@@ -7,6 +7,7 @@ import _ from 'lodash'
 import fs from 'fs'
 import util from './utils/util.js'
 import forge from 'node-forge'
+process.env.DEBUG = '*'
 export class Certd {
   constructor () {
     this.store = new FileStore()

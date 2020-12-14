@@ -1,4 +1,4 @@
-import acme from 'acme-client'
+import acme from './acme/index.cjs'
 import log from './utils/util.log.js'
 import _ from 'lodash'
 import sleep from './utils/util.sleep.js'

@@ -8,18 +8,18 @@ describe('Certd', function () {
     const certd = new Certd()
     const rootDir = certd.buildCertDir('xiaojunnuo@qq.com', options.cert.domains)
     console.log('rootDir', rootDir)
-    expect(rootDir).match(/xiaojunnuo@qq.com\\cert\\(.*)\\(.*)/)
+    expect(rootDir).match(/xiaojunnuo@qq.com\\certs\\(.*)/)
   })
   it('#writeCert', async function () {
     const certd = new Certd()
     certd.writeCert('xiaojunnuo@qq.com', ['*.domain.cn'], { csr: 'csr', crt: 'aaa', key: 'bbb' })
   })
   it('#certApply', async function () {
-    this.timeout(80000)
+    this.timeout(300000)
     const certd = new Certd()
     const cert = await certd.certApply(options)
     expect(cert).ok
-    expect(cert.cert).ok
+    expect(cert.crt).ok
     expect(cert.key).to.be.ok
   })
 

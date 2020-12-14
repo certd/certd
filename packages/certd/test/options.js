@@ -17,7 +17,7 @@ const defaultOptions = {
     }
   },
   cert: {
-    domains: ['*.docmirror.cn', 'docmirror.cn'],
+    domains: ['*.docmirror.club', 'docmirror.club'],
     email: 'xiaojunnuo@qq.com',
     challenge: {
       challengeType: 'dns',
