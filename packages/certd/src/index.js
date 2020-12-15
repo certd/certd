@@ -9,9 +9,10 @@ import util from './utils/util.js'
 import forge from 'node-forge'
 process.env.DEBUG = '*'
 export class Certd {
-  constructor () {
+  constructor (options) {
     this.store = new FileStore()
     this.acme = new AcmeService(this.store)
+    this.options = options
   }
 
   buildCertDir (email, domains) {
@@ -22,6 +23,9 @@ export class Certd {
   }
 
   async certApply (options) {
+    if (options == null) {
+      options = this.options
+    }
     const certOptions = options.cert
     const providers = options.providers
     const providerOptions = providers[certOptions.challenge.dnsProvider]

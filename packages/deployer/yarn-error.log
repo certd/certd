@@ -1,0 +1,64 @@
+Arguments: 
+  D:\Soft\Development\Nodejs\node.exe C:\Users\Administrator\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js install
+
+PATH: 
+  D:\Code\certd\certd\node_modules\.bin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0\bin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0\libnvvp;D:\Soft\Development\Python3.5.3\Scripts\;D:\Soft\Development\Python3.5.3\;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0\lib\x64;C:\Program Files\Anaconda3;C:\Program Files\Anaconda3\Scripts;C:\Program Files\Anaconda3\Library\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;D:\Soft\Development\Zookeeper\bin;D:\Soft\Development\Maven\apache-maven-3.0.3\bin;C:\WINDOWS\System32\OpenSSH\;D:\Soft\Development\Microsoft VS Code\bin;D:\Soft\Development\Redis\;D:\Soft\Development\gradle-4.10.3\bin;D:\Soft\Development\Android\flutter\bin;C:\Program Files (x86)\QT Lite\QTSystem;D:\Soft\Development\java\bin;C:\ProgramData;D:\Soft\Development\nvmnodejs;D:\Soft\Development\Git\cmd;D:\Soft\Development\Go\bin;D:\Code\open\fgit-go\release;D:\Soft\Development\Nodejs\;C:\Users\Administrator\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;D:\Soft\Development\Microsoft VS Code\bin;D:\Soft\Development\IntelliJ IDEA 2018.3.2\bin;C:\Users\Administrator\AppData\Local\BypassRuntm;C:\Users\Administrator\AppData\Local\Microsoft\WindowsApps;D:\Soft\Development\IntelliJ IDEA 2020.2\bin;;C:\Users\Administrator\AppData\Local\GitHubDesktop\bin;C:\Users\Administrator\go\bin;D:\Resources\npm\global;D:\Resources\yarn\global;C:\Users\Administrator\AppData\Roaming\npm;
+
+Yarn version: 
+  1.22.10
+
+Node version: 
+  14.15.0
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: https://registry.npmjs.org/@certd%2fcertd: Not found
+      at Request.params.callback [as _callback] (C:\Users\Administrator\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:66988:18)
+      at Request.self.callback (C:\Users\Administrator\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:140662:22)
+      at Request.emit (events.js:315:20)
+      at Request.<anonymous> (C:\Users\Administrator\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:141634:10)
+      at Request.emit (events.js:315:20)
+      at IncomingMessage.<anonymous> (C:\Users\Administrator\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:141556:12)
+      at Object.onceWrapper (events.js:421:28)
+      at IncomingMessage.emit (events.js:327:22)
+      at endReadableNT (_stream_readable.js:1327:12)
+      at processTicksAndRejections (internal/process/task_queues.js:80:21)
+
+npm manifest: 
+  {
+    "name": "@certd/samples",
+    "version": "0.0.1",
+    "description": "",
+    "main": "src/index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "type": "module",
+    "dependencies": {
+      "@alicloud/pop-core": "^1.7.10",
+      "@types/node": "^14.14.13",
+      "lodash": "^4.17.20",
+      "log4js": "^6.3.0",
+      "@certd/certd": "^0.0.1",
+      "@certd/plugins": "^0.0.1"
+    },
+    "devDependencies": {
+      "chai": "^4.2.0",
+      "eslint": "^7.15.0",
+      "eslint-config-standard": "^16.0.2",
+      "eslint-plugin-import": "^2.22.1",
+      "eslint-plugin-node": "^11.1.0",
+      "eslint-plugin-promise": "^4.2.1",
+      "mocha": "^8.2.1"
+    },
+    "author": "Greper",
+    "license": "MIT"
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

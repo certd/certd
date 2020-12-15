@@ -20,7 +20,9 @@ describe('Certd', function () {
     const cert = await certd.certApply(options)
     expect(cert).ok
     expect(cert.crt).ok
-    expect(cert.key).to.be.ok
+    expect(cert.key).ok
+    expect(cert.detail).ok
+    expect(cert.expires).ok
   })
 
   it('#readCurrentCert', async function () {
