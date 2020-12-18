@@ -50,6 +50,13 @@ export class UploadCertToAliyunPlugin extends AbstractPlugin {
     }
   }
 
+  async execute ({ accessProviders, cert, args, context }) {
+    const accessProvider = this.getAccessProvider(args.accessProvider, accessProviders)
+    const client = this.getClient(accessProvider)
+    const params = this.buildParams(args, context, cert)
+    await this.doRequest(client, params)
+  }
+
   getClient (aliyunProvider) {
     return new Core({
       accessKeyId: aliyunProvider.accessKeyId,
@@ -59,13 +66,7 @@ export class UploadCertToAliyunPlugin extends AbstractPlugin {
     })
   }
 
-  async execute ({ accessProviders, cert, args, context }) {
-    let { accessProvider } = args
-    if (typeof accessProvider === 'string' && accessProviders) {
-      accessProvider = accessProviders[accessProvider]
-    }
-    const client = this.getClient(accessProvider)
-
+  buildParams (args, context, cert) {
     const { certName, certType, domainName } = args
     const CertName = certName + '-' + dayjs().format('YYYYMMDDHHmmss')
 
@@ -82,12 +83,15 @@ export class UploadCertToAliyunPlugin extends AbstractPlugin {
       params.ServerCertificate = this.format(cert.crt.toString()),
       params.PrivateKey = this.format(cert.key.toString())
     }
+    return params
+  }
 
+  async doRequest (client, params) {
     const requestOption = {
       method: 'POST'
     }
     const ret = await client.request('SetDomainServerCertificate', params, requestOption)
-    checkRet(ret)
+    this.checkRet(ret)
     console.log('设置cdn证书成功', ret)
   }
 }

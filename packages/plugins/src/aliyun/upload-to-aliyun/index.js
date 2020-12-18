@@ -59,7 +59,7 @@ export class UploadToAliyunPlugin extends AbstractAliyunPlugin {
     const accesseProvider = this.getAccessProvider(provider, accessProviders)
     const client = this.getClient(accesseProvider)
     const ret = await client.request('CreateUserCertificate', params, requestOption)
-
+    this.checkRet(ret)
     context.aliyunCertId = ret.CertId
   }
 }
