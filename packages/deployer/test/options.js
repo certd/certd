@@ -1,7 +1,7 @@
 import _ from 'lodash'
-import optionsPrivate from './options.private.js'
+import optionsPrivate from '../../../test/options.private.js'
 const defaultOptions = {
-  providers: {
+  accessProviders: {
     aliyun: {
       providerType: 'aliyun',
       accessKeyId: '',
@@ -17,7 +17,7 @@ const defaultOptions = {
     }
   },
   cert: {
-    domains: ['*.docmirror.club', 'docmirror.club'],
+    domains: ['*.docmirror.club', 'docmirror.xyz'],
     email: 'xiaojunnuo@qq.com',
     challenge: {
       challengeType: 'dns',
@@ -38,17 +38,17 @@ const defaultOptions = {
       tasks: [
         {
           name: '上传证书到云',
-          taskType: 'uploadCertToCloud',
+          type: 'uploadCertToAliyun',
           certStore: 'aliyun'
         },
-        {
+        { // CDN、SCDN、DCDN和负载均衡（SLB）
           name: '部署证书到SLB',
-          taskType: 'deployCertToAliyunSLB',
+          type: 'deployCertToAliyunSLB',
           certStore: 'aliyun'
         },
         {
           name: '部署证书到阿里云集群Ingress',
-          taskType: 'deployCertToAliyunK8sIngress',
+          type: 'deployCertToAliyunK8sIngress',
           certStore: 'aliyun'
         }
       ]
@@ -58,7 +58,7 @@ const defaultOptions = {
       tasks: [
         {
           name: '上传证书到服务器,并重启nginx',
-          taskType: 'sshAndExecute',
+          type: 'sshAndExecute',
           ssh: 'myLinux',
           upload: [
             { from: '{certPath}', to: '/xxx/xxx/xxx.cert.pem' },
@@ -73,7 +73,7 @@ const defaultOptions = {
       tasks: [
         {
           name: '触发jenkins任务',
-          taskType: 'sshAndExecute',
+          type: 'sshAndExecute',
           ssh: 'myLinux',
           script: 'sudo systemctl restart nginx'
         }

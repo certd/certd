@@ -27,8 +27,8 @@ export class Certd {
       options = this.options
     }
     const certOptions = options.cert
-    const providers = options.providers
-    const providerOptions = providers[certOptions.challenge.dnsProvider]
+    const accessProviders = options.accessProviders
+    const providerOptions = accessProviders[certOptions.challenge.dnsProvider]
     const dnsProvider = await DnsProviderFactory.createByType(providerOptions.providerType, providerOptions)
     const cert = await this.acme.order({
       email: certOptions.email,

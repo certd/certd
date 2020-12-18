@@ -1,7 +1,7 @@
 import _ from 'lodash'
-import optionsPrivate from './options.private.js'
+import optionsPrivate from '../../../test/options.private.js'
 const defaultOptions = {
-  providers: {
+  accessProviders: {
     aliyun: {
       providerType: 'aliyun',
       accessKeyId: '',
