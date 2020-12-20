@@ -1,13 +1,12 @@
+import logger from './utils/util.log.js'
 import { AcmeService } from './acme.js'
 import { FileStore } from './store/file-store.js'
 import { DnsProviderFactory } from './dns-provider/dns-provider-factory.js'
 import dayjs from 'dayjs'
 import path from 'path'
-import _ from 'lodash'
 import fs from 'fs'
 import util from './utils/util.js'
 import forge from 'node-forge'
-process.env.DEBUG = '*'
 export class Certd {
   constructor (options) {
     this.store = new FileStore()
@@ -15,73 +14,150 @@ export class Certd {
     this.options = options
   }
 
+  getMainDomain (domains) {
+    if (domains == null) {
+      return null
+    }
+    if (typeof domains === 'string') {
+      return domains
+    }
+    if (domains.length > 0) {
+      return domains[0]
+    }
+  }
+
+  buildDomainFileName (domains) {
+    const domain = this.getMainDomain(domains)
+    return domain.replace(/\*/g, '_')
+  }
+
   buildCertDir (email, domains) {
-    let domainStr = _.join(domains)
-    domainStr = domainStr.replace(/\*/g, '')
-    const dir = path.join(email, '/certs/', domainStr)
-    return dir
+    const domainFileName = this.buildDomainFileName(domains)
+    return path.join(email, '/certs/', domainFileName)
   }
 
   async certApply (options) {
     if (options == null) {
       options = this.options
     }
-    const certOptions = options.cert
+    let oldCert
+    try {
+      oldCert = this.readCurrentCert(options.cert.email, options.cert.domains)
+    } catch (e) {
+      logger.warn('读取cert失败：', e)
+    }
+
+    if (oldCert == null) {
+      logger.info('还未申请过，准备申请新证书')
+    } else {
+      const ret = this.isWillExpire(oldCert.expires, options.cert.renewDays)
+      if (!ret.isWillExpire) {
+        logger.info('证书还未过期：', oldCert.expires, ',剩余', ret.leftDays, '天')
+        if (options.args.forceCert) {
+          logger.info('准备强制更新证书')
+        } else {
+          logger.info('暂不更新证书')
+
+          oldCert.isNew = false
+          return oldCert
+        }
+      } else {
+        logger.info('即将过期，准备更新证书')
+      }
+    }
+
+    // 执行证书申请步骤
+    return await this.doCertApply(options)
+  }
+
+  async doCertApply (options) {
     const accessProviders = options.accessProviders
-    const providerOptions = accessProviders[certOptions.challenge.dnsProvider]
+    const providerOptions = accessProviders[options.cert.challenge.dnsProvider]
     const dnsProvider = await DnsProviderFactory.createByType(providerOptions.providerType, providerOptions)
     const cert = await this.acme.order({
-      email: certOptions.email,
-      domains: certOptions.domains,
+      email: options.cert.email,
+      domains: options.cert.domains,
       dnsProvider: dnsProvider,
-      csrInfo: certOptions.csrInfo
-
+      csrInfo: options.cert.csrInfo
     })
 
-    this.writeCert(certOptions.email, certOptions.domains, cert)
-    const { detail, expires } = this.getDetailFromCrt(cert.crt)
+    const certDir = this.writeCert(options.cert.email, options.cert.domains, cert)
+    const { detail, expires } = this.getCrtDetail(cert.crt)
     return {
       ...cert,
       detail,
-      expires
+      expires,
+      certDir,
+      isNew: true
     }
   }
 
   writeCert (email, domains, cert) {
     const certFilesRootDir = this.buildCertDir(email, domains)
     const dirPath = path.join(certFilesRootDir, dayjs().format('YYYY.MM.DD.HHmmss'))
-    this.store.set(path.join(dirPath, '/cert.crt'), cert.crt)
-    this.store.set(path.join(dirPath, '/cert.key'), cert.key)
-    this.store.set(path.join(dirPath, '/cert.csr'), cert.csr)
+
+    const domainFileName = this.buildDomainFileName(domains)
+
+    this.store.set(path.join(dirPath, `/${domainFileName}.crt`), cert.crt)
+    this.store.set(path.join(dirPath, `/${domainFileName}.key`), cert.key)
+    this.store.set(path.join(dirPath, `/${domainFileName}.csr`), cert.csr)
 
     const linkPath = path.join(util.getUserBasePath(), certFilesRootDir, 'current')
     const lastPath = path.join(util.getUserBasePath(), dirPath)
-    // if (!fs.existsSync(linkPath)) {
-    //   fs.mkdirSync(linkPath)
-    // }
-    fs.symlinkSync(lastPath, linkPath)
+    if (fs.existsSync(linkPath)) {
+      try {
+        fs.unlinkSync(linkPath)
+      } catch (e) {
+        logger.error('unlink error:', e)
+      }
+    }
+    fs.symlinkSync(lastPath, linkPath, 'dir')
+
+    return linkPath
   }
 
   readCurrentCert (email, domains) {
     const certFilesRootDir = this.buildCertDir(email, domains)
     const currentPath = path.join(certFilesRootDir, 'current')
+    const domainFileName = this.buildDomainFileName(domains)
 
-    const crt = this.store.get(currentPath + '/cert.crt')
-    const key = this.store.get(currentPath + '/cert.key')
-    const csr = this.store.get(currentPath + '/cert.csr')
-
-    const { detail, expires } = this.getDetailFromCrt(crt)
-
-    const cert = {
-      crt, key, csr, detail, expires
+    const crt = this.store.get(currentPath + `/${domainFileName}.crt`)
+    if (crt == null) {
+      return null
     }
-    return cert
+    const key = this.store.get(currentPath + `/${domainFileName}.key`)
+    const csr = this.store.get(currentPath + `/${domainFileName}.csr`)
+
+    const { detail, expires } = this.getCrtDetail(crt)
+
+    const certDir = path.join(util.getUserBasePath(), currentPath)
+    return {
+      crt, key, csr, detail, expires, certDir
+    }
   }
 
-  getDetailFromCrt (crt) {
+  getCrtDetail (crt) {
     const pki = forge.pki
     const detail = pki.certificateFromPem(crt.toString())
     const expires = detail.validity.notAfter
     return { detail, expires }
+  }
+
+  /**
+   * 检查是否过期，默认提前20天
+   * @param expires
+   * @param maxDays
+   * @returns {boolean}
+   */
+  isWillExpire (expires, maxDays = 20) {
+    if (expires == null) {
+      throw new Error('过期时间不能为空')
+    }
+    // 检查有效期
+    const leftDays = dayjs(expires).diff(dayjs(), 'day')
+    return {
+      isWillExpire: leftDays < maxDays,
+      leftDays
+    }
   }
 }

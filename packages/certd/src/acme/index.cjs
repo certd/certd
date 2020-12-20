@@ -1,4 +1,3 @@
-process.env.DEBUG = '*'
 /**
  * acme-client
  */

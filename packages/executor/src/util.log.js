@@ -5,3 +5,12 @@ log4js.configure({
 })
 const logger = log4js.getLogger('certd')
 export default logger
+
+// import debug from 'debug'
+// debug.enable('info,debug,error,warn')
+// export default {
+//   debug: debug('debug'),
+//   info: debug('info'),
+//   error: debug('error'),
+//   warn: debug('warn')
+// }

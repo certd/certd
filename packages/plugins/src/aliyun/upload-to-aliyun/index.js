@@ -1,8 +1,7 @@
-import { AbstractPlugin } from '../../abstract-plugin/index.js'
 import Core from '@alicloud/pop-core'
 import dayjs from 'dayjs'
 import { AbstractAliyunPlugin } from '../abstract-aliyun.js'
-export class UploadToAliyunPlugin extends AbstractAliyunPlugin {
+export class UploadCertToAliyun extends AbstractAliyunPlugin {
   /**
    * 插件定义
    * 名称
@@ -11,7 +10,7 @@ export class UploadToAliyunPlugin extends AbstractAliyunPlugin {
    */
   static define () {
     return {
-      name: 'updateToAliyun',
+      name: 'uploadCertToAliyun',
       label: '上传证书到阿里云',
       input: {
         name: {
@@ -42,8 +41,8 @@ export class UploadToAliyunPlugin extends AbstractAliyunPlugin {
     })
   }
 
-  async execute ({ accessProviders, cert, args, context }) {
-    const { name, provider } = args
+  async execute ({ accessProviders, cert, args, context, logger }) {
+    const { name, accessProvider } = args
     const certName = name + '-' + dayjs().format('YYYYMMDDHHmmss')
     const params = {
       RegionId: 'cn-hangzhou',
@@ -56,10 +55,11 @@ export class UploadToAliyunPlugin extends AbstractAliyunPlugin {
       method: 'POST'
     }
 
-    const accesseProvider = this.getAccessProvider(provider, accessProviders)
-    const client = this.getClient(accesseProvider)
+    const provider = super.getAccessProvider(accessProvider, accessProviders)
+    const client = this.getClient(provider)
     const ret = await client.request('CreateUserCertificate', params, requestOption)
     this.checkRet(ret)
+    this.logger.info('证书上传成功：certId=', ret.CertId)
     context.aliyunCertId = ret.CertId
   }
 }

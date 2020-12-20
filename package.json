@@ -4,5 +4,8 @@
   "devDependencies": {
     "lerna": "^3.18.4"
   },
+  "scripts": {
+    "submodule":"git submodule update  --init --recursive"
+  },
   "license": "MIT"
 }

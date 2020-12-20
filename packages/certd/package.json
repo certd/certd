@@ -12,10 +12,10 @@
   "dependencies": {
     "@alicloud/pop-core": "^1.7.10",
     "@types/node": "^14.14.13",
-    "acme-client": "^4.1.2",
     "dayjs": "^1.9.7",
     "lodash": "^4.17.20",
-    "log4js": "^6.3.0"
+    "log4js": "^6.3.0",
+    "@certd/acme-client": "^0.0.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",

@@ -1,5 +1,5 @@
-import acme from './acme/index.cjs'
 import log from './utils/util.log.js'
+import acme from '@certd/acme-client'
 import _ from 'lodash'
 import sleep from './utils/util.sleep.js'
 export class AcmeService {
@@ -27,7 +27,10 @@ export class AcmeService {
     const key = await this.getAccountKey(email)
     const client = new acme.Client({
       directoryUrl: acme.directory.letsencrypt.staging,
-      accountKey: key
+      accountKey: key,
+      backoffAttempts: 10,
+      backoffMin: 5000,
+      backoffMax: 30000
     })
     return client
   }
@@ -125,7 +128,7 @@ export class AcmeService {
       csr,
       email: email,
       termsOfServiceAgreed: true,
-      challengePriority: ['dns-01', 'http-01'],
+      challengePriority: ['dns-01'],
       challengeCreateFn: (authz, challenge, keyAuthorization) => {
         return this.challengeCreateFn(authz, challenge, keyAuthorization, dnsProvider)
       },

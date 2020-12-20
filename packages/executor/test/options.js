@@ -1,6 +1,11 @@
 import _ from 'lodash'
-import optionsPrivate from '../../../test/options.private.js'
+import optionsPrivate from '../../../test/options.private.mjs'
 const defaultOptions = {
+  args: {
+    forceCert: false, // 强制更新证书
+    skipCert: false, // 是否跳过证书申请环节
+    forceDeploy: false
+  },
   accessProviders: {
     aliyun: {
       providerType: 'aliyun',
@@ -17,7 +22,7 @@ const defaultOptions = {
     }
   },
   cert: {
-    domains: ['*.docmirror.club', 'docmirror.xyz'],
+    domains: ['*.docmirror.cn'],
     email: 'xiaojunnuo@qq.com',
     challenge: {
       challengeType: 'dns',
@@ -34,27 +39,31 @@ const defaultOptions = {
   },
   deploy: [
     {
-      deployName: '流程1-部署到阿里云系列产品',
+      name: '流程1-部署到阿里云系列产品',
       tasks: [
         {
           name: '上传证书到云',
           type: 'uploadCertToAliyun',
-          certStore: 'aliyun'
+          accessProvider: 'aliyun'
         },
         { // CDN、SCDN、DCDN和负载均衡（SLB）
-          name: '部署证书到SLB',
-          type: 'deployCertToAliyunSLB',
-          certStore: 'aliyun'
-        },
-        {
-          name: '部署证书到阿里云集群Ingress',
-          type: 'deployCertToAliyunK8sIngress',
-          certStore: 'aliyun'
+          name: '部署证书到CDN',
+          type: 'deployCertToAliyunCDN',
+          domainName: 'certd-cdn-upload.docmirror.cn',
+          certName: 'certd部署测试(upload)',
+          certType: 'upload',
+          accessProvider: 'aliyun'
         }
+        // {
+        //   name: '部署证书到阿里云集群Ingress',
+        //   type: 'deployCertToAliyunK8sIngress',
+        //   accessProvider: 'aliyun'
+        // }
       ]
     },
     {
-      deployName: '流程2-部署到nginx服务器',
+      name: '流程2-部署到nginx服务器',
+      disabled: true,
       tasks: [
         {
           name: '上传证书到服务器,并重启nginx',

@@ -1,7 +1,7 @@
-import { AbstractPlugin } from '../../abstract-plugin/index.js'
+import { AbstractAliyunPlugin } from '../../aliyun/abstract-aliyun.js'
 import Core from '@alicloud/pop-core'
 import dayjs from 'dayjs'
-export class UploadCertToAliyunPlugin extends AbstractPlugin {
+export class DeployCertToAliyunCDN extends AbstractAliyunPlugin {
   /**
    * 插件定义
    * 名称
@@ -10,7 +10,7 @@ export class UploadCertToAliyunPlugin extends AbstractPlugin {
    */
   static define () {
     return {
-      name: 'deployToCdn',
+      name: 'deployCertToAliyunCDN',
       label: '部署到阿里云CDN',
       input: {
         domainName: {
@@ -21,10 +21,11 @@ export class UploadCertToAliyunPlugin extends AbstractPlugin {
           label: '证书名称'
         },
         certType: {
+          value: 'upload',
           label: '证书来源',
           options: [
             { value: 'upload', label: '直接上传' },
-            { value: 'cas', label: '从证书库（需要uploadCertToAliyun插件作为前置任务）' }
+            { value: 'cas', label: '从证书库', desc: '需要uploadCertToAliyun作为前置任务' }
           ],
           required: true
         },
@@ -76,12 +77,8 @@ export class UploadCertToAliyunPlugin extends AbstractPlugin {
       ServerCertificateStatus: 'on',
       CertName: CertName,
       CertType: certType,
-      ServerCertificate: context.aliyunCertId
-    }
-    if (certType === 'upload') {
-      // eslint-disable-next-line no-unused-expressions
-      params.ServerCertificate = this.format(cert.crt.toString()),
-      params.PrivateKey = this.format(cert.key.toString())
+      ServerCertificate: super.format(cert.crt.toString()),
+      PrivateKey: super.format(cert.key.toString())
     }
     return params
   }
@@ -92,6 +89,6 @@ export class UploadCertToAliyunPlugin extends AbstractPlugin {
     }
     const ret = await client.request('SetDomainServerCertificate', params, requestOption)
     this.checkRet(ret)
-    console.log('设置cdn证书成功', ret)
+    this.logger.info('设置cdn证书成功:', ret.RequestId)
   }
 }
