@@ -4,4 +4,4 @@
 out
 gen
 node_modules/
-/test/*.private.js
+./test/*.private*
