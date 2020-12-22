@@ -60,6 +60,7 @@ export default class AliyunDnsProvider extends DnsProvider {
   }
 
   async createRecord (dnsRecord, type, recordValue) {
+    log.info('添加域名解析：', dnsRecord, recordValue)
     const domain = await this.matchDomain(dnsRecord)
     const rr = dnsRecord.replace('.' + domain, '')
 
@@ -77,6 +78,7 @@ export default class AliyunDnsProvider extends DnsProvider {
 
     try {
       const ret = await this.client.request('AddDomainRecord', params, requestOption)
+      console.log('添加域名解析成功:', dnsRecord, recordValue, ret.RecordId)
       return ret.RecordId
     } catch (e) {
       // e.code === 'DomainRecordDuplicate'
@@ -101,7 +103,7 @@ export default class AliyunDnsProvider extends DnsProvider {
     }
 
     const ret = await this.client.request('DeleteDomainRecord', params, requestOption)
-    log.info('delete record success:', ret.RecordId)
+    log.info('删除域名解析成功:', dnsRecord, value, ret.RecordId)
     return ret.RecordId
   }
 }

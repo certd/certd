@@ -33,6 +33,15 @@ export class Executor {
   }
 
   async run (options, args) {
+    try {
+      return this.doRun(options, args)
+    } catch (e) {
+      logger.error('任务执行出错：', e)
+      throw e
+    }
+  }
+
+  async doRun (options, args) {
     if (args != null) {
       _.merge(options.args, args)
     }

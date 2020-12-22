@@ -30,7 +30,7 @@ export class AcmeService {
       accountKey: key,
       backoffAttempts: 10,
       backoffMin: 5000,
-      backoffMax: 30000
+      backoffMax: 10000
     })
     return client
   }
@@ -67,15 +67,7 @@ export class AcmeService {
       /* Replace this */
       log.info(`Would create TXT record "${dnsRecord}" with value "${recordValue}"`)
 
-      try {
-        await dnsProvider.createRecord(dnsRecord, 'TXT', recordValue)
-      } catch (e) {
-        if (e.code === 'DomainRecordDuplicate') {
-          await dnsProvider.removeRecord(dnsRecord, 'TXT')
-          await sleep(1000)
-          await dnsProvider.createRecord(dnsRecord, 'TXT', recordValue)
-        }
-      }
+      return await dnsProvider.createRecord(dnsRecord, 'TXT', recordValue)
     }
   }
 
@@ -112,7 +104,7 @@ export class AcmeService {
     }
   }
 
-  async order ({ email, domains, dnsProvider, csrInfo }) {
+  async order ({ email, domains, dnsProvider, dnsProviderCreator, csrInfo }) {
     const client = await this.getAcmeClient(email)
     /* Create CSR */
     const { commonName, altNames } = this.buildCommonNameByDomains(domains)
@@ -122,26 +114,30 @@ export class AcmeService {
       ...csrInfo,
       altNames
     })
-
+    if (dnsProvider == null && dnsProviderCreator) {
+      dnsProvider = await dnsProviderCreator()
+    }
+    if (dnsProvider == null) {
+      throw new Error('dnsProvider 不能为空')
+    }
     /* Certificate */
     const crt = await client.auto({
       csr,
       email: email,
       termsOfServiceAgreed: true,
       challengePriority: ['dns-01'],
-      challengeCreateFn: (authz, challenge, keyAuthorization) => {
-        return this.challengeCreateFn(authz, challenge, keyAuthorization, dnsProvider)
+      challengeCreateFn: async (authz, challenge, keyAuthorization) => {
+        return await this.challengeCreateFn(authz, challenge, keyAuthorization, dnsProvider)
       },
-      challengeRemoveFn: (authz, challenge, keyAuthorization) => {
-        return this.challengeRemoveFn(authz, challenge, keyAuthorization, dnsProvider)
+      challengeRemoveFn: async (authz, challenge, keyAuthorization) => {
+        return await this.challengeRemoveFn(authz, challenge, keyAuthorization, dnsProvider)
       }
     })
 
     /* Done */
-    log.info(`CSR:\n${csr.toString()}`)
-    log.info(`Private key:\n${key.toString()}`)
-    log.info(`Certificate:\n${crt.toString()}`)
-
+    log.debug(`CSR:\n${csr.toString()}`)
+    log.debug(`Certificate:\n${crt.toString()}`)
+    log.info('证书申请成功')
     return { key, crt, csr }
   }
 

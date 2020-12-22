@@ -14,8 +14,9 @@ describe('Certd', function () {
     const certd = new Certd()
     certd.writeCert('xiaojunnuo@qq.com', ['*.domain.cn'], { csr: 'csr', crt: 'aaa', key: 'bbb' })
   })
-  it('#certApply', async function () {
+  it('#申请证书-aliyun', async function () {
     this.timeout(300000)
+    options.args = { forceCert: true }
     const certd = new Certd()
     const cert = await certd.certApply(options)
     expect(cert).ok
@@ -24,7 +25,6 @@ describe('Certd', function () {
     expect(cert.detail).ok
     expect(cert.expires).ok
   })
-
   it('#readCurrentCert', async function () {
     const certd = new Certd()
     const cert = certd.readCurrentCert('xiaojunnuo@qq.com', ['*.docmirror.cn'])

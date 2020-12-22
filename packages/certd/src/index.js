@@ -40,6 +40,9 @@ export class Certd {
     if (options == null) {
       options = this.options
     }
+    if (options.args == null) {
+      options.args = {}
+    }
     let oldCert
     try {
       oldCert = this.readCurrentCert(options.cert.email, options.cert.domains)
@@ -71,13 +74,11 @@ export class Certd {
   }
 
   async doCertApply (options) {
-    const accessProviders = options.accessProviders
-    const providerOptions = accessProviders[options.cert.challenge.dnsProvider]
-    const dnsProvider = await DnsProviderFactory.createByType(providerOptions.providerType, providerOptions)
+    const dnsProvider = await this.createDnsProvider(options)
     const cert = await this.acme.order({
       email: options.cert.email,
       domains: options.cert.domains,
-      dnsProvider: dnsProvider,
+      dnsProvider,
       csrInfo: options.cert.csrInfo
     })
 
@@ -90,6 +91,12 @@ export class Certd {
       certDir,
       isNew: true
     }
+  }
+
+  async createDnsProvider (options) {
+    const accessProviders = options.accessProviders
+    const providerOptions = accessProviders[options.cert.challenge.dnsProvider]
+    return await DnsProviderFactory.createByType(providerOptions.providerType, providerOptions)
   }
 
   writeCert (email, domains, cert) {

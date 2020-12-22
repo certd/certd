@@ -3,7 +3,7 @@ export class DnsProvider {
 
   }
 
-  removeRecord (dnsRecord, type) {
+  removeRecord (dnsRecord, type, recordValue) {
 
   }
 }

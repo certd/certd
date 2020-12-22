@@ -40,6 +40,7 @@ const defaultOptions = {
   deploy: [
     {
       name: '流程1-部署到阿里云系列产品',
+      disabled: true,
       tasks: [
         {
           name: '上传证书到云',
@@ -79,6 +80,7 @@ const defaultOptions = {
     },
     {
       deployName: '流程3-触发jenkins任务',
+      disabled: true,
       tasks: [
         {
           name: '触发jenkins任务',
