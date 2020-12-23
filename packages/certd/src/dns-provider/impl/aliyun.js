@@ -59,17 +59,18 @@ export default class AliyunDnsProvider extends DnsProvider {
     return ret.DomainRecords.Record
   }
 
-  async createRecord (dnsRecord, type, recordValue) {
-    log.info('添加域名解析：', dnsRecord, recordValue)
-    const domain = await this.matchDomain(dnsRecord)
-    const rr = dnsRecord.replace('.' + domain, '')
+  async createRecord ({ fullRecord, type, value }) {
+    log.info('添加域名解析：', fullRecord, value)
+    const domain = await this.matchDomain(fullRecord)
+    const rr = fullRecord.replace('.' + domain, '')
 
     const params = {
       RegionId: 'cn-hangzhou',
       DomainName: domain,
       RR: rr,
       Type: type,
-      Value: recordValue
+      Value: value,
+      Line: 'oversea' // 海外
     }
 
     const requestOption = {
@@ -78,7 +79,7 @@ export default class AliyunDnsProvider extends DnsProvider {
 
     try {
       const ret = await this.client.request('AddDomainRecord', params, requestOption)
-      console.log('添加域名解析成功:', dnsRecord, recordValue, ret.RecordId)
+      console.log('添加域名解析成功:', value, value, ret.RecordId)
       return ret.RecordId
     } catch (e) {
       // e.code === 'DomainRecordDuplicate'
@@ -87,15 +88,10 @@ export default class AliyunDnsProvider extends DnsProvider {
     }
   }
 
-  async removeRecord (dnsRecord, type, value) {
-    const domain = await this.matchDomain(dnsRecord)
-    const rr = dnsRecord.replace('.' + domain, '')
-
-    const record = await this.getRecords(domain, rr, value)
-
+  async removeRecord ({ fullRecord, type, value, record }) {
     const params = {
       RegionId: 'cn-hangzhou',
-      RecordId: record[0].RecordId
+      RecordId: record
     }
 
     const requestOption = {
@@ -103,7 +99,7 @@ export default class AliyunDnsProvider extends DnsProvider {
     }
 
     const ret = await this.client.request('DeleteDomainRecord', params, requestOption)
-    log.info('删除域名解析成功:', dnsRecord, value, ret.RecordId)
+    log.info('删除域名解析成功:', fullRecord, value, ret.RecordId)
     return ret.RecordId
   }
 }

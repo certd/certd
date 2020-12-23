@@ -12,9 +12,12 @@
   "dependencies": {
     "@alicloud/pop-core": "^1.7.10",
     "@types/node": "^14.14.13",
+    "axios": "^0.21.1",
     "dayjs": "^1.9.7",
     "lodash": "^4.17.20",
     "log4js": "^6.3.0",
+    "node-forge": "^0.10.0",
+    "qs": "^6.9.4",
     "@certd/acme-client": "^0.0.1"
   },
   "devDependencies": {

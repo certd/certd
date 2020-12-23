@@ -19,10 +19,7 @@ const defaultOptions = {
   cert: {
     domains: ['*.docmirror.club', 'docmirror.club'],
     email: 'xiaojunnuo@qq.com',
-    challenge: {
-      challengeType: 'dns',
-      dnsProvider: 'aliyun'
-    },
+    dnsProvider: 'aliyun',
     csrInfo: {
       country: 'CN',
       state: 'GuangDong',

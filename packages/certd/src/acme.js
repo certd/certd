@@ -1,47 +1,58 @@
 import log from './utils/util.log.js'
 import acme from '@certd/acme-client'
 import _ from 'lodash'
+import path from 'path'
 import sleep from './utils/util.sleep.js'
 export class AcmeService {
   constructor (store) {
     this.store = store
   }
 
-  async getAccountKey (email) {
-    let key = this.store.get(this.buildAccountKeyPath(email))
-    if (key == null) {
-      key = await this.createNewKey({ email })
+  async getAccountConfig (email) {
+    let conf = this.store.get(this.buildAccountPath(email))
+    if (conf == null) {
+      conf = {}
+    } else {
+      conf = JSON.parse(conf)
     }
-    return key
+    return conf
   }
 
-  buildAccountKeyPath (email) {
-    return email + '/acme/account.key'
+  buildAccountPath (email) {
+    return path.join(email, '/account.json')
   }
 
-  setAccountKey (email, privateKey) {
-    this.store.set(this.buildAccountKeyPath(email), privateKey)
+  saveAccountConfig (email, conf) {
+    this.store.set(this.buildAccountPath(email), JSON.stringify(conf))
   }
 
   async getAcmeClient (email) {
-    const key = await this.getAccountKey(email)
+    const conf = await this.getAccountConfig(email)
+    if (conf.key == null) {
+      conf.key = await this.createNewKey()
+      this.saveAccountConfig(email, conf)
+    }
     const client = new acme.Client({
       directoryUrl: acme.directory.letsencrypt.staging,
-      accountKey: key,
-      backoffAttempts: 10,
+      accountKey: conf.key,
+      accountUrl: conf.accountUrl,
+      backoffAttempts: 20,
       backoffMin: 5000,
       backoffMax: 10000
     })
+
+    if (conf.accountUrl == null) {
+      const accountPayload = { termsOfServiceAgreed: true, contact: [`mailto:${email}`] }
+      await client.createAccount(accountPayload)
+      conf.accountUrl = client.getAccountUrl()
+      this.saveAccountConfig(email, conf)
+    }
     return client
   }
 
-  async createNewKey ({ email }) {
-    const privateKey = await acme.forge.createPrivateKey()
-    this.setAccountKey(email, privateKey)
-  }
-
-  async loggerin () {
-
+  async createNewKey () {
+    const key = await acme.forge.createPrivateKey()
+    return key.toString()
   }
 
   async challengeCreateFn (authz, challenge, keyAuthorization, dnsProvider) {
@@ -67,7 +78,11 @@ export class AcmeService {
       /* Replace this */
       log.info(`Would create TXT record "${dnsRecord}" with value "${recordValue}"`)
 
-      return await dnsProvider.createRecord(dnsRecord, 'TXT', recordValue)
+      return await dnsProvider.createRecord({
+        fullRecord: dnsRecord,
+        type: 'TXT',
+        value: recordValue
+      })
     }
   }
 
@@ -77,10 +92,12 @@ export class AcmeService {
    * @param {object} authz Authorization object
    * @param {object} challenge Selected challenge
    * @param {string} keyAuthorization Authorization key
+   * @param recordItem  challengeCreateFn create record item
+   * @param dnsProvider dnsProvider
    * @returns {Promise}
    */
 
-  async challengeRemoveFn (authz, challenge, keyAuthorization, dnsProvider) {
+  async challengeRemoveFn (authz, challenge, keyAuthorization, recordItem, dnsProvider) {
     log.info('Triggered challengeRemoveFn()')
 
     /* http-01 */
@@ -100,12 +117,24 @@ export class AcmeService {
 
       /* Replace this */
       log.info(`Would remove TXT record "${dnsRecord}" with value "${recordValue}"`)
-      await dnsProvider.removeRecord(dnsRecord, 'TXT', keyAuthorization)
+      await dnsProvider.removeRecord({
+        fullRecord: dnsRecord,
+        type: 'TXT',
+        value: keyAuthorization,
+        record: recordItem
+      })
     }
   }
 
   async order ({ email, domains, dnsProvider, dnsProviderCreator, csrInfo }) {
     const client = await this.getAcmeClient(email)
+
+    let accountUrl
+    try {
+      accountUrl = client.getAccountUrl()
+    } catch (e) {
+    }
+
     /* Create CSR */
     const { commonName, altNames } = this.buildCommonNameByDomains(domains)
 
@@ -120,7 +149,7 @@ export class AcmeService {
     if (dnsProvider == null) {
       throw new Error('dnsProvider 不能为空')
     }
-    /* Certificate */
+    /* 自动申请证书 */
     const crt = await client.auto({
       csr,
       email: email,
@@ -129,11 +158,20 @@ export class AcmeService {
       challengeCreateFn: async (authz, challenge, keyAuthorization) => {
         return await this.challengeCreateFn(authz, challenge, keyAuthorization, dnsProvider)
       },
-      challengeRemoveFn: async (authz, challenge, keyAuthorization) => {
-        return await this.challengeRemoveFn(authz, challenge, keyAuthorization, dnsProvider)
+      challengeRemoveFn: async (authz, challenge, keyAuthorization, recordItem) => {
+        return await this.challengeRemoveFn(authz, challenge, keyAuthorization, recordItem, dnsProvider)
       }
     })
 
+    // 保存账号url
+    if (!accountUrl) {
+      try {
+        accountUrl = client.getAccountUrl()
+        this.setAccountUrl(email, accountUrl)
+      } catch (e) {
+        log.warn('保存accountUrl出错', e)
+      }
+    }
     /* Done */
     log.debug(`CSR:\n${csr.toString()}`)
     log.debug(`Certificate:\n${crt.toString()}`)

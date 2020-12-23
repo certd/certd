@@ -14,20 +14,9 @@ describe('Certd', function () {
     const certd = new Certd()
     certd.writeCert('xiaojunnuo@qq.com', ['*.domain.cn'], { csr: 'csr', crt: 'aaa', key: 'bbb' })
   })
-  it('#申请证书-aliyun', async function () {
-    this.timeout(300000)
-    options.args = { forceCert: true }
-    const certd = new Certd()
-    const cert = await certd.certApply(options)
-    expect(cert).ok
-    expect(cert.crt).ok
-    expect(cert.key).ok
-    expect(cert.detail).ok
-    expect(cert.expires).ok
-  })
   it('#readCurrentCert', async function () {
     const certd = new Certd()
-    const cert = certd.readCurrentCert('xiaojunnuo@qq.com', ['*.docmirror.cn'])
+    const cert = certd.readCurrentCert('xiaojunnuo@qq.com', ['*.domain.cn'])
     expect(cert).to.be.ok
     expect(cert.crt).ok
     expect(cert.key).to.be.ok

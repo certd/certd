@@ -95,7 +95,7 @@ export class Certd {
 
   async createDnsProvider (options) {
     const accessProviders = options.accessProviders
-    const providerOptions = accessProviders[options.cert.challenge.dnsProvider]
+    const providerOptions = accessProviders[options.cert.dnsProvider]
     return await DnsProviderFactory.createByType(providerOptions.providerType, providerOptions)
   }
 
