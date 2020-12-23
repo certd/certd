@@ -69,8 +69,8 @@ export default class AliyunDnsProvider extends DnsProvider {
       DomainName: domain,
       RR: rr,
       Type: type,
-      Value: value,
-      Line: 'oversea' // 海外
+      Value: value
+      // Line: 'oversea' // 海外
     }
 
     const requestOption = {
