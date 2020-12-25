@@ -2,6 +2,10 @@ import _ from 'lodash'
 import optionsPrivate from '../../../test/options.private.mjs'
 const defaultOptions = {
   version: '1.0.0',
+  args: {
+    directory: 'test',
+    dry: false
+  },
   accessProviders: {
     aliyun: {
       providerType: 'aliyun',
@@ -20,10 +24,8 @@ const defaultOptions = {
   cert: {
     domains: ['*.docmirror.club', 'docmirror.club'],
     email: 'xiaojunnuo@qq.com',
-    challenge: {
-      challengeType: 'dns',
-      dnsProvider: 'aliyun'
-    },
+    dnsProvider: 'aliyun',
+    certProvider: 'letsencrypt',
     csrInfo: {
       country: 'CN',
       state: 'GuangDong',

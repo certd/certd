@@ -106,7 +106,7 @@ export class Executor {
     if (Plugin instanceof Function) {
       instance = new Plugin()
     }
-    await instance.execute({ cert, accessProviders: options.accessProviders, args: task, context })
+    await instance.execute({ cert, accessProviders: options.accessProviders, props: task, context })
     logger.info(`----任务【${task.name}】执行完成`)
   }
 }

@@ -6,4 +6,8 @@ export class Store {
   get (key) {
 
   }
+
+  getActualKey (key) {
+    // return 前缀+key
+  }
 }

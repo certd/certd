@@ -41,9 +41,9 @@ export class UploadCertToAliyun extends AbstractAliyunPlugin {
     })
   }
 
-  async execute ({ accessProviders, cert, args, context, logger }) {
-    const { name, accessProvider } = args
-    const certName = name + '-' + dayjs().format('YYYYMMDDHHmmss')
+  async execute ({ accessProviders, cert, props, context, logger }) {
+    const { name, accessProvider } = props
+    const certName = name + '-' + dayjs().format('YYYYMMDD-HHmmss')
     const params = {
       RegionId: 'cn-hangzhou',
       Name: certName,
@@ -59,7 +59,7 @@ export class UploadCertToAliyun extends AbstractAliyunPlugin {
     const client = this.getClient(provider)
     const ret = await client.request('CreateUserCertificate', params, requestOption)
     this.checkRet(ret)
-    this.logger.info('证书上传成功：certId=', ret.CertId)
+    this.logger.info('证书上传成功：aliyunCertId=', ret.CertId)
     context.aliyunCertId = ret.CertId
   }
 }

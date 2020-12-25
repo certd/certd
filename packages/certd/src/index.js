@@ -5,11 +5,13 @@ import { DnsProviderFactory } from './dns-provider/dns-provider-factory.js'
 import dayjs from 'dayjs'
 import path from 'path'
 import fs from 'fs'
-import util from './utils/util.js'
 import forge from 'node-forge'
 export class Certd {
-  constructor (options) {
-    this.store = new FileStore()
+  constructor (options = { args: {} }) {
+    if (!options.args) {
+      options.args = {}
+    }
+    this.store = new FileStore(options.args)
     this.acme = new AcmeService(this.store)
     this.options = options
   }
@@ -79,7 +81,8 @@ export class Certd {
       email: options.cert.email,
       domains: options.cert.domains,
       dnsProvider,
-      csrInfo: options.cert.csrInfo
+      csrInfo: options.cert.csrInfo,
+      isTest: options.args.test
     })
 
     const certDir = this.writeCert(options.cert.email, options.cert.domains, cert)
@@ -109,8 +112,8 @@ export class Certd {
     this.store.set(path.join(dirPath, `/${domainFileName}.key`), cert.key)
     this.store.set(path.join(dirPath, `/${domainFileName}.csr`), cert.csr)
 
-    const linkPath = path.join(util.getUserBasePath(), certFilesRootDir, 'current')
-    const lastPath = path.join(util.getUserBasePath(), dirPath)
+    const linkPath = this.store.getActualKey(path.join(certFilesRootDir, 'current'))
+    const lastPath = this.store.getActualKey(dirPath)
     if (fs.existsSync(linkPath)) {
       try {
         fs.unlinkSync(linkPath)
@@ -137,7 +140,7 @@ export class Certd {
 
     const { detail, expires } = this.getCrtDetail(crt)
 
-    const certDir = path.join(util.getUserBasePath(), currentPath)
+    const certDir = this.store.getActualKey(currentPath)
     return {
       crt, key, csr, detail, expires, certDir
     }

@@ -1,16 +1,27 @@
 import _ from 'lodash'
-import optionsPrivate from '../../../test/options.private.mjs'
+import optionsPrivate from './options.private.js'
 const defaultOptions = {
   args: {
     forceCert: false, // 强制更新证书
     skipCert: false, // 是否跳过证书申请环节
-    forceDeploy: false
+    forceDeploy: false,
+    test: true
   },
   accessProviders: {
     aliyun: {
       providerType: 'aliyun',
       accessKeyId: '',
       accessKeySecret: ''
+    },
+    dnspod: {
+      providerType: 'dnspod',
+      id: '',
+      token: ''
+    },
+    tencent: {
+      providerType: 'tencent',
+      secretId: '',
+      secretKey: ''
     },
     myLinux: {
       providerType: 'SSH',
@@ -24,10 +35,7 @@ const defaultOptions = {
   cert: {
     domains: ['*.docmirror.cn'],
     email: 'xiaojunnuo@qq.com',
-    challenge: {
-      challengeType: 'dns',
-      dnsProvider: 'aliyun'
-    },
+    dnsProvider: 'aliyun',
     csrInfo: {
       country: 'CN',
       state: 'GuangDong',
@@ -95,4 +103,6 @@ const defaultOptions = {
 
 _.merge(defaultOptions, optionsPrivate)
 
-export default defaultOptions
+export function createOptions(){
+  return _.cloneDeep(defaultOptions)
+}

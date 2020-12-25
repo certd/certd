@@ -1,11 +1,15 @@
 {
   "name": "root",
   "private": true,
+  "type": "module",
   "devDependencies": {
     "lerna": "^3.18.4"
   },
   "scripts": {
-    "submodule":"git submodule update  --init --recursive"
+    "submodule": "git submodule update  --init --recursive"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.20"
+  }
 }

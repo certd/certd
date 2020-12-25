@@ -8,14 +8,11 @@ describe('DeployToAliyunCDN', function () {
     const plugin = new DeployCertToAliyunCDN()
     const certd = new Certd()
     const cert = certd.readCurrentCert('xiaojunnuo@qq.com', ['*.docmirror.cn'])
-    const ret = await plugin.execute({
+    const ret = await plugin.doExecute({
       accessProviders: options.accessProviders,
       cert,
-      args: { domainName: 'certd-cdn-upload.docmirror.cn', certName: 'certd部署测试', certType: 'cas', accessProvider: 'aliyun' },
-      context: {
-        aliyunCertId: '4947435'
-      }
+      props: { domainName: 'certd-cdn-upload.docmirror.cn', certName: 'certd部署测试', certType: 'cas', accessProvider: 'aliyun' }
     })
-    console.log('context:', context)
+    console.log('context:', context, ret)
   })
 })

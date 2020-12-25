@@ -4,9 +4,20 @@ import path from 'path'
 import fs from 'fs'
 
 export class FileStore extends Store {
-  constructor () {
+  constructor (opts) {
     super()
     this.rootDir = util.getUserBasePath()
+    if (opts.rootDir != null) {
+      this.rootDir = opts.rootDir
+    }
+    if (opts.test) {
+      this.rootDir = path.join(this.rootDir, '/test/')
+    }
+  }
+
+  getActualKey (key) {
+    // return 前缀+key
+    return this.getPathByKey(key)
   }
 
   getPathByKey (key) {

@@ -26,14 +26,17 @@ export class AcmeService {
     this.store.set(this.buildAccountPath(email), JSON.stringify(conf))
   }
 
-  async getAcmeClient (email) {
+  async getAcmeClient (email, isTest) {
     const conf = await this.getAccountConfig(email)
     if (conf.key == null) {
       conf.key = await this.createNewKey()
       this.saveAccountConfig(email, conf)
     }
+    if (isTest == null) {
+      isTest = process.env.CERTD_MODE === 'test'
+    }
     const client = new acme.Client({
-      directoryUrl: acme.directory.letsencrypt.staging,
+      directoryUrl: isTest ? acme.directory.letsencrypt.staging : acme.directory.letsencrypt.production,
       accountKey: conf.key,
       accountUrl: conf.accountUrl,
       backoffAttempts: 20,
@@ -126,8 +129,8 @@ export class AcmeService {
     }
   }
 
-  async order ({ email, domains, dnsProvider, dnsProviderCreator, csrInfo }) {
-    const client = await this.getAcmeClient(email)
+  async order ({ email, domains, dnsProvider, dnsProviderCreator, csrInfo, isTest }) {
+    const client = await this.getAcmeClient(email, isTest)
 
     let accountUrl
     try {

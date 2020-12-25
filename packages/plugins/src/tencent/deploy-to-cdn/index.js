@@ -1,7 +1,8 @@
-import { AbstractAliyunPlugin } from '../../aliyun/abstract-aliyun.js'
-import Core from '@alicloud/pop-core'
+import { AbstractTencentPlugin } from '../../tencent/abstract-tencent.js'
 import dayjs from 'dayjs'
-export class DeployCertToAliyunCDN extends AbstractAliyunPlugin {
+import tencentcloud from 'tencentcloud-sdk-nodejs'
+
+export class DeployCertToTencentCDN extends AbstractTencentPlugin {
   /**
    * 插件定义
    * 名称
@@ -10,8 +11,8 @@ export class DeployCertToAliyunCDN extends AbstractAliyunPlugin {
    */
   static define () {
     return {
-      name: 'deployCertToAliyunCDN',
-      label: '部署到阿里云CDN',
+      name: 'deployCertToTencentCDN',
+      label: '部署到腾讯云CDN',
       input: {
         domainName: {
           label: 'cdn加速域名',
@@ -20,12 +21,12 @@ export class DeployCertToAliyunCDN extends AbstractAliyunPlugin {
         certName: {
           label: '证书名称'
         },
-        from: {
+        certType: {
           value: 'upload',
           label: '证书来源',
           options: [
             { value: 'upload', label: '直接上传' },
-            { value: 'cas', label: '从证书库', desc: '需要uploadCertToAliyun作为前置任务' }
+            { value: 'cloud', label: '从证书库', desc: '需要uploadCertToTencent作为前置任务' }
           ],
           required: true
         },
@@ -56,39 +57,60 @@ export class DeployCertToAliyunCDN extends AbstractAliyunPlugin {
     const client = this.getClient(accessProvider)
     const params = this.buildParams(props, context, cert)
     await this.doRequest(client, params)
+    return context
   }
 
-  getClient (aliyunProvider) {
-    return new Core({
-      accessKeyId: aliyunProvider.accessKeyId,
-      accessKeySecret: aliyunProvider.accessKeySecret,
-      endpoint: 'https://cdn.aliyuncs.com',
-      apiVersion: '2018-05-10'
-    })
+  async rollback ({ accessProviders, cert, props, context }) {
+
   }
 
-  buildParams (args, context, cert) {
-    const { certName, from, domainName } = args
-    const CertName = certName + '-' + dayjs().format('YYYYMMDDHHmmss')
+  getClient (accessProvider) {
+    const CdnClient = tencentcloud.cdn.v20180606.Client
+
+    const clientConfig = {
+      credential: {
+        secretId: accessProvider.secretId,
+        secretKey: accessProvider.secretKey
+      },
+      region: '',
+      profile: {
+        httpProfile: {
+          endpoint: 'cdn.tencentcloudapi.com'
+        }
+      }
+    }
+
+    return new CdnClient(clientConfig)
+  }
+
+  buildParams (props, context, cert) {
+    const { domainName, from } = props
+    const { tencentCertId } = context
 
     const params = {
-      RegionId: 'cn-hangzhou',
-      DomainName: domainName,
-      ServerCertificateStatus: 'on',
-      CertName: CertName,
-      CertType: from,
-      ServerCertificate: super.format(cert.crt.toString()),
-      PrivateKey: super.format(cert.key.toString())
+      Https: {
+        Switch: 'on',
+        CertInfo: {
+          CertId: tencentCertId
+          // Certificate: '1231',
+          // PrivateKey: '1231'
+        }
+      },
+      Domain: domainName
+    }
+    if (from === 'upload') {
+      params.Https.CertInfo = {
+        Certificate: this.format(cert.crt.toString()),
+        PrivateKey: this.format(cert.key.toString())
+      }
     }
     return params
   }
 
   async doRequest (client, params) {
-    const requestOption = {
-      method: 'POST'
-    }
-    const ret = await client.request('SetDomainServerCertificate', params, requestOption)
+    const ret = await client.UpdateDomainConfig(params)
     this.checkRet(ret)
-    this.logger.info('设置cdn证书成功:', ret.RequestId)
+    this.logger.info('设置腾讯云CDN证书成功:', ret.RequestId)
+    return ret.RequestId
   }
 }
