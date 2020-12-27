@@ -37,13 +37,13 @@ describe('DeployToTencentCDN', function () {
     const options = createOptions()
     options.args.test = false
     const plugin = new DeployCertToTencentCDN()
-    const certd = new Certd()
+    const certd = new Certd(options)
     const cert = certd.readCurrentCert('xiaojunnuo@qq.com', ['*.docmirror.cn'])
     const context = {}
     const deployOpts = {
       accessProviders: options.accessProviders,
       cert,
-      props: { domainName: 'tentcent-certd.docmirror.cn', from: 'upload', accessProvider: 'tencent' },
+      props: { domainName: 'tentcent-certd.docmirror.cn', accessProvider: 'tencent' },
       context
     }
     const ret = await plugin.doExecute(deployOpts)

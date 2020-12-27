@@ -85,15 +85,9 @@ export class Certd {
       isTest: options.args.test
     })
 
-    const certDir = this.writeCert(options.cert.email, options.cert.domains, cert)
-    const { detail, expires } = this.getCrtDetail(cert.crt)
-    return {
-      ...cert,
-      detail,
-      expires,
-      certDir,
-      isNew: true
-    }
+    this.writeCert(options.cert.email, options.cert.domains, cert)
+    const certRet = this.readCurrentCert(options.cert.email, options.cert.domains)
+    certRet.isNew = true
   }
 
   async createDnsProvider (options) {
@@ -126,6 +120,10 @@ export class Certd {
     return linkPath
   }
 
+  readCurrentCertByOptions (options) {
+    return this.readCurrentCert(options.cert.email, options.cert.domains)
+  }
+
   readCurrentCert (email, domains) {
     const certFilesRootDir = this.buildCertDir(email, domains)
     const currentPath = path.join(certFilesRootDir, 'current')
@@ -137,12 +135,12 @@ export class Certd {
     }
     const key = this.store.get(currentPath + `/${domainFileName}.key`)
     const csr = this.store.get(currentPath + `/${domainFileName}.csr`)
-
     const { detail, expires } = this.getCrtDetail(crt)
-
     const certDir = this.store.getActualKey(currentPath)
+
+    const domain = this.getMainDomain(domains)
     return {
-      crt, key, csr, detail, expires, certDir
+      crt, key, csr, detail, expires, certDir, domain, domains, email
     }
   }
 

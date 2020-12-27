@@ -57,7 +57,6 @@ export class DeployCertToTencentCDN extends AbstractTencentPlugin {
     const client = this.getClient(accessProvider)
     const params = this.buildParams(props, context, cert)
     await this.doRequest(client, params)
-    return context
   }
 
   async rollback ({ accessProviders, cert, props, context }) {
@@ -98,7 +97,7 @@ export class DeployCertToTencentCDN extends AbstractTencentPlugin {
       },
       Domain: domainName
     }
-    if (from === 'upload') {
+    if (from === 'upload' || tencentCertId == null) {
       params.Https.CertInfo = {
         Certificate: this.format(cert.crt.toString()),
         PrivateKey: this.format(cert.key.toString())

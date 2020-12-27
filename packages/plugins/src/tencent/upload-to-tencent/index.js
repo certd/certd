@@ -54,7 +54,7 @@ export class UploadCertToTencent extends AbstractTencentPlugin {
 
   async execute ({ accessProviders, cert, props, context, logger }) {
     const { name, accessProvider } = props
-    const certName = name + '-' + dayjs().format('YYYYMMDD-HHmmss')
+    const certName = this.appendTimeSuffix(name)
 
     const provider = super.getAccessProvider(accessProvider, accessProviders)
     const client = this.getClient(provider)
@@ -70,7 +70,7 @@ export class UploadCertToTencent extends AbstractTencentPlugin {
     context.tencentCertId = ret.CertificateId
   }
 
-  async rollback ({ accessProviders, cert, props, context, logger }) {
+  async rollback ({ accessProviders, cert, props, context }) {
     const { accessProvider } = props
     const provider = super.getAccessProvider(accessProvider, accessProviders)
     const client = this.getClient(provider)

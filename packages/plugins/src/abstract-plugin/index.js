@@ -1,8 +1,17 @@
 import fs from 'fs'
 import logger from '../utils/util.log.js'
+import dayjs from 'dayjs'
+import Sleep from '../utils/util.sleep.js'
 export class AbstractPlugin {
   constructor () {
     this.logger = logger
+  }
+
+  appendTimeSuffix (name) {
+    if (name == null) {
+      name = 'certd'
+    }
+    return name + '-' + dayjs().format('YYYYMMDD-HHmmss')
   }
 
   async executeFromContextFile (options = {}) {
@@ -10,8 +19,8 @@ export class AbstractPlugin {
     const contextJson = fs.readFileSync(contextPath)
     const context = JSON.parse(contextJson)
     options.context = context
-    const newContext = await this.execute(options)
-    fs.writeFileSync(JSON.stringify(newContext || context))
+    await this.doExecute(options)
+    fs.writeFileSync(JSON.stringify(context))
   }
 
   async doExecute (options) {
@@ -54,5 +63,9 @@ export class AbstractPlugin {
       accessProvider = accessProviders[accessProvider]
     }
     return accessProvider
+  }
+
+  async sleep (time) {
+    await Sleep(time)
   }
 }
