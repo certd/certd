@@ -13,4 +13,8 @@ export class AbstractTencentPlugin extends AbstractPlugin {
       throw new Error('执行失败：' + ret.Error.Code + ',' + ret.Error.Message)
     }
   }
+
+  getSafetyDomain (domain) {
+    return domain.replace(/\*/g, '_')
+  }
 }

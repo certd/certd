@@ -1,8 +1,6 @@
 import log from './utils/util.log.js'
 import acme from '@certd/acme-client'
 import _ from 'lodash'
-import path from 'path'
-import sleep from './utils/util.sleep.js'
 export class AcmeService {
   constructor (store) {
     this.store = store
@@ -19,7 +17,7 @@ export class AcmeService {
   }
 
   buildAccountPath (email) {
-    return path.join(email, '/account.json')
+    return this.store.buildKey(email, 'account.json')
   }
 
   saveAccountConfig (email, conf) {

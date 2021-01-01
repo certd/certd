@@ -1,19 +1,28 @@
 import logger from './utils/util.log.js'
 import { AcmeService } from './acme.js'
-import { FileStore } from './store/file-store.js'
+import { FileStore } from './store/impl/file-store.js'
+import { Store } from './store/store.js'
+import { CertStore } from './store/cert-store.js'
 import { DnsProviderFactory } from './dns-provider/dns-provider-factory.js'
 import dayjs from 'dayjs'
-import path from 'path'
-import fs from 'fs'
 import forge from 'node-forge'
+
 export class Certd {
-  constructor (options = { args: {} }) {
-    if (!options.args) {
-      options.args = {}
-    }
-    this.store = new FileStore(options.args)
-    this.acme = new AcmeService(this.store)
+  constructor (options) {
     this.options = options
+    this.email = options.cert.email
+    this.domains = options.cert.domains
+    this.domain = this.getMainDomain(options.cert.domains)
+
+    if (!(options.store instanceof Store)) {
+      this.store = new FileStore(options.store || {})
+    }
+    this.certStore = new CertStore({
+      store: this.store,
+      email: options.cert.email,
+      domain: this.domain
+    })
+    this.acme = new AcmeService(this.store)
   }
 
   getMainDomain (domains) {
@@ -27,27 +36,21 @@ export class Certd {
       return domains[0]
     }
   }
+  //
+  // buildDomainFileName (domains) {
+  //   const domain = this.getMainDomain(domains)
+  //   return domain.replace(/\*/g, '_')
+  // }
+  //
+  // buildCertDir (email, domains) {
+  //   const domainFileName = this.buildDomainFileName(domains)
+  //   return path.join(email, '/certs/', domainFileName)
+  // }
 
-  buildDomainFileName (domains) {
-    const domain = this.getMainDomain(domains)
-    return domain.replace(/\*/g, '_')
-  }
-
-  buildCertDir (email, domains) {
-    const domainFileName = this.buildDomainFileName(domains)
-    return path.join(email, '/certs/', domainFileName)
-  }
-
-  async certApply (options) {
-    if (options == null) {
-      options = this.options
-    }
-    if (options.args == null) {
-      options.args = {}
-    }
+  async certApply () {
     let oldCert
     try {
-      oldCert = this.readCurrentCert(options.cert.email, options.cert.domains)
+      oldCert = await this.readCurrentCert()
     } catch (e) {
       logger.warn('读取cert失败：', e)
     }
@@ -55,10 +58,10 @@ export class Certd {
     if (oldCert == null) {
       logger.info('还未申请过，准备申请新证书')
     } else {
-      const ret = this.isWillExpire(oldCert.expires, options.cert.renewDays)
+      const ret = this.isWillExpire(oldCert.expires, this.options.cert.renewDays)
       if (!ret.isWillExpire) {
         logger.info('证书还未过期：', oldCert.expires, ',剩余', ret.leftDays, '天')
-        if (options.args.forceCert) {
+        if (this.options.args.forceCert) {
           logger.info('准备强制更新证书')
         } else {
           logger.info('暂不更新证书')
@@ -72,10 +75,11 @@ export class Certd {
     }
 
     // 执行证书申请步骤
-    return await this.doCertApply(options)
+    return await this.doCertApply()
   }
 
-  async doCertApply (options) {
+  async doCertApply () {
+    const options = this.options
     const dnsProvider = await this.createDnsProvider(options)
     const cert = await this.acme.order({
       email: options.cert.email,
@@ -85,8 +89,8 @@ export class Certd {
       isTest: options.args.test
     })
 
-    this.writeCert(options.cert.email, options.cert.domains, cert)
-    const certRet = this.readCurrentCert(options.cert.email, options.cert.domains)
+    await this.writeCert(cert)
+    const certRet = await this.readCurrentCert()
     certRet.isNew = true
   }
 
@@ -96,51 +100,20 @@ export class Certd {
     return await DnsProviderFactory.createByType(providerOptions.providerType, providerOptions)
   }
 
-  writeCert (email, domains, cert) {
-    const certFilesRootDir = this.buildCertDir(email, domains)
-    const dirPath = path.join(certFilesRootDir, dayjs().format('YYYY.MM.DD.HHmmss'))
-
-    const domainFileName = this.buildDomainFileName(domains)
-
-    this.store.set(path.join(dirPath, `/${domainFileName}.crt`), cert.crt)
-    this.store.set(path.join(dirPath, `/${domainFileName}.key`), cert.key)
-    this.store.set(path.join(dirPath, `/${domainFileName}.csr`), cert.csr)
-
-    const linkPath = this.store.getActualKey(path.join(certFilesRootDir, 'current'))
-    const lastPath = this.store.getActualKey(dirPath)
-    if (fs.existsSync(linkPath)) {
-      try {
-        fs.unlinkSync(linkPath)
-      } catch (e) {
-        logger.error('unlink error:', e)
-      }
-    }
-    fs.symlinkSync(lastPath, linkPath, 'dir')
-
-    return linkPath
-  }
-
-  readCurrentCertByOptions (options) {
-    return this.readCurrentCert(options.cert.email, options.cert.domains)
-  }
-
-  readCurrentCert (email, domains) {
-    const certFilesRootDir = this.buildCertDir(email, domains)
-    const currentPath = path.join(certFilesRootDir, 'current')
-    const domainFileName = this.buildDomainFileName(domains)
-
-    const crt = this.store.get(currentPath + `/${domainFileName}.crt`)
-    if (crt == null) {
-      return null
-    }
-    const key = this.store.get(currentPath + `/${domainFileName}.key`)
-    const csr = this.store.get(currentPath + `/${domainFileName}.csr`)
-    const { detail, expires } = this.getCrtDetail(crt)
-    const certDir = this.store.getActualKey(currentPath)
-
-    const domain = this.getMainDomain(domains)
+  async writeCert (cert) {
+    const newPath = await this.certStore.writeCert(cert)
     return {
-      crt, key, csr, detail, expires, certDir, domain, domains, email
+      realPath: this.certStore.store.getActualKey(newPath),
+      currentPath: this.certStore.store.getActualKey(this.certStore.currentRootPath)
+    }
+  }
+
+  async readCurrentCert () {
+    const cert = await this.certStore.readCert()
+    const { detail, expires } = this.getCrtDetail(cert.crt)
+    const domain = this.getMainDomain(this.options.cert.domains)
+    return {
+      ...cert, detail, expires, domain, domains: this.domains, email: this.email
     }
   }
 
@@ -152,11 +125,11 @@ export class Certd {
   }
 
   /**
-   * 检查是否过期，默认提前20天
-   * @param expires
-   * @param maxDays
-   * @returns {boolean}
-   */
+     * 检查是否过期，默认提前20天
+     * @param expires
+     * @param maxDays
+     * @returns {boolean}
+     */
   isWillExpire (expires, maxDays = 20) {
     if (expires == null) {
       throw new Error('过期时间不能为空')

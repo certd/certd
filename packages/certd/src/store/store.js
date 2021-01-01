@@ -7,6 +7,26 @@ export class Store {
 
   }
 
+  buildKey (...keyItem) {
+
+  }
+
+  linkExists (linkPath) {
+
+  }
+
+  link (targetPath, linkPath) {
+
+  }
+
+  unlink (linkPath) {
+
+  }
+
+  /**
+   * 全路径
+   * @param key
+   */
   getActualKey (key) {
     // return 前缀+key
   }

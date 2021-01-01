@@ -1,13 +1,16 @@
 import pkg from 'chai'
 import { DeployCertToAliyunCDN } from '../../src/aliyun/deploy-to-cdn/index.js'
-import options from '../options.js'
 import { Certd } from '@certd/certd'
+import createOptions from '../../../../test/options.js'
 const { expect } = pkg
 describe('DeployToAliyunCDN', function () {
   it('#execute', async function () {
+    this.timeout(5000)
+    const options = createOptions()
     const plugin = new DeployCertToAliyunCDN()
-    const certd = new Certd()
-    const cert = certd.readCurrentCert('xiaojunnuo@qq.com', ['*.docmirror.cn'])
+    options.cert.domains = ['*.docmirror.cn', 'docmirror.cn']
+    const certd = new Certd(options)
+    const cert = await certd.readCurrentCert()
     const ret = await plugin.doExecute({
       accessProviders: options.accessProviders,
       cert,

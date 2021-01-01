@@ -1,7 +1,8 @@
-import { Store } from './store.js'
-import util from '../utils/util.js'
+import { Store } from '../store.js'
+import util from '../../utils/util.js'
 import path from 'path'
 import fs from 'fs'
+import logger from '../../utils/util.log.js'
 
 export class FileStore extends Store {
   constructor (opts) {
@@ -18,6 +19,10 @@ export class FileStore extends Store {
   getActualKey (key) {
     // return 前缀+key
     return this.getPathByKey(key)
+  }
+
+  buildKey (...keyItem) {
+    return path.join(...keyItem)
   }
 
   getPathByKey (key) {
@@ -39,6 +44,24 @@ export class FileStore extends Store {
     if (!fs.existsSync(filePath)) {
       return null
     }
-    return fs.readFileSync(filePath)
+    return fs.readFileSync(filePath).toString()
+  }
+
+  link (targetPath, linkPath) {
+    targetPath = this.getPathByKey(targetPath)
+    linkPath = this.getPathByKey(linkPath)
+    if (fs.existsSync(linkPath)) {
+      try {
+        fs.unlinkSync(linkPath)
+      } catch (e) {
+        logger.error('unlink error:', e)
+      }
+    }
+    fs.symlinkSync(targetPath, linkPath, 'dir')
+  }
+
+  unlink (linkPath) {
+    linkPath = this.getPathByKey(linkPath)
+    fs.unlinkSync(linkPath)
   }
 }

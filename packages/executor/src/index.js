@@ -2,11 +2,13 @@ import { Certd } from '@certd/certd'
 import DefaultPlugins from '@certd/plugins'
 import logger from './util.log.js'
 import _ from 'lodash'
+import dayjs from 'dayjs'
 export class Executor {
   constructor (args = {}) {
-    this.certd = new Certd()
     const { plugins } = args
-    this.initPlugins(plugins)
+    this.plugins = {}
+    this.usePlugins(DefaultPlugins)
+    this.usePlugins(plugins)
   }
 
   use (plugin) {
@@ -20,13 +22,9 @@ export class Executor {
     }
   }
 
-  initPlugins (customPlugins) {
-    this.plugins = {}
-    for (const key in DefaultPlugins) {
-      this.use(DefaultPlugins[key])
-    }
-    if (customPlugins) {
-      for (const plugin of customPlugins) {
+  usePlugins (plugins) {
+    if (plugins) {
+      for (const plugin of plugins) {
         this.use(plugin)
       }
     }
@@ -34,7 +32,7 @@ export class Executor {
 
   async run (options, args) {
     try {
-      return this.doRun(options, args)
+      return await this.doRun(options, args)
     } catch (e) {
       logger.error('任务执行出错：', e)
       throw e
@@ -46,7 +44,8 @@ export class Executor {
       _.merge(options.args, args)
     }
     logger.info('任务开始')
-    const cert = await this.runCertd(options)
+    const certd = new Certd(options)
+    const cert = await this.runCertd(certd)
     if (cert == null) {
       throw new Error('申请证书失败')
     }
@@ -61,8 +60,17 @@ export class Executor {
       }
     }
 
-    const context = {}
-    await this.runDeploys({ options, cert, context })
+    let context = {}
+    const contextJson = await certd.certStore.getCurrentFile('context.json')
+    if (contextJson) {
+      context = JSON.parse(contextJson)
+    }
+    try {
+      await this.runDeploys({ options, cert, context })
+    } finally {
+      await certd.certStore.setCurrentFile('context.json', JSON.stringify(context))
+    }
+
     logger.info('任务完成')
     return {
       cert,
@@ -70,27 +78,28 @@ export class Executor {
     }
   }
 
-  async runCertd (options) {
-    logger.info(`申请证书${JSON.stringify(options.cert.domains)}开始`)
-    const cert = await this.certd.certApply(options)
-    logger.info(`申请证书${JSON.stringify(options.cert.domains)}完成`)
+  async runCertd (certd) {
+    logger.info(`申请证书${JSON.stringify(certd.options.cert.domains)}开始`)
+    const cert = await certd.certApply()
+    logger.info(`申请证书${JSON.stringify(certd.options.cert.domains)}完成`)
     return cert
   }
 
   async runDeploys ({ options, cert, context }) {
     if (cert == null) {
-      cert = this.certd.readCurrentCert(options.cert.email, options.cert.domains)
+      const certd = new Certd(options)
+      cert = await certd.readCurrentCert()
     }
     for (const deploy of options.deploy) {
-      logger.info(`--部署任务【${deploy.name}】开始`)
+      logger.info(`--部署任务【${deploy.deployName}】开始`)
       if (deploy.disabled === true) {
-        logger.info('----此任务已被禁用，跳过')
-        break
+        logger.info('----此部署任务已被禁用，跳过')
+        continue
       }
       for (const task of deploy.tasks) {
         await this.runTask({ options, cert, task, context })
       }
-      logger.info(`--部署任务【${deploy.name}】完成`)
+      logger.info(`--部署任务【${deploy.deployName}】完成`)
     }
   }
 
@@ -101,12 +110,23 @@ export class Executor {
       throw new Error(`----插件：${taskType}还未安装`)
     }
 
-    logger.info(`----任务【${task.name}】开始执行`)
+    logger.info(`----任务【${task.taskName}】开始执行`)
     let instance = Plugin
     if (Plugin instanceof Function) {
       instance = new Plugin()
     }
-    await instance.execute({ cert, accessProviders: options.accessProviders, props: task, context })
-    logger.info(`----任务【${task.name}】执行完成`)
+    if (context.progress && context.progress[task.taskName] && context.progress[task.taskName].success) {
+      logger.info(`----任务【${task.taskName}】已经执行完成，跳过此任务`)
+      return
+    }
+    await instance.execute({ cert, accessProviders: options.accessProviders, props: task.props, context })
+    if (context.progress == null) {
+      context.progress = {}
+    }
+    context.progress[task.taskName] = {
+      success: true,
+      time: dayjs().format()
+    }
+    logger.info(`----任务【${task.taskName}】执行完成`)
   }
 }

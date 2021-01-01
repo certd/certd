@@ -47,21 +47,25 @@ const defaultOptions = {
   },
   deploy: [
     {
-      name: '流程1-部署到阿里云系列产品',
+      deployName: '流程1-部署到阿里云系列产品',
       disabled: true,
       tasks: [
         {
-          name: '上传证书到云',
+          taskName: '上传证书到云',
           type: 'uploadCertToAliyun',
-          accessProvider: 'aliyun'
+          props:{
+            accessProvider: 'aliyun'
+          }
         },
         { // CDN、SCDN、DCDN和负载均衡（SLB）
-          name: '部署证书到CDN',
+          taskName: '部署证书到CDN',
           type: 'deployCertToAliyunCDN',
-          domainName: 'certd-cdn-upload.docmirror.cn',
-          certName: 'certd部署测试(upload)',
-          certType: 'upload',
-          accessProvider: 'aliyun'
+          props:{
+            domainName: 'certd-cdn-upload.docmirror.cn',
+            certName: 'certd部署测试(upload)',
+            certType: 'upload',
+            accessProvider: 'aliyun'
+          }
         }
         // {
         //   name: '部署证书到阿里云集群Ingress',
@@ -71,18 +75,20 @@ const defaultOptions = {
       ]
     },
     {
-      name: '流程2-部署到nginx服务器',
+      deployName: '流程2-部署到nginx服务器',
       disabled: true,
       tasks: [
         {
-          name: '上传证书到服务器,并重启nginx',
+          taskName: '上传证书到服务器,并重启nginx',
           type: 'sshAndExecute',
-          ssh: 'myLinux',
-          upload: [
-            { from: '{certPath}', to: '/xxx/xxx/xxx.cert.pem' },
-            { from: '{keyPath}', to: '/xxx/xxx/xxx.key' }
-          ],
-          script: 'sudo systemctl restart nginx'
+          props:{
+            accessProvider: 'myLinux',
+            upload: [
+              { from: '{certPath}', to: '/xxx/xxx/xxx.cert.pem' },
+              { from: '{keyPath}', to: '/xxx/xxx/xxx.key' }
+            ],
+            script: 'sudo systemctl restart nginx'
+          }
         }
       ]
     },
@@ -91,10 +97,34 @@ const defaultOptions = {
       disabled: true,
       tasks: [
         {
-          name: '触发jenkins任务',
+          taskName: '触发jenkins任务',
           type: 'sshAndExecute',
-          ssh: 'myLinux',
-          script: 'sudo systemctl restart nginx'
+          props:{
+            accessProvider: 'myLinux',
+            script: 'sudo systemctl restart nginx'
+          }
+        }
+      ]
+    },
+    {
+      deployName: '流程4-部署到腾讯云ingress',
+      tasks: [
+        {
+          taskName: '上传到腾讯云',
+          type: 'uploadCertToTencent',
+          props:{
+            accessProvider: 'tencent-yonsz'
+          }
+        },
+        {
+          taskName: '部署到TKE-ingress',
+          type: 'deployCertToTencentTKEIngress',
+          props:{
+            clusterId:'cls-6lbj1vee',
+            ingressName:'ingress-base',
+            secretName:'certd-base-yonsz-net-hnuzjrzf',
+            accessProvider: 'tencent-yonsz'
+          }
         }
       ]
     }

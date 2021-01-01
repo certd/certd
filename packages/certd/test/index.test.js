@@ -64,18 +64,21 @@ n5Z5MqkYhlMI3J1tPRTp1nEt9fyGspBOO05gi148Qasp+3N+svqKomoQglNoAxU=
 describe('Certd', function () {
   it('#buildCertDir', function () {
     const options = createOptions()
+    options.cert.email = 'xiaojunnuo@qq.com'
     options.cert.domains = ['*.docmirror.club']
     const certd = new Certd(options)
-    const rootDir = certd.buildCertDir('xiaojunnuo@qq.com', options.cert.domains)
-    console.log('rootDir', rootDir)
-    expect(rootDir).match(/xiaojunnuo@qq.com\\certs\\_.docmirror.club/)
+    const currentRootPath = certd.certStore.currentRootPath
+    console.log('rootDir', currentRootPath)
+    expect(currentRootPath).match(/xiaojunnuo@qq.com\\certs\\_.docmirror.club\\current/)
   })
   it('#writeAndReadCert', async function () {
     const options = createOptions()
+    options.cert.email = 'xiaojunnuo@qq.com'
+    options.cert.domains = ['*.domain.cn']
     const certd = new Certd(options)
-    certd.writeCert('xiaojunnuo@qq.com', ['*.domain.cn'], { csr: 'csr', crt: fakeCrt, key: 'bbb' })
+    await certd.writeCert({ csr: 'csr', crt: fakeCrt, key: 'bbb' })
 
-    const cert = certd.readCurrentCert('xiaojunnuo@qq.com', ['*.domain.cn'])
+    const cert = await certd.readCurrentCert()
     expect(cert).to.be.ok
     expect(cert.crt).ok
     expect(cert.key).to.be.ok
