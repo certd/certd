@@ -51,8 +51,8 @@ export class DeployCertToAliyunCDN extends AbstractAliyunPlugin {
     }
   }
 
-  async execute ({ accessProviders, cert, props, context }) {
-    const accessProvider = this.getAccessProvider(props.accessProvider, accessProviders)
+  async execute ({ cert, props, context }) {
+    const accessProvider = this.getAccessProvider(props.accessProvider)
     const client = this.getClient(accessProvider)
     const params = this.buildParams(props, context, cert)
     await this.doRequest(client, params)
@@ -77,8 +77,8 @@ export class DeployCertToAliyunCDN extends AbstractAliyunPlugin {
       ServerCertificateStatus: 'on',
       CertName: CertName,
       CertType: from,
-      ServerCertificate: super.format(cert.crt.toString()),
-      PrivateKey: super.format(cert.key.toString())
+      ServerCertificate: cert.crt,
+      PrivateKey: cert.key
     }
     return params
   }

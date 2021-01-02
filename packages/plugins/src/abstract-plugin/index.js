@@ -3,8 +3,9 @@ import logger from '../utils/util.log.js'
 import dayjs from 'dayjs'
 import Sleep from '../utils/util.sleep.js'
 export class AbstractPlugin {
-  constructor () {
+  constructor ({ accessProviders }) {
     this.logger = logger
+    this.accessProviders = accessProviders
   }
 
   appendTimeSuffix (name) {
@@ -58,7 +59,7 @@ export class AbstractPlugin {
     console.error('请实现此方法,rollback:', options.context)
   }
 
-  getAccessProvider (accessProvider, accessProviders) {
+  getAccessProvider (accessProvider, accessProviders = this.accessProviders) {
     if (typeof accessProvider === 'string' && accessProviders) {
       accessProvider = accessProviders[accessProvider]
     }

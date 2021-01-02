@@ -36,9 +36,11 @@ describe('DeployToTencentCDN', function () {
   it('#execute-upload', async function () {
     const options = createOptions()
     options.args.test = false
+    options.cert.email = 'xiaojunnuo@qq.com'
+    options.cert.domains = ['*.docmirror.cn']
     const plugin = new DeployCertToTencentCDN()
     const certd = new Certd(options)
-    const cert = certd.readCurrentCert('xiaojunnuo@qq.com', ['*.docmirror.cn'])
+    const cert = await certd.readCurrentCert()
     const context = {}
     const deployOpts = {
       accessProviders: options.accessProviders,

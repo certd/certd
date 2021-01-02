@@ -52,16 +52,16 @@ export class UploadCertToTencent extends AbstractTencentPlugin {
     return new SslClient(clientConfig)
   }
 
-  async execute ({ accessProviders, cert, props, context, logger }) {
+  async execute ({ cert, props, context, logger }) {
     const { name, accessProvider } = props
     const certName = this.appendTimeSuffix(name)
 
-    const provider = super.getAccessProvider(accessProvider, accessProviders)
+    const provider = this.getAccessProvider(accessProvider)
     const client = this.getClient(provider)
 
     const params = {
-      CertificatePublicKey: this.format(cert.crt.toString()),
-      CertificatePrivateKey: this.format(cert.key.toString()),
+      CertificatePublicKey: cert.crt,
+      CertificatePrivateKey: cert.key,
       Alias: certName
     }
     const ret = await client.UploadCertificate(params)
@@ -70,9 +70,9 @@ export class UploadCertToTencent extends AbstractTencentPlugin {
     context.tencentCertId = ret.CertificateId
   }
 
-  async rollback ({ accessProviders, cert, props, context }) {
+  async rollback ({ cert, props, context }) {
     const { accessProvider } = props
-    const provider = super.getAccessProvider(accessProvider, accessProviders)
+    const provider = super.getAccessProvider(accessProvider)
     const client = this.getClient(provider)
 
     const { tencentCertId } = context

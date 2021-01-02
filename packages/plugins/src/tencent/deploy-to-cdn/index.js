@@ -52,14 +52,14 @@ export class DeployCertToTencentCDN extends AbstractTencentPlugin {
     }
   }
 
-  async execute ({ accessProviders, cert, props, context }) {
-    const accessProvider = this.getAccessProvider(props.accessProvider, accessProviders)
+  async execute ({  cert, props, context }) {
+    const accessProvider = this.getAccessProvider(props.accessProvider)
     const client = this.getClient(accessProvider)
     const params = this.buildParams(props, context, cert)
     await this.doRequest(client, params)
   }
 
-  async rollback ({ accessProviders, cert, props, context }) {
+  async rollback ({  cert, props, context }) {
 
   }
 
@@ -99,8 +99,8 @@ export class DeployCertToTencentCDN extends AbstractTencentPlugin {
     }
     if (from === 'upload' || tencentCertId == null) {
       params.Https.CertInfo = {
-        Certificate: this.format(cert.crt.toString()),
-        PrivateKey: this.format(cert.key.toString())
+        Certificate: cert.crt,
+        PrivateKey: cert.key
       }
     }
     return params

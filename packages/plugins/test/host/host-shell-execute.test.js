@@ -1,26 +1,28 @@
 import pkg from 'chai'
-import { UploadCertToTencent } from '../../src/tencent/upload-to-tencent/index.js'
+import { HostShellExecute } from '../../src/host/host-shell-execute/index.js'
 import { Certd } from '@certd/certd'
 import { createOptions } from '../../../../test/options.js'
 const { expect } = pkg
-describe('PluginUploadToTencent', function () {
+describe('HostShellExecute', function () {
   it('#execute', async function () {
+    this.timeout(10000)
     const options = createOptions()
-    const plugin = new UploadCertToTencent()
     options.args = { test: false }
     options.cert.email = 'xiaojunnuo@qq.com'
     options.cert.domains = ['*.docmirror.cn']
+    const plugin = new HostShellExecute(options)
     const certd = new Certd(options)
     const cert = await certd.readCurrentCert()
     const context = {}
     const uploadOpts = {
-      accessProviders: options.accessProviders,
       cert,
-      props: { name: 'certd部署测试', accessProvider: 'tencent' },
+      props: { script: 'ls ', accessProvider: 'aliyun-ssh' },
       context
     }
-    await plugin.doExecute(uploadOpts)
-    console.log('context:', context)
+    const ret = await plugin.doExecute(uploadOpts)
+    for (const retElement of ret) {
+      console.log('-----' + retElement)
+    }
 
     await plugin.doRollback(uploadOpts)
   })

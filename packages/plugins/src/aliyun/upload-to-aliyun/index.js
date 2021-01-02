@@ -1,5 +1,4 @@
 import Core from '@alicloud/pop-core'
-import dayjs from 'dayjs'
 import { AbstractAliyunPlugin } from '../abstract-aliyun.js'
 export class UploadCertToAliyun extends AbstractAliyunPlugin {
   /**
@@ -45,21 +44,21 @@ export class UploadCertToAliyun extends AbstractAliyunPlugin {
     })
   }
 
-  async execute ({ accessProviders, cert, props, context }) {
+  async execute ({ cert, props, context }) {
     const { name, accessProvider } = props
     const certName = this.appendTimeSuffix(name || cert.domain)
     const params = {
       RegionId: props.regionId || 'cn-hangzhou',
       Name: certName,
-      Cert: this.format(cert.crt.toString()),
-      Key: this.format(cert.key.toString())
+      Cert: cert.crt,
+      Key: cert.key
     }
 
     const requestOption = {
       method: 'POST'
     }
 
-    const provider = super.getAccessProvider(accessProvider, accessProviders)
+    const provider = this.getAccessProvider(accessProvider)
     const client = this.getClient(provider)
     const ret = await client.request('CreateUserCertificate', params, requestOption)
     this.checkRet(ret)
@@ -75,7 +74,7 @@ export class UploadCertToAliyun extends AbstractAliyunPlugin {
    * @param context
    * @returns {Promise<void>}
    */
-  async rollback ({ accessProviders, cert, props, context }) {
+  async rollback ({ cert, props, context }) {
     const { accessProvider } = props
     const { aliyunCertId } = context
     this.logger.info('准备删除阿里云证书:', aliyunCertId)
@@ -88,7 +87,7 @@ export class UploadCertToAliyun extends AbstractAliyunPlugin {
       method: 'POST'
     }
 
-    const provider = super.getAccessProvider(accessProvider, accessProviders)
+    const provider = this.getAccessProvider(accessProvider)
     const client = this.getClient(provider)
     const ret = await client.request('DeleteUserCertificate', params, requestOption)
     this.checkRet(ret)

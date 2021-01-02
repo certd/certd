@@ -15,6 +15,7 @@
     "kubernetes-client": "^9.0.0",
     "lodash": "^4.17.20",
     "log4js": "^6.3.0",
+    "ssh2": "^0.8.9",
     "tencentcloud-sdk-nodejs": "^4.0.39"
   },
   "devDependencies": {

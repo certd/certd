@@ -26,14 +26,21 @@ export class CertStore {
     return this.store.buildKey(this.certsRootPath, this.safetyDomain, dir)
   }
 
+  formatCert (pem) {
+    pem = pem.replace(/\r/g, '')
+    pem = pem.replace(/\n\n/g, '\n')
+    pem = pem.replace(/\n$/g, '')
+    return pem
+  }
+
   async writeCert (cert) {
     const newDir = this.buildNewCertRootPath()
 
     const crtKey = this.buildKey(newDir, this.safetyDomain + '.crt')
     const priKey = this.buildKey(newDir, this.safetyDomain + '.key')
     const csrKey = this.buildKey(newDir, this.safetyDomain + '.csr')
-    await this.store.set(crtKey, cert.crt)
-    await this.store.set(priKey, cert.key)
+    await this.store.set(crtKey, this.formatCert(cert.crt))
+    await this.store.set(priKey, this.formatCert(cert.key))
     await this.store.set(csrKey, cert.csr)
 
     await this.store.link(newDir, this.currentRootPath)
@@ -53,7 +60,12 @@ export class CertStore {
     const csr = await this.store.get(csrKey)
 
     return {
-      crt, key, csr, certDir: this.store.getActualKey(dir)
+      crt: this.formatCert(crt),
+      key: this.formatCert(key),
+      csr,
+      crtPath: this.store.getActualKey(crtKey),
+      keyPath: this.store.getActualKey(priKey),
+      certDir: this.store.getActualKey(dir)
     }
   }
 

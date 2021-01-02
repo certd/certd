@@ -14,20 +14,28 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
       name: 'deployCertToTencentTKEIngress',
       label: '部署到腾讯云TKE-ingress',
       input: {
+        region: {
+          label: '大区',
+          value: 'ap-guangzhou'
+        },
         clusterId: {
           label: '集群ID',
           required: true,
           desc: '例如：cls-6lbj1vee'
         },
-        region: {
-          label: '大区',
-          value: 'ap-guangzhou'
+        namespace: {
+          label: '集群的namespace',
+          value: 'default'
         },
         secreteName: {
-          label: '证书的secret名称'
+          type: [String, Array],
+          label: '证书的secret名称',
+          desc: '支持多个（传入数组）'
         },
         ingressName: {
-          label: 'ingress名称'
+          type: [String, Array],
+          label: 'ingress名称',
+          desc: '支持多个（传入数组）'
         },
         accessProvider: {
           label: 'Access提供者',
@@ -43,11 +51,12 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
     }
   }
 
-  async execute ({ accessProviders, cert, props, context }) {
-    const accessProvider = this.getAccessProvider(props.accessProvider, accessProviders)
+  async execute ({ cert, props, context }) {
+    const accessProvider = this.getAccessProvider(props.accessProvider)
     const tkeClient = this.getTkeClient(accessProvider, props.region)
     const kubeConfigStr = await this.getTkeKubeConfig(tkeClient, props.clusterId)
 
+    this.logger.info('kubeconfig已成功获取')
     const k8sClient = new K8sClient(kubeConfigStr)
     await this.patchCertSecret({ k8sClient, props, context })
     await this.sleep(2000) // 停留2秒，等待secret部署完成
@@ -84,33 +93,6 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
     return ret.Kubeconfig
   }
 
-  async createCertSecret ({ k8sClient, props, cert, context }) {
-    const { tencentCertId } = context
-    if (tencentCertId == null) {
-      throw new Error('请先将【上传证书到腾讯云】作为前置任务')
-    }
-    const certIdBase64 = Buffer.from(tencentCertId).toString('base64')
-
-    let name = 'cert-' + cert.domain.replace(/\./g, '-')
-    name = name.replace(/\*/g, '-')
-    // name = this.appendTimeSuffix(name)
-
-    const body = {
-      kind: 'Secret',
-      data: {
-        qcloud_cert_id: certIdBase64
-      },
-      metadata: {
-        name,
-        labels: {
-          certd: 'certd-' + this.getSafetyDomain(cert.domain)
-        }
-      },
-      type: 'Opaque'
-    }
-    return await k8sClient.createSecret({ namespace: props.namespace, body: body })
-  }
-
   async patchCertSecret ({ k8sClient, props, context }) {
     const { tencentCertId } = context
     if (tencentCertId == null) {
@@ -130,7 +112,14 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
         }
       }
     }
-    return await k8sClient.patchSecret({ namespace, secretName, body })
+    let secretNames = secretName
+    if (typeof secretName === 'string') {
+      secretNames = [secretName]
+    }
+    for (const secret of secretNames) {
+      await k8sClient.patchSecret({ namespace, secretName: secret, body })
+      this.logger.info(`CertSecret已更新:${secret}`)
+    }
   }
 
   async restartIngress ({ k8sClient, props }) {
@@ -143,6 +132,13 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
         }
       }
     }
-    return await k8sClient.patchIngress({ namespace, ingressName, body })
+    let ingressNames = ingressName
+    if (typeof ingressName === 'string') {
+      ingressNames = [ingressName]
+    }
+    for (const ingress of ingressNames) {
+      await k8sClient.patchIngress({ namespace, ingressName: ingress, body })
+      this.logger.info(`ingress已重启:${ingress}`)
+    }
   }
 }

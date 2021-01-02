@@ -29,15 +29,14 @@ describe('DeployToTencentCLB', function () {
     const options = createOptions()
     options.args.test = false
     options.cert.dnsProvider = 'tencent-yonsz'
-    const deployPlugin = new DeployCertToTencentCLB()
+    const deployPlugin = new DeployCertToTencentCLB(options)
     const props = {
       region: 'ap-guangzhou',
       domain: 'certd-test-no-sni.base.yonsz.net',
       accessProvider: 'tencent-yonsz',
       loadBalancerId: 'lb-59yhe5xo'
     }
-    const accessProviders = options.accessProviders
-    const accessProvider = deployPlugin.getAccessProvider(props.accessProvider, accessProviders)
+    const accessProvider = deployPlugin.getAccessProvider(props.accessProvider)
     const { region } = props
     const client = deployPlugin.getClient(accessProvider, region)
 
@@ -51,8 +50,10 @@ describe('DeployToTencentCLB', function () {
     const options = createOptions()
     options.args.test = false
     options.cert.dnsProvider = 'tencent-yonsz'
+    options.cert.email = 'xiaojunnuo@qq.com'
+    options.cert.domains = ['*.docmirror.cn']
     const certd = new Certd(options)
-    const cert = certd.readCurrentCert('xiaojunnuo@qq.com', ['*.docmirror.cn'])
+    const cert = await certd.readCurrentCert()
     const deployPlugin = new DeployCertToTencentCLB()
     const context = {}
     const deployOpts = {

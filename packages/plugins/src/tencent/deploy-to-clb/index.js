@@ -48,8 +48,8 @@ export class DeployCertToTencentCLB extends AbstractTencentPlugin {
     }
   }
 
-  async execute ({ accessProviders, cert, props, context }) {
-    const accessProvider = this.getAccessProvider(props.accessProvider, accessProviders)
+  async execute ({ cert, props, context }) {
+    const accessProvider = this.getAccessProvider(props.accessProvider)
     const { region } = props
     const client = this.getClient(accessProvider, region)
 
@@ -104,7 +104,7 @@ export class DeployCertToTencentCLB extends AbstractTencentPlugin {
     return certId
   }
 
-  async rollback ({ accessProviders, cert, props, context }) {
+  async rollback ({ cert, props, context }) {
     this.logger.warn('未实现rollback')
   }
 
@@ -140,8 +140,8 @@ export class DeployCertToTencentCLB extends AbstractTencentPlugin {
 
     if (tencentCertId == null) {
       params.Certificate.CertName = this.appendTimeSuffix(certName || cert.domain)
-      params.Certificate.CertKey = this.format(cert.key.toString())
-      params.Certificate.CertContent = this.format(cert.crt.toString())
+      params.Certificate.CertKey = cert.key
+      params.Certificate.CertContent = cert.crt
     }
     return params
   }
