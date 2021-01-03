@@ -2,9 +2,10 @@
   "name": "@certd/executor",
   "version": "0.0.1",
   "description": "",
-  "main": "./src/index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.config.js "
   },
   "type": "module",
   "dependencies": {
@@ -14,7 +15,9 @@
     "@types/node": "^14.14.13",
     "dayjs": "^1.9.8",
     "lodash": "^4.17.20",
-    "log4js": "^6.3.0"
+    "log4js": "^6.3.0",
+    "webpack": "^5.11.1",
+    "webpack-cli": "^4.3.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
