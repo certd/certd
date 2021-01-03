@@ -39,9 +39,9 @@ export class CertStore {
     const crtKey = this.buildKey(newDir, this.safetyDomain + '.crt')
     const priKey = this.buildKey(newDir, this.safetyDomain + '.key')
     const csrKey = this.buildKey(newDir, this.safetyDomain + '.csr')
-    await this.store.set(crtKey, this.formatCert(cert.crt))
-    await this.store.set(priKey, this.formatCert(cert.key))
-    await this.store.set(csrKey, cert.csr)
+    await this.store.set(crtKey, this.formatCert(cert.crt.toString()))
+    await this.store.set(priKey, this.formatCert(cert.key.toString()))
+    await this.store.set(csrKey, cert.csr.toString())
 
     await this.store.link(newDir, this.currentRootPath)
 
@@ -56,6 +56,9 @@ export class CertStore {
     const priKey = this.buildKey(dir, this.safetyDomain + '.key')
     const csrKey = this.buildKey(dir, this.safetyDomain + '.csr')
     const crt = await this.store.get(crtKey)
+    if (crt == null) {
+      return null
+    }
     const key = await this.store.get(priKey)
     const csr = await this.store.get(csrKey)
 

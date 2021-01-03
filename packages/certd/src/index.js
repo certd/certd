@@ -92,6 +92,7 @@ export class Certd {
     await this.writeCert(cert)
     const certRet = await this.readCurrentCert()
     certRet.isNew = true
+    return certRet
   }
 
   async createDnsProvider (options) {
@@ -110,6 +111,9 @@ export class Certd {
 
   async readCurrentCert () {
     const cert = await this.certStore.readCert()
+    if (cert == null) {
+      return null
+    }
     const { detail, expires } = this.getCrtDetail(cert.crt)
     const domain = this.getMainDomain(this.options.cert.domains)
     return {
