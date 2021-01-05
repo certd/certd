@@ -1,6 +1,6 @@
 {
   "name": "@certd/executor",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "",
   "main": "dist/executor.js",
   "module": "src/index.js",
@@ -11,8 +11,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@certd/certd": "^0.1.1",
-    "@certd/plugins": "^0.1.1",
+    "@certd/certd": "^0.1.2",
+    "@certd/plugins": "^0.1.2",
     "@types/node": "^14.14.13",
     "dayjs": "^1.9.8",
     "lodash": "^4.17.20",
