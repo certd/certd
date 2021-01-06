@@ -79,7 +79,7 @@ export class Certd {
 
   async doCertApply () {
     const options = this.options
-    const dnsProvider = await this.createDnsProvider(options)
+    const dnsProvider = this.createDnsProvider(options)
     const cert = await this.acme.order({
       email: options.cert.email,
       domains: options.cert.domains,
@@ -94,10 +94,10 @@ export class Certd {
     return certRet
   }
 
-  async createDnsProvider (options) {
+  createDnsProvider (options) {
     const accessProviders = options.accessProviders
     const providerOptions = accessProviders[options.cert.dnsProvider]
-    return await DnsProviderFactory.createByType(providerOptions.providerType, providerOptions)
+    return DnsProviderFactory.createByType(providerOptions.providerType, providerOptions)
   }
 
   async writeCert (cert) {

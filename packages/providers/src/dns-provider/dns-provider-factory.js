@@ -1,7 +1,7 @@
 import dnsProviders from './index.js'
 
 export class DnsProviderFactory {
-  static async createByType (type, options) {
+  static createByType (type, options) {
     try {
       const Provider = dnsProviders[type]
       return new Provider(options)
