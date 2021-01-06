@@ -1,8 +1,7 @@
-import { DnsProvider } from '../dns-provider.js'
+import { AbstractDnsProvider } from '@certd/api'
 import Core from '@alicloud/pop-core'
-import _ from 'lodash'
-import log from '../../utils/util.log.js'
-export default class AliyunDnsProvider extends DnsProvider {
+import _ from 'lodash-es'
+export class AliyunDnsProvider extends AbstractDnsProvider {
   constructor (dnsProviderConfig) {
     super()
     this.client = new Core({
@@ -11,6 +10,10 @@ export default class AliyunDnsProvider extends DnsProvider {
       endpoint: 'https://alidns.aliyuncs.com',
       apiVersion: '2015-01-09'
     })
+  }
+
+  static name () {
+    return 'aliyun'
   }
 
   async getDomainList () {
@@ -60,7 +63,7 @@ export default class AliyunDnsProvider extends DnsProvider {
   }
 
   async createRecord ({ fullRecord, type, value }) {
-    log.info('添加域名解析：', fullRecord, value)
+    this.logger.info('添加域名解析：', fullRecord, value)
     const domain = await this.matchDomain(fullRecord)
     const rr = fullRecord.replace('.' + domain, '')
 
@@ -79,11 +82,11 @@ export default class AliyunDnsProvider extends DnsProvider {
 
     try {
       const ret = await this.client.request('AddDomainRecord', params, requestOption)
-      console.log('添加域名解析成功:', value, value, ret.RecordId)
+      this.logger.info('添加域名解析成功:', value, value, ret.RecordId)
       return ret.RecordId
     } catch (e) {
       // e.code === 'DomainRecordDuplicate'
-      console.log('添加域名解析出错', e)
+      this.logger.info('添加域名解析出错', e)
       throw e
     }
   }
@@ -99,7 +102,7 @@ export default class AliyunDnsProvider extends DnsProvider {
     }
 
     const ret = await this.client.request('DeleteDomainRecord', params, requestOption)
-    log.info('删除域名解析成功:', fullRecord, value, ret.RecordId)
+    this.logger.info('删除域名解析成功:', fullRecord, value, ret.RecordId)
     return ret.RecordId
   }
 }
