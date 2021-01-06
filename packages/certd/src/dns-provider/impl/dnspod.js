@@ -56,7 +56,7 @@ export default class DnspodDnsProvider extends DnsProvider {
         mx: 1
       }
     })
-    console.log('添加域名解析成功:', fullRecord, value, JSON.stringify(ret.record))
+    log.info('添加域名解析成功:', fullRecord, value, JSON.stringify(ret.record))
     return ret.record
   }
 

@@ -19,7 +19,7 @@
     "log4js": "^6.3.0",
     "node-forge": "^0.10.0",
     "qs": "^6.9.4",
-    "@certd/tencentcloud-sdk-nodejs": "^4.0.39"
+    "tencentcloud-sdk-nodejs": "^4.0.44"
   },
   "devDependencies": {
     "chai": "^4.2.0",

@@ -1,10 +1,11 @@
 import pkg from 'chai'
-import options from '../options.js'
 import DnspodDnsProvider from '../../src/dns-provider/impl/dnspod.js'
 import { Certd } from '../../src/index.js'
+import { createOptions } from '../../../../test/options.js'
 const { expect } = pkg
 describe('DnspodDnsProvider', function () {
   it('#getDomainList', async function () {
+    const options = createOptions()
     const dnsProvider = new DnspodDnsProvider(options.accessProviders.dnspod)
     const domainList = await dnsProvider.getDomainList()
     console.log('domainList', domainList)
@@ -12,6 +13,7 @@ describe('DnspodDnsProvider', function () {
   })
 
   it('#createRecord&removeRecord', async function () {
+    const options = createOptions()
     const dnsProvider = new DnspodDnsProvider(options.accessProviders.dnspod)
     const record = await dnsProvider.createRecord({ fullRecord: '___certd___.__test__.certd.xyz', type: 'TXT', value: 'aaaa' })
     console.log('recordId', record.id)
@@ -22,11 +24,12 @@ describe('DnspodDnsProvider', function () {
 
   it('#申请证书', async function () {
     this.timeout(300000)
-    options.cert.domains = ['*.certd.xyz', 'certd.xyz']
+    const options = createOptions()
+    options.cert.domains = ['*.certd.xyz', '*.test.certd.xyz', '*.base.certd.xyz']
     options.cert.dnsProvider = 'dnspod'
     options.args = { forceCert: true }
-    const certd = new Certd()
-    const cert = await certd.certApply(options)
+    const certd = new Certd(options)
+    const cert = await certd.certApply()
     expect(cert).ok
     expect(cert.crt).ok
     expect(cert.key).ok
