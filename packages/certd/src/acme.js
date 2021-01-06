@@ -1,6 +1,7 @@
-import log from './utils/util.log.js'
 import acme from '@certd/acme-client'
-import _ from 'lodash'
+import _ from 'lodash-es'
+import { util } from '@certd/api'
+const logger = util.logger
 export class AcmeService {
   constructor (store) {
     this.store = store
@@ -57,27 +58,27 @@ export class AcmeService {
   }
 
   async challengeCreateFn (authz, challenge, keyAuthorization, dnsProvider) {
-    log.info('Triggered challengeCreateFn()')
+    logger.info('Triggered challengeCreateFn()')
 
     /* http-01 */
     if (challenge.type === 'http-01') {
       const filePath = `/var/www/html/.well-known/acme-challenge/${challenge.token}`
       const fileContents = keyAuthorization
 
-      log.info(`Creating challenge response for ${authz.identifier.value} at path: ${filePath}`)
+      logger.info(`Creating challenge response for ${authz.identifier.value} at path: ${filePath}`)
 
       /* Replace this */
-      log.info(`Would write "${fileContents}" to path "${filePath}"`)
+      logger.info(`Would write "${fileContents}" to path "${filePath}"`)
       // await fs.writeFileAsync(filePath, fileContents);
     } else if (challenge.type === 'dns-01') {
       /* dns-01 */
       const dnsRecord = `_acme-challenge.${authz.identifier.value}`
       const recordValue = keyAuthorization
 
-      log.info(`Creating TXT record for ${authz.identifier.value}: ${dnsRecord}`)
+      logger.info(`Creating TXT record for ${authz.identifier.value}: ${dnsRecord}`)
 
       /* Replace this */
-      log.info(`Would create TXT record "${dnsRecord}" with value "${recordValue}"`)
+      logger.info(`Would create TXT record "${dnsRecord}" with value "${recordValue}"`)
 
       return await dnsProvider.createRecord({
         fullRecord: dnsRecord,
@@ -99,25 +100,25 @@ export class AcmeService {
    */
 
   async challengeRemoveFn (authz, challenge, keyAuthorization, recordItem, dnsProvider) {
-    log.info('Triggered challengeRemoveFn()')
+    logger.info('Triggered challengeRemoveFn()')
 
     /* http-01 */
     if (challenge.type === 'http-01') {
       const filePath = `/var/www/html/.well-known/acme-challenge/${challenge.token}`
 
-      log.info(`Removing challenge response for ${authz.identifier.value} at path: ${filePath}`)
+      logger.info(`Removing challenge response for ${authz.identifier.value} at path: ${filePath}`)
 
       /* Replace this */
-      log.info(`Would remove file on path "${filePath}"`)
+      logger.info(`Would remove file on path "${filePath}"`)
       // await fs.unlinkAsync(filePath);
     } else if (challenge.type === 'dns-01') {
       const dnsRecord = `_acme-challenge.${authz.identifier.value}`
       const recordValue = keyAuthorization
 
-      log.info(`Removing TXT record for ${authz.identifier.value}: ${dnsRecord}`)
+      logger.info(`Removing TXT record for ${authz.identifier.value}: ${dnsRecord}`)
 
       /* Replace this */
-      log.info(`Would remove TXT record "${dnsRecord}" with value "${recordValue}"`)
+      logger.info(`Would remove TXT record "${dnsRecord}" with value "${recordValue}"`)
       await dnsProvider.removeRecord({
         fullRecord: dnsRecord,
         type: 'TXT',
@@ -170,13 +171,13 @@ export class AcmeService {
         accountUrl = client.getAccountUrl()
         this.setAccountUrl(email, accountUrl)
       } catch (e) {
-        log.warn('保存accountUrl出错', e)
+        logger.warn('保存accountUrl出错', e)
       }
     }
     /* Done */
-    log.debug(`CSR:\n${csr.toString()}`)
-    log.debug(`Certificate:\n${crt.toString()}`)
-    log.info('证书申请成功')
+    logger.debug(`CSR:\n${csr.toString()}`)
+    logger.debug(`Certificate:\n${crt.toString()}`)
+    logger.info('证书申请成功')
     return { key, crt, csr }
   }
 

@@ -1,4 +1,4 @@
-import { AbstractPlugin } from '../abstract-plugin/index.js'
+import { AbstractPlugin } from '@certd/api'
 
 export class AbstractAliyunPlugin extends AbstractPlugin {
   checkRet (ret) {

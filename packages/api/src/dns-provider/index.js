@@ -1,5 +1,10 @@
-import _ from 'lodash'
-export class DnsProvider {
+import _ from 'lodash-es'
+import logger from '../utils/util.log.js'
+export class AbstractDnsProvider {
+  constructor () {
+    this.logger = logger
+  }
+
   async createRecord ({ fullRecord, type, value }) {
     throw new Error('请实现 createRecord 方法')
   }

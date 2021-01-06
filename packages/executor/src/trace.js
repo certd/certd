@@ -1,5 +1,6 @@
-import logger from './util.log.js'
-import _ from 'lodash'
+import { util } from '@certd/api'
+import _ from 'lodash-es'
+const logger = util.logger
 export class Trace {
   constructor (context) {
     this.context = context

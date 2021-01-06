@@ -31,17 +31,4 @@ describe('AliyunDnsProvider', function () {
     console.log('recordId', recordId)
     expect(recordId != null).ok
   })
-
-  it('#申请证书-aliyun', async function () {
-    this.timeout(300000)
-    const options = createOptions()
-    options.args = { forceCert: true, test: false }
-    const certd = new Certd(options)
-    const cert = await certd.certApply()
-    expect(cert).ok
-    expect(cert.crt).ok
-    expect(cert.key).ok
-    expect(cert.detail).ok
-    expect(cert.expires).ok
-  })
 })

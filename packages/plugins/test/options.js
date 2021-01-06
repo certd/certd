@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import _ from 'lodash-es'
 import optionsPrivate from '../../../test/options.private.mjs'
 const defaultOptions = {
   version: '1.0.0',

@@ -1,9 +1,10 @@
 import { Certd } from '@certd/certd'
 import DefaultPlugins from '@certd/plugins'
-import logger from './util.log.js'
-import _ from 'lodash'
+import { util } from '@certd/api'
+import _ from 'lodash-es'
 import dayjs from 'dayjs'
 import { Trace } from './trace.js'
+const logger = util.logger
 export class Executor {
   constructor (args = {}) {
     const { plugins } = args

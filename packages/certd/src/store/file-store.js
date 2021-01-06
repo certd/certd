@@ -1,9 +1,7 @@
-import { Store } from '../store.js'
-import util from '../../utils/util.js'
+import { Store, util } from '@certd/api'
 import path from 'path'
 import fs from 'fs'
-import logger from '../../utils/util.log.js'
-
+const logger = util.logger
 export class FileStore extends Store {
   constructor (opts) {
     super()

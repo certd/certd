@@ -13,10 +13,7 @@
   "dependencies": {
     "@certd/certd": "^0.1.2",
     "@certd/plugins": "^0.1.2",
-    "@types/node": "^14.14.13",
-    "dayjs": "^1.9.8",
-    "lodash": "^4.17.20",
-    "log4js": "^6.3.0"
+    "lodash-es": "^4.17.20"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",

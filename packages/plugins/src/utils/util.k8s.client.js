@@ -1,7 +1,8 @@
 import kubernetesClient from 'kubernetes-client'
-import logger from './util.log.js'
+import { util } from '@certd/api0'
 import Request from 'kubernetes-client/backends/request/index.js'
 const { KubeConfig, Client } = kubernetesClient
+const logger = util.logger
 export class K8sClient {
   constructor (kubeConfigStr) {
     const kubeconfig = new KubeConfig()

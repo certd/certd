@@ -21,19 +21,4 @@ describe('DnspodDnsProvider', function () {
 
     await dnsProvider.removeRecord({ fullRecord: '___certd___.__test__.certd.xyz', type: 'TXT', value: 'aaaa', record })
   })
-
-  it('#申请证书', async function () {
-    this.timeout(300000)
-    const options = createOptions()
-    options.cert.domains = ['*.certd.xyz', '*.test.certd.xyz', '*.base.certd.xyz']
-    options.cert.dnsProvider = 'dnspod'
-    options.args = { forceCert: true }
-    const certd = new Certd(options)
-    const cert = await certd.certApply()
-    expect(cert).ok
-    expect(cert.crt).ok
-    expect(cert.key).ok
-    expect(cert.detail).ok
-    expect(cert.expires).ok
-  })
 })

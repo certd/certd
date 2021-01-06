@@ -5,3 +5,4 @@ out
 gen
 node_modules/
 /test/*.private.*
+/*.log

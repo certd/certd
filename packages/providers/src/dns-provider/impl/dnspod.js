@@ -1,8 +1,7 @@
-import { DnsProvider } from '../dns-provider.js'
-import _ from 'lodash'
-import log from '../../utils/util.log.js'
-import { request } from '../../utils/util.request.js'
-export default class DnspodDnsProvider extends DnsProvider {
+import { AbstractDnsProvider, util } from '@certd/api'
+import _ from 'lodash-es'
+const request = util.request
+export default class DnspodDnsProvider extends AbstractDnsProvider {
   constructor (dnsProviderConfig) {
     super()
     if (!dnsProviderConfig.id || !dnsProviderConfig.token) {
@@ -35,12 +34,12 @@ export default class DnspodDnsProvider extends DnsProvider {
     const ret = await this.doRequest({
       url: 'https://dnsapi.cn/Domain.List'
     })
-    log.debug('dnspod 域名列表：', ret.domains)
+    this.logger.debug('dnspod 域名列表：', ret.domains)
     return ret.domains
   }
 
   async createRecord ({ fullRecord, type, value }) {
-    log.info('添加域名解析：', fullRecord, value)
+    this.logger.info('添加域名解析：', fullRecord, value)
     const domainItem = await this.matchDomain(fullRecord, 'name')
     const domain = domainItem.name
     const rr = fullRecord.replace('.' + domain, '')
@@ -56,7 +55,7 @@ export default class DnspodDnsProvider extends DnsProvider {
         mx: 1
       }
     })
-    log.info('添加域名解析成功:', fullRecord, value, JSON.stringify(ret.record))
+    this.logger.info('添加域名解析成功:', fullRecord, value, JSON.stringify(ret.record))
     return ret.record
   }
 
@@ -70,7 +69,7 @@ export default class DnspodDnsProvider extends DnsProvider {
         record_id: record.id
       }
     })
-    log.info('删除域名解析成功:', fullRecord, value)
+    this.logger.info('删除域名解析成功:', fullRecord, value)
     return ret.RecordId
   }
 }
