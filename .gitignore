@@ -7,3 +7,4 @@ node_modules/
 /test/*.private.*
 /packages/node-acme-client/.idea/
 /*.log
+/packages/certd-run/
