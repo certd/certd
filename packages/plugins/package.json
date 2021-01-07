@@ -11,9 +11,11 @@
     "@alicloud/pop-core": "^1.7.10",
     "tencentcloud-sdk-nodejs": "^4.0.44",
     "@certd/certd": "^0.1.1",
+    "@certd/api": "^0.1.2",
     "kubernetes-client": "^9.0.0",
     "lodash-es": "^4.17.20",
-    "ssh2": "^0.8.9"
+    "ssh2": "^0.8.9",
+    "dayjs": "^1.9.7"
   },
   "devDependencies": {
     "chai": "^4.2.0",

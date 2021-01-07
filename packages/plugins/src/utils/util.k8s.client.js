@@ -1,5 +1,5 @@
 import kubernetesClient from 'kubernetes-client'
-import { util } from '@certd/api0'
+import { util } from '@certd/api'
 import Request from 'kubernetes-client/backends/request/index.js'
 const { KubeConfig, Client } = kubernetesClient
 const logger = util.logger

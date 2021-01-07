@@ -34,6 +34,7 @@ export class Executor {
   }
 
   async run (options, args) {
+    logger.info('------------------- Cert-D ---------------------')
     try {
       if (args != null) {
         _.merge(options.args, args)

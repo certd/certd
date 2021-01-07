@@ -12,7 +12,8 @@
   "dependencies": {
     "@certd/api": "^0.1.2",
     "@alicloud/pop-core": "^1.7.10",
-    "tencentcloud-sdk-nodejs": "^4.0.44"
+    "tencentcloud-sdk-nodejs": "^4.0.44",
+    "lodash-es": "^4.17.20"
   },
   "devDependencies": {
     "chai": "^4.2.0",

@@ -2,8 +2,7 @@
   "name": "@certd/executor",
   "version": "0.1.5",
   "description": "",
-  "main": "dist/executor.js",
-  "module": "src/index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --config webpack.config.cjs ",
@@ -13,7 +12,9 @@
   "dependencies": {
     "@certd/certd": "^0.1.2",
     "@certd/plugins": "^0.1.2",
-    "lodash-es": "^4.17.20"
+    "@certd/api": "^0.1.2",
+    "lodash-es": "^4.17.20",
+    "dayjs": "^1.9.7"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",

@@ -5,4 +5,5 @@ out
 gen
 node_modules/
 /test/*.private.*
+/packages/node-acme-client/.idea/
 /*.log

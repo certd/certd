@@ -1,6 +1,6 @@
 import axios from 'axios'
-import log from './util.log.js'
 import qs from 'qs'
+import logger from './util.log.js'
 /**
  * @description 创建请求实例
  */
@@ -21,13 +21,14 @@ function createService () {
     },
     error => {
       // 发送失败
-      log.error(error)
+      logger.error(error)
       return Promise.reject(error)
     }
   )
   // 响应拦截
   service.interceptors.response.use(
     response => {
+      logger.info('http response:', JSON.stringify(response.data))
       return response.data
     },
     error => {
@@ -46,7 +47,7 @@ function createService () {
       //   case 505: error.message = 'HTTP版本不受支持'; break
       //   default: break
       // }
-      log.error('请求出错：', error.response.config.url, error)
+      logger.error('请求出错：', error.response.config.url, error)
       return Promise.reject(error)
     }
   )
