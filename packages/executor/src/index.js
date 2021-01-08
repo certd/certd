@@ -5,12 +5,19 @@ import _ from 'lodash-es'
 import dayjs from 'dayjs'
 import { Trace } from './trace.js'
 const logger = util.logger
+
+function createDefaultOptions () {
+  return {
+    args: {
+      forceCert: false,
+      forceDeploy: true,
+      forceRedeploy: false
+    }
+  }
+}
 export class Executor {
-  constructor (args = {}) {
-    const { plugins } = args
-    this.plugins = {}
+  constructor () {
     this.usePlugins(DefaultPlugins)
-    this.usePlugins(plugins)
     this.trace = new Trace()
   }
 
@@ -33,12 +40,10 @@ export class Executor {
     }
   }
 
-  async run (options, args) {
+  async run (options) {
     logger.info('------------------- Cert-D ---------------------')
     try {
-      if (args != null) {
-        _.merge(options.args, args)
-      }
+      options = _.merge(createDefaultOptions(), options)
       return await this.doRun(options)
     } catch (e) {
       logger.error('任务执行出错：', e)
@@ -67,13 +72,13 @@ export class Executor {
       }
     }
     // 读取上次执行进度
-    let context = {
-      certIsNew: !!cert.isNew
-    }
+    let context = {}
     const contextJson = await certd.certStore.getCurrentFile('context.json')
     if (contextJson) {
       context = JSON.parse(contextJson)
     }
+
+    context.certIsNew = !!cert.isNew
 
     const trace = new Trace(context)
     // 运行部署任务
@@ -85,10 +90,17 @@ export class Executor {
 
     logger.info('任务完成')
     trace.print()
-    return {
+    const result = trace.get({ })
+    const returnData = {
       cert,
-      context
+      context,
+      result
     }
+    if (result.status === 'error') {
+      const err = new Error(result.remark)
+      err.data = returnData
+    }
+    return returnData
   }
 
   async runCertd (certd) {
@@ -125,6 +137,7 @@ export class Executor {
         trace.set({ deployName, value: { status: 'success', remark: '执行成功' } })
       } catch (e) {
         trace.set({ deployName, value: { status: 'error', remark: '执行失败：' + e.message } })
+        trace.set({ value: { status: 'error', remark: deployName + '执行失败：' + e.message } })
         logger.error('流程执行失败', e)
       }
 

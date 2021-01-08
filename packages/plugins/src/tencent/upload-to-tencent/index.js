@@ -54,7 +54,7 @@ export class UploadCertToTencent extends AbstractTencentPlugin {
 
   async execute ({ cert, props, context, logger }) {
     const { name, accessProvider } = props
-    const certName = this.appendTimeSuffix(name)
+    const certName = this.appendTimeSuffix(name || cert.domain)
 
     const provider = this.getAccessProvider(accessProvider)
     const client = this.getClient(provider)

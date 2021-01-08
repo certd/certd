@@ -41,10 +41,10 @@ export class Trace {
   print () {
     const context = this.context
     logger.info('---------------------------任务结果总览--------------------------')
-    if (!context.certIsNew) {
-      this.printTraceLine({ current: 'skip', remark: '还未到过期时间，跳过' }, '更新证书')
-    } else {
+    if (context.certIsNew) {
       this.printTraceLine({ current: 'success', remark: '证书更新成功' }, '更新证书')
+    } else {
+      this.printTraceLine({ current: 'skip', remark: '还未到过期时间，跳过' }, '更新证书')
     }
     const trace = this.get({ })
     // logger.info('trace', trace)
