@@ -37,7 +37,7 @@ describe('DeployCertToTencentTKEIngress', function () {
   // })
   //
   it('#getTKESecrets', async function () {
-    this.timeout(5000)
+    this.timeout(50000)
     const { options, deployOpts } = await getOptions()
     const plugin = new DeployCertToTencentTKEIngress(options)
     const tkeClient = plugin.getTkeClient(options.accessProviders[deployOpts.props.accessProvider], deployOpts.props.region)
