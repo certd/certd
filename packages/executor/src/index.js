@@ -25,6 +25,9 @@ export class Executor {
     if (plugin == null) {
       return
     }
+    if (this.plugins == null) {
+      this.plugins = {}
+    }
     this.plugins[plugin.name] = plugin
     if (plugin.define) {
       const define = plugin.define()
