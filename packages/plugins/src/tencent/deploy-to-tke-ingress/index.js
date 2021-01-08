@@ -1,7 +1,7 @@
 import { AbstractTencentPlugin } from '../../tencent/abstract-tencent.js'
 import tencentcloud from 'tencentcloud-sdk-nodejs'
 import { K8sClient } from '../../utils/util.k8s.client.js'
-
+import dns from 'dns'
 export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
   /**
    * 插件定义
@@ -37,6 +37,10 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
           label: 'ingress名称',
           desc: '支持多个（传入数组）'
         },
+        innerIp: {
+          type: String,
+          label: '集群内网ip'
+        },
         accessProvider: {
           label: 'Access提供者',
           type: [String, Object],
@@ -58,6 +62,9 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
 
     this.logger.info('kubeconfig已成功获取')
     const k8sClient = new K8sClient(kubeConfigStr)
+    if (props.innerIp != null) {
+      k8sClient.setLookup({ [`${props.clusterId}.ccs.tencent-cloud.com`]: { ip: props.innerIp } })
+    }
     await this.patchCertSecret({ k8sClient, props, context })
     await this.sleep(2000) // 停留2秒，等待secret部署完成
     await this.restartIngress({ k8sClient, props })

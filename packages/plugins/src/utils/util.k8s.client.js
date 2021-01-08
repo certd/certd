@@ -1,15 +1,43 @@
 import kubernetesClient from 'kubernetes-client'
 import { util } from '@certd/api'
 import Request from 'kubernetes-client/backends/request/index.js'
+import dns from 'dns'
 const { KubeConfig, Client } = kubernetesClient
 const logger = util.logger
+
 export class K8sClient {
   constructor (kubeConfigStr) {
-    const kubeconfig = new KubeConfig()
-    kubeconfig.loadFromString(kubeConfigStr)
+    this.kubeConfigStr = kubeConfigStr
+    this.init()
+  }
 
-    const backend = new Request({ kubeconfig })
+  init () {
+    const kubeconfig = new KubeConfig()
+    kubeconfig.loadFromString(this.kubeConfigStr)
+    const reqOpts = { kubeconfig, request: {} }
+    if (this.lookup) {
+      reqOpts.request.lookup = this.lookup
+    }
+
+    const backend = new Request(reqOpts)
     this.client = new Client({ backend, version: '1.13' })
+  }
+
+  /**
+   *
+   * @param localRecords {  [domain]:{ip:'xxx.xx.xxx'} }
+   */
+  setLookup (localRecords) {
+    this.lookup = (hostnameReq, options, callback) => {
+      logger.info('custom lookup', hostnameReq, localRecords)
+      if (localRecords[hostnameReq]) {
+        logger.info('local record', hostnameReq, localRecords[hostnameReq])
+        callback(null, localRecords[hostnameReq].ip, 4)
+      } else {
+        dns.lookup(hostnameReq, options, callback)
+      }
+    }
+    this.init()
   }
 
   /**

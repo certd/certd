@@ -36,18 +36,21 @@ describe('DeployCertToTencentTKEIngress', function () {
   //   console.log('kubeConfig:', kubeConfig)
   // })
   //
-  // it('#getTKESecrets', async function () {
-  //   this.timeout(5000)
-  //   const { options, deployOpts } = await getOptions()
-  //   const plugin = new DeployCertToTencentTKEIngress()
-  //   const tkeClient = plugin.getTkeClient(options.accessProviders[deployOpts.props.accessProvider], deployOpts.props.region)
-  //   const kubeConfig = await plugin.getTkeKubeConfig(tkeClient, deployOpts.props)
-  //
-  //   const k8sClient = new K8sClient(kubeConfig)
-  //   const secrets = await k8sClient.getSecret()
-  //
-  //   console.log('secrets:', secrets)
-  // })
+  it('#getTKESecrets', async function () {
+    this.timeout(5000)
+    const { options, deployOpts } = await getOptions()
+    const plugin = new DeployCertToTencentTKEIngress(options)
+    const tkeClient = plugin.getTkeClient(options.accessProviders[deployOpts.props.accessProvider], deployOpts.props.region)
+    const kubeConfig = await plugin.getTkeKubeConfig(tkeClient, deployOpts.props.clusterId)
+
+    const k8sClient = new K8sClient(kubeConfig)
+    k8sClient.setLookup({
+      'cls-6lbj1vee.ccs.tencent-cloud.com': { ip: '13.123.123.123' }
+    })
+    const secrets = await k8sClient.getSecret()
+
+    console.log('secrets:', secrets)
+  })
   //
   // it('#patchTKECertSecrets', async function () {
   //   this.timeout(5000)
