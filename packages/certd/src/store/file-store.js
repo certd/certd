@@ -5,9 +5,10 @@ const logger = util.logger
 export class FileStore extends Store {
   constructor (opts) {
     super()
-    this.rootDir = util.path.getUserBasePath()
     if (opts.rootDir != null) {
       this.rootDir = opts.rootDir
+    } else {
+      this.rootDir = util.path.getUserBasePath()
     }
     if (opts.test) {
       this.rootDir = path.join(this.rootDir, '/test/')

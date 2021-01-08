@@ -1,7 +1,6 @@
 {
   "packages": [
-    "packages/*",
-    "other/node-acme-client"
+    "packages/*"
   ],
   "version": "0.1.6"
 }
