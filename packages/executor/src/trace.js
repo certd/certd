@@ -40,6 +40,7 @@ export class Trace {
 
   print () {
     const context = this.context
+    logger.info('context:' + JSON.stringify(context))
     logger.info('---------------------------任务结果总览--------------------------')
     if (context.certIsNew) {
       this.printTraceLine({ current: 'success', remark: '证书更新成功' }, '更新证书')
