@@ -1,7 +1,6 @@
 import { AbstractTencentPlugin } from '../../tencent/abstract-tencent.js'
 import tencentcloud from 'tencentcloud-sdk-nodejs'
 import { K8sClient } from '../../utils/util.k8s.client.js'
-import dns from 'dns'
 export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
   /**
    * 插件定义
@@ -13,6 +12,7 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
     return {
       name: 'deployCertToTencentTKEIngress',
       label: '部署到腾讯云TKE-ingress',
+      desc: '需要【上传到腾讯云】作为前置任务',
       input: {
         region: {
           label: '大区',
@@ -37,15 +37,28 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
           label: 'ingress名称',
           desc: '支持多个（传入数组）'
         },
-        innerIp: {
+        clusterIp: {
           type: String,
-          label: '集群内网ip'
+          label: '集群内网ip',
+          desc: '如果开启了外网的话，无需设置'
         },
+        clusterDomain: {
+          type: String,
+          label: '集群域名，可不填，默认为:[clusterId].ccs.tencent-cloud.com'
+        },
+        /**
+         * AccessProvider的key,或者一个包含access的具体的对象
+         */
         accessProvider: {
           label: 'Access提供者',
           type: [String, Object],
-          desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
-          options: 'accessProviders[type=tencent]',
+          desc: '请选择access提供者',
+          component: {
+            name: 'accessProviderSelect',
+            props: {
+              filterType: 'tencent'
+            }
+          },
           required: true
         }
       },
@@ -62,13 +75,17 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
 
     this.logger.info('kubeconfig已成功获取')
     const k8sClient = new K8sClient(kubeConfigStr)
-    if (props.innerIp != null) {
-      k8sClient.setLookup({ [`${props.clusterId}.ccs.tencent-cloud.com`]: { ip: props.innerIp } })
+    if (props.clusterIp != null) {
+      let clusterDomain = props.clusterDomain
+      if (!clusterDomain) {
+        clusterDomain = `${props.clusterId}.ccs.tencent-cloud.com`
+      }
+      // 修改内网解析ip地址
+      k8sClient.setLookup({ [clusterDomain]: { ip: props.clusterIp } })
     }
     await this.patchCertSecret({ k8sClient, props, context })
     await this.sleep(2000) // 停留2秒，等待secret部署完成
     await this.restartIngress({ k8sClient, props })
-
     return true
   }
 
@@ -97,7 +114,7 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
     }
     const ret = await client.DescribeClusterKubeconfig(params)
     this.checkRet(ret)
-    this.logger.info('注意：后续操作需要在【集群->基本信息】中配置（外网或内网访问）,https://console.cloud.tencent.com/tke2/cluster')
+    this.logger.info('注意：后续操作需要在【集群->基本信息】中开启外网或内网访问,https://console.cloud.tencent.com/tke2/cluster')
     return ret.Kubeconfig
   }
 
