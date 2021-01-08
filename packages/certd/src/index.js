@@ -11,7 +11,6 @@ export class Certd {
     this.options = options
     this.email = options.cert.email
     this.domains = options.cert.domains
-    this.domain = this.getMainDomain(options.cert.domains)
 
     if (!(options.store instanceof Store)) {
       this.store = new FileStore(options.store || {})
@@ -19,32 +18,10 @@ export class Certd {
     this.certStore = new CertStore({
       store: this.store,
       email: options.cert.email,
-      domain: this.domain
+      domains: this.domains
     })
     this.acme = new AcmeService(this.store)
   }
-
-  getMainDomain (domains) {
-    if (domains == null) {
-      return null
-    }
-    if (typeof domains === 'string') {
-      return domains
-    }
-    if (domains.length > 0) {
-      return domains[0]
-    }
-  }
-  //
-  // buildDomainFileName (domains) {
-  //   const domain = this.getMainDomain(domains)
-  //   return domain.replace(/\*/g, '_')
-  // }
-  //
-  // buildCertDir (email, domains) {
-  //   const domainFileName = this.buildDomainFileName(domains)
-  //   return path.join(email, '/certs/', domainFileName)
-  // }
 
   async certApply () {
     let oldCert
@@ -114,7 +91,7 @@ export class Certd {
       return null
     }
     const { detail, expires } = this.getCrtDetail(cert.crt)
-    const domain = this.getMainDomain(this.options.cert.domains)
+    const domain = this.certStore.getMainDomain(this.options.cert.domains)
     return {
       ...cert, detail, expires, domain, domains: this.domains, email: this.email
     }

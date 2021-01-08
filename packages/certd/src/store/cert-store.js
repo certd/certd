@@ -1,29 +1,47 @@
 import dayjs from 'dayjs'
+import crypto from 'crypto'
+function md5 (content) {
+  return crypto.createHash('md5').update(content).digest('hex')
+}
 export class CertStore {
-  constructor ({ store, email, domain }) {
+  constructor ({ store, email, domains }) {
     this.store = store
     this.email = email
-    this.domain = domain
-    this.safetyDomain = this.getSafetyDomain(this.domain)
-
+    this.domains = domains
+    this.domain = this.getMainDomain(this.domains)
+    this.domainDir = this.getSafetyDomain(this.domain) + '-' + md5(this.getDomainStr(this.domains))
     this.certsRootPath = this.store.buildKey(this.email, 'certs')
 
-    this.currentRootPath = this.store.buildKey(this.certsRootPath, this.safetyDomain, 'current')
+    this.currentRootPath = this.store.buildKey(this.certsRootPath, this.domainDir, 'current')
   }
 
-  // getAccountConfig () {
-  //   return this.store.get(this.accountConfigKey)
-  // }
-  //
-  // setAccountConfig (email, account) {
-  //   return this.store.set(this.accountConfigKey, account)
-  // }
+  getMainDomain (domains) {
+    if (domains == null) {
+      return null
+    }
+    if (typeof domains === 'string') {
+      return domains
+    }
+    if (domains.length > 0) {
+      return domains[0]
+    }
+  }
+
+  getDomainStr (domains) {
+    if (domains == null) {
+      return null
+    }
+    if (typeof domains === 'string') {
+      return domains
+    }
+    return domains.join(',')
+  }
 
   buildNewCertRootPath (dir) {
     if (dir == null) {
       dir = dayjs().format('YYYY.MM.DD.HHmmss')
     }
-    return this.store.buildKey(this.certsRootPath, this.safetyDomain, dir)
+    return this.store.buildKey(this.certsRootPath, this.domainDir, dir)
   }
 
   formatCert (pem) {
@@ -36,9 +54,9 @@ export class CertStore {
   async writeCert (cert) {
     const newDir = this.buildNewCertRootPath()
 
-    const crtKey = this.buildKey(newDir, this.safetyDomain + '.crt')
-    const priKey = this.buildKey(newDir, this.safetyDomain + '.key')
-    const csrKey = this.buildKey(newDir, this.safetyDomain + '.csr')
+    const crtKey = this.buildKey(newDir, this.domainDir + '.crt')
+    const priKey = this.buildKey(newDir, this.domainDir + '.key')
+    const csrKey = this.buildKey(newDir, this.domainDir + '.csr')
     await this.store.set(crtKey, this.formatCert(cert.crt.toString()))
     await this.store.set(priKey, this.formatCert(cert.key.toString()))
     await this.store.set(csrKey, cert.csr.toString())
@@ -52,9 +70,9 @@ export class CertStore {
     if (dir == null) {
       dir = this.currentRootPath
     }
-    const crtKey = this.buildKey(dir, this.safetyDomain + '.crt')
-    const priKey = this.buildKey(dir, this.safetyDomain + '.key')
-    const csrKey = this.buildKey(dir, this.safetyDomain + '.csr')
+    const crtKey = this.buildKey(dir, this.domainDir + '.crt')
+    const priKey = this.buildKey(dir, this.domainDir + '.key')
+    const csrKey = this.buildKey(dir, this.domainDir + '.csr')
     const crt = await this.store.get(crtKey)
     if (crt == null) {
       return null
