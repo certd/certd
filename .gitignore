@@ -8,3 +8,4 @@ node_modules/
 /other/node-acme-client/.idea/
 /*.log
 /other/certd-run
+/other/node-acme-client
