@@ -9,7 +9,8 @@ export class CertStore {
     this.email = email
     this.domains = domains
     this.domain = this.getMainDomain(this.domains)
-    this.domainDir = this.getSafetyDomain(this.domain) + '-' + md5(this.getDomainStr(this.domains))
+    this.safetyDomain = this.getSafetyDomain(this.domain)
+    this.domainDir = this.safetyDomain + '-' + md5(this.getDomainStr(this.domains))
     this.certsRootPath = this.store.buildKey(this.email, 'certs')
 
     this.currentRootPath = this.store.buildKey(this.certsRootPath, this.domainDir, 'current')
@@ -54,9 +55,9 @@ export class CertStore {
   async writeCert (cert) {
     const newDir = this.buildNewCertRootPath()
 
-    const crtKey = this.buildKey(newDir, this.domainDir + '.crt')
-    const priKey = this.buildKey(newDir, this.domainDir + '.key')
-    const csrKey = this.buildKey(newDir, this.domainDir + '.csr')
+    const crtKey = this.buildKey(newDir, this.safetyDomain + '.crt')
+    const priKey = this.buildKey(newDir, this.safetyDomain + '.key')
+    const csrKey = this.buildKey(newDir, this.safetyDomain + '.csr')
     await this.store.set(crtKey, this.formatCert(cert.crt.toString()))
     await this.store.set(priKey, this.formatCert(cert.key.toString()))
     await this.store.set(csrKey, cert.csr.toString())
@@ -70,9 +71,9 @@ export class CertStore {
     if (dir == null) {
       dir = this.currentRootPath
     }
-    const crtKey = this.buildKey(dir, this.domainDir + '.crt')
-    const priKey = this.buildKey(dir, this.domainDir + '.key')
-    const csrKey = this.buildKey(dir, this.domainDir + '.csr')
+    const crtKey = this.buildKey(dir, this.safetyDomain + '.crt')
+    const priKey = this.buildKey(dir, this.safetyDomain + '.key')
+    const csrKey = this.buildKey(dir, this.safetyDomain + '.csr')
     const crt = await this.store.get(crtKey)
     if (crt == null) {
       return null
