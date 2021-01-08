@@ -52,14 +52,14 @@ export class DeployCertToTencentCDN extends AbstractTencentPlugin {
     }
   }
 
-  async execute ({  cert, props, context }) {
+  async execute ({ cert, props, context }) {
     const accessProvider = this.getAccessProvider(props.accessProvider)
     const client = this.getClient(accessProvider)
     const params = this.buildParams(props, context, cert)
     await this.doRequest(client, params)
   }
 
-  async rollback ({  cert, props, context }) {
+  async rollback ({ cert, props, context }) {
 
   }
 
@@ -85,7 +85,7 @@ export class DeployCertToTencentCDN extends AbstractTencentPlugin {
   buildParams (props, context, cert) {
     const { domainName, from } = props
     const { tencentCertId } = context
-
+    this.logger.info('部署腾讯云证书ID:', tencentCertId)
     const params = {
       Https: {
         Switch: 'on',

@@ -123,6 +123,7 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
     if (tencentCertId == null) {
       throw new Error('请先将【上传证书到腾讯云】作为前置任务')
     }
+    this.logger.info('腾讯云证书ID:', tencentCertId)
     const certIdBase64 = Buffer.from(tencentCertId).toString('base64')
 
     const { namespace, secretName } = props

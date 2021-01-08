@@ -128,7 +128,7 @@ export class DeployCertToTencentCLB extends AbstractTencentPlugin {
   buildProps (props, context, cert) {
     const { certName } = props
     const { tencentCertId } = context
-
+    this.logger.info('部署腾讯云证书ID:', tencentCertId)
     const params = {
       Certificate: {
         SSLMode: 'UNIDIRECTIONAL', // 单向认证
