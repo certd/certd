@@ -1,6 +1,6 @@
 {
   "name": "@certd/providers",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "",
   "main": "./src/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "@alicloud/pop-core": "^1.7.10",
-    "@certd/api": "^0.1.6",
+    "@certd/api": "^0.1.7",
     "lodash-es": "^4.17.20",
     "tencentcloud-sdk-nodejs": "^4.0.44"
   },
