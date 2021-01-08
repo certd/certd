@@ -40,7 +40,6 @@ export class Trace {
 
   print () {
     const context = this.context
-    logger.info('context:' + JSON.stringify(context))
     logger.info('---------------------------任务结果总览--------------------------')
     if (context.certIsNew) {
       this.printTraceLine({ current: 'success', remark: '证书更新成功' }, '更新证书')
@@ -65,6 +64,11 @@ export class Trace {
         }
       }
     }
+
+    const mainContext = {}
+    _.merge(mainContext, context)
+    delete mainContext.__trace__
+    logger.info('context:', JSON.stringify(mainContext))
   }
 
   printTraceLine (traceStatus, name, prefix = '') {
