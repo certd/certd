@@ -152,8 +152,13 @@ export class Executor {
       return
     }
     logger.info(`----【${taskName}】开始执行`)
-    await instance.execute({ cert, props: task.props, context })
-    trace.set({ deployName, taskName, value: { current: 'success', status: 'success', remark: '执行成功', time: dayjs().format() } })
+    try {
+      await instance.execute({ cert, props: task.props, context })
+      trace.set({ deployName, taskName, value: { current: 'success', status: 'success', remark: '执行成功', time: dayjs().format() } })
+    } catch (e) {
+      trace.set({ deployName, taskName, value: { current: 'error', status: 'error', remark: e.message, time: dayjs().format() } })
+      throw e
+    }
     logger.info(`----任务【${taskName}】执行完成`)
     logger.info('')
   }

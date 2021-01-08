@@ -90,6 +90,7 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
     }
     const ret = await client.DescribeClusterKubeconfig(params)
     this.checkRet(ret)
+    this.logger.info('注意：后续操作需要在【集群->基本信息】中配置（外网或内网访问）,https://console.cloud.tencent.com/tke2/cluster')
     return ret.Kubeconfig
   }
 
