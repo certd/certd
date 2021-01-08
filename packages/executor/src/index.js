@@ -11,7 +11,8 @@ function createDefaultOptions () {
     args: {
       forceCert: false,
       forceDeploy: true,
-      forceRedeploy: false
+      forceRedeploy: false,
+      doNotThrowError: false // 部署流程执行有错误时，不抛异常，此时整个任务执行完毕后，可以返回结果，你可以在返回结果中处理
     }
   }
 }
@@ -84,24 +85,23 @@ export class Executor {
     context.certIsNew = !!cert.isNew
 
     const trace = new Trace(context)
+    const resultTrace = trace.getInstance({ type: 'result' })
     // 运行部署任务
     try {
       await this.runDeploys({ options, cert, context, trace })
     } finally {
       await certd.certStore.setCurrentFile('context.json', JSON.stringify(context))
     }
-
     logger.info('任务完成')
     trace.print()
-    const result = trace.get({ })
+    const result = resultTrace.get({ })
     const returnData = {
       cert,
       context,
       result
     }
-    if (result.status === 'error') {
-      const err = new Error(result.remark)
-      err.data = returnData
+    if (result.status === 'error' && options.args.doNotThrowError === false) {
+      throw new Error(result.remark)
     }
     return returnData
   }
@@ -122,10 +122,12 @@ export class Executor {
     for (const deploy of options.deploy) {
       const deployName = deploy.deployName
       logger.info(`------------【${deployName}】-----------`)
+
+      const deployTrace = trace.getInstance({ type: 'deploy', deployName })
       if (deploy.disabled === true) {
         logger.info('此流程已被禁用，跳过')
         logger.info('')
-        trace.set({ deployName, value: { current: 'skip', status: 'disabled', remark: '流程禁用' } })
+        deployTrace.set({ value: { current: 'skip', status: 'disabled', remark: '流程禁用' } })
         continue
       }
       try {
@@ -134,13 +136,14 @@ export class Executor {
             context[deployName] = {}
           }
           const taskContext = context[deployName]
+          // 开始执行任务列表
           await this.runTask({ options, cert, task, context: taskContext, deploy, trace })
         }
 
-        trace.set({ deployName, value: { status: 'success', remark: '执行成功' } })
+        deployTrace.set({ value: { status: 'success', remark: '执行成功' } })
       } catch (e) {
-        trace.set({ deployName, value: { status: 'error', remark: '执行失败：' + e.message } })
-        trace.set({ value: { status: 'error', remark: deployName + '执行失败：' + e.message } })
+        deployTrace.set({ value: { status: 'error', remark: '执行失败：' + e.message } })
+        trace.set({ type: 'result', value: { status: 'error', remark: deployName + '执行失败：' + e.message } })
         logger.error('流程执行失败', e)
       }
 
@@ -161,18 +164,20 @@ export class Executor {
     if (Plugin instanceof Function) {
       instance = new Plugin({ accessProviders: options.accessProviders })
     }
-    const traceStatus = trace.get({ deployName: deploy.deployName, taskName: taskName })
+    const taskTrace = trace.getInstance({ type: 'deploy', deployName, taskName })
+    const traceStatus = taskTrace.get({})
     if (traceStatus?.status === 'success' && !options?.args?.forceRedeploy) {
       logger.info(`----【${taskName}】已经执行完成，跳过此任务`)
-      trace.set({ deployName, taskName, value: { current: 'skip', status: 'success', remark: '已执行成功过，本次跳过' } })
+      taskTrace.set({ value: { current: 'skip', status: 'success', remark: '已执行成功过，本次跳过' } })
       return
     }
     logger.info(`----【${taskName}】开始执行`)
     try {
+      // 执行任务
       await instance.execute({ cert, props: task.props, context })
-      trace.set({ deployName, taskName, value: { current: 'success', status: 'success', remark: '执行成功', time: dayjs().format() } })
+      taskTrace.set({ value: { current: 'success', status: 'success', remark: '执行成功', time: dayjs().format() } })
     } catch (e) {
-      trace.set({ deployName, taskName, value: { current: 'error', status: 'error', remark: e.message, time: dayjs().format() } })
+      taskTrace.set({ value: { current: 'error', status: 'error', remark: e.message, time: dayjs().format() } })
       throw e
     }
     logger.info(`----任务【${taskName}】执行完成`)

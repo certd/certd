@@ -6,19 +6,30 @@ export class Trace {
     this.context = context
   }
 
-  set ({ deployName, taskName, prop, value }) {
-    const key = this.buildTraceKey({ deployName, taskName, prop })
+  getInstance ({ type, deployName, taskName }) {
+    return {
+      get: ({ prop }) => {
+        return this.get({ type, deployName, taskName, prop })
+      },
+      set: ({ prop, value }) => {
+        this.set({ type, deployName, taskName, prop, value })
+      }
+    }
+  }
+
+  set ({ type, deployName, taskName, prop, value }) {
+    const key = this.buildTraceKey({ type, deployName, taskName, prop })
     const oldValue = _.get(this.context, key) || {}
     _.merge(oldValue, value)
     _.set(this.context, key, oldValue)
   }
 
-  get ({ deployName, taskName, prop }) {
-    return _.get(this.context, this.buildTraceKey({ deployName, taskName, prop }))
+  get ({ type, deployName, taskName, prop }) {
+    return _.get(this.context, this.buildTraceKey({ type, deployName, taskName, prop }))
   }
 
-  buildTraceKey ({ deployName, taskName, prop }) {
-    let key = '__trace__'
+  buildTraceKey ({ type = 'default', deployName, taskName, prop }) {
+    let key = '__trace__.' + type
     if (deployName) {
       key += '.'
       key += deployName.replace(/\./g, '_')
@@ -46,7 +57,7 @@ export class Trace {
     } else {
       this.printTraceLine({ current: 'skip', remark: '还未到过期时间，跳过' }, '更新证书')
     }
-    const trace = this.get({ })
+    const trace = this.get({ type: 'deploy' })
     // logger.info('trace', trace)
     for (const deployName in trace) {
       if (trace[deployName] == null) {
@@ -64,11 +75,12 @@ export class Trace {
         }
       }
     }
-
+    const result = this.get({ type: 'result' })
+    this.printTraceLine(result, 'result', '')
     const mainContext = {}
     _.merge(mainContext, context)
     delete mainContext.__trace__
-    logger.info('context:', JSON.stringify(mainContext))
+    logger.info('【context】', JSON.stringify(mainContext))
   }
 
   printTraceLine (traceStatus, name, prefix = '') {

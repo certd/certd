@@ -4,7 +4,7 @@ const defaultOptions = {
   args: {
     forceCert: false, // 强制更新证书
     skipCert: false, // 是否跳过证书申请环节
-    forceDeploy: false,
+    forceDeploy: true,
     test: true
   },
   accessProviders: {
