@@ -138,3 +138,41 @@ npm run post
 6. 构建后操作     
 邮件通知   
 配置你的邮箱地址，可以在执行失败时收到邮件通知。
+
+
+## API
+先列个提纲，待完善
+
+参数示例参考：https://gitee.com/certd/certd/blob/master/test/options.js
+
+### 授权提供者
+用于dns验证接口调用
+#### aliyun
+
+#### dnspod
+
+### deploy插件
+部署任务插件
+#### 阿里云
+##### 上传到阿里云
+type = uploadCertToAliyun
+##### 部署到阿里云DNS
+type = deployCertToAliyunCDN
+
+##### 部署到阿里云CLB
+type = deployCertToAliyunCLB
+
+#### 腾讯云
+##### 上传到腾讯云
+type = uploadCertToTencent
+
+##### 部署到腾讯云DNS
+type = deployCertToTencentDNS
+
+##### 部署到腾讯云CLB
+type = deployCertToTencentCLB
+
+##### 部署到腾讯云TKE-ingress
+type = deployCertToTencentTKEIngress
+
+
