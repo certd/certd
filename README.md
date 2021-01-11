@@ -22,6 +22,13 @@ npm install @certd/executor -s --production
 ```
 
 3. 创建index.js
+
+参数配置分几个部分    
+args: 运行时参数    
+accessProviders: 授权提供者，提供dns验证与部署任务的授权    
+cert: 证书申请的配置     
+deploy： 证书部署流程    
+
 ```js
 import { Executor } from '@certd/executor'
 const options =  {
