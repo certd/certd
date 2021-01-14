@@ -22,7 +22,19 @@ export class Executor {
     this.trace = new Trace()
   }
 
-  use (plugin) {
+  useProviders (providers) {
+    if (providers) {
+      _.forEach(item => {
+        Certd.use(item)
+      })
+    }
+  }
+
+  useProvider (provider) {
+    Certd.use(provider)
+  }
+
+  usePlugin (plugin) {
     if (plugin == null) {
       return
     }
@@ -38,9 +50,9 @@ export class Executor {
 
   usePlugins (plugins) {
     if (plugins) {
-      for (const plugin of plugins) {
-        this.use(plugin)
-      }
+      _.forEach(plugins, item => {
+        this.usePlugin(item)
+      })
     }
   }
 
@@ -58,7 +70,7 @@ export class Executor {
   async doRun (options) {
     // 申请证书
     logger.info('任务开始')
-    const certd = new Certd(options)
+    const certd = new Certd(options, this.providers)
     const cert = await this.runCertd(certd)
     if (cert == null) {
       throw new Error('申请证书失败')

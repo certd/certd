@@ -1,4 +1,7 @@
-import dnsProviders from './dns-provider/index.js'
-export { DnsProviderFactory } from './dns-provider/dns-provider-factory.js'
+import { AliyunDnsProvider } from './dns-provider/aliyun.js'
+import { DnspodDnsProvider } from './dns-provider/dnspod.js'
 
-export default dnsProviders
+export default {
+  AliyunDnsProvider,
+  DnspodDnsProvider
+}

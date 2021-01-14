@@ -85,7 +85,9 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
       this.logger.info('添加域名解析成功:', value, value, ret.RecordId)
       return ret.RecordId
     } catch (e) {
-      // e.code === 'DomainRecordDuplicate'
+      if (e.code === 'DomainRecordDuplicate') {
+        return
+      }
       this.logger.info('添加域名解析出错', e)
       throw e
     }

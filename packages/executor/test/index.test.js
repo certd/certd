@@ -16,7 +16,10 @@ describe('AutoDeploy', function () {
     this.timeout(120000)
     const executor = new Executor()
     const options = createOptions()
-    const ret = await executor.run(options, { forceCert: true, forceDeploy: false })
+    options.args.forceCert = true
+    options.args.forceDeploy = true
+
+    const ret = await executor.run(options)
     expect(ret).ok
     expect(ret.cert).ok
   })

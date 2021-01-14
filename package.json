@@ -6,10 +6,9 @@
     "lerna": "^3.18.4"
   },
   "scripts": {
-    "submodule": "git submodule update  --init --recursive"
   },
   "license": "MIT",
   "dependencies": {
-    "lodash": "^4.17.20"
+    "lodash-es": "^4.17.20"
   }
 }

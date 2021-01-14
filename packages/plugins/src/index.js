@@ -9,11 +9,11 @@ import { DeployCertToTencentCLB } from './tencent/deploy-to-clb/index.js'
 
 import { DeployCertToTencentTKEIngress } from './tencent/deploy-to-tke-ingress/index.js'
 
-export default [
+export default {
   UploadCertToAliyun,
   DeployCertToAliyunCDN,
   UploadCertToTencent,
   DeployCertToTencentTKEIngress,
   DeployCertToTencentCDN,
   DeployCertToTencentCLB
-]
+}

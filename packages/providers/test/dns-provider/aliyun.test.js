@@ -1,7 +1,6 @@
 import pkg from 'chai'
-import AliyunDnsProvider from '../../src/dns-provider/impl/aliyun.js'
+import AliyunDnsProvider from '../../src/dns-provider/aliyun.js'
 import { createOptions } from '../../../../test/options.js'
-import { Certd } from '../../src/index.js'
 const { expect } = pkg
 describe('AliyunDnsProvider', function () {
   it('#getDomainList', async function () {

@@ -1,5 +1,5 @@
 import pkg from 'chai'
-import DnspodDnsProvider from '../../src/dns-provider/impl/dnspod.js'
+import DnspodDnsProvider from '../../src/dns-provider/dnspod.js'
 import { Certd } from '../../src/index.js'
 import { createOptions } from '../../../../test/options.js'
 const { expect } = pkg
