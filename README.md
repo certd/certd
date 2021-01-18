@@ -139,7 +139,7 @@ node index.js
 配置cert-run的git地址     
 
 3. 构建触发器    
-配置 `H 0 3 * * ` ，每天凌晨3点执行一次
+配置 `H 3 * * *` ，每天凌晨3点-4点执行一次
 
 4. 构建环境    
 勾选 `Provide Node & npm bin/ folder to PATH`，提供nodejs运行环境     
