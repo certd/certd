@@ -46,7 +46,7 @@ export class K8sClient {
    * @returns secretsList
    */
   async getSecret (opts) {
-    const namespace = opts?.namespace || 'default'
+    const namespace = opts.namespace || 'default'
     const secrets = await this.client.api.v1.namespaces(namespace).secrets.get()
     return secrets
   }
@@ -57,7 +57,7 @@ export class K8sClient {
    * @returns {Promise<*>}
    */
   async createSecret (opts) {
-    const namespace = opts?.namespace || 'default'
+    const namespace = opts.namespace || 'default'
     const created = await this.client.api.v1.namespaces(namespace).secrets.post({
       body: opts.body
     })
@@ -66,8 +66,8 @@ export class K8sClient {
   }
 
   async updateSecret (opts) {
-    const namespace = opts?.namespace || 'default'
-    const secretName = opts?.secretName
+    const namespace = opts.namespace || 'default'
+    const secretName = opts.secretName
     if (secretName == null) {
       throw new Error('secretName 不能为空')
     }
@@ -77,8 +77,8 @@ export class K8sClient {
   }
 
   async patchSecret (opts) {
-    const namespace = opts?.namespace || 'default'
-    const secretName = opts?.secretName
+    const namespace = opts.namespace || 'default'
+    const secretName = opts.secretName
     if (secretName == null) {
       throw new Error('secretName 不能为空')
     }
@@ -88,8 +88,8 @@ export class K8sClient {
   }
 
   async getIngress (opts) {
-    const namespace = opts?.namespace || 'default'
-    const ingressName = opts?.ingressName
+    const namespace = opts.namespace || 'default'
+    const ingressName = opts.ingressName
     if (!ingressName) {
       throw new Error('ingressName 不能为空')
     }
@@ -97,8 +97,8 @@ export class K8sClient {
   }
 
   async patchIngress (opts) {
-    const namespace = opts?.namespace || 'default'
-    const ingressName = opts?.ingressName
+    const namespace = opts.namespace || 'default'
+    const ingressName = opts.ingressName
     if (!ingressName) {
       throw new Error('ingressName 不能为空')
     }

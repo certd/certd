@@ -80,7 +80,7 @@ export class Executor {
     logger.info('----------------------')
     if (!cert.isNew) {
       // 如果没有更新
-      if (!options.args?.forceDeploy && !options.args?.forceRedeploy) {
+      if (!options.args.forceDeploy && !options.args.forceRedeploy) {
         // 且不需要强制运行deploy
         logger.info('证书无更新，无需重新部署')
         logger.info('任务完成')
@@ -178,7 +178,7 @@ export class Executor {
     }
     const taskTrace = trace.getInstance({ type: 'deploy', deployName, taskName })
     const traceStatus = taskTrace.get({})
-    if (traceStatus?.status === 'success' && !options?.args?.forceRedeploy) {
+    if (traceStatus && traceStatus.status === 'success' && !options.args.forceRedeploy) {
       logger.info(`----【${taskName}】已经执行完成，跳过此任务`)
       taskTrace.set({ value: { current: 'skip', status: 'success', remark: '已执行成功过，本次跳过' } })
       return

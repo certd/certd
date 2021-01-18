@@ -28,7 +28,7 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
     _.merge(config, options)
 
     const ret = await request(config)
-    if (ret?.status?.code !== '1') {
+    if (!ret || !ret.status || ret.status.code !== '1') {
       throw new Error('请求失败：' + ret.status.message + ',api=' + config.url)
     }
     return ret
