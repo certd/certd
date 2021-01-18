@@ -1,6 +1,6 @@
 {
 	"name": "@certd/api",
-	"version": "0.1.7",
+	"version": "0.1.11",
 	"description": "",
 	"main": "./src/index.js",
 	"type": "module",
