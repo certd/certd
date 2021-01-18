@@ -23,5 +23,6 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "mocha": "^8.2.1"
-  }
+  },
+  "gitHead": "2942d39dfe64d60ce7dc0e0b2c0887866ca67f18"
 }

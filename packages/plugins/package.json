@@ -23,5 +23,6 @@
 		"mocha": "^8.2.1"
 	},
 	"author": "Greper",
-	"license": "MIT"
+	"license": "MIT",
+	"gitHead": "2942d39dfe64d60ce7dc0e0b2c0887866ca67f18"
 }

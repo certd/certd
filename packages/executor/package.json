@@ -32,5 +32,6 @@
   },
   "author": "Greper",
   "license": "MIT",
-  "sideEffects": false
+  "sideEffects": false,
+  "gitHead": "2942d39dfe64d60ce7dc0e0b2c0887866ca67f18"
 }
