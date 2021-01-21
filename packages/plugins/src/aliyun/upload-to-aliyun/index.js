@@ -1,38 +1,35 @@
 import Core from '@alicloud/pop-core'
 import { AbstractAliyunPlugin } from '../abstract-aliyun.js'
-export class UploadCertToAliyun extends AbstractAliyunPlugin {
-  /**
-   * 插件定义
-   * 名称
-   * 入参
-   * 出参
-   */
-  static define () {
-    return {
-      name: 'uploadCertToAliyun',
-      label: '上传证书到阿里云',
-      input: {
-        name: {
-          label: '证书名称'
-        },
-        regionId: {
-          label: '大区',
-          value: 'cn-hangzhou'
-        },
-        accessProvider: {
-          label: 'Access提供者',
-          type: [String, Object],
-          desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
-          options: 'accessProviders[type=aliyun]'
-        }
-      },
-      output: {
-        aliyunCertId: {
-          type: String,
-          desc: '上传成功后的阿里云CertId'
-        }
-      }
+
+const define = {
+  name: 'uploadCertToAliyun',
+  label: '上传证书到阿里云',
+  input: {
+    name: {
+      label: '证书名称'
+    },
+    regionId: {
+      label: '大区',
+      value: 'cn-hangzhou'
+    },
+    accessProvider: {
+      label: 'Access提供者',
+      type: [String, Object],
+      desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
+      options: 'accessProviders[type=aliyun]'
     }
+  },
+  output: {
+    aliyunCertId: {
+      type: String,
+      desc: '上传成功后的阿里云CertId'
+    }
+  }
+}
+
+export class UploadCertToAliyun extends AbstractAliyunPlugin {
+  static define () {
+    return define
   }
 
   getClient (aliyunProvider) {

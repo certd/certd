@@ -1,27 +1,12 @@
-import { util, Store } from '@certd/api'
+import { util, Store, pluginRegistry } from '@certd/api'
 import { AcmeService } from './acme.js'
 import { FileStore } from './store/file-store.js'
 import { CertStore } from './store/cert-store.js'
 import dayjs from 'dayjs'
 import forge from 'node-forge'
-import DefaultProviders from '@certd/providers'
-import _ from 'lodash-es'
 const logger = util.logger
 
-const AccessProviderClasses = {}
-function install (providerClass) {
-  AccessProviderClasses[providerClass.name()] = providerClass
-}
-logger.info('use')
-_.forEach(DefaultProviders, item => {
-  logger.info('use:', item.name())
-  install(item)
-})
 export class Certd {
-  static use (providerClass) {
-    install(providerClass)
-  }
-
   constructor (options) {
     this.options = options
     this.email = options.cert.email
@@ -139,7 +124,7 @@ export class Certd {
 
   createProviderByType (type, options) {
     try {
-      const Provider = AccessProviderClasses[type]
+      const Provider = pluginRegistry.get(type)
       return new Provider(options)
     } catch (e) {
       throw new Error('暂不支持此dnsProvider,请先use该provider：' + type, e)

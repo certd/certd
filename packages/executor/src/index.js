@@ -1,10 +1,15 @@
 import { Certd } from '@certd/certd'
-import DefaultPlugins from '@certd/plugins'
-import { util } from '@certd/api'
+import { pluginRegistry, util } from '@certd/api'
 import _ from 'lodash-es'
 import dayjs from 'dayjs'
 import { Trace } from './trace.js'
+import DefaultPlugins from '@certd/plugins'
+import DefaultProviders from '@certd/providers'
 const logger = util.logger
+
+// 安装默认插件和授权提供者
+DefaultPlugins.install()
+DefaultProviders.install()
 
 function createDefaultOptions () {
   return {
@@ -18,42 +23,7 @@ function createDefaultOptions () {
 }
 export class Executor {
   constructor () {
-    this.usePlugins(DefaultPlugins)
     this.trace = new Trace()
-  }
-
-  useProviders (providers) {
-    if (providers) {
-      _.forEach(item => {
-        Certd.use(item)
-      })
-    }
-  }
-
-  useProvider (provider) {
-    Certd.use(provider)
-  }
-
-  usePlugin (plugin) {
-    if (plugin == null) {
-      return
-    }
-    if (this.plugins == null) {
-      this.plugins = {}
-    }
-    this.plugins[plugin.name] = plugin
-    if (plugin.define) {
-      const define = plugin.define()
-      this.plugins[define.name] = plugin
-    }
-  }
-
-  usePlugins (plugins) {
-    if (plugins) {
-      _.forEach(plugins, item => {
-        this.usePlugin(item)
-      })
-    }
   }
 
   async run (options) {
@@ -70,7 +40,7 @@ export class Executor {
   async doRun (options) {
     // 申请证书
     logger.info('任务开始')
-    const certd = new Certd(options, this.providers)
+    const certd = new Certd(options)
     const cert = await this.runCertd(certd)
     if (cert == null) {
       throw new Error('申请证书失败')
@@ -165,7 +135,7 @@ export class Executor {
 
   async runTask ({ options, task, cert, context, deploy, trace }) {
     const taskType = task.type
-    const Plugin = this.plugins[taskType]
+    const Plugin = pluginRegistry.get(taskType)
     const deployName = deploy.deployName
     const taskName = task.taskName
     if (Plugin == null) {
