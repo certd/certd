@@ -2,6 +2,33 @@ import { AbstractDnsProvider } from '@certd/api'
 import Core from '@alicloud/pop-core'
 import _ from 'lodash-es'
 export class AliyunDnsProvider extends AbstractDnsProvider {
+  static define () {
+    return {
+      name: 'aliyun',
+      label: '阿里云',
+      desc: '',
+      input: {
+        accessKeyId: {
+          type: String,
+          desc: 'accessKeyId',
+          attrs: {
+            placeholder: 'accessKeyId'
+          }
+        },
+        accessKeySecret: {
+          type: String,
+          desc: 'accessKeySecret',
+          attrs: {
+            placeholder: 'accessKeySecret'
+          }
+        }
+      },
+      output: {
+
+      }
+    }
+  }
+
   constructor (dnsProviderConfig) {
     super()
     this.client = new Core({
@@ -10,10 +37,6 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
       endpoint: 'https://alidns.aliyuncs.com',
       apiVersion: '2015-01-09'
     })
-  }
-
-  static name () {
-    return 'aliyun'
   }
 
   async getDomainList () {

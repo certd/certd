@@ -2,8 +2,23 @@ import { AbstractDnsProvider, util } from '@certd/api'
 import _ from 'lodash-es'
 const request = util.request
 export class DnspodDnsProvider extends AbstractDnsProvider {
-  static name () {
-    return 'dnspod'
+  static define () {
+    return {
+      name: 'dnspod',
+      label: 'dnspod',
+      desc: '腾讯云的域名解析接口已迁移到dnspod',
+      input: {
+        id: {
+          type: String,
+          desc: 'dnspod的账户id'
+        },
+        token: {
+          type: String,
+          label: 'token',
+          desc: 'dnspod的开放接口token'
+        }
+      }
+    }
   }
 
   constructor (dnsProviderConfig) {
