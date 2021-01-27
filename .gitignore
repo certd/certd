@@ -5,8 +5,11 @@ out
 gen
 node_modules/
 /test/*.private.*
-/other
-/other/node-acme-client/.idea/
+
 /*.log
-/other/certd-run
-/other/node-acme-client
+
+/other/*/.idea
+
+/other/*/node_modules
+
+/packages/*/node_modules

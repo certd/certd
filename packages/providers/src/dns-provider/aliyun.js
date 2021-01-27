@@ -12,15 +12,19 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
           type: String,
           desc: 'accessKeyId',
           attrs: {
-            placeholder: 'accessKeyId'
-          }
+            placeholder: 'accessKeyId',
+            rules: [{ required: true, message: '必填项' }]
+          },
+          required: true
         },
         accessKeySecret: {
           type: String,
           desc: 'accessKeySecret',
           attrs: {
-            placeholder: 'accessKeySecret'
+            placeholder: 'accessKeySecret',
+            rules: [{ required: true, message: '必填项' }]
           }
+
         }
       },
       output: {
