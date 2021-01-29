@@ -6,11 +6,11 @@ import 'ant-design-vue/dist/antd.css'
 import '@/style/common.less'
 import { i18n } from '@/i18n'
 import icons from './icons'
-import DContainer from '@/components/d-container'
+import components from './components'
 const app = createApp(App)
 app.config.productionTip = false
 app.use(i18n)
 app.use(Antd)
 icons(app)
-app.component('d-container', DContainer)
+app.use(components)
 app.use(router).mount('#app')

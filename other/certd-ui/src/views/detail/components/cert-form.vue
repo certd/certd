@@ -71,7 +71,6 @@
 import { reactive, toRaw, ref, watch } from 'vue'
 import { useForm } from '@ant-design-vue/use'
 import _ from 'lodash-es'
-import ProviderSelector from '@/views/detail/components/provider-selector'
 
 function useDrawer () {
   const visible = ref(false)
@@ -94,7 +93,6 @@ function useDrawer () {
 
 export default {
   name: 'cert-form',
-  components: { ProviderSelector },
   emits: ['update:accessProviders', 'update:cert'],
   // 属性定义
   props: {

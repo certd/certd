@@ -81,6 +81,7 @@
           <PlusCircleOutlined title="添加部署流程" class="add-icon" @click="deployAdd"/>
         </h3>
         <a-divider></a-divider>
+
         <div class="deploy-list">
 
           <a-card class="deploy-item" v-for="(deploy,index) of options.deploy" :key="index">

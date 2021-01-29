@@ -39,8 +39,8 @@
             ></a-input>
           </a-form-item>
 
-          <a-form-item v-for="(value,key) in currentPlugin.input" :key="key" :label="value.label">
-            <a-input v-model:value="currentTask[key]"></a-input>
+          <a-form-item v-for="(item,key) in currentPlugin.input" :key="key" :label="item.label">
+            <component-render v-model:value="currentTask[key]" v-bind="item.component || {}"></component-render>
           </a-form-item>
 
         </a-form>
@@ -57,12 +57,10 @@
 
     </template>
   </a-drawer>
-  <provider-manager ref="providerManager"></provider-manager>
 </template>
 
 <script>
 import { message } from 'ant-design-vue'
-import ProviderManager from '@/views/detail/components/provider-manager'
 import pluginsApi from '@/api/api.plugins'
 import { ref } from 'vue'
 // eslint-disable-next-line no-unused-vars
@@ -176,7 +174,6 @@ function useProviderManager () {
 }
 export default {
   name: 'task-form',
-  components: { ProviderManager },
   emits: ['update'],
   props: {
     options: {}

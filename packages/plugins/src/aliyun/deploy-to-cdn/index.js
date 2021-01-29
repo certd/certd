@@ -8,7 +8,11 @@ const define = {
   input: {
     domainName: {
       label: 'cdn加速域名',
-      required: true
+      required: true,
+      attrs: {
+        placeholder: 'cdn加速域名',
+        rules: [{ required: true, message: '该项必填' }]
+      }
     },
     certName: {
       label: '证书名称'
@@ -34,7 +38,10 @@ const define = {
       label: 'Access提供者',
       type: [String, Object],
       desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
-      options: 'accessProviders[type=aliyun]',
+      component: {
+        name: 'provider-selector',
+        filter: 'aliyun'
+      },
       required: true
     }
   },

@@ -10,12 +10,18 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
       input: {
         id: {
           type: String,
-          desc: 'dnspod的账户id'
+          attrs: {
+            placeholder: 'dnspod接口账户id',
+            rules: [{ required: true, message: '该项必填' }]
+          }
         },
         token: {
           type: String,
           label: 'token',
-          desc: 'dnspod的开放接口token'
+          attrs: {
+            placeholder: '开放接口token',
+            rules: [{ required: true, message: '该项必填' }]
+          }
         }
       }
     }

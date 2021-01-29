@@ -23,7 +23,9 @@
                   <a-button type="danger" @click="remove(item,index)"><template #icon ><DeleteOutlined /></template></a-button>
               </template>
 
-              <a-radio :checked="item.key===selectedKey" @update:checked="selectedKey = item.key">【{{item.key}}】 {{ item.name }}</a-radio>
+              <a-radio :checked="item.key===selectedKey" @update:checked="selectedKey = item.key">
+                 {{ item.name }} ({{item.type}})
+              </a-radio>
 
             </a-list-item>
           </template>
@@ -38,7 +40,7 @@
   <a-modal v-model:visible="editVisible" dialogClass="d-dialog" width="700px" title="编辑授权" @ok="onSubmit">
 
     <a-form ref="formRef" class="domain-form" :model="formData" labelWidth="150px" :label-col="labelCol" :wrapper-col="wrapperCol">
-      <a-form-item label="类型" :rules="rules.type">
+      <a-form-item label="类型" name="type" :rules="rules.type">
         <a-radio-group  :disabled="editIndex!=null" v-model:value="formData.type" @change="onTypeChanged" >
           <a-radio-button v-for="(option) of providerDefineList" :key="option.name" :value="option.name">
             {{option.label}}
@@ -47,19 +49,15 @@
       </a-form-item>
 
       <template v-if="formData.type && currentProvider">
-        <a-form-item  label="key" name="key" :rules="rules.key">
-          <a-input :disabled="editIndex!=null" v-model:value="formData.key"/>
-          <div class="helper">不重复的key</div>
-        </a-form-item>
         <a-form-item label="名称" name="name" :rules="rules.name">
           <a-input v-model:value="formData.name"/>
         </a-form-item>
-        <a-form-item v-for="(item,key) in currentProvider.input"
-                     :key="key"
+        <a-form-item v-for="(item,key,index) in currentProvider.input"
+                     :key="index"
+                     v-bind="item.component||{}"
                      :label="item.label || key"
-                     :name="key"
-                     :rules="[{ required: true, message: '必填项' }]">
-          <a-input v-model:value="formData[key]" v-bind="item.attrs" ></a-input>
+                     :name="key">
+          <component-render v-model:value="formData[key]" v-bind="item.component || {}"></component-render>
           <div class="helper">{{item.desc}}</div>
         </a-form-item>
       </template>
@@ -75,42 +73,21 @@ import { ref, reactive, nextTick, watch } from 'vue'
 import { useForm } from '@ant-design-vue/use'
 import _ from 'lodash-es'
 import providerApi from '@/api/api.providers'
-function useEdit (props, context, providerList, onSave) {
+function useEdit (props, context, providerList, onEditSave) {
   const formData = reactive({
     key: '',
     name: '',
-    type: ''
+    type: undefined
   })
 
-  const rules = reactive({
+  const rules = ref({
     type: [{
+      type: 'string',
       required: true,
       message: '请选择类型'
     }],
-    key: [{
-      required: true,
-      message: '请输入key'
-    }, {
-      validator (rule, value) {
-        const providers = providerList.value
-        if (!providers || providers.length === 0) {
-          return Promise.resolve()
-        }
-        if (editIndex.value != null) {
-          return Promise.resolve()
-        }
-        const filter = providers.filter(item => item.key === value)
-        console.log('validate', filter)
-        if (filter.length === 0) {
-          return Promise.resolve()
-        } else {
-          // eslint-disable-next-line prefer-promise-reject-errors
-          return Promise.reject('key不能重复')
-        }
-      },
-      message: 'key不能与其他授权配置重复'
-    }],
     name: [{
+      type: 'string',
       required: true,
       message: '请输入名称'
     }]
@@ -121,9 +98,10 @@ function useEdit (props, context, providerList, onSave) {
   // const { resetFields, validate, validateInfos } = useForm(formData, rules)
   const onSubmit = async e => {
     e.preventDefault()
-    await formRef.value.validate()
+    const res = await formRef.value.validate()
+    console.log('validation:', res)
     const newProvider = _.cloneDeep(formData)
-    onSave(newProvider, editIndex.value)
+    onEditSave(newProvider, editIndex.value)
     closeEdit()
   }
 
@@ -139,6 +117,7 @@ function useEdit (props, context, providerList, onSave) {
       changeType(item.type)
     } else {
       editIndex.value = null
+      formData.type = null
     }
     editVisible.value = true
   }
@@ -192,6 +171,23 @@ function useEdit (props, context, providerList, onSave) {
     add
   }
 }
+
+let index = 0
+const keyPrefix = 'provider_'
+function generateNewKey (list) {
+  index++
+  let exists = false
+  for (const item of list) {
+    if (item.key === keyPrefix + index) {
+      exists = true
+      break
+    }
+  }
+  if (exists) {
+    return generateNewKey(list)
+  }
+  return keyPrefix + index
+}
 export default {
   name: 'provider-manager',
   props: {
@@ -219,11 +215,13 @@ export default {
       selectedKey.value = props.value
     }, { immediate: true })
 
-    const onEditSave = (newProvier, editIndex) => {
+    const onEditSave = (newProvider, editIndex) => {
       if (editIndex == null) {
-        providerList.value.push(newProvier)
+        // add 生成一个key
+        newProvider.key = generateNewKey(providerList.value)
+        providerList.value.push(newProvider)
       } else {
-        _.merge(providerList.value[editIndex], newProvier)
+        _.merge(providerList.value[editIndex], newProvider)
       }
     }
 

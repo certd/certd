@@ -4,7 +4,7 @@
       :value="value"
       @update:value="valueUpdate"
     >
-      <a-select-option v-for="item of providers" :key="item.key" :value="item.key">
+      <a-select-option v-for="item of providers" :key="item.key" :value="item.key" :disabled="isDisabled(item)">
         {{ item.name }}
       </a-select-option>
     </a-select>
@@ -35,7 +35,8 @@ export default {
     },
     providers: {
       type: Object
-    }
+    },
+    filter: {}
   },
   setup (props, context) {
     const providerManagerRef = ref(null)
@@ -52,11 +53,19 @@ export default {
     const valueUpdate = (val) => {
       context.emit('update:value', val)
     }
+
+    const isDisabled = (item) => {
+      if (!props.filter) {
+        return false
+      }
+      return item.type === props.filter
+    }
     return {
       providersUpdate,
       valueUpdate,
       providerManagerOpen,
-      providerManagerRef
+      providerManagerRef,
+      isDisabled
     }
   }
 }
