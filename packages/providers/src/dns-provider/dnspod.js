@@ -5,12 +5,12 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
   static define () {
     return {
       name: 'dnspod',
-      label: 'dnspod',
+      label: 'dnspod(腾讯云)',
       desc: '腾讯云的域名解析接口已迁移到dnspod',
       input: {
         id: {
           type: String,
-          attrs: {
+          component: {
             placeholder: 'dnspod接口账户id',
             rules: [{ required: true, message: '该项必填' }]
           }
@@ -18,7 +18,7 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
         token: {
           type: String,
           label: 'token',
-          attrs: {
+          component: {
             placeholder: '开放接口token',
             rules: [{ required: true, message: '该项必填' }]
           }

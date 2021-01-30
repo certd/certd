@@ -19,7 +19,9 @@
             v-model:value="formData.domains"
             :open="false"
           ></a-select>
-          <div class="helper">例如：*.yourdomain.com</div>
+          <template #extra >
+            例如：*.yourdomain.com，输入完成后回车，支持多个
+          </template>
         </a-form-item>
 
         <a-form-item :label="$t('email')" v-bind="validateInfos.email">
@@ -27,10 +29,14 @@
         </a-form-item>
 
         <a-form-item label="dns验证" v-bind="validateInfos.dnsProvider">
-         <provider-selector v-model:value="formData.dnsProvider"
-                            :providers="accessProviders"
-                            @update:providers="accessProvidersUpdate"
-         ></provider-selector>
+         <provider-selector v-model:value="formData.dnsProvider"></provider-selector>
+        </a-form-item>
+        <a-form-item label="CA" v-bind="validateInfos.ca">
+          <a-radio-group v-model:value="formData.ca" >
+            <a-radio  value="LetEncrypt">
+              LetEncrypt
+            </a-radio>
+          </a-radio-group>
         </a-form-item>
 
         <h3>CSR <span>必须全英文</span></h3>
@@ -110,6 +116,7 @@ export default {
       domains: [],
       email: undefined,
       dnsProvider: '',
+      ca: 'LetEncrypt',
       csr: {
         country: '',
         state: 'GuangDong',

@@ -8,23 +8,31 @@ const define = {
   input: {
     domainName: {
       label: 'cdn加速域名',
-      required: true,
-      attrs: {
+      component: {
         placeholder: 'cdn加速域名',
         rules: [{ required: true, message: '该项必填' }]
       }
     },
     certName: {
-      label: '证书名称'
+      label: '证书名称',
+      component: {
+        placeholder: '上传后将以此名称作为前缀'
+      }
     },
     from: {
       value: 'upload',
       label: '证书来源',
-      options: [
-        { value: 'upload', label: '直接上传' },
-        { value: 'cas', label: '从证书库', desc: '需要uploadCertToAliyun作为前置任务' }
-      ],
-      required: true
+      component: {
+        placeholder: '证书来源',
+        required: true,
+        name: 'a-select',
+        options: [
+          { value: 'upload', label: '直接上传' },
+          { value: 'cas', label: '从证书库', title: '需要uploadCertToAliyun作为前置任务' }
+        ]
+      },
+      desc: '如果选择cas类型，则需要以《上传证书到阿里云》作为前置任务'
+
     },
     // serverCertificateStatus: {
     //   label: '启用https',

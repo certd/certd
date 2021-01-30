@@ -31,16 +31,19 @@
         </a-button>
       </d-container>
       <d-container v-else class="d-container" >
-        <a-form  class="task-form" :label-col="labelCol" :wrapper-col="wrapperCol">
-          <a-form-item label="任务名称">
+        <a-form  ref="taskFormRef" class="task-form" :model="currentTask" :label-col="labelCol" :wrapper-col="wrapperCol">
+          <a-form-item label="任务名称" name="taskName" :rules="rules.name">
             <a-input
               placeholder="请输入任务名称"
               v-model:value="currentTask.taskName"
             ></a-input>
           </a-form-item>
 
-          <a-form-item v-for="(item,key) in currentPlugin.input" :key="key" :label="item.label">
+          <a-form-item v-for="(item,key) in currentPlugin.input"  v-bind="item.component || {}"  :key="key" :label="item.label" :name="key">
             <component-render v-model:value="currentTask[key]" v-bind="item.component || {}"></component-render>
+            <template #extra v-if="item.desc"  >
+              {{item.desc}}
+            </template>
           </a-form-item>
 
         </a-form>
@@ -78,13 +81,19 @@ function useTaskForm (context) {
 
   onCreated()
 
-  const currentTask = ref()
+  const currentTask = ref({ taskName: undefined })
   const currentTaskIndex = ref()
   const currentDeploy = ref()
   const currentPlugin = ref(null)
   const taskFormRef = ref(null)
   const taskDrawerVisible = ref(false)
-
+  const rules = ref({
+    name: [{
+      type: 'string',
+      required: true,
+      message: '请输入名称'
+    }]
+  })
   const taskAdd = (deploy) => {
     const task = { taskName: '新任务', type: undefined, _isAdd: true }
     currentDeploy.value = deploy
@@ -142,8 +151,11 @@ function useTaskForm (context) {
     currentPlugin.value = currentPlugins[0]
   }
 
-  const taskSave = () => {
+  const taskSave = async (e) => {
     console.log('currentTask', currentTask)
+
+    e.preventDefault()
+    await taskFormRef.value.validate()
     // context.emit('update', currentTask.value)
     taskDrawerClose()
   }
@@ -161,7 +173,8 @@ function useTaskForm (context) {
     currentTask,
     currentTaskIndex,
     currentPlugin,
-    taskSave
+    taskSave,
+    rules
   }
 }
 

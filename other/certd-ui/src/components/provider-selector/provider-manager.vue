@@ -14,7 +14,7 @@
         <a-list
           class="list"
           item-layout="horizontal"
-          :data-source="providerList"
+          :data-source="getProviders()"
         >
           <template #renderItem="{ item ,index }">
             <a-list-item>
@@ -23,7 +23,7 @@
                   <a-button type="danger" @click="remove(item,index)"><template #icon ><DeleteOutlined /></template></a-button>
               </template>
 
-              <a-radio :checked="item.key===selectedKey" @update:checked="selectedKey = item.key">
+              <a-radio :disabled="isDisabled(item)" :checked="item.key===selectedKey" @update:checked="selectedKey = item.key" >
                  {{ item.name }} ({{item.type}})
               </a-radio>
 
@@ -39,10 +39,12 @@
 
   <a-modal v-model:visible="editVisible" dialogClass="d-dialog" width="700px" title="编辑授权" @ok="onSubmit">
 
+    <a-alert v-if="currentProvider?.desc" :message="currentProvider.desc" type="success" />
+
     <a-form ref="formRef" class="domain-form" :model="formData" labelWidth="150px" :label-col="labelCol" :wrapper-col="wrapperCol">
       <a-form-item label="类型" name="type" :rules="rules.type">
         <a-radio-group  :disabled="editIndex!=null" v-model:value="formData.type" @change="onTypeChanged" >
-          <a-radio-button v-for="(option) of providerDefineList" :key="option.name" :value="option.name">
+          <a-radio-button v-for="(option) of providerDefineList"  :disabled="isDisabled(option,'name')" :key="option.name" :value="option.name">
             {{option.label}}
           </a-radio-button>
         </a-radio-group>
@@ -58,7 +60,9 @@
                      :label="item.label || key"
                      :name="key">
           <component-render v-model:value="formData[key]" v-bind="item.component || {}"></component-render>
-          <div class="helper">{{item.desc}}</div>
+          <template #extra >
+            <div v-if="item.desc" class="helper">{{item.desc}}</div>
+          </template>
         </a-form-item>
       </template>
 
@@ -68,12 +72,12 @@
 </template>
 
 <script>
-import { ref, reactive, nextTick, watch } from 'vue'
+import { ref, reactive, nextTick, watch, inject } from 'vue'
 // eslint-disable-next-line no-unused-vars
 import { useForm } from '@ant-design-vue/use'
 import _ from 'lodash-es'
 import providerApi from '@/api/api.providers'
-function useEdit (props, context, providerList, onEditSave) {
+function useEdit (props, context, onEditSave) {
   const formData = reactive({
     key: '',
     name: '',
@@ -155,6 +159,13 @@ function useEdit (props, context, providerList, onEditSave) {
     }
   }
 
+  const isDisabled = (item, keyName = 'type') => {
+    if (!props.filter) {
+      return false
+    }
+    return item[keyName
+    ] !== props.filter
+  }
   return {
     labelCol: { span: 6 },
     wrapperCol: { span: 16 },
@@ -168,7 +179,8 @@ function useEdit (props, context, providerList, onEditSave) {
     editIndex,
     openEdit,
     onTypeChanged,
-    add
+    add,
+    isDisabled
   }
 }
 
@@ -192,9 +204,9 @@ export default {
   name: 'provider-manager',
   props: {
     value: {},
-    providers: {}
+    filter: {}
   },
-  emits: ['update:value', 'update:providers'],
+  emits: ['update:value'],
   setup (props, context) {
     const visible = ref(false)
 
@@ -205,47 +217,55 @@ export default {
     const onAfterVisibleChange = () => {
 
     }
-    const providerList = ref([])
+
+    const getProviders = inject('get:accessProviders')
+    // const providerList = ref([])
     const selectedKey = ref(null)
 
-    watch(() => props.providers, () => {
-      providerList.value = _.cloneDeep(props.providers || [])
-    }, { immediate: true })
     watch(() => props.value, () => {
       selectedKey.value = props.value
     }, { immediate: true })
 
     const onEditSave = (newProvider, editIndex) => {
+      const providerList = getProviders()
       if (editIndex == null) {
         // add 生成一个key
-        newProvider.key = generateNewKey(providerList.value)
-        providerList.value.push(newProvider)
+        newProvider.key = generateNewKey(providerList)
+        providerList.push(newProvider)
       } else {
-        _.merge(providerList.value[editIndex], newProvider)
+        _.merge(providerList[editIndex], newProvider)
       }
     }
 
-    const editModule = useEdit(props, context, providerList, onEditSave)
+    const editModule = useEdit(props, context, onEditSave)
 
     const open = () => {
       visible.value = true
-      if (providerList.value.length === 0) {
+      const providerList = getProviders()
+      if (providerList.length === 0) {
         nextTick(() => {
           editModule.add()
         })
       }
     }
     const remove = (item, index) => {
-      providerList.value.splice(index, 1)
+      const providerList = getProviders()
+      providerList.splice(index, 1)
     }
 
+    const updateProviders = inject('update:accessProviders')
+
+    // watch(() => providers, () => {
+    //   providerList.value = _.cloneDeep(props.providers || [])
+    // }, { immediate: true })
+
     const onProviderSelectSubmit = () => {
-      context.emit('update:providers', providerList.value)
+      const providerList = getProviders()
+      updateProviders(providerList)
       context.emit('update:value', selectedKey.value)
       close()
     }
     return {
-      providerList,
       visible,
       open,
       close,
@@ -253,6 +273,7 @@ export default {
       remove,
       selectedKey,
       onProviderSelectSubmit,
+      getProviders,
       ...editModule
     }
   }

@@ -37,36 +37,45 @@
               </div>
             </div>
 
-            <div class="title">CSR
-            <span>必须全英文</span></div>
+            <br/>
+            <div class="title">
+              CSR
+            <span>必须全英文</span>
+            </div>
             <div class="label-item">
-              <label>country:</label>
+              <label>国家:</label>
               <div>
                 {{ options.cert.csr.country }}
               </div>
             </div>
             <div class="label-item">
-              <label>state:</label>
+              <label>省份:</label>
               <div>
                 {{ options.cert.csr.state }}
               </div>
             </div>
             <div class="label-item">
-              <label>locality:</label>
+              <label>市区:</label>
               <div>
                 {{ options.cert.csr.locality }}
               </div>
             </div>
             <div class="label-item">
-              <label>org:</label>
+              <label>组织:</label>
               <div>
                 {{ options.cert.csr.organization }}
               </div>
             </div>
             <div class="label-item">
-              <label>orgUnit:</label>
+              <label>部门:</label>
               <div>
                 {{ options.cert.csr.organizationUnit }}
+              </div>
+            </div>
+            <div class="label-item">
+              <label>邮箱:</label>
+              <div>
+                {{ options.cert.csr.emailAddress }}
               </div>
             </div>
           </div>
@@ -136,7 +145,7 @@
 <script>
 import { message } from 'ant-design-vue'
 // eslint-disable-next-line no-unused-vars
-import { reactive, ref, toRef } from 'vue'
+import { reactive, ref, toRef, provide, readonly } from 'vue'
 // eslint-disable-next-line no-unused-vars
 import { useRoute } from 'vue-router'
 import CertForm from '@/views/detail/components/cert-form'
@@ -169,6 +178,15 @@ function useDeploy (options) {
   }
 }
 
+function useProvideAccessProviders (options) {
+  provide('get:accessProviders', () => {
+    return options.accessProviders
+  })
+  provide('update:accessProviders', (providers) => {
+    options.accessProviders = providers
+  })
+}
+
 export default {
   components: { CertForm, TaskForm },
   setup () {
@@ -189,6 +207,7 @@ export default {
       deploy: []
     }
     _.merge(optionsDefault, optionParams)
+    // optionsDefault.accessProviders = reactive(optionsDefault.accessProviders)
     const options = reactive(optionsDefault)
 
     const certFormChanged = (value) => {
@@ -208,6 +227,8 @@ export default {
     const taskEdit = (deploy, task, index) => {
       taskFormRef.value.taskEdit(deploy, task, index)
     }
+
+    useProvideAccessProviders(options)
 
     return {
       options,

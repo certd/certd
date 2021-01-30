@@ -10,7 +10,7 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
       input: {
         accessKeyId: {
           type: String,
-          attrs: {
+          component: {
             placeholder: 'accessKeyId',
             rules: [{ required: true, message: '必填项' }]
           },
@@ -18,7 +18,7 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
         },
         accessKeySecret: {
           type: String,
-          attrs: {
+          component: {
             placeholder: 'accessKeySecret',
             rules: [{ required: true, message: '必填项' }]
           }

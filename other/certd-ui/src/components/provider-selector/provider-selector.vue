@@ -4,7 +4,7 @@
       :value="value"
       @update:value="valueUpdate"
     >
-      <a-select-option v-for="item of providers" :key="item.key" :value="item.key" :disabled="isDisabled(item)">
+      <a-select-option v-for="item of getProviders()" :key="item.key" :value="item.key" :disabled="isDisabled(item)">
         {{ item.name }}
       </a-select-option>
     </a-select>
@@ -13,15 +13,14 @@
     </a-button>
   </div>
   <provider-manager ref="providerManagerRef"
-                    :providers="providers"
                     :value="value"
+                    :filter="filter"
                     @update:value="valueUpdate"
-                    @update:providers="providersUpdate"
   ></provider-manager>
 
 </template>
 <script>
-import { ref } from 'vue'
+import { ref, inject } from 'vue'
 import ProviderManager from './provider-manager'
 
 export default {
@@ -32,9 +31,6 @@ export default {
   props: {
     value: {
       type: String
-    },
-    providers: {
-      type: Object
     },
     filter: {}
   },
@@ -58,14 +54,18 @@ export default {
       if (!props.filter) {
         return false
       }
-      return item.type === props.filter
+      return item.type !== props.filter
     }
+
+    const getProviders = inject('get:accessProviders')
+
     return {
       providersUpdate,
       valueUpdate,
       providerManagerOpen,
       providerManagerRef,
-      isDisabled
+      isDisabled,
+      getProviders
     }
   }
 }
