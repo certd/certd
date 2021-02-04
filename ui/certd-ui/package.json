@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@certd/plugins": "^0.1.11",
-    "@certd/providers": "^0.1.11",
+    "@certd/dns-providers": "^0.1.11",
     "ant-design-vue": "^2.0.0-rc.8",
     "lodash-es": "^4.17.20",
     "vue-i18n": "^9.0.0-rc.2",

@@ -15,7 +15,7 @@ export class DeployCertToTencentCLB extends AbstractTencentPlugin {
       input: {
         region: {
           label: '大区',
-          value: 'ap-guangzhou'
+          default: 'ap-guangzhou'
         },
         domain: {
           label: '域名',

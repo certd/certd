@@ -35,7 +35,10 @@ const defaultOptions = {
   cert: {
     domains: ['*.docmirror.cn'],
     email: 'xiaojunnuo@qq.com',
-    dnsProvider: 'aliyun',
+    dnsProvider: {
+      type:'aliyun',
+      accessProvider:'aliyun'
+    },
     csrInfo: {
       country: 'CN',
       state: 'GuangDong',

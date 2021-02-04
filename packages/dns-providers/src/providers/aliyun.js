@@ -8,21 +8,15 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
       label: '阿里云',
       desc: '',
       input: {
-        accessKeyId: {
-          type: String,
+        accessProvider: {
+          label: 'Access提供者',
+          type: [String, Object],
+          desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
           component: {
-            placeholder: 'accessKeyId',
-            rules: [{ required: true, message: '必填项' }]
+            name: 'provider-selector',
+            filter: 'aliyun'
           },
           required: true
-        },
-        accessKeySecret: {
-          type: String,
-          component: {
-            placeholder: 'accessKeySecret',
-            rules: [{ required: true, message: '必填项' }]
-          }
-
         }
       },
       output: {
@@ -31,11 +25,13 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
     }
   }
 
-  constructor (dnsProviderConfig) {
-    super()
+  constructor (args) {
+    super(args)
+    const { props } = args
+    const accessProvider = this.getAccessProvider(props.accessProvider)
     this.client = new Core({
-      accessKeyId: dnsProviderConfig.accessKeyId,
-      accessKeySecret: dnsProviderConfig.accessKeySecret,
+      accessKeyId: accessProvider.accessKeyId,
+      accessKeySecret: accessProvider.accessKeySecret,
       endpoint: 'https://alidns.aliyuncs.com',
       apiVersion: '2015-01-09'
     })

@@ -10,10 +10,13 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@certd/plugins": "^0.1.11",
-    "@certd/providers": "^0.1.11",
     "@certd/api": "^0.1.11",
+    "@certd/executor": "^0.1.11",
+    "@certd/plugins": "^0.1.11",
+    "@certd/dns-providers": "^0.1.11",
+    "compressing": "^1.5.1",
     "debug": "^4.1.1",
+    "fs-extra": "^9.1.0",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
     "koa-convert": "^1.2.0",
@@ -23,8 +26,7 @@
     "koa-router": "^7.4.0",
     "koa-static": "^5.0.0",
     "koa-views": "^6.2.0",
-    "lodash-es": "^4.17.20",
-    "pug": "^2.0.3"
+    "lodash-es": "^4.17.20"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",

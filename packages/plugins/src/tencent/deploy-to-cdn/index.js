@@ -19,30 +19,27 @@ export class DeployCertToTencentCDN extends AbstractTencentPlugin {
           required: true
         },
         certName: {
-          label: '证书名称'
+          label: '证书名称',
+          desc: '证书上传后将以此参数作为名称前缀'
         },
         certType: {
-          value: 'upload',
+          default: 'upload',
           label: '证书来源',
           options: [
             { value: 'upload', label: '直接上传' },
             { value: 'cloud', label: '从证书库', desc: '需要uploadCertToTencent作为前置任务' }
           ],
+          desc: '如果选择‘从证书库’类型，则需要以《上传证书到腾讯云》作为前置任务',
           required: true
         },
-        // serverCertificateStatus: {
-        //   label: '启用https',
-        //   options: [
-        //     { value: 'on', label: '开启HTTPS，并更新证书' },
-        //     { value: 'auto', label: '若HTTPS开启则更新，未开启不更新' }
-        //   ],
-        //   required:true
-        // },
         accessProvider: {
           label: 'Access提供者',
           type: [String, Object],
           desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
-          options: 'accessProviders[type=aliyun]',
+          component: {
+            name: 'provider-selector',
+            filter: 'tencent'
+          },
           required: true
         }
       },

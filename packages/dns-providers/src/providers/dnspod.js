@@ -8,31 +8,25 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
       label: 'dnspod(腾讯云)',
       desc: '腾讯云的域名解析接口已迁移到dnspod',
       input: {
-        id: {
-          type: String,
+        accessProvider: {
+          label: 'Access提供者',
+          type: [String, Object],
+          desc: 'AccessProviders的key',
           component: {
-            placeholder: 'dnspod接口账户id',
-            rules: [{ required: true, message: '该项必填' }]
-          }
-        },
-        token: {
-          type: String,
-          label: 'token',
-          component: {
-            placeholder: '开放接口token',
-            rules: [{ required: true, message: '该项必填' }]
-          }
+            name: 'provider-selector',
+            filter: 'dnspod'
+          },
+          required: true
         }
       }
     }
   }
 
-  constructor (dnsProviderConfig) {
-    super()
-    if (!dnsProviderConfig.id || !dnsProviderConfig.token) {
-      throw new Error('请正确配置dnspod的 id 和 token')
-    }
-    this.loginToken = dnsProviderConfig.id + ',' + dnsProviderConfig.token
+  constructor (args) {
+    super(args)
+    const { props } = args
+    const accessProvider = this.getAccessProvider(props.accessProvider)
+    this.loginToken = accessProvider.id + ',' + accessProvider.token
   }
 
   async doRequest (options) {

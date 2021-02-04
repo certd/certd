@@ -13,3 +13,4 @@ node_modules/
 /ui/*/node_modules
 
 /packages/*/node_modules
+/ui/certd-server/tmp/

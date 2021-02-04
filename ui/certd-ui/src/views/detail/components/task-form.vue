@@ -76,6 +76,7 @@ function useTaskForm (context) {
   const taskPluginDefineList = ref([])
   const onCreated = async () => {
     const plugins = await pluginsApi.list()
+    console.log('plugins', plugins)
     taskPluginDefineList.value = plugins
   }
 
@@ -113,7 +114,15 @@ function useTaskForm (context) {
       message.warn('请先选择类型')
       return
     }
+    // 给task的input设置默认值
     changeCurrentPlugin(currentTask.value)
+
+    for (const key in currentPlugin.value.input) {
+      const input = currentPlugin.value.input[key]
+      if (input.default != null) {
+        currentTask.value[key] = input.default
+      }
+    }
   }
 
   const taskDrawerShow = () => {
@@ -245,6 +254,7 @@ export default {
           font-size: 10px;
           line-height: 20px;
           height: 40px;
+          color: #7f7f7f
         }
       }
     }

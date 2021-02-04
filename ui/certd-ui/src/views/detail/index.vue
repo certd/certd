@@ -134,6 +134,20 @@
           </a-card>
         </div>
       </div>
+
+      <div class="flow-group flow-export">
+        <h3 class="group-head">
+          导出
+        </h3>
+        <a-divider></a-divider>
+
+        <div class="export">
+
+          <div><a-button @click="exportsToZip">导出可执行项目</a-button></div>
+          <br/>
+          <div> <a-button>仅导出配置</a-button></div>
+        </div>
+      </div>
     </div>
 
     <cert-form ref="certFormRef" v-model:cert="options.cert" v-model:access-providers="options.accessProviders"></cert-form>
@@ -145,11 +159,12 @@
 <script>
 import { message } from 'ant-design-vue'
 // eslint-disable-next-line no-unused-vars
-import { reactive, ref, toRef, provide, readonly } from 'vue'
+import { reactive, ref, toRef, toRefs, provide, readonly } from 'vue'
 // eslint-disable-next-line no-unused-vars
 import { useRoute } from 'vue-router'
 import CertForm from '@/views/detail/components/cert-form'
 import TaskForm from './components/task-form'
+import exportsApi from '@/api/api.exports'
 import _ from 'lodash-es'
 
 function useDeploy (options) {
@@ -185,6 +200,14 @@ function useProvideAccessProviders (options) {
   provide('update:accessProviders', (providers) => {
     options.accessProviders = providers
   })
+}
+
+function useExports (options) {
+  return {
+    async exportsToZip () {
+      await exportsApi.exportsToZip(options)
+    }
+  }
 }
 
 export default {
@@ -238,7 +261,8 @@ export default {
       ...useDeploy(options),
       taskFormRef,
       taskAdd,
-      taskEdit
+      taskEdit,
+      ...useExports(options)
     }
   }
 }
@@ -358,6 +382,10 @@ export default {
           color: #737070;
         }
       }
+    }
+
+    .flow-export{
+      max-width: 300px;
     }
 
   }

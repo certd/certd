@@ -20,6 +20,10 @@ function createService () {
   // 响应拦截
   service.interceptors.response.use(
     response => {
+      console.log('response.config', response.config)
+      if (response.config.responseType === 'blob') {
+        return response
+      }
       // dataAxios 是 axios 返回数据中的 data
       const dataAxios = response.data
       // 这个状态码是和后端约定的

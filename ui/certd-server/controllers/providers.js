@@ -1,6 +1,6 @@
 import Router from 'koa-router'
 import { providerRegistry } from '@certd/api'
-import DefaultProviders from '@certd/providers'
+import DefaultProviders from '@certd/dns-providers'
 import _ from 'lodash-es'
 import { Ret } from '../models/Ret.js'
 const router = Router()

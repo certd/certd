@@ -1,8 +1,9 @@
 import _ from 'lodash-es'
 import logger from '../utils/util.log.js'
 export class AbstractDnsProvider {
-  constructor () {
+  constructor ({ accessProviders }) {
     this.logger = logger
+    this.accessProviders = accessProviders
   }
 
   async createRecord ({ fullRecord, type, value }) {
@@ -30,5 +31,12 @@ export class AbstractDnsProvider {
       throw new Error('找不到域名,请检查域名是否正确：' + dnsRecord)
     }
     return domain
+  }
+
+  getAccessProvider (accessProvider, accessProviders = this.accessProviders) {
+    if (typeof accessProvider === 'string' && accessProviders) {
+      accessProvider = accessProviders[accessProvider]
+    }
+    return accessProvider
   }
 }
