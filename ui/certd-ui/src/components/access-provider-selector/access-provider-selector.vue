@@ -1,5 +1,5 @@
 <template>
-  <div class="provider-selector">
+  <div class="access-provider-selector">
     <a-select
       :value="value"
       @update:value="valueUpdate"
@@ -12,20 +12,20 @@
       管理授权
     </a-button>
   </div>
-  <provider-manager ref="providerManagerRef"
+  <access-provider-manager ref="providerManagerRef"
                     :value="value"
                     :filter="filter"
                     @update:value="valueUpdate"
-  ></provider-manager>
+  ></access-provider-manager>
 
 </template>
 <script>
 import { ref, inject } from 'vue'
-import ProviderManager from './provider-manager'
+import AccessProviderManager from './access-provider-manager'
 
 export default {
   name: 'provider-selector',
-  components: { ProviderManager },
+  components: { AccessProviderManager },
   emits: ['update:providers', 'update:value'],
   // 属性定义
   props: {
@@ -71,7 +71,7 @@ export default {
 }
 </script>
 <style lang="less">
-.provider-selector{
+.access-provider-selector{
   display: flex;
   flex-direction: row;
   .ant-select{

@@ -4,7 +4,7 @@ import inputHandler from '@/api/util.input.handler'
 export default {
   async list () {
     const ret = await request({
-      url: '/providers/list'
+      url: '/access-providers/list'
     })
 
     inputHandler.handle(ret)

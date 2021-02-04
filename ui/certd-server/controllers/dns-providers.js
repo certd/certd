@@ -1,16 +1,16 @@
 import Router from 'koa-router'
-import { pluginRegistry } from '@certd/api'
-import DefaultPlugins from '@certd/plugins'
+import { dnsProviderRegistry } from '@certd/api'
+import DefaultDnsProviders from '@certd/dns-providers'
 import _ from 'lodash-es'
 import { Ret } from '../models/Ret.js'
 const router = Router()
-router.prefix('/plugins')
+router.prefix('/dns-providers')
 
-DefaultPlugins.install()
+DefaultDnsProviders.install()
 
 router.get('/list', function (ctx, next) {
   const list = []
-  _.forEach(pluginRegistry.collection, item => {
+  _.forEach(dnsProviderRegistry.collection, item => {
     list.push(item.define())
   })
   ctx.body = Ret.success(list)

@@ -1,11 +1,11 @@
 import DContainer from './d-container'
 import ComponentRender from './component-render'
-import ProviderSelector from './provider-selector/provider-selector'
+import AccessProviderSelector from './access-provider-selector/access-provider-selector'
 
 const list = [
   DContainer,
   ComponentRender,
-  ProviderSelector
+  AccessProviderSelector
 ]
 export default {
   install (app) {

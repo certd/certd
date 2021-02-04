@@ -7,7 +7,7 @@
     v-model:visible="visible"
     :after-visible-change="onAfterVisibleChange"
   >
-    <div class="d-container provider-manager">
+    <div class="d-container access-provider-manager">
       <a-button @click="add">
         添加授权
       </a-button>
@@ -76,7 +76,7 @@ import { ref, reactive, nextTick, watch, inject } from 'vue'
 // eslint-disable-next-line no-unused-vars
 import { useForm } from '@ant-design-vue/use'
 import _ from 'lodash-es'
-import providerApi from '@/api/api.providers'
+import providerApi from '@/api/api.access-providers'
 function useEdit (props, context, onEditSave) {
   const formData = reactive({
     key: '',
@@ -281,7 +281,7 @@ export default {
 </script>
 
 <style lang="less">
-.provider-manager{
+.access-provider-manager{
   padding:10px;
 }
 </style>

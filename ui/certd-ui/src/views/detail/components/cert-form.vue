@@ -9,7 +9,7 @@
   >
 
     <d-container>
-      <a-form class="domain-form"  :scrollToFirstError="true" :label-col="labelCol" :wrapper-col="wrapperCol">
+      <a-form class="domain-form" :model="formData"  :scrollToFirstError="true" :label-col="labelCol" :wrapper-col="wrapperCol">
 
         <h3>域名信息</h3>
         <a-form-item :label="$t('domain')" v-bind="validateInfos.domains">
@@ -28,9 +28,20 @@
           <a-input v-model:value="formData.email"/>
         </a-form-item>
 
-        <a-form-item label="dns验证" v-bind="validateInfos.dnsProvider">
-         <provider-selector v-model:value="formData.dnsProvider"></provider-selector>
+        <a-form-item label="dns验证" v-bind="validateInfos['dnsProvider.type']">
+         <a-select v-model:value="formData.dnsProvider.type" @change="onCurrentDnsProviderChanged">
+           <a-select-option v-for="item of dnsProviderDefineList" :key="item.name"  :value="item.name">{{item.label}}</a-select-option>
+         </a-select>
         </a-form-item>
+        <template v-if="currentDnsProviderDefine">
+          <a-form-item v-for="(item,key) in currentDnsProviderDefine.input"  v-bind="item.component || {}"  :key="key" :label="item.label" :name="key">
+            <component-render v-model:value="formData.dnsProvider[key]" v-bind="item.component || {}"></component-render>
+            <template #extra v-if="item.desc"  >
+              {{item.desc}}
+            </template>
+          </a-form-item>
+        </template>
+
         <a-form-item label="CA" v-bind="validateInfos.ca">
           <a-radio-group v-model:value="formData.ca" >
             <a-radio  value="LetEncrypt">
@@ -76,6 +87,7 @@
 <script>
 import { reactive, toRaw, ref, watch } from 'vue'
 import { useForm } from '@ant-design-vue/use'
+import dnsProviderApi from '@/api/api.dns-providers'
 import _ from 'lodash-es'
 
 function useDrawer () {
@@ -115,7 +127,7 @@ export default {
     const certFormData = {
       domains: [],
       email: undefined,
-      dnsProvider: '',
+      dnsProvider: {},
       ca: 'LetEncrypt',
       csr: {
         country: '',
@@ -143,7 +155,11 @@ export default {
         required: true,
         message: '请输入正确的邮箱'
       }],
-      dnsProvider: [{
+      'dnsProvider.type': [{
+        required: true,
+        message: '请选择dns类型'
+      }],
+      'dnsProvider.accessProvider': [{
         required: true,
         message: '请选择dns授权提供者'
       }],
@@ -185,6 +201,28 @@ export default {
       console.log('accessUpdate', val)
       context.emit('update:accessProviders', val)
     }
+
+    const dnsProviderDefineList = ref()
+    const currentDnsProviderDefine = ref()
+    const onCreate = async () => {
+      const list = await dnsProviderApi.list()
+      dnsProviderDefineList.value = list
+    }
+    const onCurrentDnsProviderChanged = (type) => {
+      if (type == null) {
+        return
+      }
+      formData.dnsProvider.type = type
+      formData.dnsProvider.accessProvider = null
+      for (const item of dnsProviderDefineList.value) {
+        if (item.name === type) {
+          currentDnsProviderDefine.value = item
+          return
+        }
+      }
+    }
+    onCreate()
+
     return {
       labelCol: { span: 4 },
       wrapperCol: { span: 18 },
@@ -195,6 +233,9 @@ export default {
       providerManagerRef,
       providerManagerOpen,
       accessProvidersUpdate,
+      dnsProviderDefineList,
+      onCurrentDnsProviderChanged,
+      currentDnsProviderDefine,
       ...drawer
     }
   }

@@ -13,6 +13,10 @@ export default {
     const targetProjectDir = path.join(targetDir, projectName)
     const templateDir = pathUtil.join('templates/' + projectName)
 
+    console.log('targetDir', targetDir)
+    console.log('projectName', projectName)
+    console.log('tempalteDir', templateDir)
+    console.log('targetProjectDir', targetProjectDir)
     fs.copySync(templateDir, targetProjectDir)
 
     // const packageFilePath = path.join(targetProjectDir, 'package.json')
@@ -23,10 +27,6 @@ export default {
     const zipName = dirName + '.zip'
     const outputFilePath = path.join(targetDir, zipName)
 
-    console.log('targetDir', targetDir)
-    console.log('projectName', projectName)
-    console.log('tempalteDir', templateDir)
-    console.log('targetProjectDir', targetProjectDir)
     console.log('outputFilePath', outputFilePath)
     await zipUtil.compress({ dir: targetProjectDir, output: outputFilePath })
     return {

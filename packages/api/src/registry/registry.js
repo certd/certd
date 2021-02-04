@@ -11,9 +11,7 @@ export class Registry {
     if (this.collection == null) {
       this.collection = {}
     }
-    const className = target.name
-    this.register(className, target)
-    const defineName = target.define && target.define().name
+    const defineName = (target.define && target.define().name) || target.name
     this.register(defineName, target)
   }
 

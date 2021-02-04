@@ -31,6 +31,16 @@
               </div>
             </div>
             <div class="label-item">
+              <label>dns校验:</label>
+              <div>
+                <span v-if="options.cert?.dnsProvider">
+                  {{ options.cert.dnsProvider?.type }}-
+                {{options.accessProviders[options.cert.dnsProvider.accessProvider]?.label}}
+                </span>
+
+              </div>
+            </div>
+            <div class="label-item">
               <label>CA:</label>
               <div>
                 {{ options.cert.ca }}
