@@ -23,8 +23,8 @@ const define = {
       value: 'upload',
       label: '证书来源',
       component: {
-        placeholder: '证书来源',
         required: true,
+        placeholder: '证书来源',
         name: 'a-select',
         options: [
           { value: 'upload', label: '直接上传' },
