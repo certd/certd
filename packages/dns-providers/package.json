@@ -1,0 +1,28 @@
+{
+  "name": "@certd/dns-providers",
+  "version": "0.1.11",
+  "description": "",
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "author": "Greper",
+  "license": "MIT",
+  "dependencies": {
+    "@alicloud/pop-core": "^1.7.10",
+    "@certd/api": "^0.1.11",
+    "lodash-es": "^4.17.20",
+    "tencentcloud-sdk-nodejs": "^4.0.44"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^7.15.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "mocha": "^8.2.1"
+  },
+  "gitHead": "2942d39dfe64d60ce7dc0e0b2c0887866ca67f18"
+}

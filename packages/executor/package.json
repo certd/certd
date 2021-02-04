@@ -13,6 +13,7 @@
     "@certd/api": "^0.1.11",
     "@certd/certd": "^0.1.11",
     "@certd/plugins": "^0.1.11",
+    "@certd/dns-providers": "^0.1.11",
     "dayjs": "^1.9.7",
     "lodash-es": "^4.17.20"
   },

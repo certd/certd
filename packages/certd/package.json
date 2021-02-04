@@ -12,7 +12,7 @@
   "dependencies": {
     "@certd/acme-client": "^0.1.6",
     "@certd/api": "^0.1.11",
-    "@certd/providers": "^0.1.11",
+    "@certd/dns-providers": "^0.1.11",
     "dayjs": "^1.9.7",
     "lodash-es": "^4.17.20",
     "node-forge": "^0.10.0"

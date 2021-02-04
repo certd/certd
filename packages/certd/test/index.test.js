@@ -66,9 +66,9 @@ describe('Certd', function () {
     options.cert.email = 'xiaojunnuo@qq.com'
     options.cert.domains = ['*.docmirror.club']
     const certd = new Certd(options)
-    const currentRootPath = certd.certStore.currentRootPath
+    const currentRootPath = certd.certStore.currentMarkPath
     console.log('rootDir', currentRootPath)
-    expect(currentRootPath).match(/xiaojunnuo@qq.com\\certs\\_.docmirror.club-\w+\\current/)
+    expect(currentRootPath).match(/xiaojunnuo@qq.com\\certs\\_.docmirror.club\w*\\current.json/)
   })
   it('#writeAndReadCert', async function () {
     const options = createOptions()
@@ -83,6 +83,6 @@ describe('Certd', function () {
     expect(cert.key).to.be.ok
     expect(cert.detail).to.be.ok
     expect(cert.expires).to.be.ok
-    console.log('expires:', cert.expires)
+    console.log('cert:', JSON.stringify(cert))
   })
 })

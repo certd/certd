@@ -6,17 +6,22 @@ const define = {
   label: '上传证书到阿里云',
   input: {
     name: {
-      label: '证书名称'
+      label: '证书名称',
+      desc: '证书上传后将以此参数作为名称前缀'
     },
     regionId: {
       label: '大区',
-      value: 'cn-hangzhou'
+      default: 'cn-hangzhou'
     },
     accessProvider: {
       label: 'Access提供者',
       type: [String, Object],
       desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
-      options: 'accessProviders[type=aliyun]'
+      component: {
+        name: 'provider-selector',
+        filter: 'aliyun'
+      },
+      required: true
     }
   },
   output: {

@@ -16,7 +16,7 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
       input: {
         region: {
           label: '大区',
-          value: 'ap-guangzhou'
+          default: 'ap-guangzhou'
         },
         clusterId: {
           label: '集群ID',
@@ -25,7 +25,7 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
         },
         namespace: {
           label: '集群的namespace',
-          value: 'default'
+          default: 'default'
         },
         secreteName: {
           type: [String, Array],

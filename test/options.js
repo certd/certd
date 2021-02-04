@@ -35,7 +35,10 @@ const defaultOptions = {
   cert: {
     domains: ['*.docmirror.cn'],
     email: 'xiaojunnuo@qq.com',
-    dnsProvider: 'aliyun',
+    dnsProvider: {
+      type:'aliyun',
+      accessProvider:'aliyun'
+    },
     csrInfo: {
       country: 'CN',
       state: 'GuangDong',
@@ -48,7 +51,7 @@ const defaultOptions = {
   deploy: [
     {
       deployName: '流程1-部署到阿里云系列产品',
-      disabled: true,
+      disabled: false,
       tasks: [
         {
           taskName: '上传证书到云',
@@ -94,7 +97,7 @@ const defaultOptions = {
     },
     {
       deployName: '流程3-触发jenkins任务',
-      disabled: true,
+      disabled: false,
       tasks: [
         {
           taskName: '触发jenkins任务',
@@ -108,6 +111,7 @@ const defaultOptions = {
     },
     {
       deployName: '流程4-部署到腾讯云ingress',
+      disabled: true,
       tasks: [
         {
           taskName: '上传到腾讯云',

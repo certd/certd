@@ -20,7 +20,7 @@ const define = {
       }
     },
     from: {
-      value: 'upload',
+      default: 'upload',
       label: '证书来源',
       component: {
         required: true,
@@ -31,7 +31,7 @@ const define = {
           { value: 'cas', label: '从证书库', title: '需要uploadCertToAliyun作为前置任务' }
         ]
       },
-      desc: '如果选择cas类型，则需要以《上传证书到阿里云》作为前置任务'
+      desc: '如果选择‘从证书库’类型，则需要以《上传证书到阿里云》作为前置任务'
 
     },
     // serverCertificateStatus: {

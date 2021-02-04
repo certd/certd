@@ -1,0 +1,19 @@
+{
+  "name": "certd-run",
+  "version": "1.0.0",
+  "description": "certd run",
+  "main": "index.js",
+  "scripts": {
+    "certd": "node index.js"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/certd/certd"
+  },
+  "author": "greper",
+  "license": "MIT",
+  "dependencies": {
+    "@certd/executor": "^0.1.11"
+  }
+}

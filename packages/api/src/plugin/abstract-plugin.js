@@ -3,8 +3,6 @@ import logger from '../utils/util.log.js'
 import dayjs from 'dayjs'
 import Sleep from '../utils/util.sleep.js'
 
-import { pluginRegistry } from './plugin-registry.js'
-
 export class AbstractPlugin {
   constructor ({ accessProviders }) {
     this.logger = logger
@@ -55,7 +53,7 @@ export class AbstractPlugin {
   }
 
   /**
-   * 回退，如有必要
+   * 回退，用于单元测试
    * @param options
    */
   async rollback (options) {

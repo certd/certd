@@ -1,4 +1,4 @@
-import { util, Store, providerRegistry } from '@certd/api'
+import { util, Store, dnsProviderRegistry } from '@certd/api'
 import { AcmeService } from './acme.js'
 import { FileStore } from './store/file-store.js'
 import { CertStore } from './store/cert-store.js'
@@ -72,16 +72,14 @@ export class Certd {
   }
 
   createDnsProvider (options) {
-    const accessProviders = options.accessProviders
-    const providerOptions = accessProviders[options.cert.dnsProvider]
-    return this.createProviderByType(providerOptions.providerType, providerOptions)
+    return this.createProviderByType(options.cert.dnsProvider, options.accessProviders)
   }
 
   async writeCert (cert) {
     const newPath = await this.certStore.writeCert(cert)
     return {
       realPath: this.certStore.store.getActualKey(newPath),
-      currentPath: this.certStore.store.getActualKey(this.certStore.currentRootPath)
+      currentPath: this.certStore.store.getActualKey(this.certStore.currentMarkPath)
     }
   }
 
@@ -122,12 +120,13 @@ export class Certd {
     }
   }
 
-  createProviderByType (type, options) {
+  createProviderByType (props, accessProviders) {
+    const { type } = props
     try {
-      const Provider = providerRegistry.get(type)
-      return new Provider(options)
+      const Provider = dnsProviderRegistry.get(type)
+      return new Provider({ accessProviders, props })
     } catch (e) {
-      throw new Error('暂不支持此dnsProvider,请先use该provider：' + type, e)
+      throw new Error('暂不支持此dnsProvider,请先注册该provider：' + type, e)
     }
   }
 }
