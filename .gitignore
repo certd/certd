@@ -8,8 +8,8 @@ node_modules/
 
 /*.log
 
-/other/*/.idea
+/ui/*/.idea
 
-/other/*/node_modules
+/ui/*/node_modules
 
 /packages/*/node_modules
