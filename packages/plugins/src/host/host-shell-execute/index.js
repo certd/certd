@@ -18,8 +18,12 @@ export class HostShellExecute extends AbstractHostPlugin {
         accessProvider: {
           label: '主机登录配置',
           type: [String, Object],
-          desc: 'AccessProviders的key 或 一个包含用户名密码的对象',
-          options: 'accessProviders[type=ssh]'
+          desc: '登录',
+          component: {
+            name: 'access-provider-selector',
+            filter: 'host'
+          },
+          required: true
         }
       },
       output: {

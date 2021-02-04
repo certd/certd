@@ -5,7 +5,10 @@ function handleInputs (inputs) {
     return
   }
   _.forEach(inputs, (item, key) => {
-    if (item.component?.required === true) {
+    if (item.required === true) {
+      if (item.component == null) {
+        item.component = {}
+      }
       if (item.component.rules == null) {
         item.component.rules = []
       }
@@ -18,7 +21,7 @@ function handleInputs (inputs) {
         }
       }
       item.component.rules.push({ required: true, message: '该项必填' })
-      delete item.component.required
+      delete item.required
     }
   })
 }

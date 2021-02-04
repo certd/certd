@@ -9,9 +9,9 @@ const define = {
     domainName: {
       label: 'cdn加速域名',
       component: {
-        placeholder: 'cdn加速域名',
-        rules: [{ required: true, message: '该项必填' }]
-      }
+        placeholder: 'cdn加速域名'
+      },
+      required: true
     },
     certName: {
       label: '证书名称',
@@ -22,6 +22,7 @@ const define = {
     from: {
       default: 'upload',
       label: '证书来源',
+      required: true,
       component: {
         required: true,
         placeholder: '证书来源',
@@ -45,9 +46,9 @@ const define = {
     accessProvider: {
       label: 'Access提供者',
       type: [String, Object],
-      desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
+      desc: 'access授权',
       component: {
-        name: 'provider-selector',
+        name: 'access-provider-selector',
         filter: 'aliyun'
       },
       required: true

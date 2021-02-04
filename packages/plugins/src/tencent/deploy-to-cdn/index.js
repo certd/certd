@@ -35,9 +35,9 @@ export class DeployCertToTencentCDN extends AbstractTencentPlugin {
         accessProvider: {
           label: 'Access提供者',
           type: [String, Object],
-          desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
+          desc: 'access 授权',
           component: {
-            name: 'provider-selector',
+            name: 'access-provider-selector',
             filter: 'tencent'
           },
           required: true

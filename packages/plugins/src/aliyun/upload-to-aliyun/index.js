@@ -11,14 +11,15 @@ const define = {
     },
     regionId: {
       label: '大区',
-      default: 'cn-hangzhou'
+      default: 'cn-hangzhou',
+      required: true
     },
     accessProvider: {
       label: 'Access提供者',
       type: [String, Object],
-      desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
+      desc: 'access授权',
       component: {
-        name: 'provider-selector',
+        name: 'access-provider-selector',
         filter: 'aliyun'
       },
       required: true

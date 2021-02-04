@@ -16,21 +16,25 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
       input: {
         region: {
           label: '大区',
-          default: 'ap-guangzhou'
+          default: 'ap-guangzhou',
+          required: true
         },
         clusterId: {
           label: '集群ID',
           required: true,
-          desc: '例如：cls-6lbj1vee'
+          desc: '例如：cls-6lbj1vee',
+          request: true
         },
         namespace: {
-          label: '集群的namespace',
-          default: 'default'
+          label: '集群namespace',
+          default: 'default',
+          required: true
         },
         secreteName: {
           type: [String, Array],
           label: '证书的secret名称',
-          desc: '支持多个（传入数组）'
+          desc: '支持多个（传入数组）',
+          required: true
         },
         ingressName: {
           type: [String, Array],
@@ -44,20 +48,19 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
         },
         clusterDomain: {
           type: String,
-          label: '集群域名，可不填，默认为:[clusterId].ccs.tencent-cloud.com'
+          label: '集群域名',
+          desc: '可不填，默认为:[clusterId].ccs.tencent-cloud.com'
         },
         /**
          * AccessProvider的key,或者一个包含access的具体的对象
          */
         accessProvider: {
-          label: 'Access提供者',
+          label: 'Access授权',
           type: [String, Object],
-          desc: '请选择access提供者',
+          desc: 'access授权',
           component: {
-            name: 'accessProviderSelect',
-            props: {
-              filterType: 'tencent'
-            }
+            name: 'access-provider-selector',
+            filter: 'tencent'
           },
           required: true
         }

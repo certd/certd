@@ -24,7 +24,7 @@ import { ref, inject } from 'vue'
 import AccessProviderManager from './access-provider-manager'
 
 export default {
-  name: 'provider-selector',
+  name: 'access-provider-selector',
   components: { AccessProviderManager },
   emits: ['update:providers', 'update:value'],
   // 属性定义

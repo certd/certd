@@ -18,10 +18,14 @@ export class UploadCertToTencent extends AbstractTencentPlugin {
           label: '证书名称'
         },
         accessProvider: {
-          label: 'Access提供者',
+          label: 'Access授权',
           type: [String, Object],
-          desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
-          options: 'accessProviders[type=tencent]'
+          desc: 'access授权',
+          component: {
+            name: 'access-provider-selector',
+            filter: 'tencent'
+          },
+          required: true
         }
       },
       output: {

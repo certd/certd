@@ -15,16 +15,19 @@ export class DeployCertToTencentCLB extends AbstractTencentPlugin {
       input: {
         region: {
           label: '大区',
-          default: 'ap-guangzhou'
+          default: 'ap-guangzhou',
+          required: true
         },
         domain: {
           label: '域名',
           type: [String, Array],
+          required: true,
           desc: '要更新的支持https的负载均衡的域名'
         },
         loadBalancerId: {
           label: '负载均衡ID',
-          desc: '如果没有配置，则根据域名匹配负载均衡下的监听器（根据域名匹配时暂时只支持前100个）'
+          desc: '如果没有配置，则根据域名匹配负载均衡下的监听器（根据域名匹配时暂时只支持前100个）',
+          required: true
         },
         listenerId: {
           label: '监听器ID',
@@ -37,8 +40,11 @@ export class DeployCertToTencentCLB extends AbstractTencentPlugin {
         accessProvider: {
           label: 'Access提供者',
           type: [String, Object],
-          desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
-          options: 'accessProviders[type=tencent]',
+          desc: 'access授权',
+          component: {
+            name: 'access-provider-selector',
+            filter: 'tencent'
+          },
           required: true
         }
       },
