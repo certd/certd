@@ -1,6 +1,6 @@
 {
   "name": "@certd/certd-ui",
-  "version": "0.1.0",
+  "version": "0.1.12",
   "private": false,
   "scripts": {
     "dev": "vue-cli-service serve",
@@ -9,15 +9,15 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@certd/plugins": "^0.1.11",
-    "@certd/dns-providers": "^0.1.11",
+    "@certd/dns-providers": "^0.1.12",
+    "@certd/plugins": "^0.1.12",
     "ant-design-vue": "^2.0.0-rc.8",
-    "lodash-es": "^4.17.20",
-    "vue-i18n": "^9.0.0-rc.2",
     "core-js": "^3.8.1",
+    "lodash-es": "^4.17.20",
     "vue": "^3.0.4",
-    "vue-router": "^4.0.1",
-    "vue-json-editor": "^1.4.2"
+    "vue-i18n": "^9.0.0-rc.2",
+    "vue-json-editor": "^1.4.2",
+    "vue-router": "^4.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
