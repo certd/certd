@@ -56,5 +56,6 @@
       "vue-cli-service lint",
       "git add"
     ]
-  }
+  },
+  "gitHead": "4a421d5b142d453203c68ce6d1036e168ea2455b"
 }

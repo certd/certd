@@ -4,7 +4,8 @@ import pathUtil from '../utils/util.path.js'
 import cryptoRandomString from 'crypto-random-string'
 import zipUtil from '../utils/util.zip.js'
 import path from 'path'
-
+import executorPkg from '@certd/executor/package.json'
+import templatePkg from '@/templates/certd-run/package.json'
 export default {
   async exportsToZip (options, dirName) {
     const tempDir = os.tmpdir()
@@ -19,10 +20,15 @@ export default {
     console.log('targetProjectDir', targetProjectDir)
     fs.copySync(templateDir, targetProjectDir)
 
-    // const packageFilePath = path.join(targetProjectDir, 'package.json')
+    // options
     const optionsFilePath = path.join(targetProjectDir, 'options.json')
-
     fs.writeJsonSync(optionsFilePath, options)
+
+    // 依赖版本
+    const currentVersion = executorPkg.version
+    templatePkg.dependencies['@certd/executor'] = '^' + currentVersion
+    const pkgFilePath = path.join(targetProjectDir, 'package.json')
+    fs.writeJsonSync(pkgFilePath, templatePkg)
 
     const zipName = dirName + '.zip'
     const outputFilePath = path.join(targetDir, zipName)

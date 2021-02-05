@@ -19,5 +19,6 @@
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1"
-  }
+  },
+  "gitHead": "4a421d5b142d453203c68ce6d1036e168ea2455b"
 }

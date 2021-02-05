@@ -1,7 +1,7 @@
 import Router from 'koa-router'
 import fs from 'fs'
 import exportsService from '../service/exports-service.js'
-// import executorPkg from '@certd/executor/package.json'
+
 const router = Router()
 router.prefix('/exports')
 

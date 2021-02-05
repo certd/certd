@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "private": false,
   "type": "module",
   "author": "Greper",
   "license": "MIT",
@@ -24,5 +25,5 @@
     "eslint-plugin-promise": "^4.2.1",
     "mocha": "^8.2.1"
   },
-  "gitHead": "2942d39dfe64d60ce7dc0e0b2c0887866ca67f18"
+  "gitHead": "4a421d5b142d453203c68ce6d1036e168ea2455b"
 }
