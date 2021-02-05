@@ -3,13 +3,14 @@
     <a-select
       :value="value"
       @update:value="valueUpdate"
+      placeholder="没有可选时请点右边按钮添加"
     >
       <a-select-option v-for="item of getProviders()" :key="item.key" :value="item.key" :disabled="isDisabled(item)">
         {{ item.name }}
       </a-select-option>
     </a-select>
     <a-button class="suffix" @click="providerManagerOpen">
-      管理授权
+      添加授权
     </a-button>
   </div>
   <access-provider-manager ref="providerManagerRef"

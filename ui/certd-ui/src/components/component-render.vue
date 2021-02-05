@@ -26,7 +26,8 @@ export default {
         attrs[key] = eval(value)
       }
     })
-    return () => h(resolveComponent(props.name), context.$attrs, props.children)
+    const comp = resolveComponent(props.name)
+    return () => h(comp, context.$attrs, props.children)
   }
 }
 </script>

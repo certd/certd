@@ -9,18 +9,19 @@ function handleInputs (inputs) {
       if (item.component == null) {
         item.component = {}
       }
-      if (item.component.rules == null) {
-        item.component.rules = []
+      let rules = item.component.rules
+      if (rules == null) {
+        item.component.rules = rules = []
       }
-      if (item.component.rules.length > 0) {
-        const hasRequired = item.rules.filter(rule => {
+      if (rules.length > 0) {
+        const hasRequired = rules.filter(rule => {
           return rule.required === true
         })
         if (hasRequired.length > 0) {
           return
         }
       }
-      item.component.rules.push({ required: true, message: '该项必填' })
+      rules.push({ required: true, message: '该项必填' })
       delete item.required
     }
   })

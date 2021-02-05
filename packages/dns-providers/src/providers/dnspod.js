@@ -9,11 +9,11 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
       desc: '腾讯云的域名解析接口已迁移到dnspod',
       input: {
         accessProvider: {
-          label: 'Access提供者',
+          label: '授权',
           type: [String, Object],
-          desc: 'AccessProviders的key',
+          desc: '需要dnspod类型的授权',
           component: {
-            name: 'provider-selector',
+            name: 'access-provider-selector',
             filter: 'dnspod'
           },
           required: true

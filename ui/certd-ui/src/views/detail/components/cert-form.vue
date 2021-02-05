@@ -3,7 +3,7 @@
     title="证书申请配置"
     placement="right"
     :closable="true"
-    width="500px"
+    width="600px"
     v-model:visible="visible"
     :after-visible-change="afterVisibleChange"
   >

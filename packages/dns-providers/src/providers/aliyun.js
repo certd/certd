@@ -9,11 +9,11 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
       desc: '',
       input: {
         accessProvider: {
-          label: 'Access提供者',
+          label: '授权',
           type: [String, Object],
-          desc: 'AccessProviders的key 或 一个包含accessKeyId与accessKeySecret的对象',
+          desc: '需要aliyun类型的授权',
           component: {
-            name: 'provider-selector',
+            name: 'access-provider-selector',
             filter: 'aliyun'
           },
           required: true

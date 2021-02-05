@@ -155,7 +155,7 @@
 
           <div><a-button @click="exportsToZip">导出可执行项目</a-button></div>
           <br/>
-          <div> <a-button>仅导出配置</a-button></div>
+          <div> <a-button @click="exportsToJson">仅导出配置</a-button></div>
         </div>
       </div>
     </div>
