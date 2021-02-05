@@ -155,7 +155,7 @@ function useTaskForm (context) {
     if (currentPlugins.length <= 0) {
       task.type = undefined
       task._isAdd = true
-      throw new Error('未知插件：' + taskType)
+      // throw new Error('未知插件：' + taskType)
     }
     currentPlugin.value = currentPlugins[0]
   }

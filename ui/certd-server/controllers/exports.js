@@ -10,7 +10,7 @@ router.post('/toZip', async function (ctx, next) {
   // const query = request.query
   const body = ctx.request.body
   // const req_queryString = request.queryString
-  const { zipPath, fileName } = await exportsService.exportsToZip(body, 'certd-run')
+  const { zipPath, fileName } = await exportsService.exportsToZip(body.options, 'certd-run')
 
   console.log('zipFile', zipPath)
   ctx.set('Content-disposition', 'attachment;filename=' + fileName)

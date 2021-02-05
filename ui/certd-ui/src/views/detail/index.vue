@@ -111,6 +111,7 @@
                            :validateStatus="deploy.deployName?'':'error'"
                            placeholder="请输入流程名称"
                            @keyup.enter="deployCloseEditMode(deploy)"
+                           @blur="deployCloseEditMode(deploy)"
                   >
                     <template #suffix>
                       <CheckOutlined @click="deployCloseEditMode(deploy)" style="color: rgba(0,0,0,.45)"/>
@@ -124,7 +125,11 @@
               </div>
 
             </template>
-
+            <template #extra>
+              <a-button type="danger">
+                <template #icon><DeleteOutlined /></template>
+              </a-button>
+            </template>
             <div class="task-list">
               <div class="task-item-wrapper" v-for="(task,iindex) of deploy.tasks" :key="iindex">
                 <a-button class="task-item" shape="round" @click="taskEdit(deploy,task,index)">
