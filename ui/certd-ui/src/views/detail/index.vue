@@ -126,7 +126,7 @@
 
             </template>
             <template #extra>
-              <a-button type="danger">
+              <a-button type="danger" @click="deployDelete(deploy,index)">
                 <template #icon><DeleteOutlined /></template>
               </a-button>
             </template>
@@ -203,8 +203,13 @@ function useDeploy (options) {
   const deployOpenEditMode = (deploy) => {
     deploy._isEdit = true
   }
+
+  const deployDelete = (deploy, index) => {
+    options.deploy.splice(index, 1)
+  }
+
   return {
-    deployAdd, deployCloseEditMode, deployOpenEditMode
+    deployAdd, deployCloseEditMode, deployOpenEditMode, deployDelete
   }
 }
 

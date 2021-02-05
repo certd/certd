@@ -1,6 +1,5 @@
 <template>
   <a-drawer
-    title="编辑任务"
     placement="right"
     :closable="true"
     width="600px"
@@ -8,6 +7,12 @@
     :after-visible-change="taskDrawerOnAfterVisibleChange"
   >
 
+    <template #title>
+      编辑任务
+      <a-button  @click="taskDelete()">
+        <template #icon><DeleteOutlined /></template>
+      </a-button>
+    </template>
     <template v-if="currentTask">
       <d-container v-if="currentTask._isAdd" class="task-edit-form">
         <a-row :gutter="10">
@@ -169,6 +174,13 @@ function useTaskForm (context) {
     taskDrawerClose()
   }
 
+  const taskDelete = () => {
+    if (currentTaskIndex.value != null) {
+      currentDeploy.value.tasks.splice(currentTaskIndex.value)
+    }
+    taskDrawerClose()
+  }
+
   return {
     taskTypeSelected,
     taskTypeSave,
@@ -183,6 +195,7 @@ function useTaskForm (context) {
     currentTaskIndex,
     currentPlugin,
     taskSave,
+    taskDelete,
     rules
   }
 }
