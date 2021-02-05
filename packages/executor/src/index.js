@@ -82,6 +82,7 @@ export class Executor {
       result
     }
     if (result.status === 'error' && options.args.doNotThrowError === false) {
+      process.exitCode = 1 // 设置错误码，以便执行者可以获取到异常退出
       throw new Error(result.remark)
     }
     return returnData
