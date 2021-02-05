@@ -4,13 +4,11 @@ import _ from 'lodash-es'
 import dayjs from 'dayjs'
 import { Trace } from './trace.js'
 import DefaultPlugins from '@certd/plugins'
-import DefaultDnsProviders from '@certd/dns-providers'
 
 const logger = util.logger
 
 // 安装默认插件和授权提供者
 DefaultPlugins.install()
-DefaultDnsProviders.install()
 
 function createDefaultOptions () {
   return {

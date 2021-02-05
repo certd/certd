@@ -5,7 +5,10 @@
   "devDependencies": {
     "lerna": "^3.18.4"
   },
-  "scripts": {},
+  "scripts": {
+    "start": "lerna bootstrap --hoist",
+    "i-all": "lerna exec npm install && lerna link "
+  },
   "license": "MIT",
   "dependencies": {
     "lodash-es": "^4.17.20"

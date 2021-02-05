@@ -4,8 +4,10 @@ import pathUtil from '../utils/util.path.js'
 import cryptoRandomString from 'crypto-random-string'
 import zipUtil from '../utils/util.zip.js'
 import path from 'path'
-import executorPkg from '@certd/executor/package.json'
-import templatePkg from '@/templates/certd-run/package.json'
+
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+
 export default {
   async exportsToZip (options, dirName) {
     const tempDir = os.tmpdir()
@@ -25,7 +27,11 @@ export default {
     fs.writeJsonSync(optionsFilePath, options)
 
     // 依赖版本
+    const exePkgJson = fs.readFileSync('node_modules/@certd/executor/package.json')
+    const executorPkg = JSON.parse(exePkgJson)
     const currentVersion = executorPkg.version
+
+    const templatePkg = require('../templates/certd-run/package.json')
     templatePkg.dependencies['@certd/executor'] = '^' + currentVersion
     const pkgFilePath = path.join(targetProjectDir, 'package.json')
     fs.writeJsonSync(pkgFilePath, templatePkg)

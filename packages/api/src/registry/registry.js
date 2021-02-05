@@ -1,4 +1,3 @@
-
 export class Registry {
   constructor () {
     this.collection = {}
@@ -11,7 +10,11 @@ export class Registry {
     if (this.collection == null) {
       this.collection = {}
     }
-    const defineName = (target.define && target.define().name) || target.name
+    let defineName = target.define ? target.define().name : null
+    if (defineName == null) {
+      defineName = target.name
+    }
+
     this.register(defineName, target)
   }
 
