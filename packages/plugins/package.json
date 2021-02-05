@@ -1,12 +1,12 @@
 {
 	"name": "@certd/plugins",
-	"version": "0.1.12",
+	"version": "0.1.13",
 	"description": "",
 	"main": "./src/index.js",
 	"type": "module",
 	"dependencies": {
 		"@alicloud/pop-core": "^1.7.10",
-		"@certd/api": "^0.1.12",
+		"@certd/api": "^0.1.13",
 		"dayjs": "^1.9.7",
 		"kubernetes-client": "^9.0.0",
 		"lodash-es": "^4.17.20",

@@ -1,6 +1,6 @@
 {
   "name": "@certd/access-providers",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "",
   "main": "./src/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "author": "Greper",
   "license": "MIT",
   "dependencies": {
-    "@certd/api": "^0.1.12",
+    "@certd/api": "^0.1.13",
     "lodash-es": "^4.17.20"
   },
   "devDependencies": {
