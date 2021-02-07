@@ -32,7 +32,7 @@ export class Executor {
       options = _.merge(createDefaultOptions(), options)
       return await this.doRun(options)
     } catch (e) {
-      logger.error('任务执行出错：', e)
+      logger.error('任务执行出错：' + e.message, e)
       throw e
     }
   }
@@ -83,7 +83,6 @@ export class Executor {
       result
     }
     if (result.status === 'error' && options.args.doNotThrowError === false) {
-      process.exitCode = 1 // 设置错误码，以便执行者可以获取到异常退出
       throw new Error(result.remark)
     }
     return returnData
@@ -124,6 +123,7 @@ export class Executor {
         }
 
         deployTrace.set({ value: { status: 'success', remark: '执行成功' } })
+        trace.set({ type: 'result', value: { status: 'success', remark: '部署成功' } })
       } catch (e) {
         deployTrace.set({ value: { status: 'error', remark: '执行失败：' + e.message } })
         trace.set({ type: 'result', value: { status: 'error', remark: deployName + '执行失败：' + e.message } })
