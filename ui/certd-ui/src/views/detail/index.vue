@@ -8,7 +8,7 @@
           证书申请
         </h3>
         <a-divider></a-divider>
-        <div class="cert-display">
+        <div class="cert-display group-body">
           <a-button class="cert-edit-btn" type="link" @click="certFormOpen">
             编辑
           </a-button>
@@ -101,7 +101,7 @@
         </h3>
         <a-divider></a-divider>
 
-        <div class="deploy-list">
+        <div class="group-body deploy-list">
 
           <a-card class="deploy-item" v-for="(deploy,index) of options.deploy" :key="index">
             <template #title>
@@ -156,18 +156,26 @@
         </h3>
         <a-divider></a-divider>
 
-        <div class="export">
+        <div class="export group-body" >
 
-          <div><a-button @click="exportsToZip">导出可执行项目</a-button></div>
-          <br/>
-          <div> <a-button @click="exportsToJson">仅导出配置</a-button></div>
+          <d-container>
+            <template #header>
+              <div><a-button @click="exportsToZip">导出可执行项目</a-button></div>
+              <br/>
+              <div> <a-button @click="exportsToJson">复制options.json</a-button></div>
+              <br/>
+            </template>
+             <pre class="json">{{options}}</pre>
+
+          </d-container>
+
         </div>
       </div>
     </div>
 
     <cert-form ref="certFormRef" v-model:cert="options.cert" v-model:access-providers="options.accessProviders"></cert-form>
 
-    <task-form ref="taskFormRef" ></task-form>
+    <task-form ref="taskFormRef" @update="taskUpdated" ></task-form>
 
   </div>
 </template>
@@ -181,6 +189,7 @@ import CertForm from '@/views/detail/components/cert-form'
 import TaskForm from './components/task-form'
 import exportsApi from '@/api/api.exports'
 import _ from 'lodash-es'
+import DContainer from '@/components/d-container'
 
 function useDeploy (options) {
   const deployAdd = () => {
@@ -234,7 +243,7 @@ function useExports (options) {
 }
 
 export default {
-  components: { CertForm, TaskForm },
+  components: { DContainer, CertForm, TaskForm },
   setup () {
     const route = useRoute()
     console.log('route', route)
@@ -350,6 +359,10 @@ export default {
       border-right: 1px #eee solid;
       padding: 20px;
 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
       .group-head {
         display: flex;
         flex-direction: row;
@@ -361,6 +374,9 @@ export default {
           font-size: 24px;
           color: #737070;
         }
+      }
+      .group-body{
+        flex:1
       }
     }
 
@@ -408,7 +424,7 @@ export default {
     }
 
     .flow-export{
-      max-width: 300px;
+      max-width: 500px;
     }
 
   }

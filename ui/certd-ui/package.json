@@ -11,12 +11,11 @@
   "dependencies": {
     "@certd/dns-providers": "^0.1.13",
     "@certd/plugins": "^0.1.13",
-    "ant-design-vue": "^2.0.0-rc.8",
+    "ant-design-vue": "^2.0.0",
     "core-js": "^3.8.1",
     "lodash-es": "^4.17.20",
     "vue": "^3.0.4",
     "vue-i18n": "^9.0.0-rc.2",
-    "vue-json-editor": "^1.4.2",
     "vue-router": "^4.0.1"
   },
   "devDependencies": {

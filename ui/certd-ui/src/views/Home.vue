@@ -27,8 +27,8 @@
 
         </a-tab-pane>
         <a-tab-pane key="2" tab="从配置导入" force-render>
-          <a-textarea class="textarea" type="textarea" :auto-size="autoSize" allow-clear></a-textarea>
-          <a-button class="mt-10" type="primary" >导入</a-button>
+          <a-textarea v-model:value="optionsText" class="textarea" type="textarea" :auto-size="autoSize" allow-clear></a-textarea>
+          <a-button class="mt-10" type="primary" @click="createFromText">导入</a-button>
         </a-tab-pane>
       </a-tabs>
     </div>
@@ -38,7 +38,7 @@
 </template>
 <script>
 // eslint-disable-next-line no-unused-vars
-import { reactive, toRaw } from 'vue'
+import { reactive, toRaw, ref } from 'vue'
 import { useRouter } from 'vue-router'
 export default {
   setup () {
@@ -51,14 +51,31 @@ export default {
     })
     const router = useRouter()
     const createFromDomain = () => {
-      router.push({ name: 'detail', params: { options: JSON.stringify(formData) } })
+      goToDetail(JSON.stringify(formData))
     }
 
+    const goToDetail = (options) => {
+      router.push({ name: 'detail', params: { options } })
+    }
     const autoSize = reactive({ minRows: 8, maxRows: 10 })
+
+    const optionsText = ref()
+
+    const createFromText = () => {
+      try {
+        JSON.parse(optionsText.value)
+      } catch (e) {
+        throw new Error('json格式有误', e)
+      }
+      goToDetail(optionsText.value)
+    }
+
     return {
       createFromDomain,
       formData,
-      autoSize
+      autoSize,
+      optionsText,
+      createFromText
     }
   }
 }

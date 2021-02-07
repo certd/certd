@@ -34,7 +34,7 @@
          </a-select>
         </a-form-item>
         <template v-if="currentDnsProviderDefine">
-          <a-form-item v-for="(item,key) in currentDnsProviderDefine.input"  v-bind="item.component || {}"  :key="key" :label="item.label" :name="key">
+          <a-form-item v-for="(item,key) in currentDnsProviderDefine.input"  v-bind="item.component || {}"  :key="key" :label="item.label" :name="'dnsProvider.'+key">
             <component-render v-model:value="formData.dnsProvider[key]" v-bind="item.component || {}"></component-render>
             <template #extra v-if="item.desc"  >
               {{item.desc}}
@@ -127,7 +127,7 @@ export default {
     const certFormData = {
       domains: [],
       email: undefined,
-      dnsProvider: {},
+      dnsProvider: { type: undefined, accessProvider: undefined },
       ca: 'LetEncrypt',
       csr: {
         country: '',
@@ -171,8 +171,9 @@ export default {
       'csr.emailAddress': [{ required: false, message: '请输入邮箱' }]
     })
     // eslint-disable-next-line no-unused-vars
-    const { resetFields, validate, validateInfos } = useForm(formData, rules)
+    const { resetFields, validate, validateInfos, mergeValidateInfo } = useForm(formData, rules)
 
+    console.log('validateInfos', validateInfos)
     const onSubmit = async e => {
       e.preventDefault()
       try {
@@ -212,6 +213,7 @@ export default {
       if (type == null) {
         return
       }
+
       formData.dnsProvider.type = type
       formData.dnsProvider.accessProvider = null
       for (const item of dnsProviderDefineList.value) {

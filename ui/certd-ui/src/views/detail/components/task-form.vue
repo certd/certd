@@ -44,8 +44,8 @@
             ></a-input>
           </a-form-item>
 
-          <a-form-item v-for="(item,key) in currentPlugin.input"  v-bind="item.component || {}"  :key="key" :label="item.label" :name="key">
-            <component-render v-model:value="currentTask.props[key]" v-bind="item.component || {}"></component-render>
+          <a-form-item v-for="(item,key) in currentPlugin.input"  v-bind="item.component || {}"  :key="key" :label="item.label" :name="'props.'+key">
+            <component-render v-model:value="currentTask['props.'+key]" v-bind="item.component || {}"></component-render>
             <template #extra v-if="item.desc"  >
               {{item.desc}}
             </template>
@@ -101,16 +101,20 @@ function useTaskForm (context) {
     }]
   })
   const taskAdd = (deploy) => {
-    const task = { taskName: '新任务', type: undefined, _isAdd: true, props: {} }
+    const task = { taskName: '新任务', type: undefined, _isAdd: true }
     currentDeploy.value = deploy
     currentDeploy.value.tasks.push(task)
-    currentTask.value = deploy.tasks[deploy.tasks.length - 1]
+    const index = deploy.tasks.length - 1
+    currentTask.value = deploy.tasks[index]
+    currentTaskIndex.value = index
     taskDrawerShow()
+    console.log('currentTaskTypeChanged:', currentTask.value)
   }
 
   const taskTypeSelected = (item) => {
     currentTask.value.type = item.name
     currentTask.value.taskName = item.label
+    console.log('currentTaskTypeChanged:', currentTask.value)
   }
 
   const taskTypeSave = () => {
@@ -122,10 +126,13 @@ function useTaskForm (context) {
     // 给task的input设置默认值
     changeCurrentPlugin(currentTask.value)
 
+    if (currentTask.value.props) {
+      currentTask.value.props = {}
+    }
     for (const key in currentPlugin.value.input) {
       const input = currentPlugin.value.input[key]
       if (input.default != null) {
-        currentTask.value[key] = input.default
+        currentTask.value.props[key] = input.default
       }
     }
   }
@@ -142,10 +149,9 @@ function useTaskForm (context) {
   }
 
   const taskEdit = (deploy, task, index) => {
-    if (task) {
-      currentTask.value = task
-      currentTaskIndex.value = index
-    }
+    currentTask.value = flatData(_.cloneDeep(task))
+    console.log('currentTaskEdit', currentTask.value)
+    currentTaskIndex.value = index
     currentDeploy.value = deploy
     changeCurrentPlugin(currentTask.value)
 
@@ -163,20 +169,52 @@ function useTaskForm (context) {
       // throw new Error('未知插件：' + taskType)
     }
     currentPlugin.value = currentPlugins[0]
+
+    console.log('currentTaskTypeChanged:', currentTask.value)
   }
 
-  const taskSave = async (e) => {
-    console.log('currentTask', currentTask)
+  const flatData = (obj, parentKey = '', member = obj) => {
+    _.forEach(member, (value, key) => {
+      const pathKey = parentKey + key
+      if (!_.isArray(value) && _.isObjectLike(value)) {
+        parentKey = pathKey + '.'
+        flatData(obj, parentKey, value)
 
+        if (parentKey === '') {
+          delete (obj[key])
+        }
+      } else {
+        obj[pathKey] = value
+      }
+    })
+    return obj
+  }
+
+  const unFlatData = (obj) => {
+    const newObj = {}
+    _.merge(newObj, obj)
+    for (const key in obj) {
+      const value = obj[key]
+      if (key.indexOf('.') >= 0) {
+        delete newObj[key]
+        _.set(newObj, key, value)
+      }
+    }
+    return newObj
+  }
+  const taskSave = async (e) => {
+    console.log('currentTaskSave', currentTask.value, currentTaskIndex.value)
     e.preventDefault()
     await taskFormRef.value.validate()
-    // context.emit('update', currentTask.value)
+    const newTask = unFlatData(currentTask.value)
+    currentDeploy.value.tasks[currentTaskIndex.value] = newTask
+    // context.emit('update', newTask)
     taskDrawerClose()
   }
 
   const taskDelete = () => {
     if (currentTaskIndex.value != null) {
-      currentDeploy.value.tasks.splice(currentTaskIndex.value)
+      currentDeploy.value.tasks.splice(currentTaskIndex.value, 1)
     }
     taskDrawerClose()
   }
