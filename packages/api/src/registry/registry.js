@@ -1,6 +1,6 @@
 export class Registry {
   constructor () {
-    this.collection = {}
+    this.collection = new Map()
   }
 
   install (target) {
@@ -8,7 +8,7 @@ export class Registry {
       return
     }
     if (this.collection == null) {
-      this.collection = {}
+      this.collection = new Map()
     }
     let defineName = target.define ? target.define().name : null
     if (defineName == null) {
@@ -22,14 +22,18 @@ export class Registry {
     if (!key || value == null) {
       return
     }
-    this.collection[key] = value
+    this.collection.set(key, value)
   }
 
   get (name) {
     if (name) {
-      return this.collection[name]
+      return this.collection.get(name)
     }
 
     throw new Error(`${name} not found`)
+  }
+
+  getCollection () {
+    return this.collection
   }
 }

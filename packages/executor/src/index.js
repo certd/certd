@@ -28,6 +28,7 @@ export class Executor {
   async run (options) {
     logger.info('------------------- Cert-D ---------------------')
     try {
+      this.transferToSafetyOptions(options)
       options = _.merge(createDefaultOptions(), options)
       return await this.doRun(options)
     } catch (e) {

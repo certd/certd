@@ -5,6 +5,7 @@ import { CertStore } from './store/cert-store.js'
 import dayjs from 'dayjs'
 import forge from 'node-forge'
 import DefaultDnsProviders from '@certd/dns-providers'
+
 const logger = util.logger
 
 DefaultDnsProviders.install()
@@ -125,11 +126,10 @@ export class Certd {
 
   createProviderByType (props, accessProviders) {
     const { type } = props
-    try {
-      const Provider = dnsProviderRegistry.get(type)
-      return new Provider({ accessProviders, props })
-    } catch (e) {
-      throw new Error('暂不支持此dnsProvider,请先注册该provider：' + type, e)
+    const Provider = dnsProviderRegistry.get(type)
+    if (Provider == null) {
+      throw new Error('暂不支持此dnsProvider,请先注册该provider：' + type)
     }
+    return new Provider({ accessProviders, props })
   }
 }

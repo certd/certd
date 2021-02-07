@@ -1,7 +1,22 @@
 import { request } from './service'
+import _ from 'lodash-es'
+function arrayToMap (arr) {
+  if (arr && arr instanceof Array) {
+    const map = {}
+    _.forEach(arr, item => {
+      map[item.key] = item
+    })
+    return map
+  }
+  return arr
+}
 
+function transfer (options) {
+  options.accessProviders = arrayToMap(options.accessProviders)
+}
 export default {
   exportsToZip (options) {
+    transfer(options)
     return request({
       url: '/exports/toZip',
       data: { options },
