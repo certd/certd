@@ -13,10 +13,10 @@ export class UploadCertToHost extends AbstractHostPlugin {
       label: '上传证书到主机',
       input: {
         crtPath: {
-          label: '证书路径'
+          label: '证书保存路径'
         },
         keyPath: {
-          label: '私钥路径'
+          label: '私钥保存路径'
         },
         accessProvider: {
           label: '主机登录配置',
@@ -24,7 +24,7 @@ export class UploadCertToHost extends AbstractHostPlugin {
           desc: 'access授权',
           component: {
             name: 'access-provider-selector',
-            filter: 'host'
+            filter: 'ssh'
           },
           required: true
         }

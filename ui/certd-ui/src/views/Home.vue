@@ -44,9 +44,9 @@ export default {
   setup () {
     const formData = reactive({
       cert: {
-        domains: ['*.docmirror.cn'],
-        email: 'xiaojunnuo@qq.com',
-        dnsProvider: 'aliyun'
+        domains: [],
+        email: '',
+        dnsProvider: { type: undefined }
       }
     })
     const router = useRouter()

@@ -85,7 +85,7 @@
   </a-drawer>
 </template>
 <script>
-import { reactive, toRaw, ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useForm } from '@ant-design-vue/use'
 import dnsProviderApi from '@/api/api.dns-providers'
 import _ from 'lodash-es'
@@ -177,11 +177,8 @@ export default {
     const onSubmit = async e => {
       e.preventDefault()
       try {
-        const res = await validate()
-        console.log('validation', res, toRaw(formData))
-
+        await validate()
         context.emit('update:cert', formData)
-        console.log('1111')
         drawer.close()
       } catch (err) {
         console.error('表单校验错误', err)
@@ -208,6 +205,7 @@ export default {
     const onCreate = async () => {
       const list = await dnsProviderApi.list()
       dnsProviderDefineList.value = list
+      onCurrentDnsProviderChanged(formData?.dnsProvider?.type)
     }
     const onCurrentDnsProviderChanged = (type) => {
       if (type == null) {

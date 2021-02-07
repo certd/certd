@@ -1,4 +1,4 @@
-export class DnspodAccessProvider  {
+export class DnspodAccessProvider {
   static define () {
     return {
       name: 'dnspod',
@@ -23,8 +23,4 @@ export class DnspodAccessProvider  {
       }
     }
   }
-
-  constructor () {
-  }
-
 }

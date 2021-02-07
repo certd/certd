@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import tencentcloud from 'tencentcloud-sdk-nodejs'
 import { AbstractTencentPlugin } from '../abstract-tencent.js'
 

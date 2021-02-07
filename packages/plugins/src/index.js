@@ -9,6 +9,10 @@ import { DeployCertToTencentCDN } from './tencent/deploy-to-cdn/index.js'
 import { DeployCertToTencentCLB } from './tencent/deploy-to-clb/index.js'
 
 import { DeployCertToTencentTKEIngress } from './tencent/deploy-to-tke-ingress/index.js'
+
+import { UploadCertToHost } from './host/upload-to-host/index.js'
+import { HostShellExecute } from './host/host-shell-execute/index.js'
+
 import { pluginRegistry } from '@certd/api'
 
 export const DefaultPlugins = {
@@ -17,7 +21,9 @@ export const DefaultPlugins = {
   UploadCertToTencent,
   DeployCertToTencentTKEIngress,
   DeployCertToTencentCDN,
-  DeployCertToTencentCLB
+  DeployCertToTencentCLB,
+  UploadCertToHost,
+  HostShellExecute
 }
 export default {
   install () {

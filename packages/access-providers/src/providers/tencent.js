@@ -1,4 +1,4 @@
-export class TencentAccessProvider  {
+export class TencentAccessProvider {
   static define () {
     return {
       name: 'tencent',
@@ -6,7 +6,7 @@ export class TencentAccessProvider  {
       input: {
         secretId: {
           type: String,
-          label:'secretId',
+          label: 'secretId',
           component: {
             placeholder: 'secretId',
             rules: [{ required: true, message: '该项必填' }]
@@ -23,8 +23,4 @@ export class TencentAccessProvider  {
       }
     }
   }
-
-  constructor () {
-  }
-
 }

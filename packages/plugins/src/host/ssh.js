@@ -1,6 +1,7 @@
 import ssh2 from 'ssh2'
-import logger from '../utils/util.log.js'
 import path from 'path'
+import { util } from '@certd/api'
+const logger = util.logger
 export class SshClient {
   /**
      *

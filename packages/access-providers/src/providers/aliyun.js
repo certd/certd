@@ -1,5 +1,4 @@
-import _ from 'lodash-es'
-export class AliyunAccessProvider{
+export class AliyunAccessProvider {
   static define () {
     return {
       name: 'aliyun',
@@ -27,8 +26,5 @@ export class AliyunAccessProvider{
 
       }
     }
-  }
-
-  constructor () {
   }
 }

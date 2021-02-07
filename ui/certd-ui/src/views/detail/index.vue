@@ -258,7 +258,7 @@ export default {
           organizationUnit: 'IT Department'
         }
       },
-      accessProviders: [{ key: 'aliyun', type: 'aliyun', name: 'aliyun' }],
+      accessProviders: [],
       deploy: []
     }
     _.merge(optionsDefault, optionParams)

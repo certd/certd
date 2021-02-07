@@ -154,8 +154,17 @@ function useEdit (props, context, onEditSave) {
     }
 
     if (editIndex.value == null) {
+      // 添加时
       formData.key = currentProvider.value.name
       formData.name = currentProvider.value.label || currentProvider.value.name
+
+      // 设置默认值
+      for (const key in currentProvider.value.input) {
+        const input = currentProvider.value.input[key]
+        if (input.default != null) {
+          formData[key] = input.default
+        }
+      }
     }
   }
 
@@ -201,7 +210,7 @@ function generateNewKey (list) {
   return keyPrefix + index
 }
 export default {
-  name: 'provider-manager',
+  name: 'access-provider-manager',
   props: {
     value: {},
     filter: {}

@@ -13,7 +13,10 @@ export class HostShellExecute extends AbstractHostPlugin {
       label: '执行远程主机脚本命令',
       input: {
         script: {
-          label: 'shell脚本命令'
+          label: 'shell脚本命令',
+          component: {
+            name: 'a-textarea'
+          }
         },
         accessProvider: {
           label: '主机登录配置',
@@ -21,7 +24,7 @@ export class HostShellExecute extends AbstractHostPlugin {
           desc: '登录',
           component: {
             name: 'access-provider-selector',
-            filter: 'host'
+            filter: 'ssh'
           },
           required: true
         }
