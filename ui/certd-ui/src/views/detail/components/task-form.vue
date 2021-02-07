@@ -45,7 +45,7 @@
           </a-form-item>
 
           <a-form-item v-for="(item,key) in currentPlugin.input"  v-bind="item.component || {}"  :key="key" :label="item.label" :name="key">
-            <component-render v-model:value="currentTask[key]" v-bind="item.component || {}"></component-render>
+            <component-render v-model:value="currentTask.props[key]" v-bind="item.component || {}"></component-render>
             <template #extra v-if="item.desc"  >
               {{item.desc}}
             </template>
@@ -101,7 +101,7 @@ function useTaskForm (context) {
     }]
   })
   const taskAdd = (deploy) => {
-    const task = { taskName: '新任务', type: undefined, _isAdd: true }
+    const task = { taskName: '新任务', type: undefined, _isAdd: true, props: {} }
     currentDeploy.value = deploy
     currentDeploy.value.tasks.push(task)
     currentTask.value = deploy.tasks[deploy.tasks.length - 1]

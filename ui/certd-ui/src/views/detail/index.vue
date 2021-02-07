@@ -226,6 +226,9 @@ function useExports (options) {
   return {
     async exportsToZip () {
       await exportsApi.exportsToZip(options)
+    },
+    async exportsToJson () {
+
     }
   }
 }

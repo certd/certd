@@ -123,7 +123,7 @@ export class Executor {
         }
 
         deployTrace.set({ value: { status: 'success', remark: '执行成功' } })
-        trace.set({ type: 'result', value: { status: 'success', remark: '部署成功' } })
+        trace.set({ type: 'result', value: { status: 'success', remark: '执行成功' } })
       } catch (e) {
         deployTrace.set({ value: { status: 'error', remark: '执行失败：' + e.message } })
         trace.set({ type: 'result', value: { status: 'error', remark: deployName + '执行失败：' + e.message } })
