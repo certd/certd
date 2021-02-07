@@ -8,9 +8,9 @@ node_modules/
 
 /*.log
 
-/ui/*/.idea
+/packages/ui/*/.idea
 
-/ui/*/node_modules
+/packages/ui/*/node_modules
 
 /packages/*/node_modules
-/ui/certd-server/tmp/
+/packages/ui/certd-server/tmp/
