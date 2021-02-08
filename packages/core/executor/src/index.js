@@ -23,11 +23,25 @@ export class Executor {
   async run (options) {
     logger.info('------------------- Cert-D ---------------------')
     try {
+      this.transfer(options)
       options = _.merge(createDefaultOptions(), options)
       return await this.doRun(options)
     } catch (e) {
       logger.error('任务执行出错：' + e.message, e)
       throw e
+    }
+  }
+
+  transfer (options) {
+    const providers = options.accessProviders
+    if (_.isArray(providers)) {
+      const map = {}
+      for (const provider of providers) {
+        if (provider.key) {
+          map[provider.key] = provider
+        }
+      }
+      options.accessProviders = map
     }
   }
 
