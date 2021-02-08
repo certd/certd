@@ -79,24 +79,22 @@ const defaultOptions = {
     },
     {
       deployName: '流程2-部署到nginx服务器',
-      disabled: true,
+      disabled: false,
       tasks: [
         {
           taskName: '上传证书到服务器',
           type: 'uploadCertToHost',
           props:{
-            accessProvider: 'aliyun-linux',
-            upload: [
-              { from: '{certPath}', to: '/xxx/xxx/xxx.cert.pem' },
-              { from: '{keyPath}', to: '/xxx/xxx/xxx.key' }
-            ]
+            accessProvider: 'aliyun-ssh',
+            crtPath: '/root/certd-test/cert.pem',
+            keyPath: '/root/certd-test/cert.key'
           }
         },
         {
           taskName: '重启linux',
           type: 'hostShellExecute',
           props:{
-            accessProvider: 'aliyun-linux',
+            accessProvider: 'aliyun-ssh',
             script: ['ls']
           }
         }

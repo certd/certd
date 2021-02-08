@@ -1,6 +1,6 @@
 import _ from 'lodash-es'
 import logger from '../utils/util.log.js'
-import commonUtil from '../utils/util.common'
+import commonUtil from '../utils/util.common.js'
 export class AbstractDnsProvider {
   constructor ({ accessProviders }) {
     this.logger = logger

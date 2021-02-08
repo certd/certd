@@ -63,6 +63,9 @@ export class Executor {
         logger.info('证书无更新，无需重新部署')
         logger.info('任务完成')
         return { cert }
+      } else {
+        // 强制重新运行,清空保存的状态
+        await certd.certStore.setCurrentFile('context.json', '{}')
       }
     }
     // 读取上次执行进度
@@ -118,6 +121,7 @@ export class Executor {
         logger.info('此流程已被禁用，跳过')
         logger.info('')
         deployTrace.set({ value: { current: 'skip', status: 'disabled', remark: '流程禁用' } })
+        deployTrace.set({ tasks: null })
         continue
       }
       try {

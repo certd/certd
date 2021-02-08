@@ -65,10 +65,14 @@ export class AbstractPlugin {
   }
 
   getAccessProvider (accessProvider, accessProviders = this.accessProviders) {
+    let access = accessProvider
     if (typeof accessProvider === 'string' && accessProviders) {
-      accessProvider = accessProviders[accessProvider]
+      access = accessProviders[accessProvider]
     }
-    return accessProvider
+    if (access == null) {
+      throw new Error(`accessProvider ：${accessProvider}不存在`)
+    }
+    return access
   }
 
   async sleep (time) {

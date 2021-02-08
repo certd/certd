@@ -29,7 +29,7 @@ export class SshClient {
           try {
             for (const transport of transports) {
               logger.info('上传文件：', JSON.stringify(transport))
-              await this.exec({ conn, cmd: 'mkdir ' + path.dirname(transport.remotePath) })
+              await this.exec({ connectConf, script: 'mkdir -p ' + path.dirname(transport.remotePath) })
               await this.fastPut({ sftp, ...transport })
             }
             resolve()
@@ -59,10 +59,10 @@ export class SshClient {
             let data = null
             stream.on('close', (code, signal) => {
               console.log(`[${connectConf.host}][close]:code:${code}, signal:${signal} `)
+
               if (code === 0) {
-                resolve(data.toString())
-              } else {
-                reject(data.toString())
+                data = data ? data.toString() : null
+                resolve(data)
               }
               conn.end()
             }).on('data', (ret) => {
@@ -70,7 +70,7 @@ export class SshClient {
               data = ret
             }).stderr.on('data', (err) => {
               console.log(`[${connectConf.host}][error]: ` + err)
-              data = err
+              reject(new Error(err.toString()))
               stream.close()
             })
           })
