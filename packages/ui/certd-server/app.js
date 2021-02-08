@@ -6,7 +6,7 @@ import logger from 'koa-logger'
 import Static from 'koa-static'
 import fs from 'fs'
 import _ from 'lodash-es'
-
+import './install.js'
 const app = new Koa()
 
 // error handler
