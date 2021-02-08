@@ -1,24 +1,24 @@
 {
 	"name": "@certd/plugin-host",
-	"version": "0.1.13",
+	"version": "0.1.15",
 	"description": "",
 	"main": "src/index.js",
 	"type": "module",
 	"dependencies": {
-		"@certd/api": "^0.1.13",
+		"@certd/api": "^0.1.15",
 		"dayjs": "^1.9.7",
 		"lodash-es": "^4.17.20",
 		"ssh2": "^0.8.9"
 	},
 	"devDependencies": {
+		"@certd/certd": "^0.1.15",
 		"chai": "^4.2.0",
 		"eslint": "^7.15.0",
 		"eslint-config-standard": "^16.0.2",
 		"eslint-plugin-import": "^2.22.1",
 		"eslint-plugin-node": "^11.1.0",
 		"eslint-plugin-promise": "^4.2.1",
-		"mocha": "^8.2.1",
-		"@certd/certd": "^0.1.13"
+		"mocha": "^8.2.1"
 	},
 	"author": "Greper",
 	"license": "MIT",

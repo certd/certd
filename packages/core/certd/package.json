@@ -1,6 +1,6 @@
 {
   "name": "@certd/certd",
-  "version": "0.1.13",
+  "version": "0.1.15",
   "description": "a ssl cert keeper",
   "main": "src/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "@certd/acme-client": "^0.1.6",
-    "@certd/api": "^0.1.13",
+    "@certd/api": "^0.1.15",
     "dayjs": "^1.9.7",
     "lodash-es": "^4.17.20",
     "node-forge": "^0.10.0"

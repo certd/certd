@@ -1,6 +1,6 @@
 {
   "name": "@certd/server",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "private": false,
   "type": "module",
   "scripts": {
@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@certd/access-providers": "^0.1.13",
-    "@certd/api": "^0.1.13",
+    "@certd/api": "^0.1.15",
     "@certd/dns-providers": "^0.1.13",
-    "@certd/executor": "^0.1.14",
+    "@certd/executor": "^0.1.15",
     "@certd/plugins": "^0.1.13",
     "compressing": "^1.5.1",
     "debug": "^4.1.1",
