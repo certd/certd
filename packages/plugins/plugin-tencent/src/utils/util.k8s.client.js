@@ -45,7 +45,7 @@ export class K8sClient {
    * @param opts = {namespace:default}
    * @returns secretsList
    */
-  async getSecret (opts) {
+  async getSecret (opts = {}) {
     const namespace = opts.namespace || 'default'
     const secrets = await this.client.api.v1.namespaces(namespace).secrets.get()
     return secrets

@@ -44,7 +44,10 @@ export class DeployCertToTencentCDN extends AbstractTencentPlugin {
         }
       },
       output: {
-
+        tencentCertId: {
+          type: String,
+          desc: '证书来源选择上传时，将返回此id'
+        }
       }
     }
   }

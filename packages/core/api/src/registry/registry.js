@@ -26,11 +26,18 @@ export class Registry {
   }
 
   get (name) {
-    if (name) {
-      return this.collection[name]
+    if (!name) {
+      throw new Error('插件名称不能为空')
     }
 
-    throw new Error(`${name} cant blank`)
+    if (!this.collection) {
+      this.collection = {}
+    }
+    const plugin = this.collection[name]
+    if (!plugin) {
+      throw new Error(`插件${name}还未注册`)
+    }
+    return plugin
   }
 
   getCollection () {

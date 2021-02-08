@@ -12,12 +12,6 @@ export class HostShellExecute extends AbstractHostPlugin {
       name: 'hostShellExecute',
       label: '执行远程主机脚本命令',
       input: {
-        script: {
-          label: 'shell脚本命令',
-          component: {
-            name: 'a-textarea'
-          }
-        },
         accessProvider: {
           label: '主机登录配置',
           type: [String, Object],
@@ -27,6 +21,12 @@ export class HostShellExecute extends AbstractHostPlugin {
             filter: 'ssh'
           },
           required: true
+        },
+        script: {
+          label: 'shell脚本命令',
+          component: {
+            name: 'a-textarea'
+          }
         }
       },
       output: {
@@ -39,7 +39,7 @@ export class HostShellExecute extends AbstractHostPlugin {
     const { script, accessProvider } = props
     const connectConf = this.getAccessProvider(accessProvider)
     const sshClient = new SshClient()
-    const ret = await sshClient.shell({
+    const ret = await sshClient.exec({
       connectConf,
       script
     })

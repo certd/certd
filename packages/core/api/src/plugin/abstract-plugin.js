@@ -4,7 +4,11 @@ import dayjs from 'dayjs'
 import Sleep from '../utils/util.sleep.js'
 
 export class AbstractPlugin {
-  constructor ({ accessProviders }) {
+  constructor (options) {
+    if (options == null) {
+      throw new Error('插件安装失败：参数不允许为空')
+    }
+    const { accessProviders } = options
     this.logger = logger
     this.accessProviders = accessProviders
   }

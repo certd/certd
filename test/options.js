@@ -138,5 +138,12 @@ const defaultOptions = {
 _.merge(defaultOptions, optionsPrivate)
 
 export function createOptions(){
-  return _.cloneDeep(defaultOptions)
+  return  _.cloneDeep(defaultOptions)
+}
+
+export function getDnsProviderOptions (options) {
+  if(!options){
+    options = createOptions()
+  }
+  return { accessProviders: options.accessProviders, props: options.cert.dnsProvider }
 }

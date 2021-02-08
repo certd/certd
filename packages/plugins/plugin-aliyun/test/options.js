@@ -24,7 +24,7 @@ const defaultOptions = {
   cert: {
     domains: ['*.docmirror.club', 'docmirror.club'],
     email: 'xiaojunnuo@qq.com',
-    dnsProvider: 'aliyun',
+    dnsProvider: { type: 'aliyun', accessProvider: 'aliyun' },
     certProvider: 'letsencrypt',
     csrInfo: {
       country: 'CN',

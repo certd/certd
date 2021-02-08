@@ -1,6 +1,7 @@
 import ssh2 from 'ssh2'
 import path from 'path'
 import { util } from '@certd/api'
+import _ from 'lodash-es'
 const logger = util.logger
 export class SshClient {
   /**
@@ -39,6 +40,42 @@ export class SshClient {
           }
         })
       }).connect(connectConf)
+    })
+  }
+
+  exec ({ connectConf, script }) {
+    if (_.isArray(script)) {
+      script = script.join('\n')
+    }
+    return new Promise((resolve, reject) => {
+      this.connect({
+        connectConf,
+        onReady: (conn) => {
+          conn.exec(script, (err, stream) => {
+            if (err) {
+              reject(err)
+              return
+            }
+            let data = null
+            stream.on('close', (code, signal) => {
+              console.log(`[${connectConf.host}][close]:code:${code}, signal:${signal} `)
+              if (code === 0) {
+                resolve(data.toString())
+              } else {
+                reject(data.toString())
+              }
+              conn.end()
+            }).on('data', (ret) => {
+              console.log(`[${connectConf.host}][info]: ` + ret)
+              data = ret
+            }).stderr.on('data', (err) => {
+              console.log(`[${connectConf.host}][error]: ` + err)
+              data = err
+              stream.close()
+            })
+          })
+        }
+      })
     })
   }
 
@@ -85,26 +122,6 @@ export class SshClient {
           return
         }
         resolve()
-      })
-    })
-  }
-
-  exec ({ conn, cmd }) {
-    return new Promise((resolve, reject) => {
-      conn.exec(cmd, (err, stream) => {
-        if (err) {
-          logger.error('执行命令出错', err)
-          reject(err)
-          // return conn.end()
-        }
-
-        stream.on('close', (code, signal) => {
-          // logger.info('Stream :: close :: code: ' + code + ', signal: ' + signal)
-          // conn.end()
-          resolve()
-        }).on('data', (data) => {
-          logger.info('data', data.toString())
-        })
       })
     })
   }

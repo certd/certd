@@ -6,7 +6,7 @@ const { expect } = pkg
 describe('PluginUploadToTencent', function () {
   it('#execute', async function () {
     const options = createOptions()
-    const plugin = new UploadCertToTencent()
+    const plugin = new UploadCertToTencent(options)
     options.args = { test: false }
     options.cert.email = 'xiaojunnuo@qq.com'
     options.cert.domains = ['*.docmirror.cn']

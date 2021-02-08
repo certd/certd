@@ -1,16 +1,16 @@
 import _ from 'lodash-es'
 
-import { TencentAccessProvider } from './access-providers/tencent'
-import { DnspodAccessProvider } from './access-providers/dnspod'
+import { TencentAccessProvider } from './access-providers/tencent.js'
+import { DnspodAccessProvider } from './access-providers/dnspod.js'
 import { DnspodDnsProvider } from './dns-providers/dnspod.js'
 
-import { UploadCertToTencent } from './plugins/upload-to-tencent'
+import { UploadCertToTencent } from './plugins/upload-to-tencent/index.js'
 
-import { DeployCertToTencentCDN } from './plugins/deploy-to-cdn'
+import { DeployCertToTencentCDN } from './plugins/deploy-to-cdn/index.js'
 
-import { DeployCertToTencentCLB } from './plugins/deploy-to-clb'
+import { DeployCertToTencentCLB } from './plugins/deploy-to-clb/index.js'
 
-import { DeployCertToTencentTKEIngress } from './plugins/deploy-to-tke-ingress'
+import { DeployCertToTencentTKEIngress } from './plugins/deploy-to-tke-ingress/index.js'
 
 import { pluginRegistry, accessProviderRegistry, dnsProviderRegistry } from '@certd/api'
 
@@ -27,7 +27,7 @@ export default {
     })
 
     accessProviderRegistry.install(TencentAccessProvider)
-    accessProviderRegistry.install(DnspodDnsProvider)
+    accessProviderRegistry.install(DnspodAccessProvider)
 
     dnsProviderRegistry.install(DnspodDnsProvider)
   }

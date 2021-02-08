@@ -9,12 +9,11 @@ describe('PluginUploadToAliyun', function () {
     const options = createOptions()
     options.cert.email = 'xiaojunnuo@qq.com'
     options.cert.domains = ['_.docmirror.cn']
-    const plugin = new UploadCertToAliyun()
+    const plugin = new UploadCertToAliyun(options)
     const certd = new Certd(options)
     const cert = await certd.readCurrentCert()
     const context = {}
     const deployOpts = {
-      accessProviders: options.accessProviders,
       cert,
       props: { accessProvider: 'aliyun' },
       context
@@ -22,7 +21,7 @@ describe('PluginUploadToAliyun', function () {
     await plugin.doExecute(deployOpts)
     console.log('context:', context)
 
-    //  await plugin.sleep(1000)
+    // await plugin.sleep(1000)
     // await plugin.rollback(deployOpts)
   })
 })

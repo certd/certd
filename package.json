@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "lerna bootstrap --hoist",
-    "i-all": "lerna exec npm install && lerna link "
+    "i-all": "lerna link && lerna exec npm install  "
   },
   "license": "MIT",
   "dependencies": {

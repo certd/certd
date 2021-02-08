@@ -1,33 +1,16 @@
 
 import _ from 'lodash-es'
 
-import { AliyunDnsProvider, AliyunAccessProvider } from './access-providers/aliyun'
+import { AliyunDnsProvider } from './dns-providers/aliyun.js'
+import { AliyunAccessProvider } from './access-providers/aliyun.js'
+import { UploadCertToAliyun } from './plugins/upload-to-aliyun/index.js'
+import { DeployCertToAliyunCDN } from './plugins/deploy-to-cdn/index.js'
 
-import { UploadCertToAliyun } from './plugins/upload-to-aliyun'
-import { DeployCertToAliyunCDN } from './plugins/deploy-to-cdn'
-
-import { UploadCertToTencent } from './tencent/upload-to-tencent/index.js'
-
-import { DeployCertToTencentCDN } from './tencent/deploy-to-cdn/index.js'
-
-import { DeployCertToTencentCLB } from './tencent/deploy-to-clb/index.js'
-
-import { DeployCertToTencentTKEIngress } from './tencent/deploy-to-tke-ingress/index.js'
-
-import { UploadCertToHost } from './host/upload-to-host/index.js'
-import { HostShellExecute } from './host/host-shell-execute/index.js'
-
-import { pluginRegistry, accessProviderRegister, dnsProviderRegistry } from '@certd/api'
+import { pluginRegistry, accessProviderRegistry, dnsProviderRegistry } from '@certd/api'
 
 export const Plugins = {
   UploadCertToAliyun,
-  DeployCertToAliyunCDN,
-  UploadCertToTencent,
-  DeployCertToTencentTKEIngress,
-  DeployCertToTencentCDN,
-  DeployCertToTencentCLB,
-  UploadCertToHost,
-  HostShellExecute
+  DeployCertToAliyunCDN
 }
 export default {
   install () {
@@ -35,8 +18,7 @@ export default {
       pluginRegistry.install(item)
     })
 
-    accessProviderRegister.install(AliyunAccessProvider)
-
+    accessProviderRegistry.install(AliyunAccessProvider)
     dnsProviderRegistry.install(AliyunDnsProvider)
   }
 }

@@ -4,12 +4,8 @@ import { FileStore } from './store/file-store.js'
 import { CertStore } from './store/cert-store.js'
 import dayjs from 'dayjs'
 import forge from 'node-forge'
-import DefaultDnsProviders from '@certd/dns-providers'
 
 const logger = util.logger
-
-DefaultDnsProviders.install()
-
 export class Certd {
   constructor (options) {
     this.options = options

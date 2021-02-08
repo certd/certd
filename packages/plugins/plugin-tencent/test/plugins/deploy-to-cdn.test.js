@@ -1,7 +1,7 @@
 import pkg from 'chai'
-import { DeployCertToTencentCDN } from '../../src/plugins/deploy-to-cdn'
+import { DeployCertToTencentCDN } from '../../src/plugins/deploy-to-cdn/index.js'
 import { Certd } from '@certd/certd'
-import { UploadCertToTencent } from '../../src/plugins/upload-to-tencent'
+import { UploadCertToTencent } from '../../src/plugins/upload-to-tencent/index.js'
 import { createOptions } from '../../../../../test/options.js'
 const { expect } = pkg
 describe('DeployToTencentCDN', function () {
@@ -9,27 +9,25 @@ describe('DeployToTencentCDN', function () {
     const options = createOptions()
     options.args.test = false
     const certd = new Certd(options)
-    const cert = certd.readCurrentCert('xiaojunnuo@qq.com', ['*.docmirror.cn'])
+    const cert = await certd.readCurrentCert('xiaojunnuo@qq.com', ['*.docmirror.cn'])
     const context = {}
-    const uploadPlugin = new UploadCertToTencent()
+    const uploadPlugin = new UploadCertToTencent(options)
     const uploadOptions = {
-      accessProviders: options.accessProviders,
       cert,
       props: { name: 'certd部署测试', accessProvider: 'tencent' },
       context
     }
     await uploadPlugin.doExecute(uploadOptions)
 
-    const deployPlugin = new DeployCertToTencentCDN()
+    const deployPlugin = new DeployCertToTencentCDN(options)
     const deployOpts = {
-      accessProviders: options.accessProviders,
       cert,
       props: { domainName: 'tentcent-certd.docmirror.cn', certName: 'certd部署测试', accessProvider: 'tencent' },
       context
     }
-    const ret = await deployPlugin.doExecute(deployOpts)
-    expect(ret).ok
+    await deployPlugin.doExecute(deployOpts)
     console.log('context:', context)
+    expect(context.tencentCertId).ok
 
     await uploadPlugin.doRollback(uploadOptions)
   })
@@ -38,17 +36,17 @@ describe('DeployToTencentCDN', function () {
     options.args.test = false
     options.cert.email = 'xiaojunnuo@qq.com'
     options.cert.domains = ['*.docmirror.cn']
-    const plugin = new DeployCertToTencentCDN()
+    const plugin = new DeployCertToTencentCDN(options)
     const certd = new Certd(options)
     const cert = await certd.readCurrentCert()
     const context = {}
     const deployOpts = {
-      accessProviders: options.accessProviders,
       cert,
       props: { domainName: 'tentcent-certd.docmirror.cn', accessProvider: 'tencent' },
       context
     }
     const ret = await plugin.doExecute(deployOpts)
     console.log('context:', context, ret)
+    expect(context).be.empty
   })
 })

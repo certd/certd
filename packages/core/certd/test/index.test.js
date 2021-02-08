@@ -1,5 +1,5 @@
 import chai from 'chai'
-import { Certd } from '../src'
+import { Certd } from '../src/index.js'
 import { createOptions } from '../../../../test/options.js'
 const { expect } = chai
 const fakeCrt = `-----BEGIN CERTIFICATE-----

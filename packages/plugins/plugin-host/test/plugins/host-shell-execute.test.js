@@ -16,13 +16,12 @@ describe('HostShellExecute', function () {
     const context = {}
     const uploadOpts = {
       cert,
-      props: { script: 'ls ', accessProvider: 'aliyun-ssh' },
+      props: { script: ['ls ', 'ls '], accessProvider: 'aliyun-ssh' },
       context
     }
     const ret = await plugin.doExecute(uploadOpts)
-    for (const retElement of ret) {
-      console.log('-----' + retElement)
-    }
+    expect(ret).ok
+    console.log('-----' + JSON.stringify(ret))
 
     await plugin.doRollback(uploadOpts)
   })

@@ -1,6 +1,10 @@
 import pkg from 'chai'
 import { createOptions } from '../../../../../test/options.js'
-import { Certd } from '../../src'
+import { Certd } from '@certd/certd'
+import PluginAliyun from '../../src/index.js'
+
+// 安装默认插件和授权提供者
+PluginAliyun.install()
 const { expect } = pkg
 describe('AliyunDnsProvider', function () {
   it('#申请证书-aliyun', async function () {
