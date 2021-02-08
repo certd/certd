@@ -22,7 +22,18 @@ describe('HostShellExecute', function () {
     const ret = await plugin.doExecute(uploadOpts)
     expect(ret).ok
     console.log('-----' + JSON.stringify(ret))
+  })
 
-    await plugin.doRollback(uploadOpts)
+  it('#execute-hk-restart-docker', async function () {
+    this.timeout(10000)
+    const options = createOptions()
+    const plugin = new HostShellExecute(options)
+    const uploadOpts = {
+      props: { script: ['cd  /home/ubuntu/deloy/nginx-proxy\nsudo docker-compose build\nsudo docker-compose up -d\n'], accessProvider: 'aliyun-ssh-hk' },
+      context: {}
+    }
+    const ret = await plugin.doExecute(uploadOpts)
+    expect(ret).ok
+    console.log('-----' + JSON.stringify(ret))
   })
 })

@@ -27,6 +27,9 @@ export class UploadCertToHost extends AbstractHostPlugin {
             filter: 'ssh'
           },
           required: true
+        },
+        sudo: {
+          label: '是否sudo'
         }
       },
       output: {
@@ -45,7 +48,6 @@ export class UploadCertToHost extends AbstractHostPlugin {
   async execute ({ cert, props, context }) {
     const { crtPath, keyPath, accessProvider } = props
     const connectConf = this.getAccessProvider(accessProvider)
-    console.log('connectConf', connectConf)
     const sshClient = new SshClient()
     await sshClient.uploadFiles({
       connectConf,

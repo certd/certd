@@ -27,7 +27,7 @@ export class Executor {
       options = _.merge(createDefaultOptions(), options)
       return await this.doRun(options)
     } catch (e) {
-      logger.error('任务执行出错：' + e.message, e)
+      logger.error('任务执行出错', e)
       throw e
     }
   }

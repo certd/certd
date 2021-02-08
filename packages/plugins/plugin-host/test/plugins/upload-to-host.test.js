@@ -24,4 +24,25 @@ describe('PluginUploadToHost', function () {
 
     await plugin.doRollback(uploadOpts)
   })
+
+  it('#execute-to-ubantu', async function () {
+    this.timeout(10000)
+    const options = createOptions()
+    options.args = { test: false }
+    options.cert.email = 'xiaojunnuo@qq.com'
+    options.cert.domains = ['*.docmirror.cn']
+    const plugin = new UploadCertToHost(options)
+    const certd = new Certd(options)
+    const cert = await certd.readCurrentCert()
+    const context = {}
+    const uploadOpts = {
+      cert,
+      props: { crtPath: '/home/ubuntu/deloy/nginx-proxy/ssl/test.crt', keyPath: '/home/ubuntu/deloy/nginx-proxy/ssl/test.key', accessProvider: 'aliyun-ssh-hk' },
+      context
+    }
+    await plugin.doExecute(uploadOpts)
+    console.log('context:', context)
+
+    await plugin.doRollback(uploadOpts)
+  })
 })

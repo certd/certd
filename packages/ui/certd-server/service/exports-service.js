@@ -33,6 +33,9 @@ export default {
 
     const templatePkg = require('../templates/certd-run/package.json')
     templatePkg.dependencies['@certd/executor'] = '^' + currentVersion
+    templatePkg.dependencies['@certd/plugin-aliyun'] = '^' + currentVersion
+    templatePkg.dependencies['@certd/plugin-host'] = '^' + currentVersion
+    templatePkg.dependencies['@certd/plugin-tencent'] = '^' + currentVersion
     const pkgFilePath = path.join(targetProjectDir, 'package.json')
     fs.writeJsonSync(pkgFilePath, templatePkg)
 

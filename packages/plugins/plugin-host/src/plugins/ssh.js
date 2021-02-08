@@ -15,7 +15,7 @@ export class SshClient {
          }
      * @param transports
      */
-  uploadFiles ({ connectConf, transports }) {
+  uploadFiles ({ connectConf, transports, sudo = false }) {
     const conn = new ssh2.Client()
 
     return new Promise((resolve, reject) => {
@@ -29,7 +29,8 @@ export class SshClient {
           try {
             for (const transport of transports) {
               logger.info('上传文件：', JSON.stringify(transport))
-              await this.exec({ connectConf, script: 'mkdir -p ' + path.dirname(transport.remotePath) })
+              sudo = sudo ? 'sudo' : ''
+              await this.exec({ connectConf, script: `${sudo} mkdir -p ${path.dirname(transport.remotePath)} ` })
               await this.fastPut({ sftp, ...transport })
             }
             resolve()
@@ -47,6 +48,7 @@ export class SshClient {
     if (_.isArray(script)) {
       script = script.join('\n')
     }
+    console.log('执行命令：', script)
     return new Promise((resolve, reject) => {
       this.connect({
         connectConf,
@@ -58,11 +60,12 @@ export class SshClient {
             }
             let data = null
             stream.on('close', (code, signal) => {
-              console.log(`[${connectConf.host}][close]:code:${code}, signal:${signal} `)
-
+              console.log(`[${connectConf.host}][close]:code:${code}`)
+              data = data ? data.toString() : null
               if (code === 0) {
-                data = data ? data.toString() : null
                 resolve(data)
+              } else {
+                reject(new Error(data))
               }
               conn.end()
             }).on('data', (ret) => {
@@ -70,8 +73,7 @@ export class SshClient {
               data = ret
             }).stderr.on('data', (err) => {
               console.log(`[${connectConf.host}][error]: ` + err)
-              reject(new Error(err.toString()))
-              stream.close()
+              data = err
             })
           })
         }
