@@ -9,9 +9,8 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@certd/dns-providers": "^0.1.13",
-    "@certd/plugins": "^0.1.13",
     "ant-design-vue": "^2.0.0",
+    "axios": "^0.21.1",
     "core-js": "^3.8.1",
     "lodash-es": "^4.17.20",
     "vue": "^3.0.4",

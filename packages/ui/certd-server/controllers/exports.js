@@ -3,7 +3,7 @@ import fs from 'fs'
 import exportsService from '../service/exports-service.js'
 
 const router = Router()
-router.prefix('/exports')
+router.prefix('/api/exports')
 
 router.post('/toZip', async function (ctx, next) {
   // const request = ctx.request

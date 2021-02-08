@@ -3,7 +3,7 @@ import { dnsProviderRegistry } from '@certd/api'
 import _ from 'lodash-es'
 import { Ret } from '../models/Ret.js'
 const router = Router()
-router.prefix('/dns-providers')
+router.prefix('/api/dns-providers')
 
 router.get('/list', function (ctx, next) {
   const list = []

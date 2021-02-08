@@ -160,10 +160,10 @@
 
           <d-container>
             <template #header>
-              <div><a-button @click="exportsToZip">导出可执行项目</a-button></div>
+              <div><a-button @click="exportsToZip">导出为可执行项目</a-button></div>
               <br/>
-              <div> <a-button @click="exportsToJson">复制options.json</a-button></div>
-              <br/>
+<!--              <div> <a-button @click="exportsToJson">复制options.json</a-button></div>-->
+<!--              <br/>-->
             </template>
              <pre class="json">{{options}}</pre>
 
