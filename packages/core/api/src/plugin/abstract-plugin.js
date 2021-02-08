@@ -2,7 +2,7 @@ import fs from 'fs'
 import logger from '../utils/util.log.js'
 import dayjs from 'dayjs'
 import Sleep from '../utils/util.sleep.js'
-
+import commonUtil from '../utils/util.common.js'
 export class AbstractPlugin {
   constructor (options) {
     if (options == null) {
@@ -10,7 +10,7 @@ export class AbstractPlugin {
     }
     const { accessProviders } = options
     this.logger = logger
-    this.accessProviders = accessProviders
+    this.accessProviders = commonUtil.arrayToMap(accessProviders)
   }
 
   appendTimeSuffix (name) {

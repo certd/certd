@@ -1,9 +1,10 @@
 import _ from 'lodash-es'
 import logger from '../utils/util.log.js'
+import commonUtil from '../utils/util.common'
 export class AbstractDnsProvider {
   constructor ({ accessProviders }) {
     this.logger = logger
-    this.accessProviders = accessProviders
+    this.accessProviders = commonUtil.arrayToMap(accessProviders)
   }
 
   async createRecord ({ fullRecord, type, value }) {

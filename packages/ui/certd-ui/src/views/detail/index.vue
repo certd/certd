@@ -190,7 +190,7 @@ import TaskForm from './components/task-form'
 import exportsApi from '../../api/api.exports'
 import _ from 'lodash-es'
 import DContainer from '../../components/d-container'
-
+import commonUtil from '@/utils/util.common'
 function useDeploy (options) {
   const deployAdd = () => {
     options.deploy.push({
@@ -248,6 +248,9 @@ export default {
     const route = useRoute()
     console.log('route', route)
     const optionParams = route.params.options ? JSON.parse(route.params.options) : {}
+    if (optionParams.accessProviders) {
+      optionParams.accessProviders = commonUtil.mapToArray(optionParams.accessProviders)
+    }
     const optionsDefault = {
       cert: {
         csr: {
