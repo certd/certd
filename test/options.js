@@ -66,7 +66,7 @@ const defaultOptions = {
           props:{
             domainName: 'certd-cdn-upload.docmirror.cn',
             certName: 'certd部署测试(upload)',
-            certType: 'upload',
+            from: 'upload',
             accessProvider: 'aliyun'
           }
         }
@@ -82,29 +82,22 @@ const defaultOptions = {
       disabled: true,
       tasks: [
         {
-          taskName: '上传证书到服务器,并重启nginx',
-          type: 'sshAndExecute',
+          taskName: '上传证书到服务器',
+          type: 'uploadCertToHost',
           props:{
-            accessProvider: 'myLinux',
+            accessProvider: 'aliyun-linux',
             upload: [
               { from: '{certPath}', to: '/xxx/xxx/xxx.cert.pem' },
               { from: '{keyPath}', to: '/xxx/xxx/xxx.key' }
-            ],
-            script: 'sudo systemctl restart nginx'
+            ]
           }
-        }
-      ]
-    },
-    {
-      deployName: '流程3-触发jenkins任务',
-      disabled: false,
-      tasks: [
+        },
         {
-          taskName: '触发jenkins任务',
-          type: 'sshAndExecute',
+          taskName: '重启linux',
+          type: 'hostShellExecute',
           props:{
-            accessProvider: 'myLinux',
-            script: 'sudo systemctl restart nginx'
+            accessProvider: 'aliyun-linux',
+            script: ['ls']
           }
         }
       ]

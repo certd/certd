@@ -1,9 +1,9 @@
 import _ from 'lodash-es'
 
-import { SSHAccessProvider } from './access-providers/ssh'
+import { SSHAccessProvider } from './access-providers/ssh.js'
 
-import { UploadCertToHost } from './host/upload-to-host/index.js'
-import { HostShellExecute } from './host/host-shell-execute/index.js'
+import { UploadCertToHost } from './plugins/upload-to-host/index.js'
+import { HostShellExecute } from './plugins/host-shell-execute/index.js'
 
 import { pluginRegistry, accessProviderRegistry } from '@certd/api'
 

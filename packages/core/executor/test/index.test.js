@@ -1,7 +1,15 @@
 import pkg from 'chai'
-import { Executor } from '../src'
+import { Executor } from '../src/index.js'
 import { createOptions } from '../../../../test/options.js'
+import PluginAliyun from '@certd/plugin-aliyun'
+import PluginTencent from '@certd/plugin-tencent'
+import PluginHost from '@certd/plugin-host'
 const { expect } = pkg
+
+// 安装默认插件和授权提供者
+PluginAliyun.install()
+PluginTencent.install()
+PluginHost.install()
 
 describe('AutoDeploy', function () {
   it('#run', async function () {
