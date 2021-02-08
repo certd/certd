@@ -1,6 +1,6 @@
 {
   "name": "@certd/certd-ui",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "private": false,
   "scripts": {
     "dev": "vue-cli-service serve",
