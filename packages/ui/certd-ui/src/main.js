@@ -10,7 +10,7 @@ import components from './components'
 const app = createApp(App)
 app.config.productionTip = false
 app.use(i18n)
-app.use(Antd)
 icons(app)
+app.use(Antd)
 app.use(components)
 app.use(router).mount('#app')

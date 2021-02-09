@@ -21,6 +21,7 @@ const icons = {
 }
 export default function (app) {
   _.forEach(icons, item => {
+    console.log('icons:', item.name)
     app.component(item.name, item)
   })
 }
