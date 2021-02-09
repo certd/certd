@@ -7,6 +7,7 @@ import Static from 'koa-static'
 import fs from 'fs'
 import _ from 'lodash-es'
 import './install.js'
+import pathUtil from './utils/util.path.js'
 const app = new Koa()
 
 // error handler
@@ -19,7 +20,10 @@ app.use(bodyparser({
 app.use(json())
 app.use(logger())
 
-app.use(Static(new URL('public', import.meta.url).pathname))
+const staticPlugin = Static(pathUtil.join('public'), {
+  maxage: 30 * 24 * 60 * 3600
+})
+app.use(staticPlugin)
 
 // logger
 app.use(async (ctx, next) => {
@@ -28,8 +32,6 @@ app.use(async (ctx, next) => {
   const ms = new Date() - start
   console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
 })
-
-console.log('url', import.meta.url)
 
 // routes
 const files = fs.readdirSync(new URL('controllers/', import.meta.url))
