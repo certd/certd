@@ -35,10 +35,25 @@ CertD 是一个帮助你全自动申请和部署SSL证书的工具。
 
   通过ui生成： https://certd.docmirror.cn/
   
+开始生成证书，先填写域名，支持将多个域名打到一个证书上
+![](./doc/step1.png)
 
-4. 运行
+配置证书详细信息
+![](./doc/step2.png)
+
+配置证书部署流程
+![](./doc/step3.png)
+
+支持的部署任务类型
+![](./doc/tasks.png)
+
+配置好之后，点击导出按钮，导出一个node项目包
+
+4. 运行    
+将导出的压缩包解压，然后执行如下命令，即可开始申请证书并部署
 ```
-node index.js
+npm install
+npm run certd
 ```
 5. 执行效果
 生成的证书默认会存储在 `${home}/.certd/${email}/certs/${domain}/current`目录下 
