@@ -27,11 +27,12 @@ export default {
     fs.writeJsonSync(optionsFilePath, options)
 
     // 依赖版本
-    const exePkgJson = fs.readFileSync('node_modules/@certd/executor/package.json')
+    const exePkgJson = fs.readFileSync(pathUtil.join('node_modules/@certd/executor/package.json'))
     const executorPkg = JSON.parse(exePkgJson)
     const currentVersion = executorPkg.version
 
-    const templatePkg = require('../templates/certd-run/package.json')
+    const templatePkgJson = fs.readFileSync(pathUtil.join('templates/certd-run/package.json'))
+    const templatePkg = JSON.parse(templatePkgJson)
     templatePkg.dependencies['@certd/executor'] = '^' + currentVersion
     templatePkg.dependencies['@certd/plugin-aliyun'] = '^' + currentVersion
     templatePkg.dependencies['@certd/plugin-host'] = '^' + currentVersion

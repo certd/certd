@@ -55,10 +55,8 @@ export function errorLog (error) {
   // 打印到控制台
   console.log(error)
   // 显示提示
-  notification({
-    message: error.message,
-    type: 'error',
-    duration: 5 * 1000
+  notification.error({
+    message: error.message
   })
 }
 

@@ -22,7 +22,6 @@ import {
   LocaleProvider,
   Modal,
   Radio,
-  Rate,
   Row,
   Select,
   Switch,
@@ -61,7 +60,6 @@ const list = {
   TimePicker,
   Modal,
   Radio,
-  Rate,
   Row,
   Select,
   Switch,
@@ -77,14 +75,14 @@ const list = {
 export default function (app) {
   _.forEach(list, item => {
     app.use(item)
-
+    //
     // app.config.globalProperties.$message = message
     // app.config.globalProperties.$notification = notification
-    app.config.globalProperties.$info = Modal.info
-    app.config.globalProperties.$success = Modal.success
-    app.config.globalProperties.$error = Modal.error
-    app.config.globalProperties.$warning = Modal.warning
-    app.config.globalProperties.$confirm = Modal.confirm
-    app.config.globalProperties.$destroyAll = Modal.destroyAll
+    // app.config.globalProperties.$info = Modal.info
+    // app.config.globalProperties.$success = Modal.success
+    // app.config.globalProperties.$error = Modal.error
+    // app.config.globalProperties.$warning = Modal.warning
+    // app.config.globalProperties.$confirm = Modal.confirm
+    // app.config.globalProperties.$destroyAll = Modal.destroyAll
   })
 }

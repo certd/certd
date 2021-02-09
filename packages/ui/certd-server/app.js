@@ -8,6 +8,7 @@ import fs from 'fs'
 import _ from 'lodash-es'
 import './install.js'
 import pathUtil from './utils/util.path.js'
+import compress from 'koa-compress'
 const app = new Koa()
 
 // error handler
@@ -21,9 +22,13 @@ app.use(json())
 app.use(logger())
 
 const staticPlugin = Static(pathUtil.join('public'), {
-  maxage: 30 * 24 * 60 * 3600
+  maxage: 30 * 24 * 60 * 3600,
+  gzip: true
 })
 app.use(staticPlugin)
+
+// gzip
+app.use(compress({ threshold: 2048 }))
 
 // logger
 app.use(async (ctx, next) => {
