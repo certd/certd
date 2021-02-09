@@ -31,6 +31,7 @@
     "@vue/eslint-config-standard": "^6.0.0",
     "@vue/test-utils": "^2.0.0-0",
     "babel-eslint": "^10.1.0",
+    "babel-plugin-import": "^1.13.3",
     "chai": "^4.2.0",
     "eslint": "^7.15.0",
     "eslint-plugin-import": "^2.20.2",
