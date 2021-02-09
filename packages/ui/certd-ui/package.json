@@ -33,6 +33,7 @@
     "babel-eslint": "^10.1.0",
     "babel-plugin-import": "^1.13.3",
     "chai": "^4.2.0",
+    "compression-webpack-plugin": "^5.0.1",
     "eslint": "^7.15.0",
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-node": "^11.1.0",

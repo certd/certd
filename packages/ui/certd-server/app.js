@@ -20,15 +20,14 @@ app.use(bodyparser({
 }))
 app.use(json())
 app.use(logger())
+// gzip
+// app.use(compress({ threshold: 5120 }))
 
 const staticPlugin = Static(pathUtil.join('public'), {
   maxage: 30 * 24 * 60 * 3600,
   gzip: true
 })
 app.use(staticPlugin)
-
-// gzip
-app.use(compress({ threshold: 2048 }))
 
 // logger
 app.use(async (ctx, next) => {
