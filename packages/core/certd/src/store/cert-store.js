@@ -11,8 +11,8 @@ export class CertStore {
     this.domains = domains
     this.domain = this.getMainDomain(this.domains)
     this.safetyDomain = this.getSafetyDomain(this.domain)
-    // this.domainDir = this.safetyDomain + '-' + md5(this.getDomainStr(this.domains))
-    this.domainDir = this.safetyDomain
+    this.domainDir = this.safetyDomain + '-' + md5(this.getDomainStr(this.domains))
+    // this.domainDir = this.safetyDomain
     this.certsRootPath = this.store.buildKey(this.email, 'certs')
 
     this.currentMarkPath = this.store.buildKey(this.certsRootPath, this.domainDir, 'current.json')
