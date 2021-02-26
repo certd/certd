@@ -1,9 +1,9 @@
 import dayjs from 'dayjs'
-import crypto from 'crypto'
-// eslint-disable-next-line no-unused-vars
-function md5 (content) {
-  return crypto.createHash('md5').update(content).digest('hex')
-}
+// import crypto from 'crypto'
+// // eslint-disable-next-line no-unused-vars
+// function md5 (content) {
+//   return crypto.createHash('md5').update(content).digest('hex')
+// }
 export class CertStore {
   constructor ({ store, email, domains }) {
     this.store = store
@@ -11,7 +11,7 @@ export class CertStore {
     this.domains = domains
     this.domain = this.getMainDomain(this.domains)
     this.safetyDomain = this.getSafetyDomain(this.domain)
-    this.domainDir = this.safetyDomain + '-' + md5(this.getDomainStr(this.domains))
+    this.domainDir = this.safetyDomain + '-' + this.domains.length
     // this.domainDir = this.safetyDomain
     this.certsRootPath = this.store.buildKey(this.email, 'certs')
 
