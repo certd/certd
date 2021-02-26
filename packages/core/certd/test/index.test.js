@@ -68,7 +68,7 @@ describe('Certd', function () {
     const certd = new Certd(options)
     const currentRootPath = certd.certStore.currentMarkPath
     console.log('rootDir', currentRootPath)
-    expect(currentRootPath).match(/xiaojunnuo@qq.com\\certs\\_.docmirror.club\w*\\current.json/)
+    expect(currentRootPath).match(/xiaojunnuo@qq.com\\certs\\_.docmirror.club-\w*\\current.json/)
   })
   it('#writeAndReadCert', async function () {
     const options = createOptions()
