@@ -1,6 +1,6 @@
 {
   "name": "@certd/server",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "private": false,
   "type": "module",
   "scripts": {
@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "@certd/api": "^0.1.17",
-    "@certd/executor": "^0.1.17",
-    "@certd/plugin-aliyun": "^0.1.17",
-    "@certd/plugin-host": "^0.1.17",
-    "@certd/plugin-tencent": "^0.1.17",
+    "@certd/executor": "^0.1.18",
+    "@certd/plugin-aliyun": "^0.1.18",
+    "@certd/plugin-host": "^0.1.18",
+    "@certd/plugin-tencent": "^0.1.18",
     "compressing": "^1.5.1",
     "debug": "^4.1.1",
     "fs-extra": "^9.1.0",
