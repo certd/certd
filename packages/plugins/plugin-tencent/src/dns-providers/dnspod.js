@@ -29,7 +29,7 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
     this.loginToken = accessProvider.id + ',' + accessProvider.token
   }
 
-  async doRequest (options) {
+  async doRequest (options, successCodes = []) {
     const config = {
       method: 'post',
       formData: {
@@ -43,8 +43,11 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
     _.merge(config, options)
 
     const ret = await request(config)
-    if (!ret || !ret.status || ret.status.code !== '1') {
-      throw new Error('请求失败：' + ret.status.message + ',api=' + config.url)
+    if (!ret || !ret.status) {
+      const code = ret.status.code
+      if (code !== '1' || !successCodes.includes(code)) {
+        throw new Error('请求失败：' + ret.status.message + ',api=' + config.url)
+      }
     }
     return ret
   }
@@ -73,7 +76,7 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
         value: value,
         mx: 1
       }
-    })
+    }, ['104'])// 104错误码为记录已存在，无需再次添加
     this.logger.info('添加域名解析成功:', fullRecord, value, JSON.stringify(ret.record))
     return ret.record
   }
