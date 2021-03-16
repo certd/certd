@@ -76,7 +76,9 @@ export class Trace {
       }
     }
     const result = this.get({ type: 'result' })
-    this.printTraceLine(result, 'result', '')
+    if (result) {
+      this.printTraceLine(result, 'result', '')
+    }
     const mainContext = {}
     _.merge(mainContext, context)
     delete mainContext.__trace__

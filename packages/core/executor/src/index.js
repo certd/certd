@@ -88,15 +88,16 @@ export class Executor {
     logger.info('任务完成')
     trace.print()
     const result = resultTrace.get({ })
-    const returnData = {
+    if (result) {
+      if (result.status === 'error' && options.args.doNotThrowError === false) {
+        throw new Error(result.remark)
+      }
+    }
+    return {
       cert,
       context,
       result
     }
-    if (result.status === 'error' && options.args.doNotThrowError === false) {
-      throw new Error(result.remark)
-    }
-    return returnData
   }
 
   async runCertd (certd) {
