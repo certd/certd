@@ -16,3 +16,4 @@ node_modules/
 /packages/ui/certd-server/tmp/
 /packages/ui/certd-ui/dist/
 /other
+/dev-sidecar-test
