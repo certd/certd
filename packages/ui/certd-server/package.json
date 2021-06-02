@@ -1,6 +1,6 @@
 {
   "name": "@certd/server",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "private": false,
   "type": "module",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@certd/api": "^0.1.17",
-    "@certd/executor": "^0.1.19",
+    "@certd/executor": "^0.1.20",
     "@certd/plugin-aliyun": "^0.1.19",
     "@certd/plugin-host": "^0.1.19",
     "@certd/plugin-tencent": "^0.1.19",
