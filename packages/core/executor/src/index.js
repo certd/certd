@@ -58,14 +58,14 @@ export class Executor {
     logger.info('----------------------')
     if (!cert.isNew) {
       // 如果没有更新
-      if (!options.args.forceDeploy && !options.args.forceRedeploy) {
-        // 且不需要强制运行deploy
+      if (options.args.forceRedeploy) {
+        // 强制重新部署,清空保存的状态
+        await certd.certStore.setCurrentFile('context.json', '{}')
+      } else if (!options.args.forceDeploy) {
+        // 且不需要强制deploy
         logger.info('证书无更新，无需重新部署')
         logger.info('任务完成')
         return { cert }
-      } else {
-        // 强制重新运行,清空保存的状态
-        await certd.certStore.setCurrentFile('context.json', '{}')
       }
     }
     // 读取上次执行进度
