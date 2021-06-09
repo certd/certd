@@ -36,4 +36,17 @@ describe('HostShellExecute', function () {
     expect(ret).ok
     console.log('-----' + JSON.stringify(ret))
   })
+
+  it('#execute-publicKey-login', async function () {
+    this.timeout(10000)
+    const options = createOptions()
+    const plugin = new HostShellExecute(options)
+    const shellOpts = {
+      props: { script: ['ls'], accessProvider: 'tencent-ssh-base01' },
+      context: {}
+    }
+    const ret = await plugin.doExecute(shellOpts)
+    expect(ret).ok
+    console.log('-----' + JSON.stringify(ret))
+  })
 })

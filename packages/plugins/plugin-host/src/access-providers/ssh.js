@@ -17,7 +17,7 @@ export class SSHAccessProvider {
           required: true
         },
         password: { desc: '登录密码' },
-        publicKey: {
+        privateKey: {
           desc: '密钥，密码或此项必填一项'
         }
       }
