@@ -1,0 +1,6 @@
+[submodule "packages/deploy/server"]
+	path = packages/deploy/server
+	url = https://github.com/certd/certd-server.git
+[submodule "packages/deploy/client"]
+	path = packages/deploy/client
+	url = https://github.com/certd/certd-client.git
