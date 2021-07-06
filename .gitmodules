@@ -4,3 +4,6 @@
 [submodule "packages/deploy/client"]
 	path = packages/deploy/client
 	url = https://github.com/certd/certd-client.git
+[submodule "packages/issuer/node-acme-client"]
+	path = packages/issuer/node-acme-client
+	url = https://github.com/certd/node-acme-client.git
