@@ -41,6 +41,11 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
           label: 'ingress名称',
           desc: '支持多个（传入数组）'
         },
+        ingressClass: {
+          type: String,
+          label: 'ingress类型',
+          desc: '可选 qcloud / nginx'
+        },
         clusterIp: {
           type: String,
           label: '集群内网ip',
@@ -86,7 +91,13 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
       // 修改内网解析ip地址
       k8sClient.setLookup({ [clusterDomain]: { ip: props.clusterIp } })
     }
-    await this.patchCertSecret({ k8sClient, props, context })
+    const ingressType = props.ingressClass || 'qcloud'
+    if (ingressType === 'qcloud') {
+      await this.patchQcloudCertSecret({ k8sClient, props, context })
+    } else {
+      await this.patchNginxCertSecret({ cert, k8sClient, props, context })
+    }
+
     await this.sleep(2000) // 停留2秒，等待secret部署完成
     await this.restartIngress({ k8sClient, props })
     return true
@@ -121,7 +132,7 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
     return ret.Kubeconfig
   }
 
-  async patchCertSecret ({ k8sClient, props, context }) {
+  async patchQcloudCertSecret ({ k8sClient, props, context }) {
     const { tencentCertId } = context
     if (tencentCertId == null) {
       throw new Error('请先将【上传证书到腾讯云】作为前置任务')
@@ -134,6 +145,35 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
     const body = {
       data: {
         qcloud_cert_id: certIdBase64
+      },
+      metadata: {
+        labels: {
+          certd: this.appendTimeSuffix('certd')
+        }
+      }
+    }
+    let secretNames = secretName
+    if (typeof secretName === 'string') {
+      secretNames = [secretName]
+    }
+    for (const secret of secretNames) {
+      await k8sClient.patchSecret({ namespace, secretName: secret, body })
+      this.logger.info(`CertSecret已更新:${secret}`)
+    }
+  }
+
+  async patchNginxCertSecret ({ cert, k8sClient, props, context }) {
+    const crt = cert.crt
+    const key = cert.key
+    const crtBase64 = Buffer.from(crt).toString('base64')
+    const keyBase64 = Buffer.from(key).toString('base64')
+
+    const { namespace, secretName } = props
+
+    const body = {
+      data: {
+        'tls.crt': crtBase64,
+        'tls.key': keyBase64
       },
       metadata: {
         labels: {
