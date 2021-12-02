@@ -17,3 +17,4 @@ node_modules/
 /packages/ui/certd-ui/dist/
 /other
 /dev-sidecar-test
+/packages/core/certd/yarn.lock
