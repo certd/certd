@@ -1,6 +1,6 @@
 import { AbstractTencentPlugin } from '../abstract-tencent.js'
 import tencentcloud from 'tencentcloud-sdk-nodejs'
-import { K8sClient } from '../../utils/util.k8s.client.js'
+import { K8sClient } from '@certd/plugin-common'
 export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
   /**
    * 插件定义

@@ -87,6 +87,11 @@ export class K8sClient {
     })
   }
 
+  async getIngressList (opts) {
+    const namespace = opts.namespace || 'default'
+    return await this.client.apis.extensions.v1beta1.namespaces(namespace).ingresses.get()
+  }
+
   async getIngress (opts) {
     const namespace = opts.namespace || 'default'
     const ingressName = opts.ingressName
