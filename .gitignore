@@ -25,3 +25,5 @@ gen
 /other
 /dev-sidecar-test
 /packages/core/certd/yarn.lock
+/packages/test
+/test/own
