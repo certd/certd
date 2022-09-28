@@ -5,6 +5,9 @@ const logger = util.logger
 export class AcmeService {
   constructor (store) {
     this.store = store
+    acme.setLogger((text) => {
+      logger.info(text)
+    })
   }
 
   async getAccountConfig (email) {
