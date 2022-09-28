@@ -1,0 +1,3 @@
+[submodule "packages/base/node-acme-client"]
+	path = packages/base/node-acme-client
+	url = https://github.com/certd/node-acme-client.git
