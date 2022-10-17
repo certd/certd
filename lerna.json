@@ -3,7 +3,6 @@
     "packages/base/*",
     "packages/cor/*",
     "packages/plugins/*",
-    "packages/basic/*"
   ],
   "version": "0.2.2"
 }
