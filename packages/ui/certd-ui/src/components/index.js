@@ -1,6 +1,6 @@
-import DContainer from './d-container'
-import ComponentRender from './component-render'
-import AccessProviderSelector from './access-provider-selector/access-provider-selector'
+import DContainer from './d-container.vue'
+import ComponentRender from './component-render.vue'
+import AccessProviderSelector from './access-provider-selector/access-provider-selector.vue'
 
 const list = [
   DContainer,

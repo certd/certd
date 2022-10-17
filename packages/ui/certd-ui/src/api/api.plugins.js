@@ -1,14 +1,14 @@
-import { request } from './service'
-import inputHandler from './util.input.handler'
+import { request } from "./service";
+import inputHandler from "./util.input.handler";
 export default {
-  async list () {
+  async list() {
     const ret = await request({
-      url: '/plugins/list'
-    })
+      url: "/plugins/list"
+    });
 
-    inputHandler.handle(ret)
+    inputHandler.handle(ret);
 
-    console.log('plugins', ret)
-    return ret
+    console.log("plugins", ret);
+    return ret;
   }
-}
+};

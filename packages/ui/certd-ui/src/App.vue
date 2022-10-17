@@ -16,7 +16,6 @@
 </template>
 <script>
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
-import { useI18n } from 'vue-i18n'
 
 export default {
   data () {
@@ -25,8 +24,6 @@ export default {
     }
   },
   setup () {
-    const { t } = useI18n() // call `useI18n`, and spread `t` from  `useI18n` returning
-    return { t } // return render context that included `t`
   }
 }
 </script>

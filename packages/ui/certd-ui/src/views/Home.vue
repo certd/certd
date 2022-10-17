@@ -10,7 +10,7 @@
               <a-select
                 size="large"
                 mode="tags"
-                :placeholder="$t('please.input.domain')"
+                placeholder="请输入域名"
                 v-model:value="formData.cert.domains"
                 :open="false"
               ></a-select>

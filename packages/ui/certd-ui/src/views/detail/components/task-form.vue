@@ -4,7 +4,7 @@
     :closable="true"
     width="600px"
     v-model:visible="taskDrawerVisible"
-    :after-visible-change="taskDrawerOnAfterVisibleChange"
+    @after-visible-change="taskDrawerOnAfterVisibleChange"
   >
 
     <template #title>

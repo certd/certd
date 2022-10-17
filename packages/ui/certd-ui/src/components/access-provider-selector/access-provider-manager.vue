@@ -5,7 +5,8 @@
     :closable="true"
     width="500px"
     v-model:visible="visible"
-    :after-visible-change="onAfterVisibleChange"
+    :destroyOnClose="true"
+    @after-visible-change="onAfterVisibleChange"
   >
     <div class="d-container access-provider-manager">
       <a-button @click="add">
@@ -73,8 +74,6 @@
 
 <script>
 import { ref, reactive, nextTick, watch, inject } from 'vue'
-// eslint-disable-next-line no-unused-vars
-import { useForm } from '@ant-design-vue/use'
 import _ from 'lodash-es'
 import providerApi from '../../api/api.access-providers'
 function useEdit (props, context, onEditSave) {
