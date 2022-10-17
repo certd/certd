@@ -10,7 +10,7 @@
   "author": "Greper",
   "license": "MIT",
   "dependencies": {
-    "@certd/acme-client": "^0.2.0",
+    "@certd/acme-client": "^0.3.0",
     "@certd/api": "^0.2.1",
     "dayjs": "^1.9.7",
     "lodash-es": "^4.17.20",
