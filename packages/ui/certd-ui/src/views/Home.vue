@@ -1,9 +1,9 @@
 <template>
   <div class="page-index flex-center">
-    <H2 class="title">CERT-D</H2>
+    <h2 class="title">CERT-D</h2>
     <div class="page-body">
 
-      <a-tabs @change="callback">
+      <a-tabs >
         <a-tab-pane key="1" tab="创建新证书">
           <div class="create-from-domains">
             <div class="input-row flex-row">
@@ -51,11 +51,13 @@ export default {
     })
     const router = useRouter()
     const createFromDomain = () => {
+      console.log("formData:",formData)
       goToDetail(JSON.stringify(formData))
     }
 
     const goToDetail = (options) => {
-      router.push({ name: 'detail', params: { options } })
+      console.log("options:",options)
+      router.push({ name: 'detail', state: { options } })
     }
     const autoSize = reactive({ minRows: 8, maxRows: 10 })
 

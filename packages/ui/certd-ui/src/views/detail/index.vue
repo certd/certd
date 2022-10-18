@@ -184,7 +184,7 @@ import { message } from 'ant-design-vue'
 // eslint-disable-next-line no-unused-vars
 import { reactive, ref, toRef, toRefs, provide, readonly } from 'vue'
 // eslint-disable-next-line no-unused-vars
-import { useRoute } from 'vue-router'
+import { useRoute,useRouter } from 'vue-router'
 import CertForm from './components/cert-form.vue'
 import TaskForm from './components/task-form.vue'
 import exportsApi from '../../api/api.exports'
@@ -245,9 +245,8 @@ function useExports (options) {
 export default {
   components: { DContainer, CertForm, TaskForm },
   setup () {
-    const route = useRoute()
-    console.log('route', route)
-    const optionParams = route.params.options ? JSON.parse(route.params.options) : {}
+    const state = history.state
+    const optionParams = state.options ? JSON.parse(state.options ) : {}
     if (optionParams.accessProviders) {
       optionParams.accessProviders = commonUtil.mapToArray(optionParams.accessProviders)
     }
