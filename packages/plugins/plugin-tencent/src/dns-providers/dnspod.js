@@ -1,5 +1,5 @@
 import { AbstractDnsProvider, util } from '@certd/api'
-import _ from 'lodash-es'
+import _ from 'lodash'
 const request = util.request
 export class DnspodDnsProvider extends AbstractDnsProvider {
   static define () {

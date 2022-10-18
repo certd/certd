@@ -6,7 +6,9 @@ yarn-error.log
 yarn.lock
 package-lock.json
 /.idea/
-
+*/**/dist
+*/**/pnpm-lock.yaml
+*/**/stats.html
 .idea
 *.iml
 out

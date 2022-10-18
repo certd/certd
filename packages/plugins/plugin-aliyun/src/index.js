@@ -1,4 +1,4 @@
-import _ from 'lodash-es'
+import _ from 'lodash'
 
 import { AliyunDnsProvider } from './dns-providers/aliyun.js'
 import { AliyunAccessProvider } from './access-providers/aliyun.js'

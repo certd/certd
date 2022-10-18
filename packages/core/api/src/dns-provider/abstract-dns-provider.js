@@ -1,4 +1,4 @@
-import _ from 'lodash-es'
+import _ from 'lodash'
 import logger from '../utils/util.log.js'
 import commonUtil from '../utils/util.common.js'
 export class AbstractDnsProvider {

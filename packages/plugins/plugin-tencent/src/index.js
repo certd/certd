@@ -1,4 +1,4 @@
-import _ from 'lodash-es'
+import _ from 'lodash'
 
 import { TencentAccessProvider } from './access-providers/tencent.js'
 import { DnspodAccessProvider } from './access-providers/dnspod.js'

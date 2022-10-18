@@ -2,8 +2,12 @@
 	"name": "@certd/plugin-aliyun",
 	"version": "0.2.2",
 	"description": "",
-	"main": "src/index.js",
 	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/fast-crud.es.js",
+	"scripts": {
+		"build": "rollup -c"
+	},
 	"dependencies": {
 		"@alicloud/cs20151215": "^3.0.3",
 		"@alicloud/openapi-client": "^0.4.0",
@@ -21,7 +25,8 @@
 		"eslint-plugin-import": "^2.22.1",
 		"eslint-plugin-node": "^11.1.0",
 		"eslint-plugin-promise": "^4.2.1",
-		"mocha": "^8.2.1"
+		"mocha": "^8.2.1",
+		"rollup": "^3.2.3"
 	},
 	"author": "Greper",
 	"license": "MIT",

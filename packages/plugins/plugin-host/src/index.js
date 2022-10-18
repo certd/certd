@@ -1,4 +1,4 @@
-import _ from 'lodash-es'
+import _ from 'lodash'
 
 import { SSHAccessProvider } from './access-providers/ssh.js'
 

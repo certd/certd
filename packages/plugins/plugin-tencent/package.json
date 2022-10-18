@@ -2,8 +2,12 @@
 	"name": "@certd/plugin-tencent",
 	"version": "0.2.2",
 	"description": "",
-	"main": "src/index.js",
 	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/fast-crud.es.js",
+	"scripts": {
+		"build": "rollup -c"
+	},
 	"dependencies": {
 		"@certd/api": "^0.2.1",
 		"@certd/plugin-common": "^0.2.1",
@@ -20,7 +24,8 @@
 		"eslint-plugin-import": "^2.22.1",
 		"eslint-plugin-node": "^11.1.0",
 		"eslint-plugin-promise": "^4.2.1",
-		"mocha": "^8.2.1"
+		"mocha": "^8.2.1",
+		"rollup": "^3.2.3"
 	},
 	"author": "Greper",
 	"license": "MIT",

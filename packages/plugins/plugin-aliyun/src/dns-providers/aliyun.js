@@ -1,6 +1,6 @@
 import { AbstractDnsProvider } from '@certd/api'
 import Core from '@alicloud/pop-core'
-import _ from 'lodash-es'
+import _ from 'lodash'
 export class AliyunDnsProvider extends AbstractDnsProvider {
   static define () {
     return {

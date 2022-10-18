@@ -1,7 +1,7 @@
 import ssh2 from 'ssh2'
 import path from 'path'
 import { util } from '@certd/api'
-import _ from 'lodash-es'
+import _ from 'lodash'
 const logger = util.logger
 export class SshClient {
   /**
