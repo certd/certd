@@ -12,8 +12,8 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
           title: '授权',
           helper: '需要aliyun类型的授权',
           component: {
-            name: 'access-provider-selector',
-            filter: 'aliyun'
+            name: 'access-selector',
+            type: 'aliyun'
           },
           rules: [{ required: true, message: '必填项' }]
         }

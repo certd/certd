@@ -10,7 +10,7 @@ export class HostShellExecute extends AbstractHostPlugin {
   static define () {
     return {
       name: 'hostShellExecute',
-      label: '执行远程主机脚本命令',
+      title: '执行远程主机脚本命令',
       input: {
         accessProvider: {
           title: '主机登录配置',

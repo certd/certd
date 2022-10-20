@@ -10,7 +10,7 @@ export class UploadCertToHost extends AbstractHostPlugin {
   static define () {
     return {
       name: 'uploadCertToHost',
-      label: '上传证书到主机',
+      title: '上传证书到主机',
       input: {
         crtPath: {
           title: '证书保存路径'
@@ -22,8 +22,8 @@ export class UploadCertToHost extends AbstractHostPlugin {
           title: '主机登录配置',
           helper: 'access授权',
           component: {
-            name: 'access-provider-selector',
-            filter: 'ssh'
+            name: 'access-selector',
+            type: 'ssh'
           },
           rules: [{ required: true, message: '此项必填' }]
         },

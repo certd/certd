@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 
 const define = {
   name: 'deployCertToAliyunCDN',
-  label: '部署到阿里云CDN',
+  title: '部署到阿里云CDN',
   input: {
     domainName: {
       title: 'cdn加速域名',
@@ -36,8 +36,8 @@ const define = {
       type: [String, Object],
       desc: 'access授权',
       component: {
-        name: 'access-provider-selector',
-        filter: 'aliyun'
+        name: 'access-selector',
+        type: 'aliyun'
       },
       required: true
     }
