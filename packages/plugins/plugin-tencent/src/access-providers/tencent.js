@@ -2,7 +2,7 @@ export class TencentAccessProvider {
   static define () {
     return {
       name: 'tencent',
-      label: '腾讯云',
+      title: '腾讯云',
       input: {
         secretId: {
           component: {

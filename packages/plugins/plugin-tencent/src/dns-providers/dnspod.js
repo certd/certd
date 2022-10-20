@@ -5,7 +5,7 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
   static define () {
     return {
       name: 'dnspod',
-      label: 'dnspod(腾讯云)',
+      title: 'dnspod(腾讯云)',
       desc: '腾讯云的域名解析接口已迁移到dnspod',
       input: {
         accessProvider: {

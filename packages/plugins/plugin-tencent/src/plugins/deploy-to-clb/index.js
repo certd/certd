@@ -10,7 +10,7 @@ export class DeployCertToTencentCLB extends AbstractTencentPlugin {
   static define () {
     return {
       name: 'deployCertToTencentCLB',
-      label: '部署到腾讯云CLB',
+      title: '部署到腾讯云CLB',
       desc: '暂时只支持单向认证证书，暂时只支持通用负载均衡',
       input: {
         region: {

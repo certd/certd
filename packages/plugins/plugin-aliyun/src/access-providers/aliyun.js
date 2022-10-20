@@ -2,7 +2,7 @@ export class AliyunAccessProvider {
   static define () {
     return {
       name: 'aliyun',
-      label: '阿里云',
+      title: '阿里云',
       desc: '',
       input: {
         accessKeyId: {

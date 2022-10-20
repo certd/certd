@@ -28,7 +28,11 @@ export class UploadCertToHost extends AbstractHostPlugin {
           rules: [{ required: true, message: '此项必填' }]
         },
         sudo: {
-          title: '是否sudo'
+          title: '是否sudo',
+          component: {
+            name: 'a-checkbox',
+            vModel: 'checked'
+          }
         }
       },
       output: {

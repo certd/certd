@@ -11,18 +11,18 @@ export class UploadCertToTencent extends AbstractTencentPlugin {
   static define () {
     return {
       name: 'uploadCertToTencent',
-      label: '上传证书到腾讯云',
+      title: '上传证书到腾讯云',
+      desc: '成功后获取，tencentCertId',
       input: {
         name: {
-          label: '证书名称'
+          title: '证书名称'
         },
         accessProvider: {
-          label: 'Access授权',
-          type: [String, Object],
-          desc: 'access授权',
+          title: 'Access授权',
+          helper: 'access授权',
           component: {
-            name: 'access-provider-selector',
-            filter: 'tencent'
+            name: 'access-selector',
+            type: 'tencent'
           },
           required: true
         }

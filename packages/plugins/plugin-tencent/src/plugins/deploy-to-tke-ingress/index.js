@@ -11,7 +11,7 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
   static define () {
     return {
       name: 'deployCertToTencentTKEIngress',
-      label: '部署到腾讯云TKE-ingress',
+      title: '部署到腾讯云TKE-ingress',
       desc: '需要【上传到腾讯云】作为前置任务',
       input: {
         region: {

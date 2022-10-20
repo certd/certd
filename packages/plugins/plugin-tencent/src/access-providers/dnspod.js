@@ -2,7 +2,7 @@ export class DnspodAccessProvider {
   static define () {
     return {
       name: 'dnspod',
-      label: 'dnspod',
+      title: 'dnspod',
       desc: '腾讯云的域名解析接口已迁移到dnspod',
       input: {
         id: {

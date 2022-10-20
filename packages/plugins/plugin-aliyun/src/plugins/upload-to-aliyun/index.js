@@ -1,26 +1,32 @@
 import Core from '@alicloud/pop-core'
 import { AbstractAliyunPlugin } from '../abstract-aliyun.js'
+import { ZoneOptions } from '../../utils/index.js'
 
 const define = {
   name: 'uploadCertToAliyun',
-  label: '上传证书到阿里云',
+  title: '上传证书到阿里云',
+  desc: '',
   input: {
     name: {
-      label: '证书名称',
-      desc: '证书上传后将以此参数作为名称前缀'
+      title: '证书名称',
+      helper: '证书上传后将以此参数作为名称前缀'
     },
     regionId: {
-      label: '大区',
-      default: 'cn-hangzhou',
+      title: '大区',
+      value: 'cn-hangzhou',
+      component: {
+        name: 'a-select',
+        vModel: 'value',
+        options: ZoneOptions
+      },
       required: true
     },
     accessProvider: {
-      label: 'Access提供者',
-      type: [String, Object],
-      desc: 'access授权',
+      title: 'Access授权',
+      helper: 'Access授权',
       component: {
-        name: 'access-provider-selector',
-        filter: 'aliyun'
+        name: 'access-selector',
+        type: 'aliyun'
       },
       required: true
     }

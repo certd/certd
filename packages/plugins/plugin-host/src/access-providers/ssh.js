@@ -2,7 +2,7 @@ export class SSHAccessProvider {
   static define () {
     return {
       name: 'ssh',
-      label: '主机',
+      title: '主机',
       desc: '',
       input: {
         host: { rules: [{ required: true, message: '此项必填' }] },
@@ -17,7 +17,8 @@ export class SSHAccessProvider {
         },
         password: { helper: '登录密码' },
         privateKey: {
-          helper: '密钥，密码或此项必填一项'
+          title: '密钥',
+          helper: '密钥或密码必填一项'
         }
       }
     }

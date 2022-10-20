@@ -7,42 +7,30 @@ const define = {
   label: '部署到阿里云CDN',
   input: {
     domainName: {
-      label: 'cdn加速域名',
+      title: 'cdn加速域名',
       component: {
         placeholder: 'cdn加速域名'
       },
       required: true
     },
     certName: {
-      label: '证书名称',
+      title: '证书名称',
       component: {
         placeholder: '上传后将以此名称作为前缀'
       }
     },
     from: {
-      default: 'upload',
-      label: '证书来源',
+      value: 'upload',
+      title: '证书来源',
       required: true,
       component: {
-        required: true,
         placeholder: '证书来源',
         name: 'a-select',
         options: [
-          { value: 'upload', label: '直接上传' },
-          { value: 'cas', label: '从证书库', title: '需要uploadCertToAliyun作为前置任务' }
+          { value: 'upload', label: '直接上传' }
         ]
-      },
-      desc: '如果选择‘从证书库’类型，则需要以《上传证书到阿里云》作为前置任务'
-
+      }
     },
-    // serverCertificateStatus: {
-    //   label: '启用https',
-    //   options: [
-    //     { value: 'on', label: '开启HTTPS，并更新证书' },
-    //     { value: 'auto', label: '若HTTPS开启则更新，未开启不更新' }
-    //   ],
-    //   required:true
-    // },
     accessProvider: {
       label: 'Access提供者',
       type: [String, Object],

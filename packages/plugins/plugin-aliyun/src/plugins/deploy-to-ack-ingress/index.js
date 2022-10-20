@@ -5,7 +5,7 @@ const ROAClient = Core.ROAClient
 
 const define = {
   name: 'deployCertToAliyunAckIngress',
-  label: '部署到阿里云AckIngress',
+  title: '部署到阿里云AckIngress',
   input: {
     clusterId: {
       title: '集群id',
@@ -14,14 +14,14 @@ const define = {
       }
     },
     secretName: {
-      label: '保密字典Id',
+      title: '保密字典Id',
       component: {
         placeholder: '保密字典Id'
       },
       required: true
     },
     regionId: {
-      label: '大区',
+      title: '大区',
       value: 'cn-shanghai',
       component: {
         placeholder: '集群所属大区'
@@ -29,7 +29,7 @@ const define = {
       required: true
     },
     namespace: {
-      label: '命名空间',
+      title: '命名空间',
       value: 'default',
       component: {
         placeholder: '命名空间'
@@ -37,7 +37,7 @@ const define = {
       required: true
     },
     ingressName: {
-      label: 'ingress名称',
+      title: 'ingress名称',
       value: '',
       component: {
         placeholder: 'ingress名称'
@@ -46,7 +46,7 @@ const define = {
       helper: '可以传入一个数组'
     },
     ingressClass: {
-      label: 'ingress类型',
+      title: 'ingress类型',
       value: 'nginx',
       component: {
         placeholder: '暂时只支持nginx类型'
@@ -54,7 +54,7 @@ const define = {
       required: true
     },
     isPrivateIpAddress: {
-      label: '是否私网ip',
+      title: '是否私网ip',
       value: false,
       component: {
         placeholder: '集群连接端点是否是私网ip'
@@ -63,12 +63,12 @@ const define = {
       required: true
     },
     accessProvider: {
-      label: 'Access提供者',
+      title: 'Access授权',
       type: [String, Object],
-      desc: 'access授权',
+      helper: 'AccessKey、AccessSecret',
       component: {
-        name: 'access-provider-selector',
-        filter: 'aliyun'
+        name: 'access-selector',
+        type: 'aliyun'
       },
       required: true
     }

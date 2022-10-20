@@ -12,7 +12,7 @@ export class DeployCertToTencentCDN extends AbstractTencentPlugin {
   static define () {
     return {
       name: 'deployCertToTencentCDN',
-      label: '部署到腾讯云CDN',
+      title: '部署到腾讯云CDN',
       input: {
         domainName: {
           title: 'cdn加速域名',
