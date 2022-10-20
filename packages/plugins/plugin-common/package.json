@@ -1,6 +1,6 @@
 {
 	"name": "@certd/plugin-common",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"description": "",
 	"type": "module",
 	"main": "./dist/index.cjs",
@@ -13,7 +13,7 @@
 		"kubernetes-client": "^9.0.0"
 	},
 	"devDependencies": {
-		"@certd/certd": "^0.2.1",
+		"@certd/certd": "^0.3.0",
 		"chai": "^4.2.0",
 		"eslint": "^7.15.0",
 		"eslint-config-standard": "^16.0.2",

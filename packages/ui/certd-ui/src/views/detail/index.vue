@@ -184,13 +184,13 @@ import { message } from 'ant-design-vue'
 // eslint-disable-next-line no-unused-vars
 import { reactive, ref, toRef, toRefs, provide, readonly } from 'vue'
 // eslint-disable-next-line no-unused-vars
-import { useRoute } from 'vue-router'
-import CertForm from './components/cert-form'
-import TaskForm from './components/task-form'
+import { useRoute,useRouter } from 'vue-router'
+import CertForm from './components/cert-form.vue'
+import TaskForm from './components/task-form.vue'
 import exportsApi from '../../api/api.exports'
 import _ from 'lodash-es'
-import DContainer from '../../components/d-container'
-import commonUtil from '@/utils/util.common'
+import DContainer from '../../components/d-container.vue'
+import commonUtil from '/src/utils/util.common'
 function useDeploy (options) {
   const deployAdd = () => {
     options.deploy.push({
@@ -245,9 +245,8 @@ function useExports (options) {
 export default {
   components: { DContainer, CertForm, TaskForm },
   setup () {
-    const route = useRoute()
-    console.log('route', route)
-    const optionParams = route.params.options ? JSON.parse(route.params.options) : {}
+    const state = history.state
+    const optionParams = state.options ? JSON.parse(state.options ) : {}
     if (optionParams.accessProviders) {
       optionParams.accessProviders = commonUtil.mapToArray(optionParams.accessProviders)
     }
@@ -286,6 +285,10 @@ export default {
       taskFormRef.value.taskEdit(deploy, task, index)
     }
 
+    function taskUpdated(task){
+      console.log('task updated',task)
+    }
+
     useProvideAccessProviders(options)
 
     return {
@@ -297,6 +300,7 @@ export default {
       taskFormRef,
       taskAdd,
       taskEdit,
+      taskUpdated,
       ...useExports(options)
     }
   }

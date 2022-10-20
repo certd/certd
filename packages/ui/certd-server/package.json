@@ -10,11 +10,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@certd/api": "^0.2.1",
-    "@certd/executor": "^0.2.2",
-    "@certd/plugin-aliyun": "^0.2.2",
-    "@certd/plugin-host": "^0.2.1",
-    "@certd/plugin-tencent": "^0.2.2",
+    "@certd/api": "^0.3.0",
+    "@certd/executor": "^0.3.0",
+    "@certd/plugin-aliyun": "^0.3.0",
+    "@certd/plugin-host": "^0.3.0",
+    "@certd/plugin-tencent": "^0.3.0",
     "compressing": "^1.5.1",
     "debug": "^4.1.1",
     "fs-extra": "^9.1.0",

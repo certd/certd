@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div class="access-provider-selector">
     <a-select
       :value="value"
@@ -18,11 +19,11 @@
                     :filter="filter"
                     @update:value="valueUpdate"
   ></access-provider-manager>
-
+  </div>
 </template>
 <script>
 import { ref, inject } from 'vue'
-import AccessProviderManager from './access-provider-manager'
+import AccessProviderManager from './access-provider-manager.vue'
 
 export default {
   name: 'access-provider-selector',

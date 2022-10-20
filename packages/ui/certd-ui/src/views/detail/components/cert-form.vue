@@ -5,17 +5,17 @@
     :closable="true"
     width="600px"
     v-model:visible="visible"
-    :after-visible-change="afterVisibleChange"
+    @after-visible-change="afterVisibleChange"
   >
 
     <d-container>
       <a-form class="domain-form" :model="formData"  :scrollToFirstError="true" :label-col="labelCol" :wrapper-col="wrapperCol">
 
         <h3>域名信息</h3>
-        <a-form-item :label="$t('domain')" v-bind="validateInfos.domains">
+        <a-form-item label="域名" v-bind="validateInfos.domains">
           <a-select
             mode="tags"
-            :placeholder="$t('please.input.domain')"
+            placeholder="请输入域名"
             v-model:value="formData.domains"
             :open="false"
           ></a-select>
@@ -24,7 +24,7 @@
           </template>
         </a-form-item>
 
-        <a-form-item :label="$t('email')" v-bind="validateInfos.email">
+        <a-form-item label="邮箱" v-bind="validateInfos.email">
           <a-input v-model:value="formData.email"/>
         </a-form-item>
 
@@ -86,7 +86,8 @@
 </template>
 <script>
 import { reactive, ref, watch } from 'vue'
-import { useForm } from '@ant-design-vue/use'
+import { Form } from 'ant-design-vue';
+const useForm = Form.useForm;
 import dnsProviderApi from '../../../api/api.dns-providers'
 import _ from 'lodash-es'
 

@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    // 这样就可以对 `this` 上的数据属性进行更严格的推断`
+    "noImplicitAny": false,
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "jsx": "preserve",
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "outDir": "./dist/ts",
+    "types": [
+      "mocha",
+      "chai",
+      "node"
+    ],
+    "paths": {
+      "/@/*": ["src/*"],
+      "/src/*": ["src/*"],
+      "/#/*": ["types/*"]
+    },
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "scripthost"
+    ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "tests/**/*.ts",
+    "tests/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

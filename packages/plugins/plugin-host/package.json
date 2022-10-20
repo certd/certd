@@ -1,6 +1,6 @@
 {
 	"name": "@certd/plugin-host",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"description": "",
 	"type": "module",
 	"main": "./dist/index.cjs",
@@ -9,13 +9,13 @@
 		"build": "rollup -c"
 	},
 	"dependencies": {
-		"@certd/api": "^0.2.1",
+		"@certd/api": "^0.3.0",
 		"dayjs": "^1.9.7",
 		"lodash-es": "^4.17.20",
 		"ssh2": "^0.8.9"
 	},
 	"devDependencies": {
-		"@certd/certd": "^0.2.1",
+		"@certd/certd": "^0.3.0",
 		"chai": "^4.2.0",
 		"eslint": "^7.15.0",
 		"eslint-config-standard": "^16.0.2",

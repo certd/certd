@@ -1,6 +1,6 @@
 {
 	"name": "@certd/plugin-aliyun",
-	"version": "0.2.2",
+	"version": "0.3.0",
 	"description": "",
 	"type": "module",
 	"main": "./dist/index.cjs",
@@ -12,13 +12,13 @@
 		"@alicloud/cs20151215": "^3.0.3",
 		"@alicloud/openapi-client": "^0.4.0",
 		"@alicloud/pop-core": "^1.7.10",
-		"@certd/api": "^0.2.1",
+		"@certd/api": "^0.3.0",
 		"dayjs": "^1.9.7",
 		"lodash-es": "^4.17.20"
 	},
 	"devDependencies": {
-		"@certd/certd": "^0.2.1",
-		"@certd/plugin-common": "^0.2.1",
+		"@certd/certd": "^0.3.0",
+		"@certd/plugin-common": "^0.3.0",
 		"chai": "^4.2.0",
 		"eslint": "^7.15.0",
 		"eslint-config-standard": "^16.0.2",
