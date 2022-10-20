@@ -5,20 +5,19 @@ export class SSHAccessProvider {
       label: '主机',
       desc: '',
       input: {
-        host: { required: true },
+        host: { rules: [{ required: true, message: '此项必填' }] },
         port: {
-          label: '端口',
-          type: Number,
-          default: '22',
-          required: true
+          title: '端口',
+          value: '22',
+          rules: [{ required: true, message: '此项必填' }]
         },
         username: {
-          default: 'root',
-          required: true
+          value: 'root',
+          rules: [{ required: true, message: '此项必填' }]
         },
-        password: { desc: '登录密码' },
+        password: { helper: '登录密码' },
         privateKey: {
-          desc: '密钥，密码或此项必填一项'
+          helper: '密钥，密码或此项必填一项'
         }
       }
     }

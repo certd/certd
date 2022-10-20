@@ -15,30 +15,19 @@ export class DeployCertToTencentCDN extends AbstractTencentPlugin {
       label: '部署到腾讯云CDN',
       input: {
         domainName: {
-          label: 'cdn加速域名',
-          required: true
+          title: 'cdn加速域名',
+          rules: [{ required: true, message: '该项必填' }]
         },
         certName: {
-          label: '证书名称',
-          desc: '证书上传后将以此参数作为名称前缀'
-        },
-        certType: {
-          default: 'upload',
-          label: '证书来源',
-          options: [
-            { value: 'upload', label: '直接上传' },
-            { value: 'cloud', label: '从证书库', desc: '需要uploadCertToTencent作为前置任务' }
-          ],
-          desc: '如果选择‘从证书库’类型，则需要以《上传证书到腾讯云》作为前置任务',
-          required: true
+          title: '证书名称',
+          helper: '证书上传后将以此参数作为名称前缀'
         },
         accessProvider: {
-          label: 'Access提供者',
-          type: [String, Object],
-          desc: 'access 授权',
+          title: 'Access提供者',
+          helper: 'access 授权',
           component: {
-            name: 'access-provider-selector',
-            filter: 'tencent'
+            name: 'access-selector',
+            type: 'tencent'
           },
           required: true
         }

@@ -8,11 +8,10 @@ const define = {
   label: '部署到阿里云AckIngress',
   input: {
     clusterId: {
-      label: '集群id',
+      title: '集群id',
       component: {
         placeholder: '集群id'
-      },
-      required: true
+      }
     },
     secretName: {
       label: '保密字典Id',

@@ -6,19 +6,16 @@ export class AliyunAccessProvider {
       desc: '',
       input: {
         accessKeyId: {
-          type: String,
           component: {
-            placeholder: 'accessKeyId',
-            rules: [{ required: true, message: '必填项' }]
+            placeholder: 'accessKeyId'
           },
-          required: true
+          rules: [{ required: true, message: '必填项' }]
         },
         accessKeySecret: {
-          type: String,
           component: {
-            placeholder: 'accessKeySecret',
-            rules: [{ required: true, message: '必填项' }]
-          }
+            placeholder: 'accessKeySecret'
+          },
+          rules: [{ required: true, message: '必填项' }]
 
         }
       },

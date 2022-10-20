@@ -15,57 +15,57 @@ export class DeployCertToTencentTKEIngress extends AbstractTencentPlugin {
       desc: '需要【上传到腾讯云】作为前置任务',
       input: {
         region: {
-          label: '大区',
-          default: 'ap-guangzhou',
+          title: '大区',
+          value: 'ap-guangzhou',
           required: true
         },
         clusterId: {
-          label: '集群ID',
+          title: '集群ID',
           required: true,
           desc: '例如：cls-6lbj1vee',
           request: true
         },
         namespace: {
-          label: '集群namespace',
-          default: 'default',
+          title: '集群namespace',
+          value: 'default',
           required: true
         },
         secreteName: {
-          type: [String, Array],
-          label: '证书的secret名称',
-          desc: '支持多个（传入数组）',
+          title: '证书的secret名称',
           required: true
         },
         ingressName: {
-          type: [String, Array],
-          label: 'ingress名称',
-          desc: '支持多个（传入数组）'
+          title: 'ingress名称',
+          required: true
         },
         ingressClass: {
-          type: String,
-          label: 'ingress类型',
-          desc: '可选 qcloud / nginx'
+          title: 'ingress类型',
+          component: {
+            name: 'a-select',
+            options: [
+              { value: 'qcloud' },
+              { value: 'nginx' }
+            ]
+          },
+          helper: '可选 qcloud / nginx'
         },
         clusterIp: {
-          type: String,
-          label: '集群内网ip',
-          desc: '如果开启了外网的话，无需设置'
+          title: '集群内网ip',
+          helper: '如果开启了外网的话，无需设置'
         },
         clusterDomain: {
-          type: String,
-          label: '集群域名',
-          desc: '可不填，默认为:[clusterId].ccs.tencent-cloud.com'
+          title: '集群域名',
+          helper: '可不填，默认为:[clusterId].ccs.tencent-cloud.com'
         },
         /**
          * AccessProvider的key,或者一个包含access的具体的对象
          */
         accessProvider: {
-          label: 'Access授权',
-          type: [String, Object],
-          desc: 'access授权',
+          title: 'Access授权',
+          helper: 'access授权',
           component: {
-            name: 'access-provider-selector',
-            filter: 'tencent'
+            name: 'access-selector',
+            type: 'tencent'
           },
           required: true
         }

@@ -9,14 +9,13 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
       desc: '',
       input: {
         accessProvider: {
-          label: '授权',
-          type: [String, Object],
-          desc: '需要aliyun类型的授权',
+          title: '授权',
+          helper: '需要aliyun类型的授权',
           component: {
             name: 'access-provider-selector',
             filter: 'aliyun'
           },
-          required: true
+          rules: [{ required: true, message: '必填项' }]
         }
       },
       output: {

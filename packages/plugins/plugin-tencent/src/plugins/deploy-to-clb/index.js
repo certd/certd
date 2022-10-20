@@ -14,36 +14,37 @@ export class DeployCertToTencentCLB extends AbstractTencentPlugin {
       desc: '暂时只支持单向认证证书，暂时只支持通用负载均衡',
       input: {
         region: {
-          label: '大区',
-          default: 'ap-guangzhou',
+          title: '大区',
+          value: 'ap-guangzhou',
+          component: {
+            name: 'a-select',
+            options: [{ value: 'ap-guangzhou' }]
+          },
           required: true
         },
         domain: {
-          label: '域名',
-          type: [String, Array],
+          title: '域名',
           required: true,
-          desc: '要更新的支持https的负载均衡的域名'
+          helper: '要更新的支持https的负载均衡的域名'
         },
         loadBalancerId: {
-          label: '负载均衡ID',
-          desc: '如果没有配置，则根据域名匹配负载均衡下的监听器（根据域名匹配时暂时只支持前100个）',
+          title: '负载均衡ID',
+          helper: '如果没有配置，则根据域名匹配负载均衡下的监听器（根据域名匹配时暂时只支持前100个）',
           required: true
         },
         listenerId: {
-          label: '监听器ID',
-          desc: '如果没有配置，则根据域名或负载均衡id匹配监听器'
+          title: '监听器ID',
+          helper: '如果没有配置，则根据域名或负载均衡id匹配监听器'
         },
         certName: {
-          label: '证书名称',
-          desc: '如无uploadCertToTencent作为前置，则此项需要设置，默认为域名'
+          title: '证书名称前缀'
         },
         accessProvider: {
-          label: 'Access提供者',
-          type: [String, Object],
-          desc: 'access授权',
+          title: 'Access提供者',
+          helper: 'access授权',
           component: {
-            name: 'access-provider-selector',
-            filter: 'tencent'
+            name: 'access-selector',
+            type: 'tencent'
           },
           required: true
         }
