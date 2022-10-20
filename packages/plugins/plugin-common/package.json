@@ -9,7 +9,7 @@
 		"build": "rollup -c"
 	},
 	"dependencies": {
-		"@certd/api": "^0.2.1",
+		"@certd/api": "^0.3.0",
 		"kubernetes-client": "^9.0.0"
 	},
 	"devDependencies": {
