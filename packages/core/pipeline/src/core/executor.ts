@@ -3,10 +3,9 @@ import _ from "lodash";
 import { RunHistory } from "./run-history";
 import { pluginRegistry, TaskPlugin } from "../plugin";
 import { IAccessService } from "../access/access-service";
-import { ContextFactory, StorageContext } from "./context";
-import { IStorage, MemoryStorage } from "./storage";
+import { ContextFactory } from "./context";
+import { IStorage } from "./storage";
 import { logger } from "../utils/util.log";
-import { use } from "chai";
 
 export class Executor {
   userId: any;
@@ -16,7 +15,14 @@ export class Executor {
   accessService: IAccessService;
   contextFactory: ContextFactory;
   onChanged: (history: RunHistory) => void;
-  constructor(options: { userId: any; pipeline: Pipeline; storage: IStorage; onChanged: (history: RunHistory) => void; lastSuccessHistory?: RunHistory; accessService: IAccessService }) {
+  constructor(options: {
+    userId: any;
+    pipeline: Pipeline;
+    storage: IStorage;
+    onChanged: (history: RunHistory) => void;
+    lastSuccessHistory?: RunHistory;
+    accessService: IAccessService;
+  }) {
     this.pipeline = options.pipeline;
     this.lastSuccessHistory = options.lastSuccessHistory ?? new RunHistory();
     this.onChanged = options.onChanged;
@@ -82,13 +88,29 @@ export class Executor {
   private async runStep(step: Step) {
     //执行任务
     const taskPlugin: TaskPlugin = await this.getPlugin(step.type);
+
+    const define = taskPlugin.getDefine();
+    //从outputContext读取输入参数
+    _.forEach(define.input, (item, key) => {
+      if (item.component?.name === "output-selector") {
+        const contextKey = step.input[key];
+        if (contextKey != null) {
+          step.input[key] = this.runtime.context[contextKey];
+        }
+      }
+    });
+
     const res = await taskPlugin.execute(step.input);
-    _.merge(this.runtime.context, res);
+
+    //输出到output context
+    _.forEach(define.output, (item, key) => {
+      const contextKey = `step.${step.id}.${key}`;
+      this.runtime.context[contextKey] = res[key];
+    });
   }
 
   private async getPlugin(type: string): Promise<TaskPlugin> {
     const pluginClass = pluginRegistry.get(type);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const plugin = new pluginClass();
     await plugin.doInit({

@@ -15,7 +15,7 @@
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/ban-ts-ignore": "off",
     "@typescript-eslint/no-explicit-any": "off",
-    "no-unused-expressions": "off",
+//    "no-unused-expressions": "off",
     "max-len": [0, 160, 2, { "ignoreUrls": true }]
   }
 }

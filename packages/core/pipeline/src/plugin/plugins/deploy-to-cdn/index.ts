@@ -69,18 +69,17 @@ export class DeployCertToAliyunCDN extends AbstractPlugin implements TaskPlugin 
   }
 
   async buildParams(input: TaskInput) {
-    const { certName, domainName, cert } = input;
+    const { certName, domainName } = input;
     const CertName = certName + "-" + dayjs().format("YYYYMMDDHHmmss");
-
-    const newCert = (await this.pipelineContext.get(cert)) as CertInfo;
+    const cert = input.cert as CertInfo;
     return {
       RegionId: "cn-hangzhou",
       DomainName: domainName,
       ServerCertificateStatus: "on",
       CertName: CertName,
       CertType: "upload",
-      ServerCertificate: newCert.crt,
-      PrivateKey: newCert.key,
+      ServerCertificate: cert.crt,
+      PrivateKey: cert.key,
     };
   }
 
@@ -95,7 +94,7 @@ export class DeployCertToAliyunCDN extends AbstractPlugin implements TaskPlugin 
 
   checkRet(ret: any) {
     if (ret.code != null) {
-      throw new Error("执行失败：", ret.Message);
+      throw new Error("执行失败：" + ret.Message);
     }
   }
 }

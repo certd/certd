@@ -1,18 +1,7 @@
 import { AbstractRegistrable } from "../registry";
-import {
-  CreateRecordOptions,
-  IDnsProvider,
-  DnsProviderDefine,
-  RemoveRecordOptions,
-} from "./api";
+import { CreateRecordOptions, IDnsProvider, DnsProviderDefine, RemoveRecordOptions } from "./api";
 import { AbstractAccess } from "../access";
-export abstract class AbstractDnsProvider
-  extends AbstractRegistrable
-  implements IDnsProvider
-{
-  static define: DnsProviderDefine;
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+export abstract class AbstractDnsProvider extends AbstractRegistrable<DnsProviderDefine> implements IDnsProvider {
   // @ts-ignore
   access: AbstractAccess;
 

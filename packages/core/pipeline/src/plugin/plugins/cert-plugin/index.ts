@@ -17,6 +17,7 @@ export type CertInfo = {
     title: "证书申请",
     input: {
       domains: {
+        title: "域名",
         component: {
           name: "a-select",
           vModel: "value",
@@ -28,6 +29,7 @@ export type CertInfo = {
         helper: "请输入域名",
       },
       email: {
+        title: "邮箱",
         component: {
           name: "a-input",
           vModel: "value",
@@ -35,12 +37,14 @@ export type CertInfo = {
         helper: "请输入邮箱",
       },
       dnsProviderType: {
+        title: "DNS提供商",
         component: {
           name: "a-select",
         },
         helper: "请选择dns解析提供商",
       },
       dnsProviderAccess: {
+        title: "DNS解析授权",
         component: {
           name: "access-selector",
         },
@@ -49,7 +53,7 @@ export type CertInfo = {
       renewDays: {
         title: "更新天数",
         component: {
-          name: "a-number",
+          name: "a-input-number",
           value: 20,
         },
         helper: "到期前多少天后更新证书",

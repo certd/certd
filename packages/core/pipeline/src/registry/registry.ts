@@ -7,9 +7,14 @@ export type Registrable = {
   desc?: string;
 };
 
-export abstract class AbstractRegistrable {
-  static define: Registrable;
+export abstract class AbstractRegistrable<T extends Registrable> {
   logger: Logger = logger;
+  // @ts-ignore
+  define: T;
+
+  getDefine(): T {
+    return this.define;
+  }
 }
 export class Registry<T extends typeof AbstractRegistrable> {
   storage: {
@@ -20,7 +25,9 @@ export class Registry<T extends typeof AbstractRegistrable> {
     if (target == null) {
       return;
     }
-    let defineName = target.define.name;
+    // @ts-ignore
+    const define = new target().define;
+    let defineName = define.name;
     if (defineName == null) {
       defineName = target.name;
     }

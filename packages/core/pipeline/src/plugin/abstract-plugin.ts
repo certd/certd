@@ -1,12 +1,11 @@
 import { AbstractRegistrable } from "../registry";
-import { PluginDefine } from "./api";
 import { Logger } from "log4js";
 import { logger } from "../utils/util.log";
 import { IAccessService } from "../access/access-service";
 import { IContext } from "../core/context";
+import { PluginDefine, TaskInput, TaskOutput, TaskPlugin } from "./api";
 
-export abstract class AbstractPlugin extends AbstractRegistrable {
-  static define: PluginDefine;
+export abstract class AbstractPlugin extends AbstractRegistrable<PluginDefine> implements TaskPlugin {
   logger: Logger = logger;
   // @ts-ignore
   accessService: IAccessService;
@@ -25,4 +24,6 @@ export abstract class AbstractPlugin extends AbstractRegistrable {
   protected async onInit(): Promise<void> {
     //
   }
+
+  abstract execute(input: TaskInput): Promise<TaskOutput>;
 }

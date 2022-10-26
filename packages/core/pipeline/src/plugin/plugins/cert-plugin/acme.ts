@@ -1,12 +1,12 @@
 // @ts-ignore
-import acme, { Authorization } from "@certd/acme-client";
+import * as acme from "@certd/acme-client";
 import _ from "lodash";
 import { logger } from "../../../utils/util.log";
 import { AbstractDnsProvider } from "../../../dns-provider/abstract-dns-provider";
 import { IContext } from "../../../core/context";
 import { IDnsProvider } from "../../../dns-provider";
 import { Challenge } from "@certd/acme-client/types/rfc8555";
-
+console.log("acme", acme);
 export class AcmeService {
   userContext: IContext;
   constructor(options: { userContext: IContext }) {
@@ -155,10 +155,10 @@ export class AcmeService {
       email: email,
       termsOfServiceAgreed: true,
       challengePriority: ["dns-01"],
-      challengeCreateFn: async (authz: Authorization, challenge: Challenge, keyAuthorization: string): Promise<any> => {
+      challengeCreateFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string): Promise<any> => {
         return await this.challengeCreateFn(authz, challenge, keyAuthorization, dnsProvider);
       },
-      challengeRemoveFn: async (authz: Authorization, challenge: Challenge, keyAuthorization: string, recordItem: any): Promise<any> => {
+      challengeRemoveFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string, recordItem: any): Promise<any> => {
         return await this.challengeRemoveFn(authz, challenge, keyAuthorization, recordItem, dnsProvider);
       },
     });

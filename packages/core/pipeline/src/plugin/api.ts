@@ -22,7 +22,6 @@ export type Storage = {
 
 export type TaskOutputDefine = {
   title: string;
-  key: string;
   value?: any;
   storage?: Storage;
 };
@@ -38,6 +37,7 @@ export type PluginDefine = Registrable & {
 };
 
 export interface TaskPlugin {
+  getDefine(): PluginDefine;
   execute(input: TaskInput): Promise<TaskOutput>;
 }
 
@@ -50,9 +50,9 @@ export type OutputVO = {
 export function IsTask(define: (() => PluginDefine) | PluginDefine) {
   return function (target: any) {
     if (define instanceof Function) {
-      target.define = define();
+      target.prototype.define = define();
     } else {
-      target.define = define;
+      target.prototype.define = define;
     }
 
     pluginRegistry.install(target);

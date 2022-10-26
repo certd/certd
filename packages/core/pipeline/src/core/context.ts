@@ -1,4 +1,4 @@
-import { IStorage } from "./storage";
+import { IStorage, MemoryStorage } from "./storage";
 
 export interface IContext {
   get(key: string): Promise<any>;
@@ -7,13 +7,19 @@ export interface IContext {
 
 export class ContextFactory {
   storage: IStorage;
+  memoryStorage: IStorage;
 
   constructor(storage: IStorage) {
     this.storage = storage;
+    this.memoryStorage = new MemoryStorage();
   }
 
   getContext(scope: string, namespace: string): IContext {
     return new StorageContext(scope, namespace, this.storage);
+  }
+
+  getMemoryContext(scope: string, namespace: string): IContext {
+    return new StorageContext(scope, namespace, this.memoryStorage);
   }
 }
 

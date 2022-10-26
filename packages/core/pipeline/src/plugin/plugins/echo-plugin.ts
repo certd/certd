@@ -7,6 +7,7 @@ import { IsTask, TaskInput, TaskOutput, TaskPlugin } from "../api";
     title: "测试插件回声",
     input: {
       cert: {
+        title: "cert",
         component: {
           name: "output-selector",
         },

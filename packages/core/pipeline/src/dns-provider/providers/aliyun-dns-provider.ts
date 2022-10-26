@@ -1,12 +1,7 @@
 import { AbstractDnsProvider } from "../abstract-dns-provider";
 import Core from "@alicloud/pop-core";
 import _ from "lodash";
-import {
-  CreateRecordOptions,
-  IDnsProvider,
-  IsDnsProvider,
-  RemoveRecordOptions,
-} from "../api";
+import { CreateRecordOptions, IDnsProvider, IsDnsProvider, RemoveRecordOptions } from "../api";
 
 @IsDnsProvider({
   name: "aliyun",
@@ -14,10 +9,7 @@ import {
   desc: "阿里云DNS解析提供商",
   accessType: "aliyun",
 })
-export class AliyunDnsProvider
-  extends AbstractDnsProvider
-  implements IDnsProvider
-{
+export class AliyunDnsProvider extends AbstractDnsProvider implements IDnsProvider {
   client: any;
   constructor() {
     super();
@@ -42,11 +34,7 @@ export class AliyunDnsProvider
       method: "POST",
     };
 
-    const ret = await this.client.request(
-      "DescribeDomains",
-      params,
-      requestOption
-    );
+    const ret = await this.client.request("DescribeDomains", params, requestOption);
     return ret.Domains.Domain;
   }
 
@@ -80,11 +68,7 @@ export class AliyunDnsProvider
       method: "POST",
     };
 
-    const ret = await this.client.request(
-      "DescribeDomainRecords",
-      params,
-      requestOption
-    );
+    const ret = await this.client.request("DescribeDomainRecords", params, requestOption);
     return ret.DomainRecords.Record;
   }
 
@@ -108,11 +92,7 @@ export class AliyunDnsProvider
     };
 
     try {
-      const ret = await this.client.request(
-        "AddDomainRecord",
-        params,
-        requestOption
-      );
+      const ret = await this.client.request("AddDomainRecord", params, requestOption);
       this.logger.info("添加域名解析成功:", value, value, ret.RecordId);
       return ret.RecordId;
     } catch (e: any) {
@@ -124,7 +104,7 @@ export class AliyunDnsProvider
     }
   }
   async removeRecord(options: RemoveRecordOptions): Promise<any> {
-    const { fullRecord, value, type, record } = options;
+    const { fullRecord, value, record } = options;
     const params = {
       RegionId: "cn-hangzhou",
       RecordId: record,
@@ -134,11 +114,7 @@ export class AliyunDnsProvider
       method: "POST",
     };
 
-    const ret = await this.client.request(
-      "DeleteDomainRecord",
-      params,
-      requestOption
-    );
+    const ret = await this.client.request("DeleteDomainRecord", params, requestOption);
     this.logger.info("删除域名解析成功:", fullRecord, value, ret.RecordId);
     return ret.RecordId;
   }

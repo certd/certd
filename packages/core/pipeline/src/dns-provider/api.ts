@@ -15,6 +15,7 @@ export type RemoveRecordOptions = CreateRecordOptions & {
 };
 
 export interface IDnsProvider {
+  getDefine(): DnsProviderDefine;
   createRecord(options: CreateRecordOptions): Promise<any>;
 
   removeRecord(options: RemoveRecordOptions): Promise<any>;
@@ -22,7 +23,7 @@ export interface IDnsProvider {
 
 export function IsDnsProvider(define: DnsProviderDefine) {
   return function (target: any) {
-    target.define = define;
+    target.prototype.define = define;
     dnsProviderRegistry.install(target);
   };
 }

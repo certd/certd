@@ -8,6 +8,6 @@ export type AccessDefine = Registrable & {
 };
 export function IsAccess(define: AccessDefine) {
   return function (target: any) {
-    target.define = define;
+    target.prototype.define = define;
   };
 }
