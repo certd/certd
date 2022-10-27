@@ -52,7 +52,7 @@ export class DeployCertToAliyunCDN extends AbstractPlugin implements TaskPlugin 
 
   async execute(input: TaskInput): Promise<TaskOutput> {
     console.log("开始部署证书到阿里云cdn");
-    const access = this.accessService.getById(input.accessId) as AliyunAccess;
+    const access = (await this.accessService.getById(input.accessId)) as AliyunAccess;
     const client = this.getClient(access);
     const params = await this.buildParams(input);
     await this.doRequest(client, params);
