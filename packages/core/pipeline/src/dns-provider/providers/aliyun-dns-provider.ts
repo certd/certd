@@ -14,7 +14,6 @@ export class AliyunDnsProvider extends AbstractDnsProvider implements IDnsProvid
   constructor() {
     super();
   }
-
   async onInit() {
     const access: any = this.access;
     this.client = new Core({

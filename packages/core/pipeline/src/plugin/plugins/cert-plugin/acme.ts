@@ -1,18 +1,19 @@
 // @ts-ignore
 import * as acme from "@certd/acme-client";
 import _ from "lodash";
-import { logger } from "../../../utils/util.log";
 import { AbstractDnsProvider } from "../../../dns-provider/abstract-dns-provider";
 import { IContext } from "../../../core/context";
 import { IDnsProvider } from "../../../dns-provider";
 import { Challenge } from "@certd/acme-client/types/rfc8555";
-console.log("acme", acme);
+import { Logger } from "log4js";
 export class AcmeService {
   userContext: IContext;
-  constructor(options: { userContext: IContext }) {
+  logger: Logger;
+  constructor(options: { userContext: IContext; logger: Logger }) {
     this.userContext = options.userContext;
+    this.logger = options.logger;
     acme.setLogger((text: string) => {
-      logger.info(text);
+      this.logger.info(text);
     });
   }
 
@@ -64,27 +65,27 @@ export class AcmeService {
   }
 
   async challengeCreateFn(authz: any, challenge: any, keyAuthorization: string, dnsProvider: IDnsProvider) {
-    logger.info("Triggered challengeCreateFn()");
+    this.logger.info("Triggered challengeCreateFn()");
 
     /* http-01 */
     if (challenge.type === "http-01") {
       const filePath = `/var/www/html/.well-known/acme-challenge/${challenge.token}`;
       const fileContents = keyAuthorization;
 
-      logger.info(`Creating challenge response for ${authz.identifier.value} at path: ${filePath}`);
+      this.logger.info(`Creating challenge response for ${authz.identifier.value} at path: ${filePath}`);
 
       /* Replace this */
-      logger.info(`Would write "${fileContents}" to path "${filePath}"`);
+      this.logger.info(`Would write "${fileContents}" to path "${filePath}"`);
       // await fs.writeFileAsync(filePath, fileContents);
     } else if (challenge.type === "dns-01") {
       /* dns-01 */
       const dnsRecord = `_acme-challenge.${authz.identifier.value}`;
       const recordValue = keyAuthorization;
 
-      logger.info(`Creating TXT record for ${authz.identifier.value}: ${dnsRecord}`);
+      this.logger.info(`Creating TXT record for ${authz.identifier.value}: ${dnsRecord}`);
 
       /* Replace this */
-      logger.info(`Would create TXT record "${dnsRecord}" with value "${recordValue}"`);
+      this.logger.info(`Would create TXT record "${dnsRecord}" with value "${recordValue}"`);
 
       return await dnsProvider.createRecord({
         fullRecord: dnsRecord,
@@ -106,25 +107,25 @@ export class AcmeService {
    */
 
   async challengeRemoveFn(authz: any, challenge: any, keyAuthorization: string, recordItem: any, dnsProvider: IDnsProvider) {
-    logger.info("Triggered challengeRemoveFn()");
+    this.logger.info("Triggered challengeRemoveFn()");
 
     /* http-01 */
     if (challenge.type === "http-01") {
       const filePath = `/var/www/html/.well-known/acme-challenge/${challenge.token}`;
 
-      logger.info(`Removing challenge response for ${authz.identifier.value} at path: ${filePath}`);
+      this.logger.info(`Removing challenge response for ${authz.identifier.value} at path: ${filePath}`);
 
       /* Replace this */
-      logger.info(`Would remove file on path "${filePath}"`);
+      this.logger.info(`Would remove file on path "${filePath}"`);
       // await fs.unlinkAsync(filePath);
     } else if (challenge.type === "dns-01") {
       const dnsRecord = `_acme-challenge.${authz.identifier.value}`;
       const recordValue = keyAuthorization;
 
-      logger.info(`Removing TXT record for ${authz.identifier.value}: ${dnsRecord}`);
+      this.logger.info(`Removing TXT record for ${authz.identifier.value}: ${dnsRecord}`);
 
       /* Replace this */
-      logger.info(`Would remove TXT record "${dnsRecord}" with value "${recordValue}"`);
+      this.logger.info(`Would remove TXT record "${dnsRecord}" with value "${recordValue}"`);
       await dnsProvider.removeRecord({
         fullRecord: dnsRecord,
         type: "TXT",
@@ -169,9 +170,9 @@ export class AcmeService {
       csr: csr.toString(),
     };
     /* Done */
-    logger.debug(`CSR:\n${cert.csr}`);
-    logger.debug(`Certificate:\n${cert.crt}`);
-    logger.info("证书申请成功");
+    this.logger.debug(`CSR:\n${cert.csr}`);
+    this.logger.debug(`Certificate:\n${cert.crt}`);
+    this.logger.info("证书申请成功");
     return cert;
   }
 

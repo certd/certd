@@ -1,3 +1,5 @@
+import { Logger } from "log4js";
+
 export enum RunStrategy {
   AlwaysRun,
   SkipWhenSucceed,
@@ -27,9 +29,9 @@ export type EventHandler = {
 };
 
 export type RunnableStrategy = {
-  runStrategy: RunStrategy;
-  onSuccess: EventHandler[];
-  onError: EventHandler[];
+  runStrategy?: RunStrategy;
+  onSuccess?: EventHandler[];
+  onError?: EventHandler[];
 };
 
 export type Step = Runnable & {
@@ -79,7 +81,20 @@ export type Log = {
   text: string;
 };
 
+export enum ResultType {
+  success,
+  error,
+  skip,
+}
+
+export type HistoryResultGroup = {
+  [key: string]: {
+    runnable: Runnable;
+    res: HistoryResult;
+  };
+};
 export type HistoryResult = {
+  type: string;
   title: string;
   /**
    * 任务状态
@@ -92,4 +107,6 @@ export type HistoryResult = {
    */
   result?: string;
   errorMessage?: string;
+  logs: string[];
+  logger: Logger;
 };

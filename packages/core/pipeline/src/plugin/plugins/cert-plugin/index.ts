@@ -1,6 +1,6 @@
 import { AbstractPlugin } from "../../abstract-plugin";
 import forge from "node-forge";
-import { ContextScope, IsTask, TaskInput, TaskOutput, TaskPlugin } from "../../api";
+import { IsTask, TaskInput, TaskOutput, TaskPlugin } from "../../api";
 import dayjs from "dayjs";
 import { dnsProviderRegistry } from "../../../dns-provider";
 import { AbstractDnsProvider } from "../../../dns-provider/abstract-dns-provider";
@@ -39,53 +39,49 @@ export type CertInfo = {
       dnsProviderType: {
         title: "DNS提供商",
         component: {
-          name: "a-select",
+          name: "pi-dns-provider-selector",
         },
         helper: "请选择dns解析提供商",
       },
       dnsProviderAccess: {
         title: "DNS解析授权",
         component: {
-          name: "access-selector",
+          name: "pi-access-selector",
         },
         helper: "请选择dns解析提供商授权",
       },
       renewDays: {
         title: "更新天数",
+        value: 20,
         component: {
           name: "a-input-number",
-          value: 20,
         },
         helper: "到期前多少天后更新证书",
       },
       forceUpdate: {
         title: "强制更新",
+        value: false,
         component: {
           name: "a-switch",
           vModel: "checked",
-          value: false,
         },
-        helper: "强制重新申请证书",
+        helper: "是否强制重新申请证书",
       },
     },
     output: {
       cert: {
         key: "cert",
         type: "CertInfo",
-        title: "证书",
-        scope: ContextScope.pipeline,
+        title: "域名证书",
       },
     },
   };
 })
-export class CertPlugin extends AbstractPlugin implements TaskPlugin {
+export class CertApplyPlugin extends AbstractPlugin implements TaskPlugin {
   // @ts-ignore
   acme: AcmeService;
-  constructor() {
-    super();
-  }
   protected async onInit() {
-    this.acme = new AcmeService({ userContext: this.userContext });
+    this.acme = new AcmeService({ userContext: this.userContext, logger: this.logger });
   }
 
   async execute(input: TaskInput): Promise<TaskOutput> {
@@ -139,7 +135,7 @@ export class CertPlugin extends AbstractPlugin implements TaskPlugin {
     const access = await this.accessService.getById(dnsProviderAccessId);
     // @ts-ignore
     const dnsProvider: AbstractDnsProvider = new dnsProviderClass();
-    dnsProvider.doInit({ access });
+    dnsProvider.doInit({ access, logger: this.logger });
 
     const cert = await this.acme.order({
       email,

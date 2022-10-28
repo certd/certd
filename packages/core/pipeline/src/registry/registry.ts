@@ -1,5 +1,4 @@
 import { Logger } from "log4js";
-import { logger } from "../utils/util.log";
 
 export type Registrable = {
   name: string;
@@ -8,7 +7,6 @@ export type Registrable = {
 };
 
 export abstract class AbstractRegistrable<T extends Registrable> {
-  logger: Logger = logger;
   // @ts-ignore
   define: T;
 
@@ -21,18 +19,20 @@ export class Registry<T extends typeof AbstractRegistrable> {
     [key: string]: T;
   } = {};
 
-  install(target: T) {
-    if (target == null) {
+  install(pluginClass: T) {
+    if (pluginClass == null) {
       return;
     }
     // @ts-ignore
-    const define = new target().define;
+    const plugin = new pluginClass();
+    delete plugin.define;
+    const define = plugin.getDefine();
     let defineName = define.name;
     if (defineName == null) {
-      defineName = target.name;
+      defineName = plugin.name;
     }
 
-    this.register(defineName, target);
+    this.register(defineName, pluginClass);
   }
 
   register(key: string, value: T) {
@@ -56,5 +56,16 @@ export class Registry<T extends typeof AbstractRegistrable> {
 
   getStorage() {
     return this.storage;
+  }
+
+  getDefineList() {
+    const list = [];
+    for (const key in this.storage) {
+      const PluginClass = this.storage[key];
+      // @ts-ignore
+      const plugin = new PluginClass();
+      list.push({ ...plugin.define, key });
+    }
+    return list;
   }
 }

@@ -1,4 +1,4 @@
-import { expect } from "chai";
+//import { expect } from "chai";
 import "mocha";
 import { Executor, RunHistory } from "../../src";
 import { pipeline } from "./pipeline.define";
@@ -11,7 +11,7 @@ describe("pipeline", function () {
       console.log("changed:");
     }
 
-    const executor = new Executor({ userId: 1, pipeline, onChanged, accessService: new AccessServiceTest(), storage: new FileStorage() });
+    const executor = new Executor({ userId: "test", pipeline, onChanged, accessService: new AccessServiceTest(), storage: new FileStorage() });
     await executor.run();
     // expect(define.name).eq("EchoPlugin");
   });

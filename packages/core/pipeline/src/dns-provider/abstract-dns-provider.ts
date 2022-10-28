@@ -1,12 +1,13 @@
 import { AbstractRegistrable } from "../registry";
 import { CreateRecordOptions, IDnsProvider, DnsProviderDefine, RemoveRecordOptions } from "./api";
 import { AbstractAccess } from "../access";
+import { Logger } from "log4js";
 export abstract class AbstractDnsProvider extends AbstractRegistrable<DnsProviderDefine> implements IDnsProvider {
-  // @ts-ignore
-  access: AbstractAccess;
-
-  doInit(options: { access: AbstractAccess }) {
+  access!: AbstractAccess;
+  logger!: Logger;
+  doInit(options: { access: AbstractAccess; logger: Logger }) {
     this.access = options.access;
+    this.logger = options.logger;
     this.onInit();
   }
 

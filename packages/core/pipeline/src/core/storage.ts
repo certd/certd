@@ -7,11 +7,6 @@ export interface IStorage {
 }
 
 export class FileStorage implements IStorage {
-  /**
-   * 范围： user / pipeline / runtime / task
-   */
-  scope: any;
-  namespace: any;
   root: string;
   constructor(rootDir?: string) {
     if (rootDir == null) {
@@ -42,17 +37,17 @@ export class FileStorage implements IStorage {
   }
 
   async get(scope: string, namespace: string, key: string): Promise<string | null> {
-    const path = `${this.root}/${this.scope}/${namespace}/${key}`;
+    const path = this.buildPath(scope, namespace, key);
     return this.readFile(path);
   }
 
   async set(scope: string, namespace: string, key: string, value: string): Promise<void> {
-    const path = this.buildPath(namespace, key);
+    const path = this.buildPath(scope, namespace, key);
     this.writeFile(path, value);
   }
 
-  private buildPath(namespace: string, key: string) {
-    return `${this.root}/${this.scope}/${namespace}/${key}`;
+  private buildPath(scope: string, namespace: string, key: string) {
+    return `${this.root}/${scope}/${namespace}/${key}`;
   }
 }
 

@@ -1,4 +1,4 @@
-import { ConcurrencyStrategy, NextStrategy, Pipeline } from "../../src";
+import { ConcurrencyStrategy, NextStrategy, Pipeline, RunStrategy } from "../../src";
 
 let idIndex = 0;
 function generateId() {
@@ -44,14 +44,17 @@ export const pipeline: Pipeline = {
       tasks: [
         {
           id: generateId(),
-          title: "测试输出参数",
+          title: "测试输出参数任务",
           steps: [
             {
               id: generateId(),
-              title: "输出参数",
+              title: "输出参数（echo插件）",
               type: "EchoPlugin",
               input: {
                 cert: "cert",
+              },
+              strategy: {
+                runStrategy: RunStrategy.SkipWhenSucceed,
               },
             },
           ],
