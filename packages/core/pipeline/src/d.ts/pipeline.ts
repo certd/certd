@@ -1,5 +1,3 @@
-import { Logger } from "log4js";
-
 export enum RunStrategy {
   AlwaysRun,
   SkipWhenSucceed,
@@ -62,6 +60,7 @@ export type Runnable = {
   status?: string;
   lastTime?: number;
   strategy?: RunnableStrategy;
+  runnableType?: string; // pipeline, stage, task , step
 };
 
 export type Pipeline = Runnable & {
@@ -94,8 +93,6 @@ export type HistoryResultGroup = {
   };
 };
 export type HistoryResult = {
-  type: string;
-  title: string;
   /**
    * 任务状态
    */
@@ -105,8 +102,6 @@ export type HistoryResult = {
   /**
    * 处理结果
    */
-  result?: string;
-  errorMessage?: string;
-  logs: string[];
-  logger: Logger;
+  result?: string; //success, error,skip
+  message?: string;
 };

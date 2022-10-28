@@ -1,5 +1,3 @@
-import { Logger } from "log4js";
-
 export type Registrable = {
   name: string;
   title: string;

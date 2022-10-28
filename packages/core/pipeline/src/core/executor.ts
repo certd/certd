@@ -1,6 +1,6 @@
-import { ConcurrencyStrategy, HistoryResult, HistoryResultGroup, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
+import { ConcurrencyStrategy, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
 import _ from "lodash";
-import { RunHistory } from "./run-history";
+import { HistoryStatus, RunHistory } from "./run-history";
 import { pluginRegistry, TaskPlugin } from "../plugin";
 import { IAccessService } from "../access/access-service";
 import { ContextFactory, IContext } from "./context";
@@ -32,34 +32,37 @@ export class Executor {
       this.runtime = new RunHistory(runtimeId);
       this.logger.info(`pipeline.${this.pipeline.id}  start`);
       await this.runWithHistory(this.pipeline, "pipeline", async () => {
-        return await this.runStages();
+        await this.runStages();
       });
     } finally {
       this.logger.info(`pipeline.${this.pipeline.id}  end`);
     }
   }
 
-  async runWithHistory(runnable: Runnable, runnableType: string, run: (result: HistoryResult) => Promise<any>) {
-    const result = this.runtime.start(runnable, runnableType);
-    this.onChanged(this.runtime);
+  async runWithHistory(runnable: Runnable, runnableType: string, run: (status: HistoryStatus) => Promise<void>) {
+    runnable.runnableType = runnableType;
+    const status = this.runtime.start(runnable);
+    await this.onChanged(this.runtime);
     const contextKey = `status.${runnable.id}`;
+
     if (runnable.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
+      //如果是成功后跳过策略
       const lastResult = await this.pipelineContext.get(contextKey);
       if (lastResult != null && lastResult === ResultType.success) {
-        this.runtime.log(runnable, result, "跳过");
+        this.runtime.log(status, "跳过");
         return ResultType.skip;
       }
     }
     try {
-      await run(result);
+      await run(status);
       this.runtime.success(runnable);
-      this.onChanged(this.runtime);
+      await this.onChanged(this.runtime);
       await this.pipelineContext.set(contextKey, ResultType.success);
       return ResultType.success;
     } catch (e: any) {
       this.logger.error(e);
       this.runtime.error(runnable, e);
-      this.onChanged(this.runtime);
+      await this.onChanged(this.runtime);
       await this.pipelineContext.set(contextKey, ResultType.error);
       throw e;
     } finally {
@@ -70,19 +73,19 @@ export class Executor {
   private async runStages() {
     const resList: ResultType[] = [];
     for (const stage of this.pipeline.stages) {
-      const res: ResultType = await this.runWithHistory(stage, "stage", async (result) => {
-        return await this.runStage(stage, result);
+      const res: ResultType = await this.runWithHistory(stage, "stage", async () => {
+        await this.runStage(stage);
       });
       resList.push(res);
     }
     return this.compositionResultType(resList);
   }
 
-  async runStage(stage: Stage, result: HistoryResult) {
+  async runStage(stage: Stage) {
     const runnerList = [];
     for (const task of stage.tasks) {
-      const runner = this.runWithHistory(task, "task", async (result) => {
-        return await this.runTask(task, result);
+      const runner = this.runWithHistory(task, "task", async () => {
+        await this.runTask(task);
       });
       runnerList.push(runner);
     }
@@ -115,20 +118,21 @@ export class Executor {
     return ResultType.error;
   }
 
-  private async runTask(task: Task, result: HistoryResult) {
+  private async runTask(task: Task) {
     const resList: ResultType[] = [];
     for (const step of task.steps) {
-      const res: ResultType = await this.runWithHistory(step, "step", async (result) => {
-        await this.runStep(step, result);
+      step.runnableType = "step";
+      const res: ResultType = await this.runWithHistory(step, "step", async (status) => {
+        await this.runStep(step, status);
       });
       resList.push(res);
     }
     return this.compositionResultType(resList);
   }
 
-  private async runStep(step: Step, result: HistoryResult) {
+  private async runStep(step: Step, status: HistoryStatus) {
     //执行任务
-    const taskPlugin: TaskPlugin = await this.getPlugin(step.type, result.logger);
+    const taskPlugin: TaskPlugin = await this.getPlugin(step.type, status.logger);
     // @ts-ignore
     delete taskPlugin.define;
     const define = taskPlugin.getDefine();

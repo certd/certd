@@ -1,4 +1,4 @@
-import log4js, { Appender, Logger, LoggingEvent } from "log4js";
+import log4js, { LoggingEvent } from "log4js";
 
 const OutputAppender = {
   configure: (config: any, layouts: any, findAppender: any, levels: any) => {
