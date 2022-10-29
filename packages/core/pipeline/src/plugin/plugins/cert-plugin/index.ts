@@ -55,6 +55,7 @@ export type CertInfo = {
         value: 20,
         component: {
           name: "a-input-number",
+          vModel: "value",
         },
         helper: "到期前多少天后更新证书",
       },

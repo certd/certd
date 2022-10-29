@@ -57,14 +57,13 @@ export type Trigger = {
 export type Runnable = {
   id: string;
   title: string;
-  status?: string;
-  lastTime?: number;
   strategy?: RunnableStrategy;
   runnableType?: string; // pipeline, stage, task , step
+  status?: HistoryResult;
 };
 
 export type Pipeline = Runnable & {
-  version: number;
+  version?: number;
   stages: Stage[];
   triggers: Trigger[];
 };

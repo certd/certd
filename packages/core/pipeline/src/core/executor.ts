@@ -1,6 +1,6 @@
 import { ConcurrencyStrategy, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
 import _ from "lodash";
-import { HistoryStatus, RunHistory } from "./run-history";
+import { RunHistory } from "./run-history";
 import { pluginRegistry, TaskPlugin } from "../plugin";
 import { IAccessService } from "../access/access-service";
 import { ContextFactory, IContext } from "./context";
@@ -18,7 +18,7 @@ export class Executor {
   pipelineContext: IContext;
   onChanged: (history: RunHistory) => void;
   constructor(options: { userId: any; pipeline: Pipeline; storage: IStorage; onChanged: (history: RunHistory) => void; accessService: IAccessService }) {
-    this.pipeline = options.pipeline;
+    this.pipeline = _.cloneDeep(options.pipeline);
     this.onChanged = options.onChanged;
     this.accessService = options.accessService;
     this.userId = options.userId;
@@ -29,7 +29,7 @@ export class Executor {
 
   async run(runtimeId: any = 0) {
     try {
-      this.runtime = new RunHistory(runtimeId);
+      this.runtime = new RunHistory(runtimeId, this.pipeline);
       this.logger.info(`pipeline.${this.pipeline.id}  start`);
       await this.runWithHistory(this.pipeline, "pipeline", async () => {
         await this.runStages();
@@ -39,9 +39,9 @@ export class Executor {
     }
   }
 
-  async runWithHistory(runnable: Runnable, runnableType: string, run: (status: HistoryStatus) => Promise<void>) {
+  async runWithHistory(runnable: Runnable, runnableType: string, run: () => Promise<void>) {
     runnable.runnableType = runnableType;
-    const status = this.runtime.start(runnable);
+    this.runtime.start(runnable);
     await this.onChanged(this.runtime);
     const contextKey = `status.${runnable.id}`;
 
@@ -49,21 +49,22 @@ export class Executor {
       //如果是成功后跳过策略
       const lastResult = await this.pipelineContext.get(contextKey);
       if (lastResult != null && lastResult === ResultType.success) {
-        this.runtime.log(status, "跳过");
+        this.runtime.skip(runnable);
+        await this.onChanged(this.runtime);
         return ResultType.skip;
       }
     }
     try {
-      await run(status);
+      await run();
       this.runtime.success(runnable);
-      await this.onChanged(this.runtime);
       await this.pipelineContext.set(contextKey, ResultType.success);
+      await this.onChanged(this.runtime);
       return ResultType.success;
     } catch (e: any) {
       this.logger.error(e);
       this.runtime.error(runnable, e);
-      await this.onChanged(this.runtime);
       await this.pipelineContext.set(contextKey, ResultType.error);
+      await this.onChanged(this.runtime);
       throw e;
     } finally {
       this.runtime.finally(runnable);
@@ -122,17 +123,17 @@ export class Executor {
     const resList: ResultType[] = [];
     for (const step of task.steps) {
       step.runnableType = "step";
-      const res: ResultType = await this.runWithHistory(step, "step", async (status) => {
-        await this.runStep(step, status);
+      const res: ResultType = await this.runWithHistory(step, "step", async () => {
+        await this.runStep(step);
       });
       resList.push(res);
     }
     return this.compositionResultType(resList);
   }
 
-  private async runStep(step: Step, status: HistoryStatus) {
+  private async runStep(step: Step) {
     //执行任务
-    const taskPlugin: TaskPlugin = await this.getPlugin(step.type, status.logger);
+    const taskPlugin: TaskPlugin = await this.getPlugin(step.type, this.runtime.loggers[step.id]);
     // @ts-ignore
     delete taskPlugin.define;
     const define = taskPlugin.getDefine();

@@ -1,74 +1,83 @@
-import { Context, HistoryResult, Runnable } from "../d.ts";
+import { Context, HistoryResult, Pipeline, Runnable } from "../d.ts";
 import _ from "lodash";
 import { buildLogger } from "../utils/util.log";
 import { Logger } from "log4js";
 
 export type HistoryStatus = {
-  runnable: Runnable;
   result: HistoryResult;
   logs: string[];
-  logger: Logger;
 };
 
 export class RunHistory {
-  constructor(runtimeId: any) {
-    this.id = runtimeId;
-  }
-
-  id: any;
+  id: string;
   //运行时上下文变量
   context: Context = {};
-  status: {
-    [nodeId: string]: HistoryStatus;
+  pipeline: Pipeline;
+  logs: {
+    [runnableId: string]: string[];
   } = {};
+  loggers: {
+    [runnableId: string]: Logger;
+  } = {};
+  constructor(runtimeId: any, pipeline: Pipeline) {
+    this.id = runtimeId;
+    this.pipeline = pipeline;
+  }
 
-  start(runnable: Runnable): HistoryStatus {
+  start(runnable: Runnable): HistoryResult {
     const now = new Date().getTime();
-    const status: HistoryStatus = {
-      runnable,
-      result: {
-        status: "start",
-        startTime: now,
-      },
-      logs: [],
-      logger: buildLogger((text) => {
-        status.logs.push(text);
-      }),
+    this.logs[runnable.id] = [];
+    this.loggers[runnable.id] = buildLogger((text) => {
+      this.logs[runnable.id].push(text);
+    });
+    const status: HistoryResult = {
+      status: "start",
+      startTime: now,
+      result: "start",
     };
-    this.status[runnable.id] = status;
-    this.log(status, `开始执行`);
+    runnable.status = status;
+    this.log(runnable, `开始执行`);
     return status;
   }
 
   success(runnable: Runnable) {
     const now = new Date().getTime();
-    const status = this.status[runnable.id];
+    const status = runnable.status;
     _.merge(status, {
-      result: {
-        status: "success",
-        endTime: now,
-      },
+      status: "success",
+      endTime: now,
+      result: "success",
     });
-    this.log(status, `执行成功`);
+    this.log(runnable, `执行成功`);
+  }
+
+  skip(runnable: Runnable) {
+    const now = new Date().getTime();
+    const status = runnable.status;
+    _.merge(status, {
+      status: "success",
+      endTime: now,
+      result: "skip",
+    });
+    this.log(runnable, `跳过`);
   }
 
   error(runnable: Runnable, e: Error) {
     const now = new Date().getTime();
-    const status = this.status[runnable.id];
+    const status = runnable.status;
     _.merge(status, {
-      result: {
-        status: "error",
-        endTime: now,
-        message: e.message,
-      },
+      status: "error",
+      endTime: now,
+      result: "error",
+      message: e.message,
     });
 
-    this.log(status, `执行异常：${e.message}`);
+    this.log(runnable, `执行异常：${e.message}`);
   }
 
-  log(status: HistoryStatus, text: string) {
-    const runnable = status.runnable;
-    status.logger.info(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, text);
+  log(runnable: Runnable, text: string) {
+    // @ts-ignore
+    this.loggers[runnable.id].info(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, text);
   }
 
   finally(runnable: Runnable) {
