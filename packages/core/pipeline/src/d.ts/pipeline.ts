@@ -64,6 +64,7 @@ export type Runnable = {
 
 export type Pipeline = Runnable & {
   version?: number;
+  userId: any;
   stages: Stage[];
   triggers: Trigger[];
 };

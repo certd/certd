@@ -22,6 +22,7 @@ export class Executor {
     this.onChanged = options.onChanged;
     this.accessService = options.accessService;
     this.userId = options.userId;
+    this.pipeline.userId = this.userId;
     this.contextFactory = new ContextFactory(options.storage);
     this.logger = logger;
     this.pipelineContext = this.contextFactory.getContext("pipeline", this.pipeline.id);
