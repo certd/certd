@@ -5,6 +5,7 @@ import Core from "@alicloud/pop-core";
 import RPCClient from "@alicloud/pop-core";
 import { AliyunAccess } from "../../../access";
 import { CertInfo } from "../cert-plugin";
+import { RunStrategy } from "../../../d.ts";
 
 @IsTask(() => {
   return {
@@ -14,16 +15,12 @@ import { CertInfo } from "../cert-plugin";
     input: {
       domainName: {
         title: "CDN加速域名",
-        component: {
-          placeholder: "你在阿里云上配置的CDN加速域名，比如certd.docmirror.cn",
-        },
+        helper: "你在阿里云上配置的CDN加速域名，比如certd.docmirror.cn",
         required: true,
       },
       certName: {
         title: "证书名称",
-        component: {
-          placeholder: "上传后将以此名称作为前缀备注",
-        },
+        helper: "上传后将以此名称作为前缀备注",
       },
       cert: {
         title: "域名证书",
@@ -44,6 +41,11 @@ import { CertInfo } from "../cert-plugin";
       },
     },
     output: {},
+    default: {
+      strategy: {
+        runStrategy: RunStrategy.SkipWhenSucceed,
+      },
+    },
   };
 })
 export class DeployCertToAliyunCDN extends AbstractPlugin implements TaskPlugin {

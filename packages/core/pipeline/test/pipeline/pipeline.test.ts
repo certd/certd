@@ -12,7 +12,7 @@ describe("pipeline", function () {
     }
 
     const executor = new Executor({ userId: "test", pipeline, onChanged, accessService: new AccessServiceTest(), storage: new FileStorage() });
-    await executor.run();
+    await executor.run(1, "user");
     // expect(define.name).eq("EchoPlugin");
   });
 });

@@ -2,7 +2,7 @@ import log4js, { LoggingEvent } from "log4js";
 
 const OutputAppender = {
   configure: (config: any, layouts: any, findAppender: any, levels: any) => {
-    let layout = layouts.colouredLayout;
+    let layout = layouts.basicLayout;
     if (config.layout) {
       layout = layouts.layout(config.layout.type, config.layout);
     }

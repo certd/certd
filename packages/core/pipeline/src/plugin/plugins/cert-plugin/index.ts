@@ -23,6 +23,7 @@ export type CertInfo = {
           vModel: "value",
           mode: "tags",
         },
+        required: true,
         col: {
           span: 24,
         },
@@ -34,6 +35,7 @@ export type CertInfo = {
           name: "a-input",
           vModel: "value",
         },
+        required: true,
         helper: "请输入邮箱",
       },
       dnsProviderType: {
@@ -41,6 +43,7 @@ export type CertInfo = {
         component: {
           name: "pi-dns-provider-selector",
         },
+        required: true,
         helper: "请选择dns解析提供商",
       },
       dnsProviderAccess: {
@@ -48,25 +51,31 @@ export type CertInfo = {
         component: {
           name: "pi-access-selector",
         },
+        required: true,
         helper: "请选择dns解析提供商授权",
       },
       renewDays: {
         title: "更新天数",
-        value: 20,
         component: {
           name: "a-input-number",
           vModel: "value",
         },
+        required: true,
         helper: "到期前多少天后更新证书",
       },
       forceUpdate: {
         title: "强制更新",
-        value: false,
         component: {
           name: "a-switch",
           vModel: "checked",
         },
         helper: "是否强制重新申请证书",
+      },
+    },
+    default: {
+      input: {
+        renewDays: 20,
+        forceUpdate: false,
       },
     },
     output: {

@@ -28,9 +28,10 @@ export class Executor {
     this.pipelineContext = this.contextFactory.getContext("pipeline", this.pipeline.id);
   }
 
-  async run(runtimeId: any = 0) {
+  async run(runtimeId: any = 0, triggerType: string) {
     try {
-      this.runtime = new RunHistory(runtimeId, this.pipeline);
+      const trigger = { type: triggerType };
+      this.runtime = new RunHistory(runtimeId, trigger, this.pipeline);
       this.logger.info(`pipeline.${this.pipeline.id}  start`);
       await this.runWithHistory(this.pipeline, "pipeline", async () => {
         await this.runStages();
@@ -62,7 +63,6 @@ export class Executor {
       await this.onChanged(this.runtime);
       return ResultType.success;
     } catch (e: any) {
-      this.logger.error(e);
       this.runtime.error(runnable, e);
       await this.pipelineContext.set(contextKey, ResultType.error);
       await this.onChanged(this.runtime);
@@ -140,7 +140,7 @@ export class Executor {
     const define = taskPlugin.getDefine();
     //从outputContext读取输入参数
     _.forEach(define.input, (item, key) => {
-      if (item.component?.name === "output-selector") {
+      if (item.component?.name === "pi-output-selector") {
         const contextKey = step.input[key];
         if (contextKey != null) {
           step.input[key] = this.runtime.context[contextKey];

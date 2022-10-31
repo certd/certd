@@ -8,6 +8,9 @@ export type HistoryStatus = {
   logs: string[];
 };
 
+export type RunTrigger = {
+  type: string; // user , timer
+};
 export class RunHistory {
   id: string;
   //运行时上下文变量
@@ -19,9 +22,11 @@ export class RunHistory {
   loggers: {
     [runnableId: string]: Logger;
   } = {};
-  constructor(runtimeId: any, pipeline: Pipeline) {
+  trigger: RunTrigger;
+  constructor(runtimeId: any, trigger: RunTrigger, pipeline: Pipeline) {
     this.id = runtimeId;
     this.pipeline = pipeline;
+    this.trigger = trigger;
   }
 
   start(runnable: Runnable): HistoryResult {
@@ -72,12 +77,17 @@ export class RunHistory {
       message: e.message,
     });
 
-    this.log(runnable, `执行异常：${e.message}`);
+    this.logError(runnable, e);
   }
 
   log(runnable: Runnable, text: string) {
     // @ts-ignore
     this.loggers[runnable.id].info(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, text);
+  }
+
+  logError(runnable: Runnable, e: Error) {
+    // @ts-ignore
+    this.loggers[runnable.id].error(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, e);
   }
 
   finally(runnable: Runnable) {

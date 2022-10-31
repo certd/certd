@@ -52,6 +52,7 @@ export type Trigger = {
   id: string;
   title: string;
   cron: string;
+  type: string;
 };
 
 export type Runnable = {
@@ -60,6 +61,9 @@ export type Runnable = {
   strategy?: RunnableStrategy;
   runnableType?: string; // pipeline, stage, task , step
   status?: HistoryResult;
+  default?: {
+    [key: string]: any;
+  };
 };
 
 export type Pipeline = Runnable & {
