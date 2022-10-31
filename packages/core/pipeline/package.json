@@ -18,7 +18,6 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.186",
-    "@fast-crud/fast-crud": "^1.5.0",
     "vue-tsc": "^0.38.9",
     "@alicloud/cs20151215": "^3.0.3",
     "@alicloud/openapi-client": "^0.4.0",

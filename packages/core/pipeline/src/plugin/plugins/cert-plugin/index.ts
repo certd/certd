@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { dnsProviderRegistry } from "../../../dns-provider";
 import { AbstractDnsProvider } from "../../../dns-provider/abstract-dns-provider";
 import { AcmeService } from "./acme";
-
+import _ from "lodash";
 export type CertInfo = {
   crt: string;
   key: string;
@@ -15,6 +15,7 @@ export type CertInfo = {
   return {
     name: "CertApply",
     title: "证书申请",
+    desc: "免费通配符域名证书申请，支持多个域名打到同一个证书上",
     input: {
       domains: {
         title: "域名",
@@ -22,12 +23,17 @@ export type CertInfo = {
           name: "a-select",
           vModel: "value",
           mode: "tags",
+          open: false,
         },
         required: true,
         col: {
           span: 24,
         },
-        helper: "请输入域名",
+        helper:
+          "支持通配符域名，例如： *.foo.com 、 *.test.handsfree.work\n" +
+          "支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）\n" +
+          "多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com）\n" +
+          "输入一个回车之后，再输入下一个",
       },
       email: {
         title: "邮箱",
@@ -138,7 +144,17 @@ export class CertApplyPlugin extends AbstractPlugin implements TaskPlugin {
     const domains = input["domains"];
     const dnsProviderType = input["dnsProviderType"];
     const dnsProviderAccessId = input["dnsProviderAccess"];
-    const csrInfo = input["csrInfo"];
+    const csrInfo = _.merge(
+      {
+        country: "CN",
+        state: "GuangDong",
+        locality: "ShengZhen",
+        organization: "CertD Org.",
+        organizationUnit: "IT Department",
+        emailAddress: email,
+      },
+      input["csrInfo"]
+    );
     this.logger.info("开始申请证书,", email, domains);
 
     const dnsProviderClass = dnsProviderRegistry.get(dnsProviderType);

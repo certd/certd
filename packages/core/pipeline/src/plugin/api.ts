@@ -1,6 +1,6 @@
-import { FormItemProps } from "@fast-crud/fast-crud";
 import { Registrable } from "../registry";
 import { pluginRegistry } from "./registry";
+import { FormItemProps } from "../d.ts";
 export type TaskInput = {
   [key: string]: any;
 };

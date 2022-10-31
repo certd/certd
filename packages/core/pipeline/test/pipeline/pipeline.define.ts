@@ -9,6 +9,7 @@ export const pipeline: Pipeline = {
   version: 1,
   id: generateId(),
   title: "测试管道",
+  userId: 1,
   triggers: [],
   stages: [
     {

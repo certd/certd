@@ -7,11 +7,18 @@ import { AbstractAccess } from "../abstract-access";
   desc: "",
   input: {
     accessKeyId: {
+      title: "accessKeyId",
       component: {
         placeholder: "accessKeyId",
       },
-      //required: true,
-      //rules: [{ required: true, message: "必填项" }],
+      required: true,
+    },
+    accessKeySecret: {
+      title: "accessKeySecret",
+      component: {
+        placeholder: "accessKeySecret",
+      },
+      required: true,
     },
   },
 })

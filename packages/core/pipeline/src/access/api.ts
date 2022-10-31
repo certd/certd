@@ -1,10 +1,14 @@
 import { Registrable } from "../registry";
-import { FormItemProps } from "@fast-crud/fast-crud";
 import { accessRegistry } from "./registry";
+import { FormItemProps } from "../d.ts";
 
+export type AccessInput = FormItemProps & {
+  title: string;
+  required?: boolean;
+};
 export type AccessDefine = Registrable & {
   input: {
-    [key: string]: FormItemProps;
+    [key: string]: AccessInput;
   };
 };
 export function IsAccess(define: AccessDefine) {

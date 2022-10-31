@@ -59,11 +59,21 @@ export class Registry<T extends typeof AbstractRegistrable> {
   getDefineList() {
     const list = [];
     for (const key in this.storage) {
-      const PluginClass = this.storage[key];
-      // @ts-ignore
-      const plugin = new PluginClass();
-      list.push({ ...plugin.define, key });
+      const define = this.getDefine(key);
+      if (define) {
+        list.push({ ...define, key });
+      }
     }
     return list;
+  }
+
+  getDefine(key: string) {
+    const PluginClass = this.storage[key];
+    if (!PluginClass) {
+      return;
+    }
+    // @ts-ignore
+    const plugin = new PluginClass();
+    return plugin.define;
   }
 }
