@@ -2,12 +2,12 @@ import { ConcurrencyStrategy, Pipeline, ResultType, Runnable, RunStrategy, Stage
 import _ from "lodash";
 import { RunHistory } from "./run-history";
 import { pluginRegistry, TaskPlugin } from "../plugin";
-import { IAccessService } from "../access/access-service";
 import { ContextFactory, IContext } from "./context";
 import { IStorage } from "./storage";
 import { logger } from "../utils/util.log";
 import { Logger } from "log4js";
-
+import { request } from "../utils/util.request";
+import { IAccessService } from "../access";
 export class Executor {
   userId: any;
   pipeline: Pipeline;
@@ -166,6 +166,7 @@ export class Executor {
       pipelineContext: this.pipelineContext,
       userContext: this.contextFactory.getContext("user", this.userId),
       logger,
+      http: request,
     });
     return plugin;
   }

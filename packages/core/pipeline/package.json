@@ -2,7 +2,7 @@
   "name": "@certd/pipeline",
   "private": true,
   "version": "0.3.0",
-  "main": "./dist/pipeline.umd.js",
+  "main": "./src/index.ts",
   "module": "./dist/pipeline.mjs",
   "types": "./dist/es/index.d.ts",
   "scripts": {
@@ -14,7 +14,10 @@
     "@certd/acme-client": "^0.3.0",
     "dayjs": "^1.11.6",
     "lodash": "^4.17.21",
-    "node-forge": "^0.10.0"
+    "node-forge": "^0.10.0",
+    "log4js": "^6.3.0",
+    "axios": "^0.21.1",
+    "qs": "^6.9.4"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.186",
@@ -35,7 +38,6 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "log4js": "^6.3.0",
     "mocha": "^10.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.4",

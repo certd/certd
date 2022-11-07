@@ -1,11 +1,12 @@
 import { expect } from "chai";
 import "mocha";
-import { EchoPlugin } from "../src/plugin/plugins";
+import { EchoPlugin } from "./echo-plugin";
 describe("task_plugin", function () {
   it("#taskplugin", function () {
     const echoPlugin = new EchoPlugin();
-    const define = echoPlugin.define;
-    echoPlugin.execute({ context: {}, props: { test: 111 } });
+    // @ts-ignore
+    const define = echoPlugin.getDefine();
+    echoPlugin.execute({ context: {}, input: { test: 111 } });
     expect(define.name).eq("EchoPlugin");
   });
 });
