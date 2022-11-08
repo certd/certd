@@ -1,0 +1,1 @@
+import "./aliyun-dns-provider";

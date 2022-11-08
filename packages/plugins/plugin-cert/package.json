@@ -1,0 +1,45 @@
+{
+  "name": "@certd/plugin-cert",
+  "private": true,
+  "version": "0.3.0",
+  "main": "./src/index.ts",
+  "module": "./dist/plugin-aliyun.mjs",
+  "types": "./dist/es/plugin-aliyun.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@certd/acme-client": "^0.3.0",
+    "node-forge": "^0.10.0",
+    "@certd/pipeline": "^0.3.0"
+  },
+  "devDependencies": {
+    "dayjs": "^1.11.6",
+    "lodash": "^4.17.21",
+    "@types/lodash": "^4.14.186",
+    "vue-tsc": "^0.38.9",
+    "@alicloud/cs20151215": "^3.0.3",
+    "@alicloud/openapi-client": "^0.4.0",
+    "@alicloud/pop-core": "^1.7.10",
+    "@midwayjs/core": "^3.0.0",
+    "@midwayjs/decorator": "^3.0.0",
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^10.0.0",
+    "@types/node-forge": "^1.3.0",
+    "@typescript-eslint/eslint-plugin": "^5.38.1",
+    "@typescript-eslint/parser": "^5.38.1",
+    "chai": "^4.3.6",
+    "eslint": "^8.24.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "log4js": "^6.3.0",
+    "mocha": "^10.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4",
+    "vite": "^3.1.0"
+  }
+}
