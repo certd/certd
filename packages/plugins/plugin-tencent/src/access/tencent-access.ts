@@ -1,26 +1,24 @@
-import { AbstractAccess, IsAccess } from "@certd/pipeline";
+import { IsAccess, IsAccessInput } from "@certd/pipeline";
 
 @IsAccess({
   name: "tencent",
   title: "腾讯云",
-  input: {
-    secretId: {
-      title: "secretId",
-      component: {
-        placeholder: "secretId",
-      },
-      rules: [{ required: true, message: "该项必填" }],
-    },
-    secretKey: {
-      title: "secretKey",
-      component: {
-        placeholder: "secretKey",
-      },
-      rules: [{ required: true, message: "该项必填" }],
-    },
-  },
 })
-export class TencentAccess extends AbstractAccess {
+export class TencentAccess {
+  @IsAccessInput({
+    title: "secretId",
+    component: {
+      placeholder: "secretId",
+    },
+    rules: [{ required: true, message: "该项必填" }],
+  })
   secretId = "";
+  @IsAccessInput({
+    title: "secretKey",
+    component: {
+      placeholder: "secretKey",
+    },
+    rules: [{ required: true, message: "该项必填" }],
+  })
   secretKey = "";
 }

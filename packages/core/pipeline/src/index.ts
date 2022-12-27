@@ -5,3 +5,6 @@ export * from "./registry";
 export * from "./dns-provider";
 export * from "./plugin";
 export * from "./utils";
+export * from "./decorator";
+export * from "./midway";
+export * from "./context";

@@ -1,13 +1,6 @@
 import { Registrable } from "../registry";
 import { pluginRegistry } from "./registry";
 import { FormItemProps } from "../d.ts";
-export type TaskInput = {
-  [key: string]: any;
-};
-
-export type TaskOutput = {
-  [key: string]: any;
-};
 
 export enum ContextScope {
   global,
@@ -28,17 +21,19 @@ export type TaskOutputDefine = {
 export type TaskInputDefine = FormItemProps;
 
 export type PluginDefine = Registrable & {
-  input: {
+  default?: any;
+  inputs?: {
     [key: string]: TaskInputDefine;
   };
-  output: {
+  outputs?: {
     [key: string]: TaskOutputDefine;
   };
+
+  autowire?: any;
 };
 
-export interface TaskPlugin {
-  getDefine(): PluginDefine;
-  execute(input: TaskInput): Promise<TaskOutput>;
+export interface ITaskPlugin {
+  execute(): Promise<void>;
 }
 
 export type OutputVO = {
@@ -46,15 +41,3 @@ export type OutputVO = {
   title: string;
   value: any;
 };
-
-export function IsTask(define: (() => PluginDefine) | PluginDefine) {
-  return function (target: any) {
-    if (define instanceof Function) {
-      target.prototype.define = define();
-    } else {
-      target.prototype.define = define;
-    }
-
-    pluginRegistry.install(target);
-  };
-}

@@ -1,10 +1,10 @@
 import { AbstractPlugin, IsTask, RunStrategy, TaskInput, TaskOutput, TaskPlugin, utils } from "@certd/pipeline";
-import Core from "@alicloud/pop-core";
+// @ts-ignore
+import { ROAClient } from "@alicloud/pop-core";
 import { AliyunAccess } from "../../access";
 import { K8sClient } from "@certd/plugin-util";
 import { appendTimeSuffix } from "../../utils";
 
-const ROAClient = Core.ROAClient;
 @IsTask(() => {
   return {
     name: "DeployCertToAliyunAckIngress",

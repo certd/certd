@@ -4,36 +4,16 @@ export type Registrable = {
   desc?: string;
 };
 
-export abstract class AbstractRegistrable<T extends Registrable> {
-  // @ts-ignore
-  define: T;
-
-  getDefine(): T {
-    return this.define;
-  }
-}
-export class Registry<T extends typeof AbstractRegistrable> {
+export type RegistryItem = {
+  define: Registrable;
+  target: any;
+};
+export class Registry {
   storage: {
-    [key: string]: T;
+    [key: string]: RegistryItem;
   } = {};
 
-  install(pluginClass: T) {
-    if (pluginClass == null) {
-      return;
-    }
-    // @ts-ignore
-    const plugin = new pluginClass();
-    delete plugin.define;
-    const define = plugin.getDefine();
-    let defineName = define.name;
-    if (defineName == null) {
-      defineName = plugin.name;
-    }
-
-    this.register(defineName, pluginClass);
-  }
-
-  register(key: string, value: T) {
+  register(key: string, value: RegistryItem) {
     if (!key || value == null) {
       return;
     }
@@ -68,12 +48,10 @@ export class Registry<T extends typeof AbstractRegistrable> {
   }
 
   getDefine(key: string) {
-    const PluginClass = this.storage[key];
-    if (!PluginClass) {
+    const item = this.storage[key];
+    if (!item) {
       return;
     }
-    // @ts-ignore
-    const plugin = new PluginClass();
-    return plugin.define;
+    return item.define;
   }
 }

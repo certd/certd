@@ -1,13 +1,14 @@
 import { ConcurrencyStrategy, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
 import _ from "lodash";
 import { RunHistory } from "./run-history";
-import { pluginRegistry, TaskPlugin } from "../plugin";
+import { pluginRegistry, ITaskPlugin, PluginDefine } from "../plugin";
 import { ContextFactory, IContext } from "./context";
 import { IStorage } from "./storage";
 import { logger } from "../utils/util.log";
 import { Logger } from "log4js";
 import { request } from "../utils/util.request";
 import { IAccessService } from "../access";
+import { Registrable, RegistryItem } from "../registry";
 export class Executor {
   userId: any;
   pipeline: Pipeline;
@@ -134,40 +135,38 @@ export class Executor {
 
   private async runStep(step: Step) {
     //执行任务
-    const taskPlugin: TaskPlugin = await this.getPlugin(step.type, this.runtime.loggers[step.id]);
+    const plugin: RegistryItem = pluginRegistry.get(step.type);
+    const context = {
+      logger: this.runtime.loggers[step.id],
+      accessService: this.accessService,
+      pipelineContext: this.pipelineContext,
+      userContext: this.contextFactory.getContext("user", this.userId),
+      http: request,
+    };
     // @ts-ignore
-    delete taskPlugin.define;
-    const define = taskPlugin.getDefine();
+    const instance = new plugin.target();
+    // @ts-ignore
+    const define: PluginDefine = plugin.define;
     //从outputContext读取输入参数
-    _.forEach(define.input, (item, key) => {
+    _.forEach(define.inputs, (item, key) => {
       if (item.component?.name === "pi-output-selector") {
         const contextKey = step.input[key];
         if (contextKey != null) {
           step.input[key] = this.runtime.context[contextKey];
         }
+      } else {
+        instance[key] = step.input[key];
       }
     });
 
-    const res = await taskPlugin.execute(step.input);
+
+
+    const res = await instance.execute();
 
     //输出到output context
-    _.forEach(define.output, (item, key) => {
+    _.forEach(define.outputs, (item, key) => {
       const contextKey = `step.${step.id}.${key}`;
       this.runtime.context[contextKey] = res[key];
     });
-  }
-
-  private async getPlugin(type: string, logger: Logger): Promise<TaskPlugin> {
-    const pluginClass = pluginRegistry.get(type);
-    // @ts-ignore
-    const plugin = new pluginClass();
-    await plugin.doInit({
-      accessService: this.accessService,
-      pipelineContext: this.pipelineContext,
-      userContext: this.contextFactory.getContext("user", this.userId),
-      logger,
-      http: request,
-    });
-    return plugin;
   }
 }

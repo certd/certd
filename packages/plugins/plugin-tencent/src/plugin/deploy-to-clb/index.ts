@@ -1,99 +1,115 @@
-import { AbstractPlugin, IsTask, RunStrategy, TaskInput, TaskOutput, TaskPlugin, utils } from "@certd/pipeline";
+import { IAccessService, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput, utils } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import { TencentAccess } from "../../access";
 import dayjs from "dayjs";
+import { Inject } from "@midwayjs/decorator";
+import { ILogger } from "@midwayjs/core";
 
-@IsTask(() => {
-  return {
-    name: "DeployCertToTencentCLB",
-    title: "部署到腾讯云CLB",
-    desc: "暂时只支持单向认证证书，暂时只支持通用负载均衡",
-    input: {
-      region: {
-        title: "大区",
-        value: "ap-guangzhou",
-        component: {
-          name: "a-select",
-          options: [{ value: "ap-guangzhou" }],
-        },
-        required: true,
-      },
-      domain: {
-        title: "域名",
-        required: true,
-        helper: "要更新的支持https的负载均衡的域名",
-      },
-      loadBalancerId: {
-        title: "负载均衡ID",
-        helper: "如果没有配置，则根据域名匹配负载均衡下的监听器（根据域名匹配时暂时只支持前100个）",
-        required: true,
-      },
-      listenerId: {
-        title: "监听器ID",
-        helper: "如果没有配置，则根据域名或负载均衡id匹配监听器",
-      },
-      certName: {
-        title: "证书名称前缀",
-      },
-      accessId: {
-        title: "Access提供者",
-        helper: "access授权",
-        component: {
-          name: "pi-access-selector",
-          type: "tencent",
-        },
-        required: true,
-      },
-      cert: {
-        title: "域名证书",
-        helper: "请选择前置任务输出的域名证书",
-        component: {
-          name: "pi-output-selector",
-        },
-        required: true,
-      },
+@IsTaskPlugin({
+  name: "DeployCertToTencentCLB",
+  title: "部署到腾讯云CLB",
+  desc: "暂时只支持单向认证证书，暂时只支持通用负载均衡",
+  default: {
+    strategy: {
+      runStrategy: RunStrategy.SkipWhenSucceed,
     },
-    default: {
-      strategy: {
-        runStrategy: RunStrategy.SkipWhenSucceed,
-      },
-    },
-    output: {},
-  };
+  },
 })
-export class DeployToClbPlugin extends AbstractPlugin implements TaskPlugin {
-  async execute(input: TaskInput): Promise<TaskOutput> {
-    const { accessId, region, domain } = input;
-    const accessProvider = (await this.accessService.getById(accessId)) as TencentAccess;
-    const client = this.getClient(accessProvider, region);
+export class DeployToClbPlugin implements ITaskPlugin {
+  @TaskInput({
+    title: "大区",
+    value: "ap-guangzhou",
+    component: {
+      name: "a-select",
+      options: [{ value: "ap-guangzhou" }],
+    },
+    required: true,
+  })
+  region!: string;
 
-    const lastCertId = await this.getCertIdFromProps(client, input);
-    if (!domain) {
-      await this.updateListener(client, input);
+  @TaskInput({
+    title: "证书名称前缀",
+  })
+  certName!: string;
+
+  @TaskInput({
+    title: "负载均衡ID",
+    helper: "如果没有配置，则根据域名匹配负载均衡下的监听器（根据域名匹配时暂时只支持前100个）",
+    required: true,
+  })
+  loadBalancerId!: string;
+
+  @TaskInput({
+    title: "监听器ID",
+    helper: "如果没有配置，则根据域名或负载均衡id匹配监听器",
+  })
+  listenerId!: string;
+
+  @TaskInput({
+    title: "域名",
+    required: true,
+    helper: "要更新的支持https的负载均衡的域名",
+  })
+  domain!: string;
+
+  @TaskInput({
+    title: "域名证书",
+    helper: "请选择前置任务输出的域名证书",
+    component: {
+      name: "pi-output-selector",
+    },
+    required: true,
+  })
+  cert!: any;
+
+  @TaskInput({
+    title: "Access提供者",
+    helper: "access授权",
+    component: {
+      name: "pi-access-selector",
+      type: "tencent",
+    },
+    required: true,
+  })
+  accessId!: string;
+
+  @Inject()
+  accessService!: IAccessService;
+
+  @Inject()
+  logger!: ILogger;
+
+  async execute(): Promise<void> {
+    const accessProvider = (await this.accessService.getById(this.accessId)) as TencentAccess;
+    const client = this.getClient(accessProvider, this.region);
+
+    const lastCertId = await this.getCertIdFromProps(client);
+    if (!this.domain) {
+      await this.updateListener(client);
     } else {
-      await this.updateByDomainAttr(client, input);
+      await this.updateByDomainAttr(client);
     }
 
     try {
       await utils.sleep(2000);
-      let newCertId = await this.getCertIdFromProps(client, input);
+      let newCertId = await this.getCertIdFromProps(client);
       if ((lastCertId && newCertId === lastCertId) || (!lastCertId && !newCertId)) {
         await utils.sleep(2000);
-        newCertId = await this.getCertIdFromProps(client, input);
+        newCertId = await this.getCertIdFromProps(client);
       }
       if (newCertId === lastCertId) {
-        return {};
+        return;
       }
       this.logger.info("腾讯云证书ID:", newCertId);
     } catch (e) {
       this.logger.warn("查询腾讯云证书失败", e);
     }
-    return {};
+    return;
   }
 
-  async getCertIdFromProps(client: any, input: TaskInput) {
-    const listenerRet = await this.getListenerList(client, input.loadBalancerId, [input.listenerId]);
-    return this.getCertIdFromListener(listenerRet[0], input.domain);
+  async getCertIdFromProps(client: any) {
+    const listenerRet = await this.getListenerList(client, this.loadBalancerId, [this.listenerId]);
+    return this.getCertIdFromListener(listenerRet[0], this.domain);
   }
 
   getCertIdFromListener(listener: any, domain: string) {
@@ -115,28 +131,28 @@ export class DeployToClbPlugin extends AbstractPlugin implements TaskPlugin {
     return certId;
   }
 
-  async updateListener(client: any, props: TaskInput) {
-    const params = this.buildProps(props);
+  async updateListener(client: any) {
+    const params = this.buildProps();
     const ret = await client.ModifyListener(params);
     this.checkRet(ret);
-    this.logger.info("设置腾讯云CLB证书成功:", ret.RequestId, "->loadBalancerId:", props.loadBalancerId, "listenerId", props.listenerId);
+    this.logger.info("设置腾讯云CLB证书成功:", ret.RequestId, "->loadBalancerId:", this.loadBalancerId, "listenerId", this.listenerId);
     return ret;
   }
 
-  async updateByDomainAttr(client: any, props: TaskInput) {
-    const params: any = this.buildProps(props);
-    params.Domain = props.domain;
+  async updateByDomainAttr(client: any) {
+    const params: any = this.buildProps();
+    params.Domain = this.domain;
     const ret = await client.ModifyDomainAttributes(params);
     this.checkRet(ret);
     this.logger.info(
       "设置腾讯云CLB证书(sni)成功:",
       ret.RequestId,
       "->loadBalancerId:",
-      props.loadBalancerId,
+      this.loadBalancerId,
       "listenerId",
-      props.listenerId,
+      this.listenerId,
       "domain:",
-      props.domain
+      this.domain
     );
     return ret;
   }
@@ -146,26 +162,25 @@ export class DeployToClbPlugin extends AbstractPlugin implements TaskPlugin {
     }
     return name + "-" + dayjs().format("YYYYMMDD-HHmmss");
   }
-  buildProps(props: TaskInput) {
-    const { certName, cert } = props;
+  buildProps() {
     return {
       Certificate: {
         SSLMode: "UNIDIRECTIONAL", // 单向认证
-        CertName: this.appendTimeSuffix(certName || cert.domain),
-        CertKey: cert.key,
-        CertContent: cert.crt,
+        CertName: this.appendTimeSuffix(this.certName || this.cert.domain),
+        CertKey: this.cert.key,
+        CertContent: this.cert.crt,
       },
-      LoadBalancerId: props.loadBalancerId,
-      ListenerId: props.listenerId,
+      LoadBalancerId: this.loadBalancerId,
+      ListenerId: this.listenerId,
     };
   }
 
-  async getCLBList(client: any, props: TaskInput) {
+  async getCLBList(client: any) {
     const params = {
       Limit: 100, // 最大暂时只支持100个，暂时没做翻页
       OrderBy: "CreateTime",
       OrderType: 0,
-      ...props.DescribeLoadBalancers,
+      // ...this.DescribeLoadBalancers,
     };
     const ret = await client.DescribeLoadBalancers(params);
     this.checkRet(ret);

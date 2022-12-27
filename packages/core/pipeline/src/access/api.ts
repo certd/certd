@@ -3,22 +3,15 @@ import { accessRegistry } from "./registry";
 import { FormItemProps } from "../d.ts";
 import { AbstractAccess } from "./abstract-access";
 
-export type AccessInput = FormItemProps & {
+export type AccessInputDefine = FormItemProps & {
   title: string;
   required?: boolean;
 };
 export type AccessDefine = Registrable & {
-  input: {
-    [key: string]: AccessInput;
+  inputs?: {
+    [key: string]: AccessInputDefine;
   };
 };
-export function IsAccess(define: AccessDefine) {
-  return function (target: any) {
-    target.prototype.define = define;
-    accessRegistry.install(target);
-  };
-}
-
 export interface IAccessService {
   getById(id: any): Promise<AbstractAccess>;
 }

@@ -1,6 +1,8 @@
-import { AbstractDnsProvider, CreateRecordOptions, IDnsProvider, IsDnsProvider, RemoveRecordOptions } from "@certd/pipeline";
+import { CreateRecordOptions, HttpClient, IDnsProvider, IsDnsProvider, RemoveRecordOptions } from "@certd/pipeline";
 import _ from "lodash";
 import { DnspodAccess } from "../access";
+import { Inject } from "@midwayjs/decorator";
+import { ILogger } from "@midwayjs/core";
 
 @IsDnsProvider({
   name: "dnspod",
@@ -8,11 +10,17 @@ import { DnspodAccess } from "../access";
   desc: "腾讯云的域名解析接口已迁移到dnspod",
   accessType: "dnspod",
 })
-export class DnspodDnsProvider extends AbstractDnsProvider implements IDnsProvider {
+export class DnspodDnsProvider implements IDnsProvider {
+  @Inject()
+  http!: HttpClient;
+
+  @Inject()
+  access!: DnspodAccess;
+  @Inject()
+  logger!: ILogger;
+
   loginToken: any;
-  constructor() {
-    super();
-  }
+
   async onInit() {
     const access: DnspodAccess = this.access as DnspodAccess;
     this.loginToken = access.id + "," + access.token;

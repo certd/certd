@@ -1,3 +1,3 @@
 export * from "./api";
-export * from "./abstract-access";
 export * from "./registry";
+export * from "./decorator";

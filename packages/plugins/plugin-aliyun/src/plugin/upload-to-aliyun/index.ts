@@ -1,7 +1,5 @@
 import { AbstractPlugin, IsTask, RunStrategy, TaskInput, TaskOutput, TaskPlugin } from "@certd/pipeline";
-import dayjs from "dayjs";
 import Core from "@alicloud/pop-core";
-import RPCClient from "@alicloud/pop-core";
 import { AliyunAccess } from "../../access";
 import { appendTimeSuffix, checkRet, ZoneOptions } from "../../utils";
 
