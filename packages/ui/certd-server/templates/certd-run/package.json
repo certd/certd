@@ -14,9 +14,9 @@
   "author": "greper",
   "license": "MIT",
   "dependencies": {
-    "@certd/executor": "^0.3.0",
-    "@certd/plugin-aliyun": "^0.3.0",
-    "@certd/plugin-host": "^0.3.0",
-    "@certd/plugin-tencent": "^0.3.0"
+    "@certd/executor": "^0.3.1",
+    "@certd/plugin-aliyun": "^0.3.1",
+    "@certd/plugin-host": "^0.3.1",
+    "@certd/plugin-tencent": "^0.3.1"
   }
 }
