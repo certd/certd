@@ -1,7 +1,7 @@
 // @ts-ignore
 import * as acme from "@certd/acme-client";
 import _ from "lodash";
-import { AbstractDnsProvider, IDnsProvider } from "@certd/pipeline";
+import { IDnsProvider } from "@certd/pipeline";
 import { Challenge } from "@certd/acme-client/types/rfc8555";
 import { Logger } from "log4js";
 import { IContext } from "@certd/pipeline/src/core/context";
@@ -132,7 +132,7 @@ export class AcmeService {
     }
   }
 
-  async order(options: { email: string; domains: string | string[]; dnsProvider: AbstractDnsProvider; csrInfo: any; isTest?: boolean }) {
+  async order(options: { email: string; domains: string | string[]; dnsProvider: any; csrInfo: any; isTest?: boolean }) {
     const { email, isTest, domains, csrInfo, dnsProvider } = options;
     const client: acme.Client = await this.getAcmeClient(email, isTest);
 

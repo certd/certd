@@ -1,8 +1,7 @@
-import { IAccessService, IsTaskPlugin, RunStrategy, TaskInput, ITaskPlugin } from "@certd/pipeline";
+import { IAccessService, IsTaskPlugin, RunStrategy, TaskInput, ITaskPlugin, LOGGER } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import { TencentAccess } from "../../access";
 import { Inject } from "@midwayjs/decorator";
-import { ILogger } from "@midwayjs/core";
 
 @IsTaskPlugin({
   name: "DeployCertToTencentCDN",
@@ -52,7 +51,10 @@ export class DeployToCdnPlugin implements ITaskPlugin {
   accessService!: IAccessService;
 
   @Inject()
-  logger!: ILogger;
+  logger!: LOGGER;
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async onInit() {}
 
   async execute(): Promise<void> {
     const accessProvider: TencentAccess = (await this.accessService.getById(this.accessId)) as TencentAccess;

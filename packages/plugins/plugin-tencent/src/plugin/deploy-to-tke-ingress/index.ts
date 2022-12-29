@@ -1,121 +1,117 @@
-import { AbstractPlugin, IsTask, RunStrategy, TaskInput, TaskOutput, TaskPlugin, utils } from "@certd/pipeline";
+import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput, utils } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import { K8sClient } from "@certd/plugin-util";
 import dayjs from "dayjs";
+import { Logger } from "log4js";
 
-@IsTask(() => {
-  return {
-    name: "DeployCertToTencentTKEIngress",
-    title: "部署到腾讯云TKE-ingress",
-    desc: "需要【上传到腾讯云】作为前置任务",
-    input: {
-      region: {
-        title: "大区",
-        value: "ap-guangzhou",
-        required: true,
-      },
-      clusterId: {
-        title: "集群ID",
-        required: true,
-        desc: "例如：cls-6lbj1vee",
-        request: true,
-      },
-      namespace: {
-        title: "集群namespace",
-        value: "default",
-        required: true,
-      },
-      secreteName: {
-        title: "证书的secret名称",
-        required: true,
-      },
-      ingressName: {
-        title: "ingress名称",
-        required: true,
-      },
-      ingressClass: {
-        title: "ingress类型",
-        component: {
-          name: "a-select",
-          options: [{ value: "qcloud" }, { value: "nginx" }],
-        },
-        helper: "可选 qcloud / nginx",
-      },
-      clusterIp: {
-        title: "集群内网ip",
-        helper: "如果开启了外网的话，无需设置",
-      },
-      clusterDomain: {
-        title: "集群域名",
-        helper: "可不填，默认为:[clusterId].ccs.tencent-cloud.com",
-      },
-
-      tencentCertId: {
-        title: "腾讯云证书id",
-        helper: "请选择“上传证书到腾讯云”前置任务的输出",
-        component: {
-          name: "pi-output-selector",
-          from: "UploadCertToTencent",
-        },
-        required: true,
-      },
-
-      /**
-       * AccessProvider的key,或者一个包含access的具体的对象
-       */
-      accessId: {
-        title: "Access授权",
-        helper: "access授权",
-        component: {
-          name: "pi-access-selector",
-          type: "tencent",
-        },
-        required: true,
-      },
-      cert: {
-        title: "域名证书",
-        helper: "请选择前置任务输出的域名证书",
-        component: {
-          name: "pi-output-selector",
-        },
-        required: true,
-      },
+@IsTaskPlugin({
+  name: "DeployCertToTencentTKEIngress",
+  title: "部署到腾讯云TKE-ingress",
+  desc: "需要【上传到腾讯云】作为前置任务",
+  default: {
+    strategy: {
+      runStrategy: RunStrategy.SkipWhenSucceed,
     },
-    default: {
-      strategy: {
-        runStrategy: RunStrategy.SkipWhenSucceed,
-      },
-    },
-    output: {},
-  };
+  },
 })
-export class DeployCertToTencentTKEIngressPlugin extends AbstractPlugin implements TaskPlugin {
-  async execute(input: TaskInput): Promise<TaskOutput> {
-    const { accessId, region, clusterId, clusterIp, ingressClass } = input;
-    let { clusterDomain } = input;
-    const accessProvider = this.accessService.getById(accessId);
-    const tkeClient = this.getTkeClient(accessProvider, region);
-    const kubeConfigStr = await this.getTkeKubeConfig(tkeClient, clusterId);
+export class DeployCertToTencentTKEIngressPlugin implements ITaskPlugin {
+  @TaskInput({ title: "大区", value: "ap-guangzhou", required: true })
+  region!: string;
+
+  @TaskInput({ title: "集群ID", required: true, desc: "例如：cls-6lbj1vee", request: true })
+  clusterId!: string;
+
+  @TaskInput({ title: "集群namespace", value: "default", required: true })
+  namespace!: string;
+
+  @TaskInput({ title: "证书的secret名称", required: true })
+  secretName!: string | string[];
+
+  @TaskInput({ title: "ingress名称", required: true })
+  ingressName!: string | string[];
+
+  @TaskInput({
+    title: "ingress类型",
+    component: {
+      name: "a-select",
+      options: [{ value: "qcloud" }, { value: "nginx" }],
+    },
+    helper: "可选 qcloud / nginx",
+  })
+  ingressClass!: string;
+
+  @TaskInput({ title: "集群内网ip", helper: "如果开启了外网的话，无需设置" })
+  clusterIp!: string;
+
+  @TaskInput({ title: "集群域名", helper: "可不填，默认为:[clusterId].ccs.tencent-cloud.com" })
+  clusterDomain!: string;
+  @TaskInput({
+    title: "腾讯云证书id",
+    helper: "请选择“上传证书到腾讯云”前置任务的输出",
+    component: {
+      name: "pi-output-selector",
+      from: "UploadCertToTencent",
+    },
+    required: true,
+  })
+  tencentCertId!: string;
+
+  /**
+   * AccessProvider的key,或者一个包含access的具体的对象
+   */
+  @TaskInput({
+    title: "Access授权",
+    helper: "access授权",
+    component: {
+      name: "pi-access-selector",
+      type: "tencent",
+    },
+    required: true,
+  })
+  accessId!: string;
+
+  @TaskInput({
+    title: "域名证书",
+    helper: "请选择前置任务输出的域名证书",
+    component: {
+      name: "pi-output-selector",
+    },
+    required: true,
+  })
+  cert!: any;
+
+  @Autowire()
+  logger!: Logger;
+
+  @Autowire()
+  accessService!: IAccessService;
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async onInit() {}
+
+  async execute(): Promise<void> {
+    const accessProvider = this.accessService.getById(this.accessId);
+    const tkeClient = this.getTkeClient(accessProvider, this.region);
+    const kubeConfigStr = await this.getTkeKubeConfig(tkeClient, this.clusterId);
 
     this.logger.info("kubeconfig已成功获取");
     const k8sClient = new K8sClient(kubeConfigStr);
-    if (clusterIp != null) {
-      if (!clusterDomain) {
-        clusterDomain = `${clusterId}.ccs.tencent-cloud.com`;
+    if (this.clusterIp != null) {
+      if (!this.clusterDomain) {
+        this.clusterDomain = `${this.clusterId}.ccs.tencent-cloud.com`;
       }
       // 修改内网解析ip地址
-      k8sClient.setLookup({ [clusterDomain]: { ip: clusterIp } });
+      k8sClient.setLookup({ [this.clusterDomain]: { ip: this.clusterIp } });
     }
-    const ingressType = ingressClass || "qcloud";
+    const ingressType = this.ingressClass || "qcloud";
     if (ingressType === "qcloud") {
-      await this.patchQcloudCertSecret({ k8sClient, input });
+      await this.patchQcloudCertSecret({ k8sClient });
     } else {
-      await this.patchNginxCertSecret({ k8sClient, input });
+      await this.patchNginxCertSecret({ k8sClient });
     }
 
     await utils.sleep(2000); // 停留2秒，等待secret部署完成
-    await this.restartIngress({ k8sClient, input });
-    return {};
+    await this.restartIngress({ k8sClient });
   }
 
   getTkeClient(accessProvider: any, region = "ap-guangzhou") {
@@ -154,15 +150,14 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractPlugin implemen
     return name + "-" + dayjs().format("YYYYMMDD-HHmmss");
   }
 
-  async patchQcloudCertSecret(options: { k8sClient: any; input: TaskInput }) {
-    const { tencentCertId } = options.input;
-    if (tencentCertId == null) {
+  async patchQcloudCertSecret(options: { k8sClient: any }) {
+    if (this.tencentCertId == null) {
       throw new Error("请先将【上传证书到腾讯云】作为前置任务");
     }
-    this.logger.info("腾讯云证书ID:", tencentCertId);
-    const certIdBase64 = Buffer.from(tencentCertId).toString("base64");
+    this.logger.info("腾讯云证书ID:", this.tencentCertId);
+    const certIdBase64 = Buffer.from(this.tencentCertId).toString("base64");
 
-    const { namespace, secretName } = options.input;
+    const { namespace, secretName } = this;
 
     const body = {
       data: {
@@ -174,7 +169,7 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractPlugin implemen
         },
       },
     };
-    let secretNames = secretName;
+    let secretNames: any = secretName;
     if (typeof secretName === "string") {
       secretNames = [secretName];
     }
@@ -184,15 +179,15 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractPlugin implemen
     }
   }
 
-  async patchNginxCertSecret(options: { k8sClient: any; input: TaskInput }) {
-    const { k8sClient, input } = options;
-    const { cert } = input;
+  async patchNginxCertSecret(options: { k8sClient: any }) {
+    const { k8sClient } = options;
+    const { cert } = this;
     const crt = cert.crt;
     const key = cert.key;
     const crtBase64 = Buffer.from(crt).toString("base64");
     const keyBase64 = Buffer.from(key).toString("base64");
 
-    const { namespace, secretName } = input;
+    const { namespace, secretName } = this;
 
     const body = {
       data: {
@@ -215,9 +210,9 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractPlugin implemen
     }
   }
 
-  async restartIngress(options: { k8sClient: any; input: TaskInput }) {
-    const { k8sClient, input } = options;
-    const { namespace, ingressName } = input;
+  async restartIngress(options: { k8sClient: any }) {
+    const { k8sClient } = options;
+    const { namespace, ingressName } = this;
 
     const body = {
       metadata: {
@@ -226,7 +221,7 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractPlugin implemen
         },
       },
     };
-    let ingressNames = ingressName;
+    let ingressNames = this.ingressName;
     if (typeof ingressName === "string") {
       ingressNames = [ingressName];
     }

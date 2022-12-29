@@ -1,7 +1,5 @@
 import { Registrable } from "../registry";
-import { accessRegistry } from "./registry";
 import { FormItemProps } from "../d.ts";
-import { AbstractAccess } from "./abstract-access";
 
 export type AccessInputDefine = FormItemProps & {
   title: string;
@@ -13,5 +11,5 @@ export type AccessDefine = Registrable & {
   };
 };
 export interface IAccessService {
-  getById(id: any): Promise<AbstractAccess>;
+  getById(id: any): Promise<any>;
 }

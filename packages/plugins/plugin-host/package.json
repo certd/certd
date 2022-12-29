@@ -15,7 +15,7 @@
     "ssh2": "^0.8.9"
   },
   "devDependencies": {
-    "log4js": "^6.3.0",
+    "log4js": "^6.7.1",
     "dayjs": "^1.9.7",
     "lodash-es": "^4.17.20",
     "@types/lodash": "^4.14.186",

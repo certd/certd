@@ -1,123 +1,164 @@
-import { AbstractDnsProvider, AbstractPlugin, dnsProviderRegistry, IsTask, RunStrategy, TaskInput, TaskOutput, TaskPlugin } from "@certd/pipeline";
+import {
+  Autowire,
+  dnsProviderRegistry,
+  HttpClient,
+  IAccessService,
+  IContext,
+  IsTaskPlugin,
+  ITaskPlugin,
+  RunStrategy,
+  TaskInput,
+  TaskOutput,
+} from "@certd/pipeline";
 import forge from "node-forge";
 import dayjs from "dayjs";
 import { AcmeService } from "./acme";
 import _ from "lodash";
+import { Logger } from "log4js";
 
 export type CertInfo = {
   crt: string;
   key: string;
   csr: string;
 };
-@IsTask(() => {
-  return {
-    name: "CertApply",
-    title: "证书申请",
-    desc: "免费通配符域名证书申请，支持多个域名打到同一个证书上",
+@IsTaskPlugin({
+  name: "CertApply",
+  title: "证书申请",
+  desc: "免费通配符域名证书申请，支持多个域名打到同一个证书上",
+  default: {
     input: {
-      domains: {
-        title: "域名",
-        component: {
-          name: "a-select",
-          vModel: "value",
-          mode: "tags",
-          open: false,
-        },
-        required: true,
-        col: {
-          span: 24,
-        },
-        helper:
-          "支持通配符域名，例如： *.foo.com 、 *.test.handsfree.work\n" +
-          "支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）\n" +
-          "多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com）\n" +
-          "输入一个回车之后，再输入下一个",
-      },
-      email: {
-        title: "邮箱",
-        component: {
-          name: "a-input",
-          vModel: "value",
-        },
-        required: true,
-        helper: "请输入邮箱",
-      },
-      dnsProviderType: {
-        title: "DNS提供商",
-        component: {
-          name: "pi-dns-provider-selector",
-        },
-        required: true,
-        helper: "请选择dns解析提供商",
-      },
-      dnsProviderAccess: {
-        title: "DNS解析授权",
-        component: {
-          name: "pi-access-selector",
-        },
-        required: true,
-        helper: "请选择dns解析提供商授权",
-      },
-      renewDays: {
-        title: "更新天数",
-        component: {
-          name: "a-input-number",
-          vModel: "value",
-        },
-        required: true,
-        helper: "到期前多少天后更新证书",
-      },
-      forceUpdate: {
-        title: "强制更新",
-        component: {
-          name: "a-switch",
-          vModel: "checked",
-        },
-        helper: "是否强制重新申请证书",
-      },
+      renewDays: 20,
+      forceUpdate: false,
     },
-    default: {
-      input: {
-        renewDays: 20,
-        forceUpdate: false,
-      },
-      strategy: {
-        runStrategy: RunStrategy.AlwaysRun,
-      },
+    strategy: {
+      runStrategy: RunStrategy.AlwaysRun,
     },
-    output: {
-      cert: {
-        key: "cert",
-        type: "CertInfo",
-        title: "域名证书",
-      },
-    },
-  };
+  },
 })
-export class CertApplyPlugin extends AbstractPlugin implements TaskPlugin {
+export class CertApplyPlugin implements ITaskPlugin {
+  @TaskInput({
+    title: "域名",
+    component: {
+      name: "a-select",
+      vModel: "value",
+      mode: "tags",
+      open: false,
+    },
+    required: true,
+    col: {
+      span: 24,
+    },
+    helper:
+      "支持通配符域名，例如： *.foo.com 、 *.test.handsfree.work\n" +
+      "支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）\n" +
+      "多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com）\n" +
+      "输入一个回车之后，再输入下一个",
+  })
+  domains!: string;
+
+  @TaskInput({
+    title: "邮箱",
+    component: {
+      name: "a-input",
+      vModel: "value",
+    },
+    required: true,
+    helper: "请输入邮箱",
+  })
+  email!: string;
+
+  @TaskInput({
+    title: "DNS提供商",
+    component: {
+      name: "pi-dns-provider-selector",
+    },
+    required: true,
+    helper: "请选择dns解析提供商",
+  })
+  dnsProviderType!: string;
+
+  @TaskInput({
+    title: "DNS解析授权",
+    component: {
+      name: "pi-access-selector",
+    },
+    required: true,
+    helper: "请选择dns解析提供商授权",
+  })
+  dnsProviderAccess!: string;
+
+  @TaskInput({
+    title: "更新天数",
+    component: {
+      name: "a-input-number",
+      vModel: "value",
+    },
+    required: true,
+    helper: "到期前多少天后更新证书",
+  })
+  renewDays!: number;
+
+  @TaskInput({
+    title: "强制更新",
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+    helper: "是否强制重新申请证书",
+  })
+  forceUpdate!: string;
+
+  @TaskInput({
+    title: "CsrInfo",
+  })
+  csrInfo: any;
+
   // @ts-ignore
   acme: AcmeService;
-  protected async onInit() {
+
+  @Autowire()
+  logger!: Logger;
+
+  @Autowire()
+  userContext!: IContext;
+
+  @Autowire()
+  accessService!: IAccessService;
+
+  @Autowire()
+  http!: HttpClient;
+
+  @Autowire()
+  pipelineContext!: IContext;
+
+  @TaskOutput({
+    title: "域名证书",
+  })
+  cert?: CertInfo;
+
+  async onInit() {
     this.acme = new AcmeService({ userContext: this.userContext, logger: this.logger });
   }
 
-  async execute(input: TaskInput): Promise<TaskOutput> {
-    const oldCert = await this.condition(input);
+  async execute(): Promise<void> {
+    const oldCert = await this.condition();
     if (oldCert != null) {
-      return {
-        cert: oldCert,
-      };
+      return this.output(oldCert);
     }
-    const cert = await this.doCertApply(input);
-    return { cert };
+    const cert = await this.doCertApply();
+    return this.output(cert);
+  }
+
+  output(cert: any) {
+    this.cert = cert;
   }
 
   /**
    * 是否更新证书
    * @param input
    */
-  async condition(input: TaskInput) {
-    if (input.forceUpdate) {
+  async condition() {
+    if (this.forceUpdate) {
       return null;
     }
     let oldCert;
@@ -131,7 +172,7 @@ export class CertApplyPlugin extends AbstractPlugin implements TaskPlugin {
       return null;
     }
 
-    const ret = this.isWillExpire(oldCert.expires, input.renewDays);
+    const ret = this.isWillExpire(oldCert.expires, this.renewDays);
     if (!ret.isWillExpire) {
       this.logger.info(`证书还未过期：过期时间${dayjs(oldCert.expires).format("YYYY-MM-DD HH:mm:ss")},剩余${ret.leftDays}天`);
       return oldCert;
@@ -140,11 +181,11 @@ export class CertApplyPlugin extends AbstractPlugin implements TaskPlugin {
     return null;
   }
 
-  async doCertApply(input: TaskInput) {
-    const email = input["email"];
-    const domains = input["domains"];
-    const dnsProviderType = input["dnsProviderType"];
-    const dnsProviderAccessId = input["dnsProviderAccess"];
+  async doCertApply() {
+    const email = this["email"];
+    const domains = this["domains"];
+    const dnsProviderType = this["dnsProviderType"];
+    const dnsProviderAccessId = this["dnsProviderAccess"];
     const csrInfo = _.merge(
       {
         country: "CN",
@@ -154,7 +195,7 @@ export class CertApplyPlugin extends AbstractPlugin implements TaskPlugin {
         organizationUnit: "IT Department",
         emailAddress: email,
       },
-      input["csrInfo"]
+      this.csrInfo
     );
     this.logger.info("开始申请证书,", email, domains);
 

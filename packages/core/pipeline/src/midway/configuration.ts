@@ -1,9 +1,7 @@
-import { Config, Configuration, getClassMetadata, Inject, listModule, listPropertyDataFromClass, Logger } from "@midwayjs/decorator";
-import _ from "lodash-es";
+import { Config, Configuration, Inject, Logger } from "@midwayjs/decorator";
 // @ts-ignore
 import { ILogger } from "@midwayjs/logger";
 import { IMidwayContainer, MidwayDecoratorService } from "@midwayjs/core";
-import { pluginRegistry } from "../plugin";
 import { registerPlugins } from "../plugin/decorator";
 import { registerAccess } from "../access/decorator";
 import { registerDnsProviders } from "../dns-provider";

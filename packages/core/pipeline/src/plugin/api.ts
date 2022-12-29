@@ -1,5 +1,4 @@
 import { Registrable } from "../registry";
-import { pluginRegistry } from "./registry";
 import { FormItemProps } from "../d.ts";
 
 export enum ContextScope {
@@ -33,6 +32,7 @@ export type PluginDefine = Registrable & {
 };
 
 export interface ITaskPlugin {
+  onInit(): Promise<void>;
   execute(): Promise<void>;
 }
 

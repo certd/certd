@@ -1,18 +1,5 @@
 // src/decorator/memoryCache.decorator.ts
-import {
-  attachClassMetadata,
-  attachPropertyDataToClass,
-  createCustomPropertyDecorator,
-  getClassMetadata,
-  listModule,
-  listPropertyDataFromClass,
-  Provide,
-  saveClassMetadata,
-  saveModule,
-  Scope,
-  ScopeEnum,
-} from "@midwayjs/decorator";
-import _ from "lodash-es";
+import { getClassMetadata, listModule, Provide, saveClassMetadata, saveModule, Scope, ScopeEnum } from "@midwayjs/decorator";
 import { dnsProviderRegistry } from "./registry";
 import { DnsProviderDefine } from "./api";
 

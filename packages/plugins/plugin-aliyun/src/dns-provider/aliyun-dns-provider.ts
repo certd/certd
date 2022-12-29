@@ -1,6 +1,7 @@
 import Core from "@alicloud/pop-core";
 import _ from "lodash";
-import { AbstractDnsProvider, CreateRecordOptions, IDnsProvider, IsDnsProvider, RemoveRecordOptions } from "@certd/pipeline";
+import { CreateRecordOptions, IDnsProvider, IsDnsProvider, RemoveRecordOptions } from "@certd/pipeline";
+import { Logger } from "log4js";
 
 @IsDnsProvider({
   name: "aliyun",
@@ -8,11 +9,10 @@ import { AbstractDnsProvider, CreateRecordOptions, IDnsProvider, IsDnsProvider, 
   desc: "阿里云DNS解析提供商",
   accessType: "aliyun",
 })
-export class AliyunDnsProvider extends AbstractDnsProvider implements IDnsProvider {
+export class AliyunDnsProvider implements IDnsProvider {
   client: any;
-  constructor() {
-    super();
-  }
+  access: any;
+  logger!: Logger;
   async onInit() {
     const access: any = this.access;
     this.client = new Core({

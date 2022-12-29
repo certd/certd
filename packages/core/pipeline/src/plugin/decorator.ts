@@ -1,18 +1,13 @@
-// src/decorator/memoryCache.decorator.ts
 import {
   attachClassMetadata,
   attachPropertyDataToClass,
-  createCustomPropertyDecorator,
   getClassMetadata,
   listModule,
   listPropertyDataFromClass,
-  Provide,
   saveClassMetadata,
   saveModule,
-  Scope,
-  ScopeEnum,
 } from "@midwayjs/decorator";
-import _ from "lodash-es";
+import _ from "lodash";
 import { pluginRegistry } from "./registry";
 import { PluginDefine, TaskInputDefine, TaskOutputDefine } from "./api";
 
@@ -33,11 +28,11 @@ export function IsTaskPlugin(define: PluginDefine): ClassDecorator {
       },
       target
     );
-    // 指定 IoC 容器创建实例的作用域，这里注册为请求作用域，这样能取到 ctx
-    Scope(ScopeEnum.Prototype)(target);
+    // // 指定 IoC 容器创建实例的作用域，这里注册为请求作用域，这样能取到 ctx
+    // Scope(ScopeEnum.Prototype)(target);
 
     // 调用一下 Provide 装饰器，这样用户的 class 可以省略写 @Provide() 装饰器了
-    Provide()(target);
+    // Provide()(target);
   };
 }
 

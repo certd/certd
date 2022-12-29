@@ -1,49 +1,58 @@
-import { AbstractPlugin, IsTask, RunStrategy, TaskInput, TaskOutput, TaskPlugin } from "@certd/pipeline";
+import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput, TaskOutput, LOGGER } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import dayjs from "dayjs";
 
-@IsTask(() => {
-  return {
-    name: "UploadCertToTencent",
-    title: "上传证书到腾讯云",
-    desc: "上传成功后输出：tencentCertId",
-    input: {
-      name: {
-        title: "证书名称",
-      },
-      accessId: {
-        title: "Access授权",
-        helper: "access授权",
-        component: {
-          name: "pi-access-selector",
-          type: "tencent",
-        },
-        required: true,
-      },
-      cert: {
-        title: "域名证书",
-        helper: "请选择前置任务输出的域名证书",
-        component: {
-          name: "pi-output-selector",
-        },
-        required: true,
-      },
+@IsTaskPlugin({
+  name: "UploadCertToTencent",
+  title: "上传证书到腾讯云",
+  desc: "上传成功后输出：tencentCertId",
+  default: {
+    strategy: {
+      runStrategy: RunStrategy.SkipWhenSucceed,
     },
-    default: {
-      strategy: {
-        runStrategy: RunStrategy.SkipWhenSucceed,
-      },
-    },
-    output: {
-      tencentCertId: {
-        title: "上传成功后的腾讯云CertId",
-      },
-    },
-  };
+  },
 })
-export class UploadToTencentPlugin extends AbstractPlugin implements TaskPlugin {
-  async execute(input: TaskInput): Promise<TaskOutput> {
-    const { accessId, name, cert } = input;
+export class UploadToTencentPlugin implements ITaskPlugin {
+  @TaskInput({ title: "证书名称" })
+  name!: string;
+
+  @TaskInput({
+    title: "Access授权",
+    helper: "access授权",
+    component: {
+      name: "pi-access-selector",
+      type: "tencent",
+    },
+    required: true,
+  })
+  accessId!: string;
+
+  @TaskInput({
+    title: "域名证书",
+    helper: "请选择前置任务输出的域名证书",
+    component: {
+      name: "pi-output-selector",
+    },
+    required: true,
+  })
+  cert!: any;
+
+  @TaskOutput({
+    title: "上传成功后的腾讯云CertId",
+  })
+  tencentCertId?: string;
+
+  @Autowire()
+  accessService!: IAccessService;
+
+  @Autowire()
+  logger!: LOGGER;
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async onInit() {}
+
+  async execute(): Promise<void> {
+    const { accessId, name, cert } = this;
     const accessProvider = this.accessService.getById(accessId);
     const certName = this.appendTimeSuffix(name || cert.domain);
     const client = this.getClient(accessProvider);
@@ -56,7 +65,8 @@ export class UploadToTencentPlugin extends AbstractPlugin implements TaskPlugin 
     const ret = await client.UploadCertificate(params);
     this.checkRet(ret);
     this.logger.info("证书上传成功：tencentCertId=", ret.CertificateId);
-    return { tencentCertId: ret.CertificateId };
+
+    this.tencentCertId = ret.CertificateId;
   }
 
   appendTimeSuffix(name: string) {

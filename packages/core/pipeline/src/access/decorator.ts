@@ -9,7 +9,7 @@ import {
   saveModule,
 } from "@midwayjs/decorator";
 import { AccessDefine, AccessInputDefine } from "./api";
-import _ from "lodash-es";
+import _ from "lodash";
 import { accessRegistry } from "./registry";
 
 // 提供一个唯一 key

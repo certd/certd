@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "lerna": "^3.18.4"
+    "lerna": "^6.3.0"
   },
   "scripts": {
     "start": "lerna bootstrap --hoist",
@@ -11,6 +11,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "lodash-es": "^4.17.20"
-  }
+    "lodash-es": "^4.17.21"
+  },
+  "workspaces": [
+    "packages/**"
+  ]
 }

@@ -16,8 +16,8 @@
     "tencentcloud-sdk-nodejs": "^4.0.44"
   },
   "devDependencies": {
+    "log4js": "^6.7.1",
     "axios": "^0.21.1",
-    "log4js": "^6.3.0",
     "dayjs": "^1.9.7",
     "lodash-es": "^4.17.20",
     "@types/lodash": "^4.14.186",

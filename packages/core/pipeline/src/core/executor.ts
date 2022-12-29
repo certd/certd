@@ -1,14 +1,15 @@
 import { ConcurrencyStrategy, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
 import _ from "lodash";
 import { RunHistory } from "./run-history";
-import { pluginRegistry, ITaskPlugin, PluginDefine } from "../plugin";
+import { PluginDefine, pluginRegistry } from "../plugin";
 import { ContextFactory, IContext } from "./context";
 import { IStorage } from "./storage";
 import { logger } from "../utils/util.log";
 import { Logger } from "log4js";
 import { request } from "../utils/util.request";
 import { IAccessService } from "../access";
-import { Registrable, RegistryItem } from "../registry";
+import { RegistryItem } from "../registry";
+
 export class Executor {
   userId: any;
   pipeline: Pipeline;
@@ -136,7 +137,7 @@ export class Executor {
   private async runStep(step: Step) {
     //执行任务
     const plugin: RegistryItem = pluginRegistry.get(step.type);
-    const context = {
+    const context: any = {
       logger: this.runtime.loggers[step.id],
       accessService: this.accessService,
       pipelineContext: this.pipelineContext,
@@ -159,7 +160,9 @@ export class Executor {
       }
     });
 
-
+    _.forEach(define.autowire, (item, key: string) => {
+      instance[key] = context[key];
+    });
 
     const res = await instance.execute();
 

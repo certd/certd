@@ -1,4 +1,4 @@
-import log4js, { LoggingEvent } from "log4js";
+import log4js, { LoggingEvent, Logger } from "log4js";
 
 const OutputAppender = {
   configure: (config: any, layouts: any, findAppender: any, levels: any) => {
@@ -32,3 +32,4 @@ export function buildLogger(write: (text: string) => void) {
   });
   return logger;
 }
+export type LOGGER = Logger;

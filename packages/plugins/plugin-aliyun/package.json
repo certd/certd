@@ -22,6 +22,7 @@
     "@certd/plugin-util": "^0.3.0"
   },
   "devDependencies": {
+    "log4js": "^6.7.1",
     "@types/lodash": "^4.14.186",
     "vue-tsc": "^0.38.9",
     "@alicloud/cs20151215": "^3.0.3",
@@ -40,7 +41,6 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "log4js": "^6.3.0",
     "mocha": "^10.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.4",
