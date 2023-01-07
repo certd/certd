@@ -2,9 +2,6 @@ import { Config, Configuration, Inject, Logger } from "@midwayjs/decorator";
 // @ts-ignore
 import { ILogger } from "@midwayjs/logger";
 import { IMidwayContainer, MidwayDecoratorService } from "@midwayjs/core";
-import { registerPlugins } from "../plugin/decorator";
-import { registerAccess } from "../access/decorator";
-import { registerDnsProviders } from "../dns-provider";
 
 // ... (see below) ...
 @Configuration({
@@ -26,9 +23,6 @@ export class PipelineConfiguration {
   async onReady(container: IMidwayContainer) {
     this.logger.info("pipeline install");
 
-    registerPlugins();
-    registerAccess();
-    registerDnsProviders();
     //this.implPropertyDecorator(container);
     this.logger.info("pipeline installed");
   }

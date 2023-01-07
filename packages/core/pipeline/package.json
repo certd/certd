@@ -17,7 +17,8 @@
     "lodash": "^4.17.21",
     "log4js": "^6.3.0",
     "node-forge": "^0.10.0",
-    "qs": "^6.9.4"
+    "qs": "^6.9.4",
+    "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@alicloud/cs20151215": "^3.0.3",

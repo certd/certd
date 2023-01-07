@@ -149,7 +149,7 @@ export class Executor {
     // @ts-ignore
     const define: PluginDefine = plugin.define;
     //从outputContext读取输入参数
-    _.forEach(define.inputs, (item, key) => {
+    _.forEach(define.input, (item, key) => {
       if (item.component?.name === "pi-output-selector") {
         const contextKey = step.input[key];
         if (contextKey != null) {
@@ -164,12 +164,12 @@ export class Executor {
       instance[key] = context[key];
     });
 
-    const res = await instance.execute();
+    await instance.execute();
 
     //输出到output context
-    _.forEach(define.outputs, (item, key) => {
+    _.forEach(define.output, (item, key) => {
       const contextKey = `step.${step.id}.${key}`;
-      this.runtime.context[contextKey] = res[key];
+      this.runtime.context[contextKey] = instance[key];
     });
   }
 }

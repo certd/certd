@@ -21,14 +21,16 @@ export type TaskInputDefine = FormItemProps;
 
 export type PluginDefine = Registrable & {
   default?: any;
-  inputs?: {
+  input?: {
     [key: string]: TaskInputDefine;
   };
-  outputs?: {
+  output?: {
     [key: string]: TaskOutputDefine;
   };
 
-  autowire?: any;
+  autowire?: {
+    [key: string]: any;
+  };
 };
 
 export interface ITaskPlugin {

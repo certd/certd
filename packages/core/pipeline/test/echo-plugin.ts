@@ -1,26 +1,30 @@
-import { AbstractPlugin, IsTask, TaskInput, TaskOutput, TaskPlugin } from "../src";
+import { IsTaskPlugin, TaskInput, ITaskPlugin, LOGGER, Autowire, TaskOutput } from "../src";
 
-@IsTask(() => {
-  return {
-    name: "EchoPlugin",
-    title: "测试插件【echo】",
-    input: {
-      cert: {
-        title: "cert",
-        component: {
-          name: "pi-output-selector",
-        },
-        helper: "输出选择",
-      },
-    },
-    output: {},
-  };
+@IsTaskPlugin({
+  name: "EchoPlugin",
+  title: "测试插件【echo】",
 })
-export class EchoPlugin extends AbstractPlugin implements TaskPlugin {
-  async execute(input: TaskInput): Promise<TaskOutput> {
-    for (const key in input) {
-      this.logger.info("input :", key, input[key]);
-    }
-    return input;
+export class EchoPlugin implements ITaskPlugin {
+  @TaskInput({
+    title: "cert",
+    component: {
+      name: "pi-output-selector",
+    },
+    helper: "输出选择",
+  })
+  cert!: any;
+
+  @Autowire()
+  logger!: LOGGER;
+
+  @TaskOutput({
+    title: "cert info",
+  })
+  certInfo!: any;
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async onInit(): Promise<void> {}
+  async execute(): Promise<void> {
+    console.log("input :cert", this.cert);
   }
 }
