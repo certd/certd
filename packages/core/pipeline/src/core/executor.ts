@@ -9,6 +9,7 @@ import { Logger } from "log4js";
 import { request } from "../utils/util.request";
 import { IAccessService } from "../access";
 import { RegistryItem } from "../registry";
+import { Decorator } from "../decorator";
 
 export class Executor {
   userId: any;
@@ -149,21 +150,17 @@ export class Executor {
     // @ts-ignore
     const define: PluginDefine = plugin.define;
     //从outputContext读取输入参数
-    _.forEach(define.input, (item, key) => {
+    Decorator.inject(define.input, instance, step.input, (item, key) => {
       if (item.component?.name === "pi-output-selector") {
         const contextKey = step.input[key];
         if (contextKey != null) {
           step.input[key] = this.runtime.context[contextKey];
         }
-      } else {
-        instance[key] = step.input[key];
       }
     });
 
-    _.forEach(define.autowire, (item, key: string) => {
-      instance[key] = context[key];
-    });
-
+    Decorator.inject(define.autowire, instance, context);
+    await instance.onInit();
     await instance.execute();
 
     //输出到output context

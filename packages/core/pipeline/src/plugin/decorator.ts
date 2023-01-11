@@ -2,6 +2,7 @@ import _ from "lodash";
 import { pluginRegistry } from "./registry";
 import { PluginDefine, TaskInputDefine, TaskOutputDefine } from "./api";
 import { Decorator } from "../decorator";
+import { AUTOWIRE_KEY } from "../decorator";
 
 // 提供一个唯一 key
 export const PLUGIN_CLASS_KEY = "pipeline:plugin";
@@ -20,7 +21,7 @@ export function IsTaskPlugin(define: PluginDefine): ClassDecorator {
         inputs[property] = input;
       }
 
-      const autowire = Reflect.getMetadata(PLUGIN_AUTOWIRE_KEY, target, property);
+      const autowire = Reflect.getMetadata(AUTOWIRE_KEY, target, property);
       if (autowire) {
         autowires[property] = autowire;
       }
@@ -57,21 +58,5 @@ export function TaskOutput(output?: TaskOutputDefine): PropertyDecorator {
   return (target, propertyKey) => {
     target = Decorator.target(target, propertyKey);
     Reflect.defineMetadata(PLUGIN_OUTPUT_KEY, output, target, propertyKey);
-  };
-}
-
-export type AutowireProp = {
-  name?: string;
-  type?: any;
-};
-export const PLUGIN_AUTOWIRE_KEY = "pipeline:plugin:autowire";
-
-export function Autowire(props?: AutowireProp): PropertyDecorator {
-  return (target, propertyKey) => {
-    const _type = Reflect.getMetadata("design:type", target, propertyKey);
-    target = Decorator.target(target, propertyKey);
-    props = props || {};
-    props.type = _type;
-    Reflect.defineMetadata(PLUGIN_AUTOWIRE_KEY, props || {}, target, propertyKey);
   };
 }

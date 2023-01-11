@@ -1,8 +1,7 @@
-import { CreateRecordOptions, HttpClient, IDnsProvider, IsDnsProvider, RemoveRecordOptions } from "@certd/pipeline";
+import { Autowire, HttpClient, ILogger } from "@certd/pipeline";
+import { CreateRecordOptions, IDnsProvider, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import _ from "lodash";
 import { DnspodAccess } from "../access";
-import { Inject } from "@midwayjs/decorator";
-import { ILogger } from "@midwayjs/core";
 
 @IsDnsProvider({
   name: "dnspod",
@@ -11,12 +10,12 @@ import { ILogger } from "@midwayjs/core";
   accessType: "dnspod",
 })
 export class DnspodDnsProvider implements IDnsProvider {
-  @Inject()
+  @Autowire()
   http!: HttpClient;
 
-  @Inject()
+  @Autowire()
   access!: DnspodAccess;
-  @Inject()
+  @Autowire()
   logger!: ILogger;
 
   loginToken: any;

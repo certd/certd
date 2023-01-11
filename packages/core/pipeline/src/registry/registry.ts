@@ -20,7 +20,7 @@ export class Registry {
     this.storage[key] = value;
   }
 
-  get(name: string) {
+  get(name: string): RegistryItem {
     if (!name) {
       throw new Error("插件名称不能为空");
     }

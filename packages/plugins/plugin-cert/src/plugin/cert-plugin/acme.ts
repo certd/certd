@@ -1,10 +1,10 @@
 // @ts-ignore
 import * as acme from "@certd/acme-client";
 import _ from "lodash";
-import { IDnsProvider } from "@certd/pipeline";
 import { Challenge } from "@certd/acme-client/types/rfc8555";
 import { Logger } from "log4js";
 import { IContext } from "@certd/pipeline/src/core/context";
+import { IDnsProvider } from "../../dns-provider";
 
 export class AcmeService {
   userContext: IContext;

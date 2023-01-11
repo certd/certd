@@ -1,7 +1,7 @@
-import { IAccessService, IsTaskPlugin, RunStrategy, TaskInput, ITaskPlugin, LOGGER } from "@certd/pipeline";
+import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, ILogger, RunStrategy, TaskInput } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import { TencentAccess } from "../../access";
-import { Inject } from "@midwayjs/decorator";
+import { CertInfo } from "@certd/plugin-cert";
 
 @IsTaskPlugin({
   name: "DeployCertToTencentCDN",
@@ -22,7 +22,7 @@ export class DeployToCdnPlugin implements ITaskPlugin {
     },
     required: true,
   })
-  cert!: any;
+  cert!: CertInfo;
 
   @TaskInput({
     title: "Access提供者",
@@ -47,11 +47,11 @@ export class DeployToCdnPlugin implements ITaskPlugin {
   })
   domainName!: string;
 
-  @Inject()
+  @Autowire()
   accessService!: IAccessService;
 
-  @Inject()
-  logger!: LOGGER;
+  @Autowire()
+  logger!: ILogger;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   async onInit() {}

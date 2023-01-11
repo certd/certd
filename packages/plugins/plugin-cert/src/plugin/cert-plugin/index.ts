@@ -1,26 +1,46 @@
-import {
-  Autowire,
-  dnsProviderRegistry,
-  HttpClient,
-  IAccessService,
-  IContext,
-  IsTaskPlugin,
-  ITaskPlugin,
-  RunStrategy,
-  TaskInput,
-  TaskOutput,
-} from "@certd/pipeline";
+import { Autowire, HttpClient, IAccessService, IContext, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import forge from "node-forge";
 import dayjs from "dayjs";
 import { AcmeService } from "./acme";
 import _ from "lodash";
 import { Logger } from "log4js";
-
-export type CertInfo = {
+import { Decorator } from "@certd/pipeline/src/decorator";
+import { DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider";
+import fs from "fs";
+import os from "os";
+export class CertInfo {
   crt: string;
   key: string;
   csr: string;
-};
+
+  detail: any;
+  expires: number;
+  constructor(opts: { crt: string; key: string; csr: string }) {
+    this.crt = opts.crt;
+    this.key = opts.key;
+    this.csr = opts.csr;
+
+    const { detail, expires } = this.getCrtDetail(this.crt);
+    this.detail = detail;
+    this.expires = expires.getTime();
+  }
+
+  getCrtDetail(crt: string) {
+    const pki = forge.pki;
+    const detail = pki.certificateFromPem(crt.toString());
+    const expires = detail.validity.notAfter;
+    return { detail, expires };
+  }
+
+  saveToFile(type: "crt" | "key", path?: string) {
+    if (path == null) {
+      //写入临时目录
+      path = `${os.tmpdir()}/certd/tmp/${Math.floor(Math.random() * 1000000)}/cert.${type}`;
+    }
+    fs.writeFileSync(path, this[type]);
+    return path;
+  }
+}
 @IsTaskPlugin({
   name: "CertApply",
   title: "证书申请",
@@ -199,11 +219,16 @@ export class CertApplyPlugin implements ITaskPlugin {
     );
     this.logger.info("开始申请证书,", email, domains);
 
-    const dnsProviderClass = dnsProviderRegistry.get(dnsProviderType);
+    const dnsProviderPlugin = dnsProviderRegistry.get(dnsProviderType);
+    const DnsProviderClass = dnsProviderPlugin.target;
+    const dnsProviderDefine = dnsProviderPlugin.define as DnsProviderDefine;
     const access = await this.accessService.getById(dnsProviderAccessId);
+
     // @ts-ignore
-    const dnsProvider: AbstractDnsProvider = new dnsProviderClass();
-    dnsProvider.doInit({ access, logger: this.logger, http: this.http });
+    const dnsProvider: IDnsProvider = new DnsProviderClass();
+    const context = { access, logger: this.logger, http: this.http };
+    Decorator.inject(dnsProviderDefine.autowire, dnsProvider, context);
+    await dnsProvider.onInit();
 
     const cert = await this.acme.order({
       email,
@@ -239,23 +264,11 @@ export class CertApplyPlugin implements ITaskPlugin {
   }
 
   async readCurrentCert() {
-    const cert: CertInfo = await this.pipelineContext.get("cert");
+    const cert: any = await this.pipelineContext.get("cert");
     if (cert == null) {
       return undefined;
     }
-    const { detail, expires } = this.getCrtDetail(cert.crt);
-    return {
-      ...cert,
-      detail,
-      expires: expires.getTime(),
-    };
-  }
-
-  getCrtDetail(crt: string) {
-    const pki = forge.pki;
-    const detail = pki.certificateFromPem(crt.toString());
-    const expires = detail.validity.notAfter;
-    return { detail, expires };
+    return new CertInfo(cert);
   }
 
   /**

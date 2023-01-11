@@ -32,4 +32,4 @@ export function buildLogger(write: (text: string) => void) {
   });
   return logger;
 }
-export type LOGGER = Logger;
+export type ILogger = Logger;

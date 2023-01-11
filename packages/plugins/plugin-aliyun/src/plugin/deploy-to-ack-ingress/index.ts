@@ -1,101 +1,119 @@
-import { AbstractPlugin, IsTask, RunStrategy, TaskInput, TaskOutput, TaskPlugin, utils } from "@certd/pipeline";
+import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, ILogger, RunStrategy, TaskInput, utils } from "@certd/pipeline";
 // @ts-ignore
 import { ROAClient } from "@alicloud/pop-core";
 import { AliyunAccess } from "../../access";
 import { K8sClient } from "@certd/plugin-util";
 import { appendTimeSuffix } from "../../utils";
+import { CertInfo } from "@certd/plugin-cert";
 
-@IsTask(() => {
-  return {
-    name: "DeployCertToAliyunAckIngress",
-    title: "部署到阿里云AckIngress",
-    input: {
-      clusterId: {
-        title: "集群id",
-        component: {
-          placeholder: "集群id",
-        },
-      },
-      secretName: {
-        title: "保密字典Id",
-        component: {
-          placeholder: "保密字典Id",
-        },
-        required: true,
-      },
-      regionId: {
-        title: "大区",
-        value: "cn-shanghai",
-        component: {
-          placeholder: "集群所属大区",
-        },
-        required: true,
-      },
-      namespace: {
-        title: "命名空间",
-        value: "default",
-        component: {
-          placeholder: "命名空间",
-        },
-        required: true,
-      },
-      ingressName: {
-        title: "ingress名称",
-        value: "",
-        component: {
-          placeholder: "ingress名称",
-        },
-        required: true,
-        helper: "可以传入一个数组",
-      },
-      ingressClass: {
-        title: "ingress类型",
-        value: "nginx",
-        component: {
-          placeholder: "暂时只支持nginx类型",
-        },
-        required: true,
-      },
-      isPrivateIpAddress: {
-        title: "是否私网ip",
-        value: false,
-        component: {
-          placeholder: "集群连接端点是否是私网ip",
-        },
-        helper: "如果您当前certd运行在同一个私网下，可以选择是。",
-        required: true,
-      },
-      cert: {
-        title: "域名证书",
-        helper: "请选择前置任务输出的域名证书",
-        component: {
-          name: "pi-output-selector",
-        },
-        required: true,
-      },
-      accessId: {
-        title: "Access授权",
-        helper: "阿里云授权AccessKeyId、AccessKeySecret",
-        component: {
-          name: "pi-access-selector",
-          type: "aliyun",
-        },
-        required: true,
-      },
+@IsTaskPlugin({
+  name: "DeployCertToAliyunAckIngress",
+  title: "部署到阿里云AckIngress",
+  input: {},
+  output: {},
+  default: {
+    strategy: {
+      runStrategy: RunStrategy.SkipWhenSucceed,
     },
-    output: {},
-    default: {
-      strategy: {
-        runStrategy: RunStrategy.SkipWhenSucceed,
-      },
-    },
-  };
+  },
 })
-export class DeployCertToAliyunAckIngressPlugin extends AbstractPlugin implements TaskPlugin {
-  async execute(input: TaskInput): Promise<TaskOutput> {
+export class DeployCertToAliyunAckIngressPlugin implements ITaskPlugin {
+  @TaskInput({
+    title: "集群id",
+    component: {
+      placeholder: "集群id",
+    },
+  })
+  clusterId!: string;
+
+  @TaskInput({
+    title: "保密字典Id",
+    component: {
+      placeholder: "保密字典Id",
+    },
+    required: true,
+  })
+  secretName!: string | string[];
+
+  @TaskInput({
+    title: "大区",
+    value: "cn-shanghai",
+    component: {
+      placeholder: "集群所属大区",
+    },
+    required: true,
+  })
+  regionId!: string;
+
+  @TaskInput({
+    title: "命名空间",
+    value: "default",
+    component: {
+      placeholder: "命名空间",
+    },
+    required: true,
+  })
+  namespace!: string;
+  @TaskInput({
+    title: "ingress名称",
+    value: "",
+    component: {
+      placeholder: "ingress名称",
+    },
+    required: true,
+    helper: "可以传入一个数组",
+  })
+  ingressName!: string;
+  @TaskInput({
+    title: "ingress类型",
+    value: "nginx",
+    component: {
+      placeholder: "暂时只支持nginx类型",
+    },
+    required: true,
+  })
+  ingressClass!: string;
+  @TaskInput({
+    title: "是否私网ip",
+    value: false,
+    component: {
+      placeholder: "集群连接端点是否是私网ip",
+    },
+    helper: "如果您当前certd运行在同一个私网下，可以选择是。",
+    required: true,
+  })
+  isPrivateIpAddress!: boolean;
+  @TaskInput({
+    title: "域名证书",
+    helper: "请选择前置任务输出的域名证书",
+    component: {
+      name: "pi-output-selector",
+    },
+    required: true,
+  })
+  cert!: CertInfo;
+  @TaskInput({
+    title: "Access授权",
+    helper: "阿里云授权AccessKeyId、AccessKeySecret",
+    component: {
+      name: "pi-access-selector",
+      type: "aliyun",
+    },
+    required: true,
+  })
+  accessId!: string;
+
+  @Autowire()
+  accessService!: IAccessService;
+  @Autowire()
+  logger!: ILogger;
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async onInit(): Promise<void> {}
+  async execute(): Promise<void> {
     console.log("开始部署证书到阿里云cdn");
-    const { regionId, ingressClass, clusterId, isPrivateIpAddress, cert } = input;
-    const access = (await this.accessService.getById(input.accessId)) as AliyunAccess;
+    const { regionId, ingressClass, clusterId, isPrivateIpAddress, cert } = this;
+    const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;
     const client = this.getClient(access, regionId);
     const kubeConfigStr = await this.getKubeConfig(client, clusterId, isPrivateIpAddress);
 
@@ -106,17 +124,16 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractPlugin implement
       throw new Error("暂未实现");
       // await this.patchQcloudCertSecret({ k8sClient, props, context })
     } else {
-      await this.patchNginxCertSecret({ cert, k8sClient, input });
+      await this.patchNginxCertSecret({ cert, k8sClient });
     }
 
     await utils.sleep(3000); // 停留2秒，等待secret部署完成
     // await this.restartIngress({ k8sClient, props })
-    return {};
   }
 
-  async restartIngress(options: { k8sClient: any; input: TaskInput }) {
-    const { k8sClient, input } = options;
-    const { namespace } = input;
+  async restartIngress(options: { k8sClient: any }) {
+    const { k8sClient } = options;
+    const { namespace } = this;
 
     const body = {
       metadata: {
@@ -136,7 +153,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractPlugin implement
           return false;
         }
         for (const tls of item.spec.tls) {
-          if (tls.secretName === input.secretName) {
+          if (tls.secretName === this.secretName) {
             return true;
           }
         }
@@ -151,14 +168,14 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractPlugin implement
     }
   }
 
-  async patchNginxCertSecret(options: { cert: any; k8sClient: any; input: TaskInput }) {
-    const { cert, k8sClient, input } = options;
+  async patchNginxCertSecret(options: { cert: any; k8sClient: any }) {
+    const { cert, k8sClient } = options;
     const crt = cert.crt;
     const key = cert.key;
     const crtBase64 = Buffer.from(crt).toString("base64");
     const keyBase64 = Buffer.from(key).toString("base64");
 
-    const { namespace, secretName } = input;
+    const { namespace, secretName } = this;
 
     const body = {
       data: {
@@ -171,7 +188,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractPlugin implement
         },
       },
     };
-    let secretNames = secretName;
+    let secretNames: any = secretName;
     if (typeof secretName === "string") {
       secretNames = [secretName];
     }

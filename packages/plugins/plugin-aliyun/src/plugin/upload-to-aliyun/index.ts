@@ -17,7 +17,6 @@ import { Logger } from "log4js";
 export class UploadCertToAliyun implements ITaskPlugin {
   @TaskInput({
     title: "证书名称",
-
     helper: "证书上传后将以此参数作为名称前缀",
   })
   name!: string;
@@ -65,6 +64,9 @@ export class UploadCertToAliyun implements ITaskPlugin {
 
   @Autowire()
   logger!: Logger;
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  async onInit() {}
 
   async execute(): Promise<void> {
     console.log("开始部署证书到阿里云cdn");

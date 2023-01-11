@@ -13,6 +13,7 @@
   "dependencies": {
     "@certd/pipeline": "^0.3.0",
     "@certd/plugin-util": "^0.3.0",
+    "@certd/plugin-cert": "^0.3.0",
     "tencentcloud-sdk-nodejs": "^4.0.44"
   },
   "devDependencies": {

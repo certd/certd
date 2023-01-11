@@ -1,10 +1,11 @@
+// @ts-ignore
 import ssh2 from "ssh2";
 import path from "path";
 import _ from "lodash";
-import { Logger } from "log4js";
+import { ILogger } from "@certd/pipeline";
 export class SshClient {
-  logger: Logger;
-  constructor(logger: Logger) {
+  logger: ILogger;
+  constructor(logger: ILogger) {
     this.logger = logger;
   }
   /**

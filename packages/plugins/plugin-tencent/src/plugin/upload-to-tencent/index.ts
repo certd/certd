@@ -1,4 +1,4 @@
-import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput, TaskOutput, LOGGER } from "@certd/pipeline";
+import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput, TaskOutput, ILogger } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import dayjs from "dayjs";
 
@@ -46,7 +46,7 @@ export class UploadToTencentPlugin implements ITaskPlugin {
   accessService!: IAccessService;
 
   @Autowire()
-  logger!: LOGGER;
+  logger!: ILogger;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   async onInit() {}

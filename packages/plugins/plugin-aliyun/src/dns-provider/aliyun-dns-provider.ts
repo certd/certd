@@ -1,7 +1,8 @@
 import Core from "@alicloud/pop-core";
 import _ from "lodash";
-import { CreateRecordOptions, IDnsProvider, IsDnsProvider, RemoveRecordOptions } from "@certd/pipeline";
-import { Logger } from "log4js";
+import { CreateRecordOptions, IDnsProvider, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { Autowire, ILogger } from "@certd/pipeline";
+import { AliyunAccess } from "../access";
 
 @IsDnsProvider({
   name: "aliyun",
@@ -11,8 +12,10 @@ import { Logger } from "log4js";
 })
 export class AliyunDnsProvider implements IDnsProvider {
   client: any;
-  access: any;
-  logger!: Logger;
+  @Autowire()
+  access!: AliyunAccess;
+  @Autowire()
+  logger!: ILogger;
   async onInit() {
     const access: any = this.access;
     this.client = new Core({

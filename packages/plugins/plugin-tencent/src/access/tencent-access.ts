@@ -1,11 +1,11 @@
-import { IsAccess, IsAccessInput } from "@certd/pipeline";
+import { IsAccess, AccessInput } from "@certd/pipeline";
 
 @IsAccess({
   name: "tencent",
   title: "腾讯云",
 })
 export class TencentAccess {
-  @IsAccessInput({
+  @AccessInput({
     title: "secretId",
     component: {
       placeholder: "secretId",
@@ -13,7 +13,7 @@ export class TencentAccess {
     rules: [{ required: true, message: "该项必填" }],
   })
   secretId = "";
-  @IsAccessInput({
+  @AccessInput({
     title: "secretKey",
     component: {
       placeholder: "secretKey",

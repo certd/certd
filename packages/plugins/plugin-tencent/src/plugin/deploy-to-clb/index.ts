@@ -1,8 +1,7 @@
-import { IAccessService, IsTaskPlugin, ITaskPlugin, LOGGER, RunStrategy, TaskInput, utils } from "@certd/pipeline";
+import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, ILogger, RunStrategy, TaskInput, utils } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import { TencentAccess } from "../../access";
 import dayjs from "dayjs";
-import { Inject } from "@midwayjs/decorator";
 
 @IsTaskPlugin({
   name: "DeployCertToTencentCLB",
@@ -72,11 +71,11 @@ export class DeployToClbPlugin implements ITaskPlugin {
   })
   accessId!: string;
 
-  @Inject()
+  @Autowire()
   accessService!: IAccessService;
 
-  @Inject()
-  logger!: LOGGER;
+  @Autowire()
+  logger!: ILogger;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   async onInit() {}

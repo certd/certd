@@ -1,4 +1,4 @@
-import { IsAccess, IsAccessInput } from "@certd/pipeline";
+import { IsAccess, AccessInput } from "@certd/pipeline";
 
 @IsAccess({
   name: "aliyun",
@@ -6,7 +6,7 @@ import { IsAccess, IsAccessInput } from "@certd/pipeline";
   desc: "",
 })
 export class AliyunAccess {
-  @IsAccessInput({
+  @AccessInput({
     title: "accessKeyId",
     component: {
       placeholder: "accessKeyId",
@@ -14,7 +14,7 @@ export class AliyunAccess {
     required: true,
   })
   accessKeyId = "";
-  @IsAccessInput({
+  @AccessInput({
     title: "accessKeySecret",
     component: {
       placeholder: "accessKeySecret",

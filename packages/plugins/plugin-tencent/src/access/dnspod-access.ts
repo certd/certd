@@ -1,4 +1,4 @@
-import { IsAccess, IsAccessInput } from "@certd/pipeline";
+import { IsAccess, AccessInput } from "@certd/pipeline";
 
 @IsAccess({
   name: "dnspod",
@@ -6,7 +6,7 @@ import { IsAccess, IsAccessInput } from "@certd/pipeline";
   desc: "腾讯云的域名解析接口已迁移到dnspod",
 })
 export class DnspodAccess {
-  @IsAccessInput({
+  @AccessInput({
     title: "token",
     component: {
       placeholder: "开放接口token",
@@ -14,7 +14,7 @@ export class DnspodAccess {
     rules: [{ required: true, message: "该项必填" }],
   })
   token = "";
-  @IsAccessInput({
+  @AccessInput({
     title: "账户id",
     component: {
       placeholder: "dnspod接口账户id",

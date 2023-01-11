@@ -20,7 +20,7 @@ export function IsAccess(define: AccessDefine): ClassDecorator {
         inputs[property] = input;
       }
     }
-    _.merge(define, { inputs });
+    _.merge(define, { input: inputs });
     Reflect.defineMetadata(ACCESS_CLASS_KEY, define, target);
     target.define = define;
     accessRegistry.register(define.name, {
@@ -30,9 +30,9 @@ export function IsAccess(define: AccessDefine): ClassDecorator {
   };
 }
 
-export function IsAccessInput(input?: AccessInputDefine): PropertyDecorator {
+export function AccessInput(input?: AccessInputDefine): PropertyDecorator {
   return (target, propertyKey) => {
-    target = Decorator.target(target);
+    target = Decorator.target(target, propertyKey);
     // const _type = Reflect.getMetadata("design:type", target, propertyKey);
     Reflect.defineMetadata(ACCESS_INPUT_KEY, input, target, propertyKey);
   };

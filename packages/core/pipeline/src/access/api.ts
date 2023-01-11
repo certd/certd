@@ -6,7 +6,7 @@ export type AccessInputDefine = FormItemProps & {
   required?: boolean;
 };
 export type AccessDefine = Registrable & {
-  inputs?: {
+  input?: {
     [key: string]: AccessInputDefine;
   };
 };

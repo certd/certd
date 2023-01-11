@@ -1,7 +1,10 @@
-import { Registrable } from "../registry";
+import { Registrable } from "@certd/pipeline";
 
 export type DnsProviderDefine = Registrable & {
   accessType: string;
+  autowire?: {
+    [key: string]: any;
+  };
 };
 
 export type CreateRecordOptions = {
@@ -14,6 +17,7 @@ export type RemoveRecordOptions = CreateRecordOptions & {
 };
 
 export interface IDnsProvider {
+  onInit(): Promise<void>;
   createRecord(options: CreateRecordOptions): Promise<any>;
   removeRecord(options: RemoveRecordOptions): Promise<any>;
 }

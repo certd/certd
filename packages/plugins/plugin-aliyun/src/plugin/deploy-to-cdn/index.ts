@@ -1,9 +1,8 @@
-import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, LOGGER, RunStrategy, TaskInput } from "@certd/pipeline";
+import { Autowire, IAccessService, ILogger, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
 import dayjs from "dayjs";
 import Core from "@alicloud/pop-core";
 import RPCClient from "@alicloud/pop-core";
 import { AliyunAccess } from "../../access";
-import { Inject } from "@midwayjs/core";
 
 @IsTaskPlugin({
   name: "DeployCertToAliyunCDN",
@@ -50,11 +49,11 @@ export class DeployCertToAliyunCDN implements ITaskPlugin {
   })
   accessId!: string;
 
-  @Inject()
+  @Autowire()
   accessService!: IAccessService;
 
   @Autowire()
-  logger!: LOGGER;
+  logger!: ILogger;
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   async onInit() {}
   async execute(): Promise<void> {
