@@ -1,0 +1,27 @@
+.ant-layout{
+  background-color: @bg-color;
+}
+.ant-layout-header {
+  background-color: @bg-color
+}
+.ant-layout-sider {
+  background-color:@bg-color
+}
+.ant-menu{
+  background-color: @bg-color;
+  &.ant-menu-submenu-popup{
+    background-color: transparent;
+  }
+}
+.aside-menu{
+  .ant-menu-submenu > .ant-menu{
+    background-color:@bg-color
+  }
+
+  .ant-menu-item-active{
+    background-color: @bg-menu-item-color;
+  }
+  .ant-menu-item-selected{
+    background-color: @bg-menu-item-color !important;
+  }
+}
