@@ -1,9 +1,0 @@
-[submodule "packages/server/certd-client"]
-	path = packages/server/certd-client
-	url = https://github.com/certd/certd-client
-[submodule "packages/server/certd-server"]
-	path = packages/server/certd-server
-	url = https://github.com/certd/certd-server
-[submodule "packages/basic/acme-client"]
-	path = packages/basic/acme-client
-	url = https://github.com/certd/node-acme-client
