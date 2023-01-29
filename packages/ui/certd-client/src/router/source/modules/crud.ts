@@ -64,6 +64,12 @@ export const crudResources = [
             name: "BasisColumnsSet",
             path: "/crud/basis/columns-set",
             component: "/crud/basis/columns-set/index.vue"
+          },
+          {
+            title: "字段合并插件",
+            name: "BasisColumnMergePlugin",
+            path: "/crud/basis/column-merge-plugin",
+            component: "/crud/basis/column-merge-plugin/index.vue"
           }
         ]
       },
@@ -93,6 +99,25 @@ export const crudResources = [
             name: "DictPrototype",
             path: "/crud/dict/prototype",
             component: "/crud/dict/prototype/index.vue"
+          },
+          {
+            title: "页面间共享",
+            name: "DictShared",
+            path: "/crud/dict/shared",
+            children: [
+              {
+                title: "共享字典数据管理",
+                name: "DictSharedManager",
+                path: "/crud/dict/shared/manager",
+                component: "/crud/dict/shared/manager/index.vue"
+              },
+              {
+                title: "共享字典使用",
+                name: "DictSharedUse",
+                path: "/crud/dict/shared/use",
+                component: "/crud/dict/shared/use/index.vue"
+              }
+            ]
           }
         ]
       },
@@ -270,6 +295,12 @@ export const crudResources = [
             name: "FormLayout",
             path: "/crud/form/layout",
             component: "/crud/form/layout/index.vue"
+          },
+          {
+            title: "表单单列模式",
+            name: "FormSingleColumn",
+            path: "/crud/form/single-column",
+            component: "/crud/form/single-column/index.vue"
           },
           {
             title: "表单校验",

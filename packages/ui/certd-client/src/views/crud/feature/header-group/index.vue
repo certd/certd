@@ -1,6 +1,8 @@
 <template>
   <fs-page>
-    <fs-crud ref="crudRef" v-bind="crudBinding" />
+    <fs-crud ref="crudRef" v-bind="crudBinding">
+      <template #cell_street="scope"> 街道：{{ scope.value }} </template>
+    </fs-crud>
   </fs-page>
 </template>
 

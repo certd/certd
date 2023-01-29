@@ -10,14 +10,13 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, nextTick } from "vue";
-import { useFs, useDrag } from "@fast-crud/fast-crud";
-import createCrudOptions from "./crud";
+import { useFs } from "@fast-crud/fast-crud";
+import createCrudOptions from "./crud.jsx";
 export default defineComponent({
   name: "FormBase",
   setup() {
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
 
-    const visibleRef = ref(false);
     // 页面打开后获取列表数据
     onMounted(async () => {
       crudExpose.doRefresh();

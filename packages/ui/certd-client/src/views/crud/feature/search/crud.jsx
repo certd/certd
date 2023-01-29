@@ -30,20 +30,23 @@ export default function ({ expose }) {
           console.log("onFilterChange", e);
         }
       },
-      search:{
-        buttons:{
-          custom:{
-            text:"自定义",
-            show:true,
-            order:3,
-            icon:{
-              icon:"ant-design:search",
-              style:{
-                "font-size":'16px'
+      search: {
+        initialForm: {
+          radio: "0"
+        },
+        buttons: {
+          custom: {
+            text: "自定义",
+            show: true,
+            order: 3,
+            icon: {
+              icon: "ant-design:search",
+              style: {
+                "font-size": "16px"
               }
             },
-            click(){
-              console.log("点击了自定义按钮")
+            click() {
+              console.log("点击了自定义按钮");
             }
           }
         }

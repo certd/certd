@@ -49,7 +49,7 @@ export const useSettingStore = defineStore({
       }
       this.theme = theme;
       this.persistTheme();
-     // await changeTheme(this.theme.primaryColor);
+      // await changeTheme(this.theme.primaryColor);
     },
     async setPrimaryColor(color) {
       const theme = this.theme;

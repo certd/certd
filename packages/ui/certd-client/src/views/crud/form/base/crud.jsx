@@ -22,10 +22,32 @@ export default function ({ crudExpose }) {
         editRequest,
         delRequest
       },
+      form: {
+        wrapper: {
+          buttons: {
+            ok: {
+              text: "保存"
+            }
+          }
+        }
+      },
       columns: {
         name: {
           title: "姓名",
           type: "text"
+        },
+        renderLabel: {
+          title: "labelRender",
+          type: "text",
+          form: {
+            title(context) {
+              console.log("render label context:", context);
+              return <div style={{ color: "red" }}>LabelRender</div>;
+            },
+            helper: {
+              text: "配置form.title为一个render方法即可自定义label"
+            }
+          }
         }
       }
     }
