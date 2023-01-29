@@ -1,0 +1,82 @@
+{
+  "name": "@fast-crud/fs-server-js",
+  "version": "0.2.0",
+  "description": "fast-server base midway",
+  "private": true,
+  "scripts": {
+    "start": "NODE_ENV=production node ./bootstrap.js",
+    "online": "NODE_ENV=production node ./bootstrap.js",
+    "online:preview": "NODE_ENV=preview node ./bootstrap.js",
+    "dev": "cross-env NODE_ENV=local midway-bin dev --ts",
+    "dev:preview": "cross-env NODE_ENV=preview midway-bin dev --ts",
+    "test": "midway-bin test --ts",
+    "cov": "midway-bin cov --ts",
+    "lint": "mwts check",
+    "lint:fix": "mwts fix",
+    "ci": "npm run cov",
+    "build": "midway-bin build -c",
+    "build:preview": "cross-env NODE_ENV=preview midway-bin build -c",
+    "check": "luckyeye",
+    "mig": "typeorm migration:create -n name"
+  },
+  "dependencies": {
+    "midway-flyway-js": "^3.0.0",
+    "@koa/cors": "^3.1.0",
+    "@midwayjs/bootstrap": "^3.0.0",
+    "@midwayjs/cache": "^3.0.0",
+    "@midwayjs/cli": "^1.2.38",
+    "@midwayjs/core": "^3.0.0",
+    "@midwayjs/decorator": "^3.0.0",
+    "@midwayjs/koa": "^3.0.0",
+    "@midwayjs/logger": "^2.17.0",
+    "@midwayjs/typeorm": "^3.5.3",
+    "@midwayjs/validate": "^3.0.0",
+    "@types/cache-manager": "^3.4.0",
+    "typeorm": "^0.3.10",
+    "cache-manager": "^3.4.3",
+    "dayjs": "^1.10.5",
+    "glob": "^7.1.7",
+    "jsonwebtoken": "^8.5.1",
+    "koa-bodyparser": "^4.3.0",
+    "lodash": "^4.17.21",
+    "log4js": "^6.3.0",
+    "md5": "^2.3.0",
+    "sqlite3": "^5.1.2",
+    "svg-captcha": "^1.4.0",
+    "@alicloud/pop-core": "^1.7.10"
+  },
+  "devDependencies": {
+    "@midwayjs/cli": "^1.0.0",
+    "@midwayjs/luckyeye": "^1.0.0",
+    "@midwayjs/mock": "^3.0.0",
+    "@midwayjs/orm": "^3.0.0",
+    "@types/jest": "^26.0.10",
+    "@types/koa-bodyparser": "^4.3.0",
+    "@types/node": "14",
+    "cross-env": "^6.0.0",
+    "jest": "^26.4.0",
+    "mwts": "^1.0.5",
+    "ts-jest": "^26.2.0",
+    "typescript": "^4.0.0",
+    "ts-node": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+
+  "midway-bin-clean": [
+    ".vscode/.tsbuildinfo",
+    "dist"
+  ],
+  "midway-luckyeye": {
+    "packages": [
+      "midway_v2"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fast-crud/fast-server-js"
+  },
+  "author": "Greper",
+  "license": "MIT"
+}
