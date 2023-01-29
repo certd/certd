@@ -1,0 +1,60 @@
+{
+    "name": "acme-client",
+    "description": "Simple and unopinionated ACME client",
+    "author": "nmorsman",
+    "version": "5.0.0",
+    "main": "src/index.js",
+    "types": "types",
+    "license": "MIT",
+    "homepage": "https://github.com/publishlab/node-acme-client",
+    "engines": {
+        "node": ">= 16"
+    },
+    "files": [
+        "src",
+        "types"
+    ],
+    "dependencies": {
+        "axios": "0.27.2",
+        "debug": "^4.1.1",
+        "jsrsasign": "^10.5.26",
+        "node-forge": "^1.3.1"
+    },
+    "devDependencies": {
+        "@types/node": "^18.6.1",
+        "chai": "^4.3.6",
+        "chai-as-promised": "^7.1.1",
+        "dtslint": "^4.2.1",
+        "eslint": "^8.11.0",
+        "eslint-config-airbnb-base": "^15.0.0",
+        "eslint-plugin-import": "^2.25.4",
+        "jsdoc-to-markdown": "^7.1.1",
+        "mocha": "^10.0.0",
+        "nock": "^13.2.4",
+        "typescript": "^4.6.2",
+        "uuid": "^8.3.2"
+    },
+    "scripts": {
+        "build-docs": "jsdoc2md src/client.js > docs/client.md && jsdoc2md src/crypto/index.js > docs/crypto.md && jsdoc2md src/crypto/forge.js > docs/forge.md",
+        "lint": "eslint .",
+        "lint-types": "dtslint types",
+        "prepublishOnly": "npm run build-docs",
+        "test": "mocha -t 60000 \"test/setup.js\" \"test/**/*.spec.js\"",
+        "test-local": "/bin/bash scripts/run-tests.sh"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/publishlab/node-acme-client"
+    },
+    "keywords": [
+        "acme",
+        "client",
+        "lets",
+        "encrypt",
+        "acmev2",
+        "boulder"
+    ],
+    "bugs": {
+        "url": "https://github.com/publishlab/node-acme-client/issues"
+    }
+}
