@@ -169,9 +169,6 @@ module.exports = async function(client, userOpts) {
         await challengeFunc(authz);
     });
 
-    log('[auto] Waiting for challenge valid status');
-    // await Promise.all(challengePromises);
-
     log('开始challenge');
     let promise = Promise.resolve();
     function runPromisesSerially(tasks) {
@@ -183,6 +180,11 @@ module.exports = async function(client, userOpts) {
 
     await runPromisesSerially(challengePromises);
     log('challenge结束');
+
+    // log('[auto] Waiting for challenge valid status');
+    // await Promise.all(challengePromises);
+
+
     /**
      * Finalize order and download certificate
      */

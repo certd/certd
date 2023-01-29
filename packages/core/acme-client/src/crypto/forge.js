@@ -74,7 +74,8 @@ function parseDomains(obj) {
 
     if (rootAltNames && rootAltNames.altNames && rootAltNames.altNames.length) {
         altNamesDict = rootAltNames.altNames;
-    } else if (rootExtensions && rootExtensions.extensions && rootExtensions.extensions.length) {
+    }
+    else if (rootExtensions && rootExtensions.extensions && rootExtensions.extensions.length) {
         const extAltNames = rootExtensions.extensions.find((e) => 'altNames' in e);
 
         if (extAltNames && extAltNames.altNames && extAltNames.altNames.length) {
@@ -115,20 +116,10 @@ function parseDomains(obj) {
  */
 
 async function createPrivateKey(size = 2048) {
-    const keyPair = await generateKeyPair({bits: size});
-    // const privateKey = forge.pki.privateKeyToPem(keyPair.privateKey);
-
-    // convert a Forge private key to an ASN.1 RSAPrivateKey
-    var rsaPrivateKey = forge.pki.privateKeyToAsn1(keyPair.privateKey);
-
-// wrap an RSAPrivateKey ASN.1 object in a PKCS#8 ASN.1 PrivateKeyInfo
-    var privateKeyInfo = forge.pki.wrapRsaPrivateKey(rsaPrivateKey);
-
-// convert a PKCS#8 ASN.1 PrivateKeyInfo to PEM
-    var pemKey = forge.pki.privateKeyInfoToPem(privateKeyInfo);
+    const keyPair = await generateKeyPair({ bits: size });
+    const pemKey = forge.pki.privateKeyToPem(keyPair.privateKey);
     return Buffer.from(pemKey);
 }
-
 
 exports.createPrivateKey = createPrivateKey;
 
@@ -145,7 +136,7 @@ exports.createPrivateKey = createPrivateKey;
  * ```
  */
 
-exports.createPublicKey = async function (key) {
+exports.createPublicKey = async function(key) {
     const privateKey = forge.pki.privateKeyFromPem(key);
     const publicKey = forge.pki.rsa.setPublicKey(privateKey.n, privateKey.e);
     const pemKey = forge.pki.publicKeyToPem(publicKey);
@@ -191,7 +182,7 @@ exports.splitPemChain = (str) => forge.pem.decode(str).map(forge.pem.encode);
  * ```
  */
 
-exports.getModulus = async function (input) {
+exports.getModulus = async function(input) {
     if (!Buffer.isBuffer(input)) {
         input = Buffer.from(input);
     }
@@ -215,7 +206,7 @@ exports.getModulus = async function (input) {
  * ```
  */
 
-exports.getPublicExponent = async function (input) {
+exports.getPublicExponent = async function(input) {
     if (!Buffer.isBuffer(input)) {
         input = Buffer.from(input);
     }
@@ -240,7 +231,7 @@ exports.getPublicExponent = async function (input) {
  * ```
  */
 
-exports.readCsrDomains = async function (csr) {
+exports.readCsrDomains = async function(csr) {
     if (!Buffer.isBuffer(csr)) {
         csr = Buffer.from(csr);
     }
@@ -269,7 +260,7 @@ exports.readCsrDomains = async function (csr) {
  * ```
  */
 
-exports.readCertificateInfo = async function (cert) {
+exports.readCertificateInfo = async function(cert) {
     if (!Buffer.isBuffer(cert)) {
         cert = Buffer.from(cert);
     }
@@ -321,7 +312,7 @@ function createCsrSubject(subjectObj) {
     return Object.entries(subjectObj).reduce((result, [shortName, value]) => {
         if (value) {
             const valueTagClass = getCsrValueTagClass(shortName);
-            result.push({shortName, value, valueTagClass});
+            result.push({ shortName, value, valueTagClass });
         }
 
         return result;
@@ -341,7 +332,7 @@ function createCsrSubject(subjectObj) {
 function formatCsrAltNames(altNames) {
     return altNames.map((value) => {
         const type = net.isIP(value) ? 7 : 2;
-        return {type, value};
+        return { type, value };
     });
 }
 
@@ -400,10 +391,11 @@ function formatCsrAltNames(altNames) {
  * }, certificateKey);
  */
 
-exports.createCsr = async function (data, key = null) {
+exports.createCsr = async function(data, key = null) {
     if (!key) {
         key = await createPrivateKey(data.keySize);
-    } else if (!Buffer.isBuffer(key)) {
+    }
+    else if (!Buffer.isBuffer(key)) {
         key = Buffer.from(key);
     }
 
