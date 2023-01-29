@@ -1,0 +1,11 @@
+service: certd         ## 应用发布到云平台的名字，一般指应用名
+
+provider:
+  name: aliyun                 ## 发布的云平台，aliyun，tencent 等
+
+deployType:
+  type: koa                    ## 部署的应用类型
+  version: 3.0.0
+custom:
+  customDomain:
+    domainName: auto
