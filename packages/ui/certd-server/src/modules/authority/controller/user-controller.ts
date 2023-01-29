@@ -17,7 +17,7 @@ import { PermissionService } from '../service/permission-service';
  */
 @Provide()
 @Controller('/api/sys/authority/user')
-export class UserController extends CrudController {
+export class UserController extends CrudController<UserService> {
   @Inject()
   service: UserService;
 
@@ -40,7 +40,7 @@ export class UserController extends CrudController {
     const users = ret.data.records;
 
     //获取roles
-    const userIds = users.map(item => item.id);
+    const userIds = users.map((item) => item.id);
     const userRoles = await this.roleService.getByUserIds(userIds);
     const userRolesMap = new Map();
     for (const ur of userRoles) {
@@ -116,3 +116,4 @@ export class UserController extends CrudController {
     return this.ok(tree);
   }
 }
+

@@ -1,7 +1,10 @@
 import { ALL, Body, Post, Query } from '@midwayjs/decorator';
+import { BaseService } from './base-service';
 import { BaseController } from './base-controller';
 
-export abstract class CrudController extends BaseController {
+export abstract class CrudController<
+  T extends BaseService
+> extends BaseController {
   abstract getService();
 
   @Post('/page')
@@ -62,3 +65,4 @@ export abstract class CrudController extends BaseController {
     return this.ok(null);
   }
 }
+

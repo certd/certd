@@ -15,7 +15,7 @@ import { PermissionService } from '../service/permission-service';
  */
 @Provide()
 @Controller('/api/sys/authority/permission')
-export class PermissionController extends CrudController {
+export class PermissionController extends CrudController<PermissionService> {
   @Inject()
   service: PermissionService;
 
@@ -60,3 +60,4 @@ export class PermissionController extends CrudController {
     return this.ok(tree);
   }
 }
+

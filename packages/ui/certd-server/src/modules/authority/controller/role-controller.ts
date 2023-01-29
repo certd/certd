@@ -15,7 +15,7 @@ import { RoleService } from '../service/role-service';
  */
 @Provide()
 @Controller('/api/sys/authority/role')
-export class RoleController extends CrudController {
+export class RoleController extends CrudController<RoleService> {
   @Inject()
   service: RoleService;
 
@@ -93,3 +93,4 @@ export class RoleController extends CrudController {
     return this.ok(null);
   }
 }
+

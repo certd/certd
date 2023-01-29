@@ -2,7 +2,7 @@ import { Config, Provide } from '@midwayjs/decorator';
 import {
   IWebMiddleware,
   IMidwayKoaContext,
-  IMidwayKoaNext,
+  NextFunction
 } from '@midwayjs/koa';
 import * as _ from 'lodash';
 import * as jwt from 'jsonwebtoken';
@@ -19,7 +19,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
   private ignoreUrls: string[];
 
   resolve() {
-    return async (ctx: IMidwayKoaContext, next: IMidwayKoaNext) => {
+    return async (ctx: IMidwayKoaContext, next: NextFunction) => {
       const { url } = ctx;
       const token = ctx.get('Authorization');
       // 路由地址为 admin前缀的 需要权限校验

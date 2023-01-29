@@ -4,14 +4,19 @@ base on midway
 
 ## QuickStart
 
+> nodejs需要16以上
+
 <!-- add docs here for user -->
 
-see [midway docs][midway] for more detail.
 
 ### Development
 
 ```bash
 $ npm i
+# 如果遇到sqlite安装失败时
+# 建议使用cnpm
+# npm install -g cnpm
+# cnpm install
 $ npm run dev
 $ open http://localhost:7001/
 ```
@@ -29,3 +34,8 @@ $ npm start
 
 
 [midway]: https://midwayjs.org
+
+see [midway docs][ https://midwayjs.org] for more detail.
+
+
+

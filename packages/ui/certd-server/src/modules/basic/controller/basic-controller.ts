@@ -1,4 +1,4 @@
-import { Rule, RuleType } from '@midwayjs/validate';
+import { Rule,RuleType } from '@midwayjs/validate';
 import { ALL, Inject } from '@midwayjs/decorator';
 import { Body } from '@midwayjs/decorator';
 import { Controller, Post, Provide } from '@midwayjs/decorator';
@@ -53,3 +53,4 @@ export class BasicController extends BaseController {
     return this.ok(captcha.data);
   }
 }
+

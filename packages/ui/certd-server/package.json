@@ -3,13 +3,7 @@
   "version": "0.2.0",
   "description": "fast-server base midway",
   "private": true,
-  "midway-integration": {
-    "lifecycle": {
-      "before:package:cleanup": "npm run build"
-    }
-  },
   "scripts": {
-    "deploy": "midway-bin deploy",
     "start": "NODE_ENV=production node ./bootstrap.js",
     "online": "NODE_ENV=production node ./bootstrap.js",
     "online:preview": "NODE_ENV=preview node ./bootstrap.js",
@@ -73,6 +67,7 @@
   "engines": {
     "node": ">=12.0.0"
   },
+
   "midway-bin-clean": [
     ".vscode/.tsbuildinfo",
     "dist"

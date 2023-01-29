@@ -1,7 +1,7 @@
 import { Config, Provide } from '@midwayjs/decorator';
 import {
   IMidwayKoaContext,
-  IMidwayKoaNext,
+  NextFunction,
   IWebMiddleware,
 } from '@midwayjs/koa';
 import { PreviewException } from '../basic/exception/preview-exception';
@@ -15,7 +15,7 @@ export class PreviewMiddleware implements IWebMiddleware {
   private preview: boolean;
 
   resolve() {
-    return async (ctx: IMidwayKoaContext, next: IMidwayKoaNext) => {
+    return async (ctx: IMidwayKoaContext, next: NextFunction) => {
       if (!this.preview) {
         await next();
         return;

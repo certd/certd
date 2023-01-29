@@ -2,7 +2,7 @@ import { Provide } from '@midwayjs/decorator';
 import {
   IWebMiddleware,
   IMidwayKoaContext,
-  IMidwayKoaNext,
+  NextFunction,
 } from '@midwayjs/koa';
 import { logger } from '../utils/logger';
 import { Result } from '../basic/result';
@@ -10,7 +10,7 @@ import { Result } from '../basic/result';
 @Provide()
 export class GlobalExceptionMiddleware implements IWebMiddleware {
   resolve() {
-    return async (ctx: IMidwayKoaContext, next: IMidwayKoaNext) => {
+    return async (ctx: IMidwayKoaContext, next: NextFunction) => {
       const { url } = ctx;
       const startTime = Date.now();
       logger.info('请求开始:', url);
