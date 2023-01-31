@@ -14,7 +14,8 @@
     "preview": "vite preview",
     "pretty-quick": "pretty-quick",
     "lint-fix": "eslint --fix --ext .js --ext .jsx --ext .vue src/",
-    "upgrade": "yarn upgrade-interactive --latest"
+    "upgrade": "yarn upgrade-interactive --latest",
+    "tsc": "vue-tsc --noEmit --skipLibCheck"
   },
   "author": "Greper",
   "license": "MIT",
@@ -102,7 +103,8 @@
     "vite-plugin-theme": "^0.8.1",
     "vite-plugin-windicss": "^1.8.10",
     "vue-eslint-parser": "^9.1.0",
-    "windicss": "^3.5.6"
+    "windicss": "^3.5.6",
+    "vue-tsc": "^0.40.13"
   },
   "husky": {
     "hooks": {
