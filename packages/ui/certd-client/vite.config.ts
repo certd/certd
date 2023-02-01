@@ -4,7 +4,7 @@ import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
 import PurgeIcons from "vite-plugin-purge-icons";
 import * as path from "path";
-import WindiCSS from "vite-plugin-windicss";
+// import WindiCSS from "vite-plugin-windicss";
 // import { generateModifyVars } from "./build/modify-vars";
 // import { configThemePlugin } from "./build/theme-plugin";
 // import OptimizationPersist from "vite-plugin-optimize-persist";
@@ -46,7 +46,7 @@ export default ({ command, mode }) => {
         // iconSource: "local"
         // remoteDataAPI: "https://gitee.com/fast-crud/collections-json/raw/master/json",
         // includedCollections: ["ion"]
-      }),
+      })
       //主题色替换
       //...configThemePlugin(true),
       // viteThemePlugin({
@@ -54,19 +54,16 @@ export default ({ command, mode }) => {
       //   colorVariables: ["#1890ff", "#40a9ff"]
       // }),
       // windicss tailwindcss
-      WindiCSS()
+      // WindiCSS()
     ],
     esbuild: {
+      drop: command === "build" ? ["debugger"] : [],
       // pure: ["console.log", "debugger"],
       jsxFactory: "h",
       jsxFragment: "Fragment"
     },
     resolve: {
-      alias: [
-        ...devAlias,
-        { find: "/@", replacement: path.resolve("./src") },
-        { find: "/#", replacement: path.resolve("./types") }
-      ],
+      alias: [...devAlias, { find: "/@", replacement: path.resolve("./src") }, { find: "/#", replacement: path.resolve("./types") }],
       dedupe: ["vue"]
     },
     optimizeDeps: {
