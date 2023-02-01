@@ -19,13 +19,7 @@
           </div>
         </div>
 
-        <fs-menu
-          class="header-menu"
-          mode="horizontal"
-          :expand-selected="false"
-          :selectable="false"
-          :menus="frameworkMenus"
-        />
+        <fs-menu class="header-menu" mode="horizontal" :expand-selected="false" :selectable="false" :menus="frameworkMenus" />
         <div class="header-right header-buttons">
           <!--          <button-->
           <!--            w:bg="blue-400 hover:blue-500 dark:blue-500 dark:hover:blue-600"-->
@@ -36,13 +30,7 @@
           <!--          >-->
           <!--            Button-->
           <!--          </button>-->
-          <fs-menu
-            class="header-menu"
-            mode="horizontal"
-            :expand-selected="false"
-            :selectable="false"
-            :menus="headerMenus"
-          />
+          <fs-menu class="header-menu" mode="horizontal" :expand-selected="false" :selectable="false" :menus="headerMenus" />
           <fs-locale class="btn" />
           <!--          <fs-theme-set class="btn" />-->
           <fs-user-info class="btn" />
