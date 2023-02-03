@@ -1,0 +1,19 @@
+{
+  "name": "root",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "lerna": "^6.3.0"
+  },
+  "scripts": {
+    "start": "lerna bootstrap --hoist",
+    "i-all": "lerna link && lerna exec npm install  "
+  },
+  "license": "MIT",
+  "dependencies": {
+    "lodash-es": "^4.17.21"
+  },
+  "workspaces": [
+    "packages/**"
+  ]
+}

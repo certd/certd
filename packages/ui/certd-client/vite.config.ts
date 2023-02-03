@@ -36,7 +36,7 @@ export default ({ command, mode }) => {
   }
 
   return {
-    base: "/antdv/",
+    base: "/",
     plugins: [
       vueJsx(),
       vue(),
