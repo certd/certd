@@ -1,0 +1,35 @@
+name: sync-to-gitee
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+#  schedule:
+#    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
+#    - cron: '17 19 * * *'
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout work repo            # 1. 检出当前仓库(certd-sync-work)
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set git user                  # 2. 给git命令设置用户名和邮箱,↙↙↙ 改成你的name和email
+        run: |
+          git config --global user.name "xiaojunnuo"
+          git config --global user.email "xiaojunnuo@qq.com"
+
+      - name: Set git token                 # 3. 给git命令设置token，用于push到目标仓库
+        uses: de-vri-es/setup-git-credentials@v2
+        with:
+          credentials: https://${{secrets.PUSH_TOKEN_GITEE}}@gitee.com
+
+      - name: push to gitee               # 4. 执行同步
+        run: |
+          git remote add upstream https://gitee.com/fast-crud/fs-admin-antdv
+          git push --set-upstream upstream main
+

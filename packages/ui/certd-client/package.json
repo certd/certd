@@ -1,6 +1,6 @@
 {
   "name": "@fast-crud/fs-admin-antdv",
-  "version": "1.8.5",
+  "version": "1.9.0",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -22,9 +22,9 @@
   "dependencies": {
     "@ant-design/colors": "^6.0.0",
     "@ant-design/icons-vue": "^6.0.1",
-    "@fast-crud/fast-crud": "^1.8.5",
-    "@fast-crud/fast-extends": "^1.8.5",
-    "@fast-crud/ui-antdv": "^1.8.4",
+    "@fast-crud/fast-crud": "^1.9.0",
+    "@fast-crud/fast-extends": "^1.9.0",
+    "@fast-crud/ui-antdv": "^1.9.0",
     "@iconify/iconify": "^3.0.1",
     "@iconify/json": "^2.1.151",
     "@purge-icons/generated": "^0.9.0",
@@ -38,6 +38,7 @@
     "core-js": "^3.26.1",
     "cos-js-sdk-v5": "^1.4.15-beta.0",
     "cropperjs": "^1.5.13",
+    "dayjs": "^1.11.7",
     "deepdash-es": "5.3.5",
     "highlight.js": "^11.7.0",
     "lodash-es": "^4.17.15",
@@ -103,8 +104,8 @@
     "vite-plugin-theme": "^0.8.1",
     "vite-plugin-windicss": "^1.8.10",
     "vue-eslint-parser": "^9.1.0",
-    "windicss": "^3.5.6",
-    "vue-tsc": "^0.40.13"
+    "vue-tsc": "^0.40.13",
+    "windicss": "^3.5.6"
   },
   "husky": {
     "hooks": {
