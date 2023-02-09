@@ -28,9 +28,8 @@ export default ({ command, mode }) => {
       { find: /@fast-crud\/ui-antdv$/, replacement: path.resolve("../../ui/ui-antdv/src/") }
     ];
     devServerFs = {
-      // 如果是你自己的项目，这项可以删掉
       // 这里配置dev启动时读取的项目根目录
-      allow: ["../../"]
+      allow: ["../../../"]
     };
     console.log("devAlias", devAlias);
   }

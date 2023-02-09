@@ -54,6 +54,9 @@ export default function ({ expose }) {
                   );
                 }
               }
+            },
+            click() {
+              console.log("test");
             }
           }
         }
