@@ -113,6 +113,11 @@ export default {
 .fs-framework {
   height: 100%;
   overflow-x: hidden;
+  .menu-fold {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   .header-logo {
     width: 100%;
     height: 50px;
