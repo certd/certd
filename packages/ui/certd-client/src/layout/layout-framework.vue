@@ -48,8 +48,10 @@
           </template>
         </router-view>
       </a-layout-content>
-      <a-layout-footer class="fs-framework-footer"
-        >by fast-crud
+      <a-layout-footer class="fs-framework-footer">
+        <div>Powered by Greper</div>
+        <div>v{{ version }}</div>
+
         <fs-source-link />
       </a-layout-footer>
     </a-layout>
@@ -97,7 +99,9 @@ export default {
       //阻止错误向上传递
       return false;
     });
+    const version = ref(import.meta.env.VITE_APP_VERSION);
     return {
+      version,
       frameworkMenus,
       headerMenus,
       asideMenus,
@@ -146,6 +150,8 @@ export default {
     color: rgba(0, 0, 0, 0.85);
     font-size: 14px;
     background: #f6f6f6;
+    display: flex;
+    justify-content: space-between;
   }
   .header-buttons {
     display: flex;
