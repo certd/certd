@@ -1,17 +1,15 @@
 <template>
   <fs-page class="page-layout-custom">
     <template #header>
-      <div class="title">自定义布局</div>
+      <div class="title">
+        自定义布局
+        <span class="sub">通过自定义container.is可以自定义布局，甚至可以支持上下两个翻页条</span>
+      </div>
+      <div class="more">
+        <a target="_blank" href="http://fast-crud.docmirror.cn/guide/advance/layout.html">文档</a>
+      </div>
     </template>
-    <fs-crud ref="crudRef" v-bind="crudBinding">
-      <template #actionbar-right>
-        <a-alert
-          class="ml-1"
-          type="info"
-          message="通过自定义container.is可以自定义布局，甚至可以支持上下两个翻页条 -------->"
-        />
-      </template>
-    </fs-crud>
+    <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
   </fs-page>
 </template>
 

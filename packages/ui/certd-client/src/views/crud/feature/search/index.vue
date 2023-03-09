@@ -46,10 +46,10 @@ export default defineComponent({
         message.info(`searchForm:${JSON.stringify(form)}`);
       },
       setSearchFormData() {
-        expose.setSearchFormData({ form: { radio: "1", test: 2 }, mergeForm: true });
+        expose.setSearchFormData({ form: { radio: "1" }, mergeForm: true });
       },
       clearSearchForm() {
-        expose.setSearchFormData({ form: {}, mergeForm: false });
+        expose.setSearchFormData({ form: { radio: null }, mergeForm: false });
       }
     };
   }

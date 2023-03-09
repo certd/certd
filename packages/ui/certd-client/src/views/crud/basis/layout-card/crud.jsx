@@ -1,5 +1,7 @@
 import * as api from "./api";
 import { dict } from "@fast-crud/fast-crud";
+import { computed } from "vue";
+
 export default function ({ crudExpose }) {
   const pageRequest = async (query) => {
     return await api.GetList(query);
@@ -15,6 +17,17 @@ export default function ({ crudExpose }) {
   const addRequest = async ({ form }) => {
     return await api.AddObj(form);
   };
+  let cityDictRef = dict({
+    value: "id",
+    label: "text",
+    data: [
+      { id: "sz", text: "深圳", color: "success" },
+      { id: "gz", text: "广州", color: "blue" },
+      { id: "bj", text: "北京" },
+      { id: "wh", text: "武汉" },
+      { id: "sh", text: "上海" }
+    ]
+  });
   return {
     crudOptions: {
       container: {
@@ -25,6 +38,16 @@ export default function ({ crudExpose }) {
         addRequest,
         editRequest,
         delRequest
+      },
+      tabs: {
+        name: "city",
+        show: true,
+        type: "card",
+        value: "id",
+        label: "text",
+        options: computed(() => {
+          return cityDictRef.data;
+        })
       },
       columns: {
         id: {
@@ -47,17 +70,7 @@ export default function ({ crudExpose }) {
           title: "城市",
           type: "dict-select",
           search: { show: true },
-          dict: dict({
-            value: "id",
-            label: "text",
-            data: [
-              { id: "sz", text: "深圳", color: "success" },
-              { id: "gz", text: "广州", color: "blue" },
-              { id: "bj", text: "北京" },
-              { id: "wh", text: "武汉" },
-              { id: "sh", text: "上海" }
-            ]
-          })
+          dict: cityDictRef
         },
         radio: {
           title: "单选",

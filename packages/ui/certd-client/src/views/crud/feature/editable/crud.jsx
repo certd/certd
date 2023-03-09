@@ -83,21 +83,31 @@ export default function ({ expose }) {
           title: "姓名",
           type: "text"
         },
-        province: {
-          title: "省份",
-          search: { show: true },
-          type: "dict-select",
-          dict: dict({
-            value: "id",
-            label: "text",
-            data: [
-              { id: "sz", text: "深圳", color: "success" },
-              { id: "gz", text: "广州", color: "primary" },
-              { id: "bj", text: "北京" },
-              { id: "wh", text: "武汉" },
-              { id: "sh", text: "上海" }
-            ]
-          })
+        address: {
+          title: "地址",
+          children: {
+            province: {
+              title: "省份",
+              search: { show: true },
+              type: "text"
+            },
+            city: {
+              title: "城市",
+              search: { show: true },
+              type: "dict-select",
+              dict: dict({
+                value: "id",
+                label: "text",
+                data: [
+                  { id: "sz", text: "深圳", color: "success" },
+                  { id: "gz", text: "广州", color: "primary" },
+                  { id: "bj", text: "北京" },
+                  { id: "wh", text: "武汉" },
+                  { id: "sh", text: "上海" }
+                ]
+              })
+            }
+          }
         }
       }
     }

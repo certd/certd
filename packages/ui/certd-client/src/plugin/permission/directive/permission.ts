@@ -1,6 +1,6 @@
 import permissionUtil from "../util.permission";
 export default {
-  mounted(el, binding, vnode) {
+  mounted(el: any, binding: any, vnode: any) {
     const { value } = binding;
     const hasPermission = permissionUtil.hasPermissions(value);
 

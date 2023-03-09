@@ -51,7 +51,7 @@ export const useSettingStore = defineStore({
       this.persistTheme();
       // await changeTheme(this.theme.primaryColor);
     },
-    async setPrimaryColor(color) {
+    async setPrimaryColor(color: any) {
       const theme = this.theme;
       theme.primaryColor = color;
       await this.setTheme();

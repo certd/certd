@@ -1,4 +1,6 @@
 import * as api from "./api";
+import { message } from "ant-design-vue";
+import { utils } from "@fast-crud/fast-crud";
 export default function ({ crudExpose }) {
   const pageRequest = async (query) => {
     return await api.GetList(query);
@@ -27,6 +29,15 @@ export default function ({ crudExpose }) {
           buttons: {
             ok: {
               text: "保存"
+            },
+            custom: {
+              text: "自定义按钮",
+              click: async (context) => {
+                utils.logger.info("btn context", context);
+                message.info({ content: "通过自定义按钮，触发保存" });
+                await context.submit();
+                message.info({ content: "保存成功" });
+              }
             }
           }
         }

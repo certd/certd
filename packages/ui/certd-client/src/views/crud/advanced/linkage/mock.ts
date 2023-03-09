@@ -1,6 +1,7 @@
+// @ts-ignore
 import mockUtil from "/src/mock/base";
 import _ from "lodash-es";
-const options = {
+const options: any = {
   name: "FormLinkage",
   idGenerator: 0
 };
@@ -64,12 +65,12 @@ const tree = [
 ];
 
 options.list = list;
-options.copyTimes = 1000;
+options.copyTimes = 100;
 const mock = mockUtil.buildMock(options);
 
-function omitChildren(orignalListt) {
-  const list = [];
-  orignalListt.forEach((item) => {
+function omitChildren(originalList: any) {
+  const list: any = [];
+  originalList.forEach((item: any) => {
     list.push(_.omit(item, "children"));
   });
   return list;
@@ -90,7 +91,7 @@ mock.push({
 mock.push({
   path: "/mock/linkage/city",
   method: "get",
-  handle(req) {
+  handle(req: any) {
     const province = parseInt(req.params.province);
     const a = tree.filter((item) => {
       return item.id === province;
@@ -107,7 +108,7 @@ mock.push({
 mock.push({
   path: "/mock/linkage/county",
   method: "get",
-  handle(req) {
+  handle(req: any) {
     const province = parseInt(req.params.province);
     const a = tree.filter((item) => {
       return item.id === province;

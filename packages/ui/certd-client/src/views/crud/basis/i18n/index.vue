@@ -2,7 +2,9 @@
   <fs-page>
     <template #header>
       <div class="title">CRUD示例【国际化】</div>
-      <div class="more"><a-button @click="showDemo">更多</a-button></div>
+      <div class="more">
+        <a target="_blank" href="http://fast-crud.docmirror.cn/guide/start/i18n.html">文档</a>
+      </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #actionbar-right>
@@ -40,13 +42,9 @@ export default defineComponent({
       expose.doRefresh();
     });
 
-    function showDemo() {
-      message("演示按钮");
-    }
     return {
       crudBinding,
-      crudRef,
-      showDemo
+      crudRef
     };
   }
 });

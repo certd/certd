@@ -177,9 +177,7 @@ export default function ({ expose }) {
                 },
                 async asyncFn(watchValue) {
                   message.info("监听switch,触发远程获取options");
-                  const url = watchValue
-                    ? "/mock/dicts/OpenStatusEnum?remote"
-                    : "/mock/dicts/moreOpenStatusEnum?remote";
+                  const url = watchValue ? "/mock/dicts/OpenStatusEnum?remote" : "/mock/dicts/moreOpenStatusEnum?remote";
                   return await requestForMock({ url });
                 }
               })

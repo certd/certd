@@ -27,7 +27,7 @@ export default function ({ expose }) {
         delRequest
       },
       table: {
-        scroll: { x: 2000 }
+        scroll: { x: 3000 }
       },
       rowHandle: { fixed: "right" },
       columns: {
@@ -70,6 +70,17 @@ export default function ({ expose }) {
               options: {
                 largest: 2
               }
+            }
+          },
+          valueBuilder({ value, row, key }) {
+            console.log("value builder:", key, value, row);
+            if (value != null) {
+              row[key] = dayjs(value);
+            }
+          },
+          valueResolve({ value, row, key }) {
+            if (value != null) {
+              row[key] = value.unix();
             }
           }
         },
@@ -116,6 +127,42 @@ export default function ({ expose }) {
         time: {
           title: "仅时间",
           type: "time",
+          form: {
+            component: {
+              valueFormat: "YYYY-MM-DD HH:mm:ss" //输入值的格式
+            }
+          }
+        },
+        month: {
+          title: "月份",
+          type: "month",
+          form: {
+            component: {
+              valueFormat: "YYYY-MM-DD HH:mm:ss" //输入值的格式
+            }
+          }
+        },
+        week: {
+          title: "星期",
+          type: "week",
+          form: {
+            component: {
+              valueFormat: "YYYY-MM-DD HH:mm:ss" //输入值的格式
+            }
+          }
+        },
+        quarter: {
+          title: "季度",
+          type: "quarter",
+          form: {
+            component: {
+              valueFormat: "YYYY-MM-DD HH:mm:ss" //输入值的格式
+            }
+          }
+        },
+        year: {
+          title: "年份",
+          type: "year",
           form: {
             component: {
               valueFormat: "YYYY-MM-DD HH:mm:ss" //输入值的格式

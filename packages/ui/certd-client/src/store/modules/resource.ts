@@ -39,7 +39,7 @@ export const useResourceStore = defineStore({
     getFrameworkMenus() {
       return this.frameworkMenus;
     }
-  },
+  } as any,
   actions: {
     clear() {
       this.inited = false;
@@ -54,17 +54,17 @@ export const useResourceStore = defineStore({
       this.inited = true;
 
       const showMenus = _.cloneDeep(frameworkMenus[0].children);
-      this.frameworkMenus = filterMenus(showMenus, (item) => {
+      this.frameworkMenus = filterMenus(showMenus, (item: any) => {
         return item?.meta?.showOnHeader !== false;
       });
 
-      this.fixedAsideMenus = findMenus(showMenus, (item) => {
+      this.fixedAsideMenus = findMenus(showMenus, (item: any) => {
         return item?.meta?.fixedAside === true;
       });
       this.headerMenus = headerMenus;
       this.setAsideMenu();
     },
-    setAsideMenu(topMenu?) {
+    setAsideMenu(topMenu?: any) {
       if (this.frameworkMenus.length === 0) {
         return;
       }
@@ -74,13 +74,13 @@ export const useResourceStore = defineStore({
       const asideMenus = topMenu?.children || [];
       this.asideMenus = [...this.fixedAsideMenus, ...asideMenus];
     },
-    setAsideMenuByCurrentRoute(matched) {
+    setAsideMenuByCurrentRoute(matched: any) {
       const menuHeader = this.frameworkMenus;
       if (matched?.length <= 1) {
         return;
       }
 
-      function findFromTree(tree, find) {
+      function findFromTree(tree: any, find: any) {
         const results: Array<any> = [];
         for (const item of tree) {
           if (find(item)) {
@@ -88,7 +88,7 @@ export const useResourceStore = defineStore({
             return results;
           }
           if (item.children && item.children.length > 0) {
-            const found = findFromTree(item.children, find);
+            const found: any = findFromTree(item.children, find);
             if (found) {
               results.push(item);
               return results.concat(found);
@@ -97,7 +97,7 @@ export const useResourceStore = defineStore({
         }
       }
       const matchedPath = matched[1].path;
-      const _side = findFromTree(menuHeader, (menu) => menu.path === matchedPath);
+      const _side = findFromTree(menuHeader, (menu: any) => menu.path === matchedPath);
       if (_side?.length > 0) {
         if (this.currentAsidePath === _side[0]) {
           return;
@@ -106,11 +106,11 @@ export const useResourceStore = defineStore({
         this.setAsideMenu(_side[0]);
       }
     },
-    filterByPermission(permissions) {
+    filterByPermission(permissions: any) {
       this.frameworkMenus = this.filterChildrenByPermission(this.frameworkMenus, permissions);
     },
-    filterChildrenByPermission(list, permissions) {
-      const menus = list.filter((item) => {
+    filterChildrenByPermission(list: any, permissions: any) {
+      const menus = list.filter((item: any) => {
         if (item?.meta?.permission) {
           return permissions.includes(item.meta.permission);
         }

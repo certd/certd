@@ -1,1 +1,1 @@
-import "./iconfont.js"
+import "./iconfont.js";

@@ -1,6 +1,6 @@
 import * as api from "./api";
 import { dict } from "@fast-crud/fast-crud";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 export default function ({ expose }) {
   const pageRequest = async (query) => {
     return await api.GetList(query);
@@ -16,6 +16,9 @@ export default function ({ expose }) {
   const addRequest = async ({ form }) => {
     return await api.AddObj(form);
   };
+  let statusRef = dict({
+    url: "/mock/dicts/OpenStatusEnum?single"
+  });
   return {
     crudOptions: {
       request: {
@@ -24,15 +27,9 @@ export default function ({ expose }) {
         editRequest,
         delRequest
       },
-      table: {
-        // 表头过滤改变事件
-        onFilterChange(e) {
-          console.log("onFilterChange", e);
-        }
-      },
       search: {
         initialForm: {
-          radio: "0"
+          radio: null
         },
         buttons: {
           custom: {
@@ -51,6 +48,14 @@ export default function ({ expose }) {
           }
         }
       },
+      tabs: {
+        name: "radio",
+        show: true,
+        type: "card",
+        options: computed(() => {
+          return statusRef.data;
+        })
+      },
       columns: {
         id: {
           title: "ID",
@@ -67,23 +72,7 @@ export default function ({ expose }) {
           title: "状态",
           search: { show: true },
           type: "dict-radio",
-          dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?single"
-          }),
-          column: {
-            filters: [
-              { text: "开", value: "1" },
-              { text: "关", value: "0" },
-              { text: "停", value: "2" }
-            ],
-            // specify the condition of filtering result
-            // here is that finding the name started with `value`
-            onFilter: (value, record) => {
-              return record.radio === value;
-            },
-            sorter: (a, b) => a.radio - b.radio,
-            sortDirections: ["descend"]
-          }
+          dict: statusRef
         }
       }
     }

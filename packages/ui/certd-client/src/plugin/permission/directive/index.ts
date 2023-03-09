@@ -1,9 +1,11 @@
-import permission from "./permission";
+import permission from "./permission.js";
 import permissionUtil from "../util.permission";
-const install = function (app) {
+const install = function (app: any) {
   app.directive("permission", permission);
   app.config.globalProperties.$hasPermissions = permissionUtil.hasPermissions;
 };
 
-permission.install = install;
-export default permission;
+export default {
+  install,
+  ...permission
+};

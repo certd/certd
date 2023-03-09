@@ -22,6 +22,11 @@ export default function ({ crudExpose }) {
       container: {
         is: shallowRef(CustomLayout) //可以将自定义布局组件全局注册，这里只需要配置name即可
       },
+      tabs: {
+        show: true,
+        name: "city",
+        type: "card"
+      },
       request: {
         pageRequest,
         addRequest,
@@ -48,7 +53,7 @@ export default function ({ crudExpose }) {
         city: {
           title: "城市",
           type: "dict-select",
-          search: { show: false },
+          search: { show: true },
           dict: dict({
             value: "id",
             label: "text",

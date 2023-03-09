@@ -1,5 +1,11 @@
 <template>
   <fs-page class="page-layout-card">
+    <template #header>
+      <div class="title">Card布局</div>
+      <div class="more">
+        <a target="_blank" href="http://fast-crud.docmirror.cn/guide/advance/layout.html">文档</a>
+      </div>
+    </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
   </fs-page>
 </template>
@@ -42,5 +48,9 @@ export default defineComponent({
 <style lang="less">
 .page-layout-card {
   background-color: #eee;
+
+  .fs-page-header {
+    background-color: #fff;
+  }
 }
 </style>

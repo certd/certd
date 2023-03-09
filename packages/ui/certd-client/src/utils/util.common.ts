@@ -1,13 +1,13 @@
 import _ from "lodash-es";
 export default {
-  arrayToMap(array) {
+  arrayToMap(array: any) {
     if (!array) {
       return {};
     }
     if (!_.isArray(array)) {
       return array;
     }
-    const map = {};
+    const map: any = {};
     for (const item of array) {
       if (item.key) {
         map[item.key] = item;
@@ -15,7 +15,7 @@ export default {
     }
     return map;
   },
-  mapToArray(map) {
+  mapToArray(map: any) {
     if (!map) {
       return [];
     }

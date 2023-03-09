@@ -11,9 +11,9 @@ import { provide, ref, nextTick } from "vue";
 import { usePageStore } from "/src/store/modules/page";
 import { useResourceStore } from "/src/store/modules/resource";
 import { useSettingStore } from "/@/store/modules/settings";
-import  'dayjs/locale/zh-cn';
-import  'dayjs/locale/en';
-import dayjs from 'dayjs'
+import "dayjs/locale/zh-cn";
+import "dayjs/locale/en";
+import dayjs from "dayjs";
 export default {
   name: "App",
   setup() {
@@ -29,13 +29,13 @@ export default {
       console.log("locale changed:", value);
       if (value === "zh-cn") {
         locale.value = zhCN;
-        dayjs.locale('zh-cn');
+        dayjs.locale("zh-cn");
       } else if (value === "en") {
         locale.value = enUS;
-        dayjs.locale('en');
+        dayjs.locale("en");
       }
     }
-    localeChanged('zh-cn')
+    localeChanged("zh-cn");
     provide("fn:router.reload", reload);
     provide("fn:locale.changed", localeChanged);
 

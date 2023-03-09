@@ -1,5 +1,5 @@
 export const crudOptions = `
- ({expose,dict}) => {
+ ({crudExpose,dict}) => {
   return {
       columns: {
         id: {

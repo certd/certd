@@ -19,7 +19,8 @@
     "types": [
       "mocha",
       "chai",
-      "node"
+      "node",
+      "unplugin-vue-define-options/macros-global"
     ],
     "paths": {
       "/@/*": ["src/*"],

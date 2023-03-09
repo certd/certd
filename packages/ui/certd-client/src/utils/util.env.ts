@@ -1,15 +1,15 @@
 import _ from "lodash-es";
-export function getEnvValue(key) {
+export function getEnvValue(key: string) {
   // @ts-ignore
   return import.meta.env["VITE_APP_" + key];
 }
 
 export class EnvConfig {
-  API;
-  MODE;
-  STORAGE;
-  TITLE;
-  PM_ENABLED;
+  API: string;
+  MODE: string;
+  STORAGE: string;
+  TITLE: string;
+  PM_ENABLED: string;
   constructor() {
     this.init();
   }
@@ -19,6 +19,7 @@ export class EnvConfig {
     _.forEach(import.meta.env, (value, key) => {
       if (key.startsWith("VITE_APP")) {
         key = key.replace("VITE_APP_", "");
+        // @ts-ignore
         this[key] = value;
       }
     });
@@ -26,7 +27,8 @@ export class EnvConfig {
     this.MODE = import.meta.env.MODE;
   }
 
-  get(key, defaultValue) {
+  get(key: string, defaultValue: string) {
+    // @ts-ignore
     return this[key] ?? defaultValue;
   }
   isDev() {

@@ -1,12 +1,10 @@
 <template>
   <fs-page>
-    <fs-crud ref="crudRef" v-bind="crudBinding">
-      <template #pagination-left>
-        <a-tooltip title="批量删除">
-          <fs-button icon="DeleteOutlined" @click="handleBatchDelete"></fs-button>
-        </a-tooltip>
-      </template>
-    </fs-crud>
+    <template #header>
+      <div class="title">行展开</div>
+      <div class="more"><a target="_blank" href="http://fast-crud.docmirror.cn/api/crud-options/table.html#对应ui库的table组件的参数">文档</a></div>
+    </template>
+    <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
   </fs-page>
 </template>
 
@@ -38,27 +36,9 @@ export default defineComponent({
       expose.doRefresh();
     });
 
-    const handleBatchDelete = () => {
-      if (selectedRowKeys.value?.length > 0) {
-        Modal.confirm({
-          title: "确认",
-          content: `确定要批量删除这${selectedRowKeys.value.length}条记录吗`,
-          async onOk() {
-            await BatchDelete(selectedRowKeys.value);
-            message.info("删除成功");
-            expose.doRefresh();
-            selectedRowKeys.value = [];
-          }
-        });
-      } else {
-        message.error("请先勾选记录");
-      }
-    };
-
     return {
       crudBinding,
-      crudRef,
-      handleBatchDelete
+      crudRef
     };
   }
 });

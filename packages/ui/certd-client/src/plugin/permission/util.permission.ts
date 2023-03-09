@@ -14,11 +14,11 @@ const util = {
     }
     const permissionStore = usePermissionStore();
     const userPermissionList = permissionStore.getPermissions;
-    return userPermissionList.some((permission) => {
+    return userPermissionList.some((permission: any) => {
       return need.includes(permission);
     });
   },
-  requirePermissions: (value) => {
+  requirePermissions: (value: any) => {
     if (!util.hasPermissions(value)) {
       message.error("对不起，您没有权限执行此操作");
       throw new NoPermissionError();

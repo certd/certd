@@ -1,10 +1,4 @@
-import type {
-  ComponentRenderProxy,
-  VNode,
-  ComponentPublicInstance,
-  FunctionalComponent,
-  PropType as VuePropType,
-} from 'vue';
+import type { ComponentRenderProxy, VNode, ComponentPublicInstance, FunctionalComponent, PropType as VuePropType } from "vue";
 
 declare global {
   const __APP_INFO__: {
@@ -64,7 +58,7 @@ declare global {
     VITE_GLOB_APP_SHORT_NAME: string;
     VITE_USE_CDN: boolean;
     VITE_DROP_CONSOLE: boolean;
-    VITE_BUILD_COMPRESS: 'gzip' | 'brotli' | 'none';
+    VITE_BUILD_COMPRESS: "gzip" | "brotli" | "none";
     VITE_BUILD_COMPRESS_DELETE_ORIGIN_FILE: boolean;
     VITE_LEGACY: boolean;
     VITE_USE_IMAGEMIN: boolean;
@@ -92,8 +86,6 @@ declare global {
   }
 }
 
-declare module 'vue' {
-  export type JSXComponent<Props = any> =
-    | { new (): ComponentPublicInstance<Props> }
-    | FunctionalComponent<Props>;
+declare module "vue" {
+  export type JSXComponent<Props = any> = { new (): ComponentPublicInstance<Props> } | FunctionalComponent<Props>;
 }

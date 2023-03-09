@@ -26,7 +26,7 @@ export default function ({ expose }) {
       },
       table: {
         //默认展开第一行
-        defaultExpandedRowKeys:[1],
+        defaultExpandedRowKeys: [1],
         slots: {
           expandedRowRender: (scope) => {
             return (

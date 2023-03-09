@@ -1,17 +1,21 @@
+// @ts-ignore
 import mockUtil from "/src/mock/base";
-const options = {
-  name: "DictSharedUse",
+const options: any = {
+  name: "BasisValueChange",
   idGenerator: 0
 };
 const list = [
   {
-    status: "close"
+    switch: true,
+    text: "1111"
   },
   {
-    status: "stop"
+    switch: true,
+    text: "2222"
   },
   {
-    status: "open"
+    switch: true,
+    text: "3333"
   }
 ];
 options.list = list;

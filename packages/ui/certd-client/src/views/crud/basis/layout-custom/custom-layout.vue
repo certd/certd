@@ -9,6 +9,8 @@
     <div class="layout-top">
       <!-- ↓↓↓↓↓  关键插槽：动作条  ↓↓↓↓ -->
       <slot name="actionbar"></slot>
+
+      <slot name="tabs"></slot>
       <!-- ↓↓↓↓↓  上翻页条  ↓↓↓↓ -->
       <slot name="pagination"></slot>
     </div>
@@ -69,6 +71,11 @@ export default defineComponent({
   .fs-crud-pagination {
     text-align: right;
     padding: 5px 10px 5px 10px;
+  }
+
+  .fs-tabs-filter {
+    flex: 1;
+    margin-left: 10px;
   }
 }
 </style>

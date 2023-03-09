@@ -1,18 +1,18 @@
 import * as api from "./api";
-import { dict } from "@fast-crud/fast-crud";
-export default function ({ expose }) {
-  const pageRequest = async (query) => {
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, ScopeContext, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+export default function ({ expose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+  const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
-  const editRequest = async ({ form, row }) => {
+  const editRequest = async ({ form, row }: EditReq) => {
     form.id = row.id;
     return await api.UpdateObj(form);
   };
-  const delRequest = async ({ row }) => {
+  const delRequest = async ({ row }: DelReq) => {
     return await api.DelObj(row.id);
   };
 
-  const addRequest = async ({ form }) => {
+  const addRequest = async ({ form }: AddReq) => {
     return await api.AddObj(form);
   };
 
@@ -51,7 +51,7 @@ export default function ({ expose }) {
             cache: true
           }),
           form: {
-            valueChange({ form, value, getComponentRef }) {
+            valueChange({ form, value, getComponentRef }: ScopeContext) {
               form.city = undefined; // 将“city”的值置空
               form.county = undefined; // 将“county”的值置空
               if (value) {
@@ -70,7 +70,7 @@ export default function ({ expose }) {
             cache: true,
             prototype: true,
             // url() 改成构建url，返回一个url
-            url({ form }) {
+            url({ form }: any) {
               if (form && form.province != null) {
                 // 本数据字典的url是通过前一个select的选项决定的
                 return `/mock/linkage/city?province=${form.province}`;
@@ -81,7 +81,7 @@ export default function ({ expose }) {
           }),
           form: {
             // 注释同上
-            valueChange({ value, form, getComponentRef }) {
+            valueChange({ value, form, getComponentRef }: ScopeContext) {
               if (value) {
                 form.county = undefined; // 将county的value置空
                 const countySelect = getComponentRef("county");
@@ -104,7 +104,7 @@ export default function ({ expose }) {
             value: "id",
             cache: true,
             prototype: true,
-            url({ form }) {
+            url({ form }: any) {
               if (form && form.province != null && form.city != null) {
                 return `/mock/linkage/county?province=${form.province} &city=${form.city}`;
               }

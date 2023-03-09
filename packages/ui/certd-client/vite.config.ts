@@ -4,6 +4,7 @@ import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
 import PurgeIcons from "vite-plugin-purge-icons";
 import * as path from "path";
+import DefineOptions from "unplugin-vue-define-options/vite";
 // import WindiCSS from "vite-plugin-windicss";
 // import { generateModifyVars } from "./build/modify-vars";
 // import { configThemePlugin } from "./build/theme-plugin";
@@ -37,6 +38,7 @@ export default ({ command, mode }) => {
   return {
     base: "/antdv/",
     plugins: [
+      DefineOptions(),
       vueJsx(),
       vue(),
       // 压缩build后的代码

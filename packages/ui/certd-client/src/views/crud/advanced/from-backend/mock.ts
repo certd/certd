@@ -1,6 +1,7 @@
+// @ts-ignore
 import mockUtil from "/src/mock/base";
 import { crudOptions } from "./crud-backend";
-const options = {
+const options: any = {
   name: "AdvancedFromBackend",
   idGenerator: 0
 };
@@ -23,7 +24,7 @@ const mock = mockUtil.buildMock(options);
 mock.push({
   path: "/AdvancedFromBackend/crud",
   method: "get",
-  handle(req) {
+  handle(req: any) {
     return {
       code: 0,
       msg: "success",

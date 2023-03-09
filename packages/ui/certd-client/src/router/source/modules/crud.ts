@@ -18,10 +18,16 @@ export const crudResources = [
         },
         children: [
           {
-            title: "HelloWorld",
+            title: "FirstDemo",
             name: "FsCrudFirst",
             path: "/crud/basis/first",
             component: "/crud/basis/first/index.vue"
+          },
+          {
+            title: "HelloWorld",
+            name: "FsCrudHelloWorld",
+            path: "/crud/basis/helloworld",
+            component: "/crud/basis/helloworld/index.vue"
           },
           {
             title: "动态计算",
@@ -70,6 +76,12 @@ export const crudResources = [
             name: "BasisColumnMergePlugin",
             path: "/crud/basis/column-merge-plugin",
             component: "/crud/basis/column-merge-plugin/index.vue"
+          },
+          {
+            title: "ResetCrudOptions",
+            name: "BasisReset",
+            path: "/crud/basis/reset",
+            component: "/crud/basis/reset/index.vue"
           }
         ]
       },
@@ -445,6 +457,12 @@ export const crudResources = [
             component: "/crud/feature/header-group/index.vue"
           },
           {
+            title: "自定义表头",
+            name: "FeatureHeader",
+            path: "/crud/feature/header",
+            component: "/crud/feature/header/index.vue"
+          },
+          {
             title: "合并单元格",
             name: "FeatureMerge",
             path: "/crud/feature/merge",
@@ -497,6 +515,12 @@ export const crudResources = [
             name: "FeatureSearchMulti",
             path: "/crud/feature/search-multi",
             component: "/crud/feature/search-multi/index.vue"
+          },
+          {
+            title: "Tabs快捷查询",
+            name: "FeatureTabs",
+            path: "/crud/feature/tabs",
+            component: "/crud/feature/tabs/index.vue"
           },
           {
             title: "字段排序",

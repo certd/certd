@@ -21,7 +21,7 @@ interface PermissionState {
  * @param permissionList
  * @returns {*}
  */
-function formatPermissions(menuTree: Array<any>, permissionList = []) {
+function formatPermissions(menuTree: Array<any>, permissionList: any[] = []) {
   if (menuTree == null) {
     menuTree = [];
   }
@@ -44,17 +44,19 @@ export const usePermissionStore = defineStore({
     inited: false
   }),
   getters: {
+    // @ts-ignore
     getPermissions() {
       // @ts-ignore
       return this.permissions;
     },
+    // @ts-ignore
     isInited() {
       // @ts-ignore
       return this.inited;
     }
   },
   actions: {
-    init({ permissions }) {
+    init({ permissions }: any) {
       this.permissions = permissions;
       this.inited = true;
     },
@@ -62,7 +64,7 @@ export const usePermissionStore = defineStore({
       this.permissions = [];
       this.inited = false;
     },
-    resolve(resourceTree) {
+    resolve(resourceTree: any) {
       const permissions = formatPermissions(resourceTree);
       this.init({ permissions });
 

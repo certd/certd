@@ -15,13 +15,13 @@ interface PageState {
   // 已经加载多标签页数据 https://github.com/d2-projects/d2-admin/issues/201
   openedLoaded: boolean;
   // 当前页面
-  current: "";
+  current: string;
   // 需要缓存的页面 name
   keepAlive: Array<any>;
   inited: boolean;
 }
 // 判定是否需要缓存
-const isKeepAlive = (data) => get(data, "meta.cache", false);
+const isKeepAlive = (data: any) => get(data, "meta.cache", false);
 
 export const usePageStore = defineStore({
   id: "app.page",
@@ -48,7 +48,7 @@ export const usePageStore = defineStore({
     inited: false
   }),
   getters: {
-    getOpened() {
+    getOpened(): any {
       // @ts-ignore
       return this.opened;
     },
@@ -91,7 +91,7 @@ export const usePageStore = defineStore({
       const valid: Array<number> = [];
       // 处理数据
       this.opened = value
-        .map((opened) => {
+        .map((opened: any) => {
           // 忽略首页
           if (opened.fullPath === "/index") {
             valid.push(1);
@@ -105,7 +105,7 @@ export const usePageStore = defineStore({
           // 新的数据中一般不会携带 params 和 query, 所以旧的参数会留存
           return Object.assign({}, opened, find);
         })
-        .filter((opened, index) => valid[index] === 1);
+        .filter((opened: any, index: any) => valid[index] === 1);
       // 标记已经加载多标签页数据 https://github.com/d2-projects/d2-admin/issues/201
       this.openedLoaded = true;
       // 根据 opened 数据生成缓存设置
@@ -132,7 +132,7 @@ export const usePageStore = defineStore({
      * @param {Object} context
      * @param {Object} payload { index, params, query, fullPath } 路由信息
      */
-    async openedUpdate({ index, params, query, fullPath }) {
+    async openedUpdate({ index, params, query, fullPath }: any) {
       // 更新页面列表某一项
       const page = this.opened[index];
       page.params = params || page.params;
@@ -148,7 +148,7 @@ export const usePageStore = defineStore({
      * @param {Object} context
      * @param {Object} payload { oldIndex, newIndex } 位置信息
      */
-    async openedSort({ oldIndex, newIndex }) {
+    async openedSort({ oldIndex, newIndex }: any) {
       // 重排页面列表某一项
       const page = this.opened[oldIndex];
       this.opened.splice(oldIndex, 1);
@@ -162,7 +162,7 @@ export const usePageStore = defineStore({
      * @param {Object} context
      * @param {Object} payload new tag info
      */
-    async add({ tag, params, query, fullPath }) {
+    async add({ tag, params, query, fullPath }: any) {
       // 设置新的 tag 在新打开一个以前没打开过的页面时使用
       const newTag = tag;
       newTag.params = params || newTag.params;
@@ -183,7 +183,7 @@ export const usePageStore = defineStore({
      * @param {Object} context
      * @param {Object} payload 从路由钩子的 to 对象上获取 { name, params, query, fullPath, meta } 路由信息
      */
-    async open({ name, params, query, fullPath, meta }) {
+    async open({ name, params, query, fullPath, meta }: any) {
       // 已经打开的页面
       const opened = this.opened;
       // 判断此页面是否已经打开 并且记录位置
@@ -227,7 +227,7 @@ export const usePageStore = defineStore({
      * @param {Object} context
      * @param {Object} payload { tagName: 要关闭的标签名字 }
      */
-    async close({ tagName }) {
+    async close({ tagName }: any) {
       // 预定下个新页面
       let newPage = {};
       const isCurrent = this.current === tagName;
@@ -267,7 +267,7 @@ export const usePageStore = defineStore({
      */
     async closeLeft(opts = {}) {
       await this.closeByCondition({
-        condition({ i, currentIndex }) {
+        condition({ i, currentIndex }: any) {
           return i >= currentIndex;
         },
         ...opts
@@ -280,7 +280,7 @@ export const usePageStore = defineStore({
      */
     async closeRight(opts = {}) {
       await this.closeByCondition({
-        condition({ i, currentIndex }) {
+        condition({ i, currentIndex }: any) {
           return currentIndex >= i;
         },
         ...opts
@@ -321,7 +321,7 @@ export const usePageStore = defineStore({
      */
     async closeOther(opts = {}) {
       await this.closeByCondition({
-        condition({ i, currentIndex }) {
+        condition({ i, currentIndex }: any) {
           return currentIndex === i;
         },
         ...opts
@@ -357,14 +357,13 @@ export const usePageStore = defineStore({
      */
     keepAliveRefresh() {
       this.keepAlive = this.opened.filter((item) => isKeepAlive(item)).map((e) => e.name);
-      console.log("keep alive:", this.keepAlive);
     },
     /**
      * @description 删除一个页面的缓存设置
      * @param {Object} state state
      * @param {String} name name
      */
-    keepAliveRemove(name) {
+    keepAliveRemove(name: string) {
       const list = cloneDeep(this.keepAlive);
       const index = list.findIndex((item) => item === name);
       if (index !== -1) {
@@ -377,7 +376,7 @@ export const usePageStore = defineStore({
      * @param {Object} state state
      * @param {String} name name
      */
-    keepAlivePush(name) {
+    keepAlivePush(name: string) {
       const keep = cloneDeep(this.keepAlive);
       keep.push(name);
       this.keepAlive = uniq(keep);
@@ -395,7 +394,7 @@ export const usePageStore = defineStore({
      * @param {Object} state state
      * @param {String} fullPath new fullPath
      */
-    currentSet(fullPath) {
+    currentSet(fullPath: string) {
       this.current = fullPath;
     },
     /**
@@ -404,7 +403,7 @@ export const usePageStore = defineStore({
      * @param {Object} state state
      * @param {Array} routes routes
      */
-    async init(routes) {
+    async init(routes: any) {
       if (this.inited) {
         return;
       }
@@ -414,9 +413,9 @@ export const usePageStore = defineStore({
         routes = frameworkRoutes;
       }
 
-      const pool = [];
-      const push = function (routes) {
-        routes.forEach((route) => {
+      const pool: any = [];
+      const push = function (routes: any) {
+        routes.forEach((route: any) => {
           if (route.children && route.children.length > 0) {
             push(route.children);
           } else {

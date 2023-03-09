@@ -1,9 +1,9 @@
 import { mock } from "../api/service";
 import * as tools from "../api/tools";
 import _ from "lodash-es";
-const commonMocks = import.meta.globEager("./common/mock.*.js");
-const apiMocks = import.meta.globEager("../api/modules/*.mock.ts");
-const viewMocks = import.meta.globEager("../views/**/mock.js");
+const commonMocks = import.meta.glob("./common/mock.*.[j|t]s", { eager: true });
+const apiMocks = import.meta.glob("../api/modules/*.mock.ts", { eager: true });
+const viewMocks = import.meta.glob("../views/**/mock.[j|t]s", { eager: true });
 
 const list = [];
 _.forEach(commonMocks, (value) => {

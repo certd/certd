@@ -1,4 +1,4 @@
-<template xmlns:w="http://www.w3.org/1999/xhtml">
+<template>
   <a-layout class="fs-framework">
     <a-layout-sider v-model:collapsed="asideCollapsed" :trigger="null" collapsible>
       <div class="header-logo">
@@ -152,6 +152,11 @@ export default {
     background: #f6f6f6;
     display: flex;
     justify-content: space-between;
+
+    > div {
+      height: auto;
+      padding: 5px;
+    }
   }
   .header-buttons {
     display: flex;

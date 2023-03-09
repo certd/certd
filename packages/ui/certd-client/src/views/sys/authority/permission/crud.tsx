@@ -1,9 +1,9 @@
-import * as api from "./api";
-import { dict } from "@fast-crud/fast-crud";
+import * as api from "./api.js";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 
-export default function ({ expose }) {
-  const pageRequest = async (query) => {
-    const list = await api.GetTree(query);
+export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+  const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
+    const list = await api.GetTree();
 
     return {
       current: 1,
@@ -16,29 +16,29 @@ export default function ({ expose }) {
   async function afterChange() {
     await permissionTreeDict.reloadDict();
   }
-  const editRequest = async ({ form, row }) => {
+  const editRequest = async ({ form, row }: EditReq) => {
     form.id = row.id;
     const ret = await api.UpdateObj(form);
     await afterChange();
     return ret;
   };
-  const delRequest = async ({ row }) => {
+  const delRequest = async ({ row }: DelReq) => {
     const ret = await api.DelObj(row.id);
     await afterChange();
     return ret;
   };
 
-  const addRequest = async ({ form }) => {
+  const addRequest = async ({ form }: AddReq) => {
     const ret = await api.AddObj(form);
     await afterChange();
     return ret;
   };
-  let permissionTreeDict = dict({
+  const permissionTreeDict = dict({
     url: "/sys/authority/permission/tree",
     isTree: true,
     value: "id",
     label: "title",
-    async onReady({ dict }) {
+    async onReady({ dict }: any) {
       dict.setData([{ id: -1, title: "根节点", children: dict.data }]);
     }
   });

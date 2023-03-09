@@ -1,21 +1,15 @@
-import { request } from "/src/api/service";
-const apiPrefix = "/sys/authority/permission";
-export async function GetList(query) {
+import { requestForMock } from "/src/api/service";
+const request = requestForMock;
+const apiPrefix = "/mock/BasisColumnMergePlugin";
+export function GetList(query: any) {
   return request({
     url: apiPrefix + "/page",
-    method: "post",
+    method: "get",
     data: query
   });
 }
 
-export async function GetTree() {
-  return request({
-    url: apiPrefix + "/tree",
-    method: "post"
-  });
-}
-
-export async function AddObj(obj) {
+export function AddObj(obj: any) {
   return request({
     url: apiPrefix + "/add",
     method: "post",
@@ -23,7 +17,7 @@ export async function AddObj(obj) {
   });
 }
 
-export async function UpdateObj(obj) {
+export function UpdateObj(obj: any) {
   return request({
     url: apiPrefix + "/update",
     method: "post",
@@ -31,7 +25,7 @@ export async function UpdateObj(obj) {
   });
 }
 
-export async function DelObj(id) {
+export function DelObj(id: any) {
   return request({
     url: apiPrefix + "/delete",
     method: "post",
@@ -39,10 +33,10 @@ export async function DelObj(id) {
   });
 }
 
-export async function GetObj(id) {
+export function GetObj(id: any) {
   return request({
     url: apiPrefix + "/info",
-    method: "post",
+    method: "get",
     params: { id }
   });
 }

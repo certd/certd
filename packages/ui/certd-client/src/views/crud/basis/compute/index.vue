@@ -6,7 +6,7 @@
         <fs-icon icon="ion:apps-sharp" :spin="true" />
       </div>
       <div class="more">
-        <a target="_blank" href="http://fast-crud.docmirror.cn/guide/advance/compute.html">帮助说明</a>
+        <a target="_blank" href="http://fast-crud.docmirror.cn/guide/advance/compute.html">文档</a>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
