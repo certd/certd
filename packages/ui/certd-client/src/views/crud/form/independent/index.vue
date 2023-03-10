@@ -1,41 +1,55 @@
 <template>
   <fs-page>
-    <a-row :gutter="10">
-      <a-col :span="12">
-        <a-card title="直接显示表单">
-          <fs-form ref="formRef" v-bind="formOptions"> </fs-form>
-          <div style="margin-top: 10px">
-            <a-button @click="formSubmit">提交表单</a-button>
-            <a-button @click="formReset">重置表单</a-button>
-            <a-button class="ml-10" @click="setFormDataTest">setFormData</a-button>
-          </div>
-        </a-card>
-      </a-col>
-      <a-col span="12">
-        <a-card title="打开表单对话框">
-          <a-button @click="openFormWrapper">打开表单对话框</a-button>
-          <fs-form-wrapper ref="formWrapperRef" v-bind="formWrapperOptions" />
-        </a-card>
+    <template #header>
+      <div class="title">独立使用表单</div>
+      <div class="more">
+        <a target="_blank" href="http://fast-crud.docmirror.cn/api/use.html#useformwrapper">文档</a>
+      </div>
+    </template>
+    <div style="padding: 20px">
+      <a-row :gutter="10">
+        <a-col :span="12">
+          <a-card class="mt-10" title="直接显示表单">
+            <fs-form ref="formRef" v-bind="formOptions"> </fs-form>
+            <div style="margin-top: 10px">
+              <a-button @click="formSubmit">提交表单</a-button>
+              <a-button @click="formReset">重置表单</a-button>
+              <a-button class="ml-10" @click="setFormDataTest">setFormData</a-button>
+            </div>
+          </a-card>
+        </a-col>
+        <a-col span="12">
+          <a-card class="mt-10" title="直接打开对话框,无需写 fs-form-wrapper 标签">
+            <div style="margin-top: 10px">
+              <a-button @click="openFormWrapperNoTag">打开对话框</a-button>
+            </div>
+          </a-card>
+          <a-card class="mt-10" title="打开表单对话框">
+            <a-button @click="openFormWrapper">打开表单对话框</a-button>
+            <fs-form-wrapper ref="formWrapperRef" v-bind="formWrapperOptions" />
+          </a-card>
 
-        <a-card title="打开表单对话框（复用crudOptions）">
-          <a-button @click="openFormWrapper2">打开表单对话框</a-button>
-          <fs-form-wrapper ref="formWrapper2Ref" v-bind="formWrapper2Options" />
-        </a-card>
+          <a-card class="mt-10" title="打开表单对话框（复用crudOptions）">
+            <a-button @click="openFormWrapper2">打开表单对话框</a-button>
+            <fs-form-wrapper ref="formWrapper2Ref" v-bind="formWrapper2Options" />
+          </a-card>
 
-        <a-card class="mt-10" title="打开表单对话框【复用crudBinding】">
-          <a-button @click="openFormWrapper2">打开表单对话框</a-button>
-          <fs-form-wrapper ref="formWrapperRef2" v-bind="formWrapperOptions2" />
-        </a-card>
-      </a-col>
-    </a-row>
+          <a-card class="mt-10" title="打开表单对话框【复用crudBinding】">
+            <a-button @click="openFormWrapper2">打开表单对话框</a-button>
+            <fs-form-wrapper ref="formWrapperRef2" v-bind="formWrapperOptions2" />
+          </a-card>
+        </a-col>
+      </a-row>
+    </div>
   </fs-page>
 </template>
 
 <script>
 import { defineComponent, ref } from "vue";
 import { message } from "ant-design-vue";
-import { useCrud, useExpose, useColumns } from "@fast-crud/fast-crud";
+import { useCrud, useExpose, useColumns, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
+import { useFormWrapper } from "@fast-crud/fast-crud/src";
 
 function createFormOptionsFromCrudOptions() {
   const { buildFormOptions } = useColumns();
@@ -126,7 +140,7 @@ function useFormDirect() {
  * 表单对话框独立使用
  * @returns {{formWrapperRef, formWrapperOptions, openFormWrapper: openFormWrapper}}
  */
-function useFormWrapper() {
+function useFormWrapperUsingTag() {
   const formWrapperRef = ref();
   const formWrapperOptions = ref();
   formWrapperOptions.value = createFormOptions();
@@ -148,19 +162,7 @@ function useFormWrapper() {
 function useCrudBindingForm() {
   const formWrapperRef2 = ref();
 
-  // crud组件的ref
-  const crudRef = ref();
-  // crud 配置的ref
-  const crudBinding = ref();
-  // 暴露的方法
-  const { expose } = useExpose({ crudRef, crudBinding });
-  // 你的crud配置
-  const { crudOptions } = createCrudOptions({ expose });
-  // 初始化crud配置
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars,no-unused-vars
-  const { resetCrudOptions } = useCrud({ expose, crudOptions });
-  // 你可以调用此方法，重新初始化crud配置
-  // resetCrudOptions(options)
+  const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
 
   // 以下代码实际上== crudBinding.addForm 或者 crudBinding.editForm
   const formWrapperOptions2 = ref({
@@ -201,14 +203,32 @@ function useCrudOptions() {
   };
 }
 
+/**
+ * 无需写 fs-form-wrapper标签，直接打开对话框
+ * 此方式可以层叠打开多个对话框
+ */
+function useFormProvider() {
+  const { openDialog } = useFormWrapper();
+
+  async function openFormWrapperNoTag() {
+    const opts = createFormOptionsFromCrudOptions();
+    const wrapperRef = await openDialog(opts);
+    console.log("对话框已打开", wrapperRef);
+  }
+  return {
+    openFormWrapperNoTag
+  };
+}
+
 export default defineComponent({
   name: "FormIndependent",
   setup() {
     return {
       ...useFormDirect(),
-      ...useFormWrapper(),
+      ...useFormWrapperUsingTag(),
       ...useCrudBindingForm(),
-      ...useCrudOptions()
+      ...useCrudOptions(),
+      ...useFormProvider()
     };
   }
 });

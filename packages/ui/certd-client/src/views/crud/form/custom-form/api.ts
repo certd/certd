@@ -1,7 +1,7 @@
 import { requestForMock } from "/src/api/service";
 const request = requestForMock;
-const apiPrefix = "/mock/BasisColumnsSet";
-export function GetList(query) {
+const apiPrefix = "/mock/FormCustomForm";
+export function GetList(query: any) {
   return request({
     url: apiPrefix + "/page",
     method: "get",
@@ -9,7 +9,7 @@ export function GetList(query) {
   });
 }
 
-export function AddObj(obj) {
+export function AddObj(obj: any) {
   return request({
     url: apiPrefix + "/add",
     method: "post",
@@ -17,7 +17,7 @@ export function AddObj(obj) {
   });
 }
 
-export function UpdateObj(obj) {
+export function UpdateObj(obj: any) {
   return request({
     url: apiPrefix + "/update",
     method: "post",
@@ -25,7 +25,7 @@ export function UpdateObj(obj) {
   });
 }
 
-export function DelObj(id) {
+export function DelObj(id: any) {
   return request({
     url: apiPrefix + "/delete",
     method: "post",
@@ -38,13 +38,5 @@ export function GetObj(id) {
     url: apiPrefix + "/info",
     method: "get",
     params: { id }
-  });
-}
-
-export function BatchDelete(ids) {
-  return request({
-    url: apiPrefix + "/batchDelete",
-    method: "post",
-    data: { ids }
   });
 }

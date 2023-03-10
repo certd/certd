@@ -1,26 +1,28 @@
 <template>
   <fs-page>
     <template #header>
-      <div class="title">自定义表单</div>
+      <div class="title">
+        s3上传
+        <span class="sub">支持minio</span>
+      </div>
       <div class="more">
-        <a target="_blank" href="http://fast-crud.docmirror.cn/api/use.html#useformwrapper">文档</a>
+        <a target="_blank" href="http://fast-crud.docmirror.cn/api/crud-options/toolbar.html#columnsfilter-mode">文档</a>
       </div>
     </template>
-    <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
+    <fs-crud ref="crudRef" v-bind="crudBinding" />
   </fs-page>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
-import { useFs, UseFsProps } from "@fast-crud/fast-crud";
+import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud.js";
 
 export default defineComponent({
-  name: "FormCustomForm",
-  setup(props, ctx) {
+  name: "S3Uploader",
+  setup() {
+    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
     // 页面打开后获取列表数据
-    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions } as UseFsProps);
-
     onMounted(() => {
       crudExpose.doRefresh();
     });

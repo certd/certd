@@ -1,3 +1,5 @@
+import { message } from "ant-design-vue";
+
 export default function ({ expose }) {
   return {
     crudOptions: {
@@ -9,6 +11,13 @@ export default function ({ expose }) {
           onOpened(e) {
             console.log("onOpened", e);
           }
+        },
+        doSubmit({ form }) {
+          //覆盖提交方法
+          console.log("form submit:", form);
+          message.info("自定义表单提交:" + JSON.stringify(form));
+          message.warn("抛出异常可以阻止表单关闭");
+          throw new Error("抛出异常可以阻止表单关闭");
         },
         labelCol: { span: 6 },
         wrapperCol: { span: 16 },

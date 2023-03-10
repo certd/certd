@@ -256,6 +256,12 @@ export const crudResources = [
             component: "/crud/component/uploader/qiniu/index.vue"
           },
           {
+            title: "s3上传",
+            name: "ComponentUploaderS3",
+            path: "/crud/component/uploader/s3",
+            component: "/crud/component/uploader/s3/index.vue"
+          },
+          {
             title: "富文本编辑器",
             name: "ComponentEditor",
             path: "/crud/component/editor",
