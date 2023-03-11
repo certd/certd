@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/fast-crud/fast-crud/compare/v1.9.2...v1.10.0) (2023-03-11)
+
+
+### Bug Fixes
+
+* 行编辑支持多级表头 ([a547c99](https://github.com/fast-crud/fast-crud/commit/a547c99250f2d00b9d91c326364ccb81415c2772))
+
+
+### Features
+
+* fs-form-wrapper支持多实例 ([023cc1d](https://github.com/fast-crud/fast-crud/commit/023cc1d425d5b1fa618a3d13fe5c88c81671524d))
+
+
+### Performance Improvements
+
+* 完善文档，完善部分types ([8fff02d](https://github.com/fast-crud/fast-crud/commit/8fff02d758530bbb1212d7475dc94bc8b562ef97))
+* 优化d.ts类型 ([7a51aac](https://github.com/fast-crud/fast-crud/commit/7a51aace532ed6692f28a53332a2103a74f5827a))
+* 增加s3示例 ([9060b03](https://github.com/fast-crud/fast-crud/commit/9060b036ce9e36ef8f2ddc50b1362682c7d3aa7f))
+
+
+
+
+
 ## [1.9.2](https://github.com/fast-crud/fast-crud/compare/v1.9.1...v1.9.2) (2023-03-01)
 
 **Note:** Version bump only for package @fast-crud/fs-admin-antdv

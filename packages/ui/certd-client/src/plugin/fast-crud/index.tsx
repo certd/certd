@@ -7,7 +7,8 @@ import "@fast-crud/fast-extends/dist/style.css";
 import UiAntdv from "@fast-crud/ui-antdv";
 import _ from "lodash-es";
 import { useCrudPermission } from "../permission";
-import { TransformResProps } from "@fast-crud/fast-crud/src";
+import { TransformResProps } from "@fast-crud/fast-crud";
+import { GetSignedUrl } from "/@/views/crud/component/uploader/s3/api";
 
 function install(app: any, options: any = {}) {
   app.use(UiAntdv);
@@ -170,20 +171,24 @@ function install(app: any, options: any = {}) {
       domain: "http://d2p.file.handsfree.work/"
     },
     s3: {
+      //同时也支持minio
       bucket: "fast-crud",
       sdkOpts: {
         s3ForcePathStyle: true,
         signatureVersion: "v4",
         region: "us-east-1",
         forcePathStyle: true,
+        //minio与s3完全适配
         endpoint: "https://play.min.io",
         credentials: {
+          //不建议在客户端使用secretAccessKey来上传
           accessKeyId: "Q3AM3UQ867SPQQA43P2F", //访问登录名
           secretAccessKey: "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG" //访问密码
         }
       },
-      custom: {
-        // buildKey，获取授权等接口中将会传入
+      //预签名配置，向后端获取上传的预签名连接
+      async getSignedUrl(bucket: string, key: string, options: any) {
+        return await GetSignedUrl(bucket, key, "put");
       },
       successHandle(ret: any) {
         // 上传完成后可以在此处处理结果，修改url什么的

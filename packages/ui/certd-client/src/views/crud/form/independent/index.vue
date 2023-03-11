@@ -49,7 +49,7 @@ import { defineComponent, ref } from "vue";
 import { message } from "ant-design-vue";
 import { useCrud, useExpose, useColumns, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
-import { useFormWrapper } from "@fast-crud/fast-crud/src";
+import { useFormWrapper } from "@fast-crud/fast-crud";
 
 function createFormOptionsFromCrudOptions() {
   const { buildFormOptions } = useColumns();

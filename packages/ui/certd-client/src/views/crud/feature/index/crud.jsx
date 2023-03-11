@@ -38,7 +38,7 @@ export default function ({ expose }) {
               //计算序号,你可以自定义计算规则，此处为翻页累加
               let index = context.index ?? 1;
               let pagination = expose.crudBinding.value.pagination;
-              return ((pagination.currentPage ?? 1) - 1) * pagination.pageSize + index + 1;
+              return ((pagination.current ?? 1) - 1) * pagination.pageSize + index + 1;
             }
           }
         },

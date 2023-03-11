@@ -6,7 +6,7 @@
         <span class="sub">支持minio</span>
       </div>
       <div class="more">
-        <a target="_blank" href="http://fast-crud.docmirror.cn/api/crud-options/toolbar.html#columnsfilter-mode">文档</a>
+        <a target="_blank" href="http://fast-crud.docmirror.cn/guide/extends/uploader.html">文档</a>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding" />

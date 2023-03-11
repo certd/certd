@@ -1,6 +1,7 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { GetSignedUrl } from "./api";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
@@ -39,17 +40,27 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         file: {
           title: "S3上传",
           type: "file-uploader",
+          // 将被分发到 form.component 和 column.component之下
+          async buildUrl(key: string) {
+            //向后端获取下载的预签名链接
+            return await GetSignedUrl("fast-crud", key, "get");
+          },
           form: {
             component: {
               uploader: {
                 type: "s3"
-              }
+              },
+              valueType: "key" //返回值为key
             }
           }
         },
         pictureCard: {
           title: "照片墙",
           type: "image-uploader",
+          async buildUrl(key: string) {
+            //向后端获取下载的预签名链接
+            return await GetSignedUrl("fast-crud", key, "get");
+          },
           form: {
             component: {
               uploader: {
@@ -57,26 +68,21 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               },
               valueType: "key"
             }
-          },
-          column: {
-            component: {
-              async buildUrl(key: string) {
-                const url = await GetSignedUrl("fast-crud", key);
-                debugger;
-                console.log("url", url);
-                return url;
-              }
-            }
           }
         },
         cropper: {
           title: "裁剪",
           type: "cropper-uploader",
+          async buildUrl(key: string) {
+            //向后端获取下载的预签名链接
+            return await GetSignedUrl("fast-crud", key, "get");
+          },
           form: {
             component: {
               uploader: {
                 type: "s3"
-              }
+              },
+              valueType: "key"
             }
           }
         }

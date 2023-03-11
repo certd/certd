@@ -95,6 +95,14 @@ export default function ({ expose }) {
         pictureCard2: {
           title: "通过urls显示",
           type: "image-uploader",
+          form: {
+            show: false,
+            component: {
+              uploader: {
+                type: "form"
+              }
+            }
+          },
           column: {
             component: {
               urls: [
