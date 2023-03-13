@@ -33,7 +33,7 @@ export function DelObj(id: any) {
   });
 }
 
-export function GetObj(id) {
+export function GetObj(id: any) {
   return request({
     url: apiPrefix + "/info",
     method: "get",

@@ -25,8 +25,8 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, onMounted} from "vue";
-import {useFs} from "@fast-crud/fast-crud";
+import { defineComponent, onMounted } from "vue";
+import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 
 export default defineComponent({

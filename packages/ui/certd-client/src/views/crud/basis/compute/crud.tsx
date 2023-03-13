@@ -1,6 +1,6 @@
 import * as api from "./api";
 import { requestForMock } from "/src/api/service";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, useCompute, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, ButtonProps, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, RowHandleProps, useCompute, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { message } from "ant-design-vue";
 import { ref, computed } from "vue";
 const { asyncCompute, compute } = useCompute();
@@ -58,9 +58,12 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       },
       rowHandle: {
         fixed: "right",
+        show: computed(() => {
+          return false;
+        }),
         buttons: {
           edit: {
-            show: compute(({ row }) => {
+            show: compute<boolean>(({ row }) => {
               return row.editable;
             })
           },
@@ -68,7 +71,13 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             show: compute(({ row }) => {
               return row.editable;
             })
-          }
+          },
+          custom: compute(({ row }) => {
+            return {
+              text: "动态按钮:" + row.id,
+              show: true
+            };
+          })
         }
       },
       columns: {
