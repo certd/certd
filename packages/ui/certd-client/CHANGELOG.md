@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/fast-crud/fast-crud/compare/v1.10.0...v1.11.0) (2023-03-16)
+
+
+### Bug Fixes
+
+* 修复wangeditor无法上传视频的bug ([53ee51e](https://github.com/fast-crud/fast-crud/commit/53ee51e901956da9596600235632545bcf98746e))
+
+
+### Performance Improvements
+
+* 全面ts化 ([168d3a2](https://github.com/fast-crud/fast-crud/commit/168d3a240eb67548195c31a5fa4cb5aedb8a410c))
+
+
+
+
+
 # [1.10.0](https://github.com/fast-crud/fast-crud/compare/v1.9.2...v1.10.0) (2023-03-11)
 
 

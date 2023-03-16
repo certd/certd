@@ -10,7 +10,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, nextTick } from "vue";
-import {useFs, UseFsProps} from "@fast-crud/fast-crud";
+import { useFs, UseFsProps } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud.jsx";
 export default defineComponent({
   name: "FormBase",

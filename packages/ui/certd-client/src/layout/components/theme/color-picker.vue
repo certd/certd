@@ -14,7 +14,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent, ref } from "vue";
 const colorListDefine = [
   {
@@ -60,7 +60,7 @@ export default defineComponent({
   emits: ["change"],
   setup(props, ctx) {
     const colorList = ref(colorListDefine);
-    function changeColor(color) {
+    function changeColor(color: any) {
       ctx.emit("change", color);
     }
     return {

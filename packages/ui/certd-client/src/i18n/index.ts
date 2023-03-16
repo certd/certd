@@ -1,6 +1,7 @@
 import { createI18n } from "vue-i18n";
-//
+//@ts-ignore
 import enFsLocale from "@fast-crud/fast-crud/dist/locale/lang/en.js";
+//@ts-ignore
 import zhFsLocale from "@fast-crud/fast-crud/dist/locale/lang/zh-cn.js";
 import en from "./locale/en";
 import zh from "./locale/zh_CN";

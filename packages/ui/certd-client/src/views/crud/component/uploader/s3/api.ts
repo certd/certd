@@ -1,6 +1,6 @@
 import { requestForMock } from "/src/api/service";
 import { generateSignedUrl } from "/@/views/crud/component/uploader/s3/s3-server";
-import { SignedUrlType } from "@fast-crud/fast-extends";
+import { FsUploaderS3SignedUrlType } from "@fast-crud/fast-extends";
 const request = requestForMock;
 const apiPrefix = "/mock/S3Uploader";
 export function GetList(query: any) {
@@ -50,7 +50,7 @@ export function GetObj(id: any) {
  * @param type
  * @constructor
  */
-export async function GetSignedUrl(bucket: string, key: string, type: SignedUrlType) {
+export async function GetSignedUrl(bucket: string, key: string, type: FsUploaderS3SignedUrlType) {
   //此处模拟获取预签名url
   return await generateSignedUrl(bucket, key, type);
 }

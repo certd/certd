@@ -44,17 +44,16 @@
   </fs-page>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent, ref } from "vue";
 import { message } from "ant-design-vue";
-import { useCrud, useExpose, useColumns, useFs } from "@fast-crud/fast-crud";
+import { CreateCrudOptionsProps, useColumns, useFormWrapper, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
-import { useFormWrapper } from "@fast-crud/fast-crud";
 
 function createFormOptionsFromCrudOptions() {
   const { buildFormOptions } = useColumns();
   //可以直接复用crud.js
-  const { crudOptions } = createCrudOptions({});
+  const { crudOptions } = createCrudOptions({} as CreateCrudOptionsProps);
   return buildFormOptions(crudOptions);
 }
 
@@ -167,7 +166,7 @@ function useCrudBindingForm() {
   // 以下代码实际上== crudBinding.addForm 或者 crudBinding.editForm
   const formWrapperOptions2 = ref({
     ...crudBinding.value.addForm, // 你也可以用editForm
-    doSubmit({ form }) {
+    doSubmit({ form }: any) {
       //覆盖提交方法
       console.log("form submit:", form);
       message.info("自定义表单提交:" + JSON.stringify(form));

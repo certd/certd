@@ -49,7 +49,7 @@ router.beforeEach(async (to, from, next) => {
   }
 });
 
-router.afterEach((to) => {
+router.afterEach((to: any) => {
   // 进度条
   NProgress.done();
   // 多页控制 打开新的页面

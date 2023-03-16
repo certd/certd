@@ -1,15 +1,6 @@
 <template>
   <div class="main">
-    <a-form
-      ref="formRef"
-      class="user-layout-login"
-      name="custom-validation"
-      :model="formState"
-      :rules="rules"
-      v-bind="layout"
-      @finish="handleFinish"
-      @finishFailed="handleFinishFailed"
-    >
+    <a-form ref="formRef" class="user-layout-login" name="custom-validation" :model="formState" :rules="rules" v-bind="layout" @finish="handleFinish" @finishFailed="handleFinishFailed">
       <a-form-item required has-feedback name="username">
         <a-input v-model:value="formState.username" size="large" autocomplete="off">
           <template #prefix>
@@ -42,15 +33,15 @@
     </a-form>
   </div>
 </template>
-<script>
+<script lang="ts">
 import { defineComponent, reactive, ref, toRaw } from "vue";
 import { useUserStore } from "/src/store/modules/user";
 export default defineComponent({
-  name: "Register",
+  name: "RegisterPage",
   setup() {
     const userStore = useUserStore();
     const formRef = ref();
-    const formState = reactive({
+    const formState: any = reactive({
       username: "",
       password: ""
     });
@@ -87,7 +78,7 @@ export default defineComponent({
       }
     };
 
-    const handleFinish = async (values) => {
+    const handleFinish = async (values: any) => {
       console.log(values, formState);
       const userInfo = await userStore.login(
         toRaw({
@@ -97,7 +88,7 @@ export default defineComponent({
       );
     };
 
-    const handleFinishFailed = (errors) => {
+    const handleFinishFailed = (errors: any) => {
       console.log(errors);
     };
 

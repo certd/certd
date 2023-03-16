@@ -1,6 +1,6 @@
 import mockUtil from "/src/mock/base";
 
-const options = {
+const options: any = {
   name: "FormCustomForm",
   idGenerator: 0
 };
@@ -291,7 +291,7 @@ const mock = mockUtil.buildMock(options);
 mock.push({
   path: "/select/cascadeData",
   method: "get",
-  handle(req) {
+  handle(req: any) {
     return {
       code: 0,
       msg: "success",

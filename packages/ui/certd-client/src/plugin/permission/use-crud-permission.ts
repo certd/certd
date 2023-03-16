@@ -1,13 +1,17 @@
 import { usePermission } from "/@/plugin/permission";
 import _ from "lodash-es";
 
+export type UseCrudPermissionExtraProps = {
+  hasActionPermission: (action: string) => boolean;
+};
+export type UseCrudPermissionExtra = (props: UseCrudPermissionExtraProps) => any;
+export type UseCrudPermissionCompProps = {
+  prefix: string;
+  extra?: UseCrudPermissionExtra;
+  [key: string]: any;
+};
 export type UseCrudPermissionProps = {
-  permission:
-    | string
-    | {
-        prefix: string;
-        [key: string]: any;
-      };
+  permission: string | UseCrudPermissionCompProps;
 };
 /**
  * 设置按钮动作权限

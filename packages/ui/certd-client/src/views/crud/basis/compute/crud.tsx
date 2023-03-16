@@ -1,8 +1,9 @@
 import * as api from "./api";
 import { requestForMock } from "/src/api/service";
-import { AddReq, ButtonProps, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, RowHandleProps, useCompute, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, GetContextFn, ScopeContext, useCompute, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { message } from "ant-design-vue";
-import { ref, computed } from "vue";
+import { computed, ref } from "vue";
+
 const { asyncCompute, compute } = useCompute();
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -59,7 +60,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       rowHandle: {
         fixed: "right",
         show: computed(() => {
-          return false;
+          return true;
         }),
         buttons: {
           edit: {
@@ -71,13 +72,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             show: compute(({ row }) => {
               return row.editable;
             })
-          },
-          custom: compute(({ row }) => {
-            return {
-              text: "动态按钮:" + row.id,
-              show: true
-            };
-          })
+          }
         }
       },
       columns: {
@@ -162,7 +157,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               vModel: "value",
               placeholder: "异步计算远程获取options",
               options: asyncCompute({
-                async asyncFn(watchValue, context) {
+                async asyncFn(watchValue: any, context: GetContextFn) {
                   const url = "/mock/dicts/OpenStatusEnum?remote";
                   return await requestForMock({ url });
                 }
@@ -181,10 +176,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               vModel: "value",
               placeholder: "异步计算远程获取options",
               options: asyncCompute({
-                watch({ form }: any) {
+                watch({ form }: ScopeContext) {
                   return form.compute;
                 },
-                async asyncFn(watchValue) {
+                async asyncFn(watchValue: string) {
                   message.info("监听switch,触发远程获取options");
                   const url = watchValue ? "/mock/dicts/OpenStatusEnum?remote" : "/mock/dicts/moreOpenStatusEnum?remote";
                   return await requestForMock({ url });

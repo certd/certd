@@ -19,7 +19,7 @@
   </a-dropdown>
 </template>
 
-<script>
+<script lang="ts">
 import i18n from "../../../i18n";
 import { computed, inject } from "vue";
 import _ from "lodash-es";
@@ -27,8 +27,8 @@ export default {
   name: "FsLocale",
   setup() {
     const languages = computed(() => {
-      const map = i18n.global.messages?.value || {};
-      const list = [];
+      const map: any = i18n.global.messages?.value || {};
+      const list: any = [];
       _.forEach(map, (item, key) => {
         list.push({
           key,
@@ -41,12 +41,12 @@ export default {
       return i18n.global.locale.value;
     });
 
-    const routerReload = inject("fn:router.reload");
-    const localeChanged = inject("fn:locale.changed");
-    const changeLocale = (change) => {
+    const routerReload: any = inject("fn:router.reload");
+    const localeChanged: any = inject("fn:locale.changed");
+    const changeLocale = (change: any) => {
       i18n.global.locale.value = change.key;
       routerReload();
-      localeChanged(change.key)
+      localeChanged(change.key);
     };
     return {
       languages,

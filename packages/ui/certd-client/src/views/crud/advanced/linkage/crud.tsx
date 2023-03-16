@@ -1,6 +1,6 @@
 import * as api from "./api";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, ScopeContext, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-export default function ({ expose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -30,7 +30,6 @@ export default function ({ expose }: CreateCrudOptionsProps): CreateCrudOptionsR
       columns: {
         id: {
           title: "ID",
-          key: "id",
           type: "number",
           column: {
             width: 50
@@ -51,7 +50,7 @@ export default function ({ expose }: CreateCrudOptionsProps): CreateCrudOptionsR
             cache: true
           }),
           form: {
-            valueChange({ form, value, getComponentRef }: ScopeContext) {
+            valueChange({ form, value, getComponentRef }) {
               form.city = undefined; // 将“city”的值置空
               form.county = undefined; // 将“county”的值置空
               if (value) {

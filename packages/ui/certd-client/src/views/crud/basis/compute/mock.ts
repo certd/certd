@@ -1,5 +1,6 @@
+// @ts-ignore
 import mockUtil from "/src/mock/base";
-const options = {
+const options: any = {
   name: "FormCompute",
   idGenerator: 0
 };

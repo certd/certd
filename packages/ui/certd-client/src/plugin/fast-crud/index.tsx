@@ -1,13 +1,12 @@
 import { request, requestForMock } from "/src/api/service";
 import "/src/mock";
-import { FastCrud, UseCrudProps, useTypes, setLogger, useColumns, ColumnCompositionProps, MergeColumnPlugin, CrudOptions, TransformQuery, PageQuery, UserPageQuery, UserPageRes, PageRes } from "@fast-crud/fast-crud";
+import { ColumnCompositionProps, CrudOptions, FastCrud, PageQuery, PageRes, setLogger, TransformResProps, useColumns, UseCrudProps, UserPageQuery, useTypes } from "@fast-crud/fast-crud";
 import "@fast-crud/fast-crud/dist/style.css";
-import { FsExtendsUploader, FsExtendsEditor, FsExtendsJson, FsExtendsCopyable, FsExtendsTime } from "@fast-crud/fast-extends";
+import { FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader } from "@fast-crud/fast-extends";
 import "@fast-crud/fast-extends/dist/style.css";
 import UiAntdv from "@fast-crud/ui-antdv";
 import _ from "lodash-es";
 import { useCrudPermission } from "../permission";
-import { TransformResProps } from "@fast-crud/fast-crud";
 import { GetSignedUrl } from "/@/views/crud/component/uploader/s3/api";
 
 function install(app: any, options: any = {}) {
@@ -230,7 +229,12 @@ function install(app: any, options: any = {}) {
   //安装editor
   app.use(FsExtendsEditor, {
     //编辑器的公共配置
-    wangEditor: {}
+    wangEditor: {
+      editorConfig: {
+        MENU_CONF: {}
+      },
+      toolbarConfig: {}
+    }
   });
   app.use(FsExtendsJson);
   app.use(FsExtendsTime);

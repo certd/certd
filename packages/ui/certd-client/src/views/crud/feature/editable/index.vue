@@ -28,45 +28,34 @@
   </fs-page>
 </template>
 
-<script>
-import { defineComponent, ref, onMounted } from "vue";
+<script lang="ts">
+import { defineComponent, onMounted } from "vue";
 import createCrudOptions from "./crud";
-import { useExpose, useCrud } from "@fast-crud/fast-crud";
+import { useFs } from "@fast-crud/fast-crud";
 import { message } from "ant-design-vue";
+
 export default defineComponent({
   name: "FeatureEditable",
   setup() {
-    // crud组件的ref
-    const crudRef = ref();
-    // crud 配置的ref
-    const crudBinding = ref();
-    // 暴露的方法
-    const { expose } = useExpose({ crudRef, crudBinding });
-    // 你的crud配置
-    const { crudOptions, selectedIds } = createCrudOptions({ expose });
-    // 初始化crud配置
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars,no-unused-vars
-    const { resetCrudOptions } = useCrud({ expose, crudOptions });
-    // 你可以调用此方法，重新初始化crud配置
-    // resetCrudOptions(options)
+    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
 
     // 页面打开后获取列表数据
     onMounted(() => {
-      expose.doRefresh();
-      expose.editable.enable({ mode: "free" });
+      crudExpose.doRefresh();
+      crudExpose.editable.enable({ mode: "free" });
     });
 
     function enable() {
-      expose.editable.enable({ enabled: true, mode: "free" });
+      crudExpose.editable.enable({ enabled: true, mode: "free" });
     }
     function disable() {
-      expose.editable.disable();
+      crudExpose.editable.disable();
     }
 
     return {
       crudBinding,
       crudRef,
-      enabledChanged(event) {
+      enabledChanged(event: boolean) {
         if (event) {
           enable();
         } else {
@@ -76,13 +65,13 @@ export default defineComponent({
       enable,
       disable,
       active() {
-        expose.editable.active();
+        crudExpose.editable.active();
       },
       inactive() {
-        expose.editable.inactive();
+        crudExpose.editable.inactive();
       },
       save() {
-        expose.getTableRef().editable.submit(({ changed, removed, setData }) => {
+        crudExpose.getTableRef().editable.submit(({ changed, removed, setData }: any) => {
           console.log("changed", changed);
           console.log("removed", removed);
           // setData({ 0: {id:1} }); //设置data
@@ -90,13 +79,13 @@ export default defineComponent({
         });
       },
       cancel() {
-        expose.editable.resume();
+        crudExpose.editable.resume();
       },
       addRow() {
-        expose.editable.addRow();
+        crudExpose.editable.addRow();
       },
       editCol() {
-        expose.editable.editCol({ cols: ["radio"] });
+        crudExpose.editable.editCol({ cols: ["radio"] });
       }
     };
   }

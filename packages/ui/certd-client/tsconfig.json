@@ -17,6 +17,7 @@
     "baseUrl": ".",
     "outDir": "./dist/ts",
     "types": [
+      "vite/client",
       "mocha",
       "chai",
       "node",

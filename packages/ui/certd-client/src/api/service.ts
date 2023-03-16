@@ -106,8 +106,8 @@ function createService() {
  * @description 创建请求方法
  * @param {Object} service axios 实例
  */
-function createRequestFunction(service) {
-  return function (config) {
+function createRequestFunction(service: any) {
+  return function (config: any) {
     const configDefault = {
       headers: {
         "Content-Type": get(config, "headers.Content-Type", "application/json")

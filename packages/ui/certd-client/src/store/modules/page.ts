@@ -403,7 +403,7 @@ export const usePageStore = defineStore({
      * @param {Object} state state
      * @param {Array} routes routes
      */
-    async init(routes: any) {
+    async init(routes?: any) {
       if (this.inited) {
         return;
       }

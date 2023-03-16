@@ -1,15 +1,6 @@
 <template>
   <div class="main">
-    <a-form
-      ref="formRef"
-      class="user-layout-login"
-      name="custom-validation"
-      :model="formState"
-      :rules="rules"
-      v-bind="layout"
-      @finish="handleFinish"
-      @finishFailed="handleFinishFailed"
-    >
+    <a-form ref="formRef" class="user-layout-login" name="custom-validation" :model="formState" :rules="rules" v-bind="layout" @finish="handleFinish" @finishFailed="handleFinishFailed">
       <!--      <div class="login-title">登录</div>-->
       <a-tabs :active-key="formState.loginType" :tab-bar-style="{ textAlign: 'center', borderBottom: 'unset' }">
         <a-tab-pane key="password" tab="用户名密码登录">
@@ -24,12 +15,7 @@
             </a-input>
           </a-form-item>
           <a-form-item has-feedback name="password">
-            <a-input-password
-              v-model:value="formState.password"
-              placeholder="请输入密码"
-              size="large"
-              autocomplete="off"
-            >
+            <a-input-password v-model:value="formState.password" placeholder="请输入密码" size="large" autocomplete="off">
               <template #prefix>
                 <span class="iconify" data-icon="ion:lock-closed-outline" data-inline="false"></span>
               </template>
@@ -47,12 +33,7 @@
           <a-form-item has-feedback name="imgCode">
             <a-row :gutter="16">
               <a-col class="gutter-row" :span="16">
-                <a-input
-                  v-model:value="formState.imgCode"
-                  placeholder="请输入图片验证码"
-                  size="large"
-                  autocomplete="off"
-                >
+                <a-input v-model:value="formState.imgCode" placeholder="请输入图片验证码" size="large" autocomplete="off">
                   <template #prefix>
                     <span class="iconify" data-icon="ion:image-outline" data-inline="false"></span>
                   </template>
@@ -74,13 +55,7 @@
                 </a-input>
               </a-col>
               <a-col class="gutter-row" :span="8">
-                <a-button
-                  class="getCaptcha"
-                  tabindex="-1"
-                  :disabled="smsSendBtnDisabled"
-                  @click="sendSmsCode"
-                  v-text="smsTime <= 0 ? '发送' : smsTime + ' s'"
-                ></a-button>
+                <a-button class="getCaptcha" tabindex="-1" :disabled="smsSendBtnDisabled" @click="sendSmsCode" v-text="smsTime <= 0 ? '发送' : smsTime + ' s'"></a-button>
               </a-col>
             </a-row>
           </a-form-item>
@@ -96,11 +71,11 @@
     </a-form>
   </div>
 </template>
-<script>
+<script lang="ts">
 import { defineComponent, reactive, ref, toRaw, computed } from "vue";
 import { useUserStore } from "/src/store/modules/user";
 export default defineComponent({
-  name: "Login",
+  name: "LoginPage",
   setup() {
     const loading = ref(false);
     const userStore = useUserStore();
@@ -153,7 +128,7 @@ export default defineComponent({
       }
     };
 
-    const handleFinish = async (values) => {
+    const handleFinish = async (values: any) => {
       console.log(values, formState);
       loading.value = true;
       try {
@@ -163,7 +138,7 @@ export default defineComponent({
       }
     };
 
-    const handleFinishFailed = (errors) => {
+    const handleFinishFailed = (errors: any) => {
       console.log(errors);
     };
 

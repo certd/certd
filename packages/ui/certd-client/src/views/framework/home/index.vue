@@ -4,7 +4,7 @@
   </fs-page>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent } from "vue";
 import PageCover from "./page-cover/index.vue";
 export default defineComponent({

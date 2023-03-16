@@ -15,7 +15,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
-import { useFs, UseFsProps } from "@fast-crud/fast-crud";
+import { CrudOptions, DynamicType, useFs, UseFsProps } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud.js";
 import _ from "lodash-es";
 export default defineComponent({
@@ -26,7 +26,7 @@ export default defineComponent({
 
     setTimeout(() => {
       //合并新的crudOptions
-      const newOptions = _.merge(crudOptions, {
+      const newOptions: DynamicType<CrudOptions> = _.merge(crudOptions, {
         columns: {
           text: {
             title: "追加字段",

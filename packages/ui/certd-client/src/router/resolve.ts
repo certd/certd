@@ -3,11 +3,10 @@ import _ from "lodash-es";
 import { outsideResource } from "./source/outside";
 import { headerResource } from "./source/header";
 import { frameworkResource } from "./source/framework";
-// @ts-ignore
 const modules = import.meta.glob("/src/views/**/*.vue");
 
 let index = 0;
-function transformOneResource(resource) {
+function transformOneResource(resource: any) {
   let menu: any = null;
   if (resource.meta == null) {
     resource.meta = {};
@@ -46,7 +45,7 @@ function transformOneResource(resource) {
   };
 }
 
-export const buildMenusAndRouters = (resources) => {
+export const buildMenusAndRouters = (resources: any) => {
   const routes: Array<any> = [];
   const menus: Array<any> = [];
   for (const item of resources) {
@@ -84,7 +83,7 @@ export const buildMenusAndRouters = (resources) => {
   };
 };
 
-function setIndex(menus) {
+function setIndex(menus: any) {
   for (const menu of menus) {
     menu.index = "index_" + index;
     index++;
@@ -94,7 +93,7 @@ function setIndex(menus) {
   }
 }
 
-function findMenus(menus, condition) {
+function findMenus(menus: any, condition: any) {
   const list: any = [];
   for (const menu of menus) {
     if (condition(menu)) {
@@ -110,8 +109,8 @@ function findMenus(menus, condition) {
   return list;
 }
 
-function filterMenus(menus, condition) {
-  const list = menus.filter((item) => {
+function filterMenus(menus: any, condition: any) {
+  const list = menus.filter((item: any) => {
     return condition(item);
   });
 
@@ -123,7 +122,7 @@ function filterMenus(menus, condition) {
   return list;
 }
 
-function flatChildren(list, children) {
+function flatChildren(list: any, children: any) {
   for (const child of children) {
     list.push(child);
     if (child.children && child.children.length > 0) {
@@ -132,7 +131,7 @@ function flatChildren(list, children) {
     child.children = null;
   }
 }
-function flatSubRouters(routers) {
+function flatSubRouters(routers: any) {
   for (const router of routers) {
     const children: Array<any> = [];
     if (router.children && router.children.length > 0) {
