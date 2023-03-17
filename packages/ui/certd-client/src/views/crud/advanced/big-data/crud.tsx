@@ -57,70 +57,70 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           title: "字典1",
           type: "dict-select",
           dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?from=dict1"
+            url: "/mock/dicts/ManyOpenStatusEnum?from=dict1"
           })
         },
         dict2: {
           title: "字典2",
           type: "dict-select",
           dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?from=dict2"
+            url: "/mock/dicts/ManyOpenStatusEnum?from=dict2"
           })
         },
         dict3: {
           title: "字典3",
           type: "dict-select",
           dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?from=dict3"
+            url: "/mock/dicts/ManyOpenStatusEnum?from=dict3"
           })
         },
         dict4: {
           title: "字典4",
           type: "dict-select",
           dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?from=dict4"
+            url: "/mock/dicts/ManyOpenStatusEnum?from=dict4"
           })
         },
         dict5: {
           title: "字典5",
           type: "dict-select",
           dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?from=dict5"
+            url: "/mock/dicts/ManyOpenStatusEnum?from=dict5"
           })
         },
         dict6: {
           title: "字典6",
           type: "dict-select",
           dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?from=dict6"
+            url: "/mock/dicts/ManyOpenStatusEnum?from=dict6"
           })
         },
         dict7: {
           title: "字典7",
           type: "dict-select",
           dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?from=dict7"
+            url: "/mock/dicts/ManyOpenStatusEnum?from=dict7"
           })
         },
         dict8: {
           title: "字典8",
           type: "dict-select",
           dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?from=dict8"
+            url: "/mock/dicts/ManyOpenStatusEnum?from=dict8"
           })
         },
         dict9: {
           title: "字典9",
           type: "dict-select",
           dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?from=dict9"
+            url: "/mock/dicts/ManyOpenStatusEnum?from=dict9"
           })
         },
         dict10: {
           title: "字典10",
           type: "dict-select",
           dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?from=dict10"
+            url: "/mock/dicts/ManyOpenStatusEnum?from=dict10"
           })
         },
         text1: {

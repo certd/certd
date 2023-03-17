@@ -18,7 +18,7 @@ import createCrudOptions from "./crud.js";
 export default defineComponent({
   name: "BasisValueChange",
   setup() {
-    const { crudBinding, crudRef, crudExpose, output } = useFs({ createCrudOptions });
+    const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions });
 
     // 页面打开后获取列表数据
     onMounted(() => {
@@ -28,7 +28,7 @@ export default defineComponent({
     return {
       crudBinding,
       crudRef,
-      ...output
+      ...context
     };
   }
 });

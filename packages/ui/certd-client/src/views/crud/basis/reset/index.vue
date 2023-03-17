@@ -21,8 +21,7 @@ import _ from "lodash-es";
 export default defineComponent({
   name: "BasisReset",
   setup() {
-    const customValue: any = {}; //自定义变量，传给createCrudOptions的额外参数（可以任意命名，任意多个）
-    const { crudBinding, crudRef, crudExpose, customExport, crudOptions, resetCrudOptions, appendBindingOptions } = useFs({ createCrudOptions, customValue } as UseFsProps);
+    const { crudBinding, crudRef, crudExpose, context, crudOptions, resetCrudOptions, appendBindingOptions } = useFs({ createCrudOptions, context: {} });
 
     setTimeout(() => {
       //合并新的crudOptions

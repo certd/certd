@@ -19,9 +19,6 @@ import createCrudOptions from "./crud";
 export default defineComponent({
   name: "FsCrudFirst",
   setup() {
-    // 演示自定义变量传递, 将会传递给createCrudOptions
-    const customValue: any = {};
-
     // // crud组件的ref
     // const crudRef: Ref = ref();
     // // crud 配置的ref
@@ -35,7 +32,7 @@ export default defineComponent({
 
     //  =======以上为fs的初始化代码=========
     //  =======你可以简写为下面这一行========
-    const { crudRef, crudBinding, crudExpose, customExport } = useFs({ createCrudOptions, customValue });
+    const { crudRef, crudBinding, crudExpose, context } = useFs({ createCrudOptions, context: {} });
 
     // 页面打开后获取列表数据
     onMounted(() => {

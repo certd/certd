@@ -19,7 +19,6 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   };
 
   return {
-    output: {},
     crudOptions: {
       request: {
         pageRequest,

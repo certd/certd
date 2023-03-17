@@ -18,7 +18,6 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   };
 
   return {
-    output: {},
     crudOptions: {
       settings: {
         viewFormUseCellComponent: true

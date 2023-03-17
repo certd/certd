@@ -19,7 +19,7 @@ export default defineComponent({
   name: "FormCustomForm",
   setup(props, ctx) {
     // 页面打开后获取列表数据
-    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions } as UseFsProps);
+    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
 
     onMounted(() => {
       crudExpose.doRefresh();

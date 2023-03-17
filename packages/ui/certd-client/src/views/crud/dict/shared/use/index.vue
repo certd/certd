@@ -20,7 +20,7 @@ export default defineComponent({
   setup() {
     // crud组件的ref
     const customValue: any = {}; //自定义变量，传给createCrudOptions的额外参数（可以任意命名，任意多个）
-    const { crudBinding, crudRef, crudExpose, customExport } = useFs({ createCrudOptions, customValue });
+    const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions, context: customValue });
 
     // 页面打开后获取列表数据
     onMounted(() => {

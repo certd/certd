@@ -20,7 +20,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   setup(props, ctx) {
-    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, props, ctx });
+    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: { props, ctx } });
 
     // 页面打开后获取列表数据
     onMounted(() => {

@@ -19,8 +19,8 @@ import { useFs, UseFsProps } from "@fast-crud/fast-crud";
 export default defineComponent({
   name: "BasisColumnMergePlugin",
   setup() {
-    const customValue: any = {}; //自定义变量，传给createCrudOptions的额外参数（可以任意命名，任意多个）
-    const { crudBinding, crudRef, crudExpose, customExport } = useFs({ createCrudOptions, customValue });
+    const context: any = {}; //自定义变量，传给createCrudOptions的额外参数（可以任意命名，任意多个）
+    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
     // 页面打开后获取列表数据
     onMounted(() => {
       crudExpose.doRefresh();

@@ -16,7 +16,7 @@ import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, Edi
 import _ from "lodash-es";
 
 //此处为crudOptions配置
-const createCrudOptions = function ({ crudOptions, customValue }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+const createCrudOptions = function ({}: CreateCrudOptionsProps): CreateCrudOptionsRet {
   //本地模拟后台crud接口方法 ----开始
   const records = [{ id: 1, name: "Hello World", type: 1 }];
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -88,9 +88,6 @@ const createCrudOptions = function ({ crudOptions, customValue }: CreateCrudOpti
 export default defineComponent({
   name: "FsCrudHelloWorld",
   setup() {
-    // 演示自定义变量传递, 将会传递给createCrudOptions
-    const customValue: any = {};
-
     // // crud组件的ref
     // const crudRef: Ref = ref();
     // // crud 配置的ref
@@ -98,13 +95,13 @@ export default defineComponent({
     // // 暴露的方法
     // const { crudExpose } = useExpose({ crudRef, crudBinding });
     // // 你的crud配置
-    // const { crudOptions, customExport } = createCrudOptions({ crudExpose, customValue });
+    // const { crudOptions, customExport } = createCrudOptions({ crudExpose, context });
     // // 初始化crud配置
     // const { resetCrudOptions, appendCrudBinding } = useCrud({ crudExpose, crudOptions });
 
     //  =======以上为fs的初始化代码=========
     //  =======你可以简写为下面这一行========
-    const { crudRef, crudBinding, crudExpose, customExport } = useFs({ createCrudOptions, customValue });
+    const { crudRef, crudBinding, crudExpose, context } = useFs({ createCrudOptions, context: {} });
 
     // 页面打开后获取列表数据
     onMounted(() => {

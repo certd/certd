@@ -2,7 +2,8 @@ import * as api from "./api.js";
 import _ from "lodash-es";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 
-export default function ({ crudExpose, localDataRef }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+  const localDataRef = context.localDataRef;
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     const { page } = query;
     //总数据

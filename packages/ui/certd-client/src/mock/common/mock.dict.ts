@@ -3,7 +3,7 @@ import cascaderData from "./cascader-data";
 import pcaDataLittle from "./pca-data-little";
 // @ts-ignore
 import { TreeNodesLazyLoader, getPcaData } from "./pcas-data";
-
+import _ from "lodash-es";
 const openStatus = [
   { value: "1", label: "打开", color: "success", icon: "ion:radio-button-on" },
   { value: "2", label: "停止", color: "cyan" },
@@ -21,6 +21,20 @@ const textStatus = [
   { id: "2", text: "停止", color: "cyan" },
   { id: "0", text: "关闭", color: "red" }
 ];
+
+let manyStatus = [
+  { value: "1", label: "打开", color: "success", icon: "ion:radio-button-on" },
+  { value: "2", label: "停止", color: "cyan" },
+  { value: "0", label: "关闭", color: "red", icon: "ion:radio-button-off" }
+];
+for (let i = 0; i < 8; i++) {
+  manyStatus = manyStatus.concat(_.cloneDeep(manyStatus));
+}
+let idIndex = 0;
+for (const item of manyStatus) {
+  idIndex++;
+  item.value = idIndex + "";
+}
 
 export function GetTreeChildrenByParentId(parentId: any) {
   return TreeNodesLazyLoader.getChildren(parentId);
@@ -50,6 +64,17 @@ export default [
         code: 0,
         msg: "success",
         data: textStatus
+      };
+    }
+  },
+  {
+    path: "/mock/dicts/ManyOpenStatusEnum",
+    method: "get",
+    handle() {
+      return {
+        code: 0,
+        msg: "success",
+        data: manyStatus
       };
     }
   },

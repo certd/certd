@@ -26,7 +26,7 @@ export default defineComponent({
   setup() {
     const asideTableRef = ref();
 
-    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, asideTableRef });
+    const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions, context: { asideTableRef } });
 
     // 页面打开后获取列表数据
     onMounted(() => {

@@ -1,6 +1,6 @@
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import * as api from "./api";
-export default function ({ crudExpose, customValue }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -17,8 +17,6 @@ export default function ({ crudExpose, customValue }: CreateCrudOptionsProps): C
   };
 
   return {
-    //自定义变量返回
-    customExport: {},
     crudOptions: {
       // 自定义crudOptions配置
       request: {

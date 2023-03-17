@@ -36,7 +36,7 @@ export default defineComponent({
       const ret = await GetList({ page: { offset: 0, limit: 99999999 }, query: {}, sort: {} });
       localDataRef.value = ret.records;
 
-      const { crudExpose } = useFs({ crudBinding, crudRef, createCrudOptions, localDataRef });
+      const { crudExpose } = useFs({ crudBinding, crudRef, createCrudOptions, context: { localDataRef } });
 
       // 页面打开后获取列表数据
       await crudExpose.doRefresh();

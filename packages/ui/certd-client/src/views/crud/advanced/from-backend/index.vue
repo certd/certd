@@ -29,7 +29,7 @@ export default defineComponent({
     // 页面打开后获取列表数据
     onMounted(async () => {
       const customValue = {};
-      const { crudExpose, extraExport } = await useFsAsync({ crudRef, crudBinding, createCrudOptions, customValue });
+      const { crudExpose, context } = await useFsAsync({ crudRef, crudBinding, createCrudOptions, context: customValue });
       // 刷新数据
       await crudExpose.doRefresh();
     });

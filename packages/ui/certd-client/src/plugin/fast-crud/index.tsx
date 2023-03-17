@@ -24,10 +24,10 @@ function install(app: any, options: any = {}) {
     },
     /**
      * useCrud时会被执行
-     * @param context，useCrud的参数
+     * @param props，useCrud的参数
      */
-    commonOptions(context: UseCrudProps): CrudOptions {
-      const crudBinding = context.crudExpose?.crudBinding;
+    commonOptions(props: UseCrudProps): CrudOptions {
+      const crudBinding = props.crudExpose?.crudBinding;
       const opts: CrudOptions = {
         table: {
           size: "small",
@@ -92,7 +92,8 @@ function install(app: any, options: any = {}) {
       };
 
       // 从 useCrud({permission}) 里获取permission参数，去设置各个按钮的权限
-      const crudPermission = useCrudPermission({ permission: context.permission });
+      const permission = props.context?.permission || null;
+      const crudPermission = useCrudPermission({ permission });
       return crudPermission.merge(opts);
     }
   });
