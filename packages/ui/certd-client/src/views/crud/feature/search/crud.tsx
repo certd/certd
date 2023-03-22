@@ -38,6 +38,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             text: "自定义",
             show: true,
             order: 3,
+            class: "fs-test",
             icon: {
               icon: "ant-design:search",
               style: {

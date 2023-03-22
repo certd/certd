@@ -1,5 +1,14 @@
 <template>
   <fs-page>
+    <template #header>
+      <div class="title">
+        文本类型
+        <span class="sub">
+          <span>type='text'</span>
+          <fs-copyable :inline="true" model-value="文本复制组件测试" style="width: 200px; margin-left: 100px" :button="{ showOnHover: false, show: true, text: '点我复制' }" />
+        </span>
+      </div>
+    </template>
     <fs-crud ref="crudRef" v-bind="crudBinding" />
   </fs-page>
 </template>

@@ -10,7 +10,6 @@ import i18n from "./i18n";
 import store from "./store";
 import components from "./components";
 import plugin from "./plugin/";
-
 // @ts-ignore
 const app = createApp(App);
 // 尽量

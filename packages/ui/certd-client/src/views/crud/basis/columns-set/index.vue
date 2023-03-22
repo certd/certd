@@ -10,6 +10,8 @@
       <template #actionbar-right>
         <a-alert class="ml-1" type="warning" message="列设置可以禁用或者隐藏某字段勾选 ，-------> 点击右侧最后一个按钮查看效果" />
         <a-button @click="columnsSetToggleMode()"> 切换简单模式 </a-button>
+
+        <a-button @click="columnsSetShowToggle()"> 动态修改列设置显隐 </a-button>
       </template>
     </fs-crud>
   </fs-page>
@@ -36,10 +38,14 @@ export default defineComponent({
       message.info("点击列设置按钮查看效果，当前列设置组件的模式为：" + crudBinding.value.toolbar.columnsFilter.mode);
     }
 
+    function columnsSetShowToggle() {
+      crudBinding.value.table.columns[3].columnSetShow = !crudBinding.value.table.columns[3].columnSetShow;
+    }
     return {
       crudBinding,
       crudRef,
-      columnsSetToggleMode
+      columnsSetToggleMode,
+      columnsSetShowToggle
     };
   }
 });
