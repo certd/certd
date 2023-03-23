@@ -217,12 +217,12 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           type: "file-uploader",
           form: {
             component: {
-              limit: 2,
+              limit: 1,
               uploader: {
                 type: "form"
               }
             },
-            helper: "最大可上传2个文件"
+            helper: "最大可上传1个文件"
           }
         },
         sizeLimit: {
