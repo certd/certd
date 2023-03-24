@@ -9,6 +9,15 @@ export const crudResources = [
     },
     children: [
       {
+        title: "debug",
+        name: "debug",
+        path: "/crud/debug",
+        component: "/crud/debug/index.vue",
+        meta: {
+          isMenu: false
+        }
+      },
+      {
         title: "基本特性",
         name: "basis",
         path: "/crud/basis",

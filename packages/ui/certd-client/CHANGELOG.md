@@ -3,13 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.8](https://github.com/fast-crud/fast-crud/compare/v1.11.7...v1.11.8) (2023-03-24)
+
+### Bug Fixes
+
+* 修复当limit=1时，上传文件删光后，再选择文件上传第一次无效的bug ([d0a1ed9](https://github.com/fast-crud/fast-crud/commit/d0a1ed9c8a730d5eea19dc61f0dd6cf4031db1c3))
+
+### Performance Improvements
+
+* 优化翻页性能 ([d0a1db7](https://github.com/fast-crud/fast-crud/commit/d0a1db7bda08b49226739bba38e28b38c60c2b65))
+
 ## [1.11.7](https://github.com/fast-crud/fast-crud/compare/v1.11.6...v1.11.7) (2023-03-22)
 
 **Note:** Version bump only for package @fast-crud/fs-admin-antdv
-
-
-
-
 
 ## [1.11.6](https://github.com/fast-crud/fast-crud/compare/v1.11.5...v1.11.6) (2023-03-22)
 

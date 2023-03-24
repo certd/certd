@@ -1,5 +1,7 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, utils } from "@fast-crud/fast-crud";
+import dayjs from "dayjs";
+import { computed, Ref, ref } from "vue";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -16,6 +18,29 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   const addRequest = async ({ form }: AddReq) => {
     return await api.AddObj(form);
   };
+
+  const options: Ref = ref([]);
+
+  let arr = [
+    {
+      value: "1",
+      label: "test"
+    },
+    {
+      value: "1",
+      label: "test2"
+    }
+  ];
+
+  for (let i = 0; i < 10; i++) {
+    arr = arr.concat(arr);
+  }
+  let i = 0;
+  for (const item of arr) {
+    i++;
+    item.value = i + "";
+  }
+  options.value = arr;
 
   return {
     crudOptions: {
@@ -46,18 +71,14 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             show: false
           }
         },
-
         statusRemote: {
           title: "单选远程",
           search: {
-            show: true,
-            value: []
+            show: false
           },
           type: "dict-select",
           dict: dict({
-            url: "/mock/dicts/_OpenStatusEnum2?simple",
-            value: "id",
-            label: "text"
+            url: "/mock/dicts/ManyOpenStatusEnum?from=dict1"
           }),
           form: {
             component: { mode: "multiple" },
@@ -65,39 +86,6 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
           column: {
             width: 200
-          }
-        },
-        id2: {
-          title: "ID",
-          key: "id",
-          type: "number",
-          column: {
-            width: 300
-          },
-          form: {
-            show: false
-          }
-        },
-        id3: {
-          title: "ID",
-          key: "id",
-          type: "number",
-          column: {
-            width: 300
-          },
-          form: {
-            show: false
-          }
-        },
-        id4: {
-          title: "ID",
-          key: "id",
-          type: "number",
-          column: {
-            width: 300
-          },
-          form: {
-            show: false
           }
         }
       }
