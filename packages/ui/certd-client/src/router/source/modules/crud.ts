@@ -418,6 +418,12 @@ export const crudResources = [
             name: "FormNest",
             path: "/crud/form/nest",
             component: "/crud/form/nest/index.vue"
+          },
+          {
+            title: "字段组件周围render",
+            name: "FormRender",
+            path: "/crud/form/render",
+            component: "/crud/form/render/index.vue"
           }
         ]
       },
