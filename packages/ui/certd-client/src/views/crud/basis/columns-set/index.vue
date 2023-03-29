@@ -1,19 +1,15 @@
 <template>
   <fs-page>
     <template #header>
-      <div class="title">列设置</div>
+      <div class="title">
+        列设置
+        <span class="sub">列设置可以禁用或者隐藏某字段勾选 ，-------> 点击右侧最后一个按钮查看效果</span>
+      </div>
       <div class="more">
         <a target="_blank" href="http://fast-crud.docmirror.cn/api/crud-options/toolbar.html#columnsfilter-mode">文档</a>
       </div>
     </template>
-    <fs-crud ref="crudRef" v-bind="crudBinding">
-      <template #actionbar-right>
-        <a-alert class="ml-1" type="warning" message="列设置可以禁用或者隐藏某字段勾选 ，-------> 点击右侧最后一个按钮查看效果" />
-        <a-button @click="columnsSetToggleMode()"> 切换简单模式 </a-button>
-
-        <a-button @click="columnsSetShowToggle()"> 动态修改列设置显隐 </a-button>
-      </template>
-    </fs-crud>
+    <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
   </fs-page>
 </template>
 
