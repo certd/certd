@@ -26,7 +26,9 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         delRequest
       },
       search: {
-        layout: "multi-line",
+        container: {
+          layout: "multi-line"
+        },
         col: {
           span: 4
         },
