@@ -27,10 +27,11 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       },
       search: {
         container: {
-          layout: "multi-line"
-        },
-        col: {
-          span: 4
+          layout: "multi-line",
+          action: {
+            label: "操作"
+            //col: { span: 4 }
+          }
         },
         options: {
           labelCol: {
@@ -45,10 +46,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           change: {
             text: "切换模式",
             click() {
-              if (crudExpose.crudBinding.value.search.layout === "multi-line") {
-                crudExpose.crudBinding.value.search.layout = "";
+              if (crudExpose.crudBinding.value.search.container.layout === "multi-line") {
+                crudExpose.crudBinding.value.search.container.layout = "default";
               } else {
-                crudExpose.crudBinding.value.search.layout = "multi-line";
+                crudExpose.crudBinding.value.search.container.layout = "multi-line";
               }
             }
           },
@@ -99,9 +100,9 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           }
         },
         text1: {
-          type: "text",
-          title: "text1",
-          search: { show: true }
+          type: "datetimerange",
+          title: "datetimerange",
+          search: { show: true, col: { span: 8 } }
         },
         text2: {
           type: "text",

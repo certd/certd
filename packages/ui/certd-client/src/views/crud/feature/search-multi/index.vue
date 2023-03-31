@@ -1,5 +1,5 @@
 <template>
-  <fs-page>
+  <fs-page class="PageFeatureSearchMulti">
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
   </fs-page>
 </template>
@@ -25,3 +25,22 @@ export default defineComponent({
   }
 });
 </script>
+<style lang="less">
+.PageFeatureSearchMulti {
+  .fs-search {
+    .fs-search-multi-line-buttons {
+      position: absolute;
+      bottom: -38px;
+      right: 160px;
+    }
+    .ant-form-item-label:before {
+      border-bottom: 1px solid #eee;
+      content: "";
+      position: absolute;
+      bottom: 1px;
+      left: 2px;
+      right: 8px;
+    }
+  }
+}
+</style>
