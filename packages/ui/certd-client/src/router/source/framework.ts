@@ -1,6 +1,7 @@
 import LayoutFramework from "/src/layout/layout-framework.vue";
 import { crudResources } from "/@/router/source/modules/crud";
 import { uiResources } from "/@/router/source/modules/ui";
+import { integrationResources } from "/@/router/source/modules/integration";
 import { sysResources } from "/@/router/source/modules/sys";
 export const frameworkResource = [
   {
@@ -25,6 +26,7 @@ export const frameworkResource = [
         }
       },
       ...crudResources,
+      ...integrationResources,
       ...sysResources
     ]
   }

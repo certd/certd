@@ -75,6 +75,12 @@ export const crudResources = [
             component: "/crud/basis/layout-custom/index.vue"
           },
           {
+            title: "自定义组件",
+            name: "BasisCustom",
+            path: "/crud/basis/custom",
+            component: "/crud/basis/custom/index.vue"
+          },
+          {
             title: "列设置",
             name: "BasisColumnsSet",
             path: "/crud/basis/columns-set",
