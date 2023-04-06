@@ -36,6 +36,14 @@ function install(app: any, options: any = {}) {
             if (crudBinding.value?.table?.columnsMap && crudBinding.value?.table?.columnsMap[col.key]) {
               crudBinding.value.table.columnsMap[col.key].width = w;
             }
+          },
+          conditionalRender: {
+            match(scope) {
+              return !scope.value;
+            },
+            render() {
+              return "-";
+            }
           }
         },
         rowHandle: {

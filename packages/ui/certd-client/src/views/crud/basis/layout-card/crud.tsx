@@ -40,6 +40,24 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         editRequest,
         delRequest
       },
+      actionbar: {
+        show: true
+      },
+      toolbar: {
+        show: true
+      },
+      search: {
+        buttons: {
+          actionbarToggle: {
+            text: "actionbar/toolbar显隐",
+            show: true,
+            click() {
+              crudExpose.crudBinding.value.actionbar.show = !crudExpose.crudBinding.value.actionbar.show;
+              crudExpose.crudBinding.value.toolbar.show = !crudExpose.crudBinding.value.toolbar.show;
+            }
+          }
+        }
+      },
       tabs: {
         name: "city",
         show: true,
@@ -49,7 +67,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         options: computed(() => {
           return cityDictRef.data;
         })
-      } as any,
+      },
       columns: {
         id: {
           title: "ID",
