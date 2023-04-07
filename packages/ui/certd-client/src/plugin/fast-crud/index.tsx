@@ -39,7 +39,8 @@ function install(app: any, options: any = {}) {
           },
           conditionalRender: {
             match(scope) {
-              return !scope.value;
+              //不能用 !scope.value ， 否则switch组件设置为关之后就消失了
+              return scope.value == null || (scope.value instanceof Array && scope.value.length === 0);
             },
             render() {
               return "-";

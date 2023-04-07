@@ -121,10 +121,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           title: "单选远程",
           search: {
             show: true,
-            rules: null,
-            component: {
-              style: { width: "100px" }
-            }
+            rules: null
           },
           type: "dict-select",
           dict: dict({
@@ -154,7 +151,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         search: {
           title: "远程搜索",
           type: "text",
-          search: { show: true, component: { style: { width: "240px" } } },
+          search: { show: true },
           form: {
             component: {
               name: "a-select",
