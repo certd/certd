@@ -15,7 +15,7 @@ import { message } from "ant-design-vue";
 import { useFs } from "@fast-crud/fast-crud";
 
 export default defineComponent({
-  name: "BasisRowHandle",
+  name: "RowHandleTooltip",
   setup() {
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
     // 页面打开后获取列表数据
