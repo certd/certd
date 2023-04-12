@@ -243,7 +243,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           type: "file-uploader",
           form: {
             component: {
-              accept: "*.jpg,*.png"
+              accept: ".jpg,.png"
             },
             helper: "只能上传jpg或者png"
           }
