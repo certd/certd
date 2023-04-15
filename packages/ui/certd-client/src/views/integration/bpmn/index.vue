@@ -1,26 +1,31 @@
 <template>
   <div class="fs-bpmn-demo-page">
+    <div class="demo-tool">
+      <span class="m-l"> <a-button @click="getDetail">GetDetail</a-button> </span>
+      <span class="m-l"> <a-button @click="getXml">GetXml</a-button> </span>
+      <span class="m-l"> <a-button @click="getJson">GetJson</a-button> </span>
+      <span class="m-l"></span>
+      <span class="m-l"> showMiniMapButton<a-switch v-model:checked="toolbarProps.buttons.miniMap" /> </span>
+      <span class="m-l"></span>
+      <span class="m-l"> showExtensionProperties <a-switch v-model:checked="binding.showExtensionProperties" /> </span>
+      <span class="m-l"> showNameAndCode<a-switch v-model:checked="binding.showNameAndCode" /> </span>
+      <span class="m-l"></span>
+      <span class="m-l"> showToolbar<a-switch v-model:checked="binding.showToolbar" /> </span>
+      <span class="m-l"> showMiniMap<a-switch v-model:checked="binding.showMinimap" /> </span>
+      <span class="m-l"> showPanel<a-switch v-model:checked="binding.showPanel" /> </span>
+      <span class="m-l"> showSettings<a-switch v-model:checked="binding.showSettings" /> </span>
+      <span class="m-l"> showPalette<a-switch v-model:checked="binding.showPalette" /> </span>
+      <span class="m-l"> showContextMenu<a-switch v-model:checked="binding.showContextMenu" /> </span>
+
+      <fs-bpmn-preview-demo></fs-bpmn-preview-demo>
+    </div>
     <div class="header">
       <component :is="ui.tabs.name" v-model:active-key="activeKey" type="card">
         <component :is="ui.tabPane.name" key="designer" tab="设计器"> </component>
       </component>
-      <div>
-        <span class="m-l"> showMiniMapButton<a-switch v-model:checked="toolbarProps.buttons.miniMap" /> </span>
-        <span class="m-l"></span>
-        <span class="m-l"> showExtensionProperties <a-switch v-model:checked="binding.showExtensionProperties" /> </span>
-        <span class="m-l"> showNameAndCode<a-switch v-model:checked="binding.showNameAndCode" /> </span>
-        <span class="m-l"></span>
-        <span class="m-l"> showToolbar<a-switch v-model:checked="binding.showToolbar" /> </span>
-        <span class="m-l"> showMiniMap<a-switch v-model:checked="binding.showMinimap" /> </span>
-        <span class="m-l"> showPanel<a-switch v-model:checked="binding.showPanel" /> </span>
-        <span class="m-l"> showSettings<a-switch v-model:checked="binding.showSettings" /> </span>
-        <span class="m-l"> showPalette<a-switch v-model:checked="binding.showPalette" /> </span>
-        <span class="m-l"> showContextMenu<a-switch v-model:checked="binding.showContextMenu" /> </span>
-        <fs-bpmn-preview-demo></fs-bpmn-preview-demo>
-      </div>
     </div>
     <div class="main">
-      <fs-bpmn v-model:xml="xmlRef" :panel="panelProps" :toolbar="toolbarProps" v-bind="binding" @save="onSave">
+      <fs-bpmn ref="bpmnRef" v-model:xml="xmlRef" :panel="panelProps" :toolbar="toolbarProps" v-bind="binding" @save="onSave">
         <template #toolbar_left>
           <a-tag>toolbar_left插槽</a-tag>
         </template>
@@ -102,14 +107,32 @@ const FsBpmnDemo = defineComponent({
     function onSave(xml: string) {
       console.log("onsave", xml);
     }
+
+    const bpmnRef = ref();
+    async function getDetail() {
+      const detail = await bpmnRef.value.getDetail();
+      console.log("detail", detail);
+    }
+    async function getXml() {
+      const xml = await bpmnRef.value.getXml();
+      console.log("xml", xml);
+    }
+    async function getJson() {
+      const json = await bpmnRef.value.getJson();
+      console.log("json", json);
+    }
     return {
       localRef,
       xmlRef,
+      bpmnRef,
       ui,
       activeKey,
       panelProps,
       binding,
       onSave,
+      getDetail,
+      getXml,
+      getJson,
       toolbarProps
     };
   }
@@ -123,6 +146,9 @@ export default FsBpmnDemo;
   height: 100%;
   display: flex;
   flex-direction: column;
+  .demo-tool {
+    padding: 10px;
+  }
   .header {
     padding: 20px 20px 0 20px;
     display: flex;

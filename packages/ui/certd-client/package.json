@@ -25,7 +25,7 @@
     "@ant-design/icons-vue": "^6.1.0",
     "@aws-sdk/client-s3": "^3.292.0",
     "@aws-sdk/s3-request-presigner": "^3.292.0",
-    "@fast-crud/fast-bpmn": "^1.0.6",
+    "@fast-crud/fast-bpmn": "^1.0.8",
     "@fast-crud/fast-crud": "^1.13.1",
     "@fast-crud/fast-extends": "^1.13.1",
     "@fast-crud/ui-antdv": "^1.13.1",
