@@ -93,6 +93,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             }
           }
         },
+        error: {
+          title: "error",
+          type: "image-uploader"
+        },
         pictureCard2: {
           title: "通过urls显示",
           type: "image-uploader",
@@ -106,16 +110,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
           column: {
             component: {
-              urls: [
-                {
-                  url: "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?1",
-                  previewUrl: "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?preview1"
-                },
-                {
-                  url: "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?2",
-                  previewUrl: "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png?preview2"
-                }
-              ]
+              vModel: "urls"
+              // urls:[{url:'xxxx',previewUrl:'xxxx'}]
             }
           }
         },
