@@ -1,5 +1,5 @@
 <template>
-  <component :is="ui.collapseItem.name" name="element-documentations">
+  <component :is="ui.collapseItem.name" name="element-user-assign">
     <template #header>
       <collapse-title :title="$t('panel.userAssign')">
         <lucide-icon name="FileText" />
@@ -69,7 +69,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, Ref, ref } from "vue";
+import { computed, defineComponent, onMounted, onUnmounted, Ref, ref } from "vue";
 import { useUi } from "@fast-crud/ui-interface";
 import { useModelerStore, Base } from "@fast-crud/fast-bpmn";
 
@@ -77,7 +77,6 @@ export default defineComponent({
   name: "ElementUserAssign",
   setup() {
     const { ui } = useUi();
-
     const userTypeOptions = ref([
       { value: "assignUser", label: "直接指派" },
       { value: "candidateUsers", label: "候选人" },
@@ -94,34 +93,25 @@ export default defineComponent({
       { id: "3", name: "测试部" }
     ]);
 
-    // import { injectModelerStore } from '../lib/store/modeler'
-    // import { getProcessProperty, setProcessProperty } from '../lib/bo-utils/processUtil'
     const { injectModelerStore } = useModelerStore();
     const modelerStore = injectModelerStore();
 
     const getActive = computed(() => modelerStore!.getActive!);
-    // const getActiveId = computed(() => modelerStore!.getActiveId!)
-
-    const bpmnExpose = modelerStore.expose;
-    console.log("bpmnExpose", bpmnExpose);
-    const boUtils = bpmnExpose.boUtils;
-    const getProcessProperty = boUtils.processUtil.getProcessProperty;
-    const setProcessProperty = boUtils.processUtil.setProcessProperty;
+    const helper = modelerStore.helper;
 
     const formData: Ref = ref({});
 
-    function loadFromModel() {
+    function reload() {
+      let element = getActive.value as Base;
       formData.value = {
-        userType: getProcessProperty(getActive.value as Base, "userType"),
-        assignUser: getProcessProperty(getActive.value as Base, "assignUser"),
-        candidateUsers: getProcessProperty(getActive.value as Base, "candidateUsers"),
-        candidateGroups: getProcessProperty(getActive.value as Base, "candidateGroups")
+        userType: helper.getElementProperty(element, "userType"),
+        assignUser: helper.getElementProperty(element, "assignUser"),
+        candidateUsers: helper.getElementProperty(element, "candidateUsers"),
+        candidateGroups: helper.getElementProperty(element, "candidateGroups")
       };
     }
 
-    modelerStore.eventer.on("element-update", () => {
-      loadFromModel();
-    });
+    modelerStore.onElementUpdate(reload);
 
     function vModeler(key: string) {
       const valueKey = key ? "value." + key : "value";
@@ -129,13 +119,9 @@ export default defineComponent({
         ref: formData,
         key: valueKey,
         onChange: (value: any) => {
-          onPropertyChange(key, value);
+          helper.setElementProperty(getActive.value as Base, key, value);
         }
       };
-    }
-
-    function onPropertyChange(key: string, value: any) {
-      setProcessProperty(modelerStore, getActive.value as Base, key, value);
     }
 
     return { ui, userTypeOptions, vModeler, formData, userList, groupList };

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.2](https://github.com/fast-crud/fast-crud/compare/v1.13.1...v1.13.2) (2023-04-20)
+
+### Bug Fixes
+
+* dict ts缺少cloneable参数 ([ab9528d](https://github.com/fast-crud/fast-crud/commit/ab9528d7ae2ab782cccc89d7530a22faa981ee74))
+
+### Performance Improvements
+
+* 优化fs-images-format 加载失败时的显示 ([7df6eab](https://github.com/fast-crud/fast-crud/commit/7df6eab4d653409de442eeef933177906a2ffc70))
+
 ## [1.13.1](https://github.com/fast-crud/fast-crud/compare/v1.13.0...v1.13.1) (2023-04-10)
 
 **Note:** Version bump only for package @fast-crud/fs-admin-antdv
