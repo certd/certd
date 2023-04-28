@@ -37,6 +37,56 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             }
           }
         },
+        trim: {
+          title: "trim空格",
+          type: "text", //虽然不写也能正确显示组件，但不建议省略它
+          search: { show: true },
+          form: {
+            component: {
+              vModel: {
+                name: "value",
+                trim: true
+              },
+              maxlength: 20
+            },
+            helper: "自动移除两端空格"
+          }
+        },
+        number: {
+          title: "转换为number",
+          type: "text", //虽然不写也能正确显示组件，但不建议省略它
+          search: { show: true },
+          form: {
+            component: {
+              vModel: {
+                name: "value",
+                number: true
+              },
+              maxlength: 20
+            },
+            helper: "自动转为number"
+          }
+        },
+        transform: {
+          title: "自定义transform",
+          type: "text", //虽然不写也能正确显示组件，但不建议省略它
+          search: { show: true },
+          form: {
+            component: {
+              vModel: {
+                name: "value",
+                transform: (value) => {
+                  if (!value) {
+                    return undefined;
+                  }
+                  return value;
+                }
+              },
+              maxlength: 20,
+              helper: "自定义transform方法，此处演示空字符串转为undefined"
+            }
+          }
+        },
         search: {
           title: "搜索",
           type: "text",

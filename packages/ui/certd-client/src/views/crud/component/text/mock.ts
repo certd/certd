@@ -8,6 +8,8 @@ const list = [
     name: "王小虎",
     date: "2016-05-02",
     status: "0",
+    trim: "  aa  aa ",
+    number: "123",
     province: "1",
     avatar: "https://alicdn.antdv.com/vue.png",
     show: true,
