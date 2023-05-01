@@ -4,7 +4,6 @@ import * as previewConfig from './config/config.preview';
 import * as defaultConfig from './config/config.default';
 import { Configuration, App } from '@midwayjs/decorator';
 import * as koa from '@midwayjs/koa';
-import * as bodyParser from 'koa-bodyparser';
 import * as orm from '@midwayjs/typeorm';
 import * as cache from '@midwayjs/cache';
 import * as cors from '@koa/cors';
