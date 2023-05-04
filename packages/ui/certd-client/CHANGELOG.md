@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.3](https://github.com/fast-crud/fast-crud/compare/v1.13.2...v1.13.3) (2023-05-04)
+
+### Bug Fixes
+
+* 升级cos sdk，修复windows报毒问题 ([352f8df](https://github.com/fast-crud/fast-crud/commit/352f8df76dfe093dd29c8778f3b33e3e3775b902))
+
 ## [1.13.2](https://github.com/fast-crud/fast-crud/compare/v1.13.1...v1.13.2) (2023-04-20)
 
 ### Bug Fixes

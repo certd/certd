@@ -21,7 +21,7 @@ const createCrudOptions = function ({}: CreateCrudOptionsProps): CreateCrudOptio
   const records = [{ id: 1, name: "Hello World", type: 1 }];
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return {
-      records,
+      records: [...records],
       currentPage: 1,
       pageSize: 20,
       total: records.length
