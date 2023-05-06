@@ -27,8 +27,16 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       },
       table: {
         // 表头过滤改变事件
-        onFilterChange(e: any) {
-          console.log("onFilterChange", e);
+        onFilterChange(filters: any) {
+          console.log("onFilterChange", filters);
+          if (filters.remote != null) {
+            crudExpose.setSearchFormData({
+              form: {
+                remote: filters.remote
+              }
+            });
+            crudExpose.doRefresh();
+          }
         }
       },
       columns: {
@@ -44,7 +52,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           }
         },
         radio: {
-          title: "状态",
+          title: "本地过滤",
           search: { show: true },
           type: "dict-radio",
           dict: dict({
@@ -63,6 +71,26 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             },
             sorter: (a: any, b: any) => a.radio - b.radio,
             sortDirections: ["descend"]
+          }
+        },
+        remote: {
+          title: "支持服务端过滤",
+          search: {
+            show: true,
+            component: {
+              mode: "multiple"
+            }
+          },
+          type: "dict-radio",
+          dict: dict({
+            url: "/mock/dicts/OpenStatusEnum?single"
+          }),
+          column: {
+            filters: [
+              { text: "开", value: "1" },
+              { text: "关", value: "0" },
+              { text: "停", value: "2" }
+            ]
           }
         }
       }

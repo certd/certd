@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.4](https://github.com/fast-crud/fast-crud/compare/v1.13.3...v1.13.4) (2023-05-06)
+
+### Bug Fixes
+
+* 1.13.3 ([451bd53](https://github.com/fast-crud/fast-crud/commit/451bd5390ce88fcbb875d39a39c88b3226f46b4e))
+
+### Performance Improvements
+
+* naiveui sortable示例完善 ([dcd9e5b](https://github.com/fast-crud/fast-crud/commit/dcd9e5b04df7bda352878f4f1e30874ab9a6f452))
+
 ## [1.13.3](https://github.com/fast-crud/fast-crud/compare/v1.13.2...v1.13.3) (2023-05-04)
 
 ### Bug Fixes

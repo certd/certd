@@ -5,13 +5,16 @@ const options: any = {
 };
 const list = [
   {
-    radio: "1"
+    radio: "1",
+    remote: "0"
   },
   {
-    radio: "2"
+    radio: "2",
+    remote: "1"
   },
   {
-    radio: "0"
+    radio: "0",
+    remote: "2"
   }
 ];
 options.list = list;
