@@ -3,8 +3,13 @@
   "private": true,
   "version": "0.3.0",
   "main": "./src/index.ts",
-  "module": "./dist/plugin-aliyun.mjs",
-  "types": "./dist/es/plugin-aliyun.d.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "publishConfig": {
+    "main": "./dist/plugin-util.umd.js",
+    "module": "./dist/plugin-util.mjs",
+    "types": "./dist/es/plugin-util.d.ts"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",

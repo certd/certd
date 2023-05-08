@@ -11,6 +11,6 @@ describe("task_plugin", function () {
     // @ts-ignore
     echoPlugin.execute();
     console.log("after execute");
-    expect(echoPlugin.cert).eq("EchoPlugin");
+    expect(echoPlugin.cert.test).eq(1);
   });
 });

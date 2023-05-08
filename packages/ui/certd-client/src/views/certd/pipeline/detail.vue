@@ -12,7 +12,7 @@ import * as historyApi from "./api.history";
 import * as api from "./api";
 import { useRoute } from "vue-router";
 import { Pipeline, PipelineDetail, PipelineOptions, RunHistory } from "/@/views/certd/pipeline/pipeline/type";
-import { PluginDefine } from "@certd/pipeline/src";
+import { PluginDefine } from "@certd/pipeline";
 
 export default defineComponent({
   name: "PipelineDetail",
