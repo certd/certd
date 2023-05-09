@@ -1,9 +1,9 @@
 //import { expect } from "chai";
 import "mocha";
-import { Executor, RunHistory, FileStorage } from "@certd/pipeline";
+import { Executor, RunHistory } from "../../src";
 import { pipeline } from "./pipeline.define";
 import { AccessServiceTest } from "./access-service-test";
-import * as all from "../../src";
+import { FileStorage } from "../../src/core/storage";
 describe("pipeline", function () {
   it("#pipeline", async function () {
     this.timeout(120000);

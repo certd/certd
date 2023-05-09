@@ -1,5 +1,7 @@
-import { ContextFactory, FileStorage, logger } from "@certd/pipeline";
+import { ContextFactory } from "../../src/core/context";
+import { FileStorage } from "../../src/core/storage";
 import { AccessServiceTest } from "./access-service-test";
+import { logger } from "../../src/utils/util.log";
 
 const contextFactory = new ContextFactory(new FileStorage());
 

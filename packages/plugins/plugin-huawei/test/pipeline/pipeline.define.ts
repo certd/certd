@@ -1,4 +1,4 @@
-import { ConcurrencyStrategy, NextStrategy, Pipeline, RunStrategy } from "@certd/pipeline";
+import { ConcurrencyStrategy, NextStrategy, Pipeline, RunStrategy } from "../../src";
 
 let idIndex = 0;
 function generateId() {
