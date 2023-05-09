@@ -53,8 +53,8 @@ export class Executor {
 
     if (runnable.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
       //如果是成功后跳过策略
-      const lastResult = await this.pipelineContext.get(contextKey);
-      const lastInput = await this.pipelineContext.get(inputKey);
+      const lastResult = await this.pipelineContext.getObj(contextKey);
+      const lastInput = await this.pipelineContext.getObj(inputKey);
       let inputChanged = false;
       //TODO 参数不变
       if (runnableType === "step") {
@@ -73,12 +73,12 @@ export class Executor {
     try {
       await run();
       this.runtime.success(runnable);
-      await this.pipelineContext.set(contextKey, ResultType.success);
+      await this.pipelineContext.setObj(contextKey, ResultType.success);
       await this.onChanged(this.runtime);
       return ResultType.success;
     } catch (e: any) {
       this.runtime.error(runnable, e);
-      await this.pipelineContext.set(contextKey, ResultType.error);
+      await this.pipelineContext.setObj(contextKey, ResultType.error);
       await this.onChanged(this.runtime);
       throw e;
     } finally {

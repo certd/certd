@@ -7,7 +7,7 @@ function generateId() {
 }
 export const pipeline: Pipeline = {
   version: 1,
-  id: "3",
+  id: "huawei.test",
   title: "华为管道测试",
   userId: 1,
   triggers: [],

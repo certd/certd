@@ -17,8 +17,8 @@ export class AcmeService {
     });
   }
 
-  async getAccountConfig(email: string) {
-    return (await this.userContext.get(this.buildAccountKey(email))) || {};
+  async getAccountConfig(email: string): Promise<any> {
+    return (await this.userContext.getObj(this.buildAccountKey(email))) || {};
   }
 
   buildAccountKey(email: string) {
@@ -26,7 +26,7 @@ export class AcmeService {
   }
 
   async saveAccountConfig(email: string, conf: any) {
-    await this.userContext.set(this.buildAccountKey(email), conf);
+    await this.userContext.setObj(this.buildAccountKey(email), conf);
   }
 
   async getAcmeClient(email: string, isTest = false): Promise<acme.Client> {

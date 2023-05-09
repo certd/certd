@@ -1,8 +1,10 @@
 import { IStorage, MemoryStorage } from "./storage";
 
 export interface IContext {
-  get(key: string): Promise<any>;
-  set(key: string, value: any): Promise<void>;
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string): Promise<void>;
+  getObj(key: string): Promise<any>;
+  setObj(key: string, value: any): Promise<void>;
 }
 
 export class ContextFactory {
@@ -32,8 +34,15 @@ export class StorageContext implements IContext {
     this.scope = scope;
     this.namespace = namespace;
   }
-  async get(key: string): Promise<any> {
-    const str = await this.storage.get(this.scope, this.namespace, key);
+
+  async get(key: string) {
+    return await this.storage.get(this.scope, this.namespace, key);
+  }
+  async set(key: string, value: string) {
+    return await this.storage.set(this.scope, this.namespace, key, value);
+  }
+  async getObj(key: string): Promise<any> {
+    const str = await this.get(key);
     if (str) {
       const store = JSON.parse(str);
       return store.value;
@@ -41,7 +50,7 @@ export class StorageContext implements IContext {
     return null;
   }
 
-  async set(key: string, value: any) {
-    await this.storage.set(this.scope, this.namespace, key, JSON.stringify({ value }));
+  async setObj(key: string, value: any) {
+    await this.set(key, JSON.stringify({ value }));
   }
 }

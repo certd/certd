@@ -183,9 +183,9 @@ export class CertApplyPlugin implements ITaskPlugin {
     }
 
     let inputChanged = false;
-    const inputCacheKey = "input.cert";
-    const oldInputStr = await this.pipelineContext.get(inputCacheKey);
-    await this.pipelineContext.set(inputCacheKey, this.cert);
+    const inputCacheKey = "input.domains";
+    const oldInputStr = await this.pipelineContext.getObj(inputCacheKey);
+    await this.pipelineContext.setObj(inputCacheKey, this.domains);
     const oldInput = JSON.stringify(oldInputStr);
     const thisInput = JSON.stringify(this.cert);
     if (oldInput !== thisInput) {
@@ -276,14 +276,14 @@ export class CertApplyPlugin implements ITaskPlugin {
       key: this.formatCert(cert.key),
       csr: this.formatCert(cert.csr),
     };
-    await this.pipelineContext.set("cert", newCert);
+    await this.pipelineContext.setObj("cert", newCert);
     await this.pipelineContext.set("cert.crt", newCert.crt);
     await this.pipelineContext.set("cert.key", newCert.key);
     await this.pipelineContext.set("cert.csr", newCert.csr);
   }
 
   async readCurrentCert() {
-    const cert: any = await this.pipelineContext.get("cert");
+    const cert: any = await this.pipelineContext.getObj("cert");
     if (cert == null) {
       return undefined;
     }
