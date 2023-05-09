@@ -114,9 +114,9 @@ module.exports = async function(client, userOpts) {
             /* Trigger challengeCreateFn() */
             log(`[auto] [${d}] Trigger challengeCreateFn()`);
             const keyAuthorization = await client.getChallengeKeyAuthorization(challenge);
-
+            let recordItem = null;
             try {
-                const recordItem = await opts.challengeCreateFn(authz, challenge, keyAuthorization);
+                recordItem = await opts.challengeCreateFn(authz, challenge, keyAuthorization);
 
                 /* Challenge verification */
                 if (opts.skipChallengeVerification === true) {
