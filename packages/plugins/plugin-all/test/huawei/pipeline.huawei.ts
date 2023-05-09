@@ -7,7 +7,7 @@ function generateId() {
 }
 export const pipeline: Pipeline = {
   version: 1,
-  id: generateId(),
+  id: "3",
   title: "华为管道测试",
   userId: 1,
   triggers: [],
@@ -27,10 +27,13 @@ export const pipeline: Pipeline = {
               title: "申请证书",
               type: "CertApply",
               input: {
-                domains: ["*.powerleader.chat"],
+                domains: ["powerleader.chat", "*.powerleader.chat", "*.test.powerleader.chat", "*.ai.powerleader.chat"],
                 email: "xiaojunnuo@qq.com",
                 dnsProviderType: "huawei",
-                accessId: "111",
+                accessId: "333",
+              },
+              strategy: {
+                runStrategy: RunStrategy.SkipWhenSucceed,
               },
             },
           ],

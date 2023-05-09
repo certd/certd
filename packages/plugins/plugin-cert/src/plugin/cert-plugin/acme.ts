@@ -123,12 +123,17 @@ export class AcmeService {
 
       /* Replace this */
       this.logger.info(`Would remove TXT record "${dnsRecord}" with value "${recordValue}"`);
-      await dnsProvider.removeRecord({
-        fullRecord: dnsRecord,
-        type: "TXT",
-        value: keyAuthorization,
-        record: recordItem,
-      });
+      try {
+        await dnsProvider.removeRecord({
+          fullRecord: dnsRecord,
+          type: "TXT",
+          value: keyAuthorization,
+          record: recordItem,
+        });
+      } catch (e) {
+        this.logger.error("删除解析记录出错：", e);
+        throw e;
+      }
     }
   }
 

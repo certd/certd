@@ -49,11 +49,22 @@ export class Executor {
     this.runtime.start(runnable);
     await this.onChanged(this.runtime);
     const contextKey = `status.${runnable.id}`;
+    const inputKey = `input.${runnable.id}`;
 
     if (runnable.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
       //如果是成功后跳过策略
       const lastResult = await this.pipelineContext.get(contextKey);
-      if (lastResult != null && lastResult === ResultType.success) {
+      const lastInput = await this.pipelineContext.get(inputKey);
+      let inputChanged = false;
+      //TODO 参数不变
+      if (runnableType === "step") {
+        const step = runnable as Step;
+        const input = JSON.stringify(step.input);
+        if (input != null && lastInput !== input) {
+          inputChanged = true;
+        }
+      }
+      if (lastResult != null && lastResult === ResultType.success && !inputChanged) {
         this.runtime.skip(runnable);
         await this.onChanged(this.runtime);
         return ResultType.skip;

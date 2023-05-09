@@ -2,7 +2,11 @@ import _ from "lodash";
 import { CreateRecordOptions, IDnsProvider, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { Autowire, ILogger } from "@certd/pipeline";
 import { HuaweiAccess } from "../access";
-import { HuaweiYunClient } from "../lib/client";
+import { ApiRequestOptions, HuaweiYunClient } from "../lib/client";
+
+export type SearchRecordOptions = {
+  zoneId: string;
+} & CreateRecordOptions;
 
 @IsDnsProvider({
   name: "huawei",
@@ -11,85 +15,85 @@ import { HuaweiYunClient } from "../lib/client";
   accessType: "huawei",
 })
 export class HuaweiDnsProvider implements IDnsProvider {
-  client: any;
+  client!: HuaweiYunClient;
   @Autowire()
   access!: HuaweiAccess;
   @Autowire()
   logger!: ILogger;
-  endpoint = "https://domains-external.myhuaweicloud.com";
+  domainEndpoint = "https://domains-external.myhuaweicloud.com";
+  dnsEndpoint = "https://dns.cn-south-1.myhuaweicloud.com";
   async onInstance() {
     const access: any = this.access;
     this.client = new HuaweiYunClient(access);
   }
 
   async getDomainList() {
-    const url = `${this.endpoint}/v2/domains`;
+    const url = `${this.dnsEndpoint}/v2/zones`;
     const ret = await this.client.request({
       url,
       method: "GET",
     });
-    return ret.domains;
+    return ret.zones;
   }
 
   async matchDomain(dnsRecord: string) {
-    const list = await this.getDomainList();
-    let domain = null;
-    for (const item of list) {
-      if (_.endsWith(dnsRecord, item.DomainName)) {
-        domain = item.DomainName;
+    const zoneList = await this.getDomainList();
+    let zoneRecord = null;
+    for (const item of zoneList) {
+      if (_.endsWith(dnsRecord + ".", item.name)) {
+        zoneRecord = item;
         break;
       }
     }
-    if (!domain) {
+    if (!zoneRecord) {
       throw new Error("can not find Domain ," + dnsRecord);
     }
-    return domain;
+    return zoneRecord;
   }
 
-  async getRecords(domain: string, rr: string, value: string) {
-    const params: any = {
-      RegionId: "cn-hangzhou",
-      DomainName: domain,
-      RRKeyWord: rr,
-      ValueKeyWord: undefined,
+  async searchRecord(options: SearchRecordOptions): Promise<any> {
+    const req: ApiRequestOptions = {
+      url: `${this.dnsEndpoint}/v2/zones/${options.zoneId}/recordsets?name=${options.fullRecord}.`,
+      method: "GET",
     };
-    if (value) {
-      params.ValueKeyWord = value;
-    }
-
-    const requestOption = {
-      method: "POST",
-    };
-
-    const ret = await this.client.request("DescribeDomainRecords", params, requestOption);
-    return ret.DomainRecords.Record;
+    const ret = await this.client.request(req);
+    return ret.recordsets;
   }
 
   async createRecord(options: CreateRecordOptions): Promise<any> {
     const { fullRecord, value, type } = options;
     this.logger.info("添加域名解析：", fullRecord, value);
-    const domain = await this.matchDomain(fullRecord);
-    const rr = fullRecord.replace("." + domain, "");
+    const zoneRecord = await this.matchDomain(fullRecord);
+    const zoneId = zoneRecord.id;
 
-    const params = {
-      RegionId: "cn-hangzhou",
-      DomainName: domain,
-      RR: rr,
-      Type: type,
-      Value: value,
-      // Line: 'oversea' // 海外
-    };
-
-    const requestOption = {
-      method: "POST",
-    };
+    const records: any = await this.searchRecord({
+      zoneId,
+      ...options,
+    });
+    if (records && records.length > 0) {
+      for (const record of records) {
+        await this.removeRecord({
+          record: records[0],
+          ...options,
+        });
+      }
+    }
 
     try {
-      const ret = await this.client.request("AddDomainRecord", params, requestOption);
-      this.logger.info("添加域名解析成功:", value, value, ret.RecordId);
-      return ret.RecordId;
+      const req: ApiRequestOptions = {
+        url: `${this.dnsEndpoint}/v2/zones/${zoneId}/recordsets`,
+        method: "POST",
+        data: {
+          name: fullRecord + ".",
+          type,
+          records: [`"${value}"`],
+        },
+      };
+      const ret = await this.client.request(req);
+      this.logger.info("添加域名解析成功:", value, ret);
+      return ret;
     } catch (e: any) {
-      if (e.code === "DomainRecordDuplicate") {
+      if (e.code === "DNS.0312") {
         return;
       }
       this.logger.info("添加域名解析出错", e);
@@ -98,16 +102,12 @@ export class HuaweiDnsProvider implements IDnsProvider {
   }
   async removeRecord(options: RemoveRecordOptions): Promise<any> {
     const { fullRecord, value, record } = options;
-    const params = {
-      RegionId: "cn-hangzhou",
-      RecordId: record,
+    const req: ApiRequestOptions = {
+      url: `${this.dnsEndpoint}/v2/zones/${record.zone_id}/recordsets/${record.id}`,
+      method: "DELETE",
     };
 
-    const requestOption = {
-      method: "POST",
-    };
-
-    const ret = await this.client.request("DeleteDomainRecord", params, requestOption);
+    const ret = await this.client.request(req);
     this.logger.info("删除域名解析成功:", fullRecord, value, ret.RecordId);
     return ret.RecordId;
   }

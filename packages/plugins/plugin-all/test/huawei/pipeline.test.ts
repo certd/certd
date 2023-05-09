@@ -13,7 +13,7 @@ describe("pipeline-hauwei-test", function () {
     }
 
     const executor = new Executor({ userId: "test", pipeline, onChanged, accessService: new AccessServiceTest(), storage: new FileStorage() });
-    await executor.run(1, "user");
+    await executor.run(2, "user");
     // expect(define.name).eq("EchoPlugin");
   });
 });

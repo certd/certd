@@ -181,6 +181,17 @@ export class CertApplyPlugin implements ITaskPlugin {
     if (this.forceUpdate) {
       return null;
     }
+
+    let inputChanged = false;
+    const inputCacheKey = "input.cert";
+    const oldInputStr = await this.pipelineContext.get(inputCacheKey);
+    await this.pipelineContext.set(inputCacheKey, this.cert);
+    const oldInput = JSON.stringify(oldInputStr);
+    const thisInput = JSON.stringify(this.cert);
+    if (oldInput !== thisInput) {
+      inputChanged = true;
+    }
+
     let oldCert;
     try {
       oldCert = await this.readCurrentCert();
@@ -189,6 +200,11 @@ export class CertApplyPlugin implements ITaskPlugin {
     }
     if (oldCert == null) {
       this.logger.info("还未申请过，准备申请新证书");
+      return null;
+    }
+
+    if (inputChanged) {
+      this.logger.info("输入参数变更，申请新证书");
       return null;
     }
 
@@ -261,6 +277,9 @@ export class CertApplyPlugin implements ITaskPlugin {
       csr: this.formatCert(cert.csr),
     };
     await this.pipelineContext.set("cert", newCert);
+    await this.pipelineContext.set("cert.crt", newCert.crt);
+    await this.pipelineContext.set("cert.key", newCert.key);
+    await this.pipelineContext.set("cert.csr", newCert.csr);
   }
 
   async readCurrentCert() {
