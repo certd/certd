@@ -23,3 +23,5 @@ export class DnspodAccess {
   })
   id = "";
 }
+
+new DnspodAccess();

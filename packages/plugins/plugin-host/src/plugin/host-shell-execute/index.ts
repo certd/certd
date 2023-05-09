@@ -60,3 +60,5 @@ export class HostShellExecutePlugin implements ITaskPlugin {
     this.logger.info("exec res:", ret);
   }
 }
+
+new HostShellExecutePlugin();

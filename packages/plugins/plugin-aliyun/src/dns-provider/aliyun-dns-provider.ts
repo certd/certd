@@ -120,3 +120,5 @@ export class AliyunDnsProvider implements IDnsProvider {
     return ret.RecordId;
   }
 }
+
+new AliyunDnsProvider();

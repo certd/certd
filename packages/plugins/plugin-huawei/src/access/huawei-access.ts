@@ -23,3 +23,5 @@ export class HuaweiAccess {
   })
   accessKeySecret = "";
 }
+
+new HuaweiAccess();

@@ -101,3 +101,5 @@ export class UploadCertToAliyun implements ITaskPlugin {
     });
   }
 }
+//注册插件
+new UploadCertToAliyun();

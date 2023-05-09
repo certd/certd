@@ -23,3 +23,5 @@ export class AliyunAccess {
   })
   accessKeySecret = "";
 }
+
+new AliyunAccess();

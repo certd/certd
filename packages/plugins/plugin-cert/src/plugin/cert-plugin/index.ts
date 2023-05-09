@@ -289,3 +289,5 @@ export class CertApplyPlugin implements ITaskPlugin {
     };
   }
 }
+
+new CertApplyPlugin();

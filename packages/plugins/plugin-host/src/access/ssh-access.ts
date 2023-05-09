@@ -45,3 +45,5 @@ export class SshAccess implements IAccess {
   })
   privateKey!: string;
 }
+
+new SshAccess();

@@ -4,6 +4,7 @@ import Core from "@alicloud/pop-core";
 import RPCClient from "@alicloud/pop-core";
 import { AliyunAccess } from "../../access";
 
+
 @IsTaskPlugin({
   name: "DeployCertToAliyunCDN",
   title: "部署证书至阿里云CDN",
@@ -103,3 +104,4 @@ export class DeployCertToAliyunCDN implements ITaskPlugin {
     }
   }
 }
+new DeployCertToAliyunCDN();

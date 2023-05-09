@@ -228,3 +228,5 @@ export class DeployCertToAliyunAckIngressPlugin implements ITaskPlugin {
     }
   }
 }
+
+new DeployCertToAliyunAckIngressPlugin();

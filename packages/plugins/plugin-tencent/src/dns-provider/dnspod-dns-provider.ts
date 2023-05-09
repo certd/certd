@@ -112,3 +112,4 @@ export class DnspodDnsProvider implements IDnsProvider {
     return domain;
   }
 }
+new DnspodDnsProvider();

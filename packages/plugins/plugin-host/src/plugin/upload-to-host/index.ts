@@ -98,3 +98,5 @@ export class UploadCertToHostPlugin implements ITaskPlugin {
     this.hostKeyPath = keyPath;
   }
 }
+
+new UploadCertToHostPlugin();

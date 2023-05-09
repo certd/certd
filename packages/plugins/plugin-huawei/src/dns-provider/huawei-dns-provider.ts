@@ -112,3 +112,5 @@ export class HuaweiDnsProvider implements IDnsProvider {
     return ret.RecordId;
   }
 }
+
+new HuaweiDnsProvider();
