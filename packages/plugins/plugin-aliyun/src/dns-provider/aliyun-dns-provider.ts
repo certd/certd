@@ -16,7 +16,7 @@ export class AliyunDnsProvider implements IDnsProvider {
   access!: AliyunAccess;
   @Autowire()
   logger!: ILogger;
-  async onInit() {
+  async onInstance() {
     const access: any = this.access;
     this.client = new Core({
       accessKeyId: access.accessKeyId,

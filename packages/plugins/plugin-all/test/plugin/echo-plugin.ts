@@ -1,5 +1,4 @@
-import { ILogger } from "@midwayjs/logger";
-import { ITaskPlugin,Autowire, IsTaskPlugin, TaskInput } from "@certd/pipeline";
+import { Autowire, IsTaskPlugin, TaskInput, ITaskPlugin } from "@certd/pipeline";
 
 @IsTaskPlugin({
   name: "EchoPlugin",
@@ -15,13 +14,12 @@ export class EchoPlugin implements ITaskPlugin {
   })
   test?: string;
 
-  @Autowire()
-  // @ts-ignore
-  logger: ILogger;
-
-  async onInstance(){}
-
   async execute(): Promise<void> {
+    console.log("output", this.test);
+  }
+
+  onInstance(): Promise<void> {
     return Promise.resolve(undefined);
   }
 }
+new EchoPlugin();

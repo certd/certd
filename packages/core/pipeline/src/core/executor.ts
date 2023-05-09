@@ -160,7 +160,7 @@ export class Executor {
     });
 
     Decorator.inject(define.autowire, instance, context);
-    await instance.onInit();
+    await instance.onInstance();
     await instance.execute();
 
     //输出到output context

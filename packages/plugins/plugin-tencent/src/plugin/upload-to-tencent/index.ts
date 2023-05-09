@@ -49,7 +49,7 @@ export class UploadToTencentPlugin implements ITaskPlugin {
   logger!: ILogger;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInit() {}
+  async onInstance() {}
 
   async execute(): Promise<void> {
     const { accessId, name, cert } = this;

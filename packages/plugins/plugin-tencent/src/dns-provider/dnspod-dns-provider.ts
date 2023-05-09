@@ -20,7 +20,7 @@ export class DnspodDnsProvider implements IDnsProvider {
 
   loginToken: any;
 
-  async onInit() {
+  async onInstance() {
     const access: DnspodAccess = this.access as DnspodAccess;
     this.loginToken = access.id + "," + access.token;
   }

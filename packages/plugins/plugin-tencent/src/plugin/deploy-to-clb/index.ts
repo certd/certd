@@ -78,7 +78,7 @@ export class DeployToClbPlugin implements ITaskPlugin {
   logger!: ILogger;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInit() {}
+  async onInstance() {}
   async execute(): Promise<void> {
     const accessProvider = (await this.accessService.getById(this.accessId)) as TencentAccess;
     const client = this.getClient(accessProvider, this.region);

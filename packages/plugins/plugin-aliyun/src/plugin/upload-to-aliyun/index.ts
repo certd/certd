@@ -66,7 +66,7 @@ export class UploadCertToAliyun implements ITaskPlugin {
   logger!: Logger;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInit() {}
+  async onInstance() {}
 
   async execute(): Promise<void> {
     console.log("开始部署证书到阿里云cdn");

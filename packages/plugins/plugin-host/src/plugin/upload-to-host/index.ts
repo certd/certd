@@ -64,7 +64,7 @@ export class UploadCertToHostPlugin implements ITaskPlugin {
   })
   hostKeyPath!: string;
 
-  async onInit() {}
+  async onInstance() {}
   async execute(): Promise<void> {
     const { crtPath, keyPath, cert, accessId, sudo } = this;
     const connectConf = this.accessService.getById(accessId);

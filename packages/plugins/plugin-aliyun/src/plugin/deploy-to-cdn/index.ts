@@ -56,7 +56,7 @@ export class DeployCertToAliyunCDN implements ITaskPlugin {
   @Autowire()
   logger!: ILogger;
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInit() {}
+  async onInstance() {}
   async execute(): Promise<void> {
     console.log("开始部署证书到阿里云cdn");
     const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;

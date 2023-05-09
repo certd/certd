@@ -54,7 +54,7 @@ export class DeployToCdnPlugin implements ITaskPlugin {
   logger!: ILogger;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInit() {}
+  async onInstance() {}
 
   async execute(): Promise<void> {
     const accessProvider: TencentAccess = (await this.accessService.getById(this.accessId)) as TencentAccess;

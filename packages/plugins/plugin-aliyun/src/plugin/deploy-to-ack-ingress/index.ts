@@ -109,7 +109,7 @@ export class DeployCertToAliyunAckIngressPlugin implements ITaskPlugin {
   logger!: ILogger;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInit(): Promise<void> {}
+  async onInstance(): Promise<void> {}
   async execute(): Promise<void> {
     console.log("开始部署证书到阿里云cdn");
     const { regionId, ingressClass, clusterId, isPrivateIpAddress, cert } = this;

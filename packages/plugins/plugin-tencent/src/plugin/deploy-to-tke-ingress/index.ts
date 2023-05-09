@@ -87,7 +87,7 @@ export class DeployCertToTencentTKEIngressPlugin implements ITaskPlugin {
   accessService!: IAccessService;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInit() {}
+  async onInstance() {}
 
   async execute(): Promise<void> {
     const accessProvider = this.accessService.getById(this.accessId);

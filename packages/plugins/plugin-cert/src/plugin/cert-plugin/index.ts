@@ -156,7 +156,7 @@ export class CertApplyPlugin implements ITaskPlugin {
   })
   cert?: CertInfo;
 
-  async onInit() {
+  async onInstance() {
     this.acme = new AcmeService({ userContext: this.userContext, logger: this.logger });
   }
 
@@ -228,7 +228,7 @@ export class CertApplyPlugin implements ITaskPlugin {
     const dnsProvider: IDnsProvider = new DnsProviderClass();
     const context = { access, logger: this.logger, http: this.http };
     Decorator.inject(dnsProviderDefine.autowire, dnsProvider, context);
-    await dnsProvider.onInit();
+    await dnsProvider.onInstance();
 
     const cert = await this.acme.order({
       email,

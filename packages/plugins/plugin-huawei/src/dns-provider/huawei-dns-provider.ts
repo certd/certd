@@ -17,7 +17,7 @@ export class HuaweiDnsProvider implements IDnsProvider {
   @Autowire()
   logger!: ILogger;
   endpoint = "https://domains-external.myhuaweicloud.com";
-  async onInit() {
+  async onInstance() {
     const access: any = this.access;
     this.client = new HuaweiYunClient(access);
   }

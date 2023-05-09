@@ -20,6 +20,10 @@ export class EchoPlugin implements ITaskPlugin {
   // @ts-ignore
   logger: ILogger;
 
+  onInstance(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
   async execute(): Promise<void> {
     return Promise.resolve(undefined);
   }

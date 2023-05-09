@@ -48,7 +48,7 @@ export class HostShellExecutePlugin implements ITaskPlugin {
   logger!: ILogger;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInit() {}
+  async onInstance() {}
   async execute(): Promise<void> {
     const { script, accessId } = this;
     const connectConf = this.accessService.getById(accessId);

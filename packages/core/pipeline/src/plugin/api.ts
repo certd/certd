@@ -34,7 +34,7 @@ export type PluginDefine = Registrable & {
 };
 
 export interface ITaskPlugin {
-  onInit(): Promise<void>;
+  onInstance(): Promise<void>;
   execute(): Promise<void>;
 }
 

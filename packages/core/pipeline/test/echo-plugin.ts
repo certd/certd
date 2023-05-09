@@ -23,7 +23,7 @@ export class EchoPlugin implements ITaskPlugin {
   certInfo!: any;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInit(): Promise<void> {}
+  async onInstance(): Promise<void> {}
   async execute(): Promise<void> {
     console.log("input :cert", this.cert);
   }
