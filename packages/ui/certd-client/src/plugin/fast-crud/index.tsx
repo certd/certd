@@ -5,7 +5,7 @@ import "@fast-crud/fast-crud/dist/style.css";
 import { FsExtendsUploader, FsExtendsEditor, FsExtendsJson, FsExtendsCopyable, FsExtendsTime } from "@fast-crud/fast-extends";
 import "@fast-crud/fast-extends/dist/style.css";
 import UiAntdv from "@fast-crud/ui-antdv";
-import _ from "lodash-es";
+import _ from "lodash";
 import { useCrudPermission } from "../permission";
 
 function install(app, options: any = {}) {

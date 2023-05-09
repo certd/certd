@@ -1,4 +1,4 @@
-import _ from "lodash-es";
+import _ from "lodash";
 function copyList(originList, newList, options, parentId) {
   for (const item of originList) {
     const newItem = { ...item, parentId };

@@ -16,7 +16,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/pipeline": "^0.3.0",
+    "@certd/pipeline": "workspace:^0.3.0",
+    "@certd/plugin-cert": "workspace:^0.3.0",
     "ssh2": "^0.8.9"
   },
   "devDependencies": {
@@ -39,7 +40,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "lodash-es": "^4.17.20",
+    "lodash": "^4.17.20",
     "log4js": "^6.3.0",
     "mocha": "^10.1.0",
     "ts-node": "^10.9.1",

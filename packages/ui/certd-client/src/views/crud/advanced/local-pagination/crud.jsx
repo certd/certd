@@ -1,5 +1,5 @@
 import * as api from "./api";
-import _ from "lodash-es";
+import _ from "lodash";
 import { dict } from "@fast-crud/fast-crud";
 export default function ({ expose, localDataRef }) {
   const pageRequest = async ({ page, query }) => {

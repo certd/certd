@@ -2,7 +2,7 @@
     "name": "@certd/acme-client",
     "description": "Simple and unopinionated ACME client",
     "author": "nmorsman",
-    "version": "0.3.1",
+    "version": "0.3.0",
     "main": "src/index.js",
     "types": "types",
     "license": "MIT",

@@ -27,7 +27,7 @@ export class SshClient {
       conn
         .on("ready", () => {
           this.logger.info("连接服务器成功");
-          conn.sftp(async (err: Error, sftp: any) => {
+          conn.sftp(async (err: any, sftp: any) => {
             if (err) {
               throw err;
             }

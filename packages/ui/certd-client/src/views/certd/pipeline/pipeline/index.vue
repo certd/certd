@@ -148,7 +148,7 @@ import PiTaskForm from "./component/task-form/index.vue";
 import PiTriggerForm from "./component/trigger-form/index.vue";
 import PiTaskView from "./component/task-view/index.vue";
 import PiStatusShow from "./component/status-show.vue";
-import _ from "lodash-es";
+import _ from "lodash";
 import { message, Modal, notification } from "ant-design-vue";
 import { pluginManager } from "/@/views/certd/pipeline/pipeline/plugin";
 import { nanoid } from "nanoid";

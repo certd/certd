@@ -1,7 +1,7 @@
 import { useRoute, useRouter } from "vue-router";
 import { ref, watch, onMounted, onUnmounted, resolveComponent, nextTick, defineComponent } from "vue";
 import getEachDeep from "deepdash-es/getEachDeep";
-import _ from "lodash-es";
+import _ from "lodash";
 import BScroll from "better-scroll";
 import "./index.less";
 const eachDeep = getEachDeep(_);

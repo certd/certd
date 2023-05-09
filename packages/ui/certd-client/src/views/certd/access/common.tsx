@@ -1,6 +1,6 @@
 import { dict } from "@fast-crud/fast-crud";
 import * as api from "./api";
-import _ from "lodash-es";
+import _ from "lodash";
 
 export function getCommonColumnDefine(crudBinding, typeRef) {
   const AccessTypeDictRef = dict({

@@ -3,7 +3,7 @@ import "mocha";
 import { Executor, RunHistory, FileStorage } from "@certd/pipeline";
 import { pipeline } from "./pipeline.define";
 import { AccessServiceTest } from "./access-service-test";
-import * as all from "../../src";
+import "../../src";
 describe("pipeline", function () {
   it("#pipeline", async function () {
     this.timeout(120000);

@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { cloneDeep, get, uniq } from "lodash-es";
+import { cloneDeep, get, uniq } from "lodash";
 import router from "/src/router";
 import { frameworkRoutes } from "/src/router/resolve";
 // @ts-ignore

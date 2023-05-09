@@ -7,7 +7,7 @@ import { defineComponent, ref, onMounted } from "vue";
 import { useCrud, dict, useExpose } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import { GetCrud } from "./api";
-import _ from "lodash-es";
+import _ from "lodash";
 export default defineComponent({
   name: "AdvancedFromBackend",
   setup() {

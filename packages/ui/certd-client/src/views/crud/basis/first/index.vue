@@ -8,7 +8,7 @@
 import { defineComponent, ref, onMounted } from "vue";
 import { dict, useCrud } from "@fast-crud/fast-crud";
 import { useExpose } from "@fast-crud/fast-crud";
-import _ from "lodash-es";
+import _ from "lodash";
 
 //此处为crudOptions配置
 const createCrudOptions = function ({ expose }) {

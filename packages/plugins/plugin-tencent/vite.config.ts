@@ -8,13 +8,13 @@ export default defineConfig({
       name: "pipeline",
     },
     rollupOptions: {
-      external: ["vue", "lodash-es", "dayjs", "@fast-crud/fast-crud", "log4js", "lodash", "@certd/pipeline", "axios"],
+      external: ["vue", "lodash", "dayjs", "@fast-crud/fast-crud", "log4js", "lodash", "@certd/pipeline", "axios"],
       output: {
         // Provide global variables to use in the UMD build
         // for externalized deps
         globals: {
           vue: "Vue",
-          "lodash-es": "_",
+          "lodash": "_",
           lodash: "_",
           dayjs: "dayjs",
           "@fast-crud/fast-crud": "FastCrud",

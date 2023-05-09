@@ -1,4 +1,4 @@
-import _ from "lodash-es";
+import _ from "lodash";
 export async function getPcasData() {
   const pcasData = () => import("china-division/dist/pcas-code.json");
   const ret = await pcasData();

@@ -6,7 +6,7 @@
 import { useColumns, useExpose } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud.jsx";
 import { ref } from "vue";
-import _ from "lodash-es";
+import _ from "lodash";
 export default {
   name: "PiCertdForm",
   setup(props, ctx) {

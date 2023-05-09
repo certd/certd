@@ -1,4 +1,4 @@
-import _ from "lodash-es";
+import _ from "lodash";
 export function getEnvValue(key) {
   // @ts-ignore
   return import.meta.env["VITE_APP_" + key];

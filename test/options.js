@@ -1,4 +1,4 @@
-import _ from 'lodash-es'
+import _ from 'lodash'
 import optionsPrivate from './options.private.js'
 const defaultOptions = {
   args: {

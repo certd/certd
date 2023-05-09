@@ -81,7 +81,7 @@
 <script>
 import { message, Modal } from "ant-design-vue";
 import { inject, ref } from "vue";
-import _ from "lodash-es";
+import _ from "lodash";
 import { nanoid } from "nanoid";
 export default {
   name: "PiTriggerForm",

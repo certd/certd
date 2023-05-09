@@ -19,12 +19,13 @@
     "@alicloud/cs20151215": "^3.0.3",
     "@alicloud/openapi-client": "^0.4.0",
     "@alicloud/pop-core": "^1.7.10",
-    "@certd/acme-client": "^0.3.0",
+    "@certd/acme-client": "workspace:^0.3.0",
     "dayjs": "^1.11.6",
     "lodash": "^4.17.21",
     "node-forge": "^0.10.0",
-    "@certd/pipeline": "^0.3.0",
-    "@certd/plugin-util": "^0.3.0"
+    "@certd/pipeline": "workspace:^0.3.0",
+    "@certd/plugin-cert": "workspace:^0.3.0",
+    "@certd/plugin-util": "workspace:^0.3.0"
   },
   "devDependencies": {
     "log4js": "^6.7.1",
