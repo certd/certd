@@ -202,6 +202,11 @@ export default {
 }
 //antdv
 .fs-multiple-page-control-group {
+  .ant-tabs-tab-remove {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   .ant-tabs-bar {
     margin: 0;
     border-bottom: 1px solid #f0f0f0;
