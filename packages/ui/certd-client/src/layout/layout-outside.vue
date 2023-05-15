@@ -75,7 +75,10 @@ export default {
 
       .top {
         text-align: center;
-
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         .header {
           height: 44px;
           line-height: 44px;

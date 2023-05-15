@@ -1,4 +1,5 @@
 import "@fast-crud/fast-bpmn/dist/style.css";
+// @ts-ignore
 import FastBpmn, { FsBpmnSetupOptions, PanelComponentItem, Base, Shape } from "@fast-crud/fast-bpmn";
 
 const fsBpmnOpts: FsBpmnSetupOptions = {
