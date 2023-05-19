@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.7](https://github.com/fast-crud/fast-crud/compare/v1.13.6...v1.13.7) (2023-05-19)
+
+### Bug Fixes
+
+* 修复rowhandle 排列不整齐的问题 ([ff644b1](https://github.com/fast-crud/fast-crud/commit/ff644b11b91c58295692fc0874dc4a3d743eb6df))
+
 ## [1.13.6](https://github.com/fast-crud/fast-crud/compare/v1.13.5...v1.13.6) (2023-05-13)
 
 **Note:** Version bump only for package @fast-crud/fs-admin-antdv
