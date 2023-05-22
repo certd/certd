@@ -426,7 +426,7 @@ export const crudResources = [
             component: "/crud/form/nest/index.vue"
           },
           {
-            title: "字段组件周围render",
+            title: "字段组件render",
             name: "FormRender",
             path: "/crud/form/render",
             component: "/crud/form/render/index.vue"

@@ -1,7 +1,7 @@
 <template>
   <fs-page>
     <template #header>
-      <div class="title">表单字段组件周围的render</div>
+      <div class="title">表单字段render</div>
       <div class="more">
         <a target="_blank" href="http://fast-crud.docmirror.cn/api/crud-options/columns.html#key-form-prefixrender">文档</a>
       </div>

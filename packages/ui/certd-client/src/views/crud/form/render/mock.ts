@@ -6,10 +6,12 @@ const options: any = {
 };
 const list = [
   {
-    name: "王小虎"
+    name: "王小虎",
+    conditionalRender: "conditionalRender"
   },
   {
-    name: "张三"
+    name: "张三",
+    conditionalRender: "conditionalRender"
   }
 ];
 

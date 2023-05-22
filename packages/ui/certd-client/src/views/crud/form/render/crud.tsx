@@ -1,5 +1,5 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -60,6 +60,34 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                 </div>
               );
             }
+          }
+        },
+        conditionalRender: {
+          title: "条件渲染",
+          type: "text",
+          form: {
+            helper: "符合条件则render，否则走默认",
+            conditionalRender: {
+              match({ form }) {
+                return form.conditionalRenderToggle;
+              },
+              render({ form }) {
+                return <div style={{ lineHeight: "32px" }}>{form.conditionalRender || "请先输入值"}</div>;
+              }
+            }
+          }
+        },
+        conditionalRenderToggle: {
+          title: "切换条件",
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { value: 1, label: "预览模式" },
+              { value: 0, label: "编辑模式" }
+            ]
+          }),
+          form: {
+            helper: "切换条件render 编辑/预览 模式"
           }
         }
       }
