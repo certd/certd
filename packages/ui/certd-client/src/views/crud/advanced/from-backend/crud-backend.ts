@@ -1,3 +1,4 @@
+//此处演示从后台获取crudOptions配置字符串
 export const crudOptions = `
  ({crudExpose,dict}) => {
   return {

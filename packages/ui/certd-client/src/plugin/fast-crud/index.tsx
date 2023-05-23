@@ -8,6 +8,7 @@ import UiAntdv from "@fast-crud/ui-antdv";
 import _ from "lodash-es";
 import { useCrudPermission } from "../permission";
 import { GetSignedUrl } from "/@/views/crud/component/uploader/s3/api";
+import { message, notification } from "ant-design-vue";
 
 function install(app: any, options: any = {}) {
   app.use(UiAntdv);
@@ -93,6 +94,13 @@ function install(app: any, options: any = {}) {
             span: null,
             style: {
               width: "120px"
+            }
+          },
+          async afterSubmit({ mode }) {
+            if (mode === "add") {
+              notification.success({ message: "添加成功" });
+            } else if (mode === "edit") {
+              notification.success({ message: "保存成功" });
             }
           },
           wrapperCol: {

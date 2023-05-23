@@ -20,6 +20,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   return {
     output: {},
     crudOptions: {
+      //大量数据的crud配置
       request: {
         pageRequest,
         addRequest,

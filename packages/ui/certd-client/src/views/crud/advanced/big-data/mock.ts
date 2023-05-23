@@ -3,6 +3,7 @@ import mockUtil from "/src/mock/base";
 const options: any = {
   name: "AdvancedBigData",
   idGenerator: 0,
+  //此处copy多次，模拟大量数据
   copyTimes: 1000
 };
 const list = [

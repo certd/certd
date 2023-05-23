@@ -9,6 +9,7 @@
 
     <a-modal v-model:visible="dialogShow" width="80%" title="fs-crud in dialog">
       <div style="height: 400px; position: relative">
+        <!-- 在此处显示fs-crud页面 -->
         <fs-in-dialog></fs-in-dialog>
       </div>
     </a-modal>
@@ -17,6 +18,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
+//将fs-crud做成的页面在此处引入
 import FsInDialog from "./crud/index.vue";
 export default defineComponent({
   name: "InDialog",
