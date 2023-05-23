@@ -1,6 +1,5 @@
-import { Autowire, IAccessService, IsTaskPlugin, ILogger, RunStrategy, TaskInput, ITaskPlugin } from "@certd/pipeline";
+import { Autowire, IAccessService, ILogger, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
 import { SshClient } from "../../lib/ssh";
-import { CertInfo } from "@certd/plugin-cert";
 
 @IsTaskPlugin({
   name: "hostShellExecute",
@@ -25,15 +24,6 @@ export class HostShellExecutePlugin implements ITaskPlugin {
   })
   accessId!: string;
   @TaskInput({
-    title: "域名证书",
-    helper: "请选择前置任务输出的域名证书",
-    component: {
-      name: "pi-output-selector",
-    },
-    required: true,
-  })
-  cert!: CertInfo;
-  @TaskInput({
     title: "shell脚本命令",
     component: {
       name: "a-textarea",
@@ -51,7 +41,7 @@ export class HostShellExecutePlugin implements ITaskPlugin {
   async onInstance() {}
   async execute(): Promise<void> {
     const { script, accessId } = this;
-    const connectConf = this.accessService.getById(accessId);
+    const connectConf = await this.accessService.getById(accessId);
     const sshClient = new SshClient(this.logger);
     const ret = await sshClient.exec({
       connectConf,

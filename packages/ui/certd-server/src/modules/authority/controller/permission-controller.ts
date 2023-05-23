@@ -60,4 +60,3 @@ export class PermissionController extends CrudController<PermissionService> {
     return this.ok(tree);
   }
 }
-

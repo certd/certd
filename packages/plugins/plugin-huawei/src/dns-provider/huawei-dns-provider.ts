@@ -73,7 +73,7 @@ export class HuaweiDnsProvider implements IDnsProvider {
     if (records && records.length > 0) {
       for (const record of records) {
         await this.removeRecord({
-          record: records[0],
+          record,
           ...options,
         });
       }

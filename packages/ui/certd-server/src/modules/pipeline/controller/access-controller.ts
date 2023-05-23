@@ -15,7 +15,7 @@ import { AccessService } from '../service/access-service';
  */
 @Provide()
 @Controller('/api/pi/access')
-export class AccessController extends CrudController {
+export class AccessController extends CrudController<AccessService> {
   @Inject()
   service: AccessService;
 

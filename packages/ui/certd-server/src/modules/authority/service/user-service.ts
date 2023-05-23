@@ -3,7 +3,7 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../entity/user';
 import * as _ from 'lodash';
-import * as md5 from 'md5';
+import md5 from 'md5';
 import { CommonException } from '../../../basic/exception/common-exception';
 import { BaseService } from '../../../basic/base-service';
 import { logger } from '../../../utils/logger';
@@ -36,7 +36,7 @@ export class UserService extends BaseService<UserEntity> {
     const info = await this.repository.findOne({
       where: {
         id: this.ctx.user.id,
-      }
+      },
     });
     delete info.password;
     return info;
@@ -48,9 +48,9 @@ export class UserService extends BaseService<UserEntity> {
    */
   async add(param) {
     const exists = await this.repository.findOne({
-      where:{
+      where: {
         username: param.username,
-      }
+      },
     });
     if (!_.isEmpty(exists)) {
       throw new CommonException('用户名已经存在');
@@ -74,7 +74,7 @@ export class UserService extends BaseService<UserEntity> {
       throw new CommonException('id不能为空');
     }
     const userInfo = await this.repository.findOne({
-      where:{ id: param.id }
+      where: { id: param.id },
     });
     if (!userInfo) {
       throw new CommonException('用户不存在');
@@ -92,7 +92,7 @@ export class UserService extends BaseService<UserEntity> {
 
   async findOne(param) {
     return this.repository.findOne({
-      where:param
+      where: param,
     });
   }
 

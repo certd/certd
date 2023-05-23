@@ -1,6 +1,6 @@
 <template>
   <fs-page class="fs-pipeline-detail">
-    <pipeline-edit v-model:edit-mode="editMode" :pipeline-id="pipelineId" :options="pipelineOptions"></pipeline-edit>
+    <pipeline-edit v-model:edit-mode="editMode" :pipeline-id="pipelineId" :options="pipelineOptionsRef"></pipeline-edit>
   </fs-page>
 </template>
 
@@ -11,8 +11,7 @@ import * as pluginApi from "./api.plugin";
 import * as historyApi from "./api.history";
 import * as api from "./api";
 import { useRoute } from "vue-router";
-import { Pipeline, PipelineDetail, PipelineOptions, RunHistory } from "/@/views/certd/pipeline/pipeline/type";
-import { PluginDefine } from "@certd/pipeline";
+import { PipelineDetail, PipelineOptions, RunHistory, Pipeline } from "/@/views/certd/pipeline/pipeline/type";
 
 export default defineComponent({
   name: "PipelineDetail",
@@ -21,51 +20,47 @@ export default defineComponent({
     const route = useRoute();
     const pipelineId = ref(route.query.id);
 
-    const getPipelineDetail = async ({ pipelineId }) => {
-      const detail = await api.GetDetail(pipelineId);
-      return {
-        pipeline: {
-          id: detail.pipeline.id,
-          stages: [],
-          triggers: [],
-          ...JSON.parse(detail.pipeline.content || "{}")
-        }
-      } as PipelineDetail;
+    const pipelineOptions: PipelineOptions = {
+      async getPipelineDetail({ pipelineId }) {
+        const detail = await api.GetDetail(pipelineId);
+        return {
+          pipeline: {
+            id: detail.pipeline.id,
+            stages: [],
+            triggers: [],
+            ...JSON.parse(detail.pipeline.content || "{}")
+          }
+        } as PipelineDetail;
+      },
+
+      async getHistoryList({ pipelineId }) {
+        const list: RunHistory[] = await historyApi.GetList({ pipelineId });
+        return list;
+      },
+
+      async getHistoryDetail({ historyId }): Promise<RunHistory> {
+        const detail = await historyApi.GetDetail({ id: historyId });
+        return detail;
+      },
+
+      async getPlugins() {
+        const plugins = await pluginApi.GetList({});
+        return plugins as any[];
+      },
+
+      async doSave(pipelineConfig: any) {
+        await api.Save({
+          id: pipelineConfig.id,
+          content: JSON.stringify(pipelineConfig)
+        });
+      },
+      async doTrigger(options: { pipelineId: number }) {
+        const { pipelineId } = options;
+        await api.Trigger(pipelineId);
+      }
     };
 
-    const getHistoryList = async ({ pipelineId }) => {
-      const list: RunHistory[] = await historyApi.GetList({ pipelineId });
-      return list;
-    };
-
-    const getHistoryDetail = async ({ historyId }): Promise<RunHistory> => {
-      const detail = await historyApi.GetDetail({ id: historyId });
-      return detail;
-    };
-
-    const getPlugins = async () => {
-      const plugins = await pluginApi.GetList({});
-      return plugins as PluginDefine[];
-    };
-
-    async function doSave(pipelineConfig: Pipeline) {
-      await api.Save({
-        id: pipelineConfig.id,
-        content: JSON.stringify(pipelineConfig)
-      });
-    }
-    async function doTrigger({ pipelineId }) {
-      await api.Trigger(pipelineId);
-    }
-
-    const pipelineOptions: Ref<PipelineOptions> = ref({
-      doTrigger,
-      doSave,
-      getPlugins,
-      getHistoryList,
-      getHistoryDetail,
-      getPipelineDetail
-    });
+    const pipelineOptionsRef: Ref<PipelineOptions> = ref(pipelineOptions);
 
     const editMode = ref(false);
     if (route.query.editMode !== "false") {
@@ -73,7 +68,7 @@ export default defineComponent({
     }
 
     return {
-      pipelineOptions,
+      pipelineOptionsRef,
       pipelineId,
       editMode
     };

@@ -1,27 +1,34 @@
+// @ts-ignore
 import * as api from "./api";
 import { useI18n } from "vue-i18n";
 import { ref } from "vue";
 import { getCommonColumnDefine } from "/@/views/certd/access/common";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 
-export default function ({ expose }) {
+export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
-  const pageRequest = async (query) => {
+  const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
-  const editRequest = async ({ form, row }) => {
+  const editRequest = async (req: EditReq) => {
+    const { form, row } = req;
     form.id = row.id;
-    return await api.UpdateObj(form);
+    const res = await api.UpdateObj(form);
+    return res;
   };
-  const delRequest = async ({ row }) => {
+  const delRequest = async (req: DelReq) => {
+    const { row } = req;
     return await api.DelObj(row.id);
   };
 
-  const addRequest = async ({ form }) => {
-    return await api.AddObj(form);
+  const addRequest = async (req: AddReq) => {
+    const { form } = req;
+    const res = await api.AddObj(form);
+    return res;
   };
+
   const typeRef = ref();
-  const { crudBinding } = expose;
-  const commonColumnsDefine = getCommonColumnDefine(crudBinding, typeRef);
+  const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef);
   return {
     crudOptions: {
       request: {

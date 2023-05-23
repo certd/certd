@@ -19,7 +19,7 @@ import { HistoryLogEntity } from '../entity/history-log';
  */
 @Provide()
 @Controller('/api/pi/history')
-export class HistoryController extends CrudController {
+export class HistoryController extends CrudController<HistoryService> {
   @Inject()
   service: HistoryService;
   @Inject()

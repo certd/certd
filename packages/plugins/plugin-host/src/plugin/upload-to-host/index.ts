@@ -1,6 +1,6 @@
 import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, ILogger, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import { SshClient } from "../../lib/ssh";
-import { CertInfo } from "@certd/plugin-cert";
+import { CertInfo, CertReader } from "@certd/plugin-cert";
 import * as fs from "fs";
 
 @IsTaskPlugin({
@@ -67,11 +67,12 @@ export class UploadCertToHostPlugin implements ITaskPlugin {
   async onInstance() {}
   async execute(): Promise<void> {
     const { crtPath, keyPath, cert, accessId, sudo } = this;
-    const connectConf = this.accessService.getById(accessId);
+    const certReader = new CertReader(cert);
+    const connectConf = await this.accessService.getById(accessId);
     const sshClient = new SshClient(this.logger);
 
-    const saveCrtPath = cert.saveToFile("crt");
-    const saveKeyPath = cert.saveToFile("key");
+    const saveCrtPath = certReader.saveToFile("crt");
+    const saveKeyPath = certReader.saveToFile("key");
 
     await sshClient.uploadFiles({
       connectConf,

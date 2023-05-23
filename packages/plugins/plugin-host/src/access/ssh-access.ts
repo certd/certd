@@ -42,6 +42,10 @@ export class SshAccess implements IAccess {
   @AccessInput({
     title: "密钥",
     helper: "密钥或密码必填一项",
+    component: {
+      name: "a-textarea",
+      vModel: "value",
+    },
   })
   privateKey!: string;
 }

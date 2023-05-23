@@ -1,4 +1,3 @@
-// src/decorator/memoryCache.decorator.ts
 import { dnsProviderRegistry } from "./registry";
 import { DnsProviderDefine } from "./api";
 import { Decorator, AUTOWIRE_KEY } from "@certd/pipeline";

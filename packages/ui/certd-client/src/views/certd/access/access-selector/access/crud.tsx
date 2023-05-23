@@ -1,25 +1,31 @@
+// @ts-ignore
 import * as api from "/@/views/certd/access/api";
 import { ref } from "vue";
 import { getCommonColumnDefine } from "/@/views/certd/access/common";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 
-export default function ({ expose, props, ctx }) {
-  const { crudBinding } = expose;
+export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+  const { crudBinding } = crudExpose;
+  const { props, ctx } = context;
   const lastResRef = ref();
-  const pageRequest = async (query) => {
+  const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
-  const editRequest = async ({ form, row }) => {
+  const editRequest = async (req: EditReq) => {
+    const { form, row } = req;
     form.id = row.id;
     form.type = props.type;
     const res = await api.UpdateObj(form);
     lastResRef.value = res;
     return res;
   };
-  const delRequest = async ({ row }) => {
+  const delRequest = async (req: DelReq) => {
+    const { row } = req;
     return await api.DelObj(row.id);
   };
 
-  const addRequest = async ({ form }) => {
+  const addRequest = async (req: AddReq) => {
+    const { form } = req;
     form.type = props.type;
     const res = await api.AddObj(form);
     lastResRef.value = res;
@@ -27,24 +33,15 @@ export default function ({ expose, props, ctx }) {
   };
 
   const selectedRowKey = ref([props.modelValue]);
-  // watch(
-  //   () => {
-  //     return props.modelValue;
-  //   },
-  //   (value) => {
-  //     selectedRowKey.value = [value];
-  //   },
-  //   {
-  //     immediate: true
-  //   }
-  // );
-  const onSelectChange = (changed) => {
+
+  const onSelectChange = (changed: any) => {
     selectedRowKey.value = changed;
     ctx.emit("update:modelValue", changed[0]);
   };
 
   const typeRef = ref("aliyun");
-  const commonColumnsDefine = getCommonColumnDefine(crudBinding, typeRef);
+  context.typeRef = typeRef;
+  const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef);
   commonColumnsDefine.type.form.component.disabled = true;
   return {
     typeRef,
@@ -75,7 +72,7 @@ export default function ({ expose, props, ctx }) {
           selectedRowKeys: selectedRowKey,
           onChange: onSelectChange
         },
-        customRow: (record) => {
+        customRow: (record: any) => {
           return {
             onClick: () => {
               onSelectChange([record.id]);

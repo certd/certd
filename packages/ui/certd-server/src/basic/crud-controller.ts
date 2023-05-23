@@ -1,8 +1,8 @@
-import { ALL, Body, Post, Query } from "@midwayjs/decorator";
-import { BaseController } from "./base-controller";
+import { ALL, Body, Post, Query } from '@midwayjs/decorator';
+import { BaseController } from './base-controller';
 
-export abstract class CrudController extends BaseController {
-  abstract getService();
+export abstract class CrudController<T> extends BaseController {
+  abstract getService<T>();
 
   @Post('/page')
   async page(
@@ -62,4 +62,3 @@ export abstract class CrudController extends BaseController {
     return this.ok(null);
   }
 }
-

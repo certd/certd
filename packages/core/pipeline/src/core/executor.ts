@@ -39,6 +39,8 @@ export class Executor {
       await this.runWithHistory(this.pipeline, "pipeline", async () => {
         await this.runStages();
       });
+    } catch (e) {
+      this.logger.error("pipeline 执行失败", e);
     } finally {
       this.logger.info(`pipeline.${this.pipeline.id}  end`);
     }
@@ -54,12 +56,13 @@ export class Executor {
     if (runnable.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
       //如果是成功后跳过策略
       const lastResult = await this.pipelineContext.getObj(contextKey);
-      const lastInput = await this.pipelineContext.getObj(inputKey);
+      const lastInput = await this.pipelineContext.get(inputKey);
       let inputChanged = false;
       //TODO 参数不变
       if (runnableType === "step") {
         const step = runnable as Step;
         const input = JSON.stringify(step.input);
+        await this.pipelineContext.set(inputKey, input);
         if (input != null && lastInput !== input) {
           inputChanged = true;
         }

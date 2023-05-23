@@ -1,6 +1,5 @@
 // @ts-ignore
 import signer from "./signer";
-import https from "https";
 import { HuaweiAccess } from "../access";
 import { axios } from "@certd/acme-client";
 import { logger } from "@certd/pipeline";

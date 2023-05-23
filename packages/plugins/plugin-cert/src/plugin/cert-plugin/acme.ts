@@ -5,7 +5,11 @@ import { Challenge } from "@certd/acme-client/types/rfc8555";
 import { Logger } from "log4js";
 import { IContext } from "@certd/pipeline/src/core/context";
 import { IDnsProvider } from "../../dns-provider";
-
+export type CertInfo = {
+  crt: string;
+  key: string;
+  csr: string;
+};
 export class AcmeService {
   userContext: IContext;
   logger: Logger;
@@ -166,7 +170,7 @@ export class AcmeService {
       },
     });
 
-    const cert = {
+    const cert: CertInfo = {
       crt: crt.toString(),
       key: key.toString(),
       csr: csr.toString(),

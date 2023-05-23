@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "noImplicitAny": true,
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module": "commonjs",

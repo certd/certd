@@ -1,8 +1,11 @@
-import { dict } from "@fast-crud/fast-crud";
+import { ColumnCompositionProps, dict } from "@fast-crud/fast-crud";
+// @ts-ignore
 import * as api from "./api";
+// @ts-ignore
 import _ from "lodash";
+import { toRef } from "vue";
 
-export function getCommonColumnDefine(crudBinding, typeRef) {
+export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
   const AccessTypeDictRef = dict({
     url: "/pi/access/accessTypeDict"
   });
@@ -13,22 +16,24 @@ export function getCommonColumnDefine(crudBinding, typeRef) {
     }
   };
 
-  function buildDefineFields(define, mode) {
-    const columns = crudBinding.value[mode + "Form"].columns;
-    for (const key in columns) {
+  function buildDefineFields(define: any) {
+    const formWrapperRef = crudExpose.getFormWrapperRef();
+    const columnsRef = toRef(formWrapperRef.formOptions, "columns");
+
+    for (const key in columnsRef.value) {
       if (key.indexOf(".") >= 0) {
-        delete columns[key];
+        delete columnsRef.value[key];
       }
     }
-    console.log('crudBinding.value[mode + "Form"].columns', columns);
-    _.forEach(define.input, (value, mapKey) => {
+    console.log('crudBinding.value[mode + "Form"].columns', columnsRef.value);
+    _.forEach(define.input, (value: any, mapKey: any) => {
       const key = "access." + mapKey;
       const field = {
         ...value,
         key
       };
-      columns[key] = _.merge({ title: key }, defaultPluginConfig, field);
-      console.log("form", crudBinding.value[mode + "Form"]);
+      columnsRef.value[key] = _.merge({ title: key }, defaultPluginConfig, field);
+      console.log("form", columnsRef.value);
     });
   }
 
@@ -53,14 +58,14 @@ export function getCommonColumnDefine(crudBinding, typeRef) {
             }
             const define = await api.GetProviderDefine(value);
             console.log("define", define);
-            buildDefineFields(define, mode);
+            buildDefineFields(define);
           }
         }
       },
       addForm: {
         value: typeRef
       }
-    },
+    } as ColumnCompositionProps,
     setting: {
       column: { show: false },
       form: {
@@ -80,6 +85,6 @@ export function getCommonColumnDefine(crudBinding, typeRef) {
           form.setting = JSON.stringify(setting);
         }
       }
-    }
+    } as ColumnCompositionProps
   };
 }

@@ -1,46 +1,15 @@
 import { Autowire, HttpClient, IAccessService, IContext, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
-import forge from "node-forge";
 import dayjs from "dayjs";
-import { AcmeService } from "./acme";
+import { AcmeService, CertInfo } from "./acme";
 import _ from "lodash";
 import { Logger } from "log4js";
 import { Decorator } from "@certd/pipeline/src/decorator";
 import { DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider";
-import fs from "fs";
-import os from "os";
-export class CertInfo {
-  crt: string;
-  key: string;
-  csr: string;
+import { CertReader } from "./cert-reader";
 
-  detail: any;
-  expires: number;
-  constructor(opts: { crt: string; key: string; csr: string }) {
-    this.crt = opts.crt;
-    this.key = opts.key;
-    this.csr = opts.csr;
+export { CertReader };
+export type { CertInfo };
 
-    const { detail, expires } = this.getCrtDetail(this.crt);
-    this.detail = detail;
-    this.expires = expires.getTime();
-  }
-
-  getCrtDetail(crt: string) {
-    const pki = forge.pki;
-    const detail = pki.certificateFromPem(crt.toString());
-    const expires = detail.validity.notAfter;
-    return { detail, expires };
-  }
-
-  saveToFile(type: "crt" | "key", path?: string) {
-    if (path == null) {
-      //写入临时目录
-      path = `${os.tmpdir()}/certd/tmp/${Math.floor(Math.random() * 1000000)}/cert.${type}`;
-    }
-    fs.writeFileSync(path, this[type]);
-    return path;
-  }
-}
 @IsTaskPlugin({
   name: "CertApply",
   title: "证书申请",
@@ -166,10 +135,14 @@ export class CertApplyPlugin implements ITaskPlugin {
       return this.output(oldCert);
     }
     const cert = await this.doCertApply();
-    return this.output(cert);
+    if (cert != null) {
+      this.output(cert.toCertInfo());
+    } else {
+      throw new Error("申请证书失败");
+    }
   }
 
-  output(cert: any) {
+  output(cert: CertInfo) {
     this.cert = cert;
   }
 
@@ -187,12 +160,12 @@ export class CertApplyPlugin implements ITaskPlugin {
     const oldInputStr = await this.pipelineContext.getObj(inputCacheKey);
     await this.pipelineContext.setObj(inputCacheKey, this.domains);
     const oldInput = JSON.stringify(oldInputStr);
-    const thisInput = JSON.stringify(this.cert);
+    const thisInput = JSON.stringify(this.domains);
     if (oldInput !== thisInput) {
       inputChanged = true;
     }
 
-    let oldCert;
+    let oldCert: CertReader | undefined = undefined;
     try {
       oldCert = await this.readCurrentCert();
     } catch (e) {
@@ -257,10 +230,7 @@ export class CertApplyPlugin implements ITaskPlugin {
     await this.writeCert(cert);
     const ret = await this.readCurrentCert();
 
-    return {
-      ...ret,
-      isNew: true,
-    };
+    return ret;
   }
 
   formatCert(pem: string) {
@@ -271,7 +241,7 @@ export class CertApplyPlugin implements ITaskPlugin {
   }
 
   async writeCert(cert: { crt: string; key: string; csr: string }) {
-    const newCert = {
+    const newCert: CertInfo = {
       crt: this.formatCert(cert.crt),
       key: this.formatCert(cert.key),
       csr: this.formatCert(cert.csr),
@@ -282,12 +252,12 @@ export class CertApplyPlugin implements ITaskPlugin {
     await this.pipelineContext.set("cert.csr", newCert.csr);
   }
 
-  async readCurrentCert() {
-    const cert: any = await this.pipelineContext.getObj("cert");
+  async readCurrentCert(): Promise<CertReader | undefined> {
+    const cert: CertInfo = await this.pipelineContext.getObj("cert");
     if (cert == null) {
       return undefined;
     }
-    return new CertInfo(cert);
+    return new CertReader(cert);
   }
 
   /**

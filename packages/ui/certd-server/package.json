@@ -24,6 +24,7 @@
     "@alicloud/pop-core": "^1.7.12",
     "@certd/pipeline": "workspace:^0.3.0",
     "@certd/plugin-all": "workspace:^0.3.0",
+    "@certd/plugin-cert": "workspace:^0.3.0",
     "@koa/cors": "^3.4.3",
     "@midwayjs/bootstrap": "^3.9.1",
     "@midwayjs/cache": "^3.9.0",

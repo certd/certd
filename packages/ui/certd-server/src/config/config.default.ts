@@ -33,11 +33,7 @@ export default {
         logging: true,
 
         // 配置实体模型 或者 entities: '/entity',
-        entities: [
-          '**/modules/*/entity/*.ts',
-          FlywayHistory,
-          UserEntity,
-        ],
+        entities: ['**/modules/*/entity/*.ts', FlywayHistory, UserEntity],
       },
     },
   },

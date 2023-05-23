@@ -16,7 +16,7 @@ import { PipelineEntity } from '../entity/pipeline';
  */
 @Provide()
 @Controller('/api/pi/pipeline')
-export class PipelineController extends CrudController {
+export class PipelineController extends CrudController<PipelineService> {
   @Inject()
   service: PipelineService;
 

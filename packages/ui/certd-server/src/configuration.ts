@@ -6,20 +6,19 @@ import { Configuration, App } from '@midwayjs/decorator';
 import * as koa from '@midwayjs/koa';
 import * as orm from '@midwayjs/typeorm';
 import * as cache from '@midwayjs/cache';
-import * as cors from '@koa/cors';
+import cors from '@koa/cors';
 import { join } from 'path';
 import * as flyway from 'midway-flyway-js';
-import {ReportMiddleware} from "./middleware/report";
-import {GlobalExceptionMiddleware} from "./middleware/global-exception";
-import {PreviewMiddleware} from "./middleware/preview";
-import {AuthorityMiddleware} from "./middleware/authority";
-
+import { ReportMiddleware } from './middleware/report';
+import { GlobalExceptionMiddleware } from './middleware/global-exception';
+import { PreviewMiddleware } from './middleware/preview';
+import { AuthorityMiddleware } from './middleware/authority';
 
 import * as pipeline from './plugins/pipeline';
 import * as cron from './plugins/cron';
 
 @Configuration({
-  imports: [koa, orm, cache, flyway, validateComp,pipeline, cron],
+  imports: [koa, orm, cache, flyway, validateComp, pipeline, cron],
   importConfigs: [
     {
       default: defaultConfig,

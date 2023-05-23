@@ -139,9 +139,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (cron == null) {
       return;
     }
-    if(cron.startsWith("*")){
-      cron = "0"+ cron.substring(1,cron.length)
-      return
+    if (cron.startsWith('*')) {
+      cron = '0' + cron.substring(1, cron.length);
+      return;
     }
     this.cron.register({
       name: this.buildCronKey(pipelineId, trigger.id),
@@ -168,7 +168,17 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
     const onChanged = async (history: RunHistory) => {
       //保存执行历史
-      await this.saveHistory(history);
+      try {
+        await this.saveHistory(history);
+      } catch (e) {
+        const pipelineEntity = new PipelineEntity();
+        pipelineEntity.id = parseInt(history.pipeline.id);
+        pipelineEntity.status = 'error';
+        pipelineEntity.lastHistoryTime = history.pipeline.status.startTime;
+        await this.update(pipelineEntity);
+        logger.error('保存执行历史失败：', e);
+        throw e;
+      }
     };
 
     const userId = entity.userId;
@@ -228,6 +238,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     entity.id = parseInt(history.id);
     entity.userId = history.pipeline.userId;
     entity.pipeline = JSON.stringify(history.pipeline);
+    entity.pipelineId = parseInt(history.pipeline.id);
     await this.historyService.save(entity);
 
     const logEntity: HistoryLogEntity = new HistoryLogEntity();
