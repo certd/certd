@@ -134,6 +134,10 @@ module.exports = async function(client, userOpts) {
 
                 await client.waitForValidStatus(challenge);
             }
+            catch (e) {
+                log(`[auto] [${d}] challengeCreateFn threw error: ${e.message}`);
+                throw e;
+            }
             finally {
                 /* Trigger challengeRemoveFn(), suppress errors */
                 log(`[auto] [${d}] Trigger challengeRemoveFn()`);
