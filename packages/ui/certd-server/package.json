@@ -1,5 +1,5 @@
 {
-  "name": "@fast-crud/fs-server-js",
+  "name": "@certd/ui-server",
   "version": "1.0.0",
   "description": "fast-server base midway",
   "private": true,
