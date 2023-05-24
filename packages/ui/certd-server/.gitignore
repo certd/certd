@@ -16,3 +16,4 @@ run/
 /data/db.sqlite
 /pnpm-lock.yaml
 .serverless
+data
