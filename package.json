@@ -10,8 +10,8 @@
   "scripts": {
     "start": "lerna bootstrap --hoist",
     "i-all": "lerna link && lerna exec npm install  ",
-    "publish": "npm run proxy && npm run prepublishOnly  && lerna publish --conventional-commits && npm run afterpublishOnly",
-    "afterpublishOnly": "",
+    "publish": "npm run proxy && npm run prepublishOnly1  && lerna publish --conventional-commits && npm run afterpublishOnly",
+    "afterpublishOnly1": "",
     "proxy": "npm config set proxy=http://127.0.0.1:10809",
     "prepublishOnly": "npm run before-build && lerna run build ",
     "before-build": "cd ./packages/core/acme-client && time /t >build.md && git add ./build.md && git commit -m \"build: prepare to build\""
