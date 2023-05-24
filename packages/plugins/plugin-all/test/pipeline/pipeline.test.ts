@@ -1,14 +1,14 @@
-//import { expect } from "chai";
 import "mocha";
-import { Executor, RunHistory, FileStorage } from "@certd/pipeline";
+import { Executor, FileStorage, RunHistory } from "@certd/pipeline";
 import { pipeline } from "./pipeline.define";
 import { AccessServiceTest } from "./access-service-test";
 import "../../src";
 import "../plugin/echo-plugin";
+
 describe("pipeline", function () {
   it("#pipeline", async function () {
     this.timeout(120000);
-    function onChanged(history: RunHistory) {
+    async function onChanged(history: RunHistory) {
       console.log("changed:");
     }
 

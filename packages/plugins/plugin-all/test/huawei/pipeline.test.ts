@@ -8,7 +8,7 @@ import "../plugin/echo-plugin";
 describe("pipeline-hauwei-test", function () {
   it("#pipeline", async function () {
     this.timeout(120000);
-    function onChanged(history: RunHistory) {
+    async function onChanged(history: RunHistory) {
       console.log("changed:");
     }
 

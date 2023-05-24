@@ -1,4 +1,4 @@
-import { Autowire, IsTaskPlugin, TaskInput, ITaskPlugin } from "@certd/pipeline";
+import { IsTaskPlugin, ITaskPlugin, TaskInput } from "@certd/pipeline";
 
 @IsTaskPlugin({
   name: "EchoPlugin",
