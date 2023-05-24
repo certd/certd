@@ -3,8 +3,8 @@
   "private": false,
   "version": "1.0.2",
   "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "types": "./src/index.ts",
+  "module": "./dist/plugin-host.mjs",
+  "types": "./dist/es/plugin-host.d.ts",
   "publishConfig": {
     "main": "./dist/plugin-host.umd.js",
     "module": "./dist/plugin-host.mjs",
@@ -12,7 +12,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "rollup -c",
+    "build2": "vue-tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -33,6 +34,13 @@
     "@types/ssh2": "^1.11.6",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "@typescript-eslint/parser": "^5.38.1",
+    "@rollup/plugin-commonjs": "^23.0.4",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "tslib": "^2.5.2",
+    "rollup": "^3.7.4",
     "chai": "^4.3.6",
     "dayjs": "^1.9.7",
     "eslint": "^8.24.0",

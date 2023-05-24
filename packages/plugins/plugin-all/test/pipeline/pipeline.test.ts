@@ -7,6 +7,7 @@ import "../plugin/echo-plugin";
 
 describe("pipeline", function () {
   it("#pipeline", async function () {
+    //@ts-ignore
     this.timeout(120000);
     async function onChanged(history: RunHistory) {
       console.log("changed:");

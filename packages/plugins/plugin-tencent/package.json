@@ -3,8 +3,8 @@
   "private": false,
   "version": "1.0.2",
   "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "types": "./src/index.ts",
+  "module": "./dist/plugin-tencent.mjs",
+  "types": "./dist/es/plugin-tencent.d.ts",
   "publishConfig": {
     "main": "./dist/plugin-tencent.umd.js",
     "module": "./dist/plugin-tencent.mjs",
@@ -12,7 +12,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "rollup -c",
+    "build2": "vue-tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -33,6 +34,13 @@
     "@types/node-forge": "^1.3.0",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "@typescript-eslint/parser": "^5.38.1",
+    "@rollup/plugin-commonjs": "^23.0.4",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "tslib": "^2.5.2",
+    "rollup": "^3.7.4",
     "axios": "^0.21.1",
     "chai": "^4.3.6",
     "dayjs": "^1.9.7",

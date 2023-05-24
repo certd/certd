@@ -1,3 +1,4 @@
+import "util";
 export * from "./core";
 export * from "./d.ts";
 export * from "./access";

@@ -3,7 +3,7 @@ import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, Ru
 import { ROAClient } from "@alicloud/pop-core";
 import { AliyunAccess } from "../../access";
 import { K8sClient } from "@certd/plugin-util";
-import { appendTimeSuffix } from "../../utils";
+import { appendTimeSuffix } from "../../utils/index";
 import { CertInfo } from "@certd/plugin-cert";
 
 @IsTaskPlugin({

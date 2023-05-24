@@ -1,6 +1,4 @@
-import { Config, Configuration, Inject, Logger } from "@midwayjs/decorator";
-// @ts-ignore
-import { ILogger } from "@midwayjs/logger";
+import { Config, Configuration, Inject } from "@midwayjs/decorator";
 import { IMidwayContainer, MidwayDecoratorService } from "@midwayjs/core";
 
 // ... (see below) ...
@@ -12,19 +10,13 @@ export class PipelineConfiguration {
   @Config()
   // @ts-ignore
   config;
-  @Logger()
-  // @ts-ignore
-  logger: ILogger;
 
   @Inject()
   // @ts-ignore
   decoratorService: MidwayDecoratorService;
 
   async onReady(container: IMidwayContainer) {
-    this.logger.info("pipeline install");
-
     //this.implPropertyDecorator(container);
-    this.logger.info("pipeline installed");
   }
 
   // implPropertyDecorator(container: IMidwayContainer) {

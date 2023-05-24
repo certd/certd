@@ -2,16 +2,19 @@ import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
 import typescript from "@rollup/plugin-typescript";
 // https://vitejs.dev/config/
+
 export default defineConfig({
   plugins: [],
   build: {
     lib: {
       entry: "src/index.ts",
-      name: "pipeline",
+      name: "CertdPluginAll",
     },
     rollupOptions: {
       plugins: [
+        // @ts-ignore
         visualizer(),
+        // @ts-ignore
         typescript({
           target: "esnext",
           rootDir: "src",

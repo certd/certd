@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
-    "noImplicitAny": true,
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "module": "commonjs",
+    "module": "ESNext",
     "moduleResolution": "Node",
     "strict": true,
     "jsx": "preserve",

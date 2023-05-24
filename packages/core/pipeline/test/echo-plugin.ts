@@ -1,4 +1,4 @@
-import { Autowire, ILogger, IsTaskPlugin, ITaskPlugin, TaskInput, TaskOutput } from "../src";
+import { Autowire, IsTaskPlugin, ITaskPlugin, TaskInput, TaskOutput } from "../src";
 
 @IsTaskPlugin({
   name: "EchoPlugin",
@@ -13,9 +13,6 @@ export class EchoPlugin implements ITaskPlugin {
     helper: "输出选择",
   })
   cert!: any;
-
-  @Autowire()
-  logger!: ILogger;
 
   @TaskOutput({
     title: "cert info",

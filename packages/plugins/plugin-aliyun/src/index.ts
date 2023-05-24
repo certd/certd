@@ -1,3 +1,3 @@
-export * from "./access";
-export * from "./dns-provider";
-export * from "./plugin";
+export * from "./access/index";
+export * from "./dns-provider/index";
+export * from "./plugin/index";

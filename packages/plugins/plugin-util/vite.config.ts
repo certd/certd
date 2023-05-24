@@ -33,7 +33,10 @@ export default defineConfig({
         "@certd/plugin-huawei",
         "@certd/plugin-host",
         "@certd/plugin-tencent",
-        "@certd/plugin-util",
+        "log4js",
+        "@midwayjs/core",
+        "@midwayjs/decorator",
+        "kubernetes-client",
       ],
       output: {
         globals: {
@@ -46,7 +49,10 @@ export default defineConfig({
           "@certd/plugin-aliyun": "CertdPluginAliyun",
           "@certd/plugin-host": "CertdPluginHost",
           "@certd/plugin-huawei": "CertdPluginHuawei",
-          "@certd/plugin-util": "CertdPluginUtil",
+          log4js: "log4js",
+          "@midwayjs/core": "MidwayjsCore",
+          "@midwayjs/decorator": "MidwayjsDecorator",
+          "kubernetes-client": "kubernetesClient",
         },
       },
     },

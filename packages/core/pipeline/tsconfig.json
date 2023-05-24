@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
+    "importHelpers": false,
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "module": "commonjs",
+    "module": "ESNext",
     "moduleResolution": "Node",
     "strict": true,
     "jsx": "preserve",
@@ -13,8 +14,10 @@
     "lib": ["ESNext", "DOM"],
     "skipLibCheck": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "outDir": "./dist/ts"
+    "paths": {
+      "tslib" : ["./node_modules/tslib/tslib.d.ts"]
+    }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue","test/**/*.ts"],
+
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue","test/**/*.ts","rollup.config.ts"],
 }

@@ -5,15 +5,16 @@ import typescript from "@rollup/plugin-typescript";
 export default defineConfig({
   plugins: [],
   build: {
+    target: "es2015",
     lib: {
       entry: "src/index.ts",
-      name: "pipeline",
+      name: "CertdPipeline",
     },
     rollupOptions: {
       plugins: [
         visualizer(),
         typescript({
-          target: "esnext",
+          target: "es2015",
           rootDir: "src",
           declaration: true,
           declarationDir: "dist/d",
@@ -33,6 +34,9 @@ export default defineConfig({
         "@certd/plugin-host",
         "@certd/plugin-tencent",
         "@certd/plugin-util",
+        "log4js",
+        "@midwayjs/core",
+        "@midwayjs/decorator",
       ],
       output: {
         globals: {
@@ -45,6 +49,9 @@ export default defineConfig({
           "@certd/plugin-host": "CertdPluginHost",
           "@certd/plugin-huawei": "CertdPluginHuawei",
           "@certd/plugin-util": "CertdPluginUtil",
+          log4js: "log4js",
+          "@midwayjs/core": "MidwayjsCore",
+          "@midwayjs/decorator": "MidwayjsDecorator",
         },
       },
     },

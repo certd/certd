@@ -1,3 +1,3 @@
-export * from "./deploy-to-cdn";
-export * from "./deploy-to-ack-ingress";
-export * from "./upload-to-aliyun";
+export * from "./deploy-to-cdn/index";
+export * from "./deploy-to-ack-ingress/index";
+export * from "./upload-to-aliyun/index";
