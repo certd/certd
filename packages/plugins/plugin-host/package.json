@@ -16,8 +16,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/pipeline": "workspace:^0.3.0",
-    "@certd/plugin-cert": "workspace:^0.3.0",
+    "@certd/pipeline": "^0.3.0",
+    "@certd/plugin-cert": "^0.3.0",
     "ssh2": "^0.8.9"
   },
   "devDependencies": {

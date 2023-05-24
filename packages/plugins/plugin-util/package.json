@@ -16,7 +16,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/pipeline": "workspace:^0.3.0",
+    "@certd/pipeline": "^0.3.0",
     "kubernetes-client": "^9.0.0"
   },
   "devDependencies": {

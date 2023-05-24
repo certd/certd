@@ -16,7 +16,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "workspace:^0.3.0",
+    "@certd/acme-client": "^0.3.0",
     "axios": "^0.21.1",
     "dayjs": "^1.11.6",
     "lodash": "^4.17.21",

@@ -16,9 +16,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/pipeline": "workspace:^0.3.0",
-    "@certd/plugin-util": "workspace:^0.3.0",
-    "@certd/plugin-cert": "workspace:^0.3.0",
+    "@certd/pipeline": "^0.3.0",
+    "@certd/plugin-util": "^0.3.0",
+    "@certd/plugin-cert": "^0.3.0",
     "tencentcloud-sdk-nodejs": "^4.0.44"
   },
   "devDependencies": {

@@ -16,9 +16,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "workspace:^0.3.0",
+    "@certd/acme-client": "^0.3.0",
     "node-forge": "^0.10.0",
-    "@certd/pipeline": "workspace:^0.3.0"
+    "@certd/pipeline": "^0.3.0"
   },
   "devDependencies": {
     "log4js": "^6.7.1",

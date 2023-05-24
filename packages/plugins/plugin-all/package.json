@@ -16,14 +16,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/plugin-aliyun": "workspace:^0.3.0",
-    "@certd/plugin-tencent": "workspace:^0.3.0",
-    "@certd/plugin-host": "workspace:^0.3.0",
-    "@certd/plugin-cert": "workspace:^0.3.0",
-    "@certd/plugin-huawei": "workspace:^0.3.0"
+    "@certd/plugin-aliyun": "^0.3.0",
+    "@certd/plugin-tencent": "^0.3.0",
+    "@certd/plugin-host": "^0.3.0",
+    "@certd/plugin-cert": "^0.3.0",
+    "@certd/plugin-huawei": "^0.3.0"
   },
   "devDependencies": {
-    "@certd/pipeline": "workspace:^0.3.0",
+    "@certd/pipeline": "^0.3.0",
     "log4js": "^6.7.1",
     "@types/lodash": "^4.14.186",
     "vue-tsc": "^0.38.9",
