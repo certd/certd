@@ -16,7 +16,7 @@ export default defineComponent({
   name: "PiStatusShow",
   props: {
     status: {
-      type: String,
+      type: [String, Number],
       default: ""
     },
     type: {

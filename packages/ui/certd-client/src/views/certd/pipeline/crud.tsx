@@ -2,28 +2,28 @@ import * as api from "./api";
 import { useI18n } from "vue-i18n";
 import { ref, shallowRef } from "vue";
 import { useRouter } from "vue-router";
-import { dict } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, DialogOpenOption, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { nanoid } from "nanoid";
 import { message } from "ant-design-vue";
-export default function ({ expose, certdFormRef }) {
+export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
   const { t } = useI18n();
   const lastResRef = ref();
-  const pageRequest = async (query) => {
+  const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
-  const editRequest = async ({ form, row }) => {
+  const editRequest = async ({ form, row }: EditReq) => {
     form.id = row.id;
     const res = await api.UpdateObj(form);
     lastResRef.value = res;
     return res;
   };
-  const delRequest = async ({ row }) => {
+  const delRequest = async ({ row }: DelReq) => {
     return await api.DelObj(row.id);
   };
 
-  const addRequest = async ({ form }) => {
+  const addRequest = async ({ form }: AddReq) => {
     form.content = JSON.stringify({
       title: form.title
     });
@@ -32,7 +32,7 @@ export default function ({ expose, certdFormRef }) {
     return res;
   };
   function addCertdPipeline() {
-    certdFormRef.value.open(async ({ form }) => {
+    certdFormRef.value.open(async ({ form }: any) => {
       // 添加certd pipeline
       const pipeline = {
         title: form.domains[0] + "证书自动化",
@@ -176,8 +176,8 @@ export default function ({ expose, certdFormRef }) {
           type: "dict-switch",
           dict: dict({
             data: [
-              { value: true, label: "禁用" },
-              { value: false, label: "启用" }
+              { value: false, label: "启用" },
+              { value: true, label: "禁用" }
             ]
           }),
           form: {

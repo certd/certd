@@ -14,6 +14,9 @@ export class StorageEntity {
   @Column({ name: 'namespace', comment: '命名空间' })
   namespace: string;
 
+  @Column({ comment: 'version', length: 100, nullable: true })
+  version: string;
+
   @Column({ comment: 'key', length: 100, nullable: true })
   key: string;
 

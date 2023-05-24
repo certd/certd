@@ -23,15 +23,20 @@ export class Cron {
     cron.schedule(task.cron, task.job, {
       name: task.name,
     });
+    this.logger.info('当前定时任务数量：', this.getListSize());
   }
 
   remove(taskName: string) {
     this.logger.info(`[cron] remove : [${taskName}]`);
     const tasks = cron.getTasks() as Map<any, any>;
-    tasks.delete(taskName);
+    const node = tasks.get(taskName);
+    if (node) {
+      node.stop();
+      tasks.delete(taskName);
+    }
   }
 
-  getList() {
+  getListSize() {
     const tasks = cron.getTasks();
     return tasks.size;
   }

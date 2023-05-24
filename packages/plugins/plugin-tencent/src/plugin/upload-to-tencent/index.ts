@@ -1,4 +1,4 @@
-import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput, TaskOutput, ILogger } from "@certd/pipeline";
+import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import dayjs from "dayjs";
 
@@ -12,7 +12,7 @@ import dayjs from "dayjs";
     },
   },
 })
-export class UploadToTencentPlugin implements ITaskPlugin {
+export class UploadToTencentPlugin extends AbstractTaskPlugin {
   @TaskInput({ title: "证书名称" })
   name!: string;
 

@@ -85,9 +85,11 @@ export type Log = {
 };
 
 export enum ResultType {
-  success,
-  error,
-  skip,
+  start = "start",
+  success = "success",
+  error = "error",
+  skip = "skip",
+  none = "none",
 }
 
 export type HistoryResultGroup = {
@@ -97,15 +99,21 @@ export type HistoryResultGroup = {
   };
 };
 export type HistoryResult = {
+  input: any;
+  output: any;
   /**
    * 任务状态
    */
-  status: string;
+  status: ResultType;
   startTime: number;
   endTime?: number;
   /**
    * 处理结果
    */
-  result?: string; //success, error,skip
+  result?: ResultType; //success, error,skip
   message?: string;
+};
+
+export type RunnableMap = {
+  [id: string]: Runnable;
 };

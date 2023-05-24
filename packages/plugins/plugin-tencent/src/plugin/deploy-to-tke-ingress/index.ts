@@ -1,4 +1,4 @@
-import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput, utils } from "@certd/pipeline";
+import { AbstractTaskPlugin, Autowire, IAccessService, IsTaskPlugin, RunStrategy, TaskInput, utils } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import { K8sClient } from "@certd/plugin-util";
 import dayjs from "dayjs";
@@ -14,7 +14,7 @@ import { Logger } from "log4js";
     },
   },
 })
-export class DeployCertToTencentTKEIngressPlugin implements ITaskPlugin {
+export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
   @TaskInput({ title: "大区", value: "ap-guangzhou", required: true })
   region!: string;
 

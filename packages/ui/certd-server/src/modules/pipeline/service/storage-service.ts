@@ -1,4 +1,4 @@
-import { Provide, Scope, ScopeEnum } from "@midwayjs/decorator";
+import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service';
@@ -20,6 +20,7 @@ export class StorageService extends BaseService<StorageEntity> {
     scope: any;
     namespace: any;
     userId: number;
+    version: string;
     key: string;
   }) {
     if (where.userId == null) {
@@ -35,6 +36,7 @@ export class StorageService extends BaseService<StorageEntity> {
     scope: any;
     namespace: any;
     userId: number;
+    version: string;
     value: string;
     key: string;
   }) {

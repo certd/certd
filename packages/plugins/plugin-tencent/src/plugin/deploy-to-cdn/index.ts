@@ -1,4 +1,4 @@
-import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, ILogger, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import { TencentAccess } from "../../access";
 import { CertInfo } from "@certd/plugin-cert";
@@ -12,7 +12,7 @@ import { CertInfo } from "@certd/plugin-cert";
     },
   },
 })
-export class DeployToCdnPlugin implements ITaskPlugin {
+export class DeployToCdnPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "域名证书",
     helper: "请选择前置任务输出的域名证书",

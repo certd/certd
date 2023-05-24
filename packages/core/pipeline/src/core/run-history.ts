@@ -1,4 +1,4 @@
-import { Context, HistoryResult, Pipeline, Runnable } from "../d.ts";
+import { Context, HistoryResult, Pipeline, ResultType, Runnable, RunnableMap, Stage, Step, Task } from "../d.ts";
 import _ from "lodash";
 import { buildLogger } from "../utils/util.log";
 import { Logger } from "log4js";
@@ -11,18 +11,27 @@ export type HistoryStatus = {
 export type RunTrigger = {
   type: string; // user , timer
 };
+
+export function NewRunHistory(obj: any) {
+  const history = new RunHistory(obj.id, obj.trigger, obj.pipeline);
+  history.context = obj.context;
+  history.logs = obj.logs;
+  history._loggers = obj.loggers;
+  return history;
+}
 export class RunHistory {
-  id: string;
+  id!: string;
   //运行时上下文变量
   context: Context = {};
-  pipeline: Pipeline;
+  pipeline!: Pipeline;
   logs: {
     [runnableId: string]: string[];
   } = {};
-  loggers: {
+  _loggers: {
     [runnableId: string]: Logger;
   } = {};
-  trigger: RunTrigger;
+  trigger!: RunTrigger;
+
   constructor(runtimeId: any, trigger: RunTrigger, pipeline: Pipeline) {
     this.id = runtimeId;
     this.pipeline = pipeline;
@@ -32,13 +41,16 @@ export class RunHistory {
   start(runnable: Runnable): HistoryResult {
     const now = new Date().getTime();
     this.logs[runnable.id] = [];
-    this.loggers[runnable.id] = buildLogger((text) => {
+    this._loggers[runnable.id] = buildLogger((text) => {
       this.logs[runnable.id].push(text);
     });
+    const input = (runnable as Step).input;
     const status: HistoryResult = {
-      status: "start",
+      output: {},
+      input: _.cloneDeep(input),
+      status: ResultType.start,
       startTime: now,
-      result: "start",
+      result: ResultType.start,
     };
     runnable.status = status;
     this.log(runnable, `开始执行`);
@@ -71,9 +83,9 @@ export class RunHistory {
     const now = new Date().getTime();
     const status = runnable.status;
     _.merge(status, {
-      status: "error",
+      status: ResultType.error,
       endTime: now,
-      result: "error",
+      result: ResultType.error,
       message: e.message,
     });
 
@@ -82,15 +94,65 @@ export class RunHistory {
 
   log(runnable: Runnable, text: string) {
     // @ts-ignore
-    this.loggers[runnable.id].info(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, text);
+    this._loggers[runnable.id].info(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, text);
   }
 
   logError(runnable: Runnable, e: Error) {
     // @ts-ignore
-    this.loggers[runnable.id].error(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, e);
+    this._loggers[runnable.id].error(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, e);
   }
 
   finally(runnable: Runnable) {
     //
+  }
+}
+
+export class RunnableCollection {
+  private collection: RunnableMap = {};
+  private pipeline!: Pipeline;
+  constructor(pipeline?: Pipeline) {
+    if (!pipeline) {
+      return;
+    }
+    this.pipeline = pipeline;
+    const map = this.toMap(pipeline);
+    this.collection = map;
+  }
+
+  private each<T extends Runnable>(list: T[], exec: (item: Runnable) => void) {
+    list.forEach((item) => {
+      exec(item);
+      if (item.runnableType === "pipeline") {
+        // @ts-ignore
+        this.each<Stage>(item.stages, exec);
+      } else if (item.runnableType === "stage") {
+        // @ts-ignore
+        this.each<Task>(item.tasks, exec);
+      } else if (item.runnableType === "task") {
+        // @ts-ignore
+        this.each<Step>(item.steps, exec);
+      }
+    });
+  }
+  private toMap(pipeline: Pipeline) {
+    const map: RunnableMap = {};
+
+    this.each(pipeline.stages, (item) => {
+      map[item.id] = item;
+    });
+    return map;
+  }
+
+  get(id: string): Runnable | undefined {
+    return this.collection[id];
+  }
+
+  clear() {
+    if (!this.pipeline) {
+      return;
+    }
+    this.each(this.pipeline.stages, (item) => {
+      item.status = undefined;
+    });
   }
 }

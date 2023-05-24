@@ -1,7 +1,7 @@
 import { ConcurrencyStrategy, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
 import _ from "lodash";
-import { RunHistory } from "./run-history";
-import { PluginDefine, pluginRegistry } from "../plugin";
+import { RunHistory, RunnableCollection } from "./run-history";
+import { AbstractTaskPlugin, PluginDefine, pluginRegistry } from "../plugin";
 import { ContextFactory, IContext } from "./context";
 import { IStorage } from "./storage";
 import { logger } from "../utils/util.log";
@@ -18,11 +18,20 @@ export class Executor {
   accessService: IAccessService;
   contextFactory: ContextFactory;
   logger: Logger;
-  pipelineContext: IContext;
+  pipelineContext!: IContext;
+  lastStatusMap!: RunnableCollection;
   onChanged: (history: RunHistory) => void;
-  constructor(options: { userId: any; pipeline: Pipeline; storage: IStorage; onChanged: (history: RunHistory) => void; accessService: IAccessService }) {
+  constructor(options: {
+    userId: any;
+    pipeline: Pipeline;
+    storage: IStorage;
+    onChanged: (history: RunHistory) => Promise<void>;
+    accessService: IAccessService;
+  }) {
     this.pipeline = _.cloneDeep(options.pipeline);
-    this.onChanged = options.onChanged;
+    this.onChanged = async (history: RunHistory) => {
+      await options.onChanged(history);
+    };
     this.accessService = options.accessService;
     this.userId = options.userId;
     this.pipeline.userId = this.userId;
@@ -31,17 +40,25 @@ export class Executor {
     this.pipelineContext = this.contextFactory.getContext("pipeline", this.pipeline.id);
   }
 
+  async init() {
+    const lastRuntime = await this.pipelineContext.getObj(`lastRuntime`);
+    this.lastStatusMap = new RunnableCollection(lastRuntime?.pipeline);
+  }
+
   async run(runtimeId: any = 0, triggerType: string) {
     try {
+      await this.init();
       const trigger = { type: triggerType };
+      // 读取last
       this.runtime = new RunHistory(runtimeId, trigger, this.pipeline);
       this.logger.info(`pipeline.${this.pipeline.id}  start`);
       await this.runWithHistory(this.pipeline, "pipeline", async () => {
-        await this.runStages();
+        await this.runStages(this.pipeline);
       });
     } catch (e) {
       this.logger.error("pipeline 执行失败", e);
     } finally {
+      await this.pipelineContext.setObj("lastRuntime", this.runtime);
       this.logger.info(`pipeline.${this.pipeline.id}  end`);
     }
   }
@@ -50,20 +67,18 @@ export class Executor {
     runnable.runnableType = runnableType;
     this.runtime.start(runnable);
     await this.onChanged(this.runtime);
-    const contextKey = `status.${runnable.id}`;
-    const inputKey = `input.${runnable.id}`;
 
     if (runnable.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
       //如果是成功后跳过策略
-      const lastResult = await this.pipelineContext.getObj(contextKey);
-      const lastInput = await this.pipelineContext.get(inputKey);
+      const lastNode = this.lastStatusMap.get(runnable.id);
+      const lastResult = lastNode?.status?.status;
+      const lastInput = JSON.stringify(lastNode?.status?.input);
       let inputChanged = false;
-      //TODO 参数不变
       if (runnableType === "step") {
         const step = runnable as Step;
         const input = JSON.stringify(step.input);
-        await this.pipelineContext.set(inputKey, input);
         if (input != null && lastInput !== input) {
+          //参数有变化
           inputChanged = true;
         }
       }
@@ -76,12 +91,10 @@ export class Executor {
     try {
       await run();
       this.runtime.success(runnable);
-      await this.pipelineContext.setObj(contextKey, ResultType.success);
       await this.onChanged(this.runtime);
       return ResultType.success;
     } catch (e: any) {
       this.runtime.error(runnable, e);
-      await this.pipelineContext.setObj(contextKey, ResultType.error);
       await this.onChanged(this.runtime);
       throw e;
     } finally {
@@ -89,9 +102,9 @@ export class Executor {
     }
   }
 
-  private async runStages() {
+  private async runStages(pipeline: Pipeline) {
     const resList: ResultType[] = [];
-    for (const stage of this.pipeline.stages) {
+    for (const stage of pipeline.stages) {
       const res: ResultType = await this.runWithHistory(stage, "stage", async () => {
         await this.runStage(stage);
       });
@@ -150,17 +163,12 @@ export class Executor {
   }
 
   private async runStep(step: Step) {
+    const lastStatus = this.lastStatusMap.get(step.id);
     //执行任务
-    const plugin: RegistryItem = pluginRegistry.get(step.type);
-    const context: any = {
-      logger: this.runtime.loggers[step.id],
-      accessService: this.accessService,
-      pipelineContext: this.pipelineContext,
-      userContext: this.contextFactory.getContext("user", this.userId),
-      http: request,
-    };
+    const plugin: RegistryItem<AbstractTaskPlugin> = pluginRegistry.get(step.type);
+
     // @ts-ignore
-    const instance = new plugin.target();
+    const instance: ITaskPlugin = new plugin.target();
     // @ts-ignore
     const define: PluginDefine = plugin.define;
     //从outputContext读取输入参数
@@ -173,14 +181,27 @@ export class Executor {
       }
     });
 
+    const context: any = {
+      logger: this.runtime._loggers[step.id],
+      accessService: this.accessService,
+      pipelineContext: this.pipelineContext,
+      lastStatus,
+      userContext: this.contextFactory.getContext("user", this.userId),
+      http: request,
+    };
     Decorator.inject(define.autowire, instance, context);
+
     await instance.onInstance();
     await instance.execute();
 
+    if (instance.result.clearLastStatus) {
+      this.lastStatusMap.clear();
+    }
     //输出到output context
     _.forEach(define.output, (item, key) => {
-      const contextKey = `step.${step.id}.${key}`;
-      this.runtime.context[contextKey] = instance[key];
+      step!.status!.output[key] = instance[key];
+      const stepOutputKey = `step.${step.id}.${key}`;
+      this.runtime.context[stepOutputKey] = instance[key];
     });
   }
 }

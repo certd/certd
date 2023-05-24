@@ -1,4 +1,4 @@
 import { Registry } from "../registry";
+import { AbstractTaskPlugin } from "./api";
 
-// @ts-ignore
-export const pluginRegistry = new Registry();
+export const pluginRegistry = new Registry<AbstractTaskPlugin>();

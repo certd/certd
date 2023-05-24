@@ -1,4 +1,4 @@
-import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, ILogger, RunStrategy, TaskInput, utils } from "@certd/pipeline";
+import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, utils } from "@certd/pipeline";
 // @ts-ignore
 import { ROAClient } from "@alicloud/pop-core";
 import { AliyunAccess } from "../../access";
@@ -17,7 +17,7 @@ import { CertInfo } from "@certd/plugin-cert";
     },
   },
 })
-export class DeployCertToAliyunAckIngressPlugin implements ITaskPlugin {
+export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "集群id",
     component: {
@@ -108,8 +108,6 @@ export class DeployCertToAliyunAckIngressPlugin implements ITaskPlugin {
   @Autowire()
   logger!: ILogger;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInstance(): Promise<void> {}
   async execute(): Promise<void> {
     console.log("开始部署证书到阿里云cdn");
     const { regionId, ingressClass, clusterId, isPrivateIpAddress, cert } = this;

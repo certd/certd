@@ -12,15 +12,26 @@ export class DbStorage implements IStorage {
     this.storageService = storageService;
   }
 
+  remove(
+    scope: string,
+    namespace: string,
+    version: string,
+    key: string
+  ): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   async get(
     scope: string,
     namespace: string,
+    version: string,
     key: string
   ): Promise<string | null> {
     const storageEntity = await this.storageService.get({
       userId: this.userId,
       scope: scope,
       namespace: namespace,
+      version,
       key,
     });
 
@@ -33,6 +44,7 @@ export class DbStorage implements IStorage {
   async set(
     scope: string,
     namespace: string,
+    version: string,
     key: string,
     value: string
   ): Promise<void> {
@@ -40,6 +52,7 @@ export class DbStorage implements IStorage {
       userId: this.userId,
       scope: scope,
       namespace: namespace,
+      version,
       key,
       value,
     });

@@ -52,6 +52,7 @@ export class PipelineController extends CrudController<PipelineService> {
       await this.service.checkUserId(bean.id, this.ctx.user.id);
     }
     await this.service.save(bean);
+    await this.service.registerTriggerById(bean.id);
     return this.ok(bean.id);
   }
 

@@ -1,4 +1,4 @@
-import { Autowire, HttpClient, IAccessService, IContext, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
+import { AbstractTaskPlugin, Autowire, HttpClient, IAccessService, IContext, IsTaskPlugin, RunStrategy, Step, TaskInput, TaskOutput } from "@certd/pipeline";
 import dayjs from "dayjs";
 import { AcmeService, CertInfo } from "./acme";
 import _ from "lodash";
@@ -24,7 +24,7 @@ export type { CertInfo };
     },
   },
 })
-export class CertApplyPlugin implements ITaskPlugin {
+export class CertApplyPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "域名",
     component: {
@@ -118,7 +118,7 @@ export class CertApplyPlugin implements ITaskPlugin {
   http!: HttpClient;
 
   @Autowire()
-  pipelineContext!: IContext;
+  lastStatus!: Step;
 
   @TaskOutput({
     title: "域名证书",
@@ -137,6 +137,8 @@ export class CertApplyPlugin implements ITaskPlugin {
     const cert = await this.doCertApply();
     if (cert != null) {
       this.output(cert.toCertInfo());
+      //清空后续任务的状态，让后续任务能够重新执行
+      this.clearLastStatus();
     } else {
       throw new Error("申请证书失败");
     }
@@ -156,10 +158,7 @@ export class CertApplyPlugin implements ITaskPlugin {
     }
 
     let inputChanged = false;
-    const inputCacheKey = "input.domains";
-    const oldInputStr = await this.pipelineContext.getObj(inputCacheKey);
-    await this.pipelineContext.setObj(inputCacheKey, this.domains);
-    const oldInput = JSON.stringify(oldInputStr);
+    const oldInput = JSON.stringify(this.lastStatus?.input?.domains);
     const thisInput = JSON.stringify(this.domains);
     if (oldInput !== thisInput) {
       inputChanged = true;
@@ -167,7 +166,7 @@ export class CertApplyPlugin implements ITaskPlugin {
 
     let oldCert: CertReader | undefined = undefined;
     try {
-      oldCert = await this.readCurrentCert();
+      oldCert = await this.readLastCert();
     } catch (e) {
       this.logger.warn("读取cert失败：", e);
     }
@@ -227,10 +226,8 @@ export class CertApplyPlugin implements ITaskPlugin {
       isTest: false,
     });
 
-    await this.writeCert(cert);
-    const ret = await this.readCurrentCert();
-
-    return ret;
+    const certInfo = this.formatCerts(cert);
+    return new CertReader(certInfo);
   }
 
   formatCert(pem: string) {
@@ -240,20 +237,17 @@ export class CertApplyPlugin implements ITaskPlugin {
     return pem;
   }
 
-  async writeCert(cert: { crt: string; key: string; csr: string }) {
+  formatCerts(cert: { crt: string; key: string; csr: string }) {
     const newCert: CertInfo = {
       crt: this.formatCert(cert.crt),
       key: this.formatCert(cert.key),
       csr: this.formatCert(cert.csr),
     };
-    await this.pipelineContext.setObj("cert", newCert);
-    await this.pipelineContext.set("cert.crt", newCert.crt);
-    await this.pipelineContext.set("cert.key", newCert.key);
-    await this.pipelineContext.set("cert.csr", newCert.csr);
+    return newCert;
   }
 
-  async readCurrentCert(): Promise<CertReader | undefined> {
-    const cert: CertInfo = await this.pipelineContext.getObj("cert");
+  async readLastCert(): Promise<CertReader | undefined> {
+    const cert = this.lastStatus?.status?.output?.cert;
     if (cert == null) {
       return undefined;
     }

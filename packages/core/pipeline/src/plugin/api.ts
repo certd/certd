@@ -33,9 +33,24 @@ export type PluginDefine = Registrable & {
   };
 };
 
-export interface ITaskPlugin {
+export type ITaskPlugin = {
   onInstance(): Promise<void>;
   execute(): Promise<void>;
+  [key: string]: any;
+};
+
+export type TaskResult = {
+  clearLastStatus?: boolean;
+};
+export abstract class AbstractTaskPlugin implements ITaskPlugin {
+  result: TaskResult = {};
+  clearLastStatus() {
+    this.result.clearLastStatus = true;
+  }
+  async onInstance(): Promise<void> {
+    return;
+  }
+  abstract execute(): Promise<void>;
 }
 
 export type OutputVO = {

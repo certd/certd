@@ -1,4 +1,4 @@
-import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
+import { AbstractTaskPlugin, Autowire, IAccessService, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import Core from "@alicloud/pop-core";
 import { AliyunAccess } from "../../access";
 import { appendTimeSuffix, checkRet, ZoneOptions } from "../../utils";
@@ -14,7 +14,7 @@ import { Logger } from "log4js";
     },
   },
 })
-export class UploadCertToAliyun implements ITaskPlugin {
+export class UploadCertToAliyun extends AbstractTaskPlugin {
   @TaskInput({
     title: "证书名称",
     helper: "证书上传后将以此参数作为名称前缀",

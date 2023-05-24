@@ -1,4 +1,4 @@
-import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, ILogger, RunStrategy, TaskInput, utils } from "@certd/pipeline";
+import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, utils } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import { TencentAccess } from "../../access";
 import dayjs from "dayjs";
@@ -13,7 +13,7 @@ import dayjs from "dayjs";
     },
   },
 })
-export class DeployToClbPlugin implements ITaskPlugin {
+export class DeployToClbPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "大区",
     value: "ap-guangzhou",

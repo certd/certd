@@ -4,23 +4,23 @@ export type Registrable = {
   desc?: string;
 };
 
-export type RegistryItem = {
+export type RegistryItem<T> = {
   define: Registrable;
-  target: any;
+  target: T;
 };
-export class Registry {
+export class Registry<T> {
   storage: {
-    [key: string]: RegistryItem;
+    [key: string]: RegistryItem<T>;
   } = {};
 
-  register(key: string, value: RegistryItem) {
+  register(key: string, value: RegistryItem<T>) {
     if (!key || value == null) {
       return;
     }
     this.storage[key] = value;
   }
 
-  get(name: string): RegistryItem {
+  get(name: string): RegistryItem<T> {
     if (!name) {
       throw new Error("插件名称不能为空");
     }

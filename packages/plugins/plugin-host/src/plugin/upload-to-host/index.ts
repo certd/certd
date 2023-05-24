@@ -1,4 +1,4 @@
-import { Autowire, IAccessService, IsTaskPlugin, ITaskPlugin, ILogger, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
+import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import { SshClient } from "../../lib/ssh";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
 import * as fs from "fs";
@@ -12,7 +12,7 @@ import * as fs from "fs";
     },
   },
 })
-export class UploadCertToHostPlugin implements ITaskPlugin {
+export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "证书保存路径",
   })

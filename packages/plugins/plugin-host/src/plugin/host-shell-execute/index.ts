@@ -1,4 +1,4 @@
-import { Autowire, IAccessService, ILogger, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
 import { SshClient } from "../../lib/ssh";
 
 @IsTaskPlugin({
@@ -12,7 +12,7 @@ import { SshClient } from "../../lib/ssh";
   },
   output: {},
 })
-export class HostShellExecutePlugin implements ITaskPlugin {
+export class HostShellExecutePlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "主机登录配置",
     helper: "登录",

@@ -1,4 +1,15 @@
-const StatusEnum = {
+export type StatusEnumItem = {
+  value: string;
+  label: string;
+  color: string;
+  icon: string;
+  spin?: boolean;
+};
+export type StatusEnumType = {
+  [key: string]: StatusEnumItem;
+};
+
+const StatusEnum: StatusEnumType = {
   success: {
     value: "success",
     label: "成功",

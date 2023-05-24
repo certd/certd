@@ -1,9 +1,8 @@
-import { Autowire, IAccessService, ILogger, IsTaskPlugin, ITaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
 import dayjs from "dayjs";
 import Core from "@alicloud/pop-core";
 import RPCClient from "@alicloud/pop-core";
 import { AliyunAccess } from "../../access";
-
 
 @IsTaskPlugin({
   name: "DeployCertToAliyunCDN",
@@ -15,7 +14,7 @@ import { AliyunAccess } from "../../access";
     },
   },
 })
-export class DeployCertToAliyunCDN implements ITaskPlugin {
+export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   @TaskInput({
     title: "CDN加速域名",
     helper: "你在阿里云上配置的CDN加速域名，比如certd.docmirror.cn",
