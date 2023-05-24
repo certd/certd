@@ -7,7 +7,7 @@ import { FileStorage } from "../../src/core/storage";
 describe("pipeline", function () {
   it("#pipeline", async function () {
     this.timeout(120000);
-    function onChanged(history: RunHistory) {
+    async function onChanged(history: RunHistory) {
       console.log("changed:");
     }
 

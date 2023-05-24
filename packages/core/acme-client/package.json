@@ -1,6 +1,7 @@
 {
     "name": "@certd/acme-client",
     "description": "Simple and unopinionated ACME client",
+    "private": false,
     "author": "nmorsman",
     "version": "0.3.0",
     "main": "src/index.js",

@@ -4,8 +4,8 @@
   "description": "fast-server base midway",
   "private": true,
   "scripts": {
-    "start": "NODE_ENV=production node ./bootstrap.js",
-    "online": "NODE_ENV=production node ./bootstrap.js",
+    "start": "cross-env NODE_ENV=production node ./bootstrap.js",
+    "online": "cross-env NODE_ENV=production node ./bootstrap.js",
     "online:preview": "NODE_ENV=preview node ./bootstrap.js",
     "dev": "cross-env NODE_ENV=local midway-bin dev --ts --watchFile='../../core/pipeline/src,../../plugins/'",
     "dev:preview": "cross-env NODE_ENV=preview midway-bin dev --ts",

@@ -1,14 +1,14 @@
 {
   "name": "@certd/plugin-huawei",
-  "private": true,
+  "private": false,
   "version": "0.3.0",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
   "publishConfig": {
-    "main": "./dist/plugin-aliyun.umd.js",
-    "module": "./dist/plugin-aliyun.mjs",
-    "types": "./dist/es/plugin-aliyun.d.ts"
+    "main": "./dist/plugin-huawei.umd.js",
+    "module": "./dist/plugin-huawei.mjs",
+    "types": "./dist/es/plugin-huawei.d.ts"
   },
   "scripts": {
     "dev": "vite",

@@ -1,6 +1,6 @@
 {
   "name": "@certd/plugin-aliyun",
-  "private": true,
+  "private": false,
   "version": "0.3.0",
   "main": "./src/index.ts",
   "module": "./src/index.ts",

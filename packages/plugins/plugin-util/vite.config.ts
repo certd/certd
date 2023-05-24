@@ -14,7 +14,7 @@ export default defineConfig({
         // for externalized deps
         globals: {
           vue: "Vue",
-          "lodash": "_",
+          lodash: "_",
           dayjs: "dayjs",
           "@fast-crud/fast-crud": "FastCrud",
         },

@@ -1,4 +1,4 @@
-import { IsTaskPlugin, TaskInput, ITaskPlugin, ILogger, Autowire, TaskOutput } from "../src";
+import { Autowire, ILogger, IsTaskPlugin, ITaskPlugin, TaskInput, TaskOutput } from "../src";
 
 @IsTaskPlugin({
   name: "EchoPlugin",

@@ -1,6 +1,7 @@
 import { ILogger } from "@midwayjs/logger";
 import { ITaskPlugin } from "../api";
-import { Autowire, IsTaskPlugin, TaskInput } from "../decorator";
+import { IsTaskPlugin, TaskInput } from "../decorator";
+import { Autowire } from "../../decorator";
 
 @IsTaskPlugin({
   name: "EchoPlugin",
