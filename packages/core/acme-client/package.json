@@ -57,5 +57,6 @@
     ],
     "bugs": {
         "url": "https://github.com/publishlab/node-acme-client/issues"
-    }
+    },
+    "gitHead": "5950e1cae7cf30ebfc5128c15c7d1b0d101cbbb8"
 }
