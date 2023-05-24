@@ -1,6 +1,6 @@
 {
   "name": "@fast-crud/fs-admin-antdv",
-  "version": "1.9.2",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -20,10 +20,10 @@
   "author": "Greper",
   "license": "MIT",
   "dependencies": {
-    "@certd/acme-client": "^0.3.0",
-    "@certd/pipeline": "^0.3.0",
     "@ant-design/colors": "^6.0.0",
     "@ant-design/icons-vue": "^6.0.1",
+    "@certd/acme-client": "^1.0.0",
+    "@certd/pipeline": "^1.0.0",
     "@fast-crud/fast-crud": "^1.13.8",
     "@fast-crud/fast-extends": "^1.13.8",
     "@fast-crud/ui-antdv": "^1.13.8",
@@ -44,9 +44,9 @@
     "dayjs": "^1.11.7",
     "deepdash-es": "5.3.5",
     "highlight.js": "^11.7.0",
+    "humanize-duration": "^3.27.3",
     "lodash": "^4.17.15",
     "mitt": "^3.0.0",
-    "humanize-duration": "^3.27.3",
     "nanoid": "^4.0.0",
     "nprogress": "^0.2.0",
     "object-assign": "^4.1.1",

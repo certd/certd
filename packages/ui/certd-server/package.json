@@ -1,6 +1,6 @@
 {
   "name": "@fast-crud/fs-server-js",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "fast-server base midway",
   "private": true,
   "scripts": {
@@ -22,19 +22,19 @@
   },
   "dependencies": {
     "@alicloud/pop-core": "^1.7.12",
-    "@certd/pipeline": "^0.3.0",
-    "@certd/plugin-all": "^0.3.0",
-    "@certd/plugin-cert": "^0.3.0",
+    "@certd/pipeline": "^1.0.0",
+    "@certd/plugin-all": "^1.0.0",
+    "@certd/plugin-cert": "^1.0.0",
     "@koa/cors": "^3.4.3",
     "@midwayjs/bootstrap": "^3.9.1",
     "@midwayjs/cache": "^3.9.0",
     "@midwayjs/core": "^3.9.0",
     "@midwayjs/decorator": "^3.9.0",
+    "@midwayjs/i18n": "^3.9.0",
     "@midwayjs/koa": "^3.9.0",
     "@midwayjs/logger": "^2.17.0",
     "@midwayjs/typeorm": "^3.9.5",
     "@midwayjs/validate": "^3.9.0",
-    "@midwayjs/i18n": "^3.9.0",
     "@types/cache-manager": "^3.4.3",
     "cache-manager": "^3.6.3",
     "dayjs": "^1.11.7",
@@ -68,7 +68,6 @@
   "engines": {
     "node": ">=12.0.0"
   },
-
   "midway-bin-clean": [
     ".vscode/.tsbuildinfo",
     "dist"

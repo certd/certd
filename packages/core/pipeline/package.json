@@ -1,7 +1,7 @@
 {
   "name": "@certd/pipeline",
   "private": false,
-  "version": "0.3.0",
+  "version": "1.0.0",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
@@ -16,7 +16,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "^0.3.0",
+    "@certd/acme-client": "^1.0.0",
     "axios": "^0.21.1",
     "dayjs": "^1.11.6",
     "lodash": "^4.17.21",
@@ -38,13 +38,13 @@
     "@midwayjs/logger": "^2.17.0",
     "@midwayjs/typeorm": "^3.9.0",
     "@midwayjs/validate": "^3.9.0",
+    "@rollup/plugin-typescript": "^11.0.0",
     "@types/chai": "^4.3.3",
     "@types/lodash": "^4.14.194",
     "@types/mocha": "^10.0.0",
     "@types/node-forge": "^1.3.0",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "@typescript-eslint/parser": "^5.38.1",
-    "@rollup/plugin-typescript": "^11.0.0",
     "chai": "^4.3.6",
     "eslint": "^8.24.0",
     "eslint-config-prettier": "^8.5.0",
