@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "lerna": "^6.3.0"
+    "@lerna-lite/cli": "^2.4.0",
+    "@lerna-lite/run": "^2.4.0"
   },
   "scripts": {
     "start": "lerna bootstrap --hoist",
