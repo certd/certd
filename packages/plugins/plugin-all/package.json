@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-all",
   "private": false,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
@@ -16,17 +16,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/plugin-aliyun": "^1.0.1",
-    "@certd/plugin-cert": "^1.0.1",
-    "@certd/plugin-host": "^1.0.1",
-    "@certd/plugin-huawei": "^1.0.1",
-    "@certd/plugin-tencent": "^1.0.1"
+    "@certd/plugin-aliyun": "^1.0.2",
+    "@certd/plugin-cert": "^1.0.2",
+    "@certd/plugin-host": "^1.0.2",
+    "@certd/plugin-huawei": "^1.0.2",
+    "@certd/plugin-tencent": "^1.0.2"
   },
   "devDependencies": {
     "@alicloud/cs20151215": "^3.0.3",
     "@alicloud/openapi-client": "^0.4.0",
     "@alicloud/pop-core": "^1.7.10",
-    "@certd/pipeline": "^1.0.1",
+    "@certd/pipeline": "^1.0.2",
     "@midwayjs/core": "^3.0.0",
     "@midwayjs/decorator": "^3.0.0",
     "@types/chai": "^4.3.3",

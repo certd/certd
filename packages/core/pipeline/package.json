@@ -1,7 +1,7 @@
 {
   "name": "@certd/pipeline",
   "private": false,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
@@ -16,7 +16,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "^1.0.1",
+    "@certd/acme-client": "^1.0.2",
     "axios": "^0.21.1",
     "dayjs": "^1.11.6",
     "lodash": "^4.17.21",
