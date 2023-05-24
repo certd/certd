@@ -1,6 +1,6 @@
 {
   "name": "@certd/ui-client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -22,8 +22,8 @@
   "dependencies": {
     "@ant-design/colors": "^6.0.0",
     "@ant-design/icons-vue": "^6.0.1",
-    "@certd/acme-client": "^1.0.0",
-    "@certd/pipeline": "^1.0.0",
+    "@certd/acme-client": "^1.0.1",
+    "@certd/pipeline": "^1.0.1",
     "@fast-crud/fast-crud": "^1.13.8",
     "@fast-crud/fast-extends": "^1.13.8",
     "@fast-crud/ui-antdv": "^1.13.8",

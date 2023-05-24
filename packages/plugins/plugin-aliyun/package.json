@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-aliyun",
   "private": false,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
@@ -19,10 +19,10 @@
     "@alicloud/cs20151215": "^3.0.3",
     "@alicloud/openapi-client": "^0.4.0",
     "@alicloud/pop-core": "^1.7.10",
-    "@certd/acme-client": "^1.0.0",
-    "@certd/pipeline": "^1.0.0",
-    "@certd/plugin-cert": "^1.0.0",
-    "@certd/plugin-util": "^1.0.0",
+    "@certd/acme-client": "^1.0.1",
+    "@certd/pipeline": "^1.0.1",
+    "@certd/plugin-cert": "^1.0.1",
+    "@certd/plugin-util": "^1.0.1",
     "dayjs": "^1.11.6",
     "lodash": "^4.17.21",
     "node-forge": "^0.10.0"
