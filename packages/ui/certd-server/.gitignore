@@ -17,3 +17,5 @@ run/
 /pnpm-lock.yaml
 .serverless
 data
+public
+!public/.gitignore

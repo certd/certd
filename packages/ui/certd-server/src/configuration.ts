@@ -13,11 +13,11 @@ import { ReportMiddleware } from './middleware/report';
 import { GlobalExceptionMiddleware } from './middleware/global-exception';
 import { PreviewMiddleware } from './middleware/preview';
 import { AuthorityMiddleware } from './middleware/authority';
-
+import * as staticFile from '@midwayjs/static-file';
 import * as cron from './plugins/cron';
 
 @Configuration({
-  imports: [koa, orm, cache, flyway, validateComp, cron],
+  imports: [koa, orm, cache, flyway, validateComp, cron,staticFile],
   importConfigs: [
     {
       default: defaultConfig,
