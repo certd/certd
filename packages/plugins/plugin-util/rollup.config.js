@@ -14,7 +14,13 @@ module.exports = {
     // 解析第三方依赖
     resolve(),
     // 识别 commonjs 模式第三方依赖
-    commonjs(),
+    commonjs({
+      dynamicRequireRoot: "../../../",
+      dynamicRequireTargets: [
+        // include using a glob pattern (either a string or an array of strings)
+        "node_modules/shelljs/src/*",
+      ],
+    }),
     Typescript({
       target: "esnext",
       rootDir: "src",
@@ -39,5 +45,9 @@ module.exports = {
     "@certd/plugin-host",
     "@certd/plugin-tencent",
     "@certd/plugin-util",
+    "log4js",
+    "@midwayjs/core",
+    "@midwayjs/decorator",
+    // "kubernetes-client",
   ],
 };

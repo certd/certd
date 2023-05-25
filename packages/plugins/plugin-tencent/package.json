@@ -7,8 +7,8 @@
   "types": "./src/index.ts",
   "publishConfig": {
     "main": "./dist/bundle.js",
-    "module": "./dist/plugin-tencent.mjs",
-    "types": "./dist/es/plugin-tencent.d.ts"
+    "module": "./dist/bundle.mjs",
+    "types": "./dist/d/index.d.ts"
   },
   "scripts": {
     "dev": "vite",

@@ -7,8 +7,8 @@
   "types": "./src/index.ts",
   "publishConfig": {
     "main": "./dist/bundle.js",
-    "module": "./dist/plugin-util.mjs",
-    "types": "./dist/es/plugin-util.d.ts"
+    "module": "./dist/bundle.mjs",
+    "types": "./dist/d/index.d.ts"
   },
   "scripts": {
     "dev": "vite",
@@ -17,7 +17,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "kubernetes-client": "^9.0.0"
+    "kubernetes-client": "^9.0.0",
+    "shelljs": "^0.8.5"
   },
   "devDependencies": {
     "@certd/pipeline": "^1.0.5",
