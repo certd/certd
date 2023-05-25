@@ -2,7 +2,7 @@
   "name": "@certd/plugin-aliyun",
   "private": false,
   "version": "1.0.2",
-  "main": "./src/index.ts",
+  "main": "./dist/bundle.js",
   "module": "./dist/plugin-aliyun.mjs",
   "types": "./dist/es/plugin-aliyun.d.ts",
   "publishConfig": {

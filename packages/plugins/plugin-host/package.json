@@ -2,7 +2,7 @@
   "name": "@certd/plugin-host",
   "private": false,
   "version": "1.0.2",
-  "main": "./src/index.ts",
+  "main": "./dist/bundle.js",
   "module": "./dist/plugin-host.mjs",
   "types": "./dist/es/plugin-host.d.ts",
   "publishConfig": {

@@ -2,7 +2,7 @@
   "name": "@certd/pipeline",
   "private": false,
   "version": "1.0.2",
-  "main": "./src/index.ts",
+  "main": "./dist/bundle.js",
   "module": "./dist/pipeline.mjs",
   "types": "./dist/d/index.d.ts",
   "publishConfig": {
@@ -17,7 +17,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "workspace:^1.0.2",
+    "@certd/acme-client": "^1.0.2",
     "axios": "^1.4.0",
     "dayjs": "^1.11.7",
     "lodash": "^4.17.21",
@@ -27,18 +27,8 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@alicloud/cs20151215": "^3.0.20",
-    "@alicloud/openapi-client": "^0.4.6",
-    "@alicloud/pop-core": "^1.7.13",
-    "@midwayjs/bootstrap": "^3.11.6",
-    "@midwayjs/cache": "^3.11.6",
-    "@midwayjs/cli": "^2.0.15",
     "@midwayjs/core": "^3.11.6",
     "@midwayjs/decorator": "^3.11.6",
-    "@midwayjs/koa": "^3.11.6",
-    "@midwayjs/logger": "^2.17.0",
-    "@midwayjs/typeorm": "^3.11.8",
-    "@midwayjs/validate": "^3.11.6",
     "@types/chai": "^4.3.5",
     "@types/lodash": "^4.14.194",
     "@types/mocha": "^10.0.1",

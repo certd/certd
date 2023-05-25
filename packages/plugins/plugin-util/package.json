@@ -2,7 +2,7 @@
   "name": "@certd/plugin-util",
   "private": false,
   "version": "1.0.2",
-  "main": "./src/index.ts",
+  "main": "./dist/bundle.js",
   "module": "./dist/plugin-util.mjs",
   "types": "./dist/es/plugin-util.d.ts",
   "publishConfig": {
@@ -41,8 +41,7 @@
     "typescript": "^4.8.4",
     "vite": "^3.1.0",
     "vue-tsc": "^0.38.9",
-    "rollup-plugin-visualizer": "^5.8.2",
-    "@rollup/plugin-typescript": "^11.0.0"
+    "rollup-plugin-visualizer": "^5.8.2"
   },
   "gitHead": "5950e1cae7cf30ebfc5128c15c7d1b0d101cbbb8"
 }

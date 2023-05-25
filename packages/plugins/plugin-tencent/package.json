@@ -2,7 +2,7 @@
   "name": "@certd/plugin-tencent",
   "private": false,
   "version": "1.0.2",
-  "main": "./src/index.ts",
+  "main": "./dist/bundle.js",
   "module": "./dist/plugin-tencent.mjs",
   "types": "./dist/es/plugin-tencent.d.ts",
   "publishConfig": {

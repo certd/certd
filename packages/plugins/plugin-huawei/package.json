@@ -2,7 +2,7 @@
   "name": "@certd/plugin-huawei",
   "private": false,
   "version": "1.0.2",
-  "main": "./src/index.ts",
+  "main": "./dist/bundle.js",
   "module": "./dist/plugin-huawei.mjs",
   "types": "./dist/es/plugin-huawei.d.ts",
   "publishConfig": {

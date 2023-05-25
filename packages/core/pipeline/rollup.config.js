@@ -31,5 +31,8 @@ module.exports = {
     "@certd/plugin-host",
     "@certd/plugin-tencent",
     "@certd/plugin-util",
+    "log4js",
+    "@midwayjs/core",
+    "@midwayjs/decorator",
   ],
 };

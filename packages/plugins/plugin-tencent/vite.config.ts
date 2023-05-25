@@ -11,7 +11,9 @@ export default defineConfig({
     },
     rollupOptions: {
       plugins: [
+        // @ts-ignore
         visualizer(),
+        // @ts-ignore
         typescript({
           target: "esnext",
           rootDir: "src",
