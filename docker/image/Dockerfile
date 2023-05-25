@@ -1,4 +1,4 @@
-FROM node:18.16.0-slim
+FROM registry.cn-shenzhen.aliyuncs.com/handsfree/node:18-alpine
 RUN npm install -g pnpm
 ADD ./workspace/certd-server/package.json /app/
 WORKDIR /app/
