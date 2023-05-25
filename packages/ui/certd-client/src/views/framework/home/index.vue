@@ -1,14 +1,14 @@
 <template>
   <fs-page class="home—index">
-    <page-cover />
+    <page-content />
   </fs-page>
 </template>
 
 <script>
 import { defineComponent } from "vue";
-import PageCover from "./page-cover/index.vue";
+import PageContent from "./content/index.vue";
 export default defineComponent({
-  components: { PageCover },
+  components: { PageContent },
   setup() {}
 });
 </script>

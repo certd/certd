@@ -1,0 +1,14 @@
+version: '3.3' # 指定docker-compose 版本
+services: # 要拉起的服务们
+  certd:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${TAG}
+    container_name: certd # 容器名
+    restart: unless-stopped # 重启
+    ports: # 端口映射
+      - "7001:7001"
+    environment:
+      - TZ=Asia/Shanghai
+

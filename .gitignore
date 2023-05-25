@@ -30,3 +30,5 @@ gen
 /packages/test
 /test/own
 /pnpm-lock.yaml
+
+docker/image/workspace

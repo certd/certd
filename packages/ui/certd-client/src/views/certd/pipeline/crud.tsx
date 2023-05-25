@@ -1,11 +1,12 @@
 import * as api from "./api";
 import { useI18n } from "vue-i18n";
-import { ref, shallowRef } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, DialogOpenOption, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { nanoid } from "nanoid";
 import { message } from "ant-design-vue";
+
 export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
   const { t } = useI18n();
@@ -142,7 +143,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
         },
         title: {
           title: "流水线名称",
-          type: "text",
+          type: "link",
           search: {
             show: true,
             component: {
@@ -150,7 +151,15 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
             }
           },
           column: {
-            width: 300
+            width: 300,
+            component: {
+              on: {
+                // 注意：必须要on前缀
+                onClick({ row }) {
+                  router.push({ path: "/certd/pipeline/detail", query: { id: row.id, editMode: "false" } });
+                }
+              }
+            }
           }
         },
         lastHistoryTime: {

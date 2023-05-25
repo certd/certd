@@ -2,6 +2,7 @@
   <fs-page v-if="pipeline" class="page-pipeline-edit">
     <template #header>
       <div class="title">
+        <fs-button icon="ion:left" @click="goBack" />
         <pi-editable v-model="pipeline.title" :hover-show="false" :disabled="!editMode"></pi-editable>
       </div>
       <div class="more">
@@ -144,16 +145,16 @@
 
 <script lang="ts">
 import { defineComponent, ref, provide, Ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import PiTaskForm from "./component/task-form/index.vue";
 import PiTriggerForm from "./component/trigger-form/index.vue";
 import PiTaskView from "./component/task-view/index.vue";
 import PiStatusShow from "./component/status-show.vue";
-import _ from "lodash";
+import _ from "lodash-es";
 import { message, Modal, notification } from "ant-design-vue";
 import { pluginManager } from "/@/views/certd/pipeline/pipeline/plugin";
 import { nanoid } from "nanoid";
 import { PipelineDetail, PipelineOptions, RunHistory, Runnable } from "/@/views/certd/pipeline/pipeline/type";
-import { statusUtil } from "./utils/util.status";
 import PiHistoryTimelineItem from "/@/views/certd/pipeline/pipeline/component/history-timeline-item.vue";
 export default defineComponent({
   name: "PipelineEdit",
@@ -183,6 +184,11 @@ export default defineComponent({
     const histories: Ref<RunHistory[]> = ref([]);
 
     const currentHistory: Ref<any> = ref({});
+
+    const router = useRouter();
+    function goBack() {
+      router.back();
+    }
 
     const loadCurrentHistoryDetail = async () => {
       console.log("load history logs");
@@ -258,7 +264,7 @@ export default defineComponent({
       () => {
         return props.pipelineId;
       },
-      async (value) => {
+      async (value: any) => {
         if (!value) {
           return;
         }
@@ -294,7 +300,7 @@ export default defineComponent({
 
       function useTaskView() {
         const taskViewRef: Ref<any> = ref(null);
-        const taskViewOpen = (task) => {
+        const taskViewOpen = (task: any) => {
           taskViewRef.value.open(task);
         };
         return {
@@ -305,10 +311,10 @@ export default defineComponent({
 
       const taskView = useTaskView();
 
-      const taskAdd = (stage: any, stageIndex: number, onSuccess?) => {
+      const taskAdd = (stage: any, stageIndex: number, onSuccess?: any) => {
         currentStageIndex.value = stageIndex;
         currentTaskIndex.value = stage.tasks.length;
-        taskFormRef.value.taskAdd((type, value) => {
+        taskFormRef.value.taskAdd((type: any, value: any) => {
           if (type === "save") {
             stage.tasks.push(value);
             if (onSuccess) {
@@ -317,14 +323,14 @@ export default defineComponent({
           }
         });
       };
-      const taskEdit = (stage, stageIndex, task, taskIndex, onSuccess?) => {
+      const taskEdit = (stage: any, stageIndex: number, task: any, taskIndex: number, onSuccess?: any) => {
         currentStageIndex.value = stageIndex;
         currentTaskIndex.value = taskIndex;
         if (taskFormRef.value == null) {
           return;
         }
         if (props.editMode) {
-          taskFormRef.value.taskEdit(task, (type, value) => {
+          taskFormRef.value.taskEdit(task, (type: string, value: any) => {
             if (type === "delete") {
               stage.tasks.splice(taskIndex, 1);
               if (stage.tasks.length === 0) {
@@ -347,9 +353,9 @@ export default defineComponent({
       return { taskAdd, taskEdit, taskFormRef, ...taskView };
     }
 
-    function useStage(useTaskRet) {
+    function useStage(useTaskRet: any) {
       const stageAdd = (stageIndex = pipeline.value.stages.length) => {
-        const stage = {
+        const stage: any = {
           id: nanoid(),
           title: "新阶段",
           tasks: [],
@@ -371,18 +377,18 @@ export default defineComponent({
     function useTrigger() {
       const triggerFormRef: Ref<any> = ref(null);
       const triggerAdd = () => {
-        triggerFormRef.value.triggerAdd((type, value) => {
+        triggerFormRef.value.triggerAdd((type: string, value: any) => {
           if (type === "save") {
             pipeline.value.triggers.push(value);
           }
         });
       };
-      const triggerEdit = (trigger, index) => {
+      const triggerEdit = (trigger: any, index: number) => {
         if (triggerFormRef.value == null) {
           return;
         }
         if (props.editMode) {
-          triggerFormRef.value.triggerEdit(trigger, (type, value) => {
+          triggerFormRef.value.triggerEdit(trigger, (type: string, value: any) => {
             if (type === "delete") {
               pipeline.value.triggers.splice(index, 1);
             } else if (type === "save") {
@@ -390,7 +396,7 @@ export default defineComponent({
             }
           });
         } else {
-          triggerFormRef.value.triggerView(trigger, (type, value) => {});
+          triggerFormRef.value.triggerView(trigger, (type: string, value: any) => {});
         }
       };
       return {
@@ -463,7 +469,7 @@ export default defineComponent({
     }
 
     function useHistory() {
-      const historyView = (history) => {
+      const historyView = (history: any) => {
         changeCurrentHistory(history);
         console.log("currentPipeline", pipeline);
       };

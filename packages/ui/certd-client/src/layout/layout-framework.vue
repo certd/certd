@@ -2,8 +2,8 @@
   <a-layout class="fs-framework">
     <a-layout-sider v-model:collapsed="asideCollapsed" :trigger="null" collapsible>
       <div class="header-logo">
-        <img src="/images/logo/rect-black.svg" />
-        <span v-if="!asideCollapsed" class="title">FsAdmin</span>
+        <img src="/images/logo/logo.svg" />
+        <span v-if="!asideCollapsed" class="title">Certd</span>
       </div>
       <div class="aside-menu">
         <fs-menu :scroll="true" :menus="asideMenus" :expand-selected="!asideCollapsed" />
