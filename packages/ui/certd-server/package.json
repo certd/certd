@@ -21,6 +21,7 @@
     "mig": "typeorm migration:create -n name"
   },
   "dependencies": {
+    "reflect-metadata": "^0.1.13",
     "kubernetes-client": "^9.0.0",
     "@certd/acme-client": "^1.0.2",
     "@certd/pipeline": "^1.0.2",

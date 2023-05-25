@@ -3,6 +3,7 @@ import { FlywayHistory } from 'midway-flyway-js/dist/entity';
 
 import { MidwayConfig } from '@midwayjs/core';
 import { UserEntity } from '../modules/authority/entity/user';
+import { PipelineEntity } from '../modules/pipeline/entity/pipeline';
 
 export default {
   // use for cookie sign key, should change to your own and keep security
@@ -33,7 +34,14 @@ export default {
         logging: true,
 
         // 配置实体模型 或者 entities: '/entity',
-        entities: ['**/modules/*/entity/*.ts', FlywayHistory, UserEntity],
+        entities: [
+          '**/modules/*/entity/*.ts',
+          '**/entity/*.js',
+          '**/entity/*.d.ts',
+          PipelineEntity,
+          FlywayHistory,
+          UserEntity,
+        ],
       },
     },
   },

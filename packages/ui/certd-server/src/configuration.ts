@@ -14,11 +14,10 @@ import { GlobalExceptionMiddleware } from './middleware/global-exception';
 import { PreviewMiddleware } from './middleware/preview';
 import { AuthorityMiddleware } from './middleware/authority';
 
-import * as pipeline from './plugins/pipeline';
 import * as cron from './plugins/cron';
 
 @Configuration({
-  imports: [koa, orm, cache, flyway, validateComp, pipeline, cron],
+  imports: [koa, orm, cache, flyway, validateComp, cron],
   importConfigs: [
     {
       default: defaultConfig,

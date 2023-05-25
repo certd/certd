@@ -34,5 +34,6 @@ module.exports = {
     "log4js",
     "@midwayjs/core",
     "@midwayjs/decorator",
+    "reflect-metadata",
   ],
 };
