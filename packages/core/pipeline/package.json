@@ -3,8 +3,8 @@
   "private": false,
   "version": "1.0.3",
   "main": "./src/index.ts",
-  "module": "./dist/pipeline.mjs",
-  "types": "./dist/d/index.d.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "publishConfig": {
     "main": "./dist/bundle.js",
     "module": "./dist/pipeline.mjs",

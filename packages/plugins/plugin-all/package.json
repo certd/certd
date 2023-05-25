@@ -3,8 +3,8 @@
   "private": false,
   "version": "1.0.3",
   "main": "./src/index.ts",
-  "module": "./dist/plugin-all.mjs",
-  "types": "./dist/es/plugin-all.d.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "publishConfig": {
     "main": "./dist/bundle.js",
     "module": "./dist/plugin-all.mjs",

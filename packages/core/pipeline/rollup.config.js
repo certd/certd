@@ -1,6 +1,7 @@
 const resolve = require("@rollup/plugin-node-resolve");
 const commonjs = require("@rollup/plugin-commonjs");
-const rollupTypescript = require("rollup-plugin-typescript2");
+//const Typescript = require("rollup-plugin-typescript2");
+const Typescript = require("@rollup/plugin-typescript");
 const json = require("@rollup/plugin-json");
 const terser = require("@rollup/plugin-terser");
 module.exports = {
@@ -14,7 +15,14 @@ module.exports = {
     resolve(),
     // 识别 commonjs 模式第三方依赖
     commonjs(),
-    rollupTypescript(),
+    Typescript({
+      target: "esnext",
+      rootDir: "src",
+      declaration: true,
+      declarationDir: "dist/d",
+      exclude: ["./node_modules/**", "./src/**/*.vue"],
+      allowSyntheticDefaultImports: true,
+    }),
     json(),
     terser(),
   ],
@@ -31,9 +39,5 @@ module.exports = {
     "@certd/plugin-host",
     "@certd/plugin-tencent",
     "@certd/plugin-util",
-    "log4js",
-    "@midwayjs/core",
-    "@midwayjs/decorator",
-    "reflect-metadata",
   ],
 };
