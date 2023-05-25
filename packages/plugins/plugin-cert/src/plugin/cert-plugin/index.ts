@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { AcmeService, CertInfo } from "./acme";
 import _ from "lodash";
 import { Logger } from "log4js";
-import { Decorator } from "@certd/pipeline/src/decorator";
+import { Decorator } from "@certd/pipeline";
 import { DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider";
 import { CertReader } from "./cert-reader";
 
