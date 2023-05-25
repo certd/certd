@@ -15,11 +15,11 @@ module.exports = {
     resolve(),
     // 识别 commonjs 模式第三方依赖
     commonjs({
-      dynamicRequireRoot: "../../../",
-      dynamicRequireTargets: [
-        // include using a glob pattern (either a string or an array of strings)
-        "node_modules/shelljs/src/*",
-      ],
+      // dynamicRequireRoot: "../../../../",
+      // dynamicRequireTargets: [
+      //   // include using a glob pattern (either a string or an array of strings)
+      //   "../../../../**/shelljs/src/*",
+      // ],
     }),
     Typescript({
       target: "esnext",
@@ -48,6 +48,6 @@ module.exports = {
     "log4js",
     "@midwayjs/core",
     "@midwayjs/decorator",
-    // "kubernetes-client",
+    "kubernetes-client",
   ],
 };
