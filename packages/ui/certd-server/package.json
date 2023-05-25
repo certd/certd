@@ -33,6 +33,8 @@
     "@koa/cors": "^3.4.3",
     "@midwayjs/bootstrap": "^3.9.1",
     "@midwayjs/cache": "^3.9.0",
+    "@midwayjs/cli": "^1.3.21",
+    "@midwayjs/cli-plugin-build": "^2.0.14",
     "@midwayjs/core": "^3.9.0",
     "@midwayjs/decorator": "^3.9.0",
     "@midwayjs/i18n": "^3.9.0",
@@ -56,11 +58,10 @@
     "typeorm": "^0.3.11"
   },
   "devDependencies": {
-    "@types/cache-manager": "^3.4.3",
-    "@midwayjs/cli": "^1.3.21",
     "@midwayjs/luckyeye": "^1.1.0",
     "@midwayjs/mock": "^3.9.0",
     "@midwayjs/mwcc": "^0.8.0",
+    "@types/cache-manager": "^3.4.3",
     "@types/jest": "^26.0.24",
     "@types/koa": "2.13.4",
     "@types/node": "^14.18.35",
