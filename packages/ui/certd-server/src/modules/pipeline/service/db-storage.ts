@@ -1,4 +1,4 @@
-import { IStorage } from '@certd/pipeline/src/core/storage';
+import { IStorage } from '@certd/pipeline';
 import { StorageService } from './storage-service';
 
 export class DbStorage implements IStorage {
