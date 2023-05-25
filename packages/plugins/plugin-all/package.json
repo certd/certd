@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-all",
   "private": false,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "./src/index.ts",
   "module": "./dist/plugin-all.mjs",
   "types": "./dist/es/plugin-all.d.ts",
@@ -17,12 +17,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@certd/pipeline": "^1.0.2",
-    "@certd/plugin-aliyun": "^1.0.2",
-    "@certd/plugin-cert": "^1.0.2",
-    "@certd/plugin-host": "^1.0.2",
-    "@certd/plugin-huawei": "^1.0.2",
-    "@certd/plugin-tencent": "^1.0.2",
+    "@certd/pipeline": "^1.0.3",
+    "@certd/plugin-aliyun": "^1.0.3",
+    "@certd/plugin-cert": "^1.0.3",
+    "@certd/plugin-host": "^1.0.3",
+    "@certd/plugin-huawei": "^1.0.3",
+    "@certd/plugin-tencent": "^1.0.3",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",

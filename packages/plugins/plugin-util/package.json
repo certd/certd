@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-util",
   "private": false,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "./src/index.ts",
   "module": "./dist/plugin-util.mjs",
   "types": "./dist/es/plugin-util.d.ts",
@@ -20,7 +20,12 @@
     "kubernetes-client": "^9.0.0"
   },
   "devDependencies": {
-    "@certd/pipeline": "^1.0.2",
+    "@certd/pipeline": "^1.0.3",
+    "@rollup/plugin-commonjs": "^23.0.4",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.0.0",
     "@types/chai": "^4.3.3",
     "@types/lodash": "^4.14.186",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
@@ -30,18 +35,13 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "@rollup/plugin-commonjs": "^23.0.4",
-    "@rollup/plugin-json": "^6.0.0",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-terser": "^0.4.3",
-    "@rollup/plugin-typescript": "^11.0.0",
-    "tslib": "^2.5.2",
     "rollup": "^3.7.4",
+    "rollup-plugin-visualizer": "^5.8.2",
     "ts-node": "^10.9.1",
+    "tslib": "^2.5.2",
     "typescript": "^4.8.4",
     "vite": "^3.1.0",
-    "vue-tsc": "^0.38.9",
-    "rollup-plugin-visualizer": "^5.8.2"
+    "vue-tsc": "^0.38.9"
   },
   "gitHead": "5950e1cae7cf30ebfc5128c15c7d1b0d101cbbb8"
 }

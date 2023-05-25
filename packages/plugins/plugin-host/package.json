@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-host",
   "private": false,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "./src/index.ts",
   "module": "./dist/plugin-host.mjs",
   "types": "./dist/es/plugin-host.d.ts",
@@ -17,8 +17,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/pipeline": "^1.0.2",
-    "@certd/plugin-cert": "^1.0.2",
+    "@certd/pipeline": "^1.0.3",
+    "@certd/plugin-cert": "^1.0.3",
     "ssh2": "^0.8.9"
   },
   "devDependencies": {
@@ -27,6 +27,11 @@
     "@alicloud/pop-core": "^1.7.10",
     "@midwayjs/core": "^3.0.0",
     "@midwayjs/decorator": "^3.0.0",
+    "@rollup/plugin-commonjs": "^23.0.4",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.0.0",
     "@types/chai": "^4.3.3",
     "@types/lodash": "^4.14.186",
     "@types/mocha": "^10.0.0",
@@ -34,13 +39,6 @@
     "@types/ssh2": "^1.11.6",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "@typescript-eslint/parser": "^5.38.1",
-    "@rollup/plugin-commonjs": "^23.0.4",
-    "@rollup/plugin-json": "^6.0.0",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-terser": "^0.4.3",
-    "@rollup/plugin-typescript": "^11.0.0",
-    "tslib": "^2.5.2",
-    "rollup": "^3.7.4",
     "chai": "^4.3.6",
     "dayjs": "^1.9.7",
     "eslint": "^8.24.0",
@@ -51,12 +49,13 @@
     "lodash": "^4.17.20",
     "log4js": "^6.3.0",
     "mocha": "^10.1.0",
+    "rollup": "^3.7.4",
+    "rollup-plugin-visualizer": "^5.8.2",
     "ts-node": "^10.9.1",
+    "tslib": "^2.5.2",
     "typescript": "^4.8.4",
     "vite": "^3.1.0",
-    "vue-tsc": "^0.38.9",
-    "rollup-plugin-visualizer": "^5.8.2",
-    "@rollup/plugin-typescript": "^11.0.0"
+    "vue-tsc": "^0.38.9"
   },
   "gitHead": "5950e1cae7cf30ebfc5128c15c7d1b0d101cbbb8"
 }
