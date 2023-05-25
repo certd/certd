@@ -1,9 +1,5 @@
 import { Config, Provide } from '@midwayjs/decorator';
-import {
-  IWebMiddleware,
-  IMidwayKoaContext,
-  NextFunction
-} from '@midwayjs/koa';
+import { IWebMiddleware, IMidwayKoaContext, NextFunction } from '@midwayjs/koa';
 import * as _ from 'lodash';
 import * as jwt from 'jsonwebtoken';
 import { Constants } from '../basic/constants';
@@ -21,7 +17,8 @@ export class AuthorityMiddleware implements IWebMiddleware {
   resolve() {
     return async (ctx: IMidwayKoaContext, next: NextFunction) => {
       const { url } = ctx;
-      const token = ctx.get('Authorization');
+      let token = ctx.get('Authorization') || '';
+      token = token.replace('Bearer ', '').trim();
       // 路由地址为 admin前缀的 需要权限校验
       // console.log('ctx', ctx);
       const queryIndex = url.indexOf('?');

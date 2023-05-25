@@ -6,5 +6,5 @@ export default {
    */
   preview: {
     enabled: true,
-  }
+  },
 } as MidwayConfig;

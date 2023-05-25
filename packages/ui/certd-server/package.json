@@ -45,6 +45,7 @@
     "@midwayjs/validate": "^3.9.0",
     "cache-manager": "^3.6.3",
     "dayjs": "^1.11.7",
+    "dotenv": "^16.0.3",
     "glob": "^7.2.3",
     "jsonwebtoken": "^8.5.1",
     "kubernetes-client": "^9.0.0",

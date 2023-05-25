@@ -7,9 +7,17 @@ import { PipelineEntity } from '../modules/pipeline/entity/pipeline';
 
 export default {
   // use for cookie sign key, should change to your own and keep security
-  keys: 'certd666',
+  keys: process.env.CERTD_AUTH_JWT_KEYS,
   koa: {
     port: 7001,
+  },
+  staticFile: {
+    dirs: {
+      default: {
+        prefix: '/',
+        dir: 'public',
+      },
+    },
   },
   cron: {},
   /**
@@ -54,11 +62,11 @@ export default {
 
   biz: {
     jwt: {
-      secret: 'greper-is-666',
+      secret: process.env.CERTD_AUTH_JWT_KEYS,
       expire: 7 * 24 * 60, //单位秒
     },
     auth: {
-      ignoreUrls: ['/', '/api/login', '/api/register'],
+      ignoreUrls: ['/', '/public', '/api/login', '/api/register'],
     },
   },
 } as MidwayConfig;
