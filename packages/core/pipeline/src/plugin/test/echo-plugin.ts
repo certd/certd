@@ -1,4 +1,3 @@
-import { ILogger } from "@midwayjs/logger";
 import { ITaskPlugin } from "../api";
 import { IsTaskPlugin, TaskInput } from "../decorator";
 import { Autowire } from "../../decorator";
@@ -16,10 +15,6 @@ export class EchoPlugin implements ITaskPlugin {
     },
   })
   test?: string;
-
-  @Autowire()
-  // @ts-ignore
-  logger: ILogger;
 
   onInstance(): Promise<void> {
     throw new Error("Method not implemented.");

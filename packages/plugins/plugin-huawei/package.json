@@ -6,7 +6,7 @@
   "module": "./dist/plugin-huawei.mjs",
   "types": "./dist/es/plugin-huawei.d.ts",
   "publishConfig": {
-    "main": "./dist/plugin-huawei.umd.js",
+    "main": "./dist/bundle.js",
     "module": "./dist/plugin-huawei.mjs",
     "types": "./dist/es/plugin-huawei.d.ts"
   },

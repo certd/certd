@@ -3,7 +3,7 @@ import { pluginRegistry } from "./registry";
 import { PluginDefine, TaskInputDefine, TaskOutputDefine } from "./api";
 import { Decorator } from "../decorator";
 import { AUTOWIRE_KEY } from "../decorator";
-
+import "reflect-metadata";
 // 提供一个唯一 key
 export const PLUGIN_CLASS_KEY = "pipeline:plugin";
 

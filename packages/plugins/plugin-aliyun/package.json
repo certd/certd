@@ -6,7 +6,7 @@
   "module": "./dist/plugin-aliyun.mjs",
   "types": "./dist/es/plugin-aliyun.d.ts",
   "publishConfig": {
-    "main": "./dist/plugin-aliyun.umd.js",
+    "main": "./dist/bundle.js",
     "module": "./dist/plugin-aliyun.mjs",
     "types": "./dist/es/plugin-aliyun.d.ts"
   },

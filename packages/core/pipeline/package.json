@@ -6,7 +6,7 @@
   "module": "./dist/pipeline.mjs",
   "types": "./dist/d/index.d.ts",
   "publishConfig": {
-    "main": "./dist/pipeline.umd.js",
+    "main": "./dist/bundle.js",
     "module": "./dist/pipeline.mjs",
     "types": "./dist/d/index.d.ts"
   },
@@ -27,8 +27,6 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@midwayjs/core": "^3.11.6",
-    "@midwayjs/decorator": "^3.11.6",
     "@types/chai": "^4.3.5",
     "@types/lodash": "^4.14.194",
     "@types/mocha": "^10.0.1",

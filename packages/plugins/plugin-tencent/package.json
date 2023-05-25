@@ -6,7 +6,7 @@
   "module": "./dist/plugin-tencent.mjs",
   "types": "./dist/es/plugin-tencent.d.ts",
   "publishConfig": {
-    "main": "./dist/plugin-tencent.umd.js",
+    "main": "./dist/bundle.js",
     "module": "./dist/plugin-tencent.mjs",
     "types": "./dist/es/plugin-tencent.d.ts"
   },

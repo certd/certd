@@ -6,7 +6,7 @@
   "module": "./dist/plugin-host.mjs",
   "types": "./dist/es/plugin-host.d.ts",
   "publishConfig": {
-    "main": "./dist/plugin-host.umd.js",
+    "main": "./dist/bundle.js",
     "module": "./dist/plugin-host.mjs",
     "types": "./dist/es/plugin-host.d.ts"
   },

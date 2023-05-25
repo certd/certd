@@ -5,6 +5,5 @@ export * from "./access";
 export * from "./registry";
 export * from "./plugin";
 export * from "./utils";
-export * from "./midway";
 export * from "./context";
 export * from "./decorator";

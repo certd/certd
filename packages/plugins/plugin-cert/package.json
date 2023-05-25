@@ -6,7 +6,7 @@
   "module": "./dist/plugin-cert.mjs",
   "types": "./dist/es/plugin-cert.d.ts",
   "publishConfig": {
-    "main": "./dist/plugin-cert.umd.js",
+    "main": "./dist/bundle.js",
     "module": "./dist/plugin-cert.mjs",
     "types": "./dist/es/plugin-cert.d.ts"
   },
