@@ -15,6 +15,7 @@ import { PreviewMiddleware } from './middleware/preview';
 import { AuthorityMiddleware } from './middleware/authority';
 import * as staticFile from '@midwayjs/static-file';
 import * as cron from './plugins/cron';
+import { logger } from './utils/logger';
 
 @Configuration({
   imports: [koa, orm, cache, flyway, validateComp, cron, staticFile],
@@ -45,6 +46,11 @@ export class ContainerLifeCycle {
     // bodyparser options see https://github.com/koajs/bodyparser
     //this.app.use(bodyParser());
     //请求日志打印
+
+    setTimeout(() => {
+      console.log('heart beat ');
+      logger.info('heart beat');
+    }, 5000);
 
     this.app.useMiddleware([
       ReportMiddleware,
