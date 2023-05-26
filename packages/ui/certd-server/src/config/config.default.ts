@@ -5,11 +5,12 @@ import { MidwayConfig } from '@midwayjs/core';
 import { UserEntity } from '../modules/authority/entity/user';
 import { PipelineEntity } from '../modules/pipeline/entity/pipeline';
 import * as dotenv from 'dotenv';
+//import { logger } from '../utils/logger';
 // load .env file in process.cwd
 dotenv.config();
 export default {
   // use for cookie sign key, should change to your own and keep security
-  keys: process.env.CERTD_AUTH_JWT_KEYS,
+  keys: process.env.CERTD_AUTH_JWT_KEY,
   koa: {
     port: 7001,
   },

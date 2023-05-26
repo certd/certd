@@ -2,7 +2,7 @@ import * as validateComp from '@midwayjs/validate';
 import * as productionConfig from './config/config.production';
 import * as previewConfig from './config/config.preview';
 import * as defaultConfig from './config/config.default';
-import { Configuration, App } from '@midwayjs/decorator';
+import { App, Configuration } from '@midwayjs/decorator';
 import * as koa from '@midwayjs/koa';
 import * as orm from '@midwayjs/typeorm';
 import * as cache from '@midwayjs/cache';
@@ -15,7 +15,6 @@ import { PreviewMiddleware } from './middleware/preview';
 import { AuthorityMiddleware } from './middleware/authority';
 import * as staticFile from '@midwayjs/static-file';
 import * as cron from './plugins/cron';
-import { logger } from './utils/logger';
 
 @Configuration({
   imports: [koa, orm, cache, flyway, validateComp, cron, staticFile],
@@ -46,12 +45,6 @@ export class ContainerLifeCycle {
     // bodyparser options see https://github.com/koajs/bodyparser
     //this.app.use(bodyParser());
     //请求日志打印
-
-    setTimeout(() => {
-      console.log('heart beat ');
-      logger.info('heart beat');
-    }, 5000);
-
     this.app.useMiddleware([
       ReportMiddleware,
       //统一异常处理
