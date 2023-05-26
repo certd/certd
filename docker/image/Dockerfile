@@ -7,6 +7,7 @@ WORKDIR /app/
 #RUN pm2 install pm2-logrotate
 ADD ./workspace/certd-server/ /app/
 RUN yarn install -P  --registry=https://registry.npmmirror.com
+RUN npm run build
 #CMD ["pm2-runtime", "start", "./bootstrap.js","--name", "certd","-i","1"]
 CMD ["npm", "run","start"]
 
