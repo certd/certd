@@ -15,13 +15,13 @@
       </template>
 
       <template #search-left>
-        <a-button type="danger">search-left插槽</a-button>
+        <fs-button type="danger">search-left插槽</fs-button>
       </template>
       <template #search-middle>
-        <a-button type="danger">search-middle</a-button>
+        <fs-button type="danger">search-middle</fs-button>
       </template>
       <template #search-right>
-        <a-button type="danger">search-right插槽</a-button>
+        <fs-button type="danger">search-right插槽</fs-button>
       </template>
 
       <template #actionbar-left>

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.13.10](https://github.com/fast-crud/fast-crud/compare/v1.13.9...v1.13.10) (2023-05-31)
+
+**Note:** Version bump only for package @fast-crud/fs-admin-antdv
+
+## [1.13.9](https://github.com/fast-crud/fast-crud/compare/v1.13.8...v1.13.9) (2023-05-31)
+
+### Bug Fixes
+
+* 修复antdv文件上传限制数量的bug ([8b14ba3](https://github.com/fast-crud/fast-crud/commit/8b14ba3a45f90a11222cc751b2ca173e212bc666))
+
 ## [1.13.8](https://github.com/fast-crud/fast-crud/compare/v1.13.7...v1.13.8) (2023-05-22)
 
 **Note:** Version bump only for package @fast-crud/fs-admin-antdv

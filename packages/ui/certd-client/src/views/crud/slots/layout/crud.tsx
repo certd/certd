@@ -25,6 +25,27 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         editRequest,
         delRequest
       },
+      search: {
+        container: {
+          action: {
+            col: {
+              span: 16
+            }
+          }
+        },
+        buttons: {
+          change: {
+            text: "切换模式",
+            click() {
+              if (crudExpose.crudBinding.value.search.container.layout === "multi-line") {
+                crudExpose.crudBinding.value.search.container.layout = "default";
+              } else {
+                crudExpose.crudBinding.value.search.container.layout = "multi-line";
+              }
+            }
+          }
+        }
+      },
       columns: {
         id: {
           title: "ID",
