@@ -58,7 +58,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         options: computed(() => {
           return statusRef.data;
         })
-      } as any,
+      },
       columns: {
         id: {
           title: "ID",
@@ -76,6 +76,19 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           search: { show: true },
           type: "dict-radio",
           dict: statusRef
+        },
+        customRender: {
+          title: "自定义render",
+          search: {
+            show: true
+          },
+          type: "text",
+          form: {
+            render({ form }) {
+              //注意此处的v-model写法
+              return <a-input v-model={[form.customRender, "value"]} />;
+            }
+          }
         }
       }
     }
