@@ -8,7 +8,7 @@ import UiAntdv from "@fast-crud/ui-antdv";
 import _ from "lodash-es";
 import { useCrudPermission } from "../permission";
 import { GetSignedUrl } from "/@/views/crud/component/uploader/s3/api";
-import { message, notification } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 
 function install(app: any, options: any = {}) {
   app.use(UiAntdv);

@@ -1,6 +1,7 @@
 import * as api from "./api";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { computed } from "vue";
+import { message } from "ant-design-vue";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -30,6 +31,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         delRequest
       },
       search: {
+        validate: true,
         initialForm: {
           radio: null
         },
@@ -73,7 +75,15 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         },
         radio: {
           title: "状态",
-          search: { show: true },
+          search: {
+            show: true,
+            rules: [
+              {
+                required: true,
+                message: "请选择状态"
+              }
+            ]
+          },
           type: "dict-radio",
           dict: statusRef
         },
@@ -84,9 +94,40 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
           type: "text",
           form: {
+            component: {
+              vModel: "checked",
+              render({ attrs }) {
+                return <a-switch {...attrs} />;
+              },
+              title: "自定义render，可以继承component的属性,可以触发search的自动查询"
+            }
+          }
+        },
+        customRender2: {
+          title: "自定义render2",
+          search: {
+            show: true
+          },
+          type: "text",
+          form: {
+            component: {
+              render({ form }) {
+                //注意此处的v-model写法
+                return <a-switch v-model={[form.customRender2, "checked"]} title={"render配置在component之下，注意vModel的写法,不能触发search的自动查询"} />;
+              }
+            }
+          }
+        },
+        customRender3: {
+          title: "自定义render3",
+          search: {
+            show: true
+          },
+          type: "text",
+          form: {
             render({ form }) {
               //注意此处的v-model写法
-              return <a-input v-model={[form.customRender, "value"]} />;
+              return <a-switch v-model={[form.customRender3, "checked"]} title={"render配置在form之下，注意vModel的写法,不能触发search的自动查询"} />;
             }
           }
         }

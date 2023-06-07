@@ -5,7 +5,10 @@ const options: any = {
 };
 const list = [
   {
-    radio: "1"
+    radio: "1",
+    customRender: true,
+    customRender2: false,
+    customRender3: true
   },
   {
     radio: "2"

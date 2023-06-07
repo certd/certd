@@ -1,6 +1,6 @@
 import mockUtil from "/src/mock/base";
 const options: any = {
-  name: "FeatureSearch",
+  name: "FeatureColumnResize",
   idGenerator: 0
 };
 const list = [
