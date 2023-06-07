@@ -66,11 +66,23 @@ export type Runnable = {
   };
 };
 
+export type EmailOptions = {
+  receivers: string[];
+};
+export type NotificationWhen = "error" | "success" | "start";
+export type NotificationType = "email" | "url";
+export type Notification = {
+  type: NotificationType;
+  when: NotificationWhen[];
+  options: EmailOptions;
+};
+
 export type Pipeline = Runnable & {
   version?: number;
   userId: any;
   stages: Stage[];
   triggers: Trigger[];
+  notifications: Notification[];
 };
 
 export type Context = {

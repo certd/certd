@@ -11,30 +11,29 @@ import { IAccessService } from "../access";
 import { RegistryItem } from "../registry";
 import { Decorator } from "../decorator";
 
-export class Executor {
+export type ExecutorOptions = {
   userId: any;
   pipeline: Pipeline;
-  runtime!: RunHistory;
+  storage: IStorage;
+  onChanged: (history: RunHistory) => Promise<void>;
   accessService: IAccessService;
+};
+export class Executor {
+  pipeline: Pipeline;
+  runtime!: RunHistory;
   contextFactory: ContextFactory;
   logger: Logger;
   pipelineContext!: IContext;
   lastStatusMap!: RunnableCollection;
+  options: ExecutorOptions;
   onChanged: (history: RunHistory) => void;
-  constructor(options: {
-    userId: any;
-    pipeline: Pipeline;
-    storage: IStorage;
-    onChanged: (history: RunHistory) => Promise<void>;
-    accessService: IAccessService;
-  }) {
+  constructor(options: ExecutorOptions) {
+    this.options = options;
     this.pipeline = _.cloneDeep(options.pipeline);
     this.onChanged = async (history: RunHistory) => {
       await options.onChanged(history);
     };
-    this.accessService = options.accessService;
-    this.userId = options.userId;
-    this.pipeline.userId = this.userId;
+    this.pipeline.userId = options.userId;
     this.contextFactory = new ContextFactory(options.storage);
     this.logger = logger;
     this.pipelineContext = this.contextFactory.getContext("pipeline", this.pipeline.id);
@@ -183,10 +182,10 @@ export class Executor {
 
     const context: any = {
       logger: this.runtime._loggers[step.id],
-      accessService: this.accessService,
+      accessService: this.options.accessService,
       pipelineContext: this.pipelineContext,
       lastStatus,
-      userContext: this.contextFactory.getContext("user", this.userId),
+      userContext: this.contextFactory.getContext("user", this.options.userId),
       http: request,
     };
     Decorator.inject(define.autowire, instance, context);
