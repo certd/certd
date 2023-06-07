@@ -7,3 +7,4 @@ export * from "./plugin";
 export * from "./utils";
 export * from "./context";
 export * from "./decorator";
+export * from "./service";

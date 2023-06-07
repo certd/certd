@@ -1,4 +1,4 @@
-import { ConcurrencyStrategy, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
+import { ConcurrencyStrategy, NotificationType, NotificationWhen, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
 import _ from "lodash";
 import { RunHistory, RunnableCollection } from "./run-history";
 import { AbstractTaskPlugin, PluginDefine, pluginRegistry } from "../plugin";
@@ -10,6 +10,7 @@ import { request } from "../utils/util.request";
 import { IAccessService } from "../access";
 import { RegistryItem } from "../registry";
 import { Decorator } from "../decorator";
+import { IEmailService } from "../service";
 
 export type ExecutorOptions = {
   userId: any;
@@ -17,6 +18,7 @@ export type ExecutorOptions = {
   storage: IStorage;
   onChanged: (history: RunHistory) => Promise<void>;
   accessService: IAccessService;
+  emailService: IEmailService;
 };
 export class Executor {
   pipeline: Pipeline;
@@ -51,10 +53,13 @@ export class Executor {
       // 读取last
       this.runtime = new RunHistory(runtimeId, trigger, this.pipeline);
       this.logger.info(`pipeline.${this.pipeline.id}  start`);
+      await this.notification("start");
       await this.runWithHistory(this.pipeline, "pipeline", async () => {
         await this.runStages(this.pipeline);
       });
+      await this.notification("success");
     } catch (e) {
+      await this.notification("error");
       this.logger.error("pipeline 执行失败", e);
     } finally {
       await this.pipelineContext.setObj("lastRuntime", this.runtime);
@@ -202,5 +207,38 @@ export class Executor {
       const stepOutputKey = `step.${step.id}.${key}`;
       this.runtime.context[stepOutputKey] = instance[key];
     });
+  }
+
+  async notification(when: NotificationWhen, error?: any) {
+    if (!this.pipeline.notifications) {
+      return;
+    }
+    let subject = "";
+    let content = "";
+    if (when === "start") {
+      subject = `【CertD】${this.pipeline.title} 开始执行，buildId:${this.runtime.id}`;
+      content = `【CertD】${this.pipeline.title} 开始执行，buildId:${this.runtime.id}`;
+    } else if (when === "success") {
+      subject = `【CertD】${this.pipeline.title} 执行成功，buildId:${this.runtime.id}`;
+      content = `【CertD】${this.pipeline.title} 执行成功，buildId:${this.runtime.id}`;
+    } else if (when === "error") {
+      subject = `【CertD】${this.pipeline.title} 执行失败，buildId:${this.runtime.id}`;
+      content = `<pre>${error.message}</pre>`;
+    } else {
+      return;
+    }
+
+    for (const notification of this.pipeline.notifications) {
+      if (!notification.when.includes(when)) {
+        continue;
+      }
+      if (notification.type === "email") {
+        this.options.emailService?.send({
+          subject,
+          content,
+          receivers: notification.options.receivers,
+        });
+      }
+    }
   }
 }
