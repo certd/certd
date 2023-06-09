@@ -32,8 +32,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       },
       form: {
         //表单跨列
-        col: { span: 24 },
-        labelCol: { span: 6 }
+        col: { span: 24 }
+      },
+      rowHandle: {
+        order: 1000
       },
       columns: {
         col1: {

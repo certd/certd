@@ -2,10 +2,10 @@ import * as api from "./api";
 import { requestForMock } from "/src/api/service";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, GetContextFn, ScopeContext, useCompute, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { message } from "ant-design-vue";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
 const { asyncCompute, compute } = useCompute();
-export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -21,24 +21,9 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     return await api.AddObj(form);
   };
 
-  //普通的ref引用，可以动态切换配置
-  const showRef = ref(false);
-  const showTableRef = ref(true);
-  const showTableComputed = computed(() => {
-    return showTableRef.value;
-  });
-
-  const columnComponentShowRef = ref(true);
-  const columnComponentShowComputed = computed(() => {
-    return columnComponentShowRef.value;
-  });
+  const { showRef, showTableComputed, columnComponentShowComputed } = context;
 
   return {
-    output: {
-      showRef,
-      showTableRef,
-      columnComponentShowRef
-    },
     crudOptions: {
       request: {
         pageRequest,

@@ -35,7 +35,7 @@ export default defineComponent({
     }
 
     function columnsSetShowToggle() {
-      crudBinding.value.table.columns[3].columnSetShow = !crudBinding.value.table.columns[3].columnSetShow;
+      crudBinding.value.table.columns.disabled.columnSetShow = !crudBinding.value.table.columns.disabled.columnSetShow;
     }
     return {
       crudBinding,
