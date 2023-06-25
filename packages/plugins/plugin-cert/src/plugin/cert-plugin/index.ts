@@ -1,9 +1,8 @@
-import { AbstractTaskPlugin, Autowire, HttpClient, IAccessService, IContext, IsTaskPlugin, RunStrategy, Step, TaskInput, TaskOutput } from "@certd/pipeline";
+import { AbstractTaskPlugin, Decorator, HttpClient, IAccessService, IContext, IsTaskPlugin, RunStrategy, Step, TaskInput, TaskOutput } from "@certd/pipeline";
 import dayjs from "dayjs";
 import { AcmeService, CertInfo } from "./acme";
 import _ from "lodash";
 import { Logger } from "log4js";
-import { Decorator } from "@certd/pipeline";
 import { DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider";
 import { CertReader } from "./cert-reader";
 
@@ -109,22 +108,11 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
   })
   csrInfo: any;
 
-  // @ts-ignore
-  acme: AcmeService;
-
-  @Autowire()
+  acme!: AcmeService;
   logger!: Logger;
-
-  @Autowire()
   userContext!: IContext;
-
-  @Autowire()
   accessService!: IAccessService;
-
-  @Autowire()
   http!: HttpClient;
-
-  @Autowire()
   lastStatus!: Step;
 
   @TaskOutput({
@@ -133,13 +121,19 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
   cert?: CertInfo;
 
   async onInstance() {
+    this.accessService = this.ctx.accessService;
+    this.logger = this.ctx.logger;
+    this.userContext = this.ctx.userContext;
+    this.http = this.ctx.http;
+    this.lastStatus = this.ctx.lastStatus as Step;
+
     this.acme = new AcmeService({ userContext: this.userContext, logger: this.logger });
   }
 
   async execute(): Promise<void> {
     const oldCert = await this.condition();
     if (oldCert != null) {
-      return this.output(oldCert);
+      return this.output(oldCert.toCertInfo());
     }
     const cert = await this.doCertApply();
     if (cert != null) {

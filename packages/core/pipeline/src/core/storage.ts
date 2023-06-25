@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
-
-
+import { fileUtils } from "../utils/util.file";
 
 export interface IStorage {
   get(scope: string, namespace: string, version: string, key: string): Promise<string | null>;
@@ -12,15 +11,7 @@ export interface IStorage {
 export class FileStorage implements IStorage {
   root: string;
   constructor(rootDir?: string) {
-    if (rootDir == null) {
-      const userHome = process.env.HOME || process.env.USERPROFILE;
-      rootDir = userHome + "/.certd/storage/";
-    }
-    this.root = rootDir;
-
-    if (!fs.existsSync(this.root)) {
-      fs.mkdirSync(this.root, { recursive: true });
-    }
+    this.root = fileUtils.getFileRootDir(rootDir);
   }
 
   async remove(scope: string, namespace: string, version: string, key: string): Promise<void> {

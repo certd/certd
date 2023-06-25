@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, Autowire, IAccessService, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IAccessService, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import Core from "@alicloud/pop-core";
 import { AliyunAccess } from "../../access";
 import { appendTimeSuffix, checkRet, ZoneOptions } from "../../utils";
@@ -59,14 +59,13 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
   })
   aliyunCertId!: string;
 
-  @Autowire()
   accessService!: IAccessService;
-
-  @Autowire()
   logger!: Logger;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInstance() {}
+  async onInstance() {
+    this.accessService = this.ctx.accessService;
+    this.logger = this.ctx.logger;
+  }
 
   async execute(): Promise<void> {
     console.log("开始部署证书到阿里云cdn");

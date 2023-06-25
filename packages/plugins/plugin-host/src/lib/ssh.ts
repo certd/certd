@@ -61,6 +61,9 @@ export class SshClient {
     return new Promise((resolve, reject) => {
       this.connect({
         connectConf,
+        onError(err: any) {
+          reject(err);
+        },
         onReady: (conn: any) => {
           conn.exec(script, (err: Error, stream: any) => {
             if (err) {
@@ -98,6 +101,10 @@ export class SshClient {
     return new Promise((resolve, reject) => {
       this.connect({
         connectConf,
+        onError: (err: any) => {
+          this.logger.error(err);
+          reject(err);
+        },
         onReady: (conn: any) => {
           conn.shell((err: Error, stream: any) => {
             if (err) {
@@ -122,10 +129,13 @@ export class SshClient {
     });
   }
 
-  connect(options: { connectConf: any; onReady: any }) {
-    const { connectConf, onReady } = options;
+  connect(options: { connectConf: any; onReady: any; onError: any }) {
+    const { connectConf, onReady, onError } = options;
     const conn = new ssh2.Client();
     conn
+      .on("error", (err: any) => {
+        onError(err);
+      })
       .on("ready", () => {
         this.logger.info("Client :: ready");
         onReady(conn);

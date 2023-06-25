@@ -1,5 +1,11 @@
 import { Registrable } from "../registry";
-import { FormItemProps } from "../d.ts";
+import { FileItem, FormItemProps, Pipeline, Runnable, Step } from "../d.ts";
+import { FileStore } from "../core/file-store";
+import { Logger } from "log4js";
+import { IAccessService } from "../access";
+import { IEmailService } from "../service";
+import { IContext } from "../core";
+import { AxiosInstance } from "axios";
 
 export enum ContextScope {
   global,
@@ -7,16 +13,11 @@ export enum ContextScope {
   runtime,
 }
 
-export type Storage = {
-  scope: ContextScope;
-  path: string;
-};
-
 export type TaskOutputDefine = {
   title: string;
   value?: any;
-  storage?: Storage;
 };
+
 export type TaskInputDefine = FormItemProps;
 
 export type PluginDefine = Registrable & {
@@ -47,15 +48,56 @@ export type ITaskPlugin = {
 
 export type TaskResult = {
   clearLastStatus?: boolean;
+  files?: FileItem[];
 };
+export type TaskInstanceContext = {
+  pipeline: Pipeline;
+  step: Step;
+  logger: Logger;
+  accessService: IAccessService;
+  emailService: IEmailService;
+  pipelineContext: IContext;
+  userContext: IContext;
+  http: AxiosInstance;
+  fileStore: FileStore;
+  lastStatus?: Runnable;
+};
+
 export abstract class AbstractTaskPlugin implements ITaskPlugin {
-  result: TaskResult = {};
+  _result: TaskResult = { clearLastStatus: false, files: [] };
+  ctx!: TaskInstanceContext;
   clearLastStatus() {
-    this.result.clearLastStatus = true;
+    this._result.clearLastStatus = true;
   }
+
+  getFiles() {
+    return this._result.files;
+  }
+
+  setCtx(ctx: TaskInstanceContext) {
+    this.ctx = ctx;
+  }
+
+  saveFile(filename: string, file: Buffer) {
+    const filePath = this.ctx.fileStore.writeFile(filename, file);
+    this._result.files!.push({
+      filename,
+      path: filePath,
+    });
+  }
+
+  get pipeline() {
+    return this.ctx.pipeline;
+  }
+
+  get step() {
+    return this.ctx.step;
+  }
+
   async onInstance(): Promise<void> {
     return;
   }
+
   abstract execute(): Promise<void>;
 }
 

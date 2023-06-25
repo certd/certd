@@ -57,6 +57,9 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         name: {
           title: "名称",
           type: "text",
+          search: {
+            show: true
+          },
           form: {
             rules: [{ required: true, message: "必填项" }]
           }

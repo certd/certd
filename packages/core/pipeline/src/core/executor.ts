@@ -1,7 +1,7 @@
 import { ConcurrencyStrategy, NotificationWhen, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
 import _ from "lodash";
 import { RunHistory, RunnableCollection } from "./run-history";
-import { AbstractTaskPlugin, PluginDefine, pluginRegistry } from "../plugin";
+import { AbstractTaskPlugin, PluginDefine, pluginRegistry, TaskInstanceContext } from "../plugin";
 import { ContextFactory, IContext } from "./context";
 import { IStorage } from "./storage";
 import { logger } from "../utils/util.log";
@@ -11,6 +11,7 @@ import { IAccessService } from "../access";
 import { RegistryItem } from "../registry";
 import { Decorator } from "../decorator";
 import { IEmailService } from "../service";
+import { FileStore } from "./file-store";
 
 export type ExecutorOptions = {
   userId: any;
@@ -19,6 +20,7 @@ export type ExecutorOptions = {
   onChanged: (history: RunHistory) => Promise<void>;
   accessService: IAccessService;
   emailService: IEmailService;
+  fileRootDir?: string;
 };
 export class Executor {
   pipeline: Pipeline;
@@ -59,7 +61,7 @@ export class Executor {
       });
       await this.notification("success");
     } catch (e) {
-      await this.notification("error");
+      await this.notification("error", e);
       this.logger.error("pipeline 执行失败", e);
     } finally {
       await this.pipelineContext.setObj("lastRuntime", this.runtime);
@@ -185,28 +187,38 @@ export class Executor {
       }
     });
 
-    const context: any = {
+    const taskCtx: TaskInstanceContext = {
+      pipeline: this.pipeline,
+      step,
+      lastStatus,
+      http: request,
       logger: this.runtime._loggers[step.id],
       accessService: this.options.accessService,
+      emailService: this.options.emailService,
       pipelineContext: this.pipelineContext,
-      lastStatus,
       userContext: this.contextFactory.getContext("user", this.options.userId),
-      http: request,
+      fileStore: new FileStore({
+        scope: this.pipeline.id,
+        parent: this.runtime.id,
+        rootDir: this.options.fileRootDir,
+      }),
     };
-    Decorator.inject(define.autowire, instance, context);
+    instance.setCtx(taskCtx);
 
     await instance.onInstance();
     await instance.execute();
 
-    if (instance.result.clearLastStatus) {
+    if (instance._result.clearLastStatus) {
       this.lastStatusMap.clear();
     }
     //输出到output context
     _.forEach(define.output, (item, key) => {
-      step!.status!.output[key] = instance[key];
+      step.status!.output[key] = instance[key];
       const stepOutputKey = `step.${step.id}.${key}`;
       this.runtime.context[stepOutputKey] = instance[key];
     });
+
+    step.status!.files = instance.getFiles();
   }
 
   async notification(when: NotificationWhen, error?: any) {

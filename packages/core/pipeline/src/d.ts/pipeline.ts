@@ -55,6 +55,10 @@ export type Trigger = {
   type: string;
 };
 
+export type FileItem = {
+  filename: string;
+  path: string;
+};
 export type Runnable = {
   id: string;
   title: string;
@@ -64,6 +68,7 @@ export type Runnable = {
   default?: {
     [key: string]: any;
   };
+  files?: FileItem[];
 };
 
 export type EmailOptions = {
@@ -113,6 +118,7 @@ export type HistoryResultGroup = {
 export type HistoryResult = {
   input: any;
   output: any;
+  files?: FileItem[];
   /**
    * 任务状态
    */

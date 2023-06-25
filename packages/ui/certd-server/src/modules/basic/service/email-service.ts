@@ -4,6 +4,7 @@ import { IEmailService } from '@certd/pipeline';
 import nodemailer from 'nodemailer';
 import { SettingsService } from '../../system/service/settings-service';
 import type SMTPConnection from 'nodemailer/lib/smtp-connection';
+import { logger } from '../../../utils/logger';
 
 export type EmailConfig = {
   host: string;
@@ -46,7 +47,7 @@ export class EmailService implements IEmailService {
       text: email.content,
     };
     await transporter.sendMail(mailOptions);
-    console.log('sendEmail success', email);
+    logger.info('sendEmail complete: ', email);
   }
 
   async test(userId: number, receiver: string) {

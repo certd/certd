@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import { SshClient } from "../../lib/ssh";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
 import * as fs from "fs";
@@ -49,11 +49,6 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   })
   sudo!: boolean;
 
-  @Autowire()
-  accessService!: IAccessService;
-  @Autowire()
-  logger!: ILogger;
-
   @TaskOutput({
     title: "证书保存路径",
   })
@@ -64,7 +59,13 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   })
   hostKeyPath!: string;
 
-  async onInstance() {}
+  accessService!: IAccessService;
+  logger!: ILogger;
+
+  async onInstance() {
+    this.accessService = this.ctx.accessService;
+    this.logger = this.ctx.logger;
+  }
   async execute(): Promise<void> {
     const { crtPath, keyPath, cert, accessId, sudo } = this;
     const certReader = new CertReader(cert);

@@ -61,3 +61,11 @@ export function TaskOutput(output?: TaskOutputDefine): PropertyDecorator {
     Reflect.defineMetadata(PLUGIN_OUTPUT_KEY, output, target, propertyKey);
   };
 }
+
+export const PLUGIN_DOWNLOAD_KEY = "pipeline:plugin:download";
+export function TaskDownload(output?: TaskOutputDefine): PropertyDecorator {
+  return (target, propertyKey) => {
+    target = Decorator.target(target, propertyKey);
+    Reflect.defineMetadata(PLUGIN_DOWNLOAD_KEY, output, target, propertyKey);
+  };
+}

@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
 import { SshClient } from "../../lib/ssh";
 
 @IsTaskPlugin({
@@ -32,13 +32,12 @@ export class HostShellExecutePlugin extends AbstractTaskPlugin {
   })
   script!: string;
 
-  @Autowire()
   accessService!: IAccessService;
-  @Autowire()
   logger!: ILogger;
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInstance() {}
+  async onInstance() {
+    this.accessService = this.ctx.accessService;
+    this.logger = this.ctx.logger;
+  }
   async execute(): Promise<void> {
     const { script, accessId } = this;
     const connectConf = await this.accessService.getById(accessId);

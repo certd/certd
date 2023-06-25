@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
 import dayjs from "dayjs";
 import Core from "@alicloud/pop-core";
 import RPCClient from "@alicloud/pop-core";
@@ -17,7 +17,7 @@ import { AliyunAccess } from "../../access";
 export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   @TaskInput({
     title: "CDN加速域名",
-    helper: "你在阿里云上配置的CDN加速域名，比如certd.docmirror.cn",
+    helper: "你在阿里云上配置的CDN加速域名，比如:certd.docmirror.cn",
     required: true,
   })
   domainName!: string;
@@ -49,13 +49,13 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   })
   accessId!: string;
 
-  @Autowire()
   accessService!: IAccessService;
-
-  @Autowire()
   logger!: ILogger;
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInstance() {}
+
+  async onInstance() {
+    this.accessService = this.ctx.accessService;
+    this.logger = this.ctx.logger;
+  }
   async execute(): Promise<void> {
     console.log("开始部署证书到阿里云cdn");
     const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;

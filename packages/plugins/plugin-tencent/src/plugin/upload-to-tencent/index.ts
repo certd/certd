@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import dayjs from "dayjs";
 
@@ -42,14 +42,13 @@ export class UploadToTencentPlugin extends AbstractTaskPlugin {
   })
   tencentCertId?: string;
 
-  @Autowire()
   accessService!: IAccessService;
-
-  @Autowire()
   logger!: ILogger;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInstance() {}
+  async onInstance() {
+    this.accessService = this.ctx.accessService;
+    this.logger = this.ctx.logger;
+  }
 
   async execute(): Promise<void> {
     const { accessId, name, cert } = this;

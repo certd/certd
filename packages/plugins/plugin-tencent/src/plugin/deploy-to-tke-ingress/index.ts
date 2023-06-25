@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, Autowire, IAccessService, IsTaskPlugin, RunStrategy, TaskInput, utils } from "@certd/pipeline";
+import { AbstractTaskPlugin, IAccessService, IsTaskPlugin, RunStrategy, TaskInput, utils } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import { K8sClient } from "@certd/plugin-util";
 import dayjs from "dayjs";
@@ -80,15 +80,12 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
   })
   cert!: any;
 
-  @Autowire()
   logger!: Logger;
-
-  @Autowire()
   accessService!: IAccessService;
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInstance() {}
-
+  async onInstance() {
+    this.accessService = this.ctx.accessService;
+    this.logger = this.ctx.logger;
+  }
   async execute(): Promise<void> {
     const accessProvider = this.accessService.getById(this.accessId);
     const tkeClient = this.getTkeClient(accessProvider, this.region);

@@ -5,7 +5,7 @@
     </div>
     <p class="d2-page-cover__sub-title">让你的证书永不过期</p>
     <div class="content">
-      <img src="./image/preview.png" class="preview_img" />
+      <img src="/images/preview.png" class="preview_img" />
     </div>
     <div class="footer_box">
       <div class="left"></div>
@@ -76,6 +76,7 @@ export default defineComponent({
     width: 80%;
     .preview_img {
       width: 100%;
+      border: 1px solid #eee;
     }
   }
 

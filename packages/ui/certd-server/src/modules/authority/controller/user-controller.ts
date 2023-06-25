@@ -40,7 +40,7 @@ export class UserController extends CrudController<UserService> {
     const users = ret.data.records;
 
     //获取roles
-    const userIds = users.map((item) => item.id);
+    const userIds = users.map(item => item.id);
     const userRoles = await this.roleService.getByUserIds(userIds);
     const userRolesMap = new Map();
     for (const ur of userRoles) {
@@ -116,4 +116,3 @@ export class UserController extends CrudController<UserService> {
     return this.ok(tree);
   }
 }
-

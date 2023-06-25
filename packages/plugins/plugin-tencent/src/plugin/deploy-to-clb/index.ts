@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, Autowire, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, utils } from "@certd/pipeline";
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, utils } from "@certd/pipeline";
 import tencentcloud from "tencentcloud-sdk-nodejs/index";
 import { TencentAccess } from "../../access";
 import dayjs from "dayjs";
@@ -71,14 +71,13 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
   })
   accessId!: string;
 
-  @Autowire()
   accessService!: IAccessService;
-
-  @Autowire()
   logger!: ILogger;
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  async onInstance() {}
+  async onInstance() {
+    this.accessService = this.ctx.accessService;
+    this.logger = this.ctx.logger;
+  }
   async execute(): Promise<void> {
     const accessProvider = (await this.accessService.getById(this.accessId)) as TencentAccess;
     const client = this.getClient(accessProvider, this.region);

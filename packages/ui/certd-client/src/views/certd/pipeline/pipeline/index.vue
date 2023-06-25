@@ -2,6 +2,7 @@
   <fs-page v-if="pipeline" class="page-pipeline-edit">
     <template #header>
       <div class="title">
+        <fs-button class="back" icon="ion:chevron-back-outline" @click="goBack"></fs-button>
         <pi-editable v-model="pipeline.title" :hover-show="false" :disabled="!editMode"></pi-editable>
       </div>
       <div class="more">
@@ -588,6 +589,7 @@ export default defineComponent({
       pipeline,
       currentHistory,
       histories,
+      goBack,
       ...useTaskRet,
       ...useStageRet,
       ...useTrigger(),
@@ -602,6 +604,10 @@ export default defineComponent({
 .page-pipeline-edit {
   .fs-page-header {
     .title {
+      display: flex;
+      .back {
+        margin-right: 10px;
+      }
       .pi-editable {
         width: 300px;
       }
