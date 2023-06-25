@@ -1,4 +1,4 @@
-import { ConcurrencyStrategy, NotificationType, NotificationWhen, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
+import { ConcurrencyStrategy, NotificationWhen, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
 import _ from "lodash";
 import { RunHistory, RunnableCollection } from "./run-history";
 import { AbstractTaskPlugin, PluginDefine, pluginRegistry } from "../plugin";
@@ -216,13 +216,13 @@ export class Executor {
     let subject = "";
     let content = "";
     if (when === "start") {
-      subject = `【CertD】${this.pipeline.title} 开始执行，buildId:${this.runtime.id}`;
-      content = `【CertD】${this.pipeline.title} 开始执行，buildId:${this.runtime.id}`;
+      subject = `【CertD】开始执行，${this.pipeline.title}, buildId:${this.runtime.id}`;
+      content = subject;
     } else if (when === "success") {
-      subject = `【CertD】${this.pipeline.title} 执行成功，buildId:${this.runtime.id}`;
-      content = `【CertD】${this.pipeline.title} 执行成功，buildId:${this.runtime.id}`;
+      subject = `【CertD】执行成功，${this.pipeline.title}, buildId:${this.runtime.id}`;
+      content = subject;
     } else if (when === "error") {
-      subject = `【CertD】${this.pipeline.title} 执行失败，buildId:${this.runtime.id}`;
+      subject = `【CertD】执行失败，${this.pipeline.title}, buildId:${this.runtime.id}`;
       content = `<pre>${error.message}</pre>`;
     } else {
       return;
@@ -234,6 +234,7 @@ export class Executor {
       }
       if (notification.type === "email") {
         this.options.emailService?.send({
+          userId: this.pipeline.userId,
           subject,
           content,
           receivers: notification.options.receivers,

@@ -8,8 +8,10 @@ export class SettingsEntity {
   id: number;
   @Column({ name: 'user_id', comment: '用户id' })
   userId: number;
+  @Column({ comment: 'key', length: 100 })
+  key: string;
   @Column({ comment: '名称', length: 100 })
-  name: string;
+  title: string;
   @Column({ name: 'setting', comment: '设置', length: 1024, nullable: true })
   setting: string;
 

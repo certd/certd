@@ -8,9 +8,9 @@ export class PluginManager {
    * 初始化plugins
    * @param plugins
    */
-  init(plugins) {
+  init(plugins: any) {
     const list = plugins;
-    const map = {};
+    const map: any = {};
     for (const plugin of list) {
       map[plugin.key] = plugin;
     }
@@ -21,7 +21,7 @@ export class PluginManager {
     return this.map[name];
   }
 
-  getPreStepOutputOptions({ pipeline, currentStageIndex, currentStepIndex, currentTask }) {
+  getPreStepOutputOptions({ pipeline, currentStageIndex, currentStepIndex, currentTask }: any) {
     const steps = this.collectionPreStepOutputs({
       pipeline,
       currentStageIndex,
@@ -42,7 +42,7 @@ export class PluginManager {
     return options;
   }
 
-  collectionPreStepOutputs({ pipeline, currentStageIndex, currentStepIndex, currentTask }) {
+  collectionPreStepOutputs({ pipeline, currentStageIndex, currentStepIndex, currentTask }: any) {
     const steps: any[] = [];
     // 开始放step
     for (let i = 0; i < currentStageIndex; i++) {

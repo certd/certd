@@ -35,6 +35,28 @@ export const certdResources = [
         meta: {
           icon: "ion:disc-outline"
         }
+      },
+      {
+        title: "设置",
+        name: "certdSettings",
+        path: "/certd/settings",
+        redirect: "/certd/settings/email",
+        meta: {
+          icon: "ion:settings-outline",
+          auth: true
+        },
+        children: [
+          {
+            title: "邮箱设置",
+            name: "email",
+            path: "/certd/settings/email",
+            component: "/certd/settings/email-setting.vue",
+            meta: {
+              icon: "ion:mail-outline",
+              auth: true
+            }
+          }
+        ]
       }
     ]
   }

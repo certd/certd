@@ -48,7 +48,10 @@ export function responseError(data = {}, msg = "请求失败", code = 500) {
  * @description 记录和显示错误
  * @param {Error} error 错误对象
  */
-export function errorLog(error) {
+export function errorLog(error: any) {
+  if (error?.response?.data?.message) {
+    error.message = error?.response?.data?.message;
+  }
   // 打印到控制台
   console.error(error);
   // 显示提示
@@ -59,8 +62,6 @@ export function errorLog(error) {
  * @description 创建一个错误
  * @param {String} msg 错误信息
  */
-export function errorCreate(msg) {
-  const error = new Error(msg);
-  errorLog(error);
-  throw error;
+export function errorCreate(msg: string) {
+  throw new Error(msg);
 }

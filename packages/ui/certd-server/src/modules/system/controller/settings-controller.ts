@@ -1,6 +1,15 @@
-import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/decorator";
-import { CrudController } from "../../../basic/crud-controller";
-import { SettingsService } from "../service/settings-service";
+import {
+  ALL,
+  Body,
+  Controller,
+  Inject,
+  Post,
+  Provide,
+  Query,
+} from '@midwayjs/decorator';
+import { CrudController } from '../../../basic/crud-controller';
+import { SettingsService } from '../service/settings-service';
+import { SettingsEntity } from '../entity/settings';
 
 /**
  */
@@ -50,4 +59,18 @@ export class SettingsController extends CrudController<SettingsService> {
     return super.delete(id);
   }
 
+  @Post('/save')
+  async save(@Body(ALL) bean: SettingsEntity) {
+    await this.service.checkUserId(bean.key, this.ctx.user.id, 'userId', 'key');
+    bean.userId = this.ctx.user.id;
+    await this.service.save(bean);
+    return this.ok({});
+  }
+
+  @Post('/get')
+  async get(@Query('key') key: string) {
+    await this.service.checkUserId(key, this.ctx.user.id, 'userId', 'key');
+    const entity = await this.service.getByKey(key, this.ctx.user.id);
+    return this.ok(entity);
+  }
 }

@@ -1,9 +1,10 @@
-import { Rule,RuleType } from '@midwayjs/validate';
+import { Rule, RuleType } from '@midwayjs/validate';
 import { ALL, Inject } from '@midwayjs/decorator';
 import { Body } from '@midwayjs/decorator';
 import { Controller, Post, Provide } from '@midwayjs/decorator';
 import { BaseController } from '../../../basic/base-controller';
 import { CodeService } from '../service/code-service';
+import { EmailService } from '../service/email-service';
 export class SmsCodeReq {
   @Rule(RuleType.number().required())
   phoneCode: number;
@@ -18,22 +19,17 @@ export class SmsCodeReq {
   imgCode: string;
 }
 
-// const enumsMap = {};
-// glob('src/modules/**/enums/*.ts', {}, (err, matches) => {
-//   console.log('matched', matches);
-//   for (const filePath of matches) {
-//     const module = require('/' + filePath);
-//     console.log('modules', module);
-//   }
-// });
-
 /**
  */
 @Provide()
-@Controller('/api/basic')
+@Controller('/api/basic/code')
 export class BasicController extends BaseController {
   @Inject()
   codeService: CodeService;
+
+  @Inject()
+  emailService: EmailService;
+
   @Post('/sendSmsCode')
   public sendSmsCode(
     @Body(ALL)
@@ -53,4 +49,3 @@ export class BasicController extends BaseController {
     return this.ok(captcha.data);
   }
 }
-

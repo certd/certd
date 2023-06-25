@@ -1,4 +1,4 @@
-import { Autoload, Init, Inject, Scope, ScopeEnum } from "@midwayjs/decorator";
+import { Autoload, Init, Inject, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { PipelineService } from '../service/pipeline-service';
 import { logger } from '../../../utils/logger';
 

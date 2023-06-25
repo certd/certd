@@ -187,14 +187,19 @@ export abstract class BaseService<T> {
     return await qb.getMany();
   }
 
-  async checkUserId(id = 0, userId, userKey = 'userId') {
+  async checkUserId(
+    id: any = 0,
+    userId,
+    userKey = 'userId',
+    queryIdKey = 'id'
+  ) {
     // @ts-ignore
     const res = await this.getRepository().findOne({
       // @ts-ignore
       select: { [userKey]: true },
+      // @ts-ignore
       where: {
-        // @ts-ignore
-        id,
+        [queryIdKey]: id,
       },
     });
     // @ts-ignore

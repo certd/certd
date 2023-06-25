@@ -3,7 +3,7 @@ import { RunHistory } from "/@/views/certd/pipeline/pipeline/type";
 
 const apiPrefix = "/pi/history";
 
-export async function GetList(query) {
+export async function GetList(query: any) {
   const list = await request({
     url: apiPrefix + "/list",
     method: "post",
@@ -18,7 +18,7 @@ export async function GetList(query) {
   return list;
 }
 
-export async function GetDetail(query): Promise<RunHistory> {
+export async function GetDetail(query: any): Promise<RunHistory> {
   const detail = await request({
     url: apiPrefix + "/detail",
     method: "post",

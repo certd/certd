@@ -10,7 +10,7 @@ export abstract class BaseController {
    * 成功返回
    * @param data 返回数据
    */
-  ok(data) {
+  ok(data: any) {
     const res = {
       ...Constants.res.success,
       data: undefined,
@@ -22,12 +22,21 @@ export abstract class BaseController {
   }
   /**
    * 失败返回
-   * @param message
+   * @param msg
+   * @param code
    */
-  fail(msg, code) {
+  fail(msg: string, code: any) {
     return {
       code: code ? code : Constants.res.error.code,
       msg: msg ? msg : Constants.res.error.code,
     };
+  }
+
+  getUserId() {
+    const userId = this.ctx.user?.id;
+    if (userId == null) {
+      throw new Error('Token已过期');
+    }
+    return userId;
   }
 }

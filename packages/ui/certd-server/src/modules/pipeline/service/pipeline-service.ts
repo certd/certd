@@ -14,6 +14,7 @@ import { HistoryEntity } from '../entity/history';
 import { HistoryLogEntity } from '../entity/history-log';
 import { HistoryLogService } from './history-log-service';
 import { logger } from '../../../utils/logger';
+import { EmailService } from '../../basic/service/email-service';
 
 /**
  * 证书申请
@@ -23,7 +24,8 @@ import { logger } from '../../../utils/logger';
 export class PipelineService extends BaseService<PipelineEntity> {
   @InjectEntityModel(PipelineEntity)
   repository: Repository<PipelineEntity>;
-
+  @Inject()
+  emailService: EmailService;
   @Inject()
   accessService: AccessService;
   @Inject()
@@ -191,6 +193,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       onChanged,
       accessService: this.accessService,
       storage: new DbStorage(userId, this.storageService),
+      emailService: this.emailService,
     });
     try {
       await executor.init();

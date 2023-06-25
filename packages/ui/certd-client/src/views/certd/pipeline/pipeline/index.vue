@@ -2,7 +2,6 @@
   <fs-page v-if="pipeline" class="page-pipeline-edit">
     <template #header>
       <div class="title">
-        <fs-button icon="ion:left" @click="goBack" />
         <pi-editable v-model="pipeline.title" :hover-show="false" :disabled="!editMode"></pi-editable>
       </div>
       <div class="more">
@@ -63,7 +62,7 @@
                 </div>
               </div>
 
-              <div v-for="(stage, index) of pipeline.stages" :key="stage.id" class="stage" :class="{ 'last-stage': !editMode && index === pipeline.stages.length - 1 }">
+              <div v-for="(stage, index) of pipeline.stages" :key="stage.id" class="stage" :class="{ 'last-stage': isLastStage(index) }">
                 <div class="title">
                   <pi-editable v-model="stage.title" :disabled="!editMode"></pi-editable>
                 </div>
@@ -118,6 +117,48 @@
                       </a-button>
                     </div>
                   </div>
+                  <div v-for="(item, ii) of pipeline.notifications" :key="ii" class="task-container">
+                    <div class="line">
+                      <div class="flow-line"></div>
+                    </div>
+                    <div class="task">
+                      <a-button shape="round" @click="notificationEdit(item, ii as number)">
+                        <fs-icon icon="ion:notifications"></fs-icon>
+                        【通知】 {{ item.type }}
+                      </a-button>
+                    </div>
+                  </div>
+                  <div class="task-container">
+                    <div class="line">
+                      <div class="flow-line"></div>
+                    </div>
+                    <div class="task">
+                      <a-button shape="round" type="dashed" @click="notificationAdd()">
+                        <fs-icon icon="ion:add-circle-outline"></fs-icon>
+
+                        添加通知
+                      </a-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="stage last-stage">
+                <div class="title">
+                  <pi-editable model-value="结束" :disabled="true" />
+                </div>
+                <div class="tasks">
+                  <div v-for="(item, index) of pipeline.notifications" :key="index" class="task-container" :class="{ 'first-task': index == 0 }">
+                    <div class="line">
+                      <div class="flow-line"></div>
+                    </div>
+                    <div class="task">
+                      <a-button shape="round" @click="notificationEdit(item, index)">
+                        <fs-icon icon="ion:notifications"></fs-icon>
+
+                        【通知】 {{ item.type }}
+                      </a-button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -140,6 +181,7 @@
     <pi-task-form ref="taskFormRef" :edit-mode="editMode"></pi-task-form>
     <pi-trigger-form ref="triggerFormRef" :edit-mode="editMode"></pi-trigger-form>
     <pi-task-view ref="taskViewRef"></pi-task-view>
+    <PiNotificationForm ref="notificationFormRef" :edit-mode="editMode"></PiNotificationForm>
   </fs-page>
 </template>
 
@@ -148,9 +190,10 @@ import { defineComponent, ref, provide, Ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import PiTaskForm from "./component/task-form/index.vue";
 import PiTriggerForm from "./component/trigger-form/index.vue";
+import PiNotificationForm from "./component/notification-form/index.vue";
 import PiTaskView from "./component/task-view/index.vue";
 import PiStatusShow from "./component/status-show.vue";
-import _ from "lodash-es";
+import _ from "lodash";
 import { message, Modal, notification } from "ant-design-vue";
 import { pluginManager } from "/@/views/certd/pipeline/pipeline/plugin";
 import { nanoid } from "nanoid";
@@ -159,7 +202,7 @@ import PiHistoryTimelineItem from "/@/views/certd/pipeline/pipeline/component/hi
 export default defineComponent({
   name: "PipelineEdit",
   // eslint-disable-next-line vue/no-unused-components
-  components: { PiHistoryTimelineItem, PiTaskForm, PiTriggerForm, PiTaskView, PiStatusShow },
+  components: { PiHistoryTimelineItem, PiTaskForm, PiTriggerForm, PiTaskView, PiStatusShow, PiNotificationForm },
   props: {
     pipelineId: {
       type: [Number, String],
@@ -269,7 +312,7 @@ export default defineComponent({
           return;
         }
         const detail: PipelineDetail = await props.options.getPipelineDetail({ pipelineId: value });
-        currentPipeline.value = _.merge({ title: "新管道流程", stages: [], triggers: [] }, detail.pipeline);
+        currentPipeline.value = _.merge({ title: "新管道流程", stages: [], triggers: [], notifications: [] }, detail.pipeline);
         pipeline.value = currentPipeline.value;
         await loadHistoryList(true);
       },
@@ -369,8 +412,13 @@ export default defineComponent({
           pipeline.value.stages.splice(stageIndex, 0, stage);
         });
       };
+
+      function isLastStage(index: number) {
+        return !props.editMode && index === pipeline.value.stages.length - 1 && pipeline.value.notifications?.length < 1;
+      }
       return {
-        stageAdd
+        stageAdd,
+        isLastStage
       };
     }
 
@@ -403,6 +451,41 @@ export default defineComponent({
         triggerAdd,
         triggerEdit,
         triggerFormRef
+      };
+    }
+
+    function useNotification() {
+      const notificationFormRef = ref();
+      const notificationAdd = () => {
+        notificationFormRef.value.notificationAdd((type: string, value: any) => {
+          if (type === "save") {
+            if (pipeline.value.notifications == null) {
+              pipeline.value.notifications = [];
+            }
+            pipeline.value.notifications.push(value);
+          }
+        });
+      };
+      const notificationEdit = (notification: any, index: any) => {
+        if (notificationFormRef.value == null) {
+          return;
+        }
+        if (props.editMode) {
+          notificationFormRef.value.notificationEdit(notification, (type: string, value: any) => {
+            if (type === "delete") {
+              pipeline.value.notifications.splice(index, 1);
+            } else if (type === "save") {
+              pipeline.value.notifications[index] = value;
+            }
+          });
+        } else {
+          notificationFormRef.value.notificationView(notification, (type: string, value: any) => {});
+        }
+      };
+      return {
+        notificationAdd,
+        notificationEdit,
+        notificationFormRef
       };
     }
 
@@ -484,6 +567,7 @@ export default defineComponent({
         historyCancel
       };
     }
+
     const useTaskRet = useTask();
     const useStageRet = useStage(useTaskRet);
 
@@ -495,7 +579,8 @@ export default defineComponent({
       ...useStageRet,
       ...useTrigger(),
       ...useActions(),
-      ...useHistory()
+      ...useHistory(),
+      ...useNotification()
     };
   }
 });

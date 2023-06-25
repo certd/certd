@@ -1,9 +1,5 @@
 import { Provide } from '@midwayjs/decorator';
-import {
-  IWebMiddleware,
-  IMidwayKoaContext,
-  NextFunction,
-} from '@midwayjs/koa';
+import { IWebMiddleware, IMidwayKoaContext, NextFunction } from '@midwayjs/koa';
 import { logger } from '../utils/logger';
 import { Result } from '../basic/result';
 
@@ -20,7 +16,10 @@ export class GlobalExceptionMiddleware implements IWebMiddleware {
       } catch (err) {
         logger.error('请求异常:', url, Date.now() - startTime + 'ms', err);
         ctx.status = 200;
-        ctx.body = Result.error(err.code != null ? err.code : 1, err.message);
+        if (err.code == null || typeof err.code !== 'number') {
+          err.code = 1;
+        }
+        ctx.body = Result.error(err.code, err.message);
       }
     };
   }
