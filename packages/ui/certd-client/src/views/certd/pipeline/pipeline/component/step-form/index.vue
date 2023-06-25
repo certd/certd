@@ -84,11 +84,12 @@
   </a-drawer>
 </template>
 
-<script lang="jsx">
+<script lang="tsx">
 import { message, Modal } from "ant-design-vue";
-import { inject, ref } from "vue";
+import { computed, inject, Ref, ref } from "vue";
 import _ from "lodash";
 import { nanoid } from "nanoid";
+import { compute } from "@fast-crud/fast-crud";
 export default {
   name: "PiStepForm",
   props: {
@@ -98,21 +99,21 @@ export default {
     }
   },
   emits: ["update"],
-  setup(props, context) {
+  setup(props: any, context: any) {
     /**
      *  step drawer
      * @returns
      */
     function useStepForm() {
-      const stepPluginDefineList = inject("plugins");
+      const stepPluginDefineList: any = inject("plugins");
 
-      const mode = ref("add");
-      const callback = ref();
-      const currentStep = ref({ title: undefined, input: {} });
-      const currentPlugin = ref({});
-      const stepFormRef = ref(null);
-      const stepDrawerVisible = ref(false);
-      const rules = ref({
+      const mode: Ref = ref("add");
+      const callback: Ref = ref();
+      const currentStep: Ref = ref({ title: undefined, input: {} });
+      const currentPlugin: Ref = ref({});
+      const stepFormRef: Ref = ref(null);
+      const stepDrawerVisible: Ref = ref(false);
+      const rules: Ref = ref({
         name: [
           {
             type: "string",
@@ -122,7 +123,7 @@ export default {
         ]
       });
 
-      const stepTypeSelected = (item) => {
+      const stepTypeSelected = (item: any) => {
         currentStep.value.type = item.name;
         currentStep.value.title = item.title;
         console.log("currentStepTypeChanged:", currentStep.value);
@@ -155,13 +156,14 @@ export default {
         stepDrawerVisible.value = false;
       };
 
-      const stepDrawerOnAfterVisibleChange = (val) => {
+      const stepDrawerOnAfterVisibleChange = (val: any) => {
         console.log("stepDrawerOnAfterVisibleChange", val);
       };
 
-      const stepOpen = (step, emit) => {
+      const stepOpen = (step: any, emit: any) => {
         callback.value = emit;
         currentStep.value = _.merge({ input: {}, strategy: {} }, step);
+
         console.log("currentStepOpen", currentStep.value);
         if (step.type) {
           changeCurrentPlugin(currentStep.value);
@@ -169,9 +171,9 @@ export default {
         stepDrawerShow();
       };
 
-      const stepAdd = (emit) => {
+      const stepAdd = (emit: any) => {
         mode.value = "add";
-        const step = {
+        const step: any = {
           id: nanoid(),
           title: "新任务",
           type: undefined,
@@ -182,31 +184,49 @@ export default {
         stepOpen(step, emit);
       };
 
-      const stepEdit = (step, emit) => {
+      const stepEdit = (step: any, emit: any) => {
         mode.value = "edit";
         stepOpen(step, emit);
       };
 
-      const stepView = (step, emit) => {
+      const stepView = (step: any, emit: any) => {
         mode.value = "view";
         stepOpen(step, emit);
       };
 
-      const changeCurrentPlugin = (step) => {
+      const changeCurrentPlugin = (step: any) => {
         const stepType = step.type;
-        const pluginDefine = stepPluginDefineList.value.find((p) => {
+        const pluginDefine = stepPluginDefineList.value.find((p: any) => {
           return p.name === stepType;
         });
         if (pluginDefine) {
           step.type = stepType;
           step._isAdd = false;
-          currentPlugin.value = pluginDefine;
+          currentPlugin.value = _.cloneDeep(pluginDefine);
+          for (let key in currentPlugin.value.input) {
+            const input = currentPlugin.value.input[key];
+            if (input?.reference) {
+              for (const reference of input.reference) {
+                _.set(
+                  input,
+                  reference.dest,
+                  computed<any>(() => {
+                    const scope = {
+                      form: currentStep.value.input
+                    };
+                    return _.get(scope, reference.src);
+                  })
+                );
+              }
+            }
+          }
         }
+
         console.log("currentStepTypeChanged:", currentStep.value);
         console.log("currentStepPlugin:", currentPlugin.value);
       };
 
-      const stepSave = async (e) => {
+      const stepSave = async (e: any) => {
         console.log("currentStepSave", currentStep.value);
         try {
           await stepFormRef.value.validate();

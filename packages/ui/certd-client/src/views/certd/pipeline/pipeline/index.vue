@@ -113,18 +113,7 @@
                     <div class="task">
                       <a-button shape="round" type="dashed" @click="stageAdd()">
                         <fs-icon icon="ion:add-circle-outline"></fs-icon>
-                        新任务
-                      </a-button>
-                    </div>
-                  </div>
-                  <div v-for="(item, ii) of pipeline.notifications" :key="ii" class="task-container">
-                    <div class="line">
-                      <div class="flow-line"></div>
-                    </div>
-                    <div class="task">
-                      <a-button shape="round" @click="notificationEdit(item, ii as number)">
-                        <fs-icon icon="ion:notifications"></fs-icon>
-                        【通知】 {{ item.type }}
+                        添加任务
                       </a-button>
                     </div>
                   </div>
@@ -140,13 +129,24 @@
                       </a-button>
                     </div>
                   </div>
+                  <div v-for="(item, ii) of pipeline.notifications" :key="ii" class="task-container">
+                    <div class="line">
+                      <div class="flow-line"></div>
+                    </div>
+                    <div class="task">
+                      <a-button shape="round" @click="notificationEdit(item, ii as number)">
+                        <fs-icon icon="ion:notifications"></fs-icon>
+                        【通知】 {{ item.type }}
+                      </a-button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div v-else class="stage last-stage">
                 <div class="title">
                   <pi-editable model-value="结束" :disabled="true" />
                 </div>
-                <div class="tasks">
+                <div v-if="pipeline.notifications?.length > 0" class="tasks">
                   <div v-for="(item, index) of pipeline.notifications" :key="index" class="task-container" :class="{ 'first-task': index == 0 }">
                     <div class="line">
                       <div class="flow-line"></div>
@@ -156,6 +156,19 @@
                         <fs-icon icon="ion:notifications"></fs-icon>
 
                         【通知】 {{ item.type }}
+                      </a-button>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="tasks">
+                  <div class="task-container first-task">
+                    <div class="line">
+                      <div class="flow-line"></div>
+                    </div>
+                    <div class="task">
+                      <a-button shape="round" type="dashed">
+                        <fs-icon icon="ion:notifications"></fs-icon>
+                        通知未设置
                       </a-button>
                     </div>
                   </div>
@@ -414,7 +427,7 @@ export default defineComponent({
       };
 
       function isLastStage(index: number) {
-        return !props.editMode && index === pipeline.value.stages.length - 1 && pipeline.value.notifications?.length < 1;
+        return false;
       }
       return {
         stageAdd,

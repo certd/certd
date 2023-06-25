@@ -31,6 +31,12 @@ export type PluginDefine = Registrable & {
   autowire?: {
     [key: string]: any;
   };
+
+  reference?: {
+    src: string;
+    dest: string;
+    type: "computed";
+  }[];
 };
 
 export type ITaskPlugin = {

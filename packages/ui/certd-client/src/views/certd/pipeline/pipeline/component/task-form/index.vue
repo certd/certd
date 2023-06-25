@@ -1,12 +1,5 @@
 <template>
-  <a-drawer
-    v-model:visible="taskDrawerVisible"
-    placement="right"
-    :closable="true"
-    width="600px"
-    class="pi-task-form"
-    :after-visible-change="taskDrawerOnAfterVisibleChange"
-  >
+  <a-drawer v-model:visible="taskDrawerVisible" placement="right" :closable="true" width="600px" class="pi-task-form" :after-visible-change="taskDrawerOnAfterVisibleChange">
     <template #title>
       编辑任务
       <a-button v-if="editMode" @click="taskDelete()">
@@ -15,13 +8,7 @@
     </template>
     <template v-if="currentTask">
       <pi-container>
-        <a-form
-          ref="taskFormRef"
-          class="task-form"
-          :model="currentTask"
-          :label-col="labelCol"
-          :wrapper-col="wrapperCol"
-        >
+        <a-form ref="taskFormRef" class="task-form" :model="currentTask" :label-col="labelCol" :wrapper-col="wrapperCol">
           <fs-form-item
             v-model="currentTask.title"
             :item="{
@@ -37,13 +24,7 @@
           />
 
           <div class="steps">
-            <a-form-item
-              :value="currentTask.steps"
-              name="steps"
-              label=""
-              :wrapper-col="{ span: 24 }"
-              :rules="[{ required: true, message: '至少需要一个步骤，或者你可以点击标题右边删除按钮删除此任务' }]"
-            >
+            <a-form-item :value="currentTask.steps" name="steps" label="" :wrapper-col="{ span: 24 }" :rules="[{ required: true, message: '至少需要一个步骤，或者你可以点击标题右边删除按钮删除此任务' }]">
               <a-descriptions title="任务步骤" size="small">
                 <template #extra>
                   <a-button type="primary" @click="stepAdd(currentTask)">添加步骤</a-button>
@@ -100,14 +81,14 @@ export default {
     }
   },
   emits: ["update"],
-  setup(props, ctx) {
+  setup(props: any, ctx: any) {
     function useStep() {
       const stepFormRef: Ref<any> = ref(null);
       const currentStepIndex = ref(0);
       provide("currentStepIndex", currentStepIndex);
-      const stepAdd = (task) => {
+      const stepAdd = (task: any) => {
         currentStepIndex.value = task.steps.length;
-        stepFormRef.value.stepAdd((type, value) => {
+        stepFormRef.value.stepAdd((type: any, value: any) => {
           if (type === "save") {
             task.steps.push(value);
             if (!task.title || task.title === "新任务") {
@@ -116,12 +97,12 @@ export default {
           }
         });
       };
-      const stepEdit = (task, step, stepIndex) => {
+      const stepEdit = (task: any, step: any, stepIndex: any) => {
         currentStepIndex.value = stepIndex;
         console.log("step.edit start", task, step, props.editMode);
         if (props.editMode) {
           console.log("step.edit", task, step);
-          stepFormRef.value.stepEdit(step, (type, value) => {
+          stepFormRef.value.stepEdit(step, (type: any, value: any) => {
             console.log("step.save", step, type, value);
             if (type === "delete") {
               task.steps.splice(stepIndex, 1);
@@ -131,11 +112,11 @@ export default {
             console.log("task.steps", task.steps);
           });
         } else {
-          stepFormRef.value.stepView(step, (type, value) => {});
+          stepFormRef.value.stepView(step, (type: any, value: any) => {});
         }
       };
 
-      const stepDelete = (task, stepIndex) => {
+      const stepDelete = (task: any, stepIndex: any) => {
         Modal.confirm({
           title: "确认",
           content: `确定要删除此步骤吗？`,
@@ -176,34 +157,34 @@ export default {
         taskDrawerVisible.value = false;
       };
 
-      const taskDrawerOnAfterVisibleChange = (val) => {
+      const taskDrawerOnAfterVisibleChange = (val: any) => {
         console.log("taskDrawerOnAfterVisibleChange", val);
       };
 
-      const taskOpen = (task, emit) => {
+      const taskOpen = (task: any, emit: any) => {
         callback.value = emit;
         currentTask.value = _.merge({ steps: {} }, task);
         console.log("currentTaskOpen", currentTask.value);
         taskDrawerShow();
       };
 
-      const taskAdd = (emit) => {
+      const taskAdd = (emit: any) => {
         mode.value = "add";
-        const task = { id: nanoid(), title: "新任务", steps: [], status: null };
+        const task: any = { id: nanoid(), title: "新任务", steps: [], status: null };
         taskOpen(task, emit);
       };
 
-      const taskEdit = (task, emit) => {
+      const taskEdit = (task: any, emit: any) => {
         mode.value = "edit";
         taskOpen(task, emit);
       };
 
-      const taskView = (task, emit) => {
+      const taskView = (task: any, emit: any) => {
         mode.value = "view";
         taskOpen(task, emit);
       };
 
-      const taskSave = async (e) => {
+      const taskSave = async (e: any) => {
         console.log("currentTaskSave", currentTask.value);
         try {
           await taskFormRef.value.validate();

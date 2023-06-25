@@ -73,6 +73,13 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     },
     required: true,
     helper: "请选择dns解析提供商授权",
+    reference: [
+      {
+        src: "form.dnsProviderType",
+        dest: "component.type",
+        type: "computed",
+      },
+    ],
   })
   dnsProviderAccess!: string;
 
