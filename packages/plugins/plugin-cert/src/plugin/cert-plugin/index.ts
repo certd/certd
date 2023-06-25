@@ -5,7 +5,7 @@ import _ from "lodash";
 import { Logger } from "log4js";
 import { DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider";
 import { CertReader } from "./cert-reader";
-
+import JSZip from "jszip";
 export { CertReader };
 export type { CertInfo };
 
@@ -133,11 +133,11 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const oldCert = await this.condition();
     if (oldCert != null) {
-      return this.output(oldCert.toCertInfo());
+      return await this.output(oldCert.toCertInfo());
     }
     const cert = await this.doCertApply();
     if (cert != null) {
-      this.output(cert.toCertInfo());
+      await this.output(cert.toCertInfo());
       //清空后续任务的状态，让后续任务能够重新执行
       this.clearLastStatus();
     } else {
@@ -145,8 +145,17 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     }
   }
 
-  output(cert: CertInfo) {
+  async output(cert: CertInfo) {
     this.cert = cert;
+    await this.zipCert(cert);
+  }
+
+  async zipCert(cert: CertInfo) {
+    const zip = new JSZip();
+    zip.file("cert.crt", cert.crt);
+    zip.file("cert.key", cert.key);
+    const content = await zip.generateAsync({ type: "nodebuffer" });
+    this.saveFile("cert.zip", content);
   }
 
   /**

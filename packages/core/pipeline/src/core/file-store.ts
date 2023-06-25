@@ -28,11 +28,16 @@ export class FileStore {
 
   writeFile(filename: string, file: Buffer) {
     const localPath = this.buildFilePath(filename);
+
     fs.writeFileSync(localPath, file);
     return localPath;
   }
 
   private buildFilePath(filename: string) {
-    return path.join(this.rootDir, this.scope, dayjs().format("YYYY-MM-DD"), this.parent, filename);
+    const parentDir = path.join(this.rootDir, this.scope + "", dayjs().format("YYYY-MM-DD"), this.parent + "");
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
+    return path.join(parentDir, filename);
   }
 }

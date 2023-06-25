@@ -19,6 +19,7 @@
   "dependencies": {
     "@certd/acme-client": "^1.0.6",
     "@certd/pipeline": "^1.0.6",
+    "jszip": "^3.10.1",
     "node-forge": "^0.10.0"
   },
   "devDependencies": {
