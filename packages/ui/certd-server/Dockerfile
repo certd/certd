@@ -7,9 +7,6 @@ COPY . .
 #RUN npm install --registry=https://registry.npmmirror.com
 RUN npm install -g cnpm
 RUN cnpm install
-RUN npm run build:preview
+RUN npm run build
 
-# 如果端口更换，这边可以更新一下
-EXPOSE 7001
-
-CMD ["npm", "run", "online:preview"]
+CMD ["npm", "run", "online"]

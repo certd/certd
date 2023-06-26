@@ -4,13 +4,13 @@ import { FlywayHistory } from 'midway-flyway-js/dist/entity';
 import { MidwayConfig } from '@midwayjs/core';
 import { UserEntity } from '../modules/authority/entity/user';
 import { PipelineEntity } from '../modules/pipeline/entity/pipeline';
-import * as dotenv from 'dotenv';
 //import { logger } from '../utils/logger';
 // load .env file in process.cwd
-dotenv.config();
-export default {
+import _ from 'lodash';
+import { load } from './loader';
+const development = {
   // use for cookie sign key, should change to your own and keep security
-  keys: process.env.CERTD_AUTH_JWT_KEY,
+  keys: 'certd666',
   koa: {
     port: 7001,
   },
@@ -68,7 +68,7 @@ export default {
 
   biz: {
     jwt: {
-      secret: process.env.CERTD_AUTH_JWT_KEYS,
+      secret: 'certd666',
       expire: 7 * 24 * 60, //单位秒
     },
     auth: {
@@ -76,3 +76,5 @@ export default {
     },
   },
 } as MidwayConfig;
+_.merge(development, load('development'));
+export default development;

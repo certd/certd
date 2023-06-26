@@ -47,6 +47,7 @@
     "dayjs": "^1.11.7",
     "dotenv": "^16.0.3",
     "glob": "^7.2.3",
+    "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
     "kubernetes-client": "^9.0.0",
     "lodash": "^4.17.21",

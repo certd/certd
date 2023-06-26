@@ -1,10 +1,15 @@
 import { MidwayConfig } from '@midwayjs/core';
-
-export default {
+import { load } from './loader';
+import _ from 'lodash';
+const production = {
   /**
    * 演示环境
    */
   preview: {
-    enabled: true,
+    enabled: false,
   },
 } as MidwayConfig;
+
+_.merge(production, load('production'));
+
+export default production;

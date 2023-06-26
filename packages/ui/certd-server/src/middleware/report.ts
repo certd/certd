@@ -1,9 +1,5 @@
 import { Provide } from '@midwayjs/decorator';
-import {
-  IWebMiddleware,
-  IMidwayKoaContext,
-  NextFunction,
-} from '@midwayjs/koa';
+import { IWebMiddleware, IMidwayKoaContext, NextFunction } from '@midwayjs/koa';
 import { logger } from '../utils/logger';
 
 @Provide()
