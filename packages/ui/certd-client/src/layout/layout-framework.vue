@@ -49,10 +49,10 @@
         </router-view>
       </a-layout-content>
       <a-layout-footer class="fs-framework-footer">
-        <div>Powered by Greper</div>
+        <div>Powered by handsfree.work</div>
         <div>v{{ version }}</div>
 
-        <fs-source-link />
+        <!--        <fs-source-link />-->
       </a-layout-footer>
     </a-layout>
   </a-layout>

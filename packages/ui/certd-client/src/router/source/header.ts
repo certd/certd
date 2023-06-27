@@ -13,14 +13,14 @@ export const headerResource = [
     children: [
       {
         title: "github",
-        path: "http://github.com/certd/certd",
+        path: "https://github.com/certd/certd",
         meta: {
           icon: "ion:logo-github"
         }
       },
       {
         title: "gitee",
-        path: "http://gitee.com/certd/certd",
+        path: "https://gitee.com/certd/certd",
         meta: {
           icon: "ion:logo-octocat"
         }
