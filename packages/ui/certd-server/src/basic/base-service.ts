@@ -1,18 +1,24 @@
-import { Inject } from '@midwayjs/decorator';
 import { ValidateException } from './exception/validation-exception';
 import * as _ from 'lodash';
-import { Context } from '@midwayjs/koa';
 import { PermissionException } from './exception/permission-exception';
 import { Repository } from 'typeorm';
+import { Inject } from '@midwayjs/decorator';
+import { TypeORMDataSourceManager } from '@midwayjs/typeorm';
+import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 
 /**
  * 服务基类
  */
 export abstract class BaseService<T> {
   @Inject()
-  ctx: Context;
+  dataSourceManager: TypeORMDataSourceManager;
 
   abstract getRepository(): Repository<T>;
+
+  async transaction(callback: (entityManager: EntityManager) => Promise<any>) {
+    const dataSource = this.dataSourceManager.getDataSource('default');
+    await dataSource.transaction(callback);
+  }
 
   /**
    * 获得单个ID
@@ -34,7 +40,7 @@ export abstract class BaseService<T> {
 
   /**
    * 非分页查询
-   * @param option 查询配置
+   * @param options
    */
   async find(options) {
     return await this.getRepository().find(options);
@@ -187,23 +193,19 @@ export abstract class BaseService<T> {
     return await qb.getMany();
   }
 
-  async checkUserId(
-    id: any = 0,
-    userId,
-    userKey = 'userId',
-    queryIdKey = 'id'
-  ) {
+  async checkUserId(id: any = 0, userId, userKey = 'userId') {
     // @ts-ignore
     const res = await this.getRepository().findOne({
       // @ts-ignore
       select: { [userKey]: true },
       // @ts-ignore
       where: {
-        [queryIdKey]: id,
+        // @ts-ignore
+        id,
       },
     });
     // @ts-ignore
-    if (!res || res.userId === userId) {
+    if (!res || res[userKey] === userId) {
       return;
     }
     throw new PermissionException('权限不足');

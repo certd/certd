@@ -2,6 +2,8 @@ import { Config, Inject, Provide } from '@midwayjs/decorator';
 import { UserService } from '../../authority/service/user-service';
 import * as jwt from 'jsonwebtoken';
 import { CommonException } from '../../../basic/exception/common-exception';
+import { RoleService } from '../../authority/service/role-service';
+import { UserEntity } from '../../authority/entity/user';
 
 /**
  * 系统用户
@@ -10,6 +12,8 @@ import { CommonException } from '../../../basic/exception/common-exception';
 export class LoginService {
   @Inject()
   userService: UserService;
+  @Inject()
+  roleService: RoleService;
   @Config('biz.jwt')
   private jwt: any;
 
@@ -27,17 +31,20 @@ export class LoginService {
       throw new CommonException('用户名或密码错误');
     }
 
-    return this.generateToken(info);
+    const roleIds = await this.roleService.getRoleIdsByUserId(info.id);
+    return this.generateToken(info, roleIds);
   }
 
   /**
    * 生成token
    * @param user 用户对象
+   * @param roleIds
    */
-  async generateToken(user) {
+  async generateToken(user: UserEntity, roleIds: number[]) {
     const tokenInfo = {
       username: user.username,
       id: user.id,
+      roles: roleIds,
     };
     const expire = this.jwt.expire;
     const token = jwt.sign(tokenInfo, this.jwt.secret, {

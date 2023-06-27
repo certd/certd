@@ -15,6 +15,14 @@ export const outsideResource = [
         name: "login",
         path: "/login",
         component: "/framework/login/index.vue"
+      },
+      {
+        meta: {
+          title: "注册"
+        },
+        name: "register",
+        path: "/register",
+        component: "/framework/register/index.vue"
       }
     ]
   },

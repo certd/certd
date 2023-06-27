@@ -31,7 +31,7 @@ function createService() {
       const { code } = dataAxios;
       // 根据 code 进行判断
       if (code === undefined) {
-        // 如果没有 code 代表这不是项目后端开发的接口 比如可能是 D2Admin 请求最新版本
+        // 如果没有 code 代表这不是项目后端开发的接口
         errorCreate(`非标准返回：${dataAxios}， ${response.config.url}`);
         return dataAxios;
       } else {

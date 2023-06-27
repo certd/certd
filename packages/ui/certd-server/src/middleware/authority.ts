@@ -1,8 +1,10 @@
-import { Config, Provide } from '@midwayjs/decorator';
-import { IWebMiddleware, IMidwayKoaContext, NextFunction } from '@midwayjs/koa';
-import * as _ from 'lodash';
+import { Config, Inject, Provide } from '@midwayjs/decorator';
+import { IMidwayKoaContext, IWebMiddleware, NextFunction } from '@midwayjs/koa';
 import * as jwt from 'jsonwebtoken';
 import { Constants } from '../basic/constants';
+import { MidwayWebRouterService } from '@midwayjs/core';
+import { RoleService } from '../modules/authority/service/role-service';
+import { logger } from '../utils/logger';
 
 /**
  * 权限校验
@@ -11,33 +13,54 @@ import { Constants } from '../basic/constants';
 export class AuthorityMiddleware implements IWebMiddleware {
   @Config('biz.jwt.secret')
   private secret: string;
-  @Config('biz.auth.ignoreUrls')
-  private ignoreUrls: string[];
+  @Inject()
+  webRouterService: MidwayWebRouterService;
+  @Inject()
+  roleService: RoleService;
 
   resolve() {
     return async (ctx: IMidwayKoaContext, next: NextFunction) => {
-      const { url } = ctx;
-      let token = ctx.get('Authorization') || '';
-      token = token.replace('Bearer ', '').trim();
-      // 路由地址为 admin前缀的 需要权限校验
-      // console.log('ctx', ctx);
-      const queryIndex = url.indexOf('?');
-      let uri = url;
-      if (queryIndex >= 0) {
-        uri = url.substring(0, queryIndex);
+      // 查询当前路由是否在路由表中注册
+      const routeInfo = await this.webRouterService.getMatchedRouterInfo(
+        ctx.path,
+        ctx.method
+      );
+      const permission = routeInfo.summary;
+      if (permission == null || permission === '') {
+        ctx.status = 500;
+        ctx.body = Constants.res.serverError(
+          '该路由未配置权限控制:' + ctx.path
+        );
+        return;
       }
-      const yes = this.ignoreUrls.includes(uri);
-      if (yes) {
+
+      if (permission === Constants.per.guest) {
         await next();
         return;
       }
 
+      let token = ctx.get('Authorization') || '';
+      token = token.replace('Bearer ', '').trim();
       try {
         ctx.user = jwt.verify(token, this.secret);
       } catch (err) {
         ctx.status = 401;
         ctx.body = Constants.res.auth;
         return;
+      }
+
+      if (permission !== Constants.per.authOnly) {
+        //如果不是仅校验登录，还需要校验是否拥有权限
+        const roleIds: number[] = ctx.user.roles;
+        const permissions =
+          await this.roleService.getCachedPermissionSetByRoleIds(roleIds);
+
+        if (!permissions.has(permission)) {
+          logger.info('not permission: ', ctx.req.url);
+          ctx.status = 401;
+          ctx.body = Constants.res.permission;
+          return;
+        }
       }
       await next();
     };

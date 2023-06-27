@@ -1,6 +1,7 @@
 import { Body, Controller, Inject, Post, Provide } from '@midwayjs/decorator';
 import { BaseController } from '../../../basic/base-controller';
 import { EmailService } from '../service/email-service';
+import { Constants } from '../../../basic/constants';
 
 /**
  */
@@ -10,7 +11,7 @@ export class EmailController extends BaseController {
   @Inject()
   emailService: EmailService;
 
-  @Post('/test')
+  @Post('/test', { summary: Constants.per.authOnly })
   public async test(
     @Body('receiver')
     receiver

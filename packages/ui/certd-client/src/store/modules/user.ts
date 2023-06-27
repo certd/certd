@@ -7,10 +7,11 @@ import { LocalStorage } from "/src/utils/util.storage";
 import * as UserApi from "/src/api/modules/api.user";
 // @ts-ignore
 import { LoginReq, UserInfoRes } from "/@/api/modules/api.user";
-import { Modal } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { useI18n } from "vue-i18n";
 
 import { mitter } from "/src/utils/util.mitt";
+import { RegisterReq } from "/src/api/modules/api.user";
 
 interface UserState {
   userInfo: Nullable<UserInfoRes>;
@@ -49,6 +50,14 @@ export const useUserStore = defineStore({
       this.token = "";
       LocalStorage.remove(TOKEN_KEY);
       LocalStorage.remove(USER_INFO_KEY);
+    },
+
+    async register(user: RegisterReq) {
+      await UserApi.register(user);
+      notification.success({
+        message: "注册成功，请登录"
+      });
+      await router.replace("/login");
     },
     /**
      * @description: login

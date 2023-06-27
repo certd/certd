@@ -71,7 +71,7 @@ const development = {
       secret: 'certd666',
       expire: 7 * 24 * 60, //单位秒
     },
-    auth: {
+    authOnly: {
       ignoreUrls: ['/', '/public', '/api/login', '/api/register'],
     },
   },

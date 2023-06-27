@@ -1,4 +1,4 @@
-import { Provide } from '@midwayjs/decorator';
+import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service';
@@ -8,6 +8,7 @@ import { PermissionEntity } from '../entity/permission';
  * 权限资源
  */
 @Provide()
+@Scope(ScopeEnum.Singleton)
 export class PermissionService extends BaseService<PermissionEntity> {
   @InjectEntityModel(PermissionEntity)
   repository: Repository<PermissionEntity>;

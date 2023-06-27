@@ -6,7 +6,7 @@ export const certdResources = [
     redirect: "/certd/pipeline",
     meta: {
       icon: "ion:key-outline",
-      auth: true
+      authOnly: true
     },
     children: [
       {
@@ -43,7 +43,7 @@ export const certdResources = [
         redirect: "/certd/settings/email",
         meta: {
           icon: "ion:settings-outline",
-          auth: true
+          authOnly: true
         },
         children: [
           {
@@ -53,7 +53,7 @@ export const certdResources = [
             component: "/certd/settings/email-setting.vue",
             meta: {
               icon: "ion:mail-outline",
-              auth: true
+              authOnly: true
             }
           }
         ]

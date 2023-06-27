@@ -9,6 +9,7 @@ import {
 } from '@midwayjs/decorator';
 import { CrudController } from '../../../basic/crud-controller';
 import { AccessService } from '../service/access-service';
+import { Constants } from '../../../basic/constants';
 
 /**
  * 授权
@@ -23,49 +24,49 @@ export class AccessController extends CrudController<AccessService> {
     return this.service;
   }
 
-  @Post('/page')
+  @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body) {
     body.query = body.query ?? {};
     body.query.userId = this.ctx.user.id;
     return super.page(body);
   }
 
-  @Post('/list')
+  @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body) {
     body.userId = this.ctx.user.id;
     return super.list(body);
   }
 
-  @Post('/add')
+  @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean) {
     bean.userId = this.ctx.user.id;
     return super.add(bean);
   }
 
-  @Post('/update')
+  @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
     await this.service.checkUserId(bean.id, this.ctx.user.id);
     return super.update(bean);
   }
-  @Post('/info')
+  @Post('/info', { summary: Constants.per.authOnly })
   async info(@Query('id') id) {
     await this.service.checkUserId(id, this.ctx.user.id);
     return super.info(id);
   }
 
-  @Post('/delete')
+  @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id) {
     await this.service.checkUserId(id, this.ctx.user.id);
     return super.delete(id);
   }
 
-  @Post('/define')
+  @Post('/define', { summary: Constants.per.authOnly })
   async define(@Query('type') type) {
     const provider = this.service.getDefineByType(type);
     return this.ok(provider);
   }
 
-  @Post('/accessTypeDict')
+  @Post('/accessTypeDict', { summary: Constants.per.authOnly })
   async getAccessTypeDict() {
     const list = this.service.getDefineList();
     const dict = [];

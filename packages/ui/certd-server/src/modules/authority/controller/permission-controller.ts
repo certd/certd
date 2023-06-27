@@ -23,7 +23,7 @@ export class PermissionController extends CrudController<PermissionService> {
     return this.service;
   }
 
-  @Post('/page')
+  @Post('/page', { summary: 'sys:auth:per:view' })
   async page(
     @Body(ALL)
     body
@@ -31,7 +31,7 @@ export class PermissionController extends CrudController<PermissionService> {
     return await super.page(body);
   }
 
-  @Post('/add')
+  @Post('/add', { summary: 'sys:auth:per:add' })
   async add(
     @Body(ALL)
     bean
@@ -39,14 +39,14 @@ export class PermissionController extends CrudController<PermissionService> {
     return await super.add(bean);
   }
 
-  @Post('/update')
+  @Post('/update', { summary: 'sys:auth:per:edit' })
   async update(
     @Body(ALL)
     bean
   ) {
     return await super.update(bean);
   }
-  @Post('/delete')
+  @Post('/delete', { summary: 'sys:auth:per:remove' })
   async delete(
     @Query('id')
     id
@@ -54,7 +54,7 @@ export class PermissionController extends CrudController<PermissionService> {
     return await super.delete(id);
   }
 
-  @Post('/tree')
+  @Post('/tree', { summary: 'sys:auth:per:view' })
   async tree() {
     const tree = await this.service.tree({});
     return this.ok(tree);

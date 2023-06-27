@@ -11,6 +11,7 @@ import { UserService } from '../service/user-service';
 import { CrudController } from '../../../basic/crud-controller';
 import { RoleService } from '../service/role-service';
 import { PermissionService } from '../service/permission-service';
+import { Constants } from '../../../basic/constants';
 
 /**
  * 系统用户
@@ -30,7 +31,7 @@ export class UserController extends CrudController<UserService> {
     return this.service;
   }
 
-  @Post('/page')
+  @Post('/page', { summary: 'sys:auth:user:view' })
   async page(
     @Body(ALL)
     body
@@ -62,7 +63,7 @@ export class UserController extends CrudController<UserService> {
     return ret;
   }
 
-  @Post('/add')
+  @Post('/add', { summary: 'sys:auth:user:add' })
   async add(
     @Body(ALL)
     bean
@@ -70,14 +71,14 @@ export class UserController extends CrudController<UserService> {
     return await super.add(bean);
   }
 
-  @Post('/update')
+  @Post('/update', { summary: 'sys:auth:user:edit' })
   async update(
     @Body(ALL)
     bean
   ) {
     return await super.update(bean);
   }
-  @Post('/delete')
+  @Post('/delete', { summary: 'sys:auth:user:remove' })
   async delete(
     @Query('id')
     id
@@ -88,7 +89,7 @@ export class UserController extends CrudController<UserService> {
   /**
    * 当前登录用户的个人信息
    */
-  @Post('/mine')
+  @Post('/mine', { summary: Constants.per.authOnly })
   public async mine() {
     const id = this.ctx.user.id;
     const info = await this.service.info(id, ['password']);
@@ -98,7 +99,7 @@ export class UserController extends CrudController<UserService> {
   /**
    * 当前登录用户的权限列表
    */
-  @Post('/permissions')
+  @Post('/permissions', { summary: Constants.per.authOnly })
   public async permissions() {
     const id = this.ctx.user.id;
     const permissions = await this.service.getUserPermissions(id);
@@ -108,7 +109,7 @@ export class UserController extends CrudController<UserService> {
   /**
    * 当前登录用户的权限树形列表
    */
-  @Post('/permissionTree')
+  @Post('/permissionTree', { summary: Constants.per.authOnly })
   public async permissionTree() {
     const id = this.ctx.user.id;
     const permissions = await this.service.getUserPermissions(id);

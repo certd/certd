@@ -1,4 +1,4 @@
-import { Inject, Provide } from '@midwayjs/decorator';
+import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service';
@@ -8,10 +8,12 @@ import { RolePermissionEntity } from '../entity/role-permission';
 import { PermissionService } from './permission-service';
 import * as _ from 'lodash';
 import { RolePermissionService } from './role-permission-service';
+import { LRUCache } from 'lru-cache';
 /**
  * 角色
  */
 @Provide()
+@Scope(ScopeEnum.Singleton)
 export class RoleService extends BaseService<RoleEntity> {
   @InjectEntityModel(RoleEntity)
   repository: Repository<RoleEntity>;
@@ -21,6 +23,11 @@ export class RoleService extends BaseService<RoleEntity> {
   permissionService: PermissionService;
   @Inject()
   rolePermissionService: RolePermissionService;
+
+  permissionCache = new LRUCache<string, any>({
+    max: 1000,
+    ttl: 1000 * 60 * 10,
+  });
 
   getRepository() {
     return this.repository;
@@ -77,6 +84,8 @@ export class RoleService extends BaseService<RoleEntity> {
     await this.userRoleService.delete({ userId });
     //再添加
     await this.addRoles(userId, roles);
+
+    this.permissionCache.clear();
   }
 
   async getPermissionTreeByRoleId(id: any) {
@@ -97,5 +106,29 @@ export class RoleService extends BaseService<RoleEntity> {
         permissionId,
       });
     }
+    this.permissionCache.clear();
+  }
+
+  async getPermissionSetByRoleIds(roleIds: number[]): Promise<Set<string>> {
+    const list = await this.getPermissionByRoleIds(roleIds);
+
+    const permissionSet = new Set<string>();
+    for (const entity of list) {
+      permissionSet.add(entity.permission);
+    }
+    return permissionSet;
+  }
+
+  async getCachedPermissionSetByRoleIds(
+    roleIds: number[]
+  ): Promise<Set<string>> {
+    const roleIdsKey = roleIds.join(',');
+    let permissionSet = this.permissionCache.get(roleIdsKey);
+    if (permissionSet) {
+      return permissionSet;
+    }
+    permissionSet = await this.getPermissionSetByRoleIds(roleIds);
+    this.permissionCache.set(roleIdsKey, permissionSet);
+    return permissionSet;
   }
 }

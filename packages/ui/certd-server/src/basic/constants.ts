@@ -1,8 +1,27 @@
 export const Constants = {
+  role: {
+    defaultUser: 3,
+  },
+  per: {
+    //无需登录
+    guest: '_guest_',
+    //无需登录
+    anonymous: '_guest_',
+    //仅需要登录
+    authOnly: '_authOnly_',
+    //仅需要登录
+    loginOnly: '_authOnly_',
+  },
   res: {
+    serverError(message: string) {
+      return {
+        code: 1,
+        message,
+      };
+    },
     error: {
       code: 1,
-      message: 'error',
+      message: 'Internal server error',
     },
     success: {
       code: 0,

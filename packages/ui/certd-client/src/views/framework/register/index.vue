@@ -1,15 +1,8 @@
 <template>
   <div class="main">
-    <a-form
-      ref="formRef"
-      class="user-layout-login"
-      name="custom-validation"
-      :model="formState"
-      :rules="rules"
-      v-bind="layout"
-      @finish="handleFinish"
-      @finishFailed="handleFinishFailed"
-    >
+    <a-form ref="formRef" class="user-layout-register" name="custom-validation" :model="formState" :rules="rules" v-bind="layout" @finish="handleFinish" @finishFailed="handleFinishFailed">
+      <div class="login-title">用户注册</div>
+
       <a-form-item required has-feedback name="username">
         <a-input v-model:value="formState.username" size="large" autocomplete="off">
           <template #prefix>
@@ -46,13 +39,14 @@
 import { defineComponent, reactive, ref, toRaw } from "vue";
 import { useUserStore } from "/src/store/modules/user";
 export default defineComponent({
-  name: "Register",
+  name: "RegisterPage",
   setup() {
     const userStore = useUserStore();
     const formRef = ref();
     const formState = reactive({
       username: "",
-      password: ""
+      password: "",
+      confirmPassword: ""
     });
 
     const rules = {
@@ -88,8 +82,7 @@ export default defineComponent({
     };
 
     const handleFinish = async (values) => {
-      console.log(values, formState);
-      const userInfo = await userStore.login(
+      await userStore.register(
         toRaw({
           password: formState.password,
           username: formState.username
@@ -120,16 +113,17 @@ export default defineComponent({
 
 <style lang="less">
 @import "../../../style/theme/index.less";
-.user-layout-login {
+.user-layout-register {
   label {
     font-size: 14px;
   }
 
   .login-title {
-    color: @primary-color;
+    // color: @primary-color;
     font-size: 18px;
     text-align: center;
-    margin: 20px;
+    margin: 30px;
+    margin-top: 50px;
   }
   .getCaptcha {
     display: block;

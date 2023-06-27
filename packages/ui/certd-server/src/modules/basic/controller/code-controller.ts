@@ -5,6 +5,7 @@ import { Controller, Post, Provide } from '@midwayjs/decorator';
 import { BaseController } from '../../../basic/base-controller';
 import { CodeService } from '../service/code-service';
 import { EmailService } from '../service/email-service';
+import { Constants } from '../../../basic/constants';
 export class SmsCodeReq {
   @Rule(RuleType.number().required())
   phoneCode: number;
@@ -30,7 +31,7 @@ export class BasicController extends BaseController {
   @Inject()
   emailService: EmailService;
 
-  @Post('/sendSmsCode')
+  @Post('/sendSmsCode', { summary: Constants.per.guest })
   public sendSmsCode(
     @Body(ALL)
     body: SmsCodeReq
@@ -39,7 +40,7 @@ export class BasicController extends BaseController {
     return this.ok(null);
   }
 
-  @Post('/captcha')
+  @Post('/captcha', { summary: Constants.per.guest })
   public async getCaptcha(
     @Body()
     randomStr

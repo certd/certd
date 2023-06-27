@@ -52,6 +52,7 @@
     "kubernetes-client": "^9.0.0",
     "lodash": "^4.17.21",
     "log4js": "^6.7.1",
+    "lru-cache": "^10.0.0",
     "md5": "^2.3.0",
     "midway-flyway-js": "^3.0.0",
     "node-cron": "^3.0.2",

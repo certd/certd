@@ -63,5 +63,7 @@ export function errorLog(error: any) {
  * @param {String} msg 错误信息
  */
 export function errorCreate(msg: string) {
-  throw new Error(msg);
+  const err = new Error(msg);
+  uiContext.get().notification.error({ message: err.message });
+  throw err;
 }

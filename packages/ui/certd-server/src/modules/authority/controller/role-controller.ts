@@ -23,7 +23,7 @@ export class RoleController extends CrudController<RoleService> {
     return this.service;
   }
 
-  @Post('/page')
+  @Post('/page', { summary: 'sys:auth:role:view' })
   async page(
     @Body(ALL)
     body
@@ -31,13 +31,13 @@ export class RoleController extends CrudController<RoleService> {
     return await super.page(body);
   }
 
-  @Post('/list')
+  @Post('/list', { summary: 'sys:auth:role:view' })
   async list() {
     const ret = await this.service.find({});
     return this.ok(ret);
   }
 
-  @Post('/add')
+  @Post('/add', { summary: 'sys:auth:role:add' })
   async add(
     @Body(ALL)
     bean
@@ -45,14 +45,14 @@ export class RoleController extends CrudController<RoleService> {
     return await super.add(bean);
   }
 
-  @Post('/update')
+  @Post('/update', { summary: 'sys:auth:role:edit' })
   async update(
     @Body(ALL)
     bean
   ) {
     return await super.update(bean);
   }
-  @Post('/delete')
+  @Post('/delete', { summary: 'sys:auth:role:remove' })
   async delete(
     @Query('id')
     id
@@ -60,7 +60,7 @@ export class RoleController extends CrudController<RoleService> {
     return await super.delete(id);
   }
 
-  @Post('/getPermissionTree')
+  @Post('/getPermissionTree', { summary: 'sys:auth:role:view' })
   async getPermissionTree(
     @Query('id')
     id
@@ -69,7 +69,7 @@ export class RoleController extends CrudController<RoleService> {
     return this.ok(ret);
   }
 
-  @Post('/getPermissionIds')
+  @Post('/getPermissionIds', { summary: 'sys:auth:role:view' })
   async getPermissionIds(
     @Query('id')
     id
@@ -80,9 +80,10 @@ export class RoleController extends CrudController<RoleService> {
 
   /**
    * 给角色授予权限
-   * @param id
+   * @param roleId
+   * @param permissionIds
    */
-  @Post('/authz')
+  @Post('/authz', { summary: 'sys:auth:role:edit' })
   async authz(
     @Body('roleId')
     roleId,
@@ -93,4 +94,3 @@ export class RoleController extends CrudController<RoleService> {
     return this.ok(null);
   }
 }
-

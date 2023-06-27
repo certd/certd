@@ -66,7 +66,7 @@
       </a-form-item>
 
       <a-form-item class="user-login-other">
-        <!--        <router-link class="register" :to="{ name: 'index' }"> 注册 </router-link>-->
+        <router-link class="register" :to="{ name: 'register' }"> 注册 </router-link>
       </a-form-item>
     </a-form>
   </div>

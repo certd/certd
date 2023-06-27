@@ -8,6 +8,7 @@ import {
 } from '@midwayjs/decorator';
 import { LoginService } from '../service/login-service';
 import { BaseController } from '../../../basic/base-controller';
+import { Constants } from '../../../basic/constants';
 
 /**
  */
@@ -16,7 +17,7 @@ import { BaseController } from '../../../basic/base-controller';
 export class LoginController extends BaseController {
   @Inject()
   loginService: LoginService;
-  @Post('/login')
+  @Post('/login', { summary: Constants.per.guest })
   public async login(
     @Body(ALL)
     user
@@ -25,7 +26,6 @@ export class LoginController extends BaseController {
     return this.ok(token);
   }
 
-  @Post('/logout')
+  @Post('/logout', { summary: Constants.per.authOnly })
   public logout() {}
 }
-

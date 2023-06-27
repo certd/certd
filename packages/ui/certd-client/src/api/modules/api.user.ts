@@ -1,5 +1,11 @@
 import { request, requestForMock } from "../service";
 import { env } from "/@/utils/util.env";
+
+export interface RegisterReq {
+  username: string;
+  password: string;
+  confirmPassword: string;
+}
 /**
  * @description: Login interface parameters
  */
@@ -17,6 +23,14 @@ export interface UserInfoRes {
 export interface LoginRes {
   token: string;
   expire: number;
+}
+
+export async function register(user: RegisterReq): Promise<UserInfoRes> {
+  return await request({
+    url: "/register",
+    method: "post",
+    data: user
+  });
 }
 
 export async function login(data: LoginReq): Promise<LoginRes> {

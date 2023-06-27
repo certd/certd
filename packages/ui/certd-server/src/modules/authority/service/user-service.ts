@@ -1,4 +1,4 @@
-import { Inject, Provide } from '@midwayjs/decorator';
+import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../entity/user';
@@ -6,15 +6,18 @@ import * as _ from 'lodash';
 import md5 from 'md5';
 import { CommonException } from '../../../basic/exception/common-exception';
 import { BaseService } from '../../../basic/base-service';
-import { logger } from '../../../utils/logger';
 import { RoleService } from './role-service';
 import { PermissionService } from './permission-service';
 import { UserRoleService } from './user-role-service';
+import { Constants } from '../../../basic/constants';
+import { UserRoleEntity } from '../entity/user-role';
+import { randomText } from 'svg-captcha';
 
 /**
  * 系统用户
  */
 @Provide()
+@Scope(ScopeEnum.Singleton)
 export class UserService extends BaseService<UserEntity> {
   @InjectEntityModel(UserEntity)
   repository: Repository<UserEntity>;
@@ -32,10 +35,10 @@ export class UserService extends BaseService<UserEntity> {
   /**
    * 获得个人信息
    */
-  async mine() {
+  async mine(userId: number) {
     const info = await this.repository.findOne({
       where: {
-        id: this.ctx.user.id,
+        id: userId,
       },
     });
     delete info.password;
@@ -55,7 +58,7 @@ export class UserService extends BaseService<UserEntity> {
     if (!_.isEmpty(exists)) {
       throw new CommonException('用户名已经存在');
     }
-    const password = param.password ?? '123456';
+    const password = param.password ?? randomText(6);
     param.password = md5(password); // 默认密码  建议未改密码不能登陆
     await super.add(param);
     //添加角色
@@ -97,7 +100,7 @@ export class UserService extends BaseService<UserEntity> {
   }
 
   checkPassword(rawPassword: any, md5Password: any) {
-    logger.info('md5', md5('123456'));
+    // logger.info('md5', md5('123456'));
     return md5(rawPassword) === md5Password;
   }
 
@@ -107,7 +110,36 @@ export class UserService extends BaseService<UserEntity> {
    */
   async getUserPermissions(id: any) {
     const roleIds = await this.roleService.getRoleIdsByUserId(id);
-
     return await this.roleService.getPermissionByRoleIds(roleIds);
+  }
+
+  async register(user: UserEntity) {
+    const old = await this.findOne({ username: user.username });
+    if (old != null) {
+      throw new CommonException('用户名已经存在');
+    }
+    let newUser: UserEntity = UserEntity.of({
+      username: user.username,
+      password: user.password,
+      nickName: user.nickName || user.username,
+      avatar: user.avatar || '',
+      email: user.email || '',
+      mobile: user.mobile || '',
+      phoneCode: user.phoneCode || '',
+      status: 1,
+    });
+    newUser.password = md5(newUser.password);
+
+    await this.transaction(async txManager => {
+      newUser = await txManager.save(newUser);
+      const userRole: UserRoleEntity = UserRoleEntity.of(
+        newUser.id,
+        Constants.role.defaultUser
+      );
+      await txManager.save(userRole);
+    });
+
+    delete newUser.password;
+    return newUser;
   }
 }

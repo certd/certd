@@ -9,4 +9,8 @@ export class UserRoleEntity {
   roleId: number;
   @PrimaryColumn({ name: 'user_id' })
   userId: number;
+
+  static of(userId: number, roleId: number): UserRoleEntity {
+    return Object.assign(new UserRoleEntity(), { userId, roleId });
+  }
 }

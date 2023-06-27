@@ -60,4 +60,7 @@ export class UserEntity {
   //   },
   // })
   // roles: RoleEntity[];
+  static of(user: Partial<UserEntity>) {
+    return Object.assign(new UserEntity(), user);
+  }
 }

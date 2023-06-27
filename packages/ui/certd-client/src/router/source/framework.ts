@@ -12,7 +12,7 @@ export const frameworkResource = [
     component: LayoutFramework,
     meta: {
       icon: "ion:accessibility",
-      auth: true
+      authOnly: true
     },
     children: [
       {
