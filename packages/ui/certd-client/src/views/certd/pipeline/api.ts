@@ -1,7 +1,9 @@
 import { request } from "/src/api/service";
-const apiPrefix = "/pi/pipeline";
 
-export function GetList(query) {
+const apiPrefix = "/pi/pipeline";
+const historyApiPrefix = "/pi/history";
+
+export function GetList(query: any) {
   return request({
     url: apiPrefix + "/page",
     method: "post",
@@ -9,7 +11,7 @@ export function GetList(query) {
   });
 }
 
-export function AddObj(obj) {
+export function AddObj(obj: any) {
   return request({
     url: apiPrefix + "/add",
     method: "post",
@@ -17,7 +19,7 @@ export function AddObj(obj) {
   });
 }
 
-export function UpdateObj(obj) {
+export function UpdateObj(obj: any) {
   return request({
     url: apiPrefix + "/update",
     method: "post",
@@ -25,7 +27,7 @@ export function UpdateObj(obj) {
   });
 }
 
-export function DelObj(id) {
+export function DelObj(id: any) {
   return request({
     url: apiPrefix + "/delete",
     method: "post",
@@ -33,7 +35,7 @@ export function DelObj(id) {
   });
 }
 
-export function GetObj(id) {
+export function GetObj(id: any) {
   return request({
     url: apiPrefix + "/info",
     method: "post",
@@ -41,7 +43,7 @@ export function GetObj(id) {
   });
 }
 
-export function GetDetail(id) {
+export function GetDetail(id: any) {
   return request({
     url: apiPrefix + "/detail",
     method: "post",
@@ -49,7 +51,7 @@ export function GetDetail(id) {
   });
 }
 
-export function Save(pipelineEntity) {
+export function Save(pipelineEntity: any) {
   return request({
     url: apiPrefix + "/save",
     method: "post",
@@ -57,10 +59,18 @@ export function Save(pipelineEntity) {
   });
 }
 
-export function Trigger(id) {
+export function Trigger(id: any) {
   return request({
     url: apiPrefix + "/trigger",
     method: "post",
     params: { id }
+  });
+}
+
+export async function GetFiles(pipelineId: number) {
+  return request({
+    url: historyApiPrefix + "/files",
+    method: "post",
+    params: { pipelineId }
   });
 }

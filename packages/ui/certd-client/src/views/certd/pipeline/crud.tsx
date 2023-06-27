@@ -5,7 +5,9 @@ import { useRouter } from "vue-router";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { nanoid } from "nanoid";
-import { message } from "ant-design-vue";
+import { message, Modal } from "ant-design-vue";
+import { env } from "/@/utils/util.env";
+import { useUserStore } from "/@/store/modules/user";
 
 export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -73,6 +75,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
       router.push({ path: "/certd/pipeline/detail", query: { id, editMode: "true" } });
     });
   }
+  const userStore = useUserStore();
   return {
     crudOptions: {
       request: {
@@ -123,6 +126,33 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           edit: {
             order: 2,
             icon: "ant-design:setting-outlined"
+          },
+          download: {
+            order: 3,
+            title: null,
+            type: "link",
+            icon: "ant-design:download-outlined",
+            async click({ row }) {
+              const files = await api.GetFiles(row.id);
+              Modal.success({
+                title: "文件下载",
+                content: () => {
+                  const children = [];
+                  for (const file of files) {
+                    const downloadUrl = `${env.API}/pi/history/download?pipelineId=${row.id}&fileId=${file.id}`;
+                    children.push(
+                      <p>
+                        <a href={downloadUrl} target={"_blank"}>
+                          {file.filename}
+                        </a>
+                      </p>
+                    );
+                  }
+
+                  return <div class={"mt-3"}>{children}</div>;
+                }
+              });
+            }
           },
           remove: {
             order: 5

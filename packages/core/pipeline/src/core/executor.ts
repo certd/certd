@@ -29,6 +29,7 @@ export class Executor {
   logger: Logger;
   pipelineContext!: IContext;
   lastStatusMap!: RunnableCollection;
+  lastRuntime!: RunHistory;
   options: ExecutorOptions;
   onChanged: (history: RunHistory) => void;
   constructor(options: ExecutorOptions) {
@@ -45,6 +46,7 @@ export class Executor {
 
   async init() {
     const lastRuntime = await this.pipelineContext.getObj(`lastRuntime`);
+    this.lastRuntime = lastRuntime;
     this.lastStatusMap = new RunnableCollection(lastRuntime?.pipeline);
   }
 
@@ -59,6 +61,9 @@ export class Executor {
       await this.runWithHistory(this.pipeline, "pipeline", async () => {
         await this.runStages(this.pipeline);
       });
+      if (this.lastRuntime && this.lastRuntime.pipeline.status?.status === ResultType.error) {
+        await this.notification("turnToSuccess");
+      }
       await this.notification("success");
     } catch (e) {
       await this.notification("error", e);
@@ -232,6 +237,9 @@ export class Executor {
       content = subject;
     } else if (when === "success") {
       subject = `【CertD】执行成功，${this.pipeline.title}, buildId:${this.runtime.id}`;
+      content = subject;
+    } else if (when === "turnToSuccess") {
+      subject = `【CertD】执行成功（错误转成功），${this.pipeline.title}, buildId:${this.runtime.id}`;
       content = subject;
     } else if (when === "error") {
       subject = `【CertD】执行失败，${this.pipeline.title}, buildId:${this.runtime.id}`;

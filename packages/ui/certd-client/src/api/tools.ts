@@ -53,7 +53,7 @@ export function errorLog(error: any) {
     error.message = error?.response?.data?.message;
   }
   // 打印到控制台
-  console.error(error);
+  console.error("errorLog", error);
   // 显示提示
   uiContext.get().notification.error({ message: error.message });
 }
@@ -64,6 +64,7 @@ export function errorLog(error: any) {
  */
 export function errorCreate(msg: string) {
   const err = new Error(msg);
+  console.error("errorCreate", err);
   uiContext.get().notification.error({ message: err.message });
   throw err;
 }

@@ -38,6 +38,7 @@
                 options: [
                   { value: 'start', label: '开始时' },
                   { value: 'success', label: '成功时' },
+                  { value: 'turnToSuccess', label: '错误转成功时' },
                   { value: 'error', label: '错误时' }
                 ]
               },

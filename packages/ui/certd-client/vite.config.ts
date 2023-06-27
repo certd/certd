@@ -4,7 +4,6 @@ import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
 import PurgeIcons from "vite-plugin-purge-icons";
 import * as path from "path";
-// import WindiCSS from "vite-plugin-windicss";
 // import { generateModifyVars } from "./build/modify-vars";
 // import { configThemePlugin } from "./build/theme-plugin";
 // import OptimizationPersist from "vite-plugin-optimize-persist";

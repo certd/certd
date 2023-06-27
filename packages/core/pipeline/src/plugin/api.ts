@@ -6,7 +6,7 @@ import { IAccessService } from "../access";
 import { IEmailService } from "../service";
 import { IContext } from "../core";
 import { AxiosInstance } from "axios";
-
+import { v4 as uuidv4 } from "uuid";
 export enum ContextScope {
   global,
   pipeline,
@@ -81,6 +81,7 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
   saveFile(filename: string, file: Buffer) {
     const filePath = this.ctx.fileStore.writeFile(filename, file);
     this._result.files!.push({
+      id: uuidv4(),
       filename,
       path: filePath,
     });

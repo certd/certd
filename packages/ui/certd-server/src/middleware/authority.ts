@@ -25,6 +25,11 @@ export class AuthorityMiddleware implements IWebMiddleware {
         ctx.path,
         ctx.method
       );
+      if (routeInfo == null) {
+        // 404
+        await next();
+        return;
+      }
       const permission = routeInfo.summary;
       if (permission == null || permission === '') {
         ctx.status = 500;
@@ -41,6 +46,14 @@ export class AuthorityMiddleware implements IWebMiddleware {
 
       let token = ctx.get('Authorization') || '';
       token = token.replace('Bearer ', '').trim();
+      if (token === '') {
+        //尝试从cookie中获取token
+        token = ctx.cookies.get('token') || '';
+      }
+      if (token === '') {
+        //尝试从query中获取token
+        token = (ctx.query.token as string) || '';
+      }
       try {
         ctx.user = jwt.verify(token, this.secret);
       } catch (err) {

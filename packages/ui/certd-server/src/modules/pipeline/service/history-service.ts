@@ -1,4 +1,4 @@
-import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/decorator";
+import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service';
@@ -6,6 +6,7 @@ import { HistoryEntity } from '../entity/history';
 import { PipelineEntity } from '../entity/pipeline';
 import { HistoryDetail } from '../entity/vo/history-detail';
 import { HistoryLogService } from './history-log-service';
+import { FileItem, Pipeline, RunnableCollection } from '@certd/pipeline';
 
 /**
  * 证书申请
@@ -77,5 +78,30 @@ export class HistoryService extends BaseService<HistoryEntity> {
 
       shouldDeleteCount -= deleteCountBatch;
     }
+  }
+
+  async getLastHistory(pipelineId: number) {
+    return await this.repository.findOne({
+      where: {
+        pipelineId,
+      },
+      order: {
+        id: 'DESC',
+      },
+    });
+  }
+
+  async getFiles(history: HistoryEntity) {
+    const status: Pipeline = JSON.parse(history.pipeline);
+    const files: FileItem[] = [];
+    RunnableCollection.each([status], runnable => {
+      if (runnable.runnableType !== 'step') {
+        return;
+      }
+      if (runnable.status?.files != null) {
+        files.push(...runnable.status.files);
+      }
+    });
+    return files;
   }
 }

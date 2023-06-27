@@ -2,6 +2,7 @@ import {
   ALL,
   Body,
   Controller,
+  Get,
   Inject,
   Post,
   Provide,
@@ -13,7 +14,11 @@ import { HistoryService } from '../service/history-service';
 import { HistoryLogService } from '../service/history-log-service';
 import { HistoryEntity } from '../entity/history';
 import { HistoryLogEntity } from '../entity/history-log';
-import {Constants} from "../../../basic/constants";
+import { Constants } from '../../../basic/constants';
+import { PipelineService } from '../service/pipeline-service';
+import { CommonException } from '../../../basic/exception/common-exception';
+import { PermissionException } from '../../../basic/exception/permission-exception';
+import * as fs from 'fs';
 
 /**
  * 证书
@@ -23,6 +28,8 @@ import {Constants} from "../../../basic/constants";
 export class HistoryController extends CrudController<HistoryService> {
   @Inject()
   service: HistoryService;
+  @Inject()
+  pipelineService: PipelineService;
   @Inject()
   logService: HistoryLogService;
 
@@ -103,5 +110,52 @@ export class HistoryController extends CrudController<HistoryService> {
     await this.logService.checkUserId(id, this.ctx.user.id);
     const logInfo = await this.logService.info(id);
     return this.ok(logInfo);
+  }
+
+  @Post('/files', { summary: Constants.per.authOnly })
+  async files(@Query('pipelineId') pipelineId, @Query('historyId') historyId) {
+    const files = await this.getFiles(historyId, pipelineId);
+    return this.ok(files);
+  }
+
+  private async getFiles(historyId, pipelineId) {
+    let history = null;
+    if (historyId != null) {
+      // nothing
+      history = await this.service.info(historyId);
+    } else if (pipelineId != null) {
+      history = await this.service.getLastHistory(pipelineId);
+    }
+    if (history == null) {
+      throw new CommonException('historyId is null');
+    }
+    if (history.userId !== this.ctx.user.id) {
+      throw new PermissionException();
+    }
+    return await this.service.getFiles(history);
+  }
+
+  @Get('/download', { summary: Constants.per.authOnly })
+  async download(
+    @Query('pipelineId') pipelineId,
+    @Query('historyId') historyId,
+    @Query('fileId') fileId
+  ) {
+    const files = await this.getFiles(historyId, pipelineId);
+    const file = files.find(f => f.id === fileId);
+    if (file == null) {
+      throw new CommonException('file not found');
+    }
+    // koa send file
+    // 下载文件的名称
+    // const filename = file.filename;
+    // 要下载的文件的完整路径
+    const path = file.path;
+
+    // 以流的形式下载文件
+    this.ctx.attachment(path);
+    this.ctx.set('Content-Type', 'application/octet-stream');
+
+    return fs.createReadStream(path);
   }
 }

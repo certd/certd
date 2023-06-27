@@ -119,25 +119,25 @@ export class RunnableCollection {
     this.collection = map;
   }
 
-  private each<T extends Runnable>(list: T[], exec: (item: Runnable) => void) {
+  static each<T extends Runnable>(list: T[], exec: (item: Runnable) => void) {
     list.forEach((item) => {
       exec(item);
       if (item.runnableType === "pipeline") {
         // @ts-ignore
-        this.each<Stage>(item.stages, exec);
+        RunnableCollection.each<Stage>(item.stages, exec);
       } else if (item.runnableType === "stage") {
         // @ts-ignore
-        this.each<Task>(item.tasks, exec);
+        RunnableCollection.each<Task>(item.tasks, exec);
       } else if (item.runnableType === "task") {
         // @ts-ignore
-        this.each<Step>(item.steps, exec);
+        RunnableCollection.each<Step>(item.steps, exec);
       }
     });
   }
-  private toMap(pipeline: Pipeline) {
+  public toMap(pipeline: Pipeline) {
     const map: RunnableMap = {};
 
-    this.each(pipeline.stages, (item) => {
+    RunnableCollection.each(pipeline.stages, (item) => {
       map[item.id] = item;
     });
     return map;
@@ -151,7 +151,7 @@ export class RunnableCollection {
     if (!this.pipeline) {
       return;
     }
-    this.each(this.pipeline.stages, (item) => {
+    RunnableCollection.each(this.pipeline.stages, (item) => {
       item.status = undefined;
     });
   }

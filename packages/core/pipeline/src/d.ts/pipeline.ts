@@ -56,6 +56,7 @@ export type Trigger = {
 };
 
 export type FileItem = {
+  id: string;
   filename: string;
   path: string;
 };
@@ -68,13 +69,12 @@ export type Runnable = {
   default?: {
     [key: string]: any;
   };
-  files?: FileItem[];
 };
 
 export type EmailOptions = {
   receivers: string[];
 };
-export type NotificationWhen = "error" | "success" | "start";
+export type NotificationWhen = "error" | "success" | "turnToSuccess" | "start";
 export type NotificationType = "email" | "url";
 export type Notification = {
   type: NotificationType;

@@ -23,6 +23,11 @@ export class LoginController extends BaseController {
     user
   ) {
     const token = await this.loginService.login(user);
+
+    this.ctx.cookies.set('token', token.token, {
+      maxAge: 1000 * token.expire,
+    });
+
     return this.ok(token);
   }
 
