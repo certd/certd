@@ -1,6 +1,9 @@
 <template>
   <a-dropdown class="fs-locale-picker">
-    <fs-iconify icon="ion-globe-outline" @click.prevent></fs-iconify>
+    <div>
+      <fs-iconify icon="ion-globe-outline" @click.prevent></fs-iconify>
+    </div>
+
     <template #overlay>
       <a-menu @click="changeLocale">
         <a-menu-item v-for="item in languages" :key="item.key" :command="item.key">
@@ -46,7 +49,7 @@ export default {
     const changeLocale = (change) => {
       i18n.global.locale.value = change.key;
       routerReload();
-      localeChanged(change.key)
+      localeChanged(change.key);
     };
     return {
       languages,
@@ -58,7 +61,7 @@ export default {
 </script>
 
 <style lang="less">
-.locale-picker {
+.fs-locale-picker {
   display: flex;
   align-items: center;
 }
