@@ -1,7 +1,10 @@
 <template>
   <fs-page>
     <template #header>
-      <div class="title">授权管理</div>
+      <div class="title">
+        授权管理
+        <span class="sub">管理第三方系统授权信息</span>
+      </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
   </fs-page>
