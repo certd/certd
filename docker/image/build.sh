@@ -5,7 +5,7 @@ read version
 
 echo "您输入的版本号是： $version"
 echo "登录aliyun镜像仓库"
-docker login --username=252959493@qq.com registry.cn-shenzhen.aliyuncs.com
+sudo docker login --username=252959493@qq.com registry.cn-shenzhen.aliyuncs.com
 
 build=$(pwd)
 cd ../../
