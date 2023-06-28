@@ -1,6 +1,5 @@
 import { MidwayConfig } from '@midwayjs/core';
-import { load } from './loader';
-import _ from 'lodash';
+import { mergeConfig } from './loader';
 
 const preview = {
   /**
@@ -11,6 +10,5 @@ const preview = {
   },
 } as MidwayConfig;
 
-_.merge(preview, load('preview'));
-
+mergeConfig(preview, 'preview');
 export default preview;

@@ -6,11 +6,10 @@ import { UserEntity } from '../modules/authority/entity/user';
 import { PipelineEntity } from '../modules/pipeline/entity/pipeline';
 //import { logger } from '../utils/logger';
 // load .env file in process.cwd
-import _ from 'lodash';
-import { load } from './loader';
+import { mergeConfig } from './loader';
+
 const development = {
-  // use for cookie sign key, should change to your own and keep security
-  keys: 'certd666',
+  keys: '',
   koa: {
     port: 7001,
   },
@@ -66,15 +65,12 @@ const development = {
     scriptDir: join(__dirname, '../../db/migration'),
   },
 
-  biz: {
+  auth: {
     jwt: {
       secret: 'certd666',
       expire: 7 * 24 * 60, //单位秒
     },
-    authOnly: {
-      ignoreUrls: ['/', '/public', '/api/login', '/api/register'],
-    },
   },
 } as MidwayConfig;
-_.merge(development, load('development'));
+mergeConfig(development, 'development');
 export default development;

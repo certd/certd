@@ -13,6 +13,6 @@ services: # 要拉起的服务们
       - "7001:7001"
     environment:
       - TZ=Asia/Shanghai
-      - CERTD_AUTH_JWT_KEY=changeme
+      - certd_auth_jwt_secret=changeme
       #注意修改成你的自定义密钥 ↑↑↑↑↑
 

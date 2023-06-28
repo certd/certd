@@ -11,7 +11,7 @@ import { logger } from '../utils/logger';
  */
 @Provide()
 export class AuthorityMiddleware implements IWebMiddleware {
-  @Config('biz.jwt.secret')
+  @Config('keys')
   private secret: string;
   @Inject()
   webRouterService: MidwayWebRouterService;

@@ -14,7 +14,7 @@ export class LoginService {
   userService: UserService;
   @Inject()
   roleService: RoleService;
-  @Config('biz.jwt')
+  @Config('auth.jwt')
   private jwt: any;
 
   /**

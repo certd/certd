@@ -1,6 +1,6 @@
 import { MidwayConfig } from '@midwayjs/core';
-import { load } from './loader';
-import _ from 'lodash';
+import { mergeConfig } from './loader';
+
 const production = {
   /**
    * 演示环境
@@ -10,6 +10,5 @@ const production = {
   },
 } as MidwayConfig;
 
-_.merge(production, load('production'));
-
+mergeConfig(production, 'production');
 export default production;

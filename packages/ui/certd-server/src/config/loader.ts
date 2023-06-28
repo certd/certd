@@ -1,5 +1,6 @@
 import path from 'path';
 import _ from 'lodash';
+
 const yaml = require('js-yaml');
 const fs = require('fs');
 
@@ -23,4 +24,13 @@ export function load(env = '') {
   const doc = yaml.load(fs.readFileSync(yamlPath, 'utf8'));
   _.merge(doc, parseEnv());
   return doc;
+}
+
+export function mergeConfig(config: any, envType: string) {
+  _.merge(config, load(envType));
+  const keys = _.get(config, 'auth.jwt.secret');
+  if (keys) {
+    config.keys = keys;
+  }
+  return config;
 }
