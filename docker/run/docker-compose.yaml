@@ -4,6 +4,7 @@ services: # 要拉起的服务们
 #    build:
 #        context: ./
 #        dockerfile: Dockerfile
+#                                                              ↓↓↓↓↓  修改镜像版本号
     image: registry.cn-shenzhen.aliyuncs.com/handsfree/certd:v${TAG}
     container_name: certd # 容器名
     restart: unless-stopped # 重启
@@ -14,5 +15,5 @@ services: # 要拉起的服务们
     environment:
       - TZ=Asia/Shanghai
       - certd_auth_jwt_secret=changeme
-      #注意修改成你的自定义密钥 ↑↑↑↑↑
+#                               ↑↑↑↑↑   注意修改成你的自定义密钥
 
