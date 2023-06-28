@@ -142,4 +142,17 @@ export class UserService extends BaseService<UserEntity> {
     delete newUser.password;
     return newUser;
   }
+
+  async changePassword(userId: any, form: any) {
+    const user = await this.info(userId);
+    if (!this.checkPassword(form.password, user.password)) {
+      throw new CommonException('原密码错误');
+    }
+    const param = {
+      id: userId,
+      password: form.newPassword,
+    };
+
+    await this.update(param);
+  }
 }

@@ -55,6 +55,16 @@ export const certdResources = [
               icon: "ion:mail-outline",
               auth: true
             }
+          },
+          {
+            title: "账号信息",
+            name: "userProfile",
+            path: "/certd/mine/user-profile",
+            component: "/certd/mine/user-profile.vue",
+            meta: {
+              icon: "ion:person-outline",
+              auth: true
+            }
           }
         ]
       }

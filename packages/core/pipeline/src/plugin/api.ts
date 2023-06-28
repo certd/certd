@@ -7,10 +7,6 @@ import { IEmailService } from "../service";
 import { IContext } from "../core";
 import { AxiosInstance } from "axios";
 
-//解决 uuid random-values not support 问题
-// https://github.com/uuidjs/uuid#getrandomvalues-not-supported
-import "react-native-get-random-values";
-import { v4 as uuidv4 } from "uuid";
 export enum ContextScope {
   global,
   pipeline,
@@ -82,16 +78,19 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
     this.ctx = ctx;
   }
 
+  randomFileId() {
+    return Math.random().toString(36).substring(2, 9);
+  }
   linkFile(file: FileItem) {
     this._result.files!.push({
       ...file,
-      id: uuidv4(),
+      id: this.randomFileId(),
     });
   }
   saveFile(filename: string, file: Buffer) {
     const filePath = this.ctx.fileStore.writeFile(filename, file);
     this._result.files!.push({
-      id: uuidv4(),
+      id: this.randomFileId(),
       filename,
       path: filePath,
     });
