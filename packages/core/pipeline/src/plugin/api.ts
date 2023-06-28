@@ -6,6 +6,10 @@ import { IAccessService } from "../access";
 import { IEmailService } from "../service";
 import { IContext } from "../core";
 import { AxiosInstance } from "axios";
+
+//解决 uuid random-values not support 问题
+// https://github.com/uuidjs/uuid#getrandomvalues-not-supported
+import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 export enum ContextScope {
   global,

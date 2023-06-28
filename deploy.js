@@ -3,7 +3,8 @@ import fs from 'fs'
 
 //读取 packages/core/pipline/package.json的版本号
 import { default as packageJson } from './packages/core/pipeline/package.json' assert { type: "json" };
-console.log("certdVersion", packageJson.version)
+const certdVersion = packageJson.version
+console.log("certdVersion",certdVersion)
 
 // 同步npmmirror的包
 async function getPackages(directoryPath) {
