@@ -35,7 +35,7 @@ export const usePageStore = defineStore({
         fullPath: "/index",
         meta: {
           title: "首页",
-          authOnly: false
+          auth: false
         }
       }
     ],
