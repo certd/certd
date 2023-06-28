@@ -11,7 +11,8 @@ build=$(pwd)
 cd ../../
 root=$(pwd)
 echo "安装依赖"
-pnpm install --registry=https://registry.npmmirror.com
+#pnpm install --registry=https://registry.npmmirror.com
+pnpm install
 
 echo "client build"
 cd $root/packages/ui/certd-client
