@@ -1,58 +1,79 @@
-const http = require("axios")
-const exec = require('child_process').exec;
+import http from 'axios'
+import fs from 'fs'
 
-//builder
-function execute(cmd){
-    return new Promise((resolve,reject)=>{
-        console.log("cmd executing: " + cmd)
-        exec(cmd, function(error, stdout, stderr) {
-            if(error){
-                console.error(error);
-                console.info(stderr)
-                reject(error)
+//读取 packages/core/pipline/package.json的版本号
+import { default as packageJson } from './packages/core/pipeline/package.json' assert { type: "json" };
+console.log("certdVersion", packageJson.version)
+
+// 同步npmmirror的包
+async function getPackages(directoryPath) {
+    return new Promise((resolve, reject) => {
+        // 读取目录下的文件和目录列表
+        fs.readdir(directoryPath, {withFileTypes: true}, (err, files) => {
+            if (err) {
+                console.log('无法读取目录:', err);
+                reject(err)
+                return;
             }
-            else{
-                console.info(stdout)
-                console.log("success");
-                resolve(true)
-            }
+
+            // 过滤仅保留目录
+            const directories = files
+                .filter(file => file.isDirectory())
+                .map(directory => directory.name);
+
+            console.log('目录列表:', directories);
+            resolve(directories)
         });
     })
+
 }
 
-async function build(){
-    await execute("cd ./packages/fast-admin/fs-admin-antdv/ && npm run build")
-    await execute("cd ./packages/fast-admin/fs-admin-element/ && npm run build")
-    await execute("cd ./packages/fast-admin/fs-admin-naive-ui/ && npm run build")
-    await execute("npm run docs:build")
+async function getAllPackages(){
+    const base = await getPackages("./packages/core")
+    const plugins =await getPackages("./packages/plugins")
+
+    return base.concat(plugins)
 }
 
+async function sync(){
+    const packages = await getAllPackages()
+    for(const pkg of packages){
+        await http({
+            url: `https://registry-direct.npmmirror.com/@certd/${pkg}/sync?sync_upstream=true`,
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            data: {}
+        })
+        console.log(`sync success:${pkg}`)
+        await sleep(1000)
+    }
+    await sleep(60000)
+}
 
+// curl -X PUT https://registry-direct.npmmirror.com/@certd/plugin-cert/sync?sync_upstream=true
 
-// trigger
+const certdImageBuild = "http://flow-openapi.aliyun.com/pipeline/webhook/4zgFk3i4RZEMGuQzlOcI"
+const webhooks = [certdImageBuild]
 
-const naive = "http://flow-openapi.aliyun.com/pipeline/webhook/Zm3TJyDtyFZgV4dtJiD1"
-const doc = "http://flow-openapi.aliyun.com/pipeline/webhook/soOYdQ5sF3kLjTPJGmIO"
-const antdv = "http://flow-openapi.aliyun.com/pipeline/webhook/HiL0uVYxfUnBzIMJZVXB"
-const element = "http://flow-openapi.aliyun.com/pipeline/webhook/uFTI0XJ9RgqnofX7jpRD"
-
-const webhooks = [doc,naive,antdv,element]
-
-async function sleep(time){
+async function sleep(time) {
     return new Promise(resolve => {
-        setTimeout(resolve,time)
+        setTimeout(resolve, time)
     })
 }
 
-async function trigger(){
+async function triggerBuild() {
     for (const webhook of webhooks) {
         await http({
-            url:webhook,
-            method:'POST',
-            headers:{
+            url: webhook,
+            method: 'POST',
+            headers: {
                 "Content-Type": "application/json"
             },
-            data:{}
+            data: {
+                'CERTD_VERSION': certdVersion
+            }
         })
         console.log(`webhook success:${webhook}`)
         await sleep(1000)
@@ -60,11 +81,12 @@ async function trigger(){
 
 }
 
-async function  start(){
+async function start() {
     // await build()
     console.log("等待60秒")
-    await sleep(60*1000)
-    await trigger()
+    await sleep(60 * 1000)
+    await sync()
+    await triggerBuild()
 }
 
 start()
