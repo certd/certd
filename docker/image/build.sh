@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 echo "请先输入一个版本号："
 read version
 
