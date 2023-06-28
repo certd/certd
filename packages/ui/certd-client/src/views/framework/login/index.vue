@@ -75,15 +75,15 @@
 import { defineComponent, reactive, ref, toRaw, computed } from "vue";
 import { useUserStore } from "/src/store/modules/user";
 export default defineComponent({
-  name: "Login",
+  name: "LoginPage",
   setup() {
     const loading = ref(false);
     const userStore = useUserStore();
     const formRef = ref();
     const formState = reactive({
-      username: "admin",
+      username: "",
       mobile: "",
-      password: "123456",
+      password: "",
       loginType: "password", //password
       imgCode: "",
       smsCode: ""
