@@ -32,4 +32,6 @@ mkdir -p $build/workspace/certd-server
 \cp ./* $build/workspace/certd-server -rf
 \cp ../certd-client/dist/* $build/workspace/certd-server/public/ -rf
 
-
+export TAG=$version
+sudo -E docker compose build
+sudo -E docker compose push
