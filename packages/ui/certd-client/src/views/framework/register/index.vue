@@ -1,24 +1,25 @@
 <template>
   <div class="main">
     <a-form ref="formRef" class="user-layout-register" name="custom-validation" :model="formState" :rules="rules" v-bind="layout" @finish="handleFinish" @finishFailed="handleFinishFailed">
-      <div class="login-title">用户注册</div>
-
-      <a-form-item required has-feedback name="username">
-        <a-input v-model:value="formState.username" size="large" autocomplete="off">
+      <a-tabs :tab-bar-style="{ textAlign: 'center', borderBottom: 'unset' }">
+        <a-tab-pane key="register" tab="用户注册"> </a-tab-pane>
+      </a-tabs>
+      <a-form-item required has-feedback name="username" label="用户名">
+        <a-input v-model:value="formState.username" placeholder="用户名" size="large" autocomplete="off">
           <template #prefix>
             <span class="iconify" data-icon="ion:person" data-inline="false"></span>
           </template>
         </a-input>
       </a-form-item>
-      <a-form-item has-feedback name="password">
-        <a-input-password v-model:value="formState.password" size="large" autocomplete="off">
+      <a-form-item has-feedback name="password" label="密码">
+        <a-input-password v-model:value="formState.password" placeholder="密码" size="large" autocomplete="off">
           <template #prefix>
             <span class="iconify" data-icon="ion:lock-closed" data-inline="false"></span>
           </template>
         </a-input-password>
       </a-form-item>
-      <a-form-item has-feedback name="confirmPassword">
-        <a-input-password v-model:value="formState.confirmPassword" size="large" autocomplete="off">
+      <a-form-item has-feedback name="confirmPassword" label="确认密码">
+        <a-input-password v-model:value="formState.confirmPassword" placeholder="确认密码" size="large" autocomplete="off">
           <template #prefix>
             <span class="iconify" data-icon="ion:lock-closed" data-inline="false"></span>
           </template>
