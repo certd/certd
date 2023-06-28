@@ -136,6 +136,25 @@ export class PipelineService extends BaseService<PipelineEntity> {
     logger.info('定时器数量：', this.cron.getListSize());
   }
 
+  async delete(id: number) {
+    const pipeline = await this.info(id);
+    if (!pipeline) {
+      return;
+    }
+    const pipelineObj = JSON.parse(pipeline.content);
+    if (pipelineObj.triggers) {
+      for (const trigger of pipelineObj.triggers) {
+        this.removeCron(id, trigger);
+      }
+    }
+    await super.delete([id]);
+  }
+
+  removeCron(pipelineId, trigger) {
+    const name = this.buildCronKey(pipelineId, trigger.id);
+    this.cron.remove(name);
+  }
+
   registerCron(pipelineId, trigger) {
     let cron = trigger.props?.cron;
     if (cron == null) {

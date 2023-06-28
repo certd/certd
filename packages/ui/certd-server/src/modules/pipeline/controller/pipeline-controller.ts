@@ -60,7 +60,8 @@ export class PipelineController extends CrudController<PipelineService> {
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id) {
     await this.service.checkUserId(id, this.ctx.user.id);
-    return super.delete(id);
+    await this.service.delete(id);
+    return this.ok({});
   }
 
   @Post('/detail', { summary: Constants.per.authOnly })
