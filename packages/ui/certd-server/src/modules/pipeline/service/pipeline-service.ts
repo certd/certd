@@ -1,4 +1,4 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service';
@@ -37,6 +37,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   @Inject()
   cron: Cron;
+
+  @Config('certd')
+  private certdConfig: any;
 
   getRepository() {
     return this.repository;
@@ -213,6 +216,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       accessService: this.accessService,
       storage: new DbStorage(userId, this.storageService),
       emailService: this.emailService,
+      fileRootDir: this.certdConfig.fileRootDir,
     });
     try {
       await executor.init();

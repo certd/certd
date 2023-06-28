@@ -8,7 +8,8 @@ services: # 要拉起的服务们
     image: registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${TAG}
     container_name: certd # 容器名
     restart: unless-stopped # 重启
-    volumes: # 挂载目录
+    volumes:
+      #   ↓↓↓↓↓  修改数据库以及证书存储路径
       - /data/certd:/app/data
     ports: # 端口映射
       - "7001:7001"

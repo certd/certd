@@ -1,4 +1,4 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service';
@@ -7,6 +7,8 @@ import { PipelineEntity } from '../entity/pipeline';
 import { HistoryDetail } from '../entity/vo/history-detail';
 import { HistoryLogService } from './history-log-service';
 import { FileItem, Pipeline, RunnableCollection } from '@certd/pipeline';
+import { FileStore } from '@certd/pipeline';
+import { logger } from '../../../utils/logger';
 
 /**
  * 证书申请
@@ -18,6 +20,10 @@ export class HistoryService extends BaseService<HistoryEntity> {
   repository: Repository<HistoryEntity>;
   @Inject()
   logService: HistoryLogService;
+
+  @Config('certd')
+  private certdConfig: any;
+
   getRepository() {
     return this.repository;
   }
@@ -60,6 +66,11 @@ export class HistoryService extends BaseService<HistoryEntity> {
     }
     let shouldDeleteCount = count - keepCount;
     const deleteCountBatch = 100;
+    const fileStore = new FileStore({
+      rootDir: this.certdConfig.fileRootDir,
+      scope: pipelineId + '',
+      parent: '0',
+    });
     while (shouldDeleteCount > 0) {
       const list = await this.repository.find({
         select: {
@@ -75,6 +86,15 @@ export class HistoryService extends BaseService<HistoryEntity> {
         take: deleteCountBatch,
       });
       await this.repository.remove(list);
+
+      for (const historyEntity of list) {
+        const id = historyEntity.id;
+        try {
+          fileStore.deleteByParent(pipelineId + '', id + '');
+        } catch (e) {
+          logger.error('删除文件失败', e);
+        }
+      }
 
       shouldDeleteCount -= deleteCountBatch;
     }

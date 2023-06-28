@@ -78,6 +78,12 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
     this.ctx = ctx;
   }
 
+  linkFile(file: FileItem) {
+    this._result.files!.push({
+      ...file,
+      id: uuidv4(),
+    });
+  }
   saveFile(filename: string, file: Buffer) {
     const filePath = this.ctx.fileStore.writeFile(filename, file);
     this._result.files!.push({

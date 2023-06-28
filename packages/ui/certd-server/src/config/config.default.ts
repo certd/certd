@@ -71,6 +71,9 @@ const development = {
       expire: 7 * 24 * 60, //单位秒
     },
   },
+  certd: {
+    fileRootDir: '/app/data/files',
+  },
 } as MidwayConfig;
 mergeConfig(development, 'development');
 export default development;

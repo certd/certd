@@ -34,10 +34,17 @@ export class FileStore {
   }
 
   private buildFilePath(filename: string) {
-    const parentDir = path.join(this.rootDir, this.scope + "", dayjs().format("YYYY-MM-DD"), this.parent + "");
+    const parentDir = path.join(this.rootDir, this.scope + "", this.parent + "", dayjs().format("YYYY-MM-DD"));
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true });
     }
     return path.join(parentDir, filename);
+  }
+
+  deleteByParent(scope: string, parent: string) {
+    const dir = path.join(this.rootDir, scope, parent);
+    if (fs.existsSync(dir)) {
+      fs.unlinkSync(dir);
+    }
   }
 }
