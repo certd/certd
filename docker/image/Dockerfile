@@ -1,6 +1,7 @@
 FROM registry.cn-shenzhen.aliyuncs.com/handsfree/node:16-alpine
 EXPOSE 7001
 ENV NODE_ENV production
+ENV MIDWAY_SERVER_ENV production
 WORKDIR /app/
 #RUN npm install cross-env -g  --registry=https://registry.npmmirror.com
 #RUN npm install pm2 -g  --registry=https://registry.npmmirror.com

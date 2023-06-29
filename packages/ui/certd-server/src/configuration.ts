@@ -15,6 +15,7 @@ import { PreviewMiddleware } from './middleware/preview';
 import { AuthorityMiddleware } from './middleware/authority';
 import * as staticFile from '@midwayjs/static-file';
 import * as cron from './plugins/cron';
+import { logger } from './utils/logger';
 
 @Configuration({
   imports: [koa, orm, cache, flyway, validateComp, cron, staticFile],
@@ -54,5 +55,7 @@ export class ContainerLifeCycle {
       //授权处理
       AuthorityMiddleware,
     ]);
+
+    logger.info('当前环境：', this.app.getEnv()); // prod
   }
 }

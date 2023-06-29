@@ -14,6 +14,8 @@ const development = {
     port: 7001,
   },
   staticFile: {
+    maxAge: 31536000,
+    buffer: true,
     dirs: {
       default: {
         prefix: '/',
