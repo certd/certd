@@ -11,7 +11,8 @@ import * as pluginApi from "./api.plugin";
 import * as historyApi from "./api.history";
 import * as api from "./api";
 import { useRoute } from "vue-router";
-import { PipelineDetail, PipelineOptions, RunHistory, Pipeline } from "/@/views/certd/pipeline/pipeline/type";
+import { PipelineDetail, PipelineOptions } from "/@/views/certd/pipeline/pipeline/type";
+import type { RunHistory } from "@certd/pipeline";
 
 export default defineComponent({
   name: "PipelineDetail",

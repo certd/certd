@@ -24,7 +24,7 @@
 
 <script lang="ts">
 import { inject, provide, Ref, ref } from "vue";
-import { RunHistory } from "/@/views/certd/pipeline/pipeline/type";
+import type { RunHistory } from "@certd/pipeline";
 import PiStatusShow from "/@/views/certd/pipeline/pipeline/component/status-show.vue";
 
 export default {

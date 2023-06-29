@@ -1,5 +1,5 @@
 import { request } from "/src/api/service";
-import { RunHistory } from "/@/views/certd/pipeline/pipeline/type";
+import type { RunHistory } from "@certd/pipeline";
 
 const apiPrefix = "/pi/history";
 

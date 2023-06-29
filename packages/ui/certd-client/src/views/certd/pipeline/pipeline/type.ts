@@ -1,5 +1,4 @@
-import { Pipeline } from "@certd/pipeline";
-export * from "@certd/pipeline";
+import type { Pipeline } from "@certd/pipeline";
 export type PipelineDetail = {
   pipeline: Pipeline;
 };
