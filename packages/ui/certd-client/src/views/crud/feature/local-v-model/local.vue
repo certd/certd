@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, watch } from "vue";
+import { defineComponent, onMounted, watch } from "vue";
 import createCrudOptions from "./crud";
 import { useFs } from "@fast-crud/fast-crud";
 
@@ -18,6 +18,10 @@ export default defineComponent({
   },
   setup(props) {
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
+
+    onMounted(() => {
+      crudExpose.editable.enable({ mode: "row" });
+    });
 
     //通过导出modelValue, 可以导出成为一个input组件
     watch(

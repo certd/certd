@@ -576,7 +576,7 @@ export const crudResources = [
           {
             title: "v-model",
             name: "FeatureVModel",
-            path: "/crud/feature/v-model",
+            path: "/crud/feature/local-v-model",
             component: "/crud/feature/local-v-model/index.vue"
           },
           {

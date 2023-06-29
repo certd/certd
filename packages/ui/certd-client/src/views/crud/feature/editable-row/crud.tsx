@@ -1,5 +1,5 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
@@ -24,6 +24,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         editRequest,
         delRequest
       },
+      //将 addRow 按钮启用
       actionbar: { buttons: { add: { show: false }, addRow: { show: true } } },
       table: {
         editable: {
@@ -60,6 +61,24 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           dict: dict({
             url: "/mock/dicts/OpenStatusEnum?single"
           })
+        },
+        target: {
+          title: "根据状态动态显隐",
+          search: { show: true },
+          type: "text",
+          form: {
+            conditionalRender: {
+              match: ({ form }) => {
+                return form.radio === "2";
+              },
+              render: ({ form }) => {
+                return <div>已停止</div>;
+              }
+            },
+            show: compute(({ form }) => {
+              return form.radio !== "0";
+            })
+          }
         },
         name: {
           title: "姓名",
