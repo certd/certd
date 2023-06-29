@@ -1,11 +1,5 @@
 <template>
-  <a-modal
-    v-model:visible="taskModal.visible"
-    class="pi-task-view"
-    title="任务日志"
-    style="width: 80%"
-    v-bind="taskModal"
-  >
+  <a-modal v-model:visible="taskModal.visible" class="pi-task-view" title="任务日志" style="width: 80%" v-bind="taskModal">
     <a-tabs v-model:activeKey="activeKey" tab-position="left" animated>
       <a-tab-pane v-for="item of detail.nodes" :key="item.node.id">
         <template #tab>
@@ -14,9 +8,7 @@
             <pi-status-show :status="item.node.status?.result" type="icon"></pi-status-show>
           </div>
         </template>
-        <pre
-          class="pi-task-view-logs"
-        ><template v-for="(text, index) of item.logs" :key="index">{{ text }}</template></pre>
+        <pre class="pi-task-view-logs"><template v-for="(text, index) of item.logs" :key="index">{{ text }}</template></pre>
       </a-tab-pane>
     </a-tabs>
   </a-modal>
@@ -24,14 +16,14 @@
 
 <script lang="ts">
 import { inject, provide, Ref, ref } from "vue";
-import type { RunHistory } from "@certd/pipeline";
+import { RunHistory } from "../../type";
 import PiStatusShow from "/@/views/certd/pipeline/pipeline/component/status-show.vue";
 
 export default {
   name: "PiTaskView",
   components: { PiStatusShow },
   props: {},
-  setup(props, ctx) {
+  setup(props: any, ctx: any) {
     const taskModal = ref({
       visible: false,
       onOk() {
@@ -43,7 +35,7 @@ export default {
     const detail = ref({ nodes: [] });
     const activeKey = ref();
     const currentHistory: Ref<RunHistory> | undefined = inject("currentHistory");
-    const taskViewOpen = (task) => {
+    const taskViewOpen = (task: any) => {
       taskModal.value.visible = true;
       const nodes: any = [];
       // nodes.push({

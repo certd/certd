@@ -211,8 +211,8 @@ import _ from "lodash-es";
 import { message, Modal, notification } from "ant-design-vue";
 import { pluginManager } from "/@/views/certd/pipeline/pipeline/plugin";
 import { nanoid } from "nanoid";
-import { PipelineDetail, PipelineOptions } from "/@/views/certd/pipeline/pipeline/type";
-import { RunHistory, Runnable } from "@certd/pipeline";
+import { PipelineDetail, PipelineOptions, RunHistory } from "./type";
+import type { Runnable } from "@certd/pipeline";
 import PiHistoryTimelineItem from "/@/views/certd/pipeline/pipeline/component/history-timeline-item.vue";
 export default defineComponent({
   name: "PipelineEdit",
