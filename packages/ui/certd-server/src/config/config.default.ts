@@ -68,7 +68,7 @@ const development = {
   auth: {
     jwt: {
       secret: 'certd666',
-      expire: 7 * 24 * 60, //单位秒
+      expire: 7 * 24 * 60 * 60, //单位秒
     },
   },
   certd: {

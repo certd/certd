@@ -1,5 +1,5 @@
 import { env } from "./util.env";
-function isNullOrUnDef(value) {
+function isNullOrUnDef(value: any) {
   return value == null;
 }
 const DEFAULT_CACHE_TIME = 60 * 60 * 24 * 7;
