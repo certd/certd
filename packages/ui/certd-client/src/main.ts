@@ -3,7 +3,7 @@ import App from "./App.vue";
 import router from "./router";
 import Antd from "ant-design-vue";
 import "./style/common.less";
-import "./mock";
+// import "./mock";
 import i18n from "./i18n";
 import store from "./store";
 import components from "./components";

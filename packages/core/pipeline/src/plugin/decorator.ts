@@ -8,7 +8,6 @@ import "reflect-metadata";
 export const PLUGIN_CLASS_KEY = "pipeline:plugin";
 
 export function IsTaskPlugin(define: PluginDefine): ClassDecorator {
-  console.log("IsTaskPlugin");
   return (target: any) => {
     target = Decorator.target(target);
 
