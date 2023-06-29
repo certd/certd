@@ -2,7 +2,7 @@ import { ColumnCompositionProps, dict } from "@fast-crud/fast-crud";
 // @ts-ignore
 import * as api from "./api";
 // @ts-ignore
-import _ from "lodash";
+import _ from "lodash-es";
 import { toRef } from "vue";
 
 export function getCommonColumnDefine(crudExpose: any, typeRef: any) {

@@ -1,6 +1,6 @@
 import { mock } from "../api/service";
 import * as tools from "../api/tools";
-import _ from "lodash";
+import _ from "lodash-es";
 const commonMocks = import.meta.globEager("./common/mock.*.js");
 const apiMocks = import.meta.globEager("../api/modules/*.mock.ts");
 const viewMocks = import.meta.globEager("../views/**/mock.js");

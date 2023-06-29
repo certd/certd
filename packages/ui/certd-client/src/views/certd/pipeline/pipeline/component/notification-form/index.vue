@@ -61,7 +61,7 @@
 <script lang="ts">
 import { Modal } from "ant-design-vue";
 import { ref } from "vue";
-import _ from "lodash";
+import _ from "lodash-es";
 import { nanoid } from "nanoid";
 import PiNotificationFormEmail from "./pi-notification-form-email.vue";
 

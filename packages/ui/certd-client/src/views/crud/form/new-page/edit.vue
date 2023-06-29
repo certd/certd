@@ -18,7 +18,7 @@ import { defineComponent, ref, onMounted } from "vue";
 import { useCrud, useExpose, useColumns } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import * as api from "./api";
-import _ from "lodash";
+import _ from "lodash-es";
 import { message } from "ant-design-vue";
 import { usePageStore } from "/@/store/modules/page";
 export default defineComponent({

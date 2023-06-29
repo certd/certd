@@ -87,7 +87,7 @@
 <script lang="tsx">
 import { message, Modal } from "ant-design-vue";
 import { computed, inject, Ref, ref } from "vue";
-import _ from "lodash";
+import _ from "lodash-es";
 import { nanoid } from "nanoid";
 import { compute } from "@fast-crud/fast-crud";
 export default {

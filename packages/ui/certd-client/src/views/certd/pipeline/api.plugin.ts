@@ -1,5 +1,5 @@
 import { request } from "/src/api/service";
-import _ from "lodash";
+import _ from "lodash-es";
 const apiPrefix = "/pi/plugin";
 
 const defaultInputDefine = {
@@ -9,7 +9,7 @@ const defaultInputDefine = {
   }
 };
 
-export async function GetList(query) {
+export async function GetList(query: any) {
   const plugins = await request({
     url: apiPrefix + "/list",
     method: "post",

@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import _ from "lodash";
+import _ from "lodash-es";
 import getEachDeep from "deepdash-es/getEachDeep";
 const eachDeep = getEachDeep(_);
 import { defineComponent, ref, computed } from "vue";

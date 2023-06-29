@@ -1,5 +1,5 @@
 import axios from "axios";
-import { get } from "lodash";
+import { get } from "lodash-es";
 import Adapter from "axios-mock-adapter";
 import { errorLog, errorCreate } from "./tools";
 import { env } from "/src/utils/util.env";

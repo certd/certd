@@ -10,7 +10,7 @@
 import { defineComponent, ref, onMounted } from "vue";
 import { useCrud, useExpose, useColumns } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
-import _ from "lodash";
+import _ from "lodash-es";
 import { message } from "ant-design-vue";
 export default defineComponent({
   name: "FormNewPage",

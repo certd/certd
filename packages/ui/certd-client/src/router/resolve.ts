@@ -1,5 +1,5 @@
 import LayoutPass from "/src/layout/layout-pass.vue";
-import _ from "lodash";
+import _ from "lodash-es";
 import { outsideResource } from "./source/outside";
 import { headerResource } from "./source/header";
 import { frameworkResource } from "./source/framework";

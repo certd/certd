@@ -207,7 +207,7 @@ import PiTriggerForm from "./component/trigger-form/index.vue";
 import PiNotificationForm from "./component/notification-form/index.vue";
 import PiTaskView from "./component/task-view/index.vue";
 import PiStatusShow from "./component/status-show.vue";
-import _ from "lodash";
+import _ from "lodash-es";
 import { message, Modal, notification } from "ant-design-vue";
 import { pluginManager } from "/@/views/certd/pipeline/pipeline/plugin";
 import { nanoid } from "nanoid";

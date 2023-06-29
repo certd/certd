@@ -1,5 +1,5 @@
 import mockUtil from "/src/mock/base";
-import _ from "lodash";
+import _ from "lodash-es";
 const options = {
   name: "FormLinkage",
   idGenerator: 0

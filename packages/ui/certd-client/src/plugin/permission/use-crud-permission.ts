@@ -1,5 +1,5 @@
 import { usePermission } from "/@/plugin/permission";
-import _ from "lodash";
+import _ from "lodash-es";
 
 /**
  * 设置按钮动作权限
