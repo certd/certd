@@ -1,8 +1,9 @@
 import "./iconify";
 import "./iconfont";
-import FastCrud from "./fast-crud";
+import FastCrud from "./fast-crud/index";
 import permission from "./permission";
-function install(app, options: any = {}) {
+import { App } from "vue";
+function install(app: App, options: any = {}) {
   app.use(FastCrud, options);
   app.use(permission);
 }

@@ -10,8 +10,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, provide, Ref, watch, computed } from "vue";
+import { computed, defineComponent } from "vue";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
+
 export default defineComponent({
   name: "PiStatusShow",
   props: {
@@ -26,7 +27,7 @@ export default defineComponent({
   },
   setup(props, ctx) {
     const statusRef = computed(() => {
-      return statusUtil.get(props.status);
+      return statusUtil.get(props.status as string);
     });
 
     return {

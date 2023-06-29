@@ -14,6 +14,7 @@ const StatusEnum: StatusEnumType = {
     value: "success",
     label: "成功",
     color: "green",
+    spin: true,
     icon: "ant-design:check-circle-outlined"
   },
   error: {

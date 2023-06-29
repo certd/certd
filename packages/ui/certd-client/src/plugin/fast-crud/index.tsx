@@ -1,17 +1,17 @@
 import { request, requestForMock } from "/src/api/service";
-import "/src/mock";
-import { FastCrud, UseCrudProps, useTypes, setLogger, useColumns, ColumnCompositionProps, MergeColumnPlugin, CrudOptions } from "@fast-crud/fast-crud";
+import { ColumnCompositionProps, CrudOptions, FastCrud, setLogger, useColumns, UseCrudProps, useTypes } from "@fast-crud/fast-crud";
 import "@fast-crud/fast-crud/dist/style.css";
-import { FsExtendsUploader, FsExtendsEditor, FsExtendsJson, FsExtendsCopyable, FsExtendsTime } from "@fast-crud/fast-extends";
+import { FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader } from "@fast-crud/fast-extends";
 import "@fast-crud/fast-extends/dist/style.css";
 import UiAntdv from "@fast-crud/ui-antdv";
-import _ from "lodash";
+import _ from "lodash-es";
 import { useCrudPermission } from "../permission";
+import { App } from "vue";
 
-function install(app, options: any = {}) {
+function install(app: App, options: any = {}) {
   app.use(UiAntdv);
   //设置日志级别
-  setLogger({ level: "debug" });
+  setLogger({ level: "info" });
   app.use(FastCrud, {
     i18n: options.i18n,
     async dictRequest({ url }) {
@@ -31,7 +31,7 @@ function install(app, options: any = {}) {
         table: {
           size: "small",
           pagination: false,
-          onResizeColumn: (w, col) => {
+          onResizeColumn: (w: any, col: any) => {
             crudBinding.value.table.columnsMap[col.key].width = w;
           }
         },
@@ -70,7 +70,7 @@ function install(app, options: any = {}) {
             if (res.offset % pageSize === 0) {
               currentPage++;
             }
-            return { currentPage, pageSize, ...res };
+            return { currentPage, pageSize, total: res.total, records: res.records };
           }
         },
         form: {
@@ -96,7 +96,9 @@ function install(app, options: any = {}) {
 
   // fast-extends里面的扩展组件均为异步组件，只有在使用时才会被加载，并不会影响首页加载速度
   //安装uploader 公共参数
+
   app.use(FsExtendsUploader, {
+    // @ts-ignore
     defaultType: "cos",
     cos: {
       domain: "https://d2p-demo-1251260344.cos.ap-guangzhou.myqcloud.com",
@@ -109,7 +111,7 @@ function install(app, options: any = {}) {
         return request({
           url: "http://www.docmirror.cn:7070/api/upload/cos/getAuthorization",
           method: "get"
-        }).then((ret) => {
+        }).then((ret: any) => {
           // 返回结构如下
           // ret.data:{
           //   TmpSecretId,
@@ -132,7 +134,7 @@ function install(app, options: any = {}) {
       region: "oss-cn-shenzhen",
       accessKeyId: "",
       accessKeySecret: "",
-      async getAuthorization(custom, context) {
+      async getAuthorization(custom: any, context: any) {
         // 不传accessKeySecret代表使用临时签名模式,此时此参数必传（安全，生产环境推荐）
         const ret = await request({
           url: "http://www.docmirror.cn:7070/api/upload/alioss/getAuthorization",
@@ -183,7 +185,7 @@ function install(app, options: any = {}) {
           },
           timeout: 60000,
           data,
-          onUploadProgress: (p) => {
+          onUploadProgress: (p: any) => {
             onProgress({ percent: Math.round((p.loaded / p.total) * 100) });
           }
         });
@@ -214,7 +216,7 @@ function install(app, options: any = {}) {
       //如果与官方字段类型同名，将会覆盖官方的字段类型
       form: { component: { name: "a-date-picker" } },
       column: { component: { name: "fs-date-format", format: "YYYY-MM-DD" } },
-      valueBuilder(context) {
+      valueBuilder(context: any) {
         console.log("time2,valueBuilder", context);
       }
     }
