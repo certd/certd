@@ -14,6 +14,7 @@ import { useSettingStore } from "/@/store/modules/settings";
 import "dayjs/locale/zh-cn";
 import "dayjs/locale/en";
 import dayjs from "dayjs";
+import { useAsync } from "@fast-crud/fast-crud/src/use/use-async";
 export default {
   name: "App",
   setup() {
@@ -46,6 +47,9 @@ export default {
     pageStore.init();
     const settingStore = useSettingStore();
     settingStore.init();
+
+    const { registerAsyncLib } = useAsync();
+    registerAsyncLib("FsExportUtil");
 
     return {
       routerEnabled,

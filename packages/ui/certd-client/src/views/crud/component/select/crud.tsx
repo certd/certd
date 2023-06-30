@@ -264,7 +264,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             title: "多选本地",
             component: {
               mode: "multiple"
-            }
+            },
+            rules: [{ required: true, message: "请选择一个选项" }]
           },
           dict: dict({
             data: [

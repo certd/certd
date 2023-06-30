@@ -3,7 +3,6 @@ import App from "./App.vue";
 import router from "./router";
 import Antd from "ant-design-vue";
 import "ant-design-vue/dist/antd.less";
-// import "virtual:windi.css";
 import "./style/common.less";
 
 import i18n from "./i18n";

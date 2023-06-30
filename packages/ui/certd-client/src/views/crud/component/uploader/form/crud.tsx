@@ -1,6 +1,6 @@
 import * as api from "./api";
-import { AllUploadSuccessValidator } from "@fast-crud/fast-extends";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { createUploaderRules } from "@fast-crud/fast-extends";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -79,6 +79,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                 type: "form"
               }
             },
+            rules: createUploaderRules([{ required: true, message: "此项必传", trigger: "change" }]),
             helper: "最大可上传2个文件"
           },
           column: {
@@ -248,14 +249,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           title: "校验",
           type: "file-uploader",
           form: {
-            rules: [
-              { required: true, message: "此项必传", trigger: "input" },
-              {
-                validator: AllUploadSuccessValidator(), //如果要自定义校验规则则需要手动配置这个
-                message: "还有文件正在上传，请稍候",
-                trigger: "input"
-              }
-            ],
+            // 使用createUploaderRules创建校验规则,会附带文件还未上传完成的校验
+            rules: createUploaderRules([{ required: true, message: "此项必传", trigger: "change" }]),
             helper: "大小不能超过50M，文件未上传完成之前，阻止提交",
             component: {
               uploader: {

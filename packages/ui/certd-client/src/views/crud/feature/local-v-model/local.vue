@@ -20,6 +20,7 @@ export default defineComponent({
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
 
     onMounted(() => {
+      //启用行编辑模式
       crudExpose.editable.enable({ mode: "row" });
     });
 
