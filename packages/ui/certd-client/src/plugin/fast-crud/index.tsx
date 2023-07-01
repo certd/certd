@@ -2,21 +2,19 @@ import { request, requestForMock } from "/src/api/service";
 // import "/src/mock";
 import { ColumnCompositionProps, CrudOptions, FastCrud, PageQuery, PageRes, setLogger, TransformResProps, useColumns, UseCrudProps, UserPageQuery, useTypes, useUi } from "@fast-crud/fast-crud";
 import "@fast-crud/fast-crud/dist/style.css";
-import { CsvColumn, ExportUtil, FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader, FsExtendsExport } from "@fast-crud/fast-extends";
+import { FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader } from "@fast-crud/fast-extends";
 import "@fast-crud/fast-extends/dist/style.css";
 import UiAntdv from "@fast-crud/ui-antdv";
 import _ from "lodash-es";
 import { useCrudPermission } from "../permission";
 import { GetSignedUrl } from "/@/views/crud/component/uploader/s3/api";
 import { notification } from "ant-design-vue";
-import { useAsync } from "@fast-crud/fast-crud/src/use/use-async";
 import { useI18n } from "vue-i18n";
 
 function install(app: any, options: any = {}) {
   app.use(UiAntdv);
   //设置日志级别
   setLogger({ level: "debug" });
-  const { t } = useI18n();
   app.use(FastCrud, {
     i18n: options.i18n,
     async dictRequest({ url }: any) {
@@ -33,6 +31,7 @@ function install(app: any, options: any = {}) {
     commonOptions(props: UseCrudProps): CrudOptions {
       const crudBinding = props.crudExpose?.crudBinding;
       const { ui } = useUi();
+      const { t } = useI18n();
       const opts: CrudOptions = {
         table: {
           size: "small",
@@ -50,41 +49,6 @@ function install(app: any, options: any = {}) {
             },
             render() {
               return "-";
-            }
-          }
-        },
-        toolbar: {
-          buttons: {
-            export: {
-              show: true,
-              type: "primary",
-              icon: ui.icons.export,
-              order: 4,
-              title: t("fs.toolbar.export.title"), // '导出',
-              circle: true,
-              click: async () => {
-                const columns: CsvColumn[] = [];
-                _.each(crudBinding.value.table.columnsMap, (col: ColumnCompositionProps) => {
-                  if (col.exportable !== false && col.key !== "_index") {
-                    columns.push({
-                      prop: col.key,
-                      label: col.title
-                    });
-                  }
-                });
-
-                const { loadAsyncLib } = useAsync();
-                //加载异步组件，不影响首页加载速度
-                const exportUtil: ExportUtil = await loadAsyncLib({
-                  name: "FsExportUtil"
-                });
-                await exportUtil.csv({
-                  columns,
-                  data: crudBinding.value.data,
-                  title: "table",
-                  noHeader: false
-                });
-              }
             }
           }
         },
@@ -297,7 +261,6 @@ function install(app: any, options: any = {}) {
   app.use(FsExtendsJson);
   app.use(FsExtendsTime);
   app.use(FsExtendsCopyable);
-  app.use(FsExtendsExport);
 
   // 此处演示自定义字段类型
   const { addTypes } = useTypes();
