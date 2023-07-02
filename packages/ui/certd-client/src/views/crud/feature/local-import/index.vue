@@ -1,0 +1,47 @@
+<template>
+  <fs-page>
+    <template #header>
+      <div class="title">将本地crud当做v-model,编辑好之后一并提交，本示例演示import导入</div>
+    </template>
+    <div style="padding: 30px">
+      <a-form ref="formRef" :model="form" laba-width="120px">
+        <a-form-item label="姓名">
+          <a-input v-model:value="form.name"></a-input>
+        </a-form-item>
+        <a-form-item label="表格">
+          <div style="min-height: 300px">
+            <FeatureLocalImportValueInput v-model="form.data" />
+          </div>
+        </a-form-item>
+        <a-form-item>
+          <a-button @click="submit">提交</a-button>
+        </a-form-item>
+      </a-form>
+    </div>
+  </fs-page>
+</template>
+
+<script lang="ts">
+import { defineComponent, onMounted, reactive } from "vue";
+import { message } from "ant-design-vue";
+import FeatureLocalImportValueInput from "./local.vue";
+export default defineComponent({
+  name: "FeatureLocalImport",
+  components: { FeatureLocalImportValueInput },
+  setup() {
+    const form = reactive({
+      name: "test",
+      data: [{ name: "初始数据" }]
+    });
+
+    function submit() {
+      message.info("submit:" + JSON.stringify(form));
+      console.log("submit:", form);
+    }
+    return {
+      form,
+      submit
+    };
+  }
+});
+</script>
