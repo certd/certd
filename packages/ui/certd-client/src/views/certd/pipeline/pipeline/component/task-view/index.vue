@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts">
-import { inject, provide, Ref, ref } from "vue";
+import { computed, inject, Ref, ref } from "vue";
 import { RunHistory } from "../../type";
 import PiStatusShow from "/@/views/certd/pipeline/pipeline/component/status-show.vue";
 
@@ -55,7 +55,9 @@ export default {
       }
       for (let node of nodes) {
         if (currentHistory?.value?.logs != null) {
-          node.logs = currentHistory.value.logs[node.node.id] || [];
+          node.logs = computed(() => {
+            return currentHistory.value.logs[node.node.id] || [];
+          });
         }
       }
 

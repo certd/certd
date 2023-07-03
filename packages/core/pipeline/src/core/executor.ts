@@ -109,7 +109,7 @@ export class Executor {
     }
     const intervalFlushLogId = setInterval(async () => {
       await this.onChanged(this.runtime);
-    }, 10000);
+    }, 5000);
     const timeout = runnable.timeout ?? 20 * 60 * 1000;
     try {
       if (this.canceled) {
