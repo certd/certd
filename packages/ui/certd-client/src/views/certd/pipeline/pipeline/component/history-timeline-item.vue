@@ -61,11 +61,12 @@ export default defineComponent({
         cancelText: "取消",
         onOk: async () => {
           await api.Cancel(props.runnable.id);
+          notification.success({
+            message: "任务取消成功"
+          });
         }
       });
-      notification.success({
-        message: "任务取消成功"
-      });
+
     }
     return {
       status,
