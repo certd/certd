@@ -33,7 +33,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       search: {
         validate: true,
         initialForm: {
-          radio: null
+          //查询默认值
+          radio: "1"
         },
         buttons: {
           custom: {
@@ -86,6 +87,14 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
           type: "dict-radio",
           dict: statusRef
+        },
+        text: {
+          title: "默认值",
+          type: "text",
+          search: {
+            show: true,
+            value: "1"
+          }
         },
         customRender: {
           title: "自定义render",

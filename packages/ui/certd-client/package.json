@@ -16,7 +16,8 @@
     "lint-fix": "eslint --fix --ext .js --ext .jsx --ext .vue src/",
     "upgrade": "yarn upgrade-interactive --latest",
     "tsc": "vue-tsc --noEmit --skipLibCheck",
-    "circle:check": "pnpm dependency-cruise --validate --output-type err-html -f dependency-report.html src"
+    "circle:check": "pnpm dependency-cruise --validate --output-type err-html -f dependency-report.html src",
+    "afterPubPush": "git add . && git commit -m \"build: publish success\" && git push"
   },
   "author": "Greper",
   "license": "MIT",

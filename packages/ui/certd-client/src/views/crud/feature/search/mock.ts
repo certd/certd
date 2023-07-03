@@ -6,15 +6,18 @@ const options: any = {
 const list = [
   {
     radio: "1",
+    text: "1",
     customRender: true,
     customRender2: false,
     customRender3: true
   },
   {
-    radio: "2"
+    radio: "2",
+    text: "2"
   },
   {
-    radio: "0"
+    radio: "0",
+    text: "3"
   }
 ];
 options.list = list;
