@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-cert",
   "private": false,
-  "version": "1.1.2",
+  "version": "1.1.3",
   "main": "./dist/bundle.js",
   "module": "./dist/bundle.mjs",
   "types": "./dist/d/index.d.ts",
@@ -12,8 +12,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "^1.1.2",
-    "@certd/pipeline": "^1.1.2",
+    "@certd/acme-client": "^1.1.3",
+    "@certd/pipeline": "^1.1.3",
     "jszip": "^3.10.1",
     "node-forge": "^0.10.0"
   },
