@@ -1,20 +1,23 @@
-version: '3.3' # 指定docker-compose 版本
-services: # 要拉起的服务们
+version: '3.3'
+services:
   certd:
-#    build:
-#        context: ./
-#        dockerfile: Dockerfile
-#                                                              ↓↓↓↓↓  修改镜像版本号
+    # 镜像                                                  #  ↓↓↓↓↓ --- 1、 修改镜像版本号
     image: registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${TAG}
     container_name: certd # 容器名
     restart: unless-stopped # 重启
     volumes:
-      #   ↓↓↓↓↓  修改数据库以及证书存储路径
+      #   ↓↓↓↓↓ ------------------------------------------------------- 2、 修改数据库以及证书存储路径
       - /data/certd:/app/data
     ports: # 端口映射
       - "7001:7001"
-    environment:
+    environment: # 环境变量
       - TZ=Asia/Shanghai
       - certd_auth_jwt_secret=changeme
-#                               ↑↑↑↑↑   注意修改成你的自定义密钥
+                            #  ↑↑↑↑↑ ---------------------------------- 3、 修改成你的自定义密钥
+      # 设置环境变量即可自定义certd配置
+      # 服务端配置项见： packages/ui/certd-server/src/config/config.default.ts
+      # 服务端配置规则： certd_ + 配置项, 点号用_代替
+      # 如jwt密钥配置为： auth.jwt.secret，则设置环境变量 certd_auth_jwt_secret=changeme
 
+      # 客户端配置项见： packages/ui/certd-client/.env
+      # 按实际名称配置环境变量即可，如： VITE_APP_API=http://localhost:7001
