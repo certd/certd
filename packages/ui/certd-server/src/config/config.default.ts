@@ -7,6 +7,7 @@ import { PipelineEntity } from '../modules/pipeline/entity/pipeline';
 //import { logger } from '../utils/logger';
 // load .env file in process.cwd
 import { mergeConfig } from './loader';
+
 const development = {
   keys: '',
   koa: {
@@ -15,7 +16,7 @@ const development = {
   staticFile: {
     usePrecompiledGzip: true,
     buffer: true,
-    maxAge: 0,
+    cacheControl: 'maxAge=' + 30 * 24 * 60 * 60 * 1000,
     gzip: true,
     dirs: {
       default: {

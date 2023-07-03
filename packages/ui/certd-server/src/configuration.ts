@@ -16,7 +16,6 @@ import { AuthorityMiddleware } from './middleware/authority';
 import * as staticFile from '@midwayjs/static-file';
 import * as cron from './plugins/cron';
 import { logger } from './utils/logger';
-
 @Configuration({
   imports: [koa, orm, cache, flyway, validateComp, cron, staticFile],
   importConfigs: [
