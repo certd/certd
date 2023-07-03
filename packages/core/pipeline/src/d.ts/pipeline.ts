@@ -66,6 +66,7 @@ export type Runnable = {
   strategy?: RunnableStrategy;
   runnableType?: string; // pipeline, stage, task , step
   status?: HistoryResult;
+  timeout?: number;
   default?: {
     [key: string]: any;
   };

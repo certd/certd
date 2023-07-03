@@ -12,6 +12,7 @@ import { RegistryItem } from "../registry";
 import { Decorator } from "../decorator";
 import { IEmailService } from "../service";
 import { FileStore } from "./file-store";
+import { TimeoutPromise } from "../utils/util.promise";
 
 export type ExecutorOptions = {
   userId: any;
@@ -31,6 +32,7 @@ export class Executor {
   lastStatusMap!: RunnableCollection;
   lastRuntime!: RunHistory;
   options: ExecutorOptions;
+  canceled = false;
   onChanged: (history: RunHistory) => void;
   constructor(options: ExecutorOptions) {
     this.options = options;
@@ -50,7 +52,9 @@ export class Executor {
     this.lastStatusMap = new RunnableCollection(lastRuntime?.pipeline);
   }
 
-  async cancel() {}
+  cancel() {
+    this.canceled = true;
+  }
 
   async run(runtimeId: any = 0, triggerType: string) {
     try {
@@ -101,11 +105,15 @@ export class Executor {
         return ResultType.skip;
       }
     }
-    const timer = setInterval(async () => {
+    const intervalFlushLogId = setInterval(async () => {
       await this.onChanged(this.runtime);
     }, 10000);
+    const timeout = runnable.timeout ?? 20 * 60 * 1000;
     try {
-      await run();
+      if (this.canceled) {
+        throw new Error("task canceled");
+      }
+      await TimeoutPromise(run, timeout);
       this.runtime.success(runnable);
       return ResultType.success;
     } catch (e: any) {
@@ -113,7 +121,7 @@ export class Executor {
       throw e;
     } finally {
       this.runtime.finally(runnable);
-      clearInterval(timer);
+      clearInterval(intervalFlushLogId);
       await this.onChanged(this.runtime);
     }
   }

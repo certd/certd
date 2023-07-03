@@ -221,14 +221,21 @@ export class PipelineService extends BaseService<PipelineEntity> {
       fileRootDir: this.certdConfig.fileRootDir,
     });
     try {
-      runningTasks.set(id, executor);
+      runningTasks.set(historyId, executor);
       await executor.init();
       await executor.run(historyId, triggerType);
     } catch (e) {
       logger.error('执行失败：', e);
       throw e;
     } finally {
-      runningTasks.delete(id);
+      runningTasks.delete(historyId);
+    }
+  }
+
+  async cancel(historyId: number) {
+    const executor = runningTasks.get(historyId);
+    if (executor) {
+      executor.cancel();
     }
   }
 
