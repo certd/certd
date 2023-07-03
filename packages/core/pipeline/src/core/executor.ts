@@ -50,6 +50,8 @@ export class Executor {
     this.lastStatusMap = new RunnableCollection(lastRuntime?.pipeline);
   }
 
+  async cancel() {}
+
   async run(runtimeId: any = 0, triggerType: string) {
     try {
       await this.init();
@@ -99,17 +101,20 @@ export class Executor {
         return ResultType.skip;
       }
     }
+    const timer = setInterval(async () => {
+      await this.onChanged(this.runtime);
+    }, 10000);
     try {
       await run();
       this.runtime.success(runnable);
-      await this.onChanged(this.runtime);
       return ResultType.success;
     } catch (e: any) {
       this.runtime.error(runnable, e);
-      await this.onChanged(this.runtime);
       throw e;
     } finally {
       this.runtime.finally(runnable);
+      clearInterval(timer);
+      await this.onChanged(this.runtime);
     }
   }
 

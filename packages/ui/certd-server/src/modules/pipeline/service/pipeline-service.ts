@@ -16,6 +16,8 @@ import { HistoryLogService } from './history-log-service';
 import { logger } from '../../../utils/logger';
 import { EmailService } from '../../basic/service/email-service';
 
+const runningTasks: Map<string | number, Executor> = new Map();
+
 /**
  * 证书申请
  */
@@ -178,7 +180,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     });
   }
 
-  async run(id, triggerId) {
+  async run(id: number, triggerId: string) {
     const entity: PipelineEntity = await this.info(id);
     const pipeline = JSON.parse(entity.content);
 
@@ -219,11 +221,14 @@ export class PipelineService extends BaseService<PipelineEntity> {
       fileRootDir: this.certdConfig.fileRootDir,
     });
     try {
+      runningTasks.set(id, executor);
       await executor.init();
       await executor.run(historyId, triggerType);
     } catch (e) {
       logger.error('执行失败：', e);
       throw e;
+    } finally {
+      runningTasks.delete(id);
     }
   }
 
