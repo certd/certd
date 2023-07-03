@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
-if $CERTD_VERSION; then
+# 判断$CERTD_VERSION 是否存在
+if [ -n "$CERTD_VERSION" ]; then
     echo "CERTD_VERSION is set = $CERTD_VERSION"
     version=$CERTD_VERSION
 else

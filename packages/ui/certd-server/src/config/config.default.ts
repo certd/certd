@@ -25,6 +25,11 @@ const development = {
         alias: {
           '/': '/index.html',
         },
+        files: {
+          '/index.html': {
+            maxAge: 60 * 60 * 1000,
+          },
+        },
       },
     },
   },
