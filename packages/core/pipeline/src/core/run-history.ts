@@ -92,6 +92,19 @@ export class RunHistory {
     this.logError(runnable, e);
   }
 
+  cancel(runnable: Runnable) {
+    const now = new Date().getTime();
+    const status = runnable.status;
+    _.merge(status, {
+      status: ResultType.canceled,
+      endTime: now,
+      result: ResultType.canceled,
+      message: "用户取消",
+    });
+
+    this.log(runnable, "任务取消");
+  }
+
   log(runnable: Runnable, text: string) {
     // @ts-ignore
     this._loggers[runnable.id].info(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, text);

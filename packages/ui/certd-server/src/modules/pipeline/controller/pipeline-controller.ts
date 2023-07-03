@@ -11,6 +11,7 @@ import { CrudController } from '../../../basic/crud-controller';
 import { PipelineService } from '../service/pipeline-service';
 import { PipelineEntity } from '../entity/pipeline';
 import { Constants } from '../../../basic/constants';
+import { HistoryService } from '../service/history-service';
 
 /**
  * 证书
@@ -20,6 +21,8 @@ import { Constants } from '../../../basic/constants';
 export class PipelineController extends CrudController<PipelineService> {
   @Inject()
   service: PipelineService;
+  @Inject()
+  historyService: HistoryService;
 
   getService() {
     return this.service;
@@ -75,6 +78,13 @@ export class PipelineController extends CrudController<PipelineService> {
   async trigger(@Query('id') id) {
     await this.service.checkUserId(id, this.ctx.user.id);
     await this.service.trigger(id);
+    return this.ok({});
+  }
+
+  @Post('/cancel', { summary: Constants.per.authOnly })
+  async cancel(@Query('historyId') historyId) {
+    await this.historyService.checkUserId(historyId, this.ctx.user.id);
+    await this.service.cancel(historyId);
     return this.ok({});
   }
 }

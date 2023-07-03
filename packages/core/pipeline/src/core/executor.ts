@@ -52,8 +52,10 @@ export class Executor {
     this.lastStatusMap = new RunnableCollection(lastRuntime?.pipeline);
   }
 
-  cancel() {
+  async cancel() {
     this.canceled = true;
+    this.runtime?.cancel(this.pipeline);
+    await this.onChanged(this.runtime);
   }
 
   async run(runtimeId: any = 0, triggerType: string) {

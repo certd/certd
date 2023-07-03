@@ -67,6 +67,14 @@ export function Trigger(id: any) {
   });
 }
 
+export function Cancel(historyId: any) {
+  return request({
+    url: apiPrefix + "/cancel",
+    method: "post",
+    params: { historyId }
+  });
+}
+
 export async function GetFiles(pipelineId: number) {
   return request({
     url: historyApiPrefix + "/files",

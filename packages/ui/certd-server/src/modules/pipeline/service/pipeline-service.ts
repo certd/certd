@@ -4,7 +4,7 @@ import { In, Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service';
 import { PipelineEntity } from '../entity/pipeline';
 import { PipelineDetail } from '../entity/vo/pipeline-detail';
-import { Executor, Pipeline, RunHistory } from '@certd/pipeline';
+import { Executor, Pipeline, ResultType, RunHistory } from '@certd/pipeline';
 import { AccessService } from './access-service';
 import { DbStorage } from './db-storage';
 import { StorageService } from './storage-service';
@@ -235,7 +235,13 @@ export class PipelineService extends BaseService<PipelineEntity> {
   async cancel(historyId: number) {
     const executor = runningTasks.get(historyId);
     if (executor) {
-      executor.cancel();
+      await executor.cancel();
+    } else {
+      const entity = await this.historyService.info(historyId);
+      const pipeline: Pipeline = JSON.parse(entity.pipeline);
+      pipeline.status.status = ResultType.canceled;
+      const runtime = new RunHistory(historyId, null, pipeline);
+      await this.saveHistory(runtime);
     }
   }
 

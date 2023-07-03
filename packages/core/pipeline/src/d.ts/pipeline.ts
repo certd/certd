@@ -106,6 +106,7 @@ export enum ResultType {
   start = "start",
   success = "success",
   error = "error",
+  canceled = "canceled",
   skip = "skip",
   none = "none",
 }

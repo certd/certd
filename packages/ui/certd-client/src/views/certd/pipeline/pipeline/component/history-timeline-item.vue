@@ -9,6 +9,8 @@
 
       <a-tag v-if="isCurrent" class="pointer" color="green" :closable="true" @close="cancel">当前</a-tag>
       <a-tag v-else-if="!editMode" class="pointer" color="blue" @click="view">查看</a-tag>
+
+      <a-tag v-if="status.value === 'start'" class="pointer" color="red" @click="cancelTask">取消</a-tag>
     </p>
   </a-timeline-item>
 </template>
@@ -16,6 +18,8 @@
 <script lang="ts">
 import { defineComponent, ref, provide, Ref, watch, computed } from "vue";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
+import * as api from "../../api";
+import { Modal, notification } from "ant-design-vue";
 export default defineComponent({
   name: "PiHistoryTimelineItem",
   props: {
@@ -38,7 +42,7 @@ export default defineComponent({
     }
   },
   emits: ["view", "cancel"],
-  setup(props, ctx) {
+  setup(props: any, ctx: any) {
     const status = computed(() => {
       return statusUtil.get(props.runnable?.status?.result);
     });
@@ -49,10 +53,25 @@ export default defineComponent({
     function cancel() {
       ctx.emit("cancel");
     }
+    function cancelTask() {
+      Modal.confirm({
+        title: "确认取消",
+        content: "确认取消该任务吗？",
+        okText: "确认",
+        cancelText: "取消",
+        onOk: async () => {
+          await api.Cancel(props.runnable.id);
+        }
+      });
+      notification.success({
+        message: "任务取消成功"
+      });
+    }
     return {
       status,
       cancel,
-      view
+      view,
+      cancelTask
     };
   }
 });
