@@ -2,9 +2,10 @@ import http from 'axios'
 import fs from 'fs'
 
 //读取 packages/core/pipline/package.json的版本号
-import { default as packageJson } from './packages/core/pipeline/package.json' assert { type: "json" };
+import {default as packageJson} from './packages/core/pipeline/package.json' assert {type: "json"};
+
 const certdVersion = packageJson.version
-console.log("certdVersion",certdVersion)
+console.log("certdVersion", certdVersion)
 
 // 同步npmmirror的包
 async function getPackages(directoryPath) {
@@ -29,18 +30,18 @@ async function getPackages(directoryPath) {
 
 }
 
-async function getAllPackages(){
+async function getAllPackages() {
     const base = await getPackages("./packages/core")
-    const plugins =await getPackages("./packages/plugins")
+    const plugins = await getPackages("./packages/plugins")
 
     return base.concat(plugins)
 }
 
-async function sync(){
+async function sync() {
     const packages = await getAllPackages()
-    for(const pkg of packages){
+    for (const pkg of packages) {
         await http({
-            url: `https://registry-direct.npmmirror.com/@certd/${pkg}/sync?sync_upstream=true`,
+            url: `http://registry-direct.npmmirror.com/@certd/${pkg}/sync?sync_upstream=true`,
             method: 'PUT',
             headers: {
                 "Content-Type": "application/json"
@@ -50,7 +51,6 @@ async function sync(){
         console.log(`sync success:${pkg}`)
         await sleep(1000)
     }
-    await sleep(60000)
 }
 
 // curl -X PUT https://registry-direct.npmmirror.com/@certd/plugin-cert/sync?sync_upstream=true
@@ -87,6 +87,7 @@ async function start() {
     console.log("等待60秒")
     await sleep(60 * 1000)
     await sync()
+    await sleep(60 * 1000)
     await triggerBuild()
 }
 
