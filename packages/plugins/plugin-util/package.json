@@ -2,14 +2,9 @@
   "name": "@certd/plugin-util",
   "private": false,
   "version": "1.1.2",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "types": "./src/index.ts",
-  "publishConfig": {
-    "main": "./dist/bundle.js",
-    "module": "./dist/bundle.mjs",
-    "types": "./dist/d/index.d.ts"
-  },
+  "main": "./dist/bundle.js",
+  "module": "./dist/bundle.mjs",
+  "types": "./dist/d/index.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "rollup -c",
@@ -44,5 +39,5 @@
     "vite": "^3.1.0",
     "vue-tsc": "^0.38.9"
   },
-  "gitHead": "5950e1cae7cf30ebfc5128c15c7d1b0d101cbbb8"
+  "gitHead": "ecfcada8020661b922cbe4f4984d76efb7f2b3e3"
 }
