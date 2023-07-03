@@ -11,4 +11,5 @@ services: # 要拉起的服务们
       - "7001:7001"
     environment:
       - TZ=Asia/Shanghai
+      - node_sqlite3_binary_host_mirror=https://registry.npmmirror.com/-/binary/sqlite3
 
