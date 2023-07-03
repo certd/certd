@@ -14,6 +14,10 @@ const development = {
     port: 7001,
   },
   staticFile: {
+    usePrecompiledGzip: true,
+    buffer: true,
+    maxAge: 60 * 60 * 24 * 30 * 1000,
+    gzip: true,
     dirs: {
       default: {
         prefix: '/',
