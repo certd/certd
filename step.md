@@ -73,7 +73,7 @@
 
 这里执行失败，可以查看错误日志
 ![](./doc/images/11-1-error.png)
-![](./doc/images/112-error.png)
+![](./doc/images/11-2-error.png)
 
 修改正确后，重新执行
 ![](./doc/images/12-1-log-success.png)
