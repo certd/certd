@@ -3,7 +3,7 @@
 CertD 是一个免费全自动申请和部署SSL证书的工具。       
 后缀D取自linux守护进程的命名风格，意为证书守护进程。    
 
-## 特性
+## 一、特性
 本项目不仅支持证书申请过程自动化，还可以自动化部署证书，让你的证书永不过期。     
 
 * 全自动申请证书（支持阿里云、腾讯云、华为云注册的域名）
@@ -15,7 +15,7 @@ CertD 是一个免费全自动申请和部署SSL证书的工具。
 
 
 
-## 快速开始
+## 二、官方Demo
 
 官方Demo地址，自助注册后体验    
 
@@ -24,7 +24,7 @@ https://certd.handsfree.work/
 > 注意数据将不定期清理，生产使用请自行部署    
 > 包含敏感信息，务必自行部署进行生产使用
 
-## 快速开始
+## 三、开始使用
 本案例演示，如何配置每天自动申请证书，并部署到阿里云CDN，然后快要到期前自动更新证书并重新部署     
 
 ![演示](./doc/images/5-view.png)
@@ -32,12 +32,38 @@ https://certd.handsfree.work/
 [点我查看详细使用步骤演示](./step.md)
 
 
-## 本地docker部署
+## 四、本地docker部署
+
+### 1. 安装docker、docker-compose
+
+1.1 安装docker    
+https://docs.docker.com/engine/install/
+
+1.2 安装docker-compose     
+https://docs.docker.com/compose/install/linux/
+
+### 2. 下载docker-compose.yaml文件
+```bash
+mdkir -p certd
+cd certd
+wget https://github.com/certd/certd/blob/v2/docker/run/docker-compose.yaml
+
+```
+### 3. 运行
+```bash
+# 如果docker compose是插件化安装
+docker compose up -d
+
+#如果docker compose是独立安装
+docker-compose up -d
+
+```
+### 4. 访问
+
+http://your_server_ip:7001
 
 
-
-
-## 一些说明
+## 五、一些说明
 ### 1. 免费证书申请
 * 本项目ssl证书提供商为letencrypt
 * 申请过程遵循acme协议
