@@ -47,7 +47,16 @@ mdkir -p certd
 cd certd
 wget https://github.com/certd/certd/blob/v2/docker/run/docker-compose.yaml
 
+# 根据需要修改里面的配置
+vi docker-compose.yaml
+# 1.修改镜像版本号
+# 2.配置数据保存路径
+# 3.配置certd_auth_jwt_secret
 ```
+> 镜像版本号与release版本号同步：    
+https://github.com/certd/certd/releases
+
+
 ### 3. 运行
 ```bash
 # 如果docker compose是插件化安装
