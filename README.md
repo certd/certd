@@ -80,3 +80,8 @@ http://your_server_ip:7001
 所以每天定时运行即可，当证书过期日前20天时，会重新申请新的证书，然后自动执行部署任务。
 
 
+## 六、联系作者
+如有疑问，欢迎加入群聊（请备注certd）   
+* QQ群：141236433   
+* 微信群：   
+![](https://ai.handsfree.work/images/exchange_wxqroup.png)

@@ -99,3 +99,9 @@
 ![](./doc/images/15-2-email.png)
 
 
+以上，演示了从创建证书申请任务到自动部署证书全流程。   
+
+如有疑问，欢迎加入微信群（请备注certd）：    
+![](https://ai.handsfree.work/images/exchange_wxqroup.png)
+
+
