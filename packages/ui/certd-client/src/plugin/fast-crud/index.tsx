@@ -52,6 +52,11 @@ function install(app: any, options: any = {}) {
             }
           }
         },
+        toolbar: {
+          export: {
+            fileType: "excel"
+          }
+        },
         rowHandle: {
           buttons: {
             view: { type: "link", text: null, icon: "ion:eye-outline" },

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.14.5](https://github.com/fast-crud/fast-crud/compare/v1.14.4...v1.14.5) (2023-07-04)
+
+### Bug Fixes
+
+* 修复search.value第一次查询无效的bug ([d9a907a](https://github.com/fast-crud/fast-crud/commit/d9a907a477bae66662a8a8720a24ab3506772d30))
+
 ## [1.14.4](https://github.com/fast-crud/fast-crud/compare/v1.14.3...v1.14.4) (2023-07-02)
 
 **Note:** Version bump only for package @fast-crud/fs-admin-antdv

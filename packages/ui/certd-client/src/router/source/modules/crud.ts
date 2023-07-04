@@ -586,6 +586,12 @@ export const crudResources = [
             component: "/crud/feature/local-import/index.vue"
           },
           {
+            title: "导出",
+            name: "FeatureExport",
+            path: "/crud/feature/export",
+            component: "/crud/feature/export/index.vue"
+          },
+          {
             title: "自定义删除",
             name: "FeatureRemove",
             path: "/crud/feature/remove",
