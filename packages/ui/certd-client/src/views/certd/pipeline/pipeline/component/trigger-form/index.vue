@@ -62,7 +62,7 @@
                 name: 'a-input',
                 vModel: 'value'
               },
-              helper: 'cron表达式，例如： * * 3 * * * ，表示每天凌晨3点触发',
+              helper: 'cron表达式，例如： 0 0 3 * * * ，表示每天凌晨3点触发',
               rules: [{ required: true, message: '此项必填' }]
             }"
           />
