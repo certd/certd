@@ -50,7 +50,7 @@ https://docs.docker.com/compose/install/linux/
 
 ### 2. 下载docker-compose.yaml文件
 ```bash
-mdkir -p certd
+mdkir certd
 cd certd
 wget https://github.com/certd/certd/blob/v2/docker/run/docker-compose.yaml
 
@@ -94,7 +94,13 @@ http://your_server_ip:7001
 * 设置每天自动运行，当证书过期前20天，会自动重新申请证书并部署
 
 ## 六、联系作者
-如有疑问，欢迎加入群聊（请备注certd）   
-* QQ群：141236433   
+如有疑问，欢迎加入群聊（请备注certd）
+* QQ群：141236433
 * 微信群：   
-![](https://ai.handsfree.work/images/exchange_wxqroup.png)
+  ![](https://ai.handsfree.work/images/exchange_wxqroup.png)
+
+
+## 七、我的其他项目
+* [袖手GPT](https://ai.handsfree.work/) ChatGPT，国内可用，无需FQ，每日免费额度
+* [fast-crud](https://gitee.com/fast-crud/fast-crud/) 基于vue3的crud快速开发框架
+* [dev-sidecar](https://github.com/docmirror/dev-sidecar/) 直连访问github工具，无需FQ，解决github无法访问的问题
