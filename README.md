@@ -77,7 +77,9 @@ docker-compose up -d
 ```
 ### 4. 访问
 
-http://your_server_ip:7001
+http://your_server_ip:7001 
+默认账号密码：admin/123456 
+记得修改密码
 
 
 ## 五、一些说明

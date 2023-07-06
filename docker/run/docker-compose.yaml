@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   certd:
-    # 镜像                                                  #  ↓↓↓↓↓ --- 1、 修改镜像版本号
+    # 镜像                                                  #  ↓↓↓↓↓ --- 1、 修改镜像版本号，或者干脆写成latest
     image: registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${CERTD_VERSION}
     container_name: certd # 容器名
     restart: unless-stopped # 重启
