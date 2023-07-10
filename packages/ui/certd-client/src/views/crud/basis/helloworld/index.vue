@@ -22,8 +22,8 @@ const createCrudOptions = function ({}: CreateCrudOptionsProps): CreateCrudOptio
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return {
       records,
-      currentPage: 1,
-      pageSize: 20,
+      offset: 0, //后续transformRes会计算为currentPage
+      limit: 20, //后续transformRes会计算为pageSize
       total: records.length
     };
   };
