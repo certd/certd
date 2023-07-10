@@ -1,6 +1,6 @@
 {
   "name": "@certd/ui-client",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -22,7 +22,7 @@
   "dependencies": {
     "@ant-design/colors": "^6.0.0",
     "@ant-design/icons-vue": "^6.0.1",
-    "@certd/acme-client": "^1.1.5",
+    "@certd/acme-client": "^1.1.6",
     "@fast-crud/fast-crud": "^1.14.4",
     "@fast-crud/fast-extends": "^1.14.4",
     "@fast-crud/ui-antdv": "^1.14.4",
@@ -59,7 +59,7 @@
     "vuedraggable": "^4.0.1"
   },
   "devDependencies": {
-    "@certd/pipeline": "^1.1.5",
+    "@certd/pipeline": "^1.1.6",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@types/chai": "^4.3.4",
