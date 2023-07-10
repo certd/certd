@@ -88,7 +88,7 @@ export type Pipeline = Runnable & {
   userId: any;
   stages: Stage[];
   triggers: Trigger[];
-  notifications: Notification[];
+  notifications?: Notification[];
 };
 
 export type Context = {

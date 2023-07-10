@@ -20,9 +20,11 @@ export class DnspodDnsProvider implements IDnsProvider {
 
   loginToken: any;
 
+  endpoint = "";
   async onInstance() {
     const access: DnspodAccess = this.access as DnspodAccess;
     this.loginToken = access.id + "," + access.token;
+    this.endpoint = access.endpoint || "https://dnsapi.cn";
   }
 
   async doRequest(options: any, successCodes: string[] = []) {
@@ -51,7 +53,7 @@ export class DnspodDnsProvider implements IDnsProvider {
 
   async getDomainList() {
     const ret = await this.doRequest({
-      url: "https://dnsapi.cn/Domain.List",
+      url: this.access.endpoint + "/Domain.List",
     });
     this.logger.debug("dnspod 域名列表：", ret.domains);
     return ret.domains;
@@ -66,7 +68,7 @@ export class DnspodDnsProvider implements IDnsProvider {
 
     const ret = await this.doRequest(
       {
-        url: "https://dnsapi.cn/Record.Create",
+        url: this.access.endpoint + "/Record.Create",
         formData: {
           domain,
           sub_domain: rr,
@@ -87,7 +89,7 @@ export class DnspodDnsProvider implements IDnsProvider {
     const domain = await this.matchDomain(fullRecord);
 
     const ret = await this.doRequest({
-      url: "https://dnsapi.cn/Record.Remove",
+      url: this.access.endpoint + "/Record.Remove",
       formData: {
         domain,
         record_id: record.id,

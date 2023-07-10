@@ -87,7 +87,7 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
     this.logger = this.ctx.logger;
   }
   async execute(): Promise<void> {
-    const accessProvider = this.accessService.getById(this.accessId);
+    const accessProvider = await this.accessService.getById(this.accessId);
     const tkeClient = this.getTkeClient(accessProvider, this.region);
     const kubeConfigStr = await this.getTkeKubeConfig(tkeClient, this.clusterId);
 

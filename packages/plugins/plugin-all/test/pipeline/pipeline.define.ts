@@ -58,6 +58,17 @@ export const pipeline: Pipeline = {
                 runStrategy: RunStrategy.SkipWhenSucceed,
               },
             },
+            {
+              id: generateId(),
+              title: "上传证书到腾讯云",
+              type: "EchoPlugin",
+              input: {
+                cert: "cert",
+              },
+              strategy: {
+                runStrategy: RunStrategy.SkipWhenSucceed,
+              },
+            },
           ],
         },
       ],

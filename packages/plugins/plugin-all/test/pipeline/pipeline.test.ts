@@ -1,7 +1,7 @@
 import "mocha";
 import { Executor, FileStorage, RunHistory } from "@certd/pipeline";
 import { pipeline } from "./pipeline.define";
-import { AccessServiceTest } from "./access-service-test";
+import { AccessServiceTest, EmailServiceTest } from "./access-service-test";
 import "../../src";
 import "../plugin/echo-plugin";
 
@@ -13,7 +13,14 @@ describe("pipeline", function () {
       console.log("changed:");
     }
 
-    const executor = new Executor({ userId: "test", pipeline, onChanged, accessService: new AccessServiceTest(), storage: new FileStorage() });
+    const executor = new Executor({
+      userId: "test",
+      pipeline,
+      onChanged,
+      accessService: new AccessServiceTest(),
+      emailService: new EmailServiceTest(),
+      storage: new FileStorage(),
+    });
     await executor.run(1, "user");
     // expect(define.name).eq("EchoPlugin");
   });

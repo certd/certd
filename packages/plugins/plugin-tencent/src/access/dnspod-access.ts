@@ -7,13 +7,20 @@ import { IsAccess, AccessInput } from "@certd/pipeline";
 })
 export class DnspodAccess {
   @AccessInput({
-    title: "token",
+    title: "端点",
     component: {
-      placeholder: "开放接口token",
+      placeholder: "endpoint",
+      name: "a-select",
+      vModel: "value",
+      options: [
+        { value: "https://dnsapi.cn", label: "中国站" },
+        { value: "https://api.dnspod.com", label: "国际站" },
+      ],
     },
     rules: [{ required: true, message: "该项必填" }],
   })
-  token = "";
+  endpoint = "";
+
   @AccessInput({
     title: "账户id",
     component: {
@@ -22,6 +29,15 @@ export class DnspodAccess {
     rules: [{ required: true, message: "该项必填" }],
   })
   id = "";
+
+  @AccessInput({
+    title: "token",
+    component: {
+      placeholder: "开放接口token",
+    },
+    rules: [{ required: true, message: "该项必填" }],
+  })
+  token = "";
 }
 
 new DnspodAccess();
