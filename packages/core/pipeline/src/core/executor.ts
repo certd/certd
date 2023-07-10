@@ -189,6 +189,8 @@ export class Executor {
   }
 
   private async runStep(step: Step) {
+    const currentLogger = this.runtime._loggers[step.id];
+
     const lastStatus = this.lastStatusMap.get(step.id);
     //执行任务
     const plugin: RegistryItem<AbstractTaskPlugin> = pluginRegistry.get(step.type);
@@ -202,7 +204,11 @@ export class Executor {
       if (item.component?.name === "pi-output-selector") {
         const contextKey = step.input[key];
         if (contextKey != null) {
-          step.input[key] = this.runtime.context[contextKey];
+          const value = this.runtime.context[contextKey];
+          if (value == null) {
+            currentLogger.warn(`[step init] input ${define.title} is null`);
+          }
+          step.input[key] = value;
         }
       }
     });
@@ -212,7 +218,7 @@ export class Executor {
       step,
       lastStatus,
       http: request,
-      logger: this.runtime._loggers[step.id],
+      logger: currentLogger,
       accessService: this.options.accessService,
       emailService: this.options.emailService,
       pipelineContext: this.pipelineContext,
