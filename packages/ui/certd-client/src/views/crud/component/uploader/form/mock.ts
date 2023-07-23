@@ -21,7 +21,10 @@ const list = [
     ],
     limit: ["http://greper.handsfree.work/extends/avatar.jpg", "https://www.baidu.com/img/bd_logo1.png"],
     statusRemote: "0",
-    keyValueType: "/2022-12-20/qygzqdjd1g.yaml"
+    keyValueType: "/2022-12-20/qygzqdjd1g.yaml",
+    object: {
+      url: "http://greper.handsfree.work/extends/avatar.jpg"
+    }
   },
   {
     radio: "2"

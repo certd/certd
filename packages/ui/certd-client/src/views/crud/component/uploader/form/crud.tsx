@@ -98,6 +98,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           title: "error",
           type: "image-uploader"
         },
+        object: {
+          title: "object",
+          type: "image-uploader"
+        },
         pictureCard2: {
           title: "通过urls显示",
           type: "image-uploader",
