@@ -28,6 +28,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         delRequest
       },
       search: {
+        autoSearch: false,
         initialForm: {
           radio: null
         },
@@ -78,6 +79,11 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           search: { show: true },
           type: "dict-radio",
           dict: statusRef
+        },
+        text: {
+          title: "文本",
+          search: { show: true },
+          type: "text"
         }
       }
     }
