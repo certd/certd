@@ -260,6 +260,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           title: "多选自动染色",
           sortable: true,
           type: "dict-select",
+          search: { show: true },
           form: {
             title: "多选本地",
             component: {

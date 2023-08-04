@@ -1,5 +1,4 @@
 import { request, requestForMock } from "/src/api/service";
-// import "/src/mock";
 import { ColumnCompositionProps, CrudOptions, FastCrud, PageQuery, PageRes, setLogger, TransformResProps, useColumns, UseCrudProps, UserPageQuery, useTypes, useUi } from "@fast-crud/fast-crud";
 import "@fast-crud/fast-crud/dist/style.css";
 import { FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader } from "@fast-crud/fast-extends";
@@ -9,7 +8,6 @@ import _ from "lodash-es";
 import { useCrudPermission } from "../permission";
 import { GetSignedUrl } from "/@/views/crud/component/uploader/s3/api";
 import { notification } from "ant-design-vue";
-import { useI18n } from "vue-i18n";
 
 function install(app: any, options: any = {}) {
   app.use(UiAntdv);
@@ -30,8 +28,6 @@ function install(app: any, options: any = {}) {
      */
     commonOptions(props: UseCrudProps): CrudOptions {
       const crudBinding = props.crudExpose?.crudBinding;
-      const { ui } = useUi();
-      const { t } = useI18n();
       const opts: CrudOptions = {
         table: {
           size: "small",

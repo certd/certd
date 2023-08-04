@@ -15,13 +15,14 @@
 
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
-import { CrudOptions, DynamicType, useFs, UseFsProps } from "@fast-crud/fast-crud";
+import { CrudOptions, DynamicType, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud.js";
 import _ from "lodash-es";
+
 export default defineComponent({
   name: "BasisReset",
   setup() {
-    const { crudBinding, crudRef, crudExpose, context, crudOptions, resetCrudOptions, appendBindingOptions } = useFs({ createCrudOptions, context: {} });
+    const { crudBinding, crudRef, crudExpose, crudOptions, resetCrudOptions, appendBindingOptions } = useFs({ createCrudOptions, context: {} });
 
     setTimeout(() => {
       //合并新的crudOptions

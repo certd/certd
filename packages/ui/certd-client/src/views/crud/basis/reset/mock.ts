@@ -1,7 +1,7 @@
 // @ts-ignore
 import mockUtil from "/src/mock/base";
 const options: any = {
-  name: "BasisValueChange",
+  name: "BasisReset",
   idGenerator: 0
 };
 const list = [
