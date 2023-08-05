@@ -67,7 +67,8 @@ const mockUtil: any = {
           }
           let orderProp: any, orderAsc: any;
           if (req && req.body) {
-            const { page, query, sort } = req.body;
+            const { page, sort } = req.body;
+            let query = req.body.query;
             if (page.limit != null) {
               limit = parseInt(page.limit);
             }
@@ -76,7 +77,7 @@ const mockUtil: any = {
             }
             orderProp = sort.prop;
             orderAsc = sort.asc;
-
+            query = query || {};
             if (Object.keys(query).length > 0) {
               data = list.filter((item: any) => {
                 let allFound = true; // 是否所有条件都符合
