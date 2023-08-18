@@ -430,6 +430,12 @@ export const crudResources = [
             name: "FormRender",
             path: "/crud/form/render",
             component: "/crud/form/render/index.vue"
+          },
+          {
+            title: "查看表单使用单元格组件",
+            name: "FormView",
+            path: "/crud/form/view",
+            component: "/crud/form/view/index.vue"
           }
         ]
       },

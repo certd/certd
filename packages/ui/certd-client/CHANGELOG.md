@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.16.4](https://github.com/fast-crud/fast-crud/compare/v1.16.3...v1.16.4) (2023-08-18)
+
+**Note:** Version bump only for package @fast-crud/fs-admin-antdv
+
+## [1.16.3](https://github.com/fast-crud/fast-crud/compare/v1.16.2...v1.16.3) (2023-08-18)
+
+### Performance Improvements
+
+* fs-button增加buttonProps参数，当fs-button的属性与x-button属性名重复时使用 ([5ca5333](https://github.com/fast-crud/fast-crud/commit/5ca53330f8bcf8d7acf4eb921aa92b83c41de52a))
+
 ## [1.16.2](https://github.com/fast-crud/fast-crud/compare/v1.16.1...v1.16.2) (2023-08-10)
 
 **Note:** Version bump only for package @fast-crud/fs-admin-antdv
