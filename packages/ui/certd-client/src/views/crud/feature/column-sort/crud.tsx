@@ -48,18 +48,18 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           search: {
             //控制查询字段顺序
             show: true,
-            //字段默认order为100，比100大的放最后面
+            //字段默认order为1，比1大的放最后面
             order: 101
           },
           type: "text",
           column: {
             //控制列字段顺序
-            //字段默认order为100，比100大的放最后面
+            //字段默认order为1，比1大的放最后面
             order: 101
           },
           form: {
             //控制表单字段顺序
-            //字段默认order为100，比100大的放最后面
+            //字段默认order为1，比1大的放最后面
             order: 101
           }
         },
