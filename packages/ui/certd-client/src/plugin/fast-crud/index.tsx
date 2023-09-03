@@ -1,7 +1,7 @@
 import { request, requestForMock } from "/src/api/service";
 import { ColumnCompositionProps, CrudOptions, FastCrud, PageQuery, PageRes, setLogger, TransformResProps, useColumns, UseCrudProps, UserPageQuery, useTypes, useUi } from "@fast-crud/fast-crud";
 import "@fast-crud/fast-crud/dist/style.css";
-import { FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader } from "@fast-crud/fast-extends";
+import { FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader, FsUploaderS3SignedUrlType } from "@fast-crud/fast-extends";
 import "@fast-crud/fast-extends/dist/style.css";
 import UiAntdv from "@fast-crud/ui-antdv";
 import _ from "lodash-es";
@@ -209,8 +209,8 @@ function install(app: any, options: any = {}) {
         }
       },
       //预签名配置，向后端获取上传的预签名连接
-      async getSignedUrl(bucket: string, key: string, options: any) {
-        return await GetSignedUrl(bucket, key, "put");
+      async getSignedUrl(bucket: string, key: string, options: any, type: FsUploaderS3SignedUrlType) {
+        return await GetSignedUrl(bucket, key, type);
       },
       successHandle(ret: any) {
         // 上传完成后可以在此处处理结果，修改url什么的

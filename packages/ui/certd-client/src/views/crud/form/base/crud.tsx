@@ -1,7 +1,9 @@
 import * as api from "./api";
 import { message } from "ant-design-vue";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, FormWrapperContext, ScopeContext, UserPageQuery, UserPageRes, utils } from "@fast-crud/fast-crud";
-export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+import { computed } from "vue";
+
+export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -16,6 +18,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   const addRequest = async ({ form }: AddReq) => {
     return await api.AddObj(form);
   };
+
   return {
     crudOptions: {
       request: {
@@ -25,6 +28,22 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         delRequest
       },
       form: {
+        labelCol: {
+          //固定label宽度
+          span: null,
+          style: {
+            width: computed(() => {
+              return context.labelWidthRef.value + "px";
+            })
+          }
+        },
+        afterSubmit(context) {
+          // context.res 是add或update请求返回结果
+          if (context.form.id === 1) {
+            message.error("模拟保存失败，阻止弹窗关闭");
+            throw new Error("模拟失败，阻止弹窗关闭");
+          }
+        },
         wrapper: {
           buttons: {
             ok: {
@@ -34,9 +53,16 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               text: "自定义按钮",
               click: async (context: FormWrapperContext) => {
                 utils.logger.info("btn context", context);
-                message.info({ content: "通过自定义按钮，触发保存" });
+                message.info("通过自定义按钮，触发保存");
                 await context.submit();
-                message.info({ content: "保存成功" });
+                message.info("保存成功");
+              }
+            },
+            customClose: {
+              text: "自定义关闭",
+              color: "red",
+              click: async (context: FormWrapperContext) => {
+                context.close();
               }
             }
           }

@@ -1,7 +1,7 @@
 import * as api from "./api";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { Modal } from "ant-design-vue";
 import dayjs from "dayjs";
+
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
@@ -44,6 +44,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           fileType: context.fileType, //导出类型为excel
           dataFrom: context.dataFrom, //search查询获取， local 当前页数据
+          //仅导出显示的列
+          onlyShow: true,
           searchParams: {
             //查询条件
             page: {

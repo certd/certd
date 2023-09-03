@@ -19,6 +19,7 @@ module.exports = {
   extends: ["plugin:vue/vue3-recommended", "plugin:@typescript-eslint/recommended", "plugin:prettier/recommended", "prettier"],
   rules: {
     //"max-len": [0, 200, 2, { ignoreUrls: true }],
+    "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/ban-ts-ignore": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-explicit-any": "off",

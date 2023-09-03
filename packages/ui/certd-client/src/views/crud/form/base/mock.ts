@@ -10,7 +10,8 @@ const list = [
     age: 15,
     password: "",
     status: "2",
-    url: "https://baidu.com"
+    url: "https://baidu.com",
+    renderLabel: "第一行编辑演示阻止表单提交"
   },
   {
     name: "张三",

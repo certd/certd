@@ -293,6 +293,12 @@ export const crudResources = [
             name: "ComponentJson",
             path: "/crud/component/json",
             component: "/crud/component/json/index.vue"
+          },
+          {
+            title: "组件独立使用",
+            name: "ComponentIndependent",
+            path: "/crud/component/independent",
+            component: "/crud/component/independent/index.vue"
           }
         ]
       },
