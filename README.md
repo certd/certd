@@ -52,7 +52,7 @@ https://docs.docker.com/compose/install/linux/
 ```bash
 mkdir certd
 cd certd
-wget https://github.com/certd/certd/blob/v2/docker/run/docker-compose.yaml
+wget https://github.com/certd/certd/raw/v2/docker/run/docker-compose.yaml
 
 # 根据需要修改里面的配置
 # 1.修改镜像版本号
