@@ -50,7 +50,7 @@ https://docs.docker.com/compose/install/linux/
 
 ### 2. 下载docker-compose.yaml文件
 ```bash
-mdkir certd
+mkdir certd
 cd certd
 wget https://github.com/certd/certd/blob/v2/docker/run/docker-compose.yaml
 
