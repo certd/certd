@@ -35,7 +35,7 @@ export function DelObj(id: number) {
 
 export function GetObj(id: number) {
   return request({
-    url: apiPrefix + "/info",
+    url: apiPrefix + "/get",
     method: "get",
     params: { id }
   });

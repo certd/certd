@@ -193,6 +193,12 @@ export const crudResources = [
             component: "/crud/component/select/index.vue"
           },
           {
+            title: "表格选择(table-select)",
+            name: "ComponentTableSelect",
+            path: "/crud/component/table-select",
+            component: "/crud/component/table-select/index.vue"
+          },
+          {
             title: "级联(cascader)",
             name: "ComponentCascader",
             path: "/crud/component/cascader",

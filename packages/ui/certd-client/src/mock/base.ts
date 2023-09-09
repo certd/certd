@@ -39,6 +39,17 @@ function findById(id: any, list: any) {
     }
   }
 }
+function findByIds(ids: any[], list: any) {
+  const res = [];
+  for (const id of ids) {
+    const item = findById(id, list);
+    if (item != null) {
+      res.push(item);
+    }
+  }
+  console.log("findbyids", res, ids);
+  return res;
+}
 const mockUtil: any = {
   findById,
   buildMock(options: any) {
@@ -173,17 +184,24 @@ const mockUtil: any = {
         handle(req: any) {
           let id = req.params.id;
           id = parseInt(id);
-          let current = null;
-          for (const item of list) {
-            if (item.id === id) {
-              current = item;
-              break;
-            }
-          }
+          const current = findById(req.body.id, list);
           return {
             code: 0,
             msg: "success",
             data: current
+          };
+        }
+      },
+      {
+        path: "/mock/" + name + "/byIds",
+        method: "post",
+        handle(req: any) {
+          const ids = req.body.ids;
+          const res = findByIds(ids, list);
+          return {
+            code: 0,
+            msg: "success",
+            data: res
           };
         }
       },
