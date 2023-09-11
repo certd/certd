@@ -51,15 +51,13 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           }),
           form: {
             component: {
+              crossPage: true,
               createCrudOptions: createCrudOptionsText,
               crudOptionsOverride: {
                 table: {
                   scroll: {
                     x: 2000
                   }
-                },
-                rowHandle: {
-                  fixed: "right"
                 }
               }
             }
@@ -78,6 +76,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           }),
           form: {
             component: {
+              crossPage: true,
               multiple: true,
               createCrudOptions: createCrudOptionsText,
               crudOptionsOverride: {
