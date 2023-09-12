@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.17.0](https://github.com/fast-crud/fast-crud/compare/v1.16.11...v1.17.0) (2023-09-12)
+
+### Performance Improvements
+
+* dict.getNodesByValues 修改为单例模式也可以运行，无需配置prototype，优化性能 ([be4a6a7](https://github.com/fast-crud/fast-crud/commit/be4a6a744a97cb92e6da2b8094dd3930be6ebdc2))
+
 ## [1.16.11](https://github.com/fast-crud/fast-crud/compare/v1.16.10...v1.16.11) (2023-09-03)
 
 **Note:** Version bump only for package @fast-crud/fs-admin-antdv
