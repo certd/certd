@@ -129,6 +129,11 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           }),
           form: {
             rules: [{ required: true, message: "请选择一个选项" }]
+          },
+          column: {
+            component: {
+              type: "text"
+            }
           }
         },
         filter: {
