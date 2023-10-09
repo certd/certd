@@ -22,6 +22,11 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
   name!: string;
 
   @TaskInput({
+    title: "负载均衡监听id",
+  })
+  listenerId!: string;
+
+  @TaskInput({
     title: "大区",
     value: "cn-hangzhou",
     component: {
@@ -89,6 +94,19 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
 
     //output
     this.aliyunCertId = ret.CertId;
+
+    const lsRequestOption = {
+      method: "POST",
+    };
+
+    const lsParams = {
+      listenerId: this.listenerId,
+      certificates: [ret.CertId],
+    };
+
+    const lsRet = (await client.request("AssociateAdditionalCertificatesWithListener", lsParams, lsRequestOption)) as any;
+    checkRet(lsRet);
+    this.logger.info("关联扩展证书和监听成功");
   }
 
   getClient(aliyunProvider: AliyunAccess) {
