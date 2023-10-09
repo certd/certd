@@ -103,7 +103,7 @@ export class DnspodDnsProvider implements IDnsProvider {
     const list = await this.getDomainList();
     let domain = null;
     for (const item of list) {
-      if (_.endsWith(dnsRecord, item.name)) {
+      if (_.endsWith(dnsRecord, "." + item.name)) {
         domain = item;
         break;
       }
