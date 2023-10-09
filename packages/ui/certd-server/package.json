@@ -23,8 +23,6 @@
   "dependencies": {
     "@certd/acme-client": "^1.1.6",
     "@certd/pipeline": "^1.1.6",
-    "@certd/plugin-aliyun": "^1.1.6",
-    "@certd/plugin-all": "^1.1.6",
     "@certd/plugin-cert": "^1.1.6",
     "@certd/plugin-host": "^1.1.6",
     "@certd/plugin-huawei": "^1.1.6",
@@ -57,6 +55,7 @@
     "midway-flyway-js": "^3.0.0",
     "node-cron": "^3.0.2",
     "nodemailer": "^6.9.3",
+    "plugin-all": "workspace:^",
     "reflect-metadata": "^0.1.13",
     "sqlite3": "^5.1.4",
     "svg-captcha": "^1.4.0",

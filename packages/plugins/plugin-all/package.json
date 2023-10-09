@@ -1,5 +1,5 @@
 {
-  "name": "@certd/plugin-all",
+  "name": "plugin-all",
   "private": false,
   "version": "1.1.6",
   "main": "./src/index.ts",
@@ -48,5 +48,8 @@
     "vite": "^3.1.0",
     "vue-tsc": "^0.38.9"
   },
-  "gitHead": "b258e926209fef4cc4d633b0383eb54e26c516f9"
+  "gitHead": "b258e926209fef4cc4d633b0383eb54e26c516f9",
+  "dependencies": {
+    "plugin-aliyun": "workspace:^"
+  }
 }
