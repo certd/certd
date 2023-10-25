@@ -29,14 +29,12 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         // 表头过滤改变事件
         onFilterChange(filters: any) {
           console.log("onFilterChange", filters);
-          if (filters.remote != null) {
-            crudExpose.setSearchFormData({
-              form: {
-                remote: filters.remote
-              }
-            });
-            crudExpose.doRefresh();
-          }
+          crudExpose.setSearchFormData({
+            form: {
+              remote: filters.remote
+            }
+          });
+          crudExpose.doRefresh();
         }
       },
       columns: {
