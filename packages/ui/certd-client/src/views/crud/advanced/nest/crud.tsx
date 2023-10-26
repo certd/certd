@@ -88,8 +88,7 @@ export default function ({ crudExpose, context: { asideTableRef } }: CreateCrudO
             // 嵌套表格字段
             rules: [{ required: true, message: "请选择用户" }],
             component: {
-              //局部引用子表格，要用shallowRef包裹
-              name: shallowRef(SubTable),
+              name: SubTable,
               vModel: "modelValue",
               gradeId: compute(({ form }) => {
                 return form.id;
