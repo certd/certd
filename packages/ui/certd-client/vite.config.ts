@@ -4,6 +4,13 @@ import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
 import PurgeIcons from "vite-plugin-purge-icons";
 import * as path from "path";
+import DefineOptions from "unplugin-vue-define-options/vite";
+// import WindiCSS from "vite-plugin-windicss";
+// import { generateModifyVars } from "./build/modify-vars";
+// import { configThemePlugin } from "./build/theme-plugin";
+// import OptimizationPersist from "vite-plugin-optimize-persist";
+// import PkgConfig from "vite-plugin-package-config";
+// https://vitejs.dev/config/
 // 增加环境变量 _
 process.env.VITE_APP_VERSION = require("./package.json").version;
 process.env.VITE_APP_BUILD_TIME = require("dayjs")().format("YYYY-M-D HH:mm:ss");
@@ -16,10 +23,11 @@ export default ({ command, mode }) => {
   if (mode.startsWith("debug")) {
     devAlias = [
       { find: /@fast-crud\/fast-crud\/dist/, replacement: path.resolve("../../fast-crud/src/") },
-      { find: /@fast-crud\/fast-crud$/, replacement: path.resolve("../../fast-crud/src/") },
-      { find: /@fast-crud\/fast-extends\/dist/, replacement: path.resolve("../../fast-extends/src/") },
-      { find: /@fast-crud\/fast-extends$/, replacement: path.resolve("../../fast-extends/src/") },
-      { find: /@fast-crud\/ui-antdv$/, replacement: path.resolve("../../ui/ui-antdv/src/") }
+      // { find: /@fast-crud\/fast-crud$/, replacement: path.resolve("../../fast-crud/src/") },
+      { find: /@fast-crud\/fast-extends\/dist/, replacement: path.resolve("../../fast-extends/src/") }
+      // { find: /@fast-crud\/fast-extends$/, replacement: path.resolve("../../fast-extends/src/") },
+      // { find: /@fast-crud\/ui-antdv$/, replacement: path.resolve("../../ui/ui-antdv/src/") },
+      // { find: /@fast-crud\/ui-interface$/, replacement: path.resolve("../../ui/ui-interface/src/") }
     ];
     devServerFs = {
       // 这里配置dev启动时读取的项目根目录
@@ -31,6 +39,7 @@ export default ({ command, mode }) => {
   return {
     base: "/",
     plugins: [
+      DefineOptions(),
       vueJsx(),
       vue(),
       // 压缩build后的代码
@@ -51,7 +60,7 @@ export default ({ command, mode }) => {
     ],
     esbuild: {
       drop: command === "build" ? ["debugger"] : [],
-      // pure: ["console.log", "debugger"],
+      pure: ["console.log", "debugger"],
       jsxFactory: "h",
       jsxFragment: "Fragment"
     },

@@ -9,6 +9,15 @@ export const crudResources = [
     },
     children: [
       {
+        title: "debug",
+        name: "debug",
+        path: "/crud/debug",
+        component: "/crud/debug/index.vue",
+        meta: {
+          isMenu: false
+        }
+      },
+      {
         title: "基本特性",
         name: "basis",
         path: "/crud/basis",
@@ -18,10 +27,16 @@ export const crudResources = [
         },
         children: [
           {
-            title: "HelloWorld",
+            title: "FirstDemo",
             name: "FsCrudFirst",
             path: "/crud/basis/first",
             component: "/crud/basis/first/index.vue"
+          },
+          {
+            title: "HelloWorld",
+            name: "FsCrudHelloWorld",
+            path: "/crud/basis/helloworld",
+            component: "/crud/basis/helloworld/index.vue"
           },
           {
             title: "动态计算",
@@ -60,6 +75,12 @@ export const crudResources = [
             component: "/crud/basis/layout-custom/index.vue"
           },
           {
+            title: "自定义组件",
+            name: "BasisCustom",
+            path: "/crud/basis/custom",
+            component: "/crud/basis/custom/index.vue"
+          },
+          {
             title: "列设置",
             name: "BasisColumnsSet",
             path: "/crud/basis/columns-set",
@@ -70,6 +91,12 @@ export const crudResources = [
             name: "BasisColumnMergePlugin",
             path: "/crud/basis/column-merge-plugin",
             component: "/crud/basis/column-merge-plugin/index.vue"
+          },
+          {
+            title: "ResetCrudOptions",
+            name: "BasisReset",
+            path: "/crud/basis/reset",
+            component: "/crud/basis/reset/index.vue"
           }
         ]
       },
@@ -166,6 +193,12 @@ export const crudResources = [
             component: "/crud/component/select/index.vue"
           },
           {
+            title: "表格选择(table-select)",
+            name: "ComponentTableSelect",
+            path: "/crud/component/table-select",
+            component: "/crud/component/table-select/index.vue"
+          },
+          {
             title: "级联(cascader)",
             name: "ComponentCascader",
             path: "/crud/component/cascader",
@@ -244,6 +277,12 @@ export const crudResources = [
             component: "/crud/component/uploader/qiniu/index.vue"
           },
           {
+            title: "s3上传",
+            name: "ComponentUploaderS3",
+            path: "/crud/component/uploader/s3",
+            component: "/crud/component/uploader/s3/index.vue"
+          },
+          {
             title: "富文本编辑器",
             name: "ComponentEditor",
             path: "/crud/component/editor",
@@ -260,6 +299,12 @@ export const crudResources = [
             name: "ComponentJson",
             path: "/crud/component/json",
             component: "/crud/component/json/index.vue"
+          },
+          {
+            title: "组件独立使用",
+            name: "ComponentIndependent",
+            path: "/crud/component/independent",
+            component: "/crud/component/independent/index.vue"
           }
         ]
       },
@@ -391,6 +436,18 @@ export const crudResources = [
             name: "FormNest",
             path: "/crud/form/nest",
             component: "/crud/form/nest/index.vue"
+          },
+          {
+            title: "字段组件render",
+            name: "FormRender",
+            path: "/crud/form/render",
+            component: "/crud/form/render/index.vue"
+          },
+          {
+            title: "查看表单使用单元格组件",
+            name: "FormView",
+            path: "/crud/form/view",
+            component: "/crud/form/view/index.vue"
           }
         ]
       },
@@ -443,6 +500,12 @@ export const crudResources = [
             name: "FeatureHeaderGroup",
             path: "/crud/feature/header-group",
             component: "/crud/feature/header-group/index.vue"
+          },
+          {
+            title: "自定义表头",
+            name: "FeatureHeader",
+            path: "/crud/feature/header",
+            component: "/crud/feature/header/index.vue"
           },
           {
             title: "合并单元格",
@@ -499,6 +562,12 @@ export const crudResources = [
             component: "/crud/feature/search-multi/index.vue"
           },
           {
+            title: "Tabs快捷查询",
+            name: "FeatureTabs",
+            path: "/crud/feature/tabs",
+            component: "/crud/feature/tabs/index.vue"
+          },
+          {
             title: "字段排序",
             name: "FeatureColumnSort",
             path: "/crud/feature/column-sort",
@@ -525,8 +594,20 @@ export const crudResources = [
           {
             title: "v-model",
             name: "FeatureVModel",
-            path: "/crud/feature/v-model",
+            path: "/crud/feature/local-v-model",
             component: "/crud/feature/local-v-model/index.vue"
+          },
+          {
+            title: "导入",
+            name: "FeatureImport",
+            path: "/crud/feature/local-import",
+            component: "/crud/feature/local-import/index.vue"
+          },
+          {
+            title: "导出",
+            name: "FeatureExport",
+            path: "/crud/feature/export",
+            component: "/crud/feature/export/index.vue"
           },
           {
             title: "自定义删除",

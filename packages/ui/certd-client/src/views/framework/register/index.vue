@@ -36,7 +36,7 @@
     </a-form>
   </div>
 </template>
-<script>
+<script lang="ts">
 import { defineComponent, reactive, ref, toRaw } from "vue";
 import { useUserStore } from "/src/store/modules/user";
 export default defineComponent({
@@ -44,7 +44,7 @@ export default defineComponent({
   setup() {
     const userStore = useUserStore();
     const formRef = ref();
-    const formState = reactive({
+    const formState: any = reactive({
       username: "",
       password: "",
       confirmPassword: ""
@@ -82,7 +82,7 @@ export default defineComponent({
       }
     };
 
-    const handleFinish = async (values) => {
+    const handleFinish = async (values: any) => {
       await userStore.register(
         toRaw({
           password: formState.password,
@@ -91,7 +91,7 @@ export default defineComponent({
       );
     };
 
-    const handleFinishFailed = (errors) => {
+    const handleFinishFailed = (errors: any) => {
       console.log(errors);
     };
 

@@ -1,6 +1,6 @@
 import "./iconify";
 import "./iconfont";
-import FastCrud from "./fast-crud/index";
+import FastCrud from "./fast-crud";
 import permission from "./permission";
 import { App } from "vue";
 function install(app: App, options: any = {}) {

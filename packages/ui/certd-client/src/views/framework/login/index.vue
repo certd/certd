@@ -71,7 +71,7 @@
     </a-form>
   </div>
 </template>
-<script>
+<script lang="ts">
 import { defineComponent, reactive, ref, toRaw, computed } from "vue";
 import { useUserStore } from "/src/store/modules/user";
 export default defineComponent({
@@ -128,7 +128,7 @@ export default defineComponent({
       }
     };
 
-    const handleFinish = async (values) => {
+    const handleFinish = async (values: any) => {
       console.log(values, formState);
       loading.value = true;
       try {
@@ -138,7 +138,7 @@ export default defineComponent({
       }
     };
 
-    const handleFinishFailed = (errors) => {
+    const handleFinishFailed = (errors: any) => {
       console.log(errors);
     };
 

@@ -1,4 +1,4 @@
-import permissionDirective from "./directive/index";
+import permissionDirective from "./directive/index.js";
 import { registerRouterHook } from "./hook";
 import util from "./util.permission";
 export * from "./use-crud-permission";
@@ -11,7 +11,7 @@ export function usePermission() {
 }
 
 export default {
-  install(app) {
+  install(app: any) {
     // 开启权限模块
     // 注册v-permission指令, 用于控制按钮权限
     app.use(permissionDirective);

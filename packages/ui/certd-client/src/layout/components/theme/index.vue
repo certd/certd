@@ -1,23 +1,13 @@
 <template>
   <div class="fs-theme" @click="show()">
     <fs-iconify icon="ion:sparkles-outline" />
-    <a-drawer
-      v-model:visible="visible"
-      title="主题设置"
-      placement="right"
-      width="350px"
-      :closable="false"
-      @after-visible-change="afterVisibleChange"
-    >
-      <fs-theme-color-picker
-        :primary-color="setting.getTheme.primaryColor"
-        @change="setting.setPrimaryColor"
-      ></fs-theme-color-picker>
+    <a-drawer v-model:visible="visible" title="主题设置" placement="right" width="350px" :closable="false" @after-visible-change="afterVisibleChange">
+      <fs-theme-color-picker :primary-color="setting.getTheme.primaryColor" @change="setting.setPrimaryColor"></fs-theme-color-picker>
     </a-drawer>
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { ref, defineComponent } from "vue";
 import FsThemeColorPicker from "./color-picker.vue";
 import { useSettingStore } from "/@/store/modules/settings";

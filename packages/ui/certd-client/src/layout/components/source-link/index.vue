@@ -5,7 +5,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 export default defineComponent({
@@ -23,7 +23,7 @@ export default defineComponent({
       { immediate: true }
     );
     const middle = "/fast-crud/fs-admin-antdv/tree/main/src/views";
-    function goSource(prefix) {
+    function goSource(prefix: any) {
       const path = router.currentRoute.value.fullPath;
       window.open(prefix + middle + path + "/index.vue");
     }

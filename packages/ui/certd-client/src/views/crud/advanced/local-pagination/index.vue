@@ -11,9 +11,9 @@
   </fs-page>
 </template>
 
-<script>
+<script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
-import { useCrud, useExpose } from "@fast-crud/fast-crud";
+import { useCrud, useExpose, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import { GetList } from "./api";
 
@@ -36,16 +36,10 @@ export default defineComponent({
       const ret = await GetList({ page: { offset: 0, limit: 99999999 }, query: {}, sort: {} });
       localDataRef.value = ret.records;
 
-      //然后再初始化crud
-      // 暴露的方法
-      const { expose } = useExpose({ crudRef, crudBinding });
-      // 你的crud配置
-      const { crudOptions } = createCrudOptions({ expose, localDataRef });
-      // 初始化crud配置
-      useCrud({ expose, crudOptions });
+      const { crudExpose } = useFs({ crudBinding, crudRef, createCrudOptions, context: { localDataRef } });
 
       // 页面打开后获取列表数据
-      await expose.doRefresh();
+      await crudExpose.doRefresh();
     });
 
     return {

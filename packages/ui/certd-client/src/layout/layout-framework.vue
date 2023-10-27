@@ -58,7 +58,7 @@
   </a-layout>
 </template>
 
-<script>
+<script lang="ts">
 import { computed, onErrorCaptured, ref } from "vue";
 import FsMenu from "./components/menu/index.jsx";
 import FsLocale from "./components/locale/index.vue";
@@ -152,6 +152,11 @@ export default {
     background: #f6f6f6;
     display: flex;
     justify-content: space-between;
+
+    > div {
+      height: auto;
+      padding: 5px;
+    }
   }
   .header-buttons {
     display: flex;

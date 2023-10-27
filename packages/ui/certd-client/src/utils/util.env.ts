@@ -20,7 +20,7 @@ export class EnvConfig {
     _.forEach(import.meta.env, (value, key) => {
       if (key.startsWith("VITE_APP")) {
         key = key.replace("VITE_APP_", "");
-        //@ts-ignore
+        // @ts-ignore
         this[key] = value;
       }
     });

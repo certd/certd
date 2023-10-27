@@ -12,34 +12,29 @@
   </fs-page>
 </template>
 
-<script>
+<script lang="ts">
 import { useRoute } from "vue-router";
-import { defineComponent, ref, onMounted } from "vue";
-import { useCrud, useExpose, useColumns } from "@fast-crud/fast-crud";
+import { defineComponent, onMounted, ref } from "vue";
+import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import * as api from "./api";
-import _ from "lodash-es";
 import { message } from "ant-design-vue";
 import { usePageStore } from "/@/store/modules/page";
+
 export default defineComponent({
   name: "FormNewPageEdit",
   setup(props, ctx) {
-    // crud组件的ref
-    const crudRef = ref();
-    // crud 配置的ref
-    const crudBinding = ref();
-    // 暴露的方法
-    const { expose } = useExpose({ crudRef, crudBinding });
-    // 你的crud配置
-    const { crudOptions } = createCrudOptions({ expose });
-    // 初始化crud配置
-    const { resetCrudOptions } = useCrud({ expose, crudOptions });
+    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
+    // 页面打开后获取列表数据
+    onMounted(() => {
+      crudExpose.doRefresh();
+    });
 
     const formRef = ref();
     const formOptions = ref();
 
     const route = useRoute();
-    const id = route.query.id;
+    const id: any = route.query.id;
 
     if (id) {
       //编辑表单
@@ -50,7 +45,7 @@ export default defineComponent({
     const doSubmit = formOptions.value.doSubmit;
     const pageStore = usePageStore();
 
-    formOptions.value.doSubmit = (context) => {
+    formOptions.value.doSubmit = (context: any) => {
       console.log("submit", context);
       doSubmit(context);
       //提交成功后，关闭本页面
@@ -58,7 +53,7 @@ export default defineComponent({
       pageStore.close({ tagName: route.fullPath });
     };
 
-    const getDetail = async (id) => {
+    const getDetail = async (id: any) => {
       return await api.GetObj(id);
     };
 

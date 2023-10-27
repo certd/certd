@@ -1,5 +1,5 @@
 import { dict, utils } from "@fast-crud/fast-crud";
-import * as api from "./manager/api";
+import * as api from "./manager/api.js";
 export const statusDict = dict({
   value: "name",
   async getData() {

@@ -3,11 +3,10 @@ import _ from "lodash-es";
 import { outsideResource } from "./source/outside";
 import { headerResource } from "./source/header";
 import { frameworkResource } from "./source/framework";
-// @ts-ignore
 const modules = import.meta.glob("/src/views/**/*.vue");
 
 let index = 0;
-function transformOneResource(resource) {
+function transformOneResource(resource: any, parent: any) {
   let menu: any = null;
   if (resource.meta == null) {
     resource.meta = {};
@@ -22,58 +21,58 @@ function transformOneResource(resource) {
   } else {
     menu = _.cloneDeep(resource);
     delete menu.component;
-  }
-  let route;
-  if (resource.type !== "menu") {
-    if (resource.path == null || resource.path.startsWith("https://") || resource.path.startsWith("http://")) {
-      //没有route
-      route = null;
+    if (menu.path?.startsWith("/")) {
+      menu.fullPath = menu.path;
     } else {
-      route = _.cloneDeep(resource);
-      if (route.component && typeof route.component === "string") {
-        const path = "/src/views" + route.component;
-        route.component = modules[path];
-      }
-      if (route.component == null) {
-        route.component = LayoutPass;
-      }
+      menu.fullPath = (parent?.fullPath || "") + "/" + menu.path;
     }
   }
-
+  let route;
+  if (meta.isRoute === false || resource.path == null || resource.path.startsWith("https://") || resource.path.startsWith("http://")) {
+    //没有route
+    route = null;
+  } else {
+    route = _.cloneDeep(resource);
+    if (route.component && typeof route.component === "string") {
+      const path = "/src/views" + route.component;
+      route.component = modules[path];
+    }
+    if (route.component == null) {
+      route.component = LayoutPass;
+    }
+    if (route?.meta?.cache !== false) {
+      if (route.meta == null) {
+        route.meta = {};
+      }
+      route.meta.cache = true;
+    }
+  }
+  if (resource.children) {
+    const { menus, routes } = buildMenusAndRouters(resource.children, resource);
+    if (menu) {
+      menu.children = menus;
+    }
+    if (route) {
+      route.children = routes;
+    }
+  }
   return {
     menu,
     route
   };
 }
 
-export const buildMenusAndRouters = (resources) => {
+export const buildMenusAndRouters = (resources: any, parent: any = null) => {
   const routes: Array<any> = [];
   const menus: Array<any> = [];
   for (const item of resources) {
-    const { menu, route } = transformOneResource(item);
-    let menuChildren;
-    let routeChildren;
-    if (item.children) {
-      if (item.children.length > 0) {
-        const ret = buildMenusAndRouters(item.children);
-        menuChildren = ret.menus;
-        routeChildren = ret.routes;
-      }
-    }
+    const { menu, route } = transformOneResource(item, parent);
 
     if (menu) {
       menus.push(menu);
-      menu.children = menuChildren;
     }
     if (route) {
-      if (route?.meta?.cache !== false) {
-        if (route.meta == null) {
-          route.meta = {};
-        }
-        route.meta.cache = true;
-      }
       routes.push(route);
-      route.children = routeChildren;
     }
   }
 
@@ -84,7 +83,7 @@ export const buildMenusAndRouters = (resources) => {
   };
 };
 
-function setIndex(menus) {
+function setIndex(menus: any) {
   for (const menu of menus) {
     menu.index = "index_" + index;
     index++;
@@ -94,7 +93,7 @@ function setIndex(menus) {
   }
 }
 
-function findMenus(menus, condition) {
+function findMenus(menus: any, condition: any) {
   const list: any = [];
   for (const menu of menus) {
     if (condition(menu)) {
@@ -110,8 +109,8 @@ function findMenus(menus, condition) {
   return list;
 }
 
-function filterMenus(menus, condition) {
-  const list = menus.filter((item) => {
+function filterMenus(menus: any, condition: any) {
+  const list = menus.filter((item: any) => {
     return condition(item);
   });
 
@@ -123,7 +122,7 @@ function filterMenus(menus, condition) {
   return list;
 }
 
-function flatChildren(list, children) {
+function flatChildren(list: any, children: any) {
   for (const child of children) {
     list.push(child);
     if (child.children && child.children.length > 0) {
@@ -132,7 +131,7 @@ function flatChildren(list, children) {
     child.children = null;
   }
 }
-function flatSubRouters(routers) {
+function flatSubRouters(routers: any) {
   for (const router of routers) {
     const children: Array<any> = [];
     if (router.children && router.children.length > 0) {
@@ -148,7 +147,7 @@ const outsideRet = buildMenusAndRouters(outsideResource);
 const headerRet = buildMenusAndRouters(headerResource);
 
 const outsideRoutes = outsideRet.routes;
-const frameworkRoutes = flatSubRouters(frameworkRet.routes);
+const frameworkRoutes = frameworkRet.routes;
 const routes = [...outsideRoutes, ...frameworkRoutes];
 const frameworkMenus = frameworkRet.menus;
 const headerMenus = headerRet.menus;

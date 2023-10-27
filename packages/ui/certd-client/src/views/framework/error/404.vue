@@ -6,7 +6,7 @@
   </a-result>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   name: "Exception404",
   methods: {

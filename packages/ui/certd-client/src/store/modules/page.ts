@@ -15,7 +15,7 @@ interface PageState {
   // 已经加载多标签页数据 https://github.com/d2-projects/d2-admin/issues/201
   openedLoaded: boolean;
   // 当前页面
-  current: "";
+  current: string;
   // 需要缓存的页面 name
   keepAlive: Array<any>;
   inited: boolean;
@@ -49,7 +49,7 @@ export const usePageStore = defineStore({
   }),
   getters: {
     // @ts-ignore
-    getOpened() {
+    getOpened(): any {
       // @ts-ignore
       return this.opened;
     },
@@ -358,14 +358,14 @@ export const usePageStore = defineStore({
      */
     keepAliveRefresh() {
       this.keepAlive = this.opened.filter((item) => isKeepAlive(item)).map((e) => e.name);
-      console.log("keep alive:", this.keepAlive);
+      console.log("keepalive", this.keepAlive);
     },
     /**
      * @description 删除一个页面的缓存设置
      * @param {Object} state state
      * @param {String} name name
      */
-    keepAliveRemove(name: any) {
+    keepAliveRemove(name: string) {
       const list = cloneDeep(this.keepAlive);
       const index = list.findIndex((item) => item === name);
       if (index !== -1) {
@@ -378,7 +378,7 @@ export const usePageStore = defineStore({
      * @param {Object} state state
      * @param {String} name name
      */
-    keepAlivePush(name: any) {
+    keepAlivePush(name: string) {
       const keep = cloneDeep(this.keepAlive);
       keep.push(name);
       this.keepAlive = uniq(keep);
@@ -396,7 +396,7 @@ export const usePageStore = defineStore({
      * @param {Object} state state
      * @param {String} fullPath new fullPath
      */
-    currentSet(fullPath: any) {
+    currentSet(fullPath: string) {
       this.current = fullPath;
     },
     /**
@@ -405,7 +405,7 @@ export const usePageStore = defineStore({
      * @param {Object} state state
      * @param {Array} routes routes
      */
-    async init(routes: any) {
+    async init(routes?: any) {
       if (this.inited) {
         return;
       }

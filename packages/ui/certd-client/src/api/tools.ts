@@ -49,13 +49,14 @@ export function responseError(data = {}, msg = "请求失败", code = 500) {
  * @param {Error} error 错误对象
  */
 export function errorLog(error: any) {
-  if (error?.response?.data?.message) {
-    error.message = error?.response?.data?.message;
-  }
   // 打印到控制台
   console.error("errorLog", error);
+  let message = error.message;
+  if (error.response?.data?.message) {
+    message = error.response.data.message;
+  }
   // 显示提示
-  uiContext.get().notification.error({ message: error.message });
+  uiContext.get().notification.error({ message });
 }
 
 /**

@@ -4,10 +4,10 @@
   </a-config-provider>
 </template>
 
-<script>
+<script lang="ts">
 import zhCN from "ant-design-vue/es/locale/zh_CN";
 import enUS from "ant-design-vue/es/locale/en_US";
-import { provide, ref, nextTick } from "vue";
+import { provide, ref, nextTick, getCurrentInstance } from "vue";
 import { usePageStore } from "/src/store/modules/page";
 import { useResourceStore } from "/src/store/modules/resource";
 import { useSettingStore } from "/@/store/modules/settings";
@@ -16,7 +16,7 @@ import "dayjs/locale/en";
 import dayjs from "dayjs";
 export default {
   name: "App",
-  setup() {
+  setup(props: any, ctx: any) {
     //刷新页面方法
     const routerEnabled = ref(true);
     const locale = ref(zhCN);
@@ -25,7 +25,7 @@ export default {
       await nextTick();
       routerEnabled.value = true;
     }
-    function localeChanged(value) {
+    function localeChanged(value: any) {
       console.log("locale changed:", value);
       if (value === "zh-cn") {
         locale.value = zhCN;
