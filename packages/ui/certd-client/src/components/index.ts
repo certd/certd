@@ -4,7 +4,7 @@ import PiDnsProviderSelector from "./dns-provider-selector/index.vue";
 import PiOutputSelector from "../views/certd/pipeline/pipeline/component/output-selector/index.vue";import PiEditable from "./editable.vue";
 import { CheckCircleOutlined, InfoCircleOutlined, UndoOutlined } from "@ant-design/icons-vue";
 export default {
-  install(app) {
+  install(app:any) {
     app.component("PiContainer", PiContainer);
     app.component("PiAccessSelector", PiAccessSelector);
     app.component("PiEditable", PiEditable);
