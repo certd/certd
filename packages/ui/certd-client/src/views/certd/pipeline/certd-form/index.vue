@@ -9,7 +9,7 @@ import { ref } from "vue";
 import _ from "lodash-es";
 export default {
   name: "PiCertdForm",
-  setup(props, ctx) {
+  setup(props:any, ctx:any) {
     // 自定义表单配置
     const { buildFormOptions } = useColumns();
     //使用crudOptions结构来构建自定义表单配置
@@ -18,18 +18,18 @@ export default {
     const formOptions = buildFormOptions(
       _.merge(crudOptions, {
         form: {
-          doSubmit({ form }) {
+          doSubmit({ form }:any) {
             // 创建certd 的pipeline
             doSubmitRef.value({ form });
           }
         }
-      })
+      }) as any
     );
 
     const formWrapperRef = ref();
     const formWrapperOptions = ref();
     formWrapperOptions.value = formOptions;
-    function open(doSubmit) {
+    function open(doSubmit:any) {
       doSubmitRef.value = doSubmit;
       formWrapperRef.value.open(formWrapperOptions.value);
     }

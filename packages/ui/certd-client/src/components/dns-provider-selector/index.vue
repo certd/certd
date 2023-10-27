@@ -16,7 +16,7 @@ export default {
     }
   },
   emits: ["update:modelValue"],
-  setup(props, ctx) {
+  setup(props:any, ctx:any) {
     const options = ref<any[]>([]);
 
     async function onCreate() {
@@ -35,7 +35,7 @@ export default {
     }
     onCreate();
 
-    function onChanged(value) {
+    function onChanged(value:any) {
       ctx.emit("update:modelValue", value);
     }
     return {
