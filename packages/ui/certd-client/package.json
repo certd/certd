@@ -9,7 +9,7 @@
     "debug": "vite --mode debug --open",
     "debug:pm": "vite --mode debugpm",
     "debug:force": "vite --force --mode debug",
-    "build": "npm run tsc && vite build ",
+    "build": "vite build ",
     "serve": "vite preview",
     "preview": "vite preview",
     "pretty-quick": "pretty-quick",
