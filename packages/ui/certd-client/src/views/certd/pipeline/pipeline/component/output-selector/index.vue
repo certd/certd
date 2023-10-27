@@ -15,7 +15,7 @@ export default {
     }
   },
   emits: ["update:modelValue"],
-  setup(props, ctx) {
+  setup(props:any, ctx:any) {
     const options = ref<any[]>([]);
 
     const pipeline = inject("pipeline") as Ref<any>;
@@ -47,7 +47,7 @@ export default {
       }
     );
 
-    function onChanged(value) {
+    function onChanged(value:any) {
       ctx.emit("update:modelValue", value);
     }
     return {

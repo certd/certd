@@ -87,7 +87,7 @@ export default defineComponent({
         toRaw({
           password: formState.password,
           username: formState.username
-        })
+        }) as any
       );
     };
 

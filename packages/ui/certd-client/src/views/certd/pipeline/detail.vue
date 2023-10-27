@@ -18,7 +18,7 @@ export default defineComponent({
   components: { PipelineEdit },
   setup() {
     const route = useRoute();
-    const pipelineId = ref(route.query.id);
+    const pipelineId:Ref = ref(route.query.id);
 
     const pipelineOptions: PipelineOptions = {
       async getPipelineDetail({ pipelineId }) {
