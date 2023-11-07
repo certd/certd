@@ -69,9 +69,11 @@ https://github.com/certd/certd/releases
 ### 3. 运行
 ```bash
 # 如果docker compose是插件化安装
+export CERTD_VERSION=1.2.0
 docker compose up -d
 
 #如果docker compose是独立安装
+export CERTD_VERSION=1.2.0
 docker-compose up -d
 
 ```
