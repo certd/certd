@@ -1,7 +1,8 @@
 import _ from "lodash-es";
 function copyList(originList: any, newList: any, options: any, parentId?: any) {
   for (const item of originList) {
-    const newItem = { ...item, parentId };
+    const newItem: any = _.cloneDeep(item);
+    newItem.parentId = parentId;
     newItem.id = ++options.idGenerator;
     newList.push(newItem);
     if (item.children != null) {
@@ -291,6 +292,62 @@ const mockUtil: any = {
             code: 0,
             msg: "success",
             data: list
+          };
+        }
+      },
+      {
+        path: "/mock/" + name + "/cellUpdate",
+        method: "post",
+        handle(req: any): any {
+          console.log("req", req);
+          let item = findById(req.body.id, list);
+          if (item) {
+            _.mergeWith(item, { [req.body.key]: req.body.value }, (objValue, srcValue) => {
+              if (srcValue == null) {
+                return;
+              }
+              // 如果被合并对象为数组，则直接被覆盖对象覆盖，只要覆盖对象不为空
+              if (_.isArray(objValue)) {
+                return srcValue;
+              }
+            });
+          } else {
+            item = {
+              id: ++options.idGenerator,
+              [req.body.key]: req.body.value
+            };
+            list.unshift(item);
+          }
+
+          return {
+            code: 0,
+            msg: "success",
+            data: item
+          };
+        }
+      },
+      {
+        path: "/mock/" + name + "/columnUpdate",
+        method: "post",
+        handle(req: any): any {
+          for (const item of req.body) {
+            const item2 = findById(item.id, list);
+            if (item2) {
+              _.mergeWith(item2, item, (objValue, srcValue) => {
+                if (srcValue == null) {
+                  return;
+                }
+                // 如果被合并对象为数组，则直接被覆盖对象覆盖，只要覆盖对象不为空
+                if (_.isArray(objValue)) {
+                  return srcValue;
+                }
+              });
+            }
+          }
+          return {
+            code: 0,
+            msg: "success",
+            data: null
           };
         }
       }

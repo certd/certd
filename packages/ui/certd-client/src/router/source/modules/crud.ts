@@ -538,18 +538,6 @@ export const crudResources = [
             component: "/crud/feature/height/index.vue"
           },
           {
-            title: "可编辑",
-            name: "FeatureEditable",
-            path: "/crud/feature/editable",
-            component: "/crud/feature/editable/index.vue"
-          },
-          {
-            title: "行编辑",
-            name: "FeatureEditableRow",
-            path: "/crud/feature/editable-row",
-            component: "/crud/feature/editable-row/index.vue"
-          },
-          {
             title: "查询框",
             name: "FeatureSearch",
             path: "/crud/feature/search",
@@ -620,6 +608,41 @@ export const crudResources = [
             name: "FeatureColumnResize",
             path: "/crud/feature/column-resize",
             component: "/crud/feature/column-resize/index.vue"
+          }
+        ]
+      },
+      {
+        title: "可编辑",
+        name: "Editable",
+        path: "/crud/editable",
+        redirect: "/crud/editable/free",
+        meta: {
+          icon: "ion:extension-puzzle-outline"
+        },
+        children: [
+          {
+            title: "自由编辑",
+            name: "EditableFree",
+            path: "/crud/editable/free",
+            component: "/crud/editable/free/index.vue"
+          },
+          {
+            title: "行编辑",
+            name: "EditableRow",
+            path: "/crud/editable/row",
+            component: "/crud/editable/row/index.vue"
+          },
+          {
+            title: "单元格编辑",
+            name: "EditableCell",
+            path: "/crud/editable/cell",
+            component: "/crud/editable/cell/index.vue"
+          },
+          {
+            title: "子表格编辑",
+            name: "EditableVModel",
+            path: "/crud/editable/vmodel",
+            component: "/crud/editable/vmodel/index.vue"
           }
         ]
       },
