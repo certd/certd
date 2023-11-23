@@ -13,7 +13,9 @@ export default async function (props: CreateCrudOptionsProps): Promise<CreateCru
     return await api.GetList(query);
   };
   const editRequest = async ({ form, row }: EditReq) => {
-    form.id = row.id;
+    if (form.id == null) {
+      form.id = row.id;
+    }
     return await api.UpdateObj(form);
   };
   const delRequest = async ({ row }: DelReq) => {

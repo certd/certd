@@ -1,8 +1,8 @@
 import * as api from "./api";
 import { dict, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, UserPageQuery, UserPageRes, EditReq, DelReq, AddReq } from "@fast-crud/fast-crud";
-import EditableFreeSub from "./free/index.vue";
+import EditableRowSub from "/@/views/crud/editable/sub-crud/row/index.vue";
 export default function (props: CreateCrudOptionsProps): CreateCrudOptionsRet {
-  const { crudBinding } = props.crudExpose;
+  const { crudBinding,crudRef } = props.crudExpose;
   const { crudExpose } = props;
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
@@ -33,12 +33,6 @@ export default function (props: CreateCrudOptionsProps): CreateCrudOptionsRet {
         wrapper: {
           width: "80%"
         },
-        async beforeSubmit() {
-          const validate = await crudExpose.getFormComponentRef("subTable")?.validate();
-          if (validate !== true) {
-            return false;
-          }
-        }
       },
       columns: {
         id: {
@@ -55,23 +49,40 @@ export default function (props: CreateCrudOptionsProps): CreateCrudOptionsRet {
           type: "dict-radio",
           dict: dict({
             url: "/mock/dicts/OpenStatusEnum?single"
-          })
+          }),
+          form:{
+            rules: [{ required: true, message: "请选择状态" }]
+          }
         },
         subTable: {
           title: "子表格",
           type: "text",
           form: {
             component: {
-              name: EditableFreeSub,
-              vModel: "modelValue"
+              name: EditableRowSub,
+              id:compute(({form})=>{
+                return form.id
+              }),
+              on:{
+                async saveMain({form}){
+                  //保存主表
+                  const formRef = crudExpose.getFormRef()
+                  const ret = await formRef.submit()
+                  //将form改为编辑模式
+                  let formWrapperRef = crudExpose.getFormWrapperRef();
+                  formWrapperRef.setFormData(ret.res)
+                  crudRef.value.formWrapperRef.formOptions.mode = "edit"
+                  crudRef.value.formWrapperRef.title="编辑"
+                }
+              }
             },
             col: {
               span: 24
-            }
+            },
           },
           column: {
             formatter: ({ row }) => {
-              return row.subTable?.length + "条数据";
+              return "点击编辑查看子表";
             }
           }
         }

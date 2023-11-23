@@ -617,7 +617,7 @@ export const crudResources = [
         path: "/crud/editable",
         redirect: "/crud/editable/free",
         meta: {
-          icon: "ion:extension-puzzle-outline"
+          icon: "ion:create-outline"
         },
         children: [
           {
@@ -643,6 +643,12 @@ export const crudResources = [
             name: "EditableVModel",
             path: "/crud/editable/vmodel",
             component: "/crud/editable/vmodel/index.vue"
+          },
+          {
+            title: "子CRUD",
+            name: "EditableSubCrud",
+            path: "/crud/editable/sub-crud",
+            component: "/crud/editable/sub-crud/index.vue"
           }
         ]
       },

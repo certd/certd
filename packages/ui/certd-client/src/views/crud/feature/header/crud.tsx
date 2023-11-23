@@ -2,7 +2,9 @@ import * as api from "./api.js";
 import { CreateCrudOptionsProps, dict, CreateCrudOptionsRet, EditReq, DelReq, AddReq } from "@fast-crud/fast-crud";
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const editRequest = async ({ form, row }: EditReq) => {
-    form.id = row.id;
+    if (form.id == null) {
+      form.id = row.id;
+    }
     return await api.UpdateObj(form);
   };
   const delRequest = async ({ row }: DelReq) => {

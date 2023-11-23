@@ -1,12 +1,12 @@
 import mockUtil from "/src/mock/base";
 const options: any = {
-  name: "EditableFreeSub",
+  name: "EditableSubCrud",
   idGenerator: 0
 };
 const list = [
   {
     radio: "1",
-    name: "王强"
+    subTable: [{ id: 0, name: "王小虎" }]
   },
   {
     radio: "2"

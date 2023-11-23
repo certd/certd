@@ -1,7 +1,16 @@
+import {
+  AddReq,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet, DelReq,
+  dict,
+  EditReq,
+  UserPageQuery,
+  UserPageRes
+} from "@fast-crud/fast-crud";
 import * as api from "./api";
-import { dict, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, UserPageQuery, UserPageRes, EditReq, DelReq, AddReq } from "@fast-crud/fast-crud";
-export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose,context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { crudBinding } = crudExpose;
+  const {parentIdRef} = context
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -37,15 +46,27 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           }
         }
       },
-      table: {
-        editable: {
-          mode: "free"
+      search: {
+        show: false,
+        initialForm:{
+          parentId:parentIdRef
         }
       },
-      pagination: {
-        pageSize: 5,
-        pageSizes: [5, 10, 20, 50, 100]
+      toolbar: {
+        buttons: {
+          refresh: {
+            show: false
+          }
+        }
       },
+      table: {
+        editable: {
+          enabled: true,
+          mode: "row",
+          activeDefault:false,
+        }
+      },
+      // pagination: { show: false, pageSize: 9999999 },
       columns: {
         id: {
           title: "ID",
@@ -55,25 +76,16 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
           column: { width: 80, align: "center" }
         },
-        disable: {
-          title: "禁止编辑",
-          type: "text",
-          column: {
-            editable: {
-              disabled: true //也可以配置为方法，根据条件禁用或启用编辑
-              // disabled: ({ column, index, row }) => {
-              //   return index % 2 === 0;
-              // }
-            }
-          }
-        },
         radio: {
           title: "状态",
           search: { show: true },
           type: "dict-radio",
           dict: dict({
             url: "/mock/dicts/OpenStatusEnum?single"
-          })
+          }),
+          form:{
+            value:'1',
+          }
         },
         name: {
           title: "姓名",
@@ -85,30 +97,22 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             ]
           }
         },
-        address: {
-          title: "地址",
-          children: {
-            province: {
-              title: "省份",
-              search: { show: true },
-              type: "text"
-            },
-            city: {
-              title: "城市",
-              search: { show: true },
-              type: "dict-select",
-              dict: dict({
-                value: "id",
-                label: "text",
-                data: [
-                  { id: "sz", text: "深圳", color: "success" },
-                  { id: "gz", text: "广州", color: "primary" },
-                  { id: "bj", text: "北京" },
-                  { id: "wh", text: "武汉" },
-                  { id: "sh", text: "上海" }
-                ]
-              })
+        parentId:{
+          title: "父Id",
+          type: "number",
+          search:{
+            show:true,
+          },
+          form:{
+            value:parentIdRef,
+            component:{
+              disabled:true
             }
+          }
+        },
+        createdAt: {
+          column: {
+            show: false
           }
         }
       }

@@ -37,7 +37,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     };
   };
   const editRequest = async ({ form, row }: EditReq) => {
-    form.id = row.id;
+    if (form.id == null) {
+      form.id = row.id;
+    }
     await api.UpdateObj(form);
     //更新本地数据
     const tableData = localDataRef.value;

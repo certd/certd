@@ -2,7 +2,10 @@ import _ from "lodash-es";
 function copyList(originList: any, newList: any, options: any, parentId?: any) {
   for (const item of originList) {
     const newItem: any = _.cloneDeep(item);
-    newItem.parentId = parentId;
+    if(parentId!= null && newItem.parentId == null){
+      newItem.parentId = parentId;
+    }
+
     newItem.id = ++options.idGenerator;
     newList.push(newItem);
     if (item.children != null) {
@@ -215,7 +218,7 @@ const mockUtil: any = {
           return {
             code: 0,
             msg: "success",
-            data: req.body.id
+            data: _.cloneDeep(req.body)
           };
         }
       },
