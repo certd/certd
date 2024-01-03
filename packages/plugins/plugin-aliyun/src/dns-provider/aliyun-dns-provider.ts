@@ -29,6 +29,7 @@ export class AliyunDnsProvider implements IDnsProvider {
   async getDomainList() {
     const params = {
       RegionId: "cn-hangzhou",
+      PageSize: 100,
     };
 
     const requestOption = {
