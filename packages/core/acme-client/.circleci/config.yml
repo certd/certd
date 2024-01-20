@@ -91,7 +91,7 @@ commands:
           name: Install CoreDNS
           command: sudo -E /bin/bash ./scripts/test-suite-install-coredns.sh
           environment:
-            COREDNS_VERSION: 1.8.6
+            COREDNS_VERSION: 1.11.1
             PEBBLECTS_DNS_PORT: 8053
 
       - run:
@@ -117,10 +117,12 @@ commands:
             ACME_HTTPS_PORT: 5003
 
 jobs:
-  v16: { docker: [{ image: cimg/node:16.16 }], steps: [ pre, install-cts, install-pebble, install-coredns, test ]}
-  v18: { docker: [{ image: cimg/node:18.4 }], steps: [ pre, install-cts, install-pebble, install-coredns, test ]}
-  eab-v16: { docker: [{ image: cimg/node:16.16 }], steps: [ pre, enable-eab, install-cts, install-pebble, install-coredns, test ]}
-  eab-v18: { docker: [{ image: cimg/node:18.4 }], steps: [ pre, enable-eab, install-cts, install-pebble, install-coredns, test ]}
+  v16: { docker: [{ image: cimg/node:16.20 }], steps: [ pre, install-cts, install-pebble, install-coredns, test ]}
+  v18: { docker: [{ image: cimg/node:18.19 }], steps: [ pre, install-cts, install-pebble, install-coredns, test ]}
+  v20: { docker: [{ image: cimg/node:20.11 }], steps: [ pre, install-cts, install-pebble, install-coredns, test ]}
+  eab-v16: { docker: [{ image: cimg/node:16.20 }], steps: [ pre, enable-eab, install-cts, install-pebble, install-coredns, test ]}
+  eab-v18: { docker: [{ image: cimg/node:18.19 }], steps: [ pre, enable-eab, install-cts, install-pebble, install-coredns, test ]}
+  eab-v20: { docker: [{ image: cimg/node:20.11 }], steps: [ pre, enable-eab, install-cts, install-pebble, install-coredns, test ]}
   # step-v12: { docker: [{ image: cimg/node:12.22 }], steps: [ pre, install-cts, install-step, install-coredns, test ]}
 
 workflows:
@@ -128,6 +130,8 @@ workflows:
     jobs:
       - v16
       - v18
+      - v20
       - eab-v16
       - eab-v18
+      - eab-v20
       # - step-v12

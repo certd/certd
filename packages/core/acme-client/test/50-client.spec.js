@@ -2,8 +2,8 @@
  * ACME client tests
  */
 
+const { randomUUID: uuid } = require('crypto');
 const { assert } = require('chai');
-const { v4: uuid } = require('uuid');
 const cts = require('./challtestsrv');
 const getCertIssuers = require('./get-cert-issuers');
 const spec = require('./spec');

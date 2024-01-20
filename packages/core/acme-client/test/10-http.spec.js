@@ -2,8 +2,8 @@
  * HTTP client tests
  */
 
+const { randomUUID: uuid } = require('crypto');
 const { assert } = require('chai');
-const { v4: uuid } = require('uuid');
 const nock = require('nock');
 const axios = require('./../src/axios');
 const HttpClient = require('./../src/http');

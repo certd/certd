@@ -6,8 +6,8 @@ set -eu
 
 JOBS=("$@")
 
-CIRCLECI_CLI_URL="https://github.com/CircleCI-Public/circleci-cli/releases/download/v0.1.16947/circleci-cli_0.1.16947_linux_amd64.tar.gz"
-CIRCLECI_CLI_SHASUM="c6f9a3276445c69ae40439acfed07e2c53502216a96bfacc4556e1d862d1019a"
+CIRCLECI_CLI_URL="https://github.com/CircleCI-Public/circleci-cli/releases/download/v0.1.29936/circleci-cli_0.1.29936_linux_amd64.tar.gz"
+CIRCLECI_CLI_SHASUM="fdc8da76111facae4a10f3717502eeb5d78db0256ef94a2f8d53078978175d40"
 CIRCLECI_CLI_PATH="/tmp/circleci-cli"
 CIRCLECI_CLI_BIN="${CIRCLECI_CLI_PATH}/circleci"
 
@@ -19,8 +19,10 @@ if [[ ${#JOBS[@]} -eq 0 ]]; then
     JOBS=(
         "v16"
         "v18"
+        "v20"
         "eab-v16"
         "eab-v18"
+        "eab-v20"
     )
 fi
 
@@ -33,8 +35,9 @@ if [[ ! -f "${CIRCLECI_CLI_BIN}" ]]; then
     tar zxvf "${CIRCLECI_CLI_PATH}/circleci-cli.tar.gz" -C "${CIRCLECI_CLI_PATH}" --strip-components=1
 fi
 
-# Skip CircleCI update checks
+# Disable CircleCI update checks and telemetry
 export CIRCLECI_CLI_SKIP_UPDATE_CHECK="true"
+export CIRCLECI_CLI_TELEMETRY_OPTOUT="1"
 
 # Run test suite
 echo "[-] Running test suite"
@@ -43,7 +46,7 @@ $CIRCLECI_CLI_BIN config validate -c "${CONFIG_PATH}"
 
 for job in "${JOBS[@]}"; do
     echo "[-] Running job: ${job}"
-    $CIRCLECI_CLI_BIN local execute -c "${CONFIG_PATH}" --job "${job}" --skip-checkout
+    $CIRCLECI_CLI_BIN local execute -c "${CONFIG_PATH}" "${job}"
     echo "[+] ${job} completed successfully"
 done
 

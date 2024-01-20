@@ -3,8 +3,8 @@
  */
 
 const dns = require('dns').promises;
+const { randomUUID: uuid } = require('crypto');
 const { assert } = require('chai');
-const { v4: uuid } = require('uuid');
 const cts = require('./challtestsrv');
 const axios = require('./../src/axios');
 

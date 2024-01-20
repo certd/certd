@@ -4,7 +4,6 @@ This document outlines the breaking changes introduced in v5 of `acme-client`, w
 
 First off this release drops support for Node LTS v10, v12 and v14, and the reason for that is a new native crypto interface - more on that below. Since Node v14 is still currently in maintenance mode, `acme-client` v4 will continue to receive security updates and bugfixes until (at least) Node v14 reaches its end-of-line.
 
-
 ## New native crypto interface
 
 A new crypto interface has been introduced with v5, which you can find under `acme.crypto`. It uses native Node.js cryptography APIs to generate private keys, JSON Web Keys and signatures, and finally enables support for ECC/ECDSA (P-256, P384 and P521), both for account private keys and certificates. The [jsrsasign](https://www.npmjs.com/package/jsrsasign) module is used to handle generation and parsing of Certificate Signing Requests.
@@ -17,9 +16,9 @@ Below you will find a table summarizing the current `acme.forge` methods, and th
 
 *Note: The now deprecated `acme.forge` interface is still available for use in v5, and will not be removed until a future major version, most likely v6. Should you not wish to change to the new interface right away, the following breaking changes will not immediately affect you.*
 
-- :green_circle: = API functionality unchanged between `acme.forge` and `acme.crypto`
-- :orange_circle: = Slight API changes, like depromising or renaming, action may be required
-- :red_circle: = Breaking API changes or removal, action required if using these methods
+* :green_circle: = API functionality unchanged between `acme.forge` and `acme.crypto`
+* :orange_circle: = Slight API changes, like depromising or renaming, action may be required
+* :red_circle: = Breaking API changes or removal, action required if using these methods
 
 | Deprecated `.forge` API       | New `.crypto` API             | State                 |
 | ----------------------------- | ----------------------------- | --------------------- |
@@ -32,7 +31,6 @@ Below you will find a table summarizing the current `acme.forge` methods, and th
 | `await readCsrDomains()`      | `readCsrDomains()`            | :orange_circle:   (4) |
 | `await readCertificateInfo()` | `readCertificateInfo()`       | :orange_circle:   (4) |
 | `await createCsr()`           | `await createCsr()`           | :green_circle:        |
-
 
 ### 1. `createPublicKey` renamed and depromised
 
@@ -49,7 +47,6 @@ const publicKey = await acme.forge.createPublicKey(privateKey);
 const publicKey = acme.crypto.getPublicKey(privateKey);
 ```
 
-
 ### 2. `getPemBody` renamed, now returns Base64URL
 
 * Method `getPemBody()` has been renamed to `getPemBodyAsB64u()`
@@ -63,7 +60,6 @@ const body = acme.forge.getPemBody(pem);
 // After
 const body = acme.crypto.getPemBodyAsB64u(pem);
 ```
-
 
 ### 3. `getModulus` and `getPublicExponent` merged into `getJwk`
 
@@ -79,7 +75,6 @@ const exp = await acme.forge.getPublicExponent(key);
 // After
 const { e, n } = acme.crypto.getJwk(key);
 ```
-
 
 ### 4. `readCsrDomains` and `readCertificateInfo` depromised
 

@@ -3,7 +3,6 @@
  */
 
 const axios = require('axios');
-const adapter = require('axios/lib/adapters/http');
 const pkg = require('./../package.json');
 
 
@@ -30,7 +29,7 @@ instance.defaults.acmeSettings = {
  * https://stackoverflow.com/questions/42677387
  */
 
-instance.defaults.adapter = adapter;
+instance.defaults.adapter = 'http';
 
 
 /**
