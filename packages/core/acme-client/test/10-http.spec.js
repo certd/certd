@@ -26,8 +26,6 @@ describe('http', () => {
      */
 
     before(() => {
-        axios.defaults.acmeSettings.bypassCustomDnsResolver = true;
-
         const defaultUaOpts = { reqheaders: { 'User-Agent': defaultUserAgent } };
         const customUaOpts = { reqheaders: { 'User-Agent': customUserAgent } };
 
@@ -43,7 +41,6 @@ describe('http', () => {
 
     after(() => {
         axios.defaults.headers.common['User-Agent'] = defaultUserAgent;
-        axios.defaults.acmeSettings.bypassCustomDnsResolver = false;
     });
 
 

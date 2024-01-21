@@ -99,6 +99,10 @@ commands:
           command: sudo coredns -p 53 -conf /etc/coredns/Corefile
           background: true
 
+      - run:
+          name: Use CoreDNS in resolv.conf
+          command: echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf
+
   test:
     steps:
       - run: yarn --color
@@ -111,7 +115,6 @@ commands:
           environment:
             ACME_DOMAIN_NAME: test.example.com
             ACME_CHALLTESTSRV_URL: http://127.0.0.1:8055
-            ACME_DNS_RESOLVER: 127.0.0.1
             ACME_TLSALPN_PORT: 5001
             ACME_HTTP_PORT: 5002
             ACME_HTTPS_PORT: 5003

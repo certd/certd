@@ -50,11 +50,20 @@ async function addHttp01ChallengeResponse(token, content) {
     return request('add-http01', { token, content });
 }
 
+async function addHttps01ChallengeResponse(token, content, targetHostname, targetPort = 443) {
+    await addHttp01ChallengeResponse(token, content);
+    return request('add-redirect', {
+        path: `/.well-known/acme-challenge/${token}`,
+        targetURL: `https://${targetHostname}:${targetPort}/.well-known/acme-challenge/${token}`
+    });
+}
+
 async function addDns01ChallengeResponse(host, value) {
     return request('set-txt', { host, value });
 }
 
 exports.addHttp01ChallengeResponse = addHttp01ChallengeResponse;
+exports.addHttps01ChallengeResponse = addHttps01ChallengeResponse;
 exports.addDns01ChallengeResponse = addDns01ChallengeResponse;
 
 
