@@ -32,6 +32,7 @@ if (capEabEnabled && process.env.ACME_EAB_KID && process.env.ACME_EAB_HMAC_KEY) 
 describe('client.auto', () => {
     const testDomain = `${uuid()}.${domainName}`;
     const testHttpDomain = `${uuid()}.${domainName}`;
+    const testHttpsDomain = `${uuid()}.${domainName}`;
     const testDnsDomain = `${uuid()}.${domainName}`;
     const testWildcardDomain = `${uuid()}.${domainName}`;
 
@@ -178,6 +179,38 @@ describe('client.auto', () => {
                 assert.isString(cert);
             });
 
+            it('should settle all challenges before rejecting', async () => {
+                const results = [];
+                const [, csr] = await acme.crypto.createCsr({
+                    commonName: `${uuid()}.${domainName}`,
+                    altNames: [
+                        `${uuid()}.${domainName}`,
+                        `${uuid()}.${domainName}`,
+                        `${uuid()}.${domainName}`,
+                        `${uuid()}.${domainName}`
+                    ]
+                }, await createKeyFn());
+
+                await assert.isRejected(testClient.auto({
+                    csr,
+                    termsOfServiceAgreed: true,
+                    challengeCreateFn: async (...args) => {
+                        if ([0, 1, 2].includes(results.length)) {
+                            results.push(false);
+                            throw new Error('oops');
+                        }
+
+                        await new Promise((resolve) => { setTimeout(resolve, 500); });
+                        results.push(true);
+                        return cts.challengeCreateFn(...args);
+                    },
+                    challengeRemoveFn: cts.challengeRemoveFn
+                }));
+
+                assert.strictEqual(results.length, 5);
+                assert.deepStrictEqual(results, [false, false, false, true, true]);
+            });
+
 
             /**
              * Order certificates
@@ -208,6 +241,22 @@ describe('client.auto', () => {
                     csr,
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.assertHttpChallengeCreateFn,
+                    challengeRemoveFn: cts.challengeRemoveFn,
+                    challengePriority: ['http-01']
+                });
+
+                assert.isString(cert);
+            });
+
+            it('should order certificate using https-01', async () => {
+                const [, csr] = await acme.crypto.createCsr({
+                    commonName: testHttpsDomain
+                }, await createKeyFn());
+
+                const cert = await testClient.auto({
+                    csr,
+                    termsOfServiceAgreed: true,
+                    challengeCreateFn: cts.assertHttpsChallengeCreateFn,
                     challengeRemoveFn: cts.challengeRemoveFn,
                     challengePriority: ['http-01']
                 });

@@ -6,6 +6,7 @@ const { assert } = require('chai');
 const axios = require('./../src/axios');
 
 const apiBaseUrl = process.env.ACME_CHALLTESTSRV_URL || null;
+const httpsPort = axios.defaults.acmeSettings.httpsChallengePort || 443;
 
 
 /**
@@ -50,11 +51,11 @@ async function addHttp01ChallengeResponse(token, content) {
     return request('add-http01', { token, content });
 }
 
-async function addHttps01ChallengeResponse(token, content, targetHostname, targetPort = 443) {
+async function addHttps01ChallengeResponse(token, content, targetHostname) {
     await addHttp01ChallengeResponse(token, content);
     return request('add-redirect', {
         path: `/.well-known/acme-challenge/${token}`,
-        targetURL: `https://${targetHostname}:${targetPort}/.well-known/acme-challenge/${token}`
+        targetURL: `https://${targetHostname}:${httpsPort}/.well-known/acme-challenge/${token}`
     });
 }
 
@@ -74,6 +75,11 @@ exports.addDns01ChallengeResponse = addDns01ChallengeResponse;
 async function assertHttpChallengeCreateFn(authz, challenge, keyAuthorization) {
     assert.strictEqual(challenge.type, 'http-01');
     return addHttp01ChallengeResponse(challenge.token, keyAuthorization);
+}
+
+async function assertHttpsChallengeCreateFn(authz, challenge, keyAuthorization) {
+    assert.strictEqual(challenge.type, 'http-01');
+    return addHttps01ChallengeResponse(challenge.token, keyAuthorization, authz.identifier.value);
 }
 
 async function assertDnsChallengeCreateFn(authz, challenge, keyAuthorization) {
@@ -98,5 +104,6 @@ exports.challengeNoopFn = async () => true;
 exports.challengeThrowFn = async () => { throw new Error('oops'); };
 
 exports.assertHttpChallengeCreateFn = assertHttpChallengeCreateFn;
+exports.assertHttpsChallengeCreateFn = assertHttpsChallengeCreateFn;
 exports.assertDnsChallengeCreateFn = assertDnsChallengeCreateFn;
 exports.challengeCreateFn = challengeCreateFn;

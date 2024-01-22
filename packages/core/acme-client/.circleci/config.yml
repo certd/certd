@@ -4,9 +4,14 @@ version: 2.1
 commands:
   pre:
     steps:
+      - run:
+          name: Setup environment
+          command: |
+            echo 'export FORCE_COLOR=1' >> $BASH_ENV
+            echo 'export NPM_CONFIG_COLOR="always"' >> $BASH_ENV
+
       - run: node --version
       - run: npm --version
-      - run: yarn --version
       - checkout
 
   enable-eab:
@@ -105,13 +110,13 @@ commands:
 
   test:
     steps:
-      - run: yarn --color
-      - run: yarn run lint --color
-      - run: yarn run lint-types
-      - run: yarn run build-docs
+      - run: npm i
+      - run: npm run lint
+      - run: npm run lint-types
+      - run: npm run build-docs
 
       - run:
-          command: yarn run test --color
+          command: npm run test
           environment:
             ACME_DOMAIN_NAME: test.example.com
             ACME_CHALLTESTSRV_URL: http://127.0.0.1:8055

@@ -129,7 +129,7 @@ describe('pebble', () => {
         });
 
         it('should add challenge response', async () => {
-            const resp = await cts.addHttps01ChallengeResponse(testHttps01ChallengeToken, testHttps01ChallengeContent, testHttps01ChallengeHost, httpsPort);
+            const resp = await cts.addHttps01ChallengeResponse(testHttps01ChallengeToken, testHttps01ChallengeContent, testHttps01ChallengeHost);
             assert.isTrue(resp);
         });
 
