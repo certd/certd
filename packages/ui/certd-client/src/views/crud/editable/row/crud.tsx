@@ -15,8 +15,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   };
 
   const addRequest = async ({ form }: AddReq) => {
-    const id = await api.AddObj(form);
-    return { id };
+    return await api.AddObj(form);
   };
 
   return {
