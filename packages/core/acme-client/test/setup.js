@@ -27,6 +27,10 @@ if (process.env.ACME_HTTPS_PORT) {
     axios.defaults.acmeSettings.httpsChallengePort = process.env.ACME_HTTPS_PORT;
 }
 
+if (process.env.ACME_TLSALPN_PORT) {
+    axios.defaults.acmeSettings.tlsAlpnChallengePort = process.env.ACME_TLSALPN_PORT;
+}
+
 
 /**
  * External account binding

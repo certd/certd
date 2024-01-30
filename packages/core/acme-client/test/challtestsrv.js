@@ -63,9 +63,14 @@ async function addDns01ChallengeResponse(host, value) {
     return request('set-txt', { host, value });
 }
 
+async function addTlsAlpn01ChallengeResponse(host, content) {
+    return request('add-tlsalpn01', { host, content });
+}
+
 exports.addHttp01ChallengeResponse = addHttp01ChallengeResponse;
 exports.addHttps01ChallengeResponse = addHttps01ChallengeResponse;
 exports.addDns01ChallengeResponse = addDns01ChallengeResponse;
+exports.addTlsAlpn01ChallengeResponse = addTlsAlpn01ChallengeResponse;
 
 
 /**
@@ -87,6 +92,11 @@ async function assertDnsChallengeCreateFn(authz, challenge, keyAuthorization) {
     return addDns01ChallengeResponse(`_acme-challenge.${authz.identifier.value}.`, keyAuthorization);
 }
 
+async function assertTlsAlpnChallengeCreateFn(authz, challenge, keyAuthorization) {
+    assert.strictEqual(challenge.type, 'tls-alpn-01');
+    return addTlsAlpn01ChallengeResponse(authz.identifier.value, keyAuthorization);
+}
+
 async function challengeCreateFn(authz, challenge, keyAuthorization) {
     if (challenge.type === 'http-01') {
         return assertHttpChallengeCreateFn(authz, challenge, keyAuthorization);
@@ -94,6 +104,10 @@ async function challengeCreateFn(authz, challenge, keyAuthorization) {
 
     if (challenge.type === 'dns-01') {
         return assertDnsChallengeCreateFn(authz, challenge, keyAuthorization);
+    }
+
+    if (challenge.type === 'tls-alpn-01') {
+        return assertTlsAlpnChallengeCreateFn(authz, challenge, keyAuthorization);
     }
 
     throw new Error(`Unsupported challenge type ${challenge.type}`);
@@ -106,4 +120,5 @@ exports.challengeThrowFn = async () => { throw new Error('oops'); };
 exports.assertHttpChallengeCreateFn = assertHttpChallengeCreateFn;
 exports.assertHttpsChallengeCreateFn = assertHttpsChallengeCreateFn;
 exports.assertDnsChallengeCreateFn = assertDnsChallengeCreateFn;
+exports.assertTlsAlpnChallengeCreateFn = assertTlsAlpnChallengeCreateFn;
 exports.challengeCreateFn = challengeCreateFn;

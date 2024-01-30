@@ -8,10 +8,13 @@ const https = require('https');
 const { assert } = require('chai');
 const cts = require('./challtestsrv');
 const axios = require('./../src/axios');
+const { retrieveTlsAlpnCertificate } = require('./../src/util');
+const { isAlpnCertificateAuthorizationValid } = require('./../src/crypto');
 
 const domainName = process.env.ACME_DOMAIN_NAME || 'example.com';
 const httpPort = axios.defaults.acmeSettings.httpChallengePort || 80;
 const httpsPort = axios.defaults.acmeSettings.httpsChallengePort || 443;
+const tlsAlpnPort = axios.defaults.acmeSettings.tlsAlpnChallengePort || 443;
 
 
 describe('pebble', () => {
@@ -32,6 +35,9 @@ describe('pebble', () => {
 
     const testDns01ChallengeHost = `_acme-challenge.${uuid()}.${domainName}.`;
     const testDns01ChallengeValue = uuid();
+
+    const testTlsAlpn01ChallengeHost = `${uuid()}.${domainName}`;
+    const testTlsAlpn01ChallengeValue = uuid();
 
 
     /**
@@ -179,6 +185,31 @@ describe('pebble', () => {
 
             assert.isArray(resp);
             assert.deepStrictEqual(resp, [[testDns01ChallengeValue]]);
+        });
+    });
+
+
+    /**
+     * TLS-ALPN-01 challenge response
+     */
+
+    describe('tls-alpn-01', () => {
+        it('should not locate challenge response', async () => {
+            await assert.isRejected(retrieveTlsAlpnCertificate(testTlsAlpn01ChallengeHost, tlsAlpnPort), /(failed to retrieve)|(ssl3_read_bytes:tlsv1 alert internal error)/);
+        });
+
+        it('should timeout challenge response', async () => {
+            await assert.isRejected(retrieveTlsAlpnCertificate('example.org', tlsAlpnPort, 500), /timed out/);
+        });
+
+        it('should add challenge response', async () => {
+            const resp = await cts.addTlsAlpn01ChallengeResponse(testTlsAlpn01ChallengeHost, testTlsAlpn01ChallengeValue);
+            assert.isTrue(resp);
+        });
+
+        it('should locate challenge response', async () => {
+            const resp = await retrieveTlsAlpnCertificate(testTlsAlpn01ChallengeHost, tlsAlpnPort);
+            assert.isTrue(isAlpnCertificateAuthorizationValid(resp, testTlsAlpn01ChallengeValue));
         });
     });
 });

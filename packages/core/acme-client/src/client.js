@@ -462,22 +462,19 @@ class AcmeClient {
         const thumbprint = keysum.digest('base64url');
         const result = `${challenge.token}.${thumbprint}`;
 
-        /**
-         * https://tools.ietf.org/html/rfc8555#section-8.3
-         */
-
+        /* https://tools.ietf.org/html/rfc8555#section-8.3 */
         if (challenge.type === 'http-01') {
             return result;
         }
 
-        /**
-         * https://tools.ietf.org/html/rfc8555#section-8.4
-         * https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-01
-         */
+        /* https://tools.ietf.org/html/rfc8555#section-8.4 */
+        if (challenge.type === 'dns-01') {
+            return createHash('sha256').update(result).digest('base64url');
+        }
 
-        if ((challenge.type === 'dns-01') || (challenge.type === 'tls-alpn-01')) {
-            const shasum = createHash('sha256').update(result);
-            return shasum.digest('base64url');
+        /* https://tools.ietf.org/html/rfc8737 */
+        if (challenge.type === 'tls-alpn-01') {
+            return result;
         }
 
         throw new Error(`Unable to produce key authorization, unknown challenge type: ${challenge.type}`);

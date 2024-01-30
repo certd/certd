@@ -34,6 +34,7 @@ describe('client.auto', () => {
     const testHttpDomain = `${uuid()}.${domainName}`;
     const testHttpsDomain = `${uuid()}.${domainName}`;
     const testDnsDomain = `${uuid()}.${domainName}`;
+    const testAlpnDomain = `${uuid()}.${domainName}`;
     const testWildcardDomain = `${uuid()}.${domainName}`;
 
     const testSanDomains = [
@@ -275,6 +276,22 @@ describe('client.auto', () => {
                     challengeCreateFn: cts.assertDnsChallengeCreateFn,
                     challengeRemoveFn: cts.challengeRemoveFn,
                     challengePriority: ['dns-01']
+                });
+
+                assert.isString(cert);
+            });
+
+            it('should order certificate using tls-alpn-01', async () => {
+                const [, csr] = await acme.crypto.createCsr({
+                    commonName: testAlpnDomain
+                }, await createKeyFn());
+
+                const cert = await testClient.auto({
+                    csr,
+                    termsOfServiceAgreed: true,
+                    challengeCreateFn: cts.assertTlsAlpnChallengeCreateFn,
+                    challengeRemoveFn: cts.challengeRemoveFn,
+                    challengePriority: ['tls-alpn-01']
                 });
 
                 assert.isString(cert);

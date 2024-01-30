@@ -95,6 +95,7 @@ describe('crypto', () => {
                 let testSanCsr;
                 let testNonCnCsr;
                 let testNonAsciiCsr;
+                let testAlpnCertificate;
 
 
                 /**
@@ -215,6 +216,31 @@ describe('crypto', () => {
                     assert.strictEqual(result.commonName, testCsrDomain);
                     assert.deepStrictEqual(result.altNames, [testCsrDomain]);
                 });
+
+
+                /**
+                 * ALPN
+                 */
+
+                it(`${n}/should generate alpn certificate`, async () => {
+                    const authz = { identifier: { value: 'test.example.com' } };
+                    const [key, cert] = await crypto.createAlpnCertificate(authz, 'super-secret.12345', await createFn());
+
+                    assert.isTrue(Buffer.isBuffer(key));
+                    assert.isTrue(Buffer.isBuffer(cert));
+
+                    testAlpnCertificate = cert;
+                });
+
+                it(`${n}/should not validate invalid alpn certificate key authorization`, () => {
+                    assert.isFalse(crypto.isAlpnCertificateAuthorizationValid(testAlpnCertificate, 'aaaaaaa'));
+                    assert.isFalse(crypto.isAlpnCertificateAuthorizationValid(testAlpnCertificate, 'bbbbbbb'));
+                    assert.isFalse(crypto.isAlpnCertificateAuthorizationValid(testAlpnCertificate, 'ccccccc'));
+                });
+
+                it(`${n}/should validate valid alpn certificate key authorization`, () => {
+                    assert.isTrue(crypto.isAlpnCertificateAuthorizationValid(testAlpnCertificate, 'super-secret.12345'));
+                });
             });
         });
     });
@@ -250,7 +276,7 @@ describe('crypto', () => {
          * CSR with auto-generated key
          */
 
-        it('should generate a csr with auto-generated key', async () => {
+        it('should generate a csr with default key', async () => {
             const [key, csr] = await crypto.createCsr({
                 commonName: testCsrDomain
             });
@@ -278,6 +304,19 @@ describe('crypto', () => {
             spec.crypto.certificateInfo(info);
             assert.strictEqual(info.domains.commonName, testSanCsrDomains[0]);
             assert.deepEqual(info.domains.altNames, testSanCsrDomains.slice(1, testSanCsrDomains.length));
+        });
+
+
+        /**
+         * ALPN
+         */
+
+        it('should generate alpn certificate with default key', async () => {
+            const authz = { identifier: { value: 'test.example.com' } };
+            const [key, cert] = await crypto.createAlpnCertificate(authz, 'abc123');
+
+            assert.isTrue(Buffer.isBuffer(key));
+            assert.isTrue(Buffer.isBuffer(cert));
         });
 
 

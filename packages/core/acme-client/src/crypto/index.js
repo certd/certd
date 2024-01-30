@@ -9,7 +9,11 @@ const { promisify } = require('util');
 const crypto = require('crypto');
 const jsrsasign = require('jsrsasign');
 
+const randomInt = promisify(crypto.randomInt);
 const generateKeyPair = promisify(crypto.generateKeyPair);
+
+/* https://datatracker.ietf.org/doc/html/rfc8737#section-6.1 */
+const alpnAcmeIdentifierOID = '1.3.6.1.5.5.7.1.31';
 
 
 /**
@@ -231,7 +235,7 @@ exports.getPemBodyAsB64u = (pem) => {
         throw new Error('Unable to parse PEM body from string');
     }
 
-    /* First object, hex and back to b64 without new lines */
+    /* Select first object, decode to hex and b64u */
     return jsrsasign.hextob64u(jsrsasign.pemtohex(chain[0]));
 };
 
@@ -304,6 +308,28 @@ exports.readCsrDomains = (csrPem) => {
 
 
 /**
+ * Parse params from a single or chain of PEM encoded certificates
+ *
+ * @private
+ * @param {buffer|string} certPem PEM encoded certificate or chain
+ * @returns {object} Certificate params
+ */
+
+function getCertificateParams(certPem) {
+    const chain = splitPemChain(certPem);
+
+    if (!chain.length) {
+        throw new Error('Unable to parse PEM body from string');
+    }
+
+    /* Parse certificate */
+    const obj = new jsrsasign.X509();
+    obj.readCertPEM(chain[0]);
+    return obj.getParam();
+}
+
+
+/**
  * Read information from a certificate
  * If multiple certificates are chained, the first will be read
  *
@@ -324,16 +350,7 @@ exports.readCsrDomains = (csrPem) => {
  */
 
 exports.readCertificateInfo = (certPem) => {
-    const chain = splitPemChain(certPem);
-
-    if (!chain.length) {
-        throw new Error('Unable to parse PEM body from string');
-    }
-
-    /* Parse certificate */
-    const obj = new jsrsasign.X509();
-    obj.readCertPEM(chain[0]);
-    const params = obj.getParam();
+    const params = getCertificateParams(certPem);
 
     return {
         issuer: {
@@ -462,7 +479,7 @@ function formatCsrAltNames(altNames) {
  * }, certificateKey);
  */
 
-exports.createCsr = async (data, keyPem = null) => {
+async function createCsr(data, keyPem = null) {
     if (!keyPem) {
         keyPem = await createPrivateRsaKey(data.keySize);
     }
@@ -517,10 +534,95 @@ exports.createCsr = async (data, keyPem = null) => {
         extreq: extensionRequests
     });
 
-    /* Sign CSR, get PEM */
-    csr.sign();
+    /* Done */
     const pem = csr.getPEM();
+    return [keyPem, Buffer.from(pem)];
+}
+
+exports.createCsr = createCsr;
+
+
+/**
+ * Create a self-signed ALPN certificate for TLS-ALPN-01 challenges
+ *
+ * https://tools.ietf.org/html/rfc8737
+ *
+ * @param {object} authz Identifier authorization
+ * @param {string} keyAuthorization Challenge key authorization
+ * @param {string} [keyPem] PEM encoded CSR private key
+ * @returns {Promise<buffer[]>} [privateKey, certificate]
+ *
+ * @example Create a ALPN certificate
+ * ```js
+ * const [alpnKey, alpnCertificate] = await acme.crypto.createAlpnCertificate(authz, keyAuthorization);
+ * ```
+ *
+ * @example Create a ALPN certificate with ECDSA private key
+ * ```js
+ * const alpnKey = await acme.crypto.createPrivateEcdsaKey();
+ * const [, alpnCertificate] = await acme.crypto.createAlpnCertificate(authz, keyAuthorization, alpnKey);
+ */
+
+exports.createAlpnCertificate = async (authz, keyAuthorization, keyPem = null) => {
+    /* Create CSR first */
+    const now = new Date();
+    const commonName = authz.identifier.value;
+    const [key, csr] = await createCsr({ commonName }, keyPem);
+
+    /* Parse params and grab stuff we need */
+    const params = jsrsasign.KJUR.asn1.csr.CSRUtil.getParam(csr.toString());
+    const { subject, sbjpubkey, extreq, sigalg } = params;
+
+    /* ALPN extension */
+    const alpnExt = {
+        critical: true,
+        extname: alpnAcmeIdentifierOID,
+        extn: new jsrsasign.KJUR.asn1.DEROctetString({
+            hex: crypto.createHash('sha256').update(keyAuthorization).digest('hex')
+        })
+    };
+
+    /* Pseudo-random serial - max 20 bytes, 11 for epoch (year 5138), 9 random */
+    const random = await randomInt(1, 999999999);
+    const serial = `${Math.floor(now.getTime() / 1000)}${random}`;
+
+    /* Self-signed ALPN certificate */
+    const certificate = new jsrsasign.KJUR.asn1.x509.Certificate({
+        subject,
+        sbjpubkey,
+        sigalg,
+        version: 3,
+        serial: { hex: Buffer.from(serial).toString('hex') },
+        issuer: subject,
+        notbefore: jsrsasign.datetozulu(now),
+        notafter: jsrsasign.datetozulu(now),
+        cakey: key.toString(),
+        ext: extreq.concat([alpnExt])
+    });
 
     /* Done */
-    return [keyPem, Buffer.from(pem)];
+    const pem = certificate.getPEM();
+    return [key, Buffer.from(pem)];
+};
+
+
+/**
+ * Validate that a ALPN certificate contains the expected key authorization
+ *
+ * @param {buffer|string} certPem PEM encoded certificate
+ * @param {string} keyAuthorization Expected challenge key authorization
+ * @returns {boolean} True when valid
+ */
+
+exports.isAlpnCertificateAuthorizationValid = (certPem, keyAuthorization) => {
+    const params = getCertificateParams(certPem);
+    const expectedHex = crypto.createHash('sha256').update(keyAuthorization).digest('hex');
+    const acmeExt = (params.ext || []).find((e) => (e && e.extname && (e.extname === alpnAcmeIdentifierOID)));
+
+    if (!acmeExt || !acmeExt.extn || !acmeExt.extn.octstr || !acmeExt.extn.octstr.hex) {
+        throw new Error('Unable to locate ALPN extension within parsed certificate');
+    }
+
+    /* Return true if match */
+    return (acmeExt.extn.octstr.hex === expectedHex);
 };

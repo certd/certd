@@ -33,6 +33,7 @@ if (capEabEnabled && process.env.ACME_EAB_KID && process.env.ACME_EAB_HMAC_KEY) 
 
 describe('client', () => {
     const testDomain = `${uuid()}.${domainName}`;
+    const testDomainAlpn = `${uuid()}.${domainName}`;
     const testDomainWildcard = `*.${testDomain}`;
     const testContact = `mailto:test-${uuid()}@nope.com`;
 
@@ -78,16 +79,22 @@ describe('client', () => {
             let testAccount;
             let testAccountUrl;
             let testOrder;
+            let testOrderAlpn;
             let testOrderWildcard;
             let testAuthz;
+            let testAuthzAlpn;
             let testAuthzWildcard;
             let testChallenge;
+            let testChallengeAlpn;
             let testChallengeWildcard;
             let testKeyAuthorization;
+            let testKeyAuthorizationAlpn;
             let testKeyAuthorizationWildcard;
             let testCsr;
+            let testCsrAlpn;
             let testCsrWildcard;
             let testCertificate;
+            let testCertificateAlpn;
             let testCertificateWildcard;
 
 
@@ -107,6 +114,7 @@ describe('client', () => {
 
             it('should generate certificate signing request', async () => {
                 [, testCsr] = await acme.crypto.createCsr({ commonName: testDomain }, await createKeyFn());
+                [, testCsrAlpn] = await acme.crypto.createCsr({ commonName: testDomainAlpn }, await createKeyFn());
                 [, testCsrWildcard] = await acme.crypto.createCsr({ commonName: testDomainWildcard }, await createKeyFn());
             });
 
@@ -336,12 +344,14 @@ describe('client', () => {
 
             it('should create new order', async () => {
                 const data1 = { identifiers: [{ type: 'dns', value: testDomain }] };
-                const data2 = { identifiers: [{ type: 'dns', value: testDomainWildcard }] };
+                const data2 = { identifiers: [{ type: 'dns', value: testDomainAlpn }] };
+                const data3 = { identifiers: [{ type: 'dns', value: testDomainWildcard }] };
 
                 testOrder = await testClient.createOrder(data1);
-                testOrderWildcard = await testClient.createOrder(data2);
+                testOrderAlpn = await testClient.createOrder(data2);
+                testOrderWildcard = await testClient.createOrder(data3);
 
-                [testOrder, testOrderWildcard].forEach((item) => {
+                [testOrder, testOrderAlpn, testOrderWildcard].forEach((item) => {
                     spec.rfc8555.order(item);
                     assert.strictEqual(item.status, 'pending');
                 });
@@ -353,7 +363,7 @@ describe('client', () => {
              */
 
             it('should get existing order', async () => {
-                await Promise.all([testOrder, testOrderWildcard].map(async (existing) => {
+                await Promise.all([testOrder, testOrderAlpn, testOrderWildcard].map(async (existing) => {
                     const result = await testClient.getOrder(existing);
 
                     spec.rfc8555.order(result);
@@ -368,9 +378,10 @@ describe('client', () => {
 
             it('should get identifier authorization', async () => {
                 const orderAuthzCollection = await testClient.getAuthorizations(testOrder);
+                const alpnAuthzCollection = await testClient.getAuthorizations(testOrderAlpn);
                 const wildcardAuthzCollection = await testClient.getAuthorizations(testOrderWildcard);
 
-                [orderAuthzCollection, wildcardAuthzCollection].forEach((collection) => {
+                [orderAuthzCollection, alpnAuthzCollection, wildcardAuthzCollection].forEach((collection) => {
                     assert.isArray(collection);
                     assert.isNotEmpty(collection);
 
@@ -381,9 +392,10 @@ describe('client', () => {
                 });
 
                 testAuthz = orderAuthzCollection.pop();
+                testAuthzAlpn = alpnAuthzCollection.pop();
                 testAuthzWildcard = wildcardAuthzCollection.pop();
 
-                testAuthz.challenges.concat(testAuthzWildcard.challenges).forEach((item) => {
+                testAuthz.challenges.concat(testAuthzAlpn.challenges).concat(testAuthzWildcard.challenges).forEach((item) => {
                     spec.rfc8555.challenge(item);
                     assert.strictEqual(item.status, 'pending');
                 });
@@ -396,12 +408,14 @@ describe('client', () => {
 
             it('should get challenge key authorization', async () => {
                 testChallenge = testAuthz.challenges.find((c) => (c.type === 'http-01'));
+                testChallengeAlpn = testAuthzAlpn.challenges.find((c) => (c.type === 'tls-alpn-01'));
                 testChallengeWildcard = testAuthzWildcard.challenges.find((c) => (c.type === 'dns-01'));
 
                 testKeyAuthorization = await testClient.getChallengeKeyAuthorization(testChallenge);
+                testKeyAuthorizationAlpn = await testClient.getChallengeKeyAuthorization(testChallengeAlpn);
                 testKeyAuthorizationWildcard = await testClient.getChallengeKeyAuthorization(testChallengeWildcard);
 
-                [testKeyAuthorization, testKeyAuthorizationWildcard].forEach((k) => assert.isString(k));
+                [testKeyAuthorization, testKeyAuthorizationAlpn, testKeyAuthorizationWildcard].forEach((k) => assert.isString(k));
             });
 
 
@@ -438,9 +452,11 @@ describe('client', () => {
 
             it('should verify challenge', async () => {
                 await cts.assertHttpChallengeCreateFn(testAuthz, testChallenge, testKeyAuthorization);
+                await cts.assertTlsAlpnChallengeCreateFn(testAuthzAlpn, testChallengeAlpn, testKeyAuthorizationAlpn);
                 await cts.assertDnsChallengeCreateFn(testAuthzWildcard, testChallengeWildcard, testKeyAuthorizationWildcard);
 
                 await testClient.verifyChallenge(testAuthz, testChallenge);
+                await testClient.verifyChallenge(testAuthzAlpn, testChallengeAlpn);
                 await testClient.verifyChallenge(testAuthzWildcard, testChallengeWildcard);
             });
 
@@ -450,7 +466,7 @@ describe('client', () => {
              */
 
             it('should complete challenge', async () => {
-                await Promise.all([testChallenge, testChallengeWildcard].map(async (challenge) => {
+                await Promise.all([testChallenge, testChallengeAlpn, testChallengeWildcard].map(async (challenge) => {
                     const result = await testClient.completeChallenge(challenge);
 
                     spec.rfc8555.challenge(result);
@@ -464,7 +480,7 @@ describe('client', () => {
              */
 
             it('should wait for valid challenge status', async () => {
-                await Promise.all([testChallenge, testChallengeWildcard].map(async (c) => testClient.waitForValidStatus(c)));
+                await Promise.all([testChallenge, testChallengeAlpn, testChallengeWildcard].map(async (c) => testClient.waitForValidStatus(c)));
             });
 
 
@@ -474,11 +490,13 @@ describe('client', () => {
 
             it('should finalize order', async () => {
                 const finalize = await testClient.finalizeOrder(testOrder, testCsr);
+                const finalizeAlpn = await testClient.finalizeOrder(testOrderAlpn, testCsrAlpn);
                 const finalizeWildcard = await testClient.finalizeOrder(testOrderWildcard, testCsrWildcard);
 
-                [finalize, finalizeWildcard].forEach((f) => spec.rfc8555.order(f));
+                [finalize, finalizeAlpn, finalizeWildcard].forEach((f) => spec.rfc8555.order(f));
 
                 assert.strictEqual(testOrder.url, finalize.url);
+                assert.strictEqual(testOrderAlpn.url, finalizeAlpn.url);
                 assert.strictEqual(testOrderWildcard.url, finalizeWildcard.url);
             });
 
@@ -488,7 +506,7 @@ describe('client', () => {
              */
 
             it('should wait for valid order status', async () => {
-                await Promise.all([testOrder, testOrderWildcard].map(async (o) => testClient.waitForValidStatus(o)));
+                await Promise.all([testOrder, testOrderAlpn, testOrderWildcard].map(async (o) => testClient.waitForValidStatus(o)));
             });
 
 
@@ -498,9 +516,10 @@ describe('client', () => {
 
             it('should get certificate', async () => {
                 testCertificate = await testClient.getCertificate(testOrder);
+                testCertificateAlpn = await testClient.getCertificate(testOrderAlpn);
                 testCertificateWildcard = await testClient.getCertificate(testOrderWildcard);
 
-                [testCertificate, testCertificateWildcard].forEach((cert) => {
+                [testCertificate, testCertificateAlpn, testCertificateWildcard].forEach((cert) => {
                     assert.isString(cert);
                     acme.crypto.readCertificateInfo(cert);
                 });
@@ -539,11 +558,13 @@ describe('client', () => {
 
             it('should revoke certificate', async () => {
                 await testClient.revokeCertificate(testCertificate);
+                await testClient.revokeCertificate(testCertificateAlpn, { reason: 0 });
                 await testClient.revokeCertificate(testCertificateWildcard, { reason: 4 });
             });
 
             it('should not allow getting revoked certificate', async () => {
                 await assert.isRejected(testClient.getCertificate(testOrder));
+                await assert.isRejected(testClient.getCertificate(testOrderAlpn));
                 await assert.isRejected(testClient.getCertificate(testOrderWildcard));
             });
 

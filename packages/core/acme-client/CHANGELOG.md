@@ -1,5 +1,12 @@
 # Changelog
 
+## v5.3.0
+
+* `added` Support and tests for satisfying `tls-alpn-01` challenges
+* `changed` Method `getChallengeKeyAuthorization()` now returns `$token.$thumbprint` when called with a `tls-alpn-01` challenge
+    * Previously returned base64url encoded SHA256 digest of `$token.$thumbprint` erroneously
+    * This change is not considered breaking since the previous behavior was incorrect
+
 ## v5.2.0 (2024-01-22)
 
 * `fixed` Allow self-signed or invalid certs when validating `http-01` challenges that redirect to HTTPS - [#65](https://github.com/publishlab/node-acme-client/issues/65)

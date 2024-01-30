@@ -7,6 +7,7 @@ const https = require('https');
 const { log } = require('./logger');
 const axios = require('./axios');
 const util = require('./util');
+const { isAlpnCertificateAuthorizationValid } = require('./crypto');
 
 
 /**
@@ -122,10 +123,39 @@ async function verifyDnsChallenge(authz, challenge, keyAuthorization, prefix = '
 
 
 /**
+ * Verify ACME TLS ALPN challenge
+ *
+ * https://tools.ietf.org/html/rfc8737
+ *
+ * @param {object} authz Identifier authorization
+ * @param {object} challenge Authorization challenge
+ * @param {string} keyAuthorization Challenge key authorization
+ * @returns {Promise<boolean>}
+ */
+
+async function verifyTlsAlpnChallenge(authz, challenge, keyAuthorization) {
+    const tlsAlpnPort = axios.defaults.acmeSettings.tlsAlpnChallengePort || 443;
+    const host = authz.identifier.value;
+    log(`Establishing TLS connection with host: ${host}:${tlsAlpnPort}`);
+
+    const certificate = await util.retrieveTlsAlpnCertificate(host, tlsAlpnPort);
+    log('Certificate received from server successfully, matching key authorization in ALPN');
+
+    if (!isAlpnCertificateAuthorizationValid(certificate, keyAuthorization)) {
+        throw new Error(`Authorization not found in certificate from ${authz.identifier.value}`);
+    }
+
+    log(`Key authorization match for ${challenge.type}/${authz.identifier.value}, ACME challenge verified`);
+    return true;
+}
+
+
+/**
  * Export API
  */
 
 module.exports = {
     'http-01': verifyHttpChallenge,
-    'dns-01': verifyDnsChallenge
+    'dns-01': verifyDnsChallenge,
+    'tls-alpn-01': verifyTlsAlpnChallenge
 };
