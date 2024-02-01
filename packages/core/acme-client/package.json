@@ -37,8 +37,7 @@
         "lint": "eslint .",
         "lint-types": "tsd",
         "prepublishOnly": "npm run build-docs",
-        "test": "mocha -t 60000 \"test/setup.js\" \"test/**/*.spec.js\"",
-        "test-local": "/bin/bash scripts/run-tests.sh"
+        "test": "mocha -t 60000 \"test/setup.js\" \"test/**/*.spec.js\""
     },
     "repository": {
         "type": "git",

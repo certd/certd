@@ -2,7 +2,7 @@
 #
 # Install CoreDNS for testing.
 #
-set -eu
+set -euo pipefail
 
 # Download and install
 wget -nv "https://github.com/coredns/coredns/releases/download/v${COREDNS_VERSION}/coredns_${COREDNS_VERSION}_linux_amd64.tgz" -O /tmp/coredns.tgz
@@ -39,18 +39,21 @@ tee /etc/coredns/Corefile << EOF
 example.com {
     errors
     log
+    bind 127.53.53.53
     file /etc/coredns/db.example.com
 }
 
 test.example.com {
     errors
     log
+    bind 127.53.53.53
     forward . 127.0.0.1:${PEBBLECTS_DNS_PORT}
 }
 
 . {
     errors
     log
+    bind 127.53.53.53
     forward . 8.8.8.8
 }
 EOF

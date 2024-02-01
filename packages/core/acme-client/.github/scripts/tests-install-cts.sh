@@ -2,7 +2,7 @@
 #
 # Install Pebble Challenge Test Server for testing.
 #
-set -eu
+set -euo pipefail
 
 # Download and install
 wget -nv "https://github.com/letsencrypt/pebble/releases/download/v${PEBBLECTS_VERSION}/pebble-challtestsrv_linux-amd64" -O /usr/local/bin/pebble-challtestsrv

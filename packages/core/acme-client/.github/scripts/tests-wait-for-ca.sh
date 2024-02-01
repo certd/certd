@@ -2,13 +2,13 @@
 #
 # Wait for ACME server to accept connections.
 #
-set -eu
+set -euo pipefail
 
 MAX_ATTEMPTS=15
 ATTEMPT=0
 
 # Loop until ready
-while ! $(curl --cacert "${ACME_CA_CERT_PATH}" -s -D - "${ACME_DIRECTORY_URL}" | grep '^HTTP.*200' > /dev/null 2>&1); do
+while ! curl --cacert "${ACME_CA_CERT_PATH}" -s -D - "${ACME_DIRECTORY_URL}" | grep '^HTTP.*200' > /dev/null 2>&1; do
     ATTEMPT=$((ATTEMPT + 1))
 
     # Max attempts

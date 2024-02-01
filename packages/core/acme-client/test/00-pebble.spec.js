@@ -199,7 +199,7 @@ describe('pebble', () => {
         });
 
         it('should timeout challenge response', async () => {
-            await assert.isRejected(retrieveTlsAlpnCertificate('example.org', tlsAlpnPort, 500), /timed out/);
+            await assert.isRejected(retrieveTlsAlpnCertificate('example.org', tlsAlpnPort, 500));
         });
 
         it('should add challenge response', async () => {

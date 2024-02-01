@@ -5,7 +5,6 @@
 // const fs = require('fs').promises;
 const acme = require('./../');
 
-
 function log(m) {
     process.stdout.write(`${m}\n`);
 }

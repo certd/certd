@@ -1,4 +1,4 @@
-# acme-client [![CircleCI](https://circleci.com/gh/publishlab/node-acme-client.svg?style=svg)](https://circleci.com/gh/publishlab/node-acme-client)
+# acme-client [![test](https://github.com/publishlab/node-acme-client/actions/workflows/tests.yml/badge.svg)](https://github.com/publishlab/node-acme-client/actions/workflows/tests.yml)
 
 *A simple and unopinionated ACME client.*
 
