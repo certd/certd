@@ -7,12 +7,19 @@
 const net = require('net');
 const { promisify } = require('util');
 const crypto = require('crypto');
-const jsrsasign = require('jsrsasign');
+const asn1js = require('asn1js');
+const x509 = require('@peculiar/x509');
 
 const randomInt = promisify(crypto.randomInt);
 const generateKeyPair = promisify(crypto.generateKeyPair);
 
-/* https://datatracker.ietf.org/doc/html/rfc8737#section-6.1 */
+/* Use Node.js Web Crypto API */
+x509.cryptoProvider.set(crypto.webcrypto);
+
+/* id-ce-subjectAltName - https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6 */
+const subjectAltNameOID = '2.5.29.17';
+
+/* id-pe-acmeIdentifier - https://datatracker.ietf.org/doc/html/rfc8737#section-6.1 */
 const alpnAcmeIdentifierOID = '1.3.6.1.5.5.7.1.31';
 
 
@@ -28,17 +35,14 @@ function getKeyInfo(keyPem) {
     const result = {
         isRSA: false,
         isECDSA: false,
-        signatureAlgorithm: null,
         publicKey: crypto.createPublicKey(keyPem)
     };
 
     if (result.publicKey.asymmetricKeyType === 'rsa') {
         result.isRSA = true;
-        result.signatureAlgorithm = 'SHA256withRSA';
     }
     else if (result.publicKey.asymmetricKeyType === 'ec') {
         result.isECDSA = true;
-        result.signatureAlgorithm = 'SHA256withECDSA';
     }
     else {
         throw new Error('Unable to parse key information, unknown format');
@@ -173,24 +177,42 @@ exports.getJwk = getJwk;
 
 
 /**
- * Fix missing support for NIST curve names in jsrsasign
+ * Produce CryptoKeyPair and signing algorithm from a PEM encoded private key
  *
  * @private
- * @param {string} crv NIST curve name
- * @returns {string} SECG curve name
+ * @param {buffer|string} keyPem PEM encoded private key
+ * @returns {Promise<array>} [keyPair, signingAlgorithm]
  */
 
-function convertNistCurveNameToSecg(nistName) {
-    switch (nistName) {
-        case 'P-256':
-            return 'secp256r1';
-        case 'P-384':
-            return 'secp384r1';
-        case 'P-521':
-            return 'secp521r1';
-        default:
-            return nistName;
+async function getWebCryptoKeyPair(keyPem) {
+    const info = getKeyInfo(keyPem);
+    const jwk = getJwk(keyPem);
+
+    /* Signing algorithm */
+    const sigalg = {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: { name: 'SHA-256' }
+    };
+
+    if (info.isECDSA) {
+        sigalg.name = 'ECDSA';
+        sigalg.namedCurve = jwk.crv;
+
+        if (jwk.crv === 'P-384') {
+            sigalg.hash.name = 'SHA-384';
+        }
+
+        if (jwk.crv === 'P-521') {
+            sigalg.hash.name = 'SHA-512';
+        }
     }
+
+    /* Decode PEM and import into CryptoKeyPair */
+    const privateKeyDec = x509.PemConverter.decodeFirst(keyPem.toString());
+    const privateKey = await crypto.webcrypto.subtle.importKey('pkcs8', privateKeyDec, sigalg, true, ['sign']);
+    const publicKey = await crypto.webcrypto.subtle.importKey('jwk', jwk, sigalg, true, ['verify']);
+
+    return [{ privateKey, publicKey }, sigalg];
 }
 
 
@@ -198,7 +220,7 @@ function convertNistCurveNameToSecg(nistName) {
  * Split chain of PEM encoded objects from string into array
  *
  * @param {buffer|string} chainPem PEM encoded object chain
- * @returns {array} Array of PEM objects including headers
+ * @returns {string[]} Array of PEM objects including headers
  */
 
 function splitPemChain(chainPem) {
@@ -206,15 +228,9 @@ function splitPemChain(chainPem) {
         chainPem = chainPem.toString();
     }
 
-    return chainPem
-        /* Split chain into chunks, starting at every header */
-        .split(/\s*(?=-----BEGIN [A-Z0-9- ]+-----\r?\n?)/g)
-        /* Match header, PEM body and footer */
-        .map((pem) => pem.match(/\s*-----BEGIN ([A-Z0-9- ]+)-----\r?\n?([\S\s]+)\r?\n?-----END \1-----/))
-        /* Filter out non-matches or empty bodies */
-        .filter((pem) => pem && pem[2] && pem[2].replace(/[\r\n]+/g, '').trim())
-        /* Decode to hex, and back to PEM for formatting etc */
-        .map(([pem, header]) => jsrsasign.hextopem(jsrsasign.pemtohex(pem, header), header));
+    /* Decode into array and re-encode */
+    return x509.PemConverter.decodeWithHeaders(chainPem)
+        .map((params) => x509.PemConverter.encode([params]));
 }
 
 exports.splitPemChain = splitPemChain;
@@ -235,43 +251,28 @@ exports.getPemBodyAsB64u = (pem) => {
         throw new Error('Unable to parse PEM body from string');
     }
 
-    /* Select first object, decode to hex and b64u */
-    return jsrsasign.hextob64u(jsrsasign.pemtohex(chain[0]));
+    /* Select first object, extract body and convert to b64u */
+    const dec = x509.PemConverter.decodeFirst(chain[0]);
+    return Buffer.from(dec).toString('base64url');
 };
-
-
-/**
- * Parse common name from a subject object
- *
- * @private
- * @param {object} subj Subject returned from jsrsasign
- * @returns {string} Common name value
- */
-
-function parseCommonName(subj) {
-    const subjectArr = (subj && subj.array) ? subj.array : [];
-    const cnArr = subjectArr.find((s) => (s[0] && s[0].type && s[0].value && (s[0].type === 'CN')));
-    return (cnArr && cnArr.length && cnArr[0].value) ? cnArr[0].value : null;
-}
 
 
 /**
  * Parse domains from a certificate or CSR
  *
  * @private
- * @param {object} params Certificate or CSR params returned from jsrsasign
+ * @param {object} input x509.Certificate or x509.Pkcs10CertificateRequest
  * @returns {object} {commonName, altNames}
  */
 
-function parseDomains(params) {
-    const commonName = parseCommonName(params.subject);
-    const extensionArr = (params.ext || params.extreq || []);
+function parseDomains(input) {
+    const commonName = input.subjectName.getField('CN').pop() || null;
+    const altNamesRaw = input.getExtension(subjectAltNameOID);
     let altNames = [];
 
-    if (extensionArr && extensionArr.length) {
-        const altNameExt = extensionArr.find((e) => (e.extname && (e.extname === 'subjectAltName')));
-        const altNameArr = (altNameExt && altNameExt.array && altNameExt.array.length) ? altNameExt.array : [];
-        altNames = altNameArr.map((a) => Object.values(a)[0] || null).filter((a) => a);
+    if (altNamesRaw) {
+        const altNamesExt = new x509.SubjectAlternativeNameExtension(altNamesRaw.rawData);
+        altNames = altNames.concat(altNamesExt.names.items.map((i) => i.value));
     }
 
     return {
@@ -301,32 +302,10 @@ exports.readCsrDomains = (csrPem) => {
         csrPem = csrPem.toString();
     }
 
-    /* Parse CSR */
-    const params = jsrsasign.KJUR.asn1.csr.CSRUtil.getParam(csrPem);
-    return parseDomains(params);
+    const dec = x509.PemConverter.decodeFirst(csrPem);
+    const csr = new x509.Pkcs10CertificateRequest(dec);
+    return parseDomains(csr);
 };
-
-
-/**
- * Parse params from a single or chain of PEM encoded certificates
- *
- * @private
- * @param {buffer|string} certPem PEM encoded certificate or chain
- * @returns {object} Certificate params
- */
-
-function getCertificateParams(certPem) {
-    const chain = splitPemChain(certPem);
-
-    if (!chain.length) {
-        throw new Error('Unable to parse PEM body from string');
-    }
-
-    /* Parse certificate */
-    const obj = new jsrsasign.X509();
-    obj.readCertPEM(chain[0]);
-    return obj.getParam();
-}
 
 
 /**
@@ -350,45 +329,51 @@ function getCertificateParams(certPem) {
  */
 
 exports.readCertificateInfo = (certPem) => {
-    const params = getCertificateParams(certPem);
+    if (Buffer.isBuffer(certPem)) {
+        certPem = certPem.toString();
+    }
+
+    const dec = x509.PemConverter.decodeFirst(certPem);
+    const cert = new x509.X509Certificate(dec);
 
     return {
         issuer: {
-            commonName: parseCommonName(params.issuer)
+            commonName: cert.issuerName.getField('CN').pop() || null
         },
-        domains: parseDomains(params),
-        notBefore: jsrsasign.zulutodate(params.notbefore),
-        notAfter: jsrsasign.zulutodate(params.notafter)
+        domains: parseDomains(cert),
+        notBefore: cert.notBefore,
+        notAfter: cert.notAfter
     };
 };
 
 
 /**
- * Determine ASN.1 character string type for CSR subject field
+ * Determine ASN.1 character string type for CSR subject field name
  *
- * https://tools.ietf.org/html/rfc5280
- * https://github.com/kjur/jsrsasign/blob/2613c64559768b91dde9793dfa318feacb7c3b8a/src/x509-1.1.js#L2404-L2412
- * https://github.com/kjur/jsrsasign/blob/2613c64559768b91dde9793dfa318feacb7c3b8a/src/asn1x509-1.0.js#L3526-L3535
+ * https://datatracker.ietf.org/doc/html/rfc5280
+ * https://github.com/PeculiarVentures/x509/blob/ecf78224fd594abbc2fa83c41565d79874f88e00/src/name.ts#L65-L71
  *
  * @private
- * @param {string} field CSR subject field
- * @returns {string} ASN.1 jsrsasign character string type
+ * @param {string} field CSR subject field name
+ * @returns {string} ASN.1 character string type
  */
 
 function getCsrAsn1CharStringType(field) {
     switch (field) {
         case 'C':
-            return 'prn';
+            return 'printableString';
         case 'E':
-            return 'ia5';
+            return 'ia5String';
         default:
-            return 'utf8';
+            return 'utf8String';
     }
 }
 
 
 /**
  * Create array of subject fields for a Certificate Signing Request
+ *
+ * https://github.com/PeculiarVentures/x509/blob/ecf78224fd594abbc2fa83c41565d79874f88e00/src/name.ts#L65-L71
  *
  * @private
  * @param {object} input Key-value of subject fields
@@ -399,7 +384,7 @@ function createCsrSubject(input) {
     return Object.entries(input).reduce((result, [type, value]) => {
         if (value) {
             const ds = getCsrAsn1CharStringType(type);
-            result.push([{ type, value, ds }]);
+            result.push({ [type]: [{ [ds]: value }] });
         }
 
         return result;
@@ -408,20 +393,20 @@ function createCsrSubject(input) {
 
 
 /**
- * Create array of alt names for Certificate Signing Requests
+ * Create x509 subject alternate name extension
  *
- * https://github.com/kjur/jsrsasign/blob/3edc0070846922daea98d9588978e91d855577ec/src/x509-1.1.js#L1355-L1410
+ * https://github.com/PeculiarVentures/x509/blob/ecf78224fd594abbc2fa83c41565d79874f88e00/src/extensions/subject_alt_name.ts
  *
  * @private
  * @param {string[]} altNames Array of alt names
- * @returns {object[]} Certificate Signing Request alt names array
+ * @returns {x509.SubjectAlternativeNameExtension} Subject alternate name extension
  */
 
-function formatCsrAltNames(altNames) {
-    return altNames.map((value) => {
-        const key = net.isIP(value) ? 'ip' : 'dns';
-        return { [key]: value };
-    });
+function createSubjectAltNameExtension(altNames) {
+    return new x509.SubjectAlternativeNameExtension(altNames.map((value) => {
+        const type = net.isIP(value) ? 'ip' : 'dns';
+        return { type, value };
+    }));
 }
 
 
@@ -431,14 +416,14 @@ function formatCsrAltNames(altNames) {
  * @param {object} data
  * @param {number} [data.keySize] Size of newly created RSA private key modulus in bits, default: `2048`
  * @param {string} [data.commonName] FQDN of your server
- * @param {array} [data.altNames] SAN (Subject Alternative Names), default: `[]`
+ * @param {string[]} [data.altNames] SAN (Subject Alternative Names), default: `[]`
  * @param {string} [data.country] 2 letter country code
  * @param {string} [data.state] State or province
  * @param {string} [data.locality] City
  * @param {string} [data.organization] Organization name
  * @param {string} [data.organizationUnit] Organizational unit name
  * @param {string} [data.emailAddress] Email address
- * @param {string} [keyPem] PEM encoded CSR private key
+ * @param {buffer|string} [keyPem] PEM encoded CSR private key
  * @returns {Promise<buffer[]>} [privateKey, certificateSigningRequest]
  *
  * @example Create a Certificate Signing Request
@@ -479,7 +464,7 @@ function formatCsrAltNames(altNames) {
  * }, certificateKey);
  */
 
-async function createCsr(data, keyPem = null) {
+exports.createCsr = async (data, keyPem = null) => {
     if (!keyPem) {
         keyPem = await createPrivateRsaKey(data.keySize);
     }
@@ -491,65 +476,52 @@ async function createCsr(data, keyPem = null) {
         data.altNames = [];
     }
 
-    /* Get key info and JWK */
-    const info = getKeyInfo(keyPem);
-    const jwk = getJwk(keyPem);
-    const extensionRequests = [];
-
-    /* Missing support for NIST curve names in jsrsasign - https://github.com/kjur/jsrsasign/blob/master/src/asn1x509-1.0.js#L4388-L4393 */
-    if (jwk.crv && (jwk.kty === 'EC')) {
-        jwk.crv = convertNistCurveNameToSecg(jwk.crv);
-    }
-
     /* Ensure subject common name is present in SAN - https://cabforum.org/wp-content/uploads/BRv1.2.3.pdf */
     if (data.commonName && !data.altNames.includes(data.commonName)) {
         data.altNames.unshift(data.commonName);
     }
 
-    /* Subject */
-    const subject = createCsrSubject({
-        CN: data.commonName,
-        C: data.country,
-        ST: data.state,
-        L: data.locality,
-        O: data.organization,
-        OU: data.organizationUnit,
-        E: data.emailAddress
-    });
+    /* CryptoKeyPair and signing algorithm from private key */
+    const [keys, signingAlgorithm] = await getWebCryptoKeyPair(keyPem);
 
-    /* SAN extension */
-    if (data.altNames.length) {
-        extensionRequests.push({
-            extname: 'subjectAltName',
-            array: formatCsrAltNames(data.altNames)
-        });
-    }
+    const extensions = [
+        /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.3 */
+        new x509.KeyUsagesExtension(x509.KeyUsageFlags.digitalSignature | x509.KeyUsageFlags.keyEncipherment), // eslint-disable-line no-bitwise
+
+        /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6 */
+        createSubjectAltNameExtension(data.altNames)
+    ];
 
     /* Create CSR */
-    const csr = new jsrsasign.KJUR.asn1.csr.CertificationRequest({
-        subject: { array: subject },
-        sigalg: info.signatureAlgorithm,
-        sbjprvkey: keyPem.toString(),
-        sbjpubkey: jwk,
-        extreq: extensionRequests
+    const csr = await x509.Pkcs10CertificateRequestGenerator.create({
+        keys,
+        extensions,
+        signingAlgorithm,
+        name: createCsrSubject({
+            CN: data.commonName,
+            C: data.country,
+            ST: data.state,
+            L: data.locality,
+            O: data.organization,
+            OU: data.organizationUnit,
+            E: data.emailAddress
+        })
     });
 
     /* Done */
-    const pem = csr.getPEM();
+    const pem = csr.toString('pem');
     return [keyPem, Buffer.from(pem)];
-}
-
-exports.createCsr = createCsr;
+};
 
 
 /**
  * Create a self-signed ALPN certificate for TLS-ALPN-01 challenges
  *
- * https://tools.ietf.org/html/rfc8737
+ * https://datatracker.ietf.org/doc/html/rfc8737
  *
  * @param {object} authz Identifier authorization
  * @param {string} keyAuthorization Challenge key authorization
- * @param {string} [keyPem] PEM encoded CSR private key
+ * @param {buffer|string} [keyPem] PEM encoded CSR private key
  * @returns {Promise<buffer[]>} [privateKey, certificate]
  *
  * @example Create a ALPN certificate
@@ -564,45 +536,58 @@ exports.createCsr = createCsr;
  */
 
 exports.createAlpnCertificate = async (authz, keyAuthorization, keyPem = null) => {
-    /* Create CSR first */
+    if (!keyPem) {
+        keyPem = await createPrivateRsaKey();
+    }
+    else if (!Buffer.isBuffer(keyPem)) {
+        keyPem = Buffer.from(keyPem);
+    }
+
     const now = new Date();
     const commonName = authz.identifier.value;
-    const [key, csr] = await createCsr({ commonName }, keyPem);
-
-    /* Parse params and grab stuff we need */
-    const params = jsrsasign.KJUR.asn1.csr.CSRUtil.getParam(csr.toString());
-    const { subject, sbjpubkey, extreq, sigalg } = params;
-
-    /* ALPN extension */
-    const alpnExt = {
-        critical: true,
-        extname: alpnAcmeIdentifierOID,
-        extn: new jsrsasign.KJUR.asn1.DEROctetString({
-            hex: crypto.createHash('sha256').update(keyAuthorization).digest('hex')
-        })
-    };
 
     /* Pseudo-random serial - max 20 bytes, 11 for epoch (year 5138), 9 random */
     const random = await randomInt(1, 999999999);
-    const serial = `${Math.floor(now.getTime() / 1000)}${random}`;
+    const serialNumber = `${Math.floor(now.getTime() / 1000)}${random}`;
+
+    /* CryptoKeyPair and signing algorithm from private key */
+    const [keys, signingAlgorithm] = await getWebCryptoKeyPair(keyPem);
+
+    const extensions = [
+        /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.3 */
+        new x509.KeyUsagesExtension(x509.KeyUsageFlags.keyCertSign | x509.KeyUsageFlags.cRLSign, true), // eslint-disable-line no-bitwise
+
+        /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.9 */
+        new x509.BasicConstraintsExtension(true, 2, true),
+
+        /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.2 */
+        await x509.SubjectKeyIdentifierExtension.create(keys.publicKey),
+
+        /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6 */
+        createSubjectAltNameExtension([commonName])
+    ];
+
+    /* ALPN extension */
+    const payload = crypto.createHash('sha256').update(keyAuthorization).digest('hex');
+    const octstr = new asn1js.OctetString({ valueHex: Buffer.from(payload, 'hex') });
+    extensions.push(new x509.Extension(alpnAcmeIdentifierOID, true, octstr.toBER()));
 
     /* Self-signed ALPN certificate */
-    const certificate = new jsrsasign.KJUR.asn1.x509.Certificate({
-        subject,
-        sbjpubkey,
-        sigalg,
-        version: 3,
-        serial: { hex: Buffer.from(serial).toString('hex') },
-        issuer: subject,
-        notbefore: jsrsasign.datetozulu(now),
-        notafter: jsrsasign.datetozulu(now),
-        cakey: key.toString(),
-        ext: extreq.concat([alpnExt])
+    const cert = await x509.X509CertificateGenerator.createSelfSigned({
+        keys,
+        signingAlgorithm,
+        extensions,
+        serialNumber,
+        notBefore: now,
+        notAfter: now,
+        name: createCsrSubject({
+            CN: commonName
+        })
     });
 
     /* Done */
-    const pem = certificate.getPEM();
-    return [key, Buffer.from(pem)];
+    const pem = cert.toString('pem');
+    return [keyPem, Buffer.from(pem)];
 };
 
 
@@ -615,14 +600,20 @@ exports.createAlpnCertificate = async (authz, keyAuthorization, keyPem = null) =
  */
 
 exports.isAlpnCertificateAuthorizationValid = (certPem, keyAuthorization) => {
-    const params = getCertificateParams(certPem);
-    const expectedHex = crypto.createHash('sha256').update(keyAuthorization).digest('hex');
-    const acmeExt = (params.ext || []).find((e) => (e && e.extname && (e.extname === alpnAcmeIdentifierOID)));
+    const expected = crypto.createHash('sha256').update(keyAuthorization).digest('hex');
 
-    if (!acmeExt || !acmeExt.extn || !acmeExt.extn.octstr || !acmeExt.extn.octstr.hex) {
+    /* Attempt to locate ALPN extension */
+    const cert = new x509.X509Certificate(certPem);
+    const ext = cert.getExtension(alpnAcmeIdentifierOID);
+
+    if (!ext) {
         throw new Error('Unable to locate ALPN extension within parsed certificate');
     }
 
+    /* Decode extension value */
+    const parsed = asn1js.fromBER(ext.value);
+    const result = Buffer.from(parsed.result.valueBlock.valueHexView).toString('hex');
+
     /* Return true if match */
-    return (acmeExt.extn.octstr.hex === expectedHex);
+    return (result === expected);
 };

@@ -13,7 +13,7 @@ const { isAlpnCertificateAuthorizationValid } = require('./crypto');
 /**
  * Verify ACME HTTP challenge
  *
- * https://tools.ietf.org/html/rfc8555#section-8.3
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-8.3
  *
  * @param {object} authz Identifier authorization
  * @param {object} challenge Authorization challenge
@@ -85,7 +85,7 @@ async function walkDnsChallengeRecord(recordName, resolver = dns) {
 /**
  * Verify ACME DNS challenge
  *
- * https://tools.ietf.org/html/rfc8555#section-8.4
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-8.4
  *
  * @param {object} authz Identifier authorization
  * @param {object} challenge Authorization challenge
@@ -125,7 +125,7 @@ async function verifyDnsChallenge(authz, challenge, keyAuthorization, prefix = '
 /**
  * Verify ACME TLS ALPN challenge
  *
- * https://tools.ietf.org/html/rfc8737
+ * https://datatracker.ietf.org/doc/html/rfc8737
  *
  * @param {object} authz Identifier authorization
  * @param {object} challenge Authorization challenge

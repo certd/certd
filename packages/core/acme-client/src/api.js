@@ -41,7 +41,7 @@ class AcmeApi {
      * @private
      * @param {string} url Request URL
      * @param {object} [payload] Request payload, default: `null`
-     * @param {array} [validStatusCodes] Array of valid HTTP response status codes, default: `[]`
+     * @param {number[]} [validStatusCodes] Array of valid HTTP response status codes, default: `[]`
      * @param {object} [opts]
      * @param {boolean} [opts.includeJwsKid] Include KID instead of JWK in JWS header, default: `true`
      * @param {boolean} [opts.includeExternalAccountBinding] Include EAB in request, default: `false`
@@ -66,7 +66,7 @@ class AcmeApi {
      * @private
      * @param {string} resource Request resource name
      * @param {object} [payload] Request payload, default: `null`
-     * @param {array} [validStatusCodes] Array of valid HTTP response status codes, default: `[]`
+     * @param {number[]} [validStatusCodes] Array of valid HTTP response status codes, default: `[]`
      * @param {object} [opts]
      * @param {boolean} [opts.includeJwsKid] Include KID instead of JWK in JWS header, default: `true`
      * @param {boolean} [opts.includeExternalAccountBinding] Include EAB in request, default: `false`
@@ -82,7 +82,7 @@ class AcmeApi {
     /**
      * Get Terms of Service URL if available
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.1.1
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.1.1
      *
      * @returns {Promise<string|null>} ToS URL
      */
@@ -95,7 +95,7 @@ class AcmeApi {
     /**
      * Create new account
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.3
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.3
      *
      * @param {object} data Request payload
      * @returns {Promise<object>} HTTP response
@@ -119,7 +119,7 @@ class AcmeApi {
     /**
      * Update account
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.3.2
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.2
      *
      * @param {object} data Request payload
      * @returns {Promise<object>} HTTP response
@@ -133,7 +133,7 @@ class AcmeApi {
     /**
      * Update account key
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.3.5
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.5
      *
      * @param {object} data Request payload
      * @returns {Promise<object>} HTTP response
@@ -147,7 +147,7 @@ class AcmeApi {
     /**
      * Create new order
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.4
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.4
      *
      * @param {object} data Request payload
      * @returns {Promise<object>} HTTP response
@@ -161,7 +161,7 @@ class AcmeApi {
     /**
      * Get order
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.4
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.4
      *
      * @param {string} url Order URL
      * @returns {Promise<object>} HTTP response
@@ -175,7 +175,7 @@ class AcmeApi {
     /**
      * Finalize order
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.4
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.4
      *
      * @param {string} url Finalization URL
      * @param {object} data Request payload
@@ -190,7 +190,7 @@ class AcmeApi {
     /**
      * Get identifier authorization
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.5
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.5
      *
      * @param {string} url Authorization URL
      * @returns {Promise<object>} HTTP response
@@ -204,7 +204,7 @@ class AcmeApi {
     /**
      * Update identifier authorization
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.5.2
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.2
      *
      * @param {string} url Authorization URL
      * @param {object} data Request payload
@@ -219,7 +219,7 @@ class AcmeApi {
     /**
      * Complete challenge
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.5.1
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.1
      *
      * @param {string} url Challenge URL
      * @param {object} data Request payload
@@ -234,7 +234,7 @@ class AcmeApi {
     /**
      * Revoke certificate
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.6
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.6
      *
      * @param {object} data Request payload
      * @returns {Promise<object>} HTTP response

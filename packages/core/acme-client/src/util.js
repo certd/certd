@@ -93,7 +93,7 @@ function retry(fn, { attempts = 5, min = 5000, max = 30000 } = {}) {
  *
  * @param {string} header Link header contents
  * @param {string} rel Link relation, default: `alternate`
- * @returns {array} Array of URLs
+ * @returns {string[]} Array of URLs
  */
 
 function parseLinkHeader(header, rel = 'alternate') {
@@ -113,7 +113,7 @@ function parseLinkHeader(header, rel = 'alternate') {
  *  - If issuer is found in multiple chains, the closest to root wins
  *  - If issuer can not be located, the first chain will be returned
  *
- * @param {array} certificates Array of PEM encoded certificate chains
+ * @param {string[]} certificates Array of PEM encoded certificate chains
  * @param {string} issuer Preferred certificate issuer
  * @returns {string} PEM encoded certificate chain
  */

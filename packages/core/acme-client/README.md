@@ -4,7 +4,7 @@
 
 This module is written to handle communication with a Boulder/Let's Encrypt-style ACME API.
 
-* RFC 8555 - Automatic Certificate Management Environment (ACME): [https://tools.ietf.org/html/rfc8555](https://tools.ietf.org/html/rfc8555)
+* RFC 8555 - Automatic Certificate Management Environment (ACME): [https://datatracker.ietf.org/doc/html/rfc8555](https://datatracker.ietf.org/doc/html/rfc8555)
 * Boulder divergences from ACME: [https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md](https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md)
 
 ## Compatibility
@@ -67,7 +67,7 @@ acme.directory.zerossl.production;
 
 ### External account binding
 
-To enable [external account binding](https://tools.ietf.org/html/rfc8555#section-7.3.4) when creating your ACME account, provide your KID and HMAC key to the client constructor.
+To enable [external account binding](https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.4) when creating your ACME account, provide your KID and HMAC key to the client constructor.
 
 ```js
 const client = new acme.Client({
@@ -102,7 +102,7 @@ const myAccountUrl = client.getAccountUrl();
 
 ## Cryptography
 
-For key pairs `acme-client` utilizes native Node.js cryptography APIs, supporting signing and generation of both RSA and ECDSA keys. The module [jsrsasign](https://www.npmjs.com/package/jsrsasign) is used to generate and parse Certificate Signing Requests.
+For key pairs `acme-client` utilizes native Node.js cryptography APIs, supporting signing and generation of both RSA and ECDSA keys. The module [@peculiar/x509](https://www.npmjs.com/package/@peculiar/x509) is used to generate and parse Certificate Signing Requests.
 
 These utility methods are exposed through `.crypto`.
 

@@ -154,7 +154,7 @@ class AcmeClient {
     /**
      * Create a new account
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.3
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.3
      *
      * @param {object} [data] Request data
      * @returns {Promise<object>} Account
@@ -200,7 +200,7 @@ class AcmeClient {
     /**
      * Update existing account
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.3.2
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.2
      *
      * @param {object} [data] Request data
      * @returns {Promise<object>} Account
@@ -240,7 +240,7 @@ class AcmeClient {
     /**
      * Update account private key
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.3.5
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.5
      *
      * @param {buffer|string} newAccountKey New PEM encoded private key
      * @param {object} [data] Additional request data
@@ -286,7 +286,7 @@ class AcmeClient {
     /**
      * Create a new order
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.4
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.4
      *
      * @param {object} data Request data
      * @returns {Promise<object>} Order
@@ -318,7 +318,7 @@ class AcmeClient {
     /**
      * Refresh order object from CA
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.4
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.4
      *
      * @param {object} order Order object
      * @returns {Promise<object>} Order
@@ -345,7 +345,7 @@ class AcmeClient {
     /**
      * Finalize order
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.4
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.4
      *
      * @param {object} order Order object
      * @param {buffer|string} csr PEM encoded Certificate Signing Request
@@ -380,7 +380,7 @@ class AcmeClient {
     /**
      * Get identifier authorizations from order
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.5
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.5
      *
      * @param {object} order Order
      * @returns {Promise<object[]>} Authorizations
@@ -410,7 +410,7 @@ class AcmeClient {
     /**
      * Deactivate identifier authorization
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.5.2
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.2
      *
      * @param {object} authz Identifier authorization
      * @returns {Promise<object>} Authorization
@@ -442,7 +442,7 @@ class AcmeClient {
     /**
      * Get key authorization for ACME challenge
      *
-     * https://tools.ietf.org/html/rfc8555#section-8.1
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-8.1
      *
      * @param {object} challenge Challenge object returned by API
      * @returns {Promise<string>} Key authorization
@@ -462,17 +462,17 @@ class AcmeClient {
         const thumbprint = keysum.digest('base64url');
         const result = `${challenge.token}.${thumbprint}`;
 
-        /* https://tools.ietf.org/html/rfc8555#section-8.3 */
+        /* https://datatracker.ietf.org/doc/html/rfc8555#section-8.3 */
         if (challenge.type === 'http-01') {
             return result;
         }
 
-        /* https://tools.ietf.org/html/rfc8555#section-8.4 */
+        /* https://datatracker.ietf.org/doc/html/rfc8555#section-8.4 */
         if (challenge.type === 'dns-01') {
             return createHash('sha256').update(result).digest('base64url');
         }
 
-        /* https://tools.ietf.org/html/rfc8737 */
+        /* https://datatracker.ietf.org/doc/html/rfc8737 */
         if (challenge.type === 'tls-alpn-01') {
             return result;
         }
@@ -519,7 +519,7 @@ class AcmeClient {
     /**
      * Notify CA that challenge has been completed
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.5.1
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.1
      *
      * @param {object} challenge Challenge object returned by API
      * @returns {Promise<object>} Challenge
@@ -540,7 +540,7 @@ class AcmeClient {
     /**
      * Wait for ACME provider to verify status on a order, authorization or challenge
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.5.1
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.1
      *
      * @param {object} item An order, authorization or challenge object
      * @returns {Promise<object>} Valid order, authorization or challenge
@@ -551,7 +551,7 @@ class AcmeClient {
      * await client.waitForValidStatus(challenge);
      * ```
      *
-     * @example Wait for valid authoriation status
+     * @example Wait for valid authorization status
      * ```js
      * const authz = { ... };
      * await client.waitForValidStatus(authz);
@@ -597,7 +597,7 @@ class AcmeClient {
     /**
      * Get certificate from ACME order
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.4.2
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.4.2
      *
      * @param {object} order Order object
      * @param {string} [preferredChain] Indicate which certificate chain is preferred if a CA offers multiple, by exact issuer common name, default: `null`
@@ -644,7 +644,7 @@ class AcmeClient {
     /**
      * Revoke certificate
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.6
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.6
      *
      * @param {buffer|string} cert PEM encoded certificate
      * @param {object} [data] Additional request data

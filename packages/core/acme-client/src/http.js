@@ -64,7 +64,7 @@ class HttpClient {
     /**
      * Ensure provider directory exists
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.1.1
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.1.1
      *
      * @returns {Promise}
      */
@@ -104,7 +104,7 @@ class HttpClient {
     /**
      * Get nonce from directory API endpoint
      *
-     * https://tools.ietf.org/html/rfc8555#section-7.2
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-7.2
      *
      * @returns {Promise<string>} nonce
      */
@@ -267,7 +267,7 @@ class HttpClient {
     /**
      * Signed HTTP request
      *
-     * https://tools.ietf.org/html/rfc8555#section-6.2
+     * https://datatracker.ietf.org/doc/html/rfc8555#section-6.2
      *
      * @param {string} url Request URL
      * @param {object} payload Request payload
@@ -299,7 +299,7 @@ class HttpClient {
         const data = this.createSignedBody(url, payload, { nonce, kid });
         const resp = await this.request(url, 'post', { data });
 
-        /* Retry on bad nonce - https://tools.ietf.org/html/draft-ietf-acme-acme-10#section-6.4 */
+        /* Retry on bad nonce - https://datatracker.ietf.org/doc/html/draft-ietf-acme-acme-10#section-6.4 */
         if (resp.data && resp.data.type && (resp.status === 400) && (resp.data.type === 'urn:ietf:params:acme:error:badNonce') && (attempts < this.maxBadNonceRetries)) {
             nonce = resp.headers['replay-nonce'] || null;
             attempts += 1;

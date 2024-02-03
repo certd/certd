@@ -3,6 +3,7 @@
 ## v5.3.0
 
 * `added` Support and tests for satisfying `tls-alpn-01` challenges
+* `changed` Replace `jsrsasign` with `@peculiar/x509` for certificate and CSR generation and parsing
 * `changed` Method `getChallengeKeyAuthorization()` now returns `$token.$thumbprint` when called with a `tls-alpn-01` challenge
     * Previously returned base64url encoded SHA256 digest of `$token.$thumbprint` erroneously
     * This change is not considered breaking since the previous behavior was incorrect
@@ -54,13 +55,13 @@
 
 ## v4.2.0 (2022-01-06)
 
-* `added` Support for external account binding - [RFC 8555 Section 7.3.4](https://tools.ietf.org/html/rfc8555#section-7.3.4)
+* `added` Support for external account binding - [RFC 8555 Section 7.3.4](https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.4)
 * `added` Ability to pass through custom logger function
 * `changed` Increase default `backoffAttempts` to 10
 * `fixed` Deactivate authorizations where challenges can not be completed
 * `fixed` Attempt authoritative name servers when verifying `dns-01` challenges
 * `fixed` Error verbosity when failing to read ACME directory
-* `fixed` Correctly recognize `ready` and `processing` states - [RFC 8555 Section 7.1.6](https://tools.ietf.org/html/rfc8555#section-7.1.6)
+* `fixed` Correctly recognize `ready` and `processing` states - [RFC 8555 Section 7.1.6](https://datatracker.ietf.org/doc/html/rfc8555#section-7.1.6)
 
 ## v4.1.4 (2021-12-23)
 
@@ -110,7 +111,7 @@
 ## v3.3.0 (2019-12-19)
 
 * `added` TypeScript definitions
-* `fixed` Allow missing ACME directory meta field - [RFC 8555 Section 7.1.1](https://tools.ietf.org/html/rfc8555#section-7.1.1)
+* `fixed` Allow missing ACME directory meta field - [RFC 8555 Section 7.1.1](https://datatracker.ietf.org/doc/html/rfc8555#section-7.1.1)
 
 ## v3.2.1 (2019-11-14)
 
@@ -121,10 +122,10 @@
 * `added` More extensive testing using [letsencrypt/pebble](https://github.com/letsencrypt/pebble)
 * `changed` When creating a CSR, `commonName` no longer defaults to `'localhost'`
     * This change is not considered breaking since `commonName: 'localhost'` will result in an error when ordering a certificate
-* `fixed` Retry signed API requests on `urn:ietf:params:acme:error:badNonce` - [RFC 8555 Section 6.5](https://tools.ietf.org/html/rfc8555#section-6.5)
+* `fixed` Retry signed API requests on `urn:ietf:params:acme:error:badNonce` - [RFC 8555 Section 6.5](https://datatracker.ietf.org/doc/html/rfc8555#section-6.5)
 * `fixed` Minor bugs related to `POST-as-GET` when calling `updateAccount()`
 * `fixed` Ensure subject common name is present in SAN when creating a CSR - [CAB v1.2.3 Section 9.2.2](https://cabforum.org/wp-content/uploads/BRv1.2.3.pdf)
-* `fixed` Send empty JSON body when responding to challenges - [RFC 8555 Section 7.5.1](https://tools.ietf.org/html/rfc8555#section-7.5.1)
+* `fixed` Send empty JSON body when responding to challenges - [RFC 8555 Section 7.5.1](https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.1)
 
 ## v2.3.1 (2019-08-26)
 
@@ -133,8 +134,8 @@
 
 ## v3.1.0 (2019-08-21)
 
-* `added` UTF-8 support when generating a CSR subject using forge - [RFC 5280](https://tools.ietf.org/html/rfc5280)
-* `fixed` Implement `POST-as-GET` for all ACME API requests - [RFC 8555 Section 6.3](https://tools.ietf.org/html/rfc8555#section-6.3)
+* `added` UTF-8 support when generating a CSR subject using forge - [RFC 5280](https://datatracker.ietf.org/doc/html/rfc5280)
+* `fixed` Implement `POST-as-GET` for all ACME API requests - [RFC 8555 Section 6.3](https://datatracker.ietf.org/doc/html/rfc8555#section-6.3)
 
 ## v2.3.0 (2019-08-21)
 
@@ -171,7 +172,7 @@
 
 ## v2.0.1 (2018-08-17)
 
-* `fixed` Key rollover in compliance with [draft-ietf-acme-13](https://tools.ietf.org/html/draft-ietf-acme-acme-13)
+* `fixed` Key rollover in compliance with [draft-ietf-acme-13](https://datatracker.ietf.org/doc/html/draft-ietf-acme-acme-13)
 
 ## v2.0.0 (2018-04-02)
 

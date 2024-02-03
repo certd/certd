@@ -6,7 +6,7 @@ First off this release drops support for Node LTS v10, v12 and v14, and the reas
 
 ## New native crypto interface
 
-A new crypto interface has been introduced with v5, which you can find under `acme.crypto`. It uses native Node.js cryptography APIs to generate private keys, JSON Web Keys and signatures, and finally enables support for ECC/ECDSA (P-256, P384 and P521), both for account private keys and certificates. The [jsrsasign](https://www.npmjs.com/package/jsrsasign) module is used to handle generation and parsing of Certificate Signing Requests.
+A new crypto interface has been introduced with v5, which you can find under `acme.crypto`. It uses native Node.js cryptography APIs to generate private keys, JSON Web Keys and signatures, and finally enables support for ECC/ECDSA (P-256, P384 and P521), both for account private keys and certificates. The [@peculiar/x509](https://www.npmjs.com/package/@peculiar/x509) module is used to handle generation and parsing of Certificate Signing Requests.
 
 Full documentation of `acme.crypto` can be [found here](crypto.md).
 
