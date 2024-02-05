@@ -25,7 +25,7 @@
 <dd><p>Get a JSON Web Key derived from a RSA or ECDSA key</p>
 <p><a href="https://datatracker.ietf.org/doc/html/rfc7517">https://datatracker.ietf.org/doc/html/rfc7517</a></p>
 </dd>
-<dt><a href="#splitPemChain">splitPemChain(chainPem)</a> ⇒ <code>array</code></dt>
+<dt><a href="#splitPemChain">splitPemChain(chainPem)</a> ⇒ <code>Array.&lt;string&gt;</code></dt>
 <dd><p>Split chain of PEM encoded objects from string into array</p>
 </dd>
 <dt><a href="#getPemBodyAsB64u">getPemBodyAsB64u(pem)</a> ⇒ <code>string</code></dt>
@@ -41,6 +41,13 @@ If multiple certificates are chained, the first will be read</p>
 </dd>
 <dt><a href="#createCsr">createCsr(data, [keyPem])</a> ⇒ <code>Promise.&lt;Array.&lt;buffer&gt;&gt;</code></dt>
 <dd><p>Create a Certificate Signing Request</p>
+</dd>
+<dt><a href="#createAlpnCertificate">createAlpnCertificate(authz, keyAuthorization, [keyPem])</a> ⇒ <code>Promise.&lt;Array.&lt;buffer&gt;&gt;</code></dt>
+<dd><p>Create a self-signed ALPN certificate for TLS-ALPN-01 challenges</p>
+<p><a href="https://datatracker.ietf.org/doc/html/rfc8737">https://datatracker.ietf.org/doc/html/rfc8737</a></p>
+</dd>
+<dt><a href="#isAlpnCertificateAuthorizationValid">isAlpnCertificateAuthorizationValid(certPem, keyAuthorization)</a> ⇒ <code>boolean</code></dt>
+<dd><p>Validate that a ALPN certificate contains the expected key authorization</p>
 </dd>
 </dl>
 
@@ -138,11 +145,11 @@ const jwk = acme.crypto.getJwk(privateKey);
 ```
 <a name="splitPemChain"></a>
 
-## splitPemChain(chainPem) ⇒ <code>array</code>
+## splitPemChain(chainPem) ⇒ <code>Array.&lt;string&gt;</code>
 Split chain of PEM encoded objects from string into array
 
 **Kind**: global function  
-**Returns**: <code>array</code> - Array of PEM objects including headers  
+**Returns**: <code>Array.&lt;string&gt;</code> - Array of PEM objects including headers  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -219,14 +226,14 @@ Create a Certificate Signing Request
 | data | <code>object</code> |  |
 | [data.keySize] | <code>number</code> | Size of newly created RSA private key modulus in bits, default: `2048` |
 | [data.commonName] | <code>string</code> | FQDN of your server |
-| [data.altNames] | <code>array</code> | SAN (Subject Alternative Names), default: `[]` |
+| [data.altNames] | <code>Array.&lt;string&gt;</code> | SAN (Subject Alternative Names), default: `[]` |
 | [data.country] | <code>string</code> | 2 letter country code |
 | [data.state] | <code>string</code> | State or province |
 | [data.locality] | <code>string</code> | City |
 | [data.organization] | <code>string</code> | Organization name |
 | [data.organizationUnit] | <code>string</code> | Organizational unit name |
 | [data.emailAddress] | <code>string</code> | Email address |
-| [keyPem] | <code>string</code> | PEM encoded CSR private key |
+| [keyPem] | <code>buffer</code> \| <code>string</code> | PEM encoded CSR private key |
 
 **Example**  
 Create a Certificate Signing Request
@@ -265,3 +272,42 @@ const certificateKey = await acme.crypto.createPrivateEcdsaKey();
 const [, certificateRequest] = await acme.crypto.createCsr({
     commonName: 'test.example.com'
 }, certificateKey);
+<a name="createAlpnCertificate"></a>
+
+## createAlpnCertificate(authz, keyAuthorization, [keyPem]) ⇒ <code>Promise.&lt;Array.&lt;buffer&gt;&gt;</code>
+Create a self-signed ALPN certificate for TLS-ALPN-01 challenges
+
+https://datatracker.ietf.org/doc/html/rfc8737
+
+**Kind**: global function  
+**Returns**: <code>Promise.&lt;Array.&lt;buffer&gt;&gt;</code> - [privateKey, certificate]  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| authz | <code>object</code> | Identifier authorization |
+| keyAuthorization | <code>string</code> | Challenge key authorization |
+| [keyPem] | <code>buffer</code> \| <code>string</code> | PEM encoded CSR private key |
+
+**Example**  
+Create a ALPN certificate
+```js
+const [alpnKey, alpnCertificate] = await acme.crypto.createAlpnCertificate(authz, keyAuthorization);
+```
+**Example**  
+Create a ALPN certificate with ECDSA private key
+```js
+const alpnKey = await acme.crypto.createPrivateEcdsaKey();
+const [, alpnCertificate] = await acme.crypto.createAlpnCertificate(authz, keyAuthorization, alpnKey);
+<a name="isAlpnCertificateAuthorizationValid"></a>
+
+## isAlpnCertificateAuthorizationValid(certPem, keyAuthorization) ⇒ <code>boolean</code>
+Validate that a ALPN certificate contains the expected key authorization
+
+**Kind**: global function  
+**Returns**: <code>boolean</code> - True when valid  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| certPem | <code>buffer</code> \| <code>string</code> | PEM encoded certificate |
+| keyAuthorization | <code>string</code> | Expected challenge key authorization |
+

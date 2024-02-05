@@ -1,6 +1,6 @@
 # Changelog
 
-## v5.3.0
+## v5.3.0 (2024-02-05)
 
 * `added` Support and tests for satisfying `tls-alpn-01` challenges
 * `changed` Replace `jsrsasign` with `@peculiar/x509` for certificate and CSR generation and parsing
