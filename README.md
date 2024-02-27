@@ -106,6 +106,19 @@ http://your_server_ip:7001
   ![](https://ai.handsfree.work/images/exchange_wxqroup.png)
 
 
+加作者好友
+<p align="center">
+<img height="230" src="./doc/images/me.png">
+</p>
+
+## 捐赠
+媳妇儿说：“一天到晚搞开源，也不管管老婆孩子！😡😡😡”        
+拜托各位捐赠支持一下，让媳妇儿开心开心，我也能有更多时间进行开源项目，感谢🙏🙏🙏
+<p align="center">
+<img height="380" src="./doc/images/donate.png">
+</p>
+
+
 ## 七、我的其他项目
 * [袖手GPT](https://ai.handsfree.work/) ChatGPT，国内可用，无需FQ，每日免费额度
 * [fast-crud](https://gitee.com/fast-crud/fast-crud/) 基于vue3的crud快速开发框架
