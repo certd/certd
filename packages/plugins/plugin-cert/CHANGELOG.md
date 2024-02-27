@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/certd/certd/compare/v1.2.0...v1.2.1) (2023-12-12)
+
+**Note:** Version bump only for package @certd/plugin-cert
+
+**Note:** Version bump only for package @certd/plugin-cert
+
 # [1.2.0](https://github.com/certd/certd/compare/v1.1.6...v1.2.0) (2023-10-27)
 
 **Note:** Version bump only for package @certd/plugin-cert

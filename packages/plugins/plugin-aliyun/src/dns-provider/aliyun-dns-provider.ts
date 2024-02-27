@@ -29,6 +29,7 @@ export class AliyunDnsProvider implements IDnsProvider {
   async getDomainList() {
     const params = {
       RegionId: "cn-hangzhou",
+      PageSize: 100,
     };
 
     const requestOption = {
@@ -42,14 +43,16 @@ export class AliyunDnsProvider implements IDnsProvider {
   async matchDomain(dnsRecord: string) {
     const list = await this.getDomainList();
     let domain = null;
+    const domainList = [];
     for (const item of list) {
+      domainList.push(item.DomainName);
       if (_.endsWith(dnsRecord, item.DomainName)) {
         domain = item.DomainName;
         break;
       }
     }
     if (!domain) {
-      throw new Error("can not find Domain ," + dnsRecord);
+      throw new Error(`can not find Domain :${dnsRecord} ,list: ${JSON.stringify(domainList)}`);
     }
     return domain;
   }

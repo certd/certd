@@ -11,7 +11,7 @@
   "scripts": {
     "start": "lerna bootstrap --hoist",
     "i-all": "lerna link && lerna exec npm install  ",
-    "publish": "npm run proxy && npm run prepublishOnly1  && lerna publish 1.2.0 --conventional-commits && npm run afterpublishOnly && npm run deploy1",
+    "publish": "npm run proxy && npm run prepublishOnly1  && lerna publish --conventional-commits && npm run afterpublishOnly && npm run deploy1",
     "afterpublishOnly": "",
     "proxy": "npm config set proxy=http://127.0.0.1:10809",
     "prepublishOnly1": "npm run before-build && lerna run build ",

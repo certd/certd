@@ -54,6 +54,7 @@ export class SettingsService extends BaseService<SettingsEntity> {
     const entity = await this.repository.findOne({
       where: {
         key: bean.key,
+        userId: bean.userId,
       },
     });
     if (entity) {

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/fast-crud/fast-server-js/compare/v1.2.0...v1.2.1) (2023-12-12)
+
+### Bug Fixes
+
+* 修复邮箱设置无效的bug ([aaa3224](https://github.com/fast-crud/fast-server-js/commit/aaa322464d0f65e924d1850995540d396ee24d25))
+
+**Note:** Version bump only for package @certd/ui-server
+
 # [1.2.0](https://github.com/fast-crud/fast-server-js/compare/v1.1.6...v1.2.0) (2023-10-27)
 
 **Note:** Version bump only for package @certd/ui-server

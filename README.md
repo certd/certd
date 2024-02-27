@@ -50,9 +50,11 @@ https://docs.docker.com/compose/install/linux/
 
 ### 2. 下载docker-compose.yaml文件
 ```bash
-mdkir certd
+mkdir certd
 cd certd
-wget https://github.com/certd/certd/blob/v2/docker/run/docker-compose.yaml
+wget https://raw.githubusercontent.com/certd/certd/v2/docker/run/docker-compose.yaml
+# 或者使用gitee地址
+wget https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml
 
 # 根据需要修改里面的配置
 # 1.修改镜像版本号
@@ -69,9 +71,11 @@ https://github.com/certd/certd/releases
 ### 3. 运行
 ```bash
 # 如果docker compose是插件化安装
+export CERTD_VERSION=1.2.0
 docker compose up -d
 
 #如果docker compose是独立安装
+export CERTD_VERSION=1.2.0
 docker-compose up -d
 
 ```
