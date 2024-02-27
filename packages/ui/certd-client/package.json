@@ -20,7 +20,7 @@
     "afterPubPush": "git add . && git commit -m \"build: publish success\" && git push"
   },
   "author": "Greper",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "dependencies": {
     "@ant-design/colors": "^7.0.0",
     "@ant-design/icons-vue": "^6.1.0",
