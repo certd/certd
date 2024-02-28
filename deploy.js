@@ -49,7 +49,7 @@ async function sync() {
             data: {}
         })
         console.log(`sync success:${pkg}`)
-        await sleep(10000)
+        await sleep(100*1000)
     }
 }
 
@@ -86,7 +86,7 @@ async function triggerBuild() {
 async function start() {
     // await build()
     console.log("等待60秒")
-    await sleep(60 * 1000)
+    await sleep(200 * 1000)
     await sync()
     await sleep(60 * 1000)
     await triggerBuild()
