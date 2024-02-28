@@ -85,7 +85,7 @@ export default defineComponent({
         crudExpose.editable.addRow();
       },
       editCol() {
-        crudExpose.editable.editCol({ cols: ["radio"] });
+        crudExpose.editable.activeCols({ cols: ["radio"] });
       }
     };
   }

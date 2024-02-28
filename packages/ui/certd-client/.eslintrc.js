@@ -20,6 +20,7 @@ module.exports = {
   rules: {
     //"max-len": [0, 200, 2, { ignoreUrls: true }],
     "@typescript-eslint/no-unused-vars": "off",
+    "no-unused-vars": "off",
     "@typescript-eslint/ban-ts-ignore": "off",
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/ban-types": "off",
