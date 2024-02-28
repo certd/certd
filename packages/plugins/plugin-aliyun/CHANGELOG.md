@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.2](https://github.com/certd/certd/compare/v1.2.1...v1.20.2) (2024-02-28)
+
+### Bug Fixes
+
+* 临时修复阿里云domainlist接口返回域名列表不全的问题，后续还需要增加翻页查询 ([849c145](https://github.com/certd/certd/commit/849c145926984762bd9dbec87bd91cd047fc0855))
+
 ## [1.2.1](https://github.com/certd/certd/compare/v1.2.0...v1.2.1) (2023-12-12)
 
 **Note:** Version bump only for package @certd/plugin-aliyun
