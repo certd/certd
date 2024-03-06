@@ -1,6 +1,6 @@
 {
   "name": "@certd/ui-server",
-  "version": "1.20.2",
+  "version": "1.20.3",
   "description": "fast-server base midway",
   "private": true,
   "scripts": {
