@@ -22,7 +22,10 @@ instance.defaults.acmeSettings = {
     tlsAlpnChallengePort: 443
 };
 
-
+// instance.defaults.proxy = {
+//     host: '192.168.34.139',
+//     port: 10811
+// };
 /**
  * Explicitly set Node as default HTTP adapter
  *

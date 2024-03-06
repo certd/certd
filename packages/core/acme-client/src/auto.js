@@ -84,6 +84,8 @@ module.exports = async function(client, userOpts) {
 
     log('[auto] Resolving and satisfying authorization challenges');
 
+    const clearTasks = [];
+
     const challengeFunc = async (authz) => {
         const d = authz.identifier.value;
         let challengeCompleted = false;
@@ -139,15 +141,17 @@ module.exports = async function(client, userOpts) {
                 throw e;
             }
             finally {
-                /* Trigger challengeRemoveFn(), suppress errors */
-                log(`[auto] [${d}] Trigger challengeRemoveFn()`);
-
-                try {
-                    await opts.challengeRemoveFn(authz, challenge, keyAuthorization, recordItem);
-                }
-                catch (e) {
-                    log(`[auto] [${d}] challengeRemoveFn threw error: ${e.message}`);
-                }
+                log(`[auto] [${d}] add challengeRemoveFn()`);
+                clearTasks.push(async () => {
+                    /* Trigger challengeRemoveFn(), suppress errors */
+                    log(`[auto] [${d}] Trigger challengeRemoveFn()`);
+                    try {
+                        await opts.challengeRemoveFn(authz, challenge, keyAuthorization, recordItem);
+                    }
+                    catch (e) {
+                        log(`[auto] [${d}] challengeRemoveFn threw error: ${e.message}`);
+                    }
+                });
             }
         }
         catch (e) {
@@ -184,6 +188,9 @@ module.exports = async function(client, userOpts) {
 
 
     await runPromisesSerially(challengePromises);
+
+    log('清理challenge');
+    await runPromisesSerially(clearTasks);
     log('challenge结束');
 
     // log('[auto] Waiting for challenge valid status');
