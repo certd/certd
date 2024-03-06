@@ -2,8 +2,8 @@
  * HTTP client tests
  */
 
+const { randomUUID: uuid } = require('crypto');
 const { assert } = require('chai');
-const { v4: uuid } = require('uuid');
 const nock = require('nock');
 const axios = require('./../src/axios');
 const HttpClient = require('./../src/http');
@@ -26,8 +26,6 @@ describe('http', () => {
      */
 
     before(() => {
-        axios.defaults.acmeSettings.bypassCustomDnsResolver = true;
-
         const defaultUaOpts = { reqheaders: { 'User-Agent': defaultUserAgent } };
         const customUaOpts = { reqheaders: { 'User-Agent': customUserAgent } };
 
@@ -43,7 +41,6 @@ describe('http', () => {
 
     after(() => {
         axios.defaults.headers.common['User-Agent'] = defaultUserAgent;
-        axios.defaults.acmeSettings.bypassCustomDnsResolver = false;
     });
 
 

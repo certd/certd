@@ -3,7 +3,6 @@
  */
 
 const axios = require('axios');
-const adapter = require('axios/lib/adapters/http');
 const pkg = require('./../package.json');
 
 
@@ -19,7 +18,8 @@ instance.defaults.headers.common['User-Agent'] = `node-${pkg.name}/${pkg.version
 /* Default ACME settings */
 instance.defaults.acmeSettings = {
     httpChallengePort: 80,
-    bypassCustomDnsResolver: false
+    httpsChallengePort: 443,
+    tlsAlpnChallengePort: 443
 };
 
 
@@ -30,7 +30,7 @@ instance.defaults.acmeSettings = {
  * https://stackoverflow.com/questions/42677387
  */
 
-instance.defaults.adapter = adapter;
+instance.defaults.adapter = 'http';
 
 
 /**

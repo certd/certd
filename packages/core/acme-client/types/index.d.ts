@@ -156,6 +156,8 @@ export interface CryptoInterface {
     readCsrDomains(csrPem: CsrBuffer | CsrString): CertificateDomains;
     readCertificateInfo(certPem: CertificateBuffer | CertificateString): CertificateInfo;
     createCsr(data: CsrOptions, keyPem?: PrivateKeyBuffer | PrivateKeyString): Promise<[PrivateKeyBuffer, CsrBuffer]>;
+    createAlpnCertificate(authz: Authorization, keyAuthorization: string, keyPem?: PrivateKeyBuffer | PrivateKeyString): Promise<[PrivateKeyBuffer, CertificateBuffer]>;
+    isAlpnCertificateAuthorizationValid(certPem: CertificateBuffer | CertificateString, keyAuthorization: string): boolean;
 }
 
 export const crypto: CryptoInterface;

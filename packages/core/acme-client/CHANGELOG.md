@@ -1,81 +1,22 @@
-# Change Log
-
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
-
-## [1.20.2](https://github.com/publishlab/node-acme-client/compare/v1.2.1...v1.20.2) (2024-02-28)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.2.1](https://github.com/publishlab/node-acme-client/compare/v1.2.0...v1.2.1) (2023-12-12)
-
-**Note:** Version bump only for package @certd/acme-client
-
-**Note:** Version bump only for package @certd/acme-client
-
-# [1.2.0](https://github.com/publishlab/node-acme-client/compare/v1.1.6...v1.2.0) (2023-10-27)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.1.6](https://github.com/publishlab/node-acme-client/compare/v1.1.5...v1.1.6) (2023-07-10)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.1.5](https://github.com/publishlab/node-acme-client/compare/v1.1.4...v1.1.5) (2023-07-03)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.1.4](https://github.com/publishlab/node-acme-client/compare/v1.1.3...v1.1.4) (2023-07-03)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.1.3](https://github.com/publishlab/node-acme-client/compare/v1.1.2...v1.1.3) (2023-07-03)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.1.2](https://github.com/publishlab/node-acme-client/compare/v1.1.1...v1.1.2) (2023-07-03)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.1.1](https://github.com/publishlab/node-acme-client/compare/v1.1.0...v1.1.1) (2023-06-28)
-
-**Note:** Version bump only for package @certd/acme-client
-
-# [1.1.0](https://github.com/publishlab/node-acme-client/compare/v1.0.6...v1.1.0) (2023-06-28)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.0.6](https://github.com/publishlab/node-acme-client/compare/v1.0.5...v1.0.6) (2023-05-25)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.0.5](https://github.com/publishlab/node-acme-client/compare/v1.0.4...v1.0.5) (2023-05-25)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.0.4](https://github.com/publishlab/node-acme-client/compare/v1.0.3...v1.0.4) (2023-05-25)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.0.3](https://github.com/publishlab/node-acme-client/compare/v1.0.2...v1.0.3) (2023-05-25)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.0.2](https://github.com/publishlab/node-acme-client/compare/v1.0.1...v1.0.2) (2023-05-24)
-
-**Note:** Version bump only for package @certd/acme-client
-
-## [1.0.1](https://github.com/publishlab/node-acme-client/compare/v1.0.0...v1.0.1) (2023-05-24)
-
-**Note:** Version bump only for package @certd/acme-client
-
 # Changelog
 
-## Important upgrade notice
+## v5.3.0 (2024-02-05)
 
-On September 15, 2022, Let's Encrypt will stop accepting Certificate Signing Requests signed using the obsolete SHA-1 hash. This change affects all `acme-client` versions lower than `3.3.2` and `4.2.4`. Please upgrade ASAP to ensure that your certificates can still be issued following this date.
+* `added` Support and tests for satisfying `tls-alpn-01` challenges
+* `changed` Replace `jsrsasign` with `@peculiar/x509` for certificate and CSR generation and parsing
+* `changed` Method `getChallengeKeyAuthorization()` now returns `$token.$thumbprint` when called with a `tls-alpn-01` challenge
+    * Previously returned base64url encoded SHA256 digest of `$token.$thumbprint` erroneously
+    * This change is not considered breaking since the previous behavior was incorrect
 
-A more detailed explanation can be found [at the Let's Encrypt forums](https://community.letsencrypt.org/t/rejecting-sha-1-csrs-and-validation-using-tls-1-0-1-1-urls/175144).
+## v5.2.0 (2024-01-22)
+
+* `fixed` Allow self-signed or invalid certs when validating `http-01` challenges that redirect to HTTPS - [#65](https://github.com/publishlab/node-acme-client/issues/65)
+* `fixed` Wait for all challenge promises to settle before rejecting `client.auto()` - [#75](https://github.com/publishlab/node-acme-client/issues/75)
+
+## v5.1.0 (2024-01-20)
+
+* `fixed` Upgrade `jsrsasign@11.0.0` - [GHSA-rh63-9qcf-83gf](https://github.com/kjur/jsrsasign/security/advisories/GHSA-rh63-9qcf-83gf)
+* `fixed` Upgrade `axios@1.6.5` - [CVE-2023-45857](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2023-45857)
 
 ## v5.0.0 (2022-07-28)
 
@@ -114,13 +55,13 @@ A more detailed explanation can be found [at the Let's Encrypt forums](https://c
 
 ## v4.2.0 (2022-01-06)
 
-* `added` Support for external account binding - [RFC 8555 Section 7.3.4](https://tools.ietf.org/html/rfc8555#section-7.3.4)
+* `added` Support for external account binding - [RFC 8555 Section 7.3.4](https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.4)
 * `added` Ability to pass through custom logger function
 * `changed` Increase default `backoffAttempts` to 10
 * `fixed` Deactivate authorizations where challenges can not be completed
 * `fixed` Attempt authoritative name servers when verifying `dns-01` challenges
 * `fixed` Error verbosity when failing to read ACME directory
-* `fixed` Correctly recognize `ready` and `processing` states - [RFC 8555 Section 7.1.6](https://tools.ietf.org/html/rfc8555#section-7.1.6)
+* `fixed` Correctly recognize `ready` and `processing` states - [RFC 8555 Section 7.1.6](https://datatracker.ietf.org/doc/html/rfc8555#section-7.1.6)
 
 ## v4.1.4 (2021-12-23)
 
@@ -170,7 +111,7 @@ A more detailed explanation can be found [at the Let's Encrypt forums](https://c
 ## v3.3.0 (2019-12-19)
 
 * `added` TypeScript definitions
-* `fixed` Allow missing ACME directory meta field - [RFC 8555 Section 7.1.1](https://tools.ietf.org/html/rfc8555#section-7.1.1)
+* `fixed` Allow missing ACME directory meta field - [RFC 8555 Section 7.1.1](https://datatracker.ietf.org/doc/html/rfc8555#section-7.1.1)
 
 ## v3.2.1 (2019-11-14)
 
@@ -181,10 +122,10 @@ A more detailed explanation can be found [at the Let's Encrypt forums](https://c
 * `added` More extensive testing using [letsencrypt/pebble](https://github.com/letsencrypt/pebble)
 * `changed` When creating a CSR, `commonName` no longer defaults to `'localhost'`
     * This change is not considered breaking since `commonName: 'localhost'` will result in an error when ordering a certificate
-* `fixed` Retry signed API requests on `urn:ietf:params:acme:error:badNonce` - [RFC 8555 Section 6.5](https://tools.ietf.org/html/rfc8555#section-6.5)
+* `fixed` Retry signed API requests on `urn:ietf:params:acme:error:badNonce` - [RFC 8555 Section 6.5](https://datatracker.ietf.org/doc/html/rfc8555#section-6.5)
 * `fixed` Minor bugs related to `POST-as-GET` when calling `updateAccount()`
 * `fixed` Ensure subject common name is present in SAN when creating a CSR - [CAB v1.2.3 Section 9.2.2](https://cabforum.org/wp-content/uploads/BRv1.2.3.pdf)
-* `fixed` Send empty JSON body when responding to challenges - [RFC 8555 Section 7.5.1](https://tools.ietf.org/html/rfc8555#section-7.5.1)
+* `fixed` Send empty JSON body when responding to challenges - [RFC 8555 Section 7.5.1](https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.1)
 
 ## v2.3.1 (2019-08-26)
 
@@ -193,8 +134,8 @@ A more detailed explanation can be found [at the Let's Encrypt forums](https://c
 
 ## v3.1.0 (2019-08-21)
 
-* `added` UTF-8 support when generating a CSR subject using forge - [RFC 5280](https://tools.ietf.org/html/rfc5280)
-* `fixed` Implement `POST-as-GET` for all ACME API requests - [RFC 8555 Section 6.3](https://tools.ietf.org/html/rfc8555#section-6.3)
+* `added` UTF-8 support when generating a CSR subject using forge - [RFC 5280](https://datatracker.ietf.org/doc/html/rfc5280)
+* `fixed` Implement `POST-as-GET` for all ACME API requests - [RFC 8555 Section 6.3](https://datatracker.ietf.org/doc/html/rfc8555#section-6.3)
 
 ## v2.3.0 (2019-08-21)
 
@@ -231,7 +172,7 @@ A more detailed explanation can be found [at the Let's Encrypt forums](https://c
 
 ## v2.0.1 (2018-08-17)
 
-* `fixed` Key rollover in compliance with [draft-ietf-acme-13](https://tools.ietf.org/html/draft-ietf-acme-acme-13)
+* `fixed` Key rollover in compliance with [draft-ietf-acme-13](https://datatracker.ietf.org/doc/html/draft-ietf-acme-acme-13)
 
 ## v2.0.0 (2018-04-02)
 

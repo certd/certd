@@ -132,7 +132,7 @@ catch (e) {
 ### acmeClient.createAccount([data]) ⇒ <code>Promise.&lt;object&gt;</code>
 Create a new account
 
-https://tools.ietf.org/html/rfc8555#section-7.3
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.3
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;object&gt;</code> - Account  
@@ -161,7 +161,7 @@ const account = await client.createAccount({
 ### acmeClient.updateAccount([data]) ⇒ <code>Promise.&lt;object&gt;</code>
 Update existing account
 
-https://tools.ietf.org/html/rfc8555#section-7.3.2
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.2
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;object&gt;</code> - Account  
@@ -182,7 +182,7 @@ const account = await client.updateAccount({
 ### acmeClient.updateAccountKey(newAccountKey, [data]) ⇒ <code>Promise.&lt;object&gt;</code>
 Update account private key
 
-https://tools.ietf.org/html/rfc8555#section-7.3.5
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.5
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;object&gt;</code> - Account  
@@ -203,7 +203,7 @@ const result = await client.updateAccountKey(newAccountKey);
 ### acmeClient.createOrder(data) ⇒ <code>Promise.&lt;object&gt;</code>
 Create a new order
 
-https://tools.ietf.org/html/rfc8555#section-7.4
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.4
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;object&gt;</code> - Order  
@@ -227,7 +227,7 @@ const order = await client.createOrder({
 ### acmeClient.getOrder(order) ⇒ <code>Promise.&lt;object&gt;</code>
 Refresh order object from CA
 
-https://tools.ietf.org/html/rfc8555#section-7.4
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.4
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;object&gt;</code> - Order  
@@ -246,7 +246,7 @@ const result = await client.getOrder(order);
 ### acmeClient.finalizeOrder(order, csr) ⇒ <code>Promise.&lt;object&gt;</code>
 Finalize order
 
-https://tools.ietf.org/html/rfc8555#section-7.4
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.4
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;object&gt;</code> - Order  
@@ -268,7 +268,7 @@ const result = await client.finalizeOrder(order, csr);
 ### acmeClient.getAuthorizations(order) ⇒ <code>Promise.&lt;Array.&lt;object&gt;&gt;</code>
 Get identifier authorizations from order
 
-https://tools.ietf.org/html/rfc8555#section-7.5
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.5
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;Array.&lt;object&gt;&gt;</code> - Authorizations  
@@ -292,7 +292,7 @@ authorizations.forEach((authz) => {
 ### acmeClient.deactivateAuthorization(authz) ⇒ <code>Promise.&lt;object&gt;</code>
 Deactivate identifier authorization
 
-https://tools.ietf.org/html/rfc8555#section-7.5.2
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.2
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;object&gt;</code> - Authorization  
@@ -312,7 +312,7 @@ const result = await client.deactivateAuthorization(authz);
 ### acmeClient.getChallengeKeyAuthorization(challenge) ⇒ <code>Promise.&lt;string&gt;</code>
 Get key authorization for ACME challenge
 
-https://tools.ietf.org/html/rfc8555#section-8.1
+https://datatracker.ietf.org/doc/html/rfc8555#section-8.1
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;string&gt;</code> - Key authorization  
@@ -353,7 +353,7 @@ await client.verifyChallenge(authz, challenge);
 ### acmeClient.completeChallenge(challenge) ⇒ <code>Promise.&lt;object&gt;</code>
 Notify CA that challenge has been completed
 
-https://tools.ietf.org/html/rfc8555#section-7.5.1
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.1
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;object&gt;</code> - Challenge  
@@ -373,7 +373,7 @@ const result = await client.completeChallenge(challenge);
 ### acmeClient.waitForValidStatus(item) ⇒ <code>Promise.&lt;object&gt;</code>
 Wait for ACME provider to verify status on a order, authorization or challenge
 
-https://tools.ietf.org/html/rfc8555#section-7.5.1
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.1
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;object&gt;</code> - Valid order, authorization or challenge  
@@ -389,7 +389,7 @@ const challenge = { ... };
 await client.waitForValidStatus(challenge);
 ```
 **Example**  
-Wait for valid authoriation status
+Wait for valid authorization status
 ```js
 const authz = { ... };
 await client.waitForValidStatus(authz);
@@ -405,7 +405,7 @@ await client.waitForValidStatus(order);
 ### acmeClient.getCertificate(order, [preferredChain]) ⇒ <code>Promise.&lt;string&gt;</code>
 Get certificate from ACME order
 
-https://tools.ietf.org/html/rfc8555#section-7.4.2
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.4.2
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 **Returns**: <code>Promise.&lt;string&gt;</code> - Certificate  
@@ -432,7 +432,7 @@ const certificate = await client.getCertificate(order, 'DST Root CA X3');
 ### acmeClient.revokeCertificate(cert, [data]) ⇒ <code>Promise</code>
 Revoke certificate
 
-https://tools.ietf.org/html/rfc8555#section-7.6
+https://datatracker.ietf.org/doc/html/rfc8555#section-7.6
 
 **Kind**: instance method of [<code>AcmeClient</code>](#AcmeClient)  
 

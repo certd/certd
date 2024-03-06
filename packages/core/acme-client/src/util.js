@@ -2,6 +2,7 @@
  * Utility methods
  */
 
+const tls = require('tls');
 const dns = require('dns').promises;
 const { readCertificateInfo, splitPemChain } = require('./crypto');
 const { log } = require('./logger');
@@ -92,7 +93,7 @@ function retry(fn, { attempts = 5, min = 5000, max = 30000 } = {}) {
  *
  * @param {string} header Link header contents
  * @param {string} rel Link relation, default: `alternate`
- * @returns {array} Array of URLs
+ * @returns {string[]} Array of URLs
  */
 
 function parseLinkHeader(header, rel = 'alternate') {
@@ -112,7 +113,7 @@ function parseLinkHeader(header, rel = 'alternate') {
  *  - If issuer is found in multiple chains, the closest to root wins
  *  - If issuer can not be located, the first chain will be returned
  *
- * @param {array} certificates Array of PEM encoded certificate chains
+ * @param {string[]} certificates Array of PEM encoded certificate chains
  * @param {string} issuer Preferred certificate issuer
  * @returns {string} PEM encoded certificate chain
  */
@@ -246,6 +247,60 @@ async function getAuthoritativeDnsResolver(recordName) {
 
 
 /**
+ * Attempt to retrieve TLS ALPN certificate from peer
+ *
+ * https://nodejs.org/api/tls.html#tlsconnectoptions-callback
+ *
+ * @param {string} host Host the TLS client should connect to
+ * @param {number} port Port the client should connect to
+ * @param {string} servername Server name for the SNI (Server Name Indication)
+ * @returns {Promise<string>} PEM encoded certificate
+ */
+
+async function retrieveTlsAlpnCertificate(host, port, timeout = 30000) {
+    return new Promise((resolve, reject) => {
+        let result;
+
+        /* TLS connection */
+        const socket = tls.connect({
+            host,
+            port,
+            servername: host,
+            rejectUnauthorized: false,
+            ALPNProtocols: ['acme-tls/1']
+        });
+
+        socket.setTimeout(timeout);
+        socket.setEncoding('utf-8');
+
+        /* Grab certificate once connected and close */
+        socket.on('secureConnect', () => {
+            result = socket.getPeerX509Certificate();
+            socket.end();
+        });
+
+        /* Errors */
+        socket.on('error', (err) => {
+            reject(err);
+        });
+
+        socket.on('timeout', () => {
+            socket.destroy(new Error('TLS ALPN certificate lookup request timed out'));
+        });
+
+        /* Done, return cert as PEM if found */
+        socket.on('end', () => {
+            if (result) {
+                return resolve(result.toString());
+            }
+
+            return reject(new Error('TLS ALPN lookup failed to retrieve certificate'));
+        });
+    });
+}
+
+
+/**
  * Export utils
  */
 
@@ -254,5 +309,6 @@ module.exports = {
     parseLinkHeader,
     findCertificateChainForIssuer,
     formatResponseError,
-    getAuthoritativeDnsResolver
+    getAuthoritativeDnsResolver,
+    retrieveTlsAlpnCertificate
 };

@@ -1,0 +1,94 @@
+---
+name: test
+on: [push, pull_request]
+
+jobs:
+  test:
+    name: node=${{matrix.node}} eab=${{matrix.eab}}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: [16, 18, 20]
+        eab: [0, 1]
+
+
+    #
+    # Environment
+    #
+
+    env:
+      FORCE_COLOR: 1
+      NPM_CONFIG_COLOR: always
+
+      PEBBLE_VERSION: 2.3.1
+      PEBBLE_ALTERNATE_ROOTS: 2
+      PEBBLECTS_VERSION: 2.3.1
+      PEBBLECTS_DNS_PORT: 8053
+      COREDNS_VERSION: 1.11.1
+
+      NODE_EXTRA_CA_CERTS: /etc/pebble/ca.cert.pem
+      ACME_CA_CERT_PATH: /etc/pebble/ca.cert.pem
+
+      ACME_DIRECTORY_URL: https://127.0.0.1:14000/dir
+      ACME_CHALLTESTSRV_URL: http://127.0.0.1:8055
+      ACME_PEBBLE_MANAGEMENT_URL: https://127.0.0.1:15000
+
+      ACME_DOMAIN_NAME: test.example.com
+      ACME_CAP_EAB_ENABLED: ${{matrix.eab}}
+
+      ACME_TLSALPN_PORT: 5001
+      ACME_HTTP_PORT: 5002
+      ACME_HTTPS_PORT: 5003
+
+
+    #
+    # Pipeline
+    #
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{matrix.node}}
+
+      # Pebble Challenge Test Server
+      - name: Install Pebble Challenge Test Server
+        run: sudo -E /bin/bash ./.github/scripts/tests-install-cts.sh
+
+      - name: Start Pebble Challenge Test Server
+        run: |-
+          nohup bash -c "pebble-challtestsrv \
+            -dns01 :${PEBBLECTS_DNS_PORT} \
+            -tlsalpn01 :${ACME_TLSALPN_PORT} \
+            -http01 :${ACME_HTTP_PORT} \
+            -https01 :${ACME_HTTPS_PORT} \
+            -defaultIPv4 127.0.0.1 \
+            -defaultIPv6 \"\" &"
+
+      # Pebble
+      - name: Install Pebble
+        run: sudo -E /bin/bash ./.github/scripts/tests-install-pebble.sh
+
+      - name: Start Pebble
+        run: nohup bash -c "pebble -strict -config /etc/pebble/pebble.json -dnsserver 127.53.53.53:53 &"
+
+      - name: Wait for Pebble
+        run: /bin/bash ./.github/scripts/tests-wait-for-ca.sh
+
+      # CoreDNS
+      - name: Install CoreDNS
+        run: sudo -E /bin/bash ./.github/scripts/tests-install-coredns.sh
+
+      - name: Start CoreDNS
+        run: nohup bash -c "sudo coredns -p 53 -conf /etc/coredns/Corefile &"
+
+      - name: Use CoreDNS for DNS resolution
+        run: echo "nameserver 127.53.53.53" | sudo tee /etc/resolv.conf
+
+      # Run tests
+      - run: npm i
+      - run: npm run lint
+      - run: npm run lint-types
+      - run: npm run build-docs
+      - run: npm run test

@@ -10,10 +10,10 @@ const { crypto } = require('./../');
 
 const emptyBodyChain1 = `
 -----BEGIN TEST-----
-a
+dGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZw==
 -----END TEST-----
 -----BEGIN TEST-----
-b
+dGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZw==
 -----END TEST-----
 
 -----BEGIN TEST-----
@@ -22,7 +22,7 @@ b
 
 
 -----BEGIN TEST-----
-c
+dGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZw==
 -----END TEST-----
 `;
 
@@ -38,15 +38,15 @@ const emptyBodyChain2 = `
 -----END TEST-----
 
 -----BEGIN TEST-----
-a
+dGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZw==
 -----END TEST-----
 
 
 -----BEGIN TEST-----
-b
+dGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZw==
 -----END TEST-----
 -----BEGIN TEST-----
-c
+dGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZw==
 -----END TEST-----
 `;
 
@@ -95,6 +95,7 @@ describe('crypto', () => {
                 let testSanCsr;
                 let testNonCnCsr;
                 let testNonAsciiCsr;
+                let testAlpnCertificate;
 
 
                 /**
@@ -111,6 +112,11 @@ describe('crypto', () => {
                     assert.isTrue(Buffer.isBuffer(testPublicKeys[n]));
                 });
 
+                it(`${n}/should get public key from string`, () => {
+                    testPublicKeys[n] = crypto.getPublicKey(testPrivateKeys[n].toString());
+                    assert.isTrue(Buffer.isBuffer(testPublicKeys[n]));
+                });
+
                 it(`${n}/should get jwk from private key`, () => {
                     const jwk = crypto.getJwk(testPrivateKeys[n]);
                     jwkSpecFn(jwk);
@@ -118,6 +124,11 @@ describe('crypto', () => {
 
                 it(`${n}/should get jwk from public key`, () => {
                     const jwk = crypto.getJwk(testPublicKeys[n]);
+                    jwkSpecFn(jwk);
+                });
+
+                it(`${n}/should get jwk from string`, () => {
+                    const jwk = crypto.getJwk(testPrivateKeys[n].toString());
                     jwkSpecFn(jwk);
                 });
 
@@ -173,6 +184,15 @@ describe('crypto', () => {
                     testNonAsciiCsr = csr;
                 });
 
+                it(`${n}/should generate a csr with key as string`, async () => {
+                    const [key, csr] = await crypto.createCsr({
+                        commonName: testCsrDomain
+                    }, testPrivateKeys[n].toString());
+
+                    assert.isTrue(Buffer.isBuffer(key));
+                    assert.isTrue(Buffer.isBuffer(csr));
+                });
+
                 it(`${n}/should throw with invalid key`, async () => {
                     await assert.isRejected(crypto.createCsr({
                         commonName: testCsrDomain
@@ -215,6 +235,51 @@ describe('crypto', () => {
                     assert.strictEqual(result.commonName, testCsrDomain);
                     assert.deepStrictEqual(result.altNames, [testCsrDomain]);
                 });
+
+                it(`${n}/should resolve domains from csr string`, () => {
+                    [testCsr, testSanCsr, testNonCnCsr, testNonAsciiCsr].forEach((csr) => {
+                        const result = crypto.readCsrDomains(csr.toString());
+                        spec.crypto.csrDomains(result);
+                    });
+                });
+
+
+                /**
+                 * ALPN
+                 */
+
+                it(`${n}/should generate alpn certificate`, async () => {
+                    const authz = { identifier: { value: 'test.example.com' } };
+                    const [key, cert] = await crypto.createAlpnCertificate(authz, 'super-secret.12345', await createFn());
+
+                    assert.isTrue(Buffer.isBuffer(key));
+                    assert.isTrue(Buffer.isBuffer(cert));
+
+                    testAlpnCertificate = cert;
+                });
+
+                it(`${n}/should generate alpn certificate with key as string`, async () => {
+                    const k = await createFn();
+                    const authz = { identifier: { value: 'test.example.com' } };
+                    const [key, cert] = await crypto.createAlpnCertificate(authz, 'super-secret.12345', k.toString());
+
+                    assert.isTrue(Buffer.isBuffer(key));
+                    assert.isTrue(Buffer.isBuffer(cert));
+                });
+
+                it(`${n}/should not validate invalid alpn certificate key authorization`, () => {
+                    assert.isFalse(crypto.isAlpnCertificateAuthorizationValid(testAlpnCertificate, 'aaaaaaa'));
+                    assert.isFalse(crypto.isAlpnCertificateAuthorizationValid(testAlpnCertificate, 'bbbbbbb'));
+                    assert.isFalse(crypto.isAlpnCertificateAuthorizationValid(testAlpnCertificate, 'ccccccc'));
+                });
+
+                it(`${n}/should validate valid alpn certificate key authorization`, () => {
+                    assert.isTrue(crypto.isAlpnCertificateAuthorizationValid(testAlpnCertificate, 'super-secret.12345'));
+                });
+
+                it(`${n}/should validate valid alpn certificate with cert as string`, () => {
+                    assert.isTrue(crypto.isAlpnCertificateAuthorizationValid(testAlpnCertificate.toString(), 'super-secret.12345'));
+                });
             });
         });
     });
@@ -250,7 +315,7 @@ describe('crypto', () => {
          * CSR with auto-generated key
          */
 
-        it('should generate a csr with auto-generated key', async () => {
+        it('should generate a csr with default key', async () => {
             const [key, csr] = await crypto.createCsr({
                 commonName: testCsrDomain
             });
@@ -280,6 +345,26 @@ describe('crypto', () => {
             assert.deepEqual(info.domains.altNames, testSanCsrDomains.slice(1, testSanCsrDomains.length));
         });
 
+        it('should read certificate info from string', () => {
+            [testCert, testSanCert].forEach((cert) => {
+                const info = crypto.readCertificateInfo(cert.toString());
+                spec.crypto.certificateInfo(info);
+            });
+        });
+
+
+        /**
+         * ALPN
+         */
+
+        it('should generate alpn certificate with default key', async () => {
+            const authz = { identifier: { value: 'test.example.com' } };
+            const [key, cert] = await crypto.createAlpnCertificate(authz, 'abc123');
+
+            assert.isTrue(Buffer.isBuffer(key));
+            assert.isTrue(Buffer.isBuffer(cert));
+        });
+
 
         /**
          * PEM utils
@@ -296,9 +381,30 @@ describe('crypto', () => {
             });
         });
 
+        it('should get pem body as b64u from string', () => {
+            [testPemKey, testCert, testSanCert].forEach((pem) => {
+                const body = crypto.getPemBodyAsB64u(pem.toString());
+
+                assert.isString(body);
+                assert.notInclude(body, '\r');
+                assert.notInclude(body, '\n');
+                assert.notInclude(body, '\r\n');
+            });
+        });
+
         it('should split pem chain', () => {
             [testPemKey, testCert, testSanCert].forEach((pem) => {
                 const chain = crypto.splitPemChain(pem);
+
+                assert.isArray(chain);
+                assert.isNotEmpty(chain);
+                chain.forEach((c) => assert.isString(c));
+            });
+        });
+
+        it('should split pem chain from string', () => {
+            [testPemKey, testCert, testSanCert].forEach((pem) => {
+                const chain = crypto.splitPemChain(pem.toString());
 
                 assert.isArray(chain);
                 assert.isNotEmpty(chain);

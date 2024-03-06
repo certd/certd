@@ -182,6 +182,7 @@ module.exports = async function(client, userOpts) {
         return promise;
     }
 
+
     await runPromisesSerially(challengePromises);
     log('challenge结束');
 

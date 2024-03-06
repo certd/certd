@@ -4,7 +4,6 @@
 
 const acme = require('./../');
 
-
 function log(m) {
     process.stdout.write(`${m}\n`);
 }

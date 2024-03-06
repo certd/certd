@@ -281,7 +281,7 @@ exports.readCertificateInfo = async function(cert) {
 
 /**
  * Determine ASN.1 type for CSR subject short name
- * Note: https://tools.ietf.org/html/rfc5280
+ * Note: https://datatracker.ietf.org/doc/html/rfc5280
  *
  * @private
  * @param {string} shortName CSR subject short name
@@ -343,7 +343,7 @@ function formatCsrAltNames(altNames) {
  * @param {object} data
  * @param {number} [data.keySize] Size of newly created private key, default: `2048`
  * @param {string} [data.commonName]
- * @param {array} [data.altNames] default: `[]`
+ * @param {string[]} [data.altNames] default: `[]`
  * @param {string} [data.country]
  * @param {string} [data.state]
  * @param {string} [data.locality]

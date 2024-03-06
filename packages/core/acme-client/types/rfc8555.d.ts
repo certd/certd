@@ -1,9 +1,9 @@
 /**
  * Account
  *
- * https://tools.ietf.org/html/rfc8555#section-7.1.2
- * https://tools.ietf.org/html/rfc8555#section-7.3
- * https://tools.ietf.org/html/rfc8555#section-7.3.2
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-7.1.2
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-7.3
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.2
  */
 
 export interface Account {
@@ -31,8 +31,8 @@ export interface AccountUpdateRequest {
 /**
  * Order
  *
- * https://tools.ietf.org/html/rfc8555#section-7.1.3
- * https://tools.ietf.org/html/rfc8555#section-7.4
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-7.1.3
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-7.4
  */
 
 export interface Order {
@@ -57,7 +57,7 @@ export interface OrderCreateRequest {
 /**
  * Authorization
  *
- * https://tools.ietf.org/html/rfc8555#section-7.1.4
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-7.1.4
  */
 
 export interface Authorization {
@@ -77,9 +77,9 @@ export interface Identifier {
 /**
  * Challenge
  *
- * https://tools.ietf.org/html/rfc8555#section-8
- * https://tools.ietf.org/html/rfc8555#section-8.3
- * https://tools.ietf.org/html/rfc8555#section-8.4
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-8
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-8.3
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-8.4
  */
 
 export interface ChallengeAbstract {
@@ -106,7 +106,7 @@ export type Challenge = HttpChallenge | DnsChallenge;
 /**
  * Certificate
  *
- * https://tools.ietf.org/html/rfc8555#section-7.6
+ * https://datatracker.ietf.org/doc/html/rfc8555#section-7.6
  */
 
 export enum CertificateRevocationReason {

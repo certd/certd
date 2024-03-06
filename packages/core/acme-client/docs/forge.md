@@ -209,7 +209,7 @@ Create a Certificate Signing Request
 | data | <code>object</code> |  |
 | [data.keySize] | <code>number</code> | Size of newly created private key, default: `2048` |
 | [data.commonName] | <code>string</code> |  |
-| [data.altNames] | <code>array</code> | default: `[]` |
+| [data.altNames] | <code>Array.&lt;string&gt;</code> | default: `[]` |
 | [data.country] | <code>string</code> |  |
 | [data.state] | <code>string</code> |  |
 | [data.locality] | <code>string</code> |  |
