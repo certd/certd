@@ -25,8 +25,6 @@
     "@alicloud/cs20151215": "^3.0.3",
     "@alicloud/openapi-client": "^0.4.0",
     "@alicloud/pop-core": "^1.7.10",
-    "@midwayjs/core": "^3.0.0",
-    "@midwayjs/decorator": "^3.0.0",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
