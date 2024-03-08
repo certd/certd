@@ -187,10 +187,22 @@ module.exports = async function(client, userOpts) {
     }
 
 
-    await runPromisesSerially(challengePromises);
+    try {
+        await runPromisesSerially(challengePromises);
+    }
+    finally {
+        await runPromisesSerially(clearTasks);
+    }
 
-    log('清理challenge');
-    await runPromisesSerially(clearTasks);
+    // try {
+    //     await Promise.allSettled(challengePromises);
+    // }
+    // finally {
+    //     log('清理challenge');
+    //     await Promise.allSettled(clearTasks);
+    // }
+
+
     log('challenge结束');
 
     // log('[auto] Waiting for challenge valid status');

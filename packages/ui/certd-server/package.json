@@ -46,6 +46,7 @@
     "cache-manager": "^3.6.3",
     "dayjs": "^1.11.7",
     "glob": "^7.2.3",
+    "https-proxy-agent": "^7.0.4",
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.1",
     "koa-send": "^5.0.1",

@@ -1,14 +1,7 @@
 <template>
   <div class="pi-editable" :class="{ disabled, 'hover-show': hoverShow }">
     <div v-if="isEdit" class="input">
-      <a-input
-        ref="inputRef"
-        v-model:value="valueRef"
-        :validate-status="modelValue ? '' : 'error'"
-        v-bind="input"
-        @keyup.enter="save()"
-        @blur="save()"
-      >
+      <a-input ref="inputRef" v-model:value="valueRef" :validate-status="modelValue ? '' : 'error'" v-bind="input" @keyup.enter="save()" @blur="save()">
         <template #suffix>
           <fs-icon icon="ant-design:check-outlined" @click="save()"></fs-icon>
         </template>
@@ -81,6 +74,7 @@ export default {
 
 <style lang="less">
 .pi-editable {
+  flex: 1;
   line-height: 34px;
 
   span.fs-iconify {
