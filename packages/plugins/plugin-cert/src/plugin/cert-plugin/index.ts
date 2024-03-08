@@ -39,7 +39,7 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     helper:
       "支持通配符域名，例如： *.foo.com、foo.com、*.test.handsfree.work\n" +
       "支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）\n" +
-      "多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com）\n" +
+      "多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com、foo.com）\n" +
       "输入一个回车之后，再输入下一个",
   })
   domains!: string;
