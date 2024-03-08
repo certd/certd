@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model:visible="taskModal.visible" class="pi-task-view" title="任务日志" style="width: 80%" v-bind="taskModal">
+  <a-modal v-model:open="taskModal.open" class="pi-task-view" title="任务日志" style="width: 80%" v-bind="taskModal">
     <a-tabs v-model:activeKey="activeKey" tab-position="left" animated>
       <a-tab-pane v-for="item of detail.nodes" :key="item.node.id">
         <template #tab>
@@ -25,7 +25,7 @@ export default {
   props: {},
   setup(props: any, ctx: any) {
     const taskModal = ref({
-      visible: false,
+      open: false,
       onOk() {
         taskViewClose();
       },
@@ -36,7 +36,7 @@ export default {
     const activeKey = ref();
     const currentHistory: Ref<RunHistory> | undefined = inject("currentHistory");
     const taskViewOpen = (task: any) => {
-      taskModal.value.visible = true;
+      taskModal.value.open = true;
       const nodes: any = [];
       // nodes.push({
       //   node: task,
@@ -71,7 +71,7 @@ export default {
     };
 
     const taskViewClose = () => {
-      taskModal.value.visible = false;
+      taskModal.value.open = false;
     };
 
     return {

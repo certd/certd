@@ -1,5 +1,5 @@
 <template>
-  <a-drawer v-model:visible="stepDrawerVisible" placement="right" :closable="true" width="600px" @after-visible-change="stepDrawerOnAfterVisibleChange">
+  <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="600px" @after-open-change="stepDrawerOnAfterVisibleChange">
     <template #title>
       编辑任务
       <a-button v-if="editMode" @click="stepDelete()">

@@ -1,11 +1,11 @@
 <template>
   <a-drawer
-    v-model:visible="triggerDrawerVisible"
+    v-model:open="triggerDrawerVisible"
     placement="right"
     :closable="true"
     width="600px"
     class="pi-trigger-form"
-    @after-visible-change="triggerDrawerOnAfterVisibleChange"
+    @after-open-change="triggerDrawerOnAfterVisibleChange"
   >
     <template #title>
       编辑触发器

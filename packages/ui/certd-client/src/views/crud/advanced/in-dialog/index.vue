@@ -7,7 +7,7 @@
       <a-button type="primary" @click="openDialog">打开对话框</a-button>
     </div>
 
-    <a-modal v-model:visible="dialogShow" width="80%" title="fs-crud in dialog">
+    <a-modal v-model:open="dialogShow" width="80%" title="fs-crud in dialog">
       <div style="height: 400px; position: relative">
         <!-- 在此处显示fs-crud页面 -->
         <fs-in-dialog></fs-in-dialog>

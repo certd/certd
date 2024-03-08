@@ -1,5 +1,5 @@
 <template>
-  <a-drawer v-model:visible="notificationDrawerVisible" placement="right" :closable="true" width="600px" class="pi-notification-form" @after-visible-change="notificationDrawerOnAfterVisibleChange">
+  <a-drawer v-model:open="notificationDrawerVisible" placement="right" :closable="true" width="600px" class="pi-notification-form" @after-open-change="notificationDrawerOnAfterVisibleChange">
     <template #title>
       编辑触发器
       <a-button v-if="mode === 'edit'" @click="notificationDelete()">

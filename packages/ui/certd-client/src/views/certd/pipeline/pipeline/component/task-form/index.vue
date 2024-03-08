@@ -1,5 +1,5 @@
 <template>
-  <a-drawer v-model:visible="taskDrawerVisible" placement="right" :closable="true" width="600px" class="pi-task-form" @after-visible-change="taskDrawerOnAfterVisibleChange">
+  <a-drawer v-model:open="taskDrawerVisible" placement="right" :closable="true" width="600px" class="pi-task-form" @after-open-change="taskDrawerOnAfterVisibleChange">
     <template #title>
       编辑任务
       <a-button v-if="editMode" @click="taskDelete()">
