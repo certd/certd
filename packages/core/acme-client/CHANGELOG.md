@@ -1,3 +1,14 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [1.20.5](https://github.com/publishlab/node-acme-client/compare/v1.20.2...v1.20.5) (2024-03-11)
+
+### Bug Fixes
+
+* 修复腾讯云cdn部署无法选择端点的bug ([154409b](https://github.com/publishlab/node-acme-client/commit/154409b1dfee3ea1caae740ad9c1f99a6e7a9814))
+
 # Changelog
 
 ## v5.3.0 (2024-02-05)
