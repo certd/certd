@@ -3,7 +3,7 @@
  */
 
 const { createHmac, createSign, constants: { RSA_PKCS1_PADDING } } = require('crypto');
-const HttpsProxyAgent = require('https-proxy-agent');
+const { HttpsProxyAgent } = require('https-proxy-agent');
 const { getJwk } = require('./crypto');
 const { log } = require('./logger');
 const axios1 = require('./axios');

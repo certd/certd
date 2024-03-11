@@ -47,16 +47,16 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
   })
   domainName!: string;
 
-  @TaskInput({
-    title: "CDN接口",
-    helper: "CDN接口端点",
-    component: {
-      name: "a-select",
-      type: "tencent",
-    },
-    required: true,
-  })
-  endpoint!: string;
+  // @TaskInput({
+  //   title: "CDN接口",
+  //   helper: "CDN接口端点",
+  //   component: {
+  //     name: "a-select",
+  //     type: "tencent",
+  //   },
+  //   required: true,
+  // })
+  // endpoint!: string;
 
   accessService!: IAccessService;
 
