@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-center",
   "private": false,
-  "version": "1.20.5",
+  "version": "1.20.6",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
@@ -17,9 +17,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/pipeline": "^1.20.5",
-    "@certd/plugin-cert": "^1.20.5",
-    "@certd/plugin-util": "^1.20.5",
+    "@certd/pipeline": "^1.20.6",
+    "@certd/plugin-cert": "^1.20.6",
+    "@certd/plugin-util": "^1.20.6",
     "@rollup/plugin-dynamic-import-vars": "^2.1.2"
   },
   "devDependencies": {

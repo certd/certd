@@ -1,7 +1,7 @@
 {
   "name": "@certd/pipeline",
   "private": false,
-  "version": "1.20.5",
+  "version": "1.20.6",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
@@ -23,8 +23,7 @@
     "qs": "^6.11.2"
   },
   "devDependencies": {
-    "prettier": "^2.8.8",
-    "@certd/acme-client": "^1.20.5",
+    "@certd/acme-client": "^1.20.6",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
@@ -47,6 +46,7 @@
     "lodash": "^4.17.21",
     "log4js": "^6.9.1",
     "mocha": "^10.2.0",
+    "prettier": "^2.8.8",
     "reflect-metadata": "^0.1.13",
     "rollup": "^3.7.4",
     "rollup-plugin-typescript2": "^0.34.1",
