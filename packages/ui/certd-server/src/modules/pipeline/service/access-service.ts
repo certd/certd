@@ -1,12 +1,9 @@
-import { Provide, Scope, ScopeEnum } from "@midwayjs/decorator";
+import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service';
 import { AccessEntity } from '../entity/access';
-import {
-  accessRegistry,
-  IAccessService,
-} from '@certd/pipeline';
+import { accessRegistry, IAccessService } from '@certd/pipeline';
 
 /**
  * 授权
@@ -38,7 +35,8 @@ export class AccessService
     return accessRegistry.getDefineList();
   }
 
-  getDefineByType(type) {
+  getDefineByType(type: string) {
     return accessRegistry.getDefine(type);
   }
+
 }

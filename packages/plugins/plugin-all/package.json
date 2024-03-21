@@ -17,7 +17,9 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "prettier": "^2.8.8",
     "@certd/pipeline": "^1.20.5",
+    "@certd/plugin-center": "^1.20.5",
     "@certd/plugin-aliyun": "^1.20.5",
     "@certd/plugin-cert": "^1.20.5",
     "@certd/plugin-host": "^1.20.5",

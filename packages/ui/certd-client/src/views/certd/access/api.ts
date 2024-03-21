@@ -47,3 +47,11 @@ export function GetProviderDefine(type: string) {
     params: { type }
   });
 }
+
+export function GetProviderDefineByAccessType(type: string) {
+  return request({
+    url: apiPrefix + "/defineByAccessType",
+    method: "post",
+    params: { type }
+  });
+}
