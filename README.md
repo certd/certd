@@ -119,7 +119,12 @@ http://your_server_ip:7001
 </p>
 
 
-## 七、我的其他项目
+## 七、贡献代码
+
+[贡献插件教程](./packages/plugins/plugin-center/README.md)
+
+
+## 八、我的其他项目
 * [袖手GPT](https://ai.handsfree.work/) ChatGPT，国内可用，无需FQ，每日免费额度
 * [fast-crud](https://gitee.com/fast-crud/fast-crud/) 基于vue3的crud快速开发框架
 * [dev-sidecar](https://github.com/docmirror/dev-sidecar/) 直连访问github工具，无需FQ，解决github无法访问的问题

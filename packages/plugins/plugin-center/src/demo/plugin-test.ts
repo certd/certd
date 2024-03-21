@@ -15,6 +15,10 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
   //测试参数
   @TaskInput({
     title: "属性示例",
+    component:{
+      //前端组件配置，具体配置见组件文档 https://www.antdv.com/components/input-cn
+      name:"a-input"
+    }
   })
   text!: string;
 
@@ -22,6 +26,7 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "选择框",
     component:{
+      //前端组件配置，具体配置见组件文档 https://www.antdv.com/components/select-cn
       name:"a-select",
       options:[
         {value:"1",label:"选项1"},
@@ -35,7 +40,9 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "switch",
     component:{
+      //前端组件配置，具体配置见组件文档 https://www.antdv.com/components/switch-cn
       name:"a-switch",
+      vModel:"checked"
     }
   })
   switch!: boolean;
@@ -56,7 +63,7 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
     helper: "demoAccess授权",
     component: {
       name: "pi-access-selector",
-      type: "demoAccess",
+      type: "demo",
     },
     rules: [{ required: true, message: "此项必填" }],
   })

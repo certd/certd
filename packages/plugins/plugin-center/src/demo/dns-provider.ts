@@ -5,7 +5,6 @@ import { DemoAccess } from "./access";
 
 // TODO  这里注册一个dnsProvider
 @IsDnsProvider({
-  //注意这里name，要跟access的name一致
   name: "demo",
   title: "Dns提供商Demo",
   desc: "demo dns provider示例",
