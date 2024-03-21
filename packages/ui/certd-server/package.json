@@ -30,6 +30,7 @@
     "@certd/plugin-huawei": "^1.20.5",
     "@certd/plugin-tencent": "^1.20.5",
     "@certd/plugin-util": "^1.20.5",
+    "@certd/plugin-center": "^1.20.5",
     "@koa/cors": "^3.4.3",
     "@midwayjs/bootstrap": "^3.15.0",
     "@midwayjs/cache": "^3.14.0",

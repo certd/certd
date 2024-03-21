@@ -37,6 +37,7 @@ export default defineConfig({
         "@certd/plugin-host",
         "@certd/plugin-tencent",
         "@certd/plugin-util",
+        "@certd/plugin-center",
       ],
       output: {
         globals: {
@@ -50,6 +51,7 @@ export default defineConfig({
           "@certd/plugin-host": "CertdPluginHost",
           "@certd/plugin-huawei": "CertdPluginHuawei",
           "@certd/plugin-util": "CertdPluginUtil",
+          "@certd/plugin-center": "CertdPluginCenter",
         },
       },
     },
