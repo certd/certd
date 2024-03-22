@@ -71,11 +71,11 @@ https://github.com/certd/certd/releases
 ### 3. 运行
 ```bash
 # 如果docker compose是插件化安装
-export CERTD_VERSION=1.2.0
+export CERTD_VERSION=1.20.9
 docker compose up -d
 
 #如果docker compose是独立安装
-export CERTD_VERSION=1.2.0
+export CERTD_VERSION=1.20.9
 docker-compose up -d
 
 ```
@@ -84,6 +84,12 @@ docker-compose up -d
 http://your_server_ip:7001 
 默认账号密码：admin/123456 
 记得修改密码
+
+
+### 5. 升级
+
+* 修改版本号，重新运行 `docker compose up -d` 即可
+* 数据存在`/data/certd`目录下，不用担心数据丢失
 
 
 ## 五、一些说明
