@@ -1,18 +1,26 @@
 # 贡献插件
 
 ## 1.本地调试运行
-server:
+
+安装依赖包:      
+```shell
+cd certd
+pnpm install
+```
+
+启动 server:    
 ```shell
 cd packages/ui/certd-server
 npm run dev
 ```
 
-client:
+启动 client:    
 ```shell
 cd packages/ui/certd-client
 npm run dev
 
-# 访问客户端，即可测试你的插件
+# 会自动打开浏览器，确认正常运行
+
 ```
 
 ## 开发插件
@@ -47,7 +55,7 @@ export * from "./你的插件目录"
 ```
 
 ## 重启服务进行调试
-确保能够正常进行证书申请和部署
+刷新浏览器，检查你的插件是否工作正常， 确保能够正常进行证书申请和部署    
 
 ## 提交PR
 我们将尽快审核PR
