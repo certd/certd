@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-huawei",
   "private": false,
-  "version": "1.20.7",
+  "version": "1.20.8",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
@@ -17,10 +17,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "^1.20.7",
-    "@certd/pipeline": "^1.20.7",
-    "@certd/plugin-cert": "^1.20.7",
-    "@certd/plugin-util": "^1.20.7",
+    "@certd/acme-client": "^1.20.8",
+    "@certd/pipeline": "^1.20.8",
+    "@certd/plugin-cert": "^1.20.8",
+    "@certd/plugin-util": "^1.20.8",
     "axios": "^0.27.2",
     "dayjs": "^1.11.6",
     "lodash": "^4.17.21",
