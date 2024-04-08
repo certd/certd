@@ -11,6 +11,7 @@ export class HuaweiAccess {
     component: {
       placeholder: "accessKeyId",
     },
+    helper:"证书申请需要有dns解析权限",
     required: true,
   })
   accessKeyId = "";
