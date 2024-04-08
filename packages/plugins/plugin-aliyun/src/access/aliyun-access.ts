@@ -11,6 +11,7 @@ export class AliyunAccess {
     component: {
       placeholder: "accessKeyId",
     },
+    helper:"注意：证书申请，需要dns解析权限；其他阿里云插件，也需要对应的权限，比如证书上传需要证书管理权限",
     required: true,
   })
   accessKeyId = "";

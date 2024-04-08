@@ -19,8 +19,8 @@ export class SshClient {
          }
    * @param options
    */
-  uploadFiles(options: { connectConf: any; transports: any; sudo: boolean }) {
-    const { connectConf, transports, sudo } = options;
+  uploadFiles(options: { connectConf: any; transports: any; }) {
+    const { connectConf, transports } = options;
     const conn = new ssh2.Client();
 
     return new Promise((resolve, reject) => {
@@ -35,8 +35,7 @@ export class SshClient {
             try {
               for (const transport of transports) {
                 this.logger.info("上传文件：", JSON.stringify(transport));
-                const sudoCmd = sudo ? "sudo" : "";
-                await this.exec({ connectConf, script: `${sudoCmd} mkdir -p ${path.dirname(transport.remotePath)} ` });
+                await this.exec({ connectConf, script: `mkdir -p ${path.dirname(transport.remotePath)} ` });
                 await this.fastPut({ sftp, ...transport });
               }
               resolve({});

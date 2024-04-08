@@ -15,10 +15,18 @@ import * as fs from "fs";
 export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "证书保存路径",
+    helper: "需要有写入权限，路径要包含证书文件名",
+    component:{
+      placeholder:"/root/deploy/nginx/cert.crt",
+    }
   })
   crtPath!: string;
   @TaskInput({
     title: "私钥保存路径",
+    helper: "需要有写入权限，路径要包含证书文件名",
+    component:{
+      placeholder:"/root/deploy/nginx/cert.crt",
+    }
   })
   keyPath!: string;
   @TaskInput({
@@ -40,14 +48,6 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
     rules: [{ required: true, message: "此项必填" }],
   })
   accessId!: string;
-  @TaskInput({
-    title: "是否sudo",
-    component: {
-      name: "a-checkbox",
-      vModel: "checked",
-    },
-  })
-  sudo!: boolean;
 
   @TaskOutput({
     title: "证书保存路径",
@@ -67,7 +67,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
     this.logger = this.ctx.logger;
   }
   async execute(): Promise<void> {
-    const { crtPath, keyPath, cert, accessId, sudo } = this;
+    const { crtPath, keyPath, cert, accessId } = this;
     const certReader = new CertReader(cert);
     const connectConf = await this.accessService.getById(accessId);
     const sshClient = new SshClient(this.logger);
@@ -87,7 +87,6 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
           remotePath: keyPath,
         },
       ],
-      sudo,
     });
     this.logger.info("证书上传成功：crtPath=", crtPath, ",keyPath=", keyPath);
 
