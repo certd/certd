@@ -12,12 +12,11 @@
   "scripts": {
     "start": "lerna bootstrap --hoist",
     "i-all": "lerna link && lerna exec npm install  ",
-    "publish": "npm run proxy && npm run prepublishOnly1  && lerna publish --conventional-commits && npm run afterpublishOnly && npm run deploy1",
+    "publish": "npm run prepublishOnly1  && lerna publish --conventional-commits && npm run afterpublishOnly && npm run deploy1",
     "afterpublishOnly": "",
-    "proxy": "npm config set proxy=http://127.0.0.1:10809",
     "prepublishOnly1": "npm run before-build && lerna run build ",
     "before-build": "cd ./packages/core/acme-client && time /t >build.md && git add ./build.md && git commit -m \"build: prepare to build\"",
-    "deploy1": "node deploy.js"
+    "deploy1": "node --experimental-json-modules deploy.js "
   },
   "license": "AGPL-3.0",
   "dependencies": {

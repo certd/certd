@@ -39,5 +39,6 @@ module.exports = {
     "@certd/plugin-host",
     "@certd/plugin-tencent",
     "@certd/plugin-util",
+    "@certd/plugin-center",
   ],
 };

@@ -62,8 +62,8 @@ export class AccessController extends CrudController<AccessService> {
 
   @Post('/define', { summary: Constants.per.authOnly })
   async define(@Query('type') type) {
-    const provider = this.service.getDefineByType(type);
-    return this.ok(provider);
+    const access = this.service.getDefineByType(type);
+    return this.ok(access);
   }
 
   @Post('/accessTypeDict', { summary: Constants.per.authOnly })

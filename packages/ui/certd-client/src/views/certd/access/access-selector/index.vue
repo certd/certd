@@ -17,6 +17,7 @@
 import { defineComponent, reactive, ref, watch } from "vue";
 import * as api from "../api";
 import CertAccessModal from "./access/index.vue";
+import { GetProviderDefineByAccessType } from "../api";
 
 export default defineComponent({
   name: "PiAccessSelector",

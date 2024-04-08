@@ -2,7 +2,7 @@ import http from 'axios'
 import fs from 'fs'
 
 //读取 packages/core/pipline/package.json的版本号
-import {default as packageJson} from './packages/core/pipeline/package.json' assert {type: "json"};
+import {default as packageJson} from './packages/core/pipeline/package.json';
 
 const certdVersion = packageJson.version
 console.log("certdVersion", certdVersion)
@@ -56,7 +56,8 @@ async function sync() {
 // curl -X PUT https://registry-direct.npmmirror.com/@certd/plugin-cert/sync?sync_upstream=true
 
 const certdImageBuild = "http://flow-openapi.aliyun.com/pipeline/webhook/4zgFk3i4RZEMGuQzlOcI"
-const webhooks = [certdImageBuild]
+const certdImageRun = "http://flow-openapi.aliyun.com/pipeline/webhook/lzCzlGrLCOHQaTMMt0mG"
+const webhooks = [certdImageBuild,certdImageRun]
 
 async function sleep(time) {
     return new Promise(resolve => {
@@ -78,7 +79,7 @@ async function triggerBuild() {
             }
         })
         console.log(`webhook success:${webhook}`)
-        await sleep(1000)
+        await sleep(10*60*1000)
     }
 
 }

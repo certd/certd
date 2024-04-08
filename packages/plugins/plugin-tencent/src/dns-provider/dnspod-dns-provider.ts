@@ -55,7 +55,7 @@ export class DnspodDnsProvider implements IDnsProvider {
     const ret = await this.doRequest({
       url: this.access.endpoint + "/Domain.List",
     });
-    this.logger.debug("dnspod 域名列表：", ret.domains);
+    this.logger.info("dnspod 域名列表：", ret.domains);
     return ret.domains;
   }
 
@@ -101,6 +101,9 @@ export class DnspodDnsProvider implements IDnsProvider {
 
   async matchDomain(dnsRecord: any) {
     const list = await this.getDomainList();
+    if(list == null){
+      throw new Error("域名列表不能为空")
+    }
     let domain = null;
     for (const item of list) {
       if (_.endsWith(dnsRecord, "." + item.name)) {

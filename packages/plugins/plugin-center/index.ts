@@ -1,0 +1,2 @@
+//@ts-ignore
+DYNAMIC_IMPORT_SCRIPT
