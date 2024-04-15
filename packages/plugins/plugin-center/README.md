@@ -4,7 +4,11 @@
 
 安装依赖包:      
 ```shell
+# 设置环境变量
+npm config set node_sqlite3_binary_host_mirror "https://registry.npmmirror.com/-/binary/sqlite3"
+
 cd certd
+# 安装依赖
 pnpm install
 ```
 
