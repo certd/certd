@@ -59,9 +59,8 @@ module.exports = async function(client, userOpts) {
      */
 
     log('[auto] Parsing domains from Certificate Signing Request');
-    const csrDomains = readCsrDomains(opts.csr);
-    const domains = [csrDomains.commonName].concat(csrDomains.altNames);
-    const uniqueDomains = Array.from(new Set(domains));
+    const { commonName, altNames } = readCsrDomains(opts.csr);
+    const uniqueDomains = Array.from(new Set([commonName].concat(altNames).filter((d) => d)));
 
     log(`[auto] Resolved ${uniqueDomains.length} unique domains from parsing the Certificate Signing Request`);
 

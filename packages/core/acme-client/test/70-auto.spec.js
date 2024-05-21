@@ -299,7 +299,6 @@ describe('client.auto', () => {
 
             it('should order san certificate', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: testSanDomains[0],
                     altNames: testSanDomains
                 }, await createKeyFn());
 
