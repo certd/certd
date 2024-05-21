@@ -28,6 +28,6 @@ chown root:root /usr/local/bin/pebble
 chmod 0755 /usr/local/bin/pebble
 
 # Config
-sed -i 's/test\/certs\/localhost/\/etc\/pebble/' /etc/pebble/pebble.json
+sed -i 's#test/certs/localhost#/etc/pebble#' /etc/pebble/pebble.json
 
 exit 0

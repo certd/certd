@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        node: [16, 18, 20]
+        node: [16, 18, 20, 22]
         eab: [0, 1]
 
 

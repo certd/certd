@@ -1,5 +1,10 @@
 # Changelog
 
+## v5.3.1
+
+* `fixed` Allow `client.auto()` being called with an empty CSR common name
+* `fixed` Bug when calling `updateAccountKey()` with external account binding
+
 ## v5.3.0 (2024-02-05)
 
 * `added` Support and tests for satisfying `tls-alpn-01` challenges
