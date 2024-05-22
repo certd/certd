@@ -23,7 +23,6 @@ function log(m) {
     process.stdout.write(`${(new Date()).toISOString()} ${m}\n`);
 }
 
-
 /**
  * On-demand certificate generation using http-01
  */
@@ -52,7 +51,7 @@ async function getCertOnDemand(client, servername, attempt = 0) {
     /* Create CSR */
     log(`Creating CSR for ${servername}`);
     const [key, csr] = await acme.crypto.createCsr({
-        commonName: servername
+        commonName: servername,
     });
 
     /* Order certificate */
@@ -67,7 +66,7 @@ async function getCertOnDemand(client, servername, attempt = 0) {
         },
         challengeRemoveFn: (authz, challenge) => {
             delete challengeResponses[challenge.token];
-        }
+        },
     });
 
     /* Done, store certificate */
@@ -76,7 +75,6 @@ async function getCertOnDemand(client, servername, attempt = 0) {
     delete pendingDomains[servername];
     return certificateStore[servername];
 }
-
 
 /**
  * Main
@@ -91,9 +89,8 @@ async function getCertOnDemand(client, servername, attempt = 0) {
         log('Initializing ACME client');
         const client = new acme.Client({
             directoryUrl: acme.directory.letsencrypt.staging,
-            accountKey: await acme.crypto.createPrivateKey()
+            accountKey: await acme.crypto.createPrivateKey(),
         });
-
 
         /**
          * HTTP server
@@ -129,7 +126,6 @@ async function getCertOnDemand(client, servername, attempt = 0) {
             log(`HTTP server listening on port ${HTTP_SERVER_PORT}`);
         });
 
-
         /**
          * HTTPS server
          */
@@ -158,7 +154,7 @@ async function getCertOnDemand(client, servername, attempt = 0) {
                     log(`[ERROR] ${e.message}`);
                     cb(e.message);
                 }
-            }
+            },
         }, requestListener);
 
         httpsServer.listen(HTTPS_SERVER_PORT, () => {

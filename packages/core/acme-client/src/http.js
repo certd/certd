@@ -7,7 +7,6 @@ const { getJwk } = require('./crypto');
 const { log } = require('./logger');
 const axios = require('./axios');
 
-
 /**
  * ACME HTTP client
  *
@@ -29,7 +28,6 @@ class HttpClient {
         this.directory = null;
         this.jwk = null;
     }
-
 
     /**
      * HTTP request
@@ -60,7 +58,6 @@ class HttpClient {
         return resp;
     }
 
-
     /**
      * Ensure provider directory exists
      *
@@ -85,7 +82,6 @@ class HttpClient {
         }
     }
 
-
     /**
      * Get JSON Web Key
      *
@@ -99,7 +95,6 @@ class HttpClient {
 
         return this.jwk;
     }
-
 
     /**
      * Get nonce from directory API endpoint
@@ -120,7 +115,6 @@ class HttpClient {
         return resp.headers['replay-nonce'];
     }
 
-
     /**
      * Get URL for a directory resource
      *
@@ -138,7 +132,6 @@ class HttpClient {
         return this.directory[resource];
     }
 
-
     /**
      * Get directory meta field
      *
@@ -155,7 +148,6 @@ class HttpClient {
 
         return null;
     }
-
 
     /**
      * Prepare HTTP request body for signature
@@ -189,10 +181,9 @@ class HttpClient {
         /* Body */
         return {
             payload: payload ? Buffer.from(JSON.stringify(payload)).toString('base64url') : '',
-            protected: Buffer.from(JSON.stringify(header)).toString('base64url')
+            protected: Buffer.from(JSON.stringify(header)).toString('base64url'),
         };
     }
-
 
     /**
      * Create JWS HTTP request body using HMAC
@@ -215,7 +206,6 @@ class HttpClient {
 
         return result;
     }
-
 
     /**
      * Create JWS HTTP request body using RSA or ECC
@@ -257,12 +247,11 @@ class HttpClient {
         result.signature = signer.sign({
             key: this.accountKey,
             padding: RSA_PKCS1_PADDING,
-            dsaEncoding: 'ieee-p1363'
+            dsaEncoding: 'ieee-p1363',
         }, 'base64url');
 
         return result;
     }
-
 
     /**
      * Signed HTTP request
@@ -299,7 +288,7 @@ class HttpClient {
         const data = this.createSignedBody(url, payload, { nonce, kid });
         const resp = await this.request(url, 'post', { data });
 
-        /* Retry on bad nonce - https://datatracker.ietf.org/doc/html/draft-ietf-acme-acme-10#section-6.4 */
+        /* Retry on bad nonce - https://datatracker.ietf.org/doc/html/rfc8555#section-6.5 */
         if (resp.data && resp.data.type && (resp.status === 400) && (resp.data.type === 'urn:ietf:params:acme:error:badNonce') && (attempts < this.maxBadNonceRetries)) {
             nonce = resp.headers['replay-nonce'] || null;
             attempts += 1;
@@ -312,7 +301,6 @@ class HttpClient {
         return resp;
     }
 }
-
 
 /* Export client */
 module.exports = HttpClient;

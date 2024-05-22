@@ -20,16 +20,15 @@ const clientOpts = {
     directoryUrl,
     backoffAttempts: 5,
     backoffMin: 1000,
-    backoffMax: 5000
+    backoffMax: 5000,
 };
 
 if (capEabEnabled && process.env.ACME_EAB_KID && process.env.ACME_EAB_HMAC_KEY) {
     clientOpts.externalAccountBinding = {
         kid: process.env.ACME_EAB_KID,
-        hmacKey: process.env.ACME_EAB_HMAC_KEY
+        hmacKey: process.env.ACME_EAB_HMAC_KEY,
     };
 }
-
 
 describe('client', () => {
     const testDomain = `${uuid()}.${domainName}`;
@@ -37,17 +36,15 @@ describe('client', () => {
     const testDomainWildcard = `*.${testDomain}`;
     const testContact = `mailto:test-${uuid()}@nope.com`;
 
-
     /**
      * Pebble CTS required
      */
 
-    before(function() {
+    before(function () {
         if (!cts.isEnabled()) {
             this.skip();
         }
     });
-
 
     /**
      * Key types
@@ -58,18 +55,18 @@ describe('client', () => {
             createKeyFn: () => acme.crypto.createPrivateRsaKey(),
             createKeyAltFns: {
                 s1024: () => acme.crypto.createPrivateRsaKey(1024),
-                s4096: () => acme.crypto.createPrivateRsaKey(4096)
+                s4096: () => acme.crypto.createPrivateRsaKey(4096),
             },
-            jwkSpecFn: spec.jwk.rsa
+            jwkSpecFn: spec.jwk.rsa,
         },
         ecdsa: {
             createKeyFn: () => acme.crypto.createPrivateEcdsaKey(),
             createKeyAltFns: {
                 p384: () => acme.crypto.createPrivateEcdsaKey('P-384'),
-                p521: () => acme.crypto.createPrivateEcdsaKey('P-521')
+                p521: () => acme.crypto.createPrivateEcdsaKey('P-521'),
             },
-            jwkSpecFn: spec.jwk.ecdsa
-        }
+            jwkSpecFn: spec.jwk.ecdsa,
+        },
     }).forEach(([name, { createKeyFn, createKeyAltFns, jwkSpecFn }]) => {
         describe(name, () => {
             let testIssuers;
@@ -97,7 +94,6 @@ describe('client', () => {
             let testCertificateAlpn;
             let testCertificateWildcard;
 
-
             /**
              * Fixtures
              */
@@ -118,7 +114,7 @@ describe('client', () => {
                 [, testCsrWildcard] = await acme.crypto.createCsr({ commonName: testDomainWildcard }, await createKeyFn());
             });
 
-            it('should resolve certificate issuers [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function() {
+            it('should resolve certificate issuers [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function () {
                 if (!capAlternateCertRoots) {
                     this.skip();
                 }
@@ -134,7 +130,6 @@ describe('client', () => {
                 });
             });
 
-
             /**
              * Initialize clients
              */
@@ -142,7 +137,7 @@ describe('client', () => {
             it('should initialize client', () => {
                 testClient = new acme.Client({
                     ...clientOpts,
-                    accountKey: testAccountKey
+                    accountKey: testAccountKey,
                 });
             });
 
@@ -151,12 +146,11 @@ describe('client', () => {
                 jwkSpecFn(jwk);
             });
 
-
             /**
              * Terms of Service
              */
 
-            it('should produce tos url [ACME_CAP_META_TOS_FIELD]', async function() {
+            it('should produce tos url [ACME_CAP_META_TOS_FIELD]', async function () {
                 if (!capMetaTosField) {
                     this.skip();
                 }
@@ -165,7 +159,7 @@ describe('client', () => {
                 assert.isString(tos);
             });
 
-            it('should not produce tos url [!ACME_CAP_META_TOS_FIELD]', async function() {
+            it('should not produce tos url [!ACME_CAP_META_TOS_FIELD]', async function () {
                 if (capMetaTosField) {
                     this.skip();
                 }
@@ -174,12 +168,11 @@ describe('client', () => {
                 assert.isNull(tos);
             });
 
-
             /**
              * Create account
              */
 
-            it('should refuse account creation without tos [ACME_CAP_META_TOS_FIELD]', async function() {
+            it('should refuse account creation without tos [ACME_CAP_META_TOS_FIELD]', async function () {
                 if (!capMetaTosField) {
                     this.skip();
                 }
@@ -187,7 +180,7 @@ describe('client', () => {
                 await assert.isRejected(testClient.createAccount());
             });
 
-            it('should refuse account creation without eab [ACME_CAP_EAB_ENABLED]', async function() {
+            it('should refuse account creation without eab [ACME_CAP_EAB_ENABLED]', async function () {
                 if (!capEabEnabled) {
                     this.skip();
                 }
@@ -195,17 +188,17 @@ describe('client', () => {
                 const client = new acme.Client({
                     ...clientOpts,
                     accountKey: testAccountKey,
-                    externalAccountBinding: null
+                    externalAccountBinding: null,
                 });
 
                 await assert.isRejected(client.createAccount({
-                    termsOfServiceAgreed: true
+                    termsOfServiceAgreed: true,
                 }));
             });
 
             it('should create an account', async () => {
                 testAccount = await testClient.createAccount({
-                    termsOfServiceAgreed: true
+                    termsOfServiceAgreed: true,
                 });
 
                 spec.rfc8555.account(testAccount);
@@ -217,7 +210,6 @@ describe('client', () => {
                 assert.isString(testAccountUrl);
             });
 
-
             /**
              * Create account with alternate key sizes
              */
@@ -226,18 +218,17 @@ describe('client', () => {
                 it(`should create account with key=${k}`, async () => {
                     const client = new acme.Client({
                         ...clientOpts,
-                        accountKey: await altKeyFn()
+                        accountKey: await altKeyFn(),
                     });
 
                     const account = await client.createAccount({
-                        termsOfServiceAgreed: true
+                        termsOfServiceAgreed: true,
                     });
 
                     spec.rfc8555.account(account);
                     assert.strictEqual(account.status, 'valid');
                 });
             });
-
 
             /**
              * Find existing account using secondary client
@@ -246,29 +237,28 @@ describe('client', () => {
             it('should throw when trying to find account using invalid account key', async () => {
                 const client = new acme.Client({
                     ...clientOpts,
-                    accountKey: testAccountSecondaryKey
+                    accountKey: testAccountSecondaryKey,
                 });
 
                 await assert.isRejected(client.createAccount({
-                    onlyReturnExisting: true
+                    onlyReturnExisting: true,
                 }));
             });
 
             it('should find existing account using account key', async () => {
                 const client = new acme.Client({
                     ...clientOpts,
-                    accountKey: testAccountKey
+                    accountKey: testAccountKey,
                 });
 
                 const account = await client.createAccount({
-                    onlyReturnExisting: true
+                    onlyReturnExisting: true,
                 });
 
                 spec.rfc8555.account(account);
                 assert.strictEqual(account.status, 'valid');
                 assert.deepStrictEqual(account.key, testAccount.key);
             });
-
 
             /**
              * Account URL
@@ -278,7 +268,7 @@ describe('client', () => {
                 const client = new acme.Client({
                     ...clientOpts,
                     accountKey: testAccountKey,
-                    accountUrl: 'https://acme-staging-v02.api.letsencrypt.org/acme/acct/1'
+                    accountUrl: 'https://acme-staging-v02.api.letsencrypt.org/acme/acct/1',
                 });
 
                 await assert.isRejected(client.updateAccount());
@@ -288,18 +278,17 @@ describe('client', () => {
                 const client = new acme.Client({
                     ...clientOpts,
                     accountKey: testAccountKey,
-                    accountUrl: testAccountUrl
+                    accountUrl: testAccountUrl,
                 });
 
                 const account = await client.createAccount({
-                    onlyReturnExisting: true
+                    onlyReturnExisting: true,
                 });
 
                 spec.rfc8555.account(account);
                 assert.strictEqual(account.status, 'valid');
                 assert.deepStrictEqual(account.key, testAccount.key);
             });
-
 
             /**
              * Update account contact info
@@ -316,12 +305,11 @@ describe('client', () => {
                 assert.include(account.contact, testContact);
             });
 
-
             /**
              * Change account private key
              */
 
-            it('should change account private key [ACME_CAP_UPDATE_ACCOUNT_KEY]', async function() {
+            it('should change account private key [ACME_CAP_UPDATE_ACCOUNT_KEY]', async function () {
                 if (!capUpdateAccountKey) {
                     this.skip();
                 }
@@ -329,14 +317,13 @@ describe('client', () => {
                 await testClient.updateAccountKey(testAccountSecondaryKey);
 
                 const account = await testClient.createAccount({
-                    onlyReturnExisting: true
+                    onlyReturnExisting: true,
                 });
 
                 spec.rfc8555.account(account);
                 assert.strictEqual(account.status, 'valid');
                 assert.notDeepEqual(account.key, testAccount.key);
             });
-
 
             /**
              * Create new certificate order
@@ -357,7 +344,6 @@ describe('client', () => {
                 });
             });
 
-
             /**
              * Get status of existing certificate order
              */
@@ -370,7 +356,6 @@ describe('client', () => {
                     assert.deepStrictEqual(existing, result);
                 }));
             });
-
 
             /**
              * Get identifier authorization
@@ -401,7 +386,6 @@ describe('client', () => {
                 });
             });
 
-
             /**
              * Generate challenge key authorization
              */
@@ -418,7 +402,6 @@ describe('client', () => {
                 [testKeyAuthorization, testKeyAuthorizationAlpn, testKeyAuthorizationWildcard].forEach((k) => assert.isString(k));
             });
 
-
             /**
              * Deactivate identifier authorization
              */
@@ -427,8 +410,8 @@ describe('client', () => {
                 const order = await testClient.createOrder({
                     identifiers: [
                         { type: 'dns', value: `${uuid()}.${domainName}` },
-                        { type: 'dns', value: `${uuid()}.${domainName}` }
-                    ]
+                        { type: 'dns', value: `${uuid()}.${domainName}` },
+                    ],
                 });
 
                 const authzCollection = await testClient.getAuthorizations(order);
@@ -445,7 +428,6 @@ describe('client', () => {
                 });
             });
 
-
             /**
              * Verify satisfied challenge
              */
@@ -460,7 +442,6 @@ describe('client', () => {
                 await testClient.verifyChallenge(testAuthzWildcard, testChallengeWildcard);
             });
 
-
             /**
              * Complete challenge
              */
@@ -474,7 +455,6 @@ describe('client', () => {
                 }));
             });
 
-
             /**
              * Wait for valid challenge
              */
@@ -482,7 +462,6 @@ describe('client', () => {
             it('should wait for valid challenge status', async () => {
                 await Promise.all([testChallenge, testChallengeAlpn, testChallengeWildcard].map(async (c) => testClient.waitForValidStatus(c)));
             });
-
 
             /**
              * Finalize order
@@ -500,7 +479,6 @@ describe('client', () => {
                 assert.strictEqual(testOrderWildcard.url, finalizeWildcard.url);
             });
 
-
             /**
              * Wait for valid order
              */
@@ -508,7 +486,6 @@ describe('client', () => {
             it('should wait for valid order status', async () => {
                 await Promise.all([testOrder, testOrderAlpn, testOrderWildcard].map(async (o) => testClient.waitForValidStatus(o)));
             });
-
 
             /**
              * Get certificate
@@ -525,7 +502,7 @@ describe('client', () => {
                 });
             });
 
-            it('should get alternate certificate chain [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function() {
+            it('should get alternate certificate chain [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function () {
                 if (!capAlternateCertRoots) {
                     this.skip();
                 }
@@ -539,7 +516,7 @@ describe('client', () => {
                 }));
             });
 
-            it('should get default chain with invalid preference [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function() {
+            it('should get default chain with invalid preference [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function () {
                 if (!capAlternateCertRoots) {
                     this.skip();
                 }
@@ -550,7 +527,6 @@ describe('client', () => {
 
                 assert.strictEqual(testIssuers[0], info.issuer.commonName);
             });
-
 
             /**
              * Revoke certificate
@@ -568,7 +544,6 @@ describe('client', () => {
                 await assert.isRejected(testClient.getCertificate(testOrderWildcard));
             });
 
-
             /**
              * Deactivate account
              */
@@ -580,7 +555,6 @@ describe('client', () => {
                 spec.rfc8555.account(account);
                 assert.strictEqual(account.status, 'deactivated');
             });
-
 
             /**
              * Verify that no new orders can be made

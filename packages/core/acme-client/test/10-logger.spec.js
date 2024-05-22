@@ -5,14 +5,12 @@
 const { assert } = require('chai');
 const logger = require('./../src/logger');
 
-
 describe('logger', () => {
     let lastLogMessage = null;
 
     function customLoggerFn(msg) {
         lastLogMessage = msg;
     }
-
 
     /**
      * Logger
@@ -22,7 +20,6 @@ describe('logger', () => {
         logger.log('something');
         assert.isNull(lastLogMessage);
     });
-
 
     it('should log with custom logger', () => {
         logger.setLogger(customLoggerFn);

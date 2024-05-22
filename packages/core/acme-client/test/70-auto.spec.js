@@ -18,16 +18,15 @@ const clientOpts = {
     directoryUrl,
     backoffAttempts: 5,
     backoffMin: 1000,
-    backoffMax: 5000
+    backoffMax: 5000,
 };
 
 if (capEabEnabled && process.env.ACME_EAB_KID && process.env.ACME_EAB_HMAC_KEY) {
     clientOpts.externalAccountBinding = {
         kid: process.env.ACME_EAB_KID,
-        hmacKey: process.env.ACME_EAB_HMAC_KEY
+        hmacKey: process.env.ACME_EAB_HMAC_KEY,
     };
 }
-
 
 describe('client.auto', () => {
     const testDomain = `${uuid()}.${domainName}`;
@@ -40,20 +39,18 @@ describe('client.auto', () => {
     const testSanDomains = [
         `${uuid()}.${domainName}`,
         `${uuid()}.${domainName}`,
-        `${uuid()}.${domainName}`
+        `${uuid()}.${domainName}`,
     ];
-
 
     /**
      * Pebble CTS required
      */
 
-    before(function() {
+    before(function () {
         if (!cts.isEnabled()) {
             this.skip();
         }
     });
-
 
     /**
      * Key types
@@ -64,16 +61,16 @@ describe('client.auto', () => {
             createKeyFn: () => acme.crypto.createPrivateRsaKey(),
             createKeyAltFns: {
                 s1024: () => acme.crypto.createPrivateRsaKey(1024),
-                s4096: () => acme.crypto.createPrivateRsaKey(4096)
-            }
+                s4096: () => acme.crypto.createPrivateRsaKey(4096),
+            },
         },
         ecdsa: {
             createKeyFn: () => acme.crypto.createPrivateEcdsaKey(),
             createKeyAltFns: {
                 p384: () => acme.crypto.createPrivateEcdsaKey('P-384'),
-                p521: () => acme.crypto.createPrivateEcdsaKey('P-521')
-            }
-        }
+                p521: () => acme.crypto.createPrivateEcdsaKey('P-521'),
+            },
+        },
     }).forEach(([name, { createKeyFn, createKeyAltFns }]) => {
         describe(name, () => {
             let testIssuers;
@@ -82,12 +79,11 @@ describe('client.auto', () => {
             let testSanCertificate;
             let testWildcardCertificate;
 
-
             /**
              * Fixtures
              */
 
-            it('should resolve certificate issuers [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function() {
+            it('should resolve certificate issuers [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function () {
                 if (!capAlternateCertRoots) {
                     this.skip();
                 }
@@ -103,7 +99,6 @@ describe('client.auto', () => {
                 });
             });
 
-
             /**
              * Initialize client
              */
@@ -111,10 +106,9 @@ describe('client.auto', () => {
             it('should initialize client', async () => {
                 testClient = new acme.Client({
                     ...clientOpts,
-                    accountKey: await createKeyFn()
+                    accountKey: await createKeyFn(),
                 });
             });
-
 
             /**
              * Invalid challenge response
@@ -122,20 +116,20 @@ describe('client.auto', () => {
 
             it('should throw on invalid challenge response', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: `${uuid()}.${domainName}`
+                    commonName: `${uuid()}.${domainName}`,
                 }, await createKeyFn());
 
                 await assert.isRejected(testClient.auto({
                     csr,
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.challengeNoopFn,
-                    challengeRemoveFn: cts.challengeNoopFn
+                    challengeRemoveFn: cts.challengeNoopFn,
                 }), /^authorization not found/i);
             });
 
             it('should throw on invalid challenge response with opts.skipChallengeVerification=true', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: `${uuid()}.${domainName}`
+                    commonName: `${uuid()}.${domainName}`,
                 }, await createKeyFn());
 
                 await assert.isRejected(testClient.auto({
@@ -143,10 +137,9 @@ describe('client.auto', () => {
                     termsOfServiceAgreed: true,
                     skipChallengeVerification: true,
                     challengeCreateFn: cts.challengeNoopFn,
-                    challengeRemoveFn: cts.challengeNoopFn
+                    challengeRemoveFn: cts.challengeNoopFn,
                 }));
             });
-
 
             /**
              * Challenge function exceptions
@@ -154,27 +147,27 @@ describe('client.auto', () => {
 
             it('should throw on challengeCreate exception', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: `${uuid()}.${domainName}`
+                    commonName: `${uuid()}.${domainName}`,
                 }, await createKeyFn());
 
                 await assert.isRejected(testClient.auto({
                     csr,
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.challengeThrowFn,
-                    challengeRemoveFn: cts.challengeNoopFn
+                    challengeRemoveFn: cts.challengeNoopFn,
                 }), /^oops$/);
             });
 
             it('should not throw on challengeRemove exception', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: `${uuid()}.${domainName}`
+                    commonName: `${uuid()}.${domainName}`,
                 }, await createKeyFn());
 
                 const cert = await testClient.auto({
                     csr,
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.challengeCreateFn,
-                    challengeRemoveFn: cts.challengeThrowFn
+                    challengeRemoveFn: cts.challengeThrowFn,
                 });
 
                 assert.isString(cert);
@@ -188,8 +181,8 @@ describe('client.auto', () => {
                         `${uuid()}.${domainName}`,
                         `${uuid()}.${domainName}`,
                         `${uuid()}.${domainName}`,
-                        `${uuid()}.${domainName}`
-                    ]
+                        `${uuid()}.${domainName}`,
+                    ],
                 }, await createKeyFn());
 
                 await assert.isRejected(testClient.auto({
@@ -205,13 +198,12 @@ describe('client.auto', () => {
                         results.push(true);
                         return cts.challengeCreateFn(...args);
                     },
-                    challengeRemoveFn: cts.challengeRemoveFn
+                    challengeRemoveFn: cts.challengeRemoveFn,
                 }));
 
                 assert.strictEqual(results.length, 5);
                 assert.deepStrictEqual(results, [false, false, false, true, true]);
             });
-
 
             /**
              * Order certificates
@@ -219,14 +211,14 @@ describe('client.auto', () => {
 
             it('should order certificate', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: testDomain
+                    commonName: testDomain,
                 }, await createKeyFn());
 
                 const cert = await testClient.auto({
                     csr,
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.challengeCreateFn,
-                    challengeRemoveFn: cts.challengeRemoveFn
+                    challengeRemoveFn: cts.challengeRemoveFn,
                 });
 
                 assert.isString(cert);
@@ -235,7 +227,7 @@ describe('client.auto', () => {
 
             it('should order certificate using http-01', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: testHttpDomain
+                    commonName: testHttpDomain,
                 }, await createKeyFn());
 
                 const cert = await testClient.auto({
@@ -243,7 +235,7 @@ describe('client.auto', () => {
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.assertHttpChallengeCreateFn,
                     challengeRemoveFn: cts.challengeRemoveFn,
-                    challengePriority: ['http-01']
+                    challengePriority: ['http-01'],
                 });
 
                 assert.isString(cert);
@@ -251,7 +243,7 @@ describe('client.auto', () => {
 
             it('should order certificate using https-01', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: testHttpsDomain
+                    commonName: testHttpsDomain,
                 }, await createKeyFn());
 
                 const cert = await testClient.auto({
@@ -259,7 +251,7 @@ describe('client.auto', () => {
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.assertHttpsChallengeCreateFn,
                     challengeRemoveFn: cts.challengeRemoveFn,
-                    challengePriority: ['http-01']
+                    challengePriority: ['http-01'],
                 });
 
                 assert.isString(cert);
@@ -267,7 +259,7 @@ describe('client.auto', () => {
 
             it('should order certificate using dns-01', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: testDnsDomain
+                    commonName: testDnsDomain,
                 }, await createKeyFn());
 
                 const cert = await testClient.auto({
@@ -275,7 +267,7 @@ describe('client.auto', () => {
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.assertDnsChallengeCreateFn,
                     challengeRemoveFn: cts.challengeRemoveFn,
-                    challengePriority: ['dns-01']
+                    challengePriority: ['dns-01'],
                 });
 
                 assert.isString(cert);
@@ -283,7 +275,7 @@ describe('client.auto', () => {
 
             it('should order certificate using tls-alpn-01', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: testAlpnDomain
+                    commonName: testAlpnDomain,
                 }, await createKeyFn());
 
                 const cert = await testClient.auto({
@@ -291,7 +283,7 @@ describe('client.auto', () => {
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.assertTlsAlpnChallengeCreateFn,
                     challengeRemoveFn: cts.challengeRemoveFn,
-                    challengePriority: ['tls-alpn-01']
+                    challengePriority: ['tls-alpn-01'],
                 });
 
                 assert.isString(cert);
@@ -299,14 +291,14 @@ describe('client.auto', () => {
 
             it('should order san certificate', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    altNames: testSanDomains
+                    altNames: testSanDomains,
                 }, await createKeyFn());
 
                 const cert = await testClient.auto({
                     csr,
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.challengeCreateFn,
-                    challengeRemoveFn: cts.challengeRemoveFn
+                    challengeRemoveFn: cts.challengeRemoveFn,
                 });
 
                 assert.isString(cert);
@@ -316,14 +308,14 @@ describe('client.auto', () => {
             it('should order wildcard certificate', async () => {
                 const [, csr] = await acme.crypto.createCsr({
                     commonName: testWildcardDomain,
-                    altNames: [`*.${testWildcardDomain}`]
+                    altNames: [`*.${testWildcardDomain}`],
                 }, await createKeyFn());
 
                 const cert = await testClient.auto({
                     csr,
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.challengeCreateFn,
-                    challengeRemoveFn: cts.challengeRemoveFn
+                    challengeRemoveFn: cts.challengeRemoveFn,
                 });
 
                 assert.isString(cert);
@@ -332,7 +324,7 @@ describe('client.auto', () => {
 
             it('should order certificate with opts.skipChallengeVerification=true', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: `${uuid()}.${domainName}`
+                    commonName: `${uuid()}.${domainName}`,
                 }, await createKeyFn());
 
                 const cert = await testClient.auto({
@@ -340,20 +332,20 @@ describe('client.auto', () => {
                     termsOfServiceAgreed: true,
                     skipChallengeVerification: true,
                     challengeCreateFn: cts.challengeCreateFn,
-                    challengeRemoveFn: cts.challengeRemoveFn
+                    challengeRemoveFn: cts.challengeRemoveFn,
                 });
 
                 assert.isString(cert);
             });
 
-            it('should order alternate certificate chain [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function() {
+            it('should order alternate certificate chain [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function () {
                 if (!capAlternateCertRoots) {
                     this.skip();
                 }
 
                 await Promise.all(testIssuers.map(async (issuer) => {
                     const [, csr] = await acme.crypto.createCsr({
-                        commonName: `${uuid()}.${domainName}`
+                        commonName: `${uuid()}.${domainName}`,
                     }, await createKeyFn());
 
                     const cert = await testClient.auto({
@@ -361,7 +353,7 @@ describe('client.auto', () => {
                         termsOfServiceAgreed: true,
                         preferredChain: issuer,
                         challengeCreateFn: cts.challengeCreateFn,
-                        challengeRemoveFn: cts.challengeRemoveFn
+                        challengeRemoveFn: cts.challengeRemoveFn,
                     });
 
                     const rootCert = acme.crypto.splitPemChain(cert).pop();
@@ -371,13 +363,13 @@ describe('client.auto', () => {
                 }));
             });
 
-            it('should get default chain with invalid preference [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function() {
+            it('should get default chain with invalid preference [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function () {
                 if (!capAlternateCertRoots) {
                     this.skip();
                 }
 
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: `${uuid()}.${domainName}`
+                    commonName: `${uuid()}.${domainName}`,
                 }, await createKeyFn());
 
                 const cert = await testClient.auto({
@@ -385,7 +377,7 @@ describe('client.auto', () => {
                     termsOfServiceAgreed: true,
                     preferredChain: uuid(),
                     challengeCreateFn: cts.challengeCreateFn,
-                    challengeRemoveFn: cts.challengeRemoveFn
+                    challengeRemoveFn: cts.challengeRemoveFn,
                 });
 
                 const rootCert = acme.crypto.splitPemChain(cert).pop();
@@ -394,7 +386,6 @@ describe('client.auto', () => {
                 assert.strictEqual(testIssuers[0], info.issuer.commonName);
             });
 
-
             /**
              * Order certificate with alternate key sizes
              */
@@ -402,20 +393,19 @@ describe('client.auto', () => {
             Object.entries(createKeyAltFns).forEach(([k, altKeyFn]) => {
                 it(`should order certificate with key=${k}`, async () => {
                     const [, csr] = await acme.crypto.createCsr({
-                        commonName: testDomain
+                        commonName: testDomain,
                     }, await altKeyFn());
 
                     const cert = await testClient.auto({
                         csr,
                         termsOfServiceAgreed: true,
                         challengeCreateFn: cts.challengeCreateFn,
-                        challengeRemoveFn: cts.challengeRemoveFn
+                        challengeRemoveFn: cts.challengeRemoveFn,
                     });
 
                     assert.isString(cert);
                 });
             });
-
 
             /**
              * Read certificates

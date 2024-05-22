@@ -22,7 +22,6 @@ function log(m) {
     process.stdout.write(`${(new Date()).toISOString()} ${m}\n`);
 }
 
-
 /**
  * On-demand certificate generation using tls-alpn-01
  */
@@ -51,7 +50,7 @@ async function getCertOnDemand(client, servername, attempt = 0) {
     /* Create CSR */
     log(`Creating CSR for ${servername}`);
     const [key, csr] = await acme.crypto.createCsr({
-        commonName: servername
+        commonName: servername,
     });
 
     /* Order certificate */
@@ -66,7 +65,7 @@ async function getCertOnDemand(client, servername, attempt = 0) {
         },
         challengeRemoveFn: (authz) => {
             delete alpnResponses[authz.identifier.value];
-        }
+        },
     });
 
     /* Done, store certificate */
@@ -75,7 +74,6 @@ async function getCertOnDemand(client, servername, attempt = 0) {
     delete pendingDomains[servername];
     return certificateStore[servername];
 }
-
 
 /**
  * Main
@@ -90,9 +88,8 @@ async function getCertOnDemand(client, servername, attempt = 0) {
         log('Initializing ACME client');
         const client = new acme.Client({
             directoryUrl: acme.directory.letsencrypt.staging,
-            accountKey: await acme.crypto.createPrivateKey()
+            accountKey: await acme.crypto.createPrivateKey(),
         });
-
 
         /**
          * ALPN responder
@@ -118,14 +115,14 @@ async function getCertOnDemand(client, servername, attempt = 0) {
                     log(`Found ALPN certificate for ${servername}, serving secure context`);
                     cb(null, tls.createSecureContext({
                         key: alpnResponses[servername][0],
-                        cert: alpnResponses[servername][1]
+                        cert: alpnResponses[servername][1],
                     }));
                 }
                 catch (e) {
                     log(`[ERROR] ${e.message}`);
                     cb(e.message);
                 }
-            }
+            },
         });
 
         /* Terminate once TLS handshake has been established */
@@ -136,7 +133,6 @@ async function getCertOnDemand(client, servername, attempt = 0) {
         alpnResponder.listen(ALPN_RESPONDER_PORT, () => {
             log(`ALPN responder listening on port ${ALPN_RESPONDER_PORT}`);
         });
-
 
         /**
          * HTTPS server
@@ -166,7 +162,7 @@ async function getCertOnDemand(client, servername, attempt = 0) {
                     log(`[ERROR] ${e.message}`);
                     cb(e.message);
                 }
-            }
+            },
         }, requestListener);
 
         httpsServer.listen(HTTPS_SERVER_PORT, () => {

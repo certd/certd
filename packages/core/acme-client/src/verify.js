@@ -9,7 +9,6 @@ const axios = require('./axios');
 const util = require('./util');
 const { isAlpnCertificateAuthorizationValid } = require('./crypto');
 
-
 /**
  * Verify ACME HTTP challenge
  *
@@ -42,7 +41,6 @@ async function verifyHttpChallenge(authz, challenge, keyAuthorization, suffix = 
     log(`Key authorization match for ${challenge.type}/${authz.identifier.value}, ACME challenge verified`);
     return true;
 }
-
 
 /**
  * Walk DNS until TXT records are found
@@ -80,7 +78,6 @@ async function walkDnsChallengeRecord(recordName, resolver = dns) {
     /* Found nothing */
     throw new Error(`No TXT records found for name: ${recordName}`);
 }
-
 
 /**
  * Verify ACME DNS challenge
@@ -121,7 +118,6 @@ async function verifyDnsChallenge(authz, challenge, keyAuthorization, prefix = '
     return true;
 }
 
-
 /**
  * Verify ACME TLS ALPN challenge
  *
@@ -149,7 +145,6 @@ async function verifyTlsAlpnChallenge(authz, challenge, keyAuthorization) {
     return true;
 }
 
-
 /**
  * Export API
  */
@@ -157,5 +152,5 @@ async function verifyTlsAlpnChallenge(authz, challenge, keyAuthorization) {
 module.exports = {
     'http-01': verifyHttpChallenge,
     'dns-01': verifyDnsChallenge,
-    'tls-alpn-01': verifyTlsAlpnChallenge
+    'tls-alpn-01': verifyTlsAlpnChallenge,
 };

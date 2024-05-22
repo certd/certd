@@ -19,7 +19,6 @@ function log(m) {
     process.stdout.write(`${(new Date()).toISOString()} ${m}\n`);
 }
 
-
 /**
  * Main
  */
@@ -33,9 +32,8 @@ function log(m) {
         log('Initializing ACME client');
         const client = new acme.Client({
             directoryUrl: acme.directory.letsencrypt.staging,
-            accountKey: await acme.crypto.createPrivateKey()
+            accountKey: await acme.crypto.createPrivateKey(),
         });
-
 
         /**
          * Order wildcard certificate
@@ -44,7 +42,7 @@ function log(m) {
         log(`Creating CSR for ${WILDCARD_DOMAIN}`);
         const [key, csr] = await acme.crypto.createCsr({
             commonName: WILDCARD_DOMAIN,
-            altNames: [`*.${WILDCARD_DOMAIN}`]
+            altNames: [`*.${WILDCARD_DOMAIN}`],
         });
 
         log(`Ordering certificate for ${WILDCARD_DOMAIN}`);
@@ -60,11 +58,10 @@ function log(m) {
             challengeRemoveFn: (authz, challenge, keyAuthorization) => {
                 /* TODO: Implement this */
                 log(`[TODO] Remove TXT record key=_acme-challenge.${authz.identifier.value} value=${keyAuthorization}`);
-            }
+            },
         });
 
         log(`Certificate for ${WILDCARD_DOMAIN} created successfully`);
-
 
         /**
          * HTTPS server
@@ -78,7 +75,7 @@ function log(m) {
 
         const httpsServer = https.createServer({
             key,
-            cert
+            cert,
         }, requestListener);
 
         httpsServer.listen(HTTPS_SERVER_PORT, () => {

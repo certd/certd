@@ -8,7 +8,6 @@ function log(m) {
     process.stdout.write(`${m}\n`);
 }
 
-
 /**
  * Function used to satisfy an ACME challenge
  *
@@ -25,7 +24,6 @@ async function challengeCreateFn(authz, challenge, keyAuthorization) {
     log(keyAuthorization);
 }
 
-
 /**
  * Function used to remove an ACME challenge response
  *
@@ -41,30 +39,29 @@ async function challengeRemoveFn(authz, challenge, keyAuthorization) {
     log(keyAuthorization);
 }
 
-
 /**
  * Main
  */
 
-module.exports = async function() {
+module.exports = async () => {
     /* Init client */
     const client = new acme.Client({
         directoryUrl: acme.directory.letsencrypt.staging,
-        accountKey: await acme.crypto.createPrivateKey()
+        accountKey: await acme.crypto.createPrivateKey(),
     });
 
     /* Register account */
     await client.createAccount({
         termsOfServiceAgreed: true,
-        contact: ['mailto:test@example.com']
+        contact: ['mailto:test@example.com'],
     });
 
     /* Place new order */
     const order = await client.createOrder({
         identifiers: [
             { type: 'dns', value: 'example.com' },
-            { type: 'dns', value: '*.example.com' }
-        ]
+            { type: 'dns', value: '*.example.com' },
+        ],
     });
 
     /**
@@ -139,7 +136,7 @@ module.exports = async function() {
     /* Finalize order */
     const [key, csr] = await acme.crypto.createCsr({
         commonName: '*.example.com',
-        altNames: ['example.com']
+        altNames: ['example.com'],
     });
 
     const finalized = await client.finalizeOrder(order, csr);

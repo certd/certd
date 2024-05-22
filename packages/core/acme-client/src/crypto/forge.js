@@ -13,7 +13,6 @@ const forge = require('node-forge');
 
 const generateKeyPair = promisify(forge.pki.rsa.generateKeyPair);
 
-
 /**
  * Attempt to parse forge object from PEM encoded string
  *
@@ -54,7 +53,6 @@ function forgeObjectFromPem(input) {
     return result;
 }
 
-
 /**
  * Parse domain names from a certificate or CSR
  *
@@ -93,10 +91,9 @@ function parseDomains(obj) {
 
     return {
         commonName,
-        altNames
+        altNames,
     };
 }
-
 
 /**
  * Generate a private RSA key
@@ -123,7 +120,6 @@ async function createPrivateKey(size = 2048) {
 
 exports.createPrivateKey = createPrivateKey;
 
-
 /**
  * Create public key from a private RSA key
  *
@@ -136,13 +132,12 @@ exports.createPrivateKey = createPrivateKey;
  * ```
  */
 
-exports.createPublicKey = async function(key) {
+exports.createPublicKey = async (key) => {
     const privateKey = forge.pki.privateKeyFromPem(key);
     const publicKey = forge.pki.rsa.setPublicKey(privateKey.n, privateKey.e);
     const pemKey = forge.pki.publicKeyToPem(publicKey);
     return Buffer.from(pemKey);
 };
-
 
 /**
  * Parse body of PEM encoded object from buffer or string
@@ -157,7 +152,6 @@ exports.getPemBody = (str) => {
     return forge.util.encode64(msg.body);
 };
 
-
 /**
  * Split chain of PEM encoded objects from buffer or string into array
  *
@@ -166,7 +160,6 @@ exports.getPemBody = (str) => {
  */
 
 exports.splitPemChain = (str) => forge.pem.decode(str).map(forge.pem.encode);
-
 
 /**
  * Get modulus
@@ -182,7 +175,7 @@ exports.splitPemChain = (str) => forge.pem.decode(str).map(forge.pem.encode);
  * ```
  */
 
-exports.getModulus = async function(input) {
+exports.getModulus = async (input) => {
     if (!Buffer.isBuffer(input)) {
         input = Buffer.from(input);
     }
@@ -190,7 +183,6 @@ exports.getModulus = async function(input) {
     const obj = forgeObjectFromPem(input);
     return Buffer.from(forge.util.hexToBytes(obj.n.toString(16)), 'binary');
 };
-
 
 /**
  * Get public exponent
@@ -206,7 +198,7 @@ exports.getModulus = async function(input) {
  * ```
  */
 
-exports.getPublicExponent = async function(input) {
+exports.getPublicExponent = async (input) => {
     if (!Buffer.isBuffer(input)) {
         input = Buffer.from(input);
     }
@@ -214,7 +206,6 @@ exports.getPublicExponent = async function(input) {
     const obj = forgeObjectFromPem(input);
     return Buffer.from(forge.util.hexToBytes(obj.e.toString(16)), 'binary');
 };
-
 
 /**
  * Read domains from a Certificate Signing Request
@@ -231,7 +222,7 @@ exports.getPublicExponent = async function(input) {
  * ```
  */
 
-exports.readCsrDomains = async function(csr) {
+exports.readCsrDomains = async (csr) => {
     if (!Buffer.isBuffer(csr)) {
         csr = Buffer.from(csr);
     }
@@ -239,7 +230,6 @@ exports.readCsrDomains = async function(csr) {
     const obj = forge.pki.certificationRequestFromPem(csr);
     return parseDomains(obj);
 };
-
 
 /**
  * Read information from a certificate
@@ -260,7 +250,7 @@ exports.readCsrDomains = async function(csr) {
  * ```
  */
 
-exports.readCertificateInfo = async function(cert) {
+exports.readCertificateInfo = async (cert) => {
     if (!Buffer.isBuffer(cert)) {
         cert = Buffer.from(cert);
     }
@@ -270,14 +260,13 @@ exports.readCertificateInfo = async function(cert) {
 
     return {
         issuer: {
-            commonName: issuerCn ? issuerCn.value : null
+            commonName: issuerCn ? issuerCn.value : null,
         },
         domains: parseDomains(obj),
         notAfter: obj.validity.notAfter,
-        notBefore: obj.validity.notBefore
+        notBefore: obj.validity.notBefore,
     };
 };
-
 
 /**
  * Determine ASN.1 type for CSR subject short name
@@ -299,7 +288,6 @@ function getCsrValueTagClass(shortName) {
     }
 }
 
-
 /**
  * Create array of short names and values for Certificate Signing Request subjects
  *
@@ -319,7 +307,6 @@ function createCsrSubject(subjectObj) {
     }, []);
 }
 
-
 /**
  * Create array of alt names for Certificate Signing Requests
  * Note: https://github.com/digitalbazaar/forge/blob/dfdde475677a8a25c851e33e8f81dca60d90cfb9/lib/x509.js#L1444-L1454
@@ -335,7 +322,6 @@ function formatCsrAltNames(altNames) {
         return { type, value };
     });
 }
-
 
 /**
  * Create a Certificate Signing Request
@@ -391,7 +377,7 @@ function formatCsrAltNames(altNames) {
  * }, certificateKey);
  */
 
-exports.createCsr = async function(data, key = null) {
+exports.createCsr = async (data, key = null) => {
     if (!key) {
         key = await createPrivateKey(data.keySize);
     }
@@ -423,7 +409,7 @@ exports.createCsr = async function(data, key = null) {
         L: data.locality,
         O: data.organization,
         OU: data.organizationUnit,
-        E: data.emailAddress
+        E: data.emailAddress,
     });
 
     csr.setSubject(subject);
@@ -434,8 +420,8 @@ exports.createCsr = async function(data, key = null) {
             name: 'extensionRequest',
             extensions: [{
                 name: 'subjectAltName',
-                altNames: formatCsrAltNames(data.altNames)
-            }]
+                altNames: formatCsrAltNames(data.altNames),
+            }],
         }]);
     }
 

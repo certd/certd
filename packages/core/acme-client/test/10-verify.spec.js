@@ -9,7 +9,6 @@ const verify = require('./../src/verify');
 
 const domainName = process.env.ACME_DOMAIN_NAME || 'example.com';
 
-
 describe('verify', () => {
     const challengeTypes = ['http-01', 'dns-01'];
 
@@ -30,17 +29,15 @@ describe('verify', () => {
     const testTlsAlpn01Challenge = { type: 'dns-01', status: 'pending', token: uuid() };
     const testTlsAlpn01Key = uuid();
 
-
     /**
      * Pebble CTS required
      */
 
-    before(function() {
+    before(function () {
         if (!cts.isEnabled()) {
             this.skip();
         }
     });
-
 
     /**
      * API
@@ -49,7 +46,6 @@ describe('verify', () => {
     it('should expose verification api', async () => {
         assert.containsAllKeys(verify, challengeTypes);
     });
-
 
     /**
      * http-01
@@ -81,7 +77,6 @@ describe('verify', () => {
         });
     });
 
-
     /**
      * https-01
      */
@@ -101,7 +96,6 @@ describe('verify', () => {
             assert.isTrue(resp);
         });
     });
-
 
     /**
      * dns-01
@@ -132,7 +126,6 @@ describe('verify', () => {
             assert.isTrue(resp);
         });
     });
-
 
     /**
      * tls-alpn-01

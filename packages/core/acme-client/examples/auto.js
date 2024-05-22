@@ -9,7 +9,6 @@ function log(m) {
     process.stdout.write(`${m}\n`);
 }
 
-
 /**
  * Function used to satisfy an ACME challenge
  *
@@ -47,7 +46,6 @@ async function challengeCreateFn(authz, challenge, keyAuthorization) {
     }
 }
 
-
 /**
  * Function used to remove an ACME challenge response
  *
@@ -80,25 +78,24 @@ async function challengeRemoveFn(authz, challenge, keyAuthorization) {
 
         /* Replace this */
         log(`Would remove TXT record "${dnsRecord}" with value "${recordValue}"`);
-        // await dnsProvider.removeRecord(dnsRecord, 'TXT');
+        // await dnsProvider.removeRecord(dnsRecord, 'TXT', recordValue);
     }
 }
-
 
 /**
  * Main
  */
 
-module.exports = async function() {
+module.exports = async () => {
     /* Init client */
     const client = new acme.Client({
         directoryUrl: acme.directory.letsencrypt.staging,
-        accountKey: await acme.crypto.createPrivateKey()
+        accountKey: await acme.crypto.createPrivateKey(),
     });
 
     /* Create CSR */
     const [key, csr] = await acme.crypto.createCsr({
-        commonName: 'example.com'
+        commonName: 'example.com',
     });
 
     /* Certificate */
@@ -107,7 +104,7 @@ module.exports = async function() {
         email: 'test@example.com',
         termsOfServiceAgreed: true,
         challengeCreateFn,
-        challengeRemoveFn
+        challengeRemoveFn,
     });
 
     /* Done */

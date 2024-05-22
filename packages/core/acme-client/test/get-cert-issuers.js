@@ -7,7 +7,6 @@ const util = require('./../src/util');
 
 const pebbleManagementUrl = process.env.ACME_PEBBLE_MANAGEMENT_URL || null;
 
-
 /**
  * Pebble
  */
@@ -25,7 +24,6 @@ async function getPebbleCertIssuers() {
     /* Return issuers */
     return info.map((i) => i.issuer.commonName);
 }
-
 
 /**
  * Get certificate issuers

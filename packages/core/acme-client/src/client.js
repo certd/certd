@@ -13,7 +13,6 @@ const verify = require('./verify');
 const util = require('./util');
 const auto = require('./auto');
 
-
 /**
  * ACME states
  *
@@ -23,7 +22,6 @@ const auto = require('./auto');
 const validStates = ['ready', 'valid'];
 const pendingStates = ['pending', 'processing'];
 const invalidStates = ['invalid'];
-
 
 /**
  * Default options
@@ -38,9 +36,8 @@ const defaultOpts = {
     externalAccountBinding: {},
     backoffAttempts: 10,
     backoffMin: 5000,
-    backoffMax: 30000
+    backoffMax: 30000,
 };
-
 
 /**
  * AcmeClient
@@ -96,18 +93,16 @@ class AcmeClient {
             opts.accountKey = Buffer.from(opts.accountKey);
         }
 
-        this.opts = Object.assign({}, defaultOpts, opts);
-
+        this.opts = { ...defaultOpts, ...opts };
         this.backoffOpts = {
             attempts: this.opts.backoffAttempts,
             min: this.opts.backoffMin,
-            max: this.opts.backoffMax
+            max: this.opts.backoffMax,
         };
 
         this.http = new HttpClient(this.opts.directoryUrl, this.opts.accountKey, this.opts.externalAccountBinding);
         this.api = new AcmeApi(this.http, this.opts.accountUrl);
     }
-
 
     /**
      * Get Terms of Service URL if available
@@ -127,7 +122,6 @@ class AcmeClient {
     getTermsOfServiceUrl() {
         return this.api.getTermsOfServiceUrl();
     }
-
 
     /**
      * Get current account URL
@@ -149,7 +143,6 @@ class AcmeClient {
     getAccountUrl() {
         return this.api.getAccountUrl();
     }
-
 
     /**
      * Create a new account
@@ -196,7 +189,6 @@ class AcmeClient {
         }
     }
 
-
     /**
      * Update existing account
      *
@@ -235,7 +227,6 @@ class AcmeClient {
         const resp = await this.api.updateAccount(data);
         return resp.data;
     }
-
 
     /**
      * Update account private key
@@ -282,7 +273,6 @@ class AcmeClient {
         return resp.data;
     }
 
-
     /**
      * Create a new order
      *
@@ -313,7 +303,6 @@ class AcmeClient {
         resp.data.url = resp.headers.location;
         return resp.data;
     }
-
 
     /**
      * Refresh order object from CA
@@ -376,7 +365,6 @@ class AcmeClient {
         return resp.data;
     }
 
-
     /**
      * Get identifier authorizations from order
      *
@@ -406,7 +394,6 @@ class AcmeClient {
         }));
     }
 
-
     /**
      * Deactivate identifier authorization
      *
@@ -427,17 +414,13 @@ class AcmeClient {
             throw new Error('Unable to deactivate identifier authorization, URL not found');
         }
 
-        const data = {
-            status: 'deactivated'
-        };
-
+        const data = { status: 'deactivated' };
         const resp = await this.api.updateAuthorization(authz.url, data);
 
         /* Add URL to response */
         resp.data.url = authz.url;
         return resp.data;
     }
-
 
     /**
      * Get key authorization for ACME challenge
@@ -480,7 +463,6 @@ class AcmeClient {
         throw new Error(`Unable to produce key authorization, unknown challenge type: ${challenge.type}`);
     }
 
-
     /**
      * Verify that ACME challenge is satisfied
      *
@@ -515,7 +497,6 @@ class AcmeClient {
         return util.retry(verifyFn, this.backoffOpts);
     }
 
-
     /**
      * Notify CA that challenge has been completed
      *
@@ -535,7 +516,6 @@ class AcmeClient {
         const resp = await this.api.completeChallenge(challenge.url, {});
         return resp.data;
     }
-
 
     /**
      * Wait for ACME provider to verify status on a order, authorization or challenge
@@ -593,7 +573,6 @@ class AcmeClient {
         return util.retry(verifyFn, this.backoffOpts);
     }
 
-
     /**
      * Get certificate from ACME order
      *
@@ -640,7 +619,6 @@ class AcmeClient {
         return resp.data;
     }
 
-
     /**
      * Revoke certificate
      *
@@ -670,7 +648,6 @@ class AcmeClient {
         const resp = await this.api.revokeCert(data);
         return resp.data;
     }
-
 
     /**
      * Auto mode
@@ -726,7 +703,6 @@ class AcmeClient {
         return auto(this, opts);
     }
 }
-
 
 /* Export client */
 module.exports = AcmeClient;

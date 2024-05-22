@@ -27,7 +27,6 @@ export interface AccountUpdateRequest {
     termsOfServiceAgreed?: boolean;
 }
 
-
 /**
  * Order
  *
@@ -53,7 +52,6 @@ export interface OrderCreateRequest {
     notAfter?: string;
 }
 
-
 /**
  * Authorization
  *
@@ -72,7 +70,6 @@ export interface Identifier {
     type: string;
     value: string;
 }
-
 
 /**
  * Challenge
@@ -101,7 +98,6 @@ export interface DnsChallenge extends ChallengeAbstract {
 }
 
 export type Challenge = HttpChallenge | DnsChallenge;
-
 
 /**
  * Certificate

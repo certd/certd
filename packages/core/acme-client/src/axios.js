@@ -5,7 +5,6 @@
 const axios = require('axios');
 const pkg = require('./../package.json');
 
-
 /**
  * Instance
  */
@@ -19,9 +18,8 @@ instance.defaults.headers.common['User-Agent'] = `node-${pkg.name}/${pkg.version
 instance.defaults.acmeSettings = {
     httpChallengePort: 80,
     httpsChallengePort: 443,
-    tlsAlpnChallengePort: 443
+    tlsAlpnChallengePort: 443,
 };
-
 
 /**
  * Explicitly set Node as default HTTP adapter
@@ -31,7 +29,6 @@ instance.defaults.acmeSettings = {
  */
 
 instance.defaults.adapter = 'http';
-
 
 /**
  * Export instance

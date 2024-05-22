@@ -6,7 +6,6 @@ const debug = require('debug')('acme-client');
 
 let logger = () => {};
 
-
 /**
  * Set logger function
  *
@@ -17,11 +16,10 @@ exports.setLogger = (fn) => {
     logger = fn;
 };
 
-
 /**
  * Log message
  *
- * @param {string} Message
+ * @param {string} msg Message
  */
 
 exports.log = (msg) => {

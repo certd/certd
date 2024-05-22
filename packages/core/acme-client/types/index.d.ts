@@ -15,7 +15,6 @@ export type PublicKeyString = string;
 export type CertificateString = string;
 export type CsrString = string;
 
-
 /**
  * Augmented ACME interfaces
  */
@@ -27,7 +26,6 @@ export interface Order extends rfc8555.Order {
 export interface Authorization extends rfc8555.Authorization {
     url: string;
 }
-
 
 /**
  * Client
@@ -80,7 +78,6 @@ export class Client {
     auto(opts: ClientAutoOptions): Promise<string>;
 }
 
-
 /**
  * Directory URLs
  */
@@ -98,7 +95,6 @@ export const directory: {
         production: string
     }
 };
-
 
 /**
  * Crypto
@@ -177,13 +173,11 @@ export interface CryptoLegacyInterface {
 
 export const forge: CryptoLegacyInterface;
 
-
 /**
  * Axios
  */
 
 export const axios: AxiosInstance;
-
 
 /**
  * Logger
