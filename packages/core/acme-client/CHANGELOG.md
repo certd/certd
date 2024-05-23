@@ -1,6 +1,6 @@
 # Changelog
 
-## v5.3.1
+## v5.3.1 (2024-05-22)
 
 * `fixed` Allow `client.auto()` being called with an empty CSR common name
 * `fixed` Bug when calling `updateAccountKey()` with external account binding

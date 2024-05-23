@@ -63,7 +63,7 @@ Create ACME client instance
 ```js
 const client = new acme.Client({
     directoryUrl: acme.directory.letsencrypt.staging,
-    accountKey: 'Private key goes here'
+    accountKey: 'Private key goes here',
 });
 ```
 **Example**  
@@ -75,7 +75,7 @@ const client = new acme.Client({
     accountUrl: 'Optional account URL goes here',
     backoffAttempts: 10,
     backoffMin: 5000,
-    backoffMax: 30000
+    backoffMax: 30000,
 });
 ```
 **Example**  
@@ -86,8 +86,8 @@ const client = new acme.Client({
     accountKey: 'Private key goes here',
     externalAccountBinding: {
         kid: 'YOUR-EAB-KID',
-        hmacKey: 'YOUR-EAB-HMAC-KEY'
-    }
+        hmacKey: 'YOUR-EAB-HMAC-KEY',
+    },
 });
 ```
 <a name="AcmeClient+getTermsOfServiceUrl"></a>
@@ -145,7 +145,7 @@ https://datatracker.ietf.org/doc/html/rfc8555#section-7.3
 Create a new account
 ```js
 const account = await client.createAccount({
-    termsOfServiceAgreed: true
+    termsOfServiceAgreed: true,
 });
 ```
 **Example**  
@@ -153,7 +153,7 @@ Create a new account with contact info
 ```js
 const account = await client.createAccount({
     termsOfServiceAgreed: true,
-    contact: ['mailto:test@example.com']
+    contact: ['mailto:test@example.com'],
 });
 ```
 <a name="AcmeClient+updateAccount"></a>
@@ -174,7 +174,7 @@ https://datatracker.ietf.org/doc/html/rfc8555#section-7.3.2
 Update existing account
 ```js
 const account = await client.updateAccount({
-    contact: ['mailto:foo@example.com']
+    contact: ['mailto:foo@example.com'],
 });
 ```
 <a name="AcmeClient+updateAccountKey"></a>
@@ -218,8 +218,8 @@ Create a new order
 const order = await client.createOrder({
     identifiers: [
         { type: 'dns', value: 'example.com' },
-        { type: 'dns', value: 'test.example.com' }
-    ]
+        { type: 'dns', value: 'test.example.com' },
+    ],
 });
 ```
 <a name="AcmeClient+getOrder"></a>
@@ -452,7 +452,7 @@ Revoke certificate with reason
 ```js
 const certificate = { ... }; // Previously created certificate
 const result = await client.revokeCertificate(certificate, {
-    reason: 4
+    reason: 4,
 });
 ```
 <a name="AcmeClient+auto"></a>
@@ -479,7 +479,7 @@ Auto mode
 Order a certificate using auto mode
 ```js
 const [certificateKey, certificateRequest] = await acme.crypto.createCsr({
-    commonName: 'test.example.com'
+    altNames: ['test.example.com'],
 });
 
 const certificate = await client.auto({
@@ -491,14 +491,14 @@ const certificate = await client.auto({
     },
     challengeRemoveFn: async (authz, challenge, keyAuthorization) => {
         // Clean up challenge here
-    }
+    },
 });
 ```
 **Example**  
 Order a certificate using auto mode with preferred chain
 ```js
 const [certificateKey, certificateRequest] = await acme.crypto.createCsr({
-    commonName: 'test.example.com'
+    altNames: ['test.example.com'],
 });
 
 const certificate = await client.auto({
@@ -507,7 +507,7 @@ const certificate = await client.auto({
     termsOfServiceAgreed: true,
     preferredChain: 'DST Root CA X3',
     challengeCreateFn: async () => {},
-    challengeRemoveFn: async () => {}
+    challengeRemoveFn: async () => {},
 });
 ```
 <a name="Client"></a>

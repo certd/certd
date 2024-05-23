@@ -58,7 +58,7 @@ const defaultOpts = {
  * ```js
  * const client = new acme.Client({
  *     directoryUrl: acme.directory.letsencrypt.staging,
- *     accountKey: 'Private key goes here'
+ *     accountKey: 'Private key goes here',
  * });
  * ```
  *
@@ -70,7 +70,7 @@ const defaultOpts = {
  *     accountUrl: 'Optional account URL goes here',
  *     backoffAttempts: 10,
  *     backoffMin: 5000,
- *     backoffMax: 30000
+ *     backoffMax: 30000,
  * });
  * ```
  *
@@ -81,8 +81,8 @@ const defaultOpts = {
  *     accountKey: 'Private key goes here',
  *     externalAccountBinding: {
  *         kid: 'YOUR-EAB-KID',
- *         hmacKey: 'YOUR-EAB-HMAC-KEY'
- *     }
+ *         hmacKey: 'YOUR-EAB-HMAC-KEY',
+ *     },
  * });
  * ```
  */
@@ -155,7 +155,7 @@ class AcmeClient {
      * @example Create a new account
      * ```js
      * const account = await client.createAccount({
-     *     termsOfServiceAgreed: true
+     *     termsOfServiceAgreed: true,
      * });
      * ```
      *
@@ -163,7 +163,7 @@ class AcmeClient {
      * ```js
      * const account = await client.createAccount({
      *     termsOfServiceAgreed: true,
-     *     contact: ['mailto:test@example.com']
+     *     contact: ['mailto:test@example.com'],
      * });
      * ```
      */
@@ -200,7 +200,7 @@ class AcmeClient {
      * @example Update existing account
      * ```js
      * const account = await client.updateAccount({
-     *     contact: ['mailto:foo@example.com']
+     *     contact: ['mailto:foo@example.com'],
      * });
      * ```
      */
@@ -286,8 +286,8 @@ class AcmeClient {
      * const order = await client.createOrder({
      *     identifiers: [
      *         { type: 'dns', value: 'example.com' },
-     *         { type: 'dns', value: 'test.example.com' }
-     *     ]
+     *         { type: 'dns', value: 'test.example.com' },
+     *     ],
      * });
      * ```
      */
@@ -638,7 +638,7 @@ class AcmeClient {
      * ```js
      * const certificate = { ... }; // Previously created certificate
      * const result = await client.revokeCertificate(certificate, {
-     *     reason: 4
+     *     reason: 4,
      * });
      * ```
      */
@@ -666,7 +666,7 @@ class AcmeClient {
      * @example Order a certificate using auto mode
      * ```js
      * const [certificateKey, certificateRequest] = await acme.crypto.createCsr({
-     *     commonName: 'test.example.com'
+     *     altNames: ['test.example.com'],
      * });
      *
      * const certificate = await client.auto({
@@ -678,14 +678,14 @@ class AcmeClient {
      *     },
      *     challengeRemoveFn: async (authz, challenge, keyAuthorization) => {
      *         // Clean up challenge here
-     *     }
+     *     },
      * });
      * ```
      *
      * @example Order a certificate using auto mode with preferred chain
      * ```js
      * const [certificateKey, certificateRequest] = await acme.crypto.createCsr({
-     *     commonName: 'test.example.com'
+     *     altNames: ['test.example.com'],
      * });
      *
      * const certificate = await client.auto({
@@ -694,7 +694,7 @@ class AcmeClient {
      *     termsOfServiceAgreed: true,
      *     preferredChain: 'DST Root CA X3',
      *     challengeCreateFn: async () => {},
-     *     challengeRemoveFn: async () => {}
+     *     challengeRemoveFn: async () => {},
      * });
      * ```
      */

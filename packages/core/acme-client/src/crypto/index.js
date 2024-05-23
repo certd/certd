@@ -413,29 +413,30 @@ function createSubjectAltNameExtension(altNames) {
  * @example Create a Certificate Signing Request
  * ```js
  * const [certificateKey, certificateRequest] = await acme.crypto.createCsr({
- *     commonName: 'test.example.com'
+ *     altNames: ['test.example.com'],
  * });
  * ```
  *
  * @example Certificate Signing Request with both common and alternative names
+ * > *Warning*: Certificate subject common name has been [deprecated](https://letsencrypt.org/docs/glossary/#def-CN) and its use is [discouraged](https://cabforum.org/uploads/BRv1.2.3.pdf).
  * ```js
  * const [certificateKey, certificateRequest] = await acme.crypto.createCsr({
  *     keySize: 4096,
  *     commonName: 'test.example.com',
- *     altNames: ['foo.example.com', 'bar.example.com']
+ *     altNames: ['foo.example.com', 'bar.example.com'],
  * });
  * ```
  *
  * @example Certificate Signing Request with additional information
  * ```js
  * const [certificateKey, certificateRequest] = await acme.crypto.createCsr({
- *     commonName: 'test.example.com',
+ *     altNames: ['test.example.com'],
  *     country: 'US',
  *     state: 'California',
  *     locality: 'Los Angeles',
  *     organization: 'The Company Inc.',
  *     organizationUnit: 'IT Department',
- *     emailAddress: 'contact@example.com'
+ *     emailAddress: 'contact@example.com',
  * });
  * ```
  *
@@ -444,8 +445,9 @@ function createSubjectAltNameExtension(altNames) {
  * const certificateKey = await acme.crypto.createPrivateEcdsaKey();
  *
  * const [, certificateRequest] = await acme.crypto.createCsr({
- *     commonName: 'test.example.com'
+ *     altNames: ['test.example.com'],
  * }, certificateKey);
+ * ```
  */
 
 exports.createCsr = async (data, keyPem = null) => {
@@ -516,6 +518,7 @@ exports.createCsr = async (data, keyPem = null) => {
  * ```js
  * const alpnKey = await acme.crypto.createPrivateEcdsaKey();
  * const [, alpnCertificate] = await acme.crypto.createAlpnCertificate(authz, keyAuthorization, alpnKey);
+ * ```
  */
 
 exports.createAlpnCertificate = async (authz, keyAuthorization, keyPem = null) => {

@@ -307,8 +307,7 @@ describe('client.auto', () => {
 
             it('should order wildcard certificate', async () => {
                 const [, csr] = await acme.crypto.createCsr({
-                    commonName: testWildcardDomain,
-                    altNames: [`*.${testWildcardDomain}`],
+                    altNames: [testWildcardDomain, `*.${testWildcardDomain}`],
                 }, await createKeyFn());
 
                 const cert = await testClient.auto({

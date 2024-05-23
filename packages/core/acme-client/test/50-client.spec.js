@@ -110,8 +110,8 @@ describe('client', () => {
 
             it('should generate certificate signing request', async () => {
                 [, testCsr] = await acme.crypto.createCsr({ commonName: testDomain }, await createKeyFn());
-                [, testCsrAlpn] = await acme.crypto.createCsr({ commonName: testDomainAlpn }, await createKeyFn());
-                [, testCsrWildcard] = await acme.crypto.createCsr({ commonName: testDomainWildcard }, await createKeyFn());
+                [, testCsrAlpn] = await acme.crypto.createCsr({ altNames: [testDomainAlpn] }, await createKeyFn());
+                [, testCsrWildcard] = await acme.crypto.createCsr({ altNames: [testDomainWildcard] }, await createKeyFn());
             });
 
             it('should resolve certificate issuers [ACME_CAP_ALTERNATE_CERT_ROOTS]', async function () {

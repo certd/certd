@@ -95,7 +95,7 @@ module.exports = async () => {
 
     /* Create CSR */
     const [key, csr] = await acme.crypto.createCsr({
-        commonName: 'example.com',
+        altNames: ['example.com'],
     });
 
     /* Certificate */

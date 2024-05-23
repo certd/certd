@@ -41,8 +41,7 @@ function log(m) {
 
         log(`Creating CSR for ${WILDCARD_DOMAIN}`);
         const [key, csr] = await acme.crypto.createCsr({
-            commonName: WILDCARD_DOMAIN,
-            altNames: [`*.${WILDCARD_DOMAIN}`],
+            altNames: [WILDCARD_DOMAIN, `*.${WILDCARD_DOMAIN}`],
         });
 
         log(`Ordering certificate for ${WILDCARD_DOMAIN}`);

@@ -50,7 +50,7 @@ async function getCertOnDemand(client, servername, attempt = 0) {
     /* Create CSR */
     log(`Creating CSR for ${servername}`);
     const [key, csr] = await acme.crypto.createCsr({
-        commonName: servername,
+        altNames: [servername],
     });
 
     /* Order certificate */

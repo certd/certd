@@ -135,8 +135,7 @@ module.exports = async () => {
 
     /* Finalize order */
     const [key, csr] = await acme.crypto.createCsr({
-        commonName: '*.example.com',
-        altNames: ['example.com'],
+        altNames: ['example.com', '*.example.com'],
     });
 
     const finalized = await client.finalizeOrder(order, csr);
