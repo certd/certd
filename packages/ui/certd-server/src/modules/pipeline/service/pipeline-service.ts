@@ -8,7 +8,7 @@ import { Executor, Pipeline, ResultType, RunHistory } from '@certd/pipeline';
 import { AccessService } from './access-service';
 import { DbStorage } from './db-storage';
 import { StorageService } from './storage-service';
-import { Cron } from '../../../plugins/cron/cron';
+import { Cron } from '../../plugin/cron/cron';
 import { HistoryService } from './history-service';
 import { HistoryEntity } from '../entity/history';
 import { HistoryLogEntity } from '../entity/history-log';

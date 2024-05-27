@@ -130,7 +130,7 @@ function install(app: App, options: any = {}) {
     cos: {
       keepName: true,
       domain: "https://d2p-demo-1251260344.cos.ap-guangzhou.myqcloud.com",
-      bucket: "d2p-demo-1251260344",
+      bucket: "d2p-plugins-1251260344",
       region: "ap-guangzhou",
       secretId: "", //
       secretKey: "", // 传了secretKey 和secretId 代表使用本地签名模式（不安全，生产环境不推荐）
@@ -157,7 +157,7 @@ function install(app: App, options: any = {}) {
     },
     alioss: {
       domain: "https://d2p-demo.oss-cn-shenzhen.aliyuncs.com",
-      bucket: "d2p-demo",
+      bucket: "d2p-plugins",
       region: "oss-cn-shenzhen",
       accessKeyId: "",
       accessKeySecret: "",
@@ -183,7 +183,7 @@ function install(app: App, options: any = {}) {
     },
     qiniu: {
       keepName: true,
-      bucket: "d2p-demo",
+      bucket: "d2p-plugins",
       async getToken(options: any) {
         const ret = await request({
           url: "http://www.docmirror.cn:7070/api/upload/qiniu/getToken",

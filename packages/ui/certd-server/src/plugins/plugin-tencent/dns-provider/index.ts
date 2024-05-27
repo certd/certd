@@ -1,0 +1,1 @@
+import './dnspod-dns-provider';

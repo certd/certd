@@ -127,7 +127,7 @@ http://your_server_ip:7001
 
 ## 七、贡献代码
 
-[贡献插件教程](./packages/plugins/plugin-center/README.md)
+[贡献插件教程](./plugin.md)
 
 
 ## 八、我的其他项目
