@@ -35,6 +35,7 @@
                   <a-list-item>
                     <template #actions>
                       <a key="edit" @click="stepEdit(currentTask, item, index)">编辑</a>
+                      <a key="edit" @click="stepCopy(currentTask, item, index)">复制</a>
                       <a key="remove" @click="stepDelete(currentTask, index)">删除</a>
                     </template>
                     <a-list-item-meta>
@@ -70,10 +71,11 @@ import _ from "lodash-es";
 import { nanoid } from "nanoid";
 import PiStepForm from "../step-form/index.vue";
 import { message, Modal } from "ant-design-vue";
+import {CopyOutlined} from "@ant-design/icons-vue";
 
 export default {
   name: "PiTaskForm",
-  components: { PiStepForm },
+  components: {CopyOutlined, PiStepForm },
   props: {
     editMode: {
       type: Boolean,
@@ -86,7 +88,7 @@ export default {
       const stepFormRef: Ref<any> = ref(null);
       const currentStepIndex = ref(0);
       provide("currentStepIndex", currentStepIndex);
-      const stepAdd = (task: any) => {
+      const stepAdd = (task: any,stepDef:any) => {
         currentStepIndex.value = task.steps.length;
         stepFormRef.value.stepAdd((type: any, value: any) => {
           if (type === "save") {
@@ -95,7 +97,14 @@ export default {
               task.title = value.title;
             }
           }
-        });
+        },stepDef);
+      };
+
+      const stepCopy = (task: any, step: any, stepIndex: any) => {
+        step = _.cloneDeep(step)
+        step.id = nanoid()
+        step.title = step.title +"_copy"
+        stepAdd(task,step)
       };
       const stepEdit = (task: any, step: any, stepIndex: any) => {
         currentStepIndex.value = stepIndex;
@@ -126,7 +135,7 @@ export default {
         });
       };
 
-      return { stepAdd, stepEdit, stepDelete, stepFormRef };
+      return { stepAdd, stepEdit,stepCopy, stepDelete, stepFormRef };
     }
 
     /**
@@ -168,9 +177,10 @@ export default {
         taskDrawerShow();
       };
 
-      const taskAdd = (emit: any) => {
+      const taskAdd = (emit: any,taskMerge:any) => {
         mode.value = "add";
-        const task: any = { id: nanoid(), title: "新任务", steps: [], status: null };
+        const blankTask = { id: nanoid(), title: "新任务", steps: [], status: null }
+        const task: any = _.merge(blankTask,taskMerge) ;
         taskOpen(task, emit);
       };
 
@@ -224,7 +234,7 @@ export default {
         taskSave,
         taskDelete,
         rules,
-        blankFn
+        blankFn,
       };
     }
     return {

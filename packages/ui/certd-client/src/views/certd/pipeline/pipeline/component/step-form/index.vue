@@ -68,6 +68,7 @@
                   { value: 1, label: '成功后跳过' }
                 ]
               },
+              helper:'该任务运行成功一次之后下次运行是否跳过，证书申请任务务必选择正常运行',
               rules: [{ required: true, message: '此项必填' }]
             }"
             :get-context-fn="blankFn"
@@ -89,9 +90,10 @@ import { message, Modal } from "ant-design-vue";
 import { computed, inject, Ref, ref } from "vue";
 import _ from "lodash-es";
 import { nanoid } from "nanoid";
-import { compute } from "@fast-crud/fast-crud";
+import {CopyOutlined} from "@ant-design/icons-vue";
 export default {
   name: "PiStepForm",
+  components:{CopyOutlined},
   props: {
     editMode: {
       type: Boolean,
@@ -171,7 +173,7 @@ export default {
         stepDrawerShow();
       };
 
-      const stepAdd = (emit: any) => {
+      const stepAdd = (emit: any,stepDef:any) => {
         mode.value = "add";
         const step: any = {
           id: nanoid(),
@@ -181,6 +183,7 @@ export default {
           input: {},
           status: null
         };
+        _.merge(step,stepDef)
         stepOpen(step, emit);
       };
 
@@ -250,6 +253,14 @@ export default {
         });
       };
 
+      const stepCopy = () => {
+        const step = _.cloneDeep(currentStep.value);
+        step.id = nanoid();
+        step.title = `${step.title}-copy`;
+        callback.value("copy", step);
+        stepDrawerClose();
+      };
+
       const blankFn = () => {
         return {};
       };
@@ -270,7 +281,8 @@ export default {
         stepSave,
         stepDelete,
         rules,
-        blankFn
+        blankFn,
+        stepCopy
       };
     }
 
