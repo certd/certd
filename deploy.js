@@ -2,7 +2,7 @@ import http from 'axios'
 import fs from 'fs'
 
 //读取 packages/core/pipline/package.json的版本号
-import {default as packageJson} from './packages/core/pipeline/package.json';
+import {default as packageJson} from './packages/core/pipeline/package.json' assert { type: "json" };
 
 const certdVersion = packageJson.version
 console.log("certdVersion", certdVersion)
