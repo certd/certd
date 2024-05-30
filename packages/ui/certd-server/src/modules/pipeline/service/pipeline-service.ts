@@ -113,7 +113,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
       for (const entity of list) {
         const pipeline = JSON.parse(entity.content ?? '{}');
-        this.registerTriggers(pipeline);
+        try{
+          this.registerTriggers(pipeline);
+        }catch (e) {
+          logger.error('加载定时trigger失败：', e);
+        }
+
       }
     }
     logger.info('定时器数量：', this.cron.getListSize());
