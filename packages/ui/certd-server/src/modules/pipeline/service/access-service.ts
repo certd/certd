@@ -23,6 +23,9 @@ export class AccessService
 
   async getById(id: any): Promise<any> {
     const entity = await this.info(id);
+    if (entity == null) {
+      throw new Error(`该授权配置不存在,请确认是否已被删除:id=${id}`);
+    }
     // const access = accessRegistry.get(entity.type);
     const setting = JSON.parse(entity.setting);
     return {
@@ -38,5 +41,4 @@ export class AccessService
   getDefineByType(type: string) {
     return accessRegistry.getDefine(type);
   }
-
 }

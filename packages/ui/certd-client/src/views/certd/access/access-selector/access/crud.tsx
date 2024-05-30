@@ -64,7 +64,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         }
       },
       rowHandle: {
-        width: "150px"
+        width: "180px"
       },
       table: {
         rowSelection: {

@@ -1,12 +1,23 @@
-import { AbstractTaskPlugin, Decorator, HttpClient, IAccessService, IContext, IsTaskPlugin, RunStrategy, Step, TaskInput, TaskOutput } from "@certd/pipeline";
+import {
+  AbstractTaskPlugin,
+  Decorator,
+  HttpClient,
+  IAccessService,
+  IContext,
+  IsTaskPlugin,
+  RunStrategy,
+  Step,
+  TaskInput,
+  TaskOutput
+} from "@certd/pipeline";
 import dayjs from "dayjs";
-import { AcmeService, CertInfo } from "./acme";
+import {AcmeService, CertInfo} from "./acme";
 import _ from "lodash";
-import { Logger } from "log4js";
-import { DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider";
-import { CertReader } from "./cert-reader";
+import {Logger} from "log4js";
+import {DnsProviderDefine, dnsProviderRegistry} from "../../dns-provider";
+import {CertReader} from "./cert-reader";
 import JSZip from "jszip";
-import { fileUtils } from "@certd/pipeline";
+
 export { CertReader };
 export type { CertInfo };
 
@@ -150,7 +161,7 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     const cert: CertInfo = certReader.toCertInfo();
     this.cert = cert;
     // this.logger.info(JSON.stringify(certReader.detail));
-    const applyTime = dayjs(certReader.detail.validity.notBefore).format("YYYYMMDDHHmmss");
+    const applyTime = dayjs(certReader.detail.validity.notBefore).format("YYYYMMDD_HHmmss");
     await this.zipCert(cert, applyTime);
   }
 
@@ -162,8 +173,7 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     const filename = `cert_${domain_name}_${applyTime}.zip`;
     const content = await zip.generateAsync({ type: "nodebuffer" });
     this.saveFile(filename, content);
-    this.logger.info(`getFileRootDir:${fileUtils.getFileRootDir("11")}`);
-    this.logger.info(`保存文件:${filename}`);
+    this.logger.info(`已保存文件:${filename}`);
   }
 
   /**

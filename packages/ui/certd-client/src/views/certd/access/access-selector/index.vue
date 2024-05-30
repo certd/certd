@@ -1,6 +1,9 @@
 <template>
   <div class="pi-access-selector">
-    <span v-if="target.name" class="mlr-5">{{ target.name }}</span>
+    <span v-if="target.name" class="mr-5 cd-flex-inline">
+      <span class="mr-5">{{ target.name }}</span>
+      <fs-icon class="cd-icon-button" icon="ion:close-circle-outline" @click="clear"></fs-icon>
+    </span>
     <span v-else class="mlr-5 gray">请选择</span>
     <a-button @click="chooseForm.open">选择</a-button>
     <a-form-item-rest v-if="chooseForm.show">
@@ -42,6 +45,13 @@ export default defineComponent({
         target.value = await api.GetObj(value);
       }
     }
+
+    function clear(){
+      selectedId.value = "";
+      target.value = null
+      ctx.emit("update:modelValue", selectedId.value);
+    }
+
     watch(
       () => {
         return props.modelValue;
@@ -89,7 +99,9 @@ export default defineComponent({
       }
     });
 
+
     return {
+      clear,
       target,
       selectedId,
       providerDefine,
