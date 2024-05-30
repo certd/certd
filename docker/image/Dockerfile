@@ -1,4 +1,4 @@
-FROM registry.cn-shenzhen.aliyuncs.com/handsfree/node:16-alpine
+FROM registry.cn-shenzhen.aliyuncs.com/handsfree/node:18-alpine
 EXPOSE 7001
 ENV NODE_ENV production
 ENV MIDWAY_SERVER_ENV production
