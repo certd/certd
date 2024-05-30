@@ -1,20 +1,20 @@
-import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
-import { InjectEntityModel } from '@midwayjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service';
-import { PipelineEntity } from '../entity/pipeline';
-import { PipelineDetail } from '../entity/vo/pipeline-detail';
-import { Executor, Pipeline, ResultType, RunHistory } from '@certd/pipeline';
-import { AccessService } from './access-service';
-import { DbStorage } from './db-storage';
-import { StorageService } from './storage-service';
-import { Cron } from '../../plugin/cron/cron';
-import { HistoryService } from './history-service';
-import { HistoryEntity } from '../entity/history';
-import { HistoryLogEntity } from '../entity/history-log';
-import { HistoryLogService } from './history-log-service';
-import { logger } from '../../../utils/logger';
-import { EmailService } from '../../basic/service/email-service';
+import {Config, Inject, Provide, Scope, ScopeEnum} from '@midwayjs/decorator';
+import {InjectEntityModel} from '@midwayjs/typeorm';
+import {In, Repository} from 'typeorm';
+import {BaseService} from '../../../basic/base-service';
+import {PipelineEntity} from '../entity/pipeline';
+import {PipelineDetail} from '../entity/vo/pipeline-detail';
+import {Executor, Pipeline, ResultType, RunHistory} from '@certd/pipeline';
+import {AccessService} from './access-service';
+import {DbStorage} from './db-storage';
+import {StorageService} from './storage-service';
+import {Cron} from '../../plugin/cron/cron';
+import {HistoryService} from './history-service';
+import {HistoryEntity} from '../entity/history';
+import {HistoryLogEntity} from '../entity/history-log';
+import {HistoryLogService} from './history-log-service';
+import {logger} from '../../../utils/logger';
+import {EmailService} from '../../basic/service/email-service';
 
 const runningTasks: Map<string | number, Executor> = new Map();
 
@@ -131,7 +131,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
     for (const trigger of pipeline.triggers) {
       this.registerCron(pipeline.id, trigger);
     }
-    logger.info('当前定时器数量：', this.cron.getListSize());
   }
 
   async trigger(id) {
@@ -183,6 +182,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         await this.run(pipelineId, trigger.id);
       },
     });
+    logger.info('当前定时器数量：', this.cron.getListSize());
   }
 
   async run(id: number, triggerId: string) {
