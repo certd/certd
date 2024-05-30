@@ -19,6 +19,7 @@ import { PipelineService } from '../service/pipeline-service';
 import { CommonException } from '../../../basic/exception/common-exception';
 import { PermissionException } from '../../../basic/exception/permission-exception';
 import * as fs from 'fs';
+import { logger } from '../../../utils/logger';
 
 /**
  * 证书
@@ -151,7 +152,7 @@ export class HistoryController extends CrudController<HistoryService> {
     // const filename = file.filename;
     // 要下载的文件的完整路径
     const path = file.path;
-
+    logger.info(`download:${path}`);
     // 以流的形式下载文件
     this.ctx.attachment(path);
     this.ctx.set('Content-Type', 'application/octet-stream');

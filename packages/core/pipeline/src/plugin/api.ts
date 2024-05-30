@@ -6,6 +6,7 @@ import { IAccessService } from "../access";
 import { IEmailService } from "../service";
 import { IContext } from "../core";
 import { AxiosInstance } from "axios";
+import { logger } from "../utils";
 
 export enum ContextScope {
   global,
@@ -89,6 +90,7 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
   }
   saveFile(filename: string, file: Buffer) {
     const filePath = this.ctx.fileStore.writeFile(filename, file);
+    logger.info(`saveFile:${filePath}`);
     this._result.files!.push({
       id: this.randomFileId(),
       filename,

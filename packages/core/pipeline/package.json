@@ -23,7 +23,7 @@
     "qs": "^6.11.2"
   },
   "devDependencies": {
-    "@certd/acme-client": "^1.20.9",
+    "@certd/acme-client": "workspace:^1.20.9",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",

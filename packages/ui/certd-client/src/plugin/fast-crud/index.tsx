@@ -58,6 +58,7 @@ function install(app: App, options: any = {}) {
           buttons: {
             view: { type: "link", text: null, icon: "ion:eye-outline" },
             edit: { type: "link", text: null, icon: "ion:create-outline" },
+            copy: {show:true,type: "link", text: null, icon: "ion:copy-outline"},
             remove: { type: "link", style: { color: "red" }, text: null, icon: "ion:trash-outline" }
           },
           dropdown: {

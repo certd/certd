@@ -1,3 +1,5 @@
+import { logger } from "../utils";
+
 export type Registrable = {
   name: string;
   title: string;
@@ -9,15 +11,21 @@ export type RegistryItem<T> = {
   target: T;
 };
 export class Registry<T> {
+  type = "";
   storage: {
     [key: string]: RegistryItem<T>;
   } = {};
+
+  constructor(type: string) {
+    this.type = type;
+  }
 
   register(key: string, value: RegistryItem<T>) {
     if (!key || value == null) {
       return;
     }
     this.storage[key] = value;
+    logger.info(`注册插件:${this.type}:${key}`);
   }
 
   get(name: string): RegistryItem<T> {

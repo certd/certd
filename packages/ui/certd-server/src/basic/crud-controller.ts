@@ -32,6 +32,7 @@ export abstract class CrudController<T> extends BaseController {
     @Body(ALL)
     bean
   ) {
+    delete bean.id;
     const id = await this.getService().add(bean);
     return this.ok(id);
   }

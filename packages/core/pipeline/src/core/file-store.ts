@@ -1,7 +1,8 @@
-import { fileUtils } from "../utils/util.file";
+import { fileUtils } from "../utils";
 import dayjs from "dayjs";
 import path from "path";
 import fs from "fs";
+import { logger } from "../utils";
 
 export type FileStoreOptions = {
   rootDir?: string;
@@ -30,6 +31,7 @@ export class FileStore {
     const localPath = this.buildFilePath(filename);
 
     fs.writeFileSync(localPath, file);
+    logger.info(`写入文件：${localPath}`);
     return localPath;
   }
 

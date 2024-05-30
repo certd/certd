@@ -6,6 +6,7 @@ import { Logger } from "log4js";
 import { DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider";
 import { CertReader } from "./cert-reader";
 import JSZip from "jszip";
+import { fileUtils } from "@certd/pipeline";
 export { CertReader };
 export type { CertInfo };
 
@@ -133,11 +134,11 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const oldCert = await this.condition();
     if (oldCert != null) {
-      return await this.output(oldCert.toCertInfo());
+      return await this.output(oldCert);
     }
     const cert = await this.doCertApply();
     if (cert != null) {
-      await this.output(cert.toCertInfo());
+      await this.output(cert);
       //清空后续任务的状态，让后续任务能够重新执行
       this.clearLastStatus();
     } else {
@@ -145,17 +146,24 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     }
   }
 
-  async output(cert: CertInfo) {
+  async output(certReader: CertReader) {
+    const cert: CertInfo = certReader.toCertInfo();
     this.cert = cert;
-    await this.zipCert(cert);
+    // this.logger.info(JSON.stringify(certReader.detail));
+    const applyTime = dayjs(certReader.detail.validity.notBefore).format("YYYYMMDDHHmmss");
+    await this.zipCert(cert, applyTime);
   }
 
-  async zipCert(cert: CertInfo) {
+  async zipCert(cert: CertInfo, applyTime: string) {
     const zip = new JSZip();
     zip.file("cert.crt", cert.crt);
     zip.file("cert.key", cert.key);
+    const domain_name = this.domains[0].replace(".", "_").replace("*", "_");
+    const filename = `cert_${domain_name}_${applyTime}.zip`;
     const content = await zip.generateAsync({ type: "nodebuffer" });
-    this.saveFile("cert.zip", content);
+    this.saveFile(filename, content);
+    this.logger.info(`getFileRootDir:${fileUtils.getFileRootDir("11")}`);
+    this.logger.info(`保存文件:${filename}`);
   }
 
   /**

@@ -17,8 +17,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "^1.20.9",
-    "@certd/pipeline": "^1.20.9",
+    "@certd/acme-client": "workspace:^1.20.9",
+    "@certd/pipeline": "workspace:^1.20.9",
     "jszip": "^3.10.1",
     "node-forge": "^0.10.0"
   },
