@@ -78,7 +78,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         },
         content: {
           title: "详情",
-          type: ["editor-wang", "colspan"],
+          type: ["editor-wang5", "colspan"],
           form: {
             itemProps: { labelWidth: "0px" }
           }

@@ -1,7 +1,7 @@
 import { request, requestForMock } from "/src/api/service";
 import { ColumnCompositionProps, CrudOptions, FastCrud, PageQuery, PageRes, setLogger, TransformResProps, useColumns, UseCrudProps, UserPageQuery, useTypes, useUi } from "@fast-crud/fast-crud";
 import "@fast-crud/fast-crud/dist/style.css";
-import { FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader, FsUploaderS3SignedUrlType } from "@fast-crud/fast-extends";
+import { FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader, FsUploaderAliossSTS, FsUploaderGetAuthContext, FsUploaderS3SignedUrlType } from "@fast-crud/fast-extends";
 import "@fast-crud/fast-extends/dist/style.css";
 import UiAntdv from "@fast-crud/ui-antdv";
 import _ from "lodash-es";
@@ -131,7 +131,7 @@ function install(app: any, options: any = {}) {
       region: "ap-guangzhou",
       secretId: "", //
       secretKey: "", // 传了secretKey 和secretId 代表使用本地签名模式（不安全，生产环境不推荐）
-      async getAuthorization(custom: any) {
+      async getAuthorization(context: FsUploaderGetAuthContext): Promise<FsUploaderAliossSTS> {
         // 不传secretKey代表使用临时签名模式,此时此参数必传（安全，生产环境推荐）
         const ret = request({
           url: "http://www.docmirror.cn:7070/api/upload/cos/getAuthorization",
@@ -143,6 +143,7 @@ function install(app: any, options: any = {}) {
         //   TmpSecretKey,
         //   XCosSecurityToken,
         //   ExpiredTime, // SDK 在 ExpiredTime 时间前，不会再次调用 getAuthorization
+        //   key //【可选】后台生成的文件key，如果不传则用前端自己生成的key
         // }
         return ret;
       },
