@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.21.0](https://github.com/fast-crud/fast-crud/compare/v1.20.2...v1.21.0) (2024-06-08)
+
+### Bug Fixes
+
+* 修复图片裁剪按钮上下和左右相反的bug ([c62b8d4](https://github.com/fast-crud/fast-crud/commit/c62b8d42371364b4e50d7289055ba2adfdff05aa))
+
+### Performance Improvements
+
+* fs-dict-tree支持插槽 ([fca02f9](https://github.com/fast-crud/fast-crud/commit/fca02f9f6bb3b027ef39b7366c205ffbf3620dd8))
+
 ## [1.20.2](https://github.com/fast-crud/fast-crud/compare/v1.20.1...v1.20.2) (2024-03-21)
 
 **Note:** Version bump only for package @fast-crud/fs-admin-antdv

@@ -1,6 +1,6 @@
 {
   "name": "@fast-crud/fs-admin-antdv",
-  "version": "1.20.2",
+  "version": "1.21.0",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -26,10 +26,10 @@
     "@ant-design/icons-vue": "^6.1.0",
     "@aws-sdk/client-s3": "^3.383.0",
     "@aws-sdk/s3-request-presigner": "^3.383.0",
-    "@fast-crud/fast-crud": "^1.20.2",
-    "@fast-crud/fast-extends": "^1.20.2",
-    "@fast-crud/ui-antdv": "^1.20.2",
-    "@fast-crud/ui-interface": "^1.20.2",
+    "@fast-crud/fast-crud": "^1.21.0",
+    "@fast-crud/fast-extends": "^1.21.0",
+    "@fast-crud/ui-antdv": "^1.21.0",
+    "@fast-crud/ui-interface": "^1.21.0",
     "@iconify/iconify": "^3.1.1",
     "@iconify/json": "^2.2.98",
     "@iconify/vue": "^4.1.1",
