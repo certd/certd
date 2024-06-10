@@ -5,7 +5,7 @@ import { IsAccess, AccessInput } from '@certd/pipeline';
  * 在certd的后台管理系统中，用户可以选择添加此类型的授权
  */
 @IsAccess({
-  name: 'plugins',
+  name: 'demo',
   title: '授权插件示例',
   desc: '',
 })

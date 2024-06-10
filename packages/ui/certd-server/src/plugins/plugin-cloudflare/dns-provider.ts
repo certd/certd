@@ -6,18 +6,18 @@ import {
   RemoveRecordOptions,
 } from '@certd/plugin-cert';
 import { Autowire, ILogger } from '@certd/pipeline';
-import { DemoAccess } from './access';
+import { CloudflareAccess } from './access';
 
 // TODO  这里注册一个dnsProvider
 @IsDnsProvider({
-  name: 'demo',
-  title: 'Dns提供商Demo',
-  desc: 'dns provider示例',
-  accessType: 'demo', //这里是对应的access name
+  name: 'cloudflare',
+  title: 'dns提供商cloudflare',
+  desc: 'cloudflare dns provider示例',
+  accessType: 'cloudflare',
 })
-export class DemoDnsProvider implements IDnsProvider {
+export class CloudflareDnsProvider implements IDnsProvider {
   @Autowire()
-  access!: DemoAccess;
+  access!: CloudflareAccess;
   @Autowire()
   logger!: ILogger;
 
@@ -75,4 +75,4 @@ export class DemoDnsProvider implements IDnsProvider {
 }
 
 //TODO 实例化这个provider，将其自动注册到系统中
-new DemoDnsProvider();
+new CloudflareDnsProvider();
