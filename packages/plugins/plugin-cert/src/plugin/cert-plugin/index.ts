@@ -1,21 +1,10 @@
-import {
-  AbstractTaskPlugin,
-  Decorator,
-  HttpClient,
-  IAccessService,
-  IContext,
-  IsTaskPlugin,
-  RunStrategy,
-  Step,
-  TaskInput,
-  TaskOutput
-} from "@certd/pipeline";
+import { AbstractTaskPlugin, Decorator, HttpClient, IAccessService, IContext, IsTaskPlugin, RunStrategy, Step, TaskInput, TaskOutput } from "@certd/pipeline";
 import dayjs from "dayjs";
-import {AcmeService, CertInfo} from "./acme";
+import { AcmeService, CertInfo } from "./acme";
 import _ from "lodash";
-import {Logger} from "log4js";
-import {DnsProviderDefine, dnsProviderRegistry} from "../../dns-provider";
-import {CertReader} from "./cert-reader";
+import { Logger } from "log4js";
+import { DnsProviderContext, DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider";
+import { CertReader } from "./cert-reader";
 import JSZip from "jszip";
 
 export { CertReader };
@@ -242,8 +231,9 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
 
     // @ts-ignore
     const dnsProvider: IDnsProvider = new DnsProviderClass();
-    const context = { access, logger: this.logger, http: this.http };
+    const context: DnsProviderContext = { access, logger: this.logger, http: this.http };
     Decorator.inject(dnsProviderDefine.autowire, dnsProvider, context);
+    dnsProvider.setCtx(context);
     await dnsProvider.onInstance();
 
     const cert = await this.acme.order({

@@ -5,6 +5,8 @@ import { Challenge } from "@certd/acme-client/types/rfc8555";
 import { Logger } from "log4js";
 import { IContext } from "@certd/pipeline";
 import { IDnsProvider } from "../../dns-provider";
+import psl from "psl";
+
 export type CertInfo = {
   crt: string;
   key: string;
@@ -65,33 +67,43 @@ export class AcmeService {
     return key.toString();
   }
 
+  parseDomain(fullDomain: string) {
+    const parsed = psl.parse(fullDomain) as psl.ParsedDomain;
+    if (parsed.error) {
+      throw new Error(`解析${fullDomain}域名失败:` + JSON.stringify(parsed.error));
+    }
+    return parsed.domain as string;
+  }
   async challengeCreateFn(authz: any, challenge: any, keyAuthorization: string, dnsProvider: IDnsProvider) {
     this.logger.info("Triggered challengeCreateFn()");
 
     /* http-01 */
+    const fullDomain = authz.identifier.value;
     if (challenge.type === "http-01") {
       const filePath = `/var/www/html/.well-known/acme-challenge/${challenge.token}`;
       const fileContents = keyAuthorization;
 
-      this.logger.info(`Creating challenge response for ${authz.identifier.value} at path: ${filePath}`);
+      this.logger.info(`Creating challenge response for ${fullDomain} at path: ${filePath}`);
 
       /* Replace this */
       this.logger.info(`Would write "${fileContents}" to path "${filePath}"`);
       // await fs.writeFileAsync(filePath, fileContents);
     } else if (challenge.type === "dns-01") {
       /* dns-01 */
-      const dnsRecord = `_acme-challenge.${authz.identifier.value}`;
+      const dnsRecord = `_acme-challenge.${fullDomain}`;
       const recordValue = keyAuthorization;
 
-      this.logger.info(`Creating TXT record for ${authz.identifier.value}: ${dnsRecord}`);
-
+      this.logger.info(`Creating TXT record for ${fullDomain}: ${dnsRecord}`);
       /* Replace this */
       this.logger.info(`Would create TXT record "${dnsRecord}" with value "${recordValue}"`);
 
+      const domain = this.parseDomain(fullDomain);
+      this.logger.info("解析到域名domain=", domain);
       return await dnsProvider.createRecord({
         fullRecord: dnsRecord,
         type: "TXT",
         value: recordValue,
+        domain,
       });
     }
   }
@@ -111,28 +123,33 @@ export class AcmeService {
     this.logger.info("Triggered challengeRemoveFn()");
 
     /* http-01 */
+    const fullDomain = authz.identifier.value;
     if (challenge.type === "http-01") {
       const filePath = `/var/www/html/.well-known/acme-challenge/${challenge.token}`;
 
-      this.logger.info(`Removing challenge response for ${authz.identifier.value} at path: ${filePath}`);
+      this.logger.info(`Removing challenge response for ${fullDomain} at path: ${filePath}`);
 
       /* Replace this */
       this.logger.info(`Would remove file on path "${filePath}"`);
       // await fs.unlinkAsync(filePath);
     } else if (challenge.type === "dns-01") {
-      const dnsRecord = `_acme-challenge.${authz.identifier.value}`;
+      const dnsRecord = `_acme-challenge.${fullDomain}`;
       const recordValue = keyAuthorization;
 
-      this.logger.info(`Removing TXT record for ${authz.identifier.value}: ${dnsRecord}`);
+      this.logger.info(`Removing TXT record for ${fullDomain}: ${dnsRecord}`);
 
       /* Replace this */
       this.logger.info(`Would remove TXT record "${dnsRecord}" with value "${recordValue}"`);
+
+      const domain = this.parseDomain(fullDomain);
+
       try {
         await dnsProvider.removeRecord({
           fullRecord: dnsRecord,
           type: "TXT",
           value: keyAuthorization,
           record: recordItem,
+          domain,
         });
       } catch (e) {
         this.logger.error("删除解析记录出错：", e);

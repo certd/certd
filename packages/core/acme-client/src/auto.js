@@ -176,21 +176,31 @@ module.exports = async function(client, userOpts) {
         await challengeFunc(authz);
     });
 
-    log('开始challenge');
-    let promise = Promise.resolve();
-    function runPromisesSerially(tasks) {
-        tasks.forEach((task) => {
-            promise = promise.then(task);
-        });
-        return promise;
+
+    // let promise = Promise.resolve();
+    // function runPromisesSerially(tasks) {
+    //     tasks.forEach((task) => {
+    //         promise = promise.then(task);
+    //     });
+    //     return promise;
+    // }
+
+    function runPromiseParallel(tasks) {
+        return Promise.all(tasks.map((task) => task()));
     }
 
 
     try {
-        await runPromisesSerially(challengePromises);
+        log('开始challenge');
+        await runPromiseParallel(challengePromises);
+    }
+    catch (e) {
+        log('challenge失败');
+        throw e;
     }
     finally {
-        await runPromisesSerially(clearTasks);
+        log('清理challenge痕迹');
+        await runPromiseParallel(clearTasks);
     }
 
     // try {
