@@ -1,12 +1,6 @@
-import _ from 'lodash';
-import {
-  CreateRecordOptions,
-  IDnsProvider,
-  IsDnsProvider,
-  RemoveRecordOptions,
-} from '@certd/plugin-cert';
-import { Autowire, ILogger } from '@certd/pipeline';
-import { DemoAccess } from './access';
+import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { Autowire, ILogger } from "@certd/pipeline";
+import { DemoAccess } from "./access";
 
 // TODO  这里注册一个dnsProvider
 @IsDnsProvider({
@@ -15,7 +9,7 @@ import { DemoAccess } from './access';
   desc: 'dns provider示例',
   accessType: 'demo', //这里是对应的access name
 })
-export class DemoDnsProvider implements IDnsProvider {
+export class DemoDnsProvider extends AbstractDnsProvider {
   @Autowire()
   access!: DemoAccess;
   @Autowire()
