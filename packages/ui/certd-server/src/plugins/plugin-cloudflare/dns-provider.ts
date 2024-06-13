@@ -5,7 +5,7 @@ import { CloudflareAccess } from "./access";
 // TODO  这里注册一个dnsProvider
 @IsDnsProvider({
   name: 'cloudflare',
-  title: 'dns提供商cloudflare',
+  title: 'cloudflare',
   desc: 'cloudflare dns provider示例',
   accessType: 'cloudflare',
 })
