@@ -107,7 +107,7 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "CsrInfo",
   })
-  csrInfo: any;
+  csrInfo!: string;
 
   acme!: AcmeService;
   logger!: Logger;
@@ -167,7 +167,6 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
 
   /**
    * 是否更新证书
-   * @param input
    */
   async condition() {
     if (this.forceUpdate) {
@@ -220,7 +219,7 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
         organizationUnit: "IT Department",
         emailAddress: email,
       },
-      this.csrInfo
+      this.csrInfo ? JSON.parse(this.csrInfo) : {}
     );
     this.logger.info("开始申请证书,", email, domains);
 

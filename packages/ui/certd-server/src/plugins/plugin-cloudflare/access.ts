@@ -6,7 +6,7 @@ import { IsAccess, AccessInput } from '@certd/pipeline';
  */
 @IsAccess({
   name: 'cloudflare',
-  title: '授权插件示例',
+  title: 'cloudflare授权',
   desc: '',
 })
 export class CloudflareAccess {

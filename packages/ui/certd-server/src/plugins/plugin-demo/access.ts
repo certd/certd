@@ -1,4 +1,4 @@
-import { IsAccess, AccessInput } from '@certd/pipeline';
+import { IsAccess, AccessInput, IAccess } from "@certd/pipeline";
 
 /**
  * 这个注解将注册一个授权配置
@@ -9,7 +9,7 @@ import { IsAccess, AccessInput } from '@certd/pipeline';
   title: '授权插件示例',
   desc: '',
 })
-export class DemoAccess {
+export class DemoAccess implements IAccess{
   /**
    * 授权属性配置
    */

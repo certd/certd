@@ -6,7 +6,7 @@ import { ContextFactory, IContext } from "./context";
 import { IStorage } from "./storage";
 import { logger } from "../utils/util.log";
 import { Logger } from "log4js";
-import { request } from "../utils/util.request";
+import { createAxiosService } from "../utils/util.request";
 import { IAccessService } from "../access";
 import { RegistryItem } from "../registry";
 import { Decorator } from "../decorator";
@@ -213,11 +213,12 @@ export class Executor {
       }
     });
 
+    const http = createAxiosService({ logger: currentLogger });
     const taskCtx: TaskInstanceContext = {
       pipeline: this.pipeline,
       step,
       lastStatus,
-      http: request,
+      http,
       logger: currentLogger,
       accessService: this.options.accessService,
       emailService: this.options.emailService,

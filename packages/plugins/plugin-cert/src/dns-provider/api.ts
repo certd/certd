@@ -13,8 +13,9 @@ export type CreateRecordOptions = {
   value: any;
   domain: string;
 };
-export type RemoveRecordOptions = CreateRecordOptions & {
-  record: any;
+export type RemoveRecordOptions<T> = CreateRecordOptions & {
+  // 本次创建的dns解析记录，实际上就是createRecord接口的返回值
+  record: T;
 };
 
 export type DnsProviderContext = {
@@ -23,9 +24,9 @@ export type DnsProviderContext = {
   http: HttpClient;
 };
 
-export interface IDnsProvider {
+export interface IDnsProvider<T = any> {
   onInstance(): Promise<void>;
-  createRecord(options: CreateRecordOptions): Promise<any>;
-  removeRecord(options: RemoveRecordOptions): Promise<any>;
+  createRecord(options: CreateRecordOptions): Promise<T>;
+  removeRecord(options: RemoveRecordOptions<T>): Promise<void>;
   setCtx(ctx: DnsProviderContext): void;
 }

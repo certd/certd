@@ -100,7 +100,7 @@ export class HuaweiDnsProvider extends AbstractDnsProvider{
       throw e;
     }
   }
-  async removeRecord(options: RemoveRecordOptions): Promise<any> {
+  async removeRecord(options: RemoveRecordOptions<any>): Promise<any> {
     const { fullRecord, value, record } = options;
     const req: ApiRequestOptions = {
       url: `${this.dnsEndpoint}/v2/zones/${record.zone_id}/recordsets/${record.id}`,

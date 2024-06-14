@@ -2,10 +2,11 @@ import axios from "axios";
 // @ts-ignore
 import qs from "qs";
 import { logger } from "./util.log";
+import { Logger } from "log4js";
 /**
  * @description 创建请求实例
  */
-function createService() {
+export function createAxiosService({ logger }: { logger: Logger }) {
   // 创建一个 axios 实例
   const service = axios.create();
   // 请求拦截
@@ -18,18 +19,19 @@ function createService() {
         }); // 序列化请求参数
         delete config.formData;
       }
+      logger.info(`http request:${config.url}，method:${config.method}`);
       return config;
     },
     (error: Error) => {
       // 发送失败
-      logger.error(error);
+      logger.error("接口请求失败：", error);
       return Promise.reject(error);
     }
   );
   // 响应拦截
   service.interceptors.response.use(
     (response: any) => {
-      logger.info("http response:", JSON.stringify(response.data));
+      logger.info("http response:", JSON.stringify(response?.data));
       return response.data;
     },
     (error: any) => {
@@ -48,11 +50,12 @@ function createService() {
       //   case 505: error.message = 'HTTP版本不受支持'; break
       //   default: break
       // }
-      logger.error("请求出错：", error.response.config.url, error);
+      logger.error(`请求出错：url:${error?.response?.config.url},method:${error.response.config.method},status:${error?.response?.status}`);
+      logger.info("返回数据:", JSON.stringify(error?.response?.data));
       return Promise.reject(error);
     }
   );
   return service;
 }
 
-export const request = createService();
+export const request = createAxiosService({ logger });

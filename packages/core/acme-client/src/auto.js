@@ -119,6 +119,7 @@ module.exports = async function(client, userOpts) {
             try {
                 recordItem = await opts.challengeCreateFn(authz, challenge, keyAuthorization);
 
+                // throw new Error('测试异常');
                 /* Challenge verification */
                 if (opts.skipChallengeVerification === true) {
                     log(`[auto] [${d}] Skipping challenge verification since skipChallengeVerification=true`);
@@ -177,30 +178,43 @@ module.exports = async function(client, userOpts) {
     });
 
 
-    // let promise = Promise.resolve();
-    // function runPromisesSerially(tasks) {
-    //     tasks.forEach((task) => {
-    //         promise = promise.then(task);
-    //     });
-    //     return promise;
-    // }
-
-    function runPromiseParallel(tasks) {
-        return Promise.all(tasks.map((task) => task()));
+    function runAllPromise(tasks) {
+        let promise = Promise.resolve();
+        tasks.forEach((task) => {
+            promise = promise.then(task);
+        });
+        return promise;
     }
+
+    // function runPromisePa(tasks) {
+    //     return Promise.all(tasks.map((task) => task()));
+    // }
 
 
     try {
         log('开始challenge');
-        await runPromiseParallel(challengePromises);
+        await runAllPromise(challengePromises);
+
+        log('challenge结束');
+
+        // log('[auto] Waiting for challenge valid status');
+        // await Promise.all(challengePromises);
+
+        /**
+         * Finalize order and download certificate
+         */
+
+        log('[auto] Finalizing order and downloading certificate');
+        const finalized = await client.finalizeOrder(order, opts.csr);
+        return await client.getCertificate(finalized, opts.preferredChain);
     }
     catch (e) {
-        log('challenge失败');
+        log('证书申请失败');
         throw e;
     }
     finally {
-        log('清理challenge痕迹');
-        await runPromiseParallel(clearTasks);
+        log(`清理challenge痕迹，length:${clearTasks.length}`);
+        await runAllPromise(clearTasks);
     }
 
     // try {
@@ -210,19 +224,4 @@ module.exports = async function(client, userOpts) {
     //     log('清理challenge');
     //     await Promise.allSettled(clearTasks);
     // }
-
-
-    log('challenge结束');
-
-    // log('[auto] Waiting for challenge valid status');
-    // await Promise.all(challengePromises);
-
-
-    /**
-     * Finalize order and download certificate
-     */
-
-    log('[auto] Finalizing order and downloading certificate');
-    const finalized = await client.finalizeOrder(order, opts.csr);
-    return client.getCertificate(finalized, opts.preferredChain);
 };

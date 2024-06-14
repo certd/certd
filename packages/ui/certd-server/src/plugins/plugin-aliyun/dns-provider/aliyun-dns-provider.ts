@@ -120,7 +120,7 @@ export class AliyunDnsProvider extends AbstractDnsProvider{
       throw e;
     }
   }
-  async removeRecord(options: RemoveRecordOptions): Promise<any> {
+  async removeRecord(options: RemoveRecordOptions<any>): Promise<any> {
     const { fullRecord, value, record } = options;
     const params = {
       RegionId: 'cn-hangzhou',

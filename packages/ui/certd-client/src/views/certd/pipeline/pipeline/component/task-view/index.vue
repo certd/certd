@@ -56,7 +56,10 @@ export default {
       for (let node of nodes) {
         if (currentHistory?.value?.logs != null) {
           node.logs = computed(() => {
-            return currentHistory.value.logs[node.node.id] || [];
+            if(currentHistory?.value?.logs && currentHistory.value?.logs[node.node.id]!= null){
+                  return currentHistory.value?.logs[node.node.id];
+            }
+            return [];
           });
         }
       }
