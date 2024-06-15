@@ -2,9 +2,9 @@ import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import type { EmailSend } from '@certd/pipeline';
 import { IEmailService } from '@certd/pipeline';
 import nodemailer from 'nodemailer';
-import { SettingsService } from '../../system/service/settings-service';
 import type SMTPConnection from 'nodemailer/lib/smtp-connection';
 import { logger } from '../../../utils/logger';
+import { UserSettingsService } from '../../mine/service/user-settings-service';
 
 export type EmailConfig = {
   host: string;
@@ -24,7 +24,7 @@ export type EmailConfig = {
 @Scope(ScopeEnum.Singleton)
 export class EmailService implements IEmailService {
   @Inject()
-  settingsService: SettingsService;
+  settingsService: UserSettingsService;
 
   /**
    */

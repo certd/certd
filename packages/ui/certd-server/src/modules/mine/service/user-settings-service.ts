@@ -2,22 +2,22 @@ import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service';
-import { SettingsEntity } from '../entity/settings';
+import { UserSettingsEntity } from '../entity/user-settings';
 
 /**
  * 授权
  */
 @Provide()
 @Scope(ScopeEnum.Singleton)
-export class SettingsService extends BaseService<SettingsEntity> {
-  @InjectEntityModel(SettingsEntity)
-  repository: Repository<SettingsEntity>;
+export class UserSettingsService extends BaseService<UserSettingsEntity> {
+  @InjectEntityModel(UserSettingsEntity)
+  repository: Repository<UserSettingsEntity>;
 
   getRepository() {
     return this.repository;
   }
 
-  async getById(id: any): Promise<SettingsEntity | null> {
+  async getById(id: any): Promise<UserSettingsEntity | null> {
     const entity = await this.info(id);
     if (!entity) {
       return null;
@@ -30,7 +30,7 @@ export class SettingsService extends BaseService<SettingsEntity> {
     };
   }
 
-  async getByKey(key: string, userId: number): Promise<SettingsEntity | null> {
+  async getByKey(key: string, userId: number): Promise<UserSettingsEntity | null> {
     if (!key || !userId) {
       return null;
     }
@@ -50,7 +50,7 @@ export class SettingsService extends BaseService<SettingsEntity> {
     return JSON.parse(entity.setting);
   }
 
-  async save(bean: SettingsEntity) {
+  async save(bean: UserSettingsEntity) {
     const entity = await this.repository.findOne({
       where: {
         key: bean.key,

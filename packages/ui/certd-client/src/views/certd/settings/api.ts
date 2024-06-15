@@ -1,5 +1,5 @@
 import { request } from "/@/api/service";
-const apiPrefix = "/sys/settings";
+const apiPrefix = "/user/settings";
 
 export const SettingKeys = {
   Email: "email"

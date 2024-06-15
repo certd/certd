@@ -2,8 +2,8 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 /**
  */
-@Entity('sys_settings')
-export class SettingsEntity {
+@Entity('user_settings')
+export class UserSettingsEntity {
   @PrimaryGeneratedColumn()
   id: number;
   @Column({ name: 'user_id', comment: '用户id' })

@@ -1,6 +1,9 @@
 import { defineStore } from "pinia";
 // @ts-ignore
 import { LocalStorage } from "/src/utils/util.storage";
+import { SysPublicSetting } from "/@/api/modules/api.basic";
+import * as basicApi from '/@/api/modules/api.basic'
+import _ from "lodash-es";
 // import { replaceStyleVariables } from "vite-plugin-theme/es/client";
 
 // import { getThemeColors, generateColors } from "/src/../build/theme-colors";
@@ -23,8 +26,10 @@ import { LocalStorage } from "/src/utils/util.storage";
 //   });
 // }
 
+
 interface SettingState {
   theme: any;
+  sysPublic?: SysPublicSetting
 }
 
 const SETTING_THEME_KEY = "SETTING_THEME";
@@ -32,14 +37,24 @@ export const useSettingStore = defineStore({
   id: "app.setting",
   state: (): SettingState => ({
     // user info
-    theme: null
+    theme: null,
+    sysPublic: {
+      registerEnabled: false
+    }
   }),
   getters: {
     getTheme(): any {
       return this.theme || LocalStorage.get(SETTING_THEME_KEY) || {};
+    },
+    getSysPublic():SysPublicSetting{
+      return this.sysPublic
     }
   },
   actions: {
+    async loadSysSettings(){
+      const settings = await basicApi.getSysPublicSettings()
+      _.merge(this.sysPublic,settings)
+    },
     persistTheme() {
       LocalStorage.set(SETTING_THEME_KEY, this.getTheme);
     },
@@ -58,6 +73,7 @@ export const useSettingStore = defineStore({
     },
     async init() {
       await this.setTheme(this.getTheme);
+      await this.loadSysSettings()
     }
   }
 });

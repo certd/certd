@@ -66,7 +66,7 @@
       </a-form-item>
 
       <a-form-item class="user-login-other">
-        <router-link class="register" :to="{ name: 'register' }"> 注册 </router-link>
+        <router-link v-if="sysPublicSettings.registerEnabled" class="register" :to="{ name: 'register' }"> 注册 </router-link>
       </a-form-item>
     </a-form>
   </div>
@@ -74,11 +74,13 @@
 <script lang="ts">
 import { defineComponent, reactive, ref, toRaw, computed } from "vue";
 import { useUserStore } from "/src/store/modules/user";
+import { useSettingStore } from "/@/store/modules/settings";
 export default defineComponent({
   name: "LoginPage",
   setup() {
     const loading = ref(false);
     const userStore = useUserStore();
+    const settingStore = useSettingStore()
     const formRef = ref();
     const formState = reactive({
       username: "",
@@ -165,6 +167,7 @@ export default defineComponent({
     function sendSmsCode() {
       //api.sendSmsCode();
     }
+    const sysPublicSettings = settingStore.getSysPublic
     return {
       loading,
       formState,
@@ -179,7 +182,8 @@ export default defineComponent({
       resetImageCode,
       smsTime,
       smsSendBtnDisabled,
-      sendSmsCode
+      sendSmsCode,
+      sysPublicSettings
     };
   }
 });

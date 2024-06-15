@@ -55,6 +55,16 @@ export const sysResources = [
         },
         path: "/sys/authority/user",
         component: "/sys/authority/user/index.vue"
+      },
+      {
+        title: "系统设置",
+        name: "settings",
+        meta: {
+          icon: "ion:settings-outline",
+          permission: "sys:settings:view"
+        },
+        path: "/sys/settings",
+        component: "/sys/settings/index.vue"
       }
     ]
   }

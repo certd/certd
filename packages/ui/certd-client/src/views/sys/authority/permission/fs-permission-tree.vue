@@ -65,6 +65,7 @@ export default defineComponent({
           //处理过，无需再次处理
           return;
         }
+        value.class="is-twig"
         if (value.children != null && value.children.length > 0) {
           return;
         }
@@ -82,8 +83,13 @@ export default defineComponent({
         }
         // 所有的子节点都没有children
         parent.class = "is-twig"; // 连接叶子节点的末梢枝杈节点
+        let i = 0
         for (const child of parent.children) {
           child.class = "is-leaf";
+          if(i !== 0){
+            child.class += " leaf-after";
+          }
+          i++
         }
       });
       return [
@@ -129,21 +135,40 @@ export default defineComponent({
 
 <style lang="less">
 .fs-permission-tree {
-  .is-twig ul {
-    display: flex;
+
+  .ant-tree-list-holder-inner{
+    flex-direction: row !important;
     flex-wrap: wrap;
+    .is-twig{
+      width: 100%;
+    }
+
     .is-leaf {
-      border-bottom: 1px solid #ddd;
-      padding: 5px;
+      //border-bottom: 1px solid #ddd;
       &::before {
         display: none;
       }
+
+      &.leaf-after{
+        .ant-tree-indent-unit{
+          display: none;
+        }
+      }
+
+      .node-title-pane {
+        border-bottom: 1px solid #ddd;
+      }
     }
+
   }
+  //.is-twig ul {
+  //  display: flex;
+  //  flex-wrap: wrap;
+  //}
   .node-title-pane {
     display: flex;
     .node-title {
-      width: 80px;
+      width: 110px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
