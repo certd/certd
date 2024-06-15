@@ -16,6 +16,7 @@ import { AuthorityMiddleware } from './middleware/authority';
 import * as staticFile from '@midwayjs/static-file';
 import * as cron from './modules/plugin/cron';
 import { logger } from './utils/logger';
+import { ResetPasswdMiddleware } from './middleware/reset-passwd/middleware';
 @Configuration({
   imports: [koa, orm, cache, flyway, validateComp, cron, staticFile],
   importConfigs: [
@@ -53,6 +54,9 @@ export class ContainerLifeCycle {
       PreviewMiddleware,
       //授权处理
       AuthorityMiddleware,
+
+      //resetPasswd,重置密码模式下不提供服务
+      ResetPasswdMiddleware,
     ]);
 
     logger.info('当前环境：', this.app.getEnv()); // prod

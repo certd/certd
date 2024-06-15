@@ -15,6 +15,8 @@ services:
       - TZ=Asia/Shanghai
       - certd_auth_jwt_secret=changeme
                             #  ↑↑↑↑↑ ---------------------------------- 3、 修改成你的自定义密钥【必须，安全需要】
+      - certd_system_resetAdminPassword=false
+                                     #  ↑↑↑↑↑ 如果忘记管理员密码，可以设置为true，重启之后，管理员密码将改成123456，然后请及时修改回false
       # 设置环境变量即可自定义certd配置
       # 服务端配置项见： packages/ui/certd-server/src/config/config.default.ts
       # 服务端配置规则： certd_ + 配置项, 点号用_代替

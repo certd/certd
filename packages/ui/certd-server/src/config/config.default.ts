@@ -78,6 +78,9 @@ const development = {
   certd: {
     fileRootDir: '/app/data/files',
   },
+  system: {
+    resetAdminPasswd: false,
+  },
 } as MidwayConfig;
 mergeConfig(development, 'development');
 export default development;

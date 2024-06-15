@@ -6,7 +6,7 @@ CertD 是一个免费全自动申请和部署SSL证书的工具。
 ## 一、特性
 本项目不仅支持证书申请过程自动化，还可以自动化部署证书，让你的证书永不过期。     
 
-* 全自动申请证书（支持阿里云、腾讯云、华为云注册的域名）
+* 全自动申请证书（支持阿里云、腾讯云、华为云、Cloudflare注册的域名）
 * 全自动部署证书（目前支持服务器上传部署、部署到阿里云、腾讯云等）
 * 支持通配符域名
 * 支持多个域名打到一个证书上
@@ -101,8 +101,9 @@ http://your_server_ip:7001
 * 数据存在`/data/certd`目录下，不用担心数据丢失
 
 
-## 五、一些说明
 
+## 五、一些说明及问题处理
+### 1. 一些说明
 * 本项目ssl证书提供商为letencrypt
 * 申请过程遵循acme协议
 * 需要验证域名所有权，一般有两种方式（目前本项目仅支持dns-01）
@@ -113,6 +114,29 @@ http://your_server_ip:7001
   * 我们所说的续期，其实就是按照全套流程重新申请一份新证书。
 * 免费证书过期时间90天，以后可能还会缩短，所以自动化部署必不可少
 * 设置每天自动运行，当证书过期前20天，会自动重新申请证书并部署
+
+### 2. 问题处理
+#### 2.1 忘记管理员密码   
+解决方法如下：
+1. 修改docker-compose.yaml文件，将环境变量`certd_system_resetAdminPassword`改为`true`
+```yaml
+services:
+  certd:
+    environment: # 环境变量
+      - certd_system_resetAdminPassword=false
+```
+2. 重启容器
+```shell
+docker compose up -d
+docker logs -f --tail 500 certd
+# 观察日志，当日志中输出“重置1号管理员用户的密码完成”，即可操作下一步
+```
+3. 修改docker-compose.yaml，将`certd_system_resetAdminPassword`改回`false`
+4. 再次重启容器
+```shell
+docker compose up -d
+```
+5. 使用admin/123456登录系统，请及时修改管理员密码
 
 ## 六、联系作者
 如有疑问，欢迎加入群聊（请备注certd）

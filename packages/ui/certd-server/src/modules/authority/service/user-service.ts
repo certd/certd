@@ -155,4 +155,12 @@ export class UserService extends BaseService<UserEntity> {
 
     await this.update(param);
   }
+
+  async resetPassword(userId: any, newPasswd: string) {
+    const param = {
+      id: userId,
+      password: newPasswd,
+    };
+    await this.update(param);
+  }
 }

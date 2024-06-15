@@ -2,17 +2,18 @@
 const WebFramework = require('@midwayjs/koa').Framework;
 const { Bootstrap } = require('@midwayjs/bootstrap');
 
-const DirectoryFileDetector = require( "@midwayjs/core").DirectoryFileDetector;
+const DirectoryFileDetector = require('@midwayjs/core').DirectoryFileDetector;
 
-const baseDir = process.cwd()
-const pipelineDir = baseDir +"./node_modules/@certd/pipeline"
-const customFileDetector = new DirectoryFileDetector({loadDir:[baseDir,pipelineDir]})
-
+const baseDir = process.cwd();
+const pipelineDir = baseDir + './node_modules/@certd/pipeline';
+const customFileDetector = new DirectoryFileDetector({
+  loadDir: [baseDir, pipelineDir],
+});
 
 module.exports = async () => {
   // 加载框架并执行
   await Bootstrap.configure({
-    moduleDetector:customFileDetector
+    moduleDetector: customFileDetector,
   }).run();
   // 获取依赖注入容器
   const container = Bootstrap.getApplicationContext();

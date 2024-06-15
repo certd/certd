@@ -1,9 +1,5 @@
 import { Config, Provide } from '@midwayjs/decorator';
-import {
-  IMidwayKoaContext,
-  NextFunction,
-  IWebMiddleware,
-} from '@midwayjs/koa';
+import { IMidwayKoaContext, NextFunction, IWebMiddleware } from '@midwayjs/koa';
 import { PreviewException } from '../basic/exception/preview-exception';
 
 /**
@@ -20,6 +16,7 @@ export class PreviewMiddleware implements IWebMiddleware {
         await next();
         return;
       }
+      // eslint-disable-next-line prefer-const
       let { url, request } = ctx;
       const body: any = request.body;
       let id = body.id || request.query.id;
