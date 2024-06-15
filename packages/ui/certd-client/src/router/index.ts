@@ -18,7 +18,10 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   // 进度条
   NProgress.start();
-
+  // 修复三级以上路由页面无法缓存的问题
+  if (to.matched && to.matched.length > 2) {
+    to.matched.splice(1, to.matched.length - 2);
+  }
   // 验证当前路由所有的匹配中是否需要有登录验证的
   if (
     to.matched.some((r) => {
