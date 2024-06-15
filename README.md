@@ -42,24 +42,33 @@ https://certd.handsfree.work/
 
 ### 1. 安装docker、docker-compose
 
-1.1 安装docker    
+1.1 准备一台云服务器
+* 【阿里云】云服务器2核2G，新老用户同享，99元/年，续费同价！【 [立即购买](https://www.aliyun.com/benefit?scm=20140722.M_10244282._.V_1&source=5176.11533457&userCode=qya11txb )】
+* 【腾讯云】云服务器2核2G，新老用户同享，99元/年，续费同价！【 [立即购买](https://cloud.tencent.com/act/cps/redirect?redirect=6094&cps_key=b3ef73330335d7a6efa4a4bbeeb6b2c9&from=console)】
+  
+
+1.2 安装docker    
 https://docs.docker.com/engine/install/
 
-1.2 安装docker-compose     
+1.3 安装docker-compose     
 https://docs.docker.com/compose/install/linux/
 
 ### 2. 下载docker-compose.yaml文件
+
+[docker-compose.yaml下载](https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml)
+
 ```bash
 mkdir certd
 cd certd
+# wget下载docker-compose.yaml文件
 wget https://raw.githubusercontent.com/certd/certd/v2/docker/run/docker-compose.yaml
 # 或者使用gitee地址
 wget https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml
 
 # 根据需要修改里面的配置
-# 1.修改镜像版本号
-# 2.配置数据保存路径
-# 3.配置certd_auth_jwt_secret
+# 1.修改镜像版本号【可选】
+# 2.配置数据保存路径【可选】
+# 3.配置certd_auth_jwt_secret【必须】
 vi docker-compose.yaml
 
 
@@ -71,11 +80,11 @@ https://github.com/certd/certd/releases
 ### 3. 运行
 ```bash
 # 如果docker compose是插件化安装
-export CERTD_VERSION=1.20.9
+export CERTD_VERSION=latest
 docker compose up -d
 
 #如果docker compose是独立安装
-export CERTD_VERSION=1.20.9
+export CERTD_VERSION=latest
 docker-compose up -d
 
 ```

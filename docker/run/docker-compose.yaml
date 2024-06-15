@@ -1,19 +1,20 @@
 version: '3.3'
 services:
   certd:
-    # 镜像                                                  #  ↓↓↓↓↓ --- 1、 修改镜像版本号，或者干脆写成latest
+    # 镜像                                                  #  ↓↓↓↓↓ --- 1、 修改镜像版本号，或者干脆写成latest， 如果设置了环境变量 export CERTD_VERSION=latest，这里可以不修改
     image: registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${CERTD_VERSION}
     container_name: certd # 容器名
-    restart: unless-stopped # 重启
+    restart: unless-stopped # 自动重启
     volumes:
-      #   ↓↓↓↓↓ ------------------------------------------------------- 2、 修改数据库以及证书存储路径
+      #   ↓↓↓↓↓ ------------------------------------------------------- 2、 修改数据库以及证书存储路径【可选】
       - /data/certd:/app/data
     ports: # 端口映射
+      #  ↓↓↓↓ 如果端口有冲突，可以修改第一个7001为其他不冲突的端口号
       - "7001:7001"
     environment: # 环境变量
       - TZ=Asia/Shanghai
       - certd_auth_jwt_secret=changeme
-                            #  ↑↑↑↑↑ ---------------------------------- 3、 修改成你的自定义密钥
+                            #  ↑↑↑↑↑ ---------------------------------- 3、 修改成你的自定义密钥【必须，安全需要】
       # 设置环境变量即可自定义certd配置
       # 服务端配置项见： packages/ui/certd-server/src/config/config.default.ts
       # 服务端配置规则： certd_ + 配置项, 点号用_代替
