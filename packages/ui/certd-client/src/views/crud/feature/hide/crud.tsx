@@ -1,5 +1,15 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import {
+  AddReq,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  DelReq,
+  dict,
+  EditReq,
+  UserPageQuery,
+  UserPageRes,
+  utils
+} from "@fast-crud/fast-crud";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -46,7 +56,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             text: "自定义按钮",
             show: true,
             click() {
-              console.log("click");
+              utils.logger.info("click");
             }
           }
         }
@@ -73,7 +83,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             order: 4,
             show: true,
             click(context) {
-              console.log("click", context);
+              utils.logger.info("click", context);
             }
           }
         }

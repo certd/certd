@@ -10,6 +10,9 @@ export class EnvConfig {
   MODE: string;
   STORAGE: string;
   TITLE: string;
+  SLOGAN: string;
+  COPYRIGHT: string;
+  LOGO_PATH: string;
   PM_ENABLED: string;
   constructor() {
     this.init();

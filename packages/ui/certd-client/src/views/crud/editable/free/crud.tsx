@@ -1,5 +1,6 @@
 import * as api from "./api";
-import { dict, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, UserPageQuery, UserPageRes, EditReq, DelReq, AddReq } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { crudBinding } = crudExpose;
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -37,9 +38,18 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           }
         }
       },
+      mode: {
+        //本地模式
+        name: "local",
+        isMergeWhenUpdate: true,
+        isAppendWhenAdd: true
+      },
       table: {
         editable: {
-          mode: "free"
+          enabled: true,
+          mode: "free",
+          activeDefault: true,
+          showAction: false
         }
       },
       pagination: {

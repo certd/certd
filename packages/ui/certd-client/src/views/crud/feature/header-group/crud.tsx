@@ -1,5 +1,16 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, ValueChangeContext } from "@fast-crud/fast-crud";
+import {
+  AddReq,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  DelReq,
+  dict,
+  EditReq,
+  UserPageQuery,
+  UserPageRes,
+  utils,
+  ValueChangeContext
+} from "@fast-crud/fast-crud";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -66,7 +77,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                   vModel: "checked"
                 },
                 valueChange(context) {
-                  console.log("column value changed:", context);
+                  utils.logger.info("column value changed:", context);
                 }
               }
             }

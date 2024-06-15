@@ -1,7 +1,10 @@
 <template>
   <fs-page>
     <template #header>
-      <div class="title">行编辑模式</div>
+      <div class="title">
+        行编辑模式
+        <span class="sub">暂不支持树形结构</span>
+      </div>
       <div class="more"><a target="_blank" href="http://fast-crud.docmirror.cn/api/expose.html">文档</a></div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding" />

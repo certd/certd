@@ -15,7 +15,7 @@
 <script lang="ts">
 import { useRoute } from "vue-router";
 import { defineComponent, onMounted, ref } from "vue";
-import { useFs } from "@fast-crud/fast-crud";
+import {useFs, utils} from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import * as api from "./api";
 import { message } from "ant-design-vue";
@@ -46,7 +46,7 @@ export default defineComponent({
     const pageStore = usePageStore();
 
     formOptions.value.doSubmit = (context: any) => {
-      console.log("submit", context);
+      utils.logger.log("submit", context);
       doSubmit(context);
       //提交成功后，关闭本页面
       message.success("保存成功");

@@ -110,7 +110,7 @@ export default defineComponent({
       ctx.emit("remove", scope.dataRef);
     }
     function onChecked(a: any, b: any, c: any) {
-      console.log("chedcked", a, b, c);
+      utils.logger.info("chedcked", a, b, c);
     }
     function getChecked() {
       const checked = treeRef.value.checkedKeys;

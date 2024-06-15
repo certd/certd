@@ -1,8 +1,7 @@
 import * as api from "./api";
-import { dict, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, UserPageQuery, UserPageRes, EditReq, DelReq, AddReq } from "@fast-crud/fast-crud";
-import { computed, reactive, ref } from "vue";
-import _ from "lodash-es";
-import { EditableEachCellsOpts } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditableEachCellsOpts, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { reactive, ref } from "vue";
+
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { crudBinding } = crudExpose;
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -46,7 +45,6 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     editing: false,
     loading: false,
     onSubmit: async () => {
-      console.log("onSubmit");
       radioColumnEditor.loading = true;
       try {
         const data: any[] = [];
@@ -61,7 +59,6 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       }
     },
     onCancel: () => {
-      console.log("cancel");
       crudExpose.editable.cancel();
       radioColumnEditor.editing = false;
     },
@@ -111,7 +108,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           mode: "cell",
           exclusive: true,
           //排他式激活效果，将其他行的编辑状态触发保存
-          exclusiveEffect: "save",
+          exclusiveEffect: "save", //自动保存其他行编辑状态，cancel = 自动关闭其他行编辑状态
           async updateCell(opts) {
             const { row, key, value } = opts;
             //如果是添加，需要返回{[rowKey]:xxx},比如:{id:2}
@@ -160,7 +157,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           type: "dict-radio",
           dict: radioDictRef,
           column: {
-            width: 300
+            width: 300,
+            valueChange({ value, getComponentRef }) {
+              console.log("value changed:", value, getComponentRef("radio"));
+            }
           }
         },
         name: {

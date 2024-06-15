@@ -41,7 +41,14 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         },
         cropper: {
           title: "头像裁剪上传",
-          type: "cropper-uploader"
+          type: "cropper-uploader",
+          form: {
+            component: {
+              uploader: {
+                type: "form"
+              }
+            }
+          }
         },
         avatar: {
           title: "数量限制",

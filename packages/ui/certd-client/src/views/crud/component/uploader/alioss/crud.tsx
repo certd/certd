@@ -44,6 +44,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           type: "file-uploader",
           form: {
             component: {
+              multiple: true, //可选择多个
               uploader: {
                 type: "alioss"
               }
@@ -58,7 +59,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               uploader: {
                 type: "alioss"
               }
-            }
+            },
+            helper: "可以同时选择多个文件"
           }
         },
         cropper: {

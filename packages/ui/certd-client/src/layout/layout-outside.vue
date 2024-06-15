@@ -19,15 +19,24 @@
             <a href="_self">隐私</a>
             <a href="_self">条款</a>
           </div>
-          <div class="copyright">Copyright &copy; 2021 Greper</div>
+          <div class="copyright">{{ envRef.COPYRIGHT }}</div>
         </div>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
+import { env } from "/@/utils/util.env";
+import { ref } from "vue";
+
 export default {
-  name: "LayoutOutside"
+  name: "LayoutOutside",
+  setup() {
+    const envRef = ref(env);
+    return {
+      envRef
+    };
+  }
 };
 </script>
 

@@ -5,7 +5,7 @@
         单元格编辑
         <span class="sub">单元格修改确认后直接提交到后台</span>
       </div>
-      <div class="more"></div>
+      <div class="more"><a target="_blank" href="http://fast-crud.docmirror.cn/api/crud-options/table.html#editable">文档</a></div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #actionbar-right>
@@ -38,7 +38,7 @@
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
 import createCrudOptions from "./crud";
-import { useFs } from "@fast-crud/fast-crud";
+import {useFs, utils} from "@fast-crud/fast-crud";
 import { message } from "ant-design-vue";
 
 export default defineComponent({
@@ -57,17 +57,14 @@ export default defineComponent({
       crudBinding,
       crudRef,
       active() {
-        crudExpose.editable.active();
+        crudExpose.editable.active({});
       },
       inactive() {
         crudExpose.editable.inactive();
       },
       save() {
         crudExpose.getTableRef().editable.submit(({ changed, removed, setData }: any) => {
-          console.log("changed", changed);
-          console.log("removed", removed);
-
-          console.log("table data:", crudBinding.value.data, crudExpose.getTableData());
+          utils.logger.info("table data:", crudBinding.value.data, crudExpose.getTableData());
           // setData({ 0: {id:1} }); //设置data
           message.success("保存,修改行：" + JSON.stringify(changed) + "；删除行：" + JSON.stringify(removed));
         });

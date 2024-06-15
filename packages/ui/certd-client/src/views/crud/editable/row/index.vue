@@ -5,7 +5,7 @@
         行编辑模式
         <span class="sub">在表格内编辑每行数据</span>
       </div>
-      <div class="more"><a target="_blank" href="http://fast-crud.docmirror.cn/api/expose.html">文档</a></div>
+      <div class="more"><a target="_blank" href="http://fast-crud.docmirror.cn/api/crud-options/table.html#editable">文档</a></div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #actionbar-right>
@@ -18,7 +18,7 @@
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
 import createCrudOptions from "./crud";
-import { useFs } from "@fast-crud/fast-crud";
+import {useFs, utils} from "@fast-crud/fast-crud";
 
 export default defineComponent({
   name: "EditableRow",
@@ -28,14 +28,14 @@ export default defineComponent({
     // 页面打开后获取列表数据
     onMounted(() => {
       crudExpose.doRefresh();
-      crudExpose.editable.enable();
+      // crudExpose.editable.enable({});
     });
 
     return {
       crudBinding,
       crudRef,
       log() {
-        console.log("table data:", crudBinding.value.data, crudExpose.getTableData());
+        utils.logger.info("table data:", crudBinding.value.data, crudExpose.getTableData());
       }
     };
   }

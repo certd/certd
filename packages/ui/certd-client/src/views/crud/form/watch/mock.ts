@@ -5,7 +5,7 @@ const options: any = {
   name: "FormWatch",
   idGenerator: 0
 };
-const list = [
+const list: any = [
   {
     name: "王小虎",
     age: 15,

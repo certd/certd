@@ -96,7 +96,22 @@ export const crudResources = [
             title: "ResetCrudOptions",
             name: "BasisReset",
             path: "/crud/basis/reset",
-            component: "/crud/basis/reset/index.vue"
+            component: "/crud/basis/reset/index.vue",
+            meta: {
+              cache: true
+            }
+          },
+          {
+            title: "CrudOptions插件",
+            name: "BasisPlugin",
+            path: "/crud/basis/plugin",
+            component: "/crud/basis/plugin/index.vue"
+          },
+          {
+            title: "Ts定义测试",
+            name: "BasisTsTest",
+            path: "/crud/basis/ts",
+            component: "/crud/basis/ts/index.vue"
           }
         ]
       },
@@ -193,7 +208,7 @@ export const crudResources = [
             component: "/crud/component/select/index.vue"
           },
           {
-            title: "表格选择(table-select)",
+            title: " 表格选择(table-select)",
             name: "ComponentTableSelect",
             path: "/crud/component/table-select",
             component: "/crud/component/table-select/index.vue"
@@ -299,6 +314,12 @@ export const crudResources = [
             name: "ComponentJson",
             path: "/crud/component/json",
             component: "/crud/component/json/index.vue"
+          },
+          {
+            title: "手机号输入框",
+            name: "ComponentPhone",
+            path: "/crud/component/phone",
+            component: "/crud/component/phone/index.vue"
           },
           {
             title: "组件独立使用",
@@ -448,6 +469,12 @@ export const crudResources = [
             name: "FormView",
             path: "/crud/form/view",
             component: "/crud/form/view/index.vue"
+          },
+          {
+            title: "initialForm",
+            name: "FormInitial",
+            path: "/crud/form/initial",
+            component: "/crud/form/initial/index.vue"
           },
           {
             title: "表单Watch",

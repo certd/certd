@@ -35,7 +35,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
-import { useCrud, useExpose, useFs } from "@fast-crud/fast-crud";
+import {useCrud, useExpose, useFs, utils} from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import dayjs from "dayjs";
 export default defineComponent({
@@ -52,7 +52,7 @@ export default defineComponent({
     }
 
     function showScope(scope: any) {
-      console.log("scope", scope);
+      utils.logger.log("scope", scope);
     }
     return {
       crudBinding,

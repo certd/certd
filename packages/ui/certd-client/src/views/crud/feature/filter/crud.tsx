@@ -1,5 +1,15 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import {
+  AddReq,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  DelReq,
+  dict,
+  EditReq,
+  UserPageQuery,
+  UserPageRes,
+  utils
+} from "@fast-crud/fast-crud";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -30,7 +40,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       table: {
         // 表头过滤改变事件
         onFilterChange(filters: any) {
-          console.log("onFilterChange", filters);
+          utils.logger.info("onFilterChange", filters);
           crudExpose.setSearchFormData({
             form: {
               remote: filters.remote

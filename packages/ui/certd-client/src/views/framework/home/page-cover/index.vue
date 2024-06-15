@@ -2,11 +2,11 @@
   <div class="d2-page-cover">
     <div class="d2-page-cover__title">
       <div class="title-line">
-        <img width="50" src="./image/logo.svg" />
-        FsAdmin v{{ version }}
+        <img width="50" :src="envRef.LOGO_PATH" />
+        {{ envRef.TITLE }} v{{ version }}
       </div>
     </div>
-    <p class="d2-page-cover__sub-title">面向配置的crud编程，快速开发crud功能</p>
+    <p class="d2-page-cover__sub-title">{{ envRef.SLOGAN }}</p>
     <div class="exampleBox">
       <div class="left">
         <fs-highlight :code="helperRef.crud" lang="javascript" />
@@ -32,16 +32,19 @@
 import { defineComponent, ref } from "vue";
 import { useUi } from "@fast-crud/fast-crud";
 import helper from "./helper";
+import { env } from "../../../../utils/util.env";
 export default defineComponent({
   name: "PageCover",
   setup() {
     const version = ref(import.meta.env.VITE_APP_VERSION);
     const helperRef = ref(helper);
     const { ui } = useUi();
+    const envRef = ref(env);
     return {
       ui,
       version,
-      helperRef
+      helperRef,
+      envRef
     };
   }
 });

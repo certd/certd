@@ -5,5 +5,10 @@ export default {
       logoutTip: "确认",
       logoutMessage: "确定要注销登录吗？"
     }
+  },
+  fs: {
+    rowHandle: {
+      title: "操作列"
+    }
   }
 };

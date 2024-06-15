@@ -14,7 +14,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
 import createCrudOptions from "./crud";
-import { useExpose, useCrud, useFs } from "@fast-crud/fast-crud";
+import {useExpose, useCrud, useFs, utils} from "@fast-crud/fast-crud";
 
 export default defineComponent({
   name: "FeatureLocal",
@@ -29,7 +29,7 @@ export default defineComponent({
     });
     // 通过crudBinding.value.data 可以获取表格实时数据
     function showData() {
-      console.log("data:", crudBinding.value.data);
+      utils.logger.info("data:", crudBinding.value.data);
     }
 
     //初始化本地数据示例

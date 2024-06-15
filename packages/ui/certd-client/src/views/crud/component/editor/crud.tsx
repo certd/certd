@@ -104,7 +104,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               toolbarConfig: {},
               editorConfig: {},
               onOnChange(value: any) {
-                console.log("value changed", value);
+                utils.logger.info("value changed", value);
               },
               uploader: {
                 type: "form",

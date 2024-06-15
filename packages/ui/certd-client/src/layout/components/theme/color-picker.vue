@@ -54,6 +54,7 @@ export default defineComponent({
   name: "FsThemeColorPicker",
   props: {
     primaryColor: {
+      type: String,
       default: "#1890ff"
     }
   },

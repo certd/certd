@@ -1,7 +1,7 @@
 import * as api from "./api";
-import { message } from "ant-design-vue";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, FormWrapperContext, ScopeContext, UserPageQuery, UserPageRes, utils } from "@fast-crud/fast-crud";
+import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, FormScopeContext, FormWrapperContext, ScopeContext, UserPageQuery, UserPageRes, utils } from "@fast-crud/fast-crud";
 import { computed } from "vue";
+import { message } from "ant-design-vue";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -30,6 +30,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         delRequest
       },
       form: {
+        layout: context.labelLayoutRef,
         labelCol: {
           //固定label宽度
           span: null,
@@ -39,6 +40,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             })
           }
         },
+        beforeValidate(context) {
+          console.log("beforeValidate", context);
+        },
+        beforeSubmit(context) {
+          console.log("beforeSubmit", context);
+        },
         afterSubmit(context) {
           // context.res 是add或update请求返回结果
           if (context.form.id === 1) {
@@ -46,13 +53,31 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             throw new Error("模拟失败，阻止弹窗关闭");
           }
         },
+        onSuccess(context) {
+          message.success("保存成功");
+        },
         wrapper: {
+          title: compute(({ form }) => {
+            return form.draft ? "草稿" : "编辑";
+          }),
+          fullscreen: false,
           buttons: {
+            draft: {
+              text: "保存草稿",
+              type: "primary",
+              show: compute(({ form }) => {
+                return !!form?.draft;
+              })
+            },
             ok: {
-              text: "保存"
+              text: "保存",
+              show: compute(({ form }) => {
+                return !form?.draft;
+              })
             },
             custom: {
               text: "自定义按钮",
+              order: -1,
               click: async (context: FormWrapperContext) => {
                 utils.logger.info("btn context", context);
                 message.info("通过自定义按钮，触发保存");
@@ -75,17 +100,48 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: "姓名",
           type: "text"
         },
+        long: {
+          title: "演示Label很长时如何很好的展示",
+          type: "text"
+        },
+        draft: {
+          title: "草稿",
+          type: "switch",
+          value: false,
+          form: {
+            component: {
+              name: "a-switch",
+              vModel: "checked"
+            },
+            helper: "开启后，保存按钮将变为保存草稿"
+          }
+        },
         renderLabel: {
           title: "labelRender",
           type: "text",
           form: {
             title(context: ScopeContext) {
-              console.log("render label context:", context);
+              utils.logger.info("render label context:", context);
               return <div style={{ color: "red" }}>LabelRender</div>;
             },
             helper: {
               text: "配置form.title为一个render方法即可自定义label"
             }
+          }
+        },
+        intro: {
+          title: "无label",
+          type: "editor-wang5",
+          form: {
+            labelCol: {
+              style: {
+                width: "0px"
+              }
+            },
+            col: {
+              span: 24
+            },
+            helper: "不显示label"
           }
         }
       }

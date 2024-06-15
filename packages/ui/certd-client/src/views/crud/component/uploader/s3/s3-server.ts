@@ -1,7 +1,8 @@
 // @ts-ignore
 import { S3Client, GetObjectCommand, PutObjectCommand, CreateBucketCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-
+import {utils} from "@fast-crud/fast-crud";
+// TODO  模拟server， 你应该将此代码搬到你的server端
 let bucketCreated = false;
 export async function generateSignedUrl(bucket: string, key: string, type: "put" | "get" = "get") {
   const client = new S3Client({
@@ -39,7 +40,7 @@ export async function generateSignedUrl(bucket: string, key: string, type: "put"
   try {
     url = await getSignedUrl(client, cmd);
   } catch (err) {
-    console.log("Error getting signed URL ", err);
+    utils.logger.info("Error getting signed URL ", err);
   }
 
   return url;

@@ -31,9 +31,18 @@
           <!--            Button-->
           <!--          </button>-->
           <fs-menu class="header-menu" mode="horizontal" :expand-selected="false" :selectable="false" :menus="headerMenus" />
-          <fs-locale class="btn" />
-          <!--          <fs-theme-set class="btn" />-->
-          <fs-user-info class="btn" />
+          <div class="header-btn">
+            <fs-locale />
+          </div>
+          <!--          <div class="header-btn">-->
+          <!--            <fs-theme-mode-set />-->
+          <!--          </div>-->
+          <div class="header-btn">
+            <fs-theme-set />
+          </div>
+          <div class="header-btn">
+            <fs-user-info />
+          </div>
         </div>
       </a-layout-header>
       <fs-tabs></fs-tabs>
@@ -69,11 +78,12 @@ import { useResourceStore } from "../store/modules/resource";
 import { usePageStore } from "/@/store/modules/page";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons-vue";
 import FsThemeSet from "/@/layout/components/theme/index.vue";
-import { notification } from "ant-design-vue";
+import { env } from "../utils/util.env";
+import FsThemeModeSet from "./components/theme/mode-set.vue";
 export default {
   name: "LayoutFramework",
   // eslint-disable-next-line vue/no-unused-components
-  components: { FsThemeSet, MenuFoldOutlined, MenuUnfoldOutlined, FsMenu, FsLocale, FsSourceLink, FsUserInfo, FsTabs },
+  components: { FsThemeSet, MenuFoldOutlined, MenuUnfoldOutlined, FsMenu, FsLocale, FsSourceLink, FsUserInfo, FsTabs, FsThemeModeSet },
   setup() {
     const resourceStore = useResourceStore();
     const frameworkMenus = computed(() => {
@@ -100,6 +110,8 @@ export default {
       return false;
     });
     const version = ref(import.meta.env.VITE_APP_VERSION);
+
+    const envRef = ref(env);
     return {
       version,
       frameworkMenus,
@@ -107,7 +119,8 @@ export default {
       asideMenus,
       keepAlive,
       asideCollapsed,
-      asideCollapsedToggle
+      asideCollapsedToggle,
+      envRef
     };
   }
 };
@@ -165,11 +178,16 @@ export default {
       cursor: pointer;
       padding: 0 10px;
     }
+    height: 100%;
 
-    & > .btn {
+    & > .header-btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      //border-bottom: 1px solid rgba(255, 255, 255, 0);
       &:hover {
         background-color: #fff;
-        color: @primary-color;
       }
     }
   }

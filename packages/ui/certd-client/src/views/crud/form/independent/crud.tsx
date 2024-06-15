@@ -1,5 +1,7 @@
 import { message } from "ant-design-vue";
-import { CreateCrudOptionsProps, CreateCrudOptionsRet } from "@fast-crud/fast-crud";
+import { CreateCrudOptionsProps, CreateCrudOptionsRet, dict, utils } from "@fast-crud/fast-crud";
+import * as textTableApi from "/@/views/crud/component/text/api";
+import createCrudOptionsText from "/@/views/crud/component/text/crud";
 
 export default function ({}: CreateCrudOptionsProps): CreateCrudOptionsRet {
   return {
@@ -7,18 +9,25 @@ export default function ({}: CreateCrudOptionsProps): CreateCrudOptionsRet {
       form: {
         wrapper: {
           onClosed(e) {
-            console.log("onClosed", e);
+            utils.logger.info("onClosed", e);
           },
           onOpened(e) {
-            console.log("onOpened", e);
+            utils.logger.log("onOpened", e);
           }
         },
-        doSubmit({ form }) {
+        doSubmit({ form }: any) {
           //覆盖提交方法
-          console.log("form submit:", form);
+          utils.logger.log("form submit:", form);
           message.info("自定义表单提交:" + JSON.stringify(form));
-          message.warn("抛出异常可以阻止表单关闭");
-          throw new Error("抛出异常可以阻止表单关闭");
+          //模拟后端返回错误
+          return { error: true };
+        },
+        afterSubmit(ctx: any) {
+          utils.logger.log("form after submit:", ctx);
+          if (ctx.res.error === true) {
+            message.warn("模拟后端返回错误，不关闭对话框");
+            return false;
+          }
         },
         labelCol: { span: 6 },
         wrapperCol: { span: 16 },
@@ -34,6 +43,10 @@ export default function ({}: CreateCrudOptionsProps): CreateCrudOptionsRet {
           form: {
             helper: "最简单的helper"
           }
+        },
+        date: {
+          title: "日期",
+          type: "date"
         },
         age: {
           title: "jsx",
@@ -60,6 +73,25 @@ export default function ({}: CreateCrudOptionsProps): CreateCrudOptionsRet {
               // render() {
               //   return <div style={"color:red"}>在label通过tooltip方式显示的helper</div>;
               // }
+            }
+          }
+        },
+        tableSelect: {
+          title: "表格选择",
+          type: "table-select",
+          dict: dict({
+            value: "id",
+            label: "name",
+            //重要，根据value懒加载数据
+            getNodesByValues: async (values: any[]) => {
+              return await textTableApi.GetByIds(values);
+            }
+          }),
+          form: {
+            value: 1,
+            component: {
+              crossPage: true,
+              createCrudOptions: createCrudOptionsText
             }
           }
         }

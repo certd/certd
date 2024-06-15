@@ -5,7 +5,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, watch } from "vue";
 import createCrudOptions from "./crud";
-import { useFs } from "@fast-crud/fast-crud";
+import {useFs, utils} from "@fast-crud/fast-crud";
 
 export default defineComponent({
   name: "FeatureLocalImportValueInput",
@@ -39,7 +39,7 @@ export default defineComponent({
 
     // 通过crudBinding.value.data 可以获取表格实时数据
     function showData() {
-      console.log("data:", crudBinding.value.data);
+      utils.logger.info("data:", crudBinding.value.data);
     }
 
     return {

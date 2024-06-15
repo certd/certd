@@ -30,6 +30,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       toolbar: {
         export: {
+          // columns: [{ key: "id", title: "ID" }],
           columnBuilder: ({ col }) => {
             // https://docs.sheetjs.com/docs/csf/features/#row-and-column-properties
             if (col.key === "multi") {

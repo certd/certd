@@ -5,12 +5,15 @@ const options: any = {
 };
 const list = [
   {
+    text: "张三",
     radio: "1"
   },
   {
+    text: "李四",
     radio: "2"
   },
   {
+    text: "王五",
     radio: "0"
   }
 ];

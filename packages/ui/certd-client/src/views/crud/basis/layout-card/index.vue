@@ -6,7 +6,11 @@
         <a target="_blank" href="http://fast-crud.docmirror.cn/guide/advance/layout.html">文档</a>
       </div>
     </template>
-    <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
+    <fs-crud ref="crudRef" v-bind="crudBinding">
+      <template #actionbar-right>
+        <a-button type="danger">actionbar-right插槽</a-button>
+      </template>
+    </fs-crud>
   </fs-page>
 </template>
 

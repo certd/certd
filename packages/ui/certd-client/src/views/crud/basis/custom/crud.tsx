@@ -48,7 +48,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           column: {
             component: {
               //引用自定义组件
-              name: shallowRef(VmodelCounter),
+              name: VmodelCounter,
               color: "blue",
               slots: {
                 //插槽示例
@@ -68,7 +68,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             //form表单
             component: {
               //引用自定义组件
-              name: shallowRef(VmodelCounter),
+              name: VmodelCounter,
               vModel: "modelValue",
               color: "red",
               on: {

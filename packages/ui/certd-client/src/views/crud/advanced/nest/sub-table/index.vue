@@ -10,7 +10,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, watch } from "vue";
 import createCrudOptions from "./crud";
-import { useFs } from "@fast-crud/fast-crud";
+import {useFs, utils} from "@fast-crud/fast-crud";
 
 export default defineComponent({
   name: "SubTable",
@@ -33,7 +33,7 @@ export default defineComponent({
         return props.modelValue;
       },
       (value) => {
-        console.log("modelValue changed", value);
+        utils.logger.info("modelValue changed", value);
       }
     );
     return {

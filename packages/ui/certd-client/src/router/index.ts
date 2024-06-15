@@ -57,6 +57,9 @@ router.afterEach((to: any) => {
   NProgress.done();
   // 多页控制 打开新的页面
   const pageStore = usePageStore();
+  // for (const item of to.matched) {
+  //   pageStore.keepAlivePush(item.name);
+  // }
   pageStore.open(to);
   // 更改标题
   site.title(to.meta.title);

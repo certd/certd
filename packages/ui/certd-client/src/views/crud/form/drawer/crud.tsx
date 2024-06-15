@@ -1,5 +1,14 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import {
+  AddReq,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  DelReq,
+  EditReq,
+  UserPageQuery,
+  UserPageRes,
+  utils
+} from "@fast-crud/fast-crud";
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
@@ -28,7 +37,13 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       },
       form: {
         wrapper: {
-          is: "a-drawer"
+          is: "a-drawer",
+          onClosed(e) {
+            utils.logger.info("onClosed", e);
+          },
+          onOpened(e) {
+            utils.logger.info("onOpened", e);
+          }
         }
       },
       columns: {

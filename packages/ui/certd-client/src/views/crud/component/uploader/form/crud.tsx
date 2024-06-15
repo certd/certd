@@ -1,5 +1,5 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes, utils } from "@fast-crud/fast-crud";
 import { createUploaderRules } from "@fast-crud/fast-extends";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
@@ -33,7 +33,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           async onOpened() {
             // 异步组件实例的获取
             const componentRef = await crudExpose.getFormComponentRef("file", true);
-            console.log("componentRef", componentRef);
+            utils.logger.info("componentRef", componentRef);
           }
         }
       },
@@ -56,9 +56,11 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             component: {
               multiple: true, //可选择多个
               uploader: {
-                type: "form"
+                type: "form",
+                keepName: true
               }
-            }
+            },
+            helper: "可以同时选择多个文件"
           },
           column: {
             component: {
@@ -155,20 +157,14 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               },
               valueType: "key",
               async buildUrl(value: any) {
-                return new Promise((resolve) => {
-                  const url = "http://www.docmirror.cn:7070/api/upload/form/download?key=" + value;
-                  resolve(url);
-                });
+                return "http://www.docmirror.cn:7070/api/upload/form/download?key=" + value;
               }
             }
           },
           column: {
             component: {
               async buildUrl(value: any) {
-                return new Promise((resolve) => {
-                  const url = "http://www.docmirror.cn:7070/api/upload/form/download?key=" + value;
-                  resolve(url);
-                });
+                return "http://www.docmirror.cn:7070/api/upload/form/download?key=" + value;
               }
             }
           }
@@ -193,24 +189,19 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               valueType: "fileId",
               async buildUrls(value: any[]) {
                 //批量构建url
-                return new Promise((resolve) => {
-                  const urls: string[] = [];
-                  for (const item of value) {
-                    const url = "http://www.docmirror.cn:7070/api/upload/form/download?key=" + item;
-                    urls.push(url);
-                  }
-                  resolve(urls);
-                });
+                const urls: string[] = [];
+                for (const item of value) {
+                  const url = "http://www.docmirror.cn:7070/api/upload/form/download?key=" + item;
+                  urls.push(url);
+                }
+                return urls;
               }
             }
           },
           column: {
             component: {
               async buildUrl(value: any) {
-                return new Promise((resolve) => {
-                  const url = "http://www.docmirror.cn:7070/api/upload/form/download?key=" + value;
-                  resolve(url);
-                });
+                return "http://www.docmirror.cn:7070/api/upload/form/download?key=" + value;
               }
             }
           }

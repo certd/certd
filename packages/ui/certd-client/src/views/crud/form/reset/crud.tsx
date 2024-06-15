@@ -1,5 +1,14 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import {
+  AddReq,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  DelReq,
+  EditReq,
+  UserPageQuery,
+  UserPageRes,
+  utils
+} from "@fast-crud/fast-crud";
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
@@ -28,7 +37,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       },
       form: {
         async doReset() {
-          console.log("reset之后可以执行其他操作");
+          utils.logger.log("reset之后可以执行其他操作");
         },
         wrapper: {
           buttons: {
@@ -36,7 +45,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               text: "重置",
               order: -1,
               click(context) {
-                console.log("on reset", context);
+                utils.logger.log("on reset", context);
                 crudExpose.getFormRef().reset();
               }
             }

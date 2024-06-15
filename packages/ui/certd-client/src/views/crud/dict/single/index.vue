@@ -19,7 +19,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
-import { useFs } from "@fast-crud/fast-crud";
+import {useFs, utils} from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 
 export default defineComponent({
@@ -33,7 +33,7 @@ export default defineComponent({
     });
 
     function onClick() {
-      console.log("this.ref", crudRef.value);
+      utils.logger.info("this.ref", crudRef.value);
     }
 
     return {

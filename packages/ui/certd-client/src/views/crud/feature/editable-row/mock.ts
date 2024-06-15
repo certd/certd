@@ -6,6 +6,11 @@ const options: any = {
 const list = [
   {
     radio: "1"
+    // children: [
+    //   {
+    //     radio: "1"
+    //   }
+    // ]
   },
   {
     radio: "2"

@@ -51,11 +51,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   };
 
   const addRequest = async ({ form }: AddReq) => {
-    const id = await api.AddObj(form);
+    const { id } = await api.AddObj(form);
     //本地添加
     form.id = id;
     localDataRef.value.unshift(form);
-    return id;
+    return form;
   };
 
   const delRequest = async ({ row }: DelReq) => {

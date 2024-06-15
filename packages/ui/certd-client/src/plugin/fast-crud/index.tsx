@@ -1,9 +1,11 @@
 import { request, requestForMock } from "/src/api/service";
-import { ColumnCompositionProps, CrudOptions, FastCrud, PageQuery, PageRes, setLogger, TransformResProps, useColumns, UseCrudProps, UserPageQuery, useTypes, useUi } from "@fast-crud/fast-crud";
+// import "/src/mock";
+import { ColumnCompositionProps, CrudOptions, FastCrud, PageQuery, PageRes, setLogger, TransformResProps, useColumns, UseCrudProps, UserPageQuery, useTypes, utils } from "@fast-crud/fast-crud";
 import "@fast-crud/fast-crud/dist/style.css";
-import { FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader, FsUploaderAliossSTS, FsUploaderGetAuthContext, FsUploaderS3SignedUrlType } from "@fast-crud/fast-extends";
+import { FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader, FsExtendsInput, FsUploaderS3SignedUrlType, FsUploaderGetAuthContext, FsUploaderAliossSTS } from "@fast-crud/fast-extends";
 import "@fast-crud/fast-extends/dist/style.css";
 import UiAntdv from "@fast-crud/ui-antdv4";
+import "@fast-crud/ui-antdv4/dist/style.css";
 import _ from "lodash-es";
 import { useCrudPermission } from "../permission";
 import { App } from "vue";
@@ -28,9 +30,13 @@ function install(app: App, options: any = {}) {
      * @param props，useCrud的参数
      */
     commonOptions(props: UseCrudProps): CrudOptions {
+      utils.logger.debug("commonOptions:", props);
       const crudBinding = props.crudExpose?.crudBinding;
       const opts: CrudOptions = {
         table: {
+          scroll: {
+            x: 960
+          },
           size: "small",
           pagination: false,
           onResizeColumn: (w: number, col: any) => {
@@ -41,7 +47,7 @@ function install(app: App, options: any = {}) {
           conditionalRender: {
             match(scope) {
               //不能用 !scope.value ， 否则switch组件设置为关之后就消失了
-              const { value, key } = scope;
+              const { value, key, props } = scope;
               return !value && key != "_index" && value != false;
             },
             render() {
@@ -57,6 +63,7 @@ function install(app: App, options: any = {}) {
         rowHandle: {
           buttons: {
             view: { type: "link", text: null, icon: "ion:eye-outline" },
+            copy: { show: true, type: "link", text: null, icon: "ion:copy-outline" },
             edit: { type: "link", text: null, icon: "ion:create-outline" },
             copy: {show:true,type: "link", text: null, icon: "ion:copy-outline"},
             remove: { type: "link", style: { color: "red" }, text: null, icon: "ion:trash-outline" }
@@ -90,7 +97,7 @@ function install(app: App, options: any = {}) {
             if (res.offset % pageSize === 0) {
               currentPage++;
             }
-            return { currentPage, pageSize, total: res.total, records: res.records };
+            return { currentPage, pageSize, records: res.records, total: res.total, ...res };
           }
         },
         form: {
@@ -111,6 +118,23 @@ function install(app: App, options: any = {}) {
           },
           wrapperCol: {
             span: null
+          },
+          wrapper: {
+            saveRemind: true
+            // inner: true,
+            // innerContainerSelector: "main.fs-framework-content"
+          }
+        },
+        columns: {
+          createdAt: {
+            title: "创建时间",
+            type: "datetime",
+            form: {
+              show: false
+            },
+            column: {
+              order: 1000
+            }
           }
         }
       };
@@ -135,7 +159,7 @@ function install(app: App, options: any = {}) {
       region: "ap-guangzhou",
       secretId: "", //
       secretKey: "", // 传了secretKey 和secretId 代表使用本地签名模式（不安全，生产环境不推荐）
-      async getAuthorization(context: FsUploaderGetAuthContext): Promise<FsUploaderAliossSTS> {
+      async getAuthorization(custom: any) {
         // 不传secretKey代表使用临时签名模式,此时此参数必传（安全，生产环境推荐）
         const ret = request({
           url: "http://www.docmirror.cn:7070/api/upload/cos/getAuthorization",
@@ -147,7 +171,6 @@ function install(app: App, options: any = {}) {
         //   TmpSecretKey,
         //   XCosSecurityToken,
         //   ExpiredTime, // SDK 在 ExpiredTime 时间前，不会再次调用 getAuthorization
-        //   key //【可选】后台生成的文件key，如果不传则用前端自己生成的key
         // }
         return ret;
       },
@@ -158,19 +181,27 @@ function install(app: App, options: any = {}) {
       }
     },
     alioss: {
+      keepName: true,
       domain: "https://d2p-demo.oss-cn-shenzhen.aliyuncs.com",
       bucket: "d2p-plugins",
       region: "oss-cn-shenzhen",
       accessKeyId: "",
       accessKeySecret: "",
-      keepName: true,
-      async getAuthorization(custom: any, context: any) {
+      async getAuthorization(context: FsUploaderGetAuthContext): Promise<FsUploaderAliossSTS> {
         // 不传accessKeySecret代表使用临时签名模式,此时此参数必传（安全，生产环境推荐）
         const ret = await request({
           url: "http://www.docmirror.cn:7070/api/upload/alioss/getAuthorization",
           method: "get"
         });
         console.log("ret", ret);
+        // 返回结构要求如下
+        // ret.data:{
+        //   TmpSecretId,
+        //   TmpSecretKey,
+        //   XCosSecurityToken,
+        //   ExpiredTime, // SDK 在 ExpiredTime 时间前，不会再次调用 getAuthorization
+        //   key //【可选】后台生成的文件key，如果不传则用前端自己生成的key
+        // }
         return ret;
       },
       sdkOpts: {
@@ -218,7 +249,7 @@ function install(app: App, options: any = {}) {
         }
       },
       //预签名配置，向后端获取上传的预签名连接
-      async getSignedUrl(bucket: string, key: string, options: any, type: FsUploaderS3SignedUrlType) {
+      async getSignedUrl(bucket: string, key: string, options: any, type: FsUploaderS3SignedUrlType = "put") {
         return await GetSignedUrl(bucket, key, type);
       },
       successHandle(ret: any) {
@@ -272,11 +303,12 @@ function install(app: App, options: any = {}) {
   app.use(FsExtendsJson);
   app.use(FsExtendsTime);
   app.use(FsExtendsCopyable);
+  app.use(FsExtendsInput);
 
   const { addTypes, getType } = useTypes();
   //此处演示修改官方字段类型
   const textType = getType("text");
-  textType.search.autoSearchTrigger = "change"; //修改官方的字段类型，设置为文本变化就触发查询
+  textType.search.autoSearchTrigger = "change"; //修改官方的字段类型，变化就触发 ， "enter"=回车键触发
 
   // 此处演示自定义字段类型
   addTypes({

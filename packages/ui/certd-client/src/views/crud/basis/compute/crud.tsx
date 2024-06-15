@@ -33,6 +33,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         editRequest,
         delRequest
       },
+      toolbar: {
+        compact: false
+      },
       table: {
         scroll: {
           x: 1500
@@ -184,6 +187,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           search: { show: false },
           type: "text",
           column: {
+            order: 1000,
             fixed: "right",
             component: {
               name: "a-switch",

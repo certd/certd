@@ -1,6 +1,6 @@
 import * as api from "./api";
 import { requestForMock } from "/src/api/service";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, utils, useUi } from "@fast-crud/fast-crud";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -19,6 +19,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   const addRequest = async ({ form }: AddReq) => {
     return await api.AddObj(form);
   };
+  const { ui } = useUi();
   return {
     crudOptions: {
       request: {
@@ -52,7 +53,18 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           dict: dict({
             isTree: true,
             url: "/mock/dicts/cascaderData?single"
-          })
+          }),
+          form: {
+            component: {
+              on: {
+                selectedChange({ $event }) {
+                  utils.logger.info("onSelectedChange", $event);
+                  const labels = $event.map((item) => item.label);
+                  ui.message.info(`selected-change:${JSON.stringify(labels)}`);
+                }
+              }
+            }
+          }
         },
         lazyLoad: {
           title: "懒加载",
@@ -65,9 +77,6 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             prototype: true,
             getNodesByValues(values: any) {
               //给cell展示组件调用，根据value值获取节点，每行都会请求一次
-              if (values == null) {
-                return [];
-              }
               return requestForMock({
                 url: "/mock/tree/GetNodesByValues",
                 params: { values }
@@ -90,7 +99,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                 }
               ],
               loadData: async (selectedOptions: any) => {
-                console.log("lazyLoad", selectedOptions);
+                utils.logger.info("lazyLoad", selectedOptions);
                 const targetOption = selectedOptions[selectedOptions.length - 1];
                 targetOption.loading = true;
 

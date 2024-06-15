@@ -25,6 +25,7 @@
 import { defineComponent, onMounted, reactive } from "vue";
 import { message } from "ant-design-vue";
 import FeatureLocalImportValueInput from "./local.vue";
+import {utils} from "@fast-crud/fast-crud";
 export default defineComponent({
   name: "FeatureLocalImport",
   components: { FeatureLocalImportValueInput },
@@ -36,7 +37,7 @@ export default defineComponent({
 
     function submit() {
       message.info("submit:" + JSON.stringify(form));
-      console.log("submit:", form);
+      utils.logger.info("submit:", form);
     }
     return {
       form,

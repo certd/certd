@@ -13,7 +13,7 @@ import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 
 export default defineComponent({
-  name: "FormLayout",
+  name: "FormLayoutGrid",
   setup() {
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
     // 页面打开后获取列表数据

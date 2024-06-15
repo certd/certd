@@ -18,10 +18,10 @@ import _ from "lodash-es";
 //此处为crudOptions配置
 const createCrudOptions = function ({}: CreateCrudOptionsProps): CreateCrudOptionsRet {
   //本地模拟后台crud接口方法 ----开始
-  const records = reactive([{ id: 1, name: "Hello World", type: 1 }]);
+  const records = [{ id: 1, name: "Hello World", type: 1 }];
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return {
-      records,
+      records: _.cloneDeep(records),
       offset: 0, //后续transformRes会计算为currentPage
       limit: 20, //后续transformRes会计算为pageSize
       total: records.length

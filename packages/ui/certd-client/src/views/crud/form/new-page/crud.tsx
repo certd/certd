@@ -78,16 +78,11 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         },
         content: {
           title: "详情",
-          type: ["editor-wang5", "colspan"],
+          type: "editor-wang5",
           form: {
-            itemProps: { labelWidth: "0px" }
-          }
-        },
-        product: {
-          title: "未分组字段",
-          type: ["text", "colspan"],
-          form: {
-            helper: "未分组的字段会显示在这里，一般来说你应该把所有字段都编入分组内"
+            col: {
+              span: 24
+            }
           }
         }
       }

@@ -1,50 +1,49 @@
 import { defineStore } from "pinia";
+import { theme } from "ant-design-vue";
+import _ from "lodash-es";
 // @ts-ignore
 import { LocalStorage } from "/src/utils/util.storage";
+
 import { SysPublicSetting } from "/@/api/modules/api.basic";
 import * as basicApi from '/@/api/modules/api.basic'
 import _ from "lodash-es";
-// import { replaceStyleVariables } from "vite-plugin-theme/es/client";
 
-// import { getThemeColors, generateColors } from "/src/../build/theme-colors";
-//
-// import { mixLighten, mixDarken, tinycolor } from "vite-plugin-theme/es/colorUtils";
-
-// export async function changeTheme(color?: string) {
-//   if (color == null) {
-//     return;
-//   }
-//   const colors = generateColors({
-//     mixDarken,
-//     mixLighten,
-//     tinycolor,
-//     color
-//   });
-//
-//   return await replaceStyleVariables({
-//     colorVariables: [...getThemeColors(color), ...colors]
-//   });
-// }
-
-
-interface SettingState {
-  theme: any;
+export type ThemeToken = {
+  token: {
+    colorPrimary?: string;
+  };
+  algorithm: any;
+};
+export type ThemeConfig = {
+  colorPrimary: string;
+  mode: string;
+};
+export interface SettingState {
+  themeConfig?: ThemeConfig;
+  themeToken: ThemeToken;
   sysPublic?: SysPublicSetting
 }
 
+const defaultThemeConfig = {
+  colorPrimary: "#1890ff",
+  mode: "light"
+};
 const SETTING_THEME_KEY = "SETTING_THEME";
 export const useSettingStore = defineStore({
   id: "app.setting",
   state: (): SettingState => ({
-    // user info
-    theme: null,
+    themeConfig: null,
+    themeToken: {
+      token: {},
+      algorithm: theme.defaultAlgorithm
+    },
     sysPublic: {
       registerEnabled: false
     }
   }),
   getters: {
-    getTheme(): any {
-      return this.theme || LocalStorage.get(SETTING_THEME_KEY) || {};
+    getThemeConfig(): any {
+      return this.themeConfig || _.merge({}, defaultThemeConfig, LocalStorage.get(SETTING_THEME_KEY) || {});
     },
     getSysPublic():SysPublicSetting{
       return this.sysPublic
@@ -55,24 +54,44 @@ export const useSettingStore = defineStore({
       const settings = await basicApi.getSysPublicSettings()
       _.merge(this.sysPublic,settings)
     },
-    persistTheme() {
-      LocalStorage.set(SETTING_THEME_KEY, this.getTheme);
+    persistThemeConfig() {
+      LocalStorage.set(SETTING_THEME_KEY, this.getThemeConfig);
     },
-    async setTheme(theme?: Object) {
-      if (theme == null) {
-        theme = this.getTheme;
+    async setThemeConfig(themeConfig?: ThemeConfig) {
+      this.themeConfig = _.merge({}, this.themeConfig, themeConfig);
+
+      this.persistThemeConfig();
+      this.setPrimaryColor(this.themeConfig.colorPrimary);
+      this.setDarkMode(this.themeConfig.mode);
+    },
+    setPrimaryColor(color: any) {
+      this.themeConfig.colorPrimary = color;
+      _.set(this.themeToken, "token.colorPrimary", color);
+      this.persistThemeConfig();
+    },
+    setDarkMode(mode: string) {
+      this.themeConfig.mode = mode;
+      if (mode === "dark") {
+        this.themeToken.algorithm = theme.darkAlgorithm;
+        // const defaultSeed = theme.defaultSeed;
+        // const mapToken = theme.darkAlgorithm(defaultSeed);
+        // less.modifyVars(mapToken);
+        // less.modifyVars({
+        //   "@colorPrimaryBg": "#111a2c",
+        //   colorPrimaryBg: "#111a2c"
+        // });
+        // less.refreshStyles();
+      } else {
+        this.themeToken.algorithm = theme.defaultAlgorithm;
+
+        // const defaultSeed = theme.defaultSeed;
+        // const mapToken = theme.defaultAlgorithm(defaultSeed);
+        // less.modifyVars(mapToken);
       }
-      this.theme = theme;
-      this.persistTheme();
-      // await changeTheme(this.theme.primaryColor);
-    },
-    async setPrimaryColor(color: any) {
-      const theme = this.theme;
-      theme.primaryColor = color;
-      await this.setTheme();
+      this.persistThemeConfig();
     },
     async init() {
-      await this.setTheme(this.getTheme);
+      await this.setThemeConfig(this.getThemeConfig);
       await this.loadSysSettings()
     }
   }

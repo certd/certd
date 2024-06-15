@@ -1,5 +1,15 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import {
+  AddReq,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  DelReq,
+  dict,
+  EditReq,
+  UserPageQuery,
+  UserPageRes,
+  utils
+} from "@fast-crud/fast-crud";
 import { Modal } from "ant-design-vue";
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -47,10 +57,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           showSuccessMessage: true, //是否显示删除成功记录
           refreshTable: true, //删除后刷新表格
           onCanceled({ row }) {
-            console.log(`记录${row.id}取消删除`);
+            utils.logger.info(`记录${row.id}取消删除`);
           },
           onRemoved({ row }) {
-            console.log(`记录${row.id}已删除`);
+            utils.logger.info(`记录${row.id}已删除`);
           }
         }
       },
