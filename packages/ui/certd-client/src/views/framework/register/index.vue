@@ -36,6 +36,7 @@
 <script lang="ts">
 import { defineComponent, reactive, ref, toRaw } from "vue";
 import { useUserStore } from "/src/store/modules/user";
+import {utils} from "@fast-crud/fast-crud";
 export default defineComponent({
   name: "RegisterPage",
   setup() {
@@ -79,7 +80,7 @@ export default defineComponent({
     };
 
     const handleFinish = async (values: any) => {
-      console.log(values, formState);
+      utils.logger.log(values, formState);
       const userInfo = await userStore.login(
         toRaw({
           password: formState.password,
@@ -89,7 +90,7 @@ export default defineComponent({
     };
 
     const handleFinishFailed = (errors: any) => {
-      console.log(errors);
+      utils.logger.log(errors);
     };
 
     const resetForm = () => {

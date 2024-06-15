@@ -1,5 +1,5 @@
 import * as api from "./api";
-import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, utils } from "@fast-crud/fast-crud";
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
@@ -31,7 +31,9 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       table: {
         editable: {
           enabled: true,
-          mode: "row"
+          mode: "row",
+          exclusive: true, //排他式激活
+          exclusiveEffect: "save" //排他式激活时，其他行的编辑状态的处理方式
         }
       },
       columns: {
@@ -68,7 +70,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           form: {
             rules: {
               async asyncValidator(context) {
-                console.log("context", context);
+                utils.logger.info("context", context);
                 return true;
               },
               message: "远程校验测试"

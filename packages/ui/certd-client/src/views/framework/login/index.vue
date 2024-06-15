@@ -74,6 +74,7 @@
 <script lang="ts">
 import { defineComponent, reactive, ref, toRaw, computed } from "vue";
 import { useUserStore } from "/src/store/modules/user";
+import {utils} from "@fast-crud/fast-crud";
 export default defineComponent({
   name: "LoginPage",
   setup() {
@@ -129,7 +130,7 @@ export default defineComponent({
     };
 
     const handleFinish = async (values: any) => {
-      console.log(values, formState);
+      utils.logger.log(values, formState);
       loading.value = true;
       try {
         const userInfo = await userStore.login(toRaw(formState));
@@ -139,7 +140,7 @@ export default defineComponent({
     };
 
     const handleFinishFailed = (errors: any) => {
-      console.log(errors);
+      utils.logger.log(errors);
     };
 
     const resetForm = () => {

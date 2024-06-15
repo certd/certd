@@ -1,31 +1,34 @@
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery } from "@fast-crud/fast-crud";
 import * as api from "./api";
-export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
-  const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
-    return await api.GetList(query);
-  };
-  const editRequest = async ({ form, row }: EditReq) => {
-    if (form.id == null) {
-      form.id = row.id;
-    }
-    return await api.UpdateObj(form);
-  };
-  const delRequest = async ({ row }: DelReq) => {
-    return await api.DelObj(row.id);
-  };
+import { FirstRow } from "./api";
 
-  const addRequest = async ({ form }: AddReq) => {
-    return await api.AddObj(form);
-  };
-
+/**
+ * 定义context参数类型
+ */
+export type FirstContext = {
+  test?: number;
+};
+export default function ({ crudExpose, context }: CreateCrudOptionsProps<FirstRow, FirstContext>): CreateCrudOptionsRet<FirstRow> {
+  context.test = 111;
   return {
     crudOptions: {
       // 自定义crudOptions配置
       request: {
-        pageRequest,
-        addRequest,
-        editRequest,
-        delRequest
+        pageRequest: async (query: UserPageQuery<FirstRow>) => {
+          return await api.GetList(query);
+        },
+        addRequest: async ({ form }: AddReq) => {
+          return await api.AddObj(form);
+        },
+        editRequest: async ({ form, row }: EditReq) => {
+          if (form.id == null) {
+            form.id = row.id;
+          }
+          return await api.UpdateObj(form);
+        },
+        delRequest: async ({ row }: DelReq) => {
+          return await api.DelObj(row.id);
+        }
       },
       //两个字段
       columns: {

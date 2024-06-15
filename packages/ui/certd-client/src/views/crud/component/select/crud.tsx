@@ -1,6 +1,6 @@
 import * as api from "./api";
 import { requestForMock } from "/src/api/service";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, DictOnReadyContext, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, DictOnReadyContext, EditReq, UserPageQuery, UserPageRes, useUi, utils } from "@fast-crud/fast-crud";
 import { ref } from "vue";
 import _ from "lodash-es";
 function useSearchRemote() {
@@ -11,7 +11,7 @@ function useSearchRemote() {
     fetching: ref(false)
   };
   const fetchUser = _.debounce((value) => {
-    console.log("fetching user", value);
+    utils.logger.info("fetching user", value);
     lastFetchId += 1;
 
     const fetchId = lastFetchId;
@@ -76,6 +76,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     //dictRef.toMap();
   }
 
+  const { ui } = useUi();
+
   const { fetchUser, searchState } = useSearchRemote();
   return {
     dynamicUpdateDictOptions,
@@ -117,7 +119,24 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         statusLocal: {
           title: "单选本地",
           type: "dict-select",
-          dict: dictRef
+          dict: dictRef,
+          form: {
+            component: {
+              onChange(args: any) {
+                utils.logger.info("onChange", args);
+              },
+              on: {
+                selectedChange({ form, $event }) {
+                  // $event就是原始的事件值，也就是选中的 option对象
+                  utils.logger.info("onSelectedChange", form, $event);
+                  ui.message.info(`你选择了${JSON.stringify($event)}`);
+                  // 你还可以将选中的label值赋值给表单里其他字段
+                  // context.form.xxxLabel = context.$event.label
+                }
+              }
+            },
+            helper: "selected-change事件可以获取选中的option对象"
+          }
         },
         statusRemote: {
           title: "单选远程",
@@ -131,11 +150,6 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           }),
           form: {
             rules: [{ required: true, message: "请选择一个选项" }]
-          },
-          column: {
-            component: {
-              type: "text"
-            }
           }
         },
         filter: {
@@ -191,7 +205,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           dict: dict({
             getData({ dict }) {
               // 覆盖全局获取字典请求配置
-              console.log(`我是从自定义的getData方法中加载的数据字典`, dict);
+              utils.logger.info(`我是从自定义的getData方法中加载的数据字典`, dict);
               return requestForMock({
                 url: "/mock/dicts/OpenStatusEnum?cache",
                 method: "get"
@@ -221,7 +235,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                 // 此处dict配置会覆盖上面dict的属性
                 prototype: true, // form表单的dict设置为原型复制，每次初始化时都会重新loadDict
                 onReady({ dict }: DictOnReadyContext) {
-                  console.log("字典请求ready", dict);
+                  utils.logger.info("字典请求ready", dict);
                   dict.data[0].disabled = true; // 禁用某个选项， 还可以自己修改选项
                 }
               }
@@ -242,7 +256,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             component: {
               //监听 dict-change事件
               onDictChange({ dict, form, key }: any) {
-                console.log("dict data changed", dict, key);
+                utils.logger.info("dict data changed", dict, key);
                 if (dict.data != null && form.firstDefault == null) {
                   form.firstDefault = dict.data[0].value;
                 }

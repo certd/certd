@@ -48,3 +48,11 @@ export function BatchDelete(ids: any[]) {
     data: { ids }
   });
 }
+
+export function ColumnUpdate(key: string, value: any) {
+  return request({
+    url: apiPrefix + "/columnUpdate",
+    method: "post",
+    data: { key, value }
+  });
+}

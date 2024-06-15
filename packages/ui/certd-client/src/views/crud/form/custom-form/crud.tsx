@@ -1,5 +1,18 @@
 import * as api from "./api.js";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, CrudExpose, CrudOptions, DelReq, dict, EditReq, useColumns, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import {
+  AddReq,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  CrudExpose,
+  CrudOptions,
+  DelReq,
+  dict,
+  EditReq,
+  useColumns,
+  UserPageQuery,
+  UserPageRes,
+  utils
+} from "@fast-crud/fast-crud";
 import { message } from "ant-design-vue";
 import { useFormWrapper } from "@fast-crud/fast-crud";
 
@@ -35,7 +48,7 @@ function useCustomFormWrapperDemo(crudExpose: CrudExpose) {
           }
         },
         onOpened() {
-          console.log("fsFormWrapper", crudExpose.getFormWrapperRef());
+          utils.logger.info("fsFormWrapper", crudExpose.getFormWrapperRef());
         }
       },
       group: {
@@ -47,7 +60,7 @@ function useCustomFormWrapperDemo(crudExpose: CrudExpose) {
         }
       },
       doSubmit({ form }) {
-        console.log("form submit:", form);
+        utils.logger.info("form submit:", form);
         message.info("自定义表单提交:" + JSON.stringify(form));
         message.warn("抛出异常可以阻止表单关闭");
         throw new Error("抛出异常可以阻止表单关闭");
@@ -64,7 +77,7 @@ function useCustomFormWrapperDemo(crudExpose: CrudExpose) {
     formOptions.initialForm = { index };
     formOptions.newInstance = true; //新实例打开
     const dialogRef = await openDialog(formOptions);
-    console.log("openCustomFormRef", dialogRef);
+    utils.logger.info("openCustomFormRef", dialogRef);
   };
 
   const openCustomFormByExpose = async () => {
@@ -73,7 +86,7 @@ function useCustomFormWrapperDemo(crudExpose: CrudExpose) {
     formOptions.initialForm = { index };
     formOptions.newInstance = true; //新实例打开
     const dialogRef = await crudExpose.openDialog(formOptions);
-    console.log("openCustomFormByExposeRef", dialogRef);
+    utils.logger.info("openCustomFormByExposeRef", dialogRef);
   };
 
   return {

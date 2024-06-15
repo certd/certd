@@ -22,6 +22,8 @@
           <fs-button class="ml-1" @click="editCol">编辑列</fs-button>
           <fs-button class="ml-1" @click="cancel">取消/恢复原状</fs-button>
           <fs-button class="ml-1" @click="save">保存</fs-button>
+
+          <fs-button class="ml-1" @click="log">log</fs-button>
         </template>
       </template>
     </fs-crud>
@@ -31,7 +33,7 @@
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
 import createCrudOptions from "./crud";
-import { useFs } from "@fast-crud/fast-crud";
+import {useFs, utils} from "@fast-crud/fast-crud";
 import { message } from "ant-design-vue";
 
 export default defineComponent({
@@ -72,11 +74,13 @@ export default defineComponent({
       },
       save() {
         crudExpose.getTableRef().editable.submit(({ changed, removed, setData }: any) => {
-          console.log("changed", changed);
-          console.log("removed", removed);
+          utils.logger.info("table data:", crudBinding.value.data, crudExpose.getTableData());
           // setData({ 0: {id:1} }); //设置data
           message.success("保存,修改行：" + JSON.stringify(changed) + "；删除行：" + JSON.stringify(removed));
         });
+      },
+      log() {
+        console.log("table data:", crudBinding.value.data, crudExpose.getTableData());
       },
       cancel() {
         crudExpose.editable.resume();

@@ -44,10 +44,12 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           type: "file-uploader",
           form: {
             component: {
+              multiple: true, //可选择多个
               uploader: {
                 type: "cos"
               }
-            }
+            },
+            helper: "可以同时选择多个文件"
           }
         },
         pictureCard: {

@@ -2,7 +2,8 @@ import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
 import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
-import PurgeIcons from "vite-plugin-purge-icons";
+import { createHtmlPlugin } from "vite-plugin-html";
+import { loadEnv } from "vite";
 import * as path from "path";
 import DefineOptions from "unplugin-vue-define-options/vite";
 // import WindiCSS from "vite-plugin-windicss";
@@ -15,19 +16,26 @@ import DefineOptions from "unplugin-vue-define-options/vite";
 process.env.VITE_APP_VERSION = require("./package.json").version;
 process.env.VITE_APP_BUILD_TIME = require("dayjs")().format("YYYY-M-D HH:mm:ss");
 
+import { theme } from "ant-design-vue";
+
+const { defaultAlgorithm, defaultSeed } = theme;
+
+const mapToken = defaultAlgorithm(defaultSeed);
+
 export default ({ command, mode }) => {
   console.log("args", command, mode);
-
+  const env = loadEnv(mode, process.cwd());
   let devServerFs: any = {};
   let devAlias: any[] = [];
   if (mode.startsWith("debug")) {
     devAlias = [
       { find: /@fast-crud\/fast-crud\/dist/, replacement: path.resolve("../../fast-crud/src/") },
       // { find: /@fast-crud\/fast-crud$/, replacement: path.resolve("../../fast-crud/src/") },
-      { find: /@fast-crud\/fast-extends\/dist/, replacement: path.resolve("../../fast-extends/src/") }
+      { find: /@fast-crud\/fast-extends\/dist/, replacement: path.resolve("../../fast-extends/src/") },
       // { find: /@fast-crud\/fast-extends$/, replacement: path.resolve("../../fast-extends/src/") },
       // { find: /@fast-crud\/ui-antdv$/, replacement: path.resolve("../../ui/ui-antdv/src/") },
       // { find: /@fast-crud\/ui-interface$/, replacement: path.resolve("../../ui/ui-interface/src/") }
+      { find: /@fast-crud\/ui-antdv4\/dist/, replacement: path.resolve("../../ui/ui-antdv4/src/") }
     ];
     devServerFs = {
       // 这里配置dev启动时读取的项目根目录
@@ -35,20 +43,22 @@ export default ({ command, mode }) => {
     };
     console.log("devAlias", devAlias);
   }
-
   return {
-    base: "/antdv/",
+    base: "/antdv4/",
     plugins: [
       DefineOptions(),
       vueJsx(),
       vue(),
+      createHtmlPlugin({
+        inject: {
+          data: {
+            title: env.VITE_APP_TITLE,
+            projectPath: env.VITE_APP_PROJECT_PATH
+          }
+        }
+      }),
       // 压缩build后的代码
-      viteCompression(),
-      PurgeIcons({
-        // iconSource: "local"
-        // remoteDataAPI: "https://gitee.com/fast-crud/collections-json/raw/master/json",
-        // includedCollections: ["ion"]
-      })
+      viteCompression()
       //主题色替换
       //...configThemePlugin(true),
       // viteThemePlugin({
@@ -82,6 +92,7 @@ export default ({ command, mode }) => {
           // 修改默认主题颜色，配置less变量
           // modifyVars: generateModifyVars(),
           javascriptEnabled: true
+          // modifyVars: mapToken
         }
       }
     },

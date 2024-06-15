@@ -57,7 +57,7 @@ export function UpdateCell(id: number, key: string, value: any) {
     data: { id, key, value }
   });
 }
-export function UpdateColumn(data) {
+export function UpdateColumn(data: any) {
   return request({
     url: apiPrefix + "/columnUpdate",
     method: "post",

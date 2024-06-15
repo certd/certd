@@ -7,7 +7,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, watch } from "vue";
 import createCrudOptions from "./crud";
-import { useFs, useUi } from "@fast-crud/fast-crud";
+import { useFs, useUi, utils } from "@fast-crud/fast-crud";
 import { message } from "ant-design-vue";
 
 export default defineComponent({
@@ -18,6 +18,14 @@ export default defineComponent({
       default() {
         return undefined;
       }
+    },
+    disabled: {
+      type: Boolean,
+      default: false
+    },
+    readonly: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ["update:modelValue"],
@@ -26,8 +34,8 @@ export default defineComponent({
     const { ui } = useUi();
     let formItemContext = ui.formItem.injectFormItemContext();
 
-    function emit(data) {
-      console.log("emit:", data);
+    function emit(data: any) {
+      utils.logger.info("emit:", data);
       ctx.emit("update:modelValue", data);
       formItemContext.onBlur();
       formItemContext.onChange();
@@ -36,6 +44,7 @@ export default defineComponent({
     // 页面打开后获取列表数据
     onMounted(() => {
       // crudExpose.doRefresh();
+
       watch(
         () => {
           return props.modelValue;
@@ -53,7 +62,26 @@ export default defineComponent({
         }
       );
 
-      crudExpose.editable.enable({ mode: "free", activeDefault: true });
+      watch(
+        () => {
+          return props.disabled || props.readonly;
+        },
+        (value) => {
+          if (value) {
+            crudBinding.value.table.editable.readonly = true;
+            crudBinding.value.actionbar.buttons.addRow.show = false;
+            crudBinding.value.rowHandle.show = false;
+          } else {
+            crudBinding.value.table.editable.readonly = false;
+            crudBinding.value.actionbar.buttons.addRow.show = true;
+            crudBinding.value.rowHandle.show = true;
+          }
+        },
+        {
+          immediate: true
+        }
+      );
+      // crudExpose.editable.enable({ mode: "free", activeDefault: true });
     });
 
     async function validate() {

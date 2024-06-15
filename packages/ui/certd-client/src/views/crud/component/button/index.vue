@@ -1,5 +1,6 @@
 <template>
   <fs-page>
+    <div class="title">按钮</div>
     <fs-crud ref="crudRef" v-bind="crudBinding" />
   </fs-page>
 </template>

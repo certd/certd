@@ -30,6 +30,8 @@ jobs:
 
       - name: push to gitee               # 4. 执行同步
         run: |
-          git remote add upstream https://gitee.com/fast-crud/fs-admin-antdv
+          git remote add upstream https://gitee.com/fast-crud/fs-admin-antdv4
           git push --set-upstream upstream main
+
+
 

@@ -62,9 +62,16 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         },
         content: {
           title: "详情",
-          type: "editor-ueditor",
+          type: "editor-wang5",
           form: {
-            labelWidth: "0px"
+            labelCol: {
+              style: {
+                width: "0px"
+              }
+            },
+            col: {
+              span: 24
+            }
           }
         }
       },
@@ -85,7 +92,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                 }
               },
               icon: "el-icon-goods",
-              columns: ["code", "title", "images"]
+              columns: ["code", "title", "images", "intro"]
             },
             price: {
               tab: "库存价格",
@@ -96,7 +103,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               tab: "详情",
               collapsed: true, //默认折叠
               icon: "el-icon-warning-outline",
-              columns: ["intro", "content"]
+              columns: ["content"]
             }
             // custom: {
             //   title: "自定义",

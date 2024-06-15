@@ -6,8 +6,26 @@
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #form-body-top>
         <div style="display: flex">
-          <span>label宽度设置:</span>
-          <a-slider v-model:value="labelWidthRef" style="width: 200px" :min="40" :max="300"></a-slider>
+          <div>
+            <span>label宽度设置:</span>
+            <a-slider v-model:value="labelWidthRef" style="width: 200px" :min="40" :max="300" />
+          </div>
+          <div>
+            <span>label位置:</span>
+            <a-radio-group
+              v-model:value="labelLayoutRef"
+              :options="[
+                {
+                  value: 'vertical',
+                  label: '上置'
+                },
+                {
+                  value: '',
+                  label: '左置'
+                }
+              ]"
+            />
+          </div>
         </div>
       </template>
     </fs-crud>
@@ -23,8 +41,10 @@ export default defineComponent({
   name: "FormBase",
   setup() {
     const labelWidthRef = ref(100);
+    const labelLayoutRef = ref(undefined);
     const context = {
-      labelWidthRef
+      labelWidthRef,
+      labelLayoutRef
     };
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
@@ -36,7 +56,8 @@ export default defineComponent({
     return {
       crudBinding,
       crudRef,
-      labelWidthRef
+      labelWidthRef,
+      labelLayoutRef
     };
   }
 });

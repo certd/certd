@@ -2,7 +2,6 @@ import * as api from "./api";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, ScopeContext, UserPageQuery, UserPageRes, utils } from "@fast-crud/fast-crud";
 import dayjs from "dayjs";
 
-console.log("utils", utils);
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
@@ -33,6 +32,11 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         scroll: { x: 3000 }
       },
       rowHandle: { fixed: "right" },
+      search: {
+        initialForm: {
+          // datetimerange: [dayjs().subtract(1, "month").startOf("day"), dayjs().endOf("day")]
+        }
+      },
       columns: {
         id: {
           title: "ID",
@@ -54,7 +58,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             component: {}
           },
           valueBuilder({ value, row, key }) {
-            console.log("value builder:", key, value, row);
+            utils.logger.info("value builder:", key, value, row);
             if (value != null) {
               row[key] = dayjs(value);
             }
@@ -76,7 +80,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             }
           },
           valueBuilder({ value, row, key }) {
-            console.log("value builder:", key, value, row);
+            utils.logger.info("value builder:", key, value, row);
             if (value != null) {
               row[key] = dayjs(value);
             }
@@ -121,7 +125,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               valueFormat: "YYYY-MM-DD HH:mm:ss", //输入值的格式
               on: {
                 onChange(context: ScopeContext) {
-                  console.log("change", context);
+                  utils.logger.info("change", context);
                 }
               }
             }
@@ -187,7 +191,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         daterange: {
           title: "日期范围",
           type: "daterange",
-          search: { show: true, width: 300 },
+          search: { show: true, width: 300, col: { span: 6 } },
           valueBuilder({ row, key }) {
             if (!utils.strings.hasEmpty(row.daterangeStart, row.daterangeEnd)) {
               row[key] = [dayjs(row.daterangeStart), dayjs(row.daterangeEnd)];
@@ -197,7 +201,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         datetimerange: {
           title: "日期时间范围",
           type: "datetimerange",
-          search: { show: true, width: 300 },
+          search: { show: true, width: 300, col: { span: 8 } },
           valueBuilder({ row, key }) {
             if (!utils.strings.hasEmpty(row.datetimerangeStart, row.datetimerangeEnd)) {
               row[key] = [dayjs(row.datetimerangeStart), dayjs(row.datetimerangeEnd)];

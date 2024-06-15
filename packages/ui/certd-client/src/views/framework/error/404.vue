@@ -12,7 +12,6 @@ export default {
   name: "Exception404",
   methods: {
     toHome() {
-      //@ts-ignore
       this.$router.push({ path: "/" });
     }
   }

@@ -1,5 +1,5 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, utils, useUi } from "@fast-crud/fast-crud";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -18,6 +18,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   const addRequest = async ({ form }: AddReq) => {
     return await api.AddObj(form);
   };
+  const { ui } = useUi();
   return {
     crudOptions: {
       request: {
@@ -44,7 +45,20 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           type: "dict-checkbox",
           dict: dict({
             url: "/mock/dicts/OpenStatusEnum?single"
-          })
+          }),
+          form: {
+            component: {
+              on: {
+                selectedChange({ form, $event }) {
+                  // $event就是原始的事件值，也就是选中的 option对象
+                  utils.logger.info("onSelectedChange", form, $event);
+                  ui.message.info(`你选择了${JSON.stringify($event)}`);
+                  // 你还可以将选中的label值赋值给表单里其他字段
+                  // context.form.xxxLabel = context.$event.label
+                }
+              }
+            }
+          }
         }
       }
     }

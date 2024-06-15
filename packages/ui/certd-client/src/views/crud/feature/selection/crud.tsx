@@ -1,7 +1,17 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import {
+  AddReq,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  DelReq,
+  dict,
+  EditReq,
+  UserPageQuery,
+  UserPageRes,
+  utils
+} from "@fast-crud/fast-crud";
 import { ref } from "vue";
-export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -20,13 +30,13 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   };
 
   const selectedRowKeys = ref([]);
+  context.selectedRowKeys = selectedRowKeys;
 
   const onSelectChange = (changed: any) => {
-    console.log("selection", changed);
+    utils.logger.info("selection", changed);
     selectedRowKeys.value = changed;
   };
   return {
-    selectedRowKeys, //返回给index.vue去使用
     crudOptions: {
       table: {
         rowKey: "id",
@@ -47,7 +57,6 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       columns: {
         id: {
           title: "ID",
-          key: "id",
           type: "number",
           column: {
             width: 50
@@ -56,13 +65,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             show: false
           }
         },
-        radio: {
-          title: "状态",
-          search: { show: true },
-          type: "dict-radio",
-          dict: dict({
-            url: "/mock/dicts/OpenStatusEnum?single"
-          })
+        text: {
+          title: "Text",
+          type: "text",
+          search: { show: true }
         }
       }
     }

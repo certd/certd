@@ -100,6 +100,26 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           dict: dict({
             url: "/mock/dicts/OpenStatusEnum?single"
           })
+        },
+        text: {
+          title: "text",
+          type: "text",
+          search: { show: true }
+        },
+        text2: {
+          title: "text2",
+          type: "text",
+          search: { show: true }
+        },
+        text3: {
+          title: "text3",
+          type: "text",
+          search: { show: true }
+        },
+        text4: {
+          title: "text4",
+          type: "text",
+          search: { show: true }
         }
       }
     }

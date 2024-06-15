@@ -31,7 +31,7 @@ export default defineComponent({
     .fs-search-multi-line-buttons {
       position: absolute;
       bottom: -38px;
-      right: 160px;
+      right: 210px;
     }
     .ant-form-item-label:before {
       border-bottom: 1px solid #eee;

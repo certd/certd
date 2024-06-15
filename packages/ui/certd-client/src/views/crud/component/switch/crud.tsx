@@ -1,5 +1,16 @@
 import * as api from "./api";
-import { dict, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, UserPageQuery, UserPageRes, EditReq, DelReq, AddReq } from "@fast-crud/fast-crud";
+import {
+  dict,
+  compute,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  UserPageQuery,
+  UserPageRes,
+  EditReq,
+  DelReq,
+  AddReq,
+  utils
+} from "@fast-crud/fast-crud";
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
@@ -98,7 +109,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               name: "fs-dict-switch",
               vModel: "checked",
               onChange: (value: any) => {
-                console.log("onChange", value);
+                utils.logger.info("onChange", value);
               }
               // onChange: compute((context) => {
               //   //动态onChange方法测试
@@ -132,7 +143,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
           form: {
             show: compute((context) => {
-              console.log("context", context);
+              utils.logger.info("context", context);
               //根据cellSwitch字段显隐
               return context.form.cellSwitch === true;
             })

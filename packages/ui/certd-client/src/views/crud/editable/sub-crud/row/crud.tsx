@@ -1,16 +1,8 @@
-import {
-  AddReq,
-  CreateCrudOptionsProps,
-  CreateCrudOptionsRet, DelReq,
-  dict,
-  EditReq,
-  UserPageQuery,
-  UserPageRes
-} from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import * as api from "./api";
-export default function ({ crudExpose,context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { crudBinding } = crudExpose;
-  const {parentIdRef} = context
+  const { parentIdRef } = context;
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -48,8 +40,8 @@ export default function ({ crudExpose,context }: CreateCrudOptionsProps): Create
       },
       search: {
         show: false,
-        initialForm:{
-          parentId:parentIdRef
+        initialForm: {
+          parentId: parentIdRef
         }
       },
       toolbar: {
@@ -63,7 +55,7 @@ export default function ({ crudExpose,context }: CreateCrudOptionsProps): Create
         editable: {
           enabled: true,
           mode: "row",
-          activeDefault:false,
+          activeDefault: false
         }
       },
       // pagination: { show: false, pageSize: 9999999 },
@@ -83,8 +75,8 @@ export default function ({ crudExpose,context }: CreateCrudOptionsProps): Create
           dict: dict({
             url: "/mock/dicts/OpenStatusEnum?single"
           }),
-          form:{
-            value:'1',
+          form: {
+            value: "1"
           }
         },
         name: {
@@ -97,16 +89,16 @@ export default function ({ crudExpose,context }: CreateCrudOptionsProps): Create
             ]
           }
         },
-        parentId:{
+        parentId: {
           title: "父Id",
           type: "number",
-          search:{
-            show:true,
+          search: {
+            show: true
           },
-          form:{
-            value:parentIdRef,
-            component:{
-              disabled:true
+          form: {
+            value: parentIdRef,
+            component: {
+              disabled: true
             }
           }
         },

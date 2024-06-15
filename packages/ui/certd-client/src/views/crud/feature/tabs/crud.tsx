@@ -1,5 +1,15 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import {
+  AddReq,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  DelReq,
+  dict,
+  EditReq,
+  UserPageQuery,
+  UserPageRes,
+  utils
+} from "@fast-crud/fast-crud";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -46,7 +56,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               }
             },
             click() {
-              console.log("点击了自定义按钮");
+              utils.logger.info("点击了自定义按钮");
             }
           }
         }

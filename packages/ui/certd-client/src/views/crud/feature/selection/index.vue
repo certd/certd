@@ -14,15 +14,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, onMounted } from "vue";
 import createCrudOptions from "./crud";
-import { useExpose, useCrud, useFs } from "@fast-crud/fast-crud";
+import { useFs } from "@fast-crud/fast-crud";
 import { message, Modal } from "ant-design-vue";
 import { BatchDelete } from "./api";
+
 export default defineComponent({
   name: "FeatureSelection",
   setup() {
-    const { crudBinding, crudRef, crudExpose, selectedRowKeys } = useFs({ createCrudOptions });
+    const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions });
+    const selectedRowKeys = context.selectedRowKeys;
     // 页面打开后获取列表数据
     onMounted(() => {
       crudExpose.doRefresh();

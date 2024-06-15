@@ -1,6 +1,17 @@
 import * as api from "./api";
 import { message } from "ant-design-vue";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, ValueChangeContext } from "@fast-crud/fast-crud";
+import {
+  AddReq,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  DelReq,
+  dict,
+  EditReq,
+  UserPageQuery,
+  UserPageRes,
+  utils,
+  ValueChangeContext
+} from "@fast-crud/fast-crud";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -55,12 +66,12 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               vModel: "checked"
             },
             valueChange(context: ValueChangeContext) {
-              console.log("column value changed:", context);
+              utils.logger.info("column value changed:", context);
             }
           },
           form: {
             valueChange({ value, key, form }: ValueChangeContext) {
-              console.log("valueChanged,", key, value, form);
+              utils.logger.info("valueChanged,", key, value, form);
               message.info(`valueChanged:${key}=${value}`);
             }
           }
@@ -70,7 +81,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           type: "text",
           form: {
             valueChange({ value, key, form }: ValueChangeContext) {
-              console.log("valueChanged,", key, value, form);
+              utils.logger.info("valueChanged,", key, value, form);
               message.info(`valueChanged:${key}=${value}`);
             }
           }
@@ -84,7 +95,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           form: {
             valueChange: {
               handle({ value, key, form, immediate }: ValueChangeContext) {
-                console.log("valueChange,", key, value, "isImmediate=", immediate);
+                utils.logger.info("valueChange,", key, value, "isImmediate=", immediate);
                 message.info(`valueChanged:${key}=${value},isImmediate=${immediate}`);
               },
               immediate: true

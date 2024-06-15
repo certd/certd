@@ -1,8 +1,7 @@
 import * as api from "./api";
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, utils } from "@fast-crud/fast-crud";
-import dayjs from "dayjs";
 import { computed, Ref, ref } from "vue";
-
+import dayjs from "dayjs";
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
@@ -23,71 +22,168 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
 
   const options: Ref = ref([]);
 
-  let arr = [
-    {
-      value: "1",
-      label: "test"
-    },
-    {
-      value: "1",
-      label: "test2"
-    }
-  ];
-
-  for (let i = 0; i < 10; i++) {
-    arr = arr.concat(arr);
-  }
-  let i = 0;
-  for (const item of arr) {
-    i++;
-    item.value = i + "";
-  }
-  options.value = arr;
-
   return {
     crudOptions: {
+      table: {},
       request: {
         pageRequest,
         addRequest,
         editRequest,
         delRequest
       },
-      form: {
-        // 单列布局
-        col: { span: 24 },
-        labelCol: { span: 4 },
-        wrapperCol: { span: 18 }
-      },
+      toolbar: {},
       rowHandle: {
-        fixed: "right"
+        buttons: {
+          edit: { show: true }
+        }
+      },
+      form: {
+        watch({ form }) {
+          form.totalAmount = form.users * form.months * form.licensePrice;
+          form.statementAmount = form.totalAmount - form.discountAmount;
+          form.statementPrice = form.statementAmount / form.months / form.users;
+          if (form.months && form.startTime) {
+            // form.endTime = dayjs(form.startTime).add(form.months, "month");
+          }
+        }
       },
       columns: {
         id: {
           title: "ID",
-          key: "id",
+          type: "text",
+          form: { show: false },
+          column: { show: false }
+        },
+        users: {
+          title: "用户数量",
           type: "number",
-          column: {
-            width: 50
-          },
+          column: { width: 120 },
           form: {
-            show: false
+            component: { min: 1, max: 10000 },
+            rules: [{ required: true, message: "用户数量不能为空" }]
           }
         },
-        statusRemote: {
-          title: "单选远程",
-          search: {
-            show: false
+        months: {
+          title: "月数",
+          type: "number",
+          column: { width: 100 },
+          form: {
+            component: { min: 1, max: 120 },
+            rules: [{ required: true, message: "采购月数不能为空" }]
+          }
+        },
+        licensePrice: {
+          title: "单用户价",
+          type: "number",
+          column: { width: 150 },
+          form: {
+            component: { min: 1, max: 99999 },
+            helper: "单个用户许可价格"
+          }
+        },
+        totalAmount: {
+          title: "总额",
+          type: "number",
+          search: { show: false },
+          column: { width: 150 },
+          form: {
+            component: { disabled: true }
+          }
+        },
+        discountAmount: {
+          title: "优惠",
+          type: "number",
+          column: { width: 150 },
+          addForm: {
+            value: 0
           },
+          form: {
+            component: { min: 0, max: 9999999 },
+            rules: [{ required: true, message: "优惠金额不能为空" }]
+          }
+        },
+        statementAmount: {
+          title: "结算金额",
+          type: "number",
+          search: { show: false },
+          column: { width: 150 },
+          form: {
+            component: { disabled: true },
+            rules: [{ required: true, message: "结算金额不能为空" }],
+            helper: "结算金额 = 总额 - 优惠金额"
+          }
+        },
+        statementPrice: {
+          title: "结算单价",
+          type: "number",
+          column: { width: 150 },
+          form: {
+            component: { disabled: true },
+            helper: "结算单价 = 结算金额 / 月份 / 用户数"
+          }
+        },
+        startTime: {
+          title: "开始时间",
+          type: "date",
+          valueBuilder({ value, row, key }) {
+            if (value != null) {
+              row[key] = dayjs.unix(value);
+            }
+          },
+          valueResolve({ value, row, key }) {
+            if (value != null) {
+              row[key] = dayjs(value).unix();
+            }
+          },
+          form: {
+            rules: [{ required: true, message: "订阅起始日期不能为空" }],
+            component: {
+              format: "YYYY-MM-DD"
+            }
+          }
+        },
+        endTime: {
+          title: "结束时间",
+          type: "date",
+          valueResolve({ value, row, key }) {
+            if (value != null) {
+              row[key] = dayjs(value).unix();
+            }
+          },
+          form: {
+            component: {
+              format: "YYYY-MM-DD",
+              disabled: true
+            },
+            rules: [{ required: true, message: "订阅结束日期不能为空" }],
+            helper: "结束日期 = 开始日期 + 采购月份"
+          }
+        },
+        paymentStatus: {
+          title: "状态",
           type: "dict-select",
+          column: { width: 100, align: "center" },
+          search: { show: true },
           dict: dict({
-            url: "/mock/dicts/ManyOpenStatusEnum?from=dict1"
+            data: [
+              { value: "0", label: "待支付", color: "error" },
+              { value: "10", label: "部分支付", color: "warning" },
+              { value: "20", label: "已支付", color: "success" }
+            ]
           }),
           form: {
-            component: { mode: "multiple" },
-            rules: [{ required: true, message: "请选择一个选项" }]
-          },
-          column: {
-            width: 200
+            rules: [{ required: true, message: "支付状态不能为空" }]
+          }
+        },
+        description: {
+          title: "产品描述",
+          column: { show: false },
+          type: ["textarea"],
+          form: {
+            rules: [{ required: true, message: "描述不能为空" }],
+            col: {
+              span: 24
+            }
           }
         }
       }

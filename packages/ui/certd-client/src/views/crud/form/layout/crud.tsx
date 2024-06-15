@@ -1,5 +1,16 @@
 import * as api from "./api";
-import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import {
+  AddReq,
+  compute,
+  CreateCrudOptionsProps,
+  CreateCrudOptionsRet,
+  DelReq,
+  dict,
+  EditReq,
+  UserPageQuery,
+  UserPageRes,
+  utils
+} from "@fast-crud/fast-crud";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -38,7 +49,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           customClass: "page-layout",
           onOpened(context) {
             getFormWrapperRef().formOptions.display = context.options.initial?.display;
-            console.log("form opened", context, getFormData());
+            utils.logger.log("form opened", context, getFormData());
           }
         }
       },
@@ -57,7 +68,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             valueChange(context) {
               const { value } = context;
               getFormWrapperRef().formOptions.display = value;
-              console.log("valueChange", value, context);
+              utils.logger.log("valueChange", value, context);
             }
           }
         },

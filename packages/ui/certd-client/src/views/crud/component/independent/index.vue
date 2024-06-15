@@ -26,6 +26,15 @@
           <input type="file" @change="fileUploaderChange" />
           <a v-if="signedUrl" :href="signedUrl" target="_blank">下载</a>
         </a-form-item>
+        <a-form-item label="表格选择">
+          <fs-table-select v-model="form.tableSelect" v-bind="tableSelectBinding" />
+          <fs-label label="切换value">
+            <a-radio-group v-model:value="form.tableSelect">
+              <a-radio :value="1">王小虎</a-radio>
+              <a-radio :value="2">id为2的记录</a-radio>
+            </a-radio-group>
+          </fs-label>
+        </a-form-item>
         <a-form-item>
           <a-button @click="submit">提交</a-button>
         </a-form-item>
@@ -37,9 +46,11 @@
 <script lang="ts" setup>
 import { reactive, ref } from "vue";
 import { message } from "ant-design-vue";
-import { dict, useUi } from "@fast-crud/fast-crud";
+import {dict, useUi, utils} from "@fast-crud/fast-crud";
 import dayjs from "dayjs";
 import { FsUploaderS3, loadUploader, useUploader } from "@fast-crud/fast-extends";
+import createCrudOptionsText from "/@/views/crud/component/text/crud";
+import * as textTableApi from "/@/views/crud/component/text/api";
 
 defineOptions({
   name: "ComponentIndependent"
@@ -49,7 +60,8 @@ const form = reactive({
   avatar: undefined,
   copyable: "可复制的内容",
   select: 1,
-  humanizeTime: dayjs(new Date().getTime() - 100000)
+  humanizeTime: dayjs(new Date().getTime() - 100000),
+  tableSelect: null
 });
 
 const uploader = ref({
@@ -66,7 +78,7 @@ const cropperUploader = ref({
     viewMode: 1
   },
   async onReady(context: any) {
-    console.log("onReady", context);
+    utils.logger.info("onReady", context);
     context.zoom(-0.1);
     context.zoom(-0.1);
     context.zoom(-0.1);
@@ -81,6 +93,26 @@ const dictRef = dict({
   ]
 });
 
+const tableSelectBinding = ref({
+  dict: dict({
+    value: "id",
+    label: "name",
+    getNodesByValues: async (values: any[]) => {
+      return await textTableApi.GetByIds(values);
+    }
+  }),
+  crossPage: true,
+  valuesFormat: {
+    labelFormatter: (item: any) => {
+      return `${item.id}.${item.name}`;
+    }
+  },
+  select: {
+    placeholder: "点击选择"
+  },
+  createCrudOptions: createCrudOptionsText
+});
+
 const signedUrl = ref();
 async function fileUploaderChange(event: any) {
   const file = event.target.files[0];
@@ -90,7 +122,7 @@ async function fileUploaderChange(event: any) {
     file,
     fileName: file.name,
     onProgress(progress: any) {
-      console.log("progress:" + progress.percent + "%");
+      utils.logger.info("progress:" + progress.percent + "%");
     }
   });
   const { ui } = useUi();
@@ -104,6 +136,6 @@ async function fileUploaderChange(event: any) {
 
 function submit() {
   message.info("submit:" + JSON.stringify(form));
-  console.log("submit:", form);
+  utils.logger.info("submit:", form);
 }
 </script>

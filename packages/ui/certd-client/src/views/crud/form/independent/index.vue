@@ -10,32 +10,42 @@
       <a-row :gutter="10">
         <a-col :span="12">
           <a-card class="mt-10" title="直接显示表单">
-            <fs-form ref="formRef" v-bind="formOptions"> </fs-form>
+            <fs-form ref="formRef" v-bind="formOptions">
+              <template #form_slot="scope">
+                <a-input v-model:value="scope.form.slot">
+                  <template #prefix>
+                    <fs-icon icon="ion:search"></fs-icon>
+                  </template>
+                </a-input>
+              </template>
+            </fs-form>
             <div style="margin-top: 10px">
-              <a-button @click="formSubmit">提交表单</a-button>
-              <a-button @click="formReset">重置表单</a-button>
-              <a-button class="ml-10" @click="setFormDataTest">setFormData</a-button>
+              <a-button @click="formSubmit"> 提交表单 </a-button>
+              <a-button @click="formReset"> 重置表单 </a-button>
+              <a-button class="ml-10" @click="setFormDataTest"> setFormData </a-button>
             </div>
           </a-card>
         </a-col>
         <a-col span="12">
           <a-card class="mt-10" title="直接打开对话框,无需写 fs-form-wrapper 标签">
             <div style="margin-top: 10px">
-              <a-button @click="openFormWrapperNoTag">打开对话框</a-button>
+              <a-button @click="openFormWrapperNoTag"> 打开对话框 </a-button>
+
+              <div>需要在app.vue使用fs-form-context包裹router-view</div>
             </div>
           </a-card>
           <a-card class="mt-10" title="打开表单对话框">
-            <a-button @click="openFormWrapper">打开表单对话框</a-button>
+            <a-button @click="openFormWrapper"> 打开表单对话框 </a-button>
             <fs-form-wrapper ref="formWrapperRef" v-bind="formWrapperOptions" />
           </a-card>
 
           <a-card class="mt-10" title="打开表单对话框（复用crudOptions）">
-            <a-button @click="openFormWrapper2">打开表单对话框</a-button>
+            <a-button @click="openFormWrapper2"> 打开表单对话框 </a-button>
             <fs-form-wrapper ref="formWrapper2Ref" v-bind="formWrapper2Options" />
           </a-card>
 
           <a-card class="mt-10" title="打开表单对话框【复用crudBinding】">
-            <a-button @click="openFormWrapper2">打开表单对话框</a-button>
+            <a-button @click="openFormWrapper2"> 打开表单对话框 </a-button>
             <fs-form-wrapper ref="formWrapperRef2" v-bind="formWrapperOptions2" />
           </a-card>
         </a-col>
@@ -47,7 +57,7 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import { message } from "ant-design-vue";
-import { CreateCrudOptionsProps, useColumns, useFormWrapper, useFs } from "@fast-crud/fast-crud";
+import { CreateCrudOptionsProps, useColumns, useFormWrapper, useFs, utils } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 
 function createFormOptionsFromCrudOptions() {
@@ -72,10 +82,18 @@ function createFormOptions() {
             allowClear: true
           },
           valueBuilder(context) {
-            console.log("value builder :", context);
+            utils.logger.log("value builder :", context);
           },
           rules: [{ required: true, message: "此项必填" }]
         }
+      },
+      date: {
+        title: "日期",
+        type: "date"
+      },
+      slot: {
+        title: "插槽",
+        type: "text"
       },
       groupField: {
         title: "分组字段",
@@ -100,7 +118,7 @@ function createFormOptions() {
         }
       },
       doSubmit({ form }) {
-        console.log("form submit:", form);
+        utils.logger.log("form submit:", form);
         message.info("自定义表单提交:" + JSON.stringify(form));
         message.success("保存成功");
       }
@@ -168,10 +186,17 @@ function useCrudBindingForm() {
     ...crudBinding.value.addForm, // 你也可以用editForm
     doSubmit({ form }: any) {
       //覆盖提交方法
-      console.log("form submit:", form);
+      utils.logger.log("form submit:", form);
       message.info("自定义表单提交:" + JSON.stringify(form));
-      message.warn("抛出异常可以阻止表单关闭");
-      throw new Error("抛出异常可以阻止表单关闭");
+      //模拟后端返回错误
+      return { error: true };
+    },
+    afterSubmit(ctx: any) {
+      utils.logger.log("form after submit:", ctx);
+      if (ctx.res.error === true) {
+        message.warn("模拟后端返回错误，不关闭对话框");
+        return false;
+      }
     },
     initialForm: { name: "初始值" }
   });
@@ -212,7 +237,7 @@ function useFormProvider() {
   async function openFormWrapperNoTag() {
     const opts = createFormOptionsFromCrudOptions();
     const wrapperRef = await openDialog(opts);
-    console.log("对话框已打开", wrapperRef);
+    utils.logger.log("对话框已打开", wrapperRef);
   }
   return {
     openFormWrapperNoTag

@@ -1,5 +1,5 @@
 import * as api from "./api";
-import { dict, compute } from "@fast-crud/fast-crud";
+import { dict, compute, utils } from "@fast-crud/fast-crud";
 import { message } from "ant-design-vue";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
@@ -29,9 +29,15 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         delRequest
       },
       rowHandle: {
-        width: 290,
+        width: 240,
+        align: "left",
         buttons: {
+          edit: {
+            thin: true,
+            type: "primary"
+          },
           remove: {
+            type: "primary",
             // 根据row的值判断按钮是否显示
             show: compute(({ row }) => {
               return row.radio !== "0";
@@ -41,10 +47,11 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           orderExample: {
             text: "我排前面",
             title: "按钮排序示例",
-            type: "link",
+            type: "primary",
+            icon: "SearchOutlined",
             order: 0, //数字越小，越靠前,默认排序号为1
             click(opts) {
-              console.log("自定义操作列按钮点击", opts);
+              utils.logger.log("自定义操作列按钮点击", opts);
               message.success("自定义操作列按钮点击");
             }
           }
@@ -56,6 +63,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           more: {
             text: "更多",
             icon: null,
+            thin: false,
+            type: "primary",
             iconRight: "ion:caret-down-outline"
           }
         }

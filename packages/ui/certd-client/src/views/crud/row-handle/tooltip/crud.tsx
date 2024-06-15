@@ -1,5 +1,5 @@
 import * as api from "./api";
-import { dict } from "@fast-crud/fast-crud";
+import {dict, utils} from "@fast-crud/fast-crud";
 import { ref } from "vue";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
@@ -60,7 +60,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               }
             },
             click() {
-              console.log("test");
+              utils.logger.log("test");
             }
           }
         }

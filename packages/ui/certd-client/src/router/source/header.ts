@@ -54,14 +54,14 @@ export const headerResource = [
         children: [
           {
             title: "github",
-            path: "http://github.com/fast-crud/fs-admin-antdv",
+            path: "http://github.com/fast-crud/fs-admin-antdv4",
             meta: {
               icon: "ion:logo-github"
             }
           },
           {
             title: "gitee",
-            path: "http://gitee.com/fast-crud/fs-admin-antdv",
+            path: "http://gitee.com/fast-crud/fs-admin-antdv4",
             meta: {
               icon: "ion:logo-octocat"
             }

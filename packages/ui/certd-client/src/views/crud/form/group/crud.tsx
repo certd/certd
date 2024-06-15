@@ -60,9 +60,16 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         },
         content: {
           title: "详情",
-          type: "editor-ueditor",
+          type: "editor-wang5",
           form: {
-            labelWidth: "0px"
+            labelCol: {
+              style: {
+                width: "0px"
+              }
+            },
+            col: {
+              span: 24
+            }
           }
         },
         slotField: {
@@ -124,7 +131,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             info: {
               header: "详情",
               collapsed: true, //默认折叠
-              columns: ["intro", "content", "slotField"]
+              columns: ["intro", "slotField", "content"]
             },
             hiddenTest: {
               header: "分组隐藏测试", //如果组里面的所有的组件都配置了隐藏,则本分组隐藏

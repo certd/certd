@@ -6,10 +6,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     const list = await api.GetTree();
 
     return {
-      current: 1,
+      offset: 0,
       records: list,
       total: 10000,
-      pageSize: 10000
+      limit: 10000
     };
   };
 

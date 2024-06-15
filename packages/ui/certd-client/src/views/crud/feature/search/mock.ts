@@ -18,6 +18,18 @@ const list = [
   {
     radio: "0",
     text: "3"
+  },
+  {
+    radio: "1",
+    text: "2"
+  },
+  {
+    radio: "1",
+    text: "3"
+  },
+  {
+    radio: "0",
+    text: "1"
   }
 ];
 options.list = list;

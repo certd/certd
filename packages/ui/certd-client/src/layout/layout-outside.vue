@@ -5,10 +5,10 @@
       <div class="user-layout-content">
         <div class="top flex flex-col items-center justify-center">
           <div class="header flex flex-row items-center">
-            <img src="/images/logo/rect-black.svg" class="logo" alt="logo" />
-            <span class="title">FsAdmin</span>
+            <img :src="envRef.LOGO_PATH" class="logo" alt="logo" />
+            <span class="title">{{ envRef.TITLE }}</span>
           </div>
-          <div class="desc">fast-crud，开发crud快如闪电</div>
+          <div class="desc">{{ envRef.SLOGAN }}</div>
         </div>
 
         <router-view />
@@ -19,15 +19,24 @@
             <a href="_self">隐私</a>
             <a href="_self">条款</a>
           </div>
-          <div class="copyright">Copyright &copy; 2021 Greper</div>
+          <div class="copyright">{{ envRef.COPYRIGHT }}</div>
         </div>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
+import { env } from "/@/utils/util.env";
+import { ref } from "vue";
+
 export default {
-  name: "LayoutOutside"
+  name: "LayoutOutside",
+  setup() {
+    const envRef = ref(env);
+    return {
+      envRef
+    };
+  }
 };
 </script>
 

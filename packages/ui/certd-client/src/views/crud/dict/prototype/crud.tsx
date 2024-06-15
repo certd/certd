@@ -1,5 +1,5 @@
 import * as api from "./api";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, ValueChangeContext } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, utils } from "@fast-crud/fast-crud";
 import { requestForMock } from "../../../../api/service";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
@@ -80,7 +80,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               vModel: "checked"
             },
             valueChange({ form, value, getComponentRef }) {
-              console.log("form", value);
+              utils.logger.info("form", value);
               const targetDict = getComponentRef("remote").getDict();
               targetDict.url = form.modifyDict ? "/mock/dicts/moreOpenStatusEnum?remote" : "/mock/dicts/OpenStatusEnum?remote";
               targetDict.reloadDict();
@@ -92,7 +92,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               vModel: "checked"
             },
             valueChange({ value, getComponentRef }) {
-              console.log("value", value);
+              utils.logger.info("value", value);
               const targetDict = getComponentRef("remote").getDict();
               targetDict.url = value ? "/mock/dicts/moreOpenStatusEnum?remote" : "/mock/dicts/OpenStatusEnum?remote";
               targetDict.reloadDict();

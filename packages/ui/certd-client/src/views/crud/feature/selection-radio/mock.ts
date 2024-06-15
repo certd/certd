@@ -1,6 +1,6 @@
 import mockUtil from "/src/mock/base";
 const options: any = {
-  name: "FeatureSelection",
+  name: "FeatureSelectionRadio",
   idGenerator: 0
 };
 const list = [
@@ -8,7 +8,8 @@ const list = [
     radio: "1"
   },
   {
-    radio: "2"
+    radio: "2",
+    children: [{ radio: "2" }, { radio: "0", children: [{ radio: "1" }] }]
   },
   {
     radio: "0"

@@ -1,6 +1,7 @@
 import { mock } from "../api/service";
 import * as tools from "../api/tools";
 import _ from "lodash-es";
+import { utils } from "@fast-crud/fast-crud";
 // @ts-ignore
 const commonMocks: any = import.meta.glob("./common/mock.*.[j|t]s", { eager: true });
 // @ts-ignore
@@ -22,8 +23,8 @@ _.forEach(viewMocks, (value) => {
 list.forEach((apiFile: any) => {
   for (const item of apiFile) {
     mock.onAny(new RegExp(item.path)).reply(async (config: any) => {
-      console.log("------------fake request start -------------");
-      console.log("request:", config);
+      utils.logger.debug("------------fake request start -------------");
+      utils.logger.debug("request:", config);
       const data = config.data ? JSON.parse(config.data) : {};
       const query = config.url.indexOf("?") >= 0 ? config.url.substring(config.url.indexOf("?") + 1) : undefined;
       const params = config.params || {};
@@ -40,8 +41,8 @@ list.forEach((apiFile: any) => {
         params: params
       };
       const ret = await item.handle(req);
-      console.log("response:", ret);
-      console.log("------------fake request end-------------");
+      utils.logger.debug("response:", ret);
+      utils.logger.debug("------------fake request end-------------");
       if (ret.code === 0) {
         return tools.responseSuccess(ret.data, ret.msg);
       } else {
