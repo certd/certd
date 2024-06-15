@@ -30,6 +30,7 @@ export class ResetPasswdMiddleware implements IWebMiddleware {
           '1号管理员密码已修改为123456，当前为重置密码模式，无法响应请求，请关闭重置密码模式恢复正常服务'
         );
       }
+      await next();
     };
   }
 

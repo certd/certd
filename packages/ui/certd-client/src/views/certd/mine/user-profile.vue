@@ -1,7 +1,10 @@
 <template>
-  <fs-page>
-    <div class="p-4">
-      <a-descriptions title="我的信息" bordered>
+  <fs-page class="page-user-profile">
+    <template #header>
+      <div class="title">我的信息</div>
+    </template>
+    <div class="p-10">
+      <a-descriptions title="" bordered>
         <a-descriptions-item label="用户名">{{ userInfo.userInfoname }}</a-descriptions-item>
         <a-descriptions-item label="昵称">{{ userInfo.nickName }}</a-descriptions-item>
         <a-descriptions-item label="邮箱">{{ userInfo.email }}</a-descriptions-item>
