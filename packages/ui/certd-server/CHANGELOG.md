@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.12](https://github.com/fast-crud/fast-server-js/compare/v1.20.10...v1.20.12) (2024-06-17)
+
+### Bug Fixes
+
+* 修复aliyun域名超过100个找不到域名的bug ([5b1494b](https://github.com/fast-crud/fast-server-js/commit/5b1494b3ce93d1026dc56ee741342fbb8bf7be24))
+
+### Performance Improvements
+
+* 增加系统设置，可以关闭自助注册功能 ([20feace](https://github.com/fast-crud/fast-server-js/commit/20feacea12d43386540db6a600f391d786be4014))
+* 增加cloudflare access token说明 ([934e6e2](https://github.com/fast-crud/fast-server-js/commit/934e6e2bd05387cd50ffab95f230933543954098))
+* 支持重置管理员密码，忘记密码的补救方案 ([732cbc5](https://github.com/fast-crud/fast-server-js/commit/732cbc5e927b526850724594830392b2f10c6705))
+* 支持cloudflare域名 ([fbb9a47](https://github.com/fast-crud/fast-server-js/commit/fbb9a47e8f7bb805289b9ee64bd46ffee0f01c06))
+
 ## [1.20.10](https://github.com/fast-crud/fast-server-js/compare/v1.20.9...v1.20.10) (2024-05-30)
 
 ### Performance Improvements
