@@ -11,6 +11,7 @@ import { CertInfo, CertReader } from '@certd/plugin-cert';
 @IsTaskPlugin({
   name: 'CloudflareDeployToCDN',
   title: '部署证书到CF CDN',
+  desc: '暂未实现，不可用',
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,

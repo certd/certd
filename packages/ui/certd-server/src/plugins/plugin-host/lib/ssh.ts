@@ -1,5 +1,5 @@
 // @ts-ignore
-import ssh2 from 'ssh2';
+import ssh2, { ConnectConfig } from 'ssh2';
 import path from 'path';
 import _ from 'lodash';
 import { ILogger } from '@certd/pipeline';
@@ -19,7 +19,7 @@ export class SshClient {
          }
    * @param options
    */
-  uploadFiles(options: { connectConf: any; transports: any }) {
+  uploadFiles(options: { connectConf: ConnectConfig; transports: any }) {
     const { connectConf, transports } = options;
     const conn = new ssh2.Client();
 
@@ -53,7 +53,10 @@ export class SshClient {
     });
   }
 
-  exec(options: { connectConf: any; script: string | Array<string> }) {
+  exec(options: {
+    connectConf: ConnectConfig;
+    script: string | Array<string>;
+  }) {
     let { script } = options;
     const { connectConf } = options;
     if (_.isArray(script)) {
@@ -99,7 +102,7 @@ export class SshClient {
     });
   }
 
-  shell(options: { connectConf: any; script: string }) {
+  shell(options: { connectConf: ConnectConfig; script: string }) {
     const { connectConf, script } = options;
     return new Promise((resolve, reject) => {
       this.connect({
@@ -132,7 +135,7 @@ export class SshClient {
     });
   }
 
-  connect(options: { connectConf: any; onReady: any; onError: any }) {
+  connect(options: { connectConf: ConnectConfig; onReady: any; onError: any }) {
     const { connectConf, onReady, onError } = options;
     const conn = new ssh2.Client();
     conn

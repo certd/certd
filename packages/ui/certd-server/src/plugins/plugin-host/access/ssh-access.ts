@@ -1,4 +1,5 @@
 import { AccessInput, IAccess, IsAccess } from '@certd/pipeline';
+import { ConnectConfig } from 'ssh2';
 
 @IsAccess({
   name: 'ssh',
@@ -6,7 +7,7 @@ import { AccessInput, IAccess, IsAccess } from '@certd/pipeline';
   desc: '',
   input: {},
 })
-export class SshAccess implements IAccess {
+export class SshAccess implements IAccess, ConnectConfig {
   @AccessInput({
     title: '主机地址',
     component: {
@@ -19,11 +20,12 @@ export class SshAccess implements IAccess {
     title: '端口',
     value: '22',
     component: {
+      name: 'a-input-number',
       placeholder: '22',
     },
     rules: [{ required: true, message: '此项必填' }],
   })
-  port!: string;
+  port!: number;
   @AccessInput({
     title: '用户名',
     value: 'root',
@@ -40,14 +42,24 @@ export class SshAccess implements IAccess {
   })
   password!: string;
   @AccessInput({
-    title: '密钥',
-    helper: '密钥或密码必填一项',
+    title: '私钥登录',
+    helper: '私钥或密码必填一项',
     component: {
       name: 'a-textarea',
       vModel: 'value',
     },
   })
   privateKey!: string;
+
+  @AccessInput({
+    title: '私钥密码',
+    helper: '如果你的私钥有密码的话',
+    component: {
+      name: 'a-input-password',
+      vModel: 'value',
+    },
+  })
+  passphrase!: string;
 }
 
 new SshAccess();
