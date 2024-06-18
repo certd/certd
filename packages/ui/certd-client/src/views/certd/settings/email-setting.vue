@@ -5,11 +5,11 @@
     </template>
     <div class="email-form">
       <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish" @finish-failed="onFinishFailed">
-        <a-form-item label="STMP域名" name="host" :rules="[{ required: true, message: '请输入smtp域名或ip' }]">
+        <a-form-item label="SMTP域名" name="host" :rules="[{ required: true, message: '请输入smtp域名或ip' }]">
           <a-input v-model:value="formState.host" />
         </a-form-item>
 
-        <a-form-item label="STMP端口" name="port" :rules="[{ required: true, message: '请输入smtp端口号' }]">
+        <a-form-item label="SMTP端口" name="port" :rules="[{ required: true, message: '请输入smtp端口号' }]">
           <a-input v-model:value="formState.port" />
         </a-form-item>
 
