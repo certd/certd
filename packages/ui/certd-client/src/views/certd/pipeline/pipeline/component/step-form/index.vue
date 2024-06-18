@@ -1,7 +1,7 @@
 <template>
   <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="600px" @after-open-change="stepDrawerOnAfterVisibleChange">
     <template #title>
-      编辑任务
+      编辑步骤
       <a-button v-if="editMode" @click="stepDelete()">
         <template #icon><DeleteOutlined /></template>
       </a-button>

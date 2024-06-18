@@ -65,7 +65,6 @@ function install(app: App, options: any = {}) {
             view: { type: "link", text: null, icon: "ion:eye-outline" },
             copy: { show: true, type: "link", text: null, icon: "ion:copy-outline" },
             edit: { type: "link", text: null, icon: "ion:create-outline" },
-            copy: {show:true,type: "link", text: null, icon: "ion:copy-outline"},
             remove: { type: "link", style: { color: "red" }, text: null, icon: "ion:trash-outline" }
           },
           dropdown: {
@@ -126,16 +125,17 @@ function install(app: App, options: any = {}) {
           }
         },
         columns: {
-          createdAt: {
-            title: "创建时间",
-            type: "datetime",
-            form: {
-              show: false
-            },
-            column: {
-              order: 1000
-            }
-          }
+          // createdAt: {
+          //   title: "创建时间",
+          //   type: "datetime",
+          //   form: {
+          //     show: false
+          //   },
+          //   column: {
+          //     show: false,
+          //     order: 1000
+          //   }
+          // }
         }
       };
 

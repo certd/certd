@@ -4,16 +4,16 @@
       <div class="title-line">Certd v{{ version }}</div>
     </div>
     <p class="d2-page-cover__sub-title">让你的证书永不过期</p>
+    <div class="warnning">
+      <a-alert description="证书和授权信息为敏感信息，不要使用来历不明的在线CertD服务，请务必私有化部署使用，认准官方版本发布渠道【github、gitee】" type="warning" show-icon />
+    </div>
     <div class="content">
       <img src="/images/preview.png" class="preview_img" />
     </div>
     <div class="footer_box">
-      <div class="left"></div>
-      <div class="right">
-        <div>如果觉得好用，请不要吝啬你的star哟！</div>
-        <a href="https://gitee.com/certd/certd" target="_blank"><img src="https://gitee.com/certd/certd/badge/star.svg?theme=dark" alt="star" /></a>
-        <a href="https://github.com/certd/certd" target="_blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/certd/certd?logo=github" /></a>
-      </div>
+      <div>如果觉得好用，请不要吝啬你的star哟！</div>
+      <a href="https://gitee.com/certd/certd" target="_blank"><img src="https://gitee.com/certd/certd/badge/star.svg?theme=dark" alt="star" /></a>
+      <a href="https://github.com/certd/certd" target="_blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/certd/certd?logo=github" /></a>
     </div>
   </div>
 </template>
