@@ -8,7 +8,7 @@
             <pi-status-show :status="item.node.status?.result" type="icon"></pi-status-show>
           </div>
         </template>
-        <pre class="pi-task-view-logs"><template v-for="(text, index) of item.logs" :key="index">{{ text }}</template></pre>
+        <pre class="pi-task-view-logs" style="overflow: auto;"><template v-for="(text, index) of item.logs" :key="index">{{ text }}</template></pre>
       </a-tab-pane>
     </a-tabs>
   </a-modal>
