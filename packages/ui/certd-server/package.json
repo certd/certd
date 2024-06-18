@@ -1,6 +1,6 @@
 {
   "name": "@certd/ui-server",
-  "version": "1.20.12",
+  "version": "1.20.13",
   "description": "fast-server base midway",
   "private": true,
   "scripts": {
@@ -24,10 +24,10 @@
     "@alicloud/cs20151215": "^3.0.3",
     "@alicloud/openapi-client": "^0.4.0",
     "@alicloud/pop-core": "^1.7.10",
-    "@certd/acme-client": "^1.20.12",
-    "@certd/pipeline": "^1.20.12",
-    "@certd/plugin-cert": "^1.20.12",
-    "@certd/plugin-util": "^1.20.12",
+    "@certd/acme-client": "^1.20.13",
+    "@certd/pipeline": "^1.20.13",
+    "@certd/plugin-cert": "^1.20.13",
+    "@certd/plugin-util": "^1.20.13",
     "@koa/cors": "^3.4.3",
     "@midwayjs/bootstrap": "^3.15.0",
     "@midwayjs/cache": "^3.14.0",

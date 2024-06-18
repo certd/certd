@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.13](https://github.com/fast-crud/fast-server-js/compare/v1.20.12...v1.20.13) (2024-06-18)
+
+### Performance Improvements
+
+* ssh登录支持openssh格式私钥、支持私钥密码 ([5c2c508](https://github.com/fast-crud/fast-server-js/commit/5c2c50839a9076004f9034d754ac6deb531acdfb))
+
 ## [1.20.12](https://github.com/fast-crud/fast-server-js/compare/v1.20.10...v1.20.12) (2024-06-17)
 
 ### Bug Fixes
