@@ -1,9 +1,16 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
-import { SshClient } from "../../lib/ssh";
+import {
+  AbstractTaskPlugin,
+  IAccessService,
+  ILogger,
+  IsTaskPlugin,
+  RunStrategy,
+  TaskInput,
+} from '@certd/pipeline';
+import { SshClient } from '../../lib/ssh';
 
 @IsTaskPlugin({
-  name: "hostShellExecute",
-  title: "执行远程主机脚本命令",
+  name: 'hostShellExecute',
+  title: '执行远程主机脚本命令',
   input: {},
   default: {
     strategy: {
@@ -14,20 +21,20 @@ import { SshClient } from "../../lib/ssh";
 })
 export class HostShellExecutePlugin extends AbstractTaskPlugin {
   @TaskInput({
-    title: "主机登录配置",
-    helper: "登录",
+    title: '主机登录配置',
+    helper: '登录',
     component: {
-      name: "pi-access-selector",
-      type: "ssh",
+      name: 'pi-access-selector',
+      type: 'ssh',
     },
     required: true,
   })
   accessId!: string;
   @TaskInput({
-    title: "shell脚本命令",
+    title: 'shell脚本命令',
     component: {
-      name: "a-textarea",
-      vModel: "value",
+      name: 'a-textarea',
+      vModel: 'value',
     },
   })
   script!: string;
@@ -46,7 +53,7 @@ export class HostShellExecutePlugin extends AbstractTaskPlugin {
       connectConf,
       script,
     });
-    this.logger.info("exec res:", ret);
+    this.logger.info('exec res:', ret);
   }
 }
 
