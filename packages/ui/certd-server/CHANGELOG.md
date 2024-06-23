@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.14](https://github.com/fast-crud/fast-server-js/compare/v1.20.13...v1.20.14) (2024-06-23)
+
+**Note:** Version bump only for package @certd/ui-server
+
 ## [1.20.13](https://github.com/fast-crud/fast-server-js/compare/v1.20.12...v1.20.13) (2024-06-18)
 
 ### Performance Improvements
