@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.1](https://github.com/fast-crud/fast-crud/compare/v1.21.0...v1.21.1) (2024-06-23)
+
+### Bug Fixes
+
+* 修复独立使用对话框 openDialog方法await无返回值的bug ([0cc22fd](https://github.com/fast-crud/fast-crud/commit/0cc22fd2ad57b8e3e85174ced1546bb6a90ed838))
+
 # [1.21.0](https://github.com/fast-crud/fast-crud/compare/v1.20.2...v1.21.0) (2024-06-08)
 
 ### Bug Fixes
