@@ -18,12 +18,14 @@
         </a-form-item>
         <a-form-item label="密码" :name="['auth', 'pass']" :rules="[{ required: true, message: '请输入密码' }]">
           <a-input-password v-model:value="formState.auth.pass" />
+          <div class="helper">如果是qq邮箱，需要到qq邮箱的设置里面申请授权码作为密码</div>
         </a-form-item>
         <a-form-item label="发件邮箱" name="sender" :rules="[{ required: true, message: '请输入发件邮箱' }]">
           <a-input v-model:value="formState.sender" />
         </a-form-item>
         <a-form-item label="是否ssl" name="secure">
           <a-switch v-model:checked="formState.secure" />
+          <div class="helper">ssl和非ssl的smtp端口是不一样的，注意修改端口</div>
         </a-form-item>
         <a-form-item label="忽略证书校验" name="tls.rejectUnauthorized">
           <a-switch v-model:checked="formState.tls.rejectUnauthorized" />
@@ -123,6 +125,13 @@ async function onTestSend() {
   .email-form {
     width: 500px;
     margin: 20px;
+  }
+
+  .helper{
+    padding:1px;
+    margin:0px;
+    color: #999;
+    font-size: 10px;
   }
 }
 </style>
