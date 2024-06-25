@@ -31,6 +31,7 @@ export class AsyncSsh2Client {
   }
   async getSftp() {
     return new Promise((resolve, reject) => {
+      this.logger.info('获取sftp');
       this.conn.sftp((err: any, sftp: any) => {
         if (err) {
           reject(err);
@@ -44,6 +45,7 @@ export class AsyncSsh2Client {
   async fastPut(options: { sftp: any; localPath: string; remotePath: string }) {
     const { sftp, localPath, remotePath } = options;
     return new Promise((resolve, reject) => {
+      this.logger.info(`上传文件：${localPath} => ${remotePath}`);
       sftp.fastPut(localPath, remotePath, (err: Error) => {
         if (err) {
           reject(err);
@@ -56,6 +58,7 @@ export class AsyncSsh2Client {
 
   async exec(script: string) {
     return new Promise((resolve, reject) => {
+      this.logger.info(`执行脚本：[${this.connConf.host}][exec]: ` + script);
       this.conn.exec(script, (err: Error, stream: any) => {
         if (err) {
           reject(err);
@@ -84,8 +87,11 @@ export class AsyncSsh2Client {
     });
   }
 
-  async shell(script: string): Promise<string[]> {
+  async shell(script: string | string[]): Promise<string[]> {
     return new Promise<any>((resolve, reject) => {
+      this.logger.info(
+        `执行shell脚本：[${this.connConf.host}][shell]: ` + script
+      );
       this.conn.shell((err: Error, stream: any) => {
         if (err) {
           reject(err);
