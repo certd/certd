@@ -3,6 +3,114 @@ import ssh2, { ConnectConfig } from 'ssh2';
 import path from 'path';
 import _ from 'lodash';
 import { ILogger } from '@certd/pipeline';
+
+export class AsyncSsh2Client {
+  conn: ssh2.Client;
+  logger: ILogger;
+  connConf: ssh2.ConnectConfig;
+  constructor(connConf: ssh2.ConnectConfig, logger: ILogger) {
+    this.connConf = connConf;
+    this.logger = logger;
+  }
+
+  async connect() {
+    this.logger.info(`开始连接，${this.connConf.host}:${this.connConf.port}`);
+    return new Promise((resolve, reject) => {
+      const conn = new ssh2.Client();
+      conn
+        .on('error', (err: any) => {
+          reject(err);
+        })
+        .on('ready', () => {
+          this.logger.info('连接成功');
+          this.conn = conn;
+          resolve(this.conn);
+        })
+        .connect(this.connConf);
+    });
+  }
+  async getSftp() {
+    return new Promise((resolve, reject) => {
+      this.conn.sftp((err: any, sftp: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(sftp);
+      });
+    });
+  }
+
+  async fastPut(options: { sftp: any; localPath: string; remotePath: string }) {
+    const { sftp, localPath, remotePath } = options;
+    return new Promise((resolve, reject) => {
+      sftp.fastPut(localPath, remotePath, (err: Error) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve({});
+      });
+    });
+  }
+
+  async exec(script: string) {
+    return new Promise((resolve, reject) => {
+      this.conn.exec(script, (err: Error, stream: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        let data: any = null;
+        stream
+          .on('close', (code: any, signal: any) => {
+            this.logger.info(`[${this.connConf.host}][close]:code:${code}`);
+            data = data ? data.toString() : null;
+            if (code === 0) {
+              resolve(data);
+            } else {
+              reject(new Error(data));
+            }
+          })
+          .on('data', (ret: any) => {
+            this.logger.info(`[${this.connConf.host}][info]: ` + ret);
+            data = ret;
+          })
+          .stderr.on('data', (err: Error) => {
+            this.logger.info(`[${this.connConf.host}][error]: ` + err);
+            data = err;
+          });
+      });
+    });
+  }
+
+  async shell(script: string): Promise<string[]> {
+    return new Promise<any>((resolve, reject) => {
+      this.conn.shell((err: Error, stream: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        const output: string[] = [];
+        stream
+          .on('close', () => {
+            this.logger.info('Stream :: close');
+            resolve(output);
+          })
+          .on('data', (data: any) => {
+            this.logger.info('' + data);
+            output.push('' + data);
+          });
+        stream.end(script + '\nexit\n');
+      });
+    });
+  }
+  end() {
+    if (this.conn) {
+      this.conn.end();
+    }
+  }
+}
 export class SshClient {
   logger: ILogger;
   constructor(logger: ILogger) {
@@ -19,41 +127,23 @@ export class SshClient {
          }
    * @param options
    */
-  uploadFiles(options: { connectConf: ConnectConfig; transports: any }) {
+  async uploadFiles(options: { connectConf: ConnectConfig; transports: any }) {
     const { connectConf, transports } = options;
-    const conn = new ssh2.Client();
-    this.logger.info('开始连接服务器');
-    return new Promise((resolve, reject) => {
-      conn
-        .on('ready', () => {
-          this.logger.info('连接服务器成功');
-          conn.sftp(async (err: any, sftp: any) => {
-            if (err) {
-              throw err;
-            }
-
-            try {
-              for (const transport of transports) {
-                this.logger.info('上传文件：', JSON.stringify(transport));
-                await this.exec({
-                  connectConf,
-                  script: `mkdir -p ${path.dirname(transport.remotePath)} `,
-                });
-                await this.fastPut({ sftp, ...transport });
-              }
-              resolve({});
-            } catch (e) {
-              reject(e);
-            } finally {
-              conn.end();
-            }
-          });
-        })
-        .connect(connectConf);
+    await this._call({
+      connectConf,
+      callable: async (conn: AsyncSsh2Client) => {
+        const sftp = await conn.getSftp();
+        for (const transport of transports) {
+          this.logger.info('上传文件：', JSON.stringify(transport));
+          await conn.exec(`mkdir -p ${path.dirname(transport.remotePath)} `);
+          await conn.fastPut({ sftp, ...transport });
+        }
+        this.logger.info('文件上传成功');
+      },
     });
   }
 
-  exec(options: {
+  async exec(options: {
     connectConf: ConnectConfig;
     script: string | Array<string>;
   }) {
@@ -64,102 +154,38 @@ export class SshClient {
       script = script.join('\n');
     }
     this.logger.info('执行命令：', script);
-    return new Promise((resolve, reject) => {
-      this.connect({
-        connectConf,
-        onError(err: any) {
-          reject(err);
-        },
-        onReady: (conn: any) => {
-          conn.exec(script, (err: Error, stream: any) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            let data: any = null;
-            stream
-              .on('close', (code: any, signal: any) => {
-                this.logger.info(`[${connectConf.host}][close]:code:${code}`);
-                data = data ? data.toString() : null;
-                if (code === 0) {
-                  resolve(data);
-                } else {
-                  reject(new Error(data));
-                }
-                conn.end();
-              })
-              .on('data', (ret: any) => {
-                this.logger.info(`[${connectConf.host}][info]: ` + ret);
-                data = ret;
-              })
-              .stderr.on('data', (err: Error) => {
-                this.logger.info(`[${connectConf.host}][error]: ` + err);
-                data = err;
-              });
-          });
-        },
-      });
+    return await this._call({
+      connectConf,
+      callable: async (conn: AsyncSsh2Client) => {
+        return await conn.exec(script as string);
+      },
     });
   }
 
-  shell(options: { connectConf: ConnectConfig; script: string }) {
+  async shell(options: {
+    connectConf: ConnectConfig;
+    script: string;
+  }): Promise<string[]> {
     const { connectConf, script } = options;
-    return new Promise((resolve, reject) => {
-      this.connect({
-        connectConf,
-        onError: (err: any) => {
-          this.logger.error(err);
-          reject(err);
-        },
-        onReady: (conn: any) => {
-          conn.shell((err: Error, stream: any) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            const output: any = [];
-            stream
-              .on('close', () => {
-                this.logger.info('Stream :: close');
-                conn.end();
-                resolve(output);
-              })
-              .on('data', (data: any) => {
-                this.logger.info('' + data);
-                output.push('' + data);
-              });
-            stream.end(script + '\nexit\n');
-          });
-        },
-      });
+    return await this._call({
+      connectConf,
+      callable: async (conn: AsyncSsh2Client) => {
+        return await conn.shell(script as string);
+      },
     });
   }
 
-  connect(options: { connectConf: ConnectConfig; onReady: any; onError: any }) {
-    const { connectConf, onReady, onError } = options;
-    const conn = new ssh2.Client();
-    conn
-      .on('error', (err: any) => {
-        onError(err);
-      })
-      .on('ready', () => {
-        this.logger.info('Client :: ready');
-        onReady(conn);
-      })
-      .connect(connectConf);
-    return conn;
-  }
-
-  fastPut(options: { sftp: any; localPath: string; remotePath: string }) {
-    const { sftp, localPath, remotePath } = options;
-    return new Promise((resolve, reject) => {
-      sftp.fastPut(localPath, remotePath, (err: Error) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve({});
-      });
-    });
+  async _call(options: {
+    connectConf: ConnectConfig;
+    callable: any;
+  }): Promise<string[]> {
+    const { connectConf, callable } = options;
+    const conn = new AsyncSsh2Client(connectConf, this.logger);
+    await conn.connect();
+    try {
+      return await callable(conn);
+    } finally {
+      conn.end();
+    }
   }
 }
