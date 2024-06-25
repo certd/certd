@@ -98,11 +98,12 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const { crtPath, keyPath, cert, accessId } = this;
     const certReader = new CertReader(cert);
-
+    this.logger.info('将证书写入本地缓存文件');
     const saveCrtPath = certReader.saveToFile('crt');
     const saveKeyPath = certReader.saveToFile('key');
 
     if (this.copyToThisHost) {
+      this.logger.info('复制到目标路径');
       this.copyFile(saveCrtPath, crtPath);
       this.copyFile(saveKeyPath, keyPath);
       this.logger.info('证书复制成功：crtPath=', crtPath, ',keyPath=', keyPath);
@@ -110,6 +111,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
       if (!accessId) {
         throw new Error('主机登录授权配置不能为空');
       }
+      this.logger.info('开始连接服务器');
       const connectConf = await this.accessService.getById(accessId);
       const sshClient = new SshClient(this.logger);
       await sshClient.uploadFiles({
