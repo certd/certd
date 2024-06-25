@@ -32,7 +32,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   crtPath!: string;
   @TaskInput({
     title: '私钥保存路径',
-    helper: '需要有写入权限，路径要包含私钥文件名',
+    helper: '需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号',
     component: {
       placeholder: '/root/deploy/nginx/cert.key',
     },
