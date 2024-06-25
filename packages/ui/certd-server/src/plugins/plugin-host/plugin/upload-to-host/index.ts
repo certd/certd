@@ -24,7 +24,7 @@ import * as fs from 'fs';
 export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: '证书保存路径',
-    helper: '需要有写入权限，路径要包含证书文件名',
+    helper: '需要有写入权限，路径要包含证书文件名，文件名不能用*?!等特殊符号',
     component: {
       placeholder: '/root/deploy/nginx/cert.crt',
     },
