@@ -90,7 +90,7 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
       vModel: "value",
     },
     required: true,
-    helper: "到期前多少天后更新证书",
+    helper: "到期前多少天后更新证书，注意：流水线默认不会自动运行，请设置定时器，每天定时运行本流水线",
   })
   renewDays!: number;
 
@@ -106,8 +106,15 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: "CsrInfo",
+    helper: "暂时没有用",
   })
   csrInfo!: string;
+
+  @TaskInput({
+    title: "配置说明",
+    helper: "运行策略请选择总是运行，其他证书部署任务请选择成功后跳过；当证书快到期前将会自动重新申请证书，然后会清空后续任务的成功状态，部署任务将会重新运行",
+  })
+  intro!: string;
 
   acme!: AcmeService;
   logger!: Logger;
