@@ -111,7 +111,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
       if (!accessId) {
         throw new Error('主机登录授权配置不能为空');
       }
-      this.logger.info('开始连接服务器');
+      this.logger.info('准备上传到服务器');
       const connectConf = await this.accessService.getById(accessId);
       const sshClient = new SshClient(this.logger);
       await sshClient.uploadFiles({

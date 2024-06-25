@@ -22,7 +22,7 @@ export class SshClient {
   uploadFiles(options: { connectConf: ConnectConfig; transports: any }) {
     const { connectConf, transports } = options;
     const conn = new ssh2.Client();
-
+    this.logger.info('开始连接服务器');
     return new Promise((resolve, reject) => {
       conn
         .on('ready', () => {
