@@ -4,6 +4,7 @@
 
 const { readCsrDomains } = require('./crypto');
 const { log } = require('./logger');
+const { wait } = require('./wait');
 
 const defaultOpts = {
     csr: null,
@@ -118,7 +119,18 @@ module.exports = async function(client, userOpts) {
             let recordItem = null;
             try {
                 recordItem = await opts.challengeCreateFn(authz, challenge, keyAuthorization);
-
+                log(`[auto] [${d}] challengeCreateFn success`);
+                log(`[auto] [${d}] add challengeRemoveFn()`);
+                clearTasks.push(async () => {
+                    /* Trigger challengeRemoveFn(), suppress errors */
+                    log(`[auto] [${d}] Trigger challengeRemoveFn()`);
+                    try {
+                        await opts.challengeRemoveFn(authz, challenge, keyAuthorization, recordItem);
+                    }
+                    catch (e) {
+                        log(`[auto] [${d}] challengeRemoveFn threw error: ${e.message}`);
+                    }
+                });
                 // throw new Error('测试异常');
                 /* Challenge verification */
                 if (opts.skipChallengeVerification === true) {
@@ -139,19 +151,6 @@ module.exports = async function(client, userOpts) {
             catch (e) {
                 log(`[auto] [${d}] challengeCreateFn threw error: ${e.message}`);
                 throw e;
-            }
-            finally {
-                log(`[auto] [${d}] add challengeRemoveFn()`);
-                clearTasks.push(async () => {
-                    /* Trigger challengeRemoveFn(), suppress errors */
-                    log(`[auto] [${d}] Trigger challengeRemoveFn()`);
-                    try {
-                        await opts.challengeRemoveFn(authz, challenge, keyAuthorization, recordItem);
-                    }
-                    catch (e) {
-                        log(`[auto] [${d}] challengeRemoveFn threw error: ${e.message}`);
-                    }
-                });
             }
         }
         catch (e) {
@@ -186,14 +185,21 @@ module.exports = async function(client, userOpts) {
         return promise;
     }
 
-    // function runPromisePa(tasks) {
-    //     return Promise.all(tasks.map((task) => task()));
-    // }
+    async function runPromisePa(tasks) {
+        const results = [];
+        // eslint-disable-next-line no-await-in-loop,no-restricted-syntax
+        for (const task of tasks) {
+            results.push(task());
+            // eslint-disable-next-line no-await-in-loop
+            await wait(30000);
+        }
+        return Promise.all(results);
+    }
 
 
     try {
         log('开始challenge');
-        await runAllPromise(challengePromises);
+        await runPromisePa(challengePromises);
 
         log('challenge结束');
 

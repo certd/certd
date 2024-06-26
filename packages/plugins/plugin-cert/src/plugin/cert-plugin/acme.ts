@@ -45,7 +45,7 @@ export class AcmeService {
       directoryUrl: isTest ? acme.directory.letsencrypt.staging : acme.directory.letsencrypt.production,
       accountKey: conf.key,
       accountUrl: conf.accountUrl,
-      backoffAttempts: 20,
+      backoffAttempts: 60,
       backoffMin: 5000,
       backoffMax: 10000,
     });
