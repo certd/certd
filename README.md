@@ -102,8 +102,7 @@ http://your_server_ip:7001
 
 
 
-## 五、一些说明及问题处理
-### 1. 一些说明
+## 五、一些说明
 * 本项目ssl证书提供商为letencrypt
 * 申请过程遵循acme协议
 * 需要验证域名所有权，一般有两种方式（目前本项目仅支持dns-01）
@@ -115,8 +114,12 @@ http://your_server_ip:7001
 * 免费证书过期时间90天，以后可能还会缩短，所以自动化部署必不可少
 * 设置每天自动运行，当证书过期前20天，会自动重新申请证书并部署
 
-### 2. 问题处理
-#### 2.1 忘记管理员密码   
+## 六、不同平台的设置说明
+
+* [Cloudflare](./doc/cf/cf.md)
+
+## 七、问题处理
+### 6.1 忘记管理员密码   
 解决方法如下：
 1. 修改docker-compose.yaml文件，将环境变量`certd_system_resetAdminPassword`改为`true`
 ```yaml
@@ -138,7 +141,7 @@ docker compose up -d
 ```
 5. 使用admin/123456登录系统，请及时修改管理员密码
 
-## 六、联系作者
+## 八、联系作者
 如有疑问，欢迎加入群聊（请备注certd）
 * QQ群：141236433
 * 微信群：   
@@ -150,7 +153,7 @@ docker compose up -d
 <img height="230" src="./doc/images/me.png">
 </p>
 
-## 捐赠
+## 九、捐赠
 媳妇儿说：“一天到晚搞开源，也不管管老婆孩子！😡😡😡”        
 拜托各位捐赠支持一下，让媳妇儿开心开心，我也能有更多时间进行开源项目，感谢🙏🙏🙏
 <p align="center">
@@ -158,12 +161,12 @@ docker compose up -d
 </p>
 
 
-## 七、贡献代码
+## 十、贡献代码
 
 [贡献插件教程](./plugin.md)
 
 
-## 八、我的其他项目
+## 十一、我的其他项目
 * [袖手GPT](https://ai.handsfree.work/) ChatGPT，国内可用，无需FQ，每日免费额度
 * [fast-crud](https://gitee.com/fast-crud/fast-crud/) 基于vue3的crud快速开发框架
 * [dev-sidecar](https://github.com/docmirror/dev-sidecar/) 直连访问github工具，无需FQ，解决github无法访问的问题
