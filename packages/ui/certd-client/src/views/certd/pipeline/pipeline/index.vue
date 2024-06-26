@@ -81,11 +81,11 @@
                       <fs-icon v-if="editMode" class="add-stage-btn" title="添加新阶段" icon="ion:add-circle" @click="stageAdd(index)"></fs-icon>
                     </div>
                     <div class="task">
-                        <a-button shape="round" @click="taskEdit(stage, index, task, taskIndex)">
-                          {{ task.title }}
-                          <pi-status-show :status="task.status?.result"></pi-status-show>
-                        </a-button>
-                        <fs-icon class="copy" v-if="editMode" title="复制" icon="ion:copy-outline" @click="taskCopy(stage, index, task)"></fs-icon>
+                      <a-button shape="round" @click="taskEdit(stage, index, task, taskIndex)">
+                        {{ task.title }}
+                        <pi-status-show :status="task.status?.result"></pi-status-show>
+                      </a-button>
+                      <fs-icon v-if="editMode" class="copy" title="复制" icon="ion:copy-outline" @click="taskCopy(stage, index, task)"></fs-icon>
                     </div>
                   </div>
                   <div v-if="editMode" class="task-container is-add">
@@ -99,7 +99,6 @@
                           并行任务
                         </a-button>
                       </a-tooltip>
-
                     </div>
                   </div>
                 </div>
@@ -188,7 +187,14 @@
         <a-page-header title="运行历史" sub-title="点任务可查看日志" class="logs-block">
           <a-timeline class="mt-10">
             <template v-for="item of histories" :key="item.id">
-              <pi-history-timeline-item :runnable="item.pipeline" :is-current="currentHistory?.id === item.id" :edit-mode="editMode" @view="historyView(item)" @cancel="historyCancel()"></pi-history-timeline-item>
+              <pi-history-timeline-item
+                :runnable="item.pipeline"
+                :history-id="item.id"
+                :is-current="currentHistory?.id === item.id"
+                :edit-mode="editMode"
+                @view="historyView(item)"
+                @cancel="historyCancel()"
+              ></pi-history-timeline-item>
             </template>
             <a-empty v-if="histories.length === 0"> </a-empty>
           </a-timeline>
@@ -373,7 +379,7 @@ export default defineComponent({
 
       const taskView = useTaskView();
 
-      const taskAdd = (stage: any, stageIndex: number, onSuccess?: any,taskDef?:any) => {
+      const taskAdd = (stage: any, stageIndex: number, onSuccess?: any, taskDef?: any) => {
         currentStageIndex.value = stageIndex;
         currentTaskIndex.value = stage.tasks.length;
         taskFormRef.value.taskAdd((type: any, value: any) => {
@@ -383,17 +389,17 @@ export default defineComponent({
               onSuccess();
             }
           }
-        },taskDef);
+        }, taskDef);
       };
 
-      const taskCopy = (stage: any, stageIndex: number, task: any ) => {
-        task = _.cloneDeep(task)
-        task.id = nanoid()
-        task.title= task.title+"_copy"
+      const taskCopy = (stage: any, stageIndex: number, task: any) => {
+        task = _.cloneDeep(task);
+        task.id = nanoid();
+        task.title = task.title + "_copy";
         for (const step of task.steps) {
-          step.id = nanoid()
+          step.id = nanoid();
         }
-        taskAdd(stage,stageIndex,null,task)
+        taskAdd(stage, stageIndex, null, task);
       };
 
       const taskEdit = (stage: any, stageIndex: number, task: any, taskIndex: number, onSuccess?: any) => {
@@ -423,7 +429,7 @@ export default defineComponent({
         }
       };
 
-      return { taskAdd, taskEdit, taskCopy,taskFormRef, ...taskView };
+      return { taskAdd, taskEdit, taskCopy, taskFormRef, ...taskView };
     }
 
     function useStage(useTaskRet: any) {
@@ -760,10 +766,10 @@ export default defineComponent({
               height: 100%;
               z-index: 2;
 
-              .copy{
+              .copy {
                 position: absolute;
-                right:60px;
-                top:18px;
+                right: 60px;
+                top: 18px;
                 cursor: pointer;
                 &:hover {
                   color: #1890ff;

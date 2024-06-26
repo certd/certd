@@ -36,6 +36,13 @@ const StatusEnum: StatusEnumType = {
     spin: true,
     icon: "ant-design:sync-outlined"
   },
+  canceled: {
+    value: "canceled",
+    label: "已取消",
+    color: "yellow",
+    spin: true,
+    icon: "ant-design:minus-circle-twotone"
+  },
   none: {
     value: "none",
     label: "未运行",

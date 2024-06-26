@@ -236,14 +236,18 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async cancel(historyId: number) {
+  async cancel(historyId) {
     const executor = runningTasks.get(historyId);
     if (executor) {
       await executor.cancel();
     } else {
       const entity = await this.historyService.info(historyId);
+      if(entity == null){
+        return
+      }
       const pipeline: Pipeline = JSON.parse(entity.pipeline);
       pipeline.status.status = ResultType.canceled;
+      pipeline.status.result = ResultType.canceled;
       const runtime = new RunHistory(historyId, null, pipeline);
       await this.saveHistory(runtime);
     }
@@ -291,6 +295,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const entity: HistoryEntity = new HistoryEntity();
     entity.id = parseInt(history.id);
     entity.userId = history.pipeline.userId;
+    entity.status = pipelineEntity.status
     entity.pipeline = JSON.stringify(history.pipeline);
     entity.pipelineId = parseInt(history.pipeline.id);
     await this.historyService.save(entity);

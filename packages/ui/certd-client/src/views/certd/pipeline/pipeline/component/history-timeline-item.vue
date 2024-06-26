@@ -28,6 +28,9 @@ export default defineComponent({
         return {};
       }
     },
+    historyId: {
+      type: Number
+    },
     type: {
       type: String,
       default: "icon"
@@ -59,7 +62,7 @@ export default defineComponent({
         okText: "确认",
         cancelText: "取消",
         onOk: async () => {
-          await api.Cancel(props.runnable.id);
+          await api.Cancel(props.historyId);
           notification.success({
             message: "任务取消成功"
           });
