@@ -45,12 +45,13 @@ export class AsyncSsh2Client {
   async fastPut(options: { sftp: any; localPath: string; remotePath: string }) {
     const { sftp, localPath, remotePath } = options;
     return new Promise((resolve, reject) => {
-      this.logger.info(`上传文件：${localPath} => ${remotePath}`);
+      this.logger.info(`开始上传：${localPath} => ${remotePath}`);
       sftp.fastPut(localPath, remotePath, (err: Error) => {
         if (err) {
           reject(err);
           return;
         }
+        this.logger.info(`上传文件成功：${localPath} => ${remotePath}`);
         resolve({});
       });
     });
@@ -139,12 +140,12 @@ export class SshClient {
       connectConf,
       callable: async (conn: AsyncSsh2Client) => {
         const sftp = await conn.getSftp();
+        this.logger.info('开始上传');
         for (const transport of transports) {
-          this.logger.info('上传文件：', JSON.stringify(transport));
           await conn.exec(`mkdir -p ${path.dirname(transport.remotePath)} `);
           await conn.fastPut({ sftp, ...transport });
         }
-        this.logger.info('文件上传成功');
+        this.logger.info('文件全部上传成功');
       },
     });
   }
