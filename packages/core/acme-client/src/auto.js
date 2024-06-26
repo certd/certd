@@ -191,7 +191,7 @@ module.exports = async function(client, userOpts) {
         for (const task of tasks) {
             results.push(task());
             // eslint-disable-next-line no-await-in-loop
-            await wait(30000);
+            await wait(10000);
         }
         return Promise.all(results);
     }
