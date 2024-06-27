@@ -3,14 +3,26 @@ import ssh2, { ConnectConfig } from 'ssh2';
 import path from 'path';
 import _ from 'lodash';
 import { ILogger } from '@certd/pipeline';
-
+import iconv from 'iconv-lite';
+import {SshAccess} from "../access";
 export class AsyncSsh2Client {
   conn: ssh2.Client;
   logger: ILogger;
   connConf: ssh2.ConnectConfig;
-  constructor(connConf: ssh2.ConnectConfig, logger: ILogger) {
+  windows:boolean = false;
+  encoding:string;
+  constructor(connConf: SshAccess, logger: ILogger) {
     this.connConf = connConf;
     this.logger = logger;
+    this.windows = connConf.windows || false;
+    this.encoding = connConf.encoding;
+  }
+
+  convert(buffer: Buffer) {
+    if(this.encoding){
+      return iconv.decode(buffer, this.encoding);
+    }
+    return buffer.toString();
   }
 
   async connect() {
@@ -59,30 +71,29 @@ export class AsyncSsh2Client {
 
   async exec(script: string) {
     return new Promise((resolve, reject) => {
-      this.logger.info(`执行脚本：[${this.connConf.host}][exec]: ` + script);
+      this.logger.info(`执行命令：[${this.connConf.host}][exec]: ` + script);
       this.conn.exec(script, (err: Error, stream: any) => {
         if (err) {
           reject(err);
           return;
         }
-        let data: any = null;
+        let data: string = null;
         stream
           .on('close', (code: any, signal: any) => {
             this.logger.info(`[${this.connConf.host}][close]:code:${code}`);
-            data = data ? data.toString() : null;
             if (code === 0) {
               resolve(data);
             } else {
               reject(new Error(data));
             }
           })
-          .on('data', (ret: any) => {
-            this.logger.info(`[${this.connConf.host}][info]: ` + ret);
-            data = ret;
+          .on('data', (ret: Buffer) => {
+            data = this.convert(ret)
+            this.logger.info(`[${this.connConf.host}][info]: ` + data);
           })
-          .stderr.on('data', (err: Error) => {
-            this.logger.info(`[${this.connConf.host}][error]: ` + err);
-            data = err;
+          .stderr.on('data', (ret:Buffer) => {
+            data = this.convert(ret)
+            this.logger.info(`[${this.connConf.host}][error]: ` + data);
           });
       });
     });
@@ -104,10 +115,16 @@ export class AsyncSsh2Client {
             this.logger.info('Stream :: close');
             resolve(output);
           })
-          .on('data', (data: any) => {
+          .on('data', (ret: Buffer) => {
+            const data = this.convert(ret)
             this.logger.info('' + data);
-            output.push('' + data);
-          });
+            output.push(data);
+          })
+          .stderr.on('data', (ret:Buffer) => {
+            const data = this.convert(ret)
+            output.push(data);
+            this.logger.info(`[${this.connConf.host}][error]: ` + data);
+        });
         stream.end(script + '\nexit\n');
       });
     });
@@ -134,7 +151,7 @@ export class SshClient {
          }
    * @param options
    */
-  async uploadFiles(options: { connectConf: ConnectConfig; transports: any }) {
+  async uploadFiles(options: { connectConf: SshAccess; transports: any }) {
     const { connectConf, transports } = options;
     await this._call({
       connectConf,
@@ -142,7 +159,17 @@ export class SshClient {
         const sftp = await conn.getSftp();
         this.logger.info('开始上传');
         for (const transport of transports) {
-          await conn.exec(`mkdir -p ${path.dirname(transport.remotePath)} `);
+          let filePath = path.dirname(transport.remotePath);
+          let mkdirCmd = `mkdir -p ${filePath} `;
+          if(conn.windows){
+            if(filePath.indexOf("/") > -1){
+              this.logger.info("--------------------------")
+              this.logger.info("请注意：windows下，文件目录分隔应该写成\\而不是/")
+              this.logger.info("--------------------------")
+            }
+            mkdirCmd = `if not exist "${filePath}" mkdir  ${filePath} `
+          }
+          await conn.exec(mkdirCmd);
           await conn.fastPut({ sftp, ...transport });
         }
         this.logger.info('文件全部上传成功');
@@ -151,7 +178,7 @@ export class SshClient {
   }
 
   async exec(options: {
-    connectConf: ConnectConfig;
+    connectConf: SshAccess;
     script: string | Array<string>;
   }) {
     let { script } = options;
@@ -170,7 +197,7 @@ export class SshClient {
   }
 
   async shell(options: {
-    connectConf: ConnectConfig;
+    connectConf: SshAccess;
     script: string;
   }): Promise<string[]> {
     const { connectConf, script } = options;
@@ -183,7 +210,7 @@ export class SshClient {
   }
 
   async _call(options: {
-    connectConf: ConnectConfig;
+    connectConf: SshAccess;
     callable: any;
   }): Promise<string[]> {
     const { connectConf, callable } = options;

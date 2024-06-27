@@ -60,6 +60,32 @@ export class SshAccess implements IAccess, ConnectConfig {
     },
   })
   passphrase!: string;
+
+
+  @AccessInput({
+    title: '是否Windows',
+    helper: '如果是Windows主机，请勾选此项',
+    component: {
+      name: 'a-switch',
+      vModel: 'checked',
+    },
+  })
+  windows: boolean = false;
+
+  @AccessInput({
+    title: '命令编码',
+    helper: '如果是Windows主机，且出现乱码了，请尝试设置为GBK',
+    component: {
+      name: 'a-select',
+      vModel: 'value',
+      options:[
+        {value:"","label":"默认"},
+        {value:"GBK","label":"GBK"},
+        {value:"UTF8","label":"UTF-8"},
+      ]
+    },
+  })
+  encoding: string;
 }
 
 new SshAccess();

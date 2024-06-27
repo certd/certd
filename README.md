@@ -49,9 +49,8 @@ https://certd.handsfree.work/
 
 1.2 安装docker    
 https://docs.docker.com/engine/install/
+选择对应的操作系统，按照官方文档执行命令即可
 
-1.3 安装docker-compose     
-https://docs.docker.com/compose/install/linux/
 
 ### 2. 下载docker-compose.yaml文件
 
@@ -82,12 +81,12 @@ https://github.com/certd/certd/releases
 # 如果docker compose是插件化安装
 export CERTD_VERSION=latest
 docker compose up -d
-
-#如果docker compose是独立安装
-export CERTD_VERSION=latest
-docker-compose up -d
-
 ```
+如果提示 没有compose命令,请安装docker-compose   
+https://docs.docker.com/compose/install/linux/
+
+
+
 ### 4. 访问
 
 http://your_server_ip:7001 
@@ -117,9 +116,12 @@ http://your_server_ip:7001
 ## 六、不同平台的设置说明
 
 * [Cloudflare](./doc/cf/cf.md)
+* [腾讯云](./doc/tencent/tencent.md)
+* [windows主机](./doc/host/host.md)
+
 
 ## 七、问题处理
-### 6.1 忘记管理员密码   
+### 7.1 忘记管理员密码   
 解决方法如下：
 1. 修改docker-compose.yaml文件，将环境变量`certd_system_resetAdminPassword`改为`true`
 ```yaml

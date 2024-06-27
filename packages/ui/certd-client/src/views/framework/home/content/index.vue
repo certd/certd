@@ -1,7 +1,9 @@
 <template>
   <div class="d2-page-cover">
     <div class="d2-page-cover__title" @click="$open('https://github.com/certd/certd')">
-      <div class="title-line">Certd v{{ version }}</div>
+      <div class="title-line">
+        <span>Certd v{{ version }}</span>
+      </div>
     </div>
     <p class="d2-page-cover__sub-title">让你的证书永不过期</p>
     <div class="warnning">
@@ -73,7 +75,7 @@ export default defineComponent({
 
   .content {
     padding: 20px;
-    width: 80%;
+    width: 70%;
     .preview_img {
       width: 100%;
       border: 1px solid #eee;

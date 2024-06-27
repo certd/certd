@@ -10,6 +10,7 @@ import {
 import { SshClient } from '../../lib/ssh';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 import * as fs from 'fs';
+import {SshAccess} from "../../access";
 
 @IsTaskPlugin({
   name: 'uploadCertToHost',
@@ -112,7 +113,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
         throw new Error('主机登录授权配置不能为空');
       }
       this.logger.info('准备上传到服务器');
-      const connectConf = await this.accessService.getById(accessId);
+      const connectConf:SshAccess = await this.accessService.getById(accessId);
       const sshClient = new SshClient(this.logger);
       await sshClient.uploadFiles({
         connectConf,
