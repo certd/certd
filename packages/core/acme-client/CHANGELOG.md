@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.15](https://github.com/publishlab/node-acme-client/compare/v1.20.14...v1.20.15) (2024-06-28)
+
+### Performance Improvements
+
+* 腾讯云dns provider 支持腾讯云的accessId ([e0eb3a4](https://github.com/publishlab/node-acme-client/commit/e0eb3a441384d474fe2923c69b25318264bdc9df))
+
 ## [1.20.14](https://github.com/publishlab/node-acme-client/compare/v1.20.13...v1.20.14) (2024-06-23)
 
 **Note:** Version bump only for package @certd/acme-client

@@ -1,7 +1,7 @@
 {
   "name": "@certd/pipeline",
   "private": false,
-  "version": "1.20.14",
+  "version": "1.20.15",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
@@ -23,7 +23,7 @@
     "qs": "^6.11.2"
   },
   "devDependencies": {
-    "@certd/acme-client": "workspace:^1.20.14",
+    "@certd/acme-client": "workspace:^1.20.15",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",

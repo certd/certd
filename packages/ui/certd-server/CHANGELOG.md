@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.15](https://github.com/fast-crud/fast-server-js/compare/v1.20.14...v1.20.15) (2024-06-28)
+
+### Bug Fixes
+
+* 修复无法强制取消任务的bug ([9cc01db](https://github.com/fast-crud/fast-server-js/commit/9cc01db1d569a5c45bb3e731f35d85df324a8e62))
+
+### Performance Improvements
+
+* 腾讯云dns provider 支持腾讯云的accessId ([e0eb3a4](https://github.com/fast-crud/fast-server-js/commit/e0eb3a441384d474fe2923c69b25318264bdc9df))
+* 支持windows文件上传 ([7f61cab](https://github.com/fast-crud/fast-server-js/commit/7f61cab101fa13b4e88234e9ad47434e6130fed2))
+
 ## [1.20.14](https://github.com/fast-crud/fast-server-js/compare/v1.20.13...v1.20.14) (2024-06-23)
 
 **Note:** Version bump only for package @certd/ui-server
