@@ -1,12 +1,17 @@
-import { Autowire, HttpClient, ILogger } from "@certd/pipeline";
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
-import _ from "lodash";
-import { DnspodAccess } from "../access";
+import { Autowire, HttpClient, ILogger } from '@certd/pipeline';
+import {
+  AbstractDnsProvider,
+  CreateRecordOptions,
+  IsDnsProvider,
+  RemoveRecordOptions,
+} from '@certd/plugin-cert';
+import _ from 'lodash';
+import { DnspodAccess } from '../access';
 
 @IsDnsProvider({
   name: 'dnspod',
-  title: 'dnspod(腾讯云)',
-  desc: '腾讯云的域名解析接口已迁移到dnspod',
+  title: 'dnspod(已过时)',
+  desc: '请尽快换成腾讯云类型',
   accessType: 'dnspod',
 })
 export class DnspodDnsProvider extends AbstractDnsProvider {

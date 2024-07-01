@@ -1,7 +1,13 @@
-import {Autowire, HttpClient, ILogger} from "@certd/pipeline";
-import {AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions} from "@certd/plugin-cert";
-import {TencentAccess} from "../access";
+import { Autowire, HttpClient, ILogger } from '@certd/pipeline';
+import {
+  AbstractDnsProvider,
+  CreateRecordOptions,
+  IsDnsProvider,
+  RemoveRecordOptions,
+} from '@certd/plugin-cert';
+import { TencentAccess } from '../access';
 import tencentcloud from 'tencentcloud-sdk-nodejs/index';
+import TencentCloudSDKHttpException from 'tencentcloud-sdk-nodejs/tencentcloud/common/exception/tencent_cloud_sdk_exception';
 
 const DnspodClient = tencentcloud.dnspod.v20210323.Client;
 @IsDnsProvider({
@@ -24,10 +30,9 @@ export class TencentDnsProvider extends AbstractDnsProvider {
   endpoint = 'dnspod.tencentcloudapi.com';
 
   async onInstance() {
-
     const clientConfig = {
       credential: this.access,
-      region: "",
+      region: '',
       profile: {
         httpProfile: {
           endpoint: this.endpoint,
@@ -35,50 +40,59 @@ export class TencentDnsProvider extends AbstractDnsProvider {
       },
     };
 
-// 实例化要请求产品的client对象,clientProfile是可选的
+    // 实例化要请求产品的client对象,clientProfile是可选的
     this.client = new DnspodClient(clientConfig);
   }
 
   async createRecord(options: CreateRecordOptions): Promise<any> {
-    const { fullRecord, value, type,domain } = options;
+    const { fullRecord, value, type, domain } = options;
     this.logger.info('添加域名解析：', fullRecord, value);
     const rr = fullRecord.replace('.' + domain, '');
 
     const params = {
-      "Domain": domain,
-      "RecordType": type,
-      "RecordLine": "默认",
-      "Value": value,
-      "SubDomain": rr
+      Domain: domain,
+      RecordType: type,
+      RecordLine: '默认',
+      Value: value,
+      SubDomain: rr,
     };
 
-    const ret = await this.client.CreateRecord(params)
-    /*
-    {
-		"RecordId": 162,
-		"RequestId": "ab4f1426-ea15-42ea-8183-dc1b44151166"
-	}
-     */
-    this.logger.info(
-      '添加域名解析成功:',
-      fullRecord,
-      value,
-      JSON.stringify(ret)
-    );
-    return ret;
+    try {
+      const ret = await this.client.CreateRecord(params);
+      this.logger.info(
+        '添加域名解析成功:',
+        fullRecord,
+        value,
+        JSON.stringify(ret)
+      );
+      /*
+        {
+        "RecordId": 162,
+        "RequestId": "ab4f1426-ea15-42ea-8183-dc1b44151166"
+      }
+   */
+      return ret;
+    } catch (e: any) {
+      if (e instanceof TencentCloudSDKHttpException) {
+        if (e.code === 'InvalidParameter.DomainRecordExist') {
+          this.logger.info('域名解析已存在,无需重复添加:', fullRecord, value);
+          return {};
+        }
+      }
+      throw e;
+    }
   }
 
   async removeRecord(options: RemoveRecordOptions<any>) {
-    const { fullRecord, value, domain,record } = options;
+    const { fullRecord, value, domain, record } = options;
 
     const params = {
-      "Domain": domain,
-      "RecordId": record.RecordId
+      Domain: domain,
+      RecordId: record.RecordId,
     };
-    const ret = await this.client.DeleteRecord(params)
+    const ret = await this.client.DeleteRecord(params);
     this.logger.info('删除域名解析成功:', fullRecord, value);
     return ret;
   }
-
 }
 new TencentDnsProvider();

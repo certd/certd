@@ -171,7 +171,6 @@ module.exports = async (client, userOpts) => {
         await challengeFunc(authz);
     });
 
-
     function runAllPromise(tasks) {
         let promise = Promise.resolve();
         tasks.forEach((task) => {
@@ -210,11 +209,18 @@ module.exports = async (client, userOpts) => {
     }
     catch (e) {
         log('证书申请失败');
-        throw e;
+        log(e);
+        throw new Error(`证书申请失败:${e.message}`);
     }
     finally {
         log(`清理challenge痕迹，length:${clearTasks.length}`);
-        await runAllPromise(clearTasks);
+        try {
+            await runAllPromise(clearTasks);
+        }
+        catch (e) {
+            log('清理challenge失败');
+            log(e);
+        }
     }
 
     // try {
