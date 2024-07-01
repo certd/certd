@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.16](https://github.com/publishlab/node-acme-client/compare/v1.20.15...v1.20.16) (2024-07-01)
+
+### Bug Fixes
+
+* 修复配置了cdn cname后申请失败的bug ([4a5fa76](https://github.com/publishlab/node-acme-client/commit/4a5fa767edc347d03d29a467e86c9a4d70b0220c))
+
 ## [1.20.15](https://github.com/publishlab/node-acme-client/compare/v1.20.14...v1.20.15) (2024-06-28)
 
 ### Performance Improvements
