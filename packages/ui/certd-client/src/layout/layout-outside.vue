@@ -19,7 +19,9 @@
             <a href="_self">隐私</a>
             <a href="_self">条款</a>
           </div>
-          <div class="copyright">{{ envRef.COPYRIGHT }}</div>
+          <div class="copyright">
+            Copyright &copy; {{ envRef.COPYRIGHT_YEAR }} <a :href="envRef.COPYRIGHT_URL" target="_blank">{{ envRef.COPYRIGHT_NAME }}</a>
+          </div>
         </div>
       </div>
     </div>

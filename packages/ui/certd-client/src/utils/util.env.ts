@@ -11,7 +11,9 @@ export class EnvConfig {
   STORAGE: string;
   TITLE: string;
   SLOGAN: string;
-  COPYRIGHT: string;
+  COPYRIGHT_YEAR: string;
+  COPYRIGHT_NAME: string;
+  COPYRIGHT_URL: string;
   LOGO_PATH: string;
   PM_ENABLED: string;
   constructor() {

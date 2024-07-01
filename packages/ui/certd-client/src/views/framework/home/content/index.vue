@@ -7,7 +7,15 @@
     </div>
     <p class="d2-page-cover__sub-title">让你的证书永不过期</p>
     <div class="warnning">
-      <a-alert description="证书和授权信息为敏感信息，不要使用来历不明的在线CertD服务，请务必私有化部署使用，认准官方版本发布渠道【github、gitee】" type="warning" show-icon />
+      <a-alert type="warning" show-icon>
+        <template #description>
+          <div class="flex">
+            证书和授权为敏感信息，不要使用来历不明的在线CertD服务，以免泄露；请务必私有化部署使用，认准官方版本发布渠道：
+            <a class="ml-5 flex" href="https://gitee.com/certd/certd" target="_blank">gitee</a>、
+            <a class="ml-5 flex" href="https://github.com/certd/certd" target="_blank">github</a>
+          </div>
+        </template>
+      </a-alert>
     </div>
     <div class="content">
       <img src="/images/preview.png" class="preview_img" />
