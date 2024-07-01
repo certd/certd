@@ -9,15 +9,8 @@ env:
 rules:
   indent: [2, 4, { SwitchCase: 1, VariableDeclarator: 1 }]
   brace-style: [2, 'stroustrup', { allowSingleLine: true }]
-  space-before-function-paren: [2, { anonymous: 'never', named: 'never' }]
   func-names: 0
-  prefer-destructuring: 0
-  object-curly-newline: 0
   class-methods-use-this: 0
-  wrap-iife: [2, 'inside']
   no-param-reassign: 0
-  comma-dangle: [2, 'never']
   max-len: [1, 200, 2, { ignoreUrls: true, ignoreComments: false }]
-  no-multiple-empty-lines: [2, { max: 2, maxBOF: 0, maxEOF: 0 }]
-  prefer-object-spread: 0
   import/no-useless-path-segments: 0

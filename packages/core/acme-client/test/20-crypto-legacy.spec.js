@@ -9,9 +9,8 @@ const spec = require('./spec');
 const forge = require('./../src/crypto/forge');
 
 const cryptoEngines = {
-    forge
+    forge,
 };
-
 
 describe('crypto-legacy', () => {
     let testPemKey;
@@ -27,7 +26,6 @@ describe('crypto-legacy', () => {
     const testKeyPath = path.join(__dirname, 'fixtures', 'private.key');
     const testCertPath = path.join(__dirname, 'fixtures', 'certificate.crt');
     const testSanCertPath = path.join(__dirname, 'fixtures', 'san-certificate.crt');
-
 
     /**
      * Fixtures
@@ -50,7 +48,6 @@ describe('crypto-legacy', () => {
         });
     });
 
-
     /**
      * Engines
      */
@@ -61,7 +58,6 @@ describe('crypto-legacy', () => {
             let testSanCsr;
             let testNonCnCsr;
             let testNonAsciiCsr;
-
 
             /**
              * Key generation
@@ -83,14 +79,13 @@ describe('crypto-legacy', () => {
                 publicKeyStore.push(key.toString().replace(/[\r\n]/gm, ''));
             });
 
-
             /**
              * Certificate Signing Request
              */
 
             it('should generate a csr', async () => {
                 const [key, csr] = await engine.createCsr({
-                    commonName: testCsrDomain
+                    commonName: testCsrDomain,
                 });
 
                 assert.isTrue(Buffer.isBuffer(key));
@@ -102,7 +97,7 @@ describe('crypto-legacy', () => {
             it('should generate a san csr', async () => {
                 const [key, csr] = await engine.createCsr({
                     commonName: testSanCsrDomains[0],
-                    altNames: testSanCsrDomains.slice(1, testSanCsrDomains.length)
+                    altNames: testSanCsrDomains.slice(1, testSanCsrDomains.length),
                 });
 
                 assert.isTrue(Buffer.isBuffer(key));
@@ -113,7 +108,7 @@ describe('crypto-legacy', () => {
 
             it('should generate a csr without common name', async () => {
                 const [key, csr] = await engine.createCsr({
-                    altNames: testSanCsrDomains
+                    altNames: testSanCsrDomains,
                 });
 
                 assert.isTrue(Buffer.isBuffer(key));
@@ -126,7 +121,7 @@ describe('crypto-legacy', () => {
                 const [key, csr] = await engine.createCsr({
                     commonName: testCsrDomain,
                     organization: '大安區',
-                    organizationUnit: '中文部門'
+                    organizationUnit: '中文部門',
                 });
 
                 assert.isTrue(Buffer.isBuffer(key));
@@ -167,7 +162,6 @@ describe('crypto-legacy', () => {
                 assert.deepStrictEqual(result.altNames, [testCsrDomain]);
             });
 
-
             /**
              * Certificate
              */
@@ -187,7 +181,6 @@ describe('crypto-legacy', () => {
                 assert.strictEqual(info.domains.commonName, testSanCsrDomains[0]);
                 assert.deepEqual(info.domains.altNames, testSanCsrDomains.slice(1, testSanCsrDomains.length));
             });
-
 
             /**
              * PEM utils
@@ -213,7 +206,6 @@ describe('crypto-legacy', () => {
                     chain.forEach((c) => assert.isString(c));
                 });
             });
-
 
             /**
              * Modulus and exponent
@@ -245,7 +237,6 @@ describe('crypto-legacy', () => {
             });
         });
     });
-
 
     /**
      * Verify identical results

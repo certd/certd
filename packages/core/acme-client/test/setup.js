@@ -7,13 +7,11 @@ const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const axios = require('./../src/axios');
 
-
 /**
  * Add promise support to Chai
  */
 
 chai.use(chaiAsPromised);
-
 
 /**
  * Challenge test server ports
@@ -30,7 +28,6 @@ if (process.env.ACME_HTTPS_PORT) {
 if (process.env.ACME_TLSALPN_PORT) {
     axios.defaults.acmeSettings.tlsAlpnChallengePort = process.env.ACME_TLSALPN_PORT;
 }
-
 
 /**
  * External account binding

@@ -9,7 +9,6 @@ const axios = require('./../src/axios');
 const HttpClient = require('./../src/http');
 const pkg = require('./../package.json');
 
-
 describe('http', () => {
     let testClient;
 
@@ -19,7 +18,6 @@ describe('http', () => {
     const primaryEndpoint = `http://${uuid()}.example.com`;
     const defaultUaEndpoint = `http://${uuid()}.example.com`;
     const customUaEndpoint = `http://${uuid()}.example.com`;
-
 
     /**
      * HTTP mocking
@@ -43,7 +41,6 @@ describe('http', () => {
         axios.defaults.headers.common['User-Agent'] = defaultUserAgent;
     });
 
-
     /**
      * Initialize
      */
@@ -51,7 +48,6 @@ describe('http', () => {
     it('should initialize clients', () => {
         testClient = new HttpClient();
     });
-
 
     /**
      * HTTP verbs
@@ -64,7 +60,6 @@ describe('http', () => {
         assert.strictEqual(resp.status, 200);
         assert.strictEqual(resp.data, 'ok');
     });
-
 
     /**
      * User-Agent

@@ -8,7 +8,6 @@ const axios = require('./../src/axios');
 const apiBaseUrl = process.env.ACME_CHALLTESTSRV_URL || null;
 const httpsPort = axios.defaults.acmeSettings.httpsChallengePort || 443;
 
-
 /**
  * Send request
  */
@@ -21,12 +20,11 @@ async function request(apiPath, data = {}) {
     await axios.request({
         url: `${apiBaseUrl}/${apiPath}`,
         method: 'post',
-        data
+        data,
     });
 
     return true;
 }
-
 
 /**
  * State
@@ -34,14 +32,12 @@ async function request(apiPath, data = {}) {
 
 exports.isEnabled = () => !!apiBaseUrl;
 
-
 /**
  * DNS
  */
 
 exports.addDnsARecord = async (host, addresses) => request('add-a', { host, addresses });
 exports.setDnsCnameRecord = async (host, target) => request('set-cname', { host, target });
-
 
 /**
  * Challenge response
@@ -55,7 +51,7 @@ async function addHttps01ChallengeResponse(token, content, targetHostname) {
     await addHttp01ChallengeResponse(token, content);
     return request('add-redirect', {
         path: `/.well-known/acme-challenge/${token}`,
-        targetURL: `https://${targetHostname}:${httpsPort}/.well-known/acme-challenge/${token}`
+        targetURL: `https://${targetHostname}:${httpsPort}/.well-known/acme-challenge/${token}`,
     });
 }
 
@@ -71,7 +67,6 @@ exports.addHttp01ChallengeResponse = addHttp01ChallengeResponse;
 exports.addHttps01ChallengeResponse = addHttps01ChallengeResponse;
 exports.addDns01ChallengeResponse = addDns01ChallengeResponse;
 exports.addTlsAlpn01ChallengeResponse = addTlsAlpn01ChallengeResponse;
-
 
 /**
  * Challenge response mock functions

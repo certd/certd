@@ -4,7 +4,6 @@
 
 const util = require('./util');
 
-
 /**
  * AcmeApi
  *
@@ -17,7 +16,6 @@ class AcmeApi {
         this.http = httpClient;
         this.accountUrl = accountUrl;
     }
-
 
     /**
      * Get account URL
@@ -33,7 +31,6 @@ class AcmeApi {
 
         return this.accountUrl;
     }
-
 
     /**
      * ACME API request
@@ -59,7 +56,6 @@ class AcmeApi {
         return resp;
     }
 
-
     /**
      * ACME API request by resource name helper
      *
@@ -78,7 +74,6 @@ class AcmeApi {
         return this.apiRequest(resourceUrl, payload, validStatusCodes, { includeJwsKid, includeExternalAccountBinding });
     }
 
-
     /**
      * Get Terms of Service URL if available
      *
@@ -90,7 +85,6 @@ class AcmeApi {
     async getTermsOfServiceUrl() {
         return this.http.getMetaField('termsOfService');
     }
-
 
     /**
      * Create new account
@@ -104,7 +98,7 @@ class AcmeApi {
     async createAccount(data) {
         const resp = await this.apiResourceRequest('newAccount', data, [200, 201], {
             includeJwsKid: false,
-            includeExternalAccountBinding: (data.onlyReturnExisting !== true)
+            includeExternalAccountBinding: (data.onlyReturnExisting !== true),
         });
 
         /* Set account URL */
@@ -114,7 +108,6 @@ class AcmeApi {
 
         return resp;
     }
-
 
     /**
      * Update account
@@ -129,7 +122,6 @@ class AcmeApi {
         return this.apiRequest(this.getAccountUrl(), data, [200, 202]);
     }
 
-
     /**
      * Update account key
      *
@@ -142,7 +134,6 @@ class AcmeApi {
     updateAccountKey(data) {
         return this.apiResourceRequest('keyChange', data, [200]);
     }
-
 
     /**
      * Create new order
@@ -157,7 +148,6 @@ class AcmeApi {
         return this.apiResourceRequest('newOrder', data, [201]);
     }
 
-
     /**
      * Get order
      *
@@ -170,7 +160,6 @@ class AcmeApi {
     getOrder(url) {
         return this.apiRequest(url, null, [200]);
     }
-
 
     /**
      * Finalize order
@@ -186,7 +175,6 @@ class AcmeApi {
         return this.apiRequest(url, data, [200]);
     }
 
-
     /**
      * Get identifier authorization
      *
@@ -199,7 +187,6 @@ class AcmeApi {
     getAuthorization(url) {
         return this.apiRequest(url, null, [200]);
     }
-
 
     /**
      * Update identifier authorization
@@ -215,7 +202,6 @@ class AcmeApi {
         return this.apiRequest(url, data, [200]);
     }
 
-
     /**
      * Complete challenge
      *
@@ -230,7 +216,6 @@ class AcmeApi {
         return this.apiRequest(url, data, [200]);
     }
 
-
     /**
      * Revoke certificate
      *
@@ -244,7 +229,6 @@ class AcmeApi {
         return this.apiResourceRequest('revokeCert', data, [200]);
     }
 }
-
 
 /* Export API */
 module.exports = AcmeApi;

@@ -16,7 +16,6 @@ const httpPort = axios.defaults.acmeSettings.httpChallengePort || 80;
 const httpsPort = axios.defaults.acmeSettings.httpsChallengePort || 443;
 const tlsAlpnPort = axios.defaults.acmeSettings.tlsAlpnChallengePort || 443;
 
-
 describe('pebble', () => {
     const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
@@ -39,17 +38,15 @@ describe('pebble', () => {
     const testTlsAlpn01ChallengeHost = `${uuid()}.${domainName}`;
     const testTlsAlpn01ChallengeValue = uuid();
 
-
     /**
      * Pebble CTS required
      */
 
-    before(function() {
+    before(function () {
         if (!cts.isEnabled()) {
             this.skip();
         }
     });
-
 
     /**
      * DNS mocking
@@ -92,7 +89,6 @@ describe('pebble', () => {
         });
     });
 
-
     /**
      * HTTP-01 challenge response
      */
@@ -118,7 +114,6 @@ describe('pebble', () => {
         });
     });
 
-
     /**
      * HTTPS-01 challenge response
      */
@@ -143,7 +138,7 @@ describe('pebble', () => {
             /* Assert HTTP 302 */
             const resp = await axios.get(`http://${testHttps01ChallengeHost}:${httpPort}/.well-known/acme-challenge/${testHttps01ChallengeToken}`, {
                 maxRedirects: 0,
-                validateStatus: null
+                validateStatus: null,
             });
 
             assert.strictEqual(resp.status, 302);
@@ -164,7 +159,6 @@ describe('pebble', () => {
             });
         });
     });
-
 
     /**
      * DNS-01 challenge response
@@ -187,7 +181,6 @@ describe('pebble', () => {
             assert.deepStrictEqual(resp, [[testDns01ChallengeValue]]);
         });
     });
-
 
     /**
      * TLS-ALPN-01 challenge response

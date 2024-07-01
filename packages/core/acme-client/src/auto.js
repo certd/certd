@@ -14,9 +14,8 @@ const defaultOpts = {
     skipChallengeVerification: false,
     challengePriority: ['http-01', 'dns-01'],
     challengeCreateFn: async () => { throw new Error('Missing challengeCreateFn()'); },
-    challengeRemoveFn: async () => { throw new Error('Missing challengeRemoveFn()'); }
+    challengeRemoveFn: async () => { throw new Error('Missing challengeRemoveFn()'); },
 };
-
 
 /**
  * ACME client auto mode
@@ -26,8 +25,8 @@ const defaultOpts = {
  * @returns {Promise<buffer>} Certificate
  */
 
-module.exports = async function(client, userOpts) {
-    const opts = Object.assign({}, defaultOpts, userOpts);
+module.exports = async (client, userOpts) => {
+    const opts = { ...defaultOpts, ...userOpts };
     const accountPayload = { termsOfServiceAgreed: opts.termsOfServiceAgreed };
 
     if (!Buffer.isBuffer(opts.csr)) {
@@ -37,7 +36,6 @@ module.exports = async function(client, userOpts) {
     if (opts.email) {
         accountPayload.contact = [`mailto:${opts.email}`];
     }
-
 
     /**
      * Register account
@@ -54,7 +52,6 @@ module.exports = async function(client, userOpts) {
         await client.createAccount(accountPayload);
     }
 
-
     /**
      * Parse domains from CSR
      */
@@ -64,7 +61,6 @@ module.exports = async function(client, userOpts) {
     const uniqueDomains = Array.from(new Set([commonName].concat(altNames).filter((d) => d)));
 
     log(`[auto] Resolved ${uniqueDomains.length} unique domains from parsing the Certificate Signing Request`);
-
 
     /**
      * Place order
@@ -76,7 +72,6 @@ module.exports = async function(client, userOpts) {
     const authorizations = await client.getAuthorizations(order);
 
     log(`[auto] Placed certificate order successfully, received ${authorizations.length} identity authorizations`);
-
 
     /**
      * Resolve and satisfy challenges
@@ -195,7 +190,6 @@ module.exports = async function(client, userOpts) {
         }
         return Promise.all(results);
     }
-
 
     try {
         log('开始challenge');

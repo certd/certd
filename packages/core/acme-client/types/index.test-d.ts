@@ -4,7 +4,6 @@
 
 import * as acme from 'acme-client';
 
-
 (async () => {
     /* Client */
     const accountKey = await acme.crypto.createPrivateKey();

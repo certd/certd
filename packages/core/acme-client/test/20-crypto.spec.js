@@ -50,14 +50,12 @@ dGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0aW5ndGVzdGluZ3Rlc3Rpbmd0ZXN0
 -----END TEST-----
 `;
 
-
 describe('crypto', () => {
     const testCsrDomain = 'example.com';
     const testSanCsrDomains = ['example.com', 'test.example.com', 'abc.example.com'];
     const testKeyPath = path.join(__dirname, 'fixtures', 'private.key');
     const testCertPath = path.join(__dirname, 'fixtures', 'certificate.crt');
     const testSanCertPath = path.join(__dirname, 'fixtures', 'san-certificate.crt');
-
 
     /**
      * Key types
@@ -68,23 +66,22 @@ describe('crypto', () => {
             createKeyFns: {
                 s1024: () => crypto.createPrivateRsaKey(1024),
                 s2048: () => crypto.createPrivateRsaKey(),
-                s4096: () => crypto.createPrivateRsaKey(4096)
+                s4096: () => crypto.createPrivateRsaKey(4096),
             },
-            jwkSpecFn: spec.jwk.rsa
+            jwkSpecFn: spec.jwk.rsa,
         },
         ecdsa: {
             createKeyFns: {
                 p256: () => crypto.createPrivateEcdsaKey(),
                 p384: () => crypto.createPrivateEcdsaKey('P-384'),
-                p521: () => crypto.createPrivateEcdsaKey('P-521')
+                p521: () => crypto.createPrivateEcdsaKey('P-521'),
             },
-            jwkSpecFn: spec.jwk.ecdsa
-        }
+            jwkSpecFn: spec.jwk.ecdsa,
+        },
     }).forEach(([name, { createKeyFns, jwkSpecFn }]) => {
         describe(name, () => {
             const testPrivateKeys = {};
             const testPublicKeys = {};
-
 
             /**
              * Iterate through all generator variations
@@ -96,7 +93,6 @@ describe('crypto', () => {
                 let testNonCnCsr;
                 let testNonAsciiCsr;
                 let testAlpnCertificate;
-
 
                 /**
                  * Keys and JWK
@@ -132,14 +128,13 @@ describe('crypto', () => {
                     jwkSpecFn(jwk);
                 });
 
-
                 /**
                  * Certificate Signing Request
                  */
 
                 it(`${n}/should generate a csr`, async () => {
                     const [key, csr] = await crypto.createCsr({
-                        commonName: testCsrDomain
+                        commonName: testCsrDomain,
                     }, testPrivateKeys[n]);
 
                     assert.isTrue(Buffer.isBuffer(key));
@@ -151,7 +146,7 @@ describe('crypto', () => {
                 it(`${n}/should generate a san csr`, async () => {
                     const [key, csr] = await crypto.createCsr({
                         commonName: testSanCsrDomains[0],
-                        altNames: testSanCsrDomains.slice(1, testSanCsrDomains.length)
+                        altNames: testSanCsrDomains.slice(1, testSanCsrDomains.length),
                     }, testPrivateKeys[n]);
 
                     assert.isTrue(Buffer.isBuffer(key));
@@ -162,7 +157,7 @@ describe('crypto', () => {
 
                 it(`${n}/should generate a csr without common name`, async () => {
                     const [key, csr] = await crypto.createCsr({
-                        altNames: testSanCsrDomains
+                        altNames: testSanCsrDomains,
                     }, testPrivateKeys[n]);
 
                     assert.isTrue(Buffer.isBuffer(key));
@@ -175,7 +170,7 @@ describe('crypto', () => {
                     const [key, csr] = await crypto.createCsr({
                         commonName: testCsrDomain,
                         organization: '大安區',
-                        organizationUnit: '中文部門'
+                        organizationUnit: '中文部門',
                     }, testPrivateKeys[n]);
 
                     assert.isTrue(Buffer.isBuffer(key));
@@ -186,7 +181,7 @@ describe('crypto', () => {
 
                 it(`${n}/should generate a csr with key as string`, async () => {
                     const [key, csr] = await crypto.createCsr({
-                        commonName: testCsrDomain
+                        commonName: testCsrDomain,
                     }, testPrivateKeys[n].toString());
 
                     assert.isTrue(Buffer.isBuffer(key));
@@ -195,10 +190,9 @@ describe('crypto', () => {
 
                 it(`${n}/should throw with invalid key`, async () => {
                     await assert.isRejected(crypto.createCsr({
-                        commonName: testCsrDomain
+                        commonName: testCsrDomain,
                     }, testPublicKeys[n]));
                 });
-
 
                 /**
                  * Domain and info resolver
@@ -243,7 +237,6 @@ describe('crypto', () => {
                     });
                 });
 
-
                 /**
                  * ALPN
                  */
@@ -284,7 +277,6 @@ describe('crypto', () => {
         });
     });
 
-
     /**
      * Common functionality
      */
@@ -293,7 +285,6 @@ describe('crypto', () => {
         let testPemKey;
         let testCert;
         let testSanCert;
-
 
         it('should read private key fixture', async () => {
             testPemKey = await fs.readFile(testKeyPath);
@@ -310,20 +301,18 @@ describe('crypto', () => {
             assert.isTrue(Buffer.isBuffer(testSanCert));
         });
 
-
         /**
          * CSR with auto-generated key
          */
 
         it('should generate a csr with default key', async () => {
             const [key, csr] = await crypto.createCsr({
-                commonName: testCsrDomain
+                commonName: testCsrDomain,
             });
 
             assert.isTrue(Buffer.isBuffer(key));
             assert.isTrue(Buffer.isBuffer(csr));
         });
-
 
         /**
          * Certificate
@@ -352,7 +341,6 @@ describe('crypto', () => {
             });
         });
 
-
         /**
          * ALPN
          */
@@ -364,7 +352,6 @@ describe('crypto', () => {
             assert.isTrue(Buffer.isBuffer(key));
             assert.isTrue(Buffer.isBuffer(cert));
         });
-
 
         /**
          * PEM utils

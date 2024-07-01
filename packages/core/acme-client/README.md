@@ -9,13 +9,13 @@ This module is written to handle communication with a Boulder/Let's Encrypt-styl
 
 ## Compatibility
 
-| acme-client   | Node.js   |                                           |
-| ------------- | --------- | ----------------------------------------- |
-| v5.x          | >= v16    | [Upgrade guide](docs/upgrade-v5.md)       |
-| v4.x          | >= v10    | [Changelog](CHANGELOG.md#v400-2020-05-29) |
-| v3.x          | >= v8     | [Changelog](CHANGELOG.md#v300-2019-07-13) |
-| v2.x          | >= v4     | [Changelog](CHANGELOG.md#v200-2018-04-02) |
-| v1.x          | >= v4     | [Changelog](CHANGELOG.md#v100-2017-10-20) |
+| acme-client | Node.js |                                           |
+| ----------- | ------- | ----------------------------------------- |
+| v5.x        | >= v16  | [Upgrade guide](docs/upgrade-v5.md)       |
+| v4.x        | >= v10  | [Changelog](CHANGELOG.md#v400-2020-05-29) |
+| v3.x        | >= v8   | [Changelog](CHANGELOG.md#v300-2019-07-13) |
+| v2.x        | >= v4   | [Changelog](CHANGELOG.md#v200-2018-04-02) |
+| v1.x        | >= v4   | [Changelog](CHANGELOG.md#v100-2017-10-20) |
 
 ## Table of contents
 
@@ -49,7 +49,7 @@ const accountPrivateKey = '<PEM encoded private key>';
 
 const client = new acme.Client({
     directoryUrl: acme.directory.letsencrypt.staging,
-    accountKey: accountPrivateKey
+    accountKey: accountPrivateKey,
 });
 ```
 
@@ -75,8 +75,8 @@ const client = new acme.Client({
     accountKey: accountPrivateKey,
     externalAccountBinding: {
         kid: 'YOUR-EAB-KID',
-        hmacKey: 'YOUR-EAB-HMAC-KEY'
-    }
+        hmacKey: 'YOUR-EAB-HMAC-KEY',
+    },
 });
 ```
 
@@ -90,7 +90,7 @@ In some cases, for example with some EAB providers, this account creation step m
 const client = new acme.Client({
     directoryUrl: acme.directory.letsencrypt.staging,
     accountKey: accountPrivateKey,
-    accountUrl: 'https://acme-v02.api.letsencrypt.org/acme/acct/12345678'
+    accountUrl: 'https://acme-v02.api.letsencrypt.org/acme/acct/12345678',
 });
 ```
 
@@ -113,8 +113,7 @@ const privateRsaKey = await acme.crypto.createPrivateRsaKey();
 const privateEcdsaKey = await acme.crypto.createPrivateEcdsaKey();
 
 const [certificateKey, certificateCsr] = await acme.crypto.createCsr({
-    commonName: '*.example.com',
-    altNames: ['example.com']
+    altNames: ['example.com', '*.example.com'],
 });
 ```
 
@@ -139,7 +138,7 @@ const autoOpts = {
     email: 'test@example.com',
     termsOfServiceAgreed: true,
     challengeCreateFn: async (authz, challenge, keyAuthorization) => {},
-    challengeRemoveFn: async (authz, challenge, keyAuthorization) => {}
+    challengeRemoveFn: async (authz, challenge, keyAuthorization) => {},
 };
 
 const certificate = await client.auto(autoOpts);
@@ -156,7 +155,7 @@ To modify challenge priority, provide a list of challenge types in `challengePri
 ```js
 await client.auto({
     ...,
-    challengePriority: ['http-01', 'dns-01']
+    challengePriority: ['http-01', 'dns-01'],
 });
 ```
 
@@ -171,7 +170,7 @@ To completely disable `acme-client`s internal challenge verification, enable `sk
 ```js
 await client.auto({
     ...,
-    skipChallengeVerification: true
+    skipChallengeVerification: true,
 });
 ```
 
@@ -185,14 +184,14 @@ For more fine-grained control you can interact with the ACME API using the metho
 ```js
 const account = await client.createAccount({
     termsOfServiceAgreed: true,
-    contact: ['mailto:test@example.com']
+    contact: ['mailto:test@example.com'],
 });
 
 const order = await client.createOrder({
     identifiers: [
         { type: 'dns', value: 'example.com' },
-        { type: 'dns', value: '*.example.com' }
-    ]
+        { type: 'dns', value: '*.example.com' },
+    ],
 });
 ```
 
@@ -207,7 +206,7 @@ const acme = require('acme-client');
 
 acme.axios.defaults.proxy = {
     host: '127.0.0.1',
-    port: 9000
+    port: 9000,
 };
 ```
 

@@ -22,7 +22,6 @@ const subjectAltNameOID = '2.5.29.17';
 /* id-pe-acmeIdentifier - https://datatracker.ietf.org/doc/html/rfc8737#section-6.1 */
 const alpnAcmeIdentifierOID = '1.3.6.1.5.5.7.1.31';
 
-
 /**
  * Determine key type and info by attempting to derive public key
  *
@@ -35,7 +34,7 @@ function getKeyInfo(keyPem) {
     const result = {
         isRSA: false,
         isECDSA: false,
-        publicKey: crypto.createPublicKey(keyPem)
+        publicKey: crypto.createPublicKey(keyPem),
     };
 
     if (result.publicKey.asymmetricKeyType === 'rsa') {
@@ -50,7 +49,6 @@ function getKeyInfo(keyPem) {
 
     return result;
 }
-
 
 /**
  * Generate a private RSA key
@@ -74,15 +72,14 @@ async function createPrivateRsaKey(modulusLength = 2048) {
         modulusLength,
         privateKeyEncoding: {
             type: 'pkcs8',
-            format: 'pem'
-        }
+            format: 'pem',
+        },
     });
 
     return Buffer.from(pair.privateKey);
 }
 
 exports.createPrivateRsaKey = createPrivateRsaKey;
-
 
 /**
  * Alias of `createPrivateRsaKey()`
@@ -91,7 +88,6 @@ exports.createPrivateRsaKey = createPrivateRsaKey;
  */
 
 exports.createPrivateKey = createPrivateRsaKey;
-
 
 /**
  * Generate a private ECDSA key
@@ -115,13 +111,12 @@ exports.createPrivateEcdsaKey = async (namedCurve = 'P-256') => {
         namedCurve,
         privateKeyEncoding: {
             type: 'pkcs8',
-            format: 'pem'
-        }
+            format: 'pem',
+        },
     });
 
     return Buffer.from(pair.privateKey);
 };
-
 
 /**
  * Get a public key derived from a RSA or ECDSA key
@@ -140,12 +135,11 @@ exports.getPublicKey = (keyPem) => {
 
     const publicKey = info.publicKey.export({
         type: info.isECDSA ? 'spki' : 'pkcs1',
-        format: 'pem'
+        format: 'pem',
     });
 
     return Buffer.from(publicKey);
 };
-
 
 /**
  * Get a JSON Web Key derived from a RSA or ECDSA key
@@ -163,7 +157,7 @@ exports.getPublicKey = (keyPem) => {
 
 function getJwk(keyPem) {
     const jwk = crypto.createPublicKey(keyPem).export({
-        format: 'jwk'
+        format: 'jwk',
     });
 
     /* Sort keys */
@@ -174,7 +168,6 @@ function getJwk(keyPem) {
 }
 
 exports.getJwk = getJwk;
-
 
 /**
  * Produce CryptoKeyPair and signing algorithm from a PEM encoded private key
@@ -191,7 +184,7 @@ async function getWebCryptoKeyPair(keyPem) {
     /* Signing algorithm */
     const sigalg = {
         name: 'RSASSA-PKCS1-v1_5',
-        hash: { name: 'SHA-256' }
+        hash: { name: 'SHA-256' },
     };
 
     if (info.isECDSA) {
@@ -215,7 +208,6 @@ async function getWebCryptoKeyPair(keyPem) {
     return [{ privateKey, publicKey }, sigalg];
 }
 
-
 /**
  * Split chain of PEM encoded objects from string into array
  *
@@ -234,7 +226,6 @@ function splitPemChain(chainPem) {
 }
 
 exports.splitPemChain = splitPemChain;
-
 
 /**
  * Parse body of PEM encoded object and return a Base64URL string
@@ -256,7 +247,6 @@ exports.getPemBodyAsB64u = (pem) => {
     return Buffer.from(dec).toString('base64url');
 };
 
-
 /**
  * Parse domains from a certificate or CSR
  *
@@ -277,10 +267,9 @@ function parseDomains(input) {
 
     return {
         commonName,
-        altNames
+        altNames,
     };
 }
-
 
 /**
  * Read domains from a Certificate Signing Request
@@ -306,7 +295,6 @@ exports.readCsrDomains = (csrPem) => {
     const csr = new x509.Pkcs10CertificateRequest(dec);
     return parseDomains(csr);
 };
-
 
 /**
  * Read information from a certificate
@@ -338,14 +326,13 @@ exports.readCertificateInfo = (certPem) => {
 
     return {
         issuer: {
-            commonName: cert.issuerName.getField('CN').pop() || null
+            commonName: cert.issuerName.getField('CN').pop() || null,
         },
         domains: parseDomains(cert),
         notBefore: cert.notBefore,
-        notAfter: cert.notAfter
+        notAfter: cert.notAfter,
     };
 };
-
 
 /**
  * Determine ASN.1 character string type for CSR subject field name
@@ -369,7 +356,6 @@ function getCsrAsn1CharStringType(field) {
     }
 }
 
-
 /**
  * Create array of subject fields for a Certificate Signing Request
  *
@@ -391,7 +377,6 @@ function createCsrSubject(input) {
     }, []);
 }
 
-
 /**
  * Create x509 subject alternate name extension
  *
@@ -408,7 +393,6 @@ function createSubjectAltNameExtension(altNames) {
         return { type, value };
     }));
 }
-
 
 /**
  * Create a Certificate Signing Request
@@ -429,29 +413,30 @@ function createSubjectAltNameExtension(altNames) {
  * @example Create a Certificate Signing Request
  * ```js
  * const [certificateKey, certificateRequest] = await acme.crypto.createCsr({
- *     commonName: 'test.example.com'
+ *     altNames: ['test.example.com'],
  * });
  * ```
  *
  * @example Certificate Signing Request with both common and alternative names
+ * > *Warning*: Certificate subject common name has been [deprecated](https://letsencrypt.org/docs/glossary/#def-CN) and its use is [discouraged](https://cabforum.org/uploads/BRv1.2.3.pdf).
  * ```js
  * const [certificateKey, certificateRequest] = await acme.crypto.createCsr({
  *     keySize: 4096,
  *     commonName: 'test.example.com',
- *     altNames: ['foo.example.com', 'bar.example.com']
+ *     altNames: ['foo.example.com', 'bar.example.com'],
  * });
  * ```
  *
  * @example Certificate Signing Request with additional information
  * ```js
  * const [certificateKey, certificateRequest] = await acme.crypto.createCsr({
- *     commonName: 'test.example.com',
+ *     altNames: ['test.example.com'],
  *     country: 'US',
  *     state: 'California',
  *     locality: 'Los Angeles',
  *     organization: 'The Company Inc.',
  *     organizationUnit: 'IT Department',
- *     emailAddress: 'contact@example.com'
+ *     emailAddress: 'contact@example.com',
  * });
  * ```
  *
@@ -460,8 +445,9 @@ function createSubjectAltNameExtension(altNames) {
  * const certificateKey = await acme.crypto.createPrivateEcdsaKey();
  *
  * const [, certificateRequest] = await acme.crypto.createCsr({
- *     commonName: 'test.example.com'
+ *     altNames: ['test.example.com'],
  * }, certificateKey);
+ * ```
  */
 
 exports.createCsr = async (data, keyPem = null) => {
@@ -489,7 +475,7 @@ exports.createCsr = async (data, keyPem = null) => {
         new x509.KeyUsagesExtension(x509.KeyUsageFlags.digitalSignature | x509.KeyUsageFlags.keyEncipherment), // eslint-disable-line no-bitwise
 
         /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6 */
-        createSubjectAltNameExtension(data.altNames)
+        createSubjectAltNameExtension(data.altNames),
     ];
 
     /* Create CSR */
@@ -504,15 +490,14 @@ exports.createCsr = async (data, keyPem = null) => {
             L: data.locality,
             O: data.organization,
             OU: data.organizationUnit,
-            E: data.emailAddress
-        })
+            E: data.emailAddress,
+        }),
     });
 
     /* Done */
     const pem = csr.toString('pem');
     return [keyPem, Buffer.from(pem)];
 };
-
 
 /**
  * Create a self-signed ALPN certificate for TLS-ALPN-01 challenges
@@ -533,6 +518,7 @@ exports.createCsr = async (data, keyPem = null) => {
  * ```js
  * const alpnKey = await acme.crypto.createPrivateEcdsaKey();
  * const [, alpnCertificate] = await acme.crypto.createAlpnCertificate(authz, keyAuthorization, alpnKey);
+ * ```
  */
 
 exports.createAlpnCertificate = async (authz, keyAuthorization, keyPem = null) => {
@@ -564,7 +550,7 @@ exports.createAlpnCertificate = async (authz, keyAuthorization, keyPem = null) =
         await x509.SubjectKeyIdentifierExtension.create(keys.publicKey),
 
         /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6 */
-        createSubjectAltNameExtension([commonName])
+        createSubjectAltNameExtension([commonName]),
     ];
 
     /* ALPN extension */
@@ -581,15 +567,14 @@ exports.createAlpnCertificate = async (authz, keyAuthorization, keyPem = null) =
         notBefore: now,
         notAfter: now,
         name: createCsrSubject({
-            CN: commonName
-        })
+            CN: commonName,
+        }),
     });
 
     /* Done */
     const pem = cert.toString('pem');
     return [keyPem, Buffer.from(pem)];
 };
-
 
 /**
  * Validate that a ALPN certificate contains the expected key authorization

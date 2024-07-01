@@ -7,7 +7,6 @@ const dns = require('dns').promises;
 const { readCertificateInfo, splitPemChain } = require('./crypto');
 const { log } = require('./logger');
 
-
 /**
  * Exponential backoff
  *
@@ -26,7 +25,6 @@ class Backoff {
         this.attempts = 0;
     }
 
-
     /**
      * Get backoff duration
      *
@@ -39,7 +37,6 @@ class Backoff {
         return Math.min(ms, this.max);
     }
 }
-
 
 /**
  * Retry promise
@@ -70,7 +67,6 @@ async function retryPromise(fn, attempts, backoff) {
     }
 }
 
-
 /**
  * Retry promise
  *
@@ -86,7 +82,6 @@ function retry(fn, { attempts = 5, min = 5000, max = 30000 } = {}) {
     const backoff = new Backoff({ min, max });
     return retryPromise(fn, attempts, backoff);
 }
-
 
 /**
  * Parse URLs from link header
@@ -106,7 +101,6 @@ function parseLinkHeader(header, rel = 'alternate') {
 
     return results.filter((r) => r);
 }
-
 
 /**
  * Find certificate chain with preferred issuer common name
@@ -157,7 +151,6 @@ function findCertificateChainForIssuer(chains, issuer) {
     return chains[0];
 }
 
-
 /**
  * Find and format error in response object
  *
@@ -177,7 +170,6 @@ function formatResponseError(resp) {
 
     return result.replace(/\n/g, '');
 }
-
 
 /**
  * Resolve root domain name by looking for SOA record
@@ -203,7 +195,6 @@ async function resolveDomainBySoaRecord(recordName) {
         return resolveDomainBySoaRecord(parentRecordName);
     }
 }
-
 
 /**
  * Get DNS resolver using domains authoritative NS records
@@ -245,7 +236,6 @@ async function getAuthoritativeDnsResolver(recordName) {
     return resolver;
 }
 
-
 /**
  * Attempt to retrieve TLS ALPN certificate from peer
  *
@@ -267,7 +257,7 @@ async function retrieveTlsAlpnCertificate(host, port, timeout = 30000) {
             port,
             servername: host,
             rejectUnauthorized: false,
-            ALPNProtocols: ['acme-tls/1']
+            ALPNProtocols: ['acme-tls/1'],
         });
 
         socket.setTimeout(timeout);
@@ -299,7 +289,6 @@ async function retrieveTlsAlpnCertificate(host, port, timeout = 30000) {
     });
 }
 
-
 /**
  * Export utils
  */
@@ -310,5 +299,5 @@ module.exports = {
     findCertificateChainForIssuer,
     formatResponseError,
     getAuthoritativeDnsResolver,
-    retrieveTlsAlpnCertificate
+    retrieveTlsAlpnCertificate,
 };

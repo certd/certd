@@ -7,7 +7,6 @@ const { assert } = require('chai');
 const spec = {};
 module.exports = spec;
 
-
 /**
  * ACME
  */
@@ -120,7 +119,6 @@ spec.rfc8555.challenge = (obj) => {
     }
 };
 
-
 /**
  * Crypto
  */
@@ -149,7 +147,6 @@ spec.crypto.certificateInfo = (obj) => {
     assert.strictEqual(Object.prototype.toString.call(obj.notBefore), '[object Date]');
     assert.strictEqual(Object.prototype.toString.call(obj.notAfter), '[object Date]');
 };
-
 
 /**
  * JWK

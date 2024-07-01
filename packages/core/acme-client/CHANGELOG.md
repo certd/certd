@@ -55,7 +55,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # Changelog
 
-## v5.3.1
+## v5.3.1 (2024-05-22)
 
 * `fixed` Allow `client.auto()` being called with an empty CSR common name
 * `fixed` Bug when calling `updateAccountKey()` with external account binding
@@ -92,7 +92,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * `fixed` Upgrade `axios@0.26.1`
 * `fixed` Upgrade `node-forge@1.3.0` - [CVE-2022-24771](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-24771), [CVE-2022-24772](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-24772), [CVE-2022-24773](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-24773)
 
-## 4.2.4 (2022-03-19)
+## v4.2.4 (2022-03-19)
 
 * `fixed` Use SHA-256 when signing CSRs
 
