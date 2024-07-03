@@ -160,6 +160,26 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             width: 300,
             valueChange({ value, getComponentRef }) {
               console.log("value changed:", value, getComponentRef("radio"));
+            },
+            editable: {
+              async updateCell(opts) {
+                const { row, key, value } = opts;
+                //如果是添加，需要返回{[rowKey]:xxx},比如:{id:2}
+                await api.UpdateCell(row.id, key, value);
+                //同时修改 updateCellLink
+                await api.UpdateCell(row.id, "updateCellLink", value);
+                //修改联动本地列
+                row.updateCellLink = value;
+              }
+            }
+          }
+        },
+        updateCellLink: {
+          title: "状态联动",
+          type: "text",
+          column: {
+            editable: {
+              disabled: true
             }
           }
         },

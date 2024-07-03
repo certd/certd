@@ -766,6 +766,12 @@ export const crudResources = [
             component: "/crud/advanced/in-dialog/index.vue"
           },
           {
+            title: "抽屉中显示crud",
+            name: "AdvancedInDrawer",
+            path: "/crud/advanced/in-drawer",
+            component: "/crud/advanced/in-drawer/index.vue"
+          },
+          {
             title: "大量数据",
             name: "AdvancedBigData",
             path: "/crud/advanced/big-data",
