@@ -129,7 +129,8 @@ module.exports = async (client, userOpts) => {
                 // throw new Error('测试异常');
                 /* Challenge verification */
                 if (opts.skipChallengeVerification === true) {
-                    log(`[auto] [${d}] Skipping challenge verification since skipChallengeVerification=true`);
+                    log(`[auto] [${d}] Skipping challenge verification since skipChallengeVerification=true，wait 60s`);
+                    await wait(60 * 1000);
                 }
                 else {
                     log(`[auto] [${d}] Running challenge verification`);
