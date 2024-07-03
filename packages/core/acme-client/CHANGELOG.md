@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.21.0](https://github.com/publishlab/node-acme-client/compare/v1.20.17...v1.21.0) (2024-07-03)
+
+### Features
+
+* 支持zero ssl ([eade2c2](https://github.com/publishlab/node-acme-client/commit/eade2c2b681569f03e9cd466e7d5bcd6703ed492))
+
 ## [1.20.17](https://github.com/publishlab/node-acme-client/compare/v1.20.16...v1.20.17) (2024-07-03)
 
 ### Performance Improvements
