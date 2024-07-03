@@ -1,6 +1,6 @@
 import { AbstractTaskPlugin, Decorator, HttpClient, IAccessService, IContext, IsTaskPlugin, RunStrategy, Step, TaskInput, TaskOutput } from "@certd/pipeline";
 import dayjs from "dayjs";
-import { AcmeService, CertInfo } from "./acme";
+import { AcmeService, CertInfo, SSLProvider } from "./acme";
 import _ from "lodash";
 import { Logger } from "log4js";
 import { DnsProviderContext, DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider";
@@ -55,6 +55,32 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     helper: "请输入邮箱",
   })
   email!: string;
+
+  @TaskInput({
+    title: "证书提供商",
+    value: "letsencrypt",
+    component: {
+      name: "a-select",
+      vModel: "value",
+      options: [
+        { value: "letsencrypt", label: "Let's Encrypt" },
+        // { value: "buypass", label: "Buypass" },
+        { value: "zerossl", label: "ZeroSSL" },
+      ],
+    },
+    required: true,
+  })
+  sslProvider!: SSLProvider;
+
+  @TaskInput({
+    title: "EAB授权",
+    component: {
+      name: "pi-access-selector",
+      type: "eab",
+    },
+    helper: "如果使用ZeroSSL证书，需要提供EAB授权， 请前往 https://app.zerossl.com/developer 生成 'EAB Credentials for ACME Clients' ",
+  })
+  eabAccessId!: number;
 
   @TaskInput({
     title: "DNS提供商",
@@ -135,7 +161,11 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     this.http = this.ctx.http;
     this.lastStatus = this.ctx.lastStatus as Step;
 
-    this.acme = new AcmeService({ userContext: this.userContext, logger: this.logger });
+    let eab: any = null;
+    if (this.eabAccessId) {
+      eab = await this.ctx.accessService.getById(this.eabAccessId);
+    }
+    this.acme = new AcmeService({ userContext: this.userContext, logger: this.logger, sslProvider: this.sslProvider, eab });
   }
 
   async execute(): Promise<void> {

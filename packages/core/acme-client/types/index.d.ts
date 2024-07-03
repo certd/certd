@@ -92,6 +92,7 @@ export const directory: {
         production: string
     },
     zerossl: {
+        staging: string,
         production: string
     }
 };

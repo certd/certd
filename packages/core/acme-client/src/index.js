@@ -18,6 +18,7 @@ exports.directory = {
         production: 'https://acme-v02.api.letsencrypt.org/directory',
     },
     zerossl: {
+        staging: 'https://acme.zerossl.com/v2/DV90',
         production: 'https://acme.zerossl.com/v2/DV90',
     },
 };

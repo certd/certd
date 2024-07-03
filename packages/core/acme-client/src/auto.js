@@ -36,6 +36,9 @@ module.exports = async (client, userOpts) => {
     if (opts.email) {
         accountPayload.contact = [`mailto:${opts.email}`];
     }
+    if (opts.externalAccountBinding) {
+        accountPayload.externalAccountBinding = opts.externalAccountBinding;
+    }
 
     /**
      * Register account

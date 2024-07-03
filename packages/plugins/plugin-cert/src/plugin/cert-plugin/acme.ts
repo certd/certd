@@ -6,18 +6,24 @@ import { Logger } from "log4js";
 import { IContext } from "@certd/pipeline";
 import { IDnsProvider } from "../../dns-provider";
 import psl from "psl";
+import { ClientExternalAccountBindingOptions } from "@certd/acme-client";
 
 export type CertInfo = {
   crt: string;
   key: string;
   csr: string;
 };
+export type SSLProvider = "letsencrypt" | "buypass" | "zerossl";
 export class AcmeService {
   userContext: IContext;
   logger: Logger;
-  constructor(options: { userContext: IContext; logger: Logger }) {
+  sslProvider: SSLProvider;
+  eab?: ClientExternalAccountBindingOptions;
+  constructor(options: { userContext: IContext; logger: Logger; sslProvider: SSLProvider; eab?: ClientExternalAccountBindingOptions }) {
     this.userContext = options.userContext;
     this.logger = options.logger;
+    this.sslProvider = options.sslProvider || "letsencrypt";
+    this.eab = options.eab;
     acme.setLogger((text: string) => {
       this.logger.info(text);
     });
@@ -28,7 +34,7 @@ export class AcmeService {
   }
 
   buildAccountKey(email: string) {
-    return "acme.config." + email;
+    return `acme.config.${this.sslProvider}.${email}`;
   }
 
   async saveAccountConfig(email: string, conf: any) {
@@ -41,11 +47,18 @@ export class AcmeService {
       conf.key = await this.createNewKey();
       await this.saveAccountConfig(email, conf);
     }
+    let directoryUrl = "";
+    if (isTest) {
+      directoryUrl = acme.directory[this.sslProvider].staging;
+    } else {
+      directoryUrl = acme.directory[this.sslProvider].production;
+    }
     const client = new acme.Client({
-      directoryUrl: isTest ? acme.directory.letsencrypt.staging : acme.directory.letsencrypt.production,
+      directoryUrl: directoryUrl,
       accountKey: conf.key,
       accountUrl: conf.accountUrl,
-      backoffAttempts: 70,
+      externalAccountBinding: this.eab,
+      backoffAttempts: 30,
       backoffMin: 5000,
       backoffMax: 10000,
     });
@@ -54,6 +67,7 @@ export class AcmeService {
       const accountPayload = {
         termsOfServiceAgreed: true,
         contact: [`mailto:${email}`],
+        externalAccountBinding: this.eab,
       };
       await client.createAccount(accountPayload);
       conf.accountUrl = client.getAccountUrl();
