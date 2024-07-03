@@ -61,7 +61,6 @@ export class SshAccess implements IAccess, ConnectConfig {
   })
   passphrase!: string;
 
-
   @AccessInput({
     title: '是否Windows',
     helper: '如果是Windows主机，请勾选此项',
@@ -70,7 +69,7 @@ export class SshAccess implements IAccess, ConnectConfig {
       vModel: 'checked',
     },
   })
-  windows: boolean = false;
+  windows = false;
 
   @AccessInput({
     title: '命令编码',
@@ -78,11 +77,11 @@ export class SshAccess implements IAccess, ConnectConfig {
     component: {
       name: 'a-select',
       vModel: 'value',
-      options:[
-        {value:"","label":"默认"},
-        {value:"GBK","label":"GBK"},
-        {value:"UTF8","label":"UTF-8"},
-      ]
+      options: [
+        { value: '', label: '默认' },
+        { value: 'GBK', label: 'GBK' },
+        { value: 'UTF8', label: 'UTF-8' },
+      ],
     },
   })
   encoding: string;

@@ -27,7 +27,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
     title: '证书保存路径',
     helper: '需要有写入权限，路径要包含证书文件名，文件名不能用*?!等特殊符号',
     component: {
-      placeholder: '/root/deploy/nginx/cert.crt',
+      placeholder: '/root/deploy/nginx/cert.pem',
     },
   })
   crtPath!: string;
