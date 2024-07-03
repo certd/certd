@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.17](https://github.com/fast-crud/fast-server-js/compare/v1.20.16...v1.20.17) (2024-07-03)
+
+### Performance Improvements
+
+* 文件上传提示由cert.crt改为cert.pem ([a09b0e4](https://github.com/fast-crud/fast-server-js/commit/a09b0e48c176f3ed763791bd50322c29729f7c1c))
+
 ## [1.20.16](https://github.com/fast-crud/fast-server-js/compare/v1.20.15...v1.20.16) (2024-07-01)
 
 ### Bug Fixes

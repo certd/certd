@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.17](https://github.com/publishlab/node-acme-client/compare/v1.20.16...v1.20.17) (2024-07-03)
+
+### Performance Improvements
+
+* 创建dns解析后，强制等待60s ([f47b35f](https://github.com/publishlab/node-acme-client/commit/f47b35f6d5bd7d675005c3e286b7e9a029201f8b))
+* 优化cname verify ([eba333d](https://github.com/publishlab/node-acme-client/commit/eba333de7a5b5ef4b0b7eaa904f578720102fa61))
+
 ## [1.20.16](https://github.com/publishlab/node-acme-client/compare/v1.20.15...v1.20.16) (2024-07-01)
 
 ### Bug Fixes
