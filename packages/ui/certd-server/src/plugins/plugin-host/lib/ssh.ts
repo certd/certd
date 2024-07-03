@@ -77,7 +77,7 @@ export class AsyncSsh2Client {
           reject(err);
           return;
         }
-        let data: string = null;
+        let data: string = '';
         stream
           .on('close', (code: any, signal: any) => {
             this.logger.info(`[${this.connConf.host}][close]:code:${code}`);
@@ -88,12 +88,14 @@ export class AsyncSsh2Client {
             }
           })
           .on('data', (ret: Buffer) => {
-            data = this.convert(ret)
-            this.logger.info(`[${this.connConf.host}][info]: ` + data);
+            const out = this.convert(ret)
+            data += out
+            this.logger.info(`[${this.connConf.host}][info]: ` + out.trimEnd());
           })
           .stderr.on('data', (ret:Buffer) => {
-            data = this.convert(ret)
-            this.logger.info(`[${this.connConf.host}][error]: ` + data);
+            const err = this.convert(ret)
+            data += err
+            this.logger.info(`[${this.connConf.host}][error]: ` + err.trimEnd());
           });
       });
     });
@@ -167,7 +169,12 @@ export class SshClient {
               this.logger.info("请注意：windows下，文件目录分隔应该写成\\而不是/")
               this.logger.info("--------------------------")
             }
-            mkdirCmd = `if not exist "${filePath}" mkdir  ${filePath} `
+            const spec = await conn.exec(`echo %COMSPEC%`);
+            if (spec.toString().trim() === '%COMSPEC%') {
+              mkdirCmd = `New-Item -ItemType Directory -Path "${filePath}" -Force`;
+            } else {
+              mkdirCmd = `if not exist "${filePath}" mkdir "${filePath}"`;
+            }
           }
           await conn.exec(mkdirCmd);
           await conn.fastPut({ sftp, ...transport });
