@@ -178,7 +178,7 @@ export class AcmeService {
       csr,
       email: email,
       termsOfServiceAgreed: true,
-      skipChallengeVerification: true,
+      skipChallengeVerification: false,
       challengePriority: ["dns-01"],
       challengeCreateFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string): Promise<any> => {
         return await this.challengeCreateFn(authz, challenge, keyAuthorization, dnsProvider);

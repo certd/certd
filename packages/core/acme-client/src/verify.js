@@ -48,18 +48,18 @@ async function verifyHttpChallenge(authz, challenge, keyAuthorization, suffix = 
 
 async function walkDnsChallengeRecord(recordName, resolver = dns) {
     /* Resolve CNAME record first */
-    try {
-        log(`Checking name for CNAME records: ${recordName}`);
-        const cnameRecords = await resolver.resolveCname(recordName);
-
-        if (cnameRecords.length) {
-            log(`CNAME record found at ${recordName}, new challenge record name: ${cnameRecords[0]}`);
-            return walkDnsChallengeRecord(cnameRecords[0]);
-        }
-    }
-    catch (e) {
-        log(`No CNAME records found for name: ${recordName}`);
-    }
+    // try {
+    //     log(`Checking name for CNAME records: ${recordName}`);
+    //     const cnameRecords = await resolver.resolveCname(recordName);
+    //
+    //     if (cnameRecords.length) {
+    //         log(`CNAME record found at ${recordName}, new challenge record name: ${cnameRecords[0]}`);
+    //         return walkDnsChallengeRecord(cnameRecords[0]);
+    //     }
+    // }
+    // catch (e) {
+    //     log(`No CNAME records found for name: ${recordName}`);
+    // }
 
     /* Resolve TXT records */
     try {
