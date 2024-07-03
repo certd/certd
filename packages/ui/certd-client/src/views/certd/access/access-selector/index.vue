@@ -5,7 +5,7 @@
       <fs-icon class="cd-icon-button" icon="ion:close-circle-outline" @click="clear"></fs-icon>
     </span>
     <span v-else class="mlr-5 gray">请选择</span>
-    <a-button @click="chooseForm.open">选择</a-button>
+    <a-button class="ml-5" @click="chooseForm.open">选择</a-button>
     <a-form-item-rest v-if="chooseForm.show">
       <a-modal v-model:open="chooseForm.show" title="选择授权提供者" width="700px" @ok="chooseForm.ok">
         <div style="height: 400px; position: relative">
@@ -46,9 +46,9 @@ export default defineComponent({
       }
     }
 
-    function clear(){
+    function clear() {
       selectedId.value = "";
-      target.value = null
+      target.value = null;
       ctx.emit("update:modelValue", selectedId.value);
     }
 
@@ -98,7 +98,6 @@ export default defineComponent({
         ctx.emit("update:modelValue", selectedId.value);
       }
     });
-
 
     return {
       clear,

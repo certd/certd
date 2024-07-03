@@ -1,7 +1,7 @@
-import { compute } from "@fast-crud/fast-crud";
+import { compute, CreateCrudOptionsProps, CreateCrudOptionsRet } from "@fast-crud/fast-crud";
 import { Dicts } from "./dicts";
 
-export default function () {
+export default function (): CreateCrudOptionsRet {
   return {
     crudOptions: {
       form: {
@@ -12,7 +12,7 @@ export default function () {
       columns: {
         domains: {
           title: "域名",
-          type: ["dict-select"],
+          type: "dict-select",
           search: {
             show: true,
             component: {
@@ -56,6 +56,30 @@ export default function () {
           search: { show: false },
           form: {
             rules: [{ required: true, type: "email", message: "请填写邮箱" }]
+          }
+        },
+        blank: {
+          title: "占位",
+          type: "text",
+          form: {
+            blank: true
+          }
+        },
+        sslProvider: {
+          title: "证书提供商",
+          type: "dict-select",
+          dict: Dicts.sslProviderDict
+        },
+        eabAccess: {
+          title: "EAB授权",
+          type: "dict-select",
+          form: {
+            component: {
+              name: "PiAccessSelector",
+              type: "eab",
+              vModel: "modelValue"
+            },
+            helper: "如果是ZeroSSL，需要配置EAB授权，https://app.zerossl.com/developer 生成 'EAB' "
           }
         },
         dnsProviderType: {

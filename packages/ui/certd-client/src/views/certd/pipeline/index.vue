@@ -7,6 +7,11 @@
       <template #actionbar-right>
         <!--        <span style="margin-left: 10px">出现<a-tag>Promise rejected attempt #18,retrying in 10000ms:No TXT recordsfound for name</a-tag>属于正常现象，多重试几次</span>-->
       </template>
+      <template #form-bottom>
+        <div>
+          申请证书
+        </div>
+      </template>
       <pi-certd-form ref="certdFormRef"></pi-certd-form>
     </fs-crud>
   </fs-page>

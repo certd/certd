@@ -58,7 +58,7 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: "证书提供商",
-    value: "letsencrypt",
+    default: "letsencrypt",
     component: {
       name: "a-select",
       vModel: "value",

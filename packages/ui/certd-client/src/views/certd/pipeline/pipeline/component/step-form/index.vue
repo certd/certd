@@ -64,11 +64,11 @@
                 name: 'a-select',
                 vModel: 'value',
                 options: [
-                  { value: 0, label: '正常运行' },
-                  { value: 1, label: '成功后跳过' }
+                  { value: 0, label: '正常运行（证书申请任务请选择它）' },
+                  { value: 1, label: '成功后跳过（其他任务请选择它）' }
                 ]
               },
-              helper:'该任务运行成功一次之后下次运行是否跳过，证书申请任务务必选择正常运行',
+              helper: '该任务运行成功一次之后下次运行是否跳过，保持默认即可',
               rules: [{ required: true, message: '此项必填' }]
             }"
             :get-context-fn="blankFn"
@@ -90,10 +90,10 @@ import { message, Modal } from "ant-design-vue";
 import { computed, inject, Ref, ref } from "vue";
 import _ from "lodash-es";
 import { nanoid } from "nanoid";
-import {CopyOutlined} from "@ant-design/icons-vue";
+import { CopyOutlined } from "@ant-design/icons-vue";
 export default {
   name: "PiStepForm",
-  components:{CopyOutlined},
+  components: { CopyOutlined },
   props: {
     editMode: {
       type: Boolean,
@@ -173,7 +173,7 @@ export default {
         stepDrawerShow();
       };
 
-      const stepAdd = (emit: any,stepDef:any) => {
+      const stepAdd = (emit: any, stepDef: any) => {
         mode.value = "add";
         const step: any = {
           id: nanoid(),
@@ -183,7 +183,7 @@ export default {
           input: {},
           status: null
         };
-        _.merge(step,stepDef)
+        _.merge(step, stepDef);
         stepOpen(step, emit);
       };
 

@@ -45,7 +45,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: '大区',
-    value: 'cn-shanghai',
+    default: 'cn-shanghai',
     component: {
       placeholder: '集群所属大区',
     },
@@ -55,7 +55,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: '命名空间',
-    value: 'default',
+    default: 'default',
     component: {
       placeholder: '命名空间',
     },
@@ -64,7 +64,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
   namespace!: string;
   @TaskInput({
     title: 'ingress名称',
-    value: '',
+    default: '',
     component: {
       placeholder: 'ingress名称',
     },
@@ -74,7 +74,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
   ingressName!: string;
   @TaskInput({
     title: 'ingress类型',
-    value: 'nginx',
+    default: 'nginx',
     component: {
       placeholder: '暂时只支持nginx类型',
     },
@@ -83,8 +83,10 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
   ingressClass!: string;
   @TaskInput({
     title: '是否私网ip',
-    value: false,
+    default: false,
     component: {
+      name: 'a-switch',
+      vModel: 'checked',
       placeholder: '集群连接端点是否是私网ip',
     },
     helper: '如果您当前certd运行在同一个私网下，可以选择是。',

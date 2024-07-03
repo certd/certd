@@ -65,7 +65,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
       '开启后，将直接复制到当前主机某个目录，不上传到主机，由于是docker启动，实际上是复制到docker容器内的“证书保存路径”，你需要事先在docker-compose.yaml中配置主机目录映射： volumes: /your_target_path:/your_target_path',
     component: {
       name: 'a-switch',
-      value: false,
+      default: false,
       vModel: 'checked',
     },
   })

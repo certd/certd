@@ -10,7 +10,7 @@ import { DnspodAccess } from '../access';
 
 @IsDnsProvider({
   name: 'dnspod',
-  title: 'dnspod(已过时)',
+  title: 'dnspod(已过时,请尽快换成腾讯云)',
   desc: '请尽快换成腾讯云类型',
   accessType: 'dnspod',
 })

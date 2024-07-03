@@ -2,7 +2,7 @@ import { IsAccess, AccessInput } from "@certd/pipeline";
 
 @IsAccess({
   name: "eab",
-  title: "EABAccess",
+  title: "EAB授权",
   desc: "ZeroSSL证书申请需要EAB授权",
 })
 export class EabAccess {

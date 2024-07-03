@@ -30,7 +30,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
 
   @TaskInput({
     title: '大区',
-    value: 'cn-hangzhou',
+    default: 'cn-hangzhou',
     component: {
       name: 'a-select',
       vModel: 'value',
