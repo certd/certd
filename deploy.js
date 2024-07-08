@@ -6,17 +6,6 @@ import {default as packageJson} from './packages/core/pipeline/package.json' ass
 const certdVersion = packageJson.version
 console.log("certdVersion", certdVersion)
 
-
-const gitAdd = fs.readAsText("./node_modules/@lerna-lite/version/dist/lib/git-add.js")
-if(gitAdd.indexOf("('git', ['add', '.']") > -1){
-    console.log("git-add 已经修改过了")
-}else{
-    console.log("git-add 没有修改过")
-    fs.writeTextFile("./node_modules/@lerna-lite/version/dist/lib/git-add.js", gitAdd.replace("('git', ['add', '--', ...files]", "('git', ['add', '.']"))
-    console.log("git-add 修改成功")
-}
-
-
 // 同步npmmirror的包
 async function getPackages(directoryPath) {
     return new Promise((resolve, reject) => {
