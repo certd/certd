@@ -156,6 +156,9 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
           keyPath
         );
       }
+    } catch (e) {
+      this.logger.error(`上传失败：${e.message}`);
+      throw e;
     } finally {
       //删除临时文件
       this.logger.info('删除临时文件');
