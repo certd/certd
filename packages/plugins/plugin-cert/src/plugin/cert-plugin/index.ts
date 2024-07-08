@@ -38,10 +38,10 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
       span: 24,
     },
     helper:
-      "支持通配符域名，例如： *.foo.com、foo.com、*.test.handsfree.work\n" +
-      "支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）\n" +
-      "多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com、foo.com）\n" +
-      "输入一个回车之后，再输入下一个",
+      "1、支持通配符域名，例如： *.foo.com、foo.com、*.test.handsfree.work\n" +
+      "2、支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）\n" +
+      "3、多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com、foo.com）\n" +
+      "4、输入一个回车之后，再输入下一个",
   })
   domains!: string;
 
@@ -110,7 +110,7 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
   dnsProviderAccess!: string;
 
   @TaskInput({
-    title: "跳过本地校验DNS解析",
+    title: "跳过本地校验DNS",
     default: false,
     component: {
       name: "a-switch",
