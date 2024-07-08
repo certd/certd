@@ -1,6 +1,6 @@
 {
   "name": "@certd/ui-client",
-  "version": "1.21.0",
+  "version": "1.21.1",
   "private": true,
   "scripts": {
     "dev": "vite --open",
@@ -59,7 +59,7 @@
     "vuedraggable": "^2.24.3"
   },
   "devDependencies": {
-    "@certd/pipeline": "^1.21.0",
+    "@certd/pipeline": "^1.21.1",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@types/chai": "^4.3.12",
