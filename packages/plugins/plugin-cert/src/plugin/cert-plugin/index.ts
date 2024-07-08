@@ -110,6 +110,17 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
   dnsProviderAccess!: string;
 
   @TaskInput({
+    title: "跳过本地校验DNS解析",
+    default: false,
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+    helper: "如果重试多次出现Authorization not found TXT record，导致无法申请成功，请尝试开启此选项",
+  })
+  skipLocalVerify = false;
+
+  @TaskInput({
     title: "更新天数",
     component: {
       name: "a-input-number",
@@ -165,7 +176,13 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     if (this.eabAccessId) {
       eab = await this.ctx.accessService.getById(this.eabAccessId);
     }
-    this.acme = new AcmeService({ userContext: this.userContext, logger: this.logger, sslProvider: this.sslProvider, eab });
+    this.acme = new AcmeService({
+      userContext: this.userContext,
+      logger: this.logger,
+      sslProvider: this.sslProvider,
+      eab,
+      skipLocalVerify: this.skipLocalVerify,
+    });
   }
 
   async execute(): Promise<void> {
