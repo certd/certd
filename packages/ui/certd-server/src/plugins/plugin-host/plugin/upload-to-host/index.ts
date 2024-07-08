@@ -48,6 +48,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
     required: true,
   })
   cert!: CertInfo;
+
   @TaskInput({
     title: '主机登录配置',
     helper: 'access授权',
@@ -60,12 +61,23 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   accessId!: string;
 
   @TaskInput({
+    title: '自动创建远程目录',
+    helper: '是否自动创建远程目录,如果关闭则你需要自己确保远程目录存在',
+    default: true,
+    component: {
+      name: 'a-switch',
+      vModel: 'checked',
+    },
+  })
+  mkdirs = true;
+
+  @TaskInput({
     title: '仅复制到当前主机',
     helper:
       '开启后，将直接复制到当前主机某个目录，不上传到主机，由于是docker启动，实际上是复制到docker容器内的“证书保存路径”，你需要事先在docker-compose.yaml中配置主机目录映射： volumes: /your_target_path:/your_target_path',
+    default: false,
     component: {
       name: 'a-switch',
-      default: false,
       vModel: 'checked',
     },
   })
@@ -135,6 +147,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
               remotePath: keyPath,
             },
           ],
+          mkdirs: this.mkdirs,
         });
         this.logger.info(
           '证书上传成功：crtPath=',

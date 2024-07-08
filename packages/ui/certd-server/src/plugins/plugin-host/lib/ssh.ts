@@ -4,13 +4,13 @@ import path from 'path';
 import _ from 'lodash';
 import { ILogger } from '@certd/pipeline';
 import iconv from 'iconv-lite';
-import {SshAccess} from "../access";
+import { SshAccess } from '../access';
 export class AsyncSsh2Client {
   conn: ssh2.Client;
   logger: ILogger;
   connConf: ssh2.ConnectConfig;
-  windows:boolean = false;
-  encoding:string;
+  windows = false;
+  encoding: string;
   constructor(connConf: SshAccess, logger: ILogger) {
     this.connConf = connConf;
     this.logger = logger;
@@ -19,7 +19,7 @@ export class AsyncSsh2Client {
   }
 
   convert(buffer: Buffer) {
-    if(this.encoding){
+    if (this.encoding) {
       return iconv.decode(buffer, this.encoding);
     }
     return buffer.toString();
@@ -77,7 +77,7 @@ export class AsyncSsh2Client {
           reject(err);
           return;
         }
-        let data: string = '';
+        let data = '';
         stream
           .on('close', (code: any, signal: any) => {
             this.logger.info(`[${this.connConf.host}][close]:code:${code}`);
@@ -88,14 +88,16 @@ export class AsyncSsh2Client {
             }
           })
           .on('data', (ret: Buffer) => {
-            const out = this.convert(ret)
-            data += out
+            const out = this.convert(ret);
+            data += out;
             this.logger.info(`[${this.connConf.host}][info]: ` + out.trimEnd());
           })
-          .stderr.on('data', (ret:Buffer) => {
-            const err = this.convert(ret)
-            data += err
-            this.logger.info(`[${this.connConf.host}][error]: ` + err.trimEnd());
+          .stderr.on('data', (ret: Buffer) => {
+            const err = this.convert(ret);
+            data += err;
+            this.logger.info(
+              `[${this.connConf.host}][error]: ` + err.trimEnd()
+            );
           });
       });
     });
@@ -118,15 +120,15 @@ export class AsyncSsh2Client {
             resolve(output);
           })
           .on('data', (ret: Buffer) => {
-            const data = this.convert(ret)
+            const data = this.convert(ret);
             this.logger.info('' + data);
             output.push(data);
           })
-          .stderr.on('data', (ret:Buffer) => {
-            const data = this.convert(ret)
+          .stderr.on('data', (ret: Buffer) => {
+            const data = this.convert(ret);
             output.push(data);
             this.logger.info(`[${this.connConf.host}][error]: ` + data);
-        });
+          });
         stream.end(script + '\nexit\n');
       });
     });
@@ -153,30 +155,39 @@ export class SshClient {
          }
    * @param options
    */
-  async uploadFiles(options: { connectConf: SshAccess; transports: any }) {
-    const { connectConf, transports } = options;
+  async uploadFiles(options: {
+    connectConf: SshAccess;
+    transports: any;
+    mkdirs: boolean;
+  }) {
+    const { connectConf, transports, mkdirs } = options;
     await this._call({
       connectConf,
       callable: async (conn: AsyncSsh2Client) => {
         const sftp = await conn.getSftp();
         this.logger.info('开始上传');
         for (const transport of transports) {
-          let filePath = path.dirname(transport.remotePath);
-          let mkdirCmd = `mkdir -p ${filePath} `;
-          if(conn.windows){
-            if(filePath.indexOf("/") > -1){
-              this.logger.info("--------------------------")
-              this.logger.info("请注意：windows下，文件目录分隔应该写成\\而不是/")
-              this.logger.info("--------------------------")
+          if (mkdirs !== false) {
+            const filePath = path.dirname(transport.remotePath);
+            let mkdirCmd = `mkdir -p ${filePath} `;
+            if (conn.windows) {
+              if (filePath.indexOf('/') > -1) {
+                this.logger.info('--------------------------');
+                this.logger.info(
+                  '请注意：windows下，文件目录分隔应该写成\\而不是/'
+                );
+                this.logger.info('--------------------------');
+              }
+              const spec = await conn.exec('echo %COMSPEC%');
+              if (spec.toString().trim() === '%COMSPEC%') {
+                mkdirCmd = `New-Item -ItemType Directory -Path "${filePath}" -Force`;
+              } else {
+                mkdirCmd = `if not exist "${filePath}" mkdir "${filePath}"`;
+              }
             }
-            const spec = await conn.exec(`echo %COMSPEC%`);
-            if (spec.toString().trim() === '%COMSPEC%') {
-              mkdirCmd = `New-Item -ItemType Directory -Path "${filePath}" -Force`;
-            } else {
-              mkdirCmd = `if not exist "${filePath}" mkdir "${filePath}"`;
-            }
+            await conn.exec(mkdirCmd);
           }
-          await conn.exec(mkdirCmd);
+
           await conn.fastPut({ sftp, ...transport });
         }
         this.logger.info('文件全部上传成功');
