@@ -2,8 +2,6 @@ logs/
 npm-debug.log
 yarn-error.log
 node_modules/
-package-lock.json
-yarn.lock
 coverage/
 dist/
 .idea/
@@ -13,9 +11,6 @@ run/
 *.un~
 .tsbuildinfo
 .tsbuildinfo.*
-/data/db.sqlite
-/pnpm-lock.yaml
-.serverless
-data
-public
-!public/.gitignore
+./data
+
+./test/**/*.js

@@ -1,4 +1,4 @@
-import _ from "lodash";
+import _ from "lodash-es";
 
 const propertyMap: any = {};
 function attachProperty(target: any, propertyKey: string | symbol) {
@@ -25,7 +25,7 @@ function target(target: any, propertyKey?: string | symbol) {
 }
 
 function inject(define: any, instance: any, context: any, preHandler?: (item: any, key: string, instance: any, context: any) => void) {
-  _.forEach(define, (item, key) => {
+  _.forEach(define, (item: any, key: any) => {
     if (preHandler) {
       preHandler(item, key, instance, context);
     }

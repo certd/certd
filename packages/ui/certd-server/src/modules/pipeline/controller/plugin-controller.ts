@@ -5,10 +5,10 @@ import {
   Post,
   Provide,
   Query,
-} from '@midwayjs/decorator';
-import { BaseController } from '../../../basic/base-controller';
-import { PluginService } from '../service/plugin-service';
-import { Constants } from '../../../basic/constants';
+} from '@midwayjs/core';
+import { BaseController } from '../../../basic/base-controller.js';
+import { PluginService } from '../service/plugin-service.js';
+import { Constants } from '../../../basic/constants.js';
 
 /**
  * 插件

@@ -6,10 +6,10 @@ import {
   Post,
   Provide,
   Query,
-} from '@midwayjs/decorator';
-import { CrudController } from '../../../basic/crud-controller';
-import { SysSettingsService } from '../service/sys-settings-service';
-import { SysSettingsEntity } from '../entity/sys-settings';
+} from '@midwayjs/core';
+import { CrudController } from '../../../basic/crud-controller.js';
+import { SysSettingsService } from '../service/sys-settings-service.js';
+import { SysSettingsEntity } from '../entity/sys-settings.js';
 
 /**
  */

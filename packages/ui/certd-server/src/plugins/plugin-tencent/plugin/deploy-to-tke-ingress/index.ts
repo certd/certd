@@ -6,8 +6,8 @@ import {
   TaskInput,
   utils,
 } from '@certd/pipeline';
-import tencentcloud from 'tencentcloud-sdk-nodejs/index';
-import { K8sClient } from '@certd/plugin-util';
+import tencentcloud from 'tencentcloud-sdk-nodejs';
+import { K8sClient } from '@certd/lib-k8s';
 import dayjs from 'dayjs';
 import { Logger } from 'log4js';
 

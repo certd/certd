@@ -1,20 +1,20 @@
-import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service';
-import { PipelineEntity } from '../entity/pipeline';
-import { PipelineDetail } from '../entity/vo/pipeline-detail';
+import { BaseService } from '../../../basic/base-service.js';
+import { PipelineEntity } from '../entity/pipeline.js';
+import { PipelineDetail } from '../entity/vo/pipeline-detail.js';
 import { Executor, Pipeline, ResultType, RunHistory } from '@certd/pipeline';
-import { AccessService } from './access-service';
-import { DbStorage } from './db-storage';
-import { StorageService } from './storage-service';
-import { Cron } from '../../plugin/cron/cron';
-import { HistoryService } from './history-service';
-import { HistoryEntity } from '../entity/history';
-import { HistoryLogEntity } from '../entity/history-log';
-import { HistoryLogService } from './history-log-service';
-import { logger } from '../../../utils/logger';
-import { EmailService } from '../../basic/service/email-service';
+import { AccessService } from './access-service.js';
+import { DbStorage } from './db-storage.js';
+import { StorageService } from './storage-service.js';
+import { Cron } from '../../plugin/cron/cron.js';
+import { HistoryService } from './history-service.js';
+import { HistoryEntity } from '../entity/history.js';
+import { HistoryLogEntity } from '../entity/history-log.js';
+import { HistoryLogService } from './history-log-service.js';
+import { logger } from '../../../utils/logger.js';
+import { EmailService } from '../../basic/service/email-service.js';
 
 const runningTasks: Map<string | number, Executor> = new Map();
 
@@ -138,7 +138,11 @@ export class PipelineService extends BaseService<PipelineEntity> {
       cron: null,
       job: async () => {
         logger.info('job准备启动，当前定时器数量：', this.cron.getListSize());
-        await this.run(id, null);
+        try {
+          await this.run(id, null);
+        } catch (e) {
+          logger.error('定时job执行失败：', e);
+        }
       },
     });
     logger.info('定时器数量：', this.cron.getListSize());
@@ -230,7 +234,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       await executor.run(historyId, triggerType);
     } catch (e) {
       logger.error('执行失败：', e);
-      throw e;
+      // throw e;
     } finally {
       runningTasks.delete(historyId);
     }
@@ -242,8 +246,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       await executor.cancel();
     } else {
       const entity = await this.historyService.info(historyId);
-      if(entity == null){
-        return
+      if (entity == null) {
+        return;
       }
       const pipeline: Pipeline = JSON.parse(entity.pipeline);
       pipeline.status.status = ResultType.canceled;
@@ -295,7 +299,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const entity: HistoryEntity = new HistoryEntity();
     entity.id = parseInt(history.id);
     entity.userId = history.pipeline.userId;
-    entity.status = pipelineEntity.status
+    entity.status = pipelineEntity.status;
     entity.pipeline = JSON.stringify(history.pipeline);
     entity.pipelineId = parseInt(history.pipeline.id);
     await this.historyService.save(entity);

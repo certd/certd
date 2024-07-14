@@ -5,9 +5,8 @@ import {
   IsDnsProvider,
   RemoveRecordOptions,
 } from '@certd/plugin-cert';
-import { TencentAccess } from '../access';
-import tencentcloud from 'tencentcloud-sdk-nodejs/index';
-import TencentCloudSDKHttpException from 'tencentcloud-sdk-nodejs/tencentcloud/common/exception/tencent_cloud_sdk_exception';
+import { TencentAccess } from '../access/index.js';
+import * as tencentcloud from 'tencentcloud-sdk-nodejs';
 
 const DnspodClient = tencentcloud.dnspod.v20210323.Client;
 @IsDnsProvider({
@@ -73,11 +72,9 @@ export class TencentDnsProvider extends AbstractDnsProvider {
    */
       return ret;
     } catch (e: any) {
-      if (e instanceof TencentCloudSDKHttpException) {
-        if (e.code === 'InvalidParameter.DomainRecordExist') {
-          this.logger.info('域名解析已存在,无需重复添加:', fullRecord, value);
-          return {};
-        }
+      if (e?.code === 'InvalidParameter.DomainRecordExist') {
+        this.logger.info('域名解析已存在,无需重复添加:', fullRecord, value);
+        return {};
       }
       throw e;
     }

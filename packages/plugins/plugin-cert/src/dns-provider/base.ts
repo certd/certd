@@ -1,4 +1,4 @@
-import { CreateRecordOptions, DnsProviderContext, IDnsProvider, RemoveRecordOptions } from "./api";
+import { CreateRecordOptions, DnsProviderContext, IDnsProvider, RemoveRecordOptions } from "./api.js";
 
 export abstract class AbstractDnsProvider<T = any> implements IDnsProvider<T> {
   ctx!: DnsProviderContext;

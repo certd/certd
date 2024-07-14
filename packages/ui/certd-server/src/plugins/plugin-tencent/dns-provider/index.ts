@@ -1,1 +1,1 @@
-import './dnspod-dns-provider';
+import './dnspod-dns-provider.js';

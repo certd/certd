@@ -1,17 +1,17 @@
-import { Config, Inject, Provide } from '@midwayjs/decorator';
+import { Config, Inject, Provide } from '@midwayjs/core';
 import { IMidwayKoaContext, IWebMiddleware, NextFunction } from '@midwayjs/koa';
-import * as jwt from 'jsonwebtoken';
-import { Constants } from '../basic/constants';
+import jwt from 'jsonwebtoken';
+import { Constants } from '../basic/constants.js';
 import { MidwayWebRouterService } from '@midwayjs/core';
-import { RoleService } from '../modules/authority/service/role-service';
-import { logger } from '../utils/logger';
+import { RoleService } from '../modules/authority/service/role-service.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * 权限校验
  */
 @Provide()
 export class AuthorityMiddleware implements IWebMiddleware {
-  @Config('keys')
+  @Config('auth.jwt.secret')
   private secret: string;
   @Inject()
   webRouterService: MidwayWebRouterService;
@@ -21,10 +21,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
   resolve() {
     return async (ctx: IMidwayKoaContext, next: NextFunction) => {
       // 查询当前路由是否在路由表中注册
-      const routeInfo = await this.webRouterService.getMatchedRouterInfo(
-        ctx.path,
-        ctx.method
-      );
+      const routeInfo = await this.webRouterService.getMatchedRouterInfo(ctx.path, ctx.method);
       if (routeInfo == null) {
         // 404
         await next();
@@ -33,9 +30,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
       const permission = routeInfo.summary;
       if (permission == null || permission === '') {
         ctx.status = 500;
-        ctx.body = Constants.res.serverError(
-          '该路由未配置权限控制:' + ctx.path
-        );
+        ctx.body = Constants.res.serverError('该路由未配置权限控制:' + ctx.path);
         return;
       }
 
@@ -57,6 +52,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
       try {
         ctx.user = jwt.verify(token, this.secret);
       } catch (err) {
+        logger.error('token verify error: ', err);
         ctx.status = 401;
         ctx.body = Constants.res.auth;
         return;
@@ -65,8 +61,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
       if (permission !== Constants.per.authOnly) {
         //如果不是仅校验登录，还需要校验是否拥有权限
         const roleIds: number[] = ctx.user.roles;
-        const permissions =
-          await this.roleService.getCachedPermissionSetByRoleIds(roleIds);
+        const permissions = await this.roleService.getCachedPermissionSetByRoleIds(roleIds);
 
         if (!permissions.has(permission)) {
           logger.info('not permission: ', ctx.req.url);

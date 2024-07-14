@@ -7,8 +7,8 @@ import {
   TaskOutput,
 } from '@certd/pipeline';
 import Core from '@alicloud/pop-core';
-import { AliyunAccess } from '../../access';
-import { appendTimeSuffix, checkRet, ZoneOptions } from '../../utils';
+import { AliyunAccess } from '../../access/index.js';
+import { appendTimeSuffix, checkRet, ZoneOptions } from '../../utils/index.js';
 import { Logger } from 'log4js';
 
 @IsTaskPlugin({

@@ -1,7 +1,7 @@
-import { Body, Controller, Inject, Post, Provide } from '@midwayjs/decorator';
-import { BaseController } from '../../../basic/base-controller';
-import { EmailService } from '../service/email-service';
-import { Constants } from '../../../basic/constants';
+import { Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
+import { BaseController } from '../../../basic/base-controller.js';
+import { EmailService } from '../service/email-service.js';
+import { Constants } from '../../../basic/constants.js';
 
 /**
  */

@@ -5,10 +5,10 @@ import {
   Post,
   Provide,
   ALL,
-} from '@midwayjs/decorator';
-import { LoginService } from '../service/login-service';
-import { BaseController } from '../../../basic/base-controller';
-import { Constants } from '../../../basic/constants';
+} from '@midwayjs/core';
+import { LoginService } from '../service/login-service.js';
+import { BaseController } from '../../../basic/base-controller.js';
+import { Constants } from '../../../basic/constants.js';
 
 /**
  */

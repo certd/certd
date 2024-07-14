@@ -1,1 +1,1 @@
-import './huawei-dns-provider';
+import './huawei-dns-provider.js';

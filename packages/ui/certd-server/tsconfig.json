@@ -1,9 +1,10 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node16",
+    "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "inlineSourceMap":true,
@@ -11,15 +12,27 @@
     "noUnusedLocals": true,
     "stripInternal": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
     "pretty": true,
     "declaration": true,
+    "forceConsistentCasingInFileNames": true,
     "typeRoots": [ "./typings", "./node_modules/@types"],
-    "outDir": "dist"
+    "outDir": "dist",
+    "rootDir": "src",
+    "preserveWatchOutput": true
   },
   "exclude": [
+    "*.js",
+    "*.ts",
     "dist",
     "node_modules",
     "test"
+  ],
+  "references": [
+    { "path": "../../libs/midway-flyway-js" },
+    { "path": "../../libs/k8s" },
+    { "path": "../../libs/huawei" },
+    { "path": "../../plugins/plugin-cert" },
+    { "path": "../../core/acme-client" },
+    { "path": "../../core/pipeline" }
   ]
 }

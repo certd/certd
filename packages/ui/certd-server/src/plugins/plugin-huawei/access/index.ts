@@ -1,1 +1,1 @@
-export * from './huawei-access';
+export * from './huawei-access.js';

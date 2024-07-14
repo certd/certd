@@ -1,8 +1,8 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service';
-import { AccessEntity } from '../entity/access';
+import { BaseService } from '../../../basic/base-service.js';
+import { AccessEntity } from '../entity/access.js';
 import { accessRegistry, IAccessService } from '@certd/pipeline';
 
 /**

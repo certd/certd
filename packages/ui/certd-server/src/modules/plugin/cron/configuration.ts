@@ -1,7 +1,7 @@
-import { Config, Configuration, Logger } from '@midwayjs/decorator';
+import { Config, Configuration, Logger } from '@midwayjs/core';
 import { ILogger } from '@midwayjs/logger';
 import { IMidwayContainer } from '@midwayjs/core';
-import { Cron } from './cron';
+import { Cron } from './cron.js';
 
 // ... (see below) ...
 @Configuration({

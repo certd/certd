@@ -1,12 +1,12 @@
-import { Registrable } from "../registry";
-import { FileItem, FormItemProps, Pipeline, Runnable, Step } from "../d.ts";
-import { FileStore } from "../core/file-store";
+import { Registrable } from "../registry/index.js";
+import { FileItem, FormItemProps, Pipeline, Runnable, Step } from "../dt/index.js";
+import { FileStore } from "../core/file-store.js";
 import { Logger } from "log4js";
-import { IAccessService } from "../access";
-import { IEmailService } from "../service";
-import { IContext } from "../core";
+import { IAccessService } from "../access/index.js";
+import { IEmailService } from "../service/index.js";
+import { IContext } from "../core/index.js";
 import { AxiosInstance } from "axios";
-import { logger } from "../utils";
+import { logger } from "../utils/index.js";
 
 export enum ContextScope {
   global,
@@ -83,7 +83,7 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
     return Math.random().toString(36).substring(2, 9);
   }
   linkFile(file: FileItem) {
-    this._result.files!.push({
+    this._result.files?.push({
       ...file,
       id: this.randomFileId(),
     });
@@ -91,11 +91,18 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
   saveFile(filename: string, file: Buffer) {
     const filePath = this.ctx.fileStore.writeFile(filename, file);
     logger.info(`saveFile:${filePath}`);
-    this._result.files!.push({
+    this._result.files?.push({
       id: this.randomFileId(),
       filename,
       path: filePath,
     });
+  }
+
+  extendsFiles() {
+    if (this._result.files == null) {
+      this._result.files = [];
+    }
+    this._result.files.push(...(this.ctx.lastStatus?.status?.files || []));
   }
 
   get pipeline() {

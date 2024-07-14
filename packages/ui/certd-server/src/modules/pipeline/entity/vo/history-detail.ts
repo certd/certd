@@ -1,5 +1,5 @@
-import { HistoryEntity } from '../history';
-import { HistoryLogEntity } from '../history-log';
+import { HistoryEntity } from '../history.js';
+import { HistoryLogEntity } from '../history-log.js';
 
 export class HistoryDetail {
   history: HistoryEntity;

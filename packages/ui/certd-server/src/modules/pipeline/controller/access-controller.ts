@@ -6,10 +6,10 @@ import {
   Post,
   Provide,
   Query,
-} from '@midwayjs/decorator';
-import { CrudController } from '../../../basic/crud-controller';
-import { AccessService } from '../service/access-service';
-import { Constants } from '../../../basic/constants';
+} from '@midwayjs/core';
+import { CrudController } from '../../../basic/crud-controller.js';
+import { AccessService } from '../service/access-service.js';
+import { Constants } from '../../../basic/constants.js';
 
 /**
  * 授权

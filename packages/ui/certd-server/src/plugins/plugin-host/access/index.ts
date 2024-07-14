@@ -1,1 +1,1 @@
-export * from './ssh-access';
+export * from './ssh-access.js';

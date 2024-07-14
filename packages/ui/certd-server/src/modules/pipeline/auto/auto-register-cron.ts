@@ -1,6 +1,6 @@
-import { Autoload, Init, Inject, Scope, ScopeEnum } from '@midwayjs/decorator';
-import { PipelineService } from '../service/pipeline-service';
-import { logger } from '../../../utils/logger';
+import { Autoload, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
+import { PipelineService } from '../service/pipeline-service.js';
+import { logger } from '../../../utils/logger.js';
 
 @Autoload()
 @Scope(ScopeEnum.Singleton)

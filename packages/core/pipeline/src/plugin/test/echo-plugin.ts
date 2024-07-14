@@ -1,6 +1,5 @@
-import { ITaskPlugin } from "../api";
-import { IsTaskPlugin, TaskInput } from "../decorator";
-import { Autowire } from "../../decorator";
+import { ITaskPlugin } from "../api.js";
+import { IsTaskPlugin, TaskInput } from "../decorator.js";
 
 @IsTaskPlugin({
   name: "EchoPlugin",

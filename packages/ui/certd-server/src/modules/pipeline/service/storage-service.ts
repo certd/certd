@@ -1,8 +1,8 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service';
-import { StorageEntity } from '../entity/storage';
+import { BaseService } from '../../../basic/base-service.js';
+import { StorageEntity } from '../entity/storage.js';
 
 /**
  */

@@ -1,4 +1,4 @@
-import { Decorator } from "./index";
+import { Decorator } from "./index.js";
 
 export type AutowireProp = {
   name?: string;

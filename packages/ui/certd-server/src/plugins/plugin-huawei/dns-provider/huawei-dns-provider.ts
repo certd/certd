@@ -1,8 +1,8 @@
-import _ from "lodash";
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
-import { Autowire, ILogger } from "@certd/pipeline";
-import { HuaweiAccess } from "../access";
-import { ApiRequestOptions, HuaweiYunClient } from "../lib/client";
+import * as _ from 'lodash-es';
+import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { Autowire, ILogger } from '@certd/pipeline';
+import { HuaweiAccess } from '../access/index.js';
+import { ApiRequestOptions, HuaweiYunClient } from '@certd/lib-huawei';
 
 export type SearchRecordOptions = {
   zoneId: string;
@@ -14,7 +14,7 @@ export type SearchRecordOptions = {
   desc: '华为云DNS解析提供商',
   accessType: 'huawei',
 })
-export class HuaweiDnsProvider extends AbstractDnsProvider{
+export class HuaweiDnsProvider extends AbstractDnsProvider {
   client!: HuaweiYunClient;
   @Autowire()
   access!: HuaweiAccess;

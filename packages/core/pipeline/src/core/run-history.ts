@@ -1,6 +1,6 @@
-import { Context, HistoryResult, Pipeline, ResultType, Runnable, RunnableMap, Stage, Step, Task } from "../d.ts";
-import _ from "lodash";
-import { buildLogger } from "../utils/util.log";
+import { Context, HistoryResult, Pipeline, ResultType, Runnable, RunnableMap, Stage, Step, Task } from "../dt/index.js";
+import _ from "lodash-es";
+import { buildLogger } from "../utils/util.log.js";
 import { Logger } from "log4js";
 
 export type HistoryStatus = {

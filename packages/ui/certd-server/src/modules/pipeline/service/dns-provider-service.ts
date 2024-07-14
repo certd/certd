@@ -1,4 +1,4 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { dnsProviderRegistry } from '@certd/plugin-cert';
 @Provide()
 @Scope(ScopeEnum.Singleton)

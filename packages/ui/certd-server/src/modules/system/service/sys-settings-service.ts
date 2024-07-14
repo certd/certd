@@ -1,17 +1,11 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service';
-import { SysSettingsEntity } from '../entity/sys-settings';
+import { BaseService } from '../../../basic/base-service.js';
+import { SysSettingsEntity } from '../entity/sys-settings.js';
 import { CacheManager } from '@midwayjs/cache';
-
-const SYS_PUBLIC_KEY = 'sys.public';
-const SYS_PRIVATE_KEY = 'sys.private';
-const CACHE_SYS_PUBLIC_KEY = `settings.${SYS_PUBLIC_KEY}`;
-const CACHE_SYS_PRIVATE_KEY = `settings.${SYS_PRIVATE_KEY}`;
-export type SysPublicSettings = {
-  registerEnabled: boolean;
-};
+import { BaseSettings, SysPublicSettings } from './models.js';
+import * as _ from 'lodash-es';
 
 export type SysPrivateSettings = NonNullable<unknown>;
 
@@ -77,67 +71,60 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     }
   }
 
-  async getPublicSettings(): Promise<SysPublicSettings> {
-    const key = CACHE_SYS_PUBLIC_KEY;
-    let settings: SysPublicSettings = await this.cache.get(key);
+  async getSetting<T>(type: any): Promise<T> {
+    const key = type.__key__;
+    const cacheKey = type.getCacheKey();
+    let settings: T = await this.cache.get(cacheKey);
+    let settingInstance: T = new type();
     if (settings == null) {
-      settings = await this.readPublicSettings();
-      await this.cache.set(key, settings);
+      settings = await this.getSettingByKey(key);
+      settingInstance = _.merge(settingInstance, settings);
+      await this.cache.set(key, settingInstance);
     }
-    return settings;
+    return settingInstance;
   }
 
-  async readPublicSettings(): Promise<SysPublicSettings> {
-    const key = SYS_PUBLIC_KEY;
+  async saveSetting<T extends BaseSettings>(bean: T) {
+    const type: any = bean.constructor;
+    const key = type.__key__;
+    const cacheKey = type.getCacheKey();
+
     const entity = await this.getByKey(key);
-    if (!entity) {
-      return {
-        registerEnabled: false,
-      };
+    if (entity) {
+      entity.setting = JSON.stringify(bean);
+      await this.repository.save(entity);
+    } else {
+      const newEntity = new SysSettingsEntity();
+      newEntity.key = key;
+      newEntity.title = type.__title__;
+      newEntity.setting = JSON.stringify(bean);
+      newEntity.access = type.__access__;
+      await this.repository.save(newEntity);
     }
-    return JSON.parse(entity.setting);
+
+    await this.cache.set(cacheKey, bean);
+  }
+
+  async getPublicSettings(): Promise<SysPublicSettings> {
+    return await this.getSetting(SysPublicSettings);
   }
 
   async savePublicSettings(bean: SysPublicSettings) {
-    const key = SYS_PUBLIC_KEY;
-    const entity = await this.getByKey(key);
-    if (entity) {
-      entity.setting = JSON.stringify(bean);
-      await this.repository.save(entity);
-    } else {
-      const newEntity = new SysSettingsEntity();
-      newEntity.key = key;
-      newEntity.title = '系统公共设置';
-      newEntity.setting = JSON.stringify(bean);
-      newEntity.access = 'public';
-      await this.repository.save(newEntity);
-    }
-    await this.cache.del(CACHE_SYS_PRIVATE_KEY);
-  }
-
-  async readPrivateSettings(): Promise<SysPrivateSettings> {
-    const key = SYS_PRIVATE_KEY;
-    const entity = await this.getByKey(key);
-    if (!entity) {
-      return {};
-    }
-    return JSON.parse(entity.setting);
+    await this.saveSetting(bean);
   }
 
   async savePrivateSettings(bean: SysPrivateSettings) {
-    const key = SYS_PRIVATE_KEY;
+    this.saveSetting(bean);
+  }
+
+  async updateByKey(key: string, setting: any) {
     const entity = await this.getByKey(key);
     if (entity) {
-      entity.setting = JSON.stringify(bean);
+      entity.setting = JSON.stringify(setting);
       await this.repository.save(entity);
     } else {
-      const newEntity = new SysSettingsEntity();
-      newEntity.key = key;
-      newEntity.title = '系统私有设置';
-      newEntity.setting = JSON.stringify(bean);
-      newEntity.access = 'private';
-      await this.repository.save(newEntity);
+      throw new Error('该设置不存在');
     }
-    await this.cache.del(CACHE_SYS_PRIVATE_KEY);
+    await this.cache.del(`settings.${key}`);
   }
 }

@@ -14,6 +14,9 @@ export class UserEntity {
   @Column({ comment: '密码', length: 100 })
   password: string;
 
+  @Column({ name: 'password_version', comment: '密码版本' })
+  passwordVersion: number;
+
   @Column({ name: 'nick_name', comment: '昵称', length: 100, nullable: true })
   nickName: string;
 

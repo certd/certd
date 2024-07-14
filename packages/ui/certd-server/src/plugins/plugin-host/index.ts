@@ -1,3 +1,3 @@
-export * from './access';
-export * from './lib/ssh';
-export * from './plugin';
+export * from './access/index.js';
+export * from './lib/ssh.js';
+export * from './plugin/index.js';

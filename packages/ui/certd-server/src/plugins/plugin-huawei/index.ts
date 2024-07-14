@@ -1,2 +1,2 @@
-export * from './access';
-export * from './dns-provider';
+export * from './access/index.js';
+export * from './dns-provider/index.js';

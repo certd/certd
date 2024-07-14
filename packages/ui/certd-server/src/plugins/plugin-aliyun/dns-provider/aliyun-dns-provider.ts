@@ -1,7 +1,12 @@
-import Core from "@alicloud/pop-core";
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
-import { Autowire, ILogger } from "@certd/pipeline";
-import { AliyunAccess } from "../access";
+import Core from '@alicloud/pop-core';
+import {
+  AbstractDnsProvider,
+  CreateRecordOptions,
+  IsDnsProvider,
+  RemoveRecordOptions,
+} from '@certd/plugin-cert';
+import { Autowire, ILogger } from '@certd/pipeline';
+import { AliyunAccess } from '../access/index.js';
 
 @IsDnsProvider({
   name: 'aliyun',
@@ -9,7 +14,7 @@ import { AliyunAccess } from "../access";
   desc: '阿里云DNS解析提供商',
   accessType: 'aliyun',
 })
-export class AliyunDnsProvider extends AbstractDnsProvider{
+export class AliyunDnsProvider extends AbstractDnsProvider {
   client: any;
   @Autowire()
   access!: AliyunAccess;
@@ -86,8 +91,8 @@ export class AliyunDnsProvider extends AbstractDnsProvider{
   // }
 
   async createRecord(options: CreateRecordOptions): Promise<any> {
-    const { fullRecord, value, type,domain } = options;
-    this.logger.info('添加域名解析：', fullRecord, value,domain);
+    const { fullRecord, value, type, domain } = options;
+    this.logger.info('添加域名解析：', fullRecord, value, domain);
     // const domain = await this.matchDomain(fullRecord);
     const rr = fullRecord.replace('.' + domain, '');
 

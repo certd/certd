@@ -16,11 +16,12 @@
     "afterpublishOnly": "",
     "prepublishOnly1": "npm run before-build && lerna run build ",
     "before-build": "cd ./packages/core/acme-client && time /t >build.md && git add ./build.md && git commit -m \"build: prepare to build\"",
-    "deploy1": "node --experimental-json-modules deploy.js "
+    "deploy1": "node --experimental-json-modules deploy.js ",
+    "init": "lerna run build"
   },
   "license": "AGPL-3.0",
   "dependencies": {
-    "axios": "^1.4.0",
+    "axios": "^1.7.2",
     "lodash": "^4.17.21"
   },
   "workspaces": [

@@ -1,6 +1,6 @@
-import { Inject } from '@midwayjs/decorator';
+import { Inject } from '@midwayjs/core';
 import { Context } from '@midwayjs/koa';
-import { Constants } from './constants';
+import { Constants } from './constants.js';
 
 export abstract class BaseController {
   @Inject()

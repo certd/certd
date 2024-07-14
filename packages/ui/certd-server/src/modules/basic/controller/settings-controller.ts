@@ -1,8 +1,9 @@
 import { Rule, RuleType } from '@midwayjs/validate';
-import { Controller, Get, Inject, Provide } from '@midwayjs/decorator';
-import { BaseController } from '../../../basic/base-controller';
-import { Constants } from '../../../basic/constants';
-import { SysSettingsService } from '../../system/service/sys-settings-service';
+import { Controller, Get, Inject, Provide } from '@midwayjs/core';
+import { BaseController } from '../../../basic/base-controller.js';
+import { Constants } from '../../../basic/constants.js';
+import { SysSettingsService } from '../../system/service/sys-settings-service.js';
+import { SysPublicSettings } from '../../system/service/models.js';
 
 export class SmsCodeReq {
   @Rule(RuleType.number().required())
@@ -28,7 +29,9 @@ export class BasicSettingsController extends BaseController {
 
   @Get('/public', { summary: Constants.per.guest })
   public async getSysPublic() {
-    const settings = await this.sysSettingsService.readPublicSettings();
+    const settings = await this.sysSettingsService.getSetting(
+      SysPublicSettings
+    );
     return this.ok(settings);
   }
 }

@@ -1,26 +1,18 @@
-import { createApp, close, createHttpRequest } from '@midwayjs/mock';
-import { Framework } from '@midwayjs/koa';
-import * as assert from 'assert';
+import { createHttpRequest } from '@midwayjs/mock';
+import { Application } from '@midwayjs/koa';
+import assert from 'assert';
+import { getApp } from '../setup.js';
 
 describe('test/controller/home.test.ts', () => {
 
   it('should GET /', async () => {
-    // create app
-    const app = await createApp<Framework>();
-
+    const app: Application = getApp();
     // make request
     const result = await createHttpRequest(app).get('/');
 
     // use expect by jest
-    expect(result.status).toBe(200);
-    expect(result.text).toBe('Hello Midwayjs!');
-
-    // or use assert
-    assert.deepStrictEqual(result.status, 200);
-    assert.deepStrictEqual(result.text, 'Hello Midwayjs!');
-
-    // close app
-    await close(app);
+    assert(result.status === 200);
+    assert(result.text === 'Hello Midwayjs!');
   });
 
 });

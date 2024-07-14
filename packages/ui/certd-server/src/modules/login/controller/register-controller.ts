@@ -5,12 +5,12 @@ import {
   Inject,
   Post,
   Provide,
-} from '@midwayjs/decorator';
-import { BaseController } from '../../../basic/base-controller';
-import { Constants } from '../../../basic/constants';
-import { UserService } from '../../authority/service/user-service';
-import { UserEntity } from '../../authority/entity/user';
-import { SysSettingsService } from '../../system/service/sys-settings-service';
+} from '@midwayjs/core';
+import { BaseController } from '../../../basic/base-controller.js';
+import { Constants } from '../../../basic/constants.js';
+import { UserService } from '../../authority/service/user-service.js';
+import { UserEntity } from '../../authority/entity/user.js';
+import { SysSettingsService } from '../../system/service/sys-settings-service.js';
 
 /**
  */

@@ -1,3 +1,3 @@
-export * from './dns-provider';
-export * from './plugins';
-export * from './access';
+export * from './dns-provider.js';
+export * from './plugins/index.js';
+export * from './access.js';

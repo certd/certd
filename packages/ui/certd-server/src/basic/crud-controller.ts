@@ -1,5 +1,5 @@
-import { ALL, Body, Post, Query } from '@midwayjs/decorator';
-import { BaseController } from './base-controller';
+import { ALL, Body, Post, Query } from '@midwayjs/core';
+import { BaseController } from './base-controller.js';
 
 export abstract class CrudController<T> extends BaseController {
   abstract getService<T>();

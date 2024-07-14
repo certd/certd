@@ -1,7 +1,7 @@
 import axios from "axios";
 // @ts-ignore
 import qs from "qs";
-import { logger } from "./util.log";
+import { logger } from "./util.log.js";
 import { Logger } from "log4js";
 /**
  * @description 创建请求实例

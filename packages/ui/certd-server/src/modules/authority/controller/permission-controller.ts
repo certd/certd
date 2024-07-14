@@ -6,9 +6,9 @@ import {
   Post,
   Provide,
   Query,
-} from '@midwayjs/decorator';
-import { CrudController } from '../../../basic/crud-controller';
-import { PermissionService } from '../service/permission-service';
+} from '@midwayjs/core';
+import { CrudController } from '../../../basic/crud-controller.js';
+import { PermissionService } from '../service/permission-service.js';
 
 /**
  * 权限资源

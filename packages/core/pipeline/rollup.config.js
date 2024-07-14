@@ -28,7 +28,7 @@ module.exports = {
   ],
   external: [
     "vue",
-    "lodash",
+    "lodash-es",
     "dayjs",
     "@certd/acme-client",
     "@certd/pipeline",

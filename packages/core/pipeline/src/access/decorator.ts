@@ -1,8 +1,8 @@
 // src/decorator/memoryCache.decorator.ts
-import { AccessDefine, AccessInputDefine } from "./api";
-import { Decorator } from "../decorator";
-import _ from "lodash";
-import { accessRegistry } from "./registry";
+import { AccessDefine, AccessInputDefine } from "./api.js";
+import { Decorator } from "../decorator/index.js";
+import _ from "lodash-es";
+import { accessRegistry } from "./registry.js";
 
 // 提供一个唯一 key
 export const ACCESS_CLASS_KEY = "pipeline:access";

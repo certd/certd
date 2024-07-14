@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { fileUtils } from "../utils/util.file";
+import { fileUtils } from "../utils/util.file.js";
 
 export interface IStorage {
   get(scope: string, namespace: string, version: string, key: string): Promise<string | null>;

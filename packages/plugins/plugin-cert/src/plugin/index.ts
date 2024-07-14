@@ -1,1 +1,1 @@
-export * from "./cert-plugin";
+export * from "./cert-plugin/index.js";

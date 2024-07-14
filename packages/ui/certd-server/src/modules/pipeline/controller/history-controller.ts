@@ -1,25 +1,16 @@
-import {
-  ALL,
-  Body,
-  Controller,
-  Get,
-  Inject,
-  Post,
-  Provide,
-  Query,
-} from '@midwayjs/decorator';
-import { CrudController } from '../../../basic/crud-controller';
-import { PipelineEntity } from '../entity/pipeline';
-import { HistoryService } from '../service/history-service';
-import { HistoryLogService } from '../service/history-log-service';
-import { HistoryEntity } from '../entity/history';
-import { HistoryLogEntity } from '../entity/history-log';
-import { Constants } from '../../../basic/constants';
-import { PipelineService } from '../service/pipeline-service';
-import { CommonException } from '../../../basic/exception/common-exception';
-import { PermissionException } from '../../../basic/exception/permission-exception';
+import { ALL, Body, Controller, Get, Inject, Post, Provide, Query } from '@midwayjs/core';
+import { CrudController } from '../../../basic/crud-controller.js';
+import { PipelineEntity } from '../entity/pipeline.js';
+import { HistoryService } from '../service/history-service.js';
+import { HistoryLogService } from '../service/history-log-service.js';
+import { HistoryEntity } from '../entity/history.js';
+import { HistoryLogEntity } from '../entity/history-log.js';
+import { Constants } from '../../../basic/constants.js';
+import { PipelineService } from '../service/pipeline-service.js';
+import { CommonException } from '../../../basic/exception/common-exception.js';
+import { PermissionException } from '../../../basic/exception/permission-exception.js';
 import * as fs from 'fs';
-import { logger } from '../../../utils/logger';
+import { logger } from '../../../utils/logger.js';
 
 /**
  * 证书
@@ -53,11 +44,7 @@ export class HistoryController extends CrudController<HistoryService> {
     const buildQuery = qb => {
       qb.limit(10);
     };
-    const listRet = await this.getService().list(
-      body,
-      { prop: 'id', asc: false },
-      buildQuery
-    );
+    const listRet = await this.getService().list(body, { prop: 'id', asc: false }, buildQuery);
     return this.ok(listRet);
   }
 
@@ -137,11 +124,7 @@ export class HistoryController extends CrudController<HistoryService> {
   }
 
   @Get('/download', { summary: Constants.per.authOnly })
-  async download(
-    @Query('pipelineId') pipelineId,
-    @Query('historyId') historyId,
-    @Query('fileId') fileId
-  ) {
+  async download(@Query('pipelineId') pipelineId, @Query('historyId') historyId, @Query('fileId') fileId) {
     const files = await this.getFiles(historyId, pipelineId);
     const file = files.find(f => f.id === fileId);
     if (file == null) {

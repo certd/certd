@@ -1,1 +1,1 @@
-import './aliyun-dns-provider';
+import './aliyun-dns-provider.js';

@@ -10,7 +10,6 @@ import DefineOptions from "unplugin-vue-define-options/vite";
 // import { generateModifyVars } from "./build/modify-vars";
 // import { configThemePlugin } from "./build/theme-plugin";
 // import OptimizationPersist from "vite-plugin-optimize-persist";
-// import PkgConfig from "vite-plugin-package-config";
 // https://vitejs.dev/config/
 // 增加环境变量 _
 process.env.VITE_APP_VERSION = require("./package.json").version;

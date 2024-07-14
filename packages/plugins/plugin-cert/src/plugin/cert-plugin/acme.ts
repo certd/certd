@@ -1,10 +1,10 @@
 // @ts-ignore
 import * as acme from "@certd/acme-client";
-import _ from "lodash";
+import _ from "lodash-es";
 import { Challenge } from "@certd/acme-client/types/rfc8555";
 import { Logger } from "log4js";
 import { IContext } from "@certd/pipeline";
-import { IDnsProvider } from "../../dns-provider";
+import { IDnsProvider } from "../../dns-provider/index.js";
 import psl from "psl";
 import { ClientExternalAccountBindingOptions } from "@certd/acme-client";
 

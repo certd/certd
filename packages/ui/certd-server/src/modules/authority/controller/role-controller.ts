@@ -6,9 +6,9 @@ import {
   Post,
   Provide,
   Query,
-} from '@midwayjs/decorator';
-import { CrudController } from '../../../basic/crud-controller';
-import { RoleService } from '../service/role-service';
+} from '@midwayjs/core';
+import { CrudController } from '../../../basic/crud-controller.js';
+import { RoleService } from '../service/role-service.js';
 
 /**
  * 系统用户

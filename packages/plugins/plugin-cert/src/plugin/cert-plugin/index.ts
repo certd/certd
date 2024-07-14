@@ -1,10 +1,11 @@
 import { AbstractTaskPlugin, Decorator, HttpClient, IAccessService, IContext, IsTaskPlugin, RunStrategy, Step, TaskInput, TaskOutput } from "@certd/pipeline";
 import dayjs from "dayjs";
-import { AcmeService, CertInfo, SSLProvider } from "./acme";
-import _ from "lodash";
+import { AcmeService } from "./acme.js";
+import type { CertInfo, SSLProvider } from "./acme.js";
+import _ from "lodash-es";
 import { Logger } from "log4js";
-import { DnsProviderContext, DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider";
-import { CertReader } from "./cert-reader";
+import { DnsProviderContext, DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider/index.js";
+import { CertReader } from "./cert-reader.js";
 import JSZip from "jszip";
 
 export { CertReader };
@@ -171,11 +172,11 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const oldCert = await this.condition();
     if (oldCert != null) {
-      return await this.output(oldCert);
+      return await this.output(oldCert, false);
     }
     const cert = await this.doCertApply();
     if (cert != null) {
-      await this.output(cert);
+      await this.output(cert, true);
       //清空后续任务的状态，让后续任务能够重新执行
       this.clearLastStatus();
     } else {
@@ -183,12 +184,18 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     }
   }
 
-  async output(certReader: CertReader) {
+  async output(certReader: CertReader, isNew: boolean) {
     const cert: CertInfo = certReader.toCertInfo();
     this.cert = cert;
-    // this.logger.info(JSON.stringify(certReader.detail));
-    const applyTime = dayjs(certReader.detail.validity.notBefore).format("YYYYMMDD_HHmmss");
-    await this.zipCert(cert, applyTime);
+
+    if (isNew) {
+      const applyTime = dayjs(certReader.detail.validity.notBefore).format("YYYYMMDD_HHmmss");
+      await this.zipCert(cert, applyTime);
+    } else {
+      this.extendsFiles();
+    }
+    // thi
+    // s.logger.info(JSON.stringify(certReader.detail));
   }
 
   async zipCert(cert: CertInfo, applyTime: string) {

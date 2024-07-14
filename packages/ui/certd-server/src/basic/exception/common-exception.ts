@@ -1,5 +1,5 @@
-import { Constants } from '../constants';
-import { BaseException } from './base-exception';
+import { Constants } from '../constants.js';
+import { BaseException } from './base-exception.js';
 /**
  * 通用异常
  */

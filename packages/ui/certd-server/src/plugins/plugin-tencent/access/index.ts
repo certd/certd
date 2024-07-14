@@ -1,2 +1,2 @@
-export * from './dnspod-access';
-export * from './tencent-access';
+export * from './dnspod-access.js';
+export * from './tencent-access.js';

@@ -1,8 +1,8 @@
-import { fileUtils } from "../utils";
+import { fileUtils } from "../utils/index.js";
 import dayjs from "dayjs";
 import path from "path";
 import fs from "fs";
-import { logger } from "../utils";
+import { logger } from "../utils/index.js";
 
 export type FileStoreOptions = {
   rootDir?: string;

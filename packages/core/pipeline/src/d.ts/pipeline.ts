@@ -70,6 +70,7 @@ export type Runnable = {
   default?: {
     [key: string]: any;
   };
+  context?: Context;
 };
 
 export type EmailOptions = {

@@ -1,1 +1,1 @@
-export * from "./eab-access";
+export * from "./eab-access.js";

@@ -1,5 +1,5 @@
-import { Registrable } from "../registry";
-import { FormItemProps } from "../d.ts";
+import { Registrable } from "../registry/index.js";
+import { FormItemProps } from "../dt/index.js";
 
 export type AccessInputDefine = FormItemProps & {
   title: string;

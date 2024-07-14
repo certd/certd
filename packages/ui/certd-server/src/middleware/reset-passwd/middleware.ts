@@ -6,11 +6,11 @@ import {
   Provide,
   Scope,
   ScopeEnum,
-} from '@midwayjs/decorator';
+} from '@midwayjs/core';
 import { IMidwayKoaContext, IWebMiddleware, NextFunction } from '@midwayjs/koa';
-import { CommonException } from '../../basic/exception/common-exception';
-import { UserService } from '../../modules/authority/service/user-service';
-import { logger } from '../../utils/logger';
+import { CommonException } from '../../basic/exception/common-exception.js';
+import { UserService } from '../../modules/authority/service/user-service.js';
+import { logger } from '../../utils/logger.js';
 
 /**
  * 重置密码模式

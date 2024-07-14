@@ -1,14 +1,14 @@
-import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service';
-import { HistoryEntity } from '../entity/history';
-import { PipelineEntity } from '../entity/pipeline';
-import { HistoryDetail } from '../entity/vo/history-detail';
-import { HistoryLogService } from './history-log-service';
+import { BaseService } from '../../../basic/base-service.js';
+import { HistoryEntity } from '../entity/history.js';
+import { PipelineEntity } from '../entity/pipeline.js';
+import { HistoryDetail } from '../entity/vo/history-detail.js';
+import { HistoryLogService } from './history-log-service.js';
 import { FileItem, Pipeline, RunnableCollection } from '@certd/pipeline';
 import { FileStore } from '@certd/pipeline';
-import { logger } from '../../../utils/logger';
+import { logger } from '../../../utils/logger.js';
 
 /**
  * 证书申请

@@ -1,10 +1,10 @@
-import { ValidateException } from './exception/validation-exception';
-import * as _ from 'lodash';
-import { PermissionException } from './exception/permission-exception';
+import { ValidateException } from './exception/validation-exception.js';
+import * as _ from 'lodash-es';
+import { PermissionException } from './exception/permission-exception.js';
 import { Repository } from 'typeorm';
-import { Inject } from '@midwayjs/decorator';
+import { Inject } from '@midwayjs/core';
 import { TypeORMDataSourceManager } from '@midwayjs/typeorm';
-import { EntityManager } from 'typeorm/entity-manager/EntityManager';
+import { EntityManager } from 'typeorm/entity-manager/EntityManager.js';
 
 /**
  * 服务基类

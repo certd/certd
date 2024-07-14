@@ -1,23 +1,41 @@
 {
+  "compileOnSave": true,
   "compilerOptions": {
-    "importHelpers": false,
     "target": "ESNext",
-    "useDefineForClassFields": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
-    "strict": true,
-    "jsx": "preserve",
-    "sourceMap": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+    "moduleResolution": "node",
     "esModuleInterop": true,
-    "lib": ["ESNext", "DOM"],
-    "skipLibCheck": true,
     "experimentalDecorators": true,
-    "paths": {
-      "tslib" : ["./node_modules/tslib/tslib.d.ts"]
-    }
+    "emitDecoratorMetadata": true,
+    "inlineSourceMap":true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "stripInternal": true,
+    "skipLibCheck": true,
+    "pretty": true,
+    "declaration": true,
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": [ "./typings", "./node_modules/@types"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "composite": true,
+    "useDefineForClassFields": true,
+    "strict": true,
+//    "sourceMap": true,
+    "resolveJsonModule": true,
+    "isolatedModules": false,
+    "lib": ["ESNext", "DOM"],
   },
-
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue","test/**/*.ts","rollup.config.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.json"
+  ],
+  "exclude": [
+    "*.js",
+    "*.ts",
+    "dist",
+    "node_modules",
+    "test"
+  ],
 }

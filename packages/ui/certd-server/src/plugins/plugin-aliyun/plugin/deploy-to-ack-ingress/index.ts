@@ -9,9 +9,9 @@ import {
 } from '@certd/pipeline';
 // @ts-ignore
 import { ROAClient } from '@alicloud/pop-core';
-import { AliyunAccess } from '../../access';
-import { K8sClient } from '@certd/plugin-util';
-import { appendTimeSuffix } from '../../utils';
+import { AliyunAccess } from '../../access/index.js';
+import { K8sClient } from '@certd/lib-k8s';
+import { appendTimeSuffix } from '../../utils/index.js';
 import { CertInfo } from '@certd/plugin-cert';
 
 @IsTaskPlugin({

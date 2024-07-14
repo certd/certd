@@ -1,4 +1,4 @@
-import { CertInfo } from "./acme";
+import { CertInfo } from "./acme.js";
 import fs from "fs";
 import os from "os";
 import forge from "node-forge";

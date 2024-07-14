@@ -1,4 +1,4 @@
-# fast-server-js
+# my_midway_project
 
 ## 快速入门
 
@@ -27,4 +27,3 @@ $ npm start
 
 
 [midway]: https://midwayjs.org
-

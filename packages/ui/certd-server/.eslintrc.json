@@ -1,10 +1,11 @@
 {
   "extends": "./node_modules/mwts/",
-  "ignorePatterns": ["node_modules", "dist", "test", "jest.config.js", "typings"],
+  "ignorePatterns": ["node_modules", "dist", "test", "typings"],
   "env": {
-    "jest": true
+    "mocha": true
   },
   "rules": {
+    "max-len":  ["error", 160],
     "@typescript-eslint/ban-ts-ignore": "off",
     "@typescript-eslint/ban-ts-comment": "off"
   }

@@ -1,6 +1,6 @@
-import { Provide } from '@midwayjs/decorator';
+import { Provide } from '@midwayjs/core';
 import { IWebMiddleware, IMidwayKoaContext, NextFunction } from '@midwayjs/koa';
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.js';
 
 @Provide()
 export class ReportMiddleware implements IWebMiddleware {

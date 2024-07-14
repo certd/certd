@@ -1,8 +1,7 @@
 import path from 'path';
-import _ from 'lodash';
-
-const yaml = require('js-yaml');
-const fs = require('fs');
+import * as _ from 'lodash-es';
+import yaml from 'js-yaml';
+import fs from 'fs';
 
 function parseEnv(defaultConfig: any) {
   const config = {};

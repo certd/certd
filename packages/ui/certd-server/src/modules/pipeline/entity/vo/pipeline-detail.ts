@@ -1,6 +1,6 @@
-import { PipelineEntity } from '../pipeline';
-import { HistoryEntity } from '../history';
-import { HistoryLogEntity } from '../history-log';
+import { PipelineEntity } from '../pipeline.js';
+import { HistoryEntity } from '../history.js';
+import { HistoryLogEntity } from '../history-log.js';
 
 export class PipelineDetail {
   pipeline: PipelineEntity;

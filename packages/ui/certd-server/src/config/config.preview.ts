@@ -1,5 +1,5 @@
 import { MidwayConfig } from '@midwayjs/core';
-import { mergeConfig } from './loader';
+import { mergeConfig } from './loader.js';
 
 const preview = {
   /**

@@ -1,4 +1,4 @@
-import { IStorage, MemoryStorage } from "./storage";
+import { IStorage, MemoryStorage } from "./storage.js";
 const CONTEXT_VERSION_KEY = "contextVersion";
 export interface IContext {
   getInt(key: string): Promise<number>;

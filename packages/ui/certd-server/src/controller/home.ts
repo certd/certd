@@ -1,7 +1,7 @@
 import { MidwayEnvironmentService } from '@midwayjs/core';
-import { Controller, Get, Inject, Provide } from '@midwayjs/decorator';
-import { logger } from '../utils/logger';
-import { Constants } from '../basic/constants';
+import { Controller, Get, Inject, Provide } from '@midwayjs/core';
+import { logger } from '../utils/logger.js';
+import { Constants } from '../basic/constants.js';
 
 @Provide()
 @Controller('/hello')

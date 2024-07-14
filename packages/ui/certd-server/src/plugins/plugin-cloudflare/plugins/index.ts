@@ -1,1 +1,1 @@
-export * from './plugin-deploy-to-cdn';
+export * from './plugin-deploy-to-cdn.js';

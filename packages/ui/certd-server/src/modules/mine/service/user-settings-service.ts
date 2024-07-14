@@ -1,8 +1,8 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service';
-import { UserSettingsEntity } from '../entity/user-settings';
+import { BaseService } from '../../../basic/base-service.js';
+import { UserSettingsEntity } from '../entity/user-settings.js';
 
 /**
  * 授权
@@ -30,7 +30,10 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     };
   }
 
-  async getByKey(key: string, userId: number): Promise<UserSettingsEntity | null> {
+  async getByKey(
+    key: string,
+    userId: number
+  ): Promise<UserSettingsEntity | null> {
     if (!key || !userId) {
       return null;
     }

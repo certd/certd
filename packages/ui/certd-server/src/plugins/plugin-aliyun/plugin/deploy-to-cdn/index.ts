@@ -9,7 +9,7 @@ import {
 import dayjs from 'dayjs';
 import Core from '@alicloud/pop-core';
 import RPCClient from '@alicloud/pop-core';
-import { AliyunAccess } from '../../access';
+import { AliyunAccess } from '../../access/index.js';
 
 @IsTaskPlugin({
   name: 'DeployCertToAliyunCDN',

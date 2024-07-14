@@ -1,8 +1,8 @@
-import _ from "lodash";
-import { pluginRegistry } from "./registry";
-import { PluginDefine, TaskInputDefine, TaskOutputDefine } from "./api";
-import { Decorator } from "../decorator";
-import { AUTOWIRE_KEY } from "../decorator";
+import _ from "lodash-es";
+import { pluginRegistry } from "./registry.js";
+import { PluginDefine, TaskInputDefine, TaskOutputDefine } from "./api.js";
+import { Decorator } from "../decorator/index.js";
+import { AUTOWIRE_KEY } from "../decorator/index.js";
 import "reflect-metadata";
 // 提供一个唯一 key
 export const PLUGIN_CLASS_KEY = "pipeline:plugin";

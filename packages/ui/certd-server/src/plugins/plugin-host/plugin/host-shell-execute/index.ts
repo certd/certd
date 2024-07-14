@@ -6,7 +6,7 @@ import {
   RunStrategy,
   TaskInput,
 } from '@certd/pipeline';
-import { SshClient } from '../../lib/ssh';
+import { SshClient } from '../../lib/ssh.js';
 
 @IsTaskPlugin({
   name: 'hostShellExecute',

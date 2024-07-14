@@ -1,6 +1,6 @@
-import { Config, Provide } from '@midwayjs/decorator';
+import { Config, Provide } from '@midwayjs/core';
 import { IMidwayKoaContext, NextFunction, IWebMiddleware } from '@midwayjs/koa';
-import { PreviewException } from '../basic/exception/preview-exception';
+import { PreviewException } from '../basic/exception/preview-exception.js';
 
 /**
  * 预览模式

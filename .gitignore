@@ -34,3 +34,6 @@ gen
 
 docker/image/workspace
 /packages/core/lego
+
+tsconfig.tsbuildinfo
+test/**/*.js

@@ -1,17 +1,9 @@
-import {
-  ALL,
-  Body,
-  Controller,
-  Inject,
-  Post,
-  Provide,
-  Query,
-} from '@midwayjs/decorator';
-import { CrudController } from '../../../basic/crud-controller';
-import { PipelineService } from '../service/pipeline-service';
-import { PipelineEntity } from '../entity/pipeline';
-import { Constants } from '../../../basic/constants';
-import { HistoryService } from '../service/history-service';
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
+import { CrudController } from '../../../basic/crud-controller.js';
+import { PipelineService } from '../service/pipeline-service.js';
+import { PipelineEntity } from '../entity/pipeline.js';
+import { Constants } from '../../../basic/constants.js';
+import { HistoryService } from '../service/history-service.js';
 
 /**
  * 证书

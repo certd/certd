@@ -1,13 +1,13 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service';
-import { RoleEntity } from '../entity/role';
-import { UserRoleService } from './user-role-service';
-import { RolePermissionEntity } from '../entity/role-permission';
-import { PermissionService } from './permission-service';
-import * as _ from 'lodash';
-import { RolePermissionService } from './role-permission-service';
+import { BaseService } from '../../../basic/base-service.js';
+import { RoleEntity } from '../entity/role.js';
+import { UserRoleService } from './user-role-service.js';
+import { RolePermissionEntity } from '../entity/role-permission.js';
+import { PermissionService } from './permission-service.js';
+import * as _ from 'lodash-es';
+import { RolePermissionService } from './role-permission-service.js';
 import { LRUCache } from 'lru-cache';
 /**
  * 角色

@@ -1,42 +1,58 @@
-import * as validateComp from '@midwayjs/validate';
-import * as productionConfig from './config/config.production';
-import * as previewConfig from './config/config.preview';
-import * as defaultConfig from './config/config.default';
-import { App, Configuration } from '@midwayjs/decorator';
+import { Configuration, App } from '@midwayjs/core';
 import * as koa from '@midwayjs/koa';
 import * as orm from '@midwayjs/typeorm';
 import * as cache from '@midwayjs/cache';
-import cors from '@koa/cors';
-import { join } from 'path';
-import * as flyway from 'midway-flyway-js';
-import { ReportMiddleware } from './middleware/report';
-import { GlobalExceptionMiddleware } from './middleware/global-exception';
-import { PreviewMiddleware } from './middleware/preview';
-import { AuthorityMiddleware } from './middleware/authority';
+import * as validate from '@midwayjs/validate';
+import * as info from '@midwayjs/info';
 import * as staticFile from '@midwayjs/static-file';
-import * as cron from './modules/plugin/cron';
-import { logger } from './utils/logger';
-import { ResetPasswdMiddleware } from './middleware/reset-passwd/middleware';
+import * as cron from './modules/plugin/cron/index.js';
+import * as flyway from '@certd/midway-flyway-js';
+import cors from '@koa/cors';
+import { ReportMiddleware } from './middleware/report.js';
+import { GlobalExceptionMiddleware } from './middleware/global-exception.js';
+import { PreviewMiddleware } from './middleware/preview.js';
+import { AuthorityMiddleware } from './middleware/authority.js';
+import { logger } from './utils/logger.js';
+import { ResetPasswdMiddleware } from './middleware/reset-passwd/middleware.js';
+// import { DefaultErrorFilter } from './filter/default.filter.js';
+// import { NotFoundFilter } from './filter/notfound.filter.js';
+import DefaultConfig from './config/config.default.js';
+import ProductionConfig from './config/config.production.js';
+import PreviewConfig from './config/config.preview.js';
+import UnittestConfig from './config/config.unittest.js';
+
 @Configuration({
-  imports: [koa, orm, cache, flyway, validateComp, cron, staticFile],
+  imports: [
+    koa,
+    orm,
+    cache,
+    flyway,
+    cron,
+    staticFile,
+    validate,
+    {
+      component: info,
+      enabledEnvironment: ['local'],
+    },
+  ],
   importConfigs: [
     {
-      default: defaultConfig,
-      preview: previewConfig,
-      production: productionConfig,
+      default: DefaultConfig,
+      preview: PreviewConfig,
+      production: ProductionConfig,
+      unittest: UnittestConfig,
     },
   ],
 })
-export class ContainerConfiguration {}
-@Configuration({
-  conflictCheck: true,
-  importConfigs: [join(__dirname, './config')],
-})
-export class ContainerLifeCycle {
-  @App()
+export class MainConfiguration {
+  @App('koa')
   app: koa.Application;
 
   async onReady() {
+    // add middleware
+    this.app.useMiddleware([ReportMiddleware]);
+    // add filter
+    // this.app.useFilter([NotFoundFilter, DefaultErrorFilter]);
     //跨域
     this.app.use(
       cors({

@@ -1,9 +1,9 @@
-import { Config, Inject, Provide } from '@midwayjs/decorator';
-import { UserService } from '../../authority/service/user-service';
-import * as jwt from 'jsonwebtoken';
-import { CommonException } from '../../../basic/exception/common-exception';
-import { RoleService } from '../../authority/service/role-service';
-import { UserEntity } from '../../authority/entity/user';
+import { Config, Inject, Provide } from '@midwayjs/core';
+import { UserService } from '../../authority/service/user-service.js';
+import jwt from 'jsonwebtoken';
+import { CommonException } from '../../../basic/exception/common-exception.js';
+import { RoleService } from '../../authority/service/role-service.js';
+import { UserEntity } from '../../authority/entity/user.js';
 
 /**
  * 系统用户
@@ -26,7 +26,7 @@ export class LoginService {
     if (info == null) {
       throw new CommonException('用户名或密码错误');
     }
-    const right = this.userService.checkPassword(user.password, info.password);
+    const right = await this.userService.checkPassword(user.password, info.password, info.passwordVersion);
     if (!right) {
       throw new CommonException('用户名或密码错误');
     }

@@ -1,17 +1,18 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserEntity } from '../entity/user';
-import * as _ from 'lodash';
+import { UserEntity } from '../entity/user.js';
+import * as _ from 'lodash-es';
 import md5 from 'md5';
-import { CommonException } from '../../../basic/exception/common-exception';
-import { BaseService } from '../../../basic/base-service';
-import { RoleService } from './role-service';
-import { PermissionService } from './permission-service';
-import { UserRoleService } from './user-role-service';
-import { Constants } from '../../../basic/constants';
-import { UserRoleEntity } from '../entity/user-role';
+import { CommonException } from '../../../basic/exception/common-exception.js';
+import { BaseService } from '../../../basic/base-service.js';
+import { RoleService } from './role-service.js';
+import { PermissionService } from './permission-service.js';
+import { UserRoleService } from './user-role-service.js';
+import { Constants } from '../../../basic/constants.js';
+import { UserRoleEntity } from '../entity/user-role.js';
 import { randomText } from 'svg-captcha';
+import bcrypt from 'bcryptjs';
 
 /**
  * 系统用户
@@ -58,8 +59,9 @@ export class UserService extends BaseService<UserEntity> {
     if (!_.isEmpty(exists)) {
       throw new CommonException('用户名已经存在');
     }
-    const password = param.password ?? randomText(6);
-    param.password = md5(password); // 默认密码  建议未改密码不能登陆
+    const plainPassword = param.password ?? randomText(6);
+    param.passwordVersion = 2;
+    param.password = this.genPassword(plainPassword, param.passwordVersion); // 默认密码  建议未改密码不能登陆
     await super.add(param);
     //添加角色
     if (param.roles && param.roles.length > 0) {
@@ -85,12 +87,21 @@ export class UserService extends BaseService<UserEntity> {
 
     delete param.username;
     if (!_.isEmpty(param.password)) {
-      param.password = md5(param.password);
+      param.passwordVersion = 2;
+      param.password = this.genPassword(param.password, param.passwordVersion);
     } else {
       delete param.password;
     }
     await super.update(param);
     await this.roleService.updateRoles(param.id, param.roles);
+  }
+
+  private genPassword(plainPassword: any, passwordVersion: number) {
+    if (passwordVersion == null || passwordVersion <= 1) {
+      return md5(plainPassword);
+    }
+    const salt = bcrypt.genSaltSync(10);
+    return bcrypt.hashSync(plainPassword, salt);
   }
 
   async findOne(param) {
@@ -99,9 +110,16 @@ export class UserService extends BaseService<UserEntity> {
     });
   }
 
-  checkPassword(rawPassword: any, md5Password: any) {
-    // logger.info('md5', md5('123456'));
-    return md5(rawPassword) === md5Password;
+  async checkPassword(
+    rawPassword: any,
+    hashPassword: any,
+    passwordVersion: number
+  ) {
+    if (passwordVersion == null || passwordVersion <= 1) {
+      return this.genPassword(rawPassword, passwordVersion) === hashPassword;
+    }
+
+    return bcrypt.compareSync(rawPassword, hashPassword); // true
   }
 
   /**
@@ -127,8 +145,12 @@ export class UserService extends BaseService<UserEntity> {
       mobile: user.mobile || '',
       phoneCode: user.phoneCode || '',
       status: 1,
+      passwordVersion: 2,
     });
-    newUser.password = md5(newUser.password);
+    newUser.password = this.genPassword(
+      newUser.password,
+      newUser.passwordVersion
+    );
 
     await this.transaction(async txManager => {
       newUser = await txManager.save(newUser);
@@ -145,7 +167,12 @@ export class UserService extends BaseService<UserEntity> {
 
   async changePassword(userId: any, form: any) {
     const user = await this.info(userId);
-    if (!this.checkPassword(form.password, user.password)) {
+    const passwordChecked = await this.checkPassword(
+      form.password,
+      user.password,
+      user.passwordVersion
+    );
+    if (!passwordChecked) {
       throw new CommonException('原密码错误');
     }
     const param = {

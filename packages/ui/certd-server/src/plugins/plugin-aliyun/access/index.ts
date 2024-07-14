@@ -1,1 +1,1 @@
-export * from './aliyun-access';
+export * from './aliyun-access.js';

@@ -1,8 +1,16 @@
-import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/decorator";
-import { CrudController } from "../../../basic/crud-controller";
-import { Constants } from "../../../basic/constants";
-import { UserSettingsService } from "../service/user-settings-service";
-import { UserSettingsEntity } from "../entity/user-settings";
+import {
+  ALL,
+  Body,
+  Controller,
+  Inject,
+  Post,
+  Provide,
+  Query,
+} from '@midwayjs/core';
+import { CrudController } from '../../../basic/crud-controller.js';
+import { Constants } from '../../../basic/constants.js';
+import { UserSettingsService } from '../service/user-settings-service.js';
+import { UserSettingsEntity } from '../entity/user-settings.js';
 
 /**
  */

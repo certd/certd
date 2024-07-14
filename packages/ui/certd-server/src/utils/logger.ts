@@ -1,6 +1,6 @@
-const log4js = require('log4js');
+import log4js from 'log4js';
+import path from 'path';
 const level = process.env.NODE_ENV === 'development' ? 'debug' : 'info';
-const path = require('path');
 const filename = path.join('/logs/server.log');
 log4js.configure({
   appenders: {

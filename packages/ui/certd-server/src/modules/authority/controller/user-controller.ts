@@ -6,12 +6,12 @@ import {
   Body,
   Query,
   ALL,
-} from '@midwayjs/decorator';
-import { UserService } from '../service/user-service';
-import { CrudController } from '../../../basic/crud-controller';
-import { RoleService } from '../service/role-service';
-import { PermissionService } from '../service/permission-service';
-import { Constants } from '../../../basic/constants';
+} from '@midwayjs/core';
+import { UserService } from '../service/user-service.js';
+import { CrudController } from '../../../basic/crud-controller.js';
+import { RoleService } from '../service/role-service.js';
+import { PermissionService } from '../service/permission-service.js';
+import { Constants } from '../../../basic/constants.js';
 
 /**
  * 系统用户

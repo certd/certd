@@ -5,8 +5,8 @@ import {
   IsDnsProvider,
   RemoveRecordOptions,
 } from '@certd/plugin-cert';
-import _ from 'lodash';
-import { DnspodAccess } from '../access';
+import * as _ from 'lodash-es';
+import { DnspodAccess } from '../access/index.js';
 
 @IsDnsProvider({
   name: 'dnspod',

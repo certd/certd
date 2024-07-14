@@ -3,9 +3,10 @@
         "module": "commonjs",
         "lib": ["es6"],
         "strict": true,
-        "noEmit": true,
+        "noEmit": false,
         "esModuleInterop": true,
         "baseUrl": ".",
+        "composite": true,
         "paths": { "acme-client": ["."] }
     }
 }

@@ -1,10 +1,10 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import type { EmailSend } from '@certd/pipeline';
 import { IEmailService } from '@certd/pipeline';
 import nodemailer from 'nodemailer';
 import type SMTPConnection from 'nodemailer/lib/smtp-connection';
-import { logger } from '../../../utils/logger';
-import { UserSettingsService } from '../../mine/service/user-settings-service';
+import { logger } from '../../../utils/logger.js';
+import { UserSettingsService } from '../../mine/service/user-settings-service.js';
 
 export type EmailConfig = {
   host: string;

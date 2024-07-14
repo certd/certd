@@ -1,6 +1,6 @@
-import { Inject, Provide } from '@midwayjs/decorator';
+import { Inject, Provide } from '@midwayjs/core';
 import { CacheManager } from '@midwayjs/cache';
-const svgCaptcha = require('svg-captcha');
+import svgCaptcha from 'svg-captcha';
 
 // {data: '<svg.../svg>', text: 'abcd'}
 /**

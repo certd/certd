@@ -1,5 +1,5 @@
-import { EnumItem } from '../../../basic/enum-item';
-import * as _ from 'lodash';
+import { EnumItem } from '../../../basic/enum-item.js';
+import * as _ from 'lodash-es';
 class ResourceTypes {
   MENU = new EnumItem('menu', '菜单', 'blue');
   BTN = new EnumItem('btn', '按钮', 'green');

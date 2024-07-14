@@ -1,3 +1,3 @@
-export * from "./api";
-export * from "./registry";
-export * from "./decorator";
+export * from "./api.js";
+export * from "./registry.js";
+export * from "./decorator.js";

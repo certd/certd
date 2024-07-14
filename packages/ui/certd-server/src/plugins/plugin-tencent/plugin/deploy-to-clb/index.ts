@@ -7,8 +7,8 @@ import {
   TaskInput,
   utils,
 } from '@certd/pipeline';
-import tencentcloud from 'tencentcloud-sdk-nodejs/index';
-import { TencentAccess } from '../../access';
+import tencentcloud from 'tencentcloud-sdk-nodejs';
+import { TencentAccess } from '../../access/index.js';
 import dayjs from 'dayjs';
 
 @IsTaskPlugin({

@@ -1,18 +1,18 @@
-import { ConcurrencyStrategy, NotificationWhen, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../d.ts";
-import _ from "lodash";
-import { RunHistory, RunnableCollection } from "./run-history";
-import { AbstractTaskPlugin, PluginDefine, pluginRegistry, TaskInstanceContext } from "../plugin";
-import { ContextFactory, IContext } from "./context";
-import { IStorage } from "./storage";
-import { logger } from "../utils/util.log";
+import { ConcurrencyStrategy, NotificationWhen, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../dt/index.js";
+import _ from "lodash-es";
+import { RunHistory, RunnableCollection } from "./run-history.js";
+import { AbstractTaskPlugin, PluginDefine, pluginRegistry, TaskInstanceContext } from "../plugin/index.js";
+import { ContextFactory, IContext } from "./context.js";
+import { IStorage } from "./storage.js";
+import { logger } from "../utils/util.log.js";
 import { Logger } from "log4js";
-import { createAxiosService } from "../utils/util.request";
-import { IAccessService } from "../access";
-import { RegistryItem } from "../registry";
-import { Decorator } from "../decorator";
-import { IEmailService } from "../service";
-import { FileStore } from "./file-store";
-import { TimeoutPromise } from "../utils/util.promise";
+import { createAxiosService } from "../utils/util.request.js";
+import { IAccessService } from "../access/index.js";
+import { RegistryItem } from "../registry/index.js";
+import { Decorator } from "../decorator/index.js";
+import { IEmailService } from "../service/index.js";
+import { FileStore } from "./file-store.js";
+// import { TimeoutPromise } from "../utils/util.promise.js";
 
 export type ExecutorOptions = {
   userId: any;
@@ -33,7 +33,7 @@ export class Executor {
   lastRuntime!: RunHistory;
   options: ExecutorOptions;
   canceled = false;
-  onChanged: (history: RunHistory) => void;
+  onChanged: (history: RunHistory) => Promise<void>;
   constructor(options: ExecutorOptions) {
     this.options = options;
     this.pipeline = _.cloneDeep(options.pipeline);
@@ -110,12 +110,13 @@ export class Executor {
     const intervalFlushLogId = setInterval(async () => {
       await this.onChanged(this.runtime);
     }, 5000);
-    const timeout = runnable.timeout ?? 20 * 60 * 1000;
+
+    // const timeout = runnable.timeout ?? 20 * 60 * 1000;
     try {
       if (this.canceled) {
-        throw new Error("task canceled");
+        return ResultType.canceled;
       }
-      await TimeoutPromise(run, timeout);
+      await run();
       this.runtime.success(runnable);
       return ResultType.success;
     } catch (e: any) {
@@ -142,19 +143,25 @@ export class Executor {
   async runStage(stage: Stage) {
     const runnerList = [];
     for (const task of stage.tasks) {
-      const runner = this.runWithHistory(task, "task", async () => {
-        await this.runTask(task);
-      });
+      const runner = async () => {
+        return this.runWithHistory(task, "task", async () => {
+          await this.runTask(task);
+        });
+      };
       runnerList.push(runner);
     }
 
     let resList: ResultType[] = [];
     if (stage.concurrency === ConcurrencyStrategy.Parallel) {
-      resList = await Promise.all(runnerList);
+      const pList = [];
+      for (const item of runnerList) {
+        pList.push(item());
+      }
+      resList = await Promise.all(pList);
     } else {
       for (let i = 0; i < runnerList.length; i++) {
         const runner = runnerList[i];
-        resList[i] = await runner;
+        resList[i] = await runner();
       }
     }
     return this.compositionResultType(resList);
@@ -239,7 +246,7 @@ export class Executor {
       this.lastStatusMap.clear();
     }
     //输出到output context
-    _.forEach(define.output, (item, key) => {
+    _.forEach(define.output, (item: any, key: any) => {
       step.status!.output[key] = instance[key];
       const stepOutputKey = `step.${step.id}.${key}`;
       this.runtime.context[stepOutputKey] = instance[key];
