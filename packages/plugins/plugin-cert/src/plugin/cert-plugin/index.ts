@@ -39,10 +39,10 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
       span: 24,
     },
     helper:
-      "支持通配符域名，例如： *.foo.com、foo.com、*.test.handsfree.work\n" +
-      "支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）\n" +
-      "多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com、foo.com）\n" +
-      "输入一个回车之后，再输入下一个",
+      "1、支持通配符域名，例如： *.foo.com、foo.com、*.test.handsfree.work\n" +
+      "2、支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）\n" +
+      "3、多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com、foo.com）\n" +
+      "4、输入一个回车之后，再输入下一个",
   })
   domains!: string;
 
@@ -111,6 +111,17 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
   dnsProviderAccess!: string;
 
   @TaskInput({
+    title: "跳过本地校验DNS",
+    default: false,
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+    helper: "如果重试多次出现Authorization not found TXT record，导致无法申请成功，请尝试开启此选项",
+  })
+  skipLocalVerify = false;
+
+  @TaskInput({
     title: "更新天数",
     component: {
       name: "a-input-number",
@@ -166,7 +177,13 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     if (this.eabAccessId) {
       eab = await this.ctx.accessService.getById(this.eabAccessId);
     }
-    this.acme = new AcmeService({ userContext: this.userContext, logger: this.logger, sslProvider: this.sslProvider, eab });
+    this.acme = new AcmeService({
+      userContext: this.userContext,
+      logger: this.logger,
+      sslProvider: this.sslProvider,
+      eab,
+      skipLocalVerify: this.skipLocalVerify,
+    });
   }
 
   async execute(): Promise<void> {

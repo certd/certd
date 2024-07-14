@@ -222,6 +222,10 @@ export default {
                 );
               }
             }
+            //设置初始值
+            if (input.default != null && currentStep.value.input[key] == null) {
+              currentStep.value.input[key] = input.default ?? input.value;
+            }
           }
         }
 

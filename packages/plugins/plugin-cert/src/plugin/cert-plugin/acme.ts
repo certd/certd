@@ -18,12 +18,20 @@ export class AcmeService {
   userContext: IContext;
   logger: Logger;
   sslProvider: SSLProvider;
+  skipLocalVerify = true;
   eab?: ClientExternalAccountBindingOptions;
-  constructor(options: { userContext: IContext; logger: Logger; sslProvider: SSLProvider; eab?: ClientExternalAccountBindingOptions }) {
+  constructor(options: {
+    userContext: IContext;
+    logger: Logger;
+    sslProvider: SSLProvider;
+    eab?: ClientExternalAccountBindingOptions;
+    skipLocalVerify?: boolean;
+  }) {
     this.userContext = options.userContext;
     this.logger = options.logger;
     this.sslProvider = options.sslProvider || "letsencrypt";
     this.eab = options.eab;
+    this.skipLocalVerify = options.skipLocalVerify ?? false;
     acme.setLogger((text: string) => {
       this.logger.info(text);
     });
@@ -192,7 +200,7 @@ export class AcmeService {
       csr,
       email: email,
       termsOfServiceAgreed: true,
-      skipChallengeVerification: false,
+      skipChallengeVerification: this.skipLocalVerify,
       challengePriority: ["dns-01"],
       challengeCreateFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string): Promise<any> => {
         return await this.challengeCreateFn(authz, challenge, keyAuthorization, dnsProvider);

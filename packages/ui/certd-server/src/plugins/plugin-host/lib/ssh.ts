@@ -96,7 +96,9 @@ export class AsyncSsh2Client {
           .stderr.on('data', (ret: Buffer) => {
             const err = this.convert(ret);
             data += err;
-            this.logger.info(`[${this.connConf.host}][error]: ` + err.trimEnd());
+            this.logger.info(
+              `[${this.connConf.host}][error]: ` + err.trimEnd()
+            );
           });
       });
     });
@@ -152,30 +154,39 @@ export class SshClient {
          }
    * @param options
    */
-  async uploadFiles(options: { connectConf: SshAccess; transports: any }) {
-    const { connectConf, transports } = options;
+  async uploadFiles(options: {
+    connectConf: SshAccess;
+    transports: any;
+    mkdirs: boolean;
+  }) {
+    const { connectConf, transports, mkdirs } = options;
     await this._call({
       connectConf,
       callable: async (conn: AsyncSsh2Client) => {
         const sftp = await conn.getSftp();
         this.logger.info('开始上传');
         for (const transport of transports) {
-          const filePath = path.dirname(transport.remotePath);
-          let mkdirCmd = `mkdir -p ${filePath} `;
-          if (conn.windows) {
-            if (filePath.indexOf('/') > -1) {
-              this.logger.info('--------------------------');
-              this.logger.info('请注意：windows下，文件目录分隔应该写成\\而不是/');
-              this.logger.info('--------------------------');
+          if (mkdirs !== false) {
+            const filePath = path.dirname(transport.remotePath);
+            let mkdirCmd = `mkdir -p ${filePath} `;
+            if (conn.windows) {
+              if (filePath.indexOf('/') > -1) {
+                this.logger.info('--------------------------');
+                this.logger.info(
+                  '请注意：windows下，文件目录分隔应该写成\\而不是/'
+                );
+                this.logger.info('--------------------------');
+              }
+              const spec = await conn.exec('echo %COMSPEC%');
+              if (spec.toString().trim() === '%COMSPEC%') {
+                mkdirCmd = `New-Item -ItemType Directory -Path "${filePath}" -Force`;
+              } else {
+                mkdirCmd = `if not exist "${filePath}" mkdir "${filePath}"`;
+              }
             }
-            const spec = await conn.exec('echo %COMSPEC%');
-            if (spec.toString().trim() === '%COMSPEC%') {
-              mkdirCmd = `New-Item -ItemType Directory -Path "${filePath}" -Force`;
-            } else {
-              mkdirCmd = `if not exist "${filePath}" mkdir "${filePath}"`;
-            }
+            await conn.exec(mkdirCmd);
           }
-          await conn.exec(mkdirCmd);
+
           await conn.fastPut({ sftp, ...transport });
         }
         this.logger.info('文件全部上传成功');

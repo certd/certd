@@ -48,6 +48,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
     required: true,
   })
   cert!: CertInfo;
+
   @TaskInput({
     title: '主机登录配置',
     helper: 'access授权',
@@ -60,12 +61,23 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   accessId!: string;
 
   @TaskInput({
+    title: '自动创建远程目录',
+    helper: '是否自动创建远程目录,如果关闭则你需要自己确保远程目录存在',
+    default: true,
+    component: {
+      name: 'a-switch',
+      vModel: 'checked',
+    },
+  })
+  mkdirs = true;
+
+  @TaskInput({
     title: '仅复制到当前主机',
     helper:
       '开启后，将直接复制到当前主机某个目录，不上传到主机，由于是docker启动，实际上是复制到docker容器内的“证书保存路径”，你需要事先在docker-compose.yaml中配置主机目录映射： volumes: /your_target_path:/your_target_path',
+    default: false,
     component: {
       name: 'a-switch',
-      default: false,
       vModel: 'checked',
     },
   })
@@ -102,39 +114,58 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
     this.logger.info('将证书写入本地缓存文件');
     const saveCrtPath = certReader.saveToFile('crt');
     const saveKeyPath = certReader.saveToFile('key');
-
-    if (this.copyToThisHost) {
-      this.logger.info('复制到目标路径');
-      this.copyFile(saveCrtPath, crtPath);
-      this.copyFile(saveKeyPath, keyPath);
-      this.logger.info('证书复制成功：crtPath=', crtPath, ',keyPath=', keyPath);
-    } else {
-      if (!accessId) {
-        throw new Error('主机登录授权配置不能为空');
+    this.logger.info('本地文件写入成功');
+    try {
+      if (this.copyToThisHost) {
+        this.logger.info('复制到目标路径');
+        this.copyFile(saveCrtPath, crtPath);
+        this.copyFile(saveKeyPath, keyPath);
+        this.logger.info(
+          '证书复制成功：crtPath=',
+          crtPath,
+          ',keyPath=',
+          keyPath
+        );
+      } else {
+        if (!accessId) {
+          throw new Error('主机登录授权配置不能为空');
+        }
+        this.logger.info('准备上传文件到服务器');
+        const connectConf: SshAccess = await this.accessService.getById(
+          accessId
+        );
+        const sshClient = new SshClient(this.logger);
+        await sshClient.uploadFiles({
+          connectConf,
+          transports: [
+            {
+              localPath: saveCrtPath,
+              remotePath: crtPath,
+            },
+            {
+              localPath: saveKeyPath,
+              remotePath: keyPath,
+            },
+          ],
+          mkdirs: this.mkdirs,
+        });
+        this.logger.info(
+          '证书上传成功：crtPath=',
+          crtPath,
+          ',keyPath=',
+          keyPath
+        );
       }
-      this.logger.info('准备上传到服务器');
-      const connectConf: SshAccess = await this.accessService.getById(accessId);
-      const sshClient = new SshClient(this.logger);
-      await sshClient.uploadFiles({
-        connectConf,
-        transports: [
-          {
-            localPath: saveCrtPath,
-            remotePath: crtPath,
-          },
-          {
-            localPath: saveKeyPath,
-            remotePath: keyPath,
-          },
-        ],
-      });
-      this.logger.info('证书上传成功：crtPath=', crtPath, ',keyPath=', keyPath);
+    } catch (e) {
+      this.logger.error(`上传失败：${e.message}`);
+      throw e;
+    } finally {
+      //删除临时文件
+      this.logger.info('删除临时文件');
+      fs.unlinkSync(saveCrtPath);
+      fs.unlinkSync(saveKeyPath);
     }
-
-    //删除临时文件
-    fs.unlinkSync(saveCrtPath);
-    fs.unlinkSync(saveKeyPath);
-
+    this.logger.info('执行完成');
     //输出
     this.hostCrtPath = crtPath;
     this.hostKeyPath = keyPath;

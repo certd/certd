@@ -57,7 +57,17 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               multiple: true, //可选择多个
               uploader: {
                 type: "form",
-                keepName: true
+                keepName: true,
+                successHandle(res: any) {
+                  //这里我的后台返回res是一个key 字符串
+                  //此方法需要返回的数据结构为 {key:"string",url:"string"...}
+                  // 如果 有返回url，那么buildUrl将不会被执行
+                  return { key: res };
+                }
+              },
+              valueType: "key",
+              async buildUrl(value: string) {
+                return "http://www.docmirror.cn:7070/api/upload/form/download?key=" + value;
               }
             },
             helper: "可以同时选择多个文件"
