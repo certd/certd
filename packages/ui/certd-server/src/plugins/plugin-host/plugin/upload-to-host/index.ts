@@ -1,12 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IAccessService,
-  ILogger,
-  IsTaskPlugin,
-  RunStrategy,
-  TaskInput,
-  TaskOutput,
-} from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import { SshClient } from '../../lib/ssh.js';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 import * as fs from 'fs';
@@ -120,20 +112,13 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
         this.logger.info('复制到目标路径');
         this.copyFile(saveCrtPath, crtPath);
         this.copyFile(saveKeyPath, keyPath);
-        this.logger.info(
-          '证书复制成功：crtPath=',
-          crtPath,
-          ',keyPath=',
-          keyPath
-        );
+        this.logger.info('证书复制成功：crtPath=', crtPath, ',keyPath=', keyPath);
       } else {
         if (!accessId) {
           throw new Error('主机登录授权配置不能为空');
         }
         this.logger.info('准备上传文件到服务器');
-        const connectConf: SshAccess = await this.accessService.getById(
-          accessId
-        );
+        const connectConf: SshAccess = await this.accessService.getById(accessId);
         const sshClient = new SshClient(this.logger);
         await sshClient.uploadFiles({
           connectConf,
@@ -149,12 +134,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
           ],
           mkdirs: this.mkdirs,
         });
-        this.logger.info(
-          '证书上传成功：crtPath=',
-          crtPath,
-          ',keyPath=',
-          keyPath
-        );
+        this.logger.info('证书上传成功：crtPath=', crtPath, ',keyPath=', keyPath);
       }
     } catch (e) {
       this.logger.error(`上传失败：${e.message}`);

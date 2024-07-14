@@ -11,8 +11,8 @@ run/
 *.un~
 .tsbuildinfo
 .tsbuildinfo.*
-./data
 
-./test/**/*.js
+/test/**/*.js
 /test/setup.js
 /test/setup.ts
+/data/
