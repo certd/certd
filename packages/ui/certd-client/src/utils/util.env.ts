@@ -16,6 +16,7 @@ export class EnvConfig {
   COPYRIGHT_URL: string;
   LOGO_PATH: string;
   PM_ENABLED: string;
+  ICP_NO: string;
   constructor() {
     this.init();
   }

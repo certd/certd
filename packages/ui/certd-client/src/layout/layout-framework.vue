@@ -58,7 +58,10 @@
         </router-view>
       </a-layout-content>
       <a-layout-footer class="fs-framework-footer">
-        <div>Powered by handsfree.work</div>
+        <div>
+          <span>Powered by</span>
+          <a href="https://certd.handsfree.work"> handsfree.work </a>
+        </div>
         <div>v{{ version }}</div>
 
         <!--        <fs-source-link />-->

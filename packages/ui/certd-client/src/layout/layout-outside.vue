@@ -14,13 +14,21 @@
         <router-view />
 
         <div class="footer">
-          <div class="links">
-            <a href="_self">帮助</a>
-            <a href="_self">隐私</a>
-            <a href="_self">条款</a>
-          </div>
+          <!--          <div class="links">-->
+          <!--            <a href="_self">帮助</a>-->
+          <!--            <a href="_self">隐私</a>-->
+          <!--            <a href="_self">条款</a>-->
+          <!--          </div>-->
           <div class="copyright">
-            Copyright &copy; {{ envRef.COPYRIGHT_YEAR }} <a :href="envRef.COPYRIGHT_URL" target="_blank">{{ envRef.COPYRIGHT_NAME }}</a>
+            <span>Copyright</span>
+            <span>&copy;</span>
+            <span>{{ envRef.COPYRIGHT_YEAR }}</span>
+            <span>
+              <a :href="envRef.COPYRIGHT_URL" target="_blank">{{ envRef.COPYRIGHT_NAME }}</a>
+            </span>
+            <span v-if="envRef.ICP_NO">
+              <a href="https://beian.miit.gov.cn/" target="_blank">{{ envRef.ICP_NO }}</a>
+            </span>
           </div>
         </div>
       </div>
@@ -156,6 +164,21 @@ export default {
         .copyright {
           color: rgba(0, 0, 0, 0.45);
           font-size: 14px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          span {
+            margin-left: 5px;
+            margin-right: 5px;
+          }
+          a {
+            color: rgba(0, 0, 0, 0.45);
+            transition: all 0.3s;
+
+            &:hover {
+              color: rgba(0, 0, 0, 0.85);
+            }
+          }
         }
       }
     }
