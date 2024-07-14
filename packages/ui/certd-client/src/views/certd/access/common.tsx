@@ -45,6 +45,9 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
       search: {
         show: false
       },
+      column: {
+        width: 120
+      },
       form: {
         component: {
           disabled: false

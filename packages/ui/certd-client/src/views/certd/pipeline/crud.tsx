@@ -136,6 +136,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
               const files = await api.GetFiles(row.id);
               Modal.success({
                 title: "文件下载",
+                okText: "↑↑↑ 点击链接下载",
                 content: () => {
                   const children = [];
                   for (const file of files) {

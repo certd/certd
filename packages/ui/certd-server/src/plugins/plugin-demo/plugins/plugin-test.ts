@@ -1,11 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IAccessService,
-  ILogger,
-  IsTaskPlugin,
-  RunStrategy,
-  TaskInput,
-} from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput } from '@certd/pipeline';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 
 @IsTaskPlugin({
@@ -69,7 +62,7 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
     helper: 'demoAccess授权',
     component: {
       name: 'pi-access-selector',
-      type: 'plugins',
+      type: 'demo', //固定授权类型
     },
     rules: [{ required: true, message: '此项必填' }],
   })

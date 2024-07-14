@@ -82,8 +82,10 @@
                     </div>
                     <div class="task">
                       <a-button shape="round" @click="taskEdit(stage, index, task, taskIndex)">
-                        {{ task.title }}
-                        <pi-status-show :status="task.status?.result"></pi-status-show>
+                        <span class="flex-o w-100">
+                          <span class="ellipsis flex-1" :class="{ 'mr-15': editMode }">{{ task.title }}</span>
+                          <pi-status-show :status="task.status?.result"></pi-status-show>
+                        </span>
                       </a-button>
                       <fs-icon v-if="editMode" class="copy" title="复制" icon="ion:copy-outline" @click="taskCopy(stage, index, task)"></fs-icon>
                     </div>

@@ -17,7 +17,7 @@
     "prepublishOnly1": "npm run check && npm run before-build && lerna run build ",
     "before-build": "cd ./packages/core/acme-client && time /t >build.md && git add ./build.md && git commit -m \"build: prepare to build\"",
     "deploy1": "node --experimental-json-modules deploy.js ",
-    "check": "node --experimental-json-modules publish-check.js"
+    "check": "node --experimental-json-modules publish-check.js",
     "init": "lerna run build"
   },
   "license": "AGPL-3.0",

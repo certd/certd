@@ -7,9 +7,17 @@
 # 设置环境变量
 npm config set node_sqlite3_binary_host_mirror "https://registry.npmmirror.com/-/binary/sqlite3"
 
+# 克隆代码
+git clone https://github.com/certd/certd
+
+#进入项目目录
 cd certd
+
 # 安装依赖
 pnpm install
+
+# 初始化构建
+lerna run build
 ```
 
 启动 server:    

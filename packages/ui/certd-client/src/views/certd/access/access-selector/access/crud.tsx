@@ -64,9 +64,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         }
       },
       rowHandle: {
-        width: "180px"
+        width: "130px"
       },
       table: {
+        scroll: {
+          x: 800
+        },
         rowSelection: {
           type: "radio",
           selectedRowKeys: selectedRowKey,
@@ -100,6 +103,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: ["text"],
           form: {
             rules: [{ required: true, message: "请填写名称" }]
+          },
+          column: {
+            width: 200
           }
         },
         ...commonColumnsDefine
