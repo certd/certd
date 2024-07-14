@@ -21,6 +21,7 @@
 import * as api from "./api";
 import { Ref, ref } from "vue";
 import { CrudOptions, useColumns, useFormWrapper } from "@fast-crud/fast-crud";
+import { notification } from "ant-design-vue";
 
 const userInfo: Ref = ref({});
 
@@ -54,10 +55,14 @@ const passwordFormOptions: CrudOptions = {
       span: 24
     },
     wrapper: {
+      title: "修改密码",
       width: "500px"
     },
     async doSubmit({ form }) {
       await api.changePassword(form);
+    },
+    async afterSubmit() {
+      notification.success({ message: "修改成功" });
     }
   },
   columns: {
@@ -97,7 +102,6 @@ async function changePassword() {
   const formOptions = buildFormOptions(passwordFormOptions);
   formOptions.newInstance = true; //新实例打开
   passwordFormRef.value = await openDialog(formOptions);
-  debugger;
   console.log(passwordFormRef.value);
 }
 </script>

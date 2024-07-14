@@ -1,9 +1,9 @@
 import { MidwayConfig } from '@midwayjs/core';
-import { join } from 'path';
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-// const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(fileURLToPath(import.meta.url));
+// import { join } from 'path';
+// import { dirname } from 'node:path';
+// import { fileURLToPath } from 'node:url';
+// // const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(fileURLToPath(import.meta.url));
 
 import { FlywayHistory } from '@certd/midway-flyway-js';
 import { UserEntity } from '../modules/authority/entity/user.js';
@@ -11,8 +11,11 @@ import { PipelineEntity } from '../modules/pipeline/entity/pipeline.js';
 //import { logger } from '../utils/logger';
 // load .env file in process.cwd
 import { mergeConfig } from './loader.js';
+import { Keys } from './keys.js';
+
+const keys = Keys.load();
 const development = {
-  keys: '111',
+  keys: keys.cookieKeys,
   koa: {
     port: 7001,
   },
@@ -49,7 +52,7 @@ const development = {
          * 单数据库实例
          */
         type: 'sqlite',
-        database: join(__dirname, '../../data/db.sqlite'),
+        database: './data/db.sqlite',
         synchronize: false, // 如果第一次使用，不存在表，有同步的需求可以写 true
         logging: true,
 
@@ -62,17 +65,17 @@ const development = {
    * 自动升级数据库脚本
    */
   flyway: {
-    scriptDir: join(__dirname, '../../db/migration'),
+    scriptDir: './db/migration',
   },
 
   auth: {
     jwt: {
-      secret: 'certd666',
+      secret: keys.jwtKey,
       expire: 7 * 24 * 60 * 60, //单位秒
     },
   },
   certd: {
-    fileRootDir: '/app/data/files',
+    fileRootDir: './data/files',
   },
   system: {
     resetAdminPasswd: false,

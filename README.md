@@ -64,22 +64,23 @@ wget https://raw.githubusercontent.com/certd/certd/v2/docker/run/docker-compose.
 # 或者使用gitee地址
 wget https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml
 
-# 根据需要修改里面的配置
+# 可以根据需要修改里面的配置
 # 1.修改镜像版本号【可选】
 # 2.配置数据保存路径【可选】
-# 3.配置certd_auth_jwt_secret【必须】
+# 3.修改端口号【可选】
 vi docker-compose.yaml
 
 
 ```
-> 镜像版本号与release版本号同步：    
-https://github.com/certd/certd/releases
-
 
 ### 3. 运行
+当前版本号： ![](https://img.shields.io/npm/v/%40certd%2Fpipeline)
+
 ```bash
-# 如果docker compose是插件化安装
-export CERTD_VERSION=latest
+# 设置镜像版本号环境变量，如果docker-compose.yaml中已经修改，请忽略这条命令
+export CERTD_VERSION=latest  # <---建议设置成固定版本号
+
+# 启动certd
 docker compose up -d
 ```
 如果提示 没有compose命令,请安装docker-compose   
@@ -89,16 +90,15 @@ https://docs.docker.com/compose/install/linux/
 
 ### 4. 访问
 
-http://your_server_ip:7001 
-默认账号密码：admin/123456 
-记得修改密码
+http://your_server_ip:7001    
+默认账号密码：admin/123456    
+记得修改密码   
 
 
 ### 5. 升级
 
 * 修改版本号，重新运行 `docker compose up -d` 即可
 * 数据存在`/data/certd`目录下，不用担心数据丢失
-
 
 
 ## 五、一些说明
@@ -168,7 +168,7 @@ docker compose up -d
 [贡献插件教程](./plugin.md)
 
 
-## 十一、我的其他项目
+## 十一、我的其他项目（求Star）
 * [袖手GPT](https://ai.handsfree.work/) ChatGPT，国内可用，无需FQ，每日免费额度
 * [fast-crud](https://gitee.com/fast-crud/fast-crud/) 基于vue3的crud快速开发框架
 * [dev-sidecar](https://github.com/docmirror/dev-sidecar/) 直连访问github工具，无需FQ，解决github无法访问的问题
