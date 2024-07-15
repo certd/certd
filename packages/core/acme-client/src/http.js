@@ -25,8 +25,11 @@ class HttpClient {
         this.externalAccountBinding = externalAccountBinding;
 
         this.maxBadNonceRetries = 5;
-        this.directory = null;
         this.jwk = null;
+
+        this.directoryCache = null;
+        this.directoryMaxAge = 86400;
+        this.directoryTimestamp = 0;
     }
 
     /**
@@ -59,15 +62,17 @@ class HttpClient {
     }
 
     /**
-     * Ensure provider directory exists
+     * Get ACME provider directory
      *
      * https://datatracker.ietf.org/doc/html/rfc8555#section-7.1.1
      *
-     * @returns {Promise}
+     * @returns {Promise<object>} ACME directory contents
      */
 
     async getDirectory() {
-        if (!this.directory) {
+        const age = (Math.floor(Date.now() / 1000) - this.directoryTimestamp);
+
+        if (!this.directoryCache || (age > this.directoryMaxAge)) {
             const resp = await this.request(this.directoryUrl, 'get');
 
             if (resp.status >= 400) {
@@ -78,8 +83,10 @@ class HttpClient {
                 throw new Error('Attempting to read ACME directory returned no data');
             }
 
-            this.directory = resp.data;
+            this.directoryCache = resp.data;
         }
+
+        return this.directoryCache;
     }
 
     /**
@@ -123,13 +130,13 @@ class HttpClient {
      */
 
     async getResourceUrl(resource) {
-        await this.getDirectory();
+        const dir = await this.getDirectory();
 
-        if (!this.directory[resource]) {
+        if (!dir[resource]) {
             throw new Error(`Unable to locate API resource URL in ACME directory: "${resource}"`);
         }
 
-        return this.directory[resource];
+        return dir[resource];
     }
 
     /**
@@ -140,10 +147,10 @@ class HttpClient {
      */
 
     async getMetaField(field) {
-        await this.getDirectory();
+        const dir = await this.getDirectory();
 
-        if (('meta' in this.directory) && (field in this.directory.meta)) {
-            return this.directory.meta[field];
+        if (('meta' in dir) && (field in dir.meta)) {
+            return dir.meta[field];
         }
 
         return null;

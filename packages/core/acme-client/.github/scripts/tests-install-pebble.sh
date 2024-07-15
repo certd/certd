@@ -22,8 +22,10 @@ wget -nv "https://raw.githubusercontent.com/letsencrypt/pebble/v${PEBBLE_VERSION
 wget -nv "https://raw.githubusercontent.com/letsencrypt/pebble/v${PEBBLE_VERSION}/test/config/${CONFIG_NAME}" -O /etc/pebble/pebble.json
 
 # Download and install Pebble
-wget -nv "https://github.com/letsencrypt/pebble/releases/download/v${PEBBLE_VERSION}/pebble_linux-amd64" -O /usr/local/bin/pebble
+wget -nv "https://github.com/letsencrypt/pebble/releases/download/v${PEBBLE_VERSION}/pebble-linux-amd64.tar.gz" -O /tmp/pebble.tar.gz
+tar zxvf /tmp/pebble.tar.gz -C /tmp
 
+mv /tmp/pebble-linux-amd64/linux/amd64/pebble /usr/local/bin/pebble
 chown root:root /usr/local/bin/pebble
 chmod 0755 /usr/local/bin/pebble
 

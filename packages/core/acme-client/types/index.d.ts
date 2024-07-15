@@ -87,6 +87,10 @@ export const directory: {
         staging: string,
         production: string
     },
+    google: {
+        staging: string,
+        production: string
+    },
     letsencrypt: {
         staging: string,
         production: string

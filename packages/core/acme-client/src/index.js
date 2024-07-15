@@ -13,6 +13,10 @@ exports.directory = {
         staging: 'https://api.test4.buypass.no/acme/directory',
         production: 'https://api.buypass.com/acme/directory',
     },
+    google: {
+        staging: 'https://dv.acme-v02.test-api.pki.goog/directory',
+        production: 'https://dv.acme-v02.api.pki.goog/directory',
+    },
     letsencrypt: {
         staging: 'https://acme-staging-v02.api.letsencrypt.org/directory',
         production: 'https://acme-v02.api.letsencrypt.org/directory',
