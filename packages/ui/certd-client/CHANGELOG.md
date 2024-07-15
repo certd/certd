@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.2](https://github.com/fast-crud/fast-crud/compare/v1.21.1...v1.21.2) (2024-07-15)
+
+### Performance Improvements
+
+* 增加示例，FsInDrawer ([777830f](https://github.com/fast-crud/fast-crud/commit/777830f860b6a9752ba24df5a99af5e7c62bdfb2))
+
 ## [1.21.1](https://github.com/fast-crud/fast-crud/compare/v1.21.0...v1.21.1) (2024-06-23)
 
 ### Bug Fixes

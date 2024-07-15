@@ -181,7 +181,7 @@ function install(app: any, options: any = {}) {
       domain: "https://d2p-demo.oss-cn-shenzhen.aliyuncs.com",
       bucket: "d2p-demo",
       region: "oss-cn-shenzhen",
-      accessKeyId: "",
+      accessKeyId: "", //不建议客户端使用AccessKey，生产部署请使用getAuthorization来获取授权
       accessKeySecret: "",
       async getAuthorization(context: FsUploaderGetAuthContext): Promise<FsUploaderAliossSTS> {
         // 不传accessKeySecret代表使用临时签名模式,此时此参数必传（安全，生产环境推荐）
@@ -239,12 +239,12 @@ function install(app: any, options: any = {}) {
         //minio与s3完全适配
         endpoint: "https://play.min.io",
         credentials: {
-          //不建议在客户端使用secretAccessKey来上传
+          //不建议在客户端使用secretAccessKey来上传， 生产部署请使用getSignedUrl，来获取授权
           accessKeyId: "Q3AM3UQ867SPQQA43P2F", //访问登录名
           secretAccessKey: "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG" //访问密码
         }
       },
-      //预签名配置，向后端获取上传的预签名连接
+      //预签名配置，向后端获取上传的预签名连接（生产部署推荐）
       async getSignedUrl(bucket: string, key: string, options: any, type: FsUploaderS3SignedUrlType = "put") {
         return await GetSignedUrl(bucket, key, type);
       },
