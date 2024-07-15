@@ -59,6 +59,9 @@ const client = new acme.Client({
 acme.directory.buypass.staging;
 acme.directory.buypass.production;
 
+acme.directory.google.staging;
+acme.directory.google.production;
+
 acme.directory.letsencrypt.staging;
 acme.directory.letsencrypt.production;
 
