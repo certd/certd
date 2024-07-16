@@ -25,4 +25,4 @@ dist-ssr
 
 test/user.secret.ts
 
-rollup.cache
+.rollup.cache

@@ -5,6 +5,7 @@ import { MidwayConfig } from '@midwayjs/core';
 // // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// eslint-disable-next-line node/no-extraneous-import
 import { FlywayHistory } from '@certd/midway-flyway-js';
 import { UserEntity } from '../modules/authority/entity/user.js';
 import { PipelineEntity } from '../modules/pipeline/entity/pipeline.js';
@@ -12,6 +13,8 @@ import { PipelineEntity } from '../modules/pipeline/entity/pipeline.js';
 // load .env file in process.cwd
 import { mergeConfig } from './loader.js';
 import { Keys } from './keys.js';
+
+const env = process.env.NODE_ENV || 'development';
 
 const keys = Keys.load();
 const development = {
@@ -81,6 +84,6 @@ const development = {
     resetAdminPasswd: false,
   },
 } as MidwayConfig;
-mergeConfig(development, 'development');
+mergeConfig(development, env);
 
 export default development;

@@ -16,13 +16,7 @@ export class StorageService extends BaseService<StorageEntity> {
     return this.repository;
   }
 
-  async get(where: {
-    scope: any;
-    namespace: any;
-    userId: number;
-    version: string;
-    key: string;
-  }) {
+  async get(where: { scope: any; namespace: any; userId: number; version: string; key: string }) {
     if (where.userId == null) {
       throw new Error('userId 不能为空');
     }
@@ -31,15 +25,7 @@ export class StorageService extends BaseService<StorageEntity> {
     });
   }
 
-  async set(entity: {
-    id?: any;
-    scope: any;
-    namespace: any;
-    userId: number;
-    version: string;
-    value: string;
-    key: string;
-  }) {
+  async set(entity: { id?: any; scope: any; namespace: any; userId: number; version: string; value: string; key: string }) {
     entity.id = null;
     const query = { ...entity };
     delete query.value;

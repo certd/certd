@@ -1,4 +1,5 @@
 import { IStorage, MemoryStorage } from "./storage.js";
+
 const CONTEXT_VERSION_KEY = "contextVersion";
 export interface IContext {
   getInt(key: string): Promise<number>;
@@ -20,13 +21,11 @@ export class ContextFactory {
   }
 
   getContext(scope: string, namespace: string): IContext {
-    const context = new StorageContext(scope, namespace, this.storage);
-    return context;
+    return new StorageContext(scope, namespace, this.storage);
   }
 
   getMemoryContext(scope: string, namespace: string): IContext {
-    const context = new StorageContext(scope, namespace, this.memoryStorage);
-    return context;
+    return new StorageContext(scope, namespace, this.memoryStorage);
   }
 }
 

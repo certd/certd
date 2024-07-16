@@ -2,6 +2,7 @@ import path from 'path';
 import * as _ from 'lodash-es';
 import yaml from 'js-yaml';
 import fs from 'fs';
+import { logger } from '../utils/logger.js';
 
 function parseEnv(defaultConfig: any) {
   const config = {};
@@ -28,6 +29,7 @@ function parseEnv(defaultConfig: any) {
 
 export function load(config, env = '') {
   // Get document, or throw exception on error
+  logger.info('load config', env);
   const yamlPath = path.join(process.cwd(), `.env.${env}.yaml`);
   const doc = yaml.load(fs.readFileSync(yamlPath, 'utf8'));
   _.merge(doc, parseEnv(config));
