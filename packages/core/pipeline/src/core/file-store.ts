@@ -10,6 +10,12 @@ export type FileStoreOptions = {
   parent: string;
 };
 
+export interface IFileStore {
+  readFile(filePath: string): Buffer | null;
+  writeFile(filename: string, file: Buffer): string;
+  deleteByParent(scope: string, parent: string): void;
+}
+
 export class FileStore {
   rootDir: string;
   scope: string;
@@ -35,7 +41,7 @@ export class FileStore {
     return localPath;
   }
 
-  private buildFilePath(filename: string) {
+  protected buildFilePath(filename: string) {
     const parentDir = path.join(this.rootDir, this.scope + "", this.parent + "", dayjs().format("YYYY-MM-DD"));
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true });
