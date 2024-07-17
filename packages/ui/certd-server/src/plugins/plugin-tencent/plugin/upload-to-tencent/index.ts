@@ -1,12 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IAccessService,
-  ILogger,
-  IsTaskPlugin,
-  RunStrategy,
-  TaskInput,
-  TaskOutput,
-} from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import tencentcloud from 'tencentcloud-sdk-nodejs';
 import dayjs from 'dayjs';
 

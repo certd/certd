@@ -14,10 +14,11 @@ echo "安装依赖"
 #pnpm install --registry=https://registry.npmmirror.com
 pnpm install
 
-echo "client build"
-cd $root/packages/ui/certd-client
-pnpm run build
-echo "client build success"
+
+echo "packages build"
+
+lerna run build
+echo "packages build success"
 
 echo "server build"
 cd $root/packages/ui/certd-server
