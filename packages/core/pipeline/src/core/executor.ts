@@ -282,12 +282,16 @@ export class Executor {
         continue;
       }
       if (notification.type === "email") {
-        this.options.emailService?.send({
-          userId: this.pipeline.userId,
-          subject,
-          content,
-          receivers: notification.options.receivers,
-        });
+        try {
+          this.options.emailService?.send({
+            userId: this.pipeline.userId,
+            subject,
+            content,
+            receivers: notification.options.receivers,
+          });
+        } catch (e) {
+          logger.error("send email error", e);
+        }
       }
     }
   }

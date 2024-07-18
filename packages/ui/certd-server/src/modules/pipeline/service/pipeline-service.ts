@@ -137,15 +137,14 @@ export class PipelineService extends BaseService<PipelineEntity> {
       name: `pipeline.${id}.trigger.once`,
       cron: null,
       job: async () => {
-        logger.info('job准备启动，当前定时器数量：', this.cron.getListSize());
+        logger.info('用户手动启动job');
         try {
           await this.run(id, null);
         } catch (e) {
-          logger.error('定时job执行失败：', e);
+          logger.error('手动job执行失败：', e);
         }
       },
     });
-    logger.info('定时器数量：', this.cron.getListSize());
   }
 
   async delete(id: number) {
@@ -182,7 +181,11 @@ export class PipelineService extends BaseService<PipelineEntity> {
       cron: cron,
       job: async () => {
         logger.info('定时任务触发：', pipelineId, trigger.id);
-        await this.run(pipelineId, trigger.id);
+        try {
+          await this.run(pipelineId, trigger.id);
+        } catch (e) {
+          logger.error('定时job执行失败：', e);
+        }
       },
     });
     logger.info('当前定时器数量：', this.cron.getListSize());
@@ -244,17 +247,16 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const executor = runningTasks.get(historyId);
     if (executor) {
       await executor.cancel();
-    } else {
-      const entity = await this.historyService.info(historyId);
-      if (entity == null) {
-        return;
-      }
-      const pipeline: Pipeline = JSON.parse(entity.pipeline);
-      pipeline.status.status = ResultType.canceled;
-      pipeline.status.result = ResultType.canceled;
-      const runtime = new RunHistory(historyId, null, pipeline);
-      await this.saveHistory(runtime);
     }
+    const entity = await this.historyService.info(historyId);
+    if (entity == null) {
+      return;
+    }
+    const pipeline: Pipeline = JSON.parse(entity.pipeline);
+    pipeline.status.status = ResultType.canceled;
+    pipeline.status.result = ResultType.canceled;
+    const runtime = new RunHistory(historyId, null, pipeline);
+    await this.saveHistory(runtime);
   }
 
   private getTriggerType(triggerId, pipeline) {

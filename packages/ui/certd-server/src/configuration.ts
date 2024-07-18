@@ -21,6 +21,11 @@ import ProductionConfig from './config/config.production.js';
 import PreviewConfig from './config/config.preview.js';
 import UnittestConfig from './config/config.unittest.js';
 
+process.on('uncaughtException', error => {
+  console.error('未捕获的异常：', error);
+  // 在这里可以添加日志记录、发送错误通知等操作
+});
+
 @Configuration({
   imports: [
     koa,
@@ -50,7 +55,7 @@ export class MainConfiguration {
 
   async onReady() {
     // add middleware
-    this.app.useMiddleware([ReportMiddleware]);
+    // this.app.useMiddleware([ReportMiddleware]);
     // add filter
     // this.app.useFilter([NotFoundFilter, DefaultErrorFilter]);
     //跨域

@@ -23,4 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-test/user.secret.ts
+src/test/user.secret.ts
+
+src/**/*.js

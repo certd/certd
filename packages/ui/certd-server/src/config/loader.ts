@@ -31,9 +31,11 @@ export function load(config, env = '') {
   // Get document, or throw exception on error
   logger.info('load config', env);
   const yamlPath = path.join(process.cwd(), `.env.${env}.yaml`);
-  const doc = yaml.load(fs.readFileSync(yamlPath, 'utf8'));
-  _.merge(doc, parseEnv(config));
-  return doc;
+  if (fs.existsSync(yamlPath)) {
+    const doc = yaml.load(fs.readFileSync(yamlPath, 'utf8'));
+    return _.merge(doc, parseEnv(config));
+  }
+  return parseEnv(config);
 }
 
 export function mergeConfig(config: any, envType: string) {

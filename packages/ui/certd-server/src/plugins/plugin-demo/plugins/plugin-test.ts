@@ -1,5 +1,6 @@
 import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput } from '@certd/pipeline';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
+import { K8sClient } from '@certd/lib-k8s';
 
 @IsTaskPlugin({
   name: 'demoTest',
@@ -87,6 +88,8 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
     this.logger.info('switch:', this.switch);
     this.logger.info('授权id:', accessId);
     //TODO 这里实现你要部署的执行方法
+
+    new K8sClient('111');
   }
 }
 //TODO 这里实例化插件，进行注册

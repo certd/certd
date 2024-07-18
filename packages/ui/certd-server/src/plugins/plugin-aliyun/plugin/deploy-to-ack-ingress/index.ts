@@ -1,12 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IAccessService,
-  ILogger,
-  IsTaskPlugin,
-  RunStrategy,
-  TaskInput,
-  utils,
-} from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, utils } from '@certd/pipeline';
 // @ts-ignore
 import { ROAClient } from '@alicloud/pop-core';
 import { AliyunAccess } from '../../access/index.js';
@@ -122,17 +114,10 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
   }
   async execute(): Promise<void> {
     console.log('开始部署证书到阿里云cdn');
-    const { regionId, ingressClass, clusterId, isPrivateIpAddress, cert } =
-      this;
-    const access = (await this.accessService.getById(
-      this.accessId
-    )) as AliyunAccess;
+    const { regionId, ingressClass, clusterId, isPrivateIpAddress, cert } = this;
+    const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;
     const client = this.getClient(access, regionId);
-    const kubeConfigStr = await this.getKubeConfig(
-      client,
-      clusterId,
-      isPrivateIpAddress
-    );
+    const kubeConfigStr = await this.getKubeConfig(client, clusterId, isPrivateIpAddress);
 
     this.logger.info('kubeconfig已成功获取');
     const k8sClient = new K8sClient(kubeConfigStr);
@@ -224,11 +209,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     });
   }
 
-  async getKubeConfig(
-    client: any,
-    clusterId: string,
-    isPrivateIpAddress = false
-  ) {
+  async getKubeConfig(client: any, clusterId: string, isPrivateIpAddress = false) {
     const httpMethod = 'GET';
     const uriPath = `/k8s/${clusterId}/user_config`;
     const queries = {
@@ -241,14 +222,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     const requestOption = {};
 
     try {
-      const res = await client.request(
-        httpMethod,
-        uriPath,
-        queries,
-        body,
-        headers,
-        requestOption
-      );
+      const res = await client.request(httpMethod, uriPath, queries, body, headers, requestOption);
       return res.config;
     } catch (e) {
       console.error('请求出错：', e);

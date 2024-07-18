@@ -1,15 +1,9 @@
-import {
-  ALL,
-  Body,
-  Controller,
-  Inject,
-  Post,
-  Provide,
-  Query,
-} from '@midwayjs/core';
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { CrudController } from '../../../basic/crud-controller.js';
 import { SysSettingsService } from '../service/sys-settings-service.js';
 import { SysSettingsEntity } from '../entity/sys-settings.js';
+import { SysPublicSettings } from '../service/models.js';
+import * as _ from 'lodash-es';
 
 /**
  */
@@ -74,7 +68,9 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   // savePublicSettings
   @Post('/savePublicSettings', { summary: 'sys:settings:edit' })
   async savePublicSettings(@Body(ALL) body) {
-    await this.service.savePublicSettings(body);
+    const setting = new SysPublicSettings();
+    _.merge(setting, body);
+    await this.service.savePublicSettings(setting);
     return this.ok({});
   }
 }

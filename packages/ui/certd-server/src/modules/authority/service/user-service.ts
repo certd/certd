@@ -13,6 +13,8 @@ import { Constants } from '../../../basic/constants.js';
 import { UserRoleEntity } from '../entity/user-role.js';
 import { randomText } from 'svg-captcha';
 import bcrypt from 'bcryptjs';
+import { SysSettingsService } from '../../system/service/sys-settings-service.js';
+import { SysInstallInfo } from '../../system/service/models.js';
 
 /**
  * 系统用户
@@ -28,6 +30,9 @@ export class UserService extends BaseService<UserEntity> {
   permissionService: PermissionService;
   @Inject()
   userRoleService: UserRoleService;
+
+  @Inject()
+  sysSettingsService: SysSettingsService;
 
   getRepository() {
     return this.repository;
@@ -88,7 +93,7 @@ export class UserService extends BaseService<UserEntity> {
     delete param.username;
     if (!_.isEmpty(param.password)) {
       param.passwordVersion = 2;
-      param.password = this.genPassword(param.password, param.passwordVersion);
+      param.password = await this.genPassword(param.password, param.passwordVersion);
     } else {
       delete param.password;
     }
@@ -96,30 +101,33 @@ export class UserService extends BaseService<UserEntity> {
     await this.roleService.updateRoles(param.id, param.roles);
   }
 
-  private genPassword(plainPassword: any, passwordVersion: number) {
+  private async genPassword(rawPassword: any, passwordVersion: number) {
     if (passwordVersion == null || passwordVersion <= 1) {
-      return md5(plainPassword);
+      return md5(rawPassword);
     }
     const salt = bcrypt.genSaltSync(10);
+    const plainPassword = await this.buildPlainPassword(rawPassword);
     return bcrypt.hashSync(plainPassword, salt);
   }
 
-  async findOne(param) {
+  async findOne(param: any) {
     return this.repository.findOne({
       where: param,
     });
   }
 
-  async checkPassword(
-    rawPassword: any,
-    hashPassword: any,
-    passwordVersion: number
-  ) {
+  async checkPassword(rawPassword: any, hashPassword: any, passwordVersion: number) {
     if (passwordVersion == null || passwordVersion <= 1) {
-      return this.genPassword(rawPassword, passwordVersion) === hashPassword;
+      return (await this.genPassword(rawPassword, passwordVersion)) === hashPassword;
     }
+    const plainPassword = await this.buildPlainPassword(rawPassword);
+    return bcrypt.compareSync(plainPassword, hashPassword);
+  }
 
-    return bcrypt.compareSync(rawPassword, hashPassword); // true
+  async buildPlainPassword(rawPassword: string) {
+    const setting: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
+    const prefixSiteId = setting.siteId.substring(1, 5);
+    return rawPassword + prefixSiteId;
   }
 
   /**
@@ -147,17 +155,14 @@ export class UserService extends BaseService<UserEntity> {
       status: 1,
       passwordVersion: 2,
     });
-    newUser.password = this.genPassword(
-      newUser.password,
-      newUser.passwordVersion
-    );
+    if (!newUser.password) {
+      newUser.password = randomText(6);
+    }
+    newUser.password = await this.genPassword(newUser.password, newUser.passwordVersion);
 
     await this.transaction(async txManager => {
       newUser = await txManager.save(newUser);
-      const userRole: UserRoleEntity = UserRoleEntity.of(
-        newUser.id,
-        Constants.role.defaultUser
-      );
+      const userRole: UserRoleEntity = UserRoleEntity.of(newUser.id, Constants.role.defaultUser);
       await txManager.save(userRole);
     });
 
@@ -167,11 +172,7 @@ export class UserService extends BaseService<UserEntity> {
 
   async changePassword(userId: any, form: any) {
     const user = await this.info(userId);
-    const passwordChecked = await this.checkPassword(
-      form.password,
-      user.password,
-      user.passwordVersion
-    );
+    const passwordChecked = await this.checkPassword(form.password, user.password, user.passwordVersion);
     if (!passwordChecked) {
       throw new CommonException('原密码错误');
     }

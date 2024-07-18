@@ -44,7 +44,7 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
       "3、多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com、foo.com）\n" +
       "4、输入一个回车之后，再输入下一个",
   })
-  domains!: string;
+  domains!: string[];
 
   @TaskInput({
     title: "邮箱",
@@ -143,9 +143,20 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
   forceUpdate!: string;
 
   @TaskInput({
-    title: "CsrInfo",
-    helper: "暂时没有用",
+    title: "成功后邮件通知",
+    value: true,
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+    helper: "申请成功后是否发送邮件通知",
   })
+  successNotify = true;
+
+  // @TaskInput({
+  //   title: "CsrInfo",
+  //   helper: "暂时没有用",
+  // })
   csrInfo!: string;
 
   @TaskInput({
@@ -196,6 +207,10 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
       await this.output(cert, true);
       //清空后续任务的状态，让后续任务能够重新执行
       this.clearLastStatus();
+
+      if (this.successNotify) {
+        await this.sendSuccessEmail();
+      }
     } else {
       throw new Error("申请证书失败");
     }
@@ -296,16 +311,25 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
     dnsProvider.setCtx(context);
     await dnsProvider.onInstance();
 
-    const cert = await this.acme.order({
-      email,
-      domains,
-      dnsProvider,
-      csrInfo,
-      isTest: false,
-    });
+    try {
+      const cert = await this.acme.order({
+        email,
+        domains,
+        dnsProvider,
+        csrInfo,
+        isTest: false,
+      });
 
-    const certInfo = this.formatCerts(cert);
-    return new CertReader(certInfo);
+      const certInfo = this.formatCerts(cert);
+      return new CertReader(certInfo);
+    } catch (e: any) {
+      const message: string = e.message;
+      if (message.indexOf("redundant with a wildcard domain in the same request") >= 0) {
+        this.logger.error(e);
+        throw new Error(`通配符域名已经包含了普通域名，请删除其中一个（${message}）`);
+      }
+      throw e;
+    }
   }
 
   formatCert(pem: string) {
@@ -348,6 +372,21 @@ export class CertApplyPlugin extends AbstractTaskPlugin {
       isWillExpire: leftDays < maxDays,
       leftDays,
     };
+  }
+
+  private async sendSuccessEmail() {
+    try {
+      this.logger.info("发送成功邮件通知:" + this.email);
+      const subject = `【CertD】证书申请成功【${this.domains[0]}】`;
+      await this.ctx.emailService.send({
+        userId: this.ctx.pipeline.userId,
+        receivers: [this.email],
+        subject: subject,
+        content: `证书申请成功，域名：${this.domains.join(",")}`,
+      });
+    } catch (e) {
+      this.logger.error("send email error", e);
+    }
   }
 }
 
