@@ -1,3 +1,5 @@
+import { logger } from "./util.log.js";
+
 export function TimeoutPromise(callback: () => Promise<void>, ms = 30 * 1000) {
   let timeout: any;
   return Promise.race([
@@ -9,5 +11,16 @@ export function TimeoutPromise(callback: () => Promise<void>, ms = 30 * 1000) {
     }),
   ]).finally(() => {
     clearTimeout(timeout);
+  });
+}
+
+export function safePromise<T>(callback: (resolve: (ret: T) => void, reject: (ret: any) => void) => void): Promise<T> {
+  return new Promise((resolve, reject) => {
+    try {
+      callback(resolve, reject);
+    } catch (e) {
+      logger.error(e);
+      reject(e);
+    }
   });
 }

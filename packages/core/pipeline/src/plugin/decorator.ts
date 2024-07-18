@@ -31,7 +31,24 @@ export function IsTaskPlugin(define: PluginDefine): ClassDecorator {
         outputs[property] = output;
       }
     }
-    _.merge(define, { input: inputs, autowire: autowires, output: outputs });
+
+    // inputs 转换为array，根据order排序，然后再转换为map
+
+    let inputArray = [];
+    for (const key in inputs) {
+      const _input = inputs[key];
+      if (_input.order == null) {
+        _input.order = 0;
+      }
+      inputArray.push([key, _input]);
+    }
+    inputArray = _.sortBy(inputArray, (item) => item[1].order);
+    const inputMap: any = {};
+    inputArray.forEach((item) => {
+      inputMap[item[0]] = item[1];
+    });
+
+    _.merge(define, { input: inputMap, autowire: autowires, output: outputs });
 
     Reflect.defineMetadata(PLUGIN_CLASS_KEY, define, target);
 

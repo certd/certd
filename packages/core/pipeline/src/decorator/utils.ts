@@ -11,7 +11,11 @@ function attachProperty(target: any, propertyKey: string | symbol) {
 }
 
 function getClassProperties(target: any) {
-  return propertyMap[target] || {};
+  //获取父类
+  const parent = Object.getPrototypeOf(target);
+  const parentMap = propertyMap[parent] || {};
+  const current = propertyMap[target] || {};
+  return _.merge({}, parentMap, current);
 }
 
 function target(target: any, propertyKey?: string | symbol) {

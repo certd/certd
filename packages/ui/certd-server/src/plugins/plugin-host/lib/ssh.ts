@@ -28,18 +28,22 @@ export class AsyncSsh2Client {
   async connect() {
     this.logger.info(`开始连接，${this.connConf.host}:${this.connConf.port}`);
     return new Promise((resolve, reject) => {
-      const conn = new ssh2.Client();
-      conn
-        .on('error', (err: any) => {
-          this.logger.error('连接失败', err);
-          reject(err);
-        })
-        .on('ready', () => {
-          this.logger.info('连接成功');
-          this.conn = conn;
-          resolve(this.conn);
-        })
-        .connect(this.connConf);
+      try {
+        const conn = new ssh2.Client();
+        conn
+          .on('error', (err: any) => {
+            this.logger.error('连接失败', err);
+            reject(err);
+          })
+          .on('ready', () => {
+            this.logger.info('连接成功');
+            this.conn = conn;
+            resolve(this.conn);
+          })
+          .connect(this.connConf);
+      } catch (e) {
+        reject(e);
+      }
     });
   }
   async getSftp() {
@@ -96,9 +100,7 @@ export class AsyncSsh2Client {
           .stderr.on('data', (ret: Buffer) => {
             const err = this.convert(ret);
             data += err;
-            this.logger.info(
-              `[${this.connConf.host}][error]: ` + err.trimEnd()
-            );
+            this.logger.info(`[${this.connConf.host}][error]: ` + err.trimEnd());
           });
       });
     });
@@ -154,11 +156,7 @@ export class SshClient {
          }
    * @param options
    */
-  async uploadFiles(options: {
-    connectConf: SshAccess;
-    transports: any;
-    mkdirs: boolean;
-  }) {
+  async uploadFiles(options: { connectConf: SshAccess; transports: any; mkdirs: boolean }) {
     const { connectConf, transports, mkdirs } = options;
     await this._call({
       connectConf,
@@ -172,9 +170,7 @@ export class SshClient {
             if (conn.windows) {
               if (filePath.indexOf('/') > -1) {
                 this.logger.info('--------------------------');
-                this.logger.info(
-                  '请注意：windows下，文件目录分隔应该写成\\而不是/'
-                );
+                this.logger.info('请注意：windows下，文件目录分隔应该写成\\而不是/');
                 this.logger.info('--------------------------');
               }
               const spec = await conn.exec('echo %COMSPEC%');
