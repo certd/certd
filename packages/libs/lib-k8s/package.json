@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-k8s",
   "private": false,
-  "version": "1.22.0",
+  "version": "1.22.0-1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,7 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "dns": "^0.2.2",
+    "shelljs": "^0.8.5",
     "kubernetes-client": "^9.0.0"
   },
   "devDependencies": {

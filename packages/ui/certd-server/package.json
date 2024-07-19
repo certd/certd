@@ -22,7 +22,7 @@
     "@alicloud/pop-core": "^1.7.10",
     "@certd/acme-client": "^1.22.0",
     "@certd/lib-huawei": "^1.22.0",
-    "@certd/lib-k8s": "^1.22.0",
+    "@certd/lib-k8s": "^1.22.0-1",
     "@certd/midway-flyway-js": "^1.22.0",
     "@certd/pipeline": "^1.22.0",
     "@certd/plugin-cert": "^1.22.0",
