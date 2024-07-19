@@ -2,6 +2,7 @@ import kubernetesClient from 'kubernetes-client';
 import dns from 'dns';
 import { logger } from '@certd/pipeline';
 
+//@ts-ignore
 const { KubeConfig, Client, Request } = kubernetesClient;
 
 export class K8sClient {
