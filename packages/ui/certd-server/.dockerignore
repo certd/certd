@@ -14,3 +14,6 @@ run/
 .tsbuildinfo
 .tsbuildinfo.*
 /data/db.sqlite
+
+/tools/windows/
+
