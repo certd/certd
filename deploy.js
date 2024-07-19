@@ -32,8 +32,9 @@ async function getPackages(directoryPath) {
 async function getAllPackages() {
     const base = await getPackages("./packages/core")
     const plugins = await getPackages("./packages/plugins")
+    const libs = await getPackages("./packages/libs")
 
-    return base.concat(plugins)
+    return base.concat(plugins).concat(libs)
 }
 
 async function sync() {
