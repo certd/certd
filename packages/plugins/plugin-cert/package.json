@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-cert",
   "private": false,
-  "version": "1.21.2",
+  "version": "1.22.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,8 +13,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "workspace:^1.21.2",
-    "@certd/pipeline": "workspace:^1.21.2",
+    "@certd/acme-client": "workspace:^1.22.0",
+    "@certd/pipeline": "workspace:^1.22.0",
     "jszip": "^3.10.1",
     "node-forge": "^0.10.0",
     "psl": "^1.9.0"

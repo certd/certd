@@ -1,7 +1,7 @@
 {
   "name": "@certd/pipeline",
   "private": false,
-  "version": "1.21.2",
+  "version": "1.22.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -22,7 +22,6 @@
     "qs": "^6.11.2"
   },
   "devDependencies": {
-    "iconv-lite": "^0.6.3",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
@@ -41,6 +40,7 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "iconv-lite": "^0.6.3",
     "log4js": "^6.9.1",
     "mocha": "^10.2.0",
     "prettier": "^2.8.8",
