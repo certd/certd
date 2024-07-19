@@ -13,8 +13,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "workspace:^1.22.0",
-    "@certd/pipeline": "workspace:^1.22.0",
+    "@certd/acme-client": "^1.22.0",
+    "@certd/pipeline": "^1.22.0",
     "jszip": "^3.10.1",
     "node-forge": "^0.10.0",
     "psl": "^1.9.0"
@@ -53,5 +53,5 @@
     "vite": "^3.1.0",
     "vue-tsc": "^0.38.9"
   },
-  "gitHead": "a31f1c7f5e71fa946de9bf0283e11d6ce049b3e9"
+  "gitHead": "47fe3d5826661f678d081ab53e67c847a3239d88"
 }

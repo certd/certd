@@ -52,5 +52,6 @@
     "tslib": "^2.5.2",
     "typeorm": "^0.3.11",
     "typescript": "~5.1.0"
-  }
+  },
+  "gitHead": "47fe3d5826661f678d081ab53e67c847a3239d88"
 }
