@@ -1,6 +1,7 @@
 FROM registry.cn-shenzhen.aliyuncs.com/handsfree/node:18-alpine as builder
 EXPOSE 7001
 WORKDIR /workspace/
+COPY . /workspace/
 RUN npm install -g pnpm@8.15.7 --registry=https://registry.npmmirror.com
 RUN pnpm config set registry https://registry.npmmirror.com/
 
