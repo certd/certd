@@ -1,6 +1,5 @@
 FROM registry.cn-shenzhen.aliyuncs.com/handsfree/node:18-alpine
 EXPOSE 7001
-ENV MIDWAY_SERVER_ENV production
 WORKDIR /app/
 ENV node_sqlite3_binary_host_mirror https://registry.npmmirror.com/-/binary/sqlite3
 RUN npm install -g pnpm@8.15.7 --registry=https://registry.npmmirror.com
@@ -17,6 +16,7 @@ RUN pnpm install
 RUN node ./before-build.js
 RUN npm run build
 ENV NODE_ENV production
+ENV MIDWAY_SERVER_ENV production
 #CMD ["pm2-runtime", "start", "./bootstrap.js","--name", "certd","-i","1"]
 CMD ["npm", "run","start"]
 
