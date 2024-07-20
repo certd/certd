@@ -1,6 +1,6 @@
 {
   "name": "@certd/midway-flyway-js",
-  "version": "1.22.0",
+  "version": "1.22.1",
   "description": "midway with flyway, sql upgrade way ",
   "private": false,
   "type": "module",
@@ -36,6 +36,7 @@
     "@types/node": "16",
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "@typescript-eslint/parser": "^5.38.1",
+    "better-sqlite3": "^11.1.2",
     "cross-env": "^6.0.0",
     "eslint": "^8.24.0",
     "eslint-config-prettier": "^8.5.0",
@@ -47,7 +48,6 @@
     "prettier": "^2.8.8",
     "rollup": "^3.7.4",
     "rollup-plugin-visualizer": "^5.8.2",
-    "better-sqlite3": "^11.1.2",
     "ts-node": "^10.9.1",
     "tslib": "^2.5.2",
     "typeorm": "^0.3.11",
