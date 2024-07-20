@@ -13,6 +13,7 @@ RUN sed -i "s/workspace://g" "/app/package.json"
 RUN yarn install  --registry=https://registry.npmmirror.com
 #RUN yarn install --production
 RUN node ./before-build.js
+RUN yarn install  --registry=https://registry.npmmirror.com
 RUN npm run build
 #CMD ["pm2-runtime", "start", "./bootstrap.js","--name", "certd","-i","1"]
 CMD ["npm", "run","start"]
