@@ -4,8 +4,6 @@
 
 安装依赖包:      
 ```shell
-# 设置环境变量
-npm config set node_sqlite3_binary_host_mirror "https://registry.npmmirror.com/-/binary/sqlite3"
 
 # 克隆代码
 git clone https://github.com/certd/certd
@@ -14,6 +12,7 @@ git clone https://github.com/certd/certd
 cd certd
 
 # 安装依赖
+npm install -g pnpm@8.15.7
 pnpm install
 
 # 初始化构建
