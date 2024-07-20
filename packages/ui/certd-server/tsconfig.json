@@ -29,8 +29,8 @@
   ],
   "references": [
     { "path": "../../libs/midway-flyway-js" },
-    { "path": "../../libs/k8s" },
-    { "path": "../../libs/huawei" },
+    { "path": "../../libs/lib-k8s" },
+    { "path": "../../libs/lib-huawei" },
     { "path": "../../plugins/plugin-cert" },
     { "path": "../../core/acme-client" },
     { "path": "../../core/pipeline" }
