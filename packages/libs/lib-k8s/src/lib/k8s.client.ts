@@ -1,4 +1,5 @@
 import kubernetesClient from 'kubernetes-client';
+//@ts-ignore
 import dns from 'dns';
 import { logger } from '@certd/pipeline';
 
