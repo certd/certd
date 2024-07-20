@@ -15,8 +15,10 @@ services:
       - TZ=Asia/Shanghai
       - certd_system_resetAdminPassword=false
                                      #  ↑↑↑↑↑---------------------------4、如果忘记管理员密码，可以设置为true，重启之后，管理员密码将改成123456，然后请及时修改回false【可选】
+      - certd_cron_immediateTriggerOnce=false
+                                     #  ↑↑↑↑↑---------------------------5、如果设置为true，启动后所有配置了cron的流水线任务都将被立即触发一次【可选】
       - VITE_APP_ICP_NO=
-                      #  ↑↑↑↑↑ -----------------------------------------5、这里可以设置备案号【可选】
+                      #  ↑↑↑↑↑ -----------------------------------------6、这里可以设置备案号【可选】
       # 设置环境变量即可自定义certd配置
       # 服务端配置项见： packages/ui/certd-server/src/config/config.default.ts
       # 服务端配置规则： certd_ + 配置项, 点号用_代替

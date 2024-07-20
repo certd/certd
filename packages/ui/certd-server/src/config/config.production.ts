@@ -8,9 +8,6 @@ const production = {
   preview: {
     enabled: false,
   },
-  cron: {
-    immediateTriggerOnce: true,
-  },
 } as MidwayConfig;
 
 mergeConfig(production, 'production');

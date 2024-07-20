@@ -9,8 +9,10 @@ export type CronTask = {
 };
 export class Cron {
   logger;
+  immediateTriggerOnce: boolean;
   constructor(opts) {
     this.logger = opts.logger;
+    this.immediateTriggerOnce = opts.immediateTriggerOnce;
   }
 
   register(task: CronTask) {
