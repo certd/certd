@@ -42,9 +42,9 @@ export function IsTaskPlugin(define: PluginDefine): ClassDecorator {
       }
       inputArray.push([key, _input]);
     }
-    inputArray = _.sortBy(inputArray, (item) => item[1].order);
+    inputArray = _.sortBy(inputArray, (item: any) => item[1].order);
     const inputMap: any = {};
-    inputArray.forEach((item) => {
+    inputArray.forEach((item: any) => {
       inputMap[item[0]] = item[1];
     });
 
