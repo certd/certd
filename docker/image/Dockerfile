@@ -4,7 +4,6 @@ ENV MIDWAY_SERVER_ENV production
 WORKDIR /app/
 ENV node_sqlite3_binary_host_mirror https://registry.npmmirror.com/-/binary/sqlite3
 RUN npm install -g pnpm@8.15.7 --registry=https://registry.npmmirror.com
-RUN npm install -g mwtsc --registry=https://registry.npmmirror.com
 RUN pnpm config set registry https://registry.npmmirror.com/
 
 #RUN npm install cross-env -g  --registry=https://registry.npmmirror.com
