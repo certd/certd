@@ -1,4 +1,4 @@
-import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
+import { Config, Inject, Provide, Scope, ScopeEnum, sleep } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service.js';
@@ -80,7 +80,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
   /**
    * 应用启动后初始加载记录
    */
-  async onStartup() {
+  async onStartup(immediateTriggerOnce: boolean) {
     logger.info('加载定时trigger开始');
     const idEntityList = await this.repository.find({
       select: {
@@ -114,7 +114,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       for (const entity of list) {
         const pipeline = JSON.parse(entity.content ?? '{}');
         try {
-          this.registerTriggers(pipeline);
+          await this.registerTriggers(pipeline, immediateTriggerOnce);
         } catch (e) {
           logger.error('加载定时trigger失败：', e);
         }
@@ -123,12 +123,17 @@ export class PipelineService extends BaseService<PipelineEntity> {
     logger.info('定时器数量：', this.cron.getListSize());
   }
 
-  registerTriggers(pipeline?: Pipeline) {
+  async registerTriggers(pipeline?: Pipeline, immediateTriggerOnce = false) {
     if (pipeline?.triggers == null) {
       return;
     }
     for (const trigger of pipeline.triggers) {
       this.registerCron(pipeline.id, trigger);
+    }
+
+    if (immediateTriggerOnce) {
+      await this.trigger(pipeline.id);
+      await sleep(1000);
     }
   }
 

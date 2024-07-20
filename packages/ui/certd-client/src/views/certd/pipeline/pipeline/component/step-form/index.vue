@@ -1,5 +1,5 @@
 <template>
-  <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="600px" @after-open-change="stepDrawerOnAfterVisibleChange">
+  <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="700px" @after-open-change="stepDrawerOnAfterVisibleChange">
     <template #title>
       编辑步骤
       <a-button v-if="editMode" @click="stepDelete()">
@@ -8,30 +8,36 @@
     </template>
     <template v-if="currentStep">
       <pi-container v-if="currentStep._isAdd" class="pi-step-form">
-        <a-row :gutter="10">
-          <a-col v-for="(item, index) of stepPluginDefineList" :key="index" class="step-plugin" :span="12">
-            <a-card
-              hoverable
-              :class="{ current: item.name === currentStep.type }"
-              @click="stepTypeSelected(item)"
-              @dblclick="
-                stepTypeSelected(item);
-                stepTypeSave();
-              "
-            >
-              <a-card-meta>
-                <template #title>
-                  <a-avatar :src="item.icon || '/images/plugin.png'" />
-                  <span class="title">{{ item.title }}</span>
-                </template>
-                <template #description>
-                  <span :title="item.desc">{{ item.desc }}</span>
-                </template>
-              </a-card-meta>
-            </a-card>
-          </a-col>
-        </a-row>
-        <a-button v-if="editMode" type="primary" @click="stepTypeSave"> 确定 </a-button>
+        <a-tabs tab-position="left">
+          <a-tab-pane v-for="group of pluginGroups.groups" :key="group.key" :tab="group.title">
+            <a-row :gutter="10">
+              <a-col v-for="item of group.plugins" :key="item.key" class="step-plugin" :span="12">
+                <a-card
+                  hoverable
+                  :class="{ current: item.name === currentStep.type }"
+                  @click="stepTypeSelected(item)"
+                  @dblclick="
+                    stepTypeSelected(item);
+                    stepTypeSave();
+                  "
+                >
+                  <a-card-meta>
+                    <template #title>
+                      <a-avatar :src="item.icon || '/images/plugin.png'" />
+                      <span class="title">{{ item.title }}</span>
+                    </template>
+                    <template #description>
+                      <span :title="item.desc">{{ item.desc }}</span>
+                    </template>
+                  </a-card-meta>
+                </a-card>
+              </a-col>
+            </a-row>
+          </a-tab-pane>
+        </a-tabs>
+        <div style="padding: 20px; margin-left: 100px">
+          <a-button v-if="editMode" type="primary" @click="stepTypeSave"> 确定 </a-button>
+        </div>
       </pi-container>
       <pi-container v-else class="pi-step-form">
         <a-form ref="stepFormRef" class="step-form" :model="currentStep" :label-col="labelCol" :wrapper-col="wrapperCol">
@@ -91,6 +97,8 @@ import { computed, inject, Ref, ref } from "vue";
 import _ from "lodash-es";
 import { nanoid } from "nanoid";
 import { CopyOutlined } from "@ant-design/icons-vue";
+import { PluginGroups } from "/@/views/certd/pipeline/pipeline/type";
+
 export default {
   name: "PiStepForm",
   components: { CopyOutlined },
@@ -107,8 +115,8 @@ export default {
      * @returns
      */
     function useStepForm() {
-      const stepPluginDefineList: any = inject("plugins");
-
+      const getPluginGroups: any = inject("getPluginGroups");
+      const pluginGroups: PluginGroups = getPluginGroups();
       const mode: Ref = ref("add");
       const callback: Ref = ref();
       const currentStep: Ref = ref({ title: undefined, input: {} });
@@ -199,9 +207,8 @@ export default {
 
       const changeCurrentPlugin = (step: any) => {
         const stepType = step.type;
-        const pluginDefine = stepPluginDefineList.value.find((p: any) => {
-          return p.name === stepType;
-        });
+        const pluginDefine = pluginGroups.get(stepType);
+        debugger;
         if (pluginDefine) {
           step.type = stepType;
           step._isAdd = false;
@@ -271,7 +278,7 @@ export default {
       return {
         stepTypeSelected,
         stepTypeSave,
-        stepPluginDefineList,
+        pluginGroups,
         stepFormRef,
         mode,
         stepAdd,

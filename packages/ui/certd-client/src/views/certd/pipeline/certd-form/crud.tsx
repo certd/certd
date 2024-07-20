@@ -1,7 +1,39 @@
-import { compute, CreateCrudOptionsProps, CreateCrudOptionsRet } from "@fast-crud/fast-crud";
-import { Dicts } from "./dicts";
+import { compute, CreateCrudOptionsRet, dict } from "@fast-crud/fast-crud";
+import { PluginGroup } from "@certd/pipeline";
 
-export default function (): CreateCrudOptionsRet {
+export default function (certPluginGroup: PluginGroup, formWrapperRef: any): CreateCrudOptionsRet {
+  const inputs: any = {};
+
+  for (const plugin of certPluginGroup.plugins) {
+    for (const inputKey in plugin.input) {
+      if (inputs[inputKey]) {
+        inputs[inputKey].form.show = true;
+        continue;
+      }
+      const inputDefine = plugin.input[inputKey];
+      if (!inputDefine.required && !inputDefine.maybeNeed) {
+        continue;
+      }
+      inputs[inputKey] = {
+        title: inputDefine.title,
+        form: {
+          ...inputDefine,
+          show: compute((ctx) => {
+            console.log(formWrapperRef);
+            const form = formWrapperRef.value.getFormData();
+            if (!form) {
+              return false;
+            }
+            return form?.certApplyPlugin === plugin.name;
+          })
+        }
+      };
+    }
+  }
+
+  console.log(inputs);
+  debugger;
+
   return {
     crudOptions: {
       form: {
@@ -10,143 +42,31 @@ export default function (): CreateCrudOptionsRet {
         }
       },
       columns: {
-        domains: {
-          title: "域名",
+        certApplyPlugin: {
+          title: "证书申请插件",
           type: "dict-select",
-          search: {
-            show: true,
-            component: {
-              name: "a-input"
-            }
-          },
+          dict: dict({
+            data: [
+              { value: "CertApply", label: "JS-ACME" },
+              { value: "CertApplyLego", label: "Lego-ACME" }
+            ]
+          }),
           form: {
-            col: {
-              span: 24
-            },
-            wrapperCol: {
-              span: null
-            },
-            component: {
-              mode: "tags",
-              open: false
-            },
+            order: 0,
+            value: "CertApply",
             helper: {
               render: () => {
                 return (
-                  <div>
-                    <div>支持通配符域名，例如： *.foo.com 、 *.test.handsfree.work</div>
-                    <div>支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）</div>
-                    <div>多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com）</div>
-                    <div>输入一个回车之后，再输入下一个</div>
-                  </div>
+                  <ul>
+                    <li>Lego-ACME：基于Lego实现，支持海量DNS提供商</li>
+                    <li>JS-ACME：如果你的域名DNS属于阿里云、腾讯云、Cloudflare可以选择用它来申请</li>
+                  </ul>
                 );
               }
-            },
-            valueResolve({ form }) {
-              if (form.domains instanceof String) {
-                form.domains = form.domains?.join(",");
-              }
-            },
-            rules: [{ required: true, message: "请填写域名" }]
-          }
-        },
-        email: {
-          title: "邮箱",
-          type: "text",
-          search: { show: false },
-          form: {
-            rules: [{ required: true, type: "email", message: "请填写邮箱" }]
-          }
-        },
-        blank: {
-          title: "占位",
-          type: "text",
-          form: {
-            blank: true
-          }
-        },
-        sslProvider: {
-          title: "证书提供商",
-          type: "dict-select",
-          dict: Dicts.sslProviderDict
-        },
-        eabAccess: {
-          title: "EAB授权",
-          type: "dict-select",
-          form: {
-            component: {
-              name: "PiAccessSelector",
-              type: "eab",
-              vModel: "modelValue"
-            },
-            helper: "如果是ZeroSSL，需要配置EAB授权，https://app.zerossl.com/developer 生成 'EAB' "
-          }
-        },
-        dnsProviderType: {
-          title: "DNS提供商",
-          type: "dict-select",
-          dict: Dicts.dnsProviderTypeDict,
-          form: {
-            value: "aliyun",
-            rules: [{ required: true, message: "请选择DNS提供商" }],
-            valueChange({ form }) {
-              form.dnsProviderAccess = null;
             }
           }
         },
-        dnsProviderAccess: {
-          title: "DNS授权",
-          type: "text",
-          form: {
-            component: {
-              name: "PiAccessSelector",
-              type: compute(({ form }) => {
-                return form.dnsProviderType;
-              }),
-              vModel: "modelValue"
-            },
-            rules: [{ required: true, message: "请选择DNS授权" }]
-          }
-        }
-        // country: {
-        //   title: "国家",
-        //   type: "text",
-        //   form: {
-        //     value: "China"
-        //   }
-        // },
-        // state: {
-        //   title: "省份",
-        //   type: "text",
-        //   form: {
-        //     value: "GuangDong"
-        //   }
-        // },
-        // locality: {
-        //   title: "市区",
-        //   type: "text",
-        //   form: {
-        //     value: "NanShan"
-        //   }
-        // },
-        // organization: {
-        //   title: "单位",
-        //   type: "text",
-        //   form: {
-        //     value: "CertD"
-        //   }
-        // },
-        // organizationUnit: {
-        //   title: "部门",
-        //   type: "text",
-        //   form: {
-        //     value: "IT Dept"
-        //   }
-        // },
-        // remark: {
-        //   title: "备注",
-        //   type: "text"
-        // }
+        ...inputs
       }
     }
   };

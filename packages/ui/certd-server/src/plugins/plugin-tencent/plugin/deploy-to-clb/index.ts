@@ -1,12 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IAccessService,
-  ILogger,
-  IsTaskPlugin,
-  RunStrategy,
-  TaskInput,
-  utils,
-} from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
 import tencentcloud from 'tencentcloud-sdk-nodejs';
 import { TencentAccess } from '../../access/index.js';
 import dayjs from 'dayjs';
@@ -14,6 +6,7 @@ import dayjs from 'dayjs';
 @IsTaskPlugin({
   name: 'DeployCertToTencentCLB',
   title: '部署到腾讯云CLB',
+  group: pluginGroups.tencent.key,
   desc: '暂时只支持单向认证证书，暂时只支持通用负载均衡',
   default: {
     strategy: {
@@ -40,8 +33,7 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: '负载均衡ID',
-    helper:
-      '如果没有配置，则根据域名匹配负载均衡下的监听器（根据域名匹配时暂时只支持前100个）',
+    helper: '如果没有配置，则根据域名匹配负载均衡下的监听器（根据域名匹配时暂时只支持前100个）',
     required: true,
   })
   loadBalancerId!: string;
@@ -88,9 +80,7 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
     this.logger = this.ctx.logger;
   }
   async execute(): Promise<void> {
-    const accessProvider = (await this.accessService.getById(
-      this.accessId
-    )) as TencentAccess;
+    const accessProvider = (await this.accessService.getById(this.accessId)) as TencentAccess;
     const client = this.getClient(accessProvider, this.region);
 
     const lastCertId = await this.getCertIdFromProps(client);
@@ -103,10 +93,7 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
     try {
       await utils.sleep(2000);
       let newCertId = await this.getCertIdFromProps(client);
-      if (
-        (lastCertId && newCertId === lastCertId) ||
-        (!lastCertId && !newCertId)
-      ) {
+      if ((lastCertId && newCertId === lastCertId) || (!lastCertId && !newCertId)) {
         await utils.sleep(2000);
         newCertId = await this.getCertIdFromProps(client);
       }
@@ -121,11 +108,7 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
   }
 
   async getCertIdFromProps(client: any) {
-    const listenerRet = await this.getListenerList(
-      client,
-      this.loadBalancerId,
-      [this.listenerId]
-    );
+    const listenerRet = await this.getListenerList(client, this.loadBalancerId, [this.listenerId]);
     return this.getCertIdFromListener(listenerRet[0], this.domain);
   }
 
@@ -152,14 +135,7 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
     const params = this.buildProps();
     const ret = await client.ModifyListener(params);
     this.checkRet(ret);
-    this.logger.info(
-      '设置腾讯云CLB证书成功:',
-      ret.RequestId,
-      '->loadBalancerId:',
-      this.loadBalancerId,
-      'listenerId',
-      this.listenerId
-    );
+    this.logger.info('设置腾讯云CLB证书成功:', ret.RequestId, '->loadBalancerId:', this.loadBalancerId, 'listenerId', this.listenerId);
     return ret;
   }
 

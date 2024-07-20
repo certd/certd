@@ -1,11 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IAccessService,
-  IsTaskPlugin,
-  RunStrategy,
-  TaskInput,
-  utils,
-} from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
 import tencentcloud from 'tencentcloud-sdk-nodejs';
 import { K8sClient } from '@certd/lib-k8s';
 import dayjs from 'dayjs';
@@ -14,6 +7,7 @@ import { Logger } from 'log4js';
 @IsTaskPlugin({
   name: 'DeployCertToTencentTKEIngress',
   title: '部署到腾讯云TKE-ingress',
+  group: pluginGroups.tencent.key,
   desc: '需要【上传到腾讯云】作为前置任务',
   default: {
     strategy: {
@@ -104,10 +98,7 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const accessProvider = await this.accessService.getById(this.accessId);
     const tkeClient = this.getTkeClient(accessProvider, this.region);
-    const kubeConfigStr = await this.getTkeKubeConfig(
-      tkeClient,
-      this.clusterId
-    );
+    const kubeConfigStr = await this.getTkeKubeConfig(tkeClient, this.clusterId);
 
     this.logger.info('kubeconfig已成功获取');
     const k8sClient = new K8sClient(kubeConfigStr);
@@ -154,9 +145,7 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
     };
     const ret = await client.DescribeClusterKubeconfig(params);
     this.checkRet(ret);
-    this.logger.info(
-      '注意：后续操作需要在【集群->基本信息】中开启外网或内网访问,https://console.cloud.tencent.com/tke2/cluster'
-    );
+    this.logger.info('注意：后续操作需要在【集群->基本信息】中开启外网或内网访问,https://console.cloud.tencent.com/tke2/cluster');
     return ret.Kubeconfig;
   }
 

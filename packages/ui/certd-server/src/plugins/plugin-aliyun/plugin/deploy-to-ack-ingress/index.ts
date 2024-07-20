@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, utils } from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
 // @ts-ignore
 import { ROAClient } from '@alicloud/pop-core';
 import { AliyunAccess } from '../../access/index.js';
@@ -9,6 +9,7 @@ import { CertInfo } from '@certd/plugin-cert';
 @IsTaskPlugin({
   name: 'DeployCertToAliyunAckIngress',
   title: '部署到阿里云AckIngress',
+  group: pluginGroups.aliyun.key,
   input: {},
   output: {},
   default: {

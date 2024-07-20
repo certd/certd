@@ -5,7 +5,7 @@ RUN npm install -g pnpm@8.15.7 --registry=https://registry.npmmirror.com
 RUN pnpm config set registry https://registry.npmmirror.com/
 
 RUN cd /workspace/certd-client && pnpm install && npm run build
-RUN cd /workspace/certd-server && pnpm install && npm run build
+RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 

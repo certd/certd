@@ -21,6 +21,7 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
     col: {
       span: 24,
     },
+    order: -1,
     helper:
       "1、支持通配符域名，例如： *.foo.com、foo.com、*.test.handsfree.work\n" +
       "2、支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）\n" +
@@ -36,12 +37,14 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
       vModel: "value",
     },
     required: true,
+    order: -1,
     helper: "请输入邮箱",
   })
   email!: string;
 
   @TaskInput({
     title: "更新天数",
+    value: 20,
     component: {
       name: "a-input-number",
       vModel: "value",

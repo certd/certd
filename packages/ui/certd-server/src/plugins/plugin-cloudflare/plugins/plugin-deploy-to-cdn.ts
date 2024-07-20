@@ -1,16 +1,10 @@
-import {
-  AbstractTaskPlugin,
-  IAccessService,
-  ILogger,
-  IsTaskPlugin,
-  RunStrategy,
-  TaskInput,
-} from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 
 @IsTaskPlugin({
   name: 'CloudflareDeployToCDN',
   title: '部署证书到CF CDN',
+  group: pluginGroups.other.key,
   desc: '暂未实现，不可用',
   default: {
     strategy: {

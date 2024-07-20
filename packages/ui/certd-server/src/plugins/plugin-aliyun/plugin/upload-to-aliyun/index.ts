@@ -1,11 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IAccessService,
-  IsTaskPlugin,
-  RunStrategy,
-  TaskInput,
-  TaskOutput,
-} from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import Core from '@alicloud/pop-core';
 import { AliyunAccess } from '../../access/index.js';
 import { appendTimeSuffix, checkRet, ZoneOptions } from '../../utils/index.js';
@@ -14,6 +7,7 @@ import { Logger } from 'log4js';
 @IsTaskPlugin({
   name: 'uploadCertToAliyun',
   title: '上传证书到阿里云',
+  group: pluginGroups.aliyun.key,
   desc: '',
   default: {
     strategy: {
@@ -76,9 +70,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
 
   async execute(): Promise<void> {
     console.log('开始部署证书到阿里云cdn');
-    const access = (await this.accessService.getById(
-      this.accessId
-    )) as AliyunAccess;
+    const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;
     const client = this.getClient(access);
     const certName = appendTimeSuffix(this.name);
     const params = {
@@ -92,11 +84,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
       method: 'POST',
     };
 
-    const ret = (await client.request(
-      'CreateUserCertificate',
-      params,
-      requestOption
-    )) as any;
+    const ret = (await client.request('CreateUserCertificate', params, requestOption)) as any;
     checkRet(ret);
     this.logger.info('证书上传成功：aliyunCertId=', ret.CertId);
 

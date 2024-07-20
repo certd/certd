@@ -1,4 +1,4 @@
-import { IsTaskPlugin, RunStrategy, sp, Step, TaskInput } from "@certd/pipeline";
+import { IsTaskPlugin, pluginGroups, RunStrategy, sp, Step, TaskInput } from "@certd/pipeline";
 import type { CertInfo } from "./acme.js";
 import { CertReader } from "./cert-reader.js";
 import { CertApplyBasePlugin } from "./base.js";
@@ -12,7 +12,8 @@ export type { CertInfo };
 @IsTaskPlugin({
   name: "CertApplyLego",
   title: "证书申请（Lego）",
-  desc: "支持海量DNS解析提供商，推荐使用",
+  group: pluginGroups.cert.key,
+  desc: "支持海量DNS解析提供商，推荐使用，一样的免费通配符域名证书申请，支持多个域名打到同一个证书上",
   default: {
     input: {
       renewDays: 20,
@@ -29,7 +30,9 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
     component: {
       name: "a-input",
       vModel: "value",
+      placeholder: "alidns",
     },
+    helper: "你的域名是通过哪家提供商进行解析的，具体应该配置什么请参考lego文档：https://go-acme.github.io/lego/dns/",
     required: true,
   })
   dnsType!: string;
@@ -39,7 +42,8 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
     component: {
       name: "a-textarea",
       vModel: "value",
-      rows: 6,
+      rows: 4,
+      placeholder: "ALICLOUD_ACCESS_KEY=abcdefghijklmnopqrstuvwx\nALICLOUD_SECRET_KEY=your-secret-key",
     },
     required: true,
     helper: "一行一条，例如 appKeyId=xxxxx，具体配置请参考lego文档：https://go-acme.github.io/lego/dns/",
@@ -52,16 +56,20 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
       name: "pi-access-selector",
       type: "eab",
     },
+    maybeNeed: true,
     helper: "如果需要提供EAB授权",
   })
-  eabAccessId!: number;
+  legoEabAccessId!: number;
 
   @TaskInput({
     title: "自定义LEGO参数",
     component: {
       name: "a-input",
       vModel: "value",
+      placeholder: "--dns-timeout 30",
     },
+    helper: "额外的lego命令行参数，参考文档：https://go-acme.github.io/lego/usage/cli/options/",
+    maybeNeed: true,
   })
   customArgs = "";
 
@@ -73,8 +81,8 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
     this.userContext = this.ctx.userContext;
     this.http = this.ctx.http;
     this.lastStatus = this.ctx.lastStatus as Step;
-    if (this.eabAccessId) {
-      this.eab = await this.ctx.accessService.getById(this.eabAccessId);
+    if (this.legoEabAccessId) {
+      this.eab = await this.ctx.accessService.getById(this.legoEabAccessId);
     }
   }
   async onInit(): Promise<void> {}

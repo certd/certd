@@ -37,7 +37,9 @@ const development = {
       },
     },
   },
-  cron: {},
+  cron: {
+    immediateTriggerOnce: false,
+  },
   /**
    * 演示环境
    */
@@ -84,6 +86,8 @@ const development = {
     resetAdminPasswd: false,
   },
 } as MidwayConfig;
+mergeConfig(development, 'development');
+
 mergeConfig(development, env);
 
 export default development;

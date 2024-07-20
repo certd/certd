@@ -1,16 +1,10 @@
-import {
-  AbstractTaskPlugin,
-  IAccessService,
-  ILogger,
-  IsTaskPlugin,
-  RunStrategy,
-  TaskInput,
-} from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import { SshClient } from '../../lib/ssh.js';
 
 @IsTaskPlugin({
   name: 'hostShellExecute',
   title: '执行远程主机脚本命令',
+  group: pluginGroups.host.key,
   input: {},
   default: {
     strategy: {

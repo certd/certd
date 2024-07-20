@@ -2,7 +2,7 @@ import {
   AbstractTaskPlugin,
   IAccessService,
   ILogger,
-  IsTaskPlugin,
+  IsTaskPlugin, pluginGroups,
   RunStrategy,
   TaskInput,
 } from '@certd/pipeline';
@@ -14,6 +14,7 @@ import { AliyunAccess } from '../../access/index.js';
 @IsTaskPlugin({
   name: 'DeployCertToAliyunCDN',
   title: '部署证书至阿里云CDN',
+  group: pluginGroups.aliyun.key,
   desc: '依赖证书申请前置任务，自动部署域名证书至阿里云CDN',
   default: {
     strategy: {

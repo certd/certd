@@ -1,5 +1,12 @@
 <template>
-  <a-drawer v-model:open="taskDrawerVisible" placement="right" :closable="true" width="600px" class="pi-task-form" @after-open-change="taskDrawerOnAfterVisibleChange">
+  <a-drawer
+    v-model:open="taskDrawerVisible"
+    placement="right"
+    :closable="true"
+    width="700px"
+    class="pi-task-form"
+    @after-open-change="taskDrawerOnAfterVisibleChange"
+  >
     <template #title>
       编辑任务
       <a-button v-if="editMode" @click="taskDelete()">
@@ -24,7 +31,13 @@
           />
 
           <div class="steps">
-            <a-form-item :value="currentTask.steps" name="steps" label="" :wrapper-col="{ span: 24 }" :rules="[{ required: true, message: '至少需要一个步骤，或者你可以点击标题右边删除按钮删除此任务' }]">
+            <a-form-item
+              :value="currentTask.steps"
+              name="steps"
+              label=""
+              :wrapper-col="{ span: 24 }"
+              :rules="[{ required: true, message: '至少需要一个步骤，或者你可以点击标题右边删除按钮删除此任务' }]"
+            >
               <a-descriptions title="任务步骤" size="small">
                 <template #extra>
                   <a-button type="primary" @click="stepAdd(currentTask)">添加步骤</a-button>
@@ -70,7 +83,7 @@ import { provide, Ref, ref } from "vue";
 import _ from "lodash-es";
 import { nanoid } from "nanoid";
 import PiStepForm from "../step-form/index.vue";
-import { message, Modal } from "ant-design-vue";
+import { Modal } from "ant-design-vue";
 import { CopyOutlined } from "@ant-design/icons-vue";
 
 export default {
@@ -88,7 +101,7 @@ export default {
       const stepFormRef: Ref<any> = ref(null);
       const currentStepIndex = ref(0);
       provide("currentStepIndex", currentStepIndex);
-      const stepAdd = (task: any, stepDef: any) => {
+      const stepAdd = (task: any, stepDef?: any) => {
         currentStepIndex.value = task.steps.length;
         stepFormRef.value.stepAdd((type: any, value: any) => {
           if (type === "save") {
@@ -179,7 +192,7 @@ export default {
 
       const taskAdd = (emit: any, taskMerge: any) => {
         mode.value = "add";
-        const blankTask = { id: nanoid(), title: "新任务", steps: [], status: null };
+        const blankTask: any = { id: nanoid(), title: "新任务", steps: [], status: null };
         const task: any = _.merge(blankTask, taskMerge);
         taskOpen(task, emit);
       };

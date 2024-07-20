@@ -11,14 +11,14 @@ import * as pluginApi from "./api.plugin";
 import * as historyApi from "./api.history";
 import * as api from "./api";
 import { useRoute } from "vue-router";
-import { PipelineDetail, PipelineOptions, RunHistory } from "./pipeline/type";
+import { PipelineDetail, PipelineOptions, PluginGroups, RunHistory } from "./pipeline/type";
 
 export default defineComponent({
   name: "PipelineDetail",
   components: { PipelineEdit },
   setup() {
     const route = useRoute();
-    const pipelineId:Ref = ref(route.query.id);
+    const pipelineId: Ref = ref(route.query.id);
 
     const pipelineOptions: PipelineOptions = {
       async getPipelineDetail({ pipelineId }) {
@@ -43,9 +43,9 @@ export default defineComponent({
         return detail;
       },
 
-      async getPlugins() {
-        const plugins = await pluginApi.GetList({});
-        return plugins as any[];
+      async getPluginGroups() {
+        const groups = await pluginApi.GetGroups({});
+        return new PluginGroups(groups);
       },
 
       async doSave(pipelineConfig: any) {

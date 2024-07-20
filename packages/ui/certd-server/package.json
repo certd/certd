@@ -14,6 +14,7 @@
     "lint:fix": "mwts fix",
     "ci": "npm run cov",
     "build": "mwtsc --cleanOutDir --skipLibCheck",
+    "build-on-docker": "node ./before-build.js && npm run build",
     "up-mw-deps": "npx midway-version -u -w"
   },
   "dependencies": {

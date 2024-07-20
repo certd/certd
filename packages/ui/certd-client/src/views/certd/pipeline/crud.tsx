@@ -58,7 +58,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
                     strategy: {
                       runStrategy: 0 // 正常执行
                     },
-                    type: "CertApply"
+                    type: form.certApplyPlugin
                   }
                 ]
               }

@@ -1,10 +1,11 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 import { K8sClient } from '@certd/lib-k8s';
 
 @IsTaskPlugin({
   name: 'demoTest',
   title: 'Demo测试插件',
+  group: pluginGroups.other.key,
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,

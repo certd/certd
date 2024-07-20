@@ -1,5 +1,5 @@
 import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { pluginRegistry } from '@certd/pipeline';
+import { pluginGroups, pluginRegistry } from '@certd/pipeline';
 @Provide()
 @Scope(ScopeEnum.Singleton)
 export class PluginService {
@@ -11,5 +11,9 @@ export class PluginService {
       list.push({ ...Plugin.define, key });
     }
     return list;
+  }
+
+  getGroups() {
+    return pluginGroups;
   }
 }

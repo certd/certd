@@ -1,4 +1,4 @@
-import { Decorator, IsTaskPlugin, RunStrategy, TaskInput } from "@certd/pipeline";
+import { Decorator, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import type { CertInfo, SSLProvider } from "./acme.js";
 import { AcmeService } from "./acme.js";
 import _ from "lodash-es";
@@ -11,7 +11,8 @@ export type { CertInfo };
 
 @IsTaskPlugin({
   name: "CertApply",
-  title: "证书申请",
+  title: "证书申请（JS版）",
+  group: pluginGroups.cert.key,
   desc: "免费通配符域名证书申请，支持多个域名打到同一个证书上",
   default: {
     input: {
@@ -46,6 +47,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "pi-access-selector",
       type: "eab",
     },
+    maybeNeed: true,
     helper: "如果使用ZeroSSL证书，需要提供EAB授权， 请前往 https://app.zerossl.com/developer 生成 'EAB Credentials for ACME Clients' ",
   })
   eabAccessId!: number;

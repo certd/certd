@@ -223,7 +223,7 @@ import _ from "lodash-es";
 import { message, Modal, notification } from "ant-design-vue";
 import { pluginManager } from "/@/views/certd/pipeline/pipeline/plugin";
 import { nanoid } from "nanoid";
-import { PipelineDetail, PipelineOptions, RunHistory } from "./type";
+import { PipelineDetail, PipelineOptions, PluginGroups, RunHistory } from "./type";
 import type { Runnable } from "@certd/pipeline";
 import PiHistoryTimelineItem from "/@/views/certd/pipeline/pipeline/component/history-timeline-item.vue";
 export default defineComponent({
@@ -348,17 +348,17 @@ export default defineComponent({
       }
     );
 
-    const plugins: Ref<any> = ref([]);
+    const pluginGroupsRef: Ref<PluginGroups> = ref();
 
     const fetchPlugins = async () => {
-      const list = await props.options.getPlugins();
-      plugins.value = list;
-      pluginManager.init(list);
+      pluginGroupsRef.value = await props.options.getPluginGroups();
     };
     fetchPlugins();
 
     provide("pipeline", pipeline);
-    provide("plugins", plugins);
+    provide("getPluginGroups", () => {
+      return pluginGroupsRef.value;
+    });
     provide("currentHistory", currentHistory);
 
     function useTask() {

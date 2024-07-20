@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import tencentcloud from 'tencentcloud-sdk-nodejs';
 import dayjs from 'dayjs';
 
@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
   name: 'UploadCertToTencent',
   title: '上传证书到腾讯云',
   desc: '上传成功后输出：tencentCertId',
+  group: pluginGroups.tencent.key,
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,

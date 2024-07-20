@@ -1,4 +1,4 @@
-import { Autoload, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
+import { Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
 import { PipelineService } from '../service/pipeline-service.js';
 import { logger } from '../../../utils/logger.js';
 
@@ -10,11 +10,13 @@ export class AutoRegisterCron {
 
   // @Inject()
   // echoPlugin: EchoPlugin;
+  @Config('cron.immediateTriggerOnce')
+  private immediateTriggerOnce = false;
 
   @Init()
   async init() {
     logger.info('加载定时trigger开始');
-    await this.pipelineService.onStartup();
+    await this.pipelineService.onStartup(this.immediateTriggerOnce);
     // logger.info(this.echoPlugin, this.echoPlugin.test);
     // logger.info('加载定时trigger完成');
     //

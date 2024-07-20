@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import { SshClient } from '../../lib/ssh.js';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 import * as fs from 'fs';
@@ -7,6 +7,7 @@ import { SshAccess } from '../../access/index.js';
 @IsTaskPlugin({
   name: 'uploadCertToHost',
   title: '上传证书到主机',
+  group: pluginGroups.host.key,
   desc: '也支持复制证书到本机',
   default: {
     strategy: {

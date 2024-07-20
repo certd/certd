@@ -15,7 +15,7 @@ export default {
     }
   },
   emits: ["update:modelValue"],
-  setup(props:any, ctx:any) {
+  setup(props: any, ctx: any) {
     const options = ref<any[]>([]);
 
     const pipeline = inject("pipeline") as Ref<any>;
@@ -23,8 +23,10 @@ export default {
     const currentStepIndex = inject("currentStepIndex") as Ref<number>;
     const currentTask = inject("currentTask") as Ref<any>;
 
+    const getPluginGroups = inject("getPluginGroups") as Ref<any>;
+    const pluginGroups = getPluginGroups();
     function onCreate() {
-      options.value = pluginManager.getPreStepOutputOptions({
+      options.value = pluginGroups.getPreStepOutputOptions({
         pipeline: pipeline.value,
         currentStageIndex: currentStageIndex.value,
         currentStepIndex: currentStepIndex.value,
@@ -40,14 +42,14 @@ export default {
 
     watch(
       () => {
-        return pluginManager.map;
+        return pluginGroups.value.map;
       },
       () => {
         onCreate();
       }
     );
 
-    function onChanged(value:any) {
+    function onChanged(value: any) {
       ctx.emit("update:modelValue", value);
     }
     return {

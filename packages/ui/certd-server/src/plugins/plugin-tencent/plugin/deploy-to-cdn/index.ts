@@ -1,11 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IAccessService,
-  ILogger,
-  IsTaskPlugin,
-  RunStrategy,
-  TaskInput,
-} from '@certd/pipeline';
+import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import tencentcloud from 'tencentcloud-sdk-nodejs';
 import { TencentAccess } from '../../access/index.js';
 import { CertInfo } from '@certd/plugin-cert';
@@ -13,6 +6,7 @@ import { CertInfo } from '@certd/plugin-cert';
 @IsTaskPlugin({
   name: 'DeployCertToTencentCDN',
   title: '部署到腾讯云CDN',
+  group: pluginGroups.tencent.key,
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -75,9 +69,7 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
   }
 
   async execute(): Promise<void> {
-    const accessProvider: TencentAccess = (await this.accessService.getById(
-      this.accessId
-    )) as TencentAccess;
+    const accessProvider: TencentAccess = (await this.accessService.getById(this.accessId)) as TencentAccess;
     const client = this.getClient(accessProvider);
     const params = this.buildParams();
     await this.doRequest(client, params);

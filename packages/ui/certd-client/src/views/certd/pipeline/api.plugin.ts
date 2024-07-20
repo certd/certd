@@ -9,12 +9,7 @@ const defaultInputDefine = {
   }
 };
 
-export async function GetList(query: any) {
-  const plugins = await request({
-    url: apiPrefix + "/list",
-    method: "post",
-    params: query
-  });
+function initPlugins(plugins: any) {
   for (const plugin of plugins) {
     for (const key in plugin.input) {
       const field = _.merge({}, defaultInputDefine, plugin.input[key]);
@@ -24,7 +19,7 @@ export async function GetList(query: any) {
       //嵌套对象
       field.key = ["input", key];
       if (field.required) {
-        delete field.required;
+        // delete field.required;
         if (field.rules == null) {
           field.rules = [];
         }
@@ -34,5 +29,28 @@ export async function GetList(query: any) {
     }
   }
   console.log("plugins", plugins);
+}
+
+export async function GetList(query: any) {
+  const plugins = await request({
+    url: apiPrefix + "/list",
+    method: "post",
+    params: query
+  });
+  initPlugins(plugins);
   return plugins;
+}
+
+export async function GetGroups(query: any) {
+  const groups = await request({
+    url: apiPrefix + "/groups",
+    method: "post",
+    params: query
+  });
+  const plugins: any = [];
+  for (const groupKey in groups) {
+    plugins.push(...groups[groupKey].plugins);
+  }
+  initPlugins(plugins);
+  return groups;
 }

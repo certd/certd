@@ -4,20 +4,31 @@ export type Registrable = {
   name: string;
   title: string;
   desc?: string;
+  group?: string;
 };
 
 export type RegistryItem<T> = {
   define: Registrable;
   target: T;
 };
+
+export type OnRegisterContext<T> = {
+  registry: Registry<T>;
+  key: string;
+  value: RegistryItem<T>;
+};
+export type OnRegister<T> = (ctx: OnRegisterContext<T>) => void;
 export class Registry<T> {
   type = "";
   storage: {
     [key: string]: RegistryItem<T>;
   } = {};
 
-  constructor(type: string) {
+  onRegister?: OnRegister<T>;
+
+  constructor(type: string, onRegister?: OnRegister<T>) {
     this.type = type;
+    this.onRegister = onRegister;
   }
 
   register(key: string, value: RegistryItem<T>) {
@@ -25,6 +36,13 @@ export class Registry<T> {
       return;
     }
     this.storage[key] = value;
+    if (this.onRegister) {
+      this.onRegister({
+        registry: this,
+        key,
+        value,
+      });
+    }
     logger.info(`注册插件:${this.type}:${key}`);
   }
 
