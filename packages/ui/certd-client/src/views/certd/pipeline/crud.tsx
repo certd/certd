@@ -77,11 +77,11 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
                   }
                 ]
               }
-            ],
-            triggers,
-            notifications
+            ]
           }
-        ]
+        ],
+        triggers,
+        notifications
       };
 
       const id = await api.Save({
