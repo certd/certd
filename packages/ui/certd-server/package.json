@@ -62,7 +62,8 @@
     "svg-captcha": "^1.4.0",
     "tencentcloud-sdk-nodejs": "^4.0.44",
     "tencentcloud-sdk-nodejs-dnspod": "^4.0.866",
-    "typeorm": "^0.3.11"
+    "typeorm": "^0.3.11",
+    "mwtsc": "^1.4.0"
   },
   "devDependencies": {
     "@midwayjs/mock": "^3.16.4",
