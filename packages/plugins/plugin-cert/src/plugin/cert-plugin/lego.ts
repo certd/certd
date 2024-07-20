@@ -42,7 +42,7 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
       rows: 6,
     },
     required: true,
-    helper: "一行一条，例如 appKeyId=xxxxx",
+    helper: "一行一条，例如 appKeyId=xxxxx，具体配置请参考lego文档：https://go-acme.github.io/lego/dns/",
   })
   environment!: string;
 
