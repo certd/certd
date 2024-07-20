@@ -208,7 +208,6 @@ export default {
       const changeCurrentPlugin = (step: any) => {
         const stepType = step.type;
         const pluginDefine = pluginGroups.get(stepType);
-        debugger;
         if (pluginDefine) {
           step.type = stepType;
           step._isAdd = false;

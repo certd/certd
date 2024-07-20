@@ -31,14 +31,12 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
     }
   }
 
-  console.log(inputs);
-  debugger;
-
   return {
     crudOptions: {
       form: {
         wrapper: {
-          width: "1150px"
+          width: "1150px",
+          saveRemind: false
         }
       },
       columns: {
@@ -66,7 +64,40 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
             }
           }
         },
-        ...inputs
+        ...inputs,
+        triggerCron: {
+          title: "定时触发",
+          type: "text",
+          form: {
+            component: {
+              placeholder: "0 0 4 * * *"
+            },
+            helper: "请输入cron表达式, 例如：0 0 4 * * *，每天凌晨4点触发",
+            order: 100
+          }
+        },
+        emailNotify: {
+          title: "失败邮件通知",
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { value: true, label: "启用" },
+              { value: false, label: "不启用" }
+            ]
+          }),
+          form: {
+            order: 101,
+            helper: {
+              render: () => {
+                return (
+                  <div>
+                    需要配置<router-link to={{ path: "/certd/settings/email" }}>邮件服务器</router-link>才能发送邮件
+                  </div>
+                );
+              }
+            }
+          }
+        }
       }
     }
   };

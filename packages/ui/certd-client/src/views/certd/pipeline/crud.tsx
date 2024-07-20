@@ -37,6 +37,21 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
   function addCertdPipeline() {
     certdFormRef.value.open(async ({ form }: any) => {
       // 添加certd pipeline
+      const triggers = [];
+      if (form.triggerCron) {
+        triggers.push({ id: nanoid(), title: "定时触发", type: "timer", props: { cron: form.triggerCron } });
+      }
+      const notifications = [];
+      if (form.emailNotify) {
+        notifications.push({
+          id: nanoid(),
+          type: "email",
+          when: ["error", "turnToSuccess"],
+          options: {
+            receivers: [form.email]
+          }
+        });
+      }
       const pipeline = {
         title: form.domains[0] + "证书自动化",
         stages: [
@@ -62,7 +77,9 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
                   }
                 ]
               }
-            ]
+            ],
+            triggers,
+            notifications
           }
         ]
       };
