@@ -47,7 +47,7 @@
     "prettier": "^2.8.8",
     "rollup": "^3.7.4",
     "rollup-plugin-visualizer": "^5.8.2",
-    "sqlite3": "^5.0.2",
+    "better-sqlite3": "^11.1.2",
     "ts-node": "^10.9.1",
     "tslib": "^2.5.2",
     "typeorm": "^0.3.11",
