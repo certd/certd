@@ -42,7 +42,7 @@ jobs:
 
       - name: Set up the working directory
         run: |
-          mkdir -p ./packages/ui/
+          ls ./packages/ui/
         working-directory: ./packages/ui/
 
       - name: Set up QEMU
