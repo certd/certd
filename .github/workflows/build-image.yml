@@ -32,7 +32,7 @@ jobs:
             // 打印 JSON 文件内容
             console.log("certd_version:",pkg.version);
             // 输出 JSON 对象，可以在后续步骤中使用
-            return JSON.parse("0.0.5");
+            return {"version":"0.0.5"};
 
       - name: Set up the working directory
         run: |
