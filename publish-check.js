@@ -12,12 +12,8 @@ function check(){
 
     //GH_TOKEN
     console.log("检查 GH_TOKEN")
-    if(process.env.npm_config_gh_token){
-        process.env.GH_TOKEN = process.env.npm_config_gh_token
-        childProcess.exec("set GH_TOKEN="+process.env.npm_config_gh_token)
-    }
     if(!process.env.GH_TOKEN){
-        console.log(process.env)
+        // setx  /M GH_TOKEN xxxxx
         console.error("GH_TOKEN 未设置")
         throw new Error("GH_TOKEN 未设置")
     }
