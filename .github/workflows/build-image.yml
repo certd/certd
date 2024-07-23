@@ -40,15 +40,6 @@ jobs:
             // echo "version=0.0.5" >> $GITHUB_OUTPUT
             return "0.0.5"
 
-      - name: Set up the working directory
-        run: |
-          ls
-        working-directory: /home/runner/work/certd/certd/packages/ui/
-
-      - name: list files
-        run: |
-          ls
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -67,5 +58,6 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
+          context: ./packages/ui/
           tags: |
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}
