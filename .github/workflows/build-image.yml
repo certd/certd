@@ -20,7 +20,7 @@ jobs:
 
       - name: get_certd_version
         id: get_certd_version
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             const fs = require('fs');
@@ -36,7 +36,8 @@ jobs:
             // 打印 JSON 文件内容
             console.log("certd_version:",pkg.version);
             // 输出 JSON 对象，可以在后续步骤中使用
-            echo "version=0.0.5" >> $GITHUB_OUTPUT
+            // echo "version=0.0.5" >> $GITHUB_OUTPUT
+            return {"version":"0.0.5"}
 
       - name: Set up the working directory
         run: |
