@@ -22,6 +22,7 @@ jobs:
         id: get_certd_version
         uses: actions/github-script@v6
         with:
+          result-encoding: string
           script: |
             const fs = require('fs');
             const path = require('path');
@@ -37,7 +38,7 @@ jobs:
             console.log("certd_version:",pkg.version);
             // 输出 JSON 对象，可以在后续步骤中使用
             // echo "version=0.0.5" >> $GITHUB_OUTPUT
-            return {"version":"0.0.5"}
+            return "0.0.5"
 
       - name: Set up the working directory
         run: |
@@ -63,4 +64,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs}}
+            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}
