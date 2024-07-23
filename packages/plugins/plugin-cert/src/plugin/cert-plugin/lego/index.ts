@@ -1,9 +1,9 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, sp, Step, TaskInput } from "@certd/pipeline";
-import type { CertInfo } from "../acme";
-import { CertReader } from "../cert-reader";
-import { CertApplyBasePlugin } from "../base";
+import type { CertInfo } from "../acme.js";
+import { CertReader } from "../cert-reader.js";
+import { CertApplyBasePlugin } from "../base.js";
 import fs from "fs";
-import { EabAccess } from "../../../access";
+import { EabAccess } from "../../../access/index.js";
 import path from "path";
 
 export { CertReader };
@@ -25,6 +25,21 @@ export type { CertInfo };
   },
 })
 export class CertApplyLegoPlugin extends CertApplyBasePlugin {
+  // @TaskInput({
+  //   title: "ACME服务端点",
+  //   default: "https://acme-v02.api.letsencrypt.org/directory",
+  //   component: {
+  //     name: "a-select",
+  //     vModel: "value",
+  //     options: [
+  //       { value: "https://acme-v02.api.letsencrypt.org/directory", label: "Let's Encrypt" },
+  //       { value: "https://letsencrypt.proxy.handsfree.work/directory", label: "Let's Encrypt代理，letsencrypt.org无法访问时使用" },
+  //     ],
+  //   },
+  //   required: true,
+  // })
+  acmeServer!: string;
+
   @TaskInput({
     title: "DNS类型",
     component: {
@@ -110,8 +125,14 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
     const savePathArgs = `--path "${saveDir}"`;
     const os_type = process.platform === "win32" ? "windows" : "linux";
     const legoPath = path.resolve("./tools", os_type, "lego");
+    let serverArgs = "";
+    if (this.acmeServer) {
+      serverArgs = ` --server ${this.acmeServer}`;
+    }
     const cmds = [
-      `${legoPath} -a --email "${this.email}" --dns ${this.dnsType} ${keyType} ${domainArgs} ${eabArgs} ${savePathArgs}  ${this.customArgs || ""} run`,
+      `${legoPath} -a --email "${this.email}" --dns ${this.dnsType} ${keyType} ${domainArgs} ${serverArgs} ${eabArgs} ${savePathArgs}  ${
+        this.customArgs || ""
+      } run`,
     ];
 
     await sp.spawn({

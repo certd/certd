@@ -33,6 +33,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       vModel: "value",
       options: [
         { value: "letsencrypt", label: "Let's Encrypt" },
+        // { value: "letsencrypt-proxy", label: "Let's Encrypt代理，letsencrypt.org无法访问时使用" },
         // { value: "buypass", label: "Buypass" },
         { value: "zerossl", label: "ZeroSSL" },
       ],

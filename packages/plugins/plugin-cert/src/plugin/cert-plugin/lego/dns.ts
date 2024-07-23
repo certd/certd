@@ -1,3 +1,1 @@
-export const dnsList = [
-
-]
+export const dnsList = [];
