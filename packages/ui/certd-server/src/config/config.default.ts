@@ -59,7 +59,7 @@ const development = {
         type: 'better-sqlite3',
         database: './data/db.sqlite',
         synchronize: false, // 如果第一次使用，不存在表，有同步的需求可以写 true
-        logging: true,
+        logging: false,
 
         // 配置实体模型 或者 entities: '/entity',
         entities: ['**/modules/*/entity/*.ts', '**/entity/*.js', '**/entity/*.d.ts', PipelineEntity, FlywayHistory, UserEntity],
