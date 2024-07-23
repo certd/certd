@@ -1,4 +1,4 @@
-FROM registry.cn-shenzhen.aliyuncs.com/handsfree/node:18-alpine as builder
+FROM node:18-alpine as builder
 EXPOSE 7001
 WORKDIR /workspace/
 COPY . /workspace/
@@ -11,7 +11,7 @@ RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 
 
-FROM registry.cn-shenzhen.aliyuncs.com/handsfree/node:18-alpine
+FROM node:18-alpine
 WORKDIR /app/
 COPY --from=builder /workspace/certd-server/ /app/
 ENV TZ Asia/Shanghai
