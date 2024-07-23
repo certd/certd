@@ -25,7 +25,7 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const jsonFilePath = path.join(__dirname, './packages/ui/certd-server/package.json');
+            const jsonFilePath = "./packages/ui/certd-server/package.json";
             const jsonContent = fs.readFileSync(jsonFilePath, 'utf-8');
             const pkg = JSON.parse(jsonContent)
             // 打印 JSON 文件内容
