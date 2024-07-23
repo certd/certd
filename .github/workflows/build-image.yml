@@ -36,7 +36,7 @@ jobs:
             // 打印 JSON 文件内容
             console.log("certd_version:",pkg.version);
             // 输出 JSON 对象，可以在后续步骤中使用
-            return {"version":"0.0.5"};
+            echo "{version}={0.0.5}" >> $GITHUB_OUTPUT
 
       - name: Set up the working directory
         run: |
@@ -62,4 +62,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.version}}
+            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs}}
