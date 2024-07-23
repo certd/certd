@@ -13,9 +13,9 @@ RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 FROM node:18-alpine
 WORKDIR /app/
 COPY --from=builder /workspace/certd-server/ /app/
-ENV TZ Asia/Shanghai
-ENV NODE_ENV production
-ENV MIDWAY_SERVER_ENV production
+ENV TZ=Asia/Shanghai
+ENV NODE_ENV=production
+ENV MIDWAY_SERVER_ENV=production
 CMD ["npm", "run","start"]
 
 
