@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  sync:
+  build-certd-image:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -26,19 +26,13 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
-            
             const pnpmWorkspace = "./pnpm-workspace.yaml";
             fs.unlinkSync(pnpmWorkspace)
-            
             const jsonFilePath = "./packages/ui/certd-server/package.json";
             const jsonContent = fs.readFileSync(jsonFilePath, 'utf-8');
-            console.log(jsonContent)
             const pkg = JSON.parse(jsonContent)
-            // 打印 JSON 文件内容
             console.log("certd_version:",pkg.version);
-            // 输出 JSON 对象，可以在后续步骤中使用
-            // echo "version=0.0.5" >> $GITHUB_OUTPUT
-            return "0.0.5"
+            return pkg.version
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
