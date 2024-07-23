@@ -36,7 +36,7 @@ jobs:
             // 打印 JSON 文件内容
             console.log("certd_version:",pkg.version);
             // 输出 JSON 对象，可以在后续步骤中使用
-            echo "{version}={0.0.5}" >> $GITHUB_OUTPUT
+            echo "version=0.0.5" >> $GITHUB_OUTPUT
 
       - name: Set up the working directory
         run: |
