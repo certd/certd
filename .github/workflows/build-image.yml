@@ -25,6 +25,10 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
+            
+            const pnpmWorkspace = "pnpm-workspace.yaml";
+            fs.removeSync(jsonFilePath)
+            
             const jsonFilePath = "./packages/ui/certd-server/package.json";
             const jsonContent = fs.readFileSync(jsonFilePath, 'utf-8');
             console.log(jsonContent)
@@ -36,9 +40,8 @@ jobs:
 
       - name: Set up the working directory
         run: |
-          mkdir -p /app/
-          cp -r ./packages/ui/ /app/
-        working-directory: /app/
+          mkdir -p ./packages/ui/
+        working-directory: ./packages/ui/
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
