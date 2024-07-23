@@ -27,7 +27,7 @@ jobs:
             const path = require('path');
             
             const pnpmWorkspace = "./pnpm-workspace.yaml";
-            fs.removeSync(jsonFilePath)
+            fs.removeSync(pnpmWorkspace)
             
             const jsonFilePath = "./packages/ui/certd-server/package.json";
             const jsonContent = fs.readFileSync(jsonFilePath, 'utf-8');
