@@ -42,9 +42,8 @@ jobs:
 
       - name: Set up the working directory
         run: |
-          cd ./packages/ui/
           ls
-        working-directory: ./packages/ui/
+        working-directory: /home/runner/work/certd/certd/packages/ui/
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
