@@ -27,7 +27,7 @@ jobs:
             const path = require('path');
             
             const pnpmWorkspace = "pnpm-workspace.yaml";
-            fs.removeSync(jsonFilePath)
+            fs.removeSync(pnpmWorkspace)
             
             const jsonFilePath = "./packages/ui/certd-server/package.json";
             const jsonContent = fs.readFileSync(jsonFilePath, 'utf-8');
@@ -53,8 +53,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: registry.cn-shenzhen.aliyuncs.com
-          username: ${{ secrets.aliyun_cs_username }}
-          password: ${{ secrets.aliyun_cs_password }}
+          username: ${{ secrets.ALIYUN_CS_USERNAME }}
+          password: ${{ secrets.ALIYUN_CS_PASSWORD }}
 
       - name: Build and push
         uses: docker/build-push-action@v6.5.0
