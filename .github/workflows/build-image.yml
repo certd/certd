@@ -27,6 +27,7 @@ jobs:
             const path = require('path');
             const jsonFilePath = "./packages/ui/certd-server/package.json";
             const jsonContent = fs.readFileSync(jsonFilePath, 'utf-8');
+            console.log(jsonContent)
             const pkg = JSON.parse(jsonContent)
             // 打印 JSON 文件内容
             console.log("certd_version:",pkg.version);
