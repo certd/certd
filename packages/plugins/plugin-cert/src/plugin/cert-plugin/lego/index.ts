@@ -1,9 +1,9 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, sp, Step, TaskInput } from "@certd/pipeline";
-import type { CertInfo } from "./acme.js";
-import { CertReader } from "./cert-reader.js";
-import { CertApplyBasePlugin } from "./base.js";
+import type { CertInfo } from "../acme";
+import { CertReader } from "../cert-reader";
+import { CertApplyBasePlugin } from "../base";
 import fs from "fs";
-import { EabAccess } from "../../access";
+import { EabAccess } from "../../../access";
 import path from "path";
 
 export { CertReader };

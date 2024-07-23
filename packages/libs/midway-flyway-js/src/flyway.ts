@@ -227,8 +227,10 @@ export class Flyway {
       if (history.hash !== hash && this.allowHashNotMatch === false) {
         throw new Error(file + `hash conflict ,old: ${history.hash} != new: ${hash}`);
       }
+      this.logger.info('[ midfly ] script<' + file + '> already executed');
       return true;
     }
+    this.logger.info('[ midfly ] script<' + file + '> not yet execute');
     return false;
   }
 
