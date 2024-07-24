@@ -1,5 +1,7 @@
 import { compute, CreateCrudOptionsRet, dict } from "@fast-crud/fast-crud";
 import { PluginGroup } from "@certd/pipeline";
+import { useReference } from "/@/use/use-refrence";
+import _ from "lodash-es";
 
 export default function (certPluginGroup: PluginGroup, formWrapperRef: any): CreateCrudOptionsRet {
   const inputs: any = {};
@@ -10,10 +12,11 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
         inputs[inputKey].form.show = true;
         continue;
       }
-      const inputDefine = plugin.input[inputKey];
+      const inputDefine = _.cloneDeep(plugin.input[inputKey]);
       if (!inputDefine.required && !inputDefine.maybeNeed) {
         continue;
       }
+      useReference(inputDefine);
       inputs[inputKey] = {
         title: inputDefine.title,
         form: {

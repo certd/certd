@@ -8,6 +8,13 @@ const preview = {
   preview: {
     enabled: true,
   },
+  typeorm: {
+    dataSource: {
+      default: {
+        logging: false,
+      },
+    },
+  },
 } as MidwayConfig;
 
 mergeConfig(preview, 'preview');

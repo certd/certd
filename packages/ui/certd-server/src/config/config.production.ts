@@ -8,6 +8,13 @@ const production = {
   preview: {
     enabled: false,
   },
+  typeorm: {
+    dataSource: {
+      default: {
+        logging: false,
+      },
+    },
+  },
 } as MidwayConfig;
 
 mergeConfig(production, 'production');

@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  sync:
+  build-certd-image:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -20,28 +20,19 @@ jobs:
 
       - name: get_certd_version
         id: get_certd_version
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
+          result-encoding: string
           script: |
             const fs = require('fs');
             const path = require('path');
-            
-            const pnpmWorkspace = "pnpm-workspace.yaml";
-            fs.removeSync(pnpmWorkspace)
-            
+            const pnpmWorkspace = "./pnpm-workspace.yaml";
+            fs.unlinkSync(pnpmWorkspace)
             const jsonFilePath = "./packages/ui/certd-server/package.json";
             const jsonContent = fs.readFileSync(jsonFilePath, 'utf-8');
-            console.log(jsonContent)
             const pkg = JSON.parse(jsonContent)
-            // 打印 JSON 文件内容
             console.log("certd_version:",pkg.version);
-            // 输出 JSON 对象，可以在后续步骤中使用
-            return {"version":"0.0.5"};
-
-      - name: Set up the working directory
-        run: |
-          mkdir -p ./packages/ui/
-        working-directory: ./packages/ui/
+            return pkg.version
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -49,17 +40,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GitHub Container Registry
+      - name: Login to aliyun container Registry
         uses: docker/login-action@v3
         with:
           registry: registry.cn-shenzhen.aliyuncs.com
-          username: ${{ secrets.ALIYUN_CS_USERNAME }}
-          password: ${{ secrets.ALIYUN_CS_PASSWORD }}
+          username: ${{ secrets.aliyun_cs_username }}
+          password: ${{ secrets.aliyun_cs_password }}
 
       - name: Build and push
         uses: docker/build-push-action@v6.5.0
         with:
-          platforms: linux/amd64,linux/arm64
+#          platforms: linux/amd64,linux/arm64
           push: true
+          context: ./packages/ui/
           tags: |
-            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.version}}
+            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}
