@@ -85,7 +85,7 @@ docker compose up -d
 * certd镜像地址:
   * `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest`
 
-* 镜像构建过程公开透明，请放心使用
+* 镜像构建通过`Actions`自动执行，过程公开透明，请放心使用
   * [点我查看镜像构建日志](https://github.com/certd/certd/actions/workflows/build-image.yml) 
 
 ![](./doc/images/action-build.jpg)
