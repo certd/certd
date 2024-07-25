@@ -50,7 +50,7 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       //   case 505: error.message = 'HTTP版本不受支持'; break
       //   default: break
       // }
-      logger.error(`请求出错：url:${error?.response?.config.url},method:${error.response.config.method},status:${error?.response?.status}`);
+      logger.error(`请求出错：url:${error?.response?.config.url},method:${error?.response?.config?.method},status:${error?.response?.status}`);
       logger.info("返回数据:", JSON.stringify(error?.response?.data));
       delete error.config;
       delete error.response;
