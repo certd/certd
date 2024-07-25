@@ -12,17 +12,11 @@ CertD 是一个免费全自动申请和自动部署更新SSL证书的工具。
 * 全自动部署更新证书（目前支持服务器上传部署、部署到阿里云、腾讯云等）
 * 支持通配符域名/泛域名，支持多个域名打到一个证书上
 * 邮件通知
+* 私有化部署，保障隐私数据安全
 * 免费、免费、免费（[阿里云单个通配符域名证书最便宜也要1800/年](https://yundun.console.aliyun.com/?p=cas#/certExtend/buy/cn-hangzhou)）
 
-## 二、私有化部署，保障安全
 
-1. 全开源   
-2. 镜像构建过程公开透明，[查看镜像构建日志](https://github.com/certd/certd/actions/workflows/build-image.yml)  
-3. 私有化部署，保证隐私数据安全
-
-![](./doc/images/action-build.jpg)
-
-## 三、在线体验
+## 二、在线体验
 
 官方Demo地址，自助注册后体验    
 
@@ -31,7 +25,7 @@ https://certd.handsfree.work/
 > 注意数据将不定期清理，生产使用请自行部署    
 > 包含敏感信息，务必自己本地部署进行生产使用
 
-## 四、使用教程
+## 三、使用教程
 本案例演示，如何配置自动申请证书，并部署到阿里云CDN，然后快要到期前自动更新证书并重新部署     
 
 ![演示](./doc/images/5-view.png)
@@ -44,7 +38,7 @@ https://certd.handsfree.work/
 -------> [点我查看详细使用步骤演示](./step.md)   <--------      
 ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑     
 
-## 五、快速开始
+## 四、私有化部署
 
 ### 1. 安装docker、docker-compose
 
@@ -53,14 +47,16 @@ https://certd.handsfree.work/
 * 【腾讯云】云服务器2核2G，新老用户同享，99元/年，续费同价！【 [立即购买](https://cloud.tencent.com/act/cps/redirect?redirect=6094&cps_key=b3ef73330335d7a6efa4a4bbeeb6b2c9&from=console)】
   
 
-1.2 安装docker    
-https://docs.docker.com/engine/install/
-选择对应的操作系统，按照官方文档执行命令即可
+1.2 安装docker      
 
+https://docs.docker.com/engine/install/   
+选择对应的操作系统，按照官方文档执行命令即可   
 
 ### 2. 运行certd
 
-[docker-compose.yaml下载](https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml)
+[docker-compose.yaml 下载](https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml)
+
+当前版本号： ![](https://img.shields.io/npm/v/%40certd%2Fpipeline)
 
 ```bash
 # 随便创建一个目录
@@ -80,10 +76,18 @@ vi docker-compose.yaml # 【可选】
 docker compose up -d
 
 ```
-当前版本号： ![](https://img.shields.io/npm/v/%40certd%2Fpipeline)
+> 如果提示 没有compose命令,请安装docker-compose   
+> https://docs.docker.com/compose/install/linux/
 
-如果提示 没有compose命令,请安装docker-compose   
-https://docs.docker.com/compose/install/linux/
+#### 镜像说明：
+* certd镜像地址:
+  * `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest`
+
+* 镜像构建过程公开透明。
+  * [点我查看镜像构建日志](https://github.com/certd/certd/actions/workflows/build-image.yml) 
+
+![](./doc/images/action-build.jpg)
+
 
 ### 3. 访问
 
@@ -99,7 +103,7 @@ http://your_server_ip:7001
 * 数据存在`/data/certd`目录下，不用担心数据丢失
 
 
-## 六、一些说明
+## 五、一些说明
 * 本项目ssl证书提供商为letencrypt
 * 申请过程遵循acme协议
 * 需要验证域名所有权，一般有两种方式（目前本项目仅支持dns-01）
@@ -110,6 +114,7 @@ http://your_server_ip:7001
   * 我们所说的续期，其实就是按照全套流程重新申请一份新证书，然后重新部署上去。
 * 免费证书过期时间90天，以后可能还会缩短，所以自动化部署必不可少
 * 设置每天自动运行，当证书过期前20天，会自动重新申请证书并部署
+
 
 ## 七、不同平台的设置说明
 
