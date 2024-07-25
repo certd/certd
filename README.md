@@ -20,6 +20,7 @@ CertD 是一个免费全自动申请和自动部署更新SSL证书的工具。
 2. 镜像构建过程公开透明，[查看镜像构建日志](https://github.com/certd/certd/actions/workflows/build-image.yml)  
 3. 私有化部署，保证隐私数据安全
 
+![](./doc/images/action-build.jpg)
 
 ## 三、在线体验
 
