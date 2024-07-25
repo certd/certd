@@ -1,4 +1,4 @@
-FROM node:18-alpine as builder
+FROM node:18-alpine AS builder
 EXPOSE 7001
 WORKDIR /workspace/
 COPY . /workspace/
@@ -12,7 +12,7 @@ RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 FROM node:18-alpine
 WORKDIR /app/
 COPY --from=builder /workspace/certd-server/ /app/
-RUN chmod +x /workspace/certd-server/tools/linux/*
+RUN chmod +x /app/tools/linux/*
 ENV TZ=Asia/Shanghai
 ENV NODE_ENV=production
 ENV MIDWAY_SERVER_ENV=production
