@@ -40,6 +40,8 @@ https://certd.handsfree.work/
 
 ## 四、私有化部署
 
+由于证书、授权信息等属于高度敏感数据，请务必私有化部署，保障数据安全
+
 ### 1. 安装docker、docker-compose
 
 1.1 准备一台云服务器
