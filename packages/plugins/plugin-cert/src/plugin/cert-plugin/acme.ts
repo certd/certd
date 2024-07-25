@@ -70,7 +70,7 @@ export class AcmeService {
     if (this.options.useMappingProxy) {
       urlMapping.enabled = true;
       urlMapping.mappings = {
-        "acme-v02.api.letsencrypt.org": "letsencrypt-proxy.handsfree.work",
+        "acme-v02.api.letsencrypt.org": "letsencrypt.proxy.handsfree.work",
       };
     }
     const client = new acme.Client({
