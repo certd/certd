@@ -27,6 +27,11 @@ export interface Authorization extends rfc8555.Authorization {
     url: string;
 }
 
+export type UrlMapping={
+    enabled: boolean
+    mappings: Record<string, string>
+}
+
 /**
  * Client
  */
@@ -39,6 +44,7 @@ export interface ClientOptions {
     backoffAttempts?: number;
     backoffMin?: number;
     backoffMax?: number;
+    urlMapping?: UrlMapping;
 }
 
 export interface ClientExternalAccountBindingOptions {

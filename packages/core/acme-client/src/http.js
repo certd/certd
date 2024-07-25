@@ -12,10 +12,11 @@ const httpsProxy = process.env.HTTPS_PROXY || process.env.https_proxy;
 let httpsAgent = null;
 if (httpsProxy) {
     httpsAgent = new HttpsProxyAgent(httpsProxy);
+    log(`use https_proxy:${httpsProxy}`);
 }
 const axios = axios1.create({
     proxy: false,
-    httpsAgent
+    httpsAgent,
 });
 
 /**
@@ -30,7 +31,7 @@ const axios = axios1.create({
  */
 
 class HttpClient {
-    constructor(directoryUrl, accountKey, externalAccountBinding = {}) {
+    constructor(directoryUrl, accountKey, externalAccountBinding = {}, urlMapping = {}) {
         this.directoryUrl = directoryUrl;
         this.accountKey = accountKey;
         this.externalAccountBinding = externalAccountBinding;
@@ -41,6 +42,7 @@ class HttpClient {
         this.directoryCache = null;
         this.directoryMaxAge = 86400;
         this.directoryTimestamp = 0;
+        this.urlMapping = urlMapping;
     }
 
     /**
@@ -53,6 +55,16 @@ class HttpClient {
      */
 
     async request(url, method, opts = {}) {
+        if (this.urlMapping && this.urlMapping.enabled === true && this.urlMapping.mappings) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const key in this.urlMapping.mappings) {
+                if (url.includes(key)) {
+                    const newUrl = url.replace(key, this.urlMapping.mappings[key]);
+                    log(`use reverse proxy: ${newUrl}`);
+                    url = newUrl;
+                }
+            }
+        }
         opts.url = url;
         opts.method = method;
         opts.validateStatus = null;
