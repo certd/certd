@@ -98,7 +98,7 @@ http://your_server_ip:7001
 记得修改密码   
 
 
-### 4. 升级
+## 五、 升级
 如果使用固定版本号
 1. 修改`docker-compose.yaml`中的镜像版本号
 2. 运行 `docker compose up -d` 即可
@@ -107,10 +107,13 @@ http://your_server_ip:7001
 1. 重新拉取镜像 `docker pull registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest` 
 2. 重新启动容器 `docker compose restart`
 
-> 数据默认存在`/data/certd`目录下，不用担心数据丢失
+> 数据默认存在`/data/certd`目录下，不用担心数据丢失   
 
 
-## 五、一些说明
+更新日志： [CHANGELOG](./CHANGELOG.md)
+
+
+## 六、一些说明
 * 本项目ssl证书提供商为letencrypt
 * 申请过程遵循acme协议
 * 需要验证域名所有权，一般有两种方式（目前本项目仅支持dns-01）
@@ -184,5 +187,9 @@ docker compose up -d
 * [dev-sidecar](https://github.com/docmirror/dev-sidecar/) 直连访问github工具，无需FQ，解决github无法访问的问题
 
 
-## 十二、版本更新日志
-https://github.com/certd/certd/blob/v2/CHANGELOG.md
+
+## 十三、更新日志
+
+更新日志：[CHANGELOG](./CHANGELOG.md)
+
+
