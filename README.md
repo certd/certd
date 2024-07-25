@@ -83,7 +83,7 @@ docker compose up -d
 * certd镜像地址:
   * `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest`
 
-* 镜像构建过程公开透明。
+* 镜像构建过程公开透明，请放心使用
   * [点我查看镜像构建日志](https://github.com/certd/certd/actions/workflows/build-image.yml) 
 
 ![](./doc/images/action-build.jpg)
@@ -97,10 +97,15 @@ http://your_server_ip:7001
 
 
 ### 4. 升级
+如果使用固定版本号
+1. 修改`docker-compose.yaml`中的镜像版本号
+2. 运行 `docker compose up -d` 即可
 
-* 修改`docker-compose.yaml`中的镜像版本号
-* 重新运行 `docker compose up -d` 即可
-* 数据存在`/data/certd`目录下，不用担心数据丢失
+如果使用`latest`版本
+1. 重新拉取镜像 `docker pull registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest` 
+2. 重新启动容器 `docker compose restart`
+
+> 数据默认存在`/data/certd`目录下，不用担心数据丢失
 
 
 ## 五、一些说明
