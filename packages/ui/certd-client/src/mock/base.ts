@@ -2,7 +2,7 @@ import _ from "lodash-es";
 function copyList(originList: any, newList: any, options: any, parentId?: any) {
   for (const item of originList) {
     const newItem: any = _.cloneDeep(item);
-    if(parentId!= null && newItem.parentId == null){
+    if (parentId != null && newItem.parentId == null) {
       newItem.parentId = parentId;
     }
 
@@ -228,7 +228,7 @@ const mockUtil: any = {
         handle(req: any): any {
           const item = findById(req.body.id, list);
           if (item) {
-            _.mergeWith(item, req.body, (objValue, srcValue) => {
+            _.mergeWith(item, req.body, (objValue: any, srcValue: any) => {
               if (srcValue == null) {
                 return;
               }
@@ -305,7 +305,7 @@ const mockUtil: any = {
           console.log("req", req);
           let item = findById(req.body.id, list);
           if (item) {
-            _.mergeWith(item, { [req.body.key]: req.body.value }, (objValue, srcValue) => {
+            _.mergeWith(item, { [req.body.key]: req.body.value }, (objValue: any, srcValue: any) => {
               if (srcValue == null) {
                 return;
               }
@@ -336,7 +336,7 @@ const mockUtil: any = {
           for (const item of req.body) {
             const item2 = findById(item.id, list);
             if (item2) {
-              _.mergeWith(item2, item, (objValue, srcValue) => {
+              _.mergeWith(item2, item, (objValue: any, srcValue: any) => {
                 if (srcValue == null) {
                   return;
                 }

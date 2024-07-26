@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
-      - run: |
+        run: |
           npm install -g pnpm
           pnpm install
           npm run build
