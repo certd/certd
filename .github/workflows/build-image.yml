@@ -33,10 +33,10 @@ jobs:
             const pkg = JSON.parse(jsonContent)
             console.log("certd_version:",pkg.version);
             return pkg.version
-#      - name: Use Node.js ${{ matrix.node-version }}
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version: 18
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 #          cache: 'npm'
 #        working-directory: ./packages/ui/certd-client
       - run: |
