@@ -33,10 +33,10 @@ jobs:
             const pkg = JSON.parse(jsonContent)
             console.log("certd_version:",pkg.version);
             return pkg.version
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
+#      - name: Use Node.js
+#        uses: actions/setup-node@v4
+#        with:
+#          node-version: 18
 #          cache: 'npm'
 #        working-directory: ./packages/ui/certd-client
       - run: |
@@ -61,7 +61,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6.5.0
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,darwin
           push: true
           context: ./packages/ui/
           tags: |
