@@ -24,8 +24,6 @@
   "dependencies": {
     "@ant-design/colors": "^7.0.2",
     "@ant-design/icons-vue": "^7.0.1",
-    "@aws-sdk/client-s3": "^3.535.0",
-    "@aws-sdk/s3-request-presigner": "^3.535.0",
     "@fast-crud/fast-crud": "^1.21.1",
     "@fast-crud/fast-extends": "^1.21.1",
     "@fast-crud/ui-antdv4": "^1.21.1",
