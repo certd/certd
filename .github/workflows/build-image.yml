@@ -67,23 +67,3 @@ jobs:
           tags: |
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}
-
-      - name: trigger deploy demo
-        uses: actions/github-script@v6
-        with:
-          result-encoding: string
-          script: |
-            const fs = require('fs');
-            const http = require('axios');
-            const webhook = "http://flow-openapi.aliyun.com/pipeline/webhook/lzCzlGrLCOHQaTMMt0mG";
-            await http({
-              url: webhook,
-              method: 'POST',
-              headers: {
-                  "Content-Type": "application/json"
-              },
-              data: {
-                  'CERTD_VERSION': '${{steps.get_certd_version.outputs.result}}'
-              }
-            })
-            console.log(`webhook success:${webhook}`)

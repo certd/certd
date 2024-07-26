@@ -1,4 +1,4 @@
-name: build-image
+name: trigger-demo
 on:
   push:
     branches: ['v2']
@@ -15,24 +15,37 @@ jobs:
   deploy-certd-demo:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          npm install -g axios
-      - name: trigger deploy demo
+      - name: get_certd_version
+        id: get_certd_version
         uses: actions/github-script@v6
         with:
           result-encoding: string
           script: |
             const fs = require('fs');
-            const http = require('axios');
-            const webhook = "http://flow-openapi.aliyun.com/pipeline/webhook/lzCzlGrLCOHQaTMMt0mG"
-            await http({
-              url: webhook,
-              method: 'POST',
-              headers: {
-                  "Content-Type": "application/json"
-              },
-              data: {
-                  'CERTD_VERSION': '${{steps.get_certd_version.outputs.result}}'
-              }
-            })
-            console.log(`webhook success:${webhook}`)
+            const path = require('path');
+            const pnpmWorkspace = "./pnpm-workspace.yaml";
+            fs.unlinkSync(pnpmWorkspace)
+            const jsonFilePath = "./packages/ui/certd-server/package.json";
+            const jsonContent = fs.readFileSync(jsonFilePath, 'utf-8');
+            const pkg = JSON.parse(jsonContent)
+            console.log("certd_version:",pkg.version);
+            return pkg.version
+      - uses: GuillaumeFalourd/wait-sleep-action@v1
+        with:
+          time: '10' # for 60 seconds
+      - name: Send HTTP request
+        id: request
+        uses: tyrrrz/action-http-request@master
+        with:
+          url: http://flow-openapi.aliyun.com/pipeline/webhook/lzCzlGrLCOHQaTMMt0mG
+          method: POST
+          headers: |
+            Content-Type: application/json
+          body: |
+            {
+              "CERTD_VERSION": "${{steps.get_certd_version.outputs.result}}"
+            }
+          retry-count: 3
+          retry-delay: 5000
+
+
