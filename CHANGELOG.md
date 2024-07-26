@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.22.3](https://github.com/certd/certd/compare/v1.22.2...v1.22.3) (2024-07-25)
+
+### Bug Fixes
+
+* lege 无执行权限问题 ([338eb3b](https://github.com/certd/certd/commit/338eb3bdfeb461e9b3bc7eee97b97a59f5642ffe))
+
 ## [1.22.2](https://github.com/certd/certd/compare/v1.22.1...v1.22.2) (2024-07-23)
 
 ### Bug Fixes

@@ -54,4 +54,5 @@ jobs:
           push: true
           context: ./packages/ui/
           tags: |
+            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}

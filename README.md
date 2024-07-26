@@ -8,15 +8,12 @@ CertD 是一个免费全自动申请和自动部署更新SSL证书的工具。
 ## 一、特性
 本项目不仅支持证书申请过程自动化，还可以自动化部署更新证书，让你的证书永不过期。     
 
-* 全自动申请证书（支持阿里云、腾讯云、华为云、Cloudflare注册的域名）
-* 全自动部署更新证书（目前支持服务器上传部署、部署到阿里云、腾讯云等）
-* 支持通配符域名
-* 支持多个域名打到一个证书上
+* 全自动申请证书（支持阿里云、腾讯云、华为云、Cloudflare等各种途径注册的域名）
+* 全自动部署更新证书（目前支持部署到主机、部署到阿里云、腾讯云等）
+* 支持通配符域名/泛域名，支持多个域名打到一个证书上
 * 邮件通知
-* 证书自动更新
-* 私有化部署，安全
+* 私有化部署，保障安全
 * 免费、免费、免费（[阿里云单个通配符域名证书最便宜也要1800/年](https://yundun.console.aliyun.com/?p=cas#/certExtend/buy/cn-hangzhou)）
-
 
 
 ## 二、在线体验
@@ -41,7 +38,9 @@ https://certd.handsfree.work/
 -------> [点我查看详细使用步骤演示](./step.md)   <--------      
 ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑     
 
-## 四、本地docker部署
+## 四、私有化部署
+
+由于证书、授权信息等属于高度敏感数据，请务必私有化部署，保障数据安全
 
 ### 1. 安装docker、docker-compose
 
@@ -50,14 +49,16 @@ https://certd.handsfree.work/
 * 【腾讯云】云服务器2核2G，新老用户同享，99元/年，续费同价！【 [立即购买](https://cloud.tencent.com/act/cps/redirect?redirect=6094&cps_key=b3ef73330335d7a6efa4a4bbeeb6b2c9&from=console)】
   
 
-1.2 安装docker    
-https://docs.docker.com/engine/install/
-选择对应的操作系统，按照官方文档执行命令即可
+1.2 安装docker      
 
+https://docs.docker.com/engine/install/   
+选择对应的操作系统，按照官方文档执行命令即可   
 
 ### 2. 运行certd
 
-[docker-compose.yaml下载](https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml)
+[docker-compose.yaml 下载](https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml)
+
+当前版本号： ![](https://img.shields.io/npm/v/%40certd%2Fpipeline)
 
 ```bash
 # 随便创建一个目录
@@ -77,10 +78,18 @@ vi docker-compose.yaml # 【可选】
 docker compose up -d
 
 ```
-当前版本号： ![](https://img.shields.io/npm/v/%40certd%2Fpipeline)
+> 如果提示 没有compose命令,请安装docker-compose   
+> https://docs.docker.com/compose/install/linux/
 
-如果提示 没有compose命令,请安装docker-compose   
-https://docs.docker.com/compose/install/linux/
+#### 镜像说明：
+* certd镜像地址:
+  * `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest`
+
+* 镜像构建通过`Actions`自动执行，过程公开透明，请放心使用
+  * [点我查看镜像构建日志](https://github.com/certd/certd/actions/workflows/build-image.yml) 
+
+![](./doc/images/action-build.jpg)
+
 
 ### 3. 访问
 
@@ -89,14 +98,22 @@ http://your_server_ip:7001
 记得修改密码   
 
 
-### 4. 升级
+## 五、 升级
+如果使用固定版本号
+1. 修改`docker-compose.yaml`中的镜像版本号
+2. 运行 `docker compose up -d` 即可
 
-* 修改`docker-compose.yaml`中的镜像版本号
-* 重新运行 `docker compose up -d` 即可
-* 数据存在`/data/certd`目录下，不用担心数据丢失
+如果使用`latest`版本
+1. 重新拉取镜像 `docker pull registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest` 
+2. 重新启动容器 `docker compose restart`
+
+> 数据默认存在`/data/certd`目录下，不用担心数据丢失   
 
 
-## 五、一些说明
+更新日志： [CHANGELOG](./CHANGELOG.md)
+
+
+## 六、一些说明
 * 本项目ssl证书提供商为letencrypt
 * 申请过程遵循acme协议
 * 需要验证域名所有权，一般有两种方式（目前本项目仅支持dns-01）
@@ -108,14 +125,15 @@ http://your_server_ip:7001
 * 免费证书过期时间90天，以后可能还会缩短，所以自动化部署必不可少
 * 设置每天自动运行，当证书过期前20天，会自动重新申请证书并部署
 
-## 六、不同平台的设置说明
+
+## 七、不同平台的设置说明
 
 * [Cloudflare](./doc/cf/cf.md)
 * [腾讯云](./doc/tencent/tencent.md)
 * [windows主机](./doc/host/host.md)
 
 
-## 七、问题处理
+## 八、问题处理
 ### 7.1 忘记管理员密码   
 解决方法如下：
 1. 修改docker-compose.yaml文件，将环境变量`certd_system_resetAdminPassword`改为`true`
@@ -138,7 +156,7 @@ docker compose up -d
 ```
 5. 使用`admin/123456`登录系统，请及时修改管理员密码
 
-## 八、联系作者
+## 九、联系作者
 如有疑问，欢迎加入群聊（请备注certd）
 * QQ群：141236433
 * 微信群：   
@@ -150,7 +168,7 @@ docker compose up -d
 <img height="230" src="./doc/images/me.png">
 </p>
 
-## 九、捐赠
+## 十、捐赠
 媳妇儿说：“一天到晚搞开源，也不管管老婆孩子！😡😡😡”        
 拜托各位捐赠支持一下，让媳妇儿开心开心，我也能有更多时间进行开源项目，感谢🙏🙏🙏
 <p align="center">
@@ -158,16 +176,20 @@ docker compose up -d
 </p>
 
 
-## 十、贡献代码
+## 十一、贡献代码
 
 [贡献插件教程](./plugin.md)
 
 
-## 十一、我的其他项目（求Star）
+## 十二、我的其他项目（求Star）
 * [袖手GPT](https://ai.handsfree.work/) ChatGPT，国内可用，无需FQ，每日免费额度
 * [fast-crud](https://gitee.com/fast-crud/fast-crud/) 基于vue3的crud快速开发框架
 * [dev-sidecar](https://github.com/docmirror/dev-sidecar/) 直连访问github工具，无需FQ，解决github无法访问的问题
 
 
-## 十二、版本更新日志
-https://github.com/certd/certd/blob/v2/CHANGELOG.md
+
+## 十三、更新日志
+
+更新日志：[CHANGELOG](./CHANGELOG.md)
+
+
