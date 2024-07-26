@@ -75,7 +75,7 @@ jobs:
           script: |
             const fs = require('fs');
             const http = require('axios');
-            const webhook = "http://flow-openapi.aliyun.com/pipeline/webhook/lzCzlGrLCOHQaTMMt0mG:
+            const webhook = "http://flow-openapi.aliyun.com/pipeline/webhook/lzCzlGrLCOHQaTMMt0mG";
             await http({
               url: webhook,
               method: 'POST',
