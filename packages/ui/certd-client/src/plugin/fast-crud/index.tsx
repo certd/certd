@@ -1,15 +1,37 @@
 import { request, requestForMock } from "/src/api/service";
 // import "/src/mock";
-import { ColumnCompositionProps, CrudOptions, FastCrud, PageQuery, PageRes, setLogger, TransformResProps, useColumns, UseCrudProps, UserPageQuery, useTypes, utils } from "@fast-crud/fast-crud";
+import {
+  ColumnCompositionProps,
+  CrudOptions,
+  FastCrud,
+  PageQuery,
+  PageRes,
+  setLogger,
+  TransformResProps,
+  useColumns,
+  UseCrudProps,
+  UserPageQuery,
+  useTypes,
+  utils
+} from "@fast-crud/fast-crud";
 import "@fast-crud/fast-crud/dist/style.css";
-import { FsExtendsCopyable, FsExtendsEditor, FsExtendsJson, FsExtendsTime, FsExtendsUploader, FsExtendsInput, FsUploaderS3SignedUrlType, FsUploaderGetAuthContext, FsUploaderAliossSTS } from "@fast-crud/fast-extends";
+import {
+  FsExtendsCopyable,
+  FsExtendsEditor,
+  FsExtendsJson,
+  FsExtendsTime,
+  FsExtendsUploader,
+  FsExtendsInput,
+  FsUploaderS3SignedUrlType,
+  FsUploaderGetAuthContext,
+  FsUploaderAliossSTS
+} from "@fast-crud/fast-extends";
 import "@fast-crud/fast-extends/dist/style.css";
 import UiAntdv from "@fast-crud/ui-antdv4";
 import "@fast-crud/ui-antdv4/dist/style.css";
 import _ from "lodash-es";
 import { useCrudPermission } from "../permission";
 import { App } from "vue";
-import { GetSignedUrl } from "/@/views/crud/component/uploader/s3/api";
 import { notification } from "ant-design-vue";
 
 function install(app: App, options: any = {}) {
@@ -149,6 +171,7 @@ function install(app: App, options: any = {}) {
   // fast-extends里面的扩展组件均为异步组件，只有在使用时才会被加载，并不会影响首页加载速度
   //安装uploader 公共参数
 
+  // @ts-ignore
   app.use(FsExtendsUploader, {
     // @ts-ignore
     defaultType: "cos",
@@ -230,33 +253,6 @@ function install(app: App, options: any = {}) {
         return ret;
       },
       domain: "http://d2p.file.handsfree.work/"
-    },
-    s3: {
-      keepName: true,
-      //同时也支持minio
-      bucket: "fast-crud",
-      sdkOpts: {
-        s3ForcePathStyle: true,
-        signatureVersion: "v4",
-        region: "us-east-1",
-        forcePathStyle: true,
-        //minio与s3完全适配
-        endpoint: "https://play.min.io",
-        credentials: {
-          //不建议在客户端使用secretAccessKey来上传
-          accessKeyId: "Q3AM3UQ867SPQQA43P2F", //访问登录名
-          secretAccessKey: "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG" //访问密码
-        }
-      },
-      //预签名配置，向后端获取上传的预签名连接
-      async getSignedUrl(bucket: string, key: string, options: any, type: FsUploaderS3SignedUrlType = "put") {
-        return await GetSignedUrl(bucket, key, type);
-      },
-      successHandle(ret: any) {
-        // 上传完成后可以在此处处理结果，修改url什么的
-        console.log("success handle:", ret);
-        return ret;
-      }
     },
     form: {
       keepName: true,
