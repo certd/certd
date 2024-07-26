@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.22.4](https://github.com/certd/certd/compare/v1.22.3...v1.22.4) (2024-07-26)
+
+### Performance Improvements
+
+* 证书申请支持反向代理，letsencrypt无法访问时的备用方案 ([b7b5df0](https://github.com/certd/certd/commit/b7b5df0587e0f7ea288c1b2af6f87211f207395f))
+* 支持arm64 ([fa14f87](https://github.com/certd/certd/commit/fa14f87a8093ef3addc5e5f3315ce1bfc9982782))
+
 ## [1.22.3](https://github.com/certd/certd/compare/v1.22.2...v1.22.3) (2024-07-25)
 
 ### Bug Fixes
