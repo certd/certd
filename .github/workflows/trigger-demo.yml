@@ -1,0 +1,38 @@
+name: build-image
+on:
+  push:
+    branches: ['v2']
+    paths:
+      - "deploy.trigger"
+
+#  schedule:
+#    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
+#    - cron: '17 19 * * *'
+permissions:
+  contents: read
+
+jobs:
+  deploy-certd-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          npm install -g axios
+      - name: trigger deploy demo
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const fs = require('fs');
+            const http = require('axios');
+            const webhook = "http://flow-openapi.aliyun.com/pipeline/webhook/lzCzlGrLCOHQaTMMt0mG:
+            await http({
+              url: webhook,
+              method: 'POST',
+              headers: {
+                  "Content-Type": "application/json"
+              },
+              data: {
+                  'CERTD_VERSION': '${{steps.get_certd_version.outputs.result}}'
+              }
+            })
+            console.log(`webhook success:${webhook}`)
