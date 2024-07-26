@@ -6,7 +6,7 @@ import { Logger } from "log4js";
 import { IContext } from "@certd/pipeline";
 import { IDnsProvider } from "../../dns-provider/index.js";
 import psl from "psl";
-import { ClientExternalAccountBindingOptions } from "@certd/acme-client";
+import { ClientExternalAccountBindingOptions, UrlMapping } from "@certd/acme-client";
 
 export type CertInfo = {
   crt: string;
@@ -14,19 +14,24 @@ export type CertInfo = {
   csr: string;
 };
 export type SSLProvider = "letsencrypt" | "buypass" | "zerossl";
+type AcmeServiceOptions = {
+  userContext: IContext;
+  logger: Logger;
+  sslProvider: SSLProvider;
+  eab?: ClientExternalAccountBindingOptions;
+  skipLocalVerify?: boolean;
+  useMappingProxy?: boolean;
+};
+
 export class AcmeService {
+  options: AcmeServiceOptions;
   userContext: IContext;
   logger: Logger;
   sslProvider: SSLProvider;
   skipLocalVerify = true;
   eab?: ClientExternalAccountBindingOptions;
-  constructor(options: {
-    userContext: IContext;
-    logger: Logger;
-    sslProvider: SSLProvider;
-    eab?: ClientExternalAccountBindingOptions;
-    skipLocalVerify?: boolean;
-  }) {
+  constructor(options: AcmeServiceOptions) {
+    this.options = options;
     this.userContext = options.userContext;
     this.logger = options.logger;
     this.sslProvider = options.sslProvider || "letsencrypt";
@@ -61,6 +66,13 @@ export class AcmeService {
     } else {
       directoryUrl = acme.directory[this.sslProvider].production;
     }
+    const urlMapping: UrlMapping = { enabled: false, mappings: {} };
+    if (this.options.useMappingProxy) {
+      urlMapping.enabled = true;
+      urlMapping.mappings = {
+        "acme-v02.api.letsencrypt.org": "letsencrypt.proxy.handsfree.work",
+      };
+    }
     const client = new acme.Client({
       directoryUrl: directoryUrl,
       accountKey: conf.key,
@@ -69,6 +81,7 @@ export class AcmeService {
       backoffAttempts: 30,
       backoffMin: 5000,
       backoffMax: 10000,
+      urlMapping,
     });
 
     if (conf.accountUrl == null) {

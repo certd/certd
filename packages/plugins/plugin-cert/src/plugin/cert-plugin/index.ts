@@ -81,6 +81,17 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   dnsProviderAccess!: string;
 
   @TaskInput({
+    title: "使用代理",
+    default: false,
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+    helper: "如果acme-v02.api.letsencrypt.org被墙无法连接访问，请尝试开启此选项",
+  })
+  useProxy = false;
+
+  @TaskInput({
     title: "跳过本地校验DNS",
     default: false,
     component: {
@@ -104,6 +115,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       sslProvider: this.sslProvider,
       eab,
       skipLocalVerify: this.skipLocalVerify,
+      useMappingProxy: this.useProxy,
     });
   }
 

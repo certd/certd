@@ -100,7 +100,7 @@ class AcmeClient {
             max: this.opts.backoffMax,
         };
 
-        this.http = new HttpClient(this.opts.directoryUrl, this.opts.accountKey, this.opts.externalAccountBinding);
+        this.http = new HttpClient(this.opts.directoryUrl, this.opts.accountKey, this.opts.externalAccountBinding, this.opts.urlMapping);
         this.api = new AcmeApi(this.http, this.opts.accountUrl);
     }
 
