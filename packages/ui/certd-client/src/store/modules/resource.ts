@@ -112,6 +112,9 @@ export const useResourceStore = defineStore({
     filterChildrenByPermission(list: any, permissions: any) {
       const menus = list.filter((item: any) => {
         if (item?.meta?.permission) {
+          if (permissions.includes("*")) {
+            return true;
+          }
           return permissions.includes(item.meta.permission);
         }
         return true;

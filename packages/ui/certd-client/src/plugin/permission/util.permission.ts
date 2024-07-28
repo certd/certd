@@ -15,6 +15,9 @@ const util = {
     const permissionStore = usePermissionStore();
     const userPermissionList = permissionStore.getPermissions;
     return userPermissionList.some((permission: any) => {
+      if (permission === "*") {
+        return true;
+      }
       return need.includes(permission);
     });
   },
