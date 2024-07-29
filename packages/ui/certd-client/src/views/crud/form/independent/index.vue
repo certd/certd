@@ -232,11 +232,11 @@ function useCrudOptions() {
  * 此方式可以层叠打开多个对话框
  */
 function useFormProvider() {
-  const { openDialog } = useFormWrapper();
+  const { openCrudFormDialog } = useFormWrapper();
 
   async function openFormWrapperNoTag() {
-    const opts = createFormOptionsFromCrudOptions();
-    const wrapperRef = await openDialog(opts);
+    const { crudOptions } = createCrudOptions({} as any);
+    const wrapperRef = await openCrudFormDialog({ crudOptions });
     utils.logger.log("对话框已打开", wrapperRef);
   }
   return {
