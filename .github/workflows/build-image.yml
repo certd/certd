@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: get_certd_version
         id: get_certd_version
@@ -33,6 +33,17 @@ jobs:
             const pkg = JSON.parse(jsonContent)
             console.log("certd_version:",pkg.version);
             return pkg.version
+#      - name: Use Node.js
+#        uses: actions/setup-node@v4
+#        with:
+#          node-version: 18
+#          cache: 'npm'
+#        working-directory: ./packages/ui/certd-client
+      - run: |
+          npm install -g pnpm
+          pnpm install
+          npm run build
+        working-directory: ./packages/ui/certd-client
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -50,7 +61,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6.5.0
         with:
-#          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           context: ./packages/ui/
           tags: |

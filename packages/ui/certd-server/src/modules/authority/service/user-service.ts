@@ -66,7 +66,7 @@ export class UserService extends BaseService<UserEntity> {
     }
     const plainPassword = param.password ?? randomText(6);
     param.passwordVersion = 2;
-    param.password = this.genPassword(plainPassword, param.passwordVersion); // 默认密码  建议未改密码不能登陆
+    param.password = await this.genPassword(plainPassword, param.passwordVersion); // 默认密码  建议未改密码不能登陆
     await super.add(param);
     //添加角色
     if (param.roles && param.roles.length > 0) {

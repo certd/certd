@@ -13,10 +13,10 @@ const list: any = [];
 _.forEach(commonMocks, (value: any) => {
   list.push(value.default);
 });
-_.forEach(apiMocks, (value) => {
+_.forEach(apiMocks, (value: any) => {
   list.push(value.default);
 });
-_.forEach(viewMocks, (value) => {
+_.forEach(viewMocks, (value: any) => {
   list.push(value.default);
 });
 

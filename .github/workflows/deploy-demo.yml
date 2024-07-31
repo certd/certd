@@ -1,0 +1,55 @@
+name: deploy-demo
+on:
+  push:
+    branches: ['v2']
+    paths:
+      - "deploy.trigger"
+  workflow_run:
+    workflows: [ "build-image" ]
+    types:
+      - completed
+
+#  schedule:
+#    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
+#    - cron: '17 19 * * *'
+permissions:
+  contents: read
+
+jobs:
+  deploy-certd-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: get_certd_version
+        id: get_certd_version
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const jsonFilePath = "./packages/ui/certd-server/package.json";
+            const jsonContent = fs.readFileSync(jsonFilePath, 'utf-8');
+            const pkg = JSON.parse(jsonContent)
+            console.log("certd_version:",pkg.version);
+            return pkg.version
+      - uses: GuillaumeFalourd/wait-sleep-action@v1
+        with:
+          time: '10' # for 60 seconds
+      - name: Send HTTP request
+        id: request
+        uses: tyrrrz/action-http-request@master
+        with:
+          url: http://flow-openapi.aliyun.com/pipeline/webhook/lzCzlGrLCOHQaTMMt0mG
+          method: POST
+          headers: |
+            Content-Type: application/json
+          body: |
+            {
+              "CERTD_VERSION": "${{steps.get_certd_version.outputs.result}}"
+            }
+          retry-count: 3
+          retry-delay: 5000
+
+

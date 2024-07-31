@@ -4,10 +4,10 @@ WORKDIR /workspace/
 COPY . /workspace/
 RUN npm install -g pnpm@8.15.7
 
-RUN cd /workspace/certd-client && pnpm install && npm run build
+#RUN cd /workspace/certd-client && pnpm install && npm run build
+RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 
-RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 
 FROM node:18-alpine
 WORKDIR /app/
