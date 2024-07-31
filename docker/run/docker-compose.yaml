@@ -11,6 +11,12 @@ services:
     ports: # 端口映射
       #  ↓↓↓↓ ----------------------------------------------------------3、如果端口有冲突，可以修改第一个7001为其他不冲突的端口号【可选】
       - "7001:7001"
+    dns:
+      # 如果出现getaddrinfo ENOTFOUND等错误，可以尝试修改或注释dns配置
+      - 223.5.5.5
+      - 223.6.6.6
+      - 8.8.8.8
+      - 8.8.4.4
     environment: # 环境变量
       - TZ=Asia/Shanghai
       - certd_system_resetAdminPassword=false

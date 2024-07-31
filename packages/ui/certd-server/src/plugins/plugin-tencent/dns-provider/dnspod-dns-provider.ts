@@ -1,10 +1,5 @@
 import { Autowire, HttpClient, ILogger } from '@certd/pipeline';
-import {
-  AbstractDnsProvider,
-  CreateRecordOptions,
-  IsDnsProvider,
-  RemoveRecordOptions,
-} from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import * as _ from 'lodash-es';
 import { DnspodAccess } from '../access/index.js';
 
@@ -50,9 +45,7 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
     if (!ret || !ret.status) {
       const code = ret.status.code;
       if (code !== '1' || !successCodes.includes(code)) {
-        throw new Error(
-          '请求失败：' + ret.status.message + ',api=' + config.url
-        );
+        throw new Error('请求失败：' + ret.status.message + ',api=' + config.url);
       }
     }
     return ret;
@@ -87,12 +80,7 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
       },
       ['104']
     ); // 104错误码为记录已存在，无需再次添加
-    this.logger.info(
-      '添加域名解析成功:',
-      fullRecord,
-      value,
-      JSON.stringify(ret.record)
-    );
+    this.logger.info('添加域名解析成功:', fullRecord, value, JSON.stringify(ret.record));
     return ret.record;
   }
 
