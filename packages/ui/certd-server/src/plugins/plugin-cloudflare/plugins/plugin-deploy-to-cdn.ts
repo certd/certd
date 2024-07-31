@@ -29,6 +29,7 @@ export class CloudflareDeployToCDNPlugin extends AbstractTaskPlugin {
     component: {
       //前端组件配置，具体配置见组件文档 https://www.antdv.com/components/select-cn
       name: 'a-select',
+      mode: 'tags',
       options: [
         { value: '1', label: '选项1' },
         { value: '2', label: '选项2' },

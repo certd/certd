@@ -11,6 +11,7 @@ export class DnspodAccess {
     component: {
       placeholder: 'endpoint',
       name: 'a-select',
+      mode: 'tags',
       vModel: 'value',
       options: [
         { value: 'https://dnsapi.cn', label: '中国站' },

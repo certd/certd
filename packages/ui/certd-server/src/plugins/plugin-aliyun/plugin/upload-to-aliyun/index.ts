@@ -27,6 +27,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
     default: 'cn-hangzhou',
     component: {
       name: 'a-select',
+      mode: 'tags',
       vModel: 'value',
       options: ZoneOptions,
     },
