@@ -25,3 +25,4 @@ dist-ssr
 
 test/user.secret.*
 test/**/*.js
+src/**/*.spec.ts

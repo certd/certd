@@ -29,9 +29,7 @@ export class BasicSettingsController extends BaseController {
 
   @Get('/public', { summary: Constants.per.guest })
   public async getSysPublic() {
-    const settings = await this.sysSettingsService.getSetting(
-      SysPublicSettings
-    );
+    const settings = await this.sysSettingsService.getSetting(SysPublicSettings);
     return this.ok(settings);
   }
 }

@@ -2,7 +2,7 @@ import { createVerify } from "node:crypto";
 import { logger } from "../utils/index.js";
 
 const SecreteKey =
-  "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQkNnS0NBUUVBMjdoZDM0NjRYbyt3TkpmTTNCWjE5MXlQK2NLaTd3ck9CbXdjTWJPZUdsNlJOMUVtTGhyMgplOFdvOGpmMW9IVXc5RFV6L2I2ZHU3Q3ZXMXZNUDA1Q3dSS3lNd2U3Q1BYRGQ2U01mSkwxRFZyUkw5Ylh0cEYzCjJkQVA5UENrakFJcFMvRE5jVkhLRXk1QW8yMnFFenpTKzlUT0JVY2srREdZcmo4KzI5U3h2aEZDRE5ZbEE2d1EKbEkyRWc5TWNBV2xDU3p1S1JWa2ZWUWdYVlU3SmE5OXp1Um1oWWtYZjFxQzBLcVAwQkpDakdDNEV6ZHorMmwyaAo2T3RxVHVVLzRkemlYYnRMUS8vU0JqNEgxdi9PZ3dUZjJkSVBjUnRHOXlWVTB2ZlQzVzdUTkdlMjU3em5ESDBYCkd6Wm4zdWJxTXJuL084b2ltMHRrS3ZHZXZ1V2ZraWNwVVFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==";
+  "LS0tLS1CRUdJTiBSU0EgUFVCTElDIEtFWS0tLS0tCk1JSUJDZ0tDQVFFQXY3TGtMaUp1dGM0NzhTU3RaTExjajVGZXh1YjJwR2NLMGxwa0hwVnlZWjhMY29rRFhuUlAKUGQ5UlJSTVRTaGJsbFl2Mzd4QUhOV1ZIQ0ZsWHkrQklVU001bUlBU1NDQTV0azlJNmpZZ2F4bEFDQm1BY0lGMwozKzBjeGZIYVkrVW9YdVluMkZ6YUt2Ym5GdFZIZ0lkMDg4a3d4clZTZzlCT3BDRVZIR1pxR2I5TWN5MXVHVXhUClFTVENCbmpoTWZlZ0p6cXVPYWVOY0ZPSE5tbmtWRWpLTythbTBPeEhNS1lyS3ZnQnVEbzdoVnFENlBFMUd6V3AKZHdwZUV4QXZDSVJxL2pWTkdRK3FtMkRWOVNJZ3U5bmF4MktmSUtFeU50dUFFS1VpekdqL0VmRFhDM1cxMExhegpKaGNYNGw1SUFZU1o3L3JWVmpGbExWSVl0WDU1T054L1Z3SURBUUFCCi0tLS0tRU5EIFJTQSBQVUJMSUMgS0VZLS0tLS0K";
 
 export type LicenseVerifyReq = {
   appKey: string;
@@ -60,8 +60,7 @@ class LicenseVerifier {
       logger.warn("授权已过期");
       return this.setPlus(false);
     }
-
-    const content = `${this.licenseReq.appKey},${this.licenseReq.subjectId},${json.code},${json.secret}${json.activeTime},${json.duration},${json.expireTime},${json.version}`;
+    const content = `${this.licenseReq.appKey},${this.licenseReq.subjectId},${json.code},${json.secret},${json.activeTime},${json.duration},${json.expireTime},${json.version}`;
     const publicKey = Buffer.from(SecreteKey, "base64").toString();
     const res = this.verifySignature(content, json.signature, publicKey);
     this.checked = true;
@@ -73,7 +72,7 @@ class LicenseVerifier {
   }
 
   verifySignature(content: string, signature: any, publicKey: string) {
-    const verify = createVerify("RSA-SHA1");
+    const verify = createVerify("RSA-SHA256");
     verify.update(content);
     return verify.verify(publicKey, signature, "base64");
   }
