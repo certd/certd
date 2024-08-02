@@ -213,7 +213,11 @@ export class Executor {
         if (contextKey != null) {
           const value = this.runtime.context[contextKey];
           if (value == null) {
-            currentLogger.warn(`[step init] input ${define.title} is null`);
+            currentLogger.warn(`[step init] input ${define.title} is null，前置任务步骤输出值为空，请按如下步骤排查：`);
+            currentLogger.log(`1、检查前置任务（证书申请任务）是否是配置了成功后跳过，如果是请改为正常执行`);
+            currentLogger.log(
+              `2、是否曾经删除过前置任务（证书申请任务），然后又重新添加了，如果是，请重新编辑当前任务，重新选择一下前置任务输出的参数（域名证书那一栏）`
+            );
           }
           step.input[key] = value;
         }
