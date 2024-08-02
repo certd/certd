@@ -34,6 +34,7 @@
   "exclude": [
     "*.js",
     "*.ts",
+    "*.spec.ts",
     "dist",
     "node_modules",
     "test"

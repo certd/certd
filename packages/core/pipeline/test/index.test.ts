@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import "mocha";
-import { EchoPlugin } from "./echo-plugin";
+import { EchoPlugin } from "./echo-plugin.js";
 describe("task_plugin", function () {
   it("#taskplugin", function () {
     console.log("before new plugin");

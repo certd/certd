@@ -10,10 +10,10 @@
     "build": "tsc --skipLibCheck",
     "build3": "rollup -c",
     "build2": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "mocha   --loader=ts-node/esm"
   },
   "dependencies": {
-    "@types/lodash-es": "^4.17.12",
     "axios": "^1.7.2",
     "fix-path": "^4.0.0",
     "lodash-es": "^4.17.21",
@@ -22,6 +22,7 @@
     "qs": "^6.11.2"
   },
   "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",

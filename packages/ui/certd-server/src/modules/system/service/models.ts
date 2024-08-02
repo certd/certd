@@ -27,3 +27,10 @@ export class SysInstallInfo extends BaseSettings {
   installTime: number;
   siteId?: string;
 }
+
+export class SysLicenseInfo extends BaseSettings {
+  static __title__ = '授权许可信息';
+  static __key__ = 'sys.license';
+  static __access__ = 'private';
+  license: string;
+}

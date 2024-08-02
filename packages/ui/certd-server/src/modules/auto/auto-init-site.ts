@@ -3,7 +3,8 @@ import { logger } from '../../utils/logger.js';
 import { UserService } from '../authority/service/user-service.js';
 import { SysSettingsService } from '../system/service/sys-settings-service.js';
 import { nanoid } from 'nanoid';
-import { SysInstallInfo } from '../system/service/models.js';
+import { SysInstallInfo, SysLicenseInfo } from '../system/service/models.js';
+import { verify } from '@certd/pipeline';
 
 export type InstallInfo = {
   installTime: number;
@@ -31,6 +32,10 @@ export class AutoInitSite {
       installInfo.siteId = nanoid();
       await this.sysSettingsService.saveSetting(installInfo);
     }
+
+    // 授权许可
+    const licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
+    await verify(licenseInfo.license);
 
     logger.info('初始化站点完成');
   }
