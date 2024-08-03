@@ -229,9 +229,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   async run(id: number, triggerId: string) {
     const entity: PipelineEntity = await this.info(id);
-    if (entity.disabled) {
-      return;
-    }
+
     const pipeline = JSON.parse(entity.content);
 
     if (!pipeline.stages || pipeline.stages.length === 0) {
@@ -241,6 +239,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const triggerType = this.getTriggerType(triggerId, pipeline);
     if (triggerType == null) {
       return;
+    }
+
+    if (triggerType === 'timer') {
+      if (entity.disabled) {
+        return;
+      }
     }
 
     const onChanged = async (history: RunHistory) => {
