@@ -118,10 +118,9 @@ export abstract class BaseService<T> {
     }
     const qb = this.getRepository().createQueryBuilder('main');
     if (order && order.prop) {
-      qb.orderBy('main.' + order.prop, order.asc ? 'ASC' : 'DESC');
-    } else {
-      qb.orderBy('id', 'DESC');
+      qb.addOrderBy('main.' + order.prop, order.asc ? 'ASC' : 'DESC');
     }
+    qb.addOrderBy('id', 'DESC');
     qb.offset(page.offset).limit(page.limit);
     //根据bean query
     if (query) {

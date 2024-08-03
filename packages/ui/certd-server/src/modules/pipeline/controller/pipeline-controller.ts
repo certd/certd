@@ -23,9 +23,19 @@ export class PipelineController extends CrudController<PipelineService> {
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body) {
     body.query.userId = this.ctx.user.id;
+
+    const title = body.query.title;
+    delete body.query.title;
+
     const buildQuery = qb => {
-      qb.where({});
+      if (title) {
+        qb.where('title like :title', { title: `%${title}%` });
+      }
     };
+    if (!body.sort || !body.sort?.prop) {
+      body.sort = { prop: 'order', asc: false };
+    }
+
     return super.page({ ...body, buildQuery });
   }
 
@@ -48,7 +58,6 @@ export class PipelineController extends CrudController<PipelineService> {
       await this.service.checkUserId(bean.id, this.ctx.user.id);
     }
     await this.service.save(bean);
-    await this.service.registerTriggerById(bean.id);
     return this.ok(bean.id);
   }
 

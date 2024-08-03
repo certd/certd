@@ -47,8 +47,23 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return this.repository;
   }
 
-  async update(entity) {
-    await super.update(entity);
+  async page(query: any, page: { offset: number; limit: number }, order: any, buildQuery: any) {
+    const result = await super.page(query, page, order, buildQuery);
+    const pipelineIds: number[] = [];
+    const recordMap = {};
+    for (const record of result.records) {
+      pipelineIds.push(record.id);
+      recordMap[record.id] = record;
+    }
+    const vars = await this.storageService.findPipelineVars(pipelineIds);
+    for (const varEntity of vars) {
+      const record = recordMap[varEntity.namespace];
+      if (record) {
+        const value = JSON.parse(varEntity.value);
+        record.lastVars = value.value;
+      }
+    }
+    return result;
   }
 
   public async registerTriggerById(pipelineId) {
@@ -71,10 +86,18 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return new PipelineDetail(pipeline);
   }
 
+  async update(bean: PipelineEntity) {
+    await this.clearTriggers(bean.id);
+    await super.update(bean);
+    await this.registerTriggerById(bean.id);
+  }
+
   async save(bean: PipelineEntity) {
+    await this.clearTriggers(bean.id);
     const pipeline = JSON.parse(bean.content);
     bean.title = pipeline.title;
     await this.addOrUpdate(bean);
+    await this.registerTriggerById(bean.id);
   }
 
   /**
@@ -153,6 +176,14 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async delete(id: number) {
+    await this.clearTriggers(id);
+    //TODO 删除storage
+    // const storage = new DbStorage(pipeline.userId, this.storageService);
+    // await storage.remove(pipeline.id);
+    await super.delete([id]);
+  }
+
+  async clearTriggers(id: number) {
     const pipeline = await this.info(id);
     if (!pipeline) {
       return;
@@ -163,7 +194,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
         this.removeCron(id, trigger);
       }
     }
-    await super.delete([id]);
   }
 
   removeCron(pipelineId, trigger) {
@@ -176,6 +206,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (cron == null) {
       return;
     }
+    cron = cron.trim();
     if (cron.startsWith('*')) {
       cron = '0' + cron.substring(1, cron.length);
     }
@@ -183,7 +214,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     this.cron.remove(name);
     this.cron.register({
       name,
-      cron: cron,
+      cron,
       job: async () => {
         logger.info('定时任务触发：', pipelineId, trigger.id);
         try {
@@ -198,6 +229,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   async run(id: number, triggerId: string) {
     const entity: PipelineEntity = await this.info(id);
+    if (entity.disabled) {
+      return;
+    }
     const pipeline = JSON.parse(entity.content);
 
     if (!pipeline.stages || pipeline.stages.length === 0) {

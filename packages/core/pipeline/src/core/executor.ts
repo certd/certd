@@ -246,18 +246,26 @@ export class Executor {
 
     await instance.onInstance();
     await instance.execute();
-
+    //执行结果处理
     if (instance._result.clearLastStatus) {
+      //是否需要清除所有状态
       this.lastStatusMap.clear();
     }
-    //输出到output context
+    //输出上下文变量到output context
     _.forEach(define.output, (item: any, key: any) => {
       step.status!.output[key] = instance[key];
       const stepOutputKey = `step.${step.id}.${key}`;
       this.runtime.context[stepOutputKey] = instance[key];
     });
-
     step.status!.files = instance.getFiles();
+
+    //更新pipeline vars
+    if (Object.keys(instance._result.pipelineVars).length > 0) {
+      // 判断 pipelineVars 有值时更新
+      const vars = this.pipelineContext.getObj("vars");
+      _.merge(vars, instance._result.pipelineVars);
+      await this.pipelineContext.setObj("vars", vars);
+    }
   }
 
   async notification(when: NotificationWhen, error?: any) {

@@ -12,7 +12,7 @@ export class DbStorage implements IStorage {
     this.storageService = storageService;
   }
 
-  remove(scope: string, namespace: string, version: string, key: string): Promise<void> {
+  async remove(scope: string, namespace: string, version: string, key: string): Promise<void> {
     throw new Error('Method not implemented.');
   }
 

@@ -51,6 +51,7 @@ export type ITaskPlugin = {
 export type TaskResult = {
   clearLastStatus?: boolean;
   files?: FileItem[];
+  pipelineVars: Record<string, any>;
 };
 export type TaskInstanceContext = {
   pipeline: Pipeline;
@@ -66,7 +67,7 @@ export type TaskInstanceContext = {
 };
 
 export abstract class AbstractTaskPlugin implements ITaskPlugin {
-  _result: TaskResult = { clearLastStatus: false, files: [] };
+  _result: TaskResult = { clearLastStatus: false, files: [], pipelineVars: {} };
   ctx!: TaskInstanceContext;
   clearLastStatus() {
     this._result.clearLastStatus = true;
@@ -82,12 +83,6 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
 
   randomFileId() {
     return Math.random().toString(36).substring(2, 9);
-  }
-  linkFile(file: FileItem) {
-    this._result.files?.push({
-      ...file,
-      id: this.randomFileId(),
-    });
   }
   saveFile(filename: string, file: Buffer) {
     const filePath = this.ctx.fileStore.writeFile(filename, file);

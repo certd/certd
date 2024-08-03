@@ -1,6 +1,6 @@
 import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service.js';
 import { StorageEntity } from '../entity/storage.js';
 
@@ -40,5 +40,15 @@ export class StorageService extends BaseService<StorageEntity> {
       await this.repository.insert(entity);
     }
     return;
+  }
+
+  async findPipelineVars(pipelineIds: number[]) {
+    return await this.repository.find({
+      where: {
+        scope: 'pipeline',
+        namespace: In(pipelineIds),
+        key: 'vars',
+      },
+    });
   }
 }

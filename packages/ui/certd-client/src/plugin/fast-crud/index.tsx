@@ -61,7 +61,7 @@ function install(app: App, options: any = {}) {
           },
           size: "small",
           pagination: false,
-          onResizeColumn: (w: number, col: any) => {
+          onResizeColumn: (w: number | string, col: any) => {
             if (crudBinding.value?.table?.columnsMap && crudBinding.value?.table?.columnsMap[col.key]) {
               crudBinding.value.table.columnsMap[col.key].width = w;
             }
@@ -347,6 +347,8 @@ function install(app: App, options: any = {}) {
       columnProps.column.resizable = true;
       if (!columnProps.column.width) {
         columnProps.column.width = 100;
+      } else if (typeof columnProps.column?.width === "string" && columnProps.column.width.indexOf("px") > -1) {
+        columnProps.column.width = parseInt(columnProps.column.width.replace("px", ""));
       }
       return columnProps;
     }

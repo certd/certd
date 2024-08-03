@@ -37,6 +37,16 @@ export class PipelineEntity {
   })
   lastHistoryTime: number;
 
+  // 变量
+  lastVars: any;
+
+  @Column({
+    name: 'order',
+    comment: '排序',
+    nullable: true,
+  })
+  order: number;
+
   @Column({
     name: 'create_time',
     comment: '创建时间',
