@@ -2,4 +2,4 @@ INSERT INTO sys_settings (key, title, setting,access) VALUES ('sys.install','安
 
 ALTER TABLE sys_user ADD COLUMN password_version integer DEFAULT 1;
 ALTER TABLE sys_user ADD COLUMN password_salt varchar(36);
-ALTER TABLE sys_user ALTER COLUMN password varchar(100);
+alter table sys_user alter column password type varchar(100) using password::varchar(100);

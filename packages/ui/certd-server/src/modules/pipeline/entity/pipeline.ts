@@ -9,7 +9,7 @@ export class PipelineEntity {
   userId: number;
 
   @Column({ name: 'title', comment: '标题' })
-  title: number;
+  title: string;
 
   @Column({ comment: '配置', length: 40960 })
   content: string;
