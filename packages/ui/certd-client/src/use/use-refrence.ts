@@ -6,12 +6,10 @@ export function useReference(form: any) {
     return;
   }
   for (const reference of form.reference) {
-    debugger;
     _.set(
       form,
       reference.dest,
       compute<any>((scope) => {
-        debugger;
         return _.get(scope, reference.src);
       })
     );

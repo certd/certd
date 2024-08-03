@@ -336,6 +336,21 @@ function install(app: App, options: any = {}) {
       return columnProps;
     }
   });
+
+  registerMergeColumnPlugin({
+    name: "resize-column-plugin",
+    order: 2,
+    handle: (columnProps: ColumnCompositionProps) => {
+      if (!columnProps.column) {
+        columnProps.column = {};
+      }
+      columnProps.column.resizable = true;
+      if (!columnProps.column.width) {
+        columnProps.column.width = 100;
+      }
+      return columnProps;
+    }
+  });
 }
 
 export default {

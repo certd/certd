@@ -35,7 +35,11 @@ export class AutoInitSite {
 
     // 授权许可
     const licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
-    await verify(licenseInfo.license);
+    const req = {
+      subjectId: installInfo.siteId,
+      license: licenseInfo.license,
+    };
+    await verify(req);
 
     logger.info('初始化站点完成');
   }

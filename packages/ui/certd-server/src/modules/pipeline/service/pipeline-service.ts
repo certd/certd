@@ -120,7 +120,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         }
       }
     }
-    logger.info('定时器数量：', this.cron.getListSize());
+    logger.info('定时器数量：', this.cron.getTaskSize());
   }
 
   async registerTriggers(pipeline?: Pipeline, immediateTriggerOnce = false) {
@@ -193,7 +193,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         }
       },
     });
-    logger.info('当前定时器数量：', this.cron.getListSize());
+    logger.info('当前定时器数量：', this.cron.getTaskSize());
   }
 
   async run(id: number, triggerId: string) {
@@ -212,6 +212,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const onChanged = async (history: RunHistory) => {
       //保存执行历史
       try {
+        logger.info('保存执行历史：', history.id);
         await this.saveHistory(history);
       } catch (e) {
         const pipelineEntity = new PipelineEntity();
