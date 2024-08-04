@@ -336,6 +336,22 @@ function install(app: any, options: any = {}) {
       return columnProps;
     }
   });
+
+  //默认宽度，支持自动拖动调整列宽
+  registerMergeColumnPlugin({
+    name: "resize-column-plugin",
+    order: 2,
+    handle: (columnProps: ColumnCompositionProps) => {
+      if (!columnProps.column) {
+        columnProps.column = {};
+      }
+      columnProps.column.resizable = true;
+      if (!columnProps.column.width) {
+        columnProps.column.width = 100;
+      }
+      return columnProps;
+    }
+  });
 }
 
 export default {
