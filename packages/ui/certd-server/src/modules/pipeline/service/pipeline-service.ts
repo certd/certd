@@ -184,6 +184,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async clearTriggers(id: number) {
+    if (id == null) {
+      return;
+    }
     const pipeline = await this.info(id);
     if (!pipeline) {
       return;
