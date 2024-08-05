@@ -73,6 +73,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const info = await this.info(pipelineId);
     if (info && !info.disabled) {
       const pipeline = JSON.parse(info.content);
+      // 手动触发，不要await
       this.registerTriggers(pipeline);
     }
   }
@@ -173,7 +174,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
     if (immediateTriggerOnce) {
       await this.trigger(pipeline.id);
-      await sleep(1000);
+      await sleep(200);
     }
   }
 
@@ -224,6 +225,11 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   registerCron(pipelineId, trigger) {
+    if (pipelineId == null) {
+      logger.warn('pipelineId为空，无法注册定时任务');
+      return;
+    }
+
     let cron = trigger.props?.cron;
     if (cron == null) {
       return;
@@ -232,15 +238,20 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (cron.startsWith('*')) {
       cron = '0' + cron.substring(1, cron.length);
     }
-    const name = this.buildCronKey(pipelineId, trigger.id);
+    const triggerId = trigger.id;
+    const name = this.buildCronKey(pipelineId, triggerId);
     this.cron.remove(name);
     this.cron.register({
       name,
       cron,
       job: async () => {
-        logger.info('定时任务触发：', pipelineId, trigger.id);
+        logger.info('定时任务触发：', pipelineId, triggerId);
+        if (pipelineId == null) {
+          logger.warn('pipelineId为空,无法执行');
+          return;
+        }
         try {
-          await this.run(pipelineId, trigger.id);
+          await this.run(pipelineId, triggerId);
         } catch (e) {
           logger.error('定时job执行失败：', e);
         }
