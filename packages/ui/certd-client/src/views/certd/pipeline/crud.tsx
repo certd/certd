@@ -356,6 +356,9 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
             sorter: true,
             align: "center",
             width: 80
+          },
+          form: {
+            value: 0
           }
         },
         createTime: {
