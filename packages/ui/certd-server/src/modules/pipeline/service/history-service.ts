@@ -142,4 +142,21 @@ export class HistoryService extends BaseService<HistoryEntity> {
     });
     await this.logService.deleteByHistoryIds(ids);
   }
+
+  async deleteByPipelineId(id: number) {
+    await this.repository.delete({
+      pipelineId: id,
+    });
+
+    try {
+      const fileStore = new FileStore({
+        rootDir: this.certdConfig.fileRootDir,
+        scope: id + '',
+        parent: '0',
+      });
+      fileStore.deleteByParent(id + '', '');
+    } catch (e) {
+      logger.error('删除文件失败', e);
+    }
+  }
 }

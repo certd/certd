@@ -31,4 +31,8 @@ export class HistoryLogService extends BaseService<HistoryLogEntity> {
     }
     await this.repository.delete({ historyId: In(numbers) });
   }
+
+  async deleteByPipelineId(id: number) {
+    await this.repository.delete({ pipelineId: id });
+  }
 }

@@ -198,6 +198,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
     // const storage = new DbStorage(pipeline.userId, this.storageService);
     // await storage.remove(pipeline.id);
     await super.delete([id]);
+    await this.historyService.deleteByPipelineId(id);
+    await this.historyLogService.deleteByPipelineId(id);
   }
 
   async clearTriggers(id: number) {

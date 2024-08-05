@@ -18,7 +18,9 @@ export interface IFileStore {
 
 export class FileStore {
   rootDir: string;
+  // pipelineId
   scope: string;
+  // historyId
   parent: string;
   constructor(options?: FileStoreOptions) {
     this.rootDir = fileUtils.getFileRootDir(options?.rootDir);
