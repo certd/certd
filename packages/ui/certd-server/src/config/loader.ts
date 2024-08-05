@@ -12,7 +12,7 @@ function parseEnv(defaultConfig: any) {
       continue;
     }
     keyName = keyName.replace('certd_', '');
-    const configKey = keyName.replace('_', '.');
+    const configKey = keyName.replaceAll('_', '.');
     const oldValue = _.get(defaultConfig, configKey);
     let value: any = process.env[key];
     if (typeof oldValue === 'boolean') {
