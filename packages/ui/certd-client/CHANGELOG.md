@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.23.0](https://github.com/certd/certd/compare/v1.22.9...v1.23.0) (2024-08-05)
+
+### Features
+
+* use node 20 ([e8ed972](https://github.com/certd/certd/commit/e8ed97206bf28e83f942db2ef4ea07fa76fd3567))
+
 ## [1.22.9](https://github.com/certd/certd/compare/v1.22.8...v1.22.9) (2024-08-05)
 
 ### Performance Improvements
