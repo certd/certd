@@ -24,6 +24,7 @@ export class CronTask {
     this.job = req.job;
     this.name = req.name;
     this.logger = logger;
+    this.genNextTime();
   }
 
   genNextTime() {
@@ -68,8 +69,6 @@ export class Cron {
             this.logger.error(`job execute error : [${task.name}]`, e);
           });
           task.genNextTime();
-        } else {
-          break;
         }
       }
     }, 1000 * 60);
@@ -86,12 +85,7 @@ export class Cron {
     this.logger.info(`[cron] register cron : [${req.name}] ,${req.cron}`);
 
     const task = new CronTask(req, this.logger);
-    task.genNextTime();
     this.queue.push(task);
-
-    // sort by nextTime
-    this.queue.sort((a, b) => a.nextTime - b.nextTime);
-
     this.logger.info('当前定时任务数量：', this.getTaskSize());
   }
 
@@ -102,6 +96,7 @@ export class Cron {
       this.queue[index].stop();
       this.queue.splice(index, 1);
     }
+    this.logger.info('当前定时任务数量：', this.getTaskSize());
   }
 
   getTaskSize() {
