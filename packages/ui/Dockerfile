@@ -1,4 +1,4 @@
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 EXPOSE 7001
 WORKDIR /workspace/
 COPY . /workspace/
@@ -9,7 +9,7 @@ RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 
 
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app/
 COPY --from=builder /workspace/certd-server/ /app/
 RUN chmod +x /app/tools/linux/*
