@@ -1,6 +1,6 @@
 import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service.js';
 import { HistoryEntity } from '../entity/history.js';
 import { PipelineEntity } from '../entity/pipeline.js';
@@ -28,6 +28,14 @@ export class HistoryService extends BaseService<HistoryEntity> {
     return this.repository;
   }
 
+  async page(query, page, sort, buildQuery) {
+    const res = await super.page(query, page, sort, buildQuery);
+    for (const item of res.records) {
+      item.fillPipelineTitle();
+    }
+    return res;
+  }
+
   async save(bean: HistoryEntity) {
     if (bean.id > 0) {
       await this.update(bean);
@@ -51,7 +59,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
     };
     const { id } = await this.add(bean);
     //清除大于pipeline.keepHistoryCount的历史记录
-    this.clear(pipeline.id, pipeline.keepHistoryCount);
+    await this.clear(pipeline.id, pipeline.keepHistoryCount);
     return id;
   }
 
@@ -85,7 +93,6 @@ export class HistoryService extends BaseService<HistoryEntity> {
         skip: 0,
         take: deleteCountBatch,
       });
-      await this.repository.remove(list);
 
       for (const historyEntity of list) {
         const id = historyEntity.id;
@@ -95,6 +102,9 @@ export class HistoryService extends BaseService<HistoryEntity> {
           logger.error('删除文件失败', e);
         }
       }
+      await this.repository.remove(list);
+
+      await this.logService.deleteByHistoryIds(list.map(item => item.id));
 
       shouldDeleteCount -= deleteCountBatch;
     }
@@ -123,5 +133,13 @@ export class HistoryService extends BaseService<HistoryEntity> {
       }
     });
     return files;
+  }
+
+  async deleteByIds(ids: number[], userId: number) {
+    await this.repository.delete({
+      id: In(ids),
+      userId,
+    });
+    await this.logService.deleteByHistoryIds(ids);
   }
 }

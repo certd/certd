@@ -12,6 +12,7 @@ export class SysPublicSettings extends BaseSettings {
   static __title__ = '系统公共设置';
   static __access__ = 'public';
   registerEnabled = false;
+  managerOtherUserPipeline = false;
 }
 
 export class SysPrivateSettings extends BaseSettings {

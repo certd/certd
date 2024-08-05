@@ -1,6 +1,16 @@
 <template>
   <div class="main">
-    <a-form ref="formRef" class="user-layout-register" name="custom-validation" :model="formState" :rules="rules" v-bind="layout" @finish="handleFinish" @finishFailed="handleFinishFailed">
+    <a-form
+      ref="formRef"
+      class="user-layout-register"
+      name="custom-validation"
+      :model="formState"
+      :rules="rules"
+      v-bind="layout"
+      :label-col="{ span: 5 }"
+      @finish="handleFinish"
+      @finish-failed="handleFinishFailed"
+    >
       <a-tabs :tab-bar-style="{ textAlign: 'center', borderBottom: 'unset' }">
         <a-tab-pane key="register" tab="用户注册"> </a-tab-pane>
       </a-tabs>
@@ -39,7 +49,7 @@
 <script lang="ts">
 import { defineComponent, reactive, ref, toRaw } from "vue";
 import { useUserStore } from "/src/store/modules/user";
-import {utils} from "@fast-crud/fast-crud";
+import { utils } from "@fast-crud/fast-crud";
 export default defineComponent({
   name: "RegisterPage",
   setup() {

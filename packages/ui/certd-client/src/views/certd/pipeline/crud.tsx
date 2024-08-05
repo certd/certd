@@ -1,6 +1,6 @@
 import * as api from "./api";
 import { useI18n } from "vue-i18n";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
@@ -9,6 +9,7 @@ import { message, Modal } from "ant-design-vue";
 import { env } from "/@/utils/util.env";
 import { useUserStore } from "/@/store/modules/user";
 import dayjs from "dayjs";
+import { useSettingStore } from "/@/store/modules/settings";
 
 export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -94,6 +95,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
     });
   }
   const userStore = useUserStore();
+  const settingStore = useSettingStore();
   return {
     crudOptions: {
       request: {
@@ -190,6 +192,23 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           },
           form: {
             show: false
+          }
+        },
+        userId: {
+          title: "用户Id",
+          type: "number",
+          search: {
+            show: computed(() => {
+              return userStore.isAdmin && settingStore.sysPublic.managerOtherUserPipeline;
+            })
+          },
+          form: {
+            show: false
+          },
+          column: {
+            show: computed(() => {
+              return userStore.isAdmin && settingStore.sysPublic.managerOtherUserPipeline;
+            })
           }
         },
         title: {

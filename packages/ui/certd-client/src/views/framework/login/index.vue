@@ -1,6 +1,15 @@
 <template>
   <div class="main">
-    <a-form ref="formRef" class="user-layout-login" name="custom-validation" :model="formState" :rules="rules" v-bind="layout" @finish="handleFinish" @finishFailed="handleFinishFailed">
+    <a-form
+      ref="formRef"
+      class="user-layout-login"
+      name="custom-validation"
+      :model="formState"
+      :rules="rules"
+      v-bind="layout"
+      @finish="handleFinish"
+      @finish-failed="handleFinishFailed"
+    >
       <!--      <div class="login-title">登录</div>-->
       <a-tabs :active-key="formState.loginType" :tab-bar-style="{ textAlign: 'center', borderBottom: 'unset' }">
         <a-tab-pane key="password" tab="用户名密码登录">
@@ -55,7 +64,13 @@
                 </a-input>
               </a-col>
               <a-col class="gutter-row" :span="8">
-                <a-button class="getCaptcha" tabindex="-1" :disabled="smsSendBtnDisabled" @click="sendSmsCode" v-text="smsTime <= 0 ? '发送' : smsTime + ' s'"></a-button>
+                <a-button
+                  class="getCaptcha"
+                  tabindex="-1"
+                  :disabled="smsSendBtnDisabled"
+                  @click="sendSmsCode"
+                  v-text="smsTime <= 0 ? '发送' : smsTime + ' s'"
+                ></a-button>
               </a-col>
             </a-row>
           </a-form-item>
@@ -75,13 +90,13 @@
 import { defineComponent, reactive, ref, toRaw, computed } from "vue";
 import { useUserStore } from "/src/store/modules/user";
 import { useSettingStore } from "/@/store/modules/settings";
-import {utils} from "@fast-crud/fast-crud";
+import { utils } from "@fast-crud/fast-crud";
 export default defineComponent({
   name: "LoginPage",
   setup() {
     const loading = ref(false);
     const userStore = useUserStore();
-    const settingStore = useSettingStore()
+    const settingStore = useSettingStore();
     const formRef = ref();
     const formState = reactive({
       username: "",
@@ -168,7 +183,7 @@ export default defineComponent({
     function sendSmsCode() {
       //api.sendSmsCode();
     }
-    const sysPublicSettings = settingStore.getSysPublic
+    const sysPublicSettings = settingStore.getSysPublic;
     return {
       loading,
       formState,

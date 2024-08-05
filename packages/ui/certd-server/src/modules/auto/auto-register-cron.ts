@@ -1,12 +1,15 @@
 import { Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
-import { PipelineService } from '../service/pipeline-service.js';
-import { logger } from '../../../utils/logger.js';
+import { PipelineService } from '../pipeline/service/pipeline-service.js';
+import { logger } from '../../utils/logger.js';
 
 @Autoload()
 @Scope(ScopeEnum.Singleton)
 export class AutoRegisterCron {
   @Inject()
   pipelineService: PipelineService;
+
+  @Config('preview.enabled')
+  private preview: boolean;
 
   // @Inject()
   // echoPlugin: EchoPlugin;
@@ -16,7 +19,7 @@ export class AutoRegisterCron {
   @Init()
   async init() {
     logger.info('加载定时trigger开始');
-    await this.pipelineService.onStartup(this.immediateTriggerOnce);
+    await this.pipelineService.onStartup(this.immediateTriggerOnce, this.preview);
     // logger.info(this.echoPlugin, this.echoPlugin.test);
     // logger.info('加载定时trigger完成');
     //

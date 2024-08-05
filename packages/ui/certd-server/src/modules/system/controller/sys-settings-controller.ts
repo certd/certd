@@ -4,6 +4,7 @@ import { SysSettingsService } from '../service/sys-settings-service.js';
 import { SysSettingsEntity } from '../entity/sys-settings.js';
 import { SysPublicSettings } from '../service/models.js';
 import * as _ from 'lodash-es';
+import { PipelineService } from '../../pipeline/service/pipeline-service.js';
 
 /**
  */
@@ -12,6 +13,8 @@ import * as _ from 'lodash-es';
 export class SysSettingsController extends CrudController<SysSettingsService> {
   @Inject()
   service: SysSettingsService;
+  @Inject()
+  pipelineService: PipelineService;
 
   getService() {
     return this.service;
@@ -71,6 +74,11 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
     const setting = new SysPublicSettings();
     _.merge(setting, body);
     await this.service.savePublicSettings(setting);
+    return this.ok({});
+  }
+  @Post('/stopOtherUserTimer', { summary: 'sys:settings:edit' })
+  async stopOtherUserTimer(@Body(ALL) body) {
+    await this.pipelineService.stopOtherUserPipeline(1);
     return this.ok({});
   }
 }

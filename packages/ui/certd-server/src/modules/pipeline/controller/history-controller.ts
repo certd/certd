@@ -11,6 +11,8 @@ import { CommonException } from '../../../basic/exception/common-exception.js';
 import { PermissionException } from '../../../basic/exception/permission-exception.js';
 import * as fs from 'fs';
 import { logger } from '../../../utils/logger.js';
+import { AuthService } from '../../authority/service/auth-service.js';
+import { SysSettingsService } from '../../system/service/sys-settings-service.js';
 
 /**
  * 证书
@@ -25,19 +27,35 @@ export class HistoryController extends CrudController<HistoryService> {
   @Inject()
   logService: HistoryLogService;
 
+  @Inject()
+  authService: AuthService;
+
+  @Inject()
+  sysSettingsService: SysSettingsService;
+
   getService() {
     return this.service;
   }
 
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body) {
-    body.query.userId = this.ctx.user.id;
-    return super.page(body);
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    const publicSettings = await this.sysSettingsService.getPublicSettings();
+    if (!(publicSettings.managerOtherUserPipeline && isAdmin)) {
+      body.query.userId = this.ctx.user.id;
+    }
+
+    const res = await super.page(body);
+
+    return res;
   }
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body) {
-    body.userId = this.ctx.user.id;
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    if (!isAdmin) {
+      body.userId = this.ctx.user.id;
+    }
     if (body.pipelineId == null) {
       return this.ok([]);
     }
@@ -56,7 +74,7 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.service.checkUserId(bean.id, this.ctx.user.id);
+    await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
     return super.update(bean);
   }
 
@@ -64,7 +82,7 @@ export class HistoryController extends CrudController<HistoryService> {
   async save(@Body(ALL) bean: HistoryEntity) {
     bean.userId = this.ctx.user.id;
     if (bean.id > 0) {
-      await this.service.checkUserId(bean.id, this.ctx.user.id);
+      await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
     }
     await this.service.save(bean);
     return this.ok(bean.id);
@@ -74,7 +92,7 @@ export class HistoryController extends CrudController<HistoryService> {
   async saveLog(@Body(ALL) bean: HistoryLogEntity) {
     bean.userId = this.ctx.user.id;
     if (bean.id > 0) {
-      await this.service.checkUserId(bean.id, this.ctx.user.id);
+      await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
     }
     await this.logService.save(bean);
     return this.ok(bean.id);
@@ -82,26 +100,37 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id) {
-    await this.service.checkUserId(id, this.ctx.user.id);
-    return super.delete(id);
+    await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    await super.delete(id);
+    return this.ok();
+  }
+
+  @Post('/deleteByIds', { summary: Constants.per.authOnly })
+  async deleteByIds(@Body(ALL) body) {
+    await this.authService.checkEntityUserId(this.ctx, this.getService(), body.ids);
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    const userId = isAdmin ? null : this.ctx.user.id;
+    await this.getService().deleteByIds(body.ids, userId);
+    return this.ok();
   }
 
   @Post('/detail', { summary: Constants.per.authOnly })
   async detail(@Query('id') id) {
-    await this.service.checkUserId(id, this.ctx.user.id);
+    await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
     const detail = await this.service.detail(id);
     return this.ok(detail);
   }
 
   @Post('/logs', { summary: Constants.per.authOnly })
   async logs(@Query('id') id) {
-    await this.logService.checkUserId(id, this.ctx.user.id);
+    await this.authService.checkEntityUserId(this.ctx, this.logService, id);
     const logInfo = await this.logService.info(id);
     return this.ok(logInfo);
   }
 
   @Post('/files', { summary: Constants.per.authOnly })
   async files(@Query('pipelineId') pipelineId, @Query('historyId') historyId) {
+    await this.authService.checkEntityUserId(this.ctx, this.service, historyId);
     const files = await this.getFiles(historyId, pipelineId);
     return this.ok(files);
   }
@@ -125,6 +154,7 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Get('/download', { summary: Constants.per.authOnly })
   async download(@Query('pipelineId') pipelineId, @Query('historyId') historyId, @Query('fileId') fileId) {
+    await this.authService.checkEntityUserId(this.ctx, this.service, historyId);
     const files = await this.getFiles(historyId, pipelineId);
     const file = files.find(f => f.id === fileId);
     if (file == null) {

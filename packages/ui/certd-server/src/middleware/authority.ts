@@ -1,10 +1,9 @@
-import { Config, Inject, Provide } from '@midwayjs/core';
+import { Config, Inject, MidwayWebRouterService, Provide } from '@midwayjs/core';
 import { IMidwayKoaContext, IWebMiddleware, NextFunction } from '@midwayjs/koa';
 import jwt from 'jsonwebtoken';
 import { Constants } from '../basic/constants.js';
-import { MidwayWebRouterService } from '@midwayjs/core';
-import { RoleService } from '../modules/authority/service/role-service.js';
 import { logger } from '../utils/logger.js';
+import { AuthService } from '../modules/authority/service/auth-service.js';
 
 /**
  * 权限校验
@@ -16,7 +15,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
   @Inject()
   webRouterService: MidwayWebRouterService;
   @Inject()
-  roleService: RoleService;
+  authService: AuthService;
 
   resolve() {
     return async (ctx: IMidwayKoaContext, next: NextFunction) => {
@@ -59,11 +58,8 @@ export class AuthorityMiddleware implements IWebMiddleware {
       }
 
       if (permission !== Constants.per.authOnly) {
-        //如果不是仅校验登录，还需要校验是否拥有权限
-        const roleIds: number[] = ctx.user.roles;
-        const permissions = await this.roleService.getCachedPermissionSetByRoleIds(roleIds);
-
-        if (!permissions.has(permission)) {
+        const pass = await this.authService.checkPermission(ctx, permission);
+        if (!pass) {
           logger.info('not permission: ', ctx.req.url);
           ctx.status = 401;
           ctx.body = Constants.res.permission;

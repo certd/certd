@@ -34,6 +34,9 @@ export const useUserStore = defineStore({
     },
     getToken(): string {
       return this.token || LocalStorage.get(TOKEN_KEY);
+    },
+    isAdmin(): boolean {
+      return this.getUserInfo?.id === 1;
     }
   },
   actions: {

@@ -35,4 +35,13 @@ export class HistoryEntity {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updateTime: Date;
+
+  pipelineTitle: string;
+
+  fillPipelineTitle() {
+    if (this.pipeline) {
+      const pipeline = JSON.parse(this.pipeline);
+      this.pipelineTitle = pipeline.title;
+    }
+  }
 }

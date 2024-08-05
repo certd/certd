@@ -18,6 +18,7 @@ export interface UserInfoRes {
   id: string | number;
   username: string;
   nickName: string;
+  roles: number[];
 }
 
 export interface LoginRes {

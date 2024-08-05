@@ -10,7 +10,7 @@ export abstract class BaseController {
    * 成功返回
    * @param data 返回数据
    */
-  ok(data: any) {
+  ok(data?: any) {
     const res = {
       ...Constants.res.success,
       data: undefined,

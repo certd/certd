@@ -28,6 +28,15 @@ export const certdResources = [
         }
       },
       {
+        title: "执行历史记录",
+        name: "pipelineHistory",
+        path: "/certd/history",
+        component: "/certd/history/index.vue",
+        meta: {
+          icon: "ion:timer-outline"
+        }
+      },
+      {
         title: "授权管理",
         name: "access",
         path: "/certd/access",

@@ -4,9 +4,8 @@ import _ from "lodash-es";
 // @ts-ignore
 import { LocalStorage } from "/src/utils/util.storage";
 
+import * as basicApi from "/@/api/modules/api.basic";
 import { SysPublicSetting } from "/@/api/modules/api.basic";
-import * as basicApi from '/@/api/modules/api.basic'
-import _ from "lodash-es";
 
 export type ThemeToken = {
   token: {
@@ -21,7 +20,7 @@ export type ThemeConfig = {
 export interface SettingState {
   themeConfig?: ThemeConfig;
   themeToken: ThemeToken;
-  sysPublic?: SysPublicSetting
+  sysPublic?: SysPublicSetting;
 }
 
 const defaultThemeConfig = {
@@ -38,21 +37,22 @@ export const useSettingStore = defineStore({
       algorithm: theme.defaultAlgorithm
     },
     sysPublic: {
-      registerEnabled: false
+      registerEnabled: false,
+      managerOtherUserPipeline: false
     }
   }),
   getters: {
     getThemeConfig(): any {
       return this.themeConfig || _.merge({}, defaultThemeConfig, LocalStorage.get(SETTING_THEME_KEY) || {});
     },
-    getSysPublic():SysPublicSetting{
-      return this.sysPublic
+    getSysPublic(): SysPublicSetting {
+      return this.sysPublic;
     }
   },
   actions: {
-    async loadSysSettings(){
-      const settings = await basicApi.getSysPublicSettings()
-      _.merge(this.sysPublic,settings)
+    async loadSysSettings() {
+      const settings = await basicApi.getSysPublicSettings();
+      _.merge(this.sysPublic, settings);
     },
     persistThemeConfig() {
       LocalStorage.set(SETTING_THEME_KEY, this.getThemeConfig);
@@ -92,7 +92,7 @@ export const useSettingStore = defineStore({
     },
     async init() {
       await this.setThemeConfig(this.getThemeConfig);
-      await this.loadSysSettings()
+      await this.loadSysSettings();
     }
   }
 });

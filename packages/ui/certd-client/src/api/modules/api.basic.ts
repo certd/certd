@@ -1,9 +1,9 @@
 import { request } from "../service";
 
 export type SysPublicSetting = {
-  registerEnabled:boolean
-}
-
+  registerEnabled: boolean;
+  managerOtherUserPipeline: boolean;
+};
 
 export async function getSysPublicSettings(): Promise<SysPublicSetting> {
   return await request({

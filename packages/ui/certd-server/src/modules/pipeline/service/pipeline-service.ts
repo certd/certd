@@ -100,11 +100,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     await this.registerTriggerById(bean.id);
   }
 
-  /**
-   * 应用启动后初始加载记录
-   */
-  async onStartup(immediateTriggerOnce: boolean) {
-    logger.info('加载定时trigger开始');
+  async foreachPipeline(callback: (pipeline: PipelineEntity) => void) {
     const idEntityList = await this.repository.find({
       select: {
         id: true,
@@ -135,14 +131,35 @@ export class PipelineService extends BaseService<PipelineEntity> {
       });
 
       for (const entity of list) {
-        const pipeline = JSON.parse(entity.content ?? '{}');
-        try {
-          await this.registerTriggers(pipeline, immediateTriggerOnce);
-        } catch (e) {
-          logger.error('加载定时trigger失败：', e);
-        }
+        await callback(entity);
       }
     }
+  }
+
+  async stopOtherUserPipeline(userId: number) {
+    await this.foreachPipeline(async entity => {
+      if (entity.userId !== userId) {
+        await this.clearTriggers(entity.id);
+      }
+    });
+  }
+
+  /**
+   * 应用启动后初始加载记录
+   */
+  async onStartup(immediateTriggerOnce: boolean, preview: boolean) {
+    logger.info('加载定时trigger开始');
+    await this.foreachPipeline(async entity => {
+      if (preview && entity.userId !== 1) {
+        return;
+      }
+      const pipeline = JSON.parse(entity.content ?? '{}');
+      try {
+        await this.registerTriggers(pipeline, immediateTriggerOnce);
+      } catch (e) {
+        logger.error('加载定时trigger失败：', e);
+      }
+    });
     logger.info('定时器数量：', this.cron.getTaskSize());
   }
 
