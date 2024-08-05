@@ -187,6 +187,9 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           title: "ID",
           key: "id",
           type: "number",
+          search: {
+            show: true
+          },
           column: {
             width: 50
           },
@@ -231,6 +234,31 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
                 }
               }
             }
+          }
+        },
+        content: {
+          title: "定时任务数量",
+          type: "number",
+          column: {
+            cellRender({ value }) {
+              if (value && value.triggers) {
+                return value.triggers?.length > 0 ? value.triggers.length : "-";
+              }
+              return "-";
+            }
+          },
+          valueBuilder({ row }) {
+            if (row.content) {
+              row.content = JSON.parse(row.content);
+            }
+          },
+          valueResolve({ row }) {
+            if (row.content) {
+              row.content = JSON.stringify(row.content);
+            }
+          },
+          form: {
+            show: false
           }
         },
         lastVars: {

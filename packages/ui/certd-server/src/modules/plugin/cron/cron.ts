@@ -17,54 +17,62 @@ export class CronTask {
   name: string;
   stoped = false;
 
-  timeoutId: any;
+  nextTime: any;
 
   constructor(req: CronTaskReq, logger: ILogger) {
     this.cron = req.cron;
     this.job = req.job;
     this.name = req.name;
     this.logger = logger;
-    this.start();
   }
 
-  start() {
+  genNextTime() {
     if (!this.cron) {
-      return;
+      return null;
     }
     if (this.stoped) {
-      return;
+      return null;
     }
     const interval = parser.parseExpression(this.cron);
     const next = interval.next().getTime();
-    const now = Date.now();
-    const delay = next - now;
-    this.timeoutId = setTimeout(async () => {
-      try {
-        if (this.stoped) {
-          return;
-        }
-        await this.job();
-      } catch (e) {
-        this.logger.error(`[cron] job error : [${this.name}]`, e);
-      }
-      this.start();
-    }, delay);
+    this.logger.info(`[cron]  [${this.name}], cron:${this.cron}, next run :${new Date(next).toLocaleString()}`);
+    this.nextTime = next;
+    return next;
   }
 
   stop() {
     this.stoped = true;
-    clearTimeout(this.timeoutId);
   }
 }
 export class Cron {
   logger: ILogger;
   immediateTriggerOnce: boolean;
 
-  bucket: Record<string, CronTask> = {};
-
+  queue: CronTask[] = [];
   constructor(opts: any) {
     this.logger = opts.logger;
     this.immediateTriggerOnce = opts.immediateTriggerOnce;
+  }
+
+  start() {
+    this.logger.info('[cron] start');
+    this.queue.forEach(task => {
+      task.genNextTime();
+    });
+
+    setInterval(() => {
+      const now = new Date().getTime();
+      for (const task of this.queue) {
+        if (task.nextTime <= now) {
+          task.job().catch(e => {
+            this.logger.error(`job execute error : [${task.name}]`, e);
+          });
+          task.genNextTime();
+        } else {
+          break;
+        }
+      }
+    }, 1000 * 60);
   }
 
   register(req: CronTaskReq) {
@@ -78,21 +86,26 @@ export class Cron {
     this.logger.info(`[cron] register cron : [${req.name}] ,${req.cron}`);
 
     const task = new CronTask(req, this.logger);
-    this.bucket[task.name] = task;
+    task.genNextTime();
+    this.queue.push(task);
+
+    // sort by nextTime
+    this.queue.sort((a, b) => a.nextTime - b.nextTime);
+
     this.logger.info('当前定时任务数量：', this.getTaskSize());
   }
 
   remove(taskName: string) {
     this.logger.info(`[cron] remove : [${taskName}]`);
-    const task = this.bucket[taskName];
-    if (task) {
-      task.stop();
-      delete this.bucket[taskName];
+    const index = this.queue.findIndex(item => item.name === taskName);
+    if (index !== -1) {
+      this.queue[index].stop();
+      this.queue.splice(index, 1);
     }
   }
 
   getTaskSize() {
-    const tasks = Object.keys(this.bucket);
+    const tasks = Object.keys(this.queue);
     return tasks.length;
   }
 }

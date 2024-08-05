@@ -75,6 +75,10 @@ export class AsyncSsh2Client {
   }
 
   async exec(script: string) {
+    if (!script) {
+      this.logger.info('script 为空，取消执行');
+      return;
+    }
     return new Promise((resolve, reject) => {
       this.logger.info(`执行命令：[${this.connConf.host}][exec]: ` + script);
       this.conn.exec(script, (err: Error, stream: any) => {
@@ -96,6 +100,10 @@ export class AsyncSsh2Client {
             const out = this.convert(ret);
             data += out;
             this.logger.info(`[${this.connConf.host}][info]: ` + out.trimEnd());
+          })
+          .on('error', (err: any) => {
+            reject(err);
+            this.logger.error(err);
           })
           .stderr.on('data', (ret: Buffer) => {
             const err = this.convert(ret);

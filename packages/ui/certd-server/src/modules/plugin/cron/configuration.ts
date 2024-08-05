@@ -22,6 +22,7 @@ export class CronConfiguration {
       ...this.config,
     });
     container.registerObject('cron', this.cron);
+    this.cron.start();
     this.logger.info('cron started');
   }
 }

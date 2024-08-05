@@ -88,15 +88,16 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async update(bean: PipelineEntity) {
-    await this.clearTriggers(bean.id);
+    //更新非trigger部分
     await super.update(bean);
-    await this.registerTriggerById(bean.id);
   }
 
   async save(bean: PipelineEntity) {
     await this.clearTriggers(bean.id);
-    const pipeline = JSON.parse(bean.content);
-    bean.title = pipeline.title;
+    if (bean.content) {
+      const pipeline = JSON.parse(bean.content);
+      bean.title = pipeline.title;
+    }
     await this.addOrUpdate(bean);
     await this.registerTriggerById(bean.id);
   }

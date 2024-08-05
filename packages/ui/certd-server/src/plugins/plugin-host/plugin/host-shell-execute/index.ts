@@ -30,6 +30,7 @@ export class HostShellExecutePlugin extends AbstractTaskPlugin {
       name: 'a-textarea',
       vModel: 'value',
     },
+    required: true,
   })
   script!: string;
 
