@@ -75,7 +75,7 @@ export abstract class BaseService<T> {
    * @param param 数据
    */
   async add(param) {
-    const now = new Date().getTime();
+    const now = new Date();
     param.createTime = now;
     param.updateTime = now;
     await this.addOrUpdate(param);
@@ -91,7 +91,7 @@ export abstract class BaseService<T> {
    */
   async update(param) {
     if (!param.id) throw new ValidateException('no id');
-    param.updateTime = new Date().getTime();
+    param.updateTime = new Date();
     await this.addOrUpdate(param);
     await this.modifyAfter(param);
   }
