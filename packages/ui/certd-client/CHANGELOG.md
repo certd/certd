@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.23.1](https://github.com/certd/certd/compare/v1.23.0...v1.23.1) (2024-08-06)
+
+### Performance Improvements
+
+* 优化默认值设置 ([1af19f0](https://github.com/certd/certd/commit/1af19f0ac053fe109782882964533636b5969d6b))
+
 # [1.23.0](https://github.com/certd/certd/compare/v1.22.9...v1.23.0) (2024-08-05)
 
 ### Features
