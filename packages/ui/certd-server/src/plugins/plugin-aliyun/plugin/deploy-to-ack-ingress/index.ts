@@ -38,7 +38,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: '大区',
-    default: 'cn-shanghai',
+    value: 'cn-shanghai',
     component: {
       placeholder: '集群所属大区',
     },
@@ -48,7 +48,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: '命名空间',
-    default: 'default',
+    value: 'default',
     component: {
       placeholder: '命名空间',
     },
@@ -57,7 +57,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
   namespace!: string;
   @TaskInput({
     title: 'ingress名称',
-    default: '',
+    value: '',
     component: {
       placeholder: 'ingress名称',
     },
@@ -67,7 +67,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
   ingressName!: string;
   @TaskInput({
     title: 'ingress类型',
-    default: 'nginx',
+    value: 'nginx',
     component: {
       placeholder: '暂时只支持nginx类型',
     },
@@ -76,7 +76,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
   ingressClass!: string;
   @TaskInput({
     title: '是否私网ip',
-    default: false,
+    value: false,
     component: {
       name: 'a-switch',
       vModel: 'checked',

@@ -27,7 +27,7 @@ export type { CertInfo };
 export class CertApplyPlugin extends CertApplyBasePlugin {
   @TaskInput({
     title: "证书提供商",
-    default: "letsencrypt",
+    value: "letsencrypt",
     component: {
       name: "a-select",
       vModel: "value",
@@ -82,7 +82,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
   @TaskInput({
     title: "使用代理",
-    default: false,
+    value: false,
     component: {
       name: "a-switch",
       vModel: "checked",
@@ -93,7 +93,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
   @TaskInput({
     title: "跳过本地校验DNS",
-    default: false,
+    value: false,
     component: {
       name: "a-switch",
       vModel: "checked",

@@ -17,7 +17,7 @@ import dayjs from 'dayjs';
 export class DeployToClbPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: '大区',
-    default: 'ap-guangzhou',
+    value: 'ap-guangzhou',
     component: {
       name: 'a-select',
       mode: 'tags',
