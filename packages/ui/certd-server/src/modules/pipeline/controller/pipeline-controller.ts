@@ -46,7 +46,8 @@ export class PipelineController extends CrudController<PipelineService> {
       body.sort = { prop: 'order', asc: false };
     }
 
-    return super.page({ ...body, buildQuery });
+    const pageRet = await this.getService().page(body?.query, body?.page, body?.sort, buildQuery);
+    return this.ok(pageRet);
   }
 
   @Post('/add', { summary: Constants.per.authOnly })
