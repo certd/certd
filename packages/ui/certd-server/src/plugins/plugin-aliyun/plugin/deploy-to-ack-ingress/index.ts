@@ -121,7 +121,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     const kubeConfigStr = await this.getKubeConfig(client, clusterId, isPrivateIpAddress);
 
     this.logger.info('kubeconfig已成功获取');
-    const k8sClient = new K8sClient(kubeConfigStr);
+    const k8sClient = new K8sClient(kubeConfigStr,this.logger);
     const ingressType = ingressClass || 'qcloud';
     if (ingressType === 'qcloud') {
       throw new Error('暂未实现');

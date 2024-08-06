@@ -1,7 +1,7 @@
 import kubernetesClient from 'kubernetes-client';
 //@ts-ignore
 import dns from 'dns';
-import { logger } from '@certd/pipeline';
+import { ILogger } from '@certd/pipeline';
 
 //@ts-ignore
 const { KubeConfig, Client, Request } = kubernetesClient;
@@ -10,8 +10,10 @@ export class K8sClient {
   kubeConfigStr: string;
   lookup!: any;
   client!: any;
-  constructor(kubeConfigStr: string) {
+  logger: ILogger;
+  constructor(kubeConfigStr: string, logger: ILogger) {
     this.kubeConfigStr = kubeConfigStr;
+    this.logger = logger;
     this.init();
   }
 
@@ -33,9 +35,9 @@ export class K8sClient {
    */
   setLookup(localRecords: { [key: string]: { ip: string } }) {
     this.lookup = (hostnameReq: any, options: any, callback: any) => {
-      logger.info('custom lookup', hostnameReq, localRecords);
+      this.logger.info('custom lookup', hostnameReq, localRecords);
       if (localRecords[hostnameReq]) {
-        logger.info('local record', hostnameReq, localRecords[hostnameReq]);
+        this.logger.info('local record', hostnameReq, localRecords[hostnameReq]);
         callback(null, localRecords[hostnameReq].ip, 4);
       } else {
         dns.lookup(hostnameReq, options, callback);
@@ -64,7 +66,7 @@ export class K8sClient {
     const created = await this.client.api.v1.namespaces(namespace).secrets.post({
       body: opts.body,
     });
-    logger.info('new secrets:', created);
+    this.logger.info('new secrets:', created);
     return created;
   }
 

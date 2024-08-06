@@ -91,7 +91,7 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
     this.logger.info('授权id:', accessId);
     //TODO 这里实现你要部署的执行方法
 
-    new K8sClient('111');
+    new K8sClient('111', logger);
   }
 }
 //TODO 这里实例化插件，进行注册
