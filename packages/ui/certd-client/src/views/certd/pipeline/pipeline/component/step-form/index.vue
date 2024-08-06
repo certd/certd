@@ -148,15 +148,8 @@ export default {
         // 给step的input设置默认值
         changeCurrentPlugin(currentStep.value);
 
-        //赋初始值
+        //合并默认值
         _.merge(currentStep.value, { input: {}, strategy: { runStrategy: 0 } }, currentPlugin.value.default, currentStep.value);
-
-        for (const key in currentPlugin.value.input) {
-          const input = currentPlugin.value.input[key];
-          if (input.default != null) {
-            currentStep.value.input[key] = input.default ?? input.value;
-          }
-        }
       };
 
       const stepDrawerShow = () => {
@@ -229,7 +222,7 @@ export default {
               }
             }
             //设置初始值
-            if (input.default != null && currentStep.value.input[key] == null) {
+            if ((input.default != null || input.value != null) && currentStep.value.input[key] == null) {
               currentStep.value.input[key] = input.default ?? input.value;
             }
           }
