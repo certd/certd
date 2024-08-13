@@ -8,8 +8,8 @@ export class AutoRegisterCron {
   @Inject()
   pipelineService: PipelineService;
 
-  @Config('preview.enabled')
-  private preview: boolean;
+  @Config('cron.onlyAdminUser')
+  private onlyAdminUser: boolean;
 
   // @Inject()
   // echoPlugin: EchoPlugin;
@@ -19,7 +19,7 @@ export class AutoRegisterCron {
   @Init()
   async init() {
     logger.info('加载定时trigger开始');
-    await this.pipelineService.onStartup(this.immediateTriggerOnce, this.preview);
+    await this.pipelineService.onStartup(this.immediateTriggerOnce, this.onlyAdminUser);
     // logger.info(this.echoPlugin, this.echoPlugin.test);
     // logger.info('加载定时trigger完成');
     //

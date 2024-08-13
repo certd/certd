@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 
 @IsTaskPlugin({
@@ -28,8 +28,8 @@ export class CloudflareDeployToCDNPlugin extends AbstractTaskPlugin {
     title: '选择框',
     component: {
       //前端组件配置，具体配置见组件文档 https://www.antdv.com/components/select-cn
-      name: 'a-select',
-      mode: 'tags',
+      name: 'a-auto-complete',
+      vModel: 'value',
       options: [
         { value: '1', label: '选项1' },
         { value: '2', label: '选项2' },
@@ -71,13 +71,7 @@ export class CloudflareDeployToCDNPlugin extends AbstractTaskPlugin {
   })
   accessId!: string;
 
-  accessService!: IAccessService;
-  logger!: ILogger;
-
-  async onInstance() {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
-  }
+  async onInstance() {}
   async execute(): Promise<void> {
     const { select, text, cert, accessId } = this;
     const certReader = new CertReader(cert);

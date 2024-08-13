@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import tencentcloud from 'tencentcloud-sdk-nodejs';
 import { TencentAccess } from '../../access/index.js';
 import { CertInfo } from '@certd/plugin-cert';
@@ -59,14 +59,7 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
   // })
   // endpoint!: string;
 
-  accessService!: IAccessService;
-
-  logger!: ILogger;
-
-  async onInstance() {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
-  }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     const accessProvider: TencentAccess = (await this.accessService.getById(this.accessId)) as TencentAccess;

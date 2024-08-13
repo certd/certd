@@ -1,12 +1,4 @@
-import {
-  Provide,
-  Controller,
-  Post,
-  Inject,
-  Body,
-  Query,
-  ALL,
-} from '@midwayjs/core';
+import { Provide, Controller, Post, Inject, Body, Query, ALL } from '@midwayjs/core';
 import { UserService } from '../service/user-service.js';
 import { CrudController } from '../../../basic/crud-controller.js';
 import { RoleService } from '../service/role-service.js';

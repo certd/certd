@@ -61,24 +61,7 @@
             <fs-form-item v-model="currentStep.input[key]" :item="item" :get-context-fn="blankFn" />
           </template>
 
-          <fs-form-item
-            v-model="currentStep.strategy.runStrategy"
-            :item="{
-              title: '运行策略',
-              key: 'strategy.runStrategy',
-              component: {
-                name: 'a-select',
-                vModel: 'value',
-                options: [
-                  { value: 0, label: '正常运行（证书申请任务请选择它）' },
-                  { value: 1, label: '成功后跳过（非证书任务请选择它）' }
-                ]
-              },
-              helper: '该任务运行成功一次之后下次运行是否跳过，保持默认即可',
-              rules: [{ required: true, message: '此项必填' }]
-            }"
-            :get-context-fn="blankFn"
-          />
+          <fs-form-item v-model="currentStep.strategy.runStrategy" :item="runStrategyProps" :get-context-fn="blankFn" />
         </a-form>
 
         <template #footer>
@@ -289,10 +272,36 @@ export default {
       };
     }
 
+    const runStrategyProps = ref({
+      title: "运行策略",
+      key: "strategy.runStrategy",
+      component: {
+        name: "a-select",
+        vModel: "value",
+        options: [
+          { value: 0, label: "正常运行（证书申请任务请选择它）" },
+          { value: 1, label: "成功后跳过（非证书任务请选择它）" }
+        ]
+      },
+      helper: {
+        render: () => {
+          return (
+            <div>
+              <div>正常运行：每次都运行，证书任务需要每次都运行</div>
+              <div>成功后跳过：在证书没变化时，该任务成功一次之后跳过，不重复部署</div>
+              <div>保持默认即可，如果你想要再次测试部署，可以临时设置为正常运行</div>
+            </div>
+          );
+        }
+      },
+      rules: [{ required: true, message: "此项必填" }]
+    });
+
     return {
       ...useStepForm(),
       labelCol: { span: 6 },
-      wrapperCol: { span: 16 }
+      wrapperCol: { span: 16 },
+      runStrategyProps
     };
   }
 };

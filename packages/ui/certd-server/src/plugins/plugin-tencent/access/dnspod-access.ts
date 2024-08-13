@@ -10,8 +10,7 @@ export class DnspodAccess {
     title: '端点',
     component: {
       placeholder: 'endpoint',
-      name: 'a-select',
-      mode: 'tags',
+      name: 'a-auto-complete',
       vModel: 'value',
       options: [
         { value: 'https://dnsapi.cn', label: '中国站' },

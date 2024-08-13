@@ -1,11 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IAccessService,
-  ILogger,
-  IsTaskPlugin, pluginGroups,
-  RunStrategy,
-  TaskInput,
-} from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import dayjs from 'dayjs';
 import Core from '@alicloud/pop-core';
 import RPCClient from '@alicloud/pop-core';
@@ -57,18 +50,10 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   })
   accessId!: string;
 
-  accessService!: IAccessService;
-  logger!: ILogger;
-
-  async onInstance() {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
-  }
+  async onInstance() {}
   async execute(): Promise<void> {
     console.log('开始部署证书到阿里云cdn');
-    const access = (await this.accessService.getById(
-      this.accessId
-    )) as AliyunAccess;
+    const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;
     const client = this.getClient(access);
     const params = await this.buildParams();
     await this.doRequest(client, params);
@@ -85,8 +70,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   }
 
   async buildParams() {
-    const CertName =
-      (this.certName ?? 'certd') + '-' + dayjs().format('YYYYMMDDHHmmss');
+    const CertName = (this.certName ?? 'certd') + '-' + dayjs().format('YYYYMMDDHHmmss');
     const cert: any = this.cert;
     return {
       RegionId: 'cn-hangzhou',
@@ -103,11 +87,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     const requestOption = {
       method: 'POST',
     };
-    const ret: any = await client.request(
-      'SetDomainServerCertificate',
-      params,
-      requestOption
-    );
+    const ret: any = await client.request('SetDomainServerCertificate', params, requestOption);
     this.checkRet(ret);
     this.logger.info('设置cdn证书成功:', ret.RequestId);
   }

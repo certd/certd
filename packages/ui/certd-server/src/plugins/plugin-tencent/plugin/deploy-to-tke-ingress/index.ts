@@ -1,8 +1,7 @@
-import { AbstractTaskPlugin, IAccessService, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
 import tencentcloud from 'tencentcloud-sdk-nodejs';
 import { K8sClient } from '@certd/lib-k8s';
 import dayjs from 'dayjs';
-import { Logger } from 'log4js';
 
 @IsTaskPlugin({
   name: 'DeployCertToTencentTKEIngress',
@@ -38,8 +37,10 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: 'ingress类型',
+    value: 'qcloud',
     component: {
-      name: 'a-select',
+      name: 'a-auto-complete',
+      vModel: 'value',
       options: [{ value: 'qcloud' }, { value: 'nginx' }],
     },
     helper: '可选 qcloud / nginx',
@@ -89,12 +90,7 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
   })
   cert!: any;
 
-  logger!: Logger;
-  accessService!: IAccessService;
-  async onInstance() {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
-  }
+  async onInstance() {}
   async execute(): Promise<void> {
     const accessProvider = await this.accessService.getById(this.accessId);
     const tkeClient = this.getTkeClient(accessProvider, this.region);

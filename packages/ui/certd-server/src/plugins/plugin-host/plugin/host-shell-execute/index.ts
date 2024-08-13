@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import { SshClient } from '../../lib/ssh.js';
 
 @IsTaskPlugin({
@@ -34,12 +34,7 @@ export class HostShellExecutePlugin extends AbstractTaskPlugin {
   })
   script!: string;
 
-  accessService!: IAccessService;
-  logger!: ILogger;
-  async onInstance() {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
-  }
+  async onInstance() {}
   async execute(): Promise<void> {
     const { script, accessId } = this;
     const connectConf = await this.accessService.getById(accessId);

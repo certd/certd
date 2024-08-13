@@ -1,6 +1,5 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
-import { K8sClient } from '@certd/lib-k8s';
 
 @IsTaskPlugin({
   name: 'demoTest',
@@ -28,8 +27,8 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
     title: '选择框',
     component: {
       //前端组件配置，具体配置见组件文档 https://www.antdv.com/components/select-cn
-      name: 'a-select',
-      mode: 'tags',
+      name: 'a-auto-complete',
+      vModel: 'value',
       options: [
         { value: '1', label: '选项1' },
         { value: '2', label: '选项2' },
@@ -55,7 +54,7 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
     component: {
       name: 'pi-output-selector',
     },
-    required: true,
+    // required: true,
   })
   cert!: CertInfo;
 
@@ -67,31 +66,33 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
       name: 'pi-access-selector',
       type: 'demo', //固定授权类型
     },
-    rules: [{ required: true, message: '此项必填' }],
+    // rules: [{ required: true, message: '此项必填' }],
   })
   accessId!: string;
 
-  accessService!: IAccessService;
-  logger!: ILogger;
-
-  async onInstance() {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
-  }
+  async onInstance() {}
   async execute(): Promise<void> {
     const { select, text, cert, accessId } = this;
-    const certReader = new CertReader(cert);
-    const access = await this.accessService.getById(accessId);
-    this.logger.debug('access', access);
-    this.logger.debug('certReader', certReader);
+
+    try {
+      const access = await this.accessService.getById(accessId);
+      this.logger.debug('access', access);
+    } catch (e) {
+      this.logger.error('获取授权失败', e);
+    }
+
+    try {
+      const certReader = new CertReader(cert);
+      this.logger.debug('certReader', certReader);
+    } catch (e) {
+      this.logger.error('读取crt失败', e);
+    }
+
     this.logger.info('DemoTestPlugin execute');
     this.logger.info('text:', text);
     this.logger.info('select:', select);
     this.logger.info('switch:', this.switch);
     this.logger.info('授权id:', accessId);
-    //TODO 这里实现你要部署的执行方法
-
-    new K8sClient('111', null);
   }
 }
 //TODO 这里实例化插件，进行注册

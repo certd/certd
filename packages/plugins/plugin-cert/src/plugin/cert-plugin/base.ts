@@ -1,7 +1,6 @@
-import { AbstractTaskPlugin, HttpClient, IAccessService, IContext, Step, TaskInput, TaskOutput } from "@certd/pipeline";
+import { AbstractTaskPlugin, HttpClient, IContext, Step, TaskInput, TaskOutput } from "@certd/pipeline";
 import dayjs from "dayjs";
 import type { CertInfo } from "./acme.js";
-import { Logger } from "log4js";
 import { CertReader } from "./cert-reader.js";
 import JSZip from "jszip";
 
@@ -91,9 +90,7 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
   // })
   csrInfo!: string;
 
-  logger!: Logger;
   userContext!: IContext;
-  accessService!: IAccessService;
   http!: HttpClient;
   lastStatus!: Step;
 
@@ -103,8 +100,6 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
   cert?: CertInfo;
 
   async onInstance() {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
     this.userContext = this.ctx.userContext;
     this.http = this.ctx.http;
     this.lastStatus = this.ctx.lastStatus as Step;

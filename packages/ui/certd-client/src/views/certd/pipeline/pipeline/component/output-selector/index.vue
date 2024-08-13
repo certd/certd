@@ -23,7 +23,7 @@ export default {
     const currentStepIndex = inject("currentStepIndex") as Ref<number>;
     const currentTask = inject("currentTask") as Ref<any>;
 
-    const getPluginGroups = inject("getPluginGroups") as Ref<any>;
+    const getPluginGroups = inject("getPluginGroups") as any;
     const pluginGroups = getPluginGroups();
     function onCreate() {
       options.value = pluginGroups.getPreStepOutputOptions({
@@ -42,7 +42,7 @@ export default {
 
     watch(
       () => {
-        return pluginGroups.value.map;
+        return pluginGroups.value?.map;
       },
       () => {
         onCreate();

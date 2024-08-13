@@ -136,10 +136,13 @@ export class HistoryService extends BaseService<HistoryEntity> {
   }
 
   async deleteByIds(ids: number[], userId: number) {
-    await this.repository.delete({
+    const condition: any = {
       id: In(ids),
-      userId,
-    });
+    };
+    if (userId != null) {
+      condition.userId = userId;
+    }
+    await this.repository.delete(condition);
     await this.logService.deleteByHistoryIds(ids);
   }
 

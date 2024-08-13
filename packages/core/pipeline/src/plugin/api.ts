@@ -6,7 +6,7 @@ import { IAccessService } from "../access/index.js";
 import { IEmailService } from "../service/index.js";
 import { IContext } from "../core/index.js";
 import { AxiosInstance } from "axios";
-import { logger } from "../utils/index.js";
+import { ILogger, logger } from "../utils/index.js";
 
 export enum ContextScope {
   global,
@@ -69,6 +69,9 @@ export type TaskInstanceContext = {
 export abstract class AbstractTaskPlugin implements ITaskPlugin {
   _result: TaskResult = { clearLastStatus: false, files: [], pipelineVars: {} };
   ctx!: TaskInstanceContext;
+  logger!: ILogger;
+  accessService!: IAccessService;
+
   clearLastStatus() {
     this._result.clearLastStatus = true;
   }
@@ -79,6 +82,8 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
 
   setCtx(ctx: TaskInstanceContext) {
     this.ctx = ctx;
+    this.logger = ctx.logger;
+    this.accessService = ctx.accessService;
   }
 
   randomFileId() {

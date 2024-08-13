@@ -38,7 +38,10 @@ const development = {
     },
   },
   cron: {
+    //启动时立即触发一次
     immediateTriggerOnce: false,
+    //启动时仅注册admin（id=1）用户的
+    onlyAdminUser: false,
   },
   /**
    * 演示环境

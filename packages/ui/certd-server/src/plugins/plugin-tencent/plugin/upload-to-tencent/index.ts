@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import tencentcloud from 'tencentcloud-sdk-nodejs';
 import dayjs from 'dayjs';
 
@@ -43,13 +43,7 @@ export class UploadToTencentPlugin extends AbstractTaskPlugin {
   })
   tencentCertId?: string;
 
-  accessService!: IAccessService;
-  logger!: ILogger;
-
-  async onInstance() {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
-  }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     const { accessId, name, cert } = this;
