@@ -97,7 +97,7 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
     this.http = this.ctx.http;
     this.lastStatus = this.ctx.lastStatus as Step;
     if (this.legoEabAccessId) {
-      this.eab = await this.ctx.accessService.getById(this.legoEabAccessId);
+      this.eab = await this.accessService.getById(this.legoEabAccessId);
     }
   }
   async onInit(): Promise<void> {}

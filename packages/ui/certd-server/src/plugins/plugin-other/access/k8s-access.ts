@@ -9,6 +9,8 @@ export class K8sAccess {
   @AccessInput({
     title: 'kubeconfig',
     component: {
+      name: 'a-textarea',
+      vModel: 'value',
       placeholder: 'kubeconfig',
     },
     required: true,

@@ -97,7 +97,10 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
     const kubeConfigStr = await this.getTkeKubeConfig(tkeClient, this.clusterId);
 
     this.logger.info('kubeconfig已成功获取');
-    const k8sClient = new K8sClient(kubeConfigStr, this.logger);
+    const k8sClient = new K8sClient({
+      kubeConfigStr,
+      logger: this.logger,
+    });
     if (this.clusterIp != null) {
       if (!this.clusterDomain) {
         this.clusterDomain = `${this.clusterId}.ccs.tencent-cloud.com`;

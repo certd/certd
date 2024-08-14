@@ -13,8 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "kubernetes-client": "^9.0.0",
-    "shelljs": "^0.8.5"
+    "@kubernetes/client-node": "0.21.0"
   },
   "devDependencies": {
     "@certd/pipeline": "^1.23.1",
