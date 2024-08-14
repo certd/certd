@@ -4,7 +4,7 @@ import { In, Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service.js';
 import { PipelineEntity } from '../entity/pipeline.js';
 import { PipelineDetail } from '../entity/vo/pipeline-detail.js';
-import { Executor, Pipeline, ResultType, RunHistory } from '@certd/pipeline';
+import { Executor, isPlus, Pipeline, ResultType, RunHistory } from '@certd/pipeline';
 import { AccessService } from './access-service.js';
 import { DbStorage } from './db-storage.js';
 import { StorageService } from './storage-service.js';
@@ -15,9 +15,10 @@ import { HistoryLogEntity } from '../entity/history-log.js';
 import { HistoryLogService } from './history-log-service.js';
 import { logger } from '../../../utils/logger.js';
 import { EmailService } from '../../basic/service/email-service.js';
+import { NeedVIPException } from '../../../basic/exception/vip-exception.js';
 
 const runningTasks: Map<string | number, Executor> = new Map();
-
+const freeCount = 10;
 /**
  * 证书申请
  */
@@ -45,6 +46,17 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   getRepository() {
     return this.repository;
+  }
+
+  async add(bean: PipelineEntity) {
+    if (!isPlus()) {
+      const count = await this.repository.count();
+      if (count >= freeCount) {
+        throw new NeedVIPException('免费版最多只能创建10个pipeline');
+      }
+    }
+    await super.add(bean);
+    return bean;
   }
 
   async page(query: any, page: { offset: number; limit: number }, order: any, buildQuery: any) {
@@ -93,6 +105,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async save(bean: PipelineEntity) {
+    if (!isPlus()) {
+      const count = await this.repository.count();
+      if (count >= 10) {
+        throw new NeedVIPException('免费版最多只能创建10个pipeline');
+      }
+    }
     await this.clearTriggers(bean.id);
     if (bean.content) {
       const pipeline = JSON.parse(bean.content);

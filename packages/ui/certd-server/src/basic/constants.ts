@@ -31,6 +31,10 @@ export const Constants = {
       code: 10,
       message: '参数错误',
     },
+    needvip: {
+      code: 88,
+      message: '需要VIP',
+    },
     auth: {
       code: 401,
       message: '您还未登录或token已过期',

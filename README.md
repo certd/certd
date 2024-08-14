@@ -1,7 +1,7 @@
-# CertD
+# Certd
 
-CertD 是一个免费全自动申请和自动部署更新SSL证书的工具。       
-后缀D取自linux守护进程的命名风格，意为证书守护进程。    
+Certd 是一个免费全自动申请和自动部署更新SSL证书的工具。       
+后缀d取自linux守护进程的命名风格，意为证书守护进程。    
 
 关键字：证书自动申请、证书自动更新、证书自动续期、证书自动续签
 
@@ -180,26 +180,37 @@ docker compose up -d
 </p>
 
 ## 十、捐赠
-媳妇儿说：“一天到晚搞开源，也不管管老婆孩子！😡😡😡”        
-拜托各位捐赠支持一下，让媳妇儿开心开心，我也能有更多时间进行开源项目，感谢🙏🙏🙏
-<p align="center">
-<img height="380" src="./doc/images/donate.png">
-</p>
+支持开源，为爱发电，我已入驻爱发电   
+https://afdian.com/a/greper
+
+发电权益：
+1. 可加入发电专属群（先加我好友，发送发电截图，我拉你进群）
+2. 你的需求优先实现
+3. 可以获得作者一对一技术支持
+4. 更多权益陆续增加中...
 
 
 ## 十一、贡献代码
 
-[贡献插件教程](./plugin.md)
+1.  [贡献插件教程](./plugin.md)
+2. 作为贡献者，代表您同意您贡献的代码如下许可：
+   1. 可以调整开源协议以使其更严格或更宽松。
+   2. 可以用于商业用途。
 
+## 十二、 开源许可
+* 本项目遵循 GNU Affero General Public License（AGPL）开源协议。   
+* 允许个人和公司使用、复制、修改和分发本项目，禁止任何形式的商业用途 
+* 未获得商业授权情况下，禁止任何对logo、版权信息及授权许可相关代码的修改。
+* 如需商业授权，请联系作者。
 
-## 十二、我的其他项目（求Star）
+## 十三、我的其他项目（求Star）
 * [袖手GPT](https://ai.handsfree.work/) ChatGPT，国内可用，无需FQ，每日免费额度
 * [fast-crud](https://gitee.com/fast-crud/fast-crud/) 基于vue3的crud快速开发框架
 * [dev-sidecar](https://github.com/docmirror/dev-sidecar/) 直连访问github工具，无需FQ，解决github无法访问的问题
 
 
 
-## 十三、更新日志
+## 十四、更新日志
 
 更新日志：[CHANGELOG](./CHANGELOG.md)
 

@@ -33,6 +33,7 @@ router.beforeEach(async (to, from, next) => {
     // 请根据自身业务需要修改
     const token = userStore.getToken;
     if (token) {
+      await userStore.init();
       next();
     } else {
       // 没有登录的时候跳转到登录界面

@@ -2,8 +2,8 @@ import { createVerify } from "node:crypto";
 import { logger } from "../utils/index.js";
 
 const SecreteKey =
-  "LS0tLS1CRUdJTiBSU0EgUFVCTElDIEtFWS0tLS0tCk1JSUJDZ0tDQVFFQXY3TGtMaUp1dGM0NzhTU3RaTExjajVGZXh1YjJwR2NLMGxwa0hwVnlZWjhMY29rRFhuUlAKUGQ5UlJSTVRTaGJsbFl2Mzd4QUhOV1ZIQ0ZsWHkrQklVU001bUlBU1NDQTV0azlJNmpZZ2F4bEFDQm1BY0lGMwozKzBjeGZIYVkrVW9YdVluMkZ6YUt2Ym5GdFZIZ0lkMDg4a3d4clZTZzlCT3BDRVZIR1pxR2I5TWN5MXVHVXhUClFTVENCbmpoTWZlZ0p6cXVPYWVOY0ZPSE5tbmtWRWpLTythbTBPeEhNS1lyS3ZnQnVEbzdoVnFENlBFMUd6V3AKZHdwZUV4QXZDSVJxL2pWTkdRK3FtMkRWOVNJZ3U5bmF4MktmSUtFeU50dUFFS1VpekdqL0VmRFhDM1cxMExhegpKaGNYNGw1SUFZU1o3L3JWVmpGbExWSVl0WDU1T054L1Z3SURBUUFCCi0tLS0tRU5EIFJTQSBQVUJMSUMgS0VZLS0tLS0K";
-const appKey = "z4nXOeTeSnnpUpnmsV";
+  "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQkNnS0NBUUVBMjdoZDM0NjRYbyt3TkpmTTNCWjE5MXlQK2NLaTd3ck9CbXdjTWJPZUdsNlJOMUVtTGhyMgplOFdvOGpmMW9IVXc5RFV6L2I2ZHU3Q3ZXMXZNUDA1Q3dSS3lNd2U3Q1BYRGQ2U01mSkwxRFZyUkw5Ylh0cEYzCjJkQVA5UENrakFJcFMvRE5jVkhLRXk1QW8yMnFFenpTKzlUT0JVY2srREdZcmo4KzI5U3h2aEZDRE5ZbEE2d1EKbEkyRWc5TWNBV2xDU3p1S1JWa2ZWUWdYVlU3SmE5OXp1Um1oWWtYZjFxQzBLcVAwQkpDakdDNEV6ZHorMmwyaAo2T3RxVHVVLzRkemlYYnRMUS8vU0JqNEgxdi9PZ3dUZjJkSVBjUnRHOXlWVTB2ZlQzVzdUTkdlMjU3em5ESDBYCkd6Wm4zdWJxTXJuL084b2ltMHRrS3ZHZXZ1V2ZraWNwVVFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==";
+export const appKey = "GGtrKRWRknFdIID0rW";
 export type LicenseVerifyReq = {
   subjectId: string;
   license: string;
@@ -18,11 +18,15 @@ type License = {
   duration: number;
   version: number;
   secret: string;
+  level: number;
   signature: string;
 };
 
 class LicenseHolder {
   isPlus = false;
+  expireTime = 0;
+  level = 1;
+  message?: string = undefined;
 }
 const holder = new LicenseHolder();
 holder.isPlus = false;
@@ -35,9 +39,20 @@ class LicenseVerifier {
     return await this.verify(req);
   }
 
-  setPlus(value: boolean) {
-    holder.isPlus = value;
-    return value;
+  setPlus(value: boolean, info: any = {}) {
+    if (value && !info) {
+      holder.isPlus = true;
+      holder.expireTime = info.expireTime;
+      holder.level = info.level;
+    } else {
+      holder.isPlus = false;
+      holder.expireTime = 0;
+      holder.level = 1;
+      holder.message = info.message;
+    }
+    return {
+      ...holder,
+    };
   }
   async verify(req: LicenseVerifyReq) {
     this.licenseReq = req;
@@ -54,7 +69,7 @@ class LicenseVerifier {
     const json: License = JSON.parse(licenseJson);
     if (json.expireTime < Date.now()) {
       logger.warn("授权已过期");
-      return this.setPlus(false);
+      return this.setPlus(false, { message: "授权已过期" });
     }
     const content = `${appKey},${this.licenseReq.subjectId},${json.code},${json.secret},${json.activeTime},${json.duration},${json.expireTime},${json.version}`;
     const publicKey = Buffer.from(SecreteKey, "base64").toString();
@@ -62,9 +77,12 @@ class LicenseVerifier {
     this.checked = true;
     if (!res) {
       logger.warn("授权校验失败");
-      return this.setPlus(false);
+      return this.setPlus(false, { message: "授权校验失败" });
     }
-    return this.setPlus(true);
+    return this.setPlus(true, {
+      expireTime: json.expireTime,
+      level: json.level || 1,
+    });
   }
 
   verifySignature(content: string, signature: any, publicKey: string) {
@@ -78,6 +96,14 @@ const verifier = new LicenseVerifier();
 
 export function isPlus() {
   return holder.isPlus;
+}
+
+export function getPlusInfo() {
+  return {
+    isPlus: holder.isPlus,
+    level: holder.level,
+    expireTime: holder.expireTime,
+  };
 }
 
 export async function verify(req: LicenseVerifyReq) {

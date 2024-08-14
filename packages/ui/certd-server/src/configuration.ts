@@ -8,7 +8,6 @@ import * as staticFile from '@midwayjs/static-file';
 import * as cron from './modules/plugin/cron/index.js';
 import * as flyway from '@certd/midway-flyway-js';
 import cors from '@koa/cors';
-import { ReportMiddleware } from './middleware/report.js';
 import { GlobalExceptionMiddleware } from './middleware/global-exception.js';
 import { PreviewMiddleware } from './middleware/preview.js';
 import { AuthorityMiddleware } from './middleware/authority.js';
@@ -60,7 +59,6 @@ export class MainConfiguration {
     //this.app.use(bodyParser());
     //请求日志打印
     this.app.useMiddleware([
-      ReportMiddleware,
       //统一异常处理
       GlobalExceptionMiddleware,
       //预览模式限制修改id<1000的数据

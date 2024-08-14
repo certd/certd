@@ -146,7 +146,6 @@ export default {
         // position: absolute;
         width: 100%;
         bottom: 0;
-        padding: 0 16px;
         margin: 48px 0 24px;
         text-align: center;
 
