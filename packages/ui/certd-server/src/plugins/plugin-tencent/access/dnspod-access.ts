@@ -22,9 +22,9 @@ export class DnspodAccess {
   endpoint = '';
 
   @AccessInput({
-    title: '账户id',
+    title: 'ID',
     component: {
-      placeholder: 'dnspod接口账户id',
+      placeholder: 'dnspod token 的 id',
     },
     rules: [{ required: true, message: '该项必填' }],
   })
