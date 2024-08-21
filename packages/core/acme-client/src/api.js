@@ -3,6 +3,7 @@
  */
 
 const util = require('./util');
+const { log } = require('./logger');
 
 /**
  * AcmeApi
@@ -104,6 +105,16 @@ class AcmeApi {
         /* Set account URL */
         if (resp.headers.location) {
             this.accountUrl = resp.headers.location;
+            const mapping = this.http.urlMapping;
+            if (mapping.mappings) {
+                // eslint-disable-next-line guard-for-in,no-restricted-syntax
+                for (const key in mapping.mappings) {
+                    const url = mapping.mappings[key];
+                    if (this.accountUrl.indexOf(url) > -1) {
+                        this.accountUrl = this.accountUrl.replace(url, key);
+                    }
+                }
+            }
         }
 
         return resp;

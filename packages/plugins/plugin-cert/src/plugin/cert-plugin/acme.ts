@@ -43,7 +43,11 @@ export class AcmeService {
   }
 
   async getAccountConfig(email: string): Promise<any> {
-    return (await this.userContext.getObj(this.buildAccountKey(email))) || {};
+    const conf = (await this.userContext.getObj(this.buildAccountKey(email))) || {};
+    if (conf.accountUrl?.indexOf("letsencrypt.proxy.handsfree.work")) {
+      conf.accountUrl = conf.accountUrl.replace("letsencrypt.proxy.handsfree.work", "acme-v02.api.letsencrypt.org");
+    }
+    return conf;
   }
 
   buildAccountKey(email: string) {
