@@ -1,9 +1,10 @@
 import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
 import { SysSettingsService } from '../service/sys-settings-service.js';
 import { BaseController } from '../../../basic/base-controller.js';
-import { appKey, utils, verify } from '@certd/pipeline';
+import { appKey, verify } from '@certd/pipeline';
 import { SysInstallInfo, SysLicenseInfo } from '../service/models.js';
 import { logger } from '../../../utils/logger.js';
+import { request } from '../../../utils/http.js';
 
 /**
  */
@@ -22,8 +23,9 @@ export class SysPlusController extends BaseController {
       code,
       subjectId: installInfo.siteId,
     };
-    const res: any = await utils.http({
-      url: 'https://api.ai.handsfree.work/activation/active',
+
+    const res: any = await request({
+      url: 'http://localhost:11007/activation/active',
       method: 'post',
       data: formData,
     });

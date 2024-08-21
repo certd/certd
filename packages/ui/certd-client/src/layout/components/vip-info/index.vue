@@ -4,8 +4,10 @@
     <fs-icon icon="mingcute:vip-1-line"></fs-icon>
     <div class="text">
       <span v-if="userStore.plusInfo?.isPlus">
-        <span>专业版</span>
-        <span>{{ expireTime }}</span>
+        <a-tooltip>
+          <template #title> 到期时间：{{ expireTime }} </template>
+          <span>专业版</span>
+        </a-tooltip>
       </span>
       <span v-else @click="openUpgrade"> 当前免费版 </span>
     </div>
@@ -55,8 +57,9 @@ function openUpgrade() {
         <div class="mt-10 mb-10">
           <a-input v-model:value={formState.code} placeholder={placeholder} />
           <div class="mt-10">
+            没有激活码？
             <a href="https://afdian.com/a/greper" target="_blank">
-              爱发电赞助获取激活码
+              爱发电赞助获取
             </a>
           </div>
         </div>
