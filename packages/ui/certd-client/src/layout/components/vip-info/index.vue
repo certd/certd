@@ -1,12 +1,12 @@
 <template>
-  <div class="layout-vip" :class="{ 'layout-plus': userStore.plusInfo?.isPlus }">
+  <div class="layout-vip" :class="{ isPlus: userStore.plusInfo?.isPlus }">
     <contextHolder />
     <fs-icon icon="mingcute:vip-1-line"></fs-icon>
     <div class="text">
       <span v-if="userStore.plusInfo?.isPlus">
         <a-tooltip>
           <template #title> 到期时间：{{ expireTime }} </template>
-          <span>专业版</span>
+          <span @click="openUpgrade">专业版</span>
         </a-tooltip>
       </span>
       <span v-else @click="openUpgrade"> 当前免费版 </span>
@@ -48,19 +48,35 @@ const [modal, contextHolder] = Modal.useModal();
 function openUpgrade() {
   const placeholder = "请输入激活码";
   modal.confirm({
-    title: "升级专业版",
+    title: "升级/续期专业版",
     async onOk() {
-      await doActive();
+      return await doActive();
     },
+    okText: "激活",
+    width: 500,
     content: () => {
       return (
         <div class="mt-10 mb-10">
-          <a-input v-model:value={formState.code} placeholder={placeholder} />
-          <div class="mt-10">
-            没有激活码？
-            <a href="https://afdian.com/a/greper" target="_blank">
-              爱发电赞助获取
-            </a>
+          <div>
+            <h3 class="block-header">专业版特权</h3>
+            <ul>
+              <li>证书流水线数量无限制</li>
+              <li>可加VIP群，需求优先实现</li>
+              <li>更多特权敬请期待</li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="block-header">立刻激活/续期</h3>
+            <div class="mt-10">
+              <a-input v-model:value={formState.code} placeholder={placeholder} />
+            </div>
+
+            <div class="mt-10">
+              没有激活码？
+              <a href="https://afdian.com/a/greper" target="_blank">
+                爱发电赞助“VIP会员”后获取
+              </a>
+            </div>
           </div>
         </div>
       );
