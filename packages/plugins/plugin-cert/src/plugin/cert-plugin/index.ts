@@ -1,5 +1,5 @@
 import { Decorator, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
-import type { CertInfo, SSLProvider } from "./acme.js";
+import type { CertInfo, PrivateKeyType, SSLProvider } from "./acme.js";
 import { AcmeService } from "./acme.js";
 import _ from "lodash-es";
 import { DnsProviderContext, DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider/index.js";
@@ -41,6 +41,21 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     required: true,
   })
   sslProvider!: SSLProvider;
+
+  @TaskInput({
+    title: "证书私钥类型",
+    value: "rsa",
+    component: {
+      name: "a-select",
+      vModel: "value",
+      options: [
+        { value: "rsa", label: "RSA" },
+        { value: "ec", label: "EC" },
+      ],
+    },
+    required: true,
+  })
+  privateKeyType!: PrivateKeyType;
 
   @TaskInput({
     title: "EAB授权",
@@ -116,6 +131,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       eab,
       skipLocalVerify: this.skipLocalVerify,
       useMappingProxy: this.useProxy,
+      privateKeyType: this.privateKeyType,
     });
   }
 
@@ -156,6 +172,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         dnsProvider,
         csrInfo,
         isTest: false,
+        privateKeyType: this.privateKeyType,
       });
 
       const certInfo = this.formatCerts(cert);

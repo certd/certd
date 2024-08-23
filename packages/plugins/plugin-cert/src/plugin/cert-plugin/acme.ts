@@ -14,6 +14,7 @@ export type CertInfo = {
   csr: string;
 };
 export type SSLProvider = "letsencrypt" | "google" | "zerossl";
+export type PrivateKeyType = "rsa" | "ec";
 type AcmeServiceOptions = {
   userContext: IContext;
   logger: Logger;
@@ -21,6 +22,7 @@ type AcmeServiceOptions = {
   eab?: ClientExternalAccountBindingOptions;
   skipLocalVerify?: boolean;
   useMappingProxy?: boolean;
+  privateKeyType?: PrivateKeyType;
 };
 
 export class AcmeService {
@@ -208,18 +210,33 @@ export class AcmeService {
     }
   }
 
-  async order(options: { email: string; domains: string | string[]; dnsProvider: any; csrInfo: any; isTest?: boolean }) {
+  async order(options: {
+    email: string;
+    domains: string | string[];
+    dnsProvider: any;
+    csrInfo: any;
+    isTest?: boolean;
+    privateKeyType?: string;
+  }): Promise<CertInfo> {
     const { email, isTest, domains, csrInfo, dnsProvider } = options;
     const client: acme.Client = await this.getAcmeClient(email, isTest);
 
     /* Create CSR */
     const { commonName, altNames } = this.buildCommonNameByDomains(domains);
-
-    const [key, csr] = await acme.forge.createCsr({
-      commonName,
-      ...csrInfo,
-      altNames,
-    });
+    let privateKey = null;
+    if (options.privateKeyType == "ec") {
+      privateKey = await acme.crypto.createPrivateEcdsaKey();
+    } else {
+      privateKey = await acme.crypto.createPrivateRsaKey();
+    }
+    const [key, csr] = await acme.forge.createCsr(
+      {
+        commonName,
+        ...csrInfo,
+        altNames,
+      },
+      privateKey
+    );
     if (dnsProvider == null) {
       throw new Error("dnsProvider 不能为空");
     }
