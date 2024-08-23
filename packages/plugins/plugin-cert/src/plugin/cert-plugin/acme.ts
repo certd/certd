@@ -13,7 +13,7 @@ export type CertInfo = {
   key: string;
   csr: string;
 };
-export type SSLProvider = "letsencrypt" | "buypass" | "zerossl";
+export type SSLProvider = "letsencrypt" | "google" | "zerossl";
 type AcmeServiceOptions = {
   userContext: IContext;
   logger: Logger;
@@ -42,10 +42,18 @@ export class AcmeService {
     });
   }
 
-  async getAccountConfig(email: string): Promise<any> {
+  async getAccountConfig(email: string, urlMapping: UrlMapping): Promise<any> {
     const conf = (await this.userContext.getObj(this.buildAccountKey(email))) || {};
-    if (conf.accountUrl?.indexOf("letsencrypt.proxy.handsfree.work")) {
-      conf.accountUrl = conf.accountUrl.replace("letsencrypt.proxy.handsfree.work", "acme-v02.api.letsencrypt.org");
+    if (urlMapping && urlMapping.mappings) {
+      for (const key in urlMapping.mappings) {
+        if (Object.prototype.hasOwnProperty.call(urlMapping.mappings, key)) {
+          const element = urlMapping.mappings[key];
+          if (conf.accountUrl?.indexOf(element) > -1) {
+            //如果用了代理url，要替换回去
+            conf.accountUrl = conf.accountUrl.replace(element, key);
+          }
+        }
+      }
     }
     return conf;
   }
@@ -59,7 +67,14 @@ export class AcmeService {
   }
 
   async getAcmeClient(email: string, isTest = false): Promise<acme.Client> {
-    const conf = await this.getAccountConfig(email);
+    const urlMapping: UrlMapping = {
+      enabled: false,
+      mappings: {
+        "acme-v02.api.letsencrypt.org": "letsencrypt.proxy.handsfree.work",
+        "dv.acme-v02.api.pki.goog": "google.proxy.handsfree.work",
+      },
+    };
+    const conf = await this.getAccountConfig(email, urlMapping);
     if (conf.key == null) {
       conf.key = await this.createNewKey();
       await this.saveAccountConfig(email, conf);
@@ -70,19 +85,15 @@ export class AcmeService {
     } else {
       directoryUrl = acme.directory[this.sslProvider].production;
     }
-    const urlMapping: UrlMapping = { enabled: false, mappings: {} };
     if (this.options.useMappingProxy) {
       urlMapping.enabled = true;
-      urlMapping.mappings = {
-        "acme-v02.api.letsencrypt.org": "letsencrypt.proxy.handsfree.work",
-      };
     }
     const client = new acme.Client({
       directoryUrl: directoryUrl,
       accountKey: conf.key,
       accountUrl: conf.accountUrl,
       externalAccountBinding: this.eab,
-      backoffAttempts: 30,
+      backoffAttempts: 15,
       backoffMin: 5000,
       backoffMax: 10000,
       urlMapping,

@@ -55,7 +55,7 @@
             <a-input v-model:value="testFormState.receiver" />
           </a-form-item>
           <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
-            <a-button type="primary" html-type="submit">测试</a-button>
+            <a-button type="primary" :loading="testFormState.loading" html-type="submit">测试</a-button>
           </a-form-item>
         </a-form>
       </div>

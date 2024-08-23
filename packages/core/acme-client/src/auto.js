@@ -137,7 +137,12 @@ module.exports = async (client, userOpts) => {
                 }
                 else {
                     log(`[auto] [${d}] Running challenge verification`);
-                    await client.verifyChallenge(authz, challenge);
+                    try {
+                        await client.verifyChallenge(authz, challenge);
+                    }
+                    catch (e) {
+                        log(`[auto] [${d}] challenge verification threw error: ${e.message}`);
+                    }
                 }
 
                 /* Complete challenge and wait for valid status */
@@ -170,11 +175,41 @@ module.exports = async (client, userOpts) => {
             throw e;
         }
     };
+    const domainSets = [];
 
-    const challengePromises = authorizations.map((authz) => async () => {
-        await challengeFunc(authz);
+    authorizations.forEach((authz) => {
+        const d = authz.identifier.value;
+        let setd = false;
+        // eslint-disable-next-line no-restricted-syntax
+        for (const group of domainSets) {
+            if (!group[d]) {
+                group[d] = authz;
+                setd = true;
+            }
+        }
+        if (!setd) {
+            const group = {};
+            group[d] = authz;
+            domainSets.push(group);
+        }
     });
 
+    const allChallengePromises = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const domainSet of domainSets) {
+        const challengePromises = [];
+        // eslint-disable-next-line guard-for-in,no-restricted-syntax
+        for (const domain in domainSet) {
+            const authz = domainSet[domain];
+            challengePromises.push(async () => {
+                log(`[auto] [${domain}] Starting challenge`);
+                await challengeFunc(authz);
+            });
+        }
+        allChallengePromises.push(challengePromises);
+    }
+
+    log(`[auto] challengeGroups:${allChallengePromises.length}`);
     function runAllPromise(tasks) {
         let promise = Promise.resolve();
         tasks.forEach((task) => {
@@ -195,9 +230,15 @@ module.exports = async (client, userOpts) => {
     }
 
     try {
-        log('开始challenge');
-        await runPromisePa(challengePromises);
-
+        log(`开始challenge，共${allChallengePromises.length}组`);
+        let i = 0;
+        // eslint-disable-next-line no-restricted-syntax
+        for (const challengePromises of allChallengePromises) {
+            i += 1;
+            log(`开始第${i}组`);
+            // eslint-disable-next-line no-await-in-loop
+            await runPromisePa(challengePromises);
+        }
         log('challenge结束');
 
         // log('[auto] Waiting for challenge valid status');

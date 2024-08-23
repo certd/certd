@@ -72,7 +72,7 @@ async function spawn(opts: SpawnOption): Promise<string> {
   let stderr = "";
   return safePromise((resolve, reject) => {
     const ls = childProcess.spawn(cmd, {
-      shell: process.platform == "win32",
+      shell: true,
       env: {
         ...process.env,
         ...opts.env,
