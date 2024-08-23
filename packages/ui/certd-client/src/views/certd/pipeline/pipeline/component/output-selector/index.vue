@@ -12,6 +12,9 @@ export default {
     modelValue: {
       type: String,
       default: undefined
+    },
+    from: {
+      type: String
     }
   },
   emits: ["update:modelValue"],
@@ -32,6 +35,9 @@ export default {
         currentStepIndex: currentStepIndex.value,
         currentTask: currentTask.value
       });
+      if (props.from) {
+        options.value = options.value.filter((item: any) => item.type === props.from);
+      }
       if (props.modelValue == null && options.value.length > 0) {
         ctx.emit("update:modelValue", options.value[0].value);
       }

@@ -4,9 +4,8 @@ import { TencentAccess } from '../../access/index.js';
 import { CertInfo } from '@certd/plugin-cert';
 
 @IsTaskPlugin({
-  name: 'DeployCertToTencentEO',
-  title: '部署到腾讯云EO',
-  desc: '腾讯云边缘安全加速平台 EO',
+  name: 'DeployCertToTencentCDN',
+  title: '部署到腾讯云CDN',
   group: pluginGroups.tencent.key,
   default: {
     strategy: {

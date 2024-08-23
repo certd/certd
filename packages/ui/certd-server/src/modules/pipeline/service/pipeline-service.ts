@@ -342,7 +342,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async cancel(historyId:number) {
+  async cancel(historyId: number) {
     const executor = runningTasks.get(historyId);
     if (executor) {
       await executor.cancel();
