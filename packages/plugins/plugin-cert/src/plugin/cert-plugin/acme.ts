@@ -23,6 +23,7 @@ type AcmeServiceOptions = {
   skipLocalVerify?: boolean;
   useMappingProxy?: boolean;
   privateKeyType?: PrivateKeyType;
+  signal?: AbortSignal;
 };
 
 export class AcmeService {
@@ -99,6 +100,7 @@ export class AcmeService {
       backoffMin: 5000,
       backoffMax: 10000,
       urlMapping,
+      signal: this.options.signal,
     });
 
     if (conf.accountUrl == null) {
@@ -253,6 +255,7 @@ export class AcmeService {
       challengeRemoveFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string, recordItem: any): Promise<any> => {
         return await this.challengeRemoveFn(authz, challenge, keyAuthorization, recordItem, dnsProvider);
       },
+      signal: this.options.signal,
     });
 
     const cert: CertInfo = {

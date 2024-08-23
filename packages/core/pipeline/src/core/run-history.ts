@@ -1,4 +1,4 @@
-import { Context, HistoryResult, Pipeline, ResultType, Runnable, RunnableMap, Stage, Step, Task } from "../dt/index.js";
+import { HistoryResult, Pipeline, ResultType, Runnable, RunnableMap, Stage, Step, Task } from "../dt/index.js";
 import _ from "lodash-es";
 import { buildLogger } from "../utils/util.log.js";
 import { Logger } from "log4js";
@@ -14,15 +14,12 @@ export type RunTrigger = {
 
 export function NewRunHistory(obj: any) {
   const history = new RunHistory(obj.id, obj.trigger, obj.pipeline);
-  history.context = obj.context;
   history.logs = obj.logs;
   history._loggers = obj.loggers;
   return history;
 }
 export class RunHistory {
   id!: string;
-  //运行时上下文变量
-  context: Context = {};
   pipeline!: Pipeline;
   logs: {
     [runnableId: string]: string[];

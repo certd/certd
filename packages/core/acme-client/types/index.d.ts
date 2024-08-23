@@ -45,6 +45,7 @@ export interface ClientOptions {
     backoffMin?: number;
     backoffMax?: number;
     urlMapping?: UrlMapping;
+    signal?: AbortSignal;
 }
 
 export interface ClientExternalAccountBindingOptions {
@@ -61,6 +62,7 @@ export interface ClientAutoOptions {
     skipChallengeVerification?: boolean;
     challengePriority?: string[];
     preferredChain?: string;
+    signal?: AbortSignal;
 }
 
 export class Client {

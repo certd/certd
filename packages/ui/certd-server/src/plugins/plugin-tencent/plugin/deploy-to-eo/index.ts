@@ -1,11 +1,11 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
-import tencentcloud from 'tencentcloud-sdk-nodejs';
+import tencentcloud from 'tencentcloud-sdk-nodejs-teo';
 import { TencentAccess } from '../../access/index.js';
-import { CertInfo } from '@certd/plugin-cert';
 
 @IsTaskPlugin({
-  name: 'DeployCertToTencentCDN',
-  title: '部署到腾讯云CDN',
+  name: 'DeployCertToTencentEO',
+  title: '部署到腾讯云EO',
+  desc: '腾讯云边缘安全加速平台EO，必须配置上传证书到腾讯云任务',
   group: pluginGroups.tencent.key,
   default: {
     strategy: {
@@ -13,17 +13,17 @@ import { CertInfo } from '@certd/plugin-cert';
     },
   },
 })
-export class DeployToCdnPlugin extends AbstractTaskPlugin {
+export class DeployToEOPlugin extends AbstractTaskPlugin {
   @TaskInput({
-    title: '域名证书',
-    helper: '请选择前置任务输出的域名证书',
+    title: '已上传证书ID',
+    helper: '请选择前置任务上传到腾讯云的证书',
     component: {
       name: 'pi-output-selector',
-      from: 'CertApply',
+      from: 'UploadCertToTencent',
     },
     required: true,
   })
-  cert!: CertInfo;
+  certId!: string;
 
   @TaskInput({
     title: 'Access提供者',
@@ -37,6 +37,12 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
   accessId!: string;
 
   @TaskInput({
+    title: '站点ID',
+    helper: '类似于zone-xxxx的字符串，在站点概览页面左上角，或者，站点列表页面站点名称下方',
+  })
+  zoneId!: string;
+
+  @TaskInput({
     title: '证书名称',
     helper: '证书上传后将以此参数作为名称前缀',
   })
@@ -44,9 +50,16 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: 'cdn加速域名',
+    component: {
+      name: 'a-select',
+      vModel: 'value',
+      mode: 'tags',
+      open: false,
+    },
+    helper: '支持多个域名',
     rules: [{ required: true, message: '该项必填' }],
   })
-  domainName!: string;
+  domainNames!: string[];
 
   // @TaskInput({
   //   title: "CDN接口",
@@ -69,7 +82,7 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
   }
 
   getClient(accessProvider: TencentAccess) {
-    const CdnClient = tencentcloud.cdn.v20180606.Client;
+    const TeoClient = tencentcloud.teo.v20220901.Client;
 
     const clientConfig = {
       credential: {
@@ -79,31 +92,31 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
       region: '',
       profile: {
         httpProfile: {
-          endpoint: 'cdn.tencentcloudapi.com',
+          endpoint: 'teo.tencentcloudapi.com',
         },
       },
     };
 
-    return new CdnClient(clientConfig);
+    return new TeoClient(clientConfig);
   }
 
   buildParams() {
     return {
-      Https: {
-        Switch: 'on',
-        CertInfo: {
-          Certificate: this.cert.crt,
-          PrivateKey: this.cert.key,
+      ZoneId: this.zoneId,
+      Hosts: this.domainNames,
+      Mode: 'sslcert',
+      ServerCertInfo: [
+        {
+          CertId: this.certId,
         },
-      },
-      Domain: this.domainName,
+      ],
     };
   }
 
   async doRequest(client: any, params: any) {
-    const ret = await client.UpdateDomainConfig(params);
+    const ret = await client.ModifyHostsCertificate(params);
     this.checkRet(ret);
-    this.logger.info('设置腾讯云CDN证书成功:', ret.RequestId);
+    this.logger.info('设置腾讯云EO证书成功:', ret.RequestId);
     return ret.RequestId;
   }
 

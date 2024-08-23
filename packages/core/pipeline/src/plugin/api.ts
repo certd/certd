@@ -64,6 +64,7 @@ export type TaskInstanceContext = {
   http: AxiosInstance;
   fileStore: FileStore;
   lastStatus?: Runnable;
+  signal: AbortSignal;
 };
 
 export abstract class AbstractTaskPlugin implements ITaskPlugin {

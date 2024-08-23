@@ -490,6 +490,9 @@ class AcmeClient {
         const keyAuthorization = await this.getChallengeKeyAuthorization(challenge);
 
         const verifyFn = async () => {
+            if (this.opts.signal && this.opts.signal.aborted) {
+                throw new Error('用户取消');
+            }
             await verify[challenge.type](authz, challenge, keyAuthorization);
         };
 
@@ -513,6 +516,9 @@ class AcmeClient {
      */
 
     async completeChallenge(challenge) {
+        if (this.opts.signal && this.opts.signal.aborted) {
+            throw new Error('用户取消');
+        }
         const resp = await this.api.completeChallenge(challenge.url, {});
         return resp.data;
     }
@@ -550,6 +556,10 @@ class AcmeClient {
         }
 
         const verifyFn = async (abort) => {
+            if (this.opts.signal && this.opts.signal.aborted) {
+                throw new Error('用户取消');
+            }
+
             const resp = await this.api.apiRequest(item.url, null, [200]);
 
             /* Verify status */

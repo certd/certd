@@ -144,7 +144,6 @@ module.exports = async (client, userOpts) => {
                         log(`[auto] [${d}] challenge verification threw error: ${e.message}`);
                     }
                 }
-
                 /* Complete challenge and wait for valid status */
                 log(`[auto] [${d}] Completing challenge with ACME provider and waiting for valid status`);
                 await client.completeChallenge(challenge);
@@ -236,6 +235,9 @@ module.exports = async (client, userOpts) => {
         for (const challengePromises of allChallengePromises) {
             i += 1;
             log(`开始第${i}组`);
+            if (opts.signal && opts.signal.aborted) {
+                throw new Error('用户取消');
+            }
             // eslint-disable-next-line no-await-in-loop
             await runPromisePa(challengePromises);
         }
