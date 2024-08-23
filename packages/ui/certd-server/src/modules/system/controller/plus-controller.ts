@@ -4,7 +4,7 @@ import { BaseController } from '../../../basic/base-controller.js';
 import { appKey, verify } from '@certd/pipeline';
 import { SysInstallInfo, SysLicenseInfo } from '../service/models.js';
 import { logger } from '../../../utils/logger.js';
-import { request } from '../../../utils/http.js';
+import { PlusService } from '../../basic/service/plus-service.js';
 
 /**
  */
@@ -13,6 +13,9 @@ import { request } from '../../../utils/http.js';
 export class SysPlusController extends BaseController {
   @Inject()
   sysSettingsService: SysSettingsService;
+
+  @Inject()
+  plusService: PlusService;
 
   @Post('/active', { summary: 'sys:settings:edit' })
   async active(@Body(ALL) body) {
@@ -24,11 +27,7 @@ export class SysPlusController extends BaseController {
       subjectId: installInfo.siteId,
     };
 
-    const res: any = await request({
-      url: 'http://localhost:11007/activation/active',
-      method: 'post',
-      data: formData,
-    });
+    const res: any = await this.plusService.active(formData);
 
     if (res.code > 0) {
       logger.error('激活失败', res.message);

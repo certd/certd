@@ -1,4 +1,4 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
+import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { SysSettingsService } from '../../system/service/sys-settings-service.js';
 import { SysInstallInfo } from '../../system/service/models.js';
 import { appKey, getPlusInfo } from '@certd/pipeline';
@@ -11,8 +11,16 @@ import { logger } from '../../../utils/logger.js';
 export class PlusService {
   @Inject()
   sysSettingsService: SysSettingsService;
+  @Config('plus.server.baseUrl')
+  plusServerBaseUrl;
 
-  async request(url: string, data: any) {
+  async requestWithoutSign(config: any) {
+    config.baseURL = this.plusServerBaseUrl;
+    return await request(config);
+  }
+
+  async request(config: any) {
+    const { url, data } = config;
     const timestamps = Date.now();
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     const sign = await this.sign(data, timestamps);
@@ -29,10 +37,9 @@ export class PlusService {
       'Content-Type': 'application/json',
       'X-Plus-Subject': requestHeaderStr,
     };
-    const baseUrl = 'http://127.0.0.1:11007';
     return await request({
       url: url,
-      baseURL: baseUrl,
+      baseURL: this.plusServerBaseUrl,
       method: 'POST',
       data: data,
       headers: headers,
@@ -50,5 +57,13 @@ export class PlusService {
     const sign = crypto.createHash('sha256').update(content).digest('base64');
     logger.info('content:', content, 'sign:', sign);
     return sign;
+  }
+
+  async active(formData: { code: any; appKey: string; subjectId: string }) {
+    return await this.requestWithoutSign({
+      url: '/activation/active',
+      method: 'post',
+      data: formData,
+    });
   }
 }

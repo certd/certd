@@ -42,10 +42,13 @@ export class EmailService implements IEmailService {
      *   receivers: string[];
      */
 
-    await this.plusService.request('/activation/emailSend', {
-      subject: email.subject,
-      text: email.content,
-      to: email.receivers,
+    await this.plusService.request({
+      url: '/activation/emailSend',
+      data: {
+        subject: email.subject,
+        text: email.content,
+        to: email.receivers,
+      },
     });
   }
 

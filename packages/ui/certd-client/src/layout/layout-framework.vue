@@ -18,7 +18,7 @@
             <MenuFoldOutlined v-else />
           </div>
           <fs-menu class="header-menu" mode="horizontal" :expand-selected="false" :selectable="false" :menus="frameworkMenus" />
-          <vip-info class="flex-center header-btn"></vip-info>
+          <vip-button class="flex-center header-btn"></vip-button>
         </div>
         <div class="header-right header-buttons">
           <!--          <button-->
@@ -83,11 +83,11 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons-vue";
 import FsThemeSet from "/@/layout/components/theme/index.vue";
 import { env } from "../utils/util.env";
 import FsThemeModeSet from "./components/theme/mode-set.vue";
-import VipInfo from "./components/vip-info/index.vue";
+import VipButton from "/@/components/vip-button/index.vue";
 export default {
   name: "LayoutFramework",
   // eslint-disable-next-line vue/no-unused-components
-  components: { FsThemeSet, MenuFoldOutlined, MenuUnfoldOutlined, FsMenu, FsLocale, FsSourceLink, FsUserInfo, FsTabs, FsThemeModeSet, VipInfo },
+  components: { FsThemeSet, MenuFoldOutlined, MenuUnfoldOutlined, FsMenu, FsLocale, FsSourceLink, FsUserInfo, FsTabs, FsThemeModeSet, VipButton },
   setup() {
     const resourceStore = useResourceStore();
     const frameworkMenus = computed(() => {

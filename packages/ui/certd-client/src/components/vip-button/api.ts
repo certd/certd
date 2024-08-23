@@ -1,4 +1,4 @@
-import { request } from "/@/api/service";
+import { request } from "/src/api/service";
 
 export async function doActive(form: any) {
   return await request({

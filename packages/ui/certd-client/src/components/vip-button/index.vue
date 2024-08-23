@@ -15,7 +15,7 @@
 </template>
 <script lang="tsx" setup>
 import { ref, reactive } from "vue";
-import { useUserStore } from "/@/store/modules/user";
+import { useUserStore } from "/src/store/modules/user";
 import dayjs from "dayjs";
 import { message, Modal } from "ant-design-vue";
 import * as api from "./api";
