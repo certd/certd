@@ -28,6 +28,7 @@ class LicenseHolder {
   expireTime = 0;
   level = 1;
   message?: string = undefined;
+  secret?: string = undefined;
 }
 const holder = new LicenseHolder();
 holder.isPlus = false;
@@ -44,12 +45,14 @@ class LicenseVerifier {
     if (value && info) {
       holder.isPlus = true;
       holder.expireTime = info.expireTime;
+      holder.secret = info.secret;
       holder.level = info.level;
     } else {
       holder.isPlus = false;
       holder.expireTime = 0;
       holder.level = 1;
       holder.message = info.message;
+      holder.secret = undefined;
     }
     return {
       ...holder,
@@ -87,6 +90,7 @@ class LicenseVerifier {
     return this.setPlus(true, {
       expireTime: json.expireTime,
       level: json.level || 1,
+      secret: json.secret,
     });
   }
 
@@ -108,6 +112,7 @@ export function getPlusInfo() {
     isPlus: holder.isPlus,
     level: holder.level,
     expireTime: holder.expireTime,
+    secret: holder.secret,
   };
 }
 

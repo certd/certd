@@ -53,7 +53,23 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       logger.error(`请求出错：url:${error?.response?.config.url},method:${error?.response?.config?.method},status:${error?.response?.status}`);
       logger.info("返回数据:", JSON.stringify(error?.response?.data));
       delete error.config;
-      return Promise.reject(error.response || error);
+      const data = error?.response?.data;
+      if (!data) {
+        error.message = data.message || data.msg || data.error || data;
+      }
+      if (error?.response) {
+        return Promise.reject({
+          status: error?.response?.status,
+          statusText: error?.response?.statusText,
+          request: {
+            url: error?.response?.config?.url,
+            method: error?.response?.config?.method,
+            data: error?.response?.data,
+          },
+          data: error?.response?.data,
+        });
+      }
+      return Promise.reject(error);
     }
   );
   return service;

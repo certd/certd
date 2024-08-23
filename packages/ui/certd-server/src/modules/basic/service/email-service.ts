@@ -1,10 +1,11 @@
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import type { EmailSend } from '@certd/pipeline';
-import { IEmailService } from '@certd/pipeline';
+import { IEmailService, isPlus } from '@certd/pipeline';
 import nodemailer from 'nodemailer';
 import type SMTPConnection from 'nodemailer/lib/smtp-connection';
 import { logger } from '../../../utils/logger.js';
 import { UserSettingsService } from '../../mine/service/user-settings-service.js';
+import { PlusService } from './plus-service.js';
 
 export type EmailConfig = {
   host: string;
@@ -19,26 +20,57 @@ export type EmailConfig = {
     rejectUnauthorized: boolean;
   };
   sender: string;
+  usePlus?: boolean;
 } & SMTPConnection.Options;
 @Provide()
 @Scope(ScopeEnum.Singleton)
 export class EmailService implements IEmailService {
   @Inject()
   settingsService: UserSettingsService;
+  @Inject()
+  plusService: PlusService;
+
+  async sendByPlus(email: EmailSend) {
+    if (!isPlus()) {
+      throw new Error('plus not enabled');
+    }
+
+    /**
+     *  userId: number;
+     *   subject: string;
+     *   content: string;
+     *   receivers: string[];
+     */
+
+    await this.plusService.request('/activation/emailSend', {
+      subject: email.subject,
+      text: email.content,
+      to: email.receivers,
+    });
+  }
 
   /**
    */
   async send(email: EmailSend) {
     console.log('sendEmail', email);
 
-    const emailConfigEntity = await this.settingsService.getByKey(
-      'email',
-      email.userId
-    );
+    const emailConfigEntity = await this.settingsService.getByKey('email', email.userId);
     if (emailConfigEntity == null || !emailConfigEntity.setting) {
+      if (isPlus()) {
+        //自动使用plus发邮件
+        return await this.sendByPlus(email);
+      }
       throw new Error('email settings 未设置');
     }
     const emailConfig = JSON.parse(emailConfigEntity.setting) as EmailConfig;
+    if (emailConfig.usePlus && isPlus()) {
+      return await this.sendByPlus(email);
+    }
+    await this.sendByCustom(emailConfig, email);
+    logger.info('sendEmail complete: ', email);
+  }
+
+  private async sendByCustom(emailConfig: EmailConfig, email: EmailSend) {
     const transporter = nodemailer.createTransport(emailConfig);
     const mailOptions = {
       from: emailConfig.sender,
@@ -47,7 +79,6 @@ export class EmailService implements IEmailService {
       text: email.content,
     };
     await transporter.sendMail(mailOptions);
-    logger.info('sendEmail complete: ', email);
   }
 
   async test(userId: number, receiver: string) {

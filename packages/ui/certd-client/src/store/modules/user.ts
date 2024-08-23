@@ -47,6 +47,9 @@ export const useUserStore = defineStore({
     },
     isAdmin(): boolean {
       return this.getUserInfo?.id === 1;
+    },
+    isPlus(): boolean {
+      return this.plusInfo?.isPlus || false;
     }
   },
   actions: {
