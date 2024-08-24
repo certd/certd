@@ -30,6 +30,7 @@ export class Executor {
   contextFactory: ContextFactory;
   logger: Logger;
   pipelineContext!: IContext;
+  currentStatusMap!: RunnableCollection;
   lastStatusMap!: RunnableCollection;
   lastRuntime!: RunHistory;
   options: ExecutorOptions;
@@ -52,6 +53,7 @@ export class Executor {
     const lastRuntime = await this.pipelineContext.getObj(`lastRuntime`);
     this.lastRuntime = lastRuntime;
     this.lastStatusMap = new RunnableCollection(lastRuntime?.pipeline);
+    this.currentStatusMap = new RunnableCollection(this.pipeline);
   }
 
   async cancel() {
@@ -206,7 +208,7 @@ export class Executor {
 
   private async runStep(step: Step) {
     const currentLogger = this.runtime._loggers[step.id];
-
+    this.currentStatusMap.add(step);
     const lastStatus = this.lastStatusMap.get(step.id);
     //执行任务
     const plugin: RegistryItem<AbstractTaskPlugin> = pluginRegistry.get(step.type);
@@ -224,7 +226,7 @@ export class Executor {
           const arr = contextKey.split(".");
           const id = arr[1];
           const outputKey = arr[2];
-          step.input[key] = this.lastStatusMap.get(id)?.status?.output[outputKey];
+          step.input[key] = this.currentStatusMap.get(id)?.status?.output[outputKey] ?? this.lastStatusMap.get(id)?.status?.output[outputKey];
         }
       }
     });

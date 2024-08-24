@@ -165,4 +165,8 @@ export class RunnableCollection {
       item.status = undefined;
     });
   }
+
+  add(runnable: Runnable) {
+    this.collection[runnable.id] = runnable;
+  }
 }

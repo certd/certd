@@ -300,7 +300,8 @@ class AcmeClient {
         }
 
         /* Add URL to response */
-        resp.data.url = resp.headers.location;
+        resp.data.url = this.api.getLocationFromHeader(resp);
+
         return resp.data;
     }
 
