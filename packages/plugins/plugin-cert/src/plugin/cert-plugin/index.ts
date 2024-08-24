@@ -33,11 +33,11 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       vModel: "value",
       options: [
         { value: "letsencrypt", label: "Let's Encrypt" },
-        // { value: "letsencrypt-proxy", label: "Let's Encrypt代理，letsencrypt.org无法访问时使用" },
         { value: "google", label: "Google" },
         { value: "zerossl", label: "ZeroSSL" },
       ],
     },
+    helper: "如果letsencrypt.org或dv.acme-v02.api.pki.goog无法访问，请尝试开启代理选项\n如果使用ZeroSSL、google证书，需要提供EAB授权",
     required: true,
   })
   sslProvider!: SSLProvider;
@@ -64,7 +64,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       type: "eab",
     },
     maybeNeed: true,
-    helper: "如果使用ZeroSSL证书，需要提供EAB授权， 请前往 https://app.zerossl.com/developer 生成 'EAB Credentials for ACME Clients' ",
+    helper: "如果使用ZeroSSL或者google证书，需要提供EAB授权， 请前往 https://app.zerossl.com/developer 生成 'EAB Credentials for ACME Clients' ",
   })
   eabAccessId!: number;
 
@@ -102,7 +102,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "a-switch",
       vModel: "checked",
     },
-    helper: "如果acme-v02.api.letsencrypt.org被墙无法连接访问，请尝试开启此选项",
+    maybeNeed: true,
+    helper: "如果acme-v02.api.letsencrypt.org或goog被墙无法访问，请尝试开启此选项",
   })
   useProxy = false;
 
