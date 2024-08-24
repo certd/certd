@@ -107,7 +107,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
   async save(bean: PipelineEntity) {
     if (!isPlus()) {
       const count = await this.repository.count();
-      if (count >= 10) {
+      if (count >= freeCount) {
         throw new NeedVIPException('免费版最多只能创建10个pipeline');
       }
     }

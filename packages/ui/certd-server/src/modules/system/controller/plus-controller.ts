@@ -1,7 +1,7 @@
 import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
 import { SysSettingsService } from '../service/sys-settings-service.js';
 import { BaseController } from '../../../basic/base-controller.js';
-import { appKey, verify } from '@certd/pipeline';
+import { AppKey, verify } from '@certd/pipeline';
 import { SysInstallInfo, SysLicenseInfo } from '../service/models.js';
 import { logger } from '../../../utils/logger.js';
 import { PlusService } from '../../basic/service/plus-service.js';
@@ -22,7 +22,7 @@ export class SysPlusController extends BaseController {
     const { code } = body;
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     const formData = {
-      appKey: appKey,
+      appKey: AppKey,
       code,
       subjectId: installInfo.siteId,
     };

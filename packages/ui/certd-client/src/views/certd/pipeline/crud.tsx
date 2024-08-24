@@ -342,7 +342,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           title: "历史记录保持数",
           type: "number",
           form: {
-            value: 30,
+            value: 10,
             helper: "历史记录保持条数，多余的会被删除"
           },
           column: {

@@ -1,15 +1,20 @@
 <template>
-  <div class="layout-vip" :class="{ isPlus: userStore.plusInfo?.isPlus }">
+  <div class="layout-vip isPlus">
     <contextHolder />
     <fs-icon icon="mingcute:vip-1-line"></fs-icon>
     <div class="text">
-      <span v-if="userStore.plusInfo?.isPlus">
+      <template v-if="userStore.isPlus">
         <a-tooltip>
           <template #title> 到期时间：{{ expireTime }} </template>
           <span @click="openUpgrade">{{ texts.plus }}</span>
         </a-tooltip>
-      </span>
-      <span v-else @click="openUpgrade"> {{ texts.free }} </span>
+      </template>
+      <template v-else>
+        <a-tooltip>
+          <template #title> 升级专业版，享受更多VIP特权 </template>
+          <span @click="openUpgrade"> {{ texts.free }} {{ expiredDays }} </span>
+        </a-tooltip>
+      </template>
     </div>
   </div>
 </template>
@@ -19,9 +24,10 @@ import { useUserStore } from "/src/store/modules/user";
 import dayjs from "dayjs";
 import { message, Modal } from "ant-design-vue";
 import * as api from "./api";
+import { useSettingStore } from "/@/store/modules/settings";
 
 const props = defineProps<{
-  mode: "button" | "nav";
+  mode?: "button" | "nav";
 }>();
 type Texts = {
   plus: string;
@@ -30,22 +36,33 @@ type Texts = {
 const texts = computed<Texts>(() => {
   if (props.mode === "button") {
     return {
-      plus: "已开通",
-      free: "专业版功能"
+      plus: "专业版已开通",
+      free: "此为专业版功能"
     };
   } else {
     return {
       plus: "专业版",
-      free: "免费版，立即升级"
+      free: "免费版"
     };
   }
 });
 
 const userStore = useUserStore();
-const expireTime = ref("");
-if (userStore.plusInfo?.isPlus) {
-  expireTime.value = dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD");
-}
+const expireTime = computed(() => {
+  if (userStore.isPlus) {
+    return dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD");
+  }
+  return "";
+});
+
+const expiredDays = computed(() => {
+  if (userStore.plusInfo?.isPlus && !userStore.isPlus) {
+    //已过期多少天
+    const days = dayjs().diff(dayjs(userStore.plusInfo.expireTime), "day");
+    return `专业版已过期${days}天`;
+  }
+  return "";
+});
 
 const formState = reactive({
   code: ""
@@ -65,6 +82,9 @@ async function doActive() {
     });
   }
 }
+
+const settingStore = useSettingStore();
+const computedSiteId = computed(() => settingStore.installInfo?.siteId);
 const [modal, contextHolder] = Modal.useModal();
 function openUpgrade() {
   const placeholder = "请输入激活码";
@@ -89,7 +109,11 @@ function openUpgrade() {
           <div>
             <h3 class="block-header">立刻激活/续期</h3>
             <div class="mt-10">
-              <a-input v-model:value={formState.code} placeholder={placeholder} />
+              <div class="flex-o w-100">
+                <span>站点ID：</span>
+                <fs-copyable class="flex-1" v-model={computedSiteId.value}></fs-copyable>
+              </div>
+              <a-input class="mt-10" v-model:value={formState.code} placeholder={placeholder} />
             </div>
 
             <div class="mt-10">

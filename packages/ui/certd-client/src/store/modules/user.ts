@@ -20,7 +20,7 @@ interface UserState {
 }
 
 interface PlusInfo {
-  level: number;
+  vipType: string;
   expireTime: number;
   isPlus: boolean;
 }
@@ -49,7 +49,7 @@ export const useUserStore = defineStore({
       return this.getUserInfo?.id === 1;
     },
     isPlus(): boolean {
-      return this.plusInfo?.isPlus || false;
+      return this.plusInfo?.isPlus && this.plusInfo?.expireTime > new Date().getTime();
     }
   },
   actions: {

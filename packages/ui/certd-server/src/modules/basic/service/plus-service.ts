@@ -1,7 +1,7 @@
 import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { SysSettingsService } from '../../system/service/sys-settings-service.js';
 import { SysInstallInfo } from '../../system/service/models.js';
-import { appKey, getPlusInfo, isPlus } from '@certd/pipeline';
+import { AppKey, getPlusInfo, isPlus } from '@certd/pipeline';
 import * as crypto from 'crypto';
 import { request } from '../../../utils/http.js';
 import { logger } from '../../../utils/logger.js';
@@ -30,7 +30,7 @@ export class PlusService {
 
     const requestHeader = {
       subjectId: installInfo.siteId,
-      appKey: appKey,
+      appKey: AppKey,
       sign: sign,
       timestamps: timestamps,
     };

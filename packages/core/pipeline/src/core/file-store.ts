@@ -54,7 +54,10 @@ export class FileStore {
   deleteByParent(scope: string, parent: string) {
     const dir = path.join(this.rootDir, scope, parent);
     if (fs.existsSync(dir)) {
-      fs.unlinkSync(dir);
+      fs.rmSync(dir, {
+        recursive: true,
+        force: true,
+      });
     }
   }
 }
