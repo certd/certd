@@ -110,10 +110,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # Changelog
 
-## v5.4.0
+## v5.4.0 (2024-07-16)
 
 * `added` Directory URLs for [Google](https://cloud.google.com/certificate-manager/docs/overview) ACME provider
-* `fixed` Invalidate ACME directory cache after 24 hours
+* `fixed` Invalidate ACME provider directory cache after 24 hours
+* `fixed` Retry HTTP requests on server errors or when rate limited - [#89](https://github.com/publishlab/node-acme-client/issues/89)
 
 ## v5.3.1 (2024-05-22)
 
@@ -123,7 +124,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ## v5.3.0 (2024-02-05)
 
 * `added` Support and tests for satisfying `tls-alpn-01` challenges
-* `changed` Replace `jsrsasign` with `@peculiar/x509` for certificate and CSR generation and parsing
+* `changed` Replace `jsrsasign` with `@peculiar/x509` for certificate and CSR handling
 * `changed` Method `getChallengeKeyAuthorization()` now returns `$token.$thumbprint` when called with a `tls-alpn-01` challenge
     * Previously returned base64url encoded SHA256 digest of `$token.$thumbprint` erroneously
     * This change is not considered breaking since the previous behavior was incorrect

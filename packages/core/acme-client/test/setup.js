@@ -30,6 +30,13 @@ if (process.env.ACME_TLSALPN_PORT) {
 }
 
 /**
+ * Greatly reduce retry duration while testing
+ */
+
+axios.defaults.acmeSettings.retryMaxAttempts = 3;
+axios.defaults.acmeSettings.retryDefaultDelay = 1;
+
+/**
  * External account binding
  */
 

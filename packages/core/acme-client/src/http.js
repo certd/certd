@@ -93,9 +93,11 @@ class HttpClient {
      */
 
     async getDirectory() {
-        const age = (Math.floor(Date.now() / 1000) - this.directoryTimestamp);
+        const now = Math.floor(Date.now() / 1000);
+        const age = (now - this.directoryTimestamp);
 
         if (!this.directoryCache || (age > this.directoryMaxAge)) {
+            log(`Refreshing ACME directory, age: ${age}`);
             const resp = await this.request(this.directoryUrl, 'get');
 
             if (resp.status >= 400) {
@@ -107,6 +109,7 @@ class HttpClient {
             }
 
             this.directoryCache = resp.data;
+            this.directoryTimestamp = now;
         }
 
         return this.directoryCache;
@@ -131,7 +134,7 @@ class HttpClient {
      *
      * https://datatracker.ietf.org/doc/html/rfc8555#section-7.2
      *
-     * @returns {Promise<string>} nonce
+     * @returns {Promise<string>} Nonce
      */
 
     async getNonce() {
