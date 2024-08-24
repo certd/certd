@@ -6,19 +6,40 @@
       <span v-if="userStore.plusInfo?.isPlus">
         <a-tooltip>
           <template #title> 到期时间：{{ expireTime }} </template>
-          <span @click="openUpgrade">专业版</span>
+          <span @click="openUpgrade">{{ texts.plus }}</span>
         </a-tooltip>
       </span>
-      <span v-else @click="openUpgrade"> 当前免费版 </span>
+      <span v-else @click="openUpgrade"> {{ texts.free }} </span>
     </div>
   </div>
 </template>
 <script lang="tsx" setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, computed } from "vue";
 import { useUserStore } from "/src/store/modules/user";
 import dayjs from "dayjs";
 import { message, Modal } from "ant-design-vue";
 import * as api from "./api";
+
+const props = defineProps<{
+  mode: "button" | "nav";
+}>();
+type Texts = {
+  plus: string;
+  free: string;
+};
+const texts = computed<Texts>(() => {
+  if (props.mode === "button") {
+    return {
+      plus: "已开通",
+      free: "专业版功能"
+    };
+  } else {
+    return {
+      plus: "专业版",
+      free: "免费版，立即升级"
+    };
+  }
+});
 
 const userStore = useUserStore();
 const expireTime = ref("");
@@ -91,6 +112,7 @@ function openUpgrade() {
   align-items: center;
   justify-content: center;
   height: 100%;
+  cursor: pointer;
   &.isPlus {
     color: #c5913f;
   }

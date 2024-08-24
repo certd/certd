@@ -14,11 +14,11 @@
         @finish-failed="onFinishFailed"
       >
         <a-form-item label="使用邮件代理" name="usePlus">
-          <a-switch v-model:checked="formState.usePlus" :disabled="!userStore.isPlus" />
-          <div class="helper">专业版功能，免除繁琐的邮件配置，直接发邮件</div>
-          <div>
-            <vip-button></vip-button>
+          <div class="flex-o">
+            <a-switch v-model:checked="formState.usePlus" :disabled="!userStore.isPlus" />
+            <vip-button class="ml-5" mode="button"></vip-button>
           </div>
+          <div class="helper">专业版功能，免除繁琐的邮件配置，直接发邮件</div>
         </a-form-item>
         <template v-if="!formState.usePlus">
           <a-form-item label="SMTP域名" name="host" :rules="[{ required: true, message: '请输入smtp域名或ip' }]">

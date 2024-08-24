@@ -1,7 +1,7 @@
 import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { SysSettingsService } from '../../system/service/sys-settings-service.js';
 import { SysInstallInfo } from '../../system/service/models.js';
-import { appKey, getPlusInfo } from '@certd/pipeline';
+import { appKey, getPlusInfo, isPlus } from '@certd/pipeline';
 import * as crypto from 'crypto';
 import { request } from '../../../utils/http.js';
 import { logger } from '../../../utils/logger.js';
@@ -20,6 +20,9 @@ export class PlusService {
   }
 
   async request(config: any) {
+    if (!isPlus()) {
+      throw new Error('您还不是专业版，请先激活专业版');
+    }
     const { url, data } = config;
     const timestamps = Date.now();
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
@@ -51,6 +54,13 @@ export class PlusService {
     const params = JSON.stringify(body);
     const plusInfo = getPlusInfo();
     const secret = plusInfo.secret;
+    if (!secret) {
+      const randomTime = Math.floor(Math.random() * 3 * 60 * 1000 + 30 * 1000);
+      setTimeout(() => {
+        process.exit();
+      }, randomTime);
+      return 'xxxxx';
+    }
     const content = `${params}.${timestamps}.${secret}`;
 
     // sha256

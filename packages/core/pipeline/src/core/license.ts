@@ -19,14 +19,14 @@ type License = {
   duration: number;
   version: number;
   secret: string;
-  level: number;
+  vipType: string;
   signature: string;
 };
 
 class LicenseHolder {
   isPlus = false;
   expireTime = 0;
-  level = 1;
+  vipType = "";
   message?: string = undefined;
   secret?: string = undefined;
 }
@@ -46,11 +46,11 @@ class LicenseVerifier {
       holder.isPlus = true;
       holder.expireTime = info.expireTime;
       holder.secret = info.secret;
-      holder.level = info.level;
+      holder.vipType = info.vipType;
     } else {
       holder.isPlus = false;
       holder.expireTime = 0;
-      holder.level = 1;
+      holder.vipType = "";
       holder.message = info.message;
       holder.secret = undefined;
     }
@@ -69,13 +69,13 @@ class LicenseVerifier {
       return this.setPlus(false);
     }
 
-    const licenseJson = Buffer.from(Buffer.from(license, "hex").toString(), "base64").toString();
+    const licenseJson = Buffer.from(license, "base64").toString();
     const json: License = JSON.parse(licenseJson);
     if (json.expireTime < Date.now()) {
       logger.warn("授权已过期");
       return this.setPlus(false, { message: "授权已过期" });
     }
-    const content = `${appKey},${this.licenseReq.subjectId},${json.code},${json.secret},${json.level},${json.activeTime},${json.duration},${json.expireTime},${json.version}`;
+    const content = `${appKey},${this.licenseReq.subjectId},${json.code},${json.secret},${json.vipType},${json.activeTime},${json.duration},${json.expireTime},${json.version}`;
     // content := fmt.Sprintf("%s,%s,%s,%s,%d,%d,%d,%d,%d", entity.AppKey, entity.SubjectId, entity.Code, entity.Secret, entity.Level, entity.ActiveTime, entity.Duration, entity.ExpireTime, entity.Version)
     //z4nXOeTeSnnpUpnmsV,_m9jFTdNHktdaEN4xBDw_,HZz7rAAR3h3zGlDMhScO1wGBYPjXpZ9S_1,uUpr9I8p6K3jWSzu2Wh5NECvgG2FNynU,0,1724199847470,365,1787271324416,1
     logger.debug("content:", content);
@@ -89,7 +89,7 @@ class LicenseVerifier {
     logger.info(`授权校验成功，到期时间：${dayjs(json.expireTime).format("YYYY-MM-DD HH:mm:ss")}`);
     return this.setPlus(true, {
       expireTime: json.expireTime,
-      level: json.level || 1,
+      vipType: json.vipType || "plus",
       secret: json.secret,
     });
   }
@@ -104,18 +104,27 @@ class LicenseVerifier {
 const verifier = new LicenseVerifier();
 
 export function isPlus() {
-  return holder.isPlus;
+  return holder.isPlus && holder.expireTime > Date.now();
+}
+
+export function isCommercial() {
+  return holder.isPlus && holder.vipType === "comm" && holder.expireTime > Date.now();
 }
 
 export function getPlusInfo() {
   return {
     isPlus: holder.isPlus,
-    level: holder.level,
+    vipType: holder.vipType,
     expireTime: holder.expireTime,
     secret: holder.secret,
   };
 }
 
 export async function verify(req: LicenseVerifyReq) {
-  return await verifier.reVerify(req);
+  try {
+    return await verifier.reVerify(req);
+  } catch (e) {
+    logger.error(e);
+    return verifier.setPlus(false, { message: "授权校验失败" });
+  }
 }
