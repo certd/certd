@@ -142,6 +142,7 @@ http://your_server_ip:7001
 * [Cloudflare](./doc/cf/cf.md)
 * [腾讯云](./doc/tencent/tencent.md)
 * [windows主机](./doc/host/host.md)
+* [google证书](./doc/google/google.md)
 
 
 ## 八、问题处理

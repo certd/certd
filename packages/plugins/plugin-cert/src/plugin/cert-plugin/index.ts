@@ -64,7 +64,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       type: "eab",
     },
     maybeNeed: true,
-    helper: "如果使用ZeroSSL或者google证书，需要提供EAB授权， 请前往 https://app.zerossl.com/developer 生成 'EAB Credentials for ACME Clients' ",
+    helper:
+      "如果使用ZeroSSL或者google证书，需要提供EAB授权\nZeroSSL：请前往 https://app.zerossl.com/developer 生成 'EAB Credentials' \n Google：请前往https://github.com/certd/certd/blob/v2/doc/google/google.md",
   })
   eabAccessId!: number;
 
@@ -103,7 +104,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       vModel: "checked",
     },
     maybeNeed: true,
-    helper: "如果acme-v02.api.letsencrypt.org或goog被墙无法访问，请尝试开启此选项",
+    helper: "如果acme-v02.api.letsencrypt.org或dv.acme-v02.api.pki.goog被墙无法访问，请尝试开启此选项",
   })
   useProxy = false;
 
