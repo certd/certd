@@ -55,7 +55,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         { value: "rsa_4096", label: "RSA 4096" },
         { value: "ec_256", label: "EC 256" },
         { value: "ec_384", label: "EC 384" },
-        { value: "ec_521", label: "EC 521" },
+        // { value: "ec_521", label: "EC 521" },
       ],
     },
     required: true,
