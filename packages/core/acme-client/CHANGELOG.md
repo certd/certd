@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.24.0](https://github.com/publishlab/node-acme-client/compare/v1.23.1...v1.24.0) (2024-08-25)
+
+### Bug Fixes
+
+* 修复成功后跳过之后丢失腾讯云证书id的bug ([37eb762](https://github.com/publishlab/node-acme-client/commit/37eb762afe25c5896b75dee25f32809f8426e7b7))
+* 修复创建流水线后立即运行时报no id错误的bug ([17ead54](https://github.com/publishlab/node-acme-client/commit/17ead547aab25333603980304aa3aad3db1f73d5))
+* 修复使用代理的情况下申请证书失败的bug ([95122e2](https://github.com/publishlab/node-acme-client/commit/95122e28609333f4df55c266e5434897954c0fb3))
+
+### Features
+
+* 支持google证书申请（需要使用代理） ([a593056](https://github.com/publishlab/node-acme-client/commit/a593056e79e99dd6a74f75b5eab621af7248cfbe))
+
+### Performance Improvements
+
+* 优化证书申请成功率 ([968c469](https://github.com/publishlab/node-acme-client/commit/968c4690a07f69c08dcb3d3a494da4e319627345))
+
 ## [1.22.6](https://github.com/publishlab/node-acme-client/compare/v1.22.5...v1.22.6) (2024-08-03)
 
 **Note:** Version bump only for package @certd/acme-client
