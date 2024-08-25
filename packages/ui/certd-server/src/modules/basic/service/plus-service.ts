@@ -14,7 +14,7 @@ export class PlusService {
   @Config('plus.server.baseUrl')
   plusServerBaseUrl;
 
-  async requestWithoutSign(config: any) {
+  async requestWithoutSign(config: any): Promise<any> {
     config.baseURL = this.plusServerBaseUrl;
     return await request(config);
   }

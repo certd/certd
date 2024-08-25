@@ -1,6 +1,6 @@
 import { utils } from '@certd/pipeline';
 
-export async function request(config: any) {
+export async function request(config: any): Promise<any> {
   try {
     return await utils.http(config);
   } catch (e) {
