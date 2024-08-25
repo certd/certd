@@ -43,7 +43,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   sslProvider!: SSLProvider;
 
   @TaskInput({
-    title: "证书私钥类型",
+    title: "加密算法",
     value: "rsa_2048",
     component: {
       name: "a-select",
