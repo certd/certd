@@ -133,10 +133,10 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
     const cert: CertInfo = certReader.toCertInfo();
     this.cert = cert;
 
-    this._result.pipelineVars.certExpiresTime = dayjs(certReader.detail.validity.notAfter).valueOf();
+    this._result.pipelineVars.certExpiresTime = dayjs(certReader.detail.notAfter).valueOf();
 
     if (isNew) {
-      const applyTime = dayjs(certReader.detail.validity.notBefore).format("YYYYMMDD_HHmmss");
+      const applyTime = dayjs(certReader.detail.notBefore).format("YYYYMMDD_HHmmss");
       await this.zipCert(cert, applyTime);
     } else {
       this.extendsFiles();

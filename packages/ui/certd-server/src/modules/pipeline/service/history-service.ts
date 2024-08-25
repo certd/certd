@@ -63,7 +63,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
     return id;
   }
 
-  private async clear(pipelineId: number, keepCount = 10) {
+  private async clear(pipelineId: number, keepCount = 20) {
     const count = await this.repository.count({
       where: {
         pipelineId,

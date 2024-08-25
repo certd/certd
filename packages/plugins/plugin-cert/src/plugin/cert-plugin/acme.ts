@@ -14,7 +14,7 @@ export type CertInfo = {
   csr: string;
 };
 export type SSLProvider = "letsencrypt" | "google" | "zerossl";
-export type PrivateKeyType = "rsa" | "ec";
+export type PrivateKeyType = "rsa_1024" | "rsa_2048" | "rsa_3072" | "rsa_4096" | "ec_256" | "ec_384" | "ec_521";
 type AcmeServiceOptions = {
   userContext: IContext;
   logger: Logger;
@@ -226,12 +226,16 @@ export class AcmeService {
     /* Create CSR */
     const { commonName, altNames } = this.buildCommonNameByDomains(domains);
     let privateKey = null;
-    if (options.privateKeyType == "ec") {
-      privateKey = await acme.crypto.createPrivateEcdsaKey();
+    const privateKeyArr = options.privateKeyType.split("_");
+    const type = privateKeyArr[0];
+    const size = parseInt(privateKeyArr[1]);
+    if (type == "ec") {
+      const name: any = "P-" + size;
+      privateKey = await acme.crypto.createPrivateEcdsaKey(name);
     } else {
-      privateKey = await acme.crypto.createPrivateRsaKey();
+      privateKey = await acme.crypto.createPrivateRsaKey(size);
     }
-    const [key, csr] = await acme.forge.createCsr(
+    const [key, csr] = await acme.crypto.createCsr(
       {
         commonName,
         ...csrInfo,

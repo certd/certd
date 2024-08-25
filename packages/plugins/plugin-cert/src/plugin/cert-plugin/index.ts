@@ -44,13 +44,18 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
   @TaskInput({
     title: "证书私钥类型",
-    value: "rsa",
+    value: "rsa_2048",
     component: {
       name: "a-select",
       vModel: "value",
       options: [
-        { value: "rsa", label: "RSA" },
-        { value: "ec", label: "EC" },
+        { value: "rsa_1024", label: "RSA 1024" },
+        { value: "rsa_2048", label: "RSA 2048" },
+        { value: "rsa_3072", label: "RSA 3072" },
+        { value: "rsa_4096", label: "RSA 4096" },
+        { value: "ec_256", label: "EC 256" },
+        { value: "ec_384", label: "EC 384" },
+        { value: "ec_521", label: "EC 521" },
       ],
     },
     required: true,

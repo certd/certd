@@ -1,4 +1,5 @@
 export const Constants = {
+  dataDir: './data',
   role: {
     defaultUser: 3,
   },
