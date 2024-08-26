@@ -117,11 +117,16 @@ http://your_server_ip:7001
 ## 五、 升级
 如果使用固定版本号
 1. 修改`docker-compose.yaml`中的镜像版本号
-2. 运行 `docker compose up -d` 即可
+2. 运行`docker compose up -d` 即可
 
 如果使用`latest`版本
-1. 重新拉取镜像 `docker pull registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest` 
-2. 重新启动容器 `docker compose restart`
+```shell
+#重新拉取镜像
+docker pull registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
+# 重新启动容器
+docker compose down
+docker compose up -d
+```
 
 > 数据默认存在`/data/certd`目录下，不用担心数据丢失   
 
