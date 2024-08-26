@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import { SshClient } from '../../lib/ssh.js';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 import * as fs from 'fs';
@@ -86,13 +86,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   })
   hostKeyPath!: string;
 
-  accessService!: IAccessService;
-  logger!: ILogger;
-
-  async onInstance() {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
-  }
+  async onInstance() {}
 
   copyFile(srcFile: string, destFile: string) {
     const dir = destFile.substring(0, destFile.lastIndexOf('/'));

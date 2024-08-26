@@ -12,7 +12,7 @@ export class GlobalExceptionMiddleware implements IWebMiddleware {
       logger.info('请求开始:', url);
       try {
         await next();
-        logger.info('请求完成', url, Date.now() - startTime + 'ms');
+        logger.info('请求完成:', url, Date.now() - startTime + 'ms');
       } catch (err) {
         logger.error('请求异常:', url, Date.now() - startTime + 'ms', err);
         ctx.status = 200;

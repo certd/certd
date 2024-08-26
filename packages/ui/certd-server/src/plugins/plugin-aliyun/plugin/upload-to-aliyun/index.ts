@@ -1,8 +1,7 @@
-import { AbstractTaskPlugin, IAccessService, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import Core from '@alicloud/pop-core';
 import { AliyunAccess } from '../../access/index.js';
 import { appendTimeSuffix, checkRet, ZoneOptions } from '../../utils/index.js';
-import { Logger } from 'log4js';
 
 @IsTaskPlugin({
   name: 'uploadCertToAliyun',
@@ -26,8 +25,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
     title: '大区',
     value: 'cn-hangzhou',
     component: {
-      name: 'a-select',
-      mode: 'tags',
+      name: 'a-auto-complete',
       vModel: 'value',
       options: ZoneOptions,
     },
@@ -61,13 +59,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
   })
   aliyunCertId!: string;
 
-  accessService!: IAccessService;
-  logger!: Logger;
-
-  async onInstance() {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
-  }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     console.log('开始部署证书到阿里云cdn');

@@ -1,4 +1,5 @@
 export const Constants = {
+  dataDir: './data',
   role: {
     defaultUser: 3,
   },
@@ -30,6 +31,10 @@ export const Constants = {
     validation: {
       code: 10,
       message: '参数错误',
+    },
+    needvip: {
+      code: 88,
+      message: '需要VIP',
     },
     auth: {
       code: 401,

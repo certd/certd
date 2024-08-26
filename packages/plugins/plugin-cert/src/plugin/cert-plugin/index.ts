@@ -1,5 +1,5 @@
 import { Decorator, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
-import type { CertInfo, SSLProvider } from "./acme.js";
+import type { CertInfo, PrivateKeyType, SSLProvider } from "./acme.js";
 import { AcmeService } from "./acme.js";
 import _ from "lodash-es";
 import { DnsProviderContext, DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider/index.js";
@@ -33,14 +33,34 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       vModel: "value",
       options: [
         { value: "letsencrypt", label: "Let's Encrypt" },
-        // { value: "letsencrypt-proxy", label: "Let's Encrypt代理，letsencrypt.org无法访问时使用" },
-        // { value: "buypass", label: "Buypass" },
+        { value: "google", label: "Google" },
         { value: "zerossl", label: "ZeroSSL" },
+      ],
+    },
+    helper: "如果letsencrypt.org或dv.acme-v02.api.pki.goog无法访问，请尝试开启代理选项\n如果使用ZeroSSL、google证书，需要提供EAB授权",
+    required: true,
+  })
+  sslProvider!: SSLProvider;
+
+  @TaskInput({
+    title: "加密算法",
+    value: "rsa_2048",
+    component: {
+      name: "a-select",
+      vModel: "value",
+      options: [
+        { value: "rsa_1024", label: "RSA 1024" },
+        { value: "rsa_2048", label: "RSA 2048" },
+        { value: "rsa_3072", label: "RSA 3072" },
+        { value: "rsa_4096", label: "RSA 4096" },
+        { value: "ec_256", label: "EC 256" },
+        { value: "ec_384", label: "EC 384" },
+        // { value: "ec_521", label: "EC 521" },
       ],
     },
     required: true,
   })
-  sslProvider!: SSLProvider;
+  privateKeyType!: PrivateKeyType;
 
   @TaskInput({
     title: "EAB授权",
@@ -49,7 +69,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       type: "eab",
     },
     maybeNeed: true,
-    helper: "如果使用ZeroSSL证书，需要提供EAB授权， 请前往 https://app.zerossl.com/developer 生成 'EAB Credentials for ACME Clients' ",
+    helper:
+      "如果使用ZeroSSL或者google证书，需要提供EAB授权\nZeroSSL：请前往 https://app.zerossl.com/developer 生成 'EAB Credentials' \n Google：请前往https://github.com/certd/certd/blob/v2/doc/google/google.md",
   })
   eabAccessId!: number;
 
@@ -87,7 +108,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "a-switch",
       vModel: "checked",
     },
-    helper: "如果acme-v02.api.letsencrypt.org被墙无法连接访问，请尝试开启此选项",
+    maybeNeed: true,
+    helper: "如果acme-v02.api.letsencrypt.org或dv.acme-v02.api.pki.goog被墙无法访问，请尝试开启此选项",
   })
   useProxy = false;
 
@@ -116,6 +138,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       eab,
       skipLocalVerify: this.skipLocalVerify,
       useMappingProxy: this.useProxy,
+      privateKeyType: this.privateKeyType,
     });
   }
 
@@ -156,6 +179,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         dnsProvider,
         csrInfo,
         isTest: false,
+        privateKeyType: this.privateKeyType,
       });
 
       const certInfo = this.formatCerts(cert);

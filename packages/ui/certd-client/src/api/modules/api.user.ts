@@ -60,7 +60,14 @@ export async function mine(): Promise<UserInfoRes> {
     });
   }
   return await request({
-    url: "/sys/authority/user/mine",
+    url: "/mine/info",
+    method: "post"
+  });
+}
+
+export async function getPlusInfo() {
+  return await request({
+    url: "/mine/plusInfo",
     method: "post"
   });
 }

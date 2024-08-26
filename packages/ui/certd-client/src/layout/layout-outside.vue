@@ -1,7 +1,6 @@
 <template>
   <div id="userLayout" :class="['user-layout-wrapper']">
     <div class="login-container flex-center">
-      <div class="user-layout-lang"></div>
       <div class="user-layout-content">
         <div class="top flex flex-col items-center justify-center">
           <div class="header flex flex-row items-center">
@@ -146,7 +145,6 @@ export default {
         // position: absolute;
         width: 100%;
         bottom: 0;
-        padding: 0 16px;
         margin: 48px 0 24px;
         text-align: center;
 

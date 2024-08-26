@@ -1,21 +1,28 @@
 import { defineStore } from "pinia";
-import { store } from "../index";
 import router from "../../router";
 // @ts-ignore
 import { LocalStorage } from "/src/utils/util.storage";
 // @ts-ignore
 import * as UserApi from "/src/api/modules/api.user";
+import { RegisterReq } from "/src/api/modules/api.user";
 // @ts-ignore
 import { LoginReq, UserInfoRes } from "/@/api/modules/api.user";
 import { Modal, notification } from "ant-design-vue";
 import { useI18n } from "vue-i18n";
 
 import { mitter } from "/src/utils/util.mitt";
-import { RegisterReq } from "/src/api/modules/api.user";
 
 interface UserState {
   userInfo: Nullable<UserInfoRes>;
   token?: string;
+  plusInfo?: PlusInfo;
+  inited: boolean;
+}
+
+interface PlusInfo {
+  vipType: string;
+  expireTime: number;
+  isPlus: boolean;
 }
 
 const USER_INFO_KEY = "USER_INFO";
@@ -26,7 +33,10 @@ export const useUserStore = defineStore({
     // user info
     userInfo: null,
     // token
-    token: undefined
+    token: undefined,
+    // plus
+    plusInfo: null,
+    inited: false
   }),
   getters: {
     getUserInfo(): UserInfoRes {
@@ -37,6 +47,9 @@ export const useUserStore = defineStore({
     },
     isAdmin(): boolean {
       return this.getUserInfo?.id === 1;
+    },
+    isPlus(): boolean {
+      return this.plusInfo?.isPlus && this.plusInfo?.expireTime > new Date().getTime();
     }
   },
   actions: {
@@ -73,10 +86,7 @@ export const useUserStore = defineStore({
         // save token
         this.setToken(token, expire);
         // get user info
-        const userInfo = await this.getUserInfoAction();
-        await router.replace("/");
-        mitter.emit("app.login", { userInfo, token: data });
-        return userInfo;
+        return await this.onLoginSuccess(data);
       } catch (error) {
         return null;
       }
@@ -85,6 +95,19 @@ export const useUserStore = defineStore({
       const userInfo = await UserApi.mine();
       this.setUserInfo(userInfo);
       return userInfo;
+    },
+
+    async onLoginSuccess(loginData: any) {
+      await this.getUserInfoAction();
+      await this.loadPlusInfo();
+      const userInfo = await this.getUserInfoAction();
+      mitter.emit("app.login", { userInfo, token: loginData, plusInfo: this.plusInfo });
+      await router.replace("/");
+      return userInfo;
+    },
+
+    async loadPlusInfo() {
+      this.plusInfo = await UserApi.getPlusInfo();
     },
     /**
      * @description: logout
@@ -108,6 +131,19 @@ export const useUserStore = defineStore({
           await this.logout(true);
         }
       });
+    },
+    async init() {
+      if (this.inited) {
+        return;
+      }
+      if (this.getToken) {
+        await this.loadPlusInfo();
+      }
+      this.inited = true;
+    },
+    async reInit() {
+      this.inited = false;
+      await this.init();
     }
   }
 });

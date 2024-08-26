@@ -1,4 +1,4 @@
-import { Configuration, App } from '@midwayjs/core';
+import { App, Configuration } from '@midwayjs/core';
 import * as koa from '@midwayjs/koa';
 import * as orm from '@midwayjs/typeorm';
 import * as cache from '@midwayjs/cache';
@@ -8,18 +8,12 @@ import * as staticFile from '@midwayjs/static-file';
 import * as cron from './modules/plugin/cron/index.js';
 import * as flyway from '@certd/midway-flyway-js';
 import cors from '@koa/cors';
-import { ReportMiddleware } from './middleware/report.js';
 import { GlobalExceptionMiddleware } from './middleware/global-exception.js';
 import { PreviewMiddleware } from './middleware/preview.js';
 import { AuthorityMiddleware } from './middleware/authority.js';
 import { logger } from './utils/logger.js';
 import { ResetPasswdMiddleware } from './middleware/reset-passwd/middleware.js';
-// import { DefaultErrorFilter } from './filter/default.filter.js';
-// import { NotFoundFilter } from './filter/notfound.filter.js';
 import DefaultConfig from './config/config.default.js';
-import ProductionConfig from './config/config.production.js';
-import PreviewConfig from './config/config.preview.js';
-import UnittestConfig from './config/config.unittest.js';
 
 process.on('uncaughtException', error => {
   console.error('未捕获的异常：', error);
@@ -43,9 +37,6 @@ process.on('uncaughtException', error => {
   importConfigs: [
     {
       default: DefaultConfig,
-      preview: PreviewConfig,
-      production: ProductionConfig,
-      unittest: UnittestConfig,
     },
   ],
 })
@@ -68,7 +59,6 @@ export class MainConfiguration {
     //this.app.use(bodyParser());
     //请求日志打印
     this.app.useMiddleware([
-      ReportMiddleware,
       //统一异常处理
       GlobalExceptionMiddleware,
       //预览模式限制修改id<1000的数据

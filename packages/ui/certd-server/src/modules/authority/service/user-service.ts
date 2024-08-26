@@ -191,4 +191,17 @@ export class UserService extends BaseService<UserEntity> {
     };
     await this.update(param);
   }
+
+  async delete(ids: any) {
+    if (typeof ids === 'string') {
+      ids = ids.split(',');
+      ids = ids.map(id => parseInt(id));
+    }
+    if (ids instanceof Array) {
+      if (ids.includes(1)) {
+        throw new CommonException('不能删除管理员');
+      }
+    }
+    await super.delete(ids);
+  }
 }

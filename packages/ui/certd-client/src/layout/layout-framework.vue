@@ -12,14 +12,14 @@
 
     <a-layout class="layout-body">
       <a-layout-header class="header">
-        <div class="header-buttons">
+        <div class="header-left header-buttons">
           <div class="menu-fold" @click="asideCollapsedToggle">
             <MenuUnfoldOutlined v-if="asideCollapsed" />
             <MenuFoldOutlined v-else />
           </div>
+          <fs-menu class="header-menu" mode="horizontal" :expand-selected="false" :selectable="false" :menus="frameworkMenus" />
+          <vip-button class="flex-center header-btn"></vip-button>
         </div>
-
-        <fs-menu class="header-menu" mode="horizontal" :expand-selected="false" :selectable="false" :menus="frameworkMenus" />
         <div class="header-right header-buttons">
           <!--          <button-->
           <!--            w:bg="blue-400 hover:blue-500 dark:blue-500 dark:hover:blue-600"-->
@@ -83,10 +83,11 @@ import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons-vue";
 import FsThemeSet from "/@/layout/components/theme/index.vue";
 import { env } from "../utils/util.env";
 import FsThemeModeSet from "./components/theme/mode-set.vue";
+import VipButton from "/@/components/vip-button/index.vue";
 export default {
   name: "LayoutFramework",
   // eslint-disable-next-line vue/no-unused-components
-  components: { FsThemeSet, MenuFoldOutlined, MenuUnfoldOutlined, FsMenu, FsLocale, FsSourceLink, FsUserInfo, FsTabs, FsThemeModeSet },
+  components: { FsThemeSet, MenuFoldOutlined, MenuUnfoldOutlined, FsMenu, FsLocale, FsSourceLink, FsUserInfo, FsTabs, FsThemeModeSet, VipButton },
   setup() {
     const resourceStore = useResourceStore();
     const frameworkMenus = computed(() => {
@@ -133,6 +134,7 @@ export default {
 .fs-framework {
   height: 100%;
   overflow-x: hidden;
+  min-width: 1200px;
   .menu-fold {
     display: flex;
     justify-content: center;
@@ -174,34 +176,41 @@ export default {
       padding: 5px;
     }
   }
-  .header-buttons {
-    display: flex;
-    align-items: center;
-    & > * {
-      cursor: pointer;
-      padding: 0 10px;
-    }
-    height: 100%;
 
-    & > .header-btn {
-      display: inline-flex;
-      justify-content: center;
+  .ant-layout-header.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .header-buttons {
+      display: flex;
       align-items: center;
+      & > * {
+        cursor: pointer;
+        padding: 0 10px;
+      }
       height: 100%;
-      //border-bottom: 1px solid rgba(255, 255, 255, 0);
-      &:hover {
-        background-color: #fff;
+
+      & > .header-btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        //border-bottom: 1px solid rgba(255, 255, 255, 0);
+        &:hover {
+          background-color: #fff;
+        }
       }
     }
+    .header-right {
+      justify-content: flex-end;
+      align-items: center;
+      display: flex;
+    }
+    .header-menu {
+      flex: 1;
+    }
   }
-  .header-right {
-    justify-content: flex-end;
-    align-items: center;
-    display: flex;
-  }
-  .header-menu {
-    flex: 1;
-  }
+
   .aside-menu {
     flex: 1;
     ui {

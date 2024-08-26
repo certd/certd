@@ -10,6 +10,7 @@
 const net = require('net');
 const { promisify } = require('util');
 const forge = require('node-forge');
+const { createPrivateEcdsaKey, getPublicKey } = require('./index');
 
 const generateKeyPair = promisify(forge.pki.rsa.generateKeyPair);
 
@@ -378,13 +379,17 @@ function formatCsrAltNames(altNames) {
  * }, certificateKey);
  */
 
-exports.createCsr = async (data, key = null) => {
-    if (!key) {
+exports.createCsr = async (data, keyType = null) => {
+    let key = null;
+    if (keyType === 'ec') {
+        key = await createPrivateEcdsaKey();
+    }
+    else {
         key = await createPrivateKey(data.keySize);
     }
-    else if (!Buffer.isBuffer(key)) {
-        key = Buffer.from(key);
-    }
+    // else if (!Buffer.isBuffer(key)) {
+    //     key = Buffer.from(key);
+    // }
 
     if (typeof data.altNames === 'undefined') {
         data.altNames = [];
@@ -396,6 +401,8 @@ exports.createCsr = async (data, key = null) => {
     const privateKey = forge.pki.privateKeyFromPem(key);
     const publicKey = forge.pki.rsa.setPublicKey(privateKey.n, privateKey.e);
     csr.publicKey = publicKey;
+    // const privateKey = key;
+    // csr.publicKey = getPublicKey(key);
 
     /* Ensure subject common name is present in SAN - https://cabforum.org/wp-content/uploads/BRv1.2.3.pdf */
     if (data.commonName && !data.altNames.includes(data.commonName)) {

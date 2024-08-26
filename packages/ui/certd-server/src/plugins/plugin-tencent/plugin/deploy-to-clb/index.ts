@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
 import tencentcloud from 'tencentcloud-sdk-nodejs';
 import { TencentAccess } from '../../access/index.js';
 import dayjs from 'dayjs';
@@ -17,10 +17,9 @@ import dayjs from 'dayjs';
 export class DeployToClbPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: '大区',
-    value: 'ap-guangzhou',
     component: {
-      name: 'a-select',
-      mode: 'tags',
+      name: 'a-auto-complete',
+      vModel: 'value',
       options: [
         { value: 'ap-guangzhou' },
         { value: 'ap-beijing' },
@@ -93,13 +92,7 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
   })
   accessId!: string;
 
-  accessService!: IAccessService;
-  logger!: ILogger;
-
-  async onInstance() {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
-  }
+  async onInstance() {}
   async execute(): Promise<void> {
     const accessProvider = (await this.accessService.getById(this.accessId)) as TencentAccess;
     const client = this.getClient(accessProvider, this.region);

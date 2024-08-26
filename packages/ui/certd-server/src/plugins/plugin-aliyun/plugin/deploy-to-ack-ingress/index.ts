@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IAccessService, ILogger, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
 // @ts-ignore
 import { ROAClient } from '@alicloud/pop-core';
 import { AliyunAccess } from '../../access/index.js';
@@ -106,13 +106,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
   })
   accessId!: string;
 
-  accessService!: IAccessService;
-  logger!: ILogger;
-
-  async onInstance(): Promise<void> {
-    this.accessService = this.ctx.accessService;
-    this.logger = this.ctx.logger;
-  }
+  async onInstance(): Promise<void> {}
   async execute(): Promise<void> {
     console.log('开始部署证书到阿里云cdn');
     const { regionId, ingressClass, clusterId, isPrivateIpAddress, cert } = this;
@@ -121,7 +115,10 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     const kubeConfigStr = await this.getKubeConfig(client, clusterId, isPrivateIpAddress);
 
     this.logger.info('kubeconfig已成功获取');
-    const k8sClient = new K8sClient(kubeConfigStr,this.logger);
+    const k8sClient = new K8sClient({
+      kubeConfigStr,
+      logger: this.logger,
+    });
     const ingressType = ingressClass || 'qcloud';
     if (ingressType === 'qcloud') {
       throw new Error('暂未实现');
@@ -134,7 +131,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     // await this.restartIngress({ k8sClient, props })
   }
 
-  async restartIngress(options: { k8sClient: any }) {
+  async restartIngress(options: { k8sClient: K8sClient }) {
     const { k8sClient } = options;
     const { namespace } = this;
 
@@ -147,10 +144,10 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     };
     const ingressList = await k8sClient.getIngressList({ namespace });
     console.log('ingressList:', ingressList);
-    if (!ingressList || !ingressList.body || !ingressList.body.items) {
+    if (!ingressList || !ingressList.items) {
       return;
     }
-    const ingressNames = ingressList.body.items
+    const ingressNames = ingressList.items
       .filter((item: any) => {
         if (!item.spec.tls) {
           return false;
@@ -171,7 +168,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     }
   }
 
-  async patchNginxCertSecret(options: { cert: any; k8sClient: any }) {
+  async patchNginxCertSecret(options: { cert: CertInfo; k8sClient: K8sClient }) {
     const { cert, k8sClient } = options;
     const crt = cert.crt;
     const key = cert.key;

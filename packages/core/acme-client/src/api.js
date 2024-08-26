@@ -3,6 +3,7 @@
  */
 
 const util = require('./util');
+const { log } = require('./logger');
 
 /**
  * AcmeApi
@@ -15,6 +16,21 @@ class AcmeApi {
     constructor(httpClient, accountUrl = null) {
         this.http = httpClient;
         this.accountUrl = accountUrl;
+    }
+
+    getLocationFromHeader(resp) {
+        let locationUrl = resp.headers.location;
+        const mapping = this.http.urlMapping;
+        if (mapping.mappings) {
+            // eslint-disable-next-line guard-for-in,no-restricted-syntax
+            for (const key in mapping.mappings) {
+                const url = mapping.mappings[key];
+                if (locationUrl.indexOf(url) > -1) {
+                    locationUrl = locationUrl.replace(url, key);
+                }
+            }
+        }
+        return locationUrl;
     }
 
     /**
@@ -103,7 +119,7 @@ class AcmeApi {
 
         /* Set account URL */
         if (resp.headers.location) {
-            this.accountUrl = resp.headers.location;
+            this.accountUrl = this.getLocationFromHeader(resp);
         }
 
         return resp;

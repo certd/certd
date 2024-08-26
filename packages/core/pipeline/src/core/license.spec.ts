@@ -3,7 +3,6 @@ import { equal } from "assert";
 describe("license", function () {
   it("#license", async function () {
     const req = {
-      appKey: "z4nXOeTeSnnpUpnmsV",
       subjectId: "999",
       license: "",
     };

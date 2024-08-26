@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-k8s",
   "private": false,
-  "version": "1.23.1",
+  "version": "1.24.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,11 +13,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "kubernetes-client": "^9.0.0",
-    "shelljs": "^0.8.5"
+    "@kubernetes/client-node": "0.21.0"
   },
   "devDependencies": {
-    "@certd/pipeline": "^1.23.1",
+    "@certd/pipeline": "^1.24.0",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",

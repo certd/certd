@@ -38,7 +38,10 @@ const development = {
     },
   },
   cron: {
+    //启动时立即触发一次
     immediateTriggerOnce: false,
+    //启动时仅注册admin（id=1）用户的
+    onlyAdminUser: false,
   },
   /**
    * 演示环境
@@ -84,6 +87,9 @@ const development = {
   },
   system: {
     resetAdminPasswd: false,
+  },
+  plus: {
+    serverBaseUrl: 'http://127.0.0.1:11007',
   },
 } as MidwayConfig;
 mergeConfig(development, 'development');

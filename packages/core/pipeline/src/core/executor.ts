@@ -23,16 +23,19 @@ export type ExecutorOptions = {
   emailService: IEmailService;
   fileRootDir?: string;
 };
+
 export class Executor {
   pipeline: Pipeline;
   runtime!: RunHistory;
   contextFactory: ContextFactory;
   logger: Logger;
   pipelineContext!: IContext;
+  currentStatusMap!: RunnableCollection;
   lastStatusMap!: RunnableCollection;
   lastRuntime!: RunHistory;
   options: ExecutorOptions;
-  canceled = false;
+  abort: AbortController = new AbortController();
+
   onChanged: (history: RunHistory) => Promise<void>;
   constructor(options: ExecutorOptions) {
     this.options = options;
@@ -50,10 +53,11 @@ export class Executor {
     const lastRuntime = await this.pipelineContext.getObj(`lastRuntime`);
     this.lastRuntime = lastRuntime;
     this.lastStatusMap = new RunnableCollection(lastRuntime?.pipeline);
+    this.currentStatusMap = new RunnableCollection(this.pipeline);
   }
 
   async cancel() {
-    this.canceled = true;
+    this.abort.abort();
     this.runtime?.cancel(this.pipeline);
     await this.onChanged(this.runtime);
   }
@@ -102,6 +106,8 @@ export class Executor {
         }
       }
       if (lastResult != null && lastResult === ResultType.success && !inputChanged) {
+        runnable.status!.output = lastNode?.status?.output;
+        runnable.status!.files = lastNode?.status?.files;
         this.runtime.skip(runnable);
         await this.onChanged(this.runtime);
         return ResultType.skip;
@@ -113,10 +119,15 @@ export class Executor {
 
     // const timeout = runnable.timeout ?? 20 * 60 * 1000;
     try {
-      if (this.canceled) {
+      if (this.abort.signal.aborted) {
+        this.runtime.cancel(runnable);
         return ResultType.canceled;
       }
       await run();
+      if (this.abort.signal.aborted) {
+        this.runtime.cancel(runnable);
+        return ResultType.canceled;
+      }
       this.runtime.success(runnable);
       return ResultType.success;
     } catch (e: any) {
@@ -197,7 +208,7 @@ export class Executor {
 
   private async runStep(step: Step) {
     const currentLogger = this.runtime._loggers[step.id];
-
+    this.currentStatusMap.add(step);
     const lastStatus = this.lastStatusMap.get(step.id);
     //执行任务
     const plugin: RegistryItem<AbstractTaskPlugin> = pluginRegistry.get(step.type);
@@ -211,16 +222,11 @@ export class Executor {
       if (item.component?.name === "pi-output-selector") {
         const contextKey = step.input[key];
         if (contextKey != null) {
-          const value = this.runtime.context[contextKey];
-          if (value == null) {
-            currentLogger.warn(`[step init] input ${define.title} is null，前置任务步骤输出值为空，请按如下步骤排查：`);
-            currentLogger.log(`1、检查前置任务（证书申请任务）是否是配置了成功后跳过，如果是，请改为正常执行`);
-            currentLogger.log(
-              `2、是否曾经删除过前置任务（证书申请任务），然后又重新添加了，如果是，请重新编辑当前任务，重新选择一下前置任务输出的参数（域名证书那一栏）`
-            );
-            currentLogger.log(`3、以上都不是，联系作者吧`);
-          }
-          step.input[key] = value;
+          // "cert": "step.-BNFVPMKPu2O-i9NiOQxP.cert",
+          const arr = contextKey.split(".");
+          const id = arr[1];
+          const outputKey = arr[2];
+          step.input[key] = this.currentStatusMap.get(id)?.status?.output[outputKey] ?? this.lastStatusMap.get(id)?.status?.output[outputKey];
         }
       }
     });
@@ -241,6 +247,7 @@ export class Executor {
         parent: this.runtime.id,
         rootDir: this.options.fileRootDir,
       }),
+      signal: this.abort.signal,
     };
     instance.setCtx(taskCtx);
 
@@ -254,8 +261,8 @@ export class Executor {
     //输出上下文变量到output context
     _.forEach(define.output, (item: any, key: any) => {
       step.status!.output[key] = instance[key];
-      const stepOutputKey = `step.${step.id}.${key}`;
-      this.runtime.context[stepOutputKey] = instance[key];
+      // const stepOutputKey = `step.${step.id}.${key}`;
+      // this.runtime.context[stepOutputKey] = instance[key];
     });
     step.status!.files = instance.getFiles();
 

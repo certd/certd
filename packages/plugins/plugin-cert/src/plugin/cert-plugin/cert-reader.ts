@@ -1,8 +1,8 @@
 import { CertInfo } from "./acme.js";
 import fs from "fs";
 import os from "os";
-import forge from "node-forge";
 import path from "path";
+import { crypto } from "@certd/acme-client";
 export class CertReader implements CertInfo {
   crt: string;
   key: string;
@@ -29,9 +29,8 @@ export class CertReader implements CertInfo {
   }
 
   getCrtDetail(crt: string) {
-    const pki = forge.pki;
-    const detail = pki.certificateFromPem(crt.toString());
-    const expires = detail.validity.notAfter;
+    const detail = crypto.readCertificateInfo(crt.toString());
+    const expires = detail.notAfter;
     return { detail, expires };
   }
 

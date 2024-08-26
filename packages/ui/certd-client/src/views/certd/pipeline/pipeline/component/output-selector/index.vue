@@ -12,6 +12,9 @@ export default {
     modelValue: {
       type: String,
       default: undefined
+    },
+    from: {
+      type: String
     }
   },
   emits: ["update:modelValue"],
@@ -23,7 +26,7 @@ export default {
     const currentStepIndex = inject("currentStepIndex") as Ref<number>;
     const currentTask = inject("currentTask") as Ref<any>;
 
-    const getPluginGroups = inject("getPluginGroups") as Ref<any>;
+    const getPluginGroups = inject("getPluginGroups") as any;
     const pluginGroups = getPluginGroups();
     function onCreate() {
       options.value = pluginGroups.getPreStepOutputOptions({
@@ -32,6 +35,9 @@ export default {
         currentStepIndex: currentStepIndex.value,
         currentTask: currentTask.value
       });
+      if (props.from) {
+        options.value = options.value.filter((item: any) => item.type === props.from);
+      }
       if (props.modelValue == null && options.value.length > 0) {
         ctx.emit("update:modelValue", options.value[0].value);
       }
@@ -42,7 +48,7 @@ export default {
 
     watch(
       () => {
-        return pluginGroups.value.map;
+        return pluginGroups.value?.map;
       },
       () => {
         onCreate();

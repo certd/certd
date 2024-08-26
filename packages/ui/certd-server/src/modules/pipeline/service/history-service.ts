@@ -63,7 +63,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
     return id;
   }
 
-  private async clear(pipelineId: number, keepCount = 30) {
+  private async clear(pipelineId: number, keepCount = 20) {
     const count = await this.repository.count({
       where: {
         pipelineId,
@@ -73,13 +73,14 @@ export class HistoryService extends BaseService<HistoryEntity> {
       return;
     }
     let shouldDeleteCount = count - keepCount;
-    const deleteCountBatch = 100;
-    const fileStore = new FileStore({
-      rootDir: this.certdConfig.fileRootDir,
-      scope: pipelineId + '',
-      parent: '0',
-    });
+    const maxDeleteCountBatch = 100;
+    // const fileStore = new FileStore({
+    //   rootDir: this.certdConfig.fileRootDir,
+    //   scope: pipelineId + '',
+    //   parent: '0',
+    // });
     while (shouldDeleteCount > 0) {
+      const deleteCountBatch = maxDeleteCountBatch > shouldDeleteCount ? shouldDeleteCount : maxDeleteCountBatch;
       const list = await this.repository.find({
         select: {
           id: true,
@@ -94,18 +95,16 @@ export class HistoryService extends BaseService<HistoryEntity> {
         take: deleteCountBatch,
       });
 
-      for (const historyEntity of list) {
-        const id = historyEntity.id;
-        try {
-          fileStore.deleteByParent(pipelineId + '', id + '');
-        } catch (e) {
-          logger.error('删除文件失败', e);
-        }
-      }
-      await this.repository.remove(list);
-
-      await this.logService.deleteByHistoryIds(list.map(item => item.id));
-
+      // for (const historyEntity of list) {
+      //   const id = historyEntity.id;
+      //   try {
+      //     fileStore.deleteByParent(pipelineId + '', id + '');
+      //   } catch (e) {
+      //     logger.error('删除文件失败', e);
+      //   }
+      // }
+      const ids = list.map(item => item.id);
+      await this.deleteByIds(ids, null);
       shouldDeleteCount -= deleteCountBatch;
     }
   }
@@ -136,10 +135,13 @@ export class HistoryService extends BaseService<HistoryEntity> {
   }
 
   async deleteByIds(ids: number[], userId: number) {
-    await this.repository.delete({
+    const condition: any = {
       id: In(ids),
-      userId,
-    });
+    };
+    if (userId != null) {
+      condition.userId = userId;
+    }
+    await this.repository.delete(condition);
     await this.logService.deleteByHistoryIds(ids);
   }
 

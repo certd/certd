@@ -3,7 +3,7 @@
     "description": "Simple and unopinionated ACME client",
     "private": false,
     "author": "nmorsman",
-    "version": "1.22.6",
+    "version": "1.24.0",
     "main": "src/index.js",
     "types": "types/index.d.ts",
     "license": "MIT",
@@ -16,24 +16,24 @@
         "types"
     ],
     "dependencies": {
-        "@peculiar/x509": "^1.10.0",
+        "@peculiar/x509": "^1.11.0",
         "asn1js": "^3.0.5",
         "axios": "^1.7.2",
-        "debug": "^4.1.1",
+        "debug": "^4.3.5",
         "https-proxy-agent": "^7.0.4",
         "node-forge": "^1.3.1"
     },
     "devDependencies": {
-        "@types/node": "^20.12.12",
+        "@types/node": "^20.14.10",
         "chai": "^4.4.1",
         "chai-as-promised": "^7.1.2",
         "eslint": "^8.57.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-plugin-import": "^2.29.1",
         "jsdoc-to-markdown": "^8.0.1",
-        "mocha": "^10.4.0",
+        "mocha": "^10.6.0",
         "nock": "^13.5.4",
-        "tsd": "^0.31.0",
+        "tsd": "^0.31.1",
         "typescript": "^4.8.4",
         "uuid": "^8.3.2"
     },

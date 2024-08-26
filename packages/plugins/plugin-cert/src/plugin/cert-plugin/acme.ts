@@ -13,7 +13,8 @@ export type CertInfo = {
   key: string;
   csr: string;
 };
-export type SSLProvider = "letsencrypt" | "buypass" | "zerossl";
+export type SSLProvider = "letsencrypt" | "google" | "zerossl";
+export type PrivateKeyType = "rsa_1024" | "rsa_2048" | "rsa_3072" | "rsa_4096" | "ec_256" | "ec_384" | "ec_521";
 type AcmeServiceOptions = {
   userContext: IContext;
   logger: Logger;
@@ -21,6 +22,8 @@ type AcmeServiceOptions = {
   eab?: ClientExternalAccountBindingOptions;
   skipLocalVerify?: boolean;
   useMappingProxy?: boolean;
+  privateKeyType?: PrivateKeyType;
+  signal?: AbortSignal;
 };
 
 export class AcmeService {
@@ -42,8 +45,20 @@ export class AcmeService {
     });
   }
 
-  async getAccountConfig(email: string): Promise<any> {
-    return (await this.userContext.getObj(this.buildAccountKey(email))) || {};
+  async getAccountConfig(email: string, urlMapping: UrlMapping): Promise<any> {
+    const conf = (await this.userContext.getObj(this.buildAccountKey(email))) || {};
+    if (urlMapping && urlMapping.mappings) {
+      for (const key in urlMapping.mappings) {
+        if (Object.prototype.hasOwnProperty.call(urlMapping.mappings, key)) {
+          const element = urlMapping.mappings[key];
+          if (conf.accountUrl?.indexOf(element) > -1) {
+            //如果用了代理url，要替换回去
+            conf.accountUrl = conf.accountUrl.replace(element, key);
+          }
+        }
+      }
+    }
+    return conf;
   }
 
   buildAccountKey(email: string) {
@@ -55,7 +70,14 @@ export class AcmeService {
   }
 
   async getAcmeClient(email: string, isTest = false): Promise<acme.Client> {
-    const conf = await this.getAccountConfig(email);
+    const urlMapping: UrlMapping = {
+      enabled: false,
+      mappings: {
+        "acme-v02.api.letsencrypt.org": "letsencrypt.proxy.handsfree.work",
+        "dv.acme-v02.api.pki.goog": "google.proxy.handsfree.work",
+      },
+    };
+    const conf = await this.getAccountConfig(email, urlMapping);
     if (conf.key == null) {
       conf.key = await this.createNewKey();
       await this.saveAccountConfig(email, conf);
@@ -66,22 +88,19 @@ export class AcmeService {
     } else {
       directoryUrl = acme.directory[this.sslProvider].production;
     }
-    const urlMapping: UrlMapping = { enabled: false, mappings: {} };
     if (this.options.useMappingProxy) {
       urlMapping.enabled = true;
-      urlMapping.mappings = {
-        "acme-v02.api.letsencrypt.org": "letsencrypt.proxy.handsfree.work",
-      };
     }
     const client = new acme.Client({
       directoryUrl: directoryUrl,
       accountKey: conf.key,
       accountUrl: conf.accountUrl,
       externalAccountBinding: this.eab,
-      backoffAttempts: 30,
+      backoffAttempts: 15,
       backoffMin: 5000,
       backoffMax: 10000,
       urlMapping,
+      signal: this.options.signal,
     });
 
     if (conf.accountUrl == null) {
@@ -193,18 +212,38 @@ export class AcmeService {
     }
   }
 
-  async order(options: { email: string; domains: string | string[]; dnsProvider: any; csrInfo: any; isTest?: boolean }) {
+  async order(options: {
+    email: string;
+    domains: string | string[];
+    dnsProvider: any;
+    csrInfo: any;
+    isTest?: boolean;
+    privateKeyType?: string;
+  }): Promise<CertInfo> {
     const { email, isTest, domains, csrInfo, dnsProvider } = options;
     const client: acme.Client = await this.getAcmeClient(email, isTest);
 
     /* Create CSR */
     const { commonName, altNames } = this.buildCommonNameByDomains(domains);
-
-    const [key, csr] = await acme.forge.createCsr({
-      commonName,
-      ...csrInfo,
-      altNames,
-    });
+    let privateKey = null;
+    const privateKeyType = options.privateKeyType || "rsa_2048";
+    const privateKeyArr = privateKeyType.split("_");
+    const type = privateKeyArr[0];
+    const size = parseInt(privateKeyArr[1]);
+    if (type == "ec") {
+      const name: any = "P-" + size;
+      privateKey = await acme.crypto.createPrivateEcdsaKey(name);
+    } else {
+      privateKey = await acme.crypto.createPrivateRsaKey(size);
+    }
+    const [key, csr] = await acme.crypto.createCsr(
+      {
+        commonName,
+        ...csrInfo,
+        altNames,
+      },
+      privateKey
+    );
     if (dnsProvider == null) {
       throw new Error("dnsProvider 不能为空");
     }
@@ -221,6 +260,7 @@ export class AcmeService {
       challengeRemoveFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string, recordItem: any): Promise<any> => {
         return await this.challengeRemoveFn(authz, challenge, keyAuthorization, recordItem, dnsProvider);
       },
+      signal: this.options.signal,
     });
 
     const cert: CertInfo = {

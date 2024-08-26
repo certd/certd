@@ -10,8 +10,7 @@ export class DnspodAccess {
     title: '端点',
     component: {
       placeholder: 'endpoint',
-      name: 'a-select',
-      mode: 'tags',
+      name: 'a-auto-complete',
       vModel: 'value',
       options: [
         { value: 'https://dnsapi.cn', label: '中国站' },
@@ -23,9 +22,9 @@ export class DnspodAccess {
   endpoint = '';
 
   @AccessInput({
-    title: '账户id',
+    title: 'ID',
     component: {
-      placeholder: 'dnspod接口账户id',
+      placeholder: 'dnspod token 的 id',
     },
     rules: [{ required: true, message: '该项必填' }],
   })

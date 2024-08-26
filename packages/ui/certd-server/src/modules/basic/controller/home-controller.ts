@@ -1,10 +1,10 @@
 import { MidwayEnvironmentService } from '@midwayjs/core';
 import { Controller, Get, Inject, Provide } from '@midwayjs/core';
-import { logger } from '../utils/logger.js';
-import { Constants } from '../basic/constants.js';
+import { logger } from '../../../utils/logger.js';
+import { Constants } from '../../../basic/constants.js';
 
 @Provide()
-@Controller('/hello')
+@Controller('/home')
 export class HomeController {
   @Inject()
   environmentService: MidwayEnvironmentService;
