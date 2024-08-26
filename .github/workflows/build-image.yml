@@ -58,6 +58,12 @@ jobs:
           username: ${{ secrets.aliyun_cs_username }}
           password: ${{ secrets.aliyun_cs_password }}
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.dockerhub_username }}
+          password: ${{ secrets.dockerhub_password }}
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
