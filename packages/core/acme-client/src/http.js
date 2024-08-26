@@ -55,7 +55,7 @@ class HttpClient {
      */
 
     async request(url, method, opts = {}) {
-        if (this.urlMapping && this.urlMapping.mappings) {
+        if (this.urlMapping && this.urlMapping.enabled && this.urlMapping.mappings) {
             // eslint-disable-next-line no-restricted-syntax
             for (const key in this.urlMapping.mappings) {
                 if (url.includes(key)) {
