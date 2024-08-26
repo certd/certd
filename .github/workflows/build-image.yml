@@ -73,3 +73,5 @@ jobs:
           tags: |
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}
+            greper/certd:latest
+            greper/certd:${{steps.get_certd_version.outputs.result}}
