@@ -19,6 +19,8 @@ export class SysPrivateSettings extends BaseSettings {
   static __title__ = '系统私有设置';
   static __access__ = 'private';
   static __key__ = 'sys.private';
+  jwtKey?: string;
+  encryptSecret?: string;
 }
 
 export class SysInstallInfo extends BaseSettings {

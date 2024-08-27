@@ -5,6 +5,9 @@ import PiOutputSelector from "../views/certd/pipeline/pipeline/component/output-
 import PiEditable from "./editable.vue";
 import VipButton from "./vip-button/index.vue";
 import { CheckCircleOutlined, InfoCircleOutlined, UndoOutlined } from "@ant-design/icons-vue";
+import CronEditor from "./cron-editor/index.vue";
+import { CronLight } from "@vue-js-cron/light";
+import "@vue-js-cron/light/dist/light.css";
 export default {
   install(app: any) {
     app.component("PiContainer", PiContainer);
@@ -13,6 +16,8 @@ export default {
     app.component("PiOutputSelector", PiOutputSelector);
     app.component("PiDnsProviderSelector", PiDnsProviderSelector);
     app.component("VipButton", VipButton);
+    app.component("CronLight", CronLight);
+    app.component("CronEditor", CronEditor);
 
     app.component("CheckCircleOutlined", CheckCircleOutlined);
     app.component("InfoCircleOutlined", InfoCircleOutlined);

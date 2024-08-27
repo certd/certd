@@ -34,6 +34,7 @@ export class DemoAccess implements IAccess {
     },
     //是否必填
     required: true,
+    encrypt: true,
   })
   //属性名称
   demoKeySecret = '';

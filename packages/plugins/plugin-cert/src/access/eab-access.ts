@@ -13,6 +13,7 @@ export class EabAccess {
     },
     helper: "EAB KID",
     required: true,
+    encrypt: true,
   })
   kid = "";
   @AccessInput({
@@ -22,6 +23,7 @@ export class EabAccess {
     },
     helper: "EAB HMAC Key",
     required: true,
+    encrypt: true,
   })
   hmacKey = "";
 }

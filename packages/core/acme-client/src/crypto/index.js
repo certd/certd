@@ -290,7 +290,6 @@ exports.readCsrDomains = (csrPem) => {
     if (Buffer.isBuffer(csrPem)) {
         csrPem = csrPem.toString();
     }
-
     const dec = x509.PemConverter.decodeFirst(csrPem);
     const csr = new x509.Pkcs10CertificateRequest(dec);
     return parseDomains(csr);

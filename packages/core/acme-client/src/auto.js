@@ -255,9 +255,8 @@ module.exports = async (client, userOpts) => {
         return await client.getCertificate(finalized, opts.preferredChain);
     }
     catch (e) {
-        log('证书申请失败');
-        log(e);
-        throw new Error(`证书申请失败:${e.message}`);
+        log(`证书申请失败${e.message}`);
+        throw e;
     }
     finally {
         log(`清理challenge痕迹，length:${clearTasks.length}`);

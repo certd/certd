@@ -1,21 +1,31 @@
-import { Config, Inject, MidwayWebRouterService, Provide } from '@midwayjs/core';
+import { Init, Inject, MidwayWebRouterService, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { IMidwayKoaContext, IWebMiddleware, NextFunction } from '@midwayjs/koa';
 import jwt from 'jsonwebtoken';
 import { Constants } from '../basic/constants.js';
 import { logger } from '../utils/logger.js';
 import { AuthService } from '../modules/authority/service/auth-service.js';
+import { SysSettingsService } from '../modules/system/service/sys-settings-service.js';
+import { SysPrivateSettings } from '../modules/system/service/models.js';
 
 /**
  * 权限校验
  */
 @Provide()
+@Scope(ScopeEnum.Singleton)
 export class AuthorityMiddleware implements IWebMiddleware {
-  @Config('auth.jwt.secret')
-  private secret: string;
   @Inject()
   webRouterService: MidwayWebRouterService;
   @Inject()
   authService: AuthService;
+  @Inject()
+  sysSettingsService: SysSettingsService;
+
+  secret: string;
+  @Init()
+  async init() {
+    const setting: SysPrivateSettings = await this.sysSettingsService.getSetting(SysPrivateSettings);
+    this.secret = setting.jwtKey;
+  }
 
   resolve() {
     return async (ctx: IMidwayKoaContext, next: NextFunction) => {

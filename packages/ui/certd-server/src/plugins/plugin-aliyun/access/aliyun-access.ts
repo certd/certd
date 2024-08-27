@@ -21,6 +21,7 @@ export class AliyunAccess {
       placeholder: 'accessKeySecret',
     },
     required: true,
+    encrypt: true,
   })
   accessKeySecret = '';
 }

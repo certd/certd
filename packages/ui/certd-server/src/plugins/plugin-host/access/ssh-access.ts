@@ -38,6 +38,7 @@ export class SshAccess implements IAccess, ConnectConfig {
       name: 'a-input-password',
       vModel: 'value',
     },
+    encrypt: true,
     helper: '登录密码或密钥必填一项',
   })
   password!: string;
@@ -48,6 +49,7 @@ export class SshAccess implements IAccess, ConnectConfig {
       name: 'a-textarea',
       vModel: 'value',
     },
+    encrypt: true,
   })
   privateKey!: string;
 
@@ -58,6 +60,7 @@ export class SshAccess implements IAccess, ConnectConfig {
       name: 'a-input-password',
       vModel: 'value',
     },
+    encrypt: true,
   })
   passphrase!: string;
 

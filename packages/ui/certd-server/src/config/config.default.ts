@@ -12,13 +12,11 @@ import { PipelineEntity } from '../modules/pipeline/entity/pipeline.js';
 //import { logger } from '../utils/logger';
 // load .env file in process.cwd
 import { mergeConfig } from './loader.js';
-import { Keys } from './keys.js';
 
 const env = process.env.NODE_ENV || 'development';
 
-const keys = Keys.load();
 const development = {
-  keys: keys.cookieKeys,
+  keys: 'certd',
   koa: {
     port: 7001,
   },
@@ -78,7 +76,6 @@ const development = {
 
   auth: {
     jwt: {
-      secret: keys.jwtKey,
       expire: 7 * 24 * 60 * 60, //单位秒
     },
   },

@@ -14,6 +14,7 @@ export class K8sAccess {
       placeholder: 'kubeconfig',
     },
     required: true,
+    encrypt: true,
   })
   kubeconfig = '';
 }

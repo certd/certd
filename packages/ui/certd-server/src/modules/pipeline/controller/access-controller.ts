@@ -1,12 +1,4 @@
-import {
-  ALL,
-  Body,
-  Controller,
-  Inject,
-  Post,
-  Provide,
-  Query,
-} from '@midwayjs/core';
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { CrudController } from '../../../basic/crud-controller.js';
 import { AccessService } from '../service/access-service.js';
 import { Constants } from '../../../basic/constants.js';
@@ -28,7 +20,7 @@ export class AccessController extends CrudController<AccessService> {
   async page(@Body(ALL) body) {
     body.query = body.query ?? {};
     body.query.userId = this.ctx.user.id;
-    return super.page(body);
+    return await super.page(body);
   }
 
   @Post('/list', { summary: Constants.per.authOnly })

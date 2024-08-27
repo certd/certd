@@ -80,7 +80,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "pi-dns-provider-selector",
     },
     required: true,
-    helper: "请选择dns解析提供商",
+    helper:
+      "请选择dns解析提供商，您的域名是在哪里注册的，或者域名的dns解析服务器属于哪个平台\n如果这里没有您的dns解析提供商，您可以将域名解析服务器设置成上面的任意一个提供商",
   })
   dnsProviderType!: string;
 
@@ -108,7 +109,6 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "a-switch",
       vModel: "checked",
     },
-    maybeNeed: true,
     helper: "如果acme-v02.api.letsencrypt.org或dv.acme-v02.api.pki.goog被墙无法访问，请尝试开启此选项",
   })
   useProxy = false;

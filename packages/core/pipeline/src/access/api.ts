@@ -4,6 +4,7 @@ import { FormItemProps } from "../dt/index.js";
 export type AccessInputDefine = FormItemProps & {
   title: string;
   required?: boolean;
+  encrypt?: boolean;
 };
 export type AccessDefine = Registrable & {
   input?: {

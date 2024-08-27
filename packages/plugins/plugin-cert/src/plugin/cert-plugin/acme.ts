@@ -7,7 +7,7 @@ import { IContext } from "@certd/pipeline";
 import { IDnsProvider } from "../../dns-provider/index.js";
 import psl from "psl";
 import { ClientExternalAccountBindingOptions, UrlMapping } from "@certd/acme-client";
-
+import { utils } from "@certd/pipeline";
 export type CertInfo = {
   crt: string;
   key: string;
@@ -90,6 +90,13 @@ export class AcmeService {
     }
     if (this.options.useMappingProxy) {
       urlMapping.enabled = true;
+    } else {
+      //测试directory是否可以访问
+      const isOk = await this.testDirectory(directoryUrl);
+      if (!isOk) {
+        this.logger.info("测试访问失败，自动使用代理");
+        urlMapping.enabled = true;
+      }
     }
     const client = new acme.Client({
       directoryUrl: directoryUrl,
@@ -294,5 +301,20 @@ export class AcmeService {
       commonName,
       altNames,
     };
+  }
+
+  private async testDirectory(directoryUrl: string) {
+    try {
+      await utils.http({
+        url: directoryUrl,
+        method: "GET",
+        timeout: 5000,
+      });
+    } catch (e) {
+      this.logger.error(`${directoryUrl}，测试访问失败`, e);
+      return false;
+    }
+    this.logger.info(`${directoryUrl}，测试访问成功`);
+    return true;
   }
 }

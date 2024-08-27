@@ -30,6 +30,7 @@
     "@fast-crud/ui-interface": "^1.21.2",
     "@iconify/vue": "^4.1.1",
     "@soerenmartius/vue3-clipboard": "^0.1.2",
+    "@vue-js-cron/light": "^4.0.5",
     "ant-design-vue": "^4.1.2",
     "axios": "^1.7.2",
     "axios-mock-adapter": "^1.22.0",

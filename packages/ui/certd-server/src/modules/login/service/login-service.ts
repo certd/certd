@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import { CommonException } from '../../../basic/exception/common-exception.js';
 import { RoleService } from '../../authority/service/role-service.js';
 import { UserEntity } from '../../authority/entity/user.js';
+import { SysSettingsService } from '../../system/service/sys-settings-service.js';
+import { SysPrivateSettings } from '../../system/service/models.js';
 
 /**
  * 系统用户
@@ -16,6 +18,9 @@ export class LoginService {
   roleService: RoleService;
   @Config('auth.jwt')
   private jwt: any;
+
+  @Inject()
+  sysSettingsService: SysSettingsService;
 
   /**
    * login
@@ -47,7 +52,11 @@ export class LoginService {
       roles: roleIds,
     };
     const expire = this.jwt.expire;
-    const token = jwt.sign(tokenInfo, this.jwt.secret, {
+
+    const setting = await this.sysSettingsService.getSetting<SysPrivateSettings>(SysPrivateSettings);
+    const jwtSecret = setting.jwtKey;
+
+    const token = jwt.sign(tokenInfo, jwtSecret, {
       expiresIn: expire,
     });
 

@@ -112,7 +112,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           },
           addCertd: {
             order: 1,
-            text: "添加证书流水线",
+            text: "创建证书流水线",
             type: "primary",
             click() {
               addCertdPipeline();

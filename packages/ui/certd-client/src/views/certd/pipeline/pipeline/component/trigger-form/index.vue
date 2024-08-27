@@ -15,13 +15,7 @@
     </template>
     <template v-if="currentTrigger">
       <pi-container>
-        <a-form
-          ref="triggerFormRef"
-          class="trigger-form"
-          :model="currentTrigger"
-          :label-col="labelCol"
-          :wrapper-col="wrapperCol"
-        >
+        <a-form ref="triggerFormRef" class="trigger-form" :model="currentTrigger" :label-col="labelCol" :wrapper-col="wrapperCol">
           <fs-form-item
             v-model="currentTrigger.title"
             :item="{
@@ -59,8 +53,8 @@
               key: 'props.cron',
               component: {
                 disabled: !editMode,
-                name: 'a-input',
-                vModel: 'value'
+                name: 'cron-editor',
+                vModel: 'modelValue'
               },
               helper: 'cron表达式，例如： 0 0 3 * * * ，表示每天凌晨3点触发',
               rules: [{ required: true, message: '此项必填' }]

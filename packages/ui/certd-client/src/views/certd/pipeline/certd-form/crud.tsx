@@ -39,7 +39,8 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
       form: {
         wrapper: {
           width: "1150px",
-          saveRemind: false
+          saveRemind: false,
+          title: "创建证书申请流水线"
         }
       },
       columns: {
@@ -73,6 +74,8 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
           type: "text",
           form: {
             component: {
+              name: "cron-editor",
+              vModel: "modelValue",
               placeholder: "0 0 4 * * *"
             },
             helper: "请输入cron表达式, 例如：0 0 4 * * *，每天凌晨4点触发",

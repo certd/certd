@@ -20,6 +20,7 @@ export class CloudflareAccess {
     },
     helper: '前往 https://dash.cloudflare.com/profile/api-tokens 获取API令牌， token权限必须包含：[Zone区域-Zone区域-Edit编辑], [Zone区域-DNS-Edit编辑]',
     required: true,
+    encrypt: true,
   })
   apiToken = '';
 }

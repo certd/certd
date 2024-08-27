@@ -21,6 +21,7 @@ export class HuaweiAccess {
       placeholder: 'accessKeySecret',
     },
     required: true,
+    encrypt: true,
   })
   accessKeySecret = '';
 }

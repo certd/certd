@@ -19,6 +19,7 @@ export class TencentAccess {
     component: {
       placeholder: 'secretKey',
     },
+    encrypt: true,
     rules: [{ required: true, message: '该项必填' }],
   })
   secretKey = '';

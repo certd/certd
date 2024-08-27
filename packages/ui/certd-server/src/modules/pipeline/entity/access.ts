@@ -15,8 +15,11 @@ export class AccessEntity {
   @Column({ comment: '类型', length: 100 })
   type: string;
 
-  @Column({ name: 'setting', comment: '设置', length: 1024, nullable: true })
+  @Column({ name: 'setting', comment: '设置', length: 10240, nullable: true })
   setting: string;
+
+  @Column({ name: 'encrypt_setting', comment: '已加密设置', length: 10240, nullable: true })
+  encryptSetting: string;
 
   @Column({
     name: 'create_time',

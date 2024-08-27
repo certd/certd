@@ -35,6 +35,7 @@ export class DnspodAccess {
     component: {
       placeholder: '开放接口token',
     },
+    encrypt: true,
     rules: [{ required: true, message: '该项必填' }],
   })
   token = '';
