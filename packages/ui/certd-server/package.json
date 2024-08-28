@@ -64,8 +64,6 @@
     "ssh2": "^1.15.0",
     "svg-captcha": "^1.4.0",
     "tencentcloud-sdk-nodejs": "^4.0.44",
-    "tencentcloud-sdk-nodejs-dnspod": "^4.0.866",
-    "tencentcloud-sdk-nodejs-teo": "^4.0.919",
     "typeorm": "^0.3.11"
   },
   "devDependencies": {
