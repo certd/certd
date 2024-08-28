@@ -1,14 +1,7 @@
 import { Autowire, HttpClient, ILogger } from '@certd/pipeline';
-import {
-  AbstractDnsProvider,
-  CreateRecordOptions,
-  IsDnsProvider,
-  RemoveRecordOptions,
-} from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { TencentAccess } from '../access/index.js';
-import * as tencentcloud from 'tencentcloud-sdk-nodejs';
 
-const DnspodClient = tencentcloud.dnspod.v20210323.Client;
 @IsDnsProvider({
   name: 'tencent',
   title: '腾讯云',
@@ -38,7 +31,8 @@ export class TencentDnsProvider extends AbstractDnsProvider {
         },
       },
     };
-
+    const dnspodSdk: any = await import('tencentcloud-sdk-nodejs/tencentcloud/services/dnspod/v20210323/index.js');
+    const DnspodClient = dnspodSdk.Client;
     // 实例化要请求产品的client对象,clientProfile是可选的
     this.client = new DnspodClient(clientConfig);
   }
@@ -58,12 +52,7 @@ export class TencentDnsProvider extends AbstractDnsProvider {
 
     try {
       const ret = await this.client.CreateRecord(params);
-      this.logger.info(
-        '添加域名解析成功:',
-        fullRecord,
-        value,
-        JSON.stringify(ret)
-      );
+      this.logger.info('添加域名解析成功:', fullRecord, value, JSON.stringify(ret));
       /*
         {
         "RecordId": 162,

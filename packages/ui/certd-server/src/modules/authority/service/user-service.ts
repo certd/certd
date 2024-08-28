@@ -11,10 +11,10 @@ import { PermissionService } from './permission-service.js';
 import { UserRoleService } from './user-role-service.js';
 import { Constants } from '../../../basic/constants.js';
 import { UserRoleEntity } from '../entity/user-role.js';
-import { randomText } from 'svg-captcha';
 import bcrypt from 'bcryptjs';
 import { SysSettingsService } from '../../system/service/sys-settings-service.js';
 import { SysInstallInfo } from '../../system/service/models.js';
+import { RandomUtil } from '../../../utils/random.js';
 
 /**
  * 系统用户
@@ -64,7 +64,7 @@ export class UserService extends BaseService<UserEntity> {
     if (!_.isEmpty(exists)) {
       throw new CommonException('用户名已经存在');
     }
-    const plainPassword = param.password ?? randomText(6);
+    const plainPassword = param.password ?? RandomUtil.randomStr(6);
     param.passwordVersion = 2;
     param.password = await this.genPassword(plainPassword, param.passwordVersion); // 默认密码  建议未改密码不能登陆
     await super.add(param);
@@ -156,7 +156,7 @@ export class UserService extends BaseService<UserEntity> {
       passwordVersion: 2,
     });
     if (!newUser.password) {
-      newUser.password = randomText(6);
+      newUser.password = RandomUtil.randomStr(6);
     }
     newUser.password = await this.genPassword(newUser.password, newUser.passwordVersion);
 

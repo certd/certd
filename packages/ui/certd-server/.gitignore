@@ -16,3 +16,4 @@ run/
 /test/setup.js
 /test/setup.ts
 /data/
+.clinic

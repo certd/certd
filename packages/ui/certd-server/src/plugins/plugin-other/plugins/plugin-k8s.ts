@@ -1,6 +1,5 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
 import { CertInfo } from '@certd/plugin-cert';
-import { K8sClient } from '@certd/lib-k8s';
 import { K8sAccess } from '../access/index.js';
 import { appendTimeSuffix } from '../../plugin-aliyun/utils/index.js';
 
@@ -65,10 +64,14 @@ export class K8STestPlugin extends AbstractTaskPlugin {
   })
   cert!: CertInfo;
 
-  async onInstance() {}
+  K8sClient: any;
+  async onInstance() {
+    const sdk = await import('@certd/lib-k8s');
+    this.K8sClient = sdk.K8sClient;
+  }
   async execute(): Promise<void> {
     const access: K8sAccess = await this.accessService.getById(this.accessId);
-    const k8sClient = new K8sClient({
+    const k8sClient = new this.K8sClient({
       kubeConfigStr: access.kubeconfig,
       logger: this.logger,
     });
@@ -76,7 +79,7 @@ export class K8STestPlugin extends AbstractTaskPlugin {
     await utils.sleep(3000); // 停留2秒，等待secret部署完成
   }
 
-  async patchNginxCertSecret(options: { cert: CertInfo; k8sClient: K8sClient }) {
+  async patchNginxCertSecret(options: { cert: CertInfo; k8sClient: any }) {
     const { cert, k8sClient } = options;
     const crt = cert.crt;
     const key = cert.key;

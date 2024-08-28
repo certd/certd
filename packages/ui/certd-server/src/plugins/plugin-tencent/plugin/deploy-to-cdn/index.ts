@@ -1,5 +1,4 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
-import tencentcloud from 'tencentcloud-sdk-nodejs';
 import { TencentAccess } from '../../access/index.js';
 import { CertInfo } from '@certd/plugin-cert';
 
@@ -59,17 +58,17 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
   // })
   // endpoint!: string;
 
-  async onInstance() {}
+  Client: any;
 
-  async execute(): Promise<void> {
-    const accessProvider: TencentAccess = (await this.accessService.getById(this.accessId)) as TencentAccess;
-    const client = this.getClient(accessProvider);
-    const params = this.buildParams();
-    await this.doRequest(client, params);
+  async onInstance() {
+    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/cdn/v20180606/index.js');
+    this.Client = sdk.v20180606.Client;
   }
 
-  getClient(accessProvider: TencentAccess) {
-    const CdnClient = tencentcloud.cdn.v20180606.Client;
+  async getClient() {
+    const accessProvider: TencentAccess = (await this.accessService.getById(this.accessId)) as TencentAccess;
+
+    const CdnClient = this.Client;
 
     const clientConfig = {
       credential: {
@@ -87,6 +86,11 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
     return new CdnClient(clientConfig);
   }
 
+  async execute(): Promise<void> {
+    const params = this.buildParams();
+    await this.doRequest(params);
+  }
+
   buildParams() {
     return {
       Https: {
@@ -100,7 +104,8 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
     };
   }
 
-  async doRequest(client: any, params: any) {
+  async doRequest(params: any) {
+    const client = await this.getClient();
     const ret = await client.UpdateDomainConfig(params);
     this.checkRet(ret);
     this.logger.info('设置腾讯云CDN证书成功:', ret.RequestId);

@@ -1,5 +1,4 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
-import tencentcloud from 'tencentcloud-sdk-nodejs';
 import { TencentAccess } from '../../access/index.js';
 import dayjs from 'dayjs';
 
@@ -92,11 +91,37 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
   })
   accessId!: string;
 
-  async onInstance() {}
-  async execute(): Promise<void> {
-    const accessProvider = (await this.accessService.getById(this.accessId)) as TencentAccess;
-    const client = this.getClient(accessProvider, this.region);
+  client: any;
 
+  async onInstance() {
+    this.client = await this.getClient();
+  }
+
+  async getClient() {
+    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/clb/index.js');
+    const ClbClient = sdk.clb.v20180317.Client;
+
+    const accessProvider = (await this.accessService.getById(this.accessId)) as TencentAccess;
+
+    const region = this.region;
+    const clientConfig = {
+      credential: {
+        secretId: accessProvider.secretId,
+        secretKey: accessProvider.secretKey,
+      },
+      region: region,
+      profile: {
+        httpProfile: {
+          endpoint: 'clb.tencentcloudapi.com',
+        },
+      },
+    };
+
+    return new ClbClient(clientConfig);
+  }
+
+  async execute(): Promise<void> {
+    const client = this.client;
     const lastCertId = await this.getCertIdFromProps(client);
     if (!this.domain) {
       await this.updateListener(client);
@@ -211,25 +236,6 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
     const ret = await client.DescribeListeners(params);
     this.checkRet(ret);
     return ret.Listeners;
-  }
-
-  getClient(accessProvider: TencentAccess, region: string) {
-    const ClbClient = tencentcloud.clb.v20180317.Client;
-
-    const clientConfig = {
-      credential: {
-        secretId: accessProvider.secretId,
-        secretKey: accessProvider.secretKey,
-      },
-      region: region,
-      profile: {
-        httpProfile: {
-          endpoint: 'clb.tencentcloudapi.com',
-        },
-      },
-    };
-
-    return new ClbClient(clientConfig);
   }
 
   checkRet(ret: any) {

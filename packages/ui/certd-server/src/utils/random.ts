@@ -7,7 +7,7 @@ const specials = '~!@#$%^*()_+-=[]{}|;:,./<>?';
  * @param {Number} length
  * @param {Object} options
  */
-function randomStr(length, options) {
+function randomStr(length, options?) {
   length || (length = 8);
   options || (options = {});
 
@@ -28,8 +28,7 @@ function randomStr(length, options) {
     }
 
     if (options.specials) {
-      chars +=
-        typeof options.specials === 'string' ? options.specials : specials;
+      chars += typeof options.specials === 'string' ? options.specials : specials;
     }
   }
 

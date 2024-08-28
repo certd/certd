@@ -148,6 +148,7 @@ export class AsyncSsh2Client {
     }
   }
 }
+
 export class SshClient {
   logger: ILogger;
   constructor(logger: ILogger) {

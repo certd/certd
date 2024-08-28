@@ -1,6 +1,5 @@
 import { Inject, Provide } from '@midwayjs/core';
 import { CacheManager } from '@midwayjs/cache';
-import svgCaptcha from 'svg-captcha';
 
 // {data: '<svg.../svg>', text: 'abcd'}
 /**
@@ -14,6 +13,7 @@ export class CodeService {
    */
   async generateCaptcha(randomStr) {
     console.assert(randomStr < 10, 'randomStr 过长');
+    const svgCaptcha = await import('svg-captcha');
     const c = svgCaptcha.create();
     //{data: '<svg.../svg>', text: 'abcd'}
     const imgCode = c.text; // = RandomUtil.randomStr(4, true);

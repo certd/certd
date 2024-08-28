@@ -16,4 +16,4 @@ run/
 /data/db.sqlite
 */node_modules
 certd-server/tools/windows/
-
+.clinic

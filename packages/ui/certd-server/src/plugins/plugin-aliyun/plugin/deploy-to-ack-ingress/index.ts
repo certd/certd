@@ -2,7 +2,6 @@ import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput,
 // @ts-ignore
 import { ROAClient } from '@alicloud/pop-core';
 import { AliyunAccess } from '../../access/index.js';
-import { K8sClient } from '@certd/lib-k8s';
 import { appendTimeSuffix } from '../../utils/index.js';
 import { CertInfo } from '@certd/plugin-cert';
 
@@ -105,8 +104,11 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     required: true,
   })
   accessId!: string;
-
-  async onInstance(): Promise<void> {}
+  K8sClient: any;
+  async onInstance() {
+    const sdk = await import('@certd/lib-k8s');
+    this.K8sClient = sdk.K8sClient;
+  }
   async execute(): Promise<void> {
     console.log('开始部署证书到阿里云cdn');
     const { regionId, ingressClass, clusterId, isPrivateIpAddress, cert } = this;
@@ -115,7 +117,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     const kubeConfigStr = await this.getKubeConfig(client, clusterId, isPrivateIpAddress);
 
     this.logger.info('kubeconfig已成功获取');
-    const k8sClient = new K8sClient({
+    const k8sClient = new this.K8sClient({
       kubeConfigStr,
       logger: this.logger,
     });
@@ -131,7 +133,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     // await this.restartIngress({ k8sClient, props })
   }
 
-  async restartIngress(options: { k8sClient: K8sClient }) {
+  async restartIngress(options: { k8sClient: any }) {
     const { k8sClient } = options;
     const { namespace } = this;
 
@@ -168,7 +170,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     }
   }
 
-  async patchNginxCertSecret(options: { cert: CertInfo; k8sClient: K8sClient }) {
+  async patchNginxCertSecret(options: { cert: CertInfo; k8sClient: any }) {
     const { cert, k8sClient } = options;
     const crt = cert.crt;
     const key = cert.key;

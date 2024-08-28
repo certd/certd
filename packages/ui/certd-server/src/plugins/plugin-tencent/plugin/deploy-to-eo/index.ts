@@ -1,5 +1,4 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
-import tencentcloud from 'tencentcloud-sdk-nodejs-teo';
 import { TencentAccess } from '../../access/index.js';
 
 @IsTaskPlugin({
@@ -71,8 +70,12 @@ export class DeployToEOPlugin extends AbstractTaskPlugin {
   //   required: true,
   // })
   // endpoint!: string;
+  Client: any;
 
-  async onInstance() {}
+  async onInstance() {
+    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/teo/v20220901/index.js');
+    this.Client = sdk.v20220901.Client;
+  }
 
   async execute(): Promise<void> {
     const accessProvider: TencentAccess = (await this.accessService.getById(this.accessId)) as TencentAccess;
@@ -82,7 +85,7 @@ export class DeployToEOPlugin extends AbstractTaskPlugin {
   }
 
   getClient(accessProvider: TencentAccess) {
-    const TeoClient = tencentcloud.teo.v20220901.Client;
+    const TeoClient = this.Client;
 
     const clientConfig = {
       credential: {

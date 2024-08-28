@@ -1,5 +1,4 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
-import tencentcloud from 'tencentcloud-sdk-nodejs';
 import dayjs from 'dayjs';
 
 @IsTaskPlugin({
@@ -43,7 +42,11 @@ export class UploadToTencentPlugin extends AbstractTaskPlugin {
   })
   tencentCertId?: string;
 
-  async onInstance() {}
+  Client: any;
+  async onInstance() {
+    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js');
+    this.Client = sdk.v20191205.Client;
+  }
 
   async execute(): Promise<void> {
     const { accessId, name, cert } = this;
@@ -71,7 +74,7 @@ export class UploadToTencentPlugin extends AbstractTaskPlugin {
   }
 
   getClient(accessProvider: any) {
-    const SslClient = tencentcloud.ssl.v20191205.Client;
+    const SslClient = this.Client;
 
     const clientConfig = {
       credential: {
