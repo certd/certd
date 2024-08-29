@@ -26,7 +26,7 @@ module.exports = {
       rootDir: "src",
       declaration: true,
       declarationDir: "dist/d",
-      exclude: ["./node_modules/**", "./src/**/*.vue"],
+      exclude: ["./node_modules/**", "./src/**/*.vue", "./src/**/*.spec.ts"],
       allowSyntheticDefaultImports: true,
     }),
     json(),
