@@ -26,7 +26,7 @@ export class AutoInitSite {
   @Init()
   async init() {
     logger.info('初始化站点开始');
-    this.startOptimizeDb();
+    await this.startOptimizeDb();
     //安装信息
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     if (!installInfo.siteId) {
@@ -62,15 +62,23 @@ export class AutoInitSite {
     logger.info('初始化站点完成');
   }
 
-  startOptimizeDb() {
+  async startOptimizeDb() {
     //优化数据库
     //检查当前数据库类型为sqlite
     if (this.dbType === 'better-sqlite3') {
-      const optimizeDb = () => {
-        this.userService.repository.query('VACUUM');
+      const res = await this.userService.repository.query('PRAGMA auto_vacuum;');
+      if (!(res && res.length > 0 && res[0].auto_vacuum > 0)) {
+        //未开启自动优化
+        await this.userService.repository.query('PRAGMA auto_vacuum = INCREMENTAL;');
+        logger.info('sqlite数据库自动优化已开启');
+      }
+
+      const optimizeDb = async () => {
+        logger.info('sqlite数据库空间优化开始');
+        await this.userService.repository.query('VACUUM');
         logger.info('sqlite数据库空间优化完成');
       };
-      optimizeDb();
+      await optimizeDb();
       setInterval(optimizeDb, 1000 * 60 * 60 * 24);
     }
   }
