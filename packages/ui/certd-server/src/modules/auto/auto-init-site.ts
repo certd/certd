@@ -1,4 +1,4 @@
-import { Autoload, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
+import { Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
 import { logger } from '../../utils/logger.js';
 import { UserService } from '../authority/service/user-service.js';
 import { SysSettingsService } from '../system/service/sys-settings-service.js';
@@ -17,12 +17,16 @@ export class AutoInitSite {
   @Inject()
   userService: UserService;
 
+  @Config('typeorm.dataSource.default.type')
+  dbType: string;
+
   @Inject()
   sysSettingsService: SysSettingsService;
 
   @Init()
   async init() {
     logger.info('初始化站点开始');
+    this.startOptimizeDb();
     //安装信息
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     if (!installInfo.siteId) {
@@ -56,5 +60,18 @@ export class AutoInitSite {
     await verify(req);
 
     logger.info('初始化站点完成');
+  }
+
+  startOptimizeDb() {
+    //优化数据库
+    //检查当前数据库类型为sqlite
+    if (this.dbType === 'better-sqlite3') {
+      const optimizeDb = () => {
+        this.userService.repository.query('VACUUM');
+        logger.info('sqlite数据库空间优化完成');
+      };
+      optimizeDb();
+      setInterval(optimizeDb, 1000 * 60 * 60 * 24);
+    }
   }
 }

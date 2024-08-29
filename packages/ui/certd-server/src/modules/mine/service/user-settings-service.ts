@@ -30,10 +30,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     };
   }
 
-  async getByKey(
-    key: string,
-    userId: number
-  ): Promise<UserSettingsEntity | null> {
+  async getByKey(key: string, userId: number): Promise<UserSettingsEntity | null> {
     if (!key || !userId) {
       return null;
     }
