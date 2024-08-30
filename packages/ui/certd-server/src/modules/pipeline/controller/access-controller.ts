@@ -41,19 +41,19 @@ export class AccessController extends CrudController<AccessService> {
     return super.update(bean);
   }
   @Post('/info', { summary: Constants.per.authOnly })
-  async info(@Query('id') id) {
+  async info(@Query('id') id: number) {
     await this.service.checkUserId(id, this.ctx.user.id);
     return super.info(id);
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
-  async delete(@Query('id') id) {
+  async delete(@Query('id') id: number) {
     await this.service.checkUserId(id, this.ctx.user.id);
     return super.delete(id);
   }
 
   @Post('/define', { summary: Constants.per.authOnly })
-  async define(@Query('type') type) {
+  async define(@Query('type') type:string) {
     const access = this.service.getDefineByType(type);
     return this.ok(access);
   }

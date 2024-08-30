@@ -49,13 +49,13 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
     return super.update(bean);
   }
   @Post('/info', { summary: Constants.per.authOnly })
-  async info(@Query('id') id) {
+  async info(@Query('id') id: number) {
     await this.service.checkUserId(id, this.ctx.user.id);
     return super.info(id);
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
-  async delete(@Query('id') id) {
+  async delete(@Query('id') id: number) {
     await this.service.checkUserId(id, this.ctx.user.id);
     return super.delete(id);
   }

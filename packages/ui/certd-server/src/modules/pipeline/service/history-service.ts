@@ -44,7 +44,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
     }
   }
 
-  async detail(historyId: string) {
+  async detail(historyId: number) {
     const entity = await this.info(historyId);
     const log = await this.logService.info(historyId);
     return new HistoryDetail(entity, log);

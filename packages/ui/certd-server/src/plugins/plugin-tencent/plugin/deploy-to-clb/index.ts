@@ -92,14 +92,14 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
   accessId!: string;
 
   client: any;
-
+  ClbClient: any;
   async onInstance() {
     this.client = await this.getClient();
   }
 
   async getClient() {
-    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/clb/index.js');
-    const ClbClient = sdk.clb.v20180317.Client;
+    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/clb/v20180317/index.js');
+    this.ClbClient = sdk.v20180317.Client;
 
     const accessProvider = (await this.accessService.getById(this.accessId)) as TencentAccess;
 
@@ -117,7 +117,7 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
       },
     };
 
-    return new ClbClient(clientConfig);
+    return new this.ClbClient(clientConfig);
   }
 
   async execute(): Promise<void> {

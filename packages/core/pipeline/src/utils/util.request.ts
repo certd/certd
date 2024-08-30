@@ -1,8 +1,31 @@
 import axios from "axios";
-// @ts-ignore
-import qs from "qs";
 import { logger } from "./util.log.js";
 import { Logger } from "log4js";
+
+export class HttpError extends Error {
+  request?: { url: string; method: string; data?: any };
+  response?: { data: any };
+  status?: number;
+  statusText?: string;
+  constructor(error: any) {
+    if (!error) {
+      return;
+    }
+    super(error.message);
+    this.name = error.name;
+    this.stack = error.stack;
+    this.status = error?.response?.status;
+    this.statusText = error?.response?.statusText;
+    this.request = {
+      url: error?.response?.config?.url,
+      method: error?.response?.config?.method,
+      data: error?.response?.config?.data,
+    };
+    this.response = {
+      data: error?.response?.data,
+    };
+  }
+}
 /**
  * @description 创建请求实例
  */
@@ -12,13 +35,6 @@ export function createAxiosService({ logger }: { logger: Logger }) {
   // 请求拦截
   service.interceptors.request.use(
     (config: any) => {
-      if (config.formData) {
-        config.data = qs.stringify(config.formData, {
-          arrayFormat: "indices",
-          allowDots: true,
-        }); // 序列化请求参数
-        delete config.formData;
-      }
       logger.info(`http request:${config.url}，method:${config.method}`);
       return config;
     },
@@ -50,26 +66,12 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       //   case 505: error.message = 'HTTP版本不受支持'; break
       //   default: break
       // }
-      logger.error(`请求出错：url:${error?.response?.config.url},method:${error?.response?.config?.method},status:${error?.response?.status}`);
-      logger.info("返回数据:", JSON.stringify(error?.response?.data));
-      delete error.config;
-      const data = error?.response?.data;
-      if (!data) {
-        error.message = data.message || data.msg || data.error || data;
-      }
-      if (error?.response) {
-        return Promise.reject({
-          status: error?.response?.status,
-          statusText: error?.response?.statusText,
-          request: {
-            url: error?.response?.config?.url,
-            method: error?.response?.config?.method,
-            data: error?.response?.data,
-          },
-          data: error?.response?.data,
-        });
-      }
-      return Promise.reject(error);
+      logger.error(
+        `请求出错：status:${error?.response?.status},statusText:${error?.response?.statusText},url:${error?.config?.url},method:${error?.config?.method}。`
+      );
+      logger.error("返回数据:", JSON.stringify(error?.response?.data));
+      const err = new HttpError(error);
+      return Promise.reject(err);
     }
   );
   return service;

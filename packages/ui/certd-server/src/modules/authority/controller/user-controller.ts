@@ -73,7 +73,7 @@ export class UserController extends CrudController<UserService> {
   @Post('/delete', { summary: 'sys:auth:user:remove' })
   async delete(
     @Query('id')
-    id
+    id : number
   ) {
     return await super.delete(id);
   }

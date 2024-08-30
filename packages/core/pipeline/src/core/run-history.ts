@@ -109,7 +109,7 @@ export class RunHistory {
 
   logError(runnable: Runnable, e: Error) {
     // @ts-ignore
-    this._loggers[runnable.id].error(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, e);
+    this._loggers[runnable.id].error(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, e.stack);
   }
 
   finally(runnable: Runnable) {

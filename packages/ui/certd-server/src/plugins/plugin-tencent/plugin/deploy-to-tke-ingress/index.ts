@@ -88,12 +88,13 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
   })
   cert!: any;
 
-  sdk: any;
+  TkeClient: any;
   K8sClient: any;
 
   async onInstance() {
     //  const TkeClient = this.tencentcloud.tke.v20180525.Client;
-    this.sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/tke/v20220501/index.js');
+    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/tke/v20220501/index.js');
+    this.TkeClient = sdk.v20220501.Client;
     const k8sSdk = await import('@certd/lib-k8s');
     this.K8sClient = k8sSdk.K8sClient;
   }
@@ -139,7 +140,7 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
       },
     };
 
-    return new this.sdk.Client(clientConfig);
+    return new this.TkeClient(clientConfig);
   }
 
   async getTkeKubeConfig(client: any, clusterId: string) {

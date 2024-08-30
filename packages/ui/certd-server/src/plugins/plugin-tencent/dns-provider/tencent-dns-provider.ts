@@ -31,8 +31,8 @@ export class TencentDnsProvider extends AbstractDnsProvider {
         },
       },
     };
-    const dnspodSdk: any = await import('tencentcloud-sdk-nodejs/tencentcloud/services/dnspod/v20210323/index.js');
-    const DnspodClient = dnspodSdk.Client;
+    const dnspodSdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/dnspod/v20210323/index.js');
+    const DnspodClient = dnspodSdk.v20210323.Client;
     // 实例化要请求产品的client对象,clientProfile是可选的
     this.client = new DnspodClient(clientConfig);
   }

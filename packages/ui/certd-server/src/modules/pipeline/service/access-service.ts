@@ -50,7 +50,7 @@ export class AccessService extends BaseService<AccessEntity> implements IAccessS
     const json = JSON.parse(setting);
     let oldSetting = {};
     let encryptSetting = {};
-    const firstEncrypt = !oldSettingEntity.encryptSetting || oldSettingEntity.encryptSetting === '{}';
+    const firstEncrypt = !oldSettingEntity || !oldSettingEntity.encryptSetting || oldSettingEntity.encryptSetting === '{}';
     if (oldSettingEntity) {
       oldSetting = JSON.parse(oldSettingEntity.setting || '{}');
       encryptSetting = JSON.parse(oldSettingEntity.encryptSetting || '{}');

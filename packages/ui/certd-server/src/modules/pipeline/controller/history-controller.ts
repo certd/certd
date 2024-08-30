@@ -99,14 +99,14 @@ export class HistoryController extends CrudController<HistoryService> {
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
-  async delete(@Query('id') id) {
+  async delete(@Query('id') id: number) {
     await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
     await super.delete(id);
     return this.ok();
   }
 
   @Post('/deleteByIds', { summary: Constants.per.authOnly })
-  async deleteByIds(@Body(ALL) body) {
+  async deleteByIds(@Body(ALL) body: any) {
     await this.authService.checkEntityUserId(this.ctx, this.getService(), body.ids);
     const isAdmin = await this.authService.isAdmin(this.ctx);
     const userId = isAdmin ? null : this.ctx.user.id;
@@ -115,21 +115,21 @@ export class HistoryController extends CrudController<HistoryService> {
   }
 
   @Post('/detail', { summary: Constants.per.authOnly })
-  async detail(@Query('id') id) {
+  async detail(@Query('id') id: number) {
     await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
     const detail = await this.service.detail(id);
     return this.ok(detail);
   }
 
   @Post('/logs', { summary: Constants.per.authOnly })
-  async logs(@Query('id') id) {
+  async logs(@Query('id') id: number) {
     await this.authService.checkEntityUserId(this.ctx, this.logService, id);
     const logInfo = await this.logService.info(id);
     return this.ok(logInfo);
   }
 
   @Post('/files', { summary: Constants.per.authOnly })
-  async files(@Query('pipelineId') pipelineId, @Query('historyId') historyId) {
+  async files(@Query('pipelineId') pipelineId: number, @Query('historyId') historyId: number) {
     await this.authService.checkEntityUserId(this.ctx, this.service, historyId);
     const files = await this.getFiles(historyId, pipelineId);
     return this.ok(files);
@@ -153,7 +153,7 @@ export class HistoryController extends CrudController<HistoryService> {
   }
 
   @Get('/download', { summary: Constants.per.authOnly })
-  async download(@Query('pipelineId') pipelineId, @Query('historyId') historyId, @Query('fileId') fileId) {
+  async download(@Query('pipelineId') pipelineId: number, @Query('historyId') historyId: number, @Query('fileId') fileId: string) {
     await this.authService.checkEntityUserId(this.ctx, this.service, historyId);
     const files = await this.getFiles(historyId, pipelineId);
     const file = files.find(f => f.id === fileId);

@@ -49,7 +49,7 @@ export class PermissionController extends CrudController<PermissionService> {
   @Post('/delete', { summary: 'sys:auth:per:remove' })
   async delete(
     @Query('id')
-    id
+    id : number
   ) {
     return await super.delete(id);
   }

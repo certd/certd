@@ -13,8 +13,12 @@ const defaultOpts = {
     termsOfServiceAgreed: false,
     skipChallengeVerification: false,
     challengePriority: ['http-01', 'dns-01'],
-    challengeCreateFn: async () => { throw new Error('Missing challengeCreateFn()'); },
-    challengeRemoveFn: async () => { throw new Error('Missing challengeRemoveFn()'); },
+    challengeCreateFn: async () => {
+        throw new Error('Missing challengeCreateFn()');
+    },
+    challengeRemoveFn: async () => {
+        throw new Error('Missing challengeRemoveFn()');
+    },
 };
 
 /**
@@ -209,6 +213,7 @@ module.exports = async (client, userOpts) => {
     }
 
     log(`[auto] challengeGroups:${allChallengePromises.length}`);
+
     function runAllPromise(tasks) {
         let promise = Promise.resolve();
         tasks.forEach((task) => {
@@ -228,47 +233,48 @@ module.exports = async (client, userOpts) => {
         return Promise.all(results);
     }
 
-    try {
-        log(`开始challenge，共${allChallengePromises.length}组`);
-        let i = 0;
-        // eslint-disable-next-line no-restricted-syntax
-        for (const challengePromises of allChallengePromises) {
-            i += 1;
-            log(`开始第${i}组`);
-            if (opts.signal && opts.signal.aborted) {
-                throw new Error('用户取消');
-            }
+    log(`开始challenge，共${allChallengePromises.length}组`);
+    let i = 0;
+    // eslint-disable-next-line no-restricted-syntax
+    for (const challengePromises of allChallengePromises) {
+        i += 1;
+        log(`开始第${i}组`);
+        if (opts.signal && opts.signal.aborted) {
+            throw new Error('用户取消');
+        }
+
+        try {
             // eslint-disable-next-line no-await-in-loop
             await runPromisePa(challengePromises);
         }
-        log('challenge结束');
-
-        // log('[auto] Waiting for challenge valid status');
-        // await Promise.all(challengePromises);
-
-        /**
-         * Finalize order and download certificate
-         */
-
-        log('[auto] Finalizing order and downloading certificate');
-        const finalized = await client.finalizeOrder(order, opts.csr);
-        return await client.getCertificate(finalized, opts.preferredChain);
-    }
-    catch (e) {
-        log(`证书申请失败${e.message}`);
-        throw e;
-    }
-    finally {
-        log(`清理challenge痕迹，length:${clearTasks.length}`);
-        try {
-            await runAllPromise(clearTasks);
-        }
         catch (e) {
-            log('清理challenge失败');
-            log(e);
+            log(`证书申请失败${e.message}`);
+            throw e;
+        }
+        finally {
+            log(`清理challenge痕迹，length:${clearTasks.length}`);
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await runAllPromise(clearTasks);
+            }
+            catch (e) {
+                log('清理challenge失败');
+                log(e);
+            }
         }
     }
+    log('challenge结束');
 
+    // log('[auto] Waiting for challenge valid status');
+    // await Promise.all(challengePromises);
+    /**
+     * Finalize order and download certificate
+     */
+
+    log('[auto] Finalizing order and downloading certificate');
+    const finalized = await client.finalizeOrder(order, opts.csr);
+    const res = await client.getCertificate(finalized, opts.preferredChain);
+    return res;
     // try {
     //     await Promise.allSettled(challengePromises);
     // }

@@ -1,4 +1,5 @@
 export * from '@certd/plugin-cert';
+export * from '@certd/plugin-plus';
 export * from './plugin-aliyun/index.js';
 export * from './plugin-tencent/index.js';
 export * from './plugin-host/index.js';

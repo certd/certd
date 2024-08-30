@@ -73,28 +73,28 @@ export class PipelineController extends CrudController<PipelineService> {
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
-  async delete(@Query('id') id) {
+  async delete(@Query('id') id: number) {
     await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
     await this.service.delete(id);
     return this.ok({});
   }
 
   @Post('/detail', { summary: Constants.per.authOnly })
-  async detail(@Query('id') id) {
+  async detail(@Query('id') id: number) {
     await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
     const detail = await this.service.detail(id);
     return this.ok(detail);
   }
 
   @Post('/trigger', { summary: Constants.per.authOnly })
-  async trigger(@Query('id') id) {
+  async trigger(@Query('id') id: number) {
     await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
     await this.service.trigger(id);
     return this.ok({});
   }
 
   @Post('/cancel', { summary: Constants.per.authOnly })
-  async cancel(@Query('historyId') historyId) {
+  async cancel(@Query('historyId') historyId: number) {
     await this.authService.checkEntityUserId(this.ctx, this.historyService, historyId);
     await this.service.cancel(historyId);
     return this.ok({});

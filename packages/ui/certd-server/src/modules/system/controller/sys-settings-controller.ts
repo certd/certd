@@ -45,13 +45,13 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
     return super.update(bean);
   }
   @Post('/info', { summary: 'sys:settings:view' })
-  async info(@Query('id') id) {
+  async info(@Query('id') id: number) {
     await this.service.checkUserId(id, this.ctx.user.id);
     return super.info(id);
   }
 
   @Post('/delete', { summary: 'sys:settings:edit' })
-  async delete(@Query('id') id) {
+  async delete(@Query('id') id: number) {
     await this.service.checkUserId(id, this.ctx.user.id);
     return super.delete(id);
   }

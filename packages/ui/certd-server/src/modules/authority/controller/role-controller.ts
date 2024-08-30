@@ -1,12 +1,4 @@
-import {
-  ALL,
-  Body,
-  Controller,
-  Inject,
-  Post,
-  Provide,
-  Query,
-} from '@midwayjs/core';
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { CrudController } from '../../../basic/crud-controller.js';
 import { RoleService } from '../service/role-service.js';
 
@@ -55,7 +47,7 @@ export class RoleController extends CrudController<RoleService> {
   @Post('/delete', { summary: 'sys:auth:role:remove' })
   async delete(
     @Query('id')
-    id
+    id: number
   ) {
     return await super.delete(id);
   }
@@ -63,7 +55,7 @@ export class RoleController extends CrudController<RoleService> {
   @Post('/getPermissionTree', { summary: 'sys:auth:role:view' })
   async getPermissionTree(
     @Query('id')
-    id
+    id: number
   ) {
     const ret = await this.service.getPermissionTreeByRoleId(id);
     return this.ok(ret);
@@ -72,7 +64,7 @@ export class RoleController extends CrudController<RoleService> {
   @Post('/getPermissionIds', { summary: 'sys:auth:role:view' })
   async getPermissionIds(
     @Query('id')
-    id
+    id: number
   ) {
     const ret = await this.service.getPermissionIdsByRoleId(id);
     return this.ok(ret);

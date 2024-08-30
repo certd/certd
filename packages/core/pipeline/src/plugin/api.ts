@@ -40,6 +40,8 @@ export type PluginDefine = Registrable & {
     dest: string;
     type: "computed";
   }[];
+
+  needPlus?: boolean;
 };
 
 export type ITaskPlugin = {
