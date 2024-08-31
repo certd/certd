@@ -25,6 +25,7 @@
                     <template #title>
                       <a-avatar :src="item.icon || '/images/plugin.png'" />
                       <span class="title">{{ item.title }}</span>
+                      <vip-button v-if="item.needPlus" mode="icon" />
                     </template>
                     <template #description>
                       <span :title="item.desc">{{ item.desc }}</span>
@@ -81,6 +82,7 @@ import _ from "lodash-es";
 import { nanoid } from "nanoid";
 import { CopyOutlined } from "@ant-design/icons-vue";
 import { PluginGroups } from "/@/views/certd/pipeline/pipeline/type";
+import { useUserStore } from "/@/store/modules/user";
 
 export default {
   name: "PiStepForm",
@@ -98,6 +100,7 @@ export default {
      * @returns
      */
     function useStepForm() {
+      const useStore = useUserStore();
       const getPluginGroups: any = inject("getPluginGroups");
       const pluginGroups: PluginGroups = getPluginGroups();
       const mode: Ref = ref("add");
@@ -117,6 +120,10 @@ export default {
       });
 
       const stepTypeSelected = (item: any) => {
+        if (item.needPlus && !useStore.isPlus) {
+          message.warn("此插件需要开通专业版才能使用");
+          throw new Error("此插件需要开通专业版才能使用");
+        }
         currentStep.value.type = item.name;
         currentStep.value.title = item.title;
         console.log("currentStepTypeChanged:", currentStep.value);
@@ -128,6 +135,7 @@ export default {
           message.warn("请先选择类型");
           return;
         }
+
         // 给step的input设置默认值
         changeCurrentPlugin(currentStep.value);
 
@@ -347,7 +355,7 @@ export default {
       overflow-y: hidden;
 
       .ant-card-meta-description {
-        font-size: 10px;
+        font-size: 12px;
         line-height: 20px;
         height: 40px;
         color: #7f7f7f;

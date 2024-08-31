@@ -18,7 +18,7 @@
             <MenuFoldOutlined v-else />
           </div>
           <fs-menu class="header-menu" mode="horizontal" :expand-selected="false" :selectable="false" :menus="frameworkMenus" />
-          <vip-button class="flex-center header-btn"></vip-button>
+          <vip-button class="flex-center header-btn" mode="nav" />
         </div>
         <div class="header-right header-buttons">
           <!--          <button-->

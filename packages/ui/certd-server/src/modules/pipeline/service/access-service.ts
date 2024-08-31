@@ -75,7 +75,8 @@ export class AccessService extends BaseService<AccessEntity> implements IAccessS
         //星号保护
         const length = value.length;
         const subIndex = Math.min(2, length);
-        const starLength = length - subIndex * 2;
+        let starLength = length - subIndex * 2;
+        starLength = Math.max(2, starLength);
         const starString = '*'.repeat(starLength);
         json[key] = value.substring(0, subIndex) + starString + value.substring(value.length - subIndex);
         encryptSetting[key] = {
