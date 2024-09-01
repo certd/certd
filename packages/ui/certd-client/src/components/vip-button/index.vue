@@ -110,6 +110,10 @@ const computedSiteId = computed(() => settingStore.installInfo?.siteId);
 const [modal, contextHolder] = Modal.useModal();
 
 function openUpgrade() {
+  if (!userStore.isAdmin) {
+    message.info("仅限管理员操作");
+    return;
+  }
   const placeholder = "请输入激活码";
   modal.confirm({
     title: "升级/续期专业版",
