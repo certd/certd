@@ -24,6 +24,7 @@ export class CronTask {
     this.job = req.job;
     this.name = req.name;
     this.logger = logger;
+    this.logger.info(`[cron]  CronTask created [${this.name}], cron:${this.cron}`);
     this.genNextTime();
   }
 
