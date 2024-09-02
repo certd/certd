@@ -29,6 +29,7 @@ export class HostShellExecutePlugin extends AbstractTaskPlugin {
     component: {
       name: 'a-textarea',
       vModel: 'value',
+      rows: 6,
     },
     required: true,
   })

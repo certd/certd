@@ -117,7 +117,7 @@ export class PluginGroups {
 }
 
 export type PipelineOptions = {
-  doTrigger(options: { pipelineId: number }): Promise<void>;
+  doTrigger(options: { pipelineId: number; stepId?: string }): Promise<void>;
   doSave(pipelineConfig: Pipeline): Promise<void>;
   getPipelineDetail(query: { pipelineId: number }): Promise<PipelineDetail>;
   getHistoryList(query: { pipelineId: number }): Promise<RunHistory[]>;

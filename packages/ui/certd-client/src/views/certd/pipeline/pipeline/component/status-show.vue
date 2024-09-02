@@ -1,5 +1,5 @@
 <template>
-  <span v-if="statusRef" class="pi-status-show">
+  <span v-if="statusRef" class="pi-status-show flex-o">
     <template v-if="type === 'icon'">
       <fs-icon class="status-icon" v-bind="statusRef" :style="{ color: statusRef.color }" />
     </template>

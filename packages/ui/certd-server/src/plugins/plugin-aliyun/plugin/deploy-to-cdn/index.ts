@@ -1,9 +1,7 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import dayjs from 'dayjs';
-import Core from '@alicloud/pop-core';
-import RPCClient from '@alicloud/pop-core';
-import { AliyunAccess } from '../../access/index.js';
-
+import { AliyunAccess } from '@certd/plugin-plus';
+import type RPCClient from '@alicloud/pop-core';
 @IsTaskPlugin({
   name: 'DeployCertToAliyunCDN',
   title: '部署证书至阿里云CDN',
@@ -54,14 +52,16 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     console.log('开始部署证书到阿里云cdn');
     const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;
-    const client = this.getClient(access);
+    const client = await this.getClient(access);
     const params = await this.buildParams();
     await this.doRequest(client, params);
     console.log('部署完成');
   }
 
-  getClient(access: AliyunAccess) {
-    return new Core({
+  async getClient(access: AliyunAccess) {
+    const Core = await import('@alicloud/pop-core');
+
+    return new Core.default({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
       endpoint: 'https://cdn.aliyuncs.com',

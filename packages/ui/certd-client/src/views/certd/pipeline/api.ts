@@ -59,11 +59,11 @@ export function Save(pipelineEntity: any) {
   });
 }
 
-export function Trigger(id: any) {
+export function Trigger(id: any, stepId?: string) {
   return request({
     url: apiPrefix + "/trigger",
     method: "post",
-    params: { id }
+    params: { id, stepId }
   });
 }
 

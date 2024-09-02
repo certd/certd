@@ -54,9 +54,9 @@ export default defineComponent({
           content: JSON.stringify(pipelineConfig)
         });
       },
-      async doTrigger(options: { pipelineId: number }) {
-        const { pipelineId } = options;
-        await api.Trigger(pipelineId);
+      async doTrigger(options: { pipelineId: number; stepId?: string }) {
+        const { pipelineId, stepId } = options;
+        await api.Trigger(pipelineId, stepId);
       }
     };
 

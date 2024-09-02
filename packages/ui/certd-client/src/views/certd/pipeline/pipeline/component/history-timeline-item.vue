@@ -5,7 +5,7 @@
     </template>
     <p>
       <fs-date-format :model-value="runnable.status?.startTime"></fs-date-format>
-      <a-tag class="ml-1" :color="status.color" :closable="status.value === 'start'" @close="cancelTask">
+      <a-tag class="ml-5" :color="status.color" :closable="status.value === 'start'" @close="cancelTask">
         {{ status.label }}
       </a-tag>
       <a-tag v-if="isCurrent" class="pointer" color="green" :closable="true" @close="cancel">当前</a-tag>

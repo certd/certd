@@ -1,12 +1,7 @@
 import Core from '@alicloud/pop-core';
-import {
-  AbstractDnsProvider,
-  CreateRecordOptions,
-  IsDnsProvider,
-  RemoveRecordOptions,
-} from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { Autowire, ILogger } from '@certd/pipeline';
-import { AliyunAccess } from '../access/index.js';
+import { AliyunAccess } from '@certd/plugin-plus';
 
 @IsDnsProvider({
   name: 'aliyun',
@@ -110,11 +105,7 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
     };
 
     try {
-      const ret = await this.client.request(
-        'AddDomainRecord',
-        params,
-        requestOption
-      );
+      const ret = await this.client.request('AddDomainRecord', params, requestOption);
       this.logger.info('添加域名解析成功:', value, value, ret.RecordId);
       return ret.RecordId;
     } catch (e: any) {
@@ -136,11 +127,7 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
       method: 'POST',
     };
 
-    const ret = await this.client.request(
-      'DeleteDomainRecord',
-      params,
-      requestOption
-    );
+    const ret = await this.client.request('DeleteDomainRecord', params, requestOption);
     this.logger.info('删除域名解析成功:', fullRecord, value, ret.RecordId);
     return ret.RecordId;
   }

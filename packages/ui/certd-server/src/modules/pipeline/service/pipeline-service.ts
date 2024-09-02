@@ -197,14 +197,14 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async trigger(id) {
+  async trigger(id: any, stepId?: string) {
     this.cron.register({
       name: `pipeline.${id}.trigger.once`,
       cron: null,
       job: async () => {
         logger.info('用户手动启动job');
         try {
-          await this.run(id, null);
+          await this.run(id, null, stepId);
         } catch (e) {
           logger.error('手动job执行失败：', e);
         }
@@ -279,7 +279,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     logger.info('当前定时器数量：', this.cron.getTaskSize());
   }
 
-  async run(id: number, triggerId: string) {
+  async run(id: number, triggerId: string, stepId?: string) {
     const entity: PipelineEntity = await this.info(id);
 
     const pipeline = JSON.parse(entity.content);
@@ -333,6 +333,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
     try {
       runningTasks.set(historyId, executor);
       await executor.init();
+      if (stepId) {
+        // 清除该step的状态
+        executor.clearLastStatus(stepId);
+      }
       await executor.run(historyId, triggerType);
     } catch (e) {
       logger.error('执行失败：', e);

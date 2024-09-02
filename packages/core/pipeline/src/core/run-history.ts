@@ -166,6 +166,14 @@ export class RunnableCollection {
     });
   }
 
+  clearById(id: string) {
+    const runnable = this.collection[id];
+    if (runnable?.status) {
+      runnable.status.status = ResultType.none;
+      runnable.status.result = ResultType.none;
+    }
+  }
+
   add(runnable: Runnable) {
     this.collection[runnable.id] = runnable;
   }

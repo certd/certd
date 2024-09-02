@@ -1,7 +1,5 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
-// @ts-ignore
-import { ROAClient } from '@alicloud/pop-core';
-import { AliyunAccess } from '../../access/index.js';
+import { AliyunAccess } from '@certd/plugin-plus';
 import { appendTimeSuffix } from '../../utils/index.js';
 import { CertInfo } from '@certd/plugin-cert';
 
@@ -113,7 +111,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     console.log('开始部署证书到阿里云cdn');
     const { regionId, ingressClass, clusterId, isPrivateIpAddress, cert } = this;
     const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;
-    const client = this.getClient(access, regionId);
+    const client = await this.getClient(access, regionId);
     const kubeConfigStr = await this.getKubeConfig(client, clusterId, isPrivateIpAddress);
 
     this.logger.info('kubeconfig已成功获取');
@@ -200,8 +198,10 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     }
   }
 
-  getClient(aliyunProvider: any, regionId: string) {
-    return new ROAClient({
+  async getClient(aliyunProvider: any, regionId: string) {
+    const ROAClient = await import('@alicloud/pop-core');
+
+    return new ROAClient.default({
       accessKeyId: aliyunProvider.accessKeyId,
       accessKeySecret: aliyunProvider.accessKeySecret,
       endpoint: `https://cs.${regionId}.aliyuncs.com`,

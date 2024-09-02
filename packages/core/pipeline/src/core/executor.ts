@@ -36,6 +36,8 @@ export class Executor {
   options: ExecutorOptions;
   abort: AbortController = new AbortController();
 
+  _inited = false;
+
   onChanged: (history: RunHistory) => Promise<void>;
   constructor(options: ExecutorOptions) {
     this.options = options;
@@ -50,6 +52,10 @@ export class Executor {
   }
 
   async init() {
+    if (this._inited) {
+      return;
+    }
+    this._inited = true;
     const lastRuntime = await this.pipelineContext.getObj(`lastRuntime`);
     this.lastRuntime = lastRuntime;
     this.lastStatusMap = new RunnableCollection(lastRuntime?.pipeline);
@@ -314,5 +320,9 @@ export class Executor {
         }
       }
     }
+  }
+
+  clearLastStatus(stepId: string) {
+    this.lastStatusMap.clearById(stepId);
   }
 }

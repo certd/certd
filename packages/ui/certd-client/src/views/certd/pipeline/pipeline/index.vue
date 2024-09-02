@@ -82,10 +82,20 @@
                     </div>
                     <div class="task">
                       <a-button shape="round" @click="taskEdit(stage, index, task, taskIndex)">
-                        <span class="flex-o w-100">
-                          <span class="ellipsis flex-1" :class="{ 'mr-15': editMode }">{{ task.title }}</span>
-                          <pi-status-show :status="task.status?.result"></pi-status-show>
-                        </span>
+                        <a-popover title="步骤">
+                          <!--                          :open="true"-->
+                          <template #content>
+                            <div v-for="(item, index) of task.steps" class="flex-o w-100">
+                              <span class="ellipsis flex-1">{{ index + 1 }}. {{ item.title }} </span>
+                              <pi-status-show :status="item.status?.result"></pi-status-show>
+                              <fs-icon class="pointer color-blue" title="重新运行此步骤" icon="SyncOutlined" @click="run(item.id)"></fs-icon>
+                            </div>
+                          </template>
+                          <span class="flex-o w-100">
+                            <span class="ellipsis flex-1" :class="{ 'mr-15': editMode }">{{ task.title }}</span>
+                            <pi-status-show :status="task.status?.result"></pi-status-show>
+                          </span>
+                        </a-popover>
                       </a-button>
                       <fs-icon v-if="editMode" class="copy" title="复制" icon="ion:copy-outline" @click="taskCopy(stage, index, task)"></fs-icon>
                     </div>
@@ -226,10 +236,11 @@ import { nanoid } from "nanoid";
 import { PipelineDetail, PipelineOptions, PluginGroups, RunHistory } from "./type";
 import type { Runnable } from "@certd/pipeline";
 import PiHistoryTimelineItem from "/@/views/certd/pipeline/pipeline/component/history-timeline-item.vue";
+import { FsIcon } from "@fast-crud/fast-crud";
 export default defineComponent({
   name: "PipelineEdit",
   // eslint-disable-next-line vue/no-unused-components
-  components: { PiHistoryTimelineItem, PiTaskForm, PiTriggerForm, PiTaskView, PiStatusShow, PiNotificationForm },
+  components: { FsIcon, PiHistoryTimelineItem, PiTaskForm, PiTriggerForm, PiTaskView, PiStatusShow, PiNotificationForm },
   props: {
     pipelineId: {
       type: [Number, String],
@@ -529,7 +540,7 @@ export default defineComponent({
 
     function useActions() {
       const saveLoading = ref();
-      const run = async () => {
+      const run = async (stepId?: string) => {
         if (props.editMode) {
           message.warn("请先保存，再运行管道");
           return;
@@ -549,11 +560,12 @@ export default defineComponent({
             //@ts-ignore
             await changeCurrentHistory(null);
             watchNewHistoryList();
-            await props.options.doTrigger({ pipelineId: pipeline.value.id });
+            await props.options.doTrigger({ pipelineId: pipeline.value.id, stepId: stepId });
             notification.success({ message: "管道已经开始运行" });
           }
         });
       };
+
       function toggleEditMode(editMode: boolean) {
         ctx.emit("update:editMode", editMode);
       }

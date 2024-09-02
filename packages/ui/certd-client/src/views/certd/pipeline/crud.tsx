@@ -2,7 +2,7 @@ import * as api from "./api";
 import { useI18n } from "vue-i18n";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { nanoid } from "nanoid";
 import { message, Modal } from "ant-design-vue";
@@ -29,9 +29,16 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
   };
 
   const addRequest = async ({ form }: AddReq) => {
-    form.content = JSON.stringify({
-      title: form.title
-    });
+    if (form.content == null) {
+      form.content = JSON.stringify({
+        title: form.title
+      });
+    } else {
+      const content = JSON.parse(form.content);
+      content.title = form.title;
+      form.content = JSON.stringify(content);
+    }
+
     const res = await api.AddObj(form);
     lastResRef.value = res;
     return res;
@@ -134,6 +141,18 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           view: {
             click({ row }) {
               router.push({ path: "/certd/pipeline/detail", query: { id: row.id, editMode: "false" } });
+            }
+          },
+          copy: {
+            click: async (context) => {
+              const { ui } = useUi();
+              // @ts-ignore
+              const row = context[ui.tableColumn.row];
+              row.title = row.title + "_copy";
+              await crudExpose.openCopy({
+                row: row,
+                index: context.index
+              });
             }
           },
           config: {

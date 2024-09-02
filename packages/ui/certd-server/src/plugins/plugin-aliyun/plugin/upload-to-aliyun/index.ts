@@ -1,6 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import Core from '@alicloud/pop-core';
-import { AliyunAccess } from '../../access/index.js';
+import { AliyunAccess } from '@certd/plugin-plus';
 import { appendTimeSuffix, checkRet, ZoneOptions } from '../../utils/index.js';
 
 @IsTaskPlugin({
