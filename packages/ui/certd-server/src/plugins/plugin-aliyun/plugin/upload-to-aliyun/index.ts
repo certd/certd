@@ -1,5 +1,5 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
-import { appendTimeSuffix, checkRet, ZoneOptions } from '../../utils/index.js';
+import { appendTimeSuffix, checkRet } from '../../utils/index.js';
 import { AliyunAccess } from '../../access/index.js';
 
 @IsTaskPlugin({
