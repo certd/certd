@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.24.1](https://github.com/certd/certd/compare/v1.24.0...v1.24.1) (2024-09-02)
+
+### Performance Improvements
+
+* 授权配置支持加密 ([42a56b5](https://github.com/certd/certd/commit/42a56b581d754c3e5f9838179d19ab0d004ef2eb))
+
 # [1.24.0](https://github.com/certd/certd/compare/v1.23.1...v1.24.0) (2024-08-25)
 
 ### Bug Fixes
