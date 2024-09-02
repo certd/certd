@@ -129,8 +129,10 @@ function openUpgrade() {
           <div>
             <h3 class="block-header">专业版特权</h3>
             <ul>
-              <li>证书流水线数量无限制</li>
               <li>可加VIP群，需求优先实现</li>
+              <li>证书流水线数量无限制（免费版限制10条）</li>
+              <li>免配置发邮件功能</li>
+              <li>FTP上传、cdnfly、宝塔、易盾等部署插件</li>
               <li>更多特权敬请期待</li>
             </ul>
           </div>
