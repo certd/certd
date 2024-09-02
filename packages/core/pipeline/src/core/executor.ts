@@ -83,9 +83,9 @@ export class Executor {
         await this.notification("turnToSuccess");
       }
       await this.notification("success");
-    } catch (e) {
+    } catch (e: any) {
       await this.notification("error", e);
-      this.logger.error("pipeline 执行失败", e);
+      this.logger.error("pipeline 执行失败", e.stack);
     } finally {
       await this.pipelineContext.setObj("lastRuntime", this.runtime);
       this.logger.info(`pipeline.${this.pipeline.id}  end`);

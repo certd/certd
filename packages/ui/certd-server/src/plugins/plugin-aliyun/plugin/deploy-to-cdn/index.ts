@@ -1,12 +1,11 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import dayjs from 'dayjs';
-import { AliyunAccess } from '@certd/plugin-plus';
-import type RPCClient from '@alicloud/pop-core';
+import { AliyunAccess } from '../../access/index.js';
 @IsTaskPlugin({
   name: 'DeployCertToAliyunCDN',
   title: '部署证书至阿里云CDN',
   group: pluginGroups.aliyun.key,
-  desc: '依赖证书申请前置任务，自动部署域名证书至阿里云CDN',
+  desc: '自动部署域名证书至阿里云CDN',
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -32,6 +31,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     helper: '请选择前置任务输出的域名证书',
     component: {
       name: 'pi-output-selector',
+      from: 'CertApply',
     },
     required: true,
   })
@@ -73,7 +73,6 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     const CertName = (this.certName ?? 'certd') + '-' + dayjs().format('YYYYMMDDHHmmss');
     const cert: any = this.cert;
     return {
-      RegionId: 'cn-hangzhou',
       DomainName: this.domainName,
       SSLProtocol: 'on',
       CertName: CertName,
@@ -83,7 +82,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     };
   }
 
-  async doRequest(client: RPCClient, params: any) {
+  async doRequest(client: any, params: any) {
     const requestOption = {
       method: 'POST',
     };

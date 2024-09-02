@@ -104,12 +104,13 @@ export class RunHistory {
 
   log(runnable: Runnable, text: string) {
     // @ts-ignore
-    this._loggers[runnable.id].info(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, text);
+    this._loggers[runnable.id].info(`[${runnable.runnableType}] [${runnable.title}]<id:${runnable.id}> ：`, text);
   }
 
   logError(runnable: Runnable, e: Error) {
     // @ts-ignore
-    this._loggers[runnable.id].error(`[${runnable.title}]<id:${runnable.id}> [${runnable.runnableType}]`, e.stack);
+    const errorInfo = runnable.runnableType == "step" ? e.stack : e.message;
+    this._loggers[runnable.id].error(`[${runnable.runnableType}] [${runnable.title}]<id:${runnable.id}> ：${errorInfo}`);
   }
 
   finally(runnable: Runnable) {

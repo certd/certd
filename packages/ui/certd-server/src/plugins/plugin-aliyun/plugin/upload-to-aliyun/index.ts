@@ -1,7 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
-import Core from '@alicloud/pop-core';
-import { AliyunAccess } from '@certd/plugin-plus';
 import { appendTimeSuffix, checkRet, ZoneOptions } from '../../utils/index.js';
+import { AliyunAccess } from '../../access/index.js';
 
 @IsTaskPlugin({
   name: 'uploadCertToAliyun',
@@ -27,7 +26,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
     component: {
       name: 'a-auto-complete',
       vModel: 'value',
-      options: ZoneOptions,
+      options: [{ value: 'cn-hangzhou' }, { value: 'eu-central-1' }, { value: 'ap-southeast-1' }],
     },
     required: true,
   })
@@ -38,6 +37,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
     helper: '请选择前置任务输出的域名证书',
     component: {
       name: 'pi-output-selector',
+      from: 'CertApply',
     },
     required: true,
   })
@@ -62,9 +62,9 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
   async onInstance() {}
 
   async execute(): Promise<void> {
-    console.log('开始部署证书到阿里云cdn');
-    const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;
-    const client = this.getClient(access);
+    this.logger.info('开始部署证书到阿里云cdn');
+    const access: AliyunAccess = await this.accessService.getById(this.accessId);
+    const client = await this.getClient(access);
     const certName = appendTimeSuffix(this.name);
     const params = {
       RegionId: this.regionId || 'cn-hangzhou',
@@ -77,7 +77,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
       method: 'POST',
     };
 
-    const ret = (await client.request('CreateUserCertificate', params, requestOption)) as any;
+    const ret: any = await client.request('CreateUserCertificate', params, requestOption);
     checkRet(ret);
     this.logger.info('证书上传成功：aliyunCertId=', ret.CertId);
 
@@ -85,8 +85,9 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
     this.aliyunCertId = ret.CertId;
   }
 
-  getClient(aliyunProvider: AliyunAccess) {
-    return new Core({
+  async getClient(aliyunProvider: AliyunAccess) {
+    const Core = await import('@alicloud/pop-core');
+    return new Core.default({
       accessKeyId: aliyunProvider.accessKeyId,
       accessKeySecret: aliyunProvider.accessKeySecret,
       endpoint: 'https://cas.aliyuncs.com',

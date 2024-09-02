@@ -1,5 +1,5 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
-import { AliyunAccess } from '@certd/plugin-plus';
+import { AliyunAccess } from '../../access/index.js';
 import { appendTimeSuffix } from '../../utils/index.js';
 import { CertInfo } from '@certd/plugin-cert';
 
@@ -88,6 +88,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     helper: '请选择前置任务输出的域名证书',
     component: {
       name: 'pi-output-selector',
+      from: 'CertApply',
     },
     required: true,
   })
@@ -199,9 +200,9 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
   }
 
   async getClient(aliyunProvider: any, regionId: string) {
-    const ROAClient = await import('@alicloud/pop-core');
+    const Core = await import('@alicloud/pop-core');
 
-    return new ROAClient.default({
+    return new Core.default({
       accessKeyId: aliyunProvider.accessKeyId,
       accessKeySecret: aliyunProvider.accessKeySecret,
       endpoint: `https://cs.${regionId}.aliyuncs.com`,

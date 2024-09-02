@@ -20,7 +20,6 @@
   },
   "dependencies": {
     "@alicloud/cs20151215": "^3.0.3",
-    "@alicloud/openapi-client": "^0.4.0",
     "@alicloud/pop-core": "^1.7.10",
     "@certd/acme-client": "^1.24.0",
     "@certd/lib-huawei": "^1.22.1",

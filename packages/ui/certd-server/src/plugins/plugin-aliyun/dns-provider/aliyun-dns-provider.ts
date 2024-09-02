@@ -1,7 +1,6 @@
-import Core from '@alicloud/pop-core';
 import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { Autowire, ILogger } from '@certd/pipeline';
-import { AliyunAccess } from '@certd/plugin-plus';
+import { AliyunAccess } from '../access/index.js';
 
 @IsDnsProvider({
   name: 'aliyun',
@@ -17,7 +16,8 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
   logger!: ILogger;
   async onInstance() {
     const access: any = this.access;
-    this.client = new Core({
+    const Core = await import('@alicloud/pop-core');
+    this.client = new Core.default({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
       endpoint: 'https://alidns.aliyuncs.com',

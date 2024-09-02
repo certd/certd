@@ -1,7 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import dayjs from 'dayjs';
-import { AliyunAccess } from '@certd/plugin-plus';
-import type RPCClient from '@alicloud/pop-core';
+import { AliyunAccess } from '../../access/index.js';
 @IsTaskPlugin({
   name: 'DeployCertToAliyunDCDN',
   title: '部署证书至阿里云DCDN',
@@ -32,6 +31,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     helper: '请选择前置任务输出的域名证书',
     component: {
       name: 'pi-output-selector',
+      from: 'CertApply',
     },
     required: true,
   })
@@ -50,22 +50,21 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
 
   async onInstance() {}
   async execute(): Promise<void> {
-    console.log('开始部署证书到阿里云DCDN');
+    this.logger.info('开始部署证书到阿里云DCDN');
     const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;
     const client = await this.getClient(access);
     const params = await this.buildParams();
     await this.doRequest(client, params);
-    console.log('部署完成');
+    this.logger.info('部署完成');
   }
 
   async getClient(access: AliyunAccess) {
-    const Core = await import('@alicloud/pop-core');
-
-    return new Core.default({
+    const sdk = await import('@alicloud/pop-core');
+    return new sdk.default({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
       endpoint: 'https://dcdn.aliyuncs.com',
-      apiVersion: '2018-05-10',
+      apiVersion: '2018-01-15',
     });
   }
 
@@ -73,7 +72,6 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     const CertName = (this.certName ?? 'certd') + '-' + dayjs().format('YYYYMMDDHHmmss');
     const cert: any = this.cert;
     return {
-      RegionId: 'cn-hangzhou',
       DomainName: this.domainName,
       SSLProtocol: 'on',
       CertName: CertName,
@@ -83,9 +81,10 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     };
   }
 
-  async doRequest(client: RPCClient, params: any) {
+  async doRequest(client: any, params: any) {
     const requestOption = {
       method: 'POST',
+      formatParams: false,
     };
     const ret: any = await client.request('SetDcdnDomainSSLCertificate', params, requestOption);
     this.checkRet(ret);
