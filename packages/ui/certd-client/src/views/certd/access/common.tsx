@@ -16,7 +16,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
     }
   };
 
-  function buildDefineFields(define: any) {
+  function buildDefineFields(define: any, form: any) {
     const formWrapperRef = crudExpose.getFormWrapperRef();
     const columnsRef = toRef(formWrapperRef.formOptions, "columns");
 
@@ -32,7 +32,12 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
         ...value,
         key
       };
-      columnsRef.value[key] = _.merge({ title: key }, defaultPluginConfig, field);
+      const column = _.merge({ title: key }, defaultPluginConfig, field);
+      if (column.value != null && _.get(form, key) == null) {
+        //设置默认值
+        _.set(form, key, column.value);
+      }
+      columnsRef.value[key] = column;
       console.log("form", columnsRef.value);
     });
   }
@@ -55,13 +60,16 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
         rules: [{ required: true, message: "请选择类型" }],
         valueChange: {
           immediate: true,
-          async handle({ value, mode, form }) {
+          async handle({ value, mode, form, immediate }) {
             if (value == null) {
               return;
             }
             const define = await api.GetProviderDefine(value);
             console.log("define", define);
-            buildDefineFields(define);
+            if (!immediate) {
+              form.access = {};
+            }
+            buildDefineFields(define, form);
           }
         }
       },

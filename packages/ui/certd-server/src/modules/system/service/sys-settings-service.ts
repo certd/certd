@@ -74,14 +74,15 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   async getSetting<T>(type: any): Promise<T> {
     const key = type.__key__;
     const cacheKey = type.getCacheKey();
-    let settings: T = await this.cache.get(cacheKey);
-    let settingInstance: T = new type();
-    if (settings == null) {
-      settings = await this.getSettingByKey(key);
-      settingInstance = _.merge(settingInstance, settings);
-      await this.cache.set(key, settingInstance);
+    const settings: T = await this.cache.get(cacheKey);
+    if (settings) {
+      return settings;
     }
-    return settingInstance;
+    let newSetting: T = new type();
+    const savedSettings = await this.getSettingByKey(key);
+    newSetting = _.merge(newSetting, savedSettings);
+    await this.cache.set(cacheKey, newSetting);
+    return newSetting;
   }
 
   async saveSetting<T extends BaseSettings>(bean: T) {

@@ -29,7 +29,7 @@
     "@certd/pipeline": "^1.24.0",
     "@certd/plugin-cert": "^1.24.0",
     "@certd/plugin-plus": "^1.24.0",
-    "@koa/cors": "^3.4.3",
+    "@koa/cors": "^5.0.0",
     "@midwayjs/bootstrap": "^3.16.2",
     "@midwayjs/cache": "^3.14.0",
     "@midwayjs/core": "^3.16.2",
@@ -41,6 +41,7 @@
     "@midwayjs/typeorm": "^3.16.4",
     "@midwayjs/validate": "^3.16.4",
     "axios": "^1.7.2",
+    "basic-ftp": "^5.0.5",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.1.2",
     "cache-manager": "^3.6.3",
@@ -50,7 +51,7 @@
     "https-proxy-agent": "^7.0.4",
     "iconv-lite": "^0.6.3",
     "js-yaml": "^4.1.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "koa-send": "^5.0.1",
     "kubernetes-client": "^9.0.0",
     "lodash-es": "^4.17.21",
@@ -65,7 +66,7 @@
     "ssh2": "^1.15.0",
     "svg-captcha": "^1.4.0",
     "tencentcloud-sdk-nodejs": "^4.0.44",
-    "typeorm": "^0.3.11"
+    "typeorm": "0.3.15"
   },
   "devDependencies": {
     "@midwayjs/mock": "^3.16.4",
