@@ -66,7 +66,7 @@
     "ssh2": "^1.15.0",
     "svg-captcha": "^1.4.0",
     "tencentcloud-sdk-nodejs": "^4.0.44",
-    "typeorm": "0.3.15"
+    "typeorm": "^0.3.20"
   },
   "devDependencies": {
     "@midwayjs/mock": "^3.16.4",

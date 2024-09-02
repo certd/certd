@@ -17,7 +17,7 @@ export abstract class BaseService<T> {
 
   async transaction(callback: (entityManager: EntityManager) => Promise<any>) {
     const dataSource = this.dataSourceManager.getDataSource('default');
-    await dataSource.transaction(callback);
+    await dataSource.transaction(callback as any);
   }
 
   /**
