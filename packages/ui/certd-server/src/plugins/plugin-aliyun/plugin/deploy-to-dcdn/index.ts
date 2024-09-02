@@ -3,19 +3,19 @@ import dayjs from 'dayjs';
 import { AliyunAccess } from '@certd/plugin-plus';
 import type RPCClient from '@alicloud/pop-core';
 @IsTaskPlugin({
-  name: 'DeployCertToAliyunCDN',
-  title: '部署证书至阿里云CDN',
+  name: 'DeployCertToAliyunDCDN',
+  title: '部署证书至阿里云DCDN',
   group: pluginGroups.aliyun.key,
-  desc: '依赖证书申请前置任务，自动部署域名证书至阿里云CDN',
+  desc: '依赖证书申请前置任务，自动部署域名证书至阿里云DCDN',
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
 })
-export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
+export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   @TaskInput({
-    title: 'CDN加速域名',
+    title: 'DCDN加速域名',
     helper: '你在阿里云上配置的CDN加速域名，比如:certd.docmirror.cn',
     required: true,
   })
@@ -50,7 +50,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
 
   async onInstance() {}
   async execute(): Promise<void> {
-    console.log('开始部署证书到阿里云cdn');
+    console.log('开始部署证书到阿里云DCDN');
     const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;
     const client = await this.getClient(access);
     const params = await this.buildParams();
@@ -64,7 +64,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     return new Core.default({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
-      endpoint: 'https://cdn.aliyuncs.com',
+      endpoint: 'https://dcdn.aliyuncs.com',
       apiVersion: '2018-05-10',
     });
   }
@@ -87,9 +87,9 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     const requestOption = {
       method: 'POST',
     };
-    const ret: any = await client.request('SetCdnDomainSSLCertificate', params, requestOption);
+    const ret: any = await client.request('SetDcdnDomainSSLCertificate', params, requestOption);
     this.checkRet(ret);
-    this.logger.info('设置cdn证书成功:', ret.RequestId);
+    this.logger.info('设置Dcdn证书成功:', ret.RequestId);
   }
 
   checkRet(ret: any) {
@@ -98,4 +98,4 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     }
   }
 }
-new DeployCertToAliyunCDN();
+new DeployCertToAliyunDCDN();
