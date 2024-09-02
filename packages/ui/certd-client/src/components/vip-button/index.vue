@@ -115,8 +115,9 @@ function openUpgrade() {
     return;
   }
   const placeholder = "请输入激活码";
+  const isPlus = userStore.isPlus;
   modal.confirm({
-    title: "升级/续期专业版",
+    title: isPlus ? "续期专业版" : "激活专业版",
     async onOk() {
       return await doActive();
     },
@@ -134,7 +135,8 @@ function openUpgrade() {
             </ul>
           </div>
           <div>
-            <h3 class="block-header">立刻激活/续期</h3>
+            <h3 class="block-header">{isPlus ? "续期" : "立刻激活"}</h3>
+            <div>{isPlus ? "当前专业版已激活，到期时间" + dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD") : ""}</div>
             <div class="mt-10">
               <div class="flex-o w-100">
                 <span>站点ID：</span>
