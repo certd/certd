@@ -31,7 +31,7 @@
                       <div class="flow-line"></div>
                     </div>
                     <div class="task">
-                      <a-button shape="round" type="primary" @click="run">
+                      <a-button shape="round" type="primary" @click="run()">
                         <fs-icon icon="ion:play"></fs-icon>
                         手动触发
                       </a-button>
@@ -231,7 +231,6 @@ import PiTaskView from "./component/task-view/index.vue";
 import PiStatusShow from "./component/status-show.vue";
 import _ from "lodash-es";
 import { message, Modal, notification } from "ant-design-vue";
-import { pluginManager } from "/@/views/certd/pipeline/pipeline/plugin";
 import { nanoid } from "nanoid";
 import { PipelineDetail, PipelineOptions, PluginGroups, RunHistory } from "./type";
 import type { Runnable } from "@certd/pipeline";

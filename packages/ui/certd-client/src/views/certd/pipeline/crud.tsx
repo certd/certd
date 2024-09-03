@@ -10,11 +10,52 @@ import { env } from "/@/utils/util.env";
 import { useUserStore } from "/@/store/modules/user";
 import dayjs from "dayjs";
 import { useSettingStore } from "/@/store/modules/settings";
+import _ from "lodash-es";
 
 export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
   const { t } = useI18n();
   const lastResRef = ref();
+
+  function setRunnableIds(pipeline: any) {
+    const idMap: any = {};
+    function createId(oldId: any) {
+      if (oldId == null) {
+        return nanoid();
+      }
+      const newId = nanoid();
+      idMap[oldId] = newId;
+      return newId;
+    }
+    if (pipeline.stages) {
+      for (const stage of pipeline.stages) {
+        stage.id = createId(stage.id);
+        if (stage.tasks) {
+          for (const task of stage.tasks) {
+            task.id = createId(task.id);
+            if (task.steps) {
+              for (const step of task.steps) {
+                step.id = createId(step.id);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    for (const trigger of pipeline.triggers) {
+      trigger.id = nanoid();
+    }
+    for (const notification of pipeline.notifications) {
+      notification.id = nanoid();
+    }
+
+    let content = JSON.stringify(pipeline);
+    for (const key in idMap) {
+      content = content.replaceAll(key, idMap[key]);
+    }
+    return JSON.parse(content);
+  }
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -34,9 +75,16 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
         title: form.title
       });
     } else {
-      const content = JSON.parse(form.content);
-      content.title = form.title;
-      form.content = JSON.stringify(content);
+      //复制的流水线
+      delete form.status;
+      delete form.lastHistoryTime;
+      delete form.lastVars;
+      delete form.createTime;
+      delete form.id;
+      let pipeline = JSON.parse(form.content);
+      pipeline.title = form.title;
+      pipeline = setRunnableIds(pipeline);
+      form.content = JSON.stringify(pipeline);
     }
 
     const res = await api.AddObj(form);
@@ -48,12 +96,11 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
       // 添加certd pipeline
       const triggers = [];
       if (form.triggerCron) {
-        triggers.push({ id: nanoid(), title: "定时触发", type: "timer", props: { cron: form.triggerCron } });
+        triggers.push({ title: "定时触发", type: "timer", props: { cron: form.triggerCron } });
       }
       const notifications = [];
       if (form.emailNotify) {
         notifications.push({
-          id: nanoid(),
           type: "email",
           when: ["error", "turnToSuccess"],
           options: {
@@ -61,19 +108,16 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           }
         });
       }
-      const pipeline = {
+      let pipeline = {
         title: form.domains[0] + "证书自动化",
         stages: [
           {
-            id: nanoid(),
             title: "证书申请阶段",
             tasks: [
               {
-                id: nanoid(),
                 title: "证书申请任务",
                 steps: [
                   {
-                    id: nanoid(),
                     title: "申请证书",
                     input: {
                       renewDays: 20,
@@ -92,8 +136,10 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
         triggers,
         notifications
       };
+      pipeline = setRunnableIds(pipeline);
 
       const id = await api.Save({
+        title: pipeline.title,
         content: JSON.stringify(pipeline),
         keepHistoryCount: 30
       });
@@ -147,7 +193,8 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
             click: async (context) => {
               const { ui } = useUi();
               // @ts-ignore
-              const row = context[ui.tableColumn.row];
+              let row = context[ui.tableColumn.row];
+              row = _.cloneDeep(row);
               row.title = row.title + "_copy";
               await crudExpose.openCopy({
                 row: row,

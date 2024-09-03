@@ -49,13 +49,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async add(bean: PipelineEntity) {
-    if (!isPlus()) {
-      const count = await this.repository.count();
-      if (count >= freeCount) {
-        throw new NeedVIPException('免费版最多只能创建10个pipeline');
-      }
-    }
-    await super.add(bean);
+    await this.save(bean);
     return bean;
   }
 
@@ -105,19 +99,37 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async save(bean: PipelineEntity) {
+    let old = null;
+    if (bean.id > 0) {
+      //修改
+      old = await this.info(bean.id);
+    }
+    const isUpdate = bean.id > 0 && old != null;
     if (!isPlus()) {
-      const count = await this.repository.count();
+      let count = await this.repository.count();
+      if (isUpdate) {
+        count -= 1;
+      }
       if (count >= freeCount) {
         throw new NeedVIPException('免费版最多只能创建10个pipeline');
       }
     }
+    if (!isUpdate) {
+      //如果是添加，先保存一下，获取到id，更新pipeline.id
+      await this.addOrUpdate(bean);
+    }
     await this.clearTriggers(bean.id);
     if (bean.content) {
       const pipeline = JSON.parse(bean.content);
-      bean.title = pipeline.title;
+      if (pipeline.title) {
+        bean.title = pipeline.title;
+      }
+      pipeline.id = bean.id;
+      bean.content = JSON.stringify(pipeline);
     }
     await this.addOrUpdate(bean);
     await this.registerTriggerById(bean.id);
+    return bean;
   }
 
   async foreachPipeline(callback: (pipeline: PipelineEntity) => void) {
