@@ -37,7 +37,7 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
         lang: 'cn',
         error_on_empty: 'no',
       },
-      timeout: 5000,
+      timeout: 20000,
     };
     _.merge(config, options);
 

@@ -308,7 +308,7 @@ export class AcmeService {
       await utils.http({
         url: directoryUrl,
         method: "GET",
-        timeout: 5000,
+        timeout: 20000,
       });
     } catch (e) {
       this.logger.error(`${directoryUrl}，测试访问失败`, e);
