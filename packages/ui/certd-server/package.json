@@ -39,6 +39,7 @@
     "@midwayjs/static-file": "^3.16.4",
     "@midwayjs/typeorm": "^3.16.4",
     "@midwayjs/validate": "^3.16.4",
+    "ali-oss": "^6.21.0",
     "axios": "^1.7.2",
     "basic-ftp": "^5.0.5",
     "bcryptjs": "^2.4.3",
@@ -69,6 +70,7 @@
   },
   "devDependencies": {
     "@midwayjs/mock": "^3.16.4",
+    "@types/ali-oss": "^6.16.11",
     "@types/cache-manager": "^3.4.3",
     "@types/jest": "^26.0.24",
     "@types/koa": "2.13.4",

@@ -1,6 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import dayjs from 'dayjs';
-import { AliyunAccess } from '../../access/index.js';
+import { AliyunAccess } from "@certd/plugin-plus";
 @IsTaskPlugin({
   name: 'DeployCertToAliyunCDN',
   title: '部署证书至阿里云CDN',
@@ -50,12 +50,12 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
 
   async onInstance() {}
   async execute(): Promise<void> {
-    console.log('开始部署证书到阿里云cdn');
+    this.logger.info('开始部署证书到阿里云cdn');
     const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;
     const client = await this.getClient(access);
     const params = await this.buildParams();
     await this.doRequest(client, params);
-    console.log('部署完成');
+    this.logger.info('部署完成');
   }
 
   async getClient(access: AliyunAccess) {
