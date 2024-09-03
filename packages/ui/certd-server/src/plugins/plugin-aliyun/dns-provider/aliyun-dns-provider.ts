@@ -1,7 +1,6 @@
 import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { Autowire, ILogger } from '@certd/pipeline';
-import { AliyunAccess } from '../access/index.js';
-
+import { AliyunAccess } from '@certd/plugin-plus';
 @IsDnsProvider({
   name: 'aliyun',
   title: '阿里云',

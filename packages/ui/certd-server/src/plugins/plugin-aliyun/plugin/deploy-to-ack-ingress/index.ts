@@ -1,5 +1,5 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
-import { AliyunAccess } from '../../access/index.js';
+import { AliyunAccess } from '@certd/plugin-plus';
 import { appendTimeSuffix } from '../../utils/index.js';
 import { CertInfo } from '@certd/plugin-cert';
 
@@ -109,7 +109,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     this.K8sClient = sdk.K8sClient;
   }
   async execute(): Promise<void> {
-    console.log('开始部署证书到阿里云cdn');
+    this.logger.info('开始部署证书到阿里云cdn');
     const { regionId, ingressClass, clusterId, isPrivateIpAddress, cert } = this;
     const access = (await this.accessService.getById(this.accessId)) as AliyunAccess;
     const client = await this.getClient(access, regionId);
@@ -144,7 +144,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
       },
     };
     const ingressList = await k8sClient.getIngressList({ namespace });
-    console.log('ingressList:', ingressList);
+    this.logger.info('ingressList:', ingressList);
     if (!ingressList || !ingressList.items) {
       return;
     }
