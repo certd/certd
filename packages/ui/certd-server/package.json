@@ -64,6 +64,7 @@
     "pg": "^8.12.0",
     "reflect-metadata": "^0.1.13",
     "ssh2": "^1.15.0",
+    "strip-ansi": "^7.1.0",
     "svg-captcha": "^1.4.0",
     "tencentcloud-sdk-nodejs": "^4.0.44",
     "typeorm": "^0.3.20"

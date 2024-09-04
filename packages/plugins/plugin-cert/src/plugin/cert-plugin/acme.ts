@@ -81,6 +81,7 @@ export class AcmeService {
     if (conf.key == null) {
       conf.key = await this.createNewKey();
       await this.saveAccountConfig(email, conf);
+      this.logger.info(`创建新的Accountkey:${email}`);
     }
     let directoryUrl = "";
     if (isTest) {
@@ -124,7 +125,7 @@ export class AcmeService {
   }
 
   async createNewKey() {
-    const key = await acme.forge.createPrivateKey();
+    const key = await acme.crypto.createPrivateKey(2048);
     return key.toString();
   }
 

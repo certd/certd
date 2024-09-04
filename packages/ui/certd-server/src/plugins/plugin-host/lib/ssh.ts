@@ -3,8 +3,8 @@ import ssh2, { ConnectConfig } from 'ssh2';
 import path from 'path';
 import * as _ from 'lodash-es';
 import { ILogger } from '@certd/pipeline';
-import iconv from 'iconv-lite';
 import { SshAccess } from '../access/index.js';
+import stripAnsi from 'strip-ansi';
 export class AsyncSsh2Client {
   conn: ssh2.Client;
   logger: ILogger;
@@ -18,7 +18,7 @@ export class AsyncSsh2Client {
     this.encoding = connConf.encoding;
   }
 
-  convert(buffer: Buffer) {
+  convert(iconv: any, buffer: Buffer) {
     if (this.encoding) {
       return iconv.decode(buffer, this.encoding);
     }
@@ -79,6 +79,7 @@ export class AsyncSsh2Client {
       this.logger.info('script 为空，取消执行');
       return;
     }
+    const iconv = await import('iconv-lite');
     return new Promise((resolve, reject) => {
       this.logger.info(`执行命令：[${this.connConf.host}][exec]: ` + script);
       this.conn.exec(script, (err: Error, stream: any) => {
@@ -97,7 +98,7 @@ export class AsyncSsh2Client {
             }
           })
           .on('data', (ret: Buffer) => {
-            const out = this.convert(ret);
+            const out = this.convert(iconv, ret);
             data += out;
             this.logger.info(`[${this.connConf.host}][info]: ` + out.trimEnd());
           })
@@ -106,7 +107,7 @@ export class AsyncSsh2Client {
             this.logger.error(err);
           })
           .stderr.on('data', (ret: Buffer) => {
-            const err = this.convert(ret);
+            const err = this.convert(iconv, ret);
             data += err;
             this.logger.info(`[${this.connConf.host}][error]: ` + err.trimEnd());
           });
@@ -123,22 +124,33 @@ export class AsyncSsh2Client {
           return;
         }
         const output: string[] = [];
+        function ansiHandle(data: string) {
+          data = data.replace(/\[[0-9]+;1H/g, '\n');
+          data = stripAnsi(data);
+          return data;
+        }
         stream
           .on('close', () => {
             this.logger.info('Stream :: close');
             resolve(output);
           })
           .on('data', (ret: Buffer) => {
-            const data = this.convert(ret);
-            this.logger.info('' + data);
+            const data = ansiHandle(ret.toString());
+            this.logger.info(data);
             output.push(data);
           })
+          .on('error', (err: any) => {
+            reject(err);
+            this.logger.error(err);
+          })
           .stderr.on('data', (ret: Buffer) => {
-            const data = this.convert(ret);
+            const data = ansiHandle(ret.toString());
             output.push(data);
             this.logger.info(`[${this.connConf.host}][error]: ` + data);
           });
-        stream.end(script + '\nexit\n');
+        //保证windows下正常退出
+        const exit = '\r\nexit\r\n';
+        stream.end(script + exit);
       });
     });
   }
@@ -189,7 +201,7 @@ export class SshClient {
                 mkdirCmd = `if not exist "${filePath}" mkdir "${filePath}"`;
               }
             }
-            await conn.exec(mkdirCmd);
+            await conn.shell(mkdirCmd);
           }
 
           await conn.fastPut({ sftp, ...transport });
@@ -204,9 +216,17 @@ export class SshClient {
     const { connectConf } = options;
     if (_.isArray(script)) {
       script = script as Array<string>;
-      script = script.join('\n');
+      if (connectConf.windows) {
+        script = script.join('\r\n');
+      } else {
+        script = script.join('\n');
+      }
+    } else {
+      if (connectConf.windows) {
+        script = script.replaceAll('\n', '\r\n');
+      }
     }
-    this.logger.info('执行命令：', script);
+    this.logger.info('命令：', script);
     return await this._call({
       connectConf,
       callable: async (conn: AsyncSsh2Client) => {
@@ -215,8 +235,22 @@ export class SshClient {
     });
   }
 
-  async shell(options: { connectConf: SshAccess; script: string }): Promise<string[]> {
-    const { connectConf, script } = options;
+  //废弃
+  async shell(options: { connectConf: SshAccess; script: string | Array<string> }): Promise<string[]> {
+    let { script } = options;
+    const { connectConf } = options;
+    if (_.isArray(script)) {
+      script = script as Array<string>;
+      if (connectConf.windows) {
+        script = script.join('\r\n');
+      } else {
+        script = script.join('\n');
+      }
+    } else {
+      if (connectConf.windows) {
+        script = script.replaceAll('\n', '\r\n');
+      }
+    }
     return await this._call({
       connectConf,
       callable: async (conn: AsyncSsh2Client) => {
