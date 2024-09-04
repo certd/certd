@@ -26,6 +26,10 @@ services:
                                      #  ↑↑↑↑↑---------------------------5、如果设置为true，启动后所有配置了cron的流水线任务都将被立即触发一次【可选】
       - VITE_APP_ICP_NO=
                       #  ↑↑↑↑↑ -----------------------------------------6、这里可以设置备案号【可选】
+      #- certd_koa_key=./data/ssl/cert.key
+      #- certd_koa_cert=./data/ssl/cert.crt
+                      #  ↑↑↑↑↑ -----------------------------------------7、配置证书和key，则表示https方式启动，访问网址要使用 https://your.domain:7001【可选】
+
       # 设置环境变量即可自定义certd配置
       # 服务端配置项见： packages/ui/certd-server/src/config/config.default.ts
       # 服务端配置规则： certd_ + 配置项, 点号用_代替
