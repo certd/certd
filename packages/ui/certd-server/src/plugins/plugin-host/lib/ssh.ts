@@ -195,8 +195,8 @@ export class SshClient {
                 this.logger.info('请注意：windows下，文件目录分隔应该写成\\而不是/');
                 this.logger.info('--------------------------');
               }
-              const spec = await conn.exec('echo %COMSPEC%');
-              if (spec.toString().trim() === '%COMSPEC%') {
+              const isCmd = await this.isCmd(conn);
+              if (!isCmd) {
                 mkdirCmd = `New-Item -ItemType Directory -Path "${filePath}" -Force`;
               } else {
                 mkdirCmd = `if not exist "${filePath}" mkdir "${filePath}"`;

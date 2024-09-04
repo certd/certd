@@ -67,59 +67,68 @@
                 <div class="title">
                   <pi-editable v-model="stage.title" :disabled="!editMode"></pi-editable>
                 </div>
-                <div class="tasks">
-                  <div
-                    v-for="(task, taskIndex) of stage.tasks"
-                    :key="task.id"
-                    class="task-container"
-                    :class="{
-                      'first-task': taskIndex === 0
-                    }"
-                  >
-                    <div class="line">
-                      <div class="flow-line"></div>
-                      <fs-icon v-if="editMode" class="add-stage-btn" title="添加新阶段" icon="ion:add-circle" @click="stageAdd(index)"></fs-icon>
-                    </div>
-                    <div class="task">
-                      <a-button shape="round" @click="taskEdit(stage, index, task, taskIndex)">
-                        <a-popover title="步骤">
-                          <!--                          :open="true"-->
-                          <template #content>
-                            <div v-for="(item, index) of task.steps" class="flex-o w-100">
-                              <span class="ellipsis flex-1">{{ index + 1 }}. {{ item.title }} </span>
-                              <pi-status-show v-if="!editMode" :status="item.status?.result"></pi-status-show>
-                              <fs-icon
-                                v-if="!editMode"
-                                class="pointer color-blue ml-2"
-                                title="重新运行此步骤"
-                                icon="SyncOutlined"
-                                @click="run(item.id)"
-                              ></fs-icon>
-                            </div>
-                          </template>
-                          <span class="flex-o w-100">
-                            <span class="ellipsis flex-1" :class="{ 'mr-15': editMode }">{{ task.title }}</span>
-                            <pi-status-show :status="task.status?.result"></pi-status-show>
-                          </span>
-                        </a-popover>
-                      </a-button>
-                      <fs-icon v-if="editMode" class="copy" title="复制" icon="ion:copy-outline" @click="taskCopy(stage, index, task)"></fs-icon>
-                    </div>
-                  </div>
-                  <div v-if="editMode" class="task-container is-add">
-                    <div class="line">
-                      <div class="flow-line"></div>
-                    </div>
-                    <div class="task">
-                      <a-tooltip>
-                        <a-button type="dashed" shape="round" @click="taskAdd(stage, index)">
-                          <fs-icon class="font-20" icon="ion:add-circle-outline"></fs-icon>
-                          并行任务
+                <v-draggable v-model="stage.tasks" item-key="id" class="tasks" handle=".handle">
+                  <template #item="{ element: task, index: taskIndex }">
+                    <div
+                      class="task-container"
+                      :class="{
+                        'first-task': taskIndex === 0
+                      }"
+                    >
+                      <div class="line">
+                        <div class="flow-line"></div>
+                        <fs-icon v-if="editMode" class="add-stage-btn" title="添加新阶段" icon="ion:add-circle" @click="stageAdd(index)"></fs-icon>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" @click="taskEdit(stage, index, task, taskIndex)">
+                          <a-popover title="步骤" :trigger="editMode ? 'none' : 'hover'">
+                            <!--                          :open="true"-->
+                            <template #content>
+                              <div v-for="(item, index) of task.steps" class="flex-o w-100">
+                                <span class="ellipsis flex-1">{{ index + 1 }}. {{ item.title }} </span>
+                                <pi-status-show v-if="!editMode" :status="item.status?.result"></pi-status-show>
+                                <fs-icon
+                                  v-if="!editMode"
+                                  class="pointer color-blue ml-2"
+                                  title="重新运行此步骤"
+                                  icon="SyncOutlined"
+                                  @click="run(item.id)"
+                                ></fs-icon>
+                              </div>
+                            </template>
+                            <span class="flex-o w-100">
+                              <span class="ellipsis flex-1 task-title" :class="{ 'in-edit': editMode }">{{ task.title }}</span>
+                              <pi-status-show :status="task.status?.result"></pi-status-show>
+                            </span>
+                          </a-popover>
                         </a-button>
-                      </a-tooltip>
+                        <fs-icon
+                          v-if="editMode"
+                          class="action copy"
+                          title="复制"
+                          icon="ion:copy-outline"
+                          @click="taskCopy(stage, index, task)"
+                        ></fs-icon>
+                        <fs-icon v-if="editMode" class="handle action drag" title="拖动排序" icon="ion:move-outline"></fs-icon>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </template>
+                  <template #footer>
+                    <div v-if="editMode" class="task-container is-add">
+                      <div class="line">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-tooltip>
+                          <a-button type="dashed" shape="round" @click="taskAdd(stage, index)">
+                            <fs-icon class="font-20" icon="ion:add-circle-outline"></fs-icon>
+                            并行任务
+                          </a-button>
+                        </a-tooltip>
+                      </div>
+                    </div>
+                  </template>
+                </v-draggable>
               </div>
 
               <div v-if="editMode" class="stage last-stage">
@@ -235,6 +244,7 @@ import PiTriggerForm from "./component/trigger-form/index.vue";
 import PiNotificationForm from "./component/notification-form/index.vue";
 import PiTaskView from "./component/task-view/index.vue";
 import PiStatusShow from "./component/status-show.vue";
+import VDraggable from "vuedraggable";
 import _ from "lodash-es";
 import { message, Modal, notification } from "ant-design-vue";
 import { nanoid } from "nanoid";
@@ -245,7 +255,7 @@ import { FsIcon } from "@fast-crud/fast-crud";
 export default defineComponent({
   name: "PipelineEdit",
   // eslint-disable-next-line vue/no-unused-components
-  components: { FsIcon, PiHistoryTimelineItem, PiTaskForm, PiTriggerForm, PiTaskView, PiStatusShow, PiNotificationForm },
+  components: { FsIcon, PiHistoryTimelineItem, PiTaskForm, PiTriggerForm, PiTaskView, PiStatusShow, PiNotificationForm, VDraggable },
   props: {
     pipelineId: {
       type: [Number, String],
@@ -785,13 +795,27 @@ export default defineComponent({
               height: 100%;
               z-index: 2;
 
-              .copy {
+              .task-title {
+                &.in-edit {
+                  margin-right: 28px;
+                }
+              }
+
+              .action {
                 position: absolute;
                 right: 60px;
                 top: 18px;
+                //font-size: 18px;
                 cursor: pointer;
+                z-index: 10;
                 &:hover {
                   color: #1890ff;
+                }
+                &.copy {
+                  right: 80px;
+                }
+                &.drag {
+                  right: 60px;
                 }
               }
 

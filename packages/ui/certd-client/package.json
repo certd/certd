@@ -55,7 +55,7 @@
     "vue-cropperjs": "^5.0.0",
     "vue-i18n": "^9.10.2",
     "vue-router": "^4.3.0",
-    "vuedraggable": "^2.24.3"
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@certd/pipeline": "^1.24.1",

@@ -43,25 +43,22 @@
                   <a-button type="primary" @click="stepAdd(currentTask)">添加步骤</a-button>
                 </template>
               </a-descriptions>
-              <a-list class="step-list" item-layout="horizontal" :data-source="currentTask.steps">
-                <template #renderItem="{ item, index }">
-                  <a-list-item>
-                    <template #actions>
-                      <a key="edit" @click="stepEdit(currentTask, item, index)">编辑</a>
-                      <a key="edit" @click="stepCopy(currentTask, item, index)">复制</a>
+              <v-draggable v-model="currentTask.steps" class="step-list" handle=".handle">
+                <template #item="{ element, index }">
+                  <div class="step-row">
+                    <div class="text">
+                      <fs-icon icon="ion:flash"></fs-icon>
+                      <h4 class="title">{{ element.title }}</h4>
+                    </div>
+                    <div class="action">
+                      <a key="edit" @click="stepEdit(currentTask, element, index)">编辑</a>
+                      <a key="edit" @click="stepCopy(currentTask, element, index)">复制</a>
                       <a key="remove" @click="stepDelete(currentTask, index)">删除</a>
-                    </template>
-                    <a-list-item-meta>
-                      <template #title>
-                        {{ item.title }}
-                      </template>
-                      <template #avatar>
-                        <fs-icon icon="ion:flash"></fs-icon>
-                      </template>
-                    </a-list-item-meta>
-                  </a-list-item>
+                      <fs-icon class="icon-button handle" title="拖动排序" icon="ion:move-outline"></fs-icon>
+                    </div>
+                  </div>
                 </template>
-              </a-list>
+              </v-draggable>
             </a-form-item>
           </div>
         </a-form>
@@ -85,10 +82,10 @@ import { nanoid } from "nanoid";
 import PiStepForm from "../step-form/index.vue";
 import { Modal } from "ant-design-vue";
 import { CopyOutlined } from "@ant-design/icons-vue";
-
+import VDraggable from "vuedraggable";
 export default {
   name: "PiTaskForm",
-  components: { CopyOutlined, PiStepForm },
+  components: { CopyOutlined, PiStepForm, VDraggable },
   props: {
     editMode: {
       type: Boolean,
@@ -267,6 +264,43 @@ export default {
   }
   .ant-list .ant-list-item .ant-list-item-meta .ant-list-item-meta-title {
     margin: 0;
+  }
+  .ant-list .ant-list-item .ant-list-item-action {
+    display: flex;
+    > li {
+      display: flex;
+      align-items: center;
+    }
+  }
+  .step-list {
+    padding: 10px;
+    .icon-button {
+      font-size: 18px;
+      color: #1677ff;
+      cursor: pointer;
+    }
+
+    .step-row {
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .text {
+        display: flex;
+        > * {
+          margin: 0px;
+          margin-right: 15px;
+        }
+      }
+      .action {
+        display: flex;
+        align-items: center;
+        > * {
+          margin-right: 15px;
+          font-size: 14px;
+        }
+      }
+    }
   }
 }
 </style>
