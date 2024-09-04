@@ -79,7 +79,8 @@ export class AsyncSsh2Client {
       this.logger.info('script 为空，取消执行');
       return;
     }
-    const iconv = await import('iconv-lite');
+    let iconv: any = await import('iconv-lite');
+    iconv = iconv.default;
     return new Promise((resolve, reject) => {
       this.logger.info(`执行命令：[${this.connConf.host}][exec]: ` + script);
       this.conn.exec(script, (err: Error, stream: any) => {
@@ -211,26 +212,49 @@ export class SshClient {
     });
   }
 
+  async isCmd(conn: AsyncSsh2Client) {
+    const spec = await conn.exec('echo %COMSPEC%');
+    if (spec.toString().trim() === '%COMSPEC%') {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  /**
+   *
+   * Set-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+   * Start-Service sshd
+   *
+   * Set-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Windows\System32\cmd.exe"
+   * @param options
+   */
   async exec(options: { connectConf: SshAccess; script: string | Array<string> }) {
     let { script } = options;
     const { connectConf } = options;
-    if (_.isArray(script)) {
-      script = script as Array<string>;
-      if (connectConf.windows) {
-        script = script.join('\r\n');
-      } else {
-        script = script.join('\n');
-      }
-    } else {
-      if (connectConf.windows) {
-        script = script.replaceAll('\n', '\r\n');
-      }
-    }
+
     this.logger.info('命令：', script);
     return await this._call({
       connectConf,
       callable: async (conn: AsyncSsh2Client) => {
-        return await conn.exec(script as string);
+        let isWinCmd = false;
+        if (connectConf.windows) {
+          isWinCmd = await this.isCmd(conn);
+        }
+        if (isWinCmd) {
+          //组合成&&的形式
+          if (typeof script === 'string') {
+            script = script.split('\n');
+          }
+          script = script as Array<string>;
+          script = script.join('&& ');
+        } else {
+          if (_.isArray(script)) {
+            script = script as Array<string>;
+            script = script.join('\n');
+          }
+        }
+        await conn.exec(script);
       },
     });
   }

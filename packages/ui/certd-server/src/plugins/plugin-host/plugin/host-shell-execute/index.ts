@@ -40,9 +40,11 @@ export class HostShellExecutePlugin extends AbstractTaskPlugin {
     const { script, accessId } = this;
     const connectConf = await this.accessService.getById(accessId);
     const sshClient = new SshClient(this.logger);
-    await sshClient.shell({
+
+    const scripts = script.split('\n');
+    await sshClient.exec({
       connectConf,
-      script,
+      script: scripts,
     });
     // this.logger.info('exec res:', ret);
   }
