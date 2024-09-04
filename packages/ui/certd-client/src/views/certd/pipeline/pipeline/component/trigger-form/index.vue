@@ -56,7 +56,7 @@
                 name: 'cron-editor',
                 vModel: 'modelValue'
               },
-              helper: 'cron表达式，例如： 0 0 3 * * * ，表示每天凌晨3点触发',
+              helper: '点击上面的按钮，选择每天几点几分定时执行, 例如：0 0 4 * * *，每天凌晨4点0分0秒触发',
               rules: [{ required: true, message: '此项必填' }]
             }"
           />

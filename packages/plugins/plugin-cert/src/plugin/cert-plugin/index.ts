@@ -37,10 +37,30 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         { value: "zerossl", label: "ZeroSSL" },
       ],
     },
-    helper: "如果letsencrypt.org或dv.acme-v02.api.pki.goog无法访问，请尝试开启代理选项\n如果使用ZeroSSL、google证书，需要提供EAB授权",
+    helper: "Let's Encrypt最简单，如果使用ZeroSSL、google证书，需要提供EAB授权",
     required: true,
   })
   sslProvider!: SSLProvider;
+
+  @TaskInput({
+    title: "EAB授权",
+    component: {
+      name: "pi-access-selector",
+      type: "eab",
+    },
+    maybeNeed: true,
+    required: true,
+    helper:
+      "需要提供EAB授权\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials' \n Google：请查看[google获取eab帮助文档](https://github.com/certd/certd/blob/v2/doc/google/google.md)",
+    mergeScript: `
+    return {
+        show: ctx.compute(({form})=>{
+            return form.sslProvider === 'zerossl' || form.sslProvider === 'google'
+        })
+    }
+    `,
+  })
+  eabAccessId!: number;
 
   @TaskInput({
     title: "加密算法",
@@ -63,25 +83,13 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   privateKeyType!: PrivateKeyType;
 
   @TaskInput({
-    title: "EAB授权",
-    component: {
-      name: "pi-access-selector",
-      type: "eab",
-    },
-    maybeNeed: true,
-    helper:
-      "如果使用ZeroSSL或者google证书，需要提供EAB授权\nZeroSSL：请前往 https://app.zerossl.com/developer 生成 'EAB Credentials' \n Google：请前往https://github.com/certd/certd/blob/v2/doc/google/google.md",
-  })
-  eabAccessId!: number;
-
-  @TaskInput({
     title: "DNS提供商",
     component: {
       name: "pi-dns-provider-selector",
     },
     required: true,
     helper:
-      "请选择dns解析提供商，您的域名是在哪里注册的，或者域名的dns解析服务器属于哪个平台\n如果这里没有您的dns解析提供商，您可以将域名解析服务器设置成上面的任意一个提供商",
+      "请选择dns解析提供商，您的域名是在哪里注册的，或者域名的dns解析服务器属于哪个平台\n如果这里没有您需要的dns解析提供商，您需要将域名解析服务器设置成上面的任意一个提供商",
   })
   dnsProviderType!: string;
 
@@ -92,13 +100,14 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     },
     required: true,
     helper: "请选择dns解析提供商授权",
-    reference: [
-      {
-        src: "form.dnsProviderType",
-        dest: "component.type",
-        type: "computed",
-      },
-    ],
+    mergeScript: `return {
+      component:{
+        type: ctx.compute(({form})=>{
+            return form.dnsProviderType
+        })
+      }
+    }
+    `,
   })
   dnsProviderAccess!: string;
 

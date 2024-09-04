@@ -1,5 +1,5 @@
 <template>
-  <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="700px" @after-open-change="stepDrawerOnAfterVisibleChange">
+  <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="700px">
     <template #title>
       编辑步骤
       <a-button v-if="editMode" @click="stepDelete()">
@@ -59,7 +59,7 @@
             :get-context-fn="blankFn"
           />
           <template v-for="(item, key) in currentPlugin.input" :key="key">
-            <fs-form-item v-model="currentStep.input[key]" :item="item" :get-context-fn="blankFn" />
+            <fs-form-item v-if="item.show !== false" v-model="currentStep.input[key]" :item="item" :get-context-fn="blankFn" />
           </template>
 
           <fs-form-item v-model="currentStep.strategy.runStrategy" :item="runStrategyProps" :get-context-fn="blankFn" />
@@ -83,9 +83,12 @@ import { nanoid } from "nanoid";
 import { CopyOutlined } from "@ant-design/icons-vue";
 import { PluginGroups } from "/@/views/certd/pipeline/pipeline/type";
 import { useUserStore } from "/@/store/modules/user";
+import { compute, useCompute } from "@fast-crud/fast-crud";
+import { useReference } from "/@/use/use-refrence";
 
 export default {
   name: "PiStepForm",
+  // eslint-disable-next-line vue/no-unused-components
   components: { CopyOutlined },
   props: {
     editMode: {
@@ -106,7 +109,6 @@ export default {
       const mode: Ref = ref("add");
       const callback: Ref = ref();
       const currentStep: Ref = ref({ title: undefined, input: {} });
-      const currentPlugin: Ref = ref({});
       const stepFormRef: Ref = ref(null);
       const stepDrawerVisible: Ref = ref(false);
       const rules: Ref = ref({
@@ -150,15 +152,10 @@ export default {
         stepDrawerVisible.value = false;
       };
 
-      const stepDrawerOnAfterVisibleChange = (val: any) => {
-        console.log("stepDrawerOnAfterVisibleChange", val);
-      };
-
       const stepOpen = (step: any, emit: any) => {
         callback.value = emit;
         currentStep.value = _.merge({ input: {}, strategy: {} }, step);
 
-        console.log("currentStepOpen", currentStep.value);
         if (step.type) {
           changeCurrentPlugin(currentStep.value);
         }
@@ -189,33 +186,41 @@ export default {
         stepOpen(step, emit);
       };
 
+      const currentPluginDefine = ref();
+
+      function getContext() {
+        return {
+          form: currentStep.value.input
+        };
+      }
+      const { doComputed } = useCompute();
+      const currentPlugin = doComputed(() => {
+        return currentPluginDefine.value;
+      }, getContext);
       const changeCurrentPlugin = (step: any) => {
         const stepType = step.type;
-        const pluginDefine = pluginGroups.get(stepType);
-        if (pluginDefine) {
-          step.type = stepType;
-          step._isAdd = false;
-          currentPlugin.value = _.cloneDeep(pluginDefine);
-          for (let key in currentPlugin.value.input) {
-            const input = currentPlugin.value.input[key];
-            if (input?.reference) {
-              for (const reference of input.reference) {
-                _.set(
-                  input,
-                  reference.dest,
-                  computed<any>(() => {
-                    const scope = {
-                      form: currentStep.value.input
-                    };
-                    return _.get(scope, reference.src);
-                  })
-                );
-              }
-            }
-            //设置初始值
-            if ((input.default != null || input.value != null) && currentStep.value.input[key] == null) {
-              currentStep.value.input[key] = input.default ?? input.value;
-            }
+        step.type = stepType;
+        step._isAdd = false;
+
+        let pluginDefine = pluginGroups.get(stepType);
+        if (pluginDefine == null) {
+          console.log("插件未找到", stepType);
+          return;
+        }
+        pluginDefine = _.cloneDeep(pluginDefine);
+        const columns = pluginDefine.input;
+        for (let key in columns) {
+          const column = columns[key];
+          useReference(column);
+        }
+
+        currentPluginDefine.value = pluginDefine;
+
+        for (let key in pluginDefine.input) {
+          const column = pluginDefine.input[key];
+          //设置初始值
+          if ((column.default != null || column.value != null) && currentStep.value.input[key] == null) {
+            currentStep.value.input[key] = column.default ?? column.value;
           }
         }
 
@@ -269,7 +274,6 @@ export default {
         stepView,
         stepDrawerShow,
         stepDrawerVisible,
-        stepDrawerOnAfterVisibleChange,
         currentStep,
         currentPlugin,
         stepSave,

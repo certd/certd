@@ -22,12 +22,17 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
         form: {
           ...inputDefine,
           show: compute((ctx) => {
-            console.log(formWrapperRef);
             const form = formWrapperRef.value.getFormData();
             if (!form) {
               return false;
             }
-            return form?.certApplyPlugin === plugin.name;
+
+            let inputDefineShow = true;
+            if (inputDefine.show != null) {
+              const computeShow = inputDefine.show as any;
+              inputDefineShow = computeShow.computeFn({ form });
+            }
+            return form?.certApplyPlugin === plugin.name && inputDefineShow;
           })
         }
       };
@@ -60,8 +65,8 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
               render: () => {
                 return (
                   <ul>
-                    <li>Lego-ACME：基于Lego实现，支持海量DNS提供商</li>
-                    <li>JS-ACME：如果你的域名DNS属于阿里云、腾讯云、Cloudflare可以选择用它来申请</li>
+                    <li>JS-ACME：如果你的域名DNS属于阿里云、腾讯云、Cloudflare、西部数码可以选择用它来申请</li>
+                    <li>Lego-ACME：基于Lego实现，支持海量DNS提供商，熟悉LEGO的用户可以使用</li>
                   </ul>
                 );
               }
@@ -78,7 +83,7 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
               vModel: "modelValue",
               placeholder: "0 0 4 * * *"
             },
-            helper: "请输入cron表达式, 例如：0 0 4 * * *，每天凌晨4点触发",
+            helper: "点击上面的按钮，选择每天几点几分定时执行, 例如：0 0 4 * * *，每天凌晨4点0分0秒触发",
             order: 100
           }
         },

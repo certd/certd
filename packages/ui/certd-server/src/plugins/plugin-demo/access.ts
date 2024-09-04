@@ -34,6 +34,7 @@ export class DemoAccess implements IAccess {
     },
     //是否必填
     required: true,
+    //改属性是否需要加密
     encrypt: true,
   })
   //属性名称

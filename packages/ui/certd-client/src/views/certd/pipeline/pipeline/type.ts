@@ -1,5 +1,5 @@
 import type { Pipeline } from "@certd/pipeline";
-import { FormItemProps } from "@fast-crud/fast-crud";
+import { DynamicType, FormItemProps } from "@fast-crud/fast-crud";
 export type PipelineDetail = {
   pipeline: Pipeline;
 };
@@ -24,7 +24,7 @@ export type PluginDefine = {
   title: string;
   desc?: string;
   input: {
-    [key: string]: FormItemProps;
+    [key: string]: DynamicType<FormItemProps>;
   };
   output: {
     [key: string]: any;

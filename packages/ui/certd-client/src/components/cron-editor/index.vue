@@ -70,6 +70,7 @@ const onError = (error: any) => {
     }
     .vcron-select-input {
       min-height: 22px;
+      background-color: #fff;
     }
     .vcron-select-container {
       display: flex;

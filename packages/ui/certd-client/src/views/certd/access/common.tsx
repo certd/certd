@@ -1,4 +1,4 @@
-import { ColumnCompositionProps, dict } from "@fast-crud/fast-crud";
+import { ColumnCompositionProps, dict, compute } from "@fast-crud/fast-crud";
 // @ts-ignore
 import * as api from "./api";
 // @ts-ignore
@@ -32,11 +32,25 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
         ...value,
         key
       };
-      const column = _.merge({ title: key }, defaultPluginConfig, field);
+      let column = _.merge({ title: key }, defaultPluginConfig, field);
+
+      //eval
+      if (column.mergeScript) {
+        const ctx = {
+          compute
+        };
+        const script = column.mergeScript;
+        delete column.mergeScript;
+        const func = new Function("ctx", script);
+        const merged = func(ctx);
+        column = _.merge(column, merged);
+      }
+
+      //设置默认值
       if (column.value != null && _.get(form, key) == null) {
-        //设置默认值
         _.set(form, key, column.value);
       }
+      //字段配置赋值
       columnsRef.value[key] = column;
       console.log("form", columnsRef.value);
     });
@@ -55,7 +69,12 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
       },
       form: {
         component: {
-          disabled: false
+          disabled: false,
+          showSearch: true,
+          filterOption: (input: string, option: any) => {
+            input = input?.toLowerCase();
+            return option.value.toLowerCase().indexOf(input) >= 0 || option.label.toLowerCase().indexOf(input) >= 0;
+          }
         },
         rules: [{ required: true, message: "请选择类型" }],
         valueChange: {

@@ -15,6 +15,7 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
       vModel: "value",
       mode: "tags",
       open: false,
+      tokenSeparators: [",", " ", "，", "、", "|"],
     },
     required: true,
     col: {
@@ -25,7 +26,7 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
       "1、支持通配符域名，例如： *.foo.com、foo.com、*.test.handsfree.work\n" +
       "2、支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）\n" +
       "3、多级子域名要分成多个域名输入（*.foo.com的证书不能用于xxx.yyy.foo.com、foo.com）\n" +
-      "4、输入一个回车之后，再输入下一个",
+      "4、输入一个空格之后，再输入下一个",
   })
   domains!: string[];
 
@@ -76,13 +77,6 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
     helper: "申请成功后是否发送邮件通知",
   })
   successNotify = true;
-
-  @TaskInput({
-    title: "配置说明",
-    order: 9999,
-    helper: "运行策略请选择总是运行，其他证书部署任务请选择成功后跳过；当证书快到期前将会自动重新申请证书，然后会清空后续任务的成功状态，部署任务将会重新运行",
-  })
-  intro!: string;
 
   // @TaskInput({
   //   title: "CsrInfo",
