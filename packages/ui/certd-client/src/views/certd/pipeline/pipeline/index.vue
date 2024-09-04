@@ -87,8 +87,14 @@
                           <template #content>
                             <div v-for="(item, index) of task.steps" class="flex-o w-100">
                               <span class="ellipsis flex-1">{{ index + 1 }}. {{ item.title }} </span>
-                              <pi-status-show :status="item.status?.result"></pi-status-show>
-                              <fs-icon class="pointer color-blue" title="重新运行此步骤" icon="SyncOutlined" @click="run(item.id)"></fs-icon>
+                              <pi-status-show v-if="!editMode" :status="item.status?.result"></pi-status-show>
+                              <fs-icon
+                                v-if="!editMode"
+                                class="pointer color-blue ml-2"
+                                title="重新运行此步骤"
+                                icon="SyncOutlined"
+                                @click="run(item.id)"
+                              ></fs-icon>
                             </div>
                           </template>
                           <span class="flex-o w-100">
