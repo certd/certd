@@ -6,3 +6,4 @@ export * from './plugin-host/index.js';
 export * from './plugin-huawei/index.js';
 export * from './plugin-demo/index.js';
 export * from './plugin-other/index.js';
+export * from './plugin-west/index.js';
