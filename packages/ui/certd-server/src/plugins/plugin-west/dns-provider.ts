@@ -1,9 +1,4 @@
-import {
-  AbstractDnsProvider,
-  CreateRecordOptions,
-  IsDnsProvider,
-  RemoveRecordOptions,
-} from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { Autowire, HttpClient, ILogger } from '@certd/pipeline';
 import { WestAccess } from './access.js';
 
@@ -13,7 +8,7 @@ type westRecord = {
   msg: string;
   body: {
     record_id: number;
-  }
+  };
 };
 
 // 这里通过IsDnsProvider注册一个dnsProvider
@@ -24,7 +19,7 @@ type westRecord = {
   // 这里是对应的云平台的access类型名称
   accessType: 'west',
 })
-export class westDnsProvider extends AbstractDnsProvider<westRecord> {
+export class WestDnsProvider extends AbstractDnsProvider<westRecord> {
   // 通过Autowire注入工具对象
   @Autowire()
   access!: WestAccess;
@@ -41,13 +36,19 @@ export class westDnsProvider extends AbstractDnsProvider<westRecord> {
   }
 
   private async doRequestApi(url: string, data: any = null, method = 'post') {
+    if (this.access.scope === 'account') {
+      data.apikey = this.access.apikey;
+      data.username = this.access.username;
+    } else {
+      data.apidomainkey = this.access.apidomainkey;
+    }
     const res = await this.http.request<any, any>({
       url,
       method,
       data,
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     });
     if (res.msg !== 'success') {
       throw new Error(`${JSON.stringify(res.msg)}`);
@@ -71,22 +72,19 @@ export class westDnsProvider extends AbstractDnsProvider<westRecord> {
 
     // 准备要发送到API的请求体
     const requestBody = {
-      act: 'dnsrec.add',         // API动作类型
-      domain: domain,            // 域名
-      record_type: 'TXT',        // DNS记录类型
-      hostname: fullRecord,      // 完整的记录名
-      record_value: value,       // 记录的值
-      record_line: '',           // 记录线路
-      record_ttl: 60,            // TTL (生存时间)，设置为60秒
-      apidomainkey: this.access.apidomainkey
+      act: 'dnsrec.add', // API动作类型
+      domain: domain, // 域名
+      record_type: 'TXT', // DNS记录类型
+      hostname: fullRecord, // 完整的记录名
+      record_value: value, // 记录的值
+      record_line: '', // 记录线路
+      record_ttl: 60, // TTL (生存时间)，设置为60秒
     };
 
-    const url = `https://api.west.cn/API/v2/domain/dns/`;
+    const url = 'https://api.west.cn/API/v2/domain/dns/';
     const res = await this.doRequestApi(url, requestBody);
-    const record = res as westRecord
-    this.logger.info(
-      `添加域名解析成功:fullRecord=${fullRecord},value=${value}`
-    );
+    const record = res as westRecord;
+    this.logger.info(`添加域名解析成功:fullRecord=${fullRecord},value=${value}`);
     this.logger.info(`dns解析记录:${JSON.stringify(record)}`);
     // 西部数码生效较慢 增加90秒等待 提高成功率
     this.logger.info('等待解析生效:wait 90s');
@@ -109,21 +107,20 @@ export class westDnsProvider extends AbstractDnsProvider<westRecord> {
 
     // 准备要发送到API的请求体
     const requestBody = {
-      act: 'dnsrec.remove',      // API动作类型
-      domain: domain,            // 域名
+      act: 'dnsrec.remove', // API动作类型
+      domain: domain, // 域名
       record_id: record.body.record_id,
-      hostname: fullRecord,      // 完整的记录名
-      record_type: 'TXT',        // DNS记录类型
-      record_line: '',           // 记录线路
-      apidomainkey: this.access.apidomainkey
+      hostname: fullRecord, // 完整的记录名
+      record_type: 'TXT', // DNS记录类型
+      record_line: '', // 记录线路
     };
 
-    const url = `https://api.west.cn/API/v2/domain/dns/`;
+    const url = 'https://api.west.cn/API/v2/domain/dns/';
     const res = await this.doRequestApi(url, requestBody);
-    const result = res.result
+    const result = res.result;
     this.logger.info('删除域名解析成功:', fullRecord, value, JSON.stringify(result));
   }
 }
 
 //TODO 实例化这个provider，将其自动注册到系统中
-new westDnsProvider();
+new WestDnsProvider();
