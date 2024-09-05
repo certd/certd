@@ -1,5 +1,5 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
-import { AliyunAccess } from '@certd/plugin-plus';
+import { AliyunAccess, AliyunClient } from '@certd/plugin-plus';
 import { appendTimeSuffix } from '../../utils/index.js';
 import { CertInfo } from '@certd/plugin-cert';
 
@@ -200,14 +200,15 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
   }
 
   async getClient(aliyunProvider: any, regionId: string) {
-    const Core = await import('@alicloud/pop-core');
 
-    return new Core.default({
+    const client = new AliyunClient({logger:this.logger})
+    await client.init({
       accessKeyId: aliyunProvider.accessKeyId,
       accessKeySecret: aliyunProvider.accessKeySecret,
       endpoint: `https://cs.${regionId}.aliyuncs.com`,
       apiVersion: '2015-12-15',
-    });
+    })
+    return client
   }
 
   async getKubeConfig(client: any, clusterId: string, isPrivateIpAddress = false) {

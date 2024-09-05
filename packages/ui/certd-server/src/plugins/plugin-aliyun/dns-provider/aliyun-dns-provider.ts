@@ -1,6 +1,7 @@
 import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { Autowire, ILogger } from '@certd/pipeline';
-import { AliyunAccess } from '@certd/plugin-plus';
+import { AliyunAccess, AliyunClient } from '@certd/plugin-plus';
+
 @IsDnsProvider({
   name: 'aliyun',
   title: '阿里云',
@@ -15,13 +16,14 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
   logger!: ILogger;
   async onInstance() {
     const access: any = this.access;
-    const Core = await import('@alicloud/pop-core');
-    this.client = new Core.default({
+
+    this.client = new AliyunClient({logger:this.logger})
+    await this.client.init({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
       endpoint: 'https://alidns.aliyuncs.com',
       apiVersion: '2015-01-09',
-    });
+    })
   }
   //
   // async getDomainList() {
@@ -99,6 +101,7 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
       // Line: 'oversea' // 海外
     };
 
+   
     const requestOption = {
       method: 'POST',
     };
