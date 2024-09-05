@@ -191,6 +191,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           },
           copy: {
             click: async (context) => {
+              userStore.checkPlus();
               const { ui } = useUi();
               // @ts-ignore
               let row = context[ui.tableColumn.row];
@@ -200,7 +201,8 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
                 row: row,
                 index: context.index
               });
-            }
+            },
+            class: "need-plus"
           },
           config: {
             order: 1,

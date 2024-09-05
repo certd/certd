@@ -1,0 +1,14 @@
+version: '3.3' # 指定docker-compose 版本
+services: # 要拉起的服务们
+  certdtest:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: certd-test:1
+    container_name: certdtest # 容器名
+    volumes:
+      - ./data:/app/data
+    command: ["tail", "-f", "/dev/null"]
+    environment:
+      - TZ=Asia/Shanghai
+

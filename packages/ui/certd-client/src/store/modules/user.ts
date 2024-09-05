@@ -7,7 +7,7 @@ import * as UserApi from "/src/api/modules/api.user";
 import { RegisterReq } from "/src/api/modules/api.user";
 // @ts-ignore
 import { LoginReq, UserInfoRes } from "/@/api/modules/api.user";
-import { Modal, notification } from "ant-design-vue";
+import { message, Modal, notification } from "ant-design-vue";
 import { useI18n } from "vue-i18n";
 
 import { mitter } from "/src/utils/util.mitt";
@@ -67,7 +67,14 @@ export const useUserStore = defineStore({
       LocalStorage.remove(TOKEN_KEY);
       LocalStorage.remove(USER_INFO_KEY);
     },
-
+    checkPlus() {
+      if (!this.isPlus) {
+        notification.warn({
+          message: "此为专业版功能，请先升级到专业版"
+        });
+        throw new Error("此为专业版功能，请升级到专业版");
+      }
+    },
     async register(user: RegisterReq) {
       await UserApi.register(user);
       notification.success({

@@ -10,6 +10,7 @@ RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 
 
 FROM node:20-alpine
+RUN apk add --no-cache openssl
 WORKDIR /app/
 COPY --from=builder /workspace/certd-server/ /app/
 RUN chmod +x /app/tools/linux/*

@@ -43,7 +43,7 @@
                   <a-button type="primary" @click="stepAdd(currentTask)">添加步骤</a-button>
                 </template>
               </a-descriptions>
-              <v-draggable v-model="currentTask.steps" class="step-list" handle=".handle" item-key="id">
+              <v-draggable v-model="currentTask.steps" class="step-list" handle=".handle" item-key="id" :disabled="!userStore.isPlus">
                 <template #item="{ element, index }">
                   <div class="step-row">
                     <div class="text">
@@ -54,7 +54,7 @@
                       <a key="edit" @click="stepEdit(currentTask, element, index)">编辑</a>
                       <a key="edit" @click="stepCopy(currentTask, element, index)">复制</a>
                       <a key="remove" @click="stepDelete(currentTask, index)">删除</a>
-                      <fs-icon class="icon-button handle" title="拖动排序" icon="ion:move-outline"></fs-icon>
+                      <fs-icon v-plus class="icon-button handle" title="拖动排序" icon="ion:move-outline"></fs-icon>
                     </div>
                   </div>
                 </template>
@@ -83,6 +83,7 @@ import PiStepForm from "../step-form/index.vue";
 import { Modal } from "ant-design-vue";
 import { CopyOutlined } from "@ant-design/icons-vue";
 import VDraggable from "vuedraggable";
+import { useUserStore } from "/@/store/modules/user";
 export default {
   name: "PiTaskForm",
   components: { CopyOutlined, PiStepForm, VDraggable },
@@ -94,6 +95,7 @@ export default {
   },
   emits: ["update"],
   setup(props: any, ctx: any) {
+    const userStore = useUserStore();
     function useStep() {
       const stepFormRef: Ref<any> = ref(null);
       const currentStepIndex = ref(0);
@@ -248,6 +250,7 @@ export default {
       };
     }
     return {
+      userStore,
       labelCol: { span: 6 },
       wrapperCol: { span: 16 },
       ...useTaskForm(),

@@ -20,7 +20,7 @@
       <div class="layout-left">
         <div class="pipeline-container">
           <div class="pipeline">
-            <v-draggable v-model="pipeline.stages" class="stages" item-key="id" handle=".stage-move-handle">
+            <v-draggable v-model="pipeline.stages" class="stages" item-key="id" handle=".stage-move-handle" :disabled="!userStore.isPlus">
               <template #header>
                 <div class="stage first-stage">
                   <div class="title stage-move-handle">
@@ -69,11 +69,11 @@
                 <div :key="stage.id" class="stage" :class="{ 'last-stage': isLastStage(index) }">
                   <div class="title">
                     <pi-editable v-model="stage.title" :disabled="!editMode"></pi-editable>
-                    <div class="icon-box stage-move-handle">
+                    <div v-plus class="icon-box stage-move-handle">
                       <fs-icon v-if="editMode" title="拖动排序" icon="ion:move-outline"></fs-icon>
                     </div>
                   </div>
-                  <v-draggable v-model="stage.tasks" item-key="id" class="tasks" group="task" handle=".task-move-handle">
+                  <v-draggable v-model="stage.tasks" item-key="id" class="tasks" group="task" handle=".task-move-handle" :disabled="!userStore.isPlus">
                     <template #item="{ element: task, index: taskIndex }">
                       <div
                         class="task-container"
@@ -114,7 +114,7 @@
                           <div class="icon-box action copy">
                             <fs-icon v-if="editMode" title="复制" icon="ion:copy-outline" @click="taskCopy(stage, index, task)"></fs-icon>
                           </div>
-                          <div class="icon-box task-move-handle action drag">
+                          <div v-plus class="icon-box task-move-handle action drag">
                             <fs-icon v-if="editMode" title="拖动排序" icon="ion:move-outline"></fs-icon>
                           </div>
                         </div>
@@ -264,6 +264,7 @@ import { PipelineDetail, PipelineOptions, PluginGroups, RunHistory } from "./typ
 import type { Runnable } from "@certd/pipeline";
 import PiHistoryTimelineItem from "/@/views/certd/pipeline/pipeline/component/history-timeline-item.vue";
 import { FsIcon } from "@fast-crud/fast-crud";
+import { useUserStore } from "/@/store/modules/user";
 export default defineComponent({
   name: "PipelineEdit",
   // eslint-disable-next-line vue/no-unused-components
@@ -297,6 +298,8 @@ export default defineComponent({
     function goBack() {
       router.back();
     }
+
+    const userStore = useUserStore();
 
     const loadCurrentHistoryDetail = async () => {
       console.log("load history logs");
@@ -653,6 +656,7 @@ export default defineComponent({
       currentHistory,
       histories,
       goBack,
+      userStore,
       ...useTaskRet,
       ...useStageRet,
       ...useTrigger(),

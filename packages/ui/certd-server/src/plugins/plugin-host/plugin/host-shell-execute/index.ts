@@ -31,7 +31,7 @@ export class HostShellExecutePlugin extends AbstractTaskPlugin {
       vModel: 'value',
       rows: 6,
     },
-    helper:"注意：如果目标主机是windows，且终端是cmd，系统会自动将多行命令通过“&&”连接成一行",
+    helper: '注意：如果目标主机是windows，且终端是cmd，系统会自动将多行命令通过“&&”连接成一行',
     required: true,
   })
   script!: string;
