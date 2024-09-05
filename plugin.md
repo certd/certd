@@ -11,6 +11,9 @@ git clone https://github.com/certd/certd
 #进入项目目录
 cd certd
 
+# 切换到最新的版本tag，main分支可能不稳定
+checkout tags/vx.x.x # x.x.x为最新的版本号
+
 # 安装依赖
 npm install -g pnpm@8.15.7
 pnpm install
