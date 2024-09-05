@@ -17,6 +17,7 @@ export enum ContextScope {
 export type TaskOutputDefine = {
   title: string;
   value?: any;
+  type?: string;
 };
 
 export type TaskInputDefine = FormItemProps;

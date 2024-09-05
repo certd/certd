@@ -1,6 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import { SshClient } from '../../lib/ssh.js';
-import { CertInfo, CertReader } from '@certd/plugin-cert';
+import { CertInfo, CertReader, CertReaderHandleContext } from '@certd/plugin-cert';
 import * as fs from 'fs';
 import { SshAccess } from '../../access/index.js';
 
@@ -99,15 +99,13 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const { crtPath, keyPath, cert, accessId } = this;
     const certReader = new CertReader(cert);
-    this.logger.info('将证书写入本地缓存文件');
-    const saveCrtPath = certReader.saveToFile('crt');
-    const saveKeyPath = certReader.saveToFile('key');
-    this.logger.info('本地文件写入成功');
-    try {
+
+    const handle = async (opts: CertReaderHandleContext) => {
+      const { tmpCrtPath, tmpKeyPath } = opts;
       if (this.copyToThisHost) {
         this.logger.info('复制到目标路径');
-        this.copyFile(saveCrtPath, crtPath);
-        this.copyFile(saveKeyPath, keyPath);
+        this.copyFile(tmpCrtPath, crtPath);
+        this.copyFile(tmpKeyPath, keyPath);
         this.logger.info('证书复制成功：crtPath=', crtPath, ',keyPath=', keyPath);
       } else {
         if (!accessId) {
@@ -120,31 +118,27 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
           connectConf,
           transports: [
             {
-              localPath: saveCrtPath,
+              localPath: tmpCrtPath,
               remotePath: crtPath,
             },
             {
-              localPath: saveKeyPath,
+              localPath: tmpKeyPath,
               remotePath: keyPath,
             },
           ],
           mkdirs: this.mkdirs,
         });
         this.logger.info('证书上传成功：crtPath=', crtPath, ',keyPath=', keyPath);
+
+        //输出
+        this.hostCrtPath = crtPath;
+        this.hostKeyPath = keyPath;
       }
-    } catch (e) {
-      this.logger.error(`上传失败：${e.message}`);
-      throw e;
-    } finally {
-      //删除临时文件
-      this.logger.info('删除临时文件');
-      fs.unlinkSync(saveCrtPath);
-      fs.unlinkSync(saveKeyPath);
-    }
-    this.logger.info('执行完成');
-    //输出
-    this.hostCrtPath = crtPath;
-    this.hostKeyPath = keyPath;
+    };
+    await certReader.readCertFile({
+      logger: this.logger,
+      handle,
+    });
   }
 }
 

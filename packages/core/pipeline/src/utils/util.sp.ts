@@ -51,7 +51,7 @@ export type SpawnOption = {
   cmd: string | string[];
   onStdout?: (data: string) => void;
   onStderr?: (data: string) => void;
-  env: any;
+  env?: any;
   logger?: ILogger;
   options?: any;
 };

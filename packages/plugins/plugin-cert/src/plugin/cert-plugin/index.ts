@@ -6,8 +6,8 @@ import { DnsProviderContext, DnsProviderDefine, dnsProviderRegistry } from "../.
 import { CertReader } from "./cert-reader.js";
 import { CertApplyBasePlugin } from "./base.js";
 
-export { CertReader };
 export type { CertInfo };
+export * from "./cert-reader.js";
 
 @IsTaskPlugin({
   name: "CertApply",

@@ -3,6 +3,11 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { crypto } from "@certd/acme-client";
+import { ILogger } from "@certd/pipeline";
+
+export type CertReaderHandleContext = { reader: CertReader; tmpCrtPath: string; tmpKeyPath: string };
+export type CertReaderHandle = (ctx: CertReaderHandleContext) => Promise<void>;
+export type HandleOpts = { logger: ILogger; handle: CertReaderHandle };
 export class CertReader implements CertInfo {
   crt: string;
   key: string;
@@ -28,7 +33,7 @@ export class CertReader implements CertInfo {
     };
   }
 
-  getCrtDetail(crt: string) {
+  getCrtDetail(crt: string = this.crt) {
     const detail = crypto.readCertificateInfo(crt.toString());
     const expires = detail.notAfter;
     return { detail, expires };
@@ -47,5 +52,32 @@ export class CertReader implements CertInfo {
 
     fs.writeFileSync(filepath, this[type]);
     return filepath;
+  }
+
+  async readCertFile(opts: HandleOpts) {
+    const logger = opts.logger;
+    logger.info("将证书写入本地缓存文件");
+    const tmpCrtPath = this.saveToFile("crt");
+    const tmpKeyPath = this.saveToFile("key");
+    logger.info("本地文件写入成功");
+    try {
+      await opts.handle({
+        reader: this,
+        tmpCrtPath: tmpCrtPath,
+        tmpKeyPath: tmpKeyPath,
+      });
+    } finally {
+      //删除临时文件
+      logger.info("删除临时文件");
+      fs.unlinkSync(tmpCrtPath);
+      fs.unlinkSync(tmpKeyPath);
+    }
+  }
+
+  buildCertFileName(suffix: string, applyTime: number, prefix = "cert") {
+    const detail = this.getCrtDetail();
+    let domain = detail.detail.domains.commonName;
+    domain = domain.replace(".", "_").replace("*", "_");
+    return `${prefix}_${domain}_${applyTime}.${suffix}`;
   }
 }
