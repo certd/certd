@@ -3,6 +3,8 @@ import dayjs from "dayjs";
 import type { CertInfo } from "./acme.js";
 import { CertReader } from "./cert-reader.js";
 import JSZip from "jszip";
+import { CertConverter } from "./convert.js";
+import fs from "fs";
 
 export { CertReader };
 export type { CertInfo };
@@ -41,6 +43,18 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
     helper: "请输入邮箱",
   })
   email!: string;
+
+  @TaskInput({
+    title: "PFX密码",
+    component: {
+      name: "a-input-password",
+      vModel: "value",
+    },
+    required: false,
+    order: 100,
+    helper: "PFX格式证书是否需要加密",
+  })
+  pfxPassword!: string;
 
   @TaskInput({
     title: "更新天数",
@@ -129,22 +143,36 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
 
     this._result.pipelineVars.certExpiresTime = dayjs(certReader.detail.notAfter).valueOf();
 
+    if (cert.pfx == null || cert.der == null) {
+      const converter = new CertConverter({ logger: this.logger });
+      const res = await converter.convert({
+        cert,
+        pfxPassword: this.pfxPassword,
+      });
+      const pfxBuffer = fs.readFileSync(res.pfxPath);
+      cert.pfx = pfxBuffer.toString("base64");
+
+      const derBuffer = fs.readFileSync(res.derPath);
+      cert.der = derBuffer.toString("base64");
+
+      this.logger.info("转换证书格式成功");
+      isNew = true;
+    }
+
     if (isNew) {
-      const applyTime = dayjs(certReader.detail.notBefore).format("YYYYMMDD_HHmmss");
-      await this.zipCert(cert, applyTime);
+      const zipFileName = certReader.buildCertFileName("zip", certReader.detail.notBefore);
+      await this.zipCert(cert, zipFileName);
     } else {
       this.extendsFiles();
     }
-    // thi
-    // s.logger.info(JSON.stringify(certReader.detail));
   }
 
-  async zipCert(cert: CertInfo, applyTime: string) {
+  async zipCert(cert: CertInfo, filename: string) {
     const zip = new JSZip();
     zip.file("cert.crt", cert.crt);
     zip.file("cert.key", cert.key);
-    const domain_name = this.domains[0].replace(".", "_").replace("*", "_");
-    const filename = `cert_${domain_name}_${applyTime}.zip`;
+    zip.file("cert.pfx", Buffer.from(cert.pfx, "base64"));
+    zip.file("cert.der", Buffer.from(cert.der, "base64"));
     const content = await zip.generateAsync({ type: "nodebuffer" });
     this.saveFile(filename, content);
     this.logger.info(`已保存文件:${filename}`);

@@ -41,10 +41,8 @@ export class RunHistory {
     this._loggers[runnable.id] = buildLogger((text) => {
       this.logs[runnable.id].push(text);
     });
-    const input = (runnable as Step).input;
     const status: HistoryResult = {
       output: {},
-      input: _.cloneDeep(input),
       status: ResultType.start,
       startTime: now,
       result: ResultType.start,

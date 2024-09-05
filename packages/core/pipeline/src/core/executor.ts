@@ -96,14 +96,13 @@ export class Executor {
     runnable.runnableType = runnableType;
     this.runtime.start(runnable);
     await this.onChanged(this.runtime);
-
+    const lastNode = this.lastStatusMap.get(runnable.id);
+    const lastResult = lastNode?.status?.status;
     if (runnable.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
       //如果是成功后跳过策略
-      const lastNode = this.lastStatusMap.get(runnable.id);
-      const lastResult = lastNode?.status?.status;
-      const lastInput = JSON.stringify(lastNode?.status?.input);
       let inputChanged = false;
       if (runnableType === "step") {
+        const lastInput = JSON.stringify((lastNode as Step)?.input);
         const step = runnable as Step;
         const input = JSON.stringify(step.input);
         if (input != null && lastInput !== input) {
@@ -271,7 +270,6 @@ export class Executor {
       // this.runtime.context[stepOutputKey] = instance[key];
     });
     step.status!.files = instance.getFiles();
-
     //更新pipeline vars
     if (Object.keys(instance._result.pipelineVars).length > 0) {
       // 判断 pipelineVars 有值时更新

@@ -17,28 +17,46 @@ import path from 'path';
 export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: '证书保存路径',
-    helper: '需要有写入权限，路径要包含证书文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.pem',
+    helper: '需要有写入权限，路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.pem',
     component: {
       placeholder: './tmp/cert.pem',
     },
-    required: true,
   })
   crtPath!: string;
   @TaskInput({
     title: '私钥保存路径',
-    helper: '需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.key',
+    helper: '需要有写入权限，路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.key',
     component: {
       placeholder: './tmp/cert.key',
     },
-    required: true,
   })
   keyPath!: string;
+
+  @TaskInput({
+    title: 'PFX证书保存路径',
+    helper: '需要有写入权限，路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.pfx',
+    component: {
+      placeholder: './tmp/cert.pfx',
+    },
+  })
+  pfxPath!: string;
+
+  @TaskInput({
+    title: 'DER证书保存路径',
+    helper:
+      '需要有写入权限，路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.der\n.der和.cer是相同的东西，改个后缀名即可',
+    component: {
+      placeholder: './tmp/cert.der 或 ./tmp/cert.cer',
+    },
+  })
+  derPath!: string;
+
   @TaskInput({
     title: '域名证书',
     helper: '请选择前置任务输出的域名证书',
     component: {
       name: 'pi-output-selector',
-      from: ['CertApply','CertConvert'],
+      from: 'CertApply',
     },
     required: true,
   })
@@ -46,15 +64,27 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
 
   @TaskOutput({
     title: '证书保存路径',
-    type:"HostCrtPath"
+    type: 'HostCrtPath',
   })
   hostCrtPath!: string;
 
   @TaskOutput({
     title: '私钥保存路径',
-    type:"HostKeyPath"
+    type: 'HostKeyPath',
   })
   hostKeyPath!: string;
+
+  @TaskOutput({
+    title: 'PFX保存路径',
+    type: 'HostPfxPath',
+  })
+  hostPfxPath!: string;
+
+  @TaskOutput({
+    title: 'DER保存路径',
+    type: 'HostDerPath',
+  })
+  hostDerPath!: string;
 
   async onInstance() {}
 
@@ -67,37 +97,38 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
     fs.copyFileSync(srcFile, destFile);
   }
   async execute(): Promise<void> {
-    let { crtPath, keyPath } = this;
+    let { crtPath, keyPath, pfxPath, derPath } = this;
     const certReader = new CertReader(this.cert);
-    this.logger.info('将证书写入本地缓存文件');
-    const saveCrtPath = certReader.saveToFile('crt');
-    const saveKeyPath = certReader.saveToFile('key');
-    this.logger.info('本地文件写入成功');
-    try {
-      this.logger.info('复制到目标路径');
 
-      crtPath = crtPath.startsWith('/') ? crtPath : path.join(Constants.dataDir, crtPath);
-      keyPath = keyPath.startsWith('/') ? keyPath : path.join(Constants.dataDir, keyPath);
-      // crtPath = path.resolve(crtPath);
-      // keyPath = path.resolve(keyPath);
-      this.copyFile(saveCrtPath, crtPath);
-      this.copyFile(saveKeyPath, keyPath);
-      this.logger.info('证书复制成功：crtPath=', crtPath, ',keyPath=', keyPath);
+    const handle = async ({ reader, tmpCrtPath, tmpKeyPath, tmpDerPath, tmpPfxPath }) => {
+      this.logger.info('复制到目标路径');
+      if (crtPath) {
+        crtPath = crtPath.startsWith('/') ? crtPath : path.join(Constants.dataDir, crtPath);
+        this.copyFile(tmpCrtPath, crtPath);
+        this.hostCrtPath = crtPath;
+      }
+      if (keyPath) {
+        keyPath = keyPath.startsWith('/') ? keyPath : path.join(Constants.dataDir, keyPath);
+        this.copyFile(tmpKeyPath, keyPath);
+        this.hostKeyPath = keyPath;
+      }
+      if (pfxPath) {
+        pfxPath = pfxPath.startsWith('/') ? pfxPath : path.join(Constants.dataDir, pfxPath);
+        this.copyFile(tmpPfxPath, pfxPath);
+        this.hostPfxPath = pfxPath;
+      }
+      if (derPath) {
+        derPath = derPath.startsWith('/') ? derPath : path.join(Constants.dataDir, derPath);
+        this.copyFile(tmpDerPath, derPath);
+        this.hostDerPath = derPath;
+      }
       this.logger.info('请注意，如果使用的是相对路径，那么文件就在你的数据库同级目录下，默认是/data/certd/下面');
       this.logger.info('请注意，如果使用的是绝对路径，文件在容器内的目录下，你需要给容器做目录映射才能复制到宿主机');
-    } catch (e) {
-      this.logger.error(`复制失败：${e.message}`);
-      throw e;
-    } finally {
-      //删除临时文件
-      this.logger.info('删除临时文件');
-      fs.unlinkSync(saveCrtPath);
-      fs.unlinkSync(saveKeyPath);
-    }
+    };
+
+    await certReader.readCertFile({ logger: this.logger, handle });
+
     this.logger.info('执行完成');
-    //输出
-    this.hostCrtPath = crtPath;
-    this.hostKeyPath = keyPath;
   }
 }
 

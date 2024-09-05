@@ -17,8 +17,8 @@ import { SshAccess } from '../../access/index.js';
 })
 export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   @TaskInput({
-    title: '证书保存路径',
-    helper: '需要有写入权限，路径要包含证书文件名，文件名不能用*?!等特殊符号',
+    title: 'PEM证书保存路径',
+    helper: '需要有写入权限，路径要包含证书文件名，文件名不能用*?!等特殊符号，例如：/tmp/cert.pem',
     component: {
       placeholder: '/root/deploy/nginx/cert.pem',
     },
@@ -26,12 +26,31 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   crtPath!: string;
   @TaskInput({
     title: '私钥保存路径',
-    helper: '需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号',
+    helper: '需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号，例如：/tmp/cert.key',
     component: {
       placeholder: '/root/deploy/nginx/cert.key',
     },
   })
   keyPath!: string;
+
+  @TaskInput({
+    title: 'PFX证书保存路径',
+    helper: '需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号，例如：/tmp/cert.pfx',
+    component: {
+      placeholder: '/root/deploy/nginx/cert.pfx',
+    },
+  })
+  pfxPath!: string;
+
+  @TaskInput({
+    title: 'DER证书保存路径',
+    helper: '需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号，例如：/tmp/cert.der',
+    component: {
+      placeholder: '/root/deploy/nginx/cert.der',
+    },
+  })
+  derPath!: string;
+
   @TaskInput({
     title: '域名证书',
     helper: '请选择前置任务输出的域名证书',
@@ -87,9 +106,23 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   })
   hostKeyPath!: string;
 
+  @TaskOutput({
+    title: 'PFX保存路径',
+  })
+  hostPfxPath!: string;
+
+  @TaskOutput({
+    title: 'DER保存路径',
+  })
+  hostDerPath!: string;
+
   async onInstance() {}
 
   copyFile(srcFile: string, destFile: string) {
+    if (!srcFile || !destFile) {
+      this.logger.warn(`srcFile:${srcFile} 或 destFile:${destFile} 为空，不复制`);
+      return;
+    }
     const dir = destFile.substring(0, destFile.lastIndexOf('/'));
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -101,12 +134,15 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
     const certReader = new CertReader(cert);
 
     const handle = async (opts: CertReaderHandleContext) => {
-      const { tmpCrtPath, tmpKeyPath } = opts;
+      const { tmpCrtPath, tmpKeyPath, tmpDerPath, tmpPfxPath } = opts;
       if (this.copyToThisHost) {
         this.logger.info('复制到目标路径');
         this.copyFile(tmpCrtPath, crtPath);
         this.copyFile(tmpKeyPath, keyPath);
-        this.logger.info('证书复制成功：crtPath=', crtPath, ',keyPath=', keyPath);
+        this.copyFile(tmpPfxPath, this.pfxPath);
+        this.copyFile(tmpDerPath, this.derPath);
+
+        this.logger.info(`证书复制成功：crtPath=${crtPath},keyPath=${keyPath},pfxPath=${this.pfxPath},derPath=${this.derPath}`);
       } else {
         if (!accessId) {
           throw new Error('主机登录授权配置不能为空');
@@ -114,25 +150,43 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
         this.logger.info('准备上传文件到服务器');
         const connectConf: SshAccess = await this.accessService.getById(accessId);
         const sshClient = new SshClient(this.logger);
+        const transports: any = [];
+        if (crtPath) {
+          transports.push({
+            localPath: tmpCrtPath,
+            remotePath: crtPath,
+          });
+        }
+        if (keyPath) {
+          transports.push({
+            localPath: tmpKeyPath,
+            remotePath: keyPath,
+          });
+        }
+        if (this.pfxPath) {
+          transports.push({
+            localPath: tmpPfxPath,
+            remotePath: this.pfxPath,
+          });
+        }
+        if (this.derPath) {
+          transports.push({
+            localPath: tmpDerPath,
+            remotePath: this.derPath,
+          });
+        }
         await sshClient.uploadFiles({
           connectConf,
-          transports: [
-            {
-              localPath: tmpCrtPath,
-              remotePath: crtPath,
-            },
-            {
-              localPath: tmpKeyPath,
-              remotePath: keyPath,
-            },
-          ],
+          transports,
           mkdirs: this.mkdirs,
         });
-        this.logger.info('证书上传成功：crtPath=', crtPath, ',keyPath=', keyPath);
+        this.logger.info(`证书上传成功：crtPath=${crtPath},keyPath=${keyPath},pfxPath=${this.pfxPath},derPath=${this.derPath}`);
 
         //输出
         this.hostCrtPath = crtPath;
         this.hostKeyPath = keyPath;
+        this.hostPfxPath = this.pfxPath;
+        this.hostDerPath = this.derPath;
       }
     };
     await certReader.readCertFile({

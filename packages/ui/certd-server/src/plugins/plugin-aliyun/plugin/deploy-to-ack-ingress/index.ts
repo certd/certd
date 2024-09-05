@@ -51,7 +51,7 @@ export class DeployCertToAliyunAckIngressPlugin extends AbstractTaskPlugin {
     },
     required: true,
   })
-  namespace!: string;
+  namespace: string = 'default';
   @TaskInput({
     title: 'ingress名称',
     value: '',

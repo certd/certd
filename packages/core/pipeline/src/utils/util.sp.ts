@@ -66,8 +66,8 @@ async function spawn(opts: SpawnOption): Promise<string> {
         cmd = item;
       }
     }
-  }else{
-    cmd = opts.cmd
+  } else {
+    cmd = opts.cmd;
   }
   log.info(`执行命令: ${cmd}`);
   let stdout = "";
