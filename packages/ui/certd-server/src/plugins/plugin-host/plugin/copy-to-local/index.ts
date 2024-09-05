@@ -21,6 +21,7 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
     component: {
       placeholder: './tmp/cert.pem',
     },
+    required: true,
   })
   crtPath!: string;
   @TaskInput({
@@ -29,6 +30,7 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
     component: {
       placeholder: './tmp/cert.key',
     },
+    required: true,
   })
   keyPath!: string;
   @TaskInput({
@@ -36,7 +38,7 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
     helper: '请选择前置任务输出的域名证书',
     component: {
       name: 'pi-output-selector',
-      from: 'CertApply',
+      from: ['CertApply','CertConvert'],
     },
     required: true,
   })
@@ -44,11 +46,13 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
 
   @TaskOutput({
     title: '证书保存路径',
+    type:"HostCrtPath"
   })
   hostCrtPath!: string;
 
   @TaskOutput({
     title: '私钥保存路径',
+    type:"HostKeyPath"
   })
   hostKeyPath!: string;
 

@@ -42,9 +42,34 @@ export class CertConvertPlugin extends AbstractTaskPlugin {
       name: "a-input-password",
       vModel: "value",
     },
-    required: true,
+    required: false,
   })
   pfxPassword!: string;
+
+  @TaskInput({
+    title: "输出PFX",
+    value:true,
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+    required: true,
+  })
+  pfxEnabled: boolean = true;
+
+
+  @TaskInput({
+    title: "输出DER",
+    value:true,
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+    required: true,
+  })
+  derEnabled: boolean = true;
+
+
 
   @TaskOutput({
     title: "pfx格式证书",
@@ -64,11 +89,19 @@ export class CertConvertPlugin extends AbstractTaskPlugin {
     const certReader = new CertReader(this.cert);
 
     const handle = async (opts: CertReaderHandleContext) => {
-      // 调用openssl 转pfx
-      await this.convertPfx(opts);
-
-      // 转der
-      await this.convertDer(opts);
+      if(this.pfxEnabled){
+        // 调用openssl 转pfx
+        await this.convertPfx(opts);
+      }else{
+        this.logger.info("pfx证书已禁用");
+      }
+    
+      if(this.pfxEnabled){
+        // 转der
+        await this.convertDer(opts);
+      }else{
+        this.logger.info("der证书已禁用");
+      }
     };
 
     await certReader.readCertFile({ logger: this.logger, handle });
@@ -86,13 +119,18 @@ export class CertConvertPlugin extends AbstractTaskPlugin {
 
     const pfxPath = path.join(os.tmpdir(), "/certd/tmp/", Math.floor(Math.random() * 1000000) + "", "cert.pfx");
 
+    const dir = path.dirname(pfxPath)
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
     let passwordArg = "-passout pass:";
     if (this.pfxPassword) {
       passwordArg = `-password pass:${this.pfxPassword}`;
     }
     await this.exec(`openssl pkcs12 -export -out ${pfxPath} -inkey ${tmpKeyPath} -in ${tmpCrtPath} ${passwordArg}`);
     this.pfxCert = pfxPath;
-
+    
     const applyTime = new Date().getTime();
     const filename = reader.buildCertFileName("pfx", applyTime);
     const fileBuffer = fs.readFileSync(pfxPath);
@@ -102,6 +140,13 @@ export class CertConvertPlugin extends AbstractTaskPlugin {
   private async convertDer(opts: CertReaderHandleContext) {
     const { reader, tmpCrtPath } = opts;
     const derPath = path.join(os.tmpdir(), "/certd/tmp/", Math.floor(Math.random() * 1000000) + "", `cert.der`);
+
+    const dir = path.dirname(derPath)
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+
     await this.exec(`openssl x509 -outform der -in ${tmpCrtPath} -out ${derPath}`);
     this.derCert = derPath;
 

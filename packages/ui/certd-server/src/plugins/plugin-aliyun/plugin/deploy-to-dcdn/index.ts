@@ -1,6 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import dayjs from 'dayjs';
-import { AliyunAccess } from "@certd/plugin-plus";
+import { AliyunAccess, AliyunClient } from "@certd/plugin-plus";
 @IsTaskPlugin({
   name: 'DeployCertToAliyunDCDN',
   title: '部署证书至阿里云DCDN',
@@ -59,13 +59,14 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   }
 
   async getClient(access: AliyunAccess) {
-    const sdk = await import('@alicloud/pop-core');
-    return new sdk.default({
+    const client =  new AliyunClient({logger:this.logger})
+    await client.init({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
       endpoint: 'https://dcdn.aliyuncs.com',
       apiVersion: '2018-01-15',
-    });
+    })
+    return client
   }
 
   async buildParams() {

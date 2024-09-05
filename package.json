@@ -24,7 +24,7 @@
   "license": "AGPL-3.0",
   "dependencies": {
     "axios": "^1.7.2",
-    "lodash": "^4.17.21"
+    "lodash-es": "^4.17.21"
   },
   "workspaces": [
     "packages/**"

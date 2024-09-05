@@ -1,6 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import { appendTimeSuffix, checkRet } from '../../utils/index.js';
-import { AliyunAccess } from "@certd/plugin-plus";
+import { AliyunAccess, AliyunClient } from "@certd/plugin-plus";
 
 @IsTaskPlugin({
   name: 'uploadCertToAliyun',
@@ -86,13 +86,14 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
   }
 
   async getClient(aliyunProvider: AliyunAccess) {
-    const Core = await import('@alicloud/pop-core');
-    return new Core.default({
+    const client = new AliyunClient({logger:this.logger})
+    await client.init({
       accessKeyId: aliyunProvider.accessKeyId,
       accessKeySecret: aliyunProvider.accessKeySecret,
       endpoint: 'https://cas.aliyuncs.com',
       apiVersion: '2018-07-13',
-    });
+    })
+    return client
   }
 }
 //注册插件

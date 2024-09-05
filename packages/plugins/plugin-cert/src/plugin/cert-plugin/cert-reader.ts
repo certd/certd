@@ -4,6 +4,7 @@ import os from "os";
 import path from "path";
 import { crypto } from "@certd/acme-client";
 import { ILogger } from "@certd/pipeline";
+import dayjs from "dayjs";
 
 export type CertReaderHandleContext = { reader: CertReader; tmpCrtPath: string; tmpKeyPath: string };
 export type CertReaderHandle = (ctx: CertReaderHandleContext) => Promise<void>;
@@ -78,6 +79,7 @@ export class CertReader implements CertInfo {
     const detail = this.getCrtDetail();
     let domain = detail.detail.domains.commonName;
     domain = domain.replace(".", "_").replace("*", "_");
-    return `${prefix}_${domain}_${applyTime}.${suffix}`;
+    const timeStr = dayjs(applyTime).format("YYYYMMDDHHmmss");
+    return `${prefix}_${domain}_${timeStr}.${suffix}`;
   }
 }

@@ -111,7 +111,7 @@ async function verifyDnsChallenge(authz, challenge, keyAuthorization, prefix = '
     log(`DNS query finished successfully, found ${recordValues.length} TXT records`);
 
     if (!recordValues.length || !recordValues.includes(keyAuthorization)) {
-        throw new Error(`Authorization not found in DNS TXT record: ${recordName}`);
+        throw new Error(`Authorization not found in DNS TXT record: ${recordName}，need:${keyAuthorization},found:${recordValues}`);
     }
 
     log(`Key authorization match for ${challenge.type}/${recordName}, ACME challenge verified`);
