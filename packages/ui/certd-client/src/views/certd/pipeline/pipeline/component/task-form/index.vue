@@ -43,7 +43,7 @@
                   <a-button type="primary" @click="stepAdd(currentTask)">添加步骤</a-button>
                 </template>
               </a-descriptions>
-              <v-draggable v-model="currentTask.steps" class="step-list" handle=".handle">
+              <v-draggable v-model="currentTask.steps" class="step-list" handle=".handle" item-key="id">
                 <template #item="{ element, index }">
                   <div class="step-row">
                     <div class="text">

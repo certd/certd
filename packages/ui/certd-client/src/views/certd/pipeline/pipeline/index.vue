@@ -20,192 +20,204 @@
       <div class="layout-left">
         <div class="pipeline-container">
           <div class="pipeline">
-            <div class="stages">
-              <div class="stage first-stage">
-                <div class="title">
-                  <pi-editable model-value="触发源" :disabled="true" />
-                </div>
-                <div class="tasks">
-                  <div class="task-container first-task">
-                    <div class="line">
-                      <div class="flow-line"></div>
-                    </div>
-                    <div class="task">
-                      <a-button shape="round" type="primary" @click="run()">
-                        <fs-icon icon="ion:play"></fs-icon>
-                        手动触发
-                      </a-button>
-                    </div>
+            <v-draggable v-model="pipeline.stages" class="stages" item-key="id" handle=".stage-move-handle">
+              <template #header>
+                <div class="stage first-stage">
+                  <div class="title stage-move-handle">
+                    <pi-editable model-value="触发源" :disabled="true" />
                   </div>
-                  <div v-for="(trigger, index) of pipeline.triggers" :key="trigger.id" class="task-container">
-                    <div class="line">
-                      <div class="flow-line"></div>
-                    </div>
-                    <div class="task">
-                      <a-button shape="round" @click="triggerEdit(trigger, index)">
-                        <fs-icon icon="ion:time"></fs-icon>
-                        {{ trigger.title }}
-                      </a-button>
-                    </div>
-                  </div>
-
-                  <div v-if="editMode" class="task-container is-add">
-                    <div class="line">
-                      <div class="flow-line"></div>
-                    </div>
-                    <div class="task">
-                      <a-button shape="round" type="dashed" @click="triggerAdd">
-                        <fs-icon icon="ion:add-circle-outline"></fs-icon>
-                        触发源（定时）
-                      </a-button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div v-for="(stage, index) of pipeline.stages" :key="stage.id" class="stage" :class="{ 'last-stage': isLastStage(index) }">
-                <div class="title">
-                  <pi-editable v-model="stage.title" :disabled="!editMode"></pi-editable>
-                </div>
-                <v-draggable v-model="stage.tasks" item-key="id" class="tasks" handle=".handle">
-                  <template #item="{ element: task, index: taskIndex }">
-                    <div
-                      class="task-container"
-                      :class="{
-                        'first-task': taskIndex === 0
-                      }"
-                    >
-                      <div class="line">
+                  <div class="tasks">
+                    <div class="task-container first-task">
+                      <div class="line line-right">
                         <div class="flow-line"></div>
-                        <fs-icon v-if="editMode" class="add-stage-btn" title="添加新阶段" icon="ion:add-circle" @click="stageAdd(index)"></fs-icon>
                       </div>
                       <div class="task">
-                        <a-button shape="round" @click="taskEdit(stage, index, task, taskIndex)">
-                          <a-popover title="步骤" :trigger="editMode ? 'none' : 'hover'">
-                            <!--                          :open="true"-->
-                            <template #content>
-                              <div v-for="(item, index) of task.steps" class="flex-o w-100">
-                                <span class="ellipsis flex-1">{{ index + 1 }}. {{ item.title }} </span>
-                                <pi-status-show v-if="!editMode" :status="item.status?.result"></pi-status-show>
-                                <fs-icon
-                                  v-if="!editMode"
-                                  class="pointer color-blue ml-2"
-                                  title="重新运行此步骤"
-                                  icon="SyncOutlined"
-                                  @click="run(item.id)"
-                                ></fs-icon>
-                              </div>
-                            </template>
-                            <span class="flex-o w-100">
-                              <span class="ellipsis flex-1 task-title" :class="{ 'in-edit': editMode }">{{ task.title }}</span>
-                              <pi-status-show :status="task.status?.result"></pi-status-show>
-                            </span>
-                          </a-popover>
+                        <a-button shape="round" type="primary" @click="run()">
+                          <fs-icon icon="ion:play"></fs-icon>
+                          手动触发
                         </a-button>
-                        <fs-icon
-                          v-if="editMode"
-                          class="action copy"
-                          title="复制"
-                          icon="ion:copy-outline"
-                          @click="taskCopy(stage, index, task)"
-                        ></fs-icon>
-                        <fs-icon v-if="editMode" class="handle action drag" title="拖动排序" icon="ion:move-outline"></fs-icon>
                       </div>
                     </div>
-                  </template>
-                  <template #footer>
-                    <div v-if="editMode" class="task-container is-add">
-                      <div class="line">
+                    <div v-for="(trigger, index) of pipeline.triggers" :key="trigger.id" class="task-container">
+                      <div class="line line-right">
                         <div class="flow-line"></div>
                       </div>
                       <div class="task">
-                        <a-tooltip>
-                          <a-button type="dashed" shape="round" @click="taskAdd(stage, index)">
-                            <fs-icon class="font-20" icon="ion:add-circle-outline"></fs-icon>
-                            并行任务
-                          </a-button>
-                        </a-tooltip>
+                        <a-button shape="round" @click="triggerEdit(trigger, index)">
+                          <fs-icon icon="ion:time"></fs-icon>
+                          {{ trigger.title }}
+                        </a-button>
                       </div>
                     </div>
-                  </template>
-                </v-draggable>
-              </div>
 
-              <div v-if="editMode" class="stage last-stage">
-                <div class="title">
-                  <pi-editable model-value="新阶段" :disabled="true" />
-                </div>
-                <div class="tasks">
-                  <div class="task-container first-task">
-                    <div class="line">
-                      <div class="flow-line"></div>
-                      <fs-icon class="add-stage-btn" title="添加新阶段" icon="ion:add-circle" @click="stageAdd()"></fs-icon>
-                    </div>
-                    <div class="task">
-                      <a-button shape="round" type="dashed" @click="stageAdd()">
-                        <fs-icon icon="ion:add-circle-outline"></fs-icon>
-                        添加任务
-                      </a-button>
+                    <div v-if="editMode" class="task-container is-add">
+                      <div class="line line-right">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" type="dashed" @click="triggerAdd">
+                          <fs-icon icon="ion:add-circle-outline"></fs-icon>
+                          触发源（定时）
+                        </a-button>
+                      </div>
                     </div>
                   </div>
-                  <div class="task-container">
-                    <div class="line">
-                      <div class="flow-line"></div>
-                    </div>
-                    <div class="task">
-                      <a-button shape="round" type="dashed" @click="notificationAdd()">
-                        <fs-icon icon="ion:add-circle-outline"></fs-icon>
+                </div>
+              </template>
 
-                        添加通知
-                      </a-button>
+              <template #item="{ element: stage, index }">
+                <div :key="stage.id" class="stage" :class="{ 'last-stage': isLastStage(index) }">
+                  <div class="title">
+                    <pi-editable v-model="stage.title" :disabled="!editMode"></pi-editable>
+                    <div class="icon-box stage-move-handle">
+                      <fs-icon v-if="editMode" title="拖动排序" icon="ion:move-outline"></fs-icon>
                     </div>
                   </div>
-                  <div v-for="(item, ii) of pipeline.notifications" :key="ii" class="task-container">
-                    <div class="line">
-                      <div class="flow-line"></div>
-                    </div>
-                    <div class="task">
-                      <a-button shape="round" @click="notificationEdit(item, ii as number)">
-                        <fs-icon icon="ion:notifications"></fs-icon>
-                        【通知】 {{ item.type }}
-                      </a-button>
-                    </div>
+                  <v-draggable v-model="stage.tasks" item-key="id" class="tasks" group="task" handle=".task-move-handle">
+                    <template #item="{ element: task, index: taskIndex }">
+                      <div
+                        class="task-container"
+                        :class="{
+                          'first-task': taskIndex === 0
+                        }"
+                      >
+                        <div class="line line-left">
+                          <div class="flow-line"></div>
+                          <fs-icon v-if="editMode" class="add-stage-btn" title="添加新阶段" icon="ion:add-circle" @click="stageAdd(index)"></fs-icon>
+                        </div>
+                        <div class="line line-right">
+                          <div class="flow-line"></div>
+                        </div>
+                        <div class="task">
+                          <a-button shape="round" @click="taskEdit(stage, index, task, taskIndex)">
+                            <a-popover title="步骤" :trigger="editMode ? 'none' : 'hover'">
+                              <!--                          :open="true"-->
+                              <template #content>
+                                <div v-for="(item, index) of task.steps" class="flex-o w-100">
+                                  <span class="ellipsis flex-1">{{ index + 1 }}. {{ item.title }} </span>
+                                  <pi-status-show v-if="!editMode" :status="item.status?.result"></pi-status-show>
+                                  <fs-icon
+                                    v-if="!editMode"
+                                    class="pointer color-blue ml-2"
+                                    title="重新运行此步骤"
+                                    icon="SyncOutlined"
+                                    @click="run(item.id)"
+                                  ></fs-icon>
+                                </div>
+                              </template>
+                              <span class="flex-o w-100">
+                                <span class="ellipsis flex-1 task-title" :class="{ 'in-edit': editMode }">{{ task.title }}</span>
+                                <pi-status-show :status="task.status?.result"></pi-status-show>
+                              </span>
+                            </a-popover>
+                          </a-button>
+                          <div class="icon-box action copy">
+                            <fs-icon v-if="editMode" title="复制" icon="ion:copy-outline" @click="taskCopy(stage, index, task)"></fs-icon>
+                          </div>
+                          <div class="icon-box task-move-handle action drag">
+                            <fs-icon v-if="editMode" title="拖动排序" icon="ion:move-outline"></fs-icon>
+                          </div>
+                        </div>
+                      </div>
+                    </template>
+                    <template #footer>
+                      <div v-if="editMode" class="task-container is-add">
+                        <div class="line line-left">
+                          <div class="flow-line"></div>
+                        </div>
+                        <div class="line line-right">
+                          <div class="flow-line"></div>
+                        </div>
+                        <div class="task">
+                          <a-tooltip>
+                            <a-button type="dashed" shape="round" @click="taskAdd(stage, index)">
+                              <fs-icon class="font-20" icon="ion:add-circle-outline"></fs-icon>
+                              并行任务
+                            </a-button>
+                          </a-tooltip>
+                        </div>
+                      </div>
+                    </template>
+                  </v-draggable>
+                </div>
+              </template>
+              <template #footer>
+                <div v-if="editMode" class="stage last-stage">
+                  <div class="title">
+                    <pi-editable model-value="新阶段" :disabled="true" />
                   </div>
-                </div>
-              </div>
-              <div v-else class="stage last-stage">
-                <div class="title">
-                  <pi-editable model-value="结束" :disabled="true" />
-                </div>
-                <div v-if="pipeline.notifications?.length > 0" class="tasks">
-                  <div v-for="(item, index) of pipeline.notifications" :key="index" class="task-container" :class="{ 'first-task': index == 0 }">
-                    <div class="line">
-                      <div class="flow-line"></div>
+                  <div class="tasks">
+                    <div class="task-container first-task">
+                      <div class="line line-left">
+                        <div class="flow-line"></div>
+                        <fs-icon class="add-stage-btn" title="添加新阶段" icon="ion:add-circle" @click="stageAdd()"></fs-icon>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" type="dashed" @click="stageAdd()">
+                          <fs-icon icon="ion:add-circle-outline"></fs-icon>
+                          添加任务
+                        </a-button>
+                      </div>
                     </div>
-                    <div class="task">
-                      <a-button shape="round" @click="notificationEdit(item, index)">
-                        <fs-icon icon="ion:notifications"></fs-icon>
+                    <div class="task-container">
+                      <div class="line line-left">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" type="dashed" @click="notificationAdd()">
+                          <fs-icon icon="ion:add-circle-outline"></fs-icon>
 
-                        【通知】 {{ item.type }}
-                      </a-button>
+                          添加通知
+                        </a-button>
+                      </div>
+                    </div>
+                    <div v-for="(item, ii) of pipeline.notifications" :key="ii" class="task-container">
+                      <div class="line line-left">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" @click="notificationEdit(item, ii as number)">
+                          <fs-icon icon="ion:notifications"></fs-icon>
+                          【通知】 {{ item.type }}
+                        </a-button>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div v-else class="tasks">
-                  <div class="task-container first-task">
-                    <div class="line">
-                      <div class="flow-line"></div>
+                <div v-else class="stage last-stage">
+                  <div class="title">
+                    <pi-editable model-value="结束" :disabled="true" />
+                  </div>
+                  <div v-if="pipeline.notifications?.length > 0" class="tasks">
+                    <div v-for="(item, index) of pipeline.notifications" :key="index" class="task-container" :class="{ 'first-task': index == 0 }">
+                      <div class="line line-left">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" @click="notificationEdit(item, index)">
+                          <fs-icon icon="ion:notifications"></fs-icon>
+
+                          【通知】 {{ item.type }}
+                        </a-button>
+                      </div>
                     </div>
-                    <div class="task">
-                      <a-button shape="round" type="dashed">
-                        <fs-icon icon="ion:notifications"></fs-icon>
-                        通知未设置
-                      </a-button>
+                  </div>
+                  <div v-else class="tasks">
+                    <div class="task-container first-task">
+                      <div class="line line-left">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" type="dashed">
+                          <fs-icon icon="ion:notifications"></fs-icon>
+                          通知未设置
+                        </a-button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </template>
+            </v-draggable>
           </div>
         </div>
       </div>
@@ -715,39 +727,39 @@ export default defineComponent({
         .title {
           padding: 20px;
           color: gray;
-        }
-        &.first-stage {
-          .line {
-            width: 50% !important;
-            .flow-line {
-              border-left: 0;
-            }
+          display: flex;
+          .stage-move-handle {
+            cursor: move;
+            margin-left: 4px;
           }
         }
-        &.last-stage {
-          .line {
-            width: 50% !important;
-            left: 0;
-            right: auto;
-            .flow-line {
-              border-right: 0;
-            }
-            .add-stage-btn {
-              visibility: hidden;
-            }
-          }
-        }
-
+        //.sortable-ghost {
+        //  .line {
+        //    visibility: hidden;
+        //  }
+        //}
         .line {
           height: 50px;
           position: absolute;
           top: -25px;
-          right: 0;
-          width: 100%;
+          width: 25px;
+
+          &.line-left {
+            left: 25px;
+            .flow-line {
+              border-right: 0;
+            }
+          }
+
+          &.line-right {
+            right: 25px;
+            .flow-line {
+              border-left: 0;
+            }
+          }
+
           .flow-line {
             height: 100%;
-            margin-left: 28px;
-            margin-right: 28px;
             border: 1px solid #c7c7c7;
             border-top: 0;
           }
@@ -766,6 +778,52 @@ export default defineComponent({
           }
         }
 
+        .task-container:first-child {
+          .line {
+            width: 50px;
+
+            &.line-left {
+              left: 0;
+              .flow-line {
+                border-right: 0;
+                border-left: 0;
+              }
+            }
+
+            &.line-right {
+              right: 0;
+              .flow-line {
+                border-left: 0;
+                border-right: 0;
+              }
+            }
+
+            .add-stage-btn {
+              visibility: visible;
+            }
+          }
+        }
+
+        &.first-stage {
+          .line {
+            .flow-line {
+              border-left: 0;
+            }
+          }
+        }
+        &.last-stage {
+          .line {
+            width: 50% !important;
+            right: auto;
+            .flow-line {
+              border-right: 0;
+            }
+            .add-stage-btn {
+              visibility: hidden;
+            }
+          }
+        }
+
         .tasks {
           .task-container {
             width: 100%;
@@ -775,18 +833,6 @@ export default defineComponent({
             justify-content: center;
             align-items: center;
             position: relative;
-            &.first-task {
-              .line {
-                .flow-line {
-                  margin: 0;
-                  border-left: 0;
-                  border-right: 0;
-                }
-                .add-stage-btn {
-                  visibility: visible;
-                }
-              }
-            }
             .task {
               display: flex;
               flex-direction: column;
@@ -816,6 +862,7 @@ export default defineComponent({
                 }
                 &.drag {
                   right: 60px;
+                  cursor: move;
                 }
               }
 
