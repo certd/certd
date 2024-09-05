@@ -16,7 +16,7 @@ npm install -g pnpm@8.15.7
 pnpm install
 
 # 初始化构建
-lerna run build
+npm run init
 ```
 
 启动 server:    
