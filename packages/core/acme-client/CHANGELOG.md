@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.24.2](https://github.com/publishlab/node-acme-client/compare/v1.24.1...v1.24.2) (2024-09-06)
+
+### Performance Improvements
+
+* 修复windows下无法执行第二条命令的bug ([d5bfcdb](https://github.com/publishlab/node-acme-client/commit/d5bfcdb6de1dcc1702155442e2e00237d0bbb6e5))
+
 ## [1.24.1](https://github.com/publishlab/node-acme-client/compare/v1.24.0...v1.24.1) (2024-09-02)
 
 ### Bug Fixes
