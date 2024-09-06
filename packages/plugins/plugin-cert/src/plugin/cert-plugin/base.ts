@@ -144,19 +144,23 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
     this._result.pipelineVars.certExpiresTime = dayjs(certReader.detail.notAfter).valueOf();
 
     if (cert.pfx == null || cert.der == null) {
-      const converter = new CertConverter({ logger: this.logger });
-      const res = await converter.convert({
-        cert,
-        pfxPassword: this.pfxPassword,
-      });
-      const pfxBuffer = fs.readFileSync(res.pfxPath);
-      cert.pfx = pfxBuffer.toString("base64");
+      try {
+        const converter = new CertConverter({ logger: this.logger });
+        const res = await converter.convert({
+          cert,
+          pfxPassword: this.pfxPassword,
+        });
+        const pfxBuffer = fs.readFileSync(res.pfxPath);
+        cert.pfx = pfxBuffer.toString("base64");
 
-      const derBuffer = fs.readFileSync(res.derPath);
-      cert.der = derBuffer.toString("base64");
+        const derBuffer = fs.readFileSync(res.derPath);
+        cert.der = derBuffer.toString("base64");
 
-      this.logger.info("转换证书格式成功");
-      isNew = true;
+        this.logger.info("转换证书格式成功");
+        isNew = true;
+      } catch (e) {
+        this.logger.error("转换证书格式失败", e);
+      }
     }
 
     if (isNew) {
@@ -171,8 +175,12 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
     const zip = new JSZip();
     zip.file("cert.crt", cert.crt);
     zip.file("cert.key", cert.key);
-    zip.file("cert.pfx", Buffer.from(cert.pfx, "base64"));
-    zip.file("cert.der", Buffer.from(cert.der, "base64"));
+    if (cert.pfx) {
+      zip.file("cert.pfx", Buffer.from(cert.pfx, "base64"));
+    }
+    if (cert.der) {
+      zip.file("cert.der", Buffer.from(cert.der, "base64"));
+    }
     const content = await zip.generateAsync({ type: "nodebuffer" });
     this.saveFile(filename, content);
     this.logger.info(`已保存文件:${filename}`);

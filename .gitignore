@@ -19,21 +19,10 @@ gen
 /*.log
 
 /packages/ui/*/.idea
-
 /packages/ui/*/node_modules
-
 /packages/*/node_modules
-/packages/ui/certd-server/tmp/
-/packages/ui/certd-ui/dist/
-/other
-/dev-sidecar-test
-/packages/core/certd/yarn.lock
-/packages/test
-/test/own
 /pnpm-lock.yaml
 
-docker/image/workspace
-/packages/core/lego
 
 tsconfig.tsbuildinfo
 test/**/*.js

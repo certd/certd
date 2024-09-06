@@ -239,7 +239,10 @@ export class AcmeService {
     const privateKeyType = options.privateKeyType || "rsa_2048";
     const privateKeyArr = privateKeyType.split("_");
     const type = privateKeyArr[0];
-    const size = parseInt(privateKeyArr[1]);
+    let size = 2048;
+    if (privateKeyArr.length > 1) {
+      size = parseInt(privateKeyArr[1]);
+    }
     if (type == "ec") {
       const name: any = "P-" + size;
       privateKey = await acme.crypto.createPrivateEcdsaKey(name);
