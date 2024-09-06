@@ -79,10 +79,15 @@ export class CertReader {
     } finally {
       //删除临时文件
       logger.info("删除临时文件");
-      fs.unlinkSync(tmpCrtPath);
-      fs.unlinkSync(tmpKeyPath);
-      fs.unlinkSync(tmpPfxPath);
-      fs.unlinkSync(tmpDerPath);
+      function removeFile(filepath?: string) {
+        if (filepath) {
+          fs.unlinkSync(filepath);
+        }
+      }
+      removeFile(tmpCrtPath);
+      removeFile(tmpKeyPath);
+      removeFile(tmpPfxPath);
+      removeFile(tmpDerPath);
     }
   }
 

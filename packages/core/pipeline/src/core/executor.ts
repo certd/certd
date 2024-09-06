@@ -12,6 +12,7 @@ import { RegistryItem } from "../registry/index.js";
 import { Decorator } from "../decorator/index.js";
 import { IEmailService } from "../service/index.js";
 import { FileStore } from "./file-store.js";
+import { hashUtils } from "../utils/index.js";
 // import { TimeoutPromise } from "../utils/util.promise.js";
 
 export type ExecutorOptions = {
@@ -69,6 +70,7 @@ export class Executor {
   }
 
   async run(runtimeId: any = 0, triggerType: string) {
+    let intervalFlushLogId: any = undefined;
     try {
       await this.init();
       const trigger = { type: triggerType };
@@ -76,8 +78,14 @@ export class Executor {
       this.runtime = new RunHistory(runtimeId, trigger, this.pipeline);
       this.logger.info(`pipeline.${this.pipeline.id}  start`);
       await this.notification("start");
+
+      this.runtime.start(this.pipeline);
+      intervalFlushLogId = setInterval(async () => {
+        await this.onChanged(this.runtime);
+      }, 5000);
+
       await this.runWithHistory(this.pipeline, "pipeline", async () => {
-        await this.runStages(this.pipeline);
+        return await this.runStages(this.pipeline);
       });
       if (this.lastRuntime && this.lastRuntime.pipeline.status?.status === ResultType.error) {
         await this.notification("turnToSuccess");
@@ -87,51 +95,32 @@ export class Executor {
       await this.notification("error", e);
       this.logger.error("pipeline 执行失败", e.stack);
     } finally {
+      clearInterval(intervalFlushLogId);
+      await this.onChanged(this.runtime);
       await this.pipelineContext.setObj("lastRuntime", this.runtime);
       this.logger.info(`pipeline.${this.pipeline.id}  end`);
     }
   }
 
-  async runWithHistory(runnable: Runnable, runnableType: string, run: () => Promise<void>) {
+  async runWithHistory(runnable: Runnable, runnableType: string, run: () => Promise<ResultType | void>) {
     runnable.runnableType = runnableType;
     this.runtime.start(runnable);
-    await this.onChanged(this.runtime);
-    const lastNode = this.lastStatusMap.get(runnable.id);
-    const lastResult = lastNode?.status?.status;
-    if (runnable.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
-      //如果是成功后跳过策略
-      let inputChanged = false;
-      if (runnableType === "step") {
-        const lastInput = JSON.stringify((lastNode as Step)?.input);
-        const step = runnable as Step;
-        const input = JSON.stringify(step.input);
-        if (input != null && lastInput !== input) {
-          //参数有变化
-          inputChanged = true;
-        }
-      }
-      if (lastResult != null && lastResult === ResultType.success && !inputChanged) {
-        runnable.status!.output = lastNode?.status?.output;
-        runnable.status!.files = lastNode?.status?.files;
-        this.runtime.skip(runnable);
-        await this.onChanged(this.runtime);
-        return ResultType.skip;
-      }
-    }
-    const intervalFlushLogId = setInterval(async () => {
-      await this.onChanged(this.runtime);
-    }, 5000);
-
     // const timeout = runnable.timeout ?? 20 * 60 * 1000;
+    await this.onChanged(this.runtime);
+
     try {
       if (this.abort.signal.aborted) {
         this.runtime.cancel(runnable);
         return ResultType.canceled;
       }
-      await run();
+      const resultType = await run();
       if (this.abort.signal.aborted) {
         this.runtime.cancel(runnable);
         return ResultType.canceled;
+      }
+      if (resultType == ResultType.skip) {
+        this.runtime.skip(runnable);
+        return resultType;
       }
       this.runtime.success(runnable);
       return ResultType.success;
@@ -140,7 +129,6 @@ export class Executor {
       throw e;
     } finally {
       this.runtime.finally(runnable);
-      clearInterval(intervalFlushLogId);
       await this.onChanged(this.runtime);
     }
   }
@@ -149,7 +137,7 @@ export class Executor {
     const resList: ResultType[] = [];
     for (const stage of pipeline.stages) {
       const res: ResultType = await this.runWithHistory(stage, "stage", async () => {
-        await this.runStage(stage);
+        return await this.runStage(stage);
       });
       resList.push(res);
     }
@@ -162,6 +150,7 @@ export class Executor {
       const runner = async () => {
         return this.runWithHistory(task, "task", async () => {
           await this.runTask(task);
+          return ResultType.success;
         });
       };
       runnerList.push(runner);
@@ -204,7 +193,7 @@ export class Executor {
     for (const step of task.steps) {
       step.runnableType = "step";
       const res: ResultType = await this.runWithHistory(step, "step", async () => {
-        await this.runStep(step);
+        return await this.runStep(step);
       });
       resList.push(res);
     }
@@ -223,18 +212,39 @@ export class Executor {
     // @ts-ignore
     const define: PluginDefine = plugin.define;
     //从outputContext读取输入参数
-    Decorator.inject(define.input, instance, step.input, (item, key) => {
+    const input = _.cloneDeep(step.input);
+    Decorator.inject(define.input, instance, input, (item, key) => {
       if (item.component?.name === "pi-output-selector") {
-        const contextKey = step.input[key];
+        const contextKey = input[key];
         if (contextKey != null) {
           // "cert": "step.-BNFVPMKPu2O-i9NiOQxP.cert",
           const arr = contextKey.split(".");
           const id = arr[1];
           const outputKey = arr[2];
-          step.input[key] = this.currentStatusMap.get(id)?.status?.output[outputKey] ?? this.lastStatusMap.get(id)?.status?.output[outputKey];
+          input[key] = this.currentStatusMap.get(id)?.status?.output[outputKey] ?? this.lastStatusMap.get(id)?.status?.output[outputKey];
         }
       }
     });
+
+    const newInputHash = hashUtils.md5(JSON.stringify(input));
+    step.status!.inputHash = newInputHash;
+    //判断是否需要跳过
+    const lastNode = this.lastStatusMap.get(step.id);
+    const lastResult = lastNode?.status?.status;
+    if (step.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
+      //如果是成功后跳过策略
+      let inputChanged = true;
+      const lastInputHash = lastNode?.status?.inputHash;
+      if (lastInputHash && newInputHash && lastInputHash === newInputHash) {
+        //参数有变化
+        inputChanged = false;
+      }
+      if (lastResult != null && lastResult === ResultType.success && !inputChanged) {
+        step.status!.output = lastNode?.status?.output;
+        step.status!.files = lastNode?.status?.files;
+        return ResultType.skip;
+      }
+    }
 
     const http = createAxiosService({ logger: currentLogger });
     const taskCtx: TaskInstanceContext = {

@@ -119,6 +119,7 @@ export type HistoryResultGroup = {
 };
 export type HistoryResult = {
   // input: any;
+  inputHash?: string;
   output: any;
   files?: FileItem[];
   /**
