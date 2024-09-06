@@ -67,11 +67,12 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/armv7
           push: true
           context: ./packages/ui/
           tags: |
-            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
-            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}
-            greper/certd:latest
-            greper/certd:${{steps.get_certd_version.outputs.result}}
+            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:armv7
+#            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
+#            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}
+#            greper/certd:latest
+#            greper/certd:${{steps.get_certd_version.outputs.result}}
