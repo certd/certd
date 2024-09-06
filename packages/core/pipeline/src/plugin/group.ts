@@ -21,5 +21,6 @@ export const pluginGroups = {
   huawei: new PluginGroup("huawei", "华为云", 3),
   tencent: new PluginGroup("tencent", "腾讯云", 4),
   host: new PluginGroup("host", "主机", 5),
+  cdn: new PluginGroup("cdn", "CDN", 6),
   other: new PluginGroup("other", "其他", 7),
 };
