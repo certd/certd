@@ -2,7 +2,7 @@ FROM node:20-alpine AS builder
 EXPOSE 7001
 WORKDIR /workspace/
 COPY . /workspace/
-RUN NPM_CONFIG_LOGLEVEL=silly npm install -g pnpm
+RUN npm install -g pnpm  --loglevel verbose
 
 #RUN cd /workspace/certd-client && pnpm install && npm run build
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
