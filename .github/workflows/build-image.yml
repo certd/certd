@@ -40,7 +40,7 @@ jobs:
 #          cache: 'npm'
 #        working-directory: ./packages/ui/certd-client
       - run: |
-          npm install -g pnpm
+          npm install -g pnpm@8.15.7
           pnpm install
           npm run build
         working-directory: ./packages/ui/certd-client

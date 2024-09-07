@@ -4,10 +4,10 @@ on:
     branches: ['v2']
     paths:
       - "deploy.trigger"
-#  workflow_run:
-#    workflows: [ "build-image" ]
-#    types:
-#      - completed
+  workflow_run:
+    workflows: [ "build-image" ]
+    types:
+      - completed
 
 #  schedule:
 #    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
