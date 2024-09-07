@@ -162,12 +162,12 @@ docker compose up -d
 ## 八、问题处理
 ### 7.1 忘记管理员密码   
 解决方法如下：
-1. 修改docker-compose.yaml文件，将环境变量`certd_system_resetAdminPassword`改为`true`
+1. 修改docker-compose.yaml文件，将环境变量`certd_system_resetAdminPasswd`改为`true`
 ```yaml
 services:
   certd:
     environment: # 环境变量
-      - certd_system_resetAdminPassword=false
+      - certd_system_resetAdminPasswd=false
 ```
 2. 重启容器
 ```shell
@@ -175,7 +175,7 @@ docker compose up -d
 docker logs -f --tail 500 certd
 # 观察日志，当日志中输出“重置1号管理员用户的密码完成”，即可操作下一步
 ```
-3. 修改docker-compose.yaml，将`certd_system_resetAdminPassword`改回`false`
+3. 修改docker-compose.yaml，将`certd_system_resetAdminPasswd`改回`false`
 4. 再次重启容器
 ```shell
 docker compose up -d
