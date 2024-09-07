@@ -1,15 +1,15 @@
-FROM node:20-alpine AS builder
+FROM node:18-alpine AS builder
 EXPOSE 7001
 WORKDIR /workspace/
 COPY . /workspace/
-RUN npm install -g pnpm  --loglevel verbose
+RUN npm install -g pnpm@8.15.7
 
 #RUN cd /workspace/certd-client && pnpm install && npm run build
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 RUN cd /workspace/certd-server && yarn install && npm run build-on-docker
 
 
-FROM node:20-alpine
+FROM node:18-alpine
 RUN apk add --no-cache openssl
 WORKDIR /app/
 COPY --from=builder /workspace/certd-server/ /app/
