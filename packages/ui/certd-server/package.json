@@ -78,7 +78,7 @@
     "@types/koa": "2.13.4",
     "@types/lodash-es": "^4.17.12",
     "@types/mocha": "^10.0.1",
-    "@types/node": "16",
+    "@types/node": "^18",
     "@types/nodemailer": "^6.4.8",
     "@types/ssh2": "^1.15.0",
     "c8": "^8.0.1",
@@ -90,7 +90,7 @@
     "typescript": "~5.1.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
   "repository": {
     "type": "git",
