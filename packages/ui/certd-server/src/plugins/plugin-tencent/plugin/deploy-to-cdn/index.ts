@@ -93,20 +93,20 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
 
   buildParams() {
     return {
-      Https: {
-        Switch: 'on',
-        CertInfo: {
+      Domain: this.domainName,
+      Route: 'Https.CertInfo',
+      Value: JSON.stringify({
+        update: {
           Certificate: this.cert.crt,
           PrivateKey: this.cert.key,
         },
-      },
-      Domain: this.domainName,
+      }),
     };
   }
 
   async doRequest(params: any) {
     const client = await this.getClient();
-    const ret = await client.UpdateDomainConfig(params);
+    const ret = await client.ModifyDomainConfig(params);
     this.checkRet(ret);
     this.logger.info('设置腾讯云CDN证书成功:', ret.RequestId);
     return ret.RequestId;
