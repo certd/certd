@@ -1,29 +1,39 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { logger } from "./util.log.js";
 import { Logger } from "log4js";
 
 export class HttpError extends Error {
-  request?: { url: string; method: string; data?: any };
-  response?: { data: any };
   status?: number;
   statusText?: string;
+  code?: string;
+  request?: { url: string; method: string; params?: any; data?: any };
+  response?: { data: any };
+  cause?: any;
   constructor(error: any) {
     if (!error) {
       return;
     }
     super(error.message);
     this.name = error.name;
-    this.stack = error.stack;
-    this.status = error?.response?.status;
-    this.statusText = error?.response?.statusText;
+    this.code = error.code;
+    this.cause = error.cause;
+
+    this.status = error.response?.status;
+    this.statusText = error.response?.statusText;
     this.request = {
-      url: error?.response?.config?.url,
-      method: error?.response?.config?.method,
-      data: error?.response?.config?.data,
+      url: error.config?.url,
+      method: error.config?.method,
+      params: error.config?.params,
+      data: error.config?.data,
     };
     this.response = {
-      data: error?.response?.data,
+      data: error.response?.data,
     };
+
+    delete error.response;
+    delete error.config;
+    delete error.request;
+    logger.error(error);
   }
 }
 /**
@@ -35,7 +45,7 @@ export function createAxiosService({ logger }: { logger: Logger }) {
   // 请求拦截
   service.interceptors.request.use(
     (config: any) => {
-      logger.info(`http request:${config.url}，method:${config.method}`);
+      logger.info(`http request:${config.url}，method:${config.method}，params:${JSON.stringify(config.params)}`);
       return config;
     },
     (error: Error) => {
@@ -67,9 +77,10 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       //   default: break
       // }
       logger.error(
-        `请求出错：status:${error?.response?.status},statusText:${error?.response?.statusText},url:${error?.config?.url},method:${error?.config?.method}。`
+        `请求出错：status:${error.response?.status},statusText:${error.response?.statusText},url:${error.config?.url},method:${error.config?.method}。`
       );
-      logger.error("返回数据:", JSON.stringify(error?.response?.data));
+      logger.error("返回数据:", JSON.stringify(error.response?.data));
+
       if (error instanceof AggregateError) {
         logger.error(error);
       }
@@ -80,4 +91,8 @@ export function createAxiosService({ logger }: { logger: Logger }) {
   return service;
 }
 
-export const request = createAxiosService({ logger });
+export const http = createAxiosService({ logger }) as HttpClient;
+export type HttpClientResponse<R> = any;
+export type HttpClient = {
+  request<D = any, R = any>(config: AxiosRequestConfig<D>): Promise<HttpClientResponse<R>>;
+};

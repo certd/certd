@@ -107,8 +107,8 @@ export class RunHistory {
 
   logError(runnable: Runnable, e: Error) {
     // @ts-ignore
-    const errorInfo = runnable.runnableType == "step" ? e.stack : e.message;
-    this._loggers[runnable.id].error(`[${runnable.runnableType}] [${runnable.title}]<id:${runnable.id}> ：${errorInfo}`);
+    const errorInfo = runnable.runnableType === "step" ? e : e.message;
+    this._loggers[runnable.id].error(`[${runnable.runnableType}] [${runnable.title}]<id:${runnable.id}> ：`, errorInfo);
   }
 
   finally(runnable: Runnable) {

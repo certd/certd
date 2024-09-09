@@ -5,8 +5,8 @@ import { Logger } from "log4js";
 import { IAccessService } from "../access/index.js";
 import { IEmailService } from "../service/index.js";
 import { IContext } from "../core/index.js";
-import { AxiosInstance } from "axios";
 import { ILogger, logger } from "../utils/index.js";
+import { HttpClient } from "../utils/util.request";
 
 export enum ContextScope {
   global,
@@ -60,11 +60,12 @@ export type TaskInstanceContext = {
   pipeline: Pipeline;
   step: Step;
   logger: Logger;
+  inputChanged: boolean;
   accessService: IAccessService;
   emailService: IEmailService;
   pipelineContext: IContext;
   userContext: IContext;
-  http: AxiosInstance;
+  http: HttpClient;
   fileStore: FileStore;
   lastStatus?: Runnable;
   signal: AbortSignal;

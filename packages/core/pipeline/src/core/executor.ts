@@ -93,7 +93,7 @@ export class Executor {
       await this.notification("success");
     } catch (e: any) {
       await this.notification("error", e);
-      this.logger.error("pipeline 执行失败", e.stack);
+      this.logger.error("pipeline 执行失败", e);
     } finally {
       clearInterval(intervalFlushLogId);
       await this.onChanged(this.runtime);
@@ -237,14 +237,13 @@ export class Executor {
     //判断是否需要跳过
     const lastNode = this.lastStatusMap.get(step.id);
     const lastResult = lastNode?.status?.status;
+    let inputChanged = true;
+    const lastInputHash = lastNode?.status?.inputHash;
+    if (lastInputHash && newInputHash && lastInputHash === newInputHash) {
+      //参数有变化
+      inputChanged = false;
+    }
     if (step.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
-      //如果是成功后跳过策略
-      let inputChanged = true;
-      const lastInputHash = lastNode?.status?.inputHash;
-      if (lastInputHash && newInputHash && lastInputHash === newInputHash) {
-        //参数有变化
-        inputChanged = false;
-      }
       if (lastResult != null && lastResult === ResultType.success && !inputChanged) {
         step.status!.output = lastNode?.status?.output;
         step.status!.files = lastNode?.status?.files;
@@ -259,6 +258,7 @@ export class Executor {
       lastStatus,
       http,
       logger: currentLogger,
+      inputChanged,
       accessService: this.options.accessService,
       emailService: this.options.emailService,
       pipelineContext: this.pipelineContext,

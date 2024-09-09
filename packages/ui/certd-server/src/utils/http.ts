@@ -2,7 +2,7 @@ import { utils } from '@certd/pipeline';
 
 export async function request(config: any): Promise<any> {
   try {
-    return await utils.http(config);
+    return await utils.http.request(config);
   } catch (e) {
     const data = e.data || e.response?.data;
     if (data) {

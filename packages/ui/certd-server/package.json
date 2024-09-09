@@ -47,6 +47,7 @@
     "cache-manager": "^3.6.3",
     "cron-parser": "^4.9.0",
     "dayjs": "^1.11.7",
+    "form-data": "^4.0.0",
     "glob": "^10.4.5",
     "https-proxy-agent": "^7.0.5",
     "iconv-lite": "^0.6.3",
@@ -67,6 +68,7 @@
     "ssh2": "^1.15.0",
     "strip-ansi": "^7.1.0",
     "svg-captcha": "^1.4.0",
+    "syno": "^2.2.0",
     "tencentcloud-sdk-nodejs": "^4.0.44",
     "typeorm": "^0.3.20"
   },

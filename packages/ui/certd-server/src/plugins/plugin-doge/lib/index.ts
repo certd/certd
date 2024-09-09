@@ -1,13 +1,13 @@
 import crypto from 'crypto';
 import querystring from 'querystring';
 import { DogeCloudAccess } from '../access.js';
-import { AxiosInstance } from 'axios';
+import { HttpClient } from '@certd/pipeline';
 
 export class DogeClient {
   accessKey: string;
   secretKey: string;
-  http: AxiosInstance;
-  constructor(access: DogeCloudAccess, http: AxiosInstance) {
+  http: HttpClient;
+  constructor(access: DogeCloudAccess, http: HttpClient) {
     this.accessKey = access.accessKey;
     this.secretKey = access.secretKey;
     this.http = http;
