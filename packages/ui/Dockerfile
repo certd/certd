@@ -8,7 +8,7 @@ RUN npm install -g pnpm@8.15.7
 
 #RUN cd /workspace/certd-client && pnpm install && npm run build
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
-RUN cd /workspace/certd-server && yarn install && npm run build-on-docker
+RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 
 
 FROM node:18-alpine
