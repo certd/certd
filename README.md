@@ -157,6 +157,7 @@ docker compose up -d
 * [腾讯云](./doc/tencent/tencent.md)
 * [windows主机](./doc/host/host.md)
 * [google证书](./doc/google/google.md)
+* [群晖部署certd及证书更新教程](./doc/synology/index.md)
 
 
 ## 八、问题处理
