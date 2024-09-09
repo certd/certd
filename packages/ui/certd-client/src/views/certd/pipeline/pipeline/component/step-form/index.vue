@@ -8,43 +8,61 @@
     </template>
     <template v-if="currentStep">
       <pi-container v-if="currentStep._isAdd" class="pi-step-form">
-        <a-tabs tab-position="left">
-          <a-tab-pane v-for="group of pluginGroups.groups" :key="group.key" :tab="group.title">
-            <a-row :gutter="10">
-              <a-col v-for="item of group.plugins" :key="item.key" class="step-plugin" :span="12">
-                <a-card
-                  hoverable
-                  :class="{ current: item.name === currentStep.type }"
-                  @click="stepTypeSelected(item)"
-                  @dblclick="
-                    stepTypeSelected(item);
-                    stepTypeSave();
-                  "
-                >
-                  <a-card-meta>
-                    <template #title>
-                      <a-avatar :src="item.icon || '/images/plugin.png'" />
-                      <span class="title">{{ item.title }}</span>
-                      <vip-button v-if="item.needPlus" mode="icon" />
-                    </template>
-                    <template #description>
-                      <span :title="item.desc">{{ item.desc }}</span>
-                    </template>
-                  </a-card-meta>
-                </a-card>
-              </a-col>
-            </a-row>
-          </a-tab-pane>
-        </a-tabs>
-        <div style="padding: 20px; margin-left: 100px">
-          <a-button v-if="editMode" type="primary" @click="stepTypeSave"> 确定 </a-button>
+        <template #header>
+          <a-row :gutter="10" class="mb-10">
+            <a-col :span="24" style="padding-left: 20px">
+              <a-input-search v-model:value="pluginSearch.keyword" placeholder="搜索插件" :allow-clear="true" :show-search="true"></a-input-search>
+            </a-col>
+          </a-row>
+        </template>
+        <div class="flex-col h-100 w-100 overflow-hidden">
+          <a-tabs v-model:active-key="pluginGroupActive" tab-position="left" class="flex-1 overflow-hidden">
+            <a-tab-pane v-for="group of computedPluginGroups" :key="group.key" :tab="group.title" class="scroll-y">
+              <a-row v-if="!group.plugins || group.plugins.length === 0" :gutter="10">
+                <a-col class="flex-o">
+                  <div class="flex-o m-10">没有找到插件</div>
+                </a-col>
+              </a-row>
+              <a-row v-else :gutter="10">
+                <a-col v-for="item of group.plugins" :key="item.key" class="step-plugin" :span="12">
+                  <a-card
+                    hoverable
+                    :class="{ current: item.name === currentStep.type }"
+                    @click="stepTypeSelected(item)"
+                    @dblclick="
+                      stepTypeSelected(item);
+                      stepTypeSave();
+                    "
+                  >
+                    <a-card-meta>
+                      <template #title>
+                        <a-avatar :src="item.icon || '/images/plugin.png'" />
+                        <span class="title">{{ item.title }}</span>
+                        <vip-button v-if="item.needPlus" mode="icon" />
+                      </template>
+                      <template #description>
+                        <span :title="item.desc">{{ item.desc }}</span>
+                      </template>
+                    </a-card-meta>
+                  </a-card>
+                </a-col>
+              </a-row>
+            </a-tab-pane>
+          </a-tabs>
         </div>
+        <template #footer>
+          <div style="padding: 20px; margin-left: 100px">
+            <a-button v-if="editMode" type="primary" @click="stepTypeSave"> 确定 </a-button>
+          </div>
+        </template>
       </pi-container>
       <pi-container v-else class="pi-step-form">
-        <a-form ref="stepFormRef" class="step-form" :model="currentStep" :label-col="labelCol" :wrapper-col="wrapperCol">
+        <template #header>
           <div class="mb-10">
             <a-alert type="info" :message="currentPlugin.title" :description="currentPlugin.desc"> </a-alert>
           </div>
+        </template>
+        <a-form ref="stepFormRef" class="step-form" :model="currentStep" :label-col="labelCol" :wrapper-col="wrapperCol">
           <fs-form-item
             v-model="currentStep.title"
             :item="{
@@ -66,9 +84,9 @@
         </a-form>
 
         <template #footer>
-          <a-form-item v-if="editMode" :wrapper-col="{ span: 14, offset: 4 }">
+          <div v-if="editMode" class="bottom-button">
             <a-button type="primary" @click="stepSave"> 确定 </a-button>
-          </a-form-item>
+          </div>
         </template>
       </pi-container>
     </template>
@@ -77,7 +95,7 @@
 
 <script lang="tsx">
 import { message, Modal } from "ant-design-vue";
-import { computed, inject, Ref, ref } from "vue";
+import { computed, inject, Ref, ref, watch } from "vue";
 import _ from "lodash-es";
 import { nanoid } from "nanoid";
 import { CopyOutlined } from "@ant-design/icons-vue";
@@ -263,7 +281,45 @@ export default {
       const blankFn = () => {
         return {};
       };
+
+      const pluginSearch = ref({
+        keyword: "",
+        result: []
+      });
+      const pluginGroupActive = ref("all");
+      const computedPluginGroups: any = computed(() => {
+        const groups = pluginGroups.groups;
+        if (pluginSearch.value.keyword) {
+          const keyword = pluginSearch.value.keyword.toLowerCase();
+          const list = groups.all.plugins.filter((plugin) => {
+            return (
+              plugin.title?.toLowerCase().includes(keyword) || plugin.desc?.toLowerCase().includes(keyword) || plugin.name?.toLowerCase().includes(keyword)
+            );
+          });
+          return {
+            search: { key: "search", title: "搜索结果", plugins: list }
+          };
+        } else {
+          return groups;
+        }
+      });
+      watch(
+        () => {
+          return pluginSearch.value.keyword;
+        },
+        (val: any) => {
+          if (val) {
+            pluginGroupActive.value = "search";
+          } else {
+            pluginGroupActive.value = "all";
+          }
+        }
+      );
+
       return {
+        pluginGroupActive,
+        computedPluginGroups,
+        pluginSearch,
         stepTypeSelected,
         stepTypeSave,
         pluginGroups,
@@ -321,8 +377,23 @@ export default {
 
 <style lang="less">
 .pi-step-form {
+  .bottom-button {
+    padding: 20px;
+    padding-bottom: 5px;
+    margin-left: 100px;
+  }
+
   .body {
-    padding: 10px;
+    padding: 0px;
+
+    .ant-tabs-content {
+      height: 100%;
+    }
+    .ant-tabs-tabpane {
+      padding-right: 10px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
     .ant-card {
       margin-bottom: 10px;
 
