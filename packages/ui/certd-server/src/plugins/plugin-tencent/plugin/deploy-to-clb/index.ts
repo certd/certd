@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
   name: 'DeployCertToTencentCLB',
   title: '部署到腾讯云CLB',
   group: pluginGroups.tencent.key,
-  desc: '暂时只支持单向认证证书，暂时只支持通用负载均衡',
+  desc: '暂时只支持单向认证证书，暂时只支持通用负载均衡，必须开启sni',
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -93,14 +93,13 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
   accessId!: string;
 
   client: any;
-  ClbClient: any;
   async onInstance() {
     this.client = await this.getClient();
   }
 
   async getClient() {
     const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/clb/v20180317/index.js');
-    this.ClbClient = sdk.v20180317.Client;
+    const ClbClient = sdk.v20180317.Client;
 
     const accessProvider = (await this.accessService.getById(this.accessId)) as TencentAccess;
 
@@ -118,7 +117,7 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
       },
     };
 
-    return new this.ClbClient(clientConfig);
+    return new ClbClient(clientConfig);
   }
 
   async execute(): Promise<void> {

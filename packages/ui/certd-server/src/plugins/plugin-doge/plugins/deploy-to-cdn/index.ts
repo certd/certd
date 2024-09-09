@@ -44,6 +44,17 @@ export class DogeCloudDeployToCDNPlugin extends AbstractTaskPlugin {
   })
   accessId!: string;
 
+  @TaskInput({
+    title: '忽略部署接口报错',
+    helper: '当该域名部署后报错，但是实际上已经部署成功时，可以勾选',
+    value: false,
+    component: {
+      name: 'a-switch',
+      type: 'checked',
+    },
+  })
+  ignoreDeployNullCode = false;
+
   dogeClient!: DogeClient;
 
   async onInstance() {
@@ -66,10 +77,14 @@ export class DogeCloudDeployToCDNPlugin extends AbstractTaskPlugin {
   }
 
   async bindCert(certId: number) {
-    await this.dogeClient.request('/cdn/cert/bind.json', {
-      id: certId,
-      domain: this.domain,
-    });
+    await this.dogeClient.request(
+      '/cdn/cert/bind.json',
+      {
+        id: certId,
+        domain: this.domain,
+      },
+      this.ignoreDeployNullCode
+    );
   }
 }
 new DogeCloudDeployToCDNPlugin();

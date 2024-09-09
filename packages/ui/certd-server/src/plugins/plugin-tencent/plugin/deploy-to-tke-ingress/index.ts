@@ -1,6 +1,5 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from '@certd/pipeline';
 import dayjs from 'dayjs';
-import { tke } from 'tencentcloud-sdk-nodejs';
 
 @IsTaskPlugin({
   name: 'DeployCertToTencentTKEIngress',

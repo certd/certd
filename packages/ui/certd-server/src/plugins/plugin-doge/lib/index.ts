@@ -13,7 +13,7 @@ export class DogeClient {
     this.http = http;
   }
 
-  async request(apiPath: string, data: any = {}, jsonMode = false) {
+  async request(apiPath: string, data: any = {}, jsonMode = false, ignoreResNullCode = false) {
     // 这里替换为你的多吉云永久 AccessKey 和 SecretKey，可在用户中心 - 密钥管理中查看
     // 请勿在客户端暴露 AccessKey 和 SecretKey，那样恶意用户将获得账号完全控制权
 
@@ -34,7 +34,9 @@ export class DogeClient {
       },
     });
 
-    if (res.code !== 200) {
+    if (res.code == null && ignoreResNullCode) {
+      //ignore
+    } else if (res.code !== 200) {
       throw new Error('API Error: ' + res.msg);
     }
     return res.data;
