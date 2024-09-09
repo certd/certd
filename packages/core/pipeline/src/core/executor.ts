@@ -217,11 +217,17 @@ export class Executor {
       if (item.component?.name === "pi-output-selector") {
         const contextKey = input[key];
         if (contextKey != null) {
+          if (typeof contextKey !== "string") {
+            throw new Error(`步骤${step.title}的${item.title}属性必须为String类型，请重新配置该属性`);
+          }
           // "cert": "step.-BNFVPMKPu2O-i9NiOQxP.cert",
           const arr = contextKey.split(".");
           const id = arr[1];
           const outputKey = arr[2];
           input[key] = this.currentStatusMap.get(id)?.status?.output[outputKey] ?? this.lastStatusMap.get(id)?.status?.output[outputKey];
+          if (input[key] == null) {
+            this.logger.warn(`${item.title}的配置未找到对应的输出值，请确认对应的前置任务是否存在或者是否执行正确`);
+          }
         }
       }
     });
