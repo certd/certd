@@ -46,6 +46,9 @@ export function createAxiosService({ logger }: { logger: Logger }) {
   service.interceptors.request.use(
     (config: any) => {
       logger.info(`http request:${config.url}，method:${config.method}，params:${JSON.stringify(config.params)}`);
+      if (config.timeout == null) {
+        config.timeout = 10000;
+      }
       return config;
     },
     (error: Error) => {
