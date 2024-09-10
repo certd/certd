@@ -60,6 +60,7 @@ function install(app: any, options: any = {}) {
           }
         },
         rowHandle: {
+          fixed: "right",
           buttons: {
             view: { type: "link", text: null, icon: "ion:eye-outline" },
             copy: { show: true, type: "link", text: null, icon: "ion:copy-outline" },

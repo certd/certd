@@ -37,6 +37,9 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           }
         }
       },
+      table: {
+        scroll: { x: 2000 }
+      },
       columns: {
         id: {
           title: "ID",
@@ -141,9 +144,26 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             component: {
               uploader: {
                 type: "form"
+              },
+              on: {
+                success(ctx) {
+                  // 上传成功后的回调
+                  console.log("success", ctx);
+                  ctx.form.avatarSize = ctx.$event.file.size;
+                }
               }
             },
             helper: "就是照片墙limit=1的效果"
+          }
+        },
+        avatarSize: {
+          title: "头像文件大小",
+          type: "number",
+          form: {
+            component: {
+              disabled: true
+            },
+            helper: "左边头像上传成功后，会自动填充文件大小"
           }
         },
         cropper: {
