@@ -354,7 +354,7 @@ export default defineComponent({
             await loadHistoryList();
           }
 
-          if (!currentHistory.value) {
+          if (currentHistory.value != null) {
             if (currentHistory.value.pipeline?.status?.status === "start") {
               await loadCurrentHistoryDetail();
             } else {
@@ -614,6 +614,9 @@ export default defineComponent({
         saveLoading.value = true;
         try {
           if (props.options.doSave) {
+            if (pipeline.value.version == null) {
+              pipeline.value.version = 0;
+            }
             pipeline.value.version++;
             currentPipeline.value = pipeline.value;
             await props.options.doSave(pipeline.value);

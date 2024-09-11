@@ -12,7 +12,7 @@ import { RegistryItem } from "../registry/index.js";
 import { Decorator } from "../decorator/index.js";
 import { IEmailService } from "../service/index.js";
 import { FileStore } from "./file-store.js";
-import { hashUtils } from "../utils/index.js";
+import { hashUtils, utils } from "../utils/index.js";
 // import { TimeoutPromise } from "../utils/util.promise.js";
 
 export type ExecutorOptions = {
@@ -276,6 +276,7 @@ export class Executor {
         rootDir: this.options.fileRootDir,
       }),
       signal: this.abort.signal,
+      utils,
     };
     instance.setCtx(taskCtx);
 

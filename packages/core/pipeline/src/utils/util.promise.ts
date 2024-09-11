@@ -24,3 +24,8 @@ export function safePromise<T>(callback: (resolve: (ret: T) => void, reject: (re
     }
   });
 }
+
+export const promises = {
+  TimeoutPromise,
+  safePromise,
+};
