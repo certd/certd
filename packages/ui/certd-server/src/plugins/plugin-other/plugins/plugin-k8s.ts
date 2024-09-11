@@ -6,6 +6,7 @@ import { appendTimeSuffix } from '../../plugin-aliyun/utils/index.js';
 @IsTaskPlugin({
   name: 'DeployToK8SIngress',
   title: 'K8S Ingress证书部署',
+  desc: '暂不可用',
   group: pluginGroups.other.key,
   default: {
     strategy: {

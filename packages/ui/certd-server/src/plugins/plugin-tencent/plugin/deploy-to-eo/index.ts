@@ -38,6 +38,7 @@ export class DeployToEOPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: '站点ID',
     helper: '类似于zone-xxxx的字符串，在站点概览页面左上角，或者，站点列表页面站点名称下方',
+    required: true,
   })
   zoneId!: string;
 
