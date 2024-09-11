@@ -31,7 +31,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         container: {
           action: {
             col: {
-              span: 16
+              span: 4
             }
           }
         },
