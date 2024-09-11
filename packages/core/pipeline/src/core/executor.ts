@@ -104,11 +104,18 @@ export class Executor {
 
   async runWithHistory(runnable: Runnable, runnableType: string, run: () => Promise<ResultType | void>) {
     runnable.runnableType = runnableType;
+
     this.runtime.start(runnable);
-    // const timeout = runnable.timeout ?? 20 * 60 * 1000;
-    await this.onChanged(this.runtime);
 
     try {
+      if (runnable.disabled) {
+        //该任务被禁用
+        this.runtime.disabled(runnable);
+        return ResultType.disabled;
+      }
+
+      await this.onChanged(this.runtime);
+
       if (this.abort.signal.aborted) {
         this.runtime.cancel(runnable);
         return ResultType.canceled;

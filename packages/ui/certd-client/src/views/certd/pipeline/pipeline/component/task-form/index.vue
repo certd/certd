@@ -48,9 +48,10 @@
                   <div class="step-row">
                     <div class="text">
                       <fs-icon icon="ion:flash"></fs-icon>
-                      <h4 class="title">{{ element.title }}</h4>
+                      <h4 class="title" :class="{ disabled: element.disabled, deleted: element.disabled }">{{ element.title }}</h4>
                     </div>
                     <div class="action">
+                      <a key="disabled" @click="element.disabled = !!!element.disabled">{{ element.disabled ? "启用" : "禁用" }}</a>
                       <a key="edit" @click="stepEdit(currentTask, element, index)">编辑</a>
                       <a key="edit" @click="stepCopy(currentTask, element, index)">复制</a>
                       <a key="remove" @click="stepDelete(currentTask, index)">删除</a>

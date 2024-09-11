@@ -16,7 +16,9 @@
     "build": "mwtsc --cleanOutDir --skipLibCheck",
     "build-on-docker": "node ./before-build.js && npm run build",
     "up-mw-deps": "npx midway-version -u -w",
-    "clinic": "clinic heapprofiler   -- node ./bootstrap.js"
+    "heap": "clinic heapprofiler   -- node ./bootstrap.js",
+    "flame": "clinic flame   -- node ./bootstrap.js"
+
   },
   "dependencies": {
     "@alicloud/cs20151215": "^3.0.3",

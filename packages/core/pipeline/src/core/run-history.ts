@@ -74,6 +74,17 @@ export class RunHistory {
     this.log(runnable, `跳过`);
   }
 
+  disabled(runnable: Runnable) {
+    const now = new Date().getTime();
+    const status = runnable.status;
+    _.merge(status, {
+      status: "canceled",
+      endTime: now,
+      result: "disabled",
+    });
+    this.log(runnable, `禁用`);
+  }
+
   error(runnable: Runnable, e: Error) {
     const now = new Date().getTime();
     const status = runnable.status;
