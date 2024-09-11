@@ -9,4 +9,4 @@ log4js.configure({
   },
   categories: { default: { appenders: ['std'], level } },
 });
-export const logger = log4js.getLogger('fast');
+export const logger = log4js.getLogger('server');
