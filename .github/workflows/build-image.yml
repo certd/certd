@@ -79,11 +79,11 @@ jobs:
       - name: Build armv7
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64
+          platforms: linux/arm/v7
           push: true
           context: ./packages/ui/
           tags: |
-            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest-armv7
+            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:armv7
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}-armv7
-            greper/certd:latest-armv7
+            greper/certd:armv7
             greper/certd:${{steps.get_certd_version.outputs.result}}-armv7
