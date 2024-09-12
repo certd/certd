@@ -64,10 +64,10 @@ jobs:
           username: ${{ secrets.dockerhub_username }}
           password: ${{ secrets.dockerhub_password }}
 
-      - name: Build and push
+      - name: Build default platforms
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: true
           context: ./packages/ui/
           tags: |
@@ -75,3 +75,15 @@ jobs:
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}
             greper/certd:latest
             greper/certd:${{steps.get_certd_version.outputs.result}}
+
+      - name: Build armv7
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64
+          push: true
+          context: ./packages/ui/
+          tags: |
+            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest-armv7
+            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}-armv7
+            greper/certd:latest-armv7
+            greper/certd:${{steps.get_certd_version.outputs.result}}-armv7
