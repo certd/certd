@@ -143,6 +143,7 @@ function openUpgrade() {
               <div class="flex-o w-100">
                 <span>站点ID：</span>
                 <fs-copyable class="flex-1" v-model={computedSiteId.value}></fs-copyable>
+                <div>注意保存好数据库，暂不支持换绑（默认数据库路径/data/certd/db.sqlite）</div>
               </div>
               <a-input class="mt-10" v-model:value={formState.code} placeholder={placeholder} />
             </div>
