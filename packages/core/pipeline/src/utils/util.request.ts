@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { logger } from "./util.log.js";
 import { Logger } from "log4js";
-import { ProxyAgent } from "proxy-agent";
+import { ProxyAgent, ProxyAgentOptions } from "proxy-agent";
 export class HttpError extends Error {
   status?: number;
   statusText?: string;
@@ -136,7 +136,7 @@ export type HttpClient = {
   request<D = any, R = any>(config: HttpRequestConfig<D>): Promise<HttpClientResponse<R>>;
 };
 
-export function createAgent(opts: any = {}) {
+export function createAgent(opts: ProxyAgentOptions = {}) {
   const httpAgent = new ProxyAgent(opts);
   return {
     httpAgent,
