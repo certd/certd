@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { logger } from "./util.log.js";
 import { Logger } from "log4js";
+import { ProxyAgent } from "proxy-agent";
 export class HttpError extends Error {
   status?: number;
   statusText?: string;
@@ -41,6 +42,8 @@ export class HttpError extends Error {
 export function createAxiosService({ logger }: { logger: Logger }) {
   // 创建一个 axios 实例
   const service = axios.create();
+
+  const defaultAgents = createAgent();
   // 请求拦截
   service.interceptors.request.use(
     (config: any) => {
@@ -48,6 +51,14 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       if (config.timeout == null) {
         config.timeout = 15000;
       }
+      let agents = defaultAgents;
+      if (config.skipSslVerify) {
+        agents = createAgent({ rejectUnauthorized: config.rejectUnauthorized });
+      }
+
+      config.httpsAgent = agents.httpsAgent;
+      config.httpAgent = agents.httpAgent;
+
       return config;
     },
     (error: Error) => {
@@ -118,6 +129,17 @@ export function createAxiosService({ logger }: { logger: Logger }) {
 
 export const http = createAxiosService({ logger }) as HttpClient;
 export type HttpClientResponse<R> = any;
+export type HttpRequestConfig<D> = {
+  skipSslVerify?: boolean;
+} & AxiosRequestConfig<D>;
 export type HttpClient = {
-  request<D = any, R = any>(config: AxiosRequestConfig<D>): Promise<HttpClientResponse<R>>;
+  request<D = any, R = any>(config: HttpRequestConfig<D>): Promise<HttpClientResponse<R>>;
 };
+
+export function createAgent(opts: any = {}) {
+  const httpAgent = new ProxyAgent(opts);
+  return {
+    httpAgent,
+    httpsAgent: httpAgent,
+  };
+}
