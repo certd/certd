@@ -69,13 +69,15 @@ export class CertReader {
     const tmpDerPath = this.saveToFile("der");
     logger.info("本地文件写入成功");
     try {
-      await opts.handle({
+      return await opts.handle({
         reader: this,
         tmpCrtPath: tmpCrtPath,
         tmpKeyPath: tmpKeyPath,
         tmpPfxPath: tmpPfxPath,
         tmpDerPath: tmpDerPath,
       });
+    } catch (err) {
+      throw err;
     } finally {
       //删除临时文件
       logger.info("删除临时文件");

@@ -94,7 +94,9 @@
                               <!--                          :open="true"-->
                               <template #content>
                                 <div v-for="(item, index) of task.steps" class="flex-o w-100">
-                                  <span class="ellipsis flex-1">{{ index + 1 }}. {{ item.title }} </span>
+                                  <span class="ellipsis flex-1 step-title" :class="{ disabled: item.disabled, deleted: item.disabled }">
+                                    {{ index + 1 }}. {{ item.title }}
+                                  </span>
                                   <pi-status-show v-if="!editMode" :status="item.status?.result"></pi-status-show>
                                   <fs-icon
                                     v-if="!editMode"
@@ -346,14 +348,23 @@ export default defineComponent({
     }
     const intervalLoadHistoryRef = ref();
     function watchNewHistoryList() {
-      intervalLoadHistoryRef.value = setInterval(async () => {
-        if (currentHistory.value == null) {
-          await loadHistoryList();
-        } else if (currentHistory.value.pipeline?.status?.status === "start") {
-          await loadCurrentHistoryDetail();
-        } else {
-          clearInterval(intervalLoadHistoryRef.value);
+      intervalLoadHistoryRef.value = setTimeout(async () => {
+        try {
+          if (currentHistory.value == null) {
+            await loadHistoryList();
+          }
+
+          if (currentHistory.value != null) {
+            if (currentHistory.value.pipeline?.status?.status === "start") {
+              await loadCurrentHistoryDetail();
+            } else {
+              return;
+            }
+          }
+        } catch (e) {
+          console.error(e);
         }
+        watchNewHistoryList();
       }, 3000);
     }
 
@@ -603,6 +614,9 @@ export default defineComponent({
         saveLoading.value = true;
         try {
           if (props.options.doSave) {
+            if (pipeline.value.version == null) {
+              pipeline.value.version = 0;
+            }
             pipeline.value.version++;
             currentPipeline.value = pipeline.value;
             await props.options.doSave(pipeline.value);

@@ -48,6 +48,12 @@ const StatusEnum: StatusEnumType = {
     label: "未运行",
     color: "blue",
     icon: "ant-design:minus-circle-twotone"
+  },
+  disabled: {
+    value: "disabled",
+    label: "禁用",
+    color: "gray",
+    icon: "ant-design:stop-outlined"
   }
 };
 export const statusUtil = {

@@ -89,19 +89,16 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
   })
   cert!: any;
 
-  TkeClient: any;
   K8sClient: any;
 
   async onInstance() {
     //  const TkeClient = this.tencentcloud.tke.v20180525.Client;
-    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/tke/v20220501/index.js');
-    this.TkeClient = sdk.v20220501.Client;
     const k8sSdk = await import('@certd/lib-k8s');
     this.K8sClient = k8sSdk.K8sClient;
   }
   async execute(): Promise<void> {
     const accessProvider = await this.accessService.getById(this.accessId);
-    const tkeClient = this.getTkeClient(accessProvider, this.region);
+    const tkeClient = await this.getTkeClient(accessProvider, this.region);
     const kubeConfigStr = await this.getTkeKubeConfig(tkeClient, this.clusterId);
 
     this.logger.info('kubeconfig已成功获取');
@@ -127,7 +124,9 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
     await this.restartIngress({ k8sClient });
   }
 
-  getTkeClient(accessProvider: any, region = 'ap-guangzhou') {
+  async getTkeClient(accessProvider: any, region = 'ap-guangzhou') {
+    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/tke/v20180525/index.js');
+    const TkeClient = sdk.v20180525.Client;
     const clientConfig = {
       credential: {
         secretId: accessProvider.secretId,
@@ -141,7 +140,7 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
       },
     };
 
-    return new this.TkeClient(clientConfig);
+    return new TkeClient(clientConfig);
   }
 
   async getTkeKubeConfig(client: any, clusterId: string) {

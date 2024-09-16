@@ -45,7 +45,7 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
   email!: string;
 
   @TaskInput({
-    title: "PFX密码",
+    title: "PFX证书密码",
     component: {
       name: "a-input-password",
       vModel: "value",
@@ -191,14 +191,14 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
    */
   async condition() {
     if (this.forceUpdate) {
+      this.logger.info("强制更新证书选项已勾选，准备申请新证书");
       return null;
     }
 
-    let inputChanged = false;
-    const oldInput = JSON.stringify(this.lastStatus?.input?.domains);
-    const thisInput = JSON.stringify(this.domains);
-    if (oldInput !== thisInput) {
-      inputChanged = true;
+    const inputChanged = this.ctx.inputChanged;
+    if (inputChanged) {
+      this.logger.info("输入参数变更，准备申请新证书");
+      return null;
     }
 
     let oldCert: CertReader | undefined = undefined;
@@ -209,11 +209,6 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
     }
     if (oldCert == null) {
       this.logger.info("还未申请过，准备申请新证书");
-      return null;
-    }
-
-    if (inputChanged) {
-      this.logger.info("输入参数变更，申请新证书");
       return null;
     }
 

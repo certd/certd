@@ -74,6 +74,17 @@ export class RunHistory {
     this.log(runnable, `跳过`);
   }
 
+  disabled(runnable: Runnable) {
+    const now = new Date().getTime();
+    const status = runnable.status;
+    _.merge(status, {
+      status: "canceled",
+      endTime: now,
+      result: "disabled",
+    });
+    this.log(runnable, `禁用`);
+  }
+
   error(runnable: Runnable, e: Error) {
     const now = new Date().getTime();
     const status = runnable.status;
@@ -107,8 +118,8 @@ export class RunHistory {
 
   logError(runnable: Runnable, e: Error) {
     // @ts-ignore
-    const errorInfo = runnable.runnableType == "step" ? e.stack : e.message;
-    this._loggers[runnable.id].error(`[${runnable.runnableType}] [${runnable.title}]<id:${runnable.id}> ：${errorInfo}`);
+    const errorInfo = runnable.runnableType === "step" ? e : e.message;
+    this._loggers[runnable.id].error(`[${runnable.runnableType}] [${runnable.title}]<id:${runnable.id}> ：`, errorInfo);
   }
 
   finally(runnable: Runnable) {

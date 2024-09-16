@@ -70,6 +70,7 @@ export type Runnable = {
   default?: {
     [key: string]: any;
   };
+  disabled?: boolean;
 };
 
 export type EmailOptions = {
@@ -108,6 +109,7 @@ export enum ResultType {
   error = "error",
   canceled = "canceled",
   skip = "skip",
+  disabled = "disabled",
   none = "none",
 }
 

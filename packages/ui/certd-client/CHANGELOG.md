@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.24.4](https://github.com/certd/certd/compare/v1.24.3...v1.24.4) (2024-09-09)
+
+### Performance Improvements
+
+* 插件选择支持搜索 ([d1498a7](https://github.com/certd/certd/commit/d1498a71601b74d38343b1d070eadd03705dd9d5))
+
 ## [1.24.3](https://github.com/certd/certd/compare/v1.24.2...v1.24.3) (2024-09-06)
 
 **Note:** Version bump only for package @certd/ui-client

@@ -12,7 +12,7 @@ import { RegistryItem } from "../registry/index.js";
 import { Decorator } from "../decorator/index.js";
 import { IEmailService } from "../service/index.js";
 import { FileStore } from "./file-store.js";
-import { hashUtils } from "../utils/index.js";
+import { hashUtils, utils } from "../utils/index.js";
 // import { TimeoutPromise } from "../utils/util.promise.js";
 
 export type ExecutorOptions = {
@@ -93,7 +93,7 @@ export class Executor {
       await this.notification("success");
     } catch (e: any) {
       await this.notification("error", e);
-      this.logger.error("pipeline 执行失败", e.stack);
+      this.logger.error("pipeline 执行失败", e);
     } finally {
       clearInterval(intervalFlushLogId);
       await this.onChanged(this.runtime);
@@ -104,11 +104,18 @@ export class Executor {
 
   async runWithHistory(runnable: Runnable, runnableType: string, run: () => Promise<ResultType | void>) {
     runnable.runnableType = runnableType;
+
     this.runtime.start(runnable);
-    // const timeout = runnable.timeout ?? 20 * 60 * 1000;
-    await this.onChanged(this.runtime);
 
     try {
+      if (runnable.disabled) {
+        //该任务被禁用
+        this.runtime.disabled(runnable);
+        return ResultType.disabled;
+      }
+
+      await this.onChanged(this.runtime);
+
       if (this.abort.signal.aborted) {
         this.runtime.cancel(runnable);
         return ResultType.canceled;
@@ -217,11 +224,17 @@ export class Executor {
       if (item.component?.name === "pi-output-selector") {
         const contextKey = input[key];
         if (contextKey != null) {
+          if (typeof contextKey !== "string") {
+            throw new Error(`步骤${step.title}的${item.title}属性必须为String类型，请重新配置该属性`);
+          }
           // "cert": "step.-BNFVPMKPu2O-i9NiOQxP.cert",
           const arr = contextKey.split(".");
           const id = arr[1];
           const outputKey = arr[2];
           input[key] = this.currentStatusMap.get(id)?.status?.output[outputKey] ?? this.lastStatusMap.get(id)?.status?.output[outputKey];
+          if (input[key] == null) {
+            this.logger.warn(`${item.title}的配置未找到对应的输出值，请确认对应的前置任务是否存在或者是否执行正确`);
+          }
         }
       }
     });
@@ -231,14 +244,13 @@ export class Executor {
     //判断是否需要跳过
     const lastNode = this.lastStatusMap.get(step.id);
     const lastResult = lastNode?.status?.status;
+    let inputChanged = true;
+    const lastInputHash = lastNode?.status?.inputHash;
+    if (lastInputHash && newInputHash && lastInputHash === newInputHash) {
+      //参数有变化
+      inputChanged = false;
+    }
     if (step.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
-      //如果是成功后跳过策略
-      let inputChanged = true;
-      const lastInputHash = lastNode?.status?.inputHash;
-      if (lastInputHash && newInputHash && lastInputHash === newInputHash) {
-        //参数有变化
-        inputChanged = false;
-      }
       if (lastResult != null && lastResult === ResultType.success && !inputChanged) {
         step.status!.output = lastNode?.status?.output;
         step.status!.files = lastNode?.status?.files;
@@ -253,6 +265,7 @@ export class Executor {
       lastStatus,
       http,
       logger: currentLogger,
+      inputChanged,
       accessService: this.options.accessService,
       emailService: this.options.emailService,
       pipelineContext: this.pipelineContext,
@@ -263,6 +276,7 @@ export class Executor {
         rootDir: this.options.fileRootDir,
       }),
       signal: this.abort.signal,
+      utils,
     };
     instance.setCtx(taskCtx);
 

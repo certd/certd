@@ -13,7 +13,7 @@ https://afdian.com/a/greper
 1. 可加入发电专属群，可以获得作者一对一技术支持
 2. 您的需求我们将优先实现，并且将作为专业版功能提供
 3. 一年期专业版激活码
-4. 赠送国外免费服务器部署方案（0成本使用Certd，不过该服务器需要翻墙）
+4. 赠送国外免费服务器部署方案（0成本使用Certd，可能需要翻墙，不过现在性能越来越差了）
 
 专业版特权
 1. 证书流水线条数无限制（免费版限制10条）
@@ -101,9 +101,11 @@ docker compose up -d
 #### 镜像说明：
 * 国内镜像地址:
   * `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest`
+  * `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:armv7`、`[version]-armv7`
 * DockerHub地址：
   * `https://hub.docker.com/r/greper/certd`
-  * `docker pull greper/certd:latest`
+  * `greper/certd:latest`
+  * `greper/certd:armv7`、`greper/certd:[version]-armv7`
 
 * 镜像构建通过`Actions`自动执行，过程公开透明，请放心使用
   * [点我查看镜像构建日志](https://github.com/certd/certd/actions/workflows/build-image.yml) 
@@ -157,6 +159,7 @@ docker compose up -d
 * [腾讯云](./doc/tencent/tencent.md)
 * [windows主机](./doc/host/host.md)
 * [google证书](./doc/google/google.md)
+* [群晖部署certd及证书更新教程](./doc/synology/index.md)
 
 
 ## 八、问题处理

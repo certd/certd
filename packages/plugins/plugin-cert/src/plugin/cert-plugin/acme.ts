@@ -311,7 +311,7 @@ export class AcmeService {
 
   private async testDirectory(directoryUrl: string) {
     try {
-      await utils.http({
+      await utils.http.request({
         url: directoryUrl,
         method: "GET",
         timeout: 10000,

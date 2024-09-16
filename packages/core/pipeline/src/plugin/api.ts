@@ -5,9 +5,9 @@ import { Logger } from "log4js";
 import { IAccessService } from "../access/index.js";
 import { IEmailService } from "../service/index.js";
 import { IContext } from "../core/index.js";
-import { AxiosInstance } from "axios";
 import { ILogger, logger } from "../utils/index.js";
-
+import { HttpClient } from "../utils/util.request";
+import { utils } from "../utils/index.js";
 export enum ContextScope {
   global,
   pipeline,
@@ -57,17 +57,32 @@ export type TaskResult = {
   pipelineVars: Record<string, any>;
 };
 export type TaskInstanceContext = {
+  //流水线定义
   pipeline: Pipeline;
+  //步骤定义
   step: Step;
+  //日志
   logger: Logger;
+  //当前步骤输入参数跟上一次执行比较是否有变化
+  inputChanged: boolean;
+  //授权获取服务
   accessService: IAccessService;
+  //邮件服务
   emailService: IEmailService;
+  //流水线上下文
   pipelineContext: IContext;
+  //用户上下文
   userContext: IContext;
-  http: AxiosInstance;
+  //http请求客户端
+  http: HttpClient;
+  //文件存储
   fileStore: FileStore;
+  //上一次执行结果状态
   lastStatus?: Runnable;
+  //用户取消信号
   signal: AbortSignal;
+  //工具类
+  utils: typeof utils;
 };
 
 export abstract class AbstractTaskPlugin implements ITaskPlugin {
