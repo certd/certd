@@ -1,6 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import { appendTimeSuffix, checkRet } from '../../utils/index.js';
-import { AliyunAccess, AliyunClient } from "@certd/plugin-plus";
+import { AliyunAccess, AliyunClient } from '@certd/plugin-plus';
 
 @IsTaskPlugin({
   name: 'uploadCertToAliyun',
@@ -37,7 +37,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
     helper: '请选择前置任务输出的域名证书',
     component: {
       name: 'pi-output-selector',
-      from: 'CertApply',
+      from: ['CertApply', 'CertApplyLego'],
     },
     required: true,
   })
@@ -86,14 +86,14 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
   }
 
   async getClient(aliyunProvider: AliyunAccess) {
-    const client = new AliyunClient({logger:this.logger})
+    const client = new AliyunClient({ logger: this.logger });
     await client.init({
       accessKeyId: aliyunProvider.accessKeyId,
       accessKeySecret: aliyunProvider.accessKeySecret,
       endpoint: 'https://cas.aliyuncs.com',
       apiVersion: '2018-07-13',
-    })
-    return client
+    });
+    return client;
   }
 }
 //注册插件

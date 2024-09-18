@@ -14,7 +14,7 @@ export default {
       default: undefined
     },
     from: {
-      type: String
+      type: [String, Array]
     }
   },
   emits: ["update:modelValue"],
@@ -36,7 +36,11 @@ export default {
         currentTask: currentTask.value
       });
       if (props.from) {
-        options.value = options.value.filter((item: any) => item.type === props.from);
+        if (typeof props.from === "string") {
+          options.value = options.value.filter((item: any) => item.type === props.from);
+        } else {
+          options.value = options.value.filter((item: any) => props.from.includes(item.type));
+        }
       }
       if (props.modelValue == null && options.value.length > 0) {
         ctx.emit("update:modelValue", options.value[0].value);

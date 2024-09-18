@@ -18,7 +18,7 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
     helper: '请选择前置任务输出的域名证书',
     component: {
       name: 'pi-output-selector',
-      from: 'CertApply',
+      from: ['CertApply', 'CertApplyLego'],
     },
     required: true,
   })
