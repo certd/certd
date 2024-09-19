@@ -1,10 +1,21 @@
 <template>
-  <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="700px">
+  <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="700px" class="step-form-drawer" :class="{ fullscreen }">
     <template #title>
-      编辑步骤
-      <a-button v-if="editMode" @click="stepDelete()">
-        <template #icon><DeleteOutlined /></template>
-      </a-button>
+      <div>
+        编辑步骤
+        <template v-if="editMode">
+          <a-button @click="stepDelete()">
+            <template #icon><DeleteOutlined /></template>
+          </a-button>
+        </template>
+      </div>
+      <div>
+        <fs-icon
+          class="icon-button"
+          :icon="fullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'"
+          @click="fullscreen = !fullscreen"
+        ></fs-icon>
+      </div>
     </template>
     <template v-if="currentStep">
       <pi-container v-if="currentStep._isAdd" class="pi-step-form">
@@ -24,7 +35,7 @@
                 </a-col>
               </a-row>
               <a-row v-else :gutter="10">
-                <a-col v-for="item of group.plugins" :key="item.key" class="step-plugin" :span="12">
+                <a-col v-for="item of group.plugins" :key="item.key" class="step-plugin">
                   <a-card
                     hoverable
                     :class="{ current: item.name === currentStep.type }"
@@ -36,7 +47,7 @@
                   >
                     <a-card-meta>
                       <template #title>
-                        <a-avatar :src="item.icon || '/images/plugin.png'" />
+                        <fs-icon class="plugin-icon" :icon="item.icon || 'clarity:plugin-line'"></fs-icon>
                         <span class="title">{{ item.title }}</span>
                         <vip-button v-if="item.needPlus" mode="icon" />
                       </template>
@@ -129,6 +140,7 @@ export default {
       const currentStep: Ref = ref({ title: undefined, input: {} });
       const stepFormRef: Ref = ref(null);
       const stepDrawerVisible: Ref = ref(false);
+      const fullscreen: Ref<boolean> = ref(false);
       const rules: Ref = ref({
         name: [
           {
@@ -336,7 +348,8 @@ export default {
         stepDelete,
         rules,
         blankFn,
-        stepCopy
+        stepCopy,
+        fullscreen
       };
     }
 
@@ -376,64 +389,95 @@ export default {
 </script>
 
 <style lang="less">
-.pi-step-form {
-  .bottom-button {
-    padding: 20px;
-    padding-bottom: 5px;
-    margin-left: 100px;
+.step-form-drawer {
+  &.fullscreen {
+    .pi-step-form {
+      .body {
+        .step-plugin {
+          width: 16.666666%;
+        }
+        .step-form {
+          display: flex;
+          flex-wrap: wrap;
+          .fs-form-item {
+            width: 50%;
+          }
+        }
+      }
+    }
   }
 
-  .body {
-    padding: 0px;
-
-    .ant-tabs-content {
-      height: 100%;
-    }
-    .ant-tabs-tabpane {
-      padding-right: 10px;
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
-    .ant-card {
-      margin-bottom: 10px;
-
-      &.current {
-        border-color: #00b7ff;
-      }
-
-      .ant-card-meta-title {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-      }
-
-      .ant-avatar {
-        width: 24px;
-        height: 24px;
-        flex-shrink: 0;
-      }
-
-      .title {
-        margin-left: 5px;
-        white-space: nowrap;
-        flex: 1;
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+  .pi-step-form {
+    .bottom-button {
+      padding: 20px;
+      padding-bottom: 5px;
+      margin-left: 100px;
     }
 
-    .ant-card-body {
-      padding: 14px;
-      height: 100px;
+    .plugin-icon {
+      font-size: 22px;
+      color: #00b7ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-      overflow-y: hidden;
+    .body {
+      padding: 0px;
 
-      .ant-card-meta-description {
-        font-size: 12px;
-        line-height: 20px;
-        height: 40px;
-        color: #7f7f7f;
+      .step-plugin {
+        width: 50%;
+      }
+
+      .ant-tabs-content {
+        height: 100%;
+      }
+      .ant-tabs-tabpane {
+        padding-right: 10px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .ant-card {
+        margin-bottom: 10px;
+
+        &.current {
+          border-color: #00b7ff;
+        }
+
+        .ant-card-meta-title {
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
+        }
+
+        .ant-avatar {
+          width: 24px;
+          height: 24px;
+          flex-shrink: 0;
+        }
+
+        .title {
+          margin-left: 5px;
+          white-space: nowrap;
+          flex: 1;
+          display: block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+
+      .ant-card-body {
+        padding: 14px;
+        height: 100px;
+
+        overflow-y: hidden;
+
+        .ant-card-meta-description {
+          font-size: 12px;
+          line-height: 20px;
+          height: 40px;
+          color: #7f7f7f;
+        }
       }
     }
   }

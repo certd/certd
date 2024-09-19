@@ -11,6 +11,7 @@ export type { CertInfo };
 
 @IsTaskPlugin({
   name: "CertApplyLego",
+  icon: "ph:certificate",
   title: "证书申请（Lego）",
   group: pluginGroups.cert.key,
   desc: "支持海量DNS解析提供商，推荐使用，一样的免费通配符域名证书申请，支持多个域名打到同一个证书上",

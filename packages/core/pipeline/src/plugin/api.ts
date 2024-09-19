@@ -26,6 +26,7 @@ export type TaskInputDefine = FormItemProps;
 export type PluginDefine = Registrable & {
   default?: any;
   group?: string;
+  icon?: string;
   input?: {
     [key: string]: TaskInputDefine;
   };

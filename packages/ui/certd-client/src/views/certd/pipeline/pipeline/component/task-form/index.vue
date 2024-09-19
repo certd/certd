@@ -8,10 +8,12 @@
     @after-open-change="taskDrawerOnAfterVisibleChange"
   >
     <template #title>
-      编辑任务
-      <a-button v-if="editMode" @click="taskDelete()">
-        <template #icon><DeleteOutlined /></template>
-      </a-button>
+      <div>
+        编辑任务
+        <a-button v-if="editMode" @click="taskDelete()">
+          <template #icon><DeleteOutlined /></template>
+        </a-button>
+      </div>
     </template>
     <template v-if="currentTask">
       <pi-container>

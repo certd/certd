@@ -1,6 +1,6 @@
 import { Autowire, HttpClient, ILogger } from '@certd/pipeline';
 import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
-import { TencentAccess } from '../access/index.js';
+import { TencentAccess } from '@certd/plugin-plus';
 
 @IsDnsProvider({
   name: 'tencent',

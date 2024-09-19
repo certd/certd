@@ -5,6 +5,7 @@ import { AliyunAccess, AliyunClient } from '@certd/plugin-plus';
 @IsTaskPlugin({
   name: 'uploadCertToAliyun',
   title: '上传证书到阿里云',
+  icon: 'ant-design:aliyun-outlined',
   group: pluginGroups.aliyun.key,
   desc: '',
   default: {

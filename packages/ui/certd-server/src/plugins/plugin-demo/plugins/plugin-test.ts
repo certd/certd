@@ -4,6 +4,7 @@ import { CertInfo, CertReader } from '@certd/plugin-cert';
 @IsTaskPlugin({
   name: 'demoTest',
   title: 'Demo测试插件',
+  icon: 'clarity:plugin-line',
   group: pluginGroups.other.key,
   default: {
     strategy: {

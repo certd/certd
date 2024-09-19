@@ -1,10 +1,19 @@
 <template>
-  <a-drawer v-model:open="notificationDrawerVisible" placement="right" :closable="true" width="600px" class="pi-notification-form" @after-open-change="notificationDrawerOnAfterVisibleChange">
+  <a-drawer
+    v-model:open="notificationDrawerVisible"
+    placement="right"
+    :closable="true"
+    width="600px"
+    class="pi-notification-form"
+    @after-open-change="notificationDrawerOnAfterVisibleChange"
+  >
     <template #title>
-      编辑触发器
-      <a-button v-if="mode === 'edit'" @click="notificationDelete()">
-        <template #icon><DeleteOutlined /></template>
-      </a-button>
+      <div>
+        编辑触发器
+        <a-button v-if="mode === 'edit'" @click="notificationDelete()">
+          <template #icon><DeleteOutlined /></template>
+        </a-button>
+      </div>
     </template>
     <template v-if="currentNotification">
       <pi-container>

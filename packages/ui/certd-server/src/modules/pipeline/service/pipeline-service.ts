@@ -180,7 +180,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
    * 应用启动后初始加载记录
    */
   async onStartup(immediateTriggerOnce: boolean, onlyAdminUser: boolean) {
-    logger.info('加载定时trigger开始');
     await this.foreachPipeline(async entity => {
       if (onlyAdminUser && entity.userId !== 1) {
         return;

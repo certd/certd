@@ -1,9 +1,10 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import dayjs from 'dayjs';
-import { AliyunAccess, AliyunClient } from "@certd/plugin-plus";
+import { AliyunAccess, AliyunClient } from '@certd/plugin-plus';
 @IsTaskPlugin({
   name: 'DeployCertToAliyunDCDN',
   title: '部署证书至阿里云DCDN',
+  icon: 'ant-design:aliyun-outlined',
   group: pluginGroups.aliyun.key,
   desc: '依赖证书申请前置任务，自动部署域名证书至阿里云DCDN',
   default: {
@@ -59,14 +60,14 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   }
 
   async getClient(access: AliyunAccess) {
-    const client =  new AliyunClient({logger:this.logger})
+    const client = new AliyunClient({ logger: this.logger });
     await client.init({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
       endpoint: 'https://dcdn.aliyuncs.com',
       apiVersion: '2018-01-15',
-    })
-    return client
+    });
+    return client;
   }
 
   async buildParams() {

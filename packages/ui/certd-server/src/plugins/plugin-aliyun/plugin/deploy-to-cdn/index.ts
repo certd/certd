@@ -4,6 +4,7 @@ import { AliyunAccess, AliyunClient } from "@certd/plugin-plus";
 @IsTaskPlugin({
   name: 'DeployCertToAliyunCDN',
   title: '部署证书至阿里云CDN',
+  icon: 'ant-design:aliyun-outlined',
   group: pluginGroups.aliyun.key,
   desc: '自动部署域名证书至阿里云CDN',
   default: {

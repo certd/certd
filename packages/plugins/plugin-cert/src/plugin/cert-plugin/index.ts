@@ -12,6 +12,7 @@ export * from "./cert-reader.js";
 @IsTaskPlugin({
   name: "CertApply",
   title: "证书申请（JS版）",
+  icon: "ph:certificate",
   group: pluginGroups.cert.key,
   desc: "免费通配符域名证书申请，支持多个域名打到同一个证书上",
   default: {

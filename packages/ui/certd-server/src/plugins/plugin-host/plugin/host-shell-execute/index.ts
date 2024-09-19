@@ -4,6 +4,7 @@ import { SshClient } from '../../lib/ssh.js';
 @IsTaskPlugin({
   name: 'hostShellExecute',
   title: '执行远程主机脚本命令',
+  icon:"tabler:brand-powershell",
   group: pluginGroups.host.key,
   input: {},
   default: {

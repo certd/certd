@@ -20,8 +20,7 @@ export class AutoRegisterCron {
   async init() {
     logger.info('加载定时trigger开始');
     await this.pipelineService.onStartup(this.immediateTriggerOnce, this.onlyAdminUser);
-    // logger.info(this.echoPlugin, this.echoPlugin.test);
-    // logger.info('加载定时trigger完成');
+    logger.info('加载定时trigger完成');
     //
     // const meta = getClassMetadata(CLASS_KEY, this.echoPlugin);
     // console.log('meta', meta);
