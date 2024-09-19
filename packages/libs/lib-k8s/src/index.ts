@@ -1,1 +1,1 @@
-export * from "./lib/k8s.client.js";
+export * from './lib/k8s.client.js';
