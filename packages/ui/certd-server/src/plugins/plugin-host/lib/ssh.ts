@@ -286,7 +286,16 @@ export class SshClient {
   async _call(options: { connectConf: SshAccess; callable: any }): Promise<string[]> {
     const { connectConf, callable } = options;
     const conn = new AsyncSsh2Client(connectConf, this.logger);
-    await conn.connect();
+    try {
+      await conn.connect();
+    } catch (e: any) {
+      if (e.message?.indexOf('All configured authentication methods failed') > -1) {
+        this.logger.error(e);
+        throw new Error('登录失败，请检查用户名/密码/密钥是否正确');
+      }
+      throw e;
+    }
+
     try {
       return await callable(conn);
     } finally {

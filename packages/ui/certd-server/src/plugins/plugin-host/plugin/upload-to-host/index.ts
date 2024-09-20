@@ -7,7 +7,7 @@ import { SshAccess } from '../../access/index.js';
 @IsTaskPlugin({
   name: 'uploadCertToHost',
   title: '上传证书到主机',
-  icon:"line-md:uploading-loop",
+  icon: 'line-md:uploading-loop',
   group: pluginGroups.host.key,
   desc: '也支持复制证书到本机',
   default: {
@@ -36,7 +36,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: 'PFX证书保存路径',
-    helper: '需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号，例如：/tmp/cert.pfx',
+    helper: '用于IIS证书部署，需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号，例如：/tmp/cert.pfx',
     component: {
       placeholder: '/root/deploy/nginx/cert.pfx',
     },
@@ -45,7 +45,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: 'DER证书保存路径',
-    helper: '需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号，例如：/tmp/cert.der',
+    helper: '用于Apache证书部署，需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号，例如：/tmp/cert.der',
     component: {
       placeholder: '/root/deploy/nginx/cert.der',
     },
