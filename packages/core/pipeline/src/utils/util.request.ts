@@ -45,7 +45,7 @@ export function createAxiosService({ logger }: { logger: Logger }) {
   // 创建一个 axios 实例
   const service = axios.create();
 
-  const defaultAgents = createAgent();
+  // const defaultAgents = createAgent();
   // 请求拦截
   service.interceptors.request.use(
     (config: any) => {
@@ -53,13 +53,14 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       if (config.timeout == null) {
         config.timeout = 15000;
       }
-      let agents = defaultAgents;
-      if (config.skipSslVerify) {
-        agents = createAgent({ rejectUnauthorized: config.rejectUnauthorized });
-      }
-
-      config.httpsAgent = agents.httpsAgent;
-      config.httpAgent = agents.httpAgent;
+      // let agents = defaultAgents;
+      // if (config.skipSslVerify) {
+      //   logger.info("跳过SSL验证");
+      //   agents = createAgent({ rejectUnauthorized: config.rejectUnauthorized });
+      // }
+      // delete config.skipSslVerify;
+      // config.httpsAgent = agents.httpsAgent;
+      // config.httpAgent = agents.httpAgent;
 
       return config;
     },

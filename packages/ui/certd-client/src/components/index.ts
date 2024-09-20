@@ -8,6 +8,7 @@ import { CheckCircleOutlined, InfoCircleOutlined, UndoOutlined } from "@ant-desi
 import CronEditor from "./cron-editor/index.vue";
 import { CronLight } from "@vue-js-cron/light";
 import "@vue-js-cron/light/dist/light.css";
+import Plugins from "./plugins/index";
 export default {
   install(app: any) {
     app.component("PiContainer", PiContainer);
@@ -24,5 +25,6 @@ export default {
     app.component("UndoOutlined", UndoOutlined);
 
     app.use(vip);
+    app.use(Plugins);
   }
 };
