@@ -1,6 +1,7 @@
 import { Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
 import { PipelineService } from '../pipeline/service/pipeline-service.js';
 import { logger } from '../../utils/logger.js';
+import { SysSettingsService } from '../system/service/sys-settings-service.js';
 
 @Autoload()
 @Scope(ScopeEnum.Singleton)
@@ -16,9 +17,13 @@ export class AutoRegisterCron {
   @Config('cron.immediateTriggerOnce')
   private immediateTriggerOnce = false;
 
+  @Inject()
+  sysSettingsService: SysSettingsService;
+
   @Init()
   async init() {
     logger.info('加载定时trigger开始');
+
     await this.pipelineService.onStartup(this.immediateTriggerOnce, this.onlyAdminUser);
     logger.info('加载定时trigger完成');
     //

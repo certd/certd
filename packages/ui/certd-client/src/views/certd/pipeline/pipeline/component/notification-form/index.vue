@@ -9,7 +9,7 @@
   >
     <template #title>
       <div>
-        编辑触发器
+        编辑通知
         <a-button v-if="mode === 'edit'" @click="notificationDelete()">
           <template #icon><DeleteOutlined /></template>
         </a-button>
