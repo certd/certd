@@ -113,6 +113,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
         stages: [
           {
             title: "证书申请阶段",
+            maxTaskCount: 1,
             tasks: [
               {
                 title: "证书申请任务",

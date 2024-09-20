@@ -123,7 +123,7 @@
                       </div>
                     </template>
                     <template #footer>
-                      <div v-if="editMode" class="task-container is-add">
+                      <div v-if="editMode && !(stage.maxTaskCount > 0 && stage.tasks.length >= stage.maxTaskCount)" class="task-container is-add">
                         <div class="line line-left">
                           <div class="flow-line"></div>
                         </div>

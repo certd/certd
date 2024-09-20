@@ -46,6 +46,7 @@ export type Stage = Runnable & {
   tasks: Task[];
   concurrency: ConcurrencyStrategy;
   next: NextStrategy;
+  maxTaskCount?: number;
 };
 
 export type Trigger = {
