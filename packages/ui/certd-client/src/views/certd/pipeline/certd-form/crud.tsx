@@ -2,10 +2,11 @@ import { compute, CreateCrudOptionsRet, dict } from "@fast-crud/fast-crud";
 import { PluginGroup } from "@certd/pipeline";
 import { useReference } from "/@/use/use-refrence";
 import _ from "lodash-es";
+import { useUserStore } from "/@/store/modules/user";
 
 export default function (certPluginGroup: PluginGroup, formWrapperRef: any): CreateCrudOptionsRet {
   const inputs: any = {};
-
+  const userStore = useUserStore();
   for (const plugin of certPluginGroup.plugins) {
     for (const inputKey in plugin.input) {
       if (inputs[inputKey]) {
@@ -100,9 +101,12 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
             order: 101,
             helper: {
               render: () => {
+                if (userStore.isPlus) {
+                  return "";
+                }
                 return (
                   <div>
-                    需要配置<router-link to={{ path: "/certd/settings/email" }}>邮件服务器</router-link>才能发送邮件
+                    需要配置<router-link to={{ path: "/certd/settings/email" }}>邮件服务器</router-link>才能发送邮件(专业版请忽略)
                   </div>
                 );
               }

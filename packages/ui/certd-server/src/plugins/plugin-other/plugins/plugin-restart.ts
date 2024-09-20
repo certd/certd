@@ -24,7 +24,9 @@ export class RestartCertdPlugin extends AbstractTaskPlugin {
   delay = 30;
   async onInstance() {}
   async execute(): Promise<void> {
+    this.logger.info(`延迟 ${this.delay} 秒后重启 Certd`);
     setTimeout(() => {
+      this.logger.info('重启 Certd');
       process.exit(1);
     }, this.delay * 1000);
   }
