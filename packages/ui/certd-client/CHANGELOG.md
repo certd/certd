@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.3](https://github.com/fast-crud/fast-crud/compare/v1.21.2...v1.21.3) (2024-09-20)
+
+### Performance Improvements
+
+* 优化antdv search按钮组错位问题 ([0948650](https://github.com/fast-crud/fast-crud/commit/0948650747d725ffe84e4f357d81a3a9a331109e))
+
 ## [1.21.2](https://github.com/fast-crud/fast-crud/compare/v1.21.1...v1.21.2) (2024-07-15)
 
 ### Performance Improvements
