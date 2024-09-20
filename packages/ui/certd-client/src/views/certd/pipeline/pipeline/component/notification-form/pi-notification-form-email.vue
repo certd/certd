@@ -8,7 +8,8 @@
         component: {
           name: 'a-select',
           vModel: 'value',
-          mode: 'tags'
+          mode: 'tags',
+          open: false
         },
         rules: [{ required: true, message: '此项必填' }]
       }"
