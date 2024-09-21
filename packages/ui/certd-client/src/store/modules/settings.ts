@@ -23,6 +23,7 @@ export interface SettingState {
   sysPublic?: SysPublicSetting;
   installInfo?: {
     siteId: string;
+    installTime?: number;
   };
 }
 

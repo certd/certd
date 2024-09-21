@@ -1,0 +1,45 @@
+<template>
+  <fs-page class="cd-page-account">
+    <iframe ref="iframeRef" class="account-iframe" src="http://localhost:1017/#/home?appKey=z4nXOeTeSnnpUpnmsV"> </iframe>
+  </fs-page>
+</template>
+
+<script setup lang="tsx">
+import { IframeClient } from "@certd/lib-iframe";
+import { onMounted, ref } from "vue";
+import { useUserStore } from "/@/store/modules/user";
+import { useSettingStore } from "/@/store/modules/settings";
+
+const iframeRef = ref();
+
+const userStore = useUserStore();
+const settingStore = useSettingStore();
+type SubjectInfo = {
+  subjectId: string;
+  installTime?: number;
+  vipType?: string;
+  expiresTime?: number;
+};
+onMounted(() => {
+  const iframeClient = new IframeClient(iframeRef.value);
+  iframeClient.register("getSubjectInfo", (req) => {
+    const subjectInfo: SubjectInfo = {
+      subjectId: settingStore.installInfo.siteId,
+      installTime: settingStore.installInfo.installTime,
+      vipType: userStore.plusInfo.vipType || "free",
+      expiresTime: userStore.plusInfo.expireTime
+    };
+    return subjectInfo;
+  });
+});
+</script>
+
+<style lang="less">
+.cd-page-account {
+  .account-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+}
+</style>
