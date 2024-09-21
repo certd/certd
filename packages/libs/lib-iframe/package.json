@@ -13,6 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "nanoid": "^4.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^23.0.4",
