@@ -1,6 +1,6 @@
 <template>
   <fs-page class="cd-page-account">
-    <iframe ref="iframeRef" class="account-iframe" src="http://localhost:1017/#/home?appKey=z4nXOeTeSnnpUpnmsV"> </iframe>
+    <iframe ref="iframeRef" class="account-iframe" src="http://localhost:1017/#/?appKey=z4nXOeTeSnnpUpnmsV"> </iframe>
   </fs-page>
 </template>
 

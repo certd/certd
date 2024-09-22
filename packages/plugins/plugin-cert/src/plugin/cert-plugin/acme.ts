@@ -12,6 +12,7 @@ export type CertInfo = {
   crt: string;
   key: string;
   csr: string;
+  ic?: string;
   pfx?: string;
   der?: string;
 };
@@ -276,8 +277,9 @@ export class AcmeService {
       signal: this.options.signal,
     });
 
+    const crtString = crt.toString();
     const cert: CertInfo = {
-      crt: crt.toString(),
+      crt: crtString,
       key: key.toString(),
       csr: csr.toString(),
     };
