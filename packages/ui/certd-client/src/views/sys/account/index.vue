@@ -9,7 +9,7 @@ import { IframeClient } from "@certd/lib-iframe";
 import { onMounted, ref } from "vue";
 import { useUserStore } from "/@/store/modules/user";
 import { useSettingStore } from "/@/store/modules/settings";
-
+import * as api from "./api";
 const iframeRef = ref();
 
 const userStore = useUserStore();
@@ -22,7 +22,7 @@ type SubjectInfo = {
 };
 onMounted(() => {
   const iframeClient = new IframeClient(iframeRef.value);
-  iframeClient.register("getSubjectInfo", (req) => {
+  iframeClient.register("getSubjectInfo", async (req) => {
     const subjectInfo: SubjectInfo = {
       subjectId: settingStore.installInfo.siteId,
       installTime: settingStore.installInfo.installTime,
@@ -31,11 +31,22 @@ onMounted(() => {
     };
     return subjectInfo;
   });
+
+  iframeClient.register("preBindSubject", async (req) => {
+    const userId = req.data.userId;
+    await api.PreBindUser(userId);
+  });
 });
 </script>
 
 <style lang="less">
 .cd-page-account {
+  .fs-page-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
   .account-iframe {
     width: 100%;
     height: 100%;
