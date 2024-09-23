@@ -2,7 +2,7 @@ import { request } from "/src/api/service";
 
 const apiPrefix = "/pi/history";
 
-export function GetList(query: any) {
+export async function GetList(query: any) {
   return await request({
     url: apiPrefix + "/page",
     method: "post",
@@ -10,7 +10,7 @@ export function GetList(query: any) {
   });
 }
 
-export function AddObj(obj: any) {
+export async function AddObj(obj: any) {
   return await request({
     url: apiPrefix + "/add",
     method: "post",
@@ -18,7 +18,7 @@ export function AddObj(obj: any) {
   });
 }
 
-export function UpdateObj(obj: any) {
+export async function UpdateObj(obj: any) {
   return await request({
     url: apiPrefix + "/update",
     method: "post",
@@ -26,7 +26,7 @@ export function UpdateObj(obj: any) {
   });
 }
 
-export function DelObj(id: any) {
+export async function DelObj(id: any) {
   return await request({
     url: apiPrefix + "/delete",
     method: "post",
@@ -34,7 +34,7 @@ export function DelObj(id: any) {
   });
 }
 
-export function GetObj(id: any) {
+export async function GetObj(id: any) {
   return await request({
     url: apiPrefix + "/info",
     method: "post",
@@ -42,7 +42,7 @@ export function GetObj(id: any) {
   });
 }
 
-export function GetDetail(id: any) {
+export async function GetDetail(id: any) {
   return await request({
     url: apiPrefix + "/detail",
     method: "post",
@@ -50,7 +50,7 @@ export function GetDetail(id: any) {
   });
 }
 
-export function DeleteBatch(ids: any[]) {
+export async function DeleteBatch(ids: any[]) {
   return await request({
     url: apiPrefix + "/deleteByIds",
     method: "post",

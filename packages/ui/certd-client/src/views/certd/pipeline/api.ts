@@ -3,7 +3,7 @@ import { request } from "/src/api/service";
 const apiPrefix = "/pi/pipeline";
 const historyApiPrefix = "/pi/history";
 
-export function GetList(query: any) {
+export async function GetList(query: any) {
   return await request({
     url: apiPrefix + "/page",
     method: "post",
@@ -11,7 +11,7 @@ export function GetList(query: any) {
   });
 }
 
-export function AddObj(obj: any) {
+export async function AddObj(obj: any) {
   return await request({
     url: apiPrefix + "/add",
     method: "post",
@@ -19,7 +19,7 @@ export function AddObj(obj: any) {
   });
 }
 
-export function UpdateObj(obj: any) {
+export async function UpdateObj(obj: any) {
   return await request({
     url: apiPrefix + "/update",
     method: "post",
@@ -27,7 +27,7 @@ export function UpdateObj(obj: any) {
   });
 }
 
-export function DelObj(id: any) {
+export async function DelObj(id: any) {
   return await request({
     url: apiPrefix + "/delete",
     method: "post",
@@ -35,7 +35,7 @@ export function DelObj(id: any) {
   });
 }
 
-export function GetObj(id: any) {
+export async function GetObj(id: any) {
   return await request({
     url: apiPrefix + "/info",
     method: "post",
@@ -43,7 +43,7 @@ export function GetObj(id: any) {
   });
 }
 
-export function GetDetail(id: any) {
+export async function GetDetail(id: any) {
   return await request({
     url: apiPrefix + "/detail",
     method: "post",
@@ -51,7 +51,7 @@ export function GetDetail(id: any) {
   });
 }
 
-export function Save(pipelineEntity: any) {
+export async function Save(pipelineEntity: any) {
   return await request({
     url: apiPrefix + "/save",
     method: "post",
@@ -59,7 +59,7 @@ export function Save(pipelineEntity: any) {
   });
 }
 
-export function Trigger(id: any, stepId?: string) {
+export async function Trigger(id: any, stepId?: string) {
   return await request({
     url: apiPrefix + "/trigger",
     method: "post",
@@ -67,7 +67,7 @@ export function Trigger(id: any, stepId?: string) {
   });
 }
 
-export function Cancel(historyId: any) {
+export async function Cancel(historyId: any) {
   return await request({
     url: apiPrefix + "/cancel",
     method: "post",

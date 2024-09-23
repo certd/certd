@@ -136,14 +136,15 @@ export default {
       }
 
       .main {
-        min-width: 260px;
+        min-width: 300px;
+        width: 94%;
       }
 
       .footer {
         // position: absolute;
         width: 100%;
         bottom: 0;
-        margin: 48px 0 24px;
+        margin: 24px 0 24px;
         text-align: center;
 
         .links {

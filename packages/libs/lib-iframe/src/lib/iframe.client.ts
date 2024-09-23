@@ -26,10 +26,12 @@ export class IframeClient {
   requestQueue: Record<string, IframeMessageReq> = {};
   //当前客户端是否是父级页面
   iframe?: HTMLIFrameElement;
+  onError?: any;
 
   handlers: Record<string, (data: IframeMessageData<any>) => Promise<void>> = {};
-  constructor(iframe?: HTMLIFrameElement) {
+  constructor(iframe?: HTMLIFrameElement, onError?: (e: any) => void) {
     this.iframe = iframe;
+    this.onError = onError;
     window.addEventListener('message', async (event: MessageEvent<IframeMessageData<any>>) => {
       const data = event.data;
       if (data.action) {
@@ -37,13 +39,12 @@ export class IframeClient {
         try {
           const handler = this.handlers[data.action];
           if (handler) {
-            debugger;
             const res = await handler(data);
             if (data.id && data.action !== 'reply') {
               await this.send('reply', res, data.id);
             }
           } else {
-            throw new Error(`action:${data.action} 未注册处理器`);
+            throw new Error(`action:${data.action} 未注册处理器，可能版本过低`);
           }
         } catch (e: any) {
           console.error(e);
@@ -69,6 +70,17 @@ export class IframeClient {
   }
 
   async send<R = any, T = any>(action: string, data?: T, replyId?: string, errorCode?: number, message?: string): Promise<IframeMessageData<R>> {
+    try {
+      return await this.doSend<R, T>(action, data, replyId, errorCode, message);
+    } catch (e) {
+      if (this.onError) {
+        this.onError(e);
+      }
+      throw e;
+    }
+  }
+
+  async doSend<R = any, T = any>(action: string, data?: T, replyId?: string, errorCode?: number, message?: string): Promise<IframeMessageData<R>> {
     const reqMessageData: IframeMessageData<T> = {
       id: nanoid(),
       action,

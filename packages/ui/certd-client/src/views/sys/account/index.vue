@@ -10,6 +10,7 @@ import { onMounted, ref } from "vue";
 import { useUserStore } from "/@/store/modules/user";
 import { useSettingStore } from "/@/store/modules/settings";
 import * as api from "./api";
+import { notification } from "ant-design-vue";
 const iframeRef = ref();
 
 const userStore = useUserStore();
@@ -21,7 +22,12 @@ type SubjectInfo = {
   expiresTime?: number;
 };
 onMounted(() => {
-  const iframeClient = new IframeClient(iframeRef.value);
+  const iframeClient = new IframeClient(iframeRef.value, (e: any) => {
+    notification.error({
+      message: " error",
+      description: e.message
+    });
+  });
   iframeClient.register("getSubjectInfo", async (req) => {
     const subjectInfo: SubjectInfo = {
       subjectId: settingStore.installInfo.siteId,
@@ -46,6 +52,15 @@ onMounted(() => {
   iframeClient.register("unbindUser", async (req) => {
     const userId = req.data.userId;
     await api.UnbindUser(userId);
+  });
+
+  iframeClient.register("updateLicense", async (req) => {
+    await api.UpdateLicense(req.data);
+    await userStore.reInit();
+    notification.success({
+      message: "更新成功",
+      description: "专业版已激活"
+    });
   });
 });
 </script>

@@ -26,8 +26,9 @@ export class BasicController extends BaseController {
   public async preBindUser(@Body(ALL) body: PreBindUserReq) {
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     // 设置缓存内容
-    await this.plusService.request({
+    await this.plusService.requestWithoutSign({
       url: '/activation/subject/preBind',
+      method: 'POST',
       data: {
         userId: body.userId,
         appKey: AppKey,
@@ -52,5 +53,12 @@ export class BasicController extends BaseController {
     installInfo.bindUserId = null;
     await this.sysSettingsService.saveSetting(installInfo);
     return this.ok({});
+  }
+
+  @Post('/updateLicense', { summary: 'sys:settings:edit' })
+  public async updateLicense(@Body(ALL) body: { license: string }) {
+    const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
+    await this.plusService.updateLicense(installInfo.siteId, body.license);
+    return this.ok(true);
   }
 }

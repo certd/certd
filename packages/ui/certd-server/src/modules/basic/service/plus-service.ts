@@ -1,7 +1,7 @@
 import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { SysSettingsService } from '../../system/service/sys-settings-service.js';
-import { SysInstallInfo } from '../../system/service/models.js';
-import { AppKey, getPlusInfo, isPlus } from '@certd/pipeline';
+import { SysInstallInfo, SysLicenseInfo } from '../../system/service/models.js';
+import { AppKey, getPlusInfo, isPlus, verify } from '@certd/pipeline';
 import * as crypto from 'crypto';
 import { request } from '../../../utils/http.js';
 import { logger } from '../../../utils/logger.js';
@@ -16,6 +16,7 @@ export class PlusService {
 
   async requestWithoutSign(config: any): Promise<any> {
     config.baseURL = this.plusServerBaseUrl;
+    config.method = config.method || 'POST';
     return await request(config);
   }
 
@@ -75,5 +76,25 @@ export class PlusService {
       method: 'post',
       data: formData,
     });
+  }
+
+  async updateLicense(siteId: string, license: string) {
+    let licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
+    if (!licenseInfo) {
+      licenseInfo = new SysLicenseInfo();
+    }
+    licenseInfo.license = license;
+    await this.sysSettingsService.saveSetting(licenseInfo);
+
+    const verifyRes = await verify({
+      subjectId: siteId,
+      license,
+    });
+
+    if (!verifyRes.isPlus) {
+      const message = verifyRes.message || '授权码校验失败';
+      logger.error(message);
+      throw new Error(message);
+    }
   }
 }

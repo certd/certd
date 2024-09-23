@@ -208,7 +208,8 @@ export default defineComponent({
 <style lang="less">
 @import "../../../style/theme/index.less";
 .login-page.main {
-  margin: 20px !important;
+  //margin: 20px !important;
+  margin-bottom: 100px;
   .user-layout-login {
     label {
       font-size: 14px;

@@ -23,3 +23,11 @@ export async function UnbindUser(userId: number) {
     data: { userId }
   });
 }
+
+export async function UpdateLicense(data: any) {
+  await request({
+    url: "/sys/account/updateLicense",
+    method: "post",
+    data
+  });
+}
