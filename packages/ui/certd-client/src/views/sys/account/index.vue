@@ -32,9 +32,20 @@ onMounted(() => {
     return subjectInfo;
   });
 
-  iframeClient.register("preBindSubject", async (req) => {
+  let preBindUserId = null;
+  iframeClient.register("preBindUser", async (req) => {
     const userId = req.data.userId;
+    preBindUserId = userId;
     await api.PreBindUser(userId);
+  });
+
+  iframeClient.register("onBoundUser", async (req) => {
+    await api.BindUser(preBindUserId);
+  });
+
+  iframeClient.register("unbindUser", async (req) => {
+    const userId = req.data.userId;
+    await api.UnbindUser(userId);
   });
 });
 </script>

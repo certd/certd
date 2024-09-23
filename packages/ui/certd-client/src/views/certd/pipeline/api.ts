@@ -4,7 +4,7 @@ const apiPrefix = "/pi/pipeline";
 const historyApiPrefix = "/pi/history";
 
 export function GetList(query: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/page",
     method: "post",
     data: query
@@ -12,7 +12,7 @@ export function GetList(query: any) {
 }
 
 export function AddObj(obj: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/add",
     method: "post",
     data: obj
@@ -20,7 +20,7 @@ export function AddObj(obj: any) {
 }
 
 export function UpdateObj(obj: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/update",
     method: "post",
     data: obj
@@ -28,7 +28,7 @@ export function UpdateObj(obj: any) {
 }
 
 export function DelObj(id: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/delete",
     method: "post",
     params: { id }
@@ -36,7 +36,7 @@ export function DelObj(id: any) {
 }
 
 export function GetObj(id: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/info",
     method: "post",
     params: { id }
@@ -44,7 +44,7 @@ export function GetObj(id: any) {
 }
 
 export function GetDetail(id: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/detail",
     method: "post",
     params: { id }
@@ -52,7 +52,7 @@ export function GetDetail(id: any) {
 }
 
 export function Save(pipelineEntity: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/save",
     method: "post",
     data: pipelineEntity
@@ -60,7 +60,7 @@ export function Save(pipelineEntity: any) {
 }
 
 export function Trigger(id: any, stepId?: string) {
-  return request({
+  return await request({
     url: apiPrefix + "/trigger",
     method: "post",
     params: { id, stepId }
@@ -68,7 +68,7 @@ export function Trigger(id: any, stepId?: string) {
 }
 
 export function Cancel(historyId: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/cancel",
     method: "post",
     params: { historyId }
@@ -76,7 +76,7 @@ export function Cancel(historyId: any) {
 }
 
 export async function GetFiles(pipelineId: number) {
-  return request({
+  return await request({
     url: historyApiPrefix + "/files",
     method: "post",
     params: { pipelineId }

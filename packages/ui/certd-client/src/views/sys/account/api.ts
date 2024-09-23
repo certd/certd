@@ -1,8 +1,24 @@
 import { request } from "/@/api/service";
 
-export function PreBindUser(userId: number) {
-  request({
+export async function PreBindUser(userId: number) {
+  await request({
     url: "/sys/account/preBindUser",
+    method: "post",
+    data: { userId }
+  });
+}
+
+export async function BindUser(userId: number) {
+  await request({
+    url: "/sys/account/bindUser",
+    method: "post",
+    data: { userId }
+  });
+}
+
+export async function UnbindUser(userId: number) {
+  await request({
+    url: "/sys/account/unbindUser",
     method: "post",
     data: { userId }
   });

@@ -3,7 +3,7 @@ import { request } from "/src/api/service";
 const apiPrefix = "/pi/history";
 
 export function GetList(query: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/page",
     method: "post",
     data: query
@@ -11,7 +11,7 @@ export function GetList(query: any) {
 }
 
 export function AddObj(obj: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/add",
     method: "post",
     data: obj
@@ -19,7 +19,7 @@ export function AddObj(obj: any) {
 }
 
 export function UpdateObj(obj: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/update",
     method: "post",
     data: obj
@@ -27,7 +27,7 @@ export function UpdateObj(obj: any) {
 }
 
 export function DelObj(id: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/delete",
     method: "post",
     params: { id }
@@ -35,7 +35,7 @@ export function DelObj(id: any) {
 }
 
 export function GetObj(id: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/info",
     method: "post",
     params: { id }
@@ -43,7 +43,7 @@ export function GetObj(id: any) {
 }
 
 export function GetDetail(id: any) {
-  return request({
+  return await request({
     url: apiPrefix + "/detail",
     method: "post",
     params: { id }
@@ -51,7 +51,7 @@ export function GetDetail(id: any) {
 }
 
 export function DeleteBatch(ids: any[]) {
-  return request({
+  return await request({
     url: apiPrefix + "/deleteByIds",
     method: "post",
     data: { ids }

@@ -33,10 +33,11 @@ export class IframeClient {
     window.addEventListener('message', async (event: MessageEvent<IframeMessageData<any>>) => {
       const data = event.data;
       if (data.action) {
-        console.log('收到消息', data);
+        console.log(`收到消息[isSub:${this.isInFrame()}]`, data);
         try {
           const handler = this.handlers[data.action];
           if (handler) {
+            debugger;
             const res = await handler(data);
             if (data.id && data.action !== 'reply') {
               await this.send('reply', res, data.id);
@@ -45,6 +46,7 @@ export class IframeClient {
             throw new Error(`action:${data.action} 未注册处理器`);
           }
         } catch (e: any) {
+          console.error(e);
           await this.send('reply', {}, data.id, 500, e.message);
         }
       }
@@ -77,7 +79,7 @@ export class IframeClient {
     };
 
     return new Promise((resolve, reject) => {
-      const onReply = async (reply: IframeMessageData<R>) => {
+      const onReply = (reply: IframeMessageData<R>) => {
         if (reply.errorCode && reply.errorCode > 0) {
           reject(new IframeException(reply));
           return;
@@ -89,6 +91,7 @@ export class IframeClient {
         onReply,
       };
       try {
+        console.log(`send message[isSub:${this.isInFrame()}]:`, reqMessageData);
         if (!this.iframe) {
           if (!window.parent) {
             reject('当前页面不在 iframe 中');
