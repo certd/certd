@@ -74,6 +74,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         { value: "rsa_2048", label: "RSA 2048" },
         { value: "rsa_3072", label: "RSA 3072" },
         { value: "rsa_4096", label: "RSA 4096" },
+        { value: "rsa_2048_pkcs1", label: "RSA 2048 pkcs1 (旧版)" },
         { value: "ec_256", label: "EC 256" },
         { value: "ec_384", label: "EC 384" },
         // { value: "ec_521", label: "EC 521" },
