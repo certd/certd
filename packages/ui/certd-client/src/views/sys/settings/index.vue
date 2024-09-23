@@ -46,10 +46,12 @@ import { useSettingStore } from "/@/store/modules/settings";
 
 interface FormState {
   registerEnabled: boolean;
+  managerOtherUserPipeline: boolean;
 }
 
 const formState = reactive<Partial<FormState>>({
-  registerEnabled: false
+  registerEnabled: false,
+  managerOtherUserPipeline: false
 });
 
 async function loadSysPublicSettings() {
@@ -61,7 +63,6 @@ async function loadSysPublicSettings() {
 loadSysPublicSettings();
 const settingsStore = useSettingStore();
 const onFinish = async (form: any) => {
-  console.log("Success:", form);
   await api.PublicSettingsSave(form);
   await settingsStore.loadSysSettings();
   notification.success({
