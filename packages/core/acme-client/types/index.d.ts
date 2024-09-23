@@ -155,16 +155,16 @@ export interface EcdsaPublicJwk {
 }
 
 export interface CryptoInterface {
-    createPrivateKey(keySize?: number): Promise<PrivateKeyBuffer>;
-    createPrivateRsaKey(keySize?: number): Promise<PrivateKeyBuffer>;
-    createPrivateEcdsaKey(namedCurve?: 'P-256' | 'P-384' | 'P-521'): Promise<PrivateKeyBuffer>;
+    createPrivateKey(keySize?: number,encodingType?:string): Promise<PrivateKeyBuffer>;
+    createPrivateRsaKey(keySize?: number,encodingType?:string): Promise<PrivateKeyBuffer>;
+    createPrivateEcdsaKey(namedCurve?: 'P-256' | 'P-384' | 'P-521',encodingType?:string): Promise<PrivateKeyBuffer>;
     getPublicKey(keyPem: PrivateKeyBuffer | PrivateKeyString | PublicKeyBuffer | PublicKeyString): PublicKeyBuffer;
     getJwk(keyPem: PrivateKeyBuffer | PrivateKeyString | PublicKeyBuffer | PublicKeyString): RsaPublicJwk | EcdsaPublicJwk;
     splitPemChain(chainPem: CertificateBuffer | CertificateString): string[];
     getPemBodyAsB64u(pem: CertificateBuffer | CertificateString): string;
     readCsrDomains(csrPem: CsrBuffer | CsrString): CertificateDomains;
     readCertificateInfo(certPem: CertificateBuffer | CertificateString): CertificateInfo;
-    createCsr(data: CsrOptions, keyPem?: PrivateKeyBuffer | PrivateKeyString): Promise<[PrivateKeyBuffer, CsrBuffer]>;
+    createCsr(data: CsrOptions, keyPem?: PrivateKeyBuffer | PrivateKeyString,encodingType?:string): Promise<[PrivateKeyBuffer, CsrBuffer]>;
     createAlpnCertificate(authz: Authorization, keyAuthorization: string, keyPem?: PrivateKeyBuffer | PrivateKeyString): Promise<[PrivateKeyBuffer, CertificateBuffer]>;
     isAlpnCertificateAuthorizationValid(certPem: CertificateBuffer | CertificateString, keyAuthorization: string): boolean;
 }

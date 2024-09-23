@@ -32,7 +32,7 @@ exports.directory = {
  */
 
 exports.crypto = require('./crypto');
-// exports.forge = require('./crypto/forge');
+exports.forge = require('./crypto/forge');
 
 /**
  * Axios
