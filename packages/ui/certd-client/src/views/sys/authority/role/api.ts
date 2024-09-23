@@ -46,7 +46,7 @@ export async function GetObj(id: any) {
  * @returns {*}
  * @constructor
  */
-export function getPermissionIds(roleId: any) {
+export async function getPermissionIds(roleId: any) {
   return await request({
     url: apiPrefix + "/getPermissionIds",
     method: "post",
@@ -61,7 +61,7 @@ export function getPermissionIds(roleId: any) {
  * @returns {*}
  * @constructor
  */
-export function DoAuthz(roleId: any, permissionIds: any) {
+export async function DoAuthz(roleId: any, permissionIds: any) {
   return await request({
     url: apiPrefix + "/authz",
     method: "post",
