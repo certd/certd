@@ -40,4 +40,16 @@ export class SysPlusController extends BaseController {
 
     return this.ok(true);
   }
+  @Post('/bindUrl', { summary: 'sys:settings:edit' })
+  async bindUrl(@Body(ALL) body: { url: string }) {
+    const { url } = body;
+
+    const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
+    await this.plusService.bindUrl(installInfo.siteId, url);
+
+    installInfo.bindUrl = url;
+    await this.sysSettingsService.saveSetting(installInfo);
+
+    return this.ok(true);
+  }
 }

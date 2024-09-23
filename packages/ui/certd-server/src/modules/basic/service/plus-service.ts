@@ -97,4 +97,15 @@ export class PlusService {
       throw new Error(message);
     }
   }
+
+  async bindUrl(subjectId: string, url: string) {
+    return await this.request({
+      url: '/activation/subject/urlBind',
+      data: {
+        subjectId,
+        appKey: AppKey,
+        url,
+      },
+    });
+  }
 }

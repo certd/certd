@@ -70,7 +70,7 @@ export const sysResources = [
         title: "账号绑定",
         name: "account",
         meta: {
-          icon: "ion:settings-outline",
+          icon: "ion:golf-outline",
           permission: "sys:settings:view"
         },
         path: "/sys/account",

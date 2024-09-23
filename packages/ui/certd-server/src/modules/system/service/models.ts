@@ -32,6 +32,8 @@ export class SysInstallInfo extends BaseSettings {
   siteId?: string;
   bindUserId?: number;
   bindUrl?: string;
+  accountServerBaseUrl?: string;
+  appKey?: string;
 }
 
 export class SysLicenseInfo extends BaseSettings {

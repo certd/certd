@@ -22,3 +22,18 @@ export async function getInstallInfo(): Promise<SysInstallInfo> {
     method: "get"
   });
 }
+
+export async function getSiteInfo(): Promise<SysInstallInfo> {
+  return await request({
+    url: "/basic/settings/siteInfo",
+    method: "get"
+  });
+}
+
+export async function bindUrl(data): Promise<SysInstallInfo> {
+  return await request({
+    url: "/sys/plus/bindUrl",
+    method: "post",
+    data
+  });
+}

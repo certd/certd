@@ -18,6 +18,7 @@ import dayjs from "dayjs";
 import { message, Modal } from "ant-design-vue";
 import * as api from "./api";
 import { useSettingStore } from "/@/store/modules/settings";
+import { useRouter } from "vue-router";
 
 const props = withDefaults(
   defineProps<{
@@ -90,6 +91,7 @@ const formState = reactive({
   code: ""
 });
 
+const router = useRouter();
 async function doActive() {
   if (!formState.code) {
     message.error("请输入激活码");
@@ -100,7 +102,19 @@ async function doActive() {
     await userStore.reInit();
     Modal.success({
       title: "激活成功",
-      content: `您已成功激活专业版,有效期至：${dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD")}`
+      content: `您已成功激活专业版,有效期至：${dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD")}`,
+      onOk() {
+        if (!(settingStore.installInfo.bindUserId > 0)) {
+          //未绑定账号
+          Modal.confirm({
+            title: "是否绑定袖手账号",
+            content: "绑定账号后，可以避免专业版License丢失，强烈建议绑定",
+            onOk() {
+              router.push("/sys/account");
+            }
+          });
+        }
+      }
     });
   }
 }
@@ -132,7 +146,7 @@ function openUpgrade() {
               <li>可加VIP群，需求优先实现</li>
               <li>证书流水线数量无限制（免费版限制10条）</li>
               <li>免配置发邮件功能</li>
-              <li>FTP上传、cdnfly、宝塔、易盾等部署插件</li>
+              <li>FTP上传、cdnfly、宝塔、易盾、群晖等部署插件</li>
               <li>更多特权敬请期待</li>
             </ul>
           </div>
@@ -144,7 +158,6 @@ function openUpgrade() {
                 <span>站点ID：</span>
                 <fs-copyable class="flex-1" v-model={computedSiteId.value}></fs-copyable>
               </div>
-              <div class="mt-10">注意保存好数据库，暂不支持换绑（默认数据库路径/data/certd/db.sqlite）</div>
               <a-input class="mt-10" v-model:value={formState.code} placeholder={placeholder} />
             </div>
 

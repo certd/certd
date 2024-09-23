@@ -1,12 +1,19 @@
 <template>
   <fs-page class="cd-page-account">
-    <iframe ref="iframeRef" class="account-iframe" src="http://localhost:1017/#/?appKey=z4nXOeTeSnnpUpnmsV"> </iframe>
+    <template #header>
+      <div class="title">
+        站点绑定
+        <span class="sub">管理你安装过的Certd站点，可以通过转移功能避免丢失VIP，强烈建议绑定</span>
+      </div>
+    </template>
+
+    <iframe ref="iframeRef" class="account-iframe" :src="iframeSrcRef"> </iframe>
   </fs-page>
 </template>
 
 <script setup lang="tsx">
 import { IframeClient } from "@certd/lib-iframe";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useUserStore } from "/@/store/modules/user";
 import { useSettingStore } from "/@/store/modules/settings";
 import * as api from "./api";
@@ -15,6 +22,14 @@ const iframeRef = ref();
 
 const userStore = useUserStore();
 const settingStore = useSettingStore();
+
+const iframeSrcRef = computed(() => {
+  if (!settingStore.installInfo.accountServerBaseUrl) {
+    return "";
+  }
+  return `${settingStore.installInfo.accountServerBaseUrl}/#/?appKey=${settingStore.installInfo.appKey}`;
+});
+
 type SubjectInfo = {
   subjectId: string;
   installTime?: number;
