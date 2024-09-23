@@ -8,7 +8,9 @@ import { SysInstallInfo } from '../system/service/models.js';
 export type PreBindUserReq = {
   userId: number;
 };
-
+export type BindUserReq = {
+  userId: number;
+};
 /**
  */
 @Provide()
@@ -33,6 +35,22 @@ export class BasicController extends BaseController {
       },
     });
 
+    return this.ok({});
+  }
+
+  @Post('/bindUser', { summary: 'sys:settings:edit' })
+  public async bindUser(@Body(ALL) body: BindUserReq) {
+    const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
+    installInfo.bindUserId = body.userId;
+    await this.sysSettingsService.saveSetting(installInfo);
+    return this.ok({});
+  }
+
+  @Post('/unbindUser', { summary: 'sys:settings:edit' })
+  public async unbindUser() {
+    const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
+    installInfo.bindUserId = null;
+    await this.sysSettingsService.saveSetting(installInfo);
     return this.ok({});
   }
 }

@@ -30,6 +30,8 @@ export class SysInstallInfo extends BaseSettings {
   static __access__ = 'private';
   installTime: number;
   siteId?: string;
+  bindUserId?: number;
+  bindUrl?: string;
 }
 
 export class SysLicenseInfo extends BaseSettings {
