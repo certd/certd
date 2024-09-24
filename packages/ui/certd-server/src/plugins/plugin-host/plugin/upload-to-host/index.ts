@@ -235,7 +235,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
       handle,
     });
 
-    if (this.script.trim()) {
+    if (this.script?.trim()) {
       this.logger.info('执行脚本命令');
       const scripts = this.script.split('\n');
       await sshClient.exec({
