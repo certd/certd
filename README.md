@@ -62,7 +62,16 @@ https://certd.handsfree.work/
 
 由于证书、授权信息等属于高度敏感数据，请务必私有化部署，保障数据安全
 
-### 1. 安装docker、docker-compose
+### 4.1 宝塔面板一键部署【推荐】
+
+1. 安装宝塔面板，前往 [宝塔面板](https://www.bt.cn/u/CL3JHS) 官网，选择正式版的脚本下载安装
+
+2. 安装后登录宝塔面板，在菜单栏中点击 Docker，首次进入会提示安装Docker服务，点击立即安装，按提示完成安装
+
+3. 安装完成后在应用商店中找到`certd`，点击安装，配置域名等基本信息即可完成安装
+
+### 4.2 自有主机部署
+#### 1. 安装docker、docker-compose
 
 1.1 准备一台云服务器
 * 【阿里云】云服务器2核2G，新老用户同享，99元/年，续费同价！【 [立即购买](https://www.aliyun.com/benefit?scm=20140722.M_10244282._.V_1&source=5176.11533457&userCode=qya11txb )】
@@ -74,7 +83,7 @@ https://certd.handsfree.work/
 https://docs.docker.com/engine/install/   
 选择对应的操作系统，按照官方文档执行命令即可   
 
-### 2. 运行certd
+#### 2. 运行certd
 
 [docker-compose.yaml 下载](https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml)
 
@@ -115,12 +124,13 @@ docker compose up -d
 
 ![](./doc/images/action-build.jpg)
 
-
-### 3. 访问
+#### 3. 访问
 
 http://your_server_ip:7001    
 默认账号密码：admin/123456    
 记得修改密码   
+
+
 
 
 ## 五、 升级
