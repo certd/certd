@@ -121,7 +121,9 @@ export function createAxiosService({ logger }: { logger: Logger }) {
         `请求出错：status:${error.response?.status},statusText:${error.response?.statusText},url:${error.config?.url},method:${error.config?.method}。`
       );
       logger.error("返回数据:", JSON.stringify(error.response?.data));
-
+      if (error.response?.data) {
+        error.message = error.response.data.message || error.response.data.msg || error.response.data.error || error.response.data;
+      }
       if (error instanceof AggregateError) {
         logger.error("AggregateError", error);
       }

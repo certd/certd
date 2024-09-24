@@ -36,7 +36,7 @@ export class SysPlusController extends BaseController {
     }
     const license = res.data.license;
 
-    await this.plusService.updateLicense(siteId, license);
+    await this.plusService.updateLicense(license);
 
     return this.ok(true);
   }

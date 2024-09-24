@@ -57,8 +57,7 @@ export class BasicController extends BaseController {
 
   @Post('/updateLicense', { summary: 'sys:settings:edit' })
   public async updateLicense(@Body(ALL) body: { license: string }) {
-    const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
-    await this.plusService.updateLicense(installInfo.siteId, body.license);
+    await this.plusService.updateLicense(body.license);
     return this.ok(true);
   }
 }
