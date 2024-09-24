@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.25.0](https://github.com/publishlab/node-acme-client/compare/v1.24.4...v1.25.0) (2024-09-24)
+
+### Performance Improvements
+
+* 证书支持旧版RSA，pkcs1 ([3d9c3ec](https://github.com/publishlab/node-acme-client/commit/3d9c3ecb3eb604b2458154f608bde0f01915d116))
+* 支持七牛云 ([8ecc2f9](https://github.com/publishlab/node-acme-client/commit/8ecc2f9446a9ebd11b9bfbffbb6cf7812a043495))
+
 ## [1.24.4](https://github.com/publishlab/node-acme-client/compare/v1.24.3...v1.24.4) (2024-09-09)
 
 **Note:** Version bump only for package @certd/acme-client
