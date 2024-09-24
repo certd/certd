@@ -7,7 +7,7 @@ import { AccessInput, IsAccess } from '@certd/pipeline';
 @IsAccess({
   name: 'jdcloud',
   title: '京东云授权',
-  desc: '目前设置dns解析会覆盖已有的解析配置，慎用',
+  desc: '暂时无法成功申请，还没测试通过',
 })
 export class JDCloudAccess {
   /**
