@@ -1,10 +1,11 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
-import { TencentAccess } from '../../access/index.js';
+import { TencentAccess } from '@certd/plugin-plus';
 import { CertInfo } from '@certd/plugin-cert';
 
 @IsTaskPlugin({
   name: 'DeployCertToTencentCDN',
   title: '部署到腾讯云CDN',
+  icon: 'svg:icon-tencentcloud',
   group: pluginGroups.tencent.key,
   default: {
     strategy: {

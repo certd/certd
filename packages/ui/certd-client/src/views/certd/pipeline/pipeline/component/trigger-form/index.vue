@@ -8,10 +8,12 @@
     @after-open-change="triggerDrawerOnAfterVisibleChange"
   >
     <template #title>
-      编辑触发器
-      <a-button v-if="mode === 'edit'" @click="triggerDelete()">
-        <template #icon><DeleteOutlined /></template>
-      </a-button>
+      <div>
+        编辑触发器
+        <a-button v-if="mode === 'edit'" @click="triggerDelete()">
+          <template #icon><DeleteOutlined /></template>
+        </a-button>
+      </div>
     </template>
     <template v-if="currentTrigger">
       <pi-container>

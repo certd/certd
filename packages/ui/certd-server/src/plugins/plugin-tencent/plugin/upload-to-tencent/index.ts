@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 @IsTaskPlugin({
   name: 'UploadCertToTencent',
   title: '上传证书到腾讯云',
+  icon: 'svg:icon-tencentcloud',
   desc: '上传成功后输出：tencentCertId',
   group: pluginGroups.tencent.key,
   default: {

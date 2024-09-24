@@ -8,6 +8,7 @@ import { IContext } from "../core/index.js";
 import { ILogger, logger } from "../utils/index.js";
 import { HttpClient } from "../utils/util.request";
 import { utils } from "../utils/index.js";
+import dayjs from "dayjs";
 export enum ContextScope {
   global,
   pipeline,
@@ -25,6 +26,7 @@ export type TaskInputDefine = FormItemProps;
 export type PluginDefine = Registrable & {
   default?: any;
   group?: string;
+  icon?: string;
   input?: {
     [key: string]: TaskInputDefine;
   };
@@ -138,6 +140,13 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
   }
 
   abstract execute(): Promise<void>;
+
+  appendTimeSuffix(name?: string) {
+    if (name == null) {
+      name = "certd";
+    }
+    return name + "_" + dayjs().format("YYYYMMDDHHmmss");
+  }
 }
 
 export type OutputVO = {

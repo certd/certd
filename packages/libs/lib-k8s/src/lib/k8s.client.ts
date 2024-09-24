@@ -1,6 +1,7 @@
-import { KubeConfig, CoreV1Api, V1Secret, NetworkingV1Api, V1Ingress } from '@kubernetes/client-node';
+import { CoreV1Api, KubeConfig, NetworkingV1Api, V1Ingress, V1Secret } from '@kubernetes/client-node';
 import dns from 'dns';
 import { ILogger } from '@certd/pipeline';
+import _ from 'lodash-es';
 
 export type K8sClientOpts = {
   kubeConfigStr: string;
@@ -74,7 +75,7 @@ export class K8sClient {
   async createSecret(opts: { namespace: string; body: V1Secret }) {
     const namespace = opts.namespace || 'default';
     const created = await this.client.createNamespacedSecret(namespace, opts.body);
-    this.logger.info('new secrets:', created.body);
+    this.logger.info('new secrets:', opts.body);
     return created.body;
   }
 
@@ -93,8 +94,11 @@ export class K8sClient {
     if (secretName == null) {
       throw new Error('secretName 不能为空');
     }
-    const res = await this.client.patchNamespacedSecret(secretName, namespace, opts.body);
-    this.logger.info('secret patched:', res.body);
+    this.logger.info('patch secret:', secretName, namespace);
+    const oldSecret = await this.client.readNamespacedSecret(secretName, namespace);
+    const newSecret = _.merge(oldSecret.body, opts.body);
+    const res = await this.client.replaceNamespacedSecret(secretName, namespace, newSecret);
+    this.logger.info('secret updated');
     return res.body;
   }
 
@@ -123,9 +127,12 @@ export class K8sClient {
     if (!ingressName) {
       throw new Error('ingressName 不能为空');
     }
+    this.logger.info('patch ingress:', ingressName, namespace);
     const client = this.kubeconfig.makeApiClient(NetworkingV1Api);
-    const res = await client.patchNamespacedIngress(ingressName, namespace, opts.body);
-    this.logger.info('ingress patched:', res.body);
+    const oldIngress = await client.readNamespacedIngress(ingressName, namespace);
+    const newIngress = _.merge(oldIngress.body, opts.body);
+    const res = await client.replaceNamespacedIngress(ingressName, namespace, newIngress);
+    this.logger.info('ingress patched', opts.body);
     return res;
   }
 }

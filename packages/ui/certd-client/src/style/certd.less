@@ -1,4 +1,4 @@
-.fs-iconify.fs-icon{
+.fs-iconify.fs-icon {
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -11,22 +11,55 @@
   align-items: center;
 }
 
-.cd-icon-button{
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-   cursor: pointer;
+.cd-icon-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 
-.cd-flex{
-    display: flex;
-    justify-content: left;
-    align-items: center;
+.cd-flex {
+  display: flex;
+  justify-content: left;
+  align-items: center;
 }
 
-.cd-flex-inline{
+.cd-flex-inline {
   display: inline-flex;
   justify-content: left;
   align-items: center;
 }
 
+
+.ant-drawer-content {
+  &.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+  }
+}
+
+
+.icon-button {
+  cursor: pointer;
+  font-size: 22px
+}
+
+.ant-drawer {
+  .ant-drawer-header-title {
+    display: flex;
+    align-items: center;
+
+    .ant-drawer-title {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+}

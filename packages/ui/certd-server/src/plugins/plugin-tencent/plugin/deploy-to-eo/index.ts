@@ -1,9 +1,10 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
-import { TencentAccess } from '../../access/index.js';
+import { TencentAccess } from '@certd/plugin-plus';
 
 @IsTaskPlugin({
   name: 'DeployCertToTencentEO',
   title: '部署到腾讯云EO',
+  icon: 'svg:icon-tencentcloud',
   desc: '腾讯云边缘安全加速平台EO，必须配置上传证书到腾讯云任务',
   group: pluginGroups.tencent.key,
   default: {

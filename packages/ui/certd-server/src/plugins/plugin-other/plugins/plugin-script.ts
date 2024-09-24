@@ -9,6 +9,7 @@ export type CustomScriptContext = {
 @IsTaskPlugin({
   name: 'CustomScript',
   title: '自定义js脚本',
+  icon:"ri:javascript-line",
   desc: '测试',
   group: pluginGroups.other.key,
   default: {

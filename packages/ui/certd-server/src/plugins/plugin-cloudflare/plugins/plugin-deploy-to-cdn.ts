@@ -4,6 +4,7 @@ import { CertInfo, CertReader } from '@certd/plugin-cert';
 @IsTaskPlugin({
   name: 'CloudflareDeployToCDN',
   title: '部署证书到CF CDN',
+  icon: 'simple-icons:cloudflare',
   group: pluginGroups.other.key,
   desc: '暂未实现，不可用',
   default: {

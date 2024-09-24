@@ -1,0 +1,29 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 4688792 */
+  src: url('iconfont.svg?t=1726734453480#iconfont') format('svg');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-aliyun:before {
+  content: "\e601";
+}
+
+.icon-tencentcloud:before {
+  content: "\e747";
+}
+
+.icon-dogecloud:before {
+  content: "\e605";
+}
+
+.icon-bt:before {
+  content: "\e600";
+}
+

@@ -247,7 +247,7 @@ export class SshClient {
             script = script.split('\n');
           }
           script = script as Array<string>;
-          script = script.join('&& ');
+          script = script.join(' && ');
         } else {
           if (_.isArray(script)) {
             script = script as Array<string>;

@@ -7,6 +7,7 @@ import path from 'path';
 @IsTaskPlugin({
   name: 'CopyToLocal',
   title: '复制到本机',
+  icon: 'solar:copy-bold-duotone',
   group: pluginGroups.host.key,
   default: {
     strategy: {

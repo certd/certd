@@ -7,6 +7,7 @@ import { SshAccess } from '../../access/index.js';
 @IsTaskPlugin({
   name: 'uploadCertToHost',
   title: '上传证书到主机',
+  icon:"line-md:uploading-loop",
   group: pluginGroups.host.key,
   desc: '也支持复制证书到本机',
   default: {

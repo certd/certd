@@ -33,9 +33,11 @@ export class HttpError extends Error {
     delete error.response;
     delete error.config;
     delete error.request;
-    logger.error(error);
+    // logger.error(error);
   }
 }
+
+export const HttpCommonError = HttpError;
 /**
  * @description 创建请求实例
  */
@@ -118,7 +120,7 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       logger.error("返回数据:", JSON.stringify(error.response?.data));
 
       if (error instanceof AggregateError) {
-        logger.error(error);
+        logger.error("AggregateError", error);
       }
       const err = new HttpError(error);
       return Promise.reject(err);
