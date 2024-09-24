@@ -3,7 +3,7 @@
     "description": "Simple and unopinionated ACME client",
     "private": false,
     "author": "nmorsman",
-    "version": "1.25.2",
+    "version": "1.25.3",
     "main": "src/index.js",
     "types": "types/index.d.ts",
     "license": "MIT",
