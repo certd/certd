@@ -18,7 +18,6 @@
     "up-mw-deps": "npx midway-version -u -w",
     "heap": "clinic heapprofiler   -- node ./bootstrap.js",
     "flame": "clinic flame   -- node ./bootstrap.js"
-
   },
   "dependencies": {
     "@alicloud/cs20151215": "^3.0.3",
@@ -65,6 +64,7 @@
     "nanoid": "^4.0.0",
     "nodemailer": "^6.9.3",
     "pg": "^8.12.0",
+    "qiniu": "^7.12.0",
     "querystring": "^0.2.1",
     "reflect-metadata": "^0.1.13",
     "ssh2": "^1.15.0",

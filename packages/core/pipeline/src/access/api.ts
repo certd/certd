@@ -12,7 +12,7 @@ export type AccessDefine = Registrable & {
   };
 };
 export interface IAccessService {
-  getById(id: any): Promise<any>;
+  getById<T = any>(id: any): Promise<T>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

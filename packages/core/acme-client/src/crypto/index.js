@@ -201,9 +201,6 @@ async function getWebCryptoKeyPair(keyPem) {
     }
 
     /* Decode PEM and import into CryptoKeyPair */
-    if (encodingType === 'pkcs1') {
-        encodingType = 'pkcs8';
-    }
     const privateKeyDec = x509.PemConverter.decodeFirst(keyPem.toString());
     const privateKey = await crypto.webcrypto.subtle.importKey('pkcs8', privateKeyDec, sigalg, true, ['sign']);
     const publicKey = await crypto.webcrypto.subtle.importKey('jwk', jwk, sigalg, true, ['verify']);

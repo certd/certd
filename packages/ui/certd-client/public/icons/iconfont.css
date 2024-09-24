@@ -1,6 +1,6 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4688792 */
-  src: url('iconfont.svg?t=1726734453480#iconfont') format('svg');
+  src: url('iconfont.svg?t=1727153857332#iconfont') format('svg');
 }
 
 .iconfont {
@@ -9,6 +9,10 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-qiniuyun:before {
+  content: "\e603";
 }
 
 .icon-aliyun:before {
