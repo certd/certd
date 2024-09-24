@@ -70,7 +70,7 @@ https://certd.handsfree.work/
 
 3. 安装完成后在应用商店中找到`certd`，点击安装，配置域名等基本信息即可完成安装
 
-### 4.2 自有主机部署
+### 4.2 Docker部署
 #### 1. 安装docker、docker-compose
 
 1.1 准备一台云服务器
