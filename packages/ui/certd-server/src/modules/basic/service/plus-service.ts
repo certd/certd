@@ -1,9 +1,7 @@
-import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
+import { Config, Init, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { SysSettingsService } from '../../system/service/sys-settings-service.js';
-import { SysInstallInfo } from '../../system/service/models.js';
-import { AppKey, getPlusInfo, isPlus } from '@certd/pipeline';
-import * as crypto from 'crypto';
-import { request } from '../../../utils/http.js';
+import { SysInstallInfo, SysLicenseInfo } from '../../system/service/models.js';
+import { AppKey, http, PlusRequestService, verify } from '@certd/pipeline';
 import { logger } from '../../../utils/logger.js';
 
 @Provide()
@@ -14,66 +12,69 @@ export class PlusService {
   @Config('plus.server.baseUrl')
   plusServerBaseUrl;
 
-  async requestWithoutSign(config: any): Promise<any> {
-    config.baseURL = this.plusServerBaseUrl;
-    return await request(config);
-  }
+  plusRequestService: PlusRequestService;
 
-  async request(config: any) {
-    if (!isPlus()) {
-      throw new Error('您还不是专业版，请先激活专业版');
-    }
-    const { url, data } = config;
-    const timestamps = Date.now();
+  @Init()
+  async init() {
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
-    const sign = await this.sign(data, timestamps);
-
-    const requestHeader = {
+    this.plusRequestService = new PlusRequestService({
+      plusServerBaseUrl: this.plusServerBaseUrl,
+      http: http,
+      logger,
       subjectId: installInfo.siteId,
-      appKey: AppKey,
-      sign: sign,
-      timestamps: timestamps,
-    };
-    let requestHeaderStr = JSON.stringify(requestHeader);
-    requestHeaderStr = Buffer.from(requestHeaderStr).toString('base64');
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-Plus-Subject': requestHeaderStr,
-    };
-    return await request({
-      url: url,
-      baseURL: this.plusServerBaseUrl,
-      method: 'POST',
-      data: data,
-      headers: headers,
     });
   }
 
-  async sign(body: any, timestamps: number) {
-    //content := fmt.Sprintf("%s.%d.%s", in.Params, in.Timestamps, secret)
-    const params = JSON.stringify(body);
-    const plusInfo = getPlusInfo();
-    const secret = plusInfo.secret;
-    if (!secret) {
-      const randomTime = Math.floor(Math.random() * 3 * 60 * 1000 + 30 * 1000);
-      setTimeout(() => {
-        process.exit();
-      }, randomTime);
-      return 'xxxxx';
-    }
-    const content = `${params}.${timestamps}.${secret}`;
-
-    // sha256
-    const sign = crypto.createHash('sha256').update(content).digest('base64');
-    logger.info('content:', content, 'sign:', sign);
-    return sign;
+  async requestWithoutSign(config: any) {
+    return await this.plusRequestService.requestWithoutSign(config);
+  }
+  async request(config: any) {
+    return await this.plusRequestService.request(config);
   }
 
   async active(formData: { code: any; appKey: string; subjectId: string }) {
-    return await this.requestWithoutSign({
+    return await this.plusRequestService.requestWithoutSign({
       url: '/activation/active',
       method: 'post',
       data: formData,
+    });
+  }
+
+  async updateLicense(license: string) {
+    let licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
+    if (!licenseInfo) {
+      licenseInfo = new SysLicenseInfo();
+    }
+    licenseInfo.license = license;
+    await this.sysSettingsService.saveSetting(licenseInfo);
+    await this.verify();
+  }
+  async verify() {
+    const licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
+    const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
+
+    const verifyRes = await verify({
+      subjectId: installInfo.siteId,
+      license: licenseInfo.license,
+      plusRequestService: this.plusRequestService,
+      bindUrl: installInfo?.bindUrl,
+    });
+
+    if (!verifyRes.isPlus) {
+      const message = verifyRes.message || '授权码校验失败';
+      logger.error(message);
+      throw new Error(message);
+    }
+  }
+
+  async bindUrl(subjectId: string, url: string) {
+    return await this.plusRequestService.request({
+      url: '/activation/subject/urlBind',
+      data: {
+        subjectId,
+        appKey: AppKey,
+        url,
+      },
     });
   }
 }

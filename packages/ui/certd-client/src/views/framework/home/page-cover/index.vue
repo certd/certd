@@ -2,7 +2,7 @@
   <div class="d2-page-cover">
     <div class="d2-page-cover__title">
       <div class="title-line">
-        <img width="50" :src="envRef.LOGO_PATH" />
+        <img width="50" :src="envRef.LOGO" />
         {{ envRef.TITLE }} v{{ version }}
       </div>
     </div>

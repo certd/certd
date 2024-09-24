@@ -3,9 +3,10 @@ import { logger } from '../../utils/logger.js';
 import { UserService } from '../authority/service/user-service.js';
 import { SysSettingsService } from '../system/service/sys-settings-service.js';
 import { nanoid } from 'nanoid';
-import { SysInstallInfo, SysLicenseInfo, SysPrivateSettings } from '../system/service/models.js';
-import { verify } from '@certd/pipeline';
+import { SysInstallInfo, SysPrivateSettings } from '../system/service/models.js';
 import crypto from 'crypto';
+import { PlusService } from '../basic/service/plus-service.js';
+
 export type InstallInfo = {
   installTime: number;
   instanceId?: string;
@@ -22,6 +23,8 @@ export class AutoInitSite {
 
   @Inject()
   sysSettingsService: SysSettingsService;
+  @Inject()
+  plusService: PlusService;
 
   @Init()
   async init() {
@@ -52,12 +55,7 @@ export class AutoInitSite {
     }
 
     // 授权许可
-    const licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
-    const req = {
-      subjectId: installInfo.siteId,
-      license: licenseInfo.license,
-    };
-    await verify(req);
+    await this.plusService.verify();
 
     logger.info('初始化站点完成');
   }

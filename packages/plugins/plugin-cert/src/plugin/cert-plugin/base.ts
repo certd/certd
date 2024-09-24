@@ -175,6 +175,7 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
     const zip = new JSZip();
     zip.file("cert.crt", cert.crt);
     zip.file("cert.key", cert.key);
+    zip.file("intermediate.crt", cert.ic);
     if (cert.pfx) {
       zip.file("cert.pfx", Buffer.from(cert.pfx, "base64"));
     }

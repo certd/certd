@@ -1,37 +1,25 @@
 // @ts-ignore
 import _ from "lodash-es";
-export function getEnvValue(key: string) {
-  // @ts-ignore
-  return import.meta.env["VITE_APP_" + key];
-}
 
 export class EnvConfig {
-  API: string;
-  MODE: string;
-  STORAGE: string;
-  TITLE: string;
-  SLOGAN: string;
-  COPYRIGHT_YEAR: string;
-  COPYRIGHT_NAME: string;
-  COPYRIGHT_URL: string;
-  LOGO_PATH: string;
-  PM_ENABLED: string;
-  ICP_NO: string;
-  constructor() {
-    this.init();
-  }
+  MODE: string = import.meta.env.MODE;
+  API: string = import.meta.env.VITE_APP_API;
+  STORAGE: string = import.meta.env.VITE_APP_STORAGE;
+  TITLE: string = import.meta.env.VITE_APP_TITLE;
+  SLOGAN: string = import.meta.env.VITE_APP_SLOGAN;
+  COPYRIGHT_YEAR: string = import.meta.env.VITE_APP_COPYRIGHT_YEAR;
+  COPYRIGHT_NAME: string = import.meta.env.VITE_APP_COPYRIGHT_NAME;
+  COPYRIGHT_URL: string = import.meta.env.VITE_APP_COPYRIGHT_URL;
+  LOGO: string = import.meta.env.VITE_APP_LOGO;
+  PM_ENABLED: string = import.meta.env.VITE_APP_PM_ENABLED;
+  ICP_NO: string = import.meta.env.VITE_APP_ICP_NO;
 
-  init() {
-    // @ts-ignore
-    _.forEach(import.meta.env, (value, key) => {
-      if (key.startsWith("VITE_APP")) {
-        key = key.replace("VITE_APP_", "");
-        // @ts-ignore
-        this[key] = value;
+  init(env: any) {
+    for (const key in this) {
+      if (this.hasOwnProperty(key)) {
+        this[key] = env[key];
       }
-    });
-    // @ts-ignore
-    this.MODE = import.meta.env.MODE;
+    }
   }
 
   get(key: string, defaultValue: string) {

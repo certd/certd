@@ -84,7 +84,8 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
               vModel: "modelValue",
               placeholder: "0 0 4 * * *"
             },
-            helper: "点击上面的按钮，选择每天几点几分定时执行, 例如：0 0 4 * * *，每天凌晨4点0分0秒触发\n建议设置为每天触发一次，证书未到期之前任务会跳过，不会重复执行",
+            helper:
+              "点击上面的按钮，选择每天几点几分定时执行,后面的分秒都要选择0。\n例如：0 0 4 * * *，每天凌晨4点0分0秒触发\n建议设置为每天触发一次，证书未到期之前任务会跳过，不会重复执行",
             order: 100
           }
         },

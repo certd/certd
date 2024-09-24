@@ -65,6 +65,16 @@ export const sysResources = [
         },
         path: "/sys/settings",
         component: "/sys/settings/index.vue"
+      },
+      {
+        title: "账号绑定",
+        name: "account",
+        meta: {
+          icon: "ion:golf-outline",
+          permission: "sys:settings:view"
+        },
+        path: "/sys/account",
+        component: "/sys/account/index.vue"
       }
     ]
   }

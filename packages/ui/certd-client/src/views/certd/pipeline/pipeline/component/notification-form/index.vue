@@ -8,10 +8,12 @@
     @after-open-change="notificationDrawerOnAfterVisibleChange"
   >
     <template #title>
-      编辑通知
-      <a-button v-if="mode === 'edit'" @click="notificationDelete()">
-        <template #icon><DeleteOutlined /></template>
-      </a-button>
+      <div>
+        编辑通知
+        <a-button v-if="mode === 'edit'" @click="notificationDelete()">
+          <template #icon><DeleteOutlined /></template>
+        </a-button>
+      </div>
     </template>
     <template v-if="currentNotification">
       <pi-container>

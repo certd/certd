@@ -74,6 +74,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         { value: "rsa_2048", label: "RSA 2048" },
         { value: "rsa_3072", label: "RSA 3072" },
         { value: "rsa_4096", label: "RSA 4096" },
+        { value: "rsa_2048_pkcs1", label: "RSA 2048 pkcs1 (旧版)" },
         { value: "ec_256", label: "EC 256" },
         { value: "ec_384", label: "EC 384" },
         // { value: "ec_521", label: "EC 521" },
@@ -195,8 +196,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       const certInfo = this.formatCerts(cert);
       return new CertReader(certInfo);
     } catch (e: any) {
-      const message: string = e.message;
-      if (message.indexOf("redundant with a wildcard domain in the same request") >= 0) {
+      const message: string = e?.message;
+      if (message != null && message.indexOf("redundant with a wildcard domain in the same request") >= 0) {
         this.logger.error(e);
         throw new Error(`通配符域名已经包含了普通域名，请删除其中一个（${message}）`);
       }

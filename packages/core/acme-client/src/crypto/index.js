@@ -67,11 +67,11 @@ function getKeyInfo(keyPem) {
  * ```
  */
 
-async function createPrivateRsaKey(modulusLength = 2048) {
+async function createPrivateRsaKey(modulusLength = 2048, encodingType = 'pkcs8') {
     const pair = await generateKeyPair('rsa', {
         modulusLength,
         privateKeyEncoding: {
-            type: 'pkcs8',
+            type: encodingType,
             format: 'pem',
         },
     });
@@ -106,11 +106,11 @@ exports.createPrivateKey = createPrivateRsaKey;
  * ```
  */
 
-exports.createPrivateEcdsaKey = async (namedCurve = 'P-256') => {
+exports.createPrivateEcdsaKey = async (namedCurve = 'P-256', encodingType = 'pkcs8') => {
     const pair = await generateKeyPair('ec', {
         namedCurve,
         privateKeyEncoding: {
-            type: 'pkcs8',
+            type: encodingType,
             format: 'pem',
         },
     });

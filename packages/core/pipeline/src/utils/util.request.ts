@@ -1,7 +1,9 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { logger } from "./util.log.js";
 import { Logger } from "log4js";
-import { ProxyAgent, ProxyAgentOptions } from "proxy-agent";
+import { HttpProxyAgent } from "http-proxy-agent";
+import { HttpsProxyAgent } from "https-proxy-agent";
+import nodeHttp from "http";
 export class HttpError extends Error {
   status?: number;
   statusText?: string;
@@ -55,9 +57,10 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       }
       let agents = defaultAgents;
       if (config.skipSslVerify) {
-        agents = createAgent({ rejectUnauthorized: config.rejectUnauthorized });
+        logger.info("跳过SSL验证");
+        agents = createAgent({ rejectUnauthorized: false } as any);
       }
-
+      delete config.skipSslVerify;
       config.httpsAgent = agents.httpsAgent;
       config.httpAgent = agents.httpAgent;
 
@@ -118,7 +121,9 @@ export function createAxiosService({ logger }: { logger: Logger }) {
         `请求出错：status:${error.response?.status},statusText:${error.response?.statusText},url:${error.config?.url},method:${error.config?.method}。`
       );
       logger.error("返回数据:", JSON.stringify(error.response?.data));
-
+      if (error.response?.data) {
+        error.message = error.response.data.message || error.response.data.msg || error.response.data.error || error.response.data;
+      }
       if (error instanceof AggregateError) {
         logger.error("AggregateError", error);
       }
@@ -138,10 +143,19 @@ export type HttpClient = {
   request<D = any, R = any>(config: HttpRequestConfig<D>): Promise<HttpClientResponse<R>>;
 };
 
-export function createAgent(opts: ProxyAgentOptions = {}) {
-  const httpAgent = new ProxyAgent(opts);
+export function createAgent(opts: nodeHttp.AgentOptions = {}) {
+  let httpAgent, httpsAgent;
+  const httpProxy = process.env.HTTP_PROXY || process.env.http_proxy;
+  if (httpProxy) {
+    httpAgent = new HttpProxyAgent(httpProxy, opts as any);
+  }
+  const httpsProxy = process.env.HTTPS_PROXY || process.env.https_proxy;
+  if (httpsProxy) {
+    httpsAgent = new HttpsProxyAgent(httpsProxy, opts as any);
+  }
+
   return {
     httpAgent,
-    httpsAgent: httpAgent,
+    httpsAgent,
   };
 }

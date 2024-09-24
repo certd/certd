@@ -1,5 +1,5 @@
 <template>
-  <div class="main">
+  <div class="main login-page">
     <a-form
       ref="formRef"
       class="user-layout-login"
@@ -207,59 +207,63 @@ export default defineComponent({
 
 <style lang="less">
 @import "../../../style/theme/index.less";
-.user-layout-login {
-  label {
-    font-size: 14px;
-  }
+.login-page.main {
+  //margin: 20px !important;
+  margin-bottom: 100px;
+  .user-layout-login {
+    label {
+      font-size: 14px;
+    }
 
-  .login-title {
-    color: @primary-color;
-    font-size: 18px;
-    text-align: center;
-    margin: 20px;
-  }
-  .getCaptcha {
-    display: block;
-    width: 100%;
-    height: 40px;
-  }
+    .login-title {
+      color: @primary-color;
+      font-size: 18px;
+      text-align: center;
+      margin: 20px;
+    }
+    .getCaptcha {
+      display: block;
+      width: 100%;
+      height: 40px;
+    }
 
-  .forge-password {
-    font-size: 14px;
-  }
+    .forge-password {
+      font-size: 14px;
+    }
 
-  button.login-button {
-    padding: 0 15px;
-    font-size: 16px;
-    height: 40px;
-    width: 100%;
-  }
+    button.login-button {
+      padding: 0 15px;
+      font-size: 16px;
+      height: 40px;
+      width: 100%;
+    }
 
-  .user-login-other {
-    text-align: left;
-    margin-top: 30px;
-    margin-bottom: 30px;
-    line-height: 22px;
+    .user-login-other {
+      text-align: left;
+      margin-top: 30px;
+      margin-bottom: 30px;
+      line-height: 22px;
 
-    .item-icon {
-      font-size: 24px;
-      color: rgba(0, 0, 0, 0.2);
-      margin-left: 16px;
-      vertical-align: middle;
-      cursor: pointer;
-      transition: color 0.3s;
+      .item-icon {
+        font-size: 24px;
+        color: rgba(0, 0, 0, 0.2);
+        margin-left: 16px;
+        vertical-align: middle;
+        cursor: pointer;
+        transition: color 0.3s;
 
-      &:hover {
-        color: @primary-color;
+        &:hover {
+          color: @primary-color;
+        }
+      }
+
+      .register {
+        float: right;
       }
     }
-
-    .register {
-      float: right;
+    .iconify {
+      color: rgba(0, 0, 0, 0.45);
     }
-  }
-  .iconify {
-    color: rgba(0, 0, 0, 0.45);
   }
 }
 </style>

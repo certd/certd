@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "9612999",
+      "name": "qiniuyun",
+      "font_class": "qiniuyun",
+      "unicode": "e603",
+      "unicode_decimal": 58883
+    },
+    {
       "icon_id": "26492886",
       "name": "aliyun",
       "font_class": "aliyun",

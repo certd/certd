@@ -21,17 +21,17 @@ gcloud beta publicca external-account-keys create
 
 ```shell
 Created an external account key
-[b64MacKey: xxxxxxxxxxxxx
-keyId: xxxxxxxxx]
+[b64MacKey: xxxxxxxxxxxxxxxx
+keyId: xxxxxxxxxxxxx]
 ```
-记录以上信息备用
+记录以上信息备用（注意keyId是不带中括号的）
 
 
 ## 3、 创建证书流水线
 选择证书提供商为google， 开启使用代理
 
 ## 4、 将key信息作为EAB授权信息
-google证书需要EAB授权， 使用第二步中的 keyId 和 b64MacKey 信息创建一条EAB授权记录      
-
+google证书需要EAB授权， 使用第二步中的 keyId 和 b64MacKey 信息创建一条EAB授权记录         
+注意：keyId没有`]`结尾，不要把`]`也复制了
 ## 5、 其他就跟正常申请证书一样了
 

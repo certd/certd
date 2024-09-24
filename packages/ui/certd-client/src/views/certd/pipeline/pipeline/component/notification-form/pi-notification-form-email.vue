@@ -8,8 +8,10 @@
         component: {
           name: 'a-select',
           vModel: 'value',
-          mode: 'tags'
+          mode: 'tags',
+          open: false
         },
+        helper: '输入你的收件邮箱地址，支持多个邮箱',
         rules: [{ required: true, message: '此项必填' }]
       }"
     />

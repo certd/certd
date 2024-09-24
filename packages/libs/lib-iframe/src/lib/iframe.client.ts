@@ -1,31 +1,63 @@
 import { nanoid } from 'nanoid';
 
-export type IframeMessageData = {
+export type IframeMessageData<T> = {
   action: string;
   id: string;
-  data: any;
+  data?: T;
   replyId?: string;
+  errorCode?: number; //0为成功
+  message?: string;
 };
 
-export type IframeMessageReq = {
-  req: IframeMessageData;
-  onReply: (data: IframeMessageData) => void;
+export type IframeMessageReq<T = any, R = any> = {
+  req: IframeMessageData<T>;
+  onReply: (data: IframeMessageData<R>) => void;
 };
+
+export class IframeException extends Error {
+  code?: number = 0;
+  constructor(data: IframeMessageData<any>) {
+    super(data.message);
+    this.code = data.errorCode;
+  }
+}
 
 export class IframeClient {
-  messageBucket: Record<string, IframeMessageReq> = {};
+  requestQueue: Record<string, IframeMessageReq> = {};
   //当前客户端是否是父级页面
   iframe?: HTMLIFrameElement;
-  constructor(iframe?: HTMLIFrameElement) {
+  onError?: any;
+
+  handlers: Record<string, (data: IframeMessageData<any>) => Promise<void>> = {};
+  constructor(iframe?: HTMLIFrameElement, onError?: (e: any) => void) {
     this.iframe = iframe;
-    window.addEventListener('message', (event: MessageEvent<IframeMessageData>) => {
+    this.onError = onError;
+    window.addEventListener('message', async (event: MessageEvent<IframeMessageData<any>>) => {
       const data = event.data;
-      if (data.replyId) {
-        const req = this.messageBucket[data.replyId];
-        if (req) {
-          req.onReply(data);
-          delete this.messageBucket[data.replyId];
+      if (data.action) {
+        console.log(`收到消息[isSub:${this.isInFrame()}]`, data);
+        try {
+          const handler = this.handlers[data.action];
+          if (handler) {
+            const res = await handler(data);
+            if (data.id && data.action !== 'reply') {
+              await this.send('reply', res, data.id);
+            }
+          } else {
+            throw new Error(`action:${data.action} 未注册处理器，可能版本过低`);
+          }
+        } catch (e: any) {
+          console.error(e);
+          await this.send('reply', {}, data.id, 500, e.message);
         }
+      }
+    });
+
+    this.register('reply', async data => {
+      const req = this.requestQueue[data.replyId!];
+      if (req) {
+        req.onReply(data);
+        delete this.requestQueue[data.replyId!];
       }
     });
   }
@@ -33,23 +65,45 @@ export class IframeClient {
     return window.self !== window.top;
   }
 
-  async send(action: string, data?: any, replyId?: string) {
-    const reqMessageData: IframeMessageData = {
+  register<T = any>(action: string, handler: (data: IframeMessageData<T>) => Promise<void>) {
+    this.handlers[action] = handler;
+  }
+
+  async send<R = any, T = any>(action: string, data?: T, replyId?: string, errorCode?: number, message?: string): Promise<IframeMessageData<R>> {
+    try {
+      return await this.doSend<R, T>(action, data, replyId, errorCode, message);
+    } catch (e) {
+      if (this.onError) {
+        this.onError(e);
+      }
+      throw e;
+    }
+  }
+
+  async doSend<R = any, T = any>(action: string, data?: T, replyId?: string, errorCode?: number, message?: string): Promise<IframeMessageData<R>> {
+    const reqMessageData: IframeMessageData<T> = {
       id: nanoid(),
       action,
       data,
       replyId,
+      errorCode,
+      message,
     };
 
     return new Promise((resolve, reject) => {
-      const onReply = async (reply: IframeMessageData) => {
+      const onReply = (reply: IframeMessageData<R>) => {
+        if (reply.errorCode && reply.errorCode > 0) {
+          reject(new IframeException(reply));
+          return;
+        }
         resolve(reply);
       };
-      this.messageBucket[reqMessageData.id] = {
+      this.requestQueue[reqMessageData.id] = {
         req: reqMessageData,
         onReply,
       };
       try {
+        console.log(`send message[isSub:${this.isInFrame()}]:`, reqMessageData);
         if (!this.iframe) {
           if (!window.parent) {
             reject('当前页面不在 iframe 中');

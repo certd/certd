@@ -8,6 +8,7 @@ import path from 'path';
   name: 'CopyToLocal',
   title: '复制到本机',
   icon: 'solar:copy-bold-duotone',
+  desc: '实际上是复制证书到docker容器内的某个路径，需要做目录映射到宿主机',
   group: pluginGroups.host.key,
   default: {
     strategy: {
@@ -18,7 +19,7 @@ import path from 'path';
 export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: '证书保存路径',
-    helper: '需要有写入权限，路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.pem',
+    helper: '路径要包含文件名，文件名不能用*?!等特殊符号' + '\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.pem',
     component: {
       placeholder: './tmp/cert.pem',
     },
@@ -26,7 +27,7 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
   crtPath!: string;
   @TaskInput({
     title: '私钥保存路径',
-    helper: '需要有写入权限，路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.key',
+    helper: '路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.key',
     component: {
       placeholder: './tmp/cert.key',
     },
@@ -35,7 +36,7 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: 'PFX证书保存路径',
-    helper: '需要有写入权限，路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.pfx',
+    helper: '用于IIS证书部署，路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.pfx',
     component: {
       placeholder: './tmp/cert.pfx',
     },
@@ -45,7 +46,7 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: 'DER证书保存路径',
     helper:
-      '需要有写入权限，路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.der\n.der和.cer是相同的东西，改个后缀名即可',
+      '用户Apache证书部署，路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.der\n.der和.cer是相同的东西，改个后缀名即可',
     component: {
       placeholder: './tmp/cert.der 或 ./tmp/cert.cer',
     },
@@ -124,7 +125,9 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
         this.hostDerPath = derPath;
       }
       this.logger.info('请注意，如果使用的是相对路径，那么文件就在你的数据库同级目录下，默认是/data/certd/下面');
-      this.logger.info('请注意，如果使用的是绝对路径，文件在容器内的目录下，你需要给容器做目录映射才能复制到宿主机');
+      this.logger.info(
+        '请注意，如果使用的是绝对路径，文件在容器内的目录下，你需要给容器做目录映射才能复制到宿主机，需要在docker-compose.yaml中配置主机目录映射： volumes: /你宿主机的路径:/任务配置的证书路径'
+      );
     };
 
     await certReader.readCertFile({ logger: this.logger, handle });

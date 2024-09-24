@@ -18,13 +18,13 @@
     "up-mw-deps": "npx midway-version -u -w",
     "heap": "clinic heapprofiler   -- node ./bootstrap.js",
     "flame": "clinic flame   -- node ./bootstrap.js"
-
   },
   "dependencies": {
     "@alicloud/cs20151215": "^3.0.3",
     "@alicloud/pop-core": "^1.7.10",
     "@certd/acme-client": "^1.24.4",
     "@certd/lib-huawei": "^1.24.3",
+    "@certd/lib-jdcloud": "^1.24.4",
     "@certd/lib-k8s": "^1.24.4",
     "@certd/midway-flyway-js": "^1.24.4",
     "@certd/pipeline": "^1.24.4",
@@ -65,6 +65,7 @@
     "nanoid": "^4.0.0",
     "nodemailer": "^6.9.3",
     "pg": "^8.12.0",
+    "qiniu": "^7.12.0",
     "querystring": "^0.2.1",
     "reflect-metadata": "^0.1.13",
     "ssh2": "^1.15.0",
@@ -72,7 +73,8 @@
     "svg-captcha": "^1.4.0",
     "syno": "^2.2.0",
     "tencentcloud-sdk-nodejs": "^4.0.44",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@midwayjs/mock": "^3.16.4",

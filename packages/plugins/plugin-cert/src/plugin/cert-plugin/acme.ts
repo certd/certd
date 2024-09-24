@@ -12,6 +12,7 @@ export type CertInfo = {
   crt: string;
   key: string;
   csr: string;
+  ic?: string;
   pfx?: string;
   der?: string;
 };
@@ -243,13 +244,25 @@ export class AcmeService {
     if (privateKeyArr.length > 1) {
       size = parseInt(privateKeyArr[1]);
     }
+
+    let encodingType = "pkcs8";
+    if (privateKeyArr.length > 2) {
+      encodingType = privateKeyArr[2];
+    }
+
     if (type == "ec") {
       const name: any = "P-" + size;
-      privateKey = await acme.crypto.createPrivateEcdsaKey(name);
+      privateKey = await acme.crypto.createPrivateEcdsaKey(name, encodingType);
     } else {
-      privateKey = await acme.crypto.createPrivateRsaKey(size);
+      privateKey = await acme.crypto.createPrivateRsaKey(size, encodingType);
     }
-    const [key, csr] = await acme.crypto.createCsr(
+
+    let createCsr: any = acme.crypto.createCsr;
+    if (encodingType === "pkcs1") {
+      //兼容老版本
+      createCsr = acme.forge.createCsr;
+    }
+    const [key, csr] = await createCsr(
       {
         commonName,
         ...csrInfo,
@@ -257,6 +270,7 @@ export class AcmeService {
       },
       privateKey
     );
+
     if (dnsProvider == null) {
       throw new Error("dnsProvider 不能为空");
     }
@@ -276,8 +290,9 @@ export class AcmeService {
       signal: this.options.signal,
     });
 
+    const crtString = crt.toString();
     const cert: CertInfo = {
-      crt: crt.toString(),
+      crt: crtString,
       key: key.toString(),
       csr: csr.toString(),
     };

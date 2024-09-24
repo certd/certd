@@ -1,14 +1,14 @@
 import { request } from "/src/api/service";
 
 export async function getMineInfo() {
-  return request({
+  return await request({
     url: "/mine/info",
     method: "POST"
   });
 }
 
 export async function changePassword(form: any) {
-  return request({
+  return await request({
     url: "/mine/changePassword",
     method: "POST",
     data: form

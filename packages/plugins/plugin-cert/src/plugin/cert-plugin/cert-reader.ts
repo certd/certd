@@ -6,7 +6,14 @@ import { crypto } from "@certd/acme-client";
 import { ILogger } from "@certd/pipeline";
 import dayjs from "dayjs";
 
-export type CertReaderHandleContext = { reader: CertReader; tmpCrtPath: string; tmpKeyPath: string; tmpPfxPath?: string; tmpDerPath?: string };
+export type CertReaderHandleContext = {
+  reader: CertReader;
+  tmpCrtPath: string;
+  tmpKeyPath: string;
+  tmpPfxPath?: string;
+  tmpDerPath?: string;
+  tmpIcPath?: string;
+};
 export type CertReaderHandle = (ctx: CertReaderHandleContext) => Promise<void>;
 export type HandleOpts = { logger: ILogger; handle: CertReaderHandle };
 export class CertReader {
@@ -14,6 +21,7 @@ export class CertReader {
   crt: string;
   key: string;
   csr: string;
+  ic: string; //中间证书
 
   detail: any;
   expires: number;
@@ -23,9 +31,28 @@ export class CertReader {
     this.key = certInfo.key;
     this.csr = certInfo.csr;
 
+    this.ic = certInfo.ic;
+    if (!this.ic) {
+      this.ic = this.getIc();
+      this.cert.ic = this.ic;
+    }
+
     const { detail, expires } = this.getCrtDetail(this.cert.crt);
     this.detail = detail;
     this.expires = expires.getTime();
+  }
+
+  getIc() {
+    //中间证书ic， 就是crt的第一个 -----END CERTIFICATE----- 之后的内容
+    const endStr = "-----END CERTIFICATE-----";
+    const firstBlockEndIndex = this.crt.indexOf(endStr);
+
+    const start = firstBlockEndIndex + endStr.length + 1;
+    if (this.crt.length <= start) {
+      return "";
+    }
+    const ic = this.crt.substring(start);
+    return ic.trim();
   }
 
   toCertInfo(): CertInfo {
@@ -38,7 +65,7 @@ export class CertReader {
     return { detail, expires };
   }
 
-  saveToFile(type: "crt" | "key" | "pfx" | "der", filepath?: string) {
+  saveToFile(type: "crt" | "key" | "pfx" | "der" | "ic", filepath?: string) {
     if (!this.cert[type]) {
       return;
     }
@@ -52,7 +79,7 @@ export class CertReader {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    if (type === "crt" || type === "key") {
+    if (type === "crt" || type === "key" || type === "ic") {
       fs.writeFileSync(filepath, this.cert[type]);
     } else {
       fs.writeFileSync(filepath, Buffer.from(this.cert[type], "base64"));
@@ -66,8 +93,9 @@ export class CertReader {
     const tmpCrtPath = this.saveToFile("crt");
     const tmpKeyPath = this.saveToFile("key");
     const tmpPfxPath = this.saveToFile("pfx");
-    const tmpDerPath = this.saveToFile("der");
+    const tmpIcPath = this.saveToFile("ic");
     logger.info("本地文件写入成功");
+    const tmpDerPath = this.saveToFile("der");
     try {
       return await opts.handle({
         reader: this,
@@ -75,6 +103,7 @@ export class CertReader {
         tmpKeyPath: tmpKeyPath,
         tmpPfxPath: tmpPfxPath,
         tmpDerPath: tmpDerPath,
+        tmpIcPath: tmpIcPath,
       });
     } catch (err) {
       throw err;
@@ -90,6 +119,7 @@ export class CertReader {
       removeFile(tmpKeyPath);
       removeFile(tmpPfxPath);
       removeFile(tmpDerPath);
+      removeFile(tmpIcPath);
     }
   }
 

@@ -57,7 +57,7 @@ export default {
     .container {
       .main {
         max-width: 368px;
-        width: 98%;
+        width: 96%;
       }
     }
   }
@@ -136,16 +136,15 @@ export default {
       }
 
       .main {
-        min-width: 260px;
-        width: 368px;
-        margin: 0 auto;
+        min-width: 300px;
+        width: 94%;
       }
 
       .footer {
         // position: absolute;
         width: 100%;
         bottom: 0;
-        margin: 48px 0 24px;
+        margin: 24px 0 24px;
         text-align: center;
 
         .links {
@@ -163,6 +162,7 @@ export default {
           color: rgba(0, 0, 0, 0.45);
           font-size: 14px;
           display: flex;
+          flex-wrap: wrap;
           justify-content: center;
           align-items: center;
           span {

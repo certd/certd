@@ -58,6 +58,7 @@
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
+    "@certd/lib-iframe": "^1.24.4",
     "@certd/pipeline": "^1.24.4",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
