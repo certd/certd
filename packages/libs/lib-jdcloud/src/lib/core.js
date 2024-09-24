@@ -1,13 +1,12 @@
-require('node-fetch')
-
 var JDCloud = {
-  util: require('./util'),
+  util: require("./util"),
   // todo swaggerVar
-  VERSION: ''
-}
+  VERSION: "",
+  fetch: require("node-fetch"),
+};
 
-module.exports = JDCloud
+module.exports = JDCloud;
 
-require('./service')
-require('./config')
-require('./request')
+require("./service");
+require("./config");
+require("./request");

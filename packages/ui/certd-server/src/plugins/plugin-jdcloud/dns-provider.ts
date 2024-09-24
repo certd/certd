@@ -4,13 +4,17 @@ import { JDCloudAccess } from './access.js';
 function promisfy(func: any) {
   return (params: any, regionId: string) => {
     return new Promise((resolve, reject) => {
-      func(params, regionId, (err, result) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(result);
-      });
+      try {
+        func(params, regionId, (err, result) => {
+          if (err) {
+            reject(err.error || err);
+            return;
+          }
+          resolve(result);
+        });
+      } catch (e) {
+        reject(e);
+      }
     });
   };
 }
@@ -57,17 +61,23 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
     const { fullRecord, value, type, domain } = options;
     this.logger.info('添加域名解析：', fullRecord, value, type, domain);
 
-    const describeDomains = promisfy(this.service.describeDomains);
+    const describeDomains = promisfy((a, b, c) => {
+      this.service.describeDomains(a, b, c);
+    });
 
     const res: any = await describeDomains({ domainName: domain, pageNumber: 1, pageSize: 10 }, this.regionId);
-
-    if (res.dataList.length === 0) {
+    this.logger.info('请求成功:', JSON.stringify(res.result));
+    const dataList = res.result.dataList;
+    if (dataList.length === 0) {
       throw new Error('账号下找不到域名:' + domain);
     }
-    const domainId = res.dataList[0].id;
+    const domainId = dataList[0].id;
+    this.logger.info('domainId:', domainId);
 
     //开始创建解析记录
-    const createResourceRecord = promisfy(this.service.createResourceRecord);
+    const createResourceRecord = promisfy((a, b, c) => {
+      this.service.createResourceRecord(a, b, c);
+    });
     const res2: any = await createResourceRecord(
       {
         domainId,
@@ -79,8 +89,9 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
       },
       this.regionId
     );
-
-    const recordId = res2.dataList[0].id;
+    this.logger.info('请求成功:', JSON.stringify(res.result));
+    const recordList = res2.result.dataList;
+    const recordId = recordList[0].id;
 
     this.logger.info(`添加域名解析成功:fullRecord=${fullRecord},value=${value}`);
     this.logger.info(`请求结果:recordId:${recordId}`);
@@ -96,7 +107,7 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
   async removeRecord(opts: RemoveRecordOptions<any>): Promise<void> {
     const { record } = opts;
     const deleteResourceRecord = promisfy(this.service.deleteResourceRecord);
-    const res = await deleteResourceRecord(
+    const res: any = await deleteResourceRecord(
       {
         domainId: record.domainId,
         resourceRecordId: record.id,

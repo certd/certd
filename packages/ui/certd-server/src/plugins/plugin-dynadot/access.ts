@@ -7,7 +7,7 @@ import { AccessInput, IsAccess } from '@certd/pipeline';
 @IsAccess({
   name: 'dynadot',
   title: 'dynadot授权',
-  desc: '目前设置dns解析会覆盖已有的解析配置，慎用',
+  desc: '************\n注意：申请证书时会覆盖已有的域名解析配置，慎用\n************\n待优化，主要是dynadot的接口一言难尽',
 })
 export class DynadotAccess {
   /**

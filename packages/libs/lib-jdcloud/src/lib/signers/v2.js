@@ -138,7 +138,11 @@ module.exports = class SignerV2 extends RequestSigner {
   }
 
   hexEncodedBodyHash() {
-    return this.hexEncodedHash(this.request.request.body || "");
+    let body = this.request.request?.body;
+    if (body && body instanceof ReadableStream) {
+      body = this.request.request?.bodyCache;
+    }
+    return this.hexEncodedHash(body || "");
     /* var request = this.request;
         if (this.isPresigned() && this.serviceName === 's3' && !request.body) {
             return 'UNSIGNED-PAYLOAD';

@@ -12,7 +12,11 @@ module.exports = {
   },
   plugins: [
     // 解析第三方依赖
-    resolve(),
+    resolve({
+      jsnext: true,
+      main: true,
+      browser: true,
+    }),
     // 识别 commonjs 模式第三方依赖
     commonjs({
       // dynamicRequireRoot: "../../../../",
@@ -32,5 +36,5 @@ module.exports = {
     json(),
     terser(),
   ],
-  external: ["vue", "lodash-es", "dayjs", "log4js", "@midwayjs/core", "@certd/pipeline", "axios", "node-fetch"],
+  external: ["vue", "lodash-es", "dayjs", "log4js", "@midwayjs/core", "@certd/pipeline", "axios", "querystring"],
 };

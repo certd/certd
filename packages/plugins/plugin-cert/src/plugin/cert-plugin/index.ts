@@ -196,8 +196,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       const certInfo = this.formatCerts(cert);
       return new CertReader(certInfo);
     } catch (e: any) {
-      const message: string = e.message;
-      if (message.indexOf("redundant with a wildcard domain in the same request") >= 0) {
+      const message: string = e?.message;
+      if (message != null && message.indexOf("redundant with a wildcard domain in the same request") >= 0) {
         this.logger.error(e);
         throw new Error(`通配符域名已经包含了普通域名，请删除其中一个（${message}）`);
       }

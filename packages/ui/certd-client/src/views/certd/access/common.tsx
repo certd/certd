@@ -3,7 +3,7 @@ import { ColumnCompositionProps, dict, compute } from "@fast-crud/fast-crud";
 import * as api from "./api";
 // @ts-ignore
 import _ from "lodash-es";
-import { toRef } from "vue";
+import { computed, ref, toRef } from "vue";
 import { useReference } from "/@/use/use-refrence";
 
 export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
@@ -48,6 +48,8 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
     });
   }
 
+  const currentDefine = ref();
+
   return {
     type: {
       title: "类型",
@@ -76,13 +78,21 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
               return;
             }
             const define = await api.GetProviderDefine(value);
+            currentDefine.value = define;
             console.log("define", define);
             if (!immediate) {
               form.access = {};
             }
             buildDefineFields(define, form);
           }
-        }
+        },
+        helper: computed(() => {
+          const define = currentDefine.value;
+          if (define == null) {
+            return "";
+          }
+          return define.desc;
+        })
       },
       addForm: {
         value: typeRef

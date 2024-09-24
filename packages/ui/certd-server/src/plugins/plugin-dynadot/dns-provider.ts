@@ -59,13 +59,21 @@ export class DynadotDnsProvider extends AbstractDnsProvider {
     const { fullRecord, value, type, domain } = options;
     this.logger.info('添加域名解析：', fullRecord, value, type, domain);
 
+    //先获取域名原始解析记录
+    //https://api.dynadot.com/api3.xml?key=[API Key]&command=domain_info&domain=domain1.com
+    const res1 = await this.doRequest('domain_info', {
+      domain: domain,
+    });
+    // this.logger.info(`域名信息:${JSON.stringify(res1)}`);
+    // "DomainInfoResponse.NameServerSettings":{"Type":"Dynadot DNS","SubDomains":[{"Subhost":"_acme-challenge","RecordType":"TXT","Value":"43XrhFA6pJpE7a-20y7BmC6CsN20TMt5l-Zl-CL_-4I"}],"TTL":"300"}
+    this.logger.info('原始域名解析记录:', JSON.stringify(res1.DomainInfoResponse?.DomainInfo?.NameServerSettings));
     const prefix = fullRecord.replace(`.${domain}`, '');
     // 给domain下创建txt类型的dns解析记录，fullRecord
     const res = await this.doRequest('set_dns2', {
       domain: domain,
       subdomain0: prefix,
       sub_record_type0: 'TXT',
-      sub_record0 : value,
+      sub_record0: value,
     });
     this.logger.info(`添加域名解析成功:fullRecord=${fullRecord},value=${value}`);
     this.logger.info(`请求结果:${JSON.stringify(res)}`);
