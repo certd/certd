@@ -4,6 +4,7 @@ import * as api from "./api";
 // @ts-ignore
 import _ from "lodash-es";
 import { toRef } from "vue";
+import { useReference } from "/@/use/use-refrence";
 
 export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
   const AccessTypeDictRef = dict({
@@ -32,19 +33,10 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
         ...value,
         key
       };
-      let column = _.merge({ title: key }, defaultPluginConfig, field);
+      const column = _.merge({ title: key }, defaultPluginConfig, field);
 
       //eval
-      if (column.mergeScript) {
-        const ctx = {
-          compute
-        };
-        const script = column.mergeScript;
-        delete column.mergeScript;
-        const func = new Function("ctx", script);
-        const merged = func(ctx);
-        column = _.merge(column, merged);
-      }
+      useReference(column);
 
       //设置默认值
       if (column.value != null && _.get(form, key) == null) {

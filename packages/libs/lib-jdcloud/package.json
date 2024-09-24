@@ -1,0 +1,22 @@
+{
+  "name": "@certd/lib-jdcloud",
+  "private": false,
+  "version": "1.24.4",
+  "main": "./dist/bundle.mjs",
+  "module": "./dist/bundle.mjs",
+  "types": "./dist/d/index.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "rollup -c ",
+    "build2": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@certd/pipeline": "1.21.0",
+    "axios": "^1.7.2",
+    "node-fetch": "^3.3.2",
+    "rollup": "^3.7.4",
+    "uuid": "^3.4.0"
+  },
+  "gitHead": "c49ccbde93dbad7062ac39d4f18eca7d561f573f"
+}
