@@ -53,6 +53,9 @@ export class PlusService {
     const licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
 
+    if (!licenseInfo.license) {
+      return;
+    }
     const verifyRes = await verify({
       subjectId: installInfo.siteId,
       license: licenseInfo.license,
