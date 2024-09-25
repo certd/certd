@@ -7,7 +7,8 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --skipLibCheck",
+    "before-build": "rimraf dist && rimraf tsconfig.tsbuildinfo && rimraf .rollup.cache",
+    "build": "npm run before-build && tsc --skipLibCheck",
     "build3": "rollup -c",
     "build2": "vue-tsc --noEmit && vite build",
     "preview": "vite preview"
@@ -16,6 +17,7 @@
     "@kubernetes/client-node": "0.21.0"
   },
   "devDependencies": {
+    "rimraf": "^5.0.5",
     "@certd/pipeline": "^1.25.4",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-json": "^6.0.0",

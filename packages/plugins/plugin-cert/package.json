@@ -7,12 +7,14 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --skipLibCheck",
+    "before-build": "rimraf dist && rimraf tsconfig.tsbuildinfo && rimraf .rollup.cache",
+    "build": "npm run before-build &&tsc --skipLibCheck",
     "build3": "rollup -c",
     "build2": "vue-tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "rimraf": "^5.0.5",
     "@certd/acme-client": "^1.25.4",
     "@certd/pipeline": "^1.25.4",
     "jszip": "^3.10.1",

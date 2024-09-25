@@ -7,13 +7,14 @@
   "types": "./dist/d/index.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "rollup -c ",
+    "before-build": "rimraf dist && rimraf tsconfig.tsbuildinfo && rimraf .rollup.cache",
+    "build": "npm run before-build && rollup -c ",
     "build2": "vue-tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/pipeline": "1.21.0",
     "axios": "^1.7.2",
+    "rimraf": "^5.0.5",
     "rollup": "^3.7.4"
   },
   "gitHead": "c49ccbde93dbad7062ac39d4f18eca7d561f573f"
