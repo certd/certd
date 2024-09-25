@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-jdcloud",
   "private": false,
-  "version": "1.25.3",
+  "version": "1.25.4",
   "main": "./dist/bundle.mjs",
   "module": "./dist/bundle.mjs",
   "types": "./dist/d/index.d.ts",
