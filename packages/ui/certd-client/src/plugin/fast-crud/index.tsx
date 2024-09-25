@@ -45,6 +45,9 @@ function install(app: any, options: any = {}) {
           },
           conditionalRender: {
             match(scope) {
+              if (scope.key === "__blank__") {
+                return false;
+              }
               //不能用 !scope.value ， 否则switch组件设置为关之后就消失了
               const { value, key, props } = scope;
               return !value && key != "_index" && value != false;
@@ -133,6 +136,20 @@ function install(app: any, options: any = {}) {
             },
             column: {
               order: 1000
+            }
+          },
+          //最后一列空白，用于自动伸缩列宽
+          __blank__: {
+            title: "",
+            type: "text",
+            form: {
+              show: false
+            },
+            column: {
+              order: 99999,
+              width: -1,
+              columnSetShow: false,
+              resizable: false
             }
           }
         }
@@ -346,10 +363,13 @@ function install(app: any, options: any = {}) {
       if (!columnProps.column) {
         columnProps.column = {};
       }
-      columnProps.column.resizable = true;
-      if (!columnProps.column.width) {
-        columnProps.column.width = 100;
+      if (columnProps.column.resizable == null) {
+        columnProps.column.resizable = true;
+        if (!columnProps.column.width) {
+          columnProps.column.width = 200;
+        }
       }
+
       return columnProps;
     }
   });
