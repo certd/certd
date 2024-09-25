@@ -8,7 +8,7 @@ import { doRequest, uploadCert } from '../lib/sdk.js';
   title: '部署证书至七牛CDN',
   icon: 'svg:icon-qiniuyun',
   group: pluginGroups.cdn.key,
-  desc: '自动部署域名证书至七牛云CDN',
+  desc: '自动部署域名证书至七牛云CDN，七牛云OSS',
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
