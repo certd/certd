@@ -14,7 +14,7 @@
     "test": "mocha   --loader=ts-node/esm"
   },
   "dependencies": {
-    "@certd/plus": "^1.25.1",
+    "@certd/plus-core": "^1.25.4",
     "axios": "^1.7.2",
     "fix-path": "^4.0.0",
     "http-proxy-agent": "^7.0.2",
@@ -60,5 +60,5 @@
     "vite": "^4.3.8",
     "vue-tsc": "^1.6.5"
   },
-  "gitHead": "c2650d308c7f64af60f1658ea4844b0f2b13351b"
+  "gitHead": "03ce69dbfb317db7a3688d33ccc17ef06fd68393"
 }

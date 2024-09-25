@@ -1,7 +1,7 @@
 import { logger } from "../utils/index.js";
-import { setLogger, isPlus } from "@certd/plus";
+import { setLogger, isPlus } from "@certd/plus-core";
 setLogger(logger);
-export * from "@certd/plus";
+export * from "@certd/plus-core";
 
 export function checkPlus() {
   if (!isPlus()) {
