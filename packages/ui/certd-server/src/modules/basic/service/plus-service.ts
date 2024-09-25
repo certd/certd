@@ -47,27 +47,23 @@ export class PlusService {
     }
     licenseInfo.license = license;
     await this.sysSettingsService.saveSetting(licenseInfo);
-    await this.verify();
-  }
-  async verify() {
-    const licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
-    const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
-
-    if (!licenseInfo.license) {
-      return;
-    }
-    const verifyRes = await verify({
-      subjectId: installInfo.siteId,
-      license: licenseInfo.license,
-      plusRequestService: this.plusRequestService,
-      bindUrl: installInfo?.bindUrl,
-    });
-
+    const verifyRes = await this.verify();
     if (!verifyRes.isPlus) {
       const message = verifyRes.message || '授权码校验失败';
       logger.error(message);
       throw new Error(message);
     }
+  }
+  async verify() {
+    const licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
+    const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
+
+    return await verify({
+      subjectId: installInfo.siteId,
+      license: licenseInfo.license,
+      plusRequestService: this.plusRequestService,
+      bindUrl: installInfo?.bindUrl,
+    });
   }
 
   async bindUrl(subjectId: string, url: string) {
