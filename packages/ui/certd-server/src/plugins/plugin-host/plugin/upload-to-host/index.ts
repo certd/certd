@@ -79,7 +79,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
       name: 'pi-access-selector',
       type: 'ssh',
     },
-    rules: [{ required: false, message: '' }],
+    required: true,
   })
   accessId!: string;
 
@@ -106,18 +106,6 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   })
   script!: string;
 
-  @TaskInput({
-    title: '仅复制到当前主机',
-    helper:
-      '注意：本配置即将废弃\n' +
-      '开启后，将直接复制到当前主机某个目录，不上传到主机，由于是docker启动，实际上是复制到docker容器内的“证书保存路径”\n' +
-      '你需要事先在docker-compose.yaml中配置主机目录映射： volumes: /your_target_path:/your_target_path',
-    value: false,
-    component: {
-      name: 'a-switch',
-      vModel: 'checked',
-    },
-  })
   copyToThisHost!: boolean;
 
   @TaskOutput({
@@ -168,68 +156,70 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
       const { tmpCrtPath, tmpKeyPath, tmpDerPath, tmpPfxPath, tmpIcPath } = opts;
       if (this.copyToThisHost) {
         this.logger.info('复制到目标路径');
-        this.copyFile(tmpCrtPath, crtPath);
-        this.copyFile(tmpKeyPath, keyPath);
-        this.copyFile(tmpIcPath, this.icPath);
-        this.copyFile(tmpPfxPath, this.pfxPath);
-        this.copyFile(tmpDerPath, this.derPath);
-      } else {
-        if (!accessId) {
-          throw new Error('主机登录授权配置不能为空');
-        }
-        this.logger.info('准备上传文件到服务器');
-
-        const transports: any = [];
-        if (crtPath) {
-          transports.push({
-            localPath: tmpCrtPath,
-            remotePath: crtPath,
-          });
-          this.logger.info(`上传证书到主机：${crtPath}`);
-        }
-        if (keyPath) {
-          transports.push({
-            localPath: tmpKeyPath,
-            remotePath: keyPath,
-          });
-          this.logger.info(`上传私钥到主机：${keyPath}`);
-        }
-        if (this.icPath) {
-          transports.push({
-            localPath: tmpIcPath,
-            remotePath: this.icPath,
-          });
-          this.logger.info(`上传中间证书到主机：${this.icPath}`);
-        }
-        if (this.pfxPath) {
-          transports.push({
-            localPath: tmpPfxPath,
-            remotePath: this.pfxPath,
-          });
-          this.logger.info(`上传PFX证书到主机：${this.pfxPath}`);
-        }
-        if (this.derPath) {
-          transports.push({
-            localPath: tmpDerPath,
-            remotePath: this.derPath,
-          });
-          this.logger.info(`上传DER证书到主机：${this.derPath}`);
-        }
-        this.logger.info('开始上传文件到服务器');
-        await sshClient.uploadFiles({
-          connectConf,
-          transports,
-          mkdirs: this.mkdirs,
-        });
-        this.logger.info('上传文件到服务器成功');
-        //输出
-        this.hostCrtPath = crtPath;
-        this.hostKeyPath = keyPath;
-        this.hostIcPath = this.icPath;
-        this.hostPfxPath = this.pfxPath;
-        this.hostDerPath = this.derPath;
+        throw new Error('复制到当前主机功能已迁移到 “复制到本机”插件');
+        // this.copyFile(tmpCrtPath, crtPath);
+        // this.copyFile(tmpKeyPath, keyPath);
+        // this.copyFile(tmpIcPath, this.icPath);
+        // this.copyFile(tmpPfxPath, this.pfxPath);
+        // this.copyFile(tmpDerPath, this.derPath);
       }
+
+      if (!accessId) {
+        throw new Error('主机登录授权配置不能为空');
+      }
+      this.logger.info('准备上传文件到服务器');
+
+      const transports: any = [];
+      if (crtPath) {
+        transports.push({
+          localPath: tmpCrtPath,
+          remotePath: crtPath,
+        });
+        this.logger.info(`上传证书到主机：${crtPath}`);
+      }
+      if (keyPath) {
+        transports.push({
+          localPath: tmpKeyPath,
+          remotePath: keyPath,
+        });
+        this.logger.info(`上传私钥到主机：${keyPath}`);
+      }
+      if (this.icPath) {
+        transports.push({
+          localPath: tmpIcPath,
+          remotePath: this.icPath,
+        });
+        this.logger.info(`上传中间证书到主机：${this.icPath}`);
+      }
+      if (this.pfxPath) {
+        transports.push({
+          localPath: tmpPfxPath,
+          remotePath: this.pfxPath,
+        });
+        this.logger.info(`上传PFX证书到主机：${this.pfxPath}`);
+      }
+      if (this.derPath) {
+        transports.push({
+          localPath: tmpDerPath,
+          remotePath: this.derPath,
+        });
+        this.logger.info(`上传DER证书到主机：${this.derPath}`);
+      }
+      this.logger.info('开始上传文件到服务器');
+      await sshClient.uploadFiles({
+        connectConf,
+        transports,
+        mkdirs: this.mkdirs,
+      });
+      this.logger.info('上传文件到服务器成功');
+      //输出
+      this.hostCrtPath = crtPath;
+      this.hostKeyPath = keyPath;
+      this.hostIcPath = this.icPath;
+      this.hostPfxPath = this.pfxPath;
+      this.hostDerPath = this.derPath;
     };
+
     await certReader.readCertFile({
       logger: this.logger,
       handle,

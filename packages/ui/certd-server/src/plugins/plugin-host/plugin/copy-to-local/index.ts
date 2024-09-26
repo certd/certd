@@ -35,6 +35,15 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
   keyPath!: string;
 
   @TaskInput({
+    title: '中间证书保存路径',
+    helper: '需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号，例如：/tmp/intermediate.crt',
+    component: {
+      placeholder: '/root/deploy/nginx/intermediate.crt',
+    },
+  })
+  icPath!: string;
+
+  @TaskInput({
     title: 'PFX证书保存路径',
     helper: '用于IIS证书部署，路径要包含文件名，文件名不能用*?!等特殊符号\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.pfx',
     component: {
@@ -77,6 +86,12 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
   hostKeyPath!: string;
 
   @TaskOutput({
+    title: '中间证书保存路径',
+    type: 'HostKeyPath',
+  })
+  hostIcPath!: string;
+
+  @TaskOutput({
     title: 'PFX保存路径',
     type: 'HostPfxPath',
   })
@@ -99,7 +114,7 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
     fs.copyFileSync(srcFile, destFile);
   }
   async execute(): Promise<void> {
-    let { crtPath, keyPath, pfxPath, derPath } = this;
+    let { crtPath, keyPath, icPath, pfxPath, derPath } = this;
     const certReader = new CertReader(this.cert);
 
     const handle = async ({ reader, tmpCrtPath, tmpKeyPath, tmpDerPath, tmpPfxPath }) => {
@@ -113,6 +128,11 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
         keyPath = keyPath.startsWith('/') ? keyPath : path.join(Constants.dataDir, keyPath);
         this.copyFile(tmpKeyPath, keyPath);
         this.hostKeyPath = keyPath;
+      }
+      if (icPath) {
+        icPath = icPath.startsWith('/') ? icPath : path.join(Constants.dataDir, icPath);
+        this.copyFile(tmpPfxPath, icPath);
+        this.hostIcPath = icPath;
       }
       if (pfxPath) {
         pfxPath = pfxPath.startsWith('/') ? pfxPath : path.join(Constants.dataDir, pfxPath);

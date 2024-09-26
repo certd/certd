@@ -70,13 +70,12 @@ https://certd.handsfree.work/
 
 3. 安装完成后在应用商店中找到`certd`，点击安装，配置域名等基本信息即可完成安装
 
-### 4.2 Docker部署
+### 4.2 Docker部署【推荐】
 #### 1. 安装docker、docker-compose
 
 1.1 准备一台云服务器
 * 【阿里云】云服务器2核2G，新老用户同享，99元/年，续费同价！【 [立即购买](https://www.aliyun.com/benefit?scm=20140722.M_10244282._.V_1&source=5176.11533457&userCode=qya11txb )】
 * 【腾讯云】云服务器2核2G，新老用户同享，99元/年，续费同价！【 [立即购买](https://cloud.tencent.com/act/cps/redirect?redirect=6094&cps_key=b3ef73330335d7a6efa4a4bbeeb6b2c9&from=console)】
-  
 
 1.2 安装docker      
 
@@ -110,7 +109,7 @@ docker compose up -d
 > 如果提示 没有compose命令,请安装docker-compose   
 > https://docs.docker.com/compose/install/linux/
 
-#### 镜像说明：
+#### 3. 镜像说明：
 * 国内镜像地址:
   * `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest`
   * `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:armv7`、`[version]-armv7`
@@ -124,13 +123,19 @@ docker compose up -d
 
 ![](./doc/images/action-build.jpg)
 
-#### 3. 访问
+#### 4. 访问测试
 
 http://your_server_ip:7001    
 默认账号密码：admin/123456    
 记得修改密码   
 
-
+### 4.3 源码部署
+```shell
+# 克隆代码
+git clone https://github.com/certd/certd
+cd certd
+./start.sh  
+```
 
 
 ## 五、 升级
@@ -223,10 +228,12 @@ https://afdian.com/a/greper
 
 ## 十一、贡献代码
 
-1.  [贡献插件教程](./plugin.md)
+1. 本地开发 [贡献插件教程](./dev/development.md)
 2. 作为贡献者，代表您同意您贡献的代码如下许可：
    1. 可以调整开源协议以使其更严格或更宽松。
    2. 可以用于商业用途。
+
+
 
 ## 十二、 开源许可
 * 本项目遵循 GNU Affero General Public License（AGPL）开源协议。   
