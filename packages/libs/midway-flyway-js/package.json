@@ -1,6 +1,6 @@
 {
   "name": "@certd/midway-flyway-js",
-  "version": "1.25.4",
+  "version": "1.25.5",
   "description": "midway with flyway, sql upgrade way ",
   "private": false,
   "type": "module",
@@ -25,7 +25,6 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "rimraf": "^5.0.5",
     "@midwayjs/core": "^3",
     "@midwayjs/logger": "^3",
     "@midwayjs/typeorm": "^3",
@@ -48,6 +47,7 @@
     "mwts": "^1.3.0",
     "mwtsc": "^1.4.0",
     "prettier": "^2.8.8",
+    "rimraf": "^5.0.5",
     "rollup": "^3.7.4",
     "rollup-plugin-visualizer": "^5.8.2",
     "ts-node": "^10.9.1",

@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-jdcloud",
   "private": false,
-  "version": "1.25.4",
+  "version": "1.25.5",
   "main": "./dist/bundle.mjs",
   "module": "./dist/bundle.mjs",
   "types": "./dist/d/index.d.ts",
@@ -23,9 +23,9 @@
     "uuid": "^3.1.0"
   },
   "devDependencies": {
+    "babel-register": "^6.26.0",
     "rimraf": "^5.0.5",
-    "rollup": "^3.7.4",
-    "babel-register": "^6.26.0"
+    "rollup": "^3.7.4"
   },
   "gitHead": "03ce69dbfb317db7a3688d33ccc17ef06fd68393"
 }

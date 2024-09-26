@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-iframe",
   "private": false,
-  "version": "1.25.4",
+  "version": "1.25.5",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,7 +17,6 @@
     "nanoid": "^4.0.0"
   },
   "devDependencies": {
-    "rimraf": "^5.0.5",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
@@ -32,6 +31,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.8",
+    "rimraf": "^5.0.5",
     "rollup": "^3.7.4",
     "rollup-plugin-visualizer": "^5.8.2",
     "ts-node": "^10.9.1",
