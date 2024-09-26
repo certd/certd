@@ -102,7 +102,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           type: ["text"],
           form: {
-            rules: [{ required: true, message: "请填写名称" }]
+            rules: [{ required: true, message: "请填写名称" }],
+            helper: "随便填，当多个相同类型的授权时，便于区分"
           },
           column: {
             width: 200
