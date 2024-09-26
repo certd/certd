@@ -4,11 +4,12 @@ import { FileStore } from "../core/file-store.js";
 import { Logger } from "log4js";
 import { IAccessService } from "../access/index.js";
 import { IEmailService } from "../service/index.js";
-import { IContext } from "../core/index.js";
-import { ILogger, logger } from "../utils/index.js";
+import { IContext, PluginRequestHandleReq } from "../core/index.js";
+import { ILogger, logger, utils } from "../utils/index.js";
 import { HttpClient } from "../utils/util.request";
-import { utils } from "../utils/index.js";
 import dayjs from "dayjs";
+import _ from "lodash-es";
+
 export enum ContextScope {
   global,
   pipeline,
@@ -38,18 +39,13 @@ export type PluginDefine = Registrable & {
     [key: string]: any;
   };
 
-  reference?: {
-    src: string;
-    dest: string;
-    type: "computed";
-  }[];
-
   needPlus?: boolean;
 };
 
 export type ITaskPlugin = {
   onInstance(): Promise<void>;
   execute(): Promise<void>;
+  onRequest(req: PluginRequestHandleReq<any>): Promise<any>;
   [key: string]: any;
 };
 
@@ -107,6 +103,17 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
     this.accessService = ctx.accessService;
   }
 
+  async getAccess(accessId: string) {
+    if (accessId == null) {
+      throw new Error("您还没有配置授权");
+    }
+    const res = await this.ctx.accessService.getById(accessId);
+    if (res == null) {
+      throw new Error("授权不存在，可能已被删除，请前往任务配置里面重新选择授权");
+    }
+    return res;
+  }
+
   randomFileId() {
     return Math.random().toString(36).substring(2, 9);
   }
@@ -146,6 +153,22 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
       name = "certd";
     }
     return name + "_" + dayjs().format("YYYYMMDDHHmmss");
+  }
+
+  async onRequest(req: PluginRequestHandleReq<any>) {
+    if (!req.action) {
+      throw new Error("action is required");
+    }
+
+    const methodName = `on${_.upperFirst(req.action)}`;
+
+    // @ts-ignore
+    const method = this[methodName];
+    if (method) {
+      // @ts-ignore
+      return await this[methodName](req.data);
+    }
+    throw new Error(`action ${req.action} not found`);
   }
 }
 

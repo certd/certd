@@ -11,15 +11,10 @@
 
 <script lang="tsx" setup>
 import { defineProps, ref, useAttrs } from "vue";
-import { request } from "/@/api/service";
 import { Modal } from "ant-design-vue";
+import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 
-const props = defineProps<{
-  type: string;
-  typeName: string;
-  form: any;
-  value?: any;
-}>();
+const props = defineProps<ComponentPropsType>();
 
 const emit = defineEmits<{
   "update:value": any;
@@ -29,24 +24,15 @@ const attrs = useAttrs();
 
 const otpCodeRef = ref("");
 
-async function doRequest(action: string, data: any) {
-  const res = await request({
-    url: "/pi/handle",
-    method: "post",
-    data: {
-      type: props.type,
-      typeName: props.typeName,
-      action,
-      data: data,
-      input: props.form.access
-    }
-  });
-  return res;
-}
-
 async function loginWithOTPCode(otpCode: string) {
-  return await doRequest("LoginWithOPTCode", {
-    otpCode
+  return await doRequest({
+    type: props.type,
+    typeName: props.typeName,
+    action: "LoginWithOPTCode",
+    data: {
+      otpCode
+    },
+    form: props.form
   });
 }
 

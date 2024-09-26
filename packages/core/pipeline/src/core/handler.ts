@@ -1,21 +1,28 @@
 import _ from "lodash-es";
-import { HttpClient, ILogger } from "../utils";
+import { HttpClient, ILogger, utils } from "../utils";
 
-export type PluginRequest = {
-  type: "plugin" | "access";
+export type PluginRequestHandleReq<T = any> = {
   typeName: string;
   action: string;
-  input: any;
+  input: T;
   data: any;
 };
 
-export type RequestHandleContext = {
+export type AccessRequestHandleReqInput<T = any> = {
+  id?: number;
+  title?: string;
+  access: T;
+};
+export type AccessRequestHandleReq<T = any> = PluginRequestHandleReq<AccessRequestHandleReqInput<T>>;
+
+export type AccessRequestHandleContext = {
   http: HttpClient;
   logger: ILogger;
+  utils: typeof utils;
 };
 
-export class RequestHandler {
-  async onRequest(req: PluginRequest, ctx: RequestHandleContext) {
+export class AccessRequestHandler<T = any> {
+  async onRequest(req: AccessRequestHandleReq<T>, ctx: AccessRequestHandleContext) {
     if (!req.action) {
       throw new Error("action is required");
     }
@@ -31,3 +38,4 @@ export class RequestHandler {
     throw new Error(`action ${req.action} not found`);
   }
 }
+

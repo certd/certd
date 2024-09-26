@@ -22,5 +22,6 @@ export const pluginGroups = {
   tencent: new PluginGroup("tencent", "腾讯云", 4),
   host: new PluginGroup("host", "主机", 5),
   cdn: new PluginGroup("cdn", "CDN", 6),
-  other: new PluginGroup("other", "其他", 7),
+  panel: new PluginGroup("panel", "面板", 7),
+  other: new PluginGroup("other", "其他", 8),
 };

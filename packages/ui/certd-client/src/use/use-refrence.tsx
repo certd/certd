@@ -1,23 +1,19 @@
 import _ from "lodash-es";
-import { compute } from "@fast-crud/fast-crud";
+import { asyncCompute, compute } from "@fast-crud/fast-crud";
+import { computed } from "vue";
+
+export type MergeScriptContext = {
+  compute: typeof compute;
+  asyncCompute: typeof asyncCompute;
+  computed: typeof computed;
+};
 
 export function useReference(formItem: any) {
-  if (formItem.reference) {
-    for (const reference of formItem.reference) {
-      _.set(
-        formItem,
-        reference.dest,
-        compute<any>((scope) => {
-          return _.get(scope, reference.src);
-        })
-      );
-    }
-    delete formItem.reference;
-  }
-
   if (formItem.mergeScript) {
     const ctx = {
-      compute
+      compute,
+      asyncCompute,
+      computed
     };
     const script = formItem.mergeScript;
     const func = new Function("ctx", script);
