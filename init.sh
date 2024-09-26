@@ -1,3 +1,4 @@
+
 current_pwd=$(pwd)
 
 echo "开始设置git配置"
