@@ -106,8 +106,6 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   })
   script!: string;
 
-  copyToThisHost!: boolean;
-
   @TaskOutput({
     title: '证书保存路径',
   })
@@ -152,17 +150,21 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
 
     const handle = async (opts: CertReaderHandleContext) => {
       const { tmpCrtPath, tmpKeyPath, tmpDerPath, tmpPfxPath, tmpIcPath } = opts;
-      if (this.copyToThisHost) {
-        this.logger.info('复制到目标路径');
-        this.copyFile(tmpCrtPath, crtPath);
-        this.copyFile(tmpKeyPath, keyPath);
-        this.copyFile(tmpIcPath, this.icPath);
-        this.copyFile(tmpPfxPath, this.pfxPath);
-        this.copyFile(tmpDerPath, this.derPath);
-        this.logger.warn('复制到当前主机功能已迁移到 “复制到本机”插件，请尽快换成复制到本机插件');
+      // if (this.copyToThisHost) {
+      //   this.logger.info('复制到目标路径');
+      //   this.copyFile(tmpCrtPath, crtPath);
+      //   this.copyFile(tmpKeyPath, keyPath);
+      //   this.copyFile(tmpIcPath, this.icPath);
+      //   this.copyFile(tmpPfxPath, this.pfxPath);
+      //   this.copyFile(tmpDerPath, this.derPath);
+      //   this.logger.warn('复制到当前主机功能已迁移到 “复制到本机”插件，请尽快换成复制到本机插件');
+      //   return;
+      // }
+
+      if (accessId == null) {
+        this.logger.error('复制到当前主机功能已迁移到 “复制到本机”插件，请换成复制到本机插件');
         return;
       }
-
       const connectConf: SshAccess = await this.accessService.getById(accessId);
       const sshClient = new SshClient(this.logger);
 
