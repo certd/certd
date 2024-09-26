@@ -19,7 +19,7 @@ echo "开始构建"
 echo "构建certd-client"
 cd packages/ui/certd-client
 npm run build
-cp -r dist ../certd-server
+cp -r dist/* ../certd-server/public
 
 echo "构建certd-server"
 cd ../certd-server
