@@ -149,20 +149,22 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const { crtPath, keyPath, cert, accessId } = this;
     const certReader = new CertReader(cert);
-    const connectConf: SshAccess = await this.accessService.getById(accessId);
-    const sshClient = new SshClient(this.logger);
 
     const handle = async (opts: CertReaderHandleContext) => {
       const { tmpCrtPath, tmpKeyPath, tmpDerPath, tmpPfxPath, tmpIcPath } = opts;
       if (this.copyToThisHost) {
         this.logger.info('复制到目标路径');
-        throw new Error('复制到当前主机功能已迁移到 “复制到本机”插件');
-        // this.copyFile(tmpCrtPath, crtPath);
-        // this.copyFile(tmpKeyPath, keyPath);
-        // this.copyFile(tmpIcPath, this.icPath);
-        // this.copyFile(tmpPfxPath, this.pfxPath);
-        // this.copyFile(tmpDerPath, this.derPath);
+        this.copyFile(tmpCrtPath, crtPath);
+        this.copyFile(tmpKeyPath, keyPath);
+        this.copyFile(tmpIcPath, this.icPath);
+        this.copyFile(tmpPfxPath, this.pfxPath);
+        this.copyFile(tmpDerPath, this.derPath);
+        this.logger.warn('复制到当前主机功能已迁移到 “复制到本机”插件，请尽快换成复制到本机插件');
+        return;
       }
+
+      const connectConf: SshAccess = await this.accessService.getById(accessId);
+      const sshClient = new SshClient(this.logger);
 
       if (!accessId) {
         throw new Error('主机登录授权配置不能为空');
@@ -226,6 +228,8 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
     });
 
     if (this.script && this.script?.trim()) {
+      const connectConf: SshAccess = await this.accessService.getById(accessId);
+      const sshClient = new SshClient(this.logger);
       this.logger.info('执行脚本命令');
       const scripts = this.script.split('\n');
       await sshClient.exec({
