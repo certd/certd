@@ -16,7 +16,7 @@
     "afterpublishOnly": "time /t >build.trigger && git add ./build.trigger && git commit -m \"build: trigger build image\" && TIMEOUT /T 10 && git push",
     "prepublishOnly1": "npm run check && lerna run build ",
     "prepublishOnly2": "npm run check && npm run before-build && lerna run build ",
-    "before-build": "cd ./packages/pro/c && time /t >build.md && git add ./build.md && git commit -m \"build: prepare to build\"",
+    "before-build": "cd ./packages/pro/plus-core && time /t >build.md && git add ./build.md && git commit -m \"build: prepare to build\"",
     "deploy1": "node --experimental-json-modules deploy.js ",
     "check": "node --experimental-json-modules publish-check.js",
     "init": "lerna run build"
