@@ -1,4 +1,4 @@
-#version: '3.3'
+version: '3.3' # 兼容旧版docker-compose
 services:
   certd:
     # 镜像                                                  #  ↓↓↓↓↓ --- 镜像版本号，建议改成固定版本号
