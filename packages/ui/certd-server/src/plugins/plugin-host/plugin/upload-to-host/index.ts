@@ -18,10 +18,10 @@ import { SshAccess } from '../../access/index.js';
 })
 export class UploadCertToHostPlugin extends AbstractTaskPlugin {
   @TaskInput({
-    title: 'PEM证书保存路径',
-    helper: '需要有写入权限，路径要包含证书文件名，文件名不能用*?!等特殊符号，例如：/tmp/cert.pem',
+    title: '证书保存路径',
+    helper: '全链证书，需要有写入权限，路径要包含证书文件名，文件名不能用*?!等特殊符号，例如：/tmp/cert.pem',
     component: {
-      placeholder: '/root/deploy/nginx/cert.pem',
+      placeholder: '/root/deploy/nginx/full_chain.pem',
     },
   })
   crtPath!: string;
@@ -36,9 +36,9 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: '中间证书保存路径',
-    helper: '需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号，例如：/tmp/intermediate.crt',
+    helper: '一般情况传上面两个文件即可，极少数情况需要这个中间证书',
     component: {
-      placeholder: '/root/deploy/nginx/intermediate.crt',
+      placeholder: '/root/deploy/nginx/intermediate.pem',
     },
   })
   icPath!: string;

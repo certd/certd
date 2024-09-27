@@ -19,9 +19,9 @@ import path from 'path';
 export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: '证书保存路径',
-    helper: '路径要包含文件名，文件名不能用*?!等特殊符号' + '\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.pem',
+    helper: '全链证书，路径要包含文件名，文件名不能用*?!等特殊符号' + '\n推荐使用相对路径，将写入与数据库同级目录，无需映射，例如：./tmp/cert.pem',
     component: {
-      placeholder: './tmp/cert.pem',
+      placeholder: './tmp/full_chain.pem',
     },
   })
   crtPath!: string;
@@ -36,9 +36,9 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: '中间证书保存路径',
-    helper: '需要有写入权限，路径要包含私钥文件名，文件名不能用*?!等特殊符号，例如：/tmp/intermediate.crt',
+    helper: '一般情况传上面两个文件就行了，极少数情况需要这个中间证书',
     component: {
-      placeholder: '/root/deploy/nginx/intermediate.crt',
+      placeholder: '/root/deploy/nginx/intermediate.pem',
     },
   })
   icPath!: string;
