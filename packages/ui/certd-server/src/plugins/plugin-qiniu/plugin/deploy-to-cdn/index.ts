@@ -18,10 +18,10 @@ import { doRequest, uploadCert } from '../lib/sdk.js';
 export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
   @TaskInput({
     title: 'CDN加速域名',
-    helper: '你在七牛云上配置的CDN加速域名，比如:certd.handsfree.work',
+    helper: '你在七牛云上配置的CDN加速域名，比如:certd.handsfree.work\n支持部署多个域名，用英文逗号,隔开',
     required: true,
   })
-  domainName!: string;
+  domainNames!: string;
 
   @TaskInput({
     title: '域名证书',
@@ -45,30 +45,34 @@ export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
   })
   accessId!: string;
 
-  async onInstance() {}
+  async onInstance() { }
   async execute(): Promise<void> {
-    this.logger.info('开始部署证书到七牛云cdn');
-    const access = await this.accessService.getById<QiniuAccess>(this.accessId);
 
-    const url = `https://api.qiniu.com/domain/${this.domainName}/httpsconf`;
+    const access = await this.accessService.getById<QiniuAccess>(this.accessId);
     let certId = null;
     if (typeof this.cert !== 'string') {
-      // 是证书id，直接上传即可
       this.logger.info('先上传证书');
       certId = await uploadCert(this.ctx.http, access, this.cert, this.appendTimeSuffix('certd'));
+      this.logger.info(`上传证书成功，certId=${certId}`);
     } else {
       certId = this.cert;
+      this.logger.info(`使用已存在的证书ID：${certId}`);
     }
 
-    //开始修改证书
-    this.logger.info('开始修改证书');
-    const body = {
-      certID: certId,
-    };
+    const domainNameArray = this.domainNames.split(',');
+    for (const domainName of domainNameArray) {
+      this.logger.info(`开始部署证书到七牛云cdn，域名：${domainName}`);
 
-    await doRequest(this.ctx.http, access, url, 'put', body);
+      const url = `https://api.qiniu.com/domain/${domainName}/httpsconf`;
+      this.logger.info(`开始部署证书到${domainName}域名`);
+      const body = {
+        certID: certId,
+      };
 
-    this.logger.info('部署完成');
+      await doRequest(this.ctx.http, access, url, 'put', body);
+
+      this.logger.info(`部署域名${domainName}完成`);
+    }
   }
 }
 new QiniuDeployCertToCDN();
