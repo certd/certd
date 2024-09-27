@@ -117,7 +117,7 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
     let { crtPath, keyPath, icPath, pfxPath, derPath } = this;
     const certReader = new CertReader(this.cert);
 
-    const handle = async ({ reader, tmpCrtPath, tmpKeyPath, tmpDerPath, tmpPfxPath }) => {
+    const handle = async ({ reader, tmpCrtPath, tmpKeyPath, tmpDerPath, tmpPfxPath, tmpIcPath }) => {
       this.logger.info('复制到目标路径');
       if (crtPath) {
         crtPath = crtPath.startsWith('/') ? crtPath : path.join(Constants.dataDir, crtPath);
@@ -131,7 +131,7 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
       }
       if (icPath) {
         icPath = icPath.startsWith('/') ? icPath : path.join(Constants.dataDir, icPath);
-        this.copyFile(tmpPfxPath, icPath);
+        this.copyFile(tmpIcPath, icPath);
         this.hostIcPath = icPath;
       }
       if (pfxPath) {
