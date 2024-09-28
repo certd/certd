@@ -19,6 +19,7 @@
           </div>
           <fs-menu class="header-menu" mode="horizontal" :expand-selected="false" :selectable="false" :menus="frameworkMenus" />
           <vip-button class="flex-center header-btn" mode="nav" />
+          <tutorial-button class="flex-center header-btn" />
         </div>
         <div class="header-right header-buttons">
           <!--          <button-->
@@ -84,10 +85,23 @@ import FsThemeSet from "/@/layout/components/theme/index.vue";
 import { env } from "../utils/util.env";
 import FsThemeModeSet from "./components/theme/mode-set.vue";
 import VipButton from "/@/components/vip-button/index.vue";
+import TutorialSteps from "/@/components/tutorial/tutorial-steps.vue";
 export default {
   name: "LayoutFramework",
   // eslint-disable-next-line vue/no-unused-components
-  components: { FsThemeSet, MenuFoldOutlined, MenuUnfoldOutlined, FsMenu, FsLocale, FsSourceLink, FsUserInfo, FsTabs, FsThemeModeSet, VipButton },
+  components: {
+    TutorialSteps,
+    FsThemeSet,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
+    FsMenu,
+    FsLocale,
+    FsSourceLink,
+    FsUserInfo,
+    FsTabs,
+    FsThemeModeSet,
+    VipButton
+  },
   setup() {
     const resourceStore = useResourceStore();
     const frameworkMenus = computed(() => {

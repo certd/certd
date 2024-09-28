@@ -9,6 +9,7 @@ import CronEditor from "./cron-editor/index.vue";
 import { CronLight } from "@vue-js-cron/light";
 import "@vue-js-cron/light/dist/light.css";
 import Plugins from "./plugins/index";
+import TutorialButton from "./tutorial/index.vue";
 export default {
   install(app: any) {
     app.component("PiContainer", PiContainer);
@@ -23,6 +24,8 @@ export default {
     app.component("CheckCircleOutlined", CheckCircleOutlined);
     app.component("InfoCircleOutlined", InfoCircleOutlined);
     app.component("UndoOutlined", UndoOutlined);
+
+    app.component("TutorialButton", TutorialButton);
 
     app.use(vip);
     app.use(Plugins);
