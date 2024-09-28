@@ -1,6 +1,6 @@
 <template>
   <div class="flex-col h-100 tutorial-steps">
-    <a-steps v-model:current="current" class="mt-10" :percent="percent" size="small" :items="steps"></a-steps>
+    <a-steps v-model:current="current" class="mt-10" :percent="percent" size="small" :items="steps" @change="stepChanged"></a-steps>
 
     <div class="step-item overflow-hidden">
       <div class="text">
@@ -40,6 +40,7 @@ import { computed, nextTick, ref } from "vue";
 const steps = ref<Step[]>([
   {
     title: "创建证书申请流水线",
+    description: "演示证书申请任务如何配置",
     items: [
       {
         image: "/doc/images/1-add.png",
@@ -70,6 +71,7 @@ const steps = ref<Step[]>([
   },
   {
     title: "添加部署证书任务",
+    description: "演示部署到阿里云CDN和Nginx",
     items: [
       {
         image: "/doc/images/6-1-add-task.png",
@@ -125,6 +127,7 @@ const steps = ref<Step[]>([
   },
   {
     title: "运行与测试",
+    description: "演示流水线运行,查看日志，成功后跳过等",
     items: [
       {
         image: "/doc/images/9-start.png",
@@ -175,6 +178,7 @@ const steps = ref<Step[]>([
   },
   {
     title: "设置定时执行和邮件通知",
+    description: "自动运行",
     items: [
       {
         image: "/doc/images/14-timer.png",
@@ -204,6 +208,10 @@ const currentStep = computed(() => {
 });
 const currentStepItem = computed(() => {
   return currentStep.value.items[currentItem.value];
+});
+
+const percent = computed(() => {
+  return ((currentItem.value + 1) / currentStep.value.items.length) * 100;
 });
 
 function stepNext() {
@@ -242,6 +250,11 @@ function prev() {
       });
     }
   }
+}
+
+function stepChanged(index: number) {
+  current.value = index;
+  currentItem.value = 0;
 }
 </script>
 
@@ -290,6 +303,11 @@ function prev() {
       margin-left: 5px;
       margin-right: 5px;
     }
+  }
+
+  .ant-steps .ant-steps-item-description {
+    font-size: 12px !important;
+    color: #999 !important;
   }
 }
 </style>
