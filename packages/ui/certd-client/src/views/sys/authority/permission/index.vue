@@ -4,11 +4,19 @@
       <div class="title">权限管理</div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
-      <a-button v-permission="'sys:auth:per:add'" style="margin-left: 20px" @click="addHandle({})">
+      <a-button v-permission="'1sys:auth:per:add'" style="margin-left: 20px" @click="addHandle({})">
         <fs-icon :icon="ui.icons.add"></fs-icon>
         添加
       </a-button>
-      <fs-permission-tree class="permission-tree mt-10" :tree="crudBinding.data" :checkable="false" :actions="permission" @add="addHandle" @edit="editHandle" @remove="removeHandle"></fs-permission-tree>
+      <fs-permission-tree
+        class="permission-tree mt-10"
+        :tree="crudBinding.data"
+        :checkable="false"
+        :actions="permission"
+        @add="addHandle"
+        @edit="editHandle"
+        @remove="removeHandle"
+      ></fs-permission-tree>
     </fs-crud>
   </fs-page>
 </template>
@@ -49,9 +57,9 @@ export default defineComponent({
 
     const { hasPermissions } = usePermission();
     const permission = ref({
-      add: hasPermissions("sys:auth:per:add"),
-      edit: hasPermissions("sys:auth:per:edit"),
-      remove: hasPermissions("sys:auth:per:remove")
+      add: hasPermissions("1sys:auth:per:add"),
+      edit: hasPermissions("1sys:auth:per:edit"),
+      remove: hasPermissions("1sys:auth:per:remove")
     });
 
     return {

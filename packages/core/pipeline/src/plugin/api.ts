@@ -9,7 +9,10 @@ import { ILogger, logger, utils } from "../utils/index.js";
 import { HttpClient } from "../utils/util.request";
 import dayjs from "dayjs";
 import _ from "lodash-es";
-
+export type UserInfo = {
+  role: "admin" | "user";
+  id: any;
+};
 export enum ContextScope {
   global,
   pipeline,
@@ -81,6 +84,8 @@ export type TaskInstanceContext = {
   signal: AbortSignal;
   //工具类
   utils: typeof utils;
+
+  user: UserInfo;
 };
 
 export abstract class AbstractTaskPlugin implements ITaskPlugin {
@@ -169,6 +174,10 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
       return await this[methodName](req.data);
     }
     throw new Error(`action ${req.action} not found`);
+  }
+
+  isAdmin() {
+    return this.ctx.user.role === "admin";
   }
 }
 

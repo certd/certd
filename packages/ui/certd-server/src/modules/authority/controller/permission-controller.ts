@@ -1,12 +1,4 @@
-import {
-  ALL,
-  Body,
-  Controller,
-  Inject,
-  Post,
-  Provide,
-  Query,
-} from '@midwayjs/core';
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { CrudController } from '../../../basic/crud-controller.js';
 import { PermissionService } from '../service/permission-service.js';
 
@@ -49,7 +41,7 @@ export class PermissionController extends CrudController<PermissionService> {
   @Post('/delete', { summary: 'sys:auth:per:remove' })
   async delete(
     @Query('id')
-    id : number
+    id: number
   ) {
     return await super.delete(id);
   }

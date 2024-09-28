@@ -1,7 +1,7 @@
 import { ConcurrencyStrategy, NotificationWhen, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../dt/index.js";
 import _ from "lodash-es";
 import { RunHistory, RunnableCollection } from "./run-history.js";
-import { AbstractTaskPlugin, PluginDefine, pluginRegistry, TaskInstanceContext } from "../plugin/index.js";
+import { AbstractTaskPlugin, PluginDefine, pluginRegistry, TaskInstanceContext, UserInfo } from "../plugin/index.js";
 import { ContextFactory, IContext } from "./context.js";
 import { IStorage } from "./storage.js";
 import { logger } from "../utils/util.log.js";
@@ -16,13 +16,13 @@ import { hashUtils, utils } from "../utils/index.js";
 // import { TimeoutPromise } from "../utils/util.promise.js";
 
 export type ExecutorOptions = {
-  userId: any;
   pipeline: Pipeline;
   storage: IStorage;
   onChanged: (history: RunHistory) => Promise<void>;
   accessService: IAccessService;
   emailService: IEmailService;
   fileRootDir?: string;
+  user: UserInfo;
 };
 
 export class Executor {
@@ -46,7 +46,7 @@ export class Executor {
     this.onChanged = async (history: RunHistory) => {
       await options.onChanged(history);
     };
-    this.pipeline.userId = options.userId;
+    this.pipeline.userId = options.user.id;
     this.contextFactory = new ContextFactory(options.storage);
     this.logger = logger;
     this.pipelineContext = this.contextFactory.getContext("pipeline", this.pipeline.id);
@@ -269,7 +269,7 @@ export class Executor {
       accessService: this.options.accessService,
       emailService: this.options.emailService,
       pipelineContext: this.pipelineContext,
-      userContext: this.contextFactory.getContext("user", this.options.userId),
+      userContext: this.contextFactory.getContext("user", this.options.user.id),
       fileStore: new FileStore({
         scope: this.pipeline.id,
         parent: this.runtime.id,
@@ -277,6 +277,7 @@ export class Executor {
       }),
       signal: this.abort.signal,
       utils,
+      user: this.options.user,
     };
     instance.setCtx(taskCtx);
 

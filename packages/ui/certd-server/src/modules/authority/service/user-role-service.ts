@@ -16,4 +16,6 @@ export class UserRoleService extends BaseService<UserRoleEntity> {
   getRepository() {
     return this.repository;
   }
+
+
 }

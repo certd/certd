@@ -4,7 +4,7 @@ import { In, Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service.js';
 import { PipelineEntity } from '../entity/pipeline.js';
 import { PipelineDetail } from '../entity/vo/pipeline-detail.js';
-import { Executor, isPlus, Pipeline, ResultType, RunHistory } from '@certd/pipeline';
+import { Executor, isPlus, Pipeline, ResultType, RunHistory, UserInfo } from '@certd/pipeline';
 import { AccessService } from './access-service.js';
 import { DbStorage } from './db-storage.js';
 import { StorageService } from './storage-service.js';
@@ -16,9 +16,11 @@ import { HistoryLogService } from './history-log-service.js';
 import { logger } from '../../../utils/logger.js';
 import { EmailService } from '../../basic/service/email-service.js';
 import { NeedVIPException } from '../../../basic/exception/vip-exception.js';
+import { UserService } from '../../authority/service/user-service.js';
 
 const runningTasks: Map<string | number, Executor> = new Map();
 const freeCount = 10;
+
 /**
  * 证书申请
  */
@@ -37,6 +39,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
   historyService: HistoryService;
   @Inject()
   historyLogService: HistoryLogService;
+
+  @Inject()
+  userService: UserService;
 
   @Inject()
   cron: Cron;
@@ -331,9 +336,13 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
     const userId = entity.userId;
     const historyId = await this.historyService.start(entity);
-
+    const userIsAdmin = await this.userService.isAdmin(userId);
+    const user: UserInfo = {
+      id: userId,
+      role: userIsAdmin ? 'admin' : 'user',
+    };
     const executor = new Executor({
-      userId,
+      user,
       pipeline,
       onChanged,
       accessService: this.accessService,

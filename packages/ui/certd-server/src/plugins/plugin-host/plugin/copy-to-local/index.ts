@@ -8,7 +8,7 @@ import path from 'path';
   name: 'CopyToLocal',
   title: '复制到本机',
   icon: 'solar:copy-bold-duotone',
-  desc: '实际上是复制证书到docker容器内的某个路径，需要做目录映射到宿主机',
+  desc: '【仅管理员使用】实际上是复制证书到docker容器内的某个路径，需要做目录映射到宿主机',
   group: pluginGroups.host.key,
   default: {
     strategy: {
@@ -114,6 +114,10 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
     fs.copyFileSync(srcFile, destFile);
   }
   async execute(): Promise<void> {
+    if (!this.isAdmin()) {
+      throw new Error('只有管理员才能运行此任务');
+    }
+
     let { crtPath, keyPath, icPath, pfxPath, derPath } = this;
     const certReader = new CertReader(this.cert);
 

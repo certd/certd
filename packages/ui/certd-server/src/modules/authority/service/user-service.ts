@@ -204,4 +204,16 @@ export class UserService extends BaseService<UserEntity> {
     }
     await super.delete(ids);
   }
+
+  async isAdmin(userId: any) {
+    const userRoles = await this.userRoleService.find({
+      where: {
+        userId,
+      },
+    });
+    const roleIds = userRoles.map(item => item.roleId);
+    if (roleIds.includes(1)) {
+      return true;
+    }
+  }
 }
