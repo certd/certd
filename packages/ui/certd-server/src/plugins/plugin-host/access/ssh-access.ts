@@ -65,8 +65,8 @@ export class SshAccess implements IAccess, ConnectConfig {
   passphrase!: string;
 
   @AccessInput({
-    title: '代理',
-    helper: '代理配置，格式：socks5://$username:$password@$host:$port',
+    title: 'socks代理',
+    helper: 'socks代理配置，格式：socks5://user:password@host:port',
     component: {
       name: 'a-input',
       vModel: 'value',
