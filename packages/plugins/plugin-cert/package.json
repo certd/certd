@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-cert",
   "private": false,
-  "version": "1.25.6",
+  "version": "1.25.7",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,13 +14,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "^1.25.6",
-    "@certd/pipeline": "^1.25.6",
+    "@certd/acme-client": "^1.25.7",
+    "@certd/pipeline": "^1.25.7",
+    "dayjs": "^1.11.7",
     "jszip": "^3.10.1",
     "node-forge": "^0.10.0",
     "psl": "^1.9.0",
-    "rimraf": "^5.0.5",
-    "dayjs": "^1.11.7"
+    "rimraf": "^5.0.5"
   },
   "devDependencies": {
     "@alicloud/cs20151215": "^3.0.3",
