@@ -13,10 +13,10 @@
 ## 自动化流水线创建
 
 ### 1. 创建证书申请部署流水线
-![创建证书申请任务](./doc/images/1-add.png)
+![创建证书申请任务](./packages/ui/certd-client/public/doc/images/1-add.png)
 
 需要添加域名的DNS解析服务商的授权
-![添加域名的DNS解析服务商的授权](./doc/images/2-access-provider.png)
+![添加域名的DNS解析服务商的授权](./packages/ui/certd-client/public/doc/images/2-access-provider.png)
 
 填写accessKey和accessSecret
 ![](./packages/ui/certd-client/public/doc/images/3-add-access.png)
