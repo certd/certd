@@ -86,7 +86,7 @@ const development = {
     resetAdminPasswd: false,
   },
   plus: {
-    serverBaseUrl: 'http://127.0.0.1:11007',
+    serverBaseUrls: ['http://127.0.0.1:11007'],
   },
 } as MidwayConfig;
 mergeConfig(development, 'development');

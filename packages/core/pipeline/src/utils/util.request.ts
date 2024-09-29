@@ -8,7 +8,7 @@ export class HttpError extends Error {
   status?: number;
   statusText?: string;
   code?: string;
-  request?: { url: string; method: string; params?: any; data?: any };
+  request?: { baseURL: string; url: string; method: string; params?: any; data?: any };
   response?: { data: any };
   cause?: any;
   constructor(error: any) {
@@ -23,6 +23,7 @@ export class HttpError extends Error {
     this.status = error.response?.status;
     this.statusText = error.response?.statusText;
     this.request = {
+      baseURL: error.config?.baseURL,
       url: error.config?.url,
       method: error.config?.method,
       params: error.config?.params,
