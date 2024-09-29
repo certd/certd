@@ -9,7 +9,7 @@ import CronEditor from "./cron-editor/index.vue";
 import { CronLight } from "@vue-js-cron/light";
 import "@vue-js-cron/light/dist/light.css";
 import Plugins from "./plugins/index";
-import TutorialButton from "./tutorial/index.vue";
+
 export default {
   install(app: any) {
     app.component("PiContainer", PiContainer);

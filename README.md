@@ -138,8 +138,10 @@ http://your_server_ip:7001
 # 克隆代码
 git clone https://github.com/certd/certd
 cd certd
+# 启动服务
 ./start.sh  
 ```
+如果是windows，请先安装`git for windows` ，然后右键，选择`open git bash here`打开终端，再执行以上命令
 
 
 ## 五、 升级
