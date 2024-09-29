@@ -5,10 +5,13 @@ import * as _ from 'lodash-es';
 import { ILogger } from '@certd/pipeline';
 import { SshAccess } from '../access/index.js';
 import stripAnsi from 'strip-ansi';
+import { SocksClient } from 'socks';
+import { SocksProxy, SocksProxyType } from 'socks/typings/common/constants.js';
+
 export class AsyncSsh2Client {
   conn: ssh2.Client;
   logger: ILogger;
-  connConf: ssh2.ConnectConfig;
+  connConf: SshAccess & ssh2.ConnectConfig;
   windows = false;
   encoding: string;
   constructor(connConf: SshAccess, logger: ILogger) {
@@ -27,6 +30,23 @@ export class AsyncSsh2Client {
 
   async connect() {
     this.logger.info(`开始连接，${this.connConf.host}:${this.connConf.port}`);
+    if (this.connConf.socksProxy) {
+      this.logger.info(`使用代理${this.connConf.socksProxy}`);
+      if (typeof this.connConf.port === 'string') {
+        this.connConf.port = parseInt(this.connConf.port);
+      }
+      const proxyOption: SocksProxy = this.parseSocksProxyFromUri(this.connConf.socksProxy);
+      const info = await SocksClient.createConnection({
+        proxy: proxyOption,
+        command: 'connect',
+        destination: {
+          host: this.connConf.host,
+          port: this.connConf.port,
+        },
+      });
+      this.logger.info('代理连接成功');
+      this.connConf.sock = info.socket;
+    }
     return new Promise((resolve, reject) => {
       try {
         const conn = new ssh2.Client();
@@ -159,6 +179,26 @@ export class AsyncSsh2Client {
     if (this.conn) {
       this.conn.end();
     }
+  }
+
+  private parseSocksProxyFromUri(socksProxyUri: string): SocksProxy {
+    const url = new URL(socksProxyUri);
+    let type: SocksProxyType = 5;
+    if (url.protocol.startsWith('socks4')) {
+      type = 4;
+    }
+    const proxy: SocksProxy = {
+      host: url.hostname,
+      port: parseInt(url.port),
+      type,
+    };
+    if (url.username) {
+      proxy.userId = url.username;
+    }
+    if (url.password) {
+      proxy.password = url.password;
+    }
+    return proxy;
   }
 }
 

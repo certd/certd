@@ -60,7 +60,7 @@ export class AccessService extends BaseService<AccessEntity> implements IAccessS
       const value = json[key];
       const accessInputDefine = accessDefine.input[key];
       if (!accessInputDefine) {
-        throw new ValidateException(`授权类型${accessType}不存在字段${key}`);
+        continue;
       }
       if (!accessInputDefine.encrypt || !value || typeof value !== 'string') {
         //定义无需加密、value为空、不是字符串 这些不需要加密

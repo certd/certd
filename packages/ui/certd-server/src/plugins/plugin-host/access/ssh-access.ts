@@ -18,7 +18,7 @@ export class SshAccess implements IAccess, ConnectConfig {
   host!: string;
   @AccessInput({
     title: '端口',
-    value: '22',
+    value: 22,
     component: {
       name: 'a-input-number',
       placeholder: '22',
@@ -63,6 +63,17 @@ export class SshAccess implements IAccess, ConnectConfig {
     encrypt: true,
   })
   passphrase!: string;
+
+  @AccessInput({
+    title: '代理',
+    helper: '代理配置，格式：socks5://$username:$password@$host:$port',
+    component: {
+      name: 'a-input',
+      vModel: 'value',
+    },
+    encrypt: false,
+  })
+  socksProxy!: string;
 
   @AccessInput({
     title: '是否Windows',
