@@ -6,8 +6,9 @@ import { DnspodAccess } from '../access/index.js';
 @IsDnsProvider({
   name: 'dnspod',
   title: 'dnspod(已过时,请尽快换成腾讯云)',
-  desc: '请尽快换成腾讯云类型',
+  desc: '已废弃，请尽快换成腾讯云类型',
   accessType: 'dnspod',
+  deprecated: 'dnspod已废弃，请换成腾讯云',
 })
 export class DnspodDnsProvider extends AbstractDnsProvider {
   @Autowire()

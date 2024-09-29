@@ -5,6 +5,7 @@ export type Registrable = {
   title: string;
   desc?: string;
   group?: string;
+  deprecated?: string;
 };
 
 export type RegistryItem<T> = {
@@ -67,6 +68,9 @@ export class Registry<T> {
     for (const key in this.storage) {
       const define = this.getDefine(key);
       if (define) {
+        if (define?.deprecated) {
+          continue;
+        }
         list.push({ ...define, key });
       }
     }

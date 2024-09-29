@@ -174,6 +174,9 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     const dnsProviderPlugin = dnsProviderRegistry.get(dnsProviderType);
     const DnsProviderClass = dnsProviderPlugin.target;
     const dnsProviderDefine = dnsProviderPlugin.define as DnsProviderDefine;
+    if (dnsProviderDefine.deprecated) {
+      throw new Error(dnsProviderDefine.deprecated);
+    }
     const access = await this.accessService.getById(dnsProviderAccessId);
 
     // @ts-ignore

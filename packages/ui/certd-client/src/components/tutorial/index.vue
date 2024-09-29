@@ -30,8 +30,9 @@ function next() {
 
 <style lang="less">
 .tutorial-modal {
+  top: 50px;
   .ant-modal-body {
-    height: 70vh;
+    height: 80vh;
   }
 }
 </style>

@@ -11,7 +11,7 @@
       </div>
 
       <div class="image-box">
-        <a-image :src="currentStepItem.image" />
+        <a-image :src="currentStepItem.image" :preview-mask="previewMask" />
       </div>
     </div>
 
@@ -22,7 +22,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 type Step = {
   title: string;
   subTitle?: string;
@@ -256,19 +256,26 @@ function stepChanged(index: number) {
   current.value = index;
   currentItem.value = 0;
 }
+function previewMask() {
+  return (
+    <div title="点击放大" class="h-100 w-100">
+      {" "}
+    </div>
+  );
+}
 </script>
 
 <style lang="less">
 .tutorial-steps {
   .step-item {
     display: flex !important;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     flex: 1;
     padding: 20px;
     .text {
-      width: 100%;
+      width: 350px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -285,10 +292,20 @@ function stepChanged(index: number) {
       background: #eee;
       width: 100%;
       height: 100%;
-      img {
-        height: 100%;
+      .ant-image-mask {
+        background: rgba(255, 255, 255, 0);
+      }
+      .ant-image {
         width: 100%;
-        object-fit: contain;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
       }
     }
     .desc {

@@ -53,7 +53,7 @@ export class AccessController extends CrudController<AccessService> {
   }
 
   @Post('/define', { summary: Constants.per.authOnly })
-  async define(@Query('type') type:string) {
+  async define(@Query('type') type: string) {
     const access = this.service.getDefineByType(type);
     return this.ok(access);
   }
@@ -63,6 +63,9 @@ export class AccessController extends CrudController<AccessService> {
     const list = this.service.getDefineList();
     const dict = [];
     for (const item of list) {
+      if (item?.deprecated) {
+        continue;
+      }
       dict.push({
         value: item.name,
         label: item.title,
