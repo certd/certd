@@ -41,4 +41,7 @@ export class DemoAccess implements IAccess {
   demoKeySecret = '';
 }
 
-new DemoAccess();
+if (process.env.NODE_ENV === 'development') {
+  //你的实现 要去掉这个if，不然生产环境将不会显示
+  new DemoAccess();
+}

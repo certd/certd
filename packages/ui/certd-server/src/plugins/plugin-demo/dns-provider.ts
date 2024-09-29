@@ -1,9 +1,4 @@
-import {
-  AbstractDnsProvider,
-  CreateRecordOptions,
-  IsDnsProvider,
-  RemoveRecordOptions,
-} from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { Autowire, HttpClient, ILogger } from '@certd/pipeline';
 import { DemoAccess } from './access.js';
 
@@ -83,4 +78,7 @@ export class DemoDnsProvider extends AbstractDnsProvider<DemoRecord> {
 }
 
 //TODO 实例化这个provider，将其自动注册到系统中
-new DemoDnsProvider();
+if (process.env.NODE_ENV === 'development') {
+  //你的实现 要去掉这个if，不然生产环境将不会显示
+  new DemoDnsProvider();
+}

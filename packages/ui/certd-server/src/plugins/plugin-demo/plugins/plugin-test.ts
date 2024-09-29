@@ -98,4 +98,7 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
   }
 }
 //TODO 这里实例化插件，进行注册
-new DemoTestPlugin();
+if (process.env.NODE_ENV === 'development') {
+  //你的实现 要去掉这个if，不然生产环境将不会显示
+  new DemoTestPlugin();
+}
