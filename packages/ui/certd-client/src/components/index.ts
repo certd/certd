@@ -25,8 +25,6 @@ export default {
     app.component("InfoCircleOutlined", InfoCircleOutlined);
     app.component("UndoOutlined", UndoOutlined);
 
-    app.component("TutorialButton", TutorialButton);
-
     app.use(vip);
     app.use(Plugins);
   }
