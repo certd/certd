@@ -8,7 +8,7 @@ export class PluginService {
     const list = [];
     for (const key in collection) {
       const Plugin = collection[key];
-      if (Plugin?.define.deprecated) {
+      if (Plugin?.define?.deprecated) {
         continue;
       }
       list.push({ ...Plugin.define, key });
