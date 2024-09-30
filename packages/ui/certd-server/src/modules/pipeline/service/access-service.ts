@@ -108,6 +108,14 @@ export class AccessService extends BaseService<AccessEntity> implements IAccessS
       throw new Error(`该授权配置不存在,请确认是否已被删除:id=${id}`);
     }
     // const access = accessRegistry.get(entity.type);
+    const setting = this.decryptAccessEntity(entity);
+    return {
+      id: entity.id,
+      ...setting,
+    };
+  }
+
+  decryptAccessEntity(entity: AccessEntity): any {
     let setting = {};
     if (entity.encryptSetting && entity.encryptSetting !== '{}') {
       setting = JSON.parse(entity.encryptSetting);
@@ -123,10 +131,7 @@ export class AccessService extends BaseService<AccessEntity> implements IAccessS
     } else if (entity.setting) {
       setting = JSON.parse(entity.setting);
     }
-    return {
-      id: entity.id,
-      ...setting,
-    };
+    return setting;
   }
 
   getDefineList() {

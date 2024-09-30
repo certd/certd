@@ -4,7 +4,7 @@ import { FileStore } from "../core/file-store.js";
 import { Logger } from "log4js";
 import { IAccessService } from "../access/index.js";
 import { IEmailService } from "../service/index.js";
-import { IContext, PluginRequestHandleReq } from "../core/index.js";
+import { IContext, PluginRequestHandleReq, RunnableCollection } from "../core/index.js";
 import { ILogger, logger, utils } from "../utils/index.js";
 import { HttpClient } from "../utils/util.request";
 import dayjs from "dayjs";
@@ -165,7 +165,10 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
       throw new Error("action is required");
     }
 
-    const methodName = `on${_.upperFirst(req.action)}`;
+    let methodName = req.action;
+    if (!req.action.startsWith("on")) {
+      methodName = `on${_.upperFirst(req.action)}`;
+    }
 
     // @ts-ignore
     const method = this[methodName];
@@ -178,6 +181,21 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
 
   isAdmin() {
     return this.ctx.user.role === "admin";
+  }
+
+  getStepFromPipeline(stepId: string) {
+    let found: any = null;
+    RunnableCollection.each(this.ctx.pipeline.stages, (step) => {
+      if (step.id === stepId) {
+        found = step;
+        return;
+      }
+    });
+    return found;
+  }
+
+  getStepIdFromRefInput(ref = ".") {
+    return ref.split(".")[1];
   }
 }
 

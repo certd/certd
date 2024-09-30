@@ -22,6 +22,19 @@ const getOptions = async () => {
   });
 };
 
+const filterOption = (input: string, option: any) => {
+  return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0 || String(option.value).toLowerCase().indexOf(input.toLowerCase());
+};
+
+let isFirst = true;
+async function onClick() {
+  if (!isFirst) {
+    return;
+  }
+  isFirst = false;
+  optionsRef.value = await getOptions();
+}
+
 watch(
   () => {
     const values = [];
@@ -35,13 +48,20 @@ watch(
   },
   async () => {
     optionsRef.value = await getOptions();
-  },
-  { immediate: true }
+  }
 );
 </script>
 
 <template>
-  <a-select class="remote-select" :options="optionsRef" :value="value" @update:value="emit('update:value', $event)" />
+  <a-select
+    class="remote-select"
+    show-search
+    :filter-option="filterOption"
+    :options="optionsRef"
+    :value="value"
+    @click="onClick"
+    @update:value="emit('update:value', $event)"
+  />
 </template>
 
 <style lang="less"></style>

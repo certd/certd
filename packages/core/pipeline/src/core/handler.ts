@@ -27,7 +27,10 @@ export class AccessRequestHandler<T = any> {
       throw new Error("action is required");
     }
 
-    const methodName = `on${_.upperFirst(req.action)}`;
+    let methodName = req.action;
+    if (!req.action.startsWith("on")) {
+      methodName = `on${_.upperFirst(req.action)}`;
+    }
 
     // @ts-ignore
     const method = this[methodName];
@@ -38,4 +41,3 @@ export class AccessRequestHandler<T = any> {
     throw new Error(`action ${req.action} not found`);
   }
 }
-

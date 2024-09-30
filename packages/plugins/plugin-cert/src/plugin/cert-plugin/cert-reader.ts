@@ -65,6 +65,13 @@ export class CertReader {
     return { detail, expires };
   }
 
+  getAllDomains() {
+    const { detail } = this.getCrtDetail();
+    const domains = [detail.domains.commonName];
+    domains.push(...detail.domains.altNames);
+    return domains;
+  }
+
   saveToFile(type: "crt" | "key" | "pfx" | "der" | "ic", filepath?: string) {
     if (!this.cert[type]) {
       return;

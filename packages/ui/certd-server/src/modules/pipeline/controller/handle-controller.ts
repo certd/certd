@@ -37,22 +37,19 @@ export class HandleController extends BaseController {
     //@ts-ignore
     const access = new accessCls();
 
-    let isNew = true;
+    let inputAccess = body.input.access;
     if (body.input.id > 0) {
       const oldEntity = await this.accessService.info(body.input.id);
-      if (!oldEntity) {
-        isNew = false;
-        const param = {
+      if (oldEntity) {
+        const param: any = {
           type: body.typeName,
           setting: JSON.stringify(body.input.access),
         };
         this.accessService.encryptSetting(param, oldEntity);
-        body.input.access = JSON.parse(param.setting);
+        inputAccess = this.accessService.decryptAccessEntity(param);
       }
     }
-    if (isNew) {
-      mergeUtils.merge(access, body.input.access);
-    }
+    mergeUtils.merge(access, inputAccess);
 
     const ctx: AccessRequestHandleContext = {
       http: http,

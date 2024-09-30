@@ -139,6 +139,7 @@ export const http = createAxiosService({ logger }) as HttpClient;
 export type HttpClientResponse<R> = any;
 export type HttpRequestConfig<D> = {
   skipSslVerify?: boolean;
+  skipCheckRes?: boolean;
 } & AxiosRequestConfig<D>;
 export type HttpClient = {
   request<D = any, R = any>(config: HttpRequestConfig<D>): Promise<HttpClientResponse<R>>;

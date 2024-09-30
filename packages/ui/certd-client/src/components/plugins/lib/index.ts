@@ -7,10 +7,10 @@ export type ComponentPropsType = {
   value?: any;
 };
 export type RequestHandleReq<T = any> = {
-  type: strin;
+  type: string;
   typeName: string;
   action: string;
-  data: any;
+  data?: any;
   input: T;
 };
 
