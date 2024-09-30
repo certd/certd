@@ -12,7 +12,7 @@
   "scripts": {
     "start": "lerna bootstrap --hoist",
     "i-all": "lerna link && lerna exec npm install  ",
-    "publish": "npm run prepublishOnly2  && lerna publish --force-publish=pro/plus-core --conventional-commits --create-release github && npm run afterpublishOnly",
+    "publish": "npm run prepublishOnly2  && lerna publish --force-publish=pro/plus-core --conventional-commits --create-release github && npm run afterpublishOnly && npm run commitAll",
     "afterpublishOnly": "time /t >build.trigger && git add ./build.trigger && git commit -m \"build: trigger build image\" && TIMEOUT /T 10 && git push",
     "commitAll" : "git add . && git commit -m \"build: publish\" && git push",
     "prepublishOnly1": "npm run check && lerna run build ",
