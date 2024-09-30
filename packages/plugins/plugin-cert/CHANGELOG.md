@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.25.8](https://github.com/certd/certd/compare/v1.25.7...v1.25.8) (2024-09-30)
+
+### Bug Fixes
+
+* 修复pfxPassword无效的bug ([251e450](https://github.com/certd/certd/commit/251e450fabfe62405bac13e39f2153736c081ef0))
+
 ## [1.25.7](https://github.com/certd/certd/compare/v1.25.6...v1.25.7) (2024-09-29)
 
 **Note:** Version bump only for package @certd/plugin-cert

@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-cert",
   "private": false,
-  "version": "1.25.7",
+  "version": "1.25.8",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,8 +14,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@certd/acme-client": "^1.25.7",
-    "@certd/pipeline": "^1.25.7",
+    "@certd/acme-client": "^1.25.8",
+    "@certd/pipeline": "^1.25.8",
     "dayjs": "^1.11.7",
     "jszip": "^3.10.1",
     "node-forge": "^0.10.0",

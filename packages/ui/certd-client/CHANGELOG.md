@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.25.8](https://github.com/certd/certd/compare/v1.25.7...v1.25.8) (2024-09-30)
+
+### Performance Improvements
+
+* 群晖获取deviceid优化 ([8d42273](https://github.com/certd/certd/commit/8d4227366548eb70f6bc04303829e6933168f906))
+
 ## [1.25.7](https://github.com/certd/certd/compare/v1.25.6...v1.25.7) (2024-09-29)
 
 **Note:** Version bump only for package @certd/ui-client
