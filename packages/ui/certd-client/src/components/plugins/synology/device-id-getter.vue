@@ -32,7 +32,7 @@ async function loginWithOTPCode(otpCode: string) {
     data: {
       otpCode
     },
-    form: props.form
+    input: props.form
   });
 }
 
