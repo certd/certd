@@ -9,8 +9,8 @@ import { logger } from '../../../utils/logger.js';
 export class PlusService {
   @Inject()
   sysSettingsService: SysSettingsService;
-  @Config('plus.server.baseUrl')
-  plusServerBaseUrl;
+  @Config('plus.server.baseUrls')
+  plusServerBaseUrls: string[];
 
   plusRequestService: PlusRequestService;
 
@@ -18,7 +18,7 @@ export class PlusService {
   async init() {
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     this.plusRequestService = new PlusRequestService({
-      plusServerBaseUrl: this.plusServerBaseUrl,
+      plusServerBaseUrls: this.plusServerBaseUrls,
       http: http,
       logger,
       subjectId: installInfo.siteId,

@@ -1,7 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
-import { QiniuAccess } from '../../access/index.js';
+import { QiniuAccess, QiniuClient } from '@certd/plugin-plus';
 import { CertInfo } from '@certd/plugin-cert';
-import { doRequest, uploadCert } from '../lib/sdk.js';
 
 @IsTaskPlugin({
   name: 'QiniuDeployCertToCDN',
@@ -49,24 +48,27 @@ export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     this.logger.info('开始部署证书到七牛云cdn');
     const access = await this.accessService.getById<QiniuAccess>(this.accessId);
-
+    const qiniuClient = new QiniuClient({
+      http: this.ctx.http,
+      access,
+    });
     const url = `https://api.qiniu.com/domain/${this.domainName}/httpsconf`;
     let certId = null;
     if (typeof this.cert !== 'string') {
       // 是证书id，直接上传即可
       this.logger.info('先上传证书');
-      certId = await uploadCert(this.ctx.http, access, this.cert, this.appendTimeSuffix('certd'));
+      certId = await qiniuClient.uploadCert(this.cert, this.appendTimeSuffix('certd'));
     } else {
       certId = this.cert;
     }
 
     //开始修改证书
-    this.logger.info('开始修改证书');
+    this.logger.info(`开始修改证书,certId:${certId},domain:${this.domainName}`);
     const body = {
       certID: certId,
     };
 
-    await doRequest(this.ctx.http, access, url, 'put', body);
+    await qiniuClient.doRequest(url, 'put', body);
 
     this.logger.info('部署完成');
   }
