@@ -1,4 +1,6 @@
-# Certd Open Source License
+
+                    Certd Open Source License
+                  
 
 - This project is licensed under the **GNU Affero General Public License (AGPL)** with the following additional terms.  
 - 本项目遵循 GNU Affero General Public License（AGPL），并附加以下条款。
