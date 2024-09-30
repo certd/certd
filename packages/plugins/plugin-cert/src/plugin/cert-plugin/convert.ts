@@ -21,12 +21,12 @@ export class CertConverter {
     const certReader = new CertReader(opts.cert);
     let pfxPath: string;
     let derPath: string;
-    const handle = async (opts: CertReaderHandleContext) => {
+    const handle = async (ctx: CertReaderHandleContext) => {
       // 调用openssl 转pfx
-      pfxPath = await this.convertPfx(opts);
+      pfxPath = await this.convertPfx(ctx, opts.pfxPassword);
 
       // 转der
-      derPath = await this.convertDer(opts);
+      derPath = await this.convertDer(ctx);
     };
 
     await certReader.readCertFile({ logger: this.logger, handle });
@@ -44,7 +44,7 @@ export class CertConverter {
     });
   }
 
-  private async convertPfx(opts: CertReaderHandleContext, pfxPassword?: string) {
+  private async convertPfx(opts: CertReaderHandleContext, pfxPassword: string) {
     const { tmpCrtPath, tmpKeyPath } = opts;
 
     const pfxPath = path.join(os.tmpdir(), "/certd/tmp/", Math.floor(Math.random() * 1000000) + "", "cert.pfx");
