@@ -583,8 +583,22 @@ export default defineComponent({
       const saveLoading = ref();
       const run = async (stepId?: string) => {
         if (props.editMode) {
-          message.warn("请先保存，再运行管道");
-          return;
+          const res = await new Promise((resolve, reject) => {
+            Modal.confirm({
+              title: "需要保存才能运行管道",
+              content: "是否先保存",
+              onOk() {
+                save();
+                resolve(true);
+              },
+              onCancel() {
+                resolve(false);
+              }
+            });
+          });
+          if (!res) {
+            return;
+          }
         }
         if (!props.options.doTrigger) {
           message.warn("暂不支持运行");
