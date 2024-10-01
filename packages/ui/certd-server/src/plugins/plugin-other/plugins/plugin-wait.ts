@@ -17,7 +17,7 @@ export class WaitPlugin extends AbstractTaskPlugin {
     title: '等待时长',
     value: 30,
     component: {
-      name: 'a-number',
+      name: 'a-input-number',
       vModel: 'value',
     },
     helper: '单位：秒',
@@ -27,7 +27,9 @@ export class WaitPlugin extends AbstractTaskPlugin {
 
   async onInstance() {}
   async execute(): Promise<void> {
+    this.logger.info(`等待${this.waitTime}s`);
     await this.ctx.utils.sleep(this.waitTime * 1000);
+    this.logger.info('等待结束');
   }
 }
 new WaitPlugin();
