@@ -1,5 +1,6 @@
 import { Registrable } from "../registry/index.js";
 import { FormItemProps } from "../dt/index.js";
+import { HttpClient, ILogger, utils } from "../utils";
 
 export type AccessInputDefine = FormItemProps & {
   title: string;
@@ -15,5 +16,13 @@ export interface IAccessService {
   getById<T = any>(id: any): Promise<T>;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface IAccess {}
+export interface IAccess {
+  ctx: AccessContext;
+  [key: string]: any;
+}
+
+export type AccessContext = {
+  http: HttpClient;
+  logger: ILogger;
+  utils: typeof utils;
+};

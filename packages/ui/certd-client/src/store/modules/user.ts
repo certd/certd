@@ -130,7 +130,7 @@ export const useUserStore = defineStore({
      */
     confirmLoginOut() {
       const { t } = useI18n();
-      Modal.config({
+      Modal.confirm({
         iconType: "warning",
         title: t("app.login.logoutTip"),
         content: t("app.login.logoutMessage"),

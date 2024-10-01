@@ -3,7 +3,7 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseService } from '../../../basic/base-service.js';
 import { AccessEntity } from '../entity/access.js';
-import { AccessDefine, accessRegistry, IAccessService } from '@certd/pipeline';
+import { AccessDefine, accessRegistry, IAccessService, newAccess } from '@certd/pipeline';
 import { EncryptService } from './encrypt-service.js';
 import { ValidateException } from '../../../basic/exception/validation-exception.js';
 
@@ -109,10 +109,11 @@ export class AccessService extends BaseService<AccessEntity> implements IAccessS
     }
     // const access = accessRegistry.get(entity.type);
     const setting = this.decryptAccessEntity(entity);
-    return {
+    const input = {
       id: entity.id,
       ...setting,
     };
+    return newAccess(entity.type, input);
   }
 
   decryptAccessEntity(entity: AccessEntity): any {

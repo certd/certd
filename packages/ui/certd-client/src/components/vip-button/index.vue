@@ -135,6 +135,7 @@ function openUpgrade() {
     async onOk() {
       return await doActive();
     },
+    maskClosable: true,
     okText: "激活",
     width: 500,
     content: () => {

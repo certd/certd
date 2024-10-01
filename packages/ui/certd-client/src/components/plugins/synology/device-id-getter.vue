@@ -42,6 +42,7 @@ async function getDeviceId() {
 
   modal.confirm({
     title: "请输入OTP验证码",
+    maskClosable: true,
     content: () => {
       return (
         <a-form-item-rest>

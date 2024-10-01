@@ -13,13 +13,13 @@ export type AccessRequestHandleReqInput<T = any> = {
   title?: string;
   access: T;
 };
-export type AccessRequestHandleReq<T = any> = PluginRequestHandleReq<AccessRequestHandleReqInput<T>>;
-
 export type AccessRequestHandleContext = {
   http: HttpClient;
   logger: ILogger;
   utils: typeof utils;
 };
+
+export type AccessRequestHandleReq<T = any> = PluginRequestHandleReq<AccessRequestHandleReqInput<T>>;
 
 export class AccessRequestHandler<T = any> {
   async onRequest(req: AccessRequestHandleReq<T>, ctx: AccessRequestHandleContext) {

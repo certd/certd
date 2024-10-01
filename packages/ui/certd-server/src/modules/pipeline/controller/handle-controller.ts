@@ -1,13 +1,12 @@
 import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
 import { Constants } from '../../../basic/constants.js';
 import {
-  accessRegistry,
-  AccessRequestHandleContext,
   AccessRequestHandleReq,
   http,
   ITaskPlugin,
   logger,
   mergeUtils,
+  newAccess,
   pluginRegistry,
   PluginRequestHandleReq,
   TaskInstanceContext,
@@ -28,15 +27,6 @@ export class HandleController extends BaseController {
 
   @Post('/access', { summary: Constants.per.authOnly })
   async accessRequest(@Body(ALL) body: AccessRequestHandleReq) {
-    const accessItem = accessRegistry.get(body.typeName);
-    const accessCls = accessItem.target;
-    if (accessCls == null) {
-      throw new Error(`access ${body.typeName} not found`);
-    }
-    //实例化access
-    //@ts-ignore
-    const access = new accessCls();
-
     let inputAccess = body.input.access;
     if (body.input.id > 0) {
       const oldEntity = await this.accessService.info(body.input.id);
@@ -49,14 +39,10 @@ export class HandleController extends BaseController {
         inputAccess = this.accessService.decryptAccessEntity(param);
       }
     }
-    mergeUtils.merge(access, inputAccess);
 
-    const ctx: AccessRequestHandleContext = {
-      http: http,
-      logger: logger,
-      utils,
-    };
-    const res = await access.onRequest(body, ctx);
+    const access = newAccess(body.typeName, inputAccess);
+
+    const res = await access.onRequest(body);
 
     return this.ok(res);
   }

@@ -1,8 +1,9 @@
 // src/decorator/memoryCache.decorator.ts
-import { AccessDefine, AccessInputDefine } from "./api.js";
+import { AccessContext, AccessDefine, AccessInputDefine } from "./api.js";
 import { Decorator } from "../decorator/index.js";
 import _ from "lodash-es";
 import { accessRegistry } from "./registry.js";
+import { http, logger, utils } from "../utils";
 
 // 提供一个唯一 key
 export const ACCESS_CLASS_KEY = "pipeline:access";
@@ -36,4 +37,25 @@ export function AccessInput(input?: AccessInputDefine): PropertyDecorator {
     // const _type = Reflect.getMetadata("design:type", target, propertyKey);
     Reflect.defineMetadata(ACCESS_INPUT_KEY, input, target, propertyKey);
   };
+}
+
+export function newAccess(type: string, input: any, ctx?: AccessContext) {
+  const register = accessRegistry.get(type);
+  if (register == null) {
+    throw new Error(`access ${type} not found`);
+  }
+  // @ts-ignore
+  const access = new register.target();
+  for (const key in input) {
+    access[key] = input[key];
+  }
+  if (!ctx) {
+    ctx = {
+      http,
+      logger,
+      utils,
+    };
+  }
+  access.ctx = ctx;
+  return access;
 }
