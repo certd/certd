@@ -1,4 +1,4 @@
-import { Decorator, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { Decorator, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from "@certd/pipeline";
 import type { CertInfo, PrivateKeyType, SSLProvider } from "./acme.js";
 import { AcmeService } from "./acme.js";
 import _ from "lodash-es";
@@ -181,7 +181,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
     // @ts-ignore
     const dnsProvider: IDnsProvider = new DnsProviderClass();
-    const context: DnsProviderContext = { access, logger: this.logger, http: this.http };
+    const context: DnsProviderContext = { access, logger: this.logger, http: this.http, utils };
     Decorator.inject(dnsProviderDefine.autowire, dnsProvider, context);
     dnsProvider.setCtx(context);
     await dnsProvider.onInstance();

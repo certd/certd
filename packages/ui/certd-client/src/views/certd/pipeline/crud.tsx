@@ -185,11 +185,19 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
         minWidth: 200,
         fixed: "right",
         buttons: {
-          view: {
+          play: {
+            title: null,
+            type: "link",
+            icon: "ant-design:play-outlined",
             click({ row }) {
               router.push({ path: "/certd/pipeline/detail", query: { id: row.id, editMode: "false" } });
             }
           },
+          // view: {
+          //   click({ row }) {
+          //     router.push({ path: "/certd/pipeline/detail", query: { id: row.id, editMode: "false" } });
+          //   }
+          // },
           copy: {
             click: async (context) => {
               userStore.checkPlus();
@@ -260,7 +268,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
             show: true
           },
           column: {
-            width: 50
+            width: 100
           },
           form: {
             show: false
@@ -280,7 +288,8 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           column: {
             show: computed(() => {
               return userStore.isAdmin && settingStore.sysPublic.managerOtherUserPipeline;
-            })
+            }),
+            width: 100
           }
         },
         title: {
@@ -306,9 +315,11 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           }
         },
         content: {
-          title: "定时任务数量",
+          title: "定时任务数",
           type: "number",
           column: {
+            align: "center",
+            width: 100,
             cellRender({ value }) {
               if (value && value.triggers) {
                 return value.triggers?.length > 0 ? value.triggers.length : "-";
@@ -346,7 +357,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
               const percent = (leftDays / 90) * 100;
               return <a-progress percent={percent} strokeColor={color} format={(percent: number) => `${leftDays} 天`} />;
             },
-            width: 110
+            width: 150
           }
         },
         lastHistoryTime: {
@@ -357,7 +368,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           },
           column: {
             sorter: true,
-            width: 120,
+            width: 150,
             align: "center"
           }
         },
@@ -415,6 +426,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
             helper: "历史记录保持条数，多余的会被删除"
           },
           column: {
+            width: 130,
             show: false
           }
         },
@@ -438,7 +450,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           },
           column: {
             sorter: true,
-            width: 125,
+            width: 155,
             align: "center"
           }
         },
@@ -449,6 +461,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
             show: false
           },
           column: {
+            width: 125,
             show: false
           }
         }

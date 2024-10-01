@@ -68,6 +68,9 @@ function install(app: App, options: any = {}) {
           },
           conditionalRender: {
             match(scope) {
+              if (scope.key === "__blank__") {
+                return false;
+              }
               //不能用 !scope.value ， 否则switch组件设置为关之后就消失了
               const { value, key, props } = scope;
               return !value && key != "_index" && value != false;
@@ -147,17 +150,18 @@ function install(app: App, options: any = {}) {
           }
         },
         columns: {
-          // createdAt: {
-          //   title: "创建时间",
-          //   type: "datetime",
-          //   form: {
-          //     show: false
-          //   },
-          //   column: {
-          //     show: false,
-          //     order: 1000
-          //   }
-          // }
+          __blank__: {
+            title: "",
+            type: "text",
+            form: {
+              show: false
+            },
+            column: {
+              show: true,
+              order: 999999,
+              width: -1
+            }
+          }
         }
       };
 

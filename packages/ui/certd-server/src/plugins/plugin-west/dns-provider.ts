@@ -37,7 +37,7 @@ export class WestDnsProvider extends AbstractDnsProvider<westRecord> {
 
   private async doRequestApi(url: string, data: any = null, method = 'post') {
     if (this.access.scope === 'account') {
-      data.apikey = this.access.apikey;
+      data.apikey = this.ctx.utils.hash.md5(this.access.apikey);
       data.username = this.access.username;
     } else {
       data.apidomainkey = this.access.apidomainkey;
