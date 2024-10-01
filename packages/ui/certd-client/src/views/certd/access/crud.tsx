@@ -42,6 +42,9 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           span: 6
         }
       },
+      rowHandle: {
+        width: 200
+      },
       columns: {
         id: {
           title: "ID",

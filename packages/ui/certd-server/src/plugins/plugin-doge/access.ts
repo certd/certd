@@ -1,4 +1,4 @@
-import { IsAccess, AccessInput } from '@certd/pipeline';
+import { IsAccess, AccessInput, BaseAccess } from '@certd/pipeline';
 
 /**
  * 这个注解将注册一个授权配置
@@ -9,7 +9,7 @@ import { IsAccess, AccessInput } from '@certd/pipeline';
   title: '多吉云',
   desc: '',
 })
-export class DogeCloudAccess {
+export class DogeCloudAccess extends BaseAccess {
   /**
    * 授权属性配置
    */

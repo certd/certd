@@ -3,7 +3,7 @@ import { AccessContext, AccessDefine, AccessInputDefine } from "./api.js";
 import { Decorator } from "../decorator/index.js";
 import _ from "lodash-es";
 import { accessRegistry } from "./registry.js";
-import { http, logger, utils } from "../utils";
+import { http, logger, utils } from "../utils/index.js";
 
 // 提供一个唯一 key
 export const ACCESS_CLASS_KEY = "pipeline:access";

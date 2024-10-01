@@ -1,5 +1,4 @@
-import _ from "lodash-es";
-import { HttpClient, ILogger, utils } from "../utils";
+import { HttpClient, ILogger, utils } from "../utils/index.js";
 
 export type PluginRequestHandleReq<T = any> = {
   typeName: string;
@@ -20,24 +19,3 @@ export type AccessRequestHandleContext = {
 };
 
 export type AccessRequestHandleReq<T = any> = PluginRequestHandleReq<AccessRequestHandleReqInput<T>>;
-
-export class AccessRequestHandler<T = any> {
-  async onRequest(req: AccessRequestHandleReq<T>, ctx: AccessRequestHandleContext) {
-    if (!req.action) {
-      throw new Error("action is required");
-    }
-
-    let methodName = req.action;
-    if (!req.action.startsWith("on")) {
-      methodName = `on${_.upperFirst(req.action)}`;
-    }
-
-    // @ts-ignore
-    const method = this[methodName];
-    if (method) {
-      // @ts-ignore
-      return await this[methodName](req.data, ctx);
-    }
-    throw new Error(`action ${req.action} not found`);
-  }
-}

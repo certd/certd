@@ -1,4 +1,4 @@
-import { AccessInput, IsAccess } from '@certd/pipeline';
+import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
 
 /**
  * 这个注解将注册一个授权配置
@@ -9,7 +9,7 @@ import { AccessInput, IsAccess } from '@certd/pipeline';
   title: 'dynadot授权',
   desc: '************\n注意：申请证书时会覆盖已有的域名解析配置，慎用\n************\n待优化，主要是dynadot的接口一言难尽',
 })
-export class DynadotAccess {
+export class DynadotAccess extends BaseAccess {
   /**
    * 授权属性配置
    */

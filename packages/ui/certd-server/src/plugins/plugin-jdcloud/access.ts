@@ -1,4 +1,4 @@
-import { AccessInput, IsAccess } from '@certd/pipeline';
+import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
 
 /**
  * 这个注解将注册一个授权配置
@@ -9,7 +9,7 @@ import { AccessInput, IsAccess } from '@certd/pipeline';
   title: '京东云授权',
   desc: '暂时无法成功申请，还没测试通过',
 })
-export class JDCloudAccess {
+export class JDCloudAccess extends BaseAccess {
   /**
    * 授权属性配置
    */

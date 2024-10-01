@@ -5,7 +5,7 @@ import { useRouter } from "vue-router";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { nanoid } from "nanoid";
-import { message, Modal } from "ant-design-vue";
+import { message, Modal, notification } from "ant-design-vue";
 import { env } from "/@/utils/util.env";
 import { useUserStore } from "/@/store/modules/user";
 import dayjs from "dayjs";
@@ -181,23 +181,34 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           }
         }
       },
+      table: {
+        scroll: { x: 1500 }
+      },
       rowHandle: {
-        minWidth: 200,
+        width: 300,
         fixed: "right",
         buttons: {
           play: {
+            order: -999,
             title: null,
             type: "link",
-            icon: "ant-design:play-outlined",
+            icon: "ant-design:play-circle-outlined",
+            click({ row }) {
+              Modal.confirm({
+                title: "确认",
+                content: `确定要触发运行吗？`,
+                async onOk() {
+                  await api.Trigger(row.id);
+                  notification.success({ message: "管道已经开始运行" });
+                }
+              });
+            }
+          },
+          view: {
             click({ row }) {
               router.push({ path: "/certd/pipeline/detail", query: { id: row.id, editMode: "false" } });
             }
           },
-          // view: {
-          //   click({ row }) {
-          //     router.push({ path: "/certd/pipeline/detail", query: { id: row.id, editMode: "false" } });
-          //   }
-          // },
           copy: {
             click: async (context) => {
               userStore.checkPlus();
@@ -303,7 +314,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
             }
           },
           column: {
-            width: 300,
+            width: 350,
             sorter: true,
             component: {
               on: {

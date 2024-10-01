@@ -1,4 +1,4 @@
-import { IsAccess, AccessInput } from '@certd/pipeline';
+import { IsAccess, AccessInput, BaseAccess } from '@certd/pipeline';
 
 @IsAccess({
   name: 'dnspod',
@@ -6,7 +6,7 @@ import { IsAccess, AccessInput } from '@certd/pipeline';
   desc: '腾讯云的域名解析接口已迁移到dnspod',
   deprecated: 'dnspod已废弃，请换成腾讯云',
 })
-export class DnspodAccess {
+export class DnspodAccess extends BaseAccess {
   @AccessInput({
     title: '端点',
     component: {

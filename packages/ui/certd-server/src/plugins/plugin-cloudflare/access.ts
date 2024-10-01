@@ -1,4 +1,4 @@
-import { IsAccess, AccessInput } from '@certd/pipeline';
+import { IsAccess, AccessInput, BaseAccess } from '@certd/pipeline';
 
 /**
  * 这个注解将注册一个授权配置
@@ -9,7 +9,7 @@ import { IsAccess, AccessInput } from '@certd/pipeline';
   title: 'cloudflare授权',
   desc: '',
 })
-export class CloudflareAccess {
+export class CloudflareAccess extends BaseAccess {
   /**
    * 授权属性配置
    */

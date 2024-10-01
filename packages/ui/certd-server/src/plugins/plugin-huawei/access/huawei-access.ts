@@ -1,11 +1,11 @@
-import { IsAccess, AccessInput } from '@certd/pipeline';
+import { IsAccess, AccessInput, BaseAccess } from '@certd/pipeline';
 
 @IsAccess({
   name: 'huawei',
   title: '华为云授权',
   desc: '',
 })
-export class HuaweiAccess {
+export class HuaweiAccess extends BaseAccess {
   @AccessInput({
     title: 'accessKeyId',
     component: {

@@ -1,4 +1,4 @@
-import { AccessInput, IAccess, IsAccess } from '@certd/pipeline';
+import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
 import { ConnectConfig } from 'ssh2';
 
 @IsAccess({
@@ -7,7 +7,7 @@ import { ConnectConfig } from 'ssh2';
   desc: '',
   input: {},
 })
-export class SshAccess implements IAccess, ConnectConfig {
+export class SshAccess extends BaseAccess implements ConnectConfig {
   @AccessInput({
     title: '主机地址',
     component: {

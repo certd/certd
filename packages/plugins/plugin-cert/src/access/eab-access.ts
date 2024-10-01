@@ -1,11 +1,11 @@
-import { IsAccess, AccessInput } from "@certd/pipeline";
+import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
 
 @IsAccess({
   name: "eab",
   title: "EAB授权",
   desc: "ZeroSSL证书申请需要EAB授权",
 })
-export class EabAccess {
+export class EabAccess extends BaseAccess {
   @AccessInput({
     title: "KID",
     component: {

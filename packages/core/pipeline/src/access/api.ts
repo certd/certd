@@ -1,6 +1,8 @@
 import { Registrable } from "../registry/index.js";
 import { FormItemProps } from "../dt/index.js";
-import { HttpClient, ILogger, utils } from "../utils";
+import { HttpClient, ILogger, utils } from "../utils/index.js";
+import _ from "lodash-es";
+import { AccessRequestHandleReq } from "../core";
 
 export type AccessInputDefine = FormItemProps & {
   title: string;
@@ -26,3 +28,26 @@ export type AccessContext = {
   logger: ILogger;
   utils: typeof utils;
 };
+
+export abstract class BaseAccess implements IAccess {
+  ctx!: AccessContext;
+
+  async onRequest(req: AccessRequestHandleReq) {
+    if (!req.action) {
+      throw new Error("action is required");
+    }
+
+    let methodName = req.action;
+    if (!req.action.startsWith("on")) {
+      methodName = `on${_.upperFirst(req.action)}`;
+    }
+
+    // @ts-ignore
+    const method = this[methodName];
+    if (method) {
+      // @ts-ignore
+      return await this[methodName](req.data);
+    }
+    throw new Error(`action ${req.action} not found`);
+  }
+}
