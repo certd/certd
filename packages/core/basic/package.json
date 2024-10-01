@@ -1,0 +1,11 @@
+{
+  "name": "@certd/basic",
+  "version": "1.25.8",
+  "main": "src/index.js",
+  "scripts": {
+    "build": ""
+  },
+  "author": "",
+  "license": "MIT",
+  "description": ""
+}
