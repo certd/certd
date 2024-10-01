@@ -1,6 +1,6 @@
 {
   "name": "@certd/basic",
-  "version": "1.25.8",
+  "version": "1.25.9",
   "main": "src/index.js",
   "scripts": {
     "build": "echo 'basic'"
