@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid';
 import { SysInstallInfo, SysPrivateSettings } from '../system/service/models.js';
 import crypto from 'crypto';
 import { PlusService } from '../basic/service/plus-service.js';
+import { isComm } from '@certd/plus-core';
 
 export type InstallInfo = {
   installTime: number;
@@ -56,6 +57,15 @@ export class AutoInitSite {
 
     // 授权许可
     await this.plusService.verify();
+
+    if (isComm()) {
+      //加载商业版代码
+      try {
+        await import('@certd/commercial-core');
+      } catch (e) {
+        logger.error('加载商业版代码失败，请尝试升级版本', e);
+      }
+    }
 
     logger.info('初始化站点完成');
   }

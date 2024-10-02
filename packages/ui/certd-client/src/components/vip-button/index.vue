@@ -146,20 +146,42 @@ function openUpgrade() {
     },
     maskClosable: true,
     okText: "激活",
-    width: 500,
+    width: 900,
     content: () => {
       const vipLabel = userStore.vipLabel;
       return (
         <div class="mt-10 mb-10">
           <div>
-            <h3 class="block-header">专业版特权</h3>
-            <ul>
-              <li>可加VIP群，需求优先实现</li>
-              <li>证书流水线数量无限制（免费版限制10条）</li>
-              <li>免配置发邮件功能</li>
-              <li>FTP上传、cdnfly、宝塔、易盾、群晖等部署插件</li>
-              <li>更多特权敬请期待</li>
-            </ul>
+            <a-row gutter={20}>
+              <a-col span={8}>
+                <h3 class="block-header">免费版</h3>
+                <ul>
+                  <li>证书申请功能无限制</li>
+                  <li>证书流水线数量限制10条</li>
+                  <li>部分部署插件不可用</li>
+                </ul>
+              </a-col>
+              <a-col span={8}>
+                <h3 class="block-header">专业版</h3>
+                <ul>
+                  <li>可加VIP群，需求优先实现</li>
+                  <li>证书流水线数量无限制</li>
+                  <li>免配置发邮件功能</li>
+                  <li>宝塔、易盾、群晖、cdnfly、1Panel等部署插件</li>
+                  <li>多用户有限制</li>
+                </ul>
+              </a-col>
+              <a-col span={8}>
+                <h3 class="block-header">商业版</h3>
+                <ul>
+                  <li>拥有专业版所有特权</li>
+                  <li>修改logo、标题</li>
+                  <li>多用户无限制</li>
+                  <li>支持用户支付</li>
+                  <li>允许商用</li>
+                </ul>
+              </a-col>
+            </a-row>
           </div>
           <div>
             <h3 class="block-header">{isPlus ? "续期" : "立刻激活"}</h3>
