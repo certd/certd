@@ -13,13 +13,21 @@ const emit = defineEmits<{
 }>();
 
 const optionsRef = ref([]);
+const message = ref("");
 const getOptions = async () => {
-  return await doRequest({
-    type: props.type,
-    typeName: props.typeName,
-    action: props.action,
-    input: props.form
-  });
+  return await doRequest(
+    {
+      type: props.type,
+      typeName: props.typeName,
+      action: props.action,
+      input: props.form
+    },
+    {
+      onError(err) {
+        message.value = err.message;
+      }
+    }
+  );
 };
 
 const filterOption = (input: string, option: any) => {
@@ -53,7 +61,8 @@ watch(
 </script>
 
 <template>
-  <a-select
+  <div>
+    <a-select
     class="remote-select"
     show-search
     :filter-option="filterOption"
@@ -62,6 +71,10 @@ watch(
     @click="onClick"
     @update:value="emit('update:value', $event)"
   />
+    <div class="helper">
+      {{ message }}
+    </div>
+  </div>
 </template>
 
 <style lang="less"></style>

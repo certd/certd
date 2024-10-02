@@ -350,7 +350,7 @@ function install(app: App, options: any = {}) {
       }
       columnProps.column.resizable = true;
       if (!columnProps.column.width) {
-        columnProps.column.width = 100;
+        columnProps.column.width = -1;
       } else if (typeof columnProps.column?.width === "string" && columnProps.column.width.indexOf("px") > -1) {
         columnProps.column.width = parseInt(columnProps.column.width.replace("px", ""));
       }

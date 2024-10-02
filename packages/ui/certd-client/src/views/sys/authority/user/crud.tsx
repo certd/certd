@@ -40,7 +40,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           type: "text",
           form: { show: false }, // 表单配置
           column: {
-            width: 70,
+            width: 100,
             sorter: true
           }
         },
@@ -74,7 +74,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
           editForm: { component: { disabled: true } },
           column: {
-            sorter: true
+            sorter: true,
+            width: 200
           }
         },
         password: {

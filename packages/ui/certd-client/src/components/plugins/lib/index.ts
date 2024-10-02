@@ -14,7 +14,7 @@ export type RequestHandleReq<T = any> = {
   input: T;
 };
 
-export async function doRequest(req: RequestHandleReq) {
+export async function doRequest(req: RequestHandleReq, opts?: any = {}) {
   const url = req.type === "access" ? "/pi/handle/access" : "/pi/handle/plugin";
   const { typeName, action, data, input } = req;
   const res = await request({
@@ -25,7 +25,8 @@ export async function doRequest(req: RequestHandleReq) {
       action,
       data,
       input
-    }
+    },
+    ...opts
   });
   return res;
 }

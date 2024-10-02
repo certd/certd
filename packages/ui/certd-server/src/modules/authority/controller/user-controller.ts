@@ -73,8 +73,11 @@ export class UserController extends CrudController<UserService> {
   @Post('/delete', { summary: 'sys:auth:user:remove' })
   async delete(
     @Query('id')
-    id : number
+    id: number
   ) {
+    if (id === 1) {
+      throw new Error('不能删除默认的管理员用户');
+    }
     return await super.delete(id);
   }
 

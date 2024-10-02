@@ -33,18 +33,19 @@ type Text = {
   title?: string;
 };
 const text = computed<Text>(() => {
+  const vipLabel = userStore.vipLabel;
   const map = {
     isPlus: {
       button: {
-        name: "专业版已开通",
+        name: `${vipLabel}已开通`,
         title: "到期时间：" + expireTime.value
       },
       icon: {
         name: "",
-        title: "专业版已开通"
+        title: `${vipLabel}已开通`
       },
       nav: {
-        name: "专业版",
+        name: `${vipLabel}`,
         title: "到期时间：" + expireTime.value
       }
     },
@@ -82,7 +83,7 @@ const expiredDays = computed(() => {
   if (userStore.plusInfo?.isPlus && !userStore.isPlus) {
     //已过期多少天
     const days = dayjs().diff(dayjs(userStore.plusInfo.expireTime), "day");
-    return `专业版已过期${days}天`;
+    return `${userStore.vipLabel}已过期${days}天`;
   }
   return "";
 });
@@ -100,15 +101,16 @@ async function doActive() {
   const res = await api.doActive(formState);
   if (res) {
     await userStore.reInit();
+    const vipLabel = userStore.vipLabel;
     Modal.success({
       title: "激活成功",
-      content: `您已成功激活专业版,有效期至：${dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD")}`,
+      content: `您已成功激活${vipLabel},有效期至：${dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD")}`,
       onOk() {
         if (!(settingStore.installInfo.bindUserId > 0)) {
           //未绑定账号
           Modal.confirm({
             title: "是否绑定袖手账号",
-            content: "绑定账号后，可以避免专业版License丢失，强烈建议绑定",
+            content: "绑定账号后，可以避免License丢失，强烈建议绑定",
             onOk() {
               router.push("/sys/account");
             }
@@ -130,8 +132,15 @@ function openUpgrade() {
   }
   const placeholder = "请输入激活码";
   const isPlus = userStore.isPlus;
+  let title = "激活专业版/商业版";
+  if (userStore.isComm) {
+    title = "续期商业版";
+  } else if (userStore.isPlus) {
+    title = "续期专业版/升级商业版";
+  }
+
   modal.confirm({
-    title: isPlus ? "续期专业版" : "激活专业版",
+    title,
     async onOk() {
       return await doActive();
     },
@@ -139,6 +148,7 @@ function openUpgrade() {
     okText: "激活",
     width: 500,
     content: () => {
+      const vipLabel = userStore.vipLabel;
       return (
         <div class="mt-10 mb-10">
           <div>
@@ -153,7 +163,7 @@ function openUpgrade() {
           </div>
           <div>
             <h3 class="block-header">{isPlus ? "续期" : "立刻激活"}</h3>
-            <div>{isPlus ? "当前专业版已激活，到期时间" + dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD") : ""}</div>
+            <div>{isPlus ? `当前${vipLabel}已激活，到期时间` + dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD") : ""}</div>
             <div class="mt-10">
               <div class="flex-o w-100">
                 <span>站点ID：</span>

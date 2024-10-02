@@ -49,6 +49,9 @@ export class RoleController extends CrudController<RoleService> {
     @Query('id')
     id: number
   ) {
+    if (id === 1) {
+      throw new Error('不能删除默认的管理员角色');
+    }
     return await super.delete(id);
   }
 

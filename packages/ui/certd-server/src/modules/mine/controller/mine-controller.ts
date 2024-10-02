@@ -3,6 +3,7 @@ import { BaseController } from '../../../basic/base-controller.js';
 import { Constants } from '../../../basic/constants.js';
 import { UserService } from '../../authority/service/user-service.js';
 import { getPlusInfo } from '@certd/pipeline';
+import { RoleService } from '../../authority/service/role-service.js';
 
 /**
  */
@@ -11,10 +12,13 @@ import { getPlusInfo } from '@certd/pipeline';
 export class MineController extends BaseController {
   @Inject()
   userService: UserService;
+  @Inject()
+  roleService: RoleService;
   @Post('/info', { summary: Constants.per.authOnly })
   public async info() {
     const userId = this.getUserId();
     const user = await this.userService.info(userId);
+    user.roleIds = await this.roleService.getRoleIdsByUserId(userId);
     delete user.password;
     return this.ok(user);
   }

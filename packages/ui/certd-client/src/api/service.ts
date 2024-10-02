@@ -1,7 +1,7 @@
 import axios from "axios";
 import { get } from "lodash-es";
 import Adapter from "axios-mock-adapter";
-import { errorLog, errorCreate } from "./tools";
+import { errorLog, errorCreate, response } from "./tools";
 import { env } from "/src/utils/util.env";
 import { useUserStore } from "../store/modules/user";
 /**
@@ -95,6 +95,10 @@ function createService() {
       if (status === 401) {
         const userStore = useUserStore();
         userStore.logout();
+      }
+
+      if (error?.config?.onError) {
+        error.config.onError(error);
       }
       return Promise.reject(error);
     }

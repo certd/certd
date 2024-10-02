@@ -23,6 +23,7 @@ interface PlusInfo {
   vipType: string;
   expireTime: number;
   isPlus: boolean;
+  isComm: boolean;
 }
 
 const USER_INFO_KEY = "USER_INFO";
@@ -46,10 +47,21 @@ export const useUserStore = defineStore({
       return this.token || LocalStorage.get(TOKEN_KEY);
     },
     isAdmin(): boolean {
-      return this.getUserInfo?.id === 1;
+      return this.getUserInfo.id === 1 || this.getUserInfo.roles?.includes(1);
     },
     isPlus(): boolean {
       return this.plusInfo?.isPlus && this.plusInfo?.expireTime > new Date().getTime();
+    },
+    isComm(): boolean {
+      return this.plusInfo?.isComm && this.plusInfo?.expireTime > new Date().getTime();
+    },
+    vipLabel(): string {
+      const vipLabelMap: any = {
+        free: "免费版",
+        vip: "专业版",
+        comm: "商业版"
+      };
+      return vipLabelMap[this.plusInfo?.vipType];
     }
   },
   actions: {

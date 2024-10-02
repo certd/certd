@@ -16,6 +16,11 @@ export class HttpError extends Error {
       return;
     }
     super(error.message);
+
+    if (error?.message?.indexOf("ssl3_get_record:wrong version number") > -1) {
+      this.message = "http协议错误，服务端要求http协议，请检查是否使用了https请求";
+    }
+
     this.name = error.name;
     this.code = error.code;
     this.cause = error.cause;

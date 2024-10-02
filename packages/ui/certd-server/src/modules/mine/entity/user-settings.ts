@@ -27,4 +27,5 @@ export class UserSettingsEntity {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updateTime: Date;
+
 }

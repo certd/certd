@@ -24,6 +24,7 @@
     "@alicloud/pop-core": "^1.7.10",
     "@certd/acme-client": "^1.25.9",
     "@certd/lib-huawei": "^1.25.9",
+    "@certd/commcial-core": "^1.25.9",
     "@certd/lib-jdcloud": "^1.25.9",
     "@certd/lib-k8s": "^1.25.9",
     "@certd/midway-flyway-js": "^1.25.9",

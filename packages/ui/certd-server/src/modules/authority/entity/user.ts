@@ -66,4 +66,6 @@ export class UserEntity {
   static of(user: Partial<UserEntity>) {
     return Object.assign(new UserEntity(), user);
   }
+
+  roleIds: number[];
 }
