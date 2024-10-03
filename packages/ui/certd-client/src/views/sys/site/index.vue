@@ -1,9 +1,9 @@
 <template>
-  <fs-page class="page-sys-settings">
+  <fs-page class="page-sys-site">
     <template #header>
       <div class="title">站点个性化设置</div>
     </template>
-    <div class="sys-settings-form">
+    <div class="sys-site-form">
       <a-form
         :model="formState"
         name="basic"
@@ -13,16 +13,15 @@
         @finish="onFinish"
         @finish-failed="onFinishFailed"
       >
-        <a-form-item label="开启自助注册" name="registerEnabled">
-          <a-switch v-model:checked="formState.registerEnabled" />
+        <a-form-item label="标题" name="title">
+          <a-input v-model:checked="formState.title" />
         </a-form-item>
-        <a-form-item label="管理其他用户流水线" name="managerOtherUserPipeline">
-          <a-switch v-model:checked="formState.managerOtherUserPipeline" />
+        <a-form-item label="副标题" name="slogan">
+          <a-input v-model:value="formState.slogan" />
         </a-form-item>
-        <!--        <a-form-item label="启动后触发流水线" name="triggerOnStartup">-->
-        <!--          <a-switch v-model:checked="formState.triggerOnStartup" />-->
-        <!--          <div class="helper">启动后自动触发一次所有已启用的流水线</div>-->
-        <!--        </a-form-item>-->
+        <a-form-item label="Logo" name="logo">
+          <fs-cropper-upload v-model:value="formState.logo" />
+        </a-form-item>
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
           <a-button type="primary" html-type="submit">保存</a-button>
         </a-form-item>
@@ -46,7 +45,9 @@ import { useSettingStore } from "/src/store/modules/settings";
 
 interface FormState {
   title: string;
+  slogan: string;
   logo: string;
+  icpNo: string;
 }
 
 const formState = reactive<Partial<FormState>>({
@@ -83,8 +84,8 @@ async function stopOtherUserTimer() {
 </script>
 
 <style lang="less">
-.page-sys-settings {
-  .sys-settings-form {
+.page-sys-site {
+  .sys-site-form {
     width: 500px;
     margin: 20px;
   }

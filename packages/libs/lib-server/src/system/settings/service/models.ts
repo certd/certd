@@ -14,6 +14,7 @@ export class SysPublicSettings extends BaseSettings {
   static __access__ = 'public';
   registerEnabled = false;
   managerOtherUserPipeline = false;
+  icpNo?: string;
   // triggerOnStartup = false;
 }
 
@@ -48,8 +49,7 @@ export class SysSiteInfo extends BaseSettings {
   static __title__ = '站点信息';
   static __key__ = 'sys.site';
   static __access__ = 'public';
-  TITLE?: string;
-  SLOGAN?: string;
-  LOGO?: string;
-  ICP_NO?: string;
+  title?: string;
+  slogan?: string;
+  logo?: string;
 }

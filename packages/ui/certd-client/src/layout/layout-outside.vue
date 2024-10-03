@@ -4,7 +4,7 @@
       <div class="user-layout-content">
         <div class="top flex flex-col items-center justify-center">
           <div class="header flex flex-row items-center">
-            <img src="/images/logo/rect-black.svg" class="logo" alt="logo" />
+            <img src="/assets/images/logo/rect-black.svg" class="logo" alt="logo" />
             <span class="title"></span>
           </div>
           <div class="desc"></div>

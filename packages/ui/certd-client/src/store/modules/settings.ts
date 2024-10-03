@@ -32,10 +32,9 @@ export interface SettingState {
     appKey?: string;
   };
   siteInfo?: {
-    TITLE: string;
-    SLOGAN: string;
-    LOGO: string;
-    ICP_NO: string;
+    title: string;
+    slogan: string;
+    logo: string;
   };
 }
 
@@ -54,7 +53,8 @@ export const useSettingStore = defineStore({
     },
     sysPublic: {
       registerEnabled: false,
-      managerOtherUserPipeline: false
+      managerOtherUserPipeline: false,
+      icpNo: ""
     },
     installInfo: {
       siteId: "",
@@ -64,10 +64,9 @@ export const useSettingStore = defineStore({
       appKey: ""
     },
     siteInfo: {
-      TITLE: "",
-      SLOGAN: "",
-      LOGO: "",
-      ICP_NO: ""
+      title: "Certd",
+      slogan: "让你的证书永不过期",
+      logo: ""
     }
   }),
   getters: {

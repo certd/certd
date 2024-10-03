@@ -43,27 +43,27 @@ const steps = ref<Step[]>([
     description: "演示证书申请任务如何配置",
     items: [
       {
-        image: "/doc/images/1-add.png",
+        image: "/assets/doc/images/1-add.png",
         title: "创建证书流水线",
         descriptions: ["点击添加流水线，选择证书申请"]
       },
       {
-        image: "/doc/images/2-access-provider.png",
+        image: "/assets/doc/images/2-access-provider.png",
         title: "DNS授权",
         descriptions: ["证书申请需要给域名添加TXT解析记录来验证域名所有权"]
       },
       {
-        image: "/doc/images/3-add-access.png",
+        image: "/assets/doc/images/3-add-access.png",
         title: "第一次使用，需要添加DNS授权",
         descriptions: ["选择DNS授权，确认创建"]
       },
       // {
-      //   image: "/doc/images/3-add-access.png",
+      //   image: "/assets/doc/images/3-add-access.png",
       //   title: "确定创建流水线",
       //   descriptions: ["选择DNS授权，信息填写无误，确认创建"]
       // },
       {
-        image: "/doc/images/4-add-success.png",
+        image: "/assets/doc/images/4-add-success.png",
         title: "流水线创建成功",
         descriptions: ["此时证书申请任务已经建好，点击手动触发即可测试证书申请", "接下来演示如何添加部署任务"]
       }
@@ -74,52 +74,52 @@ const steps = ref<Step[]>([
     description: "演示部署到阿里云CDN和Nginx",
     items: [
       {
-        image: "/doc/images/6-1-add-task.png",
+        image: "/assets/doc/images/6-1-add-task.png",
         title: "添加部署任务",
         descriptions: ["演示第一个部署任务，部署到阿里云CDN"]
       },
       {
-        image: "/doc/images/6-2-add-task.png",
+        image: "/assets/doc/images/6-2-add-task.png",
         title: "选择任务插件",
         descriptions: ["可以搜索插件，这里选择阿里云CDN插件"]
       },
       {
-        image: "/doc/images/6-3-add-task.png",
+        image: "/assets/doc/images/6-3-add-task.png",
         title: "配置任务参数",
         descriptions: ["填写CDN的域名和证书ID", "任务保存之后，阿里云CDN的部署任务就配置好了"]
       },
       {
-        image: "/doc/images/7-1-add-host-task.png",
+        image: "/assets/doc/images/7-1-add-host-task.png",
         title: "添加主机部署任务",
         descriptions: ["接下来演示配置第二个部署任务，部署到主机", "部署到主机分两步: 1. 上传证书到主机 2. 运行主机命令"]
       },
       {
-        image: "/doc/images/7-2-add-host-task.png",
+        image: "/assets/doc/images/7-2-add-host-task.png",
         title: "配置上传到主机任务",
         descriptions: ["填写上传到主机任务参数", "比如证书保存路径"]
       },
       {
-        image: "/doc/images/7-3-add-host-task.png",
+        image: "/assets/doc/images/7-3-add-host-task.png",
         title: "添加主机ssh登录授权",
         descriptions: ["填写主机ip、用户名、密码，授权只需添加一次，后续其他任务可以复用"]
       },
       {
-        image: "/doc/images/8-1-add-host-task.png",
+        image: "/assets/doc/images/8-1-add-host-task.png",
         title: "上传到主机任务配置完成",
         descriptions: ["接下来配置主机执行脚本，去部署证书"]
       },
       {
-        image: "/doc/images/8-2-add-host-task.png",
+        image: "/assets/doc/images/8-2-add-host-task.png",
         title: "选择添加主机远程命令任务",
         descriptions: ["选择主机远程命令任务"]
       },
       {
-        image: "/doc/images/8-4-add-host-task.png",
+        image: "/assets/doc/images/8-4-add-host-task.png",
         title: "填写证书部署脚本",
         descriptions: ["选择主机授权，编写部署脚本，这里演示部署到nginx，需要重启nginx，让证书生效"]
       },
       {
-        image: "/doc/images/8-5-add-host-task.png",
+        image: "/assets/doc/images/8-5-add-host-task.png",
         title: "上传到主机任务的两个步骤配置完成",
         descriptions: ["接下来测试运行"]
       }
@@ -130,47 +130,47 @@ const steps = ref<Step[]>([
     description: "演示流水线运行,查看日志，成功后跳过等",
     items: [
       {
-        image: "/doc/images/9-start.png",
+        image: "/assets/doc/images/9-start.png",
         title: "运行测试一下",
         descriptions: ["之前是把证书上传到主机，接下来要运行命令，去部署证书"]
       },
       {
-        image: "/doc/images/10-1-log.png",
+        image: "/assets/doc/images/10-1-log.png",
         title: "查看日志",
         descriptions: ["点击任务可以查看状态和日志"]
       },
       {
-        image: "/doc/images/11-1-error.png",
+        image: "/assets/doc/images/11-1-error.png",
         title: "执行失败如何排查",
         descriptions: ["查看错误日志"]
       },
       {
-        image: "/doc/images/11-2-error.png",
+        image: "/assets/doc/images/11-2-error.png",
         title: "执行失败如何排查",
         descriptions: ["查看错误日志,这里报的是nginx容器不存在，修改命令改成正确的nginx容器名称"]
       },
       {
-        image: "/doc/images/12-1-log-success.png",
+        image: "/assets/doc/images/12-1-log-success.png",
         title: "执行成功",
         descriptions: ["修改正确后，重新点击手动触发，重新运行一次，执行成功"]
       },
       {
-        image: "/doc/images/12-2-skip-log.png",
+        image: "/assets/doc/images/12-2-skip-log.png",
         title: "成功后自动跳过",
         descriptions: ["可以看到成功过的将会自动跳过，不会重复执行，只有当参数变更或者证书更新了，才会重新运行"]
       },
       {
-        image: "/doc/images/13-1-result.png",
+        image: "/assets/doc/images/13-1-result.png",
         title: "查看证书部署成功",
         descriptions: ["访问nginx上的网站，可以看到证书已经部署成功"]
       },
       {
-        image: "/doc/images/13-2-result.png",
+        image: "/assets/doc/images/13-2-result.png",
         title: "阿里云CDN也部署成功",
         descriptions: ["阿里云CDN上已经更新证书，证书名称已certd开头"]
       },
       {
-        image: "/doc/images/13-3-download.png",
+        image: "/assets/doc/images/13-3-download.png",
         title: "还可以下载证书，手动部署",
         descriptions: ["如果还没有好用的部署插件，没办法自动部署，你还可以下载证书，手动部署"]
       }
@@ -181,7 +181,7 @@ const steps = ref<Step[]>([
     description: "自动运行",
     items: [
       {
-        image: "/doc/images/14-timer.png",
+        image: "/assets/doc/images/14-timer.png",
         title: "设置定时执行",
         descriptions: [
           "流水线测试成功，接下来配置定时触发，以后每天定时执行就不用管了",
@@ -189,7 +189,7 @@ const steps = ref<Step[]>([
         ]
       },
       {
-        image: "/doc/images/15-1-email.png",
+        image: "/assets/doc/images/15-1-email.png",
         title: "设置邮件通知",
         descriptions: ["建议选择监听'错误时'和'错误转成功'两种即可，在意外失败时可以尽快去排查问题，（免费版需要配置邮件服务器）"]
       }

@@ -3,6 +3,7 @@ import { request } from "../service";
 export type SysPublicSetting = {
   registerEnabled: boolean;
   managerOtherUserPipeline: boolean;
+  icpNo?: string;
 };
 
 export type SysInstallInfo = {

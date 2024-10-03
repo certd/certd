@@ -5,7 +5,7 @@ import nodemailer from 'nodemailer';
 import type SMTPConnection from 'nodemailer/lib/smtp-connection';
 import { logger } from '@certd/pipeline';
 import { UserSettingsService } from '../../mine/service/user-settings-service.js';
-import { PlusService } from './plus-service.js';
+import { PlusService } from '@certd/lib-server';
 
 export type EmailConfig = {
   host: string;

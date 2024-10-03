@@ -1,8 +1,7 @@
 import { Config, Init, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { SysSettingsService } from '@certd/lib-server';
-import { SysInstallInfo, SysLicenseInfo } from '@certd/lib-server';
 import { AppKey, http, PlusRequestService, verify } from '@certd/pipeline';
 import { logger } from '@certd/pipeline';
+import { SysInstallInfo, SysLicenseInfo, SysSettingsService } from '../../settings/index.js';
 
 @Provide()
 @Scope(ScopeEnum.Singleton)

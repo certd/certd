@@ -19,6 +19,9 @@
         <a-form-item label="管理其他用户流水线" name="managerOtherUserPipeline">
           <a-switch v-model:checked="formState.managerOtherUserPipeline" />
         </a-form-item>
+        <a-form-item label="ICP备案号" name="icpNo">
+          <a-switch v-model:checked="formState.icpNo" />
+        </a-form-item>
         <!--        <a-form-item label="启动后触发流水线" name="triggerOnStartup">-->
         <!--          <a-switch v-model:checked="formState.triggerOnStartup" />-->
         <!--          <div class="helper">启动后自动触发一次所有已启用的流水线</div>-->
