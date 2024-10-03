@@ -26,13 +26,5 @@
     "dist",
     "node_modules",
     "test"
-  ],
-  "references": [
-    { "path": "../../libs/midway-flyway-js" },
-    { "path": "../../libs/lib-k8s" },
-    { "path": "../../libs/lib-huawei" },
-    { "path": "../../plugins/plugin-cert" },
-    { "path": "../../core/acme-client" },
-    { "path": "../../core/pipeline" }
   ]
 }
