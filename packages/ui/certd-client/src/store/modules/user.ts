@@ -58,10 +58,10 @@ export const useUserStore = defineStore({
     vipLabel(): string {
       const vipLabelMap: any = {
         free: "免费版",
-        vip: "专业版",
+        plus: "专业版",
         comm: "商业版"
       };
-      return vipLabelMap[this.plusInfo?.vipType];
+      return vipLabelMap[this.plusInfo?.vipType || "free"];
     }
   },
   actions: {

@@ -1,11 +1,10 @@
 import { Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
 import { logger } from '@certd/pipeline';
 import { UserService } from '../authority/service/user-service.js';
-import { SysSettingsService } from '@certd/lib-server';
+import { PlusService, SysSettingsService } from '@certd/lib-server';
 import { nanoid } from 'nanoid';
 import { SysInstallInfo, SysPrivateSettings } from '@certd/lib-server';
 import crypto from 'crypto';
-import { PlusService } from '../basic/service/plus-service.js';
 
 export type InstallInfo = {
   installTime: number;

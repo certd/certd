@@ -100,7 +100,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             show: computed(() => {
               return userStore.isAdmin && settingStore.sysPublic.managerOtherUserPipeline;
-            })
+            }),
+            width: 100
           }
         },
         pipelineId: {
@@ -111,6 +112,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             show: false
+          },
+          column: {
+            width: 100
           }
         },
         pipelineTitle: {
@@ -123,7 +127,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             }
           },
           column: {
-            width: 200
+            width: 300
           }
         },
         createTime: {
@@ -134,7 +138,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             sorter: true,
-            width: 125,
+            width: 160,
             align: "center"
           }
         },

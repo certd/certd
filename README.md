@@ -29,11 +29,11 @@ https://certd.handsfree.work/
 ## 三、使用教程
 本案例演示，如何配置自动申请证书，并部署到阿里云CDN，然后快要到期前自动更新证书并重新部署     
 
-![演示](./packages/ui/certd-client/src/assets/doc/images/5-view.png)
-![演示](./packages/ui/certd-client/src/assets/doc/images/9-start.png)
-![演示](./packages/ui/certd-client/src/assets/doc/images/10-1-log.png)
-![演示](./packages/ui/certd-client/src/assets/doc/images/13-3-download.png)
-![演示](./packages/ui/certd-client/src/assets/doc/images/13-1-result.png)
+![演示](packages/ui/certd-client/public/statics/doc/images/5-view.png)
+![演示](packages/ui/certd-client/public/statics/doc/images/9-start.png)
+![演示](packages/ui/certd-client/public/statics/doc/images/10-1-log.png)
+![演示](packages/ui/certd-client/public/statics/doc/images/13-3-download.png)
+![演示](packages/ui/certd-client/public/statics/doc/images/13-1-result.png)
 
 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓      
 -------> [点我查看详细使用步骤演示](./step.md)   <--------      

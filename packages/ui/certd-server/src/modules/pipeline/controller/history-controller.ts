@@ -10,6 +10,7 @@ import * as fs from 'fs';
 import { logger } from '@certd/pipeline';
 import { AuthService } from '../../authority/service/auth-service.js';
 import { SysSettingsService } from '@certd/lib-server';
+import { In } from 'typeorm';
 
 /**
  * 证书
@@ -35,16 +36,34 @@ export class HistoryController extends CrudController<HistoryService> {
   }
 
   @Post('/page', { summary: Constants.per.authOnly })
-  async page(@Body(ALL) body) {
+  async page(@Body(ALL) body: any) {
     const isAdmin = await this.authService.isAdmin(this.ctx);
     const publicSettings = await this.sysSettingsService.getPublicSettings();
+    const pipelineQuery: any = {};
     if (!(publicSettings.managerOtherUserPipeline && isAdmin)) {
       body.query.userId = this.ctx.user.id;
+      pipelineQuery.userId = this.ctx.user.id;
     }
 
-    const res = await super.page(body);
+    let pipelineIds: any = null;
+    const pipelineTitle = body.query?.pipelineTitle;
+    if (pipelineTitle) {
+      const pipelines = await this.pipelineService.list(pipelineQuery, null, qb => {
+        qb.where('title like :title', { title: `%${pipelineTitle}%` });
+      });
+      pipelineIds = pipelines.map(p => p.id);
+    }
 
-    return res;
+    const buildQuery = qb => {
+      if (pipelineIds) {
+        qb.where({
+          pipelineId: In(pipelineIds),
+        });
+      }
+    };
+
+    const res = await this.service.page(body?.query, body?.page, body?.sort, buildQuery);
+    return this.ok(res);
   }
 
   @Post('/list', { summary: Constants.per.authOnly })

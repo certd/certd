@@ -23,7 +23,6 @@ export class AutoRegisterCron {
   @Init()
   async init() {
     logger.info('加载定时trigger开始');
-
     await this.pipelineService.onStartup(this.immediateTriggerOnce, this.onlyAdminUser);
     logger.info('加载定时trigger完成');
     //

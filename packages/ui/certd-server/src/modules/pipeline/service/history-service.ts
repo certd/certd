@@ -18,6 +18,9 @@ import { logger } from '@certd/pipeline';
 export class HistoryService extends BaseService<HistoryEntity> {
   @InjectEntityModel(HistoryEntity)
   repository: Repository<HistoryEntity>;
+
+  @InjectEntityModel(PipelineEntity)
+  pipelineRepository: Repository<PipelineEntity>;
   @Inject()
   logService: HistoryLogService;
 

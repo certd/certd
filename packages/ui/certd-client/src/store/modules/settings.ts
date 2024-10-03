@@ -85,8 +85,11 @@ export const useSettingStore = defineStore({
       const settings = await basicApi.getSysPublicSettings();
       _.merge(this.sysPublic, settings);
 
-      const siteInfo = await basicApi.getSiteInfo();
-      _.merge(this.siteInfo, siteInfo);
+      const userStore = useUserStore();
+      if (userStore.isComm) {
+        const siteInfo = await basicApi.getSiteInfo();
+        _.merge(this.siteInfo, siteInfo);
+      }
 
       await this.loadInstallInfo();
 
