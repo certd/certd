@@ -1,12 +1,11 @@
 import { Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
-import { logger } from '../../utils/logger.js';
+import { logger } from '@certd/pipeline';
 import { UserService } from '../authority/service/user-service.js';
-import { SysSettingsService } from '../system/service/sys-settings-service.js';
+import { SysSettingsService } from '@certd/lib-server';
 import { nanoid } from 'nanoid';
-import { SysInstallInfo, SysPrivateSettings } from '../system/service/models.js';
+import { SysInstallInfo, SysPrivateSettings } from '@certd/lib-server';
 import crypto from 'crypto';
 import { PlusService } from '../basic/service/plus-service.js';
-import { isComm } from '@certd/plus-core';
 
 export type InstallInfo = {
   installTime: number;
@@ -57,15 +56,6 @@ export class AutoInitSite {
 
     // 授权许可
     await this.plusService.verify();
-
-    if (isComm()) {
-      //加载商业版代码
-      try {
-        await import('@certd/commercial-core');
-      } catch (e) {
-        logger.error('加载商业版代码失败，请尝试升级版本', e);
-      }
-    }
 
     logger.info('初始化站点完成');
   }

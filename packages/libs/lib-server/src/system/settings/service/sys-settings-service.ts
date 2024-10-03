@@ -1,13 +1,11 @@
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service.js';
 import { SysSettingsEntity } from '../entity/sys-settings.js';
 import { CacheManager } from '@midwayjs/cache';
-import { BaseSettings, SysPublicSettings } from './models.js';
+import { BaseSettings, SysPrivateSettings, SysPublicSettings } from './models.js';
 import * as _ from 'lodash-es';
-
-export type SysPrivateSettings = NonNullable<unknown>;
+import { BaseService } from '../../../basic/index.js';
 
 /**
  * 设置

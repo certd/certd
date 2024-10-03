@@ -1,18 +1,15 @@
 import { ALL, Body, Controller, Get, Inject, Post, Provide, Query } from '@midwayjs/core';
-import { CrudController } from '../../../basic/crud-controller.js';
+import { CommonException, Constants, CrudController, PermissionException } from '@certd/lib-server';
 import { PipelineEntity } from '../entity/pipeline.js';
 import { HistoryService } from '../service/history-service.js';
 import { HistoryLogService } from '../service/history-log-service.js';
 import { HistoryEntity } from '../entity/history.js';
 import { HistoryLogEntity } from '../entity/history-log.js';
-import { Constants } from '../../../basic/constants.js';
 import { PipelineService } from '../service/pipeline-service.js';
-import { CommonException } from '../../../basic/exception/common-exception.js';
-import { PermissionException } from '../../../basic/exception/permission-exception.js';
 import * as fs from 'fs';
-import { logger } from '../../../utils/logger.js';
+import { logger } from '@certd/pipeline';
 import { AuthService } from '../../authority/service/auth-service.js';
-import { SysSettingsService } from '../../system/service/sys-settings-service.js';
+import { SysSettingsService } from '@certd/lib-server';
 
 /**
  * 证书
@@ -33,7 +30,7 @@ export class HistoryController extends CrudController<HistoryService> {
   @Inject()
   sysSettingsService: SysSettingsService;
 
-  getService() {
+  getService(): HistoryService {
     return this.service;
   }
 

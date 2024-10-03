@@ -7,8 +7,8 @@ import {
   Provide,
   Query,
 } from '@midwayjs/core';
-import { CrudController } from '../../../basic/crud-controller.js';
-import { Constants } from '../../../basic/constants.js';
+import { CrudController } from '@certd/lib-server';
+import { Constants } from '@certd/lib-server';
 import { UserSettingsService } from '../service/user-settings-service.js';
 import { UserSettingsEntity } from '../entity/user-settings.js';
 

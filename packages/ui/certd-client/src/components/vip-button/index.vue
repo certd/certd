@@ -150,35 +150,69 @@ function openUpgrade() {
     content: () => {
       const vipLabel = userStore.vipLabel;
       return (
-        <div class="mt-10 mb-10">
-          <div>
+        <div class="mt-10 mb-10 vip-active-modal">
+          <div class="vip-type-vs">
             <a-row gutter={20}>
               <a-col span={8}>
                 <h3 class="block-header">免费版</h3>
                 <ul>
-                  <li>证书申请功能无限制</li>
-                  <li>证书流水线数量限制10条</li>
-                  <li>部分部署插件不可用</li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>证书申请功能无限制
+                  </li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
+                    证书流水线数量10条
+                  </li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
+                    常用的部署插件
+                  </li>
                 </ul>
               </a-col>
               <a-col span={8}>
                 <h3 class="block-header">专业版</h3>
                 <ul>
-                  <li>可加VIP群，需求优先实现</li>
-                  <li>证书流水线数量无限制</li>
-                  <li>免配置发邮件功能</li>
-                  <li>宝塔、易盾、群晖、cdnfly、1Panel等部署插件</li>
-                  <li>多用户有限制</li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
+                    可加VIP群，需求优先实现
+                  </li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
+                    证书流水线数量无限制
+                  </li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
+                    免配置发邮件功能
+                  </li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
+                    支持宝塔、易盾、群晖、cdnfly、1Panel等部署插件
+                  </li>
                 </ul>
               </a-col>
               <a-col span={8}>
                 <h3 class="block-header">商业版</h3>
                 <ul>
-                  <li>拥有专业版所有特权</li>
-                  <li>修改logo、标题</li>
-                  <li>多用户无限制</li>
-                  <li>支持用户支付</li>
-                  <li>允许商用</li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
+                    拥有专业版所有特权
+                  </li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
+                    修改logo、标题
+                  </li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
+                    多用户无限制
+                  </li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
+                    支持用户支付
+                  </li>
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
+                    允许商用
+                  </li>
                 </ul>
               </a-col>
             </a-row>
@@ -222,6 +256,20 @@ function openUpgrade() {
 
   .text {
     margin-left: 5px;
+  }
+}
+
+.vip-active-modal {
+  ul {
+    list-style-type: unset;
+    margin-left: 0px;
+    padding: 0;
+  }
+  .vip-type-vs {
+    .fs-icon {
+      margin-right: 5px;
+      color: green;
+    }
   }
 }
 </style>

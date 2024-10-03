@@ -1,9 +1,9 @@
 import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
-import { BaseController } from '../../basic/base-controller.js';
+import { BaseController } from '@certd/lib-server';
 import { PlusService } from '../basic/service/plus-service.js';
 import { AppKey } from '@certd/pipeline';
-import { SysSettingsService } from '../system/service/sys-settings-service.js';
-import { SysInstallInfo } from '../system/service/models.js';
+import { SysSettingsService } from '@certd/lib-server';
+import { SysInstallInfo } from '@certd/lib-server';
 
 export type PreBindUserReq = {
   userId: number;

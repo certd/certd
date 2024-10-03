@@ -2,10 +2,10 @@ import { Rule, RuleType } from '@midwayjs/validate';
 import { ALL, Inject } from '@midwayjs/core';
 import { Body } from '@midwayjs/core';
 import { Controller, Post, Provide } from '@midwayjs/core';
-import { BaseController } from '../../../basic/base-controller.js';
+import { BaseController } from '@certd/lib-server';
 import { CodeService } from '../service/code-service.js';
 import { EmailService } from '../service/email-service.js';
-import { Constants } from '../../../basic/constants.js';
+import { Constants } from '@certd/lib-server';
 export class SmsCodeReq {
   @Rule(RuleType.number().required())
   phoneCode: number;

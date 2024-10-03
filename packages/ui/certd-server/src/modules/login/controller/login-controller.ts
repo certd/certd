@@ -1,14 +1,7 @@
-import {
-  Body,
-  Controller,
-  Inject,
-  Post,
-  Provide,
-  ALL,
-} from '@midwayjs/core';
+import { Body, Controller, Inject, Post, Provide, ALL } from '@midwayjs/core';
 import { LoginService } from '../service/login-service.js';
-import { BaseController } from '../../../basic/base-controller.js';
-import { Constants } from '../../../basic/constants.js';
+import { BaseController } from '@certd/lib-server';
+import { Constants } from '@certd/lib-server';
 
 /**
  */
@@ -20,7 +13,7 @@ export class LoginController extends BaseController {
   @Post('/login', { summary: Constants.per.guest })
   public async login(
     @Body(ALL)
-    user
+    user: any
   ) {
     const token = await this.loginService.login(user);
 

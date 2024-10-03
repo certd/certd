@@ -1,16 +1,8 @@
-import {
-  Autoload,
-  Config,
-  Init,
-  Inject,
-  Provide,
-  Scope,
-  ScopeEnum,
-} from '@midwayjs/core';
+import { Autoload, Config, Init, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { IMidwayKoaContext, IWebMiddleware, NextFunction } from '@midwayjs/koa';
-import { CommonException } from '../../basic/exception/common-exception.js';
+import { CommonException } from '@certd/lib-server';
 import { UserService } from '../../modules/authority/service/user-service.js';
-import { logger } from '../../utils/logger.js';
+import { logger } from '@certd/pipeline';
 
 /**
  * 重置密码模式
@@ -26,9 +18,7 @@ export class ResetPasswdMiddleware implements IWebMiddleware {
   resolve() {
     return async (ctx: IMidwayKoaContext, next: NextFunction) => {
       if (this.resetAdminPasswd === true) {
-        throw new CommonException(
-          '1号管理员密码已修改为123456，当前为重置密码模式，无法响应请求，请关闭重置密码模式恢复正常服务'
-        );
+        throw new CommonException('1号管理员密码已修改为123456，当前为重置密码模式，无法响应请求，请关闭重置密码模式恢复正常服务');
       }
       await next();
     };

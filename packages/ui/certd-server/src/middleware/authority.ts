@@ -1,11 +1,11 @@
 import { Init, Inject, MidwayWebRouterService, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { IMidwayKoaContext, IWebMiddleware, NextFunction } from '@midwayjs/koa';
 import jwt from 'jsonwebtoken';
-import { Constants } from '../basic/constants.js';
-import { logger } from '../utils/logger.js';
+import { Constants } from '@certd/lib-server';
+import { logger } from '@certd/pipeline';
 import { AuthService } from '../modules/authority/service/auth-service.js';
-import { SysSettingsService } from '../modules/system/service/sys-settings-service.js';
-import { SysPrivateSettings } from '../modules/system/service/models.js';
+import { SysSettingsService } from '@certd/lib-server';
+import { SysPrivateSettings } from '@certd/lib-server';
 
 /**
  * 权限校验

@@ -1,9 +1,9 @@
 import { Provide, Controller, Post, Inject, Body, Query, ALL } from '@midwayjs/core';
 import { UserService } from '../service/user-service.js';
-import { CrudController } from '../../../basic/crud-controller.js';
+import { CrudController } from '@certd/lib-server';
 import { RoleService } from '../service/role-service.js';
 import { PermissionService } from '../service/permission-service.js';
-import { Constants } from '../../../basic/constants.js';
+import { Constants } from '@certd/lib-server';
 
 /**
  * 系统用户

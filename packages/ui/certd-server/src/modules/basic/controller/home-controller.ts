@@ -1,7 +1,7 @@
 import { MidwayEnvironmentService } from '@midwayjs/core';
 import { Controller, Get, Inject, Provide } from '@midwayjs/core';
-import { logger } from '../../../utils/logger.js';
-import { Constants } from '../../../basic/constants.js';
+import { logger } from '@certd/pipeline';
+import { Constants } from '@certd/lib-server';
 
 @Provide()
 @Controller('/home')

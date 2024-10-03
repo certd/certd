@@ -1,6 +1,6 @@
 import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
-import { BaseController } from '../../../basic/base-controller.js';
-import { Constants } from '../../../basic/constants.js';
+import { BaseController } from '@certd/lib-server';
+import { Constants } from '@certd/lib-server';
 import { UserService } from '../../authority/service/user-service.js';
 import { getPlusInfo } from '@certd/pipeline';
 import { RoleService } from '../../authority/service/role-service.js';

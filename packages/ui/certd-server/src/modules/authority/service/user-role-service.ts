@@ -1,7 +1,7 @@
 import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service.js';
+import { BaseService } from '@certd/lib-server';
 import { UserRoleEntity } from '../entity/user-role.js';
 
 /**
@@ -16,6 +16,4 @@ export class UserRoleService extends BaseService<UserRoleEntity> {
   getRepository() {
     return this.repository;
   }
-
-
 }

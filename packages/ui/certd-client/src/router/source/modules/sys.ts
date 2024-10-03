@@ -75,6 +75,33 @@ export const sysResources = [
         },
         path: "/sys/account",
         component: "/sys/account/index.vue"
+      },
+      {
+        title: "站点个性化",
+        name: "site",
+        meta: {
+          icon: "ion:document-text-outline",
+          permission: "sys:settings:view"
+        },
+        component: "/sys/site/index.vue"
+      },
+      {
+        title: "商业版设置",
+        name: "/sys/commercial",
+        meta: {
+          icon: "ion:document-text-outline",
+          permission: "sys:settings:view"
+        },
+        children: [
+          {
+            title: "套餐设置",
+            name: "suite",
+            meta: {
+              icon: "ion:document-text-outline",
+              permission: "sys:settings:view"
+            }
+          }
+        ]
       }
     ]
   }

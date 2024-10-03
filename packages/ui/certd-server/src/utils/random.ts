@@ -1,6 +1,6 @@
-const numbers = '0123456789';
-const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-const specials = '~!@#$%^*()_+-=[]{}|;:,./<>?';
+const numbers = "0123456789";
+const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const specials = "~!@#$%^*()_+-=[]{}|;:,./<>?";
 
 /**
  * Generate random string
@@ -11,24 +11,24 @@ function randomStr(length, options?) {
   length || (length = 8);
   options || (options = {});
 
-  let chars = '';
-  let result = '';
+  let chars = "";
+  let result = "";
 
   if (options === true) {
     chars = numbers + letters;
-  } else if (typeof options === 'string') {
+  } else if (typeof options === "string") {
     chars = options;
   } else {
     if (options.numbers !== false) {
-      chars += typeof options.numbers === 'string' ? options.numbers : numbers;
+      chars += typeof options.numbers === "string" ? options.numbers : numbers;
     }
 
     if (options.letters !== false) {
-      chars += typeof options.letters === 'string' ? options.letters : letters;
+      chars += typeof options.letters === "string" ? options.letters : letters;
     }
 
     if (options.specials) {
-      chars += typeof options.specials === 'string' ? options.specials : specials;
+      chars += typeof options.specials === "string" ? options.specials : specials;
     }
   }
 

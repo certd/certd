@@ -1,7 +1,7 @@
 import { Provide } from '@midwayjs/core';
 import { IWebMiddleware, IMidwayKoaContext, NextFunction } from '@midwayjs/koa';
-import { logger } from '../utils/logger.js';
-import { Result } from '../basic/result.js';
+import { logger } from '@certd/pipeline';
+import { Result } from '@certd/lib-server';
 
 @Provide()
 export class GlobalExceptionMiddleware implements IWebMiddleware {

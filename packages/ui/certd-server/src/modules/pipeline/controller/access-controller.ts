@@ -1,7 +1,7 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
-import { CrudController } from '../../../basic/crud-controller.js';
+import { CrudController } from '@certd/lib-server';
 import { AccessService } from '../service/access-service.js';
-import { Constants } from '../../../basic/constants.js';
+import { Constants } from '@certd/lib-server';
 
 /**
  * 授权
@@ -12,7 +12,7 @@ export class AccessController extends CrudController<AccessService> {
   @Inject()
   service: AccessService;
 
-  getService() {
+  getService(): AccessService {
     return this.service;
   }
 

@@ -30,14 +30,11 @@ services:
                                      #  ↑↑↑↑↑--------------------------- 如果忘记管理员密码，可以设置为true，重启之后，管理员密码将改成123456，然后请及时修改回false
       - certd_cron_immediateTriggerOnce=false
                                      #  ↑↑↑↑↑--------------------------- 如果设置为true，启动后所有配置了cron的流水线任务都将被立即触发一次
-      - VITE_APP_ICP_NO=
+      - certd_site_icp_no=
                       #  ↑↑↑↑↑ ----------------------------------------- 这里可以设置备案号
       #- certd_koa_key=./data/ssl/cert.key
       #- certd_koa_cert=./data/ssl/cert.crt
                       #  ↑↑↑↑↑ ----------------------------------------- 配置证书和key，则表示https方式启动，使用https协议访问，https://your.domain:7001
       # 设置环境变量即可自定义certd配置
-      # 服务端配置项见： packages/ui/certd-server/src/config/config.default.ts
-      # 服务端配置规则： certd_ + 配置项, 点号用_代替
-
-      # 客户端配置项见： packages/ui/certd-client/.env
-      # 按实际名称配置环境变量即可，如： VITE_APP_API=http://localhost:7001
+      # 配置项见： packages/ui/certd-server/src/config/config.default.ts
+      # 配置规则： certd_ + 配置项, 点号用_代替

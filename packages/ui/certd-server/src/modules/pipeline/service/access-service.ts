@@ -1,11 +1,11 @@
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service.js';
+import { BaseService } from '@certd/lib-server';
 import { AccessEntity } from '../entity/access.js';
 import { AccessDefine, accessRegistry, IAccessService, newAccess } from '@certd/pipeline';
 import { EncryptService } from './encrypt-service.js';
-import { ValidateException } from '../../../basic/exception/validation-exception.js';
+import { ValidateException } from '@certd/lib-server';
 
 /**
  * 授权

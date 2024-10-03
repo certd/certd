@@ -8,6 +8,7 @@ export * from "./util.promise.js";
 export * from "./util.hash.js";
 export * from "./util.merge.js";
 export * from "./util.cache.js";
+import { nanoid } from "nanoid";
 import { mergeUtils } from "./util.merge.js";
 import { sp } from "./util.sp.js";
 import { hashUtils } from "./util.hash.js";
@@ -25,4 +26,5 @@ export const utils = {
   _,
   mergeUtils,
   cache,
+  nanoid,
 };

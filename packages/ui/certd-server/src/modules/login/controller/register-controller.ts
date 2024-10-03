@@ -1,16 +1,9 @@
-import {
-  ALL,
-  Body,
-  Controller,
-  Inject,
-  Post,
-  Provide,
-} from '@midwayjs/core';
-import { BaseController } from '../../../basic/base-controller.js';
-import { Constants } from '../../../basic/constants.js';
+import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
+import { BaseController } from '@certd/lib-server';
+import { Constants } from '@certd/lib-server';
 import { UserService } from '../../authority/service/user-service.js';
 import { UserEntity } from '../../authority/entity/user.js';
-import { SysSettingsService } from '../../system/service/sys-settings-service.js';
+import { SysSettingsService } from '@certd/lib-server';
 
 /**
  */

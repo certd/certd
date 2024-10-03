@@ -1,7 +1,7 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 import * as fs from 'fs';
-import { Constants } from '../../../../basic/constants.js';
+import { Constants } from '@certd/lib-server';
 import path from 'path';
 
 @IsTaskPlugin({

@@ -1,8 +1,8 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
-import { CrudController } from '../../../basic/crud-controller.js';
-import { SysSettingsService } from '../service/sys-settings-service.js';
+import { CrudController } from '@certd/lib-server';
+import { SysSettingsService } from '@certd/lib-server';
 import { SysSettingsEntity } from '../entity/sys-settings.js';
-import { SysPublicSettings } from '../service/models.js';
+import { SysPublicSettings } from '@certd/lib-server';
 import * as _ from 'lodash-es';
 import { PipelineService } from '../../pipeline/service/pipeline-service.js';
 

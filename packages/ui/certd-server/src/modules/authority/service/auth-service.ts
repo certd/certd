@@ -1,6 +1,6 @@
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { RoleService } from './role-service.js';
-import { BaseService } from '../../../basic/base-service.js';
+import { BaseService } from '@certd/lib-server';
 
 /**
  * 权限校验

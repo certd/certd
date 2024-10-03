@@ -2,7 +2,7 @@ import path from 'path';
 import * as _ from 'lodash-es';
 import yaml from 'js-yaml';
 import fs from 'fs';
-import { logger } from '../utils/logger.js';
+import { logger } from '@certd/pipeline';
 
 function parseEnv(defaultConfig: any) {
   const config = {};

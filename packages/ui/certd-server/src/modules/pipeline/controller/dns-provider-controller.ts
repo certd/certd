@@ -1,7 +1,7 @@
 import { ALL, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { DnsProviderService } from '../service/dns-provider-service.js';
-import { BaseController } from '../../../basic/base-controller.js';
-import { Constants } from '../../../basic/constants.js';
+import { BaseController } from '@certd/lib-server';
+import { Constants } from '@certd/lib-server';
 
 /**
  * 插件

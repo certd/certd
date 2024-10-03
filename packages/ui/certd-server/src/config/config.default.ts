@@ -12,6 +12,8 @@ import { PipelineEntity } from '../modules/pipeline/entity/pipeline.js';
 //import { logger } from '../utils/logger';
 // load .env file in process.cwd
 import { mergeConfig } from './loader.js';
+import { libServerEntities } from '@certd/lib-server';
+import { commercialEntities } from '@certd/commercial-core';
 
 const env = process.env.NODE_ENV || 'development';
 
@@ -63,7 +65,7 @@ const development = {
         logging: false,
 
         // 配置实体模型 或者 entities: '/entity',
-        entities: ['**/modules/*/entity/*.ts', '**/entity/*.js', '**/entity/*.d.ts', PipelineEntity, FlywayHistory, UserEntity],
+        entities: ['**/modules/*/entity/*.js', ...libServerEntities, ...commercialEntities, PipelineEntity, FlywayHistory, UserEntity],
       },
     },
   },

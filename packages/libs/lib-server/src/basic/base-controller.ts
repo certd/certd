@@ -1,10 +1,10 @@
 import { Inject } from '@midwayjs/core';
-import { Context } from '@midwayjs/koa';
+import * as koa from '@midwayjs/koa';
 import { Constants } from './constants.js';
 
 export abstract class BaseController {
   @Inject()
-  ctx: Context;
+  ctx: koa.Context;
 
   /**
    * 成功返回

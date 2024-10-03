@@ -1,4 +1,4 @@
-import { EnumItem } from '../../../basic/enum-item.js';
+import { EnumItem } from '@certd/lib-server';
 import * as _ from 'lodash-es';
 class ResourceTypes {
   MENU = new EnumItem('menu', '菜单', 'blue');

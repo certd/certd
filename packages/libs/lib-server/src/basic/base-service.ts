@@ -1,6 +1,6 @@
-import { ValidateException } from './exception/validation-exception.js';
+import { ValidateException } from './exception/index.js';
 import * as _ from 'lodash-es';
-import { PermissionException } from './exception/permission-exception.js';
+import { PermissionException } from './exception/index.js';
 import { Repository } from 'typeorm';
 import { Inject } from '@midwayjs/core';
 import { TypeORMDataSourceManager } from '@midwayjs/typeorm';

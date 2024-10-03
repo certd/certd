@@ -55,7 +55,7 @@ export function errorLog(error: any) {
   if (error.response?.data?.message) {
     message = error.response.data.message;
   }
-  if (message.indexOf("ssl3_get_record:wrong version number" > -1)) {
+  if (message.indexOf("ssl3_get_record:wrong version number") >= 0) {
     message = "http协议错误，服务端要求http协议，请检查是否使用了https请求";
   }
   // 显示提示

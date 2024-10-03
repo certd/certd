@@ -1,7 +1,7 @@
 import { ALL, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
-import { BaseController } from '../../../basic/base-controller.js';
+import { BaseController } from '@certd/lib-server';
 import { PluginService } from '../service/plugin-service.js';
-import { Constants } from '../../../basic/constants.js';
+import { Constants } from '@certd/lib-server';
 
 /**
  * 插件

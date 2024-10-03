@@ -3,7 +3,7 @@ import type { EmailSend } from '@certd/pipeline';
 import { IEmailService, isPlus } from '@certd/pipeline';
 import nodemailer from 'nodemailer';
 import type SMTPConnection from 'nodemailer/lib/smtp-connection';
-import { logger } from '../../../utils/logger.js';
+import { logger } from '@certd/pipeline';
 import { UserSettingsService } from '../../mine/service/user-settings-service.js';
 import { PlusService } from './plus-service.js';
 

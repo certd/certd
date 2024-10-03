@@ -4,16 +4,16 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '../entity/user.js';
 import * as _ from 'lodash-es';
 import md5 from 'md5';
-import { CommonException } from '../../../basic/exception/common-exception.js';
-import { BaseService } from '../../../basic/base-service.js';
+import { CommonException } from '@certd/lib-server';
+import { BaseService } from '@certd/lib-server';
 import { RoleService } from './role-service.js';
 import { PermissionService } from './permission-service.js';
 import { UserRoleService } from './user-role-service.js';
-import { Constants } from '../../../basic/constants.js';
+import { Constants } from '@certd/lib-server';
 import { UserRoleEntity } from '../entity/user-role.js';
 import bcrypt from 'bcryptjs';
-import { SysSettingsService } from '../../system/service/sys-settings-service.js';
-import { SysInstallInfo } from '../../system/service/models.js';
+import { SysSettingsService } from '@certd/lib-server';
+import { SysInstallInfo } from '@certd/lib-server';
 import { RandomUtil } from '../../../utils/random.js';
 
 /**

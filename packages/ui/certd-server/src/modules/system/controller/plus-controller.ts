@@ -1,9 +1,9 @@
 import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
-import { SysSettingsService } from '../service/sys-settings-service.js';
-import { BaseController } from '../../../basic/base-controller.js';
+import { SysSettingsService } from '@certd/lib-server';
+import { BaseController } from '@certd/lib-server';
 import { AppKey } from '@certd/pipeline';
-import { SysInstallInfo } from '../service/models.js';
-import { logger } from '../../../utils/logger.js';
+import { SysInstallInfo } from '@certd/lib-server';
+import { logger } from '@certd/pipeline';
 import { PlusService } from '../../basic/service/plus-service.js';
 
 /**

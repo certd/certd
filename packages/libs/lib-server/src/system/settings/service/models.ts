@@ -7,6 +7,7 @@ export class BaseSettings {
     return 'settings.' + this.__key__;
   }
 }
+
 export class SysPublicSettings extends BaseSettings {
   static __key__ = 'sys.public';
   static __title__ = '系统公共设置';

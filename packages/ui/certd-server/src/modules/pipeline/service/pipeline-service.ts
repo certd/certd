@@ -1,7 +1,7 @@
 import { Config, Inject, Provide, Scope, ScopeEnum, sleep } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service.js';
+import { BaseService } from '@certd/lib-server';
 import { PipelineEntity } from '../entity/pipeline.js';
 import { PipelineDetail } from '../entity/vo/pipeline-detail.js';
 import { Executor, isPlus, Pipeline, ResultType, RunHistory, UserInfo } from '@certd/pipeline';
@@ -13,9 +13,9 @@ import { HistoryService } from './history-service.js';
 import { HistoryEntity } from '../entity/history.js';
 import { HistoryLogEntity } from '../entity/history-log.js';
 import { HistoryLogService } from './history-log-service.js';
-import { logger } from '../../../utils/logger.js';
+import { logger } from '@certd/pipeline';
 import { EmailService } from '../../basic/service/email-service.js';
-import { NeedVIPException } from '../../../basic/exception/vip-exception.js';
+import { NeedVIPException } from '@certd/lib-server';
 import { UserService } from '../../authority/service/user-service.js';
 
 const runningTasks: Map<string | number, Executor> = new Map();

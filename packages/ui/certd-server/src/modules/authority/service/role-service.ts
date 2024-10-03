@@ -1,7 +1,7 @@
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { BaseService } from '../../../basic/base-service.js';
+import { BaseService } from '@certd/lib-server';
 import { RoleEntity } from '../entity/role.js';
 import { UserRoleService } from './user-role-service.js';
 import { RolePermissionEntity } from '../entity/role-permission.js';
@@ -50,12 +50,7 @@ export class RoleService extends BaseService<RoleEntity> {
   async getPermissionByRoleIds(roleIds: any) {
     return await this.permissionService.repository
       .createQueryBuilder('permission')
-      .innerJoinAndSelect(
-        RolePermissionEntity,
-        'rp',
-        'rp.permissionId = permission.id and rp.roleId in (:...roleIds)',
-        { roleIds }
-      )
+      .innerJoinAndSelect(RolePermissionEntity, 'rp', 'rp.permissionId = permission.id and rp.roleId in (:...roleIds)', { roleIds })
       .getMany();
   }
 
@@ -119,9 +114,7 @@ export class RoleService extends BaseService<RoleEntity> {
     return permissionSet;
   }
 
-  async getCachedPermissionSetByRoleIds(
-    roleIds: number[]
-  ): Promise<Set<string>> {
+  async getCachedPermissionSetByRoleIds(roleIds: number[]): Promise<Set<string>> {
     const roleIdsKey = roleIds.join(',');
     let permissionSet = this.permissionCache.get(roleIdsKey);
     if (permissionSet) {

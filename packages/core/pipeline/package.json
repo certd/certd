@@ -17,6 +17,7 @@
   "dependencies": {
     "@certd/basic": "^1.25.9",
     "@certd/plus-core": "^1.25.9",
+    "nanoid": "^5.0.7",
     "axios": "^1.7.2",
     "fix-path": "^4.0.0",
     "http-proxy-agent": "^7.0.2",

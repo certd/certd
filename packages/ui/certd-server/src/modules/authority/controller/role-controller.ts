@@ -1,5 +1,5 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
-import { CrudController } from '../../../basic/crud-controller.js';
+import { CrudController } from '@certd/lib-server';
 import { RoleService } from '../service/role-service.js';
 
 /**

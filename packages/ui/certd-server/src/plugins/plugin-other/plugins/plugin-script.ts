@@ -39,7 +39,7 @@ export class CustomScriptPlugin extends AbstractTaskPlugin {
       name: 'pi-output-selector',
       from: ['CertApply', 'CertApplyLego'],
     },
-    required: true,
+    required: false,
   })
   cert!: CertInfo;
 

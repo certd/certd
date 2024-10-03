@@ -86,6 +86,7 @@ import { env } from "../utils/util.env";
 import FsThemeModeSet from "./components/theme/mode-set.vue";
 import VipButton from "/@/components/vip-button/index.vue";
 import TutorialButton from "/@/components/tutorial/index.vue";
+import { useUserStore } from "/@/store/modules/user";
 export default {
   name: "LayoutFramework",
   // eslint-disable-next-line vue/no-unused-components
@@ -130,7 +131,10 @@ export default {
     const version = ref(import.meta.env.VITE_APP_VERSION);
 
     const envRef = ref(env);
+
+    const userStore = useUserStore();
     return {
+      userStore,
       version,
       frameworkMenus,
       headerMenus,

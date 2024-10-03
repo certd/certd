@@ -1,11 +1,11 @@
 import { Config, Inject, Provide } from '@midwayjs/core';
 import { UserService } from '../../authority/service/user-service.js';
 import jwt from 'jsonwebtoken';
-import { CommonException } from '../../../basic/exception/common-exception.js';
+import { CommonException } from '@certd/lib-server';
 import { RoleService } from '../../authority/service/role-service.js';
 import { UserEntity } from '../../authority/entity/user.js';
-import { SysSettingsService } from '../../system/service/sys-settings-service.js';
-import { SysPrivateSettings } from '../../system/service/models.js';
+import { SysSettingsService } from '@certd/lib-server';
+import { SysPrivateSettings } from '@certd/lib-server';
 
 /**
  * 系统用户

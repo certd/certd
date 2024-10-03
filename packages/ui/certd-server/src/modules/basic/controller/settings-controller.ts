@@ -1,8 +1,8 @@
 import { Config, Controller, Get, Inject, Provide } from '@midwayjs/core';
-import { BaseController } from '../../../basic/base-controller.js';
-import { Constants } from '../../../basic/constants.js';
-import { SysSettingsService } from '../../system/service/sys-settings-service.js';
-import { SysInstallInfo, SysPublicSettings, SysSiteInfo } from '../../system/service/models.js';
+import { BaseController } from '@certd/lib-server';
+import { Constants } from '@certd/lib-server';
+import { SysSettingsService } from '@certd/lib-server';
+import { SysInstallInfo, SysPublicSettings, SysSiteInfo } from '@certd/lib-server';
 import { AppKey } from '@certd/pipeline';
 
 /**
