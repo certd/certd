@@ -4,6 +4,7 @@ import { Logger } from "log4js";
 import { HttpProxyAgent } from "http-proxy-agent";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import nodeHttp from "http";
+import * as https from "node:https";
 export class HttpError extends Error {
   status?: number;
   statusText?: string;
@@ -17,7 +18,7 @@ export class HttpError extends Error {
     }
     super(error.message);
 
-    if (error?.message?.indexOf("ssl3_get_record:wrong version number") > -1) {
+    if (error?.message?.indexOf("ssl3_get_record:wrong version number") >= 0) {
       this.message = "http协议错误，服务端要求http协议，请检查是否使用了https请求";
     }
 
@@ -69,7 +70,7 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       delete config.skipSslVerify;
       config.httpsAgent = agents.httpsAgent;
       config.httpAgent = agents.httpAgent;
-
+      config.proxy = false; //必须 否则还会走一层代理，
       return config;
     },
     (error: Error) => {
@@ -154,13 +155,18 @@ export function createAgent(opts: nodeHttp.AgentOptions = {}) {
   let httpAgent, httpsAgent;
   const httpProxy = process.env.HTTP_PROXY || process.env.http_proxy;
   if (httpProxy) {
+    logger.info("use httpProxy:", httpProxy);
     httpAgent = new HttpProxyAgent(httpProxy, opts as any);
+  } else {
+    httpAgent = new nodeHttp.Agent(opts);
   }
   const httpsProxy = process.env.HTTPS_PROXY || process.env.https_proxy;
   if (httpsProxy) {
+    logger.info("use httpsProxy:", httpsProxy);
     httpsAgent = new HttpsProxyAgent(httpsProxy, opts as any);
+  } else {
+    httpsAgent = new https.Agent(opts);
   }
-
   return {
     httpAgent,
     httpsAgent,
