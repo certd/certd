@@ -39,7 +39,6 @@
 <script setup lang="ts">
 import { reactive } from "vue";
 import * as api from "./api";
-import { PublicSettingsSave, SettingKeys } from "./api";
 import { notification } from "ant-design-vue";
 import { useSettingStore } from "/src/store/modules/settings";
 
@@ -50,37 +49,26 @@ interface FormState {
   icpNo: string;
 }
 
-const formState = reactive<Partial<FormState>>({
-  registerEnabled: false,
-  managerOtherUserPipeline: false
-});
+const formState = reactive<Partial<FormState>>({});
 
-async function loadSysPublicSettings() {
-  const data: any = await api.SettingsGet(SettingKeys.SysPublic);
+async function loadSysSiteSettings() {
+  const data: any = await api.SettingsGet();
+  if (data == null) {
+    return;
+  }
   const setting = JSON.parse(data.setting);
   Object.assign(formState, setting);
 }
 
-loadSysPublicSettings();
+loadSysSiteSettings();
 const settingsStore = useSettingStore();
 const onFinish = async (form: any) => {
-  await api.PublicSettingsSave(form);
+  await api.SettingsSave(form);
   await settingsStore.loadSysSettings();
   notification.success({
     message: "保存成功"
   });
 };
-
-const onFinishFailed = (errorInfo: any) => {
-  // console.log("Failed:", errorInfo);
-};
-
-async function stopOtherUserTimer() {
-  await api.stopOtherUserTimer();
-  notification.success({
-    message: "停止成功"
-  });
-}
 </script>
 
 <style lang="less">

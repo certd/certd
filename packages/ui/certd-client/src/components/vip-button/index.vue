@@ -154,7 +154,10 @@ function openUpgrade() {
           <div class="vip-type-vs">
             <a-row gutter={20}>
               <a-col span={8}>
-                <h3 class="block-header">免费版</h3>
+                <h3 class="block-header">
+                  免费版
+                  <fs-icon v-if="!userStore.isPlus" class="color-green" icon="ion:checkmark-sharp" />
+                </h3>
                 <ul>
                   <li>
                     <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>证书申请功能无限制
@@ -170,7 +173,10 @@ function openUpgrade() {
                 </ul>
               </a-col>
               <a-col span={8}>
-                <h3 class="block-header">专业版</h3>
+                <h3 class="block-header">
+                  专业版
+                  <fs-icon v-if="userStore.isPlus && !userStore.isComm" class="color-green" icon="ion:checkmark-sharp" />
+                </h3>
                 <ul>
                   <li>
                     <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
@@ -191,7 +197,10 @@ function openUpgrade() {
                 </ul>
               </a-col>
               <a-col span={8}>
-                <h3 class="block-header">商业版</h3>
+                <h3 class="block-header">
+                  商业版
+                  <fs-icon v-if="userStore.isComm" class="color-green" icon="ion:checkmark-sharp" />
+                </h3>
                 <ul>
                   <li>
                     <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
@@ -264,6 +273,9 @@ function openUpgrade() {
     list-style-type: unset;
     margin-left: 0px;
     padding: 0;
+  }
+  .color-green {
+    color: green;
   }
   .vip-type-vs {
     .fs-icon {

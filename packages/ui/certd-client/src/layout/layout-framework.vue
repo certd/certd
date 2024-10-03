@@ -2,7 +2,7 @@
   <a-layout class="fs-framework">
     <a-layout-sider v-model:collapsed="asideCollapsed" :trigger="null" collapsible>
       <div class="header-logo">
-        <img src="/assets/images/logo/logo.svg" />
+        <img src="/static/images/logo/logo.svg" />
         <span v-if="!asideCollapsed" class="title">Certd</span>
       </div>
       <div class="aside-menu">

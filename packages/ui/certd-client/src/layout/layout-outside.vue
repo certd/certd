@@ -4,7 +4,7 @@
       <div class="user-layout-content">
         <div class="top flex flex-col items-center justify-center">
           <div class="header flex flex-row items-center">
-            <img src="/assets/images/logo/rect-black.svg" class="logo" alt="logo" />
+            <img src="/static/images/logo/rect-black.svg" class="logo" alt="logo" />
             <span class="title"></span>
           </div>
           <div class="desc"></div>
@@ -65,7 +65,7 @@ export default {
   .login-container {
     width: 100%;
     min-height: 100%;
-    background: #f0f2f5 url(/src/assets/background.svg) no-repeat 50%;
+    background: #f0f2f5 url(/static/background.svg) no-repeat 50%;
     background-size: 100%;
     //padding: 50px 0 84px;
     position: relative;

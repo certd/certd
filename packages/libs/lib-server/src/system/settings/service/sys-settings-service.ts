@@ -6,6 +6,7 @@ import { CacheManager } from '@midwayjs/cache';
 import { BaseSettings, SysPrivateSettings, SysPublicSettings } from './models.js';
 import * as _ from 'lodash-es';
 import { BaseService } from '../../../basic/index.js';
+import { checkComm } from '@certd/pipeline';
 
 /**
  * 设置
@@ -38,6 +39,9 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   async getByKey(key: string): Promise<SysSettingsEntity | null> {
     if (!key) {
       return null;
+    }
+    if (key === 'sys.site') {
+      checkComm();
     }
     return await this.repository.findOne({
       where: {

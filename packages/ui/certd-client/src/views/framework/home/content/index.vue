@@ -18,7 +18,7 @@
       </a-alert>
     </div>
     <div class="content">
-      <img src="/assets/images/preview.png" class="preview_img" />
+      <img src="/static/images/preview.png" class="preview_img" />
     </div>
     <div class="footer_box">
       <div>如果觉得好用，请不要吝啬你的star哟！</div>

@@ -5,7 +5,7 @@ export const sysResources = [
     title: "系统管理",
     name: "sys",
     path: "/sys",
-    redirect: "/sys/authority",
+    redirect: "/sys/settings",
     component: LayoutPass,
     meta: {
       icon: "ion:settings-outline",
