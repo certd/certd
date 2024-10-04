@@ -9,15 +9,16 @@
           <div v-for="desc of currentStepItem.descriptions">{{ desc }}</div>
         </div>
       </div>
-
-      <div class="image-box">
-        <a-image :src="currentStepItem.image" :preview-mask="previewMask" />
-      </div>
+      <template v-if="currentStepItem.image">
+        <div class="image-box">
+          <a-image :src="currentStepItem.image" :preview-mask="previewMask" />
+        </div>
+      </template>
     </div>
 
     <div class="flex-center actions">
       <fs-button class="m-10" icon="mingcute:arrow-left-fill" @click="prev()">上一步</fs-button>
-      <fs-button class="m-10" icon-right="mingcute:arrow-right-fill" @click="next()">下一步</fs-button>
+      <fs-button class="m-10" type="primary" icon-right="mingcute:arrow-right-fill" @click="next()">下一步</fs-button>
     </div>
   </div>
 </template>
@@ -43,14 +44,21 @@ const steps = ref<Step[]>([
     description: "演示证书申请任务如何配置",
     items: [
       {
+        title: "教程演示内容",
+        descriptions: [
+          "1. 本教程演示如何全自动申请和更新证书，部署证书到阿里云CDN和Nginx，证书到期后自动续期，自动部署",
+          "2. 演示流程：创建证书申请流水线 -> 添加部署任务 -> 运行测试 -> 设置定时执行和邮件通知"
+        ]
+      },
+      {
         image: "/static/doc/images/1-add.png",
         title: "创建证书流水线",
-        descriptions: ["点击添加流水线，选择证书申请"]
+        descriptions: ["点击添加证书流水线，填写证书申请信息"]
       },
       {
         image: "/static/doc/images/2-access-provider.png",
         title: "DNS授权",
-        descriptions: ["证书申请需要给域名添加TXT解析记录来验证域名所有权"]
+        descriptions: ["证书申请需要给域名添加TXT解析记录来验证域名所有权", "根据你的域名注册商，选择对应的平台授权"]
       },
       {
         image: "/static/doc/images/3-add-access.png",
@@ -65,7 +73,7 @@ const steps = ref<Step[]>([
       {
         image: "/static/doc/images/4-add-success.png",
         title: "流水线创建成功",
-        descriptions: ["此时证书申请任务已经建好，点击手动触发即可测试证书申请", "接下来演示如何添加部署任务"]
+        descriptions: ["此时证书申请任务已经建好", "点击手动触发即可测试证书申请", "接下来演示如何添加部署任务"]
       }
     ]
   },
@@ -132,7 +140,7 @@ const steps = ref<Step[]>([
       {
         image: "/static/doc/images/9-start.png",
         title: "运行测试一下",
-        descriptions: ["之前是把证书上传到主机，接下来要运行命令，去部署证书"]
+        descriptions: ["点击手动触发按钮，即可测试运行"]
       },
       {
         image: "/static/doc/images/10-1-log.png",
@@ -147,7 +155,7 @@ const steps = ref<Step[]>([
       {
         image: "/static/doc/images/11-2-error.png",
         title: "执行失败如何排查",
-        descriptions: ["查看错误日志,这里报的是nginx容器不存在，修改命令改成正确的nginx容器名称"]
+        descriptions: ["查看错误日志", "这里报的是nginx容器不存在，修改命令，改成正确的nginx容器名称即可"]
       },
       {
         image: "/static/doc/images/12-1-log-success.png",
@@ -192,6 +200,10 @@ const steps = ref<Step[]>([
         image: "/static/doc/images/15-1-email.png",
         title: "设置邮件通知",
         descriptions: ["建议选择监听'错误时'和'错误转成功'两种即可，在意外失败时可以尽快去排查问题，（免费版需要配置邮件服务器）"]
+      },
+      {
+        title: "教程结束",
+        descriptions: ["感谢观看，希望对你有所帮助"]
       }
     ]
   }
