@@ -7,12 +7,13 @@ export class EnvConfig {
   STORAGE: string = import.meta.env.VITE_APP_STORAGE;
   TITLE: string = import.meta.env.VITE_APP_TITLE;
   SLOGAN: string = import.meta.env.VITE_APP_SLOGAN;
+  LOGO: string = import.meta.env.VITE_APP_LOGO;
+  LOGIN_LOGO: string = import.meta.env.VITE_APP_LOGIN_LOGO;
+  ICP_NO: string = import.meta.env.VITE_APP_ICP_NO;
   COPYRIGHT_YEAR: string = import.meta.env.VITE_APP_COPYRIGHT_YEAR;
   COPYRIGHT_NAME: string = import.meta.env.VITE_APP_COPYRIGHT_NAME;
   COPYRIGHT_URL: string = import.meta.env.VITE_APP_COPYRIGHT_URL;
-  LOGO: string = import.meta.env.VITE_APP_LOGO;
   PM_ENABLED: string = import.meta.env.VITE_APP_PM_ENABLED;
-  ICP_NO: string = import.meta.env.VITE_APP_ICP_NO;
 
   init(env: any) {
     for (const key in this) {

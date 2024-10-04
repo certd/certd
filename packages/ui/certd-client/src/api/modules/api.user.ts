@@ -64,10 +64,3 @@ export async function mine(): Promise<UserInfoRes> {
     method: "post"
   });
 }
-
-export async function getPlusInfo() {
-  return await request({
-    url: "/mine/plusInfo",
-    method: "post"
-  });
-}

@@ -12,14 +12,14 @@
   </div>
 </template>
 <script lang="tsx" setup>
-import { ref, reactive, computed } from "vue";
-import { useUserStore } from "/src/store/modules/user";
+import { computed, reactive } from "vue";
 import dayjs from "dayjs";
 import { message, Modal } from "ant-design-vue";
 import * as api from "./api";
 import { useSettingStore } from "/@/store/modules/settings";
 import { useRouter } from "vue-router";
-
+import { useUserStore } from "/@/store/modules/user";
+const settingStore = useSettingStore();
 const props = withDefaults(
   defineProps<{
     mode?: "button" | "nav" | "icon";
@@ -33,7 +33,7 @@ type Text = {
   title?: string;
 };
 const text = computed<Text>(() => {
-  const vipLabel = userStore.vipLabel;
+  const vipLabel = settingStore.vipLabel;
   const map = {
     isPlus: {
       button: {
@@ -64,26 +64,25 @@ const text = computed<Text>(() => {
       }
     }
   };
-  if (userStore.isPlus) {
+  if (settingStore.isPlus) {
     return map.isPlus[props.mode];
   } else {
     return map.free[props.mode];
   }
 });
 
-const userStore = useUserStore();
 const expireTime = computed(() => {
-  if (userStore.isPlus) {
-    return dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD");
+  if (settingStore.isPlus) {
+    return dayjs(settingStore.plusInfo.expireTime).format("YYYY-MM-DD");
   }
   return "";
 });
 
 const expiredDays = computed(() => {
-  if (userStore.plusInfo?.isPlus && !userStore.isPlus) {
+  if (settingStore.plusInfo?.isPlus && !settingStore.isPlus) {
     //已过期多少天
-    const days = dayjs().diff(dayjs(userStore.plusInfo.expireTime), "day");
-    return `${userStore.vipLabel}已过期${days}天`;
+    const days = dayjs().diff(dayjs(settingStore.plusInfo.expireTime), "day");
+    return `${settingStore.vipLabel}已过期${days}天`;
   }
   return "";
 });
@@ -91,6 +90,24 @@ const expiredDays = computed(() => {
 const formState = reactive({
   code: ""
 });
+
+const vipTypeDefine = {
+  free: {
+    title: "免费版",
+    type: "free",
+    privilege: ["证书申请功能无限制", "证书流水线数量10条", "常用的主机、cdn等部署插件"]
+  },
+  plus: {
+    title: "专业版",
+    type: "plus",
+    privilege: ["可加VIP群，需求优先实现", "证书流水线数量无限制", "免配置发邮件功能", "支持宝塔、易盾、群晖、1Panel、cdnfly等部署插件"]
+  },
+  comm: {
+    title: "商业版",
+    type: "comm",
+    privilege: ["拥有专业版所有特权", "允许商用", "修改logo、标题", "多用户无限制", "支持用户支付（敬请期待）"]
+  }
+};
 
 const router = useRouter();
 async function doActive() {
@@ -101,10 +118,10 @@ async function doActive() {
   const res = await api.doActive(formState);
   if (res) {
     await userStore.reInit();
-    const vipLabel = userStore.vipLabel;
+    const vipLabel = settingStore.vipLabel;
     Modal.success({
       title: "激活成功",
-      content: `您已成功激活${vipLabel},有效期至：${dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD")}`,
+      content: `您已成功激活${vipLabel},有效期至：${dayjs(settingStore.plusInfo.expireTime).format("YYYY-MM-DD")}`,
       onOk() {
         if (!(settingStore.installInfo.bindUserId > 0)) {
           //未绑定账号
@@ -121,21 +138,20 @@ async function doActive() {
   }
 }
 
-const settingStore = useSettingStore();
 const computedSiteId = computed(() => settingStore.installInfo?.siteId);
 const [modal, contextHolder] = Modal.useModal();
-
+const userStore = useUserStore();
 function openUpgrade() {
   if (!userStore.isAdmin) {
     message.info("仅限管理员操作");
     return;
   }
   const placeholder = "请输入激活码";
-  const isPlus = userStore.isPlus;
+  const isPlus = settingStore.isPlus;
   let title = "激活专业版/商业版";
-  if (userStore.isComm) {
+  if (settingStore.isComm) {
     title = "续期商业版";
-  } else if (userStore.isPlus) {
+  } else if (settingStore.isPlus) {
     title = "续期专业版/升级商业版";
   }
 
@@ -148,87 +164,35 @@ function openUpgrade() {
     okText: "激活",
     width: 900,
     content: () => {
-      const vipLabel = userStore.vipLabel;
+      const vipLabel = settingStore.vipLabel;
+      const slots = [];
+      for (const key in vipTypeDefine) {
+        const item = vipTypeDefine[key];
+        const vipBlockClass = `vip-block ${key === settingStore.plusInfo.vipType ? "current" : ""}`;
+        slots.push(
+          <a-col span={8}>
+            <div class={vipBlockClass}>
+              <h3 class="block-header">{item.title}</h3>
+              <ul>
+                {item.privilege.map((p) => (
+                  <li>
+                    <fs-icon class="color-green" icon="ion:checkmark-sharp" />
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </a-col>
+        );
+      }
       return (
         <div class="mt-10 mb-10 vip-active-modal">
           <div class="vip-type-vs">
-            <a-row gutter={20}>
-              <a-col span={8}>
-                <h3 class="block-header">
-                  免费版
-                  <fs-icon v-if="!userStore.isPlus" class="color-green" icon="ion:checkmark-sharp" />
-                </h3>
-                <ul>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>证书申请功能无限制
-                  </li>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
-                    证书流水线数量10条
-                  </li>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
-                    常用的部署插件
-                  </li>
-                </ul>
-              </a-col>
-              <a-col span={8}>
-                <h3 class="block-header">
-                  专业版
-                  <fs-icon v-if="userStore.isPlus && !userStore.isComm" class="color-green" icon="ion:checkmark-sharp" />
-                </h3>
-                <ul>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
-                    可加VIP群，需求优先实现
-                  </li>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
-                    证书流水线数量无限制
-                  </li>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
-                    免配置发邮件功能
-                  </li>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
-                    支持宝塔、易盾、群晖、cdnfly、1Panel等部署插件
-                  </li>
-                </ul>
-              </a-col>
-              <a-col span={8}>
-                <h3 class="block-header">
-                  商业版
-                  <fs-icon v-if="userStore.isComm" class="color-green" icon="ion:checkmark-sharp" />
-                </h3>
-                <ul>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
-                    拥有专业版所有特权
-                  </li>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
-                    修改logo、标题
-                  </li>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
-                    多用户无限制
-                  </li>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
-                    支持用户支付
-                  </li>
-                  <li>
-                    <fs-icon class="color-green" icon="ion:checkmark-sharp"></fs-icon>
-                    允许商用
-                  </li>
-                </ul>
-              </a-col>
-            </a-row>
+            <a-row gutter={20}>{slots}</a-row>
           </div>
-          <div>
+          <div class="mt-10">
             <h3 class="block-header">{isPlus ? "续期" : "立刻激活"}</h3>
-            <div>{isPlus ? `当前${vipLabel}已激活，到期时间` + dayjs(userStore.plusInfo.expireTime).format("YYYY-MM-DD") : ""}</div>
+            <div>{isPlus ? `当前${vipLabel}已激活，到期时间` + dayjs(settingStore.plusInfo.expireTime).format("YYYY-MM-DD") : ""}</div>
             <div class="mt-10">
               <div class="flex-o w-100">
                 <span>站点ID：</span>
@@ -269,6 +233,20 @@ function openUpgrade() {
 }
 
 .vip-active-modal {
+  .vip-block {
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    height: 160px;
+    //background-color: rgba(250, 237, 167, 0.79);
+    &.current {
+      border-color: green;
+    }
+    .block-header {
+      padding: 0px;
+    }
+  }
+
   ul {
     list-style-type: unset;
     margin-left: 0px;

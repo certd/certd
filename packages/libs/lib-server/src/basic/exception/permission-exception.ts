@@ -5,10 +5,6 @@ import { BaseException } from './base-exception.js';
  */
 export class PermissionException extends BaseException {
   constructor(message?: string) {
-    super(
-      'PermissionException',
-      Constants.res.permission.code,
-      message ? message : Constants.res.permission.message
-    );
+    super('PermissionException', Constants.res.permission.code, message ? message : Constants.res.permission.message);
   }
 }

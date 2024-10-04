@@ -1,8 +1,6 @@
 import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
-import { BaseController } from '@certd/lib-server';
-import { Constants } from '@certd/lib-server';
+import { BaseController, Constants } from '@certd/lib-server';
 import { UserService } from '../../authority/service/user-service.js';
-import { getPlusInfo } from '@certd/pipeline';
 import { RoleService } from '../../authority/service/role-service.js';
 
 /**
@@ -28,13 +26,5 @@ export class MineController extends BaseController {
     const userId = this.getUserId();
     await this.userService.changePassword(userId, body);
     return this.ok({});
-  }
-
-  @Post('/plusInfo', { summary: Constants.per.authOnly })
-  async plusInfo(@Body(ALL) body) {
-    const info = getPlusInfo();
-    return this.ok({
-      ...info,
-    });
   }
 }

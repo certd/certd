@@ -47,8 +47,8 @@ onMounted(() => {
     const subjectInfo: SubjectInfo = {
       subjectId: settingStore.installInfo.siteId,
       installTime: settingStore.installInfo.installTime,
-      vipType: userStore.plusInfo.vipType || "free",
-      expiresTime: userStore.plusInfo.expireTime
+      vipType: settingStore.plusInfo.vipType || "free",
+      expiresTime: settingStore.plusInfo.expireTime
     };
     return subjectInfo;
   });
@@ -74,7 +74,7 @@ onMounted(() => {
     await userStore.reInit();
     notification.success({
       message: "更新成功",
-      description: "专业版已激活"
+      description: "专业版/商业版已激活"
     });
   });
 });

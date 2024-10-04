@@ -114,6 +114,7 @@ import { PluginGroups } from "/@/views/certd/pipeline/pipeline/type";
 import { useUserStore } from "/@/store/modules/user";
 import { compute, useCompute } from "@fast-crud/fast-crud";
 import { useReference } from "/@/use/use-refrence";
+import { useSettingStore } from "/@/store/modules/settings";
 
 export default {
   name: "PiStepForm",
@@ -132,7 +133,7 @@ export default {
      * @returns
      */
     function useStepForm() {
-      const useStore = useUserStore();
+      const settingStore = useSettingStore();
       const getPluginGroups: any = inject("getPluginGroups");
       const pluginGroups: PluginGroups = getPluginGroups();
       const mode: Ref = ref("add");
@@ -152,7 +153,7 @@ export default {
       });
 
       const stepTypeSelected = (item: any) => {
-        if (item.needPlus && !useStore.isPlus) {
+        if (item.needPlus && !settingStore.isPlus) {
           message.warn("此插件需要开通专业版才能使用");
           throw new Error("此插件需要开通专业版才能使用");
         }

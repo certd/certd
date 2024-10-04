@@ -2,8 +2,8 @@
   <a-layout class="fs-framework">
     <a-layout-sider v-model:collapsed="asideCollapsed" :trigger="null" collapsible>
       <div class="header-logo">
-        <img src="/static/images/logo/logo.svg" />
-        <span v-if="!asideCollapsed" class="title">Certd</span>
+        <img :src="siteInfo.logo" />
+        <span v-if="!asideCollapsed" class="title">{{ siteInfo.title }}</span>
       </div>
       <div class="aside-menu">
         <fs-menu :scroll="true" :menus="asideMenus" :expand-selected="!asideCollapsed" />
@@ -61,7 +61,18 @@
       <a-layout-footer class="fs-framework-footer">
         <div>
           <span>Powered by</span>
-          <a href="https://certd.handsfree.work"> handsfree.work </a>
+          <a> handsfree.work </a>
+          <template v-if="siteInfo.icpNo">
+            <a-divider type="vertical" />
+            <span>
+              <a href="https://beian.miit.gov.cn/" target="_blank">{{ siteInfo.icpNo }}</a>
+            </span>
+          </template>
+
+          <template v-if="siteInfo.licenseTo">
+            <a-divider type="vertical" />
+            <a :href="siteInfo.licenseToUrl || ''">{{ siteInfo.licenseTo }}</a>
+          </template>
         </div>
         <div>v{{ version }}</div>
 
@@ -71,11 +82,10 @@
   </a-layout>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { computed, onErrorCaptured, ref } from "vue";
 import FsMenu from "./components/menu/index.jsx";
 import FsLocale from "./components/locale/index.vue";
-import FsSourceLink from "./components/source-link/index.vue";
 import FsUserInfo from "./components/user-info/index.vue";
 import FsTabs from "./components/tabs/index.vue";
 import { useResourceStore } from "../store/modules/resource";
@@ -83,69 +93,46 @@ import { usePageStore } from "/@/store/modules/page";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons-vue";
 import FsThemeSet from "/@/layout/components/theme/index.vue";
 import { env } from "../utils/util.env";
-import FsThemeModeSet from "./components/theme/mode-set.vue";
 import VipButton from "/@/components/vip-button/index.vue";
 import TutorialButton from "/@/components/tutorial/index.vue";
 import { useUserStore } from "/@/store/modules/user";
-export default {
-  name: "LayoutFramework",
-  // eslint-disable-next-line vue/no-unused-components
-  components: {
-    TutorialButton,
-    FsThemeSet,
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
-    FsMenu,
-    FsLocale,
-    FsSourceLink,
-    FsUserInfo,
-    FsTabs,
-    FsThemeModeSet,
-    VipButton
-  },
-  setup() {
-    const resourceStore = useResourceStore();
-    const frameworkMenus = computed(() => {
-      return resourceStore.getFrameworkMenus;
-    });
-    const headerMenus = computed(() => {
-      return resourceStore.getHeaderMenus;
-    });
-    const asideMenus = computed(() => {
-      return resourceStore.getAsideMenus;
-    });
+import { useSettingStore } from "/@/store/modules/settings";
 
-    const pageStore = usePageStore();
-    const keepAlive = pageStore.keepAlive;
+const resourceStore = useResourceStore();
+const frameworkMenus = computed(() => {
+  return resourceStore.getFrameworkMenus;
+});
+const headerMenus = computed(() => {
+  return resourceStore.getHeaderMenus;
+});
+const asideMenus = computed(() => {
+  return resourceStore.getAsideMenus;
+});
 
-    const asideCollapsed = ref(false);
-    function asideCollapsedToggle() {
-      asideCollapsed.value = !asideCollapsed.value;
-    }
-    onErrorCaptured((e) => {
-      console.error("ErrorCaptured:", e);
-      // notification.error({ message: e.message });
-      //阻止错误向上传递
-      return false;
-    });
-    const version = ref(import.meta.env.VITE_APP_VERSION);
+const pageStore = usePageStore();
+const keepAlive = pageStore.keepAlive;
 
-    const envRef = ref(env);
+const asideCollapsed = ref(false);
+function asideCollapsedToggle() {
+  asideCollapsed.value = !asideCollapsed.value;
+}
+onErrorCaptured((e) => {
+  console.error("ErrorCaptured:", e);
+  // notification.error({ message: e.message });
+  //阻止错误向上传递
+  return false;
+});
+const version = ref(import.meta.env.VITE_APP_VERSION);
 
-    const userStore = useUserStore();
-    return {
-      userStore,
-      version,
-      frameworkMenus,
-      headerMenus,
-      asideMenus,
-      keepAlive,
-      asideCollapsed,
-      asideCollapsedToggle,
-      envRef
-    };
-  }
-};
+const envRef = ref(env);
+
+const userStore = useUserStore();
+
+const settingStore = useSettingStore();
+
+const siteInfo = computed(() => {
+  return settingStore.siteInfo;
+});
 </script>
 <style lang="less">
 @import "../style/theme/index.less";

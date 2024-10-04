@@ -15,15 +15,7 @@ import { mitter } from "/src/utils/util.mitt";
 interface UserState {
   userInfo: Nullable<UserInfoRes>;
   token?: string;
-  plusInfo?: PlusInfo;
   inited: boolean;
-}
-
-interface PlusInfo {
-  vipType: string;
-  expireTime: number;
-  isPlus: boolean;
-  isComm: boolean;
 }
 
 const USER_INFO_KEY = "USER_INFO";
@@ -35,8 +27,6 @@ export const useUserStore = defineStore({
     userInfo: null,
     // token
     token: undefined,
-    // plus
-    plusInfo: null,
     inited: false
   }),
   getters: {
@@ -48,20 +38,6 @@ export const useUserStore = defineStore({
     },
     isAdmin(): boolean {
       return this.getUserInfo.id === 1 || this.getUserInfo.roles?.includes(1);
-    },
-    isPlus(): boolean {
-      return this.plusInfo?.isPlus && this.plusInfo?.expireTime > new Date().getTime();
-    },
-    isComm(): boolean {
-      return this.plusInfo?.isComm && this.plusInfo?.expireTime > new Date().getTime();
-    },
-    vipLabel(): string {
-      const vipLabelMap: any = {
-        free: "免费版",
-        plus: "专业版",
-        comm: "商业版"
-      };
-      return vipLabelMap[this.plusInfo?.vipType || "free"];
     }
   },
   actions: {
@@ -78,14 +54,6 @@ export const useUserStore = defineStore({
       this.token = "";
       LocalStorage.remove(TOKEN_KEY);
       LocalStorage.remove(USER_INFO_KEY);
-    },
-    checkPlus() {
-      if (!this.isPlus) {
-        notification.warn({
-          message: "此为专业版功能，请先升级到专业版"
-        });
-        throw new Error("此为专业版功能，请升级到专业版");
-      }
     },
     async register(user: RegisterReq) {
       await UserApi.register(user);
@@ -118,16 +86,12 @@ export const useUserStore = defineStore({
 
     async onLoginSuccess(loginData: any) {
       await this.getUserInfoAction();
-      await this.loadPlusInfo();
       const userInfo = await this.getUserInfoAction();
-      mitter.emit("app.login", { userInfo, token: loginData, plusInfo: this.plusInfo });
+      mitter.emit("app.login", { userInfo, token: loginData });
       await router.replace("/");
       return userInfo;
     },
 
-    async loadPlusInfo() {
-      this.plusInfo = await UserApi.getPlusInfo();
-    },
     /**
      * @description: logout
      */
@@ -154,9 +118,6 @@ export const useUserStore = defineStore({
     async init() {
       if (this.inited) {
         return;
-      }
-      if (this.getToken) {
-        await this.loadPlusInfo();
       }
       this.inited = true;
     },

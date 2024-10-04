@@ -38,3 +38,10 @@ export async function bindUrl(data): Promise<SysInstallInfo> {
     data
   });
 }
+
+export async function getPlusInfo() {
+  return await request({
+    url: "/basic/settings/plusInfo",
+    method: "get"
+  });
+}

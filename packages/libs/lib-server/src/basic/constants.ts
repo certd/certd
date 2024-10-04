@@ -44,6 +44,14 @@ export const Constants = {
       code: 402,
       message: '您没有权限',
     },
+    param: {
+      code: 400,
+      message: '参数错误',
+    },
+    notFound: {
+      code: 404,
+      message: '页面/文件/资源不存在',
+    },
     preview: {
       code: 10001,
       message: '对不起，预览环境不允许修改此数据',

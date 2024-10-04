@@ -16,6 +16,8 @@ import { promises } from "./util.promise.js";
 import { fileUtils } from "./util.file.js";
 import _ from "lodash-es";
 import { cache } from "./util.cache.js";
+import dayjs from 'dayjs';
+
 export const utils = {
   sleep,
   http,
@@ -27,4 +29,5 @@ export const utils = {
   mergeUtils,
   cache,
   nanoid,
+  dayjs
 };

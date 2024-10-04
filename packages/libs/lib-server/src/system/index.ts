@@ -1,2 +1,2 @@
 export * from './settings/index.js';
-export * from './plus/index.js';
+export * from './basic/index.js';

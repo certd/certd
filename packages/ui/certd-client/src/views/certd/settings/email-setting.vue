@@ -54,7 +54,7 @@
         <a-form :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }">
           <a-form-item label="使用官方邮件服务器">
             <div class="flex-o">
-              <a-switch v-model:checked="formState.usePlus" :disabled="!userStore.isPlus" @change="onUsePlusChanged" />
+              <a-switch v-model:checked="formState.usePlus" :disabled="!settingStore.isPlus" @change="onUsePlusChanged" />
               <vip-button class="ml-5" mode="button"></vip-button>
             </div>
             <div class="helper">使用官方邮箱服务器直接发邮件，免除繁琐的配置</div>
@@ -83,7 +83,7 @@ import * as emailApi from "./api.email";
 
 import { SettingKeys } from "./api";
 import { notification } from "ant-design-vue";
-import { useUserStore } from "/@/store/modules/user";
+import { useSettingStore } from "/@/store/modules/settings";
 
 interface FormState {
   host: string;
@@ -154,7 +154,7 @@ async function onTestSend() {
   }
 }
 
-const userStore = useUserStore();
+const settingStore = useSettingStore();
 </script>
 
 <style lang="less">

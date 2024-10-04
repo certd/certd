@@ -102,7 +102,7 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
             order: 101,
             helper: {
               render: () => {
-                if (userStore.isPlus) {
+                if (settingStore.isPlus) {
                   return "";
                 }
                 return (

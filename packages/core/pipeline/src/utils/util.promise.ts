@@ -25,7 +25,26 @@ export function safePromise<T>(callback: (resolve: (ret: T) => void, reject: (re
   });
 }
 
+export function promisify(func: any) {
+  return function (...args: any) {
+    return new Promise((resolve, reject) => {
+      try {
+        func(...args, (err: any, data: any) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(data);
+          }
+        });
+      } catch (e) {
+        reject(e);
+      }
+    });
+  };
+}
+
 export const promises = {
   TimeoutPromise,
   safePromise,
+  promisify,
 };

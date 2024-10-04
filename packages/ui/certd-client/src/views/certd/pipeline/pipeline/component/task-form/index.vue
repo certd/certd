@@ -45,7 +45,7 @@
                   <a-button type="primary" @click="stepAdd(currentTask)">添加步骤</a-button>
                 </template>
               </a-descriptions>
-              <v-draggable v-model="currentTask.steps" class="step-list" handle=".handle" item-key="id" :disabled="!userStore.isPlus">
+              <v-draggable v-model="currentTask.steps" class="step-list" handle=".handle" item-key="id" :disabled="!settingStore.isPlus">
                 <template #item="{ element, index }">
                   <div class="step-row">
                     <div class="text">
@@ -99,6 +99,7 @@ export default {
   emits: ["update"],
   setup(props: any, ctx: any) {
     const userStore = useUserStore();
+    const settingStore = useSettingStore();
     function useStep() {
       const stepFormRef: Ref<any> = ref(null);
       const currentStepIndex = ref(0);
@@ -254,6 +255,7 @@ export default {
     }
     return {
       userStore,
+      settingStore,
       labelCol: { span: 6 },
       wrapperCol: { span: 16 },
       ...useTaskForm(),

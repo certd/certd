@@ -2,11 +2,11 @@
   <div class="d2-page-cover">
     <div class="d2-page-cover__title" @click="$open('https://github.com/certd/certd')">
       <div class="title-line">
-        <span>Certd v{{ version }}</span>
+        <span>{{ siteInfo.title }} v{{ version }}</span>
       </div>
     </div>
-    <p class="d2-page-cover__sub-title">让你的证书永不过期</p>
-    <div class="warnning">
+    <p class="d2-page-cover__sub-title">{{ siteInfo.slogan }}</p>
+    <div v-if="siteInfo.warningOff !== false" class="warning">
       <a-alert type="warning" show-icon>
         <template #description>
           <div class="flex">
@@ -27,17 +27,14 @@
     </div>
   </div>
 </template>
-<script>
-import { defineComponent, ref } from "vue";
-export default defineComponent({
-  name: "PageContent",
-  setup() {
-    const version = ref(import.meta.env.VITE_APP_VERSION);
+<script lang="ts" setup>
+import { computed, ref, Ref } from "vue";
+import { SiteInfo, useSettingStore } from "/@/store/modules/settings";
 
-    return {
-      version
-    };
-  }
+const version = ref(import.meta.env.VITE_APP_VERSION);
+const settingStore = useSettingStore();
+const siteInfo: Ref<SiteInfo> = computed(() => {
+  return settingStore.siteInfo;
 });
 </script>
 <style lang="less" scoped>

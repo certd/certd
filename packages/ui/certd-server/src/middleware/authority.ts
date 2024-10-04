@@ -50,11 +50,11 @@ export class AuthorityMiddleware implements IWebMiddleware {
 
       let token = ctx.get('Authorization') || '';
       token = token.replace('Bearer ', '').trim();
-      if (token === '') {
+      if (!token) {
         //尝试从cookie中获取token
         token = ctx.cookies.get('token') || '';
       }
-      if (token === '') {
+      if (!token) {
         //尝试从query中获取token
         token = (ctx.query.token as string) || '';
       }

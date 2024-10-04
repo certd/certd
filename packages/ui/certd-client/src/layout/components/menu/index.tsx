@@ -101,6 +101,11 @@ export default defineComponent({
         return slots;
       }
       for (const sub of children) {
+        if (sub.meta?.show != null) {
+          if (sub.meta.show === false || (typeof sub.meta.show === "function" && !sub.meta.show())) {
+            continue;
+          }
+        }
         const title: any = () => {
           if (sub?.meta?.icon) {
             // @ts-ignore

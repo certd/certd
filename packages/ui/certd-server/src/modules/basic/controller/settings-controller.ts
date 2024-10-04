@@ -1,9 +1,6 @@
-import { Config, Controller, Get, Inject, Provide } from '@midwayjs/core';
-import { BaseController } from '@certd/lib-server';
-import { Constants } from '@certd/lib-server';
-import { SysSettingsService } from '@certd/lib-server';
-import { SysInstallInfo, SysPublicSettings, SysSiteInfo } from '@certd/lib-server';
-import { AppKey } from '@certd/pipeline';
+import { ALL, Body, Config, Controller, Get, Inject, Provide } from '@midwayjs/core';
+import { BaseController, Constants, SysInstallInfo, SysPublicSettings, SysSettingsService, SysSiteInfo } from '@certd/lib-server';
+import { AppKey, getPlusInfo } from '@certd/pipeline';
 
 /**
  */
@@ -33,5 +30,13 @@ export class BasicSettingsController extends BaseController {
   public async getSiteInfo() {
     const settings: SysSiteInfo = await this.sysSettingsService.getSetting(SysSiteInfo);
     return this.ok(settings);
+  }
+
+  @Get('/plusInfo', { summary: Constants.per.guest })
+  async plusInfo(@Body(ALL) body: any) {
+    const info = getPlusInfo();
+    return this.ok({
+      ...info,
+    });
   }
 }

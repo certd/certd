@@ -13,8 +13,6 @@ export async function SettingsSave(setting: any) {
   await request({
     url: apiPrefix + "/save",
     method: "post",
-    data: {
-      setting: JSON.stringify(setting)
-    }
+    data: setting
   });
 }

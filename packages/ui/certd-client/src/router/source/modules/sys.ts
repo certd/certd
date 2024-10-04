@@ -1,4 +1,7 @@
 import LayoutPass from "/@/layout/layout-pass.vue";
+import { computed } from "vue";
+import { useUserStore } from "/@/store/modules/user";
+import { useSettingStore } from "/@/store/modules/settings";
 
 export const sysResources = [
   {
@@ -57,16 +60,6 @@ export const sysResources = [
         component: "/sys/authority/user/index.vue"
       },
       {
-        title: "系统设置",
-        name: "settings",
-        meta: {
-          icon: "ion:settings-outline",
-          permission: "sys:settings:view"
-        },
-        path: "/sys/settings",
-        component: "/sys/settings/index.vue"
-      },
-      {
         title: "账号绑定",
         name: "account",
         meta: {
@@ -77,9 +70,24 @@ export const sysResources = [
         component: "/sys/account/index.vue"
       },
       {
+        title: "系统设置",
+        name: "settings",
+        meta: {
+          icon: "ion:settings-outline",
+          permission: "sys:settings:view"
+        },
+        path: "/sys/settings",
+        component: "/sys/settings/index.vue"
+      },
+      {
         title: "站点个性化",
         name: "site",
+        path: "/sys/site",
         meta: {
+          show: () => {
+            const settingStore = useSettingStore();
+            return settingStore.isComm;
+          },
           icon: "ion:document-text-outline",
           permission: "sys:settings:view"
         },
@@ -87,18 +95,27 @@ export const sysResources = [
       },
       {
         title: "商业版设置",
-        name: "/sys/commercial",
+        name: "SysCommercial",
         meta: {
           icon: "ion:document-text-outline",
-          permission: "sys:settings:view"
+          permission: "sys:settings:view",
+          show: () => {
+            const settingStore = useSettingStore();
+            return settingStore.isComm;
+          }
         },
         children: [
           {
             title: "套餐设置",
             name: "suite",
+            path: "/sys/commercial/suite",
             meta: {
               icon: "ion:document-text-outline",
-              permission: "sys:settings:view"
+              permission: "sys:settings:view",
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isComm;
+              }
             }
           }
         ]

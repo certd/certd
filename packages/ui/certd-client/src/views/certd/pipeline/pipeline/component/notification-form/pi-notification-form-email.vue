@@ -16,7 +16,7 @@
       }"
     />
 
-    <a-alert v-if="!userStore.isPlus" class="m-1" type="info">
+    <a-alert v-if="!settingStore.isPlus" class="m-1" type="info">
       <template #message> 还没有配置邮件服务器？<router-link :to="{ path: '/certd/settings/email' }">现在就去</router-link> </template>
     </a-alert>
   </div>
@@ -24,6 +24,7 @@
 <script lang="ts" setup>
 import { Ref, ref, watch } from "vue";
 import { useUserStore } from "/@/store/modules/user";
+import { useSettingStore } from "/@/store/modules/settings";
 
 const props = defineProps({
   options: {
@@ -32,7 +33,7 @@ const props = defineProps({
   }
 });
 
-const userStore = useUserStore();
+const settingStore = useSettingStore();
 
 const optionsFormState: Ref<any> = ref({});
 

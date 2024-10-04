@@ -20,14 +20,14 @@
           <a-switch v-model:checked="formState.managerOtherUserPipeline" />
         </a-form-item>
         <a-form-item label="ICP备案号" name="icpNo">
-          <a-switch v-model:checked="formState.icpNo" />
+          <a-input v-model:value="formState.icpNo" />
         </a-form-item>
         <!--        <a-form-item label="启动后触发流水线" name="triggerOnStartup">-->
         <!--          <a-switch v-model:checked="formState.triggerOnStartup" />-->
         <!--          <div class="helper">启动后自动触发一次所有已启用的流水线</div>-->
         <!--        </a-form-item>-->
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
-          <a-button type="primary" html-type="submit">保存</a-button>
+          <a-button :loading="saveLoading" type="primary" html-type="submit">保存</a-button>
         </a-form-item>
       </a-form>
 
@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import * as api from "./api";
 import { PublicSettingsSave, SettingKeys } from "./api";
 import { notification } from "ant-design-vue";
@@ -59,18 +59,27 @@ const formState = reactive<Partial<FormState>>({
 
 async function loadSysPublicSettings() {
   const data: any = await api.SettingsGet(SettingKeys.SysPublic);
+  if (data == null) {
+    return;
+  }
   const setting = JSON.parse(data.setting);
   Object.assign(formState, setting);
 }
 
+const saveLoading = ref(false);
 loadSysPublicSettings();
 const settingsStore = useSettingStore();
 const onFinish = async (form: any) => {
-  await api.PublicSettingsSave(form);
-  await settingsStore.loadSysSettings();
-  notification.success({
-    message: "保存成功"
-  });
+  try {
+    saveLoading.value = true;
+    await api.PublicSettingsSave(form);
+    await settingsStore.loadSysSettings();
+    notification.success({
+      message: "保存成功"
+    });
+  } finally {
+    saveLoading.value = false;
+  }
 };
 
 const onFinishFailed = (errorInfo: any) => {

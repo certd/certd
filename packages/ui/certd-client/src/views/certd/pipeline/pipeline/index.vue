@@ -20,7 +20,7 @@
       <div class="layout-left">
         <div class="pipeline-container">
           <div class="pipeline">
-            <v-draggable v-model="pipeline.stages" class="stages" item-key="id" handle=".stage-move-handle" :disabled="!userStore.isPlus">
+            <v-draggable v-model="pipeline.stages" class="stages" item-key="id" handle=".stage-move-handle" :disabled="!settingStore.isPlus">
               <template #header>
                 <div class="stage first-stage">
                   <div class="title stage-move-handle">
@@ -73,7 +73,7 @@
                       <fs-icon v-if="editMode" title="拖动排序" icon="ion:move-outline"></fs-icon>
                     </div>
                   </div>
-                  <v-draggable v-model="stage.tasks" item-key="id" class="tasks" group="task" handle=".task-move-handle" :disabled="!userStore.isPlus">
+                  <v-draggable v-model="stage.tasks" item-key="id" class="tasks" group="task" handle=".task-move-handle" :disabled="!settingStore.isPlus">
                     <template #item="{ element: task, index: taskIndex }">
                       <div
                         class="task-container"
@@ -93,7 +93,7 @@
                             <a-popover title="步骤" :trigger="editMode ? 'none' : 'hover'">
                               <!--                          :open="true"-->
                               <template #content>
-                                <div v-for="(item, index) of task.steps" class="flex-o w-100">
+                                <div v-for="(item, index) of task.steps" :key="item.id" class="flex-o w-100">
                                   <span class="ellipsis flex-1 step-title" :class="{ disabled: item.disabled, deleted: item.disabled }">
                                     {{ index + 1 }}. {{ item.title }}
                                   </span>
@@ -266,7 +266,6 @@ import { PipelineDetail, PipelineOptions, PluginGroups, RunHistory } from "./typ
 import type { Runnable } from "@certd/pipeline";
 import PiHistoryTimelineItem from "/@/views/certd/pipeline/pipeline/component/history-timeline-item.vue";
 import { FsIcon } from "@fast-crud/fast-crud";
-import { useUserStore } from "/@/store/modules/user";
 export default defineComponent({
   name: "PipelineEdit",
   // eslint-disable-next-line vue/no-unused-components
@@ -300,8 +299,6 @@ export default defineComponent({
     function goBack() {
       router.back();
     }
-
-    const userStore = useUserStore();
 
     const loadCurrentHistoryDetail = async () => {
       console.log("load history logs");
@@ -678,13 +675,13 @@ export default defineComponent({
 
     const useTaskRet = useTask();
     const useStageRet = useStage(useTaskRet);
-
+    const settingStore = useSettingStore();
     return {
       pipeline,
       currentHistory,
       histories,
       goBack,
-      userStore,
+      settingStore,
       ...useTaskRet,
       ...useStageRet,
       ...useTrigger(),

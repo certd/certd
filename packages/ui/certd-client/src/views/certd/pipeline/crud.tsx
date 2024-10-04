@@ -211,7 +211,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           },
           copy: {
             click: async (context) => {
-              userStore.checkPlus();
+              settingStore.checkPlus();
               const { ui } = useUi();
               // @ts-ignore
               let row = context[ui.tableColumn.row];

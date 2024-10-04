@@ -1,13 +1,13 @@
 <template>
   <div id="userLayout" :class="['user-layout-wrapper']">
     <div class="login-container flex-center">
-      <div class="user-layout-content">
+      <div class="user-layout-content flex-center flex-col">
         <div class="top flex flex-col items-center justify-center">
           <div class="header flex flex-row items-center">
-            <img src="/static/images/logo/rect-black.svg" class="logo" alt="logo" />
+            <img :src="logoRef" class="logo" alt="logo" />
             <span class="title"></span>
           </div>
-          <div class="desc"></div>
+          <div class="desc">{{ sloganRef }}</div>
         </div>
 
         <router-view />
@@ -25,8 +25,13 @@
             <span>
               <a :href="envRef.COPYRIGHT_URL" target="_blank">{{ envRef.COPYRIGHT_NAME }}</a>
             </span>
-            <span v-if="envRef.ICP_NO">
-              <a href="https://beian.miit.gov.cn/" target="_blank">{{ envRef.ICP_NO }}</a>
+            <span v-if="siteInfo.icpNo">
+              <a-divider type="vertical" />
+              <a href="https://beian.miit.gov.cn/" target="_blank">{{ siteInfo.icpNo }}</a>
+            </span>
+            <span v-if="siteInfo.licenseTo">
+              <a-divider type="vertical" />
+              <a :href="siteInfo.licenseToUrl" target="_blank">{{ siteInfo.licenseTo }}</a>
             </span>
           </div>
         </div>
@@ -34,19 +39,16 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script lang="ts" setup>
 import { env } from "/@/utils/util.env";
-import { ref } from "vue";
+import { computed, ref, Ref } from "vue";
+import { SiteInfo, useSettingStore } from "/@/store/modules/settings";
 
-export default {
-  name: "LayoutOutside",
-  setup() {
-    const envRef = ref(env);
-    return {
-      envRef
-    };
-  }
-};
+const envRef = ref(env);
+const settingStore = useSettingStore();
+const siteInfo: Ref<SiteInfo> = computed(() => {
+  return settingStore.siteInfo;
+});
 </script>
 
 <style lang="less" scoped>
@@ -70,24 +72,6 @@ export default {
     //padding: 50px 0 84px;
     position: relative;
 
-    .user-layout-lang {
-      width: 100%;
-      height: 40px;
-      line-height: 44px;
-      text-align: right;
-
-      .select-lang-trigger {
-        cursor: pointer;
-        padding: 12px;
-        margin-right: 24px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        vertical-align: middle;
-      }
-    }
-
     .user-layout-content {
       padding: 32px 0 24px;
 
@@ -98,8 +82,8 @@ export default {
         align-items: center;
         justify-content: center;
         .header {
-          height: 44px;
-          line-height: 44px;
+          height: 70px;
+          line-height: 70px;
 
           .badge {
             position: absolute;
@@ -112,9 +96,8 @@ export default {
           }
 
           .logo {
-            height: 80px;
+            height: 100%;
             vertical-align: top;
-            margin-right: 16px;
             border-style: none;
           }
 

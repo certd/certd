@@ -52,4 +52,5 @@ export class SysSiteInfo extends BaseSettings {
   title?: string;
   slogan?: string;
   logo?: string;
+  loginLogo?: string;
 }

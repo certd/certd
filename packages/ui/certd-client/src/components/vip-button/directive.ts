@@ -1,11 +1,12 @@
-import { message, notification } from "ant-design-vue";
-import { useUserStore } from "/@/store/modules/user";
+import { notification } from "ant-design-vue";
+import { useSettingStore } from "/@/store/modules/settings";
+
 export default {
   mounted(el: any, binding: any, vnode: any) {
     const { value } = binding;
-    const userStore = useUserStore();
+    const settingStore = useSettingStore();
     el.className = el.className + " need-plus";
-    if (!userStore.isPlus) {
+    if (!settingStore.isPlus) {
       function checkPlus() {
         // 事件处理代码
         notification.warn({
