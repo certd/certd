@@ -131,18 +131,15 @@ export const useSettingStore = defineStore({
       }
     },
     async loadSysSettings() {
+      await this.loadSysPublicSettings();
+      await this.loadInstallInfo();
+      await this.loadPlusInfo();
+      await this.loadSiteInfo();
+      await this.checkUrlBound();
+    },
+    async loadSysPublicSettings() {
       const settings = await basicApi.getSysPublicSettings();
       _.merge(this.sysPublic, settings);
-
-      await this.loadInstallInfo();
-
-      await this.loadPlusInfo();
-
-      if (this.isComm) {
-        await this.loadSiteInfo();
-      }
-
-      await this.checkUrlBound();
     },
     async loadInstallInfo() {
       const installInfo = await basicApi.getInstallInfo();

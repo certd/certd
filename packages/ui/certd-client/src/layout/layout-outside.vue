@@ -4,10 +4,10 @@
       <div class="user-layout-content flex-center flex-col">
         <div class="top flex flex-col items-center justify-center">
           <div class="header flex flex-row items-center">
-            <img :src="logoRef" class="logo" alt="logo" />
+            <img :src="siteInfo.loginLogo" class="logo" alt="logo" />
             <span class="title"></span>
           </div>
-          <div class="desc">{{ sloganRef }}</div>
+          <div class="desc">{{ siteInfo.slogan }}</div>
         </div>
 
         <router-view />
