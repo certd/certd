@@ -112,6 +112,9 @@ const formState = reactive<Partial<FormState>>({
 
 async function load() {
   const data: any = await api.SettingsGet(SettingKeys.Email);
+  if (!data?.setting) {
+    return;
+  }
   const setting = JSON.parse(data.setting);
   Object.assign(formState, setting);
 }

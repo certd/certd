@@ -87,6 +87,7 @@ import { Modal } from "ant-design-vue";
 import { CopyOutlined } from "@ant-design/icons-vue";
 import VDraggable from "vuedraggable";
 import { useUserStore } from "/@/store/modules/user";
+import { useSettingStore } from "/@/store/modules/settings";
 export default {
   name: "PiTaskForm",
   components: { CopyOutlined, PiStepForm, VDraggable },

@@ -266,6 +266,8 @@ import { PipelineDetail, PipelineOptions, PluginGroups, RunHistory } from "./typ
 import type { Runnable } from "@certd/pipeline";
 import PiHistoryTimelineItem from "/@/views/certd/pipeline/pipeline/component/history-timeline-item.vue";
 import { FsIcon } from "@fast-crud/fast-crud";
+import { useSettingStore } from "/@/store/modules/settings";
+import { useUserStore } from "/@/store/modules/user";
 export default defineComponent({
   name: "PipelineEdit",
   // eslint-disable-next-line vue/no-unused-components
@@ -676,11 +678,13 @@ export default defineComponent({
     const useTaskRet = useTask();
     const useStageRet = useStage(useTaskRet);
     const settingStore = useSettingStore();
+    const userStore = useUserStore();
     return {
       pipeline,
       currentHistory,
       histories,
       goBack,
+      userStore,
       settingStore,
       ...useTaskRet,
       ...useStageRet,
