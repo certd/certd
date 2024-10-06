@@ -1,18 +1,18 @@
 <template>
-  <a-select class="pi-output-selector" :value="modelValue" :options="options" @update:value="onChanged"> </a-select>
+  <a-select class="output-selector" :value="modelValue" :options="options" @update:value="onChanged"> </a-select>
 </template>
 
 <script lang="ts">
 import { inject, onMounted, Ref, ref, watch } from "vue";
-import { pluginManager } from "../../plugin";
 
 export default {
-  name: "PiOutputSelector",
+  name: "OutputSelector",
   props: {
     modelValue: {
       type: String,
       default: undefined
     },
+    // eslint-disable-next-line vue/require-default-prop
     from: {
       type: [String, Array]
     }

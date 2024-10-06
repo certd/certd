@@ -8,14 +8,16 @@ export type DnsProviderDefine = Registrable & {
 };
 
 export type CreateRecordOptions = {
+  domain: string;
   fullRecord: string;
+  hostRecord: string;
   type: string;
   value: any;
-  domain: string;
 };
-export type RemoveRecordOptions<T> = CreateRecordOptions & {
+export type RemoveRecordOptions<T> = {
+  recordReq: CreateRecordOptions;
   // 本次创建的dns解析记录，实际上就是createRecord接口的返回值
-  record: T;
+  recordRes: T;
 };
 
 export type DnsProviderContext = {

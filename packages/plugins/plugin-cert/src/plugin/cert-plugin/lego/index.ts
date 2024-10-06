@@ -69,7 +69,7 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
   @TaskInput({
     title: "EAB授权",
     component: {
-      name: "pi-access-selector",
+      name: "access-selector",
       type: "eab",
     },
     maybeNeed: true,

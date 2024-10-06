@@ -68,9 +68,13 @@ function install(app: App, options: any = {}) {
           },
           conditionalRender: {
             match(scope) {
+              if (scope.column.conditionalRenderDisabled) {
+                return false;
+              }
               if (scope.key === "__blank__") {
                 return false;
               }
+
               //不能用 !scope.value ， 否则switch组件设置为关之后就消失了
               const { value, key, props } = scope;
               return !value && key != "_index" && value != false;
@@ -349,8 +353,8 @@ function install(app: App, options: any = {}) {
         columnProps.column = {};
       }
       columnProps.column.resizable = true;
-      if (!columnProps.column.width) {
-        columnProps.column.width = -1;
+      if (columnProps.column.width == null) {
+        columnProps.column.width = 200;
       } else if (typeof columnProps.column?.width === "string" && columnProps.column.width.indexOf("px") > -1) {
         columnProps.column.width = parseInt(columnProps.column.width.replace("px", ""));
       }

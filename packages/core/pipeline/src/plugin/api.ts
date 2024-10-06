@@ -3,7 +3,7 @@ import { FileItem, FormItemProps, Pipeline, Runnable, Step } from "../dt/index.j
 import { FileStore } from "../core/file-store.js";
 import { Logger } from "log4js";
 import { IAccessService } from "../access/index.js";
-import { IEmailService } from "../service/index.js";
+import { ICnameProxyService, IEmailService } from "../service/index.js";
 import { IContext, PluginRequestHandleReq, RunnableCollection } from "../core/index.js";
 import { ILogger, logger, utils } from "../utils/index.js";
 import { HttpClient } from "../utils/util.request.js";
@@ -70,6 +70,8 @@ export type TaskInstanceContext = {
   accessService: IAccessService;
   //邮件服务
   emailService: IEmailService;
+  //cname记录服务
+  cnameProxyService: ICnameProxyService;
   //流水线上下文
   pipelineContext: IContext;
   //用户上下文
@@ -84,7 +86,7 @@ export type TaskInstanceContext = {
   signal: AbortSignal;
   //工具类
   utils: typeof utils;
-
+  //用户信息
   user: UserInfo;
 };
 

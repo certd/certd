@@ -5,7 +5,15 @@
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding" />
     <a-modal v-model:open="authzDialogVisible" width="860px" title="分配权限" @ok="updatePermission">
-      <fs-permission-tree ref="permissionTreeRef" v-model:checkedKeys="checkedKeys" :tree="permissionTreeData" :editable="false" checkable :replace-fields="{ key: 'id', label: 'title' }"> </fs-permission-tree>
+      <fs-permission-tree
+        ref="permissionTreeRef"
+        v-model:checked-keys="checkedKeys"
+        :tree="permissionTreeData"
+        :editable="false"
+        checkable
+        :replace-fields="{ key: 'id', label: 'title' }"
+      >
+      </fs-permission-tree>
     </a-modal>
   </fs-page>
 </template>
@@ -84,7 +92,7 @@ function useAuthz() {
 }
 
 export default defineComponent({
-  name: "AuthorityRole",
+  name: "RoleManager",
   components: { FsPermissionTree },
   setup() {
     //授权配置

@@ -47,6 +47,10 @@ import { PublicSettingsSave, SettingKeys } from "./api";
 import { notification } from "ant-design-vue";
 import { useSettingStore } from "/@/store/modules/settings";
 
+defineOptions({
+  name: "SysSettings"
+});
+
 interface FormState {
   registerEnabled: boolean;
   managerOtherUserPipeline: boolean;

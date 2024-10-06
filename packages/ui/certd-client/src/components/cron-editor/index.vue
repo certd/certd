@@ -22,6 +22,9 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
+defineOptions({
+  name: "CronEditor"
+});
 const props = defineProps<{
   modelValue?: string;
   disabled?: boolean;

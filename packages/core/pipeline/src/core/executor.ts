@@ -10,7 +10,7 @@ import { createAxiosService } from "../utils/util.request.js";
 import { IAccessService } from "../access/index.js";
 import { RegistryItem } from "../registry/index.js";
 import { Decorator } from "../decorator/index.js";
-import { IEmailService } from "../service/index.js";
+import { ICnameProxyService, IEmailService } from "../service/index.js";
 import { FileStore } from "./file-store.js";
 import { hashUtils, utils } from "../utils/index.js";
 // import { TimeoutPromise } from "../utils/util.promise.js";
@@ -21,6 +21,7 @@ export type ExecutorOptions = {
   onChanged: (history: RunHistory) => Promise<void>;
   accessService: IAccessService;
   emailService: IEmailService;
+  cnameProxyService: ICnameProxyService;
   fileRootDir?: string;
   user: UserInfo;
 };
@@ -221,7 +222,7 @@ export class Executor {
     //从outputContext读取输入参数
     const input = _.cloneDeep(step.input);
     Decorator.inject(define.input, instance, input, (item, key) => {
-      if (item.component?.name === "pi-output-selector") {
+      if (item.component?.name === "output-selector") {
         const contextKey = input[key];
         if (contextKey != null) {
           if (typeof contextKey !== "string") {
@@ -268,6 +269,7 @@ export class Executor {
       inputChanged,
       accessService: this.options.accessService,
       emailService: this.options.emailService,
+      cnameProxyService: this.options.cnameProxyService,
       pipelineContext: this.pipelineContext,
       userContext: this.contextFactory.getContext("user", this.options.user.id),
       fileStore: new FileStore({

@@ -3,10 +3,12 @@ import { PluginGroup } from "@certd/pipeline";
 import { useReference } from "/@/use/use-refrence";
 import _ from "lodash-es";
 import { useUserStore } from "/@/store/modules/user";
+import { useSettingStore } from "/@/store/modules/settings";
 
 export default function (certPluginGroup: PluginGroup, formWrapperRef: any): CreateCrudOptionsRet {
   const inputs: any = {};
   const userStore = useUserStore();
+  const settingStore = useSettingStore();
   for (const plugin of certPluginGroup.plugins) {
     for (const inputKey in plugin.input) {
       if (inputs[inputKey]) {
@@ -66,8 +68,8 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
               render: () => {
                 return (
                   <ul>
-                    <li>JS-ACME：如果你的域名DNS属于阿里云、腾讯云、Cloudflare、西部数码可以选择用它来申请</li>
-                    <li>Lego-ACME：基于Lego实现，支持海量DNS提供商，熟悉LEGO的用户可以使用</li>
+                    <li>JS-ACME：使用简单方便，功能强大【推荐】</li>
+                    <li>Lego-ACME：基于Lego实现，支持海量DNS提供商，熟悉LEGO的用户可以使用【即将废弃】</li>
                   </ul>
                 );
               }

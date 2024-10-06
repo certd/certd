@@ -86,7 +86,8 @@ export class DnspodDnsProvider extends AbstractDnsProvider {
   }
 
   async removeRecord(options: RemoveRecordOptions<any>) {
-    const { fullRecord, value, record } = options;
+    const { fullRecord, value } = options.recordReq;
+    const record = options.recordRes;
     const domain = await this.matchDomain(fullRecord);
 
     const ret = await this.doRequest({

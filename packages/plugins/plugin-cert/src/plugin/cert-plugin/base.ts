@@ -24,7 +24,7 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
     col: {
       span: 24,
     },
-    order: -1,
+    order: -999,
     helper:
       "1、支持通配符域名，例如： *.foo.com、foo.com、*.test.handsfree.work\n" +
       "2、支持多个域名、多个子域名、多个通配符域名打到一个证书上（域名必须是在同一个DNS提供商解析）\n" +
@@ -39,6 +39,7 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
       name: "a-input",
       vModel: "value",
     },
+    rules: [{ type: "email" }],
     required: true,
     order: -1,
     helper: "请输入邮箱",

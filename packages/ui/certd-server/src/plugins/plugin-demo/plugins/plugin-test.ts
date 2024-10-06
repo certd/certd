@@ -53,7 +53,7 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
     title: '域名证书',
     helper: '请选择前置任务输出的域名证书',
     component: {
-      name: 'pi-output-selector',
+      name: 'output-selector',
       from: ['CertApply', 'CertApplyLego'],
     },
     // required: true,
@@ -65,7 +65,7 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
     title: 'demo授权',
     helper: 'demoAccess授权',
     component: {
-      name: 'pi-access-selector',
+      name: 'access-selector',
       type: 'demo', //固定授权类型
     },
     // rules: [{ required: true, message: '此项必填' }],

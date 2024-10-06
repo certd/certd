@@ -1,18 +1,17 @@
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseService } from '@certd/lib-server';
+import { BaseService, PermissionException, ValidateException } from '@certd/lib-server';
 import { AccessEntity } from '../entity/access.js';
-import { AccessDefine, accessRegistry, IAccessService, newAccess } from '@certd/pipeline';
+import { AccessDefine, accessRegistry, newAccess } from '@certd/pipeline';
 import { EncryptService } from './encrypt-service.js';
-import { ValidateException } from '@certd/lib-server';
 
 /**
  * 授权
  */
 @Provide()
 @Scope(ScopeEnum.Singleton)
-export class AccessService extends BaseService<AccessEntity> implements IAccessService {
+export class AccessService extends BaseService<AccessEntity> {
   @InjectEntityModel(AccessEntity)
   repository: Repository<AccessEntity>;
 
@@ -102,10 +101,13 @@ export class AccessService extends BaseService<AccessEntity> implements IAccessS
     return await super.update(param);
   }
 
-  async getById(id: any): Promise<any> {
+  async getById(id: any, userId?: number): Promise<any> {
     const entity = await this.info(id);
     if (entity == null) {
       throw new Error(`该授权配置不存在,请确认是否已被删除:id=${id}`);
+    }
+    if (userId !== entity.userId) {
+      throw new PermissionException('您对该授权无访问权限');
     }
     // const access = accessRegistry.get(entity.type);
     const setting = this.decryptAccessEntity(entity);

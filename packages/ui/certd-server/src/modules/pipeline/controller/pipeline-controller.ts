@@ -4,7 +4,7 @@ import { PipelineService } from '../service/pipeline-service.js';
 import { PipelineEntity } from '../entity/pipeline.js';
 import { Constants } from '@certd/lib-server';
 import { HistoryService } from '../service/history-service.js';
-import { AuthService } from '../../authority/service/auth-service.js';
+import { AuthService } from '../../sys/authority/service/auth-service.js';
 import { SysSettingsService } from '@certd/lib-server';
 
 /**

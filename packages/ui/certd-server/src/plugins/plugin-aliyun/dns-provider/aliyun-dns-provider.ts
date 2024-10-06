@@ -17,13 +17,13 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
   async onInstance() {
     const access: any = this.access;
 
-    this.client = new AliyunClient({logger:this.logger})
+    this.client = new AliyunClient({ logger: this.logger });
     await this.client.init({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
       endpoint: 'https://alidns.aliyuncs.com',
       apiVersion: '2015-01-09',
-    })
+    });
   }
   //
   // async getDomainList() {
@@ -101,7 +101,6 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
       // Line: 'oversea' // 海外
     };
 
-   
     const requestOption = {
       method: 'POST',
     };
@@ -119,7 +118,8 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
     }
   }
   async removeRecord(options: RemoveRecordOptions<any>): Promise<any> {
-    const { fullRecord, value, record } = options;
+    const { fullRecord, value } = options.recordReq;
+    const record = options.recordRes;
     const params = {
       RegionId: 'cn-hangzhou',
       RecordId: record,

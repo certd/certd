@@ -18,7 +18,7 @@ export class DeployToEOPlugin extends AbstractTaskPlugin {
     title: '已上传证书ID',
     helper: '请选择前置任务上传到腾讯云的证书',
     component: {
-      name: 'pi-output-selector',
+      name: 'output-selector',
       from: 'UploadCertToTencent',
     },
     required: true,
@@ -29,7 +29,7 @@ export class DeployToEOPlugin extends AbstractTaskPlugin {
     title: 'Access提供者',
     helper: 'access 授权',
     component: {
-      name: 'pi-access-selector',
+      name: 'access-selector',
       type: 'tencent',
     },
     required: true,

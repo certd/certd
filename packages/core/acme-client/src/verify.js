@@ -68,6 +68,7 @@ async function walkDnsChallengeRecord(recordName, resolver = dns) {
 
         if (txtRecords.length) {
             log(`Found ${txtRecords.length} TXT records at ${recordName}`);
+            log(`TXT records: ${JSON.stringify(txtRecords)}`);
             return [].concat(...txtRecords);
         }
     }

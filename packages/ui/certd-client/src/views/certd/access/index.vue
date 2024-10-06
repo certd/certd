@@ -16,7 +16,7 @@ import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 
 export default defineComponent({
-  name: "CertdAccess",
+  name: "AccessManager",
   setup() {
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: {} });
 

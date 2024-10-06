@@ -68,6 +68,10 @@ import { notification } from "ant-design-vue";
 import { useSettingStore } from "/src/store/modules/settings";
 import { useUserStore } from "/@/store/modules/user";
 
+defineOptions({
+  name: "SiteSetting"
+});
+
 interface FormState {
   title: string;
   slogan: string;

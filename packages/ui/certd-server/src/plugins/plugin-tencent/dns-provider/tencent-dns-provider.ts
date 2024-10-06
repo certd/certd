@@ -70,8 +70,8 @@ export class TencentDnsProvider extends AbstractDnsProvider {
   }
 
   async removeRecord(options: RemoveRecordOptions<any>) {
-    const { fullRecord, value, domain, record } = options;
-
+    const { fullRecord, value, domain } = options.recordReq;
+    const record = options.recordRes;
     const params = {
       Domain: domain,
       RecordId: record.RecordId,

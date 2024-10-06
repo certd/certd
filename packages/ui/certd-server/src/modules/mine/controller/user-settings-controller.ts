@@ -1,12 +1,4 @@
-import {
-  ALL,
-  Body,
-  Controller,
-  Inject,
-  Post,
-  Provide,
-  Query,
-} from '@midwayjs/core';
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { CrudController } from '@certd/lib-server';
 import { Constants } from '@certd/lib-server';
 import { UserSettingsService } from '../service/user-settings-service.js';

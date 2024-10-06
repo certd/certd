@@ -1,7 +1,7 @@
 export const certdResources = [
   {
     title: "证书自动化",
-    name: "certd",
+    name: "CertdRoot",
     path: "/certd",
     redirect: "/certd/pipeline",
     meta: {
@@ -11,7 +11,7 @@ export const certdResources = [
     children: [
       {
         title: "证书自动化流水线",
-        name: "pipeline",
+        name: "PipelineManager",
         path: "/certd/pipeline",
         component: "/certd/pipeline/index.vue",
         meta: {
@@ -20,7 +20,7 @@ export const certdResources = [
       },
       {
         title: "编辑流水线",
-        name: "pipelineEdit",
+        name: "PipelineEdit",
         path: "/certd/pipeline/detail",
         component: "/certd/pipeline/detail.vue",
         meta: {
@@ -29,7 +29,7 @@ export const certdResources = [
       },
       {
         title: "执行历史记录",
-        name: "pipelineHistory",
+        name: "PipelineHistory",
         path: "/certd/history",
         component: "/certd/history/index.vue",
         meta: {
@@ -38,44 +38,43 @@ export const certdResources = [
       },
       {
         title: "授权管理",
-        name: "access",
+        name: "AccessManager",
         path: "/certd/access",
         component: "/certd/access/index.vue",
         meta: {
-          icon: "ion:disc-outline"
+          icon: "ion:disc-outline",
+          auth: true
         }
       },
       {
-        title: "设置",
-        name: "certdSettings",
-        path: "/certd/settings",
-        redirect: "/certd/settings/email",
+        title: "CNAME记录管理",
+        name: "CnameRecord",
+        path: "/certd/cname/record",
+        component: "/certd/cname/record/index.vue",
         meta: {
-          icon: "ion:settings-outline",
+          icon: "ion:disc-outline",
           auth: true
-        },
-        children: [
-          {
-            title: "邮箱设置",
-            name: "email",
-            path: "/certd/settings/email",
-            component: "/certd/settings/email-setting.vue",
-            meta: {
-              icon: "ion:mail-outline",
-              auth: true
-            }
-          },
-          {
-            title: "账号信息",
-            name: "userProfile",
-            path: "/certd/mine/user-profile",
-            component: "/certd/mine/user-profile.vue",
-            meta: {
-              icon: "ion:person-outline",
-              auth: true
-            }
-          }
-        ]
+        }
+      },
+      {
+        title: "邮箱设置",
+        name: "EmailSetting",
+        path: "/certd/settings/email",
+        component: "/certd/settings/email-setting.vue",
+        meta: {
+          icon: "ion:mail-outline",
+          auth: true
+        }
+      },
+      {
+        title: "账号信息",
+        name: "UserProfile",
+        path: "/certd/mine/user-profile",
+        component: "/certd/mine/user-profile.vue",
+        meta: {
+          icon: "ion:person-outline",
+          auth: true
+        }
       }
     ]
   }

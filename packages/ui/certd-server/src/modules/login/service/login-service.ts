@@ -1,9 +1,9 @@
 import { Config, Inject, Provide } from '@midwayjs/core';
-import { UserService } from '../../authority/service/user-service.js';
+import { UserService } from '../../sys/authority/service/user-service.js';
 import jwt from 'jsonwebtoken';
 import { CommonException } from '@certd/lib-server';
-import { RoleService } from '../../authority/service/role-service.js';
-import { UserEntity } from '../../authority/entity/user.js';
+import { RoleService } from '../../sys/authority/service/role-service.js';
+import { UserEntity } from '../../sys/authority/entity/user.js';
 import { SysSettingsService } from '@certd/lib-server';
 import { SysPrivateSettings } from '@certd/lib-server';
 

@@ -65,7 +65,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
     title: '域名证书',
     helper: '请选择前置任务输出的域名证书',
     component: {
-      name: 'pi-output-selector',
+      name: 'output-selector',
       from: ['CertApply', 'CertApplyLego'],
     },
     required: true,
@@ -76,7 +76,7 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
     title: '主机登录配置',
     helper: 'access授权',
     component: {
-      name: 'pi-access-selector',
+      name: 'access-selector',
       type: 'ssh',
     },
     required: true,

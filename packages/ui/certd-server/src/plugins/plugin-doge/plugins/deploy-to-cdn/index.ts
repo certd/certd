@@ -26,7 +26,7 @@ export class DogeCloudDeployToCDNPlugin extends AbstractTaskPlugin {
     title: '证书',
     helper: '请选择前置任务输出的域名证书',
     component: {
-      name: 'pi-output-selector',
+      name: 'output-selector',
       from: ['CertApply', 'CertApplyLego'],
     },
     required: true,
@@ -38,7 +38,7 @@ export class DogeCloudDeployToCDNPlugin extends AbstractTaskPlugin {
     title: '多吉云授权',
     helper: '多吉云AccessKey',
     component: {
-      name: 'pi-access-selector',
+      name: 'access-selector',
       type: 'dogecloud',
     },
     rules: [{ required: true, message: '此项必填' }],

@@ -1,13 +1,27 @@
 import { Decorator, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from "@certd/pipeline";
-import type { CertInfo, PrivateKeyType, SSLProvider } from "./acme.js";
+import type { CertInfo, CnameVerifyPlan, DomainsVerifyPlan, PrivateKeyType, SSLProvider } from "./acme.js";
 import { AcmeService } from "./acme.js";
 import _ from "lodash-es";
-import { DnsProviderContext, DnsProviderDefine, dnsProviderRegistry } from "../../dns-provider/index.js";
+import { DnsProviderContext, DnsProviderDefine, dnsProviderRegistry, IDnsProvider } from "../../dns-provider/index.js";
 import { CertReader } from "./cert-reader.js";
 import { CertApplyBasePlugin } from "./base.js";
 
 export type { CertInfo };
 export * from "./cert-reader.js";
+export type CnameRecordInput = {
+  id: number;
+  status: string;
+};
+export type DomainVerifyPlanInput = {
+  domain: string;
+  type: "cname" | "dns";
+  dnsProviderType?: string;
+  dnsProviderAccessId?: number;
+  cnameVerifyPlan?: Record<string, CnameRecordInput>;
+};
+export type DomainsVerifyPlanInput = {
+  [key: string]: DomainVerifyPlanInput;
+};
 
 @IsTaskPlugin({
   name: "CertApply",
@@ -27,6 +41,85 @@ export * from "./cert-reader.js";
 })
 export class CertApplyPlugin extends CertApplyBasePlugin {
   @TaskInput({
+    title: "域名验证方式",
+    value: "dns",
+    component: {
+      name: "a-select",
+      vModel: "value",
+      options: [
+        { value: "dns", label: "DNS直接验证" },
+        { value: "cname", label: "CNAME间接验证" },
+      ],
+    },
+    required: true,
+    helper:
+      "DNS直接验证：适合域名是在阿里云、腾讯云、华为云、Cloudflare、西数注册的，需要提供Access授权信息。\nCNAME间接验证：支持任何注册商注册的域名，并且不需要提供Access授权信息，但第一次需要手动添加CNAME记录",
+  })
+  challengeType!: string;
+
+  @TaskInput({
+    title: "DNS提供商",
+    component: {
+      name: "dns-provider-selector",
+    },
+    mergeScript: `
+    return {
+      show: ctx.compute(({form})=>{
+          return form.challengeType === 'dns' 
+      })
+    }
+    `,
+    required: true,
+    helper: "请选择dns解析提供商，您的域名是在哪里注册的，或者域名的dns解析服务器属于哪个平台\n如果这里没有您需要的dns解析提供商，请选择CNAME间接验证校验方式",
+  })
+  dnsProviderType!: string;
+
+  @TaskInput({
+    title: "DNS解析授权",
+    component: {
+      name: "access-selector",
+    },
+    required: true,
+    helper: "请选择dns解析提供商授权",
+    mergeScript: `return {
+      component:{
+        type: ctx.compute(({form})=>{
+            return form.dnsProviderType
+        })
+      },
+      show: ctx.compute(({form})=>{
+          return form.challengeType === 'dns' 
+      })
+    }
+    `,
+  })
+  dnsProviderAccess!: number;
+
+  @TaskInput({
+    title: "域名验证配置",
+    component: {
+      name: "domains-verify-plan-editor",
+    },
+    required: true,
+    helper: "如果选择CNAME方式，请按照上面的显示，给域名添加CNAME记录",
+    col: {
+      span: 24,
+    },
+    mergeScript: `return {
+      component:{
+        domains: ctx.compute(({form})=>{
+            return form.domains
+        })
+      },
+      show: ctx.compute(({form})=>{
+          return form.challengeType === 'cname' 
+      })
+    }
+    `,
+  })
+  domainsVerifyPlan!: DomainsVerifyPlanInput;
+
+  @TaskInput({
     title: "证书提供商",
     value: "letsencrypt",
     component: {
@@ -38,7 +131,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         { value: "zerossl", label: "ZeroSSL" },
       ],
     },
-    helper: "Let's Encrypt最简单，如果使用ZeroSSL、google证书，需要提供EAB授权",
+    helper: "Let's Encrypt最简单，如果使用ZeroSSL、Google证书，需要提供EAB授权",
     required: true,
   })
   sslProvider!: SSLProvider;
@@ -46,7 +139,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   @TaskInput({
     title: "EAB授权",
     component: {
-      name: "pi-access-selector",
+      name: "access-selector",
       type: "eab",
     },
     maybeNeed: true,
@@ -80,38 +173,10 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         // { value: "ec_521", label: "EC 521" },
       ],
     },
+    helper: "如无特殊需求，默认即可",
     required: true,
   })
   privateKeyType!: PrivateKeyType;
-
-  @TaskInput({
-    title: "DNS提供商",
-    component: {
-      name: "pi-dns-provider-selector",
-    },
-    required: true,
-    helper:
-      "请选择dns解析提供商，您的域名是在哪里注册的，或者域名的dns解析服务器属于哪个平台\n如果这里没有您需要的dns解析提供商，您需要将域名解析服务器设置成上面的任意一个提供商",
-  })
-  dnsProviderType!: string;
-
-  @TaskInput({
-    title: "DNS解析授权",
-    component: {
-      name: "pi-access-selector",
-    },
-    required: true,
-    helper: "请选择dns解析提供商授权",
-    mergeScript: `return {
-      component:{
-        type: ctx.compute(({form})=>{
-            return form.dnsProviderType
-        })
-      }
-    }
-    `,
-  })
-  dnsProviderAccess!: string;
 
   @TaskInput({
     title: "使用代理",
@@ -120,7 +185,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "a-switch",
       vModel: "checked",
     },
-    helper: "如果acme-v02.api.letsencrypt.org或dv.acme-v02.api.pki.goog被墙无法访问，请尝试开启此选项",
+    helper: "如果acme-v02.api.letsencrypt.org或dv.acme-v02.api.pki.goog被墙无法访问，请尝试开启此选项\n默认情况会进行测试，如果无法访问，将会自动使用代理",
   })
   useProxy = false;
 
@@ -131,7 +196,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "a-switch",
       vModel: "checked",
     },
-    helper: "如果重试多次出现Authorization not found TXT record，导致无法申请成功，请尝试开启此选项",
+    helper: "跳过本地校验可以加快申请速度，同时也会增加失败概率。",
   })
   skipLocalVerify = false;
 
@@ -150,14 +215,15 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       skipLocalVerify: this.skipLocalVerify,
       useMappingProxy: this.useProxy,
       privateKeyType: this.privateKeyType,
+      // cnameProxyService: this.ctx.cnameProxyService,
+      // dnsProviderCreator: this.createDnsProvider.bind(this),
     });
   }
 
   async doCertApply() {
     const email = this["email"];
     const domains = this["domains"];
-    const dnsProviderType = this["dnsProviderType"];
-    const dnsProviderAccessId = this["dnsProviderAccess"];
+
     const csrInfo = _.merge(
       {
         country: "CN",
@@ -171,26 +237,22 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     );
     this.logger.info("开始申请证书,", email, domains);
 
-    const dnsProviderPlugin = dnsProviderRegistry.get(dnsProviderType);
-    const DnsProviderClass = dnsProviderPlugin.target;
-    const dnsProviderDefine = dnsProviderPlugin.define as DnsProviderDefine;
-    if (dnsProviderDefine.deprecated) {
-      throw new Error(dnsProviderDefine.deprecated);
+    let dnsProvider: any = null;
+    let domainsVerifyPlan: DomainsVerifyPlan = null;
+    if (this.challengeType === "cname") {
+      domainsVerifyPlan = await this.createDomainsVerifyPlan();
+    } else {
+      const dnsProviderType = this.dnsProviderType;
+      const dnsProviderAccessId = this.dnsProviderAccess;
+      dnsProvider = await this.createDnsProvider(dnsProviderType, dnsProviderAccessId);
     }
-    const access = await this.accessService.getById(dnsProviderAccessId);
-
-    // @ts-ignore
-    const dnsProvider: IDnsProvider = new DnsProviderClass();
-    const context: DnsProviderContext = { access, logger: this.logger, http: this.http, utils };
-    Decorator.inject(dnsProviderDefine.autowire, dnsProvider, context);
-    dnsProvider.setCtx(context);
-    await dnsProvider.onInstance();
 
     try {
       const cert = await this.acme.order({
         email,
         domains,
         dnsProvider,
+        domainsVerifyPlan,
         csrInfo,
         isTest: false,
         privateKeyType: this.privateKeyType,
@@ -206,6 +268,52 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       }
       throw e;
     }
+  }
+
+  async createDnsProvider(dnsProviderType: string, dnsProviderAccessId: number): Promise<IDnsProvider> {
+    const dnsProviderPlugin = dnsProviderRegistry.get(dnsProviderType);
+    const DnsProviderClass = dnsProviderPlugin.target;
+    const dnsProviderDefine = dnsProviderPlugin.define as DnsProviderDefine;
+    if (dnsProviderDefine.deprecated) {
+      throw new Error(dnsProviderDefine.deprecated);
+    }
+    const access = await this.accessService.getById(dnsProviderAccessId);
+
+    // @ts-ignore
+    const dnsProvider: IDnsProvider = new DnsProviderClass();
+    const context: DnsProviderContext = { access, logger: this.logger, http: this.http, utils };
+    Decorator.inject(dnsProviderDefine.autowire, dnsProvider, context);
+    dnsProvider.setCtx(context);
+    await dnsProvider.onInstance();
+    return dnsProvider;
+  }
+
+  async createDomainsVerifyPlan(): Promise<DomainsVerifyPlan> {
+    const plan: DomainsVerifyPlan = {};
+    for (const domain in this.domainsVerifyPlan) {
+      const domainVerifyPlan = this.domainsVerifyPlan[domain];
+      let dnsProvider = null;
+      const cnameVerifyPlan: Record<string, CnameVerifyPlan> = {};
+      if (domainVerifyPlan.type === "dns") {
+        dnsProvider = await this.createDnsProvider(domainVerifyPlan.dnsProviderType, domainVerifyPlan.dnsProviderAccessId);
+      } else {
+        for (const key in domainVerifyPlan.cnameVerifyPlan) {
+          const cnameRecord = await this.ctx.cnameProxyService.getByDomain(key);
+          cnameVerifyPlan[key] = {
+            domain: cnameRecord.cnameProvider.domain,
+            fullRecord: cnameRecord.recordValue,
+            dnsProvider: await this.createDnsProvider(cnameRecord.cnameProvider.dnsProviderType, cnameRecord.cnameProvider.accessId),
+          };
+        }
+      }
+      plan[domain] = {
+        domain,
+        type: domainVerifyPlan.type,
+        dnsProvider,
+        cnameVerifyPlan,
+      };
+    }
+    return plan;
   }
 }
 

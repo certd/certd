@@ -3,7 +3,7 @@ import { IMidwayKoaContext, IWebMiddleware, NextFunction } from '@midwayjs/koa';
 import jwt from 'jsonwebtoken';
 import { Constants } from '@certd/lib-server';
 import { logger } from '@certd/pipeline';
-import { AuthService } from '../modules/authority/service/auth-service.js';
+import { AuthService } from '../modules/sys/authority/service/auth-service.js';
 import { SysSettingsService } from '@certd/lib-server';
 import { SysPrivateSettings } from '@certd/lib-server';
 

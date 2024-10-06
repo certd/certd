@@ -1,6 +1,6 @@
 import { Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
 import { logger } from '@certd/pipeline';
-import { UserService } from '../authority/service/user-service.js';
+import { UserService } from '../sys/authority/service/user-service.js';
 import { PlusService, SysSettingsService } from '@certd/lib-server';
 import { nanoid } from 'nanoid';
 import { SysInstallInfo, SysPrivateSettings } from '@certd/lib-server';

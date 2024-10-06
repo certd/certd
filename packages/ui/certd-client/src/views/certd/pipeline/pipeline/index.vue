@@ -3,7 +3,7 @@
     <template #header>
       <div class="title">
         <fs-button class="back" icon="ion:chevron-back-outline" @click="goBack"></fs-button>
-        <pi-editable v-model="pipeline.title" :hover-show="false" :disabled="!editMode"></pi-editable>
+        <text-editable v-model="pipeline.title" :hover-show="false" :disabled="!editMode"></text-editable>
       </div>
       <div class="more">
         <template v-if="editMode">
@@ -24,7 +24,7 @@
               <template #header>
                 <div class="stage first-stage">
                   <div class="title stage-move-handle">
-                    <pi-editable model-value="触发源" :disabled="true" />
+                    <text-editable model-value="触发源" :disabled="true" />
                   </div>
                   <div class="tasks">
                     <div class="task-container first-task">
@@ -68,7 +68,7 @@
               <template #item="{ element: stage, index }">
                 <div :key="stage.id" class="stage" :class="{ 'last-stage': isLastStage(index) }">
                   <div class="title">
-                    <pi-editable v-model="stage.title" :disabled="!editMode"></pi-editable>
+                    <text-editable v-model="stage.title" :disabled="!editMode"></text-editable>
                     <div v-plus class="icon-box stage-move-handle">
                       <fs-icon v-if="editMode" title="拖动排序" icon="ion:move-outline"></fs-icon>
                     </div>
@@ -146,7 +146,7 @@
               <template #footer>
                 <div v-if="editMode" class="stage last-stage">
                   <div class="title">
-                    <pi-editable model-value="新阶段" :disabled="true" />
+                    <text-editable model-value="新阶段" :disabled="true" />
                   </div>
                   <div class="tasks">
                     <div class="task-container first-task">
@@ -188,7 +188,7 @@
                 </div>
                 <div v-else class="stage last-stage">
                   <div class="title">
-                    <pi-editable model-value="结束" :disabled="true" />
+                    <text-editable model-value="结束" :disabled="true" />
                   </div>
                   <div v-if="pipeline.notifications?.length > 0" class="tasks">
                     <div v-for="(item, index) of pipeline.notifications" :key="index" class="task-container" :class="{ 'first-task': index == 0 }">
@@ -704,7 +704,7 @@ export default defineComponent({
       .back {
         margin-right: 10px;
       }
-      .pi-editable {
+      .text-editable {
         width: 300px;
       }
     }

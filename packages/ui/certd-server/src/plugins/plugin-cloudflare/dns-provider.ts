@@ -1,9 +1,4 @@
-import {
-  AbstractDnsProvider,
-  CreateRecordOptions,
-  IsDnsProvider,
-  RemoveRecordOptions,
-} from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { Autowire, HttpClient, ILogger } from '@certd/pipeline';
 import { CloudflareAccess } from './access.js';
 
@@ -88,9 +83,7 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
       ttl: 60,
     });
     const record = res.result as CloudflareRecord;
-    this.logger.info(
-      `添加域名解析成功:fullRecord=${fullRecord},value=${value}`
-    );
+    this.logger.info(`添加域名解析成功:fullRecord=${fullRecord},value=${value}`);
     this.logger.info(`dns解析记录:${JSON.stringify(record)}`);
 
     //本接口需要返回本次创建的dns解析记录，这个记录会在删除的时候用到
@@ -101,10 +94,9 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
    *  删除dns解析记录,清理申请痕迹
    * @param options
    */
-  async removeRecord(
-    options: RemoveRecordOptions<CloudflareRecord>
-  ): Promise<void> {
-    const { fullRecord, value, record } = options;
+  async removeRecord(options: RemoveRecordOptions<CloudflareRecord>): Promise<void> {
+    const { fullRecord, value } = options.recordReq;
+    const record = options.recordRes;
     this.logger.info('删除域名解析：', fullRecord, value);
     if (!record) {
       this.logger.info('record不存在');
@@ -115,9 +107,7 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
     const recordId = record.id;
     const url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${recordId}`;
     await this.doRequestApi(url, null, 'delete');
-    this.logger.info(
-      `删除域名解析成功:fullRecord=${fullRecord},value=${value}`
-    );
+    this.logger.info(`删除域名解析成功:fullRecord=${fullRecord},value=${value}`);
   }
 }
 

@@ -14,6 +14,10 @@ import { defineProps, ref, useAttrs } from "vue";
 import { Modal } from "ant-design-vue";
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 
+defineOptions({
+  name: "DeviceIdGetter"
+});
+
 const props = defineProps<ComponentPropsType>();
 
 const emit = defineEmits<{

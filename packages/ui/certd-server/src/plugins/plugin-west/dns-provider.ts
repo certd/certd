@@ -97,7 +97,8 @@ export class WestDnsProvider extends AbstractDnsProvider<westRecord> {
    * @param options
    */
   async removeRecord(options: RemoveRecordOptions<westRecord>): Promise<void> {
-    const { fullRecord, value, record, domain } = options;
+    const { fullRecord, value, domain } = options.recordReq;
+    const record = options.recordRes;
     this.logger.info('删除域名解析：', fullRecord, value, record);
     if (!record) {
       this.logger.info('record不存在');

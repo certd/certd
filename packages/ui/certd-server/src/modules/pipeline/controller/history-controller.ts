@@ -8,7 +8,7 @@ import { HistoryLogEntity } from '../entity/history-log.js';
 import { PipelineService } from '../service/pipeline-service.js';
 import * as fs from 'fs';
 import { logger } from '@certd/pipeline';
-import { AuthService } from '../../authority/service/auth-service.js';
+import { AuthService } from '../../sys/authority/service/auth-service.js';
 import { SysSettingsService } from '@certd/lib-server';
 import { In } from 'typeorm';
 

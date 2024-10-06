@@ -313,6 +313,9 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
               name: "a-input"
             }
           },
+          form: {
+            rules: [{ required: true, message: "此项必填" }]
+          },
           column: {
             width: 350,
             sorter: true,

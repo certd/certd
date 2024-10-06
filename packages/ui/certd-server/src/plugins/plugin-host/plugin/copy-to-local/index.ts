@@ -66,7 +66,7 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
     title: '域名证书',
     helper: '请选择前置任务输出的域名证书',
     component: {
-      name: 'pi-output-selector',
+      name: 'output-selector',
       from: ['CertApply', 'CertApplyLego'],
     },
     required: true,

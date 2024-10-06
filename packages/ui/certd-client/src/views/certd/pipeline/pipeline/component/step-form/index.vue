@@ -73,27 +73,28 @@
             <a-alert type="info" :message="currentPlugin.title" :description="currentPlugin.desc"> </a-alert>
           </div>
         </template>
-        <a-form ref="stepFormRef" class="step-form" :model="currentStep" :label-col="labelCol" :wrapper-col="wrapperCol">
-          <fs-form-item
-            v-model="currentStep.title"
-            :item="{
-              title: '任务名称',
-              key: 'title',
-              component: {
-                name: 'a-input',
-                vModel: 'value'
-              },
-              rules: [{ required: true, message: '此项必填' }]
-            }"
-            :get-context-fn="blankFn"
-          />
-          <template v-for="(item, key) in currentPlugin.input" :key="key">
-            <fs-form-item v-if="item.show !== false" v-model="currentStep.input[key]" :item="item" :get-context-fn="blankFn" />
-          </template>
+        <div class="w-100 h-100">
+          <a-form ref="stepFormRef" class="step-form" :model="currentStep" :label-col="labelCol" :wrapper-col="wrapperCol">
+            <fs-form-item
+              v-model="currentStep.title"
+              :item="{
+                title: '任务名称',
+                key: 'title',
+                component: {
+                  name: 'a-input',
+                  vModel: 'value'
+                },
+                rules: [{ required: true, message: '此项必填' }]
+              }"
+              :get-context-fn="blankFn"
+            />
+            <template v-for="(item, key) in currentPlugin.input" :key="key">
+              <fs-form-item v-if="item.show !== false" v-model="currentStep.input[key]" :item="item" :get-context-fn="blankFn" />
+            </template>
 
-          <fs-form-item v-model="currentStep.strategy.runStrategy" :item="runStrategyProps" :get-context-fn="blankFn" />
-        </a-form>
-
+            <fs-form-item v-model="currentStep.strategy.runStrategy" :item="runStrategyProps" :get-context-fn="blankFn" />
+          </a-form>
+        </div>
         <template #footer>
           <div v-if="editMode" class="bottom-button">
             <a-button type="primary" @click="stepSave"> 确定 </a-button>
@@ -394,15 +395,22 @@ export default {
   &.fullscreen {
     .pi-step-form {
       .body {
+        margin: auto;
         .step-plugin {
           width: 16.666666%;
         }
         .step-form {
           display: flex;
           flex-wrap: wrap;
+          width: 1300px;
           .fs-form-item {
-            width: 50%;
+            width: 100%;
           }
+        }
+      }
+      .footer {
+        .bottom-button {
+          text-align: center;
         }
       }
     }

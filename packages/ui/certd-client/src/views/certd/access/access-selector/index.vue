@@ -1,11 +1,11 @@
 <template>
-  <div class="pi-access-selector">
+  <div class="access-selector">
     <span v-if="target.name" class="mr-5 cd-flex-inline">
       <span class="mr-5">{{ target.name }}</span>
       <fs-icon class="cd-icon-button" icon="ion:close-circle-outline" @click="clear"></fs-icon>
     </span>
-    <span v-else class="mlr-5 gray">请选择</span>
-    <a-button class="ml-5" @click="chooseForm.open">选择</a-button>
+    <span v-else class="mlr-5 text-gray">{{ placeholder }}</span>
+    <a-button class="ml-5" :size="size" @click="chooseForm.open">选择</a-button>
     <a-form-item-rest v-if="chooseForm.show">
       <a-modal v-model:open="chooseForm.show" title="选择授权提供者" width="900px" @ok="chooseForm.ok">
         <div style="height: 400px; position: relative">
@@ -23,7 +23,7 @@ import CertAccessModal from "./access/index.vue";
 import { GetProviderDefineByAccessType } from "../api";
 
 export default defineComponent({
-  name: "PiAccessSelector",
+  name: "AccessSelector",
   components: { CertAccessModal },
   props: {
     modelValue: {
@@ -33,6 +33,14 @@ export default defineComponent({
     type: {
       type: String,
       default: "aliyun"
+    },
+    placeholder: {
+      type: String,
+      default: "请选择"
+    },
+    size: {
+      type: String,
+      default: "middle"
     }
   },
   emits: ["update:modelValue"],

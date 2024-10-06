@@ -1,12 +1,10 @@
 import LayoutPass from "/@/layout/layout-pass.vue";
-import { computed } from "vue";
-import { useUserStore } from "/@/store/modules/user";
 import { useSettingStore } from "/@/store/modules/settings";
 
 export const sysResources = [
   {
     title: "系统管理",
-    name: "sys",
+    name: "SysRoot",
     path: "/sys",
     redirect: "/sys/settings",
     component: LayoutPass,
@@ -17,7 +15,7 @@ export const sysResources = [
     children: [
       {
         title: "权限管理",
-        name: "authority",
+        name: "AuthorityManager",
         path: "/sys/authority",
         redirect: "/sys/authority/permission",
         meta: {
@@ -28,61 +26,62 @@ export const sysResources = [
         children: [
           {
             title: "权限资源管理",
-            name: "permission",
+            name: "PermissionManager",
+            path: "/sys/authority/permission",
+            component: "/sys/authority/permission/index.vue",
             meta: {
               icon: "ion:list-outline",
               //需要校验权限
               permission: "sys:auth:per:view"
-            },
-            path: "/sys/authority/permission",
-            component: "/sys/authority/permission/index.vue"
+            }
           },
           {
             title: "角色管理",
-            name: "role",
+            name: "RoleManager",
+            path: "/sys/authority/role",
+            component: "/sys/authority/role/index.vue",
             meta: {
               icon: "ion:people-outline",
               permission: "sys:auth:role:view"
-            },
-            path: "/sys/authority/role",
-            component: "/sys/authority/role/index.vue"
+            }
           }
         ]
       },
       {
         title: "用户管理",
-        name: "user",
+        name: "UserManager",
+        path: "/sys/authority/user",
+        component: "/sys/authority/user/index.vue",
         meta: {
           icon: "ion:person-outline",
           permission: "sys:auth:user:view"
-        },
-        path: "/sys/authority/user",
-        component: "/sys/authority/user/index.vue"
-      },
-      {
-        title: "账号绑定",
-        name: "account",
-        meta: {
-          icon: "ion:golf-outline",
-          permission: "sys:settings:view"
-        },
-        path: "/sys/account",
-        component: "/sys/account/index.vue"
+        }
       },
       {
         title: "系统设置",
-        name: "settings",
+        name: "SysSettings",
+        path: "/sys/settings",
+        component: "/sys/settings/index.vue",
         meta: {
           icon: "ion:settings-outline",
           permission: "sys:settings:view"
-        },
-        path: "/sys/settings",
-        component: "/sys/settings/index.vue"
+        }
+      },
+      {
+        title: "CNAME服务设置",
+        name: "CnameSetting",
+        path: "/sys/cname/provider",
+        component: "/sys/cname/provider/index.vue",
+        meta: {
+          icon: "ion:settings-outline",
+          permission: "sys:settings:view"
+        }
       },
       {
         title: "站点个性化",
-        name: "site",
+        name: "SiteSetting",
         path: "/sys/site",
+        component: "/sys/site/index.vue",
         meta: {
           show: () => {
             const settingStore = useSettingStore();
@@ -90,9 +89,8 @@ export const sysResources = [
           },
           icon: "ion:document-text-outline",
           permission: "sys:settings:view"
-        },
-        component: "/sys/site/index.vue"
-      }
+        }
+      },
       // {
       //   title: "商业版设置",
       //   name: "SysCommercial",
@@ -120,6 +118,16 @@ export const sysResources = [
       //     }
       //   ]
       // }
+      {
+        title: "账号绑定",
+        name: "AccountBind",
+        path: "/sys/account",
+        component: "/sys/account/index.vue",
+        meta: {
+          icon: "ion:golf-outline",
+          permission: "sys:settings:view"
+        }
+      }
     ]
   }
 ];

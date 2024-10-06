@@ -14,7 +14,7 @@ import { UserRoleEntity } from '../entity/user-role.js';
 import bcrypt from 'bcryptjs';
 import { SysSettingsService } from '@certd/lib-server';
 import { SysInstallInfo } from '@certd/lib-server';
-import { RandomUtil } from '../../../utils/random.js';
+import { RandomUtil } from '../../../../utils/random.js';
 
 /**
  * 系统用户

@@ -4,7 +4,7 @@ import { SysSettingsService } from '@certd/lib-server';
 import { SysSettingsEntity } from '../entity/sys-settings.js';
 import { SysPublicSettings } from '@certd/lib-server';
 import * as _ from 'lodash-es';
-import { PipelineService } from '../../pipeline/service/pipeline-service.js';
+import { PipelineService } from '../../../pipeline/service/pipeline-service.js';
 
 /**
  */

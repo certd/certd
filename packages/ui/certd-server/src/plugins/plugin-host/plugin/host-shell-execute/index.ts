@@ -19,7 +19,7 @@ export class HostShellExecutePlugin extends AbstractTaskPlugin {
     title: '主机登录配置',
     helper: '登录',
     component: {
-      name: 'pi-access-selector',
+      name: 'access-selector',
       type: 'ssh',
     },
     required: true,

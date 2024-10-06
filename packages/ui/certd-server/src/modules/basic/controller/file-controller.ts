@@ -13,7 +13,7 @@ export class FileController extends BaseController {
   @Inject()
   fileService: FileService;
 
-  @Post('/upload', { summary: 'sys:settings:view' })
+  @Post('/upload', { summary: Constants.per.authOnly })
   async upload(@Files() files: UploadFileInfo<string>[], @Fields() fields: any) {
     console.log('files', files, fields);
     const cacheKey = uploadTmpFileCacheKey + nanoid();

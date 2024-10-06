@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { inject, ref, watch } from "vue";
 
+defineOptions({
+  name: "CertDomainsGetter"
+});
+
 const props = defineProps<{
   inputKey?: string;
   modelValue?: string[];

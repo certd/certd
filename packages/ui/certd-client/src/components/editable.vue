@@ -1,5 +1,5 @@
 <template>
-  <div class="pi-editable" :class="{ disabled, 'hover-show': hoverShow }">
+  <div class="text-editable" :class="{ disabled, 'hover-show': hoverShow }">
     <div v-if="isEdit" class="input">
       <a-input ref="inputRef" v-model:value="valueRef" :validate-status="modelValue ? '' : 'error'" v-bind="input" @keyup.enter="save()" @blur="save()">
         <template #suffix>
@@ -18,7 +18,7 @@
 import { watch, ref, nextTick } from "vue";
 
 export default {
-  name: "PiEditable",
+  name: "TextEditable",
   props: {
     modelValue: {
       type: String,
@@ -73,7 +73,7 @@ export default {
 </script>
 
 <style lang="less">
-.pi-editable {
+.text-editable {
   flex: 1;
   line-height: 34px;
 

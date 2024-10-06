@@ -70,6 +70,7 @@
     "nanoid": "^5.0.7",
     "nodemailer": "^6.9.3",
     "pg": "^8.12.0",
+    "psl": "^1.9.0",
     "qiniu": "^7.12.0",
     "querystring": "^0.2.1",
     "reflect-metadata": "^0.1.13",

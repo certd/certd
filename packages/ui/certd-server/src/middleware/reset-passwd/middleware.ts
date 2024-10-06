@@ -1,7 +1,7 @@
 import { Autoload, Config, Init, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { IMidwayKoaContext, IWebMiddleware, NextFunction } from '@midwayjs/koa';
 import { CommonException } from '@certd/lib-server';
-import { UserService } from '../../modules/authority/service/user-service.js';
+import { UserService } from '../../modules/sys/authority/service/user-service.js';
 import { logger } from '@certd/pipeline';
 
 /**

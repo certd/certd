@@ -192,18 +192,17 @@ export abstract class BaseService<T> {
     return await qb.getMany();
   }
 
-  async checkUserId(id: any = 0, userId, userKey = 'userId') {
-    // @ts-ignore
+  async checkUserId(id: any = 0, userId: number, userKey = 'userId') {
     const res = await this.getRepository().findOne({
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       select: { [userKey]: true },
-      // @ts-ignore
       where: {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         id,
       },
     });
-    // @ts-ignore
     if (!res || res[userKey] === userId) {
       return;
     }

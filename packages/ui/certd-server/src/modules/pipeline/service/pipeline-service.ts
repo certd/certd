@@ -16,7 +16,10 @@ import { HistoryLogService } from './history-log-service.js';
 import { logger } from '@certd/pipeline';
 import { EmailService } from '../../basic/service/email-service.js';
 import { NeedVIPException } from '@certd/lib-server';
-import { UserService } from '../../authority/service/user-service.js';
+import { UserService } from '../../sys/authority/service/user-service.js';
+import { AccessGetter } from './access-getter.js';
+import { CnameRecordService } from '../../cname/service/cname-record-service.js';
+import { CnameProxyService } from './cname-proxy-service.js';
 
 const runningTasks: Map<string | number, Executor> = new Map();
 const freeCount = 10;
@@ -33,6 +36,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
   emailService: EmailService;
   @Inject()
   accessService: AccessService;
+  @Inject()
+  cnameRecordService: CnameRecordService;
   @Inject()
   storageService: StorageService;
   @Inject()
@@ -341,11 +346,14 @@ export class PipelineService extends BaseService<PipelineEntity> {
       id: userId,
       role: userIsAdmin ? 'admin' : 'user',
     };
+    const accessGetter = new AccessGetter(userId, this.accessService.getById.bind(this.accessService));
+    const cnameProxyService = new CnameProxyService(userId, this.cnameRecordService.getByDomain.bind(this.cnameRecordService));
     const executor = new Executor({
       user,
       pipeline,
       onChanged,
-      accessService: this.accessService,
+      accessService: accessGetter,
+      cnameProxyService,
       storage: new DbStorage(userId, this.storageService),
       emailService: this.emailService,
       fileRootDir: this.certdConfig.fileRootDir,

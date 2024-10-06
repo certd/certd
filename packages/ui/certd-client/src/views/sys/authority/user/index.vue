@@ -12,7 +12,7 @@ import { defineComponent, ref, onMounted } from "vue";
 import { useCrud, useExpose, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 export default defineComponent({
-  name: "AuthorityUser",
+  name: "UserManager",
   setup() {
     // 初始化crud配置
     // 此处传入权限前缀进行通用按钮权限设置，会通过commonOptions去设置actionbar和rowHandle的按钮的show属性

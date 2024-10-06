@@ -61,8 +61,9 @@ export class DemoDnsProvider extends AbstractDnsProvider<DemoRecord> {
    * @param options
    */
   async removeRecord(options: RemoveRecordOptions<DemoRecord>): Promise<void> {
-    const { fullRecord, value, record } = options;
-    this.logger.info('删除域名解析：', fullRecord, value, record);
+    const { fullRecord, value, domain } = options.recordReq;
+    const record = options.recordRes;
+    this.logger.info('删除域名解析：', domain, fullRecord, value, record);
     //这里调用删除txt dns解析记录接口
     //请根据实际接口情况调用，例如：
 

@@ -18,6 +18,10 @@ import { useUserStore } from "/@/store/modules/user";
 import { useSettingStore } from "/@/store/modules/settings";
 import * as api from "./api";
 import { notification } from "ant-design-vue";
+
+defineOptions({
+  name: "AccountBind"
+});
 const iframeRef = ref();
 
 const userStore = useUserStore();

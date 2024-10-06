@@ -26,7 +26,7 @@ export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
     title: '域名证书',
     helper: '请选择前置任务输出的域名证书，或者上传到七牛云的证书id',
     component: {
-      name: 'pi-output-selector',
+      name: 'output-selector',
       from: ['CertApply', 'CertApplyLego', 'QiniuCertUpload'],
     },
     required: true,
@@ -37,7 +37,7 @@ export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
     title: 'Access授权',
     helper: '七牛云授权',
     component: {
-      name: 'pi-access-selector',
+      name: 'access-selector',
       type: 'qiniu',
     },
     required: true,

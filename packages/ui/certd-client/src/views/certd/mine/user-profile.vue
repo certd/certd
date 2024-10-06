@@ -23,6 +23,10 @@ import { Ref, ref } from "vue";
 import { CrudOptions, useColumns, useFormWrapper } from "@fast-crud/fast-crud";
 import { notification } from "ant-design-vue";
 
+defineOptions({
+  name: "UserProfile"
+});
+
 const userInfo: Ref = ref({});
 
 const getUserInfo = async () => {

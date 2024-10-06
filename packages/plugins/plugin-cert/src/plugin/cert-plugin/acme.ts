@@ -1,13 +1,28 @@
 // @ts-ignore
 import * as acme from "@certd/acme-client";
+import { ClientExternalAccountBindingOptions, UrlMapping } from "@certd/acme-client";
 import _ from "lodash-es";
 import { Challenge } from "@certd/acme-client/types/rfc8555";
 import { Logger } from "log4js";
-import { IContext } from "@certd/pipeline";
-import { IDnsProvider } from "../../dns-provider/index.js";
-import psl from "psl";
-import { ClientExternalAccountBindingOptions, UrlMapping } from "@certd/acme-client";
-import { utils } from "@certd/pipeline";
+import { IContext, utils } from "@certd/pipeline";
+import { IDnsProvider, parseDomain } from "../../dns-provider/index.js";
+
+export type CnameVerifyPlan = {
+  domain: string;
+  fullRecord: string;
+  dnsProvider: IDnsProvider;
+};
+
+export type DomainVerifyPlan = {
+  domain: string;
+  type: "cname" | "dns";
+  dnsProvider?: IDnsProvider;
+  cnameVerifyPlan?: Record<string, CnameVerifyPlan>;
+};
+export type DomainsVerifyPlan = {
+  [key: string]: DomainVerifyPlan;
+};
+
 export type CertInfo = {
   crt: string;
   key: string;
@@ -132,14 +147,7 @@ export class AcmeService {
     return key.toString();
   }
 
-  parseDomain(fullDomain: string) {
-    const parsed = psl.parse(fullDomain) as psl.ParsedDomain;
-    if (parsed.error) {
-      throw new Error(`解析${fullDomain}域名失败:` + JSON.stringify(parsed.error));
-    }
-    return parsed.domain as string;
-  }
-  async challengeCreateFn(authz: any, challenge: any, keyAuthorization: string, dnsProvider: IDnsProvider) {
+  async challengeCreateFn(authz: any, challenge: any, keyAuthorization: string, dnsProvider: IDnsProvider, domainsVerifyPlan: DomainsVerifyPlan) {
     this.logger.info("Triggered challengeCreateFn()");
 
     /* http-01 */
@@ -155,21 +163,62 @@ export class AcmeService {
       // await fs.writeFileAsync(filePath, fileContents);
     } else if (challenge.type === "dns-01") {
       /* dns-01 */
-      const dnsRecord = `_acme-challenge.${fullDomain}`;
+      let fullRecord = `_acme-challenge.${fullDomain}`;
       const recordValue = keyAuthorization;
 
-      this.logger.info(`Creating TXT record for ${fullDomain}: ${dnsRecord}`);
+      this.logger.info(`Creating TXT record for ${fullDomain}: ${fullRecord}`);
       /* Replace this */
-      this.logger.info(`Would create TXT record "${dnsRecord}" with value "${recordValue}"`);
+      this.logger.info(`Would create TXT record "${fullRecord}" with value "${recordValue}"`);
 
-      const domain = this.parseDomain(fullDomain);
+      let domain = parseDomain(fullDomain);
       this.logger.info("解析到域名domain=", domain);
-      return await dnsProvider.createRecord({
-        fullRecord: dnsRecord,
+
+      if (domainsVerifyPlan) {
+        //按照计划执行
+        const domainVerifyPlan = domainsVerifyPlan[domain];
+        if (domainVerifyPlan) {
+          if (domainVerifyPlan.type === "dns") {
+            dnsProvider = domainVerifyPlan.dnsProvider;
+          } else if (domainVerifyPlan.type === "cname") {
+            const cnameVerifyPlan = domainVerifyPlan.cnameVerifyPlan;
+            if (cnameVerifyPlan) {
+              const cname = cnameVerifyPlan[fullDomain];
+              if (cname) {
+                dnsProvider = cname.dnsProvider;
+                domain = parseDomain(cname.domain);
+                fullRecord = cname.fullRecord;
+              }
+            } else {
+              this.logger.error("未找到域名Cname校验计划，使用默认的dnsProvider");
+            }
+          } else {
+            this.logger.error("不支持的校验类型", domainVerifyPlan.type);
+          }
+        } else {
+          this.logger.info("未找到域名校验计划，使用默认的dnsProvider");
+        }
+      }
+
+      let hostRecord = fullRecord.replace(`${domain}`, "");
+      if (hostRecord.endsWith(".")) {
+        hostRecord = hostRecord.substring(0, hostRecord.length - 1);
+      }
+
+      const recordReq = {
+        domain,
+        fullRecord,
+        hostRecord,
         type: "TXT",
         value: recordValue,
-        domain,
-      });
+      };
+      this.logger.info("添加 TXT 解析记录", JSON.stringify(recordReq));
+      const recordRes = await dnsProvider.createRecord(recordReq);
+      this.logger.info("添加 TXT 解析记录成功", JSON.stringify(recordRes));
+      return {
+        recordReq,
+        recordRes,
+        dnsProvider,
+      };
     }
   }
 
@@ -179,12 +228,13 @@ export class AcmeService {
    * @param {object} authz Authorization object
    * @param {object} challenge Selected challenge
    * @param {string} keyAuthorization Authorization key
-   * @param recordItem  challengeCreateFn create record item
+   * @param recordReq
+   * @param recordRes
    * @param dnsProvider dnsProvider
    * @returns {Promise}
    */
 
-  async challengeRemoveFn(authz: any, challenge: any, keyAuthorization: string, recordItem: any, dnsProvider: IDnsProvider) {
+  async challengeRemoveFn(authz: any, challenge: any, keyAuthorization: string, recordReq: any, recordRes: any, dnsProvider: IDnsProvider) {
     this.logger.info("Triggered challengeRemoveFn()");
 
     /* http-01 */
@@ -198,24 +248,13 @@ export class AcmeService {
       this.logger.info(`Would remove file on path "${filePath}"`);
       // await fs.unlinkAsync(filePath);
     } else if (challenge.type === "dns-01") {
-      const dnsRecord = `_acme-challenge.${fullDomain}`;
-      const recordValue = keyAuthorization;
-
-      this.logger.info(`Removing TXT record for ${fullDomain}: ${dnsRecord}`);
-
-      /* Replace this */
-      this.logger.info(`Would remove TXT record "${dnsRecord}" with value "${recordValue}"`);
-
-      const domain = this.parseDomain(fullDomain);
-
+      this.logger.info(`删除 TXT 解析记录:${JSON.stringify(recordReq)} ,recordRes = ${JSON.stringify(recordRes)}`);
       try {
         await dnsProvider.removeRecord({
-          fullRecord: dnsRecord,
-          type: "TXT",
-          value: keyAuthorization,
-          record: recordItem,
-          domain,
+          recordReq,
+          recordRes,
         });
+        this.logger.info("删除解析记录成功");
       } catch (e) {
         this.logger.error("删除解析记录出错：", e);
         throw e;
@@ -226,12 +265,13 @@ export class AcmeService {
   async order(options: {
     email: string;
     domains: string | string[];
-    dnsProvider: any;
+    dnsProvider?: any;
+    domainsVerifyPlan?: DomainsVerifyPlan;
     csrInfo: any;
     isTest?: boolean;
     privateKeyType?: string;
   }): Promise<CertInfo> {
-    const { email, isTest, domains, csrInfo, dnsProvider } = options;
+    const { email, isTest, domains, csrInfo, dnsProvider, domainsVerifyPlan } = options;
     const client: acme.Client = await this.getAcmeClient(email, isTest);
 
     /* Create CSR */
@@ -271,8 +311,8 @@ export class AcmeService {
       privateKey
     );
 
-    if (dnsProvider == null) {
-      throw new Error("dnsProvider 不能为空");
+    if (dnsProvider == null && domainsVerifyPlan == null) {
+      throw new Error("dnsProvider 、 domainsVerifyPlan 不能都为空");
     }
     /* 自动申请证书 */
     const crt = await client.auto({
@@ -281,11 +321,22 @@ export class AcmeService {
       termsOfServiceAgreed: true,
       skipChallengeVerification: this.skipLocalVerify,
       challengePriority: ["dns-01"],
-      challengeCreateFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string): Promise<any> => {
-        return await this.challengeCreateFn(authz, challenge, keyAuthorization, dnsProvider);
+      challengeCreateFn: async (
+        authz: acme.Authorization,
+        challenge: Challenge,
+        keyAuthorization: string
+      ): Promise<{ recordReq: any; recordRes: any; dnsProvider: any }> => {
+        return await this.challengeCreateFn(authz, challenge, keyAuthorization, dnsProvider, domainsVerifyPlan);
       },
-      challengeRemoveFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string, recordItem: any): Promise<any> => {
-        return await this.challengeRemoveFn(authz, challenge, keyAuthorization, recordItem, dnsProvider);
+      challengeRemoveFn: async (
+        authz: acme.Authorization,
+        challenge: Challenge,
+        keyAuthorization: string,
+        recordReq: any,
+        recordRes: any,
+        dnsProvider: IDnsProvider
+      ): Promise<any> => {
+        return await this.challengeRemoveFn(authz, challenge, keyAuthorization, recordReq, recordRes, dnsProvider);
       },
       signal: this.options.signal,
     });

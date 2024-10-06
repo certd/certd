@@ -75,7 +75,7 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
     title: '域名证书',
     helper: '请选择前置任务输出的域名证书',
     component: {
-      name: 'pi-output-selector',
+      name: 'output-selector',
       from: ['CertApply', 'CertApplyLego'],
     },
     required: true,
@@ -86,7 +86,7 @@ export class DeployToClbPlugin extends AbstractTaskPlugin {
     title: 'Access提供者',
     helper: 'access授权',
     component: {
-      name: 'pi-access-selector',
+      name: 'access-selector',
       type: 'tencent',
     },
     required: true,

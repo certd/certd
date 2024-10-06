@@ -7,7 +7,7 @@ import { MidwayConfig } from '@midwayjs/core';
 
 // eslint-disable-next-line node/no-extraneous-import
 import { FlywayHistory } from '@certd/midway-flyway-js';
-import { UserEntity } from '../modules/authority/entity/user.js';
+import { UserEntity } from '../modules/sys/authority/entity/user.js';
 import { PipelineEntity } from '../modules/pipeline/entity/pipeline.js';
 //import { logger } from '../utils/logger';
 // load .env file in process.cwd
@@ -67,7 +67,7 @@ const development = {
         logging: false,
 
         // 配置实体模型 或者 entities: '/entity',
-        entities: ['**/modules/*/entity/*.js', ...libServerEntities, ...commercialEntities, PipelineEntity, FlywayHistory, UserEntity],
+        entities: ['**/modules/**/entity/*.js', ...libServerEntities, ...commercialEntities, PipelineEntity, FlywayHistory, UserEntity],
       },
     },
   },

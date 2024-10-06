@@ -102,10 +102,11 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
 
   /**
    *  删除dns解析记录,清理申请痕迹
-   * @param opts
+   * @param options
    */
-  async removeRecord(opts: RemoveRecordOptions<any>): Promise<void> {
-    const { record } = opts;
+  async removeRecord(options: RemoveRecordOptions<any>): Promise<void> {
+    // const { fullRecord, value, domain } = options.recordReq;
+    const record = options.recordRes;
     const deleteResourceRecord = promisfy(this.service.deleteResourceRecord);
     const res: any = await deleteResourceRecord(
       {

@@ -2,6 +2,10 @@
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 import { ref, watch } from "vue";
 
+defineOptions({
+  name: "RemoteSelect"
+});
+
 const props = defineProps<
   {
     watches: string[];
@@ -63,14 +67,14 @@ watch(
 <template>
   <div>
     <a-select
-    class="remote-select"
-    show-search
-    :filter-option="filterOption"
-    :options="optionsRef"
-    :value="value"
-    @click="onClick"
-    @update:value="emit('update:value', $event)"
-  />
+      class="remote-select"
+      show-search
+      :filter-option="filterOption"
+      :options="optionsRef"
+      :value="value"
+      @click="onClick"
+      @update:value="emit('update:value', $event)"
+    />
     <div class="helper">
       {{ message }}
     </div>
