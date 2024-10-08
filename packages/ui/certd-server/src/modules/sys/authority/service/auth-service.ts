@@ -1,6 +1,5 @@
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { RoleService } from './role-service.js';
-import { BaseService } from '@certd/lib-server';
 
 /**
  * 权限校验
@@ -28,7 +27,7 @@ export class AuthService {
     }
   }
 
-  async checkEntityUserId(ctx: any, service: BaseService<any>, id: any = 0, userKey = 'userId') {
+  async checkEntityUserId(ctx: any, service: any, id: any = 0, userKey = 'userId') {
     const isAdmin = await this.isAdmin(ctx);
     if (isAdmin) {
       return true;

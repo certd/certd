@@ -54,6 +54,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
   @Config('certd')
   private certdConfig: any;
 
+  //@ts-ignore
   getRepository() {
     return this.repository;
   }

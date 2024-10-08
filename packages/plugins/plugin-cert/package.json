@@ -14,6 +14,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@certd/basic": "^1.25.9",
     "@certd/acme-client": "^1.25.9",
     "@certd/pipeline": "^1.25.9",
     "dayjs": "^1.11.7",
@@ -23,7 +24,6 @@
     "rimraf": "^5.0.5"
   },
   "devDependencies": {
-    "@alicloud/cs20151215": "^3.0.3",
     "@alicloud/openapi-client": "^0.4.0",
     "@alicloud/pop-core": "^1.7.10",
     "@rollup/plugin-commonjs": "^23.0.4",

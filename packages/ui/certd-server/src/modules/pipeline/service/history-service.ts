@@ -27,6 +27,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
   @Config('certd')
   private certdConfig: any;
 
+  //@ts-ignore
   getRepository() {
     return this.repository;
   }

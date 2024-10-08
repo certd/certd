@@ -1,4 +1,3 @@
-import "util";
 export * from "./core/index.js";
 export * from "./dt/index.js";
 export * from "./access/index.js";

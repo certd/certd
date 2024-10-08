@@ -1,10 +1,6 @@
 import { ALL, Body, Controller, Get, Inject, Post, Provide } from '@midwayjs/core';
-import { Constants, SysSettingsService } from '@certd/lib-server';
-import { BaseController } from '@certd/lib-server';
-import { AppKey, http, PlusRequestService, verify } from '@certd/pipeline';
-import { SysInstallInfo } from '@certd/lib-server';
-import { logger } from '@certd/pipeline';
-import { PlusService } from '@certd/lib-server';
+import { BaseController, Constants, PlusService, SysInstallInfo, SysSettingsService } from '@certd/lib-server';
+import { AppKey, logger, PlusRequestService, verify } from '@certd/pipeline';
 
 /**
  */
@@ -63,8 +59,6 @@ export class SysPlusController extends BaseController {
     const timestamps = 1728365013899;
     const bindUrl = 'http://89.21.0.171:7001/';
     const service = new PlusRequestService({
-      logger: logger,
-      http: http,
       subjectId: subjectId,
       plusServerBaseUrls: ['https://api.ai.handsfree.work'],
     });

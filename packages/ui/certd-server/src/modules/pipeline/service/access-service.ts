@@ -18,6 +18,7 @@ export class AccessService extends BaseService<AccessEntity> {
   @Inject()
   encryptService: EncryptService;
 
+  //@ts-ignore
   getRepository() {
     return this.repository;
   }
@@ -101,13 +102,13 @@ export class AccessService extends BaseService<AccessEntity> {
     return await super.update(param);
   }
 
-  async getById(id: any, userId?: number): Promise<any> {
+  async getById(id: any, userId: number): Promise<any> {
     const entity = await this.info(id);
     if (entity == null) {
       throw new Error(`该授权配置不存在,请确认是否已被删除:id=${id}`);
     }
     if (userId !== entity.userId) {
-      throw new PermissionException('您对该授权无访问权限');
+      throw new PermissionException('您对该Access授权无访问权限');
     }
     // const access = accessRegistry.get(entity.type);
     const setting = this.decryptAccessEntity(entity);

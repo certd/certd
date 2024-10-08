@@ -13,6 +13,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
   @InjectEntityModel(UserSettingsEntity)
   repository: Repository<UserSettingsEntity>;
 
+  //@ts-ignore
   getRepository() {
     return this.repository;
   }

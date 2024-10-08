@@ -13,6 +13,7 @@ export class HistoryLogService extends BaseService<HistoryLogEntity> {
   @InjectEntityModel(HistoryLogEntity)
   repository: Repository<HistoryLogEntity>;
 
+  //@ts-ignore
   getRepository() {
     return this.repository;
   }

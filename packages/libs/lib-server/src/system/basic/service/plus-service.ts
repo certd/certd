@@ -1,6 +1,6 @@
 import { Config, Init, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { AppKey, http, PlusRequestService, verify } from '@certd/pipeline';
-import { logger } from '@certd/pipeline';
+import { AppKey, PlusRequestService, verify } from '@certd/pipeline';
+import { logger } from '@certd/basic';
 import { SysInstallInfo, SysLicenseInfo, SysSettingsService } from '../../settings/index.js';
 
 @Provide()
@@ -18,8 +18,6 @@ export class PlusService {
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     this.plusRequestService = new PlusRequestService({
       plusServerBaseUrls: this.plusServerBaseUrls,
-      http: http,
-      logger,
       subjectId: installInfo.siteId,
     });
   }

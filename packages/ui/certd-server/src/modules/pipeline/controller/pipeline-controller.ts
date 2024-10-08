@@ -1,11 +1,9 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
-import { CrudController } from '@certd/lib-server';
+import { Constants, CrudController, SysSettingsService } from '@certd/lib-server';
 import { PipelineService } from '../service/pipeline-service.js';
 import { PipelineEntity } from '../entity/pipeline.js';
-import { Constants } from '@certd/lib-server';
 import { HistoryService } from '../service/history-service.js';
 import { AuthService } from '../../sys/authority/service/auth-service.js';
-import { SysSettingsService } from '@certd/lib-server';
 
 /**
  * 证书

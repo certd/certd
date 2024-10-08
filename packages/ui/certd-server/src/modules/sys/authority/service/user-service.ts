@@ -34,6 +34,7 @@ export class UserService extends BaseService<UserEntity> {
   @Inject()
   sysSettingsService: SysSettingsService;
 
+  //@ts-ignore
   getRepository() {
     return this.repository;
   }

@@ -13,6 +13,7 @@ export class CnameProviderService extends BaseService<CnameProviderEntity> {
   @InjectEntityModel(CnameProviderEntity)
   repository: Repository<CnameProviderEntity>;
 
+  //@ts-ignore
   getRepository() {
     return this.repository;
   }

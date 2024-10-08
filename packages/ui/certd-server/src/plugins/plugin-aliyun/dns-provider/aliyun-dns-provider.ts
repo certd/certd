@@ -107,15 +107,22 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
 
     try {
       const ret = await this.client.request('AddDomainRecord', params, requestOption);
-      this.logger.info('添加域名解析成功:', value, value, ret.RecordId);
+      this.logger.info('添加域名解析成功:', JSON.stringify(options), ret.RecordId);
       return ret.RecordId;
     } catch (e: any) {
       if (e.code === 'DomainRecordDuplicate') {
         return;
       }
       this.logger.info('添加域名解析出错', e);
-      throw e;
+      this.resolveError(e, options);
     }
+  }
+
+  resolveError(e: any, req: CreateRecordOptions) {
+    if (e.Message.indexOf('The specified domain name does not exist') > -1) {
+      throw new Error(`阿里云账号中不存在此域名:${req.domain}`);
+    }
+    throw e;
   }
   async removeRecord(options: RemoveRecordOptions<any>): Promise<any> {
     const { fullRecord, value } = options.recordReq;

@@ -15,6 +15,7 @@ import {
 import { BaseController } from '@certd/lib-server';
 import { AccessService } from '../service/access-service.js';
 import { EmailService } from '../../basic/service/email-service.js';
+import { AccessGetter } from '../service/access-getter.js';
 
 @Provide()
 @Controller('/api/pi/handle')
@@ -49,6 +50,7 @@ export class HandleController extends BaseController {
 
   @Post('/plugin', { summary: Constants.per.authOnly })
   async pluginRequest(@Body(ALL) body: PluginRequestHandleReq) {
+    const userId = this.getUserId();
     const pluginDefine = pluginRegistry.get(body.typeName);
     const pluginCls = pluginDefine.target;
     if (pluginCls == null) {
@@ -59,6 +61,9 @@ export class HandleController extends BaseController {
     const plugin: PluginRequestHandler = new pluginCls();
     //@ts-ignore
     const instance = plugin as ITaskPlugin;
+
+    const accessGetter = new AccessGetter(userId, this.accessService.getById.bind(this.accessService));
+
     //@ts-ignore
     const taskCtx: TaskInstanceContext = {
       pipeline: undefined,
@@ -67,7 +72,7 @@ export class HandleController extends BaseController {
       http,
       logger: logger,
       inputChanged: true,
-      accessService: this.accessService,
+      accessService: accessGetter,
       emailService: this.emailService,
       pipelineContext: undefined,
       userContext: undefined,

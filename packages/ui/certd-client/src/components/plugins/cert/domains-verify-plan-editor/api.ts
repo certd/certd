@@ -24,3 +24,13 @@ export async function GetByDomain(domain: string) {
     }
   });
 }
+
+export async function DoVerify(id: number) {
+  return await request({
+    url: apiPrefix + "/verify",
+    method: "post",
+    data: {
+      id
+    }
+  });
+}

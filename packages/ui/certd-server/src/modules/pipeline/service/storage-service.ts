@@ -12,6 +12,7 @@ export class StorageService extends BaseService<StorageEntity> {
   @InjectEntityModel(StorageEntity)
   repository: Repository<StorageEntity>;
 
+  //@ts-ignore
   getRepository() {
     return this.repository;
   }

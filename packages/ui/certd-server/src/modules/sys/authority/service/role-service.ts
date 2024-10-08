@@ -29,7 +29,8 @@ export class RoleService extends BaseService<RoleEntity> {
     ttl: 1000 * 60 * 10,
   });
 
-  getRepository() {
+ //@ts-ignore
+getRepository() {
     return this.repository;
   }
 

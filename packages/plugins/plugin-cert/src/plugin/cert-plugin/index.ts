@@ -1,8 +1,8 @@
-import { Decorator, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from "@certd/pipeline";
+import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, utils } from "@certd/pipeline";
 import type { CertInfo, CnameVerifyPlan, DomainsVerifyPlan, PrivateKeyType, SSLProvider } from "./acme.js";
 import { AcmeService } from "./acme.js";
 import _ from "lodash-es";
-import { DnsProviderContext, DnsProviderDefine, dnsProviderRegistry, IDnsProvider } from "../../dns-provider/index.js";
+import { createDnsProvider, DnsProviderContext, IDnsProvider } from "../../dns-provider/index.js";
 import { CertReader } from "./cert-reader.js";
 import { CertApplyBasePlugin } from "./base.js";
 
@@ -271,21 +271,12 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   }
 
   async createDnsProvider(dnsProviderType: string, dnsProviderAccessId: number): Promise<IDnsProvider> {
-    const dnsProviderPlugin = dnsProviderRegistry.get(dnsProviderType);
-    const DnsProviderClass = dnsProviderPlugin.target;
-    const dnsProviderDefine = dnsProviderPlugin.define as DnsProviderDefine;
-    if (dnsProviderDefine.deprecated) {
-      throw new Error(dnsProviderDefine.deprecated);
-    }
     const access = await this.accessService.getById(dnsProviderAccessId);
-
-    // @ts-ignore
-    const dnsProvider: IDnsProvider = new DnsProviderClass();
-    const context: DnsProviderContext = { access, logger: this.logger, http: this.http, utils };
-    Decorator.inject(dnsProviderDefine.autowire, dnsProvider, context);
-    dnsProvider.setCtx(context);
-    await dnsProvider.onInstance();
-    return dnsProvider;
+    const context: DnsProviderContext = { access, logger: this.logger, http: this.ctx.http, utils };
+    return await createDnsProvider({
+      dnsProviderType,
+      context,
+    });
   }
 
   async createDomainsVerifyPlan(): Promise<DomainsVerifyPlan> {

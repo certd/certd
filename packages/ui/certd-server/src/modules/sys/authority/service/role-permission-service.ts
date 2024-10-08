@@ -13,6 +13,7 @@ export class RolePermissionService extends BaseService<RolePermissionEntity> {
   @InjectEntityModel(RolePermissionEntity)
   repository: Repository<RolePermissionEntity>;
 
+  //@ts-ignore
   getRepository() {
     return this.repository;
   }

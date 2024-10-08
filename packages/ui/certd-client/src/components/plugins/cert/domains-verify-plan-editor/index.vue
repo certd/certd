@@ -8,55 +8,55 @@
         </div>
         <table class="plan-table">
           <thead>
-          <tr>
-            <th>域名</th>
-            <th>验证方式</th>
-            <th>验证计划</th>
-          </tr>
+            <tr>
+              <th>域名</th>
+              <th>验证方式</th>
+              <th>验证计划</th>
+            </tr>
           </thead>
           <tbody>
-          <tr v-for="(item, key) of planRef" :key="key" class="row">
-            <td>{{ item.domain }}</td>
-            <td>
-              <div class="type">
-                <a-select v-model:value="item.type" size="small" :options="challengeTypeOptions" @change="onPlanChanged"></a-select>
-              </div>
-            </td>
-            <td style="padding: 0">
-              <div class="plan">
-                <div v-if="item.type === 'dns'" class="plan-dns">
-                  <div class="form-item">
-                    <span class="label">DNS类型：</span>
-                    <span class="input">
-                      <fs-dict-select
-                        v-model="item.dnsProviderType"
-                        size="small"
-                        :dict="dnsProviderTypeDict"
-                        placeholder="DNS提供商"
-                        @change="onPlanChanged"
-                      ></fs-dict-select>
-                    </span>
+            <tr v-for="(item, key) of planRef" :key="key" class="row">
+              <td>{{ item.domain }}</td>
+              <td>
+                <div class="type">
+                  <a-select v-model:value="item.type" size="small" :options="challengeTypeOptions" @change="onPlanChanged"></a-select>
+                </div>
+              </td>
+              <td style="padding: 0">
+                <div class="plan">
+                  <div v-if="item.type === 'dns'" class="plan-dns">
+                    <div class="form-item">
+                      <span class="label">DNS类型：</span>
+                      <span class="input">
+                        <fs-dict-select
+                          v-model="item.dnsProviderType"
+                          size="small"
+                          :dict="dnsProviderTypeDict"
+                          placeholder="DNS提供商"
+                          @change="onPlanChanged"
+                        ></fs-dict-select>
+                      </span>
+                    </div>
+                    <a-divider type="vertical" />
+                    <div class="form-item">
+                      <span class="label">DNS授权：</span>
+                      <span class="input">
+                        <access-selector
+                          v-model="item.dnsProviderAccessId"
+                          size="small"
+                          :type="item.dnsProviderType"
+                          placeholder="请选择"
+                          @change="onPlanChanged"
+                        ></access-selector>
+                      </span>
+                    </div>
                   </div>
-                  <a-divider type="vertical" />
-                  <div class="form-item">
-                    <span class="label">DNS授权：</span>
-                    <span class="input">
-                      <access-selector
-                        v-model="item.dnsProviderAccessId"
-                        size="small"
-                        :type="item.dnsProviderType"
-                        placeholder="请选择"
-                        @change="onPlanChanged"
-                      ></access-selector>
-                    </span>
+                  <div v-if="item.type === 'cname'" class="plan-cname">
+                    <cname-verify-plan v-model="item.cnameVerifyPlan" @change="onPlanChanged" />
                   </div>
                 </div>
-                <div v-if="item.type === 'cname'" class="plan-cname">
-                  <cname-verify-plan v-model="item.cnameVerifyPlan" @change="onPlanChanged" />
-                </div>
-              </div>
-            </td>
-          </tr>
+              </td>
+            </tr>
           </tbody>
         </table>
         <div class="error">
@@ -119,7 +119,6 @@ const dnsProviderTypeDict = dict({
   url: "pi/dnsProvider/dnsProviderTypeDict"
 });
 function onPlanChanged() {
-  debugger;
   emit("update:modelValue", planRef.value);
 }
 
