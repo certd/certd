@@ -44,7 +44,7 @@
     "@midwayjs/logger": "^3.1.0",
     "@midwayjs/static-file": "^3.16.4",
     "@midwayjs/typeorm": "^3.16.4",
-    "@midwayjs/upload": "3",
+    "@midwayjs/upload": "~3.16.4",
     "@midwayjs/validate": "^3.16.4",
     "ali-oss": "^6.21.0",
     "axios": "^1.7.2",

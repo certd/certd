@@ -37,7 +37,7 @@
     "typeorm": "^0.3.20",
     "lodash-es":  "^4.17.21",
     "dayjs": "^1.11.7",
-    "@midwayjs/upload": "3"
+    "@midwayjs/upload": "^3.16.4"
   },
   "devDependencies": {
     "mwts": "^1.3.0",

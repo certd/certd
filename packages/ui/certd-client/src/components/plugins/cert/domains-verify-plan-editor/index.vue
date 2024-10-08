@@ -7,11 +7,14 @@
           <fs-icon :icon="fullscreen ? 'material-symbols:fullscreen' : 'material-symbols:fullscreen-exit'" @click="fullscreen = !fullscreen"></fs-icon>
         </div>
         <table class="plan-table">
+          <thead>
           <tr>
             <th>域名</th>
             <th>验证方式</th>
             <th>验证计划</th>
           </tr>
+          </thead>
+          <tbody>
           <tr v-for="(item, key) of planRef" :key="key" class="row">
             <td>{{ item.domain }}</td>
             <td>
@@ -54,6 +57,7 @@
               </div>
             </td>
           </tr>
+          </tbody>
         </table>
         <div class="error">
           {{ errorMessageRef }}

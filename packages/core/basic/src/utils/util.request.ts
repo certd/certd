@@ -1,10 +1,10 @@
-import axios, { AxiosRequestConfig } from "axios";
-import { logger } from "./util.log.js";
-import { Logger } from "log4js";
-import { HttpProxyAgent } from "http-proxy-agent";
-import { HttpsProxyAgent } from "https-proxy-agent";
-import nodeHttp from "http";
-import * as https from "node:https";
+import axios, { AxiosRequestConfig } from 'axios';
+import { logger } from './util.log.js';
+import { Logger } from 'log4js';
+import { HttpProxyAgent } from 'http-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import nodeHttp from 'http';
+import * as https from 'node:https';
 export class HttpError extends Error {
   status?: number;
   statusText?: string;
@@ -18,8 +18,8 @@ export class HttpError extends Error {
     }
     super(error.message);
 
-    if (error?.message?.indexOf("ssl3_get_record:wrong version number") >= 0) {
-      this.message = "http协议错误，服务端要求http协议，请检查是否使用了https请求";
+    if (error?.message?.indexOf('ssl3_get_record:wrong version number') >= 0) {
+      this.message = 'http协议错误，服务端要求http协议，请检查是否使用了https请求';
     }
 
     this.name = error.name;
@@ -64,7 +64,7 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       }
       let agents = defaultAgents;
       if (config.skipSslVerify) {
-        logger.info("跳过SSL验证");
+        logger.info('跳过SSL验证');
         agents = createAgent({ rejectUnauthorized: false } as any);
       }
       delete config.skipSslVerify;
@@ -75,51 +75,51 @@ export function createAxiosService({ logger }: { logger: Logger }) {
     },
     (error: Error) => {
       // 发送失败
-      logger.error("接口请求失败：", error);
+      logger.error('接口请求失败：', error);
       return Promise.reject(error);
     }
   );
   // 响应拦截
   service.interceptors.response.use(
     (response: any) => {
-      logger.info("http response:", JSON.stringify(response?.data));
+      logger.info('http response:', JSON.stringify(response?.data));
       return response.data;
     },
     (error: any) => {
       const status = error.response?.status;
       switch (status) {
         case 400:
-          error.message = "请求错误";
+          error.message = '请求错误';
           break;
         case 401:
-          error.message = "未授权，请登录";
+          error.message = '未授权，请登录';
           break;
         case 403:
-          error.message = "拒绝访问";
+          error.message = '拒绝访问';
           break;
         case 404:
           error.message = `请求地址出错: ${error.response.config.url}`;
           break;
         case 408:
-          error.message = "请求超时";
+          error.message = '请求超时';
           break;
         case 500:
-          error.message = "服务器内部错误";
+          error.message = '服务器内部错误';
           break;
         case 501:
-          error.message = "服务未实现";
+          error.message = '服务未实现';
           break;
         case 502:
-          error.message = "网关错误";
+          error.message = '网关错误';
           break;
         case 503:
-          error.message = "服务不可用";
+          error.message = '服务不可用';
           break;
         case 504:
-          error.message = "网关超时";
+          error.message = '网关超时';
           break;
         case 505:
-          error.message = "HTTP版本不受支持";
+          error.message = 'HTTP版本不受支持';
           break;
         default:
           break;
@@ -127,12 +127,12 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       logger.error(
         `请求出错：status:${error.response?.status},statusText:${error.response?.statusText},url:${error.config?.url},method:${error.config?.method}。`
       );
-      logger.error("返回数据:", JSON.stringify(error.response?.data));
+      logger.error('返回数据:', JSON.stringify(error.response?.data));
       if (error.response?.data) {
         error.message = error.response.data.message || error.response.data.msg || error.response.data.error || error.response.data;
       }
       if (error instanceof AggregateError) {
-        logger.error("AggregateError", error);
+        logger.error('AggregateError', error);
       }
       const err = new HttpError(error);
       return Promise.reject(err);
@@ -155,14 +155,14 @@ export function createAgent(opts: nodeHttp.AgentOptions = {}) {
   let httpAgent, httpsAgent;
   const httpProxy = process.env.HTTP_PROXY || process.env.http_proxy;
   if (httpProxy) {
-    logger.info("use httpProxy:", httpProxy);
+    logger.info('use httpProxy:', httpProxy);
     httpAgent = new HttpProxyAgent(httpProxy, opts as any);
   } else {
     httpAgent = new nodeHttp.Agent(opts);
   }
   const httpsProxy = process.env.HTTPS_PROXY || process.env.https_proxy;
   if (httpsProxy) {
-    logger.info("use httpsProxy:", httpsProxy);
+    logger.info('use httpsProxy:', httpsProxy);
     httpsAgent = new HttpsProxyAgent(httpsProxy, opts as any);
   } else {
     httpsAgent = new https.Agent(opts);

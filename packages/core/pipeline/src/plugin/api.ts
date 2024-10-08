@@ -6,7 +6,7 @@ import { IAccessService } from "../access/index.js";
 import { ICnameProxyService, IEmailService } from "../service/index.js";
 import { IContext, PluginRequestHandleReq, RunnableCollection } from "../core/index.js";
 import { ILogger, logger, utils } from "../utils/index.js";
-import { HttpClient } from "../utils/util.request.js";
+import { HttpClient } from "../utils/index.js";
 import dayjs from "dayjs";
 import _ from "lodash-es";
 export type UserInfo = {
