@@ -3,7 +3,7 @@
 
 ## 1.本地调试运行
 
-安装依赖包:      
+### 克隆代码
 ```shell
 
 # 克隆代码
@@ -11,22 +11,38 @@ git clone https://github.com/certd/certd
 
 #进入项目目录
 cd certd
+```
 
+### 修改pnpm-workspace.yaml文件     
+重要：否则无法正确加载专业版的access和plugin
+```yaml
+# pnpm-workspace.yaml
+packages:
+   - 'packages/**'  # <--------------注释掉这一行，PR时不要提交此修改
+   - 'packages/ui/**'
+```
+
+### 安装依赖和初始化:
+```shell
+# 安装pnpm，如果提示npm命令不存在，就需要先安装nodejs
+npm install -g pnpm@8.15.7 --registry=https://registry.npmmirror.com
+
+# 使用国内镜像源，如果有代理，就不需要
+pnpm config set registry https://registry.npmmirror.com
 # 安装依赖
-npm install -g pnpm@8.15.7
 pnpm install
 
 # 初始化构建
 npm run init
 ```
 
-启动 server:    
+### 启动 server:    
 ```shell
 cd packages/ui/certd-server
 npm run dev
 ```
 
-启动 client:    
+### 启动 client:    
 ```shell
 cd packages/ui/certd-client
 npm run dev
@@ -48,7 +64,7 @@ npm run dev
 这样用户就可以在`certd`后台中创建这种授权凭证了
 
 ### 3. dns-provider
-如果域名是这个平台进行解析的，那么你需要实现dns-provider
+如果域名是这个平台进行解析的，那么你需要实现dns-provider，（申请证书需要）    
 参考`plugin-cloudflare/dns-provider.ts` 修改为你要做的平台的`dns-provider`
 
 ### 4. plugin-deploy
@@ -66,7 +82,7 @@ export * from './plugins/plugin-deploy-to-xx'
 在`./src/plugins/index.ts`中增加`import`
 
 ```ts
-export * from "./plugin-cloudflare"
+export * from "./plugin-cloudflare.js"
 ```
 
 ## 重启服务进行调试
