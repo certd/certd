@@ -3,9 +3,12 @@
     <div class="fullscreen-modal" @click="fullscreenExit"></div>
     <div class="plan-wrapper">
       <div class="plan-box">
-        <div class="fullscreen-button pointer" @click="fullscreen = !fullscreen">
-          <span style="font-size: 10px"> 这里可以放大→ </span>
-          <fs-icon :icon="fullscreen ? 'material-symbols:fullscreen' : 'material-symbols:fullscreen-exit'"></fs-icon>
+        <div class="fullscreen-button pointer flex-center" @click="fullscreen = !fullscreen">
+          <span v-if="!fullscreen" style="font-size: 10px" class="flex-center">
+            这里可以放大
+            <fs-icon icon="ion:arrow-forward-outline"></fs-icon>
+          </span>
+          <fs-icon :icon="fullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'"></fs-icon>
         </div>
         <table class="plan-table">
           <thead>
