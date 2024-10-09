@@ -48,10 +48,12 @@ function onRecordChange(domain: string, record: CnameRecord) {
 .cname-verify-plan {
   width: 100%;
   table-layout: fixed;
+  tbody tr td {
+    border-top: 1px solid #e8e8e8 !important;
+  }
   tr {
     td {
       border: 0 !important;
-      border-bottom: 1px solid #e8e8e8 !important;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -60,11 +62,11 @@ function onRecordChange(domain: string, record: CnameRecord) {
         text-align: center;
       }
     }
-    &:last-child {
-      td {
-        border-bottom: 0 !important;
-      }
-    }
+    //&:last-child {
+    //  td {
+    //    border-bottom: 0 !important;
+    //  }
+    //}
   }
 }
 </style>
