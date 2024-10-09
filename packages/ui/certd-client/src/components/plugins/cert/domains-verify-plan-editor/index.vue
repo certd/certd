@@ -77,20 +77,11 @@ import { dict, FsDictSelect } from "@fast-crud/fast-crud";
 import AccessSelector from "/@/views/certd/access/access-selector/index.vue";
 import CnameVerifyPlan from "./cname-verify-plan.vue";
 import psl from "psl";
+import { Form } from "ant-design-vue";
+import { DomainsVerifyPlanInput } from "./type";
 defineOptions({
   name: "DomainsVerifyPlanEditor"
 });
-
-type DomainVerifyPlanInput = {
-  domain: string;
-  type: "cname" | "dns";
-  dnsProviderType?: string;
-  dnsProviderAccessId?: number;
-  cnameVerifyPlan?: Record<string, CnameRecord>;
-};
-type DomainsVerifyPlanInput = {
-  [key: string]: DomainVerifyPlanInput;
-};
 
 const challengeTypeOptions = ref<any[]>([
   {
@@ -122,8 +113,12 @@ const planRef = ref<DomainsVerifyPlanInput>(props.modelValue || {});
 const dnsProviderTypeDict = dict({
   url: "pi/dnsProvider/dnsProviderTypeDict"
 });
+
+const formItemContext = Form.useInjectFormItemContext();
 function onPlanChanged() {
+  console.log("plan changed", planRef.value);
   emit("update:modelValue", planRef.value);
+  formItemContext.onFieldChange();
 }
 
 const errorMessageRef = ref<string>("");

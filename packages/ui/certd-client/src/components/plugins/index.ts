@@ -5,7 +5,7 @@ import OutputSelector from "/@/components/plugins/common/output-selector/index.v
 import DnsProviderSelector from "/@/components/plugins/cert/dns-provider-selector/index.vue";
 import DomainsVerifyPlanEditor from "/@/components/plugins/cert/domains-verify-plan-editor/index.vue";
 import AccessSelector from "/@/views/certd/access/access-selector/index.vue";
-
+export * from "./cert/index.js";
 export default {
   install(app: any) {
     app.component("OutputSelector", OutputSelector);

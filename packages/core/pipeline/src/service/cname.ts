@@ -10,6 +10,7 @@ export type CnameRecord = {
   hostRecord: string;
   recordValue: string;
   cnameProvider: CnameProvider;
+  status: string;
 };
 export type ICnameProxyService = {
   getByDomain: (domain: string) => Promise<CnameRecord>;
