@@ -402,7 +402,7 @@ export default {
         .step-form {
           display: flex;
           flex-wrap: wrap;
-          width: 1300px;
+          width: 1500px;
           .fs-form-item {
             width: 100%;
           }

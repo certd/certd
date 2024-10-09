@@ -12,7 +12,9 @@
       </td>
       <td class="status center flex-center">
         <fs-values-format v-model="cnameRecord.status" :dict="statusDict" />
-        <fs-icon icon="ion:refresh-outline" class="pointer" @click="doVerify"></fs-icon>
+      </td>
+      <td class="center">
+        <a-button v-if="cnameRecord.status !== 'valid'" type="primary" size="small" :loading="loading" @click="doVerify">点击验证</a-button>
       </td>
     </tr>
   </tbody>
@@ -74,11 +76,17 @@ watch(
   }
 );
 
+const loading = ref(false);
 async function doVerify() {
   if (!cnameRecord.value || !cnameRecord.value.id) {
     return;
   }
-  await api.DoVerify(cnameRecord.value.id);
+  loading.value = true;
+  try {
+    await api.DoVerify(cnameRecord.value.id);
+  } finally {
+    loading.value = false;
+  }
   await doRefresh();
 }
 </script>

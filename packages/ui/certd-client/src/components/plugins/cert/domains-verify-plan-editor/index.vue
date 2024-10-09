@@ -3,8 +3,9 @@
     <div class="fullscreen-modal" @click="fullscreenExit"></div>
     <div class="plan-wrapper">
       <div class="plan-box">
-        <div class="fullscreen-button pointer">
-          <fs-icon :icon="fullscreen ? 'material-symbols:fullscreen' : 'material-symbols:fullscreen-exit'" @click="fullscreen = !fullscreen"></fs-icon>
+        <div class="fullscreen-button pointer" @click="fullscreen = !fullscreen">
+          <span style="font-size: 10px"> 这里可以放大→ </span>
+          <fs-icon :icon="fullscreen ? 'material-symbols:fullscreen' : 'material-symbols:fullscreen-exit'"></fs-icon>
         </div>
         <table class="plan-table">
           <thead>
@@ -149,6 +150,9 @@ function onDomainsChanged(domains: string[]) {
       continue;
     }
     const mainDomain = parsed.domain;
+    if (mainDomain == null) {
+      continue;
+    }
     let group = domainGroups[mainDomain];
     if (!group) {
       group = {};
