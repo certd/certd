@@ -1,10 +1,12 @@
 import * as api from "./api";
 import { useI18n } from "vue-i18n";
-import { computed, Ref, ref } from "vue";
+import { Ref, ref } from "vue";
 import { useRouter } from "vue-router";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, utils } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { useUserStore } from "/@/store/modules/user";
 import { useSettingStore } from "/@/store/modules/settings";
+import { message } from "ant-design-vue";
+import { DoVerify } from "./api";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -57,6 +59,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         addRequest,
         editRequest,
         delRequest
+      },
+      tabs: {
+        name: "status",
+        show: true
       },
       rowHandle: {
         minWidth: 200,
@@ -139,9 +145,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           dict: dict({
             data: [
               { label: "待设置CNAME", value: "cname", color: "warning" },
-              { label: "验证中", value: "validating", color: "primary" },
-              { label: "验证成功", value: "valid", color: "success" },
-              { label: "验证失败", value: "failed", color: "error" }
+              { label: "验证中", value: "validating", color: "blue" },
+              { label: "验证成功", value: "valid", color: "green" },
+              { label: "验证失败", value: "failed", color: "red" }
             ]
           }),
           addForm: {
@@ -160,14 +166,29 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             conditionalRenderDisabled: true,
-            width: 100,
+            width: 130,
             align: "center",
             cellRender({ row, value }) {
               if (row.status === "valid") {
                 return "-";
               }
+              async function doVerify() {
+                row._validating_ = true;
+                try {
+                  const res = await api.DoVerify(row.id);
+                  if (res === true) {
+                    message.success("验证成功");
+                    row.status = "valid";
+                  }
+                } catch (e) {
+                  console.error(e);
+                  message.error(e.message);
+                } finally {
+                  row._validating_ = false;
+                }
+              }
               return (
-                <a-button size={"small"} type={"primary"}>
+                <a-button onClick={doVerify} loading={row._validating_} size={"small"} type={"primary"}>
                   点击验证
                 </a-button>
               );

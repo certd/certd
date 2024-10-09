@@ -1,7 +1,7 @@
 import { ValidateException } from './exception/index.js';
 import * as _ from 'lodash-es';
 import { PermissionException } from './exception/index.js';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Inject } from '@midwayjs/core';
 import { TypeORMDataSourceManager } from '@midwayjs/typeorm';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager.js';
@@ -49,16 +49,22 @@ export abstract class BaseService<T> {
   /**
    * 删除
    * @param ids 删除的ID集合 如：[1,2,3] 或者 1,2,3
+   * @param where
    */
-  async delete(ids) {
-    if (ids instanceof Array) {
-      await this.getRepository().delete(ids);
-    } else if (typeof ids === 'string') {
-      await this.getRepository().delete(ids.split(','));
-    } else {
-      //ids是一个condition
-      await this.getRepository().delete(ids);
+  async delete(ids: any, where?: any) {
+    if (!ids) {
+      throw new ValidateException('ids不能为空');
     }
+    if (typeof ids === 'string') {
+      ids = ids.split(',');
+    }
+    if (ids.length === 0) {
+      return;
+    }
+    await this.getRepository().delete({
+      id: In(ids),
+      ...where,
+    });
     await this.modifyAfter(ids);
   }
 
@@ -90,7 +96,7 @@ export abstract class BaseService<T> {
    * @param param 数据
    */
   async update(param) {
-    if (!param.id) throw new ValidateException('no id');
+    if (!param.id) throw new ValidateException('id 不能为空');
     param.updateTime = new Date();
     await this.addOrUpdate(param);
     await this.modifyAfter(param);

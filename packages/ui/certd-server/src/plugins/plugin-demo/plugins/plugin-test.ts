@@ -1,5 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
+import { isDev } from '../../../utils/env.js';
 
 @IsTaskPlugin({
   name: 'demoTest',
@@ -98,7 +99,7 @@ export class DemoTestPlugin extends AbstractTaskPlugin {
   }
 }
 //TODO 这里实例化插件，进行注册
-if (process.env.NODE_ENV === 'development') {
+if (isDev()) {
   //你的实现 要去掉这个if，不然生产环境将不会显示
   new DemoTestPlugin();
 }

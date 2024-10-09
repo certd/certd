@@ -14,14 +14,14 @@ export class PluginController extends BaseController {
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Query(ALL) query: any) {
-    query.userId = this.ctx.user.id;
+    query.userId = this.getUserId();
     const list = this.service.getList();
     return this.ok(list);
   }
 
   @Post('/groups', { summary: Constants.per.authOnly })
   async groups(@Query(ALL) query: any) {
-    query.userId = this.ctx.user.id;
+    query.userId = this.getUserId();
     const group = this.service.getGroups();
     return this.ok(group);
   }

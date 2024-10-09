@@ -68,6 +68,9 @@ export class HistoryService extends BaseService<HistoryEntity> {
   }
 
   private async clear(pipelineId: number, keepCount = 20) {
+    if (pipelineId == null) {
+      return;
+    }
     const count = await this.repository.count({
       where: {
         pipelineId,
@@ -139,6 +142,9 @@ export class HistoryService extends BaseService<HistoryEntity> {
   }
 
   async deleteByIds(ids: number[], userId: number) {
+    if (!ids || ids.length === 0) {
+      return;
+    }
     const condition: any = {
       id: In(ids),
     };
@@ -150,6 +156,9 @@ export class HistoryService extends BaseService<HistoryEntity> {
   }
 
   async deleteByPipelineId(id: number) {
+    if (id == null) {
+      return;
+    }
     await this.repository.delete({
       pipelineId: id,
     });

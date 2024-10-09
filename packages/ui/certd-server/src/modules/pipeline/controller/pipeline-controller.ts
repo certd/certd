@@ -29,7 +29,7 @@ export class PipelineController extends CrudController<PipelineService> {
     const isAdmin = await this.authService.isAdmin(this.ctx);
     const publicSettings = await this.sysSettingsService.getPublicSettings();
     if (!(publicSettings.managerOtherUserPipeline && isAdmin)) {
-      body.query.userId = this.ctx.user.id;
+      body.query.userId = this.getUserId();
     }
 
     const title = body.query.title;
@@ -50,7 +50,7 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean: PipelineEntity) {
-    bean.userId = this.ctx.user.id;
+    bean.userId = this.getUserId();
     return super.add(bean);
   }
 
@@ -62,7 +62,7 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/save', { summary: Constants.per.authOnly })
   async save(@Body(ALL) bean: PipelineEntity) {
-    bean.userId = this.ctx.user.id;
+    bean.userId = this.getUserId();
     if (bean.id > 0) {
       await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
     }

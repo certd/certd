@@ -86,7 +86,7 @@ export class UserController extends CrudController<UserService> {
    */
   @Post('/mine', { summary: Constants.per.authOnly })
   public async mine() {
-    const id = this.ctx.user.id;
+    const id = this.getUserId();
     const info = await this.service.info(id, ['password']);
     return this.ok(info);
   }
@@ -96,7 +96,7 @@ export class UserController extends CrudController<UserService> {
    */
   @Post('/permissions', { summary: Constants.per.authOnly })
   public async permissions() {
-    const id = this.ctx.user.id;
+    const id = this.getUserId();
     const permissions = await this.service.getUserPermissions(id);
     return this.ok(permissions);
   }
@@ -106,7 +106,7 @@ export class UserController extends CrudController<UserService> {
    */
   @Post('/permissionTree', { summary: Constants.per.authOnly })
   public async permissionTree() {
-    const id = this.ctx.user.id;
+    const id = this.getUserId();
     const permissions = await this.service.getUserPermissions(id);
     const tree = this.permissionService.buildTree(permissions);
     return this.ok(tree);

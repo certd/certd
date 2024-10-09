@@ -57,3 +57,13 @@ export async function DeleteBatch(ids: any[]) {
     data: { ids }
   });
 }
+
+export async function DoVerify(id: number) {
+  return await request({
+    url: apiPrefix + "/verify",
+    method: "post",
+    data: {
+      id
+    }
+  });
+}

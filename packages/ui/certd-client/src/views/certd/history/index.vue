@@ -18,7 +18,7 @@ import { onMounted } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import { message, Modal } from "ant-design-vue";
-import { DeleteBatch } from "/@/views/certd/history/api";
+import { DeleteBatch } from "./api";
 
 defineOptions({
   name: "PipelineHistory"

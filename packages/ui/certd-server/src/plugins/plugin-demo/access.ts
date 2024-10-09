@@ -1,4 +1,5 @@
 import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
+import { isDev } from "../../utils/env.js";
 
 /**
  * 这个注解将注册一个授权配置
@@ -41,7 +42,7 @@ export class DemoAccess extends BaseAccess {
   demoKeySecret = '';
 }
 
-if (process.env.NODE_ENV === 'development') {
+if (isDev()) {
   //你的实现 要去掉这个if，不然生产环境将不会显示
   new DemoAccess();
 }

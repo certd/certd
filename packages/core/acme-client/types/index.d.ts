@@ -197,3 +197,5 @@ export const axios: AxiosInstance;
  */
 
 export function setLogger(fn: (msg: string) => void): void;
+
+export function walkTxtRecord(record: any): Promise<string[]>;

@@ -66,18 +66,35 @@ async function walkDnsChallengeRecord(recordName, resolver = dns) {
         log(`Checking name for TXT records: ${recordName}`);
         const txtRecords = await resolver.resolveTxt(recordName);
 
-        if (txtRecords.length) {
+        if (txtRecords && txtRecords.length) {
             log(`Found ${txtRecords.length} TXT records at ${recordName}`);
             log(`TXT records: ${JSON.stringify(txtRecords)}`);
             return [].concat(...txtRecords);
         }
+        return [];
     }
     catch (e) {
-        log(`No TXT records found for name: ${recordName}`);
+        log(`Resolve TXT records error, ${recordName} :${e.message}`);
+        throw e;
     }
+}
 
-    /* Found nothing */
-    throw new Error(`No TXT records found for name: ${recordName}`);
+async function walkTxtRecord(recordName) {
+    try {
+        /* Default DNS resolver first */
+        log('Attempting to resolve TXT with default DNS resolver first');
+        const res = await walkDnsChallengeRecord(recordName);
+        if (res && res.length > 0) {
+            return res;
+        }
+        throw new Error('No TXT records found');
+    }
+    catch (e) {
+        /* Authoritative DNS resolver */
+        log(`Error using default resolver, attempting to resolve TXT with authoritative NS: ${e.message}`);
+        const authoritativeResolver = await util.getAuthoritativeDnsResolver(recordName);
+        return await walkDnsChallengeRecord(recordName, authoritativeResolver);
+    }
 }
 
 /**
@@ -93,24 +110,10 @@ async function walkDnsChallengeRecord(recordName, resolver = dns) {
  */
 
 async function verifyDnsChallenge(authz, challenge, keyAuthorization, prefix = '_acme-challenge.') {
-    let recordValues = [];
     const recordName = `${prefix}${authz.identifier.value}`;
     log(`Resolving DNS TXT from record: ${recordName}`);
-
-    try {
-        /* Default DNS resolver first */
-        log('Attempting to resolve TXT with default DNS resolver first');
-        recordValues = await walkDnsChallengeRecord(recordName);
-    }
-    catch (e) {
-        /* Authoritative DNS resolver */
-        log(`Error using default resolver, attempting to resolve TXT with authoritative NS: ${e.message}`);
-        const authoritativeResolver = await util.getAuthoritativeDnsResolver(recordName);
-        recordValues = await walkDnsChallengeRecord(recordName, authoritativeResolver);
-    }
-
+    const recordValues = await walkTxtRecord(recordName);
     log(`DNS query finished successfully, found ${recordValues.length} TXT records`);
-
     if (!recordValues.length || !recordValues.includes(keyAuthorization)) {
         throw new Error(`Authorization not found in DNS TXT record: ${recordName}，need:${keyAuthorization},found:${recordValues}`);
     }
@@ -154,4 +157,5 @@ module.exports = {
     'http-01': verifyHttpChallenge,
     'dns-01': verifyDnsChallenge,
     'tls-alpn-01': verifyTlsAlpnChallenge,
+    walkTxtRecord,
 };

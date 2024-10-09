@@ -8,9 +8,18 @@ import { CnameProviderService } from '../../sys/cname/service/cname-provider-ser
 import { CnameProviderEntity } from '../../sys/cname/entity/cname_provider.js';
 import { createDnsProvider, IDnsProvider, parseDomain } from '@certd/plugin-cert';
 import { cache, http, logger, utils } from '@certd/pipeline';
-import dns from 'dns';
 import { AccessService } from '../../pipeline/service/access-service.js';
+import { isDev } from '../../../utils/env.js';
+import { walkTxtRecord } from '@certd/acme-client';
 
+type CnameCheckCacheValue = {
+  validating: boolean;
+  pass: boolean;
+  recordReq?: any;
+  recordRes?: any;
+  startTime: number;
+  intervalId?: NodeJS.Timeout;
+};
 /**
  * 授权
  */
@@ -147,56 +156,94 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
     if (!bean) {
       throw new ValidateException(`CnameRecord:${id} 不存在`);
     }
-    const cacheKey = `cname.record.verify.${bean.id}`;
-
-    type CacheValue = {
-      ready: boolean;
-      pass: boolean;
-    };
-    let value: CacheValue = cache.get(cacheKey);
-    if (!value) {
-      value = {
-        ready: false,
-        pass: false,
-      };
+    if (bean.status === 'valid') {
+      return true;
     }
 
-    const originDomain = parseDomain(bean.domain);
-    const fullDomain = `${bean.hostRecord}.${originDomain}`;
+    const cacheKey = `cname.record.verify.${bean.id}`;
+
+    let value: CnameCheckCacheValue = cache.get(cacheKey);
+    if (!value) {
+      value = {
+        validating: false,
+        pass: false,
+        startTime: new Date().getTime(),
+      };
+    }
+    let ttl = 60 * 60 * 15 * 1000;
+    if (isDev()) {
+      ttl = 30 * 1000;
+    }
     const recordValue = bean.recordValue.substring(0, bean.recordValue.indexOf('.'));
+
+    const buildDnsProvider = async () => {
+      const cnameProvider = await this.cnameProviderService.info(bean.cnameProviderId);
+      const access = await this.accessService.getById(cnameProvider.accessId, bean.userId);
+      const context = { access, logger, http, utils };
+      const dnsProvider: IDnsProvider = await createDnsProvider({
+        dnsProviderType: cnameProvider.dnsProviderType,
+        context,
+      });
+      return dnsProvider;
+    };
+
     const checkRecordValue = async () => {
+      if (value.pass) {
+        return true;
+      }
+      if (value.startTime + ttl < new Date().getTime()) {
+        logger.warn(`cname验证超时,停止检查,${bean.domain} ${recordValue}`);
+        clearInterval(value.intervalId);
+        await this.updateStatus(bean.id, 'cname');
+        return false;
+      }
+
+      const originDomain = parseDomain(bean.domain);
+      const fullDomain = `${bean.hostRecord}.${originDomain}`;
+
       logger.info(`检查CNAME配置 ${fullDomain} ${recordValue}`);
-      const txtRecords = await dns.promises.resolveTxt(fullDomain);
+
+      // const txtRecords = await dns.promises.resolveTxt(fullDomain);
+      // if (txtRecords.length) {
+      //   records = [].concat(...txtRecords);
+      // }
       let records: string[] = [];
-      if (txtRecords.length) {
-        records = [].concat(...txtRecords);
+      try {
+        records = await walkTxtRecord(fullDomain);
+      } catch (e) {
+        logger.error(`获取TXT记录失败，${e.message}`);
       }
       logger.info(`检查到TXT记录 ${JSON.stringify(records)}`);
       const success = records.includes(recordValue);
       if (success) {
+        clearInterval(value.intervalId);
         logger.info(`检测到CNAME配置,修改状态 ${fullDomain} ${recordValue}`);
         await this.updateStatus(bean.id, 'valid');
         value.pass = true;
+        cache.delete(cacheKey);
+        try {
+          const dnsProvider = await buildDnsProvider();
+          await dnsProvider.removeRecord({
+            recordReq: value.recordReq,
+            recordRes: value.recordRes,
+          });
+          logger.info('删除CNAME的校验DNS记录成功');
+        } catch (e) {
+          logger.error(`删除CNAME的校验DNS记录失败， ${e.message}，req:${JSON.stringify(value.recordReq)}，recordRes:${JSON.stringify(value.recordRes)}`, e);
+        }
       }
+      return success;
     };
 
-    if (value.ready) {
+    if (value.validating) {
       // lookup recordValue in dns
       return await checkRecordValue();
     }
 
-    const ttl = 60 * 60 * 30;
     cache.set(cacheKey, value, {
       ttl: ttl,
     });
 
-    const cnameProvider = await this.cnameProviderService.info(bean.cnameProviderId);
-    const access = await this.accessService.getById(cnameProvider.accessId, bean.userId);
-    const context = { access, logger, http, utils };
-    const dnsProvider: IDnsProvider = await createDnsProvider({
-      dnsProviderType: cnameProvider.dnsProviderType,
-      context,
-    });
     const domain = parseDomain(bean.recordValue);
     const fullRecord = bean.recordValue;
     const hostRecord = fullRecord.replace(`.${domain}`, '');
@@ -207,8 +254,20 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
       type: 'TXT',
       value: recordValue,
     };
-    await dnsProvider.createRecord(req);
-    value.ready = true;
+    const dnsProvider = await buildDnsProvider();
+    const recordRes = await dnsProvider.createRecord(req);
+    value.validating = true;
+    value.recordReq = req;
+    value.recordRes = recordRes;
+    await this.updateStatus(bean.id, 'validating');
+
+    value.intervalId = setInterval(async () => {
+      try {
+        await checkRecordValue();
+      } catch (e) {
+        logger.error('检查cname出错：', e);
+      }
+    }, 10000);
   }
 
   async updateStatus(id: number, status: CnameRecordStatusType) {

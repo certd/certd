@@ -1,6 +1,7 @@
 import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { Autowire, HttpClient, ILogger } from '@certd/pipeline';
 import { DemoAccess } from './access.js';
+import { isDev } from "../../utils/env.js";
 
 type DemoRecord = {
   // 这里定义Record记录的数据结构，跟对应云平台接口返回值一样即可，一般是拿到id就行，用于删除txt解析记录，清理申请痕迹
@@ -79,7 +80,7 @@ export class DemoDnsProvider extends AbstractDnsProvider<DemoRecord> {
 }
 
 //TODO 实例化这个provider，将其自动注册到系统中
-if (process.env.NODE_ENV === 'development') {
+if (isDev()) {
   //你的实现 要去掉这个if，不然生产环境将不会显示
   new DemoDnsProvider();
 }

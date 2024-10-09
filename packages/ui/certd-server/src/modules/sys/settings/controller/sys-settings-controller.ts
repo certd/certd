@@ -23,36 +23,36 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   @Post('/page', { summary: 'sys:settings:view' })
   async page(@Body(ALL) body) {
     body.query = body.query ?? {};
-    body.query.userId = this.ctx.user.id;
+    body.query.userId = this.getUserId();
     return super.page(body);
   }
 
   @Post('/list', { summary: 'sys:settings:view' })
   async list(@Body(ALL) body) {
-    body.userId = this.ctx.user.id;
+    body.userId = this.getUserId();
     return super.list(body);
   }
 
   @Post('/add', { summary: 'sys:settings:edit' })
   async add(@Body(ALL) bean) {
-    bean.userId = this.ctx.user.id;
+    bean.userId = this.getUserId();
     return super.add(bean);
   }
 
   @Post('/update', { summary: 'sys:settings:edit' })
   async update(@Body(ALL) bean) {
-    await this.service.checkUserId(bean.id, this.ctx.user.id);
+    await this.service.checkUserId(bean.id, this.getUserId());
     return super.update(bean);
   }
   @Post('/info', { summary: 'sys:settings:view' })
   async info(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.ctx.user.id);
+    await this.service.checkUserId(id, this.getUserId());
     return super.info(id);
   }
 
   @Post('/delete', { summary: 'sys:settings:edit' })
   async delete(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.ctx.user.id);
+    await this.service.checkUserId(id, this.getUserId());
     return super.delete(id);
   }
 

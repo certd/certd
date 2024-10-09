@@ -26,9 +26,9 @@ import * as api from "./api.js";
 const statusDict = dict({
   data: [
     { label: "待设置CNAME", value: "cname", color: "warning" },
-    { label: "验证中", value: "validating", color: "primary" },
-    { label: "验证成功", value: "valid", color: "success" },
-    { label: "验证失败", value: "failed", color: "error" }
+    { label: "验证中", value: "validating", color: "blue" },
+    { label: "验证成功", value: "valid", color: "green" },
+    { label: "验证失败", value: "failed", color: "red" }
   ]
 });
 

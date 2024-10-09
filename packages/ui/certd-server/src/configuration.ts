@@ -17,6 +17,7 @@ import DefaultConfig from './config/config.default.js';
 import * as libServer from '@certd/lib-server';
 import * as commercial from '@certd/commercial-core';
 import * as upload from '@midwayjs/upload';
+import { setLogger } from '@certd/acme-client';
 process.on('uncaughtException', error => {
   console.error('未捕获的异常：', error);
   // 在这里可以添加日志记录、发送错误通知等操作
@@ -74,6 +75,11 @@ export class MainConfiguration {
       //resetPasswd,重置密码模式下不提供服务
       ResetPasswdMiddleware,
     ]);
+
+    //acme setlogger
+    setLogger((text: string) => {
+      logger.info(text);
+    });
 
     logger.info('当前环境：', this.app.getEnv()); // prod
   }

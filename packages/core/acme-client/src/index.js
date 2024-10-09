@@ -45,3 +45,5 @@ exports.axios = require('./axios');
  */
 
 exports.setLogger = require('./logger').setLogger;
+
+exports.walkTxtRecord = require('./verify').walkTxtRecord;
