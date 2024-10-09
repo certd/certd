@@ -3,9 +3,9 @@
     <thead>
       <tr>
         <td style="width: 160px">主机记录</td>
-        <td style="width: 250px">请设置CNAME记录（设置以后不要删除）</td>
+        <td style="width: 250px">请设置CNAME记录（验证成功以后不要删除）</td>
         <td style="width: 120px" class="center">状态</td>
-        <td style="width: 80px" class="center">验证</td>
+        <td style="width: 80px" class="center">操作</td>
       </tr>
     </thead>
     <template v-for="key in domains" :key="key">

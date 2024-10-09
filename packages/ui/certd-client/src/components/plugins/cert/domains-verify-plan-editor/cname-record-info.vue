@@ -15,6 +15,7 @@
       </td>
       <td class="center">
         <a-button v-if="cnameRecord.status !== 'valid'" type="primary" size="small" :loading="loading" @click="doVerify">点击验证</a-button>
+        <div v-else class="helper">不要删除CNAME</div>
       </td>
     </tr>
   </tbody>

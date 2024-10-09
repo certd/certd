@@ -230,8 +230,10 @@ watch(
     height: 100%;
     background-color: rgba(74, 74, 74, 0.78);
     z-index: 1000;
-    padding: 100px;
     margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     .plan-wrapper {
       width: 1400px;
       margin: auto;

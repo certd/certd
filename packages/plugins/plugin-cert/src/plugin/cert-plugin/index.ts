@@ -101,7 +101,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "domains-verify-plan-editor",
     },
     required: true,
-    helper: "如果选择CNAME方式，请按照上面的显示，给域名添加CNAME记录",
+    helper: "如果选择CNAME方式，请按照上面的显示，给域名添加CNAME记录，添加后，点击验证，验证成功后不要删除记录，申请和续期证书会一直用它",
     col: {
       span: 24,
     },
