@@ -164,9 +164,27 @@ function openUpgrade() {
     okText: "激活",
     width: 900,
     content: () => {
+      let activationCodeGetWay: any = null;
+      if (settingStore.siteEnv.agent.enabled != null) {
+        const agent = settingStore.siteEnv.agent;
+        if (agent.enabled === false) {
+          activationCodeGetWay = (
+            <a href="https://afdian.com/a/greper" target="_blank">
+              爱发电赞助“VIP会员”后获取
+            </a>
+          );
+        } else {
+          activationCodeGetWay = (
+            <a href={agent.contactLink} target="_blank">
+              {agent.contactText}
+            </a>
+          );
+        }
+      }
       const vipLabel = settingStore.vipLabel;
       const slots = [];
       for (const key in vipTypeDefine) {
+        // @ts-ignore
         const item = vipTypeDefine[key];
         const vipBlockClass = `vip-block ${key === settingStore.plusInfo.vipType ? "current" : ""}`;
         slots.push(
@@ -174,7 +192,7 @@ function openUpgrade() {
             <div class={vipBlockClass}>
               <h3 class="block-header">{item.title}</h3>
               <ul>
-                {item.privilege.map((p) => (
+                {item.privilege.map((p: string) => (
                   <li>
                     <fs-icon class="color-green" icon="ion:checkmark-sharp" />
                     {p}
@@ -203,9 +221,7 @@ function openUpgrade() {
 
             <div class="mt-10">
               没有激活码？
-              <a href="https://afdian.com/a/greper" target="_blank">
-                爱发电赞助“VIP会员”后获取
-              </a>
+              {activationCodeGetWay}
             </div>
           </div>
         </div>

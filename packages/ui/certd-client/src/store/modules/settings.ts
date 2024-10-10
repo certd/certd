@@ -35,8 +35,16 @@ export interface SettingState {
   };
   siteInfo: SiteInfo;
   plusInfo?: PlusInfo;
+  siteEnv?: SiteEnv;
 }
 
+export type SiteEnv = {
+  agent?: {
+    enabled?: boolean;
+    contactText?: string;
+    contactLink?: string;
+  };
+};
 export type SiteInfo = {
   title: string;
   slogan: string;
@@ -94,7 +102,14 @@ export const useSettingStore = defineStore({
       accountServerBaseUrl: "",
       appKey: ""
     },
-    siteInfo: defaultSiteInfo
+    siteInfo: defaultSiteInfo,
+    siteEnv: {
+      agent: {
+        enabled: undefined,
+        contactText: "",
+        contactLink: ""
+      }
+    }
   }),
   getters: {
     getThemeConfig(): any {
@@ -132,6 +147,7 @@ export const useSettingStore = defineStore({
     },
     async loadSysSettings() {
       await this.loadSysPublicSettings();
+      await this.loadSiteEnv();
       await this.loadInstallInfo();
       await this.loadPlusInfo();
       await this.loadSiteInfo();
@@ -145,12 +161,16 @@ export const useSettingStore = defineStore({
       const installInfo = await basicApi.getInstallInfo();
       _.merge(this.installInfo, installInfo);
     },
+    async loadSiteEnv() {
+      const siteEnv = await basicApi.getSiteEnv();
+      _.merge(this.siteEnv, siteEnv);
+    },
     async loadPlusInfo() {
       this.plusInfo = await basicApi.getPlusInfo();
     },
     async loadSiteInfo() {
       const isComm = this.isComm;
-      let siteInfo = {};
+      let siteInfo: SiteInfo;
       if (isComm) {
         siteInfo = await basicApi.getSiteInfo();
         if (siteInfo.logo) {

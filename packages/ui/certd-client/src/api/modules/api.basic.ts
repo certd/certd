@@ -1,4 +1,5 @@
 import { request } from "../service";
+import { SiteEnv, SiteInfo } from "/@/store/modules/settings";
 
 export type SysPublicSetting = {
   registerEnabled: boolean;
@@ -24,14 +25,20 @@ export async function getInstallInfo(): Promise<SysInstallInfo> {
   });
 }
 
-export async function getSiteInfo(): Promise<SysInstallInfo> {
+export async function getSiteInfo(): Promise<SiteInfo> {
   return await request({
     url: "/basic/settings/siteInfo",
     method: "get"
   });
 }
+export async function getSiteEnv(): Promise<SiteEnv> {
+  return await request({
+    url: "/basic/settings/siteEnv",
+    method: "get"
+  });
+}
 
-export async function bindUrl(data): Promise<SysInstallInfo> {
+export async function bindUrl(data: any): Promise<any> {
   return await request({
     url: "/sys/plus/bindUrl",
     method: "post",

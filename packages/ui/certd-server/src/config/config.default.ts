@@ -115,6 +115,11 @@ const development = {
     // 仅在匹配路径到 /api/upload 的时候去解析 body 中的文件信息
     match: /\/api\/basic\/file\/upload/,
   },
+  agent: {
+    enabled: false,
+    contactText: '',
+    contactLink: '',
+  },
 } as MidwayConfig;
 mergeConfig(development, 'development');
 
