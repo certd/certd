@@ -158,7 +158,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   eabAccessId!: number;
 
   @TaskInput({
-    title: "GoogleEAB授权",
+    title: "临时EAB授权",
     component: {
       name: "access-selector",
       type: "eab",
@@ -166,7 +166,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     maybeNeed: true,
     required: false,
     helper:
-      "请查看[google获取eab帮助文档](https://github.com/certd/certd/blob/v2/doc/google/google.md)\n注意此方式获取的EAB授权是一次性的，下次申请需要重新获取授权\n推荐使用Google服务账号授权自动获取EAB",
+      "请查看[google获取eab帮助文档](https://gitee.com/certd/certd/blob/v2/doc/google/google.md)\n注意此方式获取的EAB授权是一次性的，下次申请需要重新获取授权\n推荐使用Google服务账号授权自动获取EAB",
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
@@ -178,14 +178,15 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   googleEabAccessId!: number;
 
   @TaskInput({
-    title: "Google服务账号授权",
+    title: "服务账号授权",
     component: {
       name: "access-selector",
       type: "google",
     },
     maybeNeed: true,
     required: false,
-    helper: "google服务账号授权，需要配置代理或者服务器本身在海外\n代理配置方法：配置环境变量https_proxy",
+    helper:
+      "google服务账号授权与google一次性EAB授权选填其中一个，[服务账号授权获取方法](https://gitee.com/certd/certd/blob/v2/doc/google/google.md)\n服务账号授权需要配置代理或者服务器本身在海外",
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
