@@ -23,6 +23,7 @@ export default {
 
     const pipeline = inject("pipeline") as Ref<any>;
     const currentStageIndex = inject("currentStageIndex") as Ref<number>;
+    const currentTaskIndex = inject("currentTaskIndex") as Ref<number>;
     const currentStepIndex = inject("currentStepIndex") as Ref<number>;
     const currentTask = inject("currentTask") as Ref<any>;
 
@@ -32,6 +33,7 @@ export default {
       options.value = pluginGroups.getPreStepOutputOptions({
         pipeline: pipeline.value,
         currentStageIndex: currentStageIndex.value,
+        currentTaskIndex: currentTaskIndex.value,
         currentStepIndex: currentStepIndex.value,
         currentTask: currentTask.value
       });

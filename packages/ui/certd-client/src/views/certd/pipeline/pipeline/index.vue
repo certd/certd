@@ -134,7 +134,7 @@
                           <a-tooltip>
                             <a-button type="dashed" shape="round" @click="taskAdd(stage, index)">
                               <fs-icon class="font-20" icon="ion:add-circle-outline"></fs-icon>
-                              并行任务
+                              添加任务
                             </a-button>
                           </a-tooltip>
                         </div>
