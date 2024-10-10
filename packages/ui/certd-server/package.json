@@ -8,6 +8,7 @@
     "start": "cross-env NODE_ENV=production node ./bootstrap.js",
     "dev": "cross-env NODE_ENV=local mwtsc --watch --run @midwayjs/mock/app",
     "commdev": "cross-env NODE_ENV=commdev mwtsc --watch --run @midwayjs/mock/app",
+    "commpro": "cross-env NODE_ENV=commpro mwtsc --watch --run @midwayjs/mock/app",
     "pgdev": "cross-env NODE_ENV=pgdev mwtsc --watch --run @midwayjs/mock/app",
     "test": "cross-env NODE_ENV=unittest mocha",
     "cov": "cross-env c8 --all --reporter=text --reporter=lcovonly npm run test",

@@ -1,4 +1,4 @@
-import { Config, Init, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
+import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { AppKey, PlusRequestService, verify } from '@certd/pipeline';
 import { logger } from '@certd/basic';
 import { SysInstallInfo, SysLicenseInfo, SysSettingsService } from '../../settings/index.js';
@@ -11,26 +11,26 @@ export class PlusService {
   @Config('plus.server.baseUrls')
   plusServerBaseUrls: string[];
 
-  plusRequestService: PlusRequestService;
-
-  @Init()
-  async init() {
+  async getPlusRequestService() {
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
-    this.plusRequestService = new PlusRequestService({
+    return new PlusRequestService({
       plusServerBaseUrls: this.plusServerBaseUrls,
       subjectId: installInfo.siteId,
     });
   }
 
   async requestWithoutSign(config: any) {
-    return await this.plusRequestService.requestWithoutSign(config);
+    const plusRequestService = await this.getPlusRequestService();
+    return await plusRequestService.requestWithoutSign(config);
   }
   async request(config: any) {
-    return await this.plusRequestService.request(config);
+    const plusRequestService = await this.getPlusRequestService();
+    return await plusRequestService.request(config);
   }
 
   async active(formData: { code: any; appKey: string; subjectId: string }) {
-    return await this.plusRequestService.requestWithoutSign({
+    const plusRequestService = await this.getPlusRequestService();
+    return await plusRequestService.requestWithoutSign({
       url: '/activation/active',
       method: 'post',
       data: formData,
@@ -55,16 +55,18 @@ export class PlusService {
     const licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
 
+    const plusRequestService = await this.getPlusRequestService();
     return await verify({
       subjectId: installInfo.siteId,
       license: licenseInfo.license,
-      plusRequestService: this.plusRequestService,
+      plusRequestService: plusRequestService,
       bindUrl: installInfo?.bindUrl,
     });
   }
 
   async bindUrl(subjectId: string, url: string) {
-    return await this.plusRequestService.request({
+    const plusRequestService = await this.getPlusRequestService();
+    return await plusRequestService.request({
       url: '/activation/subject/urlBind',
       data: {
         subjectId,
