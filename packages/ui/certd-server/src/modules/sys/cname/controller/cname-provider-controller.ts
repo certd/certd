@@ -52,6 +52,12 @@ export class CnameRecordController extends CrudController<CnameProviderService> 
     return super.delete(id);
   }
 
+  @Post('/deleteByIds', { summary: 'sys:settings:edit' })
+  async deleteByIds(@Body(ALL) body: { ids: number[] }) {
+    const res = await this.service.delete(body.ids);
+    return this.ok(res);
+  }
+
   @Post('/setDefault', { summary: 'sys:settings:edit' })
   async setDefault(@Body('id') id: number) {
     await this.service.setDefault(id);

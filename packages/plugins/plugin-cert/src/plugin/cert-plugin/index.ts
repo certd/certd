@@ -49,12 +49,12 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       vModel: "value",
       options: [
         { value: "dns", label: "DNS直接验证" },
-        { value: "cname", label: "CNAME间接验证" },
+        { value: "cname", label: "CNAME代理验证" },
       ],
     },
     required: true,
     helper:
-      "DNS直接验证：适合域名是在阿里云、腾讯云、华为云、Cloudflare、西数注册的，需要提供Access授权信息。\nCNAME间接验证：支持任何注册商注册的域名，并且不需要提供Access授权信息，但第一次需要手动添加CNAME记录",
+      "DNS直接验证：适合域名是在阿里云、腾讯云、华为云、Cloudflare、西数注册的，需要提供Access授权信息。\nCNAME代理验证：支持任何注册商注册的域名，并且不需要提供Access授权信息，但第一次需要手动添加CNAME记录",
   })
   challengeType!: string;
 
@@ -71,7 +71,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     }
     `,
     required: true,
-    helper: "请选择dns解析提供商，您的域名是在哪里注册的，或者域名的dns解析服务器属于哪个平台\n如果这里没有您需要的dns解析提供商，请选择CNAME间接验证校验方式",
+    helper: "请选择dns解析提供商，您的域名是在哪里注册的，或者域名的dns解析服务器属于哪个平台\n如果这里没有您需要的dns解析提供商，请选择CNAME代理验证校验方式",
   })
   dnsProviderType!: string;
 

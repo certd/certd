@@ -84,7 +84,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             }
           },
           form: {
-            helper: "CNAME域名一旦确定不可修改",
+            component: {
+              placeholder: "cname.handsfree.work"
+            },
+            helper: "CNAME域名一旦确定不可修改，建议使用一级子域名",
             rules: [{ required: true, message: "此项必填" }]
           },
           column: {

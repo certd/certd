@@ -49,6 +49,9 @@ export class CnameProviderService extends BaseService<CnameProviderEntity> {
   }
 
   async delete(ids: any) {
+    if (!ids) {
+      return;
+    }
     if (!(ids instanceof Array)) {
       ids = [ids];
     }
@@ -77,9 +80,9 @@ export class CnameProviderService extends BaseService<CnameProviderEntity> {
     if (def) {
       return def;
     }
-    const found = await this.repository.findOne({ order: { createTime: 'DESC' } });
-    if (found) {
-      return found;
+    const founds = await this.repository.find({ take: 1, order: { createTime: 'DESC' } });
+    if (founds && founds.length > 0) {
+      return founds[0];
     }
     return null;
   }
