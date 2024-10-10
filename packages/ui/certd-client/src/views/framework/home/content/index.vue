@@ -20,7 +20,7 @@
     <div class="content">
       <img src="/static/images/preview.png" class="preview_img" />
     </div>
-    <div class="footer_box">
+    <div v-if="!settingStore.isComm" class="footer_box">
       <div>如果觉得好用，请不要吝啬你的star哟！</div>
       <a href="https://gitee.com/certd/certd" target="_blank"><img src="https://gitee.com/certd/certd/badge/star.svg?theme=dark" alt="star" /></a>
       <a href="https://github.com/certd/certd" target="_blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/certd/certd?logo=github" /></a>
