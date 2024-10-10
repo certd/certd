@@ -31,7 +31,14 @@
           <!--          >-->
           <!--            Button-->
           <!--          </button>-->
-          <fs-menu class="header-menu" mode="horizontal" :expand-selected="false" :selectable="false" :menus="headerMenus" />
+          <fs-menu
+            v-if="settingStore?.siteEnv?.agent?.enabled === false"
+            class="header-menu"
+            mode="horizontal"
+            :expand-selected="false"
+            :selectable="false"
+            :menus="headerMenus"
+          />
           <div class="header-btn">
             <fs-locale />
           </div>
