@@ -47,7 +47,13 @@ function createService() {
             return dataAxios.data;
           default:
             // 不是正确的 code
-            errorCreate(`${dataAxios.msg}: ${response.config.url}`);
+            const errorMessage = dataAxios.msg;
+            // @ts-ignore
+            if (response?.config?.onError) {
+              // @ts-ignore
+              response.config.onError(new Error(errorMessage));
+            }
+            errorCreate(`${errorMessage}: ${response.config.url}`);
             return dataAxios;
         }
       }

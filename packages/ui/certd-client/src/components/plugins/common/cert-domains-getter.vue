@@ -1,3 +1,8 @@
+<template>
+  <a-select mode="tags" readonly :value="modelValue" />
+  <div>{{ errorRef }}</div>
+</template>
+
 <script setup lang="ts">
 import { inject, ref, watch } from "vue";
 
@@ -56,10 +61,5 @@ watch(
   }
 );
 </script>
-
-<template>
-  <a-select mode="tags" readonly :value="modelValue" />
-  <div>{{ errorRef }}</div>
-</template>
 
 <style lang="less"></style>

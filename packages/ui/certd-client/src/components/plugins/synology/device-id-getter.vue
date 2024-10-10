@@ -1,7 +1,7 @@
 <template>
   <div>
     <contextHolder />
-    <a-input v-bind="attrs" :value="value" :allow-clear="true" @update:value="emit('update:value', $event)">
+    <a-input :value="value" :allow-clear="true" v-bind="attrs" @update:value="emit('update:value', $event)">
       <template #suffix>
         <a-tag class="cursor-pointer" @click="getDeviceId">获取设备ID</a-tag>
       </template>
