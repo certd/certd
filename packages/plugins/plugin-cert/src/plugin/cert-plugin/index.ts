@@ -145,37 +145,18 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       type: "eab",
     },
     maybeNeed: true,
-    required: true,
-    helper: "需要提供EAB授权\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials'",
+    required: false,
+    helper:
+      "需要提供EAB授权\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials'\n Google:请查看[google获取eab帮助文档](https://gitee.com/certd/certd/blob/v2/doc/google/google.md)",
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
-            return form.sslProvider === 'zerossl'
+            return form.sslProvider === 'zerossl' || form.sslProvider === 'google'
         })
     }
     `,
   })
   eabAccessId!: number;
-
-  @TaskInput({
-    title: "临时EAB授权",
-    component: {
-      name: "access-selector",
-      type: "eab",
-    },
-    maybeNeed: true,
-    required: false,
-    helper:
-      "请查看[google获取eab帮助文档](https://gitee.com/certd/certd/blob/v2/doc/google/google.md)\n注意此方式获取的EAB授权是一次性的，下次申请需要重新获取授权\n推荐使用Google服务账号授权自动获取EAB",
-    mergeScript: `
-    return {
-        show: ctx.compute(({form})=>{
-            return form.sslProvider === 'google'
-        })
-    }
-    `,
-  })
-  googleEabAccessId!: number;
 
   @TaskInput({
     title: "服务账号授权",
@@ -186,7 +167,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     maybeNeed: true,
     required: false,
     helper:
-      "google服务账号授权与google一次性EAB授权选填其中一个，[服务账号授权获取方法](https://gitee.com/certd/certd/blob/v2/doc/google/google.md)\n服务账号授权需要配置代理或者服务器本身在海外",
+      "google服务账号授权与EAB授权选填其中一个，[服务账号授权获取方法](https://gitee.com/certd/certd/blob/v2/doc/google/google.md)\n服务账号授权需要配置代理或者服务器本身在海外",
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
@@ -248,25 +229,27 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
     if (this.sslProvider === "google") {
       if (this.googleAccessId) {
+        this.logger.info("您正在使用google服务账号授权");
         const googleAccess = await this.ctx.accessService.getById(this.googleAccessId);
         const googleClient = new GoogleClient({
           access: googleAccess,
           logger: this.logger,
         });
         eab = await googleClient.getEab();
-      } else if (this.googleEabAccessId || this.eabAccessId) {
-        this.logger.warn("您正在使用google一次性EAB授权，下次申请证书需要重新获取");
-        eab = await this.ctx.accessService.getById(this.googleEabAccessId);
+      } else if (this.eabAccessId) {
+        this.logger.info("您正在使用google EAB授权");
+        eab = await this.ctx.accessService.getById(this.eabAccessId);
       } else {
         this.logger.error("google需要配置EAB授权或服务账号授权");
         return;
       }
     } else if (this.sslProvider === "zerossl") {
       if (this.eabAccessId) {
-        this.logger.error("zerossl需要EAB授权");
+        eab = await this.ctx.accessService.getById(this.eabAccessId);
+      } else {
+        this.logger.error("zerossl需要配置EAB授权");
         return;
       }
-      eab = await this.ctx.accessService.getById(this.eabAccessId);
     }
 
     this.acme = new AcmeService({

@@ -8,8 +8,8 @@ https://console.cloud.google.com/apis/library/publicca.googleapis.com
 打开该链接后点击“启用”，随后等待右侧出现“API已启用”则可以关闭该页。
 
 ## 2、 获取授权
-以下两种方式任选其一，有代理的话，推荐选第二种
-### 2.1 直接获取一次性EAB
+以下两种方式任选其一
+### 2.1 直接获取EAB
 
 1. 打开“Google Cloud Shell”（在右上角点击激活CloudShell图标）。   
 等待分配完成后在 Shell 窗口内输入如下命令：
@@ -29,9 +29,8 @@ keyId: xxxxxxxxxxxxx]
 3. 到Certd中，创建一条EAB授权记录，填写keyId(=kid) 和 b64MacKey 信息    
    注意：keyId没有`]`结尾，不要把`]`也复制了   
 
-注意：此方式获取的EAB是一次性的，只能用于申请一次证书，优势是无需代理。   
 
-### 2.2 通过服务账号获取EAB【推荐】
+### 2.2 通过服务账号获取EAB
 
 此方式可以自动EAB，需要配置代理
 
