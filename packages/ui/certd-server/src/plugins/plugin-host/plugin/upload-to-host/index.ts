@@ -3,6 +3,7 @@ import { SshClient } from '../../lib/ssh.js';
 import { CertInfo, CertReader, CertReaderHandleContext } from '@certd/plugin-cert';
 import * as fs from 'fs';
 import { SshAccess } from '../../access/index.js';
+import dayjs from 'dayjs';
 
 @IsTaskPlugin({
   name: 'uploadCertToHost',
@@ -105,6 +106,18 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
     required: false,
   })
   script!: string;
+
+  @TaskInput({
+    title: '注入环境变量',
+    value: false,
+    component: {
+      name: 'a-switch',
+      vModel: 'checked',
+    },
+    helper: '是否将证书域名、路径等信息注入脚本执行环境变量中，具体的变量名称，可以运行后从日志中查看',
+    required: false,
+  })
+  injectEnv!: string;
 
   @TaskOutput({
     title: '证书保存路径',
@@ -233,10 +246,28 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
       const connectConf: SshAccess = await this.accessService.getById(accessId);
       const sshClient = new SshClient(this.logger);
       this.logger.info('执行脚本命令');
+
+      //环境变量
+      const env = {};
+      if (this.injectEnv) {
+        const domains = certReader.getAllDomains();
+        for (let i = 0; i < domains.length; i++) {
+          env[`CERT_DOMAIN_${i}`] = domains[i];
+        }
+        env['CERT_EXPIRES'] = dayjs(certReader.getCrtDetail().expires).unix();
+
+        env['HOST_CRT_PATH'] = this.hostCrtPath || '';
+        env['HOST_KEY_PATH'] = this.hostKeyPath || '';
+        env['HOST_IC_PATH'] = this.hostIcPath || '';
+        env['HOST_PFX_PATH'] = this.hostPfxPath || '';
+        env['HOST_DER_PATH'] = this.hostDerPath || '';
+      }
+
       const scripts = this.script.split('\n');
       await sshClient.exec({
         connectConf,
         script: scripts,
+        env,
       });
     }
   }

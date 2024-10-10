@@ -1,5 +1,5 @@
 // @ts-ignore
-import ssh2, { ConnectConfig } from 'ssh2';
+import ssh2, { ConnectConfig, ExecOptions } from 'ssh2';
 import path from 'path';
 import * as _ from 'lodash-es';
 import { ILogger } from '@certd/pipeline';
@@ -269,7 +269,7 @@ export class SshClient {
    * Set-ItemProperty -Path "HKLM:\SOFTWARE\OpenSSH" -Name DefaultShell -Value "C:\Windows\System32\cmd.exe"
    * @param options
    */
-  async exec(options: { connectConf: SshAccess; script: string | Array<string> }) {
+  async exec(options: { connectConf: SshAccess; script: string | Array<string>; env?: any }): Promise<string[]> {
     let { script } = options;
     const { connectConf } = options;
 
@@ -278,20 +278,41 @@ export class SshClient {
       connectConf,
       callable: async (conn: AsyncSsh2Client) => {
         let isWinCmd = false;
+        const isLinux = !connectConf.windows;
+        const envScripts = [];
         if (connectConf.windows) {
           isWinCmd = await this.isCmd(conn);
         }
+
+        if (options.env) {
+          for (const key in options.env) {
+            if (isLinux) {
+              envScripts.push(`export ${key}=${options.env[key]}`);
+            } else if (isWinCmd) {
+              //win cmd
+              envScripts.push(`set ${key}=${options.env[key]}`);
+            } else {
+              //powershell
+              envScripts.push(`$env:${key}="${options.env[key]}"`);
+            }
+          }
+        }
+
         if (isWinCmd) {
           //组合成&&的形式
           if (typeof script === 'string') {
             script = script.split('\n');
           }
+          script = envScripts.concat(script);
           script = script as Array<string>;
           script = script.join(' && ');
         } else {
           if (_.isArray(script)) {
             script = script as Array<string>;
             script = script.join('\n');
+          }
+          if (envScripts.length > 0) {
+            script = envScripts.join('\n') + '\n' + script;
           }
         }
         await conn.exec(script);
