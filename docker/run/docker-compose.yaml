@@ -22,11 +22,11 @@ services:
       #  ↓↓↓↓ ---------------------------------------------------------- 这里可以配置自定义hosts，外网域名可以指向本地局域网ip地址
 #      - "localdomain.comm:192.168.1.3"
     environment: # 环境变量
+      - TZ=Asia/Shanghai
       # 设置环境变量即可自定义certd配置
       # 配置项见： packages/ui/certd-server/src/config/config.default.ts
       # 配置规则： certd_ + 配置项, 点号用_代替
 
-      - TZ=Asia/Shanghai
                            #  ↓↓↓↓  ------------------------------------ 这里可以设置http代理
       #- HTTPS_PROXY=http://xxxxxx:xx
       #- HTTP_PROXY=http://xxxxxx:xx
