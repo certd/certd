@@ -19,7 +19,7 @@ export class GoogleClient {
     const credentials = JSON.parse(access.serviceAccountSecret);
 
     const client = new v1.PublicCertificateAuthorityServiceClient({ credentials });
-    const parent = `projects/${credentials.projectId}/locations/global`;
+    const parent = `projects/${credentials.project_id}/locations/global`;
     const externalAccountKey = {};
     const request = {
       parent,
