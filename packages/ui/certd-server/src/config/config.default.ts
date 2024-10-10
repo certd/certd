@@ -37,6 +37,12 @@ const development = {
           '/': '/index.html',
         },
       },
+      // '/index.html': {
+      //   maxAge: 0,
+      // },
+      // '/': {
+      //   maxAge: 0,
+      // },
     },
   },
   cron: {

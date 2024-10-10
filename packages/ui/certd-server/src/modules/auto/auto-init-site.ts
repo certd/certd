@@ -54,7 +54,11 @@ export class AutoInitSite {
     }
 
     // 授权许可
-    await this.plusService.verify();
+    try {
+      await this.plusService.verify();
+    } catch (e) {
+      logger.error('授权许可验证失败', e);
+    }
 
     logger.info('初始化站点完成');
   }
