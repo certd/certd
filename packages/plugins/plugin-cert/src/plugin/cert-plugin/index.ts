@@ -5,6 +5,7 @@ import _ from "lodash-es";
 import { createDnsProvider, DnsProviderContext, IDnsProvider } from "../../dns-provider/index.js";
 import { CertReader } from "./cert-reader.js";
 import { CertApplyBasePlugin } from "./base.js";
+import { GoogleClient } from "../../libs/google.js";
 
 export type { CertInfo };
 export * from "./cert-reader.js";
@@ -145,17 +146,55 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     },
     maybeNeed: true,
     required: true,
-    helper:
-      "需要提供EAB授权\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials' \n Google：请查看[google获取eab帮助文档](https://github.com/certd/certd/blob/v2/doc/google/google.md)",
+    helper: "需要提供EAB授权\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials'",
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
-            return form.sslProvider === 'zerossl' || form.sslProvider === 'google'
+            return form.sslProvider === 'zerossl'
         })
     }
     `,
   })
   eabAccessId!: number;
+
+  @TaskInput({
+    title: "GoogleEAB授权",
+    component: {
+      name: "access-selector",
+      type: "eab",
+    },
+    maybeNeed: true,
+    required: false,
+    helper:
+      "请查看[google获取eab帮助文档](https://github.com/certd/certd/blob/v2/doc/google/google.md)\n注意此方式获取的EAB授权是一次性的，下次申请需要重新获取授权\n推荐使用Google服务账号授权自动获取EAB",
+    mergeScript: `
+    return {
+        show: ctx.compute(({form})=>{
+            return form.sslProvider === 'google'
+        })
+    }
+    `,
+  })
+  googleEabAccessId!: number;
+
+  @TaskInput({
+    title: "Google服务账号授权",
+    component: {
+      name: "access-selector",
+      type: "google",
+    },
+    maybeNeed: true,
+    required: false,
+    helper: "google服务账号授权，需要配置代理或者服务器本身在海外\n代理配置方法：配置环境变量https_proxy",
+    mergeScript: `
+    return {
+        show: ctx.compute(({form})=>{
+            return form.sslProvider === 'google'
+        })
+    }
+    `,
+  })
+  googleAccessId!: number;
 
   @TaskInput({
     title: "加密算法",
@@ -205,9 +244,30 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
   async onInit() {
     let eab: any = null;
-    if (this.eabAccessId) {
+
+    if (this.sslProvider === "google") {
+      if (this.googleAccessId) {
+        const googleAccess = await this.ctx.accessService.getById(this.googleAccessId);
+        const googleClient = new GoogleClient({
+          access: googleAccess,
+          logger: this.logger,
+        });
+        eab = await googleClient.getEab();
+      } else if (this.googleEabAccessId || this.eabAccessId) {
+        this.logger.warn("您正在使用google一次性EAB授权，下次申请证书需要重新获取");
+        eab = await this.ctx.accessService.getById(this.googleEabAccessId);
+      } else {
+        this.logger.error("google需要配置EAB授权或服务账号授权");
+        return;
+      }
+    } else if (this.sslProvider === "zerossl") {
+      if (this.eabAccessId) {
+        this.logger.error("zerossl需要EAB授权");
+        return;
+      }
       eab = await this.ctx.accessService.getById(this.eabAccessId);
     }
+
     this.acme = new AcmeService({
       userContext: this.userContext,
       logger: this.logger,
