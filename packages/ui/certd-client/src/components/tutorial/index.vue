@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import TutorialSteps from "/@/components/tutorial/tutorial-steps.vue";
+import { useSettingStore } from "/@/store/modules/settings";
 const openedRef = ref(false);
 function open() {
   openedRef.value = true;
@@ -14,10 +15,12 @@ function prev() {
 function next() {
   console.log("next");
 }
+
+const settingStore = useSettingStore();
 </script>
 
 <template>
-  <div class="tutorial-button" @click="open">
+  <div v-if="!settingStore.isComm" class="tutorial-button" @click="open">
     <fs-icon icon="mingcute:question-line"></fs-icon>
     <div class="ml-5">使用教程</div>
     <a-modal v-model:open="openedRef" class="tutorial-modal" width="90%">

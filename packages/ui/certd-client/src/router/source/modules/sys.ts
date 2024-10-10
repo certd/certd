@@ -83,6 +83,7 @@ export const sysResources = [
         path: "/sys/settings/email",
         component: "/sys/settings/email-setting.vue",
         meta: {
+          permission: "sys:settings:view",
           icon: "ion:mail-outline",
           auth: true
         }

@@ -32,7 +32,7 @@
           <!--            Button-->
           <!--          </button>-->
           <fs-menu
-            v-if="settingStore?.siteEnv?.agent?.enabled === false || !settingStore.isComm"
+            v-if="settingStore?.siteEnv?.agent?.enabled === false && !settingStore.isComm"
             class="header-menu"
             mode="horizontal"
             :expand-selected="false"
