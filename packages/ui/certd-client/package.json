@@ -10,6 +10,7 @@
     "debug:pm": "vite --mode debugpm",
     "debug:force": "vite --force --mode debug",
     "build": " vite build ",
+    "dev-build": "echo 1",
     "serve": "vite preview",
     "preview": "vite preview",
     "pretty-quick": "pretty-quick",

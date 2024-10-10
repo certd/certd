@@ -9,6 +9,7 @@
   "scripts": {
     "before-build": "rimraf dist && rimraf tsconfig.tsbuildinfo && rimraf .rollup.cache",
     "build": "npm run before-build && tsc --skipLibCheck",
+    "dev-build": "npm run build",
     "test": "midway-bin test --ts -V",
     "test1": "midway-bin test --ts -V -f test/blank.test.ts -t 'hash-check'",
     "cov": "midway-bin cov --ts",
