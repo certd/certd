@@ -26,7 +26,7 @@ export class WoaiCdnPlugin extends AbstractTaskPlugin {
     title: '域名证书',
     helper: '请选择前置任务输出的域名证书',
     component: {
-      name: 'pi-output-selector',
+      name: 'output-selector',
       from: ['CertApply', 'CertApplyLego'],
     },
     required: true,
@@ -36,7 +36,7 @@ export class WoaiCdnPlugin extends AbstractTaskPlugin {
     title: 'Access授权',
     helper: '我爱云的用户、密码授权',
     component: {
-      name: 'pi-access-selector',
+      name: 'access-selector',
       type: 'woai',
     },
     required: true,
