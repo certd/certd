@@ -51,7 +51,7 @@ const siteInfo: Ref<SiteInfo> = computed(() => {
 });
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
 #userLayout.user-layout-wrapper {
   height: 100%;
 
@@ -66,7 +66,7 @@ const siteInfo: Ref<SiteInfo> = computed(() => {
 
   .login-container {
     width: 100%;
-    min-height: 100%;
+    height: 100%;
     background: #f0f2f5 url(/static/background.svg) no-repeat 50%;
     background-size: 100%;
     //padding: 50px 0 84px;
@@ -74,8 +74,10 @@ const siteInfo: Ref<SiteInfo> = computed(() => {
 
     .user-layout-content {
       padding: 32px 0 24px;
+      height: 100%;
 
       .top {
+        margin-top: 100px;
         text-align: center;
         display: flex;
         flex-direction: column;
@@ -119,8 +121,9 @@ const siteInfo: Ref<SiteInfo> = computed(() => {
       }
 
       .main {
-        min-width: 300px;
-        width: 94%;
+        width: 400px;
+        max-width: 90vw;
+        flex: 1;
       }
 
       .footer {
