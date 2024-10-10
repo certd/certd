@@ -169,9 +169,12 @@ function openUpgrade() {
         const agent = settingStore.siteEnv.agent;
         if (agent.enabled === false) {
           activationCodeGetWay = (
-            <a href="https://afdian.com/a/greper" target="_blank">
-              爱发电赞助“VIP会员”后获取
-            </a>
+            <span>
+              <a href="https://afdian.com/a/greper" target="_blank">
+                爱发电赞助“VIP会员”后获取专业版
+              </a>
+              <span> 商业版请直接联系作者</span>
+            </span>
           );
         } else {
           activationCodeGetWay = (
