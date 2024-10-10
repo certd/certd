@@ -18,6 +18,7 @@ import * as libServer from '@certd/lib-server';
 import * as commercial from '@certd/commercial-core';
 import * as upload from '@midwayjs/upload';
 import { setLogger } from '@certd/acme-client';
+import { IMidwayKoaContext, NextFunction } from '@midwayjs/koa';
 process.on('uncaughtException', error => {
   console.error('未捕获的异常：', error);
   // 在这里可以添加日志记录、发送错误通知等操作
@@ -61,6 +62,15 @@ export class MainConfiguration {
         origin: '*',
       })
     );
+    //
+    // this.app.use(async (ctx, next) => {
+    //   // 只在返回 'index.html' 的时候设置 maxAge
+    //   if (ctx.path === '/') {
+    //     // ctx.response.redirect('/index.html');
+    //     ctx.send(file)
+    //     return;
+    //   }
+    // });
     // bodyparser options see https://github.com/koajs/bodyparser
     //this.app.use(bodyParser());
     //请求日志打印
@@ -75,6 +85,13 @@ export class MainConfiguration {
       //resetPasswd,重置密码模式下不提供服务
       ResetPasswdMiddleware,
     ]);
+
+    this.app.getMiddleware().insertFirst(async (ctx: IMidwayKoaContext, next: NextFunction) => {
+      await next();
+      if (ctx.path === '/' || ctx.path === '/index.html') {
+        ctx.response.set('Cache-Control', 'public,max-age=180');
+      }
+    });
 
     //acme setlogger
     setLogger((text: string) => {

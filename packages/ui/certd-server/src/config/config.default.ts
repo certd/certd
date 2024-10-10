@@ -4,7 +4,6 @@ import { MidwayConfig } from '@midwayjs/core';
 // import { fileURLToPath } from 'node:url';
 // // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = dirname(fileURLToPath(import.meta.url));
-
 // eslint-disable-next-line node/no-extraneous-import
 import { FlywayHistory } from '@certd/midway-flyway-js';
 import { UserEntity } from '../modules/sys/authority/entity/user.js';
@@ -15,8 +14,9 @@ import { mergeConfig } from './loader.js';
 import { libServerEntities } from '@certd/lib-server';
 import { commercialEntities } from '@certd/commercial-core';
 import { tmpdir } from 'node:os';
-import { uploadWhiteList, DefaultUploadFileMimeType } from '@midwayjs/upload';
+import { DefaultUploadFileMimeType, uploadWhiteList } from '@midwayjs/upload';
 import path from 'path';
+
 const env = process.env.NODE_ENV || 'development';
 
 const development = {
@@ -27,7 +27,7 @@ const development = {
   staticFile: {
     usePrecompiledGzip: true,
     buffer: true,
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+    maxAge: 30 * 24 * 60 * 60,
     gzip: true,
     dirs: {
       default: {
@@ -35,14 +35,10 @@ const development = {
         dir: 'public',
         alias: {
           '/': '/index.html',
+          '\\': '/index.html',
         },
+        maxFiles: 200,
       },
-      // '/index.html': {
-      //   maxAge: 0,
-      // },
-      // '/': {
-      //   maxAge: 0,
-      // },
     },
   },
   cron: {
