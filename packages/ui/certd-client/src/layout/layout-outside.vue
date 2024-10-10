@@ -73,7 +73,6 @@ const siteInfo: Ref<SiteInfo> = computed(() => {
     position: relative;
 
     .user-layout-content {
-      padding: 32px 0 24px;
       height: 100%;
 
       .top {
