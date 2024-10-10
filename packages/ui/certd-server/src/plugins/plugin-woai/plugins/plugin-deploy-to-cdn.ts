@@ -1,13 +1,13 @@
-import {AbstractTaskPlugin, HttpClient, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput} from '@certd/pipeline';
-import {CertInfo} from '@certd/plugin-cert';
-import {WoaiAccess} from '../access.js';
+import { AbstractTaskPlugin, HttpClient, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
+import { CertInfo } from '@certd/plugin-cert';
+import { WoaiAccess } from '../access.js';
 
 @IsTaskPlugin({
-  name: 'woaiCloud',
+  name: 'WoaiCDN',
   title: '部署证书到我爱云 CDN',
   desc: '部署证书到我爱云CDN',
   icon: 'clarity:plugin-line',
-  group: pluginGroups.other.key,
+  group: pluginGroups.cdn.key,
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -17,8 +17,8 @@ import {WoaiAccess} from '../access.js';
 export class WoaiCdnPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: '证书ID',
-    helper: '请填写 <a href="https://console.edge.51vs.club/site/certificate" target="_blank">证书列表</a> 中的证书的ID',
-    component: {name: 'a-input'},
+    helper: '请填写 [证书列表](https://console.edge.51vs.club/site/certificate) 中的证书的ID',
+    component: { name: 'a-input' },
     required: true,
   })
   certId!: string;
@@ -52,7 +52,7 @@ export class WoaiCdnPlugin extends AbstractTaskPlugin {
   private async doRequestApi(url: string, data: any = null, method = 'post', token: string | null = null) {
     const headers = {
       'Content-Type': 'application/json',
-      ...(token ? {'Token': token} : {}),
+      ...(token ? { Token: token } : {}),
     };
     const res = await this.http.request<any, any>({
       url,
@@ -67,7 +67,7 @@ export class WoaiCdnPlugin extends AbstractTaskPlugin {
   }
 
   async execute(): Promise<void> {
-    const {certId, cert, accessId} = this;
+    const { certId, cert, accessId } = this;
     const access = (await this.accessService.getById(accessId)) as WoaiAccess;
     // 登录获取token
     const loginResponse = await this.doRequestApi(`${this.baseApi}/account/login`, {
