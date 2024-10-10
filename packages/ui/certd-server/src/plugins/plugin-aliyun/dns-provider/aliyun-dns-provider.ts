@@ -119,7 +119,7 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
   }
 
   resolveError(e: any, req: CreateRecordOptions) {
-    if (e.Message.indexOf('The specified domain name does not exist') > -1) {
+    if (e.message?.indexOf('The specified domain name does not exist') > -1) {
       throw new Error(`阿里云账号中不存在此域名:${req.domain}`);
     }
     throw e;
