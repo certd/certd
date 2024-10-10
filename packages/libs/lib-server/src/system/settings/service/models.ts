@@ -54,3 +54,11 @@ export class SysSiteInfo extends BaseSettings {
   logo?: string;
   loginLogo?: string;
 }
+
+export class SysSiteEnv {
+  agent?: {
+    enabled?: boolean;
+    contactText?: string;
+    contactLink?: string;
+  };
+}

@@ -40,6 +40,7 @@ type AcmeServiceOptions = {
   eab?: ClientExternalAccountBindingOptions;
   skipLocalVerify?: boolean;
   useMappingProxy?: boolean;
+  reverseProxy?: string;
   privateKeyType?: PrivateKeyType;
   signal?: AbortSignal;
 };
@@ -91,8 +92,8 @@ export class AcmeService {
     const urlMapping: UrlMapping = {
       enabled: false,
       mappings: {
-        "acme-v02.api.letsencrypt.org": "letsencrypt.proxy.handsfree.work",
-        "dv.acme-v02.api.pki.goog": "google.proxy.handsfree.work",
+        "acme-v02.api.letsencrypt.org": this.options.reverseProxy || "letsencrypt.proxy.handsfree.work",
+        "dv.acme-v02.api.pki.goog": this.options.reverseProxy || "google.proxy.handsfree.work",
       },
     };
     const conf = await this.getAccountConfig(email, urlMapping);

@@ -18,9 +18,17 @@ export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
   @TaskInput({
     title: 'CDN加速域名',
     helper: '你在七牛云上配置的CDN加速域名，比如:certd.handsfree.work',
+    component: {
+      name: 'a-select',
+      vModel: 'value',
+      mode: 'tags',
+      open: false,
+      tokenSeparators: [',', ' ', '，', '、', '|'],
+    },
+    rules: [{ type: 'domains' }],
     required: true,
   })
-  domainName!: string;
+  domainName!: string | string[];
 
   @TaskInput({
     title: '域名证书',
@@ -52,7 +60,7 @@ export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
       http: this.ctx.http,
       access,
     });
-    const url = `https://api.qiniu.com/domain/${this.domainName}/httpsconf`;
+
     let certId = null;
     if (typeof this.cert !== 'string') {
       // 是证书id，直接上传即可
@@ -62,13 +70,17 @@ export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
       certId = this.cert;
     }
 
-    //开始修改证书
-    this.logger.info(`开始修改证书,certId:${certId},domain:${this.domainName}`);
-    const body = {
-      certID: certId,
-    };
-
-    await qiniuClient.doRequest(url, 'put', body);
+    const domains: string[] = typeof this.domainName === 'string' ? [this.domainName] : this.domainName;
+    for (const domain of domains) {
+      //开始修改证书
+      this.logger.info(`开始修改证书,certId:${certId},domain:${domain}`);
+      const body = {
+        certID: certId,
+      };
+      const url = `https://api.qiniu.com/domain/${domain}/httpsconf`;
+      await qiniuClient.doRequest(url, 'put', body);
+      this.logger.info(`修改证书成功,certId:${certId},domain:${domain}`);
+    }
 
     this.logger.info('部署完成');
   }

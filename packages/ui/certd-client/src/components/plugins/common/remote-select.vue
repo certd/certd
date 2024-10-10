@@ -1,6 +1,28 @@
+<template>
+  <div class="remote-select">
+    <div class="flex flex-row">
+      <a-select
+        class="remote-select-input"
+        show-search
+        :filter-option="filterOption"
+        :options="optionsRef"
+        :value="value"
+        v-bind="attrs"
+        @click="onClick"
+        @update:value="emit('update:value', $event)"
+      />
+      <div class="ml-5">
+        <fs-button title="刷新选项" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
+      </div>
+    </div>
+    <div class="helper error">
+      {{ message }}
+    </div>
+  </div>
+</template>
 <script setup lang="ts">
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
-import { ref, watch } from "vue";
+import { ref, useAttrs, watch } from "vue";
 
 defineOptions({
   name: "RemoteSelect"
@@ -16,6 +38,8 @@ const emit = defineEmits<{
   "update:value": any;
 }>();
 
+const attrs = useAttrs();
+
 const optionsRef = ref([]);
 const message = ref("");
 const getOptions = async () => {
@@ -27,8 +51,8 @@ const getOptions = async () => {
       input: props.form
     },
     {
-      onError(err) {
-        message.value = err.message;
+      onError(err: any) {
+        message.value = `获取选项出错：${err.message}`;
       }
     }
   );
@@ -44,6 +68,10 @@ async function onClick() {
     return;
   }
   isFirst = false;
+  await refreshOptions();
+}
+
+async function refreshOptions() {
   optionsRef.value = await getOptions();
 }
 
@@ -63,22 +91,5 @@ watch(
   }
 );
 </script>
-
-<template>
-  <div>
-    <a-select
-      class="remote-select"
-      show-search
-      :filter-option="filterOption"
-      :options="optionsRef"
-      :value="value"
-      @click="onClick"
-      @update:value="emit('update:value', $event)"
-    />
-    <div class="helper">
-      {{ message }}
-    </div>
-  </div>
-</template>
 
 <style lang="less"></style>

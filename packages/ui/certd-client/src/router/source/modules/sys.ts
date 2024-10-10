@@ -73,7 +73,7 @@ export const sysResources = [
         path: "/sys/cname/provider",
         component: "/sys/cname/provider/index.vue",
         meta: {
-          icon: "ion:settings-outline",
+          icon: "ion:earth-outline",
           permission: "sys:settings:view"
         }
       },

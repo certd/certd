@@ -62,9 +62,10 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/save', { summary: Constants.per.authOnly })
   async save(@Body(ALL) bean: PipelineEntity) {
-    bean.userId = this.getUserId();
     if (bean.id > 0) {
       await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
+    } else {
+      bean.userId = this.getUserId();
     }
     await this.service.save(bean);
     return this.ok(bean.id);

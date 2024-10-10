@@ -1,5 +1,5 @@
 import { ALL, Body, Config, Controller, Get, Inject, Provide } from '@midwayjs/core';
-import { BaseController, Constants, SysInstallInfo, SysPublicSettings, SysSettingsService, SysSiteInfo } from '@certd/lib-server';
+import { BaseController, Constants, SysInstallInfo, SysPublicSettings, SysSettingsService, SysSiteEnv, SysSiteInfo } from '@certd/lib-server';
 import { AppKey, getPlusInfo } from '@certd/pipeline';
 
 /**
@@ -11,6 +11,9 @@ export class BasicSettingsController extends BaseController {
   sysSettingsService: SysSettingsService;
   @Config('account.server.baseUrl')
   accountServerBaseUrl: any;
+
+  @Config('agent')
+  agentConfig: SysSiteEnv['agent'];
 
   @Get('/public', { summary: Constants.per.guest })
   public async getSysPublic() {
@@ -30,6 +33,14 @@ export class BasicSettingsController extends BaseController {
   public async getSiteInfo() {
     const settings: SysSiteInfo = await this.sysSettingsService.getSetting(SysSiteInfo);
     return this.ok(settings);
+  }
+
+  @Get('/siteEnv', { summary: Constants.per.guest })
+  public async getSiteEnv() {
+    const env: SysSiteEnv = {
+      agent: this.agentConfig,
+    };
+    return this.ok(env);
   }
 
   @Get('/plusInfo', { summary: Constants.per.guest })

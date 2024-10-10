@@ -6,7 +6,7 @@
       </div>
     </div>
     <p class="d2-page-cover__sub-title">{{ siteInfo.slogan }}</p>
-    <div v-if="siteInfo.warningOff !== true" class="warning">
+    <div v-if="siteInfo.warningOff !== true && settingStore.siteEnv?.agent?.enabled === false" class="warning">
       <a-alert type="warning" show-icon>
         <template #description>
           <div class="flex">

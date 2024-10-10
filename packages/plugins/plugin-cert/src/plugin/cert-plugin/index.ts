@@ -5,6 +5,7 @@ import _ from "lodash-es";
 import { createDnsProvider, DnsProviderContext, IDnsProvider } from "../../dns-provider/index.js";
 import { CertReader } from "./cert-reader.js";
 import { CertApplyBasePlugin } from "./base.js";
+import { GoogleClient } from "../../libs/google.js";
 
 export type { CertInfo };
 export * from "./cert-reader.js";
@@ -144,9 +145,9 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       type: "eab",
     },
     maybeNeed: true,
-    required: true,
+    required: false,
     helper:
-      "需要提供EAB授权\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials' \n Google：请查看[google获取eab帮助文档](https://github.com/certd/certd/blob/v2/doc/google/google.md)",
+      "需要提供EAB授权\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials'\n Google:请查看[google获取eab帮助文档](https://gitee.com/certd/certd/blob/v2/doc/google/google.md)，用过一次后会绑定邮箱，后续复用EAB要用同一个邮箱",
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
@@ -156,6 +157,26 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     `,
   })
   eabAccessId!: number;
+
+  @TaskInput({
+    title: "服务账号授权",
+    component: {
+      name: "access-selector",
+      type: "google",
+    },
+    maybeNeed: true,
+    required: false,
+    helper:
+      "google服务账号授权与EAB授权选填其中一个，[服务账号授权获取方法](https://gitee.com/certd/certd/blob/v2/doc/google/google.md)\n服务账号授权需要配置代理或者服务器本身在海外",
+    mergeScript: `
+    return {
+        show: ctx.compute(({form})=>{
+            return form.sslProvider === 'google'
+        })
+    }
+    `,
+  })
+  googleAccessId!: number;
 
   @TaskInput({
     title: "加密算法",
@@ -191,6 +212,15 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   useProxy = false;
 
   @TaskInput({
+    title: "自定义反代地址",
+    component: {
+      placeholder: "google.yourproxy.com",
+    },
+    helper: "填写你的自定义反代地址，不要带http://\nletsencrypt反代目标：acme-v02.api.letsencrypt.org\ngoogle反代目标：dv.acme-v02.api.pki.goog",
+  })
+  reverseProxy = "";
+
+  @TaskInput({
     title: "跳过本地校验DNS",
     value: false,
     component: {
@@ -205,9 +235,32 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
   async onInit() {
     let eab: any = null;
-    if (this.eabAccessId) {
-      eab = await this.ctx.accessService.getById(this.eabAccessId);
+
+    if (this.sslProvider === "google") {
+      if (this.googleAccessId) {
+        this.logger.info("您正在使用google服务账号授权");
+        const googleAccess = await this.ctx.accessService.getById(this.googleAccessId);
+        const googleClient = new GoogleClient({
+          access: googleAccess,
+          logger: this.logger,
+        });
+        eab = await googleClient.getEab();
+      } else if (this.eabAccessId) {
+        this.logger.info("您正在使用google EAB授权");
+        eab = await this.ctx.accessService.getById(this.eabAccessId);
+      } else {
+        this.logger.error("google需要配置EAB授权或服务账号授权");
+        return;
+      }
+    } else if (this.sslProvider === "zerossl") {
+      if (this.eabAccessId) {
+        eab = await this.ctx.accessService.getById(this.eabAccessId);
+      } else {
+        this.logger.error("zerossl需要配置EAB授权");
+        return;
+      }
     }
+
     this.acme = new AcmeService({
       userContext: this.userContext,
       logger: this.logger,
@@ -215,6 +268,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       eab,
       skipLocalVerify: this.skipLocalVerify,
       useMappingProxy: this.useProxy,
+      reverseProxy: this.reverseProxy,
       privateKeyType: this.privateKeyType,
       // cnameProxyService: this.ctx.cnameProxyService,
       // dnsProviderCreator: this.createDnsProvider.bind(this),

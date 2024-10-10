@@ -118,10 +118,11 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const isUpdate = bean.id > 0 && old != null;
     if (!isPlus()) {
       let count = await this.repository.count();
-      if (isUpdate) {
-        count -= 1;
+      if (!isUpdate) {
+        //如果是添加要加1
+        count += 1;
       }
-      if (count >= freeCount) {
+      if (count > freeCount) {
         throw new NeedVIPException('免费版最多只能创建10个pipeline');
       }
     }

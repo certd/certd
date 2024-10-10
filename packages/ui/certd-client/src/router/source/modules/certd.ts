@@ -52,7 +52,7 @@ export const certdResources = [
         path: "/certd/cname/record",
         component: "/certd/cname/record/index.vue",
         meta: {
-          icon: "ion:disc-outline",
+          icon: "ion:link-outline",
           auth: true
         }
       },

@@ -75,10 +75,11 @@ export class PluginGroups {
     return this.map[name];
   }
 
-  getPreStepOutputOptions({ pipeline, currentStageIndex, currentStepIndex, currentTask }: any) {
+  getPreStepOutputOptions({ pipeline, currentStageIndex, currentTaskIndex, currentStepIndex, currentTask }: any) {
     const steps = this.collectionPreStepOutputs({
       pipeline,
       currentStageIndex,
+      currentTaskIndex,
       currentStepIndex,
       currentTask
     });
@@ -96,7 +97,7 @@ export class PluginGroups {
     return options;
   }
 
-  collectionPreStepOutputs({ pipeline, currentStageIndex, currentStepIndex, currentTask }: any) {
+  collectionPreStepOutputs({ pipeline, currentStageIndex, currentTaskIndex, currentStepIndex, currentTask }: any) {
     const steps: any[] = [];
     // 开始放step
     for (let i = 0; i < currentStageIndex; i++) {
@@ -105,6 +106,14 @@ export class PluginGroups {
         for (const step of task.steps) {
           steps.push(step);
         }
+      }
+    }
+    //当前阶段之前的task
+    const currentStage = pipeline.stages[currentStageIndex];
+    for (let i = 0; i < currentTaskIndex; i++) {
+      const task = currentStage.tasks[i];
+      for (const step of task.steps) {
+        steps.push(step);
       }
     }
     //放当前任务下的step

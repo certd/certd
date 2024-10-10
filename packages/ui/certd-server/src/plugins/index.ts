@@ -10,3 +10,4 @@ export * from './plugin-west/index.js';
 export * from './plugin-doge/index.js';
 export * from './plugin-qiniu/index.js';
 export * from './plugin-jdcloud/index.js';
+export * from './plugin-woai/index.js';

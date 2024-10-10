@@ -69,7 +69,7 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
                 return (
                   <ul>
                     <li>JS-ACME：使用简单方便，功能强大【推荐】</li>
-                    <li>Lego-ACME：基于Lego实现，支持海量DNS提供商，熟悉LEGO的用户可以使用【即将废弃】</li>
+                    <li>Lego-ACME：基于Lego实现，支持海量DNS提供商，熟悉LEGO的用户可以使用</li>
                   </ul>
                 );
               }
