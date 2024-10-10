@@ -1,6 +1,6 @@
 {
   "name": "@certd/lib-server",
-  "version": "1.25.9",
+  "version": "1.26.0",
   "description": "midway with flyway, sql upgrade way ",
   "private": false,
   "type": "module",
@@ -26,25 +26,22 @@
   ],
   "license": "AGPL",
   "dependencies": {
-    "@certd/basic": "^1.25.9",
-    "@certd/pipeline": "^1.25.9",
+    "@certd/basic": "^1.26.0",
+    "@certd/pipeline": "^1.26.0",
+    "@midwayjs/cache": "~3.14.0",
     "@midwayjs/core": "~3.17.1",
     "@midwayjs/i18n": "~3.17.3",
     "@midwayjs/info": "~3.17.3",
     "@midwayjs/koa": "~3.17.1",
     "@midwayjs/logger": "~3.4.2",
     "@midwayjs/typeorm": "~3.17.1",
-    "@midwayjs/cache": "~3.14.0",
     "@midwayjs/upload": "^3.17.3",
     "better-sqlite3": "^11.1.2",
-    "typeorm": "^0.3.20",
-    "lodash-es":  "^4.17.21",
-    "dayjs": "^1.11.7"
-
+    "dayjs": "^1.11.7",
+    "lodash-es": "^4.17.21",
+    "typeorm": "^0.3.20"
   },
   "devDependencies": {
-    "mwts": "^1.3.0",
-    "mwtsc": "^1.4.0",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
@@ -60,6 +57,8 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "mwts": "^1.3.0",
+    "mwtsc": "^1.4.0",
     "prettier": "^2.8.8",
     "rimraf": "^5.0.5",
     "rollup": "^3.7.4",
