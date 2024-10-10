@@ -59,7 +59,10 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
         show: false
       },
       column: {
-        width: 120
+        width: 200,
+        component: {
+          color: "auto"
+        }
       },
       form: {
         component: {

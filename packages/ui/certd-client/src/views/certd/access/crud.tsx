@@ -51,7 +51,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           key: "id",
           type: "number",
           column: {
-            width: 50
+            width: 100
           },
           form: {
             show: false
@@ -65,6 +65,9 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
           form: {
             rules: [{ required: true, message: "必填项" }]
+          },
+          column: {
+            width: 300
           }
         },
         ...commonColumnsDefine
