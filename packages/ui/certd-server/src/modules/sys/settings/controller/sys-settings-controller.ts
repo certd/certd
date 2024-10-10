@@ -1,11 +1,10 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
-import { CrudController, SysEmailConf } from '@certd/lib-server';
-import { SysSettingsService } from '@certd/lib-server';
+import { CrudController, SysPublicSettings, SysSettingsService } from '@certd/lib-server';
 import { SysSettingsEntity } from '../entity/sys-settings.js';
-import { SysPublicSettings } from '@certd/lib-server';
 import * as _ from 'lodash-es';
 import { PipelineService } from '../../../pipeline/service/pipeline-service.js';
 import { UserSettingsService } from '../../../mine/service/user-settings-service.js';
+import { getEmailSettings } from '../fix.js';
 
 /**
  */
@@ -74,16 +73,7 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   // savePublicSettings
   @Post('/getEmailSettings', { summary: 'sys:settings:edit' })
   async getEmailSettings(@Body(ALL) body) {
-    let conf = await this.service.getSetting<SysEmailConf>(SysEmailConf);
-    if (!conf.host && conf.usePlus != null) {
-      //到userSetting里面去找
-      const adminEmailSetting = await this.userSettingsService.getByKey('email', 1);
-      if (adminEmailSetting) {
-        const setting = JSON.parse(adminEmailSetting.setting);
-        conf = _.merge(conf, setting);
-        await this.service.saveSetting(conf);
-      }
-    }
+    const conf = await getEmailSettings(this.service, this.userSettingsService);
     return this.ok(conf);
   }
 

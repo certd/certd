@@ -83,7 +83,7 @@ import { SettingKeys } from "./api";
 import * as emailApi from "./api.email";
 import { notification } from "ant-design-vue";
 import { useSettingStore } from "/src/store/modules/settings";
-
+import _ from "lodash-es";
 defineOptions({
   name: "EmailSetting"
 });

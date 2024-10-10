@@ -4,8 +4,8 @@ import { IEmailService, isPlus, logger } from '@certd/pipeline';
 import nodemailer from 'nodemailer';
 import type SMTPConnection from 'nodemailer/lib/smtp-connection';
 import { UserSettingsService } from '../../mine/service/user-settings-service.js';
-import { PlusService, SysEmailConf, SysSettingsService } from '@certd/lib-server';
-import { merge } from 'lodash-es';
+import { PlusService, SysSettingsService } from '@certd/lib-server';
+import { getEmailSettings } from '../../sys/settings/fix.js';
 
 export type EmailConfig = {
   host: string;
@@ -60,17 +60,9 @@ export class EmailService implements IEmailService {
   async send(email: EmailSend) {
     logger.info('sendEmail', email);
 
-    const emailConf = await this.sysSettingsService.getSetting<SysEmailConf>(SysEmailConf);
-    if (!emailConf.host && emailConf.usePlus != null) {
-      const emailConfigEntity = await this.settingsService.getByKey('email', 1);
-      if (emailConfigEntity) {
-        const emailConfig = JSON.parse(emailConfigEntity.setting) as EmailConfig;
-        merge(emailConf, emailConfig);
-        await this.sysSettingsService.saveSetting(emailConf);
-      }
-    }
+    const emailConf = await getEmailSettings(this.sysSettingsService, this.settingsService);
 
-    if (!emailConf.host) {
+    if (!emailConf.host && emailConf.usePlus == null) {
       if (isPlus()) {
         //自动使用plus发邮件
         return await this.sendByPlus(email);

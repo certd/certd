@@ -18,7 +18,7 @@ export async function SettingsGet(key: string) {
 }
 
 export async function SettingsSave(key: string, setting: any) {
-  await request({
+  return await request({
     url: apiPrefix + "/save",
     method: "post",
     data: {
@@ -29,14 +29,14 @@ export async function SettingsSave(key: string, setting: any) {
 }
 
 export async function EmailSettingsGet() {
-  await request({
+  return await request({
     url: apiPrefix + "/getEmailSettings",
     method: "post"
   });
 }
 
 export async function PublicSettingsSave(setting: any) {
-  await request({
+  return await request({
     url: apiPrefix + "/savePublicSettings",
     method: "post",
     data: setting
@@ -44,7 +44,7 @@ export async function PublicSettingsSave(setting: any) {
 }
 
 export async function stopOtherUserTimer() {
-  await request({
+  return await request({
     url: apiPrefix + "/stopOtherUserTimer",
     method: "post"
   });

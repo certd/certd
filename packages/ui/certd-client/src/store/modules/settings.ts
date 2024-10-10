@@ -170,7 +170,7 @@ export const useSettingStore = defineStore({
     },
     async loadSiteInfo() {
       const isComm = this.isComm;
-      let siteInfo: SiteInfo;
+      let siteInfo: SiteInfo = {};
       if (isComm) {
         siteInfo = await basicApi.getSiteInfo();
         if (siteInfo.logo) {
