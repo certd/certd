@@ -78,6 +78,16 @@ export const sysResources = [
         }
       },
       {
+        title: "邮箱设置",
+        name: "EmailSetting",
+        path: "/sys/settings/email",
+        component: "/sys/settings/email-setting.vue",
+        meta: {
+          icon: "ion:mail-outline",
+          auth: true
+        }
+      },
+      {
         title: "站点个性化",
         name: "SiteSetting",
         path: "/sys/site",
@@ -91,6 +101,7 @@ export const sysResources = [
           permission: "sys:settings:view"
         }
       },
+
       // {
       //   title: "商业版设置",
       //   name: "SysCommercial",

@@ -56,16 +56,16 @@ export const certdResources = [
           auth: true
         }
       },
-      {
-        title: "邮箱设置",
-        name: "EmailSetting",
-        path: "/certd/settings/email",
-        component: "/certd/settings/email-setting.vue",
-        meta: {
-          icon: "ion:mail-outline",
-          auth: true
-        }
-      },
+      // {
+      //   title: "邮箱设置",
+      //   name: "EmailSetting",
+      //   path: "/certd/settings/email",
+      //   component: "/certd/settings/email-setting.vue",
+      //   meta: {
+      //     icon: "ion:mail-outline",
+      //     auth: true
+      //   }
+      // },
       {
         title: "账号信息",
         name: "UserProfile",

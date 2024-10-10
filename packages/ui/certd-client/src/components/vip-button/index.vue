@@ -1,5 +1,5 @@
 <template>
-  <div class="layout-vip isPlus" @click="openUpgrade">
+  <div v-if="!settingStore.isComm" class="layout-vip isPlus" @click="openUpgrade">
     <contextHolder />
     <fs-icon icon="mingcute:vip-1-line" :title="text.title" />
 

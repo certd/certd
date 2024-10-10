@@ -32,7 +32,7 @@
           <!--            Button-->
           <!--          </button>-->
           <fs-menu
-            v-if="settingStore?.siteEnv?.agent?.enabled === false"
+            v-if="settingStore?.siteEnv?.agent?.enabled === false || !settingStore.isComm"
             class="header-menu"
             mode="horizontal"
             :expand-selected="false"
@@ -67,18 +67,21 @@
       </a-layout-content>
       <a-layout-footer class="fs-framework-footer">
         <div>
-          <span>Powered by</span>
-          <a> handsfree.work </a>
+          <span v-if="!settingStore.isComm">
+            <span>Powered by</span>
+            <a> handsfree.work </a>
+          </span>
+
+          <template v-if="siteInfo.licenseTo">
+            <a-divider type="vertical" />
+            <a :href="siteInfo.licenseToUrl || ''">{{ siteInfo.licenseTo }}</a>
+          </template>
+
           <template v-if="siteInfo.icpNo">
             <a-divider type="vertical" />
             <span>
               <a href="https://beian.miit.gov.cn/" target="_blank">{{ siteInfo.icpNo }}</a>
             </span>
-          </template>
-
-          <template v-if="siteInfo.licenseTo">
-            <a-divider type="vertical" />
-            <a :href="siteInfo.licenseToUrl || ''">{{ siteInfo.licenseTo }}</a>
           </template>
         </div>
         <div>v{{ version }}</div>

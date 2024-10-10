@@ -4,7 +4,8 @@ const apiPrefix = "/sys/settings";
 
 export const SettingKeys = {
   SysPublic: "sys.public",
-  SysPrivate: "sys.private"
+  SysPrivate: "sys.private",
+  SysEmail: "sys.email"
 };
 export async function SettingsGet(key: string) {
   return await request({
@@ -24,6 +25,13 @@ export async function SettingsSave(key: string, setting: any) {
       key,
       setting: JSON.stringify(setting)
     }
+  });
+}
+
+export async function EmailSettingsGet() {
+  await request({
+    url: apiPrefix + "/getEmailSettings",
+    method: "post"
   });
 }
 

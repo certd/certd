@@ -13,25 +13,23 @@
         <router-view />
 
         <div class="footer">
-          <!--          <div class="links">-->
-          <!--            <a href="_self">帮助</a>-->
-          <!--            <a href="_self">隐私</a>-->
-          <!--            <a href="_self">条款</a>-->
-          <!--          </div>-->
           <div class="copyright">
-            <span>Copyright</span>
-            <span>&copy;</span>
-            <span>{{ envRef.COPYRIGHT_YEAR }}</span>
-            <span>
-              <a :href="envRef.COPYRIGHT_URL" target="_blank">{{ envRef.COPYRIGHT_NAME }}</a>
+            <span v-if="!settingStore.isComm">
+              <span>Copyright</span>
+              <span>&copy;</span>
+              <span>{{ envRef.COPYRIGHT_YEAR }}</span>
+              <span>
+                <a :href="envRef.COPYRIGHT_URL" target="_blank">{{ envRef.COPYRIGHT_NAME }}</a>
+              </span>
+            </span>
+
+            <span v-if="siteInfo.licenseTo">
+              <a-divider type="vertical" />
+              <a :href="siteInfo.licenseToUrl" target="_blank">{{ siteInfo.licenseTo }}</a>
             </span>
             <span v-if="siteInfo.icpNo">
               <a-divider type="vertical" />
               <a href="https://beian.miit.gov.cn/" target="_blank">{{ siteInfo.icpNo }}</a>
-            </span>
-            <span v-if="siteInfo.licenseTo">
-              <a-divider type="vertical" />
-              <a :href="siteInfo.licenseToUrl" target="_blank">{{ siteInfo.licenseTo }}</a>
             </span>
           </div>
         </div>

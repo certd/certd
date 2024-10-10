@@ -82,7 +82,7 @@ import * as api from "./api";
 import { SettingKeys } from "./api";
 import * as emailApi from "./api.email";
 import { notification } from "ant-design-vue";
-import { useSettingStore } from "/@/store/modules/settings";
+import { useSettingStore } from "/src/store/modules/settings";
 
 defineOptions({
   name: "EmailSetting"
@@ -114,19 +114,15 @@ const formState = reactive<Partial<FormState>>({
 });
 
 async function load() {
-  const data: any = await api.SettingsGet(SettingKeys.Email);
-  if (!data?.setting) {
-    return;
-  }
-  const setting = JSON.parse(data.setting);
-  Object.assign(formState, setting);
+  const data: any = await api.EmailSettingsGet();
+  _.merge(formState, data);
 }
 
 load();
 
 const onFinish = async (form: any) => {
   console.log("Success:", form);
-  await api.SettingsSave(SettingKeys.Email, form);
+  await api.SettingsSave(SettingKeys.SysEmail, form);
   notification.success({
     message: "保存成功"
   });
@@ -137,7 +133,7 @@ const onFinishFailed = (errorInfo: any) => {
 };
 
 async function onUsePlusChanged() {
-  await api.SettingsSave(SettingKeys.Email, formState);
+  await api.SettingsSave(SettingKeys.SysEmail, formState);
 }
 
 interface TestFormState {

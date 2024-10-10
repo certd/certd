@@ -83,6 +83,7 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     let newSetting: T = new type();
     const savedSettings = await this.getSettingByKey(key);
     newSetting = _.merge(newSetting, savedSettings);
+    await this.saveSetting(newSetting);
     await this.cache.set(cacheKey, newSetting);
     return newSetting;
   }
@@ -95,6 +96,7 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     const entity = await this.getByKey(key);
     if (entity) {
       entity.setting = JSON.stringify(bean);
+      entity.access = type.__access__;
       await this.repository.save(entity);
     } else {
       const newEntity = new SysSettingsEntity();

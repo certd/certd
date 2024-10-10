@@ -1,4 +1,4 @@
-import { request } from "/@/api/service";
+import { request } from "/src/api/service";
 const apiPrefix = "/basic/email";
 
 export async function TestSend(receiver: string) {

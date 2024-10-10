@@ -45,6 +45,26 @@ export class SysLicenseInfo extends BaseSettings {
   license?: string;
 }
 
+export class SysEmailConf extends BaseSettings {
+  static __title__ = '邮箱配置';
+  static __key__ = 'sys.email';
+  static __access__ = 'private';
+
+  host: string;
+  port: number;
+  auth: {
+    user: string;
+    pass: string;
+  };
+  secure: boolean; // use TLS
+  tls: {
+    // do not fail on invalid certs
+    rejectUnauthorized: boolean;
+  };
+  sender: string;
+  usePlus?: boolean;
+}
+
 export class SysSiteInfo extends BaseSettings {
   static __title__ = '站点信息';
   static __key__ = 'sys.site';
