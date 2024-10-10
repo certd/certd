@@ -147,7 +147,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     maybeNeed: true,
     required: false,
     helper:
-      "需要提供EAB授权\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials'\n Google:请查看[google获取eab帮助文档](https://gitee.com/certd/certd/blob/v2/doc/google/google.md)",
+      "需要提供EAB授权\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials'\n Google:请查看[google获取eab帮助文档](https://gitee.com/certd/certd/blob/v2/doc/google/google.md)，用过一次后会绑定邮箱，后续复用EAB要用同一个邮箱",
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
@@ -212,6 +212,15 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   useProxy = false;
 
   @TaskInput({
+    title: "自定义反代地址",
+    component: {
+      placeholder: "google.yourproxy.com",
+    },
+    helper: "填写你的自定义反代地址，不要带http://\nletsencrypt反代目标：acme-v02.api.letsencrypt.org\ngoogle反代目标：dv.acme-v02.api.pki.goog",
+  })
+  reverseProxy = "";
+
+  @TaskInput({
     title: "跳过本地校验DNS",
     value: false,
     component: {
@@ -259,6 +268,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       eab,
       skipLocalVerify: this.skipLocalVerify,
       useMappingProxy: this.useProxy,
+      reverseProxy: this.reverseProxy,
       privateKeyType: this.privateKeyType,
       // cnameProxyService: this.ctx.cnameProxyService,
       // dnsProviderCreator: this.createDnsProvider.bind(this),

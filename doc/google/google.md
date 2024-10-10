@@ -9,7 +9,8 @@ https://console.cloud.google.com/apis/library/publicca.googleapis.com
 
 ## 2、 获取授权
 以下两种方式任选其一
-### 2.1 直接获取EAB
+### 2.1 直接获取EAB 【推荐】
+
 
 1. 打开“Google Cloud Shell”（在右上角点击激活CloudShell图标）。   
 等待分配完成后在 Shell 窗口内输入如下命令：
@@ -29,6 +30,8 @@ keyId: xxxxxxxxxxxxx]
 3. 到Certd中，创建一条EAB授权记录，填写keyId(=kid) 和 b64MacKey 信息    
    注意：keyId没有`]`结尾，不要把`]`也复制了   
 
+注意：EAB授权使用过一次之后，会绑定邮箱，后续再次使用时，要使用相同的邮箱    
+否则会报错 `Unknown external account binding (EAB) key. This may be due to the EAB key expiring which occurs 7 days after creation`
 
 ### 2.2 通过服务账号获取EAB
 
