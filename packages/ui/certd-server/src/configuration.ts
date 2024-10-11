@@ -89,7 +89,7 @@ export class MainConfiguration {
     this.app.getMiddleware().insertFirst(async (ctx: IMidwayKoaContext, next: NextFunction) => {
       await next();
       if (ctx.path === '/' || ctx.path === '/index.html') {
-        ctx.response.set('Cache-Control', 'public,max-age=180');
+        ctx.response.set('Cache-Control', 'public,max-age=60');
       }
     });
 
