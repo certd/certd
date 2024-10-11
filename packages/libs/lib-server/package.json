@@ -1,6 +1,6 @@
 {
   "name": "@certd/lib-server",
-  "version": "1.26.1",
+  "version": "1.26.2",
   "description": "midway with flyway, sql upgrade way ",
   "private": false,
   "type": "module",
@@ -26,8 +26,8 @@
   ],
   "license": "AGPL",
   "dependencies": {
-    "@certd/basic": "^1.26.1",
-    "@certd/pipeline": "^1.26.1",
+    "@certd/basic": "^1.26.2",
+    "@certd/pipeline": "^1.26.2",
     "@midwayjs/cache": "~3.14.0",
     "@midwayjs/core": "~3.17.1",
     "@midwayjs/i18n": "~3.17.3",
