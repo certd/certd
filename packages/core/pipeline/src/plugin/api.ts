@@ -9,6 +9,7 @@ import { ILogger, logger, utils } from "../utils/index.js";
 import { HttpClient } from "../utils/index.js";
 import dayjs from "dayjs";
 import _ from "lodash-es";
+import { IPluginConfigService } from "../service/config";
 export type UserInfo = {
   role: "admin" | "user";
   id: any;
@@ -72,6 +73,8 @@ export type TaskInstanceContext = {
   emailService: IEmailService;
   //cname记录服务
   cnameProxyService: ICnameProxyService;
+  //插件配置服务
+  configService: IPluginConfigService;
   //流水线上下文
   pipelineContext: IContext;
   //用户上下文
