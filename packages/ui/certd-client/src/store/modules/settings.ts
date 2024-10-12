@@ -136,7 +136,6 @@ export const useSettingStore = defineStore({
       _.merge(this.plusInfo, allSettings.plusInfo || {});
       //@ts-ignore
       this.initSiteInfo(allSettings.siteInfo || {});
-      await this.checkUrlBound();
     },
     initSiteInfo(siteInfo: SiteInfo) {
       //@ts-ignore

@@ -93,7 +93,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onErrorCaptured, ref } from "vue";
+import { computed, onErrorCaptured, onMounted, ref } from "vue";
 import FsMenu from "./components/menu/index.jsx";
 import FsLocale from "./components/locale/index.vue";
 import FsUserInfo from "./components/user-info/index.vue";
@@ -142,6 +142,10 @@ const settingStore = useSettingStore();
 
 const siteInfo = computed(() => {
   return settingStore.siteInfo;
+});
+
+onMounted(async () => {
+  await settingStore.checkUrlBound();
 });
 </script>
 <style lang="less">
