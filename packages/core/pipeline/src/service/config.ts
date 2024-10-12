@@ -1,9 +1,8 @@
-import { FormItemProps } from "../d.ts/index.js";
-
 export type PluginConfig = {
-  show: false;
-  sysInput: {
-    [key: string]: {};
+  name: string;
+  disabled: boolean;
+  sysSetting: {
+    [key: string]: any;
   };
 };
 

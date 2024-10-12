@@ -1,12 +1,9 @@
-import { ColumnCompositionProps, dict, compute } from "@fast-crud/fast-crud";
-// @ts-ignore
-import * as api from "./api";
-// @ts-ignore
-import _ from "lodash-es";
+import { ColumnCompositionProps, dict } from "@fast-crud/fast-crud";
 import { computed, ref, toRef } from "vue";
 import { useReference } from "/@/use/use-refrence";
+import { forEach, get, merge, set } from "lodash-es";
 
-export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
+export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
   const AccessTypeDictRef = dict({
     url: "/pi/access/accessTypeDict"
   });
@@ -27,20 +24,20 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any) {
       }
     }
     console.log('crudBinding.value[mode + "Form"].columns', columnsRef.value);
-    _.forEach(define.input, (value: any, mapKey: any) => {
+    forEach(define.input, (value: any, mapKey: any) => {
       const key = "access." + mapKey;
       const field = {
         ...value,
         key
       };
-      const column = _.merge({ title: key }, defaultPluginConfig, field);
+      const column = merge({ title: key }, defaultPluginConfig, field);
 
       //eval
       useReference(column);
 
       //设置默认值
-      if (column.value != null && _.get(form, key) == null) {
-        _.set(form, key, column.value);
+      if (column.value != null && get(form, key) == null) {
+        set(form, key, column.value);
       }
       //字段配置赋值
       columnsRef.value[key] = column;

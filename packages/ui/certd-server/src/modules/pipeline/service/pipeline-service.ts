@@ -20,6 +20,7 @@ import { UserService } from '../../sys/authority/service/user-service.js';
 import { AccessGetter } from './access-getter.js';
 import { CnameRecordService } from '../../cname/service/cname-record-service.js';
 import { CnameProxyService } from './cname-proxy-service.js';
+import { PluginConfigService } from './plugin-config-service.js';
 
 const runningTasks: Map<string | number, Executor> = new Map();
 const freeCount = 10;
@@ -44,6 +45,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
   historyService: HistoryService;
   @Inject()
   historyLogService: HistoryLogService;
+
+  @Inject()
+  pluginConfigService: PluginConfigService;
 
   @Inject()
   userService: UserService;
@@ -356,6 +360,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       onChanged,
       accessService: accessGetter,
       cnameProxyService,
+      pluginConfigService: this.pluginConfigService,
       storage: new DbStorage(userId, this.storageService),
       emailService: this.emailService,
       fileRootDir: this.certdConfig.fileRootDir,

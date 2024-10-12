@@ -69,6 +69,34 @@ export const sysResources = [
         }
       },
       {
+        title: "系统级授权",
+        name: "SysAccess",
+        path: "/sys/access",
+        component: "/sys/access/index.vue",
+        meta: {
+          show: () => {
+            const settingStore = useSettingStore();
+            return settingStore.isComm;
+          },
+          icon: "ion:disc-outline",
+          permission: "sys:settings:view"
+        }
+      },
+      {
+        title: "插件管理",
+        name: "SysPlugin",
+        path: "/sys/plugin",
+        component: "/sys/plugin/index.vue",
+        meta: {
+          show: () => {
+            const settingStore = useSettingStore();
+            return settingStore.isComm;
+          },
+          icon: "ion:extension-puzzle-outline",
+          permission: "sys:settings:view"
+        }
+      },
+      {
         title: "账号绑定",
         name: "AccountBind",
         path: "/sys/account",

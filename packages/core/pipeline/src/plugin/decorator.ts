@@ -1,9 +1,9 @@
-import _ from "lodash-es";
 import { pluginRegistry } from "./registry.js";
 import { PluginDefine, TaskInputDefine, TaskOutputDefine } from "./api.js";
 import { Decorator } from "../decorator/index.js";
 import { AUTOWIRE_KEY } from "../decorator/index.js";
 import "reflect-metadata";
+import { merge, sortBy } from "lodash-es";
 // 提供一个唯一 key
 export const PLUGIN_CLASS_KEY = "pipeline:plugin";
 
@@ -42,13 +42,13 @@ export function IsTaskPlugin(define: PluginDefine): ClassDecorator {
       }
       inputArray.push([key, _input]);
     }
-    inputArray = _.sortBy(inputArray, (item: any) => item[1].order);
+    inputArray = sortBy(inputArray, (item: any) => item[1].order);
     const inputMap: any = {};
     inputArray.forEach((item: any) => {
       inputMap[item[0]] = item[1];
     });
 
-    _.merge(define, { input: inputMap, autowire: autowires, output: outputs });
+    merge(define, { input: inputMap, autowire: autowires, output: outputs });
 
     Reflect.defineMetadata(PLUGIN_CLASS_KEY, define, target);
 

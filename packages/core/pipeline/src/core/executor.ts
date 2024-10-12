@@ -1,18 +1,16 @@
 import { ConcurrencyStrategy, NotificationWhen, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task } from "../dt/index.js";
-import _ from "lodash-es";
 import { RunHistory, RunnableCollection } from "./run-history.js";
 import { AbstractTaskPlugin, PluginDefine, pluginRegistry, TaskInstanceContext, UserInfo } from "../plugin/index.js";
 import { ContextFactory, IContext } from "./context.js";
 import { IStorage } from "./storage.js";
-import { logger } from "../utils/index.js";
+import { createAxiosService, hashUtils, logger, utils } from "../utils/index.js";
 import { Logger } from "log4js";
-import { createAxiosService } from "../utils/index.js";
 import { IAccessService } from "../access/index.js";
 import { RegistryItem } from "../registry/index.js";
 import { Decorator } from "../decorator/index.js";
-import { ICnameProxyService, IEmailService } from "../service/index.js";
+import { ICnameProxyService, IEmailService, IPluginConfigService } from "../service/index.js";
 import { FileStore } from "./file-store.js";
-import { hashUtils, utils } from "../utils/index.js";
+import { cloneDeep, forEach, merge } from "lodash-es";
 
 export type ExecutorOptions = {
   pipeline: Pipeline;
@@ -21,6 +19,7 @@ export type ExecutorOptions = {
   accessService: IAccessService;
   emailService: IEmailService;
   cnameProxyService: ICnameProxyService;
+  pluginConfigService: IPluginConfigService;
   fileRootDir?: string;
   user: UserInfo;
 };
@@ -42,7 +41,7 @@ export class Executor {
   onChanged: (history: RunHistory) => Promise<void>;
   constructor(options: ExecutorOptions) {
     this.options = options;
-    this.pipeline = _.cloneDeep(options.pipeline);
+    this.pipeline = cloneDeep(options.pipeline);
     this.onChanged = async (history: RunHistory) => {
       await options.onChanged(history);
     };
@@ -219,7 +218,7 @@ export class Executor {
     // @ts-ignore
     const define: PluginDefine = plugin.define;
     //从outputContext读取输入参数
-    const input = _.cloneDeep(step.input);
+    const input = cloneDeep(step.input);
     Decorator.inject(define.input, instance, input, (item, key) => {
       if (item.component?.name === "output-selector") {
         const contextKey = input[key];
@@ -269,6 +268,7 @@ export class Executor {
       accessService: this.options.accessService,
       emailService: this.options.emailService,
       cnameProxyService: this.options.cnameProxyService,
+      pluginConfigService: this.options.pluginConfigService,
       pipelineContext: this.pipelineContext,
       userContext: this.contextFactory.getContext("user", this.options.user.id),
       fileStore: new FileStore({
@@ -290,7 +290,7 @@ export class Executor {
       this.lastStatusMap.clear();
     }
     //输出上下文变量到output context
-    _.forEach(define.output, (item: any, key: any) => {
+    forEach(define.output, (item: any, key: any) => {
       step.status!.output[key] = instance[key];
       // const stepOutputKey = `step.${step.id}.${key}`;
       // this.runtime.context[stepOutputKey] = instance[key];
@@ -300,7 +300,7 @@ export class Executor {
     if (Object.keys(instance._result.pipelineVars).length > 0) {
       // 判断 pipelineVars 有值时更新
       const vars = this.pipelineContext.getObj("vars");
-      _.merge(vars, instance._result.pipelineVars);
+      merge(vars, instance._result.pipelineVars);
       await this.pipelineContext.setObj("vars", vars);
     }
   }

@@ -18,9 +18,8 @@
 
 <script>
 import { defineComponent, reactive, ref, watch } from "vue";
-import * as api from "../api";
 import CertAccessModal from "./access/index.vue";
-import { GetProviderDefineByAccessType } from "../api";
+import { createAccessApi } from "../api";
 
 export default defineComponent({
   name: "AccessSelector",
@@ -41,10 +40,16 @@ export default defineComponent({
     size: {
       type: String,
       default: "middle"
+    },
+    from: {
+      type: String, //user | sys
+      default: "user"
     }
   },
   emits: ["update:modelValue"],
   setup(props, ctx) {
+    const api = createAccessApi(props.from === "sys" ? "/sys/access" : "/pi/access");
+
     const target = ref({});
     const selectedId = ref();
     async function refreshTarget(value) {

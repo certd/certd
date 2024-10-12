@@ -8,6 +8,7 @@
 import { defineComponent, onMounted, watch } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
+import { createAccessApi } from "/@/views/certd/access/api";
 
 export default defineComponent({
   name: "CertAccessModal",
@@ -16,11 +17,16 @@ export default defineComponent({
       type: String,
       default: "aliyun"
     },
+    from: {
+      type: String, //user | sys
+      default: "user"
+    },
     modelValue: {}
   },
   emits: ["update:modelValue"],
   setup(props, ctx) {
-    const context: any = { props, ctx };
+    const api = createAccessApi(props.from === "sys" ? "/sys/access" : "/pi/access");
+    const context: any = { props, ctx, api };
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
     // 你可以调用此方法，重新初始化crud配置

@@ -1,12 +1,12 @@
 // @ts-ignore
-import * as api from "./api";
 import { useI18n } from "vue-i18n";
 import { ref } from "vue";
 import { getCommonColumnDefine } from "/@/views/certd/access/common";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 
-export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
+  const api = context.api;
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -28,7 +28,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   };
 
   const typeRef = ref();
-  const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef);
+  const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef, api);
   return {
     crudOptions: {
       request: {

@@ -1,8 +1,9 @@
 import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { pluginGroups, pluginRegistry } from '@certd/pipeline';
+
 @Provide()
 @Scope(ScopeEnum.Singleton)
-export class PluginService {
+export class BuiltInPluginService {
   getList() {
     const collection = pluginRegistry.storage;
     const list = [];

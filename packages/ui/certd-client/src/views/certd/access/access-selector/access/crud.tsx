@@ -1,5 +1,4 @@
 // @ts-ignore
-import * as api from "/@/views/certd/access/api";
 import { ref } from "vue";
 import { getCommonColumnDefine } from "/@/views/certd/access/common";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
@@ -9,25 +8,25 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const { props, ctx } = context;
   const lastResRef = ref();
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
-    return await api.GetList(query);
+    return await context.api.GetList(query);
   };
   const editRequest = async (req: EditReq) => {
     const { form, row } = req;
     form.id = row.id;
     form.type = props.type;
-    const res = await api.UpdateObj(form);
+    const res = await context.api.UpdateObj(form);
     lastResRef.value = res;
     return res;
   };
   const delRequest = async (req: DelReq) => {
     const { row } = req;
-    return await api.DelObj(row.id);
+    return await context.api.DelObj(row.id);
   };
 
   const addRequest = async (req: AddReq) => {
     const { form } = req;
     form.type = props.type;
-    const res = await api.AddObj(form);
+    const res = await context.api.AddObj(form);
     lastResRef.value = res;
     return res;
   };
@@ -41,7 +40,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const typeRef = ref("aliyun");
   context.typeRef = typeRef;
-  const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef);
+  const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef, api);
   commonColumnsDefine.type.form.component.disabled = true;
   return {
     typeRef,

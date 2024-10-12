@@ -8,8 +8,8 @@ import { IContext, PluginRequestHandleReq, RunnableCollection } from "../core/in
 import { ILogger, logger, utils } from "../utils/index.js";
 import { HttpClient } from "../utils/index.js";
 import dayjs from "dayjs";
-import _ from "lodash-es";
 import { IPluginConfigService } from "../service/config";
+import { upperFirst } from "lodash-es";
 export type UserInfo = {
   role: "admin" | "user";
   id: any;
@@ -74,7 +74,7 @@ export type TaskInstanceContext = {
   //cname记录服务
   cnameProxyService: ICnameProxyService;
   //插件配置服务
-  configService: IPluginConfigService;
+  pluginConfigService: IPluginConfigService;
   //流水线上下文
   pipelineContext: IContext;
   //用户上下文
@@ -172,7 +172,7 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
 
     let methodName = req.action;
     if (!req.action.startsWith("on")) {
-      methodName = `on${_.upperFirst(req.action)}`;
+      methodName = `on${upperFirst(req.action)}`;
     }
 
     // @ts-ignore
