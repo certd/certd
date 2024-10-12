@@ -28,7 +28,10 @@
         </a-form-item>
 
         <a-form-item label="HTTPS代理" :name="['private', 'httpsProxy']" :rules="urlRules">
-          <a-input v-model:value="formState.private.httpsProxy" placeholder="http://192.168.1.2:18010/" />
+          <div class="flex">
+            <a-input v-model:value="formState.private.httpsProxy" placeholder="http://192.168.1.2:18010/" />
+            <a-button class="ml-5" type="primary" title="保存后，再点击测试" @click="testProxy">测试</a-button>
+          </div>
           <div class="helper">一般这两个代理填一样的</div>
         </a-form-item>
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
@@ -94,6 +97,15 @@ async function stopOtherUserTimer() {
   await api.stopOtherUserTimer();
   notification.success({
     message: "停止成功"
+  });
+}
+
+async function testProxy() {
+  const res = await api.TestProxy();
+  const content = `测试google:${res.google === true ? "成功" : "失败" + res.google}，测试百度:${res.baidu === true ? "成功" : "失败:" + res.baidu}`;
+  notification.success({
+    message: "测试完成",
+    description: content
   });
 }
 </script>

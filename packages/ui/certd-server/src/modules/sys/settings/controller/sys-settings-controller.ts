@@ -5,6 +5,7 @@ import * as _ from 'lodash-es';
 import { PipelineService } from '../../../pipeline/service/pipeline-service.js';
 import { UserSettingsService } from '../../../mine/service/user-settings-service.js';
 import { getEmailSettings } from '../fix.js';
+import { http, logger } from '@certd/pipeline';
 
 /**
  */
@@ -100,5 +101,39 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   async stopOtherUserTimer(@Body(ALL) body) {
     await this.pipelineService.stopOtherUserPipeline(1);
     return this.ok({});
+  }
+
+  @Post('/testProxy', { summary: 'sys:settings:view' })
+  async testProxy(@Body(ALL) body) {
+    const google = 'https://www.google.com/';
+    const baidu = 'https://www.baidu.com/';
+    let googleRes = false;
+    try {
+      await http.request({
+        url: google,
+        method: 'GET',
+        timeout: 4000,
+      });
+      googleRes = true;
+    } catch (e) {
+      googleRes = e.message;
+      logger.info('test google error:', e);
+    }
+    let baiduRes = false;
+    try {
+      await http.request({
+        url: baidu,
+        method: 'GET',
+        timeout: 4000,
+      });
+      baiduRes = true;
+    } catch (e) {
+      baiduRes = e.message;
+      logger.info('test baidu error:', e);
+    }
+    return this.ok({
+      google: googleRes,
+      baidu: baiduRes,
+    });
   }
 }

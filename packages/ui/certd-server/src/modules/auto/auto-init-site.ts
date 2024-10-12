@@ -35,10 +35,6 @@ export class AutoInitSite {
       installInfo.siteId = nanoid();
       await this.sysSettingsService.saveSetting(installInfo);
     }
-    if (!installInfo.siteId) {
-      installInfo.siteId = nanoid();
-      await this.sysSettingsService.saveSetting(installInfo);
-    }
 
     //private信息
     const privateInfo = await this.sysSettingsService.getSetting<SysPrivateSettings>(SysPrivateSettings);

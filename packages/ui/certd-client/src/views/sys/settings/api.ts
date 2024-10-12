@@ -72,3 +72,10 @@ export async function SysSettingsSave(data: SysSettings) {
     data: data
   });
 }
+
+export async function TestProxy() {
+  return await request({
+    url: apiPrefix + "/testProxy",
+    method: "post"
+  });
+}
