@@ -63,6 +63,8 @@ export class AutoInitSite {
     }
 
     logger.info('初始化站点完成');
+    // const pkg = require('../../../package.json');
+    // logger.info(`当前版本为：${pkg.version}`);
   }
 
   async startOptimizeDb() {
