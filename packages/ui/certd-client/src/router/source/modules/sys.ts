@@ -14,40 +14,6 @@ export const sysResources = [
     },
     children: [
       {
-        title: "权限管理",
-        name: "AuthorityManager",
-        path: "/sys/authority",
-        redirect: "/sys/authority/permission",
-        meta: {
-          icon: "ion:ribbon-outline",
-          //需要校验权限
-          permission: "sys:auth"
-        },
-        children: [
-          {
-            title: "权限资源管理",
-            name: "PermissionManager",
-            path: "/sys/authority/permission",
-            component: "/sys/authority/permission/index.vue",
-            meta: {
-              icon: "ion:list-outline",
-              //需要校验权限
-              permission: "sys:auth:per:view"
-            }
-          },
-          {
-            title: "角色管理",
-            name: "RoleManager",
-            path: "/sys/authority/role",
-            component: "/sys/authority/role/index.vue",
-            meta: {
-              icon: "ion:people-outline",
-              permission: "sys:auth:role:view"
-            }
-          }
-        ]
-      },
-      {
         title: "用户管理",
         name: "UserManager",
         path: "/sys/authority/user",
@@ -102,6 +68,37 @@ export const sysResources = [
           permission: "sys:settings:view"
         }
       },
+      {
+        title: "账号绑定",
+        name: "AccountBind",
+        path: "/sys/account",
+        component: "/sys/account/index.vue",
+        meta: {
+          icon: "ion:golf-outline",
+          permission: "sys:settings:view"
+        }
+      },
+      {
+        title: "权限管理",
+        name: "PermissionManager",
+        path: "/sys/authority/permission",
+        component: "/sys/authority/permission/index.vue",
+        meta: {
+          icon: "ion:list-outline",
+          //需要校验权限
+          permission: "sys:auth:per:view"
+        }
+      },
+      {
+        title: "角色管理",
+        name: "RoleManager",
+        path: "/sys/authority/role",
+        component: "/sys/authority/role/index.vue",
+        meta: {
+          icon: "ion:people-outline",
+          permission: "sys:auth:role:view"
+        }
+      }
 
       // {
       //   title: "商业版设置",
@@ -130,16 +127,6 @@ export const sysResources = [
       //     }
       //   ]
       // }
-      {
-        title: "账号绑定",
-        name: "AccountBind",
-        path: "/sys/account",
-        component: "/sys/account/index.vue",
-        meta: {
-          icon: "ion:golf-outline",
-          permission: "sys:settings:view"
-        }
-      }
     ]
   }
 ];

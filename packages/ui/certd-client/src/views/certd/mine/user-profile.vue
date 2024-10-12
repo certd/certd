@@ -5,7 +5,7 @@
     </template>
     <div class="p-10">
       <a-descriptions title="" bordered>
-        <a-descriptions-item label="用户名">{{ userInfo.userInfoname }}</a-descriptions-item>
+        <a-descriptions-item label="用户名">{{ userInfo.username }}</a-descriptions-item>
         <a-descriptions-item label="昵称">{{ userInfo.nickName }}</a-descriptions-item>
         <a-descriptions-item label="邮箱">{{ userInfo.email }}</a-descriptions-item>
         <a-descriptions-item label="手机号">{{ userInfo.phoneCode }}{{ userInfo.mobile }}</a-descriptions-item>

@@ -48,7 +48,6 @@ export default {
     const pageStore = usePageStore();
     pageStore.init();
     const settingStore = useSettingStore();
-    settingStore.init();
 
     return {
       routerEnabled,

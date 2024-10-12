@@ -5,7 +5,7 @@ import _ from "lodash-es";
 import { LocalStorage } from "/src/utils/util.storage";
 
 import * as basicApi from "/@/api/modules/api.basic";
-import { SysInstallInfo, SysPublicSetting } from "/@/api/modules/api.basic";
+import { PlusInfo, SiteEnv, SiteInfo, SysInstallInfo, SysPublicSetting } from "/@/api/modules/api.basic";
 import { useUserStore } from "/@/store/modules/user";
 import { mitter } from "/@/utils/util.mitt";
 import { env } from "/@/utils/util.env";
@@ -36,31 +36,7 @@ export interface SettingState {
   siteInfo: SiteInfo;
   plusInfo?: PlusInfo;
   siteEnv?: SiteEnv;
-}
-
-export type SiteEnv = {
-  agent?: {
-    enabled?: boolean;
-    contactText?: string;
-    contactLink?: string;
-  };
-};
-export type SiteInfo = {
-  title: string;
-  slogan: string;
-  logo: string;
-  loginLogo: string;
-  warningOff: boolean;
-  icpNo: string;
-  licenseTo?: string;
-  licenseToUrl?: string;
-};
-
-interface PlusInfo {
-  vipType?: string;
-  expireTime?: number;
-  isPlus: boolean;
-  isComm?: boolean;
+  inited?: boolean;
 }
 
 const defaultThemeConfig = {
@@ -73,7 +49,6 @@ const defaultSiteInfo = {
   slogan: env.SLOGAN || "让你的证书永不过期",
   logo: env.LOGO || "/static/images/logo/logo.svg",
   loginLogo: env.LOGIN_LOGO || "/static/images/logo/rect-block.svg",
-  warningOff: false,
   icpNo: env.ICP_NO,
   licenseTo: "",
   licenseToUrl: ""
@@ -88,7 +63,8 @@ export const useSettingStore = defineStore({
     },
     plusInfo: {
       isPlus: false,
-      vipType: "free"
+      vipType: "free",
+      isComm: false
     },
     sysPublic: {
       registerEnabled: false,
@@ -109,7 +85,8 @@ export const useSettingStore = defineStore({
         contactText: "",
         contactLink: ""
       }
-    }
+    },
+    inited: false
   }),
   getters: {
     getThemeConfig(): any {
@@ -126,6 +103,12 @@ export const useSettingStore = defineStore({
     },
     isComm(): boolean {
       return this.plusInfo?.isComm && this.plusInfo?.expireTime > new Date().getTime();
+    },
+    isAgent(): boolean {
+      return this.siteEnv?.agent?.enabled === true;
+    },
+    isCommOrAgent() {
+      return this.isComm || this.isAgent;
     },
     vipLabel(): string {
       const vipLabelMap: any = {
@@ -146,33 +129,18 @@ export const useSettingStore = defineStore({
       }
     },
     async loadSysSettings() {
-      await this.loadSysPublicSettings();
-      await this.loadSiteEnv();
-      await this.loadInstallInfo();
-      await this.loadPlusInfo();
-      await this.loadSiteInfo();
+      const allSettings = await basicApi.loadAllSettings();
+      _.merge(this.sysPublic, allSettings.sysPublic || {});
+      _.merge(this.installInfo, allSettings.installInfo || {});
+      _.merge(this.siteEnv, allSettings.siteEnv || {});
+      _.merge(this.plusInfo, allSettings.plusInfo || {});
+      //@ts-ignore
+      this.initSiteInfo(allSettings.siteInfo || {});
       await this.checkUrlBound();
     },
-    async loadSysPublicSettings() {
-      const settings = await basicApi.getSysPublicSettings();
-      _.merge(this.sysPublic, settings);
-    },
-    async loadInstallInfo() {
-      const installInfo = await basicApi.getInstallInfo();
-      _.merge(this.installInfo, installInfo);
-    },
-    async loadSiteEnv() {
-      const siteEnv = await basicApi.getSiteEnv();
-      _.merge(this.siteEnv, siteEnv);
-    },
-    async loadPlusInfo() {
-      this.plusInfo = await basicApi.getPlusInfo();
-    },
-    async loadSiteInfo() {
-      const isComm = this.isComm;
-      let siteInfo: SiteInfo = {};
-      if (isComm) {
-        siteInfo = await basicApi.getSiteInfo();
+    initSiteInfo(siteInfo: SiteInfo) {
+      //@ts-ignore
+      if (this.isComm) {
         if (siteInfo.logo) {
           siteInfo.logo = `/api/basic/file/download?key=${siteInfo.logo}`;
         }
@@ -205,8 +173,9 @@ export const useSettingStore = defineStore({
 
       const doBindUrl = async (url: string) => {
         await basicApi.bindUrl({ url });
-        await this.loadInstallInfo();
+        await this.loadSysSettings();
       };
+
       const baseUrl = getBaseUrl();
       if (!bindUrl) {
         //绑定url
@@ -269,6 +238,13 @@ export const useSettingStore = defineStore({
     async init() {
       await this.setThemeConfig(this.getThemeConfig);
       await this.loadSysSettings();
+    },
+    async initOnce() {
+      if (this.inited) {
+        return;
+      }
+      await this.init();
+      this.inited = true;
     }
   }
 });

@@ -1,4 +1,4 @@
-import { ALL, Body, Config, Controller, Get, Inject, Provide } from '@midwayjs/core';
+import { Config, Controller, Get, Inject, Provide } from '@midwayjs/core';
 import { BaseController, Constants, SysInstallInfo, SysPublicSettings, SysSettingsService, SysSiteEnv, SysSiteInfo } from '@certd/lib-server';
 import { AppKey, getPlusInfo } from '@certd/pipeline';
 
@@ -15,39 +15,45 @@ export class BasicSettingsController extends BaseController {
   @Config('agent')
   agentConfig: SysSiteEnv['agent'];
 
-  @Get('/public', { summary: Constants.per.guest })
   public async getSysPublic() {
-    const settings = await this.sysSettingsService.getSetting(SysPublicSettings);
-    return this.ok(settings);
+    return await this.sysSettingsService.getSetting(SysPublicSettings);
   }
 
-  @Get('/install', { summary: Constants.per.guest })
   public async getInstallInfo() {
     const settings: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     settings.accountServerBaseUrl = this.accountServerBaseUrl;
     settings.appKey = AppKey;
-    return this.ok(settings);
+    return settings;
   }
 
-  @Get('/siteInfo', { summary: Constants.per.guest })
   public async getSiteInfo() {
-    const settings: SysSiteInfo = await this.sysSettingsService.getSetting(SysSiteInfo);
-    return this.ok(settings);
+    return await this.sysSettingsService.getSetting(SysSiteInfo);
   }
 
-  @Get('/siteEnv', { summary: Constants.per.guest })
   public async getSiteEnv() {
     const env: SysSiteEnv = {
       agent: this.agentConfig,
     };
-    return this.ok(env);
+    return env;
   }
 
-  @Get('/plusInfo', { summary: Constants.per.guest })
-  async plusInfo(@Body(ALL) body: any) {
-    const info = getPlusInfo();
+  async plusInfo() {
+    return getPlusInfo();
+  }
+
+  @Get('/all', { summary: Constants.per.guest })
+  async getAllSettings() {
+    const sysPublic = await this.getSysPublic();
+    const installInfo = await this.getInstallInfo();
+    const siteInfo = await this.getSiteInfo();
+    const siteEnv = await this.getSiteEnv();
+    const plusInfo = await this.plusInfo();
     return this.ok({
-      ...info,
+      sysPublic,
+      installInfo,
+      siteInfo,
+      siteEnv,
+      plusInfo,
     });
   }
 }

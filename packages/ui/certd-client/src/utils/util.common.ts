@@ -29,5 +29,9 @@ export default {
       array.push(item);
     }
     return array;
+  },
+
+  async sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 };

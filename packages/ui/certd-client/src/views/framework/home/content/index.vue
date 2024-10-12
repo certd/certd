@@ -6,7 +6,7 @@
       </div>
     </div>
     <p class="d2-page-cover__sub-title">{{ siteInfo.slogan }}</p>
-    <div v-if="siteInfo.warningOff !== true && settingStore.siteEnv?.agent?.enabled === false" class="warning">
+    <div v-if="!settingStore.isCommOrAgent" class="warning">
       <a-alert type="warning" show-icon>
         <template #description>
           <div class="flex">
@@ -17,10 +17,10 @@
         </template>
       </a-alert>
     </div>
-    <div class="content">
+    <div v-if="!settingStore.isCommOrAgent" class="content">
       <img src="/static/images/preview.png" class="preview_img" />
     </div>
-    <div v-if="!settingStore.isComm" class="footer_box">
+    <div v-if="!settingStore.isCommOrAgent" class="footer_box">
       <div>如果觉得好用，请不要吝啬你的star哟！</div>
       <a href="https://gitee.com/certd/certd" target="_blank"><img src="https://gitee.com/certd/certd/badge/star.svg?theme=dark" alt="star" /></a>
       <a href="https://github.com/certd/certd" target="_blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/certd/certd?logo=github" /></a>
@@ -29,7 +29,8 @@
 </template>
 <script lang="ts" setup>
 import { computed, ref, Ref } from "vue";
-import { SiteInfo, useSettingStore } from "/@/store/modules/settings";
+import { useSettingStore } from "/@/store/modules/settings";
+import { SiteInfo } from "/@/api/modules/api.basic";
 
 const version = ref(import.meta.env.VITE_APP_VERSION);
 const settingStore = useSettingStore();

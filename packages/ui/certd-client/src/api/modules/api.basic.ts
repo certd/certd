@@ -1,6 +1,28 @@
 import { request } from "../service";
-import { SiteEnv, SiteInfo } from "/@/store/modules/settings";
 
+export type SiteEnv = {
+  agent?: {
+    enabled?: boolean;
+    contactText?: string;
+    contactLink?: string;
+  };
+};
+export type SiteInfo = {
+  title: string;
+  slogan: string;
+  logo: string;
+  loginLogo: string;
+  icpNo: string;
+  licenseTo?: string;
+  licenseToUrl?: string;
+};
+
+export type PlusInfo = {
+  vipType?: string;
+  expireTime?: number;
+  isPlus: boolean;
+  isComm?: boolean;
+};
 export type SysPublicSetting = {
   registerEnabled: boolean;
   managerOtherUserPipeline: boolean;
@@ -11,29 +33,17 @@ export type SysInstallInfo = {
   siteId: string;
 };
 
-export async function getSysPublicSettings(): Promise<SysPublicSetting> {
-  return await request({
-    url: "/basic/settings/public",
-    method: "get"
-  });
-}
+export type AllSettings = {
+  sysPublic: SysPublicSetting;
+  installInfo: SysInstallInfo;
+  plusInfo: PlusInfo;
+  siteInfo: SiteInfo;
+  siteEnv: SiteEnv;
+};
 
-export async function getInstallInfo(): Promise<SysInstallInfo> {
+export async function loadAllSettings(): Promise<AllSettings> {
   return await request({
-    url: "/basic/settings/install",
-    method: "get"
-  });
-}
-
-export async function getSiteInfo(): Promise<SiteInfo> {
-  return await request({
-    url: "/basic/settings/siteInfo",
-    method: "get"
-  });
-}
-export async function getSiteEnv(): Promise<SiteEnv> {
-  return await request({
-    url: "/basic/settings/siteEnv",
+    url: "/basic/settings/all",
     method: "get"
   });
 }
@@ -43,12 +53,5 @@ export async function bindUrl(data: any): Promise<any> {
     url: "/sys/plus/bindUrl",
     method: "post",
     data
-  });
-}
-
-export async function getPlusInfo() {
-  return await request({
-    url: "/basic/settings/plusInfo",
-    method: "get"
   });
 }

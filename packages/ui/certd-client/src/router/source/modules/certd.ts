@@ -1,3 +1,5 @@
+import { sysResources } from "/@/router/source/modules/sys";
+
 export const certdResources = [
   {
     title: "证书自动化",
@@ -73,9 +75,11 @@ export const certdResources = [
         component: "/certd/mine/user-profile.vue",
         meta: {
           icon: "ion:person-outline",
-          auth: true
+          auth: true,
+          isMenu: false
         }
-      }
+      },
+      ...sysResources
     ]
   }
 ];

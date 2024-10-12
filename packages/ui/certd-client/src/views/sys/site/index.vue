@@ -37,9 +37,6 @@
             :build-url="buildUrl"
           />
         </a-form-item>
-        <a-form-item label="关闭首页告警" name="warningOff">
-          <a-switch v-model:checked="formState.warningOff" />
-        </a-form-item>
         <a-form-item label="你的主体名称" name="licenseTo">
           <a-input v-model:value="formState.licenseTo" />
           <div class="helper">将会显示在底部</div>
@@ -77,7 +74,6 @@ interface FormState {
   slogan: string;
   logo: string;
   loginLogo: string;
-  warningOff: boolean;
   licenseTo: string;
   licenseToUrl: string;
 }

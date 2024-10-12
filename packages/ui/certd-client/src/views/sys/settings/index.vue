@@ -54,11 +54,13 @@ defineOptions({
 interface FormState {
   registerEnabled: boolean;
   managerOtherUserPipeline: boolean;
+  icpNo: string;
 }
 
 const formState = reactive<Partial<FormState>>({
   registerEnabled: false,
-  managerOtherUserPipeline: false
+  managerOtherUserPipeline: false,
+  icpNo: ""
 });
 
 async function loadSysPublicSettings() {

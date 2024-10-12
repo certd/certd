@@ -6,7 +6,7 @@ import { CacheManager } from '@midwayjs/cache';
 import { BaseSettings, SysPrivateSettings, SysPublicSettings } from './models.js';
 import * as _ from 'lodash-es';
 import { BaseService } from '../../../basic/index.js';
-import { checkComm } from '@certd/pipeline';
+import { isComm } from '@certd/pipeline';
 
 /**
  * 设置
@@ -40,8 +40,8 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     if (!key) {
       return null;
     }
-    if (key === 'sys.site') {
-      checkComm();
+    if (key === 'sys.site' && isComm()) {
+      return null;
     }
     return await this.repository.findOne({
       where: {
