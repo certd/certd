@@ -24,13 +24,21 @@ export class SysPrivateSettings extends BaseSettings {
   static __key__ = 'sys.private';
   jwtKey?: string;
   encryptSecret?: string;
+
+  httpsProxy? = '';
+  httpProxy? = '';
+
+  removeSecret() {
+    delete this.jwtKey;
+    delete this.encryptSecret;
+  }
 }
 
 export class SysInstallInfo extends BaseSettings {
   static __title__ = '系统安装信息';
   static __key__ = 'sys.install';
   static __access__ = 'private';
-  installTime: number;
+  installTime?: number;
   siteId?: string;
   bindUserId?: number;
   bindUrl?: string;

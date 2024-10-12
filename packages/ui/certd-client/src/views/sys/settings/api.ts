@@ -1,6 +1,18 @@
 // @ts-ignore
 import { request } from "/@/api/service";
 const apiPrefix = "/sys/settings";
+export type SysSettings = { public: SysPublicSetting; private: SysPrivateSetting };
+
+export type SysPublicSetting = {
+  registerEnabled?: boolean;
+  managerOtherUserPipeline?: boolean;
+  icpNo?: string;
+};
+
+export type SysPrivateSetting = {
+  httpProxy?: string;
+  httpsProxy?: string;
+};
 
 export const SettingKeys = {
   SysPublic: "sys.public",
@@ -8,13 +20,17 @@ export const SettingKeys = {
   SysEmail: "sys.email"
 };
 export async function SettingsGet(key: string) {
-  return await request({
+  const res = await request({
     url: apiPrefix + "/get",
     method: "post",
     params: {
       key
     }
   });
+  if (!res) {
+    return {};
+  }
+  return JSON.parse(res.setting);
 }
 
 export async function SettingsSave(key: string, setting: any) {
@@ -35,17 +51,24 @@ export async function EmailSettingsGet() {
   });
 }
 
-export async function PublicSettingsSave(setting: any) {
-  return await request({
-    url: apiPrefix + "/savePublicSettings",
-    method: "post",
-    data: setting
-  });
-}
-
 export async function stopOtherUserTimer() {
   return await request({
     url: apiPrefix + "/stopOtherUserTimer",
     method: "post"
+  });
+}
+
+export async function SysSettingsGet(): Promise<SysSettings> {
+  return await request({
+    url: apiPrefix + "/getSysSettings",
+    method: "post"
+  });
+}
+
+export async function SysSettingsSave(data: SysSettings) {
+  return await request({
+    url: apiPrefix + "/saveSysSettings",
+    method: "post",
+    data: data
   });
 }

@@ -44,12 +44,11 @@ const defaultThemeConfig = {
   mode: "light"
 };
 const SETTING_THEME_KEY = "SETTING_THEME";
-const defaultSiteInfo = {
+const defaultSiteInfo: SiteInfo = {
   title: env.TITLE || "Certd",
   slogan: env.SLOGAN || "让你的证书永不过期",
   logo: env.LOGO || "/static/images/logo/logo.svg",
   loginLogo: env.LOGIN_LOGO || "/static/images/logo/rect-block.svg",
-  icpNo: env.ICP_NO,
   licenseTo: "",
   licenseToUrl: ""
 };
@@ -69,7 +68,7 @@ export const useSettingStore = defineStore({
     sysPublic: {
       registerEnabled: false,
       managerOtherUserPipeline: false,
-      icpNo: ""
+      icpNo: env.ICP_NO || ""
     },
     installInfo: {
       siteId: "",
@@ -147,11 +146,6 @@ export const useSettingStore = defineStore({
         if (siteInfo.loginLogo) {
           siteInfo.loginLogo = `/api/basic/file/download?key=${siteInfo.loginLogo}`;
         }
-      }
-
-      const sysPublic = this.getSysPublic;
-      if (sysPublic.icpNo) {
-        siteInfo.icpNo = sysPublic.icpNo;
       }
       this.siteInfo = _.merge({}, defaultSiteInfo, siteInfo);
     },

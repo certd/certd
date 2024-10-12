@@ -13,29 +13,28 @@
         @finish="onFinish"
         @finish-failed="onFinishFailed"
       >
-        <a-form-item label="开启自助注册" name="registerEnabled">
-          <a-switch v-model:checked="formState.registerEnabled" />
+        <a-form-item label="开启自助注册" :name="['public', 'registerEnabled']">
+          <a-switch v-model:checked="formState.public.registerEnabled" />
         </a-form-item>
-        <a-form-item label="管理其他用户流水线" name="managerOtherUserPipeline">
-          <a-switch v-model:checked="formState.managerOtherUserPipeline" />
+        <a-form-item label="管理其他用户流水线" :name="['public', 'managerOtherUserPipeline']">
+          <a-switch v-model:checked="formState.public.managerOtherUserPipeline" />
         </a-form-item>
-        <a-form-item label="ICP备案号" name="icpNo">
-          <a-input v-model:value="formState.icpNo" />
+        <a-form-item label="ICP备案号" :name="['public', 'icpNo']">
+          <a-input v-model:value="formState.public.icpNo" placeholder="粤ICP备xxxxxxx号" />
         </a-form-item>
-        <!--        <a-form-item label="启动后触发流水线" name="triggerOnStartup">-->
-        <!--          <a-switch v-model:checked="formState.triggerOnStartup" />-->
-        <!--          <div class="helper">启动后自动触发一次所有已启用的流水线</div>-->
-        <!--        </a-form-item>-->
+
+        <a-form-item label="HTTP代理" :name="['private', 'httpProxy']" :rules="urlRules">
+          <a-input v-model:value="formState.private.httpProxy" placeholder="http://192.168.1.2:18010/" />
+        </a-form-item>
+
+        <a-form-item label="HTTPS代理" :name="['private', 'httpsProxy']" :rules="urlRules">
+          <a-input v-model:value="formState.private.httpsProxy" placeholder="http://192.168.1.2:18010/" />
+          <div class="helper">一般这两个代理填一样的</div>
+        </a-form-item>
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
           <a-button :loading="saveLoading" type="primary" html-type="submit">保存</a-button>
         </a-form-item>
       </a-form>
-
-      <!--      <a-descriptions label="系统维护操作">-->
-      <!--        <a-descriptions-item label="自动化任务">-->
-      <!--          <a-button @click="stopOtherUserTimer">停止所有其他用户的定时任务</a-button>-->
-      <!--        </a-descriptions-item>-->
-      <!--      </a-descriptions>-->
     </div>
   </fs-page>
 </template>
@@ -43,42 +42,41 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import * as api from "./api";
-import { PublicSettingsSave, SettingKeys } from "./api";
+import { SysSettings } from "./api";
 import { notification } from "ant-design-vue";
 import { useSettingStore } from "/@/store/modules/settings";
+import { merge } from "lodash-es";
 
 defineOptions({
   name: "SysSettings"
 });
 
-interface FormState {
-  registerEnabled: boolean;
-  managerOtherUserPipeline: boolean;
-  icpNo: string;
-}
-
-const formState = reactive<Partial<FormState>>({
-  registerEnabled: false,
-  managerOtherUserPipeline: false,
-  icpNo: ""
+const formState = reactive<Partial<SysSettings>>({
+  public: {
+    registerEnabled: false,
+    managerOtherUserPipeline: false,
+    icpNo: ""
+  },
+  private: {}
 });
 
-async function loadSysPublicSettings() {
-  const data: any = await api.SettingsGet(SettingKeys.SysPublic);
-  if (data == null) {
-    return;
-  }
-  const setting = JSON.parse(data.setting);
-  Object.assign(formState, setting);
+const urlRules = ref({
+  type: "url",
+  message: "请输入正确的URL"
+});
+
+async function loadSysSettings() {
+  const data: any = await api.SysSettingsGet();
+  merge(formState, data);
 }
 
 const saveLoading = ref(false);
-loadSysPublicSettings();
+loadSysSettings();
 const settingsStore = useSettingStore();
 const onFinish = async (form: any) => {
   try {
     saveLoading.value = true;
-    await api.PublicSettingsSave(form);
+    await api.SysSettingsSave(form);
     await settingsStore.loadSysSettings();
     notification.success({
       message: "保存成功"

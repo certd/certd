@@ -7,6 +7,7 @@ import { BaseSettings, SysPrivateSettings, SysPublicSettings } from './models.js
 import * as _ from 'lodash-es';
 import { BaseService } from '../../../basic/index.js';
 import { isComm } from '@certd/pipeline';
+import { setGlobalProxy } from '@certd/basic';
 
 /**
  * 设置
@@ -118,8 +119,25 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     await this.saveSetting(bean);
   }
 
+  async getPrivateSettings(): Promise<SysPrivateSettings> {
+    return await this.getSetting(SysPrivateSettings);
+  }
+
   async savePrivateSettings(bean: SysPrivateSettings) {
-    this.saveSetting(bean);
+    await this.saveSetting(bean);
+
+    //让设置生效
+    await this.reloadPrivateSettings();
+  }
+
+  async reloadPrivateSettings() {
+    const bean = await this.getPrivateSettings();
+    if (bean.httpProxy || bean.httpsProxy) {
+      setGlobalProxy({
+        httpProxy: bean.httpProxy,
+        httpsProxy: bean.httpsProxy,
+      });
+    }
   }
 
   async updateByKey(key: string, setting: any) {

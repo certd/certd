@@ -47,6 +47,21 @@ export class HttpError extends Error {
 }
 
 export const HttpCommonError = HttpError;
+
+let defaultAgents = createAgent();
+
+export function setGlobalProxy(opts: { httpProxy?: string; httpsProxy?: string }) {
+  logger.info('setGlobalProxy:', opts);
+  if (opts.httpProxy) {
+    process.env.HTTP_PROXY = opts.httpProxy;
+  }
+  if (opts.httpsProxy) {
+    process.env.HTTPS_PROXY = opts.httpsProxy;
+  }
+
+  defaultAgents = createAgent();
+}
+
 /**
  * @description 创建请求实例
  */
@@ -54,7 +69,6 @@ export function createAxiosService({ logger }: { logger: Logger }) {
   // 创建一个 axios 实例
   const service = axios.create();
 
-  const defaultAgents = createAgent();
   // 请求拦截
   service.interceptors.request.use(
     (config: any) => {

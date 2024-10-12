@@ -1,5 +1,5 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
-import { CrudController, SysPublicSettings, SysSettingsService } from '@certd/lib-server';
+import { CrudController, SysPrivateSettings, SysPublicSettings, SysSettingsService } from '@certd/lib-server';
 import { SysSettingsEntity } from '../entity/sys-settings.js';
 import * as _ from 'lodash-es';
 import { PipelineService } from '../../../pipeline/service/pipeline-service.js';
@@ -77,12 +77,23 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
     return this.ok(conf);
   }
 
+  @Post('/getSysSettings', { summary: 'sys:settings:edit' })
+  async getSysSettings() {
+    const publicSettings = await this.service.getPublicSettings();
+    const privateSettings = await this.service.getPrivateSettings();
+    privateSettings.removeSecret();
+    return this.ok({ public: publicSettings, private: privateSettings });
+  }
+
   // savePublicSettings
-  @Post('/savePublicSettings', { summary: 'sys:settings:edit' })
-  async savePublicSettings(@Body(ALL) body) {
-    const setting = new SysPublicSettings();
-    _.merge(setting, body);
-    await this.service.savePublicSettings(setting);
+  @Post('/saveSysSettings', { summary: 'sys:settings:edit' })
+  async saveSysSettings(@Body(ALL) body: { public: SysPublicSettings; private: SysPrivateSettings }) {
+    const publicSettings = await this.service.getPublicSettings();
+    const privateSettings = await this.service.getPrivateSettings();
+    _.merge(publicSettings, body.public);
+    _.merge(privateSettings, body.private);
+    await this.service.savePublicSettings(publicSettings);
+    await this.service.savePrivateSettings(privateSettings);
     return this.ok({});
   }
   @Post('/stopOtherUserTimer', { summary: 'sys:settings:edit' })

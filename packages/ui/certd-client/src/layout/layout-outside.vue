@@ -27,9 +27,9 @@
               <a-divider type="vertical" />
               <a :href="siteInfo.licenseToUrl" target="_blank">{{ siteInfo.licenseTo }}</a>
             </span>
-            <span v-if="siteInfo.icpNo">
+            <span v-if="sysPublic.icpNo">
               <a-divider type="vertical" />
-              <a href="https://beian.miit.gov.cn/" target="_blank">{{ siteInfo.icpNo }}</a>
+              <a href="https://beian.miit.gov.cn/" target="_blank">{{ sysPublic.icpNo }}</a>
             </span>
           </div>
         </div>
@@ -40,12 +40,16 @@
 <script lang="ts" setup>
 import { env } from "/@/utils/util.env";
 import { computed, ref, Ref } from "vue";
-import { SiteInfo, useSettingStore } from "/@/store/modules/settings";
+import { useSettingStore } from "/@/store/modules/settings";
+import { SiteInfo, SysPublicSetting } from "/@/api/modules/api.basic";
 
 const envRef = ref(env);
 const settingStore = useSettingStore();
 const siteInfo: Ref<SiteInfo> = computed(() => {
   return settingStore.siteInfo;
+});
+const sysPublic: Ref<SysPublicSetting> = computed(() => {
+  return settingStore.sysPublic;
 });
 </script>
 

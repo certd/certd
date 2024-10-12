@@ -77,10 +77,10 @@
             <a :href="siteInfo.licenseToUrl || ''">{{ siteInfo.licenseTo }}</a>
           </template>
 
-          <template v-if="siteInfo.icpNo">
+          <template v-if="sysPublic.icpNo">
             <a-divider type="vertical" />
             <span>
-              <a href="https://beian.miit.gov.cn/" target="_blank">{{ siteInfo.icpNo }}</a>
+              <a href="https://beian.miit.gov.cn/" target="_blank">{{ sysPublic.icpNo }}</a>
             </span>
           </template>
         </div>
@@ -140,6 +140,9 @@ const userStore = useUserStore();
 
 const settingStore = useSettingStore();
 
+const sysPublic = computed(() => {
+  return settingStore.sysPublic;
+});
 const siteInfo = computed(() => {
   return settingStore.siteInfo;
 });

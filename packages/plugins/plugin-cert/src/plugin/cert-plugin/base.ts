@@ -195,6 +195,7 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
   async condition() {
     if (this.forceUpdate) {
       this.logger.info("强制更新证书选项已勾选，准备申请新证书");
+      this.logger.warn("申请完之后，切记取消强制更新，避免申请过多证书。");
       return null;
     }
 

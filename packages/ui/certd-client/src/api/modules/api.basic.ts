@@ -8,11 +8,11 @@ export type SiteEnv = {
   };
 };
 export type SiteInfo = {
-  title: string;
-  slogan: string;
-  logo: string;
-  loginLogo: string;
-  icpNo: string;
+  title?: string;
+  slogan?: string;
+  logo?: string;
+  loginLogo?: string;
+  icpNo?: string;
   licenseTo?: string;
   licenseToUrl?: string;
 };
