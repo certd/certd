@@ -1,10 +1,10 @@
 import { Config, Inject, Provide, Scope, ScopeEnum, sleep } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { BaseService, PageReq } from '@certd/lib-server';
+import { BaseService, NeedVIPException, PageReq } from '@certd/lib-server';
 import { PipelineEntity } from '../entity/pipeline.js';
 import { PipelineDetail } from '../entity/vo/pipeline-detail.js';
-import { Executor, isPlus, Pipeline, ResultType, RunHistory, UserInfo } from '@certd/pipeline';
+import { Executor, isPlus, logger, Pipeline, ResultType, RunHistory, UserInfo } from '@certd/pipeline';
 import { AccessService } from './access-service.js';
 import { DbStorage } from './db-storage.js';
 import { StorageService } from './storage-service.js';
@@ -13,14 +13,12 @@ import { HistoryService } from './history-service.js';
 import { HistoryEntity } from '../entity/history.js';
 import { HistoryLogEntity } from '../entity/history-log.js';
 import { HistoryLogService } from './history-log-service.js';
-import { logger } from '@certd/pipeline';
 import { EmailService } from '../../basic/service/email-service.js';
-import { NeedVIPException } from '@certd/lib-server';
 import { UserService } from '../../sys/authority/service/user-service.js';
 import { AccessGetter } from './access-getter.js';
 import { CnameRecordService } from '../../cname/service/cname-record-service.js';
 import { CnameProxyService } from './cname-proxy-service.js';
-import { PluginConfigService } from './plugin-config-service.js';
+import { PluginConfigGetter } from '../../plugin/service/plugin-config-getter.js';
 
 const runningTasks: Map<string | number, Executor> = new Map();
 const freeCount = 10;
@@ -47,7 +45,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
   historyLogService: HistoryLogService;
 
   @Inject()
-  pluginConfigService: PluginConfigService;
+  pluginConfigGetter: PluginConfigGetter;
 
   @Inject()
   userService: UserService;
@@ -360,7 +358,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       onChanged,
       accessService: accessGetter,
       cnameProxyService,
-      pluginConfigService: this.pluginConfigService,
+      pluginConfigService: this.pluginConfigGetter,
       storage: new DbStorage(userId, this.storageService),
       emailService: this.emailService,
       fileRootDir: this.certdConfig.fileRootDir,

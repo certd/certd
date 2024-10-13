@@ -8,7 +8,7 @@ CREATE TABLE "pi_plugin"
   "group"       varchar(100),
   "version"     varchar(100),
   "setting"     text,
-  "sysSetting"  text,
+  "sys_setting" text,
   "content"     text,
   "type"        varchar(100) NOT NULL,
   "disabled"    boolean      NOT NULL,

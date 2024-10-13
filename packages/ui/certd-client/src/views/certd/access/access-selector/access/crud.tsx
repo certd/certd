@@ -1,11 +1,11 @@
 // @ts-ignore
 import { ref } from "vue";
 import { getCommonColumnDefine } from "/@/views/certd/access/common";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { crudBinding } = crudExpose;
-  const { props, ctx } = context;
+  const { props, ctx, api } = context;
   const lastResRef = ref();
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await context.api.GetList(query);
@@ -106,6 +106,33 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             width: 200
+          }
+        },
+        from: {
+          title: "级别",
+          type: "dict-select",
+          dict: dict({
+            data: [
+              { label: "系统", value: "sys" },
+              { label: "用户", value: "user" }
+            ]
+          }),
+          search: {
+            show: false
+          },
+          form: {
+            show: false
+          },
+          column: {
+            width: 100,
+            align: "center",
+            component: {
+              color: "auto"
+            },
+            order: 10
+          },
+          valueBuilder: ({ row, key, value }) => {
+            row[key] = row.userId > 0 ? "user" : "sys";
           }
         },
         ...commonColumnsDefine

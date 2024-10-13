@@ -20,7 +20,7 @@ export type PluginGroup = {
 };
 
 export type PluginDefine = {
-  key: string;
+  name: string;
   title: string;
   desc?: string;
   input: {

@@ -23,7 +23,7 @@ export class PluginEntity {
   @Column({ comment: '配置', length: 40960 })
   setting: string;
 
-  @Column({ comment: '系统配置', length: 40960 })
+  @Column({ name: 'sys_setting', comment: '系统配置', length: 40960 })
   sysSetting: string;
 
   @Column({ comment: '脚本', length: 40960 })

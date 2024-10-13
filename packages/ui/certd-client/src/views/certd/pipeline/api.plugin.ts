@@ -1,5 +1,6 @@
 import { request } from "/src/api/service";
 import _ from "lodash-es";
+import { PluginConfigBean, PluginSysSetting } from "/@/views/sys/plugin/api";
 const apiPrefix = "/pi/plugin";
 
 const defaultInputDefine = {
@@ -53,4 +54,12 @@ export async function GetGroups(query: any) {
   }
   initPlugins(plugins);
   return groups;
+}
+
+export async function GetPluginConfig(req: { id?: number; name: string; type: string }): Promise<PluginConfigBean> {
+  return await request({
+    url: apiPrefix + "/config",
+    method: "post",
+    data: req
+  });
 }

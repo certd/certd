@@ -9,7 +9,7 @@
     <a-form-item-rest v-if="chooseForm.show">
       <a-modal v-model:open="chooseForm.show" title="选择授权提供者" width="900px" @ok="chooseForm.ok">
         <div style="height: 400px; position: relative">
-          <cert-access-modal v-model="selectedId" :type="type"></cert-access-modal>
+          <cert-access-modal v-model="selectedId" :type="type" :from="from"></cert-access-modal>
         </div>
       </a-modal>
     </a-form-item-rest>
@@ -48,7 +48,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   setup(props, ctx) {
-    const api = createAccessApi(props.from === "sys" ? "/sys/access" : "/pi/access");
+    const api = createAccessApi(props.from);
 
     const target = ref({});
     const selectedId = ref();

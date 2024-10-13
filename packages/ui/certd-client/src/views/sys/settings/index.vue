@@ -3,7 +3,7 @@
     <template #header>
       <div class="title">系统设置</div>
     </template>
-    <div class="sys-settings-form">
+    <div class="sys-settings-form settings-form">
       <a-form
         :model="formState"
         name="basic"

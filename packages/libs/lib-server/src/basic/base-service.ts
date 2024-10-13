@@ -167,7 +167,7 @@ export abstract class BaseService<T> {
         index++;
       });
       if (index > 0) {
-        qb.where(whereSql, query);
+        qb.andWhere(whereSql, query);
       }
     }
     //自定义query

@@ -51,7 +51,7 @@ export class HistoryController extends CrudController<HistoryService> {
       const pipelines = await this.pipelineService.list({
         query: pipelineQuery,
         buildQuery: qb => {
-          qb.where('title like :title', { title: `%${pipelineTitle}%` });
+          qb.andWhere('title like :title', { title: `%${pipelineTitle}%` });
         },
       });
       pipelineIds = pipelines.map(p => p.id);
@@ -59,7 +59,7 @@ export class HistoryController extends CrudController<HistoryService> {
 
     const buildQuery = qb => {
       if (pipelineIds) {
-        qb.where({
+        qb.andWhere({
           pipelineId: In(pipelineIds),
         });
       }

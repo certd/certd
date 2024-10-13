@@ -3,6 +3,7 @@ import { merge } from 'lodash-es';
 import { CrudController } from '@certd/lib-server';
 import { PluginService } from '../../../modules/plugin/service/plugin-service.js';
 import { checkComm } from '@certd/pipeline';
+import { CommPluginConfig, PluginConfigService } from '../../../modules/plugin/service/plugin-config-service.js';
 
 /**
  * 插件
@@ -12,6 +13,9 @@ import { checkComm } from '@certd/pipeline';
 export class PluginController extends CrudController<PluginService> {
   @Inject()
   service: PluginService;
+
+  @Inject()
+  pluginConfigService: PluginConfigService;
 
   getService() {
     checkComm();
@@ -64,5 +68,16 @@ export class PluginController extends CrudController<PluginService> {
   async setDisabled(@Body(ALL) body: { id: number; name: string; type: string; disabled: boolean }) {
     await this.service.setDisabled(body);
     return this.ok();
+  }
+  @Post('/getCommPluginConfigs', { summary: 'sys:settings:edit' })
+  async getCommPluginConfigs() {
+    const res = await this.pluginConfigService.getCommPluginConfig();
+    return this.ok(res);
+  }
+
+  @Post('/saveCommPluginConfigs', { summary: 'sys:settings:edit' })
+  async saveCommPluginConfigs(@Body(ALL) body: CommPluginConfig) {
+    const res = await this.pluginConfigService.saveCommPluginConfig(body);
+    return this.ok(res);
   }
 }

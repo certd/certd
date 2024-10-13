@@ -217,6 +217,8 @@ export class Executor {
     const instance: ITaskPlugin = new plugin.target();
     // @ts-ignore
     const define: PluginDefine = plugin.define;
+    const pluginName = define.name;
+    const pluginConfig = await this.options.pluginConfigService.getPluginConfig(pluginName);
     //从outputContext读取输入参数
     const input = cloneDeep(step.input);
     Decorator.inject(define.input, instance, input, (item, key) => {
@@ -237,6 +239,12 @@ export class Executor {
         }
       }
     });
+
+    const sysInput = pluginConfig.sysSetting?.input || {};
+    //注入系统设置参数
+    for (const sysInputKey in sysInput) {
+      input[sysInputKey] = sysInput[sysInputKey];
+    }
 
     const newInputHash = hashUtils.md5(JSON.stringify(input));
     step.status!.inputHash = newInputHash;

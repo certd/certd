@@ -58,10 +58,43 @@ export async function DeleteBatch(ids: any[]) {
   });
 }
 
-export async function SetDisabled(bean: { id?: number; name?: string; type?: string; disabled: boolean }) {
+export async function SetDisabled(data: { id?: number; name?: string; type?: string; disabled: boolean }) {
   return await request({
     url: apiPrefix + "/setDisabled",
     method: "post",
-    data: bean
+    data: data
+  });
+}
+
+export type PluginConfigBean = {
+  name: string;
+  disabled: boolean;
+  sysSetting: {
+    input?: Record<string, any>;
+  };
+};
+
+export type CertApplyPluginSysInput = {
+  googleCommonEabAccessId: number;
+};
+export type PluginSysSetting<T> = {
+  input?: T;
+};
+export type CommPluginConfig = {
+  CertApply?: PluginSysSetting<CertApplyPluginSysInput>;
+};
+
+export async function GetCommPluginConfigs(): Promise<CommPluginConfig> {
+  return await request({
+    url: apiPrefix + "/getCommPluginConfigs",
+    method: "post"
+  });
+}
+
+export async function SaveCommPluginConfigs(data: CommPluginConfig): Promise<void> {
+  return await request({
+    url: apiPrefix + "/saveCommPluginConfigs",
+    method: "post",
+    data
   });
 }

@@ -6,6 +6,7 @@ import { createDnsProvider, DnsProviderContext, IDnsProvider } from "../../dns-p
 import { CertReader } from "./cert-reader.js";
 import { CertApplyBasePlugin } from "./base.js";
 import { GoogleClient } from "../../libs/google.js";
+import { EabAccess } from "../../access";
 
 export type { CertInfo };
 export * from "./cert-reader.js";
@@ -139,6 +140,13 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   sslProvider!: SSLProvider;
 
   @TaskInput({
+    title: "Google公共EAB授权",
+    isSys: true,
+    show: false,
+  })
+  googleCommonEabAccessId!: number;
+
+  @TaskInput({
     title: "EAB授权",
     component: {
       name: "access-selector",
@@ -151,7 +159,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
-            return form.sslProvider === 'zerossl' || form.sslProvider === 'google'
+            return form.sslProvider === 'zerossl' || (form.sslProvider === 'google' && !form.googleCommonEabAccessId)
         })
     }
     `,
@@ -171,7 +179,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
-            return form.sslProvider === 'google'
+            return form.sslProvider === 'google' && !form.googleCommonEabAccessId
         })
     }
     `,
@@ -233,10 +241,12 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
   acme!: AcmeService;
 
+  eab!: EabAccess;
   async onInit() {
-    let eab: any = null;
+    let eab: EabAccess = null;
 
     if (this.sslProvider === "google") {
+      const eabAccessId = this.eabAccessId || this.googleCommonEabAccessId;
       if (this.googleAccessId) {
         this.logger.info("您正在使用google服务账号授权");
         const googleAccess = await this.ctx.accessService.getById(this.googleAccessId);
@@ -245,9 +255,9 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
           logger: this.logger,
         });
         eab = await googleClient.getEab();
-      } else if (this.eabAccessId) {
+      } else if (eabAccessId) {
         this.logger.info("您正在使用google EAB授权");
-        eab = await this.ctx.accessService.getById(this.eabAccessId);
+        eab = await this.ctx.accessService.getById(eabAccessId);
       } else {
         this.logger.error("google需要配置EAB授权或服务账号授权");
         return;
@@ -260,7 +270,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         return;
       }
     }
-
+    this.eab = eab;
     this.acme = new AcmeService({
       userContext: this.userContext,
       logger: this.logger,
@@ -276,7 +286,10 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   }
 
   async doCertApply() {
-    const email = this["email"];
+    let email = this.email;
+    if (this.eab && this.eab.email) {
+      email = this.eab.email;
+    }
     const domains = this["domains"];
 
     const csrInfo = _.merge(

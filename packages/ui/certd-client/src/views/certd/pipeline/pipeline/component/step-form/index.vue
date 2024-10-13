@@ -116,7 +116,7 @@ import { useUserStore } from "/@/store/modules/user";
 import { compute, useCompute } from "@fast-crud/fast-crud";
 import { useReference } from "/@/use/use-refrence";
 import { useSettingStore } from "/@/store/modules/settings";
-
+import * as pluginApi from "../../../api.plugin";
 export default {
   name: "PiStepForm",
   // eslint-disable-next-line vue/no-unused-components
@@ -163,7 +163,7 @@ export default {
         console.log("currentStepTypeChanged:", currentStep.value);
       };
 
-      const stepTypeSave = () => {
+      const stepTypeSave = async () => {
         currentStep.value._isAdd = false;
         if (currentStep.value.type == null) {
           message.warn("请先选择类型");
@@ -171,7 +171,7 @@ export default {
         }
 
         // 给step的input设置默认值
-        changeCurrentPlugin(currentStep.value);
+        await changeCurrentPlugin(currentStep.value);
 
         //合并默认值
         _.merge(currentStep.value, { input: {}, strategy: { runStrategy: 0 } }, currentPlugin.value.default, currentStep.value);
@@ -229,7 +229,7 @@ export default {
       const currentPlugin = doComputed(() => {
         return currentPluginDefine.value;
       }, getContext);
-      const changeCurrentPlugin = (step: any) => {
+      const changeCurrentPlugin = async (step: any) => {
         const stepType = step.type;
         step.type = stepType;
         step._isAdd = false;
@@ -253,6 +253,14 @@ export default {
           //设置初始值
           if ((column.default != null || column.value != null) && currentStep.value.input[key] == null) {
             currentStep.value.input[key] = column.default ?? column.value;
+          }
+        }
+        //设置系统初始值
+        debugger;
+        const pluginSysConfig = await pluginApi.GetPluginConfig({ name: pluginDefine.name, type: "builtIn" });
+        if (pluginSysConfig.sysSetting?.input) {
+          for (const key in pluginSysConfig.sysSetting?.input) {
+            currentStep.value.input[key] = pluginSysConfig.sysSetting?.input[key];
           }
         }
 

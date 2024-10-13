@@ -25,7 +25,7 @@ export default defineComponent({
   },
   emits: ["update:modelValue"],
   setup(props, ctx) {
-    const api = createAccessApi(props.from === "sys" ? "/sys/access" : "/pi/access");
+    const api = createAccessApi(props.from);
     const context: any = { props, ctx, api };
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 

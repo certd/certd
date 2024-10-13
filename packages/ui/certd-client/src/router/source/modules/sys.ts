@@ -97,6 +97,20 @@ export const sysResources = [
         }
       },
       {
+        title: "证书插件配置",
+        name: "SysPluginConfig",
+        path: "/sys/plugin/config",
+        component: "/sys/plugin/config.vue",
+        meta: {
+          show: () => {
+            const settingStore = useSettingStore();
+            return settingStore.isComm;
+          },
+          icon: "ion:extension-puzzle-outline",
+          permission: "sys:settings:view"
+        }
+      },
+      {
         title: "账号绑定",
         name: "AccountBind",
         path: "/sys/account",

@@ -24,7 +24,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
 
     const bq = qb => {
       if (domain) {
-        qb.where('domain like :domain', { domain: `%${domain}%` });
+        qb.andWhere('domain like :domain', { domain: `%${domain}%` });
       }
     };
 

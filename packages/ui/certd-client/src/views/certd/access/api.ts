@@ -1,6 +1,7 @@
 import { request } from "/src/api/service";
 
-export function createAccessApi(apiPrefix = "/pi/access") {
+export function createAccessApi(from = "user") {
+  const apiPrefix = from === "sys" ? "/sys/access" : "/pi/access";
   return {
     async GetList(query: any) {
       return await request({

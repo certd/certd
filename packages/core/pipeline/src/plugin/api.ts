@@ -26,7 +26,10 @@ export type TaskOutputDefine = {
   type?: string;
 };
 
-export type TaskInputDefine = FormItemProps;
+export type TaskInputDefine = {
+  required?: boolean;
+  isSys?: boolean;
+} & FormItemProps;
 
 export type PluginDefine = Registrable & {
   default?: any;

@@ -1,10 +1,10 @@
 import { compute, CreateCrudOptionsRet, dict } from "@fast-crud/fast-crud";
 import { PluginGroup } from "@certd/pipeline";
 import { useReference } from "/@/use/use-refrence";
-import _ from "lodash-es";
+import _, { merge } from "lodash-es";
 import { useUserStore } from "/@/store/modules/user";
 import { useSettingStore } from "/@/store/modules/settings";
-
+import * as api from "../api.plugin";
 export default function (certPluginGroup: PluginGroup, formWrapperRef: any): CreateCrudOptionsRet {
   const inputs: any = {};
   const userStore = useUserStore();
@@ -46,7 +46,7 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
     crudOptions: {
       form: {
         wrapper: {
-          width: "1150px",
+          width: 1350,
           saveRemind: false,
           title: "创建证书申请流水线"
         }
@@ -73,6 +73,19 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
                   </ul>
                 );
               }
+            },
+            valueChange: {
+              handle: async ({ form, value }) => {
+                debugger;
+                const config = await api.GetPluginConfig({
+                  name: value,
+                  type: "builtIn"
+                });
+                if (config.sysSetting?.input) {
+                  merge(form, config.sysSetting.input);
+                }
+              },
+              immediate: true
             }
           }
         },
