@@ -26,6 +26,7 @@ function promisfy(func: any) {
   desc: '京东云 dns provider',
   // 这里是对应的 cloudflare的access类型名称
   accessType: 'jdcloud',
+  deprecated: '暂不支持',
 })
 export class JDCloudDnsProvider extends AbstractDnsProvider {
   // 通过Autowire传递context

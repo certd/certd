@@ -44,7 +44,12 @@ export class PipelineController extends CrudController<PipelineService> {
       body.sort = { prop: 'order', asc: false };
     }
 
-    const pageRet = await this.getService().page(body?.query, body?.page, body?.sort, buildQuery);
+    const pageRet = await this.getService().page({
+      query: body.query,
+      page: body.page,
+      order: body.order,
+      buildQuery,
+    });
     return this.ok(pageRet);
   }
 

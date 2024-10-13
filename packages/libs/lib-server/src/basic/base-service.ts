@@ -1,10 +1,23 @@
 import { ValidateException } from './exception/index.js';
 import * as _ from 'lodash-es';
 import { PermissionException } from './exception/index.js';
-import { In, Repository } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { Inject } from '@midwayjs/core';
 import { TypeORMDataSourceManager } from '@midwayjs/typeorm';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager.js';
+
+export type PageReq<T = any> = {
+  page?: { offset: number; limit: number };
+} & ListReq<T>;
+
+export type ListReq<T = any> = {
+  query?: Partial<T>;
+  order?: {
+    prop: string;
+    asc: boolean;
+  };
+  buildQuery?: (bq: SelectQueryBuilder<any>) => void;
+};
 
 /**
  * 服务基类
@@ -106,50 +119,22 @@ export abstract class BaseService<T> {
    * 新增|修改|删除 之后的操作
    * @param data 对应数据
    */
-  async modifyAfter(data) {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async modifyAfter(data: any) {}
 
   /**
    * 分页查询
-   * @param query 查询条件 bean
-   * @param page
-   * @param order
-   * @param buildQuery
    */
-  async page(query, page = { offset: 0, limit: 20 }, order, buildQuery) {
+  async page(pageReq: PageReq<T>) {
+    const { page } = pageReq;
     if (page.offset == null) {
       page.offset = 0;
     }
     if (page.limit == null) {
       page.limit = 20;
     }
-    const qb = this.getRepository().createQueryBuilder('main');
-    if (order && order.prop) {
-      qb.addOrderBy('main.' + order.prop, order.asc ? 'ASC' : 'DESC');
-    }
-    qb.addOrderBy('id', 'DESC');
+    const qb = this.buildListQuery(pageReq);
     qb.offset(page.offset).limit(page.limit);
-    //根据bean query
-    if (query) {
-      let whereSql = '';
-      let index = 0;
-      _.forEach(query, (value, key) => {
-        if (!value) {
-          return;
-        }
-        if (index !== 0) {
-          whereSql += ' and ';
-        }
-        whereSql += ` main.${key} = :${key} `;
-        index++;
-      });
-      if (index > 0) {
-        qb.where(whereSql, query);
-      }
-    }
-    //自定义query
-    if (buildQuery) {
-      buildQuery(qb);
-    }
     const list = await qb.getMany();
     const total = await qb.getCount();
     return {
@@ -160,19 +145,13 @@ export abstract class BaseService<T> {
     };
   }
 
-  /**
-   * 分页查询
-   * @param query 查询条件 bean
-   * @param order
-   * @param buildQuery
-   */
-  async list(query, order, buildQuery) {
+  private buildListQuery(listReq: ListReq<T>) {
+    const { query, order, buildQuery } = listReq;
     const qb = this.getRepository().createQueryBuilder('main');
     if (order && order.prop) {
-      qb.orderBy('main.' + order.prop, order.asc ? 'ASC' : 'DESC');
-    } else {
-      qb.orderBy('id', 'DESC');
+      qb.addOrderBy('main.' + order.prop, order.asc ? 'ASC' : 'DESC');
     }
+    qb.addOrderBy('id', 'DESC');
     //根据bean query
     if (query) {
       let whereSql = '';
@@ -195,6 +174,14 @@ export abstract class BaseService<T> {
     if (buildQuery) {
       buildQuery(qb);
     }
+    return qb;
+  }
+
+  /**
+   * 分页查询
+   */
+  async list(listReq: ListReq<T>) {
+    const qb = this.buildListQuery(listReq);
     return await qb.getMany();
   }
 

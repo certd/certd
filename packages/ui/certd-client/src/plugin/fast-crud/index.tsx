@@ -134,7 +134,7 @@ function install(app: App, options: any = {}) {
             //固定label宽度
             span: null,
             style: {
-              width: "120px"
+              width: "145px"
             }
           },
           async afterSubmit({ mode }) {
@@ -182,86 +182,7 @@ function install(app: App, options: any = {}) {
   // @ts-ignore
   app.use(FsExtendsUploader, {
     // @ts-ignore
-    defaultType: "cos",
-    cos: {
-      keepName: true,
-      domain: "https://d2p-demo-1251260344.cos.ap-guangzhou.myqcloud.com",
-      bucket: "d2p-plugins-1251260344",
-      region: "ap-guangzhou",
-      secretId: "", //
-      secretKey: "", // 传了secretKey 和secretId 代表使用本地签名模式（不安全，生产环境不推荐）
-      async getAuthorization(custom: any) {
-        // 不传secretKey代表使用临时签名模式,此时此参数必传（安全，生产环境推荐）
-        const ret = request({
-          url: "http://www.docmirror.cn:7070/api/upload/cos/getAuthorization",
-          method: "get"
-        });
-        // 返回结构要求如下
-        // ret.data:{
-        //   TmpSecretId,
-        //   TmpSecretKey,
-        //   XCosSecurityToken,
-        //   ExpiredTime, // SDK 在 ExpiredTime 时间前，不会再次调用 getAuthorization
-        // }
-        return ret;
-      },
-      successHandle(ret: any) {
-        // 上传完成后可以在此处处理结果，修改url什么的
-        console.log("success handle:", ret);
-        return ret;
-      }
-    },
-    alioss: {
-      keepName: true,
-      domain: "https://d2p-demo.oss-cn-shenzhen.aliyuncs.com",
-      bucket: "d2p-plugins",
-      region: "oss-cn-shenzhen",
-      accessKeyId: "",
-      accessKeySecret: "",
-      async getAuthorization(context: FsUploaderGetAuthContext): Promise<FsUploaderAliossSTS> {
-        // 不传accessKeySecret代表使用临时签名模式,此时此参数必传（安全，生产环境推荐）
-        const ret = await request({
-          url: "http://www.docmirror.cn:7070/api/upload/alioss/getAuthorization",
-          method: "get"
-        });
-        console.log("ret", ret);
-        // 返回结构要求如下
-        // ret.data:{
-        //   TmpSecretId,
-        //   TmpSecretKey,
-        //   XCosSecurityToken,
-        //   ExpiredTime, // SDK 在 ExpiredTime 时间前，不会再次调用 getAuthorization
-        //   key //【可选】后台生成的文件key，如果不传则用前端自己生成的key
-        // }
-        return ret;
-      },
-      sdkOpts: {
-        // sdk配置
-        secure: true // 默认为非https上传,为了安全，设置为true
-      },
-      successHandle(ret: any) {
-        // 上传完成后可以在此处处理结果，修改url什么的
-        console.log("success handle:", ret);
-        return ret;
-      }
-    },
-    qiniu: {
-      keepName: true,
-      bucket: "d2p-plugins",
-      async getToken(options: any) {
-        const ret = await request({
-          url: "http://www.docmirror.cn:7070/api/upload/qiniu/getToken",
-          method: "get"
-        });
-        return ret; // {token:xxx,expires:xxx}
-      },
-      successHandle(ret: any) {
-        // 上传完成后可以在此处处理结果，修改url什么的
-        console.log("success handle:", ret);
-        return ret;
-      },
-      domain: "http://d2p.file.handsfree.work/"
-    },
+    defaultType: "form",
     form: {
       keepName: true,
       action: "http://www.docmirror.cn:7070/api/upload/form/upload",
@@ -313,6 +234,11 @@ function install(app: App, options: any = {}) {
   //此处演示修改官方字段类型
   const textType = getType("text");
   textType.search.autoSearchTrigger = "change"; //修改官方的字段类型，变化就触发 ， "enter"=回车键触发
+  if (!textType.column) {
+    textType.column = {};
+  }
+  textType.column.ellipsis = true;
+  textType.column.showTitle = true;
 
   // 此处演示自定义字段类型
   addTypes({

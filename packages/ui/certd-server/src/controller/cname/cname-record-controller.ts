@@ -28,7 +28,12 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
       }
     };
 
-    const pageRet = await this.getService().page(body?.query, body?.page, body?.sort, bq);
+    const pageRet = await this.getService().page({
+      query: body.query,
+      page: body.page,
+      order: body.order,
+      buildQuery: bq,
+    });
     return this.ok(pageRet);
   }
 

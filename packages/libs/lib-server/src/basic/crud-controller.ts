@@ -7,13 +7,21 @@ export abstract class CrudController<T> extends BaseController {
 
   @Post('/page')
   async page(@Body(ALL) body: any) {
-    const pageRet = await this.getService().page(body?.query, body?.page, body?.sort, null);
+    const pageRet = await this.getService().page({
+      query: body.query ?? {},
+      page: body.page,
+      sort: body.sort,
+      bq: body.bq,
+    });
     return this.ok(pageRet);
   }
 
   @Post('/list')
   async list(@Body(ALL) body: any) {
-    const listRet = await this.getService().list(body, null, null);
+    const listRet = await this.getService().list({
+      query: body.query ?? {},
+      order: body.order,
+    });
     return this.ok(listRet);
   }
 

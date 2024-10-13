@@ -1,7 +1,7 @@
 import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { BaseService } from '@certd/lib-server';
+import { BaseService, PageReq } from '@certd/lib-server';
 import { HistoryEntity } from '../entity/history.js';
 import { PipelineEntity } from '../entity/pipeline.js';
 import { HistoryDetail } from '../entity/vo/history-detail.js';
@@ -32,8 +32,8 @@ export class HistoryService extends BaseService<HistoryEntity> {
     return this.repository;
   }
 
-  async page(query, page, sort, buildQuery) {
-    const res = await super.page(query, page, sort, buildQuery);
+  async page(pageReq: PageReq<HistoryEntity>) {
+    const res = await super.page(pageReq);
     for (const item of res.records) {
       item.fillPipelineTitle();
     }

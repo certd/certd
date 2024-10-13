@@ -1,7 +1,7 @@
 import { Config, Inject, Provide, Scope, ScopeEnum, sleep } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { BaseService } from '@certd/lib-server';
+import { BaseService, PageReq } from '@certd/lib-server';
 import { PipelineEntity } from '../entity/pipeline.js';
 import { PipelineDetail } from '../entity/vo/pipeline-detail.js';
 import { Executor, isPlus, Pipeline, ResultType, RunHistory, UserInfo } from '@certd/pipeline';
@@ -68,8 +68,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return bean;
   }
 
-  async page(query: any, page: { offset: number; limit: number }, order: any, buildQuery: any) {
-    const result = await super.page(query, page, order, buildQuery);
+  async page(pageReq: PageReq<PipelineEntity>) {
+    const result = await super.page(pageReq);
     const pipelineIds: number[] = [];
     const recordMap = {};
     for (const record of result.records) {

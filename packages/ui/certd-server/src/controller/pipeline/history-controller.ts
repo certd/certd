@@ -48,8 +48,11 @@ export class HistoryController extends CrudController<HistoryService> {
     let pipelineIds: any = null;
     const pipelineTitle = body.query?.pipelineTitle;
     if (pipelineTitle) {
-      const pipelines = await this.pipelineService.list(pipelineQuery, null, qb => {
-        qb.where('title like :title', { title: `%${pipelineTitle}%` });
+      const pipelines = await this.pipelineService.list({
+        query: pipelineQuery,
+        buildQuery: qb => {
+          qb.where('title like :title', { title: `%${pipelineTitle}%` });
+        },
       });
       pipelineIds = pipelines.map(p => p.id);
     }
@@ -62,7 +65,12 @@ export class HistoryController extends CrudController<HistoryService> {
       }
     };
 
-    const res = await this.service.page(body?.query, body?.page, body?.sort, buildQuery);
+    const res = await this.service.page({
+      query: body.query,
+      page: body.page,
+      order: body.order,
+      buildQuery,
+    });
     return this.ok(res);
   }
 
@@ -78,7 +86,11 @@ export class HistoryController extends CrudController<HistoryService> {
     const buildQuery = qb => {
       qb.limit(10);
     };
-    const listRet = await this.getService().list(body, { prop: 'id', asc: false }, buildQuery);
+    const listRet = await this.getService().list({
+      query: body,
+      order: { prop: 'id', asc: false },
+      buildQuery,
+    });
     return this.ok(listRet);
   }
 

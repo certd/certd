@@ -10,6 +10,7 @@ import querystring from 'querystring';
   desc: 'dynadot dns provider',
   // 这里是对应的 cloudflare的access类型名称
   accessType: 'dynadot',
+  deprecated: '暂不支持',
 })
 export class DynadotDnsProvider extends AbstractDnsProvider {
   // 通过Autowire传递context

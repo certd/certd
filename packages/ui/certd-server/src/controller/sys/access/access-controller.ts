@@ -16,14 +16,14 @@ export class SysAccessController extends AccessController {
     return this.service2;
   }
 
-  userId() {
+  getUserId() {
     checkComm();
     return 0;
   }
 
   @Post('/page', { summary: 'sys:settings:view' })
   async page(@Body(ALL) body: any) {
-    return await await super.page(body);
+    return await super.page(body);
   }
 
   @Post('/list', { summary: 'sys:settings:view' })

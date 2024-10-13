@@ -72,6 +72,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         buttons: {
           edit: {
             show: false
+          },
+          copy: {
+            show: false
+          },
+          remove: {
+            show: false
           }
         }
       },
@@ -97,7 +103,25 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: false
           },
           column: {
-            width: 100
+            width: 200
+          }
+        },
+        icon: {
+          title: "图标",
+          type: "text",
+          form: {
+            show: false
+          },
+          column: {
+            width: 100,
+            align: "center",
+            component: {
+              name: "fs-icon",
+              vModel: "icon",
+              style: {
+                fontSize: "22px"
+              }
+            }
           }
         },
         title: {
@@ -118,7 +142,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: "分组",
           type: "text",
           column: {
-            width: 300
+            width: 100,
+            align: "center"
           }
         },
         disabled: {
@@ -135,6 +160,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             width: 100,
+            align: "center",
             component: {
               title: "点击可禁用/启用",
               on: {
@@ -143,7 +169,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                     title: "提示",
                     content: `确定要${!value ? "禁用" : "启用"}吗？`,
                     onOk: async () => {
-                      await api.SetDisabled(row.id, !value);
+                      await api.SetDisabled({
+                        id: row.id,
+                        name: row.name,
+                        type: row.type,
+                        disabled: !value
+                      });
                       await crudExpose.doRefresh();
                     }
                   });

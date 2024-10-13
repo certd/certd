@@ -10,7 +10,7 @@ CREATE TABLE "pi_plugin"
   "setting"     text,
   "sysSetting"  text,
   "content"     text,
-  "type"        strinng      NOT NULL,
+  "type"        varchar(100) NOT NULL,
   "disabled"    boolean      NOT NULL,
   "create_time" datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "update_time" datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP)

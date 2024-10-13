@@ -103,7 +103,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     },
     rules: [{ type: "checkCnameVerifyPlan" }],
     required: true,
-    helper: "如果选择CNAME方式，请按照上面的显示，给域名添加CNAME记录，添加后，点击验证，验证成功后不要删除记录，申请和续期证书会一直用它",
+    helper: "如果选择CNAME方式，请按照上面的显示，给要申请证书的域名添加CNAME记录，添加后，点击验证，验证成功后不要删除记录，申请和续期证书会一直用它",
     col: {
       span: 24,
     },
@@ -122,7 +122,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   domainsVerifyPlan!: DomainsVerifyPlanInput;
 
   @TaskInput({
-    title: "证书提供商",
+    title: "证书颁发机构",
     value: "letsencrypt",
     component: {
       name: "a-select",

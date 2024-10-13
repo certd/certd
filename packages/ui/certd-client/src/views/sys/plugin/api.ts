@@ -57,3 +57,11 @@ export async function DeleteBatch(ids: any[]) {
     data: { ids }
   });
 }
+
+export async function SetDisabled(bean: { id?: number; name?: string; type?: string; disabled: boolean }) {
+  return await request({
+    url: apiPrefix + "/setDisabled",
+    method: "post",
+    data: bean
+  });
+}

@@ -76,18 +76,21 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           }
         },
         domain: {
-          title: "域名",
+          title: "CNAME域名",
           type: "text",
           editForm: {
             component: {
               disabled: true
             }
           },
+          search: {
+            show: true
+          },
           form: {
             component: {
               placeholder: "cname.handsfree.work"
             },
-            helper: "CNAME域名一旦确定不可修改，建议使用一级子域名",
+            helper: "需要一个右边DNS提供商注册的域名（也可以将其他域名的dns服务器转移到这几家来）。\nCNAME域名一旦确定不可修改，建议使用一级子域名",
             rules: [{ required: true, message: "此项必填" }]
           },
           column: {
@@ -97,6 +100,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         dnsProviderType: {
           title: "DNS提供商",
           type: "dict-select",
+          search: {
+            show: true
+          },
           dict: dict({
             url: "pi/dnsProvider/list",
             value: "key",

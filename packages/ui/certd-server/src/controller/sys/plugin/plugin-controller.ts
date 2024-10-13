@@ -61,8 +61,8 @@ export class PluginController extends CrudController<PluginService> {
   }
 
   @Post('/setDisabled', { summary: 'sys:settings:edit' })
-  async setDisabled(@Body('id') id: number, @Body('disabled') disabled: boolean) {
-    await this.service.setDisabled(id, disabled);
+  async setDisabled(@Body(ALL) body: { id: number; name: string; type: string; disabled: boolean }) {
+    await this.service.setDisabled(body);
     return this.ok();
   }
 }

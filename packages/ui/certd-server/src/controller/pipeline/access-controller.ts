@@ -12,10 +12,6 @@ export class AccessController extends CrudController<AccessService> {
   @Inject()
   service: AccessService;
 
-  userId() {
-    return this.getUserId();
-  }
-
   getService(): AccessService {
     return this.service;
   }
@@ -23,36 +19,45 @@ export class AccessController extends CrudController<AccessService> {
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body) {
     body.query = body.query ?? {};
-    body.query.userId = this.userId();
-    return await super.page(body);
+    delete body.query.userId;
+    const buildQuery = qb => {
+      qb.where('user_id = :userId', { userId: this.getUserId() });
+    };
+    const res = await this.service.page({
+      query: body.query,
+      page: body.page,
+      order: body.order,
+      buildQuery,
+    });
+    return this.ok(res);
   }
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body) {
-    body.userId = this.userId();
+    body.userId = this.getUserId();
     return super.list(body);
   }
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean) {
-    bean.userId = this.userId();
+    bean.userId = this.getUserId();
     return super.add(bean);
   }
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.service.checkUserId(bean.id, this.userId());
+    await this.service.checkUserId(bean.id, this.getUserId());
     return super.update(bean);
   }
   @Post('/info', { summary: Constants.per.authOnly })
   async info(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.userId());
+    await this.service.checkUserId(id, this.getUserId());
     return super.info(id);
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.userId());
+    await this.service.checkUserId(id, this.getUserId());
     return super.delete(id);
   }
 
