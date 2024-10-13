@@ -10,12 +10,14 @@ const list = [
     age: 15,
     password: "",
     status: "2",
+    long: "我的label很长",
     url: "https://baidu.com",
     renderLabel: "第一行编辑演示阻止表单提交"
   },
   {
     name: "张三",
     age: 18,
+    long: "我的label很长",
     password: "",
     url: "https://baidu.com"
   },

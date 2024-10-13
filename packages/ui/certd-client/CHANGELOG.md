@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.4](https://github.com/fast-crud/fast-crud/compare/v1.21.3...v1.21.4) (2024-10-13)
+
+### Performance Improvements
+
+* 优化列设置多级表头支持级联勾选 ([a196922](https://github.com/fast-crud/fast-crud/commit/a196922630e9ef627dd548bb8d1c13acbe2eee28))
+* table-select支持destroyOnClose参数，以修复点击取消后，扔保留上一次选中值的bug ([5a70cec](https://github.com/fast-crud/fast-crud/commit/5a70cec7e5f45439a518fc2aadc40b29fad5c6f1))
+
 ## [1.21.3](https://github.com/fast-crud/fast-crud/compare/v1.21.2...v1.21.3) (2024-09-20)
 
 ### Performance Improvements

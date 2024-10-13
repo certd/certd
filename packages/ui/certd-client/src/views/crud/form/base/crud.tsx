@@ -49,7 +49,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         afterSubmit(context) {
           // context.res 是add或update请求返回结果
           if (context.form.id === 1) {
-            message.error("模拟保存失败，阻止弹窗关闭");
+            message.error("模拟保存失败，阻止弹窗关闭，请选择其他行的数据进行编辑保存");
             throw new Error("模拟失败，阻止弹窗关闭");
           }
         },
@@ -102,7 +102,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
         long: {
           title: "演示Label很长时如何很好的展示",
-          type: "text"
+          type: "text",
+          column: {
+            ellipsis: true,
+            showTitle: true
+          }
         },
         draft: {
           title: "草稿",

@@ -24,6 +24,7 @@ const list = [
     name: "张三",
     date: "2016-05-04",
     status: "1",
+    long: "我很长我很长我很长我很长我很长我很长我很长我很长",
     province: "2",
     copy: "测试文本",
     classId: 2

@@ -2,7 +2,7 @@
   <div class="fs-multiple-page-control-group">
     <div class="fs-multiple-page-control-content">
       <div class="fs-multiple-page-control-content-inner">
-        <a-tabs class="fs-multiple-page-control fs-multiple-page-sort" :active-key="page.getCurrent" type="editable-card" hide-add @tabClick="handleClick" @edit="handleTabEdit">
+        <a-tabs class="fs-multiple-page-control fs-multiple-page-sort" :active-key="page.getCurrent" type="editable-card" hide-add @tab-click="handleClick" @edit="handleTabEdit">
           <a-tab-pane v-for="item in page.getOpened" :key="item.fullPath" :tab="item.meta?.title || '未命名'" :name="item.fullPath" :closable="isTabClosable(item)" />
         </a-tabs>
         <!--        <fs-contextmenu v-model:visible="contextmenuFlag" :x="contentmenuX" :y="contentmenuY">-->
@@ -16,10 +16,10 @@
 
     <div class="fs-multiple-page-control-btn">
       <a-dropdown-button class="control-btn-dropdown" split-button @click="closeAll">
-        <span class="iconify" data-icon="ion:close-circle" data-inline="false"></span>
+        <fs-icon icon="ion:close-circle"></fs-icon>
         <template #icon><DownOutlined /></template>
         <template #overlay>
-          <a-menu @click="(command:any) => handleControlItemClick(command)">
+          <a-menu @click="(command: any) => handleControlItemClick(command)">
             <a-menu-item key="left">
               <fs-icon name="arrow-left" class="fs-mr-10" />
               关闭左侧

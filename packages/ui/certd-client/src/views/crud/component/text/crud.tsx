@@ -105,6 +105,14 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             }
           }
         },
+        long: {
+          title: "演示Text很长时如何很好的展示",
+          type: "text",
+          column: {
+            ellipsis: true,
+            showTitle: true
+          }
+        },
         search: {
           title: "搜索",
           type: "text",
@@ -169,8 +177,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                 utils.logger.info("context scope", context);
                 return (
                   <a-input-group compact>
-                    <a-input placeholder={"render1 input"} style="width: 50%" v-model={[context.form.render, "value"]} />
-                    <a-input placeholder={"render2 input"} style="width: 50%" v-model={[context.form.render2, "value"]} />
+                    <a-input placeholder={"render1 input"} style={{ width: "50%" }} v-model={[context.form.render, "value"]} />
+                    <a-input placeholder={"render2 input"} style={{ width: "50%" }} v-model={[context.form.render2, "value"]} />
                   </a-input-group>
                 );
               }
@@ -181,7 +189,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           title: "我的值是由复杂输入列输入的",
           type: "text",
           column: {
-            width: "300px"
+            width: 300
           },
           form: {
             show: false
