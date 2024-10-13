@@ -4,13 +4,13 @@ import { Repository } from 'typeorm';
 import { BaseService, ValidateException } from '@certd/lib-server';
 import { CnameRecordEntity, CnameRecordStatusType } from '../entity/cname-record.js';
 import { v4 as uuidv4 } from 'uuid';
-import { CnameProviderService } from '../../sys/cname/service/cname-provider-service.js';
-import { CnameProviderEntity } from '../../sys/cname/entity/cname_provider.js';
 import { createDnsProvider, IDnsProvider, parseDomain } from '@certd/plugin-cert';
 import { cache, http, logger, utils } from '@certd/pipeline';
 import { AccessService } from '../../pipeline/service/access-service.js';
 import { isDev } from '../../../utils/env.js';
 import { walkTxtRecord } from '@certd/acme-client';
+import { CnameProviderService } from './cname-provider-service.js';
+import { CnameProviderEntity } from '../entity/cname_provider.js';
 
 type CnameCheckCacheValue = {
   validating: boolean;

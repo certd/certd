@@ -8,7 +8,7 @@ import { Executor, isPlus, Pipeline, ResultType, RunHistory, UserInfo } from '@c
 import { AccessService } from './access-service.js';
 import { DbStorage } from './db-storage.js';
 import { StorageService } from './storage-service.js';
-import { Cron } from '../../plugin/cron/cron.js';
+import { Cron } from '../../cron/cron.js';
 import { HistoryService } from './history-service.js';
 import { HistoryEntity } from '../entity/history.js';
 import { HistoryLogEntity } from '../entity/history-log.js';

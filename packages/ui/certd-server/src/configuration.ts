@@ -5,7 +5,7 @@ import * as cache from '@midwayjs/cache';
 import * as validate from '@midwayjs/validate';
 import * as info from '@midwayjs/info';
 import * as staticFile from '@midwayjs/static-file';
-import * as cron from './modules/plugin/cron/index.js';
+import * as cron from './modules/cron/index.js';
 import * as flyway from '@certd/midway-flyway-js';
 import cors from '@koa/cors';
 import { GlobalExceptionMiddleware } from './middleware/global-exception.js';
