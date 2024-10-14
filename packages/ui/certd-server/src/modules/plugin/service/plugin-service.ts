@@ -3,7 +3,7 @@ import { BaseService, PageReq } from '@certd/lib-server';
 import { PluginEntity } from '../entity/plugin.js';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
-import { checkComm, isComm } from '@certd/pipeline';
+import { isComm } from '@certd/pipeline';
 import { BuiltInPluginService } from '../../pipeline/service/builtin-plugin-service.js';
 import { merge } from 'lodash-es';
 
@@ -18,7 +18,6 @@ export class PluginService extends BaseService<PluginEntity> {
 
   //@ts-ignore
   getRepository() {
-    checkComm();
     return this.repository;
   }
 

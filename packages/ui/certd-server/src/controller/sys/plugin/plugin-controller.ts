@@ -2,7 +2,6 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/c
 import { merge } from 'lodash-es';
 import { CrudController } from '@certd/lib-server';
 import { PluginService } from '../../../modules/plugin/service/plugin-service.js';
-import { checkComm } from '@certd/pipeline';
 import { CommPluginConfig, PluginConfigService } from '../../../modules/plugin/service/plugin-config-service.js';
 
 /**
@@ -18,7 +17,6 @@ export class PluginController extends CrudController<PluginService> {
   pluginConfigService: PluginConfigService;
 
   getService() {
-    checkComm();
     return this.service;
   }
 
