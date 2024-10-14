@@ -41,9 +41,6 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     if (!key) {
       return null;
     }
-    if (key === 'sys.site' && isComm()) {
-      return null;
-    }
     return await this.repository.findOne({
       where: {
         key,
