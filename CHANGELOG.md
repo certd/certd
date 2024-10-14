@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.26.7](https://github.com/certd/certd/compare/v1.26.6...v1.26.7) (2024-10-14)
+
+### Bug Fixes
+
+* 修复siteInfo每次都要重新设置的bug ([36b26ae](https://github.com/certd/certd/commit/36b26ae9f5c7a53c1c2546fb79b2ea451b854abf))
+
 ## [1.26.6](https://github.com/certd/certd/compare/v1.26.5...v1.26.6) (2024-10-14)
 
 ### Bug Fixes
