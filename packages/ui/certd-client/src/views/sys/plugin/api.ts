@@ -78,7 +78,9 @@ export type CertApplyPluginSysInput = {
   googleCommonEabAccessId: number;
 };
 export type PluginSysSetting<T> = {
-  input?: T;
+  sysSetting: {
+    input?: T;
+  };
 };
 export type CommPluginConfig = {
   CertApply?: PluginSysSetting<CertApplyPluginSysInput>;

@@ -6,9 +6,16 @@
 
     <div class="sys-plugin-config settings-form">
       <a-form :model="formState" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish" @finish-failed="onFinishFailed">
-        <a-form-item label="公共Google EAB授权" :name="['CertApply', 'input', 'googleCommonEabAccessId']">
-          <access-selector v-model:model-value="formState.CertApply.input.googleCommonEabAccessId" type="eab" from="sys"></access-selector>
-          <div class="helper">设置公共Google EAB授权给用户使用，避免用户自己去翻墙获取Google EAB授权</div>
+        <a-form-item label="公共Google EAB授权" :name="['CertApply', 'sysSetting', 'input', 'googleCommonEabAccessId']">
+          <access-selector v-model:model-value="formState.CertApply.sysSetting.input.googleCommonEabAccessId" type="eab" from="sys"></access-selector>
+          <div class="helper">
+            <div>设置公共Google EAB授权给用户使用，避免用户自己去翻墙获取Google EAB授权</div>
+            <div>
+              <a href="https://gitee.com/certd/certd/blob/v2/doc/google/google.md#21-%E7%9B%B4%E6%8E%A5%E8%8E%B7%E5%8F%96eab-%E6%8E%A8%E8%8D%90">
+                获取Google EAB授权方法
+              </a>
+            </div>
+          </div>
         </a-form-item>
 
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
@@ -31,7 +38,11 @@ defineOptions({
 });
 const formState = reactive<Partial<CommPluginConfig>>({
   CertApply: {
-    input: {}
+    sysSetting: {
+      input: {
+        googleCommonEabAccessId: null
+      }
+    }
   }
 });
 

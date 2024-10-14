@@ -34,20 +34,27 @@ export class PluginConfigService {
     return configs;
   }
 
-  async saveCommPluginConfig(body: CommPluginConfig) {
-    const certApplyConfig = body.CertApply;
-    const CertApply = await this.pluginService.getRepository().findOne({
-      where: { name: 'CertApply' },
+  async saveCommPluginConfig(config: CommPluginConfig) {
+    await this.savePluginConfig('CertApply', config.CertApply);
+  }
+
+  async savePluginConfig(name: string, config: PluginConfig) {
+    const sysSetting = config?.sysSetting;
+    if (!sysSetting) {
+      throw new Error(`${name}.sysSetting is required`);
+    }
+    const pluginEntity = await this.pluginService.getRepository().findOne({
+      where: { name },
     });
-    if (!CertApply) {
+    if (!pluginEntity) {
       await this.pluginService.add({
-        name: 'CertApply',
-        sysSetting: JSON.stringify(certApplyConfig),
+        name,
+        sysSetting: JSON.stringify(sysSetting),
         type: 'builtIn',
         disabled: false,
       });
     } else {
-      await this.pluginService.getRepository().update({ name: 'CertApply' }, { sysSetting: JSON.stringify(certApplyConfig) });
+      await this.pluginService.getRepository().update({ name }, { sysSetting: JSON.stringify(sysSetting) });
     }
   }
 

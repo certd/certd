@@ -1,15 +1,9 @@
 import { Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
 import { logger } from '@certd/pipeline';
 import { UserService } from '../sys/authority/service/user-service.js';
-import { PlusService, SysSettingsService } from '@certd/lib-server';
+import { PlusService, SysInstallInfo, SysPrivateSettings, SysSettingsService } from '@certd/lib-server';
 import { nanoid } from 'nanoid';
-import { SysInstallInfo, SysPrivateSettings } from '@certd/lib-server';
 import crypto from 'crypto';
-
-export type InstallInfo = {
-  installTime: number;
-  instanceId?: string;
-};
 
 @Autoload()
 @Scope(ScopeEnum.Singleton)
@@ -59,8 +53,6 @@ export class AutoInitSite {
     }
 
     logger.info('初始化站点完成');
-    // const pkg = require('../../../package.json');
-    // logger.info(`当前版本为：${pkg.version}`);
   }
 
   async startOptimizeDb() {

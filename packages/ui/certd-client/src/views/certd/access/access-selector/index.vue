@@ -1,7 +1,7 @@
 <template>
   <div class="access-selector">
     <span v-if="target.name" class="mr-5 cd-flex-inline">
-      <span class="mr-5">{{ target.name }}</span>
+      <a-tag class="mr-5" color="green">{{ target.name }}</a-tag>
       <fs-icon class="cd-icon-button" icon="ion:close-circle-outline" @click="clear"></fs-icon>
     </span>
     <span v-else class="mlr-5 text-gray">{{ placeholder }}</span>
