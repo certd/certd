@@ -6,7 +6,6 @@ import { CacheManager } from '@midwayjs/cache';
 import { BaseSettings, SysPrivateSettings, SysPublicSettings } from './models.js';
 import * as _ from 'lodash-es';
 import { BaseService } from '../../../basic/index.js';
-import { isComm } from '@certd/pipeline';
 import { setGlobalProxy } from '@certd/basic';
 
 /**
