@@ -9,11 +9,11 @@ Certd 是一个免费全自动申请和自动部署更新SSL证书的工具。
 ## 一、特性
 本项目不仅支持证书申请过程自动化，还可以自动化部署更新证书，让你的证书永不过期。     
 
-* 全自动申请证书（支持阿里云、腾讯云、华为云、Cloudflare等各种途径注册的域名）
-* 全自动部署更新证书（目前支持部署到主机、部署到阿里云、腾讯云等）
+* 全自动申请证书（支持所有注册商注册的域名）
+* 全自动部署更新证书（目前支持部署到主机、部署到阿里云、腾讯云等，目前已支持30+部署插件）
 * 支持通配符域名/泛域名，支持多个域名打到一个证书上
 * 邮件通知
-* 私有化部署，保障安全
+* 私有化部署，保障数据安全
 * 免费、免费、免费（[阿里云单个通配符域名证书最便宜也要1800/年](https://yundun.console.aliyun.com/?p=cas#/certExtend/buy/cn-hangzhou)）
 
 
@@ -124,6 +124,7 @@ git clone https://github.com/certd/certd
 cd certd
 # 启动服务
 ./start.sh  
+# 数据默认保存在 ./packages/ui/certd-server/data 目录下,注意数据备份
 ```
 如果是windows，请先安装`git for windows` ，然后右键，选择`open git bash here`打开终端，再执行`./start.sh`命令
 
@@ -169,6 +170,7 @@ docker compose up -d
 * [google证书](./doc/google/google.md)
 * [群晖部署certd及证书更新教程](./doc/synology/index.md)
 
+* [CNAME证书校验方式说明](./doc/cname/index.md)
 
 ## 八、问题处理
 ### 7.1 忘记管理员密码   

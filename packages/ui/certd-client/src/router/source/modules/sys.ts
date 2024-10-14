@@ -106,7 +106,7 @@ export const sysResources = [
             const settingStore = useSettingStore();
             return settingStore.isComm;
           },
-          icon: "ion:extension-puzzle-outline",
+          icon: "ion:extension-puzzle",
           permission: "sys:settings:view"
         }
       },
