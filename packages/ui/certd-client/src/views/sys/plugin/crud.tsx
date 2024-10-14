@@ -67,6 +67,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         }
       },
       rowHandle: {
+        show: false,
         minWidth: 200,
         fixed: "right",
         buttons: {
@@ -81,18 +82,21 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           }
         }
       },
+      table: {
+        rowKey: "name"
+      },
       columns: {
-        id: {
-          title: "ID",
-          key: "id",
-          type: "number",
-          column: {
-            width: 100
-          },
-          form: {
-            show: false
-          }
-        },
+        // id: {
+        //   title: "ID",
+        //   key: "id",
+        //   type: "number",
+        //   column: {
+        //     width: 100
+        //   },
+        //   form: {
+        //     show: false
+        //   }
+        // },
         name: {
           title: "插件名称",
           type: "text",
@@ -147,7 +151,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           }
         },
         disabled: {
-          title: "禁用/启用",
+          title: "点击禁用/启用",
           type: "dict-switch",
           dict: dict({
             data: [
@@ -159,7 +163,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             value: false
           },
           column: {
-            width: 100,
+            width: 120,
             align: "center",
             component: {
               title: "点击可禁用/启用",
