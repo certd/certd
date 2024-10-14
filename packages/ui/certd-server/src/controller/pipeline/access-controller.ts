@@ -26,7 +26,7 @@ export class AccessController extends CrudController<AccessService> {
     const res = await this.service.page({
       query: body.query,
       page: body.page,
-      order: body.order,
+      sort: body.sort,
       buildQuery,
     });
     return this.ok(res);

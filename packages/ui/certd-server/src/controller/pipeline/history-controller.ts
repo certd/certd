@@ -68,7 +68,7 @@ export class HistoryController extends CrudController<HistoryService> {
     const res = await this.service.page({
       query: body.query,
       page: body.page,
-      order: body.order,
+      sort: body.sort,
       buildQuery,
     });
     return this.ok(res);
@@ -88,7 +88,7 @@ export class HistoryController extends CrudController<HistoryService> {
     };
     const listRet = await this.getService().list({
       query: body,
-      order: { prop: 'id', asc: false },
+      sort: { prop: 'id', asc: false },
       buildQuery,
     });
     return this.ok(listRet);

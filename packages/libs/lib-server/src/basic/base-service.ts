@@ -12,7 +12,7 @@ export type PageReq<T = any> = {
 
 export type ListReq<T = any> = {
   query?: Partial<T>;
-  order?: {
+  sort?: {
     prop: string;
     asc: boolean;
   };
@@ -146,10 +146,10 @@ export abstract class BaseService<T> {
   }
 
   private buildListQuery(listReq: ListReq<T>) {
-    const { query, order, buildQuery } = listReq;
+    const { query, sort, buildQuery } = listReq;
     const qb = this.getRepository().createQueryBuilder('main');
-    if (order && order.prop) {
-      qb.addOrderBy('main.' + order.prop, order.asc ? 'ASC' : 'DESC');
+    if (sort && sort.prop) {
+      qb.addOrderBy('main.' + sort.prop, sort.asc ? 'ASC' : 'DESC');
     }
     qb.addOrderBy('id', 'DESC');
     //根据bean query
