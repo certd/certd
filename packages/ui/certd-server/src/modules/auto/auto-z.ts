@@ -21,7 +21,7 @@ export class AutoZPrint {
     if (isPlus()) {
       logger.info(`授权信息:${plusInfo.vipType},${dayjs(plusInfo.expireTime).format('YYYY-MM-DD')}`);
     }
-    logger.info('服务启动完成');
+    logger.info('Certd已启动');
     logger.info('=========================================');
   }
 }

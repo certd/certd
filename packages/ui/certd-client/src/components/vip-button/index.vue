@@ -117,7 +117,7 @@ async function doActive() {
   }
   const res = await api.doActive(formState);
   if (res) {
-    await userStore.reInit();
+    await settingStore.init();
     const vipLabel = settingStore.vipLabel;
     Modal.success({
       title: "激活成功",

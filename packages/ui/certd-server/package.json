@@ -10,6 +10,8 @@
     "commdev": "cross-env NODE_ENV=commdev mwtsc --watch --run @midwayjs/mock/app",
     "commpro": "cross-env NODE_ENV=commpro mwtsc --watch --run @midwayjs/mock/app",
     "pgdev": "cross-env NODE_ENV=pgdev mwtsc --watch --run @midwayjs/mock/app",
+    "dev-new": "npm run rm-db-new && cross-env NODE_ENV=local mwtsc --watch --run @midwayjs/mock/app",
+    "rm-db-new": "rimraf ./data/db-new.sqlite",
     "test": "cross-env NODE_ENV=unittest mocha",
     "cov": "cross-env c8 --all --reporter=text --reporter=lcovonly npm run test",
     "lint": "mwts check",
@@ -87,6 +89,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "rimraf": "^5.0.5",
     "@midwayjs/mock": "~3.17.1",
     "@types/ali-oss": "^6.16.11",
     "@types/cache-manager": "^4.0.6",
