@@ -10,6 +10,7 @@
     "commdev": "cross-env NODE_ENV=commdev mwtsc --watch --run @midwayjs/mock/app",
     "commpro": "cross-env NODE_ENV=commpro mwtsc --watch --run @midwayjs/mock/app",
     "pgdev": "cross-env NODE_ENV=pgdev mwtsc --watch --run @midwayjs/mock/app",
+    "pgpl": "cross-env NODE_ENV=pgpl mwtsc --watch --run @midwayjs/mock/app",
     "dev-new": "npm run rm-db-new && cross-env NODE_ENV=local mwtsc --watch --run @midwayjs/mock/app",
     "rm-db-new": "rimraf ./data/db-new.sqlite",
     "test": "cross-env NODE_ENV=unittest mocha",
@@ -21,7 +22,7 @@
     "dev-build": "echo 1",
     "build-on-docker": "node ./before-build.js && npm run build",
     "up-mw-deps": "npx midway-version -u -w",
-    "heap": "clinic heapprofiler    --  node ./bootstrap.js",
+    "heap": "cross-env NODE_ENV=pgpl clinic heapprofiler    --  node ./bootstrap.js",
     "flame": "clinic flame   -- node ./bootstrap.js"
   },
   "dependencies": {

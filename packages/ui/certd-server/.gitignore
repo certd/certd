@@ -17,3 +17,5 @@ run/
 /test/setup.ts
 /data/
 .clinic
+
+.env.pgpl.yaml
