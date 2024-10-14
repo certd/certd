@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-huawei",
   "private": false,
-  "version": "1.26.3",
+  "version": "1.26.4",
   "main": "./dist/bundle.js",
   "module": "./dist/bundle.js",
   "types": "./dist/d/index.d.ts",
