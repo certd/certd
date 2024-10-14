@@ -67,6 +67,14 @@ export class PluginConfigService {
   async getPluginConfig(req: PluginFindReq) {
     const plugin = await this.get(req);
     let sysSetting: any = {};
+    if (!plugin) {
+      return {
+        name: req.name,
+        disabled: false,
+        type: req.type,
+        sysSetting,
+      };
+    }
     if (plugin && plugin.sysSetting) {
       sysSetting = JSON.parse(plugin.sysSetting);
     }

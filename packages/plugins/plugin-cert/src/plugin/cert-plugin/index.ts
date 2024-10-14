@@ -246,18 +246,20 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     let eab: EabAccess = null;
 
     if (this.sslProvider === "google") {
-      const eabAccessId = this.eabAccessId || this.googleCommonEabAccessId;
       if (this.googleAccessId) {
-        this.logger.info("您正在使用google服务账号授权");
+        this.logger.info("当前正在使用 google服务账号授权获取EAB");
         const googleAccess = await this.ctx.accessService.getById(this.googleAccessId);
         const googleClient = new GoogleClient({
           access: googleAccess,
           logger: this.logger,
         });
         eab = await googleClient.getEab();
-      } else if (eabAccessId) {
-        this.logger.info("您正在使用google EAB授权");
-        eab = await this.ctx.accessService.getById(eabAccessId);
+      } else if (this.eabAccessId) {
+        this.logger.info("当前正在使用 google EAB授权");
+        eab = await this.ctx.accessService.getById(this.eabAccessId);
+      } else if (this.googleCommonEabAccessId) {
+        this.logger.info("当前正在使用 google公共EAB授权");
+        eab = await this.ctx.accessService.getById(this.googleCommonEabAccessId);
       } else {
         this.logger.error("google需要配置EAB授权或服务账号授权");
         return;

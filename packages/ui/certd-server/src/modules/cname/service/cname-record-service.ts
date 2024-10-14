@@ -62,7 +62,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
       //获取默认的cnameProviderId
       cnameProvider = await this.cnameProviderService.getByPriority();
       if (cnameProvider == null) {
-        throw new ValidateException('找不到CNAME服务，请先联系管理员添加CNAME服务');
+        throw new ValidateException('找不到CNAME服务，请先前往“系统管理->CNAME服务设置”添加CNAME服务');
       }
     } else {
       cnameProvider = await this.cnameProviderService.info(param.cnameProviderId);

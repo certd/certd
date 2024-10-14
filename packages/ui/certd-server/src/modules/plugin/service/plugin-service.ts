@@ -100,7 +100,7 @@ export class PluginService extends BaseService<PluginEntity> {
     return records;
   }
 
-  async setDisabled(opts: { id: number; name: string; type: string; disabled: boolean }) {
+  async setDisabled(opts: { id?: number; name?: string; type: string; disabled: boolean }) {
     const { id, name, type, disabled } = opts;
     if (!type) {
       throw new Error('参数错误: type 不能为空');

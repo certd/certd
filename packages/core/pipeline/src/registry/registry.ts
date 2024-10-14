@@ -5,7 +5,7 @@ export type Registrable = {
   title: string;
   desc?: string;
   group?: string;
-  deprecated?: string | boolean;
+  deprecated?: string;
 };
 
 export type RegistryItem<T> = {
