@@ -1,7 +1,7 @@
 {
   "name": "@certd/pipeline",
   "private": false,
-  "version": "1.26.4",
+  "version": "1.26.5",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -15,8 +15,8 @@
     "test": "mocha   --loader=ts-node/esm"
   },
   "dependencies": {
-    "@certd/basic": "^1.26.4",
-    "@certd/plus-core": "^1.26.4",
+    "@certd/basic": "^1.26.5",
+    "@certd/plus-core": "^1.26.5",
     "axios": "^1.7.2",
     "dayjs": "^1.11.7",
     "fix-path": "^4.0.0",

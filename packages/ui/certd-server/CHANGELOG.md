@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.26.5](https://github.com/certd/certd/compare/v1.26.4...v1.26.5) (2024-10-14)
+
+### Bug Fixes
+
+* 修复版本号获取错误的bug ([8851870](https://github.com/certd/certd/commit/8851870400df86e496198ad509061b8989fcc44f))
+
 ## [1.26.4](https://github.com/certd/certd/compare/v1.26.3...v1.26.4) (2024-10-14)
 
 ### Performance Improvements
