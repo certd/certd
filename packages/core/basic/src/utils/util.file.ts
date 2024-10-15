@@ -1,8 +1,8 @@
-import fs from "fs";
+import fs from 'fs';
 function getFileRootDir(rootDir?: string) {
   if (rootDir == null) {
     const userHome = process.env.HOME || process.env.USERPROFILE;
-    rootDir = userHome + "/.certd/storage/";
+    rootDir = userHome + '/.certd/storage/';
   }
 
   if (!fs.existsSync(rootDir)) {
