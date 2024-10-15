@@ -89,7 +89,7 @@ export class SysSiteInfo extends BaseSettings {
 
 export class SysSecretBackup extends BaseSettings {
   static __title__ = '密钥信息备份';
-  static __key__ = 'sys.secret';
+  static __key__ = 'sys.secret.backup';
   static __access__ = 'private';
   siteId?: string;
   encryptSecret?: string;
