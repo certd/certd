@@ -76,7 +76,10 @@ export class UserController extends CrudController<UserService> {
     id: number
   ) {
     if (id === 1) {
-      throw new Error('不能删除默认的管理员用户');
+      throw new Error('不能删除默认的管理员角色');
+    }
+    if (id === 3) {
+      throw new Error('不能删除默认的普通用户角色');
     }
     return await super.delete(id);
   }
