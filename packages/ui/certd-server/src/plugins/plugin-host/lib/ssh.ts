@@ -178,6 +178,8 @@ export class AsyncSsh2Client {
   end() {
     if (this.conn) {
       this.conn.end();
+      this.conn.destroy();
+      this.conn = null;
     }
   }
 
@@ -242,9 +244,8 @@ export class SshClient {
                 mkdirCmd = `if not exist "${filePath}" mkdir "${filePath}"`;
               }
             }
-            await conn.shell(mkdirCmd);
+            await conn.exec(mkdirCmd);
           }
-
           await conn.fastPut({ sftp, ...transport });
         }
         this.logger.info('文件全部上传成功');

@@ -122,6 +122,7 @@ http://your_server_ip:7001
 ```shell
 # 克隆代码
 git clone https://github.com/certd/certd
+git checkout v1.26.7  # 这里换成最新版本号
 cd certd
 # 启动服务
 ./start.sh  

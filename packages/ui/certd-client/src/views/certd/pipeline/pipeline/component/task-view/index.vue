@@ -1,6 +1,6 @@
 <template>
   <a-modal v-model:open="taskModal.open" class="pi-task-view" title="任务日志" style="width: 80%" v-bind="taskModal">
-    <a-tabs v-model:activeKey="activeKey" tab-position="left" animated>
+    <a-tabs v-model:active-key="activeKey" tab-position="left" animated>
       <a-tab-pane v-for="item of detail.nodes" :key="item.node.id">
         <template #tab>
           <div class="tab-title" :title="item.node.title">
@@ -8,7 +8,7 @@
             <pi-status-show :status="item.node.status?.result" type="icon"></pi-status-show>
           </div>
         </template>
-        <pre class="pi-task-view-logs" style="overflow: auto;"><template v-for="(text, index) of item.logs" :key="index">{{ text }}</template></pre>
+        <pre class="pi-task-view-logs" style="overflow: auto"><template v-for="(text, index) of item.logs" :key="index">{{ text }}</template></pre>
       </a-tab-pane>
     </a-tabs>
   </a-modal>
@@ -56,8 +56,8 @@ export default {
       for (let node of nodes) {
         if (currentHistory?.value?.logs != null) {
           node.logs = computed(() => {
-            if(currentHistory?.value?.logs && currentHistory.value?.logs[node.node.id]!= null){
-                  return currentHistory.value?.logs[node.node.id];
+            if (currentHistory?.value?.logs && currentHistory.value?.logs[node.node.id] != null) {
+              return currentHistory.value?.logs[node.node.id];
             }
             return [];
           });
@@ -94,10 +94,11 @@ export default {
     display: flex;
     .tab-title-text {
       display: inline-block;
-      width: 150px;
+      width: 180px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      text-align: left;
     }
   }
 

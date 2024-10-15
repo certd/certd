@@ -11,6 +11,10 @@ git clone https://github.com/certd/certd
 
 #进入项目目录
 cd certd
+
+# 切换到最新版本代码
+git checkout v1.26.7  # 这里换成最新版本号
+
 ```
 
 ### 修改pnpm-workspace.yaml文件     

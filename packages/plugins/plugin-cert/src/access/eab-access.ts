@@ -9,9 +9,9 @@ export class EabAccess extends BaseAccess {
   @AccessInput({
     title: "KID",
     component: {
-      placeholder: "kid",
+      placeholder: "kid / keyId",
     },
-    helper: "EAB KID",
+    helper: "EAB KID， google的叫 keyId",
     required: true,
     encrypt: true,
   })
@@ -19,9 +19,9 @@ export class EabAccess extends BaseAccess {
   @AccessInput({
     title: "HMACKey",
     component: {
-      placeholder: "HMAC Key",
+      placeholder: "HMAC Key / b64MacKey",
     },
-    helper: "EAB HMAC Key",
+    helper: "EAB HMAC Key ，google的叫b64MacKey",
     required: true,
     encrypt: true,
   })
@@ -32,7 +32,8 @@ export class EabAccess extends BaseAccess {
     component: {
       placeholder: "绑定一个邮箱",
     },
-    helper: "Google EAB 申请证书绑定邮箱后，不能更换，否则会导致EAB失效",
+    rules: { type: "email", message: "请输入正确的邮箱" },
+    helper: "Google的EAB申请证书，更换邮箱会导致EAB失效，可以在此处绑定一个邮箱避免此问题",
     required: false,
   })
   email = "";
