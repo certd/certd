@@ -11,7 +11,9 @@ import { useUserStore } from "/@/store/modules/user";
 import dayjs from "dayjs";
 import { useSettingStore } from "/@/store/modules/settings";
 import _ from "lodash-es";
-
+import { useModal } from "/@/use/use-modal";
+import CertView from "./cert-view.vue";
+import { eachRunnable, eachStages } from "./utils";
 export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
   const { t } = useI18n();
@@ -149,6 +151,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
     });
   }
 
+  const model = useModal();
   const viewCert = async (row: any) => {
     const cert = await api.GetCert(row.id);
     if (!cert) {
@@ -156,34 +159,20 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
       return;
     }
 
-    Modal.success({
+    model.success({
       title: "查看证书",
       maskClosable: true,
       okText: "关闭",
+      width: 800,
       content: () => {
-        return (
-          <div class={"view-cert"}>
-            <div class={"cert-txt"}>
-              <h3>fullchain.pem</h3>
-              <div>{cert.crt}</div>
-            </div>
-            <div class={"cert-txt"}>
-              <h3>private.pem</h3>
-              <div>{cert.key}</div>
-            </div>
-            <div class={"cert-txt"}>
-              <h3>中间证书.pem</h3>
-              <div>{cert.ic}</div>
-            </div>
-          </div>
-        );
+        return <CertView cert={cert}></CertView>;
       }
     });
   };
 
   const downloadCert = async (row: any) => {
     const files = await api.GetFiles(row.id);
-    Modal.success({
+    model.success({
       title: "文件下载",
       maskClosable: true,
       okText: "↑↑↑ 点击上面链接下载",
@@ -197,11 +186,6 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
                 <a href={downloadUrl} target={"_blank"}>
                   {file.filename}
                 </a>
-              </div>
-              <div>
-                <a-button type={"primary"} onClick={viewCert}>
-                  直接查看证书
-                </a-button>
               </div>
             </div>
           );
@@ -253,7 +237,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
         buttons: {
           play: {
             order: -999,
-            title: null,
+            title: "运行流水线",
             type: "link",
             icon: "ant-design:play-circle-outlined",
             click({ row }) {
@@ -268,6 +252,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
             }
           },
           view: {
+            show: false,
             click({ row }) {
               router.push({ path: "/certd/pipeline/detail", query: { id: row.id, editMode: "false" } });
             }
@@ -289,7 +274,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           },
           config: {
             order: 1,
-            title: null,
+            title: "修改流水线内容",
             type: "link",
             icon: "ant-design:edit-outlined",
             click({ row }) {
@@ -298,12 +283,22 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           },
           edit: {
             order: 2,
+            title: "修改流水线运行配置",
             icon: "ant-design:setting-outlined"
           },
-          download: {
+          viewCert: {
             order: 3,
-            title: null,
+            title: "查看证书",
             type: "link",
+            icon: "ph:certificate",
+            async click({ row }) {
+              viewCert(row);
+            }
+          },
+          download: {
+            order: 4,
+            type: "link",
+            title: "下载证书",
             icon: "ant-design:download-outlined",
             async click({ row }) {
               downloadCert(row);
@@ -373,30 +368,51 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
           }
         },
         content: {
-          title: "定时任务数",
-          type: "number",
+          title: "流水线内容",
+          form: { show: false },
           column: {
-            align: "center",
-            width: 100,
-            cellRender({ value }) {
-              if (value && value.triggers) {
-                return value.triggers?.length > 0 ? value.triggers.length : "-";
-              }
-              return "-";
-            }
+            show: false
           },
           valueBuilder({ row }) {
             if (row.content) {
               row.content = JSON.parse(row.content);
+              const pipeline = row.content;
+              let stepCount = 0;
+              eachStages(pipeline.stages, (item, runnableType) => {
+                if (runnableType === "step") {
+                  stepCount++;
+                }
+              });
+              row._stepCount = stepCount;
+              if (pipeline.triggers) {
+                row._triggerCount = pipeline.triggers?.length > 0 ? pipeline.triggers.length : "-";
+              }
             }
           },
           valueResolve({ row }) {
             if (row.content) {
               row.content = JSON.stringify(row.content);
             }
+          }
+        },
+        _triggerCount: {
+          title: "定时任务数",
+          type: "number",
+          column: {
+            align: "center",
+            width: 100
           },
           form: {
             show: false
+          }
+        },
+        _stepCount: {
+          title: "部署任务数",
+          type: "number",
+          form: { show: false },
+          column: {
+            align: "center",
+            width: 100
           }
         },
         lastVars: {
@@ -418,18 +434,6 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
             width: 150
           }
         },
-        lastHistoryTime: {
-          title: "最后运行",
-          type: "datetime",
-          form: {
-            show: false
-          },
-          column: {
-            sorter: true,
-            width: 150,
-            align: "center"
-          }
-        },
         status: {
           title: "状态",
           type: "dict-select",
@@ -445,7 +449,18 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
             align: "center"
           }
         },
-
+        lastHistoryTime: {
+          title: "最后运行",
+          type: "datetime",
+          form: {
+            show: false
+          },
+          column: {
+            sorter: true,
+            width: 150,
+            align: "center"
+          }
+        },
         disabled: {
           title: "启用",
           type: "dict-switch",

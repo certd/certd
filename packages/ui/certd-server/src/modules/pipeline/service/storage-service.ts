@@ -60,12 +60,17 @@ export class StorageService extends BaseService<StorageEntity> {
     if (pipelineId == null) {
       throw new Error('pipelineId 不能为空');
     }
-    return await this.repository.find({
+    const res = await this.repository.findOne({
       where: {
         scope: 'pipeline',
         namespace: pipelineId + '',
         key: 'privateVars',
       },
     });
+    if (!res) {
+      return {};
+    }
+    const value = JSON.parse(res.value);
+    return value.value;
   }
 }

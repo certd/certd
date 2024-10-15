@@ -43,7 +43,6 @@ async function loginWithOTPCode(otpCode: string) {
 const [modal, contextHolder] = Modal.useModal();
 async function getDeviceId() {
   //打开对话框
-
   modal.confirm({
     title: "请输入OTP验证码",
     maskClosable: true,

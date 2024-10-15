@@ -31,6 +31,7 @@ export class HostShellExecutePlugin extends AbstractTaskPlugin {
       name: 'a-textarea',
       vModel: 'value',
       rows: 6,
+      placeholder: 'systemctl restart nginx',
     },
     helper: '注意：如果目标主机是windows，且终端是cmd，系统会自动将多行命令通过“&&”连接成一行',
     required: true,

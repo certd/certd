@@ -38,7 +38,7 @@ export class RunHistory {
   start(runnable: Runnable): HistoryResult {
     const now = new Date().getTime();
     this.logs[runnable.id] = [];
-    this._loggers[runnable.id] = buildLogger((text) => {
+    this._loggers[runnable.id] = buildLogger((text: string) => {
       this.logs[runnable.id].push(text);
     });
     const status: HistoryResult = {

@@ -166,7 +166,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
-            return (form.sslProvider === 'zerossl' || !form.zerosslCommonEabAccessId) || (form.sslProvider === 'google' && !form.googleCommonEabAccessId)
+            return (form.sslProvider === 'zerossl' && !form.zerosslCommonEabAccessId) || (form.sslProvider === 'google' && !form.googleCommonEabAccessId)
         })
     }
     `,

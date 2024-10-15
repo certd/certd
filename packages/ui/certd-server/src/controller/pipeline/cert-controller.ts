@@ -15,7 +15,7 @@ export class CertController extends BaseController {
   async getCert(@Query('id') id: number) {
     const userId = this.getUserId();
     await this.pipelineService.checkUserId(id, userId);
-    const privateVars = this.storeService.getPipelinePrivateVars(id);
-    return this.ok(privateVars);
+    const privateVars = await this.storeService.getPipelinePrivateVars(id);
+    return this.ok(privateVars.cert);
   }
 }
