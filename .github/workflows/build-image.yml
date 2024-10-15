@@ -1,7 +1,7 @@
 name: build-image
 on:
   push:
-    branches: ['v2']
+    branches: ['v2-dev']
     paths:
       - "build.trigger"
 
