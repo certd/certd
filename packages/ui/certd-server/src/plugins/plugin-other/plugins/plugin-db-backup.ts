@@ -102,14 +102,14 @@ export class DBBackupPlugin extends AbstractPlusTaskPlugin {
 
     this.logger.info('当前备份方式：', this.backupMode);
     const backupDir = this.backupDir || defaultBackupDir;
-    const backupPath = `${backupDir}/${this.filePrefix}.${dayjs().format('YYYYMMDD.HHmmss')}.sqlite`;
+    const backupFile = `${backupDir}/${this.filePrefix}.${dayjs().format('YYYYMMDD.HHmmss')}.sqlite`;
 
     if (this.backupMode === 'local') {
-      await this.localBackup(dbPath, backupDir, backupPath);
+      await this.localBackup(dbPath, backupDir, backupFile);
     } else if (this.backupMode === 'ssh') {
-      await this.sshBackup(dbPath, backupDir, backupPath);
+      await this.sshBackup(dbPath, backupDir, backupFile);
     } else if (this.backupMode === 'oss') {
-      await this.ossBackup(dbPath, backupDir, backupPath);
+      await this.ossBackup(dbPath, backupDir, backupFile);
     } else {
       throw new Error(`不支持的备份方式:${this.backupMode}`);
     }
@@ -119,12 +119,13 @@ export class DBBackupPlugin extends AbstractPlusTaskPlugin {
 
   private async localBackup(dbPath: string, backupDir: string, backupPath: string) {
     if (!backupPath.startsWith('/')) {
-      backupPath = path.resolve('./data/', backupPath);
+      backupPath = path.join('./data/', backupPath);
     }
-    const dir = backupDir;
+    const dir = path.dirname(backupPath);
     if (!fs.existsSync(dir)) {
       await fs.promises.mkdir(dir, { recursive: true });
     }
+    backupPath = path.resolve(backupPath);
     await fs.promises.copyFile(dbPath, backupPath);
     this.logger.info('备份文件路径：', backupPath);
 
@@ -162,12 +163,12 @@ export class DBBackupPlugin extends AbstractPlusTaskPlugin {
       // 删除过期备份
       this.logger.info('开始删除过期备份文件');
       const isWin = access.windows;
-      let script = '';
+      let script: string[] = [];
       if (isWin) {
         throw new Error('删除过期文件暂不支持windows系统');
         // script = `forfiles /p ${backupDir} /s /d -${this.retainDays} /c "cmd /c del @path"`;
       } else {
-        script = `find ${backupDir} -type f -mtime +${this.retainDays} -name '${this.filePrefix}*' -exec rm -f {} \\;`;
+        script = [`cd ${backupDir}`, 'echo 备份目录', 'pwd', `find . -type f -mtime +${this.retainDays} -name '${this.filePrefix}*' -exec rm -f {} \\;`];
       }
 
       await sshClient.exec({
