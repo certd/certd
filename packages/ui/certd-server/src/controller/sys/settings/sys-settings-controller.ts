@@ -80,8 +80,8 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   @Post('/getSysSettings', { summary: 'sys:settings:edit' })
   async getSysSettings() {
     const publicSettings = await this.service.getPublicSettings();
-    const privateSettings = await this.service.getPrivateSettings();
-    privateSettings.removeSecret();
+    let privateSettings = await this.service.getPrivateSettings();
+    privateSettings = privateSettings.removeSecret();
     return this.ok({ public: publicSettings, private: privateSettings });
   }
 

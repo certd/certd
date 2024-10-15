@@ -307,9 +307,15 @@ export class Executor {
     //更新pipeline vars
     if (Object.keys(instance._result.pipelineVars).length > 0) {
       // 判断 pipelineVars 有值时更新
-      const vars = this.pipelineContext.getObj("vars");
+      const vars = await this.pipelineContext.getObj("vars");
       merge(vars, instance._result.pipelineVars);
       await this.pipelineContext.setObj("vars", vars);
+    }
+    if (Object.keys(instance._result.pipelinePrivateVars).length > 0) {
+      // 判断 pipelineVars 有值时更新
+      const vars = await this.pipelineContext.getObj("privateVars");
+      merge(vars, instance._result.pipelinePrivateVars);
+      await this.pipelineContext.setObj("privateVars", vars);
     }
   }
 

@@ -147,6 +147,13 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   googleCommonEabAccessId!: number;
 
   @TaskInput({
+    title: "ZeroSSL公共EAB授权",
+    isSys: true,
+    show: false,
+  })
+  zerosslCommonEabAccessId!: number;
+
+  @TaskInput({
     title: "EAB授权",
     component: {
       name: "access-selector",
@@ -159,7 +166,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
-            return form.sslProvider === 'zerossl' || (form.sslProvider === 'google' && !form.googleCommonEabAccessId)
+            return (form.sslProvider === 'zerossl' || !form.zerosslCommonEabAccessId) || (form.sslProvider === 'google' && !form.googleCommonEabAccessId)
         })
     }
     `,
@@ -266,7 +273,11 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       }
     } else if (this.sslProvider === "zerossl") {
       if (this.eabAccessId) {
+        this.logger.info("当前正在使用 zerossl EAB授权");
         eab = await this.ctx.accessService.getById(this.eabAccessId);
+      } else if (this.zerosslCommonEabAccessId) {
+        this.logger.info("当前正在使用 zerossl 公共EAB授权");
+        eab = await this.ctx.accessService.getById(this.zerosslCommonEabAccessId);
       } else {
         this.logger.error("zerossl需要配置EAB授权");
         return;

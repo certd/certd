@@ -2,6 +2,7 @@ import { request } from "/src/api/service";
 
 const apiPrefix = "/pi/pipeline";
 const historyApiPrefix = "/pi/history";
+const certApiPrefix = "/pi/cert";
 
 export async function GetList(query: any) {
   return await request({
@@ -80,5 +81,21 @@ export async function GetFiles(pipelineId: number) {
     url: historyApiPrefix + "/files",
     method: "post",
     params: { pipelineId }
+  });
+}
+
+export type CertInfo = {
+  crt: string;
+  key: string;
+  ic: string;
+  der: string;
+  pfx: string;
+};
+
+export async function GetCert(pipelineId: number): Promise<CertInfo> {
+  return await request({
+    url: certApiPrefix + "/get",
+    method: "post",
+    params: { id: pipelineId }
   });
 }

@@ -3,10 +3,10 @@ import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Repository } from 'typeorm';
 import { SysSettingsEntity } from '../entity/sys-settings.js';
 import { CacheManager } from '@midwayjs/cache';
-import { BaseSettings, SysPrivateSettings, SysPublicSettings } from './models.js';
+import { BaseSettings, SysInstallInfo, SysPrivateSettings, SysPublicSettings, SysSecretBackup } from './models.js';
 import * as _ from 'lodash-es';
 import { BaseService } from '../../../basic/index.js';
-import { setGlobalProxy } from '@certd/basic';
+import { logger, setGlobalProxy } from '@certd/basic';
 
 /**
  * 设置
@@ -145,5 +145,22 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
       throw new Error('该设置不存在');
     }
     await this.cache.del(`settings.${key}`);
+  }
+
+  async backupSecret() {
+    const settings = await this.getSettingByKey(SysSecretBackup.__key__);
+    if (settings == null) {
+      const backup = new SysSecretBackup();
+      const privateSettings = await this.getPrivateSettings();
+      const installInfo = await this.getSetting<SysInstallInfo>(SysInstallInfo);
+      if (installInfo.siteId == null || privateSettings.encryptSecret == null) {
+        logger.error('备份密钥失败，siteId或encryptSecret为空');
+        return;
+      }
+      backup.siteId = installInfo.siteId;
+      backup.encryptSecret = privateSettings.encryptSecret;
+      await this.saveSetting(backup);
+      logger.info('备份密钥成功');
+    }
   }
 }

@@ -44,11 +44,27 @@ export class StorageService extends BaseService<StorageEntity> {
   }
 
   async findPipelineVars(pipelineIds: number[]) {
+    if (pipelineIds == null || pipelineIds.length === 0) {
+      throw new Error('pipelineIds 不能为空');
+    }
     return await this.repository.find({
       where: {
         scope: 'pipeline',
         namespace: In(pipelineIds),
         key: 'vars',
+      },
+    });
+  }
+
+  async getPipelinePrivateVars(pipelineId: number) {
+    if (pipelineId == null) {
+      throw new Error('pipelineId 不能为空');
+    }
+    return await this.repository.find({
+      where: {
+        scope: 'pipeline',
+        namespace: pipelineId + '',
+        key: 'privateVars',
       },
     });
   }

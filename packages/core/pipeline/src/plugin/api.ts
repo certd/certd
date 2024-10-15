@@ -60,6 +60,7 @@ export type TaskResult = {
   clearLastStatus?: boolean;
   files?: FileItem[];
   pipelineVars: Record<string, any>;
+  pipelinePrivateVars?: Record<string, any>;
 };
 export type TaskInstanceContext = {
   //流水线定义
@@ -97,7 +98,7 @@ export type TaskInstanceContext = {
 };
 
 export abstract class AbstractTaskPlugin implements ITaskPlugin {
-  _result: TaskResult = { clearLastStatus: false, files: [], pipelineVars: {} };
+  _result: TaskResult = { clearLastStatus: false, files: [], pipelineVars: {}, pipelinePrivateVars: {} };
   ctx!: TaskInstanceContext;
   logger!: ILogger;
   accessService!: IAccessService;

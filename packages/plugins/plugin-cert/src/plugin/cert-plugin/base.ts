@@ -144,6 +144,10 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
     this.cert = cert;
 
     this._result.pipelineVars.certExpiresTime = dayjs(certReader.detail.notAfter).valueOf();
+    if (!this._result.pipelinePrivateVars) {
+      this._result.pipelinePrivateVars = {};
+    }
+    this._result.pipelinePrivateVars.cert = cert;
 
     if (cert.pfx == null || cert.der == null) {
       try {

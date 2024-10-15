@@ -43,6 +43,8 @@ export class AutoInitSite {
       await this.sysSettingsService.saveSetting(privateInfo);
     }
 
+    await this.sysSettingsService.backupSecret();
+
     await this.sysSettingsService.reloadPrivateSettings();
 
     // 授权许可

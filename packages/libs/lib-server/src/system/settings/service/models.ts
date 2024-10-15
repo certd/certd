@@ -1,3 +1,5 @@
+import { cloneDeep } from 'lodash-es';
+
 export class BaseSettings {
   static __key__: string;
   static __title__: string;
@@ -29,8 +31,10 @@ export class SysPrivateSettings extends BaseSettings {
   httpProxy? = '';
 
   removeSecret() {
-    delete this.jwtKey;
-    delete this.encryptSecret;
+    const clone = cloneDeep(this);
+    delete clone.jwtKey;
+    delete clone.encryptSecret;
+    return clone;
   }
 }
 
@@ -81,6 +85,14 @@ export class SysSiteInfo extends BaseSettings {
   slogan?: string;
   logo?: string;
   loginLogo?: string;
+}
+
+export class SysSecretBackup extends BaseSettings {
+  static __title__ = '密钥信息备份';
+  static __key__ = 'sys.secret';
+  static __access__ = 'private';
+  siteId?: string;
+  encryptSecret?: string;
 }
 
 export class SysSiteEnv {

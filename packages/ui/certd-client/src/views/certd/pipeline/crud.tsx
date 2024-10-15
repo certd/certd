@@ -148,6 +148,69 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
       router.push({ path: "/certd/pipeline/detail", query: { id, editMode: "true" } });
     });
   }
+
+  const viewCert = async (row: any) => {
+    const cert = await api.GetCert(row.id);
+    if (!cert) {
+      notification.error({ message: "还没有产生证书，请先运行流水线" });
+      return;
+    }
+
+    Modal.success({
+      title: "查看证书",
+      maskClosable: true,
+      okText: "关闭",
+      content: () => {
+        return (
+          <div class={"view-cert"}>
+            <div class={"cert-txt"}>
+              <h3>fullchain.pem</h3>
+              <div>{cert.crt}</div>
+            </div>
+            <div class={"cert-txt"}>
+              <h3>private.pem</h3>
+              <div>{cert.key}</div>
+            </div>
+            <div class={"cert-txt"}>
+              <h3>中间证书.pem</h3>
+              <div>{cert.ic}</div>
+            </div>
+          </div>
+        );
+      }
+    });
+  };
+
+  const downloadCert = async (row: any) => {
+    const files = await api.GetFiles(row.id);
+    Modal.success({
+      title: "文件下载",
+      maskClosable: true,
+      okText: "↑↑↑ 点击上面链接下载",
+      content: () => {
+        const children = [];
+        for (const file of files) {
+          const downloadUrl = `${env.API}/pi/history/download?pipelineId=${row.id}&fileId=${file.id}`;
+          children.push(
+            <div>
+              <div>
+                <a href={downloadUrl} target={"_blank"}>
+                  {file.filename}
+                </a>
+              </div>
+              <div>
+                <a-button type={"primary"} onClick={viewCert}>
+                  直接查看证书
+                </a-button>
+              </div>
+            </div>
+          );
+        }
+
+        return <div class={"mt-3"}>{children}</div>;
+      }
+    });
+  };
   const userStore = useUserStore();
   const settingStore = useSettingStore();
   return {
@@ -243,27 +306,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
             type: "link",
             icon: "ant-design:download-outlined",
             async click({ row }) {
-              const files = await api.GetFiles(row.id);
-              Modal.success({
-                title: "文件下载",
-                maskClosable: true,
-                okText: "↑↑↑ 点击上面链接下载",
-                content: () => {
-                  const children = [];
-                  for (const file of files) {
-                    const downloadUrl = `${env.API}/pi/history/download?pipelineId=${row.id}&fileId=${file.id}`;
-                    children.push(
-                      <p>
-                        <a href={downloadUrl} target={"_blank"}>
-                          {file.filename}
-                        </a>
-                      </p>
-                    );
-                  }
-
-                  return <div class={"mt-3"}>{children}</div>;
-                }
-              });
+              downloadCert(row);
             }
           },
           remove: {
