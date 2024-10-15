@@ -237,7 +237,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     });
   }
 
-  async delete(id: number) {
+  async delete(id: any) {
     await this.clearTriggers(id);
     //TODO 删除storage
     // const storage = new DbStorage(pipeline.userId, this.storageService);

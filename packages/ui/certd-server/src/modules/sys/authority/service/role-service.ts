@@ -29,8 +29,8 @@ export class RoleService extends BaseService<RoleEntity> {
     ttl: 1000 * 60 * 10,
   });
 
- //@ts-ignore
-getRepository() {
+  //@ts-ignore
+  getRepository() {
     return this.repository;
   }
 
@@ -77,7 +77,7 @@ getRepository() {
       return;
     }
     //先删除所有
-    await this.userRoleService.delete({ userId });
+    await this.userRoleService.deleteWhere({ userId });
     //再添加
     await this.addRoles(userId, roles);
 
@@ -95,7 +95,7 @@ getRepository() {
   }
 
   async authz(roleId: any, permissionIds: any) {
-    await this.rolePermissionService.delete({ roleId });
+    await this.rolePermissionService.deleteWhere({ roleId });
     for (const permissionId of permissionIds) {
       await this.rolePermissionService.add({
         roleId,
@@ -124,5 +124,13 @@ getRepository() {
     permissionSet = await this.getPermissionSetByRoleIds(roleIds);
     this.permissionCache.set(roleIdsKey, permissionSet);
     return permissionSet;
+  }
+
+  async delete(id: any) {
+    const idArr = this.resolveIdArr(id);
+    const urs = await this.userRoleService.find({ where: { roleId: In(idArr) } });
+    if (urs.length > 0) {
+      throw new Error('该角色已被用户使用，无法删除');
+    }
   }
 }

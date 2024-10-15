@@ -60,25 +60,41 @@ export abstract class BaseService<T> {
   }
 
   /**
+   *
+   * @param where
+   */
+  async deleteWhere(where: any) {
+    await this.getRepository().delete({
+      ...where,
+    });
+  }
+
+  /**
    * 删除
    * @param ids 删除的ID集合 如：[1,2,3] 或者 1,2,3
    * @param where
    */
-  async delete(ids: any, where?: any) {
+  async delete(ids: string | any[], where?: any) {
+    const idArr = this.resolveIdArr(ids);
+    if (idArr.length === 0) {
+      return;
+    }
+    await this.getRepository().delete({
+      id: In(idArr),
+      ...where,
+    });
+    await this.modifyAfter(idArr);
+  }
+
+  resolveIdArr(ids: string | any[]) {
     if (!ids) {
       throw new ValidateException('ids不能为空');
     }
     if (typeof ids === 'string') {
-      ids = ids.split(',');
+      return ids.split(',');
+    } else {
+      return ids;
     }
-    if (ids.length === 0) {
-      return;
-    }
-    await this.getRepository().delete({
-      id: In(ids),
-      ...where,
-    });
-    await this.modifyAfter(ids);
   }
 
   /**
