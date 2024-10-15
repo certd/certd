@@ -84,7 +84,7 @@ export class DBBackupPlugin extends AbstractPlusTaskPlugin {
       vModel: 'value',
       placeholder: '20',
     },
-    helper: '删除多少天前的备份,不填则不删除',
+    helper: '删除多少天前的备份,不填则不删除，windows暂不支持',
     required: false,
   })
   retainDays!: number;
