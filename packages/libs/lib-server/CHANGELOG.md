@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.26.8](https://github.com/certd/certd/compare/v1.26.7...v1.26.8) (2024-10-15)
+
+### Bug Fixes
+
+* 修复无法设置角色的bug ([02fe704](https://github.com/certd/certd/commit/02fe704769edb25fea5ffd85a51a5530864b37b3))
+
+### Performance Improvements
+
+* 密钥备份 ([1c6028a](https://github.com/certd/certd/commit/1c6028abcf8849163462bb2f8441b6838357e09b))
+
 ## [1.26.7](https://github.com/certd/certd/compare/v1.26.6...v1.26.7) (2024-10-14)
 
 ### Bug Fixes
