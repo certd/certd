@@ -155,8 +155,8 @@ export class Executor {
     for (const task of stage.tasks) {
       const runner = async () => {
         return this.runWithHistory(task, "task", async () => {
-          await this.runTask(task);
-          return ResultType.success;
+          const res = await this.runTask(task);
+          return res;
         });
       };
       runnerList.push(runner);
@@ -178,15 +178,21 @@ export class Executor {
     return this.compositionResultType(resList);
   }
 
-  compositionResultType(resList: ResultType[]) {
+  compositionResultType(resList: ResultType[]): ResultType {
     let hasSuccess = false;
+    let hasSkip = false;
     for (const type of resList) {
       if (type === ResultType.error) {
         return ResultType.error;
-      }
-      if (type === ResultType.success) {
+      } else if (type === ResultType.success) {
         hasSuccess = true;
+      } else if (type === ResultType.skip) {
+        hasSkip = true;
       }
+    }
+    if (!hasSuccess && hasSkip) {
+      //全是跳过
+      return ResultType.skip;
     }
     if (hasSuccess) {
       return ResultType.success;
@@ -254,7 +260,7 @@ export class Executor {
     let inputChanged = true;
     const lastInputHash = lastNode?.status?.inputHash;
     if (lastInputHash && newInputHash && lastInputHash === newInputHash) {
-      //参数有变化
+      //参数没有变化
       inputChanged = false;
     }
     if (step.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
