@@ -12,7 +12,7 @@ const defaultFilePrefix = 'db-backup';
 @IsTaskPlugin({
   name: 'DBBackupPlugin',
   title: '数据库备份',
-  icon: 'ri:rest-time-line',
+  icon: 'lucide:database-backup',
   desc: '仅支持备份SQLite数据库',
   group: pluginGroups.other.key,
   default: {
@@ -102,12 +102,24 @@ export class DBBackupPlugin extends AbstractPlusTaskPlugin {
       return;
     }
 
+    const dbTmpFilename = `${this.filePrefix}.${dayjs().format('YYYYMMDD.HHmmss')}.sqlite`;
+    const dbZipFilename = `${dbTmpFilename}.zip`;
+    const tempDir = path.resolve(os.tmpdir(), 'certd_backup');
+    if (!fs.existsSync(tempDir)) {
+      await fs.promises.mkdir(tempDir, { recursive: true });
+    }
+    const dbTmpPath = path.resolve(tempDir, dbTmpFilename);
+    const dbZipPath = path.resolve(tempDir, dbZipFilename);
+
+    //复制到临时目录
+    await fs.promises.copyFile(dbPath, dbTmpPath);
     //本地压缩
     const zip = new JSZip();
-    zip.file(dbPath);
+    const stream = fs.createReadStream(dbTmpPath);
+    // 使用流的方式添加文件内容
+    zip.file(dbTmpFilename, stream, { binary: true, compression: 'DEFLATE' });
     const content = await zip.generateAsync({ type: 'nodebuffer' });
-    const dbZipFilename = `${this.filePrefix}.${dayjs().format('YYYYMMDD.HHmmss')}.sqlite.zip`;
-    const dbZipPath = path.resolve(os.tmpdir(), dbZipFilename);
+
     await fs.promises.writeFile(dbZipPath, content);
     this.logger.info(`数据库文件压缩完成:${dbZipPath}`);
 
@@ -116,11 +128,11 @@ export class DBBackupPlugin extends AbstractPlusTaskPlugin {
     const backupFilePath = `${backupDir}/${dbZipFilename}`;
 
     if (this.backupMode === 'local') {
-      await this.localBackup(dbPath, backupDir, backupFilePath);
+      await this.localBackup(dbZipPath, backupDir, backupFilePath);
     } else if (this.backupMode === 'ssh') {
-      await this.sshBackup(dbPath, backupDir, backupFilePath);
+      await this.sshBackup(dbZipPath, backupDir, backupFilePath);
     } else if (this.backupMode === 'oss') {
-      await this.ossBackup(dbPath, backupDir, backupFilePath);
+      await this.ossBackup(dbZipPath, backupDir, backupFilePath);
     } else {
       throw new Error(`不支持的备份方式:${this.backupMode}`);
     }
