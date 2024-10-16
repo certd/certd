@@ -102,7 +102,7 @@ export class AsyncSsh2Client {
     let iconv: any = await import('iconv-lite');
     iconv = iconv.default;
     return new Promise((resolve, reject) => {
-      this.logger.info(`执行命令：[${this.connConf.host}][exec]: ` + script);
+      this.logger.info(`执行命令：[${this.connConf.host}][exec]: \n` + script);
       this.conn.exec(script, (err: Error, stream: any) => {
         if (err) {
           reject(err);
@@ -274,7 +274,7 @@ export class SshClient {
     let { script } = options;
     const { connectConf } = options;
 
-    this.logger.info('命令：', script);
+    // this.logger.info('命令：', script);
     return await this._call({
       connectConf,
       callable: async (conn: AsyncSsh2Client) => {

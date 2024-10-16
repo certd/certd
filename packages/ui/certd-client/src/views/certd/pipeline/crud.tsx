@@ -155,7 +155,7 @@ export default function ({ crudExpose, context: { certdFormRef } }: CreateCrudOp
   const viewCert = async (row: any) => {
     const cert = await api.GetCert(row.id);
     if (!cert) {
-      notification.error({ message: "还没有产生证书，请先运行流水线" });
+      notification.error({ message: "请先运行一次流水线" });
       return;
     }
 

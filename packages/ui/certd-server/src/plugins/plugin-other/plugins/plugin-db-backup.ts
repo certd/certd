@@ -4,6 +4,8 @@ import path from 'path';
 import dayjs from 'dayjs';
 import { SshAccess, SshClient } from '../../plugin-host/index.js';
 import { AbstractPlusTaskPlugin } from '@certd/plugin-plus';
+import JSZip from 'jszip';
+import * as os from 'node:os';
 
 const defaultBackupDir = 'certd_backup';
 const defaultFilePrefix = 'db-backup';
@@ -100,16 +102,25 @@ export class DBBackupPlugin extends AbstractPlusTaskPlugin {
       return;
     }
 
-    this.logger.info('当前备份方式：', this.backupMode);
+    //本地压缩
+    const zip = new JSZip();
+    zip.file(dbPath);
+    const content = await zip.generateAsync({ type: 'nodebuffer' });
+    const dbZipFilename = `${this.filePrefix}.${dayjs().format('YYYYMMDD.HHmmss')}.sqlite.zip`;
+    const dbZipPath = path.resolve(os.tmpdir(), dbZipFilename);
+    await fs.promises.writeFile(dbZipPath, content);
+    this.logger.info(`数据库文件压缩完成:${dbZipPath}`);
+
+    this.logger.info('开始备份，当前备份方式：', this.backupMode);
     const backupDir = this.backupDir || defaultBackupDir;
-    const backupFile = `${backupDir}/${this.filePrefix}.${dayjs().format('YYYYMMDD.HHmmss')}.sqlite`;
+    const backupFilePath = `${backupDir}/${dbZipFilename}`;
 
     if (this.backupMode === 'local') {
-      await this.localBackup(dbPath, backupDir, backupFile);
+      await this.localBackup(dbPath, backupDir, backupFilePath);
     } else if (this.backupMode === 'ssh') {
-      await this.sshBackup(dbPath, backupDir, backupFile);
+      await this.sshBackup(dbPath, backupDir, backupFilePath);
     } else if (this.backupMode === 'oss') {
-      await this.ossBackup(dbPath, backupDir, backupFile);
+      await this.ossBackup(dbPath, backupDir, backupFilePath);
     } else {
       throw new Error(`不支持的备份方式:${this.backupMode}`);
     }
