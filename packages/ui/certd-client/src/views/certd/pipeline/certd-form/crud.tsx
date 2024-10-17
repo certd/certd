@@ -122,7 +122,7 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
                 }
                 return (
                   <div>
-                    需要配置<router-link to={{ path: "/certd/settings/email" }}>邮件服务器</router-link>才能发送邮件(专业版请忽略)
+                    需要配置<router-link to={{ path: "/sys/settings/email" }}>邮件服务器</router-link>才能发送邮件(专业版请忽略)
                   </div>
                 );
               }

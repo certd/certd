@@ -61,8 +61,8 @@ export const certdResources = [
       // {
       //   title: "邮箱设置",
       //   name: "EmailSetting",
-      //   path: "/certd/settings/email",
-      //   component: "/certd/settings/email-setting.vue",
+      //   path: "/sys/settings/email",
+      //   component: "/sys/settings/email-setting.vue",
       //   meta: {
       //     icon: "ion:mail-outline",
       //     auth: true
