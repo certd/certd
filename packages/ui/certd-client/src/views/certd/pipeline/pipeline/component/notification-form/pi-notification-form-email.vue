@@ -17,7 +17,7 @@
     />
 
     <a-alert v-if="!settingStore.isPlus" class="m-1" type="info">
-      <template #message> 还没有配置邮件服务器？<router-link :to="{ path: '/certd/settings/email' }">现在就去</router-link> </template>
+      <template #message> 还没有配置邮件服务器？<router-link :to="{ path: '/sys/settings/email' }">现在就去</router-link> </template>
     </a-alert>
   </div>
 </template>
