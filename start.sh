@@ -26,4 +26,8 @@ cd ../certd-server
 npm run build
 echo "构建完成"
 echo "启动服务"
+# 前台运行
 npm run start
+
+# 后台运行
+# nohup npm run start &

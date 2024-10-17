@@ -1,9 +1,9 @@
 # Certd
 
-Certd 是一个免费全自动申请和自动部署更新SSL证书的工具。       
+Certd 是一个免费全自动申请和自动部署更新SSL证书的管理系统。       
 后缀d取自linux守护进程的命名风格，意为证书守护进程。    
 
-关键字：证书自动申请、证书自动更新、证书自动续期、证书自动续签
+关键字：证书自动申请、证书自动更新、证书自动续期、证书自动续签、证书管理工具
 
 
 ## 一、特性
@@ -166,13 +166,13 @@ docker compose up -d
 
 ## 七、不同平台的设置说明
 
-* [Cloudflare](./doc/cf/cf.md)
-* [腾讯云](./doc/tencent/tencent.md)
-* [windows主机](./doc/host/host.md)
-* [google证书](./doc/google/google.md)
-* [群晖部署certd及证书更新教程](./doc/synology/index.md)
+* [Cloudflare](./docs/plugins/cf/cf.md)
+* [腾讯云](./docs/plugins/tencent/tencent.md)
+* [windows主机](./docs/plugins/host/host.md)
+* [google证书](./docs/plugins/google/google.md)
+* [群晖部署certd及证书更新教程](./docs/plugins/synology/index.md)
 
-* [CNAME证书校验方式说明](./doc/cname/index.md)
+* [CNAME证书校验方式说明](./docs/feature/cname/index.md)
 
 ## 八、问题处理
 ### 7.1 忘记管理员密码   

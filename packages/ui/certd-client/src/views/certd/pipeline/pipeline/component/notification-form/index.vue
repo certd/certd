@@ -51,6 +51,7 @@
                   { value: 'error', label: '错误时' }
                 ]
               },
+              helper: `建议仅选择'错误时'和'错误转成功'两种即可`,
               rules: [{ required: true, message: '此项必填' }]
             }"
           />
