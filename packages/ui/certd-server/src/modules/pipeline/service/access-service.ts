@@ -57,7 +57,12 @@ export class AccessService extends BaseService<AccessEntity> {
     }
     for (const key in json) {
       //加密
-      const value = json[key];
+      let value = json[key];
+      if (value && typeof value === 'string') {
+        //去除前后空格
+        value = value.trim();
+        json[key] = value;
+      }
       const accessInputDefine = accessDefine.input[key];
       if (!accessInputDefine) {
         continue;
