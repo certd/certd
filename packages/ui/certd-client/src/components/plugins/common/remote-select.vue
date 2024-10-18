@@ -43,7 +43,7 @@ const attrs = useAttrs();
 const optionsRef = ref([]);
 const message = ref("");
 const getOptions = async () => {
-  return await doRequest(
+  const res = await doRequest(
     {
       type: props.type,
       typeName: props.typeName,
@@ -56,6 +56,8 @@ const getOptions = async () => {
       }
     }
   );
+  message.value = "";
+  return res;
 };
 
 const filterOption = (input: string, option: any) => {
