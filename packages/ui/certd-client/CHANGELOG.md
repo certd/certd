@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.26.9](https://github.com/certd/certd/compare/v1.26.8...v1.26.9) (2024-10-19)
+
+### Bug Fixes
+
+* 修复切换普通用户登录时，左侧菜单没有同步更新的bug ([12116a8](https://github.com/certd/certd/commit/12116a89f43cf8b98f16d2ea6073f6b72a643215))
+* 修正邮箱设置跳转路由 ([17d8890](https://github.com/certd/certd/commit/17d88900a1f0e3af609b74597f5b1978230db32d))
+
+### Performance Improvements
+
+* 触发证书重新申请input变化对比规则优化，减少升级版本后触发申请证书的情况 ([c46a2a9](https://github.com/certd/certd/commit/c46a2a9a399c2a9a8bb59a48b9fb6e93227cce9b))
+* 优化菜单 ([1f4f157](https://github.com/certd/certd/commit/1f4f15757de1015cf7563f7022599eef58cc93d7))
+* 增加文档站 https://certd.docmirror.cn ([6e2ac1c](https://github.com/certd/certd/commit/6e2ac1c089f6ddccb396f1f2738509c05333e1bb))
+
 ## [1.26.8](https://github.com/certd/certd/compare/v1.26.7...v1.26.8) (2024-10-15)
 
 ### Performance Improvements
