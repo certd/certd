@@ -78,8 +78,7 @@ export const certdResources = [
           auth: true,
           isMenu: false
         }
-      },
-      ...sysResources
+      }
     ]
   }
 ];

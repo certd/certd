@@ -4,11 +4,10 @@ import { frameworkMenus, headerMenus, filterMenus, findMenus } from "/src/router
 import _ from "lodash-es";
 import { mitter } from "/src/utils/util.mitt";
 //监听注销事件
-// mitter.on("app.logout", () => {
-//   debugger;
-//   const resourceStore = useResourceStore();
-//   resourceStore.clear();
-// });
+mitter.on("app.logout", () => {
+  const resourceStore = useResourceStore();
+  resourceStore.clear();
+});
 //
 // mitter.on("app.login", () => {
 //   const resourceStore = useResourceStore();
@@ -54,11 +53,17 @@ export const useResourceStore = defineStore({
     },
     getFrameworkMenus() {
       return this.authedTopMenus;
+      // const menus = _.cloneDeep(this.authedTopMenus);
+      // for (const menu of menus) {
+      //   delete menu.children;
+      // }
+      // return menus;
     }
   } as any,
   actions: {
     clear() {
       this.inited = false;
+      this.currentTopMenu = undefined;
     },
     /**
      * 初始化资源
@@ -80,21 +85,22 @@ export const useResourceStore = defineStore({
       this.headerMenus = headerMenus;
     },
     setCurrentTopMenu(topMenu?: any) {
-      if (this.frameworkMenus.length === 0) {
+      if (this.topMenus.length === 0) {
         return;
       }
       if (topMenu == null) {
-        topMenu = this.frameworkMenus[0];
+        topMenu = this.topMenus[0];
       }
       this.currentTopMenu = topMenu;
     },
     setCurrentTopMenuByCurrentRoute(matched: any) {
-      const menuHeader = this.frameworkMenus;
+      const menuHeader = this.authedTopMenus;
       if (matched?.length <= 1) {
         return;
       }
 
       function findFromTree(tree: any, find: any) {
+        tree = tree || [];
         const results: Array<any> = [];
         for (const item of tree) {
           if (find(item)) {

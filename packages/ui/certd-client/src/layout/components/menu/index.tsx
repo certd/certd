@@ -4,6 +4,7 @@ import _ from "lodash-es";
 import BScroll from "better-scroll";
 import "./index.less";
 import { utils } from "@fast-crud/fast-crud";
+import { routerUtils } from "/@/utils/util.router";
 
 function useBetterScroll(enabled = true) {
   const bsRef = ref(null);
@@ -70,27 +71,8 @@ export default defineComponent({
     scroll: {}
   },
   setup(props, ctx) {
-    async function open(path: any) {
-      if (path == null) {
-        return;
-      }
-      if (path.startsWith("http://") || path.startsWith("https://")) {
-        window.open(path);
-        return;
-      }
-      try {
-        const navigationResult = await router.push(path);
-        if (navigationResult) {
-          // 导航被阻止
-        } else {
-          // 导航成功 (包括重新导航的情况)
-        }
-      } catch (e) {
-        console.error("导航失败", e);
-      }
-    }
-    function onSelect(item: any) {
-      open(item.key);
+    async function onSelect(item: any) {
+      await routerUtils.open(item.key);
     }
 
     const fsIcon = resolveComponent("FsIcon");
