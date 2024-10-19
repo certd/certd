@@ -25,7 +25,11 @@ export default defineConfig({
       name: "keywords",
       content: "证书自动申请、证书自动更新、证书自动续期、证书自动续签、证书管理工具、Certd、SSL证书自动部署、证书自动化，https证书，pfx证书，der证书，TLS证书，nginx证书自动续签自动部署"
     }],
-    ["link", { rel: "icon", href: "/favicon.ico" }]
+    ["meta", {
+      name: "google-site-verification",
+      content: "V5XLTSnXoT15uQotwpxJoQolUo2d5UbSL-TacsyOsC0"
+    }],
+    ["link", { rel: "icon", href: "/static/logo/logo.svg" }]
   ],
   themeConfig: {
     logo: "/static/logo/logo.svg",
