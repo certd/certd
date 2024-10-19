@@ -15,7 +15,6 @@ Certd 是一个免费全自动申请和自动部署更新SSL证书的管理系�
 * 邮件通知
 * 私有化部署，保障数据安全
 * 支持sqlite，postgresql数据库
-* 免费、免费、免费（[阿里云单个通配符域名证书最便宜也要1800/年](https://yundun.console.aliyun.com/?p=cas#/certExtend/buy/cn-hangzhou)）
 
 
 ## 二、在线体验
