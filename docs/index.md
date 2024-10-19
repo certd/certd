@@ -7,7 +7,7 @@ hero:
   text: "全自动申请、部署证书管理工具"
   tagline: 让你的网站证书永不过期
   image:
-    src: ./images/logo/logo.svg
+    src: /static/logo/logo.svg
     alt: Certd
   actions:
     - theme: brand
