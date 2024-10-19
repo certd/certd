@@ -45,7 +45,7 @@ export class StorageService extends BaseService<StorageEntity> {
 
   async findPipelineVars(pipelineIds: number[]) {
     if (pipelineIds == null || pipelineIds.length === 0) {
-      throw new Error('pipelineIds 不能为空');
+      return [];
     }
     return await this.repository.find({
       where: {
@@ -58,7 +58,7 @@ export class StorageService extends BaseService<StorageEntity> {
 
   async getPipelinePrivateVars(pipelineId: number) {
     if (pipelineId == null) {
-      throw new Error('pipelineId 不能为空');
+      return [];
     }
     const res = await this.repository.findOne({
       where: {
