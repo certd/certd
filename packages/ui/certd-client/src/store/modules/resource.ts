@@ -4,46 +4,56 @@ import { frameworkMenus, headerMenus, filterMenus, findMenus } from "/src/router
 import _ from "lodash-es";
 import { mitter } from "/src/utils/util.mitt";
 //监听注销事件
-mitter.on("app.logout", () => {
-  const resourceStore = useResourceStore();
-  resourceStore.clear();
-});
+// mitter.on("app.logout", () => {
+//   debugger;
+//   const resourceStore = useResourceStore();
+//   resourceStore.clear();
+// });
+//
+// mitter.on("app.login", () => {
+//   const resourceStore = useResourceStore();
+//   resourceStore.clear();
+//   resourceStore.init();
+// });
 
 interface ResourceState {
-  frameworkMenus: Array<any>;
+  topMenus: Array<any>;
+  authedTopMenus: Array<any>;
   headerMenus: Array<any>;
   asideMenus: Array<any>;
   fixedAsideMenus: Array<any>;
   inited: boolean;
-  currentAsidePath: string;
+  currentTopMenu?: string;
+  currentAsidePath?: string;
 }
 
 export const useResourceStore = defineStore({
   id: "app.resource",
   state: (): ResourceState => ({
     // user info
-    frameworkMenus: [],
+    topMenus: [],
+    authedTopMenus: [],
     headerMenus: [],
-    asideMenus: [],
     fixedAsideMenus: [],
     inited: false,
-    currentAsidePath: ""
+    currentTopMenu: undefined,
+    currentAsidePath: undefined
   }),
   getters: {
-    // @ts-ignore
     getAsideMenus() {
-      // @ts-ignore
-      return this.asideMenus;
+      let topMenu = this.currentTopMenu;
+      if (!topMenu && this.authedTopMenus.length > 0) {
+        topMenu = this.authedTopMenus[0];
+      }
+      let asideMenus = topMenu?.children || [];
+      asideMenus = [...this.fixedAsideMenus, ...asideMenus];
+      return asideMenus;
     },
-    // @ts-ignore
     getHeaderMenus() {
-      // @ts-ignore
       return this.headerMenus;
     },
-    // @ts-ignore
     getFrameworkMenus() {
-      // @ts-ignore
-      return this.frameworkMenus;
+      return this.authedTopMenus;
     }
   } as any,
   actions: {
@@ -59,28 +69,26 @@ export const useResourceStore = defineStore({
       }
       this.inited = true;
 
-      const showMenus = _.cloneDeep(frameworkMenus[0].children);
-      this.frameworkMenus = filterMenus(showMenus, (item: any) => {
+      const allMenus = _.cloneDeep(frameworkMenus[0].children);
+      this.topMenus = filterMenus(allMenus, (item: any) => {
         return item?.meta?.showOnHeader !== false;
       });
 
-      this.fixedAsideMenus = findMenus(showMenus, (item: any) => {
+      this.fixedAsideMenus = findMenus(allMenus, (item: any) => {
         return item?.meta?.fixedAside === true;
       });
       this.headerMenus = headerMenus;
-      this.setAsideMenu();
     },
-    setAsideMenu(topMenu?: any) {
+    setCurrentTopMenu(topMenu?: any) {
       if (this.frameworkMenus.length === 0) {
         return;
       }
       if (topMenu == null) {
         topMenu = this.frameworkMenus[0];
       }
-      const asideMenus = topMenu?.children || [];
-      this.asideMenus = [...this.fixedAsideMenus, ...asideMenus];
+      this.currentTopMenu = topMenu;
     },
-    setAsideMenuByCurrentRoute(matched: any) {
+    setCurrentTopMenuByCurrentRoute(matched: any) {
       const menuHeader = this.frameworkMenus;
       if (matched?.length <= 1) {
         return;
@@ -109,11 +117,11 @@ export const useResourceStore = defineStore({
           return;
         }
         this.currentAsidePath = _side[0];
-        this.setAsideMenu(_side[0]);
+        this.setCurrentTopMenu(_side[0]);
       }
     },
     filterByPermission(permissions: any) {
-      this.frameworkMenus = this.filterChildrenByPermission(this.frameworkMenus, permissions);
+      this.authedTopMenus = this.filterChildrenByPermission(this.topMenus, permissions);
     },
     filterChildrenByPermission(list: any, permissions: any) {
       const menus = list.filter((item: any) => {

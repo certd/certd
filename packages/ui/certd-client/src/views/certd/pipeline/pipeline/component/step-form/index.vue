@@ -256,7 +256,6 @@ export default {
           }
         }
         //设置系统初始值
-        debugger;
         const pluginSysConfig = await pluginApi.GetPluginConfig({ name: pluginDefine.name, type: "builtIn" });
         if (pluginSysConfig.sysSetting?.input) {
           for (const key in pluginSysConfig.sysSetting?.input) {

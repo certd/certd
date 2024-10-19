@@ -47,8 +47,8 @@ provide("fn:router.reload", reload);
 provide("fn:locale.changed", localeChanged);
 
 //其他初始化
-const resourceStore = useResourceStore();
-resourceStore.init();
+// const resourceStore = useResourceStore();
+// resourceStore.init();
 const pageStore = usePageStore();
 pageStore.init();
 const settingStore = useSettingStore();

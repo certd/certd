@@ -2,7 +2,6 @@ import Validator from "async-validator";
 import { DomainsVerifyPlanInput } from "./type";
 
 function checkCnameVerifyPlan(rule, value: DomainsVerifyPlanInput) {
-  debugger;
   if (value == null) {
     return true;
   }

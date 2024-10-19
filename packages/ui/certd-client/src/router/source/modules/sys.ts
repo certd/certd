@@ -10,7 +10,7 @@ export const sysResources = [
     component: LayoutPass,
     meta: {
       icon: "ion:settings-outline",
-      permission: "sys"
+      permission: "sys:settings:view"
     },
     children: [
       {

@@ -22,6 +22,8 @@ router.beforeEach(async (to, from, next) => {
   NProgress.start();
   const settingStore = useSettingStore();
   await settingStore.initOnce();
+  const resourceStore = useResourceStore();
+  resourceStore.init();
   // 修复三级以上路由页面无法缓存的问题
   if (to.matched && to.matched.length > 2) {
     to.matched.splice(1, to.matched.length - 2);
@@ -37,11 +39,11 @@ router.beforeEach(async (to, from, next) => {
     // 请根据自身业务需要修改
     const token = userStore.getToken;
     if (token) {
-      await userStore.init();
       next();
     } else {
       // 没有登录的时候跳转到登录界面
       // 携带上登陆成功之后需要跳转的页面完整路径
+      resourceStore.clear();
       next({
         name: "login",
         query: {
@@ -73,7 +75,7 @@ router.afterEach((to: any) => {
   const matched = to.matched;
   if (matched.length > 0) {
     const resourceStore = useResourceStore();
-    resourceStore.setAsideMenuByCurrentRoute(matched);
+    resourceStore.setCurrentTopMenuByCurrentRoute(matched);
   }
 });
 export default router;

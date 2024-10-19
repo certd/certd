@@ -76,7 +76,6 @@ export default function (certPluginGroup: PluginGroup, formWrapperRef: any): Cre
             },
             valueChange: {
               handle: async ({ form, value }) => {
-                debugger;
                 const config = await api.GetPluginConfig({
                   name: value,
                   type: "builtIn"

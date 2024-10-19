@@ -131,7 +131,7 @@ export default defineComponent({
               open(sub.path);
             }
           }
-          slots.push(<a-sub-menu key={sub.index} v-slots={subSlots} onTitleClick={onTitleClick} />);
+          slots.push(<a-sub-menu key={sub.path} v-slots={subSlots} onTitleClick={onTitleClick} />);
         } else {
           slots.push(
             <a-menu-item key={sub.path} title={sub.title}>
