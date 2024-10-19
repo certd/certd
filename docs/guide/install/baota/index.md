@@ -59,7 +59,7 @@ services:
 点击进入安装路径，数据保存在`./data`目录下，可以手动备份
 
 
-![](../../images/app.png)
+![](./images/app.png)
 
 ![](./images/db_path.png)
 
@@ -70,4 +70,4 @@ services:
 
 ### 4.3 自动备份
 
-> 建议配置一条 [数据库备份流水线](../backup.md)，自动备份
+> 建议配置一条 [数据库备份流水线](../../use/backup/)，自动备份

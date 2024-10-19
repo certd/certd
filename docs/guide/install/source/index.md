@@ -34,7 +34,7 @@ kill -9 $(lsof -t -i:7001)
 ./start.sh
 ```
 > 数据默认保存在 `./packages/ui/certd-server/data` 目录下    
-> 建议配置一条[数据库备份流水线](../backup.md)  自动备份
+> 建议配置一条[数据库备份流水线](../use/backup/)  自动备份
 
 
 

@@ -17,10 +17,10 @@ https://certd.handsfree.work/
 
 ###  1. 部署方式
 
-1. [宝塔面板方式部署](./install/baota.md)
-2. [1Panel面板方式部署](./install/1panel.md)
-2. [Docker方式部署](./install/docker.md)
-3. [源码方式部署](./install/source.md)
+1. [宝塔面板方式部署](./install/baota/)
+2. [1Panel面板方式部署](./install/1panel/)
+2. [Docker方式部署](./install/docker/)
+3. [源码方式部署](./install/source/)
 
 
 ### 2. 访问测试

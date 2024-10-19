@@ -12,10 +12,10 @@ hero:
   actions:
     - theme: brand
       text: 快速开始
-      link: /guide/start
+      link: /guide/start.md
     - theme: alt
       text: 演示教程
-      link: /guide/tutorial
+      link: /guide/tutorial.md
     - theme: alt
       text: demo体验
       link: https://certd.handsfree.work
