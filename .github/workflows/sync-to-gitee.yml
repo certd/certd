@@ -1,7 +1,7 @@
 name: sync-to-gitee
 on:
   push:
-    branches: ['v2']
+    branches: ['v2','v2-dev']
 #  schedule:
 #    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
 #    - cron: '17 19 * * *'
