@@ -180,6 +180,9 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
 
   async zipCert(cert: CertInfo, filename: string) {
     const zip = new JSZip();
+    zip.file("证书.pem", cert.crt);
+    zip.file("私钥.pem", cert.key);
+    zip.file("中间证书.pem", cert.ic);
     zip.file("cert.crt", cert.crt);
     zip.file("cert.key", cert.key);
     zip.file("intermediate.crt", cert.ic);

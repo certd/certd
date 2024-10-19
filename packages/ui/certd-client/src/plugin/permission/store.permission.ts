@@ -6,7 +6,6 @@ import { env } from "/@/utils/util.env";
 
 //监听注销事件
 mitter.on("app.logout", () => {
-  debugger;
   const permissionStore = usePermissionStore();
   permissionStore.clear();
 });
@@ -80,7 +79,6 @@ export const usePermissionStore = defineStore({
       resourceStore.filterByPermission(permissions);
     },
     async loadFromRemote() {
-      debugger;
       let permissionTree = [];
       if (env.PM_ENABLED === "false") {
         console.warn("当前权限模块未开启，权限列表为空");
