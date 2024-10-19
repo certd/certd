@@ -1,4 +1,4 @@
-name: sync-to-gitee
+name: sync-to-gitee-dev
 on:
   push:
     branches: ['v2-dev']
