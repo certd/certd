@@ -16,6 +16,7 @@ export type AccessDefine = Registrable & {
 };
 export interface IAccessService {
   getById<T = any>(id: any): Promise<T>;
+  getCommonById<T = any>(id: any): Promise<T>;
 }
 
 export interface IAccess {

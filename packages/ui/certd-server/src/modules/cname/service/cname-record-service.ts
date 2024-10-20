@@ -5,7 +5,7 @@ import { BaseService, ValidateException } from '@certd/lib-server';
 import { CnameRecordEntity, CnameRecordStatusType } from '../entity/cname-record.js';
 import { v4 as uuidv4 } from 'uuid';
 import { createDnsProvider, IDnsProvider, parseDomain } from '@certd/plugin-cert';
-import { cache, http, logger, utils } from '@certd/pipeline';
+import { cache, CnameProvider, http, logger, utils } from '@certd/pipeline';
 import { AccessService } from '../../pipeline/service/access-service.js';
 import { isDev } from '../../../utils/env.js';
 import { walkTxtRecord } from '@certd/acme-client';
@@ -109,16 +109,22 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
     return await super.update(param);
   }
 
-  async validate(id: number) {
-    const info = await this.info(id);
-    if (info.status === 'success') {
-      return true;
-    }
+  // async validate(id: number) {
+  //   const info = await this.info(id);
+  //   if (info.status === 'success') {
+  //     return true;
+  //   }
+  //
+  //   //开始校验
+  //   // 1.  dnsProvider
+  //   // 2.  添加txt记录
+  //   // 3.  检查原域名是否有cname记录
+  // }
 
-    //开始校验
-    // 1.  dnsProvider
-    // 2.  添加txt记录
-    // 3.  检查原域名是否有cname记录
+  async getWithAccessByDomain(domain: string, userId: number) {
+    const record = await this.getByDomain(domain, userId);
+    record.cnameProvider.access = await this.accessService.getAccessById(record.cnameProvider.accessId, false);
+    return record;
   }
 
   async getByDomain(domain: string, userId: number, createOnNotFound = true) {
@@ -143,7 +149,9 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
 
     return {
       ...record,
-      cnameProvider: provider,
+      cnameProvider: {
+        ...provider,
+      } as CnameProvider,
     };
   }
 
@@ -178,7 +186,10 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
 
     const buildDnsProvider = async () => {
       const cnameProvider = await this.cnameProviderService.info(bean.cnameProviderId);
-      const access = await this.accessService.getById(cnameProvider.accessId, bean.userId);
+      if (cnameProvider == null) {
+        throw new ValidateException(`CNAME服务:${bean.cnameProviderId} 已被删除，请修改CNAME记录，重新选择CNAME服务`);
+      }
+      const access = await this.accessService.getById(cnameProvider.accessId, cnameProvider.userId);
       const context = { access, logger, http, utils };
       const dnsProvider: IDnsProvider = await createDnsProvider({
         dnsProviderType: cnameProvider.dnsProviderType,

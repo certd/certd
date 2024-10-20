@@ -7,6 +7,8 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 export class CnameProviderEntity {
   @PrimaryGeneratedColumn()
   id: number;
+  @Column({ comment: 'userId', name: 'user_id' })
+  userId: number;
   @Column({ comment: '域名', length: 100 })
   domain: string;
   @Column({ comment: 'DNS提供商类型', name: 'dns_provider_type', length: 20 })

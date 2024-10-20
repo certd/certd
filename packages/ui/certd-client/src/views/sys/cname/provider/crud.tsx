@@ -130,7 +130,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               name: "access-selector",
               vModel: "modelValue",
-              from: "sys",
               type: compute(({ form }) => {
                 return form.dnsProviderType;
               })

@@ -354,7 +354,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       role: userIsAdmin ? 'admin' : 'user',
     };
     const accessGetter = new AccessGetter(userId, this.accessService.getById.bind(this.accessService));
-    const cnameProxyService = new CnameProxyService(userId, this.cnameRecordService.getByDomain.bind(this.cnameRecordService));
+    const cnameProxyService = new CnameProxyService(userId, this.cnameRecordService.getWithAccessByDomain.bind(this.cnameRecordService));
     const executor = new Executor({
       user,
       pipeline,
