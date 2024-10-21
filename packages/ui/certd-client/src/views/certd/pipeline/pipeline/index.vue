@@ -101,7 +101,7 @@
                                   <fs-icon
                                     v-if="!editMode"
                                     class="pointer color-blue ml-2"
-                                    title="重新运行此步骤"
+                                    title="完全重新运行此步骤"
                                     icon="SyncOutlined"
                                     @click="run(item.id)"
                                   ></fs-icon>

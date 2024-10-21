@@ -57,7 +57,12 @@ export class AccessService extends BaseService<AccessEntity> {
     }
     for (const key in json) {
       //加密
-      const value = json[key];
+      let value = json[key];
+      if (value && typeof value === 'string') {
+        //去除前后空格
+        value = value.trim();
+        json[key] = value;
+      }
       const accessInputDefine = accessDefine.input[key];
       if (!accessInputDefine) {
         continue;
@@ -102,14 +107,20 @@ export class AccessService extends BaseService<AccessEntity> {
     return await super.update(param);
   }
 
-  async getById(id: any, userId: number): Promise<any> {
+  async getAccessById(id: any, checkUserId: boolean, userId?: number): Promise<any> {
     const entity = await this.info(id);
     if (entity == null) {
       throw new Error(`该授权配置不存在,请确认是否已被删除:id=${id}`);
     }
-    if (userId !== entity.userId && entity.userId !== 0) {
-      throw new PermissionException('您对该Access授权无访问权限');
+    if (checkUserId) {
+      if (userId == null) {
+        throw new ValidateException('userId不能为空');
+      }
+      if (userId !== entity.userId) {
+        throw new PermissionException('您对该Access授权无访问权限');
+      }
     }
+
     // const access = accessRegistry.get(entity.type);
     const setting = this.decryptAccessEntity(entity);
     const input = {
@@ -117,6 +128,10 @@ export class AccessService extends BaseService<AccessEntity> {
       ...setting,
     };
     return newAccess(entity.type, input);
+  }
+
+  async getById(id: any, userId: number): Promise<any> {
+    return await this.getAccessById(id, true, userId);
   }
 
   decryptAccessEntity(entity: AccessEntity): any {

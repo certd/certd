@@ -266,7 +266,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         eab = await this.ctx.accessService.getById(this.eabAccessId);
       } else if (this.googleCommonEabAccessId) {
         this.logger.info("当前正在使用 google公共EAB授权");
-        eab = await this.ctx.accessService.getById(this.googleCommonEabAccessId);
+        eab = await this.ctx.accessService.getCommonById(this.googleCommonEabAccessId);
       } else {
         this.logger.error("google需要配置EAB授权或服务账号授权");
         return;
@@ -277,7 +277,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         eab = await this.ctx.accessService.getById(this.eabAccessId);
       } else if (this.zerosslCommonEabAccessId) {
         this.logger.info("当前正在使用 zerossl 公共EAB授权");
-        eab = await this.ctx.accessService.getById(this.zerosslCommonEabAccessId);
+        eab = await this.ctx.accessService.getCommonById(this.zerosslCommonEabAccessId);
       } else {
         this.logger.error("zerossl需要配置EAB授权");
         return;
@@ -324,8 +324,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       domainsVerifyPlan = await this.createDomainsVerifyPlan();
     } else {
       const dnsProviderType = this.dnsProviderType;
-      const dnsProviderAccessId = this.dnsProviderAccess;
-      dnsProvider = await this.createDnsProvider(dnsProviderType, dnsProviderAccessId);
+      const access = await this.ctx.accessService.getById(this.dnsProviderAccess);
+      dnsProvider = await this.createDnsProvider(dnsProviderType, access);
     }
 
     try {
@@ -351,9 +351,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     }
   }
 
-  async createDnsProvider(dnsProviderType: string, dnsProviderAccessId: number): Promise<IDnsProvider> {
-    const access = await this.accessService.getById(dnsProviderAccessId);
-    const context: DnsProviderContext = { access, logger: this.logger, http: this.ctx.http, utils };
+  async createDnsProvider(dnsProviderType: string, dnsProviderAccess: any): Promise<IDnsProvider> {
+    const context: DnsProviderContext = { access: dnsProviderAccess, logger: this.logger, http: this.ctx.http, utils };
     return await createDnsProvider({
       dnsProviderType,
       context,
@@ -367,14 +366,15 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       let dnsProvider = null;
       const cnameVerifyPlan: Record<string, CnameVerifyPlan> = {};
       if (domainVerifyPlan.type === "dns") {
-        dnsProvider = await this.createDnsProvider(domainVerifyPlan.dnsProviderType, domainVerifyPlan.dnsProviderAccessId);
+        const access = await this.ctx.accessService.getById(domainVerifyPlan.dnsProviderAccessId);
+        dnsProvider = await this.createDnsProvider(domainVerifyPlan.dnsProviderType, access);
       } else {
         for (const key in domainVerifyPlan.cnameVerifyPlan) {
           const cnameRecord = await this.ctx.cnameProxyService.getByDomain(key);
           cnameVerifyPlan[key] = {
             domain: cnameRecord.cnameProvider.domain,
             fullRecord: cnameRecord.recordValue,
-            dnsProvider: await this.createDnsProvider(cnameRecord.cnameProvider.dnsProviderType, cnameRecord.cnameProvider.accessId),
+            dnsProvider: await this.createDnsProvider(cnameRecord.cnameProvider.dnsProviderType, cnameRecord.cnameProvider.access),
           };
         }
       }

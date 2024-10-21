@@ -15,7 +15,6 @@ import { mitter } from "/src/utils/util.mitt";
 interface UserState {
   userInfo: Nullable<UserInfoRes>;
   token?: string;
-  inited: boolean;
 }
 
 const USER_INFO_KEY = "USER_INFO";
@@ -26,8 +25,7 @@ export const useUserStore = defineStore({
     // user info
     userInfo: null,
     // token
-    token: undefined,
-    inited: false
+    token: undefined
   }),
   getters: {
     getUserInfo(): UserInfoRes {
@@ -114,16 +112,6 @@ export const useUserStore = defineStore({
           await this.logout(true);
         }
       });
-    },
-    async init() {
-      if (this.inited) {
-        return;
-      }
-      this.inited = true;
-    },
-    async reInit() {
-      this.inited = false;
-      await this.init();
     }
   }
 });

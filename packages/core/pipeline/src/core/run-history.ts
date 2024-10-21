@@ -181,6 +181,9 @@ export class RunnableCollection {
     if (runnable?.status) {
       runnable.status.status = ResultType.none;
       runnable.status.result = ResultType.none;
+      runnable.status.inputHash = "";
+      // @ts-ignore
+      runnable.input = {};
     }
   }
 

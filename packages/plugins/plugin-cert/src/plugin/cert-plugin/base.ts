@@ -5,6 +5,7 @@ import { CertReader } from "./cert-reader.js";
 import JSZip from "jszip";
 import { CertConverter } from "./convert.js";
 import fs from "fs";
+import { pick } from "lodash-es";
 
 export { CertReader };
 export type { CertInfo };
@@ -179,6 +180,9 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
 
   async zipCert(cert: CertInfo, filename: string) {
     const zip = new JSZip();
+    zip.file("证书.pem", cert.crt);
+    zip.file("私钥.pem", cert.key);
+    zip.file("中间证书.pem", cert.ic);
     zip.file("cert.crt", cert.crt);
     zip.file("cert.key", cert.key);
     zip.file("intermediate.crt", cert.ic);
@@ -203,10 +207,35 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
       return null;
     }
 
-    const inputChanged = this.ctx.inputChanged;
+    let inputChanged = this.ctx.inputChanged;
     if (inputChanged) {
-      this.logger.info("输入参数变更，准备申请新证书");
-      return null;
+      this.logger.info("input hash 有变更，检查是否需要重新申请证书");
+      //判断域名有没有变更
+      /**
+       *                      "renewDays": 20,
+       *                     "certApplyPlugin": "CertApply",
+       *                     "sslProvider": "letsencrypt",
+       *                     "privateKeyType": "rsa_2048_pkcs1",
+       *                     "dnsProviderType": "aliyun",
+       *                     "domains": [
+       *                       "*.handsfree.work"
+       *                     ],
+       *                     "email": "xiaojunnuo@qq.com",
+       *                     "dnsProviderAccess": 3,
+       *                     "useProxy": false,
+       *                     "skipLocalVerify": false,
+       *                     "successNotify": true,
+       *                     "pfxPassword": "123456"
+       */
+      const checkInputChanges = ["domains", "sslProvider", "privateKeyType", "dnsProviderType", "dnsProviderAccess", "pfxPassword"];
+      const oldInput = JSON.stringify(pick(this.lastStatus?.input, checkInputChanges));
+      const thisInput = JSON.stringify(pick(this, checkInputChanges));
+      inputChanged = oldInput !== thisInput;
+
+      if (inputChanged) {
+        this.logger.info("输入参数变更，准备申请新证书");
+        return null;
+      }
     }
 
     let oldCert: CertReader | undefined = undefined;

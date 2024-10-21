@@ -34,11 +34,13 @@ export class CnameRecordController extends CrudController<CnameProviderService> 
       disabled: false,
     };
     merge(bean, def);
+    bean.userId = this.getUserId();
     return super.add(bean);
   }
 
   @Post('/update', { summary: 'sys:settings:edit' })
   async update(@Body(ALL) bean: any) {
+    bean.userId = this.getUserId();
     return super.update(bean);
   }
 

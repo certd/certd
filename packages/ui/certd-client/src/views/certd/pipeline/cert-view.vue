@@ -8,7 +8,7 @@
               <div class="title">
                 <div>{{ item.name }}({{ item.fileName }})</div>
                 <fs-copyable :model-value="item.content" :button="{ show: false }">
-                  <a-tag type="success">复制</a-tag>
+                  <a-tag color="success">复制</a-tag>
                 </fs-copyable>
               </div>
             </template>

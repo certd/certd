@@ -8,7 +8,7 @@ export class CnameProxyService implements ICnameProxyService {
     this.getter = getter;
   }
 
-  getByDomain(domain: string): Promise<CnameRecord> {
-    return this.getter<CnameRecord>(domain, this.userId);
+  async getByDomain(domain: string): Promise<CnameRecord> {
+    return await this.getter<CnameRecord>(domain, this.userId);
   }
 }

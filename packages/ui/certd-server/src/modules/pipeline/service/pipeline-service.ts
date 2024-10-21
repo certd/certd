@@ -74,14 +74,17 @@ export class PipelineService extends BaseService<PipelineEntity> {
       pipelineIds.push(record.id);
       recordMap[record.id] = record;
     }
-    const vars = await this.storageService.findPipelineVars(pipelineIds);
-    for (const varEntity of vars) {
-      const record = recordMap[varEntity.namespace];
-      if (record) {
-        const value = JSON.parse(varEntity.value);
-        record.lastVars = value.value;
+    if (pipelineIds?.length > 0) {
+      const vars = await this.storageService.findPipelineVars(pipelineIds);
+      for (const varEntity of vars) {
+        const record = recordMap[varEntity.namespace];
+        if (record) {
+          const value = JSON.parse(varEntity.value);
+          record.lastVars = value.value;
+        }
       }
     }
+
     return result;
   }
 
@@ -351,7 +354,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       role: userIsAdmin ? 'admin' : 'user',
     };
     const accessGetter = new AccessGetter(userId, this.accessService.getById.bind(this.accessService));
-    const cnameProxyService = new CnameProxyService(userId, this.cnameRecordService.getByDomain.bind(this.cnameRecordService));
+    const cnameProxyService = new CnameProxyService(userId, this.cnameRecordService.getWithAccessByDomain.bind(this.cnameRecordService));
     const executor = new Executor({
       user,
       pipeline,

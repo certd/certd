@@ -6,7 +6,6 @@ import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, Edi
 import { useUserStore } from "/@/store/modules/user";
 import { useSettingStore } from "/@/store/modules/settings";
 import { message } from "ant-design-vue";
-import { DoVerify } from "./api";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -125,9 +124,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           }),
           form: {
             component: {
-              onDictChange: ({ form, dict }) => {
+              onDictChange: ({ form, dict }: any) => {
                 if (!form.cnameProviderId) {
-                  const item = dict.data.find((item) => item.isDefault);
+                  const item = dict.data.find((item: any) => item.isDefault);
                   if (item) {
                     form.cnameProviderId = item.id;
                   }
@@ -180,7 +179,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                     message.success("验证成功");
                     row.status = "valid";
                   }
-                } catch (e) {
+                } catch (e: any) {
                   console.error(e);
                   message.error(e.message);
                 } finally {

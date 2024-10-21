@@ -17,7 +17,17 @@
             <MenuUnfoldOutlined v-if="asideCollapsed" />
             <MenuFoldOutlined v-else />
           </div>
-          <fs-menu class="header-menu" mode="horizontal" :expand-selected="false" :selectable="false" :menus="frameworkMenus" />
+          <!--          <fs-menu class="header-menu" mode="horizontal" :expand-selected="false" :selectable="false" :menus="frameworkMenus" />-->
+          <div
+            v-for="menu of resourceStore.authedTopMenus"
+            class="top-menu flex-center header-btn"
+            :class="{ current: resourceStore.currentTopMenu === menu }"
+            :style="{ color: resourceStore.currentTopMenu === menu ? token.colorPrimary : '' }"
+            @click="menuClick(menu)"
+          >
+            <fs-icon :icon="menu.meta.icon"></fs-icon>
+            <span class="ml-5">{{ menu.title }} </span>
+          </div>
           <tutorial-button class="flex-center header-btn" />
           <vip-button class="flex-center header-btn" mode="nav" />
         </div>
@@ -32,7 +42,7 @@
           <!--            Button-->
           <!--          </button>-->
           <fs-menu
-            v-if="settingStore?.siteEnv?.agent?.enabled === false && !settingStore.isComm"
+            v-if="!settingStore?.isAgent && !settingStore.isComm"
             class="header-menu"
             mode="horizontal"
             :expand-selected="false"
@@ -107,6 +117,8 @@ import VipButton from "/@/components/vip-button/index.vue";
 import TutorialButton from "/@/components/tutorial/index.vue";
 import { useUserStore } from "/@/store/modules/user";
 import { useSettingStore } from "/@/store/modules/settings";
+import { routerUtils } from "/@/utils/util.router";
+import { theme } from "ant-design-vue";
 
 const resourceStore = useResourceStore();
 const frameworkMenus = computed(() => {
@@ -150,6 +162,13 @@ const siteInfo = computed(() => {
 onMounted(async () => {
   await settingStore.checkUrlBound();
 });
+
+function menuClick(menu) {
+  routerUtils.open(menu.path);
+}
+
+const { useToken } = theme;
+const { token } = useToken();
 </script>
 <style lang="less">
 @import "../style/theme/index.less";
@@ -208,7 +227,7 @@ onMounted(async () => {
       align-items: center;
       & > * {
         cursor: pointer;
-        padding: 0 10px;
+        padding: 0 15px;
       }
       height: 100%;
 
@@ -219,7 +238,11 @@ onMounted(async () => {
         height: 100%;
         //border-bottom: 1px solid rgba(255, 255, 255, 0);
         &:hover {
-          background-color: #fff;
+          background-color: rgba(0, 0, 0, 0.06);
+        }
+        &.current {
+          //color: #1890ff;
+          //background-color: hsla(0, 0%, 100%, 0.5) !important;
         }
       }
     }

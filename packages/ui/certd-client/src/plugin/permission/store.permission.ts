@@ -10,6 +10,12 @@ mitter.on("app.logout", () => {
   permissionStore.clear();
 });
 
+mitter.on("app.login", () => {
+  const permissionStore = useResourceStore();
+  permissionStore.clear();
+  permissionStore.init();
+});
+
 interface PermissionState {
   permissions: [];
   inited: boolean;

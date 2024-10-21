@@ -19,7 +19,7 @@ import { createAccessApi } from "/@/views/certd/access/api";
 export default defineComponent({
   name: "SysAccessManager",
   setup() {
-    const api = createAccessApi("/sys/access");
+    const api = createAccessApi("sys");
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: { api } });
 
     // 页面打开后获取列表数据

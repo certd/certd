@@ -70,6 +70,7 @@ export class SshAccess extends BaseAccess implements ConnectConfig {
     component: {
       name: 'a-input',
       vModel: 'value',
+      placeholder: 'socks5://user:password@host:port',
     },
     encrypt: false,
   })
@@ -77,7 +78,7 @@ export class SshAccess extends BaseAccess implements ConnectConfig {
 
   @AccessInput({
     title: '是否Windows',
-    helper: '如果是Windows主机，请勾选此项',
+    helper: '如果是Windows主机，请勾选此项\n并且需要windows[安装OpenSSH](https://gitee.com/certd/certd/blob/v2/doc/host/host.md)',
     component: {
       name: 'a-switch',
       vModel: 'checked',
