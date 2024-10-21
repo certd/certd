@@ -192,6 +192,7 @@ export const forge: CryptoLegacyInterface;
 
 export const axios: AxiosInstance;
 
+export const agents: any;
 /**
  * Logger
  */

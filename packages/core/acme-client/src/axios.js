@@ -1,11 +1,11 @@
 /**
  * Axios instance
  */
-
 const axios = require('axios');
 const { parseRetryAfterHeader } = require('./util');
 const { log } = require('./logger');
 const pkg = require('./../package.json');
+const Agents = require('./agents');
 
 const { AxiosError } = axios;
 
@@ -24,8 +24,8 @@ instance.defaults.acmeSettings = {
     httpsChallengePort: 443,
     tlsAlpnChallengePort: 443,
 
-    retryMaxAttempts: 5,
-    retryDefaultDelay: 5,
+    retryMaxAttempts: 3,
+    retryDefaultDelay: 3,
 };
 // instance.defaults.proxy = {
 //     host: '192.168.34.139',
@@ -56,19 +56,26 @@ function isRetryableError(error) {
 
 /* https://github.com/axios/axios/blob/main/lib/core/settle.js */
 function validateStatus(response) {
-    const validator = response.config.retryValidateStatus;
-
+    if (!response) {
+        return new Error('Response is undefined');
+    }
+    let validator = null;
+    if (response.config) {
+        validator = response.config.retryValidateStatus;
+    }
     if (!response.status || !validator || validator(response.status)) {
         return response;
     }
 
-    throw new AxiosError(
+    const err = new AxiosError(
         `Request failed with status code ${response.status}`,
         (Math.floor(response.status / 100) === 4) ? AxiosError.ERR_BAD_REQUEST : AxiosError.ERR_BAD_RESPONSE,
         response.config,
         response.request,
         response,
     );
+
+    throw new Agents.HttpError(err);
 }
 
 /* Pass all responses through the error interceptor */
@@ -76,8 +83,17 @@ instance.interceptors.request.use((config) => {
     if (!('retryValidateStatus' in config)) {
         config.retryValidateStatus = config.validateStatus;
     }
-
     config.validateStatus = () => false;
+
+    const agents = Agents.getGlobalAgents();
+    // if (config.skipSslVerify) {
+    //     logger.info('跳过SSL验证');
+    //     agents = createAgent({ rejectUnauthorized: false } as any);
+    // }
+    // delete config.skipSslVerify;
+    config.httpsAgent = agents.httpsAgent;
+    config.httpAgent = agents.httpAgent;
+    config.proxy = false; // 必须 否则还会走一层代理，
     return config;
 });
 
@@ -86,7 +102,7 @@ instance.interceptors.response.use(null, async (error) => {
     const { config, response } = error;
 
     if (!config) {
-        return Promise.reject(error);
+        return Promise.reject(new Agents.HttpError(error));
     }
 
     /* Pick up errors we want to retry */
@@ -115,6 +131,9 @@ instance.interceptors.response.use(null, async (error) => {
         }
     }
 
+    if (!response) {
+        return Promise.reject(new Agents.HttpError(error));
+    }
     /* Validate and return response */
     return validateStatus(response);
 });

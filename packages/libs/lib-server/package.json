@@ -27,6 +27,7 @@
   "license": "AGPL",
   "dependencies": {
     "@certd/basic": "^1.26.10",
+    "@certd/acme-client": "^1.26.10",
     "@certd/pipeline": "^1.26.10",
     "@midwayjs/cache": "~3.14.0",
     "@midwayjs/core": "~3.17.1",

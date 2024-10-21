@@ -7,7 +7,7 @@ import { BaseSettings, SysInstallInfo, SysPrivateSettings, SysPublicSettings, Sy
 import * as _ from 'lodash-es';
 import { BaseService } from '../../../basic/index.js';
 import { logger, setGlobalProxy } from '@certd/basic';
-
+import { agents } from '@certd/acme-client';
 /**
  * 设置
  */
@@ -23,7 +23,6 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   getRepository() {
     return this.repository;
   }
-
   async getById(id: any): Promise<SysSettingsEntity | null> {
     const entity = await this.info(id);
     if (!entity) {
@@ -129,10 +128,12 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   async reloadPrivateSettings() {
     const bean = await this.getPrivateSettings();
     if (bean.httpProxy || bean.httpsProxy) {
-      setGlobalProxy({
+      const opts = {
         httpProxy: bean.httpProxy,
         httpsProxy: bean.httpsProxy,
-      });
+      };
+      setGlobalProxy(opts);
+      agents.setGlobalProxy(opts);
     }
   }
 

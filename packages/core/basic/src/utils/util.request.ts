@@ -35,6 +35,14 @@ export class HttpError extends Error {
       params: error.config?.params,
       data: error.config?.data,
     };
+    let url = error.config?.url;
+    if (error.config?.baseURL) {
+      url = error.config?.baseURL + url;
+    }
+    if (url) {
+      this.message = `${this.message} : ${url}`;
+    }
+
     this.response = {
       data: error.response?.data,
     };
@@ -60,6 +68,10 @@ export function setGlobalProxy(opts: { httpProxy?: string; httpsProxy?: string }
   }
 
   defaultAgents = createAgent();
+}
+
+export function getGlobalAgents() {
+  return defaultAgents;
 }
 
 /**

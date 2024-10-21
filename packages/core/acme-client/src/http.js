@@ -3,21 +3,9 @@
  */
 
 const { createHmac, createSign, constants: { RSA_PKCS1_PADDING } } = require('crypto');
-const { HttpsProxyAgent } = require('https-proxy-agent');
 const { getJwk } = require('./crypto');
 const { log } = require('./logger');
-const axios1 = require('./axios');
-
-const httpsProxy = process.env.HTTPS_PROXY || process.env.https_proxy;
-let httpsAgent = null;
-if (httpsProxy) {
-    httpsAgent = new HttpsProxyAgent(httpsProxy);
-    log(`use https_proxy:${httpsProxy}`);
-}
-const axios = axios1.create({
-    proxy: false,
-    httpsAgent,
-});
+const axios = require('./axios');
 
 /**
  * ACME HTTP client
