@@ -18,6 +18,8 @@ Certd 是一个免费全自动申请和自动部署更新SSL证书的工具。
 * 免费、免费、免费（[阿里云单个通配符域名证书最便宜也要1800/年](https://yundun.console.aliyun.com/?p=cas#/certExtend/buy/cn-hangzhou)）
 
 
+
+
 ## 二、在线体验
 
 官方Demo地址，自助注册后体验    
@@ -28,6 +30,10 @@ https://certd.handsfree.work/
 > 包含敏感信息，务必自己本地部署进行生产使用
 
 ## 三、使用教程
+
+更多教程请访问文档网站 [certd.docmirror.cn](https://certd.docmirror.cn/)
+
+
 本案例演示，如何配置自动申请证书，并部署到阿里云CDN，然后快要到期前自动更新证书并重新部署     
 
 ![演示](packages/ui/certd-client/public/static/doc/images/5-view.png)
@@ -166,13 +172,8 @@ docker compose up -d
 
 ## 七、不同平台的设置说明
 
-* [Cloudflare](./doc/cf/cf.md)
-* [腾讯云](./doc/tencent/tencent.md)
-* [windows主机](./doc/host/host.md)
-* [google证书](./doc/google/google.md)
-* [群晖部署certd及证书更新教程](./doc/synology/index.md)
-
-* [CNAME证书校验方式说明](./doc/cname/index.md)
+* 已迁移到新的文档网站，请到常见问题章节查看
+* [最新文档站链接 certd.docmirror.cn](https://certd.docmirror.cn/)
 
 ## 八、问题处理
 ### 7.1 忘记管理员密码   
