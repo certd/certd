@@ -72,7 +72,10 @@ export function createAxiosService({ logger }: { logger: Logger }) {
   // 请求拦截
   service.interceptors.request.use(
     (config: any) => {
-      logger.info(`http request:${config.url}，method:${config.method}，params:${JSON.stringify(config.params)}`);
+      logger.info(`http request:${config.url}，method:${config.method}`);
+      if (config.logParams !== false) {
+        logger.info(`params:${JSON.stringify(config.params)}`);
+      }
       if (config.timeout == null) {
         config.timeout = 15000;
       }
@@ -96,7 +99,11 @@ export function createAxiosService({ logger }: { logger: Logger }) {
   // 响应拦截
   service.interceptors.response.use(
     (response: any) => {
-      logger.info('http response:', JSON.stringify(response?.data));
+      if (response?.config?.logRes !== false) {
+        logger.info(`http response : status=${response?.status},data=${JSON.stringify(response?.data)}`);
+      } else {
+        logger.info('http response status:', response?.status);
+      }
       return response.data;
     },
     (error: any) => {
@@ -142,6 +149,9 @@ export function createAxiosService({ logger }: { logger: Logger }) {
         `请求出错：status:${error.response?.status},statusText:${error.response?.statusText},url:${error.config?.url},method:${error.config?.method}。`
       );
       logger.error('返回数据:', JSON.stringify(error.response?.data));
+      if (error?.config?.logRes !== false) {
+        logger.error('返回数据:', JSON.stringify(error.response?.data));
+      }
       if (error.response?.data) {
         error.message = error.response.data.message || error.response.data.msg || error.response.data.error || error.response.data;
       }
@@ -160,6 +170,8 @@ export type HttpClientResponse<R> = any;
 export type HttpRequestConfig<D> = {
   skipSslVerify?: boolean;
   skipCheckRes?: boolean;
+  logParams?: boolean;
+  logRes?: boolean;
 } & AxiosRequestConfig<D>;
 export type HttpClient = {
   request<D = any, R = any>(config: HttpRequestConfig<D>): Promise<HttpClientResponse<R>>;
