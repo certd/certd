@@ -48,7 +48,7 @@ export function responseError(data = {}, msg = "请求失败", code = 500) {
  * @description 记录和显示错误
  * @param {Error} error 错误对象
  */
-export function errorLog(error: any) {
+export function errorLog(error: any, notify = true) {
   // 打印到控制台
   console.error("errorLog", error);
   let message = error.message;
@@ -58,17 +58,22 @@ export function errorLog(error: any) {
   if (message.indexOf("ssl3_get_record:wrong version number") >= 0) {
     message = "http协议错误，服务端要求http协议，请检查是否使用了https请求";
   }
-  // 显示提示
-  uiContext.get().notification.error({ message });
+  if (notify) {
+    // 显示提示
+    uiContext.get().notification.error({ message });
+  }
 }
 
 /**
  * @description 创建一个错误
  * @param {String} msg 错误信息
  */
-export function errorCreate(msg: string) {
+export function errorCreate(msg: string, notify = true) {
   const err = new Error(msg);
   console.error("errorCreate", err);
-  uiContext.get().notification.error({ message: err.message });
+  if (notify) {
+    uiContext.get().notification.error({ message: err.message });
+  }
+
   throw err;
 }

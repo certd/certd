@@ -11,6 +11,7 @@
     "debug:force": "vite --force --mode debug",
     "build": " vite build ",
     "dev-build": "echo 1",
+    "test:unit": "vitest",
     "serve": "vite preview",
     "preview": "vite preview",
     "pretty-quick": "pretty-quick",
@@ -114,7 +115,9 @@
     "vite-plugin-html": "^3.2.2",
     "vite-plugin-windicss": "^1.9.3",
     "vue-eslint-parser": "^9.4.2",
-    "vue-tsc": "^1.8.8"
+    "vue-tsc": "^1.8.8",
+    "@vue/test-utils": "^2.4.6",
+    "vitest": "^2.1.2"
   },
   "husky": {
     "hooks": {

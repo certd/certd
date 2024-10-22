@@ -5,6 +5,7 @@ import { HttpProxyAgent } from 'http-proxy-agent';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import nodeHttp from 'http';
 import * as https from 'node:https';
+import { merge } from 'lodash-es';
 export class HttpError extends Error {
   status?: number;
   statusText?: string;
@@ -40,7 +41,7 @@ export class HttpError extends Error {
       url = error.config?.baseURL + url;
     }
     if (url) {
-      this.message = `${this.message} : ${url}`;
+      this.message = `${this.message}  : url=${url}`;
     }
 
     this.response = {
@@ -99,6 +100,11 @@ export function createAxiosService({ logger }: { logger: Logger }) {
       delete config.skipSslVerify;
       config.httpsAgent = agents.httpsAgent;
       config.httpAgent = agents.httpAgent;
+
+      // const agent = new https.Agent({
+      //   rejectUnauthorized: false  // 允许自签名证书
+      // });
+      // config.httpsAgent = agent;
       config.proxy = false; //必须 否则还会走一层代理，
       return config;
     },
@@ -161,9 +167,6 @@ export function createAxiosService({ logger }: { logger: Logger }) {
         `请求出错：status:${error.response?.status},statusText:${error.response?.statusText},url:${error.config?.url},method:${error.config?.method}。`
       );
       logger.error('返回数据:', JSON.stringify(error.response?.data));
-      if (error?.config?.logRes !== false) {
-        logger.error('返回数据:', JSON.stringify(error.response?.data));
-      }
       if (error.response?.data) {
         error.message = error.response.data.message || error.response.data.msg || error.response.data.error || error.response.data;
       }
@@ -195,6 +198,7 @@ export function createAgent(opts: nodeHttp.AgentOptions = {}) {
   if (httpProxy) {
     logger.info('use httpProxy:', httpProxy);
     httpAgent = new HttpProxyAgent(httpProxy, opts as any);
+    merge(httpAgent.options, opts);
   } else {
     httpAgent = new nodeHttp.Agent(opts);
   }
@@ -202,6 +206,7 @@ export function createAgent(opts: nodeHttp.AgentOptions = {}) {
   if (httpsProxy) {
     logger.info('use httpsProxy:', httpsProxy);
     httpsAgent = new HttpsProxyAgent(httpsProxy, opts as any);
+    merge(httpsAgent.options, opts);
   } else {
     httpsAgent = new https.Agent(opts);
   }

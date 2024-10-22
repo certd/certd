@@ -53,7 +53,9 @@ function createService() {
               // @ts-ignore
               response.config.onError(new Error(errorMessage));
             }
-            errorCreate(`${errorMessage}: ${response.config.url}`);
+            //@ts-ignore
+            const showErrorNotify = response?.config?.showErrorNotify;
+            errorCreate(`${errorMessage}: ${response.config.url}`, showErrorNotify);
             return dataAxios;
         }
       }
@@ -97,7 +99,7 @@ function createService() {
         default:
           break;
       }
-      errorLog(error);
+      errorLog(error, error?.response?.config?.showErrorNotify);
       if (status === 401) {
         const userStore = useUserStore();
         userStore.logout();
