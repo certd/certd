@@ -37,6 +37,7 @@ export type UrlMapping={
  */
 
 export interface ClientOptions {
+    sslProvider:string;
     directoryUrl: string;
     accountKey: PrivateKeyBuffer | PrivateKeyString;
     accountUrl?: string;

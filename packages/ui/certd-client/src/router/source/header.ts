@@ -1,7 +1,10 @@
 export const headerResource = [
   {
     title: "文档",
-    path: "https://certd.docmirror.cn"
+    path: "https://certd.docmirror.cn",
+    meta: {
+      icon: "ion:document-text-outline"
+    },
   },
   {
     title: "源码",

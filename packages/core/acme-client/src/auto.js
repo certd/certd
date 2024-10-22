@@ -182,12 +182,19 @@ module.exports = async (client, userOpts) => {
 
     authorizations.forEach((authz) => {
         const d = authz.identifier.value;
+        log(`authorization:domain = ${d}, value = ${JSON.stringify(authz)}`);
+
+        if (authz.status === 'valid') {
+            log(`[auto] [${d}] Authorization already has valid status, no need to complete challenges`);
+            return;
+        }
         let setd = false;
         // eslint-disable-next-line no-restricted-syntax
         for (const group of domainSets) {
             if (!group[d]) {
                 group[d] = authz;
                 setd = true;
+                break;
             }
         }
         if (!setd) {
@@ -196,6 +203,8 @@ module.exports = async (client, userOpts) => {
             domainSets.push(group);
         }
     });
+
+    // log(`domainSets:${JSON.stringify(domainSets)}`);
 
     const allChallengePromises = [];
     // eslint-disable-next-line no-restricted-syntax
@@ -252,17 +261,34 @@ module.exports = async (client, userOpts) => {
                 log(`证书申请失败${e.message}`);
                 throw e;
             }
+            finally {
+                if (client.opts.sslProvider !== 'google') {
+                    // letsencrypt 如果同时检出两个TXT记录，会以第一个为准，就会校验失败，所以需要提前删除
+                    log(`清理challenge痕迹，length:${clearTasks.length}`);
+                    try {
+                        // eslint-disable-next-line no-await-in-loop
+                        await runAllPromise(clearTasks);
+                    }
+                    catch (e) {
+                        log('清理challenge失败');
+                        log(e);
+                    }
+                }
+            }
         }
     }
     finally {
-        log(`清理challenge痕迹，length:${clearTasks.length}`);
-        try {
+        if (client.opts.sslProvider === 'google') {
+            // google 相同的域名txt记录是一样的，不能提前删除，否则校验失败
+            log(`清理challenge痕迹，length:${clearTasks.length}`);
+            try {
             // eslint-disable-next-line no-await-in-loop
-            await runAllPromise(clearTasks);
-        }
-        catch (e) {
-            log('清理challenge失败');
-            log(e);
+                await runAllPromise(clearTasks);
+            }
+            catch (e) {
+                log('清理challenge失败');
+                log(e);
+            }
         }
     }
 

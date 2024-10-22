@@ -89,12 +89,15 @@ export class AcmeService {
   }
 
   async getAcmeClient(email: string, isTest = false): Promise<acme.Client> {
+    const mappings = {};
+    if (this.sslProvider === "google") {
+      mappings["acme-v02.api.letsencrypt.org"] = this.options.reverseProxy || "le.px.certd.handfree.work";
+    } else if (this.sslProvider === "letsencrypt") {
+      mappings["dv.acme-v02.api.pki.goog"] = this.options.reverseProxy || "gg.px.certd.handfree.work";
+    }
     const urlMapping: UrlMapping = {
       enabled: false,
-      mappings: {
-        "acme-v02.api.letsencrypt.org": this.options.reverseProxy || "le.px.certd.handfree.work",
-        "dv.acme-v02.api.pki.goog": this.options.reverseProxy || "gg.px.certd.handfree.work",
-      },
+      mappings,
     };
     const conf = await this.getAccountConfig(email, urlMapping);
     if (conf.key == null) {
@@ -119,6 +122,7 @@ export class AcmeService {
       }
     }
     const client = new acme.Client({
+      sslProvider: this.sslProvider,
       directoryUrl: directoryUrl,
       accountKey: conf.key,
       accountUrl: conf.accountUrl,
@@ -172,7 +176,7 @@ export class AcmeService {
       this.logger.info(`Would create TXT record "${fullRecord}" with value "${recordValue}"`);
 
       let domain = parseDomain(fullDomain);
-      this.logger.info("解析到域名domain=", domain);
+      this.logger.info("解析到域名domain=" + domain);
 
       if (domainsVerifyPlan) {
         //按照计划执行

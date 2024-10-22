@@ -37,8 +37,12 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
   }
 
   async getZoneId(domain: string) {
+    this.logger.info('获取zoneId:', domain);
     const url = `https://api.cloudflare.com/client/v4/zones?name=${domain}`;
     const res = await this.doRequestApi(url, null, 'get');
+    if (res.result.length === 0) {
+      throw new Error(`未找到域名${domain}的zoneId`);
+    }
     return res.result[0].id;
   }
 

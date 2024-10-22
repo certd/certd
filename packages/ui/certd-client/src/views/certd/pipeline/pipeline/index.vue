@@ -101,8 +101,9 @@
                                   <fs-icon
                                     v-if="!editMode"
                                     class="pointer color-blue ml-2"
-                                    title="完全重新运行此步骤"
-                                    icon="SyncOutlined"
+                                    style="font-size: 16px"
+                                    title="强制重新执行此步骤"
+                                    icon="icon-park-outline:replay-music"
                                     @click="run(item.id)"
                                   ></fs-icon>
                                 </div>
