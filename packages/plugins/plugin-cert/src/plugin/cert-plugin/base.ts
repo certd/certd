@@ -50,7 +50,7 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "PFX证书密码",
     component: {
-      name: "a-input-password",
+      name: "input-password",
       vModel: "value",
     },
     required: false,
@@ -227,7 +227,7 @@ export abstract class CertApplyBasePlugin extends AbstractTaskPlugin {
        *                     "successNotify": true,
        *                     "pfxPassword": "123456"
        */
-      const checkInputChanges = ["domains", "sslProvider", "privateKeyType", "dnsProviderType", "dnsProviderAccess", "pfxPassword"];
+      const checkInputChanges = ["domains", "sslProvider", "privateKeyType", "dnsProviderType", "pfxPassword"];
       const oldInput = JSON.stringify(pick(this.lastStatus?.input, checkInputChanges));
       const thisInput = JSON.stringify(pick(this, checkInputChanges));
       inputChanged = oldInput !== thisInput;
