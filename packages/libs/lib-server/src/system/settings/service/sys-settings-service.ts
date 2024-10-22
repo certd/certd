@@ -150,10 +150,10 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
 
   async backupSecret() {
     const settings = await this.getSettingByKey(SysSecretBackup.__key__);
+    const privateSettings = await this.getPrivateSettings();
+    const installInfo = await this.getSetting<SysInstallInfo>(SysInstallInfo);
     if (settings == null) {
       const backup = new SysSecretBackup();
-      const privateSettings = await this.getPrivateSettings();
-      const installInfo = await this.getSetting<SysInstallInfo>(SysInstallInfo);
       if (installInfo.siteId == null || privateSettings.encryptSecret == null) {
         logger.error('备份密钥失败，siteId或encryptSecret为空');
         return;
@@ -162,6 +162,14 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
       backup.encryptSecret = privateSettings.encryptSecret;
       await this.saveSetting(backup);
       logger.info('备份密钥成功');
+    } else {
+      //校验是否有变化
+      if (settings.siteId !== installInfo.siteId) {
+        throw new Error(`siteId与备份不一致，可能是数据异常，请检查：backup=${settings.siteId}, current=${installInfo.siteId}`);
+      }
+      if (settings.encryptSecret !== privateSettings.encryptSecret) {
+        throw new Error('encryptSecret与备份不一致，可能是数据异常，请检查');
+      }
     }
   }
 }

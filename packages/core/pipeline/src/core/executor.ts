@@ -128,6 +128,10 @@ export class Executor {
         this.runtime.skip(runnable);
         return resultType;
       }
+      if (resultType == ResultType.disabled) {
+        this.runtime.disabled(runnable);
+        return resultType;
+      }
       this.runtime.success(runnable);
       return ResultType.success;
     } catch (e: any) {
@@ -164,12 +168,14 @@ export class Executor {
 
     let resList: ResultType[] = [];
     if (stage.concurrency === ConcurrencyStrategy.Parallel) {
+      //并行
       const pList = [];
       for (const item of runnerList) {
         pList.push(item());
       }
       resList = await Promise.all(pList);
     } else {
+      //串行
       for (let i = 0; i < runnerList.length; i++) {
         const runner = runnerList[i];
         resList[i] = await runner();
@@ -181,6 +187,7 @@ export class Executor {
   compositionResultType(resList: ResultType[]): ResultType {
     let hasSuccess = false;
     let hasSkip = false;
+    let hasDisabled = false;
     for (const type of resList) {
       if (type === ResultType.error) {
         return ResultType.error;
@@ -188,7 +195,13 @@ export class Executor {
         hasSuccess = true;
       } else if (type === ResultType.skip) {
         hasSkip = true;
+      } else if (type === ResultType.disabled) {
+        hasDisabled = true;
       }
+    }
+    if (!hasSuccess && !hasSkip && hasDisabled) {
+      //全是disabled
+      return ResultType.disabled;
     }
     if (!hasSuccess && hasSkip) {
       //全是跳过

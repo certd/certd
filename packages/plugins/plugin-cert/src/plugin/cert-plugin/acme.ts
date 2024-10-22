@@ -92,8 +92,8 @@ export class AcmeService {
     const urlMapping: UrlMapping = {
       enabled: false,
       mappings: {
-        "acme-v02.api.letsencrypt.org": this.options.reverseProxy || "letsencrypt.proxy.handsfree.work",
-        "dv.acme-v02.api.pki.goog": this.options.reverseProxy || "google.proxy.handsfree.work",
+        "acme-v02.api.letsencrypt.org": this.options.reverseProxy || "le.px.certd.handfree.work",
+        "dv.acme-v02.api.pki.goog": this.options.reverseProxy || "gg.px.certd.handfree.work",
       },
     };
     const conf = await this.getAccountConfig(email, urlMapping);
