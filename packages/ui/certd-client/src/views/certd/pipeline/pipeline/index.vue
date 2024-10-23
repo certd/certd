@@ -264,7 +264,7 @@ import _ from "lodash-es";
 import { message, Modal, notification } from "ant-design-vue";
 import { nanoid } from "nanoid";
 import { PipelineDetail, PipelineOptions, PluginGroups, RunHistory } from "./type";
-import type { Runnable } from "@certd/pipeline";
+import type { Runnable, Stage } from "@certd/pipeline";
 import PiHistoryTimelineItem from "/@/views/certd/pipeline/pipeline/component/history-timeline-item.vue";
 import { FsIcon } from "@fast-crud/fast-crud";
 import { useSettingStore } from "/@/store/modules/settings";
@@ -633,6 +633,12 @@ export default defineComponent({
             }
             pipeline.value.version++;
             currentPipeline.value = pipeline.value;
+
+            //移除空阶段
+            _.remove(pipeline.value.stages, (item: Stage) => {
+              return item.tasks.length === 0;
+            });
+
             await props.options.doSave(pipeline.value);
           }
           toggleEditMode(false);

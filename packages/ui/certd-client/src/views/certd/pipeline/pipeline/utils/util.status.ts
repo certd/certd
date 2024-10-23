@@ -4,6 +4,7 @@ export type StatusEnumItem = {
   color: string;
   icon: string;
   spin?: boolean;
+  iconSpin?: boolean;
 };
 export type StatusEnumType = {
   [key: string]: StatusEnumItem;
@@ -34,13 +35,13 @@ const StatusEnum: StatusEnumType = {
     label: "运行中",
     color: "blue",
     spin: true,
+    iconSpin: true,
     icon: "ant-design:sync-outlined"
   },
   canceled: {
     value: "canceled",
     label: "已取消",
     color: "yellow",
-    spin: true,
     icon: "ant-design:minus-circle-twotone"
   },
   none: {
