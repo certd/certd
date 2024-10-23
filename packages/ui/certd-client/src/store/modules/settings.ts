@@ -111,7 +111,7 @@ export const useSettingStore = defineStore({
     },
     vipLabel(): string {
       const vipLabelMap: any = {
-        free: "免费版",
+        free: "基础版",
         plus: "专业版",
         comm: "商业版"
       };

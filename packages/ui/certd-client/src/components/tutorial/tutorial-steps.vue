@@ -199,7 +199,7 @@ const steps = ref<Step[]>([
       {
         image: "/static/doc/images/15-1-email.png",
         title: "设置邮件通知",
-        descriptions: ["建议选择监听'错误时'和'错误转成功'两种即可，在意外失败时可以尽快去排查问题，（免费版需要配置邮件服务器）"]
+        descriptions: ["建议选择监听'错误时'和'错误转成功'两种即可，在意外失败时可以尽快去排查问题，（基础版需要配置邮件服务器）"]
       },
       {
         title: "教程结束",

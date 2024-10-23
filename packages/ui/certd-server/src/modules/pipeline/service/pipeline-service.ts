@@ -128,7 +128,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         count += 1;
       }
       if (count > freeCount) {
-        throw new NeedVIPException('免费版最多只能创建10个pipeline');
+        throw new NeedVIPException('基础版最多只能创建10个pipeline');
       }
     }
     if (!isUpdate) {

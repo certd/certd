@@ -36,6 +36,7 @@ _acme-challenge.cert.com ---> xxxxx.cname.proxy.com ----> txt-record-abcdefg
    ![](./images/cname3.png)
    ![](./images/cname4.png)
 4. 申请过程中，Certd会在`xxxxxx.cname.proxy.com`下自动添加TXT记录。 
+5. 到此即可自动化申请证书了
 
 
 

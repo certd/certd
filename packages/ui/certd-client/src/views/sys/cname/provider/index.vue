@@ -5,6 +5,7 @@
         CNAME服务配置
         <span class="sub">
           此处配置的域名作为其他域名校验的代理，当别的域名需要申请证书时，通过CNAME映射到此域名上来验证所有权。好处是任何域名都可以通过此方式申请证书，也无需填写AccessSecret。
+          <a href="https://certd.docmirror.cn/guide/feature/cname/" taget="_blank">CNAME功能原理及使用说明</a>
         </span>
       </div>
     </template>

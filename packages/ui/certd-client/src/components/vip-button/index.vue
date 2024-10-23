@@ -59,7 +59,7 @@ const text = computed<Text>(() => {
         title: "此为专业版功能"
       },
       nav: {
-        name: "免费版",
+        name: "基础版",
         title: "升级专业版，享受更多VIP特权"
       }
     }
@@ -93,7 +93,7 @@ const formState = reactive({
 
 const vipTypeDefine = {
   free: {
-    title: "免费版",
+    title: "基础版",
     type: "free",
     privilege: ["证书申请功能无限制", "证书流水线数量10条", "常用的主机、cdn等部署插件"]
   },

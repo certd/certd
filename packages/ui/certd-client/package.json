@@ -42,6 +42,7 @@
     "china-division": "^2.7.0",
     "core-js": "^3.36.0",
     "cos-js-sdk-v5": "^1.7.0",
+    "cron-parser": "^4.9.0",
     "cropperjs": "^1.6.1",
     "dayjs": "^1.11.10",
     "highlight.js": "^11.9.0",

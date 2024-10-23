@@ -182,7 +182,7 @@ export function createAxiosService({ logger }: { logger: Logger }) {
 
 export const http = createAxiosService({ logger }) as HttpClient;
 export type HttpClientResponse<R> = any;
-export type HttpRequestConfig<D> = {
+export type HttpRequestConfig<D=any> = {
   skipSslVerify?: boolean;
   skipCheckRes?: boolean;
   logParams?: boolean;
