@@ -16,12 +16,15 @@
     <div class="mt-5">
       <a-input :disabled="true" :readonly="readonly" :value="modelValue" @change="onChange"></a-input>
     </div>
+    <div class="helper">下次触发时间：{{ nextTime }}</div>
     <div class="fs-helper">{{ errorMessage }}</div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import parser from "cron-parser";
+import { computed, ref } from "vue";
+import dayjs from "dayjs";
 defineOptions({
   name: "CronEditor"
 });
@@ -31,8 +34,10 @@ const props = defineProps<{
   readonly?: boolean;
 }>();
 
-const period = ref<string>("day");
-
+const period = ref<string>("");
+if (props.modelValue == null) {
+  period.value = "day";
+}
 const emit = defineEmits<{
   "update:modelValue": any;
 }>();
@@ -58,6 +63,17 @@ const onChange = (e: any) => {
 const onError = (error: any) => {
   errorMessage.value = error;
 };
+
+const nextTime = computed(() => {
+  try {
+    const interval = parser.parseExpression(props.modelValue);
+    const next = interval.next().getTime();
+    return dayjs(next).format("YYYY-MM-DD HH:mm:ss");
+  } catch (e) {
+    console.log(e);
+    return "请先设置正确的cron表达式";
+  }
+});
 </script>
 <style lang="less">
 .cron-editor {
