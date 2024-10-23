@@ -264,6 +264,7 @@ module.exports = async (client, userOpts) => {
             finally {
                 if (client.opts.sslProvider !== 'google') {
                     // letsencrypt 如果同时检出两个TXT记录，会以第一个为准，就会校验失败，所以需要提前删除
+                    // zerossl 此方式测试无问题
                     log(`清理challenge痕迹，length:${clearTasks.length}`);
                     try {
                         // eslint-disable-next-line no-await-in-loop
@@ -279,7 +280,11 @@ module.exports = async (client, userOpts) => {
     }
     finally {
         if (client.opts.sslProvider === 'google') {
-            // google 相同的域名txt记录是一样的，不能提前删除，否则校验失败
+            // google 相同的域名txt记录是一样的，不能提前删除，否则校验失败，报错如下
+            //  Error: The TXT record retrieved from _acme-challenge.bbc.handsfree.work.
+            //  at the time the challenge was validated did not contain JshHVu7dt_DT6uYILWhokHefFVad2Q6Mw1L-fNZFcq8
+            //  (the base64url-encoded SHA-256 digest of RlJZNBR0LWnxNK_xd2zqtYVvCiNJOKJ3J1NmCjU_9BjaUJgL3k-qSpIhQ-uF4FBS.NRyqT8fRiq6THzzrvkgzgR5Xai2LsA2SyGLAq_wT3qc).
+            //  See https://tools.ietf.org/html/rfc8555#section-8.4 for more information.
             log(`清理challenge痕迹，length:${clearTasks.length}`);
             try {
             // eslint-disable-next-line no-await-in-loop

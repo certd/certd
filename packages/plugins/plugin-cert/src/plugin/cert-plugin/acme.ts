@@ -90,9 +90,9 @@ export class AcmeService {
 
   async getAcmeClient(email: string, isTest = false): Promise<acme.Client> {
     const mappings = {};
-    if (this.sslProvider === "google") {
+    if (this.sslProvider === "letsencrypt") {
       mappings["acme-v02.api.letsencrypt.org"] = this.options.reverseProxy || "le.px.certd.handfree.work";
-    } else if (this.sslProvider === "letsencrypt") {
+    } else if (this.sslProvider === "google") {
       mappings["dv.acme-v02.api.pki.goog"] = this.options.reverseProxy || "gg.px.certd.handfree.work";
     }
     const urlMapping: UrlMapping = {
