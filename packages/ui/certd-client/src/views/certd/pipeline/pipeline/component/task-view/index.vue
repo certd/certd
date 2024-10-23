@@ -8,7 +8,11 @@
             <pi-status-show :status="item.node.status?.result" type="icon"></pi-status-show>
           </div>
         </template>
-        <pre class="pi-task-view-logs" style="overflow: auto"><template v-for="(text, index) of item.logs" :key="index">{{ text }}</template></pre>
+        <div class="pi-task-view-logs" style="overflow: auto">
+          <template v-for="(logItem, index) of item.logs" :key="index">
+            <span :class="logItem.color"> {{ logItem.time }}</span> <span>{{ logItem.content }}</span>
+          </template>
+        </div>
       </a-tab-pane>
     </a-tabs>
   </a-modal>
@@ -57,7 +61,20 @@ export default {
         if (currentHistory?.value?.logs != null) {
           node.logs = computed(() => {
             if (currentHistory?.value?.logs && currentHistory.value?.logs[node.node.id] != null) {
-              return currentHistory.value?.logs[node.node.id];
+              const logs = currentHistory.value?.logs[node.node.id];
+              const list = [];
+              for (let log of logs) {
+                const index = log.indexOf("]", 27) + 1;
+                const time = log.substring(0, index);
+                const content = log.substring(index);
+                const color = time.includes("ERROR") ? "red" : time.includes("WARN") ? "yellow" : "green";
+                list.push({
+                  time,
+                  content,
+                  color
+                });
+              }
+              return list;
             }
             return [];
           });
@@ -92,6 +109,7 @@ export default {
 .pi-task-view {
   .tab-title {
     display: flex;
+
     .tab-title-text {
       display: inline-block;
       width: 180px;
@@ -104,11 +122,26 @@ export default {
 
   .pi-task-view-logs {
     background-color: #000c17;
-    color: #fafafa;
+    color: #e9e9e9;
+    font-family: monospace;
+    padding: 5px;
     min-height: 300px;
     max-height: 580px;
     white-space: pre-wrap;
     word-wrap: break-word;
+    > div {
+      padding: 0;
+      margin: 0;
+    }
+    .green {
+      color: rgba(0, 255, 0, 0.8);
+    }
+    .yellow {
+      color: yellow;
+    }
+    .red {
+      color: red;
+    }
   }
 }
 </style>

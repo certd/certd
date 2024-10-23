@@ -30,6 +30,7 @@ class AcmeApi {
                 }
             }
         }
+        console.log(locationUrl, mapping);
         return locationUrl;
     }
 

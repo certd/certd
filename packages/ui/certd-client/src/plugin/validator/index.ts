@@ -1,6 +1,6 @@
 import Validator from "async-validator";
 // 自定义验证器函数
-function isDomain(rule, value) {
+export function isDomain(rule: any, value: any) {
   if (value == null) {
     return true;
   }
@@ -8,9 +8,14 @@ function isDomain(rule, value) {
   if (typeof value === "string") {
     domains = value.split(",");
   }
+
+  const allowDotStart = rule.allowDotStart ? "\\.|" : "";
+  const exp = `^(?:${allowDotStart}\\*\\.|[0-9a-zA-Z\u4e00-\u9fa5-]+\\.)+[0-9a-zA-Z\u4e00-\u9fa5-]+$`;
+  const compiled = new RegExp(exp);
   for (const domain of domains) {
     //域名可以是泛域名，中文域名，数字域名，英文域名，域名中可以包含-和. ,可以_开头
-    if (!/^(?:\*\.|[0-9a-zA-Z\u4e00-\u9fa5-]+\.)+[0-9a-zA-Z\u4e00-\u9fa5-]+$/.test(domain)) {
+
+    if (!compiled.test(domain)) {
       throw new Error(`域名有误：${domain}，请输入正确的域名`);
     }
   }

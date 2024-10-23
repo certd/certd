@@ -3,8 +3,10 @@ import { request } from "/src/api/service";
 const apiPrefix = "/cname/record";
 
 export type CnameRecord = {
-  id: number;
-  status: string;
+  id?: number;
+  status?: string;
+  hostRecord?: string;
+  recordValue?: string;
 };
 
 export async function GetList() {

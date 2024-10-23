@@ -1,6 +1,6 @@
 {
   "name": "@certd/ui-client",
-  "version": "1.26.10",
+  "version": "1.26.11",
   "private": true,
   "scripts": {
     "dev": "vite --open",
@@ -11,6 +11,7 @@
     "debug:force": "vite --force --mode debug",
     "build": " vite build ",
     "dev-build": "echo 1",
+    "test:unit": "vitest",
     "serve": "vite preview",
     "preview": "vite preview",
     "pretty-quick": "pretty-quick",
@@ -61,8 +62,8 @@
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
-    "@certd/lib-iframe": "^1.26.10",
-    "@certd/pipeline": "^1.26.10",
+    "@certd/lib-iframe": "^1.26.11",
+    "@certd/pipeline": "^1.26.11",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@types/chai": "^4.3.12",
@@ -77,7 +78,7 @@
     "@vitejs/plugin-vue-jsx": "^3.1.0",
     "@vue/compiler-sfc": "^3.4.21",
     "@vue/eslint-config-typescript": "^13.0.0",
-    "@vue/test-utils": "^2.4.5",
+    "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.18",
     "caller-path": "^4.0.0",
     "chai": "^5.1.0",
@@ -113,6 +114,7 @@
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-html": "^3.2.2",
     "vite-plugin-windicss": "^1.9.3",
+    "vitest": "^2.1.2",
     "vue-eslint-parser": "^9.4.2",
     "vue-tsc": "^1.8.8"
   },

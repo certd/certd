@@ -7,6 +7,7 @@
       <td class="host-record" :title="'域名：' + props.domain">
         <fs-copyable v-model="cnameRecord.hostRecord"></fs-copyable>
       </td>
+      <td style="text-align: center">CNAME</td>
       <td class="record-value">
         <fs-copyable v-model="cnameRecord.recordValue"></fs-copyable>
       </td>
@@ -44,10 +45,12 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  change: {
-    id: number | null;
-    status: string | null;
-  };
+  change: [
+    {
+      id: number | null;
+      status: string | null;
+    }
+  ];
 }>();
 
 const cnameRecord = ref<CnameRecord | null>(null);

@@ -28,7 +28,7 @@ features:
   - title: 多域名、泛域名打到一个证书上
     details: 支持通配符域名/泛域名，支持多个域名打到一个证书上
   - title: 多证书格式支持
-    details: 支持pem、pfx、der等多种证书格式
+    details: 支持pem、pfx、der等多种证书格式，支持Google、Letsencrypt、ZeroSSL证书颁发机构
   - title: 支持私有化部署
     details: 保障数据安全
   - title: 多数据库支持

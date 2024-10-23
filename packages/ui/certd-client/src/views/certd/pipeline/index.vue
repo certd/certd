@@ -20,7 +20,7 @@ import createCrudOptions from "./crud";
 import { useExpose } from "@fast-crud/fast-crud";
 import PiCertdForm from "./certd-form/index.vue";
 export default defineComponent({
-  name: "PipelineManager",
+  name: "PipelineManager1",
   components: { PiCertdForm },
   setup() {
     const certdFormRef = ref();

@@ -43,6 +43,7 @@ const attrs = useAttrs();
 const optionsRef = ref([]);
 const message = ref("");
 const getOptions = async () => {
+  message.value = "";
   const res = await doRequest(
     {
       type: props.type,
@@ -53,10 +54,10 @@ const getOptions = async () => {
     {
       onError(err: any) {
         message.value = `获取选项出错：${err.message}`;
-      }
+      },
+      showErrorNotify: false
     }
   );
-  message.value = "";
   return res;
 };
 

@@ -7,7 +7,7 @@ import { BaseSettings, SysInstallInfo, SysPrivateSettings, SysPublicSettings, Sy
 import * as _ from 'lodash-es';
 import { BaseService } from '../../../basic/index.js';
 import { logger, setGlobalProxy } from '@certd/basic';
-
+import { agents } from '@certd/acme-client';
 /**
  * 设置
  */
@@ -23,7 +23,6 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   getRepository() {
     return this.repository;
   }
-
   async getById(id: any): Promise<SysSettingsEntity | null> {
     const entity = await this.info(id);
     if (!entity) {
@@ -129,10 +128,12 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   async reloadPrivateSettings() {
     const bean = await this.getPrivateSettings();
     if (bean.httpProxy || bean.httpsProxy) {
-      setGlobalProxy({
+      const opts = {
         httpProxy: bean.httpProxy,
         httpsProxy: bean.httpsProxy,
-      });
+      };
+      setGlobalProxy(opts);
+      agents.setGlobalProxy(opts);
     }
   }
 
@@ -149,10 +150,10 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
 
   async backupSecret() {
     const settings = await this.getSettingByKey(SysSecretBackup.__key__);
+    const privateSettings = await this.getPrivateSettings();
+    const installInfo = await this.getSetting<SysInstallInfo>(SysInstallInfo);
     if (settings == null) {
       const backup = new SysSecretBackup();
-      const privateSettings = await this.getPrivateSettings();
-      const installInfo = await this.getSetting<SysInstallInfo>(SysInstallInfo);
       if (installInfo.siteId == null || privateSettings.encryptSecret == null) {
         logger.error('备份密钥失败，siteId或encryptSecret为空');
         return;
@@ -161,6 +162,14 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
       backup.encryptSecret = privateSettings.encryptSecret;
       await this.saveSetting(backup);
       logger.info('备份密钥成功');
+    } else {
+      //校验是否有变化
+      if (settings.siteId !== installInfo.siteId) {
+        throw new Error(`siteId与备份不一致，可能是数据异常，请检查：backup=${settings.siteId}, current=${installInfo.siteId}`);
+      }
+      if (settings.encryptSecret !== privateSettings.encryptSecret) {
+        throw new Error('encryptSecret与备份不一致，可能是数据异常，请检查');
+      }
     }
   }
 }

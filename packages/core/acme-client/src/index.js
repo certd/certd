@@ -39,6 +39,7 @@ exports.forge = require('./crypto/forge');
  */
 
 exports.axios = require('./axios');
+exports.agents = require('./agents');
 
 /**
  * Logger

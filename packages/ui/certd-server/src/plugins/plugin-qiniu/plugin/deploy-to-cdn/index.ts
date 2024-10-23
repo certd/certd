@@ -7,7 +7,7 @@ import { CertInfo } from '@certd/plugin-cert';
   title: '部署证书至七牛CDN',
   icon: 'svg:icon-qiniuyun',
   group: pluginGroups.cdn.key,
-  desc: '自动部署域名证书至七牛云CDN，七牛云OSS',
+  desc: '自动部署域名证书至七牛云CDN',
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -25,7 +25,7 @@ export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
       open: false,
       tokenSeparators: [',', ' ', '，', '、', '|'],
     },
-    rules: [{ type: 'domains' }],
+    rules: [{ type: 'domains', allowDotStart: true }],
     required: true,
   })
   domainName!: string | string[];

@@ -22,7 +22,7 @@ exports.setLogger = (fn) => {
  * @param {string} msg Message
  */
 
-exports.log = (msg) => {
-    debug(msg);
-    logger(msg);
+exports.log = (...msg) => {
+    debug(...msg);
+    logger(...msg);
 };
