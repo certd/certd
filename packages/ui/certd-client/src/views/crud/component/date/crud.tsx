@@ -65,7 +65,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
           valueResolve({ value, row, key }) {
             if (value != null) {
-              row[key] = value.unix();
+              row[key] = value.valueOf();
             }
           }
         },
@@ -87,7 +87,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
           valueResolve({ value, row, key }) {
             if (value != null) {
-              row[key] = value.unix();
+              row[key] = value.valueOf();
             }
           }
         },

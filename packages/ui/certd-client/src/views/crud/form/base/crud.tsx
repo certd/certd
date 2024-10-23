@@ -92,6 +92,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 context.close();
               }
             }
+          },
+          beforeClose: (context) => {
+            console.log("beforeClose", context);
+          },
+          onClosed(context) {
+            console.log("onClosed", context);
+          },
+          onOpen(context) {
+            console.log("onOpen", context);
+          },
+          onOpened(context) {
+            console.log("onOpened", context);
           }
         }
       },

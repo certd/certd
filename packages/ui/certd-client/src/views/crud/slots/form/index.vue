@@ -24,6 +24,13 @@
         <a-alert type="warning" message="form-body-bottom 插槽" />
       </template>
 
+      <template #form-body-left>
+        <a-alert type="warning" message="form-body-left 插槽" />
+      </template>
+      <template #form-body-right>
+        <a-alert type="warning" message="form-body-right 插槽" />
+      </template>
+
       <template #form-footer-left>
         <a-button type="danger">form-footer-left 插槽</a-button>
       </template>

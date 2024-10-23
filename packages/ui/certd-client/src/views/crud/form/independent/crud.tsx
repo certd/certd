@@ -48,6 +48,9 @@ export default function ({}: CreateCrudOptionsProps): CreateCrudOptionsRet {
           title: "日期",
           type: "date"
         },
+        slot: {
+          title: "插槽"
+        },
         age: {
           title: "jsx",
           type: "text",

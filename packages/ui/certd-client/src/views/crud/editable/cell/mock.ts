@@ -11,7 +11,8 @@ const list = [
       {
         radio: "2"
       }
-    ]
+    ],
+    slot: "1"
   },
   {
     radio: "2"

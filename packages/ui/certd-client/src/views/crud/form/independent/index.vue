@@ -36,17 +36,41 @@
           </a-card>
           <a-card class="mt-10" title="打开表单对话框">
             <a-button @click="openFormWrapper"> 打开表单对话框 </a-button>
-            <fs-form-wrapper ref="formWrapperRef" v-bind="formWrapperOptions" />
+            <fs-form-wrapper ref="formWrapperRef" v-bind="formWrapperOptions">
+              <template #form_slot="scope">
+                <a-input v-model:value="scope.form.slot">
+                  <template #prefix>
+                    <fs-icon icon="ion:search"></fs-icon>
+                  </template>
+                </a-input>
+              </template>
+            </fs-form-wrapper>
           </a-card>
 
           <a-card class="mt-10" title="打开表单对话框（复用crudOptions）">
             <a-button @click="openFormWrapper2"> 打开表单对话框 </a-button>
-            <fs-form-wrapper ref="formWrapper2Ref" v-bind="formWrapper2Options" />
+            <fs-form-wrapper ref="formWrapper2Ref" v-bind="formWrapper2Options">
+              <template #form_slot="scope">
+                <a-input v-model:value="scope.form.slot">
+                  <template #prefix>
+                    <fs-icon icon="ion:search"></fs-icon>
+                  </template>
+                </a-input>
+              </template>
+            </fs-form-wrapper>
           </a-card>
 
           <a-card class="mt-10" title="打开表单对话框【复用crudBinding】">
             <a-button @click="openFormWrapper2"> 打开表单对话框 </a-button>
-            <fs-form-wrapper ref="formWrapperRef2" v-bind="formWrapperOptions2" />
+            <fs-form-wrapper ref="formWrapperRef2" v-bind="formWrapperOptions2">
+              <template #form_slot="scope">
+                <a-input v-model:value="scope.form.slot">
+                  <template #prefix>
+                    <fs-icon icon="ion:search"></fs-icon>
+                  </template>
+                </a-input>
+              </template>
+            </fs-form-wrapper>
           </a-card>
         </a-col>
       </a-row>

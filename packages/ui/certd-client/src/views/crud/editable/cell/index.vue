@@ -8,6 +8,9 @@
       <div class="more"><a target="_blank" href="http://fast-crud.docmirror.cn/api/crud-options/table.html#editable">文档</a></div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
+      <template #cell_slot="scope">
+        <span>{{ scope.row.slot }}=插槽显示</span>
+      </template>
       <template #actionbar-right>
         <!--      <fs-button class="ml-1" @click="addRow">添加行</fs-button>-->
         <a-radio-group v-model:value="crudBinding.table.editable.enabled" class="ml-5">
@@ -38,7 +41,7 @@
 <script lang="ts">
 import { defineComponent, onMounted } from "vue";
 import createCrudOptions from "./crud";
-import {useFs, utils} from "@fast-crud/fast-crud";
+import { useFs, utils } from "@fast-crud/fast-crud";
 import { message } from "ant-design-vue";
 
 export default defineComponent({

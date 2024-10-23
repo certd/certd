@@ -221,6 +221,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                   { id: "sh", text: "上海" }
                 ]
               })
+            },
+            slot: {
+              title: "插槽",
+              type: "text"
             }
           }
         }

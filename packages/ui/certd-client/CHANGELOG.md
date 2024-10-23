@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.22.1](https://github.com/fast-crud/fast-crud/compare/v1.22.0...v1.22.1) (2024-10-23)
+
+### Performance Improvements
+
+* 表单支持左右插槽 ([e3a9e8b](https://github.com/fast-crud/fast-crud/commit/e3a9e8b985558f7cbff0acd580af242df56da8c4))
+* 独立使用表单支持插槽 ([095da7a](https://github.com/fast-crud/fast-crud/commit/095da7ac92996779f3b3c3885a8abd4de6c2fc0c))
+* editable支持单元格插槽 ([ae029de](https://github.com/fast-crud/fast-crud/commit/ae029de0f554f4cc4c4750e0af3b6f7bd1edaee5))
+* values-format option支持iconSpin ([cdaa4f5](https://github.com/fast-crud/fast-crud/commit/cdaa4f55a9384b95764443b4a7f4223ec787cce3))
+
 # [1.22.0](https://github.com/fast-crud/fast-crud/compare/v1.21.5...v1.22.0) (2024-10-21)
 
 **Note:** Version bump only for package @fast-crud/fs-admin-antdv4
