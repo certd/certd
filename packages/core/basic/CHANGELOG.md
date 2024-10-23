@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.26.11](https://github.com/certd/certd/compare/v1.26.10...v1.26.11) (2024-10-23)
+
+### Bug Fixes
+
+* 申请证书没有使用到系统设置的http代理的bug ([3db216f](https://github.com/certd/certd/commit/3db216f515ba404cb4330fdab452971b22a50f08))
+
 ## [1.26.10](https://github.com/certd/certd/compare/v1.26.9...v1.26.10) (2024-10-20)
 
 **Note:** Version bump only for package @certd/basic
