@@ -7,6 +7,7 @@ import { CertInfo } from '@certd/plugin-cert';
   title: '部署到腾讯云CDN',
   icon: 'svg:icon-tencentcloud',
   group: pluginGroups.tencent.key,
+  desc: '可能不支持国际版',
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
