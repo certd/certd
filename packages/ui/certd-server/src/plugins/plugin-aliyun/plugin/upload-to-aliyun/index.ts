@@ -92,7 +92,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
       accessKeyId: aliyunProvider.accessKeyId,
       accessKeySecret: aliyunProvider.accessKeySecret,
       endpoint: 'https://cas.aliyuncs.com',
-      apiVersion: '2018-07-13',
+      apiVersion: '2020-04-07',
     });
     return client;
   }
