@@ -10,7 +10,6 @@ import { TencentSslClient } from '../../lib/index.js';
   icon: 'svg:icon-tencentcloud',
   group: pluginGroups.tencent.key,
   desc: '部署到腾讯云COS源站域名证书',
-  deprecated: '暂不可用',
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -117,15 +116,18 @@ export class DeployCertToTencentCosPlugin extends AbstractPlusTaskPlugin {
       });
     }
 
-    const params = {
-      CertificateId: tencentCertId,
-      ResourceType: 'cos',
-      Status: 1,
-      InstanceIdList: [`${this.bucket}#${this.region}#${this.domains}`],
-    };
+    for (const domain of this.domains) {
+      const params = {
+        CertificateId: tencentCertId,
+        ResourceType: 'cos',
+        Status: 1,
+        InstanceIdList: [`${this.region}#${this.bucket}#${domain}`],
+      };
 
-    const res = await client.deployCertificateInstance(params);
-    this.logger.info('部署成功', res);
+      const res = await client.deployCertificateInstance(params);
+      this.logger.info(`域名${domain}部署成功:`, res);
+    }
+    this.logger.info('部署完成');
   }
 
   async onGetDomainList(data: any) {
