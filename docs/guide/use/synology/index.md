@@ -38,3 +38,21 @@
 
 ## 2. 在certd上配置自动更新群晖证书插件
 ![](./images/deploy.png)
+
+## 3. 配置任务参数
+![](./images/deploy1.png)
+
+## 4. 创建授权
+![](./images/deploy2.png)
+> 注意群晖上要做两个设置   
+
+![](./images/setting2.png)
+![](./images/setting1.png)
+
+## 5. 运行部署
+点击手动运行即可
+![](./images/deploy3.png)
+![](./images/deploy4.png)
+
+## 6. 配置通知和自动运行
+![](./images/notify.png)
