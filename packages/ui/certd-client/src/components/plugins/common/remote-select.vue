@@ -12,10 +12,10 @@
         @update:value="emit('update:value', $event)"
       />
       <div class="ml-5">
-        <fs-button title="刷新选项" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
+        <fs-button :loading="loading" title="刷新选项" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
       </div>
     </div>
-    <div class="helper error">
+    <div class="helper" :class="{ error: hasError }">
       {{ message }}
     </div>
   </div>
@@ -42,23 +42,35 @@ const attrs = useAttrs();
 
 const optionsRef = ref([]);
 const message = ref("");
+const hasError = ref(false);
+const loading = ref(false);
 const getOptions = async () => {
   message.value = "";
-  const res = await doRequest(
-    {
-      type: props.type,
-      typeName: props.typeName,
-      action: props.action,
-      input: props.form
-    },
-    {
-      onError(err: any) {
-        message.value = `获取选项出错：${err.message}`;
+  hasError.value = false;
+  loading.value = true;
+  try {
+    const res = await doRequest(
+      {
+        type: props.type,
+        typeName: props.typeName,
+        action: props.action,
+        input: props.form
       },
-      showErrorNotify: false
+      {
+        onError(err: any) {
+          hasError.value = true;
+          message.value = `获取选项出错：${err.message}`;
+        },
+        showErrorNotify: false
+      }
+    );
+    if (res && res.length > 0) {
+      message.value = "获取数据成功，请从下拉框中选择";
     }
-  );
-  return res;
+    return res;
+  } finally {
+    loading.value = false;
+  }
 };
 
 const filterOption = (input: string, option: any) => {
