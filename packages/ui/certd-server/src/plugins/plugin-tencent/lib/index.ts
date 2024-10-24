@@ -1,7 +1,7 @@
 import { TencentAccess } from '@certd/plugin-plus';
 import { CertInfo } from '@certd/plugin-cert';
 import { ILogger } from '@certd/pipeline';
-
+import sdk from 'tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js';
 export class TencentSslClient {
   access: TencentAccess;
   logger: ILogger;
@@ -12,7 +12,7 @@ export class TencentSslClient {
     this.region = opts.region;
   }
   async getSslClient(): Promise<any> {
-    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js');
+    // const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js');
     const SslClient = sdk.v20191205.Client;
 
     const clientConfig = {
