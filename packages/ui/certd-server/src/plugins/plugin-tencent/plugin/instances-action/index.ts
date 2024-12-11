@@ -4,11 +4,11 @@ import { TencentAccess } from '@certd/plugin-plus';
 import { createRemoteSelectInputDefine } from '@certd/plugin-lib';
 
 @IsTaskPlugin({
-  name: 'TencentStartInstancesPlugin',
-  title: '腾讯云实例开机',
+  name: 'TencentActionInstancesPlugin',
+  title: '腾讯云实例开关机',
   icon: 'svg:icon-tencentcloud',
   group: pluginGroups.tencent.key,
-  desc: '腾讯云实例开机',
+  desc: '腾讯云实例开关机',
   default: {
     strategy: {
       runStrategy: RunStrategy.AlwaysRun,
@@ -16,7 +16,7 @@ import { createRemoteSelectInputDefine } from '@certd/plugin-lib';
   },
   needPlus: false,
 })
-export class TencentStartInstancesPlugin extends AbstractTaskPlugin {
+export class TencentActionInstancesPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: 'Access提供者',
     helper: 'access 授权',
@@ -69,19 +69,64 @@ export class TencentStartInstancesPlugin extends AbstractTaskPlugin {
       title: '实列ID',
       helper: '请选择实列',
       typeName: 'TencentStartInstancesPlugin',
-      action: TencentStartInstancesPlugin.prototype.onGetInstanceList.name,
+      action: TencentActionInstancesPlugin.prototype.onGetInstanceList.name,
       watches: ['region'],
     })
   )
   instanceId!: string | string[];
 
+  @TaskInput({
+    title: '操作',
+    component: {
+      name: 'a-radio-group',
+      vModel: 'value',
+      options: [
+        { value: 'start', label: '开机' },
+        { value: 'stop', label: '关机' },
+      ],
+    },
+    required: true,
+  })
+  action!: string;
+
+  @TaskInput({
+    title: '实例关机不收费',
+    value: true,
+    component: {
+      name: 'a-switch',
+      vModel: 'checked',
+      placeholder: `按量计费实例关机不收费`,
+    },
+    required: false,
+    mergeScript: `
+      return {
+        show: ctx.compute(({form})=>{
+          return form.action === 'stop';
+        })
+      }
+  `,
+  })
+  charging = true;
+
   async onInstance() {}
 
   async execute(): Promise<void> {
     const cvmClient = await this.getCvmClient();
-    const res = await cvmClient.StartInstances({
+    const params = {
       InstanceIds: Array.isArray(this.instanceId) ? this.instanceId : [this.instanceId],
-    });
+    };
+    let res: any;
+    if (this.action === 'start') {
+      res = await cvmClient.StartInstances(params);
+    } else {
+      res = await cvmClient.StopInstances(
+        Object.assign(params, {
+          StopType: 'SOFT_FIRST',
+          StoppedMode: this.charging ? 'STOP_CHARGING' : 'KEEP_CHARGING',
+        })
+      );
+    }
+
     this.checkRet(res);
   }
 
@@ -133,4 +178,4 @@ export class TencentStartInstancesPlugin extends AbstractTaskPlugin {
   }
 }
 
-new TencentStartInstancesPlugin();
+new TencentActionInstancesPlugin();
