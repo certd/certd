@@ -4,11 +4,11 @@ import { TencentAccess } from '@certd/plugin-plus';
 import { createRemoteSelectInputDefine } from '@certd/plugin-lib';
 
 @IsTaskPlugin({
-  name: 'TencentStartInstancesPlugin',
-  title: '腾讯云实例开机',
+  name: 'TencentStopInstancesPlugin',
+  title: '腾讯云实例关机',
   icon: 'svg:icon-tencentcloud',
   group: pluginGroups.tencent.key,
-  desc: '腾讯云实例开机',
+  desc: '腾讯云实例关机',
   default: {
     strategy: {
       runStrategy: RunStrategy.AlwaysRun,
@@ -16,7 +16,7 @@ import { createRemoteSelectInputDefine } from '@certd/plugin-lib';
   },
   needPlus: false,
 })
-export class TencentStartInstancesPlugin extends AbstractTaskPlugin {
+export class TencentStopInstancesPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: 'Access提供者',
     helper: 'access 授权',
@@ -69,18 +69,32 @@ export class TencentStartInstancesPlugin extends AbstractTaskPlugin {
       title: '实列ID',
       helper: '请选择实列',
       typeName: 'TencentStartInstancesPlugin',
-      action: TencentStartInstancesPlugin.prototype.onGetInstanceList.name,
+      action: TencentStopInstancesPlugin.prototype.onGetInstanceList.name,
       watches: ['region'],
     })
   )
   instanceId!: string | string[];
 
+  @TaskInput({
+    title: '实例关机不收费',
+    value: true,
+    component: {
+      name: 'a-switch',
+      vModel: 'checked',
+      placeholder: `按量计费实例关机不收费`,
+    },
+    required: false,
+  })
+  charging = true;
+
   async onInstance() {}
 
   async execute(): Promise<void> {
     const cvmClient = await this.getCvmClient();
-    const res = await cvmClient.StartInstances({
+    const res = await cvmClient.StopInstances({
       InstanceIds: Array.isArray(this.instanceId) ? this.instanceId : [this.instanceId],
+      StopType: 'SOFT_FIRST',
+      StoppedMode: this.charging ? 'STOP_CHARGING' : 'KEEP_CHARGING',
     });
     this.checkRet(res);
   }
@@ -133,4 +147,4 @@ export class TencentStartInstancesPlugin extends AbstractTaskPlugin {
   }
 }
 
-new TencentStartInstancesPlugin();
+new TencentStopInstancesPlugin();
