@@ -11,11 +11,13 @@ import { useCrudPermission } from "../permission";
 import { GetSignedUrl } from "/@/views/crud/component/uploader/s3/api";
 import { notification } from "ant-design-vue";
 import { usePreferences } from "/@/vben/preferences";
+import { columnSizeSaver } from "/@/plugin/fast-crud/column-size-saver";
 
 function install(app: any, options: any = {}) {
   app.use(UiAntdv);
   //设置日志级别
   setLogger({ level: "debug" });
+
   app.use(FastCrud, {
     i18n: options.i18n,
     async dictRequest({ url }: any) {
@@ -53,6 +55,7 @@ function install(app: any, options: any = {}) {
           onResizeColumn: (w: number, col: any) => {
             if (crudBinding.value?.table?.columnsMap && crudBinding.value?.table?.columnsMap[col.key]) {
               crudBinding.value.table.columnsMap[col.key].width = w;
+              columnSizeSaver.save(col.key, w);
             }
           },
           conditionalRender: {
@@ -72,6 +75,11 @@ function install(app: any, options: any = {}) {
         toolbar: {
           export: {
             fileType: "excel"
+          },
+          columnsFilter: {
+            async onReset() {
+              columnSizeSaver.clear();
+            }
           }
         },
         rowHandle: {
@@ -381,7 +389,10 @@ function install(app: any, options: any = {}) {
       }
       if (columnProps.column.resizable == null) {
         columnProps.column.resizable = true;
-        if (!columnProps.column.width) {
+        const savedColumnWidth = columnSizeSaver.get(columnProps.key as string);
+        if (savedColumnWidth) {
+          columnProps.column.width = savedColumnWidth;
+        } else if (!columnProps.column.width) {
           columnProps.column.width = 200;
         }
       }

@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.25.6](https://github.com/fast-crud/fast-crud/compare/v1.25.5...v1.25.6) (2025-03-19)
+
+**Note:** Version bump only for package @fast-crud/fs-admin-antdv4
+
+## [1.25.5](https://github.com/fast-crud/fast-crud/compare/v1.25.4...v1.25.5) (2025-03-19)
+
+### Bug Fixes
+
+* 修复 antdv 弹出菜单边框过大的问题 ([fe4a044](https://github.com/fast-crud/fast-crud/commit/fe4a0442bf8fcdc3120b6de788ff318933b6bfab))
+* 修复 antdv懒加载后dropdown按钮无法点击的bug ([30ee067](https://github.com/fast-crud/fast-crud/commit/30ee067580fb663bbe550d50abf63c1fd89504a1))
+
+### Performance Improvements
+
+* antdv示例增加保存列宽功能 ([a1218b0](https://github.com/fast-crud/fast-crud/commit/a1218b0451eb73fae8e337128e79b6e1fd4184eb))
+
 ## [1.25.4](https://github.com/fast-crud/fast-crud/compare/v1.25.3...v1.25.4) (2025-03-04)
 
 ### Performance Improvements
