@@ -133,6 +133,7 @@ export default async function ({ crudExpose }: CreateCrudOptionsProps): Promise<
           form: {
             helper: "组件本身render",
             render({ form }) {
+              console.log("字段组件本身render");
               return (
                 <div>
                   <a-input v-model={[form.formRender, "value"]} />
