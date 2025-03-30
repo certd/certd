@@ -188,7 +188,7 @@ const mockUtil: any = {
         handle(req: any) {
           let id = req.params.id;
           id = parseInt(id);
-          const current = findById(req.body.id, list);
+          const current = findById(id, list);
           return {
             code: 0,
             msg: "success",

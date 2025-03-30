@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { BasicLayout, LockScreen, UserDropdown } from "/@/vben/layouts";
-
+import FsSourceLink from "./components/source-link/index.vue";
 import { computed } from "vue";
 import { VBEN_DOC_URL } from "/@/vben/constants";
 import { BookOpenText } from "/@/vben/icons";
@@ -42,6 +42,9 @@ async function handleLogout() {
     </template>
     <template #lock-screen>
       <LockScreen :avatar @to-login="handleLogout" />
+    </template>
+    <template #extra>
+      <FsSourceLink />
     </template>
   </BasicLayout>
 </template>

@@ -21,6 +21,7 @@ export default async function ({ crudExpose }: CreateCrudOptionsProps): Promise<
 
   return {
     crudOptions: {
+      id: "right-table",
       pagination: {
         showSizeChanger: false, // antdv
         showQuickJumper: false // antdv

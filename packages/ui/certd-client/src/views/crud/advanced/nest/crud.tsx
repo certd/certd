@@ -31,6 +31,7 @@ export default function ({ crudExpose, context: { asideTableRef } }: CreateCrudO
   };
   return {
     crudOptions: {
+      id: "main-table",
       table: {
         customRow(record: any, index: number) {
           const clazz = record.id === currentRow.value ? "fs-current-row" : "";

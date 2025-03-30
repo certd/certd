@@ -40,6 +40,7 @@ export default defineComponent({
   position: fixed;
   right: 3px;
   bottom: 20px;
+  z-index: 1000;
   .fs-source-link {
     text-align: left;
     cursor: pointer;

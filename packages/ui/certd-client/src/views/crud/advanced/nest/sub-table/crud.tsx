@@ -21,6 +21,7 @@ export default function ({ crudExpose, context: { props, ctx } }: CreateCrudOpti
 
   return {
     crudOptions: {
+      id: "sub-table",
       table: {
         customRow(record: any, index: number) {
           const clazz = record.id === props.modelValue ? "fs-current-row" : "";
