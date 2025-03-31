@@ -1,6 +1,6 @@
 import mockUtil from "/src/mock/base";
 const options: any = {
-  name: "ComponentJson",
+  name: "ComponentCode",
   idGenerator: 0
 };
 const list: any = [
