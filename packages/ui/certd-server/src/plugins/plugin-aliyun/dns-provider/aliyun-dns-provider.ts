@@ -86,15 +86,56 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
   //   return ret.DomainRecords.Record;
   // }
 
+  async #processRRAndSubDomain(fullRecord: string, baseDomain: string): Promise<{ rr: string; domainName: string }> {
+    const expectRR = fullRecord.replace('.' + baseDomain, '');
+    const subDomains = expectRR.split('.');
+    if (subDomains.length === 0) {
+      return { rr: '@', domainName: baseDomain };
+    }
+    const params = {
+      RegionId: 'cn-hangzhou',
+      KeyWord: `%${baseDomain}`,
+      PageSize: 100,
+    };
+
+    const requestOption = {
+      method: 'POST',
+    };
+
+    const ret = await this.client.request('DescribeDomains', params, requestOption);
+    const domainNames = new Set((ret.Domains.Domain as { DomainName: string }[]).map(domain => domain.DomainName));
+
+    for (let i = 0; i < subDomains.length; i++) {
+      const domain = subDomains.slice(i, subDomains.length).join('.') + '.' + baseDomain;
+      if (domainNames.has(domain)) {
+        const rr = subDomains.slice(0, i).join('.');
+        this.logger.info('在域名列表中发现匹配的(子)域名,使用新的rr与域名', rr, domain);
+        return { rr, domainName: domain };
+      }
+    }
+    return { rr: subDomains.join('.'), domainName: baseDomain };
+  }
+
   async createRecord(options: CreateRecordOptions): Promise<any> {
     const { fullRecord, value, type, domain } = options;
     this.logger.info('添加域名解析：', fullRecord, value, domain);
     // const domain = await this.matchDomain(fullRecord);
-    const rr = fullRecord.replace('.' + domain, '');
+
+    let rr: string;
+    let domainName: string;
+    try {
+      const processResult = await this.#processRRAndSubDomain(fullRecord, domain);
+      rr = processResult.rr;
+      domainName = processResult.domainName;
+    } catch (e) {
+      this.logger.info('获取域名列表出错', e);
+      this.resolveError(e, options);
+      return;
+    }
 
     const params = {
       RegionId: 'cn-hangzhou',
-      DomainName: domain,
+      DomainName: domainName,
       RR: rr,
       Type: type,
       Value: value,
