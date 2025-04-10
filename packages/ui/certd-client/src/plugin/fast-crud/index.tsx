@@ -338,6 +338,7 @@ function install(app: any, options: any = {}) {
       toolbarConfig: {}
     }
   });
+
   app.use(FsExtendsJson);
   app.use(FsExtendsTime);
   app.use(FsExtendsCopyable);

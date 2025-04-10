@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.25.8](https://github.com/fast-crud/fast-crud/compare/v1.25.7...v1.25.8) (2025-04-10)
+
+### Bug Fixes
+
+* 修复commonOptions无法覆盖某些参数的bug ([f2ecc03](https://github.com/fast-crud/fast-crud/commit/f2ecc034bf5b38d668ee8366c903a824af34302c))
+* fs-editor-code 支持配置schema校验 ([7d342cb](https://github.com/fast-crud/fast-crud/commit/7d342cbe8ebbaebb6ff5b3b80ce977d87aaa9ba5))
+
+### Performance Improvements
+
+* 添加代码编辑器示例 ([7217460](https://github.com/fast-crud/fast-crud/commit/72174604735b90fc57e0fb1ce40cc380b6c0c351))
+
 ## [1.25.7](https://github.com/fast-crud/fast-crud/compare/v1.25.6...v1.25.7) (2025-03-30)
 
 ### Bug Fixes

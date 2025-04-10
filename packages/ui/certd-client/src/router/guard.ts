@@ -43,6 +43,10 @@ export function setupCommonGuard(router: Router) {
  */
 function setupAccessGuard(router: Router) {
   router.beforeEach(async (to, from) => {
+    if (to.matched && to.matched.length > 2) {
+      to.matched.splice(1, to.matched.length - 2);
+    }
+
     // 基本路由，这些路由不需要进入权限拦截
     const needAuth = to.matched.some((r) => {
       return r.meta?.auth || r.meta?.permission;

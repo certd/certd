@@ -1,18 +1,30 @@
 import { defineAsyncComponent } from "vue";
 import Input from "ant-design-vue/es/input/Input";
 import Button from "ant-design-vue/es/button/button";
-
+import Divider from "ant-design-vue/es/divider";
+import Badge from "ant-design-vue/es/badge";
+import Empty from "ant-design-vue/es/empty";
+import Avatar from "ant-design-vue/es/avatar";
+import Steps from "ant-design-vue/es/steps";
+import Select from "ant-design-vue/es/select";
+import PageHeader from "ant-design-vue/es/page-header";
+import Card from "ant-design-vue/es/card";
 export default {
   install(app: any) {
-    app.component("AInput", Input);
-    app.component("AButton", Button);
+    app.use(Input);
+    app.use(Button);
+    app.use(Divider);
+    app.use(Badge);
+    app.use(Empty);
+    app.use(Avatar);
+    app.use(PageHeader);
+    app.use(Steps);
+    app.use(Select);
+    app.use(Card);
+
     app.component(
-      "AInputPassword",
-      defineAsyncComponent(() => import("ant-design-vue/es/input/Password"))
-    );
-    app.component(
-      "AButtonGroup",
-      defineAsyncComponent(() => import("ant-design-vue/es/button/button-group"))
+      "AAutoComplete",
+      defineAsyncComponent(() => import("ant-design-vue/es/auto-complete/index"))
     );
     app.component(
       "ARadio",
@@ -39,6 +51,11 @@ export default {
       defineAsyncComponent(() => import("ant-design-vue/es/form/FormItem"))
     );
     app.component(
+      "AFormItemRest",
+      defineAsyncComponent(() => import("ant-design-vue/es/form/FormItemContext"))
+    );
+
+    app.component(
       "ATabs",
       defineAsyncComponent(() => import("ant-design-vue/es/tabs/src/Tabs"))
     );
@@ -54,10 +71,6 @@ export default {
     app.component(
       "AInputNumber",
       defineAsyncComponent(() => import("ant-design-vue/es/input-number/index"))
-    );
-    app.component(
-      "ASelect",
-      defineAsyncComponent(() => import("ant-design-vue/es/select/index"))
     );
     app.component(
       "ADrawer",
@@ -98,10 +111,7 @@ export default {
       "AInputAutoComplete",
       defineAsyncComponent(() => import("ant-design-vue/es/auto-complete/index"))
     );
-    app.component(
-      "ACard",
-      defineAsyncComponent(() => import("ant-design-vue/es/card/index"))
-    );
+
     app.component(
       "ACascader",
       defineAsyncComponent(() => import("ant-design-vue/es/cascader/index"))
@@ -151,8 +161,8 @@ export default {
       defineAsyncComponent(() => import("ant-design-vue/es/tree-select"))
     );
     app.component(
-      "AToar",
-      defineAsyncComponent(() => import("ant-design-vue/es/tree-select"))
+      "ATour",
+      defineAsyncComponent(() => import("ant-design-vue/es/tour"))
     );
 
     app.component(
@@ -166,6 +176,50 @@ export default {
     app.component(
       "AMenuItem",
       defineAsyncComponent(() => import("ant-design-vue/es/menu/src/MenuItem"))
+    );
+
+    app.component(
+      "AProgress",
+      defineAsyncComponent(() => import("ant-design-vue/es/progress"))
+    );
+    app.component(
+      "ATimelineItem",
+      defineAsyncComponent(() => import("ant-design-vue/es/timeline/TimelineItem"))
+    );
+    app.component(
+      "ATimeline",
+      defineAsyncComponent(() => import("ant-design-vue/es/timeline/Timeline"))
+    );
+    app.component(
+      "APageHeader",
+      defineAsyncComponent(() => import("ant-design-vue/es/page-header/index"))
+    );
+    app.component(
+      "APopover",
+      defineAsyncComponent(() => import("ant-design-vue/es/popover"))
+    );
+    app.component(
+      "APopconfirm",
+      defineAsyncComponent(() => import("ant-design-vue/es/popconfirm"))
+    );
+    app.component(
+      "ACollapse",
+      defineAsyncComponent(() => import("ant-design-vue/es/collapse"))
+    );
+    app.component(
+      "ADescriptions",
+      defineAsyncComponent(() => import("ant-design-vue/es/descriptions"))
+    );
+    app.component(
+      "ADescriptionsItem",
+      defineAsyncComponent(async () => {
+        const m = await import("ant-design-vue/es/descriptions/");
+        return m.DescriptionsItem;
+      })
+    );
+    app.component(
+      "AResult",
+      defineAsyncComponent(() => import("ant-design-vue/es/result"))
     );
   }
 };
