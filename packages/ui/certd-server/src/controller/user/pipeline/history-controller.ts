@@ -97,7 +97,9 @@ export class HistoryController extends CrudController<HistoryService> {
       if (!item.pipeline) {
         continue;
       }
-      const json = JSON.parse(item.pipeline);
+      const json = typeof item.pipeline === 'object'
+        ? item.pipeline
+        : JSON.parse(item.pipeline);
       delete json.stages;
       item.pipeline = json;
     }

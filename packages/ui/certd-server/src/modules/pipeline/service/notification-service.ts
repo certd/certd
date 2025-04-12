@@ -82,7 +82,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
   }
 
   private buildNotificationInstanceConfig(res: NotificationEntity) {
-    const setting = JSON.parse(res.setting);
+    const setting = typeof res.setting === 'object' ? res.setting : JSON.parse(res.setting);
     return {
       id: res.id,
       type: res.type,

@@ -24,7 +24,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
       return null;
     }
     // const access = accessRegistry.get(entity.type);
-    const setting = JSON.parse(entity.setting);
+    const setting = typeof entity.setting === 'object' ? entity.setting : JSON.parse(entity.setting);
     return {
       id: entity.id,
       ...setting,
@@ -48,7 +48,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     if (!entity) {
       return null;
     }
-    return JSON.parse(entity.setting);
+    return typeof entity.setting === 'object' ? entity.setting : JSON.parse(entity.setting);
   }
 
   async save(bean: UserSettingsEntity) {

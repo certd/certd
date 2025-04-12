@@ -125,7 +125,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
   async getCert(@Query('id') id: number) {
     await this.service.checkUserId(id, this.getUserId());
     const certInfoEntity = await this.service.info(id);
-    const certInfo = JSON.parse(certInfoEntity.certInfo);
+    const certInfo = typeof certInfoEntity.certInfo === 'object' ? certInfoEntity.certInfo : JSON.parse(certInfoEntity.certInfo);
     return this.ok(certInfo);
   }
 

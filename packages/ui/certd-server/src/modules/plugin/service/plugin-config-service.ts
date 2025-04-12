@@ -83,7 +83,7 @@ export class PluginConfigService {
       };
     }
     if (plugin && plugin.sysSetting) {
-      sysSetting = JSON.parse(plugin.sysSetting);
+      sysSetting = typeof plugin.sysSetting === 'object' ? plugin.sysSetting : JSON.parse(plugin.sysSetting);
     }
     return {
       name: plugin.name,

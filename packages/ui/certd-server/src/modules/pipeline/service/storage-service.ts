@@ -70,7 +70,7 @@ export class StorageService extends BaseService<StorageEntity> {
     if (!res) {
       return {};
     }
-    const value = JSON.parse(res.value);
+    const value = typeof res.value === 'object' ? res.value : JSON.parse(res.value);
     return value.value;
   }
 }

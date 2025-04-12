@@ -134,7 +134,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       for (const varEntity of vars) {
         const record = recordMap[varEntity.namespace];
         if (record) {
-          const value = JSON.parse(varEntity.value);
+          const value = typeof varEntity.value === 'object' ? varEntity.value : JSON.parse(varEntity.value);
           record.lastVars = value.value;
         }
       }
@@ -147,7 +147,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
     const info = await this.info(pipelineId);
     if (info && !info.disabled) {
-      const pipeline = JSON.parse(info.content);
+      const pipeline = typeof info.content === 'object' ? info.content : JSON.parse(info.content);
       // 手动触发，不要await
       this.registerTriggers(pipeline);
     }
@@ -173,7 +173,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       //修改
       old = await this.info(bean.id);
     }
-    const pipeline = JSON.parse(bean.content || '{}');
+    const pipeline = typeof bean.content === 'object' ? bean.content : JSON.parse(bean.content || '{}');
     RunnableCollection.initPipelineRunnableType(pipeline);
     const isUpdate = bean.id > 0 && old != null;
 
@@ -300,7 +300,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       if (onlyAdminUser && entity.userId !== 1) {
         return;
       }
-      const pipeline = JSON.parse(entity.content ?? '{}');
+      const pipeline = typeof entity.content === 'object' ? entity.content : JSON.parse(entity.content ?? '{}');
       try {
         await this.registerTriggers(pipeline, immediateTriggerOnce);
       } catch (e) {
@@ -377,7 +377,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!pipeline) {
       return;
     }
-    const pipelineObj = JSON.parse(pipeline.content);
+    const pipelineObj = typeof pipeline.content === 'object' ? pipeline.content : JSON.parse(pipeline.content);
     if (pipelineObj.triggers) {
       for (const trigger of pipelineObj.triggers) {
         this.removeCron(id, trigger);
@@ -441,7 +441,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       suite = await this.checkHasDeployCount(id, entity.userId);
     }
 
-    const pipeline = JSON.parse(entity.content);
+    const pipeline = typeof entity.content === 'object' ? entity.content : JSON.parse(entity.content);
     if (!pipeline.id) {
       pipeline.id = id;
     }
@@ -545,7 +545,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (entity == null) {
       return;
     }
-    const pipeline: Pipeline = JSON.parse(entity.pipeline);
+    const pipeline: Pipeline = typeof entity.pipeline === 'object' ? entity.pipeline : JSON.parse(entity.pipeline);
     pipeline.status.status = ResultType.canceled;
     pipeline.status.result = ResultType.canceled;
     const runtime = new RunHistory(historyId, null, pipeline);

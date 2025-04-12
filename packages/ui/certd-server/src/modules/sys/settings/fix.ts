@@ -8,7 +8,7 @@ export async function getEmailSettings(sysSettingService: SysSettingsService, us
     //到userSetting里面去找
     const adminEmailSetting = await userSettingsService.getByKey('email', 1);
     if (adminEmailSetting) {
-      const setting = JSON.parse(adminEmailSetting.setting);
+      const setting = typeof adminEmailSetting.setting === 'object' ? adminEmailSetting.setting : JSON.parse(adminEmailSetting.setting);
       conf = _.merge(conf, setting);
       await sysSettingService.saveSetting(conf);
     }

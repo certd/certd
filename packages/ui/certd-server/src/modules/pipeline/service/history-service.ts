@@ -134,7 +134,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
   }
 
   async getFiles(history: HistoryEntity) {
-    const status: Pipeline = JSON.parse(history.pipeline);
+    const status: Pipeline = typeof history.pipeline === 'object' ? history.pipeline : JSON.parse(history.pipeline);
     const files: FileItem[] = [];
     RunnableCollection.each([status], runnable => {
       if (runnable.runnableType !== 'step') {

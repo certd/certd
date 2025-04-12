@@ -40,7 +40,7 @@ export class HistoryEntity {
 
   fillPipelineTitle() {
     if (this.pipeline) {
-      const pipeline = JSON.parse(this.pipeline);
+      const pipeline = typeof this.pipeline === 'object' ? this.pipeline : JSON.parse(this.pipeline);
       this.pipelineTitle = pipeline.title;
     }
   }

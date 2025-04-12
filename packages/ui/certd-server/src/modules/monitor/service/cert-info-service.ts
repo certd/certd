@@ -130,7 +130,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     if (!entity.certInfo) {
       throw new CodeException(Constants.res.openCertNotReady);
     }
-    const certInfo = JSON.parse(entity.certInfo) as CertInfo;
+    const certInfo = typeof entity.certInfo === 'object' ? entity.certInfo as CertInfo : JSON.parse(entity.certInfo) as CertInfo;
     const certReader = new CertReader(certInfo);
     return certReader.toCertInfo();
   }
