@@ -82,8 +82,8 @@ jobs:
           push: true
           context: ./packages/ui/
           tags: |
-            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
-            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}
+            registry.cn-hangzhou.aliyuncs.com/coolxitech/certd:latest
+            registry.cn-hangzhou.aliyuncs.com/coolxitech/certd:${{steps.get_certd_version.outputs.result}}
             greper/certd:latest
             greper/certd:${{steps.get_certd_version.outputs.result}}
             ghcr.io/${{ github.repository }}:latest

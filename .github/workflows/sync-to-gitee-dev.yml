@@ -19,8 +19,8 @@ jobs:
           lfs: true
       - name: Set git user                  # 2. 给git命令设置用户名和邮箱,↙↙↙ 改成你的name和email
         run: |
-          git config --global user.name "xiaojunnuo"
-          git config --global user.email "xiaojunnuo@qq.com"
+          git config --global user.name "coolxitech"
+          git config --global user.email "admin@kuxi.tech"
 
       - name: Set git token                 # 3. 给git命令设置token，用于push到目标仓库
         uses: de-vri-es/setup-git-credentials@v2
@@ -29,6 +29,6 @@ jobs:
 
       - name: push to gitee               # 4. 执行同步
         run: |
-          git remote add upstream https://gitee.com/certd/certd
+          git remote add upstream https://gitee.com/coolxitech/certd
           git push --set-upstream upstream v2-dev
 
