@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.25.9](https://github.com/fast-crud/fast-crud/compare/v1.25.8...v1.25.9) (2025-04-16)
+
+### Bug Fixes
+
+* 修复预览大图previewurl错误的bug ([cfb6554](https://github.com/fast-crud/fast-crud/commit/cfb6554c7c93297ddfcaa206168aceaf4ba2c2ef))
+* 修复yaml workers引入问题 ([1c90198](https://github.com/fast-crud/fast-crud/commit/1c90198f6f7df0ac0c9845d1c6af0592b1c34ae3))
+
 ## [1.25.8](https://github.com/fast-crud/fast-crud/compare/v1.25.7...v1.25.8) (2025-04-10)
 
 ### Bug Fixes
