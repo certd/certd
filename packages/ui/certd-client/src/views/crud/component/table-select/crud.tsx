@@ -250,6 +250,26 @@ export default async function ({ crudExpose }: CreateCrudOptionsProps): Promise<
               }
             }
           }
+        },
+        editable: {
+          title: "可编辑选择",
+          search: { show: true },
+          type: "editable-select",
+          dict: dict({
+            value: "id",
+            label: "name",
+            async getData() {
+              return await textTableApi.GetAll();
+            }
+          }),
+          form: {
+            component: {
+              tableSelect: {
+                createCrudOptions: createCrudOptionsText,
+                crudOptionsOverride
+              }
+            }
+          }
         }
       }
     }

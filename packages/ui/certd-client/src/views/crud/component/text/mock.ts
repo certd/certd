@@ -45,5 +45,6 @@ const list = [
   }
 ];
 options.list = list;
+options.copyTimes = 5;
 const mock = mockUtil.buildMock(options);
 export default mock;

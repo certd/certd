@@ -48,3 +48,10 @@ export function GetByIds(ids: any) {
     data: { ids }
   });
 }
+
+export function GetAll() {
+  return request({
+    url: apiPrefix + "/all",
+    method: "get"
+  });
+}
