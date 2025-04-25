@@ -52,6 +52,19 @@ export default async function ({ crudExpose }: CreateCrudOptionsProps): Promise<
           }
         }
       },
+      rowHandle: {
+        fixed: null,
+        title: "操作列行合并",
+        customCell: (_: any, index: any) => {
+          if (index === 4) {
+            return { rowSpan: 2 };
+          } else if (index === 5) {
+            return { rowSpan: 0 };
+          } else {
+            return { rowSpan: 1 };
+          }
+        }
+      },
       columns: {
         id: {
           title: "id",
@@ -69,57 +82,55 @@ export default async function ({ crudExpose }: CreateCrudOptionsProps): Promise<
           title: "上下合并",
           type: "text",
           column: {
-            customRender: ({ text, index }: any, cellRender: any) => {
-              const obj: any = {
-                props: {}
-              };
+            customCell: (_: any, index: any) => {
               if (index === 2) {
-                obj.children = text + "(我合并了)";
-                obj.props.rowSpan = 2;
+                return {
+                  rowSpan: 2
+                };
               } else if (index === 3) {
-                obj.props.rowSpan = 0;
-              } else {
-                obj.children = cellRender();
+                return {
+                  rowSpan: 0
+                };
               }
-              return obj;
+            },
+            formatter({ value, index }) {
+              if (index === 2) {
+                return value + "（我上下合并了）";
+              }
+              return value;
             }
           }
         },
         colMerge1: {
-          title: "左右合并",
+          title: "左右合并1",
           type: "text",
           column: {
             align: "center",
-            customRender({ text, index, record, dataIndex }: any, cellRender: any) {
-              if (index !== 4) {
+            customCell(value: any, index: any) {
+              if (index === 4) {
                 return {
-                  children: cellRender()
+                  colSpan: 2
                 };
               }
-              return {
-                children: text + "(我合并了)",
-                props: {
-                  colSpan: 2
-                }
-              };
+            },
+            formatter({ value, index }) {
+              if (index === 4) {
+                return value + "（我左右合并了）";
+              }
+              return value;
             }
           }
         },
         colMerge2: {
-          title: "左右合并",
+          title: "左右合并2",
           type: "text",
           column: {
-            customRender({ text, index, record, dataIndex }: any, cellRender: any) {
-              if (index !== 4) {
+            customCell(_: any, index: any) {
+              if (index === 4) {
                 return {
-                  children: cellRender()
+                  colSpan: 0
                 };
               }
-              return {
-                props: {
-                  colSpan: 0
-                }
-              };
             }
           }
         },

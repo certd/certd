@@ -221,5 +221,18 @@ export default {
       "AResult",
       defineAsyncComponent(() => import("ant-design-vue/es/result"))
     );
+
+    app.component(
+      "ATableSummaryCell",
+      defineAsyncComponent(() => import("ant-design-vue/es/vc-table/Cell/index"))
+    );
+    app.component(
+      "ATableSummaryRow",
+      defineAsyncComponent(() => import("ant-design-vue/es/vc-table/Footer/Row"))
+    );
+    app.component(
+      "ATableSummary",
+      defineAsyncComponent(() => import("ant-design-vue/es/vc-table/Footer/Summary"))
+    );
   }
 };
