@@ -110,7 +110,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           type: "text",
           column: {
             ellipsis: true,
-            showTitle: true
+            tooltip: true
           }
         },
         search: {

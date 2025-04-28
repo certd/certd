@@ -38,7 +38,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps<FirstRo
           search: { show: true },
           column: {
             resizable: true,
-            width: 200
+            width: 200,
+            tooltip: true
           }
         },
         type: {

@@ -234,5 +234,10 @@ export default {
       "ATableSummary",
       defineAsyncComponent(() => import("ant-design-vue/es/vc-table/Footer/Summary"))
     );
+
+    app.component(
+      "ASlider",
+      defineAsyncComponent(() => import("ant-design-vue/es/slider/index"))
+    );
   }
 };

@@ -51,13 +51,21 @@ const createCrudOptions = async function ({}: CreateCrudOptionsProps): Promise<C
 
   return {
     //自定义变量返回
-    customExport: {},
     crudOptions: {
       request: {
         pageRequest,
         addRequest,
         editRequest,
         delRequest
+      },
+      actionbar: {
+        buttons: {
+          add: {
+            tooltip: {
+              title: "tooltip演示"
+            }
+          }
+        }
       },
       columns: {
         name: {
@@ -66,7 +74,10 @@ const createCrudOptions = async function ({}: CreateCrudOptionsProps): Promise<C
           search: { show: true },
           column: {
             resizable: true,
-            width: 200
+            width: 200,
+            tooltip: {
+              title: "tooltip演示"
+            }
           }
         },
         type: {

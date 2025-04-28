@@ -20,7 +20,7 @@
                   label: '上置'
                 },
                 {
-                  value: '',
+                  value: 'horizontal',
                   label: '左置'
                 }
               ]"
@@ -41,7 +41,7 @@ export default defineComponent({
   name: "FormBase",
   setup() {
     const labelWidthRef = ref(100);
-    const labelLayoutRef = ref();
+    const labelLayoutRef = ref("horizontal");
     const context = {
       labelWidthRef,
       labelLayoutRef
