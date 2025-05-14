@@ -1,6 +1,6 @@
 import { defineAsyncComponent } from "vue";
-import Input from "ant-design-vue/es/input/Input";
-import Button from "ant-design-vue/es/button/button";
+import Input from "ant-design-vue/es/input";
+import Button from "ant-design-vue/es/button";
 import Divider from "ant-design-vue/es/divider";
 import Badge from "ant-design-vue/es/badge";
 import Empty from "ant-design-vue/es/empty";

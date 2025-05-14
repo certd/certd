@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.25.11](https://github.com/fast-crud/fast-crud/compare/v1.25.10...v1.25.11) (2025-05-14)
+
+### Bug Fixes
+
+* 修复naive-ui下 form-item 的label设置为render会报警告的问题 ([45e1bc6](https://github.com/fast-crud/fast-crud/commit/45e1bc6d9cfc408a98dfe628bf3b9bd14af4b2cf))
+
+### Performance Improvements
+
+* 单元格支持tooltip ([44d83ad](https://github.com/fast-crud/fast-crud/commit/44d83ad890589b2b64ff5e9f869fc04863576a3b))
+
 ## [1.25.10](https://github.com/fast-crud/fast-crud/compare/v1.25.9...v1.25.10) (2025-04-25)
 
 ### Performance Improvements

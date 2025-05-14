@@ -1,6 +1,6 @@
 {
   "name": "@fast-crud/fs-admin-antdv4",
-  "version": "1.25.10",
+  "version": "1.25.11",
   "private": true,
   "scripts": {
     "dev": "vite",
