@@ -7,7 +7,8 @@ const list = [
   {
     status: "1",
     remote: "2",
-    modifyDict: true
+    modifyDict: true,
+    localSet: 1
   },
   {
     status: "2",

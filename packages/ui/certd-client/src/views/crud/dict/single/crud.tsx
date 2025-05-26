@@ -131,6 +131,10 @@ export default async function ({ crudExpose }: CreateCrudOptionsProps): Promise<
             cache: true
           }),
           type: "dict-select"
+        },
+        pictureCard: {
+          title: "test",
+          type: "image-uploader"
         }
       }
     }

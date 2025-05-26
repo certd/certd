@@ -121,6 +121,10 @@ export default async function ({ crudExpose }: CreateCrudOptionsProps): Promise<
           title: "动态Url",
           dict: dynamicUrlDict,
           type: "dict-select"
+        },
+        pictureCard: {
+          title: "照片墙",
+          type: "image-uploader"
         }
       }
     }

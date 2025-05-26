@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.25.12](https://github.com/fast-crud/fast-crud/compare/v1.25.11...v1.25.12) (2025-05-26)
+
+### Bug Fixes
+
+* 修复cloneable模式下的dict 无法动态修改data的bug ([1dd5cd1](https://github.com/fast-crud/fast-crud/commit/1dd5cd1e1445b126451c6e1b68f453a70bf920de))
+
 ## [1.25.11](https://github.com/fast-crud/fast-crud/compare/v1.25.10...v1.25.11) (2025-05-14)
 
 ### Bug Fixes
