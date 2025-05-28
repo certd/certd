@@ -72,13 +72,17 @@
               </template>
             </fs-form-wrapper>
           </a-card>
+
+          <a-card class="mt-10" title="打开对话框">
+            <a-button @click="openDialogOnly"> 打开对话框 </a-button>
+          </a-card>
         </a-col>
       </a-row>
     </div>
   </fs-page>
 </template>
 
-<script lang="ts">
+<script lang="tsx">
 import { defineComponent, ref } from "vue";
 import { message } from "ant-design-vue";
 import { CreateCrudOptionsProps, useColumns, useFormWrapper, useFs, utils } from "@fast-crud/fast-crud";
@@ -268,6 +272,42 @@ function useFormProvider() {
   };
 }
 
+function useOpenDialogOnly() {
+  const { openDialog } = useFormWrapper();
+  function openDialogOnly() {
+    openDialog({
+      wrapper: {
+        title: "自定义对话框",
+        is: "a-modal",
+        footer: false,
+        buttons: {
+          cancel: {
+            show: false
+          },
+          reset: {
+            show: false
+          },
+          ok: {
+            show: false
+          }
+        },
+        slots: {
+          "form-body-top": () => {
+            return (
+              <div>
+                <a-alert type="warning" message="form-body-top 插槽" />
+              </div>
+            );
+          }
+        }
+      }
+    });
+  }
+  return {
+    openDialogOnly
+  };
+}
+
 export default defineComponent({
   name: "FormIndependent",
   setup() {
@@ -276,7 +316,8 @@ export default defineComponent({
       ...useFormWrapperUsingTag(),
       ...useCrudBindingForm(),
       ...useCrudOptions(),
-      ...useFormProvider()
+      ...useFormProvider(),
+      ...useOpenDialogOnly()
     };
   }
 });
