@@ -306,7 +306,8 @@ export default async function ({ crudExpose, context }: CreateCrudOptionsProps):
               { value: "wh", label: "武汉" },
               { value: "sh", label: "上海" },
               { value: "hz", label: "杭州" },
-              { value: "bj", label: "北京", color: "red" }
+              { value: "bj", label: "北京", color: "red" },
+              { value: "github", label: "github" }
             ]
           }),
           column: {

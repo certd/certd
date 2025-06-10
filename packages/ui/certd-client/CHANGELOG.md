@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.25.13](https://github.com/fast-crud/fast-crud/compare/v1.25.12...v1.25.13) (2025-06-10)
+
+### Bug Fixes
+
+* 修复fs-values-format组件某些值无法获取自动颜色的bug ([18169fc](https://github.com/fast-crud/fast-crud/commit/18169fc11f37595b8fba96467f0c741fe898ad21))
+
 ## [1.25.12](https://github.com/fast-crud/fast-crud/compare/v1.25.11...v1.25.12) (2025-05-26)
 
 ### Bug Fixes

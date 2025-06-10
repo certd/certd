@@ -8,7 +8,7 @@ const list = [
     statusLocal: "sz",
     customDictUrl: "0",
     statusValue: 1,
-    multiple: ["sz", "bj", "gz", "sh", "hz", "xz", "xg"],
+    multiple: ["sz", "bj", "gz", "sh", "hz", "xz", "xg", "github"],
     checkbox: "0",
     select_local: "sz",
     statusRemote: "0",
