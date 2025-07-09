@@ -54,7 +54,7 @@ function getDomainFromPipeline(inputKey: string) {
     return;
   }
 
-  if (!CertApplyPluginNames.includes(certStep.type)) {
+  if (certStep?.type?.indexOf?.("CertApply") === -1) {
     targetStepId = getStepIdFromInputKey(certStep.input?.cert);
     certStep = findStepFromPipeline(targetStepId);
     if (!certStep) {

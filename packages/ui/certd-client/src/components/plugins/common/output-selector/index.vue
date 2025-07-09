@@ -37,13 +37,9 @@ export default {
         currentStepIndex: currentStepIndex.value,
         currentTask: currentTask.value,
       });
-      if (props.from) {
-        if (typeof props.from === "string") {
-          options.value = options.value.filter((item: any) => item.type === props.from);
-        } else {
-          options.value = options.value.filter((item: any) => props.from.includes(item.type));
-        }
-      }
+      const _certApply = pluginGroups?.groups?.cert?.plugins?.map((item: any) => item.name) || [];
+      const _fromProps = props.from ? (typeof props.from === "string" ? [props.from] : props.from) : [];
+      options.value = options.value.filter((item: any) => _certApply?.includes?.(item.type) || _fromProps.includes(item.type));
 
       if (props.modelValue != null) {
         const found = options.value.find((item: any) => item.value === props.modelValue);
