@@ -4,7 +4,7 @@ import router from "../../router";
 import { LocalStorage } from "/src/utils/util.storage";
 // @ts-ignore
 import * as UserApi from "./api.user";
-import { RegisterReq, SmsLoginReq } from "./api.user";
+import { ForgotPasswordReq, RegisterReq, SmsLoginReq } from "./api.user";
 // @ts-ignore
 import { LoginReq, UserInfoRes } from "/@/store/user/api.user";
 import { message, Modal, notification } from "ant-design-vue";
@@ -64,6 +64,13 @@ export const useUserStore = defineStore({
       await UserApi.register(user);
       notification.success({
         message: "注册成功，请登录",
+      });
+      await router.replace("/login");
+    },
+    async forgotPassword(params: ForgotPasswordReq): Promise<any> {
+      await UserApi.forgotPassword(params);
+      notification.success({
+        message: "密码已重置，请登录",
       });
       await router.replace("/login");
     },

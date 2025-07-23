@@ -24,6 +24,14 @@ export const outsideResource = [
         path: "/register",
         component: "/framework/register/index.vue",
       },
+      {
+        meta: {
+          title: "找回密码",
+        },
+        name: "forgotPassword",
+        path: "/forgotPassword",
+        component: "/framework/forgot-password/index.vue",
+      },
     ],
   },
   ...errorPage,

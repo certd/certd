@@ -48,9 +48,9 @@
         </a-button>
 
         <div v-if="!settingStore.isComm" class="mt-2">
-          <a href="https://certd.docmirror.cn/guide/use/forgotpasswd/" target="_blank">
-            {{ t("authentication.forgotAdminPassword") }}
-          </a>
+          <router-link :to="{name: 'forgotPassword'}">
+            {{ t("authentication.forgotPassword") }}
+          </router-link>
         </div>
       </a-form-item>
 

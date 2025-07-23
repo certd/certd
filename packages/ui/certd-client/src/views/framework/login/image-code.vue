@@ -11,7 +11,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, useAttrs } from "vue";
+import { ref, useAttrs, defineExpose } from "vue";
 import { nanoid } from "nanoid";
 
 const props = defineProps<{
@@ -32,5 +32,10 @@ function resetImageCode() {
   imageCodeUrl.value = url + "?randomStr=" + randomStr;
   emit("update:randomStr", randomStr);
 }
+
+defineExpose({
+  resetImageCode,
+})
+
 resetImageCode();
 </script>

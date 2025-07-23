@@ -20,6 +20,17 @@ export interface SmsLoginReq {
   randomStr: string;
 }
 
+export interface ForgotPasswordReq {
+  forgotPasswordType: string;
+  input: string;
+  randomStr: string;
+  imgCode: string;
+  validateCode: string;
+
+  password: string;
+  confirmPassword: string;
+}
+
 export interface UserInfoRes {
   id: string | number;
   username: string;
@@ -41,6 +52,13 @@ export async function register(user: RegisterReq): Promise<UserInfoRes> {
     url: "/register",
     method: "post",
     data: user,
+  });
+}
+export async function forgotPassword(data: ForgotPasswordReq): Promise<any> {
+  return await request({
+    url: "/forgotPassword",
+    method: "post",
+    data: data,
   });
 }
 export async function logout() {

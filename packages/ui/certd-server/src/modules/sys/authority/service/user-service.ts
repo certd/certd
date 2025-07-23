@@ -15,6 +15,7 @@ import { DbAdapter } from '../../../db/index.js';
 import { simpleNanoId, utils } from '@certd/basic';
 
 export type RegisterType = 'username' | 'mobile' | 'email';
+export type ForgotPasswordType = 'mobile' | 'email';
 
 export const AdminRoleId = 1
 /**
@@ -23,7 +24,7 @@ export const AdminRoleId = 1
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class UserService extends BaseService<UserEntity> {
- 
+
   @InjectEntityModel(UserEntity)
   repository: Repository<UserEntity>;
   @Inject()
@@ -227,6 +228,28 @@ export class UserService extends BaseService<UserEntity> {
     utils.mitter.emit('register', { userId: newUser.id });
 
     return newUser;
+  }
+
+  async forgotPassword(
+    data: {
+      type: ForgotPasswordType; input?: string, phoneCode?: string,
+      randomStr: string, imgCode:string, validateCode: string,
+      password: string, confirmPassword: string,
+    }
+  ) {
+    if(!data.type) {
+      throw new CommonException('找回类型不能为空');
+    }
+    if(data.password !== data.confirmPassword) {
+      throw new CommonException('两次输入的密码不一致');
+    }
+    const user = await this.findOne([{ [data.type]: data.input }]);
+    console.log('user', user)
+    if(!user) {
+      throw new CommonException('用户不存在');
+      // return;
+    }
+    await this.resetPassword(user.id, data.password)
   }
 
   async changePassword(userId: any, form: any) {

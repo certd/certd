@@ -57,6 +57,7 @@ export default {
   passwordPlaceholder: "请输入密码",
   mobilePlaceholder: "请输入手机号",
   loginButton: "登录",
+  forgotPassword: "忘记密码？",
   forgotAdminPassword: "忘记管理员密码？",
   registerLink: "注册",
 
