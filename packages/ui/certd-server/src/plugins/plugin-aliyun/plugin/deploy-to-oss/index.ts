@@ -59,6 +59,15 @@ export class DeployCertToAliyunOSS extends AbstractTaskPlugin {
   @TaskInput({
     title: 'Bucket',
     helper: '存储桶名称',
+    component: {
+      name: 'remote-auto-complete',
+      vModel: 'value',
+      type: 'plugin',
+      action: 'onGetBucketList',
+      search: false,
+      pager: false,
+      watches: ['accessId', 'region']
+    },
     required: true,
   })
   bucket!: string;
@@ -91,7 +100,7 @@ export class DeployCertToAliyunOSS extends AbstractTaskPlugin {
   @TaskInput({
     title: '证书服务接入点',
     helper: '不会选就按默认',
-    value: 'cas.aliyuncs.com',
+    value: 'cn-hangzhou',
     component: {
       name: 'a-select',
       options: [
@@ -101,6 +110,7 @@ export class DeployCertToAliyunOSS extends AbstractTaskPlugin {
       ],
     },
     required: true,
+    order: -99,
   })
   casRegion!: string;
 
@@ -112,6 +122,7 @@ export class DeployCertToAliyunOSS extends AbstractTaskPlugin {
       type: 'aliyun',
     },
     required: true,
+    order: -98,
   })
   accessId!: string;
 
@@ -168,6 +179,24 @@ export class DeployCertToAliyunOSS extends AbstractTaskPlugin {
       // yourBucketName填写Bucket名称。
       bucket: this.bucket,
     });
+  }
+
+  async onGetBucketList(data: any) {
+    console.log('data', data)
+
+    const access = (await this.getAccess(this.accessId)) as AliyunAccess;
+    const client = await this.getClient(access);
+
+    let res;
+    const buckets = []
+    do{
+      const requestData = {'marker': res?.nextMarker || null, 'max-keys': 1000};
+      res = await client.listBuckets(requestData)
+      buckets.push(...(res?.buckets || []))
+    } while (!!res?.nextMarker)
+    return buckets
+      .filter(bucket => bucket?.region === this.region)
+      .map(bucket => ({label: `${bucket.name}<${bucket.region}>`, value: bucket.name}));
   }
 
   async doRequest(client: any, params: any) {

@@ -26,7 +26,7 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
     helper: "请选择证书申请任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
+      from: [...CertApplyPluginNames, 'uploadCertToAliyun']
     },
     required: true
   })

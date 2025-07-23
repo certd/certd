@@ -1,4 +1,5 @@
 import SynologyIdDeviceGetter from "./synology/device-id-getter.vue";
+import RemoteAutoComplete from "./common/remote-auto-complete.vue";
 import RemoteSelect from "./common/remote-select.vue";
 import RemoteInput from "./common/remote-input.vue";
 import CertDomainsGetter from "./common/cert-domains-getter.vue";
@@ -21,6 +22,7 @@ export default {
     app.component("ApiTest", ApiTest);
 
     app.component("SynologyDeviceIdGetter", SynologyIdDeviceGetter);
+    app.component("RemoteAutoComplete", RemoteAutoComplete);
     app.component("RemoteSelect", RemoteSelect);
     app.component("RemoteInput", RemoteInput);
     app.component("CertDomainsGetter", CertDomainsGetter);
