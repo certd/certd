@@ -57,13 +57,23 @@ export class CodeService {
   }
   /**
    */
-  async sendSmsCode(phoneCode = '86', mobile: string, randomStr: string) {
+  async sendSmsCode(
+    phoneCode = '86',
+    mobile: string,
+    randomStr: string,
+    opts?: {
+      duration?: number,
+      verificationType?: string
+    },
+  ) {
     if (!mobile) {
       throw new Error('手机号不能为空');
     }
     if (!randomStr) {
       throw new Error('randomStr不能为空');
     }
+
+    const duration = Math.max(Math.floor(Math.min(opts?.duration || 5, 15)), 1);
 
     const sysSettings = await this.sysSettingsService.getPrivateSettings();
     if (!sysSettings.sms?.config?.accessId) {
@@ -84,16 +94,29 @@ export class CodeService {
       phoneCode,
     });
 
-    const key = this.buildSmsCodeKey(phoneCode, mobile, randomStr);
+    const key = this.buildSmsCodeKey(phoneCode, mobile, randomStr, opts?.verificationType);
     cache.set(key, smsCode, {
-      ttl: 5 * 60 * 1000, //5分钟
+      ttl: duration * 60 * 1000, //5分钟
     });
     return smsCode;
   }
 
   /**
+   *
+   * @param email 收件邮箱
+   * @param randomStr
+   * @param opts title标题 content内容模版 duration有效时间单位分钟 verificationType验证类型
    */
-  async sendEmailCode(email: string, randomStr: string) {
+  async sendEmailCode(
+    email: string,
+    randomStr: string,
+    opts?: {
+      title?: string,
+      content?: string,
+      duration?: number,
+      verificationType?: string
+    },
+  ) {
     if (!email) {
       throw new Error('Email不能为空');
     }
@@ -110,15 +133,20 @@ export class CodeService {
     }
 
     const code = randomNumber(4);
+    const duration = Math.max(Math.floor(Math.min(opts?.duration || 5, 15)), 1);
+
+    const title = `【${siteTitle}】${!!opts?.title ? opts.title : '验证码'}`;
+    const content = !!opts.content ? this.compile(opts.content)({code, duration}) : `您的验证码是${code}，请勿泄露`;
+
     await this.emailService.send({
-      subject: `【${siteTitle}】验证码`,
-      content: `您的验证码是${code}，请勿泄露`,
+      subject: title,
+      content: content,
       receivers: [email],
     });
 
-    const key = this.buildEmailCodeKey(email, randomStr);
+    const key = this.buildEmailCodeKey(email, randomStr, opts?.verificationType);
     cache.set(key, code, {
-      ttl: 5 * 60 * 1000, //5分钟
+      ttl: duration * 60 * 1000, //5分钟
     });
     return code;
   }
@@ -126,20 +154,20 @@ export class CodeService {
   /**
    * checkSms
    */
-  async checkSmsCode(opts: { mobile: string; phoneCode: string; smsCode: string; randomStr: string; throwError: boolean }) {
-    const key = this.buildSmsCodeKey(opts.phoneCode, opts.mobile, opts.randomStr);
+  async checkSmsCode(opts: { mobile: string; phoneCode: string; smsCode: string; randomStr: string; verificationType?: string; throwError: boolean }) {
+    const key = this.buildSmsCodeKey(opts.phoneCode, opts.mobile, opts.randomStr, opts.verificationType);
     if (isDev()) {
       return true;
     }
     return this.checkValidateCode(key, opts.smsCode, opts.throwError);
   }
 
-  buildSmsCodeKey(phoneCode: string, mobile: string, randomStr: string) {
-    return `sms:${phoneCode}${mobile}:${randomStr}`;
+  buildSmsCodeKey(phoneCode: string, mobile: string, randomStr: string, verificationType?: string) {
+    return ['sms', verificationType, phoneCode, mobile, randomStr].filter(item => !!item).join(':');
   }
 
-  buildEmailCodeKey(email: string, randomStr: string) {
-    return `email:${email}:${randomStr}`;
+  buildEmailCodeKey(email: string, randomStr: string, verificationType?: string) {
+    return ['email', verificationType, email, randomStr].filter(item => !!item).join(':');
   }
   checkValidateCode(key: string, userCode: string, throwError = true) {
     //验证图片验证码
@@ -154,8 +182,18 @@ export class CodeService {
     return true;
   }
 
-  checkEmailCode(opts: { randomStr: string; validateCode: string; email: string; throwError: boolean }) {
-    const key = this.buildEmailCodeKey(opts.email, opts.randomStr);
+  checkEmailCode(opts: { randomStr: string; validateCode: string; email: string; verificationType?: string; throwError: boolean }) {
+    const key = this.buildEmailCodeKey(opts.email, opts.randomStr, opts.verificationType);
     return this.checkValidateCode(key, opts.validateCode, opts.throwError);
+  }
+
+  compile(templateString: string) {
+    return new Function(
+      "data",
+      `    with(data || {}) {
+        return \`${templateString}\`;
+      }
+    `
+    );
   }
 }

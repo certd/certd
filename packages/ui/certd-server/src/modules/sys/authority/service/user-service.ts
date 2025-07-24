@@ -250,6 +250,7 @@ export class UserService extends BaseService<UserEntity> {
       // return;
     }
     await this.resetPassword(user.id, data.password)
+    return user.username;
   }
 
   async changePassword(userId: any, form: any) {

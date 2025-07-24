@@ -27,6 +27,9 @@ export class EmailCodeReq {
 
   @Rule(RuleType.string().required().max(4))
   imgCode: string;
+
+  @Rule(RuleType.string())
+  verificationType: string;
 }
 
 /**
@@ -55,8 +58,20 @@ export class BasicController extends BaseController {
     @Body(ALL)
     body: EmailCodeReq
   ) {
+    const opts = {
+      verificationType: body.verificationType,
+      title: undefined,
+      content: undefined,
+      duration: undefined,
+    };
+    if(body?.verificationType === 'forgotPassword') {
+      opts.title = '找回密码';
+      opts.content = '验证码：${code}。您正在找回密码，请输入验证码并完成操作。如非本人操作请忽略';
+      opts.duration = 3;
+    }
+
     await this.codeService.checkCaptcha(body.randomStr, body.imgCode);
-    await this.codeService.sendEmailCode(body.email, body.randomStr);
+    await this.codeService.sendEmailCode(body.email, body.randomStr, opts);
     // 设置缓存内容
     return this.ok(null);
   }

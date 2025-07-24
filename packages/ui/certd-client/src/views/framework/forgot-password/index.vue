@@ -21,7 +21,13 @@
             </a-input>
           </a-form-item>
           <a-form-item has-feedback name="validateCode" label="邮件验证码">
-            <email-code v-model:value="formState.validateCode" :img-code="formState.imgCode" :email="formState.input" :random-str="formState.randomStr" />
+            <email-code
+              v-model:value="formState.validateCode"
+              :img-code="formState.imgCode"
+              :email="formState.input"
+              :random-str="formState.randomStr"
+              verification-type="forgotPassword"
+            />
           </a-form-item>
         </a-tab-pane>
         <a-tab-pane key="mobile" tab="手机号找回">
@@ -33,7 +39,14 @@
             </a-input>
           </a-form-item>
           <a-form-item name="validateCode" label="手机验证码">
-            <sms-code v-model:value="formState.validateCode" :img-code="formState.imgCode" :mobile="formState.input" :phone-code="formState.phoneCode" :random-str="formState.randomStr" />
+            <sms-code
+              v-model:value="formState.validateCode"
+              :img-code="formState.imgCode"
+              :mobile="formState.input"
+              :phone-code="formState.phoneCode"
+              :random-str="formState.randomStr"
+              verification-type="forgotPassword"
+            />
           </a-form-item>
         </a-tab-pane>
       </a-tabs>
@@ -60,7 +73,7 @@
         <a-button type="primary" size="large" html-type="submit" class="submit-button"> 找回密码</a-button>
 
         <div class="mt-2">
-          <a href="https://certd.docmirror.cn/guide/use/forgotpasswd/" target="_blank"> 管理员无绑定邮箱或MFA丢失找回 </a>
+          <a href="https://certd.docmirror.cn/guide/use/forgotpasswd/" target="_blank"> 管理员无绑定通信方式或MFA丢失找回 </a>
         </div>
       </a-form-item>
     </a-form>
@@ -83,7 +96,10 @@ const rules = {
   input: [{ required: true }],
   validateCode: [{ required: true }],
   imgCode: [{ required: true }, { min: 4, max: 4, message: "请输入4位图片验证码" }],
-  password: [{ required: true, trigger: "change", message: "请输入密码" }],
+  password: [
+    { required: true, trigger: "change", message: "请输入密码" },
+    { len: 6, message: "至少输入6位密码" },
+  ],
   confirmPassword: [
     { required: true, trigger: "change", message: "请确认密码" },
     {

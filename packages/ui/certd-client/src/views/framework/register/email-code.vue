@@ -22,6 +22,7 @@ const props = defineProps<{
   email?: string;
   imgCode?: string;
   randomStr?: string;
+  verificationType?: string;
 }>();
 const emit = defineEmits(["update:value", "change"]);
 
@@ -53,6 +54,7 @@ async function sendSmsCode() {
       email: props.email,
       imgCode: props.imgCode,
       randomStr: props.randomStr,
+      verificationType: props.verificationType,
     });
   } finally {
     loading.value = false;
