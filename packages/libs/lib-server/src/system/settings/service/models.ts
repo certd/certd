@@ -22,6 +22,7 @@ export class SysPublicSettings extends BaseSettings {
   mobileRegisterEnabled = false;
   smsLoginEnabled = false;
   emailRegisterEnabled = false;
+  selfServicePasswordRetrievalEnabled = false;
 
   limitUserPipelineCount = 0;
   managerOtherUserPipeline = false;

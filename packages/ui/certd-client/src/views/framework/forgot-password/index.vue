@@ -98,7 +98,7 @@ const rules = {
   imgCode: [{ required: true }, { min: 4, max: 4, message: "请输入4位图片验证码" }],
   password: [
     { required: true, trigger: "change", message: "请输入密码" },
-    { len: 6, message: "至少输入6位密码" },
+    { min: 6, message: "至少输入6位密码" },
   ],
   confirmPassword: [
     { required: true, trigger: "change", message: "请确认密码" },

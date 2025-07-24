@@ -24,6 +24,11 @@ export class LoginController extends BaseController {
     @Body(ALL)
     body: any,
   ) {
+    const sysSettings = await this.sysSettingsService.getPublicSettings();
+    if(!sysSettings.selfServicePasswordRetrievalEnabled) {
+      throw new CommonException('暂未开启自助找回');
+    }
+
     if(body.type === 'email') {
       this.codeService.checkEmailCode({
         verificationType: 'forgotPassword',
