@@ -571,6 +571,7 @@ export default {
   dualStackNetworkHelper: "如果选择IPv6优先，需要在docker-compose.yaml中启用ipv6",
   enableCommonCnameService: "启用公共CNAME服务",
   commonCnameHelper: "是否可以使用公共CNAME服务，如果禁用，且没有设置<router-link to='/sys/cname/provider'>自定义CNAME服务</router-link>，则无法使用CNAME代理方式申请证书",
+  enableCommonSelfServicePasswordRetrieval: "启用自助找回密码",
   saveButton: "保存",
   stopSuccess: "停止成功",
   google: "Google",

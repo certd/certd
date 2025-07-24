@@ -36,6 +36,7 @@ export type SysPublicSetting = {
   emailRegisterEnabled?: boolean;
   passwordLoginEnabled?: boolean;
   smsLoginEnabled?: boolean;
+  selfServicePasswordRetrievalEnabled?: boolean;
 
   limitUserPipelineCount?: number;
   managerOtherUserPipeline?: boolean;

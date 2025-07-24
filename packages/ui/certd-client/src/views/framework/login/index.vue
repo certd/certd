@@ -47,8 +47,8 @@
           {{ t("authentication.loginButton") }}
         </a-button>
 
-        <div v-if="!settingStore.isComm" class="mt-2">
-          <router-link :to="{name: 'forgotPassword'}">
+        <div v-if="!!settingStore.sysPublic.selfServicePasswordRetrievalEnabled" class="mt-2">
+          <router-link :to="{ name: 'forgotPassword' }">
             {{ t("authentication.forgotPassword") }}
           </router-link>
         </div>
