@@ -26,6 +26,8 @@ export default async function ({ crudExpose }: CreateCrudOptionsProps): Promise<
     ]
   });
 
+  console.log("dict", statusDict.data);
+
   const remoteDict = dict({
     url: "/mock/dicts/OpenStatusEnum",
     immediate: false
