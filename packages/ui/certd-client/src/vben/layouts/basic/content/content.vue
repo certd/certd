@@ -78,7 +78,7 @@ function transformComponent(component: VNode, route: RouteLocationNormalizedLoad
 </script>
 
 <template>
-  <div class="relative h-full">
+  <div class="relative h-full bg-white dark:bg-black">
     <IFrameRouterView />
     <RouterView v-slot="{ Component, route }">
       <Transition :name="getTransitionName(route)" appear mode="out-in">

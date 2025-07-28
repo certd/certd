@@ -12,7 +12,7 @@ import { GetSignedUrl } from "/@/views/crud/component/uploader/s3/api";
 import { notification } from "ant-design-vue";
 import { usePreferences } from "/@/vben/preferences";
 import { columnSizeSaver } from "/@/plugin/fast-crud/column-size-saver";
-
+import { FsEditorCode } from "@fast-crud/editor-code";
 function install(app: any, options: any = {}) {
   app.use(UiAntdv);
   //设置日志级别
@@ -343,6 +343,7 @@ function install(app: any, options: any = {}) {
   app.use(FsExtendsTime);
   app.use(FsExtendsCopyable);
   app.use(FsExtendsInput);
+  app.use(FsEditorCode);
 
   const { addTypes, getType } = useTypes();
   //此处演示修改官方字段类型

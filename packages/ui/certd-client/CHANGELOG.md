@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.26.0](https://github.com/fast-crud/fast-crud/compare/v1.25.13...v1.26.0) (2025-07-28)
+
+### Bug Fixes
+
+* 独立使用form表单缺失mode的问题 ([9ed791a](https://github.com/fast-crud/fast-crud/commit/9ed791ad4bb9294f4b9380d858df89fbc32ca2a0))
+* 修复table-select 示例右上角自定义插槽无法设置的bug ([54a5d90](https://github.com/fast-crud/fast-crud/commit/54a5d90b86338036474657267de3bd7a74caf1eb))
+* card布局情况下，header-top header-bottom同时跟search显隐的bug ([3484232](https://github.com/fast-crud/fast-crud/commit/348423280f06f052fb16214e863ba03735ff9042))
+
+### Performance Improvements
+
+* antdv示例背景设置为白色 ([3d74bf4](https://github.com/fast-crud/fast-crud/commit/3d74bf4e7ca76ecad286ec8f1b8fd2cbcb6428eb))
+
 ## [1.25.13](https://github.com/fast-crud/fast-crud/compare/v1.25.12...v1.25.13) (2025-06-10)
 
 ### Bug Fixes

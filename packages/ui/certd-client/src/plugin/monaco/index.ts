@@ -4,7 +4,7 @@ import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
 import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
 import yamlWorker from "./yaml.worker?worker";
 import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
-import { registerWorker } from "@fast-crud/fast-extends";
+import { registerWorker } from "@fast-crud/editor-code";
 export function setupMonaco() {
   registerWorker("json", jsonWorker);
   registerWorker(["css", "less", "scss"], cssWorker);

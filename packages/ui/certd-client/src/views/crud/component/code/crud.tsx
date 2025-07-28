@@ -1,6 +1,6 @@
 import * as api from "./api";
 
-import { FsEditorCodeValidators } from "@fast-crud/fast-extends";
+import { FsEditorCodeValidators } from "@fast-crud/editor-code";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes, ValueBuilderContext, ValueResolveContext } from "@fast-crud/fast-crud";
 export default async function ({ crudExpose }: CreateCrudOptionsProps): Promise<CreateCrudOptionsRet> {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {

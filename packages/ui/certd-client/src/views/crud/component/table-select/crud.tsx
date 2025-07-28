@@ -22,6 +22,9 @@ export default async function ({ crudExpose }: CreateCrudOptionsProps): Promise<
   };
 
   const crudOptionsOverride = {
+    container: {
+      is: "fs-layout-card"
+    },
     table: {
       scroll: {
         x: 2000
@@ -124,7 +127,8 @@ export default async function ({ crudExpose }: CreateCrudOptionsProps): Promise<
                 placeholder: "点击选择"
               },
               createCrudOptions: createCrudOptionsText,
-              crudOptionsOverride: crudOptionsOverride
+              crudOptionsOverride: crudOptionsOverride,
+              isSyncCreate: true
             }
           },
           column: {

@@ -112,7 +112,7 @@ function menuIcon(menu: MenuRecordRaw) {
 
       .vben-normal-menu__name,
       .vben-normal-menu__icon {
-        @apply text-primary-foreground font-semibold;
+        @apply font-semibold;
       }
     }
 
