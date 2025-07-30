@@ -54,7 +54,7 @@ async function login() {
     'redirectTo': 'https://www.51dns.com/domain',
     '_token': _token
   }
-  console.log(JSON.stringify(obj, null, 2))
+  // console.log(JSON.stringify(obj, null, 2)) // Avoid logging sensitive data
   const res2 = await instance.request({
     url: 'https://www.51dns.com/login',
     method: 'post',
