@@ -14,6 +14,7 @@
   },
   "scripts": {
     "start": "lerna bootstrap --hoist",
+    "start:server": "cd ./packages/ui/certd-server && npm start",
     "devb": "lerna run dev-build",
     "i-all": "lerna link && lerna exec npm install  ",
     "publish": "npm run prepublishOnly2  && lerna publish --force-publish=pro/plus-core --conventional-commits --create-release github && npm run afterpublishOnly && npm run commitAll",
