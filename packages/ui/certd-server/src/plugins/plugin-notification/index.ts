@@ -12,3 +12,4 @@ export * from './bark/index.js';
 export * from './feishu/index.js';
 export * from './dingtalk/index.js';
 export * from './vocechat/index.js';
+export * from './onebot/index.js';
