@@ -63,7 +63,8 @@ export class CodeService {
     randomStr: string,
     opts?: {
       duration?: number,
-      verificationType?: string
+      verificationType?: string,
+      verificationCodeLength?: number,
     },
   ) {
     if (!mobile) {
@@ -73,7 +74,8 @@ export class CodeService {
       throw new Error('randomStr不能为空');
     }
 
-    const duration = Math.max(Math.floor(Math.min(opts?.duration || 5, 15)), 1);
+    const verificationCodeLength =  Math.floor(Math.max(Math.min(opts?.verificationCodeLength || 4, 8), 4));
+    const duration = Math.floor(Math.max(Math.min(opts?.duration || 5, 15), 1));
 
     const sysSettings = await this.sysSettingsService.getPrivateSettings();
     if (!sysSettings.sms?.config?.accessId) {
@@ -87,7 +89,7 @@ export class CodeService {
       accessService: accessGetter,
       config: smsConfig,
     });
-    const smsCode = randomNumber(4);
+    const smsCode = randomNumber(verificationCodeLength);
     await sender.sendSmsCode({
       mobile,
       code: smsCode,
@@ -114,7 +116,8 @@ export class CodeService {
       title?: string,
       content?: string,
       duration?: number,
-      verificationType?: string
+      verificationType?: string,
+      verificationCodeLength?: number,
     },
   ) {
     if (!email) {
@@ -132,8 +135,10 @@ export class CodeService {
       }
     }
 
-    const code = randomNumber(4);
-    const duration = Math.max(Math.floor(Math.min(opts?.duration || 5, 15)), 1);
+    const verificationCodeLength =  Math.floor(Math.max(Math.min(opts?.verificationCodeLength || 4, 8), 4));
+    const duration = Math.floor(Math.max(Math.min(opts?.duration || 5, 15), 1));
+
+    const code = randomNumber(verificationCodeLength);
 
     const title = `【${siteTitle}】${!!opts?.title ? opts.title : '验证码'}`;
     const content = !!opts.content ? this.compile(opts.content)({code, duration}) : `您的验证码是${code}，请勿泄露`;
@@ -154,12 +159,12 @@ export class CodeService {
   /**
    * checkSms
    */
-  async checkSmsCode(opts: { mobile: string; phoneCode: string; smsCode: string; randomStr: string; verificationType?: string; throwError: boolean }) {
+  async checkSmsCode(opts: { mobile: string; phoneCode: string; smsCode: string; randomStr: string; verificationType?: string; throwError: boolean; errorNum?: number }) {
     const key = this.buildSmsCodeKey(opts.phoneCode, opts.mobile, opts.randomStr, opts.verificationType);
     if (isDev()) {
       return true;
     }
-    return this.checkValidateCode(key, opts.smsCode, opts.throwError);
+    return this.checkValidateCode(key, opts.smsCode, opts.throwError, opts.errorNum);
   }
 
   buildSmsCodeKey(phoneCode: string, mobile: string, randomStr: string, verificationType?: string) {
@@ -169,22 +174,38 @@ export class CodeService {
   buildEmailCodeKey(email: string, randomStr: string, verificationType?: string) {
     return ['email', verificationType, email, randomStr].filter(item => !!item).join(':');
   }
-  checkValidateCode(key: string, userCode: string, throwError = true) {
+  checkValidateCode(key: string, userCode: string, throwError = true, errorNum = 0) {
+    // 记录异常次数key
+    const err_num_key = key + ':err_num';
     //验证图片验证码
     const code = cache.get(key);
     if (code == null || code !== userCode) {
+      let maxRetryCount = false;
+      if (!!code && errorNum > 0) {
+        const err_num = cache.get(err_num_key) || 0
+        if(err_num >= errorNum - 1) {
+          maxRetryCount = true;
+          cache.delete(key);
+          cache.delete(err_num_key);
+        } else {
+          cache.set(err_num_key, err_num + 1, {
+            ttl: 30 * 60 * 1000
+          });
+        }
+      }
       if (throwError) {
-        throw new CodeErrorException('验证码错误');
+        throw new CodeErrorException(!maxRetryCount ? '验证码错误': '验证码错误请获取新的验证码');
       }
       return false;
     }
     cache.delete(key);
+    cache.delete(err_num_key);
     return true;
   }
 
-  checkEmailCode(opts: { randomStr: string; validateCode: string; email: string; verificationType?: string; throwError: boolean }) {
+  checkEmailCode(opts: { randomStr: string; validateCode: string; email: string; verificationType?: string; throwError: boolean; errorNum?: number }) {
     const key = this.buildEmailCodeKey(opts.email, opts.randomStr, opts.verificationType);
-    return this.checkValidateCode(key, opts.validateCode, opts.throwError);
+    return this.checkValidateCode(key, opts.validateCode, opts.throwError, opts.errorNum);
   }
 
   compile(templateString: string) {

@@ -16,6 +16,9 @@ export class SmsCodeReq {
 
   @Rule(RuleType.string().required().max(4))
   imgCode: string;
+
+  @Rule(RuleType.string())
+  verificationType: string;
 }
 
 export class EmailCodeReq {
@@ -31,6 +34,9 @@ export class EmailCodeReq {
   @Rule(RuleType.string())
   verificationType: string;
 }
+
+// 找回密码的验证码有效期
+const FORGOT_PASSWORD_CODE_DURATION = 3
 
 /**
  */
@@ -48,8 +54,18 @@ export class BasicController extends BaseController {
     @Body(ALL)
     body: SmsCodeReq
   ) {
+    const opts = {
+      verificationType: body.verificationType,
+      verificationCodeLength: undefined,
+      duration: undefined,
+    };
+    if(body?.verificationType === 'forgotPassword') {
+      opts.duration = FORGOT_PASSWORD_CODE_DURATION;
+      // opts.verificationCodeLength = 6; //部分厂商这里会设置参数长度这里就不改了
+    }
+
     await this.codeService.checkCaptcha(body.randomStr, body.imgCode);
-    await this.codeService.sendSmsCode(body.phoneCode, body.mobile, body.randomStr);
+    await this.codeService.sendSmsCode(body.phoneCode, body.mobile, body.randomStr, opts);
     return this.ok(null);
   }
 
@@ -60,6 +76,7 @@ export class BasicController extends BaseController {
   ) {
     const opts = {
       verificationType: body.verificationType,
+      verificationCodeLength: undefined,
       title: undefined,
       content: undefined,
       duration: undefined,
@@ -67,7 +84,8 @@ export class BasicController extends BaseController {
     if(body?.verificationType === 'forgotPassword') {
       opts.title = '找回密码';
       opts.content = '验证码：${code}。您正在找回密码，请输入验证码并完成操作。如非本人操作请忽略';
-      opts.duration = 3;
+      opts.duration = FORGOT_PASSWORD_CODE_DURATION;
+      opts.verificationCodeLength = 6;
     }
 
     await this.codeService.checkCaptcha(body.randomStr, body.imgCode);

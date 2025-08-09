@@ -28,6 +28,8 @@ export class LoginController extends BaseController {
     if(!sysSettings.selfServicePasswordRetrievalEnabled) {
       throw new CommonException('暂未开启自助找回');
     }
+    // 找回密码的验证码允许错误次数
+    const errorNum = 5;
 
     if(body.type === 'email') {
       this.codeService.checkEmailCode({
@@ -35,6 +37,7 @@ export class LoginController extends BaseController {
         email: body.input,
         randomStr: body.randomStr,
         validateCode: body.validateCode,
+        errorNum,
         throwError: true,
       });
     } else if(body.type === 'mobile') {
@@ -44,6 +47,7 @@ export class LoginController extends BaseController {
         randomStr: body.randomStr,
         phoneCode: body.phoneCode,
         smsCode: body.validateCode,
+        errorNum,
         throwError: true,
       });
     } else {

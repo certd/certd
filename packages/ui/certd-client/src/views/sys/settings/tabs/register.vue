@@ -11,6 +11,9 @@
       <a-form-item :label="t('certd.enableSelfRegistration')" :name="['public', 'registerEnabled']">
         <a-switch v-model:checked="formState.public.registerEnabled" />
       </a-form-item>
+      <a-form-item :label="t('certd.enableCommonSelfServicePasswordRetrieval')" :name="['public', 'selfServicePasswordRetrievalEnabled']">
+        <a-switch v-model:checked="formState.public.selfServicePasswordRetrievalEnabled" />
+      </a-form-item>
       <a-form-item :label="t('certd.enableUserValidityPeriod')" :name="['public', 'userValidTimeEnabled']">
         <div class="flex-o">
           <a-switch v-model:checked="formState.public.userValidTimeEnabled" :disabled="!settingsStore.isPlus" />

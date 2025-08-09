@@ -47,10 +47,6 @@
         <div class="helper" v-html="t('certd.commonCnameHelper')"></div>
       </a-form-item>
 
-      <a-form-item :label="t('certd.enableCommonSelfServicePasswordRetrieval')" :name="['public', 'selfServicePasswordRetrievalEnabled']">
-        <a-switch v-model:checked="formState.public.selfServicePasswordRetrievalEnabled" />
-      </a-form-item>
-
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
         <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
       </a-form-item>
