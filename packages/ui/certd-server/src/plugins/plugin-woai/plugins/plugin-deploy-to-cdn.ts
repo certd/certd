@@ -17,14 +17,14 @@ import { CertApplyPluginNames} from '@certd/plugin-cert';
 export class WoaiCdnPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: '接口地址(可留空)',
-    helper: '请填写我爱云的地址, 默认为 [API](https://console.edeg.sxhjgy.cn) 末尾请不要携带`/`',
+    helper: '请填写我爱云的地址, 默认为 [API](https://console.edge.ttzi.cn) 末尾请不要携带`/`',
     component: { name: 'a-input' },
     required: false,
   })
   baseApi?: string;
   @TaskInput({
     title: '证书ID',
-    helper: '请填写 [证书列表](https://console.edge.sxhjgy.cn/site/certificate) 中的证书的ID',
+    helper: '请填写 [证书列表](https://console.edge.ttzi.cn/site/certificate) 中的证书的ID',
     component: { name: 'a-input' },
     required: true,
   })
@@ -73,9 +73,9 @@ export class WoaiCdnPlugin extends AbstractTaskPlugin {
     const { baseApi, certId, cert, accessId } = this;
     const access = (await this.getAccess(accessId)) as WoaiAccess;
     // 使用默认值或用户输入的值
-    const apiBase = baseApi || 'https://console.edeg.sxhjgy.cn';
+    const apiBase = baseApi || 'https://console.edge.ttzi.cn';
     // 登录获取token
-    const loginResponse = await this.doRequestApi(`${apiBase}/account/login`, {
+    const loginResponse = await this.doRequestApi(`${apiBase}/login`, {
       username: access.username,
       password: access.password,
     });
