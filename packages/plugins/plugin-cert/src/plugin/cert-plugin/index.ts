@@ -280,6 +280,29 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   certProfile!: string;
 
   @TaskInput({
+    title: "首选链",
+    value: "ISRG Root X1",
+    component: {
+      name: "a-select",
+      vModel: "value",
+      options: [
+        { value: "ISRG Root X1", label: "ISRG Root X1" },
+        { value: "ISRG Root X2", label: "ISRG Root X2" },
+      ],
+    },
+    helper: "仅 Let's Encrypt 可选，默认为 ISRG Root X1",
+    required: false,
+    mergeScript: `
+    return {
+        show: ctx.compute(({form})=>{
+            return form.sslProvider === 'letsencrypt'
+        })
+    }
+    `,
+  })
+  preferredChain!: string;
+
+  @TaskInput({
     title: "使用代理",
     value: false,
     component: {
@@ -430,6 +453,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         isTest: false,
         privateKeyType: this.privateKeyType,
         profile: this.certProfile,
+        preferredChain: this.preferredChain,
       });
 
       const certInfo = this.formatCerts(cert);

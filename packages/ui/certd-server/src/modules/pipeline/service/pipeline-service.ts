@@ -934,6 +934,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
                     "sslProvider": "letsencrypt",
                     "privateKeyType": "rsa_2048",
                     "certProfile": "classic",
+                    "preferredChain": "ISRG Root X1",
                     "useProxy": false,
                     "skipLocalVerify": false,
                     "maxCheckRetryCount": 20,
