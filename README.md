@@ -1,6 +1,6 @@
 # Certd
 
-[English](./README_en.md) | [中文](./README.md)
+中文 | [English](./README_en.md)
 
 Certd® 是一个免费的全自动证书管理系统，让你的网站证书永不过期。   
 后缀d取自linux守护进程的命名风格，意为证书守护进程
