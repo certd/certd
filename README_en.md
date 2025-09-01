@@ -1,6 +1,6 @@
 # Certd
 
-[English](./README_en.md) | [中文](./README.md)
+[中文](./README.md) | English
 
 Certd® is a free, fully automated certificate management system that ensures your website certificates never expire. The suffix 'd' is inspired by the naming convention of Linux daemons, representing a certificate daemon.
 
