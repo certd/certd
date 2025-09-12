@@ -35,6 +35,7 @@ export class CertReader {
 
   detail: CertificateInfo;
   //毫秒时间戳
+  effective: number;
   expires: number;
   constructor(certInfo: CertInfo) {
     this.cert = certInfo;
@@ -52,8 +53,9 @@ export class CertReader {
     }
 
     try {
-      const { detail, expires } = this.getCrtDetail(this.cert.crt);
+      const { detail, effective, expires } = this.getCrtDetail(this.cert.crt);
       this.detail = detail;
+      this.effective = effective.getTime();
       this.expires = expires.getTime();
     } catch (e) {
       throw new Error("证书解析失败:" + e.message);
@@ -102,8 +104,9 @@ export class CertReader {
 
   static readCertDetail(crt: string) {
     const detail = crypto.readCertificateInfo(crt.toString());
+    const effective = detail.notBefore;
     const expires = detail.notAfter;
-    return { detail, expires };
+    return { detail, effective, expires };
   }
 
   getAllDomains() {

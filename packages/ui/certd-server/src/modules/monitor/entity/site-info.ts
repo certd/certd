@@ -26,6 +26,8 @@ export class SiteInfoEntity {
   @Column({ name: 'cert_provider', comment: '证书颁发机构', length: 100 })
   certProvider: string;
 
+  @Column({ name: 'cert_effective_time', comment: '证书生效时间' })
+  certEffectiveTime: number;
   @Column({ name: 'cert_expires_time', comment: '证书到期时间' })
   certExpiresTime: number;
   @Column({ name: 'last_check_time', comment: '上次检查时间' })

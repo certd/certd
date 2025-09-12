@@ -30,6 +30,9 @@ export class CertInfoEntity {
   @Column({ name: 'cert_provider', comment: '证书颁发机构' })
   certProvider: string;
 
+  @Column({ name: 'effective_time', comment: '生效时间' })
+  effectiveTime: number;
+
   @Column({ name: 'expires_time', comment: '过期时间' })
   expiresTime: number;
 

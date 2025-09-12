@@ -134,6 +134,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       if (!certi) {
         throw new Error("没有发现证书");
       }
+      const effective = certi.valid_from;
       const expires = certi.valid_to;
       const allDomains = certi.subjectaltname?.replaceAll("DNS:", "").split(",") || [];
       const mainDomain = certi.subject?.CN;
@@ -149,12 +150,13 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         certDomains: domains.join(","),
         certStatus: status,
         certProvider: issuer,
+        certEffectiveTime: dayjs(effective).valueOf(),
         certExpiresTime: dayjs(expires).valueOf(),
         lastCheckTime: dayjs().valueOf(),
         error: null,
         checkStatus: "ok"
       };
-      logger.info(`测试站点成功：id=${updateData.id},site=${site.name},expiresTime=${updateData.certExpiresTime}`)
+      logger.info(`测试站点成功：id=${updateData.id},site=${site.name},certEffectiveTime=${updateData.certEffectiveTime},expiresTime=${updateData.certExpiresTime}`)
       if (site.ipCheck) {
         delete updateData.checkStatus
       }

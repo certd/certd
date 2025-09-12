@@ -366,21 +366,47 @@ export default function ({ crudExpose, context: { groupDictRef, selectedRowKeys 
           },
           column: {
             cellRender({ row }) {
-              const value = row.lastVars?.certExpiresTime;
-              if (!value) {
+              const {
+                certEffectiveTime: effectiveTime,
+                certExpiresTime: expiresTime,
+              } = row?.lastVars || {};
+              if (!expiresTime) {
                 return "-";
               }
-              const expireDate = dayjs(value).format("YYYY-MM-DD");
-              const leftDays = dayjs(value).diff(dayjs(), "day");
+              // 申请时间 ps:此处为证书在certd创建的时间而非实际证书申请时间
+              const applyDate = dayjs(effectiveTime ?? Date.now()).format("YYYY-MM-DD");
+              // 失效时间
+              const expireDate = dayjs(expiresTime).format("YYYY-MM-DD");
+              // 有效天数 ps:此处证书最小设置为90d
+              const effectiveDays = Math.max(90, dayjs(expiresTime).diff(applyDate, "day"));
+              // 距离失效时间剩余天数
+              const leftDays = dayjs(expiresTime).diff(dayjs(), "day");
               const color = leftDays < 20 ? "red" : "#389e0d";
-              const percent = (leftDays / 90) * 100;
+              const percent = (leftDays / effectiveDays) * 100;
               const textColor = leftDays < 20 ? "red" : leftDays > 60 ? "#389e0d" : "";
               const format = () => {
                 return <span style={{ color: textColor }}>{`${leftDays}${t("certd.days")}`}</span>;
               };
+              // console.log('cellRender', 'effectiveDays', effectiveDays, 'expiresTime', expiresTime, 'applyTime', applyTime, 'percent', percent, row)
               return <a-progress title={expireDate + t("certd.expires")} percent={percent} strokeColor={color} format={format} />;
             },
             width: 150,
+          },
+        },
+        "lastVars.certEffectiveTime": {
+          title: t("certd.fields.effectiveTime"),
+          search: {
+            show: false,
+          },
+          type: "datetime",
+          form: {
+            show: false,
+          },
+          column: {
+            sorter: false,
+            show: false,
+            width: 150,
+            align: "center",
           },
         },
         "lastVars.certExpiresTime": {

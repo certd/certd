@@ -345,8 +345,36 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
           },
         },
+        certEffectiveTime: {
+          title: t("certd.monitor.certEffectiveTime"),
+          search: {
+            show: false,
+          },
+          type: "datetime",
+          form: {
+            show: false,
+          },
+          column: {
+            sorter: true,
+            width: 155,
+          },
+        },
         certExpiresTime: {
           title: t("certd.monitor.certExpiresTime"),
+          search: {
+            show: false,
+          },
+          type: "datetime",
+          form: {
+            show: false,
+          },
+          column: {
+            sorter: true,
+            width: 155,
+          },
+        },
+        remainingValidity: {
+          title: t("certd.monitor.remainingValidity"),
           search: {
             show: false,
           },
@@ -355,15 +383,26 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: false,
           },
           column: {
-            sorter: true,
-            cellRender({ value }) {
-              if (!value) {
+            conditionalRender: false,
+            cellRender({ row }) {
+              const {
+                certEffectiveTime: effectiveTime,
+                certExpiresTime: expiresTime,
+              } = row || {};
+              if (!expiresTime) {
                 return "-";
               }
-              const expireDate = dayjs(value).format("YYYY-MM-DD");
-              const leftDays = dayjs(value).diff(dayjs(), "day");
+              // 申请时间 ps:此处为证书在certd创建的时间而非实际证书申请时间
+              const applyDate = dayjs(effectiveTime ?? Date.now()).format("YYYY-MM-DD");
+              // 失效时间
+              const expireDate = dayjs(expiresTime).format("YYYY-MM-DD");
+              // 有效天数 ps:此处证书最小设置为90d
+              const effectiveDays = Math.max(90, dayjs(expiresTime).diff(applyDate, "day"));
+              // 距离失效时间剩余天数
+              const leftDays = dayjs(expiresTime).diff(dayjs(), "day");
               const color = leftDays < 20 ? "red" : "#389e0d";
-              const percent = (leftDays / 90) * 100;
+              const percent = (leftDays / effectiveDays) * 100;
+              // console.log('cellRender', 'effectiveDays', effectiveDays, 'expiresTime', expiresTime, 'applyTime', applyTime, 'percent', percent, row)
               return <a-progress title={expireDate + t("certd.monitor.expired")} percent={percent} strokeColor={color} format={(percent: number) => `${leftDays}${t("certd.monitor.days")}`} />;
             },
           },

@@ -164,6 +164,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     bean.domains = domains.join(',');
     bean.domain = domains[0];
     bean.domainCount = domains.length;
+    bean.effectiveTime = certReader.effective;
     bean.expiresTime = certReader.expires;
     bean.certProvider = certReader.detail.issuer.commonName;
     bean.userId = userId

@@ -99,6 +99,7 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
     const cert: CertInfo = certReader.toCertInfo();
     this.cert = cert;
 
+    this._result.pipelineVars.certEffectiveTime = dayjs(certReader.detail.notBefore).valueOf();
     this._result.pipelineVars.certExpiresTime = dayjs(certReader.detail.notAfter).valueOf();
     if (!this._result.pipelinePrivateVars) {
       this._result.pipelinePrivateVars = {};
