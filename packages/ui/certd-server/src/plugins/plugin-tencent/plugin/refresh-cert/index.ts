@@ -14,8 +14,8 @@ import { omit } from "lodash-es";
 @IsTaskPlugin({
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名
   name: "TencentRefreshCert",
-  title: "腾讯云-更新证书(Id不变)",
-  desc: "根据证书id一键更新腾讯云证书并自动部署（Id不变），注意该接口为腾讯云白名单功能，非白名单用户无法使用该功能",
+  title: "腾讯云-更新证书",
+  desc: "根据证书id一键更新腾讯云证书并自动部署",
   icon: "svg:icon-tencentcloud",
   //插件分组
   group: pluginGroups.tencent.key,
@@ -55,6 +55,18 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
   })
   accessId!: string;
   //
+
+  @TaskInput({
+    title: '更新证书 ID',
+    value: false,
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+      placeholder: `是否更新证书 ID (在不更新时要求腾讯云白名单)`,
+    },
+    required: false,
+  })
+  updateCertId = false;
 
   @TaskInput(
     createRemoteSelectInputDefine({
@@ -156,13 +168,24 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
           break;
         }
         retryCount++
-        deployRes = await sslClient.UploadUpdateCertificateInstance({
-          OldCertificateId: certId,
-          "ResourceTypes": resourceTypes,
-          "CertificatePublicKey": this.cert.crt,
-          "CertificatePrivateKey": this.cert.key,
-          "ResourceTypesRegions":resourceTypesRegions
-        });
+        if (!this.updateCertId) {
+          deployRes = await sslClient.UploadUpdateCertificateInstance({
+            OldCertificateId: certId,
+            "ResourceTypes": resourceTypes,
+            "CertificatePublicKey": this.cert.crt,
+            "CertificatePrivateKey": this.cert.key,
+            "ResourceTypesRegions":resourceTypesRegions
+          });
+        } else {
+          deployRes = await sslClient.UpdateCertificateInstance({
+            OldCertificateId: certId,
+            "ResourceTypes": resourceTypes,
+            "CertificatePublicKey": this.cert.crt,
+            "CertificatePrivateKey": this.cert.key,
+            "ResourceTypesRegions":resourceTypesRegions
+          })
+        }
+
         if (deployRes && deployRes.DeployRecordId>0){
           this.logger.info(`任务创建成功，开始检查结果：${JSON.stringify(deployRes)}`);
           break;
@@ -181,22 +204,33 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
         }
         retryCount++
         //查询部署状态
-        const deployStatus = await sslClient.DescribeHostUploadUpdateRecordDetail({
-          "DeployRecordId":deployRes.DeployRecordId
-        })
-        const details = deployStatus.DeployRecordDetail
-        let allSuccess = true
-        for (const item of details) {
-          this.logger.info(`查询结果：${JSON.stringify(omit(item,"RecordDetailList"))}`);
-          if (item.Status === 2) {
-            throw new Error(`任务失败：${JSON.stringify(item.RecordDetailList)}`)
-          }else if (item.Status !== 1) {
-            //如果不是成功状态
-            allSuccess = false
+        if (!this.updateCertId) {
+          const deployStatus = await sslClient.DescribeHostUploadUpdateRecordDetail({
+            "DeployRecordId":deployRes.DeployRecordId
+          })
+          const details = deployStatus.DeployRecordDetail
+          let allSuccess = true
+          for (const item of details) {
+            this.logger.info(`查询结果：${JSON.stringify(omit(item,"RecordDetailList"))}`);
+            if (item.Status === 2) {
+              throw new Error(`任务失败：${JSON.stringify(item.RecordDetailList)}`)
+            }else if (item.Status !== 1) {
+              //如果不是成功状态
+              allSuccess = false
+            }
           }
-        }
-        if (allSuccess) {
-          break;
+          if (allSuccess) {
+            break;
+          }
+        } else {
+          const deployStatus = await sslClient.DescribeHostUpdateRecordDetail({
+            "DeployRecordId":deployRes.DeployRecordId
+          })
+
+          this.logger.info(`更新证书状态：总共 ${deployStatus.TotalCount}, 成功 ${deployStatus.SuccessTotalCount}, 失败 ${deployStatus.FailedTotalCount}, 运行中 ${deployStatus.RunningTotalCount}`);
+          if (deployStatus.RunningTotalCount === 0 && deployRes.PendingTotalCount === 0) {
+            break
+          }
         }
         await this.ctx.utils.sleep(10000);
       }
