@@ -90,17 +90,8 @@ export class OidcOauthProvider extends BaseAddon implements IOauthProvider {
       code_challenge,
       code_challenge_method: 'S256',
       state,
+      nonce: client.randomNonce(),
     }
-
-    // if (!config.serverMetadata().supportsPKCE()) {
-    //     /**
-    //      * We cannot be sure the server supports PKCE so we're going to use state too.
-    //      * Use of PKCE is backwards compatible even if the AS doesn't support it which
-    //      * is why we're using it regardless. Like PKCE, random state must be generated
-    //      * for every redirect to the authorization_endpoint.
-    //      */
-    //     parameters.state = client.randomState()
-    // }
 
     let redirectTo = client.buildAuthorizationUrl(config, parameters)
     return {
@@ -108,6 +99,7 @@ export class OidcOauthProvider extends BaseAddon implements IOauthProvider {
       ticketValue: {
         codeVerifier: code_verifier,
         state,
+        nonce: parameters.nonce,
       },
     };
   }
@@ -120,8 +112,9 @@ export class OidcOauthProvider extends BaseAddon implements IOauthProvider {
       config,
       req.currentURL,
       {
-        expectedState: client.skipStateCheck ,
+        expectedState: req.ticketValue.state,
         pkceCodeVerifier: req.ticketValue.codeVerifier,
+        expectedNonce: req.ticketValue.nonce,
       }
     )
 
