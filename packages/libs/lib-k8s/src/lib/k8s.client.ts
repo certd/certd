@@ -1,4 +1,4 @@
-import { CoreV1Api, KubeConfig, NetworkingV1Api, V1Ingress, V1Secret } from "@kubernetes/client-node";
+import { CoreV1Api, KubeConfig, NetworkingV1Api, V1Ingress, V1Secret, KubernetesObjectApi, loadYaml, KubernetesObject } from "@kubernetes/client-node";
 import dns from "dns";
 import { ILogger } from "@certd/basic";
 import { merge } from "lodash-es";
@@ -27,6 +27,11 @@ export class K8sClient {
   }
 
   init() {
+    const kubeconfig = this.getKubeConfig();
+    this.client = kubeconfig.makeApiClient(CoreV1Api);
+  }
+
+  getKubeConfig() {
     const kubeconfig = new KubeConfig();
     kubeconfig.loadFromString(this.kubeConfigStr);
     this.kubeconfig = kubeconfig;
@@ -41,16 +46,35 @@ export class K8sClient {
     } catch (e) {
       this.logger.warn("skipTLSVerify error", e);
     }
+    return kubeconfig;
+  }
 
-    this.client = kubeconfig.makeApiClient(CoreV1Api);
+  getKubeClient() {
+    const kc = this.getKubeConfig();
+    const client = KubernetesObjectApi.makeApiClient(kc);
+    return client;
+  }
 
-    // const reqOpts = { kubeconfig, request: {} } as any;
-    // if (this.lookup) {
-    //   reqOpts.request.lookup = this.lookup;
-    // }
-    //
-    // const backend = new Request(reqOpts);
-    // this.client = new Client({ backend, version: '1.13' });
+  async apply(manifest: string) {
+    const yml = loadYaml<KubernetesObject>(manifest);
+    const client = this.getKubeClient();
+    try {
+      await client.create(yml);
+    } catch (e) {
+      this.logger.error("apply error", e.response?.body);
+      if (e.response?.body?.reason === "AlreadyExists") {
+        //patch
+        this.logger.info("patch existing resource: ", yml.metadata?.name);
+        const existing = await client.read(yml as any);
+        if (!yml.metadata) {
+          yml.metadata = {};
+        }
+        yml.metadata.resourceVersion = existing.body.metadata.resourceVersion;
+        await client.patch(yml);
+        return;
+      }
+      throw e;
+    }
   }
 
   /**

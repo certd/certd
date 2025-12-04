@@ -178,17 +178,12 @@ export class DeployCertToMailPlugin extends AbstractTaskPlugin {
   }
 
   compile(templateString: string) {
-  // 1. 转义所有HTML特殊字符
-  
-  // 2. 使用更安全的方式替换变量
-  return function(data) {
-    return templateString.replace(/\${(.*?)}/g, (match, key) => {
-      // 3. 安全地获取属性，避免原型链访问
-      const value = get(data, key, '');
-      // 4. 对值也进行转义
-      return String(value);
-    });
-  };
-}
+    return function(data) {
+      return templateString.replace(/\${(.*?)}/g, (match, key) => {
+        const value = get(data, key, '');
+        return String(value);
+      });
+    };
+  }
 }
 new DeployCertToMailPlugin();
