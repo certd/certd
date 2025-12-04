@@ -168,6 +168,7 @@ export class K8sClient {
     const oldIngress = await client.readNamespacedIngress(ingressName, namespace);
     const newIngress = merge(oldIngress.body, opts.body);
     const res = await client.replaceNamespacedIngress(ingressName, namespace, newIngress);
+
     this.logger.info("ingress patched", opts.body);
     return res;
   }
