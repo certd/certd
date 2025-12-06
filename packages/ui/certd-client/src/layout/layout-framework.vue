@@ -75,7 +75,7 @@
         <div>
           <span v-if="!settingStore.isComm">
             <span>Powered by</span>
-            <a> handsfree.work </a>
+            <a> handfree.work </a>
           </span>
 
           <template v-if="siteInfo.licenseTo">

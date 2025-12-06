@@ -164,7 +164,7 @@ const steps = ref<Step[]>([
       {
         image: "/static/doc/images/15-1-email.png",
         title: t("guide.scheduleAndEmailTask.setEmailNotification"),
-        descriptions: [t("guide.scheduleAndEmailTask.suggestErrorAndRecoveryEmails"), t("guide.scheduleAndEmailTask.basicVersionNeedsMailServer")],
+        descriptions: [t("guide.scheduleAndEmailTask.suggestErrorAndRecoveryEmails")],
       },
       {
         title: t("guide.scheduleAndEmailTask.tutorialEndTitle"),

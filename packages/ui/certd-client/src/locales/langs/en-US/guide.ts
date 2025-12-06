@@ -64,7 +64,6 @@ export default {
     recommendDailyRun: "Recommend configuring to run once daily; new certs requested 35 days before expiry and auto-skipped otherwise",
     setEmailNotification: "Set Email Notifications",
     suggestErrorAndRecoveryEmails: "Suggest listening for 'On Error' and 'Error to Success' to quickly troubleshoot failures (basic version requires mail server setup)",
-    basicVersionNeedsMailServer: "(basic version requires configuring mail server)",
     tutorialEndTitle: "Tutorial End",
     thanksForWatching: "Thank you for watching, hope it helps you",
   },
