@@ -64,7 +64,8 @@
 | 60.| **新网授权** |  | 
 | 61.| **新网授权（代理方式）** |  | 
 | 62.| **新网互联授权** | 仅支持代理账号，ip需要加入白名单 | 
-| 63.| **雨云授权** | https://app.rainyun.com/ | 
+| 63.| **中国移动CND授权** |  | 
+| 64.| **雨云授权** | https://app.rainyun.com/ | 
 
 <style module>
 table th:first-of-type {

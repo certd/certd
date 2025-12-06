@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.15](https://github.com/certd/certd/compare/v1.37.14...v1.37.15) (2025-12-06)
+
+### Bug Fixes
+
+* oidc 支持nonce ([a5ca411](https://github.com/certd/certd/commit/a5ca41131b308b36b17ca359d9709ea8e9b7cee1))
+
+### Performance Improvements
+
+* 第三方登录支持gitee ([5cee7d4](https://github.com/certd/certd/commit/5cee7d44f17bd36972f477bc1f270999da558d05))
+* 邮件模版安全优化 ([adca151](https://github.com/certd/certd/commit/adca151e4f07a4c6a2a753bfa48ee0d4d6469fd2))
+* 支持部署到中国移动CDN ([4351304](https://github.com/certd/certd/commit/43513049beff407558d2a234415521464165cebc))
+* 支持k8s apply ([d55954a](https://github.com/certd/certd/commit/d55954a36391ebe6a9397ff7dcfb710193ac5e34))
+
 ## [1.37.14](https://github.com/certd/certd/compare/v1.37.13...v1.37.14) (2025-12-02)
 
 ### Bug Fixes
