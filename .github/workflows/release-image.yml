@@ -121,10 +121,12 @@ jobs:
       - name: deploy-certd-doc
         uses: tyrrrz/action-http-request@master
         with:
-          url: http://flow-openapi.aliyun.com/pipeline/webhook/IiSxLDp9aOhgDUxJPytv
+          url: ${{ secrets.WEBHOOK_CERTD_DOC }}
           method: POST
           body: |
-            {}
+            {
+              "CERTD_VERSION": "1.0.0"
+            }
           headers: |
             Content-Type: application/json
           retry-count: 3

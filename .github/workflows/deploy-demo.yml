@@ -44,7 +44,8 @@ jobs:
       - name: deploy-certd-demo
         uses: tyrrrz/action-http-request@master
         with:
-          url: http://flow-openapi.aliyun.com/pipeline/webhook/lzCzlGrLCOHQaTMMt0mG
+          # 通过webhook 触发 certd-demo来部署
+          url: ${{ secrets.WEBHOOK_CERTD_DEMO }}
           method: POST
           headers: |
             Content-Type: application/json
