@@ -46,7 +46,7 @@ importers:
   packages/core/acme-client:
     dependencies:
       '@certd/basic':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../basic
       '@peculiar/x509':
         specifier: ^1.11.0
@@ -210,10 +210,10 @@ importers:
   packages/core/pipeline:
     dependencies:
       '@certd/basic':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../basic
       '@certd/plus-core':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../pro/plus-core
       dayjs:
         specifier: ^1.11.7
@@ -409,7 +409,7 @@ importers:
   packages/libs/lib-k8s:
     dependencies:
       '@certd/basic':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/basic
       '@kubernetes/client-node':
         specifier: 0.21.0
@@ -449,19 +449,19 @@ importers:
   packages/libs/lib-server:
     dependencies:
       '@certd/acme-client':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../pro/plus-core
       '@midwayjs/cache':
         specifier: 3.14.0
@@ -607,16 +607,16 @@ importers:
   packages/plugins/plugin-cert:
     dependencies:
       '@certd/acme-client':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../plugin-lib
       '@google-cloud/publicca':
         specifier: ^1.3.0
@@ -695,10 +695,10 @@ importers:
         specifier: ^3.787.0
         version: 3.810.0(aws-crt@1.26.2)
       '@certd/basic':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/pipeline
       '@kubernetes/client-node':
         specifier: 0.21.0
@@ -783,19 +783,19 @@ importers:
   packages/pro/commercial-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/basic
       '@certd/lib-server':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../libs/lib-server
       '@certd/pipeline':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/pipeline
       '@certd/plugin-plus':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../plugin-plus
       '@certd/plus-core':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../plus-core
       '@midwayjs/core':
         specifier: 3.20.11
@@ -880,22 +880,22 @@ importers:
         specifier: ^1.0.2
         version: 1.0.3
       '@certd/basic':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/basic
       '@certd/lib-k8s':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../libs/lib-k8s
       '@certd/pipeline':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/pipeline
       '@certd/plugin-cert':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../plugins/plugin-cert
       '@certd/plugin-lib':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../plus-core
       ali-oss:
         specifier: ^6.21.0
@@ -998,7 +998,7 @@ importers:
   packages/pro/plus-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/basic
       dayjs:
         specifier: ^1.11.7
@@ -1080,20 +1080,20 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       '@fast-crud/editor-code':
-        specifier: ^1.27.6
-        version: 1.27.6
+        specifier: ^1.27.7
+        version: 1.27.7
       '@fast-crud/fast-crud':
-        specifier: ^1.27.6
-        version: 1.27.6(vue@3.5.14(typescript@5.8.3))
+        specifier: ^1.27.7
+        version: 1.27.7(vue@3.5.14(typescript@5.8.3))
       '@fast-crud/fast-extends':
-        specifier: ^1.27.6
-        version: 1.27.6(aws-crt@1.26.2)(vue@3.5.14(typescript@5.8.3))
+        specifier: ^1.27.7
+        version: 1.27.7(aws-crt@1.26.2)(vue@3.5.14(typescript@5.8.3))
       '@fast-crud/ui-antdv4':
-        specifier: ^1.27.6
-        version: 1.27.6
+        specifier: ^1.27.7
+        version: 1.27.7
       '@fast-crud/ui-interface':
-        specifier: ^1.27.6
-        version: 1.27.6
+        specifier: ^1.27.7
+        version: 1.27.7
       '@iconify/tailwind':
         specifier: ^1.2.0
         version: 1.2.0
@@ -1294,10 +1294,10 @@ importers:
         version: 0.1.3(zod@3.24.4)
     devDependencies:
       '@certd/lib-iframe':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../libs/lib-iframe
       '@certd/pipeline':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/pipeline
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -1480,46 +1480,46 @@ importers:
         specifier: ^3.705.0
         version: 3.810.0(aws-crt@1.26.2)
       '@certd/acme-client':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/basic
       '@certd/commercial-core':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../pro/commercial-core
       '@certd/cv4pve-api-javascript':
         specifier: ^8.4.2
         version: 8.4.2
       '@certd/jdcloud':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../libs/lib-jdcloud
       '@certd/lib-huawei':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../libs/lib-huawei
       '@certd/lib-k8s':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../libs/lib-k8s
       '@certd/lib-server':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../libs/lib-server
       '@certd/midway-flyway-js':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../libs/midway-flyway-js
       '@certd/pipeline':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../core/pipeline
       '@certd/plugin-cert':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../plugins/plugin-cert
       '@certd/plugin-lib':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../plugins/plugin-lib
       '@certd/plugin-plus':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../pro/plugin-plus
       '@certd/plus-core':
-        specifier: ^1.37.12
+        specifier: ^1.37.14
         version: link:../../pro/plus-core
       '@huaweicloud/huaweicloud-sdk-cdn':
         specifier: ^3.1.120
@@ -3411,20 +3411,20 @@ packages:
     resolution: {integrity: sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  '@fast-crud/editor-code@1.27.6':
-    resolution: {integrity: sha512-ynEfltaR11wVDwZjwMDlgKa7B/oudyEG5rgX8uUQbCcFb13tXArz/3KButB3+kaqQWK/jNakPhb/oM1lUkjv7g==}
+  '@fast-crud/editor-code@1.27.7':
+    resolution: {integrity: sha512-5gDHH7+lMEQae9h2+LHWPNyS4CCbjYzO1sSKNXew/20FAtxoIXHGHsXO6XnYXO/+yi76Z0wpgKR1zwUBjtC7kA==}
 
-  '@fast-crud/fast-crud@1.27.6':
-    resolution: {integrity: sha512-V4sma2wWFLnivJT/vxEsSX5A80IRRppD6oSq935BlQ4a8tTuZ26QNNplmhL1L6Hp5NWDBDSxKfBIuJmTMBzm4A==}
+  '@fast-crud/fast-crud@1.27.7':
+    resolution: {integrity: sha512-0w2xSl/tuc1uQRBKWVzZMOZrWJ6CQB2V0/Z7sKwvSpmboTAy4vqv1Pu77wVLqVQRcvf2YN4eoP5kpANoYOu7ZA==}
 
-  '@fast-crud/fast-extends@1.27.6':
-    resolution: {integrity: sha512-85Eu7JuAQN9eRHi9vL9gunIApgayBrK9z6RIcPp0jY41nq5pKZA0DEQoU7jy1PL0bhvbtj9E22bDaA7rXqbTcw==}
+  '@fast-crud/fast-extends@1.27.7':
+    resolution: {integrity: sha512-ktsy0bZEYHRqFBb2kBFwGIG0wwI+YHgL0t7ka0SsPcS5n284cidHKfFMuli/ZvArRil5DefTFtZEjI4VLgloWg==}
 
-  '@fast-crud/ui-antdv4@1.27.6':
-    resolution: {integrity: sha512-Eszzn6KgLy9TrjsJOfe3FFu2yMFF/oslCwiy8jknbuiZs/PUOhIhdQgQAn5hwmqTas/T62C/9pje5DVbgOUbNA==}
+  '@fast-crud/ui-antdv4@1.27.7':
+    resolution: {integrity: sha512-Hysw+rECmgnZZENym9l46BlsT/c1uGCCjebQYZFfCFL0pyI4gLv5cdDdcwL5nB5pZZPHlmzCtCUEXGxWc+JCwg==}
 
-  '@fast-crud/ui-interface@1.27.6':
-    resolution: {integrity: sha512-T6Fgwe1WUWoYMsK0uIZu4fbtaxN5IngUy/nikPREwHTePHS6br9vQTFefG8bZv5e+L381TIETXzfU70RoSJLGg==}
+  '@fast-crud/ui-interface@1.27.7':
+    resolution: {integrity: sha512-tcxFrdxoRkgd0TROJJEOn9BNLrE4siLli1NB+2OOVpM00Z/+tS06eaMwBnGtRau4f1o/qg0XgHJwjCHTcTCD8Q==}
 
   '@fidm/asn1@1.0.4':
     resolution: {integrity: sha512-esd1jyNvRb2HVaQGq2Gg8Z0kbQPXzV9Tq5Z14KNIov6KfFD6PTaRIO8UpcsYiTNzOqJpmyzWgVTrUwFV3UF4TQ==}
@@ -15325,14 +15325,14 @@ snapshots:
 
   '@eslint/js@8.57.0': {}
 
-  '@fast-crud/editor-code@1.27.6':
+  '@fast-crud/editor-code@1.27.7':
     dependencies:
       js-yaml: 4.1.0
       lodash-es: 4.17.21
       monaco-editor: 0.52.2
       monaco-yaml: 5.4.0(monaco-editor@0.52.2)
 
-  '@fast-crud/fast-crud@1.27.6(vue@3.5.14(typescript@5.8.3))':
+  '@fast-crud/fast-crud@1.27.7(vue@3.5.14(typescript@5.8.3))':
     dependencies:
       '@iconify/types': 2.0.0
       file-saver: 2.0.5
@@ -15342,7 +15342,7 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@fast-crud/fast-extends@1.27.6(aws-crt@1.26.2)(vue@3.5.14(typescript@5.8.3))':
+  '@fast-crud/fast-extends@1.27.7(aws-crt@1.26.2)(vue@3.5.14(typescript@5.8.3))':
     dependencies:
       '@aws-sdk/client-s3': 3.810.0(aws-crt@1.26.2)
       '@aws-sdk/s3-request-presigner': 3.810.0
@@ -15372,9 +15372,9 @@ snapshots:
       - utf-8-validate
       - vue
 
-  '@fast-crud/ui-antdv4@1.27.6': {}
+  '@fast-crud/ui-antdv4@1.27.7': {}
 
-  '@fast-crud/ui-interface@1.27.6':
+  '@fast-crud/ui-interface@1.27.7':
     dependencies:
       lodash-es: 4.17.21
 
