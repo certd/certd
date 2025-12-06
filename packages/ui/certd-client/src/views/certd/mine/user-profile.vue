@@ -16,12 +16,14 @@
         <a-descriptions-item :label="t('authentication.email')">{{ userInfo.email }}</a-descriptions-item>
         <a-descriptions-item :label="t('authentication.phoneNumber')">{{ userInfo.phoneCode }}{{ userInfo.mobile }}</a-descriptions-item>
         <a-descriptions-item v-if="settingStore.sysPublic.oauthEnabled && settingStore.isPlus" label="第三方账号绑定">
-          <div v-for="item in computedOauthBounds" :key="item.name" class="flex items-center gap-2 mb-2">
-            <fs-icon :icon="item.icon" class="mr-2 text-blue-500" />
-            <span class="mr-2 w-36">{{ item.title }}</span>
-            <a-button v-if="item.bound" type="primary" danger @click="unbind(item.name)">解绑</a-button>
-            <a-button v-else type="primary" @click="bind(item.name)">绑定</a-button>
-          </div>
+          <template v-for="item in computedOauthBounds" :key="item.name">
+            <div v-if="item.addonId" class="flex items-center gap-2 mb-2">
+              <fs-icon :icon="item.icon" class="mr-2 text-blue-500 w-5 flex justify-center items-center" />
+              <span class="mr-2 w-36">{{ item.title }}</span>
+              <a-button v-if="item.bound" type="primary" danger @click="unbind(item.name)">解绑</a-button>
+              <a-button v-else type="primary" @click="bind(item.name)">绑定</a-button>
+            </div>
+          </template>
         </a-descriptions-item>
         <a-descriptions-item :label="t('common.handle')">
           <a-button type="primary" @click="doUpdate">{{ t("authentication.updateProfile") }}</a-button>
@@ -40,6 +42,7 @@ import { useI18n } from "/src/locales";
 import { useUserProfile } from "./use";
 import { Modal } from "ant-design-vue";
 import { useSettingStore } from "/@/store/settings";
+import { isEmpty } from "lodash-es";
 
 const { t } = useI18n();
 

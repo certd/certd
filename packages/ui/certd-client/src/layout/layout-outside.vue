@@ -74,6 +74,7 @@ const sysPublic: Ref<SysPublicSetting> = computed(() => {
   .login-container {
     width: 100%;
     height: 100%;
+    overflow: auto;
     background: #f0f2f5 url(/static/background.svg) no-repeat 50%;
     background-size: 100%;
     //padding: 50px 0 84px;

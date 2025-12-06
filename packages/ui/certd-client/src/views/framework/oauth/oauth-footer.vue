@@ -7,7 +7,7 @@
       <template v-for="item in oauthProviderList" :key="item.type">
         <div v-if="item.addonId" class="oauth-icon-button pointer" @click="goOauthLogin(item.name)">
           <div><fs-icon :icon="item.icon" class="text-blue-600 text-40" /></div>
-          <div>{{ item.addonTitle || item.title }}</div>
+          <div class="ellipsis title" :title="item.addonTitle || item.title">{{ item.addonTitle || item.title }}</div>
         </div>
       </template>
     </div>
@@ -101,6 +101,12 @@ async function goOauthLogin(type: string) {
     gap: 8px;
     padding: 8px 8px;
     border-radius: 100px;
+    width: 100px;
+
+    .title {
+      width: 100%;
+      text-align: center;
+    }
     .fs-icon {
       font-size: 36px;
       color: #006be6;
