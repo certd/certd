@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.15](https://github.com/certd/certd/compare/v1.37.14...v1.37.15) (2025-12-06)
+
+### Performance Improvements
+
+* 邮件模版安全优化 ([adca151](https://github.com/certd/certd/commit/adca151e4f07a4c6a2a753bfa48ee0d4d6469fd2))
+* 支持k8s apply ([d55954a](https://github.com/certd/certd/commit/d55954a36391ebe6a9397ff7dcfb710193ac5e34))
+
 ## [1.37.14](https://github.com/certd/certd/compare/v1.37.13...v1.37.14) (2025-12-02)
 
 **Note:** Version bump only for package @certd/lib-k8s
