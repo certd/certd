@@ -21,6 +21,7 @@
             },
           },
         }"
+        :disabled="disabled"
         :show-current="false"
         :show-select="false"
         :dialog="{ width: 960 }"
