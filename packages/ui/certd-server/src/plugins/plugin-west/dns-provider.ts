@@ -107,12 +107,16 @@ export class WestDnsProvider extends AbstractDnsProvider<westRecord> {
       return;
     }
     //这里调用删除txt dns解析记录接口
-
+    const record_id = record.data?.id;
+    if (!record_id) {
+      this.logger.info('record_id不存在');
+      return;
+    }
     // 准备要发送到API的请求体
     const requestBody = {
       act: 'deldnsrecord', // API动作类型
       domain: domain, // 域名
-      id: record.data?.id,
+      id: record_id,
     };
 
     const url = '/v2/domain/';

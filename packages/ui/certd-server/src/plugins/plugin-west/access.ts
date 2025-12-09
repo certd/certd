@@ -158,6 +158,9 @@ export class WestAccess extends BaseAccess {
       },
     });
     if (res.msg !== 'success') {
+      if(res.msg.includes('500 already exists')){
+        return res;
+      }
       throw new Error(`${JSON.stringify(res.msg)}`);
     }
     return res;
@@ -253,6 +256,9 @@ token=md5(zhangsan + 5dh232kfg!* + 1554691950854)=cfcd208495d565ef66e7dff9f98764
     });
     this.ctx.logger.info(`request ${url} ${method} res:${JSON.stringify(res)}`);
     if (res.msg !== 'success' && res.result!= 200) {
+      if(res.msg.includes('500 already exists')){
+        return res;
+      }
       throw new Error(`${JSON.stringify(res.msg)}`);
     }
     return res;
