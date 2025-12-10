@@ -635,7 +635,7 @@ export default {
   autoHideTime: "自动隐藏时间",
   autoHideTimeHelper: "多少分钟内无请求自动隐藏",
   hideOpenApi: "隐藏开放接口",
-  hideOpenApiHelper: "是否隐藏开放接口，是否放开/api/v1开头的接口",
+  hideOpenApiHelper: "是否隐藏开放接口，是否同时隐藏/api/v1开头的接口",
   hideSiteImmediately: "立即隐藏站点",
   hideImmediately: "立即隐藏",
   confirmHideSiteTitle: "确定要立即隐藏站点吗？",

@@ -631,7 +631,7 @@ export default {
   autoHideTime: "Auto Hide Time",
   autoHideTimeHelper: "Minutes without requests before auto hiding",
   hideOpenApi: "Hide Open API",
-  hideOpenApiHelper: "Whether to hide open APIs; whether to expose /api/v1 prefixed endpoints",
+  hideOpenApiHelper: "Whether to hide open APIs; whether to hide /api/v1 prefixed endpoints",
   hideSiteImmediately: "Hide Site Immediately",
   hideImmediately: "Hide Immediately",
   confirmHideSiteTitle: "Are you sure to hide the site immediately?",

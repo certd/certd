@@ -73,11 +73,16 @@ export class WestDnsProviderDomain extends AbstractDnsProvider<westRecord> {
     }
     //这里调用删除txt dns解析记录接口
 
+    const record_id = record?.body?.record_id;
+    if (!record_id) {
+      this.logger.info('record_id不存在');
+      return;
+    }
     // 准备要发送到API的请求体
     const requestBody = {
       act: 'dnsrec.remove', // API动作类型
       domain: domain, // 域名
-      record_id: record.body.record_id,
+      record_id: record_id,
       hostname: fullRecord, // 完整的记录名
       record_type: 'TXT', // DNS记录类型
       record_line: '', // 记录线路
