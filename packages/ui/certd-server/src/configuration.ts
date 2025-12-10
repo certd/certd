@@ -21,6 +21,8 @@ import * as upload from '@midwayjs/upload';
 import { setLogger } from '@certd/acme-client';
 import {HiddenMiddleware} from "./middleware/hidden.js";
 
+//@ts-ignore
+// process.env.UV_THREADPOOL_SIZE = 2
 process.on('uncaughtException', error => {
   console.error('未捕获的异常：', error);
   // 在这里可以添加日志记录、发送错误通知等操作
