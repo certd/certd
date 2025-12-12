@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "cross-env NODE_ENV=production node --optimize-for-size ./bootstrap.js",
-    "dev-start": "mwtsc --watch --run @midwayjs/mock/app",
+    "dev-start": "cross-env NODE_ENV=dev & mwtsc --watch --run @midwayjs/mock/app",
     "dc": "cd ../../../ && pnpm run dev",
     "dev": "cross-env NODE_ENV=local & pnpm run dev-start",
     "dev-commlocal": "cross-env NODE_ENV=dev-commlocal mwtsc --watch --run @midwayjs/mock/app",

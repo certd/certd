@@ -109,8 +109,14 @@ export class CodeService {
 
     const code = randomNumber(verificationCodeLength);
 
+    const templateData = {
+      code, duration, siteTitle
+    }
+
+    const titleTemplate = opts?.title? 
+
     const title = `【${siteTitle}】${!!opts?.title ? opts.title : '验证码'}`;
-    const content = !!opts.content ? this.compile(opts.content)({code, duration}) : `您的验证码是${code}，请勿泄露`;
+    const content = !!opts.content ? this.compile(opts.content)(templateData) : `您的验证码是${code}，请勿泄露`;
 
     await this.emailService.send({
       subject: title,

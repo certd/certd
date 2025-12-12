@@ -26,6 +26,7 @@ export class AutoZPrint {
   async init() {
     //监听https
     this.startHttpsServer();
+    logger.info("ENV:", process.env.NODE_ENV);
     if (isDev()) {
       this.startHeapLog();
     }
@@ -49,7 +50,7 @@ export class AutoZPrint {
     setInterval(() => {
       const mu = process.memoryUsage();
       logger.info(`rss:${format(mu.rss)},heapUsed: ${format(mu.heapUsed)},heapTotal: ${format(mu.heapTotal)},external: ${format(mu.external)}`);
-    }, 60000);
+    }, 20000);
   }
 
   startHttpsServer() {
