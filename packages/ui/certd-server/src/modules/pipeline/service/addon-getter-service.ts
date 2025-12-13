@@ -62,4 +62,11 @@ export class AddonGetterService  {
     return await this.getAddonById(id, true, userId);
   }
 
+
+  async getBlank(type:string,name:string){
+    return await this.getAddonById(null,false,0,{
+      type,name
+    })
+  }
+
 }

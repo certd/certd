@@ -1,6 +1,7 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
 import {
   addonRegistry,
+  AddonService,
   CrudController,
   SysPrivateSettings,
   SysPublicSettings,
@@ -30,6 +31,8 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   pipelineService: PipelineService;
   @Inject()
   codeService: CodeService;
+ @Inject()
+  addonService: AddonService;
 
   getService() {
     return this.service;
@@ -84,6 +87,25 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   async getEmailSettings(@Body(ALL) body) {
     const conf = await getEmailSettings(this.service, this.userSettingsService);
     return this.ok(conf);
+  }
+
+   @Post('/getEmailTemplates', { summary: 'sys:settings:view' })
+  async getEmailTemplates(@Body(ALL) body) {
+    const conf = await getEmailSettings(this.service, this.userSettingsService);
+    const templates = conf.templates ||  {}
+
+    const emailTemplateProviders = await this.addonService.getDefineList("emailTemplate")
+
+    const proviers = []
+    for (const item of emailTemplateProviders) {
+      const templateConf = templates[item.name] || {}
+      proviers.push({
+        name: item.name,
+        title: item.title,
+        addonId : templateConf.addonId,
+      })
+    }
+    return this.ok(proviers);
   }
 
   @Post('/saveEmailSettings', { summary: 'sys:settings:edit' })

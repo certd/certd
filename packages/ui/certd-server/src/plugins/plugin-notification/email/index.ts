@@ -21,10 +21,23 @@ export class EmailNotification extends BaseNotification {
   receivers!: string[];
 
   async send(body: NotificationBody) {
-    await this.ctx.emailService.send({
-      subject: body.title,
-      content: body.content + '\n\n[查看详情](' + body.url + ')',
-      receivers: this.receivers,
-    });
+
+    const templateData = {
+      ...body,
+    }
+    await this.ctx.emailService.sendByTemplate({
+      type: body.notificationType,
+      data: templateData,
+      email: {
+        receivers: this.receivers,
+        attachments: body.attachments,
+      }
+    })
+
+    // await this.ctx.emailService.send({
+    //   subject: body.title,
+    //   content: body.content + '\n\n[查看详情](' + body.url + ')',
+    //   receivers: this.receivers,
+    // });
   }
 }

@@ -132,6 +132,7 @@ nohup sh -c '$RESTART_CERT' >/dev/null  2>&1 & echo '10秒后重启' && exit
             title: `${this.repoName} 新版本 ${this.lastVersion} 发布`,
             content: `${body}\n\n > [Certd](https://certd.docmirror.cn)，不止证书自动化，插件解锁无限可能！\n\n`,
             url: `https://github.com/${this.repoName}/releases/tag/${this.lastVersion}`,
+            notificationType: "githubReleaseCheck",
           }
         })
       }

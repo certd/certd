@@ -423,30 +423,45 @@ export class Executor {
     let subject = "";
     let content = "";
     const errorMessage = error?.message;
+    const templateData: any = {
+      pipelineId: this.pipeline.id,
+      historyId: this.runtime.id,
+      pipelineTitle: this.pipeline.title,
+    };
+    let pipelineResult = "";
+    let errors = "";
     if (when === "start") {
-      subject = `开始执行，${this.pipeline.title}【${this.pipeline.id}】`;
+      pipelineResult = "开始执行";
+      subject = `${pipelineResult}，${this.pipeline.title}【${this.pipeline.id}】`;
       content = `流水线ID:${this.pipeline.id}，运行ID:${this.runtime.id}`;
     } else if (when === "success") {
-      subject = `执行成功，${this.pipeline.title}【${this.pipeline.id}】`;
+      pipelineResult = "执行成功";
+      subject = `${pipelineResult}，${this.pipeline.title}【${this.pipeline.id}】`;
       content = `流水线ID:${this.pipeline.id}，运行ID:${this.runtime.id}`;
     } else if (when === "turnToSuccess") {
-      subject = `执行成功（失败转成功），${this.pipeline.title}【${this.pipeline.id}】`;
+      pipelineResult = "执行成功（失败转成功）";
+      subject = `${pipelineResult}，${this.pipeline.title}【${this.pipeline.id}】`;
       content = `流水线ID:${this.pipeline.id}，运行ID:${this.runtime.id}`;
     } else if (when === "error") {
-      subject = `执行失败，${this.pipeline.title}【${this.pipeline.id}】`;
-
+      pipelineResult = "执行失败";
+      subject = `${pipelineResult}，${this.pipeline.title}【${this.pipeline.id}】`;
       if (error instanceof RunnableError) {
         const runnableError = error as RunnableError;
         content = `流水线ID:${this.pipeline.id}，运行ID:${this.runtime.id}\n\n`;
         for (const re of runnableError.errors) {
-          content += ` - ${re.runnable.title} 执行失败，错误详情：${re.e?.message || re.e?.error?.message}\n\n`;
+          errors += ` - ${re.runnable.title} 执行失败，错误详情：${re.e?.message || re.e?.error?.message}\n\n`;
         }
+        content += errors;
       } else {
+        errors = error.message;
         content = `流水线ID:${this.pipeline.id}，运行ID:${this.runtime.id}\n\n${this.currentStatusMap?.currentStep?.title} 执行失败\n\n错误详情:${error.message}`;
       }
     } else {
       return;
     }
+
+    templateData.errors = errors;
+    templateData.pipelineResult = pipelineResult;
 
     for (const notification of this.pipeline.notifications) {
       if (!notification.when.includes(when)) {
@@ -455,10 +470,12 @@ export class Executor {
 
       if (notification.type === "email" && notification.options?.receivers) {
         try {
-          await this.options.emailService?.send({
-            subject,
-            content,
-            receivers: notification.options?.receivers,
+          await this.options.emailService?.sendByTemplate({
+            type: "pipelineResult",
+            data: templateData,
+            email: {
+              receivers: notification.options?.receivers,
+            },
           });
         } catch (e) {
           logger.error("send email error", e);
@@ -472,15 +489,15 @@ export class Executor {
             useEmail: false,
             logger: this.logger,
             body: {
+              notificationType: "pipelineResult",
               title: subject,
               content,
               userId: this.pipeline.userId,
               pipeline: this.pipeline,
               result: this.lastRuntime?.pipeline?.status,
-              pipelineId: this.pipeline.id,
-              historyId: this.runtime.id,
               errorMessage,
               url,
+              ...templateData,
             },
           });
         } catch (e) {

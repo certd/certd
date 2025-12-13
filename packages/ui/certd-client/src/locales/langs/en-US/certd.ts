@@ -780,6 +780,18 @@ export default {
       oauthAutoRedirectHelper: "Whether to auto redirect to OAuth2 login when login (using the first enabled OAuth2 login type)",
       oauthOnly: "OAuth2 Login Only",
       oauthOnlyHelper: "Whether to only allow OAuth2 login, disable password login",
+
+      email: {
+        templates: "Email Templates",
+        templateType: "Template Type",
+        templateProvider: "Template Config",
+
+        templateSetting: "Email Template Setting",
+        serverSetting: "Email Server Setting",
+        sendTest: "Send Test",
+
+        templateProviderSelectorPlaceholder: "Not Configured",
+      },
     },
   },
   modal: {

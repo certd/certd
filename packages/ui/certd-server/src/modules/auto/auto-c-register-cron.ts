@@ -130,7 +130,8 @@ export class AutoCRegisterCron {
                 title,
                 content,
                 errorMessage:title,
-                url
+                url,
+                notificationType: "vipExpireRemind",
               }
             },adminUser.id)
           }
@@ -182,7 +183,8 @@ export class AutoCRegisterCron {
                 title,
                 content,
                 errorMessage: title,
-                url
+                url,
+                notificationType: "userExpireRemind",
               }
             }, user.id)
           }

@@ -3,8 +3,16 @@ export type BuildContentReq = {
     data: any;
 }
 
-export type BuildContentReply = Record<string, string>;
 
-export interface ITemplateProvider {
-    buildContent: (params: BuildContentReq) => Promise<BuildContentReply>;
+export interface ITemplateProvider<T=any> {
+    buildContent: (params: BuildContentReq) => Promise<T>;
+
+    buildDefaultContent:(params: BuildContentReq) => Promise<T>;
 }
+
+
+export type EmailContent = {
+    subject:string,
+    content?:string,
+    html?:string
+};

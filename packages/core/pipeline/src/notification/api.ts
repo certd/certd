@@ -15,6 +15,11 @@ export type NotificationBody = {
   historyId?: number;
   errorMessage?: string;
   url?: string;
+  notificationType?: string;
+  attachments?: any[];
+  pipelineResult?: string;
+  pipelineTitle?: string;
+  errors?: string;
 };
 
 export type NotificationRequestHandleReqInput<T = any> = {

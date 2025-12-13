@@ -154,6 +154,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
       title: `证书申请成功【${this.pipeline.title}】`,
       content: `域名：${this.domains.join(",")}`,
       url: url,
+      notificationType: "certApplySuccess",
     };
     try {
       await this.ctx.notificationService.send({

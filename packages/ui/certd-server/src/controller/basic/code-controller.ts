@@ -1,9 +1,10 @@
-import { Rule, RuleType } from "@midwayjs/validate";
-import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
 import { BaseController, Constants, SysSettingsService } from "@certd/lib-server";
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
+import { Rule, RuleType } from "@midwayjs/validate";
+import { CaptchaService } from "../../modules/basic/service/captcha-service.js";
 import { CodeService } from "../../modules/basic/service/code-service.js";
 import { EmailService } from "../../modules/basic/service/email-service.js";
-import { CaptchaService } from "../../modules/basic/service/captcha-service.js";
+import { AddonGetterService } from "../../modules/pipeline/service/addon-getter-service.js";
 
 export class SmsCodeReq {
   @Rule(RuleType.string().required())
@@ -49,6 +50,9 @@ export class BasicController extends BaseController {
   @Inject()
   captchaService: CaptchaService;
 
+  @Inject()
+  addonGetterService: AddonGetterService;
+
   @Post('/captcha/get', { summary: Constants.per.guest })
   async getCaptcha(@Query("captchaAddonId") captchaAddonId:number) {
       const form = await this.captchaService.getCaptcha(captchaAddonId)
@@ -83,16 +87,17 @@ export class BasicController extends BaseController {
     const opts = {
       verificationType: body.verificationType,
       verificationCodeLength: undefined,
-      title: undefined,
-      content: undefined,
       duration: undefined,
     };
+    
     if(body?.verificationType === 'forgotPassword') {
-      opts.title = '找回密码';
-      opts.content = '验证码：${code}。您正在找回密码，请输入验证码并完成操作。如非本人操作请忽略';
       opts.duration = FORGOT_PASSWORD_CODE_DURATION;
       opts.verificationCodeLength = 6;
+    }else{
+      opts.duration = 10;
+      opts.verificationCodeLength = 6;
     }
+
 
     await this.codeService.checkCaptcha(body.captcha);
     await this.codeService.sendEmailCode(body.email, opts);

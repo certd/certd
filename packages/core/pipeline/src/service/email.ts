@@ -6,6 +6,13 @@ export type EmailSend = {
   html?: string;
 };
 
+export type EmailSendByTemplateReq = {
+  type: string;
+  data: any;
+  email: { receivers: string[]; attachments?: any[] };
+};
+
 export interface IEmailService {
   send(email: EmailSend): Promise<void>;
+  sendByTemplate(req: EmailSendByTemplateReq): Promise<void>;
 }

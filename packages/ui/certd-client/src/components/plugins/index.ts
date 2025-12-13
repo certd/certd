@@ -11,6 +11,7 @@ import AccessSelector from "/@/views/certd/access/access-selector/index.vue";
 import InputPassword from "./common/input-password.vue";
 import CertInfoUpdater from "/@/views/certd/pipeline/cert-upload/index.vue";
 import ApiTest from "./common/api-test.vue";
+import ParamsShow from "./common/params-show.vue";
 export * from "./cert/index.js";
 export default {
   install(app: any) {
@@ -29,5 +30,6 @@ export default {
     app.component("RemoteInput", RemoteInput);
     app.component("CertDomainsGetter", CertDomainsGetter);
     app.component("InputPassword", InputPassword);
+    app.component("ParamsShow", ParamsShow);
   },
 };

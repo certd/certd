@@ -268,7 +268,8 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
           url,
           title: `站点证书${fromIpCheck ? "(IP)" : ""}检查出错<${site.name}>`,
           content: `站点名称： ${site.name} \n站点域名： ${site.domain} \n错误信息：${site.error}`,
-          errorMessage: site.error
+          errorMessage: site.error,
+          notificationType: "siteCheckError",
         }
       },
       site.userId
@@ -295,7 +296,8 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
             title: `站点证书即将过期，剩余${validDays}天，<${site.name}>`,
             content,
             url,
-            errorMessage: "站点证书即将过期"
+            errorMessage: "站点证书即将过期",
+            notificationType: "siteCertExpireRemind",
           }
         },
         site.userId
@@ -311,7 +313,8 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
             title: `站点证书已过期${-validDays}天<${site.name}>`,
             content,
             url,
-            errorMessage: "站点证书已过期"
+            errorMessage: "站点证书已过期",
+            notificationType: "siteCertExpireRemind",
           }
         },
         site.userId

@@ -1,14 +1,10 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { cache, isDev, randomNumber, simpleNanoId } from '@certd/basic';
-import { SysSettingsService, SysSiteInfo } from '@certd/lib-server';
-import { SmsServiceFactory } from '../sms/factory.js';
+import { AccessService, AccessSysGetter, CodeErrorException, SysSettingsService } from '@certd/lib-server';
+import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { ISmsService } from '../sms/api.js';
-import { CodeErrorException } from '@certd/lib-server';
-import { EmailService } from './email-service.js';
-import { AccessService } from '@certd/lib-server';
-import { AccessSysGetter } from '@certd/lib-server';
-import { isComm } from '@certd/plus-core';
+import { SmsServiceFactory } from '../sms/factory.js';
 import { CaptchaService } from "./captcha-service.js";
+import { EmailService } from './email-service.js';
 
 // {data: '<svg.../svg>', text: 'abcd'}
 /**
@@ -84,8 +80,6 @@ export class CodeService {
   async sendEmailCode(
     email: string,
     opts?: {
-      title?: string,
-      content?: string,
       duration?: number,
       verificationType?: string,
       verificationCodeLength?: number,
@@ -96,32 +90,27 @@ export class CodeService {
     }
 
 
-    let siteTitle = 'Certd';
-    if (isComm()) {
-      const siteInfo = await this.sysSettingsService.getSetting<SysSiteInfo>(SysSiteInfo);
-      if (siteInfo) {
-        siteTitle = siteInfo.title || siteTitle;
-      }
-    }
-
     const verificationCodeLength =  Math.floor(Math.max(Math.min(opts?.verificationCodeLength || 4, 8), 4));
     const duration = Math.floor(Math.max(Math.min(opts?.duration || 5, 15), 1));
 
     const code = randomNumber(verificationCodeLength);
-
+   
     const templateData = {
-      code, duration, siteTitle
+      code, duration, 
+      title: "验证码",
+      content:`您的验证码是${code}，请勿泄露`,
+       notificationType: "registerCode"
     }
-
-    const titleTemplate = opts?.title? 
-
-    const title = `【${siteTitle}】${!!opts?.title ? opts.title : '验证码'}`;
-    const content = !!opts.content ? this.compile(opts.content)(templateData) : `您的验证码是${code}，请勿泄露`;
-
-    await this.emailService.send({
-      subject: title,
-      content: content,
-      receivers: [email],
+    if (opts?.verificationType === 'forgotPassword') {
+       templateData.title = '找回密码';
+      templateData.notificationType = "forgotPassword"
+    }
+    await this.emailService.sendByTemplate({
+        type: templateData.notificationType,
+        data: templateData,
+        email:{
+          receivers: [email],
+        },
     });
 
     const key = this.buildEmailCodeKey(email,opts?.verificationType);

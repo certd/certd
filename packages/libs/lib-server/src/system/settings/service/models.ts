@@ -108,6 +108,11 @@ export class SysLicenseInfo extends BaseSettings {
   license?: string;
 }
 
+
+export type EmailTemplate = {
+  addonId?: number;
+}
+
 export class SysEmailConf extends BaseSettings {
   static __title__ = '邮箱配置';
   static __key__ = 'sys.email';
@@ -126,6 +131,16 @@ export class SysEmailConf extends BaseSettings {
   };
   sender: string;
   usePlus?: boolean;
+
+  templates:{
+    registerCode?: EmailTemplate,
+    forgotPasswordCode?: EmailTemplate,
+    certSuccessNotify?: EmailTemplate,
+    certSend?: EmailTemplate,
+    pipelineNotify?: EmailTemplate,
+    test?: EmailTemplate,
+    siteMonitorNotify?: EmailTemplate,
+  }
 }
 
 export class SysSiteInfo extends BaseSettings {

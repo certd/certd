@@ -780,6 +780,18 @@ export default {
       oauthAutoRedirectHelper: "是否自动跳转第三方登录（使用第一个已启用的第三方登录类型）",
       oauthOnly: "仅使用第三方登录",
       oauthOnlyHelper: "是否仅使用第三方登录，关闭密码登录（注意：请务必在测试第三方登录功能正常后再开启）",
+
+      email: {
+        templates: "邮件模板",
+        templateType: "模板类型",
+        templateProvider: "模板配置",
+
+        templateSetting: "邮件模板设置",
+        serverSetting: "邮件服务器设置",
+        sendTest: "发送测试",
+
+        templateProviderSelectorPlaceholder: "未配置",
+      },
     },
   },
   modal: {
