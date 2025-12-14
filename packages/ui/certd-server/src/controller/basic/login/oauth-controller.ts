@@ -169,7 +169,7 @@ export class ConnectController extends BaseController {
     const userInfo = validationValue.userInfo;
     const oauthType = validationValue.type;
     let newUser = new UserEntity()
-    newUser.username = `${oauthType}_${userInfo.nickName}_${simpleNanoId(6)}`;
+    newUser.username = `${userInfo.nickName}_${simpleNanoId(6)}_${oauthType}`;
     newUser.avatar = userInfo.avatar;
     newUser.nickName = userInfo.nickName || simpleNanoId(6);
 
