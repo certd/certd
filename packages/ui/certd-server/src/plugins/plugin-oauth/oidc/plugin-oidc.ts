@@ -129,6 +129,7 @@ export class OidcOauthProvider extends BaseAddon implements IOauthProvider {
         openId: claims.sub,
         nickName: claims.nickname || claims.name || claims.username || claims.preferred_username || "",
         avatar: claims.picture,
+        email: claims.email || "",
       },
     }
   };

@@ -172,6 +172,7 @@ export class ConnectController extends BaseController {
     newUser.username = `${userInfo.nickName}_${simpleNanoId(6)}_${oauthType}`;
     newUser.avatar = userInfo.avatar;
     newUser.nickName = userInfo.nickName || simpleNanoId(6);
+    newUser.email = userInfo.email || "";
 
     newUser = await this.userService.register("username", newUser, async (txManager) => {
       const oauthBound: OauthBoundEntity = new OauthBoundEntity()
