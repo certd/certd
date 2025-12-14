@@ -6,7 +6,7 @@ import { BaseEmailTemplateProvider } from "./plugin-base.js";
   addonType: "emailTemplate",
   name: 'registerCode',
   title: '注册验证码邮件模版',
-  desc: '注册验证码邮件模版',
+  desc: '您的注册验证码为：xxxx，请勿泄露',
   icon: "simple-icons:email:blue",
   showTest: false,
 })
@@ -16,10 +16,9 @@ export class RegisterCodeEmailTemplateProvider extends BaseEmailTemplateProvider
     component: {
       name: "ParamsShow",
       params:[
-        {labele:"验证码",value:"code"}
+        {label:"验证码",value:"code"}
       ]
     },
-    order: 5,
     col: { span: 24 },
   })
   paramIntro = "";

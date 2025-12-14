@@ -172,11 +172,13 @@ export class EmailService implements IEmailService {
     // 没有找到模版，使用默认模版
     if (!content) {
       try {
-        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank(req.type, "默认")
+        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", req.type)
         content = await addon.buildDefaultContent({ data: req.data })
       } catch (e) {
-        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("common", "默认")
+        // 对应的通知类型模版可能没有注册或者开发
+        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", "common")
         content = await addon.buildDefaultContent({ data: req.data })
+        //common类型的一定有，已经开发了
       }
     }
     return await this.send({

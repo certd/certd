@@ -63,9 +63,9 @@ export class AddonGetterService  {
   }
 
 
-  async getBlank(type:string,name:string){
+  async getBlank(addonType:string,subType:string){
     return await this.getAddonById(null,false,0,{
-      type,name
+      type: addonType, name:subType
     })
   }
 

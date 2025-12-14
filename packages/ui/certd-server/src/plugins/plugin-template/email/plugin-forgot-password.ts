@@ -6,7 +6,7 @@ import { BaseEmailTemplateProvider } from "./plugin-base.js";
   addonType: "emailTemplate",
   name: 'forgotPassword',
   title: '忘记密码邮件模版',
-  desc: '忘记密码邮件模版',
+  desc: '您正在重置密码，您的验证码为xxxx，请勿泄露',
   icon: "simple-icons:email:blue",
   showTest: false,
 })
@@ -16,10 +16,9 @@ export class ForgotPasswordEmailTemplateProvider extends BaseEmailTemplateProvid
     component: {
       name: "ParamsShow",
       params:[
-        {labele:"验证码",value:"code"}
+        {label:"验证码",value:"code"}
       ]
     },
-    order: 5,
     col: { span: 24 },
   })
   paramIntro = "";

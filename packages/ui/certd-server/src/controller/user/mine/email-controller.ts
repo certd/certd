@@ -18,24 +18,24 @@ export class EmailController extends BaseController {
     return this.ok({});
   }
 
-  // @Post('/list', { summary: Constants.per.authOnly })
-  // public async list() {
-  //   const userId = super.getUserId();
-  //   const res = await this.emailService.list(userId);
-  //   return this.ok(res);
-  // }
+  @Post('/list', { summary: Constants.per.authOnly })
+  public async list() {
+    const userId = super.getUserId();
+    const res = await this.emailService.list(userId);
+    return this.ok(res);
+  }
 
-  // @Post('/add', { summary: Constants.per.authOnly })
-  // public async add(@Body('email') email) {
-  //   const userId = super.getUserId();
-  //   await this.emailService.add(userId, email);
-  //   return this.ok({});
-  // }
+  @Post('/add', { summary: Constants.per.authOnly })
+  public async add(@Body('email') email) {
+    const userId = super.getUserId();
+    await this.emailService.add(userId, email);
+    return this.ok({});
+  }
 
-  // @Post('/delete', { summary: Constants.per.authOnly })
-  // public async delete(@Body('email') email) {
-  //   const userId = super.getUserId();
-  //   await this.emailService.delete(userId, email);
-  //   return this.ok({});
-  // }
+  @Post('/delete', { summary: Constants.per.authOnly })
+  public async delete(@Body('email') email) {
+    const userId = super.getUserId();
+    await this.emailService.delete(userId, email);
+    return this.ok({});
+  }
 }

@@ -6,7 +6,7 @@ import { BaseEmailTemplateProvider } from "./plugin-base.js";
   addonType: "emailTemplate",
   name: 'pipelineResult',
   title: '流水线执行结果邮件模版',
-  desc: '流水线执行结果邮件模版',
+  desc: '执行失败，xxxx自动化【流水线id】；运行ID:xxx,错误信息:xxxx',
   icon: "simple-icons:email:blue",
   showTest: false,
 })
@@ -16,15 +16,14 @@ export class PipelineResultEmailTemplateProvider extends BaseEmailTemplateProvid
     component: {
       name: "ParamsShow",
       params:[
-        {labele:"运行结果",value:"pipelineResult"},
-        {labele:"流水线标题",value:"pipelineTitle"},
-        {labele:"流水线ID",value:"pipelineId"},
-        {labele:"运行Id",value:"historyId"},
-        {labele:"错误信息",value:"errors"},
-        {labele:"URL",value:"url"},
+        {label:"运行结果",value:"pipelineResult"},
+        {label:"流水线标题",value:"pipelineTitle"},
+        {label:"流水线ID",value:"pipelineId"},
+        {label:"运行Id",value:"historyId"},
+        {label:"错误信息",value:"errors"},
+        {label:"URL",value:"url"},
       ]
     },
-    order: 5,
     col: { span: 24 },
   })
   paramIntro = "";

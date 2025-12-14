@@ -1,9 +1,9 @@
 <template>
   <div class="params-show">
-    <div v-for="item of params" :key="item.value" class="item">
-      <span class="label">{{ item.label }}:</span>
-      <fs-copyable>{{ item.value }}</fs-copyable>
-    </div>
+    <a-tag type="primary" color="green" v-for="item of params" :key="item.value" class="item">
+      <span class="label">{{ item.label }}=</span>
+      <fs-copyable :modelValue="`\$\{${item.value}\}`" :button="{show:false}" :inline="true"></fs-copyable>
+    </a-tag>
   </div>
 </template>
 <script setup lang="ts">
@@ -21,20 +21,13 @@ const props = defineProps<{
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  min-height: 32px;
 
   .item {
-    width: 200px;
     display: flex;
-    margin-bottom: 5px;
     align-items: center;
-
-    .label {
-      width: 100px;
-    }
-
-    .fs-copyable {
-      width: 100%;
-    }
+    margin-bottom: 2px;
+    margin-top: 2px;
   }
 }
 </style>

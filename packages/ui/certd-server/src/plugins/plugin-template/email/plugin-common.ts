@@ -6,7 +6,7 @@ import { BaseEmailTemplateProvider } from "./plugin-base.js";
   addonType: "emailTemplate",
   name: 'common',
   title: '通用邮件模版',
-  desc: '通用邮件模版',
+  desc: '使用通用的邮件标题和内容，内容外部可以自定义html进行美化',
   icon: "simple-icons:email:blue",
   showTest: false,
 })
@@ -16,12 +16,11 @@ export class CommonEmailTemplateProvider extends BaseEmailTemplateProvider imple
     component: {
       name: "ParamsShow",
       params:[
-        {labele:"标题",value:"title"},
-        {labele:"内容",value:"content"},
-        {labele:"URL",value:"url"}
+        {label:"标题",value:"title"},
+        {label:"内容",value:"content"},
+        {label:"URL",value:"url"}
       ]
     },
-    order: 5,
     col: { span: 24 },
   })
   paramIntro = "";
@@ -30,7 +29,7 @@ export class CommonEmailTemplateProvider extends BaseEmailTemplateProvider imple
   async buildDefaultContent(req:BuildContentReq) {
     const defaultTemplate = new CommonEmailTemplateProvider()
     defaultTemplate.titleTemplate = "${title}"
-    defaultTemplate.contentTemplate = "${content} \n\n 查看详情:${url}"
+    defaultTemplate.contentTemplate = "${content} \n\n 查看详情：${url}"
     defaultTemplate.formatType = "text"
     return await defaultTemplate.buildContent(req)
   }
