@@ -125,7 +125,7 @@ export class CloginOauthProvider extends BaseAddon implements IOauthProvider {
     return {
       token: {
         accessToken: access_token,
-        expiresIn: 600,
+        expiresIn: 7200,
         refreshToken: "",
       },
       userInfo: {
