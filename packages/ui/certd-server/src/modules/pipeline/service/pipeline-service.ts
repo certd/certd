@@ -441,6 +441,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       pipeline = await this.info(id);
     } else {
       pipeline = id;
+      id = pipeline.id;
     }
     if (!pipeline) {
       return;
@@ -456,6 +457,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
   removeCron(pipelineId, trigger) {
     const name = this.buildCronKey(pipelineId, trigger.id);
     this.cron.remove(name);
+    logger.info("当前定时器数量：", this.cron.getTaskSize());
   }
 
   registerCron(pipelineId, trigger) {

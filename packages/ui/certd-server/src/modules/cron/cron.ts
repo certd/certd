@@ -1,5 +1,5 @@
 import parser from 'cron-parser';
-import { ILogger } from '@certd/basic';
+import { ILogger, logger } from '@certd/basic';
 
 export type CronTaskReq = {
   /**
@@ -52,7 +52,7 @@ export class Cron {
 
   queue: CronTask[] = [];
   constructor(opts: any) {
-    this.logger = opts.logger;
+    this.logger = opts.logger || logger;
     this.immediateTriggerOnce = opts.immediateTriggerOnce;
   }
 
