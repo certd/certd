@@ -21,6 +21,11 @@ export class DomainParser implements IDomainParser {
   }
 
   async parse(fullDomain: string) {
+    //如果是ip
+    if (utils.domain.isIp(fullDomain)) {
+      return fullDomain;
+    }
+
     this.logger.info(`查找主域名:${fullDomain}`);
     const cacheKey = `domain_parse:${fullDomain}`;
     const value = utils.cache.get(cacheKey);
