@@ -59,7 +59,11 @@
           <a-button type="primary" html-type="submit">{{ t("certd.save") }}</a-button>
         </a-form-item>
 
-        <h2>{{ t("certd.sys.setting.email.templateSetting") }}</h2>
+        <div class="flex items-center">
+          <h2>{{ t("certd.sys.setting.email.templateSetting") }}</h2>
+          <vip-button class="ml-10" mode="button"></vip-button>
+        </div>
+
         <a-form-item :label="t('certd.sys.setting.email.templates')" :name="['templates']">
           <div class="flex flex-wrap">
             <table class="w-full table-auto border-collapse border border-gray-400">
