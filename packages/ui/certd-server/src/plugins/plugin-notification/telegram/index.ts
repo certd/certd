@@ -60,7 +60,7 @@ export class TelegramNotification extends BaseNotification {
 
   replaceText(text: string) {
     // .*()<> 等都需要用\\进行替换
-    return text.replace(/[\\.*()<>]/g, '\\$&');
+    return text.replace(/[\\.*()<>-]/g, '\\$&');
   }
   async send(body: NotificationBody) {
     if (!this.botToken || !this.chatId) {
