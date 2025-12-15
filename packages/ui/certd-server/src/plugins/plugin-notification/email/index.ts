@@ -25,13 +25,16 @@ export class EmailNotification extends BaseNotification {
     const templateData = {
       ...body,
     }
+    const emailSend:any = {
+      receivers: this.receivers,
+    }
+    if (body.attachments && body.attachments.length > 0) {
+      emailSend.attachments = body.attachments;
+    }
     await this.ctx.emailService.sendByTemplate({
       type: body.notificationType,
       data: templateData,
-      email: {
-        receivers: this.receivers,
-        attachments: body.attachments,
-      }
+      email: emailSend
     })
 
     // await this.ctx.emailService.send({

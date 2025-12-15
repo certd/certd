@@ -121,6 +121,7 @@ export class EmailService implements IEmailService {
       data: {
         title: '测试邮件,from certd',
         content: '测试邮件,from certd',
+        url:"https://certd.handfree.work",
       },
       email: {
         receivers: [receiver],

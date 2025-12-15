@@ -61,8 +61,14 @@ export class BaseEmailTemplateProvider extends BaseAddon implements ITemplatePro
 
 
   async buildContent(params: BuildContentReq): Promise<EmailContent> {
-    const title = this.compile(this.titleTemplate)(params.data)
-    const content = this.compile(this.contentTemplate)(params.data)
+    const data = {
+      title:"",
+      content:"",
+      url:"",
+      ...params.data,
+    }
+    const title = this.compile(this.titleTemplate)(data)
+    const content = this.compile(this.contentTemplate)(data)
 
     const body: any = {
       subject: title,
