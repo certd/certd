@@ -78,7 +78,14 @@
                     </div>
                   </td>
                   <td class="border border-gray-300 px-4 py-2">
-                    <AddonSelector v-model:model-value="item.addonId" addon-type="emailTemplate" from="sys" :type="item.name" :placeholder="t('certd.sys.setting.email.templateProviderSelectorPlaceholder')" />
+                    <AddonSelector
+                      v-model:model-value="item.addonId"
+                      :disabled="!settingStore.isPlus"
+                      addon-type="emailTemplate"
+                      from="sys"
+                      :type="item.name"
+                      :placeholder="t('certd.sys.setting.email.templateProviderSelectorPlaceholder')"
+                    />
                   </td>
                 </tr>
               </tbody>

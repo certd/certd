@@ -117,8 +117,8 @@ export class EmailService implements IEmailService {
 
   async test(userId: number, receiver: string) {
     await this.sendByTemplate({
-      type:"common",
-      data:{
+      type: "common",
+      data: {
         title: '测试邮件,from certd',
         content: '测试邮件,from certd',
       },
@@ -150,36 +150,39 @@ export class EmailService implements IEmailService {
 
 
   async sendByTemplate(req: EmailSendByTemplateReq) {
-    const emailConf = await this.sysSettingsService.getSetting<SysEmailConf>(SysEmailConf);
-
-    const template = emailConf?.templates?.[req.type]
     let content = null
-    if (template && template.addonId) {
-      const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(template.addonId, true, 0)
-      if (addon) {
-        content = await addon.buildContent({ data: req.data })
-      }
-    }
-    if (!content) {
-      //看看有没有通用模版
-      if (emailConf?.templates?.common && emailConf?.templates?.common.addonId) {
-        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(emailConf.templates.common.addonId, true, 0)
+    if (isPlus()) {
+      const emailConf = await this.sysSettingsService.getSetting<SysEmailConf>(SysEmailConf);
+      const template = emailConf?.templates?.[req.type]
+      if (template && template.addonId) {
+        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(template.addonId, true, 0)
         if (addon) {
           content = await addon.buildContent({ data: req.data })
         }
       }
-    }
-    // 没有找到模版，使用默认模版
-    if (!content) {
-      try {
-        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", req.type)
-        content = await addon.buildDefaultContent({ data: req.data })
-      } catch (e) {
-        // 对应的通知类型模版可能没有注册或者开发
-        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", "common")
-        content = await addon.buildDefaultContent({ data: req.data })
-        //common类型的一定有，已经开发了
+      if (!content) {
+        //看看有没有通用模版
+        if (emailConf?.templates?.common && emailConf?.templates?.common.addonId) {
+          const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(emailConf.templates.common.addonId, true, 0)
+          if (addon) {
+            content = await addon.buildContent({ data: req.data })
+          }
+        }
       }
+      // 没有找到模版，使用默认模版
+      if (!content) {
+        try {
+          const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", req.type)
+          content = await addon.buildDefaultContent({ data: req.data })
+        } catch (e) {
+          // 对应的通知类型模版可能没有注册或者开发
+        }
+      }
+    }
+
+    if (!content) {
+      const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", "common")
+      content = await addon.buildDefaultContent({ data: req.data })
     }
     return await this.send({
       ...req.email,
