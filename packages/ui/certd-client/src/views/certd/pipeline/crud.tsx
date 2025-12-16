@@ -145,6 +145,9 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
           },
         },
       },
+      search: {
+        col: { span: 3 },
+      },
       form: {
         afterSubmit({ form, res, mode }) {
           if (mode === "add") {
@@ -262,6 +265,7 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
           type: "number",
           search: {
             show: true,
+            col: { span: 3 },
           },
           column: {
             width: 100,
@@ -277,6 +281,7 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
             show: computed(() => {
               return userStore.isAdmin && settingStore.sysPublic.managerOtherUserPipeline;
             }),
+            col: { span: 3 },
           },
           form: {
             show: false,
@@ -297,6 +302,7 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
             component: {
               name: "a-input",
             },
+            col: { span: 3 },
           },
           form: {
             rules: [{ required: true, message: t("certd.fields.required") }],

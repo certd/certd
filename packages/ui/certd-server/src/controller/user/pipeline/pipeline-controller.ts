@@ -33,7 +33,20 @@ export class PipelineController extends CrudController<PipelineService> {
   async page(@Body(ALL) body) {
     const isAdmin = await this.authService.isAdmin(this.ctx);
     const publicSettings = await this.sysSettingsService.getPublicSettings();
-    if (!(publicSettings.managerOtherUserPipeline && isAdmin)) {
+
+    let onlyOther = false
+    if(isAdmin){
+      if(publicSettings.managerOtherUserPipeline){
+        //管理员管理 其他用户
+        if( body.query.userId === -1){
+          //如果只查询其他用户
+          onlyOther = true;
+          delete body.query.userId;
+        }
+      }else{
+        body.query.userId = this.getUserId();
+      }
+    }else{
       body.query.userId = this.getUserId();
     }
 
@@ -43,6 +56,9 @@ export class PipelineController extends CrudController<PipelineService> {
     const buildQuery = qb => {
       if (title) {
         qb.andWhere('(title like :title or content like :content)', { title: `%${title}%`, content: `%${title}%` });
+      }
+      if(onlyOther){
+        qb.andWhere('user_id  != :userId', { userId: this.getUserId() });
       }
     };
     if (!body.sort || !body.sort?.prop) {
