@@ -777,17 +777,29 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async batchDelete(ids: number[], userId: number) {
+    if (!isPlus()) {
+      throw new NeedVIPException("此功能需要升级专业版");
+    }
     for (const id of ids) {
-      await this.checkUserId(id, userId);
+      if (userId) {
+        await this.checkUserId(id, userId);
+      }
       await this.delete(id);
     }
   }
 
   async batchUpdateGroup(ids: number[], groupId: number, userId: any) {
+    if (!isPlus()) {
+      throw new NeedVIPException("此功能需要升级专业版");
+    }
+    const query :any = {}
+    if(userId && userId>0){
+      query.userId = userId;
+    }
     await this.repository.update(
       {
         id: In(ids),
-        userId
+        ...query
       },
       { groupId }
     );
@@ -795,11 +807,17 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
 
   async batchUpdateTrigger(ids: number[], trigger: any, userId: any) {
-
+    if (!isPlus()) {
+      throw new NeedVIPException("此功能需要升级专业版");
+    }
+    const query :any = {}
+    if(userId && userId>0){
+      query.userId = userId;
+    }
     const list = await this.find({
       where: {
         id: In(ids),
-        userId
+        ...query
       }
     });
 
@@ -822,11 +840,17 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async batchUpdateNotifications(ids: number[], notification: Notification, userId: any) {
-
+    if (!isPlus()) {
+      throw new NeedVIPException("此功能需要升级专业版");
+    }
+    const query :any = {}
+    if(userId && userId>0){
+      query.userId = userId;
+    }
     const list = await this.find({
       where: {
         id: In(ids),
-        userId
+        ...query
       }
     });
 

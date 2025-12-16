@@ -142,26 +142,36 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/batchDelete', { summary: Constants.per.authOnly })
   async batchDelete(@Body('ids') ids: number[]) {
-    await this.service.batchDelete(ids, this.getUserId());
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    const userId = isAdmin ?  undefined : this.getUserId() ;
+    await this.service.batchDelete(ids, userId);
     return this.ok({});
   }
 
+
+
   @Post('/batchUpdateGroup', { summary: Constants.per.authOnly })
   async batchUpdateGroup(@Body('ids') ids: number[], @Body('groupId') groupId: number) {
-    await this.service.batchUpdateGroup(ids, groupId, this.getUserId());
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    const userId = isAdmin ?  undefined : this.getUserId() ;
+    await this.service.batchUpdateGroup(ids, groupId, userId);
     return this.ok({});
   }
 
 
   @Post('/batchUpdateTrigger', { summary: Constants.per.authOnly })
   async batchUpdateTrigger(@Body('ids') ids: number[], @Body('trigger') trigger: any) {
-    await this.service.batchUpdateTrigger(ids, trigger, this.getUserId());
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    const userId = isAdmin ?  undefined : this.getUserId() ;
+    await this.service.batchUpdateTrigger(ids, trigger, userId);
     return this.ok({});
   }
 
   @Post('/batchUpdateNotification', { summary: Constants.per.authOnly })
   async batchUpdateNotification(@Body('ids') ids: number[], @Body('notification') notification: any) {
-    await this.service.batchUpdateNotifications(ids, notification, this.getUserId());
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    const userId = isAdmin ?  undefined : this.getUserId() ;
+    await this.service.batchUpdateNotifications(ids, notification, userId);
     return this.ok({});
   }
 
