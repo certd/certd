@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.16](https://github.com/certd/certd/compare/v1.37.15...v1.37.16) (2025-12-15)
+
+### Bug Fixes
+
+* 优化西部数据 500 already exists 的问题 ([2bfad9f](https://github.com/certd/certd/commit/2bfad9fc651da208b610abd921fbfb2fbc04203f))
+
+### Performance Improvements
+
+* 批量设置定时，支持清除定时 ([63d8bcf](https://github.com/certd/certd/commit/63d8bcf8823f713365042d3c7aee3cf31d44b044))
+* 新增数据库迁移doc说明文档，优化datetime字段平滑迁移 ([45fbce0](https://github.com/certd/certd/commit/45fbce0c2af5fb3ead6d3dd12a42f8cc1714262f))
+* 支持彩虹聚合登录 ([6f18693](https://github.com/certd/certd/commit/6f186932ccad4becfdc0087c0539f7b2d0069844))
+* 支持邮件模版设置 ([a6c0d2c](https://github.com/certd/certd/commit/a6c0d2c6f1fd6b60e6d7af290487c94564fd91ea))
+* oidc支持使用第三方昵称或账号作为certd用户的用户名 ([b6fea0c](https://github.com/certd/certd/commit/b6fea0c8562abf912daa7d72958ceb2e93575d31))
+
 ## [1.37.15](https://github.com/certd/certd/compare/v1.37.14...v1.37.15) (2025-12-06)
 
 ### Bug Fixes

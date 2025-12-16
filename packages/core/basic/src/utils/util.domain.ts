@@ -58,7 +58,7 @@ function isIpv6(d: string) {
   if (!d) {
     return false;
   }
-  const isIPv6Regex = /^([\da-f]{1,4}:){2,7}[\da-f]{1,4}$/i;
+  const isIPv6Regex = /^([0-9A-Fa-f]{0,4}:){2,7}([0-9A-Fa-f]{1,4}$|((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4})$/gm;
   return isIPv6Regex.test(d);
 }
 

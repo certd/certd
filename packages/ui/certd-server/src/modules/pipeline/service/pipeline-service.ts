@@ -128,7 +128,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       }
       const pipeline = JSON.parse(item.content);
       let stepCount = 0;
-      if(pipeline.stages){
+      if (pipeline.stages) {
         RunnableCollection.each(pipeline.stages, (runnable: any) => {
           stepCount++;
         });
@@ -237,7 +237,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     let fromType = "pipeline";
     if (bean.type === "cert_upload") {
       fromType = "upload";
-    }else if (bean.type === "cert_auto") {
+    } else if (bean.type === "cert_auto") {
       fromType = "auto";
     }
     await this.certInfoService.updateDomains(pipeline.id, pipeline.userId || bean.userId, domains, fromType);
@@ -376,17 +376,17 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
 
     if (immediateTriggerOnce) {
-      try{
+      try {
         await this.trigger(pipeline.id);
         await sleep(200);
-      }catch(e){
+      } catch (e) {
         logger.error(e);
       }
-     
+
     }
   }
 
-  async trigger(id: any, stepId?: string , doCheck = false) {
+  async trigger(id: any, stepId?: string, doCheck = false) {
     const entity: PipelineEntity = await this.info(id);
     if (doCheck) {
       await this.beforeCheck(entity);
@@ -441,6 +441,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       pipeline = await this.info(id);
     } else {
       pipeline = id;
+      id = pipeline.id;
     }
     if (!pipeline) {
       return;
@@ -456,6 +457,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
   removeCron(pipelineId, trigger) {
     const name = this.buildCronKey(pipelineId, trigger.id);
     this.cron.remove(name);
+    logger.info("当前定时器数量：", this.cron.getTaskSize());
   }
 
   registerCron(pipelineId, trigger) {
@@ -500,8 +502,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   async isPipelineValidTimeEnabled(entity: PipelineEntity) {
     const settings = await this.sysSettingsService.getPublicSettings();
-    if (isPlus() && settings.pipelineValidTimeEnabled){
-      if (entity.validTime > 0 && entity.validTime < Date.now()){
+    if (isPlus() && settings.pipelineValidTimeEnabled) {
+      if (entity.validTime > 0 && entity.validTime < Date.now()) {
         return false
       }
     }
@@ -524,7 +526,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!validTimeEnabled) {
       throw new Error(`流水线${entity.id}已过期，不予执行`);
     }
-   
+
     let suite: UserSuiteEntity = null;
     if (isComm()) {
       suite = await this.checkHasDeployCount(entity.id, entity.userId);
@@ -538,8 +540,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   async doRun(entity: PipelineEntity, triggerId: string, stepId?: string) {
 
-    let suite:any = null
-    try{
+    let suite: any = null
+    try {
       const res = await this.beforeCheck(entity);
       suite = res.suite
     } catch (e) {
@@ -803,11 +805,17 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
     for (const item of list) {
       const pipeline = JSON.parse(item.content);
-      pipeline.triggers = [{
-        id: nanoid(),
-        title: "定时触发",
-        ...trigger
-      }];
+      if (trigger.props === false) {
+        //清除trigger
+        pipeline.triggers = []
+      } else {
+        pipeline.triggers = [{
+          id: nanoid(),
+          title: "定时触发",
+          ...trigger
+        }];
+      }
+
       await this.doUpdatePipelineJson(item, pipeline);
     }
 
@@ -919,20 +927,20 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async createAutoPipeline(req: { domains: string[]; email: string; userId: number ,from:string}) {
+  async createAutoPipeline(req: { domains: string[]; email: string; userId: number, from: string }) {
 
     const randomHour = Math.floor(Math.random() * 6);
     const randomMin = Math.floor(Math.random() * 60);
     const randomCron = `0 ${randomMin} ${randomHour} * * *`;
 
     let pipeline: any = {
-      title: req.domains[0] + `证书自动申请【${req.from??"OpenAPI"}】`,
+      title: req.domains[0] + `证书自动申请【${req.from ?? "OpenAPI"}】`,
       runnableType: "pipeline",
       triggers: [
         {
           id: nanoid(),
           title: "定时触发",
-          props:{
+          props: {
             cron: randomCron,
           },
           type: "timer"

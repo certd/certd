@@ -17,8 +17,9 @@
 | 13.| **cloudflare** | cloudflare dns provider | 
 | 14.| **namesilo** | namesilo dns provider | 
 | 15.| **godaddy** | GoDaddy | 
-| 16.| **51dns** | 51DNS | 
-| 17.| **新网互联** | 新网互联 | 
+| 16.| **Dns提供商Demo** | dns provider示例 | 
+| 17.| **51dns** | 51DNS | 
+| 18.| **新网互联** | 新网互联 | 
 
 <style module>
 table th:first-of-type {

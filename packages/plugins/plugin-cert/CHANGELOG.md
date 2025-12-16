@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.16](https://github.com/certd/certd/compare/v1.37.15...v1.37.16) (2025-12-15)
+
+### Bug Fixes
+
+* 修复ipv6作为证书域名申请证书校验失败的bug ([e4e16bc](https://github.com/certd/certd/commit/e4e16bc6a65bb082c18ca0590226f0987a47d477))
+
+### Performance Improvements
+
+* 支持邮件模版设置 ([a6c0d2c](https://github.com/certd/certd/commit/a6c0d2c6f1fd6b60e6d7af290487c94564fd91ea))
+
 ## [1.37.15](https://github.com/certd/certd/compare/v1.37.14...v1.37.15) (2025-12-06)
 
 **Note:** Version bump only for package @certd/plugin-cert

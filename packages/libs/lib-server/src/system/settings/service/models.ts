@@ -134,12 +134,9 @@ export class SysEmailConf extends BaseSettings {
 
   templates:{
     registerCode?: EmailTemplate,
-    forgotPasswordCode?: EmailTemplate,
-    certSuccessNotify?: EmailTemplate,
-    certSend?: EmailTemplate,
-    pipelineNotify?: EmailTemplate,
-    test?: EmailTemplate,
-    siteMonitorNotify?: EmailTemplate,
+    forgotPassword?: EmailTemplate,
+    pipelineResult?: EmailTemplate,
+    common?: EmailTemplate,
   }
 }
 

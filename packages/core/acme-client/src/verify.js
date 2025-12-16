@@ -8,7 +8,7 @@ import {log as defaultLog} from './logger.js'
 import axios from './axios.js'
 import * as util from './util.js'
 import {isAlpnCertificateAuthorizationValid} from './crypto/index.js'
-
+import {utils} from '@certd/basic'
 
 const dns = dnsSdk.promises
 
@@ -60,11 +60,15 @@ async function verifyHttpChallenge(authz, challenge, keyAuthorization, suffix = 
     }
 
     const httpPort = axios.defaults.acmeSettings.httpChallengePort || 80;
-    const challengeUrl = `http://${authz.identifier.value}:${httpPort}${suffix}`;
+    let host = authz.identifier.value;
+    if(utils.domain.isIpv6(host)){
+        host = `[${host}]`;
+    }
+    const challengeUrl = `http://${host}:${httpPort}${suffix}`;
 
     if (!await doQuery(challengeUrl)) {
         const httpsPort = axios.defaults.acmeSettings.httpsChallengePort || 443;
-        const httpsChallengeUrl = `https://${authz.identifier.value}:${httpsPort}${suffix}`;
+        const httpsChallengeUrl = `https://${host}:${httpsPort}${suffix}`;
         const res = await doQuery(httpsChallengeUrl)
         if (!res) {
             throw new Error(`[error] 验证失败，请检查以上测试url是否可以正常访问`);

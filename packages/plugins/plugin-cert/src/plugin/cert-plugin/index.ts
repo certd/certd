@@ -220,7 +220,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
           if(form.challengeType === 'cname' ){
               return '请按照上面的提示，给要申请证书的域名添加CNAME记录，添加后，点击验证，验证成功后不要删除记录，申请和续期证书会一直用它'
           }else if (form.challengeType === 'http'){
-              return '请按照上面的提示，给每个域名设置文件上传配置，证书申请过程中会上传校验文件到网站根目录下'
+              return '请按照上面的提示，给每个域名设置文件上传配置，证书申请过程中会上传校验文件到网站根目录的.well-known/acme-challenge/目录下'
           }else if (form.challengeType === 'http'){
               return '给每个域名单独配置dns提供商'
           }
