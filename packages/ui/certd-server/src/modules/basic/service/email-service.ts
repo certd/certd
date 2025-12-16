@@ -123,9 +123,7 @@ export class EmailService implements IEmailService {
         content: '测试邮件,from certd',
         url:"https://certd.handfree.work",
       },
-      email: {
-        receivers: [receiver],
-      },
+      receivers: [receiver],
     });
   }
 
@@ -186,8 +184,9 @@ export class EmailService implements IEmailService {
       content = await addon.buildDefaultContent({ data: req.data })
     }
     return await this.send({
-      ...req.email,
-      ...content
+      ...content,
+      receivers: req.receivers,
+      attachments: req.attachments,
     })
   }
 }

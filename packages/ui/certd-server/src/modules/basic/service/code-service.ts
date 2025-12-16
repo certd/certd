@@ -108,9 +108,7 @@ export class CodeService {
     await this.emailService.sendByTemplate({
         type: templateData.notificationType,
         data: templateData,
-        email:{
-          receivers: [email],
-        },
+        receivers: [email],
     });
 
     const key = this.buildEmailCodeKey(email,opts?.verificationType);

@@ -34,7 +34,7 @@ export class EmailNotification extends BaseNotification {
     await this.ctx.emailService.sendByTemplate({
       type: body.notificationType,
       data: templateData,
-      email: emailSend
+      ...emailSend
     })
 
     // await this.ctx.emailService.send({

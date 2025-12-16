@@ -29,7 +29,7 @@ export class CommonEmailTemplateProvider extends BaseEmailTemplateProvider imple
   async buildDefaultContent(req:BuildContentReq) {
     const defaultTemplate = new CommonEmailTemplateProvider()
     defaultTemplate.titleTemplate = "${title}"
-    defaultTemplate.contentTemplate = "${content} \n\n 查看详情：${url}"
+    defaultTemplate.contentTemplate = "${content} \n\n ${url?'查看详情：'+url:''}"
     defaultTemplate.formatType = "text"
     return await defaultTemplate.buildContent(req)
   }

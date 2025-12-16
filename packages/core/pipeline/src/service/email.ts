@@ -9,7 +9,8 @@ export type EmailSend = {
 export type EmailSendByTemplateReq = {
   type: string;
   data: any;
-  email: { receivers: string[]; attachments?: any[] };
+  receivers: string[];
+  attachments?: any[];
 };
 
 export interface IEmailService {

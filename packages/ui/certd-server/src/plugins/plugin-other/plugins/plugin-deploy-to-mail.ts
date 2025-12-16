@@ -1,5 +1,5 @@
-import {AbstractTaskPlugin, FileItem, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput} from '@certd/pipeline';
-import {CertInfo, CertReader} from "@certd/plugin-cert";
+import { AbstractTaskPlugin, FileItem, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
+import { CertInfo, CertReader } from "@certd/plugin-cert";
 import dayjs from "dayjs";
 import { get } from 'lodash-es';
 
@@ -9,7 +9,7 @@ import { get } from 'lodash-es';
   icon: 'ion:mail-outline',
   desc: '通过邮件发送证书',
   group: pluginGroups.other.key,
-  showRunStrategy:false,
+  showRunStrategy: false,
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -45,7 +45,7 @@ export class DeployCertToMailPlugin extends AbstractTaskPlugin {
     component: {
       name: 'EmailSelector',
       vModel: 'value',
-      mode:"tags",
+      mode: "tags",
     },
     required: true,
   })
@@ -78,40 +78,40 @@ export class DeployCertToMailPlugin extends AbstractTaskPlugin {
    */
 
 
-  @TaskInput({
-    title: '邮件标题',
-    component: {
-      name: 'a-input',
-      vModel: 'value',
-      placeholder:`证书申请成功【$\{mainDomain}】`,
-    },
-    helper: '请输入邮件标题否则将使用默认标题\n模板变量：主域名=$\{mainDomain}、全部域名=$\{domains}、过期时间=$\{expiresTime}、备注=$\{remark}、证书PEM=$\{crt}、证书私钥=$\{key}、中间证书/CA证书=$\{ic}',
-    required: false,
-  })
-  title!: string;
+//   @TaskInput({
+//     title: '邮件标题',
+//     component: {
+//       name: 'a-input',
+//       vModel: 'value',
+//       placeholder: `证书申请成功【$\{mainDomain}】`,
+//     },
+//     helper: '请输入邮件标题否则将使用默认标题\n模板变量：主域名=$\{mainDomain}、全部域名=$\{domains}、过期时间=$\{expiresTime}、备注=$\{remark}、证书PEM=$\{crt}、证书私钥=$\{key}、中间证书/CA证书=$\{ic}',
+//     required: false,
+//   })
+//   title!: string;
 
-  @TaskInput({
-    title: '邮件模版',
-    component: {
-      name: 'a-textarea',
-      vModel: 'value',
-      autosize: {
-        minRows: 6,
-        maxRows: 10,
-      },
-      placeholder: `
-<div>
-  <p>证书申请成功</p>
-  <p>域名：$\{domains}</p>
-  <p>证书有效期：$\{expiresTime}</p>
-  <p>备注：$\{remark}</p>
-</div>
-`,
-    },
-    helper: `请输入模版内容否则将使用默认模版，模板变量同上`,
-    required: false,
-  })
-  template!: string;
+//   @TaskInput({
+//     title: '邮件模版',
+//     component: {
+//       name: 'a-textarea',
+//       vModel: 'value',
+//       autosize: {
+//         minRows: 6,
+//         maxRows: 10,
+//       },
+//       placeholder: `
+// <div>
+//   <p>证书申请成功</p>
+//   <p>域名：$\{domains}</p>
+//   <p>证书有效期：$\{expiresTime}</p>
+//   <p>备注：$\{remark}</p>
+// </div>
+// `,
+//     },
+//     helper: `请输入模版内容否则将使用默认模版，模板变量同上`,
+//     required: false,
+//   })
+//   template!: string;
 
   @TaskInput({
     title: '备注',
@@ -123,7 +123,7 @@ export class DeployCertToMailPlugin extends AbstractTaskPlugin {
   })
   remark!: string;
 
-  async onInstance() {}
+  async onInstance() { }
   async execute(): Promise<void> {
 
     this.logger.info(`开始发送邮件`);
@@ -132,41 +132,32 @@ export class DeployCertToMailPlugin extends AbstractTaskPlugin {
     const domains = certReader.getAllDomains().join(',');
 
 
-    const data = {
+    const data: any = {
       mainDomain,
       domains,
       expiresTime: dayjs(certReader.expires).format("YYYY-MM-DD HH:mm:ss"),
-      remark:this.remark ||"",
+      remark: this.remark || "",
       crt: this.cert.crt,
       key: this.cert.key,
-      ic: this.cert.ic
+      ic: this.cert.ic,
+      url: ""
     }
 
     let title = `证书申请成功【${mainDomain}】`;
-    let html = `
-        <div>
-          <p>证书申请成功</p>
-          <p>域名：${domains}</p>
-          <p>证书有效期：${data.expiresTime}</p>
-          <p>备注：${this.remark||""}</p>
-        </div>
+    let content = `证书申请成功
+域名：${domains}
+证书有效期：${data.expiresTime}
+备注：${this.remark || ""}
       `;
-
-    if (this.title) {
-      const compile = this.compile(this.title);
-      title = compile(data);
-    }
-    if (this.template) {
-      const compile = this.compile(this.template);
-      html = compile(data);
-    }
+    data.content = content;
+    data.title = title
     const file = this.certZip
     if (!file) {
       throw new Error('证书压缩文件还未生成，重新运行证书任务');
     }
-    await this.ctx.emailService.send({
-      subject:title,
-      html: html,
+    await this.ctx.emailService.sendByTemplate({
+      type: "common",
+      data,
       receivers: this.email,
       attachments: [
         {
@@ -178,7 +169,7 @@ export class DeployCertToMailPlugin extends AbstractTaskPlugin {
   }
 
   compile(templateString: string) {
-    return function(data) {
+    return function (data) {
       return templateString.replace(/\${(.*?)}/g, (match, key) => {
         const value = get(data, key, '');
         return String(value);
