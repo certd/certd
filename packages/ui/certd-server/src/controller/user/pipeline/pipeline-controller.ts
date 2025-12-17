@@ -33,7 +33,20 @@ export class PipelineController extends CrudController<PipelineService> {
   async page(@Body(ALL) body) {
     const isAdmin = await this.authService.isAdmin(this.ctx);
     const publicSettings = await this.sysSettingsService.getPublicSettings();
-    if (!(publicSettings.managerOtherUserPipeline && isAdmin)) {
+
+    let onlyOther = false
+    if(isAdmin){
+      if(publicSettings.managerOtherUserPipeline){
+        //管理员管理 其他用户
+        if( body.query.userId === -1){
+          //如果只查询其他用户
+          onlyOther = true;
+          delete body.query.userId;
+        }
+      }else{
+        body.query.userId = this.getUserId();
+      }
+    }else{
       body.query.userId = this.getUserId();
     }
 
@@ -43,6 +56,9 @@ export class PipelineController extends CrudController<PipelineService> {
     const buildQuery = qb => {
       if (title) {
         qb.andWhere('(title like :title or content like :content)', { title: `%${title}%`, content: `%${title}%` });
+      }
+      if(onlyOther){
+        qb.andWhere('user_id  != :userId', { userId: this.getUserId() });
       }
     };
     if (!body.sort || !body.sort?.prop) {
@@ -142,26 +158,36 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/batchDelete', { summary: Constants.per.authOnly })
   async batchDelete(@Body('ids') ids: number[]) {
-    await this.service.batchDelete(ids, this.getUserId());
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    const userId = isAdmin ?  undefined : this.getUserId() ;
+    await this.service.batchDelete(ids, userId);
     return this.ok({});
   }
 
+
+
   @Post('/batchUpdateGroup', { summary: Constants.per.authOnly })
   async batchUpdateGroup(@Body('ids') ids: number[], @Body('groupId') groupId: number) {
-    await this.service.batchUpdateGroup(ids, groupId, this.getUserId());
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    const userId = isAdmin ?  undefined : this.getUserId() ;
+    await this.service.batchUpdateGroup(ids, groupId, userId);
     return this.ok({});
   }
 
 
   @Post('/batchUpdateTrigger', { summary: Constants.per.authOnly })
   async batchUpdateTrigger(@Body('ids') ids: number[], @Body('trigger') trigger: any) {
-    await this.service.batchUpdateTrigger(ids, trigger, this.getUserId());
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    const userId = isAdmin ?  undefined : this.getUserId() ;
+    await this.service.batchUpdateTrigger(ids, trigger, userId);
     return this.ok({});
   }
 
   @Post('/batchUpdateNotification', { summary: Constants.per.authOnly })
   async batchUpdateNotification(@Body('ids') ids: number[], @Body('notification') notification: any) {
-    await this.service.batchUpdateNotifications(ids, notification, this.getUserId());
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    const userId = isAdmin ?  undefined : this.getUserId() ;
+    await this.service.batchUpdateNotifications(ids, notification, userId);
     return this.ok({});
   }
 
