@@ -16,9 +16,9 @@ Certd® is a free, fully automated certificate management system that ensures yo
 
 Official Open Source Address: 
 
-[Github](https://github.com/certd/certd)   ![](https://img.shields.io/github/stars/certd/certd?logo=github)      https://github.com/certd/certd      
-[Gitee](https://gitee.com/certd/certd)   ![](https://gitee.com/certd/certd/badge/star.svg?theme=dark)     https://gitee.com/certd/certd     
-[AtomGit](https://atomgit.com/certd/certd)       ![](https://atomgit.com/certd/certd/star/badge.svg)     https://atomgit.com/certd/certd     
+[Github](https://github.com/certd/certd)   ![](https://img.shields.io/github/stars/certd/certd?logo=github)        
+[Gitee](https://gitee.com/certd/certd)   ![](https://gitee.com/certd/certd/badge/star.svg?theme=dark)        
+[AtomGit](https://atomgit.com/certd/certd)       ![](https://atomgit.com/certd/certd/star/badge.svg)   
 
 
 
