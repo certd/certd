@@ -16,6 +16,12 @@ Certd® 是一个免费的全自动证书管理系统，让你的网站证书永
 
 > 流水线数量现已调整为无限制，欢迎大家使用
 
+官方开源地址：
+
+[Github](https://github.com/certd/certd)   ![](https://img.shields.io/github/stars/certd/certd?logo=github)      https://github.com/certd/certd      
+[Gitee](https://gitee.com/certd/certd)   ![](https://gitee.com/certd/certd/badge/star.svg?theme=dark)     https://gitee.com/certd/certd     
+[AtomGit](https://atomgit.com/certd/certd)       ![](https://atomgit.com/certd/certd/star/badge.svg)     https://atomgit.com/certd/certd     
+
 
 ## 一、特性
 本项目不仅支持证书申请过程自动化，还可以自动化部署更新证书，让你的证书永不过期。     
