@@ -242,7 +242,9 @@ export class LoginService {
     }
     const info = await this.userService.findOne({id: oauthBound.userId});
     if (info == null) {
-      throw new CommonException('用户不存在');
+      // 用户已被删除，删除此oauth绑定
+      await this.oauthBoundService.delete([oauthBound.id]);
+      return null
     }
     return this.generateToken(info);
   }
