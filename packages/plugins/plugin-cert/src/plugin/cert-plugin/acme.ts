@@ -233,13 +233,22 @@ export class AcmeService {
 
     // const origDomain = punycode.toUnicode(domain);
     const origFullDomain = punycode.toUnicode(fullDomain);
+
+    const isIp = utils.domain.isIp(origFullDomain);
+    function checkIpChallenge(type: string) {
+      if (isIp) {
+        throw new Error(`IP证书不支持${type}校验方式，请选择HTTP方式校验`);
+      }
+    }
     if (providers.domainsVerifyPlan) {
       //按照计划执行
       const domainVerifyPlan = providers.domainsVerifyPlan[origFullDomain];
       if (domainVerifyPlan) {
         if (domainVerifyPlan.type === "dns") {
+          checkIpChallenge("dns");
           dnsProvider = domainVerifyPlan.dnsProvider;
         } else if (domainVerifyPlan.type === "cname") {
+          checkIpChallenge("cname");
           const cname: CnameVerifyPlan = domainVerifyPlan.cnameVerifyPlan;
           if (cname) {
             dnsProvider = cname.dnsProvider;
@@ -274,6 +283,7 @@ export class AcmeService {
     }
 
     const dnsChallenge = getChallenge("dns-01");
+    checkIpChallenge("dns");
     return await doDnsVerify(dnsChallenge, fullRecord, dnsProvider);
   }
 
