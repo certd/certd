@@ -1,6 +1,9 @@
 import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
 
 export const AwsRegions = [
+  { label: 'cn-north-1', value: 'cn-north-1' },
+  { label: 'cn-northwest-1', value: 'cn-northwest-1' },
+  { label: '---------------', value: '--',disabled: true },
   { label: 'us-east-1', value: 'us-east-1' },
   { label: 'us-east-2', value: 'us-east-2' },
   { label: 'us-west-1', value: 'us-west-1' },
