@@ -827,6 +827,22 @@ export class PipelineService extends BaseService<PipelineEntity> {
         //清除trigger
         pipeline.triggers = []
       } else {
+        if(trigger.random === true){
+            //随机时间
+            const start = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[0];
+            let end = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[1];
+            if(trigger.randomRange[1]<trigger.randomRange[0]){
+              //跨天
+              end = dayjs().add(1, "day").format("YYYY-MM-DD") + " " + trigger.randomRange[1];
+            }
+            const startTime = dayjs(start).valueOf();
+            const endTime = dayjs(end).valueOf();
+            const randomTime = Math.floor(Math.random() * (endTime - startTime)) + startTime;
+            const time = dayjs(randomTime).format(" ss:mm:HH").replaceAll(":", " ").replaceAll(" 0", " ").trim();
+            set(trigger,"props.cron",  `${time} * * *`)
+        } 
+        delete trigger.random
+        delete trigger.randomRange;
         pipeline.triggers = [{
           id: nanoid(),
           title: "定时触发",

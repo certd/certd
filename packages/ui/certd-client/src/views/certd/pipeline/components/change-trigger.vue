@@ -22,6 +22,8 @@ async function batchUpdateRequest(form: any) {
     title: "定时触发",
     type: "timer",
     props: form.clear ? false : form.props,
+    random: form.random,
+    randomRange: form.randomRange,
   });
   emit("change");
 }
@@ -56,6 +58,46 @@ async function openFormDialog() {
           },
         },
       },
+      random: {
+        title: "随机时间",
+        form: {
+          value: true,
+          helper: "是否给流水线随机设置一个时间",
+          component: {
+            name: "fs-dict-switch",
+            vModel: "checked",
+            dict: dict({
+              data: [
+                {
+                  label: "随机时间",
+                  value: true,
+                },
+                {
+                  label: "固定时间",
+                  value: false,
+                },
+              ],
+            }),
+          },
+        },
+      },
+      randomRange: {
+        title: "随机时间范围",
+        form: {
+          value: ["00:00:00", "08:00:00"],
+          helper: "随机时间范围，单位秒",
+          component: {
+            //  <a-time-range-picker :bordered="false" />
+            name: "a-time-range-picker",
+            vModel: "value",
+            valueFormat: "HH:mm:ss",
+          },
+          show: compute(({ form }) => {
+            return form.clear !== true && form.random === true;
+          }),
+          rules: [{ required: true, message: "请选择随机时间范围" }],
+        },
+      },
       "props.cron": {
         title: t("certd.schedule"),
         form: {
@@ -64,7 +106,7 @@ async function openFormDialog() {
             vModel: "modelValue",
           },
           show: compute(({ form }) => {
-            return form.clear !== true;
+            return form.clear !== true && form?.random !== true;
           }),
           rules: [{ required: true, message: t("certd.selectCron") }],
         },
