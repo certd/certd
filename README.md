@@ -16,9 +16,8 @@ Certd® 是一个免费的全自动证书管理系统，让你的网站证书永
 
 > 流水线数量现已调整为无限制，欢迎大家使用
 
-官方开源地址：
 
-| | |
+|官方开源地址： | |
 | ---- | ---- |
 | [Github](https://github.com/certd/certd)| ![](https://img.shields.io/github/stars/certd/certd?logo=github)      |    
 | [Gitee](https://gitee.com/certd/certd)  | ![](https://gitee.com/certd/certd/badge/star.svg?theme=dark)        |

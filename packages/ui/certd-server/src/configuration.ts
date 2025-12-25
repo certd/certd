@@ -31,6 +31,20 @@ process.on('uncaughtException', error => {
   }
 });
 
+// function startHeapLog() {
+//   function format(bytes: any) {
+//     return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+//   }
+//   function log()  {
+//     const mu = process.memoryUsage();
+//     logger.info(`rss:${format(mu.rss)},heapUsed: ${format(mu.heapUsed)},heapTotal: ${format(mu.heapTotal)},external: ${format(mu.external)}`);
+//   }
+//   setInterval(log, 200);
+//   log()
+// }
+
+// startHeapLog();
+
 @Configuration({
   detectorOptions: {
     ignore: [
@@ -64,6 +78,9 @@ export class MainConfiguration {
   app: koa.Application;
 
   async onReady() {
+
+
+
     // add middleware
     // this.app.useMiddleware([ReportMiddleware]);
     // add filter

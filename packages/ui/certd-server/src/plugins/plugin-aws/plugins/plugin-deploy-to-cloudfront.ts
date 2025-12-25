@@ -1,7 +1,7 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { AwsAccess, AwsRegions } from "../access.js";
-import { AwsAcmClient } from "../libs/aws-acm-client.js";
+import { AwsClient } from "../libs/aws-client.js";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { optionsUtils } from "@certd/basic";
 
@@ -115,9 +115,10 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
   }
 
   private async uploadToACM(access: AwsAccess, cert: CertInfo) {
-    const acmClient = new AwsAcmClient({
+    const acmClient = new AwsClient({
       access,
       region: this.region,
+      logger: this.logger,
     });
     const awsCertARN = await acmClient.importCertificate(cert);
     this.logger.info('证书上传成功,id=', awsCertARN);

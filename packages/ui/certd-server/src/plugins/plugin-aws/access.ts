@@ -64,6 +64,18 @@ export class AwsAccess extends BaseAccess {
     helper: '请妥善保管您的安全访问密钥。您可以在AWS管理控制台的IAM中创建新的访问密钥。',
   })
   secretAccessKey = '';
+
+  @AccessInput({
+    title: 'region',
+    component: {
+      name:"a-select",
+      options: AwsRegions,
+    },
+    required: true,
+    helper: '请选择您的默认AWS区域，默认us-east-1',
+    options: AwsRegions,
+  })
+  region = '';
 }
 
 new AwsAccess();
