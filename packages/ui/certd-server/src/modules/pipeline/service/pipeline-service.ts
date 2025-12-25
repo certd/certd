@@ -1012,7 +1012,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
                   title: "申请证书",
                   runnableType: "step",
                   input: {
-                    renewDays: 35,
+                    renewDays: 18,
                     domains: req.domains,
                     email: req.email,
                     "challengeType": "auto",

@@ -61,7 +61,7 @@ export default {
     description: "自动运行",
     setSchedule: "设置定时执行",
     pipelineSuccessThenSchedule: "流水线测试成功，接下来配置定时触发，以后每天定时执行就不用管了",
-    recommendDailyRun: "推荐配置每天运行一次，默认到期前35天会重新申请新证书并部署，没到期前会自动跳过，不会重复申请。",
+    recommendDailyRun: "推荐配置每天运行一次，默认到期前18天会重新申请新证书并部署，没到期前会自动跳过，不会重复申请。",
     setEmailNotification: "设置邮件通知",
     suggestErrorAndRecoveryEmails: "建议选择监听'错误时'和'错误转成功'两种即可，在意外失败时可以尽快去排查问题",
     tutorialEndTitle: "教程结束",

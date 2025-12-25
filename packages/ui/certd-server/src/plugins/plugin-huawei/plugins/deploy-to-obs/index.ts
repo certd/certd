@@ -170,13 +170,15 @@ export class HauweiDeployCertToOBS extends AbstractTaskPlugin {
     const params:any = {
       Bucket: bucket,
       DomainName: domain,
-      Name: this.buildCertName( domain)
+      DomainBody:{
+        Name: this.buildCertName( domain),  
+      }
     };
     if (typeof cert === 'string'){
-      params.CertificateId= cert
+      params.DomainBody.CertificateId= cert
     }else{
-      params.Certificate= cert.crt
-      params.PrivateKey = cert.key
+      params.DomainBody.Certificate= cert.crt
+      params.DomainBody.PrivateKey = cert.key
     }
     const res = await obsClient.setBucketCustomDomain(params)
     this.checkRet(res)

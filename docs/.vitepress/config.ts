@@ -122,6 +122,7 @@ export default defineConfig({
                         {text: "宝塔动态IP白名单", link: "/guide/use/baota/white_list.md"},
                         {text: "子域名托管", link: "/guide/use/cert/subdomain.md"},
                         {text: "流水线有效期", link: "/guide/use/pipeline/valid.md"},
+                        {text: "IP证书申请", link: "/guide/use/cert/ip.md"},
                     ]
                 },
                 {

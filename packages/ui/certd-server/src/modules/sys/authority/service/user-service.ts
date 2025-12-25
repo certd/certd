@@ -13,6 +13,7 @@ import { RandomUtil } from '../../../../utils/random.js';
 import dayjs from 'dayjs';
 import { DbAdapter } from '../../../db/index.js';
 import { simpleNanoId, utils } from '@certd/basic';
+import { OauthBoundService } from '../../../login/service/oauth-bound-service.js';
 
 export type RegisterType = 'username' | 'mobile' | 'email';
 export type ForgotPasswordType = 'mobile' | 'email';
@@ -41,6 +42,10 @@ export class UserService extends BaseService<UserEntity> {
   fileService: FileService;
   @Inject()
   dbAdapter: DbAdapter;
+
+   @Inject()
+  oauthBoundService: OauthBoundService;
+
 
   //@ts-ignore
   getRepository() {
@@ -311,6 +316,9 @@ export class UserService extends BaseService<UserEntity> {
       throw new CommonException('不能删除管理员');
     }
     await super.delete(ids);
+    await this.oauthBoundService.deleteWhere({
+      userId: In(ids),
+    });
   }
 
   async isAdmin(userId: any) {

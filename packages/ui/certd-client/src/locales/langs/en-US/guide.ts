@@ -61,7 +61,7 @@ export default {
     description: "Automatic running",
     setSchedule: "Set Scheduled Execution",
     pipelineSuccessThenSchedule: "Pipeline tests succeed, then configure scheduled triggers so it runs automatically daily",
-    recommendDailyRun: "Recommend configuring to run once daily; new certs requested 35 days before expiry and auto-skipped otherwise",
+    recommendDailyRun: "Recommend configuring to run once daily; new certs requested 18 days before expiry and auto-skipped otherwise",
     setEmailNotification: "Set Email Notifications",
     suggestErrorAndRecoveryEmails: "Suggest listening for 'On Error' and 'Error to Success' to quickly troubleshoot failures (basic version requires mail server setup)",
     tutorialEndTitle: "Tutorial End",

@@ -1,7 +1,7 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import { CertInfo } from '@certd/plugin-cert';
 import { AwsAccess, AwsRegions } from '../access.js';
-import { AwsAcmClient } from '../libs/aws-acm-client.js';
+import { AwsClient } from '../libs/aws-client.js';
 import { CertApplyPluginNames} from '@certd/plugin-cert';
 @IsTaskPlugin({
   name: 'AwsUploadToACM',
@@ -59,9 +59,10 @@ export class AwsUploadToACM extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const { cert, accessId, region } = this;
     const access = await this.getAccess<AwsAccess>(accessId);
-    const acmClient = new AwsAcmClient({
+    const acmClient = new AwsClient({
       access,
       region,
+      logger: this.logger,
     });
     this.awsCertARN = await acmClient.importCertificate(cert);
     this.logger.info('证书上传成功,id=', this.awsCertARN);

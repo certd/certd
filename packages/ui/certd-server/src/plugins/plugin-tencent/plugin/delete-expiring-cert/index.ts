@@ -54,8 +54,8 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
   @TaskInput({
     title: '即将过期天数',
     helper:
-      '仅删除有效期小于此天数的证书,\n<span class="color-red">注意：`1.26.14`版本之前Certd创建的证书流水线默认是到期前20天才更新证书，需要将之前创建的证书申请任务的更新天数改为35天，保证删除之前就已经替换掉即将过期证书</span>',
-    value: 30,
+      '仅删除有效期小于此天数的证书',
+    value: 18,
     component: {
       name: 'a-input-number',
       vModel: 'value',

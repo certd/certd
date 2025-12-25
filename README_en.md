@@ -13,6 +13,15 @@ Certd® is a free, fully automated certificate management system that ensures yo
 
 > The number of pipelines is now unlimited. Welcome to use it.
 
+
+Official Open Source Address: 
+
+[Github](https://github.com/certd/certd)   ![](https://img.shields.io/github/stars/certd/certd?logo=github)        
+[Gitee](https://gitee.com/certd/certd)   ![](https://gitee.com/certd/certd/badge/star.svg?theme=dark)        
+[AtomGit](https://atomgit.com/certd/certd)       ![](https://atomgit.com/certd/certd/star/badge.svg)   
+
+
+
 ## 1. Features
 This project not only supports automated certificate application but also automated certificate deployment and updates, ensuring your certificates never expire.
 
