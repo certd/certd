@@ -746,7 +746,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
         status: true
       },
       where: {
-        userId
+        userId,
+        disabled: false
       }
     });
     await this.fillLastVars(list);
