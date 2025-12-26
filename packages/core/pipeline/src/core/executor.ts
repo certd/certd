@@ -473,9 +473,7 @@ export class Executor {
           await this.options.emailService?.sendByTemplate({
             type: "pipelineResult",
             data: templateData,
-            email: {
-              receivers: notification.options?.receivers,
-            },
+            receivers: notification.options?.receivers,
           });
         } catch (e) {
           logger.error("send email error", e);

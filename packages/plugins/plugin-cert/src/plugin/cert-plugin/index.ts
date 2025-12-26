@@ -111,7 +111,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       options: [
         { value: "dns", label: "DNS直接验证" },
         { value: "cname", label: "CNAME代理验证" },
-        { value: "http", label: "HTTP文件验证" },
+        { value: "http", label: "HTTP文件验证（IP证书只能选它）" },
         { value: "dnses", label: "多DNS提供商" },
         { value: "auto", label: "自动匹配" },
       ],
@@ -119,7 +119,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     required: true,
     helper: `1. <b>DNS直接验证</b>：当域名dns解析已被本系统支持时（即下方DNS解析服务商选项中可选），推荐选择此方式
 2.  <b>CNAME代理验证</b>：支持任何注册商的域名，第一次需要手动添加[CNAME记录](#/certd/cname/record)（如果经常申请失败，建议将DNS服务器修改为阿里云/腾讯云的，然后使用DNS直接验证）
-3.  <b>HTTP文件验证</b>：不支持泛域名，需要配置网站文件上传
+3.  <b>HTTP文件验证</b>：不支持泛域名，需要配置网站文件上传（IP证书必须选它）
 4.  <b>多DNS提供商</b>：每个域名可以选择独立的DNS提供商
 5.  <b>自动匹配</b>：此处无需选择校验方式，需要在[域名管理](#/certd/cert/domain)中提前配置好校验方式
 `,
@@ -133,12 +133,12 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "icon-select",
       vModel: "value",
       options: [
-        { value: "letsencrypt", label: "Let's Encrypt（免费，新手推荐）", icon: "simple-icons:letsencrypt" },
+        { value: "letsencrypt", label: "Let's Encrypt（免费，新手推荐，支持IP证书）", icon: "simple-icons:letsencrypt" },
         { value: "google", label: "Google（免费）", icon: "flat-color-icons:google" },
         { value: "zerossl", label: "ZeroSSL（免费）", icon: "emojione:digit-zero" },
         { value: "litessl", label: "litessl（免费）", icon: "roentgen:free" },
         { value: "sslcom", label: "SSL.com（仅主域名和www免费）", icon: "la:expeditedssl" },
-        { value: "letsencrypt_staging", label: "Let's Encrypt测试环境（IP证书）", icon: "simple-icons:letsencrypt" },
+        { value: "letsencrypt_staging", label: "Let's Encrypt测试环境（仅供测试）", icon: "simple-icons:letsencrypt" },
       ],
     },
     helper: "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权\nZeroSSL：需要EAB授权，无需翻墙\nSSL.com：仅主域名和www免费,必须设置CAA记录",
