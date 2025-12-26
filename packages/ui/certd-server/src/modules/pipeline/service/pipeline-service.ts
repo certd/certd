@@ -47,6 +47,7 @@ import { CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { TaskServiceBuilder } from "./getter/task-service-getter.js";
 import { nanoid } from "nanoid";
 import { set } from "lodash-es";
+import { executorQueue } from "./executor-queue.js";
 
 const runningTasks: Map<string | number, Executor> = new Map();
 
@@ -311,7 +312,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       },
       where: {
         disabled: false,
-        templateId: 0
+        isTemplate: false
       }
     });
     const ids = idEntityList.map(item => {
@@ -489,11 +490,16 @@ export class PipelineService extends BaseService<PipelineEntity> {
           logger.warn("pipelineId为空,无法执行");
           return;
         }
-        try {
-          await this.run(pipelineId, triggerId);
-        } catch (e) {
-          logger.error("定时job执行失败：", e);
-        }
+        //加入执行队列
+        executorQueue.addTask({
+          task: async () => {
+            try {
+              await this.run(pipelineId, triggerId);
+            } catch (e) {
+              logger.error("定时job执行失败：", e);
+            }
+          }
+        });
       }
     });
     logger.info("当前定时器数量：", this.cron.getTaskSize());
@@ -666,12 +672,13 @@ export class PipelineService extends BaseService<PipelineEntity> {
       //如果不是手动触发
       //查找trigger
       const found = this.findTrigger(pipeline, triggerId);
+      const key = this.buildCronKey(pipeline.id, triggerId);
       if (!found) {
         //如果没有找到triggerId，说明被用户删掉了，这里再删除一次
-        this.cron.remove(this.buildCronKey(pipeline.id, triggerId));
+        this.cron.remove(key);
         triggerType = null;
       } else {
-        logger.info("timer trigger:" + found.id, found.title, found.cron);
+        logger.info(`timer trigger:${key}, ${found.title}, ${found.props}`);
         triggerType = "timer";
       }
     }
