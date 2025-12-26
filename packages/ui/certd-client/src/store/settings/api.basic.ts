@@ -54,6 +54,9 @@ export type SysPublicSetting = {
   //流水线是否启用有效期
   pipelineValidTimeEnabled?: boolean;
 
+  // 默认到期前更新天数
+  defaultCertRenewDays?: number;
+
   //证书域名添加到监控
   certDomainAddToMonitorEnabled?: boolean;
 
@@ -86,6 +89,9 @@ export type SysPrivateSetting = {
   httpsProxy?: string;
   dnsResultOrder?: string;
   commonCnameEnabled?: boolean;
+  // 同一个用户同时最大运行流水线数量
+  pipelineMaxRunningCount?: number;
+
   sms?: {
     type?: string;
     config?: any;

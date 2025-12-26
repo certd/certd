@@ -47,7 +47,7 @@ import { CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { TaskServiceBuilder } from "./getter/task-service-getter.js";
 import { nanoid } from "nanoid";
 import { set } from "lodash-es";
-import { executorQueue } from "./executor-queue.js";
+import { executorQueue } from "@certd/lib-server";
 
 const runningTasks: Map<string | number, Executor> = new Map();
 
@@ -373,7 +373,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       return;
     }
     for (const trigger of pipeline.triggers) {
-      this.registerCron(pipeline.id, trigger);
+      this.registerCron(pipeline.id, pipeline.userId, trigger);
     }
 
     if (immediateTriggerOnce) {
@@ -461,7 +461,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     logger.info("当前定时器数量：", this.cron.getTaskSize());
   }
 
-  registerCron(pipelineId, trigger) {
+  registerCron(pipelineId: number, userId: number, trigger) {
     if (pipelineId == null) {
       logger.warn("pipelineId为空，无法注册定时任务");
       return;
@@ -491,7 +491,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
           return;
         }
         //加入执行队列
-        executorQueue.addTask({
+        executorQueue.addTask(userId, {
           task: async () => {
             try {
               await this.run(pipelineId, triggerId);
@@ -678,7 +678,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         this.cron.remove(key);
         triggerType = null;
       } else {
-        logger.info(`timer trigger:${key}, ${found.title}, ${found.props}`);
+        logger.info(`timer trigger:${key}, ${found.title}, ${JSON.stringify(found.props)}`);
         triggerType = "timer";
       }
     }

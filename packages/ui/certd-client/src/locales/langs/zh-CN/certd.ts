@@ -759,6 +759,14 @@ export default {
       certDomainAddToMonitorEnabled: "证书域名添加到证书监控",
       certDomainAddToMonitorEnabledHelper: "创建证书流水线时是否可以选择将域名添加到证书监控",
 
+      defaultCertRenewDays: "默认到期前更新天数",
+      defaultCertRenewDaysHelper: "创建证书流水线时，默认的证书到期前更新天数",
+      defaultCertRenewDaysRecommend: "默认值15",
+
+      pipelineMaxRunningCount: "同时最大运行流水线数量",
+      pipelineMaxRunningCountHelper: "同一个用户同时运行的最大流水线数量，避免同时触发太多导致ACME账户被限制",
+      pipelineMaxRunningCountRecommend: "推荐5-10",
+
       fixedCertExpireDays: "固定证书有效期天数",
       fixedCertExpireDaysHelper: "固定证书有效期天数，有助于列表进度条整齐显示",
       fixedCertExpireDaysRecommend: "推荐90",

@@ -26,10 +26,24 @@
 
       <a-form-item :label="t('certd.sys.setting.fixedCertExpireDays')" :name="['public', 'fixedCertExpireDays']">
         <div class="flex items-center">
-          <a-input-number v-model:value="formState.public.fixedCertExpireDays" :placeholder="t('certd.sys.setting.fixedCertExpireDaysRecommend')" />
+          <a-input-number v-model:value="formState.public.fixedCertExpireDays" :disabled="!settingsStore.isPlus" :placeholder="t('certd.sys.setting.fixedCertExpireDaysRecommend')" />
           <vip-button class="ml-5" mode="button"></vip-button>
         </div>
         <div class="helper">{{ t("certd.sys.setting.fixedCertExpireDaysHelper") }}</div>
+      </a-form-item>
+
+      <a-form-item :label="t('certd.sys.setting.defaultCertRenewDays')" :name="['public', 'defaultCertRenewDays']">
+        <div class="flex items-center">
+          <a-input-number v-model:value="formState.public.defaultCertRenewDays" :placeholder="t('certd.sys.setting.defaultCertRenewDaysRecommend')" />
+        </div>
+        <div class="helper">{{ t("certd.sys.setting.defaultCertRenewDaysHelper") }}</div>
+      </a-form-item>
+
+      <a-form-item :label="t('certd.sys.setting.pipelineMaxRunningCount')" :name="['private', 'pipelineMaxRunningCount']">
+        <div class="flex items-center">
+          <a-input-number v-model:value="formState.private.pipelineMaxRunningCount" :placeholder="t('certd.sys.setting.pipelineMaxRunningCountRecommend')" />
+        </div>
+        <div class="helper">{{ t("certd.sys.setting.pipelineMaxRunningCountHelper") }}</div>
       </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">

@@ -8,6 +8,7 @@ import { BaseService } from '../../../basic/index.js';
 import { cache, logger, setGlobalProxy } from '@certd/basic';
 import * as dns from 'node:dns';
 import {mergeUtils} from "@certd/basic";
+import { executorQueue } from '../../basic/service/executor-queue.js';
 const {merge} = mergeUtils;
 /**
  * 设置
@@ -139,6 +140,10 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
 
     if (bean.dnsResultOrder) {
       dns.setDefaultResultOrder(bean.dnsResultOrder as any);
+    }
+
+    if (bean.pipelineMaxRunningCount){
+      executorQueue.setMaxRunningCount(bean.pipelineMaxRunningCount);
     }
   }
 

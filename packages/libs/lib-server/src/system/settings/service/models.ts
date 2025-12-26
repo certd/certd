@@ -43,11 +43,15 @@ export class SysPublicSettings extends BaseSettings {
   //流水线是否启用有效期
   pipelineValidTimeEnabled?: boolean = false;
 
+
   //证书域名添加到监控
   certDomainAddToMonitorEnabled?: boolean = false;
 
   // 固定证书有效期天数，0表示不固定
   fixedCertExpireDays?: number;
+
+  //默认到期前更新天数
+  defaultCertRenewDays?: number;
 
   // 第三方OAuth配置
   oauthEnabled?: boolean = false;
@@ -72,6 +76,8 @@ export class SysPrivateSettings extends BaseSettings {
   commonCnameEnabled?: boolean = true;
 
   httpRequestTimeout?: number = 30;
+
+  pipelineMaxRunningCount?: number;
 
   sms?: {
     type?: string;
