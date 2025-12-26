@@ -1,6 +1,6 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4688792 */
-  src: url('iconfont.svg?t=1754884110189#iconfont') format('svg');
+  src: url('iconfont.svg?t=1766772710945#iconfont') format('svg');
 }
 
 .iconfont {
@@ -11,12 +11,28 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-four:before {
-  content: "\e8fb";
+.icon-fnos:before {
+  content: "\e60a";
 }
 
 .icon-ksyun:before {
-  content: "\e65a";
+  content: "\e8ad";
+}
+
+.icon-cmcc:before {
+  content: "\e989";
+}
+
+.icon-xinnet:before {
+  content: "\e643";
+}
+
+.icon-ucloud:before {
+  content: "\e717";
+}
+
+.icon-four:before {
+  content: "\e8fb";
 }
 
 .icon-rainyun:before {

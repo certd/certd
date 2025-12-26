@@ -8,9 +8,9 @@ import { UCloudAccess } from "../access.js";
   name: "UCloudDeployToCDN",
   title: "UCloud-部署到CDN",
   desc: "将证书部署到UCloud CDN",
-  icon: "svg:icon-lucky",
+  icon: "svg:icon-ucloud",
   //插件分组
-  group: pluginGroups.cdn.key,
+  group: pluginGroups.ucloud.key,
   needPlus: false,
   default: {
     //默认值配置照抄即可

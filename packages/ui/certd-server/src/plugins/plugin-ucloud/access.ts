@@ -8,7 +8,7 @@ import { CertInfo, CertReader } from '@certd/plugin-cert';
 @IsAccess({
   name: 'ucloud',
   title: 'UCloud授权',
-  icon: 'lsicon:badge-new-filled',
+  icon: 'svg:icon-ucloud',
   desc: '优刻得授权',
 })
 export class UCloudAccess extends BaseAccess {

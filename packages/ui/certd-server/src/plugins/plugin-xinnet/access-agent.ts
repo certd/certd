@@ -7,7 +7,7 @@ import crypto from "crypto";
 @IsAccess({
   name: "xinnetagent",
   title: "新网授权（代理方式）",
-  icon: "lsicon:badge-new-filled",
+  icon: "svg:icon-xinnet",
   desc: ""
 })
 export class XinnetAgentAccess extends BaseAccess {

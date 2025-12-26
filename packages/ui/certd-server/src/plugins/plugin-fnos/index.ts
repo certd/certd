@@ -11,7 +11,7 @@ import {
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名
   name: "FnOSDeployToNAS",
   title: "飞牛NAS-部署证书",
-  icon: "svg:icon-lucky",
+  icon: "svg:icon-fnos",
   //插件分组
   group: pluginGroups.panel.key,
   needPlus: false,

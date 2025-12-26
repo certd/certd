@@ -7,9 +7,9 @@ import { UCloudAccess } from "../access.js";
   name: "UCloudUploadToUSSL",
   title: "UCloud-上传到USSL",
   desc: "将证书上传到UCloud USSL",
-  icon: "svg:icon-lucky",
+  icon: "svg:icon-ucloud",
   //插件分组
-  group: pluginGroups.cdn.key,
+  group: pluginGroups.ucloud.key,
   needPlus: false,
   default: {
     //默认值配置照抄即可

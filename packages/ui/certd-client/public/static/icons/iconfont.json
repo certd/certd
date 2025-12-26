@@ -6,18 +6,46 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "45984300",
+      "name": "飞牛",
+      "font_class": "fnos",
+      "unicode": "e60a",
+      "unicode_decimal": 58890
+    },
+    {
+      "icon_id": "21785199",
+      "name": "金山云logo",
+      "font_class": "ksyun",
+      "unicode": "e8ad",
+      "unicode_decimal": 59565
+    },
+    {
+      "icon_id": "17262195",
+      "name": "中国移动",
+      "font_class": "cmcc",
+      "unicode": "e989",
+      "unicode_decimal": 59785
+    },
+    {
+      "icon_id": "3445787",
+      "name": "xinnet",
+      "font_class": "xinnet",
+      "unicode": "e643",
+      "unicode_decimal": 58947
+    },
+    {
+      "icon_id": "41854093",
+      "name": "ucloud",
+      "font_class": "ucloud",
+      "unicode": "e717",
+      "unicode_decimal": 59159
+    },
+    {
       "icon_id": "544964",
       "name": "social-foursquare",
       "font_class": "four",
       "unicode": "e8fb",
       "unicode_decimal": 59643
-    },
-    {
-      "icon_id": "8567079",
-      "name": "ksyun-logo",
-      "font_class": "ksyun",
-      "unicode": "e65a",
-      "unicode_decimal": 58970
     },
     {
       "icon_id": "42174864",
