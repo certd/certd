@@ -83,11 +83,6 @@ export class AwsClient {
     // const { Route53Client, ChangeResourceRecordSetsCommand } = require("@aws-sdk/client-route-53"); // CommonJS import
     // import type { Route53ClientConfig } from "@aws-sdk/client-route-53";
     const client = await this.route53ClientGet();
-
-    const appendBody:any = {}
-    if(req.action === 'CREATE'){
-      appendBody.TTL = 60;
-    }
     const input = { // ChangeResourceRecordSetsRequest
       HostedZoneId: req.hostedZoneId, // required
       ChangeBatch: { // ChangeBatch
@@ -102,7 +97,7 @@ export class AwsClient {
                   Value: `"${req.value}"`, // required
                 },
               ],
-              ...appendBody
+              TTL: 60,
             },
           },
         ],
