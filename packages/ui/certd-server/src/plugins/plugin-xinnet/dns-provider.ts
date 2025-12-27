@@ -16,7 +16,7 @@ export type XinnetRecord = {
   name: "xinnet",
   title: "新网",
   desc: "新网域名解析",
-  icon: "lsicon:badge-new-filled",
+  icon: "svg:icon-xinnet",
   // 这里是对应的 cloudflare的access类型名称
   accessType: "xinnet",
   order: 7

@@ -185,6 +185,8 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
     if (res == null) {
       throw new Error("授权不存在，可能已被删除，请前往任务配置里面重新选择授权");
     }
+    res.ctx.logger = this.logger;
+    res.ctx.http = this.http;
     // @ts-ignore
     if (this.logger?.addSecret) {
       // 隐藏加密信息，不在日志中输出

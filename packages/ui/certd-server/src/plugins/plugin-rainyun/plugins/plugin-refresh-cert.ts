@@ -8,7 +8,7 @@ import { RainyunAccess } from "../access.js";
   name: "RainyunRefreshCert",
   title: "雨云-更新证书",
   desc: "app.rainyun.com",
-  icon: "svg:icon-lucky",
+  icon: "svg:icon-rainyun",
   //插件分组
   group: pluginGroups.cdn.key,
   needPlus: false,

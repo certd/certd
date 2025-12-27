@@ -11,7 +11,7 @@ export type XinnetAgentRecord = {
   name: "xinnetagent",
   title: "新网(代理方式)",
   desc: "新网域名解析(代理方式)",
-  icon: "lsicon:badge-new-filled",
+  icon: "svg:icon-xinnet",
   // 这里是对应的 cloudflare的access类型名称
   accessType: "xinnetagent",
   order: 7

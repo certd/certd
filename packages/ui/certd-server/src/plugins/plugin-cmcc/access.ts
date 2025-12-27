@@ -11,7 +11,7 @@ import { CmccClient } from "./cmcc-client.js";
   name: "cmcc",
   title: "中国移动CND授权",
   desc: "",
-  icon: "clarity:plugin-line"
+  icon: "svg:cmcc"
 })
 export class CmccAccess extends BaseAccess {
 

@@ -16,7 +16,7 @@ import {KsyunAccess} from "../access.js";
   name: "KsyunRefreshCert",
   title: "金山云-更新CDN证书",
   desc: "金山云自动更新CDN证书",
-  icon: "svg:icon-lucky",
+  icon: "svg:icon-ksyun",
   //插件分组
   group: pluginGroups.cdn.key,
   needPlus: false,

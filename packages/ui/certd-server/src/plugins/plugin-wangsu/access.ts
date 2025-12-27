@@ -10,7 +10,7 @@ import { CertInfo } from "@certd/plugin-cert";
   name: "wangsu",
   title: "网宿授权",
   desc: "",
-  icon: "svg:icon-lucky"
+  icon: "svg:icon-wangsu"
 })
 export class WangsuAccess extends BaseAccess {
 

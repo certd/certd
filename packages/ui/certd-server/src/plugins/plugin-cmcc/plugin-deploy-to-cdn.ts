@@ -15,7 +15,7 @@ import { CmccAccess } from "./access.js";
   name: "CmccDeployCertToCdn",
   title: "中国移动-部署证书到CDN",
   desc: "中国移动自动部署证书到CDN",
-  icon: "svg:icon-lucky",
+  icon: "svg:icon-cmcc",
   //插件分组
   group: pluginGroups.cdn.key,
   needPlus: true,

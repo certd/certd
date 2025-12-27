@@ -1,9 +1,10 @@
 import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
 
 export const AwsRegions = [
-  { label: 'cn-north-1', value: 'cn-north-1' },
-  { label: 'cn-northwest-1', value: 'cn-northwest-1' },
-  { label: '---------------', value: '--',disabled: true },
+  { label: '------中国区------', value: 'cn',disabled: true },
+  { label: '北京', value: 'cn-north-1' },
+  { label: '宁夏', value: 'cn-northwest-1' },
+  { label: '------海外-----', value: 'out',disabled: true },
   { label: 'us-east-1', value: 'us-east-1' },
   { label: 'us-east-2', value: 'us-east-2' },
   { label: 'us-west-1', value: 'us-west-1' },
@@ -72,7 +73,7 @@ export class AwsAccess extends BaseAccess {
       options: AwsRegions,
     },
     required: true,
-    helper: '请选择您的默认AWS区域，默认us-east-1',
+    helper: '请选择您的默认AWS区域，主要区分中国区还是海外区即可',
     options: AwsRegions,
   })
   region = '';

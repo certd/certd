@@ -63,6 +63,9 @@ async function openFormDialog() {
         form: {
           value: true,
           helper: "是否给流水线随机设置一个时间",
+          show: compute(({ form }) => {
+            return form.clear !== true;
+          }),
           component: {
             name: "fs-dict-switch",
             vModel: "checked",

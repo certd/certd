@@ -32,7 +32,7 @@ export class AwsRoute53Provider extends AbstractDnsProvider {
       fullRecord: fullRecord,
       type: type,
       value: value,
-      action: 'CREATE',
+      action: 'UPSERT',
     });
     return {
       hostedZoneId: ZoneId,

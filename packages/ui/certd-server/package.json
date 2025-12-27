@@ -75,6 +75,7 @@
     "@midwayjs/upload": "3.20.13",
     "@midwayjs/validate": "3.20.13",
     "@peculiar/x509": "^1.11.0",
+    "@ucloud-sdks/ucloud-sdk-js": "^0.2.4",
     "@volcengine/openapi": "^1.28.1",
     "ali-oss": "^6.21.0",
     "axios": "^1.7.2",

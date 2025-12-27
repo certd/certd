@@ -15,7 +15,7 @@ import { WangsuAccess } from "../access.js";
   name: "WangsuRefreshCert",
   title: "网宿-更新证书",
   desc: "网宿证书自动更新",
-  icon: "svg:icon-lucky",
+  icon: "svg:icon-wangsu",
   //插件分组
   group: pluginGroups.cdn.key,
   needPlus: false,

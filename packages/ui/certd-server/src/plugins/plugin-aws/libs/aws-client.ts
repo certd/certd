@@ -1,8 +1,8 @@
 // 导入所需的 SDK 模块
 import { AwsAccess } from '../access.js';
 import { CertInfo } from '@certd/plugin-cert';
-import {ILogger, utils} from '@certd/basic';
-type AwsClientOptions = { access: AwsAccess; region: string, logger:ILogger };
+import { ILogger, utils } from '@certd/basic';
+type AwsClientOptions = { access: AwsAccess; region: string, logger: ILogger };
 
 export class AwsClient {
   options: AwsClientOptions;
@@ -52,24 +52,24 @@ export class AwsClient {
     });
   }
 
-   async route53GetHostedZoneId(name:string) :Promise<{ZoneId:string,ZoneName:string}> {
+  async route53GetHostedZoneId(name: string): Promise<{ ZoneId: string, ZoneName: string }> {
     const hostedZones = await this.route53ListHostedZones(name);
-    const zoneId = hostedZones[0].Id.replace('/hostedzone/','');
+    const zoneId = hostedZones[0].Id.replace('/hostedzone/', '');
     this.logger.info(`获取到hostedZoneId:${zoneId},name:${hostedZones[0].Name}`);
     return {
       ZoneId: zoneId,
       ZoneName: hostedZones[0].Name,
     };
   }
-  async route53ListHostedZones(name:string) :Promise<{Id:string,Name:string}[]> {
-    const {  ListHostedZonesByNameCommand } =await import("@aws-sdk/client-route-53"); // ES Modules import
+  async route53ListHostedZones(name: string): Promise<{ Id: string, Name: string }[]> {
+    const { ListHostedZonesByNameCommand } = await import("@aws-sdk/client-route-53"); // ES Modules import
 
     const client = await this.route53ClientGet();
     const input = { // ListHostedZonesByNameRequest
       DNSName: name,
     };
     const command = new ListHostedZonesByNameCommand(input);
-    const response = await this.doRequest(()=>client.send(command));
+    const response = await this.doRequest(() => client.send(command));
     if (response.HostedZones.length === 0) {
       throw new Error(`找不到 HostedZone ${name}`);
     }
@@ -77,9 +77,10 @@ export class AwsClient {
     return response.HostedZones;
   }
 
-  async route53ChangeRecord(req:{
-    hostedZoneId:string,fullRecord:string,type:string, value:string, action:"CREATE"|"DELETE"}){
-    const {  ChangeResourceRecordSetsCommand} =await import("@aws-sdk/client-route-53"); // ES Modules import
+  async route53ChangeRecord(req: {
+    hostedZoneId: string, fullRecord: string, type: string, value: string, action: "UPSERT" | "DELETE"
+  }) {
+    const { ChangeResourceRecordSetsCommand } = await import("@aws-sdk/client-route-53"); // ES Modules import
     // const { Route53Client, ChangeResourceRecordSetsCommand } = require("@aws-sdk/client-route-53"); // CommonJS import
     // import type { Route53ClientConfig } from "@aws-sdk/client-route-53";
     const client = await this.route53ClientGet();
@@ -88,9 +89,9 @@ export class AwsClient {
       ChangeBatch: { // ChangeBatch
         Changes: [ // Changes // required
           { // Change
-            Action: req.action as any , // required
+            Action: req.action as any, // required
             ResourceRecordSet: { // ResourceRecordSet
-              Name: req.fullRecord+".", // required
+              Name: req.fullRecord, // required
               Type: req.type.toUpperCase() as any,
               ResourceRecords: [ // ResourceRecords
                 { // ResourceRecord
@@ -103,9 +104,9 @@ export class AwsClient {
         ],
       },
     };
-    this.logger.info(`添加域名解析参数：${JSON.stringify(input)}`);
+    this.logger.info(`设置域名解析参数：${JSON.stringify(input)}`);
     const command = new ChangeResourceRecordSetsCommand(input);
-    const response = await this.doRequest(()=>client.send(command));
+    const response = await this.doRequest(() => client.send(command));
     console.log('Add record successful:', JSON.stringify(response));
     await utils.sleep(3000);
     return response;
@@ -120,10 +121,10 @@ export class AwsClient {
 // };*/
   }
 
-  async doRequest<T>(call:()=>Promise<T>):Promise<T>{
-    try{
+  async doRequest<T>(call: () => Promise<T>): Promise<T> {
+    try {
       return await call();
-    }catch(err){
+    } catch (err) {
       this.logger.error(`调用接口失败:${err.Error?.Message || err.message},requestId:${err.requestId}`);
       throw err;
     }

@@ -247,7 +247,7 @@ async function getAuthoritativeDnsResolver(recordName, logger = log) {
 
     try {
         /* Resolve root domain by SOA */
-        const domain = await resolveDomainBySoaRecord(recordNam,logger);
+        const domain = await resolveDomainBySoaRecord(recordName,logger);
 
         /* Resolve authoritative NS addresses */
         logger(`获取到权威NS服务器name: ${domain}`);

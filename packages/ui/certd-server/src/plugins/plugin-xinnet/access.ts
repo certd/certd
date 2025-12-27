@@ -8,7 +8,7 @@ import { XinnetClient } from "@certd/plugin-plus";
 @IsAccess({
   name: "xinnet",
   title: "新网授权",
-  icon: "lsicon:badge-new-filled",
+  icon: "svg:icon-xinnet",
   desc: ""
 })
 export class XinnetAccess extends BaseAccess {

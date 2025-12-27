@@ -7,7 +7,7 @@ import { IsAccess, AccessInput, BaseAccess } from '@certd/pipeline';
 @IsAccess({
   name: 'xinnetconnect',
   title: '新网互联授权',
-  icon: 'lsicon:badge-new-filled',
+  icon: 'svg:icon-xinnet',
   desc: '仅支持代理账号，ip需要加入白名单',
 })
 export class XinnetConnectAccess extends BaseAccess {
