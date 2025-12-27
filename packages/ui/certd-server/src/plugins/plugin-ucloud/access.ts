@@ -151,7 +151,7 @@ export class UCloudAccess extends BaseAccess {
     const crtBase64 = this.ctx.utils.hash.base64(cert.crt)
     const keyBase64 = this.ctx.utils.hash.base64(cert.key)
     const allDomains = certReader.getAllDomains().join(",")
-        
+
     this.ctx.logger.info(`----------- 上传USSL证书，certName:${certName},domains:${allDomains}`);
     try {
       const resp = await this.invoke({
@@ -162,15 +162,15 @@ export class UCloudAccess extends BaseAccess {
         "SslMD5": this.ctx.utils.hash.md5(crtBase64 + keyBase64)
       });
       this.ctx.logger.info(`----------- 上传USSL证书成功，certId:${resp.CertificateID}`);
-      return { type: "ussl", id: resp.CertificateID, name: certName, resourceId: resp.LongResourceID,domains:allDomains }
+      return { type: "ussl", id: resp.CertificateID, name: certName, resourceId: resp.LongResourceID, domains: allDomains }
     } catch (err) {
 
-      if(err.message.includes("重复上传证书")){
+      if (err.message.includes("重复上传证书")) {
         //查找证书
         const certList = await this.SslGetCertList(certReader.getMainDomain());
-       
+
         const cert = certList.find((item: any) => item.Domains === allDomains)
-        if(cert){
+        if (cert) {
           this.ctx.logger.info(`----------- 找到已存在证书，certId:${cert.CertificateID}`);
           return { type: "ussl", id: cert.CertificateID, name: certName, domains: cert.Domains }
         }
@@ -188,9 +188,21 @@ export class UCloudAccess extends BaseAccess {
       Action: "GetCertificateList",
       Mode: "trust",
       Domain: domain,
-      Sort:"2"
+      Sort: "2"
     });
-    return resp.CertificateList||[];
+    return resp.CertificateList || [];
+  }
+
+  async WafSiteList(req: { PageNo: number, PageSize: number , FullDomain?: string }):Promise<{DomainHostList?:{RecordId:string,FullDomain:string}[],TotalCount:number}> {
+    const resp = await this.invoke({
+      "Action": "DescribeWafDomainHostInfo",
+      "ProjectId": this.projectId,
+      "Limit": req.PageSize,
+      "Offset": (req.PageNo - 1) * req.PageSize,
+      "FullDomain": req.FullDomain || undefined
+    });
+    this.ctx.logger.info(`获取到WAF站点列表:${JSON.stringify(resp)}`);
+    return resp;
   }
 
 
