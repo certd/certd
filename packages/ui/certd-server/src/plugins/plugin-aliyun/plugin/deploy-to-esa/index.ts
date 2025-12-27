@@ -126,6 +126,12 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
 
     for (const siteId of this.siteIds) {
 
+      try{
+        await this.clearSiteCert(client,siteId);
+      }catch (e) {
+        this.logger.error("清理站点[${siteId}]证书失败",e)
+      }
+
       try {
         const res = await client.doRequest({
           // 接口名称
@@ -149,13 +155,15 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
         }else{
           throw e;
         }
+      }finally{
+        try{
+          await this.clearSiteCert(client,siteId);
+        }catch (e) {
+          this.logger.error("清理站点[${siteId}]证书失败",e)
+        }
       }
 
-      try{
-        await this.clearSiteCert(client,siteId);
-      }catch (e) {
-        this.logger.error("清理站点[${siteId}]证书失败",e)
-      }
+      
 
     }
   }
