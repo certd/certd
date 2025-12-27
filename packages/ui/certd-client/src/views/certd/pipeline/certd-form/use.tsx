@@ -163,6 +163,7 @@ export function useCertPipelineCreator() {
               data: [
                 { value: "CertApply", label: "JS-ACME" },
                 { value: "CertApplyLego", label: "Lego-ACME" },
+                { value: "CertApplyAliyun", label: "Aliyun-Order" },
               ],
             }),
             form: {
@@ -174,6 +175,7 @@ export function useCertPipelineCreator() {
                     <ul>
                       <li>{t("certd.plugin.jsAcme")}</li>
                       <li>{t("certd.plugin.legoAcme")}</li>
+                      <li>{t("certd.plugin.aliyunOrder")}</li>
                     </ul>
                   );
                 },
@@ -201,7 +203,7 @@ export function useCertPipelineCreator() {
               component: {
                 name: "cron-editor",
                 vModel: "modelValue",
-                placeholder: "0 0 4 * * *",
+                placeholder: "0 0 4 * * * (表示凌晨4点执行)",
               },
               helper: t("certd.pipelineForm.triggerCronHelper"),
               order: 100,

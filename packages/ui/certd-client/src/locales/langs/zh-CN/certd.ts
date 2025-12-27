@@ -225,6 +225,7 @@ export default {
     selectTitle: "证书申请插件",
     jsAcme: "JS-ACME：使用简单方便，功能强大【推荐】",
     legoAcme: "Lego-ACME：基于Lego实现，支持海量DNS提供商，熟悉LEGO的用户可以使用",
+    aliyunOrder: "Aliyun-Order：从阿里云证书订单中获取证书更新",
   },
   pipelineForm: {
     createTitle: "创建证书流水线",

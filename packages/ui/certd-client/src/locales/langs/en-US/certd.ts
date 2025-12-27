@@ -220,6 +220,7 @@ export default {
     selectTitle: "Certificate Apply Plugin",
     jsAcme: "JS-ACME: Easy to use, powerful features [Recommended]",
     legoAcme: "Lego-ACME: Based on Lego, supports a wide range of DNS providers, suitable for users familiar with Lego",
+    aliyunOrder: "Aliyun-Order: Get certificate from Aliyun certificate order",
   },
   pipelineForm: {
     createTitle: "Create Certificate Pipeline",
