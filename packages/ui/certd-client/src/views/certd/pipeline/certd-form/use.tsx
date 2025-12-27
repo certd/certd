@@ -163,7 +163,7 @@ export function useCertPipelineCreator() {
               data: [
                 { value: "CertApply", label: "JS-ACME" },
                 { value: "CertApplyLego", label: "Lego-ACME" },
-                { value: "CertApplyAliyun", label: "Aliyun-Order" },
+                { value: "CertApplyGetFormAliyun", label: "Aliyun-Order" },
               ],
             }),
             form: {
