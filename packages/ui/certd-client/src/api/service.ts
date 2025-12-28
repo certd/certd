@@ -71,7 +71,7 @@ function createService() {
             // @ts-ignore
             response.config.onError(err);
           }
-          errorCreate(`${errorMessage}: ${response.config.url}`, showErrorNotify, dataAxios);
+          errorCreate(`${errorMessage} （请求接口： ${response.config.url}）`, showErrorNotify, dataAxios);
       }
     },
     error => {
@@ -113,7 +113,7 @@ function createService() {
         default:
           break;
       }
-      error.message += `: ${error.response?.config?.url}`;
+      error.message += `（ 请求接口：${error.response?.config?.url}）`;
       errorLog(error, error?.response?.config?.showErrorNotify);
       if (status === 401) {
         const userStore = useUserStore();

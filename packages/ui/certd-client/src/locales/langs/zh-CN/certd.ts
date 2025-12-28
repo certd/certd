@@ -57,6 +57,7 @@ export default {
   siteMonitorSetting: "站点监控设置",
   userSecurity: "认证安全设置",
   userProfile: "账号信息",
+  userGrant: "授权委托",
   suite: "套餐",
   mySuite: "我的套餐",
   suiteBuy: "套餐购买",
@@ -68,6 +69,13 @@ export default {
     greeting: "您好",
     profile: "账号信息",
     logout: "注销登录",
+
+    setting: {
+      grantSetting: "授权委托设置",
+      saveSuccess: "保存成功",
+      allowAdminViewCerts: "授权管理员查看和下载证书",
+      allowAdminViewCertsHelper: "允许管理员查看和下载我的所有证书",
+    },
   },
   dashboard: {
     greeting: "您好，{name}，欢迎使用 【{site}】",

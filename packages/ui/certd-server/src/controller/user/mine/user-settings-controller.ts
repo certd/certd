@@ -2,6 +2,9 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/c
 import { Constants, CrudController } from "@certd/lib-server";
 import { UserSettingsService } from "../../../modules/mine/service/user-settings-service.js";
 import { UserSettingsEntity } from "../../../modules/mine/entity/user-settings.js";
+import { UserGrantSetting } from "../../../modules/mine/service/models.js";
+import { isPlus } from "@certd/plus-core";
+import { merge } from "lodash-es";
 
 /**
  */
@@ -65,6 +68,26 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
     const entity = await this.service.getByKey(key, this.getUserId());
     return this.ok(entity);
   }
+@Post("/grant/get", { summary: Constants.per.authOnly })
+  async grantSettingsGet() {
+    const userId = this.getUserId();
+    const setting = await this.service.getSetting<UserGrantSetting>(userId, UserGrantSetting);
+    return this.ok(setting);
+  }
+
+  @Post("/grant/save", { summary: Constants.per.authOnly })
+  async grantSettingsSave(@Body(ALL) bean: UserGrantSetting) {
+    if (!isPlus()) {
+      throw new Error('本功能需要开通专业版')
+    }
+    const userId = this.getUserId();
+    const setting = new UserGrantSetting();
+    merge(setting, bean);
+
+    await this.service.saveSetting(userId, setting);
+    return this.ok({});
+  }
+
 
 
 }

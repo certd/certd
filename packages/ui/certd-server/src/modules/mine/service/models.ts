@@ -37,3 +37,12 @@ export class UserEmailSetting extends BaseSettings {
 
   list:string[] = [];
 }
+
+
+
+export class UserGrantSetting extends BaseSettings {
+  static __title__ = "用户授权设置";
+  static __key__ = "user.grant";
+
+  allowAdminViewCerts:boolean = false;
+}

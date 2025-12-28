@@ -52,6 +52,7 @@ export default {
   siteMonitorSetting: "Site Monitor Settings",
   userSecurity: "Security Settings",
   userProfile: "Account Info",
+  userGrant: "Grant Delegation",
   suite: "Suite",
   mySuite: "My Suite",
   suiteBuy: "Suite Purchase",
@@ -62,6 +63,12 @@ export default {
     greeting: "Hello",
     profile: "Account Info",
     logout: "Logout",
+    setting: {
+      grantSetting: "Grant Settings",
+      saveSuccess: "Save Success",
+      allowAdminViewCerts: "Allow Admin view and download Certs",
+      allowAdminViewCertsHelper: "Allow admin view and download all certificates",
+    },
   },
   dashboard: {
     greeting: "Hello, {name}, welcome to 【{site}】",

@@ -205,6 +205,17 @@ export const certdResources = [
             },
           },
           {
+            title: "certd.userGrant",
+            name: "UserGrantSetting",
+            path: "/certd/mine/grant",
+            component: "/certd/mine/grant/index.vue",
+            meta: {
+              icon: "mi:user-check",
+              auth: true,
+              isMenu: true,
+            },
+          },
+          {
             title: "certd.userProfile",
             name: "UserProfile",
             path: "/certd/mine/user-profile",

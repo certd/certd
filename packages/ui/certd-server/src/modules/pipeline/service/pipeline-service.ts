@@ -1072,4 +1072,16 @@ export class PipelineService extends BaseService<PipelineEntity> {
     });
     return res?.status;
   }
+
+  async getPipelineUserId(pipelineId: number) {
+    const res = await this.repository.findOne({
+      select: {
+        userId: true
+      },
+      where: {
+        id: pipelineId
+      }
+    });
+    return res?.userId;
+  }
 }

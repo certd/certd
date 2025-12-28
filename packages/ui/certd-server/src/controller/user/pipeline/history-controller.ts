@@ -10,6 +10,8 @@ import * as fs from "fs";
 import { logger } from "@certd/basic";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 import { In } from "typeorm";
+import { UserSettingsService } from "../../../modules/mine/service/user-settings-service.js";
+import { UserGrantSetting } from "../../../modules/mine/service/models.js";
 
 /**
  * 证书
@@ -29,6 +31,9 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Inject()
   sysSettingsService: SysSettingsService;
+
+  @Inject()
+  userSettingsService: UserSettingsService;
 
   getService(): HistoryService {
     return this.service;
@@ -77,7 +82,7 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body) {
-    const isAdmin = await this.authService.isAdmin(this.ctx);
+    const isAdmin = this.authService.isAdmin(this.ctx);
     if (!isAdmin) {
       body.userId = this.getUserId();
     }
@@ -89,7 +94,7 @@ export class HistoryController extends CrudController<HistoryService> {
     };
     const withDetail = body.withDetail;
     delete body.withDetail;
-    let select:any = null
+    let select: any = null
     if (!withDetail) {
       select = {
         pipeline: true, // 后面这里改成false
@@ -193,7 +198,6 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post('/files', { summary: Constants.per.authOnly })
   async files(@Query('pipelineId') pipelineId: number, @Query('historyId') historyId: number) {
-    await this.authService.checkEntityUserId(this.ctx, this.service, historyId);
     const files = await this.getFiles(historyId, pipelineId);
     return this.ok(files);
   }
@@ -210,14 +214,24 @@ export class HistoryController extends CrudController<HistoryService> {
       throw new CommonException('historyId is null');
     }
     if (history.userId !== this.getUserId()) {
-      throw new PermissionException();
+      // 如果是管理员，检查用户是否有授权管理员查看
+      const isAdmin = await this.isAdmin()
+      if (!isAdmin) {
+        throw new PermissionException();
+      }
+      // 是否允许管理员查看
+      const setting = await this.userSettingsService.getSetting<UserGrantSetting>(history.userId, UserGrantSetting, false);
+      if (setting?.allowAdminViewCerts!==true) {
+        //不允许管理员查看
+        throw new PermissionException("该流水线的用户还未授权管理员下载证书，请先让用户在”设置->授权委托“中打开开关");
+      }
+      //允许管理员查看
     }
     return await this.service.getFiles(history);
   }
 
   @Get('/download', { summary: Constants.per.authOnly })
   async download(@Query('pipelineId') pipelineId: number, @Query('historyId') historyId: number, @Query('fileId') fileId: string) {
-    await this.authService.checkEntityUserId(this.ctx, this.service, historyId);
     const files = await this.getFiles(historyId, pipelineId);
     const file = files.find(f => f.id === fileId);
     if (file == null) {

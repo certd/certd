@@ -1,6 +1,6 @@
 <template>
   <a-button v-if="showButton" type="primary" @click="open">
-    {{ $t("authentication.changePasswordButton") }}
+    {{ t("authentication.changePasswordButton") }}
   </a-button>
 </template>
 
