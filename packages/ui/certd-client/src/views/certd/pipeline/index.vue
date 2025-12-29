@@ -8,7 +8,7 @@
         <div class="batch-actions-inner">
           <span>{{ t("certd.selectedCount", { count: selectedRowKeys.length }) }}</span>
           <fs-button icon="ion:trash-outline" class="color-red" type="link" :text="t('certd.batchDelete')" @click="batchDelete"></fs-button>
-          <fs-button icon="icon-park-outline:replay-music" class="need-plus" type="link" :text="t('certd.batchForceRerun')" @click="batchRerun"></fs-button>
+          <batch-rerun :selected-row-keys="selectedRowKeys" @change="batchFinished"></batch-rerun>
           <change-group :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-group>
           <change-notification :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-notification>
           <change-trigger :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-trigger>
@@ -28,6 +28,7 @@ import { dict, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import ChangeGroup from "./components/change-group.vue";
 import ChangeTrigger from "./components/change-trigger.vue";
+import BatchRerun from "./components/batch-rerun.vue";
 import { Modal, notification } from "ant-design-vue";
 import * as api from "./api";
 import { useI18n } from "/src/locales";
@@ -70,20 +71,6 @@ function batchDelete() {
     async onOk() {
       await api.BatchDelete(selectedRowKeys.value);
       notification.success({ message: "删除成功" });
-      await crudExpose.doRefresh();
-      selectedRowKeys.value = [];
-    },
-  });
-}
-
-function batchRerun() {
-  settingStore.checkPlus();
-  Modal.confirm({
-    title: "确认强制重新运行吗",
-    content: "确定要强制重新运行选中流水线吗？(20条一批执行)",
-    async onOk() {
-      await api.BatchRerun(selectedRowKeys.value);
-      notification.success({ message: "任务已提交" });
       await crudExpose.doRefresh();
       selectedRowKeys.value = [];
     },

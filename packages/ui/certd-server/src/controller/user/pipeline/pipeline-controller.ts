@@ -192,8 +192,8 @@ export class PipelineController extends CrudController<PipelineService> {
   }
 
   @Post('/batchRerun', { summary: Constants.per.authOnly })
-  async batchRerun(@Body('ids') ids: number[]) {
-    await this.service.batchRerun(ids, this.getUserId());
+  async batchRerun(@Body('ids') ids: number[], @Body('force') force: boolean) {
+    await this.service.batchRerun(ids, this.getUserId(), force);
     return this.ok({});
   }
 }

@@ -117,11 +117,11 @@ export async function BatchDelete(pipelineIds: number[]): Promise<void> {
     data: { ids: pipelineIds },
   });
 }
-export async function BatchRerun(pipelineIds: number[]): Promise<void> {
+export async function BatchRerun(pipelineIds: number[], force: boolean): Promise<void> {
   return await request({
     url: apiPrefix + "/batchRerun",
     method: "post",
-    data: { ids: pipelineIds },
+    data: { ids: pipelineIds, force },
   });
 }
 

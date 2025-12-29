@@ -159,6 +159,7 @@ export default {
   selectedCount: "Selected {count} items",
   batchDelete: "Batch Delete",
   batchForceRerun: "Force Rerun",
+  batchRerun: "Rerun",
   applyCertificate: "Apply for Certificate",
   pipelineExecutionRecords: "Pipeline Execution Records",
   confirm: "Confirm",

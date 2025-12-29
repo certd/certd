@@ -165,6 +165,7 @@ export default {
   selectedCount: "已选择 {count} 项",
   batchDelete: "批量删除",
   batchForceRerun: "强制重新运行",
+  batchRerun: "重新运行",
   applyCertificate: "申请证书",
   pipelineExecutionRecords: "流水线执行记录",
   confirm: "确认",

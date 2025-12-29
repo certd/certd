@@ -898,7 +898,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async batchRerun(ids: number[], userId: any) {
+  async batchRerun(ids: number[], userId: any, force: boolean) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
@@ -919,18 +919,20 @@ export class PipelineService extends BaseService<PipelineEntity> {
     ids = list.map(item => item.id);
 
     //异步执行
-    this.startBatchRerun(ids);
+    this.startBatchRerun(userId,ids, force);
   }
 
-  async startBatchRerun(ids: number[]) {
-    //20条一批
-    const batchSize = 20;
-    for (let i = 0; i < ids.length; i += batchSize) {
-      const batchIds = ids.slice(i, i + batchSize);
-      const batchPromises = batchIds.map(async (id) => {
-        await this.run(id, null, "ALL");
+  startBatchRerun(userId:number, ids: number[], force: boolean) {
+    for (const id of ids) {
+      executorQueue.addTask(userId,{
+          task: async () => {
+            if (force) {
+              await this.run(id, null, "ALL");
+            } else {
+              await this.run(id, null);
+            }
+          }
       });
-      await Promise.all(batchPromises);
     }
   }
 
