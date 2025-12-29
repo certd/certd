@@ -51,7 +51,7 @@ jobs:
         run: |
           rootDir=$(pwd)
           rm -rf ./packages/ui/certd-client/dist/**/*.gz 
-          cd ./packages/ui/certd-client/dist && zip -r ../../../ui.zip .
+          cd ./packages/ui/certd-client/dist && zip -r ../ui.zip .
           cd $rootDir
           export ATOMGIT_TOKEN=${{ secrets.ATOMGIT_TOKEN }}
           pnpm install

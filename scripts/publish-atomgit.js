@@ -169,7 +169,7 @@ async function uploadFile(url, headers, data) {
 async function publishToAtomgit() {
     const release = await createRelease()
     const uploadUrl = await getUploadUrl()
-    const fileName = `ui.zip`
+    const fileName = `./packages/ui/certd-client/ui.zip`
     const fileData = fs.createReadStream(fileName)
     const contentLength = fs.statSync(fileName).size
     uploadUrl.headers['Content-Length'] = contentLength
