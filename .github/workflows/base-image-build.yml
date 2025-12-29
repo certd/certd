@@ -41,16 +41,9 @@ jobs:
       - name: Build default platforms
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           context: ./scripts/build/
           tags: |
-            greper/node-base:22-alpine-1
-      - name: Build armv7
-        uses: docker/build-push-action@v6
-        with:
-          platforms: linux/arm/v7
-          push: true
-          context: ./scripts/build/
-          tags: |
-            greper/node-base:22-alpine-1-armv7
+            greper/node-base:22-alpine-2
+     
