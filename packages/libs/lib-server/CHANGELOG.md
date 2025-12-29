@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.17](https://github.com/certd/certd/compare/v1.37.16...v1.37.17) (2025-12-29)
+
+### Performance Improvements
+
+* 执行队列数量支持设置 ([cd94488](https://github.com/certd/certd/commit/cd944882c3272adad4a2da94a3889a01fe05fe13))
+
 ## [1.37.16](https://github.com/certd/certd/compare/v1.37.15...v1.37.16) (2025-12-15)
 
 ### Bug Fixes

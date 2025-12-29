@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.17](https://github.com/certd/certd/compare/v1.37.16...v1.37.17) (2025-12-29)
+
+### Bug Fixes
+
+* 发送证书到邮箱插件的邮件模版转为使用邮箱配置中的通用模版 ([c5a3003](https://github.com/certd/certd/commit/c5a3003cf7b640500a90ec2c8961859ffe6fdb18))
+* 首页最快到期证书，不包含已禁用的流水线 ([d731956](https://github.com/certd/certd/commit/d731956b066e4dbbe24d4de7b3d3679b355eb97c))
+* 修复部署到华为obs 报错的bug ([dd19afc](https://github.com/certd/certd/commit/dd19afce928a7f36312af9df1e7e5ed3eb1e214a))
+* 修复从模版创建的流水线不会自动执行的bug ([833808c](https://github.com/certd/certd/commit/833808c5deb716122b241d3d67349d2d6a18bf45))
+* 修复流水线列表step数量统计错误的bug ([0e5a4fb](https://github.com/certd/certd/commit/0e5a4fb098d3261b690c551cf2b95198cac487e7))
+* 修复用户删除后，用相同的oauth授权登录报错用户不存在的问题 ([e505916](https://github.com/certd/certd/commit/e5059165259e4d757abc811c0c14bbc4a3dbaee9))
+* 修复站点ip监控报主站与ip证书过期时间不一致的问题 ([62f8525](https://github.com/certd/certd/commit/62f8525dd5da95dc07ed103f602644c6e5f7f8e3))
+* 修复serverchan3 没有选择tags报错的bug ([5bbf210](https://github.com/certd/certd/commit/5bbf210394883c4893c365bd16e999490b6e9b41))
+* telegram 修复消息内存在横杠无法发出的bug ([5f4469e](https://github.com/certd/certd/commit/5f4469e306187c31d8a74d53b17ea3a213420367))
+
+### Performance Improvements
+
+* 批量修改定时时间支持随机时间 ([d0f653d](https://github.com/certd/certd/commit/d0f653da9a2970920e961e7404ff04080bccd343))
+* 批量运行优化，支持普通运行和强制重新运行 ([039c62b](https://github.com/certd/certd/commit/039c62b09b37cdda35d33c6ee9adecad62dee75c))
+* 升级lego到4.30.1版本 ([136e8dd](https://github.com/certd/certd/commit/136e8dd7c5ff7199ff4b0bcca95b8a03aa847553))
+* 腾讯云EO增加请求参数打印 ([5b5deac](https://github.com/certd/certd/commit/5b5deac7d98684eda5c68384241a4d62c48d803b))
+* 优化阿里云esa清理证书时机 ([5359a76](https://github.com/certd/certd/commit/5359a7670fac5a18c4294b37a34227308a0deed6))
+* 优化源码方式部署，前端无需编译 ([13ddc97](https://github.com/certd/certd/commit/13ddc979ec7953e3db8db76dd23fd85a3b3c7997))
+* 支持部署到goedge ([44bf4b1](https://github.com/certd/certd/commit/44bf4b1cc1aafa2d711c3b8e408009f0ceb413eb))
+* 支持从阿里云商用证书订单中获取证书 ([8872466](https://github.com/certd/certd/commit/887246696861c3a0b1f99fd9ad978caea423c650))
+* 支持授权给管理员查看和下载用户证书 ([1347355](https://github.com/certd/certd/commit/1347355cb117694abe99da385352a19771a32e84))
+* 支持执行队列，避免同一时间触发流水线太多导致被限制 ([888d959](https://github.com/certd/certd/commit/888d9591fe9730b529e1c355d71f41e7ec9b479d))
+* 支持aws route53 dns ([cbb8319](https://github.com/certd/certd/commit/cbb8319cfa48673e81ec15894adc3376c173c97e))
+* 支持ucloud waf（未测试） ([a248367](https://github.com/certd/certd/commit/a248367b154c38661a6797ef64e37ec99d4e2abf))
+* 支持ucloud，上传到ussl，部署到ucdn ([e61daae](https://github.com/certd/certd/commit/e61daaee2d0dec19710cd4ec759219a071f2435e))
+* 执行队列数量支持设置 ([cd94488](https://github.com/certd/certd/commit/cd944882c3272adad4a2da94a3889a01fe05fe13))
+* aws route53 ([8caab1f](https://github.com/certd/certd/commit/8caab1fd9264df548f467b94202d567107b7a30b))
+* ip证书校验方式提示 ([773cada](https://github.com/certd/certd/commit/773cada57a01fb28ea8602062aaeec3d45109ea9))
+
 ## [1.37.16](https://github.com/certd/certd/compare/v1.37.15...v1.37.16) (2025-12-15)
 
 ### Bug Fixes

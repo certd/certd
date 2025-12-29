@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.17](https://github.com/certd/certd/compare/v1.37.16...v1.37.17) (2025-12-29)
+
+### Performance Improvements
+
+* 批量修改定时时间支持随机时间 ([d0f653d](https://github.com/certd/certd/commit/d0f653da9a2970920e961e7404ff04080bccd343))
+* 批量运行优化，支持普通运行和强制重新运行 ([039c62b](https://github.com/certd/certd/commit/039c62b09b37cdda35d33c6ee9adecad62dee75c))
+* 优化源码方式部署，前端无需编译 ([13ddc97](https://github.com/certd/certd/commit/13ddc979ec7953e3db8db76dd23fd85a3b3c7997))
+* 支持部署到goedge ([44bf4b1](https://github.com/certd/certd/commit/44bf4b1cc1aafa2d711c3b8e408009f0ceb413eb))
+* 支持从阿里云商用证书订单中获取证书 ([8872466](https://github.com/certd/certd/commit/887246696861c3a0b1f99fd9ad978caea423c650))
+* 支持授权给管理员查看和下载用户证书 ([1347355](https://github.com/certd/certd/commit/1347355cb117694abe99da385352a19771a32e84))
+* 执行队列数量支持设置 ([cd94488](https://github.com/certd/certd/commit/cd944882c3272adad4a2da94a3889a01fe05fe13))
+* aws route53 ([8caab1f](https://github.com/certd/certd/commit/8caab1fd9264df548f467b94202d567107b7a30b))
+
 ## [1.37.16](https://github.com/certd/certd/compare/v1.37.15...v1.37.16) (2025-12-15)
 
 ### Bug Fixes

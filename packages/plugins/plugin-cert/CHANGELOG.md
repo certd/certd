@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.17](https://github.com/certd/certd/compare/v1.37.16...v1.37.17) (2025-12-29)
+
+### Performance Improvements
+
+* 支持从阿里云商用证书订单中获取证书 ([8872466](https://github.com/certd/certd/commit/887246696861c3a0b1f99fd9ad978caea423c650))
+* ip证书校验方式提示 ([773cada](https://github.com/certd/certd/commit/773cada57a01fb28ea8602062aaeec3d45109ea9))
+
 ## [1.37.16](https://github.com/certd/certd/compare/v1.37.15...v1.37.16) (2025-12-15)
 
 ### Bug Fixes
