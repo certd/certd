@@ -1,4 +1,13 @@
 FROM node:22-alpine AS builder
+
+RUN apk add build-base
+RUN wget -O - https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar -xj && \
+    cd jemalloc-5.3.0 && \
+    ./configure && \
+    make && \
+    make install
+
+
 WORKDIR /workspace/
 COPY . /workspace/
 # armv7 目前只能用node18， pnpm9不支持node18,所以pnpm只能用8.15.7版本
@@ -14,6 +23,12 @@ RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 FROM node:22-alpine
 EXPOSE 7001
 EXPOSE 7002
+
+# 安装jemalloc内存分配器，优化内存占用
+COPY --from=builder /usr/local/lib/libjemalloc.so.2 /usr/local/lib/
+ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
+
+
 RUN apk add --no-cache openssl
 RUN apk add --no-cache openjdk8
 WORKDIR /app/
@@ -21,7 +36,7 @@ COPY --from=builder /workspace/certd-server/ /app/
 
 COPY ./patch/ssh2/*.js /app/node_modules/.pnpm/node_modules/ssh2/lib/protocol/
 
-ENV LEGO_VERSION=4.22.2
+ENV LEGO_VERSION=4.30.1
 ENV LEGO_DOWNLOAD_DIR=/app/tools/lego
 RUN mkdir -p $LEGO_DOWNLOAD_DIR
 

@@ -49,7 +49,7 @@ export class AutoZPrint {
     }
     setInterval(() => {
       const mu = process.memoryUsage();
-      logger.info(`rss:${format(mu.rss)},heapUsed: ${format(mu.heapUsed)},heapTotal: ${format(mu.heapTotal)},external: ${format(mu.external)}`);
+      logger.info(`rss:${format(mu.rss)},heapUsed: ${format(mu.heapUsed)},heapTotal: ${format(mu.heapTotal)},external: ${format(mu.external)},arrayBuffers: ${format(mu.arrayBuffers)}`);
     }, 20000);
   }
 
