@@ -1,5 +1,5 @@
-import {AccessInput, BaseAccess, IsAccess} from "@certd/pipeline";
-import {HttpRequestConfig} from "@certd/basic";
+import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
+import { HttpRequestConfig } from "@certd/basic";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
 import dayjs from "dayjs";
 
@@ -17,10 +17,10 @@ export class GoEdgeAccess extends BaseAccess {
   @AccessInput({
     title: "系统地址",
     component: {
-        name: "a-input",
-        vModel: "value"
+      name: "a-input",
+      vModel: "value"
     },
-    helper:"例如：http://yourdomain.com:8002， 需要在API节点配置中开启HTTP访问地址",
+    helper: "例如：http://yourdomain.com:8002， 需要在API节点配置中开启HTTP访问地址",
     encrypt: false,
     required: true
   })
@@ -49,7 +49,7 @@ export class GoEdgeAccess extends BaseAccess {
 
   @AccessInput({
     title: "accessKeyId",
-    helper:`用户AccessKey: 在”平台用户-用户-详情-AccessKey” 或 商业版的“访问控制” 中创建。
+    helper: `用户AccessKey: 在”平台用户-用户-详情-AccessKey” 或 商业版的“访问控制” 中创建。
 管理员AccessKey：在”系统用户-用户-详情-AccessKey” 中创建。`,
     component: {
       name: "a-input",
@@ -83,11 +83,11 @@ export class GoEdgeAccess extends BaseAccess {
   })
   testRequest = true;
 
-  accessToken: {expiresAt:number,token:string}
+  accessToken: { expiresAt: number, token: string }
 
   async onTestRequest() {
-      await this.getCertList({pageSize:1});
-      return "ok"
+    await this.getCertList({ pageSize: 1 });
+    return "ok"
   }
 
   /**
@@ -115,32 +115,32 @@ export class GoEdgeAccess extends BaseAccess {
     "ocspError": ""
    * @returns 
    */
-  async getCertList(req:{pageNo?:number,pageSize?:number,query?:string,onlyUser?:boolean,userId?:number}){
+  async getCertList(req: { pageNo?: number, pageSize?: number, query?: string, onlyUser?: boolean, userId?: number }) {
     const pageNo = req.pageNo ?? 1;
     const pageSize = req.pageSize ?? 20;
-    const body:any = {
-        keyword: req.query??"",
-	      offset: (pageNo-1)*pageSize,
-        size: pageSize,
+    const body: any = {
+      keyword: req.query ?? "",
+      offset: (pageNo - 1) * pageSize,
+      size: pageSize,
     }
-     if (req.onlyUser){
+    if (req.onlyUser) {
       body["onlyUser"] = true;
     }
-    if (req.userId){
+    if (req.userId) {
       body["userId"] = req.userId;
     }
 
     const countRes = await this.doRequest({
       url: `/SSLCertService/countSSLCerts`,
       method: "POST",
-      data:body
+      data: body
     });
     const total = countRes.count || 9999;
 
     const res = await this.doRequest({
       url: `/SSLCertService/listSSLCerts`,
       method: "POST",
-      data:body
+      data: body
     });
     // this.ctx.logger.info("getCertList",JSON.stringify(res));
     const sslCertsJSON = this.ctx.utils.hash.base64Decode(res.sslCertsJSON) || "[]";
@@ -153,21 +153,26 @@ export class GoEdgeAccess extends BaseAccess {
     }
   }
 
-  async doCertReplace(req:{certId:number,cert:CertInfo}){
+  async doCertReplace(req: { certId: number, cert: CertInfo }) {
 
-    const res = await this.doRequest({
-      url: `/SSLCertService/findEnabledSSLCertConfig`,
-      method: "POST",
-      data: {
-        sslCertId: req.certId,
-      }
-    });
-    const sslCertJSON = this.ctx.utils.hash.base64Decode(res.sslCertJSON) || "{}";
-    const sslCert = JSON.parse(sslCertJSON) ;
+    let sslCert:any = {}
+    try {
+      const res = await this.doRequest({
+        url: `/SSLCertService/findEnabledSSLCertConfig`,
+        method: "POST",
+        data: {
+          sslCertId: req.certId,
+        }
+      });
+      const sslCertJSON = this.ctx.utils.hash.base64Decode(res.sslCertJSON) || "{}";
+      sslCert = JSON.parse(sslCertJSON);
+    } catch (error) {
+      this.ctx.logger.error("获取原来的证书详情失败", error);
+    }
 
     const certReader = new CertReader(req.cert);
     const dnsNames = certReader.getAllDomains()
-    
+
     // /product/sslcenter/{id}
     return await this.doRequest({
       url: `/SSLCertService/updateSSLCert`,
@@ -175,31 +180,31 @@ export class GoEdgeAccess extends BaseAccess {
       data: {
         sslCertId: req.certId,
         certData: this.ctx.utils.hash.base64(req.cert.crt),
-		    keyData: this.ctx.utils.hash.base64(req.cert.key),
-        isOn: sslCert.isOn,
+        keyData: this.ctx.utils.hash.base64(req.cert.key),
+        isOn: sslCert.isOn ?? true,
         name: sslCert.name || certReader.buildCertName(),
         description: sslCert.description || "upload by certd",
         serverName: sslCert.serverName,
-        timeBeginAt: certReader.detail.notBefore.getTime()/1000,
-        timeEndAt: certReader.detail.notAfter.getTime()/1000,
+        timeBeginAt: certReader.detail.notBefore.getTime() / 1000,
+        timeEndAt: certReader.detail.notAfter.getTime() / 1000,
         dnsNames: dnsNames,
         /**
          * // 是否启用
-	bool isOn;
+  bool isOn;
 
-	// 名称
-	string name;
+  // 名称
+  string name;
 
-	// 描述（备注）
-	string description;
-	string serverName;
-	bool isCA;
-	bytes certData;
-	bytes keyData;
-	int64 timeBeginAt;
-	int64 timeEndAt;
-	[]string dnsNames;
-	[]string commonNames;
+  // 描述（备注）
+  string description;
+  string serverName;
+  bool isCA;
+  bytes certData;
+  bytes keyData;
+  int64 timeBeginAt;
+  int64 timeEndAt;
+  []string dnsNames;
+  []string commonNames;
          */
       }
     });
@@ -207,9 +212,9 @@ export class GoEdgeAccess extends BaseAccess {
   }
 
 
-  async getToken(){
+  async getToken() {
     // /APIAccessTokenService/getAPIAccessToken
-    if (this.accessToken && this.accessToken.expiresAt >dayjs().unix()){
+    if (this.accessToken && this.accessToken.expiresAt > dayjs().unix()) {
       return this.accessToken;
     }
 
@@ -226,26 +231,26 @@ export class GoEdgeAccess extends BaseAccess {
     return res;
   }
 
-  async doRequest(req:HttpRequestConfig){
+  async doRequest(req: HttpRequestConfig) {
 
-    const headers: Record<string,string> = {}
-    if(!req.url.endsWith("/getAPIAccessToken")){
-      if (!this.accessToken || this.accessToken.expiresAt < dayjs().unix()){
+    const headers: Record<string, string> = {}
+    if (!req.url.endsWith("/getAPIAccessToken")) {
+      if (!this.accessToken || this.accessToken.expiresAt < dayjs().unix()) {
         await this.getToken();
       }
       headers["X-Edge-Access-Token"] = this.accessToken.token;
     }
     let endpoint = this.endpoint;
-    if (endpoint.endsWith("/")){
-      endpoint = endpoint.slice(0,-1);
+    if (endpoint.endsWith("/")) {
+      endpoint = endpoint.slice(0, -1);
     }
-    const res =  await this.ctx.http.request({
+    const res = await this.ctx.http.request({
       url: req.url,
       baseURL: endpoint,
-      method: req.method|| "POST",
+      method: req.method || "POST",
       data: req.data,
-      params:  req.params,
-      headers:{
+      params: req.params,
+      headers: {
         ...headers,
         ...req.headers
       },
