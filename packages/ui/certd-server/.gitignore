@@ -23,3 +23,5 @@ tools/lego/*
 !tools/lego/readme.md
 test.mjs
 isolate-*.log
+
+ui-*.zip

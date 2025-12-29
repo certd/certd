@@ -57,16 +57,18 @@ echo "构建完成"
 
 echo "下载前端ui"
 # 如果zip有了就不下载
-if [ -f ui-$version.zip ]; then
+if [ -f ./ui-$version.zip ]; then
   echo "ui-$version.zip 已经存在，不需要下载"
 else
+  echo "ui-$version.zip 不存在，开始下载"
   # 下载之前清理一下
   rm -rf ui-*.zip
   # https://atomgit.com/certd/certd/releases/download/v1.37.16/ui-1.37.16.zip
   # 判断是否下载失败
   wget https://atomgit.com/certd/certd/releases/download/v$version/ui-$version.zip
+fi
 # 覆盖解压缩
-unzip -o ui-$version.zip -d ./public
+unzip -o -q ui-$version.zip -d ./public
 
 echo "启动服务"
 
