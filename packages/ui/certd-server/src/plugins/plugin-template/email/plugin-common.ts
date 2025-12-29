@@ -21,6 +21,7 @@ export class CommonEmailTemplateProvider extends BaseEmailTemplateProvider imple
         {label:"URL",value:"url"}
       ]
     },
+    helper:"html格式下${content}建议使用pre标签包裹：例如：&lt;pre&gt;${content}&lt;/pre&gt;",
     col: { span: 24 },
   })
   paramIntro = "";
