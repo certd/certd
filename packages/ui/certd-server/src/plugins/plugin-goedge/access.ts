@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 @IsAccess({
   name: "goedge",
   title: "GoEdge授权",
-  icon: "fa:leaf:#6C6BF6",
+  icon: "fa-solid:leaf:#6C6BF6",
   order: 100
 })
 export class GoEdgeAccess extends BaseAccess {

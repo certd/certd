@@ -8,7 +8,7 @@ import { GoEdgeAccess } from "../access.js";
   name: "GoEdgeRefreshCert",
   title: "GoEdge-更新证书",
   desc: "GoEdge",
-  icon: "fa:leaf:#6C6BF6",
+  icon: "fa-solid:leaf:#6C6BF6",
   //插件分组
   group: pluginGroups.cdn.key,
   needPlus: false,
