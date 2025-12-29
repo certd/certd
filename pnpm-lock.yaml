@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      axios:
-        specifier: ^1.7.7
-        version: 1.9.0(debug@4.4.1)
       copyfiles:
         specifier: ^2.4.1
         version: 2.4.1
@@ -33,6 +30,9 @@ importers:
       '@lerna-lite/version':
         specifier: ^3.9.3
         version: 3.12.3(@lerna-lite/publish@3.12.3)(@lerna-lite/run@3.12.3)(@types/node@22.15.18)(typescript@5.8.3)
+      axios:
+        specifier: ^1.9.0
+        version: 1.9.0(debug@4.4.1)
       medium-zoom:
         specifier: ^1.1.0
         version: 1.1.0
@@ -55,7 +55,7 @@ importers:
         specifier: ^3.0.5
         version: 3.0.6
       axios:
-        specifier: ^1.7.2
+        specifier: ^1.9.0
         version: 1.9.0(debug@4.4.1)
       debug:
         specifier: ^4.3.5
@@ -128,7 +128,7 @@ importers:
         specifier: ^1.4.1
         version: 1.4.1
       axios:
-        specifier: ^1.7.2
+        specifier: ^1.9.0
         version: 1.9.0(debug@4.4.1)
       dayjs:
         specifier: ^1.11.7
@@ -286,7 +286,7 @@ importers:
   packages/libs/lib-huawei:
     dependencies:
       axios:
-        specifier: ^1.7.2
+        specifier: ^1.9.0
         version: 1.9.0(debug@4.4.1)
       rimraf:
         specifier: ^5.0.5
@@ -1131,7 +1131,7 @@ importers:
         specifier: ^4.2.5
         version: 4.2.5
       axios:
-        specifier: ^1.7.2
+        specifier: ^1.9.0
         version: 1.9.0(debug@4.4.1)
       axios-mock-adapter:
         specifier: ^1.22.0
@@ -1579,7 +1579,7 @@ importers:
         specifier: ^6.21.0
         version: 6.23.0
       axios:
-        specifier: ^1.7.2
+        specifier: ^1.9.0
         version: 1.9.0(debug@4.4.1)
       basic-ftp:
         specifier: ^5.0.5

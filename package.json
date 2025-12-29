@@ -8,6 +8,7 @@
     "@lerna-lite/publish": "^3.9.3",
     "@lerna-lite/run": "^3.9.3",
     "@lerna-lite/version": "^3.9.3",
+    "axios": "^1.9.0",
     "medium-zoom": "^1.1.0",
     "vitepress": "^2.0.0-alpha.4",
     "vitepress-plugin-lightbox": "^1.0.2"
@@ -42,7 +43,6 @@
   },
   "license": "AGPL-3.0",
   "dependencies": {
-    "axios": "^1.7.7",
     "copyfiles": "^2.4.1",
     "lodash-es": "^4.17.21",
     "typescript": "^5.4.2"

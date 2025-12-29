@@ -78,7 +78,7 @@
     "@ucloud-sdks/ucloud-sdk-js": "^0.2.4",
     "@volcengine/openapi": "^1.28.1",
     "ali-oss": "^6.21.0",
-    "axios": "^1.7.2",
+    "axios": "^1.9.0",
     "basic-ftp": "^5.0.5",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.1.2",
