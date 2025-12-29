@@ -775,7 +775,7 @@ export default {
 
       pipelineMaxRunningCount: "同时最大运行流水线数量",
       pipelineMaxRunningCountHelper: "同一个用户同时运行的最大流水线数量，避免同时触发太多导致ACME账户被限制",
-      pipelineMaxRunningCountRecommend: "推荐5-10",
+      pipelineMaxRunningCountRecommend: "推荐5-15，默认10",
 
       fixedCertExpireDays: "固定证书有效期天数",
       fixedCertExpireDaysHelper: "固定证书有效期天数，有助于列表进度条整齐显示",
