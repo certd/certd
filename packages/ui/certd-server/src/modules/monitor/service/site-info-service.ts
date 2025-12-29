@@ -210,7 +210,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         if (item.error) {
           errorMessage += `${item.ipAddress}：${item.error}； \n`;
         } else if (item.certExpiresTime !== certExpiresTime) {
-          errorMessage += `${item.ipAddress}：与主站证书过期时间不一致； \n`;
+          errorMessage += `${item.ipAddress}：与主站证书过期时间不一致(主站：${dayjs(certExpiresTime).format("YYYY-MM-DD")}，IP：${dayjs(item.certExpiresTime).format("YYYY-MM-DD")})； \n`;
         } else {
           errorCount--;
         }
