@@ -1,7 +1,7 @@
 name: sync-to-atomgit
 on:
   push:
-    branches: ['v2-dev']
+    branches: ['v2']
 #  schedule:
 #    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
 #    - cron: '17 19 * * *'
@@ -30,5 +30,5 @@ jobs:
       - name: push to atomgit               # 4. 执行同步
         run: |
           git remote add upstream https://atomgit.com/certd/certd
-          git push --set-upstream upstream v2-dev
+          git push --set-upstream upstream v2
 
