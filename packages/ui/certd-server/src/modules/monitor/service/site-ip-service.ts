@@ -175,7 +175,11 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
 
       await this.update(updateData);
       logger.info(`测试站点ip成功: id=${updateData.id},ip=${entity.ipAddress},expiresTime=${updateData.certExpiresTime}`)
-      return updateData
+
+      return {
+        ...updateData,
+        ipAddress: entity.ipAddress,
+      }
 
     } catch (e) {
       logger.error("check site ip error", e);

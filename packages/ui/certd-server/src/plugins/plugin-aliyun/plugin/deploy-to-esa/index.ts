@@ -162,9 +162,6 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
           this.logger.error("清理站点[${siteId}]证书失败",e)
         }
       }
-
-      
-
     }
   }
 
