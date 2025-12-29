@@ -131,7 +131,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
       let stepCount = 0;
       if (pipeline.stages) {
         RunnableCollection.each(pipeline.stages, (runnable: any) => {
-          stepCount++;
+          if (runnable.runnableType === "step") {
+            stepCount++;
+          }
         });
       }
       // @ts-ignore
