@@ -117,7 +117,6 @@ jobs:
 #            registry.cn-shenzhen.aliyuncs.com/handsfree/certd-agent:${{steps.get_certd_version.outputs.result}}
 #            greper/certd-agent:latest
 #            greper/certd-agent:${{steps.get_certd_version.outputs.result}}
-
       - name: deploy-certd-doc
         uses: tyrrrz/action-http-request@master
         with:
@@ -131,3 +130,13 @@ jobs:
             Content-Type: application/json
           retry-count: 3
           retry-delay: 5000
+      
+      - name: publish_to_atomgit
+        id: publish_to_atomgit
+        run: |
+          rm -rf ./packages/ui/certd-client/dist/**/*.gz 
+          zip -r ui.zip ./packages/ui/certd-client/dist
+          export ATOMGIT_TOKEN=${{ secrets.ATOMGIT_TOKEN }}
+          pnpm install
+          npm run publish_to_atomgit
+        working-directory: ./
