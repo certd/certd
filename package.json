@@ -27,8 +27,8 @@
     "prepublishOnly1": "npm run check && lerna run build ",
     "prepublishOnly2": "npm run check && npm run before-build && lerna run build ",
     "before-build": "npm run transform-sql && cd ./packages/core/basic && time /t >build.md && git add ./build.md && git commit -m \"build: prepare to build\"",
-    "deploy1": "node --experimental-json-modules deploy.js ",
-    "check": "node --experimental-json-modules publish-check.js",
+    "deploy1": "node --experimental-json-modules ./scripts/deploy.js ",
+    "check": "node --experimental-json-modules ./scripts/publish-check.js",
     "init": "lerna run build",
     "init:dev": "lerna run build",
     "docs:dev": "vitepress dev docs",
@@ -36,7 +36,9 @@
     "docs:preview": "vitepress preview docs",
     "pub": "echo 1",
     "dev": "pnpm run -r --parallel  compile ",
-    "release": "time /t >trigger/release.trigger && git add trigger/release.trigger && git commit -m \"build: release\" && git push"
+    "release": "time /t >trigger/release.trigger && git add trigger/release.trigger && git commit -m \"build: release\" && git push",
+    "publish_to_atomgit": "node --experimental-json-modules ./scripts/publish-atomgit.js",
+    "get_version": "node --experimental-json-modules ./scripts/version.js"
   },
   "license": "AGPL-3.0",
   "dependencies": {

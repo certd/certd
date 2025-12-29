@@ -1,0 +1,56 @@
+name: publish-atomgit
+on:
+  push:
+    branches: ['v2-dev']
+    paths:
+      - "trigger/publish.trigger"
+#  workflow_run:
+#    workflows: [ "deploy-demo" ]
+#    types:
+#      - completed
+
+#  schedule:
+#    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
+#    - cron: '17 19 * * *'
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish-atomgit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: get_certd_version
+        id: get_certd_version
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const pnpmWorkspace = "./pnpm-workspace.yaml";
+            fs.unlinkSync(pnpmWorkspace)
+            const jsonFilePath = "./packages/ui/certd-server/package.json";
+            const jsonContent = fs.readFileSync(jsonFilePath, 'utf-8');
+            const pkg = JSON.parse(jsonContent)
+            console.log("certd_version:",pkg.version);
+            return pkg.version
+
+      - name: zip_front
+        id: zip_front
+        run: |
+          rm -rf ./packages/ui/certd-client/dist/**/*.gz 
+          zip -r ui.zip ./packages/ui/certd-client/dist
+
+      - name: publish_to_atomgit
+        id: publish_to_atomgit
+        run: |
+          export ATOMGIT_TOKEN=${{ secrets.ATOMGIT_TOKEN }}
+          npm run publish_to_atomgit
+        working-directory: ./

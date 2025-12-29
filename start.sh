@@ -18,10 +18,10 @@ fi
 # fi
 # find ./packages -mindepth 1 -maxdepth 1 -type d ! -name 'ui' -exec rm -rf {} +
 # echo "删除成功"
-
+echo "修改 pnpm-workspace.yaml"
 cat > pnpm-workspace.yaml << EOF
 packages:
-  - 'packages/ui/**'
+  - 'packages/ui/certd-server'
 EOF
 
 
@@ -43,17 +43,31 @@ $SUDO_CMD npm install -g pnpm --registry https://registry.npmmirror.com
 echo "安装依赖"
 $SUDO_CMD pnpm install --registry https://registry.npmmirror.com
 
-echo "开始构建"
-echo "构建certd-client"
-export NODE_OPTIONS=--max-old-space-size=32768
-cd packages/ui/certd-client
-$SUDO_CMD_E pnpm run build
-cp -r dist/* ../certd-server/public
 
+# 获取版本号
+version=$(node --experimental-json-modules ./scripts/version.js)
+echo "当前版本号为: $version"
+
+echo "开始构建"
+cd packages/ui/certd-server
 echo "构建certd-server"
-cd ../certd-server
 $SUDO_CMD_E pnpm run build
 echo "构建完成"
+
+
+echo "下载前端ui"
+# 如果zip有了就不下载
+if [ -f ui-$version.zip ]; then
+  echo "ui-$version.zip 已经存在，不需要下载"
+else
+  # 下载之前清理一下
+  rm -rf ui-*.zip
+  # https://atomgit.com/certd/certd/releases/download/v1.37.16/ui-1.37.16.zip
+  # 判断是否下载失败
+  wget https://atomgit.com/certd/certd/releases/download/v$version/ui-$version.zip
+# 覆盖解压缩
+unzip -o ui-$version.zip -d ./public
+
 echo "启动服务"
 
 # 前台运行

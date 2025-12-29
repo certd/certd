@@ -59,7 +59,7 @@ export default {
   vip_group_priority: "可加VIP群，您的需求将优先实现",
   unlimited_site_certificate_monitoring: "站点证书监控无限制",
   more_notification_methods: "更多通知方式",
-  plugins_fully_open: "插件全开放，群辉等更多插件",
+  plugins_fully_open: "插件全开放，群晖等更多插件",
   click_to_get_7_day_trial: "点击获取7天试用",
   years: "年",
   afdian_support_vip: "新用户开通永久专业版立享50优惠券",
