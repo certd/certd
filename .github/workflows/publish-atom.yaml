@@ -45,6 +45,9 @@ jobs:
           pnpm install
           npm run build
         working-directory: ./packages/ui/certd-client
+      - run: |
+          pnpm install
+        working-directory: ./
       - name: zip_front
         id: zip_front
         run: |
