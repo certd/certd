@@ -138,6 +138,7 @@ const getOptions = async () => {
         onError(err: any) {
           hasError.value = true;
           message.value = `获取选项出错：${err.message}`;
+          optionsRef.value = [];
         },
         showErrorNotify: false,
       }

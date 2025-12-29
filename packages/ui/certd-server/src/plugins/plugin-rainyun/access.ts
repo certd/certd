@@ -19,10 +19,8 @@ export class RainyunAccess extends BaseAccess {
     title: "ApiKey",
     component: {
       placeholder: "api-key",
-      component: {
-        name: "a-input",
-        vModel: "value"
-      }
+      name: "a-input",
+      vModel: "value"
     },
     helper:"https://app.rainyun.com/account/settings/api-key",
     encrypt: true,
