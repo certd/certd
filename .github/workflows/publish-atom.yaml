@@ -26,22 +26,11 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: get_certd_version
-        id: get_certd_version
-        uses: actions/github-script@v6
-        with:
-          result-encoding: string
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const pnpmWorkspace = "./pnpm-workspace.yaml";
-            fs.unlinkSync(pnpmWorkspace)
-            const jsonFilePath = "./packages/ui/certd-server/package.json";
-            const jsonContent = fs.readFileSync(jsonFilePath, 'utf-8');
-            const pkg = JSON.parse(jsonContent)
-            console.log("certd_version:",pkg.version);
-            return pkg.version
-
+      - run: |
+          npm install -g pnpm
+          pnpm install
+          npm run build
+        working-directory: ./packages/ui/certd-client
       - name: zip_front
         id: zip_front
         run: |
