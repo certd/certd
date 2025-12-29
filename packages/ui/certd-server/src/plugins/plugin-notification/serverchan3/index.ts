@@ -56,7 +56,7 @@ export class ServerChan3Notification extends BaseNotification {
       data: {
         text: body.title,
         desp: body.content + '\n\n[查看详情](' + body.url + ')',
-        tags: this.tags.join('|'),
+        tags: this.tags?.join('|') || undefined,
         short: this.short,
       },
       skipSslVerify: this.skipSslVerify,
