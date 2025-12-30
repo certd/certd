@@ -19,4 +19,4 @@ input:
     encrypt: true
 type: builtIn
 pluginType: access
-scriptFilePath: ../../../plugins/plugin-doge/index.js
+scriptFilePath: ../../../plugins/plugin-doge/access.js

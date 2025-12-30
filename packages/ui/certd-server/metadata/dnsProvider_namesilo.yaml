@@ -5,4 +5,4 @@ icon: simple-icons:namesilo
 accessType: namesilo
 type: builtIn
 pluginType: dnsProvider
-scriptFilePath: ../../../plugins/plugin-namesilo/index.js
+scriptFilePath: ../../../plugins/plugin-namesilo/dns-provider.js

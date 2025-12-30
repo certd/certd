@@ -167,4 +167,4 @@ input:
         value: sa-east-1
 type: builtIn
 pluginType: access
-scriptFilePath: ../../../plugins/plugin-aws/index.js
+scriptFilePath: ../../../plugins/plugin-aws/access.js

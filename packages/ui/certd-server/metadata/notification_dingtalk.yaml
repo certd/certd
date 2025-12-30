@@ -48,4 +48,4 @@ input:
     required: false
 type: builtIn
 pluginType: notification
-scriptFilePath: ../../../plugins/plugin-notification/index.js
+scriptFilePath: ../../../plugins/plugin-notification/dingtalk/index.js

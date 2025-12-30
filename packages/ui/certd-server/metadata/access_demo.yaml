@@ -16,4 +16,4 @@ input:
     encrypt: true
 type: builtIn
 pluginType: access
-scriptFilePath: ../../../plugins/plugin-demo/index.js
+scriptFilePath: ../../../plugins/plugin-demo/access.js

@@ -17,4 +17,4 @@ input:
     required: true
 type: builtIn
 pluginType: notification
-scriptFilePath: ../../../plugins/plugin-notification/index.js
+scriptFilePath: ../../../plugins/plugin-notification/anpush/index.js

@@ -80,4 +80,4 @@ input:
 output: {}
 type: builtIn
 pluginType: deploy
-scriptFilePath: ../../../plugins/plugin-doge/plugins/index.js
+scriptFilePath: ../../../plugins/plugin-doge/plugins/deploy-to-cdn/index.js

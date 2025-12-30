@@ -6,4 +6,4 @@ accessType: 51dns
 order: 999
 type: builtIn
 pluginType: dnsProvider
-scriptFilePath: ../../../plugins/plugin-51dns/index.js
+scriptFilePath: ../../../plugins/plugin-51dns/dns-provider.js

@@ -16,4 +16,4 @@ input:
     encrypt: true
 type: builtIn
 pluginType: access
-scriptFilePath: ../../../plugins/plugin-namesilo/index.js
+scriptFilePath: ../../../plugins/plugin-namesilo/access.js

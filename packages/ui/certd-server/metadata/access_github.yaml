@@ -40,4 +40,4 @@ input:
     helper: 点击测试接口是否正常
 type: builtIn
 pluginType: access
-scriptFilePath: ../../../plugins/plugin-github/index.js
+scriptFilePath: ../../../plugins/plugin-github/access.js

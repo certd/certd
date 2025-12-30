@@ -19,4 +19,4 @@ input:
     encrypt: true
 type: builtIn
 pluginType: access
-scriptFilePath: ../../../plugins/plugin-51dns/index.js
+scriptFilePath: ../../../plugins/plugin-51dns/access.js

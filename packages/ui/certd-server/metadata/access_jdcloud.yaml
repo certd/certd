@@ -18,4 +18,4 @@ input:
     encrypt: true
 type: builtIn
 pluginType: access
-scriptFilePath: ../../../plugins/plugin-jdcloud/index.js
+scriptFilePath: ../../../plugins/plugin-jdcloud/access.js

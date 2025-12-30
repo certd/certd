@@ -33,6 +33,22 @@ export default async function loadModules(dir) {
     if(file === "dist/plugins/index.js" || file === "dist\\plugins\\index.js"){
       continue
     }
+    const content = fs.readFileSync(file, 'utf8')
+    const lines = content.split('\n')
+    let allExport = true
+    for (let line of lines) {
+      line = line.trim()
+      if (!line || line.startsWith("//")) {
+        continue
+      }
+      if(!line.startsWith("export ")){
+        allExport = false
+        break
+      }
+    }
+    if (allExport) {
+      continue
+    }
     try {
       // 转换为 file:// URL（Windows 必需）
       const moduleUrl = pathToFileURL(file).href
@@ -87,7 +103,7 @@ async function genMetadata(){
         const filePath = path.join(`./metadata/${pluginDefine.pluginType}_${pluginDefine.name}.yaml`)
 
         pluginDefine.scriptFilePath = location
-         console.log(location)
+        console.log(location)
         const data  = yaml.dump(pluginDefine)
         fs.writeFileSync(filePath,data ,'utf8')
       }

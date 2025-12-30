@@ -21,4 +21,4 @@ input:
     encrypt: false
 type: builtIn
 pluginType: access
-scriptFilePath: ../../../plugins/plugin-cloudflare/index.js
+scriptFilePath: ../../../plugins/plugin-cloudflare/access.js

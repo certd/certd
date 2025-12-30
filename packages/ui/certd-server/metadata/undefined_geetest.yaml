@@ -18,4 +18,4 @@ input:
       placeholder: captchaKey
     required: true
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-captcha/index.js
+scriptFilePath: ../../../plugins/plugin-captcha/geetest/index.js

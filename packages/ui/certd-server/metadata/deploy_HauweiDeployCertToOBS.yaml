@@ -102,4 +102,4 @@ input:
 output: {}
 type: builtIn
 pluginType: deploy
-scriptFilePath: ../../../plugins/plugin-huawei/plugins/index.js
+scriptFilePath: ../../../plugins/plugin-huawei/plugins/deploy-to-obs/index.js

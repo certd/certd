@@ -168,4 +168,4 @@ input:
 output: {}
 type: builtIn
 pluginType: deploy
-scriptFilePath: ../../../plugins/plugin-aliyun/plugin/index.js
+scriptFilePath: ../../../plugins/plugin-aliyun/plugin/deploy-to-alb/index.js

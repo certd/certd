@@ -5,4 +5,4 @@ icon: simple-icons:cloudflare
 accessType: cloudflare
 type: builtIn
 pluginType: dnsProvider
-scriptFilePath: ../../../plugins/plugin-cloudflare/index.js
+scriptFilePath: ../../../plugins/plugin-cloudflare/dns-provider.js

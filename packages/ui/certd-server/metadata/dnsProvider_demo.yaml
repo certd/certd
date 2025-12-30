@@ -6,4 +6,4 @@ accessType: demo
 order: 99
 type: builtIn
 pluginType: dnsProvider
-scriptFilePath: ../../../plugins/plugin-demo/index.js
+scriptFilePath: ../../../plugins/plugin-demo/dns-provider.js

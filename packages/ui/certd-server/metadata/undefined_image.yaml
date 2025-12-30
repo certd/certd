@@ -5,4 +5,4 @@ desc: ''
 showTest: false
 input: {}
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-captcha/index.js
+scriptFilePath: ../../../plugins/plugin-captcha/image/index.js

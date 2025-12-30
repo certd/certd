@@ -6,4 +6,4 @@ icon: svg:icon-aws
 order: 0
 type: builtIn
 pluginType: dnsProvider
-scriptFilePath: ../../../plugins/plugin-aws/index.js
+scriptFilePath: ../../../plugins/plugin-aws/aws-route53-provider.js

@@ -32,4 +32,4 @@ input:
     helper: 点击测试接口是否正常(注意账号中必须要有50个域名才能使用API接口)
 type: builtIn
 pluginType: access
-scriptFilePath: ../../../plugins/plugin-godaddy/index.js
+scriptFilePath: ../../../plugins/plugin-godaddy/access.js
