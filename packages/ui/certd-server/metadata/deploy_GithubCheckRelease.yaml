@@ -1,0 +1,80 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 0
+name: GithubCheckRelease
+title: Github-检查Release版本
+desc: 检查最新Release版本并推送消息
+icon: ion:logo-github
+group: other
+needPlus: false
+input:
+  accessId:
+    title: Github授权
+    component:
+      name: access-selector
+      type: github
+    required: true
+    order: 0
+  repoName:
+    title: 仓库名称
+    helper: owner/name，比如 certd/certd
+    required: true
+    order: 0
+  notificationIds:
+    title: 通知渠道
+    component:
+      name: notification-selector
+      select:
+        mode: tags
+    required: false
+    order: 0
+  sshAccessId:
+    title: 主机登录配置
+    helper: 登录
+    component:
+      name: access-selector
+      type: ssh
+    required: false
+    order: 0
+  script:
+    title: shell脚本命令
+    component:
+      name: a-textarea
+      vModel: value
+      rows: 6
+      placeholder: >-
+
+        # 拉取最新镜像
+
+        docker pull registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
+
+        # 升级容器命令， 替换成你自己的实际部署位置及更新命令
+
+        export RESTART_CERT='sleep 10; cd ~/deploy/certd/ ; docker compose down;
+        docker compose up -d'
+
+        # 构造一个脚本10s后在后台执行，避免容器销毁时执行太快，导致流水线任务无法结束
+
+        nohup sh -c '$RESTART_CERT' >/dev/null  2>&1 & echo '10秒后重启' && exit
+    helper: >
+      有新版本后执行命令，比如：拉取最新版镜像，然后重建容器
+
+      注意：自己升级自己需要使用nohup配合sleep
+
+      自动升级命令示例：
+
+      docker pull registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
+
+      export RESTART_CERT='sleep 10; cd ~/deploy/certd/ ; docker compose down;
+      docker compose up -d'
+
+      nohup sh -c '$RESTART_CERT' >/dev/null  2>&1 & echo '10秒后重启' && exit
+    required: false
+    order: 0
+output:
+  lastVersion:
+    title: 最后版本
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-github/plugins/plugin-check-release.js

@@ -3,10 +3,10 @@ default:
   strategy:
     runStrategy: 1
 name: AliyunDeployCertToSLB
-title: 阿里云-部署至SLB(传统负载均衡)
+title: 阿里云-部署至CLB(传统负载均衡)
 icon: svg:icon-aliyun
 group: aliyun
-desc: 部署证书到阿里云SLB(传统负载均衡)
+desc: 部署证书到阿里云CLB(传统负载均衡)
 needPlus: false
 input:
   cert:
@@ -17,9 +17,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
         - uploadCertToAliyun
     required: true
     order: 0
@@ -37,7 +35,23 @@ input:
                 }
               }
               
+    template: false
     required: false
+    order: 0
+  casEndpoint:
+    title: 证书接入点
+    helper: 不会选就保持默认即可
+    value: cas.aliyuncs.com
+    component:
+      name: a-select
+      options:
+        - value: cas.aliyuncs.com
+          label: 中国大陆
+        - value: cas.ap-southeast-1.aliyuncs.com
+          label: 新加坡
+        - value: cas.eu-central-1.aliyuncs.com
+          label: 德国（法兰克福）
+    required: true
     order: 0
   accessId:
     title: Access授权
@@ -53,8 +67,9 @@ input:
       name: remote-select
       vModel: value
       type: plugin
-      typeName: AliyunDeployCertToSLB
       action: onGetRegionList
+      search: false
+      pager: false
       watches:
         - certDomains
         - accessId
@@ -79,8 +94,9 @@ input:
       vModel: value
       mode: tags
       type: plugin
-      typeName: AliyunDeployCertToSLB
       action: onGetLoadBalanceList
+      search: false
+      pager: false
       watches:
         - certDomains
         - accessId
@@ -105,8 +121,9 @@ input:
       vModel: value
       mode: tags
       type: plugin
-      typeName: AliyunDeployCertToSLB
       action: onGetListenerList
+      search: false
+      pager: false
       watches:
         - certDomains
         - accessId
@@ -124,20 +141,45 @@ input:
               
     helper: 要部署证书的监听器列表
     order: 0
-  casEndpoint:
-    title: 证书接入点
-    helper: 不会选就保持默认即可
-    value: cas.aliyuncs.com
+  deployDefault:
+    title: 部署默认证书
+    value: true
     component:
-      name: a-select
-      options:
-        - value: cas.aliyuncs.com
-          label: 中国大陆
-        - value: cas.ap-southeast-1.aliyuncs.com
-          label: 新加坡
-        - value: cas.eu-central-1.aliyuncs.com
-          label: 德国（法兰克福）
+      name: a-switch
+      vModel: checked
+    order: 0
+  deployExtension:
+    title: 部署扩展证书
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    order: 0
+  extensionDomains:
+    title: 扩展域名列表
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetExtensionDomainList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+        - listeners
+        - deployExtension
     required: true
+    mergeScript: |2-
+
+              return {
+              show: ctx.compute(({form})=>{
+                return form.deployExtension;
+              })
+            }
+            
+    helper: 要部署扩展域名列表
     order: 0
 output: {}
 type: builtIn

@@ -17,9 +17,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
         - HauweiUploadToCCM
     required: true
     order: 0
@@ -37,7 +35,14 @@ input:
                 }
               }
               
+    template: false
     required: false
+    order: 0
+  enterpriseProjectId:
+    title: 企业项目ID
+    helper: 华为云子账号必填，"all"表示查询所有项目
+    required: false
+    value: all
     order: 0
   accessId:
     title: Access授权
@@ -56,6 +61,8 @@ input:
       type: plugin
       typeName: HauweiDeployCertToCDN
       action: onGetDomainList
+      search: false
+      pager: false
       watches:
         - certDomains
         - accessId
@@ -75,4 +82,4 @@ input:
 output: {}
 type: builtIn
 pluginType: deploy
-scriptFilePath: ../../../plugins/plugin-huawei/plugins/deploy-to-cdn/index.js
+scriptFilePath: ../../../plugins/plugin-huawei/plugins/index.js

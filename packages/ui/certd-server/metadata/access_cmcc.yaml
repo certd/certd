@@ -1,0 +1,25 @@
+name: cmcc
+title: 中国移动CND授权
+desc: ''
+icon: svg:cmcc
+input:
+  tenantId:
+    title: TenantID
+    component:
+      placeholder: TenantID
+    required: true
+  tenantKey:
+    title: TenantKey
+    component:
+      placeholder: TenantKey
+    required: true
+    encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+type: builtIn
+pluginType: access
+scriptFilePath: ../../../plugins/plugin-cmcc/index.js

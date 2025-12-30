@@ -14,9 +14,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
         - uploadCertToAliyun
     required: true
     order: 0
@@ -34,6 +32,7 @@ input:
                 }
               }
               
+    template: false
     required: false
     order: 0
   accessId:
@@ -44,14 +43,37 @@ input:
       type: aliyun
     required: true
     order: 0
-  domainName:
-    title: DCDN加速域名
-    helper: 你在阿里云上配置的CDN加速域名，比如:certd.docmirror.cn
-    required: true
-    order: 0
   certName:
     title: 证书名称
     helper: 上传后将以此名称作为前缀备注
+    order: 0
+  domainName:
+    title: DCDN加速域名
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetDomainList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 你在阿里云上配置的DCDN加速域名，比如:certd.docmirror.cn
     order: 0
 output: {}
 type: builtIn

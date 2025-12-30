@@ -6,7 +6,7 @@ name: HauweiUploadToCCM
 title: 华为云-上传证书至CCM
 icon: svg:icon-huawei
 group: huawei
-desc: 上传证书到华为云CCM
+desc: 上传证书到华为云云证书管理（CCM）
 input:
   cert:
     title: 域名证书
@@ -14,9 +14,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
     required: true
     order: 0
   certDomains:
@@ -33,6 +31,7 @@ input:
                 }
               }
               
+    template: false
     required: false
     order: 0
   accessId:

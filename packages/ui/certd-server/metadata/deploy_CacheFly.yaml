@@ -14,9 +14,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
     required: true
     order: 0
   accessId:

@@ -1,0 +1,30 @@
+addonType: captcha
+name: tencent
+title: 腾讯云验证码
+desc: ''
+showTest: false
+input:
+  accessId:
+    title: 腾讯云授权
+    helper: 腾讯云授权
+    component:
+      name: access-selector
+      vModel: modelValue
+      from: sys
+      type: tencent
+    required: true
+  captchaAppId:
+    title: 验证ID
+    component:
+      name: a-input-number
+      placeholder: CaptchaAppId
+    helper: >-
+      [腾讯云验证码](https://cloud.tencent.com/act/cps/redirect?redirect=37716&cps_key=b3ef73330335d7a6efa4a4bbeeb6b2c9)
+    required: true
+  appSecretKey:
+    title: 验证Key
+    component:
+      placeholder: AppSecretKey
+    required: true
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-captcha/tencent/index.js

@@ -1,0 +1,49 @@
+name: farcdn
+title: farcdn授权
+desc: ''
+icon: svg:icon-lucky
+input:
+  endpoint:
+    title: 接口地址
+    value: https://open.farcdn.net/api/source
+    component:
+      placeholder: https://open.farcdn.net/api/source
+      name: a-input
+      vModel: value
+    required: true
+  accessKeyId:
+    title: accessKeyId
+    component:
+      placeholder: accessKeyId
+      component:
+        name: a-input
+        vModel: value
+    encrypt: false
+    required: true
+  accessKey:
+    title: accessKey
+    component:
+      placeholder: accessKey
+      component:
+        name: a-input
+        vModel: value
+    encrypt: true
+    required: true
+  httpProxy:
+    title: HttpProxy
+    component:
+      placeholder: http://192.168.x.x:10811
+      component:
+        name: a-input
+        vModel: value
+    encrypt: false
+    required: false
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+type: builtIn
+pluginType: access
+scriptFilePath: ../../../plugins/plugin-farcdn/index.js

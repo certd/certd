@@ -7,21 +7,31 @@ title: 多吉云-部署到多吉云CDN
 icon: svg:icon-dogecloud
 group: cdn
 input:
-  domain:
-    title: 域名
-    helper: CDN域名
-    required: true
-    order: 0
   cert:
     title: 证书
     helper: 请选择前置任务输出的域名证书
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
     required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: false
     order: 0
   accessId:
     title: 多吉云授权
@@ -32,6 +42,32 @@ input:
     rules:
       - required: true
         message: 此项必填
+    order: 0
+  domain:
+    title: CDN域名
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetDomainList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 请选择CDN域名，可以选择多个，一次性部署
     order: 0
   ignoreDeployNullCode:
     title: 忽略部署接口报错

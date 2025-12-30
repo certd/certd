@@ -1,0 +1,83 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: GoEdgeRefreshCert
+title: GoEdge-更新证书
+desc: GoEdge
+icon: fa-solid:leaf:#6C6BF6
+group: cdn
+needPlus: false
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: false
+    order: 0
+  accessId:
+    title: GoEdge授权
+    component:
+      name: access-selector
+      type: goedge
+    required: true
+    order: 0
+  userId:
+    title: 用户id
+    component:
+      name: a-input-number
+      vModel: value
+    helper: |-
+      用于查询用户证书，点击用户详情->浏览器地址中userId值，如：/users/user?userId=1
+      如果为空，则查询管理员证书
+    required: false
+    order: 0
+  certList:
+    title: 证书Id
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetCertList
+      search: true
+      pager: true
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 要更新的GoEdge证书id
+    order: 0
+output: {}
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-goedge/plugins/plugin-refresh-cert.js

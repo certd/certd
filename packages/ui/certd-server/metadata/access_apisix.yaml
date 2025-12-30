@@ -1,0 +1,28 @@
+name: apisix
+title: APISIX授权
+desc: ''
+icon: svg:icon-lucky
+input:
+  endpoint:
+    title: Apisix管理地址
+    component:
+      placeholder: http://192.168.11.11:9180
+    required: true
+  apiKey:
+    title: ApiKey
+    component:
+      placeholder: ApiKey
+    helper: >-
+      [参考文档](https://apisix.apache.org/docs/apisix/admin-api/#using-environment-variables)在config中配置admin
+      apiKey
+    required: true
+    encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+type: builtIn
+pluginType: access
+scriptFilePath: ../../../plugins/plugin-apisix/index.js

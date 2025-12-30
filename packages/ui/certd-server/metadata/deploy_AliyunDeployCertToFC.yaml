@@ -6,8 +6,8 @@ name: AliyunDeployCertToFC
 title: 阿里云-部署至阿里云FC(3.0)
 icon: svg:icon-aliyun
 group: aliyun
-desc: 部署证书到阿里云函数计算（FC3.0）,【注意】证书的加密算法必须选择【pkcs1旧版】
-needPlus: true
+desc: 部署证书到阿里云函数计算（FC3.0）
+needPlus: false
 input:
   cert:
     title: 域名证书
@@ -15,9 +15,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
     required: true
     order: 0
   certDomains:
@@ -34,6 +32,7 @@ input:
                 }
               }
               
+    template: false
     required: false
     order: 0
   regionId:
@@ -110,6 +109,8 @@ input:
       type: plugin
       typeName: AliyunDeployCertToFC
       action: onGetDomainList
+      search: false
+      pager: false
       watches:
         - certDomains
         - accessId
@@ -126,15 +127,14 @@ input:
                   },
                }
               
-    helper: |-
-      请选择要部署证书的域名
-      【注意】证书的加密算法必须选择【pkcs1旧版】（否则会报'private key' has to be in PEM format错误）
+    helper: 请选择要部署证书的域名
     order: 0
   protocol:
     title: 域名支持的协议类型
+    value: ''
     component:
       name: a-select
-      value: ''
+      vModel: value
       options:
         - value: ''
           label: 保持原样（适用于原来已经开启了HTTPS）
@@ -142,6 +142,10 @@ input:
           label: 仅HTTPS
         - value: HTTP,HTTPS
           label: HTTP与HTTPS同时支持
+    order: 0
+  certName:
+    title: 证书名称
+    helper: 上传后将以此名称作为前缀备注
     order: 0
 output: {}
 type: builtIn

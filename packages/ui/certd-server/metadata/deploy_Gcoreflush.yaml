@@ -14,6 +14,7 @@ input:
     order: 0
   ssl_id:
     title: 证书ID
+    required: true
     order: 0
   cert:
     title: 域名证书
@@ -21,9 +22,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
     required: true
     order: 0
   accessId:

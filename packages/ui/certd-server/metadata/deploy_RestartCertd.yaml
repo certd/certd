@@ -6,9 +6,10 @@ name: RestartCertd
 title: 重启 Certd
 icon: mdi:restart
 desc: 【仅管理员可用】 重启 certd的https服务，用于更新 Certd 的 ssl 证书
-group: other
+group: admin
+onlyAdmin: true
 input: {}
 output: {}
 type: builtIn
 pluginType: deploy
-scriptFilePath: ../../../plugins/plugin-other/plugins/plugin-restart.js
+scriptFilePath: ../../../plugins/plugin-admin/plugin-restart.js

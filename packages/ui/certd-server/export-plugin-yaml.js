@@ -56,7 +56,6 @@ async function genMetadata(){
   fs.rmSync("./metadata", { recursive: true });
   fs.mkdirSync("./metadata", { recursive: true });
   for (const key in modules) {
-    console.log(key)
     const module = modules[key]
     const entry = Object.entries(module)
     for (const [name, value] of entry) {
@@ -88,6 +87,7 @@ async function genMetadata(){
         const filePath = path.join(`./metadata/${pluginDefine.pluginType}_${pluginDefine.name}.yaml`)
 
         pluginDefine.scriptFilePath = location
+         console.log(location)
         const data  = yaml.dump(pluginDefine)
         fs.writeFileSync(filePath,data ,'utf8')
       }

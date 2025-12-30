@@ -1,0 +1,93 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: AwsCNDeployToCloudFront
+title: AWS(国区)-部署证书到CloudFront
+desc: 部署证书到 AWS CloudFront
+icon: svg:icon-aws
+group: aws
+needPlus: false
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+        - AwsUploadToACM
+    required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: false
+    order: 0
+  region:
+    title: 区域
+    helper: 证书上传区域
+    component:
+      name: a-auto-complete
+      vModel: value
+      options:
+        - label: cn-north-1
+          value: cn-north-1
+        - label: cn-northwest-1
+          value: cn-northwest-1
+    required: true
+    order: 0
+  accessId:
+    title: Access授权
+    helper: aws的授权
+    component:
+      name: access-selector
+      type: aws-cn
+    required: true
+    order: 0
+  certName:
+    title: 证书名称
+    helper: 上传后将以此名称作为前缀备注
+    order: 0
+  distributionIds:
+    title: 分配ID
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetDistributions
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 请选择distributions id
+    order: 0
+output: {}
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-aws-cn/plugins/plugin-deploy-to-cloudfront.js

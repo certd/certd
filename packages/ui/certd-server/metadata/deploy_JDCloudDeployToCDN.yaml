@@ -14,9 +14,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
         - JDCloudUploadCert
     required: true
     order: 0
@@ -34,6 +32,7 @@ input:
                 }
               }
               
+    template: false
     required: false
     order: 0
   accessId:
@@ -52,6 +51,8 @@ input:
       mode: tags
       type: plugin
       action: onGetDomainList
+      search: false
+      pager: false
       watches:
         - certDomains
         - accessId

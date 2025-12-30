@@ -5,8 +5,9 @@ default:
 name: DBBackupPlugin
 title: 数据库备份
 icon: lucide:database-backup
-desc: 仅支持备份SQLite数据库
-group: other
+desc: 【仅管理员可用】仅支持备份SQLite数据库
+group: admin
+onlyAdmin: true
 needPlus: true
 input:
   backupMode:
@@ -124,4 +125,4 @@ input:
 output: {}
 type: builtIn
 pluginType: deploy
-scriptFilePath: ../../../plugins/plugin-other/plugins/plugin-db-backup.js
+scriptFilePath: ../../../plugins/plugin-admin/plugin-db-backup.js

@@ -1,0 +1,73 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: KsyunRefreshCert
+title: 金山云-更新CDN证书
+desc: 金山云自动更新CDN证书
+icon: svg:icon-ksyun
+group: cdn
+needPlus: false
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: false
+    order: 0
+  accessId:
+    title: 金山云授权
+    component:
+      name: access-selector
+      type: ksyun
+    required: true
+    order: 0
+  certList:
+    title: 证书Id
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetCertList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 要更新的金山云CDN证书id，如果这里没有，请先给cdn域名手动绑定一次证书
+    order: 0
+output: {}
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-ksyun/plugins/plugin-refresh-cert.js

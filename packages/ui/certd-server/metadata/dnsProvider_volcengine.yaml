@@ -1,8 +1,0 @@
-name: volcengine
-title: 火山引擎
-desc: 火山引擎DNS解析提供商
-accessType: volcengine
-icon: svg:icon-volcengine
-type: builtIn
-pluginType: dnsProvider
-scriptFilePath: ../../../plugins/plugin-volcengine/volcengine-dns-provider.js

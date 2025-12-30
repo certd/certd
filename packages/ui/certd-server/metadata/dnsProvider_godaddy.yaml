@@ -1,0 +1,9 @@
+name: godaddy
+title: godaddy
+desc: GoDaddy
+icon: simple-icons:godaddy
+accessType: godaddy
+order: 10
+type: builtIn
+pluginType: dnsProvider
+scriptFilePath: ../../../plugins/plugin-godaddy/index.js

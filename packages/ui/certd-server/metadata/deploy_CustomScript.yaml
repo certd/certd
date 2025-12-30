@@ -6,7 +6,8 @@ name: CustomScript
 title: 自定义js脚本
 icon: ri:javascript-line
 desc: 【仅管理员】运行自定义js脚本执行
-group: other
+group: admin
+onlyAdmin: true
 input:
   script:
     title: 脚本
@@ -24,12 +25,10 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
     required: false
     order: 0
 output: {}
 type: builtIn
 pluginType: deploy
-scriptFilePath: ../../../plugins/plugin-other/plugins/plugin-script.js
+scriptFilePath: ../../../plugins/plugin-admin/plugin-script.js

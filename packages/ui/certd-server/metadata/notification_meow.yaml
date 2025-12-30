@@ -1,0 +1,18 @@
+name: meow
+title: MeoW通知
+desc: https://api.chuckfang.com/
+needPlus: false
+input:
+  endpoint:
+    title: MeoW接口地址
+    component:
+      placeholder: https://api.xxxxxx.com
+    required: true
+  nickName:
+    title: 昵称
+    component:
+      placeholder: ''
+    required: true
+type: builtIn
+pluginType: notification
+scriptFilePath: ../../../plugins/plugin-notification/index.js

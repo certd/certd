@@ -29,10 +29,9 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
         - uploadCertToAliyun
+    template: false
     required: true
     order: 0
   certDomains:
@@ -49,6 +48,7 @@ input:
                 }
               }
               
+    template: false
     required: false
     order: 0
   accessId:
@@ -68,6 +68,8 @@ input:
       type: plugin
       typeName: DeployCertToAliyunCDN
       action: onGetDomainList
+      search: false
+      pager: false
       watches:
         - certDomains
         - accessId

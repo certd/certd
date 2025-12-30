@@ -15,9 +15,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
     required: true
     order: 0
   certType:
@@ -36,6 +34,8 @@ input:
           label: jks，一般用于JAVA应用
         - value: one
           label: 证书私钥一体，crt+key简单合并为一个pem文件
+        - value: p7b
+          label: p7b格式
     required: true
     order: 0
   crtPath:
@@ -57,14 +57,14 @@ input:
     order: 0
   keyPath:
     title: 私钥保存路径
-    helper: 需要有写入权限，路径要包含私钥文件名，例如：/tmp/cert.key
+    helper: 原本的私钥保存路径，需要有写入权限，路径要包含私钥文件名，例如：/tmp/cert.key
     component:
       placeholder: /root/deploy/nginx/cert.key
     mergeScript: |2-
 
             return {
               show: ctx.compute(({form})=>{
-                return form.certType === 'pem';
+                return form.certType === 'pem' || form.certType === 'p7b' ;
               })
             }
           
@@ -156,6 +156,23 @@ input:
     rules:
       - type: filepath
     order: 0
+  p7bPath:
+    title: p7b证书保存路径
+    helper: 填写应用原本的证书保存路径，路径要包含证书文件名，例如：/tmp/domain_cert.p7b
+    component:
+      placeholder: /root/deploy/app/domain_cert.p7b
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'p7b';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
   accessId:
     title: 主机登录配置
     helper: access授权
@@ -166,7 +183,9 @@ input:
     order: 0
   uploadType:
     title: 上传方式
-    helper: 选择上传方式，sftp或者scp
+    helper: |-
+      支持sftp或者scp
+      需要有写入权限，如果没有，须先将证书上传到有权限的目录，再通过后置命令复制到目标路径
     value: sftp
     component:
       name: a-select
@@ -185,14 +204,26 @@ input:
       name: a-switch
       vModel: checked
     order: 0
-  script:
-    title: shell脚本命令
+  scriptPre:
+    title: 前置命令
     component:
       name: a-textarea
       vModel: value
-      rows: 6
+      rows: 3
+      placeholder: mkdir /app/ssl
+    helper: 上传前执行脚本命令，做上传前的准备工作
+    required: false
+    order: 0
+  script:
+    title: 后置命令
+    component:
+      name: a-textarea
+      vModel: value
+      rows: 5
+      placeholder: 'systemctl restart nginx '
     helper: |-
-      上传后执行脚本命令，不填则不执行
+      上传后执行脚本命令，让证书生效（比如重启nginx），不填则不执行
+      注意：sudo需要配置免密，不要使用-i这种交互式命令
       注意：如果目标主机是windows，且终端是cmd，系统会自动将多行命令通过“&&”连接成一行
     required: false
     order: 0
@@ -220,6 +251,8 @@ output:
     title: jks保存路径
   hostOnePath:
     title: 一体证书保存路径
+  hostP7bPath:
+    title: p7b证书保存路径
 type: builtIn
 pluginType: deploy
 scriptFilePath: ../../../plugins/plugin-host/plugin/upload-to-host/index.js

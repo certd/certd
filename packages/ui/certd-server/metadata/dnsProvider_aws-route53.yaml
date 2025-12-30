@@ -1,0 +1,9 @@
+name: aws-route53
+title: AWS Route53
+desc: AWS Route53 DNS解析提供商
+accessType: aws
+icon: svg:icon-aws
+order: 0
+type: builtIn
+pluginType: dnsProvider
+scriptFilePath: ../../../plugins/plugin-aws/index.js

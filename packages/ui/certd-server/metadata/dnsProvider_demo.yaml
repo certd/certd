@@ -3,6 +3,7 @@ title: Dns提供商Demo
 desc: dns provider示例
 icon: clarity:plugin-line
 accessType: demo
+order: 99
 type: builtIn
 pluginType: dnsProvider
 scriptFilePath: ../../../plugins/plugin-demo/index.js

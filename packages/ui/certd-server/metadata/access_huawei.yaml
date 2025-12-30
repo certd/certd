@@ -2,6 +2,7 @@ name: huawei
 title: 华为云授权
 desc: ''
 icon: svg:icon-huawei
+order: 0
 input:
   accessKeyId:
     title: accessKeyId

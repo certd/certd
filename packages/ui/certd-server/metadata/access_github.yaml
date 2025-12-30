@@ -1,0 +1,43 @@
+name: github
+title: Github授权
+desc: ''
+icon: ion:logo-github
+input:
+  endpoint:
+    title: 接口地址
+    component:
+      placeholder: 可以使用反向代理地址
+      component:
+        name: a-input
+        vModel: value
+    helper: 默认值：https://api.github.com
+    encrypt: false
+    required: false
+  githubToken:
+    title: GithubToken
+    component:
+      placeholder: GithubToken
+      component:
+        name: a-input
+        vModel: value
+    helper: 支持匿名访问的接口可以不填
+    encrypt: true
+    required: false
+  httpProxy:
+    title: HttpProxy
+    component:
+      placeholder: http://192.168.x.x:10811
+      component:
+        name: a-input
+        vModel: value
+    encrypt: false
+    required: false
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+type: builtIn
+pluginType: access
+scriptFilePath: ../../../plugins/plugin-github/index.js

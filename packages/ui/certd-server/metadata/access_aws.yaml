@@ -17,6 +17,154 @@ input:
     required: true
     encrypt: true
     helper: 请妥善保管您的安全访问密钥。您可以在AWS管理控制台的IAM中创建新的访问密钥。
+  region:
+    title: region
+    component:
+      name: a-select
+      options:
+        - label: '------中国区------'
+          value: cn
+          disabled: true
+        - label: 北京
+          value: cn-north-1
+        - label: 宁夏
+          value: cn-northwest-1
+        - label: '------海外-----'
+          value: out
+          disabled: true
+        - label: us-east-1
+          value: us-east-1
+        - label: us-east-2
+          value: us-east-2
+        - label: us-west-1
+          value: us-west-1
+        - label: us-west-2
+          value: us-west-2
+        - label: af-south-1
+          value: af-south-1
+        - label: ap-east-1
+          value: ap-east-1
+        - label: ap-northeast-1
+          value: ap-northeast-1
+        - label: ap-northeast-2
+          value: ap-northeast-2
+        - label: ap-northeast-3
+          value: ap-northeast-3
+        - label: ap-south-1
+          value: ap-south-1
+        - label: ap-south-2
+          value: ap-south-2
+        - label: ap-southeast-1
+          value: ap-southeast-1
+        - label: ap-southeast-2
+          value: ap-southeast-2
+        - label: ap-southeast-3
+          value: ap-southeast-3
+        - label: ap-southeast-4
+          value: ap-southeast-4
+        - label: ap-southeast-5
+          value: ap-southeast-5
+        - label: ca-central-1
+          value: ca-central-1
+        - label: ca-west-1
+          value: ca-west-1
+        - label: eu-central-1
+          value: eu-central-1
+        - label: eu-central-2
+          value: eu-central-2
+        - label: eu-north-1
+          value: eu-north-1
+        - label: eu-south-1
+          value: eu-south-1
+        - label: eu-south-2
+          value: eu-south-2
+        - label: eu-west-1
+          value: eu-west-1
+        - label: eu-west-2
+          value: eu-west-2
+        - label: eu-west-3
+          value: eu-west-3
+        - label: il-central-1
+          value: il-central-1
+        - label: me-central-1
+          value: me-central-1
+        - label: me-south-1
+          value: me-south-1
+        - label: sa-east-1
+          value: sa-east-1
+    required: true
+    helper: 请选择您的默认AWS区域，主要区分中国区还是海外区即可
+    options:
+      - label: '------中国区------'
+        value: cn
+        disabled: true
+      - label: 北京
+        value: cn-north-1
+      - label: 宁夏
+        value: cn-northwest-1
+      - label: '------海外-----'
+        value: out
+        disabled: true
+      - label: us-east-1
+        value: us-east-1
+      - label: us-east-2
+        value: us-east-2
+      - label: us-west-1
+        value: us-west-1
+      - label: us-west-2
+        value: us-west-2
+      - label: af-south-1
+        value: af-south-1
+      - label: ap-east-1
+        value: ap-east-1
+      - label: ap-northeast-1
+        value: ap-northeast-1
+      - label: ap-northeast-2
+        value: ap-northeast-2
+      - label: ap-northeast-3
+        value: ap-northeast-3
+      - label: ap-south-1
+        value: ap-south-1
+      - label: ap-south-2
+        value: ap-south-2
+      - label: ap-southeast-1
+        value: ap-southeast-1
+      - label: ap-southeast-2
+        value: ap-southeast-2
+      - label: ap-southeast-3
+        value: ap-southeast-3
+      - label: ap-southeast-4
+        value: ap-southeast-4
+      - label: ap-southeast-5
+        value: ap-southeast-5
+      - label: ca-central-1
+        value: ca-central-1
+      - label: ca-west-1
+        value: ca-west-1
+      - label: eu-central-1
+        value: eu-central-1
+      - label: eu-central-2
+        value: eu-central-2
+      - label: eu-north-1
+        value: eu-north-1
+      - label: eu-south-1
+        value: eu-south-1
+      - label: eu-south-2
+        value: eu-south-2
+      - label: eu-west-1
+        value: eu-west-1
+      - label: eu-west-2
+        value: eu-west-2
+      - label: eu-west-3
+        value: eu-west-3
+      - label: il-central-1
+        value: il-central-1
+      - label: me-central-1
+        value: me-central-1
+      - label: me-south-1
+        value: me-south-1
+      - label: sa-east-1
+        value: sa-east-1
 type: builtIn
 pluginType: access
 scriptFilePath: ../../../plugins/plugin-aws/index.js

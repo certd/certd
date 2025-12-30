@@ -7,7 +7,7 @@ title: 阿里云-部署至阿里云WAF
 icon: svg:icon-aliyun
 group: aliyun
 desc: 部署证书到阿里云WAF
-needPlus: true
+needPlus: false
 input:
   cert:
     title: 域名证书
@@ -17,9 +17,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
         - uploadCertToAliyun
     required: true
     order: 0
@@ -37,6 +35,7 @@ input:
                 }
               }
               
+    template: false
     required: false
     order: 0
   regionId:
@@ -82,8 +81,9 @@ input:
       vModel: value
       mode: tags
       type: plugin
-      typeName: AliyunDeployCertToWaf
       action: onGetCnameList
+      search: true
+      pager: true
       watches:
         - certDomains
         - accessId
@@ -101,6 +101,28 @@ input:
                }
               
     helper: 请选择要部署证书的CNAME站点
+    order: 0
+  tlsVersion:
+    title: TLS版本
+    value: tlsv1.2
+    component:
+      name: a-select
+      options:
+        - value: tlsv1
+          label: TLSv1
+        - value: tlsv1.1
+          label: TLSv1.1
+        - value: tlsv1.2
+          label: TLSv1.2
+    required: true
+    order: 0
+  enableTLSv3:
+    title: 启用TLSv3
+    value: true
+    component:
+      name: a-switch
+      vModel: checked
+    required: true
     order: 0
 output: {}
 type: builtIn

@@ -1,0 +1,21 @@
+addonType: captcha
+name: geetest
+title: 极验验证码v4
+desc: ''
+showTest: false
+input:
+  captchaId:
+    title: 验证ID
+    component:
+      placeholder: captchaId
+    helper: >-
+      [极验验证码v4](https://console.geetest.com/sensbot/management) -> 创建业务模块 ->
+      新增业务场景
+    required: true
+  captchaKey:
+    title: 验证Key
+    component:
+      placeholder: captchaKey
+    required: true
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-captcha/index.js

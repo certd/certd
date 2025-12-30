@@ -1,0 +1,195 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: UploadCertToOss
+title: 上传证书到对象存储OSS
+icon: ion:cloud-upload-outline
+desc: 支持阿里云OSS、腾讯云COS、七牛云KODO、S3、MinIO、FTP、SFTP
+group: host
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  uploaderType:
+    title: OSS类型
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - label: 阿里云OSS
+          value: alioss
+        - label: 腾讯云COS
+          value: tencentcos
+        - label: 七牛OSS
+          value: qiniuoss
+        - label: S3/Minio
+          value: s3
+        - label: SFTP
+          value: sftp
+        - label: FTP
+          value: ftp
+    required: true
+    order: 0
+  accessId:
+    title: OSS授权
+    component:
+      name: access-selector
+    required: true
+    mergeScript: |2-
+
+            return {
+              component: {
+              type: ctx.compute(({form})=>{
+                  return form.uploaderType;
+                })
+              }
+            }
+          
+    order: 0
+  certType:
+    title: 证书格式
+    helper: 要部署的证书格式，支持pem、pfx、der、jks
+    component:
+      name: a-select
+      options:
+        - value: pem
+          label: pem（crt），Nginx等大部分应用
+        - value: pfx
+          label: pfx，一般用于IIS
+        - value: der
+          label: der，一般用于Apache
+        - value: jks
+          label: jks，一般用于JAVA应用
+        - value: one
+          label: 证书私钥一体，crt+key简单合并为一个pem文件
+    required: true
+    order: 0
+  crtPath:
+    title: 证书保存路径
+    helper: 路径要包含证书文件名，例如：/tmp/cert.pem
+    component:
+      placeholder: /root/deploy/nginx/full_chain.pem
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'pem';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+  keyPath:
+    title: 私钥保存路径
+    helper: 路径要包含私钥文件名，例如：/tmp/cert.key
+    component:
+      placeholder: /root/deploy/nginx/cert.key
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'pem';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+  icPath:
+    title: 中间证书保存路径
+    helper: 路径要包含文件名，一般情况传上面两个文件即可，极少数情况需要这个中间证书
+    component:
+      placeholder: /root/deploy/nginx/intermediate.pem
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'pem';
+              })
+            }
+          
+    rules:
+      - type: filepath
+    order: 0
+  pfxPath:
+    title: PFX证书保存路径
+    helper: 路径要包含证书文件名，例如：D:\iis\cert.pfx
+    component:
+      placeholder: D:\iis\cert.pfx
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'pfx';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+  derPath:
+    title: DER证书保存路径
+    helper: 路径要包含证书文件名，例如：/tmp/cert.der
+    component:
+      placeholder: /root/deploy/apache/cert.der
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'der';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+  jksPath:
+    title: jks证书保存路径
+    helper: 路径要包含证书文件名，例如：/tmp/cert.jks
+    component:
+      placeholder: /root/deploy/java_app/cert.jks
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'jks';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+  onePath:
+    title: 一体证书保存路径
+    helper: 路径要包含证书文件名，例如：/tmp/crt_key.pem
+    component:
+      placeholder: /app/crt_key.pem
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'one';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+output: {}
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-host/plugin/plugin-upload-to-oss.js

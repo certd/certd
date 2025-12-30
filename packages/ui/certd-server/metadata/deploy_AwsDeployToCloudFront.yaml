@@ -7,7 +7,7 @@ title: AWS-部署证书到CloudFront
 desc: 部署证书到 AWS CloudFront
 icon: svg:icon-aws
 group: aws
-needPlus: true
+needPlus: false
 input:
   cert:
     title: 域名证书
@@ -15,9 +15,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
         - AwsUploadToACM
     required: true
     order: 0
@@ -35,6 +33,7 @@ input:
                 }
               }
               
+    template: false
     required: false
     order: 0
   region:
@@ -44,6 +43,16 @@ input:
       name: a-auto-complete
       vModel: value
       options:
+        - label: '------中国区------'
+          value: cn
+          disabled: true
+        - label: 北京
+          value: cn-north-1
+        - label: 宁夏
+          value: cn-northwest-1
+        - label: '------海外-----'
+          value: out
+          disabled: true
         - label: us-east-1
           value: us-east-1
         - label: us-east-2
@@ -122,6 +131,8 @@ input:
       mode: tags
       type: plugin
       action: onGetDistributions
+      search: false
+      pager: false
       watches:
         - certDomains
         - accessId

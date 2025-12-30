@@ -1,0 +1,26 @@
+name: ksyun
+title: 金山云授权
+desc: ''
+icon: svg:icon-ksyun
+input:
+  accessKeyId:
+    title: AccessKeyID
+    component:
+      placeholder: AccessKeyID
+    helper: '[获取密钥](https://uc.console.ksyun.com/pro/iam/#/set/keyManage)'
+    required: true
+  accessKeySecret:
+    title: AccessKeySecret
+    component:
+      placeholder: AccessKeySecret
+    required: true
+    encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+type: builtIn
+pluginType: access
+scriptFilePath: ../../../plugins/plugin-ksyun/index.js

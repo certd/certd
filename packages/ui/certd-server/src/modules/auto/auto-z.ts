@@ -47,10 +47,12 @@ export class AutoZPrint {
     function format(bytes: any) {
       return (bytes / 1024 / 1024).toFixed(2) + ' MB';
     }
-    setInterval(() => {
+    function printHeapLog() {
       const mu = process.memoryUsage();
       logger.info(`rss:${format(mu.rss)},heapUsed: ${format(mu.heapUsed)},heapTotal: ${format(mu.heapTotal)},external: ${format(mu.external)},arrayBuffers: ${format(mu.arrayBuffers)}`);
-    }, 20000);
+    }
+    setInterval(printHeapLog, 20000);
+    printHeapLog();
   }
 
   startHttpsServer() {

@@ -14,9 +14,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
     required: true
     order: 0
   accessId:
@@ -34,6 +32,16 @@ input:
       name: a-auto-complete
       vModel: value
       options:
+        - label: '------中国区------'
+          value: cn
+          disabled: true
+        - label: 北京
+          value: cn-north-1
+        - label: 宁夏
+          value: cn-northwest-1
+        - label: '------海外-----'
+          value: out
+          disabled: true
         - label: us-east-1
           value: us-east-1
         - label: us-east-2

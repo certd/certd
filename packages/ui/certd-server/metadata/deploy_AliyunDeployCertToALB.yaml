@@ -17,9 +17,7 @@ input:
     component:
       name: output-selector
       from:
-        - CertApply
-        - CertApplyLego
-        - CertApplyUpload
+        - ':cert:'
         - uploadCertToAliyun
     required: true
     order: 0
@@ -37,7 +35,23 @@ input:
                 }
               }
               
+    template: false
     required: false
+    order: 0
+  casEndpoint:
+    title: 证书接入点
+    helper: 不会选就保持默认即可
+    value: cas.aliyuncs.com
+    component:
+      name: a-select
+      options:
+        - value: cas.aliyuncs.com
+          label: 中国大陆
+        - value: cas.ap-southeast-1.aliyuncs.com
+          label: 新加坡
+        - value: cas.eu-central-1.aliyuncs.com
+          label: 德国（法兰克福）
+    required: true
     order: 0
   accessId:
     title: Access授权
@@ -55,6 +69,8 @@ input:
       type: plugin
       typeName: AliyunDeployCertToALB
       action: onGetRegionList
+      search: false
+      pager: false
       watches:
         - certDomains
         - accessId
@@ -81,6 +97,8 @@ input:
       type: plugin
       typeName: AliyunDeployCertToALB
       action: onGetLoadBalanceList
+      search: false
+      pager: false
       watches:
         - certDomains
         - accessId
@@ -107,6 +125,8 @@ input:
       type: plugin
       typeName: AliyunDeployCertToALB
       action: onGetListenerList
+      search: false
+      pager: false
       watches:
         - certDomains
         - accessId
@@ -124,19 +144,25 @@ input:
               
     helper: 要部署证书的监听器列表
     order: 0
-  casEndpoint:
-    title: 证书接入点
-    helper: 不会选就保持默认即可
-    value: cas.aliyuncs.com
+  deployType:
+    title: 部署证书类型
+    value: default
     component:
       name: a-select
+      vModel: value
       options:
-        - value: cas.aliyuncs.com
-          label: 中国大陆
-        - value: cas.ap-southeast-1.aliyuncs.com
-          label: 新加坡
-        - value: cas.eu-central-1.aliyuncs.com
-          label: 德国（法兰克福）
+        - label: 默认证书
+          value: default
+        - label: 扩展证书
+          value: extension
+    required: true
+    order: 0
+  clearExpiredCert:
+    title: 是否清理过期证书
+    value: true
+    component:
+      name: a-switch
+      vModel: checked
     required: true
     order: 0
 output: {}

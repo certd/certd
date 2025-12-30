@@ -12,8 +12,8 @@ export class AutoBLoadPlugins {
   @Init()
   async init() {
     logger.info('加载插件开始');
-    // await this.pluginService.registerFromLocal("./metadata")
-    await import("../../plugins/index.js")
+    await this.pluginService.registerFromLocal("./metadata")
+    // await import("../../plugins/index.js")
     await this.pluginService.registerFromDb()
     logger.info('加载插件完成');
 

@@ -1,14 +1,14 @@
 name: email
 title: 电子邮件
 desc: 电子邮件通知
+order: -100
 input:
   receivers:
     title: 收件人邮箱
     component:
-      name: a-select
+      name: email-selector
       vModel: value
       mode: tags
-      open: false
     required: true
     helper: |-
       可以填写多个，填写一个按回车键再填写下一个

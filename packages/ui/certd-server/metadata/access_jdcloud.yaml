@@ -2,6 +2,7 @@ name: jdcloud
 title: 京东云
 desc: ''
 icon: svg:icon-jdcloud
+order: 1
 input:
   accessKeyId:
     title: AccessKeyID

@@ -1,4 +1,4 @@
-showRunStrategy: false
+showRunStrategy: true
 default:
   strategy:
     runStrategy: 1
