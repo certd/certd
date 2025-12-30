@@ -15,6 +15,6 @@ input:
       placeholder: ''
     helper: '[获取通道ID](https://anpush.com/push/setting)创建通道，复制通道id，填入此处'
     required: true
-type: builtIn
 pluginType: notification
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-notification/anpush/index.js

@@ -4,6 +4,6 @@ desc: 京东云DNS解析提供商
 accessType: jdcloud
 icon: svg:icon-jdcloud
 order: 3
-type: builtIn
 pluginType: dnsProvider
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-jdcloud/dns-provider.js

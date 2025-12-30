@@ -38,6 +38,6 @@ input:
       name: a-switch
       vModel: checked
     required: false
-type: builtIn
 pluginType: notification
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-notification/vocechat/index.js

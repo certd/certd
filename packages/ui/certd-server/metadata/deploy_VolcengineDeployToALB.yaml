@@ -96,6 +96,6 @@ input:
       需要在监听器中选择证书中心，进行跨服务访问授权
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-volcengine/plugins/plugin-deploy-to-alb.js

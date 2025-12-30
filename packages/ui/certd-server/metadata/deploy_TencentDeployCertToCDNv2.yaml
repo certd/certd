@@ -71,6 +71,6 @@ input:
     helper: 请选择域名或输入域名
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-tencent/plugin/deploy-to-cdn-v2/index.js

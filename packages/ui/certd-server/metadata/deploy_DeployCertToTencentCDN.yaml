@@ -36,6 +36,6 @@ input:
         message: 该项必填
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-tencent/plugin/deploy-to-cdn/index.js

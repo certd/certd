@@ -68,6 +68,6 @@ input:
     helper: 虚拟主机列表
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-west/plugins/deploy-to-vhost.js

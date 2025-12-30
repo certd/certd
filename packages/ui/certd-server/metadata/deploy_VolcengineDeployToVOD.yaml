@@ -80,6 +80,6 @@ input:
       需要先在域名管理页面进行证书中心访问授权（即点击去配置SSL证书）
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-volcengine/plugins/plugin-deploy-to-vod.js

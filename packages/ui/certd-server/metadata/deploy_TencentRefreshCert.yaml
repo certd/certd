@@ -81,6 +81,6 @@ input:
     required: false
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-tencent/plugin/refresh-cert/index.js

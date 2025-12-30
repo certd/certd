@@ -14,5 +14,6 @@ input:
     component:
       placeholder: ClientSecretKey / appSecretKey
     required: true
+pluginType: addon
 type: builtIn
 scriptFilePath: ../../../plugins/plugin-oauth/oauth2/plugin-gitee.js

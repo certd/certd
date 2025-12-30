@@ -13,6 +13,6 @@ input:
     helper: |-
       可以填写多个，填写一个按回车键再填写下一个
       需要先[配置邮件服务器](#/sys/settings/email)
-type: builtIn
 pluginType: notification
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-notification/email/index.js

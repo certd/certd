@@ -132,6 +132,6 @@ input:
         
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-tencent/plugin/start-instances/index.js

@@ -26,5 +26,6 @@ input:
     component:
       placeholder: AppSecretKey
     required: true
+pluginType: addon
 type: builtIn
 scriptFilePath: ../../../plugins/plugin-captcha/tencent/index.js

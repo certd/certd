@@ -68,6 +68,6 @@ input:
     helper: 要更新的中国移动CDN域名
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-cmcc/plugin-deploy-to-cdn.js

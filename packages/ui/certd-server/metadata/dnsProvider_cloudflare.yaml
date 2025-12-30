@@ -3,6 +3,6 @@ title: cloudflare
 desc: cloudflare dns provider
 icon: simple-icons:cloudflare
 accessType: cloudflare
-type: builtIn
 pluginType: dnsProvider
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-cloudflare/dns-provider.js

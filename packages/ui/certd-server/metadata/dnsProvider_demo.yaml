@@ -4,6 +4,6 @@ desc: dns provider示例
 icon: clarity:plugin-line
 accessType: demo
 order: 99
-type: builtIn
 pluginType: dnsProvider
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-demo/dns-provider.js

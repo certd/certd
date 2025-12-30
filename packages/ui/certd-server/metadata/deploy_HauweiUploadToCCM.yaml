@@ -45,6 +45,6 @@ input:
 output:
   huaweiCertId:
     title: 华为云CertId
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-huawei/plugins/upload-to-ccm/index.js

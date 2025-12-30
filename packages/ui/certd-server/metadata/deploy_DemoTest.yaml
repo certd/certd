@@ -120,6 +120,6 @@ input:
     helper: 选择时可以从后端获取选项
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-demo/plugins/plugin-test.js

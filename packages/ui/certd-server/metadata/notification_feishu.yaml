@@ -38,6 +38,6 @@ input:
       vModel: checked
     helper: 是否@所有人
     required: false
-type: builtIn
 pluginType: notification
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-notification/feishu/index.js

@@ -67,6 +67,6 @@ input:
     helper: 要更新的Flex证书id
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-flex/plugins/plugin-refresh-cert.js

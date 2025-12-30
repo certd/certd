@@ -3,6 +3,6 @@ title: dns.la
 desc: dns.la
 icon: arcticons:dns-changer-3
 accessType: dnsla
-type: builtIn
 pluginType: dnsProvider
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-dnsla/dns-provider.js

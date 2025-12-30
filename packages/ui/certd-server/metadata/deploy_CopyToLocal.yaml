@@ -162,6 +162,6 @@ output:
   hostJksPath:
     title: jks保存路径
     type: HostJksPath
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-host/plugin/copy-to-local/index.js

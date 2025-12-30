@@ -72,6 +72,6 @@ input:
     helper: 你在京东云上配置的CDN加速域名，比如:certd.docmirror.cn
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-jdcloud/plugins/plugin-deploy-to-cdn.js

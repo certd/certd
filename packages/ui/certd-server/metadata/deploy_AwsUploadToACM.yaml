@@ -107,6 +107,6 @@ input:
 output:
   awsCertARN:
     title: 证书ARN
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aws/plugins/plugin-upload-to-acm.js

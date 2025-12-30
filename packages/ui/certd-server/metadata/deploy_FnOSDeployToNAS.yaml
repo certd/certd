@@ -73,6 +73,6 @@ input:
     helper: 面板证书请选择fnOS，其他FTP、webdav等证书请选择已使用，可多选（如果证书域名都匹配的话）
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-fnos/index.js

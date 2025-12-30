@@ -19,6 +19,6 @@ input:
     component:
       placeholder: totp key
     encrypt: true
-type: builtIn
 pluginType: access
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-cachefly/access.js

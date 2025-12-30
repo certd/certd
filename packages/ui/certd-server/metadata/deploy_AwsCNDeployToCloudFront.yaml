@@ -88,6 +88,6 @@ input:
     helper: 请选择distributions id
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aws-cn/plugins/plugin-deploy-to-cloudfront.js

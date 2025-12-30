@@ -75,6 +75,6 @@ input:
 output:
   lastVersion:
     title: 最后版本
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-github/plugins/plugin-check-release.js

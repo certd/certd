@@ -106,6 +106,6 @@ input:
     helper: 上传后将以此名称作为前缀备注
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aliyun/plugin/deploy-to-cdn/index.js

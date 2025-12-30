@@ -253,6 +253,6 @@ output:
     title: 一体证书保存路径
   hostP7bPath:
     title: p7b证书保存路径
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-host/plugin/upload-to-host/index.js

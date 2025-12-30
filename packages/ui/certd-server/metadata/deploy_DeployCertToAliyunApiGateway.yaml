@@ -132,6 +132,6 @@ input:
     helper: 在API分组上配置的绑定域名
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aliyun/plugin/deploy-to-apigateway/index.js

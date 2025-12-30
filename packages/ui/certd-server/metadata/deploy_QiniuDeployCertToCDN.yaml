@@ -73,6 +73,6 @@ input:
     helper: 你在七牛云上配置的CDN加速域名，比如:certd.handsfree.work
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-qiniu/plugin/deploy-to-cdn/index.js

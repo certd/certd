@@ -88,6 +88,6 @@ input:
     helper: 你在火山引擎上配置的CDN加速域名，比如:certd.docmirror.cn
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-volcengine/plugins/plugin-deploy-to-cdn.js

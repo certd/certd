@@ -33,6 +33,6 @@ input:
     rules:
       - required: true
         message: 该项必填
-type: builtIn
 pluginType: access
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-tencent/access/dnspod-access.js

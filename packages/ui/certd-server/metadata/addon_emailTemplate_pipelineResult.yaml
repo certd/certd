@@ -1,7 +1,7 @@
 addonType: emailTemplate
-name: common
-title: 通用邮件模版
-desc: 使用通用的邮件标题和内容，内容外部可以自定义html进行美化
+name: pipelineResult
+title: 流水线执行结果邮件模版
+desc: 执行失败，xxxx自动化【流水线id】；运行ID:xxx,错误信息:xxxx
 icon: simple-icons:email:blue
 showTest: false
 input:
@@ -53,14 +53,20 @@ input:
     component:
       name: ParamsShow
       params:
-        - label: 标题
-          value: title
-        - label: 内容
-          value: content
+        - label: 运行结果
+          value: pipelineResult
+        - label: 流水线标题
+          value: pipelineTitle
+        - label: 流水线ID
+          value: pipelineId
+        - label: 运行Id
+          value: historyId
+        - label: 错误信息
+          value: errors
         - label: URL
           value: url
-    helper: html格式下${content}建议使用pre标签包裹：例如：&lt;pre&gt;${content}&lt;/pre&gt;
     col:
       span: 24
+pluginType: addon
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-template/email/plugin-common.js
+scriptFilePath: ../../../plugins/plugin-template/email/plugin-pipeline-result.js

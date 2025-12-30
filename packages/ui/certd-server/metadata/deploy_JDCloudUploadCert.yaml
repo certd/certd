@@ -34,6 +34,6 @@ input:
 output:
   jdcloudCertId:
     title: 上传成功后的京东云CertId
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-jdcloud/plugins/plugin-upload-cert.js

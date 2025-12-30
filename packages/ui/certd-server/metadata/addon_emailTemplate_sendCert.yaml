@@ -1,7 +1,7 @@
 addonType: emailTemplate
-name: pipelineResult
-title: 流水线执行结果邮件模版
-desc: 执行失败，xxxx自动化【流水线id】；运行ID:xxx,错误信息:xxxx
+name: sendCert
+title: 发送证书邮件模版
+desc: 邮件发送证书插件的邮件模版
 icon: simple-icons:email:blue
 showTest: false
 input:
@@ -53,19 +53,22 @@ input:
     component:
       name: ParamsShow
       params:
-        - label: 运行结果
-          value: pipelineResult
-        - label: 流水线标题
-          value: pipelineTitle
-        - label: 流水线ID
-          value: pipelineId
-        - label: 运行Id
-          value: historyId
-        - label: 错误信息
-          value: errors
-        - label: URL
-          value: url
+        - label: 主域名
+          value: mainDomain
+        - label: 全部域名
+          value: domains
+        - label: 过期时间
+          value: expiresTime
+        - label: 备注
+          value: remark
+        - label: 证书内容
+          value: crt
+        - label: 私钥内容
+          value: key
+        - label: 中间证书
+          value: ic
     col:
       span: 24
+pluginType: addon
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-template/email/plugin-pipeline-result.js
+scriptFilePath: ../../../plugins/plugin-template/email/plugin-send-cert.js

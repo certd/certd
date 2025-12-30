@@ -37,6 +37,6 @@ input:
     helper: pam 或 pve。默认值 pam
     required: false
     encrypt: false
-type: builtIn
 pluginType: access
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-proxmox/access.js

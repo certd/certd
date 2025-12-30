@@ -17,6 +17,6 @@ input:
     helper: ''
     required: false
     encrypt: true
-type: builtIn
 pluginType: access
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-dnsla/access.js

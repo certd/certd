@@ -1,7 +1,7 @@
 addonType: emailTemplate
-name: forgotPassword
-title: 忘记密码邮件模版
-desc: 您正在重置密码，您的验证码为xxxx，请勿泄露
+name: registerCode
+title: 注册验证码邮件模版
+desc: 您的注册验证码为：xxxx，请勿泄露
 icon: simple-icons:email:blue
 showTest: false
 input:
@@ -57,5 +57,6 @@ input:
           value: code
     col:
       span: 24
+pluginType: addon
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-template/email/plugin-forgot-password.js
+scriptFilePath: ../../../plugins/plugin-template/email/plugin-register-code.js

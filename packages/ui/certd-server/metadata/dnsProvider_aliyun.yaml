@@ -4,6 +4,6 @@ desc: 阿里云DNS解析提供商
 accessType: aliyun
 icon: svg:icon-aliyun
 order: 0
-type: builtIn
 pluginType: dnsProvider
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aliyun/dns-provider/aliyun-dns-provider.js

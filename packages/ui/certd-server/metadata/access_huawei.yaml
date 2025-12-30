@@ -17,6 +17,6 @@ input:
       placeholder: accessKeySecret
     required: true
     encrypt: true
-type: builtIn
 pluginType: access
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-huawei/access/huawei-access.js

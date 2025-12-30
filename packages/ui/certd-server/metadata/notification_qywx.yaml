@@ -27,6 +27,6 @@ input:
       open: false
     required: false
     helper: 填写成员手机号，@all 为提醒所有人
-type: builtIn
 pluginType: notification
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-notification/qywx/index.js

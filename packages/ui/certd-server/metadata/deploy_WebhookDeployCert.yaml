@@ -106,6 +106,6 @@ input:
       placeholder: 例如： status:"success"
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-other/plugins/plugin-webhook.js

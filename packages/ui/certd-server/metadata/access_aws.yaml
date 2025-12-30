@@ -165,6 +165,6 @@ input:
         value: me-south-1
       - label: sa-east-1
         value: sa-east-1
-type: builtIn
 pluginType: access
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aws/access.js

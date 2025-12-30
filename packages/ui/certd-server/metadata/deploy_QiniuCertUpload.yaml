@@ -32,6 +32,6 @@ input:
 output:
   qiniuCertId:
     title: 上传成功后的七牛云CertId
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-qiniu/plugin/upload-cert/index.js

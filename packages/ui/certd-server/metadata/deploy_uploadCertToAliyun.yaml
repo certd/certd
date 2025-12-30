@@ -63,6 +63,6 @@ input:
 output:
   aliyunCertId:
     title: 上传成功后的阿里云CertId
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aliyun/plugin/upload-to-aliyun/index.js

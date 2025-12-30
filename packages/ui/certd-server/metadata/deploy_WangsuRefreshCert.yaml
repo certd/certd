@@ -68,6 +68,6 @@ input:
     helper: 要更新的网宿证书id
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-wangsu/plugins/plugin-refresh-cert.js

@@ -28,6 +28,6 @@ output:
   certId:
     title: 证书ID
     type: UCloudCertId
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-ucloud/plugins/plugin-upload-to-ussl.js

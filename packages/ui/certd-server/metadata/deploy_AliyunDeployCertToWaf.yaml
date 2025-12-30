@@ -125,6 +125,6 @@ input:
     required: true
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aliyun/plugin/deploy-to-waf/index.js

@@ -23,7 +23,7 @@
     "lint": "mwts check",
     "lint:fix": "mwts fix",
     "ci": "npm run cov",
-    "build": "cross-env NODE_ENV=production mwtsc --cleanOutDir --skipLibCheck",
+    "build": "cross-env NODE_ENV=production mwtsc --cleanOutDir --skipLibCheck && npm run export-metadata && npm run export-md",
     "export-metadata": "node export-plugin-yaml.js",
     "export-md": "node export-plugin-md.js",
     "dev-build": "echo 1",

@@ -102,6 +102,6 @@ input:
     helper: 证书上传后将以此参数作为名称前缀
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-tencent/plugin/deploy-to-eo/index.js

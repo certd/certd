@@ -4,6 +4,6 @@ desc: 51DNS
 icon: arcticons:dns-changer-3
 accessType: 51dns
 order: 999
-type: builtIn
 pluginType: dnsProvider
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-51dns/dns-provider.js

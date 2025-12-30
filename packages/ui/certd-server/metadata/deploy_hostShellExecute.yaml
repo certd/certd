@@ -27,6 +27,6 @@ input:
     required: true
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-host/plugin/host-shell-execute/index.js

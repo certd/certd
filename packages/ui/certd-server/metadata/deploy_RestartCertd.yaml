@@ -10,6 +10,6 @@ group: admin
 onlyAdmin: true
 input: {}
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-admin/plugin-restart.js

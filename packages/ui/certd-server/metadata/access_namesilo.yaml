@@ -14,6 +14,6 @@ input:
       然后点击Generate按钮
     required: true
     encrypt: true
-type: builtIn
 pluginType: access
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-namesilo/access.js

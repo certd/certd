@@ -17,6 +17,6 @@ input:
     required: true
     encrypt: true
     helper: 请妥善保管您的安全访问密钥。您可以在AWS管理控制台的IAM中创建新的访问密钥。
-type: builtIn
 pluginType: access
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aws-cn/access.js

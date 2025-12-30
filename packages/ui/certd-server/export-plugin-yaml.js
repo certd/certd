@@ -4,7 +4,8 @@ import path, { join } from "path";
 import fs from "fs";
 import { pathToFileURL } from "node:url";
 import * as yaml from "js-yaml";
-import { AbstractTaskPlugin, BaseAccess, BaseNotification } from "@certd/pipeline";
+import { AbstractTaskPlugin, BaseAccess, BaseNotification} from "@certd/pipeline";
+import { BaseAddon} from "@certd/lib-server";
 
 function scanDir(dir) {
   const files = fs.readdirSync(dir);
@@ -87,7 +88,7 @@ async function genMetadata(){
         const pluginDefine = {
           ...value.define
         }
-        pluginDefine.type = "builtIn"
+        let subType = ""
         if(pluginDefine.accessType){
           pluginDefine.pluginType = "dnsProvider"
         }else if(isPrototypeOf(value,AbstractTaskPlugin)){
@@ -96,11 +97,15 @@ async function genMetadata(){
           pluginDefine.pluginType = "notification"
         }else if(isPrototypeOf(value,BaseAccess)){
           pluginDefine.pluginType = "access"
+        }else if(isPrototypeOf(value,BaseAddon)){
+          pluginDefine.pluginType = "addon"
+          subType = "_"+pluginDefine.addonType
         }else{
           console.log(`[warning] 未知的插件类型：${pluginDefine.name}`)
         }
-
-        const filePath = path.join(`./metadata/${pluginDefine.pluginType}_${pluginDefine.name}.yaml`)
+        pluginDefine.type = "builtIn"
+          
+        const filePath = path.join(`./metadata/${pluginDefine.pluginType}${subType}_${pluginDefine.name}.yaml`)
 
         pluginDefine.scriptFilePath = location
         console.log(location)

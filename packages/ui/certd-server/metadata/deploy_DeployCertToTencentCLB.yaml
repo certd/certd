@@ -75,6 +75,6 @@ input:
     required: true
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-tencent/plugin/deploy-to-clb/index.js

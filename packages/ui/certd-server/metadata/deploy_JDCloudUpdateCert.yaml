@@ -72,6 +72,6 @@ input:
     helper: 您在京东云上已有的证书Id
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-jdcloud/plugins/plugin-update-cert.js

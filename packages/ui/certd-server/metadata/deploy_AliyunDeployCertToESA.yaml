@@ -99,6 +99,6 @@ input:
     helper: 请选择要部署证书的站点
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aliyun/plugin/deploy-to-esa/index.js

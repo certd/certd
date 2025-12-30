@@ -19,6 +19,6 @@ input:
     helper: 是否使用http代理
     required: false
     encrypt: false
-type: builtIn
 pluginType: access
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-cloudflare/access.js

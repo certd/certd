@@ -17,6 +17,6 @@ input:
       placeholder: 密码
     required: true
     encrypt: true
-type: builtIn
 pluginType: access
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-51dns/access.js

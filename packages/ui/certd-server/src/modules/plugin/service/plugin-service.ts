@@ -1,5 +1,5 @@
 import {Inject, Provide, Scope, ScopeEnum} from "@midwayjs/core";
-import {BaseService, PageReq} from "@certd/lib-server";
+import {addonRegistry, BaseService, PageReq} from "@certd/lib-server";
 import {PluginEntity} from "../entity/plugin.js";
 import {InjectEntityModel} from "@midwayjs/typeorm";
 import {IsNull, Not, Repository} from "typeorm";
@@ -399,8 +399,13 @@ export class PluginService extends BaseService<PluginEntity> {
     delete item.metadata;
     delete item.content;
     delete item.extra;
+    let name = item.name
+
     if (item.author) {
-      item.name = item.author + "/" + item.name;
+      name = item.author + "/" + name;
+    }
+     if(item.addonType){
+      name = item.addonType + ":" + name;
     }
     let registry = null;
     if (item.pluginType === "access") {
@@ -411,18 +416,20 @@ export class PluginService extends BaseService<PluginEntity> {
       registry = dnsProviderRegistry;
     } else if (item.pluginType === "notification") {
       registry = notificationRegistry;
-    } else {
-      logger.warn(`插件${item.name}类型错误:${item.pluginType}`);
+    }else if (item.pluginType === "addon") {
+      registry = addonRegistry;
+    }  else {
+      logger.warn(`插件${name}类型错误:${item.pluginType}`);
       return;
     }
 
-    registry.register(item.name, {
+    registry.register(name, {
       define: item,
       target: async () => {
         if (item.type === "builtIn") {
           return await this.getPluginClassFromFile(item);
         } else {
-          return await this.getPluginClassFromDb(item.name);
+          return await this.getPluginClassFromDb(name);
         }
       }
     });

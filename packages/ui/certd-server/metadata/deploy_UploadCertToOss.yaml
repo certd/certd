@@ -190,6 +190,6 @@ input:
       - type: filepath
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-host/plugin/plugin-upload-to-oss.js

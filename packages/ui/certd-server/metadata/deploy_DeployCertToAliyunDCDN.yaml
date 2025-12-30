@@ -76,6 +76,6 @@ input:
     helper: 你在阿里云上配置的DCDN加速域名，比如:certd.docmirror.cn
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aliyun/plugin/deploy-to-dcdn/index.js

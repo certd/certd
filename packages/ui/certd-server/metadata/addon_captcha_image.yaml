@@ -4,5 +4,6 @@ title: 图片验证码
 desc: ''
 showTest: false
 input: {}
+pluginType: addon
 type: builtIn
 scriptFilePath: ../../../plugins/plugin-captcha/image/index.js

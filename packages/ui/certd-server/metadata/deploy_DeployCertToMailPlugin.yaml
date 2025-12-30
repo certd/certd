@@ -42,6 +42,6 @@ input:
     required: false
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-other/plugins/plugin-deploy-to-mail.js

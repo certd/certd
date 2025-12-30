@@ -80,6 +80,6 @@ input:
     helper: 请选择域名或输入域名
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-huawei/plugins/deploy-to-cdn/index.js

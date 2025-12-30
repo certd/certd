@@ -68,6 +68,6 @@ input:
     helper: 要更新的证书名称，如果这里没有，请先给手动绑定一次证书
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-dokploy/plugins/plugin-refresh-cert.js

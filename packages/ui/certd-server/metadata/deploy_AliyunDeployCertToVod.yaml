@@ -86,6 +86,6 @@ input:
     helper: 请选择要部署证书的域名
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aliyun/plugin/deploy-to-vod/index.js

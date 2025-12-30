@@ -182,6 +182,6 @@ input:
     helper: 要部署扩展域名列表
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-aliyun/plugin/deploy-to-slb/index.js

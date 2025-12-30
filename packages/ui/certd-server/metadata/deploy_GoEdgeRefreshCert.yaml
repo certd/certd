@@ -78,6 +78,6 @@ input:
     helper: 要更新的GoEdge证书id
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-goedge/plugins/plugin-refresh-cert.js

@@ -4,6 +4,6 @@ desc: GoDaddy
 icon: simple-icons:godaddy
 accessType: godaddy
 order: 10
-type: builtIn
 pluginType: dnsProvider
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-godaddy/dns-provider.js

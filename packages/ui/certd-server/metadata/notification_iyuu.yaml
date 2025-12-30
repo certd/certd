@@ -9,6 +9,6 @@ input:
       placeholder: ''
     helper: https://iyuu.cn/ 微信扫码获取
     required: true
-type: builtIn
 pluginType: notification
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-notification/iyuu/index.js

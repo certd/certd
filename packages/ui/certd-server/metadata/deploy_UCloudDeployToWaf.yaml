@@ -68,6 +68,6 @@ input:
     helper: 要更新的UCloud域名列表
     order: 0
 output: {}
-type: builtIn
 pluginType: deploy
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-ucloud/plugins/plugin-deploy-to-waf.js

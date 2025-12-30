@@ -16,6 +16,6 @@ input:
       placeholder: SecretAccessKey
     required: true
     encrypt: true
-type: builtIn
 pluginType: access
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-volcengine/access.js

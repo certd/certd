@@ -36,6 +36,6 @@ input:
       placeholder: xxxxxxxxxx
     helper: (选填)访问API的授权令牌（无token时留空）
     required: false
-type: builtIn
 pluginType: notification
+type: builtIn
 scriptFilePath: ../../../plugins/plugin-notification/onebot/index.js
