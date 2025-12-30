@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.17](https://github.com/publishlab/node-acme-client/compare/v1.37.16...v1.37.17) (2025-12-29)
+
+### Performance Improvements
+
+* aws route53 ([8caab1f](https://github.com/publishlab/node-acme-client/commit/8caab1fd9264df548f467b94202d567107b7a30b))
+
 ## [1.37.16](https://github.com/publishlab/node-acme-client/compare/v1.37.15...v1.37.16) (2025-12-15)
 
 ### Bug Fixes

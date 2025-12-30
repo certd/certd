@@ -49,8 +49,10 @@ jobs:
       - name: publish_to_atomgit
         id: publish_to_atomgit
         run: |
+          rootDir=$(pwd)
           rm -rf ./packages/ui/certd-client/dist/**/*.gz 
-          zip -r ui.zip ./packages/ui/certd-client/dist
+          cd ./packages/ui/certd-client/dist && zip -r ../ui.zip .
+          cd $rootDir
           export ATOMGIT_TOKEN=${{ secrets.ATOMGIT_TOKEN }}
           pnpm install
           npm run publish_to_atomgit

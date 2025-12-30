@@ -783,19 +783,19 @@ importers:
   packages/pro/commercial-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../../core/basic
       '@certd/lib-server':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../../libs/lib-server
       '@certd/pipeline':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../../core/pipeline
       '@certd/plugin-plus':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../plugin-plus
       '@certd/plus-core':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../plus-core
       '@midwayjs/core':
         specifier: 3.20.11
@@ -880,22 +880,22 @@ importers:
         specifier: ^1.0.2
         version: 1.0.3
       '@certd/basic':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../../core/basic
       '@certd/lib-k8s':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../../libs/lib-k8s
       '@certd/pipeline':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../../core/pipeline
       '@certd/plugin-cert':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../../plugins/plugin-cert
       '@certd/plugin-lib':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../plus-core
       ali-oss:
         specifier: ^6.21.0
@@ -998,7 +998,7 @@ importers:
   packages/pro/plus-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.37.15
+        specifier: ^1.37.16
         version: link:../../core/basic
       dayjs:
         specifier: ^1.11.7

@@ -54,7 +54,7 @@ export class UserTaskQueue{
 
 export class ExecutorQueue{
   queues: Record<number, UserTaskQueue> = {};
-  maxRunningCount: number = 8;
+  maxRunningCount: number = 10;
 
 
   setMaxRunningCount(count: number) {

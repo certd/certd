@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.37.17](https://github.com/certd/certd/compare/v1.37.16...v1.37.17) (2025-12-29)
+
+### Bug Fixes
+
+* 发送证书到邮箱插件的邮件模版转为使用邮箱配置中的通用模版 ([c5a3003](https://github.com/certd/certd/commit/c5a3003cf7b640500a90ec2c8961859ffe6fdb18))
+
+### Performance Improvements
+
+* 支持ucloud，上传到ussl，部署到ucdn ([e61daae](https://github.com/certd/certd/commit/e61daaee2d0dec19710cd4ec759219a071f2435e))
+
 ## [1.37.16](https://github.com/certd/certd/compare/v1.37.15...v1.37.16) (2025-12-15)
 
 ### Performance Improvements

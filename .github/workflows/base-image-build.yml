@@ -1,0 +1,45 @@
+name: build-node-base-image
+# 废弃，比默认的占用内存更多
+on:
+  push:
+    branches: ['v2-dev1']
+    paths:
+      - "scripts/build/Dockerfile"
+#  schedule:
+#    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
+#    - cron: '17 19 * * *'
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-node-base-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.dockerhub_username }}
+          password: ${{ secrets.dockerhub_password }}
+
+      - name: Build default platforms
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          context: ./scripts/build/
+          tags: |
+            greper/node-base:22-alpine-2
+     

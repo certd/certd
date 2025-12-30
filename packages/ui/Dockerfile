@@ -1,11 +1,11 @@
 FROM node:22-alpine AS builder
 
-RUN apk add build-base
-RUN wget -O - https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar -xj && \
-    cd jemalloc-5.3.0 && \
-    ./configure && \
-    make && \
-    make install
+# RUN apk add build-base
+# RUN wget -O - https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar -xj && \
+#     cd jemalloc-5.3.0 && \
+#     ./configure && \
+#     make && \
+#     make install
 
 
 WORKDIR /workspace/
@@ -24,9 +24,9 @@ FROM node:22-alpine
 EXPOSE 7001
 EXPOSE 7002
 
-# 安装jemalloc内存分配器，优化内存占用
-COPY --from=builder /usr/local/lib/libjemalloc.so.2 /usr/local/lib/
-ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
+# 安装jemalloc内存分配器，优化内存占用 -- 基本没用，反而更高了
+# COPY --from=builder /usr/local/lib/libjemalloc.so.2 /usr/local/lib/
+# ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
 
 
 RUN apk add --no-cache openssl
