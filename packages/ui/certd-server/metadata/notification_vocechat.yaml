@@ -1,0 +1,43 @@
+name: vocechat
+title: VoceChat通知
+desc: https://voce.chat
+needPlus: true
+input:
+  endpoint:
+    title: 服务地址
+    component:
+      placeholder: https://replace.your.domain
+    required: true
+  apiKey:
+    title: apiKey
+    component:
+      placeholder: ''
+    helper: '[获取APIKEY](https://doc.voce.chat/bot/bot-and-webhook)'
+    required: true
+  targetType:
+    title: 目标类型
+    component:
+      name: a-select
+      options:
+        - value: user
+          label: 用户
+        - value: channel
+          label: 频道
+    required: true
+    helper: 发送消息的目标类型
+  targetId:
+    title: 目标ID
+    component:
+      placeholder: 发送消息的目标ID
+    required: true
+    helper: 目标ID可以是用户ID或频道ID
+  skipSslVerify:
+    title: 忽略证书校验
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    required: false
+type: builtIn
+pluginType: notification
+scriptFilePath: ../../../plugins/plugin-notification/vocechat/index.js

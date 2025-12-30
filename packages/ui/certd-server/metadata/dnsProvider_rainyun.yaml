@@ -1,0 +1,8 @@
+name: rainyun
+title: 雨云
+desc: 雨云DNS解析提供商
+accessType: rainyun
+icon: svg:icon-rainyun
+type: builtIn
+pluginType: dnsProvider
+scriptFilePath: ../../../plugins/plugin-rainyun/dns-provider.js

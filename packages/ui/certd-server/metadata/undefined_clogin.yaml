@@ -1,0 +1,64 @@
+addonType: oauth
+name: clogin
+title: 彩虹聚合登录
+desc: 彩虹聚合登录
+icon: emojione:rainbow
+showTest: false
+input:
+  endpoint:
+    title: 系统地址
+    helper: http://clogin.xxxx.com/
+    required: true
+    col:
+      span: 24
+  loginType:
+    title: 登录类型
+    component:
+      name: a-auto-complete
+      options:
+        - label: QQ
+          value: qq
+        - label: 微信
+          value: wx
+        - label: 支付宝
+          value: alipay
+        - label: 微博
+          value: sina
+        - label: 百度
+          value: baidu
+        - label: 华为
+          value: huawei
+        - label: 小米
+          value: xiaomi
+        - label: 谷歌
+          value: google
+        - label: 微软
+          value: microsoft
+        - label: Facebook
+          value: facebook
+        - label: Twitter
+          value: twitter
+        - label: 钉钉
+          value: dingtalk
+        - label: Gitee
+          value: gitee
+        - label: Github
+          value: github
+    required: true
+  icon:
+    title: 自定义图标
+    component:
+      name: fs-icon-selector
+      vModel: modelValue
+    required: false
+  appId:
+    title: AppId
+    helper: 彩虹聚合登录->应用列表->创建应用 获取
+    required: true
+  appKey:
+    title: AppKey
+    component:
+      placeholder: AppKey
+    required: true
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-oauth/oauth2/plugin-clogin.js

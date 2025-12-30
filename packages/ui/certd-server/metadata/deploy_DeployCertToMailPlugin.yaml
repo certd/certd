@@ -1,0 +1,47 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: DeployCertToMailPlugin
+title: 邮件发送证书
+icon: ion:mail-outline
+desc: 通过邮件发送证书
+group: other
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  certZip:
+    title: 证书压缩文件
+    helper: 请选择前置任务输出的域名证书压缩文件
+    component:
+      name: output-selector
+      from:
+        - ':certZip:'
+    required: true
+    order: 0
+  email:
+    title: 接收邮箱
+    component:
+      name: EmailSelector
+      vModel: value
+      mode: tags
+    required: true
+    order: 0
+  remark:
+    title: 备注
+    component:
+      name: a-input
+      vModel: value
+    required: false
+    order: 0
+output: {}
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-other/plugins/plugin-deploy-to-mail.js

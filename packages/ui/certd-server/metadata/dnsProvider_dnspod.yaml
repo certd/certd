@@ -1,0 +1,9 @@
+name: dnspod
+title: dnspod(已过时,请尽快换成腾讯云)
+desc: 已废弃，请尽快换成腾讯云类型
+accessType: dnspod
+deprecated: dnspod已废弃，请换成腾讯云
+icon: svg:icon-tencentcloud
+type: builtIn
+pluginType: dnsProvider
+scriptFilePath: ../../../plugins/plugin-tencent/dns-provider/dnspod-dns-provider.js

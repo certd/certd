@@ -1,0 +1,66 @@
+addonType: emailTemplate
+name: common
+title: 通用邮件模版
+desc: 使用通用的邮件标题和内容，内容外部可以自定义html进行美化
+icon: simple-icons:email:blue
+showTest: false
+input:
+  useIntro:
+    title: 配置说明
+    component:
+      name: a-alert
+      props:
+        type: info
+        message: 在标题和内容模版中，通过${name}引用参数，例如： 感谢注册，您的注册验证码为：${code}
+    order: -9
+    col:
+      span: 24
+  formatType:
+    title: 邮件格式
+    component:
+      name: a-select
+      props:
+        options:
+          - label: HTML
+            value: html
+          - label: TEXT
+            value: text
+    order: 9
+    col:
+      span: 24
+    required: true
+  titleTemplate:
+    title: 邮件标题模版
+    required: true
+    order: 10
+    component:
+      name: a-input
+      props:
+        placeholder: 邮件标题模版
+    col:
+      span: 24
+  contentTemplate:
+    title: 邮件内容模版
+    component:
+      name: a-textarea
+      rows: 6
+    order: 20
+    col:
+      span: 24
+    required: true
+  paramIntro:
+    title: 可用参数
+    component:
+      name: ParamsShow
+      params:
+        - label: 标题
+          value: title
+        - label: 内容
+          value: content
+        - label: URL
+          value: url
+    helper: html格式下${content}建议使用pre标签包裹：例如：&lt;pre&gt;${content}&lt;/pre&gt;
+    col:
+      span: 24
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-template/email/plugin-common.js

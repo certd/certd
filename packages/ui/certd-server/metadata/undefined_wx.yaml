@@ -1,0 +1,18 @@
+addonType: oauth
+name: wx
+title: 微信登录
+desc: 微信网站应用登录
+icon: ion:logo-wechat:green
+showTest: false
+input:
+  appId:
+    title: AppId
+    required: true
+    helper: 在[微信开放平台](https://open.weixin.qq.com/cgi-bin/index)注册网站应用后获取
+  appSecretKey:
+    title: AppSecretKey
+    component:
+      placeholder: AppSecretKey
+    required: true
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-oauth/wx/plugin-wx.js

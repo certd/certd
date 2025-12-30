@@ -1,0 +1,21 @@
+name: volcengine
+title: 火山引擎
+desc: ''
+icon: svg:icon-volcengine
+order: 1
+input:
+  accessKeyId:
+    title: AccessKeyID
+    component:
+      placeholder: AccessKeyID
+    helper: '[获取密钥](https://console.volcengine.com/iam/keymanage/)'
+    required: true
+  secretAccessKey:
+    title: SecretAccessKey
+    component:
+      placeholder: SecretAccessKey
+    required: true
+    encrypt: true
+type: builtIn
+pluginType: access
+scriptFilePath: ../../../plugins/plugin-volcengine/access.js

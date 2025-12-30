@@ -1,0 +1,76 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: TencentDeployCertToCDNv2
+title: 腾讯云-部署到CDN-v2
+icon: svg:icon-tencentcloud
+group: tencent
+desc: 推荐使用
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书，或者选择前置任务“上传证书到腾讯云”任务的证书ID
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+        - UploadCertToTencent
+    required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: false
+    order: 0
+  accessId:
+    title: Access提供者
+    helper: access 授权
+    component:
+      name: access-selector
+      type: tencent
+    required: true
+    order: 0
+  domains:
+    title: CDN域名
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      typeName: TencentDeployCertToCDNv2
+      action: onGetDomainList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 请选择域名或输入域名
+    order: 0
+output: {}
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-tencent/plugin/deploy-to-cdn-v2/index.js

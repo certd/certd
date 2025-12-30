@@ -1,0 +1,23 @@
+name: xinnetconnect
+title: 新网互联授权
+icon: svg:icon-xinnet
+desc: 仅支持代理账号，ip需要加入白名单
+input:
+  username:
+    title: 用户名
+    component:
+      placeholder: 代理用户名，如：agent001
+      help: 新网互联的代理用户名
+    required: true
+    encrypt: false
+  password:
+    title: 密码
+    component:
+      name: a-input-password
+      vModel: value
+      placeholder: 密码
+    required: true
+    encrypt: true
+type: builtIn
+pluginType: access
+scriptFilePath: ../../../plugins/plugin-xinnetconnet/access.js

@@ -1,0 +1,24 @@
+name: rainyun
+title: 雨云授权
+desc: https://app.rainyun.com/
+icon: svg:icon-rainyun
+order: 100
+input:
+  apiKey:
+    title: ApiKey
+    component:
+      placeholder: api-key
+      name: a-input
+      vModel: value
+    helper: https://app.rainyun.com/account/settings/api-key
+    encrypt: true
+    required: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+type: builtIn
+pluginType: access
+scriptFilePath: ../../../plugins/plugin-rainyun/access.js

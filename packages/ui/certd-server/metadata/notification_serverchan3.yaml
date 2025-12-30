@@ -1,0 +1,32 @@
+name: serverchan3
+title: Server酱³
+desc: https://doc.sc3.ft07.com/serverchan3
+needPlus: true
+input:
+  apiURL:
+    title: ApiURL
+    component:
+      placeholder: https://uid.push.ft07.com/send/sendKey.send
+    required: true
+  tags:
+    title: 标签Tags
+    component:
+      name: a-select
+      vModel: value
+      mode: tags
+      open: false
+    helper: 支持多个，回车后填写下一个
+    required: false
+  short:
+    title: short
+    required: false
+  skipSslVerify:
+    title: 忽略证书校验
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    required: false
+type: builtIn
+pluginType: notification
+scriptFilePath: ../../../plugins/plugin-notification/serverchan3/index.js

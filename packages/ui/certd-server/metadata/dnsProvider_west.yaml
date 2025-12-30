@@ -1,0 +1,8 @@
+name: west
+title: 西部数码
+desc: west dns provider
+icon: svg:icon-xibushuma
+accessType: west
+type: builtIn
+pluginType: dnsProvider
+scriptFilePath: ../../../plugins/plugin-west/dns-provider.js

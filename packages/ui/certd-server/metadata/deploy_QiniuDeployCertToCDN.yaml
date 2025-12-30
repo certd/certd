@@ -1,0 +1,78 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: QiniuDeployCertToCDN
+title: 七牛云-部署证书至CDN/DCDN
+icon: svg:icon-qiniuyun
+group: qiniu
+desc: 自动部署域名证书至七牛云CDN、DCDN
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书，或者上传到七牛云的证书id
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+        - QiniuCertUpload
+    required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: false
+    order: 0
+  accessId:
+    title: Access授权
+    helper: 七牛云授权
+    component:
+      name: access-selector
+      type: qiniu
+    required: true
+    order: 0
+  domainName:
+    title: CDN加速域名
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetDomainList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+    rules:
+      - type: domains
+        allowDotStart: true
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 你在七牛云上配置的CDN加速域名，比如:certd.handsfree.work
+    order: 0
+output: {}
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-qiniu/plugin/deploy-to-cdn/index.js

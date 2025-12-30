@@ -1,0 +1,30 @@
+name: slack
+title: Slack通知
+desc: Slack消息推送通知
+needPlus: true
+input:
+  webhook:
+    title: webhook地址
+    component:
+      placeholder: >-
+        https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+    helper: >-
+      [APPS](https://api.slack.com/apps/)->进入APP->incoming-webhooks->Add New
+      Webhook to Workspace
+    required: true
+  httpsProxy:
+    title: 代理
+    component:
+      placeholder: http://xxxxx:xx
+    helper: 使用https_proxy
+    required: false
+  skipSslVerify:
+    title: 忽略证书校验
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    required: false
+type: builtIn
+pluginType: notification
+scriptFilePath: ../../../plugins/plugin-notification/slack/index.js

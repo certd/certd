@@ -1,0 +1,18 @@
+addonType: oauth
+name: gitee
+title: Gitee认证
+desc: Gitee OAuth2登录
+icon: simple-icons:gitee:red
+showTest: false
+input:
+  clientId:
+    title: ClientId
+    helper: '[gitee 第三方应用管理](https://gitee.com/oauth/applications)创建应用后获取'
+    required: true
+  clientSecretKey:
+    title: ClientSecretKey
+    component:
+      placeholder: ClientSecretKey / appSecretKey
+    required: true
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-oauth/oauth2/plugin-gitee.js

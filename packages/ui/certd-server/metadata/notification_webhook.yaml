@@ -1,0 +1,76 @@
+name: webhook
+title: 自定义webhook
+desc: 根据模版自定义http请求
+order: -100
+input:
+  webhook:
+    title: webhook地址
+    component:
+      placeholder: https://xxxxx.com/xxxx
+    col:
+      span: 24
+    required: true
+  method:
+    title: 请求方式
+    value: POST
+    component:
+      name: a-select
+      placeholder: post/put/get
+      options:
+        - value: POST
+          label: POST
+        - value: PUT
+          label: PUT
+        - value: GET
+          label: GET
+    required: true
+  contentType:
+    title: ContentType
+    value: application/json
+    component:
+      name: a-auto-complete
+      options:
+        - value: application/json
+          label: application/json
+        - value: application/x-www-form-urlencoded
+          label: application/x-www-form-urlencoded
+    helper: 也可以自定义填写
+    required: true
+  headers:
+    title: Headers
+    component:
+      name: a-textarea
+      vModel: value
+      rows: 2
+    col:
+      span: 24
+    helper: 一行一个，格式为key=value
+    required: false
+  template:
+    title: 消息body模版
+    value: |-
+      {
+          "title":"{title}",
+          "content":"{content}\n[查看详情]({url})"
+      }
+    component:
+      name: a-textarea
+      rows: 4
+    col:
+      span: 24
+    helper: |-
+      根据对应的webhook接口文档，构建一个json对象作为参数（默认值只是一个示例，一般不是正确的参数）
+      支持变量：{title}、{content}、{url}，变量用{}包裹
+      字符串需要双引号，使用\n换行
+      如果是get方式，将作为query参数拼接到url上
+    required: true
+  skipSslVerify:
+    title: 忽略证书校验
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    required: false
+type: builtIn
+pluginType: notification
+scriptFilePath: ../../../plugins/plugin-notification/webhook/index.js

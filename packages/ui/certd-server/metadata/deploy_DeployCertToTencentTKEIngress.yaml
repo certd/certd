@@ -1,0 +1,133 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: DeployCertToTencentTKEIngress
+title: 腾讯云-部署到TKE
+needPlus: false
+icon: svg:icon-tencentcloud
+group: tencent
+desc: |-
+  修改TKE集群密钥配置，支持Opaque和TLS证书类型。注意：
+  1. serverless集群请使用K8S部署插件；
+  2. Opaque类型需要【上传到腾讯云】作为前置任务；
+  3. ApiServer需要开通公网访问（或者certd可访问），实际上底层仍然是通过KubeClient进行部署
+input:
+  ingressClass:
+    title: ingress证书类型
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - value: nginx
+          label: TLS证书格式（Nginx可用）
+        - value: qcloud
+          label: Opaque格式（CLB可用，原qcloud）
+    helper: clb将部署Opaque类型的证书，nginx类型将部署TLS证书格式
+    required: true
+    order: 0
+  tencentCertId:
+    title: 腾讯云证书id
+    helper: 请选择“上传证书到腾讯云”前置任务的输出
+    component:
+      name: output-selector
+      from: UploadCertToTencent
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.ingressClass === "qcloud"|| form.ingressClass === "clb"
+              })
+            }
+          
+    required: true
+    order: 0
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.ingressClass === "nginx"
+              })
+            }
+          
+    required: true
+    order: 0
+  accessId:
+    title: Access授权
+    helper: access授权
+    component:
+      name: access-selector
+      type: tencent
+    required: true
+    order: 0
+  region:
+    title: 大区
+    value: ap-guangzhou
+    required: true
+    order: 0
+  clusterId:
+    title: 集群ID
+    required: true
+    desc: 例如：cls-6lbj1vee
+    request: true
+    order: 0
+  namespace:
+    title: 集群namespace
+    value: default
+    required: true
+    order: 0
+  secretName:
+    title: 证书的secret名称
+    helper: 集群->配置管理->Secret,复制名称
+    required: true
+    component:
+      name: a-select
+      vModel: value
+      mode: tags
+      open: false
+    order: 0
+  clusterDomain:
+    title: 集群域名
+    helper: |-
+      ApiServer需要开通公网访问，填写`ApiServer公网IP:443`
+      默认为:[clusterId].ccs.tencent-cloud.com，可能访问不通
+    component:
+      placeholder: xx.xxx.xx.xx:443
+    order: 0
+  ingressName:
+    title: ingress名称
+    required: false
+    helper: 填写之后会自动重启ingress
+    component:
+      name: a-select
+      vModel: value
+      mode: tags
+      open: false
+    order: 0
+  skipTLSVerify:
+    title: 忽略证书校验
+    required: false
+    helper: 是否忽略证书校验
+    component:
+      name: a-switch
+      vModel: checked
+    order: 0
+  createOnNotFound:
+    title: Secret自动创建
+    helper: 如果Secret不存在，则创建
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    order: 0
+output: {}
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-tencent/plugin/deploy-to-tke-ingress/index.js

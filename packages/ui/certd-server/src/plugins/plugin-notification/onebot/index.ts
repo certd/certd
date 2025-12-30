@@ -23,7 +23,7 @@ export class OneBotNotification extends BaseNotification {
     required: true,
     rules: [
       { 
-        validator: (value) => /^https?:\/\/\S+$/.test(value), 
+        type: 'url',
         message: '请输入有效的HTTP/HTTPS地址' 
       }
     ]
@@ -49,16 +49,11 @@ export class OneBotNotification extends BaseNotification {
   @NotificationInput({
     title: '目标ID',
     component: {
+      name: 'a-input-number',
       placeholder: '123456789',
     },
     helper: '群聊ID或用户ID（纯数字）',
     required: true,
-    rules: [
-      { 
-        validator: (value) => /^\d+$/.test(value), 
-        message: 'ID必须为纯数字' 
-      }
-    ]
   })
   targetId = '';
 

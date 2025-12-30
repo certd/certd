@@ -1,0 +1,30 @@
+addonType: oauth
+name: oidc
+title: OIDC认证
+desc: OpenID Connect 认证，统一认证服务
+icon: simple-icons:fusionauth:#006be6
+showTest: false
+input:
+  icon:
+    title: 自定义图标
+    component:
+      name: fs-icon-selector
+      vModel: modelValue
+    required: false
+  clientId:
+    title: ClientId
+    helper: ClientId / appId
+    required: true
+  clientSecretKey:
+    title: ClientSecretKey
+    component:
+      placeholder: ClientSecretKey / appSecretKey
+    required: true
+  issuerUrl:
+    title: 服务地址
+    helper: Issuer地址，服务发现地址去掉/.well-known/openid-configuration
+    component:
+      placeholder: https://oidc.example.com/oidc
+    required: true
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-oauth/oidc/plugin-oidc.js

@@ -1,0 +1,41 @@
+name: onebot
+title: OneBot V11 通知
+desc: 通过动态拼接URL发送 OneBot V11 协议消息
+needPlus: false
+input:
+  baseUrl:
+    title: 服务地址
+    component:
+      placeholder: http://xxxx.xxxx.xxxx
+    helper: OneBot 服务的基础地址（不包含action路径）
+    required: true
+    rules:
+      - type: url
+        message: 请输入有效的HTTP/HTTPS地址
+  targetType:
+    title: 目标类型
+    component:
+      name: a-select
+      options:
+        - value: group
+          label: 群聊
+        - value: private
+          label: 私聊
+    required: true
+    helper: 选择消息发送的目标类型
+  targetId:
+    title: 目标ID
+    component:
+      name: a-input-number
+      placeholder: '123456789'
+    helper: 群聊ID或用户ID（纯数字）
+    required: true
+  accessToken:
+    title: 鉴权密钥
+    component:
+      placeholder: xxxxxxxxxx
+    helper: (选填)访问API的授权令牌（无token时留空）
+    required: false
+type: builtIn
+pluginType: notification
+scriptFilePath: ../../../plugins/plugin-notification/onebot/index.js

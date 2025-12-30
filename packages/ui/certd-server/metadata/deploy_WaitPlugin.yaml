@@ -1,0 +1,23 @@
+showRunStrategy: true
+default:
+  strategy:
+    runStrategy: 1
+name: WaitPlugin
+title: 等待
+icon: ri:rest-time-line
+desc: 等待一段时间
+group: other
+input:
+  waitTime:
+    title: 等待时长
+    value: 30
+    component:
+      name: a-input-number
+      vModel: value
+    helper: 单位：秒
+    required: true
+    order: 0
+output: {}
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-other/plugins/plugin-wait.js

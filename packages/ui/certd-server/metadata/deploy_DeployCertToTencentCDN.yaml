@@ -1,0 +1,41 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: DeployCertToTencentCDN
+title: 腾讯云-部署到CDN（废弃）
+icon: svg:icon-tencentcloud
+group: tencent
+desc: 已废弃，请使用v2版
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  accessId:
+    title: Access提供者
+    helper: access 授权
+    component:
+      name: access-selector
+      type: tencent
+    required: true
+    order: 0
+  certName:
+    title: 证书名称
+    helper: 证书上传后将以此参数作为名称前缀
+    order: 0
+  domainName:
+    title: cdn加速域名
+    rules:
+      - required: true
+        message: 该项必填
+    order: 0
+output: {}
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-tencent/plugin/deploy-to-cdn/index.js

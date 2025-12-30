@@ -1,0 +1,19 @@
+name: upyun
+title: 又拍云
+desc: ''
+icon: svg:icon-upyun
+input:
+  username:
+    title: 账号
+    component:
+      placeholder: 又拍云账号
+    required: true
+  password:
+    title: 密码
+    component:
+      placeholder: 又拍云密码
+    required: true
+    encrypt: true
+type: builtIn
+pluginType: access
+scriptFilePath: ../../../plugins/plugin-upyun/access.js

@@ -1,0 +1,111 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: WebhookDeployCert
+title: webhook方式部署证书
+icon: ion:send-sharp
+desc: 调用webhook部署证书
+group: other
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  webhook:
+    title: webhook地址
+    component:
+      placeholder: https://xxxxx.com/xxxx
+    col:
+      span: 24
+    required: true
+    order: 0
+  method:
+    title: 请求方式
+    value: POST
+    component:
+      name: a-select
+      placeholder: post/put/get
+      options:
+        - value: POST
+          label: POST
+        - value: PUT
+          label: PUT
+        - value: GET
+          label: GET
+    required: true
+    order: 0
+  contentType:
+    title: ContentType
+    value: application/json
+    component:
+      name: a-auto-complete
+      options:
+        - value: application/json
+          label: application/json
+        - value: application/x-www-form-urlencoded
+          label: application/x-www-form-urlencoded
+    helper: 也可以自定义填写
+    required: true
+    order: 0
+  headers:
+    title: Headers
+    component:
+      name: a-textarea
+      vModel: value
+      rows: 2
+    col:
+      span: 24
+    helper: 一行一个，格式为key=value
+    required: false
+    order: 0
+  template:
+    title: 消息body模版
+    value: |-
+      {
+          "id":"123",
+          "crt":"${crt}",
+          "key":"${key}"
+      }
+    component:
+      name: a-textarea
+      rows: 4
+    col:
+      span: 24
+    helper: >-
+      根据对应的webhook接口文档，构建一个json对象作为参数（默认值只是一个示例，一般不是正确的参数）
+
+      变量用${}包裹
+
+      字符串需要双引号，使用\n换行
+
+      如果是get方式，将作为query参数拼接到url上
+
+      变量列表：${domain} 主域名、${domains} 全部域名、${crt} 证书、${key} 私钥、${ic} 中间证书、${one}
+      一体证书、${der} der证书(base64)、${pfx} pfx证书(base64)、${jks} jks证书(base64)、
+    required: true
+    order: 0
+  skipSslVerify:
+    title: 忽略证书校验
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    required: false
+    order: 0
+  successStr:
+    title: 成功判定
+    helper: 返回结果中包含此字符串则表示部署成功，不填则仅通过statusCode判定
+    component:
+      name: a-input
+      placeholder: 例如： status:"success"
+    order: 0
+output: {}
+type: builtIn
+pluginType: deploy
+scriptFilePath: ../../../plugins/plugin-other/plugins/plugin-webhook.js

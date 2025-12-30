@@ -1,0 +1,39 @@
+name: telegram
+title: Telegram通知
+desc: Telegram Bot推送通知
+needPlus: true
+input:
+  endpoint:
+    title: URL
+    value: https://api.telegram.org
+    component:
+      placeholder: https://api.telegram.org
+    required: true
+  botToken:
+    title: Bot Token
+    component:
+      placeholder: 123456789:ABCdefGhijklmnopqrstUVWXyz
+    helper: '[token获取](https://core.telegram.org/bots/features#botfather)'
+    required: true
+  chatId:
+    title: 聊天ID
+    component:
+      placeholder: 聊天ID，例如 123456789 或 @channelusername
+    helper: 用户ID(纯数字)或频道名称(@xxxx)
+    required: true
+  httpsProxy:
+    title: 代理
+    component:
+      placeholder: http://xxxxx:xx
+    helper: 使用https_proxy
+    required: false
+  skipSslVerify:
+    title: 忽略证书校验
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    required: false
+type: builtIn
+pluginType: notification
+scriptFilePath: ../../../plugins/plugin-notification/telegram/index.js

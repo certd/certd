@@ -1,0 +1,61 @@
+addonType: emailTemplate
+name: registerCode
+title: 注册验证码邮件模版
+desc: 您的注册验证码为：xxxx，请勿泄露
+icon: simple-icons:email:blue
+showTest: false
+input:
+  useIntro:
+    title: 配置说明
+    component:
+      name: a-alert
+      props:
+        type: info
+        message: 在标题和内容模版中，通过${name}引用参数，例如： 感谢注册，您的注册验证码为：${code}
+    order: -9
+    col:
+      span: 24
+  formatType:
+    title: 邮件格式
+    component:
+      name: a-select
+      props:
+        options:
+          - label: HTML
+            value: html
+          - label: TEXT
+            value: text
+    order: 9
+    col:
+      span: 24
+    required: true
+  titleTemplate:
+    title: 邮件标题模版
+    required: true
+    order: 10
+    component:
+      name: a-input
+      props:
+        placeholder: 邮件标题模版
+    col:
+      span: 24
+  contentTemplate:
+    title: 邮件内容模版
+    component:
+      name: a-textarea
+      rows: 6
+    order: 20
+    col:
+      span: 24
+    required: true
+  paramIntro:
+    title: 可用参数
+    component:
+      name: ParamsShow
+      params:
+        - label: 验证码
+          value: code
+    col:
+      span: 24
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-template/email/plugin-register-code.js

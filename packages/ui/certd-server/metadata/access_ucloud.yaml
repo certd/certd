@@ -1,0 +1,36 @@
+name: ucloud
+title: UCloud授权
+icon: svg:icon-ucloud
+desc: 优刻得授权
+input:
+  projectId:
+    title: 项目Id
+    component:
+      placeholder: 项目Id
+    helper: '[项目管理](https://console.ucloud.cn/uaccount/iam/project_manage)项目ID列获取'
+    required: true
+    encrypt: false
+  publicKey:
+    title: 公钥
+    component:
+      placeholder: 公钥
+    helper: '[Api管理](https://console.ucloud.cn/uaccount/api_manage)获取'
+    required: true
+    encrypt: false
+  privateKey:
+    title: 私钥
+    component:
+      name: a-input-password
+      vModel: value
+      placeholder: 私钥
+    required: true
+    encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+type: builtIn
+pluginType: access
+scriptFilePath: ../../../plugins/plugin-ucloud/access.js

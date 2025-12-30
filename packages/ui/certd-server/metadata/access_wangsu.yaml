@@ -1,0 +1,33 @@
+name: wangsu
+title: 网宿授权
+desc: ''
+icon: svg:icon-wangsu
+input:
+  accessKeyId:
+    title: accessKeyId
+    component:
+      placeholder: accessKeyId
+      component:
+        name: a-input
+        vModel: value
+    helper: '[点击前往获取AccessKey](https://console.wangsu.com/account/accessKey?rsr=ws)'
+    encrypt: false
+    required: true
+  accessKeySecret:
+    title: accessKeySecret
+    component:
+      placeholder: accessKeySecret
+      component:
+        name: a-input
+        vModel: value
+    encrypt: true
+    required: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+type: builtIn
+pluginType: access
+scriptFilePath: ../../../plugins/plugin-wangsu/access.js

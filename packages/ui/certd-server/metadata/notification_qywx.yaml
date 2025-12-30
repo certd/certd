@@ -1,0 +1,32 @@
+name: qywx
+title: 企业微信通知
+desc: 企业微信群聊机器人通知
+needPlus: true
+input:
+  webhook:
+    title: webhook地址
+    component:
+      placeholder: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxx
+    helper: '[企微群聊机器人配置说明](https://developer.work.weixin.qq.com/document/path/91770)'
+    required: true
+  mentionedList:
+    title: 提醒指定成员
+    component:
+      name: a-select
+      vModel: value
+      mode: tags
+      open: false
+    required: false
+    helper: 填写成员名字，@all 为提醒所有人
+  mentionedMobileList:
+    title: 提醒指定手机号成员
+    component:
+      name: a-select
+      vModel: value
+      mode: tags
+      open: false
+    required: false
+    helper: 填写成员手机号，@all 为提醒所有人
+type: builtIn
+pluginType: notification
+scriptFilePath: ../../../plugins/plugin-notification/qywx/index.js
