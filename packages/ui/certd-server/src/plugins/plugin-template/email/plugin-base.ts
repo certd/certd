@@ -30,6 +30,7 @@ export class BaseEmailTemplateProvider extends BaseAddon implements ITemplatePro
     },
     order: 9,
     col: { span: 24 },
+    required: true,
   })
   formatType = "";
 
