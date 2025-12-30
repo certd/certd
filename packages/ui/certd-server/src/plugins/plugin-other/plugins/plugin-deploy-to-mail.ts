@@ -156,7 +156,7 @@ export class DeployCertToMailPlugin extends AbstractTaskPlugin {
       throw new Error('证书压缩文件还未生成，重新运行证书任务');
     }
     await this.ctx.emailService.sendByTemplate({
-      type: "common",
+      type: "sendCert",
       data,
       receivers: this.email,
       attachments: [

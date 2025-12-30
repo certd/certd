@@ -211,6 +211,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, a
         show: computed(() => {
           return getAddonTypeDefine(addonType)?.showDefault ?? false;
         }),
+        columnSetShow: false,
         value: false,
         rules: [{ required: true, message: t("certd.selectIsDefault") }],
         order: 999,
@@ -218,6 +219,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, a
       column: {
         align: "center",
         width: 100,
+        columnSetShow: false,
         show: computed(() => {
           return getAddonTypeDefine(addonType)?.showDefault ?? false;
         }),
@@ -263,10 +265,11 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, a
       },
       column: {
         show: false,
+        columnSetShow: false,
       },
     },
     setting: {
-      column: { show: false },
+      column: { show: false, columnSetShow: false },
       form: {
         show: false,
         valueBuilder({ value, form }) {
