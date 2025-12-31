@@ -4,8 +4,9 @@ import {
   createCertDomainGetterInputDefine,
   createRemoteSelectInputDefine
 } from "@certd/plugin-lib";
-import { AliyunAccess, AliyunClientV2 } from "../../../plugin-lib/aliyun/access/index.js";
+import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
 import { AliyunClient, AliyunSslClient } from "../../../plugin-lib/aliyun/lib/index.js";
+import { AliyunClientV2 } from "../../../plugin-lib/aliyun/lib/aliyun-client-v2.js";
 
 @IsTaskPlugin({
   name: "AliyunDeployCertToALB",

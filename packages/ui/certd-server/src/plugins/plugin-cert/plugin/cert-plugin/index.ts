@@ -2,7 +2,6 @@ import { CancelError, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from 
 import { utils } from "@certd/basic";
 
 import { AcmeService, DomainsVerifyPlan, DomainVerifyPlan, PrivateKeyType, SSLProvider } from "./acme.js";
-import * as _ from "lodash-es";
 import { createDnsProvider, DnsProviderContext, DnsVerifier, DomainVerifiers, HttpVerifier, IDnsProvider, IDomainVerifierGetter, ISubDomainsGetter } from "@certd/plugin-lib";
 import { CertReader } from "@certd/plugin-lib";
 import { CertApplyBasePlugin } from "./base.js";
@@ -10,6 +9,7 @@ import { GoogleClient } from "../../libs/google.js";
 import { EabAccess } from "../../access/index.js";
 import { DomainParser } from "@certd/plugin-lib";
 import { ossClientFactory } from "../../../plugin-lib/oss/factory.js";
+import { merge } from "lodash-es";
 
 export * from "./base.js";
 export type CnameRecordInput = {
@@ -472,7 +472,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     }
     const domains = this["domains"];
 
-    const csrInfo = _.merge(
+    const csrInfo = merge(
       {
         // country: "CN",
         // state: "GuangDong",

@@ -5,8 +5,9 @@ import {
   createRemoteSelectInputDefine
 } from "@certd/plugin-lib";
 import { CertApplyPluginNames} from '@certd/plugin-cert';
-import { AliyunAccess, AliyunClientV2 } from "../../../plugin-lib/aliyun/access/index.js";
+import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
 import { AliyunClient, AliyunSslClient } from "../../../plugin-lib/aliyun/lib/index.js";
+import { AliyunClientV2 } from '../../../plugin-lib/aliyun/lib/aliyun-client-v2.js';
 @IsTaskPlugin({
   name: 'AliyunDeployCertToNLB',
   title: '阿里云-部署至NLB（网络负载均衡）',

@@ -35,6 +35,9 @@ export default async function loadModules(dir) {
       continue
     }
     const content = fs.readFileSync(file, 'utf8')
+    if(content.includes(" abstract ")){
+      continue
+    }
     const lines = content.split('\n')
     let allExport = true
     for (let line of lines) {

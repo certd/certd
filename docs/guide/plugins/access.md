@@ -46,27 +46,27 @@
 | 42.| **UCloud授权** | 优刻得授权 | 
 | 43.| **FTP授权** |  | 
 | 44.| **s3/minio授权** | S3/minio oss授权 | 
-| 45.| **EAB授权** | ZeroSSL证书申请需要EAB授权 | 
-| 46.| **google cloud** | 谷歌云授权 | 
-| 47.| **宝塔云WAF授权** | 用于连接和管理宝塔云WAF服务的授权配置 | 
-| 48.| **易盾DCDN授权** | https://user.yiduncdn.com | 
-| 49.| **易盾rcdn授权** | 易盾CDN，每月免费30G，[注册即领](https://rhcdn.yiduncdn.com/register?code=8mn536rrzfbf8) | 
-| 50.| **易发云短信** | sms.yfyidc.cn/ | 
-| 51.| **cdnfly授权** |  | 
-| 52.| **群晖登录授权** |  | 
-| 53.| **k8s授权** |  | 
-| 54.| **1panel授权** | 账号和密码 | 
-| 55.| **LeCDN授权** |  | 
-| 56.| **白山云授权** |  | 
-| 57.| **plesk授权** |  | 
-| 58.| **易支付** |  | 
-| 59.| **支付宝** |  | 
-| 60.| **微信支付** |  | 
-| 61.| **长亭雷池授权** |  | 
-| 62.| **lucky** |  | 
-| 63.| **括彩云cdn授权** | 括彩云CDN，每月免费30G，[注册即领](https://kuocaicdn.com/register?code=8mn536rrzfbf8) | 
-| 64.| **uniCloud** | unicloud授权 | 
-| 65.| **猫云授权** |  | 
+| 45.| **宝塔云WAF授权** | 用于连接和管理宝塔云WAF服务的授权配置 | 
+| 46.| **易盾DCDN授权** | https://user.yiduncdn.com | 
+| 47.| **易盾rcdn授权** | 易盾CDN，每月免费30G，[注册即领](https://rhcdn.yiduncdn.com/register?code=8mn536rrzfbf8) | 
+| 48.| **易发云短信** | sms.yfyidc.cn/ | 
+| 49.| **cdnfly授权** |  | 
+| 50.| **群晖登录授权** |  | 
+| 51.| **k8s授权** |  | 
+| 52.| **1panel授权** | 账号和密码 | 
+| 53.| **LeCDN授权** |  | 
+| 54.| **白山云授权** |  | 
+| 55.| **plesk授权** |  | 
+| 56.| **易支付** |  | 
+| 57.| **支付宝** |  | 
+| 58.| **微信支付** |  | 
+| 59.| **长亭雷池授权** |  | 
+| 60.| **lucky** |  | 
+| 61.| **括彩云cdn授权** | 括彩云CDN，每月免费30G，[注册即领](https://kuocaicdn.com/register?code=8mn536rrzfbf8) | 
+| 62.| **uniCloud** | unicloud授权 | 
+| 63.| **猫云授权** |  | 
+| 64.| **EAB授权** | ZeroSSL证书申请需要EAB授权 | 
+| 65.| **google cloud** | 谷歌云授权 | 
 | 66.| **雨云授权** | https://app.rainyun.com/ | 
 | 67.| **GoEdge授权** |  | 
 
