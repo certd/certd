@@ -1,0 +1,98 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: CtyunDeployToCDN
+title: 天翼云-部署证书到CDN
+icon: svg:icon-ctyun
+group: cdn
+desc: 部署证书到天翼云CDN和全站加速
+needPlus: false
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: true
+    order: 0
+  productCode:
+    title: 产品类型
+    helper: 加速产品类型
+    component:
+      name: a-select
+      options:
+        - label: 静态加速
+          value: '001'
+        - label: 下载加速
+          value: '003'
+        - label: 视频点播加速
+          value: '004'
+        - label: CDN加速
+          value: '008'
+        - label: 全站加速
+          value: '006'
+        - label: 安全加速
+          value: '007'
+        - label: 下载加速闲时
+          value: '014'
+    required: true
+    order: 0
+  accessId:
+    title: 天翼云授权
+    helper: 天翼云授权
+    component:
+      name: access-selector
+      type: ctyun
+    required: true
+    order: 0
+  domains:
+    title: 加速域名
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      typeName: CtyunDeployToCDN
+      action: onGetDomainList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 请选择加速域名
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/ctyun/plugins/plugin-deploy-to-cdn.js

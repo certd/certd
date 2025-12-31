@@ -1,0 +1,21 @@
+name: yfysms
+title: 易发云短信
+icon: material-symbols:shield-outline
+desc: sms.yfyidc.cn/
+input:
+  keyId:
+    title: KeyID
+    component:
+      placeholder: api_key
+    helper: '[获取密钥](http://sms.yfyidc.cn/user/index#)'
+    required: true
+    encrypt: true
+  keySecret:
+    title: KeySecret
+    component:
+      placeholder: ''
+    required: true
+    encrypt: true
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/yidun/access-sms.js

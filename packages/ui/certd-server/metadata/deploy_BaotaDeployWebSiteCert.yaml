@@ -1,0 +1,84 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: BaotaDeployWebSiteCert
+title: 宝塔-网站证书部署
+icon: svg:icon-bt
+group: panel
+desc: 部署宝塔管理的站点的ssl证书，目前支持宝塔网站站点、docker站点等。本插件也支持aaPanel。
+needPlus: false
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: true
+    order: 0
+  accessId:
+    title: 宝塔授权
+    helper: baota的接口密钥
+    component:
+      name: access-selector
+      type: baota
+    required: true
+    order: 0
+  isDockerSite:
+    title: 是否Docker站点
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 是否为docker站点
+    required: true
+    order: 0
+  siteName:
+    title: 站点名称
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      action: GetSiteList
+      watches:
+        - certDomains
+        - accessId
+        - isDockerSite
+    required: true
+    mergeScript: |2-
+
+            return {
+              component:{
+                form: ctx.compute(({form})=>{
+                  return form
+                })
+              },
+           }
+          
+    helper: |-
+      将会自动获取证书匹配的站点名称
+      宝塔版本低于9.0.0时，此处会获取失败，忽略错误，手动输入站点域名即可
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/baota/plugins/plugin-deploy-to-website.js

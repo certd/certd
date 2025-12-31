@@ -1,0 +1,77 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: HostDeployToIIS
+title: IIS-部署到IIS站点
+icon: devicon:windows8
+group: host
+needPlus: true
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: false
+    order: 0
+  accessId:
+    title: 主机SSH授权
+    component:
+      name: access-selector
+      type: ssh
+    required: true
+    order: 0
+  siteNames:
+    title: 站点名称
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetSiteList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 选择或手动输入网站名称
+    order: 0
+  pfxPassword:
+    title: 证书密码
+    required: false
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-host/plugin/plugin-deploy-to-iis.js

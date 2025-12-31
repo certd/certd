@@ -1,0 +1,62 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: UniCloudDeployToSpace
+title: uniCloud-部署到服务空间
+icon: material-symbols:shield-outline
+group: panel
+desc: 部署到服务空间
+needPlus: false
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  accessId:
+    title: uniCloud授权
+    helper: uniCloud授权
+    component:
+      name: access-selector
+      type: unicloud
+    required: true
+    order: 0
+  spaceId:
+    title: 服务空间ID
+    component:
+      name: a-input
+      vModel: value
+    helper: spaceId
+    order: 0
+  provider:
+    title: 空间提供商
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - label: 阿里云
+          value: aliyun
+        - label: 腾讯云
+          value: tencent
+        - label: 支付宝云
+          value: alipay
+    helper: 空间提供商
+    order: 0
+  domains:
+    title: 空间域名
+    component:
+      name: a-select
+      vModel: value
+      mode: tags
+      open: false
+    helper: 空间域名
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/unicloud/plugins/plugin-deploy-to-space.js

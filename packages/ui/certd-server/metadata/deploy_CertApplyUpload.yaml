@@ -1,0 +1,150 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 0
+name: CertApplyUpload
+icon: ph:certificate
+title: 商用证书托管
+group: cert
+desc: 手动上传自定义证书后，自动部署（每次证书有更新，都需要手动上传一次）
+shortcut:
+  certUpdate:
+    title: 更新证书
+    icon: ion:upload
+    action: onCertUpdate
+    form:
+      columns:
+        crt:
+          title: 证书
+          type: text
+          form:
+            component:
+              name: pem-input
+              vModel: modelValue
+              textarea:
+                rows: 4
+                placeholder: |-
+                  -----BEGIN CERTIFICATE-----
+                  ...
+                  ...
+                  -----END CERTIFICATE-----
+            rules:
+              - required: true
+                message: 此项必填
+            col:
+              span: 24
+        key:
+          title: 私钥
+          type: text
+          form:
+            component:
+              name: pem-input
+              vModel: modelValue
+              textarea:
+                rows: 4
+                placeholder: |-
+                  -----BEGIN PRIVATE KEY-----
+                  ...
+                  ...
+                  -----END PRIVATE KEY----- 
+            rules:
+              - required: true
+                message: 此项必填
+            col:
+              span: 24
+input:
+  uploadCert:
+    title: 手动上传证书
+    component:
+      name: cert-info-updater
+      vModel: modelValue
+    helper: 手动上传证书
+    order: -9999
+    required: true
+    mergeScript: |2-
+
+          return {
+            component:{
+              on:{
+                updated(scope){
+                  scope.form.input.domains = scope.$event?.domains
+                }
+              }
+            }
+          }
+          
+  domains:
+    title: 证书域名
+    component:
+      name: a-select
+      vModel: value
+      mode: tags
+      open: false
+      placeholder: foo.com / *.foo.com / *.bar.com
+      tokenSeparators:
+        - ','
+        - ' '
+        - ，
+        - 、
+        - '|'
+    rules:
+      - type: domains
+    required: true
+    col:
+      span: 24
+    order: -999
+    helper: |-
+      1、支持多个域名打到一个证书上，例如： foo.com，*.foo.com，*.bar.com
+      2、子域名被通配符包含的不要填写，例如：www.foo.com已经被*.foo.com包含，不要填写www.foo.com
+      3、泛域名只能通配*号那一级（*.foo.com的证书不能用于xxx.yyy.foo.com、不能用于foo.com）
+      4、输入一个，空格之后，再输入下一个 
+      5、如果设置了子域托管解析（比如免费的二级域名托管在CF或者阿里云），请先[设置托管子域名](#/certd/pipeline/subDomain)
+  pfxPassword:
+    title: 证书加密密码
+    component:
+      name: input-password
+      vModel: value
+    required: false
+    order: 100
+    helper: |-
+      转换成PFX、jks格式证书是否需要加密
+      jks必须设置密码，不传则默认123456
+      pfx不传则为空密码
+  pfxArgs:
+    title: PFX证书转换参数
+    value: '-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES'
+    component:
+      name: a-auto-complete
+      vModel: value
+      options:
+        - value: ''
+          label: 兼容 Windows Server 最新
+        - value: '-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES'
+          label: 兼容 Windows Server 2016
+        - value: '-nomac -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES'
+          label: 兼容 Windows Server 2008
+    required: false
+    order: 100
+    helper: 兼容Windows Server各个版本
+  renewDays:
+    title: 过期前提醒
+    value: 10
+    component:
+      name: a-input-number
+      vModel: value
+    required: true
+    order: 100
+    helper: 到期前多少天提醒
+output:
+  cert:
+    title: 域名证书
+    type: cert
+  certZip:
+    title: 域名证书压缩文件
+    type: certZip
+  certMd5:
+    title: 证书MD5
+    type: certMd5
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-cert/plugin/cert-plugin/custom/index.js

@@ -1,0 +1,22 @@
+name: yidun
+title: 易盾DCDN授权
+icon: material-symbols:shield-outline
+desc: https://user.yiduncdn.com
+input:
+  apiKey:
+    title: api_key
+    component:
+      placeholder: api_key
+    helper: http://user.yiduncdn.com/console/index.html#/account/config/api,点击开启后获取
+    required: true
+    encrypt: true
+  apiSecret:
+    title: api_secret
+    component:
+      placeholder: api_secret
+    helper: http://user.yiduncdn.com/console/index.html#/account/config/api,点击开启后获取
+    required: true
+    encrypt: true
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/yidun/access.js

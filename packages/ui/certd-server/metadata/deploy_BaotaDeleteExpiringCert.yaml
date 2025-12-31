@@ -1,0 +1,23 @@
+showRunStrategy: true
+default:
+  strategy:
+    runStrategy: 0
+name: BaotaDeleteExpiringCert
+title: 宝塔-删除过期证书
+icon: svg:icon-bt
+group: panel
+desc: 删除证书夹中过期证书
+needPlus: true
+input:
+  accessId:
+    title: 宝塔授权
+    helper: baota的接口密钥
+    component:
+      name: access-selector
+      type: baota
+    required: true
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/baota/plugins/plugin-delete-expiring-cert.js

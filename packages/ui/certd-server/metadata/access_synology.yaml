@@ -1,0 +1,88 @@
+name: synology
+title: 群晖登录授权
+desc: ''
+icon: simple-icons:synology
+input:
+  version:
+    title: 群晖版本
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - label: 7.x
+          value: '7'
+        - label: 6.x
+          value: '6'
+    required: true
+  baseUrl:
+    title: 群晖面板的url
+    component:
+      placeholder: https://yourdomain:5006
+    helper: 群晖面板的访问地址,例如：https://yourdomain:5006
+    required: true
+  username:
+    title: 账号
+    component:
+      placeholder: 账号
+    helper: 群晖面板登录账号，必须是处于管理员用户组
+    required: true
+  password:
+    title: 密码
+    component:
+      placeholder: 密码
+    helper: 群晖面板登录密码
+    required: true
+    encrypt: true
+  otp:
+    title: 双重认证
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 是否启用了双重认证
+    required: true
+  deviceId:
+    title: 设备ID
+    component:
+      placeholder: 设备ID
+      name: synology-device-id-getter
+      type: access
+      typeName: synology
+    mergeScript: |2-
+
+           return {
+              component:{
+                form: ctx.compute(({form})=>{
+                  return form
+                })
+              },
+              show: ctx.compute(({form})=>{
+                 return form.access.otp
+              })
+           }
+          
+    helper: |-
+      1.如果开启了双重认证，需要获取设备ID
+      2.填好上面的必填项，然后点击获取设备ID，输入双重认证APP上的码，确认即可获得设备ID，此操作只需要做一次
+      3.注意：必须勾选‘安全性->允许网页浏览器的用户通过信任设备来跳过双重验证
+      4.注意：在群晖信任设备页面里面会生成一条记录，不要删除
+      5.注意：需要将流水线证书申请过期前多少天设置为30天以下，避免设备ID过期
+    required: false
+    encrypt: true
+  skipSslVerify:
+    title: 忽略证书校验
+    value: true
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 如果面板的url是https，且使用的是自签名证书，则需要开启此选项，其他情况可以关闭
+  timeout:
+    title: 请求超时
+    value: 120
+    component:
+      name: a-input-number
+      vModel: value
+    helper: 请求超时时间，单位:秒
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/synology/access.js

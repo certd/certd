@@ -1,0 +1,29 @@
+name: alipay
+title: 支付宝
+icon: ion:logo-alipay
+input:
+  appId:
+    title: AppId
+    component:
+      placeholder: 201909176714xxxx
+    required: true
+    encrypt: false
+  privateKey:
+    title: 应用私钥
+    component:
+      placeholder: MIIEvQIBADANB...
+      name: a-textarea
+      rows: 3
+    required: true
+    encrypt: true
+  alipayPublicKey:
+    title: 支付宝公钥
+    component:
+      name: a-textarea
+      rows: 3
+      placeholder: MIIBIjANBg...
+    required: true
+    encrypt: true
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/alipay/access.js

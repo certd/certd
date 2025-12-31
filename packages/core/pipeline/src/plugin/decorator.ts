@@ -8,6 +8,9 @@ export const PLUGIN_CLASS_KEY = "pipeline:plugin";
 
 export function IsTaskPlugin(define: PluginDefine): ClassDecorator {
   return (target: any) => {
+    if (process.env.certd_plugin_loadmode === "metadata") {
+      return;
+    }
     target = Decorator.target(target);
 
     const inputs: any = {};
@@ -69,6 +72,9 @@ export const PLUGIN_INPUT_KEY = "pipeline:plugin:input";
 
 export function TaskInput(input?: TaskInputDefine): PropertyDecorator {
   return (target, propertyKey) => {
+    if (process.env.certd_plugin_loadmode === "metadata") {
+      return;
+    }
     target = Decorator.target(target, propertyKey);
     Reflect.defineMetadata(PLUGIN_INPUT_KEY, input, target, propertyKey);
   };
@@ -78,6 +84,9 @@ export function TaskInput(input?: TaskInputDefine): PropertyDecorator {
 export const PLUGIN_OUTPUT_KEY = "pipeline:plugin:output";
 export function TaskOutput(output?: TaskOutputDefine): PropertyDecorator {
   return (target, propertyKey) => {
+    if (process.env.certd_plugin_loadmode === "metadata") {
+      return;
+    }
     target = Decorator.target(target, propertyKey);
     Reflect.defineMetadata(PLUGIN_OUTPUT_KEY, output, target, propertyKey);
   };
@@ -86,6 +95,9 @@ export function TaskOutput(output?: TaskOutputDefine): PropertyDecorator {
 export const PLUGIN_DOWNLOAD_KEY = "pipeline:plugin:download";
 export function TaskDownload(output?: TaskOutputDefine): PropertyDecorator {
   return (target, propertyKey) => {
+    if (process.env.certd_plugin_loadmode === "metadata") {
+      return;
+    }
     target = Decorator.target(target, propertyKey);
     Reflect.defineMetadata(PLUGIN_DOWNLOAD_KEY, output, target, propertyKey);
   };

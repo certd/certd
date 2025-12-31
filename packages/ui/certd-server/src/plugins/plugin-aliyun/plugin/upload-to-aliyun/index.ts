@@ -1,7 +1,7 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
-import { AliyunAccess } from '@certd/plugin-lib';
-import { AliyunSslClient } from '@certd/plugin-lib';
 import { CertApplyPluginNames, CertReader } from "@certd/plugin-cert";
+import { AliyunAccess } from '../../../plugin-lib/aliyun/access/index.js';
+import { AliyunSslClient } from '../../../plugin-lib/aliyun/lib/index.js';
 /**
  * 华东1（杭州）	cn-hangzhou	cas.aliyuncs.com	cas-vpc.cn-hangzhou.aliyuncs.com
  * 马来西亚（吉隆坡）	ap-southeast-3	cas.ap-southeast-3.aliyuncs.com	cas-vpc.ap-southeast-3.aliyuncs.com

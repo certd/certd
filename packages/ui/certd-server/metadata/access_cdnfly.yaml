@@ -1,0 +1,93 @@
+name: cdnfly
+title: cdnfly授权
+desc: ''
+icon: majesticons:cloud-line
+input:
+  url:
+    title: cdnfly系统网址
+    component:
+      name: a-input
+      vModel: value
+    required: true
+    helper: 例如：http://demo.cdnfly.cn
+  type:
+    title: 授权方式
+    value: apikey
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - label: 接口密钥
+          value: apikey
+        - label: 模拟登录
+          value: password
+    required: true
+  username:
+    title: 用户名
+    component:
+      placeholder: username
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.access.type === 'password';
+              })
+            }
+          
+    required: true
+  password:
+    title: 密码
+    component:
+      placeholder: password
+    helper: ''
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.access.type === 'password';
+              })
+            }
+          
+    required: true
+    encrypt: true
+  apiKey:
+    title: api_key
+    component:
+      placeholder: api_key
+    helper: 登录cdnfly控制台->账户中心->Api密钥,点击开启后获取
+    required: true
+    encrypt: true
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.access.type === 'apikey';
+              })
+            }
+          
+  apiSecret:
+    title: api_secret
+    component:
+      placeholder: api_secret
+    helper: 登录cdnfly控制台->账户中心->Api密钥,点击开启后获取
+    required: true
+    encrypt: true
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.access.type === 'apikey';
+              })
+            }
+          
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: onTestRequest
+    helper: |-
+      点击测试接口看是否正常
+      IP需要加白名单，如果是同一台机器部署的，可以试试面板的url使用网卡docker0的ip，白名单使用172.16.0.0/12
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/cdnfly/access.js

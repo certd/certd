@@ -9,7 +9,8 @@ import {
 } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
-import { TencentAccess, TencentSslClient } from "@certd/plugin-lib";
+import { TencentAccess } from "../../../plugin-lib/tencent/access.js";
+import { TencentSslClient } from "../../../plugin-lib/tencent/index.js";
 import { omit } from "lodash-es";
 @IsTaskPlugin({
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名

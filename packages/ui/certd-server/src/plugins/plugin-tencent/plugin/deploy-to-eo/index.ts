@@ -2,10 +2,11 @@ import {AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput} 
 import {
   createCertDomainGetterInputDefine,
   createRemoteSelectInputDefine,
-  TencentAccess,
-  TencentSslClient
 } from "@certd/plugin-lib";
+
 import {CertApplyPluginNames, CertInfo, CertReader} from "@certd/plugin-cert";
+import { TencentAccess } from "../../../plugin-lib/tencent/access.js";
+import { TencentSslClient } from "../../../plugin-lib/tencent/index.js";
 
 @IsTaskPlugin({
   name: 'DeployCertToTencentEO',

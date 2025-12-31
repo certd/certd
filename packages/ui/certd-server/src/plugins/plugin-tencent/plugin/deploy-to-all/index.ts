@@ -1,6 +1,6 @@
 import {AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput} from '@certd/pipeline';
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
-import { TencentSslClient } from "@certd/plugin-lib";
+import { TencentSslClient } from '../../../plugin-lib/tencent/index.js';
 
 @IsTaskPlugin({
   name: 'DeployCertToTencentAll',

@@ -1,7 +1,7 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import { CertInfo ,CertReader} from '@certd/plugin-cert';
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
-import { TencentAccess, TencentSslClient } from '@certd/plugin-lib';
+import { TencentAccess, TencentSslClient } from '../../../plugin-lib/tencent/index.js';
 import { CertApplyPluginNames} from '@certd/plugin-cert';
 @IsTaskPlugin({
   name: 'TencentDeployCertToCDNv2',

@@ -2,10 +2,11 @@ import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipel
 import fs from "fs";
 import path from "path";
 import dayjs from "dayjs";
-import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-lib";
 import JSZip from "jszip";
 import * as os from "node:os";
-import { OssClientContext, ossClientFactory, OssClientRemoveByOpts, SshAccess, SshClient } from "@certd/plugin-lib";
+import { OssClientContext, ossClientFactory, OssClientRemoveByOpts} from "../plugin-lib/oss/index.js";
+import { SshAccess, SshClient } from "../plugin-lib/ssh/index.js";
 import { pipeline } from "stream/promises";
 const defaultBackupDir = "certd_backup";
 const defaultFilePrefix = "db_backup";

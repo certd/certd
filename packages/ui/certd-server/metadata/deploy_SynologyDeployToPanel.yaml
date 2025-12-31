@@ -1,0 +1,43 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: SynologyDeployToPanel
+title: 群晖-部署证书到群晖面板
+icon: simple-icons:synology
+group: panel
+desc: Synology，支持6.x以上版本
+needPlus: true
+input:
+  certName:
+    title: 群晖证书描述
+    component:
+      name: a-input
+      vModel: value
+      placeholder: 群晖证书描述
+    required: false
+    helper: |-
+      在群晖证书管理页面里面，选择证书，点击操作，给证书设置描述，然后填写到这里
+      如果不填，则覆盖更新全部证书
+    order: 0
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  accessId:
+    title: 群晖授权
+    helper: 群晖登录授权，请确保账户是管理员用户组
+    component:
+      name: access-selector
+      type: synology
+    required: true
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/synology/plugins/plugin-deploy-to-panel.js

@@ -1,0 +1,69 @@
+name: lecdn
+title: LeCDN授权
+desc: ''
+icon: material-symbols:shield-outline
+input:
+  url:
+    title: LeCDN系统网址
+    component:
+      name: a-input
+      vModel: value
+    required: true
+    helper: 例如：http://demo.xxxx.cn
+  type:
+    title: 认证类型
+    component:
+      placeholder: 请选择
+      name: a-select
+      vModel: value
+      options:
+        - value: token
+          label: API访问令牌
+        - value: password
+          label: 账号密码(旧版本)
+    required: true
+  username:
+    title: 用户名
+    component:
+      placeholder: username
+    mergeScript: |2-
+
+          return {
+               show:ctx.compute(({form})=>{
+                return form.access.type === 'password';
+              })
+            }
+          
+    required: true
+    encrypt: false
+  password:
+    title: 登录密码
+    component:
+      placeholder: password
+    required: true
+    encrypt: true
+    mergeScript: |2-
+
+          return {
+               show:ctx.compute(({form})=>{
+                return form.access.type === 'password';
+              })
+            }
+          
+  apiToken:
+    title: Api访问令牌
+    component:
+      placeholder: apiToken
+    required: true
+    encrypt: true
+    mergeScript: |2-
+
+          return {
+               show:ctx.compute(({form})=>{
+                return form.access.type === 'token';
+              })
+            }
+          
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/lecdn/access.js

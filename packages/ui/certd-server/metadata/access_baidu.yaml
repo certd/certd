@@ -1,0 +1,29 @@
+name: baidu
+title: 百度云授权
+desc: ''
+icon: ant-design:baidu-outlined
+order: 2
+input:
+  accessKey:
+    title: AccessKey
+    component:
+      placeholder: AccessKey
+    helper: '[百度智能云->安全认证获取](https://console.bce.baidu.com/iam/#/iam/accesslist)'
+    required: true
+    encrypt: false
+  secretKey:
+    title: SecretKey
+    component:
+      placeholder: SecretKey
+    helper: ''
+    required: true
+    encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: onTestRequest
+    helper: 点击测试接口看是否正常
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/baidu/access.js

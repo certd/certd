@@ -1,7 +1,5 @@
 import {AbstractTaskPlugin, IsTaskPlugin, Pager, pluginGroups, RunStrategy, TaskInput} from '@certd/pipeline';
 import {
-  AliyunAccess,
-  AliyunSslClient,
   createCertDomainGetterInputDefine,
   createRemoteSelectInputDefine
 } from '@certd/plugin-lib';
@@ -9,6 +7,8 @@ import {CertInfo, CertReader} from '@certd/plugin-cert';
 import { CertApplyPluginNames} from '@certd/plugin-cert';
 import {optionsUtils} from "@certd/basic";
 import {isArray} from "lodash-es";
+import { AliyunAccess } from '../../../plugin-lib/aliyun/access/index.js';
+import { AliyunSslClient } from '../../../plugin-lib/aliyun/lib/index.js';
 @IsTaskPlugin({
   name: 'DeployCertToAliyunOSS',
   title: '阿里云-部署证书至OSS',

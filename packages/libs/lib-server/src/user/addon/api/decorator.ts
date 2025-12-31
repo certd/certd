@@ -11,6 +11,9 @@ export const ADDON_INPUT_KEY = "pipeline:addon:input";
 
 export function IsAddon(define: AddonDefine): ClassDecorator {
   return (target: any) => {
+    if (process.env.certd_plugin_loadmode === "metadata") {
+      return;
+    }
     target = Decorator.target(target);
 
     const inputs: any = {};
@@ -36,6 +39,9 @@ export function IsAddon(define: AddonDefine): ClassDecorator {
 
 export function AddonInput(input?: AddonInputDefine): PropertyDecorator {
   return (target, propertyKey) => {
+    if (process.env.certd_plugin_loadmode === "metadata") {
+      return;
+    }
     target = Decorator.target(target, propertyKey);
     // const _type = Reflect.getMetadata("design:type", target, propertyKey);
     Reflect.defineMetadata(ADDON_INPUT_KEY, input, target, propertyKey);

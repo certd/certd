@@ -1,6 +1,6 @@
 import { logger } from '@certd/basic';
 import { ISmsService, PluginInputs, SmsPluginCtx } from './api.js';
-import { AliyunAccess, AliyunClient } from '@certd/plugin-lib';
+import { AliyunAccess, AliyunClient } from '../../../plugins/plugin-lib/aliyun/index.js';
 
 export type AliyunSmsConfig = {
   accessId: string;

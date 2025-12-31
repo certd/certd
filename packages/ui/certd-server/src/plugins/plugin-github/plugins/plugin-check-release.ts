@@ -1,6 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import { GithubAccess } from "../access.js";
-import {SshClient} from "@certd/plugin-lib";
+import { SshClient } from "../../plugin-lib/ssh/ssh.js";
 
 @IsTaskPlugin({
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名

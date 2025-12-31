@@ -1,0 +1,19 @@
+name: qiniu
+title: 七牛云授权
+desc: ''
+icon: svg:icon-qiniuyun
+input:
+  accessKey:
+    title: AccessKey
+    rules:
+      - required: true
+        message: 此项必填
+    helper: AK，前往[密钥管理](https://portal.qiniu.com/developer/user/key)获取
+  secretKey:
+    title: SecretKey
+    encrypt: true
+    helper: SK
+order: 2
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-lib/qiniu/access.js

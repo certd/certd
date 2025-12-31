@@ -1,0 +1,52 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: K8sDeployToIngress
+title: K8S-Ingress 证书部署
+icon: mdi:kubernetes
+desc: 部署证书到k8s的Ingress
+needPlus: false
+group: panel
+input:
+  namespace:
+    title: 命名空间
+    value: default
+    component:
+      placeholder: 命名空间
+    required: true
+    order: 0
+  ingressName:
+    title: IngressName
+    required: true
+    helper: Ingress名称，根据名称查找证书Secret，然后更新
+    order: 0
+  accessId:
+    title: k8s授权
+    helper: kubeconfig
+    component:
+      name: access-selector
+      type: k8s
+    required: true
+    order: 0
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  createOnNotFound:
+    title: Secret自动创建
+    helper: 如果Secret不存在，则创建
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/k8s/plugins/plugin-ingress.js

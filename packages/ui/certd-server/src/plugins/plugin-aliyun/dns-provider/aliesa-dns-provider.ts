@@ -1,7 +1,7 @@
 import { IAccessService } from '@certd/pipeline';
 import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { AliesaAccess, AliyunAccess, AliyunClientV2 } from '../../plugin-lib/aliyun/index.js';
 
-import { AliesaAccess, AliyunAccess, AliyunClientV2 } from '@certd/plugin-lib';
 
 @IsDnsProvider({
   name: 'aliesa',

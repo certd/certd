@@ -1,0 +1,33 @@
+name: plesk
+title: plesk授权
+desc: ''
+icon: svg:icon-plesk
+input:
+  url:
+    title: Plesk网址
+    component:
+      name: a-input
+      vModel: value
+    required: true
+    helper: 例如：https://xxxx.xxxxx:8443/
+  username:
+    title: 用户名
+    component:
+      placeholder: username
+    required: true
+    encrypt: false
+  password:
+    title: 登录密码
+    component:
+      placeholder: password
+    required: true
+    encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: onTestRequest
+    helper: 点击测试接口看是否正常
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/plesk/access.js

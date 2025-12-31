@@ -1,0 +1,20 @@
+name: kuocaicdn
+title: 括彩云cdn授权
+icon: material-symbols:shield-outline
+desc: 括彩云CDN，每月免费30G，[注册即领](https://kuocaicdn.com/register?code=8mn536rrzfbf8)
+input:
+  username:
+    title: 账户
+    component:
+      placeholder: 手机号
+    required: true
+    encrypt: true
+  password:
+    title: 密码
+    component:
+      placeholder: password
+    required: true
+    encrypt: true
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/kuocai/access.js

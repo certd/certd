@@ -1,0 +1,136 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 0
+name: CertApplyGetFormAliyun
+icon: ph:certificate
+title: 获取阿里云订阅证书
+group: cert
+desc: 从阿里云拉取订阅模式的商用证书
+input:
+  domains:
+    title: 证书域名
+    component:
+      name: a-select
+      vModel: value
+      mode: tags
+      open: false
+      placeholder: foo.com / *.foo.com / *.bar.com
+      tokenSeparators:
+        - ','
+        - ' '
+        - ，
+        - 、
+        - '|'
+    rules:
+      - type: domains
+    required: true
+    col:
+      span: 24
+    order: -999
+    helper: |-
+      1、支持多个域名打到一个证书上，例如： foo.com，*.foo.com，*.bar.com
+      2、子域名被通配符包含的不要填写，例如：www.foo.com已经被*.foo.com包含，不要填写www.foo.com
+      3、泛域名只能通配*号那一级（*.foo.com的证书不能用于xxx.yyy.foo.com、不能用于foo.com）
+      4、输入一个，空格之后，再输入下一个 
+      5、如果设置了子域托管解析（比如免费的二级域名托管在CF或者阿里云），请先[设置托管子域名](#/certd/pipeline/subDomain)
+  email:
+    title: 邮箱
+    component:
+      name: email-selector
+      vModel: value
+    rules:
+      - type: email
+        message: 请输入正确的邮箱
+    required: true
+    order: -1
+    helper: 请输入邮箱
+  accessId:
+    title: Access授权
+    helper: 阿里云授权AccessKeyId、AccessKeySecret
+    component:
+      name: access-selector
+      type: aliyun
+    required: true
+    order: 0
+  orderId:
+    title: 证书订单ID
+    component:
+      name: RemoteAutoComplete
+      vModel: value
+      mode: tags
+      type: plugin
+      typeName: CertApplyGetFormAliyun
+      action: onGetOrderList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 订阅模式的证书订单Id
+    order: 0
+  pfxPassword:
+    title: 证书加密密码
+    component:
+      name: input-password
+      vModel: value
+    required: false
+    order: 100
+    helper: |-
+      转换成PFX、jks格式证书是否需要加密
+      jks必须设置密码，不传则默认123456
+      pfx不传则为空密码
+  pfxArgs:
+    title: PFX证书转换参数
+    value: '-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES'
+    component:
+      name: a-auto-complete
+      vModel: value
+      options:
+        - value: ''
+          label: 兼容 Windows Server 最新
+        - value: '-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES'
+          label: 兼容 Windows Server 2016
+        - value: '-nomac -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES'
+          label: 兼容 Windows Server 2008
+    required: false
+    order: 100
+    helper: 兼容Windows Server各个版本
+  renewDays:
+    title: 更新天数
+    value: 18
+    component:
+      name: a-input-number
+      vModel: value
+    required: true
+    order: 100
+    helper: 到期前多少天后更新证书，注意：流水线默认不会自动运行，请设置定时器，每天定时运行本流水线
+  successNotify:
+    title: 证书申请成功通知
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    order: 100
+    helper: 证书申请成功后是否发送通知，优先使用默认通知渠道
+output:
+  cert:
+    title: 域名证书
+    type: cert
+  certZip:
+    title: 域名证书压缩文件
+    type: certZip
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-cert/plugin/cert-plugin/getter/aliyun.js

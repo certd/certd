@@ -1,0 +1,21 @@
+name: unicloud
+title: uniCloud
+icon: material-symbols:shield-outline
+desc: unicloud授权
+input:
+  email:
+    title: 账号
+    component:
+      placeholder: email
+    helper: 登录邮箱
+    required: true
+    encrypt: false
+  password:
+    title: 密码
+    component:
+      placeholder: 密码
+    required: true
+    encrypt: true
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/unicloud/access.js

@@ -1,0 +1,29 @@
+name: lucky
+title: lucky
+desc: ''
+icon: svg:icon-lucky
+input:
+  url:
+    title: 访问url
+    component:
+      placeholder: http://xxx.xx.xx:16301
+    helper: 不要带安全入口
+    required: true
+    encrypt: false
+  safePath:
+    title: 安全入口
+    component:
+      placeholder: /your_safe_path
+    helper: 请参考lucky设置中关于安全入口的配置，
+    required: false
+    encrypt: true
+  openToken:
+    title: OpenToken
+    component:
+      placeholder: OpenToken
+    helper: 设置->最下面开发者设置->启用OpenToken
+    required: true
+    encrypt: true
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/lucky/access.js

@@ -1,0 +1,23 @@
+name: k8s
+title: k8s授权
+desc: ''
+icon: mdi:kubernetes
+input:
+  kubeconfig:
+    title: kubeconfig
+    component:
+      name: a-textarea
+      vModel: value
+      placeholder: kubeconfig
+    required: true
+    encrypt: true
+  skipTLSVerify:
+    title: 忽略证书校验
+    component:
+      name: a-switch
+      vModel: checked
+    required: false
+    encrypt: false
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/k8s/access.js

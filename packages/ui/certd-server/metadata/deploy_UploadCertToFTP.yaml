@@ -1,0 +1,169 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: UploadCertToFTP
+title: FTP-上传证书到FTP
+icon: mdi:folder-upload-outline
+group: host
+desc: 将证书上传到FTP服务器
+needPlus: false
+input:
+  certType:
+    title: 证书格式
+    helper: 要部署的证书格式，支持pem、pfx、der、jks
+    component:
+      name: a-select
+      options:
+        - value: pem
+          label: pem，Nginx等大部分应用
+        - value: pfx
+          label: pfx，一般用于IIS
+        - value: der
+          label: der，一般用于Apache
+        - value: jks
+          label: jks，一般用于JAVA应用
+        - value: one
+          label: 一体化证书，证书和私钥合并为一个pem文件
+    required: true
+    order: 0
+  crtPath:
+    title: PEM证书保存路径
+    helper: 需要有写入权限，路径要包含文件名
+    component:
+      placeholder: /test/fullchain.pem
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'pem';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+  keyPath:
+    title: 私钥保存路径
+    helper: 需要有写入权限，路径要包含文件名
+    component:
+      placeholder: /test/privatekey.pem
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'pem';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+  icPath:
+    title: 中间证书保存路径
+    helper: 需要有写入权限，路径要包含文件名
+    component:
+      placeholder: /test/immediate.pem
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'pem';
+              })
+            }
+          
+    rules:
+      - type: filepath
+    order: 0
+  pfxPath:
+    title: PFX证书保存路径
+    helper: 需要有写入权限，路径要包含文件名
+    component:
+      placeholder: /test/cert.pfx
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'pfx';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+  derPath:
+    title: DER证书保存路径
+    helper: |-
+      需要有写入权限，路径要包含文件名
+      .der和.cer是相同的东西，改个后缀名即可
+    component:
+      placeholder: /test/cert.der 或 /test/cert.cer
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'der';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+  jksPath:
+    title: jks证书保存路径
+    helper: 证书原本的保存路径，路径要包含文件名
+    component:
+      placeholder: /test/javaapp/cert.jks
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'jks';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+  onePath:
+    title: 一体化证书保存路径
+    helper: 证书原本的保存路径，路径要包含文件名
+    component:
+      placeholder: /app/ssl/one.pem
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.certType === 'one';
+              })
+            }
+          
+    required: true
+    rules:
+      - type: filepath
+    order: 0
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  accessId:
+    title: FTP授权
+    component:
+      name: access-selector
+      type: ftp
+    required: true
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/ftp/plugins/plugin-upload-to-ftp.js

@@ -1,0 +1,44 @@
+name: baota
+title: baota授权
+desc: ''
+icon: svg:icon-bt
+order: 2
+input:
+  panelUrl:
+    title: 宝塔URL地址
+    component:
+      placeholder: http://192.168.42.237:41896
+    helper: 宝塔面板的url地址，不要带安全入口，例如：http://192.168.42.237:41896
+    required: true
+  apiSecret:
+    title: 接口密钥
+    component:
+      placeholder: 接口密钥
+    helper: |-
+      宝塔面板设置->面板设置->API接口->接口配置->接口密钥。
+      必须要加IP白名单，您可以点击下方测试按钮，报错之后会打印IP，将IP加入白名单之后再次测试即可
+    required: true
+    encrypt: true
+  skipSslVerify:
+    title: 忽略证书校验
+    value: true
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 如果面板的url是https，且使用的是自签名证书，则需要开启此选项，其他情况可以关闭
+  isWindows:
+    title: windows版
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 是否是windows版
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口看是否正常
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/baota/access.js

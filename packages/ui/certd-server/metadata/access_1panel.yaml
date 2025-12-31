@@ -1,0 +1,102 @@
+name: 1panel
+title: 1panel授权
+desc: 账号和密码
+icon: svg:icon-onepanel
+input:
+  baseUrl:
+    title: 1Panel面板的url
+    component:
+      placeholder: http://xxxx.com:1231
+    helper: 不要带安全入口
+    required: true
+  safeEnter:
+    title: 安全入口
+    component:
+      placeholder: 登录的安全入口
+    encrypt: true
+    required: false
+  type:
+    title: 授权方式
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - label: 模拟登录【不推荐】
+          value: password
+        - label: 接口密钥【推荐】
+          value: apikey
+    required: true
+  apiVersion:
+    title: 接口版本
+    value: v1
+    component:
+      placeholder: v1 / v2
+      name: a-select
+      vModel: value
+      options:
+        - label: v1
+          value: v1
+        - label: v2
+          value: v2
+    required: true
+  username:
+    title: 用户名
+    component:
+      placeholder: username
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.access.type === 'password';
+              })
+            }
+          
+    required: true
+  password:
+    title: 密码
+    component:
+      placeholder: password
+    helper: ''
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.access.type === 'password';
+              })
+            }
+          
+    required: true
+    encrypt: true
+  apiKey:
+    title: 接口密钥
+    component:
+      placeholder: 接口密钥
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form})=>{
+                return form.access.type === 'apikey';
+              })
+            }
+          
+    helper: 面板设置->API接口中获取
+    required: true
+    encrypt: true
+  skipSslVerify:
+    title: 忽略证书校验
+    value: true
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 如果面板的url是https，且使用的是自签名证书，则需要开启此选项，其他情况可以关闭
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: onTestRequest
+    helper: |-
+      点击测试接口看是否正常
+      IP需要加白名单，如果是同一台机器部署的，可以试试面板的url使用网卡docker0的ip，白名单使用172.16.0.0/12
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/1panel/access.js

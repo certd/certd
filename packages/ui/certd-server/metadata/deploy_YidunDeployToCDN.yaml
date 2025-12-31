@@ -1,0 +1,46 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: YidunDeployToCDN
+title: 易盾-部署到易盾DCDN
+icon: material-symbols:shield-outline
+group: cdn
+desc: 主要是防御，http://user.yiduncdn.com/
+needPlus: false
+input:
+  certId:
+    title: 证书ID
+    component:
+      name: a-input-number
+      vModel: value
+    helper: 证书ID,在证书管理页面查看，每条记录都有证书id
+    order: 0
+  domain:
+    title: 网站域名
+    component:
+      name: a-input
+      vModel: value
+    helper: 网站域名和证书ID选填其中一个，填了证书ID，则忽略网站域名
+    order: 0
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  accessId:
+    title: 易盾授权
+    helper: 易盾CDN授权
+    component:
+      name: access-selector
+      type: yidun
+    required: true
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/yidun/plugins/plugin-deploy-to-cdn.js

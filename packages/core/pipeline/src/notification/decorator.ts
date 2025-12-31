@@ -11,6 +11,9 @@ export const NOTIFICATION_INPUT_KEY = "pipeline:notification:input";
 
 export function IsNotification(define: NotificationDefine): ClassDecorator {
   return (target: any) => {
+    if (process.env.certd_plugin_loadmode === "metadata") {
+      return;
+    }
     target = Decorator.target(target);
 
     const inputs: any = {};
@@ -35,6 +38,9 @@ export function IsNotification(define: NotificationDefine): ClassDecorator {
 
 export function NotificationInput(input?: NotificationInputDefine): PropertyDecorator {
   return (target, propertyKey) => {
+    if (process.env.certd_plugin_loadmode === "metadata") {
+      return;
+    }
     target = Decorator.target(target, propertyKey);
     // const _type = Reflect.getMetadata("design:type", target, propertyKey);
     Reflect.defineMetadata(NOTIFICATION_INPUT_KEY, input, target, propertyKey);

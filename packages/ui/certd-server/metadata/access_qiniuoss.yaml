@@ -1,0 +1,20 @@
+name: qiniuoss
+title: 七牛OSS授权
+desc: ''
+icon: svg:icon-qiniuyun
+input:
+  accessId:
+    title: 七牛云授权
+    component:
+      name: access-selector
+      vModel: modelValue
+      type: qiniu
+    helper: 请选择七牛云授权
+    required: true
+  bucket:
+    title: Bucket
+    helper: 存储桶名称
+    required: true
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-lib/qiniu/access-oss.js

@@ -1,7 +1,7 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import { CertInfo, CertReader, CertReaderHandleContext } from '@certd/plugin-cert';
 import dayjs from 'dayjs';
-import { SshAccess, SshClient } from '@certd/plugin-lib';
+import { SshAccess, SshClient } from '../../../plugin-lib/ssh/index.js';
 import { CertApplyPluginNames} from '@certd/plugin-cert';
 @IsTaskPlugin({
   name: 'uploadCertToHost',

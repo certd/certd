@@ -11,11 +11,15 @@ export class AutoBLoadPlugins {
 
   @Init()
   async init() {
-    logger.info('加载插件开始');
-    await this.pluginService.registerFromLocal("./metadata")
+    logger.info(`加载插件开始，加载模式:${process.env.certd_plugin_loadmode}`);
+    if (process.env.certd_plugin_loadmode === "metadata") {
+      await this.pluginService.registerFromLocal("./metadata")
+    }else{
+      await import("../../plugins/index.js")
+    }
     // await import("../../plugins/index.js")
     await this.pluginService.registerFromDb()
-    logger.info('加载插件完成');
+    logger.info(`加载插件完成，加载模式:${process.env.certd_plugin_loadmode}`);
 
   }
 }

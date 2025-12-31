@@ -1,0 +1,45 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: BaishanUpdateCert
+title: 白山云-更新证书
+icon: material-symbols:shield-outline
+group: cdn
+needPlus: false
+input:
+  certId:
+    title: 证书ID
+    component:
+      name: a-input-number
+      vModel: value
+    helper: 证书ID,在证书管理页面查看，每条记录都有证书id
+    order: 0
+  certName:
+    title: 证书名称
+    component:
+      name: a-input
+      vModel: value
+    helper: 给证书设置一个名字，便于区分
+    order: 0
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  accessId:
+    title: 白山云授权
+    helper: 白山云授权
+    component:
+      name: access-selector
+      type: baishan
+    required: true
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/baishan/plugins/plugin-update-cert.js

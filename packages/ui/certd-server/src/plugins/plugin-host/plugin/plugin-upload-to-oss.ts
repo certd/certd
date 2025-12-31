@@ -1,7 +1,7 @@
 import {AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput} from '@certd/pipeline';
 import {CertInfo} from "@certd/plugin-cert";
-import {ossClientFactory} from "@certd/plugin-lib";
 import {utils} from "@certd/basic";
+import { ossClientFactory } from '../../plugin-lib/oss/factory.js';
 
 @IsTaskPlugin({
   name: 'UploadCertToOss',

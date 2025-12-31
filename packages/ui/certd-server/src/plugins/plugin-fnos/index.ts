@@ -3,9 +3,9 @@ import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-cert";
 import {
   createCertDomainGetterInputDefine,
   createRemoteSelectInputDefine,
-  SshAccess,
-  SshClient
 } from "@certd/plugin-lib";
+import { SshAccess } from "../plugin-lib/ssh/ssh-access.js";
+import { SshClient } from "../plugin-lib/ssh/ssh.js";
 
 @IsTaskPlugin({
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名

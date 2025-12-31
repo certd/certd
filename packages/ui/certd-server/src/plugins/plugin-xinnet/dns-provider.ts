@@ -1,6 +1,6 @@
 import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { XinnetAccess } from "./access.js";
-import { XinnetClient } from "@certd/plugin-plus";
+import { XinnetClient } from "../plugin-plus/xinnet/client.js";
 
 export type XinnetRecord = {
   recordId: number;

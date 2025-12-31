@@ -1,14 +1,15 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import dayjs from 'dayjs';
 import {
-  AliyunAccess,
-  AliyunClient,
   createCertDomainGetterInputDefine,
   createRemoteSelectInputDefine
 } from "@certd/plugin-lib";
+import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
+
 import { CertInfo } from '@certd/plugin-cert';
 import { CertApplyPluginNames} from '@certd/plugin-cert';
 import { optionsUtils } from "@certd/basic";
+import { AliyunClient } from "../../../plugin-lib/aliyun/lib/index.js";
 @IsTaskPlugin({
   name: 'DeployCertToAliyunDCDN',
   title: '阿里云-部署证书至DCDN',

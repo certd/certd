@@ -1,5 +1,5 @@
+import { TencentAccess } from '../../../plugins/plugin-lib/tencent/access.js';
 import {ISmsService, PluginInputs, SmsPluginCtx} from './api.js';
-import {TencentAccess} from "@certd/plugin-lib";
 
 export type TencentSmsConfig = {
   accessId: string;

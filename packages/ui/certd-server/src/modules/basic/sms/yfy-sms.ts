@@ -1,6 +1,6 @@
 import { http, utils } from '@certd/basic';
 import { ISmsService, PluginInputs, SmsPluginCtx } from './api.js';
-import { YfySmsAccess } from '@certd/plugin-plus';
+import { YfySmsAccess } from '../../../plugins/plugin-plus/yidun/access-sms.js';
 
 export type YfySmsConfig = {
   accessId: string;

@@ -1,6 +1,7 @@
 import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { AliyunAccess } from '../../plugin-lib/aliyun/access/aliyun-access.js';
+import { AliyunClient } from '../../plugin-lib/aliyun/index.js';
 
-import { AliyunAccess, AliyunClient } from '@certd/plugin-lib';
 
 @IsDnsProvider({
   name: 'aliyun',

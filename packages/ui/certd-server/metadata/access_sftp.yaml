@@ -1,0 +1,23 @@
+name: sftp
+title: SFTP授权
+desc: ''
+icon: clarity:host-line
+input:
+  sshAccess:
+    title: SSH授权
+    component:
+      name: access-selector
+      type: ssh
+      vModel: modelValue
+    helper: 请选择一个SSH授权
+    required: true
+  fileMode:
+    title: 文件权限
+    component:
+      name: a-input
+      vModel: value
+      placeholder: '777'
+    helper: 文件上传后是否修改文件权限
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-lib/ssh/sftp-access.js

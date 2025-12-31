@@ -1,0 +1,33 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: BaiduUploadCert
+title: 百度云-上传到证书托管
+icon: ant-design:baidu-outlined
+desc: 上传证书到百度云证书托管中心
+group: baidu
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  accessId:
+    title: Access授权
+    helper: access授权
+    component:
+      name: access-selector
+      type: baidu
+    required: true
+    order: 0
+output:
+  baiduCertId:
+    title: 百度云CertId
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/baidu/plugins/plugin-upload-to-baidu.js

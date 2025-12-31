@@ -1,0 +1,26 @@
+name: safeline
+title: 长亭雷池授权
+icon: svg:icon-safeline
+input:
+  baseUrl:
+    title: 雷池的访问url
+    component:
+      placeholder: https://xxxx.com:9443
+    required: true
+  apiToken:
+    title: ApiToken
+    component:
+      placeholder: apiToken
+    helper: ''
+    required: true
+    encrypt: true
+  skipSslVerify:
+    title: 忽略证书校验
+    value: true
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 如果面板的url是https，且使用的是自签名证书，则需要开启此选项，其他情况可以关闭
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/safeline/access.js

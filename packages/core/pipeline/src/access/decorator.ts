@@ -11,6 +11,9 @@ export const ACCESS_INPUT_KEY = "pipeline:access:input";
 
 export function IsAccess(define: AccessDefine): ClassDecorator {
   return (target: any) => {
+    if (process.env.certd_plugin_loadmode === "metadata") {
+      return;
+    }
     target = Decorator.target(target);
 
     const inputs: any = {};
@@ -35,6 +38,9 @@ export function IsAccess(define: AccessDefine): ClassDecorator {
 
 export function AccessInput(input?: AccessInputDefine): PropertyDecorator {
   return (target, propertyKey) => {
+    if (process.env.certd_plugin_loadmode === "metadata") {
+      return;
+    }
     target = Decorator.target(target, propertyKey);
     // const _type = Reflect.getMetadata("design:type", target, propertyKey);
     Reflect.defineMetadata(ACCESS_INPUT_KEY, input, target, propertyKey);

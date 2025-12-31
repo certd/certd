@@ -1,0 +1,15 @@
+name: baishan
+title: 白山云授权
+desc: ''
+icon: material-symbols:shield-outline
+input:
+  token:
+    title: token
+    component:
+      placeholder: token
+    helper: 自行联系提供商申请
+    required: true
+    encrypt: true
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/baishan/access.js

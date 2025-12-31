@@ -1,0 +1,36 @@
+name: baotawaf
+title: 宝塔云WAF授权
+desc: 用于连接和管理宝塔云WAF服务的授权配置
+icon: svg:icon-bt
+input:
+  panelUrl:
+    title: 在宝塔WAF URL
+    component:
+      placeholder: http://192.168.42.237:41896
+    helper: 在宝塔WAF的URL地址，不要带安全入口，例如：http://192.168.42.237:41896
+    required: true
+  apiSecret:
+    title: WAF API 密钥
+    component:
+      placeholder: 请输入WAF API接口密钥
+    helper: |-
+      在宝塔WAF设置页面 - API接口中获取的API密钥。
+      必须添加IP白名单，请确保已将CertD服务器IP加入白名单
+    required: true
+    encrypt: true
+  skipSslVerify:
+    title: 忽略SSL证书校验
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 如果面板使用的是自签名SSL证书，则需要开启此选项
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: onTestRequest
+    helper: 点击测试WAF请求
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/baota/waf-access.js

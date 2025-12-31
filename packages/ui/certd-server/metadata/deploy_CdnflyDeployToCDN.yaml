@@ -1,0 +1,116 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: CdnflyDeployToCDN
+title: cdnfly-部署证书到cdnfly
+icon: majesticons:cloud-line
+group: cdn
+desc: cdnfly
+needPlus: false
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: false
+    order: 0
+  accessId:
+    title: cdnfly授权
+    helper: cdnfly授权
+    component:
+      name: access-selector
+      type: cdnfly
+    required: true
+    order: 0
+  autoMatch:
+    title: 自动匹配站点
+    component:
+      name: a-switch
+      vModel: checked
+    helper: |-
+      是否自动匹配站点进行部署
+      如果选择自动匹配，则下方参数无需填写
+    order: 0
+  certId:
+    title: 证书ID
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      typeName: CdnflyDeployToCDNPlugin
+      action: onGetCertList
+      search: true
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+        - cert
+        - accessId
+    required: false
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 请选择证书Id，需要先手动上传一次证书，后续可以自动更新证书【推荐】
+    order: 0
+  siteId:
+    title: 网站Id
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetSiteList
+      search: true
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+        - url
+        - cert
+        - accessId
+    required: false
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 请选择要部署证书的网站Id
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/cdnfly/plugins/plugin-deploy-to-cdn.js

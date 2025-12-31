@@ -1,0 +1,53 @@
+name: s3
+title: s3/minio授权
+desc: S3/minio oss授权
+icon: mdi:folder-upload-outline
+input:
+  endpoint:
+    title: endpoint
+    component:
+      placeholder: http://xxxxxx:9000
+      name: a-input
+      vModel: value
+    helper: Minio的地址，如果是aws s3 则无需填写
+    required: false
+  accessKeyId:
+    title: accessKeyId
+    component:
+      placeholder: accessKeyId
+    helper: accessKeyId
+    required: true
+  secretAccessKey:
+    title: secretAccessKey
+    component:
+      placeholder: secretAccessKey
+      component:
+        name: a-input
+        vModel: value
+    helper: secretAccessKey
+    encrypt: true
+    required: true
+  region:
+    title: 地区
+    value: us-east-1
+    component:
+      name: a-input
+      vModel: value
+    helper: region
+    required: true
+  bucket:
+    title: 存储桶
+    component:
+      name: a-input
+      vModel: value
+    helper: bucket 名称
+    required: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-lib/s3/access.js

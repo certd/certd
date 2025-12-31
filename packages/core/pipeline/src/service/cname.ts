@@ -1,4 +1,4 @@
-import { IAccess } from "../access";
+import { IAccess } from "../access/index.js";
 
 export type CnameProvider = {
   id: any;

@@ -1,0 +1,107 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: 1PanelDeployToWebsitePlugin
+title: 1Panel-部署证书到1Panel
+icon: svg:icon-onepanel
+desc: 更新1Panel的证书
+group: panel
+needPlus: false
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: true
+    order: 0
+  accessId:
+    title: 1Panel授权
+    helper: 1Panel授权
+    component:
+      name: access-selector
+      type: 1panel
+    required: true
+    order: 0
+  currentNode:
+    title: 1Panel节点
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      typeName: OnePanelDeployToWebsitePlugin
+      action: onGetNodes
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+    value: local
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 要更新的1Panel证书的节点信息，目前只有v2存在此概念
+    order: 0
+  sslIds:
+    title: 1Panel证书ID
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      typeName: 1PanelDeployToWebsitePlugin
+      action: onGetSSLIds
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: |-
+      要更新的1Panel证书id，选择授权之后，从下拉框中选择
+      IP需要加白名单，如果是同一台机器部署的，可以试试172.16.0.0/12
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/1panel/plugins/deploy-to-website.js

@@ -1,5 +1,3 @@
-export * from '@certd/plugin-cert';
-export * from '@certd/plugin-plus';
 export * from './plugin-aliyun/index.js';
 export * from './plugin-tencent/index.js';
 export * from './plugin-host/index.js';
@@ -43,3 +41,6 @@ export * from './plugin-cmcc/index.js'
 export * from './plugin-template/index.js'
 export * from './plugin-ucloud/index.js'
 export * from './plugin-goedge/index.js'
+export * from './plugin-lib/index.js'
+export * from './plugin-plus/index.js'
+export * from './plugin-cert/index.js'

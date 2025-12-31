@@ -1,6 +1,6 @@
 import { AddonInput, BaseAddon, IsAddon } from "@certd/lib-server";
 import { ICaptchaAddon } from "../api.js";
-import { TencentAccess } from "@certd/plugin-lib";
+import { TencentAccess } from "../../plugin-lib/tencent/access.js";
 
 @IsAddon({
   addonType: "captcha",

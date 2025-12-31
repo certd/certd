@@ -21,6 +21,7 @@
     "@alicloud/openapi-util": "^0.3.2",
     "@alicloud/pop-core": "^1.7.10",
     "@alicloud/tea-util": "^1.4.10",
+    "psl": "^1.15.0",
     "@aws-sdk/client-s3": "^3.787.0",
     "@certd/basic": "^1.37.17",
     "@certd/pipeline": "^1.37.17",
@@ -37,7 +38,10 @@
     "socks-proxy-agent": "^8.0.4",
     "ssh2": "1.17.0",
     "strip-ansi": "^7.1.0",
-    "tencentcloud-sdk-nodejs": "^4.0.1005"
+    "tencentcloud-sdk-nodejs": "^4.0.1005",
+    "@certd/acme-client": "^1.37.17",
+    "@certd/plus-core": "^1.37.17",
+    "punycode.js": "^2.3.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",

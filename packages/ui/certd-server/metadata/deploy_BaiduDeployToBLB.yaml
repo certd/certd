@@ -1,0 +1,112 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: BaiduDeployToBLB
+title: 百度云-部署证书到负载均衡
+icon: ant-design:baidu-outlined
+group: baidu
+desc: 部署到百度云负载均衡，包括BLB、APPBLB
+needPlus: false
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+        - BaiduUploadCert
+    required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: true
+    order: 0
+  region:
+    title: 区域
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - value: bj
+          label: 北京
+        - value: fsh
+          label: 上海
+        - value: gz
+          label: 广州
+        - value: fwh
+          label: 武汉
+        - value: su
+          label: 苏州
+        - value: bd
+          label: 保定
+        - value: hkg
+          label: 香港
+        - value: sin
+          label: 新加坡
+    required: true
+    order: 0
+  blbType:
+    title: 负载均衡类型
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - value: blb
+          label: 普通负载均衡
+        - value: appblb
+          label: 应用负载均衡
+    required: true
+    order: 0
+  accessId:
+    title: 百度云授权
+    helper: 百度云授权
+    component:
+      name: access-selector
+      type: baidu
+    required: true
+    order: 0
+  blbIds:
+    title: 负载均衡ID
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      action: GetBLBList
+      watches:
+        - certDomains
+        - blbType
+        - accessId
+    required: true
+    order: 0
+  listenerIds:
+    title: 监听器ID
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      action: GetListenerList
+      watches:
+        - certDomains
+        - accessId
+        - blbIds
+    required: true
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/baidu/plugins/plugin-deploy-to-blb.js

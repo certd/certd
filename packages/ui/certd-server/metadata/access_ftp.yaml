@@ -1,0 +1,49 @@
+name: ftp
+title: FTP授权
+desc: ''
+icon: mdi:folder-upload-outline
+input:
+  host:
+    title: host
+    component:
+      placeholder: ip / 域名
+      name: a-input
+      vModel: value
+    helper: FTP地址
+    required: true
+  port:
+    title: 端口
+    value: 21
+    component:
+      placeholder: '21'
+      name: a-input-number
+      vModel: value
+    helper: FTP端口
+    required: true
+  user:
+    title: user
+    component:
+      placeholder: 用户名
+    helper: FTP用户名
+    required: true
+  password:
+    title: password
+    component:
+      placeholder: 密码
+      component:
+        name: a-input-password
+        vModel: value
+    encrypt: true
+    helper: FTP密码
+    required: true
+  secure:
+    title: secure
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 是否使用SSL
+    required: true
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-lib/ftp/access.js

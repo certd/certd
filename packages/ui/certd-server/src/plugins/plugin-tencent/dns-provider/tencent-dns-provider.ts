@@ -1,5 +1,5 @@
 import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
-import { TencentAccess } from '@certd/plugin-lib';
+import { TencentAccess } from '../../plugin-lib/tencent/index.js';
 
 @IsDnsProvider({
   name: 'tencent',

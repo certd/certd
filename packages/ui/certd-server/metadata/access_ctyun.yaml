@@ -1,0 +1,22 @@
+name: ctyun
+title: 天翼云授权
+desc: ''
+icon: ant-design:aliyun-outlined
+order: 2
+input:
+  accessKeyId:
+    title: accessKeyId
+    component:
+      placeholder: accessKeyId
+    helper: '[前往创建天翼云AccessKey](https://iam.ctyun.cn/myAccessKey)'
+    required: true
+  securityKey:
+    title: securityKey
+    component:
+      placeholder: securityKey
+    required: true
+    encrypt: true
+    helper: ''
+pluginType: access
+type: builtIn
+scriptFilePath: ../../../plugins/plugin-plus/ctyun/access/ctyun-access.js

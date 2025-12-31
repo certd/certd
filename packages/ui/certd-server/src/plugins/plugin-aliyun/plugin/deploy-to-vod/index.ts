@@ -1,6 +1,7 @@
 import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
-import { AliyunAccess, createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
 
 @IsTaskPlugin({
   name: "AliyunDeployCertToVod",
