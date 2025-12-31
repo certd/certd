@@ -77,4 +77,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/plesk/plugins/plugin-deploy-cert.js
+scriptFilePath: /plugins/plugin-plus/plesk/plugins/plugin-deploy-cert.js

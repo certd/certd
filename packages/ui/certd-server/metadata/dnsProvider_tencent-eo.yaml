@@ -5,4 +5,4 @@ accessType: tencent
 icon: svg:icon-tencentcloud
 pluginType: dnsProvider
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-tencent/dns-provider/teo-dns-provider.js
+scriptFilePath: /plugins/plugin-tencent/dns-provider/teo-dns-provider.js

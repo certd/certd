@@ -21,4 +21,4 @@ input:
     encrypt: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-cachefly/access.js
+scriptFilePath: /plugins/plugin-cachefly/access.js

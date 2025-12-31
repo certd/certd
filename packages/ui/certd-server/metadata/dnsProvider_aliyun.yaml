@@ -6,4 +6,4 @@ icon: svg:icon-aliyun
 order: 0
 pluginType: dnsProvider
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-aliyun/dns-provider/aliyun-dns-provider.js
+scriptFilePath: /plugins/plugin-aliyun/dns-provider/aliyun-dns-provider.js

@@ -17,4 +17,4 @@ input:
     encrypt: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/kuocai/access.js
+scriptFilePath: /plugins/plugin-plus/kuocai/access.js

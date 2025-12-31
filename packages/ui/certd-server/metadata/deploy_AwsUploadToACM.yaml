@@ -109,4 +109,4 @@ output:
     title: 证书ARN
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-aws/plugins/plugin-upload-to-acm.js
+scriptFilePath: /plugins/plugin-aws/plugins/plugin-upload-to-acm.js

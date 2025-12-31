@@ -18,4 +18,4 @@ input:
     required: false
 pluginType: notification
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-notification/bark/index.js
+scriptFilePath: /plugins/plugin-notification/bark/index.js

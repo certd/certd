@@ -29,4 +29,4 @@ input:
     helper: 填写成员手机号，@all 为提醒所有人
 pluginType: notification
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-notification/qywx/index.js
+scriptFilePath: /plugins/plugin-notification/qywx/index.js

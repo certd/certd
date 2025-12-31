@@ -20,4 +20,4 @@ input:
     helper: 文件上传后是否修改文件权限
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-lib/ssh/sftp-access.js
+scriptFilePath: /plugins/plugin-lib/ssh/sftp-access.js

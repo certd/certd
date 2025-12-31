@@ -39,4 +39,4 @@ input:
     encrypt: false
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-proxmox/access.js
+scriptFilePath: /plugins/plugin-proxmox/access.js

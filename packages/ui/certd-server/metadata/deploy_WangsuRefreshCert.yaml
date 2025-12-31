@@ -70,4 +70,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-wangsu/plugins/plugin-refresh-cert.js
+scriptFilePath: /plugins/plugin-wangsu/plugins/plugin-refresh-cert.js

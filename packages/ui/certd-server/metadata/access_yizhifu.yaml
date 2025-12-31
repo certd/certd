@@ -42,4 +42,4 @@ input:
     encrypt: false
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/yizhifu/access.js
+scriptFilePath: /plugins/plugin-plus/yizhifu/access.js

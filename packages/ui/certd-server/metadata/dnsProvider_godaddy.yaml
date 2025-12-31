@@ -6,4 +6,4 @@ accessType: godaddy
 order: 10
 pluginType: dnsProvider
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-godaddy/dns-provider.js
+scriptFilePath: /plugins/plugin-godaddy/dns-provider.js

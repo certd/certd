@@ -37,4 +37,4 @@ input:
     encrypt: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/wxpay/access.js
+scriptFilePath: /plugins/plugin-plus/wxpay/access.js

@@ -30,4 +30,4 @@ output:
     title: 百度云CertId
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/baidu/plugins/plugin-upload-to-baidu.js
+scriptFilePath: /plugins/plugin-plus/baidu/plugins/plugin-upload-to-baidu.js

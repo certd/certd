@@ -64,4 +64,4 @@ input:
       span: 24
 pluginType: addon
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-template/email/plugin-common.js
+scriptFilePath: /plugins/plugin-template/email/plugin-common.js

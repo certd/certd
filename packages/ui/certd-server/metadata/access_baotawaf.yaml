@@ -33,4 +33,4 @@ input:
     helper: 点击测试WAF请求
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/baota/waf-access.js
+scriptFilePath: /plugins/plugin-plus/baota/waf-access.js

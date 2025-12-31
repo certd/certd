@@ -16,4 +16,4 @@ input:
 order: 2
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-lib/qiniu/access.js
+scriptFilePath: /plugins/plugin-lib/qiniu/access.js

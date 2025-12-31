@@ -30,4 +30,4 @@ input:
     helper: 点击测试接口看是否正常
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/plesk/access.js
+scriptFilePath: /plugins/plugin-plus/plesk/access.js

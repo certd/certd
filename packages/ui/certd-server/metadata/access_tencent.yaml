@@ -43,4 +43,4 @@ input:
       vModel: checked
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-lib/tencent/access.js
+scriptFilePath: /plugins/plugin-lib/tencent/access.js

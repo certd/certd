@@ -5,4 +5,4 @@ accessType: huawei
 icon: svg:icon-huawei
 pluginType: dnsProvider
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-huawei/dns-provider/huawei-dns-provider.js
+scriptFilePath: /plugins/plugin-huawei/dns-provider/huawei-dns-provider.js

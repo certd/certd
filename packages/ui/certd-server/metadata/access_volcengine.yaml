@@ -18,4 +18,4 @@ input:
     encrypt: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-volcengine/access.js
+scriptFilePath: /plugins/plugin-volcengine/access.js

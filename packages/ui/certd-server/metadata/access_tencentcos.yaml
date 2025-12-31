@@ -72,4 +72,4 @@ input:
     required: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-lib/tencent/access-cos.js
+scriptFilePath: /plugins/plugin-lib/tencent/access-cos.js

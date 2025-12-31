@@ -49,4 +49,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/k8s/plugins/plugin-ingress.js
+scriptFilePath: /plugins/plugin-plus/k8s/plugins/plugin-ingress.js

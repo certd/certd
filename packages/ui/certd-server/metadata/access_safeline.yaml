@@ -23,4 +23,4 @@ input:
     helper: 如果面板的url是https，且使用的是自签名证书，则需要开启此选项，其他情况可以关闭
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/safeline/access.js
+scriptFilePath: /plugins/plugin-plus/safeline/access.js

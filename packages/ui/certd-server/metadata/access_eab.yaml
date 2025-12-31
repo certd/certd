@@ -28,4 +28,4 @@ input:
     required: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-cert/access/eab-access.js
+scriptFilePath: /plugins/plugin-cert/access/eab-access.js

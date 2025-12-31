@@ -73,4 +73,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/safeline/plugins/deploy-to-website.js
+scriptFilePath: /plugins/plugin-plus/safeline/plugins/deploy-to-website.js

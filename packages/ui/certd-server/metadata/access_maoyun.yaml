@@ -32,4 +32,4 @@ input:
     required: false
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/maoyun/access.js
+scriptFilePath: /plugins/plugin-plus/maoyun/access.js

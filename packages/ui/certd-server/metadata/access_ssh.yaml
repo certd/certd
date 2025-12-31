@@ -125,4 +125,4 @@ input:
 order: 0
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-lib/ssh/ssh-access.js
+scriptFilePath: /plugins/plugin-lib/ssh/ssh-access.js

@@ -38,4 +38,4 @@ input:
     required: false
 pluginType: notification
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-notification/onebot/index.js
+scriptFilePath: /plugins/plugin-notification/onebot/index.js

@@ -54,4 +54,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-proxmox/plugins/plugin-upload.js
+scriptFilePath: /plugins/plugin-proxmox/plugins/plugin-upload.js

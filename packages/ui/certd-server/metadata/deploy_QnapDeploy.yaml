@@ -29,4 +29,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-qnap/plugins/plugin-qnap.js
+scriptFilePath: /plugins/plugin-qnap/plugins/plugin-qnap.js

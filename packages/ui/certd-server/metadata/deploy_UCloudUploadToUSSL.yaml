@@ -30,4 +30,4 @@ output:
     type: UCloudCertId
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-ucloud/plugins/plugin-upload-to-ussl.js
+scriptFilePath: /plugins/plugin-ucloud/plugins/plugin-upload-to-ussl.js

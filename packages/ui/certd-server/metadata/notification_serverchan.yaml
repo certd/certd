@@ -34,4 +34,4 @@ input:
     required: false
 pluginType: notification
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-notification/serverchan/index.js
+scriptFilePath: /plugins/plugin-notification/serverchan/index.js

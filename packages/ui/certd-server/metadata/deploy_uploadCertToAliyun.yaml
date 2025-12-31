@@ -65,4 +65,4 @@ output:
     title: 上传成功后的阿里云CertId
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-aliyun/plugin/upload-to-aliyun/index.js
+scriptFilePath: /plugins/plugin-aliyun/plugin/upload-to-aliyun/index.js

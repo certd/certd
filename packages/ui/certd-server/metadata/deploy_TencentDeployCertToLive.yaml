@@ -57,4 +57,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-tencent/plugin/deploy-to-live/index.js
+scriptFilePath: /plugins/plugin-tencent/plugin/deploy-to-live/index.js

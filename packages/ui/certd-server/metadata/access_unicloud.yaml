@@ -18,4 +18,4 @@ input:
     encrypt: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/unicloud/access.js
+scriptFilePath: /plugins/plugin-plus/unicloud/access.js

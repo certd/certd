@@ -26,4 +26,4 @@ input:
     required: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-lib/aliyun/access/aliesa-access.js
+scriptFilePath: /plugins/plugin-lib/aliyun/access/aliesa-access.js

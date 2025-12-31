@@ -20,4 +20,4 @@ input:
     encrypt: false
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/k8s/access.js
+scriptFilePath: /plugins/plugin-plus/k8s/access.js

@@ -71,4 +71,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/lucky/plugins/plugin-upload.js
+scriptFilePath: /plugins/plugin-plus/lucky/plugins/plugin-upload.js

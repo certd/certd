@@ -5,4 +5,4 @@ accessType: rainyun
 icon: svg:icon-rainyun
 pluginType: dnsProvider
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-rainyun/dns-provider.js
+scriptFilePath: /plugins/plugin-rainyun/dns-provider.js

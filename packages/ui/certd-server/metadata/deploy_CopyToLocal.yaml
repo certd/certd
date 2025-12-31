@@ -164,4 +164,4 @@ output:
     type: HostJksPath
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-host/plugin/copy-to-local/index.js
+scriptFilePath: /plugins/plugin-host/plugin/copy-to-local/index.js

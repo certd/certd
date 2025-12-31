@@ -147,4 +147,4 @@ output:
     type: certMd5
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-cert/plugin/cert-plugin/custom/index.js
+scriptFilePath: /plugins/plugin-cert/plugin/cert-plugin/custom/index.js

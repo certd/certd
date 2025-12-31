@@ -81,4 +81,4 @@ input:
     encrypt: false
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-cert/access/google-access.js
+scriptFilePath: /plugins/plugin-cert/access/google-access.js

@@ -6,4 +6,4 @@ showTest: false
 input: {}
 pluginType: addon
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-captcha/image/index.js
+scriptFilePath: /plugins/plugin-captcha/image/index.js

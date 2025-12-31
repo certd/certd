@@ -175,4 +175,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-aliyun/plugin/deploy-to-oss/index.js
+scriptFilePath: /plugins/plugin-aliyun/plugin/deploy-to-oss/index.js

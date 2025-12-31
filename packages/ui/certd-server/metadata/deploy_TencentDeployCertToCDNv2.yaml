@@ -73,4 +73,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-tencent/plugin/deploy-to-cdn-v2/index.js
+scriptFilePath: /plugins/plugin-tencent/plugin/deploy-to-cdn-v2/index.js

@@ -20,4 +20,4 @@ input:
     encrypt: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-xinnetconnet/access.js
+scriptFilePath: /plugins/plugin-xinnetconnet/access.js

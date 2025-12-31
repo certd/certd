@@ -6,4 +6,4 @@ icon: svg:icon-volcengine
 order: 2
 pluginType: dnsProvider
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-volcengine/volcengine-dns-provider.js
+scriptFilePath: /plugins/plugin-volcengine/volcengine-dns-provider.js

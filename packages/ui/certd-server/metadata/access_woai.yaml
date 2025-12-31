@@ -16,4 +16,4 @@ input:
     encrypt: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-woai/access.js
+scriptFilePath: /plugins/plugin-woai/access.js

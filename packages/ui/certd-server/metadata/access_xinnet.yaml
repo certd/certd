@@ -25,4 +25,4 @@ input:
     helper: 点击测试接口是否正常
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-xinnet/access.js
+scriptFilePath: /plugins/plugin-xinnet/access.js

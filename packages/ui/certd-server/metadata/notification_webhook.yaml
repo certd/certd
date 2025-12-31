@@ -73,4 +73,4 @@ input:
     required: false
 pluginType: notification
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-notification/webhook/index.js
+scriptFilePath: /plugins/plugin-notification/webhook/index.js

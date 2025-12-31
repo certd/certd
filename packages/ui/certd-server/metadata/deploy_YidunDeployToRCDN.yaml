@@ -56,4 +56,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/yidun/plugins/plugin-deploy-to-rcdn.js
+scriptFilePath: /plugins/plugin-plus/yidun/plugins/plugin-deploy-to-rcdn.js

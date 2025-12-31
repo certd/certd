@@ -19,4 +19,4 @@ input:
     encrypt: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-huawei/access/huawei-access.js
+scriptFilePath: /plugins/plugin-huawei/access/huawei-access.js

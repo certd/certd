@@ -170,4 +170,4 @@ output:
     type: certZip
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-cert/plugin/cert-plugin/lego/index.js
+scriptFilePath: /plugins/plugin-cert/plugin/cert-plugin/lego/index.js

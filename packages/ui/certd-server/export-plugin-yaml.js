@@ -86,7 +86,7 @@ async function genMetadata(){
         location = location.substring(0, location.length - 3)
         location = location.replaceAll("\\","/")
         location += ".js"
-        location = `../../..${location}` // 从modules/plugin/plugin-service 加载 ../../plugins目录下的文件
+        location = `${location}` // 从modules/plugin/plugin-service 加载 ../../plugins目录下的文件
 
         const pluginDefine = {
           ...value.define

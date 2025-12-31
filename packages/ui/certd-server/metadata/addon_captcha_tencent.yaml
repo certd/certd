@@ -28,4 +28,4 @@ input:
     required: true
 pluginType: addon
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-captcha/tencent/index.js
+scriptFilePath: /plugins/plugin-captcha/tencent/index.js

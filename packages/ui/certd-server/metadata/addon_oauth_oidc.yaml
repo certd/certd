@@ -28,4 +28,4 @@ input:
     required: true
 pluginType: addon
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-oauth/oidc/plugin-oidc.js
+scriptFilePath: /plugins/plugin-oauth/oidc/plugin-oidc.js

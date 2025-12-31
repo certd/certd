@@ -59,4 +59,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/unicloud/plugins/plugin-deploy-to-space.js
+scriptFilePath: /plugins/plugin-plus/unicloud/plugins/plugin-deploy-to-space.js

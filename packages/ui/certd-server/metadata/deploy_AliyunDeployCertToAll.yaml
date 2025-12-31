@@ -174,4 +174,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-aliyun/plugin/deploy-to-all/index.js
+scriptFilePath: /plugins/plugin-aliyun/plugin/deploy-to-all/index.js

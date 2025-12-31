@@ -12,4 +12,4 @@ input: {}
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-admin/plugin-restart.js
+scriptFilePath: /plugins/plugin-admin/plugin-restart.js

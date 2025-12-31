@@ -66,4 +66,4 @@ input:
           
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/lecdn/access.js
+scriptFilePath: /plugins/plugin-plus/lecdn/access.js

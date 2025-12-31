@@ -46,4 +46,4 @@ input:
     required: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-lib/ftp/access.js
+scriptFilePath: /plugins/plugin-lib/ftp/access.js

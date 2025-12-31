@@ -47,4 +47,4 @@ output:
     title: 上传成功后的火山引擎证书Id
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-volcengine/plugins/plugin-upload-to-cert-center.js
+scriptFilePath: /plugins/plugin-volcengine/plugins/plugin-upload-to-cert-center.js

@@ -15,4 +15,4 @@ input:
     required: true
 pluginType: notification
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-notification/meow/index.js
+scriptFilePath: /plugins/plugin-notification/meow/index.js

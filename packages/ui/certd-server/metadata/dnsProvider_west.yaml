@@ -5,4 +5,4 @@ icon: svg:icon-xibushuma
 accessType: west
 pluginType: dnsProvider
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-west/dns-provider.js
+scriptFilePath: /plugins/plugin-west/dns-provider.js

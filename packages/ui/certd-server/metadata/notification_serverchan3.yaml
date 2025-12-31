@@ -29,4 +29,4 @@ input:
     required: false
 pluginType: notification
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-notification/serverchan3/index.js
+scriptFilePath: /plugins/plugin-notification/serverchan3/index.js

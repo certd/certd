@@ -6,4 +6,4 @@ icon: svg:icon-jdcloud
 order: 3
 pluginType: dnsProvider
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-jdcloud/dns-provider.js
+scriptFilePath: /plugins/plugin-jdcloud/dns-provider.js

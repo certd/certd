@@ -16,4 +16,4 @@ input:
     required: true
 pluginType: addon
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-oauth/wx/plugin-wx.js
+scriptFilePath: /plugins/plugin-oauth/wx/plugin-wx.js

@@ -30,4 +30,4 @@ output:
     title: 上传成功后的腾讯云CertId
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-tencent/plugin/upload-to-tencent/index.js
+scriptFilePath: /plugins/plugin-tencent/plugin/upload-to-tencent/index.js

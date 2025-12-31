@@ -62,4 +62,4 @@ input:
     required: true
 pluginType: addon
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-oauth/oauth2/plugin-clogin.js
+scriptFilePath: /plugins/plugin-oauth/oauth2/plugin-clogin.js

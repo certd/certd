@@ -12,4 +12,4 @@ input:
     encrypt: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/baishan/access.js
+scriptFilePath: /plugins/plugin-plus/baishan/access.js

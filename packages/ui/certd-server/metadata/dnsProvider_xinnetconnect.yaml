@@ -6,4 +6,4 @@ accessType: xinnetconnect
 order: 999
 pluginType: dnsProvider
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-xinnetconnet/dns-provider.js
+scriptFilePath: /plugins/plugin-xinnetconnet/dns-provider.js

@@ -19,4 +19,4 @@ input:
     encrypt: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/yidun/access.js
+scriptFilePath: /plugins/plugin-plus/yidun/access.js

@@ -35,4 +35,4 @@ input:
         message: 该项必填
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-tencent/access/dnspod-access.js
+scriptFilePath: /plugins/plugin-tencent/access/dnspod-access.js

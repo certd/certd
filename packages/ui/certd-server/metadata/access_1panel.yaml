@@ -99,4 +99,4 @@ input:
       IP需要加白名单，如果是同一台机器部署的，可以试试面板的url使用网卡docker0的ip，白名单使用172.16.0.0/12
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/1panel/access.js
+scriptFilePath: /plugins/plugin-plus/1panel/access.js

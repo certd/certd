@@ -50,4 +50,4 @@ input:
     helper: 点击测试接口是否正常
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-lib/s3/access.js
+scriptFilePath: /plugins/plugin-lib/s3/access.js

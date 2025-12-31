@@ -15,4 +15,4 @@ input:
       需要先[配置邮件服务器](#/sys/settings/email)
 pluginType: notification
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-notification/email/index.js
+scriptFilePath: /plugins/plugin-notification/email/index.js

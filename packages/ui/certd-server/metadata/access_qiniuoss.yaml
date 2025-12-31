@@ -17,4 +17,4 @@ input:
     required: true
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-lib/qiniu/access-oss.js
+scriptFilePath: /plugins/plugin-lib/qiniu/access-oss.js

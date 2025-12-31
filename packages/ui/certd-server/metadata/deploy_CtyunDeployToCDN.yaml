@@ -95,4 +95,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/ctyun/plugins/plugin-deploy-to-cdn.js
+scriptFilePath: /plugins/plugin-plus/ctyun/plugins/plugin-deploy-to-cdn.js

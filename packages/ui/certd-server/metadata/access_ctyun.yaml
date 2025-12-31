@@ -19,4 +19,4 @@ input:
     helper: ''
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/ctyun/access/ctyun-access.js
+scriptFilePath: /plugins/plugin-plus/ctyun/access/ctyun-access.js

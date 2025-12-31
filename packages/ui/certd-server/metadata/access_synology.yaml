@@ -85,4 +85,4 @@ input:
     helper: 请求超时时间，单位:秒
 pluginType: access
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-plus/synology/access.js
+scriptFilePath: /plugins/plugin-plus/synology/access.js

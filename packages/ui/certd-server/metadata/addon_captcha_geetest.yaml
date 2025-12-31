@@ -19,4 +19,4 @@ input:
     required: true
 pluginType: addon
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-captcha/geetest/index.js
+scriptFilePath: /plugins/plugin-captcha/geetest/index.js

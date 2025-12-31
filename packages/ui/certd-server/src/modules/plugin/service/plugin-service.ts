@@ -307,7 +307,7 @@ export class PluginService extends BaseService<PluginEntity> {
 
   private async getPluginClassFromFile(item: any) {
     const scriptFilePath = item.scriptFilePath;
-    const res =  await import((`${scriptFilePath}`))
+    const res =  await import((`../../..${scriptFilePath}`))
     const classNames = Object.keys(res)
     return res[classNames[classNames.length - 1]]
   }

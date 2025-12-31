@@ -69,4 +69,4 @@ input:
       span: 24
 pluginType: addon
 type: builtIn
-scriptFilePath: ../../../plugins/plugin-template/email/plugin-pipeline-result.js
+scriptFilePath: /plugins/plugin-template/email/plugin-pipeline-result.js
