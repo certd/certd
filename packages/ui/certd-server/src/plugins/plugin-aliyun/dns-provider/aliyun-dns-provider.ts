@@ -114,6 +114,9 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
         await this.ctx.utils.sleep(5000)
         return this.createRecord(options)
       }
+      if (e.code === 'SignatureDoesNotMatch') {
+        this.logger.error('阿里云账号的AccessKeyId或AccessKeySecret错误，请检查AccessKey是否被删除、过期、或者选择了错误的授权记录');
+      }
       this.logger.info('添加域名解析出错', e);
       this.resolveError(e, options);
     }
