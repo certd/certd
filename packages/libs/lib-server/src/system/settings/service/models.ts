@@ -21,6 +21,7 @@ export class SysPublicSettings extends BaseSettings {
   usernameRegisterEnabled = true;
   mobileRegisterEnabled = false;
   smsLoginEnabled = false;
+  useSmsLoginDefault = true;
   emailRegisterEnabled = false;
   selfServicePasswordRetrievalEnabled = false;
 

@@ -53,6 +53,10 @@ export default {
     alignLeft: "居左",
     alignRight: "居右",
   },
+  loginType: {
+    password: "密码登录",
+    sms: "手机号登录",
+  },
   usernamePlaceholder: "请输入用户名/邮箱/手机号",
   passwordPlaceholder: "请输入密码",
   mobilePlaceholder: "请输入手机号",

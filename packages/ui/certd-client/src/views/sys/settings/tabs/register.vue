@@ -28,6 +28,11 @@
             <router-link to="/sys/settings/email">{{ t("certd.emailServerSetup") }}</router-link>
           </div>
         </a-form-item>
+        <a-form-item :label="t('certd.defaultLoginType')" :name="['public', 'defaultLoginType']" required>
+          <div class="flex-o">
+            <a-radio-group v-model:value="formState.public.defaultLoginType" :options="loginTypeOptions" :title="t('certd.commFeature')" />
+          </div>
+        </a-form-item>
         <a-form-item :label="t('certd.enableSmsLoginRegister')" :name="['public', 'smsLoginEnabled']">
           <div class="flex-o">
             <a-switch v-model:checked="formState.public.smsLoginEnabled" :disabled="!settingsStore.isComm" :title="t('certd.commFeature')" />
@@ -65,7 +70,7 @@
 <script setup lang="tsx">
 import { notification } from "ant-design-vue";
 import { merge } from "lodash-es";
-import { reactive, ref, Ref } from "vue";
+import { computed, reactive, ref, Ref } from "vue";
 import { useSettingStore } from "/@/store/settings";
 import * as api from "/@/views/sys/settings/api";
 import { SysSettings } from "/@/views/sys/settings/api";
@@ -187,6 +192,18 @@ const onFinish = async (form: any) => {
     saveLoading.value = false;
   }
 };
+
+const loginTypeOptions = computed(() => [
+  {
+    label: t("authentication.loginType.password"),
+    value: "password",
+  },
+  {
+    label: t("authentication.loginType.sms"),
+    value: "sms",
+    disabled: !formState.public.smsLoginEnabled,
+  },
+]);
 </script>
 <style lang="less">
 .sys-settings-register {
