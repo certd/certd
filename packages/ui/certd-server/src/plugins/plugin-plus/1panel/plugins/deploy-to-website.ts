@@ -7,9 +7,9 @@ import { OnePanelClient } from "../client.js";
 
 @IsTaskPlugin({
   name: "1PanelDeployToWebsitePlugin",
-  title: "1Panel-部署证书到1Panel",
+  title: "1Panel-更新证书",
   icon: "svg:icon-onepanel",
-  desc: "更新1Panel的证书",
+  desc: "更新1Panel的证书，包括面板证书和站点证书",
   group: pluginGroups.panel.key,
   default: {
     strategy: {
@@ -195,7 +195,7 @@ export class OnePanelDeployToWebsitePlugin extends AbstractTaskPlugin {
       currentNode: this.currentNode,
     });
     if (!res?.items) {
-      throw new Error("没有找到证书，请先在1Panel中手动上传证书，并关联站点，后续才可以自动更新");
+      throw new Error("没有找到证书，请先在1Panel中手动上传证书，并关联站点或设置面板证书，后续才可以自动更新");
     }
     const list = res.items.map(item => {
       const domains = item.domains ? [] : item.domains.split(",");
