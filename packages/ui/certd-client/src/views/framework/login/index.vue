@@ -131,7 +131,7 @@ export default defineComponent({
       phoneCode: "86",
       mobile: "",
       password: "",
-      loginType: urlLoginType || settingStore.sysPublic.defaultLoginType, //password
+      loginType: urlLoginType || defaultLoginType, //password
       smsCode: "",
       captcha: null,
       smsCaptcha: null,
