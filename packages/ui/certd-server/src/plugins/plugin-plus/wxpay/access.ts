@@ -30,12 +30,13 @@ export class WxpayAccess extends BaseAccess {
   mchid: string;
 
   @AccessInput({
-    title: "公钥",
+    title: "证书公钥",
     component: {
       name: "a-textarea",
       rows: 3,
-      placeholder: "MIIBIjANBg...",
+      placeholder: "-----BEGIN CERTIFICATE-----",
     },
+    helper: "微信商户平台—>账户设置—>API安全—>验证商户身份—>商户API证书—>管理证书—>apiclient_cert.pem",
     required: true,
     encrypt: true,
   })
@@ -44,10 +45,11 @@ export class WxpayAccess extends BaseAccess {
   @AccessInput({
     title: "私钥",
     component: {
-      placeholder: "MIIEvQIBADANB...",
+      placeholder: "-----BEGIN PRIVATE KEY-----",
       name: "a-textarea",
       rows: 3,
     },
+    helper: "证书私钥 apiclient_key.pem",
     required: true,
     encrypt: true,
   })
