@@ -4,6 +4,25 @@
       <!--      <div class="login-title">登录</div>-->
       <template v-if="!isOauthOnly">
         <a-tabs v-model:active-key="formState.loginType" :tab-bar-style="{ textAlign: 'center', borderBottom: 'unset' }">
+          <a-tab-pane v-if="sysPublicSettings.smsLoginEnabled === true" key="sms" :tab="t('authentication.smsTab')">
+            <template v-if="formState.loginType === 'sms'">
+              <a-form-item has-feedback name="mobile" :rules="rules.mobile">
+                <a-input v-model:value="formState.mobile" :placeholder="t('authentication.mobilePlaceholder')" autocomplete="off">
+                  <template #prefix>
+                    <fs-icon icon="ion:phone-portrait-outline"></fs-icon>
+                  </template>
+                </a-input>
+              </a-form-item>
+
+              <a-form-item has-feedback name="smsCaptcha">
+                <CaptchaInput v-model:model-value="formState.smsCaptcha" @keydown.enter="handleFinish"></CaptchaInput>
+              </a-form-item>
+
+              <a-form-item name="smsCode" :rules="rules.smsCode">
+                <sms-code v-model:value="formState.smsCode" :captcha="formState.smsCaptcha" :mobile="formState.mobile" :phone-code="formState.phoneCode" @error="formState.smsCaptcha = null" />
+              </a-form-item>
+            </template>
+          </a-tab-pane>
           <a-tab-pane key="password" :tab="t('authentication.passwordTab')" :disabled="sysPublicSettings.passwordLoginEnabled !== true">
             <template v-if="formState.loginType === 'password'">
               <!--      <div class="login-title">登录</div>-->
@@ -24,25 +43,6 @@
 
               <a-form-item v-if="settingStore.sysPublic.captchaEnabled" has-feedback required name="captcha" :rules="rules.captcha">
                 <CaptchaInput v-model:model-value="formState.captcha" @keydown.enter="handleFinish"></CaptchaInput>
-              </a-form-item>
-            </template>
-          </a-tab-pane>
-          <a-tab-pane v-if="sysPublicSettings.smsLoginEnabled === true" key="sms" :tab="t('authentication.smsTab')">
-            <template v-if="formState.loginType === 'sms'">
-              <a-form-item has-feedback name="mobile" :rules="rules.mobile">
-                <a-input v-model:value="formState.mobile" :placeholder="t('authentication.mobilePlaceholder')" autocomplete="off">
-                  <template #prefix>
-                    <fs-icon icon="ion:phone-portrait-outline"></fs-icon>
-                  </template>
-                </a-input>
-              </a-form-item>
-
-              <a-form-item has-feedback name="smsCaptcha">
-                <CaptchaInput v-model:model-value="formState.smsCaptcha" @keydown.enter="handleFinish"></CaptchaInput>
-              </a-form-item>
-
-              <a-form-item name="smsCode" :rules="rules.smsCode">
-                <sms-code v-model:value="formState.smsCode" :captcha="formState.smsCaptcha" :mobile="formState.mobile" :phone-code="formState.phoneCode" @error="formState.smsCaptcha = null" />
               </a-form-item>
             </template>
           </a-tab-pane>
@@ -125,7 +125,7 @@ export default defineComponent({
       phoneCode: "86",
       mobile: "",
       password: "",
-      loginType: urlLoginType || "password", //password
+      loginType: urlLoginType || settingStore.sysPublic.smsLoginEnabled ? "sms" : "password", //password
       smsCode: "",
       captcha: null,
       smsCaptcha: null,
@@ -229,7 +229,7 @@ export default defineComponent({
     const sysPublicSettings = settingStore.getSysPublic;
 
     function hasRegisterTypeEnabled() {
-      return sysPublicSettings.registerEnabled && (sysPublicSettings.usernameRegisterEnabled || sysPublicSettings.emailRegisterEnabled);
+      return sysPublicSettings.registerEnabled && (sysPublicSettings.usernameRegisterEnabled || sysPublicSettings.emailRegisterEnabled || sysPublicSettings.mobileRegisterEnabled || sysPublicSettings.smsLoginEnabled);
     }
 
     const captchaInputRef = ref();

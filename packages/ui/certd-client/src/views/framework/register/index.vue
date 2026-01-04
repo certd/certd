@@ -2,7 +2,7 @@
   <div class="main">
     <a-form ref="formRef" class="user-layout-register" name="custom-validation" :model="formState" :rules="rules" v-bind="layout" :label-col="{ span: 6 }" @finish="handleFinish" @finish-failed="handleFinishFailed">
       <a-tabs v-model:active-key="registerType" @change="handleTabChange">
-        <a-tab-pane key="username" tab="用户名注册" :disabled="!settingsStore.sysPublic.usernameRegisterEnabled">
+        <a-tab-pane v-if="settingsStore.sysPublic.usernameRegisterEnabled !== false" key="username" tab="用户名注册">
           <template v-if="registerType === 'username'">
             <a-form-item required has-feedback name="username" label="用户名" :rules="rules.username">
               <a-input v-model:value="formState.username" placeholder="用户名" size="large" autocomplete="off">
@@ -71,10 +71,14 @@
           </template>
         </a-tab-pane>
 
-        <a-tab-pane v-if="settingsStore.sysPublic.smsLoginEnabled" key="mobile" tab="手机号注册"> </a-tab-pane>
+        <a-tab-pane v-if="settingsStore.sysPublic.smsLoginEnabled" key="mobile" tab="手机号注册">
+          <div class="p-20">
+            <a-button type="primary" html-type="button" class="login-button" @click="goLogin">前往手机号登录（登录即注册）</a-button>
+          </div>
+        </a-tab-pane>
       </a-tabs>
 
-      <a-form-item>
+      <a-form-item v-if="registerType !== 'mobile'">
         <a-button type="primary" size="large" html-type="submit" class="login-button">注册</a-button>
       </a-form-item>
 
@@ -99,14 +103,16 @@ export default defineComponent({
   setup() {
     const settingsStore = useSettingStore();
     const registerType = ref("email");
-    if (!settingsStore.sysPublic.emailRegisterEnabled) {
+    if (settingsStore.sysPublic.emailRegisterEnabled) {
+      registerType.value = "email";
+    } else if (settingsStore.sysPublic.usernameRegisterEnabled) {
       registerType.value = "username";
-      if (!settingsStore.sysPublic.usernameRegisterEnabled) {
-        registerType.value = "";
-        notification.error({
-          message: "没有启用任何一种注册方式",
-        });
-      }
+    } else if (settingsStore.sysPublic.smsLoginEnabled) {
+      registerType.value = "mobile";
+    } else {
+      notification.error({
+        message: "没有启用任何一种注册方式",
+      });
     }
     const userStore = useUserStore();
     const formRef = ref();
@@ -223,9 +229,12 @@ export default defineComponent({
     };
 
     const router = useRouter();
+    const goLogin = () => {
+      router.replace({ path: "/login", query: { loginType: "sms" } });
+    };
     const handleTabChange = (key: string) => {
       if (key === "mobile") {
-        router.push({ path: "/login", query: { loginType: "sms" } });
+        goLogin();
       }
     };
 
@@ -240,6 +249,7 @@ export default defineComponent({
       registerType,
       settingsStore,
       handleTabChange,
+      goLogin,
     };
   },
 });

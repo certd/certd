@@ -62,7 +62,7 @@ export default {
   forgotAdminPassword: "忘记管理员密码？",
   registerLink: "注册",
 
-  smsTab: "手机号注册登录",
+  smsTab: "手机号登录/注册",
   passwordTab: "密码登录",
 
   title: "修改密码",
