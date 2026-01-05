@@ -1,13 +1,14 @@
 import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { ZenlayerAccess } from "../access.js";
 
 @IsTaskPlugin({
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名
   name: "ZenlayerRefreshCert",
   title: "Zenlayer-刷新证书",
-  desc: "将证书部署到Zenlayer CDN",
-  icon: "svg:icon-zenlayer",
+  desc: "刷新Zenlayer CDN证书",
+  icon: "svg:icon-lucky",
   //插件分组
   group: pluginGroups.cdn.key,
   needPlus: false,
@@ -30,7 +31,7 @@ export class ZenlayerRefreshCert extends AbstractTaskPlugin {
     }
     // required: true, // 必填
   })
-  cert!: CertInfo | { type: string, id: number, name: string };
+  cert!: CertInfo;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
@@ -63,43 +64,73 @@ export class ZenlayerRefreshCert extends AbstractTaskPlugin {
 
   //插件执行方法
   async execute(): Promise<void> {
-    // const access = await this.getAccess<ZenlayerAccess>(this.accessId);
+    const access = await this.getAccess<ZenlayerAccess>(this.accessId);
+
+    for (const certId of this.certList) {
+      await this.updateCert({
+        access: access,
+        certId: certId,
+        cert: this.cert
+      });
+      this.logger.info(`刷新证书${certId}成功`);
+      await this.ctx.utils.sleep(1000);
+    }
+
     this.logger.info("部署完成");
   }
+
+  async updateCert(req:{access:ZenlayerAccess,certId:string, cert: CertInfo}){
+    const {access,certId, cert} = req;
+    // ModifyCertificate
+    await access.doRequest({
+      url: "/api/v2/cdn",
+      action: "ModifyCertificate",
+      data: {
+        /**
+         * certificateId
+certificateContent
+certificateKey
+          */
+        certificateId: certId,
+        certificateContent: cert.crt,
+        certificateKey: cert.key,
+      }
+    });
+  }
   async onGetCertList(req: PageSearch = {}) {
-    // const access = await this.getAccess<ZenlayerAccess>(this.accessId);
+    const access = await this.getAccess<ZenlayerAccess>(this.accessId);
 
-    // const pageNo = req.pageNo ?? 1;
-    // const pageSize = req.pageSize ?? 100;
-    // const res = await access.GetCertList(
-    //   {
-    //     PageNo: pageNo,
-    //     PageSize: pageSize
-    //   }
-    // );
-    // const total = res.TotalCount;
-    // const list = res.DomainInfoList || [];
-    // if (!list || list.length === 0) {
-    //   throw new Error("没有找到CDN域名，请先在控制台创建CDN域名");
-    // }
+    const pageNo = req.pageNo ?? 1;
+    const pageSize = req.pageSize ?? 100;
+    const res = await access.getCertList(
+      {
+        pageNo: pageNo,
+        pageSize: pageSize
+      }
+    );
+    const total = res.totalCount;
+    const list = res.dataSet || [];
+    if (!list || list.length === 0) {
+      throw new Error("没有找到Zenlayer证书，请先在控制台CDN证书管理创建证书");
+    }
 
-    // /**
-    //  *  "Domain": "ucloud.certd.handsfree.work",
-    //   "DomainId": "ucdn-1kwdtph5ygbb"
-    //  */
-    // const options = list.map((item: any) => {
-    //   return {
-    //     label: `${item.Domain}<${item.DomainId}>`,
-    //     value: `${item.Domain}`,
-    //     domain: item.Domain
-    //   };
-    // });
-    // return {
-    //   list: this.ctx.utils.options.buildGroupOptions(options, this.certDomains),
-    //   total: total,
-    //   pageNo: pageNo,
-    //   pageSize: pageSize
-    // };
+    /**
+     *  "Domain": "ucloud.certd.handsfree.work",
+      "DomainId": "ucdn-1kwdtph5ygbb"
+     */
+    const options = list.map((item: any) => {
+      return {
+        label: `${item.certificateLabel}<${item.certificateId}-${item.common}>`,
+        value: `${item.certificateId}`,
+        domain: item.sans
+      };
+    });
+    return {
+      list: this.ctx.utils.options.buildGroupOptions(options, this.certDomains),
+      total: total,
+      pageNo: pageNo,
+      pageSize: pageSize
+    };
   }
 
 }
