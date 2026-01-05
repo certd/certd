@@ -1,0 +1,27 @@
+name: zenlayer
+title: Zenlayer授权
+icon: svg:icon-lucky
+desc: Zenlayer授权
+input:
+  accessKeyId:
+    title: AccessKeyId
+    component:
+      placeholder: 访问密钥ID
+    helper: '[访问密钥管理](https://console.zenlayer.com/accessKey)获取'
+    required: true
+    encrypt: false
+  accessKeyPassword:
+    title: AccessKey Password
+    component:
+      placeholder: 访问密钥密码
+    required: true
+    encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+pluginType: access
+type: builtIn
+scriptFilePath: /plugins/plugin-zenlayer/access.js

@@ -67,8 +67,9 @@
 | 63.| **猫云授权** |  | 
 | 64.| **EAB授权** | ZeroSSL证书申请需要EAB授权 | 
 | 65.| **google cloud** | 谷歌云授权 | 
-| 66.| **雨云授权** | https://app.rainyun.com/ | 
-| 67.| **GoEdge授权** |  | 
+| 66.| **Zenlayer授权** | Zenlayer授权 | 
+| 67.| **雨云授权** | https://app.rainyun.com/ | 
+| 68.| **GoEdge授权** |  | 
 
 <style module>
 table th:first-of-type {
