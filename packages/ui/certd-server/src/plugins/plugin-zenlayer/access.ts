@@ -316,7 +316,7 @@ Signature
 
     const StringToSign = `${signMethod}\n${timestamp}\n${this.accessKeyId}\n${CanonicalRequest}`;
 
-    const signature = this.ctx.utils.hash.hmacSha256(StringToSign, "hex");
+    const signature = this.ctx.utils.hash.hmacSha256WithKey(this.accessKeyPassword, StringToSign, "hex");
 
     const authorization = `${signMethod} Credential=${this.accessKeyId}, SignedHeaders=${SignedHeaders}, Signature=${signature}`;
 

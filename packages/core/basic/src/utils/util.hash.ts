@@ -11,6 +11,10 @@ function hmacSha256(data: string, digest: BinaryToTextEncoding = "base64") {
   return crypto.createHmac("sha256", data).update(Buffer.alloc(0)).digest(digest);
 }
 
+function hmacSha256WithKey(key: string, data: string, digest: BinaryToTextEncoding = "base64") {
+  return crypto.createHmac("sha256", key).update(data).digest(digest);
+}
+
 function base64(data: string) {
   return Buffer.from(data).toString("base64");
 }
@@ -39,4 +43,5 @@ export const hashUtils = {
   toHex,
   hexToStr,
   hexToNumber,
+  hmacSha256WithKey,
 };
