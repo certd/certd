@@ -55,7 +55,7 @@ async function handleOauthToken() {
     //需要绑定
     bindCode.value = res.validationCode;
     //如果开启了自动注册，默认自动注册账号
-    if (settingStore.sysPublic.registerEnabled) {
+    if (settingStore.sysPublic.oauthAutoRegister) {
       autoRegister();
     } else {
       bindRequired.value = true;

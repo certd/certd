@@ -620,6 +620,7 @@ export default {
   proFeature: "专业版功能",
   emailServerSetup: "设置邮箱服务器",
   enableSmsLoginRegister: "开启手机号登录、注册",
+  defaultLoginType: "默认登录方式",
   commFeature: "商业版功能",
   smsProvider: "短信提供商",
   aliyunSms: "阿里云短信",

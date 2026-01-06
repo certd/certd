@@ -53,6 +53,10 @@ export default {
     alignLeft: "Align Left",
     alignRight: "Align Right",
   },
+  loginType: {
+    password: "Password Login",
+    sms: "Mobile Login",
+  },
   usernamePlaceholder: "Please enter username/email/phone number",
   passwordPlaceholder: "Please enter your password",
   mobilePlaceholder: "Please enter your mobile number",

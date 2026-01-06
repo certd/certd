@@ -788,9 +788,6 @@ importers:
       '@certd/pipeline':
         specifier: ^1.37.17
         version: link:../../core/pipeline
-      '@certd/plugin-plus':
-        specifier: ^1.37.17
-        version: link:../plugin-plus
       '@certd/plus-core':
         specifier: ^1.37.17
         version: link:../plus-core
@@ -806,18 +803,12 @@ importers:
       '@midwayjs/typeorm':
         specifier: 3.20.11
         version: 3.20.11
-      alipay-sdk:
-        specifier: ^4.13.0
-        version: 4.14.0
       dayjs:
         specifier: ^1.11.7
         version: 1.11.13
       typeorm:
         specifier: ^0.3.20
         version: 0.3.24(better-sqlite3@11.10.0)(mysql2@3.14.1)(pg@8.16.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.100)(typescript@5.8.3))
-      wechatpay-node-v3:
-        specifier: ^2.2.1
-        version: 2.2.1
     devDependencies:
       '@rollup/plugin-json':
         specifier: ^6.0.0
@@ -861,130 +852,6 @@ importers:
       rollup-plugin-visualizer:
         specifier: ^5.8.2
         version: 5.14.0(rollup@3.29.5)
-      tslib:
-        specifier: ^2.8.1
-        version: 2.8.1
-      typescript:
-        specifier: ^5.4.2
-        version: 5.8.3
-
-  packages/pro/plugin-plus:
-    dependencies:
-      '@alicloud/pop-core':
-        specifier: ^1.7.10
-        version: 1.8.0
-      '@baiducloud/sdk':
-        specifier: ^1.0.2
-        version: 1.0.3
-      '@certd/basic':
-        specifier: ^1.37.17
-        version: link:../../core/basic
-      '@certd/lib-k8s':
-        specifier: ^1.37.17
-        version: link:../../libs/lib-k8s
-      '@certd/pipeline':
-        specifier: ^1.37.17
-        version: link:../../core/pipeline
-      '@certd/plugin-cert':
-        specifier: ^1.37.17
-        version: link:../../plugins/plugin-cert
-      '@certd/plugin-lib':
-        specifier: ^1.37.17
-        version: link:../../plugins/plugin-lib
-      '@certd/plus-core':
-        specifier: ^1.37.17
-        version: link:../plus-core
-      ali-oss:
-        specifier: ^6.21.0
-        version: 6.23.0
-      baidu-aip-sdk:
-        specifier: ^4.16.16
-        version: 4.16.16
-      basic-ftp:
-        specifier: ^5.0.5
-        version: 5.0.5
-      cos-nodejs-sdk-v5:
-        specifier: ^2.14.6
-        version: 2.14.7
-      crypto-js:
-        specifier: ^4.2.0
-        version: 4.2.0
-      dayjs:
-        specifier: ^1.11.7
-        version: 1.11.13
-      form-data:
-        specifier: ^4.0.0
-        version: 4.0.2
-      https-proxy-agent:
-        specifier: ^7.0.5
-        version: 7.0.6
-      js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.0
-      jsencrypt:
-        specifier: ^3.3.2
-        version: 3.3.2
-      jsrsasign:
-        specifier: ^11.1.0
-        version: 11.1.0
-      qiniu:
-        specifier: ^7.12.0
-        version: 7.14.0
-      tencentcloud-sdk-nodejs:
-        specifier: ^4.0.44
-        version: 4.1.112(encoding@0.1.13)
-    devDependencies:
-      '@rollup/plugin-json':
-        specifier: ^6.0.0
-        version: 6.1.0(rollup@3.29.5)
-      '@rollup/plugin-terser':
-        specifier: ^0.4.3
-        version: 0.4.4(rollup@3.29.5)
-      '@rollup/plugin-typescript':
-        specifier: ^11.0.0
-        version: 11.1.6(rollup@3.29.5)(tslib@2.8.1)(typescript@5.8.3)
-      '@types/ali-oss':
-        specifier: ^6.16.11
-        version: 6.16.11
-      '@types/chai':
-        specifier: ^4.3.10
-        version: 4.3.20
-      '@types/mocha':
-        specifier: ^10.0.7
-        version: 10.0.10
-      '@types/node':
-        specifier: ^18
-        version: 18.19.100
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^8.26.1
-        version: 8.32.1(@typescript-eslint/parser@8.32.1(eslint@8.57.0)(typescript@5.8.3))(eslint@8.57.0)(typescript@5.8.3)
-      '@typescript-eslint/parser':
-        specifier: ^8.26.1
-        version: 8.32.1(eslint@8.57.0)(typescript@5.8.3)
-      chai:
-        specifier: 4.3.10
-        version: 4.3.10
-      eslint:
-        specifier: ^8.41.0
-        version: 8.57.0
-      eslint-config-prettier:
-        specifier: ^8.8.0
-        version: 8.10.0(eslint@8.57.0)
-      eslint-plugin-prettier:
-        specifier: ^4.2.1
-        version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.8.2
-      prettier:
-        specifier: ^2.8.8
-        version: 2.8.8
-      rimraf:
-        specifier: ^5.0.5
-        version: 5.0.10
-      rollup:
-        specifier: ^3.7.4
-        version: 3.29.5
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
@@ -1520,7 +1387,7 @@ importers:
         version: link:../../plugins/plugin-lib
       '@certd/plugin-plus':
         specifier: ^1.37.17
-        version: link:../../pro/plugin-plus
+        version: 1.37.17(encoding@0.1.13)
       '@certd/plus-core':
         specifier: ^1.37.17
         version: link:../../pro/plus-core
@@ -1581,6 +1448,9 @@ importers:
       ali-oss:
         specifier: ^6.21.0
         version: 6.23.0
+      alipay-sdk:
+        specifier: ^4.13.0
+        version: 4.14.0
       axios:
         specifier: ^1.9.0
         version: 1.9.0(debug@4.4.1)
@@ -1731,6 +1601,9 @@ importers:
       uuid:
         specifier: ^10.0.0
         version: 10.0.0
+      wechatpay-node-v3:
+        specifier: ^2.2.1
+        version: 2.2.1
       xml2js:
         specifier: ^0.6.2
         version: 0.6.2
@@ -2887,6 +2760,9 @@ packages:
 
   '@certd/cv4pve-api-javascript@8.4.2':
     resolution: {integrity: sha512-udGce7ewrVl4DmZvX+17PjsnqsdDIHEDatr8QP0AVrY2p+8JkaSPW4mXCKiLGf82C9K2+GXgT+qNIqgW7tfF9Q==}
+
+  '@certd/plugin-plus@1.37.17':
+    resolution: {integrity: sha512-yIBCdHc+vdOQa9cMRRKHvyLgVCQvwqYzCzOFzODEWL7zZ3e6T3YLueG49vqyr0dyEEcY/JXfqT4vDo+r3Zs1zw==}
 
   '@certd/vue-js-cron-core@6.0.3':
     resolution: {integrity: sha512-kqzoAMhYz9j6FGNWEODRYtt4NpUEUwjpkU89z5WVg2tCtOcI5VhwyUGOd8AxiBCRfd6PtXvzuqw85PaOps9wrQ==}
@@ -15444,6 +15320,34 @@ snapshots:
     dependencies:
       debug: 4.4.1(supports-color@8.1.1)
     transitivePeerDependencies:
+      - supports-color
+
+  '@certd/plugin-plus@1.37.17(encoding@0.1.13)':
+    dependencies:
+      '@alicloud/pop-core': 1.8.0
+      '@baiducloud/sdk': 1.0.3
+      '@certd/basic': link:packages/core/basic
+      '@certd/lib-k8s': link:packages/libs/lib-k8s
+      '@certd/pipeline': link:packages/core/pipeline
+      '@certd/plugin-cert': link:packages/plugins/plugin-cert
+      '@certd/plugin-lib': link:packages/plugins/plugin-lib
+      '@certd/plus-core': link:packages/pro/plus-core
+      ali-oss: 6.23.0
+      baidu-aip-sdk: 4.16.16
+      basic-ftp: 5.0.5
+      cos-nodejs-sdk-v5: 2.14.7
+      crypto-js: 4.2.0
+      dayjs: 1.11.13
+      form-data: 4.0.2
+      https-proxy-agent: 7.0.6
+      js-yaml: 4.1.0
+      jsencrypt: 3.3.2
+      jsrsasign: 11.1.0
+      qiniu: 7.14.0
+      tencentcloud-sdk-nodejs: 4.1.112(encoding@0.1.13)
+    transitivePeerDependencies:
+      - encoding
+      - proxy-agent
       - supports-color
 
   '@certd/vue-js-cron-core@6.0.3':
