@@ -163,3 +163,11 @@ export async function ReadCertDetail(crt: string): Promise<any> {
     data: { crt },
   });
 }
+
+export async function ToggleDisabled(req: { id: number; disabled: boolean }) {
+  return await request({
+    url: apiPrefix + "/disabled",
+    method: "post",
+    data: req,
+  });
+}

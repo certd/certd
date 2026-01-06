@@ -171,9 +171,14 @@ export class PipelineService extends BaseService<PipelineEntity> {
       return;
     }
     const info = await this.info(pipelineId);
-    if (info && !info.disabled) {
+    if (!info) {
+      return;
+    }
+    if (!info.disabled) {
       const pipeline = JSON.parse(info.content);
       this.registerTriggers(pipeline, false);
+    }else {
+      this.unregisterTriggers(info);
     }
   }
 
@@ -186,6 +191,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       this.registerTriggers(pipeline, false);
     }
   }
+
+
 
   /**
    * 获取详情
@@ -256,7 +263,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
    * @param pipeline
    */
   async doUpdatePipelineJson(bean: PipelineEntity, pipeline: Pipeline) {
-    await this.clearTriggers(bean);
+    await this.unregisterTriggers(bean);
     if (pipeline.title) {
       bean.title = pipeline.title;
     }
@@ -347,7 +354,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
   async stopOtherUserPipeline(userId: number) {
     await this.foreachPipeline(async entity => {
       if (entity.userId !== userId) {
-        await this.clearTriggers(entity.id);
+        await this.unregisterTriggers(entity.id);
       }
     });
   }
@@ -389,6 +396,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
+
+
   async trigger(id: any, stepId?: string, doCheck = false) {
     const entity: PipelineEntity = await this.info(id);
     if (doCheck) {
@@ -425,7 +434,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   //@ts-ignore
   async delete(id: any) {
-    await this.clearTriggers(id);
+    await this.unregisterTriggers(id);
     //TODO 删除storage
     // const storage = new DbStorage(pipeline.userId, this.storageService);
     // await storage.remove(pipeline.id);
@@ -435,7 +444,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     await this.certInfoService.deleteByPipelineId(id);
   }
 
-  async clearTriggers(id: number | PipelineEntity) {
+  async unregisterTriggers(id: number | PipelineEntity) {
     if (id == null) {
       return;
     }
@@ -526,6 +535,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
    */
   async run(id: number, triggerId: string, stepId?: string) {
     const entity: PipelineEntity = await this.info(id);
+    if (!entity) {
+      logger.error(`流水线${id}不存在`);
+      return;
+    }
     await this.doRun(entity, triggerId, stepId);
   }
 
@@ -571,8 +584,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
       return;
     }
 
-    if (triggerType === "timer") {
+    if (triggerType !== "user") {
       if (entity.disabled) {
+        logger.info(`流水线${entity.id}已禁用，不予执行`);
         return;
       }
     }
@@ -1087,5 +1101,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
       }
     });
     return res?.userId;
+  }
+
+  async disabled(id: number, disabled: boolean) {
+    await this.repository.update(id, { disabled });
+    await this.registerTriggerById(id);
   }
 }

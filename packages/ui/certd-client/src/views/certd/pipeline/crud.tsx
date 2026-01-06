@@ -484,9 +484,9 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
               vModel: "checked",
             },
             async valueChange({ row, key, value }) {
-              return await api.UpdateObj({
+              return await api.ToggleDisabled({
                 id: row.id,
-                disabled: row[key],
+                disabled: value,
               });
             },
           },
