@@ -8,7 +8,7 @@ import { CertApplyPluginNames} from '@certd/plugin-cert';
   title: '主机-部署证书到SSH主机',
   icon: 'line-md:uploading-loop',
   group: pluginGroups.host.key,
-  desc: 'SFTP上传证书到主机，然后SSH执行部署脚本命令',
+  desc: '上传证书到主机覆盖原来的证书文件，然后自动执行部署脚本命令使证书生效',
   order: 1,
   default: {
     strategy: {
@@ -30,11 +30,11 @@ export class UploadCertToHostPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: '证书格式',
-    helper: '要部署的证书格式，支持pem、pfx、der、jks',
+    helper: '要部署的证书格式，支持pem/crt、pfx、der、jks、p7b\n你原来的证书是哪种格式就选择哪种',
     component: {
       name: 'a-select',
       options: [
-        { value: 'pem', label: 'pem（crt），Nginx等大部分应用' },
+        { value: 'pem', label: 'pem/crt，用于Nginx等大部分应用，证书和私钥2个文件' },
         { value: 'pfx', label: 'pfx，一般用于IIS' },
         { value: 'der', label: 'der，一般用于Apache' },
         { value: 'jks', label: 'jks，一般用于JAVA应用' },
