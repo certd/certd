@@ -47,8 +47,9 @@ class ColumnSizeSaver {
     LocalStorage.remove(saveKey);
   }
 }
-const columnSizeSaver = new ColumnSizeSaver();
+const columnSizeSaver = new ColumnSizeSaver("columnSize");
 const tableSortSaver = new ColumnSizeSaver("tableSorter");
+const tableSaver = new ColumnSizeSaver("table");
 
 function install(app: App, options: any = {}) {
   app.use(UiAntdv);
@@ -94,6 +95,13 @@ function install(app: App, options: any = {}) {
               bindings.table.sort = oldSorter;
             }
           },
+        },
+        pagination: {
+          _onPageSizeChange(req: any) {
+            const { pageSize } = req;
+            tableSaver.save("pageSize", pageSize);
+          },
+          pageSize: tableSaver.get("pageSize") || 20,
         },
         table: {
           scroll: {
