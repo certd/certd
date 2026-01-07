@@ -71,7 +71,7 @@
             </div>
           </template>
         </a-alert>
-        <a-alert type="warning" show-icon>
+        <a-alert v-if="settingStore.sysPublic.notice" type="warning" show-icon>
           <template #message>
             {{ settingStore.sysPublic.notice }}
           </template>

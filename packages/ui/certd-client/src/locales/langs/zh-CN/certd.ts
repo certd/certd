@@ -811,9 +811,9 @@ export default {
 
         templateProviderSelectorPlaceholder: "未配置",
       },
-      notice: "系统通知",
-      noticeHelper: "系统通知，将在顶部显示",
-      noticePlaceholder: "系统通知",
+      notice: "系统公告",
+      noticeHelper: "系统公告，将在首页显示",
+      noticePlaceholder: "系统公告",
     },
   },
   modal: {
