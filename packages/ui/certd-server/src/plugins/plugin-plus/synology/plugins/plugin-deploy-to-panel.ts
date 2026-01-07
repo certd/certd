@@ -1,11 +1,9 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
-import { CertInfo, CertReader } from "@certd/plugin-cert";
+import { CertInfo } from "@certd/plugin-lib";
 import { AbstractPlusTaskPlugin } from "@certd/plugin-lib";
-import { SynologyClient } from "../client.js";
-import fs from "fs";
-import FormData from "form-data";
+import { SynologyClient } from "@certd/plugin-plus";
 import { SynologyAccess } from "../access.js";
-import { CertApplyPluginNames } from "@certd/plugin-cert";
+import { CertApplyPluginNames } from "@certd/plugin-lib";
 @IsTaskPlugin({
   name: "SynologyDeployToPanel",
   title: "群晖-部署证书到群晖面板",
@@ -74,66 +72,16 @@ export class SynologyDeployToPanel extends AbstractPlusTaskPlugin {
         throw new Error(`未找到证书: ${this.certName}`);
       }
       this.logger.info(`找到证书: ${certItem.id}`);
-      await this.updateCertToPanel(client, certItem);
+      await client.updateCertToPanel(certItem,this.cert);
     } else {
       this.logger.info("开始更新全部证书");
       for (const item of certListRes.certificates) {
         this.logger.info(`更新证书: ${item.id}`);
-        await this.updateCertToPanel(client, item);
+        await client.updateCertToPanel(item,this.cert);
       }
     }
   }
 
-  async updateCertToPanel(client: SynologyClient, certItem: any) {
-    /**
-     * query
-     *  api: SYNO.Core.Certificate
-     *     method: import
-     *       version: 1
-     *     SynoToken: Bvum9p7BNeSc6
-     *
-     * key: （二进制）
-     * cert: （二进制）
-     * inter_cert: （二进制）
-     * id: yxTtcC
-     * desc: certd
-     * as_default:
-     */
-    this.logger.info(`更新证书:${certItem.id}`);
-    const certReader = new CertReader(this.cert);
-
-    return certReader.readCertFile({
-      logger: this.logger,
-      handle: async (ctx) => {
-        const form = new FormData();
-        const { tmpCrtPath, tmpKeyPath, tmpIcPath } = ctx;
-        this.logger.info(`上传证书:${tmpCrtPath},${tmpKeyPath}`);
-        form.append("key", fs.createReadStream(tmpKeyPath));
-        form.append("cert", fs.createReadStream(tmpCrtPath));
-        if (certReader.cert.ic) {
-          this.logger.info(`包含中间证书:${tmpIcPath}`);
-          form.append("inter_cert", fs.createReadStream(tmpIcPath));
-        }
-        form.append("id", certItem.id);
-        form.append("desc", certItem.desc);
-        // form传输必须是string，bool要改成string
-        // form.append("as_default", certItem.is_default + "");
-
-        console.log(JSON.stringify(form.getHeaders()));
-        return await client.doRequest({
-          method: "POST",
-          apiParams: {
-            api: "SYNO.Core.Certificate",
-            version: 1,
-            method: "import",
-          },
-          data: form,
-          headers: {
-            ...form.getHeaders(),
-          },
-        });
-      },
-    });
-  }
+  
 }
 new SynologyDeployToPanel();
