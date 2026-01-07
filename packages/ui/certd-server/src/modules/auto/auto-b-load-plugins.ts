@@ -18,10 +18,12 @@ export class AutoBLoadPlugins {
     }else{
       // await import("../../plugins/index.js")
       const fs = await import("fs");
-      const list = fs.readdirSync("../../plugins");
+      const list = fs.readdirSync("./dist/plugins");
+      console.log("list", list);
       for (const file of list) {
-        if (file.endsWith("index.js")) {
-          await import(`../../plugins/${file}`);
+        if (!file.includes(".")){
+          logger.info(`加载插件文件:${file}`);
+          await import(`../../plugins/${file}/index.js`);
         }
       }
     }
