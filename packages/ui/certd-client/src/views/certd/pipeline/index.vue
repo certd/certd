@@ -3,6 +3,11 @@
     <template #header>
       <div class="title">{{ t("certd.myPipelines") }}</div>
     </template>
+    <a-alert v-if="settingStore.sysPublic.notice" type="warning" show-icon>
+      <template #message>
+        {{ settingStore.sysPublic.notice }}
+      </template>
+    </a-alert>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <div v-if="selectedRowKeys.length > 0" class="batch-actions">
         <div class="batch-actions-inner">

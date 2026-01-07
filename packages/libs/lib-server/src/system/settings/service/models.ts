@@ -62,6 +62,7 @@ export class SysPublicSettings extends BaseSettings {
     addonId: number;
   }> = {};
 
+  notice?: string;
 }
 
 export class SysPrivateSettings extends BaseSettings {

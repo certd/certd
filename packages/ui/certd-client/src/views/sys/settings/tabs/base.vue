@@ -47,6 +47,11 @@
         <div class="helper" v-html="t('certd.commonCnameHelper')"></div>
       </a-form-item>
 
+      <a-form-item :label="t('certd.sys.setting.notice')" :name="['public', 'notice']">
+        <a-textarea v-model:value="formState.public.notice" :placeholder="t('certd.sys.setting.noticePlaceholder')" :rows="5" />
+        <div class="helper" v-html="t('certd.sys.setting.noticeHelper')"></div>
+      </a-form-item>
+
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
         <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
       </a-form-item>

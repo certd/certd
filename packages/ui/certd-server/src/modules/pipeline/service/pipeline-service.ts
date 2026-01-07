@@ -695,7 +695,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         triggerType = null;
       } else {
         logger.info(`timer trigger:${key}, ${found.title}, ${JSON.stringify(found.props)}`);
-        triggerType = "timer";
+        triggerType = found.type || "timer";
       }
     }
     return triggerType;

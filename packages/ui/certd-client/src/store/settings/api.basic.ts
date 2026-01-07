@@ -81,6 +81,8 @@ export type SysPublicSetting = {
       addonId: number;
     }
   >;
+  // 系统通知
+  notice?: string;
 };
 export type SuiteSetting = {
   enabled?: boolean;

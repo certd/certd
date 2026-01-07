@@ -801,6 +801,9 @@ export default {
 
         templateProviderSelectorPlaceholder: "Not Configured",
       },
+      notice: "System Notice",
+      noticeHelper: "System notice, will be displayed on the login page",
+      noticePlaceholder: "System notice",
     },
   },
   modal: {
