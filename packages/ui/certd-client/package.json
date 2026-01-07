@@ -29,8 +29,8 @@
   "dependencies": {
     "@ant-design/colors": "^7.0.2",
     "@ant-design/icons-vue": "^7.0.1",
-    "@aws-sdk/client-s3": "^3.535.0",
-    "@aws-sdk/s3-request-presigner": "^3.535.0",
+    "@aws-sdk/client-s3": "^3.964.0",
+    "@aws-sdk/s3-request-presigner": "^3.964.0",
     "@certd/vue-js-cron-light": "^4.0.14",
     "@ctrl/tinycolor": "^4.1.0",
     "@fast-crud/editor-code": "^1.27.8",
