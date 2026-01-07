@@ -1,3 +1,4 @@
+//@ts-ignore
 import { request } from "/src/api/service";
 // import "/src/mock";
 import { ColumnCompositionProps, CrudOptions, FastCrud, PageQuery, PageRes, setLogger, TransformResProps, useColumns, UseCrudProps, UserPageQuery, useTypes, utils, forEachTableColumns } from "@fast-crud/fast-crud";
@@ -322,6 +323,7 @@ function install(app: App, options: any = {}) {
   app.use(FsExtendsTime);
   app.use(FsExtendsCopyable);
   app.use(FsExtendsInput);
+  //@ts-ignore
   app.use(FsEditorCode);
 
   const { addTypes, getType } = useTypes();

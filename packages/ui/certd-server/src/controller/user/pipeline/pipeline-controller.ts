@@ -133,7 +133,8 @@ export class PipelineController extends CrudController<PipelineService> {
   async disabled(@Body(ALL) bean) {
     await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
     delete bean.userId;
-    return this.service.disabled(bean.id, bean.disabled);
+    await this.service.disabled(bean.id, bean.disabled);
+    return this.ok({});
   }
 
   @Post('/detail', { summary: Constants.per.authOnly })

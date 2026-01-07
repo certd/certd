@@ -2,6 +2,8 @@
 解决方法如下：
 
 ## 1. 修改环境变量
+
+docker部署的：
 修改docker-compose.yaml文件，将环境变量`certd_system_resetAdminPasswd`改为`true`
 ```yaml
 services:
@@ -9,6 +11,13 @@ services:
     environment: # 环境变量
       - certd_system_resetAdminPasswd=true
 ```
+
+源码部署的，修改`packages/ui/certd-server/.env`文件  
+
+```ini
+certd_system_resetAdminPasswd=true
+```
+
 ## 2. 重启容器
 ```shell
 docker compose up -d
