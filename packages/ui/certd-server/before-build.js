@@ -17,3 +17,5 @@ function slimming(filePath, find, rep) {
   });
 }
 slimming(filePath, find, rep);
+
+slimming("./tsconfig.json",`"sourceMap": true,`, `"sourceMap": false,`)

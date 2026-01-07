@@ -16,7 +16,14 @@ export class AutoBLoadPlugins {
     if (process.env.certd_plugin_loadmode === "metadata") {
       await this.pluginService.registerFromLocal("./metadata")
     }else{
-      await import("../../plugins/index.js")
+      // await import("../../plugins/index.js")
+      const fs = await import("fs");
+      const list = fs.readdirSync("../../plugins");
+      for (const file of list) {
+        if (file.endsWith("index.js")) {
+          await import(`../../plugins/${file}`);
+        }
+      }
     }
     // await import("../../plugins/index.js")
     await this.pluginService.registerFromDb()

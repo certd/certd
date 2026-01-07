@@ -1,47 +1,47 @@
-export * from './plugin-aliyun/index.js';
-export * from './plugin-tencent/index.js';
-export * from './plugin-host/index.js';
-export * from './plugin-huawei/index.js';
-export * from './plugin-demo/index.js';
-export * from './plugin-other/index.js';
-export * from './plugin-west/index.js';
-export * from './plugin-doge/index.js';
-export * from './plugin-qiniu/index.js';
-export * from './plugin-woai/index.js';
-export * from './plugin-cachefly/index.js';
-export * from './plugin-gcore/index.js';
-export * from './plugin-qnap/index.js';
-export * from './plugin-aws/index.js';
-export * from './plugin-aws-cn/index.js';
-export * from './plugin-dnsla/index.js';
-export * from './plugin-upyun/index.js';
-export * from './plugin-volcengine/index.js'
-export * from './plugin-jdcloud/index.js'
-export * from './plugin-51dns/index.js'
-export * from './plugin-notification/index.js'
-export * from './plugin-flex/index.js'
-export * from './plugin-farcdn/index.js'
-export * from './plugin-fnos/index.js'
-export * from './plugin-rainyun/index.js'
-export * from './plugin-cloudflare/index.js'
-export * from './plugin-github/index.js'
-export * from './plugin-namesilo/index.js'
-export * from './plugin-proxmox/index.js'
-export * from './plugin-wangsu/index.js'
-export * from './plugin-admin/index.js'
-export * from './plugin-ksyun/index.js'
-export * from './plugin-apisix/index.js'
-export * from './plugin-dokploy/index.js'
-export * from './plugin-godaddy/index.js'
-export * from './plugin-captcha/index.js'
-export * from './plugin-xinnet/index.js'
-export * from './plugin-xinnetconnet/index.js'
-export * from './plugin-oauth/index.js'
-export * from './plugin-cmcc/index.js'
-export * from './plugin-template/index.js'
-export * from './plugin-ucloud/index.js'
-export * from './plugin-goedge/index.js'
-export * from './plugin-lib/index.js'
-export * from './plugin-plus/index.js'
-export * from './plugin-cert/index.js'
-export * from './plugin-zenlayer/index.js'
+// export * from './plugin-aliyun/index.js';
+// export * from './plugin-tencent/index.js';
+// export * from './plugin-host/index.js';
+// export * from './plugin-huawei/index.js';
+// export * from './plugin-demo/index.js';
+// export * from './plugin-other/index.js';
+// export * from './plugin-west/index.js';
+// export * from './plugin-doge/index.js';
+// export * from './plugin-qiniu/index.js';
+// export * from './plugin-woai/index.js';
+// export * from './plugin-cachefly/index.js';
+// export * from './plugin-gcore/index.js';
+// export * from './plugin-qnap/index.js';
+// export * from './plugin-aws/index.js';
+// export * from './plugin-aws-cn/index.js';
+// export * from './plugin-dnsla/index.js';
+// export * from './plugin-upyun/index.js';
+// export * from './plugin-volcengine/index.js'
+// export * from './plugin-jdcloud/index.js'
+// export * from './plugin-51dns/index.js'
+// export * from './plugin-notification/index.js'
+// export * from './plugin-flex/index.js'
+// export * from './plugin-farcdn/index.js'
+// export * from './plugin-fnos/index.js'
+// export * from './plugin-rainyun/index.js'
+// export * from './plugin-cloudflare/index.js'
+// export * from './plugin-github/index.js'
+// export * from './plugin-namesilo/index.js'
+// export * from './plugin-proxmox/index.js'
+// export * from './plugin-wangsu/index.js'
+// export * from './plugin-admin/index.js'
+// export * from './plugin-ksyun/index.js'
+// export * from './plugin-apisix/index.js'
+// export * from './plugin-dokploy/index.js'
+// export * from './plugin-godaddy/index.js'
+// export * from './plugin-captcha/index.js'
+// export * from './plugin-xinnet/index.js'
+// export * from './plugin-xinnetconnet/index.js'
+// export * from './plugin-oauth/index.js'
+// export * from './plugin-cmcc/index.js'
+// export * from './plugin-template/index.js'
+// export * from './plugin-ucloud/index.js'
+// export * from './plugin-goedge/index.js'
+// export * from './plugin-lib/index.js'
+// export * from './plugin-plus/index.js'
+// export * from './plugin-cert/index.js'
+// export * from './plugin-zenlayer/index.js'

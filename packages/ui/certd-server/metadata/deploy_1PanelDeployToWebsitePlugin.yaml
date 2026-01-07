@@ -3,9 +3,9 @@ default:
   strategy:
     runStrategy: 1
 name: 1PanelDeployToWebsitePlugin
-title: 1Panel-部署证书到1Panel
+title: 1Panel-更新证书
 icon: svg:icon-onepanel
-desc: 更新1Panel的证书
+desc: 更新1Panel的证书，包括面板证书和站点证书
 group: panel
 needPlus: false
 input:
