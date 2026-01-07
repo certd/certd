@@ -56,19 +56,29 @@ echo "构建完成"
 
 
 echo "下载前端ui"
+front_zip="ui-$version.zip"
 # 如果zip有了就不下载
-if [ -f ./ui-$version.zip ]; then
-  echo "ui-$version.zip 已经存在，不需要下载"
+if [ -f ./$front_zip ]; then
+  echo "$front_zip 已经存在，不需要下载"
 else
-  echo "ui-$version.zip 不存在，开始下载"
+  echo "$front_zip 不存在，开始下载"
   # 下载之前清理一下
   rm -rf ui-*.zip
   # https://atomgit.com/certd/certd/releases/download/v1.37.16/ui-1.37.16.zip
   # 判断是否下载失败
-  wget https://atomgit.com/certd/certd/releases/download/v$version/ui-$version.zip
+  URL="https://atomgit.com/certd/certd/releases/download/v$version/ui-$version.zip"
+  if command -v wget &> /dev/null; then
+    wget -O "$front_zip" "$URL"
+  elif command -v curl &> /dev/null; then
+      curl -L -o "$front_zip" "$URL"
+  else
+      echo "错误：需要 wget 或 curl 来下载前端文件包，请先安装 wget 或 curl"
+      exit 1
+  fi
+
 fi
 # 覆盖解压缩
-unzip -o -q ui-$version.zip -d ./public
+unzip -o -q $front_zip -d ./public
 
 echo "启动服务"
 
