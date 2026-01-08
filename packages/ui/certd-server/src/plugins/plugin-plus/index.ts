@@ -19,3 +19,5 @@ export * from "./kuocai/index.js";
 export * from "./unicloud/index.js";
 export * from "./maoyun/index.js";
 export * from "./xinnet/index.js";
+export * from "./exsi/index.js";
+export * from "./openwrt/index.js";

@@ -1,0 +1,30 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: OpenwrtDeployCert
+title: Openwrt-部署证书到Openwrt
+icon: svg:icon-lucky
+group: host
+needPlus: true
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  accessId:
+    title: 主机SSH授权
+    component:
+      name: access-selector
+      type: ssh
+    required: true
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-plus/openwrt/plugin-deploy-to-openwrt.js

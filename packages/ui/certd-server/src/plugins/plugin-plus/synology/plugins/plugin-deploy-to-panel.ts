@@ -58,7 +58,7 @@ export class SynologyDeployToPanel extends AbstractPlusTaskPlugin {
   async onInstance() {}
   async execute(): Promise<void> {
     const access: SynologyAccess = await this.getAccess<SynologyAccess>(this.accessId);
-    const client = new SynologyClient(access, this.ctx.http, this.ctx.logger, access.skipSslVerify);
+    const client = new SynologyClient(access as any, this.ctx.http, this.ctx.logger, access.skipSslVerify);
     // await client.init();
     await client.doLogin();
     // const res = await client.getInfo();

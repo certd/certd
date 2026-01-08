@@ -1,5 +1,5 @@
 import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
-import { SynologyClient } from "./client.js";
+import { SynologyClient } from "@certd/plugin-plus";
 /**
  * 这个注解将注册一个授权配置
  * 在certd的后台管理系统中，用户可以选择添加此类型的授权
@@ -125,9 +125,8 @@ export class SynologyAccess extends BaseAccess {
   timeout = 120;
 
   onLoginWithOPTCode(data: { otpCode: string }) {
-    console.log("onLoginWithOPTCode", this);
     const ctx = this.ctx;
-    const client = new SynologyClient(this, ctx.http, ctx.logger, this.skipSslVerify);
+    const client = new SynologyClient(this as any, ctx.http, ctx.logger, this.skipSslVerify);
     return client.doLoginWithOTPCode(data.otpCode);
   }
 }
