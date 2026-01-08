@@ -1,7 +1,7 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { UniCloudAccess } from "../access.js";
-import { UniCloudClient } from "../client.js";
+import { UniCloudClient } from "@certd/plugin-plus";
 
 @IsTaskPlugin({
   name: "UniCloudDeployToSpace",
