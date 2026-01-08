@@ -651,14 +651,20 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         } as ColumnCompositionProps,
-        ipCount: {
-          title: t("certd.monitor.ipCount"),
-          search: {
-            show: false,
-          },
-          type: "text",
+        ipSyncAuto: {
+          title: t("certd.monitor.ipSyncAuto"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("common.enabled"), value: true, color: "green" },
+              { label: t("common.disabled"), value: false, color: "gray" },
+            ],
+          }),
           form: {
-            show: false,
+            value: true,
+            show: compute(({ form }) => {
+              return form.ipCheck;
+            }),
           },
           column: {
             width: 100,

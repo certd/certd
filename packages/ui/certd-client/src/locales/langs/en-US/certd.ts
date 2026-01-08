@@ -281,6 +281,7 @@ export default {
     lastCheckTime: "Last Check Time",
     disabled: "Enable/Disable",
     ipCheck: "Enable IP Check",
+    ipSyncAuto: "Enable IP Sync Auto",
     selectRequired: "Please select",
     ipCheckConfirm: "Are you sure to {status} IP check?",
     ipCount: "IP Count",

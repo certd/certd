@@ -46,8 +46,8 @@ export class SiteInfoEntity {
   @Column({ name: 'ip_check', comment: '是否检查IP' })
   ipCheck: boolean;
 
-  @Column({ name: 'ip_scan', comment: '是否自动获取IP' })
-  ipScan: boolean;
+  @Column({ name: 'ip_sync_auto', comment: '是否自动同步IP' })
+  ipSyncAuto: boolean;
 
   @Column({ name: 'ip_count', comment: 'ip数量' })
   ipCount: number

@@ -285,6 +285,7 @@ export default {
     lastCheckTime: "上次检查时间",
     disabled: "禁用启用",
     ipCheck: "开启IP检查",
+    ipSyncAuto: "自动同步IP",
     selectRequired: "请选择",
     ipCheckConfirm: "确定{status}IP检查？",
     ipCount: "IP数量",

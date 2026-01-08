@@ -237,7 +237,12 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         logger.error("send notify error", e);
       }
     };
-    await this.siteIpService.syncAndCheck(site, retryTimes,onFinished);
+    if (!site.ipSyncAuto) {
+      await this.siteIpService.checkAll(site, retryTimes,onFinished);
+    }else{
+      await this.siteIpService.syncAndCheck(site, retryTimes,onFinished);
+    }
+  
   }
 
   /**
