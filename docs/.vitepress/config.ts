@@ -81,7 +81,8 @@ export default defineConfig({
                             ]
                         },
                         {text: "演示教程", link: "/guide/tutorial.md"},
-                        {text: "版本升级", link: "/guide/install/upgrade.md"}
+                        {text: "版本升级", link: "/guide/install/upgrade.md"},
+                        {text: "赞助专业版", link: "/guide/donate/"},
                     ]
                 },
                 {
@@ -139,7 +140,6 @@ export default defineConfig({
                         {text: "更新日志", link: "/guide/changelogs/CHANGELOG.md"},
                         {text: "镜像说明", link: "/guide/image.md"},
                         {text: "联系我们", link: "/guide/contact/"},
-                        {text: "捐赠", link: "/guide/donate/"},
                         {text: "开源协议", link: "/guide/license/"},
                         {text: "我的其他开源项目", link: "/guide/link/"},
                     ]
