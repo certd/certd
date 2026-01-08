@@ -1,5 +1,5 @@
 import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
-import { XinnetClient } from "../plugin-plus/xinnet/client.js";
+import { XinnetClient } from "@certd/plugin-plus";
 
 /**
  * 这个注解将注册一个授权配置
