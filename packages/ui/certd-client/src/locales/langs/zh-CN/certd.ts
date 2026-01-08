@@ -352,6 +352,7 @@ export default {
   editSchedule: "修改定时",
   timerTrigger: "定时触发",
   schedule: "定时",
+  webhook: "Webhook",
   selectCron: "请选择定时Cron",
   batchEditSchedule: "批量修改定时",
   editTrigger: "编辑触发器",

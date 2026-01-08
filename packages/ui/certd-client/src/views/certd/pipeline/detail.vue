@@ -38,6 +38,8 @@ const pipelineOptions: PipelineOptions = {
         from: detail.pipeline.from,
       },
       validTime: detail.pipeline.validTime,
+      webhookKey: detail.pipeline.webhookKey,
+      id: detail.pipeline.id,
     } as PipelineDetail;
   },
 

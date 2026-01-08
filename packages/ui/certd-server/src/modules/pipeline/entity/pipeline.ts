@@ -33,6 +33,12 @@ export class PipelineEntity {
   @Column({ comment: '类型', nullable: true, default: 'cert' })
   type: string;
 
+  @Column({ name: 'webhook_key', comment: 'webhookkey', length: 100, nullable: true })
+  webhookKey: string;
+
+  @Column({ name: 'trigger_count', comment: '触发器数量', nullable: true, default: 0 })
+  triggerCount: number;
+
   // custom: 自定义; monitor: 监控;
   @Column({ comment: '来源', nullable: true, default: '' })
   from: string;

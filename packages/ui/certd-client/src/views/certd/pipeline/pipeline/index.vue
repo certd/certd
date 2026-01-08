@@ -28,10 +28,10 @@
               未设置触发源，不会自动执行
             </span>
           </a-tag>
-          <a-tag v-if="pipelineEntity.validTime > 0 && settingStore.sysPublic.pipelineValidTimeEnabled && settingStore.isPlus" :color="pipelineEntity.validTime > Date.now() ? 'green' : 'red'">
+          <a-tag v-if="pipelineDetail.validTime > 0 && settingStore.sysPublic.pipelineValidTimeEnabled && settingStore.isPlus" :color="pipelineDetail.validTime > Date.now() ? 'green' : 'red'">
             <span class="flex">
               <fs-icon icon="ion:time-outline"></fs-icon>
-              <span v-if="pipelineEntity.validTime > Date.now()"> 有效期：<FsTimeHumanize :model-value="pipelineEntity.validTime" :options="{ units: ['d'] }" format="YYYY-MM-DD"></FsTimeHumanize> </span>
+              <span v-if="pipelineDetail.validTime > Date.now()"> 有效期：<FsTimeHumanize :model-value="pipelineDetail.validTime" :options="{ units: ['d'] }" format="YYYY-MM-DD"></FsTimeHumanize> </span>
               <span v-else> 已过期 </span>
             </span>
           </a-tag>
@@ -76,7 +76,7 @@
                       </div>
                       <div class="task">
                         <a-button shape="round" @click="triggerEdit(trigger, index)">
-                          <fs-icon icon="ion:time"></fs-icon>
+                          <TriggerIcon class="mr-2" :trigger-type="trigger.type"></TriggerIcon>
                           {{ trigger.title }}
                         </a-button>
                       </div>
@@ -90,6 +90,17 @@
                         <a-button shape="round" type="dashed" @click="triggerAdd">
                           <fs-icon icon="ion:add-circle-outline"></fs-icon>
                           触发源（定时）
+                        </a-button>
+                      </div>
+                    </div>
+                    <div v-if="editMode" class="task-container is-add">
+                      <div class="line line-right">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" type="dashed" @click="triggerAdd('webhook')">
+                          <fs-icon icon="ion:add-circle-outline"></fs-icon>
+                          触发源（Webhook）
                         </a-button>
                       </div>
                     </div>
@@ -126,8 +137,8 @@
                             <a-popover title="步骤" :trigger="editMode ? 'none' : 'hover'">
                               <!--                          :open="true"-->
                               <template #content>
-                                <div v-for="(item, index) of task.steps" :key="item.id" class="flex-o w-100">
-                                  <span class="ellipsis flex-1 step-title" :class="{ disabled: item.disabled, deleted: item.disabled }"> {{ index + 1 }}. {{ item.title }} </span>
+                                <div v-for="(item, stepIndex) of task.steps" :key="item.id" class="flex-o w-100">
+                                  <span class="ellipsis flex-1 step-title" :class="{ disabled: item.disabled, deleted: item.disabled }"> {{ stepIndex + 1 }}. {{ item.title }} </span>
                                   <pi-status-show v-if="!editMode" :status="item.status?.result"></pi-status-show>
                                   <a-tooltip title="强制重新执行此步骤">
                                     <fs-icon v-if="!editMode" class="pointer color-blue ml-2" style="font-size: 16px" title="强制重新执行此步骤" icon="icon-park-outline:replay-music" @click="run(item.id)"></fs-icon>
@@ -310,6 +321,7 @@ import { usePluginStore } from "/@/store/plugin";
 import { getCronNextTimes } from "/@/components/cron-editor/utils";
 import { useCertViewer } from "/@/views/certd/pipeline/use";
 import { useI18n } from "/@/locales";
+import TriggerIcon from "./component/trigger-icon.vue";
 
 export default defineComponent({
   name: "PipelineEdit",
@@ -324,6 +336,7 @@ export default defineComponent({
     PiNotificationForm,
     VDraggable,
     TaskShortcuts,
+    TriggerIcon,
   },
   props: {
     pipelineId: {
@@ -351,7 +364,7 @@ export default defineComponent({
     //右侧选中的pipeline
     const currentPipeline: Ref<any> = ref({});
     const pipeline: Ref<any> = ref({});
-    const pipelineEntity: Ref<any> = ref({});
+    const pipelineDetail: Ref<any> = ref({});
     const histories: Ref<RunHistory[]> = ref([]);
 
     const currentHistory: Ref<any> = ref({});
@@ -400,7 +413,7 @@ export default defineComponent({
       currentPipeline.value = currentHistory.value.pipeline;
     };
 
-    async function loadHistoryList(reload = false, historyId: number) {
+    async function loadHistoryList(reload = false, historyId: number = null) {
       if (props.editMode) {
         return;
       }
@@ -499,7 +512,7 @@ export default defineComponent({
           return;
         }
         const detail: PipelineDetail = await props.options.getPipelineDetail({ pipelineId: value });
-        pipelineEntity.value = detail;
+        pipelineDetail.value = detail;
         currentPipeline.value = merge(
           {
             title: "新管道流程",
@@ -523,6 +536,7 @@ export default defineComponent({
     };
     fetchPlugins();
 
+    provide("pipelineDetail:get", () => pipelineDetail);
     provide("pipeline", pipeline);
     provide("getPluginGroups", () => {
       return pluginStore.group;
@@ -631,8 +645,8 @@ export default defineComponent({
 
     function useTrigger() {
       const triggerFormRef: Ref<any> = ref(null);
-      const triggerAdd = () => {
-        triggerFormRef.value.triggerAdd((type: string, value: any) => {
+      const triggerAdd = (triggerType = "timer") => {
+        triggerFormRef.value.triggerAdd(triggerType, (type: string, value: any) => {
           if (type === "save") {
             pipeline.value.triggers.push(value);
           }
@@ -988,7 +1002,7 @@ export default defineComponent({
       nextTriggerTimes,
       viewCert,
       downloadCert,
-      pipelineEntity,
+      pipelineDetail,
     };
   },
 });

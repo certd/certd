@@ -4,6 +4,7 @@
       <fs-icon v-bind="status" :color="status.iconColor || status.color" />
     </template>
     <p class="flex items-center">
+      <TriggerIcon class="mr-2" :trigger-type="runnable.triggerType"></TriggerIcon>
       <fs-date-format :model-value="runnable.createTime"></fs-date-format>
       <a-tag class="ml-5" :color="status.color" :closable="status.value === 'start'" @close="cancelTask">
         {{ status.label }}
@@ -19,8 +20,12 @@ import { defineComponent, ref, provide, Ref, watch, computed } from "vue";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import * as api from "../../api";
 import { Modal, notification } from "ant-design-vue";
+import TriggerIcon from "./trigger-icon.vue";
 export default defineComponent({
   name: "PiHistoryTimelineItem",
+  components: {
+    TriggerIcon,
+  },
   props: {
     runnable: {
       type: Object,
@@ -69,6 +74,7 @@ export default defineComponent({
         },
       });
     }
+
     return {
       status,
       cancel,

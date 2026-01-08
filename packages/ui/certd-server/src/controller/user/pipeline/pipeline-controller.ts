@@ -35,18 +35,18 @@ export class PipelineController extends CrudController<PipelineService> {
     const publicSettings = await this.sysSettingsService.getPublicSettings();
 
     let onlyOther = false
-    if(isAdmin){
-      if(publicSettings.managerOtherUserPipeline){
+    if (isAdmin) {
+      if (publicSettings.managerOtherUserPipeline) {
         //管理员管理 其他用户
-        if( body.query.userId === -1){
+        if (body.query.userId === -1) {
           //如果只查询其他用户
           onlyOther = true;
           delete body.query.userId;
         }
-      }else{
+      } else {
         body.query.userId = this.getUserId();
       }
-    }else{
+    } else {
       body.query.userId = this.getUserId();
     }
 
@@ -57,7 +57,7 @@ export class PipelineController extends CrudController<PipelineService> {
       if (title) {
         qb.andWhere('(title like :title or content like :content)', { title: `%${title}%`, content: `%${title}%` });
       }
-      if(onlyOther){
+      if (onlyOther) {
         qb.andWhere('user_id  != :userId', { userId: this.getUserId() });
       }
     };
@@ -76,7 +76,7 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/getSimpleByIds', { summary: Constants.per.authOnly })
   async getSimpleById(@Body(ALL) body) {
-    const ret = await this.getService().getSimplePipelines(body.ids,this.getUserId() );
+    const ret = await this.getService().getSimplePipelines(body.ids, this.getUserId());
     return this.ok(ret);
   }
 
@@ -95,19 +95,19 @@ export class PipelineController extends CrudController<PipelineService> {
   }
 
   @Post('/save', { summary: Constants.per.authOnly })
-  async save(@Body(ALL) bean: {addToMonitorEnabled: boolean, addToMonitorDomains: string} & PipelineEntity) {
+  async save(@Body(ALL) bean: { addToMonitorEnabled: boolean, addToMonitorDomains: string } & PipelineEntity) {
     if (bean.id > 0) {
       await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
     } else {
       bean.userId = this.getUserId();
     }
 
-    if(!this.isAdmin()){
+    if (!this.isAdmin()) {
       // 非管理员用户 不允许设置流水线有效期
       delete bean.validTime
     }
 
-    const {version} = await this.service.save(bean);
+    const { version } = await this.service.save(bean);
     //是否增加证书监控
     if (bean.addToMonitorEnabled && bean.addToMonitorDomains) {
       const sysPublicSettings = await this.sysSettingsService.getPublicSettings();
@@ -119,7 +119,7 @@ export class PipelineController extends CrudController<PipelineService> {
         });
       }
     }
-    return this.ok({id:bean.id,version:version});
+    return this.ok({ id: bean.id, version: version });
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
@@ -147,7 +147,7 @@ export class PipelineController extends CrudController<PipelineService> {
   @Post('/trigger', { summary: Constants.per.authOnly })
   async trigger(@Query('id') id: number, @Query('stepId') stepId?: string) {
     await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
-    await this.service.trigger(id, stepId,true);
+    await this.service.trigger(id, stepId, true);
     return this.ok({});
   }
 
@@ -167,7 +167,7 @@ export class PipelineController extends CrudController<PipelineService> {
   @Post('/batchDelete', { summary: Constants.per.authOnly })
   async batchDelete(@Body('ids') ids: number[]) {
     const isAdmin = await this.authService.isAdmin(this.ctx);
-    const userId = isAdmin ?  undefined : this.getUserId() ;
+    const userId = isAdmin ? undefined : this.getUserId();
     await this.service.batchDelete(ids, userId);
     return this.ok({});
   }
@@ -177,7 +177,7 @@ export class PipelineController extends CrudController<PipelineService> {
   @Post('/batchUpdateGroup', { summary: Constants.per.authOnly })
   async batchUpdateGroup(@Body('ids') ids: number[], @Body('groupId') groupId: number) {
     const isAdmin = await this.authService.isAdmin(this.ctx);
-    const userId = isAdmin ?  undefined : this.getUserId() ;
+    const userId = isAdmin ? undefined : this.getUserId();
     await this.service.batchUpdateGroup(ids, groupId, userId);
     return this.ok({});
   }
@@ -186,7 +186,7 @@ export class PipelineController extends CrudController<PipelineService> {
   @Post('/batchUpdateTrigger', { summary: Constants.per.authOnly })
   async batchUpdateTrigger(@Body('ids') ids: number[], @Body('trigger') trigger: any) {
     const isAdmin = await this.authService.isAdmin(this.ctx);
-    const userId = isAdmin ?  undefined : this.getUserId() ;
+    const userId = isAdmin ? undefined : this.getUserId();
     await this.service.batchUpdateTrigger(ids, trigger, userId);
     return this.ok({});
   }
@@ -194,7 +194,7 @@ export class PipelineController extends CrudController<PipelineService> {
   @Post('/batchUpdateNotification', { summary: Constants.per.authOnly })
   async batchUpdateNotification(@Body('ids') ids: number[], @Body('notification') notification: any) {
     const isAdmin = await this.authService.isAdmin(this.ctx);
-    const userId = isAdmin ?  undefined : this.getUserId() ;
+    const userId = isAdmin ? undefined : this.getUserId();
     await this.service.batchUpdateNotifications(ids, notification, userId);
     return this.ok({});
   }
@@ -204,4 +204,14 @@ export class PipelineController extends CrudController<PipelineService> {
     await this.service.batchRerun(ids, this.getUserId(), force);
     return this.ok({});
   }
+
+  @Post('/refreshWebhookKey', { summary: Constants.per.authOnly })
+  async refreshWebhookKey(@Body('id') id: number) {
+    await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    const res = await this.service.refreshWebhookKey(id);
+    return this.ok({
+      webhookKey: res,
+    });
+  }
+
 }

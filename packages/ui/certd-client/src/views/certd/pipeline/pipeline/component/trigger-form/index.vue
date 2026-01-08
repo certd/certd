@@ -14,6 +14,25 @@
       <pi-container>
         <a-form ref="triggerFormRef" class="trigger-form" :model="currentTrigger" :label-col="labelCol" :wrapper-col="wrapperCol">
           <fs-form-item
+            :model-value="currentTrigger.type"
+            :item="{
+              title: t('certd.type'),
+              key: 'type',
+              value: 'timer',
+              component: {
+                name: 'a-select',
+                vModel: 'value',
+                disabled: !editMode,
+                options: [
+                  { value: 'timer', label: t('certd.schedule') },
+                  { value: 'webhook', label: t('certd.webhook') },
+                ],
+              },
+              rules: [{ required: true, message: t('certd.requiredField') }],
+            }"
+            @update:model-value="typeValueChange($event)"
+          />
+          <fs-form-item
             v-model="currentTrigger.title"
             :item="{
               title: t('certd.triggerName'),
@@ -27,36 +46,8 @@
             }"
           />
 
-          <fs-form-item
-            v-model="currentTrigger.type"
-            :item="{
-              title: t('certd.type'),
-              key: 'type',
-              value: 'timer',
-              component: {
-                name: 'a-select',
-                vModel: 'value',
-                disabled: !editMode,
-                options: [{ value: 'timer', label: t('certd.schedule') }],
-              },
-              rules: [{ required: true, message: t('certd.requiredField') }],
-            }"
-          />
-
-          <fs-form-item
-            v-model="currentTrigger.props.cron"
-            :item="{
-              title: t('certd.cronForm.title'),
-              key: 'props.cron',
-              component: {
-                disabled: !editMode,
-                name: 'cron-editor',
-                vModel: 'modelValue',
-              },
-              helper: t('certd.cronForm.helper'),
-              rules: [{ required: true, message: t('certd.cronForm.required') }],
-            }"
-          />
+          <timer-form v-if="currentTrigger.type === 'timer'" :edit-mode="editMode" />
+          <webhook-form v-if="currentTrigger.type === 'webhook'" :edit-mode="editMode" />
         </a-form>
 
         <template #footer>
@@ -70,13 +61,19 @@
 </template>
 
 <script>
-import { message, Modal } from "ant-design-vue";
-import { inject, ref } from "vue";
+import { Modal } from "ant-design-vue";
 import * as _ from "lodash-es";
-import { useI18n } from "/src/locales/";
 import { nanoid } from "nanoid";
+import { ref, provide } from "vue";
+import { useI18n } from "/src/locales/";
+import TimerForm from "./timer-form.vue";
+import WebhookForm from "./webhook-form.vue";
 export default {
   name: "PiTriggerForm",
+  components: {
+    TimerForm,
+    WebhookForm,
+  },
   props: {
     editMode: {
       type: Boolean,
@@ -94,6 +91,7 @@ export default {
       const mode = ref("add");
       const callback = ref();
       const currentTrigger = ref({ title: undefined, input: {} });
+      provide("trigger:get", () => currentTrigger);
       const currentPlugin = ref({});
       const triggerFormRef = ref(null);
       const triggerDrawerVisible = ref(false);
@@ -125,9 +123,13 @@ export default {
         triggerDrawerShow();
       };
 
-      const triggerAdd = emit => {
+      const triggerAdd = (triggerType, emit) => {
         mode.value = "add";
         const trigger = { id: nanoid(), title: t("certd.timerTrigger"), type: "timer", props: {} };
+        if (triggerType === "webhook") {
+          trigger.type = "webhook";
+          trigger.title = "Webhook触发";
+        }
         triggerOpen(trigger, emit);
       };
 
@@ -168,6 +170,19 @@ export default {
       const blankFn = () => {
         return {};
       };
+
+      function typeValueChange(value) {
+        if (value === "webhook") {
+          if (currentTrigger.value.title === "定时触发" || !currentTrigger.value.title) {
+            currentTrigger.value.title = "Webhook触发";
+          }
+        } else if (value === "timer") {
+          if (currentTrigger.value.title === "Webhook触发" || !currentTrigger.value.title) {
+            currentTrigger.value.title = "定时触发";
+          }
+        }
+        currentTrigger.value.type = value;
+      }
       return {
         triggerFormRef,
         mode,
@@ -183,6 +198,7 @@ export default {
         triggerDelete,
         rules,
         blankFn,
+        typeValueChange,
       };
     }
 

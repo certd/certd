@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  root: 'link:'
-
 importers:
 
   .:
@@ -870,6 +867,9 @@ importers:
       '@certd/basic':
         specifier: ^1.37.17
         version: link:../../core/basic
+      '@certd/pipeline':
+        specifier: ^1.37.17
+        version: link:../../core/pipeline
       '@certd/plugin-lib':
         specifier: ^1.37.17
         version: link:../../plugins/plugin-lib
