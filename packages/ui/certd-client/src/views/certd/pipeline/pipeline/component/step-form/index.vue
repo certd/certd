@@ -414,7 +414,7 @@ const runStrategyProps = ref({
     name: "a-select",
     vModel: "value",
     options: [
-      { value: 0, label: "正常运行（只有证书申请任务需要选择它）" },
+      { value: 0, label: "正常运行（仅证书申请任务需要选它，除非你需要这个任务不跳过，每次都运行）" },
       { value: 1, label: "成功后跳过（其他任务请选择它）" },
     ],
   },
