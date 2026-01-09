@@ -162,16 +162,16 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       }
       await this.update(updateData);
 
-
+      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId, UserSiteMonitorSetting)
       //检查ip
-      await this.checkAllIp(site,retryTimes);
+      await this.checkAllIp(site,retryTimes,setting);
 
       if (!notify) {
         return;
       }
 
       try {
-        await this.sendExpiresNotify(site.id);
+        await this.sendExpiresNotify(site.id,setting);
       } catch (e) {
         logger.error("send notify error", e);
       }
@@ -187,18 +187,19 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         return;
       }
       try {
-        await this.sendCheckErrorNotify(site.id);
+        await this.sendCheckErrorNotify(site.id,false,setting);
       } catch (e) {
         logger.error("send notify error", e);
       }
     }
   }
 
-  async checkAllIp(site: SiteInfoEntity,retryTimes = null) {
+  async checkAllIp(site: SiteInfoEntity,retryTimes = null,setting: UserSiteMonitorSetting) {
     if (!site.ipCheck) {
       return;
     }
     const certExpiresTime = site.certExpiresTime;
+    const tipDays = setting?.certValidDays || 10;
     const onFinished = async (list: SiteIpEntity[]) => {
       let errorCount = 0;
       let errorMessage = "";
@@ -207,11 +208,19 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
           continue;
         }
         errorCount++;
+
+        const isExpired = dayjs().valueOf() > dayjs(item.certExpiresTime).valueOf();
+        const isWillExpired = dayjs().valueOf() > dayjs(item.certExpiresTime).subtract(tipDays, "day").valueOf();
+
         if (item.error) {
           errorMessage += `${item.ipAddress}：${item.error}； \n`;
-        } else if (item.certExpiresTime !== certExpiresTime) {
+        } else if (item.certExpiresTime !== certExpiresTime && !site.ipIgnoreCoherence) {
           errorMessage += `${item.ipAddress}：与主站证书过期时间不一致(主站：${dayjs(certExpiresTime).format("YYYY-MM-DD")}，IP：${dayjs(item.certExpiresTime).format("YYYY-MM-DD")})； \n`;
-        } else {
+        } else if (isExpired){
+          errorMessage += `${item.ipAddress}：证书已过期(过期时间：${dayjs(item.certExpiresTime).format("YYYY-MM-DD")})； \n`;
+        }else if (isWillExpired){
+          errorMessage += `${item.ipAddress}：证书将过期(过期时间：${dayjs(item.certExpiresTime).format("YYYY-MM-DD")})； \n`;
+        }else {
           errorCount--;
         }
       }
@@ -232,12 +241,12 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         ipErrorCount: errorCount
       });
       try {
-        await this.sendCheckErrorNotify(site.id, true);
+        await this.sendCheckErrorNotify(site.id, true,setting);
       } catch (e) {
         logger.error("send notify error", e);
       }
     };
-    if (!site.ipSyncAuto) {
+    if (site.ipSyncAuto === false) {
       await this.siteIpService.checkAll(site, retryTimes,onFinished);
     }else{
       await this.siteIpService.syncAndCheck(site, retryTimes,onFinished);
@@ -246,7 +255,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   /**
-   * 检查
+   * 检查,不等待返回
    * @param id
    * @param notify
    * @param retryTimes
@@ -256,13 +265,16 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     if (!site) {
       throw new Error("站点不存在");
     }
-    return await this.doCheck(site, notify, retryTimes);
+
+    this.doCheck(site, notify, retryTimes).catch((err) => {
+      logger.error("check site error", err);
+    });
+    return
   }
 
-  async sendCheckErrorNotify(siteId: number, fromIpCheck = false) {
+  async sendCheckErrorNotify(siteId: number, fromIpCheck = false,setting: UserSiteMonitorSetting) {
     const site = await this.info(siteId);
     const url = await this.notificationService.getBindUrl("#/certd/monitor/site");
-    const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId, UserSiteMonitorSetting)
     // 发邮件
     await this.notificationService.send(
       {
@@ -281,11 +293,9 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     );
   }
 
-  async sendExpiresNotify(siteId: number) {
-    const site = await this.info(siteId);
-    const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId, UserSiteMonitorSetting)
+  async sendExpiresNotify(siteId: number,setting: UserSiteMonitorSetting) {
     const tipDays = setting?.certValidDays || 10;
-
+    const site = await this.info(siteId);
     const expires = site.certExpiresTime;
     const validDays = dayjs(expires).diff(dayjs(), "day");
     const url = await this.notificationService.getBindUrl("#/certd/monitor/site");

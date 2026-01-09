@@ -49,6 +49,12 @@ export class SiteInfoEntity {
   @Column({ name: 'ip_sync_auto', comment: '是否自动同步IP' })
   ipSyncAuto: boolean;
 
+  @Column({ name: 'ip_sync_mode', comment: 'IP同步模式' })
+  ipSyncMode: string;
+
+  @Column({ name: 'ip_ignore_coherence', comment: '忽略证书一致性' })
+  ipIgnoreCoherence: boolean;
+
   @Column({ name: 'ip_count', comment: 'ip数量' })
   ipCount: number
 

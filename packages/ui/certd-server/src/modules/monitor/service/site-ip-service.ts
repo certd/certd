@@ -76,7 +76,7 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
     }
 
     //从域名解析中获取所有ip
-    const ips = await this.getAllIpsFromDomain(domain,resolver);
+    const ips = await this.getAllIpsFromDomain(domain,resolver,entity.ipSyncMode);
     if (ips.length === 0 ) {
       logger.warn(`没有发现${domain}的IP`)
       return
@@ -126,7 +126,7 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
     }
   }
 
-  async check(ipId: number, domain: string, port: number,retryTimes = null) {
+  async check(ipId: number, domain: string, port: number,retryTimes = null ,tipDays = 10) {
     if(!ipId){
       return
     }
@@ -231,7 +231,7 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
     })
   }
 
-  async getAllIpsFromDomain(domain: string,resolver:any = dns):Promise<string[]> {
+  async getAllIpsFromDomain(domain: string,resolver:any = dns,ipSyncMode:string = "all"):Promise<string[]> {
     const getFromV4 = async ():Promise<string[]> => {
       try{
         return await resolver.resolve4(domain);
@@ -249,6 +249,12 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
       }
     }
 
+    if (ipSyncMode === "ipv4") {
+      return await getFromV4();
+    }
+    if (ipSyncMode === "ipv6") {
+      return await getFromV6();
+    }
 
     return Promise.all([getFromV4(), getFromV6()]).then(res => {
       return [...res[0], ...res[1]];

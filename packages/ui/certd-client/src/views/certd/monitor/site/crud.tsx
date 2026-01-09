@@ -610,6 +610,46 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         },
+        checkStatus: {
+          title: t("certd.monitor.checkStatus"),
+          search: {
+            show: false,
+          },
+          type: "dict-select",
+          dict: checkStatusDict,
+          form: {
+            show: false,
+          },
+          column: {
+            width: 100,
+            align: "center",
+            sorter: true,
+            cellRender({ value, row }) {
+              return (
+                <a-tooltip title={row.error}>
+                  <fs-values-format v-model={value} dict={checkStatusDict}></fs-values-format>
+                </a-tooltip>
+              );
+            },
+          },
+        },
+        // error: {
+        //   title: "错误信息",
+        //   search: {
+        //     show: false
+        //   },
+        //   type: "text",
+        //   form: {
+        //     show: false
+        //   },
+        //   column: {
+        //     width: 200,
+        //     sorter: true,
+        //     cellRender({ value }) {
+        //       return <a-tooltip title={value}>{value}</a-tooltip>;
+        //     }
+        //   }
+        // },
         ipCheck: {
           title: t("certd.monitor.ipCheck"),
           type: "dict-switch",
@@ -672,46 +712,51 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
           },
         },
-        checkStatus: {
-          title: t("certd.monitor.checkStatus"),
-          search: {
-            show: false,
-          },
+        ipSyncMode: {
+          title: t("certd.monitor.ipSyncMode"),
           type: "dict-select",
-          dict: checkStatusDict,
+          dict: dict({
+            data: [
+              { label: t("certd.monitor.ipSyncModeAll"), value: "all" },
+              { label: t("certd.monitor.ipSyncModeIPV4Only"), value: "ipv4" },
+              { label: t("certd.monitor.ipSyncModeIPV6Only"), value: "ipv6" },
+            ],
+          }),
           form: {
-            show: false,
+            value: "all",
+            show: compute(({ form }) => {
+              return form.ipSyncAuto;
+            }),
+            helper: t("certd.monitor.ipSyncModeHelper"),
           },
           column: {
             width: 100,
-            align: "center",
             sorter: true,
-            cellRender({ value, row }) {
-              return (
-                <a-tooltip title={row.error}>
-                  <fs-values-format v-model={value} dict={checkStatusDict}></fs-values-format>
-                </a-tooltip>
-              );
-            },
+            align: "center",
           },
         },
-        // error: {
-        //   title: "错误信息",
-        //   search: {
-        //     show: false
-        //   },
-        //   type: "text",
-        //   form: {
-        //     show: false
-        //   },
-        //   column: {
-        //     width: 200,
-        //     sorter: true,
-        //     cellRender({ value }) {
-        //       return <a-tooltip title={value}>{value}</a-tooltip>;
-        //     }
-        //   }
-        // },
+        ipIgnoreCoherence: {
+          title: t("certd.monitor.ipIgnoreCoherence"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("common.enabled"), value: true, color: "green" },
+              { label: t("common.disabled"), value: false, color: "gray" },
+            ],
+          }),
+          form: {
+            value: false,
+            show: compute(({ form }) => {
+              return form.ipCheck;
+            }),
+            helper: t("certd.monitor.ipIgnoreCoherenceHelper"),
+          },
+          column: {
+            width: 100,
+            sorter: true,
+            align: "center",
+          },
+        },
         pipelineId: {
           title: t("certd.monitor.pipelineId"),
           search: {

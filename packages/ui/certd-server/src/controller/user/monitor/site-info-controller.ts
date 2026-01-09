@@ -5,6 +5,7 @@ import { SiteInfoService } from "../../../modules/monitor/service/site-info-serv
 import { UserSiteMonitorSetting } from "../../../modules/mine/service/models.js";
 import { merge } from "lodash-es";
 import {SiteIpService} from "../../../modules/monitor/service/site-ip-service.js";
+import { utils } from "@certd/basic";
 
 /**
  */
@@ -104,6 +105,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   async check(@Body('id') id: number) {
     await this.service.checkUserId(id, this.getUserId());
     await this.service.check(id, true, 0);
+    await utils.sleep(1000);
     return this.ok();
   }
 

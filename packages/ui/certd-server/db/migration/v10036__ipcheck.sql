@@ -1,4 +1,6 @@
-ALTER TABLE cd_site_info ADD COLUMN ip_sync_auto boolean DEFAULT (1);
+ALTER TABLE cd_site_info ADD COLUMN ip_sync_auto boolean;
+ALTER TABLE cd_site_info ADD COLUMN ip_sync_mode varchar(20);
+ALTER TABLE cd_site_info ADD COLUMN ip_ignore_coherence boolean;
 
 ALTER TABLE pi_pipeline ADD COLUMN webhook_key varchar(100);
 ALTER TABLE pi_pipeline ADD COLUMN trigger_count integer DEFAULT (0);
