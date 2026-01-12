@@ -26,8 +26,11 @@ export class UpyunClient {
         private_key: cert.key
       }
     });
+    if (!res.data?.result) {
+      throw new Error("upload cert failed： " + JSON.stringify(res.data));
+    }
 
-    return res.data.result.certificate_id;
+    return res.data?.result?.certificate_id;
   }
 
   async getLoginToken() {
