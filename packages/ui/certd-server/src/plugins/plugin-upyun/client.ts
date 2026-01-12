@@ -46,8 +46,11 @@ export class UpyunClient {
       logRes: false,
       returnOriginRes: true
     });
-    if (res.data?.errors?.length > 0) {
+    if (res.data?.errors?.length > 0 ) {
       throw new Error(JSON.stringify(res.data.msg));
+    }
+    if (res.data?.data?.error_code ) {
+      throw new Error( "登录失败:"+res.data.data.message);
     }
     const cookie = res.headers["set-cookie"];
     return cookie;
