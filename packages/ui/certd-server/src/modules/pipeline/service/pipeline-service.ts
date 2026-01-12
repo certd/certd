@@ -138,8 +138,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
       }
       // @ts-ignore
       item.stepCount = stepCount;
-      // @ts-ignore
-      item.triggerCount = pipeline.triggers?.length;
+      if(item.triggerCount == 0  ){
+        item.triggerCount = pipeline.triggers?.length;
+      }
+      
       delete item.content;
     }
 

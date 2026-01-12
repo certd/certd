@@ -349,6 +349,7 @@ function openUpgrade() {
   }
   const modalRef = modal.success({
     title,
+    class: "vip-modal",
     maskClosable: true,
     okText: t("vip.close"),
     width: 1100,
@@ -371,10 +372,11 @@ function openUpgrade() {
       let plusInfo: any = "";
       if (isPlus) {
         plusInfo = (
-          <div class="mt-10">
-            {t("vip.current")} {vipLabel} {t("vip.activated_expire_time")}
-            {settingStore.expiresText}
-            <a class="ml-15" href="https://app.handfree.work/subject/#/page/detail/1" target="_blank">
+          <div class="mt-10 flex flex-col md:flex-row ">
+            <span class="mr-2">
+              {t("vip.current")} {vipLabel} {t("vip.activated_expire_time")} {settingStore.expiresText}
+            </span>
+            <a href="https://app.handfree.work/subject/#/page/detail/1" target="_blank">
               {t("vip.learn_more")}
             </a>
           </div>
@@ -385,9 +387,9 @@ function openUpgrade() {
       for (const key in vipTypeDefine) {
         // @ts-ignore
         const item = vipTypeDefine[key];
-        const vipBlockClass = `vip-block ${key === settingStore.plusInfo.vipType ? "current" : ""}`;
+        const vipBlockClass = `vip-block  ${key === settingStore.plusInfo.vipType ? "current" : ""}`;
         slots.push(
-          <a-col span={8}>
+          <div class="w-full md:w-1/3 mb-4 p-5">
             <div class={vipBlockClass}>
               <h3 class="block-header ">
                 <span class="flex-o">{item.title}</span>
@@ -413,17 +415,15 @@ function openUpgrade() {
               </ul>
               <div class="footer flex-between flex-vc">
                 <div class="price-show">
-                  {item.price && (
+                  {item.priceText && (
                     <span class="flex">
-                      <span class="-text">¥{item.price}</span>
-                      <span>/</span>
-                      {t("vip.year")}
-                      <a-tooltip class="ml-5" title={item.price3}>
+                      <span class="-text">{item.priceText}</span>
+                      <a-tooltip class="ml-5" title={item.discountText}>
                         <fs-icon class="pointer color-red" icon="ic:outline-discount"></fs-icon>
                       </a-tooltip>
                     </span>
                   )}
-                  {!item.price && (
+                  {!item.priceText && (
                     <span>
                       <span class="price-text">{t("vip.freee")}</span>
                     </span>
@@ -432,7 +432,7 @@ function openUpgrade() {
                 <div class="get-show">{item.get && <div>{item.get()}</div>}</div>
               </div>
             </div>
-          </a-col>
+          </div>
         );
       }
       return (
@@ -446,18 +446,15 @@ function openUpgrade() {
             <a-row gutter={20}>{slots}</a-row>
           </div>
           <div class="mt-10">
-            <div class="flex-o w-100">
+            <div class=" w-100 flex-col md:flex-row ">
               <span>{t("vip.site_id")}：</span>
-              <fs-copyable v-model={computedSiteId.value}></fs-copyable>
-
-              <a class="ml-2" onClick={goBindAccount}>
-                {t("vip.not_effective")}
-              </a>
+              <fs-copyable v-model={computedSiteId.value} class="mr-2"></fs-copyable>
+              <a onClick={goBindAccount}>{t("vip.not_effective")}</a>
             </div>
           </div>
           {plusInfo}
-          <div class="mt-10">
-            {t("vip.have_activation_code")}
+          <div class="mt-10 ">
+            <span class="mr-2">{t("vip.have_activation_code")}</span>
             <span>
               <a onClick={showManualActivation}>{t("vip.manual_activation")}</a>
             </span>
@@ -478,6 +475,11 @@ onMounted(() => {
 </script>
 
 <style lang="less">
+.vip-modal {
+  .ant-modal-confirm-content {
+    margin-inline-start: 10px !important;
+  }
+}
 .layout-vip {
   display: flex;
   align-items: center;

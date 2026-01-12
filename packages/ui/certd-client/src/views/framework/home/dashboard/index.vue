@@ -61,22 +61,7 @@
       </div>
     </div>
     <div class="warning">
-      <a-carousel arrows dots-class="slick-dots slick-thumb" autoplay dot-position="right">
-        <a-alert v-if="!settingStore.isComm" type="warning" show-icon>
-          <template #message>
-            <div>
-              {{ t("certd.dashboard.alertMessage") }}
-              <a class="ml-5 flex-inline" href="https://gitee.com/certd/certd" target="_blank">gitee</a>、 <a class="ml-5 flex-inline" href="https://github.com/certd/certd" target="_blank">github</a>、
-              <a class="ml-5 flex-inline" href="https://certd.docmirror.cn" target="_blank">{{ t("certd.dashboard.helpDoc") }}</a>
-            </div>
-          </template>
-        </a-alert>
-        <a-alert v-if="settingStore.sysPublic.notice" type="warning" show-icon>
-          <template #message>
-            {{ settingStore.sysPublic.notice }}
-          </template>
-        </a-alert>
-      </a-carousel>
+      <notice-bar :list="noticeList"></notice-bar>
     </div>
 
     <div class="statistic-data m-20">
@@ -166,7 +151,7 @@ import { useI18n } from "/src/locales";
 const { t } = useI18n();
 import { usePluginStore } from "/@/store/plugin";
 import { notification } from "ant-design-vue";
-import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import NoticeBar from "./notice-bar.vue";
 defineOptions({
   name: "DashboardUser",
 });
@@ -289,6 +274,32 @@ function openUpgradeUrl() {
 function openChangeLogUrl() {
   window.open("https://certd.docmirror.cn/guide/changelogs/CHANGELOG.html");
 }
+
+const noticeList = computed(() => {
+  const list = [];
+  if (!settingStore.isComm) {
+    list.push(`
+          ${t("certd.dashboard.alertMessage")}
+          <a class="ml-5 flex-inline" href="https://gitee.com/certd/certd" target="_blank">
+            gitee
+          </a>
+          、
+          <a class="ml-5 flex-inline" href="https://github.com/certd/certd" target="_blank">
+            github
+          </a>
+          、
+          <a class="ml-5 flex-inline" href="https://certd.docmirror.cn" target="_blank">
+            ${t("certd.dashboard.helpDoc")}
+          </a>
+        `);
+  }
+
+  if (settingStore.sysPublic.notice) {
+    list.push(`${settingStore.sysPublic.notice}`);
+  }
+
+  return list;
+});
 </script>
 
 <style lang="less">

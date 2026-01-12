@@ -265,7 +265,7 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
           type: "number",
           search: {
             show: true,
-            col: { span: 3 },
+            col: { span: 2 },
           },
           column: {
             width: 100,
@@ -281,7 +281,7 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
             show: computed(() => {
               return userStore.isAdmin && settingStore.sysPublic.managerOtherUserPipeline;
             }),
-            col: { span: 3 },
+            col: { span: 2 },
           },
           form: {
             show: false,
@@ -317,40 +317,41 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
             },
           },
         },
-        content: {
-          title: t("certd.fields.pipelineContent"),
-          form: { show: false },
-          column: {
-            show: false,
-          },
-          valueBuilder({ row }) {
-            if (row.content) {
-              row.content = JSON.parse(row.content);
-              const pipeline = row.content;
-              let stepCount = 0;
-              eachStages(pipeline.stages, (item, runnableType) => {
-                if (runnableType === "step") {
-                  stepCount++;
-                }
-              });
-              row._stepCount = stepCount;
-              if (pipeline.triggers) {
-                row._triggerCount = pipeline.triggers?.length > 0 ? pipeline.triggers.length : "-";
-              }
-            }
-          },
-          valueResolve({ row }) {
-            if (row.content) {
-              row.content = JSON.stringify(row.content);
-            }
-          },
-        },
+        // content: {
+        //   title: t("certd.fields.pipelineContent"),
+        //   form: { show: false },
+        //   column: {
+        //     show: false,
+        //   },
+        //   valueBuilder({ row }) {
+        //     if (row.content) {
+        //       row.content = JSON.parse(row.content);
+        //       const pipeline = row.content;
+        //       let stepCount = 0;
+        //       eachStages(pipeline.stages, (item, runnableType) => {
+        //         if (runnableType === "step") {
+        //           stepCount++;
+        //         }
+        //       });
+        //       row._stepCount = stepCount;
+        //       if (pipeline.triggers) {
+        //         row._triggerCount = pipeline.triggers?.length > 0 ? pipeline.triggers.length : "-";
+        //       }
+        //     }
+        //   },
+        //   valueResolve({ row }) {
+        //     if (row.content) {
+        //       row.content = JSON.stringify(row.content);
+        //     }
+        //   },
+        // },
         triggerCount: {
           title: t("certd.fields.scheduledTaskCount"),
           type: "number",
           column: {
             align: "center",
-            width: 100,
+            width: 120,
+            sorter: true,
           },
           form: {
             show: false,
@@ -465,6 +466,12 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
         disabled: {
           title: t("certd.fields.enabled"),
           type: "dict-switch",
+          search: {
+            show: true,
+            col: {
+              span: 2,
+            },
+          },
           dict: dict({
             data: [
               { value: false, label: t("certd.fields.enabledLabel") },
