@@ -7,6 +7,16 @@
       </div>
       <div class="more flex items-center flex-1 justify-end">
         <div v-if="isCert" class="flex items-center hidden md:block">
+          <a-tag :color="pipelineDetail.lastVars?.certExpiresTime > Date.now() ? 'green' : 'red'">
+            <span class="flex">
+              <fs-icon icon="ion:time-outline"></fs-icon>
+              <span v-if="pipelineDetail.lastVars?.certExpiresTime > Date.now()">
+                证书过期时间：<FsTimeHumanize :model-value="pipelineDetail.lastVars?.certExpiresTime" :options="{ units: ['d'] }" format="YYYY-MM-DD"></FsTimeHumanize>
+              </span>
+              <span v-else> 证书已过期 <FsTimeHumanize :model-value="pipelineDetail.lastVars?.certExpiresTime" :options="{ units: ['d'] }" format="YYYY-MM-DD"></FsTimeHumanize></span>
+            </span>
+          </a-tag>
+
           <a-tag class="mr-5 pointer" color="green" type="primary" text="查看证书" @click="viewCert(pipeline.id)">
             <span class="flex"><fs-icon icon="ant-design:eye-outlined"></fs-icon> 查看证书</span>
           </a-tag>

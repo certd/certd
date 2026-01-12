@@ -298,8 +298,8 @@ function openUpgrade() {
         },
       },
       icon: "stash:thumb-up",
-      price: productInfo.plus.price,
-      price3: `¥${productInfo.plus.price3}/3${t("vip.years")}`,
+      priceText: productInfo.plus.priceText || `¥${productInfo.plus.price}/${t("vip.years")}`,
+      discountText: productInfo.plus.discountText || `¥${productInfo.plus.price3}/3${t("vip.years")}`,
       tooltip: productInfo.plus.tooltip,
       get() {
         return (
@@ -317,8 +317,8 @@ function openUpgrade() {
       type: "comm",
       icon: "vaadin:handshake",
       privilege: [t("vip.all_pro_privileges"), t("vip.allow_commercial_use_modify_logo_title"), t("vip.data_statistics"), t("vip.plugin_management"), t("vip.unlimited_multi_users"), t("vip.support_user_payment")],
-      price: productInfo.comm.price,
-      price3: `¥${productInfo.comm.price3}/3${t("vip.years")}`,
+      priceText: productInfo.comm.priceText || `¥${productInfo.comm.price}/${t("vip.years")}`,
+      discountText: productInfo.comm.discountText || `¥${productInfo.comm.price3}/3${t("vip.years")}`,
       tooltip: productInfo.comm.tooltip,
       trial: {
         title: t("vip.click_to_get_7_day_trial"),

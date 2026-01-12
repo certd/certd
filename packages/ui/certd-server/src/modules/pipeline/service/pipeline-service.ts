@@ -202,6 +202,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
    */
   async detail(id) {
     const pipeline = await this.info(id);
+    await this.fillLastVars([pipeline]);
     return new PipelineDetail(pipeline);
   }
 

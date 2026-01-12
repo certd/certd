@@ -5,6 +5,9 @@ export type PipelineDetail = {
   pipeline: Pipeline;
   validTime?: number;
   webhookKey?: string;
+  lastVars?: {
+    [key: string]: string;
+  };
 };
 
 export type RunHistory = {

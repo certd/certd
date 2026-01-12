@@ -41,12 +41,16 @@ export interface SettingState {
       price: number;
       price3: number;
       tooltip?: string;
+      priceText?: string;
+      discountText?: string;
     };
     comm: {
       name: string;
       price: number;
       price3: number;
       tooltip?: string;
+      priceText?: string;
+      discountText?: string;
     };
     app?: {
       minVersion?: string;

@@ -40,6 +40,7 @@ const pipelineOptions: PipelineOptions = {
       validTime: detail.pipeline.validTime,
       webhookKey: detail.pipeline.webhookKey,
       id: detail.pipeline.id,
+      lastVars: detail.pipeline.lastVars,
     } as PipelineDetail;
   },
 
