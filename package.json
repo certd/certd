@@ -21,7 +21,7 @@
     "publish": "npm run prepublishOnly2  && lerna publish --force-publish=pro/plus-core --conventional-commits --create-release github && npm run afterpublishOnly ",
     "afterpublishOnly": "npm run plugin-doc-gen && npm run copylogs && time /t >trigger/build.trigger && git add ./trigger/build.trigger && git commit -m \"build: trigger build image\" && TIMEOUT /T 10 && npm run commitAll",
     "transform-sql": "cd ./packages/ui/certd-server/db/ && node --experimental-json-modules transform.js",
-    "plugin-doc-gen": "cd ./packages/ui/certd-server/ && npm run export-md",
+    "plugin-doc-gen": "cd ./packages/ui/certd-server/ && npm run export-metadata",
     "commitAll": "git add . && git commit -m \"build: publish\" && git push && npm run commitPro",
     "commitPro": "cd ./packages/pro/ && git add . && git commit -m \"build: publish\" && git push",
     "copylogs": "copyfiles \"CHANGELOG.md\"  ./docs/guide/changelogs/",
