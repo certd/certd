@@ -45,6 +45,16 @@
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
         },
+         {
+            "name": "server-pgpl",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/packages/ui/certd-server",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": ["dev-pgpl"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
         {
             "name": "server-common",
             "type": "node",
