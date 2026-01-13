@@ -140,3 +140,11 @@ jobs:
           pnpm install
           npm run publish_to_atomgit
         working-directory: ./
+      
+      - name: publish_to_gitee
+        id: publish_to_gitee
+        run: |
+          export GITEE_TOKEN=${{ secrets.GITEE_TOKEN }}
+          pnpm install
+          npm run publish_to_gitee
+        working-directory: ./

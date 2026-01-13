@@ -1,27 +1,11 @@
 import fs from 'fs'
 import axios from 'axios'
+import { getVersionContent } from './get-new-version.js'
+
 
 
 const AtomgitAccessToken = process.env.ATOMGIT_TOKEN
-// CHANGELOG.md
-const changelog = fs.readFileSync('./CHANGELOG.md', 'utf8')
-// 解析CHANGELOG.md
-let lines = changelog.split('\n')
-const versionLineIndex = lines.findIndex(line => line.startsWith('## '))
-const versionLine = lines[versionLineIndex]
-//  ## [1.37.16](https://github.com/certd/certd/compare/v1.37.15...v1.37.16) (2025-12-15)
-const versionTitle = versionLine.match(/\[(.*?)\]/)[1]
 
-const contentStart = versionLineIndex + 1
-lines = lines.slice(contentStart)
-const contentEnd = lines.findIndex(line => {
-    return line.startsWith('## ')
-})
-const content = lines.slice(0, contentEnd).join('\n')
-console.log("-------title------/n")
-console.log(versionTitle)
-console.log("-------content------/n")
-console.log(content)
 
 /**
  * 创建仓库Release
@@ -68,7 +52,7 @@ string
  */
 
 // 创建release
-async function createRelease() {
+async function createRelease(versionTitle, content) {
     const response = await axios.request({
         method: 'POST',
         url: `https://api.atomgit.com/api/v5/repos/certd/certd/releases`,
@@ -138,7 +122,7 @@ headers
 object
 
  */
-async function getUploadUrl() {
+async function getUploadUrl(versionTitle) {
     const response = await axios.request({
         method: 'GET',
         url: `https://api.atomgit.com/api/v5/repos/certd/certd/releases/v${versionTitle}/upload_url`,
@@ -167,8 +151,9 @@ async function uploadFile(url, headers, data) {
 }
 
 async function publishToAtomgit() {
-    const release = await createRelease()
-    const uploadUrl = await getUploadUrl()
+    const { versionTitle, content } = getVersionContent()
+    const release = await createRelease(versionTitle, content)
+    const uploadUrl = await getUploadUrl(versionTitle)
     const fileName = `./packages/ui/certd-client/ui.zip`
     const fileData = fs.createReadStream(fileName)
     const contentLength = fs.statSync(fileName).size

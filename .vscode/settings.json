@@ -10,5 +10,8 @@
         "editor.defaultFormatter": "vscode.typescript-language-features"
     },
     "editor.tabSize": 2,
-    "explorer.autoReveal": false
+    "explorer.autoReveal": false,
+    "[javascript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
 }

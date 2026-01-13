@@ -39,6 +39,7 @@
     "dev": "pnpm run -r --parallel  compile ",
     "release": "time /t >trigger/release.trigger && git add trigger/release.trigger && git commit -m \"build: release\" && git push",
     "publish_to_atomgit": "node --experimental-json-modules ./scripts/publish-atomgit.js",
+    "publish_to_gitee": "node --experimental-json-modules ./scripts/publish-gitee.js",
     "get_version": "node --experimental-json-modules ./scripts/version.js"
   },
   "license": "AGPL-3.0",
