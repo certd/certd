@@ -98,6 +98,6 @@ export default {
   already_comm: "Already Business Edition, can't change to Professional Edition",
   already_perpetual_plus: "You already have a perpetual Professional Edition, can't upgrade",
   confirm: "Confirm",
-  not_effective: "Not effective?",
+  not_effective: "Not effective or duration not sync?",
   learn_more: "More privileges",
 };

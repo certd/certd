@@ -97,6 +97,6 @@ export default {
   already_comm: "已经是商业版了，不能降级为专业版",
   already_perpetual_plus: "您已经是永久专业版了，无法继续升级",
   confirm: "确认",
-  not_effective: "VIP没有生效?",
+  not_effective: "VIP没有生效/时长未同步?",
   learn_more: "更多特权(加VIP群等)",
 };
