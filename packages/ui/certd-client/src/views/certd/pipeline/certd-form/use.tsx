@@ -19,6 +19,9 @@ export function fillPipelineByDefaultForm(pipeline: any, form: any) {
   if (form.triggerCron) {
     triggers.push({ title: "定时触发", type: "timer", props: { cron: form.triggerCron } });
   }
+  if (form.webhookEnabled) {
+    triggers.push({ title: "Webhook触发", type: "webhook" });
+  }
   const notifications = [];
   if (form.notification != null) {
     notifications.push({
@@ -296,6 +299,22 @@ export function useCertPipelineCreator() {
                 span: 24,
               },
               helper: t("certd.domainList.helper"),
+              order: 999,
+            },
+          },
+          webhookEnabled: {
+            title: t("certd.pipelineForm.webhookEnabled"),
+            type: "switch",
+            form: {
+              helper: t("certd.pipelineForm.webhookEnabledHelper"),
+              value: false,
+              component: {
+                name: "a-switch",
+                vModel: "checked",
+              },
+              col: {
+                span: 24,
+              },
               order: 999,
             },
           },

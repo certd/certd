@@ -243,6 +243,9 @@ export default {
 
     addToMonitorEnabled: "Add to Cert Monitor",
     addToMonitorDomains: "Add to Monitor Domains",
+
+    webhookEnabled: "Webhook Enabled",
+    webhookEnabledHelper: "Support webhook trigger pipeline, please check webhook address in trigger source",
   },
   notificationDefault: "Use Default Notification",
   monitor: {

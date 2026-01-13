@@ -247,6 +247,8 @@ export default {
     groupIdTitle: "流水线分组",
     addToMonitorEnabled: "添加到证书监控",
     addToMonitorDomains: "添加到监控域名",
+    webhookEnabled: "开启Webhook",
+    webhookEnabledHelper: "支持webhook触发流水线，请在触发源中查看webhook地址",
   },
   notificationDefault: "使用默认通知",
   monitor: {

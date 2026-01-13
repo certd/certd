@@ -6,7 +6,7 @@
         <text-editable v-model="pipeline.title" :hover-show="false" :disabled="!editMode"></text-editable>
       </div>
       <div class="more flex items-center flex-1 justify-end">
-        <div v-if="isCert" class="flex items-center hidden md:block">
+        <div v-if="isCert && pipelineDetail.lastVars?.certExpiresTime" class="flex items-center hidden md:block">
           <a-tag :color="pipelineDetail.lastVars?.certExpiresTime > Date.now() ? 'green' : 'red'">
             <span class="flex">
               <fs-icon icon="ion:time-outline"></fs-icon>
