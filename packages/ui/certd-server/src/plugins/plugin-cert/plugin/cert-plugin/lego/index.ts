@@ -1,15 +1,12 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, Step, TaskInput } from "@certd/pipeline";
-import type { CertInfo } from "../acme.js";
 import { CertReader } from "@certd/plugin-lib";
 import { CertApplyBasePlugin } from "../base.js";
 import fs from "fs";
 import { EabAccess } from "../../../access/index.js";
 import path from "path";
 import JSZip from "jszip";
+import { PrivateKeyType } from "./dns.js";
 
-export { CertReader };
-export type { CertInfo };
-export type PrivateKeyType = "rsa2048" | "rsa3072" | "rsa4096" | "rsa8192" | "ec256" | "ec384";
 
 @IsTaskPlugin({
   name: "CertApplyLego",

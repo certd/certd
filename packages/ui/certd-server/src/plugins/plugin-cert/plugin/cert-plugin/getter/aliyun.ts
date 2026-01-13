@@ -1,12 +1,8 @@
 import { IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { AliyunAccess } from "../../../../plugin-lib/aliyun/access/index.js";
-import type { CertInfo } from "../acme.js";
 import { CertApplyBasePlugin } from "../base.js";
 import { CertReader, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import dayjs from "dayjs";
-
-export { CertReader };
-export type { CertInfo };
 
 @IsTaskPlugin({
   name: "CertApplyGetFormAliyun",

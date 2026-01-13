@@ -3,10 +3,6 @@ import type { CertInfo } from "../acme.js";
 import { CertReader } from "@certd/plugin-lib";
 import { CertApplyBaseConvertPlugin } from "../base-convert.js";
 import dayjs from "dayjs";
-
-export { CertReader };
-export type { CertInfo };
-
 @IsTaskPlugin({
   name: "CertApplyUpload",
   icon: "ph:certificate",

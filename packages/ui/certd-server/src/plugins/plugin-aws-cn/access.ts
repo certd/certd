@@ -1,10 +1,5 @@
 import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
 
-export const AwsCNRegions = [
-  { label: 'cn-north-1', value: 'cn-north-1' },
-  { label: 'cn-northwest-1', value: 'cn-northwest-1' },
-];
-
 @IsAccess({
   name: 'aws-cn',
   title: '亚马逊云科技（国区）授权',

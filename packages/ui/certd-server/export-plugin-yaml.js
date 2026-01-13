@@ -80,6 +80,9 @@ async function genMetadata(){
   for (const key in modules) {
     const module = modules[key]
     const entry = Object.entries(module)
+    if (entry.length >1) {
+      console.log(`[warning] 文件 ${key} 导出了 ${entry.length} 个对象: ${entry.map(([name, value]) => name).join(", ")}`)
+    }
     for (const [name, value] of entry) {
       //如果有define属性
       if(value.define){

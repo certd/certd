@@ -1,8 +1,9 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import { CertInfo } from '@certd/plugin-cert';
-import { AwsAccess, AwsRegions } from '../access.js';
+import { AwsAccess } from '../access.js';
 import { AwsClient } from '../libs/aws-client.js';
 import { CertApplyPluginNames} from '@certd/plugin-cert';
+import { AwsRegions } from "../constants.js";
 @IsTaskPlugin({
   name: 'AwsUploadToACM',
   title: 'AWS-上传证书到ACM',

@@ -992,7 +992,7 @@ export default defineComponent({
 
     const { viewCert, downloadCert } = useCertViewer();
     const isCert = computed(() => {
-      return currentPipeline.value?.type?.startsWith("cert");
+      return currentPipeline.value?.type?.startsWith("cert") || pipelineDetail.value.lastVars?.certExpiresTime;
     });
 
     const hasWebhookTrigger = computed(() => {

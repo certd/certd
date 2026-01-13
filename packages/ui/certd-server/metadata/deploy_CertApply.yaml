@@ -440,4 +440,4 @@ output:
     type: certZip
 pluginType: deploy
 type: builtIn
-scriptFilePath: /plugins/plugin-cert/plugin/cert-plugin/index.js
+scriptFilePath: /plugins/plugin-cert/plugin/cert-plugin/apply.js

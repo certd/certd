@@ -1,8 +1,10 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
-import { AwsCNAccess, AwsCNRegions } from "../access.js";
+import { AwsCNAccess } from "../access.js";
 import { AwsIAMClient } from "../libs/aws-iam-client.js";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { AwsCNRegions } from '../constants.js';
+
 
 @IsTaskPlugin({
   name: 'AwsCNDeployToCloudFront',
