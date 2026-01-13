@@ -16,7 +16,7 @@ import { omit } from "lodash-es";
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名
   name: "TencentRefreshCert",
   title: "腾讯云-更新证书(Id不变)",
-  desc: "根据证书id一键更新腾讯云证书并自动部署（Id不变），注意该接口为腾讯云白名单功能，非白名单用户无法使用该功能",
+  desc: "根据证书id一键更新腾讯云证书并自动部署（Id不变），注意：当前仅支持CLB，其他需要等腾讯接口完善",
   icon: "svg:icon-tencentcloud",
   //插件分组
   group: pluginGroups.tencent.key,
@@ -98,7 +98,7 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
 
   @TaskInput({
     title: '资源区域',
-    helper:"如果云资源类型区分区域，请选择区域，如果区域在选项中不存在，请手动输入",
+    helper:"如果云资源类型区分区域，请选择区域，如果区域在选项中不存在，请手动输入（注意：当前仅支持CLB）",
     component: {
       name: 'remote-tree-select',
       vModel: 'value',
