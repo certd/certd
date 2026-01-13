@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.38.0](https://github.com/certd/certd/compare/v1.37.17...v1.38.0) (2026-01-13)
+
+### Features
+
+* 【破坏性更新】插件改为metadata加载模式，plugin-cert、plugin-lib包部分代码转移到certd-server中，影响自定义插件，需要修改相关import引用 ([a3fb249](https://github.com/certd/certd/commit/a3fb24993d7ac8fbb0bb354fa02ef067f609021e))
+
+### Performance Improvements
+
+* 支持公告功能 ([a79fe1f](https://github.com/certd/certd/commit/a79fe1f350f2991af9e5b50825f1776029677fc5))
+
 ## [1.37.17](https://github.com/certd/certd/compare/v1.37.16...v1.37.17) (2025-12-29)
 
 ### Performance Improvements

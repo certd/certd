@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.38.0](https://github.com/certd/certd/compare/v1.37.17...v1.38.0) (2026-01-13)
+
+### Bug Fixes
+
+* 修复禁用第三方登录自动注册无效的bug ([7ee39fd](https://github.com/certd/certd/commit/7ee39fd4eddfc847bcef879f0904a4319993d081))
+* 修复重启certd后，再启用流水线，不会自动执行的bug ([468ccbf](https://github.com/certd/certd/commit/468ccbf2b725fc4b78ce4b950a114e4a4be57698))
+
+### Features
+
+* 【破坏性更新】插件改为metadata加载模式，plugin-cert、plugin-lib包部分代码转移到certd-server中，影响自定义插件，需要修改相关import引用 ([a3fb249](https://github.com/certd/certd/commit/a3fb24993d7ac8fbb0bb354fa02ef067f609021e))
+
+### Performance Improvements
+
+* 流水线页面可以查看证书过期时间 ([be03d8e](https://github.com/certd/certd/commit/be03d8e13752c355dbec158da78b9cb4c3b3bb5d))
+* 每页记录条数保持 ([14f9987](https://github.com/certd/certd/commit/14f99875fb3f535fa5ffb7bf5db3960b105aa7aa))
+* 手机号登录放到前面 ([26ac081](https://github.com/certd/certd/commit/26ac08118219407c5dd3afc35130cdd48b8fab05))
+* 优化微信支付对接文档 ([64e0d9a](https://github.com/certd/certd/commit/64e0d9a4d54b0d9da028be2c5e0ece7a97b2c250))
+* 优化站点监控，支持设置忽略主站证书一致性，支持开启和关闭自动同步ip ([26f75c7](https://github.com/certd/certd/commit/26f75c71ba8866278dbe117f1bfaf671e7f70781))
+* 增加邮件发送证书模版配置 ([cabc4da](https://github.com/certd/certd/commit/cabc4da3ac003a8c699c69f5bffea4c149be185c))
+* 站点监控增加是否自动同步IP开关 ([5268904](https://github.com/certd/certd/commit/52689049ae8e004e1252ab1e2872fbf676e0295f))
+* 证书流水线可以开启webhook ([840bd52](https://github.com/certd/certd/commit/840bd526714072315244a6900c95395d2d62f647))
+* 支持公告功能 ([a79fe1f](https://github.com/certd/certd/commit/a79fe1f350f2991af9e5b50825f1776029677fc5))
+* 支持webhook触发流水线，新增触发类型图标显示 ([1a29541](https://github.com/certd/certd/commit/1a2954114063a8b994c257a90e5814e0a3a8d924))
+* webhook触发器一个流水线限制只能添加一个 ([6c39d7b](https://github.com/certd/certd/commit/6c39d7b1eecb679cb6506b0e3557e8152e01417d))
+* zenlayer证书更新 ([9ba6c83](https://github.com/certd/certd/commit/9ba6c838215d0750cda925778a47002a521f05e9))
+
 ## [1.37.17](https://github.com/certd/certd/compare/v1.37.16...v1.37.17) (2025-12-29)
 
 ### Performance Improvements
