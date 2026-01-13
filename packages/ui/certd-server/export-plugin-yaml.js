@@ -229,8 +229,16 @@ table th:nth-of-type(2) {
 // setTimeout(() => why(), 100); // 延迟打印原因
 async function main(){
   await genMetadata()
-  await genPluginMd()
+  console.log("genMetadata success")
+  // 获取args genmd
+  const args = process.argv.slice(2)
+  if(!args.includes("docoff")){
+    await genPluginMd()
+    console.log("genPluginMd success")
+  }
   process.exit()
 }
+
+
 main()
 
