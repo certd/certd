@@ -660,6 +660,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             ],
           }),
           form: {
+            helper: t("certd.monitor.ipCheckHelper"),
             value: false,
             rules: [{ required: true, message: t("certd.monitor.selectRequired") }],
           },
