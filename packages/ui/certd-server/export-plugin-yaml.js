@@ -172,7 +172,8 @@ async function genPluginMd() {
     let i = 0;
     for (const x of list) {
       i++
-      mdContent += `| ${i}.| **${x.title}** | ${x.desc||''} | \n`;
+      const desc = x.desc||''
+      mdContent += `| ${i}.| **${x.title}** | ${desc.replaceAll("\n"," ")} | \n`;
     }
     return mdContent;
   }
