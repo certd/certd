@@ -103,7 +103,7 @@
                         </a-button>
                       </div>
                     </div>
-                    <div v-if="editMode" class="task-container is-add">
+                    <div v-if="editMode && !hasWebhookTrigger" class="task-container is-add">
                       <div class="line line-right">
                         <div class="flow-line"></div>
                       </div>
@@ -994,6 +994,10 @@ export default defineComponent({
     const isCert = computed(() => {
       return currentPipeline.value?.type?.startsWith("cert");
     });
+
+    const hasWebhookTrigger = computed(() => {
+      return currentPipeline.value?.triggers?.some((item: any) => item.type === "webhook");
+    });
     return {
       isCert,
       pipeline,
@@ -1013,6 +1017,7 @@ export default defineComponent({
       viewCert,
       downloadCert,
       pipelineDetail,
+      hasWebhookTrigger,
     };
   },
 });
