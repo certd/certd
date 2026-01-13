@@ -28,9 +28,13 @@ async function createRelease(versionTitle, content) {
 }
 
 async function publishToGitee() {
-     const { versionTitle, content } = getVersionContent()
-    const release = await createRelease(versionTitle, content)
-    console.log("publishToGitee success")
+    try{
+        const { versionTitle, content } = getVersionContent()
+        const release = await createRelease(versionTitle, content)
+        console.log("publishToGitee success")
+    } catch (error) {
+        console.error("publishToGitee error:", error)
+    }
 }
 
 publishToGitee()
