@@ -53,7 +53,7 @@ RUN ARCH=$(uname -m) && \
 ENV TZ=Asia/Shanghai
 ENV NODE_ENV=production
 ENV MIDWAY_SERVER_ENV=production
-CMD ["npm", "run","start"]
+CMD ["node", "--optimize-for-size", "./bootstrap.js"]
 
 
 
