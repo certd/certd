@@ -56,3 +56,16 @@ jobs:
           retry-count: 3
           retry-delay: 5000
 
+      - name: deploy-certd-doc
+        uses: tyrrrz/action-http-request@master
+        with:
+          url: ${{ secrets.WEBHOOK_CERTD_DOC }}
+          method: POST
+          body: |
+            {
+              "CERTD_VERSION": "1.0.0"
+            }
+          headers: |
+            Content-Type: application/json
+          retry-count: 3
+          retry-delay: 5000

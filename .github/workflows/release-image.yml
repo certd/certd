@@ -130,23 +130,4 @@ jobs:
             Content-Type: application/json
           retry-count: 3
           retry-delay: 5000
-      
-      - name: publish_to_atomgit
-        id: publish_to_atomgit
-        run: |
-          rootDir=$(pwd)
-          rm -rf ./packages/ui/certd-client/dist/**/*.gz 
-          cd ./packages/ui/certd-client/dist && zip -r ../../../ui.zip .
-          cd $rootDir
-          export ATOMGIT_TOKEN=${{ secrets.ATOMGIT_TOKEN }}
-          pnpm install
-          npm run publish_to_atomgit
-        working-directory: ./
-      
-      - name: publish_to_gitee
-        id: publish_to_gitee
-        run: |
-          export GITEE_TOKEN=${{ secrets.GITEE_TOKEN }}
-          pnpm install
-          npm run publish_to_gitee
-        working-directory: ./
+   
