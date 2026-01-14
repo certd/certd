@@ -33,7 +33,11 @@ async function publishToGitee() {
         const release = await createRelease(versionTitle, content)
         console.log("publishToGitee success")
     } catch (error) {
-        console.error("publishToGitee error:", error)
+        if (error?.response?.data){
+            console.log("publishToGitee error:",error.response.data)
+        }else{
+            console.log("publishToGitee error:",error)
+        }
     }
 }
 

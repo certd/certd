@@ -152,15 +152,24 @@ async function uploadFile(url, headers, data) {
 
 async function publishToAtomgit() {
     const { versionTitle, content } = getVersionContent()
-    const release = await createRelease(versionTitle, content)
-    const uploadUrl = await getUploadUrl(versionTitle)
-    const fileName = `./packages/ui/certd-client/ui.zip`
-    const fileData = fs.createReadStream(fileName)
-    const contentLength = fs.statSync(fileName).size
-    uploadUrl.headers['Content-Length'] = contentLength
-    const response = await uploadFile(uploadUrl.url, uploadUrl.headers, fileData)
-    console.log("uploadFile success:")
-    console.log("publishToAtomgit success")
+    try{
+        const release = await createRelease(versionTitle, content)
+        const uploadUrl = await getUploadUrl(versionTitle)
+        const fileName = `./packages/ui/certd-client/ui.zip`
+        const fileData = fs.createReadStream(fileName)
+        const contentLength = fs.statSync(fileName).size
+        uploadUrl.headers['Content-Length'] = contentLength
+        const response = await uploadFile(uploadUrl.url, uploadUrl.headers, fileData)
+        console.log("uploadFile success:")
+        console.log("publishToAtomgit success")
+    }catch(error){
+        if (error?.response?.data){
+            console.log("publishToAtomgit error:",error.response.data)
+        }else{
+            console.log("publishToAtomgit error:",error)
+        }
+    }
+   
 }
 
 publishToAtomgit()
