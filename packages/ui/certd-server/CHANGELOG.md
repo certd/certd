@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.1](https://github.com/certd/certd/compare/v1.38.0...v1.38.1) (2026-01-15)
+
+### Bug Fixes
+
+* 修复自定义插件name丢失author导致找不到插件的bug ([2fbb58e](https://github.com/certd/certd/commit/2fbb58eb2b239eab4864f90aa72b0ef2ada38e8f))
+
+### Performance Improvements
+
+* 自定义插件支持使用_ctx.import("/@/xxx.js")以绝对路径引用模块 ([9eace86](https://github.com/certd/certd/commit/9eace86aeeb48c23b55102fc5d42088294d9eb97))
+
 # [1.38.0](https://github.com/certd/certd/compare/v1.37.17...v1.38.0) (2026-01-13)
 
 ### Bug Fixes
