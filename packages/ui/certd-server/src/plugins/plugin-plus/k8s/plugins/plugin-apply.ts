@@ -4,7 +4,7 @@ import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-cert";
 import dayjs from "dayjs";
 import { get } from "lodash-es";
 import { K8sAccess } from "../access.js";
-import { AbstractPlusTaskPlugin } from "@certd/plugin-lib";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 @IsTaskPlugin({
   name: "K8sApply",
   title: "K8S-Apply自定义yaml",

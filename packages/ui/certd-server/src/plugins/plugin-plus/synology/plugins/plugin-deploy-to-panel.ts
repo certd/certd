@@ -1,6 +1,6 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertInfo } from "@certd/plugin-lib";
-import { AbstractPlusTaskPlugin } from "@certd/plugin-lib";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import { SynologyClient } from "@certd/plugin-plus";
 import { SynologyAccess } from "../access.js";
 import { CertApplyPluginNames } from "@certd/plugin-lib";

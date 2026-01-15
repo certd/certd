@@ -262,7 +262,7 @@ export class PluginService extends BaseService<PluginEntity> {
       return;
     }
     let name = item.name;
-    if (item.author){
+    if (item.author && !item.name.startsWith( `${item.author}/`)){
        name = `${item.author}/${item.name}`
     }
     if (item.pluginType  === "access"){
@@ -331,7 +331,6 @@ export class PluginService extends BaseService<PluginEntity> {
     });
     if (info && info.length > 0) {
       const plugin = info[0];
-
       try {
         const AsyncFunction = Object.getPrototypeOf(async () => {
         }).constructor;
@@ -399,12 +398,11 @@ export class PluginService extends BaseService<PluginEntity> {
     delete item.metadata;
     delete item.content;
     delete item.extra;
-    let name = item.name
-
-    if (item.author) {
-      name = item.author + "/" + name;
+     if (item.author) {
+       item.name = item.author + "/" +  item.name;
     }
-     if(item.addonType){
+    let name = item.name
+    if(item.addonType){
       name = item.addonType + ":" + name;
     }
     let registry = null;

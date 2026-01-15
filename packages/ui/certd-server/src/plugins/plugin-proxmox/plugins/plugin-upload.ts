@@ -1,6 +1,6 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import { CertInfo } from '@certd/plugin-cert';
-import { AbstractPlusTaskPlugin } from '@certd/plugin-lib';
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import { ProxmoxAccess } from '../access.js';
 import { createRemoteSelectInputDefine } from '@certd/plugin-lib';
 import { CertApplyPluginNames} from '@certd/plugin-cert';

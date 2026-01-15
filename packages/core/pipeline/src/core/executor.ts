@@ -276,7 +276,10 @@ export class Executor {
     const lastStatus = this.lastStatusMap.get(step.id);
     //执行任务
     const plugin: RegistryItem<AbstractTaskPlugin> = pluginRegistry.get(step.type);
-
+    if (!plugin) {
+      currentLogger.error(`未找到插件${step.type}`);
+      throw new Error(`未找到插件${step.type}`);
+    }
     //@ts-ignore
     let instance: ITaskPlugin = null;
     try {
@@ -285,7 +288,7 @@ export class Executor {
       //@ts-ignore
       instance = new pluginCls();
     } catch (e: any) {
-      currentLogger.error(`实例化插件失败:${e.message}`);
+      currentLogger.error(`实例化插件失败:${step.type}:${e.message}`);
       throw new Error(`实例化插件失败`, e);
     }
 

@@ -1,8 +1,8 @@
 import {IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput} from "@certd/pipeline";
 import {CertApplyPluginNames, CertInfo} from "@certd/plugin-cert";
-import {AbstractPlusTaskPlugin, createCertDomainGetterInputDefine, createRemoteSelectInputDefine} from "@certd/plugin-lib";
+import {createCertDomainGetterInputDefine, createRemoteSelectInputDefine} from "@certd/plugin-lib";
 import {ApisixAccess} from "../access.js";
-
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 @IsTaskPlugin({
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名
   name: "ApisixRefreshCert",

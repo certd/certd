@@ -1,6 +1,6 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { BaotaClient } from "../lib/client.js";
-import { AbstractPlusTaskPlugin } from "@certd/plugin-lib";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import dayjs from "dayjs";
 @IsTaskPlugin({
   name: "BaotaDeleteExpiringCert",
