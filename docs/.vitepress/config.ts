@@ -108,12 +108,12 @@ export default defineConfig({
                     text: "常见问题",
                     items: [
                         {text: "QA", link: "/guide/qa/use.md"},
+                        {text: "忘记密码/无法登录", link: "/guide/use/forgotpasswd/"},
                         {text: "群晖证书部署", link: "/guide/use/synology/"},
                         {text: "腾讯云密钥获取", link: "/guide/use/tencent/"},
                         {text: "连接windows主机", link: "/guide/use/host/windows.md"},
                         {text: "Google EAB获取", link: "/guide/use/google/"},
                         {text: "阿里云相关", link: "/guide/use/aliyun/"},
-                        {text: "忘记密码", link: "/guide/use/forgotpasswd/"},
                         {text: "数据备份", link: "/guide/use/backup/"},
                         {text: "Certd本身的证书更新", link: "/guide/use/https/index.md"},
                         {text: "js脚本插件使用", link: "/guide/use/custom-script/index.md"},
