@@ -14,7 +14,7 @@ export class BuiltInPluginService {
         continue;
       }
       //@ts-ignore
-      if(Plugin.define?.type && Plugin.define?.type !== 'builtin'){
+      if(Plugin.define?.type && Plugin.define?.type.toLowerCase() !== 'builtin'){
         continue;
       }
       list.push({ ...Plugin.define, key });

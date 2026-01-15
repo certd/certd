@@ -1,16 +1,16 @@
-import {Inject, Provide, Scope, ScopeEnum} from "@midwayjs/core";
-import {addonRegistry, BaseService, PageReq} from "@certd/lib-server";
-import {PluginEntity} from "../entity/plugin.js";
-import {InjectEntityModel} from "@midwayjs/typeorm";
-import {IsNull, Not, Repository} from "typeorm";
-import {isComm} from "@certd/plus-core";
-import {BuiltInPluginService} from "../../pipeline/service/builtin-plugin-service.js";
-import {merge} from "lodash-es";
-import {accessRegistry, notificationRegistry, pluginRegistry} from "@certd/pipeline";
-import {dnsProviderRegistry} from "@certd/plugin-cert";
-import {logger} from "@certd/basic";
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { addonRegistry, BaseService, PageReq } from "@certd/lib-server";
+import { PluginEntity } from "../entity/plugin.js";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { IsNull, Not, Repository } from "typeorm";
+import { isComm } from "@certd/plus-core";
+import { BuiltInPluginService } from "../../pipeline/service/builtin-plugin-service.js";
+import { merge } from "lodash-es";
+import { accessRegistry, notificationRegistry, pluginRegistry } from "@certd/pipeline";
+import { dnsProviderRegistry } from "@certd/plugin-cert";
+import { logger } from "@certd/basic";
 import yaml from "js-yaml";
-import {getDefaultAccessPlugin, getDefaultDeployPlugin, getDefaultDnsPlugin} from "./default-plugin.js";
+import { getDefaultAccessPlugin, getDefaultDeployPlugin, getDefaultDnsPlugin } from "./default-plugin.js";
 import fs from "fs";
 import path from "path";
 
@@ -19,8 +19,21 @@ export type PluginImportReq = {
   override?: boolean;
 };
 
+ async function importer(modulePath: string) {
+  if (!modulePath) {
+    throw new Error("modules path 不能为空")
+  }
+  if (!modulePath.startsWith("/@/")) {
+    return await import(modulePath)
+  }
+  modulePath = modulePath.replace("/@/", "")
+  //替换@为相对地址
+  modulePath = `../../../${modulePath}`
+  return await import(modulePath)
+}
+
 @Provide()
-@Scope(ScopeEnum.Request, {allowDowngrade: true})
+@Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class PluginService extends BaseService<PluginEntity> {
   @InjectEntityModel(PluginEntity)
   repository: Repository<PluginEntity>;
@@ -57,7 +70,7 @@ export class PluginService extends BaseService<PluginEntity> {
     };
   }
 
-  async getEnabledBuildInGroup(opts?:{isSimple?:boolean,withSetting?:boolean}) {
+  async getEnabledBuildInGroup(opts?: { isSimple?: boolean, withSetting?: boolean }) {
     const groups = this.builtInPluginService.getGroups();
     if (opts?.isSimple) {
       for (const key in groups) {
@@ -75,17 +88,17 @@ export class PluginService extends BaseService<PluginEntity> {
 
     // 初始化设置
     const settingPlugins = await this.repository.find({
-      select:{
-        id:true,
-        name:true,
-        sysSetting:true
+      select: {
+        id: true,
+        name: true,
+        sysSetting: true
       },
       where: {
-        sysSetting : Not(IsNull())
+        sysSetting: Not(IsNull())
       }
     })
     //合并插件配置
-    const pluginSettingMap:any = {}
+    const pluginSettingMap: any = {}
     for (const item of settingPlugins) {
       if (!item.sysSetting) {
         continue;
@@ -99,7 +112,7 @@ export class PluginService extends BaseService<PluginEntity> {
       }
       for (const item of group.plugins) {
         const pluginSetting = pluginSettingMap[item.name];
-        if (pluginSetting){
+        if (pluginSetting) {
           item.sysSetting = pluginSetting
         }
       }
@@ -172,13 +185,13 @@ export class PluginService extends BaseService<PluginEntity> {
   }
 
   async setDisabled(opts: { id?: number; name?: string; type: string; disabled: boolean }) {
-    const {id, name, type, disabled} = opts;
+    const { id, name, type, disabled } = opts;
     if (!type) {
       throw new Error("参数错误: type 不能为空");
     }
     if (id > 0) {
       //update
-      await this.repository.update({id}, {disabled});
+      await this.repository.update({ id }, { disabled });
       return;
     }
 
@@ -214,7 +227,7 @@ export class PluginService extends BaseService<PluginEntity> {
       throw new Error(`插件${param.author}/${param.name}已存在`);
     }
 
-    if (param.type === "builtIn"){
+    if (param.type === "builtIn") {
       return await super.add({
         ...param,
       });
@@ -233,7 +246,7 @@ export class PluginService extends BaseService<PluginEntity> {
       throw new Error(`插件类型${param.pluginType}不支持`);
     }
 
-    const res= await super.add({
+    const res = await super.add({
       ...param,
       ...plugin
     });
@@ -242,18 +255,18 @@ export class PluginService extends BaseService<PluginEntity> {
     return res
   }
 
-   async registerById(id: any) {
+  async registerById(id: any) {
     const item = await this.info(id);
     if (!item) {
       return;
     }
-    if(item.type === "builtIn"){
+    if (item.type === "builtIn") {
       return;
     }
     await this.registerPlugin(item);
   }
 
-  async unRegisterById(id: any){
+  async unRegisterById(id: any) {
     const item = await this.info(id);
     if (!item) {
       return;
@@ -262,19 +275,19 @@ export class PluginService extends BaseService<PluginEntity> {
       return;
     }
     let name = item.name;
-    if (item.author && !item.name.startsWith( `${item.author}/`)){
-       name = `${item.author}/${item.name}`
+    if (item.author && !item.name.startsWith(`${item.author}/`)) {
+      name = `${item.author}/${item.name}`
     }
-    if (item.pluginType  === "access"){
+    if (item.pluginType === "access") {
       accessRegistry.unRegister(name)
-    }else if (item.pluginType === "deploy"){
+    } else if (item.pluginType === "deploy") {
       pluginRegistry.unRegister(name)
-    }else if (item.pluginType === "dnsProvider"){
+    } else if (item.pluginType === "dnsProvider") {
       dnsProviderRegistry.unRegister(name)
-    }else if (item.pluginType === "notification"){
+    } else if (item.pluginType === "notification") {
       notificationRegistry.unRegister(name)
-    }else{
-     logger.warn(`不支持的插件类型：${item.pluginType}`)
+    } else {
+      logger.warn(`不支持的插件类型：${item.pluginType}`)
     }
   }
 
@@ -291,7 +304,7 @@ export class PluginService extends BaseService<PluginEntity> {
     }
 
 
-    const res= await super.update(param);
+    const res = await super.update(param);
 
     await this.registerById(param.id);
     return res
@@ -300,14 +313,14 @@ export class PluginService extends BaseService<PluginEntity> {
   async compile(code: string) {
     const ts = await import("typescript");
     return ts.transpileModule(code, {
-      compilerOptions: {module: ts.ModuleKind.ESNext}
+      compilerOptions: { module: ts.ModuleKind.ESNext }
     }).outputText;
   }
 
 
   private async getPluginClassFromFile(item: any) {
     const scriptFilePath = item.scriptFilePath;
-    const res =  await import((`../../..${scriptFilePath}`))
+    const res = await import((`../../..${scriptFilePath}`))
     const classNames = Object.keys(res)
     return res[classNames[classNames.length - 1]]
   }
@@ -336,8 +349,8 @@ export class PluginService extends BaseService<PluginEntity> {
         }).constructor;
         // const script = await this.compile(plugin.content);
         const script = plugin.content;
-        const getPluginClass = new AsyncFunction(script);
-        return await getPluginClass({logger: logger});
+        const getPluginClass = new AsyncFunction("_ctx", script);
+        return await getPluginClass({ logger: logger, import: importer });
       } catch (e) {
         logger.error("编译插件失败:", e);
         throw e;
@@ -379,7 +392,7 @@ export class PluginService extends BaseService<PluginEntity> {
     }
     //排序
     list = list.sort((a, b) => {
-      return (a.order??10) - (b.order ??10);
+      return (a.order ?? 10) - (b.order ?? 10);
     });
 
     for (const item of list) {
@@ -398,11 +411,11 @@ export class PluginService extends BaseService<PluginEntity> {
     delete item.metadata;
     delete item.content;
     delete item.extra;
-     if (item.author) {
-       item.name = item.author + "/" +  item.name;
+    if (item.author) {
+      item.name = item.author + "/" + item.name;
     }
     let name = item.name
-    if(item.addonType){
+    if (item.addonType) {
       name = item.addonType + ":" + name;
     }
     let registry = null;
@@ -414,9 +427,9 @@ export class PluginService extends BaseService<PluginEntity> {
       registry = dnsProviderRegistry;
     } else if (item.pluginType === "notification") {
       registry = notificationRegistry;
-    }else if (item.pluginType === "addon") {
+    } else if (item.pluginType === "addon") {
       registry = addonRegistry;
-    }  else {
+    } else {
       logger.warn(`插件${name}类型错误:${item.pluginType}`);
       return;
     }
@@ -495,9 +508,9 @@ export class PluginService extends BaseService<PluginEntity> {
 
     if (!old) {
       //add
-      const {id} = await this.add(pluginEntity);
+      const { id } = await this.add(pluginEntity);
       pluginEntity.id = id;
-    } else{
+    } else {
       if (!req.override) {
         throw new Error(`插件${loaded.author}/${loaded.name}已存在`);
       }
@@ -511,8 +524,8 @@ export class PluginService extends BaseService<PluginEntity> {
   }
 
 
-  async deleteByIds(ids:any[]){
-     await super.delete(ids);
+  async deleteByIds(ids: any[]) {
+    await super.delete(ids);
     for (const id of ids) {
       await this.unRegisterById(id)
     }
