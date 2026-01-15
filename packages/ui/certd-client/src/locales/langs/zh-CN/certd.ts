@@ -729,6 +729,7 @@ export default {
   cnameDomain: "CNAME域名",
   cnameDomainPlaceholder: "cname.handsfree.work",
   cnameDomainHelper: "需要一个右边DNS提供商注册的域名（也可以将其他域名的dns服务器转移到这几家来）。\nCNAME域名一旦确定不可修改，建议使用一级子域名",
+  cnameDomainPattern: "域名不能使用星号",
   dnsProvider: "DNS提供商",
   dnsProviderAuthorization: "DNS提供商授权",
   setDefault: "设置默认",

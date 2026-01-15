@@ -88,7 +88,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               placeholder: t("certd.cnameDomainPlaceholder"),
             },
             helper: t("certd.cnameDomainHelper"),
-            rules: [{ required: true, message: t("certd.requiredField") }],
+            rules: [
+              { required: true, message: t("certd.requiredField") },
+              { pattern: /^[^*]+$/, message: t("certd.cnameDomainPattern") },
+            ],
           },
           column: {
             width: 200,

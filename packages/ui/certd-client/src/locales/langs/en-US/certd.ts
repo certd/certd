@@ -721,6 +721,7 @@ export default {
   cnameDomainPlaceholder: "cname.handsfree.work",
   cnameDomainHelper:
     "Requires a domain registered with a DNS provider on the right (or you can transfer other domain DNS servers here).\nOnce the CNAME domain is set, it cannot be changed. It is recommended to use a first-level subdomain.",
+  cnameDomainPattern: "Domain name cannot contain *",
   dnsProvider: "DNS Provider",
   dnsProviderAuthorization: "DNS Provider Authorization",
   setDefault: "Set Default",
