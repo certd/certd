@@ -37,7 +37,7 @@ export class AutoZPrint {
     logger.info(`当前版本:${version}`);
     const plusInfo = getPlusInfo();
     if (isPlus()) {
-      logger.info(`授权信息:${plusInfo.vipType},${dayjs(plusInfo.expireTime).format('YYYY-MM-DD')}`);
+      logger.info(`授权信息:${plusInfo.vipType},${plusInfo.expireTime === -1 ? '永久' : dayjs(plusInfo.expireTime).format('YYYY-MM-DD')}`);
     }
     logger.info('Certd已启动');
     logger.info('=========================================');
