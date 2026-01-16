@@ -18,7 +18,7 @@
     "start:server": "cd ./packages/ui/certd-server && npm start",
     "devb": "lerna run dev-build",
     "i-all": "lerna link && lerna exec npm install  ",
-    "publish": "npm run prepublishOnly2  && lerna publish --force-publish=pro/plus-core --conventional-commits --create-release github && npm run afterpublishOnly ",
+    "publish": "npm run prepublishOnly2  && lerna publish --force-publish=pro/plus-core --conventional-commits && npm run afterpublishOnly ",
     "afterpublishOnly": "npm run copylogs && time /t >trigger/build.trigger && git add ./trigger/build.trigger && git commit -m \"build: trigger build image\" && TIMEOUT /T 10 && npm run commitAll",
     "transform-sql": "cd ./packages/ui/certd-server/db/ && node --experimental-json-modules transform.js",
     "plugin-doc-gen": "cd ./packages/ui/certd-server/ && npm run export-metadata",

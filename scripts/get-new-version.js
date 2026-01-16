@@ -17,7 +17,7 @@ export function getVersionContent() {
     const contentStart = versionLineIndex + 1
     lines = lines.slice(contentStart)
     const contentEnd = lines.findIndex(line => {
-        return line.startsWith('## ')
+        return line.startsWith('## [') || line.startsWith('# [')
     })
     const content = lines.slice(0, contentEnd).join('\n')
     console.log("-------title------/n")
