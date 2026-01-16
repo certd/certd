@@ -1,5 +1,5 @@
 import { HttpClient, ILogger, utils } from "@certd/basic";
-import { IAccess, IServiceGetter, Registrable } from "@certd/pipeline";
+import { IAccess, IServiceGetter, Pager, PageRes, Registrable } from "@certd/pipeline";
 
 export type DnsProviderDefine = Registrable & {
   accessType: string;
@@ -28,6 +28,12 @@ export type DnsProviderContext = {
   serviceGetter: IServiceGetter;
 };
 
+export type DomainRecord = {
+  id: string;
+  domain: string;
+  thirdDns: boolean;
+};
+
 export interface IDnsProvider<T = any> {
   onInstance(): Promise<void>;
 
@@ -51,6 +57,8 @@ export interface IDnsProvider<T = any> {
 
   //中文域名是否需要punycode转码，如果返回True，则使用punycode来添加解析记录，否则使用中文域名添加解析记录
   usePunyCode(): boolean;
+
+  getDomainListPage(pager: Pager): Promise<PageRes<DomainRecord>>;
 }
 
 export interface ISubDomainsGetter {

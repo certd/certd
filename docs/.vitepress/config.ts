@@ -124,6 +124,7 @@ export default defineConfig({
                         {text: "子域名托管", link: "/guide/use/cert/subdomain.md"},
                         {text: "流水线有效期", link: "/guide/use/pipeline/valid.md"},
                         {text: "IP证书申请", link: "/guide/use/cert/ip.md"},
+                        {text: "插件开发", link: "/guide/use/dev/plugin.md"},
                     ]
                 },
                 {

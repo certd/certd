@@ -12,7 +12,10 @@
           <a-switch v-model:checked="formState.public.userValidTimeEnabled" :disabled="!settingsStore.isPlus" />
           <vip-button class="ml-5" mode="button"></vip-button>
         </div>
-        <div class="helper">{{ t("certd.userValidityPeriodHelper") }}</div>
+        <div class="helper">
+          {{ t("certd.userValidityPeriodHelper") }}
+          <a href="https://certd.docmirror.cn/guide/use/setting/user-valid.html" target="_blank">{{ t("certd.helpDocLink") }}</a>
+        </div>
       </a-form-item>
       <template v-if="formState.public.registerEnabled">
         <a-form-item :label="t('certd.enableUsernameRegistration')" :name="['public', 'usernameRegisterEnabled']">

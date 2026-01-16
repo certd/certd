@@ -21,7 +21,10 @@
           <a-switch v-model:checked="formState.public.certDomainAddToMonitorEnabled" :disabled="!settingsStore.isPlus" />
           <vip-button class="ml-5" mode="button"></vip-button>
         </div>
-        <div class="helper">{{ t("certd.sys.setting.certDomainAddToMonitorEnabledHelper") }}</div>
+        <div class="helper">
+          {{ t("certd.sys.setting.certDomainAddToMonitorEnabledHelper") }}
+          <a href="https://certd.docmirror.cn/guide/use/setting/user-valid.html" target="_blank">{{ t("certd.helpDocLink") }}</a>
+        </div>
       </a-form-item>
 
       <a-form-item :label="t('certd.sys.setting.fixedCertExpireDays')" :name="['public', 'fixedCertExpireDays']">

@@ -34,7 +34,7 @@
           <a-select-option value="ipv4first">{{ t("certd.ipv4Priority") }}</a-select-option>
           <a-select-option value="ipv6first">{{ t("certd.ipv6Priority") }}</a-select-option>
         </a-select>
-        <div class="helper">{{ t("certd.dualStackNetworkHelper") }}</div>
+        <div class="helper">{{ t("certd.dualStackNetworkHelper") }}, <a href="https://certd.docmirror.cn/guide/use/setting/ipv6.html" target="_blank">{{ t("certd.helpDocLink") }}</a></div>
       </a-form-item>
 
       <a-form-item :label="t('certd.sys.setting.showRunStrategy')" :name="['public', 'showRunStrategy']">

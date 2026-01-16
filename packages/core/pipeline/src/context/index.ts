@@ -11,11 +11,11 @@ export type PageSearch = {
   // sortOrder?: "asc" | "desc";
 };
 
-export type PageRes = {
+export type PageRes<T = any> = {
   pageNo?: number;
   pageSize?: number;
-  total?: string;
-  list: any[];
+  total?: number;
+  list: T[];
 };
 
 export class Pager {

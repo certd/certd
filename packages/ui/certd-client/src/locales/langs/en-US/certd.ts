@@ -36,6 +36,7 @@ export default {
     title: "Framework",
     home: "Home",
   },
+  helpDocLink: "Help Docs",
   title: "Certificate Automation",
   pipeline: "Pipeline",
   pipelineEdit: "Edit Pipeline",

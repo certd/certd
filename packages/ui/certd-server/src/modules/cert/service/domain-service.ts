@@ -4,12 +4,20 @@ import {In, Not, Repository} from 'typeorm';
 import {AccessService, BaseService} from '@certd/lib-server';
 import {DomainEntity} from '../entity/domain.js';
 import {SubDomainService} from "../../pipeline/service/sub-domain-service.js";
-import {DomainParser} from "@certd/plugin-cert";
+import {createDnsProvider, DomainParser} from "@certd/plugin-lib";
 import {DomainVerifiers} from "@certd/plugin-cert";
 import { SubDomainsGetter } from '../../pipeline/service/getter/sub-domain-getter.js';
 import { CnameRecordService } from '../../cname/service/cname-record-service.js';
 import { CnameRecordEntity } from "../../cname/entity/cname-record.js";
+import { http, logger, utils } from '@certd/basic';
+import { TaskServiceBuilder } from '../../pipeline/service/getter/task-service-getter.js';
+import { Pager } from '@certd/pipeline';
 
+ export interface SyncFromProviderReq {
+  userId: number;
+  dnsProviderType: string;
+  dnsProviderAccessId: string;
+}
 
 /**
  *
@@ -27,6 +35,9 @@ export class DomainService extends BaseService<DomainEntity> {
 
   @Inject()
   cnameRecordService: CnameRecordService;
+
+  @Inject()
+  taskServiceBuilder: TaskServiceBuilder;
 
   //@ts-ignore
   getRepository() {
@@ -186,5 +197,80 @@ export class DomainService extends BaseService<DomainEntity> {
     }
 
     return domainVerifiers;
+  }
+
+  
+
+  async syncFromProvider(req: SyncFromProviderReq) {
+    const { userId, dnsProviderType, dnsProviderAccessId } = req;
+    const subDomainGetter = new SubDomainsGetter(userId, this.subDomainService)
+    const domainParser = new DomainParser(subDomainGetter)
+    const serviceGetter = this.taskServiceBuilder.create({ userId });
+    const access = await this.accessService.getById(dnsProviderAccessId, userId);
+    const context = { access, logger, http, utils, domainParser, serviceGetter };
+    // 翻页查询dns的记录
+    const dnsProvider =  await createDnsProvider({dnsProviderType,context})
+    
+    const pager = new Pager({
+      pageNo: 1,
+      pageSize: 100,
+    })
+    const challengeType = "dns"
+
+    const importDomain =  async(domainRecord: any) =>{
+      const domain = domainRecord.domain
+      const old = await this.findOne({
+        where: {
+          domain,
+          userId,
+        }
+      })
+      if (old) {
+        //更新
+        await this.update({
+          id: old.id,
+          dnsProviderType,
+          dnsProviderAccess: dnsProviderAccessId,
+          challengeType,
+        })
+      } else {
+        //添加
+        await this.add({
+          userId,
+          domain,
+          dnsProviderType,
+          dnsProviderAccess: dnsProviderAccessId,
+          challengeType,
+        })
+      }
+    }
+    const start = async ()=>{
+      let count = 0
+      while(true){
+        const pageRes = await dnsProvider.getDomainListPage(pager)
+        if(!pageRes || !pageRes.list || pageRes.list.length === 0){
+          //遍历完成
+          break
+        }
+        //处理
+        for (const domainRecord of pageRes.list) {
+          if (domainRecord.thirdDns) {
+            //域名由第三方dns解析，不导入
+            continue
+          }
+          await importDomain(domainRecord)
+        }
+
+        count += pageRes.list.length
+        if(pageRes.total>0 && count >= pageRes.total){
+          //遍历完成
+          break
+        }
+        pager.pageNo++
+      }
+    }
+
+    start()
+
   }
 }

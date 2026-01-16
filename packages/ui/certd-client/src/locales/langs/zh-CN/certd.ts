@@ -40,7 +40,7 @@ export default {
     title: "框架",
     home: "首页",
   },
-
+  helpDocLink: "帮助文档",
   title: "证书自动化",
   pipeline: "证书自动化流水线",
   pipelineEdit: "编辑流水线",
