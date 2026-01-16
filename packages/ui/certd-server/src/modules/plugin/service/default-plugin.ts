@@ -96,6 +96,9 @@ input:   # 插件的输入参数
   const script = `
 // 要用await来import模块
 const { AbstractTaskPlugin } = await import("@certd/pipeline")
+// 使用_ctx.import("/@/xxx.js") 以绝对路径引用模块，/@相当于根路径
+const {AliyunAccess} = await _ctx.import("/@/plugins/plugin-lib/aliyun/access/index.js")
+_ctx.logger.info("AliyunAccess:",AliyunAccess)
 // 要返回一个继承AbstractTaskPlugin的class
 return class DemoTask extends AbstractTaskPlugin {
   // 这里是插件的输入参数，对应左边的input配置

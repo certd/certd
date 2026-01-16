@@ -2,7 +2,7 @@ import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipel
 import fs from "fs";
 import path from "path";
 import dayjs from "dayjs";
-import { AbstractPlusTaskPlugin } from "@certd/plugin-lib";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import JSZip from "jszip";
 import * as os from "node:os";
 import { OssClientContext, ossClientFactory, OssClientRemoveByOpts} from "../plugin-lib/oss/index.js";

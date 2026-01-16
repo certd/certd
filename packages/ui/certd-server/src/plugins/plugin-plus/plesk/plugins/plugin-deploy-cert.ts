@@ -1,6 +1,6 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
-import { AbstractPlusTaskPlugin } from "@certd/plugin-lib";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import { PleskAccess } from "../access.js";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import FormData from "form-data";

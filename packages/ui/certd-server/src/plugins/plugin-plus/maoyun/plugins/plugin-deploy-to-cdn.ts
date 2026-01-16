@@ -1,9 +1,9 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
-import { AbstractPlusTaskPlugin } from "@certd/plugin-lib";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import { MaoyunAccess } from "../access.js";
-import { MaoyunClient } from "../client.js";
+import { MaoyunClient } from "@certd/plugin-plus";
 
 @IsTaskPlugin({
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名

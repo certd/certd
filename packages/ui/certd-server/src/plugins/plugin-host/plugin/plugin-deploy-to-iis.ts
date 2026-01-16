@@ -1,6 +1,6 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertInfo } from "@certd/plugin-cert";
-import { AbstractPlusTaskPlugin } from "@certd/plugin-lib";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { tmpdir } from "node:os";
 import path from "node:path";

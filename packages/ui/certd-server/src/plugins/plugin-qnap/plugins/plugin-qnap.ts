@@ -1,6 +1,6 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import { CertInfo } from '@certd/plugin-cert';
-import { AbstractPlusTaskPlugin } from '@certd/plugin-lib';
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import { tmpdir } from 'node:os';
 import fs from 'fs';
 import { SshAccess, SshClient } from '../../plugin-lib/ssh/index.js';

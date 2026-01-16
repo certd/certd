@@ -1,7 +1,7 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertInfo } from "@certd/plugin-cert";
 import { BaotaClient } from "../lib/client.js";
-import { AbstractPlusTaskPlugin } from "@certd/plugin-lib";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import { CertApplyPluginNames } from "@certd/plugin-cert";
 @IsTaskPlugin({
   name: "BaotaDeployPanelCert",

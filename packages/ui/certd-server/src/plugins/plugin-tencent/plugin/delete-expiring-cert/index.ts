@@ -1,5 +1,5 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
-import { AbstractPlusTaskPlugin } from '@certd/plugin-lib';
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import dayjs from 'dayjs';
 import { remove } from 'lodash-es';
 import { TencentAccess, TencentSslClient } from '../../../plugin-lib/tencent/index.js';

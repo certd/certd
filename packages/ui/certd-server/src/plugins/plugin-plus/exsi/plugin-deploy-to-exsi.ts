@@ -1,8 +1,9 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
-import { AbstractPlusTaskPlugin, CertReader } from "@certd/plugin-lib";
+import { CertReader } from "@certd/plugin-lib";
 import { SshAccess } from "../../plugin-lib/ssh/ssh-access.js";
 import { SshClient } from "../../plugin-lib/ssh/ssh.js";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 @IsTaskPlugin({
   name: "ExsiDeployCert",
   title: "Exsi-部署证书到Exsi",

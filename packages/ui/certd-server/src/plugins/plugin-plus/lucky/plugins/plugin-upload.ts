@@ -2,7 +2,7 @@ import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipel
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { LuckyAccess } from "../access.js";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
-import { AbstractPlusTaskPlugin } from "@certd/plugin-lib";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import { isArray } from "lodash-es";
 
 @IsTaskPlugin({
