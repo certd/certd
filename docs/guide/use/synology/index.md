@@ -68,3 +68,30 @@
 
 ## 6. 配置通知和自动运行
 ![](./images/notify.png)
+
+
+## 三、 常见问题
+
+### 1. 登录超时 status:ECONNABORTED
+如果您的certd部署在群晖里面，可能会遇到登录超时的问题
+```
+httpRequest:https://dms.xxxxx.com:5001/webapi/entry.cgi, method:get
+请求出错: status:ECONNABORTED, statusText:ECONNABORTED
+Axio:sError: timeout of 120000ms exceeded
+```
+可能的原因是是您的dsm域名指向的局域网地址在容器内无法访问，导致登录超时
+
+你可以通过配置 域名映射来解决
+1. 获取群晖dsm内部地址
+  进入certd后台->系统管理->网络测试，  一般会看到 `172.xx.0.2` ，记住这个xx是多少
+![](./images/nettest.png)
+
+2. 修改容器编排 docker-compose.yaml
+
+```
+services:
+  certd:
+    ...
+    extra_hosts:   # 放开这段注释
+       - "你的dsm域名地址:172.xx.0.1" #  将xx替换成上面记住的数字
+```
