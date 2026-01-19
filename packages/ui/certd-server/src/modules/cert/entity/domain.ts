@@ -25,6 +25,15 @@ export class DomainEntity {
   @Column({ comment: '是否禁用', name: 'disabled' })
   disabled: boolean;
 
+  @Column({ comment: '注册时间', name: 'registration_date' })
+  registrationDate: number;
+
+  @Column({ comment: '过期时间', name: 'expiration_date' })
+  expirationDate: number;
+
+  @Column({ comment: '来源', name: 'from', length: 50 })
+  fromType: string;
+
 
   @Column({ comment: 'http上传类型', name: 'http_uploader_type', length: 50 })
   httpUploaderType: string;

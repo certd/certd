@@ -57,3 +57,11 @@ export async function DeleteBatch(ids: any[]) {
     data: { ids },
   });
 }
+
+export async function SyncSubmit(body: any) {
+  return await request({
+    url: apiPrefix + "/sync/submit",
+    method: "post",
+    data: body,
+  });
+}

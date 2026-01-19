@@ -8,6 +8,7 @@ import { useSettingStore } from "/@/store/settings";
 import { Dicts } from "/@/components/plugins/lib/dicts";
 import { createAccessApi } from "/@/views/certd/access/api";
 import { Modal } from "ant-design-vue";
+import { useDomainImport } from "./use";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -49,6 +50,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const dnsProviderTypeDict = dict({
     url: "pi/dnsProvider/dnsProviderTypeDict",
   });
+
+  const openDomainImportDialog = useDomainImport();
   return {
     crudOptions: {
       settings: {
@@ -86,6 +89,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           if (form.challengeType === "cname") {
             throw new Error("CNAME方式请前往CNAME记录页面进行管理");
           }
+        },
+      },
+      actionbar: {
+        buttons: {
+          import: {
+            title: "从域名提供商导入域名",
+            type: "primary",
+            text: "从域名提供商导入",
+            click: () => {
+              openDomainImportDialog();
+            },
+          },
         },
       },
       columns: {

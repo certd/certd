@@ -1,6 +1,7 @@
-import {CreateRecordOptions, DnsProviderContext, IDnsProvider, RemoveRecordOptions} from '@certd/plugin-cert';
+import {CreateRecordOptions, DnsProviderContext, DomainRecord, IDnsProvider, RemoveRecordOptions} from '@certd/plugin-cert';
 import {PlusService} from '@certd/lib-server';
 import punycode from 'punycode.js'
+import { Pager, PageRes } from '@certd/pipeline';
 export type CommonCnameProvider = {
   id: number;
   domain: string;
@@ -22,6 +23,9 @@ export class CommonDnsProvider implements IDnsProvider {
   constructor(opts: { config: CommonCnameProvider; plusService: PlusService }) {
     this.config = opts.config;
     this.plusService = opts.plusService;
+  }
+  getDomainListPage(pager: Pager): Promise<PageRes<DomainRecord>> {
+    throw new Error('公共CNAME服务不支持获取域名列表');
   }
 
   /**

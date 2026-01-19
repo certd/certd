@@ -1,5 +1,5 @@
 <template>
-  <icon-select class="dns-provider-selector" :value="modelValue" :options="options" @update:value="onChanged"> </icon-select>
+  <icon-select class="dns-provider-selector" :value="modelValue" :options="options" @update:value="atChange"> </icon-select>
 </template>
 
 <script lang="ts">
@@ -37,7 +37,7 @@ export default {
     }
     onCreate();
 
-    function onChanged(value: any) {
+    function atChange(value: any) {
       ctx.emit("update:modelValue", value);
       onSelectedChange(value);
     }
@@ -52,7 +52,7 @@ export default {
     }
     return {
       options,
-      onChanged,
+      atChange,
     };
   },
 };

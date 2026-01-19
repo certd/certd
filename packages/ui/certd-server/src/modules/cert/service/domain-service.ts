@@ -226,13 +226,19 @@ export class DomainService extends BaseService<DomainEntity> {
         }
       })
       if (old) {
+        const updateObj :any={
+           id: old.id,
+          registrationDate: domainRecord.registrationDate,
+          expirationDate: domainRecord.expirationDate,
+        }
+        if (old.fromType !== 'manual'){
+          //如果不是手动的，更新校验配置
+          updateObj.dnsProviderType = dnsProviderType
+          updateObj.dnsProviderAccess = dnsProviderAccessId
+          updateObj.challengeType = challengeType
+        }
         //更新
-        await this.update({
-          id: old.id,
-          dnsProviderType,
-          dnsProviderAccess: dnsProviderAccessId,
-          challengeType,
-        })
+        await this.update(updateObj)
       } else {
         //添加
         await this.add({
@@ -241,6 +247,10 @@ export class DomainService extends BaseService<DomainEntity> {
           dnsProviderType,
           dnsProviderAccess: dnsProviderAccessId,
           challengeType,
+          disabled: false,
+          fromType: 'auto',
+          registrationDate: domainRecord.registrationDate,
+          expirationDate: domainRecord.expirationDate,
         })
       }
     }
@@ -254,10 +264,6 @@ export class DomainService extends BaseService<DomainEntity> {
         }
         //处理
         for (const domainRecord of pageRes.list) {
-          if (domainRecord.thirdDns) {
-            //域名由第三方dns解析，不导入
-            continue
-          }
           await importDomain(domainRecord)
         }
 

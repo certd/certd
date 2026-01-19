@@ -72,7 +72,7 @@ export default defineComponent({
     }
 
     async function emitValue(value) {
-      if (pipeline?.value && target?.value && pipeline.value.userId !== target.value.userId) {
+      if (pipeline && pipeline?.value && target?.value && pipeline.value.userId !== target.value.userId) {
         message.error("对不起，您不能修改他人流水线的授权");
         return;
       }
