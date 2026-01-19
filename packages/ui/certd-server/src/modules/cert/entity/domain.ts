@@ -31,7 +31,7 @@ export class DomainEntity {
   @Column({ comment: '过期时间', name: 'expiration_date' })
   expirationDate: number;
 
-  @Column({ comment: '来源', name: 'from', length: 50 })
+  @Column({ comment: '来源', name: 'from_type', length: 50 })
   fromType: string;
 
 
