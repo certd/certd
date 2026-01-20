@@ -51,7 +51,10 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
       delete form.lastVars;
       delete form.createTime;
       delete form.id;
-      let pipeline = JSON.parse(form.content);
+      let pipeline = form.content;
+      if (typeof pipeline === "string" && pipeline.startsWith("{")) {
+        pipeline = JSON.parse(form.content);
+      }
       pipeline.title = form.title;
       pipeline = setRunnableIds(pipeline);
       form.content = JSON.stringify(pipeline);

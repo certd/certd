@@ -130,7 +130,7 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
       try{
         await this.clearSiteCert(client,siteId);
       }catch (e) {
-        this.logger.error("清理站点[${siteId}]证书失败",e)
+        this.logger.error(`清理站点[${siteId}]证书失败`,e)
       }
 
       try {
@@ -160,7 +160,7 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
         try{
           await this.clearSiteCert(client,siteId);
         }catch (e) {
-          this.logger.error("清理站点[${siteId}]证书失败",e)
+          this.logger.error(`清理站点[${siteId}]证书失败`,e)
         }
       }
     }
