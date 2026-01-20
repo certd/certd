@@ -79,9 +79,9 @@ httpRequest:https://dms.xxxxx.com:5001/webapi/entry.cgi, method:get
 请求出错: status:ECONNABORTED, statusText:ECONNABORTED
 Axio:sError: timeout of 120000ms exceeded
 ```
-可能的原因是是您的dsm域名指向的局域网地址在容器内无法访问，导致登录超时
+可能的原因是是您的dsm域名指向的ip地址在容器内无法访问，导致登录超时
 
-你可以通过配置 域名映射来解决
+您可以通过配置域名映射来解决
 1. 获取群晖dsm内部地址
   进入certd后台->系统管理->网络测试，  一般会看到 `172.xx.0.2` ，记住这个xx是多少
 ![](./images/nettest.png)

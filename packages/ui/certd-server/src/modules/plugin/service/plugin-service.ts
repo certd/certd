@@ -286,6 +286,8 @@ export class PluginService extends BaseService<PluginEntity> {
       dnsProviderRegistry.unRegister(name)
     } else if (item.pluginType === "notification") {
       notificationRegistry.unRegister(name)
+    }else if (item.pluginType === "addon") {
+      addonRegistry.unRegister(name)
     } else {
       logger.warn(`不支持的插件类型：${item.pluginType}`)
     }

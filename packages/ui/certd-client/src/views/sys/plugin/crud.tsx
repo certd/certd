@@ -228,7 +228,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             rules: [
               { required: true },
               {
-                type: "regexp",
+                type: "pattern",
                 pattern: /^[a-zA-Z][a-zA-Z0-9]+$/,
                 message: t("certd.pluginNameRuleMsg"),
               },
@@ -257,7 +257,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             rules: [
               { required: true },
               {
-                type: "regexp",
+                type: "pattern",
                 pattern: /^[a-zA-Z][a-zA-Z0-9]+$/,
                 message: t("certd.authorRuleMsg"),
               },
