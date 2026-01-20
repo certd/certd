@@ -22,4 +22,15 @@ const onRegister = ({ key, value }: OnRegisterContext<AbstractTaskPlugin>) => {
   }
   pluginGroups.other.plugins.push(value.define);
 };
-export const pluginRegistry = createRegistry<AbstractTaskPlugin>("plugin", onRegister);
+
+const onUnRegister = ({ key }: OnRegisterContext<AbstractTaskPlugin>) => {
+  for (const group of Object.values(pluginGroups)) {
+    const index = group.plugins.findIndex(plugin => plugin.name === key);
+    if (index > -1) {
+      group.plugins.splice(index, 1);
+      return;
+    }
+  }
+};
+
+export const pluginRegistry = createRegistry<AbstractTaskPlugin>("plugin", onRegister, onUnRegister);

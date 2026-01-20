@@ -305,7 +305,7 @@ export class PluginService extends BaseService<PluginEntity> {
       throw new Error(`插件${param.author}/${param.name}已存在`);
     }
 
-
+    await this.unRegisterById(param.id);
     const res = await super.update(param);
 
     await this.registerById(param.id);
@@ -413,7 +413,7 @@ export class PluginService extends BaseService<PluginEntity> {
     delete item.metadata;
     delete item.content;
     delete item.extra;
-    if (item.author) {
+    if (item.author && !item.name.startsWith(`${item.author}/`)) {
       item.name = item.author + "/" + item.name;
     }
     let name = item.name
@@ -527,10 +527,11 @@ export class PluginService extends BaseService<PluginEntity> {
 
 
   async deleteByIds(ids: any[]) {
-    await super.delete(ids);
     for (const id of ids) {
       await this.unRegisterById(id)
+      await this.delete(id);
     }
+   
   }
 
 

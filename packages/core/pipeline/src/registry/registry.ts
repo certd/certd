@@ -27,10 +27,12 @@ export class Registry<T = any> {
   } = {};
 
   onRegister?: OnRegister<T>;
+  onUnRegister?: OnRegister<T>;
 
-  constructor(type: string, onRegister?: OnRegister<T>) {
+  constructor(type: string, onRegister?: OnRegister<T>, onUnRegister?: OnRegister<T>) {
     this.type = type;
     this.onRegister = onRegister;
+    this.onUnRegister = onUnRegister;
   }
 
   register(key: string, value: RegistryItem<T>) {
@@ -49,6 +51,13 @@ export class Registry<T = any> {
   }
 
   unRegister(key: string) {
+    if (this.onUnRegister) {
+      this.onUnRegister({
+        registry: this,
+        key,
+        value: this.storage[key],
+      });
+    }
     delete this.storage[key];
     logger.info(`反注册插件:${this.type}:${key}`);
   }
@@ -108,7 +117,7 @@ export class Registry<T = any> {
   }
 }
 
-export function createRegistry<T>(type: string, onRegister?: OnRegister<T>): Registry<T> {
+export function createRegistry<T>(type: string, onRegister?: OnRegister<T>, onUnRegister?: OnRegister<T>): Registry<T> {
   const pipelineregistrycacheKey = "PIPELINE_REGISTRY_CACHE";
   // @ts-ignore
   let cached: any = global[pipelineregistrycacheKey];
@@ -121,7 +130,7 @@ export function createRegistry<T>(type: string, onRegister?: OnRegister<T>): Reg
   if (cached[type]) {
     return cached[type];
   }
-  const newRegistry = new Registry<T>(type, onRegister);
+  const newRegistry = new Registry<T>(type, onRegister, onUnRegister);
   cached[type] = newRegistry;
   return newRegistry;
 }
