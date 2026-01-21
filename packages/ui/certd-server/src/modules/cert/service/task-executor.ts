@@ -1,27 +1,35 @@
 import { logger } from "@certd/basic"
 
-export class BackTaskExecutor{
-  tasks :Record<string,Record<string,BackTask>> = {}
+export class BackTaskExecutor {
+  tasks: Record<string, Record<string, BackTask>> = {}
 
-  add(type:string,task: BackTask){
+  start(type: string, task: BackTask) {
     if (!this.tasks[type]) {
       this.tasks[type] = {}
     }
+    const oldTask = this.tasks[type][task.key]
+    if (oldTask && oldTask.status === "running") {
+      throw new Error(`任务 ${task.key} 正在运行中`)
+    }
     this.tasks[type][task.key] = task
+    this.run(type, task);
   }
 
-  get(type: string,key: string){
+  get(type: string, key: string) {
+    if (!this.tasks[type]) {
+      this.tasks[type] = {}
+    }
     return this.tasks[type][key]
   }
 
-  removeIsEnd(type: string,key: string){
+  removeIsEnd(type: string, key: string) {
     const task = this.tasks[type]?.[key]
     if (task && task.status !== "running") {
-      this.clear(type,key);
+      this.clear(type, key);
     }
   }
 
-  clear(type: string,key: string){
+  clear(type: string, key: string) {
     const task = this.tasks[type]?.[key]
     if (task) {
       task.clearTimeout();
@@ -29,33 +37,31 @@ export class BackTaskExecutor{
     }
   }
 
-  
-
-  async run(type:string,key: string){
-    const task = this.tasks[type]?.[key]
-    if (!task) {
-      throw new Error(`任务 ${key} 不存在`)
+  private async run(type: string, task: any) {
+    if (task.status === "running") {
+      throw new Error(`任务 ${task.key} 正在运行中`)
     }
     task.startTime = Date.now();
     task.clearTimeout();
-    try{
+    try {
       task.status = "running";
-      return await task.run();
-    }catch(e){
+      return await task.run(task);
+    } catch (e) {
       logger.error(`任务 ${task.title}[${task.key}] 执行失败`, e.message);
       task.status = "failed";
       task.error = e.message;
-    }finally{
+    } finally {
       task.endTime = Date.now();
       task.status = "done";
       task.timeoutId = setTimeout(() => {
-        this.clear(type,task.key);
-      }, 60*60*1000);
+        this.clear(type, task.key);
+      }, 24 * 60 * 60 * 1000);
+      delete task.run;
     }
   }
 }
-export class BackTask{
-  key:string;
+export class BackTask {
+  key: string;
   title: string;
   total: number = 0;
   current: number = 0;
@@ -66,9 +72,12 @@ export class BackTask{
   timeoutId?: NodeJS.Timeout;
 
 
-  run: () => Promise<void>;
+  run: (task: BackTask) => Promise<void>;
 
-  constructor(key:string,title: string,run: () => Promise<void>){
+  constructor(opts:{
+    key: string, title: string, run: (task: BackTask) => Promise<void>
+  }) {
+    const {key, title, run} = opts
     this.key = key;
     this.title = title;
     Object.defineProperty(this, 'run', {
@@ -79,10 +88,19 @@ export class BackTask{
     });
   }
 
-  clearTimeout(){
+  clearTimeout() {
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
   }
+
+  setTotal(total: number) {
+    this.total = total;
+  }
+  incrementCurrent() {
+    this.current++
+  }
 }
+
+export const taskExecutor = new BackTaskExecutor();

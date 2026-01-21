@@ -80,12 +80,20 @@ export class DomainController extends CrudController<DomainService> {
 
 
   @Post('/sync/submit', { summary: Constants.per.authOnly })
-  async sync(@Body(ALL) body: any) {
+  async syncSubmit(@Body(ALL) body: any) {
     const { dnsProviderType, dnsProviderAccessId } = body;
     const req = {
       dnsProviderType, dnsProviderAccessId, userId: this.getUserId(),
     }
-    await this.service.syncFromProvider(req);
+    await this.service.doSyncFromProvider(req);
+    return this.ok();
+  }
+
+  @Post('/sync/expiration', { summary: Constants.per.authOnly })
+  async syncExpiration(@Body(ALL) body: any) {
+    await this.service.doSyncDomainsExpirationDate({
+      userId: this.getUserId(),
+    })
     return this.ok();
   }
 

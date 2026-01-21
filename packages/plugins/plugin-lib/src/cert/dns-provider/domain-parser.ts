@@ -4,6 +4,14 @@ import psl from "psl";
 import { ILogger, utils, logger as globalLogger } from "@certd/basic";
 import { resolveDomainBySoaRecord } from "@certd/acme-client";
 
+export function parseDomainByPsl(fullDomain: string) {
+  const parsed = psl.parse(fullDomain) as psl.ParsedDomain;
+  if (parsed.error) {
+    throw new Error(`解析${fullDomain}域名失败:` + JSON.stringify(parsed.error));
+  }
+  return parsed;
+}
+
 export class DomainParser implements IDomainParser {
   subDomainsGetter: ISubDomainsGetter;
   logger: ILogger;
@@ -13,11 +21,7 @@ export class DomainParser implements IDomainParser {
   }
 
   parseDomainByPsl(fullDomain: string) {
-    const parsed = psl.parse(fullDomain) as psl.ParsedDomain;
-    if (parsed.error) {
-      throw new Error(`解析${fullDomain}域名失败:` + JSON.stringify(parsed.error));
-    }
-    return parsed.domain as string;
+    return parseDomainByPsl(fullDomain).domain as string;
   }
 
   async parse(fullDomain: string) {

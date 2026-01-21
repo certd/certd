@@ -48,7 +48,7 @@ export function useDomainImport() {
     },
   };
 
-  return function openDomainImportDialog() {
+  return function openDomainImportDialog(req: { afterSubmit?: () => void }) {
     openFormDialog({
       title: "从域名提供商导入域名",
       columns: columns,
@@ -58,6 +58,9 @@ export function useDomainImport() {
           dnsProviderAccessId: form.dnsProviderAccessId,
         });
         message.success("导入任务已提交");
+        if (req.afterSubmit) {
+          req.afterSubmit();
+        }
       },
     });
   };

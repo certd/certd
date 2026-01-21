@@ -65,3 +65,10 @@ export async function SyncSubmit(body: any) {
     data: body,
   });
 }
+
+export async function SyncDomainsExpiration() {
+  return await request({
+    url: apiPrefix + "/sync/expiration",
+    method: "post",
+  });
+}

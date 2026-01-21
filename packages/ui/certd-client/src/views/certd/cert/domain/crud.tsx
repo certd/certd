@@ -7,7 +7,7 @@ import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 import { Dicts } from "/@/components/plugins/lib/dicts";
 import { createAccessApi } from "/@/views/certd/access/api";
-import { Modal } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { useDomainImport } from "./use";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
@@ -98,7 +98,27 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             type: "primary",
             text: "从域名提供商导入",
             click: () => {
-              openDomainImportDialog();
+              openDomainImportDialog({
+                afterSubmit: () => {
+                  setTimeout(() => {
+                    crudExpose.doRefresh();
+                  }, 2000);
+                },
+              });
+            },
+          },
+          syncExpirationDate: {
+            title: "同步域名过期时间",
+            type: "primary",
+            text: "同步域名过期时间",
+            click: async () => {
+              await api.SyncDomainsExpiration();
+              notification.success({
+                message: "同步任务已提交",
+              });
+              setTimeout(() => {
+                crudExpose.doRefresh();
+              }, 2000);
             },
           },
         },
