@@ -9,6 +9,40 @@
       </template>
     </a-alert> -->
     <fs-crud ref="crudRef" v-bind="crudBinding">
+      <template #actionbar-right="scope">
+        <a-dropdown class="ml-1">
+          <a-button type="primary" class="ant-dropdown-link" @click.prevent>
+            更多流水线
+            <DownOutlined />
+          </a-button>
+          <template #overlay>
+            <a-menu @click="openCertApplyDialog">
+              <!-- <a-menu-item key="CertApplyUpload" class="flex items-center">
+                <fs-icon icon="ion:business-outline" />
+                商用证书托管流水线
+              </a-menu-item> -->
+              <a-menu-item key="CertApplyGetFormAliyun">
+                <div class="flex items-center">
+                  <fs-icon icon="svg:icon-aliyun" />
+                  <span class="ml-2">阿里云订阅证书流水线</span>
+                </div>
+              </a-menu-item>
+              <a-menu-item key="CertApplyLego">
+                <div class="flex items-center">
+                  <fs-icon icon="cbi:lego" />
+                  <span class="ml-2">Lego申请证书流水线</span>
+                </div>
+              </a-menu-item>
+              <a-menu-item key="AddPipeline">
+                <div class="flex items-center">
+                  <fs-icon icon="ion:add-circle-outline" />
+                  <span class="ml-2">自定义流水线</span>
+                </div>
+              </a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown>
+      </template>
       <div v-if="selectedRowKeys.length > 0" class="batch-actions">
         <div class="batch-actions-inner">
           <span>{{ t("certd.selectedCount", { count: selectedRowKeys.length }) }}</span>
@@ -19,7 +53,6 @@
           <change-trigger :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-trigger>
         </div>
       </div>
-      <template #actionbar-right> </template>
       <template #form-bottom>
         <div>{{ t("certd.applyCertificate") }}</div>
       </template>
@@ -28,7 +61,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onMounted, ref } from "vue";
+import { computed, onActivated, onMounted, ref } from "vue";
 import { dict, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import ChangeGroup from "./components/change-group.vue";
@@ -42,6 +75,7 @@ const { t } = useI18n();
 import ChangeNotification from "/@/views/certd/pipeline/components/change-notification.vue";
 import { useSettingStore } from "/@/store/settings";
 import { groupDictRef } from "./group/dicts";
+import { useCertPipelineCreator } from "./certd-form/use";
 
 defineOptions({
   name: "PipelineManager",
@@ -81,6 +115,25 @@ function batchDelete() {
     },
   });
 }
+const { openAddCertdPipelineDialog } = useCertPipelineCreator();
+const addMorePipelineBtns = computed(() => {
+  return [
+    { key: "CertApplyGetFormAliyun", title: t("certd.aliyunSubscriptionPipeline"), icon: "svg:icon-aliyun" },
+    { key: "CertApplyLego", title: t("certd.legoApplicationPipeline"), icon: "cbi:lego" },
+    { key: "AddPipeline", title: t("certd.customPipeline"), icon: "ion:add-circle-outline" },
+  ];
+});
+function openCertApplyDialog(req: { key: string; title: string }) {
+  if (req.key === "AddPipeline") {
+    crudExpose.openAdd({});
+    return;
+  }
+
+  const searchForm = crudExpose.getSearchValidatedFormData();
+  const defaultGroupId = searchForm.groupId;
+  openAddCertdPipelineDialog({ pluginName: req.key, defaultGroupId, title: req.title });
+}
+context.openCertApplyDialog = openCertApplyDialog;
 </script>
 <style lang="less">
 .batch-actions {

@@ -1,29 +1,26 @@
-import * as api from "./api";
+import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
+import { Modal, notification } from "ant-design-vue";
+import dayjs from "dayjs";
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
-import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
-import { Modal, notification } from "ant-design-vue";
-import { useUserStore } from "/@/store/user";
-import dayjs from "dayjs";
+import * as api from "./api";
+import { GetDetail } from "./api";
+import { groupDictRef } from "./group/dicts";
 import { useSettingStore } from "/@/store/settings";
-import { cloneDeep } from "lodash-es";
-import { eachStages } from "./utils";
-import { setRunnableIds, useCertPipelineCreator } from "/@/views/certd/pipeline/certd-form/use";
+import { useUserStore } from "/@/store/user";
 import { useCertUpload } from "/@/views/certd/pipeline/cert-upload/use";
+import { setRunnableIds } from "/@/views/certd/pipeline/certd-form/use";
 import GroupSelector from "/@/views/certd/pipeline/group/group-selector.vue";
+import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { useCertViewer } from "/@/views/certd/pipeline/use";
 import { useI18n } from "/src/locales";
-import { GetDetail, GetObj } from "./api";
-import { groupDictRef } from "./group/dicts";
 
-export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
   const lastResRef = ref();
 
   const { t } = useI18n();
 
-  const { openAddCertdPipelineDialog } = useCertPipelineCreator();
   const { openUploadCreateDialog } = useCertUpload();
 
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -108,7 +105,8 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
       actionbar: {
         buttons: {
           add: {
-            order: 5,
+            order: 99,
+            show: false,
             icon: "ion:ios-add-circle-outline",
             text: t("certd.customPipeline"),
           },
@@ -118,9 +116,7 @@ export default function ({ crudExpose, context: { selectedRowKeys } }: CreateCru
             type: "primary",
             icon: "ion:ios-add-circle-outline",
             click() {
-              const searchForm = crudExpose.getSearchValidatedFormData();
-              const defaultGroupId = searchForm.groupId;
-              openAddCertdPipelineDialog({ defaultGroupId });
+              openCertApplyDialog({ key: "CertApply" });
             },
           },
           uploadCert: {

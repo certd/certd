@@ -85,46 +85,23 @@ export function useCertPipelineCreator() {
   const settingStore = useSettingStore();
   const router = useRouter();
 
-  function createCrudOptions(certPlugins: any[], getFormData: any, doSubmit: any): CreateCrudOptionsRet {
+  function createCrudOptions(req: { certPlugin: any; doSubmit: any; title?: string }): CreateCrudOptionsRet {
     const inputs: any = {};
     const moreParams = [];
-    for (const plugin of certPlugins) {
-      for (const inputKey in plugin.input) {
-        if (inputs[inputKey]) {
-          //如果两个插件有的字段，直接显示
-          inputs[inputKey].form.show = true;
-          continue;
-        }
-        const inputDefine = cloneDeep(plugin.input[inputKey]);
-        if (!inputDefine.required && !inputDefine.maybeNeed) {
-          moreParams.push(inputKey);
-          // continue;
-        }
-        useReference(inputDefine);
-        inputs[inputKey] = {
-          title: inputDefine.title,
-          form: {
-            ...inputDefine,
-            show: compute(ctx => {
-              const form = getFormData();
-              if (!form) {
-                return false;
-              }
-
-              let inputDefineShow = true;
-              if (inputDefine.show != null) {
-                const computeShow = inputDefine.show as any;
-                if (computeShow === false) {
-                  inputDefineShow = false;
-                } else if (computeShow && computeShow.computeFn) {
-                  inputDefineShow = computeShow.computeFn({ form });
-                }
-              }
-              return form?.certApplyPlugin === plugin.name && inputDefineShow;
-            }),
-          },
-        };
+    const doSubmit = req.doSubmit;
+    for (const inputKey in req.certPlugin.input) {
+      // inputs[inputKey].form.show = true;
+      const inputDefine = cloneDeep(req.certPlugin.input[inputKey]);
+      if (inputDefine.maybeNeed) {
+        moreParams.push(inputKey);
       }
+      useReference(inputDefine);
+      inputs[inputKey] = {
+        title: inputDefine.title,
+        form: {
+          ...inputDefine,
+        },
+      };
     }
 
     const pluginStore = usePluginStore();
@@ -146,7 +123,7 @@ export function useCertPipelineCreator() {
             wrapClassName: "cert_pipeline_create_form",
             width: 1350,
             saveRemind: false,
-            title: t("certd.pipelineForm.createTitle"),
+            title: req.title || t("certd.pipelineForm.createTitle"),
           },
           group: {
             groups: {
@@ -159,44 +136,44 @@ export function useCertPipelineCreator() {
           },
         },
         columns: {
-          certApplyPlugin: {
-            title: t("certd.plugin.selectTitle"),
-            type: "dict-select",
-            dict: dict({
-              data: [
-                { value: "CertApply", label: "JS-ACME" },
-                { value: "CertApplyLego", label: "Lego-ACME" },
-                { value: "CertApplyGetFormAliyun", label: "Aliyun-Order" },
-              ],
-            }),
-            form: {
-              order: 0,
-              value: "CertApply",
-              helper: {
-                render: () => {
-                  return (
-                    <ul>
-                      <li>{t("certd.plugin.jsAcme")}</li>
-                      <li>{t("certd.plugin.legoAcme")}</li>
-                      <li>{t("certd.plugin.aliyunOrder")}</li>
-                    </ul>
-                  );
-                },
-              },
-              valueChange: {
-                handle: async ({ form, value }) => {
-                  const config = await pluginStore.getPluginConfig({
-                    name: value,
-                    type: "builtIn",
-                  });
-                  if (config.sysSetting?.input) {
-                    merge(form, config.sysSetting.input);
-                  }
-                },
-                immediate: true,
-              },
-            },
-          },
+          // certApplyPlugin: {
+          //   title: t("certd.plugin.selectTitle"),
+          //   type: "dict-select",
+          //   dict: dict({
+          //     data: [
+          //       { value: "CertApply", label: "JS-ACME" },
+          //       { value: "CertApplyLego", label: "Lego-ACME" },
+          //       { value: "CertApplyGetFormAliyun", label: "Aliyun-Order" },
+          //     ],
+          //   }),
+          //   form: {
+          //     order: 0,
+          //     value: "CertApply",
+          //     helper: {
+          //       render: () => {
+          //         return (
+          //           <ul>
+          //             <li>{t("certd.plugin.jsAcme")}</li>
+          //             <li>{t("certd.plugin.legoAcme")}</li>
+          //             <li>{t("certd.plugin.aliyunOrder")}</li>
+          //           </ul>
+          //         );
+          //       },
+          //     },
+          //     valueChange: {
+          //       handle: async ({ form, value }) => {
+          //         const config = await pluginStore.getPluginConfig({
+          //           name: value,
+          //           type: "builtIn",
+          //         });
+          //         if (config.sysSetting?.input) {
+          //           merge(form, config.sysSetting.input);
+          //         }
+          //       },
+          //       immediate: true,
+          //     },
+          //   },
+          // },
           ...inputs,
           triggerCron: {
             title: t("certd.pipelineForm.triggerCronTitle"),
@@ -336,17 +313,9 @@ export function useCertPipelineCreator() {
     return certPlugins;
   }
 
-  async function openAddCertdPipelineDialog(req: { defaultGroupId?: number }) {
+  async function openAddCertdPipelineDialog(req: { pluginName: string; defaultGroupId?: number; title?: string }) {
     //检查是否流水线数量超出限制
     await checkPipelineLimit();
-
-    const wrapperRef = ref();
-    function getFormData() {
-      if (!wrapperRef.value) {
-        return null;
-      }
-      return wrapperRef.value.getFormData();
-    }
 
     async function doSubmit({ form }: any) {
       // const certDetail = readCertDetail(form.cert.crt);
@@ -375,7 +344,7 @@ export function useCertPipelineCreator() {
                     strategy: {
                       runStrategy: 0, // 正常执行
                     },
-                    type: form.certApplyPlugin,
+                    type: req.pluginName,
                   },
                 ],
               },
@@ -410,11 +379,19 @@ export function useCertPipelineCreator() {
       router.push({ path: "/certd/pipeline/detail", query: { id, editMode: "true" } });
     }
     const certPlugins = await getCertPlugins();
-    const { crudOptions } = createCrudOptions(certPlugins, getFormData, doSubmit);
+    const certPlugin = certPlugins.find(plugin => plugin.name === req.pluginName);
+    if (!certPlugin) {
+      message.error("该证书申请插件不存在");
+      return;
+    }
+    const { crudOptions } = createCrudOptions({
+      certPlugin,
+      doSubmit,
+      title: req.title,
+    });
     //@ts-ignore
     crudOptions.columns.groupId.form.value = req.defaultGroupId || undefined;
-    const wrapper = await openCrudFormDialog({ crudOptions });
-    wrapperRef.value = wrapper;
+    await openCrudFormDialog({ crudOptions });
   }
 
   return {

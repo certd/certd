@@ -71,7 +71,6 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
       name: "access-selector",
       type: "eab",
     },
-    maybeNeed: true,
     helper: "如果需要提供EAB授权",
   })
   legoEabAccessId!: number;

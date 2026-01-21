@@ -39,6 +39,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
       vModel: "checked",
     },
     order: 100,
+    maybeNeed: true,
     helper: "证书申请成功后是否发送通知，优先使用默认通知渠道",
   })
   successNotify = false;

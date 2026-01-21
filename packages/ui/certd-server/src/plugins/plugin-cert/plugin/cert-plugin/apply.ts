@@ -123,25 +123,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   })
   challengeType!: string;
 
-  @TaskInput({
-    title: "证书颁发机构",
-    value: "letsencrypt",
-    component: {
-      name: "icon-select",
-      vModel: "value",
-      options: [
-        { value: "letsencrypt", label: "Let's Encrypt（免费，新手推荐，支持IP证书）", icon: "simple-icons:letsencrypt" },
-        { value: "google", label: "Google（免费）", icon: "flat-color-icons:google" },
-        { value: "zerossl", label: "ZeroSSL（免费）", icon: "emojione:digit-zero" },
-        { value: "litessl", label: "litessl（免费）", icon: "roentgen:free" },
-        { value: "sslcom", label: "SSL.com（仅主域名和www免费）", icon: "la:expeditedssl" },
-        { value: "letsencrypt_staging", label: "Let's Encrypt测试环境（仅供测试）", icon: "simple-icons:letsencrypt" },
-      ],
-    },
-    helper: "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权\nZeroSSL：需要EAB授权，无需翻墙\nSSL.com：仅主域名和www免费,必须设置CAA记录",
-    required: true,
-  })
-  sslProvider!: SSLProvider;
+  
 
   @TaskInput({
     title: "DNS解析服务商",
@@ -226,6 +208,27 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     `,
   })
   domainsVerifyPlan!: DomainsVerifyPlanInput;
+
+  
+  @TaskInput({
+    title: "证书颁发机构",
+    value: "letsencrypt",
+    component: {
+      name: "icon-select",
+      vModel: "value",
+      options: [
+        { value: "letsencrypt", label: "Let's Encrypt（免费，新手推荐，支持IP证书）", icon: "simple-icons:letsencrypt" },
+        { value: "google", label: "Google（免费）", icon: "flat-color-icons:google" },
+        { value: "zerossl", label: "ZeroSSL（免费）", icon: "emojione:digit-zero" },
+        { value: "litessl", label: "litessl（免费）", icon: "roentgen:free" },
+        { value: "sslcom", label: "SSL.com（仅主域名和www免费）", icon: "la:expeditedssl" },
+        { value: "letsencrypt_staging", label: "Let's Encrypt测试环境（仅供测试）", icon: "simple-icons:letsencrypt" },
+      ],
+    },
+    helper: "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权\nZeroSSL：需要EAB授权，无需翻墙\nSSL.com：仅主域名和www免费,必须设置CAA记录",
+    required: true,
+  })
+  sslProvider!: SSLProvider;
 
   @TaskInput({
     title: "Google公共EAB授权",
@@ -319,6 +322,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       ],
     },
     helper: "如无特殊需求，默认即可\n选择RSA 2048 pkcs1可以获得旧版RSA证书",
+    maybeNeed: false,
     required: true,
   })
   privateKeyType!: PrivateKeyType;
@@ -337,6 +341,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     },
     helper: "如无特殊需求，默认即可",
     required: false,
+    maybeNeed: true,
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
@@ -356,6 +361,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     },
     helper: preferredChainConfigs.letsencrypt.helper,
     required: false,
+    maybeNeed: true,
     mergeScript: preferredChainMergeScript,
   })
   preferredChain!: string;
@@ -367,6 +373,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "a-switch",
       vModel: "checked",
     },
+    maybeNeed: true,
     helper: "如果acme-v02.api.letsencrypt.org或dv.acme-v02.api.pki.goog被墙无法访问，请尝试开启此选项\n默认情况会进行测试，如果无法访问，将会自动使用代理",
   })
   useProxy = false;
@@ -376,6 +383,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     component: {
       placeholder: "google.yourproxy.com",
     },
+    maybeNeed: true,
     helper: "填写你的自定义反代地址，不要带http://\nletsencrypt反代目标：acme-v02.api.letsencrypt.org\ngoogle反代目标：dv.acme-v02.api.pki.goog",
   })
   reverseProxy = "";
@@ -387,6 +395,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "a-switch",
       vModel: "checked",
     },
+    maybeNeed: true,
     helper: "跳过本地校验可以加快申请速度，同时也会增加失败概率。",
   })
   skipLocalVerify = false;
@@ -398,6 +407,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "a-input-number",
       vModel: "value",
     },
+    maybeNeed: true,
     helper: "检查域名验证解析记录重试次数，如果你的域名服务商解析生效速度慢，可以适当增加此值",
   })
   maxCheckRetryCount = 20;
@@ -409,6 +419,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "a-input-number",
       vModel: "value",
     },
+    maybeNeed: true,
     helper: "等待解析生效时长（秒），如果使用CNAME方式校验，本地验证失败，可以尝试延长此时间（比如5-10分钟）",
   })
   waitDnsDiffuseTime = 30;

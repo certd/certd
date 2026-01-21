@@ -39,7 +39,7 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
     },
     required: false,
     order: 100,
-    helper: "转换成PFX、jks格式证书是否需要加密\njks必须设置密码，不传则默认123456\npfx不传则为空密码",
+    helper: "转换成PFX、jks格式证书是否需要加密\n不传则pfx格式默认空密码，jks格式默认123456",
   })
   pfxPassword!: string;
 
@@ -57,6 +57,7 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
     },
     required: false,
     order: 100,
+    maybeNeed: true,
     helper: "兼容Windows Server各个版本",
   })
   pfxArgs = "-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES";
