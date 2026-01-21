@@ -31,8 +31,6 @@ export type DnsProviderContext = {
 export type DomainRecord = {
   id: string;
   domain: string;
-  registrationDate: number;
-  expirationDate: number;
 };
 
 export interface IDnsProvider<T = any> {

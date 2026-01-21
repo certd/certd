@@ -134,6 +134,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             sorter: true,
           },
         },
+        expirationDate: {
+          title: t("certd.domain.expirationDate"),
+          type: "date",
+        },
         challengeType: {
           title: t("certd.domain.challengeType"),
           type: "dict-select",
@@ -297,6 +301,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                   </div>
                 );
               }
+            },
+          },
+        },
+        fromType: {
+          title: t("certd.domain.fromType"),
+          type: "dict-select",
+          dict: Dicts.domainFromTypeDict,
+          column: {
+            component: {
+              color: "auto",
             },
           },
         },

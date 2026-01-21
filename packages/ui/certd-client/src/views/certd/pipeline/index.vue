@@ -9,34 +9,22 @@
       </template>
     </a-alert> -->
     <fs-crud ref="crudRef" v-bind="crudBinding">
-      <template #actionbar-right="scope">
+      <template #actionbar-right>
         <a-dropdown class="ml-1">
           <a-button type="primary" class="ant-dropdown-link" @click.prevent>
-            更多流水线
+            {{ t("certd.pipelinePage.addMore") }}
             <DownOutlined />
           </a-button>
           <template #overlay>
-            <a-menu @click="openCertApplyDialog">
+            <a-menu @click="onActionbarMoreItemClick">
               <!-- <a-menu-item key="CertApplyUpload" class="flex items-center">
                 <fs-icon icon="ion:business-outline" />
                 商用证书托管流水线
               </a-menu-item> -->
-              <a-menu-item key="CertApplyGetFormAliyun">
+              <a-menu-item v-for="item in addMorePipelineBtns" :key="item.key" :title="item.title">
                 <div class="flex items-center">
-                  <fs-icon icon="svg:icon-aliyun" />
-                  <span class="ml-2">阿里云订阅证书流水线</span>
-                </div>
-              </a-menu-item>
-              <a-menu-item key="CertApplyLego">
-                <div class="flex items-center">
-                  <fs-icon icon="cbi:lego" />
-                  <span class="ml-2">Lego申请证书流水线</span>
-                </div>
-              </a-menu-item>
-              <a-menu-item key="AddPipeline">
-                <div class="flex items-center">
-                  <fs-icon icon="ion:add-circle-outline" />
-                  <span class="ml-2">自定义流水线</span>
+                  <fs-icon :icon="item.icon" />
+                  <span class="ml-2">{{ item.title }}</span>
                 </div>
               </a-menu-item>
             </a-menu>
@@ -85,6 +73,30 @@ const selectedRowKeys = ref([]);
 const context: any = {
   selectedRowKeys,
 };
+
+const { openAddCertdPipelineDialog } = useCertPipelineCreator();
+const addMorePipelineBtns = computed(() => {
+  return [
+    { key: "CertApplyGetFormAliyun", title: t("certd.pipelinePage.aliyunSubscriptionPipeline"), icon: "svg:icon-aliyun" },
+    { key: "CertApplyLego", title: t("certd.pipelinePage.legoCertPipeline"), icon: "cbi:lego" },
+    { key: "AddPipeline", title: t("certd.pipelinePage.customPipeline"), icon: "ion:add-circle-outline" },
+  ];
+});
+function onActionbarMoreItemClick(req: { key: string; item: any }) {
+  openCertApplyDialog({ key: req.key, title: req.item?.title });
+}
+function openCertApplyDialog(req: { key: string; title: string }) {
+  if (req.key === "AddPipeline") {
+    crudExpose.openAdd({});
+    return;
+  }
+
+  const searchForm = crudExpose.getSearchValidatedFormData();
+  const defaultGroupId = searchForm.groupId;
+  openAddCertdPipelineDialog({ pluginName: req.key, defaultGroupId, title: req.title });
+}
+context.openCertApplyDialog = openCertApplyDialog;
+
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
 // 页面打开后获取列表数据
@@ -115,25 +127,6 @@ function batchDelete() {
     },
   });
 }
-const { openAddCertdPipelineDialog } = useCertPipelineCreator();
-const addMorePipelineBtns = computed(() => {
-  return [
-    { key: "CertApplyGetFormAliyun", title: t("certd.aliyunSubscriptionPipeline"), icon: "svg:icon-aliyun" },
-    { key: "CertApplyLego", title: t("certd.legoApplicationPipeline"), icon: "cbi:lego" },
-    { key: "AddPipeline", title: t("certd.customPipeline"), icon: "ion:add-circle-outline" },
-  ];
-});
-function openCertApplyDialog(req: { key: string; title: string }) {
-  if (req.key === "AddPipeline") {
-    crudExpose.openAdd({});
-    return;
-  }
-
-  const searchForm = crudExpose.getSearchValidatedFormData();
-  const defaultGroupId = searchForm.groupId;
-  openAddCertdPipelineDialog({ pluginName: req.key, defaultGroupId, title: req.title });
-}
-context.openCertApplyDialog = openCertApplyDialog;
 </script>
 <style lang="less">
 .batch-actions {

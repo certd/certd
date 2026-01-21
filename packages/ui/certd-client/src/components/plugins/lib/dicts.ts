@@ -28,4 +28,10 @@ export const Dicts = {
       { label: "SSH(已废弃，请选择SFTP方式)", value: "ssh", disabled: true },
     ],
   }),
+  domainFromTypeDict: dict({
+    data: [
+      { value: "manual", label: "手动" },
+      { value: "auto", label: "自动" },
+    ],
+  }),
 };

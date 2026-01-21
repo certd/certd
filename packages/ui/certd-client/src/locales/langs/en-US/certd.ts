@@ -13,6 +13,12 @@ export default {
       title: "Operation",
     },
   },
+  pipelinePage: {
+    addMore: "Add More Pipelines",
+    aliyunSubscriptionPipeline: "Aliyun Subscription Pipeline",
+    legoCertPipeline: "Lego Certificate Pipeline",
+    customPipeline: "Custom Pipeline",
+  },
   order: {
     confirmTitle: "Order Confirmation",
     package: "Package",
@@ -833,6 +839,8 @@ export default {
     disabled: "Disabled",
     challengeSetting: "Challenge Setting",
     gotoCnameTip: "Please go to CNAME Record Page",
+    fromType: "From Type",
+    expirationDate: "Expiration Date",
   },
   addonSelector: {
     select: "Select",

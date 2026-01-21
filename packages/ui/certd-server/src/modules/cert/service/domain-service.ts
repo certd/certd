@@ -60,6 +60,9 @@ export class DomainService extends BaseService<DomainEntity> {
     if (old) {
       throw new Error(`域名（${param.domain}）不能重复`);
     }
+    if (!param.fromType) {
+      param.fromType = 'manual'
+    }
     return await super.add(param);
   }
 
@@ -219,6 +222,11 @@ export class DomainService extends BaseService<DomainEntity> {
 
     const importDomain =  async(domainRecord: any) =>{
       const domain = domainRecord.domain
+      const certProps :any={
+        registrationDate: domainRecord.registrationDate,
+        expirationDate: domainRecord.expirationDate,
+      }
+
       const old = await this.findOne({
         where: {
           domain,
@@ -228,8 +236,7 @@ export class DomainService extends BaseService<DomainEntity> {
       if (old) {
         const updateObj :any={
            id: old.id,
-          registrationDate: domainRecord.registrationDate,
-          expirationDate: domainRecord.expirationDate,
+           ...certProps
         }
         if (old.fromType !== 'manual'){
           //如果不是手动的，更新校验配置
@@ -238,7 +245,7 @@ export class DomainService extends BaseService<DomainEntity> {
           updateObj.challengeType = challengeType
         }
         //更新
-        await this.update(updateObj)
+        await super.update(updateObj)
       } else {
         //添加
         await this.add({
@@ -249,8 +256,7 @@ export class DomainService extends BaseService<DomainEntity> {
           challengeType,
           disabled: false,
           fromType: 'auto',
-          registrationDate: domainRecord.registrationDate,
-          expirationDate: domainRecord.expirationDate,
+          ...certProps
         })
       }
     }

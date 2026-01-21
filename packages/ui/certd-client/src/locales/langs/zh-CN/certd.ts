@@ -17,6 +17,12 @@ export default {
       title: "操作列",
     },
   },
+  pipelinePage: {
+    addMore: "添加更多流水线",
+    aliyunSubscriptionPipeline: "阿里云订阅流水线",
+    legoCertPipeline: "Lego证书流水线",
+    customPipeline: "自定义流水线",
+  },
   order: {
     confirmTitle: "订单确认",
     package: "套餐",
@@ -846,6 +852,8 @@ export default {
     disabled: "禁用/启用",
     challengeSetting: "校验配置",
     gotoCnameTip: "CNAME域名配置请前往CNAME记录页面添加",
+    fromType: "来源类型",
+    expirationDate: "到期时间",
   },
   addonSelector: {
     select: "选择",
