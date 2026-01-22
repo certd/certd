@@ -39,6 +39,7 @@ import { dict } from "@fast-crud/fast-crud";
 import * as api from "./api.js";
 import CnameTip from "./cname-tip.vue";
 import { Modal } from "ant-design-vue";
+import { utils } from "/@/utils/index.js";
 const statusDict = dict({
   data: [
     { label: "待设置CNAME", value: "cname", color: "warning" },

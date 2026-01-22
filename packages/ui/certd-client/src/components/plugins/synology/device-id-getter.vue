@@ -10,7 +10,7 @@
 </template>
 
 <script lang="tsx" setup>
-import { defineProps, inject, ref, useAttrs } from "vue";
+import { inject, ref, useAttrs } from "vue";
 import { Modal } from "ant-design-vue";
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 

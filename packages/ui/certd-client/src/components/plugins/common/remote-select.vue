@@ -85,7 +85,9 @@ const message = ref("");
 const hasError = ref(false);
 const loading = ref(false);
 const pagerRef: Ref = ref({
-  current: 1,
+  pageNo: 1,
+  total: 0,
+  pageSize: 100,
 });
 const getOptions = async () => {
   if (loading.value) {

@@ -4,6 +4,7 @@ import RemoteSelect from "./common/remote-select.vue";
 import RemoteInput from "./common/remote-input.vue";
 import RemoteTreeSelect from "./common/remote-tree-select.vue";
 import CertDomainsGetter from "./common/cert-domains-getter.vue";
+import DomainSelector from "./common/domain-selector.vue";
 import OutputSelector from "/@/components/plugins/common/output-selector/index.vue";
 import DnsProviderSelector from "/@/components/plugins/cert/dns-provider-selector/index.vue";
 import DomainsVerifyPlanEditor from "/@/components/plugins/cert/domains-verify-plan-editor/index.vue";
@@ -29,6 +30,7 @@ export default {
     app.component("RemoteTreeSelect", RemoteTreeSelect);
     app.component("RemoteInput", RemoteInput);
     app.component("CertDomainsGetter", CertDomainsGetter);
+    app.component("DomainSelector", DomainSelector);
     app.component("InputPassword", InputPassword);
     app.component("ParamsShow", ParamsShow);
   },

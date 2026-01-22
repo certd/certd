@@ -9,12 +9,14 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "证书域名",
     component: {
-      name: "a-select",
+      name: "domain-selector",
       vModel: "value",
       mode: "tags",
-      open: false,
-      placeholder: "foo.com / *.foo.com / *.bar.com",
+      // open: false,
+      placeholder: "foo.com / *.foo.com / *.sub.foo.com / *.bar.com",
       tokenSeparators: [",", " ", "，", "、", "|"],
+      search: true,
+      pager:true,
     },
     rules: [{ type: "domains" }],
     required: true,
