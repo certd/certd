@@ -2,8 +2,8 @@ showRunStrategy: false
 default:
   strategy:
     runStrategy: 1
-name: ExsiDeployCert
-title: Exsi-部署证书到Exsi
+name: EsxiDeployCert
+title: ESXi-部署证书到ESXi
 icon: svg:icon-lucky
 group: host
 needPlus: true
@@ -27,4 +27,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: /plugins/plugin-plus/exsi/plugin-deploy-to-exsi.js
+scriptFilePath: /plugins/plugin-plus/esxi/plugin-deploy-to-esxi.js

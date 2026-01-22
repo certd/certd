@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.2](https://github.com/certd/certd/compare/v1.38.1...v1.38.2) (2026-01-22)
+
+### Performance Improvements
+
+* 域名导入 ([ad64384](https://github.com/certd/certd/commit/ad64384891c13342980b7559924666dcfb2796c2))
+* 支持从提供商导入域名列表 ([f442363](https://github.com/certd/certd/commit/f4423638a2ee779d48fc17b3819ce3bee55b0361))
+* 支持同步域名过期时间 ([a97cee8](https://github.com/certd/certd/commit/a97cee84f3bfdeeb2083d91f748cac5405fed6ae))
+
 ## [1.38.1](https://github.com/certd/certd/compare/v1.38.0...v1.38.1) (2026-01-15)
 
 ### Bug Fixes

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.2](https://github.com/certd/certd/compare/v1.38.1...v1.38.2) (2026-01-22)
+
+### Bug Fixes
+
+* 编辑插件author不允许出现符号 ([5ea2b09](https://github.com/certd/certd/commit/5ea2b09dc30397c086a2498f958f661e7fef10fc))
+* 修复插件修改名字和删除后没有注销注册的bug ([61192b9](https://github.com/certd/certd/commit/61192b998a7088a8f446fd224cc242def462a79b))
+* 修复流水线复制出错的bug ([418bcdd](https://github.com/certd/certd/commit/418bcddc95bf19d2659d2a9cfe336bc059d157b0))
+
+### Performance Improvements
+
+* 优化流水线创建入口，各种证书申请任务类型拆分成多个按钮 ([f75c73d](https://github.com/certd/certd/commit/f75c73d739ee271fb718148416836dbe09bb3266))
+* 域名导入 ([ad64384](https://github.com/certd/certd/commit/ad64384891c13342980b7559924666dcfb2796c2))
+* 支持从提供商导入域名列表 ([f442363](https://github.com/certd/certd/commit/f4423638a2ee779d48fc17b3819ce3bee55b0361))
+* 支持同步域名过期时间 ([a97cee8](https://github.com/certd/certd/commit/a97cee84f3bfdeeb2083d91f748cac5405fed6ae))
+* cname记录支持批量导入和导出 ([607afe8](https://github.com/certd/certd/commit/607afe864a12d6f50993895a4e10f4c9a3dd8fee))
+
 ## [1.38.1](https://github.com/certd/certd/compare/v1.38.0...v1.38.1) (2026-01-15)
 
 ### Bug Fixes

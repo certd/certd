@@ -74,7 +74,6 @@ input:
     component:
       name: access-selector
       type: eab
-    maybeNeed: true
     helper: 如果需要提供EAB授权
     order: 0
   customArgs:
@@ -126,8 +125,7 @@ input:
     order: 100
     helper: |-
       转换成PFX、jks格式证书是否需要加密
-      jks必须设置密码，不传则默认123456
-      pfx不传则为空密码
+      不传则pfx格式默认空密码，jks格式默认123456
   pfxArgs:
     title: PFX证书转换参数
     value: '-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES'
@@ -143,6 +141,7 @@ input:
           label: 兼容 Windows Server 2008
     required: false
     order: 100
+    maybeNeed: true
     helper: 兼容Windows Server各个版本
   renewDays:
     title: 更新天数
@@ -160,6 +159,7 @@ input:
       name: a-switch
       vModel: checked
     order: 100
+    maybeNeed: true
     helper: 证书申请成功后是否发送通知，优先使用默认通知渠道
 output:
   cert:

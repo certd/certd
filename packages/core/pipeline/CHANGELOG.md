@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.2](https://github.com/certd/certd/compare/v1.38.1...v1.38.2) (2026-01-22)
+
+### Bug Fixes
+
+* 修复插件修改名字和删除后没有注销注册的bug ([61192b9](https://github.com/certd/certd/commit/61192b998a7088a8f446fd224cc242def462a79b))
+
+### Performance Improvements
+
+* 支持同步域名过期时间 ([a97cee8](https://github.com/certd/certd/commit/a97cee84f3bfdeeb2083d91f748cac5405fed6ae))
+
 ## [1.38.1](https://github.com/certd/certd/compare/v1.38.0...v1.38.1) (2026-01-15)
 
 ### Bug Fixes

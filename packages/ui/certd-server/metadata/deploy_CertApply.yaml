@@ -78,38 +78,6 @@ input:
 
       5.  <b>自动匹配</b>：此处无需选择校验方式，需要在[域名管理](#/certd/cert/domain)中提前配置好校验方式
     order: 0
-  sslProvider:
-    title: 证书颁发机构
-    value: letsencrypt
-    component:
-      name: icon-select
-      vModel: value
-      options:
-        - value: letsencrypt
-          label: Let's Encrypt（免费，新手推荐，支持IP证书）
-          icon: simple-icons:letsencrypt
-        - value: google
-          label: Google（免费）
-          icon: flat-color-icons:google
-        - value: zerossl
-          label: ZeroSSL（免费）
-          icon: emojione:digit-zero
-        - value: litessl
-          label: litessl（免费）
-          icon: roentgen:free
-        - value: sslcom
-          label: SSL.com（仅主域名和www免费）
-          icon: la:expeditedssl
-        - value: letsencrypt_staging
-          label: Let's Encrypt测试环境（仅供测试）
-          icon: simple-icons:letsencrypt
-    helper: |-
-      Let's Encrypt：申请最简单
-      Google：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权
-      ZeroSSL：需要EAB授权，无需翻墙
-      SSL.com：仅主域名和www免费,必须设置CAA记录
-    required: true
-    order: 0
   dnsProviderType:
     title: DNS解析服务商
     component:
@@ -186,6 +154,38 @@ input:
             })
           }
           
+    order: 0
+  sslProvider:
+    title: 证书颁发机构
+    value: letsencrypt
+    component:
+      name: icon-select
+      vModel: value
+      options:
+        - value: letsencrypt
+          label: Let's Encrypt（免费，新手推荐，支持IP证书）
+          icon: simple-icons:letsencrypt
+        - value: google
+          label: Google（免费）
+          icon: flat-color-icons:google
+        - value: zerossl
+          label: ZeroSSL（免费）
+          icon: emojione:digit-zero
+        - value: litessl
+          label: litessl（免费）
+          icon: roentgen:free
+        - value: sslcom
+          label: SSL.com（仅主域名和www免费）
+          icon: la:expeditedssl
+        - value: letsencrypt_staging
+          label: Let's Encrypt测试环境（仅供测试）
+          icon: simple-icons:letsencrypt
+    helper: |-
+      Let's Encrypt：申请最简单
+      Google：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权
+      ZeroSSL：需要EAB授权，无需翻墙
+      SSL.com：仅主域名和www免费,必须设置CAA记录
+    required: true
     order: 0
   googleCommonEabAccessId:
     title: Google公共EAB授权
@@ -282,6 +282,7 @@ input:
     helper: |-
       如无特殊需求，默认即可
       选择RSA 2048 pkcs1可以获得旧版RSA证书
+    maybeNeed: false
     required: true
     order: 0
   certProfile:
@@ -299,6 +300,7 @@ input:
           label: 短暂的（shortlived）
     helper: 如无特殊需求，默认即可
     required: false
+    maybeNeed: true
     mergeScript: |2-
 
           return {
@@ -320,6 +322,7 @@ input:
           label: ISRG Root X2
     helper: 如无特殊需求保持默认即可
     required: false
+    maybeNeed: true
     mergeScript: |2-
 
           const chainConfigs = {"letsencrypt":{"helper":"如无特殊需求保持默认即可","options":[{"value":"ISRG Root X1","label":"ISRG Root X1"},{"value":"ISRG Root X2","label":"ISRG Root X2"}]},"google":{"helper":"GlobalSign 提供对老旧设备更好的兼容性，但证书链会变长","options":[{"value":"GTS Root R1","label":"GTS Root R1"},{"value":"GlobalSign","label":"GlobalSign"}]}};
@@ -350,6 +353,7 @@ input:
     component:
       name: a-switch
       vModel: checked
+    maybeNeed: true
     helper: |-
       如果acme-v02.api.letsencrypt.org或dv.acme-v02.api.pki.goog被墙无法访问，请尝试开启此选项
       默认情况会进行测试，如果无法访问，将会自动使用代理
@@ -358,6 +362,7 @@ input:
     title: 自定义反代地址
     component:
       placeholder: google.yourproxy.com
+    maybeNeed: true
     helper: |-
       填写你的自定义反代地址，不要带http://
       letsencrypt反代目标：acme-v02.api.letsencrypt.org
@@ -369,6 +374,7 @@ input:
     component:
       name: a-switch
       vModel: checked
+    maybeNeed: true
     helper: 跳过本地校验可以加快申请速度，同时也会增加失败概率。
     order: 0
   maxCheckRetryCount:
@@ -377,6 +383,7 @@ input:
     component:
       name: a-input-number
       vModel: value
+    maybeNeed: true
     helper: 检查域名验证解析记录重试次数，如果你的域名服务商解析生效速度慢，可以适当增加此值
     order: 0
   waitDnsDiffuseTime:
@@ -385,6 +392,7 @@ input:
     component:
       name: a-input-number
       vModel: value
+    maybeNeed: true
     helper: 等待解析生效时长（秒），如果使用CNAME方式校验，本地验证失败，可以尝试延长此时间（比如5-10分钟）
     order: 0
   pfxPassword:
@@ -396,8 +404,7 @@ input:
     order: 100
     helper: |-
       转换成PFX、jks格式证书是否需要加密
-      jks必须设置密码，不传则默认123456
-      pfx不传则为空密码
+      不传则pfx格式默认空密码，jks格式默认123456
   pfxArgs:
     title: PFX证书转换参数
     value: '-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES'
@@ -413,6 +420,7 @@ input:
           label: 兼容 Windows Server 2008
     required: false
     order: 100
+    maybeNeed: true
     helper: 兼容Windows Server各个版本
   renewDays:
     title: 更新天数
@@ -430,6 +438,7 @@ input:
       name: a-switch
       vModel: checked
     order: 100
+    maybeNeed: true
     helper: 证书申请成功后是否发送通知，优先使用默认通知渠道
 output:
   cert:
