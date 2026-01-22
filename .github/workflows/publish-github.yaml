@@ -30,7 +30,7 @@ jobs:
       - name: publish_to_github
         id: publish_to_github
         run: |
-          export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
           rm -rf ./pnpm*.yaml
           npm install -g pnpm
           pnpm install

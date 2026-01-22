@@ -164,10 +164,9 @@ async function publishToAtomgit() {
         console.log("publishToAtomgit success")
     }catch(error){
         if (error?.response?.data){
-            console.log("publishToAtomgit error:",error.response.data)
-        }else{
-            console.log("publishToAtomgit error:",error)
+            throw new Error("publishToAtomgit error:",error.response.data)
         }
+        throw new Error("publishToAtomgit error:",error)
     }
    
 }

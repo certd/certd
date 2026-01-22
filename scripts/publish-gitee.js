@@ -34,10 +34,9 @@ async function publishToGitee() {
         console.log("publishToGitee success")
     } catch (error) {
         if (error?.response?.data){
-            console.log("publishToGitee error:",error.response.data)
-        }else{
-            console.log("publishToGitee error:",error)
+           throw new Error("publishToGitee error:",error.response.data)
         }
+        throw new Error("publishToGitee error:",error)
     }
 }
 

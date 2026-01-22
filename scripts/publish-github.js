@@ -34,10 +34,9 @@ async function publishToGithub() {
         console.log("publishToGithub success")
     } catch (error) {
         if (error?.response?.data){
-            console.log("publishToGithub error:",error.response.data)
-        }else{
-            console.log("publishToGithub error:",error)
+            throw new Error("publishToGithub error:",error.response.data)
         }
+        throw new Error("publishToGithub error:",error)
     }
 }
 
