@@ -7,7 +7,9 @@ import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 import { message, Modal } from "ant-design-vue";
 import CnameTip from "/@/components/plugins/cert/domains-verify-plan-editor/cname-tip.vue";
+import { useCnameImport } from "./use";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+  const crudBinding = crudExpose.crudBinding;
   const router = useRouter();
   const { t } = useI18n();
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -27,10 +29,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     return res;
   };
 
+  const openCnameImportDialog = useCnameImport();
+
   const userStore = useUserStore();
   const settingStore = useSettingStore();
   const selectedRowKeys: Ref<any[]> = ref([]);
   context.selectedRowKeys = selectedRowKeys;
+
   const dictRef = dict({
     data: [
       { label: t("certd.pending_cname_setup"), value: "cname", color: "warning" },
@@ -63,6 +68,32 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         addRequest,
         editRequest,
         delRequest,
+      },
+      actionbar: {
+        buttons: {
+          import: {
+            title: "导入CNAME记录",
+            type: "primary",
+            text: "批量导入",
+            click: () => {
+              openCnameImportDialog({
+                afterSubmit: () => {
+                  setTimeout(() => {
+                    crudExpose?.doRefresh();
+                  }, 2000);
+                },
+              });
+            },
+          },
+          export: {
+            title: "导出CNAME记录之后，可用于批量导入cname解析到域名注册商",
+            type: "primary",
+            text: "批量导出",
+            click: () => {
+              crudBinding.value.toolbar.buttons.export.click({});
+            },
+          },
+        },
       },
       tabs: {
         name: "status",

@@ -60,7 +60,7 @@ export async function DeleteBatch(ids: any[]) {
 
 export async function SyncSubmit(body: any) {
   return await request({
-    url: apiPrefix + "/sync/submit",
+    url: apiPrefix + "/sync/import",
     method: "post",
     data: body,
   });

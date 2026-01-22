@@ -9,7 +9,7 @@ export class BackTaskExecutor {
     }
     const oldTask = this.tasks[type][task.key]
     if (oldTask && oldTask.status === "running") {
-      throw new Error(`任务 ${task.key} 正在运行中`)
+      throw new Error(`任务 ${type}—${task.key} 正在运行中`)
     }
     this.tasks[type][task.key] = task
     this.run(type, task);
@@ -39,7 +39,7 @@ export class BackTaskExecutor {
 
   private async run(type: string, task: any) {
     if (task.status === "running") {
-      throw new Error(`任务 ${task.key} 正在运行中`)
+      throw new Error(`任务 ${type}—${task.key} 正在运行中`)
     }
     task.startTime = Date.now();
     task.clearTimeout();
@@ -47,7 +47,7 @@ export class BackTaskExecutor {
       task.status = "running";
       return await task.run(task);
     } catch (e) {
-      logger.error(`任务 ${task.title}[${task.key}] 执行失败`, e.message);
+      logger.error(`任务 ${task.title}[${type}-${task.key}] 执行失败`, e.message);
       task.status = "failed";
       task.error = e.message;
     } finally {

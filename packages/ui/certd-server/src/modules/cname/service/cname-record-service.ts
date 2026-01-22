@@ -22,6 +22,7 @@ import punycode from "punycode.js";
 import { SubDomainService } from "../../pipeline/service/sub-domain-service.js";
 import { SubDomainsGetter } from "../../pipeline/service/getter/sub-domain-getter.js";
 import { TaskServiceBuilder } from "../../pipeline/service/getter/task-service-getter.js";
+import { BackTask, taskExecutor } from "../../cert/service/task-executor.js";
 
 type CnameCheckCacheValue = {
   validating: boolean;
@@ -486,5 +487,50 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
       throw new ValidateException("id不能为空");
     }
     await this.getRepository().update(id, { status: "cname", mainDomain: "" });
+  }
+
+  async doImport(req:{ userId: number; domainList: string; cnameProviderId: any }) {
+    const {userId,cnameProviderId,domainList} = req;
+    const domains = domainList.split("\n").map(item => item.trim()).filter(item => item.length > 0);
+    if (domains.length === 0) {
+      throw new ValidateException("域名列表不能为空");
+    }
+    if (!req.cnameProviderId) {
+      throw new ValidateException("CNAME服务提供商不能为空");
+    }
+   
+    taskExecutor.start("cnameImport",new BackTask({
+      key: "user_"+userId,
+      title: "导入CNAME记录",
+      run: async (task) => {
+        await this._import({ userId, domains, cnameProviderId },task);
+      }
+    }));
+  }
+
+  async _import(req :{ userId: number; domains: string[]; cnameProviderId: any },task:BackTask) {
+    const userId = req.userId;
+    for (const domain of req.domains) {
+      const old = await this.getRepository().findOne({
+        where: {
+          userId: req.userId,
+          domain,
+        },
+      });
+      if (old) {
+        logger.warn(`域名${domain}已存在，跳过`);
+      }
+      //开始导入
+      try{
+          await this.add({
+            userId,
+            domain: domain,
+            cnameProviderId: req.cnameProviderId,
+          });
+      }catch(e){
+        logger.error(`导入域名${domain}失败：${e.message}`);
+      }
+    }
+   
   }
 }

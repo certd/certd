@@ -1,6 +1,7 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { Constants, CrudController } from '@certd/lib-server';
 import {DomainService} from "../../../modules/cert/service/domain-service.js";
+import { checkPlus } from '@certd/plus-core';
 
 /**
  * 授权
@@ -79,12 +80,13 @@ export class DomainController extends CrudController<DomainService> {
   }
 
 
-  @Post('/sync/submit', { summary: Constants.per.authOnly })
-  async syncSubmit(@Body(ALL) body: any) {
+  @Post('/sync/import', { summary: Constants.per.authOnly })
+  async syncImport(@Body(ALL) body: any) {
     const { dnsProviderType, dnsProviderAccessId } = body;
     const req = {
       dnsProviderType, dnsProviderAccessId, userId: this.getUserId(),
     }
+    checkPlus()
     await this.service.doSyncFromProvider(req);
     return this.ok();
   }

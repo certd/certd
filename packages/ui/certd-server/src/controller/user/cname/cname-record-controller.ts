@@ -99,4 +99,15 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     const res = await this.service.resetStatus(body.id);
     return this.ok(res);
   }
+ @Post('/import', { summary: Constants.per.authOnly })
+  async import(@Body(ALL) body: { domainList: string; cnameProviderId: any }) {
+    const userId = this.getUserId();
+    const res = await this.service.doImport({
+      userId,
+      domainList: body.domainList,
+      cnameProviderId: body.cnameProviderId,
+    });
+    return this.ok(res);
+  }
+
 }

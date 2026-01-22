@@ -157,6 +157,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         expirationDate: {
           title: t("certd.domain.expirationDate"),
           type: "date",
+          form: {
+            show: false,
+          },
         },
         challengeType: {
           title: t("certd.domain.challengeType"),

@@ -77,3 +77,11 @@ export async function ResetStatus(id: number) {
     },
   });
 }
+
+export async function Import(form: { domainList: string; cnameProviderId: any }) {
+  return await request({
+    url: apiPrefix + "/import",
+    method: "post",
+    data: form,
+  });
+}

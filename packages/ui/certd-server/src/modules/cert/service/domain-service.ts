@@ -350,9 +350,9 @@ export class DomainService extends BaseService<DomainEntity> {
     const getDomainPage = async (pager: Pager) => {
       const pageRes = await this.page({
         query: query,
-        buildQuery(bq) {
-          bq.andWhere(" (expiration_date is null or expiration_date < :now) ", { now: dayjs().add(1, 'month').valueOf() })
-        },
+        // buildQuery(bq) {
+        //   bq.andWhere(" (expiration_date is null or expiration_date < :now) ", { now: dayjs().add(1, 'month').valueOf() })
+        // },
         page: {
           offset: pager.getOffset(),
           limit: pager.pageSize,
