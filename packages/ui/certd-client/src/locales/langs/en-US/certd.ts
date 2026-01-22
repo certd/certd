@@ -18,6 +18,7 @@ export default {
     aliyunSubscriptionPipeline: "Aliyun Subscription Pipeline",
     legoCertPipeline: "Lego Certificate Pipeline",
     customPipeline: "Custom Pipeline",
+    batchAddPipeline: "Add Pipeline Use Template",
   },
   order: {
     confirmTitle: "Order Confirmation",

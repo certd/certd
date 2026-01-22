@@ -93,10 +93,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       actionbar: {
         buttons: {
+          add: {
+            icon: "ion:add-circle-outline",
+          },
           import: {
             title: "从域名提供商导入域名",
             type: "primary",
             text: "从域名提供商导入",
+            needPlus: true,
+            color: "gold",
+            icon: "mingcute:vip-1-line",
             click: () => {
               openDomainImportDialog({
                 afterSubmit: () => {
@@ -110,6 +116,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           syncExpirationDate: {
             title: "同步域名过期时间",
             type: "primary",
+            icon: "ion:refresh-outline",
             text: "同步域名过期时间",
             click: async () => {
               await api.SyncDomainsExpiration();

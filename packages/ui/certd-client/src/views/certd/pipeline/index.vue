@@ -64,6 +64,7 @@ import ChangeNotification from "/@/views/certd/pipeline/components/change-notifi
 import { useSettingStore } from "/@/store/settings";
 import { groupDictRef } from "./group/dicts";
 import { useCertPipelineCreator } from "./certd-form/use";
+import { useRouter } from "vue-router";
 
 defineOptions({
   name: "PipelineManager",
@@ -73,21 +74,27 @@ const selectedRowKeys = ref([]);
 const context: any = {
   selectedRowKeys,
 };
-
+const router = useRouter();
 const { openAddCertdPipelineDialog } = useCertPipelineCreator();
+function onActionbarMoreItemClick(req: { key: string; item: any }) {
+  openCertApplyDialog({ key: req.key, title: req.item?.title });
+}
+
 const addMorePipelineBtns = computed(() => {
   return [
     { key: "CertApplyGetFormAliyun", title: t("certd.pipelinePage.aliyunSubscriptionPipeline"), icon: "svg:icon-aliyun" },
     { key: "CertApplyLego", title: t("certd.pipelinePage.legoCertPipeline"), icon: "cbi:lego" },
     { key: "AddPipeline", title: t("certd.pipelinePage.customPipeline"), icon: "ion:add-circle-outline" },
+    { key: "BatchAddPipeline", title: t("certd.pipelinePage.batchAddPipeline"), icon: "ion:duplicate" },
   ];
 });
-function onActionbarMoreItemClick(req: { key: string; item: any }) {
-  openCertApplyDialog({ key: req.key, title: req.item?.title });
-}
 function openCertApplyDialog(req: { key: string; title: string }) {
   if (req.key === "AddPipeline") {
     crudExpose.openAdd({});
+    return;
+  }
+  if (req.key === "BatchAddPipeline") {
+    router.push({ path: "/certd/pipeline/template" });
     return;
   }
 

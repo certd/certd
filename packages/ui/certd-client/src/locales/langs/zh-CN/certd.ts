@@ -22,6 +22,7 @@ export default {
     aliyunSubscriptionPipeline: "阿里云订阅流水线",
     legoCertPipeline: "Lego证书流水线",
     customPipeline: "自定义流水线",
+    batchAddPipeline: "模版批量创建流水线",
   },
   order: {
     confirmTitle: "订单确认",
