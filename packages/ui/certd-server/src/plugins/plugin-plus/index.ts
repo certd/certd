@@ -18,5 +18,5 @@ export * from "./lucky/index.js";
 export * from "./kuocai/index.js";
 export * from "./unicloud/index.js";
 export * from "./maoyun/index.js";
-export * from "./exsi/index.js";
+export * from "./esxi/index.js";
 export * from "./openwrt/index.js";

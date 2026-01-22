@@ -5,8 +5,8 @@ import { SshAccess } from "../../plugin-lib/ssh/ssh-access.js";
 import { SshClient } from "../../plugin-lib/ssh/ssh.js";
 import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 @IsTaskPlugin({
-  name: "ExsiDeployCert",
-  title: "Exsi-部署证书到Exsi",
+  name: "EsxiDeployCert", //这个名字Esxi不要改，兼容用户旧数据，以前写错了
+  title: "ESXi-部署证书到ESXi",
   icon: "svg:icon-lucky",
   group: pluginGroups.host.key,
   default: {
@@ -16,7 +16,7 @@ import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
   },
   needPlus: true,
 })
-export class ExsiDeployCertPlugin extends AbstractPlusTaskPlugin {
+export class EsxiDeployCertPlugin extends AbstractPlusTaskPlugin {
   //证书选择，此项必须要有
   @TaskInput({
     title: "域名证书",
@@ -88,4 +88,4 @@ export class ExsiDeployCertPlugin extends AbstractPlusTaskPlugin {
   }
 }
 
-new ExsiDeployCertPlugin();
+new EsxiDeployCertPlugin();
