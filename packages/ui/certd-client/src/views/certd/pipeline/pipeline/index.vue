@@ -308,6 +308,7 @@
 </template>
 
 <script lang="tsx">
+import { usePreferences } from "/@/vben/preferences";
 import { computed, defineComponent, onMounted, onUnmounted, provide, ref, Ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import PiTaskForm from "./component/task-form/index.vue";
@@ -920,7 +921,9 @@ export default defineComponent({
         console.log("currentPipeline", pipeline);
       };
 
-      const logsCollapse = ref(false);
+      // 获取浏览器宽度
+      const viewWidth = window.innerWidth;
+      const logsCollapse = ref(viewWidth < 768 ? true : false);
 
       function toggleLogsCollapse() {
         logsCollapse.value = !logsCollapse.value;
@@ -1062,8 +1065,9 @@ export default defineComponent({
     }
 
     .layout-right {
-      width: 354px;
+      width: 364px;
       height: 100%;
+      max-width: 90vw;
     }
   }
 
@@ -1287,9 +1291,8 @@ export default defineComponent({
 
   .layout-right {
     position: relative;
-
     &.collapsed {
-      margin-right: -354px;
+      margin-right: max(-364px, -90vw);
     }
 
     .collapse-toggle {
