@@ -196,6 +196,7 @@ export const useSettingStore = defineStore({
         notification.warn({
           message: $t("vip.needVipTip"),
         });
+        mitter.emit("openVipModal");
         throw new Error($t("vip.needVipTip"));
       }
     },

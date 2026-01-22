@@ -71,11 +71,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       actionbar: {
         buttons: {
+          add: {
+            icon: "ion:add-circle-outline",
+          },
           import: {
             title: "导入CNAME记录",
             type: "primary",
             text: "批量导入",
+            icon: "mingcute:vip-1-line",
             click: () => {
+              settingStore.checkPlus();
               openCnameImportDialog({
                 afterSubmit: () => {
                   setTimeout(() => {
@@ -89,7 +94,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             title: "导出CNAME记录之后，可用于批量导入cname解析到域名注册商",
             type: "primary",
             text: "批量导出",
+            icon: "mingcute:vip-1-line",
             click: () => {
+              settingStore.checkPlus();
               crudBinding.value.toolbar.buttons.export.click({});
             },
           },

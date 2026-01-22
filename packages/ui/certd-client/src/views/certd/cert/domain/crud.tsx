@@ -104,6 +104,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             color: "gold",
             icon: "mingcute:vip-1-line",
             click: () => {
+              settingStore.checkPlus();
               openDomainImportDialog({
                 afterSubmit: () => {
                   setTimeout(() => {

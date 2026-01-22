@@ -233,7 +233,11 @@ export class DomainService extends BaseService<DomainEntity> {
     })
     const challengeType = "dns"
 
-    const importDomain = async (domainRecord: any) => {
+    const getPage = async (pager: Pager) => {
+      return await dnsProvider.getDomainListPage(pager)
+    }
+
+    const itemHandle = async (domainRecord: any) => {
       task.incrementCurrent()
       const domain = domainRecord.domain
 
@@ -273,7 +277,7 @@ export class DomainService extends BaseService<DomainEntity> {
         task.setTotal(pageRes.total || 0)
     }
     const start = async () => {
-      await doPageTurn({ pager, getPage: dnsProvider.getDomainListPage, itemHandle: importDomain, batchHandle })
+      await doPageTurn({ pager, getPage, itemHandle, batchHandle })
     }
 
     start()
