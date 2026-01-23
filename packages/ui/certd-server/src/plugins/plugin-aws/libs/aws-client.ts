@@ -1,9 +1,13 @@
 // 导入所需的 SDK 模块
 import { AwsAccess } from '../access.js';
-import { CertInfo } from '@certd/plugin-cert';
+import { CertInfo, DomainRecord } from '@certd/plugin-cert';
 import { ILogger, utils } from '@certd/basic';
+import { PageRes, PageSearch } from '@certd/pipeline';
 type AwsClientOptions = { access: AwsAccess; region: string, logger: ILogger };
 
+/**
+ * https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/route-53-domains/
+ */
 export class AwsClient {
   options: AwsClientOptions;
   access: AwsAccess;
@@ -75,6 +79,29 @@ export class AwsClient {
     }
     this.logger.info(`获取到hostedZoneId:${JSON.stringify(response.HostedZones)}`);
     return response.HostedZones;
+  }
+
+  async route53ListHostedZonesPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const { ListHostedZonesByNameCommand } = await import("@aws-sdk/client-route-53"); // ES Modules import
+
+    const client = await this.route53ClientGet();
+    const input:any = { // ListHostedZonesByNameRequest
+      MaxItems: req.pageSize,
+    };
+    if (req.searchKey) {
+      input.DNSName = req.searchKey;
+    }
+    const command = new ListHostedZonesByNameCommand(input);
+    const response = await this.doRequest(() => client.send(command));
+    let list :any[]= response.HostedZones || [];
+    list = list.map((item: any) => ({
+      id: item.Id.replace('/hostedzone/', ''),
+      domain: item.Name,
+    }));
+    return {
+      total: list.length,
+      list,
+    };
   }
 
   async route53ChangeRecord(req: {

@@ -68,7 +68,7 @@ export class GodaddyAccess extends BaseAccess {
 
     const pager = new Pager(opts);
     const req = {
-      url :`/v1/domains?limit=${pager.pageSize}`,
+      url :`/v1/domains?limit=${pager.pageSize}&offset=${pager.getOffset()}`,
       method: "get",
     }
     return await this.doRequest(req);

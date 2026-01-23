@@ -1,5 +1,6 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { RainyunAccess } from "./access.js";
+import { Pager, PageRes, PageSearch } from "@certd/pipeline";
 
 @IsDnsProvider({
   name: "rainyun",
@@ -59,6 +60,25 @@ export class RainyunDnsProvider extends AbstractDnsProvider {
     });
     this.logger.info("删除域名解析成功:", fullRecord, value, ret);
     return ret;
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const access: RainyunAccess = this.ctx.access as RainyunAccess;
+    const pager = new Pager(req);
+    const ret = await access.getDomainList({
+      offset: pager.getOffset(),
+      limit: pager.pageSize,
+      query: req.searchKey,
+    })
+    // this.logger.info("获取域名列表成功:", ret);
+    const list = ret.list.map((item: any) => ({
+      id: item.id,
+      domain: item.domain,
+    }));
+    return {
+      total:ret.total || list.length,
+      list,
+    };
   }
 }
 

@@ -1,7 +1,8 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import qs from 'qs';
 import { NamesiloAccess } from './access.js';
 import { merge } from 'lodash-es';
+import { Pager, PageRes, PageSearch } from '@certd/pipeline';
 
 export type NamesiloRecord = {
   record_id: string;
@@ -101,6 +102,25 @@ export class NamesiloDnsProvider extends AbstractDnsProvider<NamesiloRecord> {
       rrid: recordId,
     });
     this.logger.info(`删除域名解析成功:fullRecord=${fullRecord},value=${value}`);
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    
+    const pager = new Pager(req);
+    const ret =await this.doRequest('/api/listDomains', {
+      key:req.searchKey,
+      page: pager.pageNo,
+      pageSize: pager.pageSize,
+    });
+    // this.logger.info("获取域名列表成功:", ret);
+    const list = ret.domains.map((item: any) => ({
+      id: item.domain,
+      domain: item.domain,
+    }));
+    return {
+      total:ret.pager?.total || list.length,
+      list,
+    };
   }
 }
 

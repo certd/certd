@@ -1,6 +1,7 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 
 import { DnslaAccess } from "./access.js";
+import { Pager, PageRes, PageSearch } from "@certd/pipeline";
 
 export type DnslaRecord = {
   id: string;
@@ -175,6 +176,24 @@ export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
     const url = `/api/record?id=${recordId}`;
     await this.doRequestApi(url, null, 'delete');
     this.logger.info(`删除域名解析成功:fullRecord=${fullRecord},value=${value}`);
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const pager = new Pager(req);
+    const url = `/api/domain?pageIndex=${pager.pageNo}&pageSize=${pager.pageSize}`;
+    const ret = await this.doRequestApi(url, null, 'get');
+
+
+    let list = ret.data.results || []
+    list = list.map((item: any) => ({
+      id: item.id,
+      domain: item.domain,
+    }));
+    const total = ret.data.total || list.length;
+    return {
+      total,
+      list,
+    };
   }
 }
 

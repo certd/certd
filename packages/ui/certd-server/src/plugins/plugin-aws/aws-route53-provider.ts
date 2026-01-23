@@ -1,6 +1,7 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { AwsClient } from './libs/aws-client.js';
 import { AwsAccess } from './access.js';
+import { PageRes, PageSearch } from '@certd/pipeline';
 
 
 @IsDnsProvider({
@@ -56,6 +57,10 @@ export class AwsRoute53Provider extends AbstractDnsProvider {
     }catch(e){
       this.logger.warn(`删除域名解析失败：${e.message} : ${hostedZoneId} ${fullRecord} ${value} ${type} `, );
     }
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    return await this.client.route53ListHostedZonesPage(req);
   }
 }
 

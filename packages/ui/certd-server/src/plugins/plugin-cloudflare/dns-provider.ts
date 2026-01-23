@@ -1,6 +1,7 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 
 import { CloudflareAccess } from './access.js';
+import { Pager, PageRes, PageSearch } from '@certd/pipeline';
 
 export type CloudflareRecord = {
   id: string;
@@ -143,6 +144,27 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
     const url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${recordId}`;
     await this.doRequestApi(url, null, 'delete');
     this.logger.info(`删除域名解析成功:fullRecord=${fullRecord},value=${value}`);
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const pager = new Pager(req);
+    
+    let url = `https://api.cloudflare.com/client/v4/zones?page=${pager.pageNo}&per_page=${pager.pageSize}`;
+    if (req.searchKey) {
+      url += `&name=${req.searchKey}`;
+    }
+    const ret = await this.doRequestApi(url, null, 'get');
+
+    let list = ret.result || []
+    list = list.map((item: any) => ({
+      id: item.id,
+      domain: item.name,
+    }));
+    const total = ret.result_info.total_count || list.length;
+    return {
+      total,
+      list,
+    };
   }
 }
 

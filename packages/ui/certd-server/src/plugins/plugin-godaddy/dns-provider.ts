@@ -1,6 +1,7 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 
 import { GodaddyAccess } from "./access.js";
+import { Pager, PageRes, PageSearch } from "@certd/pipeline";
 
 export type GodaddyRecord = {
   domain: string,
@@ -83,6 +84,23 @@ export class GodaddyDnsProvider extends AbstractDnsProvider<GodaddyRecord> {
       url: '/v1/domains/'+domain+`/records/${type}/${name}`,
     })
     this.logger.info(`删除域名解析成功:fullRecord=${fullRecord},id=${res}`);
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const pager = new Pager(req);
+    
+    const ret = await this.access.getDomainList(req)
+
+    let list = ret.zones || []
+    list = list.map((item: any) => ({
+      id: item.domainId,
+      domain: item.domain,
+    }));
+    const total = list.length === pager.pageSize ?  list.length+1: list.length
+    return {
+      total,
+      list,
+    };
   }
 }
 

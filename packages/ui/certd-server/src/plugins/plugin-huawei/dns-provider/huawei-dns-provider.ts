@@ -1,8 +1,9 @@
 import * as _ from "lodash-es";
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 
 import { HuaweiAccess } from "../access/index.js";
 import { ApiRequestOptions, HuaweiYunClient } from "@certd/lib-huawei";
+import { Pager, PageRes, PageSearch } from "@certd/pipeline";
 
 export type SearchRecordOptions = {
   zoneId: string;
@@ -176,6 +177,27 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
     }else{
       this.logger.info("删除域名解析失败，没有找到解析记录", fullRecord, value);
     }
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const pager = new Pager(req);
+     let url = `${this.dnsEndpoint}/v2/zones?offset=${pager.getOffset()}&limit=${pager.pageSize}`;
+     if (req.searchKey){
+      url += `&name=${req.searchKey}`
+     }
+    const ret = await this.client.request({
+      url,
+      method: "GET"
+    });
+    let list = ret.zones || []
+    list = list.map((item: any) => ({
+      id: item.id,
+      domain: item.name,
+    }));
+    return {
+      total:ret.metadata.total_count || list.length,
+      list,
+    };
   }
 }
 

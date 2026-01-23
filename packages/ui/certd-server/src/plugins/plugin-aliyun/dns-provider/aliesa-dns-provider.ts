@@ -1,5 +1,5 @@
-import { IAccessService } from '@certd/pipeline';
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { IAccessService, Pager, PageRes, PageSearch } from '@certd/pipeline';
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { AliesaAccess, AliyunAccess } from '../../plugin-lib/aliyun/index.js';
 import { AliyunClientV2 } from '../../plugin-lib/aliyun/lib/aliyun-client-v2.js';
 
@@ -100,6 +100,40 @@ export class AliesaDnsProvider extends AbstractDnsProvider {
       }
     })
     this.logger.info('删除域名解析成功:', record.RecordId);
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const pager = new Pager(req)
+    const ret = await this.client.doRequest({
+      // 接口名称
+      action: "ListSites",
+      // 接口版本
+      version: "2024-09-10",
+      // 接口协议
+      protocol: "HTTPS",
+      // 接口 HTTP 方法
+      method: "GET",
+      authType: "AK",
+      style: "RPC",
+      data: {
+        query: {
+          SiteName: req.searchKey,
+          // ["SiteSearchType"] = "exact";
+          SiteSearchType: "fuzzy",
+          AccessType: "NS",
+          PageSize: pager.pageSize,
+          PageNumber: pager.pageNo,
+        }
+      }
+    })
+    const list = ret.Sites?.map(item => ({
+      domain: item.SiteName,
+      id: item.SiteId,
+    })) 
+    return {
+      list: list || [],
+      total: ret.TotalCount,
+    }
   }
 }
 
