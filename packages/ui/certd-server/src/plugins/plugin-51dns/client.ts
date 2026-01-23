@@ -1,6 +1,8 @@
 import {createAxiosService, HttpClient, ILogger} from "@certd/basic";
 import {Dns51Access} from "./access.js";
-
+import qs from "qs"
+import { Pager, PageRes } from "@certd/pipeline";
+import { DomainRecord } from "@certd/plugin-lib/dist/cert/dns-provider/api.js";
 export class Dns51Client {
   logger: ILogger;
   access: Dns51Access;
@@ -233,5 +235,65 @@ _token: ieOfM21eDd9nWJv3OZtMJF6ogDsnPKQHJ17dlMck
       throw new Error(`删除域名解析失败：${res.msg}`);
     }
 
+  }
+
+  async getDomainListPage(pager: Pager): Promise<PageRes<DomainRecord>> {
+    if (pager.pageNo >=2) { //不知道翻页查询的参数是什么
+      return {
+        total: 0,
+        list: []
+      }
+    }
+    await this.login();
+    const query = {
+        //domain=&id=&status=&perPage=500
+        perPage: 1000,
+    }
+    const res = await this.http.request({
+      url: 'https://www.51dns.com/domain?' + qs.stringify(query),
+      method: 'get',
+      withCredentials: true,
+      logRes: false,
+      returnOriginRes: true,
+      headers: this.getRequestHeaders()
+    });
+    //提取记录
+    const content = res.data || ""
+    const startIndex = content.indexOf(`<table cellpadding="0" cellspacing="0" class="domiantable">`)
+    if (startIndex < 0) {
+      throw new Error("解析域名列表失败，未找到域名列表")
+    }
+    const endIndex = content.indexOf(`</table>`, startIndex)
+    const tableContent = content.substring(startIndex, endIndex + 8)
+    //  <tr class="">
+    // <a target="_blank" href="https://www.51dns.com/domain/record/199820259"
+    // class="color47">docmirror.cn</a>
+
+    const list: DomainRecord[] = []
+    const trArr = tableContent.split(`<tr class="">`)
+    for (const tr of trArr) {
+      const lines = tr.trim().split("\n")
+      const row:any = {}
+      for (const line of lines) {
+        if (line.includes(`<a target="_blank" href="https://www.51dns.com/domain/record/`)) {
+        // 提取id
+          const domainId = line.match(/record\/(\d+)"/i)[1];
+          row.id = parseInt(domainId);
+        }
+        if (line.includes(`class="color47"`)) {
+          // 提取域名
+          const domain = line.match(/class="color47">(.*?)<\/a>/i)[1];
+          row.domain = domain;
+        }
+      }
+      if (row.domain) {
+        list.push(row)
+      }
+    }
+
+    return {
+      total: list.length,
+      list
+    }
   }
 }

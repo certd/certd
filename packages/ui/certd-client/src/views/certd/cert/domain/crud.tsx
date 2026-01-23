@@ -339,10 +339,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.domain.fromType"),
           type: "dict-select",
           dict: Dicts.domainFromTypeDict,
+          form: {
+            show: false,
+          },
           column: {
             component: {
               color: "auto",
             },
+            show: false,
           },
         },
         disabled: {

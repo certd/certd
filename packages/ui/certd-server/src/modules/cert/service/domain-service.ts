@@ -248,8 +248,12 @@ export class DomainService extends BaseService<DomainEntity> {
         }
       })
       if (old) {
-        if (old.fromType !== 'auto') {
-          //如果是手动的，跳过更新校验配置
+        // if (old.fromType !== 'auto') {
+        //   //如果是手动的，跳过更新校验配置
+        //   return
+        // }
+        if (old) {
+          //如果old存在，直接跳过
           return
         }
         const updateObj: any = {
@@ -269,8 +273,9 @@ export class DomainService extends BaseService<DomainEntity> {
           dnsProviderAccess: dnsProviderAccessId,
           challengeType,
           disabled: false,
-          fromType: 'auto',
+          fromType: 'manual',
         })
+        logger.info(`导入域名${domain}到用户${userId}`)
       }
     }
     const batchHandle = async (pageRes: PageRes<any>) => {
@@ -278,6 +283,7 @@ export class DomainService extends BaseService<DomainEntity> {
     }
     const start = async () => {
       await doPageTurn({ pager, getPage, itemHandle, batchHandle })
+      logger.info(`同步用户(${req.userId ?? '全部'})从域名提供商${dnsProviderType}导入域名完成`)
     }
 
     start()
@@ -397,5 +403,6 @@ export class DomainService extends BaseService<DomainEntity> {
     }
 
     await doPageTurn({ pager, getPage: getDomainPage, itemHandle: itemHandle })
+    logger.info(`同步用户(${req.userId ?? '全部'})注册域名过期时间完成`)
   }
 }
