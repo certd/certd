@@ -179,15 +179,13 @@ export class NotificationService extends BaseService<NotificationEntity> {
     if (req.id && req.id > 0) {
       notifyConfig = await this.getById(req.id, userId);
       if (!notifyConfig) {
-        logger.warn(`未找到通知配置<${req.id}>`);
+        logger.warn(`未找到通知配置<${req.id}>,请确认是否已被删除`);
       }
     }
     if (!notifyConfig) {
-      if (req.id === 0 || req.useDefault) {
-        notifyConfig = await this.getDefault(userId);
-        if (!notifyConfig) {
-          logger.warn(`未找到默认通知配置`);
-        }
+      notifyConfig = await this.getDefault(userId);
+      if (!notifyConfig) {
+        logger.warn(`未找到默认通知配置`);
       }
     }
 
