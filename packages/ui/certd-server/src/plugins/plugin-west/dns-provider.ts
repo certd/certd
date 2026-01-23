@@ -1,6 +1,7 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
-import { WestDnsProviderDomain } from './dns-provider-domain.js';
+import { PageRes, PageSearch } from '@certd/pipeline';
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { WestAccess } from './access.js';
+import { WestDnsProviderDomain } from './dns-provider-domain.js';
 
 type westRecord = {
   // 这里定义Record记录的数据结构，跟对应云平台接口返回值一样即可，一般是拿到id就行，用于删除txt解析记录，清理申请痕迹
@@ -127,6 +128,10 @@ export class WestDnsProvider extends AbstractDnsProvider<westRecord> {
     });
     const result = res.result;
     this.logger.info('删除域名解析成功:', fullRecord, value, JSON.stringify(result));
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    return await this.access.getDomainList(req);
   }
 }
 

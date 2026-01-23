@@ -2,6 +2,7 @@ import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOp
 
 import { VolcengineDnsClient } from "./dns-client.js";
 import { VolcengineAccess } from "./access.js";
+import { PageSearch } from "@certd/pipeline";
 
 @IsDnsProvider({
   name: "volcengine",
@@ -87,6 +88,10 @@ export class VolcengineDnsProvider extends AbstractDnsProvider {
       },
       body
     });
+  }
+  
+  async getDomainListPage(page: PageSearch) {
+    return await this.client.getDomainList(page)
   }
 }
 

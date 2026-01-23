@@ -1,5 +1,6 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { TencentAccess } from '../../plugin-lib/tencent/index.js';
+import { Pager, PageRes, PageSearch } from '@certd/pipeline';
 
 @IsDnsProvider({
   name: 'tencent',
@@ -92,6 +93,27 @@ export class TencentDnsProvider extends AbstractDnsProvider {
     const ret = await this.client.DeleteRecord(params);
     this.logger.info('删除域名解析成功:', fullRecord, value);
     return ret;
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    
+    const pager = new Pager(req);
+    
+    const params:any = {
+      Offset: pager.getOffset(),
+      Limit: pager.pageSize,
+    };
+    if (req.searchKey) {
+      params.Keyword = req.searchKey;
+    }
+    const ret = await this.client.DescribeDomainList(params);
+    let list = ret.DomainList || [];
+    list = list.map((item) => ({
+      id: item.DomainId,
+      domain: item.Name,
+    }));
+    const total  = ret.DomainCountInfo?.AllTotal || list.length
+    return {total,list,};
   }
 }
 new TencentDnsProvider();

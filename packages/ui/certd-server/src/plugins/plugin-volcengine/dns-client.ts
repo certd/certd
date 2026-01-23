@@ -1,6 +1,7 @@
 import {http} from "@certd/basic";
 import querystring from "querystring";
 import {VolcengineOpts} from "./ve-client.js";
+import { Pager, PageSearch } from "@certd/pipeline";
 
 
 export type VolcengineReq = {
@@ -79,7 +80,6 @@ export class VolcengineDnsClient {
   }
 
 
-  // 列出域名解析记录
   async findDomain(domain: string) {
     const req: VolcengineReq = {
       method: "POST",
@@ -96,6 +96,42 @@ export class VolcengineDnsClient {
     };
 
     return this.doRequest(req);
+  }
+
+   async getDomainList(page: PageSearch) {
+    const pager = new Pager(page)
+    const body:any = {
+        SearchMode: "like",
+        PageNumber: pager.pageNo,
+        PageSize: pager.pageSize,
+    }
+    if (page.searchKey) {
+      body.Key = page.searchKey
+    }
+    const req: VolcengineReq = {
+      method: "POST",
+      region: "cn-beijing",
+      service: "dns",
+      query: {
+        Action: "ListZones",
+        Version: "2018-08-01",
+      },
+      body:body
+    };
+
+    const res = await this.doRequest(req);
+    let list = res.Result?.Zones || []
+    list = list.map((item:any) => {
+      return {
+        id: item.ZID,
+        domain: item.ZoneName,
+      }
+    })
+    const total = res.Result?.Total|| list.length
+    return {
+      list,
+      total
+    }
   }
 }
 

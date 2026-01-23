@@ -1,5 +1,5 @@
 import { HttpRequestConfig } from '@certd/basic';
-import { IsAccess, AccessInput, BaseAccess } from '@certd/pipeline';
+import { IsAccess, AccessInput, BaseAccess, PageSearch, Pager } from '@certd/pipeline';
 import qs from 'qs';
 import iconv from 'iconv-lite';
 /**
@@ -133,7 +133,7 @@ export class WestAccess extends BaseAccess {
       return "ok";
     }
 
-    await this.getDomainList();
+    await this.getDomainList({pageNo:1,pageSize:1});
     return "ok";
   }
 
@@ -166,14 +166,15 @@ export class WestAccess extends BaseAccess {
     return res;
   }
 
-  async getDomainList() {
+  async getDomainList(req: PageSearch) {
+    const pager = new Pager(req)
     const res = await this.doRequest({
       url: '/v2/domain',
       method: 'GET',
       data:{
         act:'getdomains',
-        limit:1,
-        page:1
+        limit: pager.pageSize,
+        page: pager.pageNo,
       }
     });
     return res;

@@ -1,6 +1,7 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { XinnetAccess } from "./access.js";
 import { XinnetClient } from "@certd/plugin-plus";
+import { PageRes, PageSearch } from "@certd/pipeline";
 
 export type XinnetRecord = {
   recordId: number;
@@ -103,6 +104,26 @@ export class XinnetProvider extends AbstractDnsProvider<XinnetRecord> {
     });
 
 
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+
+    const client = new XinnetClient({
+      logger: this.logger,
+      access: this.access,
+      http: this.http
+    });
+    
+    const res =  await client.getDomainList(req);
+
+    const list = res.list.map((item) => ({
+      domain: item.domainName,
+      id: item.domainName
+    }));
+    return {
+      list: list || [],
+      total: res.totalRows || 0
+    }
   }
 }
 

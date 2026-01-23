@@ -1,8 +1,8 @@
 import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 
+import { PageRes, PageSearch } from "@certd/pipeline";
 import { Dns51Access } from "./access.js";
 import { Dns51Client } from "./client.js";
-import { Pager, PageRes } from "@certd/pipeline";
 
 export type Dns51Record = {
   id: number;
@@ -94,8 +94,8 @@ export class Dns51DnsProvider extends AbstractDnsProvider<Dns51Record> {
     this.logger.info(`删除域名解析成功:fullRecord=${fullRecord},id=${id}`);
   }
 
-  async getDomainListPage(pager: Pager): Promise<PageRes<DomainRecord>> {
-    return await this.client.getDomainListPage(pager)
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    return await this.client.getDomainListPage(req)
   }
 }
 

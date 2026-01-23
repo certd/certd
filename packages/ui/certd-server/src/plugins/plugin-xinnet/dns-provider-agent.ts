@@ -1,5 +1,6 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { XinnetAgentAccess } from "./access-agent.js";
+import { PageRes, PageSearch } from "@certd/pipeline";
 
 export type XinnetAgentRecord = {
   recordId: number;
@@ -81,9 +82,20 @@ line	是	string	线路	只能传"默认"
         domainName: domainName
       }
     });
-
-
   }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const res = await this.access.getDomainList(req);
+    const list = res.list.map((item) => ({
+      domain: item.domainName,
+      id: item.domainName
+    }));
+    return {
+      list: list || [],
+      total: res.totalRows || 0
+    }
+  }
+
 }
 
 //实例化这个provider，将其自动注册到系统中

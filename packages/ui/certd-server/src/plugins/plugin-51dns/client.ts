@@ -1,8 +1,8 @@
-import {createAxiosService, HttpClient, ILogger} from "@certd/basic";
-import {Dns51Access} from "./access.js";
-import qs from "qs"
-import { Pager, PageRes } from "@certd/pipeline";
+import { createAxiosService, HttpClient, ILogger } from "@certd/basic";
+import { PageRes, PageSearch } from "@certd/pipeline";
 import { DomainRecord } from "@certd/plugin-lib/dist/cert/dns-provider/api.js";
+import qs from "qs";
+import { Dns51Access } from "./access.js";
 export class Dns51Client {
   logger: ILogger;
   access: Dns51Access;
@@ -237,8 +237,8 @@ _token: ieOfM21eDd9nWJv3OZtMJF6ogDsnPKQHJ17dlMck
 
   }
 
-  async getDomainListPage(pager: Pager): Promise<PageRes<DomainRecord>> {
-    if (pager.pageNo >=2) { //不知道翻页查询的参数是什么
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    if (req.pageNo >=2) { //不知道翻页查询的参数是什么
       return {
         total: 0,
         list: []

@@ -1,4 +1,4 @@
-import { Pager, PageRes } from "@certd/pipeline";
+import { Pager, PageRes, PageSearch } from "@certd/pipeline";
 import { CreateRecordOptions, DnsProviderContext, DnsProviderDefine, DomainRecord, IDnsProvider, RemoveRecordOptions } from "./api.js";
 import { dnsProviderRegistry } from "./registry.js";
 import { HttpClient, ILogger } from "@certd/basic";
@@ -46,7 +46,7 @@ export abstract class AbstractDnsProvider<T = any> implements IDnsProvider<T> {
 
   abstract removeRecord(options: RemoveRecordOptions<T>): Promise<void>;
 
-  async getDomainListPage(pager: Pager): Promise<PageRes<DomainRecord>> {
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
     throw new Error("Method not implemented.");
   }
 }
