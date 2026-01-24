@@ -59,17 +59,22 @@ export class BackTaskExecutor {
       delete task.run;
     }
   }
+
+
+  
 }
 export class BackTask {
   key: string;
   title: string;
   total: number = 0;
   current: number = 0;
+  skip: number = 0;
   startTime: number;
   endTime: number;
   status: string = "pending";
-  error?: string;
+  errors?: string[] = [];
   timeoutId?: NodeJS.Timeout;
+
 
 
   run: (task: BackTask) => Promise<void>;
@@ -100,6 +105,31 @@ export class BackTask {
   }
   incrementCurrent() {
     this.current++
+  }
+
+  addError(error: string) {
+    logger.error(error)
+    this.errors.push(error)
+  }
+
+  getSuccessCount() {
+    return this.current - this.errors.length
+  }
+
+  getErrorCount() {
+    return this.errors.length
+  }
+
+  getProgress() {
+    return (this.current / this.total * 1.0).toFixed(2)
+  }
+
+  getSkipCount() {
+    return this.skip
+  }
+
+  incrementSkip() {
+    this.skip++
   }
 }
 

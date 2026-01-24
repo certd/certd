@@ -35,7 +35,14 @@ export class Pager {
   }
 }
 
-export async function doPageTurn<T>(req: { pager: Pager; getPage: (pager: Pager) => Promise<PageRes<T>>; itemHandle?: (item: T) => Promise<void>; batchHandle?: (pageRes: PageRes<T>) => Promise<void> }) {
+export type PageTurnReq<T = any> = {
+  pager: Pager;
+  getPage: (pager: Pager) => Promise<PageRes<T>>;
+  itemHandle?: (item: T) => Promise<void>;
+  batchHandle?: (pageRes: PageRes<T>) => Promise<void>;
+};
+
+export async function doPageTurn<T>(req: PageTurnReq<T>) {
   let count = 0;
   const { pager, getPage, itemHandle, batchHandle } = req;
   while (true) {

@@ -22,7 +22,7 @@ import punycode from "punycode.js";
 import { SubDomainService } from "../../pipeline/service/sub-domain-service.js";
 import { SubDomainsGetter } from "../../pipeline/service/getter/sub-domain-getter.js";
 import { TaskServiceBuilder } from "../../pipeline/service/getter/task-service-getter.js";
-import { BackTask, taskExecutor } from "../../cert/service/task-executor.js";
+import { BackTask, taskExecutor } from "../../basic/service/task-executor.js";
 
 type CnameCheckCacheValue = {
   validating: boolean;

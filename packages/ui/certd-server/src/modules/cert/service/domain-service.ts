@@ -13,7 +13,7 @@ import { SubDomainsGetter } from '../../pipeline/service/getter/sub-domain-gette
 import { TaskServiceBuilder } from '../../pipeline/service/getter/task-service-getter.js';
 import { SubDomainService } from "../../pipeline/service/sub-domain-service.js";
 import { DomainEntity } from '../entity/domain.js';
-import { BackTask, taskExecutor } from './task-executor.js';
+import { BackTask, taskExecutor } from '../../basic/service/task-executor.js';
 
 export interface SyncFromProviderReq {
   userId: number;
@@ -208,9 +208,10 @@ export class DomainService extends BaseService<DomainEntity> {
 
 
   async doSyncFromProvider(req: SyncFromProviderReq) {
+    const key = `user_${req.userId || 0}`
     taskExecutor.start('syncFromProviderTask', new BackTask({
-      key: `user_${req.userId}`,
-      title: `同步用户${req.userId}从域名提供商导入域名`,
+      key,
+      title: `从域名提供商导入域名(${key})`,
       run: async (task: BackTask) => {
         await this._syncFromProvider(req, task)
       },
@@ -254,6 +255,7 @@ export class DomainService extends BaseService<DomainEntity> {
         // }
         if (old) {
           //如果old存在，直接跳过
+          task.incrementSkip()
           return
         }
         const updateObj: any = {
@@ -279,22 +281,19 @@ export class DomainService extends BaseService<DomainEntity> {
       }
     }
     const batchHandle = async (pageRes: PageRes<any>) => {
-        task.setTotal(pageRes.total || 0)
+      task.setTotal(pageRes.total || 0)
     }
-    const start = async () => {
-      await doPageTurn({ pager, getPage, itemHandle, batchHandle })
-      logger.info(`同步用户(${req.userId ?? '全部'})从域名提供商${dnsProviderType}导入域名完成`)
-    }
-
-    start()
-
+    await doPageTurn({ pager, getPage, itemHandle, batchHandle })
+    const key = `user_${userId || 0}`
+    logger.info(`从域名提供商${dnsProviderType}导入域名完成(${key})，共导入${task.current}个域名，跳过${task.getSkipCount()}个域名`)
   }
 
   async doSyncDomainsExpirationDate(req: { userId?: number }) {
     const userId = req.userId
+    const key = `user_${userId || 0}`
     taskExecutor.start('syncDomainsExpirationDateTask', new BackTask({
-      key: `user_${userId}`,
-      title: `同步用户(${userId ?? '全部'})注册域名过期时间`,
+      key,
+      title: `同步注册域名过期时间(${key}))`,
       run: async (task: BackTask) => {
         await this._syncDomainsExpirationDate({ userId, task })
       }
@@ -326,13 +325,14 @@ export class DomainService extends BaseService<DomainEntity> {
       const parsed = parseDomainByPsl(domain)
       const mainDomain = parsed.domain || ''
       if (mainDomain !== domain) {
-        logger.warn(`${domain}为子域名，跳过同步`)
+        req.task.addError(`【${domain}】为子域名，跳过同步`)
         return
       }
       const suffix = parsed.tld || ''
       const rdapUrl = rdapMap[suffix]
       if (!rdapUrl) {
-        throw new Error(`未找到${suffix}的rdap地址`)
+        req.task.addError(`【${domain}】未找到${suffix}的rdap地址`)
+        return
       }
       // https://rdap.nic.work/domain/handsfree.work
       const rdap = await http.request({
@@ -354,7 +354,7 @@ export class DomainService extends BaseService<DomainEntity> {
     const query: any = {
       challengeType: "dns",
     }
-    if (req.userId!=null) {
+    if (req.userId != null) {
       query.userId = req.userId
     }
     const getDomainPage = async (pager: Pager) => {
@@ -384,10 +384,10 @@ export class DomainService extends BaseService<DomainEntity> {
         }
         const { expirationDate, registrationDate } = res
         if (!expirationDate) {
-          logger.error(`获取域名${item.domain}过期时间失败`)
+          req.task.addError(`【${item.domain}】获取域名${item.domain}过期时间失败`)
           return
         }
-        logger.info(`更新域名${item.domain}过期时间:${dayjs(expirationDate).format('YYYY-MM-DD')}`)
+        logger.info(`【${item.domain}】更新域名过期时间:${dayjs(expirationDate).format('YYYY-MM-DD')}`)
         const updateObj: any = {
           id: item.id,
           expirationDate: expirationDate,
@@ -396,13 +396,15 @@ export class DomainService extends BaseService<DomainEntity> {
         //更新
         await super.update(updateObj)
       } catch (error) {
-        logger.error(`更新域名${item.domain}过期时间失败:${error}`)
+        const errorMsg = `【${item.domain}】${error.message ?? error}`
+        req.task.addError(errorMsg)
       } finally {
         await utils.sleep(1000)
       }
     }
 
     await doPageTurn({ pager, getPage: getDomainPage, itemHandle: itemHandle })
-    logger.info(`同步用户(${req.userId ?? '全部'})注册域名过期时间完成`)
+    const key = `user_${req.userId || 'all'}`
+    logger.info(`同步用户(${key})注册域名过期时间完成(${req.task.getSuccessCount()}个成功，${req.task.errors.length}个失败)` )
   }
 }
