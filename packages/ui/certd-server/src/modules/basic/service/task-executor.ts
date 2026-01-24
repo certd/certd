@@ -3,16 +3,17 @@ import { logger } from "@certd/basic"
 export class BackTaskExecutor {
   tasks: Record<string, Record<string, BackTask>> = {}
 
-  start(type: string, task: BackTask) {
+  start(task: BackTask) {
+    const type =  task.type || 'default'
     if (!this.tasks[type]) {
       this.tasks[type] = {}
     }
     const oldTask = this.tasks[type][task.key]
     if (oldTask && oldTask.status === "running") {
-      throw new Error(`任务 ${type}—${task.key} 正在运行中`)
+      throw new Error(`任务 ${task.title} 正在运行中`)
     }
     this.tasks[type][task.key] = task
-    this.run(type, task);
+    this.run(task);
   }
 
   get(type: string, key: string) {
@@ -37,7 +38,8 @@ export class BackTaskExecutor {
     }
   }
 
-  private async run(type: string, task: any) {
+  private async run(task: BackTask) {
+    const type =  task.type || 'default'
     if (task.status === "running") {
       throw new Error(`任务 ${type}—${task.key} 正在运行中`)
     }
@@ -49,7 +51,7 @@ export class BackTaskExecutor {
     } catch (e) {
       logger.error(`任务 ${task.title}[${type}-${task.key}] 执行失败`, e.message);
       task.status = "failed";
-      task.error = e.message;
+      task.addError(e.message)
     } finally {
       task.endTime = Date.now();
       task.status = "done";
@@ -61,9 +63,10 @@ export class BackTaskExecutor {
   }
 
 
-  
+
 }
 export class BackTask {
+  type: string;
   key: string;
   title: string;
   total: number = 0;
@@ -79,10 +82,12 @@ export class BackTask {
 
   run: (task: BackTask) => Promise<void>;
 
-  constructor(opts:{
+  constructor(opts: {
+    type: string,
     key: string, title: string, run: (task: BackTask) => Promise<void>
   }) {
-    const {key, title, run} = opts
+    const { key, title, run, type } = opts
+    this.type = type
     this.key = key;
     this.title = title;
     Object.defineProperty(this, 'run', {

@@ -53,11 +53,10 @@ export function useDomainImport() {
       title: "从域名提供商导入域名",
       columns: columns,
       onSubmit: async (form: any) => {
-        await api.SyncSubmit({
+        await api.ImportTaskAdd({
           dnsProviderType: form.dnsProviderType,
           dnsProviderAccessId: form.dnsProviderAccessId,
         });
-        message.success("导入任务已提交");
         if (req.afterSubmit) {
           req.afterSubmit();
         }

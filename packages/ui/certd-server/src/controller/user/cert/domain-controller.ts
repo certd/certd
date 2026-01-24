@@ -1,6 +1,6 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { Constants, CrudController } from '@certd/lib-server';
-import {DomainService} from "../../../modules/cert/service/domain-service.js";
+import { DomainService } from "../../../modules/cert/service/domain-service.js";
 import { checkPlus } from '@certd/plus-core';
 
 /**
@@ -80,23 +80,63 @@ export class DomainController extends CrudController<DomainService> {
   }
 
 
-  @Post('/sync/import', { summary: Constants.per.authOnly })
-  async syncImport(@Body(ALL) body: any) {
-    const { dnsProviderType, dnsProviderAccessId } = body;
+  @Post('/import/start', { summary: Constants.per.authOnly })
+  async importStart(@Body(ALL) body: any) {
+    const { key } = body;
     const req = {
-      dnsProviderType, dnsProviderAccessId, userId: this.getUserId(),
+      key, userId: this.getUserId(),
     }
     checkPlus()
-    await this.service.doSyncFromProvider(req);
+    await this.service.startDomainImportTask(req);
     return this.ok();
   }
 
-  @Post('/sync/expiration', { summary: Constants.per.authOnly })
-  async syncExpiration(@Body(ALL) body: any) {
-    await this.service.doSyncDomainsExpirationDate({
+  @Post('/import/status', { summary: Constants.per.authOnly })
+  async importStatus() {
+    const req = {
+      userId: this.getUserId(),
+    }
+    const task = await this.service.getDomainImportTaskStatus(req);
+    return this.ok(task);
+  }
+
+  @Post('/import/add', { summary: Constants.per.authOnly })
+  async importAdd(@Body(ALL) body: any) {
+    const { dnsProviderType, dnsProviderAccessId, title } = body;
+    const req = {
+      userId: this.getUserId(),
+      dnsProviderType, dnsProviderAccessId, title,
+    }
+    const item = await this.service.addDomainImportTask(req);
+    return this.ok(item);
+  }
+
+  @Post('/import/delete', { summary: Constants.per.authOnly })
+  async importDelete(@Body(ALL) body: any) {
+    const { key } = body;
+    const req = {
+      userId: this.getUserId(),
+      key,
+    }
+    await this.service.deleteDomainImportTask(req);
+    return this.ok();
+  }
+
+
+  @Post('/sync/expiration/start', { summary: Constants.per.authOnly })
+  async syncExpirationStart(@Body(ALL) body: any) {
+    await this.service.startSyncExpirationTask({
       userId: this.getUserId(),
     })
     return this.ok();
   }
+  @Post('/sync/expiration/status', { summary: Constants.per.authOnly })
+  async syncExpirationStatus(@Body(ALL) body: any) {
+    const status = await this.service.getSyncExpirationTaskStatus({
+      userId: this.getUserId(),
+    })
+    return this.ok(status);
+  }
+
 
 }

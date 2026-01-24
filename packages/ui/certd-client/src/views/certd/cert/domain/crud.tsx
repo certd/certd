@@ -1,15 +1,15 @@
-import * as api from "./api";
-import { useI18n } from "/src/locales";
+import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { Modal, notification } from "ant-design-vue";
 import { Ref, ref } from "vue";
 import { useRouter } from "vue-router";
-import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { useUserStore } from "/@/store/user";
-import { useSettingStore } from "/@/store/settings";
+import * as api from "./api";
+import DomainImportTaskStatus from "./domain-import-task-status.vue";
 import { Dicts } from "/@/components/plugins/lib/dicts";
+import { useSettingStore } from "/@/store/settings";
+import { useUserStore } from "/@/store/user";
+import { useFormDialog } from "/@/use/use-dialog";
 import { createAccessApi } from "/@/views/certd/access/api";
-import { Modal, notification } from "ant-design-vue";
-import { useDomainImport } from "./use";
-
+import { useI18n } from "/src/locales";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
   const { t } = useI18n();
@@ -51,7 +51,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     url: "pi/dnsProvider/dnsProviderTypeDict",
   });
 
-  const openDomainImportDialog = useDomainImport();
+  const { openFormDialog } = useFormDialog();
   return {
     crudOptions: {
       settings: {
@@ -103,13 +103,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             needPlus: true,
             color: "gold",
             icon: "mingcute:vip-1-line",
-            click: () => {
+            click: async () => {
               settingStore.checkPlus();
-              openDomainImportDialog({
-                afterSubmit: () => {
-                  setTimeout(() => {
-                    crudExpose.doRefresh();
-                  }, 2000);
+              await openFormDialog({
+                title: "从域名提供商导入域名",
+                body: () => {
+                  return <DomainImportTaskStatus />;
+                },
+                onSubmit: async (form: any) => {
+                  crudExpose.doRefresh();
                 },
               });
             },
@@ -120,7 +122,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             icon: "ion:refresh-outline",
             text: "同步域名过期时间",
             click: async () => {
-              await api.SyncDomainsExpiration();
+              await api.SyncExpirationStart();
               notification.success({
                 message: "同步任务已提交",
               });

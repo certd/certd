@@ -14,6 +14,8 @@ import { TaskServiceBuilder } from '../../pipeline/service/getter/task-service-g
 import { SubDomainService } from "../../pipeline/service/sub-domain-service.js";
 import { DomainEntity } from '../entity/domain.js';
 import { BackTask, taskExecutor } from '../../basic/service/task-executor.js';
+import { UserSettingsService } from '../../mine/service/user-settings-service.js';
+import { UserDomainImportSetting } from '../../mine/service/models.js';
 
 export interface SyncFromProviderReq {
   userId: number;
@@ -21,6 +23,9 @@ export interface SyncFromProviderReq {
   dnsProviderAccessId: string;
 }
 
+
+const DOMAIN_IMPORT_TASK_TYPE = 'domainImportTask'
+const DOMAIN_EXPIRE_TASK_TYPE = 'domainExpirationSyncTask'
 
 
 /**
@@ -42,6 +47,9 @@ export class DomainService extends BaseService<DomainEntity> {
 
   @Inject()
   taskServiceBuilder: TaskServiceBuilder;
+
+  @Inject()
+  userSettingService: UserSettingsService;
 
   //@ts-ignore
   getRepository() {
@@ -207,13 +215,26 @@ export class DomainService extends BaseService<DomainEntity> {
   }
 
 
-  async doSyncFromProvider(req: SyncFromProviderReq) {
-    const key = `user_${req.userId || 0}`
-    taskExecutor.start('syncFromProviderTask', new BackTask({
+  async startDomainImportTask(req: {userId:number,key:string}) {
+    const key = req.key
+    const setting = await this.userSettingService.getSetting<UserDomainImportSetting>(req.userId, UserDomainImportSetting)
+
+    const item = setting.domainImportList.find(item => item.key === key)
+    if (!item) {
+      throw new Error(`域名导入任务配置（${key}）还未注册`)
+    }
+    const { dnsProviderType, dnsProviderAccessId,title } = item
+
+    taskExecutor.start(new BackTask({
+      type: DOMAIN_IMPORT_TASK_TYPE,  
       key,
-      title: `从域名提供商导入域名(${key})`,
+      title: title,
       run: async (task: BackTask) => {
-        await this._syncFromProvider(req, task)
+        await this._syncFromProvider({
+          userId: req.userId,
+          dnsProviderType,
+          dnsProviderAccessId,
+        }, task)
       },
     }))
   }
@@ -288,10 +309,85 @@ export class DomainService extends BaseService<DomainEntity> {
     logger.info(`从域名提供商${dnsProviderType}导入域名完成(${key})，共导入${task.current}个域名，跳过${task.getSkipCount()}个域名`)
   }
 
-  async doSyncDomainsExpirationDate(req: { userId?: number }) {
+  async getDomainImportTaskStatus(req:{userId?:number}) {
+    const userId = req.userId || 0
+
+    const setting = await this.userSettingService.getSetting<UserDomainImportSetting>(userId, UserDomainImportSetting)
+    const list= setting?.domainImportList || []
+
+    const taskList:any = []
+
+    for (const item of list) {
+      const {  key } = item
+      
+      const task =  taskExecutor.get(DOMAIN_IMPORT_TASK_TYPE,key)
+
+      taskList.push({
+        ...item,
+        task,
+      })
+    }
+    return taskList
+  }
+
+  async addDomainImportTask(req:{userId?:number,dnsProviderType:string,dnsProviderAccessId:string,title:string}) {
+    const userId = req.userId || 0
+    const { dnsProviderType, dnsProviderAccessId,title } = req
+    const key = `user_${userId}_${dnsProviderType}_${dnsProviderAccessId}`
+
+    const setting = await this.userSettingService.getSetting<UserDomainImportSetting>(userId, UserDomainImportSetting)
+    setting.domainImportList = setting.domainImportList || []
+    if (setting.domainImportList.find(item => item.key === key)) {
+      throw new Error(`该域名导入任务${key}已存在`)
+    }
+
+    const access = await this.accessService.getAccessById(dnsProviderAccessId, true, userId)
+    if (!access) {
+      throw new Error(`该授权（${dnsProviderAccessId}）不存在，请检查是否已被删除`)
+    }
+
+    const item = {
+      dnsProviderType,
+      dnsProviderAccessId,
+      key,
+      title,
+    }
+    setting.domainImportList.push(item)
+    await this.userSettingService.saveSetting(userId, setting)
+
+    return item
+  }
+
+  async deleteDomainImportTask(req:{userId?:number,key:string}) {
+    const userId = req.userId || 0
+    const { key } = req
+
+    const setting = await this.userSettingService.getSetting<UserDomainImportSetting>(userId, UserDomainImportSetting)
+    setting.domainImportList = setting.domainImportList || []
+    const index = setting.domainImportList.findIndex(item => item.key === key)
+    if (index === -1) {
+      throw new Error(`该域名导入任务${key}不存在`)
+    }
+    setting.domainImportList.splice(index, 1)
+    taskExecutor.clear(DOMAIN_IMPORT_TASK_TYPE,key)
+    await this.userSettingService.saveSetting(userId, setting)
+  }
+
+
+
+  
+  async getSyncExpirationTaskStatus(req:{userId?:number}) {
+    const userId = req.userId || 0
+    const key = `user_${userId}`
+    const task = taskExecutor.get(DOMAIN_EXPIRE_TASK_TYPE,key)
+    return task
+  }
+
+  async startSyncExpirationTask(req: { userId?: number }) {
     const userId = req.userId
     const key = `user_${userId || 0}`
-    taskExecutor.start('syncDomainsExpirationDateTask', new BackTask({
+    taskExecutor.start(new BackTask({
+      type: DOMAIN_EXPIRE_TASK_TYPE,
       key,
       title: `同步注册域名过期时间(${key}))`,
       run: async (task: BackTask) => {
@@ -407,4 +503,6 @@ export class DomainService extends BaseService<DomainEntity> {
     const key = `user_${req.userId || 'all'}`
     logger.info(`同步用户(${key})注册域名过期时间完成(${req.task.getSuccessCount()}个成功，${req.task.errors.length}个失败)` )
   }
+
+  
 }

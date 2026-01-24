@@ -255,3 +255,4 @@ export class SysSafeSetting extends BaseSettings {
     autoHiddenTimes: 5,
   };
 }
+

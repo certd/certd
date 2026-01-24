@@ -58,17 +58,44 @@ export async function DeleteBatch(ids: any[]) {
   });
 }
 
-export async function SyncSubmit(body: any) {
+export async function ImportTaskAdd(body: any) {
   return await request({
-    url: apiPrefix + "/sync/import",
+    url: apiPrefix + "/import/add",
     method: "post",
     data: body,
   });
 }
-
-export async function SyncDomainsExpiration() {
+export async function ImportTaskStatus() {
   return await request({
-    url: apiPrefix + "/sync/expiration",
+    url: apiPrefix + "/import/status",
+    method: "post",
+  });
+}
+export async function ImportTaskDelete(key: any) {
+  return await request({
+    url: apiPrefix + "/import/delete",
+    method: "post",
+    params: { key },
+  });
+}
+export async function ImportTaskStart(key: any) {
+  return await request({
+    url: apiPrefix + "/import/start",
+    method: "post",
+    params: { key },
+  });
+}
+
+export async function SyncExpirationStart() {
+  return await request({
+    url: apiPrefix + "/sync/expiration/start",
+    method: "post",
+  });
+}
+
+export async function SyncExpirationStatus() {
+  return await request({
+    url: apiPrefix + "/sync/expiration/status",
     method: "post",
   });
 }

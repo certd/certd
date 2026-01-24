@@ -46,3 +46,11 @@ export class UserGrantSetting extends BaseSettings {
 
   allowAdminViewCerts:boolean = false;
 }
+
+
+export class UserDomainImportSetting extends BaseSettings {
+  static __title__ = "用户域名导入设置";
+  static __key__ = "user.domain.import";
+
+  domainImportList:{dnsProviderType:string,dnsProviderAccessId:string,key:string,title:string}[];
+}

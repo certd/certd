@@ -2,8 +2,9 @@ import { useFormWrapper } from "@fast-crud/fast-crud";
 
 export type FormOptionReq = {
   title: string;
-  columns: any;
+  columns?: any;
   onSubmit?: any;
+  body?: any;
 };
 
 export function useFormDialog() {
@@ -18,6 +19,9 @@ export function useFormDialog() {
             wrapper: {
               title: req.title,
               saveRemind: false,
+              slots: {
+                "form-body-top": req.body,
+              },
             },
             async afterSubmit() {},
             async doSubmit({ form }: any) {
