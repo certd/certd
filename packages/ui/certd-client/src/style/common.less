@@ -320,3 +320,108 @@ h6 {
 .ant-input-number{
   min-width: 100px;
 }
+
+
+.cd-table {
+  /* 我的客户样式 */
+  width: 100%;
+  border-collapse: collapse;
+  overflow: auto;
+
+  .fs-loading{
+    position: absolute;
+    left :0;  
+    top :0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.05);
+    z-index: 10000
+  }
+
+  table {
+    width: 1000px;
+    min-width: 100%;
+    table-layout: fixed;
+    font-size: 16px;
+  }
+
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .position-sticky-right {
+    position: sticky;
+    right: 0;
+    z-index: 100;
+    border-left: 0px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      /* 边框宽度 */
+      background: #eee;
+      /* 边框颜色 */
+    }
+  }
+
+  th,
+  td {
+
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    border-left: 1px solid #eee;
+  }
+
+  th {
+    padding: 15px 5px;
+    background: #f5f7ff;
+    font-weight: 600;
+    color: #6e8efb;
+    font-size: 14px;
+
+    &:last-child {
+      border-right: 1px solid #eee;
+    }
+  }
+
+  td {
+    padding: 10px;
+    font-size: 14px;
+
+    &:last-child {
+      border-right: 1px solid #eee;
+    }
+  }
+
+  td.position-sticky-right {
+    background-color: #fff;
+  }
+
+
+  tr.hover-color:hover td {
+    background: #f9f9ff;
+  }
+
+  .status {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .status-active {
+    background: #e7f6e9;
+    color: #2e7d32;
+  }
+
+  .status-pending {
+    background: #ffecb3;
+    color: #f57c00;
+  }
+}

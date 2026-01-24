@@ -7,15 +7,15 @@ import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import dayjs from 'dayjs';
 import { In, Not, Repository } from 'typeorm';
+import { BackTask, taskExecutor } from '../../basic/service/task-executor.js';
 import { CnameRecordEntity } from "../../cname/entity/cname-record.js";
 import { CnameRecordService } from '../../cname/service/cname-record-service.js';
+import { UserDomainImportSetting } from '../../mine/service/models.js';
+import { UserSettingsService } from '../../mine/service/user-settings-service.js';
 import { SubDomainsGetter } from '../../pipeline/service/getter/sub-domain-getter.js';
 import { TaskServiceBuilder } from '../../pipeline/service/getter/task-service-getter.js';
 import { SubDomainService } from "../../pipeline/service/sub-domain-service.js";
 import { DomainEntity } from '../entity/domain.js';
-import { BackTask, taskExecutor } from '../../basic/service/task-executor.js';
-import { UserSettingsService } from '../../mine/service/user-settings-service.js';
-import { UserDomainImportSetting } from '../../mine/service/models.js';
 
 export interface SyncFromProviderReq {
   userId: number;
@@ -306,7 +306,7 @@ export class DomainService extends BaseService<DomainEntity> {
     }
     await doPageTurn({ pager, getPage, itemHandle, batchHandle })
     const key = `user_${userId || 0}`
-    logger.info(`从域名提供商${dnsProviderType}导入域名完成(${key})，共导入${task.current}个域名，跳过${task.getSkipCount()}个域名`)
+    logger.info(`从域名提供商${dnsProviderType}导入域名完成(${key})，共导入${task.total}个域名，跳过${task.getSkipCount()}个域名，成功${task.getSuccessCount()}个域名，失败${task.getErrorCount()}个域名`)
   }
 
   async getDomainImportTaskStatus(req:{userId?:number}) {
@@ -324,7 +324,7 @@ export class DomainService extends BaseService<DomainEntity> {
 
       taskList.push({
         ...item,
-        task,
+        task:task,
       })
     }
     return taskList
@@ -377,7 +377,7 @@ export class DomainService extends BaseService<DomainEntity> {
 
   
   async getSyncExpirationTaskStatus(req:{userId?:number}) {
-    const userId = req.userId || 0
+    const userId = req.userId ?? 'all'
     const key = `user_${userId}`
     const task = taskExecutor.get(DOMAIN_EXPIRE_TASK_TYPE,key)
     return task
@@ -385,7 +385,7 @@ export class DomainService extends BaseService<DomainEntity> {
 
   async startSyncExpirationTask(req: { userId?: number }) {
     const userId = req.userId
-    const key = `user_${userId || 0}`
+    const key = `user_${userId ?? 'all'}`
     taskExecutor.start(new BackTask({
       type: DOMAIN_EXPIRE_TASK_TYPE,
       key,
@@ -501,7 +501,7 @@ export class DomainService extends BaseService<DomainEntity> {
 
     await doPageTurn({ pager, getPage: getDomainPage, itemHandle: itemHandle })
     const key = `user_${req.userId || 'all'}`
-    logger.info(`同步用户(${key})注册域名过期时间完成(${req.task.getSuccessCount()}个成功，${req.task.errors.length}个失败)` )
+    logger.info(`同步用户(${key})注册域名过期时间完成(${req.task.getSuccessCount()}个成功，${req.task.getErrorCount()}个失败)` )
   }
 
   

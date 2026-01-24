@@ -3,7 +3,7 @@ import { Modal, notification } from "ant-design-vue";
 import { Ref, ref } from "vue";
 import { useRouter } from "vue-router";
 import * as api from "./api";
-import DomainImportTaskStatus from "./domain-import-task-status.vue";
+import DomainImportTaskStatus from "./import.vue";
 import { Dicts } from "/@/components/plugins/lib/dicts";
 import { useSettingStore } from "/@/store/settings";
 import { useUserStore } from "/@/store/user";

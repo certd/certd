@@ -71,18 +71,18 @@ export async function ImportTaskStatus() {
     method: "post",
   });
 }
-export async function ImportTaskDelete(key: any) {
+export async function ImportTaskDelete(key: string) {
   return await request({
     url: apiPrefix + "/import/delete",
     method: "post",
-    params: { key },
+    data: { key },
   });
 }
-export async function ImportTaskStart(key: any) {
+export async function ImportTaskStart(key: string) {
   return await request({
     url: apiPrefix + "/import/start",
     method: "post",
-    params: { key },
+    data: { key },
   });
 }
 

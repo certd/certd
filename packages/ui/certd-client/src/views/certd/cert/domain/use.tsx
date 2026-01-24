@@ -2,6 +2,7 @@ import { message } from "ant-design-vue";
 import * as api from "./api";
 import { useFormDialog } from "/@/use/use-dialog";
 import { compute } from "@fast-crud/fast-crud";
+import { Dicts } from "/@/components/plugins/lib/dicts";
 
 export function useDomainImport() {
   const { openFormDialog } = useFormDialog();
@@ -13,11 +14,12 @@ export function useDomainImport() {
       form: {
         component: {
           name: "dns-provider-selector",
-        },
-        on: {
-          //@ts-ignore
-          onSelectedChange: ({ form, $event }) => {
-            form.dnsProviderAccessType = $event.accessType;
+          on: {
+            //@ts-ignore
+            selectedChange: ({ form, $event }) => {
+              form.dnsProviderAccessType = $event.accessType;
+              form.dnsProviderTitle = $event.label;
+            },
           },
         },
         //@ts-ignore
@@ -43,6 +45,12 @@ export function useDomainImport() {
           type: compute(({ form }) => {
             return form.dnsProviderAccessType || form.dnsProviderType;
           }),
+          on: {
+            //@ts-ignore
+            selectedChange({ form, $event }) {
+              form.accessTitle = $event.name;
+            },
+          },
         },
       },
     },
@@ -56,6 +64,7 @@ export function useDomainImport() {
         await api.ImportTaskAdd({
           dnsProviderType: form.dnsProviderType,
           dnsProviderAccessId: form.dnsProviderAccessId,
+          title: form.dnsProviderTitle + "_" + form.accessTitle,
         });
         if (req.afterSubmit) {
           req.afterSubmit();

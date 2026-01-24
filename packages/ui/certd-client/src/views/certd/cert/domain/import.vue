@@ -1,29 +1,46 @@
 <template>
-  <div class="domain-import-task-status">
+  <div class="domain-import-task-status min-h-[400px]">
     <div class="action">
-      <fs-button type="primary" size="small" icon="ion:add-outline" @click="addTask">添加导入任务</fs-button>
+      <fs-button type="primary" icon="ion:add-outline" @click="addTask">添加导入任务</fs-button>
+      <fs-button type="primary" icon="ion:refresh-outline" class="ml-2" @click="loadImportTaskStatus">刷新</fs-button>
     </div>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>标题</th>
-          <th>进度</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in list" :key="item.taskId">
-          <td>{{ item.title }}</td>
-          <td>
-            <a-progress :percent="item.percent" size="small" status="active" />
-          </td>
-          <td>
-            <fs-button type="primary" size="small" icon="ion:play-outline" @click="startTask(item)">执行</fs-button>
-            <fs-button type="danger" size="small" icon="ion:stop-outline" @click="deleteTask(item)">删除</fs-button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-container overflow-auto mt-2">
+      <table class="cd-table border-gray-300 w-full">
+        <thead>
+          <tr>
+            <th class="w-20%">来源</th>
+            <th>进度</th>
+            <th class="w-20%">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in list" :key="item.key">
+            <td class="ellipsis">{{ item.title }}</td>
+            <td>
+              <div v-if="item.task">
+                <div>
+                  <a-tag color="blue">总数：{{ item.task?.total }}</a-tag>
+                  <a-tag color="success" class="ml-2">成功：{{ item.task?.successCount }}</a-tag>
+                  <a-tag type="info" class="ml-2">跳过：{{ item.task?.skipCount }}</a-tag>
+                  <a-tooltip v-if="item.task?.errors.length > 0">
+                    <template #title>
+                      <div v-for="error in item.task?.errors" :key="error">{{ error }}</div>
+                    </template>
+                    <a-tag color="red" class="ml-2">失败：{{ item.task?.errors.length }}</a-tag>
+                  </a-tooltip>
+                </div>
+                <a-progress :percent="item.task?.progress" size="small" status="active" />
+              </div>
+              <div v-else>未执行</div>
+            </td>
+            <td>
+              <fs-button type="primary" icon="ion:play-outline" @click="startTask(item)">执行</fs-button>
+              <fs-button type="primary" class="ml-2" danger icon="ion:trash-outline" @click="deleteTask(item)">删除</fs-button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
@@ -44,7 +61,7 @@ async function loadImportTaskStatus() {
 }
 
 async function startTask(item: any) {
-  await api.ImportTaskStart(item);
+  await api.ImportTaskStart(item.key);
   await loadImportTaskStatus();
 }
 
@@ -54,7 +71,7 @@ async function deleteTask(item: any) {
     okText: "确认",
     okType: "danger",
     onOk: async () => {
-      await api.ImportTaskDelete(item.taskId);
+      await api.ImportTaskDelete(item.key);
       await loadImportTaskStatus();
     },
   });
@@ -74,3 +91,11 @@ onMounted(async () => {
   await loadImportTaskStatus();
 });
 </script>
+
+<style lang="less">
+.domain-import-task-status {
+  .table-container {
+    height: 60vh;
+  }
+}
+</style>

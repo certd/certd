@@ -499,7 +499,8 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
       throw new ValidateException("CNAME服务提供商不能为空");
     }
    
-    taskExecutor.start("cnameImport",new BackTask({
+    taskExecutor.start(new BackTask({
+      type:"cnameImport",
       key: "user_"+userId,
       title: "导入CNAME记录",
       run: async (task) => {

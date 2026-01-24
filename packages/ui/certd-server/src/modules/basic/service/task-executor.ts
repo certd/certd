@@ -9,8 +9,11 @@ export class BackTaskExecutor {
       this.tasks[type] = {}
     }
     const oldTask = this.tasks[type][task.key]
-    if (oldTask && oldTask.status === "running") {
-      throw new Error(`任务 ${task.title} 正在运行中`)
+    if (oldTask ){
+      if (oldTask.status === "running") {
+        throw new Error(`任务 ${task.title} 正在运行中`)
+      }
+      this.clear(type, task.key);
     }
     this.tasks[type][task.key] = task
     this.run(task);
@@ -55,9 +58,9 @@ export class BackTaskExecutor {
     } finally {
       task.endTime = Date.now();
       task.status = "done";
-      task.timeoutId = setTimeout(() => {
+      task.setTimeoutId(setTimeout(() => {
         this.clear(type, task.key);
-      }, 24 * 60 * 60 * 1000);
+      }, 24 * 60 * 60 * 1000));
       delete task.run;
     }
   }
@@ -76,11 +79,11 @@ export class BackTask {
   endTime: number;
   status: string = "pending";
   errors?: string[] = [];
-  timeoutId?: NodeJS.Timeout;
+  private _timeoutId?: NodeJS.Timeout;
 
 
 
-  run: (task: BackTask) => Promise<void>;
+  private _run: (task: BackTask) => Promise<void>;
 
   constructor(opts: {
     type: string,
@@ -90,19 +93,62 @@ export class BackTask {
     this.type = type
     this.key = key;
     this.title = title;
-    Object.defineProperty(this, 'run', {
-      value: run,
-      writable: true,
-      enumerable: false, // 设置为false使其不可遍历
+    this._run = run;
+
+    Object.defineProperty(this, '_run', {
+      enumerable: false,
+      value: this._run
+    })
+    Object.defineProperty(this, '_timeoutId', {
+      enumerable: false,
+      value: null
+    })
+
+    Object.defineProperty(this, 'progress', {
+      get: ()=> {
+        return this.getProgress()
+      },
+      enumerable: true,  // 关键：设置为可枚举
       configurable: true
     });
+    Object.defineProperty(this, 'successCount', {
+      get: ()=> {
+        return this.getSuccessCount()
+      },
+      enumerable: true,  // 关键：设置为可枚举
+      configurable: true
+    })
+    Object.defineProperty(this, 'errorCount', {
+      get: ()=> {
+        return this.getErrorCount()
+      },
+      enumerable: true,  // 关键：设置为可枚举
+      configurable: true
+    })
+    Object.defineProperty(this, 'skipCount', {
+      get: ()=> {
+        return this.getSkipCount()
+      },
+      enumerable: true,  // 关键：设置为可枚举
+      configurable: true
+    })
+  }
+
+  async run(task: BackTask) {
+    return await this._run(task);
   }
 
   clearTimeout() {
-    if (this.timeoutId) {
-      clearTimeout(this.timeoutId);
-      this.timeoutId = null;
+    if (this._timeoutId) {
+      clearTimeout(this._timeoutId);
+      this._timeoutId = null;
     }
+  }
+
+
+  setTimeoutId(timeoutId: NodeJS.Timeout) {
+    this.clearTimeout();
+    this._timeoutId = timeoutId;
   }
 
   setTotal(total: number) {
@@ -117,21 +163,22 @@ export class BackTask {
     this.errors.push(error)
   }
 
-  getSuccessCount() {
-    return this.current - this.errors.length
-  }
-
   getErrorCount() {
     return this.errors.length
-  }
-
-  getProgress() {
-    return (this.current / this.total * 1.0).toFixed(2)
   }
 
   getSkipCount() {
     return this.skip
   }
+
+  getSuccessCount() {
+    return this.current - this.errors.length
+  }
+
+  getProgress() {
+    return (this.current * 1.0 / this.total  * 100.0);
+  }
+
 
   incrementSkip() {
     this.skip++

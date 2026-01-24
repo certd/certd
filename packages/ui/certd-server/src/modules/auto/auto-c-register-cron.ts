@@ -220,7 +220,7 @@ export class AutoCRegisterCron {
       name: 'domain-expire-check',
       cron: `0 ${randomMinute} ${randomHour} ? * ${randomWeek}`, // 每周随机一天检查一次
       job: async () => {
-        await this.domainService.doSyncDomainsExpirationDate({})
+        await this.domainService.startSyncExpirationTask({})
       }
     })
   }
