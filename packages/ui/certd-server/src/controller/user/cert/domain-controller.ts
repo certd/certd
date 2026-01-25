@@ -82,11 +82,11 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post('/import/start', { summary: Constants.per.authOnly })
   async importStart(@Body(ALL) body: any) {
+    checkPlus();
     const { key } = body;
     const req = {
       key, userId: this.getUserId(),
     }
-    checkPlus()
     await this.service.startDomainImportTask(req);
     return this.ok();
   }
@@ -114,6 +114,7 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post('/import/save', { summary: Constants.per.authOnly })
   async importSave(@Body(ALL) body: any) {
+    checkPlus();
     const { dnsProviderType, dnsProviderAccessId, key } = body;
     const req = {
       userId: this.getUserId(),

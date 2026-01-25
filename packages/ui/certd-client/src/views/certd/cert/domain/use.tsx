@@ -75,7 +75,6 @@ export function useDomainImportManage() {
   const { openFormDialog } = useFormDialog();
   const settingStore = useSettingStore();
   return async function openDomainImportManageDialog(req: { afterSubmit?: (res?: any) => void; form?: any; zIndex?: number }) {
-    settingStore.checkPlus();
     await openFormDialog({
       title: "从域名提供商导入域名",
       body: () => {

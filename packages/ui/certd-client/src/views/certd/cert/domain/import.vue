@@ -1,7 +1,7 @@
 <template>
   <div class="domain-import-task-status min-h-[300px]">
     <div class="action mb-5">
-      <fs-button type="primary" icon="ion:add-outline" @click="addTask">添加导入任务</fs-button>
+      <fs-button type="primary" icon="mingcute:vip-1-line" @click="addTask">添加导入任务</fs-button>
       <fs-button type="primary" icon="ion:refresh-outline" class="ml-2" @click="loadImportTaskStatus">刷新</fs-button>
     </div>
     <div class="table-container overflow-auto mb-10">
@@ -53,11 +53,11 @@
 </template>
 
 <script setup lang="ts">
+import { Modal } from "ant-design-vue";
 import { onMounted, onUnmounted, ref } from "vue";
 import * as api from "./api";
-import { Modal } from "ant-design-vue";
 import { useDomainImport } from "./use";
-import { Dicts } from "/@/components/plugins/lib/dicts";
+import { useSettingStore } from "/@/store/settings";
 defineOptions({
   name: "DomainImportTaskStatus",
 });
@@ -70,6 +70,7 @@ async function loadImportTaskStatus() {
 }
 
 async function startTask(item: any) {
+  settingStore.checkPlus();
   await api.ImportTaskStart(item.key);
   await loadImportTaskStatus();
 }
@@ -87,8 +88,9 @@ async function deleteTask(item: any) {
 }
 
 const openDomainImportDialog = useDomainImport();
-
+const settingStore = useSettingStore();
 async function addTask() {
+  settingStore.checkPlus();
   await openDomainImportDialog({
     afterSubmit: async (res?: any) => {
       if (res) {
@@ -100,6 +102,7 @@ async function addTask() {
 }
 
 async function editTask(item: any) {
+  settingStore.checkPlus();
   await openDomainImportDialog({
     afterSubmit: async () => {
       await loadImportTaskStatus();

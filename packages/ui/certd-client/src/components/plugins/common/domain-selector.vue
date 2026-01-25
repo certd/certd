@@ -16,14 +16,7 @@
           <template v-if="search">
             <div class="flex w-full items-center justify-between flex-wrap" style="padding: 4px 8px">
               <div class="flex-1 flex flex-row items-center">
-                <a-input
-                  ref="inputRef"
-                  v-model:value="searchKeyRef"
-                  class="flex-1"
-                  allow-clear
-                  placeholder="这里可以搜索域名（数据来自“设置->域名管理”），列表中没有的域名可以直接在上面输入框输入"
-                  @keydown.enter="doSearch"
-                />
+                <a-input ref="inputRef" v-model:value="searchKeyRef" class="flex-1" allow-clear placeholder="这里可以搜索域名（数据来自“设置->域名管理”），您也可以直接在上面输入框输入" @keydown.enter="doSearch" />
                 <fs-button type="primary" class="m-1" :loading="loading" icon="mingcute:search-2-line" @click="doSearch"> 查询 </fs-button>
               </div>
               <div class="manager flex flex-row items-center">
@@ -203,7 +196,6 @@ function openDomainManager(e: any) {
 const openDomainImportManageDialog = useDomainImportManage();
 function openDomainImportDialog() {
   openDomainImportManageDialog({
-    zIndex: 2060,
     afterSubmit: res => {
       refreshOptions();
     },
