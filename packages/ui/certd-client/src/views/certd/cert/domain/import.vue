@@ -67,10 +67,6 @@ const list = ref([]);
 async function loadImportTaskStatus() {
   const res = await api.ImportTaskStatus();
   list.value = res || [];
-  for (let item of list.value) {
-    const provider = Dicts.dnsProviderTypeDict.dataMap[item.dnsProviderType];
-    item.icon = provider?.icon || "ion:cloud-outline";
-  }
 }
 
 async function startTask(item: any) {
