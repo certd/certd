@@ -19,8 +19,8 @@ div#app {
   height: 100%;
 }
 
-pre.pre{
-   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+pre.pre {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 h1,
@@ -61,16 +61,20 @@ h6 {
   justify-content: center;
   align-items: center;
 }
+
 .flex-vc {
   align-items: center;
 }
+
 .flex-vb {
   align-items: baseline;
 }
+
 .flex-o {
   display: flex !important;
   align-items: center;
 }
+
 .flex-baseline {
   display: flex !important;
   align-items: baseline;
@@ -85,6 +89,7 @@ h6 {
 .flex {
   display: flex;
 }
+
 .flex-inline {
   display: inline-flex;
   align-items: center;
@@ -93,6 +98,7 @@ h6 {
 .flex-1 {
   flex: 1;
 }
+
 .flex-0 {
   flex: 0;
 }
@@ -101,9 +107,11 @@ h6 {
   display: flex;
   flex-direction: column;
 }
+
 .align-left {
   text-align: left;
 }
+
 .align-right {
   text-align: right;
 }
@@ -111,18 +119,23 @@ h6 {
 .scroll-y {
   overflow-y: auto;
 }
+
 .m-0 {
   margin: 0 !important;
 }
+
 .m-2 {
   margin: 2px !important;
 }
+
 .m-3 {
   margin: 3px !important;
 }
+
 .m-5 {
   margin: 5px !important;
 }
+
 .m-10 {
   margin: 10px !important;
 }
@@ -130,6 +143,7 @@ h6 {
 .m-20 {
   margin: 20px !important;
 }
+
 .mb-2 {
   margin-bottom: 2px !important;
 }
@@ -137,6 +151,7 @@ h6 {
 .mb-5 {
   margin-bottom: 5px !important;
 }
+
 .ml-5 {
   margin-left: 5px !important;
 }
@@ -192,6 +207,7 @@ h6 {
 .p-20 {
   padding: 20px !important;
 }
+
 .ellipsis {
   white-space: nowrap;
   overflow: hidden;
@@ -220,6 +236,7 @@ h6 {
 .color-plus {
   color: #c5913f;
 }
+
 .color-blue {
   color: #1890ff;
 }
@@ -231,6 +248,7 @@ h6 {
 .color-green {
   color: green;
 }
+
 .color-gray {
   color: gray;
 }
@@ -274,6 +292,7 @@ h6 {
   font-size: 12px;
   margin-top: 3px;
   margin-bottom: 3px;
+
   &.error {
     color: #ff4d4f;
   }
@@ -281,6 +300,7 @@ h6 {
 
 .fs-copyable {
   display: inline-flex;
+
   .text {
     flex: 1;
   }
@@ -309,29 +329,29 @@ h6 {
   color: #6e6e6e;
 }
 
-.ant-modal-body{
-  .fs-form-body{
+.ant-modal-body {
+  .fs-form-body {
     max-height: 66vh;
     overflow-y: auto;
   }
 
 }
 
-.ant-input-number{
+.ant-input-number {
   min-width: 100px;
 }
 
 
 .cd-table {
-  /* 我的客户样式 */
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   overflow: auto;
 
-  .fs-loading{
+  .fs-loading {
     position: absolute;
-    left :0;  
-    top :0;
+    left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.05);
@@ -343,6 +363,7 @@ h6 {
     min-width: 100%;
     table-layout: fixed;
     font-size: 16px;
+    
   }
 
   thead {
@@ -379,11 +400,12 @@ h6 {
   }
 
   th {
-    padding: 15px 5px;
-    background: #f5f7ff;
+    padding: 10px 5px;
+    background: #fbfbfb;
     font-weight: 600;
-    color: #6e8efb;
+    color: #000000;
     font-size: 14px;
+    border-top: 1px solid #eee;
 
     &:last-child {
       border-right: 1px solid #eee;

@@ -1,21 +1,29 @@
 <template>
-  <div class="domain-import-task-status min-h-[400px]">
-    <div class="action">
+  <div class="domain-import-task-status min-h-[300px]">
+    <div class="action mb-5">
       <fs-button type="primary" icon="ion:add-outline" @click="addTask">添加导入任务</fs-button>
       <fs-button type="primary" icon="ion:refresh-outline" class="ml-2" @click="loadImportTaskStatus">刷新</fs-button>
     </div>
-    <div class="table-container overflow-auto mt-2">
+    <div class="table-container overflow-auto mb-10">
       <table class="cd-table border-gray-300 w-full">
         <thead>
           <tr>
-            <th class="w-20%">来源</th>
-            <th>进度</th>
-            <th class="w-20%">操作</th>
+            <th class="w-[220px]">来源</th>
+            <th class="">进度</th>
+            <th class="w-[220px]">操作</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="item in list" :key="item.key">
-            <td class="ellipsis">{{ item.title }}</td>
+            <td class="ellipsis">
+              <span class="flex items-center pointer" @click="editTask(item)">
+                <span class="flex-1 ellipsis flex items-center">
+                  <fs-icon :icon="item.icon" class="mr-2"></fs-icon>
+                  {{ item.title }}
+                </span>
+                <fs-icon icon="ant-design:edit-outlined" class="ml-2" />
+              </span>
+            </td>
             <td>
               <div v-if="item.task">
                 <div>
@@ -49,6 +57,7 @@ import { onMounted, ref } from "vue";
 import * as api from "./api";
 import { Modal } from "ant-design-vue";
 import { useDomainImport } from "./use";
+import { Dicts } from "/@/components/plugins/lib/dicts";
 defineOptions({
   name: "DomainImportTaskStatus",
 });
@@ -58,6 +67,10 @@ const list = ref([]);
 async function loadImportTaskStatus() {
   const res = await api.ImportTaskStatus();
   list.value = res || [];
+  for (let item of list.value) {
+    const provider = Dicts.dnsProviderTypeDict.dataMap[item.dnsProviderType];
+    item.icon = provider?.icon || "ion:cloud-outline";
+  }
 }
 
 async function startTask(item: any) {
@@ -87,6 +100,15 @@ async function addTask() {
   });
 }
 
+async function editTask(item: any) {
+  await openDomainImportDialog({
+    afterSubmit: async () => {
+      await loadImportTaskStatus();
+    },
+    form: item,
+  });
+}
+
 onMounted(async () => {
   await loadImportTaskStatus();
 });
@@ -95,7 +117,11 @@ onMounted(async () => {
 <style lang="less">
 .domain-import-task-status {
   .table-container {
-    height: 60vh;
+    height: 50vh;
+  }
+
+  .ant-progress {
+    margin-bottom: 0px;
   }
 }
 </style>

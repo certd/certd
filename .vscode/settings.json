@@ -13,5 +13,8 @@
     "explorer.autoReveal": false,
     "[javascript]": {
         "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "[less]": {
+        "editor.defaultFormatter": "vscode.css-language-features"
     }
 }

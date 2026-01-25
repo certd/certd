@@ -2,7 +2,7 @@ import { http, logger, utils } from '@certd/basic';
 import { AccessService, BaseService } from '@certd/lib-server';
 import { doPageTurn, Pager, PageRes } from '@certd/pipeline';
 import { DomainVerifiers } from "@certd/plugin-cert";
-import { createDnsProvider, DomainParser, parseDomainByPsl } from "@certd/plugin-lib";
+import { createDnsProvider, dnsProviderRegistry, DomainParser, parseDomainByPsl } from "@certd/plugin-lib";
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import dayjs from 'dayjs';
@@ -20,7 +20,7 @@ import { DomainEntity } from '../entity/domain.js';
 export interface SyncFromProviderReq {
   userId: number;
   dnsProviderType: string;
-  dnsProviderAccessId: string;
+  dnsProviderAccessId: number;
 }
 
 
@@ -330,10 +330,31 @@ export class DomainService extends BaseService<DomainEntity> {
     return taskList
   }
 
-  async addDomainImportTask(req:{userId?:number,dnsProviderType:string,dnsProviderAccessId:string,title:string}) {
+  async getProviderTitle(req:{userId?:number,dnsProviderType:string,dnsProviderAccessId:number}) {
     const userId = req.userId || 0
-    const { dnsProviderType, dnsProviderAccessId,title } = req
+    const { dnsProviderType, dnsProviderAccessId} = req
+    const dnsProviderDefine = dnsProviderRegistry.getDefine(dnsProviderType)
+    if (!dnsProviderDefine) {
+      throw new Error(`该域名提供商（${dnsProviderType}）不存在，请检查是否已被注册`)
+    }
+    const access = await this.accessService.getSimpleInfo(dnsProviderAccessId)
+    if (!access || access.userId !== userId) {
+      throw new Error(`该授权（${dnsProviderAccessId}）不存在，请检查是否已被删除`)
+    }
+    return {
+      title: `${dnsProviderDefine.title}_${access.name || ''}`,
+      //@ts-ignore
+      icon: dnsProviderDefine.icon || '',
+    }
+  }
+
+  async addDomainImportTask(req:{userId?:number,dnsProviderType:string,dnsProviderAccessId:number,index?:number}) {
+    const userId = req.userId || 0
+    const { dnsProviderType, dnsProviderAccessId,index=0 } = req    
     const key = `user_${userId}_${dnsProviderType}_${dnsProviderAccessId}`
+
+    const {title,icon} = await this.getProviderTitle(req)
+
 
     const setting = await this.userSettingService.getSetting<UserDomainImportSetting>(userId, UserDomainImportSetting)
     setting.domainImportList = setting.domainImportList || []
@@ -351,8 +372,9 @@ export class DomainService extends BaseService<DomainEntity> {
       dnsProviderAccessId,
       key,
       title,
+      icon: icon || '',
     }
-    setting.domainImportList.push(item)
+    setting.domainImportList.splice(index, 0, item)
     await this.userSettingService.saveSetting(userId, setting)
 
     return item
@@ -371,6 +393,24 @@ export class DomainService extends BaseService<DomainEntity> {
     setting.domainImportList.splice(index, 1)
     taskExecutor.clear(DOMAIN_IMPORT_TASK_TYPE,key)
     await this.userSettingService.saveSetting(userId, setting)
+  }
+
+  async saveDomainImportTask(req:{userId?:number,dnsProviderType:string,dnsProviderAccessId:number,key?:string}) {
+    const userId = req.userId || 0
+    const { dnsProviderType, dnsProviderAccessId,key } = req
+    const setting = await this.userSettingService.getSetting<UserDomainImportSetting>(userId, UserDomainImportSetting)
+    setting.domainImportList = setting.domainImportList || []
+
+    let index = 0
+    if (key) {
+      index = setting.domainImportList.findIndex(item => item.key === key)
+      if (index === -1) {
+        throw new Error(`该域名导入任务${key}不存在`)
+      }
+      await this.deleteDomainImportTask({userId,key})
+    }
+
+    await this.addDomainImportTask({userId,dnsProviderType,dnsProviderAccessId,index})
   }
 
 

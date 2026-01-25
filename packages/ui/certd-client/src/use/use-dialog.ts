@@ -5,6 +5,7 @@ export type FormOptionReq = {
   columns?: any;
   onSubmit?: any;
   body?: any;
+  initialForm?: any;
 };
 
 export function useFormDialog() {
@@ -16,6 +17,7 @@ export function useFormDialog() {
         crudOptions: {
           columns: req.columns,
           form: {
+            initialForm: req.initialForm,
             wrapper: {
               title: req.title,
               saveRemind: false,

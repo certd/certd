@@ -100,16 +100,6 @@ export class DomainController extends CrudController<DomainService> {
     return this.ok(task);
   }
 
-  @Post('/import/add', { summary: Constants.per.authOnly })
-  async importAdd(@Body(ALL) body: any) {
-    const { dnsProviderType, dnsProviderAccessId, title } = body;
-    const req = {
-      userId: this.getUserId(),
-      dnsProviderType, dnsProviderAccessId, title,
-    }
-    const item = await this.service.addDomainImportTask(req);
-    return this.ok(item);
-  }
 
   @Post('/import/delete', { summary: Constants.per.authOnly })
   async importDelete(@Body(ALL) body: any) {
@@ -120,6 +110,17 @@ export class DomainController extends CrudController<DomainService> {
     }
     await this.service.deleteDomainImportTask(req);
     return this.ok();
+  }
+
+  @Post('/import/save', { summary: Constants.per.authOnly })
+  async importSave(@Body(ALL) body: any) {
+    const { dnsProviderType, dnsProviderAccessId, key } = body;
+    const req = {
+      userId: this.getUserId(),
+      dnsProviderType, dnsProviderAccessId,  key
+    }
+    const item = await this.service.saveDomainImportTask(req);
+    return this.ok(item);
   }
 
 

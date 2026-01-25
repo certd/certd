@@ -18,7 +18,6 @@ export function useDomainImport() {
             //@ts-ignore
             selectedChange: ({ form, $event }) => {
               form.dnsProviderAccessType = $event.accessType;
-              form.dnsProviderTitle = $event.label;
             },
           },
         },
@@ -45,26 +44,23 @@ export function useDomainImport() {
           type: compute(({ form }) => {
             return form.dnsProviderAccessType || form.dnsProviderType;
           }),
-          on: {
-            //@ts-ignore
-            selectedChange({ form, $event }) {
-              form.accessTitle = $event.name;
-            },
-          },
         },
       },
     },
   };
 
-  return function openDomainImportDialog(req: { afterSubmit?: () => void }) {
+  return function openDomainImportDialog(req: { afterSubmit?: () => void; form?: any }) {
     openFormDialog({
       title: "从域名提供商导入域名",
       columns: columns,
+      initialForm: {
+        ...req.form,
+      },
       onSubmit: async (form: any) => {
-        await api.ImportTaskAdd({
+        await api.ImportTaskSave({
+          key: form.key,
           dnsProviderType: form.dnsProviderType,
           dnsProviderAccessId: form.dnsProviderAccessId,
-          title: form.dnsProviderTitle + "_" + form.accessTitle,
         });
         if (req.afterSubmit) {
           req.afterSubmit();

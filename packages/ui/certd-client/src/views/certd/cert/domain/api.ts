@@ -58,9 +58,9 @@ export async function DeleteBatch(ids: any[]) {
   });
 }
 
-export async function ImportTaskAdd(body: any) {
+export async function ImportTaskSave(body: any) {
   return await request({
-    url: apiPrefix + "/import/add",
+    url: apiPrefix + "/import/save",
     method: "post",
     data: body,
   });
