@@ -42,7 +42,7 @@
               <div v-else>未执行</div>
             </td>
             <td>
-              <fs-button type="primary" icon="ion:play-outline" @click="startTask(item)">执行</fs-button>
+              <fs-button type="primary" icon="ion:play-outline" :disabled="item.task?.status === 'running'" @click="startTask(item)">执行</fs-button>
               <fs-button type="primary" class="ml-2" danger icon="ion:trash-outline" @click="deleteTask(item)">删除</fs-button>
             </td>
           </tr>
@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import * as api from "./api";
 import { Modal } from "ant-design-vue";
 import { useDomainImport } from "./use";
@@ -90,7 +90,10 @@ const openDomainImportDialog = useDomainImport();
 
 async function addTask() {
   await openDomainImportDialog({
-    afterSubmit: async () => {
+    afterSubmit: async (res?: any) => {
+      if (res) {
+        await api.ImportTaskStart(res.key);
+      }
       await loadImportTaskStatus();
     },
   });
@@ -105,8 +108,16 @@ async function editTask(item: any) {
   });
 }
 
+const checkIntervalRef = ref();
 onMounted(async () => {
   await loadImportTaskStatus();
+  checkIntervalRef.value = setInterval(async () => {
+    await loadImportTaskStatus();
+  }, 3000);
+});
+
+onUnmounted(() => {
+  clearInterval(checkIntervalRef.value);
 });
 </script>
 

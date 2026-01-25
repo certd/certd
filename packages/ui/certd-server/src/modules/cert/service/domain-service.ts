@@ -261,7 +261,10 @@ export class DomainService extends BaseService<DomainEntity> {
 
     const itemHandle = async (domainRecord: any) => {
       task.incrementCurrent()
-      const domain = domainRecord.domain
+      let domain = domainRecord.domain
+      if (domain.endsWith(".")) {
+        domain = domain.slice(0, -1)
+      }
 
       const old = await this.findOne({
         where: {
@@ -410,7 +413,7 @@ export class DomainService extends BaseService<DomainEntity> {
       await this.deleteDomainImportTask({userId,key})
     }
 
-    await this.addDomainImportTask({userId,dnsProviderType,dnsProviderAccessId,index})
+    return await this.addDomainImportTask({userId,dnsProviderType,dnsProviderAccessId,index})
   }
 
 

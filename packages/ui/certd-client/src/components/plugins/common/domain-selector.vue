@@ -1,24 +1,35 @@
 <template>
   <div class="domain-select">
     <div class="flex flex-row">
-      <a-select class="domain-select-input" show-search :filter-option="filterOption" :options="optionsRef" :value="value" v-bind="attrs" @click="onClick" @update:value="emit('update:value', $event)">
+      <a-select
+        class="domain-select-input"
+        :dropdown-style="dropdownStyle"
+        show-search
+        :filter-option="filterOption"
+        :options="optionsRef"
+        :value="value"
+        v-bind="attrs"
+        @click="onClick"
+        @update:value="emit('update:value', $event)"
+      >
         <template #dropdownRender="{ menuNode }">
           <template v-if="search">
-            <div class="flex w-full" style="padding: 4px 8px">
-              <a-input
-                ref="inputRef"
-                v-model:value="searchKeyRef"
-                class="flex-1"
-                allow-clear
-                placeholder="这里可以搜索域名（数据来自设置->域名管理），列表中没有的域名可以直接在上面输入框输入"
-                @keydown.enter="doSearch"
-              />
-              <a-button class="ml-2" :loading="loading" type="text" @click="doSearch">
-                <template #icon>
-                  <search-outlined />
-                </template>
-                查询
-              </a-button>
+            <div class="flex w-full items-center justify-between flex-wrap" style="padding: 4px 8px">
+              <div class="flex-1 flex flex-row items-center">
+                <a-input
+                  ref="inputRef"
+                  v-model:value="searchKeyRef"
+                  class="flex-1"
+                  allow-clear
+                  placeholder="这里可以搜索域名（数据来自“设置->域名管理”），列表中没有的域名可以直接在上面输入框输入"
+                  @keydown.enter="doSearch"
+                />
+                <fs-button type="primary" class="m-1" :loading="loading" icon="mingcute:search-2-line" @click="doSearch"> 查询 </fs-button>
+              </div>
+              <div class="manager flex flex-row items-center">
+                <fs-button type="primary" class="m-1" icon="mingcute:vip-1-line" @click="openDomainImportDialog">导入域名</fs-button>
+                <fs-button class="m-1" type="primary" icon="carbon:gui-management" @click="openDomainManager">管理域名</fs-button>
+              </div>
             </div>
             <div v-if="hasError" class="helper p-2" :class="{ error: hasError }">
               {{ message }}
@@ -29,6 +40,15 @@
 
           <div v-if="pager === true" class="pager text-center p-5" @click="paginationClick">
             <a-pagination v-model:current="pagerRef.pageNo" simple :total="pagerRef.total" :page-size="pagerRef.pageSize" @change="onPageChange" />
+          </div>
+        </template>
+        <template #option="scope">
+          <div class="flex flex-row items-center">
+            <span class="min-w-60">{{ scope.label }}</span>
+            <div>
+              <fs-values-format :model-value="scope.challengeType" :dict="challengeTypeDict"></fs-values-format>
+              <fs-values-format :model-value="scope.dnsProviderType" :dict="dnsProviderTypeDict"></fs-values-format>
+            </div>
           </div>
         </template>
       </a-select>
@@ -44,6 +64,9 @@
 <script setup lang="ts">
 import { computed, defineComponent, ref, Ref, useAttrs } from "vue";
 import { request } from "/@/api/service";
+import { Dicts } from "../lib/dicts";
+import { useRouter } from "vue-router";
+import { useDomainImport, useDomainImportManage } from "/@/views/certd/cert/domain/use";
 
 defineOptions({
   name: "DomainSelector",
@@ -114,10 +137,14 @@ const getOptions = async () => {
       options.push({
         value: item.domain,
         label: item.domain,
+        dnsProviderType: item.dnsProviderType,
+        challengeType: item.challengeType,
       });
       options.push({
         value: `*.${item.domain}`,
         label: `*.${item.domain}`,
+        dnsProviderType: item.dnsProviderType,
+        challengeType: item.challengeType,
       });
     }
 
@@ -162,6 +189,29 @@ async function paginationClick(e: any) {
   e.stopPropagation();
   e.preventDefault();
 }
+
+const dnsProviderTypeDict = Dicts.dnsProviderTypeDict;
+const challengeTypeDict = Dicts.challengeTypeDict;
+
+const router = useRouter();
+function openDomainManager(e: any) {
+  e.preventDefault();
+  // router.push("/certd/cert/domain");
+  window.open(`${window.location.origin}/#/certd/cert/domain`);
+}
+
+const openDomainImportManageDialog = useDomainImportManage();
+function openDomainImportDialog() {
+  openDomainImportManageDialog({
+    zIndex: 2060,
+    afterSubmit: res => {
+      refreshOptions();
+    },
+  });
+}
+const dropdownStyle = ref({
+  zIndex: 2000,
+});
 </script>
 
 <style lang="less"></style>

@@ -3,11 +3,10 @@ import { Modal, notification } from "ant-design-vue";
 import { Ref, ref } from "vue";
 import { useRouter } from "vue-router";
 import * as api from "./api";
-import DomainImportTaskStatus from "./import.vue";
+import { useDomainImportManage } from "./use";
 import { Dicts } from "/@/components/plugins/lib/dicts";
 import { useSettingStore } from "/@/store/settings";
 import { useUserStore } from "/@/store/user";
-import { useFormDialog } from "/@/use/use-dialog";
 import { createAccessApi } from "/@/views/certd/access/api";
 import { useI18n } from "/src/locales";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
@@ -51,7 +50,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     url: "pi/dnsProvider/dnsProviderTypeDict",
   });
 
-  const { openFormDialog } = useFormDialog();
+  const openDomainImportManageDialog = useDomainImportManage();
   return {
     crudOptions: {
       settings: {
@@ -104,13 +103,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             color: "gold",
             icon: "mingcute:vip-1-line",
             click: async () => {
-              settingStore.checkPlus();
-              await openFormDialog({
-                title: "从域名提供商导入域名",
-                body: () => {
-                  return <DomainImportTaskStatus />;
-                },
-                onSubmit: async (form: any) => {
+              await openDomainImportManageDialog({
+                afterSubmit: res => {
                   crudExpose.doRefresh();
                 },
               });

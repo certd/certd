@@ -192,7 +192,7 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
     let list = ret.zones || []
     list = list.map((item: any) => ({
       id: item.id,
-      domain: item.name,
+      domain: item.name.endsWith(".") ? item.name.slice(0, -1) : item.name,
     }));
     return {
       total:ret.metadata.total_count || list.length,

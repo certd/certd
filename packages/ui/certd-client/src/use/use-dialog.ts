@@ -6,6 +6,7 @@ export type FormOptionReq = {
   onSubmit?: any;
   body?: any;
   initialForm?: any;
+  zIndex?: number;
 };
 
 export function useFormDialog() {
@@ -19,6 +20,7 @@ export function useFormDialog() {
           form: {
             initialForm: req.initialForm,
             wrapper: {
+              zIndex: req.zIndex,
               title: req.title,
               saveRemind: false,
               slots: {
