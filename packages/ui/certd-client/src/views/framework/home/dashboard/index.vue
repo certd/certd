@@ -67,7 +67,7 @@
     <div class="statistic-data m-20">
       <a-row :gutter="20" class="flex-wrap">
         <a-col :md="6" :xs="24">
-          <statistic-card :title="t('certd.dashboard.pipelineCount')" :count="count.pipelineCount">
+          <statistic-card :title="t('certd.dashboard.pipelineCount')" :count="count.pipelineCount" :sub-counts="count.pipelineEnableCount">
             <template v-if="count.pipelineCount === 0" #default>
               <div class="flex-center flex-1 flex-col">
                 <div style="font-size: 18px; font-weight: 700">{{ t("certd.dashboard.noPipeline") }}</div>
@@ -79,9 +79,21 @@
             </template>
           </statistic-card>
         </a-col>
-        <a-col :md="6" :xs="24">
+        <!-- <a-col :md="6" :xs="24">
           <statistic-card :title="t('certd.dashboard.pipelineStatus')" :footer="false">
             <pie-count v-if="count.pipelineStatusCount" :data="count.pipelineStatusCount"></pie-count>
+          </statistic-card>
+        </a-col> -->
+        <a-col :md="6" :xs="24">
+          <statistic-card :title="t('certd.dashboard.certCount')" :count="count.certCount" :sub-counts="count.certStatusCount">
+            <template v-if="count.certCount === 0" #default>
+              <div class="flex-center flex-1 flex-col">
+                <div style="font-size: 18px; font-weight: 700">{{ t("certd.dashboard.noCert") }}</div>
+              </div>
+            </template>
+            <template #footer>
+              <router-link to="/certd/monitor/cert" class="flex"> <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" /> {{ t("certd.dashboard.manageCert") }} </router-link>
+            </template>
           </statistic-card>
         </a-col>
         <a-col :md="6" :xs="24">
@@ -242,6 +254,19 @@ function transformStatusCount() {
     }
   }
   count.value.pipelineStatusCount = result;
+
+  const pipelineEnableCount = count.value.pipelineEnableCount;
+  count.value.pipelineEnableCount = [
+    { name: t("certd.dashboard.enabledCount"), value: pipelineEnableCount.enabled, color: "green" },
+    { name: t("certd.dashboard.disabledCount"), value: pipelineEnableCount.disabled, color: "gray" },
+  ];
+  const certCount = count.value.certCount;
+  count.value.certStatusCount = [
+    { name: t("certd.dashboard.certExpiredCount"), value: certCount.expired, color: "red", checkIcon: "mingcute:warning-fill:#f44336" },
+    { name: t("certd.dashboard.certExpiringCount"), value: certCount.expiring, color: "yellow", checkIcon: "mingcute:alert-fill:#ff9800" },
+    { name: t("certd.dashboard.certNoExpireCount"), value: certCount.notExpired, color: "green" },
+  ];
+  count.value.certCount = certCount.total;
 }
 async function loadCount() {
   count.value = await GetStatisticCount();

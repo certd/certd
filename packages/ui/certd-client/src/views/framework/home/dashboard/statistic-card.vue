@@ -8,7 +8,27 @@
         </div>
         <div class="content">
           <div v-if="!slots.default" class="statistic">
-            <div v-if="count !== 0" class="value">{{ count }}</div>
+            <div v-if="count !== 0" class="value flex items-center w-full">
+              <div class="total flex-center flex-1 flex-col">
+                <span>{{ count }}</span>
+                <span class="title">{{ title }}</span>
+              </div>
+              <a-divider type="vertical h-10"></a-divider>
+              <div class="sub flex-1 flex-col h-[80%] flex-between pl-4">
+                <div v-for="item in subCounts" :key="item.name" class="sub-item flex justify-center w-full">
+                  <div class="flex items-center w-[60%] ellipsis overflow-hidden">
+                    <div class="status-indicator" :class="`bg-${item.color}`"></div>
+                    {{ item.name }}：
+                  </div>
+                  <div class="w-[40%] flex items-center justify-center relative">
+                    <span class="icon-text">{{ item.value }}</span>
+                    <div v-if="item.value !== 0 && item.checkIcon" class="ml-2 flex items-center absolute right-0">
+                      <fs-icon :icon="item.checkIcon" class="fs-icon"></fs-icon>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <a-empty v-else></a-empty>
           </div>
           <slot></slot>
@@ -25,51 +45,103 @@ import { FsIcon } from "@fast-crud/fast-crud";
 const props = defineProps<{
   title: string;
   count?: number;
+  subCounts?: {
+    name: string;
+    value: number;
+    color: string;
+    checkIcon?: string;
+  }[];
 }>();
 const slots = defineSlots();
 </script>
 <style lang="less">
 .statistic-card {
   margin-bottom: 10px;
+
   .icon-text {
     display: inline-flex;
     justify-content: left;
     align-items: center;
+
     .fs-icon {
       margin-right: 5px;
       font-size: 14px;
     }
   }
+
   .data-item {
     display: flex;
     flex-direction: column;
     height: 188px;
+
     .header {
       display: flex;
       justify-content: space-between;
       //padding-bottom: 10px;
       color: #8077a4;
     }
+
     .content {
       display: flex;
       flex-direction: column;
       flex: 1;
+
       .statistic {
         height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
+
         .value {
           font-size: 50px;
           font-weight: 700;
-          color: #2c254e;
+          color: #323232;
+
+          .total {
+            .title {
+              font-size: 14px;
+              font-weight: 400;
+              color: #8077a4;
+            }
+          }
+
+          .sub-item {
+            font-size: 14px;
+
+            .status-indicator {
+              width: 10px;
+              height: 10px;
+              border-radius: 50%;
+              margin-right: 12px;
+              flex-shrink: 0;
+            }
+
+            .bg-green {
+              background: linear-gradient(90deg, #4caf50, #8bc34a);
+            }
+
+            .bg-red {
+              background: linear-gradient(90deg, #f44336, #e57373);
+            }
+
+            .bg-yellow {
+              background: linear-gradient(90deg, #ff9800, #ffc107);
+            }
+            .bg-blue {
+              background: linear-gradient(90deg, #2196f3, #64b5f6);
+            }
+            .bg-gray {
+              background: linear-gradient(90deg, #9e9e9e, #bdbdbd);
+            }
+          }
         }
       }
 
       x-vue-echarts {
       }
     }
+
     .footer {
       color: #8077a4;
       font-size: 12px;
@@ -81,9 +153,11 @@ const slots = defineSlots();
       border-style: dashed;
       border-width: 1px 0 0;
       padding-top: 15px;
+
       > * {
         cursor: pointer;
       }
+
       margin-bottom: -10px;
     }
   }

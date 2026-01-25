@@ -1,7 +1,7 @@
 import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { BaseService, CodeException, Constants, PageReq } from "@certd/lib-server";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Repository } from "typeorm";
+import { Between, IsNull, LessThan, Not, Repository } from "typeorm";
 import { CertInfoEntity } from "../entity/cert-info.js";
 import { utils } from "@certd/basic";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
@@ -181,6 +181,36 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         pipelineId,
       },
     });
+  }
 
+  async count({ userId }: { userId: number }) {
+    const total = await this.repository.count({
+      where: {
+        userId,
+        expiresTime: Not(IsNull()),
+      },
+    });
+
+    const expired = await this.repository.count({
+      where: {
+        userId,
+        expiresTime: LessThan(new Date().getTime()),
+      },
+    });
+
+    const expiring = await this.repository.count({
+      where: {
+        userId,
+        expiresTime: Between(new Date().getTime(), new Date().getTime() + 15 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    const notExpired = total - expired - expiring;
+    return {
+      total,
+      expired,
+      expiring,
+      notExpired,
+    };
   }
 }

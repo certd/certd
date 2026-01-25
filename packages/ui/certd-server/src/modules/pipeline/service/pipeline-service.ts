@@ -771,6 +771,26 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return statusCount;
   }
 
+  async enableCount(param: { userId?: any } = {}) {
+    const statusCount = await this.repository
+      .createQueryBuilder()
+      .select("disabled")
+      .addSelect("count(1)", "count")
+      .where({
+        userId: param.userId
+      })
+      .groupBy("disabled")
+      .getRawMany();
+    const result = {
+      enabled: 0,
+      disabled: 0,
+    };
+    for (const item of statusCount) {
+      result[item.disabled ? "disabled" : "enabled"] = parseInt(item.count);
+    }
+    return result;
+  }
+
   async latestExpiringList({ userId }: any) {
     let list = await this.repository.find({
       select: {
