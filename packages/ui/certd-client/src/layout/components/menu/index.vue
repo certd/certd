@@ -3,7 +3,7 @@
 </template>
 
 <script lang="tsx" setup>
-import { ref, watch, defineOptions } from "vue";
+import { ref, watch } from "vue";
 import { routerUtils } from "/@/utils/util.router";
 import { useRoute } from "vue-router";
 import { utils } from "@fast-crud/fast-crud";

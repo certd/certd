@@ -255,7 +255,7 @@ function previewMask() {
     flex: 1;
     padding: 20px;
     .text {
-      width: 350px;
+      width: 400px;
       display: flex;
       flex-direction: column;
       align-items: center;

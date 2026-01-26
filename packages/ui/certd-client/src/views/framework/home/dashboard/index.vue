@@ -292,9 +292,9 @@ onMounted(async () => {
   loadLatestVersion();
   loadCount();
   loadPluginGroups();
-  // if (count.value.pipelineCount === 0) {
-  tourHandleOpen(true);
-  // }
+  if (count.value.pipelineCount === 0) {
+    tourHandleOpen(true);
+  }
 });
 
 function openUpgradeUrl() {
@@ -346,9 +346,9 @@ function useTour() {
   });
 
   const tourHandleOpen = (val: boolean): void => {
-    // if (LocalStorage.get("home-tour-off")) {
-    //   return;
-    // }
+    if (LocalStorage.get("home-tour-off")) {
+      return;
+    }
     initSteps();
     tour.value.open = val;
   };

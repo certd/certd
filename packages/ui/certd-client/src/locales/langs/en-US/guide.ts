@@ -3,9 +3,9 @@ export default {
     title: "Create Certificate Application Pipeline",
     description: "Demonstrate how to configure a certificate application task",
     items: {
-      tutorialTitle: "Tutorial Demo Content",
-      tutorialDesc1: "This tutorial demonstrates how to automatically apply for a certificate and deploy it to Nginx",
-      tutorialDesc2: "Only 3 steps, fully automatic application and deployment",
+      tutorialTitle: "This tutorial demonstrates how to automatically apply for a certificate and deploy it to Nginx",
+      tutorialDesc1: "Only 3 steps, fully automatic application and deployment",
+      tutorialDesc2: "",
       createTitle: "Create Certificate Pipeline",
       createDesc: "Click to add a certificate pipeline and fill in the certificate application information",
       successTitle: "Pipeline Created Successfully",

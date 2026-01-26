@@ -3,9 +3,9 @@ export default {
     title: "创建证书申请流水线",
     description: "演示证书申请任务如何配置",
     items: {
-      tutorialTitle: "教程演示内容",
-      tutorialDesc1: "本教程演示如何自动申请证书并部署到Nginx上",
-      tutorialDesc2: "仅需3步，全自动申请部署证书",
+      tutorialTitle: "本教程演示如何自动申请证书并部署到Nginx上",
+      tutorialDesc1: "仅需3步，全自动申请部署证书",
+      tutorialDesc2: "",
       createTitle: "创建证书流水线",
       createDesc: "点击添加证书流水线，填写证书申请信息",
       successTitle: "流水线创建成功",
