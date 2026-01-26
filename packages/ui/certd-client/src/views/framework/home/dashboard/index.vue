@@ -67,7 +67,7 @@
     <div class="statistic-data m-20">
       <a-row :gutter="20" class="flex-wrap">
         <a-col :md="6" :xs="24">
-          <statistic-card :title="t('certd.dashboard.pipelineCount')" :count="count.pipelineCount" :sub-counts="count.pipelineEnableCount">
+          <statistic-card icon="fluent-color:data-line-24" :title="t('certd.dashboard.pipelineCount')" :count="count.pipelineCount" :sub-counts="count.pipelineEnableCount">
             <template v-if="count.pipelineCount === 0" #default>
               <div class="flex-center flex-1 flex-col">
                 <div style="font-size: 18px; font-weight: 700">{{ t("certd.dashboard.noPipeline") }}</div>
@@ -85,7 +85,7 @@
           </statistic-card>
         </a-col> -->
         <a-col :md="6" :xs="24">
-          <statistic-card :title="t('certd.dashboard.certCount')" :count="count.certCount" :sub-counts="count.certStatusCount">
+          <statistic-card icon="fluent-color:certificate-24" :title="t('certd.dashboard.certCount')" :count="count.certCount" :sub-counts="count.certStatusCount">
             <template v-if="count.certCount === 0" #default>
               <div class="flex-center flex-1 flex-col">
                 <div style="font-size: 18px; font-weight: 700">{{ t("certd.dashboard.noCert") }}</div>
@@ -97,12 +97,12 @@
           </statistic-card>
         </a-col>
         <a-col :md="6" :xs="24">
-          <statistic-card :title="t('certd.dashboard.recentRun')" :footer="false">
+          <statistic-card icon="fluent-color:data-trending-24" :title="t('certd.dashboard.recentRun')" :footer="false">
             <day-count v-if="count.historyCountPerDay" :data="count.historyCountPerDay" :title="t('certd.dashboard.runCount')"></day-count>
           </statistic-card>
         </a-col>
         <a-col :md="6" :xs="24">
-          <statistic-card :title="t('certd.dashboard.expiringCerts')">
+          <statistic-card icon="fluent-color:alert-urgent-24" :title="t('certd.dashboard.expiringCerts')">
             <expiring-list v-if="count.expiringList" :data="count.expiringList"></expiring-list>
           </statistic-card>
         </a-col>
@@ -112,8 +112,11 @@
     <div v-if="pluginGroups" class="plugin-list">
       <a-card>
         <template #title>
-          {{ t("certd.dashboard.supportedTasks") }}
-          <a-tag color="green">{{ pluginGroups.groups.all.plugins.length }}</a-tag>
+          <div class="flex items-center">
+            <fs-icon icon="fluent-color:puzzle-piece-24" class="mr-5 fs-28" />
+            <div class="mr-5">{{ t("certd.dashboard.supportedTasks") }}</div>
+            <a-tag color="green">{{ pluginGroups.groups.all.plugins.length }}</a-tag>
+          </div>
         </template>
         <a-row :gutter="10">
           <a-col v-for="item of pluginGroups.groups.all.plugins" :key="item.name" class="plugin-item-col" :xl="4" :md="6" :xs="24">
@@ -264,7 +267,7 @@ function transformStatusCount() {
   const certCount = count.value.certCount;
   count.value.certStatusCount = [
     { name: t("certd.dashboard.certExpiredCount"), value: certCount.expired, color: "red", checkIcon: "mingcute:warning-fill:#f44336" },
-    { name: t("certd.dashboard.certExpiringCount"), value: certCount.expiring, color: "yellow", checkIcon: "mingcute:alert-fill:#ff9800" },
+    { name: t("certd.dashboard.certExpiringCount"), value: certCount.expiring, color: "yellow", checkIcon: "mingcute:alert-fill:#ff9800", title: "到期不足15天" },
     { name: t("certd.dashboard.certNoExpireCount"), value: certCount.notExpired, color: "green" },
   ];
   count.value.certCount = certCount.total;

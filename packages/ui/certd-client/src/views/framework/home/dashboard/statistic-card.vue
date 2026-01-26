@@ -3,7 +3,10 @@
     <a-card>
       <div class="data-item">
         <div class="header">
-          <div class="title">{{ title }}</div>
+          <div class="title">
+            <fs-icon :icon="icon" class="statistic-icon"></fs-icon>
+            {{ title }}
+          </div>
           <div class="more"></div>
         </div>
         <div class="content">
@@ -11,11 +14,11 @@
             <div v-if="count !== 0" class="value flex items-center w-full">
               <div class="total flex-center flex-1 flex-col">
                 <span>{{ count }}</span>
-                <span class="title">{{ title }}</span>
+                <span class="sub-title">{{ title }}</span>
               </div>
               <a-divider type="vertical h-10"></a-divider>
-              <div class="sub flex-1 flex-col h-[80%] flex-between pl-4">
-                <div v-for="item in subCounts" :key="item.name" class="sub-item flex justify-center w-full">
+              <div class="sub flex-1 flex-col h-[80%] flex-evenly pl-4">
+                <div v-for="item in subCounts" :key="item.name" class="sub-item flex justify-center w-full" :title="item.title">
                   <div class="flex items-center w-[60%] ellipsis overflow-hidden">
                     <div class="status-indicator" :class="`bg-${item.color}`"></div>
                     {{ item.name }}：
@@ -43,6 +46,7 @@
 <script setup lang="ts">
 import { FsIcon } from "@fast-crud/fast-crud";
 const props = defineProps<{
+  icon: string;
   title: string;
   count?: number;
   subCounts?: {
@@ -50,6 +54,7 @@ const props = defineProps<{
     value: number;
     color: string;
     checkIcon?: string;
+    title?: string;
   }[];
 }>();
 const slots = defineSlots();
@@ -58,6 +63,9 @@ const slots = defineSlots();
 .statistic-card {
   margin-bottom: 10px;
 
+  .ant-card-body {
+    padding: 15px 24px;
+  }
   .icon-text {
     display: inline-flex;
     justify-content: left;
@@ -72,13 +80,33 @@ const slots = defineSlots();
   .data-item {
     display: flex;
     flex-direction: column;
-    height: 188px;
+    height: 200px;
 
     .header {
       display: flex;
       justify-content: space-between;
-      //padding-bottom: 10px;
-      color: #8077a4;
+      margin-top: 6px;
+      margin-bottom: 6px;
+      color: #494949;
+      align-items: center;
+
+      .title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      .more {
+        display: flex;
+        align-items: center;
+      }
+
+      .statistic-icon {
+        font-size: 28px;
+        margin-right: 5px;
+      }
     }
 
     .content {
@@ -96,13 +124,12 @@ const slots = defineSlots();
         .value {
           font-size: 50px;
           font-weight: 700;
-          color: #323232;
-
           .total {
-            .title {
-              font-size: 14px;
+            color: hsl(var(--primary));
+            .sub-title {
+              font-size: 12px;
               font-weight: 400;
-              color: #8077a4;
+              color: #626262;
             }
           }
 
@@ -137,9 +164,6 @@ const slots = defineSlots();
           }
         }
       }
-
-      x-vue-echarts {
-      }
     }
 
     .footer {
@@ -157,8 +181,6 @@ const slots = defineSlots();
       > * {
         cursor: pointer;
       }
-
-      margin-bottom: -10px;
     }
   }
 }

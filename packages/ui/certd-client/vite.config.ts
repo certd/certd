@@ -6,6 +6,9 @@ import { createHtmlPlugin } from "vite-plugin-html";
 import { loadEnv } from "vite";
 import * as path from "path";
 import DefineOptions from "unplugin-vue-define-options/vite";
+import { theme } from "ant-design-vue";
+const { defaultAlgorithm, defaultSeed } = theme;
+const mapToken = defaultAlgorithm(defaultSeed);
 // import WindiCSS from "vite-plugin-windicss";
 // import { generateModifyVars } from "./build/modify-vars";
 // import { configThemePlugin } from "./build/theme-plugin";
@@ -76,7 +79,7 @@ export default ({ command, mode }) => {
           // 修改默认主题颜色，配置less变量
           // modifyVars: generateModifyVars(),
           javascriptEnabled: true,
-          // modifyVars: mapToken
+          modifyVars: mapToken,
         },
       },
     },
