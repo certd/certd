@@ -23,6 +23,7 @@ export default {
     legoCertPipeline: "Lego证书流水线",
     customPipeline: "自定义流水线",
     batchAddPipeline: "模版批量创建流水线",
+    myPipelinesDesc: "流水线模式：申请证书->部署证书->定时运行",
   },
   order: {
     confirmTitle: "订单确认",

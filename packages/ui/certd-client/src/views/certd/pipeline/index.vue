@@ -1,7 +1,10 @@
 <template>
   <fs-page class="page-cert">
     <template #header>
-      <div class="title">{{ t("certd.myPipelines") }}</div>
+      <div class="title">
+        {{ t("certd.myPipelines") }}
+        <div class="sub">{{ t("certd.pipelinePage.myPipelinesDesc") }}</div>
+      </div>
     </template>
     <!-- <a-alert v-if="settingStore.sysPublic.notice" type="warning" show-icon>
       <template #message>

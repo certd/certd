@@ -15,3 +15,4 @@
 ## 2. 图文教程链接
 如果不方便登录系统，您还可以直接查看 [图文教程](https://gitee.com/certd/certd/blob/v2/step.md)
 
+![alt text](../images/start/first.png)

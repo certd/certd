@@ -19,6 +19,7 @@ export default {
     legoCertPipeline: "Lego Certificate Pipeline",
     customPipeline: "Custom Pipeline",
     batchAddPipeline: "Add Pipeline Use Template",
+    myPipelinesDesc: "Pipeline Mode: Apply -> Deploy -> Schedule",
   },
   order: {
     confirmTitle: "Order Confirmation",

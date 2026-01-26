@@ -83,7 +83,7 @@ provide("fn:ai.open", openChat);
     </template>
     <template #header-right-0>
       <div class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
-        <tutorial-button class="flex-center header-btn" />
+        <tutorial-button class="flex-center header-btn" mode="nav" />
       </div>
       <div class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full">
         <vip-button class="flex-center header-btn" mode="nav" />

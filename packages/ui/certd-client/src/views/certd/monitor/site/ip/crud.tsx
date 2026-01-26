@@ -167,8 +167,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
           },
           type: "text",
-          helper: t("certd.helperIpCname"),
           form: {
+            helper: t("certd.helperIpCname"),
             rules: [{ required: true, message: t("certd.ruleIpRequired") }],
           },
           column: {

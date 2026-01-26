@@ -6,7 +6,7 @@
       <div class="text">
         <h3 class="title">{{ number }} {{ currentStepItem.title }}</h3>
         <div class="description mt-5">
-          <div v-for="desc of currentStepItem.descriptions">{{ desc }}</div>
+          <div v-for="(desc, index) of currentStepItem.descriptions" :key="index">{{ desc }}</div>
         </div>
         <div v-if="currentStepItem.body">
           <fs-render :render-func="currentStepItem.body" />
@@ -29,9 +29,12 @@
 <script setup lang="tsx">
 import { FsRender } from "@fast-crud/fast-crud";
 import { useI18n } from "vue-i18n";
-
-const { t } = useI18n();
 import SimpleSteps from "./simple-steps.vue";
+
+const props = defineProps<{
+  mode?: string;
+}>();
+const { t } = useI18n();
 type Step = {
   title: string;
   subTitle?: string;
@@ -69,10 +72,10 @@ const steps = ref<Step[]>([
         title: t("guide.createCertPipeline.items.successTitle"),
         descriptions: [t("guide.createCertPipeline.items.successDesc")],
       },
-      {
-        title: t("guide.createCertPipeline.items.nextTitle"),
-        descriptions: [t("guide.createCertPipeline.items.nextDesc")],
-      },
+      // {
+      //   title: t("guide.createCertPipeline.items.nextTitle"),
+      //   descriptions: [t("guide.createCertPipeline.items.nextDesc")],
+      // },
     ],
   },
   {

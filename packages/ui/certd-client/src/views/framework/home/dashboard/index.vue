@@ -138,32 +138,33 @@
         </a-row>
       </a-card>
     </div>
+    <a-tour v-bind="tour" v-model:current="tour.current" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { FsIcon } from "@fast-crud/fast-crud";
-import SimpleSteps from "/@/components/tutorial/simple-steps.vue";
-import { useUserStore } from "/@/store/user";
-import { computed, ComputedRef, onMounted, Ref, ref } from "vue";
+import { notification } from "ant-design-vue";
 import dayjs from "dayjs";
-import StatisticCard from "/@/views/framework/home/dashboard/statistic-card.vue";
-import TutorialButton from "/@/components/tutorial/index.vue";
-import DayCount from "./charts/day-count.vue";
-import PieCount from "./charts/pie-count.vue";
-import ExpiringList from "./charts/expiring-list.vue";
-import SuiteCard from "./suite-card.vue";
-import { useSettingStore } from "/@/store/settings";
-import { SiteInfo } from "/@/store/settings/api.basic";
-import { UserInfoRes } from "/@/store/user/api.user";
-import { GetStatisticCount } from "/@/views/framework/home/dashboard/api";
+import { computed, ComputedRef, onMounted, Ref, ref } from "vue";
 import { useRouter } from "vue-router";
 import * as api from "./api";
+import DayCount from "./charts/day-count.vue";
+import ExpiringList from "./charts/expiring-list.vue";
+import NoticeBar from "./notice-bar.vue";
+import SuiteCard from "./suite-card.vue";
+import TutorialButton from "/@/components/tutorial/index.vue";
+import SimpleSteps from "/@/components/tutorial/simple-steps.vue";
+import { usePluginStore } from "/@/store/plugin";
+import { useSettingStore } from "/@/store/settings";
+import { SiteInfo } from "/@/store/settings/api.basic";
+import { useUserStore } from "/@/store/user";
+import { UserInfoRes } from "/@/store/user/api.user";
+import { LocalStorage } from "/@/utils/util.storage";
+import { GetStatisticCount } from "/@/views/framework/home/dashboard/api";
+import StatisticCard from "/@/views/framework/home/dashboard/statistic-card.vue";
 import { useI18n } from "/src/locales";
 const { t } = useI18n();
-import { usePluginStore } from "/@/store/plugin";
-import { notification } from "ant-design-vue";
-import NoticeBar from "./notice-bar.vue";
 defineOptions({
   name: "DashboardUser",
 });
@@ -291,6 +292,9 @@ onMounted(async () => {
   loadLatestVersion();
   loadCount();
   loadPluginGroups();
+  // if (count.value.pipelineCount === 0) {
+  tourHandleOpen(true);
+  // }
 });
 
 function openUpgradeUrl() {
@@ -325,6 +329,50 @@ const noticeList = computed(() => {
 
   return list;
 });
+
+function useTour() {
+  const tour = ref({
+    open: false,
+    current: 0,
+    steps: [],
+    onClose: () => {
+      tour.value.open = false;
+      LocalStorage.set("home-tour-off", true, 999999999);
+    },
+    onFinish: () => {
+      tour.value.open = false;
+      LocalStorage.set("home-tour-off", true, 999999999);
+    },
+  });
+
+  const tourHandleOpen = (val: boolean): void => {
+    // if (LocalStorage.get("home-tour-off")) {
+    //   return;
+    // }
+    initSteps();
+    tour.value.open = val;
+  };
+
+  function initSteps() {
+    //@ts-ignore
+    tour.value.steps = [
+      {
+        title: "您是第一次使用吗？",
+        description: "此处可以查看新手教程哦 ↑↑↑↑",
+        target: () => {
+          return document.querySelector("header .tutorial-button");
+        },
+      },
+    ];
+  }
+
+  return {
+    tour,
+    tourHandleOpen,
+  };
+}
+
+const { tour, tourHandleOpen } = useTour();
 </script>
 
 <style lang="less">
