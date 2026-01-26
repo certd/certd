@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from '@certd/plugin-lib';
 import { optionsUtils } from '@certd/basic';
@@ -171,7 +171,7 @@ export class DemoTest extends AbstractTaskPlugin {
   }
 
   //此方法演示，如何让前端在添加插件时可以从后端获取选项，这里是后端返回选项的方法
-  async onGetSiteList() {
+  async onGetSiteList(req: PageSearch) {
     if (!this.accessId) {
       throw new Error('请选择Access授权');
     }
@@ -179,13 +179,7 @@ export class DemoTest extends AbstractTaskPlugin {
     // @ts-ignore
     const access = await this.getAccess(this.accessId);
 
-    // const siteRes = await this.ctx.http.request({
-    //   url: '你的服务端获取选项的请求地址',
-    //   method: 'GET',
-    //   data: {
-    //    token:access.xxxx
-    //   }, //请求参数
-    // });
+    // const siteRes = await access.GetDomainList(req);
     //以下是模拟数据
     const siteRes = [
       { id: 1, siteName: 'site1.com' },
@@ -204,5 +198,3 @@ export class DemoTest extends AbstractTaskPlugin {
     return optionsUtils.buildGroupOptions(options, this.certDomains);
   }
 }
-//实例化一下，注册插件
-new DemoTest();
