@@ -74,14 +74,14 @@ export class UCloudAccess extends BaseAccess {
   }
 
 
-  async getClient() {
+  async getClient(region?:string) {
     if (this.client) {
       return this.client;
     }
     const { Client } = await import('@ucloud-sdks/ucloud-sdk-js');
     const client = new Client({
       config: {
-        region: 'cn-bj2',
+        region: region || 'cn-bj2',
         projectId: this.projectId || "",
         baseUrl: "https://api.ucloud.cn"
       },
@@ -108,7 +108,7 @@ export class UCloudAccess extends BaseAccess {
     const res = await client.uaccount().getRegion({
       "Action": "GetRegion"
     });
-    this.ctx.logger.info(`获取到区域列表:${JSON.stringify(res)}`);
+    // this.ctx.logger.info(`获取到区域列表:${JSON.stringify(res)}`);
     return res;
   }
 
@@ -212,7 +212,7 @@ export class UCloudAccess extends BaseAccess {
     const resp = await client.invoke(new Request({
       ...req
     }));
-    this.ctx.logger.info(`请求UCloud API:${JSON.stringify(resp)}`);
+    // this.ctx.logger.info(`请求UCloud API:${JSON.stringify(resp)}`);
     const res = resp.data || {}
     if (res.RetCode !== 0) {
       throw new Error(res.Message)
