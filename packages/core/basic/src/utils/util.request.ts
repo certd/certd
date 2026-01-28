@@ -25,26 +25,30 @@ export class HttpError extends Error {
     if (!error) {
       return;
     }
-    super(error.message || error.response?.statusText);
 
-    const message = error?.message;
+    let message = error?.message || error?.response.statusText || error?.code;
     if (message && typeof message === "string" && message.indexOf) {
       for (const key in errorMap) {
         if (message.indexOf(key) > -1) {
-          this.message = `${this.message}(${errorMap[key]})`;
+          message = `${message}(${errorMap[key]})`;
           break;
         }
       }
     }
+    if (!message) {
+      message = error.message;
+    }
+    if (error.errors && error.errors.length > 0) {
+      message += " \n" + error.errors.map((item: any) => item.message).join("\n ");
+    }
+    super(message);
 
     this.name = error.name;
     this.code = error.code;
 
     this.status = error.response?.status;
     this.statusText = error.response?.statusText || error.code;
-    if (!this.message) {
-      this.message = error.code;
-    }
+
     this.request = {
       baseURL: error.config?.baseURL,
       url: error.config?.url,
@@ -228,10 +232,13 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
         errorMessage = "请求地址不存在";
       }
       if (errorMessage) {
-        error.message = errorMessage + "," + error.message;
+        if (error.message) {
+          errorMessage += `,${error.message}`;
+        }
+        error.message = errorMessage;
       }
 
-      logger.error(`请求出错：status:${error.response?.status || error.code},statusText:${error.response?.statusText || error.code},url:${error.config?.url},method:${error.config?.method}。`);
+      logger.error(`请求出错：${errorMessage} status:${error.response?.status || error.code},statusText:${error.response?.statusText || error.code},url:${error.config?.url},method:${error.config?.method}。`);
       logger.error("返回数据:", JSON.stringify(error.response?.data));
       if (error.response?.data) {
         const message = error.response.data.message || error.response.data.msg || error.response.data.error;

@@ -177,11 +177,18 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       }
     } catch (e) {
       logger.error("check site error", e);
+      let message = e.message
+      if (!message){
+        message = e.code 
+      }
+      if (e.errors &&e.errors.length > 0){
+        message += "\n"+e.errors.map((item:any)=>item.message).join("\n")
+      }
       await this.update({
         id: site.id,
         checkStatus: "error",
         lastCheckTime: dayjs().valueOf(),
-        error: e.message
+        error: message
       });
       if (!notify) {
         return;
