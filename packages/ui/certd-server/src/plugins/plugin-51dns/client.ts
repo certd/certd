@@ -1,6 +1,6 @@
 import { createAxiosService, HttpClient, ILogger } from "@certd/basic";
 import { PageRes, PageSearch } from "@certd/pipeline";
-import { DomainRecord } from "@certd/plugin-lib/dist/cert/dns-provider/api.js";
+import { DomainRecord } from "@certd/plugin-lib";
 import qs from "qs";
 import { Dns51Access } from "./access.js";
 export class Dns51Client {
