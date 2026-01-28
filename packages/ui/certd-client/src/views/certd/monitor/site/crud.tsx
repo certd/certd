@@ -457,6 +457,29 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
           },
         },
+        checkStatus: {
+          title: t("certd.monitor.checkStatus"),
+          search: {
+            show: false,
+          },
+          type: "dict-select",
+          dict: checkStatusDict,
+          form: {
+            show: false,
+          },
+          column: {
+            width: 100,
+            align: "center",
+            sorter: true,
+            cellRender({ value, row }) {
+              return (
+                <a-tooltip title={row.error}>
+                  <fs-values-format v-model={value} dict={checkStatusDict}></fs-values-format>
+                </a-tooltip>
+              );
+            },
+          },
+        },
         certEffectiveTime: {
           title: t("certd.monitor.certEffectiveTime"),
           search: {
@@ -610,29 +633,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         },
-        checkStatus: {
-          title: t("certd.monitor.checkStatus"),
-          search: {
-            show: false,
-          },
-          type: "dict-select",
-          dict: checkStatusDict,
-          form: {
-            show: false,
-          },
-          column: {
-            width: 100,
-            align: "center",
-            sorter: true,
-            cellRender({ value, row }) {
-              return (
-                <a-tooltip title={row.error}>
-                  <fs-values-format v-model={value} dict={checkStatusDict}></fs-values-format>
-                </a-tooltip>
-              );
-            },
-          },
-        },
+
         // error: {
         //   title: "错误信息",
         //   search: {
