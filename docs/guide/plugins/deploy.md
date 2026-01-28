@@ -1,5 +1,5 @@
 # 任务插件
-共 `116` 款任务插件    
+共 `118` 款任务插件    
 ## 1. 证书申请
 
 | 序号 | 名称 | 说明 |
@@ -138,8 +138,10 @@
 | 序号 | 名称 | 说明 |
 |-----|-----|-----|
 | 1.| **UCloud-部署到CDN** | 将证书部署到UCloud CDN | 
-| 2.| **UCloud-部署到WAF** | 将证书部署到UCloud WAF | 
-| 3.| **UCloud-上传到USSL** | 将证书上传到UCloud USSL | 
+| 2.| **UCloud-部署到负载均衡** | 将证书部署到UCloud负载均衡(ULB/ALB/CLB) | 
+| 3.| **UCloud-部署到对象存储(US3)** | 将证书部署到UCloud对象存储(US3) | 
+| 4.| **UCloud-部署到WAF** | 将证书部署到UCloud WAF | 
+| 5.| **UCloud-上传到USSL** | 将证书上传到UCloud USSL | 
 ## 11. 百度云
 
 | 序号 | 名称 | 说明 |

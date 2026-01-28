@@ -1,0 +1,101 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: UCloudDeployToULB
+title: UCloud-部署到负载均衡
+desc: 将证书部署到UCloud负载均衡(ULB/ALB/CLB)
+icon: svg:icon-ucloud
+group: ucloud
+needPlus: false
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: false
+    order: 0
+  accessId:
+    title: UCloud授权
+    component:
+      name: access-selector
+      type: ucloud
+    required: true
+    order: 0
+  region:
+    title: 地域
+    component:
+      name: remote-select
+      vModel: value
+      type: plugin
+      action: onGetRegionList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 选择UCloud地域
+    order: 0
+  certNameList:
+    title: 证书列表
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetCertList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: |-
+      选择要替换的证书名称
+      如果证书不存在，可以手动输入证书名称（运行一次后将会自动创建,您可以在ULB控制台进行使用）
+      请确保证书名称不要重复，如果重复，只会更新创建时间最近的那一条
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-ucloud/plugins/plugin-deploy-to-ulb.js

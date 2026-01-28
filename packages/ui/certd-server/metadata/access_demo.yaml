@@ -1,19 +1,38 @@
 name: demo
 title: 授权插件示例
 icon: clarity:plugin-line
-desc: ''
+desc: 这是一个示例授权插件，用于演示如何实现一个授权插件
 input:
+  apiType:
+    title: 授权方式
+    value: apiKey
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - label: API密钥（推荐）
+          value: apiKey
+        - label: 账号密码
+          value: account
+      placeholder: demoKeyId
+    required: true
   demoKeyId:
     title: 密钥Id
     component:
+      name: a-input
+      allowClear: true
       placeholder: demoKeyId
     required: true
   demoKeySecret:
-    title: 密钥串
-    component:
-      placeholder: demoKeySecret
+    title: 密钥
     required: true
     encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
 pluginType: access
 type: builtIn
 scriptFilePath: /plugins/plugin-demo/access.js

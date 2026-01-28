@@ -14,17 +14,18 @@ input:
   domains:
     title: 证书域名
     component:
-      name: a-select
+      name: domain-selector
       vModel: value
       mode: tags
-      open: false
-      placeholder: foo.com / *.foo.com / *.bar.com
+      placeholder: 请输入证书域名，比如：foo.com , *.foo.com , *.sub.foo.com , *.bar.com
       tokenSeparators:
         - ','
         - ' '
         - ，
         - 、
         - '|'
+      search: true
+      pager: true
     rules:
       - type: domains
     required: true
@@ -424,7 +425,6 @@ input:
     helper: 兼容Windows Server各个版本
   renewDays:
     title: 更新天数
-    value: 18
     component:
       name: a-input-number
       vModel: value
