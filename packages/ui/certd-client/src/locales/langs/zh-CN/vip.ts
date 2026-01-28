@@ -99,4 +99,5 @@ export default {
   confirm: "确认",
   not_effective: "VIP没有生效/时长未同步?",
   learn_more: "更多特权(加VIP群等)",
+  question: "更多VIP相关问题",
 };

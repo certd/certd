@@ -57,6 +57,8 @@ export type SysPublicSetting = {
 
   // 默认到期前更新天数
   defaultCertRenewDays?: number;
+  // 默认即将到期天数
+  defaultWillExpireDays?: number;
 
   //证书域名添加到监控
   certDomainAddToMonitorEnabled?: boolean;

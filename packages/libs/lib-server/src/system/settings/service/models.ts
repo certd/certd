@@ -53,6 +53,8 @@ export class SysPublicSettings extends BaseSettings {
 
   //默认到期前更新天数
   defaultCertRenewDays?: number;
+  // 即将到期天数
+  defaultWillExpireDays?: number = 15;
 
   // 第三方OAuth配置
   oauthEnabled?: boolean = false;

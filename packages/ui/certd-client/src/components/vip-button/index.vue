@@ -445,6 +445,11 @@ function openUpgrade() {
           <div class="vip-type-vs">
             <a-row gutter={20}>{slots}</a-row>
           </div>
+          <div>
+            <a href="https://certd.docmirror.cn/guide/donate/#相关问题" target="_blank">
+              {t("vip.question")}
+            </a>
+          </div>
           <div class="mt-10">
             <div class=" w-100 flex-col md:flex-row ">
               <span>{t("vip.site_id")}：</span>

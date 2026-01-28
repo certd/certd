@@ -337,6 +337,12 @@ export default {
       certValidDays: "证书到期前天数",
       certValidDaysHelper: "证书到期前多少天发送通知",
     },
+
+    cert: {
+      expired: "已过期",
+      expiring: "即将过期",
+      noExpired: "未过期",
+    },
   },
   checkStatus: {
     success: "成功",

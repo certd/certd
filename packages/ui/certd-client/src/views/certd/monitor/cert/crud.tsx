@@ -4,7 +4,7 @@ import { useI18n } from "/src/locales";
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, useFormWrapper, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { certInfoApi } from "./api";
 import dayjs from "dayjs";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useModal } from "/@/use/use-modal";
 import { notification } from "ant-design-vue";
 import CertView from "/@/views/certd/pipeline/cert-view.vue";
@@ -57,7 +57,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     });
   };
 
-  const { openUploadCreateDialog, openUpdateCertDialog } = useCertUpload();
+  const { openUploadCreateDialog } = useCertUpload();
+
+  const DEFAULT_WILL_EXPIRE_DAYS = settingStore.sysPublic.defaultWillExpireDays || settingStore.sysPublic.defaultCertRenewDays || 15;
+  const route = useRoute();
+  const expireStatus = route?.query?.expireStatus as string;
+  const searchInitForm = {
+    expiresLeft: expireStatus,
+  };
   return {
     crudOptions: {
       request: {
@@ -65,6 +72,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         addRequest,
         editRequest,
         delRequest,
+      },
+      search: {
+        initialForm: searchInitForm,
       },
       form: {
         labelCol: {
@@ -213,7 +223,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         expiresLeft: {
           title: t("certd.validDays"),
           search: {
-            show: false,
+            show: true,
+            component: {
+              name: "fs-dict-select",
+              dict: dict({
+                data: [
+                  { label: t("certd.monitor.cert.expired"), value: "expired" },
+                  { label: t("certd.monitor.cert.expiring"), value: "expiring" },
+                  { label: t("certd.monitor.cert.noExpired"), value: "noExpired" },
+                ],
+              }),
+            },
           },
           type: "date",
           form: {
@@ -242,9 +262,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
               // 距离失效时间剩余天数
               const leftDays = dayjs(expiresTime).diff(dayjs(), "day");
-              const color = leftDays < 20 ? "red" : "#389e0d";
+              const color = leftDays < DEFAULT_WILL_EXPIRE_DAYS ? "red" : "#389e0d";
               const percent = (leftDays / effectiveDays) * 100;
-              const textColor = leftDays < 20 ? "red" : leftDays > 60 ? "#389e0d" : "";
+              const textColor = leftDays < DEFAULT_WILL_EXPIRE_DAYS ? "red" : leftDays > 60 ? "#389e0d" : "";
               const format = () => {
                 return <span style={{ color: textColor }}>{`${leftDays}${t("certd.days")}`}</span>;
               };

@@ -1,11 +1,12 @@
 import { ALL, Body, Controller, Get, Inject, Post, Provide, Query } from "@midwayjs/core";
-import { CommonException, Constants, CrudController } from "@certd/lib-server";
+import { CommonException, Constants, CrudController, SysSettingsService } from "@certd/lib-server";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 import { CertInfoService } from "../../../modules/monitor/index.js";
 import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
 import { SelectQueryBuilder } from "typeorm";
 import { logger } from "@certd/basic";
 import fs from "fs";
+import dayjs from "dayjs";
 
 /**
  */
@@ -19,6 +20,9 @@ export class CertInfoController extends CrudController<CertInfoService> {
   @Inject()
   pipelineService: PipelineService;
 
+  @Inject()
+  sysSettingService: SysSettingsService;
+
   getService(): CertInfoService {
     return this.service;
   }
@@ -29,6 +33,12 @@ export class CertInfoController extends CrudController<CertInfoService> {
     body.query.userId = this.getUserId();
     const domains = body.query?.domains;
     delete body.query.domains;
+
+    const expiresLeft = body.query?.expiresLeft;
+    delete body.query.expiresLeft;
+
+    const sysSetting = await this.sysSettingService.getPublicSettings();
+    const DEFAULT_WILL_EXPIRE_DAYS = sysSetting?.defaultWillExpireDays || sysSetting?.defaultCertRenewDays || 15;
     const res = await this.service.page({
       query: body.query,
       page: body.page,
@@ -36,6 +46,16 @@ export class CertInfoController extends CrudController<CertInfoService> {
       buildQuery: (bq) => {
         if (domains) {
           bq.andWhere('domains like :domains', { domains: `%${domains}%` });
+        }
+        if (expiresLeft) {
+          const willExpire = dayjs().add(DEFAULT_WILL_EXPIRE_DAYS, 'day').valueOf();
+          if (expiresLeft === "expired") {
+            bq.andWhere('expires_time < :now', { now: Date.now() });
+          } else if (expiresLeft === "expiring") {
+            bq.andWhere('expires_time <= :willExpire and expires_time > :now', { willExpire, now: Date.now() });
+          } else if (expiresLeft === "noExpired") {
+            bq.andWhere('expires_time > :willExpire', { willExpire });
+          }
         }
       }
     });

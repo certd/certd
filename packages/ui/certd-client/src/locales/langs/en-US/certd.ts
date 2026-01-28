@@ -330,6 +330,11 @@ export default {
       certValidDays: "Certificate Valid Days",
       certValidDaysHelper: "Number of days before expiration to send a notification",
     },
+    cert: {
+      expired: "Expired",
+      expiring: "Expiring",
+      noExpired: "Not Expired",
+    },
   },
   checkStatus: {
     success: "Success",

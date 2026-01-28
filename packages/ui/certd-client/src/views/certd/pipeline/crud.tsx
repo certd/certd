@@ -66,6 +66,8 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
   const userStore = useUserStore();
   const settingStore = useSettingStore();
 
+  const DEFAULT_WILL_EXPIRE_DAYS = settingStore.sysPublic.defaultWillExpireDays || settingStore.sysPublic.defaultCertRenewDays || 15;
+
   function onDialogOpen(opt: any) {
     const searchForm = crudExpose.getSearchValidatedFormData();
     opt.initialForm = {
@@ -389,9 +391,9 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
               }
               // 距离失效时间剩余天数
               const leftDays = dayjs(expiresTime).diff(dayjs(), "day");
-              const color = leftDays < 20 ? "red" : "#389e0d";
+              const color = leftDays < DEFAULT_WILL_EXPIRE_DAYS ? "red" : "#389e0d";
               const percent = (leftDays / effectiveDays) * 100;
-              const textColor = leftDays < 20 ? "red" : leftDays > 60 ? "#389e0d" : "";
+              const textColor = leftDays < DEFAULT_WILL_EXPIRE_DAYS ? "red" : leftDays > 60 ? "#389e0d" : "";
               const format = () => {
                 return <span style={{ color: textColor }}>{`${leftDays}${t("certd.days")}`}</span>;
               };
