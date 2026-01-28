@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.3](https://github.com/certd/certd/compare/v1.38.2...v1.38.3) (2026-01-28)
+
+### Bug Fixes
+
+* 当通知配置被删除时，使用默认通知配置进行发送 ([5398300](https://github.com/certd/certd/commit/53983002b6553a929b72e2c70a26809a9f306e89))
+* 站点检查多个ip连接超时的报错显示不出来的bug ([33b284a](https://github.com/certd/certd/commit/33b284afc0ae6391658d573e32b1ce7765e51cb2))
+
+### Performance Improvements
+
+* 部署插件支持ucloud alb ([640950d](https://github.com/certd/certd/commit/640950d4c847c72cae2986e3c2cae10d52a67fdf))
+* 多个dns 提供商支持导入域名 ([d3c0914](https://github.com/certd/certd/commit/d3c0914ac16db8ac77f9c60285bb20cfab7a3cb0))
+* 首次使用提示新手教程按钮 ([e054c8f](https://github.com/certd/certd/commit/e054c8fc55063fd96548f1c19049070524a63411))
+* 输入证书域名时，支持点击导入域名 ([40be424](https://github.com/certd/certd/commit/40be42406c6fd5de11f594fc6913178d9e7d8943))
+* 所有的dnsprovider 支持导入域名列表 ([9f21b1a](https://github.com/certd/certd/commit/9f21b1a09797d7dab253e4416c538b55fb8f4488))
+* 优化首页统计数据，饼图替换成证书数量统计 ([9fa1c2e](https://github.com/certd/certd/commit/9fa1c2eb3e55ef630333ae24284aa8b54e3414b6))
+* 优化首页图标 ([998de0f](https://github.com/certd/certd/commit/998de0f9a031339b019aa7a09e61e994664a8047))
+* 域名导入任务进度条 ([7058d5c](https://github.com/certd/certd/commit/7058d5cb935cab8c75b98493ed497a22dbe70883))
+* 站点监控，检查状态挪到前面显示 ([48f1bf0](https://github.com/certd/certd/commit/48f1bf091869b87dd17feaca5efd8680ef741582))
+* 证书仓库页面增加到期状态查询条件 ([58c3d70](https://github.com/certd/certd/commit/58c3d7087bb66358d896a741e12005f690b2bd5e))
+* 证书流水线创建域名输入框支持获取域名数据进行选择 ([1d5b1c2](https://github.com/certd/certd/commit/1d5b1c239cf350920eb2eb9fd293af74ef412853))
+* 支持导入51dns域名 ([7eb9694](https://github.com/certd/certd/commit/7eb96942214aed0dfc9c3c5a669374da67052c49))
+* ucloud支持部署到alb ([78004bd](https://github.com/certd/certd/commit/78004bdfb552a3b83298fa09d518ca282a529d90))
+* ucloud支持部署到ulb（alb、clb统一成一个） ([c408687](https://github.com/certd/certd/commit/c408687af7669afe733b5506720ca795555acdce))
+
 ## [1.38.2](https://github.com/certd/certd/compare/v1.38.1...v1.38.2) (2026-01-22)
 
 ### Bug Fixes

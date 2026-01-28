@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.3](https://github.com/certd/certd/compare/v1.38.2...v1.38.3) (2026-01-28)
+
+### Performance Improvements
+
+* 域名导入任务进度条 ([7058d5c](https://github.com/certd/certd/commit/7058d5cb935cab8c75b98493ed497a22dbe70883))
+* 证书仓库页面增加到期状态查询条件 ([58c3d70](https://github.com/certd/certd/commit/58c3d7087bb66358d896a741e12005f690b2bd5e))
+
 ## [1.38.2](https://github.com/certd/certd/compare/v1.38.1...v1.38.2) (2026-01-22)
 
 **Note:** Version bump only for package @certd/lib-server

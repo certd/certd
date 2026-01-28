@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.3](https://github.com/certd/certd/compare/v1.38.2...v1.38.3) (2026-01-28)
+
+### Bug Fixes
+
+* 站点检查多个ip连接超时的报错显示不出来的bug ([33b284a](https://github.com/certd/certd/commit/33b284afc0ae6391658d573e32b1ce7765e51cb2))
+
 ## [1.38.2](https://github.com/certd/certd/compare/v1.38.1...v1.38.2) (2026-01-22)
 
 **Note:** Version bump only for package @certd/basic

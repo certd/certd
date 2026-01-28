@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.3](https://github.com/certd/certd/compare/v1.38.2...v1.38.3) (2026-01-28)
+
+### Performance Improvements
+
+* 多个dns 提供商支持导入域名 ([d3c0914](https://github.com/certd/certd/commit/d3c0914ac16db8ac77f9c60285bb20cfab7a3cb0))
+* 首次使用提示新手教程按钮 ([e054c8f](https://github.com/certd/certd/commit/e054c8fc55063fd96548f1c19049070524a63411))
+* ucloud支持部署到alb ([78004bd](https://github.com/certd/certd/commit/78004bdfb552a3b83298fa09d518ca282a529d90))
+
 ## [1.38.2](https://github.com/certd/certd/compare/v1.38.1...v1.38.2) (2026-01-22)
 
 ### Performance Improvements
