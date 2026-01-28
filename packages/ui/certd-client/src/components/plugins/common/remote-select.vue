@@ -145,12 +145,18 @@ const getOptions = async () => {
         showErrorNotify: false,
       }
     );
-    const list = res?.list || res || [];
+    let list = res?.list || res || [];
     if (list.length > 0) {
       message.value = "获取数据成功，请从下拉框中选择";
     } else {
       message.value = "获取数据成功，没有数据";
     }
+    list = list.map((item: any) => {
+      return {
+        ...item,
+        title: `${item.domain || item.value}`,
+      };
+    });
     optionsRef.value = list;
     pagerRef.value.total = list.length;
     if (props.pager) {

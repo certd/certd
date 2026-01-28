@@ -99,7 +99,7 @@ export class UCloudAccess extends BaseAccess {
     const resp = await client.uaccount().getProjectList({
       "Action": "GetProjectList"
     });
-    this.ctx.logger.info(`获取到项目列表:${JSON.stringify(resp)}`);
+    // this.ctx.logger.info(`获取到项目列表:${JSON.stringify(resp)}`);
     return resp;
   }
 
@@ -120,7 +120,7 @@ export class UCloudAccess extends BaseAccess {
       "PageNo": req.PageNo,
       "PageSize": req.PageSize,
     });
-    this.ctx.logger.info(`获取到CDN域名列表:${JSON.stringify(resp)}`);
+    // this.ctx.logger.info(`获取到CDN域名列表:${JSON.stringify(resp)}`);
     return resp;
   }
 

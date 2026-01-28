@@ -5,12 +5,12 @@
     </template>
     <p class="flex items-center">
       <TriggerIcon class="mr-2" :trigger-type="runnable.triggerType"></TriggerIcon>
-      <fs-date-format :model-value="runnable.createTime"></fs-date-format>
-      <a-tag class="ml-5" :color="status.color" :closable="status.value === 'start'" @close="cancelTask">
+      <fs-date-format class="mr-1" :model-value="runnable.createTime"></fs-date-format>
+      <a-tag class="ml-0 mr-1" :color="status.color" :closable="status.value === 'start'" @close="cancelTask">
         {{ status.label }}
       </a-tag>
-      <a-tag v-if="isCurrent" class="pointer" color="green" :closable="true" @close="cancel">当前</a-tag>
-      <a-tag v-else-if="!editMode" class="pointer" color="blue" @click="view">查看</a-tag>
+      <a-tag v-if="isCurrent" class="pointer ml-0 mr-1" color="green" :closable="true" @close="cancel">当前</a-tag>
+      <a-tag v-else-if="!editMode" class="pointer ml-0 mr-1" color="blue" @click="view">查看</a-tag>
     </p>
   </a-timeline-item>
 </template>
@@ -88,6 +88,10 @@ export default defineComponent({
 .pi-history-timeline-item {
   .ant-tag.pointer {
     cursor: pointer;
+  }
+
+  .ant-timeline .ant-timeline-item-content {
+    margin-inline-start: 22px !important;
   }
 }
 </style>
