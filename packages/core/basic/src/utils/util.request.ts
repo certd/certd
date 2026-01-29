@@ -177,39 +177,40 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
     },
     (error: any) => {
       const status = error.response?.status;
+      let message = "";
       switch (status) {
         case 400:
-          error.message = "请求错误";
+          message = "请求错误";
           break;
         case 401:
-          error.message = "认证/登录失败";
+          message = "认证/登录失败";
           break;
         case 403:
-          error.message = "拒绝访问";
+          message = "拒绝访问";
           break;
         case 404:
-          error.message = `请求地址出错`;
+          message = `请求地址出错`;
           break;
         case 408:
-          error.message = "请求超时";
+          message = "请求超时";
           break;
         case 500:
-          error.message = "服务器内部错误";
+          message = "服务器内部错误";
           break;
         case 501:
-          error.message = "服务未实现";
+          message = "服务未实现";
           break;
         case 502:
-          error.message = "网关错误";
+          message = "网关错误";
           break;
         case 503:
-          error.message = "服务不可用";
+          message = "服务不可用";
           break;
         case 504:
-          error.message = "网关超时";
+          message = "网关超时";
           break;
         case 505:
-          error.message = "HTTP版本不受支持";
+          message = "HTTP版本不受支持";
           break;
         case 302:
           //重定向
@@ -217,9 +218,12 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
         default:
           break;
       }
+      if (status) {
+        message += ` [${status}] `;
+      }
 
       const errorCode = error.code;
-      let errorMessage = null;
+      let errorMessage = "";
       if (errorCode === "ECONNABORTED") {
         errorMessage = "请求连接终止";
       } else if (errorCode === "ETIMEDOUT") {
@@ -231,14 +235,17 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       } else if (errorCode === "ENOTFOUND") {
         errorMessage = "请求地址不存在";
       }
-      if (errorMessage) {
-        if (error.message) {
-          errorMessage += `,${error.message}`;
-        }
-        error.message = errorMessage;
+      if (errorCode) {
+        errorMessage += ` [${errorCode}] `;
       }
-
-      logger.error(`请求出错：${errorMessage} status:${error.response?.status || error.code},statusText:${error.response?.statusText || error.code},url:${error.config?.url},method:${error.config?.method}。`);
+      if (message) {
+        errorMessage += `,${message}`;
+      }
+      if (error.message) {
+        errorMessage += `(${error.message})`;
+      }
+      error.message = errorMessage;
+      logger.error(`请求出错：${errorMessage} status:${status},statusText:${error.response?.statusText || error.code},url:${error.config?.url},method:${error.config?.method}。`);
       logger.error("返回数据:", JSON.stringify(error.response?.data));
       if (error.response?.data) {
         const message = error.response.data.message || error.response.data.msg || error.response.data.error;

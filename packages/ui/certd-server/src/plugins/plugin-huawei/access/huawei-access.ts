@@ -1,3 +1,4 @@
+import { resetLogConfigure } from '@certd/basic';
 import { IsAccess, AccessInput, BaseAccess } from '@certd/pipeline';
 
 @IsAccess({
@@ -26,6 +27,26 @@ export class HuaweiAccess extends BaseAccess {
     encrypt: true,
   })
   accessKeySecret = '';
+
+
+  async getProjectList() {
+    const endpoint = "https://iam.cn-north-4.myhuaweicloud.com";
+
+    const { BasicCredentials } = await import('@huaweicloud/huaweicloud-sdk-core');
+    const iam = await import('@huaweicloud/huaweicloud-sdk-iam/v3/public-api.js');
+    //恢复华为云把log4j的config改了的问题
+    resetLogConfigure();
+    const credentials: any = new BasicCredentials().withAk(this.accessKeyId).withSk(this.accessKeySecret)
+
+
+    const client = iam.IamClient.newBuilder()
+      .withCredential(credentials)
+      .withEndpoint(endpoint)
+      .build();
+    const request = new iam.KeystoneListAuthProjectsRequest();
+    const result = await client.keystoneListAuthProjects(request);
+    return result.projects;
+  }
 }
 
 new HuaweiAccess();
