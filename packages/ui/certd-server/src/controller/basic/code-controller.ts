@@ -1,5 +1,5 @@
 import { BaseController, Constants, SysSettingsService } from "@certd/lib-server";
-import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
+import { ALL, Body, Controller, Inject, Post, Provide, Query, RequestIP } from "@midwayjs/core";
 import { Rule, RuleType } from "@midwayjs/validate";
 import { CaptchaService } from "../../modules/basic/service/captcha-service.js";
 import { CodeService } from "../../modules/basic/service/code-service.js";
@@ -62,7 +62,8 @@ export class BasicController extends BaseController {
   @Post('/sendSmsCode', { summary: Constants.per.guest })
   public async sendSmsCode(
     @Body(ALL)
-    body: SmsCodeReq
+    body: SmsCodeReq,
+    @RequestIP() remoteIp: string
   ) {
     const opts = {
       verificationType: body.verificationType,
@@ -74,7 +75,7 @@ export class BasicController extends BaseController {
       // opts.verificationCodeLength = 6; //部分厂商这里会设置参数长度这里就不改了
     }
 
-    await this.codeService.checkCaptcha(body.captcha);
+    await this.codeService.checkCaptcha(body.captcha,{remoteIp});
     await this.codeService.sendSmsCode(body.phoneCode, body.mobile, opts);
     return this.ok(null);
   }
@@ -82,7 +83,8 @@ export class BasicController extends BaseController {
   @Post('/sendEmailCode', { summary: Constants.per.guest })
   public async sendEmailCode(
     @Body(ALL)
-    body: EmailCodeReq
+    body: EmailCodeReq,
+    @RequestIP() remoteIp: string
   ) {
     const opts = {
       verificationType: body.verificationType,
@@ -99,7 +101,7 @@ export class BasicController extends BaseController {
     }
 
 
-    await this.codeService.checkCaptcha(body.captcha);
+    await this.codeService.checkCaptcha(body.captcha,{remoteIp});
     await this.codeService.sendEmailCode(body.email, opts);
     // 设置缓存内容
     return this.ok(null);

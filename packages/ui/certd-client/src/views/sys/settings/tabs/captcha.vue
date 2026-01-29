@@ -9,9 +9,11 @@
         <addon-selector v-model:model-value="formState.public.captchaAddonId" addon-type="captcha" from="sys" @selected-change="onAddonChanged" />
       </a-form-item>
       <a-form-item v-if="formState.public.captchaType === settingsStore.sysPublic.captchaType" :label="t('certd.sys.setting.captchaTest')">
-        <div class="flex">
-          <CaptchaInput v-model:model-value="captchaTestForm.captcha" class="w-50%"></CaptchaInput>
-          <a-button class="ml-2" type="primary" @click="doCaptchaValidate">后端验证</a-button>
+        <div class="flex items-center">
+          <CaptchaInput v-model:model-value="captchaTestForm.captcha" class="w-60%"></CaptchaInput>
+          <a-button class="ml-2 mr-2" type="primary" @click="doCaptchaValidate">后端验证</a-button>
+          <a-tag v-if="captchaTestForm.pass" color="green" class="flex items-center"> <fs-icon icon="material-symbols:check-circle-rounded"></fs-icon> 校验通过</a-tag>
+          <a-tag v-else class="flex items-center"> <fs-icon icon="material-symbols:info-rounded"></fs-icon> 请先点击验证</a-tag>
         </div>
       </a-form-item>
 

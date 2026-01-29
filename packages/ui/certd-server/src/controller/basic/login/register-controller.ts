@@ -1,4 +1,4 @@
-import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
+import { ALL, Body, Controller, Inject, Post, Provide, RequestIP } from '@midwayjs/core';
 import { BaseController, Constants, SysSettingsService } from '@certd/lib-server';
 import { RegisterType, UserService } from '../../../modules/sys/authority/service/user-service.js';
 import { CodeService } from '../../../modules/basic/service/code-service.js';
@@ -32,7 +32,8 @@ export class RegisterController extends BaseController {
   @Post('/register', { summary: Constants.per.guest })
   public async register(
     @Body(ALL)
-    body: RegisterReq
+    body: RegisterReq,
+    @RequestIP() remoteIp: string
   ) {
     const sysPublicSettings = await this.sysSettingsService.getPublicSettings();
     if (sysPublicSettings.registerEnabled === false) {
@@ -51,7 +52,7 @@ export class RegisterController extends BaseController {
         throw new Error('用户名不能为空');
       }
 
-      await this.codeService.checkCaptcha(body.captcha);
+      await this.codeService.checkCaptcha(body.captcha,{remoteIp});
       const newUser = await this.userService.register(body.type, {
         username: body.username,
         password: body.password,

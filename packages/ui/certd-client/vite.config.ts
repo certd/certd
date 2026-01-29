@@ -87,7 +87,7 @@ export default ({ command, mode }) => {
       host: "0.0.0.0",
       port: 3008,
       fs: devServerFs,
-      allowedHosts: ["localhost", "127.0.0.1", "yfy.docmirror.cn"],
+      allowedHosts: ["localhost", "127.0.0.1", "yfy.docmirror.cn", "docmirror.top", "*"],
       proxy: {
         // with options
         "/api": {

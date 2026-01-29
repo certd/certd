@@ -12,3 +12,4 @@ export * from './deploy-to-vod/index.js';
 export * from './deploy-to-apigateway/index.js';
 export * from './deploy-to-apig/index.js';
 export * from './deploy-to-ack/index.js';
+export * from './deploy-to-all/index.js';

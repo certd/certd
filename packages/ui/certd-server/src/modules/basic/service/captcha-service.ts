@@ -1,7 +1,7 @@
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { SysSettingsService } from "@certd/lib-server";
 import { logger } from "@certd/basic";
-import { ICaptchaAddon } from "../../../plugins/plugin-captcha/api.js";
+import { CaptchaRequest, ICaptchaAddon } from "../../../plugins/plugin-captcha/api.js";
 import { AddonGetterService } from "../../pipeline/service/addon-getter-service.js";
 
 @Provide()
@@ -29,7 +29,7 @@ export class CaptchaService {
   }
 
 
-  async doValidate(opts: { form: any, must?: boolean, captchaAddonId?: number }) {
+  async doValidate(opts: { form: any, must?: boolean, captchaAddonId?: number,req:CaptchaRequest }) {
     if (!opts.captchaAddonId) {
       const settings = await this.sysSettingsService.getPublicSettings();
       opts.captchaAddonId = settings.captchaAddonId ?? 0;
@@ -46,7 +46,7 @@ export class CaptchaService {
     if (!opts.form) {
       throw new Error("请输入验证码");
     }
-    const res = await addon.onValidate(opts.form);
+    const res = await addon.onValidate(opts.form,opts.req);
     if (!res) {
       throw new Error("验证码错误");
     }

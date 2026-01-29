@@ -11,8 +11,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { defineEmits, defineExpose, defineProps, ref, watch } from "vue";
-import { nanoid } from "nanoid";
+import { ref, watch } from "vue";
 
 const props = defineProps<{
   modelValue: any;

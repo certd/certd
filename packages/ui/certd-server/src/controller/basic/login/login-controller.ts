@@ -1,4 +1,4 @@
-import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
+import { ALL, Body, Controller, Inject, Post, Provide, RequestIP } from "@midwayjs/core";
 import { LoginService } from "../../../modules/login/service/login-service.js";
 import { AddonService, BaseController, Constants, SysPublicSettings, SysSettingsService } from "@certd/lib-server";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
@@ -26,11 +26,13 @@ export class LoginController extends BaseController {
   @Post('/login', { summary: Constants.per.guest })
   public async login(
     @Body(ALL)
-    body: any
+    body: any,
+    @RequestIP()
+    remoteIp: string
   ) {
    const settings = await this.sysSettingsService.getPublicSettings()
     if (settings.captchaEnabled === true) {
-      await this.captchaService.doValidate({form:body.captcha,must:false,captchaAddonId:settings.captchaAddonId})
+      await this.captchaService.doValidate({form:body.captcha,must:false,captchaAddonId:settings.captchaAddonId,req:{remoteIp}})
     }
     const token = await this.loginService.loginByPassword(body);
     this.writeTokenCookie(token);

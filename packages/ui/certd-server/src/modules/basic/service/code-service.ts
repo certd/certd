@@ -5,6 +5,7 @@ import { ISmsService } from '../sms/api.js';
 import { SmsServiceFactory } from '../sms/factory.js';
 import { CaptchaService } from "./captcha-service.js";
 import { EmailService } from './email-service.js';
+import { CaptchaRequest } from '../../../plugins/plugin-captcha/api.js';
 
 // {data: '<svg.../svg>', text: 'abcd'}
 /**
@@ -25,8 +26,8 @@ export class CodeService {
 
 
 
-  async checkCaptcha(body:any) {
-    return await this.captchaService.doValidate({form:body})
+  async checkCaptcha(body:any,req:CaptchaRequest) {
+    return await this.captchaService.doValidate({form:body,req});
   }
   /**
    */

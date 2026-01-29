@@ -1,4 +1,4 @@
-import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
+import { ALL, Body, Controller, Inject, Post, Provide, Query, RequestIP } from "@midwayjs/core";
 import {
   addonRegistry,
   AddonService,
@@ -218,8 +218,8 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
 
 
   @Post("/captchaTest", { summary: "sys:settings:edit" })
-  async captchaTest(@Body(ALL) body: any) {
-    await this.codeService.checkCaptcha(body)
+  async captchaTest(@Body(ALL) body: any,@RequestIP() remoteIp: string) {
+    await this.codeService.checkCaptcha(body,{remoteIp});
     return this.ok({});
   }
 
