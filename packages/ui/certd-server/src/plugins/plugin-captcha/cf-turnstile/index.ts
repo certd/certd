@@ -5,23 +5,23 @@ import { CaptchaRequest, ICaptchaAddon } from "../api.js";
   addonType: "captcha",
   name: "cfTurnstile",
   title: "Cloudflare Turnstile",
-  desc: "",
+  desc: "谨慎使用，国内被墙了",
   showTest: false,
 })
 export class CfTurnstileCaptcha extends BaseAddon implements ICaptchaAddon {
 
   @AddonInput({
-    title: "SiteKey",
+    title: "站点密钥",
     component: {
       placeholder: "SiteKey",
     },
-    helper: "[Cloudflare Turnstile](https://www.cloudflare.com/zh-cn/application-services/products/turnstile/)",
+    helper: "[Cloudflare Turnstile](https://www.cloudflare.com/zh-cn/application-services/products/turnstile/) -> 添加小组件",
     required: true,
   })
   siteKey = "";
 
   @AddonInput({
-    title: "SecretKey",
+    title: "密钥",
     component: {
       placeholder: "SecretKey",
     },
