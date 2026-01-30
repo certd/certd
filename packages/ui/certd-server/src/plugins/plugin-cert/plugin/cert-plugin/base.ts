@@ -121,7 +121,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
       return null;
     }
 
-    const ret = this.isWillExpire(oldCert.expires, this.renewDays);
+    const ret = this.isWillExpire(oldCert, this.renewDays);
     if (!ret.isWillExpire) {
       this.logger.info(`证书还未过期：过期时间${dayjs(oldCert.expires).format("YYYY-MM-DD HH:mm:ss")},剩余${ret.leftDays}天`);
       return oldCert;
@@ -135,13 +135,27 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
    * @param expires
    * @param maxDays
    */
-  isWillExpire(expires: number, maxDays = 20) {
-    if (expires == null) {
+  isWillExpire(cert: CertReader, maxDays = 15) {
+    const expires = cert.expires;
+     if (expires == null) {
       throw new Error("过期时间不能为空");
     }
-    // 检查有效期
+    const begin =  dayjs(cert.detail?.notBefore )
+
+    //证书总天数
+    const totalDays = Math.floor((expires - begin.valueOf()) / (1000 * 60 * 60 * 24));
+     // 检查有效期
     const leftDays = Math.floor((expires - dayjs().valueOf()) / (1000 * 60 * 60 * 24));
-    this.logger.info(`证书剩余天数：${leftDays}`);
+     this.logger.info(`证书有效期剩余天数：${leftDays}`);
+    if(totalDays < maxDays){
+      this.logger.warn(`当前更新到期前天数为${maxDays}，证书总天数${totalDays}，总天数小于更新到期前天数`);
+      maxDays = Math.floor(totalDays/2);
+      if(maxDays < 2){
+        maxDays = 2;
+      }
+      this.logger.warn(`为避免每次运行都更新证书，更新天数自动减半，调整为${maxDays}`);
+    }
+   
     return {
       isWillExpire: leftDays <= maxDays,
       leftDays,
