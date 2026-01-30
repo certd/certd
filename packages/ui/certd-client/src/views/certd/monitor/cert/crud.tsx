@@ -33,7 +33,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     const res = await api.AddObj(form);
     return res;
   };
-  const { openCrudFormDialog } = useFormWrapper();
   const router = useRouter();
 
   const settingStore = useSettingStore();

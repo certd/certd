@@ -67,7 +67,7 @@
     <div class="statistic-data m-20">
       <a-row :gutter="20" class="flex-wrap">
         <a-col :md="6" :xs="24">
-          <statistic-card icon="fluent-color:data-line-24" :title="t('certd.dashboard.pipelineCount')" :count="count.pipelineCount" :sub-counts="count.pipelineEnableCount">
+          <statistic-card icon="fluent-color:data-line-24" :title="t('certd.dashboard.pipelineCount')" :count="count.pipelineCount" link="/certd/pipeline" :sub-counts="count.pipelineEnableCount">
             <template v-if="count.pipelineCount === 0" #default>
               <div class="flex-center flex-1 flex-col">
                 <div style="font-size: 18px; font-weight: 700">{{ t("certd.dashboard.noPipeline") }}</div>
@@ -85,7 +85,7 @@
           </statistic-card>
         </a-col> -->
         <a-col :md="6" :xs="24">
-          <statistic-card icon="fluent-color:certificate-24" :title="t('certd.dashboard.certCount')" :count="count.certCount" :sub-counts="count.certStatusCount">
+          <statistic-card icon="fluent-color:certificate-24" :title="t('certd.dashboard.certCount')" :count="count.certCount" link="/certd/monitor/cert" :sub-counts="count.certStatusCount">
             <template v-if="count.certCount === 0" #default>
               <div class="flex-center flex-1 flex-col">
                 <div style="font-size: 18px; font-weight: 700">{{ t("certd.dashboard.noCert") }}</div>
@@ -216,6 +216,9 @@ const siteInfo: Ref<SiteInfo> = computed(() => {
   return settingStore.siteInfo;
 });
 const settingsStore = useSettingStore();
+const defaultExpireDays = computed(() => {
+  return settingsStore.sysPublic.defaultCertRenewDays || settingsStore.sysPublic.defaultWillExpireDays || 15;
+});
 const userStore = useUserStore();
 const userInfo: ComputedRef<UserInfoRes> = computed(() => {
   return userStore.getUserInfo;
@@ -266,9 +269,16 @@ function transformStatusCount() {
   ];
   const certCount = count.value.certCount;
   count.value.certStatusCount = [
-    { name: t("certd.dashboard.certExpiredCount"), value: certCount.expired, color: "red", checkIcon: "mingcute:warning-fill:#f44336" },
-    { name: t("certd.dashboard.certExpiringCount"), value: certCount.expiring, color: "yellow", checkIcon: "mingcute:alert-fill:#ff9800", title: "到期不足15天" },
-    { name: t("certd.dashboard.certNoExpireCount"), value: certCount.notExpired, color: "green" },
+    { name: t("certd.dashboard.certExpiredCount"), value: certCount.expired, color: "red", checkIcon: "mingcute:warning-fill:#f44336", link: { path: "/certd/monitor/cert", query: { expireStatus: "expired" } } },
+    {
+      name: t("certd.dashboard.certExpiringCount"),
+      value: certCount.expiring,
+      color: "yellow",
+      checkIcon: "mingcute:alert-fill:#ff9800",
+      title: `到期不足${defaultExpireDays.value}天`,
+      link: { path: "/certd/monitor/cert", query: { expireStatus: "expiring" } },
+    },
+    { name: t("certd.dashboard.certNoExpireCount"), value: certCount.notExpired, color: "green", link: { path: "/certd/monitor/cert", query: { expireStatus: "noExpired" } } },
   ];
   count.value.certCount = certCount.total;
 }
@@ -380,6 +390,12 @@ const { tour, tourHandleOpen } = useTour();
 
 <style lang="less">
 .dashboard-user {
+  .ant-card-head {
+    padding: 0px 18px;
+  }
+  .ant-card-body {
+    padding: 15px 18px;
+  }
   .warning {
     .ant-alert {
       border-left: 0;

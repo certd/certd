@@ -12,13 +12,13 @@
         <div class="content">
           <div v-if="!slots.default" class="statistic">
             <div v-if="count !== 0" class="value flex items-center w-full">
-              <div class="total flex-center flex-1 flex-col">
+              <div class="total flex-center flex-1 flex-col pointer" @click="goDetail(link)">
                 <span>{{ count }}</span>
                 <span class="sub-title">{{ title }}</span>
               </div>
               <a-divider type="vertical h-10"></a-divider>
-              <div class="sub flex-1 flex-col h-[80%] flex-evenly pl-4">
-                <div v-for="item in subCounts" :key="item.name" class="sub-item flex justify-center w-full" :title="item.title">
+              <div class="sub flex-1 flex-col h-[80%] flex-evenly pl-1 2xl:pl-4">
+                <div v-for="item in subCounts" :key="item.name" class="sub-item flex justify-center w-full pointer" :title="item.title" @click="goDetail(item.link)">
                   <div class="flex items-center w-[60%] ellipsis overflow-hidden">
                     <div class="status-indicator" :class="`bg-${item.color}`"></div>
                     {{ item.name }}：
@@ -45,27 +45,37 @@
 </template>
 <script setup lang="ts">
 import { FsIcon } from "@fast-crud/fast-crud";
+import { useRouter } from "vue-router";
 const props = defineProps<{
   icon: string;
   title: string;
   count?: number;
+  link?: any;
   subCounts?: {
     name: string;
     value: number;
     color: string;
     checkIcon?: string;
     title?: string;
+    link?: any;
   }[];
 }>();
 const slots = defineSlots();
+const router = useRouter();
+function goDetail(link: any) {
+  if (!link) {
+    return;
+  }
+  if (typeof link === "string") {
+    router.push({ path: link });
+  } else {
+    router.push(link);
+  }
+}
 </script>
 <style lang="less">
 .statistic-card {
   margin-bottom: 10px;
-
-  .ant-card-body {
-    padding: 15px 24px;
-  }
   .icon-text {
     display: inline-flex;
     justify-content: left;

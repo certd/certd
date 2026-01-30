@@ -1,11 +1,12 @@
 import type { RouteRecordNormalized } from "vue-router";
 
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 
 import { isHttpUrl, openRouteInNewWindow, openWindow } from "../../../utils";
 
 function useNavigation() {
   const router = useRouter();
+  const route1 = useRoute();
   const routes = router.getRoutes();
 
   const routeMetaMap = new Map<string, RouteRecordNormalized>();
@@ -15,6 +16,9 @@ function useNavigation() {
   });
 
   const navigation = async (path: string) => {
+    if (route1.path === path) {
+      return;
+    }
     const route = routeMetaMap.get(path);
     const { openInNewWindow = false, query = {} as any } = route?.meta ?? {};
     if (isHttpUrl(path)) {

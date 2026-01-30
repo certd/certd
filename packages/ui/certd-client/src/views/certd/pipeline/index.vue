@@ -3,7 +3,7 @@
     <template #header>
       <div class="title">
         {{ t("certd.myPipelines") }}
-        <div class="sub">{{ t("certd.pipelinePage.myPipelinesDesc") }}</div>
+        <span class="sub">{{ t("certd.pipelinePage.myPipelinesDesc") }}</span>
       </div>
     </template>
     <!-- <a-alert v-if="settingStore.sysPublic.notice" type="warning" show-icon>

@@ -1,6 +1,6 @@
 <template>
   <div v-if="data.length !== 0" class="expiring-pipeline-list">
-    <div v-for="item of data" class="pipeline-row">
+    <div v-for="item of data" :key="item.id" class="pipeline-row">
       <div class="title" :title="item.title">
         <pi-status-show :status="item.status"></pi-status-show> <a @click="goDetail(item)">{{ item.title }}</a>
       </div>
