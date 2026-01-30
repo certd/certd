@@ -45,7 +45,8 @@ export class TaskServiceGetter implements IServiceGetter{
 
   async getSubDomainsGetter(): Promise<SubDomainsGetter> {
     const subDomainsService:SubDomainService = await  this.appCtx.getAsync("subDomainService")
-    return new SubDomainsGetter(this.userId, subDomainsService)
+    const domainService:DomainService = await  this.appCtx.getAsync("domainService")
+    return new SubDomainsGetter(this.userId, subDomainsService,domainService)
   }
 
   async getAccessService(): Promise<AccessGetter> {

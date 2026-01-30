@@ -1,6 +1,5 @@
-import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
-import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Repository } from "typeorm";
+import { createChallengeFn, getAuthoritativeDnsResolver } from "@certd/acme-client";
+import { cache, http, isDev, logger, utils } from "@certd/basic";
 import {
   AccessService,
   BaseService,
@@ -9,20 +8,19 @@ import {
   SysSettingsService,
   ValidateException
 } from "@certd/lib-server";
-import { CnameRecordEntity, CnameRecordStatusType } from "../entity/cname-record.js";
-import { createDnsProvider, IDnsProvider } from "@certd/plugin-cert";
 import { CnameProvider, CnameRecord } from "@certd/pipeline";
-import { cache, http, isDev, logger, utils } from "@certd/basic";
-import { getAuthoritativeDnsResolver, createChallengeFn } from "@certd/acme-client";
-import { CnameProviderService } from "./cname-provider-service.js";
-import { CnameProviderEntity } from "../entity/cname-provider.js";
-import { CommonDnsProvider } from "./common-provider.js";
-import { DomainParser } from "@certd/plugin-cert";
+import { createDnsProvider, DomainParser, IDnsProvider } from "@certd/plugin-cert";
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
 import punycode from "punycode.js";
-import { SubDomainService } from "../../pipeline/service/sub-domain-service.js";
-import { SubDomainsGetter } from "../../pipeline/service/getter/sub-domain-getter.js";
-import { TaskServiceBuilder } from "../../pipeline/service/getter/task-service-getter.js";
+import { Repository } from "typeorm";
 import { BackTask, taskExecutor } from "../../basic/service/task-executor.js";
+import { TaskServiceBuilder } from "../../pipeline/service/getter/task-service-getter.js";
+import { SubDomainService } from "../../pipeline/service/sub-domain-service.js";
+import { CnameProviderEntity } from "../entity/cname-provider.js";
+import { CnameRecordEntity, CnameRecordStatusType } from "../entity/cname-record.js";
+import { CnameProviderService } from "./cname-provider-service.js";
+import { CommonDnsProvider } from "./common-provider.js";
 
 type CnameCheckCacheValue = {
   validating: boolean;
@@ -106,7 +104,8 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
   private async cnameProviderChanged(userId: number, param: any, cnameProvider: CnameProviderEntity) {
     param.cnameProviderId = cnameProvider.id;
 
-    const subDomainGetter = new SubDomainsGetter(userId, this.subDomainService);
+    const taskService = this.taskServiceBuilder.create({ userId: userId });
+    const subDomainGetter = await taskService.getSubDomainsGetter();
     const domainParser = new DomainParser(subDomainGetter);
 
     const realDomain = await domainParser.parse(param.domain);
@@ -254,7 +253,8 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
 
     await this.getByDomain(bean.domain, bean.userId);
 
-    const subDomainGetter = new SubDomainsGetter(bean.userId, this.subDomainService);
+    const taskService = this.taskServiceBuilder.create({ userId: bean.userId });
+    const subDomainGetter = await taskService.getSubDomainsGetter();
     const domainParser = new DomainParser(subDomainGetter);
 
     const cacheKey = `cname.record.verify.${bean.id}`;

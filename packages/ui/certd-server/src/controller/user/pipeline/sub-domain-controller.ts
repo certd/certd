@@ -1,8 +1,8 @@
-import {ALL, Body, Controller, Inject, Post, Provide, Query} from '@midwayjs/core';
-import {Constants, CrudController} from '@certd/lib-server';
-import {SubDomainService} from "../../../modules/pipeline/service/sub-domain-service.js";
-import {DomainParser} from '@certd/plugin-cert';
-import { SubDomainsGetter } from '../../../modules/pipeline/service/getter/sub-domain-getter.js';
+import { Constants, CrudController } from '@certd/lib-server';
+import { DomainParser } from '@certd/plugin-cert';
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
+import { SubDomainService } from "../../../modules/pipeline/service/sub-domain-service.js";
+import { TaskServiceBuilder } from '../../../modules/pipeline/service/getter/task-service-getter.js';
 
 /**
  * 子域名托管
@@ -13,6 +13,9 @@ export class SubDomainController extends CrudController<SubDomainService> {
   @Inject()
   service: SubDomainService;
 
+  @Inject()
+  taskServiceBuilder: TaskServiceBuilder;
+
   getService() {
     return this.service;
   }
@@ -20,7 +23,8 @@ export class SubDomainController extends CrudController<SubDomainService> {
   @Post('/parseDomain', { summary: Constants.per.authOnly })
   async parseDomain(@Body("fullDomain") fullDomain:string) {
     const userId = this.getUserId()
-    const subDomainGetter = new SubDomainsGetter(userId, this.service)
+    const taskService = this.taskServiceBuilder.create({ userId: userId });
+    const subDomainGetter = await taskService.getSubDomainsGetter();
     const domainParser = new DomainParser(subDomainGetter)
     const domain = await domainParser.parse(fullDomain)
     return this.ok(domain);

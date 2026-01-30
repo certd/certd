@@ -62,6 +62,7 @@ export interface IDnsProvider<T = any> {
 
 export interface ISubDomainsGetter {
   getSubDomains(): Promise<string[]>;
+  hasSubDomain(domain: string): Promise<string>;
 }
 
 export interface IDomainParser {

@@ -12,7 +12,6 @@ import { CnameRecordEntity } from "../../cname/entity/cname-record.js";
 import { CnameRecordService } from '../../cname/service/cname-record-service.js';
 import { UserDomainImportSetting } from '../../mine/service/models.js';
 import { UserSettingsService } from '../../mine/service/user-settings-service.js';
-import { SubDomainsGetter } from '../../pipeline/service/getter/sub-domain-getter.js';
 import { TaskServiceBuilder } from '../../pipeline/service/getter/task-service-getter.js';
 import { SubDomainService } from "../../pipeline/service/sub-domain-service.js";
 import { DomainEntity } from '../entity/domain.js';
@@ -112,7 +111,8 @@ export class DomainService extends BaseService<DomainEntity> {
   async getDomainVerifiers(userId: number, domains: string[]): Promise<DomainVerifiers> {
 
     const mainDomainMap: Record<string, string> = {}
-    const subDomainGetter = new SubDomainsGetter(userId, this.subDomainService)
+    const taskService = this.taskServiceBuilder.create({ userId: userId });
+    const subDomainGetter = await taskService.getSubDomainsGetter();
     const domainParser = new DomainParser(subDomainGetter)
 
     const mainDomains = []
@@ -215,7 +215,7 @@ export class DomainService extends BaseService<DomainEntity> {
   }
 
 
-  async startDomainImportTask(req: {userId:number,key:string}) {
+  async startDomainImportTask(req: { userId: number, key: string }) {
     const key = req.key
     const setting = await this.userSettingService.getSetting<UserDomainImportSetting>(req.userId, UserDomainImportSetting)
 
@@ -223,10 +223,10 @@ export class DomainService extends BaseService<DomainEntity> {
     if (!item) {
       throw new Error(`域名导入任务配置（${key}）还未注册`)
     }
-    const { dnsProviderType, dnsProviderAccessId,title } = item
+    const { dnsProviderType, dnsProviderAccessId, title } = item
 
     taskExecutor.start(new BackTask({
-      type: DOMAIN_IMPORT_TASK_TYPE,  
+      type: DOMAIN_IMPORT_TASK_TYPE,
       key,
       title: title,
       run: async (task: BackTask) => {
@@ -241,9 +241,11 @@ export class DomainService extends BaseService<DomainEntity> {
 
   private async _syncFromProvider(req: SyncFromProviderReq, task: BackTask) {
     const { userId, dnsProviderType, dnsProviderAccessId } = req;
-    const subDomainGetter = new SubDomainsGetter(userId, this.subDomainService)
-    const domainParser = new DomainParser(subDomainGetter)
+
     const serviceGetter = this.taskServiceBuilder.create({ userId });
+    const subDomainGetter = await serviceGetter.getSubDomainsGetter();
+    const domainParser = new DomainParser(subDomainGetter)
+
     const access = await this.accessService.getById(dnsProviderAccessId, userId);
     const context = { access, logger, http, utils, domainParser, serviceGetter };
     // 翻页查询dns的记录
@@ -312,30 +314,30 @@ export class DomainService extends BaseService<DomainEntity> {
     logger.info(`从域名提供商${dnsProviderType}导入域名完成(${key})，共导入${task.total}个域名，跳过${task.getSkipCount()}个域名，成功${task.getSuccessCount()}个域名，失败${task.getErrorCount()}个域名`)
   }
 
-  async getDomainImportTaskStatus(req:{userId?:number}) {
+  async getDomainImportTaskStatus(req: { userId?: number }) {
     const userId = req.userId || 0
 
     const setting = await this.userSettingService.getSetting<UserDomainImportSetting>(userId, UserDomainImportSetting)
-    const list= setting?.domainImportList || []
+    const list = setting?.domainImportList || []
 
-    const taskList:any = []
+    const taskList: any = []
 
     for (const item of list) {
-      const {  key } = item
-      
-      const task =  taskExecutor.get(DOMAIN_IMPORT_TASK_TYPE,key)
+      const { key } = item
+
+      const task = taskExecutor.get(DOMAIN_IMPORT_TASK_TYPE, key)
 
       taskList.push({
         ...item,
-        task:task,
+        task: task,
       })
     }
     return taskList
   }
 
-  async getProviderTitle(req:{userId?:number,dnsProviderType:string,dnsProviderAccessId:number}) {
+  async getProviderTitle(req: { userId?: number, dnsProviderType: string, dnsProviderAccessId: number }) {
     const userId = req.userId || 0
-    const { dnsProviderType, dnsProviderAccessId} = req
+    const { dnsProviderType, dnsProviderAccessId } = req
     const dnsProviderDefine = dnsProviderRegistry.getDefine(dnsProviderType)
     if (!dnsProviderDefine) {
       throw new Error(`该域名提供商（${dnsProviderType}）不存在，请检查是否已被注册`)
@@ -351,12 +353,12 @@ export class DomainService extends BaseService<DomainEntity> {
     }
   }
 
-  async addDomainImportTask(req:{userId?:number,dnsProviderType:string,dnsProviderAccessId:number,index?:number}) {
+  async addDomainImportTask(req: { userId?: number, dnsProviderType: string, dnsProviderAccessId: number, index?: number }) {
     const userId = req.userId || 0
-    const { dnsProviderType, dnsProviderAccessId,index=0 } = req    
+    const { dnsProviderType, dnsProviderAccessId, index = 0 } = req
     const key = `user_${userId}_${dnsProviderType}_${dnsProviderAccessId}`
 
-    const {title,icon} = await this.getProviderTitle(req)
+    const { title, icon } = await this.getProviderTitle(req)
 
 
     const setting = await this.userSettingService.getSetting<UserDomainImportSetting>(userId, UserDomainImportSetting)
@@ -383,7 +385,7 @@ export class DomainService extends BaseService<DomainEntity> {
     return item
   }
 
-  async deleteDomainImportTask(req:{userId?:number,key:string}) {
+  async deleteDomainImportTask(req: { userId?: number, key: string }) {
     const userId = req.userId || 0
     const { key } = req
 
@@ -394,13 +396,13 @@ export class DomainService extends BaseService<DomainEntity> {
       throw new Error(`该域名导入任务${key}不存在`)
     }
     setting.domainImportList.splice(index, 1)
-    taskExecutor.clear(DOMAIN_IMPORT_TASK_TYPE,key)
+    taskExecutor.clear(DOMAIN_IMPORT_TASK_TYPE, key)
     await this.userSettingService.saveSetting(userId, setting)
   }
 
-  async saveDomainImportTask(req:{userId?:number,dnsProviderType:string,dnsProviderAccessId:number,key?:string}) {
+  async saveDomainImportTask(req: { userId?: number, dnsProviderType: string, dnsProviderAccessId: number, key?: string }) {
     const userId = req.userId || 0
-    const { dnsProviderType, dnsProviderAccessId,key } = req
+    const { dnsProviderType, dnsProviderAccessId, key } = req
     const setting = await this.userSettingService.getSetting<UserDomainImportSetting>(userId, UserDomainImportSetting)
     setting.domainImportList = setting.domainImportList || []
 
@@ -410,19 +412,19 @@ export class DomainService extends BaseService<DomainEntity> {
       if (index === -1) {
         throw new Error(`该域名导入任务${key}不存在`)
       }
-      await this.deleteDomainImportTask({userId,key})
+      await this.deleteDomainImportTask({ userId, key })
     }
 
-    return await this.addDomainImportTask({userId,dnsProviderType,dnsProviderAccessId,index})
+    return await this.addDomainImportTask({ userId, dnsProviderType, dnsProviderAccessId, index })
   }
 
 
 
-  
-  async getSyncExpirationTaskStatus(req:{userId?:number}) {
+
+  async getSyncExpirationTaskStatus(req: { userId?: number }) {
     const userId = req.userId ?? 'all'
     const key = `user_${userId}`
-    const task = taskExecutor.get(DOMAIN_EXPIRE_TASK_TYPE,key)
+    const task = taskExecutor.get(DOMAIN_EXPIRE_TASK_TYPE, key)
     return task
   }
 
@@ -544,8 +546,8 @@ export class DomainService extends BaseService<DomainEntity> {
 
     await doPageTurn({ pager, getPage: getDomainPage, itemHandle: itemHandle })
     const key = `user_${req.userId || 'all'}`
-    logger.info(`同步用户(${key})注册域名过期时间完成(${req.task.getSuccessCount()}个成功，${req.task.getErrorCount()}个失败)` )
+    logger.info(`同步用户(${key})注册域名过期时间完成(${req.task.getSuccessCount()}个成功，${req.task.getErrorCount()}个失败)`)
   }
 
-  
+
 }

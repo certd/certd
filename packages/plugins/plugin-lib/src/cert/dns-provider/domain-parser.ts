@@ -38,20 +38,28 @@ export class DomainParser implements IDomainParser {
       return value;
     }
 
-    const subDomains = await this.subDomainsGetter.getSubDomains();
-    if (subDomains && subDomains.length > 0) {
-      const fullDomainDot = "." + fullDomain;
-      for (const subDomain of subDomains) {
-        if (fullDomainDot.endsWith("." + subDomain)) {
-          //找到子域名托管
-          utils.cache.set(cacheKey, subDomain, {
-            ttl: 60 * 1000,
-          });
-          this.logger.info(`获取到子域名托管域名:${fullDomain}->${subDomain}`);
-          return subDomain;
-        }
-      }
+    //检查是否有子域名托管
+    const subDomain = await this.subDomainsGetter.hasSubDomain(fullDomain);
+    if (subDomain) {
+      utils.cache.set(cacheKey, subDomain, {
+        ttl: 60 * 1000,
+      });
+      this.logger.info(`获取到托管域名:${fullDomain}->${subDomain}`);
+      return subDomain;
     }
+    // if (subDomains && subDomains.length > 0) {
+    //   const fullDomainDot = "." + fullDomain;
+    //   for (const subDomain of subDomains) {
+    //     if (fullDomainDot.endsWith("." + subDomain)) {
+    //       //找到子域名托管
+    //       utils.cache.set(cacheKey, subDomain, {
+    //         ttl: 60 * 1000,
+    //       });
+    //       this.logger.info(`获取到子域名托管域名:${fullDomain}->${subDomain}`);
+    //       return subDomain;
+    //     }
+    //   }
+    // }
 
     const res = this.parseDomainByPsl(fullDomain);
     this.logger.info(`从psl获取主域名:${fullDomain}->${res}`);
