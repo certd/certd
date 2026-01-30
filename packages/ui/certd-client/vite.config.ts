@@ -25,10 +25,10 @@ export default (req: any) => {
   const env = loadEnv(mode, process.cwd());
   const devServerFs: any = {};
   const devAlias: any[] = [];
-  let base = "./";
-  if (mode.startsWith("dev")) {
-    base = "/certd";
-  }
+  const base = "./";
+  // if (mode.startsWith("dev")) {
+  //   base = "/certd";
+  // }
   return {
     base: base,
     plugins: [

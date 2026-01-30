@@ -124,6 +124,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
     const ret = this.isWillExpire(oldCert, this.renewDays);
     if (!ret.isWillExpire) {
       this.logger.info(`证书还未过期：过期时间${dayjs(oldCert.expires).format("YYYY-MM-DD HH:mm:ss")},剩余${ret.leftDays}天`);
+      this.logger.info(`证书将在${ret.nextUpdateDays}天后更新（再次运行本任务时）`);
       return oldCert;
     }
     this.logger.info("即将过期，开始更新证书");
@@ -159,6 +160,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
     return {
       isWillExpire: leftDays <= maxDays,
       leftDays,
+      nextUpdateDays: leftDays - maxDays,
     };
   }
   async sendSuccessNotify() {
