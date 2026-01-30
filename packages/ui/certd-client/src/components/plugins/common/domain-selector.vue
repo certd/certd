@@ -60,6 +60,7 @@ import { request } from "/@/api/service";
 import { Dicts } from "../lib/dicts";
 import { useRouter } from "vue-router";
 import { useDomainImport, useDomainImportManage } from "/@/views/certd/cert/domain/use";
+import { openRouteInNewWindow } from "/@/vben/utils";
 
 defineOptions({
   name: "DomainSelector",
@@ -190,7 +191,7 @@ const router = useRouter();
 function openDomainManager(e: any) {
   e.preventDefault();
   // router.push("/certd/cert/domain");
-  window.open(`${window.location.origin}/#/certd/cert/domain`);
+  openRouteInNewWindow("/certd/cert/domain");
 }
 
 const openDomainImportManageDialog = useDomainImportManage();

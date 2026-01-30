@@ -167,7 +167,6 @@ function useMixedMenu() {
    * @param path 路由路径
    */
   function calcSideMenus(path: string = route.path) {
-    debugger;
     let { rootMenu } = findRootMenuByPath(menus.value, path);
     if (!rootMenu) {
       rootMenu = menus.value.find((item: any) => item.path === path);

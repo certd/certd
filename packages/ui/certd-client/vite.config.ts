@@ -19,15 +19,16 @@ process.env.VITE_APP_VERSION = require("./package.json").version;
 process.env.VITE_APP_BUILD_TIME = require("dayjs")().format("YYYY-M-D HH:mm:ss");
 import * as https from "node:https";
 
-export default ({ command, mode }) => {
+export default (req: any) => {
+  const { command, mode } = req;
   console.log("args", command, mode);
   const env = loadEnv(mode, process.cwd());
   const devServerFs: any = {};
   const devAlias: any[] = [];
-  const base = "./";
-  // if (mode.startsWith("dev")) {
-  //   base = "./";
-  // }
+  let base = "./";
+  if (mode.startsWith("dev")) {
+    base = "/certd";
+  }
   return {
     base: base,
     plugins: [
@@ -93,6 +94,13 @@ export default ({ command, mode }) => {
         "/api": {
           //配套后端 https://github.com/fast-crud/fs-server-js
           target: "https://127.0.0.1:7002",
+          //忽略证书
+          agent: new https.Agent({ rejectUnauthorized: false }),
+        },
+        "/certd/api": {
+          //配套后端 https://github.com/fast-crud/fs-server-js
+          target: "https://127.0.0.1:7002/api",
+          rewrite: path => path.replace(/^\/certd\/api/, ""),
           //忽略证书
           agent: new https.Agent({ rejectUnauthorized: false }),
         },
