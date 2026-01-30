@@ -77,6 +77,13 @@ export class EmailService implements IEmailService {
       }
     }
     let subject = email.subject;
+
+    if (!subject) {
+      logger.error(new Error('邮件标题不能为空'));
+      subject = `邮件标题为空，请联系管理员排查`;
+    }
+
+
     if (!subject.includes(`【${sysTitle}】`)) {
       subject = `【${sysTitle}】${subject}`;
     }
@@ -121,7 +128,7 @@ export class EmailService implements IEmailService {
       data: {
         title: '测试邮件,from certd',
         content: '测试邮件,from certd',
-        url:"https://certd.handfree.work",
+        url: "https://certd.handfree.work",
       },
       receivers: [receiver],
     });
@@ -150,32 +157,33 @@ export class EmailService implements IEmailService {
 
   async sendByTemplate(req: EmailSendByTemplateReq) {
     let content = null
-    if (isPlus()) {
-      const emailConf = await this.sysSettingsService.getSetting<SysEmailConf>(SysEmailConf);
-      const template = emailConf?.templates?.[req.type]
-      if (template && template.addonId) {
+    const emailConf = await this.sysSettingsService.getSetting<SysEmailConf>(SysEmailConf);
+    const template = emailConf?.templates?.[req.type]
+    if (template && isPlus()) {
+      if (template.addonId) {
         const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(template.addonId, true, 0)
         if (addon) {
           content = await addon.buildContent({ data: req.data })
         }
       }
-      if (!content) {
-        //看看有没有通用模版
-        if (emailConf?.templates?.common && emailConf?.templates?.common.addonId) {
-          const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(emailConf.templates.common.addonId, true, 0)
-          if (addon) {
-            content = await addon.buildContent({ data: req.data })
-          }
+    }
+    if (!content && isPlus()) {
+      //看看有没有通用模版
+      if (emailConf?.templates?.common && emailConf?.templates?.common.addonId) {
+        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(emailConf.templates.common.addonId, true, 0)
+        if (addon) {
+          content = await addon.buildContent({ data: req.data })
         }
       }
-      // 没有找到模版，使用默认模版
-      if (!content) {
-        try {
-          const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", req.type)
-          content = await addon.buildDefaultContent({ data: req.data })
-        } catch (e) {
-          // 对应的通知类型模版可能没有注册或者开发
-        }
+    }
+
+    // 没有找到模版，使用默认模版
+    if (!content) {
+      try {
+        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", req.type)
+        content = await addon.buildDefaultContent({ data: req.data })
+      } catch (e) {
+        // 对应的通知类型模版可能没有注册或者开发
       }
     }
 

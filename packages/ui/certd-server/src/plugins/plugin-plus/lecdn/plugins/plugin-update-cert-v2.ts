@@ -136,7 +136,7 @@ export class LeCDNUpdateCertV2 extends AbstractTaskPlugin {
 
   private checkRes(res: any) {
     if (res.code !== 0 && res.code !== 200) {
-      throw new Error(res.message);
+      throw new Error(res.message || JSON.stringify(res));
     }
   }
 

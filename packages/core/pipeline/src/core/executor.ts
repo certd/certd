@@ -465,6 +465,8 @@ export class Executor {
 
     templateData.errors = errors;
     templateData.pipelineResult = pipelineResult;
+    templateData.title = subject;
+    templateData.content = content;
 
     for (const notification of this.pipeline.notifications) {
       if (!notification.when.includes(when)) {
