@@ -7,6 +7,7 @@ import {
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
 import { AliyunSslClient } from "../../../plugin-lib/aliyun/lib/ssl-client.js";
 import { AliyunClientV2 } from "../../../plugin-lib/aliyun/lib/aliyun-client-v2.js";
+import dayjs from "dayjs";
 
 @IsTaskPlugin({
   name: "AliyunDeployCertToESA",
@@ -89,6 +90,19 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
   )
   siteIds!: string[];
 
+  @TaskInput({
+    title: "是否免费版",
+    value: true,
+    component: {
+      name: "a-switch",
+      vModel: "value"
+    },
+    helper: "如果是免费站点，将检查证书数量限制，如果超限将删除最旧的那张证书",
+    required: true
+  })
+
+  isFree: boolean;
+
 
   async onInstance() {
   }
@@ -126,13 +140,9 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
     const { certId, certName } = await this.getAliyunCertId(access);
 
     for (const siteId of this.siteIds) {
-
-      try{
-        await this.clearSiteCert(client,siteId);
-      }catch (e) {
-        this.logger.error(`清理站点[${siteId}]证书失败`,e)
+      if (this.isFree) {
+          await this.clearSiteLimitCert(client, siteId);
       }
-
       try {
         const res = await client.doRequest({
           // 接口名称
@@ -140,12 +150,12 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
           // 接口版本
           version: "2024-09-10",
           data: {
-             body:{
-               SiteId: siteId,
-               CasId: certId,
-               Type: "cas",
-               Name: certName
-             }
+            body: {
+              SiteId: siteId,
+              CasId: certId,
+              Type: "cas",
+              Name: certName
+            }
           }
         });
         this.logger.info(`部署站点[${siteId}]证书成功：${JSON.stringify(res)}`);
@@ -153,14 +163,14 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
       } catch (e) {
         if (e.message.includes("Certificate.Duplicated")) {
           this.logger.info(`站点[${siteId}]证书已存在,无需重复部署`);
-        }else{
+        } else {
           throw e;
         }
-      }finally{
-        try{
-          await this.clearSiteCert(client,siteId);
-        }catch (e) {
-          this.logger.error(`清理站点[${siteId}]证书失败`,e)
+      } finally {
+        try {
+          await this.clearSiteExpiredCert(client, siteId);
+        } catch (e) {
+          this.logger.error(`清理站点[${siteId}]过期证书失败`, e)
         }
       }
     }
@@ -201,15 +211,16 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
     return this.ctx.utils.options.buildGroupOptions(options, this.certDomains);
   }
 
-  async clearSiteCert(client: AliyunClientV2, siteId: string) {
+  async clearSiteExpiredCert(client: AliyunClientV2, siteId: string) {
     this.logger.info(`开始清理站点[${siteId}]过期证书`);
     const certListRes = await client.doRequest({
       action: "ListCertificates",
       version: "2024-09-10",
       method: "GET",
-      data:{
+      data: {
         query: {
-          SiteId: siteId
+          SiteId: siteId,
+          PageSize: 100
         }
       }
     });
@@ -219,13 +230,13 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
       this.logger.info(`证书${item.Name}状态：${item.Status}`);
       if (item.Status === "Expired") {
         this.logger.info(`证书${item.Name}已过期，执行删除`);
-        try{
+        try {
           await client.doRequest({
             action: "DeleteCertificate",
             version: "2024-09-10",
             // 接口 HTTP 方法
             method: "GET",
-            data:{
+            data: {
               query: {
                 SiteId: siteId,
                 Id: item.id
@@ -233,12 +244,75 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
             }
           });
           this.logger.info(`证书${item.Name}已删除`);
-        }catch (e) {
-          this.logger.error(`过期证书${item.Name}删除失败：`,e.message)
+        } catch (e) {
+          this.logger.error(`过期证书${item.Name}删除失败：`, e.message)
         }
-
       }
     }
+  }
+
+
+  async clearSiteLimitCert(client: AliyunClientV2, siteId: string) {
+    const res = await client.doRequest({
+      action: "GetCertificateQuota",
+      version: "2024-09-10",
+      method: "GET",
+      data: {
+        query: {
+          SiteId: siteId,
+          Type: "free"
+        }
+      }
+    });
+    this.logger.info(`站点[${siteId}]证书限制情况, 限制${res.Quota} ,已使用${res.QuotaUsage}`);
+
+    if (res.QuotaUsage < res.Quota) {
+      this.logger.info(`站点[${siteId}]证书未超限制, 无需删除`);
+      return;
+    }
+    //删除最旧的证书
+    this.logger.info(`站点[${siteId}]证书已超限制, 开始删除最旧的证书`);
+    const certListRes = await client.doRequest({
+      action: "ListCertificates",
+      version: "2024-09-10",
+      method: "GET",
+      data: {
+        query: {
+          SiteId: siteId,
+          PageSize: 100
+        }
+      }
+    });
+
+    const list = certListRes.Result;
+    if (!list || list.length === 0) {
+      this.logger.info(`站点[${siteId}]没有证书, 无需删除`);
+      return 
+    }
+    let  oldly:any = null;
+    for (const item of list) {
+      if (!oldly) {
+        oldly = item;
+        continue;
+      }
+      if (dayjs(item.CreateTime).valueOf() < (dayjs(oldly.CreateTime)).valueOf()){
+        oldly = item;
+      }
+    }
+    this.logger.info(`最旧的证书${oldly.Name}创建时间：${oldly.CreateTime}`);
+    await client.doRequest({
+      action: "DeleteCertificate",
+      version: "2024-09-10",
+      method: "GET",
+      data: {
+        query: {
+          SiteId: siteId,
+          Id: oldly.id
+        }
+      }
+    });
+    this.logger.info(`最旧证书${oldly.Name}已删除`);
+    
   }
 }
 
