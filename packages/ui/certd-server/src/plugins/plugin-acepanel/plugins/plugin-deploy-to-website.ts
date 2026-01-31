@@ -1,12 +1,12 @@
-import {IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput} from "@certd/pipeline";
-import {CertApplyPluginNames, CertInfo} from "@certd/plugin-cert";
-import {createCertDomainGetterInputDefine, createRemoteSelectInputDefine} from "@certd/plugin-lib";
-import {AcepanelAccess} from "../access.js";
+import { IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
+import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
+import { AcePanelAccess } from "../access.js";
 
 @IsTaskPlugin({
-  name: "AcepanelDeployToWebsite",
-  title: "ACEPanel-部署到网站",
+  name: "AcePanelDeployToWebsite",
+  title: "AcePanel-部署到网站",
   desc: "上传证书并部署到指定网站",
   icon: "svg:icon-lucky",
   group: pluginGroups.panel.key,
@@ -18,7 +18,7 @@ import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
   }
 })
 
-export class AcepanelDeployToWebsite extends AbstractPlusTaskPlugin {
+export class AcePanelDeployToWebsite extends AbstractPlusTaskPlugin {
   @TaskInput({
     title: "域名证书",
     helper: "请选择前置任务输出的域名证书",
@@ -46,7 +46,7 @@ export class AcepanelDeployToWebsite extends AbstractPlusTaskPlugin {
     createRemoteSelectInputDefine({
       title: "部署网站",
       helper: "选择需要部署证书的网站",
-      action: AcepanelDeployToWebsite.prototype.onGetWebsiteList.name,
+      action: AcePanelDeployToWebsite.prototype.onGetWebsiteList.name,
       pager: false,
       search: false
     })
@@ -57,7 +57,7 @@ export class AcepanelDeployToWebsite extends AbstractPlusTaskPlugin {
   }
 
   async onGetWebsiteList(data: PageSearch = {}) {
-    const access = await this.getAccess<AcepanelAccess>(this.accessId);
+    const access = await this.getAccess<AcePanelAccess>(this.accessId);
     const res = await access.getWebSiteList(data);
     const items = res.data.items;
     if (!items || items.length === 0) {
@@ -76,7 +76,7 @@ export class AcepanelDeployToWebsite extends AbstractPlusTaskPlugin {
   }
 
   async execute(): Promise<void> {
-    const access = await this.getAccess<AcepanelAccess>(this.accessId);
+    const access = await this.getAccess<AcePanelAccess>(this.accessId);
 
     // 上传证书
     this.logger.info("开始上传证书");
@@ -99,4 +99,4 @@ export class AcepanelDeployToWebsite extends AbstractPlusTaskPlugin {
   }
 }
 
-new AcepanelDeployToWebsite();
+new AcePanelDeployToWebsite();

@@ -6,21 +6,22 @@ import url from "url";
 
 
 /**
+ * AcePanel授权
  */
 @IsAccess({
   name: "acepanel",
-  title: "ACEPanel授权",
+  title: "AcePanel授权",
   desc: "",
   icon: "svg:icon-lucky"
 })
-export class AcepanelAccess extends BaseAccess {
+export class AcePanelAccess extends BaseAccess {
 
   @AccessInput({
-    title: "ACEPanel管理地址",
+    title: "AcePanel管理地址",
     component: {
       placeholder: "http://127.0.0.1:25475/entrance",
     },
-    helper:"请输入ACEPanel管理地址，格式为http://127.0.0.1:25475/entrance, 要带安全入口，最后面不要加/",
+    helper:"请输入AcePanel管理地址，格式为http://127.0.0.1:25475/entrance, 要带安全入口，最后面不要加/",    
     required: true,
   })
   endpoint = '';
@@ -239,4 +240,4 @@ export class AcepanelAccess extends BaseAccess {
 
 }
 
-new AcepanelAccess();
+new AcePanelAccess();
