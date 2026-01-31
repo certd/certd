@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.4](https://github.com/certd/certd/compare/v1.38.3...v1.38.4) (2026-01-31)
+
+### Bug Fixes
+
+* 修复1:: 形式的ipv6校验失败的bug ([8b96f21](https://github.com/certd/certd/commit/8b96f218d5284033f10c186c0ce18e4c16d8e9b2))
+* 修复阿里云esa超过免费配额之后无法部署证书的bug，改成删除最旧的那张证书 ([32de8d9](https://github.com/certd/certd/commit/32de8d9ccb08d26414adbdde950d7cd405dc344a))
+
+### Performance Improvements
+
+* 当ip证书天数太小时，自动调整更新天数，避免每次运行都重新申请ip证书 ([433e98b](https://github.com/certd/certd/commit/433e98b6450fa7d0491151f159e432bf3dfe4feb))
+* 首页证书数量支持点击跳转 ([52cbff0](https://github.com/certd/certd/commit/52cbff0e15329aecd3edcf81315fb7ceab9ec290))
+* 修复旧版本流水线数据发送通知标题为空的bug ([9bee0e4](https://github.com/certd/certd/commit/9bee0e460bfebe8db76742b80b2d52854392f4de))
+* 验证码支持 Cloudflare Turnstile ，谨慎启用，国内被墙了 ([ca43c77](https://github.com/certd/certd/commit/ca43c775250154def63c4acd96d65dc95d1c0c2b))
+* 优化证书未过期时的任务日志提示 ([ac85488](https://github.com/certd/certd/commit/ac85488245197694560aad7df9425ca215ef7ff7))
+* 支持部署到阿里云GA ([1a0d3ee](https://github.com/certd/certd/commit/1a0d3eeb1b0b5ce08f05af84b6161e00c1fe1815))
+* 支持部署到华为elb ([60c8ace](https://github.com/certd/certd/commit/60c8ace443e848155d3ce12e95b84766a4610d3a))
+* 支持部署到AcePanel ([1661cae](https://github.com/certd/certd/commit/1661caed05e3413dc3e2b14ce62b75aa03ad90e0))
+
 ## [1.38.3](https://github.com/certd/certd/compare/v1.38.2...v1.38.3) (2026-01-28)
 
 ### Bug Fixes
