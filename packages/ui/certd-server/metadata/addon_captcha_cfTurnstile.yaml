@@ -1,0 +1,23 @@
+addonType: captcha
+name: cfTurnstile
+title: Cloudflare Turnstile
+desc: 谨慎使用，国内被墙了
+showTest: false
+input:
+  siteKey:
+    title: 站点密钥
+    component:
+      placeholder: SiteKey
+    helper: >-
+      [Cloudflare
+      Turnstile](https://www.cloudflare.com/zh-cn/application-services/products/turnstile/)
+      -> 添加小组件
+    required: true
+  secretKey:
+    title: 密钥
+    component:
+      placeholder: SecretKey
+    required: true
+pluginType: addon
+type: builtIn
+scriptFilePath: /plugins/plugin-captcha/cf-turnstile/index.js

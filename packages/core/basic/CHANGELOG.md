@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.4](https://github.com/certd/certd/compare/v1.38.3...v1.38.4) (2026-01-31)
+
+### Bug Fixes
+
+* 修复1:: 形式的ipv6校验失败的bug ([8b96f21](https://github.com/certd/certd/commit/8b96f218d5284033f10c186c0ce18e4c16d8e9b2))
+
+### Performance Improvements
+
+* 支持部署到阿里云GA ([1a0d3ee](https://github.com/certd/certd/commit/1a0d3eeb1b0b5ce08f05af84b6161e00c1fe1815))
+* 支持部署到华为elb ([60c8ace](https://github.com/certd/certd/commit/60c8ace443e848155d3ce12e95b84766a4610d3a))
+
 ## [1.38.3](https://github.com/certd/certd/compare/v1.38.2...v1.38.3) (2026-01-28)
 
 ### Bug Fixes

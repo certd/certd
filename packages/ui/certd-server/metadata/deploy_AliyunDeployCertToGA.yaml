@@ -1,0 +1,158 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: AliyunDeployCertToGA
+title: 阿里云-部署至GA
+icon: svg:icon-aliyun
+group: aliyun
+desc: 部署证书到阿里云GA(全球加速)，支持更新默认证书和扩展证书
+needPlus: false
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择证书申请任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+        - uploadCertToAliyun
+    required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: false
+    order: 0
+  casEndpoint:
+    title: 证书接入点
+    helper: 不会选就保持默认即可
+    value: cas.aliyuncs.com
+    component:
+      name: a-select
+      options:
+        - value: cas.aliyuncs.com
+          label: 中国大陆
+        - value: cas.ap-southeast-1.aliyuncs.com
+          label: 新加坡
+    required: true
+    order: 0
+  accessId:
+    title: Access授权
+    helper: 阿里云授权AccessKeyId、AccessKeySecret
+    component:
+      name: access-selector
+      type: aliyun
+    required: true
+    order: 0
+  acceleratorId:
+    title: 全球加速实例
+    component:
+      name: remote-select
+      vModel: value
+      type: plugin
+      action: onGetAcceleratorList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 请选择要部署证书的全球加速实例
+    order: 0
+  listenerIds:
+    title: 监听
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetListenerList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+        - accessId
+        - acceleratorId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 请选择要部署证书的监听
+    order: 0
+  certType:
+    title: 证书类型
+    helper: 选择更新默认证书还是扩展证书
+    value: default
+    component:
+      name: a-select
+      options:
+        - value: default
+          label: 默认证书
+        - value: additional
+          label: 扩展证书
+    required: true
+    order: 0
+  additionalDomains:
+    title: 扩展证书域名
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetAdditionalDomainList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+        - accessId
+        - acceleratorId
+        - listenerIds
+        - certType
+    required: true
+    mergeScript: |2-
+
+              return {
+                show: ctx.compute(({form})=>{
+                  return form.certType === "additional";
+                })
+              }
+          
+    helper: 将证书里的域名扩展绑定到监听器中
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-aliyun/plugin/deploy-to-ga/index.js

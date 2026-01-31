@@ -1,0 +1,41 @@
+name: acepanel
+title: AcePanel授权
+desc: ''
+icon: svg:icon-lucky
+input:
+  endpoint:
+    title: AcePanel管理地址
+    component:
+      placeholder: http://127.0.0.1:25475/entrance
+    helper: 请输入AcePanel管理地址，格式为http://127.0.0.1:25475/entrance, 要带安全入口，最后面不要加/
+    required: true
+  tokenId:
+    title: 访问令牌ID
+    component:
+      name: a-input-number
+      vModel: value
+    helper: AcePanel控制台->设置->用户->访问令牌->创建访问令牌
+    required: true
+  accessToken:
+    title: 访问令牌
+    component:
+      placeholder: AccessToken
+    helper: 创建访问令牌后复制该令牌填到这里
+    required: true
+    encrypt: true
+  skipSslVerify:
+    title: 忽略证书校验
+    value: true
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 如果面板的url是https，且使用的是自签名证书，则需要开启此选项，其他情况可以关闭
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+pluginType: access
+type: builtIn
+scriptFilePath: /plugins/plugin-acepanel/access.js

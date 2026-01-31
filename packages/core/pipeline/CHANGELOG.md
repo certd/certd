@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.4](https://github.com/certd/certd/compare/v1.38.3...v1.38.4) (2026-01-31)
+
+### Performance Improvements
+
+* 修复旧版本流水线数据发送通知标题为空的bug ([9bee0e4](https://github.com/certd/certd/commit/9bee0e460bfebe8db76742b80b2d52854392f4de))
+* 支持部署到阿里云GA ([1a0d3ee](https://github.com/certd/certd/commit/1a0d3eeb1b0b5ce08f05af84b6161e00c1fe1815))
+
 ## [1.38.3](https://github.com/certd/certd/compare/v1.38.2...v1.38.3) (2026-01-28)
 
 **Note:** Version bump only for package @certd/pipeline

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.4](https://github.com/certd/certd/compare/v1.38.3...v1.38.4) (2026-01-31)
+
+### Bug Fixes
+
+* 修复1:: 形式的ipv6校验失败的bug ([8b96f21](https://github.com/certd/certd/commit/8b96f218d5284033f10c186c0ce18e4c16d8e9b2))
+
+### Performance Improvements
+
+* 首页证书数量支持点击跳转 ([52cbff0](https://github.com/certd/certd/commit/52cbff0e15329aecd3edcf81315fb7ceab9ec290))
+* 验证码支持 Cloudflare Turnstile ，谨慎启用，国内被墙了 ([ca43c77](https://github.com/certd/certd/commit/ca43c775250154def63c4acd96d65dc95d1c0c2b))
+* 优化证书未过期时的任务日志提示 ([ac85488](https://github.com/certd/certd/commit/ac85488245197694560aad7df9425ca215ef7ff7))
+
 ## [1.38.3](https://github.com/certd/certd/compare/v1.38.2...v1.38.3) (2026-01-28)
 
 ### Performance Improvements

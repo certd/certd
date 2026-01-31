@@ -1,7 +1,7 @@
 {
   "name": "@certd/basic",
   "private": false,
-  "version": "1.38.3",
+  "version": "1.38.4",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

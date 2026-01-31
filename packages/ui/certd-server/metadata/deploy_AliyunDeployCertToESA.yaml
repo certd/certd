@@ -98,6 +98,15 @@ input:
               
     helper: 请选择要部署证书的站点
     order: 0
+  isFree:
+    title: 是否免费版
+    value: true
+    component:
+      name: a-switch
+      vModel: value
+    helper: 如果是免费站点，将检查证书数量限制，如果超限将删除最旧的那张证书
+    required: true
+    order: 0
 output: {}
 pluginType: deploy
 type: builtIn
