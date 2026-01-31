@@ -104,11 +104,11 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
     }else{
       certName = this.buildCertName(CertReader.getMainDomain(this.cert.crt))
     }
-    const certIdRes = await client.uploadCert({
+    const certIdRes = await client.uploadCertificate({
       name: certName,
       cert: this.cert,
     });
-    this.aliyunCertId = certIdRes.certId as any;
+    this.aliyunCertId = certIdRes as any;
   }
 }
 //注册插件

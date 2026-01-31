@@ -115,11 +115,11 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     if (typeof this.cert === 'object') {
       // @ts-ignore
       const certName = this.buildCertName(CertReader.getMainDomain(this.cert.crt))
-      const certIdRes = await sslClient.uploadCert({
+      const certIdRes = await sslClient.uploadCertificate({
         name:certName,
         cert: this.cert,
       });
-      certId = certIdRes.certId;
+      certId = certIdRes.certId as any;
     }
 
     const client = await this.getClient(access);

@@ -212,11 +212,11 @@ export class DeployCertToAliyunOSS extends AbstractTaskPlugin {
 
       certName = this.buildCertName(CertReader.getMainDomain(this.cert.crt));
 
-      const certIdRes = await sslClient.uploadCert({
+      const certIdRes = await sslClient.uploadCertificate({
         name: certName,
         cert: this.cert
       });
-      certId = certIdRes.certId;
+      certId = certIdRes.certId as any;
       this.logger.info("上传证书成功", certId, certName);
     }
     return {

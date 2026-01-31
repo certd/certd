@@ -305,11 +305,11 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       });
 
       const certName = this.buildCertName(CertReader.getMainDomain(this.cert.crt));
-      const certIdRes = await sslClient.uploadCert({
+      const certIdRes = await sslClient.uploadCertificate({
         name: certName,
         cert: this.cert
       });
-      certId = certIdRes.certId;
+      certId = certIdRes.certId as any; 
     }
 
     return certId;

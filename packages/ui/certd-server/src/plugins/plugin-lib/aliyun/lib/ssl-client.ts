@@ -98,7 +98,11 @@ export class AliyunSslClient {
     return `${certId}-${this.getCasRegionFromEndpoint(this.opts.endpoint)}`;
   }
 
-  async uploadCert(req: AliyunSslUploadCertReq) : Promise<CasCertId> {
+  async uploadCert(req: AliyunSslUploadCertReq) {
+      const {certId} = await this.uploadCertificate(req);
+      return certId;
+  }
+  async uploadCertificate(req: AliyunSslUploadCertReq) : Promise<CasCertId> {
     const client = await this.getClient();
     const params = {
       Name: req.name,
@@ -127,7 +131,7 @@ export class AliyunSslClient {
       // 上传证书到阿里云
       this.logger.info(`开始上传证书`);
       const certName = CertReader.buildCertName(cert);
-      const res = await this.uploadCert({
+      const res = await this.uploadCertificate({
         name: certName,
         cert: cert
       });
