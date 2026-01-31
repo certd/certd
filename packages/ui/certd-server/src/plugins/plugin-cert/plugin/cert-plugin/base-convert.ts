@@ -13,7 +13,7 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
       vModel: "value",
       mode: "tags",
       // open: false,
-      placeholder: "请输入证书域名，比如：foo.com , *.foo.com , *.sub.foo.com , *.bar.com",
+      placeholder: "请输入证书域名/IP，比如：foo.com , *.foo.com , *.sub.foo.com , *.bar.com , 123.123.123.123",
       tokenSeparators: [",", " ", "，", "、", "|"],
       search: true,
       pager:true,
