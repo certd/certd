@@ -8,6 +8,7 @@ export * from './deploy-to-nlb/index.js';
 export * from './deploy-to-slb/index.js';
 export * from './deploy-to-fc/index.js';
 export * from './deploy-to-esa/index.js';
+export * from './deploy-to-ga/index.js';
 export * from './deploy-to-vod/index.js';
 export * from './deploy-to-apigateway/index.js';
 export * from './deploy-to-apig/index.js';

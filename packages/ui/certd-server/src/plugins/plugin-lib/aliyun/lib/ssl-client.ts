@@ -1,6 +1,7 @@
-import { ILogger } from "@certd/basic";
+import { ILogger, utils } from "@certd/basic";
 import { AliyunAccess } from "../access/index.js";
 import { AliyunClient } from "./index.js";
+import { CertInfo, CertReader } from "@certd/plugin-lib";
 
 export type AliyunCertInfo = {
   crt: string; //fullchain证书
@@ -32,6 +33,11 @@ export type AliyunSslUploadCertReq = {
 
 export type CasCertInfo = { certId: number; certName: string; certIdentifier: string; notAfter: number; casRegion: string };
 
+export type CasCertId = {
+  certId: number;
+  certIdentifier: string;
+  certName: string;
+}
 export class AliyunSslClient {
   opts: AliyunSslClientOpts;
   logger: ILogger;
@@ -85,7 +91,14 @@ export class AliyunSslClient {
     };
   }
 
-  async uploadCert(req: AliyunSslUploadCertReq) {
+  getCertIdentifier(certId: number | string) {
+    if (typeof certId === "string" && certId.indexOf("-") > 0) {
+      return certId;
+    }
+    return `${certId}-${this.getCasRegionFromEndpoint(this.opts.endpoint)}`;
+  }
+
+  async uploadCert(req: AliyunSslUploadCertReq) : Promise<CasCertId> {
     const client = await this.getClient();
     const params = {
       Name: req.name,
@@ -102,7 +115,33 @@ export class AliyunSslClient {
     this.checkRet(ret);
     this.opts.logger.info("证书上传成功：aliyunCertId=", ret.CertId);
     //output
-    return ret.CertId;
+    return {
+      certId: ret.CertId,
+      certName: req.name,
+      certIdentifier: this.getCertIdentifier(ret.CertId),
+    }
+  }
+
+  async uploadCertOrGet(cert: CertInfo | number )  :Promise<CasCertId>{
+    if (typeof cert === "object") {
+      // 上传证书到阿里云
+      this.logger.info(`开始上传证书`);
+      const certName = CertReader.buildCertName(cert);
+      const res = await this.uploadCert({
+        name: certName,
+        cert: cert
+      });
+      this.logger.info("上传证书成功", JSON.stringify(res));
+      return res
+    }
+    const certId = cert as any;
+    let certName: any = utils.string.appendTimeSuffix(certId);
+    const certIdentifier = this.getCertIdentifier(certId);
+    return {
+      certId,
+      certIdentifier,
+      certName
+    }
   }
 
   async getResourceList(req: AliyunSslGetResourceListReq) {

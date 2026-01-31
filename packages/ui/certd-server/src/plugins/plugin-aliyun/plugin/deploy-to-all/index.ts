@@ -155,10 +155,11 @@ export class AliyunDeployCertToAll extends AbstractTaskPlugin {
     //
     let certId: any = this.cert;
     if (typeof this.cert === "object") {
-      certId = await sslClient.uploadCert({
+      const certIdRes = await sslClient.uploadCert({
         name: this.appendTimeSuffix("certd"),
         cert: this.cert,
       });
+      certId = certIdRes.certId;
     }
 
     const jobId = await this.createDeployJob(sslClient, certId);

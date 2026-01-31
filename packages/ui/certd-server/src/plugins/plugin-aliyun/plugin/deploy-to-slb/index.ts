@@ -251,10 +251,11 @@ export class AliyunDeployCertToSLB extends AbstractTaskPlugin {
 
     if (typeof this.cert === 'object') {
       const name = this.appendTimeSuffix('certd');
-      certId = await sslClient.uploadCert({
+      const certIdRes = await sslClient.uploadCert({
         name: name,
         cert: this.cert,
       });
+      certId = certIdRes.certId;
     }
 
     return await sslClient.getCertInfo(certId);

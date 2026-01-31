@@ -152,10 +152,11 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
         endpoint: this.casEndpoint,
       });
 
-      certId = await sslClient.uploadCert({
+      const certIdRes = await sslClient.uploadCert({
         name: this.buildCertName(CertReader.getMainDomain(this.cert.crt)),
         cert: this.cert,
       });
+      certId = certIdRes.certId;
     }
 
     const client = await this.getWafClient(access);

@@ -249,10 +249,7 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
   abstract execute(): Promise<void | string>;
 
   appendTimeSuffix(name?: string) {
-    if (name == null) {
-      name = "certd";
-    }
-    return name + "_" + dayjs().format("YYYYMMDDHHmmssSSS");
+    return utils.string.appendTimeSuffix(name);
   }
 
   buildCertName(domain: string, prefix = "") {
@@ -296,6 +293,10 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
 
   getStepIdFromRefInput(ref = ".") {
     return ref.split(".")[1];
+  }
+
+  buildDomainGroupOptions(options: any[], domains: string[]) {
+    return utils.options.buildGroupOptions(options, domains);
   }
 }
 
