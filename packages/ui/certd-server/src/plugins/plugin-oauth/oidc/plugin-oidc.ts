@@ -135,10 +135,17 @@ export class OidcOauthProvider extends BaseAddon implements IOauthProvider {
   };
 
   async buildLogoutUrl(params: BuildLogoutUrlReq) {
-    const { config } = await this.getClient()
-    let logoutUrl =  config.serverMetadata().end_session_endpoint
-    return {
-      logoutUrl: logoutUrl,
-    };
+    try{
+      const { config } = await this.getClient()
+      let logoutUrl =  config.serverMetadata().end_session_endpoint
+      return {
+        logoutUrl: logoutUrl,
+      };
+    }catch(err){
+      this.logger.error(`获取注销地址失败: ${err}`)
+      return {
+        logoutUrl: "",
+      };
+    }
   }
 }
