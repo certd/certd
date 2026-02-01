@@ -254,7 +254,8 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
   async clearSiteLimitCert(client: AliyunClientV2, siteId: string) {
     
     //删除最旧的证书
-    this.logger.info(`站点[${siteId}]证书数量检查，当前限制${this.certLimit}`);
+    const certLimit = this.certLimit || 2;
+    this.logger.info(`站点[${siteId}]证书数量检查，当前限制${certLimit}`);
     const certListRes = await client.doRequest({
       action: "ListCertificates",
       version: "2024-09-10",
@@ -272,7 +273,7 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
       this.logger.info(`站点[${siteId}]没有证书, 无需删除`);
       return 
     }
-    if (list.length < this.certLimit) {
+    if (list.length < certLimit) {
       this.logger.info(`站点[${siteId}]证书数量（${list.length}）未超限制, 无需删除`);
       return;
     }
@@ -301,7 +302,6 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
       }
     });
     this.logger.info(`最旧证书${oldly.Name}已删除`);
-    
   }
 }
 
