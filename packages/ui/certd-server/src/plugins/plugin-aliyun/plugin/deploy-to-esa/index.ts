@@ -138,40 +138,40 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
 
     const client = await this.getClient(access);
 
-    // const { certId, certName } = await this.getAliyunCertId(access);
+    const { certId, certName } = await this.getAliyunCertId(access);
 
     for (const siteId of this.siteIds) {
       await this.clearSiteLimitCert(client, siteId);
-      // try {
-      //   const res = await client.doRequest({
-      //     // 接口名称
-      //     action: "SetCertificate",
-      //     // 接口版本
-      //     version: "2024-09-10",
-      //     data: {
-      //       body: {
-      //         SiteId: siteId,
-      //         CasId: certId,
-      //         Type: "cas",
-      //         Name: certName
-      //       }
-      //     }
-      //   });
-      //   this.logger.info(`部署站点[${siteId}]证书成功：${JSON.stringify(res)}`);
+      try {
+        const res = await client.doRequest({
+          // 接口名称
+          action: "SetCertificate",
+          // 接口版本
+          version: "2024-09-10",
+          data: {
+            body: {
+              SiteId: siteId,
+              CasId: certId,
+              Type: "cas",
+              Name: certName
+            }
+          }
+        });
+        this.logger.info(`部署站点[${siteId}]证书成功：${JSON.stringify(res)}`);
 
-      // } catch (e) {
-      //   if (e.message.includes("Certificate.Duplicated")) {
-      //     this.logger.info(`站点[${siteId}]证书已存在,无需重复部署`);
-      //   } else {
-      //     throw e;
-      //   }
-      // } finally {
-      //   try {
-      //     await this.clearSiteExpiredCert(client, siteId);
-      //   } catch (e) {
-      //     this.logger.error(`清理站点[${siteId}]过期证书失败`, e)
-      //   }
-      // }
+      } catch (e) {
+        if (e.message.includes("Certificate.Duplicated")) {
+          this.logger.info(`站点[${siteId}]证书已存在,无需重复部署`);
+        } else {
+          throw e;
+        }
+      } finally {
+        try {
+          await this.clearSiteExpiredCert(client, siteId);
+        } catch (e) {
+          this.logger.error(`清理站点[${siteId}]过期证书失败`, e)
+        }
+      }
     }
   }
 
@@ -296,7 +296,7 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
       data: {
         query: {
           SiteId: siteId,
-          Id: oldly.id
+          Id: oldly.Id
         }
       }
     });
