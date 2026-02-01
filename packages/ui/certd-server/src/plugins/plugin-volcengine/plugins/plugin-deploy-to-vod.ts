@@ -174,7 +174,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       action: "ListDomain",
       body: {
         SpaceName: this.spaceName,
-        Offset: 100
+        // Offset: 100
       }
     });
 
