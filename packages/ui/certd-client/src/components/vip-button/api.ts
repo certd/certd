@@ -15,3 +15,10 @@ export async function getVipTrial(vipType: string) {
     data: { vipType },
   });
 }
+
+export async function getTodayVipOrderCount() {
+  return await request({
+    url: "/sys/plus/getTodayVipOrderCount",
+    method: "post",
+  });
+}

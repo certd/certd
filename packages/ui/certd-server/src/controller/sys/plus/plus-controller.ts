@@ -48,6 +48,11 @@ export class SysPlusController extends BaseController {
     const res = await this.plusService.getVipTrial(vipType);
     return this.ok(res);
   }
+  @Post('/getTodayVipOrderCount', { summary: 'sys:settings:edit' })
+  async getTodayVipOrderCount() {
+    const res = await this.plusService.getTodayOrderCount();
+    return this.ok(res);
+  }
   //
   // @Get('/test', { summary: Constants.per.guest })
   // async test() {
