@@ -20,6 +20,7 @@ export class PlusService {
 
     const subjectId = installInfo.siteId;
     const bindUrl = installInfo.bindUrl;
+    const bindUrl2 = installInfo.bindUrl2;
     const installTime = installInfo.installTime;
     const saveLicense = async (license: string) => {
       let licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
@@ -30,7 +31,7 @@ export class PlusService {
       await this.sysSettingsService.saveSetting(licenseInfo);
     };
 
-    return new PlusRequestService({ subjectId, bindUrl, installTime, saveLicense });
+    return new PlusRequestService({ subjectId, bindUrl, bindUrl2, installTime, saveLicense });
   }
 
   async getSubjectId() {
@@ -148,6 +149,12 @@ export class PlusService {
     } else {
       throw new Error('您已经领取过VIP试用了');
     }
+  }
+
+  async getTodayOrderCount () {
+    await this.register();
+    const plusRequestService = await this.getPlusRequestService();
+    return await plusRequestService.getOrderCount()
   }
 
   async requestWithToken(config: HttpRequestConfig) {

@@ -107,6 +107,7 @@ export class SysInstallInfo extends BaseSettings {
   siteId?: string;
   bindUserId?: number;
   bindUrl?: string;
+  bindUrl2?: string;
   accountServerBaseUrl?: string;
   appKey?: string;
 }
