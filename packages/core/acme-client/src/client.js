@@ -103,7 +103,9 @@ class AcmeClient {
             max: this.opts.backoffMax,
         };
 
-        this.http = new HttpClient(this.opts.directoryUrl, this.opts.accountKey, this.opts.externalAccountBinding, this.opts.urlMapping, opts.logger);
+        const cacheNonce = true
+        // const cacheNonce = this.sslProvider === 'litessl';
+        this.http = new HttpClient(this.opts.directoryUrl, this.opts.accountKey, this.opts.externalAccountBinding, this.opts.urlMapping, opts.logger, cacheNonce);
         this.api = new AcmeApi(this.http, this.opts.accountUrl);
         this.logger = opts.logger;
     }

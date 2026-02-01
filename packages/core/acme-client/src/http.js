@@ -19,7 +19,7 @@ import { getJwk } from './crypto/index.js';
  */
 
 class HttpClient {
-    constructor(directoryUrl, accountKey, externalAccountBinding = {}, urlMapping = {},logger) {
+    constructor(directoryUrl, accountKey, externalAccountBinding = {}, urlMapping = {}, logger, cacheNonce= false) {
         this.directoryUrl = directoryUrl;
         this.accountKey = accountKey;
         this.externalAccountBinding = externalAccountBinding;
@@ -31,7 +31,34 @@ class HttpClient {
         this.directoryMaxAge = 86400;
         this.directoryTimestamp = 0;
         this.urlMapping = urlMapping;
-        this.log = logger? logger.info.bind(logger) : log;
+        this.log = logger ? logger.info.bind(logger) : log;
+        this.nonces = [];
+        this.cacheNonce = cacheNonce;
+    }
+
+    pushNonce(nonce) {
+        if (!this.cacheNonce || !nonce) {
+            return;
+        }
+        this.nonces.push({
+            nonce,
+            expires: Date.now() + 30*1000,
+        });
+    }
+    popNonce() {
+        while (true) {
+            if (this.nonces.length === 0) {
+                return null;
+            }
+            const item = this.nonces.shift();
+            if (!item) {
+                return null;
+            }
+            if (item.expires < Date.now()) {
+                continue;
+            }
+            return item.nonce;
+        }
     }
 
     /**
@@ -70,6 +97,13 @@ class HttpClient {
         const resp = await axios.request(opts);
 
         this.log(`RESP ${resp.status} ${method} ${url}`);
+
+        const nonce = resp.headers['replay-nonce'];
+        if (nonce) {
+            //如果有nonce
+            this.pushNonce(nonce);
+        }
+
         return resp;
     }
 
@@ -127,6 +161,13 @@ class HttpClient {
      */
 
     async getNonce() {
+
+        //尝试从队列中pop一个nonce
+        const nonce = this.popNonce();
+        if (nonce) {
+            return nonce;
+        }
+
         const url = await this.getResourceUrl('newNonce');
         const resp = await this.request(url, 'head');
 
@@ -134,7 +175,11 @@ class HttpClient {
             throw new Error('Failed to get nonce from ACME provider');
         }
 
+        if (this.cacheNonce) {
+            return this.popNonce();
+        }
         return resp.headers['replay-nonce'];
+       
     }
 
     /**
