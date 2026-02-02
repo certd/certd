@@ -27,6 +27,7 @@ export type PlusInfo = {
   expireTime?: number;
   isPlus: boolean;
   isComm?: boolean;
+  message?: string;
 };
 export type SysPublicSetting = {
   registerEnabled?: boolean;

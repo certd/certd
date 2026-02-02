@@ -43,6 +43,7 @@ type Text = {
 };
 const text = computed<Text>(() => {
   const vipLabel = settingStore.vipLabel;
+  const plusMessage = settingStore.plusInfo?.message;
   const map = {
     isComm: {
       comm: {
@@ -95,7 +96,7 @@ const text = computed<Text>(() => {
       },
       nav: {
         name: t("vip.free.nav.name"),
-        title: t("vip.free.nav.title"),
+        title: plusMessage || t("vip.free.nav.title"),
       },
     },
   };
