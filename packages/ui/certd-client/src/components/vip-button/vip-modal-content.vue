@@ -1,16 +1,16 @@
 <template>
   <div class="mt-10 vip-active-modal">
     <div v-if="todayOrderCount.enabled" class="order-count hidden md:flex">
-      <div class="status-item status-show">
+      <div v-for="(stage, index) in todayOrderCount.stages" :key="index" class="status-item" :class="{ 'status-show': TodayVipOrderCountRef.current === index }">
         <div class="background">
-          <img :src="todayOrderCount.bg" alt="" />
+          <img :src="stage.bg" alt="" />
         </div>
         <div class="flex flex-col order-count-text weight-bold">
           <div class="count-text ml-4 flex items-center">
             <fs-icon icon="noto:fire" class="fs-20 mr-2"></fs-icon>
             <span> 今日赞助 </span>
-            <span class="count-number color-red font-bold text-2xl ml-1 mr-1"> {{ todayOrderCount.orderCount }} </span>人，
-            <span> {{ todayOrderCount.title }} </span>
+            <span class="count-number color-red font-bold text-2xl ml-1 mr-1"> {{ stage.orderCount }} </span>人，
+            <span> {{ stage.title }} </span>
           </div>
         </div>
       </div>
@@ -109,13 +109,14 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, nextTick, onMounted, reactive, Ref, ref } from "vue";
 import { message, Modal } from "ant-design-vue";
 import dayjs from "dayjs";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useSettingStore } from "/@/store/settings";
 import * as api from "./api";
+import { utils } from "/@/utils";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -229,7 +230,7 @@ const vipTypeDefine: any = {
   },
 };
 
-const TodayVipOrderCountRef = ref();
+const TodayVipOrderCountRef: Ref = ref({});
 
 async function getTodayVipOrderCount() {
   const res = await api.getTodayVipOrderCount();
@@ -242,18 +243,35 @@ const todayOrderCount = computed(() => {
   const countInfo = TodayVipOrderCountRef.value;
   const enabled = countInfo?.enabled || false;
   const orderCount = countInfo?.orderCount || 0;
-  const title = countInfo?.stage?.title || "";
-  const bg = countInfo?.stage?.bg || "";
+  for (const stage of countInfo?.stages) {
+    stage.orderCount = stage.countGe || 0;
+  }
+  const lastStage = countInfo?.stages?.[countInfo?.stages?.length - 1] || {};
+  lastStage.orderCount = orderCount;
   return {
     enabled: enabled,
     orderCount: orderCount,
-    bg: bg,
-    title: title,
+    title: lastStage.title || "",
+    stages: countInfo?.stages,
   };
 });
 
+async function scrollOrderCount() {
+  const stages = todayOrderCount.value.stages;
+  if (!stages.length) {
+    return;
+  }
+  let index = 0;
+  for (const stage of stages) {
+    TodayVipOrderCountRef.value.current = index;
+    await utils.sleep(500);
+    index++;
+  }
+}
+
 onMounted(async () => {
-  getTodayVipOrderCount();
+  await getTodayVipOrderCount();
+  await scrollOrderCount();
 });
 </script>
 
@@ -313,7 +331,7 @@ onMounted(async () => {
 
     .status-item {
       opacity: 0;
-      transition: all 0.5s ease-in-out;
+      transition: all 0.7s ease-in-out;
     }
 
     .status-show {
