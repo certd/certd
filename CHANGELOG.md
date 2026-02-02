@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.5](https://github.com/certd/certd/compare/v1.38.4...v1.38.5) (2026-02-02)
+
+### Bug Fixes
+
+* 阿里云esa查询证书限制接口无效，改成配置证书数量上限检查方式进行清理 ([2302567](https://github.com/certd/certd/commit/230256793f8ad87ef8a0738c37108bf7b5ab9853))
+* 某些情况下登陆页面没有显示重置密码文档链接的问题 ([40801d0](https://github.com/certd/certd/commit/40801d0a0668c77adb57fae42b4b6615b198a88d))
+* 修复部署到火山引擎vod，获取域名列表为空的bug ([0719f4c](https://github.com/certd/certd/commit/0719f4c99e9198544d03431107b53652e076e881))
+* 修复litessl new-nonce报428的bug ([540ef96](https://github.com/certd/certd/commit/540ef967457a7871637cfdb5012ed1fa3261757b))
+* 修复oidc配置取消后获取登出地址失败后无法列出oauth列表的bug ([eb5de15](https://github.com/certd/certd/commit/eb5de150332fd914c56b812c3ba2c2445f902bb7))
+
+### Performance Improvements
+
+* 将重置密码的日志挪到启动成功之后，方便查看 ([0fa9b34](https://github.com/certd/certd/commit/0fa9b344e08cf355aee7a7566f061cc5d95dc374))
+* 支持绑定两个url地址 ([a2e9a41](https://github.com/certd/certd/commit/a2e9a41a7e712395c0e3ee6fe55b370aa1fc1f12))
+
 ## [1.38.4](https://github.com/certd/certd/compare/v1.38.3...v1.38.4) (2026-01-31)
 
 ### Bug Fixes

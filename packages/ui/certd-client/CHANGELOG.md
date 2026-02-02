@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.5](https://github.com/certd/certd/compare/v1.38.4...v1.38.5) (2026-02-02)
+
+### Bug Fixes
+
+* 某些情况下登陆页面没有显示重置密码文档链接的问题 ([40801d0](https://github.com/certd/certd/commit/40801d0a0668c77adb57fae42b4b6615b198a88d))
+
+### Performance Improvements
+
+* 支持绑定两个url地址 ([a2e9a41](https://github.com/certd/certd/commit/a2e9a41a7e712395c0e3ee6fe55b370aa1fc1f12))
+
 ## [1.38.4](https://github.com/certd/certd/compare/v1.38.3...v1.38.4) (2026-01-31)
 
 ### Bug Fixes
