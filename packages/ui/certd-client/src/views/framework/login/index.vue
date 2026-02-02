@@ -59,6 +59,9 @@
               <router-link v-if="!!settingStore.sysPublic.selfServicePasswordRetrievalEnabled && !queryBindCode" :to="{ name: 'forgotPassword' }">
                 {{ t("authentication.forgotPassword") }}
               </router-link>
+              <a v-else v-comm="false" href="https://certd.docmirror.cn/guide/use/forgotpasswd/" target="_blank">
+                {{ t("authentication.forgotPassword") }}
+              </a>
             </div>
 
             <router-link v-if="hasRegisterTypeEnabled() && !queryBindCode" class="register" :to="{ name: 'register' }">
