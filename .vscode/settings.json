@@ -16,5 +16,9 @@
     },
     "[less]": {
         "editor.defaultFormatter": "vscode.css-language-features"
-    }
+    },
+    "scm.repositories.visible": 9,
+    "scm.repositories.explorer": false,
+    "scm.repositories.selectionMode": "multiple",
+    "scm.repositories.sortOrder": "discovery time"
 }
