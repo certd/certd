@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { Modal, notification } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import * as basicApi from "./api.basic";
 import { AppInfo, HeaderMenus, PlusInfo, SiteEnv, SiteInfo, SuiteSetting, SysInstallInfo, SysPublicSetting } from "./api.basic";
 import { useUserStore } from "../user";
@@ -20,6 +20,7 @@ export interface SettingState {
     installTime?: number;
     bindUserId?: number;
     bindUrl?: string;
+    bindUrl2?: string;
     accountServerBaseUrl?: string;
     appKey?: string;
   };
@@ -153,9 +154,11 @@ export const useSettingStore = defineStore({
       if (this.plusInfo?.expireTime === -1) {
         return "永久";
       }
+      //@ts-ignore
       return dayjs(this.plusInfo?.expireTime).format("YYYY-MM-DD");
     },
     isForever() {
+      //@ts-ignore
       return this.isPlus && this.plusInfo?.expireTime === -1;
     },
     vipLabel(): string {
@@ -251,9 +254,17 @@ export const useSettingStore = defineStore({
       url = url.split("#")[0];
       return url;
     },
-    async doBindUrl() {
-      const url = this.getBaseUrl();
-      await basicApi.bindUrl({ url });
+    async doBindUrl(key: string = "url") {
+      const url = this.installInfo.bindUrl;
+      const url2 = this.installInfo.bindUrl2;
+
+      const thisUrl = this.getBaseUrl();
+      const form = {
+        url,
+        url2,
+        [key]: thisUrl,
+      };
+      await basicApi.bindUrl(form);
       await this.loadSysSettings();
     },
     async checkUrlBound() {
@@ -262,24 +273,64 @@ export const useSettingStore = defineStore({
       if (!userStore.isAdmin) {
         return;
       }
-
+      const event: any = { ModalRef: null };
+      mitter.emit("getModal", event);
+      const Modal = event.ModalRef;
+      let modalRef: any = null;
       const bindUrl = this.installInfo.bindUrl;
+      const bindUrl2 = this.installInfo.bindUrl2;
+
+      const doBindRequest = async (key: string) => {
+        await this.doBindUrl(key);
+        if (modalRef) {
+          modalRef.destroy();
+        }
+      };
 
       if (!bindUrl) {
         //绑定url
-        await this.doBindUrl();
+        await this.doBindUrl("url");
       } else {
         //检查当前url 是否与绑定的url一致
         const url = window.location.href;
-        if (!url.startsWith(bindUrl)) {
-          Modal.confirm({
-            title: "URL地址有变化",
-            content: "以后都用这个新地址访问本系统吗？",
-            onOk: async () => {
-              await this.doBindUrl();
+        if (!url.startsWith(bindUrl) && !url.startsWith(bindUrl2)) {
+          modalRef = Modal.warning({
+            title: "URL地址未绑定，是否绑定此地址？",
+            width: 500,
+            keyboard: false,
+            content: () => {
+              return (
+                <div class="p-4">
+                  <div class="flex items-center justify-between">
+                    <span>
+                      绑定地址1：
+                      <a-tag color="green">{bindUrl || "未占用"}</a-tag>
+                    </span>
+                    <a-button type="primary" onClick={() => doBindRequest("url")}>
+                      绑定到地址1
+                    </a-button>
+                  </div>
+                  <div class="flex items-center justify-between mt-3">
+                    <span>
+                      绑定地址2：
+                      <a-tag color="green">{bindUrl2 || "未占用"}</a-tag>
+                    </span>
+                    <a-button type="primary" onClick={() => doBindRequest("url2")}>
+                      绑定到地址2
+                    </a-button>
+                  </div>
+                </div>
+              );
             },
-            okText: "是的，继续",
-            cancelText: "不是，回到原来的地址",
+            onOk: async () => {
+              // await this.doBindUrl();
+              window.location.href = bindUrl;
+            },
+            okButtonProps: {
+              danger: true,
+            },
+            okText: "不，回到原来的地址",
+            cancelText: "不，回到原来的地址",
             onCancel: () => {
               window.location.href = bindUrl;
             },

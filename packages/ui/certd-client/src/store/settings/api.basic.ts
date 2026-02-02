@@ -107,6 +107,8 @@ export type SysPrivateSetting = {
 };
 export type SysInstallInfo = {
   siteId: string;
+  bindUrl?: string;
+  bindUrl2?: string;
 };
 export type MenuItem = {
   id: string;

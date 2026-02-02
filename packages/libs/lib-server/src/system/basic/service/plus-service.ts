@@ -54,9 +54,9 @@ export class PlusService {
     await plusRequestService.verify({ license: licenseInfo.license });
   }
 
-  async bindUrl(url: string) {
+  async bindUrl(url: string, url2?:string) {
     const plusRequestService = await this.getPlusRequestService();
-    const res = await plusRequestService.bindUrl(url);
+    const res = await plusRequestService.bindUrl(url,url2);
     this.plusRequestService = null;
     return res;
   }
