@@ -7,6 +7,8 @@ import { getVersion } from '../../utils/version.js';
 import dayjs from 'dayjs';
 import { Application } from '@midwayjs/koa';
 import { httpsServer, HttpsServerOptions } from './https/server.js';
+import { UserService } from '../sys/authority/service/user-service.js';
+import { UserSettingsService } from '../mine/service/user-settings-service.js';
 
 @Autoload()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -21,6 +23,15 @@ export class AutoZPrint {
   httpsConfig: HttpsServerOptions;
   @Config('koa')
   koaConfig: any;
+
+  @Inject()
+  userService: UserService;
+  
+  @Inject()
+  userSettingsService: UserSettingsService;
+
+  @Config('system.resetAdminPasswd')
+  private resetAdminPasswd: boolean;
 
   @Init()
   async init() {
@@ -41,6 +52,26 @@ export class AutoZPrint {
     }
     logger.info('Certd已启动');
     logger.info('=========================================');
+    await this.resetPasswd();
+  }
+
+  async resetPasswd(){
+    if (this.resetAdminPasswd === true) {
+      logger.info('开始重置1号管理员用户的密码');
+      const newPasswd = '123456';
+      await this.userService.resetPassword(1, newPasswd);
+      await this.userService.updateStatus(1, 1);
+      await this.userSettingsService.deleteWhere({
+        userId: 1,
+        key:"user.two.factor"
+      })
+      const publicSettings = await this.sysSettingsService.getPublicSettings()
+      publicSettings.captchaEnabled = false
+      await this.sysSettingsService.savePublicSettings(publicSettings);
+
+      const user = await this.userService.info(1);
+      logger.info(`重置1号管理员用户的密码完成，2FA设置已删除，验证码登录已禁用，用户名：${user.username},新密码：${newPasswd}，请在登录进去之后尽快修改密码`);
+    }
   }
 
   startHeapLog() {

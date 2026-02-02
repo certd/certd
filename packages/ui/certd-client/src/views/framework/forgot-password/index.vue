@@ -76,7 +76,7 @@
         <a-button type="primary" size="large" html-type="submit" class="submit-button"> 找回密码</a-button>
 
         <div class="mt-2 flex-between">
-          <a v-comm="false" href="https://certd.docmirror.cn/guide/use/forgotpasswd/" target="_blank"> 管理员无绑定通信方式或MFA丢失找回 </a>
+          <a v-comm="false" href="https://certd.docmirror.cn/guide/use/forgotpasswd/" target="_blank"> 管理员忘记密码 </a>
 
           <router-link :to="{ name: 'login' }"> 返回登录 </router-link>
         </div>
