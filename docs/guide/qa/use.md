@@ -52,3 +52,11 @@ service:
 3. DNS 有其他平台申请过的_acme-challenge记录，删除即可
 
 
+## 7. DNS problem: NXDOMAIN looking up TXT for  _acme-challenge.xxx 
+`
+DNS problem: NXDOMAIN looking up TXT for  _acme-challenge.xxxxx - check that a DNS record exists for this domain
+`
+证书颁发机构向域名ns查询TXT验证记录失败，有以下几种可能
+1、域名的ns服务器修改成别的了，但申请证书时的DNS提供商选择错误（检查确认，配置正确的DNS提供商）
+2、证书颁发机构与ns域名服务器之间访问不通，无法查询到TXT记录（尝试更换证书颁发机构）
+3、ns服务商解析值生效慢（尝试修改证书申请任务里面的等待生效时长600-1000s）
