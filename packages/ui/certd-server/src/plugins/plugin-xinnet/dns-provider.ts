@@ -57,7 +57,19 @@ export class XinnetProvider extends AbstractDnsProvider<XinnetRecord> {
     if (!res.list || res.list.length == 0) {
       throw new Error("域名不存在");
     }
-    const serviceCode = res.list[0].serviceCode;
+
+    let list = res.list.map((item) => ({
+      domainName: item.domainName,
+      serviceCode: item.serviceCode
+    }));
+    this.logger.info("域名列表:", JSON.stringify(list));
+
+    const domainItem = list.find((item) => item.domainName === domain);
+    if (!domainItem) {
+      throw new Error("域名（" + domain + "）不存在");
+    }
+
+    const serviceCode = domainItem.serviceCode;
 
     const dcpCookie = await client.getDcpCookie({
       serviceCode

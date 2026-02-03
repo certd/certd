@@ -44,7 +44,7 @@ export class XinnetAccess extends BaseAccess {
       name: "api-test",
       action: "TestRequest"
     },
-    helper: "点击测试接口是否正常"
+    helper: "测试前请务必先在新网后台关闭异地登录保护、关闭动态口令验证\n如果提示需要短信验证码，请等几个小时后再试"
   })
   testRequest = true;
 

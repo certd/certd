@@ -9,6 +9,7 @@ import { Application } from '@midwayjs/koa';
 import { httpsServer, HttpsServerOptions } from './https/server.js';
 import { UserService } from '../sys/authority/service/user-service.js';
 import { UserSettingsService } from '../mine/service/user-settings-service.js';
+import { startProxyServer } from './proxy/server.js';
 
 @Autoload()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -37,6 +38,7 @@ export class AutoZPrint {
   async init() {
     //监听https
     this.startHttpsServer();
+    // this.startProxyServer();
     logger.info("ENV:", process.env.NODE_ENV);
     if (isDev()) {
       this.startHeapLog();
@@ -96,5 +98,9 @@ export class AutoZPrint {
       app: this.app,
       hostname: this.httpsConfig.hostname || this.koaConfig.hostname,
     });
+  }
+
+  startProxyServer() {
+    startProxyServer({port: 7003});
   }
 }
