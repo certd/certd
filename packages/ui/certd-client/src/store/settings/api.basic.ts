@@ -27,6 +27,7 @@ export type PlusInfo = {
   expireTime?: number;
   isPlus: boolean;
   isComm?: boolean;
+  message?: string;
 };
 export type SysPublicSetting = {
   registerEnabled?: boolean;
@@ -107,6 +108,8 @@ export type SysPrivateSetting = {
 };
 export type SysInstallInfo = {
   siteId: string;
+  bindUrl?: string;
+  bindUrl2?: string;
 };
 export type MenuItem = {
   id: string;

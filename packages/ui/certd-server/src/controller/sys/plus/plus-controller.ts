@@ -22,14 +22,13 @@ export class SysPlusController extends BaseController {
     return this.ok(true);
   }
   @Post('/bindUrl', { summary: 'sys:settings:edit' })
-  async bindUrl(@Body(ALL) body: { url: string }) {
-    const { url } = body;
-
+  async bindUrl(@Body(ALL) body: { url: string ,url2?:string }) {
+    const { url,url2 } = body;  
     await this.plusService.register();
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
-    await this.plusService.bindUrl(url);
-
+    await this.plusService.bindUrl(url,url2);
     installInfo.bindUrl = url;
+    installInfo.bindUrl2 = url2;
     await this.sysSettingsService.saveSetting(installInfo);
 
     //重新验证vip

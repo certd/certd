@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.5](https://github.com/publishlab/node-acme-client/compare/v1.38.4...v1.38.5) (2026-02-02)
+
+### Bug Fixes
+
+* 修复litessl new-nonce报428的bug ([540ef96](https://github.com/publishlab/node-acme-client/commit/540ef967457a7871637cfdb5012ed1fa3261757b))
+
 ## [1.38.4](https://github.com/publishlab/node-acme-client/compare/v1.38.3...v1.38.4) (2026-01-31)
 
 **Note:** Version bump only for package @certd/acme-client

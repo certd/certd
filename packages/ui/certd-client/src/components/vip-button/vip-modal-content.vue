@@ -1,9 +1,24 @@
 <template>
-  <div class="mt-10 mb-10 vip-active-modal">
-    <div v-if="productInfo.notice" class="mb-10">
+  <div class="mt-10 vip-active-modal">
+    <div v-if="todayOrderCount.enabled" class="order-count hidden md:flex">
+      <div v-for="(stage, index) in todayOrderCount.stages" :key="index" class="status-item" :class="{ 'status-show': TodayVipOrderCountRef.current === index }">
+        <div class="background">
+          <img :src="stage.bg" alt="" />
+        </div>
+        <div class="flex flex-col order-count-text weight-bold">
+          <div class="count-text ml-4 flex items-center">
+            <fs-icon icon="noto:fire" class="fs-20 mr-2"></fs-icon>
+            <span> 今日赞助 </span>
+            <span class="count-number color-red font-bold text-2xl ml-1 mr-1"> {{ stage.orderCount }} </span>人，
+            <span> {{ stage.title }} </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-if="productInfo.notice" class="mt-10">
       <a-alert type="error" :message="productInfo.notice"></a-alert>
     </div>
-    <div class="vip-type-vs">
+    <div class="vip-type-vs mt-10">
       <a-row :gutter="20">
         <div v-for="(item, key) in vipTypeDefine" :key="key" class="w-full md:w-1/3 mb-4 p-5">
           <div :class="`vip-block  ${key === settingStore.plusInfo.vipType ? 'current' : ''}`">
@@ -94,13 +109,14 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, nextTick, onMounted, reactive, Ref, ref } from "vue";
 import { message, Modal } from "ant-design-vue";
 import dayjs from "dayjs";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useSettingStore } from "/@/store/settings";
 import * as api from "./api";
+import { utils } from "/@/utils";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -214,22 +230,115 @@ const vipTypeDefine: any = {
   },
 };
 
-const TodayVipOrderCountRef = ref(0);
+const TodayVipOrderCountRef: Ref = ref({});
 
 async function getTodayVipOrderCount() {
   const res = await api.getTodayVipOrderCount();
   if (res) {
-    TodayVipOrderCountRef.value = res.count;
+    TodayVipOrderCountRef.value = res;
+  }
+}
+
+const todayOrderCount = computed(() => {
+  const countInfo = TodayVipOrderCountRef.value;
+  const enabled = countInfo?.enabled || false;
+  const orderCount = countInfo?.orderCount || 0;
+  for (const stage of countInfo?.stages) {
+    stage.orderCount = stage.countGe || 0;
+  }
+  const lastStage = countInfo?.stages?.[countInfo?.stages?.length - 1] || {};
+  lastStage.orderCount = orderCount;
+  return {
+    enabled: enabled,
+    orderCount: orderCount,
+    title: lastStage.title || "",
+    stages: countInfo?.stages,
+  };
+});
+
+async function scrollOrderCount() {
+  const stages = todayOrderCount.value.stages;
+  if (!stages.length) {
+    return;
+  }
+  let index = 0;
+  for (const stage of stages) {
+    TodayVipOrderCountRef.value.current = index;
+    await utils.sleep(500);
+    index++;
   }
 }
 
 onMounted(async () => {
-  getTodayVipOrderCount();
+  await getTodayVipOrderCount();
+  await scrollOrderCount();
 });
 </script>
 
 <style lang="less">
 .vip-active-modal {
+  .order-count {
+    height: 80px;
+    position: relative;
+    border: 1px solid #fee2c5;
+    border-radius: 5px;
+
+    .background {
+      border: 0px;
+      border-radius: 5px;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      display: flex;
+      justify-content: flex-end;
+      overflow: hidden;
+
+      img {
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .order-count-text {
+      position: absolute;
+      width: 100%;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 2;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      /* 左至右渐变*/
+      background: linear-gradient(to right, rgba(255, 217, 167, 0.5), rgba(255, 255, 255, 0));
+
+      .count-text {
+        font-size: 16px;
+        font-weight: 600;
+        color: #ff6600;
+        display: flex;
+
+        .count-number {
+          margin-bottom: 5px;
+        }
+      }
+    }
+
+    .status-item {
+      opacity: 0;
+      transition: all 0.7s ease-in-out;
+    }
+
+    .status-show {
+      opacity: 1;
+    }
+  }
+
   .vip-block {
     display: flex;
     flex-direction: column;
