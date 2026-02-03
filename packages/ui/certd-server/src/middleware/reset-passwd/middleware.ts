@@ -1,9 +1,8 @@
+import { CommonException, SysSettingsService } from "@certd/lib-server";
 import { Autoload, Config, Init, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { IMidwayKoaContext, IWebMiddleware, NextFunction } from '@midwayjs/koa';
-import { CommonException, SysSettingsService } from "@certd/lib-server";
+import { UserSettingsService } from "../../modules/mine/service/user-settings-service.js";
 import { UserService } from '../../modules/sys/authority/service/user-service.js';
-import { logger } from '@certd/basic';
-import {UserSettingsService} from "../../modules/mine/service/user-settings-service.js";
 
 /**
  * 重置密码模式

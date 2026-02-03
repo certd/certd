@@ -1,0 +1,24 @@
+{
+  "notice": "永久专业版上线，新用户立减50，升级到最新版点击下方“立即赞助”按钮前往获取",
+  "plus": {
+    "name": "专业版",
+    "price": "89.9",
+    "price3": "199",
+    "tooltip": "开源需要您的赞助支持",
+	"priceText":"¥89.9/年",
+	"discountText":"永久专业版50优惠券立即领取"
+  },
+  "comm": {
+    "name": "商业版",
+    "price": "399",
+    "price3": "899",
+    "tooltip": "3年优惠300",
+	"priceText":"¥399/年",
+	"discountText":"¥899/3年（3年优惠300）"
+  },
+  "app":{
+	  "minVersion":"1.36.0",
+	  "minVersionTip":"版本过低，为了您的数据安全，请尽快升级"
+  }
+  
+}

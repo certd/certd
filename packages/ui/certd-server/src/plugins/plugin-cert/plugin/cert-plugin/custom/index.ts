@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 @IsTaskPlugin({
   name: "CertApplyUpload",
   icon: "ph:certificate",
-  title: "商用证书托管",
+  title: "已有证书托管",
   group: pluginGroups.cert.key,
   desc: "手动上传自定义证书后，自动部署（每次证书有更新，都需要手动上传一次）",
   default: {

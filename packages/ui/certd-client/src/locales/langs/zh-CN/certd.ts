@@ -120,7 +120,7 @@ export default {
   },
   customPipeline: "自定义流水线",
   createCertdPipeline: "创建证书流水线",
-  commercialCertHosting: "商用证书托管",
+  commercialCertHosting: "已有证书托管",
   tooltip: {
     manualUploadOwnCert: "手动上传自有证书，执行自动部署",
     noAutoApplyCommercialCert: "并不能自动申请商业证书",
