@@ -9,6 +9,7 @@
         :options="optionsRef"
         :value="value"
         v-bind="attrs"
+        :open="openProp"
         @click="onClick"
         @update:value="emit('update:value', $event)"
       >
@@ -56,11 +57,11 @@
 </template>
 <script setup lang="ts">
 import { computed, defineComponent, ref, Ref, useAttrs } from "vue";
-import { request } from "/@/api/service";
-import { Dicts } from "../lib/dicts";
 import { useRouter } from "vue-router";
-import { useDomainImport, useDomainImportManage } from "/@/views/certd/cert/domain/use";
+import { Dicts } from "../lib/dicts";
+import { request } from "/@/api/service";
 import { openRouteInNewWindow } from "/@/vben/utils";
+import { useDomainImportManage } from "/@/views/certd/cert/domain/use";
 
 defineOptions({
   name: "DomainSelector",
@@ -82,6 +83,7 @@ const props = defineProps<{
   search?: boolean;
   pager?: boolean;
   value?: any[];
+  open?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -89,6 +91,15 @@ const emit = defineEmits<{
 }>();
 
 const attrs = useAttrs();
+
+const hasOptions: Ref = ref(null);
+
+const openProp = computed(() => {
+  if (hasOptions.value == null) {
+    return false;
+  }
+  return hasOptions.value;
+});
 
 const searchKeyRef = ref("");
 const optionsRef = ref([]);
@@ -143,6 +154,13 @@ const getOptions = async () => {
     }
 
     optionsRef.value = options;
+    if (hasOptions.value == null) {
+      if (options.length > 0) {
+        hasOptions.value = true;
+      } else {
+        hasOptions.value = false;
+      }
+    }
     pagerRef.value.total = list.length;
     if (props.pager) {
       if (res.total != null) {
