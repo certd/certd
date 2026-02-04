@@ -8,14 +8,20 @@
         <div class="flex flex-col order-count-text weight-bold">
           <div class="count-text ml-4 flex items-center">
             <fs-icon icon="noto:fire" class="fs-20 mr-2"></fs-icon>
-            <span> 已有 </span>
-            <span class="count-number color-red font-bold text-2xl ml-1 mr-1"> {{ todayOrderCount.vipTotal }} </span> 位小伙伴赞助，
-            <span v-if="stage.orderCount === 0">
-              {{ todayOrderCount.title }}
-            </span>
-            <span v-else>
-              {{ stage.title }}
-            </span>
+            <template v-if="stage.vipTotal > 0">
+              <span> 已有 </span>
+              <span class="count-number color-red font-bold text-2xl ml-1 mr-1"> {{ stage.vipTotal }} </span> 位小伙伴赞助，
+              <span>
+                {{ stage.title }}
+              </span>
+            </template>
+            <template v-else>
+              <span> 今日赞助 </span>
+              <span class="count-number color-red font-bold text-2xl ml-1 mr-1"> {{ stage.orderCount }} </span> 人，
+              <span>
+                {{ stage.title }}
+              </span>
+            </template>
           </div>
         </div>
       </div>
@@ -114,14 +120,13 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onMounted, reactive, Ref, ref } from "vue";
 import { message, Modal } from "ant-design-vue";
 import dayjs from "dayjs";
+import { computed, nextTick, onMounted, onUnmounted, reactive, Ref, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
-import { useSettingStore } from "/@/store/settings";
 import * as api from "./api";
-import { utils } from "/@/utils";
+import { useSettingStore } from "/@/store/settings";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -235,12 +240,13 @@ const vipTypeDefine: any = {
   },
 };
 
-const TodayVipOrderCountRef: Ref = ref({});
+const TodayVipOrderCountRef: Ref = ref({ enabled: false, current: 0, stages: [] });
 
 async function getTodayVipOrderCount() {
   const res = await api.getTodayVipOrderCount();
   if (res) {
     TodayVipOrderCountRef.value = res;
+    TodayVipOrderCountRef.value.current = 0;
   }
 }
 
@@ -253,31 +259,49 @@ const todayOrderCount = computed(() => {
   }
   const lastStage = countInfo?.stages?.[countInfo?.stages?.length - 1] || {};
   lastStage.orderCount = orderCount;
+
+  const stages: any = [];
+  stages.push({
+    title: countInfo.title,
+    vipTotal: countInfo?.vipTotal || 0,
+    orderCount: orderCount,
+    bg: lastStage.bg,
+  });
+  if (lastStage.orderCount > 0) {
+    stages.push(lastStage);
+  }
   return {
     enabled: enabled,
-    orderCount: orderCount,
-    title: lastStage.title || "",
-    stages: countInfo?.stages,
-    vipTotal: countInfo?.vipTotal || 0,
+    stages: stages,
   };
 });
 
 async function scrollOrderCount() {
   const stages = todayOrderCount.value.stages;
-  if (!stages.length) {
+  if (stages.length === 0) {
     return;
   }
   let index = 0;
-  for (const stage of stages) {
+  const doScroll = () => {
     TodayVipOrderCountRef.value.current = index;
-    // await utils.sleep(500);
     index++;
-  }
+    if (index >= stages.length) {
+      index = 0;
+    }
+  };
+  doScroll();
+  scrollOrderCountIntervalRef.value = setInterval(doScroll, 7000);
 }
 
+const scrollOrderCountIntervalRef: Ref = ref(null);
 onMounted(async () => {
   await getTodayVipOrderCount();
+  await nextTick();
   await scrollOrderCount();
+});
+
+onUnmounted(() => {
+  clearInterval(scrollOrderCountIntervalRef.value);
 });
 </script>
 

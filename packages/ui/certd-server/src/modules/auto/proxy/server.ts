@@ -84,5 +84,9 @@ export function startProxyServer(opts:{port:number}) {
      logger.info(`[proxy] 正向代理服务器运行在 http://0.0.0.0:${port}`);
   });
 
+  proxyServer.close(() => {
+    logger.info('[proxy] 正向代理服务器已关闭');
+  });
+
   return proxyServer
 }
