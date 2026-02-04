@@ -861,4 +861,8 @@ export default {
     select: "Select",
     placeholder: "select please",
   },
+  adminMode: {
+    enterpriseMode: "Enterprise Mode",
+    saasMode: "SaaS Mode",
+  },
 };

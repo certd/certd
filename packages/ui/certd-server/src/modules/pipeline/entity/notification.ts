@@ -20,6 +20,9 @@ export class NotificationEntity {
   @Column({ name: 'is_default', comment: '是否默认' })
   isDefault: boolean;
 
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

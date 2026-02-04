@@ -21,6 +21,9 @@ export class AccessEntity {
   @Column({ name: 'encrypt_setting', comment: '已加密设置', length: 10240, nullable: true })
   encryptSetting: string;
 
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

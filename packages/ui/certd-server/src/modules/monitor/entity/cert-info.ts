@@ -42,6 +42,9 @@ export class CertInfoEntity {
   @Column({ name: 'cert_file', comment: '证书下载' })
   certFile: string;
 
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

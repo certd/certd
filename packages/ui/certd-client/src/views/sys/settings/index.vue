@@ -26,6 +26,9 @@
         <a-tab-pane key="pipeline" :tab="t('certd.sys.setting.pipelineSetting')">
           <SettingPipeline v-if="activeKey === 'pipeline'" />
         </a-tab-pane>
+        <a-tab-pane key="mode" :tab="t('certd.adminMode')">
+          <SettingMode v-if="activeKey === 'mode'" />
+        </a-tab-pane>
       </a-tabs>
     </div>
   </fs-page>
@@ -39,6 +42,8 @@ import SettingSafe from "/@/views/sys/settings/tabs/safe.vue";
 import SettingCaptcha from "/@/views/sys/settings/tabs/captcha.vue";
 import SettingPipeline from "/@/views/sys/settings/tabs/pipeline.vue";
 import SettingOauth from "/@/views/sys/settings/tabs/oauth.vue";
+import SettingMode from "/@/views/sys/settings/tabs/mode.vue";
+
 import { useRoute, useRouter } from "vue-router";
 import { ref } from "vue";
 import { useSettingStore } from "/@/store/settings";

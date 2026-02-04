@@ -34,7 +34,9 @@
           <a-select-option value="ipv4first">{{ t("certd.ipv4Priority") }}</a-select-option>
           <a-select-option value="ipv6first">{{ t("certd.ipv6Priority") }}</a-select-option>
         </a-select>
-        <div class="helper">{{ t("certd.dualStackNetworkHelper") }}, <a href="https://certd.docmirror.cn/guide/use/setting/ipv6.html" target="_blank">{{ t("certd.helpDocLink") }}</a></div>
+        <div class="helper">
+          {{ t("certd.dualStackNetworkHelper") }}, <a href="https://certd.docmirror.cn/guide/use/setting/ipv6.html" target="_blank">{{ t("certd.helpDocLink") }}</a>
+        </div>
       </a-form-item>
 
       <a-form-item :label="t('certd.sys.setting.showRunStrategy')" :name="['public', 'showRunStrategy']">
@@ -68,8 +70,6 @@ import { useSettingStore } from "/@/store/settings";
 import { notification } from "ant-design-vue";
 import { util } from "/@/utils";
 import { useI18n } from "/src/locales";
-import AddonSelector from "../../../certd/addon/addon-selector/index.vue";
-import CaptchaInput from "/@/components/captcha/captcha-input.vue";
 const { t } = useI18n();
 
 defineOptions({

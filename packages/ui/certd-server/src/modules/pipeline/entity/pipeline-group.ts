@@ -17,6 +17,9 @@ export class PipelineGroupEntity {
   @Column({ name: 'favorite', comment: '收藏' })
   favorite: boolean;
 
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

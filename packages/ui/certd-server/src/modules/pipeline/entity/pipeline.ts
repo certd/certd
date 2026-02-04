@@ -61,6 +61,9 @@ export class PipelineEntity {
   @Column({name: 'order', comment: '排序', nullable: true,})
   order: number;
 
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
+
   @Column({name: 'create_time',comment: '创建时间', default: () => 'CURRENT_TIMESTAMP',})
   createTime: Date;
   @Column({

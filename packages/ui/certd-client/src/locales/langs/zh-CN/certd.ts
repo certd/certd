@@ -876,4 +876,8 @@ export default {
     select: "选择",
     placeholder: "请选择",
   },
+  adminMode: {
+    enterpriseMode: "企业模式",
+    saasMode: "SaaS模式",
+  },
 };
