@@ -8,9 +8,14 @@
         <div class="flex flex-col order-count-text weight-bold">
           <div class="count-text ml-4 flex items-center">
             <fs-icon icon="noto:fire" class="fs-20 mr-2"></fs-icon>
-            <span> 今日赞助 </span>
-            <span class="count-number color-red font-bold text-2xl ml-1 mr-1"> {{ stage.orderCount }} </span>人，
-            <span> {{ stage.title }} </span>
+            <span> 已有 </span>
+            <span class="count-number color-red font-bold text-2xl ml-1 mr-1"> {{ todayOrderCount.vipTotal }} </span> 位小伙伴赞助，
+            <span v-if="stage.orderCount === 0">
+              {{ todayOrderCount.title }}
+            </span>
+            <span v-else>
+              {{ stage.title }}
+            </span>
           </div>
         </div>
       </div>
@@ -253,6 +258,7 @@ const todayOrderCount = computed(() => {
     orderCount: orderCount,
     title: lastStage.title || "",
     stages: countInfo?.stages,
+    vipTotal: countInfo?.vipTotal || 0,
   };
 });
 
@@ -264,7 +270,7 @@ async function scrollOrderCount() {
   let index = 0;
   for (const stage of stages) {
     TodayVipOrderCountRef.value.current = index;
-    await utils.sleep(500);
+    // await utils.sleep(500);
     index++;
   }
 }
