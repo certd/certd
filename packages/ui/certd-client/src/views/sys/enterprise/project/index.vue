@@ -2,13 +2,7 @@
   <fs-page class="page-cert">
     <template #header>
       <div class="title">
-        {{ t("certd.cnameTitle") }}
-        <span class="sub">
-          {{ t("certd.cnameDescription") }}
-          <a href="https://certd.docmirror.cn/guide/feature/cname/" target="_blank">
-            {{ t("certd.cnameLinkText") }}
-          </a>
-        </span>
+        {{ t("certd.sysResources.projectManager") }}
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
@@ -32,7 +26,7 @@ import { useI18n } from "/src/locales";
 const { t } = useI18n();
 
 defineOptions({
-  name: "CnameProvider",
+  name: "ProjectManager",
 });
 const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions });
 

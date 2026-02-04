@@ -2,13 +2,13 @@ import {Inject, Provide, Scope, ScopeEnum} from '@midwayjs/core';
 import {BaseService, SysSettingsService} from '@certd/lib-server';
 import {InjectEntityModel} from '@midwayjs/typeorm';
 import {Repository} from 'typeorm';
-import { ProjectUserEntity } from '../entity/project-user.js';
+import { ProjectMemberEntity } from '../entity/project-member.js';
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
-export class ProjectUserService extends BaseService<ProjectUserEntity> {
-  @InjectEntityModel(ProjectUserEntity)
-  repository: Repository<ProjectUserEntity>;
+export class ProjectMemberService extends BaseService<ProjectMemberEntity> {
+  @InjectEntityModel(ProjectMemberEntity)
+  repository: Repository<ProjectMemberEntity>;
 
   @Inject()
   sysSettingsService: SysSettingsService;
@@ -18,7 +18,7 @@ export class ProjectUserService extends BaseService<ProjectUserEntity> {
     return this.repository;
   }
 
-  async add(bean: ProjectUserEntity) {
+  async add(bean: ProjectMemberEntity) {
     const {projectId, userId} = bean;
     if (!projectId) {
       throw new Error('项目ID不能为空');

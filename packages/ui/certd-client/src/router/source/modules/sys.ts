@@ -215,10 +215,10 @@ export const sysResources = [
             },
           },
           {
-            title: "certd.sysResources.projectUserManager",
-            name: "ProjectUserManager",
-            path: "/sys/enterprise/project/user",
-            component: "/sys/enterprise/project/user/index.vue",
+            title: "certd.sysResources.projectMemberManager",
+            name: "ProjectMemberManager",
+            path: "/sys/enterprise/project/member",
+            component: "/sys/enterprise/project/member/index.vue",
             meta: {
               isMenu: false,
               show: true,

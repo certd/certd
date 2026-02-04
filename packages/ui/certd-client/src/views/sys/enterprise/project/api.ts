@@ -1,6 +1,7 @@
 import { request } from "/src/api/service";
 
-const apiPrefix = "/sys/project/provider";
+const apiPrefix = "/sys/enterprise/project";
+const userApiPrefix = "/sys/authority/user";
 
 export async function GetList(query: any) {
   return await request({
@@ -55,14 +56,6 @@ export async function DeleteBatch(ids: any[]) {
     url: apiPrefix + "/deleteByIds",
     method: "post",
     data: { ids },
-  });
-}
-
-export async function SetDefault(id: any) {
-  return await request({
-    url: apiPrefix + "/setDefault",
-    method: "post",
-    data: { id },
   });
 }
 

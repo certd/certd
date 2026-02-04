@@ -28,7 +28,7 @@ export class UserController extends CrudController<UserService> {
     return this.service;
   }
 
-  @Post('/getSimpleUserByIds', {summary: 'sys:auth:user:add'})
+  @Post('/getSimpleUserByIds', {summary: 'sys:auth:user:view'})
   async getSimpleUserByIds(@Body('ids') ids: number[]) {
     const users = await this.service.find({
       select: {
@@ -43,6 +43,21 @@ export class UserController extends CrudController<UserService> {
       },
     });
 
+    return this.ok(users);
+  }
+
+
+  @Post('/getSimpleUsers', {summary: 'sys:auth:user:view'})
+  async getSimpleUsers() {
+    const users = await this.service.find({
+      select: {
+        id: true,
+        username: true,
+        nickName: true,
+        mobile: true,
+        phoneCode: true,
+      },
+    });
     return this.ok(users);
   }
 
@@ -151,6 +166,8 @@ export class UserController extends CrudController<UserService> {
     const tree = this.permissionService.buildTree(permissions);
     return this.ok(tree);
   }
+
+
 
 
 }

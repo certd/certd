@@ -2,8 +2,8 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 /**
  */
-@Entity('cd_project_user')
-export class ProjectUserEntity {
+@Entity('cd_project_member')
+export class ProjectMemberEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -14,7 +14,7 @@ export class ProjectUserEntity {
   projectId: number;
   
   @Column({ name: 'permission', comment: '权限' })
-  permission: string; // read / write
+  permission: string; // read / write / admin
 
   @Column({
     name: 'create_time',

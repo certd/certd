@@ -72,126 +72,19 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: false,
           },
         },
-        domain: {
-          title: t("certd.cnameDomain"),
+        name: {
+          title: t("certd.ent.projectName"),
           type: "text",
-          editForm: {
-            component: {
-              disabled: true,
-            },
-          },
           search: {
             show: true,
           },
           form: {
-            component: {
-              placeholder: t("certd.cnameDomainPlaceholder"),
-            },
-            helper: t("certd.cnameDomainHelper"),
-            rules: [
-              { required: true, message: t("certd.requiredField") },
-              { pattern: /^[^*]+$/, message: t("certd.cnameDomainPattern") },
-            ],
+            component: {},
+            helper: t("certd.ent.projectNameHelper"),
+            rules: [{ required: true, message: t("certd.requiredField") }],
           },
           column: {
             width: 200,
-          },
-        },
-        dnsProviderType: {
-          title: t("certd.dnsProvider"),
-          type: "dict-select",
-          search: {
-            show: true,
-          },
-          dict: dict({
-            url: "pi/dnsProvider/list",
-            value: "key",
-            label: "title",
-          }),
-          form: {
-            rules: [{ required: true, message: t("certd.requiredField") }],
-          },
-          column: {
-            width: 150,
-            component: {
-              color: "auto",
-            },
-          },
-        },
-        accessId: {
-          title: t("certd.dnsProviderAuthorization"),
-          type: "dict-select",
-          dict: dict({
-            url: "/pi/access/list",
-            value: "id",
-            label: "name",
-          }),
-          form: {
-            component: {
-              name: "access-selector",
-              vModel: "modelValue",
-              type: compute(({ form }) => {
-                return form.dnsProviderType;
-              }),
-            },
-            rules: [{ required: true, message: t("certd.requiredField") }],
-          },
-          column: {
-            width: 150,
-            component: {
-              color: "auto",
-            },
-          },
-        },
-        isDefault: {
-          title: t("certd.isDefault"),
-          type: "dict-switch",
-          dict: dict({
-            data: [
-              { label: t("certd.yes"), value: true, color: "success" },
-              { label: t("certd.no"), value: false, color: "default" },
-            ],
-          }),
-          form: {
-            value: false,
-            rules: [{ required: true, message: t("certd.selectIsDefault") }],
-          },
-          column: {
-            align: "center",
-            width: 100,
-          },
-        },
-        setDefault: {
-          title: t("certd.setDefault"),
-          type: "text",
-          form: {
-            show: false,
-          },
-          column: {
-            width: 100,
-            align: "center",
-            conditionalRenderDisabled: true,
-            cellRender: ({ row }) => {
-              if (row.isDefault) {
-                return;
-              }
-              const onClick = async () => {
-                Modal.confirm({
-                  title: t("certd.prompt"),
-                  content: t("certd.confirmSetDefault"),
-                  onOk: async () => {
-                    await api.SetDefault(row.id);
-                    await crudExpose.doRefresh();
-                  },
-                });
-              };
-
-              return (
-                <a-button type={"link"} size={"small"} onClick={onClick}>
-                  {t("certd.setAsDefault")}
-                </a-button>
-              );
-            },
           },
         },
         disabled: {

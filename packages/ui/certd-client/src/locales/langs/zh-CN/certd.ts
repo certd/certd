@@ -883,4 +883,7 @@ export default {
     enterpriseMode: "企业模式",
     saasMode: "SaaS模式",
   },
+  ent: {
+    projectName: "项目名称",
+  },
 };

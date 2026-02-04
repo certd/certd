@@ -1,16 +1,16 @@
 import { CrudController, SysSettingsService } from "@certd/lib-server";
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
-import { ProjectUserEntity } from "../../../modules/sys/enterprise/entity/project-user.js";
-import { ProjectUserService } from "../../../modules/sys/enterprise/service/project-user-service.js";
+import { ProjectMemberEntity } from "../../../modules/sys/enterprise/entity/project-member.js";
+import { ProjectMemberService } from "../../../modules/sys/enterprise/service/project-member-service.js";
 import { merge } from "lodash-es";
 
 /**
  */
 @Provide()
-@Controller("/api/sys/enterprise/projectUser")
-export class SysProjectUserController extends CrudController<ProjectUserEntity> {
+@Controller("/api/sys/enterprise/projectMember")
+export class SysProjectMemberController extends CrudController<ProjectMemberEntity> {
   @Inject()
-  service: ProjectUserService;
+  service: ProjectMemberService;
 
   @Inject()
   sysSettingsService: SysSettingsService;
