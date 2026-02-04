@@ -208,6 +208,10 @@ export default {
     orderManager: "Order Management",
     userSuites: "User Suites",
     netTest: "Network Test",
+
+    enterpriseSetting: "Enterprise Settings",
+    projectManager: "Project Management",
+    projectUserManager: "Project User Management",
   },
   certificateRepo: {
     title: "Certificate Repository",

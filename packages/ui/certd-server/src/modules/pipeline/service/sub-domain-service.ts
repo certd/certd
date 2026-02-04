@@ -54,7 +54,6 @@ export class SubDomainService extends BaseService<SubDomainEntity> {
      throw new Error('域名已存在');
    }
    return await super.add(bean)
-
   }
 
 }

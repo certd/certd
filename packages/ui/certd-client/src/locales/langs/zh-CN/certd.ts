@@ -214,6 +214,9 @@ export default {
     orderManager: "订单管理",
     userSuites: "用户套餐",
     netTest: "网络测试",
+    enterpriseSetting: "企业管理设置",
+    projectManager: "项目管理",
+    projectUserManager: "项目用户管理",
   },
   certificateRepo: {
     title: "证书仓库",
