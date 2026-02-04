@@ -1,0 +1,21 @@
+addonType: oauth
+name: google
+title: Google认证
+desc: Google OAuth2登录
+icon: simple-icons:google
+showTest: false
+input:
+  clientId:
+    title: ClientId
+    helper: >-
+      [Google Cloud
+      Console](https://console.cloud.google.com/apis/credentials)创建应用后获取
+    required: true
+  clientSecretKey:
+    title: ClientSecretKey
+    component:
+      placeholder: ClientSecretKey / appSecretKey
+    required: true
+pluginType: addon
+type: builtIn
+scriptFilePath: /plugins/plugin-oauth/oauth2/plugin-google.js

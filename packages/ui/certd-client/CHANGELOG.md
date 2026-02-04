@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.6](https://github.com/certd/certd/compare/v1.38.5...v1.38.6) (2026-02-04)
+
+### Performance Improvements
+
+* 当域名管理中没有域名时，创建流水线时不展开域名选择框 ([9166a57](https://github.com/certd/certd/commit/9166a579301a60750f0b72b6a42b0c8d730695fd))
+* count tip ([e19743f](https://github.com/certd/certd/commit/e19743f70553700f1f91bff76f87370f749dd247))
+* oauth支持github 和google， 修复头像显示问题 ([693a4a6](https://github.com/certd/certd/commit/693a4a663385ced3176286bf4b5f3566da83d90e))
+
 ## [1.38.5](https://github.com/certd/certd/compare/v1.38.4...v1.38.5) (2026-02-02)
 
 ### Bug Fixes
