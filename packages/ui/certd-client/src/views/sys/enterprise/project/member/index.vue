@@ -1,5 +1,13 @@
 <template>
   <fs-page class="page-project-member">
+    <template #header>
+      <div class="title">
+        {{ t("certd.projectMemberManager") }}
+        <span class="sub">
+          {{ t("certd.projectMemberDescription") }}
+        </span>
+      </div>
+    </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #pagination-left>
         <a-tooltip :title="t('certd.batchDelete')">
@@ -17,13 +25,22 @@ import createCrudOptions from "./crud";
 import { message, Modal } from "ant-design-vue";
 import { DeleteBatch } from "./api";
 import { useI18n } from "/src/locales";
+import { useRoute } from "vue-router";
 
 const { t } = useI18n();
 
 defineOptions({
   name: "ProjectMemberManager",
 });
-const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions });
+
+const route = useRoute();
+const projectIdStr = route.query.projectId as string;
+const projectId = Number(projectIdStr);
+
+const context: any = {
+  projectId,
+};
+const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
 const selectedRowKeys = context.selectedRowKeys;
 const handleBatchDelete = () => {
