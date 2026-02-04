@@ -35,7 +35,13 @@ const menus = computed(() => [
 
 const avatar = computed(() => {
   const avt = userStore.getUserInfo?.avatar;
-  return avt ? `/api/basic/file/download?key=${avt}` : "";
+  if (!avt) {
+    return "";
+  }
+  if (avt.startsWith("http")) {
+    return avt;
+  }
+  return `/api/basic/file/download?key=${avt}`;
 });
 
 async function handleLogout() {
