@@ -94,7 +94,7 @@ const attrs = useAttrs();
 const hasOptions: Ref = ref(null);
 
 const popupClassName = computed(() => {
-  if (hasOptions.value == null) {
+  if (!hasOptions.value) {
     return "hidden-important";
   }
   return "";
