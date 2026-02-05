@@ -600,7 +600,7 @@ class AcmeClient {
             throw new Error(`[${d}] Unexpected item status: ${resp.data.status}`);
         };
 
-        this.log(`[${d}] Waiting for valid status （等待valid状态）: ${item.url}`, this.backoffOpts);
+        this.log(`[${d}] Waiting for valid status （等待valid状态）: ${item.url}`, JSON.stringify(this.backoffOpts));
         return util.retry(verifyFn, this.backoffOpts);
     }
 

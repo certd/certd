@@ -8,7 +8,7 @@
         <a-descriptions-item :label="t('authentication.username')">{{ userInfo.username }}</a-descriptions-item>
         <a-descriptions-item :label="t('authentication.nickName')">{{ userInfo.nickName }}</a-descriptions-item>
         <a-descriptions-item :label="t('authentication.avatar')">
-          <a-avatar v-if="userInfo.avatar" size="large" :src="'api/basic/file/download?&key=' + userInfo.avatar" style="background-color: #eee"> </a-avatar>
+          <a-avatar v-if="userInfo.avatar" size="large" :src="userAvatar" style="background-color: #eee"> </a-avatar>
           <a-avatar v-else size="large" style="background-color: #00b4f5">
             {{ userInfo.username }}
           </a-avatar>
@@ -107,6 +107,17 @@ async function bind(type: string) {
   const loginUrl = res.loginUrl;
   window.location.href = loginUrl;
 }
+
+const userAvatar = computed(() => {
+  if (isEmpty(userInfo.value.avatar)) {
+    return "";
+  }
+  if (userInfo.value.avatar.startsWith("http")) {
+    return userInfo.value.avatar;
+  }
+
+  return "api/basic/file/download?&key=" + userInfo.value.avatar;
+});
 
 onMounted(async () => {
   await getUserInfo();

@@ -1,0 +1,19 @@
+addonType: oauth
+name: github
+title: GitHub认证
+desc: GitHub OAuth2登录
+icon: simple-icons:github
+showTest: false
+input:
+  clientId:
+    title: ClientId
+    helper: '[GitHub Developer Settings](https://github.com/settings/developers)创建应用后获取'
+    required: true
+  clientSecretKey:
+    title: ClientSecretKey
+    component:
+      placeholder: ClientSecretKey / appSecretKey
+    required: true
+pluginType: addon
+type: builtIn
+scriptFilePath: /plugins/plugin-oauth/oauth2/plugin-github.js

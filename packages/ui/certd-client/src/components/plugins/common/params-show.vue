@@ -1,8 +1,8 @@
 <template>
   <div class="params-show">
-    <a-tag type="primary" color="green" v-for="item of params" :key="item.value" class="item">
+    <a-tag v-for="item of params" :key="item.value" type="primary" color="green" class="item">
       <span class="label">{{ item.label }}=</span>
-      <fs-copyable :modelValue="`\$\{${item.value}\}`" :button="{show:false}" :inline="true"></fs-copyable>
+      <fs-copyable :model-value="`\$\{${item.value}\}`" :button="{ show: false }" :inline="true"></fs-copyable>
     </a-tag>
   </div>
 </template>
