@@ -264,7 +264,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "access-selector",
       type: "eab",
     },
-    maybeNeed: true,
+    maybeNeed: false,
     required: false,
     helper:
       "需要提供EAB授权" +
@@ -291,7 +291,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       name: "access-selector",
       type: "google",
     },
-    maybeNeed: true,
+    maybeNeed: false,
     required: false,
     helper: "google服务账号授权与EAB授权选填其中一个，[服务账号授权获取方法](https://certd.docmirror.cn/guide/use/google/)\n服务账号授权需要配置代理或者服务器本身在海外",
     mergeScript: `

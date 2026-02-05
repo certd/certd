@@ -154,6 +154,7 @@ const getOptions = async () => {
 
     optionsRef.value = options;
     if (hasOptions.value == null) {
+      //初始设置一次
       if (options.length > 0) {
         hasOptions.value = true;
       } else {
