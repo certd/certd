@@ -147,7 +147,7 @@ export class AcmeService {
       externalAccountBinding: this.eab,
       backoffAttempts: this.options.maxCheckRetryCount || 20,
       backoffMin: 5000,
-      backoffMax: 10000,
+      backoffMax: 400000,
       urlMapping,
       signal: this.options.signal,
       logger: this.logger,
