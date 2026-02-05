@@ -38,4 +38,12 @@ export class ProjectMemberService extends BaseService<ProjectMemberEntity> {
    return await super.add(bean)
   }
 
+  async getByUserId(userId: number) {
+    return await this.repository.find({
+      where: {
+        userId,
+      },
+    });
+  }
+
 }

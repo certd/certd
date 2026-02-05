@@ -74,7 +74,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
         name: {
           title: t("certd.ent.projectName"),
-          type: "text",
+          type: "link",
           search: {
             show: true,
           },
@@ -85,6 +85,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             width: 200,
+            cellRender({ row }) {
+              return (
+                <router-link to={`/sys/enterprise/project/member`} query={{ projectId: row.id }}>
+                  {row.name}
+                </router-link>
+              );
+            },
           },
         },
         disabled: {

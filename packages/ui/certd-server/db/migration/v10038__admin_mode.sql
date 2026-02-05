@@ -11,7 +11,7 @@ CREATE TABLE "cd_project"
 
 
 CREATE INDEX "index_project_user_id" ON "cd_project" ("user_id");
-INSERT INTO cd_project (id, user_id, "name", "disabled") VALUES (1, 0, 'default', false);
+INSERT INTO cd_project (id, user_id, "name", "disabled") VALUES (1, 1, 'default', false);
 
 
 ALTER TABLE cd_cert_info ADD COLUMN  project_id integer;
@@ -33,21 +33,60 @@ ALTER TABLE cd_addon ADD COLUMN  project_id integer;
 CREATE INDEX "index_addon_project_id" ON "cd_addon" ("project_id");
 
 ALTER TABLE pi_pipeline ADD COLUMN  project_id integer;
-CREATE INDEX "index_pipeline_project_id" ON "cd_pipeline" ("project_id");
+CREATE INDEX "index_pipeline_project_id" ON "pi_pipeline" ("project_id");
 
 ALTER TABLE pi_pipeline_group ADD COLUMN  project_id integer;
-CREATE INDEX "index_pipeline_group_project_id" ON "cd_pipeline_group" ("project_id");
+CREATE INDEX "index_pipeline_group_project_id" ON "pi_pipeline_group" ("project_id");
 
 ALTER TABLE pi_storage ADD COLUMN  project_id integer;
-CREATE INDEX "index_storage_project_id" ON "cd_storage" ("project_id");
+CREATE INDEX "index_storage_project_id" ON "pi_storage" ("project_id");
 
 ALTER TABLE pi_notification ADD COLUMN  project_id integer;
-CREATE INDEX "index_notification_project_id" ON "cd_notification" ("project_id");
+CREATE INDEX "index_notification_project_id" ON "pi_notification" ("project_id");
 
 ALTER TABLE pi_history ADD COLUMN  project_id integer;
-CREATE INDEX "index_history_project_id" ON "cd_history" ("project_id");
+CREATE INDEX "index_history_project_id" ON "pi_history" ("project_id");
 
 ALTER TABLE pi_history_log ADD COLUMN  project_id integer;
-CREATE INDEX "index_history_log_project_id" ON "cd_history_log" ("project_id");
+CREATE INDEX "index_history_log_project_id" ON "pi_history_log" ("project_id");
+
+ALTER TABLE pi_template ADD COLUMN  project_id integer;
+CREATE INDEX "index_template_project_id" ON "pi_template" ("project_id");
+
+
+
+CREATE TABLE "cd_project_member"
+(
+  "id"          integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+  "user_id"     integer      NOT NULL,
+  "project_id"  integer      NOT NULL,
+  "permission"  varchar(128) NOT NULL DEFAULT ('read'),
+  "create_time" datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  "update_time" datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+);
+
+
+CREATE INDEX "index_project_member_user_id" ON "cd_project_member" ("user_id");
+CREATE INDEX "index_project_member_project_id" ON "cd_project_member" ("project_id");
+
+
+CREATE TABLE "cd_audit_log"
+(
+  "id"          integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+  "user_id"     integer      NOT NULL,
+  "username"    varchar(128) NOT NULL,
+  "project_id"  integer      NOT NULL,
+  "project_name" varchar(512) NOT NULL,
+  "type"        varchar(128) NOT NULL,
+  "action"      varchar(128) NOT NULL DEFAULT ('read'),
+  "content"     text         NOT NULL,
+  "ip_address"  varchar(128) NOT NULL,
+  "create_time" datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  "update_time" datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+);
+
+
+CREATE INDEX "index_audit_log_user_id" ON "cd_audit_log" ("user_id");
+CREATE INDEX "index_audit_log_project_id" ON "cd_audit_log" ("project_id");
 
 

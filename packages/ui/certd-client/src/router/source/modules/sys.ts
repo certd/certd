@@ -230,7 +230,7 @@ export const sysResources = [
             title: "certd.sysResources.enterpriseSetting",
             name: "EnterpriseSetting",
             path: "/sys/enterprise/setting",
-            redirect: "/sys/settings?tab=enterprise",
+            redirect: "/sys/settings?tab=mode",
             meta: {
               isMenu: true,
               show: true,

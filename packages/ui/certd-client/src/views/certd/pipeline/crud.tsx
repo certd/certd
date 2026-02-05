@@ -14,6 +14,7 @@ import GroupSelector from "/@/views/certd/pipeline/group/group-selector.vue";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { useCertViewer } from "/@/views/certd/pipeline/use";
 import { useI18n } from "/src/locales";
+import { projectDict } from "../dicts";
 
 export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -293,6 +294,11 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             }),
             width: 100,
           },
+        },
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "number",
+          dict: projectDict,
         },
         title: {
           title: t("certd.fields.pipelineName"),

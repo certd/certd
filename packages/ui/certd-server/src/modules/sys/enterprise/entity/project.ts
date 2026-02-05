@@ -28,4 +28,7 @@ export class ProjectEntity {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updateTime: Date;
+
+  // user permission read write admin
+  permission:string
 }

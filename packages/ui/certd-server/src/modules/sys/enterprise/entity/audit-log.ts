@@ -19,6 +19,9 @@ export class AuditLogEntity {
   @Column({ name: 'project_name', comment: '项目名称' })
   projectName: string;
 
+  @Column({ name: 'type', comment: '类型' })
+  type: string;
+
   @Column({ name: 'action', comment: '操作' })
   action: string;
 

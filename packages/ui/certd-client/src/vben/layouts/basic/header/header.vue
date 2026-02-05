@@ -111,7 +111,7 @@ function clearPreferencesAndLogout() {
   <template v-for="slot in leftSlots.filter(item => item.index < REFERENCE_VALUE)" :key="slot.name">
     <slot :name="slot.name">
       <template v-if="slot.name === 'refresh'">
-        <VbenIconButton class="my-0 mr-1 rounded-md" @click="refresh">
+        <VbenIconButton class="my-0 mr-1 rounded-md hidden md:block" @click="refresh">
           <RotateCw class="size-4" />
         </VbenIconButton>
       </template>
@@ -131,7 +131,7 @@ function clearPreferencesAndLogout() {
     <template v-for="slot in rightSlots" :key="slot.name">
       <slot :name="slot.name">
         <template v-if="slot.name === 'global-search'">
-          <GlobalSearch :enable-shortcut-key="globalSearchShortcutKey" :menus="accessStore.accessMenus" class="mr-1 sm:mr-4" />
+          <GlobalSearch :enable-shortcut-key="globalSearchShortcutKey" :menus="accessStore.accessMenus" class="mr-1 sm:mr-4 hidden md:block" />
         </template>
 
         <template v-else-if="slot.name === 'preferences'">
@@ -144,7 +144,7 @@ function clearPreferencesAndLogout() {
           <LanguageToggle class="mr-1" />
         </template>
         <template v-else-if="slot.name === 'fullscreen'">
-          <VbenFullScreen class="mr-1" />
+          <VbenFullScreen class="mr-1 hidden md:block" />
         </template>
       </slot>
     </template>

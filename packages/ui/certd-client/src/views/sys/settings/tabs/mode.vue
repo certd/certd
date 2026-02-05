@@ -2,7 +2,7 @@
   <div class="sys-settings-form sys-settings-mode">
     <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
       <a-form-item :label="t('certd.adminMode')" :name="['public', 'adminMode']">
-        <fs-dict-radio v-model:checked="formState.public.adminMode" :dict="adminModeDict" />
+        <fs-dict-radio v-model:value="formState.public.adminMode" :dict="adminModeDict" />
       </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
@@ -20,22 +20,25 @@ import { merge } from "lodash-es";
 import { useSettingStore } from "/@/store/settings";
 import { notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
+import { dict } from "@fast-crud/fast-crud";
 const { t } = useI18n();
 
 defineOptions({
   name: "SettingMode",
 });
 
-const adminModeDict = [
-  {
-    label: t("certd.adminMode.enterpriseMode"),
-    value: "enterprise",
-  },
-  {
-    label: t("certd.adminMode.saasMode"),
-    value: "saas",
-  },
-];
+const adminModeDict = dict({
+  data: [
+    {
+      label: t("certd.adminMode.enterpriseMode"),
+      value: "enterprise",
+    },
+    {
+      label: t("certd.adminMode.saasMode"),
+      value: "saas",
+    },
+  ],
+});
 
 const formState = reactive<Partial<SysSettings>>({
   public: {},
