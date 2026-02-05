@@ -3,13 +3,13 @@
     <div class="flex flex-row">
       <a-select
         class="domain-select-input"
+        :popup-class-name="popupClassName"
         :dropdown-style="dropdownStyle"
         show-search
         :filter-option="filterOption"
         :options="optionsRef"
         :value="value"
         v-bind="attrs"
-        :open="openProp"
         @click="onClick"
         @update:value="emit('update:value', $event)"
       >
@@ -56,7 +56,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, defineComponent, ref, Ref, useAttrs } from "vue";
+import { computed, defineComponent, onMounted, ref, Ref, useAttrs } from "vue";
 import { useRouter } from "vue-router";
 import { Dicts } from "../lib/dicts";
 import { request } from "/@/api/service";
@@ -83,7 +83,6 @@ const props = defineProps<{
   search?: boolean;
   pager?: boolean;
   value?: any[];
-  open?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -94,11 +93,11 @@ const attrs = useAttrs();
 
 const hasOptions: Ref = ref(null);
 
-const openProp = computed(() => {
+const popupClassName = computed(() => {
   if (hasOptions.value == null) {
-    return false;
+    return "hidden-important";
   }
-  return hasOptions.value;
+  return "";
 });
 
 const searchKeyRef = ref("");
@@ -222,6 +221,10 @@ function openDomainImportDialog() {
 }
 const dropdownStyle = ref({
   zIndex: 2000,
+});
+
+onMounted(() => {
+  refreshOptions();
 });
 </script>
 
