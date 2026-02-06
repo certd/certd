@@ -521,6 +521,7 @@ export default {
   selectRecordFirst: "请先勾选记录",
   subdomainHosted: "托管的子域名",
   subdomainHelpText: "如果您不理解什么是子域托管，请不要随意设置（可能导致证书无法申请，以前设置过的cname记录也需要重新配置），可以参考文档",
+  subdomainHelpSupportStart: "支持*号通配符,表示该域名下的子域名都是托管的（免费子域名）",
   subdomainManagement: "子域管理",
   isDisabled: "是否禁用",
   enabled: "启用",

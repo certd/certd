@@ -80,10 +80,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               render() {
                 return (
                   <div>
-                    {t("certd.subdomainHelpText")}
-                    <a href={"https://help.aliyun.com/zh/dns/subdomain-management"} target={"_blank"}>
-                      {t("certd.subdomainManagement")}
-                    </a>
+                    <div>
+                      1. {t("certd.subdomainHelpText")}
+                      <a href={"https://help.aliyun.com/zh/dns/subdomain-management"} target={"_blank"}>
+                        {t("certd.subdomainManagement")}
+                      </a>
+                    </div>
+                    <div>2. {t("certd.subdomainHelpSupportStart")}</div>
                   </div>
                 );
               },
