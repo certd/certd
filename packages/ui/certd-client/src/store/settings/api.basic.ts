@@ -93,6 +93,7 @@ export type SuiteSetting = {
 export type SysPrivateSetting = {
   httpProxy?: string;
   httpsProxy?: string;
+  reverseProxies?: any;
   dnsResultOrder?: string;
   commonCnameEnabled?: boolean;
   // 同一个用户同时最大运行流水线数量

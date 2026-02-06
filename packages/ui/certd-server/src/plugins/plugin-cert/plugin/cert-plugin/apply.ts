@@ -458,6 +458,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     this.eab = eab;
     const subDomainsGetter = await this.ctx.serviceGetter.get<ISubDomainsGetter>("subDomainsGetter");
     const domainParser = new DomainParser(subDomainsGetter, this.logger);
+
     this.acme = new AcmeService({
       userId: this.ctx.user.id,
       userContext: this.userContext,
@@ -672,6 +673,12 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         dnsProvider,
       },
     };
+  }
+
+  async onGetReverseProxyList() {
+    const sysSettingsService:any = await this.ctx.serviceGetter.get("sysSettingsService");
+    const sysSettings = await sysSettingsService.getPrivateSettings();
+    return sysSettings.reverseProxyList || []
   }
 }
 

@@ -4,10 +4,10 @@ import { Repository } from 'typeorm';
 import { SysSettingsEntity } from '../entity/sys-settings.js';
 import { BaseSettings, SysInstallInfo, SysPrivateSettings, SysPublicSettings, SysSecret, SysSecretBackup } from './models.js';
 
-import { BaseService } from '../../../basic/index.js';
-import { cache, logger, setGlobalProxy } from '@certd/basic';
+import { getAllSslProviderDomains, setSslProviderReverseProxies } from '@certd/acme-client';
+import { cache, logger, mergeUtils, setGlobalProxy } from '@certd/basic';
 import * as dns from 'node:dns';
-import {mergeUtils} from "@certd/basic";
+import { BaseService } from '../../../basic/index.js';
 import { executorQueue } from '../../basic/service/executor-queue.js';
 const {merge} = mergeUtils;
 /**
@@ -120,7 +120,14 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   }
 
   async getPrivateSettings(): Promise<SysPrivateSettings> {
-    return await this.getSetting(SysPrivateSettings);
+    const res = await this.getSetting<SysPrivateSettings>(SysPrivateSettings);
+    const sslProviderDomains = getAllSslProviderDomains();
+    for (const domain of sslProviderDomains) {
+      if (!res.reverseProxies[domain]) {
+        res.reverseProxies[domain] = "";
+      }
+    }
+    return res
   }
 
   async savePrivateSettings(bean: SysPrivateSettings) {
@@ -145,6 +152,8 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     if (bean.pipelineMaxRunningCount){
       executorQueue.setMaxRunningCount(bean.pipelineMaxRunningCount);
     }
+
+    setSslProviderReverseProxies(bean.reverseProxies);
   }
 
   async updateByKey(key: string, setting: any) {

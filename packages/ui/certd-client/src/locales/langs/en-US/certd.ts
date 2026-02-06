@@ -785,6 +785,7 @@ export default {
       captchaSetting: "Captcha Setting",
       pipelineSetting: "Pipeline Settings",
       oauthSetting: "OAuth2 Settings",
+      networkSetting: "Network Settings",
 
       showRunStrategy: "Show RunStrategy",
       showRunStrategyHelper: "Allow modify the run strategy of the task",
@@ -836,6 +837,11 @@ export default {
       notice: "System Notice",
       noticeHelper: "System notice, will be displayed on the login page",
       noticePlaceholder: "System notice",
+
+      reverseProxy: "Reverse Proxy List",
+      reverseProxyHelper: "Reverse proxy for ACME address, used when applying for certificate",
+      reverseProxyPlaceholder: "http://le.px.handfree.work",
+      reverseProxyEmpty: "No reverse proxy list configured",
     },
   },
   modal: {

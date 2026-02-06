@@ -792,6 +792,7 @@ export default {
       captchaSetting: "验证码设置",
       pipelineSetting: "流水线设置",
       oauthSetting: "第三方登录",
+      networkSetting: "网络设置",
 
       showRunStrategy: "显示运行策略选择",
       showRunStrategyHelper: "任务设置中是否允许选择运行策略",
@@ -851,6 +852,11 @@ export default {
       notice: "系统公告",
       noticeHelper: "系统公告，将在首页显示",
       noticePlaceholder: "系统公告",
+
+      reverseProxy: "反向代理列表",
+      reverseProxyHelper: "证书颁发机构ACME地址的反向代理，在申请证书时自动使用",
+      reverseProxyPlaceholder: "http://le.px.handfree.work",
+      reverseProxyEmpty: "未配置反向代理",
     },
   },
   modal: {

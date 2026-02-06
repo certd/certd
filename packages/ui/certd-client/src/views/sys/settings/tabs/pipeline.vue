@@ -8,6 +8,10 @@
         <a-input-number v-model:value="formState.public.limitUserPipelineCount" />
         <div class="helper">{{ t("certd.limitUserPipelineCountHelper") }}</div>
       </a-form-item>
+      <a-form-item :label="t('certd.sys.setting.showRunStrategy')" :name="['public', 'showRunStrategy']">
+        <a-switch v-model:checked="formState.public.showRunStrategy" />
+        <div class="helper">{{ t("certd.sys.setting.showRunStrategyHelper") }}</div>
+      </a-form-item>
       <a-form-item :label="t('certd.sys.setting.pipelineValidTimeEnabled')" :name="['public', 'pipelineValidTimeEnabled']">
         <div class="flex items-center">
           <a-switch v-model:checked="formState.public.pipelineValidTimeEnabled" :disabled="!settingsStore.isPlus" />

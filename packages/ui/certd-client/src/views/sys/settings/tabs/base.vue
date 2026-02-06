@@ -15,33 +15,6 @@
         <a-switch v-model:checked="formState.public.robots" />
       </a-form-item>
 
-      <a-form-item :label="t('certd.httpProxy')" :name="['private', 'httpProxy']" :rules="urlRules">
-        <a-input v-model:value="formState.private.httpProxy" :placeholder="t('certd.httpProxyPlaceholder')" />
-        <div class="helper">{{ t("certd.httpProxyHelper") }}</div>
-      </a-form-item>
-
-      <a-form-item :label="t('certd.httpsProxy')" :name="['private', 'httpsProxy']" :rules="urlRules">
-        <div class="flex">
-          <a-input v-model:value="formState.private.httpsProxy" :placeholder="t('certd.httpsProxyPlaceholder')" />
-          <a-button class="ml-5" type="primary" :loading="testProxyLoading" :title="t('certd.saveThenTestTitle')" @click="testProxy">{{ t("certd.testButton") }}</a-button>
-        </div>
-        <div class="helper">{{ t("certd.httpsProxyHelper") }}</div>
-      </a-form-item>
-
-      <a-form-item :label="t('certd.dualStackNetwork')" :name="['private', 'dnsResultOrder']">
-        <a-select v-model:value="formState.private.dnsResultOrder">
-          <a-select-option value="verbatim">{{ t("certd.default") }}</a-select-option>
-          <a-select-option value="ipv4first">{{ t("certd.ipv4Priority") }}</a-select-option>
-          <a-select-option value="ipv6first">{{ t("certd.ipv6Priority") }}</a-select-option>
-        </a-select>
-        <div class="helper">{{ t("certd.dualStackNetworkHelper") }}, <a href="https://certd.docmirror.cn/guide/use/setting/ipv6.html" target="_blank">{{ t("certd.helpDocLink") }}</a></div>
-      </a-form-item>
-
-      <a-form-item :label="t('certd.sys.setting.showRunStrategy')" :name="['public', 'showRunStrategy']">
-        <a-switch v-model:checked="formState.public.showRunStrategy" />
-        <div class="helper">{{ t("certd.sys.setting.showRunStrategyHelper") }}</div>
-      </a-form-item>
-
       <a-form-item :label="t('certd.enableCommonCnameService')" :name="['private', 'commonCnameEnabled']">
         <a-switch v-model:checked="formState.private.commonCnameEnabled" />
         <div class="helper" v-html="t('certd.commonCnameHelper')"></div>
@@ -60,16 +33,14 @@
 </template>
 
 <script setup lang="tsx">
-import { reactive, ref } from "vue";
-import { SysSettings } from "/@/views/sys/settings/api";
-import * as api from "/@/views/sys/settings/api";
-import { merge } from "lodash-es";
-import { useSettingStore } from "/@/store/settings";
 import { notification } from "ant-design-vue";
-import { util } from "/@/utils";
+import { merge } from "lodash-es";
+import { reactive, ref } from "vue";
+import { useSettingStore } from "/@/store/settings";
+import * as api from "/@/views/sys/settings/api";
+import { SysSettings } from "/@/views/sys/settings/api";
+
 import { useI18n } from "/src/locales";
-import AddonSelector from "../../../certd/addon/addon-selector/index.vue";
-import CaptchaInput from "/@/components/captcha/captcha-input.vue";
 const { t } = useI18n();
 
 defineOptions({
@@ -82,11 +53,6 @@ const formState = reactive<Partial<SysSettings>>({
     mpsNo: "",
   },
   private: {},
-});
-
-const urlRules = ref({
-  type: "url",
-  message: "请输入正确的URL",
 });
 
 async function loadSysSettings() {
@@ -110,43 +76,6 @@ const onFinish = async (form: any) => {
     saveLoading.value = false;
   }
 };
-
-const testProxyLoading = ref(false);
-async function testProxy() {
-  testProxyLoading.value = true;
-  try {
-    const res = await api.TestProxy();
-    let success = true;
-    if (res.google !== true || res.baidu !== true) {
-      success = false;
-    }
-    const content = () => {
-      return (
-        <div>
-          <div>
-            {t("certd.google")}: {res.google === true ? t("certd.success") : util.maxLength(res.google)}
-          </div>
-          <div>
-            {t("certd.baidu")}: {res.baidu === true ? t("certd.success") : util.maxLength(res.baidu)}
-          </div>
-        </div>
-      );
-    };
-    if (!success) {
-      notification.error({
-        message: t("certd.testFailed"),
-        description: content,
-      });
-      return;
-    }
-    notification.success({
-      message: t("certd.testCompleted"),
-      description: content,
-    });
-  } finally {
-    testProxyLoading.value = false;
-  }
-}
 </script>
 <style lang="less">
 .sys-settings-base {
