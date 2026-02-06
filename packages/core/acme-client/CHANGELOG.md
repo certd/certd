@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.8](https://github.com/publishlab/node-acme-client/compare/v1.38.7...v1.38.8) (2026-02-06)
+
+### Performance Improvements
+
+* 优化申请证书最大超时时长 ([00f67d8](https://github.com/publishlab/node-acme-client/commit/00f67d86d68f4f83cfafe2fbfeb4af0d86f9d20e))
+* 支持设置默认的证书申请地址的反向代理 ([0cfb94b](https://github.com/publishlab/node-acme-client/commit/0cfb94b0ba6a6dc3bb0d0a81a1912068a4e6b6b6))
+
 ## [1.38.7](https://github.com/publishlab/node-acme-client/compare/v1.38.6...v1.38.7) (2026-02-05)
 
 ### Performance Improvements
