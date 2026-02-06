@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.7](https://github.com/publishlab/node-acme-client/compare/v1.38.6...v1.38.7) (2026-02-05)
+
+### Performance Improvements
+
+* 优化zerossl申请证书稳定性 ([4d86fb3](https://github.com/publishlab/node-acme-client/commit/4d86fb319b81dbf6fa6485982105725b1b066593))
+
 ## [1.38.6](https://github.com/publishlab/node-acme-client/compare/v1.38.5...v1.38.6) (2026-02-04)
 
 **Note:** Version bump only for package @certd/acme-client

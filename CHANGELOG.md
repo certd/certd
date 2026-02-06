@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.7](https://github.com/certd/certd/compare/v1.38.6...v1.38.7) (2026-02-05)
+
+### Bug Fixes
+
+* 修复有域名记录时，域名输入框无法关闭的bug ([54c8217](https://github.com/certd/certd/commit/54c8217808453b121abf646b004596f28932509f))
+
+### Performance Improvements
+
+*  eab从更多参数中挪到外面 ([5ea4f46](https://github.com/certd/certd/commit/5ea4f46de7ae403a7a16e9488dc1d9c7523d019a))
+* 第三方登录支持Microsoft ([beb7a4c](https://github.com/certd/certd/commit/beb7a4c99277262bb9681c5594cfcd3e36c52074))
+* 优化zerossl申请证书稳定性 ([4d86fb3](https://github.com/certd/certd/commit/4d86fb319b81dbf6fa6485982105725b1b066593))
+
 ## [1.38.6](https://github.com/certd/certd/compare/v1.38.5...v1.38.6) (2026-02-04)
 
 ### Bug Fixes
