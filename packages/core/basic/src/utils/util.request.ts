@@ -294,6 +294,7 @@ export function createAgent(opts: CreateAgentOptions = {}) {
     {
       autoSelectFamily: true,
       autoSelectFamilyAttemptTimeout: 1000,
+      connectTimeout: 5000, // 连接建立超时
     },
     opts
   );
