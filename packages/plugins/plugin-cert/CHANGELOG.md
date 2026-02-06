@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.7](https://github.com/certd/certd/compare/v1.38.6...v1.38.7) (2026-02-05)
+
+### Performance Improvements
+
+*  eab从更多参数中挪到外面 ([5ea4f46](https://github.com/certd/certd/commit/5ea4f46de7ae403a7a16e9488dc1d9c7523d019a))
+
 ## [1.38.6](https://github.com/certd/certd/compare/v1.38.5...v1.38.6) (2026-02-04)
 
 **Note:** Version bump only for package @certd/plugin-cert

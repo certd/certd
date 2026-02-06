@@ -77,6 +77,8 @@ export type ILogger = {
   fatal(message: any, ...args: any[]): void;
 
   mark(message: any, ...args: any[]): void;
+
+  addSecret(secret: string): void;
 };
 
 const locale = Intl.DateTimeFormat().resolvedOptions().locale;
@@ -106,10 +108,14 @@ export class PipelineLogger implements ILogger {
 
   constructor(name: string, write: (text: string) => void) {
     this.customWriter = write;
+    //@ts-ignore
     this.logger = log4js.getLogger(name);
   }
 
   addSecret(secret: string) {
+    if (!secret) {
+      return;
+    }
     this._secrets.push(secret);
   }
 

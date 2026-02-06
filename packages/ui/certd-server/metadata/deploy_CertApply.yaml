@@ -215,7 +215,7 @@ input:
     component:
       name: access-selector
       type: eab
-    maybeNeed: true
+    maybeNeed: false
     required: false
     helper: >-
       需要提供EAB授权
@@ -246,7 +246,7 @@ input:
     component:
       name: access-selector
       type: google
-    maybeNeed: true
+    maybeNeed: false
     required: false
     helper: >-
       google服务账号授权与EAB授权选填其中一个，[服务账号授权获取方法](https://certd.docmirror.cn/guide/use/google/)

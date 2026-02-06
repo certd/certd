@@ -52,11 +52,17 @@ async function retryPromise(fn, attempts, backoff, logger = log) {
     let aborted = false;
 
     try {
-        const data = await fn(() => { aborted = true; });
+        const setAbort = () => { aborted = true; }
+        const data = await fn(setAbort);
         return data;
     }
     catch (e) {
-        if (aborted || ((backoff.attempts + 1) >= attempts)) {
+        if (aborted){
+            logger(`用户取消重试`);
+            throw e;
+        }
+        if ( ((backoff.attempts + 1) >= attempts)) {
+            logger(`重试次数超过${attempts}次`);
             throw e;
         }
 

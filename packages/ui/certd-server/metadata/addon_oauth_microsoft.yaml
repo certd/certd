@@ -1,0 +1,26 @@
+addonType: oauth
+name: microsoft
+title: Microsoft认证
+desc: Microsoft OAuth2登录
+icon: simple-icons:microsoft
+showTest: false
+input:
+  clientId:
+    title: ClientId
+    helper: '[Azure Portal](https://portal.azure.com/)创建应用后获取'
+    required: true
+  clientSecretKey:
+    title: ClientSecretKey
+    component:
+      placeholder: ClientSecretKey / appSecretKey
+    required: true
+  tenantId:
+    title: TenantId
+    helper: 租户ID，留空使用/common端点（需要应用配置为多租户）
+    component:
+      placeholder: common 或 租户ID
+    value: common
+    required: false
+pluginType: addon
+type: builtIn
+scriptFilePath: /plugins/plugin-oauth/oauth2/plugin-microsoft.js
