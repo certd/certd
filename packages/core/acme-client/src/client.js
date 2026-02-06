@@ -601,7 +601,10 @@ class AcmeClient {
         };
 
         this.log(`[${d}] Waiting for valid status （等待valid状态）: ${item.url}`, JSON.stringify(this.backoffOpts));
-        return util.retry(verifyFn, this.backoffOpts);
+        const log = (...args)=>{
+            this.logger.info(...args)
+        }
+        return util.retry(verifyFn, this.backoffOpts,log);
     }
 
     /**
