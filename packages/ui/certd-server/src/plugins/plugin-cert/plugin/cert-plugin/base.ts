@@ -60,6 +60,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
   abstract doCertApply(): Promise<CertReader>;
 
   async execute(): Promise<string | void> {
+    this.logger.addSecret(this.pfxPassword);
     const oldCert = await this.condition();
     if (oldCert != null) {
       await this.output(oldCert, false);
