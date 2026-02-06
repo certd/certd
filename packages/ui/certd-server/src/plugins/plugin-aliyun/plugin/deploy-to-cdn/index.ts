@@ -151,6 +151,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   }
 
   async SetCdnDomainSSLCertificate(client: any, params: { CertId: number; DomainName: string,CertName:string,CertRegion:string }) {
+    this.logger.info('设置CDN: ',JSON.stringify(params));
     const requestOption = {
       method: 'POST',
       formatParams: false,
