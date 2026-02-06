@@ -52,7 +52,8 @@ async function retryPromise(fn, attempts, backoff, logger = log) {
     let aborted = false;
 
     try {
-        const data = await fn(() => { aborted = true; });
+        const setAbort = () => { aborted = true; }
+        const data = await fn(setAbort);
         return data;
     }
     catch (e) {
