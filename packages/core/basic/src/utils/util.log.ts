@@ -18,7 +18,7 @@ export function resetLogConfigure() {
   });
 }
 resetLogConfigure();
-export const logger = log4js.getLogger("default");
+export const logger: ILogger = log4js.getLogger("default") as any;
 
 export function resetLogFilePath(filePath: string) {
   logFilePath = filePath;
