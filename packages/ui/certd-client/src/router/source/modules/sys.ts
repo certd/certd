@@ -188,59 +188,6 @@ export const sysResources = [
         },
       },
       {
-        title: "certd.sysResources.enterpriseManager",
-        name: "EnterpriseManager",
-        path: "/sys/enterprise",
-        redirect: "/sys/enterprise/project",
-        meta: {
-          icon: "ion:cart-outline",
-          permission: "sys:settings:edit",
-          show: () => {
-            const settingStore = useSettingStore();
-            return settingStore.isEnterprise;
-          },
-          keepAlive: true,
-        },
-        children: [
-          {
-            title: "certd.sysResources.projectManager",
-            name: "ProjectManager",
-            path: "/sys/enterprise/project",
-            component: "/sys/enterprise/project/index.vue",
-            meta: {
-              show: true,
-              icon: "ion:cart",
-              permission: "sys:settings:edit",
-              keepAlive: true,
-            },
-          },
-          {
-            title: "certd.sysResources.projectMemberManager",
-            name: "ProjectMemberManager",
-            path: "/sys/enterprise/project/member",
-            component: "/sys/enterprise/project/member/index.vue",
-            meta: {
-              isMenu: false,
-              show: true,
-              icon: "ion:cart",
-              permission: "sys:settings:edit",
-            },
-          },
-          {
-            title: "certd.sysResources.enterpriseSetting",
-            name: "EnterpriseSetting",
-            path: "/sys/enterprise/setting",
-            redirect: "/sys/settings?tab=mode",
-            meta: {
-              isMenu: true,
-              show: true,
-              icon: "ion:cart",
-              permission: "sys:settings:edit",
-            },
-          },
-        ],
-      },
-      {
         title: "certd.sysResources.suiteManager",
         name: "SuiteManager",
         path: "/sys/suite",

@@ -295,11 +295,6 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             width: 100,
           },
         },
-        projectId: {
-          title: t("certd.fields.projectName"),
-          type: "number",
-          dict: projectDict,
-        },
         title: {
           title: t("certd.fields.pipelineName"),
           type: "link",
@@ -633,6 +628,11 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
               return dayjs(value).format("YYYY-MM-DD");
             },
           },
+        },
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "number",
+          dict: projectDict,
         },
         updateTime: {
           title: t("certd.fields.updateTime"),

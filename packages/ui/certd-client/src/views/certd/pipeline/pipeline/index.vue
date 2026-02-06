@@ -1,7 +1,7 @@
 <template>
   <fs-page v-if="pipeline" class="page-pipeline-edit">
     <template #header>
-      <div class="title flex-1">
+      <div class="title flex-0">
         <fs-button class="back" icon="ion:chevron-back-outline" @click="goBack"></fs-button>
         <text-editable v-model="pipeline.title" :hover-show="false" :disabled="!editMode"></text-editable>
       </div>

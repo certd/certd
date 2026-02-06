@@ -87,7 +87,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             width: 200,
             cellRender({ row }) {
               return (
-                <router-link to={`/sys/enterprise/project/member`} query={{ projectId: row.id }}>
+                <router-link to={`/sys/enterprise/project/detail`} query={{ projectId: row.id }}>
                   {row.name}
                 </router-link>
               );

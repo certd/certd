@@ -27,7 +27,7 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
     helper:
       "1、支持多个域名打到一个证书上，例如： foo.com，*.foo.com，*.bar.com\n" +
       "2、子域名被通配符包含的不要填写，例如：www.foo.com已经被*.foo.com包含，不要填写www.foo.com\n" +
-      "3、泛域名只能通配*号那一级（*.foo.com的证书不能用于xxx.yyy.foo.com、不能用于foo.com）\n" +
+      "3、泛域名只能通配*号那一级（*.foo.com的证书不能用于foo.com且不能用于xxx.yyy.foo.com）\n" +
       "4、输入一个，空格之后，再输入下一个 \n" +
       "5、如果设置了子域托管解析（比如免费的二级域名托管在CF或者阿里云），请先[设置托管子域名](#/certd/pipeline/subDomain)",
   })
