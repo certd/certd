@@ -74,8 +74,9 @@ class HttpClient {
         if (this.urlMapping && this.urlMapping.enabled && this.urlMapping.mappings) {
             // eslint-disable-next-line no-restricted-syntax
             for (const key in this.urlMapping.mappings) {
+                const value = this.urlMapping.mappings[key];
                 if (url.includes(key)) {
-                    const newUrl = url.replace(key, this.urlMapping.mappings[key]);
+                    const newUrl = url.replace(key, value);
                     this.log(`use reverse proxy: ${newUrl}`);
                     url = newUrl;
                 }
@@ -193,7 +194,7 @@ class HttpClient {
         const dir = await this.getDirectory();
 
         if (!dir[resource]) {
-            throw new Error(`Unable to locate API resource URL in ACME directory: "${resource}"`);
+            throw new Error(`Unable to locate API resource URL in ACME directory: "${resource}"，获取ACME接口地址信息失败，可能网络不稳定或该证书颁发机构服务器崩溃，目录地址：${this.directoryUrl}，请测试地址是否可以正常访问并显示json格式的URL地址列表`);
         }
 
         return dir[resource];
