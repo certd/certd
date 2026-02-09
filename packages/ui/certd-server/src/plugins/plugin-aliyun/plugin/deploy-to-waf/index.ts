@@ -1,11 +1,11 @@
-import { AbstractTaskPlugin, IsTaskPlugin, Pager,PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-cert";
 import {
   createCertDomainGetterInputDefine,
   createRemoteSelectInputDefine
 } from "@certd/plugin-lib";
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
-import { AliyunClient, AliyunSslClient } from "../../../plugin-lib/aliyun/lib/index.js";
+import { AliyunClient, AliyunSslClient, CasCertInfo } from "../../../plugin-lib/aliyun/lib/index.js";
 
 @IsTaskPlugin({
   name: 'AliyunDeployCertToWaf',
@@ -30,7 +30,7 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
     },
     required: true,
   })
-  cert!: CertInfo | number;
+  cert!: CertInfo | number | CasCertInfo;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
@@ -83,8 +83,8 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
       helper: '请选择要部署证书的CNAME站点',
       action: AliyunDeployCertToWaf.prototype.onGetCnameList.name,
       watches: ['accessId', 'regionId'],
-      pager:true,
-      search:true,
+      pager: true,
+      search: true,
     })
   )
   cnameDomains!: string[];
@@ -105,7 +105,7 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
   })
   tlsVersion!: string;
 
-    @TaskInput({
+  @TaskInput({
     title: '启用TLSv3',
     value: true,
     component: {
@@ -118,7 +118,7 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
 
 
 
-  async onInstance() {}
+  async onInstance() { }
 
   async getWafClient(access: AliyunAccess) {
     const client = new AliyunClient({ logger: this.logger });
@@ -152,11 +152,17 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
         endpoint: this.casEndpoint,
       });
 
-      const certIdRes = await sslClient.uploadCertificate({
-        name: this.buildCertName(CertReader.getMainDomain(this.cert.crt)),
-        cert: this.cert,
-      });
-      certId = certIdRes.certId as any;
+      const cert = this.cert as CertInfo;
+      if (cert.crt) {
+        const certIdRes = await sslClient.uploadCertificate({
+          name: this.buildCertName(CertReader.getMainDomain(cert.crt)),
+          cert: cert,
+        });
+        certId = certIdRes.certId as any;
+      }else {
+        const casCert = this.cert as CasCertInfo;
+        certId = casCert.certId;
+      }
     }
 
     const client = await this.getWafClient(access);
@@ -211,13 +217,13 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
     const pager = new Pager(data)
 
     const instanceId = await this.getInstanceId(client);
-    const params:any = {
+    const params: any = {
       RegionId: this.regionId,
       InstanceId: instanceId,
       PageSize: pager.pageSize,
       PageNumber: pager.pageNo,
     };
-    if (data.searchKey){
+    if (data.searchKey) {
       params.Domain = data.searchKey
     }
 
@@ -235,7 +241,7 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
         domain: item.Domain,
       };
     });
-    const list= this.ctx.utils.options.buildGroupOptions(options, this.certDomains);
+    const list = this.ctx.utils.options.buildGroupOptions(options, this.certDomains);
 
     // const list = [{value:"1",label:"1"},{value:"2",label:"2"}]
     // const total = 120

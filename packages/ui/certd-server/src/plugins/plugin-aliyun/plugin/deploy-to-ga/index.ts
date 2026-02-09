@@ -5,7 +5,7 @@ import {
   createRemoteSelectInputDefine
 } from "@certd/plugin-lib";
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
-import { AliyunSslClient } from "../../../plugin-lib/aliyun/lib/ssl-client.js";
+import { AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/ssl-client.js";
 
 @IsTaskPlugin({
   name: "AliyunDeployCertToGA",
@@ -30,7 +30,7 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
     },
     required: true
   })
-  cert!: CertInfo|number;
+  cert!: CertInfo|number | CasCertId;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
@@ -123,7 +123,7 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
       logger: this.logger,
       endpoint: this.casEndpoint
     });
-    return await sslClient.uploadCertOrGet(this.cert)
+    return await sslClient.uploadCertOrGet(this.cert as any)
   }
 
   async execute(): Promise<void> {
