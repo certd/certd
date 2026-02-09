@@ -103,7 +103,7 @@ import SmsCode from "/@/views/framework/login/sms-code.vue";
 import { useI18n } from "/@/locales";
 import { LanguageToggle } from "/@/vben/layouts";
 import CaptchaInput from "/@/components/captcha/captcha-input.vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import OauthFooter from "/@/views/framework/oauth/oauth-footer.vue";
 import * as oauthApi from "../oauth/api";
 import { notification } from "ant-design-vue";
@@ -113,6 +113,12 @@ export default defineComponent({
   setup() {
     const { t } = useI18n();
     const route = useRoute();
+    const router = useRouter();
+    const userStore = useUserStore();
+    if (userStore.getToken) {
+      router.push("/");
+      return;
+    }
 
     const queryBindCode = ref(route.query.bindCode as string | undefined);
 
@@ -120,7 +126,7 @@ export default defineComponent({
     const urlLoginType = route.query.loginType as string | undefined;
     const verifyCodeInputRef = ref();
     const loading = ref(false);
-    const userStore = useUserStore();
+
     const settingStore = useSettingStore();
     const formRef = ref();
     let defaultLoginType = settingStore.sysPublic.defaultLoginType || "password";
