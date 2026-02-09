@@ -101,6 +101,14 @@ function setupAccessGuard(router: Router) {
       return r.meta?.auth || r.meta?.permission;
     });
 
+    if (to.path === LOGIN_PATH && accessStore.accessToken) {
+      return {
+        path: DEFAULT_HOME_PATH,
+        // 携带当前跳转的页面，登录后重新跳转该页面
+        replace: true,
+      };
+    }
+
     if (!needAuth) {
       return true;
     }

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.9](https://github.com/certd/certd/compare/v1.38.8...v1.38.9) (2026-02-09)
+
+### Bug Fixes
+
+* esxi部署失败的bug ([6ab1fca](https://github.com/certd/certd/commit/6ab1fcaf894f7ce343af4b5bf4b0d67438df6618))
+
 ## [1.38.8](https://github.com/certd/certd/compare/v1.38.7...v1.38.8) (2026-02-06)
 
 **Note:** Version bump only for package @certd/basic

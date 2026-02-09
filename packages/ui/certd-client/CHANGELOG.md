@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.9](https://github.com/certd/certd/compare/v1.38.8...v1.38.9) (2026-02-09)
+
+### Performance Improvements
+
+* 已登录状态访问登录页面自动跳转到首页 ([bd8caff](https://github.com/certd/certd/commit/bd8caff0b754cb13530cf0f1644b33e29fde5d01))
+* 优化access授权支持remote-auto-complete ([2f40f79](https://github.com/certd/certd/commit/2f40f795ee6131132d3fab2601f92a567bbdc4b7))
+* access 插件支持remote-select等配置 ([d286c04](https://github.com/certd/certd/commit/d286c040a5232dcca829945734affead3ee08b3c))
+
 ## [1.38.8](https://github.com/certd/certd/compare/v1.38.7...v1.38.8) (2026-02-06)
 
 ### Performance Improvements
