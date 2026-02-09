@@ -22,9 +22,27 @@ export class AliossAccess extends BaseAccess {
   @AccessInput({
     title: "大区",
     component: {
-      name: "a-auto-complete",
+      name: "remote-auto-complete",
       vModel: "value",
-      options: [
+      type: "access",
+      typeName: "alioss",
+      action: AliossAccess.prototype.onGetRegionList.name
+    },
+    required: true,
+  })
+  region!: string;
+
+  @AccessInput({
+    title: "Bucket",
+    helper: "存储桶名称",
+    required: true,
+  })
+  bucket!: string;
+
+
+  onGetRegionList(){
+    return {
+      list: [
         { value: "oss-cn-hangzhou", label: "华东1（杭州）" },
         { value: "oss-cn-shanghai", label: "华东2（上海）" },
         { value: "oss-cn-nanjing", label: "华东5（南京-本地地域）" },
@@ -54,18 +72,10 @@ export class AliossAccess extends BaseAccess {
         { value: "oss-eu-west-1", label: "英国（伦敦）" },
         { value: "oss-me-east-1", label: "阿联酋（迪拜）①" },
         { value: "oss-rg-china-mainland", label: "无地域属性（中国内地）" },
-      ],
-    },
-    required: true,
-  })
-  region!: string;
+      ]
+    }
+  }
 
-  @AccessInput({
-    title: "Bucket",
-    helper: "存储桶名称",
-    required: true,
-  })
-  bucket!: string;
 }
 
 new AliossAccess();

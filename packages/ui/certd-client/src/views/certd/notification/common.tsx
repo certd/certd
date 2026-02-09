@@ -26,6 +26,10 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
     },
   };
 
+  provide("getCurrentPluginDefine", () => {
+    return currentDefine;
+  });
+
   function buildDefineFields(define: any, form: any, mode: string) {
     const formWrapperRef = crudExpose.getFormWrapperRef();
     const columnsRef = toRef(formWrapperRef.formOptions, "columns");

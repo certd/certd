@@ -10,6 +10,9 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
   provide("get:plugin:type", () => {
     return "access";
   });
+  provide("getCurrentPluginDefine", () => {
+    return currentDefine;
+  });
   const AccessTypeDictRef = dict({
     url: "/pi/access/accessTypeDict",
   });
