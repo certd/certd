@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.9](https://github.com/certd/certd/compare/v1.38.8...v1.38.9) (2026-02-09)
+
+### Performance Improvements
+
+* 修改sql升级语句，兼容mysql5.7 ([02f89a9](https://github.com/certd/certd/commit/02f89a9c9d77850437285844670aed441e5953c3))
+
 ## [1.38.8](https://github.com/certd/certd/compare/v1.38.7...v1.38.8) (2026-02-06)
 
 **Note:** Version bump only for package @certd/midway-flyway-js
