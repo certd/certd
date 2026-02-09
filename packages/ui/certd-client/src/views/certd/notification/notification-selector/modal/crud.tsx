@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { getCommonColumnDefine } from "../../common";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { useProjectStore } from "/@/store/project";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { crudBinding } = crudExpose;
@@ -29,6 +30,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     return res;
   };
 
+  const projectStore = useProjectStore();
   const selectedRowKey = ref([props.modelValue]);
 
   const onSelectChange = (changed: any) => {
@@ -54,6 +56,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       search: {
         show: false,
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
       },
       form: {
         labelCol: {

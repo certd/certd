@@ -81,6 +81,11 @@ provide("fn:ai.open", openChat);
 
 <template>
   <BasicLayout @clear-preferences-and-logout="handleLogout">
+    <template #header-left-0>
+      <div class="ml-1 mr-2">
+        <project-selector class="flex-center header-btn" />
+      </div>
+    </template>
     <template #user-dropdown>
       <UserDropdown :avatar="avatar" :menus="menus" :text="userStore.userInfo?.nickName || userStore.userInfo?.username" description="" tag-text="" @logout="handleLogout" />
     </template>

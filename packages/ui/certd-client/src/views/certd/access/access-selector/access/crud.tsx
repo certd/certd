@@ -3,6 +3,8 @@ import { ref } from "vue";
 import { getCommonColumnDefine } from "/@/views/certd/access/common";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { useI18n } from "/src/locales";
+import { useProjectStore } from "/@/store/project";
+import { projectDict } from "../../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -44,6 +46,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   context.typeRef = typeRef;
   const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef, api);
   commonColumnsDefine.type.form.component.disabled = true;
+  const projectStore = useProjectStore();
   return {
     typeRef,
     crudOptions: {
@@ -58,6 +61,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       search: {
         show: true,
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
       },
       form: {
         wrapper: {
@@ -141,6 +147,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         ...commonColumnsDefine,
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: projectDict,
+        },
       },
     },
   };

@@ -46,4 +46,26 @@ export class ProjectMemberService extends BaseService<ProjectMemberEntity> {
     });
   }
 
+  async getMember(projectId: number,userId: number) {
+    return await this.repository.findOne({
+      where: {
+        userId,
+        projectId,
+      },
+    });
+  }
+
+  async getProjectId(id: number) {
+    const member = await this.repository.findOne({
+      select: ['projectId'],
+      where: {
+        id: id,
+      },
+    });
+    if (!member) {
+      throw new Error('项目成员记录不存在');
+    }
+    return member.projectId;
+  }
+
 }

@@ -41,6 +41,30 @@ export const sysResources = [
         },
       },
       {
+        title: "certd.sysResources.projectManager",
+        name: "ProjectManager",
+        path: "/sys/enterprise/project",
+        component: "/sys/enterprise/project/index.vue",
+        meta: {
+          show: true,
+          icon: "ion:apps",
+          permission: "sys:settings:edit",
+          keepAlive: true,
+        },
+      },
+      {
+        title: "certd.sysResources.projectDetail",
+        name: "ProjectDetail",
+        path: "/sys/enterprise/project/detail",
+        component: "/sys/enterprise/project/detail/index.vue",
+        meta: {
+          isMenu: false,
+          show: true,
+          icon: "ion:apps",
+          permission: "sys:settings:edit",
+        },
+      },
+      {
         title: "certd.sysResources.cnameSetting",
         name: "CnameSetting",
         path: "/sys/cname/provider",

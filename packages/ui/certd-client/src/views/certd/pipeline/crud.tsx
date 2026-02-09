@@ -15,6 +15,7 @@ import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { useCertViewer } from "/@/views/certd/pipeline/use";
 import { useI18n } from "/src/locales";
 import { projectDict } from "../dicts";
+import { useProjectStore } from "/@/store/project";
 
 export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -66,6 +67,8 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
   const { viewCert, downloadCert } = useCertViewer();
   const userStore = useUserStore();
   const settingStore = useSettingStore();
+
+  const projectStore = useProjectStore();
 
   const DEFAULT_WILL_EXPIRE_DAYS = settingStore.sysPublic.defaultWillExpireDays || settingStore.sysPublic.defaultCertRenewDays || 15;
 
@@ -148,7 +151,9 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
         },
       },
       search: {
-        col: { span: 3 },
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
       },
       form: {
         afterSubmit({ form, res, mode }) {
@@ -631,7 +636,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
         },
         projectId: {
           title: t("certd.fields.projectName"),
-          type: "number",
+          type: "dict-select",
           dict: projectDict,
         },
         updateTime: {

@@ -13,6 +13,8 @@ import { useSiteImport } from "/@/views/certd/monitor/site/use";
 import { ref } from "vue";
 import GroupSelector from "../../basic/group/group-selector.vue";
 import { createGroupDictRef } from "../../basic/group/api";
+import { useProjectStore } from "/@/store/project";
+import { projectDict } from "../../dicts";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const api = siteInfoApi;
@@ -105,6 +107,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       return searchFrom.groupId;
     }
   }
+
+  const projectStore = useProjectStore();
   return {
     id: "siteMonitorCrud",
     crudOptions: {
@@ -289,6 +293,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       //   name: "disabled",
       //   show: true,
       // },
+      search: {
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
+      },
       columns: {
         id: {
           title: "ID",
@@ -799,6 +808,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               return <a-tooltip title={value}>{value}</a-tooltip>;
             },
           },
+        },
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: projectDict,
         },
       },
     },

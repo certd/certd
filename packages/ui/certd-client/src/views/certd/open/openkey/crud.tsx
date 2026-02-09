@@ -3,6 +3,8 @@ import { useI18n } from "/src/locales";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { OPEN_API_DOC, openkeyApi } from "./api";
 import { useModal } from "/@/use/use-modal";
+import { useProjectStore } from "/@/store/project";
+import { projectDict } from "../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -26,6 +28,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     const res = await api.AddObj(form);
     return res;
   };
+  const projectStore = useProjectStore();
   const model = useModal();
   return {
     crudOptions: {
@@ -37,6 +40,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       search: {
         show: false,
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
       },
       form: {
         labelCol: {
@@ -162,6 +168,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
             sorter: true,
           },
+        },
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: projectDict,
         },
         createTime: {
           title: t("certd.fields.createTime"),
