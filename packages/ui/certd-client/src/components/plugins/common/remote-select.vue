@@ -57,7 +57,7 @@ const VNodes = defineComponent({
 
 const props = defineProps<
   {
-    watches: string[];
+    watches?: string[];
     search?: boolean;
     pager?: boolean;
   } & ComponentPropsType
@@ -201,11 +201,13 @@ watch(
     const pluginType = getPluginType();
     const { form, key } = getScope();
     const input = (pluginType === "plugin" ? form?.input : form) || {};
-    const watches = {};
-    for (const key of props.watches) {
-      //@ts-ignore
-      watches[key] = input[key];
+    const watches: any = {};
+    if (props.watches && props.watches.length > 0) {
+      for (const key of props.watches) {
+        watches[key] = input[key];
+      }
     }
+
     return {
       form: watches,
       key,
@@ -215,11 +217,12 @@ watch(
     const { form } = value;
     const oldForm: any = oldValue?.form;
     let changed = oldForm == null || optionsRef.value.length == 0;
-    for (const key of props.watches) {
-      //@ts-ignore
-      if (oldForm && form[key] != oldForm[key]) {
-        changed = true;
-        break;
+    if (props.watches && props.watches.length > 0) {
+      for (const key of props.watches) {
+        if (oldForm && form[key] != oldForm[key]) {
+          changed = true;
+          break;
+        }
       }
     }
     if (changed) {
