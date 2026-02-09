@@ -6,7 +6,7 @@ import {
 } from "@certd/plugin-lib";
 import { CertApplyPluginNames} from '@certd/plugin-cert';
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
-import { AliyunClient, AliyunSslClient } from "../../../plugin-lib/aliyun/lib/index.js";
+import { AliyunClient, AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/index.js";
 import { AliyunClientV2 } from '../../../plugin-lib/aliyun/lib/aliyun-client-v2.js';
 @IsTaskPlugin({
   name: 'AliyunDeployCertToNLB',
@@ -31,7 +31,7 @@ export class AliyunDeployCertToNLB extends AbstractTaskPlugin {
     },
     required: true,
   })
-  cert!: CertInfo | number;
+  cert!: CertInfo | number | CasCertId;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
@@ -286,17 +286,25 @@ export class AliyunDeployCertToNLB extends AbstractTaskPlugin {
   async getAliyunCertId(access: AliyunAccess) {
     let certId: any = this.cert;
     if (typeof this.cert === 'object') {
+
+      const casCert = this.cert as CasCertId;
+      if (casCert.certId) {
+        return casCert.certId;
+      }
+
+      const certInfo = this.cert as CertInfo;
+
       const sslClient = new AliyunSslClient({
         access,
         logger: this.logger,
         endpoint: this.casEndpoint,
       });
 
-      const certName = this.buildCertName(CertReader.getMainDomain(this.cert.crt))
+      const certName = this.buildCertName(CertReader.getMainDomain(certInfo.crt))
 
       const certIdRes = await sslClient.uploadCertificate({
         name: certName,
-        cert: this.cert,
+        cert: certInfo,
       });
       certId = certIdRes.certId as any;
     }

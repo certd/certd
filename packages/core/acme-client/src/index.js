@@ -57,6 +57,32 @@ export function getDirectoryUrl(opts) {
   return list.production
 }
 
+
+export function getAllSslProviderDomains() {
+  const list = Object.values(directory).map((item) => {
+    let url =  item.production.replace('https://', '')
+    url = url.substring(0, url.indexOf('/'))
+    return url
+  })
+  return list
+}
+
+let sslProviderReverseProxies = {}
+
+function initSslProviderReverseProxies() {
+  for (const sslProvider of getAllSslProviderDomains()) {
+    sslProviderReverseProxies[sslProvider] = ""
+  }
+}
+initSslProviderReverseProxies()
+
+export function getSslProviderReverseProxies() {
+  return sslProviderReverseProxies
+}
+export function setSslProviderReverseProxies(reverseProxies) {
+  Object.assign(sslProviderReverseProxies, reverseProxies)
+}
+
 /**
  * Crypto
  */

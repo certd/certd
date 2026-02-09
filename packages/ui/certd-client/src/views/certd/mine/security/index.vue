@@ -57,6 +57,17 @@
             <div class="ml-20">
               <img class="full-w" :src="authenticatorForm.qrcodeSrc" />
             </div>
+            <div class="ml-20 mt-5">
+              <div>您也可以手动添加：</div>
+              <div class="flex mt-5">
+                <a-tag type="primary" color="green" class="mr-2">Secret：</a-tag>
+                <fs-copyable :model-value="authenticatorForm.secret" />
+              </div>
+              <div class="flex mt-5">
+                <a-tag type="primary" color="green" class="mr-2">Link：</a-tag>
+                <fs-copyable :model-value="authenticatorForm.link" />
+              </div>
+            </div>
           </div>
           <h3 class="font-bold m-10">{{ t("certd.step3") }}</h3>
           <div class="ml-20">
@@ -97,6 +108,8 @@ const formState = reactive<Partial<UserTwoFactorSetting>>({
 const authenticatorForm = reactive({
   qrcodeSrc: "",
   verifyCode: "",
+  link: "",
+  secret: "",
   open: false,
 });
 
@@ -110,9 +123,14 @@ watch(
   async open => {
     if (open) {
       //base64 转图片
-      authenticatorForm.qrcodeSrc = await api.TwoFactorAuthenticatorGet();
+      const { qrcode, link, secret } = await api.TwoFactorAuthenticatorGet();
+      authenticatorForm.qrcodeSrc = qrcode;
+      authenticatorForm.link = link;
+      authenticatorForm.secret = secret;
     } else {
       authenticatorForm.qrcodeSrc = "";
+      authenticatorForm.link = "";
+      authenticatorForm.secret = "";
       authenticatorForm.verifyCode = "";
     }
   }

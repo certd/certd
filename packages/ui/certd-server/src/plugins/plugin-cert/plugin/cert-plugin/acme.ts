@@ -1,13 +1,12 @@
 // @ts-ignore
 import * as acme from "@certd/acme-client";
 import { ClientExternalAccountBindingOptions, UrlMapping } from "@certd/acme-client";
-import * as _ from "lodash-es";
 import { Challenge } from "@certd/acme-client/types/rfc8555.js";
-import { IContext } from "@certd/pipeline";
 import { ILogger, utils } from "@certd/basic";
+import { IContext } from "@certd/pipeline";
+import { IDnsProvider, IDomainParser } from "@certd/plugin-lib";
 import punycode from "punycode.js";
 import { IOssClient } from "../../../plugin-lib/index.js";
-import { IDnsProvider, IDomainParser } from "@certd/plugin-lib";
 export type CnameVerifyPlan = {
   type?: string;
   domain: string;
@@ -112,11 +111,26 @@ export class AcmeService {
   }
 
   async getAcmeClient(email: string): Promise<acme.Client> {
-    const mappings = {};
-    if (this.sslProvider === "letsencrypt") {
-      mappings["acme-v02.api.letsencrypt.org"] = this.options.reverseProxy || "le.px.certd.handfree.work";
-    } else if (this.sslProvider === "google") {
-      mappings["dv.acme-v02.api.pki.goog"] = this.options.reverseProxy || "gg.px.certd.handfree.work";
+
+    const directoryUrl = acme.getDirectoryUrl({ sslProvider: this.sslProvider, pkType: this.options.privateKeyType });
+    let targetUrl = directoryUrl.replace("https://", "");
+    targetUrl = targetUrl.substring(0, targetUrl.indexOf("/"));
+    
+    const mappings = {
+      "acme-v02.api.letsencrypt.org": "le.px.certd.handfree.work",
+      "dv.acme-v02.api.pki.goog": "gg.px.certd.handfree.work",
+    };
+    const reverseProxies = acme.getSslProviderReverseProxies();
+    if (reverseProxies) {
+      for (const key in reverseProxies) {
+        const value = reverseProxies[key];
+        if (value) {
+          mappings[key] = value;
+        }
+      }
+    }
+    if (this.options.reverseProxy && targetUrl) {
+      mappings[targetUrl] = this.options.reverseProxy;
     }
     const urlMapping: UrlMapping = {
       enabled: false,
@@ -128,7 +142,7 @@ export class AcmeService {
       await this.saveAccountConfig(email, conf);
       this.logger.info(`创建新的Accountkey:${email}`);
     }
-    const directoryUrl = acme.getDirectoryUrl({ sslProvider: this.sslProvider, pkType: this.options.privateKeyType });
+
     if (this.options.useMappingProxy) {
       urlMapping.enabled = true;
     } else {
@@ -147,7 +161,7 @@ export class AcmeService {
       externalAccountBinding: this.eab,
       backoffAttempts: this.options.maxCheckRetryCount || 20,
       backoffMin: 5000,
-      backoffMax: 30*1000,
+      backoffMax: 30 * 1000,
       urlMapping,
       signal: this.options.signal,
       logger: this.logger,
@@ -434,11 +448,7 @@ export class AcmeService {
     if (domains.length === 0) {
       throw new Error("domain can not be empty");
     }
-    // const commonName = domains[0];
-    // let altNames: undefined | string[] = undefined;
-    // if (domains.length > 1) {
-    //   altNames = _.slice(domains, 1);
-    // }
+
     return {
       // commonName,
       altNames: domains,

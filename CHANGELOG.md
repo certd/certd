@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.8](https://github.com/certd/certd/compare/v1.38.7...v1.38.8) (2026-02-06)
+
+### Performance Improvements
+
+* 双重验证显示secret ([febd6d3](https://github.com/certd/certd/commit/febd6d32cfe6d89ccecf26bf15141df7c456e5c6))
+* 优化申请证书最大超时时长 ([00f67d8](https://github.com/certd/certd/commit/00f67d86d68f4f83cfafe2fbfeb4af0d86f9d20e))
+* 支持设置默认的证书申请地址的反向代理 ([0cfb94b](https://github.com/certd/certd/commit/0cfb94b0ba6a6dc3bb0d0a81a1912068a4e6b6b6))
+* 子域名托管域名支持配置通配符 ([3f7ac93](https://github.com/certd/certd/commit/3f7ac939326b0c7ec013a7534b6c0e58fb3e8cb4))
+
 ## [1.38.7](https://github.com/certd/certd/compare/v1.38.6...v1.38.7) (2026-02-05)
 
 ### Bug Fixes

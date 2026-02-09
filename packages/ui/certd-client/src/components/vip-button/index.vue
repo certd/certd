@@ -161,27 +161,30 @@ function openStarModal(vipType: string) {
     return;
   }
   Modal.destroyAll();
-  const goGithub = () => {
-    window.open("https://github.com/certd/certd/");
-  };
 
-  modal.confirm({
-    title: t("vip.get_7_day_pro_trial"),
-    okText: t("vip.star_now"),
-    onOk() {
-      goGithub();
-      openTrialModal(vipType);
-    },
-    width: 600,
-    content: () => {
-      return (
-        <div class="flex mt-10 mb-10">
-          <div>{t("vip.please_help_star")}</div>
-          <img class="ml-5" src="https://img.shields.io/github/stars/certd/certd?logo=github" />
-        </div>
-      );
-    },
-  });
+  openTrialModal(vipType);
+
+  // const goGithub = () => {
+  //   window.open("https://github.com/certd/certd/");
+  // };
+
+  // modal.confirm({
+  //   title: t("vip.get_7_day_pro_trial"),
+  //   okText: t("vip.star_now"),
+  //   onOk() {
+  //     goGithub();
+  //     openTrialModal(vipType);
+  //   },
+  //   width: 600,
+  //   content: () => {
+  //     return (
+  //       <div class="flex mt-10 mb-10">
+  //         <div>{t("vip.please_help_star")}</div>
+  //         <img class="ml-5" src="https://img.shields.io/github/stars/certd/certd?logo=github" />
+  //       </div>
+  //     );
+  //   },
+  // });
 }
 
 function openUpgrade() {

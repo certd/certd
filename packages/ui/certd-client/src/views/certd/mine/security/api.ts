@@ -28,7 +28,7 @@ export async function TwoFactorAuthenticatorGet() {
     url: apiPrefix + "/twoFactor/authenticator/qrcode",
     method: "post",
   });
-  return res as string; //base64
+  return res as { qrcode: string; link: string; secret: string }; //base64
 }
 
 export async function TwoFactorAuthenticatorSave(req: AuthenticatorSaveReq) {

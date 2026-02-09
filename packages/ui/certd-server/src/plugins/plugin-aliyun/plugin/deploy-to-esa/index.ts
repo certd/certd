@@ -5,7 +5,7 @@ import {
   createRemoteSelectInputDefine
 } from "@certd/plugin-lib";
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
-import { AliyunSslClient } from "../../../plugin-lib/aliyun/lib/ssl-client.js";
+import { AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/ssl-client.js";
 import { AliyunClientV2 } from "../../../plugin-lib/aliyun/lib/aliyun-client-v2.js";
 import dayjs from "dayjs";
 
@@ -32,7 +32,7 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
     },
     required: true
   })
-  cert!: CertInfo;
+  cert!: CertInfo | CasCertId | number;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
@@ -117,14 +117,21 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
         endpoint: this.casEndpoint
       });
 
-      certName = this.buildCertName(CertReader.getMainDomain(this.cert.crt));
+      const certInfo = this.cert as CertInfo;
+      const casCert = this.cert as CasCertId;
+      if (casCert.certId) {
+        certId = casCert.certId;
+        certName = casCert.certName;
+      } else {
+        certName = this.buildCertName(CertReader.getMainDomain(certInfo.crt));
 
-      const certIdRes = await sslClient.uploadCertificate({
-        name: certName,
-        cert: this.cert
-      });
-      certId = certIdRes.certId as any;
-      this.logger.info("上传证书成功", certId, certName);
+        const certIdRes = await sslClient.uploadCertificate({
+          name: certName,
+          cert: certInfo
+        });
+        certId = certIdRes.certId as any;
+        this.logger.info("上传证书成功", certId, certName);
+      }
     }
     return {
       certId,

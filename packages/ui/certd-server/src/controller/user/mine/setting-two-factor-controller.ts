@@ -48,8 +48,8 @@ export class UserTwoFactorSettingController extends BaseController {
   @Post("/authenticator/qrcode", { summary: Constants.per.authOnly })
   async authenticatorQrcode() {
     const userId = this.getUserId();
-    const qrcode = await this.twoFactorService.getAuthenticatorQrCode(userId);
-    return this.ok(qrcode);
+    const {qrcode,link,secret} = await this.twoFactorService.getAuthenticatorQrCode(userId);
+    return this.ok({qrcode,link,secret}); 
   }
 
   @Post("/authenticator/save", { summary: Constants.per.authOnly })

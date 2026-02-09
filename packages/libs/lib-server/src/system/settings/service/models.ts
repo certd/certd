@@ -78,6 +78,9 @@ export class SysPrivateSettings extends BaseSettings {
 
   httpsProxy? = '';
   httpProxy? = '';
+
+  reverseProxies?: Record<string, string> = {};
+
   dnsResultOrder? = '';
   commonCnameEnabled?: boolean = true;
 

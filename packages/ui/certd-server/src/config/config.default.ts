@@ -4,7 +4,7 @@ import { MidwayConfig } from '@midwayjs/core';
 // import { fileURLToPath } from 'node:url';
 // // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = dirname(fileURLToPath(import.meta.url));
-import { FlywayHistory } from '@certd/midway-flyway-js';
+import { FlywayHistory, setFlywayLogger } from '@certd/midway-flyway-js';
 import { UserEntity } from '../modules/sys/authority/entity/user.js';
 import { PipelineEntity } from '../modules/pipeline/entity/pipeline.js';
 //import { logger } from '../utils/logger';
@@ -15,6 +15,7 @@ import { commercialEntities } from '@certd/commercial-core';
 import { tmpdir } from 'node:os';
 import { DefaultUploadFileMimeType, uploadWhiteList } from '@midwayjs/upload';
 import path from 'path';
+import { logger } from '@certd/basic';
 
 const env = process.env.NODE_ENV || 'development';
 
@@ -136,5 +137,7 @@ loadDotEnv();
 mergeConfig(development, 'development');
 
 mergeConfig(development, env);
+
+setFlywayLogger(logger);
 
 export default development;

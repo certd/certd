@@ -1,12 +1,11 @@
 import { ColumnCompositionProps, compute, dict } from "@fast-crud/fast-crud";
+import { Modal } from "ant-design-vue";
+import { forEach, get, merge, set } from "lodash-es";
 import { computed, provide, ref, toRef } from "vue";
 import { useReference } from "/@/use/use-refrence";
-import { forEach, get, merge, set } from "lodash-es";
-import { Modal } from "ant-design-vue";
 import { mitter } from "/@/utils/util.mitt";
-import { useI18n } from "/src/locales";
-import * as pipelineApi from "/@/views/certd/pipeline/api";
 import { getAddonTypeDefine } from "/@/views/certd/addon/api";
+import { useI18n } from "/src/locales";
 
 export function addonProvide(api: any) {
   provide("addonApi", api);
@@ -29,6 +28,10 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, a
       vModel: "value",
     },
   };
+
+  provide("getCurrentPluginDefine", () => {
+    return currentDefine;
+  });
 
   function buildDefineFields(define: any, form: any, mode: string) {
     const formWrapperRef = crudExpose.getFormWrapperRef();

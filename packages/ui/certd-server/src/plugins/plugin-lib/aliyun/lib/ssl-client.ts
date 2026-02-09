@@ -126,18 +126,25 @@ export class AliyunSslClient {
     }
   }
 
-  async uploadCertOrGet(cert: CertInfo | number )  :Promise<CasCertId>{
+  async uploadCertOrGet(cert: CertInfo | number | CasCertId )  :Promise<CasCertId>{
     if (typeof cert === "object") {
+
+      const casCert = cert as CasCertId;
+      if (casCert.certId) {
+        return casCert;
+      }
+      const certInfo = cert as CertInfo;
       // 上传证书到阿里云
       this.logger.info(`开始上传证书`);
-      const certName = CertReader.buildCertName(cert);
+      const certName = CertReader.buildCertName(certInfo);
       const res = await this.uploadCertificate({
         name: certName,
-        cert: cert
+        cert: certInfo
       });
       this.logger.info("上传证书成功", JSON.stringify(res));
       return res
     }
+    //number类型
     const certId = cert as any;
     let certName: any = utils.string.appendTimeSuffix(certId);
     const certIdentifier = this.getCertIdentifier(certId);

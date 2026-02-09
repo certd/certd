@@ -524,6 +524,7 @@ export default {
   selectRecordFirst: "请先勾选记录",
   subdomainHosted: "托管的子域名",
   subdomainHelpText: "如果您不理解什么是子域托管，请不要随意设置（可能导致证书无法申请，以前设置过的cname记录也需要重新配置），可以参考文档",
+  subdomainHelpSupportStart: "支持*号通配符,表示该域名下的子域名都是托管的（免费子域名）",
   subdomainManagement: "子域管理",
   isDisabled: "是否禁用",
   enabled: "启用",
@@ -794,6 +795,7 @@ export default {
       captchaSetting: "验证码设置",
       pipelineSetting: "流水线设置",
       oauthSetting: "第三方登录",
+      networkSetting: "网络设置",
 
       showRunStrategy: "显示运行策略选择",
       showRunStrategyHelper: "任务设置中是否允许选择运行策略",
@@ -853,6 +855,11 @@ export default {
       notice: "系统公告",
       noticeHelper: "系统公告，将在首页显示",
       noticePlaceholder: "系统公告",
+
+      reverseProxy: "反向代理列表",
+      reverseProxyHelper: "证书颁发机构ACME地址的反向代理，在申请证书时自动使用",
+      reverseProxyPlaceholder: "http://le.px.handfree.work",
+      reverseProxyEmpty: "未配置反向代理",
     },
   },
   modal: {

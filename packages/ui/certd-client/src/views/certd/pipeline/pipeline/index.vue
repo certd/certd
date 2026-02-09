@@ -1065,7 +1065,7 @@ export default defineComponent({
     }
 
     .layout-right {
-      width: 364px;
+      width: 368px;
       height: 100%;
       max-width: 90vw;
     }
@@ -1292,7 +1292,7 @@ export default defineComponent({
   .layout-right {
     position: relative;
     &.collapsed {
-      margin-right: max(-364px, -90vw);
+      margin-right: max(-368px, -90vw);
     }
 
     .collapse-toggle {

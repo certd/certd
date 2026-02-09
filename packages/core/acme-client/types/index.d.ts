@@ -118,6 +118,9 @@ export const directory: {
 };
 
 export function getDirectoryUrl(opts:{sslProvider:string, pkType: string}): string;
+export function getAllSslProviderDomains(): string[];
+export function getSslProviderReverseProxies(): Record<string, string>;
+export function setSslProviderReverseProxies(reverseProxies: Record<string, string>): void;
 
 /**
  * Crypto

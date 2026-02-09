@@ -33,7 +33,8 @@ export class TwoFactorService {
 
     //生成qrcode base64
     const qrcode = await import("qrcode");
-    return await qrcode.toDataURL(qrcodeContent);
+    const qrcodeBase64 = await qrcode.toDataURL(qrcodeContent);
+    return {qrcode:qrcodeBase64,link:qrcodeContent,secret}
 
   }
 

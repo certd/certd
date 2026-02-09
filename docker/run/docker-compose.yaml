@@ -62,7 +62,7 @@ services:
 #      - certd_typeorm_dataSource_default_password=yourpasswd            # 密码
 #      - certd_typeorm_dataSource_default_database=certd                 # 数据库名
 
-#                                    #↓↓↓↓ ----------------------------- 使用mysql数据库，需要提前创建数据库 charset=utf8mb4, collation=utf8mb4_bin
+#                                    #↓↓↓↓ ----------------------------- 使用mysql8数据库，需要提前创建数据库 charset=utf8mb4, collation=utf8mb4_bin
 #      - certd_flyway_scriptDir=./db/migration-mysql                     # 升级脚本目录
 #      - certd_typeorm_dataSource_default_type=mysql                     # 数据库类型， 或者 mariadb
 #      - certd_typeorm_dataSource_default_host=localhost                 # 数据库地址
