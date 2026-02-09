@@ -16,5 +16,5 @@ CREATE TABLE `cd_domain`
 );
 
 CREATE INDEX `index_domain_user_id` ON `cd_domain` (`user_id`);
-CREATE INDEX `index_domain_domain` ON `cd_domain` (`domain`);
+CREATE INDEX `index_domain_domain` ON `cd_domain` (`domain`(100));
 

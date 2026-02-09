@@ -1,4 +1,5 @@
 import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
+import { AliyunAccess } from "./aliyun-access.js";
 
 @IsAccess({
   name: "alioss",
@@ -36,6 +37,15 @@ export class AliossAccess extends BaseAccess {
     title: "Bucket",
     helper: "存储桶名称",
     required: true,
+    component: {
+      name: "remote-auto-complete",
+      vModel: "value",
+      type: "access",
+      action: AliossAccess.prototype.onGetBucketList.name,
+      search: false,
+      pager: false,
+      watches: ["accessId", "region"],
+    },
   })
   bucket!: string;
 
@@ -76,6 +86,32 @@ export class AliossAccess extends BaseAccess {
     }
   }
 
+  async onGetBucketList() {
+    const access = (await this.ctx.accessService.getById(this.accessId)) as AliyunAccess;
+    const client = await this.getClient(access);
+
+    let res;
+    const buckets = [];
+    do {
+      const requestData = { marker: res?.nextMarker || null, "max-keys": 1000 };
+      res = await client.listBuckets(requestData);
+      buckets.push(...(res?.buckets || []));
+    } while (!!res?.nextMarker);
+    return buckets.filter(bucket => bucket?.region === this.region).map(bucket => ({ label: `${bucket.name}<${bucket.region}>`, value: bucket.name }));
+  }
+
+  async getClient(access: AliyunAccess) {
+    // @ts-ignore
+    const OSS = await import("ali-oss");
+    return new OSS.default({
+      accessKeyId: access.accessKeyId,
+      accessKeySecret: access.accessKeySecret,
+      // yourRegion填写Bucket所在地域。以华东1（杭州）为例，Region填写为oss-cn-hangzhou。
+      region: this.region,
+      //@ts-ignore
+      authorizationV4: true,
+    });
+  }
 }
 
 new AliossAccess();

@@ -97,7 +97,7 @@ CREATE TABLE `cd_cert_info`
 
 CREATE INDEX `index_cert_info_user_id` ON `cd_cert_info` (`user_id`);
 CREATE INDEX `index_cert_info_domain` ON `cd_cert_info` (`domain`);
-CREATE INDEX `index_cert_info_domains` ON `cd_cert_info` (`domains`(200));
+CREATE INDEX `index_cert_info_domains` ON `cd_cert_info` (`domains`(190));
 CREATE INDEX `index_cert_info_pipeline` ON `cd_cert_info` (`pipeline_id`);
 
 
@@ -124,7 +124,7 @@ CREATE TABLE `cd_site_info`
 
   `create_time`       timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time`       timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB;
 
 CREATE INDEX `index_site_info_user_id` ON `cd_site_info` (`user_id`);
 CREATE INDEX `index_site_info_domain` ON `cd_site_info` (`domain`);

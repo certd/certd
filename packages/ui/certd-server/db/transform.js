@@ -75,6 +75,8 @@ function transformMysql() {
     pgSql = pgSql.replaceAll(/text/g, 'longtext');
     //双引号 替换成反引号
     pgSql = pgSql.replaceAll(/"/g, '`');
+    //create table if not exists
+    pgSql = pgSql.replaceAll(/CREATE TABLE ([ ]+)`/g, 'CREATE TABLE IF NOT EXISTS `');
 
     fs.writeFileSync(`./migration-mysql/${notFile}`, pgSql);
   }

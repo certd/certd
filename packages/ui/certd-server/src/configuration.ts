@@ -78,7 +78,7 @@ export class MainConfiguration {
   app: koa.Application;
 
   async onReady() {
-
+    // 设置flyway logger
 
 
     // add middleware

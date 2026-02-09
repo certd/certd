@@ -31,6 +31,12 @@ const DefaultLogger = {
     console.error(args);
   },
 };
+
+let customLogger:any = null;
+export function setFlywayLogger (logger: any) {
+  customLogger = logger;
+};
+
 export class Flyway {
   scriptDir;
   flywayTableName;
@@ -43,7 +49,7 @@ export class Flyway {
     this.flywayTableName = opts.flywayTableName ?? 'flyway_history';
     this.baseline = opts.baseline ?? false;
     this.allowHashNotMatch = opts.allowHashNotMatch ?? false;
-    this.logger = opts.logger || DefaultLogger;
+    this.logger = customLogger || opts.logger || DefaultLogger;
     this.connection = opts.connection;
   }
 
