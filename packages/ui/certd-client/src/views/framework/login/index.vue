@@ -113,12 +113,7 @@ export default defineComponent({
   setup() {
     const { t } = useI18n();
     const route = useRoute();
-    const router = useRouter();
     const userStore = useUserStore();
-    if (userStore.getToken) {
-      router.push("/");
-      return;
-    }
 
     const queryBindCode = ref(route.query.bindCode as string | undefined);
 
@@ -256,6 +251,7 @@ export default defineComponent({
       }
       return sysPublicSettings.oauthOnly && settingStore.isPlus && sysPublicSettings.oauthEnabled;
     });
+
     return {
       t,
       loading,
