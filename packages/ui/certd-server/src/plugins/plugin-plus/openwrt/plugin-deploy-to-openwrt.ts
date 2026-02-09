@@ -59,7 +59,7 @@ export class OpenwrtDeployCertPlugin extends AbstractPlusTaskPlugin {
       handle: async (ctx) => {
         const crtPath = ctx.tmpCrtPath;
         const keyPath = ctx.tmpKeyPath;
-        sshClient.uploadFiles({
+        await sshClient.uploadFiles({
           connectConf: sshConf,
           transports: [
             {
