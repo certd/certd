@@ -1,0 +1,36 @@
+
+ALTER TABLE `cd_access` ENGINE = InnoDB;
+ALTER TABLE `cd_addon` ENGINE = InnoDB;
+ALTER TABLE `cd_cert_info` ENGINE = InnoDB;
+ALTER TABLE `cd_cname_provider` ENGINE = InnoDB;
+ALTER TABLE `cd_cname_record` ENGINE = InnoDB;
+ALTER TABLE `cd_domain` ENGINE = InnoDB;
+ALTER TABLE `cd_group` ENGINE = InnoDB;
+ALTER TABLE `cd_oauth_bound` ENGINE = InnoDB;
+ALTER TABLE `cd_open_key` ENGINE = InnoDB;
+ALTER TABLE `cd_product` ENGINE = InnoDB;
+ALTER TABLE `cd_site_info` ENGINE = InnoDB;
+ALTER TABLE `cd_site_ip` ENGINE = InnoDB;
+ALTER TABLE `cd_trade` ENGINE = InnoDB;
+ALTER TABLE `cd_user_suite` ENGINE = InnoDB;
+ALTER TABLE `flyway_history` ENGINE = InnoDB;
+ALTER TABLE `pi_history` ENGINE = InnoDB;
+ALTER TABLE `pi_history_log` ENGINE = InnoDB;
+ALTER TABLE `pi_notification` ENGINE = InnoDB;
+ALTER TABLE `pi_pipeline` ENGINE = InnoDB;
+ALTER TABLE `pi_pipeline_group` ENGINE = InnoDB;
+ALTER TABLE `pi_plugin` ENGINE = InnoDB;
+ALTER TABLE `pi_storage` ENGINE = InnoDB;
+ALTER TABLE `pi_sub_domain` ENGINE = InnoDB;
+ALTER TABLE `pi_template` ENGINE = InnoDB;
+ALTER TABLE `sys_permission` ENGINE = InnoDB;
+ALTER TABLE `sys_role` ENGINE = InnoDB;
+ALTER TABLE `sys_role_permission` ENGINE = InnoDB;
+ALTER TABLE `sys_settings` ENGINE = InnoDB;
+ALTER TABLE `sys_user` ENGINE = InnoDB;
+ALTER TABLE `sys_user_role` ENGINE = InnoDB;
+ALTER TABLE `user_settings` ENGINE = InnoDB;
+
+ALTER TABLE `cd_audit_log` ENGINE = InnoDB;
+ALTER TABLE `cd_project` ENGINE = InnoDB;
+ALTER TABLE `cd_project_member` ENGINE = InnoDB;
