@@ -10,7 +10,6 @@
         :options="optionsRef"
         :value="value"
         v-bind="attrs"
-        :open="openProp"
         @click="onClick"
         @update:value="emit('update:value', $event)"
       >

@@ -7,7 +7,7 @@ import * as pipelineApi from "../api";
 import { useTemplate } from "/@/views/certd/pipeline/template/use";
 import { useI18n } from "/@/locales";
 import { useProjectStore } from "/@/store/project";
-import { projectDict } from "../../dicts";
+import { myProjectDict } from "../../dicts";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const api = templateApi;
   const { t } = useI18n();
@@ -244,7 +244,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         projectId: {
           title: t("certd.fields.projectName"),
           type: "dict-select",
-          dict: projectDict,
+          dict: myProjectDict,
         },
       },
     },

@@ -2,7 +2,7 @@ import { useI18n } from "/src/locales";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { pipelineGroupApi } from "./api";
 import { useProjectStore } from "/@/store/project";
-import { projectDict } from "../../dicts";
+import { myProjectDict } from "../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -139,7 +139,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         projectId: {
           title: t("certd.fields.projectName"),
           type: "dict-select",
-          dict: projectDict,
+          dict: myProjectDict,
         },
       },
     },

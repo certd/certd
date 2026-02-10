@@ -214,6 +214,8 @@ export default {
     enterpriseSetting: "Enterprise Settings",
     projectManager: "Project Management",
     projectUserManager: "Project User Management",
+    myProjectManager: "My Projects",
+    myProjectDetail: "Project Detail",
   },
   certificateRepo: {
     title: "Certificate Repository",

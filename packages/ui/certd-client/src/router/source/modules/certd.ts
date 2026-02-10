@@ -15,6 +15,30 @@ export const certdResources = [
     },
     children: [
       {
+        title: "certd.sysResources.myProjectManager",
+        name: "MyProjectManager",
+        path: "/certd/project",
+        component: "/certd/project/index.vue",
+        meta: {
+          show: true,
+          icon: "ion:apps",
+          permission: "sys:settings:edit",
+          keepAlive: true,
+        },
+      },
+      {
+        title: "certd.sysResources.myProjectDetail",
+        name: "MyProjectDetail",
+        path: "/certd/project/detail",
+        component: "/certd/project/detail/index.vue",
+        meta: {
+          isMenu: false,
+          show: true,
+          icon: "ion:apps",
+          permission: "sys:settings:edit",
+        },
+      },
+      {
         title: "certd.pipeline",
         name: "PipelineManager",
         path: "/certd/pipeline",

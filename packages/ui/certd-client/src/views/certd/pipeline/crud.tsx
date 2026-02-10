@@ -14,7 +14,7 @@ import GroupSelector from "/@/views/certd/pipeline/group/group-selector.vue";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { useCertViewer } from "/@/views/certd/pipeline/use";
 import { useI18n } from "/src/locales";
-import { projectDict } from "../dicts";
+import { myProjectDict } from "../dicts";
 import { useProjectStore } from "/@/store/project";
 
 export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
@@ -445,6 +445,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           type: "dict-select",
           search: {
             show: true,
+            col: { span: 2 },
           },
           dict: dict({
             data: statusUtil.getOptions(),
@@ -537,6 +538,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           type: "dict-select",
           search: {
             show: true,
+            col: { span: 2 },
           },
           dict: dict({
             data: [
@@ -637,7 +639,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
         projectId: {
           title: t("certd.fields.projectName"),
           type: "dict-select",
-          dict: projectDict,
+          dict: myProjectDict,
         },
         updateTime: {
           title: t("certd.fields.updateTime"),

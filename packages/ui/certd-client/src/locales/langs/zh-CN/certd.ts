@@ -220,6 +220,8 @@ export default {
     projectManager: "项目管理",
     projectDetail: "项目详情",
     enterpriseSetting: "企业设置",
+    myProjectManager: "我的项目",
+    myProjectDetail: "项目详情",
   },
   certificateRepo: {
     title: "证书仓库",

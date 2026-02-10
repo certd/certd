@@ -7,9 +7,10 @@
         </a-menu-item>
       </a-menu>
     </template>
-    <div class="rounded pl-2 pr-2 px-2 py-1 flex-center flex pointer bg-accent h-10 button-text">
+    <div class="rounded pl-3 pr-3 px-2 py-1 flex-center flex pointer items-center bg-accent h-10 button-text">
+      <fs-icon icon="ion:apps" class="mr-1"></fs-icon>
       {{ projectStore.currentProject?.name || "..." }}
-      <DownOutlined class="ml-1" />
+      <fs-icon icon="ion:chevron-down-outline" class="ml-1"></fs-icon>
     </div>
   </a-dropdown>
 </template>

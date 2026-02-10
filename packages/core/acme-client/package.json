@@ -53,7 +53,7 @@
         "prepublishOnly": "npm run build-docs",
         "test": "mocha -t 60000 \"test/setup.js\" \"test/**/*.spec.js\"",
         "pub": "npm publish",
-        "compile": "tsc --skipLibCheck --watch"
+        "compile": "echo '1'"
     },
     "repository": {
         "type": "git",

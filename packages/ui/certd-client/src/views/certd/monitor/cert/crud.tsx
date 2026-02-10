@@ -11,7 +11,7 @@ import CertView from "/@/views/certd/pipeline/cert-view.vue";
 import { useCertUpload } from "/@/views/certd/pipeline/cert-upload/use";
 import { useSettingStore } from "/@/store/settings";
 import { useProjectStore } from "/@/store/project";
-import { projectDict } from "../../dicts";
+import { myProjectDict } from "../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -350,7 +350,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         projectId: {
           title: t("certd.fields.projectName"),
           type: "dict-select",
-          dict: projectDict,
+          dict: myProjectDict,
         },
       },
     },

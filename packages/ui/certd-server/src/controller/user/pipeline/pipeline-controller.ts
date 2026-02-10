@@ -1,11 +1,11 @@
-import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { Constants, CrudController, SysSettingsService } from '@certd/lib-server';
-import { PipelineService } from '../../../modules/pipeline/service/pipeline-service.js';
+import { isPlus } from '@certd/plus-core';
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
+import { SiteInfoService } from '../../../modules/monitor/index.js';
 import { PipelineEntity } from '../../../modules/pipeline/entity/pipeline.js';
 import { HistoryService } from '../../../modules/pipeline/service/history-service.js';
+import { PipelineService } from '../../../modules/pipeline/service/pipeline-service.js';
 import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
-import { SiteInfoService } from '../../../modules/monitor/index.js';
-import { isPlus } from '@certd/plus-core';
 
 /**
  * 证书
@@ -25,6 +25,7 @@ export class PipelineController extends CrudController<PipelineService> {
   @Inject()
   siteInfoService: SiteInfoService;
 
+
   getService() {
     return this.service;
   }
@@ -34,6 +35,8 @@ export class PipelineController extends CrudController<PipelineService> {
     const isAdmin = await this.authService.isAdmin(this.ctx);
     const publicSettings = await this.sysSettingsService.getPublicSettings();
 
+    const {projectId,userId} = this.getProjectUserId("read")
+     body.query.projectId = projectId
     let onlyOther = false
     if (isAdmin) {
       if (publicSettings.managerOtherUserPipeline) {
@@ -44,10 +47,10 @@ export class PipelineController extends CrudController<PipelineService> {
           delete body.query.userId;
         }
       } else {
-        body.query.userId = this.getUserId();
+        body.query.userId = userId;
       }
     } else {
-      body.query.userId = this.getUserId();
+      body.query.userId = userId;
     }
 
     const title = body.query.title;
@@ -76,14 +79,17 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/getSimpleByIds', { summary: Constants.per.authOnly })
   async getSimpleById(@Body(ALL) body) {
-    const ret = await this.getService().getSimplePipelines(body.ids, this.getUserId());
+    const {projectId,userId} = this.getProjectUserId("read")
+    const ret = await this.getService().getSimplePipelines(body.ids, userId,projectId);
     return this.ok(ret);
   }
 
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean: PipelineEntity) {
-    bean.userId = this.getUserId();
+    const {projectId,userId} = this.getProjectUserId("write")
+    bean.userId = userId
+    bean.projectId = projectId
     return super.add(bean);
   }
 

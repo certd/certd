@@ -6,7 +6,7 @@ import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, Edi
 import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
-import { projectDict } from "../dicts";
+import { myProjectDict } from "../dicts";
 import { useProjectStore } from "/@/store/project";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
@@ -205,7 +205,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         projectId: {
           title: t("certd.fields.projectName"),
           type: "dict-select",
-          dict: projectDict,
+          dict: myProjectDict,
         },
         updateTime: {
           title: t("certd.fields.updateTime"),

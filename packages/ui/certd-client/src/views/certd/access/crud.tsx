@@ -1,10 +1,10 @@
 // @ts-ignore
-import { useI18n } from "/src/locales";
-import { ref } from "vue";
-import { getCommonColumnDefine } from "/@/views/certd/access/common";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { projectDict } from "../dicts";
+import { ref } from "vue";
+import { myProjectDict } from "../dicts";
 import { useProjectStore } from "/@/store/project";
+import { getCommonColumnDefine } from "/@/views/certd/access/common";
+import { useI18n } from "/src/locales";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -126,7 +126,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         projectId: {
           title: t("certd.fields.projectName"),
           type: "dict-select",
-          dict: projectDict,
+          dict: myProjectDict,
         },
       },
     },

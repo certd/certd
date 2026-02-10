@@ -4,7 +4,7 @@ import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, Edi
 import { OPEN_API_DOC, openkeyApi } from "./api";
 import { useModal } from "/@/use/use-modal";
 import { useProjectStore } from "/@/store/project";
-import { projectDict } from "../../dicts";
+import { myProjectDict } from "../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -172,7 +172,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         projectId: {
           title: t("certd.fields.projectName"),
           type: "dict-select",
-          dict: projectDict,
+          dict: myProjectDict,
         },
         createTime: {
           title: t("certd.fields.createTime"),

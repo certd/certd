@@ -6,7 +6,7 @@ import { Modal } from "ant-design-vue";
 import { mitter } from "/@/utils/util.mitt";
 import { useI18n } from "/src/locales";
 import { useProjectStore } from "/@/store/project";
-import { projectDict } from "../dicts";
+import { myProjectDict } from "../dicts";
 
 export function notificationProvide(api: any) {
   provide("notificationApi", api);
@@ -254,7 +254,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
     projectId: {
       title: t("certd.fields.projectName"),
       type: "dict-select",
-      dict: projectDict,
+      dict: myProjectDict,
     },
   };
 }

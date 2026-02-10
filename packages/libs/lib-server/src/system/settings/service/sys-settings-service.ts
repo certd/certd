@@ -7,9 +7,9 @@ import { BaseSettings, SysInstallInfo, SysPrivateSettings, SysPublicSettings, Sy
 import { getAllSslProviderDomains, setSslProviderReverseProxies } from '@certd/acme-client';
 import { cache, logger, mergeUtils, setGlobalProxy } from '@certd/basic';
 import * as dns from 'node:dns';
-import { BaseService } from '../../../basic/index.js';
+import { BaseService, setAdminMode } from '../../../basic/index.js';
 import { executorQueue } from '../../basic/service/executor-queue.js';
-const {merge} = mergeUtils;
+const { merge } = mergeUtils;
 /**
  * 设置
  */
@@ -117,6 +117,8 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
 
   async savePublicSettings(bean: SysPublicSettings) {
     await this.saveSetting(bean);
+    //让设置生效
+    await this.reloadPublicSettings();
   }
 
   async getPrivateSettings(): Promise<SysPrivateSettings> {
@@ -137,23 +139,33 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     await this.reloadPrivateSettings();
   }
 
+  async reloadSettings() {
+    await this.reloadPrivateSettings()
+    await this.reloadPublicSettings()
+  }
+
+  async reloadPublicSettings() {
+    const publicSetting = await this.getPublicSettings()
+    setAdminMode(publicSetting.adminMode)
+  }
+
   async reloadPrivateSettings() {
-    const bean = await this.getPrivateSettings();
+    const privateSetting = await this.getPrivateSettings();
     const opts = {
-      httpProxy: bean.httpProxy,
-      httpsProxy: bean.httpsProxy,
+      httpProxy: privateSetting.httpProxy,
+      httpsProxy: privateSetting.httpsProxy,
     };
     setGlobalProxy(opts);
 
-    if (bean.dnsResultOrder) {
-      dns.setDefaultResultOrder(bean.dnsResultOrder as any);
+    if (privateSetting.dnsResultOrder) {
+      dns.setDefaultResultOrder(privateSetting.dnsResultOrder as any);
     }
 
-    if (bean.pipelineMaxRunningCount){
-      executorQueue.setMaxRunningCount(bean.pipelineMaxRunningCount);
+    if (privateSetting.pipelineMaxRunningCount) {
+      executorQueue.setMaxRunningCount(privateSetting.pipelineMaxRunningCount);
     }
 
-    setSslProviderReverseProxies(bean.reverseProxies);
+    setSslProviderReverseProxies(privateSetting.reverseProxies);
   }
 
   async updateByKey(key: string, setting: any) {

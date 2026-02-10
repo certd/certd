@@ -76,6 +76,7 @@ export const useProjectStore = defineStore("app.project", () => {
     projects,
     myProjects,
     currentProject,
+    currentProjectId,
     isEnterprise,
     getSearchForm,
     loadMyProjects,

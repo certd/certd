@@ -14,7 +14,7 @@ import { ref } from "vue";
 import GroupSelector from "../../basic/group/group-selector.vue";
 import { createGroupDictRef } from "../../basic/group/api";
 import { useProjectStore } from "/@/store/project";
-import { projectDict } from "../../dicts";
+import { myProjectDict } from "../../dicts";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const api = siteInfoApi;
@@ -812,7 +812,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         projectId: {
           title: t("certd.fields.projectName"),
           type: "dict-select",
-          dict: projectDict,
+          dict: myProjectDict,
         },
       },
     },

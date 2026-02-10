@@ -993,7 +993,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return await this.repository.count({ where: { userId } });
   }
 
-  async getSimplePipelines(pipelineIds: number[], userId?: number) {
+  async getSimplePipelines(pipelineIds: number[], userId?: number,projectId?:number) {
     return await this.repository.find({
       select: {
         id: true,
@@ -1001,7 +1001,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       },
       where: {
         id: In(pipelineIds),
-        userId
+        userId,
+        projectId
       }
     });
   }
