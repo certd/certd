@@ -9,6 +9,7 @@ import { cache, logger, mergeUtils, setGlobalProxy } from '@certd/basic';
 import * as dns from 'node:dns';
 import { BaseService, setAdminMode } from '../../../basic/index.js';
 import { executorQueue } from '../../basic/service/executor-queue.js';
+import { isComm } from '@certd/plus-core';
 const { merge } = mergeUtils;
 /**
  * 设置
@@ -116,6 +117,12 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   }
 
   async savePublicSettings(bean: SysPublicSettings) {
+    if(isComm()){
+      if(bean.adminMode === 'enterprise'){
+        throw new Error("商业版不支持使用企业管理模式")
+      }
+    }
+    
     await this.saveSetting(bean);
     //让设置生效
     await this.reloadPublicSettings();

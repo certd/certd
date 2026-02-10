@@ -61,7 +61,7 @@ export abstract class BaseController {
     }
   }
 
-  getProjectId(permission:string) {
+  async getProjectId(permission:string) {
     if (!isEnterprise()) {
       return null
     }
@@ -71,13 +71,13 @@ export abstract class BaseController {
     }
     const userId = this.getUserId()
     const projectId = parseInt(projectIdStr)
-    this.checkProjectPermission(userId, projectId,permission)
+    await this.checkProjectPermission(userId, projectId,permission)
     return projectId;
   }
 
-  getProjectUserId(permission:string){
+  async getProjectUserId(permission:string){
     let userId = this.getUserId()
-    const projectId = this.getProjectId(permission)
+    const projectId = await this.getProjectId(permission)
     if(projectId){
       userId = 0
     }
@@ -85,11 +85,19 @@ export abstract class BaseController {
       projectId,userId
     }
   }
+  async getProjectUserIdRead(){
+    return await this.getProjectUserId("read")
+  }
+  async getProjectUserIdWrite(){
+    return await this.getProjectUserId("write")
+  }
+  async getProjectUserIdAdmin(){
+    return await this.getProjectUserId("admin")
+  }
 
   async checkProjectPermission(userId: number, projectId: number,permission:string) {
     const projectService:any = await this.applicationContext.getAsync("projectService");
     await projectService.checkPermission({userId,projectId,permission})
-
   }
 
 
