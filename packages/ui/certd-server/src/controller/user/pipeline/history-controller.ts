@@ -89,7 +89,12 @@ export class HistoryController extends CrudController<HistoryService> {
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body) {
     const { projectId, userId } = await this.getProjectUserIdRead()
-    body.query.projectId = projectId
+    if (!body){
+      body = {}
+    }
+    if (projectId){
+      body.projectId = projectId
+    }
 
     const isAdmin = this.authService.isAdmin(this.ctx);
     if (!isAdmin) {

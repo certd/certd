@@ -258,13 +258,7 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/refreshWebhookKey', { summary: Constants.per.authOnly })
   async refreshWebhookKey(@Body('id') id: number) {
-    
-    const { projectId } = await this.getProjectUserIdWrite()
-    if (projectId) {
-      await this.authService.checkEntityProjectId(this.getService(), projectId, id);
-    } else {
-      await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
-    }
+    await this.checkEntityOwner(this.getService(), id,"write");
     const res = await this.service.refreshWebhookKey(id);
     return this.ok({
       webhookKey: res,
