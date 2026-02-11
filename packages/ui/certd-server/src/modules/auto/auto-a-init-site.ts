@@ -51,7 +51,8 @@ export class AutoAInitSite {
     //加载一次密钥
     await this.sysSettingsService.getSecret();
 
-    await this.sysSettingsService.reloadPrivateSettings();
+    //加载设置
+    await this.sysSettingsService.reloadSettings();
 
     // 授权许可
     try {

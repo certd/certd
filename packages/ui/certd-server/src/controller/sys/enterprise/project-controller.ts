@@ -38,7 +38,11 @@ export class SysProjectController extends CrudController<ProjectEntity> {
     };
     merge(bean, def);
     bean.userId = this.getUserId();
-    return super.add(bean);
+    return super.add({
+      ...bean,
+      userId:0,
+      adminId: bean.userId,
+    });
   }
 
   @Post("/update", { summary: "sys:settings:edit" })

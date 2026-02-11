@@ -1,10 +1,10 @@
 <template>
-  <fs-page class="page-project-member">
+  <fs-page class="page-project-detail">
     <template #header>
       <div class="title">
-        {{ t("certd.projectMemberManager") }}
+        {{ t("certd.ent.projectDetailManager") }}
         <span class="sub">
-          {{ t("certd.projectMemberDescription") }}
+          {{ t("certd.ent.projectDetailDescription") }}
         </span>
       </div>
     </template>
@@ -30,7 +30,7 @@ import { useRoute } from "vue-router";
 const { t } = useI18n();
 
 defineOptions({
-  name: "ProjectMemberManager",
+  name: "ProjectDetail",
 });
 
 const route = useRoute();

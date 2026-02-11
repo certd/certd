@@ -1,10 +1,16 @@
-import { Inject } from '@midwayjs/core';
+import { ApplicationContext, Inject } from '@midwayjs/core';
+import type {IMidwayContainer} from  '@midwayjs/core';
 import * as koa from '@midwayjs/koa';
 import { Constants } from './constants.js';
+import { isEnterprise } from './mode.js';
+
 
 export abstract class BaseController {
   @Inject()
   ctx: koa.Context;
+
+  @ApplicationContext()
+  applicationContext: IMidwayContainer;
 
   /**
    * 成功返回
@@ -54,5 +60,45 @@ export abstract class BaseController {
       return true;
     }
   }
+
+  async getProjectId(permission:string) {
+    if (!isEnterprise()) {
+      return null
+    }
+    const projectIdStr = this.ctx.headers["project-id"] as string;
+    if (!projectIdStr) {
+      throw new Error("projectId 不能为空")
+    }
+    const userId = this.getUserId()
+    const projectId = parseInt(projectIdStr)
+    await this.checkProjectPermission(userId, projectId,permission)
+    return projectId;
+  }
+
+  async getProjectUserId(permission:string){
+    let userId = this.getUserId()
+    const projectId = await this.getProjectId(permission)
+    if(projectId){
+      userId = 0
+    }
+    return {
+      projectId,userId
+    }
+  }
+  async getProjectUserIdRead(){
+    return await this.getProjectUserId("read")
+  }
+  async getProjectUserIdWrite(){
+    return await this.getProjectUserId("write")
+  }
+  async getProjectUserIdAdmin(){
+    return await this.getProjectUserId("admin")
+  }
+
+  async checkProjectPermission(userId: number, projectId: number,permission:string) {
+    const projectService:any = await this.applicationContext.getAsync("projectService");
+    await projectService.checkPermission({userId,projectId,permission})
+  }
+
 
 }

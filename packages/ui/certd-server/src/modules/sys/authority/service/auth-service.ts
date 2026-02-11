@@ -35,4 +35,8 @@ export class AuthService {
     }
     await service.checkUserId(id, ctx.user.id, userKey);
   }
+
+  async checkEntityProjectId(service:any,projectId = 0,id:any=0){
+    await service.checkUserId(id, projectId , "projectId");
+  }
 }

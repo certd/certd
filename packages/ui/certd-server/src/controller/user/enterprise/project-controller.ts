@@ -20,7 +20,7 @@ export class UserProjectController extends BaseController {
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body: any) {
     const userId= this.getUserId();
-    const res = await this.service.getByUserId(userId);
+    const res = await this.service.getUserProjects(userId);
     return this.ok(res);
   }
 

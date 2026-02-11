@@ -15,6 +15,30 @@ export const certdResources = [
     },
     children: [
       {
+        title: "certd.sysResources.myProjectManager",
+        name: "MyProjectManager",
+        path: "/certd/project",
+        component: "/certd/project/index.vue",
+        meta: {
+          show: true,
+          icon: "ion:apps",
+          permission: "sys:settings:edit",
+          keepAlive: true,
+        },
+      },
+      {
+        title: "certd.sysResources.myProjectDetail",
+        name: "MyProjectDetail",
+        path: "/certd/project/detail",
+        component: "/certd/project/detail/index.vue",
+        meta: {
+          isMenu: false,
+          show: true,
+          icon: "ion:apps",
+          permission: "sys:settings:edit",
+        },
+      },
+      {
         title: "certd.pipeline",
         name: "PipelineManager",
         path: "/certd/pipeline",
@@ -93,59 +117,6 @@ export const certdResources = [
           auth: true,
           keepAlive: true,
         },
-      },
-      {
-        title: "certd.sysResources.enterpriseManager",
-        name: "EnterpriseManager",
-        path: "/sys/enterprise",
-        redirect: "/sys/enterprise/project",
-        meta: {
-          icon: "ion:cart-outline",
-          permission: "sys:settings:edit",
-          show: () => {
-            const settingStore = useSettingStore();
-            return settingStore.isEnterprise;
-          },
-          keepAlive: true,
-        },
-        children: [
-          {
-            title: "certd.sysResources.projectManager",
-            name: "ProjectManager",
-            path: "/sys/enterprise/project",
-            component: "/sys/enterprise/project/index.vue",
-            meta: {
-              show: true,
-              icon: "ion:cart",
-              permission: "sys:settings:edit",
-              keepAlive: true,
-            },
-          },
-          {
-            title: "certd.sysResources.projectMemberManager",
-            name: "ProjectMemberManager",
-            path: "/sys/enterprise/project/member",
-            component: "/sys/enterprise/project/member/index.vue",
-            meta: {
-              isMenu: false,
-              show: true,
-              icon: "ion:cart",
-              permission: "sys:settings:edit",
-            },
-          },
-          {
-            title: "certd.sysResources.enterpriseSetting",
-            name: "EnterpriseSetting",
-            path: "/sys/enterprise/setting",
-            redirect: "/sys/settings?tab=mode",
-            meta: {
-              isMenu: true,
-              show: true,
-              icon: "ion:cart",
-              permission: "sys:settings:edit",
-            },
-          },
-        ],
       },
       {
         title: "certd.settings",

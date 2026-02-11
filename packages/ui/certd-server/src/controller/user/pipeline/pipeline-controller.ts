@@ -1,11 +1,11 @@
-import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { Constants, CrudController, SysSettingsService } from '@certd/lib-server';
-import { PipelineService } from '../../../modules/pipeline/service/pipeline-service.js';
+import { isPlus } from '@certd/plus-core';
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
+import { SiteInfoService } from '../../../modules/monitor/index.js';
 import { PipelineEntity } from '../../../modules/pipeline/entity/pipeline.js';
 import { HistoryService } from '../../../modules/pipeline/service/history-service.js';
+import { PipelineService } from '../../../modules/pipeline/service/pipeline-service.js';
 import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
-import { SiteInfoService } from '../../../modules/monitor/index.js';
-import { isPlus } from '@certd/plus-core';
 
 /**
  * 证书
@@ -25,6 +25,7 @@ export class PipelineController extends CrudController<PipelineService> {
   @Inject()
   siteInfoService: SiteInfoService;
 
+
   getService() {
     return this.service;
   }
@@ -34,6 +35,8 @@ export class PipelineController extends CrudController<PipelineService> {
     const isAdmin = await this.authService.isAdmin(this.ctx);
     const publicSettings = await this.sysSettingsService.getPublicSettings();
 
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    body.query.projectId = projectId
     let onlyOther = false
     if (isAdmin) {
       if (publicSettings.managerOtherUserPipeline) {
@@ -44,10 +47,10 @@ export class PipelineController extends CrudController<PipelineService> {
           delete body.query.userId;
         }
       } else {
-        body.query.userId = this.getUserId();
+        body.query.userId = userId;
       }
     } else {
-      body.query.userId = this.getUserId();
+      body.query.userId = userId;
     }
 
     const title = body.query.title;
@@ -76,30 +79,43 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/getSimpleByIds', { summary: Constants.per.authOnly })
   async getSimpleById(@Body(ALL) body) {
-    const ret = await this.getService().getSimplePipelines(body.ids, this.getUserId());
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    const ret = await this.getService().getSimplePipelines(body.ids, userId, projectId);
     return this.ok(ret);
   }
 
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean: PipelineEntity) {
-    bean.userId = this.getUserId();
+    const { projectId, userId } = await this.getProjectUserIdWrite()
+    bean.userId = userId
+    bean.projectId = projectId
     return super.add(bean);
   }
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
+    const { projectId } = await this.getProjectUserIdWrite()
+    if (projectId) {
+      await this.authService.checkEntityProjectId(this.getService(), projectId, bean.id);
+    } else {
+      await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
+    }
     delete bean.userId;
     return super.update(bean);
   }
 
   @Post('/save', { summary: Constants.per.authOnly })
   async save(@Body(ALL) bean: { addToMonitorEnabled: boolean, addToMonitorDomains: string } & PipelineEntity) {
+    const { projectId, userId } = await this.getProjectUserIdWrite()
     if (bean.id > 0) {
-      await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
+      if (projectId) {
+        await this.authService.checkEntityProjectId(this.getService(), projectId, bean.id);
+      } else {
+        await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
+      }
     } else {
-      bean.userId = this.getUserId();
+      bean.userId = userId;
     }
 
     if (!this.isAdmin()) {
@@ -115,7 +131,7 @@ export class PipelineController extends CrudController<PipelineService> {
         //增加证书监控
         await this.siteInfoService.doImport({
           text: bean.addToMonitorDomains,
-          userId: this.getUserId(),
+          userId: userId,
         });
       }
     }
@@ -124,14 +140,24 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    const { projectId } = await this.getProjectUserIdWrite()
+    if (projectId) {
+      await this.authService.checkEntityProjectId(this.getService(), projectId, id);
+    } else {
+      await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    }
     await this.service.delete(id);
     return this.ok({});
   }
 
   @Post('/disabled', { summary: Constants.per.authOnly })
   async disabled(@Body(ALL) bean) {
-    await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
+    const { projectId } = await this.getProjectUserIdWrite()
+    if (projectId) {
+      await this.authService.checkEntityProjectId(this.getService(), projectId, bean.id);
+    } else {
+      await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
+    }
     delete bean.userId;
     await this.service.disabled(bean.id, bean.disabled);
     return this.ok({});
@@ -139,75 +165,140 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/detail', { summary: Constants.per.authOnly })
   async detail(@Query('id') id: number) {
-    await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    const { projectId } = await this.getProjectUserIdRead()
+    if (projectId) {
+      await this.authService.checkEntityProjectId(this.getService(), projectId, id);
+    } else {
+      await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    }
     const detail = await this.service.detail(id);
     return this.ok(detail);
   }
 
   @Post('/trigger', { summary: Constants.per.authOnly })
   async trigger(@Query('id') id: number, @Query('stepId') stepId?: string) {
-    await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    const { projectId } = await this.getProjectUserIdWrite()
+    if (projectId) {
+      await this.authService.checkEntityProjectId(this.getService(), projectId, id);
+    } else {
+      await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    }
     await this.service.trigger(id, stepId, true);
     return this.ok({});
   }
 
   @Post('/cancel', { summary: Constants.per.authOnly })
   async cancel(@Query('historyId') historyId: number) {
-    await this.authService.checkEntityUserId(this.ctx, this.historyService, historyId);
+    const { projectId } = await this.getProjectUserIdWrite()
+    if (projectId) {
+      await this.authService.checkEntityProjectId(this.historyService, projectId, historyId);
+    } else {
+      await this.authService.checkEntityUserId(this.ctx, this.historyService, historyId);
+    }
     await this.service.cancel(historyId);
     return this.ok({});
   }
 
   @Post('/count', { summary: Constants.per.authOnly })
   async count() {
-    const count = await this.service.count({ userId: this.getUserId() });
+    const { userId } = await this.getProjectUserIdRead()
+    const count = await this.service.count({ userId: userId });
     return this.ok({ count });
+  }
+
+
+  private async checkPermissionCall(callback:any){
+    let { projectId ,userId} = await this.getProjectUserIdWrite()
+    if(projectId){
+      return await callback({userId,projectId});
+    }
+    const isAdmin = await this.authService.isAdmin(this.ctx);
+    userId = isAdmin ? undefined : userId;
+    return await callback({userId});
   }
 
   @Post('/batchDelete', { summary: Constants.per.authOnly })
   async batchDelete(@Body('ids') ids: number[]) {
-    const isAdmin = await this.authService.isAdmin(this.ctx);
-    const userId = isAdmin ? undefined : this.getUserId();
-    await this.service.batchDelete(ids, userId);
-    return this.ok({});
+    // let { projectId ,userId} = await this.getProjectUserIdWrite()
+    // if(projectId){
+    //   await this.service.batchDelete(ids, null,projectId);
+    //   return this.ok({});
+    // }
+    // const isAdmin = await this.authService.isAdmin(this.ctx);
+    // userId = isAdmin ? undefined : userId;
+    // await this.service.batchDelete(ids, userId);
+    // return this.ok({});
+    await this.checkPermissionCall(async ({userId,projectId})=>{
+      await this.service.batchDelete(ids, userId,projectId);
+    })
+    return this.ok({})
   }
 
 
 
   @Post('/batchUpdateGroup', { summary: Constants.per.authOnly })
   async batchUpdateGroup(@Body('ids') ids: number[], @Body('groupId') groupId: number) {
-    const isAdmin = await this.authService.isAdmin(this.ctx);
-    const userId = isAdmin ? undefined : this.getUserId();
-    await this.service.batchUpdateGroup(ids, groupId, userId);
+    // let { projectId ,userId} = await this.getProjectUserIdWrite()
+    // if(projectId){
+    //   await this.service.batchUpdateGroup(ids, groupId, null,projectId);
+    //   return this.ok({});
+    // }
+
+    // const isAdmin = await this.authService.isAdmin(this.ctx);
+    // userId = isAdmin ? undefined : this.getUserId();
+    // await this.service.batchUpdateGroup(ids, groupId, userId);
+    await this.checkPermissionCall(async ({userId,projectId})=>{
+      await this.service.batchUpdateGroup(ids, groupId, userId,projectId);
+    })
     return this.ok({});
   }
 
 
   @Post('/batchUpdateTrigger', { summary: Constants.per.authOnly })
   async batchUpdateTrigger(@Body('ids') ids: number[], @Body('trigger') trigger: any) {
-    const isAdmin = await this.authService.isAdmin(this.ctx);
-    const userId = isAdmin ? undefined : this.getUserId();
-    await this.service.batchUpdateTrigger(ids, trigger, userId);
+    // let { projectId ,userId} = await this.getProjectUserIdWrite()
+    // if(projectId){
+    //  await this.service.batchUpdateTrigger(ids, trigger, null,projectId);
+    //   return this.ok({});
+    // }
+
+    // const isAdmin = await this.authService.isAdmin(this.ctx);
+    // userId = isAdmin ? undefined : this.getUserId();
+    // await this.service.batchUpdateTrigger(ids, trigger, userId);
+    await this.checkPermissionCall(async ({userId,projectId})=>{
+      await this.service.batchUpdateTrigger(ids, trigger, userId,projectId);
+    })
     return this.ok({});
   }
 
   @Post('/batchUpdateNotification', { summary: Constants.per.authOnly })
   async batchUpdateNotification(@Body('ids') ids: number[], @Body('notification') notification: any) {
-    const isAdmin = await this.authService.isAdmin(this.ctx);
-    const userId = isAdmin ? undefined : this.getUserId();
-    await this.service.batchUpdateNotifications(ids, notification, userId);
+    // const isAdmin = await this.authService.isAdmin(this.ctx);
+    // const userId = isAdmin ? undefined : this.getUserId();
+    // await this.service.batchUpdateNotifications(ids, notification, userId);
+    await this.checkPermissionCall(async ({userId,projectId})=>{
+      await this.service.batchUpdateNotifications(ids, notification, userId,projectId);
+    })
     return this.ok({});
   }
 
   @Post('/batchRerun', { summary: Constants.per.authOnly })
   async batchRerun(@Body('ids') ids: number[], @Body('force') force: boolean) {
-    await this.service.batchRerun(ids, this.getUserId(), force);
+    await this.checkPermissionCall(async ({userId,projectId})=>{
+      await this.service.batchRerun(ids,  force,userId,projectId);
+    })
     return this.ok({});
   }
 
   @Post('/refreshWebhookKey', { summary: Constants.per.authOnly })
   async refreshWebhookKey(@Body('id') id: number) {
-    await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    
+    const { projectId } = await this.getProjectUserIdWrite()
+    if (projectId) {
+      await this.authService.checkEntityProjectId(this.getService(), projectId, id);
+    } else {
+      await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    }
     const res = await this.service.refreshWebhookKey(id);
     return this.ok({
       webhookKey: res,

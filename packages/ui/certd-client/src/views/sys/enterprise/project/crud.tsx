@@ -6,6 +6,7 @@ import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, 
 import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 import { Modal } from "ant-design-vue";
+import { userDict } from "../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -80,17 +81,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             component: {},
-            helper: t("certd.ent.projectNameHelper"),
             rules: [{ required: true, message: t("certd.requiredField") }],
           },
           column: {
             width: 200,
             cellRender({ row }) {
-              return (
-                <router-link to={`/sys/enterprise/project/detail`} query={{ projectId: row.id }}>
-                  {row.name}
-                </router-link>
-              );
+              return <router-link to={{ path: `/sys/enterprise/project/detail`, query: { projectId: row.id } }}>{row.name}</router-link>;
             },
           },
         },
@@ -123,6 +119,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 },
               },
             },
+          },
+        },
+        adminId: {
+          title: t("certd.fields.adminId"),
+          type: "dict-select",
+          dict: userDict,
+          column: {
+            width: 160,
           },
         },
         createTime: {

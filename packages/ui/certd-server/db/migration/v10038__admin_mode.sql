@@ -4,6 +4,7 @@ CREATE TABLE "cd_project"
   "id"          integer PRIMARY KEY AUTOINCREMENT NOT NULL,
   "user_id"     integer      NOT NULL,
   "name"        varchar(512) NOT NULL,
+  "admin_id"    integer      NOT NULL,
   "disabled"    boolean      NOT NULL DEFAULT (false),
   "create_time" datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "update_time" datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP)
@@ -11,6 +12,7 @@ CREATE TABLE "cd_project"
 
 
 CREATE INDEX "index_project_user_id" ON "cd_project" ("user_id");
+CREATE INDEX "index_project_admin_id" ON "cd_project" ("admin_id");
 INSERT INTO cd_project (id, user_id, "name", "disabled") VALUES (1, 1, 'default', false);
 
 

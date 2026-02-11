@@ -1,7 +1,7 @@
 <template>
   <div class="sys-settings-form sys-settings-mode">
     <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
-      <a-form-item :label="t('certd.adminMode')" :name="['public', 'adminMode']">
+      <a-form-item :label="t('certd.sys.setting.adminMode')" :name="['public', 'adminMode']">
         <fs-dict-radio v-model:value="formState.public.adminMode" :dict="adminModeDict" />
       </a-form-item>
 
@@ -30,11 +30,11 @@ defineOptions({
 const adminModeDict = dict({
   data: [
     {
-      label: t("certd.adminMode.enterpriseMode"),
+      label: t("certd.sys.setting.enterpriseMode"),
       value: "enterprise",
     },
     {
-      label: t("certd.adminMode.saasMode"),
+      label: t("certd.sys.setting.saasMode"),
       value: "saas",
     },
   ],

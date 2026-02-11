@@ -6,6 +6,7 @@ import * as api from "./api";
 import { useSettingStore } from "/@/store/settings";
 import { useUserStore } from "/@/store/user";
 import { useI18n } from "/src/locales";
+import { userDict } from "../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -26,6 +27,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     const res = await api.AddObj(form);
     return res;
   };
+
+  const projectId = context.projectId;
 
   const userStore = useUserStore();
   const settingStore = useSettingStore();
@@ -60,6 +63,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         minWidth: 200,
         fixed: "right",
       },
+      search: {
+        initialForm: {
+          projectId,
+        },
+      },
       columns: {
         id: {
           title: "ID",
@@ -79,6 +87,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: false,
           },
           form: {
+            value: projectId,
+            show: false,
+          },
+          editForm: {
             show: false,
           },
           column: {
@@ -87,23 +99,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         userId: {
-          title: "用户ID",
+          title: "用户",
           type: "dict-select",
-          dict: dict({
-            url: "/sys/authority/user/getSimpleUsers",
-            value: "id",
-            label: "nickName",
-            labelBuilder: (item: any) => item.nickName || item.username || item.phoneCode + item.mobile,
-          }),
+          dict: userDict,
           search: {
-            show: false,
+            show: true,
           },
-          form: {
+          form: {},
+          editForm: {
             show: false,
           },
           column: {
             width: 200,
-            show: false,
           },
         },
         permission: {
@@ -111,9 +118,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "dict-select",
           dict: dict({
             data: [
-              { label: t("certd.read"), value: "read", color: "cyan" },
-              { label: t("certd.write"), value: "write", color: "blue" },
-              { label: t("certd.admin"), value: "admin", color: "green" },
+              { label: t("certd.ent.permission.read"), value: "read", color: "cyan" },
+              { label: t("certd.ent.permission.write"), value: "write", color: "blue" },
+              { label: t("certd.ent.permission.admin"), value: "admin", color: "green" },
             ],
           }),
           search: {

@@ -17,6 +17,16 @@ export const projectPermissionDict = dict({
   ],
 });
 
-export const projectDict = dict({
-  url: "/sys/enterprise/project/list",
+export const myProjectDict = dict({
+  url: "/enterprise/project/list",
+});
+
+export const userDict = dict({
+  url: "/sys/authority/user/getSimpleUsers",
+  value: "id",
+  onReady: ({ dict }) => {
+    for (const item of dict.data) {
+      item.label = item.nickName || item.username || item.phoneCode + item.mobile;
+    }
+  },
 });

@@ -14,7 +14,8 @@ import GroupSelector from "/@/views/certd/pipeline/group/group-selector.vue";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { useCertViewer } from "/@/views/certd/pipeline/use";
 import { useI18n } from "/src/locales";
-import { projectDict } from "../dicts";
+import { myProjectDict } from "../dicts";
+import { useProjectStore } from "/@/store/project";
 
 export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -66,6 +67,8 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
   const { viewCert, downloadCert } = useCertViewer();
   const userStore = useUserStore();
   const settingStore = useSettingStore();
+
+  const projectStore = useProjectStore();
 
   const DEFAULT_WILL_EXPIRE_DAYS = settingStore.sysPublic.defaultWillExpireDays || settingStore.sysPublic.defaultCertRenewDays || 15;
 
@@ -148,7 +151,9 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
         },
       },
       search: {
-        col: { span: 3 },
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
       },
       form: {
         afterSubmit({ form, res, mode }) {
@@ -440,6 +445,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           type: "dict-select",
           search: {
             show: true,
+            col: { span: 2 },
           },
           dict: dict({
             data: statusUtil.getOptions(),
@@ -532,6 +538,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           type: "dict-select",
           search: {
             show: true,
+            col: { span: 2 },
           },
           dict: dict({
             data: [
@@ -631,8 +638,8 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
         },
         projectId: {
           title: t("certd.fields.projectName"),
-          type: "number",
-          dict: projectDict,
+          type: "dict-select",
+          dict: myProjectDict,
         },
         updateTime: {
           title: t("certd.fields.updateTime"),

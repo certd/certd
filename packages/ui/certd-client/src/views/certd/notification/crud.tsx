@@ -2,6 +2,7 @@ import { ref } from "vue";
 import { getCommonColumnDefine } from "./common";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { createNotificationApi } from "/@/views/certd/notification/api";
+import { useProjectStore } from "/@/store/project";
 const api = createNotificationApi();
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -26,6 +27,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const typeRef = ref();
   const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef, api);
+  const projectStore = useProjectStore();
   return {
     crudOptions: {
       request: {
@@ -33,6 +35,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         addRequest,
         editRequest,
         delRequest,
+      },
+      search: {
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
       },
       form: {
         labelCol: {

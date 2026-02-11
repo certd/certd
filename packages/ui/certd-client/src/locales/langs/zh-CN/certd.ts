@@ -167,6 +167,8 @@ export default {
     updateTime: "更新时间",
     triggerType: "触发类型",
     pipelineId: "流水线Id",
+    projectName: "项目",
+    adminId: "管理员",
   },
   pi: {
     validTime: "流水线有效期",
@@ -214,9 +216,12 @@ export default {
     orderManager: "订单管理",
     userSuites: "用户套餐",
     netTest: "网络测试",
-    enterpriseSetting: "企业管理设置",
+    enterpriseManager: "企业管理设置",
     projectManager: "项目管理",
-    projectUserManager: "项目用户管理",
+    projectDetail: "项目详情",
+    enterpriseSetting: "企业设置",
+    myProjectManager: "我的项目",
+    myProjectDetail: "项目详情",
   },
   certificateRepo: {
     title: "证书仓库",
@@ -796,6 +801,12 @@ export default {
       pipelineSetting: "流水线设置",
       oauthSetting: "第三方登录",
       networkSetting: "网络设置",
+      adminModeSetting: "管理模式",
+      adminModeHelper: "企业管理模式: 企业内部使用，通过项目来隔离权限，流水线、授权数据属于项目。\nsaas模式：供外部用户注册使用，各个用户之间数据隔离，流水线、授权数据属于用户。",
+
+      adminMode: "管理模式",
+      enterpriseMode: "企业模式",
+      saasMode: "SaaS模式",
 
       showRunStrategy: "显示运行策略选择",
       showRunStrategyHelper: "任务设置中是否允许选择运行策略",
@@ -886,11 +897,16 @@ export default {
     select: "选择",
     placeholder: "请选择",
   },
-  adminMode: {
-    enterpriseMode: "企业模式",
-    saasMode: "SaaS模式",
-  },
   ent: {
     projectName: "项目名称",
+    projectDescription: "项目描述",
+    projectDetailManager: "项目详情",
+    projectDetailDescription: "管理项目成员",
+    projectPermission: "权限",
+    permission: {
+      read: "读取",
+      write: "写入",
+      admin: "管理员",
+    },
   },
 };

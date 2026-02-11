@@ -160,6 +160,8 @@ export default {
     updateTime: "Update Time",
     triggerType: "Trigger Type",
     pipelineId: "Pipeline Id",
+    projectName: "Project",
+    adminId: "Admin",
   },
 
   pi: {
@@ -212,6 +214,8 @@ export default {
     enterpriseSetting: "Enterprise Settings",
     projectManager: "Project Management",
     projectUserManager: "Project User Management",
+    myProjectManager: "My Projects",
+    myProjectDetail: "Project Detail",
   },
   certificateRepo: {
     title: "Certificate Repository",
@@ -790,6 +794,10 @@ export default {
       pipelineSetting: "Pipeline Settings",
       oauthSetting: "OAuth2 Settings",
       networkSetting: "Network Settings",
+      adminModeSetting: "Admin Mode Settings",
+      adminModeHelper: "enterprise mode : allow to create and manage pipelines, roles, users, etc.\n saas mode : only allow to create and manage pipelines",
+      enterpriseMode: "Enterprise Mode",
+      saasMode: "SaaS Mode",
 
       showRunStrategy: "Show RunStrategy",
       showRunStrategyHelper: "Allow modify the run strategy of the task",
@@ -868,12 +876,20 @@ export default {
     fromType: "From Type",
     expirationDate: "Expiration Date",
   },
+  ent: {
+    projectName: "Project Name",
+    projectDescription: "Project Description",
+    projectDetailManager: "Project Detail",
+    projectDetailDescription: "Manage Project Members",
+    projectPermission: "Permission",
+    permission: {
+      read: "Read",
+      write: "Write",
+      admin: "Admin",
+    },
+  },
   addonSelector: {
     select: "Select",
     placeholder: "select please",
-  },
-  adminMode: {
-    enterpriseMode: "Enterprise Mode",
-    saasMode: "SaaS Mode",
   },
 };

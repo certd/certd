@@ -29,7 +29,7 @@
         <a-tab-pane key="network" :tab="t('certd.sys.setting.networkSetting')">
           <SettingNetwork v-if="activeKey === 'network'" />
         </a-tab-pane>
-        <a-tab-pane key="mode" :tab="t('certd.adminMode')">
+        <a-tab-pane key="mode" :tab="t('certd.sys.setting.adminModeSetting')">
           <SettingMode v-if="activeKey === 'mode'" />
         </a-tab-pane>
       </a-tabs>

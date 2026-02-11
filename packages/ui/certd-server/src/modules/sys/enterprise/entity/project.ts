@@ -10,6 +10,9 @@ export class ProjectEntity {
   @Column({ name: 'user_id', comment: 'UserId' })
   userId: number;
 
+  @Column({ name: 'admin_id', comment: '管理员Id' })
+  adminId: number;
+
   @Column({ name: 'name', comment: '项目名称' })
   name: string;
 

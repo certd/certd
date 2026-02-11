@@ -4,6 +4,7 @@ import { In, MoreThan, Repository } from "typeorm";
 import {
   AccessService,
   BaseService,
+  isEnterprise,
   NeedSuiteException,
   NeedVIPException,
   PageReq,
@@ -38,7 +39,7 @@ import { CnameRecordService } from "../../cname/service/cname-record-service.js"
 import { PluginConfigGetter } from "../../plugin/service/plugin-config-getter.js";
 import dayjs from "dayjs";
 import { DbAdapter } from "../../db/index.js";
-import { isComm, isPlus } from "@certd/plus-core";
+import { checkPlus, isComm, isPlus } from "@certd/plus-core";
 import { logger, utils } from "@certd/basic";
 import { UrlService } from "./url-service.js";
 import { NotificationService } from "./notification-service.js";
@@ -301,6 +302,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
     //     throw new NeedVIPException(`基础版最多只能创建${freeCount}条流水线`);
     //   }
     // }
+    if(isEnterprise()){
+      //企业模式不限制
+      checkPlus()
+      return;
+    }
+ 
     if (isComm()) {
       //校验pipelineCount
       const suiteSetting = await this.userSuiteService.getSuiteSetting();
@@ -328,6 +335,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         }
       }
     }
+    
   }
 
   async foreachPipeline(callback: (pipeline: PipelineEntity) => void) {
@@ -559,6 +567,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async beforeCheck(entity: PipelineEntity) {
+
+    if(isEnterprise()){
+      checkPlus()
+      return {}
+    }
+
     const validTimeEnabled = await this.isPipelineValidTimeEnabled(entity)
     if (!validTimeEnabled) {
       throw new Error(`流水线${entity.id}已过期，不予执行`);
@@ -582,7 +596,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       const res = await this.beforeCheck(entity);
       suite = res.suite
     } catch (e) {
-      logger.error(`流水线${entity.id}触发${triggerId}失败：${e.message}`);
+      logger.error(`流水线${entity.id}触发失败（${triggerId}）：${e.message}`);
     }
 
     const id = entity.id;
@@ -625,7 +639,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
     const userId = entity.userId;
     const historyId = await this.historyService.start(entity, triggerType);
-    const userIsAdmin = await this.userService.isAdmin(userId);
+    let userIsAdmin = false
+    if(userId){
+      userIsAdmin = await this.userService.isAdmin(userId);
+    }
     const user: UserInfo = {
       id: userId,
       role: userIsAdmin ? "admin" : "user"
@@ -836,7 +853,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return result;
   }
 
-  async batchDelete(ids: number[], userId: number) {
+  async batchDelete(ids: number[], userId?: number,projectId?:number) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
@@ -844,17 +861,23 @@ export class PipelineService extends BaseService<PipelineEntity> {
       if (userId) {
         await this.checkUserId(id, userId);
       }
+      if(projectId){
+        await this.checkUserId(id,projectId,"projectId")
+      }
       await this.delete(id);
     }
   }
 
-  async batchUpdateGroup(ids: number[], groupId: number, userId: any) {
+  async batchUpdateGroup(ids: number[], groupId: number, userId: any,projectId?:number) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
     const query: any = {}
     if (userId && userId > 0) {
       query.userId = userId;
+    }
+    if(projectId){
+      query.projectId = projectId;
     }
     await this.repository.update(
       {
@@ -866,13 +889,16 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
 
-  async batchUpdateTrigger(ids: number[], trigger: any, userId: any) {
+  async batchUpdateTrigger(ids: number[], trigger: any, userId: any,projectId?:number) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
     const query: any = {}
     if (userId && userId > 0) {
       query.userId = userId;
+    }
+    if(projectId){
+      query.projectId = projectId;
     }
     const list = await this.find({
       where: {
@@ -915,13 +941,16 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   }
 
-  async batchUpdateNotifications(ids: number[], notification: Notification, userId: any) {
+  async batchUpdateNotifications(ids: number[], notification: Notification, userId: any,projectId?:number) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
     const query: any = {}
     if (userId && userId > 0) {
       query.userId = userId;
+    }
+    if(projectId){
+      query.projectId = projectId;
     }
     const list = await this.find({
       where: {
@@ -950,7 +979,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async batchRerun(ids: number[], userId: any, force: boolean) {
+  async batchRerun(ids: number[], force: boolean,userId: any, projectId?:number) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
@@ -958,14 +987,18 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!userId || ids.length === 0) {
       return;
     }
+    const where:any = {
+        id: In(ids),
+        userId,
+    }
+    if(projectId){
+      where.projectId = projectId
+    }
     const list = await this.repository.find({
       select: {
         id: true
       },
-      where: {
-        id: In(ids),
-        userId
-      }
+      where:where
     });
 
     ids = list.map(item => item.id);
@@ -993,7 +1026,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return await this.repository.count({ where: { userId } });
   }
 
-  async getSimplePipelines(pipelineIds: number[], userId?: number) {
+  async getSimplePipelines(pipelineIds: number[], userId?: number,projectId?:number) {
     return await this.repository.find({
       select: {
         id: true,
@@ -1001,7 +1034,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       },
       where: {
         id: In(pipelineIds),
-        userId
+        userId,
+        projectId
       }
     });
   }
