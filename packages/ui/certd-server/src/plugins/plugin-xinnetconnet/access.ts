@@ -1,8 +1,8 @@
-import { IsAccess, AccessInput, BaseAccess } from '@certd/pipeline';
+import { AccessInput, BaseAccess, IsAccess, PageSearch } from '@certd/pipeline';
 
 /**
- * 这个注解将注册一个授权配置
- * 在certd的后台管理系统中，用户可以选择添加此类型的授权
+ 管理页面地址：https://www.dns.com.cn/login/toLogin.do
+是否有API接口，接口地址：https://api.bizcn.com/rrpservices
  */
 @IsAccess({
   name: 'xinnetconnect',
@@ -37,6 +37,23 @@ export class XinnetConnectAccess extends BaseAccess {
   })
   password = '';
 
+
+  async getDomainList(req: PageSearch): Promise<any> {
+    let bodyXml =`
+    <limit>${req.pageSize}</limit>
+    <offset>${req.pageNo}</offset>
+    `
+    if(req.searchKey){
+      bodyXml += `<domainname>${req.searchKey}</domainname>`
+    }
+
+    const res = await this.doRequest({
+      url: "/domainService",
+      bodyXml: bodyXml,
+      service: "getDomainList",
+    })
+    return res
+  }
 
 
   async addDnsRecord(req: {domain:string,hostRecord:string, value:string, type:string}): Promise<any> {
@@ -125,15 +142,19 @@ export class XinnetConnectAccess extends BaseAccess {
 
     // 提取返回结果
     const soapBody = result['soap:Envelope']['soap:Body'];
-    const addDnsRecordResponse = soapBody["ns1:addDnsRecordResponse"];
-    console.log(addDnsRecordResponse)
+    const keys = Object.keys(soapBody);
+    if (keys.length === 0) {
+      throw new Error('SOAP响应体为空');
+    }
+    const addDnsRecordResponse = soapBody[keys[0]];
+    this.ctx.logger.info(addDnsRecordResponse)
     const resultData = addDnsRecordResponse.response.result;
 
     const res = {
       code: resultData.$.code,
       msg: resultData.msg
     }
-    console.log('操作结果:', res);
+    this.ctx.logger.info('操作结果:', res);
 
     if (res.code != "200") {
       throw new Error(res.msg + " code:" + res.code);
