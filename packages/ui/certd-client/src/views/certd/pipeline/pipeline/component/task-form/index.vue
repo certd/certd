@@ -37,7 +37,7 @@
                   <div class="step-row">
                     <div class="text">
                       <fs-icon icon="ion:flash"></fs-icon>
-                      <h4 class="title" :class="{ disabled: element.disabled, deleted: element.disabled }">{{ element.title }}</h4>
+                      <h4 class="title" :class="{ disabled: element.disabled, deleted: element.disabled }" :title="element.title">{{ element.title }}</h4>
                     </div>
                     <div class="action">
                       <a key="edit" @click="stepEdit(currentTask, element, index)">编辑</a>
@@ -306,6 +306,9 @@ export default {
       justify-content: space-between;
       .text {
         display: flex;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         > * {
           margin: 0px;
           margin-right: 15px;
@@ -314,9 +317,16 @@ export default {
       .action {
         display: flex;
         align-items: center;
+        flex-wrap: nowrap;
+        word-wrap: nowrap;
+        margin-left: 10px;
         > * {
           margin-right: 10px;
           font-size: 14px;
+          display: flex;
+          align-items: center;
+          flex-wrap: nowrap;
+          white-space: nowrap;
         }
       }
     }
