@@ -95,25 +95,16 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    const { projectId } = await this.getProjectUserIdWrite()
-    if (projectId) {
-      await this.authService.checkEntityProjectId(this.getService(), projectId, bean.id);
-    } else {
-      await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
-    }
+    await this.checkEntityOwner(this.getService(), bean.id,"write");
     delete bean.userId;
     return super.update(bean);
   }
 
   @Post('/save', { summary: Constants.per.authOnly })
   async save(@Body(ALL) bean: { addToMonitorEnabled: boolean, addToMonitorDomains: string } & PipelineEntity) {
-    const { projectId, userId } = await this.getProjectUserIdWrite()
+     const { userId } = await this.getProjectUserIdWrite()
     if (bean.id > 0) {
-      if (projectId) {
-        await this.authService.checkEntityProjectId(this.getService(), projectId, bean.id);
-      } else {
-        await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
-      }
+      await this.checkEntityOwner(this.getService(), bean.id,"write");
     } else {
       bean.userId = userId;
     }
@@ -140,24 +131,14 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    const { projectId } = await this.getProjectUserIdWrite()
-    if (projectId) {
-      await this.authService.checkEntityProjectId(this.getService(), projectId, id);
-    } else {
-      await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
-    }
+    await this.checkEntityOwner(this.getService(), id,"write");
     await this.service.delete(id);
     return this.ok({});
   }
 
   @Post('/disabled', { summary: Constants.per.authOnly })
   async disabled(@Body(ALL) bean) {
-    const { projectId } = await this.getProjectUserIdWrite()
-    if (projectId) {
-      await this.authService.checkEntityProjectId(this.getService(), projectId, bean.id);
-    } else {
-      await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
-    }
+    await this.checkEntityOwner(this.getService(), bean.id,"write");
     delete bean.userId;
     await this.service.disabled(bean.id, bean.disabled);
     return this.ok({});
@@ -165,36 +146,21 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/detail', { summary: Constants.per.authOnly })
   async detail(@Query('id') id: number) {
-    const { projectId } = await this.getProjectUserIdRead()
-    if (projectId) {
-      await this.authService.checkEntityProjectId(this.getService(), projectId, id);
-    } else {
-      await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
-    }
+    await this.checkEntityOwner(this.getService(), id,"read");
     const detail = await this.service.detail(id);
     return this.ok(detail);
   }
 
   @Post('/trigger', { summary: Constants.per.authOnly })
   async trigger(@Query('id') id: number, @Query('stepId') stepId?: string) {
-    const { projectId } = await this.getProjectUserIdWrite()
-    if (projectId) {
-      await this.authService.checkEntityProjectId(this.getService(), projectId, id);
-    } else {
-      await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
-    }
+    await this.checkEntityOwner(this.getService(), id,"write");
     await this.service.trigger(id, stepId, true);
     return this.ok({});
   }
 
   @Post('/cancel', { summary: Constants.per.authOnly })
   async cancel(@Query('historyId') historyId: number) {
-    const { projectId } = await this.getProjectUserIdWrite()
-    if (projectId) {
-      await this.authService.checkEntityProjectId(this.historyService, projectId, historyId);
-    } else {
-      await this.authService.checkEntityUserId(this.ctx, this.historyService, historyId);
-    }
+    await this.checkEntityOwner(this.historyService, historyId,"write");
     await this.service.cancel(historyId);
     return this.ok({});
   }

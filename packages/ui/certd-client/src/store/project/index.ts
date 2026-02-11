@@ -52,12 +52,17 @@ export const useProjectStore = defineStore("app.project", () => {
     }
     const projects = await api.MyProjectList();
     myProjects.value = projects;
+    if (projects.length > 0 && !currentProjectId.value) {
+      changeCurrentProject(projects[0].id, true);
+    }
   }
 
-  function changeCurrentProject(id: string) {
+  function changeCurrentProject(id: string, silent?: boolean) {
     currentProjectId.value = id;
     LocalStorage.set("currentProjectId", id);
-    message.success("切换项目成功");
+    if (!silent) {
+      message.success("切换项目成功");
+    }
   }
 
   async function reload() {

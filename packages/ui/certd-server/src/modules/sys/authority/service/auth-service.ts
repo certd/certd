@@ -28,15 +28,15 @@ export class AuthService {
   }
 
   //管理员有权限查看其他用户的数据
-  async checkEntityUserId(ctx: any, service: any, id: any = 0, userKey = 'userId') {
+  async checkEntityUserId(ctx: any, service: any, ids: number| number[] = null, userKey = 'userId') {
     const isAdmin = await this.isAdmin(ctx);
     if (isAdmin) {
       return true;
     }
-    await service.checkUserId(id, ctx.user.id, userKey);
+    await service.checkUserId(ids, ctx.user.id, userKey);
   }
 
-  async checkEntityProjectId(service:any,projectId = 0,id:any=0){
-    await service.checkUserId(id, projectId , "projectId");
+  async checkEntityProjectId(service:any,ids:number| number[] = null,projectId = null){
+    await service.checkUserId(ids, projectId , "projectId");
   }
 }

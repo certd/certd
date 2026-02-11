@@ -100,5 +100,20 @@ export abstract class BaseController {
     await projectService.checkPermission({userId,projectId,permission})
   }
 
+  /**
+   * 
+   * @param service 检查记录是否属于某用户或某项目
+   * @param id 
+   */
+  async checkEntityOwner(service:any,id:number,permission:string){
+    let { projectId,userId } = await this.getProjectUserId(permission)
+    const authService:any = await this.applicationContext.getAsync("authService");
+    if (projectId) {
+      await authService.checkEntityProjectId(service, id, projectId);
+    }else{
+      await authService.checkEntityUserId(this.ctx, service, id);
+    }
+    return {projectId,userId}
+  }
 
 }

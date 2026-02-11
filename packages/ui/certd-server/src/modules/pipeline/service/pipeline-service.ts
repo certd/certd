@@ -747,13 +747,27 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return;
   }
 
+  async getProjectId(pipelineId: number) {
+    const pipelineEntity = await this.repository.findOne({
+      select: {
+        projectId: true,
+      },
+      where: {
+        id: pipelineId,
+      },
+    });
+    return pipelineEntity.projectId;
+  }
   private async saveHistory(history: RunHistory) {
     //修改pipeline状态
-    const pipelineEntity = new PipelineEntity();
+    let pipelineEntity = new PipelineEntity();
     pipelineEntity.id = parseInt(history.pipeline.id);
     pipelineEntity.status = history.pipeline.status.result + "";
     pipelineEntity.lastHistoryTime = history.pipeline.status.startTime;
     await this.update(pipelineEntity);
+
+    const projectId = await this.getProjectId(pipelineEntity.id);
+    pipelineEntity.projectId = projectId;
 
     const entity: HistoryEntity = new HistoryEntity();
     entity.id = parseInt(history.id);
@@ -761,6 +775,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     entity.status = pipelineEntity.status;
     entity.pipeline = JSON.stringify(history.pipeline);
     entity.pipelineId = parseInt(history.pipeline.id);
+    entity.projectId = pipelineEntity.projectId;
     await this.historyService.save(entity);
 
     const logEntity: HistoryLogEntity = new HistoryLogEntity();
@@ -769,6 +784,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     logEntity.pipelineId = entity.pipelineId;
     logEntity.historyId = entity.id;
     logEntity.logs = JSON.stringify(history.logs);
+    logEntity.projectId = pipelineEntity.projectId;
     await this.historyLogService.addOrUpdate(logEntity);
   }
 
@@ -984,7 +1000,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       throw new NeedVIPException("此功能需要升级专业版");
     }
 
-    if (!userId || ids.length === 0) {
+    if (userId == null || ids.length === 0) {
       return;
     }
     const where:any = {

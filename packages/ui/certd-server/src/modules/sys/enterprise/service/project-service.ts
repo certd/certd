@@ -1,9 +1,15 @@
 import { BaseService, SysSettingsService } from '@certd/lib-server';
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
+import { LRUCache } from 'lru-cache';
 import { Repository } from 'typeorm';
 import { ProjectEntity } from '../entity/project.js';
 import { ProjectMemberService } from './project-member-service.js';
+
+const projectCache = new LRUCache<string, any>({
+  max: 1000,
+  ttl: 1000 * 60 * 10,
+});
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -23,7 +29,7 @@ export class ProjectService extends BaseService<ProjectEntity> {
   }
 
   async add(bean: ProjectEntity) {
-    const {name} = bean;
+    const { name } = bean;
     if (!name) {
       throw new Error('项目名称不能为空');
     }
@@ -33,17 +39,25 @@ export class ProjectService extends BaseService<ProjectEntity> {
         userId: 0,
       },
     });
-   if (exist) {
-     throw new Error('项目名称已存在');
-   }
-   bean.disabled = false
-   return await super.add(bean)
+    if (exist) {
+      throw new Error('项目名称已存在');
+    }
+    bean.disabled = false
+    const res= await super.add(bean)
+    projectCache.clear();
+    return res;
+  }
+
+  async update( bean: ProjectEntity) {
+    const res= await super.update(bean)
+    projectCache.clear();
+    return res;
   }
 
   async setDisabled(id: number, disabled: boolean) {
     await this.repository.update({
       id,
-      userId:0,
+      userId: 0,
     }, {
       disabled,
     });
@@ -55,7 +69,7 @@ export class ProjectService extends BaseService<ProjectEntity> {
     const projectIds = memberList.map(item => item.projectId);
     const projectList = await this.repository.createQueryBuilder('project')
       .where(' project.disabled = false')
-      .where(' project.userId = :userId', { userId:0 })
+      .where(' project.userId = :userId', { userId: 0 })
       .where(' project.id IN (:...projectIds) or project.adminId = :userId', { projectIds, userId })
       .getMany();
 
@@ -67,7 +81,7 @@ export class ProjectService extends BaseService<ProjectEntity> {
     projectList.forEach(item => {
       if (item.adminId === userId) {
         item.permission = 'admin';
-      }else{
+      } else {
         item.permission = memberPermissionMap[item.id] || 'read';
       }
     })
@@ -75,21 +89,21 @@ export class ProjectService extends BaseService<ProjectEntity> {
     return projectList
   }
 
-  async checkAdminPermission({userId, projectId}: {userId: number, projectId: number}) {
+  async checkAdminPermission({ userId, projectId }: { userId: number, projectId: number }) {
     return await this.checkPermission({
       userId,
       projectId,
       permission: 'admin',
     })
   }
-  async checkWritePermission({userId, projectId}: {userId: number, projectId: number}) {
+  async checkWritePermission({ userId, projectId }: { userId: number, projectId: number }) {
     return await this.checkPermission({
       userId,
       projectId,
       permission: 'write',
     })
   }
-  async checkReadPermission({userId, projectId}: {userId: number, projectId: number}) {
+  async checkReadPermission({ userId, projectId }: { userId: number, projectId: number }) {
     return await this.checkPermission({
       userId,
       projectId,
@@ -97,47 +111,60 @@ export class ProjectService extends BaseService<ProjectEntity> {
     })
   }
 
-  async checkPermission({userId, projectId, permission}: {userId: number, projectId: number, permission: string}) {
-   if (permission !== 'admin' && permission !== 'write' && permission !== 'read') {
-     throw new Error('权限类型错误');
-   }
-   if (!userId ){
-     throw new Error('用户ID不能为空');
-   }
-   if (!projectId ){
-     throw new Error('项目ID不能为空');
-   }
-   const project = await this.findOne({
-      select: ['id', 'userId', 'adminId', 'disabled'],
-      where: {
-        id: projectId,
-      },
-   });
-    if (!project) {
-      throw new Error('项目不存在');
+  async checkPermission({ userId, projectId, permission }: { userId: number, projectId: number, permission: string }) {
+    if (permission !== 'admin' && permission !== 'write' && permission !== 'read') {
+      throw new Error('权限类型错误');
     }
-    if (project.adminId === userId) {
-      //创建者拥有管理权限
-      return true
+    if (!userId) {
+      throw new Error('用户ID不能为空');
     }
-    if (project.disabled) {
-      throw new Error('项目已禁用');
+    if (!projectId) {
+      throw new Error('项目ID不能为空');
     }
-    const member = await this.projectMemberService.getMember(projectId,userId);
-    if (!member) {
-      throw new Error('项目成员不存在');
+
+    const cacheKey = `projectPermission:${projectId}:${userId}`
+    let savedPermission = projectCache.get(cacheKey);
+    
+    if (!savedPermission){
+        const project = await this.findOne({
+          select: ['id', 'userId', 'adminId', 'disabled'],
+          where: {
+            id: projectId,
+          },
+        });
+        if (!project) {
+          throw new Error('项目不存在');
+        }
+        if (project.adminId === userId) {
+          //创建者拥有管理权限
+          savedPermission = 'admin';
+        }else{
+          if (project.disabled) {
+            throw new Error('项目已禁用');
+          } 
+          const member = await this.projectMemberService.getMember(projectId, userId);
+          if (!member) {
+            throw new Error('项目成员不存在');
+          }
+          savedPermission = member.permission;
+        }
     }
+    projectCache.set(cacheKey, savedPermission,{ttl:  3 * 60 * 1000});
+    if (!savedPermission) {
+      throw new Error('权限不足');
+    }
+    
     if (permission === 'read') {
       return true
     }
     if (permission === 'write') {
-      if (member.permission === 'admin' || member.permission === 'write') {
+      if (savedPermission === 'admin' || savedPermission === 'write') {
         return true
-      }else{
+      } else {
         throw new Error('权限不足');
       }
     }
-    if (member.permission !== permission) {
+    if (savedPermission !== permission) {
       throw new Error('权限不足');
     }
     return true

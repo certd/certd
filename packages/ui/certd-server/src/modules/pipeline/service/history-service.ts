@@ -66,7 +66,8 @@ export class HistoryService extends BaseService<HistoryEntity> {
       pipelineId: pipeline.id,
       title: pipeline.title,
       status: 'start',
-      triggerType
+      triggerType,
+      projectId: pipeline.projectId,
     };
     const { id } = await this.add(bean);
     //清除大于pipeline.keepHistoryCount的历史记录

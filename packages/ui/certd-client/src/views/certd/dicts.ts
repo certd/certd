@@ -19,6 +19,8 @@ export const projectPermissionDict = dict({
 
 export const myProjectDict = dict({
   url: "/enterprise/project/list",
+  value: "id",
+  label: "name",
 });
 
 export const userDict = dict({

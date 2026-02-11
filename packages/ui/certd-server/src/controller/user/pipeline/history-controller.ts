@@ -1,17 +1,17 @@
-import { ALL, Body, Controller, Get, Inject, Post, Provide, Query } from "@midwayjs/core";
-import { CommonException, Constants, CrudController, PermissionException, SysSettingsService } from "@certd/lib-server";
-import { PipelineEntity } from "../../../modules/pipeline/entity/pipeline.js";
-import { HistoryService } from "../../../modules/pipeline/service/history-service.js";
-import { HistoryLogService } from "../../../modules/pipeline/service/history-log-service.js";
-import { HistoryEntity } from "../../../modules/pipeline/entity/history.js";
-import { HistoryLogEntity } from "../../../modules/pipeline/entity/history-log.js";
-import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
-import * as fs from "fs";
 import { logger } from "@certd/basic";
-import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
+import { CommonException, Constants, CrudController, PermissionException, SysSettingsService } from "@certd/lib-server";
+import { ALL, Body, Controller, Get, Inject, Post, Provide, Query } from "@midwayjs/core";
+import * as fs from "fs";
 import { In } from "typeorm";
-import { UserSettingsService } from "../../../modules/mine/service/user-settings-service.js";
 import { UserGrantSetting } from "../../../modules/mine/service/models.js";
+import { UserSettingsService } from "../../../modules/mine/service/user-settings-service.js";
+import { HistoryLogEntity } from "../../../modules/pipeline/entity/history-log.js";
+import { HistoryEntity } from "../../../modules/pipeline/entity/history.js";
+import { PipelineEntity } from "../../../modules/pipeline/entity/pipeline.js";
+import { HistoryLogService } from "../../../modules/pipeline/service/history-log-service.js";
+import { HistoryService } from "../../../modules/pipeline/service/history-service.js";
+import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
+import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 
 /**
  * 证书
@@ -41,12 +41,18 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body: any) {
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    body.query.projectId = projectId
+
     const isAdmin = await this.authService.isAdmin(this.ctx);
     const publicSettings = await this.sysSettingsService.getPublicSettings();
     const pipelineQuery: any = {};
     if (!(publicSettings.managerOtherUserPipeline && isAdmin)) {
-      body.query.userId = this.getUserId();
-      pipelineQuery.userId = this.getUserId();
+      body.query.userId = userId;
+      pipelineQuery.userId = userId;
+    }
+    if (projectId) {
+      pipelineQuery.projectId = projectId;
     }
 
     let pipelineIds: any = null;
@@ -82,10 +88,14 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body) {
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    body.query.projectId = projectId
+
     const isAdmin = this.authService.isAdmin(this.ctx);
     if (!isAdmin) {
-      body.userId = this.getUserId();
+      body.userId = userId;
     }
+
     if (body.pipelineId == null) {
       return this.ok([]);
     }
@@ -106,7 +116,8 @@ export class HistoryController extends CrudController<HistoryService> {
         triggerType: true,
         endTime: true,
         createTime: true,
-        updateTime: true
+        updateTime: true,
+        projectId: true,
       };
     }
     const listRet = await this.getService().list({
@@ -135,32 +146,45 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean: PipelineEntity) {
-    bean.userId = this.getUserId();
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    bean.projectId = projectId
+    bean.userId = userId;
     return super.add(bean);
   }
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
+    await this.checkEntityOwner(this.getService(), bean.id,"write");
     delete bean.userId;
     return super.update(bean);
   }
 
   @Post('/save', { summary: Constants.per.authOnly })
   async save(@Body(ALL) bean: HistoryEntity) {
-    bean.userId = this.getUserId();
+    const { projectId,userId } = await this.getProjectUserIdWrite()
+    bean.userId = userId;
+    bean.projectId = projectId;
     if (bean.id > 0) {
-      await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
+      //修改
+      delete bean.projectId;
+      delete bean.userId;
+      await this.checkEntityOwner(this.getService(), bean.id,"write");
     }
+   
     await this.service.save(bean);
     return this.ok(bean.id);
   }
 
   @Post('/saveLog', { summary: Constants.per.authOnly })
   async saveLog(@Body(ALL) bean: HistoryLogEntity) {
-    bean.userId = this.getUserId();
+    const { projectId,userId } = await this.getProjectUserIdWrite()
+    bean.projectId = projectId;
+    bean.userId = userId;
     if (bean.id > 0) {
-      await this.authService.checkEntityUserId(this.ctx, this.getService(), bean.id);
+      //修改
+      delete bean.projectId;
+      delete bean.userId;
+      await this.checkEntityOwner(this.logService, bean.id,"write");
     }
     await this.logService.save(bean);
     return this.ok(bean.id);
@@ -168,30 +192,30 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    await this.checkEntityOwner(this.getService(), id,"write");
     await super.delete(id);
     return this.ok();
   }
 
   @Post('/deleteByIds', { summary: Constants.per.authOnly })
   async deleteByIds(@Body(ALL) body: any) {
-    await this.authService.checkEntityUserId(this.ctx, this.getService(), body.ids);
+    let {userId} = await this.checkEntityOwner(this.getService(), body.ids,"write");
     const isAdmin = await this.authService.isAdmin(this.ctx);
-    const userId = isAdmin ? null : this.getUserId();
+    userId = isAdmin ? null : userId;
     await this.getService().deleteByIds(body.ids, userId);
     return this.ok();
   }
 
   @Post('/detail', { summary: Constants.per.authOnly })
   async detail(@Query('id') id: number) {
-    await this.authService.checkEntityUserId(this.ctx, this.getService(), id);
+    await this.checkEntityOwner(this.getService(), id,"read");
     const detail = await this.service.detail(id);
     return this.ok(detail);
   }
 
   @Post('/logs', { summary: Constants.per.authOnly })
   async logs(@Query('id') id: number) {
-    await this.authService.checkEntityUserId(this.ctx, this.logService, id);
+    await this.checkEntityOwner(this.logService, id,"read");
     const logInfo = await this.logService.info(id);
     return this.ok(logInfo);
   }
@@ -213,7 +237,14 @@ export class HistoryController extends CrudController<HistoryService> {
     if (history == null) {
       throw new CommonException('historyId is null');
     }
-    if (history.userId !== this.getUserId()) {
+    const {projectId} = await this.getProjectUserIdRead()
+    if (projectId) {
+      //enterprise模式
+      if(history.projectId !== projectId){
+        throw new PermissionException("您没有权限下载该流水线证书，请先加入该项目："+history.projectId);
+      }
+      //有权限下载
+    }else if (history.userId !== this.getUserId()) {
       // 如果是管理员，检查用户是否有授权管理员查看
       const isAdmin = await this.isAdmin()
       if (!isAdmin) {

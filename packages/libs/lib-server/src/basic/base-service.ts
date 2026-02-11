@@ -206,18 +206,28 @@ export abstract class BaseService<T> {
     return await qb.getMany();
   }
 
-  async checkUserId(id: any = 0, userId: number, userKey = 'userId') {
-    const res = await this.getRepository().findOne({
+  async checkUserId(ids: number | number[] = 0, userId: number, userKey = 'userId') {
+    if (ids == null) {
+      throw new ValidateException('id不能为空');
+    }
+    if (userId == null) {
+      throw new ValidateException('userId不能为空');
+    }
+    if (!Array.isArray(ids)) {
+      ids = [ids];
+    }
+    const res = await this.getRepository().find({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       select: { [userKey]: true },
       where: {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        id,
+        id: In(ids),
+        [userKey]: userId,
       },
     });
-    if (!res || res[userKey] === userId) {
+    if (!res || res.length === ids.length) {
       return;
     }
     throw new PermissionException('权限不足');
