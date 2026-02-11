@@ -53,6 +53,7 @@ export class HandleController extends BaseController {
     const accessGetter = new AccessGetter(userId, this.accessService.getById.bind(this.accessService));
     const access = await newAccess(body.typeName, inputAccess,accessGetter);
 
+    mergeUtils.merge(access, body.input);
     const res = await access.onRequest(body);
 
     return this.ok(res);

@@ -1,4 +1,5 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { PageRes, PageSearch } from "@certd/pipeline";
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { XinnetConnectAccess } from "./access.js";
 
 
@@ -61,6 +62,21 @@ export class XinnetConnectDnsProvider extends AbstractDnsProvider<XinnetConnectR
     }
     await this.access.delDnsRecord(record)
     this.logger.info(`删除域名解析成功:fullRecord=${fullRecord}`);
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const res = await this.access.getDomainList(req)
+    let list = res.domainlist || []
+    list = list.map(item => ({
+      domain: item.domain,
+      id: item.domain,
+    }))
+    return {
+      pageNo: req.pageNo,
+      pageSize: req.pageSize,
+      total: res.total || 0,
+      list,
+    }
   }
 }
 

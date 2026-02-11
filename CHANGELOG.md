@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.9](https://github.com/certd/certd/compare/v1.38.8...v1.38.9) (2026-02-09)
+
+### Bug Fixes
+
+* 修复部署到openwrt错误的bug ([9ac33f9](https://github.com/certd/certd/commit/9ac33f9b9ba7727fcbbd320dd866bc048cbb3d72))
+* 修复新版本上传到阿里云cas后，其他依赖任务无法部署的bug ([99f5b8e](https://github.com/certd/certd/commit/99f5b8ebc1c64798ceb42042ad71cf71e967beb0))
+* esxi部署失败的bug ([6ab1fca](https://github.com/certd/certd/commit/6ab1fcaf894f7ce343af4b5bf4b0d67438df6618))
+
+### Performance Improvements
+
+* 修改sql升级语句，兼容mysql5.7 ([02f89a9](https://github.com/certd/certd/commit/02f89a9c9d77850437285844670aed441e5953c3))
+* 已登录状态访问登录页面自动跳转到首页 ([bd8caff](https://github.com/certd/certd/commit/bd8caff0b754cb13530cf0f1644b33e29fde5d01))
+* 优化access授权支持remote-auto-complete ([2f40f79](https://github.com/certd/certd/commit/2f40f795ee6131132d3fab2601f92a567bbdc4b7))
+* access 插件支持remote-select等配置 ([d286c04](https://github.com/certd/certd/commit/d286c040a5232dcca829945734affead3ee08b3c))
+
 ## [1.38.8](https://github.com/certd/certd/compare/v1.38.7...v1.38.8) (2026-02-06)
 
 ### Performance Improvements

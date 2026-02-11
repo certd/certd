@@ -57,7 +57,7 @@ const VNodes = defineComponent({
 
 const props = defineProps<
   {
-    watches: string[];
+    watches?: string[];
     search?: boolean;
     pager?: boolean;
   } & ComponentPropsType
@@ -79,6 +79,17 @@ const getPluginType: any = inject("get:plugin:type", () => {
   return "plugin";
 });
 
+function getInputFromForm(form: any, pluginType: string) {
+  let input: any = {};
+  if (pluginType === "plugin") {
+    input = form?.input || {};
+  } else if (pluginType === "access") {
+    input = form?.access || {};
+  } else {
+    input = form || {};
+  }
+  return input;
+}
 const searchKeyRef = ref("");
 const optionsRef = ref([]);
 const message = ref("");
@@ -104,7 +115,7 @@ const getOptions = async () => {
   }
   const pluginType = getPluginType();
   const { form } = getScope();
-  const input = (pluginType === "plugin" ? form?.input : form) || {};
+  const input = getInputFromForm(form, pluginType);
 
   for (let key in define.input) {
     const inWatches = props.watches?.includes(key);
@@ -200,12 +211,14 @@ watch(
   () => {
     const pluginType = getPluginType();
     const { form, key } = getScope();
-    const input = (pluginType === "plugin" ? form?.input : form) || {};
-    const watches = {};
-    for (const key of props.watches) {
-      //@ts-ignore
-      watches[key] = input[key];
+    const input = getInputFromForm(form, pluginType);
+    const watches: any = {};
+    if (props.watches && props.watches.length > 0) {
+      for (const key of props.watches) {
+        watches[key] = input[key];
+      }
     }
+
     return {
       form: watches,
       key,
@@ -215,11 +228,12 @@ watch(
     const { form } = value;
     const oldForm: any = oldValue?.form;
     let changed = oldForm == null || optionsRef.value.length == 0;
-    for (const key of props.watches) {
-      //@ts-ignore
-      if (oldForm && form[key] != oldForm[key]) {
-        changed = true;
-        break;
+    if (props.watches && props.watches.length > 0) {
+      for (const key of props.watches) {
+        if (oldForm && form[key] != oldForm[key]) {
+          changed = true;
+          break;
+        }
       }
     }
     if (changed) {
