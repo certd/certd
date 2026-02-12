@@ -95,7 +95,7 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.checkEntityOwner(this.getService(), bean.id,"write");
+    await this.checkOwner(this.getService(), bean.id,"write",true);
     delete bean.userId;
     return super.update(bean);
   }
@@ -104,7 +104,7 @@ export class PipelineController extends CrudController<PipelineService> {
   async save(@Body(ALL) bean: { addToMonitorEnabled: boolean, addToMonitorDomains: string } & PipelineEntity) {
      const { userId } = await this.getProjectUserIdWrite()
     if (bean.id > 0) {
-      await this.checkEntityOwner(this.getService(), bean.id,"write");
+      await this.checkOwner(this.getService(), bean.id,"write",true);
     } else {
       bean.userId = userId;
     }
@@ -131,14 +131,14 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.checkEntityOwner(this.getService(), id,"write");
+    await this.checkOwner(this.getService(), id,"write",true);
     await this.service.delete(id);
     return this.ok({});
   }
 
   @Post('/disabled', { summary: Constants.per.authOnly })
   async disabled(@Body(ALL) bean) {
-    await this.checkEntityOwner(this.getService(), bean.id,"write");
+    await this.checkOwner(this.getService(), bean.id,"write",true);
     delete bean.userId;
     await this.service.disabled(bean.id, bean.disabled);
     return this.ok({});
@@ -146,21 +146,21 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/detail', { summary: Constants.per.authOnly })
   async detail(@Query('id') id: number) {
-    await this.checkEntityOwner(this.getService(), id,"read");
+    await this.checkOwner(this.getService(), id,"read",true);
     const detail = await this.service.detail(id);
     return this.ok(detail);
   }
 
   @Post('/trigger', { summary: Constants.per.authOnly })
   async trigger(@Query('id') id: number, @Query('stepId') stepId?: string) {
-    await this.checkEntityOwner(this.getService(), id,"write");
+    await this.checkOwner(this.getService(), id,"write",true);
     await this.service.trigger(id, stepId, true);
     return this.ok({});
   }
 
   @Post('/cancel', { summary: Constants.per.authOnly })
   async cancel(@Query('historyId') historyId: number) {
-    await this.checkEntityOwner(this.historyService, historyId,"write");
+    await this.checkOwner(this.historyService, historyId,"write",true);
     await this.service.cancel(historyId);
     return this.ok({});
   }
@@ -258,7 +258,7 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/refreshWebhookKey', { summary: Constants.per.authOnly })
   async refreshWebhookKey(@Body('id') id: number) {
-    await this.checkEntityOwner(this.getService(), id,"write");
+    await this.checkOwner(this.getService(), id,"write",true);
     const res = await this.service.refreshWebhookKey(id);
     return this.ok({
       webhookKey: res,

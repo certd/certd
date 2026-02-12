@@ -19,10 +19,14 @@ export class TemplateController extends CrudController<TemplateService> {
 
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body) {
+    
     body.query = body.query ?? {};
     delete body.query.userId;
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    body.query.projectId = projectId
+    
     const buildQuery = qb => {
-      qb.andWhere('user_id = :userId', { userId: this.getUserId() });
+      qb.andWhere('user_id = :userId', { userId: userId });
     };
     const res = await this.service.page({
       query: body.query,
@@ -36,49 +40,58 @@ export class TemplateController extends CrudController<TemplateService> {
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body) {
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    body.query.projectId = projectId
+    body.query.userId = userId
     return super.list(body);
   }
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean) {
-    bean.userId = this.getUserId();
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    bean.userId = userId;
+    bean.projectId = projectId
     checkPlus()
     return super.add(bean);
   }
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.service.checkUserId(bean.id, this.getUserId());
+    await this.checkOwner(this.service, bean.id, "write");
     delete bean.userId;
     return super.update(bean);
   }
   @Post('/info', { summary: Constants.per.authOnly })
   async info(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+     await this.checkOwner(this.service, id, "read");
     return super.info(id);
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.service.batchDelete([id], this.getUserId());
+     const { userId ,projectId } = await this.getProjectUserIdWrite()
+    await this.service.batchDelete([id], userId,projectId);
     return this.ok({});
   }
 
   @Post('/batchDelete', { summary: Constants.per.authOnly })
   async batchDelete(@Body('ids') ids: number[]) {
-    await this.service.batchDelete(ids, this.getUserId());
+    const { userId ,projectId } = await this.getProjectUserIdWrite()
+    await this.service.batchDelete(ids, userId,projectId);
     return this.ok({});
   }
 
   @Post('/detail', { summary: Constants.per.authOnly })
   async detail(@Query('id') id: number) {
-    const detail = await this.service.detail(id, this.getUserId());
+    const { userId ,projectId } = await this.getProjectUserIdRead()
+    const detail = await this.service.detail(id, userId,projectId);
     return this.ok(detail);
   }
   @Post('/createPipelineByTemplate', { summary: Constants.per.authOnly })
   async createPipelineByTemplate(@Body(ALL) body: any) {
-    body.userId = this.getUserId();
+    const { userId ,projectId } = await this.getProjectUserIdWrite()
+    body.userId = userId;
+    body.projectId = projectId
     checkPlus()
     const res = await this.service.createPipelineByTemplate(body);
     return this.ok(res);

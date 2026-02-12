@@ -30,7 +30,10 @@ export class CertInfoController extends CrudController<CertInfoService> {
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body: any) {
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    body.query.projectId = projectId
+    body.query.userId = userId;
     const domains = body.query?.domains;
     delete body.query.domains;
 
@@ -76,17 +79,20 @@ export class CertInfoController extends CrudController<CertInfoService> {
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body: any) {
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    body.query.projectId = projectId
+    body.query.userId = userId;
     return await super.list(body);
   }
 
 
   @Post('/getOptionsByIds', { summary: Constants.per.authOnly })
   async getOptionsByIds(@Body(ALL) body: {ids:any[]}) {
-
+    const { projectId, userId } = await this.getProjectUserIdRead()
     const list = await this.service.list({
       query:{
-        userId: this.getUserId(),
+        projectId,
+        userId,
       },
       buildQuery: (bq: SelectQueryBuilder<any>) => {
         bq.andWhere('id in (:...ids)', { ids: body.ids });
@@ -107,33 +113,37 @@ export class CertInfoController extends CrudController<CertInfoService> {
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean: any) {
-    bean.userId = this.getUserId();
+    const { projectId, userId } = await this.getProjectUserIdWrite()
+    bean.projectId = projectId
+    bean.userId = userId;
     return await super.add(bean);
   }
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.service.checkUserId(bean.id, this.getUserId());
+    await this.checkOwner(this.service,bean.id,"write");
     delete bean.userId;
     return await super.update(bean);
   }
   @Post('/info', { summary: Constants.per.authOnly })
   async info(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.service,id,"read");
     return await super.info(id);
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.service,id,"write");
     return await super.delete(id);
   }
 
   @Post('/all', { summary: Constants.per.authOnly })
   async all() {
+    const { projectId, userId } = await this.getProjectUserIdRead()
     const list: any = await this.service.find({
       where: {
-        userId: this.getUserId(),
+        projectId,
+        userId,
       },
     });
     return this.ok(list);
@@ -143,7 +153,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
 
   @Post('/getCert', { summary: Constants.per.authOnly })
   async getCert(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(),id,"read");
     const certInfoEntity = await this.service.info(id);
     const certInfo = JSON.parse(certInfoEntity.certInfo);
     return this.ok(certInfo);
@@ -151,7 +161,8 @@ export class CertInfoController extends CrudController<CertInfoService> {
 
   @Get('/download', { summary: Constants.per.authOnly })
   async download(@Query('id') id: number) {
-    const certInfo = await this.service.info(id)
+    await this.checkOwner(this.getService(),id,"read");
+    const certInfo = await this.getService().info(id)
     if (certInfo == null) {
       throw new CommonException('file not found');
     }

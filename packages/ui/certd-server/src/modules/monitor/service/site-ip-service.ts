@@ -278,7 +278,7 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
     })
   }
 
-  async doImport(req: { text: string; userId:number, siteId:number }) {
+  async doImport(req: { text: string; userId:number, siteId:number,projectId?:number }) {
     if (!req.text) {
       throw new Error("text is required");
     }
@@ -289,7 +289,8 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
     const siteEntity = await this.siteInfoRepository.findOne({
       where: {
         id: req.siteId,
-        userId:req.userId
+        userId:req.userId,
+        projectId:req.projectId
       }
     });
     if (!siteEntity) {
@@ -311,6 +312,7 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
         siteId: req.siteId,
         from: "import",
         disabled:false,
+        projectId: req.projectId,
       });
     }
 

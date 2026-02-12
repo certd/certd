@@ -255,6 +255,9 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
       title: t("certd.fields.projectName"),
       type: "dict-select",
       dict: myProjectDict,
+      form: {
+        show: false,
+      },
     },
   };
 }

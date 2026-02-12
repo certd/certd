@@ -1,7 +1,7 @@
 import {Inject, Provide, Scope, ScopeEnum} from "@midwayjs/core";
 import {BaseService, NeedSuiteException, NeedVIPException, SysSettingsService} from "@certd/lib-server";
 import {InjectEntityModel} from "@midwayjs/typeorm";
-import {Repository} from "typeorm";
+import {In, Repository} from "typeorm";
 import {SiteInfoEntity} from "../entity/site-info.js";
 import {siteTester} from "./site-tester.js";
 import dayjs from "dayjs";
@@ -344,12 +344,12 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     }
   }
 
-  async checkAllByUsers(userId: any) {
+  async checkAllByUsers(userId: any,projectId?: number) {
     if (!userId) {
       throw new Error("userId is required");
     }
     const sites = await this.repository.find({
-      where: {userId}
+      where: {userId,projectId}
     });
     this.checkList(sites,false);
   }
@@ -418,7 +418,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     }
   }
 
-  async doImport(req: { text: string; userId: number,groupId?:number }) {
+  async doImport(req: { text: string; userId: number,groupId?:number,projectId?:number }) {
     if (!req.text) {
       throw new Error("text is required");
     }
@@ -461,7 +461,8 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         httpsPort: port,
         userId: req.userId,
         remark,
-        groupId: req.groupId
+        groupId: req.groupId,
+        projectId: req.projectId
       });
     }
 
@@ -536,5 +537,13 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     }
 
     logger.info(`站点证书检查完成[${userId??'所有用户'}]`);
+  }
+
+  async batchDelete(ids: number[], userId: number,projectId?:number): Promise<void> {
+    await this.repository.delete({
+      id: In(ids),
+      userId,
+      projectId,
+    });
   }
 }

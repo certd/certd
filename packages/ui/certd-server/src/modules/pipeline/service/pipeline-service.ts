@@ -756,6 +756,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
         id: pipelineId,
       },
     });
+    if(!pipelineEntity){
+      return null
+    }
     return pipelineEntity.projectId;
   }
   private async saveHistory(history: RunHistory) {

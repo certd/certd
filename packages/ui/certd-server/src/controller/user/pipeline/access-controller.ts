@@ -102,7 +102,7 @@ export class AccessController extends CrudController<AccessService> {
 
   @Post('/simpleInfo', { summary: Constants.per.authOnly })
   async simpleInfo(@Query('id') id: number) {
-    await this.authService.checkEntityUserId(this.ctx, this.service, id);
+    await this.authService.checkUserIdButAllowAdmin(this.ctx, this.service, id);
     const res = await this.service.getSimpleInfo(id);
     return this.ok(res);
   }

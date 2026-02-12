@@ -67,12 +67,15 @@ export class TemplateService extends BaseService<TemplateEntity> {
 
   }
 
-  async detail(id: number, userId: number) {
+  async detail(id: number, userId: number,projectId?:number) {
     const info = await this.info(id)
     if (!info) {
       throw new Error('模板不存在');
     }
     if (info.userId !== userId) {
+      throw new Error('无权限');
+    }
+    if (projectId && info.projectId !== projectId) {
       throw new Error('无权限');
     }
     let pipeline = null
@@ -88,19 +91,22 @@ export class TemplateService extends BaseService<TemplateEntity> {
     }
   }
 
-  async batchDelete(ids: number[], userId: number) {
+  async batchDelete(ids: number[], userId: number,projectId?:number) {
 
     const where: any = {
       id: In(ids),
     }
-    if (userId > 0) {
+    if (userId != null) {
       where.userId = userId
+    }
+    if (projectId) {
+      where.projectId = projectId
     }
     const list = await this.getRepository().find({where})
     ids = list.map(item => item.id)
     const pipelineIds = list.map(item => item.pipelineId)
     await this.delete(ids);
-    await this.pipelineService.batchDelete(pipelineIds, userId)
+    await this.pipelineService.batchDelete(pipelineIds, userId, projectId)
   }
 
   async createPipelineByTemplate(body: PipelineEntity) {

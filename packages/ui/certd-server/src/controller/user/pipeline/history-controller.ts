@@ -159,7 +159,7 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.checkEntityOwner(this.getService(), bean.id,"write");
+    await this.checkOwner(this.getService(), bean.id,"write",true);
     delete bean.userId;
     return super.update(bean);
   }
@@ -173,7 +173,7 @@ export class HistoryController extends CrudController<HistoryService> {
       //修改
       delete bean.projectId;
       delete bean.userId;
-      await this.checkEntityOwner(this.getService(), bean.id,"write");
+      await this.checkOwner(this.getService(), bean.id,"write",true);
     }
    
     await this.service.save(bean);
@@ -189,7 +189,7 @@ export class HistoryController extends CrudController<HistoryService> {
       //修改
       delete bean.projectId;
       delete bean.userId;
-      await this.checkEntityOwner(this.logService, bean.id,"write");
+      await this.checkOwner(this.logService, bean.id,"write",true);
     }
     await this.logService.save(bean);
     return this.ok(bean.id);
@@ -197,14 +197,14 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.checkEntityOwner(this.getService(), id,"write");
+    await this.checkOwner(this.getService(), id,"write",true);
     await super.delete(id);
     return this.ok();
   }
 
   @Post('/deleteByIds', { summary: Constants.per.authOnly })
   async deleteByIds(@Body(ALL) body: any) {
-    let {userId} = await this.checkEntityOwner(this.getService(), body.ids,"write");
+    let {userId} = await this.checkOwner(this.getService(), body.ids,"write",true);
     const isAdmin = await this.authService.isAdmin(this.ctx);
     userId = isAdmin ? null : userId;
     await this.getService().deleteByIds(body.ids, userId);
@@ -213,14 +213,14 @@ export class HistoryController extends CrudController<HistoryService> {
 
   @Post('/detail', { summary: Constants.per.authOnly })
   async detail(@Query('id') id: number) {
-    await this.checkEntityOwner(this.getService(), id,"read");
+    await this.checkOwner(this.getService(), id,"read",true);
     const detail = await this.service.detail(id);
     return this.ok(detail);
   }
 
   @Post('/logs', { summary: Constants.per.authOnly })
   async logs(@Query('id') id: number) {
-    await this.checkEntityOwner(this.logService, id,"read");
+    await this.checkOwner(this.logService, id,"read",true);
     const logInfo = await this.logService.info(id);
     return this.ok(logInfo);
   }

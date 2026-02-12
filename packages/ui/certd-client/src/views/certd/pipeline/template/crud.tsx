@@ -245,6 +245,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.fields.projectName"),
           type: "dict-select",
           dict: myProjectDict,
+          form: {
+            show: false,
+          },
         },
       },
     },
