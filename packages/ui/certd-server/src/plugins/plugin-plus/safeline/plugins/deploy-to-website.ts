@@ -7,9 +7,9 @@ import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from
 
 @IsTaskPlugin({
   name: "SafelineDeployToWebsitePlugin",
-  title: "雷池-更新证书",
+  title: "雷池-更新证书（支持控制台和防护应用）",
   icon: "svg:icon-safeline",
-  desc: "更新长亭雷池WAF的证书",
+  desc: "更新长亭雷池WAF的证书，支持更新控制台和防护应用的证书。",
   group: pluginGroups.panel.key,
   default: {
     strategy: {
