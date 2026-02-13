@@ -63,7 +63,10 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
         domainId: domainId
       };
     }catch (e) {
-      this.logger.error(e)
+      if (e.error){
+        this.logger.error(JSON.stringify(e.error))
+        throw new Error(JSON.stringify(e.error))
+      }
       throw e
     }
 

@@ -7,7 +7,7 @@ import * as https from "node:https";
 import { merge } from "lodash-es";
 import { safePromise } from "./util.promise.js";
 import fs from "fs";
-
+import sleep from "./util.sleep.js";
 const errorMap: Record<string, string> = {
   "ssl3_get_record:wrong version number": "http协议错误，服务端要求http协议，请检查是否使用了https请求",
   "getaddrinfo EAI_AGAIN": "无法解析域名，请检查网络连接或dns配置，更换docker-compose.yaml中dns配置",
@@ -148,6 +148,16 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       // });
       // config.httpsAgent = agent;
       config.proxy = false; //必须 否则还会走一层代理，
+
+      config.retry = merge(
+        {
+          status: [421],
+          count: 0,
+          max: 3,
+          delay: 1000,
+        },
+        config.retry
+      );
       return config;
     },
     (error: Error) => {
@@ -175,7 +185,7 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       }
       return response.data;
     },
-    (error: any) => {
+    async (error: any) => {
       const status = error.response?.status;
       let message = "";
       switch (status) {
@@ -215,6 +225,9 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
         case 302:
           //重定向
           return Promise.resolve(error.response);
+        case 421:
+          message = "源站请求超时";
+          break;
         default:
           break;
       }
@@ -256,6 +269,22 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       if (error instanceof AggregateError) {
         logger.error("AggregateError", error);
       }
+
+      const originalRequest = error.config || {};
+      logger.info(`config`, originalRequest);
+      const retry = originalRequest.retry || {};
+      if (retry.status && retry.status.includes(status)) {
+        if (retry.max > 0 && retry.count < retry.max) {
+          // 重试次数增加
+          retry.count++;
+          const delay = retry.delay * retry.count;
+          logger.error(`status=${status}，重试次数${retry.count},将在${delay}ms后重试，请求地址：${originalRequest.url}`);
+          await sleep(delay);
+          return service.request(originalRequest); // 重试请求
+        }
+        logger.error(`重试超过最大次数${retry.max}，请求失败:${originalRequest.url}`);
+      }
+
       const err = new HttpError(error);
       if (error.response?.config?.logParams === false) {
         delete err.request?.params;

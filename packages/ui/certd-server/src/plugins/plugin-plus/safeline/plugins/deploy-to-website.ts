@@ -7,9 +7,9 @@ import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from
 
 @IsTaskPlugin({
   name: "SafelineDeployToWebsitePlugin",
-  title: "雷池-更新证书",
+  title: "雷池-更新证书（支持控制台和防护应用）",
   icon: "svg:icon-safeline",
-  desc: "更新长亭雷池WAF的证书",
+  desc: "更新长亭雷池WAF的证书，支持更新控制台和防护应用的证书。",
   group: pluginGroups.panel.key,
   default: {
     strategy: {
@@ -51,7 +51,7 @@ export class SafelineDeployToWebsitePlugin extends AbstractTaskPlugin {
       title: "雷池证书",
       typeName: "SafelineDeployToWebsitePlugin",
       action: SafelineDeployToWebsitePlugin.prototype.onGetCertIds.name,
-      helper: "请选择要更新的雷池的证书Id，需要先手动到雷池控制台上传一次",
+      helper: "请选择要更新的雷池的证书Id，需要先手动到雷池控制台上传一次\n如果输入0，则表示新增证书,运行一次之后可以在雷池中使用该证书，最后记得在此处选择新上传的这个证书id，后续将进行自动更新",
       required: true,
     })
   )
@@ -69,19 +69,26 @@ export class SafelineDeployToWebsitePlugin extends AbstractTaskPlugin {
   }
 
   async uploadCert(certId: number) {
-    await this.doRequest({
+    const data:any = {
+      manual: {
+        crt: this.cert.crt,
+        key: this.cert.key,
+      },
+      type: 2,
+    };
+    let type = "新增"
+    // @ts-ignore
+    if (certId !== "0" && certId >0) {
+      //@ts-ignore
+       data.id = parseInt(certId)
+       type = "更新"
+    }
+    const res = await this.doRequest({
       url: "/api/open/cert",
       method: "post",
-      data: {
-        id: certId,
-        manual: {
-          crt: this.cert.crt,
-          key: this.cert.key,
-        },
-        type: 2,
-      },
+      data:data
     });
-    this.logger.info(`证书<${certId}>更新成功`);
+    this.logger.info(`证书<${certId}>${type}成功,ID:${res}`);
   }
 
   async doRequest(config: HttpRequestConfig<any>) {
@@ -109,7 +116,7 @@ export class SafelineDeployToWebsitePlugin extends AbstractTaskPlugin {
     });
     const nodes = res?.nodes;
     if (!nodes || nodes.length === 0) {
-      throw new Error("没有找到证书，请先在雷池控制台中手动上传证书，并关联防护站点，后续才可以自动更新");
+      throw new Error("没有找到证书，请先在雷池控制台中手动上传证书，并关联防护站点或控制台面板使用该证书，后续才可以自动更新");
     }
     const options = nodes.map(item => {
       return {
