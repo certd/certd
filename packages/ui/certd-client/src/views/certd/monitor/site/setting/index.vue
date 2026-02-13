@@ -45,15 +45,16 @@
 </template>
 
 <script setup lang="tsx">
+import { notification } from "ant-design-vue";
+import { merge } from "lodash-es";
 import { reactive } from "vue";
 import * as api from "./api";
 import { UserSiteMonitorSetting } from "./api";
-import { notification } from "ant-design-vue";
-import { merge } from "lodash-es";
-import { useSettingStore } from "/src/store/settings";
-import NotificationSelector from "/@/views/certd/notification/notification-selector/index.vue";
 import { useUserStore } from "/@/store/user";
+import { utils } from "/@/utils";
+import NotificationSelector from "/@/views/certd/notification/notification-selector/index.vue";
 import { useI18n } from "/src/locales";
+import { useSettingStore } from "/src/store/settings";
 
 const { t } = useI18n();
 
@@ -74,6 +75,7 @@ async function loadUserSettings() {
 
 loadUserSettings();
 const doSave = async (form: any) => {
+  await utils.sleep(1);
   await api.SiteMonitorSettingsSave({
     ...formState,
   });

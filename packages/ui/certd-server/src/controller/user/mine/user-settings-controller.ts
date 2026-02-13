@@ -68,7 +68,7 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
     const entity = await this.service.getByKey(key, this.getUserId());
     return this.ok(entity);
   }
-@Post("/grant/get", { summary: Constants.per.authOnly })
+  @Post("/grant/get", { summary: Constants.per.authOnly })
   async grantSettingsGet() {
     const userId = this.getUserId();
     const setting = await this.service.getSetting<UserGrantSetting>(userId, UserGrantSetting);
@@ -87,7 +87,5 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
     await this.service.saveSetting(userId, setting);
     return this.ok({});
   }
-
-
 
 }
