@@ -256,7 +256,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
 
     await this.doUpdatePipelineJson(bean, pipeline);
-
     //保存域名信息到certInfo表
     let fromType = "pipeline";
     if (bean.type === "cert_upload") {
@@ -264,7 +263,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
     } else if (bean.type === "cert_auto") {
       fromType = "auto";
     }
-    await this.certInfoService.updateDomains(pipeline.id, pipeline.userId || bean.userId, domains, fromType);
+    const userId = pipeline.userId || bean.userId;
+    const projectId = pipeline.projectId ?? bean.projectId ??null;
+    await this.certInfoService.updateDomains(pipeline.id, userId, projectId ,  domains, fromType);
     return {
       ...bean,
       version: pipeline.version,
@@ -293,6 +294,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     bean.content = JSON.stringify(pipeline);
     await this.addOrUpdate(bean);
     await this.registerTrigger(bean);
+    return bean
   }
 
   private async checkMaxPipelineCount(bean: PipelineEntity, pipeline: Pipeline, domains: string[]) {

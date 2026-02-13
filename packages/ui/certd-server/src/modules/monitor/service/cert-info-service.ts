@@ -40,11 +40,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async updateDomains(pipelineId: number, userId: number, domains: string[],fromType?:string) {
+  async updateDomains(pipelineId: number, userId: number, projectId: number, domains: string[],fromType?:string) {
     const found = await this.repository.findOne({
       where: {
         pipelineId,
         userId,
+        projectId,
       },
     });
     const bean = new CertInfoEntity();
@@ -55,6 +56,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       //create
       bean.pipelineId = pipelineId;
       bean.userId = userId;
+      bean.projectId = projectId;
       bean.fromType = fromType
       if (!domains || domains.length === 0) {
         return;

@@ -105,7 +105,9 @@ export class PipelineController extends CrudController<PipelineService> {
   async save(@Body(ALL) bean: { addToMonitorEnabled: boolean, addToMonitorDomains: string } & PipelineEntity) {
      const { userId ,projectId} = await this.getProjectUserIdWrite()
     if (bean.id > 0) {
-      await this.checkOwner(this.getService(), bean.id,"write",true);
+      const {userId,projectId} = await this.checkOwner(this.getService(), bean.id,"write",true);
+      bean.userId = userId;
+      bean.projectId = projectId;
     } else {
       bean.userId = userId;
       bean.projectId = projectId;
