@@ -122,6 +122,9 @@ export type TaskInstanceContext = {
   //用户信息
   user: UserInfo;
 
+  //项目id
+  projectId?: number;
+
   emitter: TaskEmitter;
 
   //service 容器

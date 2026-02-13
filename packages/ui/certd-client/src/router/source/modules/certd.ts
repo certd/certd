@@ -1,6 +1,7 @@
 import { useSettingStore } from "/@/store/settings";
 import aboutResource from "/@/router/source/modules/about";
 import i18n from "/@/locales/i18n";
+import { useProjectStore } from "/@/store/project";
 
 export const certdResources = [
   {
@@ -20,7 +21,10 @@ export const certdResources = [
         path: "/certd/project",
         component: "/certd/project/index.vue",
         meta: {
-          show: true,
+          show: () => {
+            const projectStore = useProjectStore();
+            return projectStore.isEnterprise;
+          },
           icon: "ion:apps",
           permission: "sys:settings:edit",
           keepAlive: true,

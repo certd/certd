@@ -59,6 +59,7 @@ export class TemplateController extends CrudController<TemplateService> {
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service, bean.id, "write");
     delete bean.userId;
+    delete bean.projectId;
     return super.update(bean);
   }
   @Post('/info', { summary: Constants.per.authOnly })

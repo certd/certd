@@ -210,9 +210,11 @@ const headerSlots = computed(() => {
     </template>
     <!-- 侧边额外区域 -->
     <template #side-extra>
+      1111
       <LayoutExtraMenu :accordion="preferences.navigation.accordion" :collapse="preferences.sidebar.extraCollapse" :menus="wrapperMenus(extraMenus)" :rounded="isMenuRounded" :theme="sidebarTheme" />
     </template>
     <template #side-extra-title>
+      234234234
       <VbenLogo v-if="preferences.logo.enable" :text="preferences.app.name" :theme="theme" />
     </template>
 

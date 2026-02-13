@@ -17,8 +17,10 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
 
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body: any) {
+    const {userId,projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    body.query.userId = userId;
+    body.query.projectId = projectId;
     const domain = body.query.domain;
     delete body.query.domain;
 
@@ -39,22 +41,27 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body: any) {
+    const {userId,projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    body.query.userId = userId;
+    body.query.projectId = projectId;
     const list = await this.getService().list(body);
     return this.ok(list);
   }
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean: any) {
-    bean.userId = this.getUserId();
+    const {userId,projectId} = await this.getProjectUserIdWrite();
+    bean.userId = userId;
+    bean.projectId = projectId;
     return super.add(bean);
   }
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean: any) {
-    await this.service.checkUserId(bean.id, this.getUserId());
+    await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
+    delete bean.projectId;
     return super.update(bean);
   }
 

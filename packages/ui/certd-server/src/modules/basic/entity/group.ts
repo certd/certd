@@ -22,6 +22,9 @@ export class GroupEntity {
   @Column({ name: 'type', comment: '类型', length: 512 })
   type: string;
 
+  @Column({ name: 'project_id', comment: '项目Id' })
+  projectId: number;
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

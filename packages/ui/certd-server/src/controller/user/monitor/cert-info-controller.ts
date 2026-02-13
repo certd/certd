@@ -123,6 +123,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service,bean.id,"write");
     delete bean.userId;
+    delete bean.projectId;
     return await super.update(bean);
   }
   @Post('/info', { summary: Constants.per.authOnly })

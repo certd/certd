@@ -65,7 +65,13 @@ export abstract class BaseController {
     if (!isEnterprise()) {
       return null
     }
-    const projectIdStr = this.ctx.headers["project-id"] as string;
+    let projectIdStr = this.ctx.headers["project-id"] as string;
+    if (!projectIdStr){
+      projectIdStr = this.ctx.request.query["projectId"] as string;
+    }
+    if (!projectIdStr){
+      return null
+    }
     if (!projectIdStr) {
       throw new Error("projectId 不能为空")
     }

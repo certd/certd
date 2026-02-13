@@ -17,6 +17,9 @@ export class SubDomainEntity {
   @Column({ name: 'disabled', comment: '禁用' })
   disabled: boolean;
 
+  @Column({ name: 'project_id', comment: '项目Id' })
+  projectId: number;
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

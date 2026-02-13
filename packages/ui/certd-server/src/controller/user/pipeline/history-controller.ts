@@ -161,6 +161,7 @@ export class HistoryController extends CrudController<HistoryService> {
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.getService(), bean.id,"write",true);
     delete bean.userId;
+    delete bean.projectId;
     return super.update(bean);
   }
 

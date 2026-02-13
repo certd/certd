@@ -44,6 +44,9 @@ export class DomainEntity {
   @Column({ comment: 'http上传根目录', name: 'http_upload_root_dir', length: 512 })
   httpUploadRootDir: string;
 
+  @Column({ name: 'project_id', comment: '项目Id' })
+  projectId: number;
+
   @Column({
     comment: '创建时间',
     name: 'create_time',

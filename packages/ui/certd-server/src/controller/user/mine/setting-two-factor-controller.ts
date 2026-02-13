@@ -22,7 +22,7 @@ export class UserTwoFactorSettingController extends BaseController {
   @Post("/get", { summary: Constants.per.authOnly })
   async get() {
     const userId = this.getUserId();
-    const setting = await this.service.getSetting<UserTwoFactorSetting>(userId, UserTwoFactorSetting);
+    const setting = await this.service.getSetting<UserTwoFactorSetting>(userId,null, UserTwoFactorSetting);
     return this.ok(setting);
   }
 
@@ -41,7 +41,7 @@ export class UserTwoFactorSettingController extends BaseController {
         setting.authenticator.verified = false;
     }
 
-    await this.service.saveSetting(userId, setting);
+    await this.service.saveSetting(userId,null, setting);
     return this.ok({});
   }
 

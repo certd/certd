@@ -19,8 +19,10 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
 
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body: any) {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    body.query.projectId = projectId;
+    body.query.userId = userId;
     const res = await this.service.page({
       query: body.query,
       page: body.page,
@@ -31,40 +33,45 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body: any) {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    body.query.projectId = projectId;
+    body.query.userId = userId;
     return await super.list(body);
   }
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) body: any) {
-    body.userId = this.getUserId();
+    const {projectId,userId} = await this.getProjectUserIdRead();
+    body.projectId = projectId;
+    body.userId = userId;
     const res = await this.service.add(body);
     return this.ok(res);
   }
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.service.checkUserId(bean.id, this.getUserId());
+    await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
+    delete bean.projectId;
     await this.service.update(bean);
     return this.ok();
   }
   @Post('/info', { summary: Constants.per.authOnly })
   async info(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(), id, "read");
     return await super.info(id);
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(), id, "write");
     return await super.delete(id);
   }
 
   @Post('/getApiToken', { summary: Constants.per.authOnly })
   async getApiToken(@Body('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(), id, "write");
     const token = await this.service.getApiToken(id);
     return this.ok(token);
   }

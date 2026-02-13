@@ -80,6 +80,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service,bean.id,"write");
     delete bean.userId;
+    delete bean.projectId;
     await this.service.update(bean);
     const entity = await this.service.info(bean.id);
     if (entity.disabled) {

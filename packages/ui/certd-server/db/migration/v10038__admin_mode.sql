@@ -54,6 +54,19 @@ CREATE INDEX "index_history_log_project_id" ON "pi_history_log" ("project_id");
 ALTER TABLE pi_template ADD COLUMN  project_id integer;
 CREATE INDEX "index_template_project_id" ON "pi_template" ("project_id");
 
+ALTER TABLE pi_sub_domain ADD COLUMN  project_id integer;
+CREATE INDEX "index_sub_domain_project_id" ON "pi_sub_domain" ("project_id");
+
+ALTER TABLE cd_cname_record ADD COLUMN  project_id integer;
+CREATE INDEX "index_cname_record_project_id" ON "cd_cname_record" ("project_id");
+
+ALTER TABLE cd_domain ADD COLUMN  project_id integer;
+CREATE INDEX "index_domain_project_id" ON "cd_domain" ("project_id");
+
+ALTER TABLE user_settings ADD COLUMN  project_id integer;
+CREATE INDEX "index_user_settings_project_id" ON "user_settings" ("project_id");
+
+
 
 
 CREATE TABLE "cd_project_member"

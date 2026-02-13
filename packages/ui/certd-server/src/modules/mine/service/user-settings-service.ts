@@ -37,7 +37,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     };
   }
 
-  async getByKey(key: string, userId: number): Promise<UserSettingsEntity | null> {
+  async getByKey(key: string, userId: number, projectId: number): Promise<UserSettingsEntity | null> {
     if(!userId){
       throw new Error('userId is required');
     }
@@ -47,16 +47,17 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     return await this.repository.findOne({
       where: {
         key,
-        userId
+        userId,
+        projectId
       }
     });
   }
 
-  async getSettingByKey(key: string, userId: number): Promise<any | null> {
+  async getSettingByKey(key: string, userId: number, projectId: number): Promise<any | null> {
     if(!userId){
       throw new Error('userId is required');
     }
-    const entity = await this.getByKey(key, userId);
+    const entity = await this.getByKey(key, userId, projectId);
     if (!entity) {
       return null;
     }
@@ -67,7 +68,8 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     const entity = await this.repository.findOne({
       where: {
         key: bean.key,
-        userId: bean.userId
+        userId: bean.userId,
+        projectId: bean.projectId
       }
     });
     if (entity) {
@@ -80,12 +82,16 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
   }
 
 
-  async getSetting<T>( userId: number,type: any, cache:boolean = false): Promise<T> {
+  async getSetting<T>( userId: number, projectId: number,type: any, cache:boolean = false): Promise<T> {
     if(!userId){
       throw new Error('userId is required');
     }
     const key = type.__key__;
-    const cacheKey = key + '_' + userId;
+    let cacheKey = key + '_' + userId ;
+    if (projectId) {
+      cacheKey += '_' + projectId;
+    }
+
     if (cache) {
       const settings: T = UserSettingCache.get(cacheKey);
       if (settings) {
@@ -94,7 +100,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     }
 
     let newSetting: T = new type();
-    const savedSettings = await this.getSettingByKey(key, userId);
+    const savedSettings = await this.getSettingByKey(key, userId, projectId);
     newSetting = merge(newSetting, savedSettings);
 
     if (cache) {
@@ -103,11 +109,11 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     return newSetting;
   }
 
-  async saveSetting<T extends BaseSettings>(userId:number,bean: T) {
+  async saveSetting<T extends BaseSettings>(userId:number, projectId: number,bean: T) {
     if(!userId){
       throw new Error('userId is required');
     }
-    const old = await this.getSetting(userId,bean.constructor)
+    const old = await this.getSetting(userId, projectId,bean.constructor)
     bean = merge(old,bean)
 
     const type: any = bean.constructor;
@@ -115,7 +121,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     if(!key){
       throw new Error(`${type.name} must have __key__`);
     }
-    const entity = await this.getByKey(key,userId);
+    const entity = await this.getByKey(key,userId, projectId);
     const newEntity = new UserSettingsEntity();
     if (entity) {
       newEntity.id = entity.id;
@@ -123,6 +129,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
       newEntity.key = key;
       newEntity.title = type.__title__;
       newEntity.userId = userId;
+      newEntity.projectId = projectId;
     }
     newEntity.setting = JSON.stringify(bean);
     await this.repository.save(newEntity);

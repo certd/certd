@@ -21,9 +21,8 @@ export class CertController extends BaseController {
 
   @Post('/get', { summary: Constants.per.authOnly })
   async getCert(@Query('id') id: number) {
-    const userId = this.getUserId();
 
-
+    const {userId} = await this.getProjectUserIdRead()
 
     const pipleinUserId = await this.pipelineService.getPipelineUserId(id);
 
@@ -34,7 +33,7 @@ export class CertController extends BaseController {
         throw new PermissionException();
       }
       // 是否允许管理员查看
-      const setting = await this.userSettingsService.getSetting<UserGrantSetting>(pipleinUserId, UserGrantSetting, false);
+      const setting = await this.userSettingsService.getSetting<UserGrantSetting>(pipleinUserId,null, UserGrantSetting, false);
       if (setting?.allowAdminViewCerts !== true) {
         //不允许管理员查看
         throw new PermissionException("该流水线的用户还未授权管理员查看证书，请先让用户在”设置->授权委托“中打开开关");

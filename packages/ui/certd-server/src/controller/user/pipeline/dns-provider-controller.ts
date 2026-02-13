@@ -14,7 +14,6 @@ export class DnsProviderController extends BaseController {
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Query(ALL) query: any) {
-    query.userId = this.getUserId();
     const list = this.service.getList();
     return this.ok(list);
   }

@@ -7,9 +7,9 @@
         </a-menu-item>
       </a-menu>
     </template>
-    <div class="rounded pl-3 pr-3 px-2 py-1 flex-center flex pointer items-center bg-accent h-10 button-text">
+    <div class="rounded pl-3 pr-3 px-2 py-1 flex-center flex pointer items-center bg-accent h-10 button-text" title="当前项目">
       <fs-icon icon="ion:apps" class="mr-1"></fs-icon>
-      {{ projectStore.currentProject?.name || "..." }}
+      当前项目：{{ projectStore.currentProject?.name || "..." }}
       <fs-icon icon="ion:chevron-down-outline" class="ml-1"></fs-icon>
     </div>
   </a-dropdown>
@@ -34,8 +34,8 @@ function handleMenuClick({ key }: any) {
 <style lang="less">
 .project-selector {
   &.button-text {
-    min-width: 100px;
-    max-width: 150px;
+    min-width: 150px;
+    max-width: 250px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

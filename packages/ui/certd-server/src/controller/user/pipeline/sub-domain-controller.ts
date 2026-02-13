@@ -22,8 +22,8 @@ export class SubDomainController extends CrudController<SubDomainService> {
 
   @Post('/parseDomain', { summary: Constants.per.authOnly })
   async parseDomain(@Body("fullDomain") fullDomain:string) {
-    const userId = this.getUserId()
-    const taskService = this.taskServiceBuilder.create({ userId: userId });
+    const {projectId,userId} = await this.getProjectUserIdRead();
+    const taskService = this.taskServiceBuilder.create({ userId: userId, projectId: projectId });
     const subDomainGetter = await taskService.getSubDomainsGetter();
     const domainParser = new DomainParser(subDomainGetter)
     const domain = await domainParser.parse(fullDomain)
@@ -33,10 +33,12 @@ export class SubDomainController extends CrudController<SubDomainService> {
 
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body) {
+    const {userId,projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     delete body.query.userId;
+    body.query.projectId = projectId;
     const buildQuery = qb => {
-      qb.andWhere('user_id = :userId', { userId: this.getUserId() });
+      qb.andWhere('user_id = :userId', { userId: userId });
     };
     const res = await this.service.page({
       query: body.query,
@@ -49,38 +51,44 @@ export class SubDomainController extends CrudController<SubDomainService> {
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body) {
+    const {userId,projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    body.query.userId = userId;
+    body.query.projectId = projectId;
     return super.list(body);
   }
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean) {
-    bean.userId = this.getUserId();
+    const {userId,projectId} = await this.getProjectUserIdRead();
+    bean.userId = userId;
+    bean.projectId = projectId;
     return super.add(bean);
   }
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.service.checkUserId(bean.id, this.getUserId());
+    await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
+    delete bean.projectId;
     return super.update(bean);
   }
   @Post('/info', { summary: Constants.per.authOnly })
   async info(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(), id, "read");
     return super.info(id);
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(), id, "write");
     return super.delete(id);
   }
 
   @Post('/batchDelete', { summary: Constants.per.authOnly })
   async batchDelete(@Body('ids') ids: number[]) {
-    await this.service.batchDelete(ids, this.getUserId());
+    const {userId,projectId} = await this.getProjectUserIdWrite();
+    await this.service.batchDelete(ids, userId, projectId);
     return this.ok({});
   }
 }

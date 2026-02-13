@@ -84,7 +84,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
     }
   }
 
-  async getById(id: number, userId: number): Promise<NotificationInstanceConfig> {
+  async getById(id: number, userId: number, projectId?: number): Promise<NotificationInstanceConfig> {
     if (!id) {
       throw new ValidateException('id不能为空');
     }
@@ -95,6 +95,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
       where: {
         id,
         userId,
+        projectId,
       },
     });
     if (!res) {
@@ -114,10 +115,11 @@ export class NotificationService extends BaseService<NotificationEntity> {
     };
   }
 
-  async getDefault(userId: number): Promise<NotificationInstanceConfig> {
+  async getDefault(userId: number, projectId?: number): Promise<NotificationInstanceConfig> {
     const res = await this.repository.findOne({
       where: {
         userId,
+        projectId,
       },
       order: {
         isDefault: 'DESC',
@@ -129,7 +131,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
     return this.buildNotificationInstanceConfig(res);
   }
 
-  async setDefault(id: number, userId: number) {
+  async setDefault(id: number, userId: number, projectId?: number) {
     if (!id) {
       throw new ValidateException('id不能为空');
     }
@@ -139,6 +141,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
     await this.repository.update(
       {
         userId,
+        projectId,
       },
       {
         isDefault: false,
@@ -148,6 +151,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
       {
         id,
         userId,
+        projectId,
       },
       {
         isDefault: true,
@@ -155,8 +159,8 @@ export class NotificationService extends BaseService<NotificationEntity> {
     );
   }
 
-  async getOrCreateDefault(email: string, userId: any) {
-    const defaultConfig = await this.getDefault(userId);
+  async getOrCreateDefault(email: string, userId: any, projectId?: number) {
+    const defaultConfig = await this.getDefault(userId, projectId);
     if (defaultConfig) {
       return defaultConfig;
     }
@@ -169,21 +173,22 @@ export class NotificationService extends BaseService<NotificationEntity> {
       name: '邮件通知',
       setting: JSON.stringify(setting),
       isDefault: true,
+      projectId,
     });
     return this.buildNotificationInstanceConfig(res);
   }
 
-  async send(req: NotificationSendReq, userId?: number) {
+  async send(req: NotificationSendReq, userId?: number, projectId?: number) {
     const logger = req.logger;
     let notifyConfig: NotificationInstanceConfig = null;
     if (req.id && req.id > 0) {
-      notifyConfig = await this.getById(req.id, userId);
+      notifyConfig = await this.getById(req.id, userId, projectId);
       if (!notifyConfig) {
         logger.warn(`未找到通知配置<${req.id}>,请确认是否已被删除`);
       }
     }
     if (!notifyConfig) {
-      notifyConfig = await this.getDefault(userId);
+      notifyConfig = await this.getDefault(userId, projectId);
       if (!notifyConfig) {
         logger.warn(`未找到默认通知配置`);
       }

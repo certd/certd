@@ -62,6 +62,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service,bean.id,"write");
     delete bean.userId;
+    delete bean.projectId;
     await this.service.update(bean);
     const siteEntity = await this.siteInfoService.info(bean.siteId);
     if(!siteEntity.disabled){
