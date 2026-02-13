@@ -48,7 +48,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   async add(data: SiteInfoEntity) {
-    if (!data.userId) {
+    if (data.userId == null) {
       throw new Error("userId is required");
     }
 
@@ -91,7 +91,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   async getUserMonitorCount(userId: number) {
-    if (!userId) {
+    if (userId==null) {
       throw new Error("userId is required");
     }
     return await this.repository.count({
@@ -127,7 +127,8 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         host: site.domain,
         port: site.httpsPort,
         retryTimes,
-        customDns
+        customDns,
+        ipAddress: site.ipAddress,
       });
 
       const certi: PeerCertificate = res.certificate;
@@ -345,7 +346,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   async checkAllByUsers(userId: any,projectId?: number) {
-    if (!userId) {
+    if (userId==null) {
       throw new Error("userId is required");
     }
     const sites = await this.repository.find({
