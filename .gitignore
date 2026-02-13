@@ -31,3 +31,4 @@ test/**/*.js
 /packages/pro/
 test.js
 .history
+/logs
