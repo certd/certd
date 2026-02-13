@@ -29,6 +29,7 @@ onMounted(async () => {
 
 function handleMenuClick({ key }: any) {
   projectStore.changeCurrentProject(key);
+  window.location.reload();
 }
 </script>
 <style lang="less">

@@ -135,23 +135,23 @@ export class EmailService implements IEmailService {
   }
 
   async list(userId: any) {
-    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, UserEmailSetting)
+    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId,null, UserEmailSetting)
     return userEmailSetting.list;
   }
 
   async delete(userId: any, email: string) {
-    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, UserEmailSetting)
+    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, null, UserEmailSetting)
     userEmailSetting.list = userEmailSetting.list.filter(item => item !== email);
-    await this.settingsService.saveSetting(userId, userEmailSetting)
+    await this.settingsService.saveSetting(userId, null, userEmailSetting)
   }
   async add(userId: any, email: string) {
-    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, UserEmailSetting)
+    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, null, UserEmailSetting)
     //如果已存在
     if (userEmailSetting.list.includes(email)) {
       return
     }
     userEmailSetting.list.unshift(email)
-    await this.settingsService.saveSetting(userId, userEmailSetting)
+    await this.settingsService.saveSetting(userId, null, userEmailSetting)
   }
 
 

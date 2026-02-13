@@ -28,9 +28,11 @@ export class OpenCertController extends BaseOpenController {
   async get(@Body(ALL) bean: CertGetReq, @Query(ALL) query: CertGetReq) {
     const openKey: OpenKey = this.ctx.openKey;
     const userId = openKey.userId;
+    
     if (!userId) {
       throw new CodeException(Constants.res.openKeyError);
     }
+    const projectId = openKey.projectId;
 
     const req = merge({}, bean, query)
 
@@ -39,7 +41,8 @@ export class OpenCertController extends BaseOpenController {
       domains: req.domains,
       certId: req.certId,
       autoApply: req.autoApply??false,
-      format: req.format
+      format: req.format,
+      projectId,
     });
     return this.ok(res);
   }

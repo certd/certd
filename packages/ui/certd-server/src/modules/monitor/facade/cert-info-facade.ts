@@ -27,10 +27,10 @@ export class CertInfoFacade  {
   @Inject()
   userSettingsService : UserSettingsService
 
-  async getCertInfo(req: { domains?: string; certId?: number; userId: number,autoApply?:boolean,format?:string }) {
-    const { domains, certId, userId } = req;
+  async getCertInfo(req: { domains?: string; certId?: number; userId: number, projectId:number, autoApply?:boolean,format?:string }) {
+    const { domains, certId, userId,projectId } = req;
     if (certId) {
-      return await this.certInfoService.getCertInfoById({ id: certId, userId });
+      return await this.certInfoService.getCertInfoById({ id: certId, userId, projectId });
     }
     if (!domains) {
       throw new CodeException({
@@ -69,7 +69,7 @@ export class CertInfoFacade  {
       }
     }
 
-    return await this.certInfoService.getCertInfoById({ id: matched.id, userId: userId,format:req.format });
+    return await this.certInfoService.getCertInfoById({ id: matched.id, userId: userId,projectId,format:req.format });
 
 
 
@@ -124,7 +124,7 @@ export class CertInfoFacade  {
       }
     }
 
-    const userEmailSetting = await this.userSettingsService.getSetting<UserEmailSetting>(req.userId,UserEmailSetting)
+    const userEmailSetting = await this.userSettingsService.getSetting<UserEmailSetting>(req.userId,null, UserEmailSetting)
     if(!userEmailSetting.list){
       throw new CodeException(Constants.res.openEmailNotFound)
     }
@@ -134,7 +134,7 @@ export class CertInfoFacade  {
       domains: req.domains,
       email,
       userId: req.userId,
-      from:"OpenAPI"
+      from: "OpenAPI"
     })
 
   }

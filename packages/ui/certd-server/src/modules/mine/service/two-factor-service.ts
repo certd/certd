@@ -23,7 +23,7 @@ export class TwoFactorService {
       const { authenticator  } = await import("otplib");
 
       authenticatorSetting.secret = authenticator.generateSecret()
-      await this.userSettingsService.saveSetting(userId, setting);
+      await this.userSettingsService.saveSetting(userId, null, setting);
     }
 
     const user = await this.userService.info(userId);
@@ -59,7 +59,7 @@ export class TwoFactorService {
     authenticatorSetting.enabled = true;
     authenticatorSetting.verified = true;
 
-    await this.userSettingsService.saveSetting(userId, setting);
+    await this.userSettingsService.saveSetting(userId, null, setting);
   }
 
   async offAuthenticator(userId:number) {
@@ -71,11 +71,11 @@ export class TwoFactorService {
     setting.authenticator.enabled = false;
     setting.authenticator.verified = false;
     setting.authenticator.secret = '';
-    await this.userSettingsService.saveSetting(userId, setting);
+    await this.userSettingsService.saveSetting(userId, null, setting);
   }
 
   async getSetting(userId:number) {
-    return await this.userSettingsService.getSetting<UserTwoFactorSetting>(userId, UserTwoFactorSetting);
+    return await this.userSettingsService.getSetting<UserTwoFactorSetting>(userId, null, UserTwoFactorSetting);
 
   }
 

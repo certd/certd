@@ -11,6 +11,7 @@ export type UploadCertReq = {
   certReader: CertReader;
   fromType?: string;
   userId?: number;
+  projectId?: number;
   file?:any
 };
 
@@ -113,9 +114,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async getCertInfoById(req: { id: number; userId: number,format?:string }) {
+  async getCertInfoById(req: { id: number; userId: number,projectId:number,format?:string }) {
     const entity = await this.info(req.id);
-    if (!entity || entity.userId !== req.userId) {
+    if (!entity || entity.userId !== req.userId ) {
+      throw new CodeException(Constants.res.openCertNotFound);
+    }
+    if (req.projectId && entity.projectId !== req.projectId) {
       throw new CodeException(Constants.res.openCertNotFound);
     }
 
@@ -167,7 +171,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     bean.effectiveTime = certReader.effective;
     bean.expiresTime = certReader.expires;
     bean.certProvider = certReader.detail.issuer.commonName;
-    bean.userId = userId
+    bean.userId = userId;
+    bean.projectId = req.projectId;
     if(req.file){
       bean.certFile = req.file
     }

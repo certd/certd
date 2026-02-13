@@ -103,11 +103,12 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post('/save', { summary: Constants.per.authOnly })
   async save(@Body(ALL) bean: { addToMonitorEnabled: boolean, addToMonitorDomains: string } & PipelineEntity) {
-     const { userId } = await this.getProjectUserIdWrite()
+     const { userId ,projectId} = await this.getProjectUserIdWrite()
     if (bean.id > 0) {
       await this.checkOwner(this.getService(), bean.id,"write",true);
     } else {
       bean.userId = userId;
+      bean.projectId = projectId;
     }
 
     if (!this.isAdmin()) {
@@ -124,6 +125,7 @@ export class PipelineController extends CrudController<PipelineService> {
         await this.siteInfoService.doImport({
           text: bean.addToMonitorDomains,
           userId: userId,
+          projectId: projectId,
         });
       }
     }

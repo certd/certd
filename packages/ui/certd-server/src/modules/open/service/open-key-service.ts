@@ -9,6 +9,7 @@ import dayjs from 'dayjs';
 
 export type OpenKey = {
   userId: number;
+  projectId?: number;
   keyId: string;
   keySecret: string;
   encrypt: boolean;
@@ -30,15 +31,16 @@ export class OpenKeyService extends BaseService<OpenKeyEntity> {
   }
 
   async add(bean: OpenKeyEntity) {
-    return await this.generate(bean.userId, bean.scope);
+    return await this.generate(bean.userId,bean.projectId, bean.scope);
   }
 
-  async generate(userId: number, scope: string) {
+  async generate(userId: number, projectId?: number, scope: string = 'open') {
     const keyId = utils.id.simpleNanoId(18) + '_key';
     const secretKey = crypto.randomBytes(32);
     const keySecret = Buffer.from(secretKey).toString('hex');
     const entity = new OpenKeyEntity();
     entity.userId = userId;
+    entity.projectId = projectId;
     entity.keyId = keyId;
     entity.keySecret = keySecret;
     entity.scope = scope ?? 'open';
@@ -80,7 +82,7 @@ export class OpenKeyService extends BaseService<OpenKeyEntity> {
       throw new CodeException(Constants.res.openKeySignError);
     }
 
-    if (!entity.userId) {
+    if (entity.userId==null) {
       throw new CodeException(Constants.res.openKeyError);
     }
 
@@ -89,6 +91,7 @@ export class OpenKeyService extends BaseService<OpenKeyEntity> {
       keyId: entity.keyId,
       keySecret: entity.keySecret,
       encrypt: encrypt,
+      projectId: entity.projectId,
       scope: entity.scope,
     };
   }

@@ -253,4 +253,19 @@ export abstract class BaseService<T> {
   async findOne(options: FindOneOptions<T>) {
     return await this.getRepository().findOne(options);
   }
+
+}
+
+export function checkUserProjectParam(userId: number, projectId: number) {
+  if (projectId != null ){
+    if( userId !==0) {
+      throw new ValidateException('userId projectId 错误');
+    }
+    return true
+  }else{
+    if( userId > 0) {
+      return true
+    }
+     throw new ValidateException('userId不能为空');
+  }
 }

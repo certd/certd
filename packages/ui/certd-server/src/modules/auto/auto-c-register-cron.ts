@@ -84,7 +84,7 @@ export class AutoCRegisterCron {
       if(!setting?.cron){
         continue
       }
-      await this.siteInfoService.registerSiteMonitorJob(item.userId)
+      await this.siteInfoService.registerSiteMonitorJob(item.userId,item.projectId)
     }
 
     if (this.immediateTriggerSiteMonitor) {

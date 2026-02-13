@@ -38,10 +38,10 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
   }
 
   async getByKey(key: string, userId: number, projectId: number): Promise<UserSettingsEntity | null> {
-    if(!userId){
+    if(userId == null){
       throw new Error('userId is required');
     }
-    if (!key || !userId) {
+    if (!key) {
       return null;
     }
     return await this.repository.findOne({
@@ -54,7 +54,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
   }
 
   async getSettingByKey(key: string, userId: number, projectId: number): Promise<any | null> {
-    if(!userId){
+    if(userId == null){
       throw new Error('userId is required');
     }
     const entity = await this.getByKey(key, userId, projectId);
@@ -83,7 +83,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
 
 
   async getSetting<T>( userId: number, projectId: number,type: any, cache:boolean = false): Promise<T> {
-    if(!userId){
+    if(userId==null){
       throw new Error('userId is required');
     }
     const key = type.__key__;
@@ -110,7 +110,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
   }
 
   async saveSetting<T extends BaseSettings>(userId:number, projectId: number,bean: T) {
-    if(!userId){
+    if(userId == null){
       throw new Error('userId is required');
     }
     const old = await this.getSetting(userId, projectId,bean.constructor)

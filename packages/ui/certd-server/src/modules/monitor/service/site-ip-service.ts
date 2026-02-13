@@ -67,7 +67,7 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
 
     const domain = entity.domain;
 
-    const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(entity.userId, UserSiteMonitorSetting);
+    const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(entity.userId,entity.projectId, UserSiteMonitorSetting);
 
     const dnsServer = setting.dnsServer
     let resolver = dns

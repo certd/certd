@@ -158,23 +158,18 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
 
   @Post("/setting/get", { summary: Constants.per.authOnly })
   async get() {
-    const { userId } = await this.getProjectUserIdRead()
-    const setting = await this.service.getSetting(userId)
+    const { userId, projectId } = await this.getProjectUserIdRead()
+    const setting = await this.service.getSetting(userId, projectId)
     return this.ok(setting);
   }
 
   @Post("/setting/save", { summary: Constants.per.authOnly })
   async save(@Body(ALL) bean: any) {
-    const { userId } = await this.getProjectUserIdWrite()
-    if(userId === 0){
-      if(!this.isAdmin()){
-        throw new Error("仅管理员可以修改");
-      }
-    }
+    const { userId, projectId} = await this.getProjectUserIdWrite()
     const setting = new UserSiteMonitorSetting();
     merge(setting, bean);
 
-    await this.service.saveSetting(userId, setting);
+    await this.service.saveSetting(userId, projectId,setting);
     return this.ok({});
   }
 

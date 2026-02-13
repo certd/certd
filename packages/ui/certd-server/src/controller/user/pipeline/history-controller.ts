@@ -257,7 +257,7 @@ export class HistoryController extends CrudController<HistoryService> {
         throw new PermissionException();
       }
       // 是否允许管理员查看
-      const setting = await this.userSettingsService.getSetting<UserGrantSetting>(history.userId, UserGrantSetting, false);
+      const setting = await this.userSettingsService.getSetting<UserGrantSetting>(history.userId, null, UserGrantSetting, false);
       if (setting?.allowAdminViewCerts!==true) {
         //不允许管理员查看
         throw new PermissionException("该流水线的用户还未授权管理员下载证书，请先让用户在”设置->授权委托“中打开开关");
