@@ -18,7 +18,7 @@ export class CaptchaService {
       const settings = await this.sysSettingsService.getPublicSettings();
       captchaAddonId = settings.captchaAddonId ?? 0;
     }
-    const addon: ICaptchaAddon = await this.addonGetterService.getAddonById(captchaAddonId, true, 0, {
+    const addon: ICaptchaAddon = await this.addonGetterService.getAddonById(captchaAddonId, true, 0,null, {
       type: "captcha",
       name: "image"
     });

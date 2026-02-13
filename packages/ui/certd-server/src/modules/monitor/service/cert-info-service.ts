@@ -32,7 +32,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   }
 
   async getUserDomainCount(userId: number) {
-    if (!userId) {
+    if (userId==null) {
       throw new Error('userId is required');
     }
     return await this.repository.sum('domainCount', {
@@ -84,8 +84,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async getMatchCertList(params: { domains: string[]; userId: number }) {
-    const { domains, userId } = params;
+  async getMatchCertList(params: { domains: string[]; userId: number,projectId?:number }) {
+    const { domains, userId,projectId } = params;
     if (!domains) {
       throw new CodeException({
         ...Constants.res.openCertNotFound,
@@ -102,6 +102,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       },
       where: {
         userId,
+        projectId,
       },
       order: {
         id: 'DESC',

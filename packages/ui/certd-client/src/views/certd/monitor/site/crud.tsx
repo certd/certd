@@ -556,6 +556,20 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         },
+        ipAddress: {
+          title: t("certd.monitor.ipAddress"),
+          search: {
+            show: false,
+          },
+          type: "text",
+          form: {
+            helper: t("certd.monitor.ipAddressHelper"),
+          },
+          column: {
+            width: 150,
+            sorter: true,
+          },
+        },
         groupId: {
           title: t("certd.fields.group"),
           type: "dict-select",

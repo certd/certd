@@ -29,7 +29,7 @@ export class OpenCertController extends BaseOpenController {
     const openKey: OpenKey = this.ctx.openKey;
     const userId = openKey.userId;
     
-    if (!userId) {
+    if (userId==null) {
       throw new CodeException(Constants.res.openKeyError);
     }
     const projectId = openKey.projectId;

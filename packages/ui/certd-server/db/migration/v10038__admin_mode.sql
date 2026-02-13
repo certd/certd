@@ -66,6 +66,9 @@ CREATE INDEX "index_domain_project_id" ON "cd_domain" ("project_id");
 ALTER TABLE user_settings ADD COLUMN  project_id integer;
 CREATE INDEX "index_user_settings_project_id" ON "user_settings" ("project_id");
 
+ALTER TABLE cd_group ADD COLUMN  project_id integer;
+CREATE INDEX "index_group_project_id" ON "cd_group" ("project_id");
+
 
 
 
@@ -103,4 +106,7 @@ CREATE TABLE "cd_audit_log"
 CREATE INDEX "index_audit_log_user_id" ON "cd_audit_log" ("user_id");
 CREATE INDEX "index_audit_log_project_id" ON "cd_audit_log" ("project_id");
 
+
+
+ALTER TABLE cd_site_info ADD COLUMN ip_address varchar(128);
 

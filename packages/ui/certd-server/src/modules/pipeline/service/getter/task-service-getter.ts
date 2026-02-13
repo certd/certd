@@ -48,7 +48,7 @@ export class TaskServiceGetter implements IServiceGetter{
   async getSubDomainsGetter(): Promise<SubDomainsGetter> {
     const subDomainsService:SubDomainService = await  this.appCtx.getAsync("subDomainService")
     const domainService:DomainService = await  this.appCtx.getAsync("domainService")
-    return new SubDomainsGetter(this.userId, subDomainsService,domainService)
+    return new SubDomainsGetter(this.userId,this.projectId, subDomainsService,domainService)
   }
 
   async getAccessService(): Promise<AccessGetter> {
@@ -69,7 +69,7 @@ export class TaskServiceGetter implements IServiceGetter{
 
   async getDomainVerifierGetter(): Promise<DomainVerifierGetter> {
     const domainService:DomainService = await  this.appCtx.getAsync("domainService")
-    return new DomainVerifierGetter(this.userId, domainService);
+    return new DomainVerifierGetter(this.userId, this.projectId, domainService);
   }
 }
 @Provide()

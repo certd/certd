@@ -4,17 +4,19 @@ import { DomainService } from "../../../cert/service/domain-service.js";
 
 export class SubDomainsGetter implements ISubDomainsGetter {
   userId: number;
+  projectId: number;
   subDomainService: SubDomainService;
   domainService: DomainService;
 
-  constructor(userId: number, subDomainService: SubDomainService, domainService: DomainService) {
+  constructor(userId: number, projectId: number, subDomainService: SubDomainService, domainService: DomainService) {
     this.userId = userId;
+    this.projectId = projectId;
     this.subDomainService = subDomainService;
     this.domainService = domainService;
   }
 
   async getSubDomains() {
-    return await this.subDomainService.getListByUserId(this.userId)
+    return await this.subDomainService.getListByUserId(this.userId, this.projectId)
   }
 
   async hasSubDomain(fullDomain: string) {

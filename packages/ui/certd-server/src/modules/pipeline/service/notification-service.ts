@@ -88,7 +88,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
     if (!id) {
       throw new ValidateException('id不能为空');
     }
-    if (!userId) {
+    if (userId==null) {
       throw new ValidateException('userId不能为空');
     }
     const res = await this.repository.findOne({
@@ -135,7 +135,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
     if (!id) {
       throw new ValidateException('id不能为空');
     }
-    if (!userId) {
+    if (userId==null) {
       throw new ValidateException('userId不能为空');
     }
     await this.repository.update(

@@ -311,6 +311,8 @@ export default {
     days: "天",
     lastCheckTime: "上次检查时间",
     disabled: "禁用启用",
+    ipAddress: "IP地址",
+    ipAddressHelper: "填写则固定检查此IP，不从DNS获取域名的IP地址",
     ipCheck: "开启IP检查",
     ipCheckHelper: "开启后，会检查IP（或源站）上的证书有效期",
     ipSyncAuto: "自动同步IP",

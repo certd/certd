@@ -89,7 +89,7 @@ export class AddonService extends BaseService<AddonEntity> {
     if (ids.length === 0) {
       return [];
     }
-    if (!userId) {
+    if (userId==null) {
       return [];
     }
     return await this.repository.find({
@@ -145,7 +145,7 @@ export class AddonService extends BaseService<AddonEntity> {
     if (!id) {
       throw new ValidateException("id不能为空");
     }
-    if (!userId) {
+    if (userId==null) {
       throw new ValidateException("userId不能为空");
     }
     await this.repository.update(

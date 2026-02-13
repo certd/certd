@@ -40,12 +40,12 @@ export class CertInfoFacade  {
     }
     const domainArr = domains.split(',');
 
-    const matchedList = await this.certInfoService.getMatchCertList({domains:domainArr,userId})
+    const matchedList = await this.certInfoService.getMatchCertList({domains:domainArr,userId,projectId})
 
     if (matchedList.length === 0 ) {
       if(req.autoApply === true){
         //自动申请，先创建自动申请流水线
-        const pipeline:PipelineEntity = await this.createAutoPipeline({domains:domainArr,userId})
+        const pipeline:PipelineEntity = await this.createAutoPipeline({domains:domainArr,userId,projectId})
         await this.triggerApplyPipeline({pipelineId:pipeline.id})
       }else{
         throw new CodeException({
@@ -103,9 +103,9 @@ export class CertInfoFacade  {
     return matched;
   }
 
-  async createAutoPipeline(req:{domains:string[],userId:number}){
+  async createAutoPipeline(req:{domains:string[],userId:number,projectId:number}){
 
-    const verifierGetter = new DomainVerifierGetter(req.userId, this.domainService)
+    const verifierGetter = new DomainVerifierGetter(req.userId, req.projectId, this.domainService)
 
     const allDomains = []
     for (const item of req.domains) {
@@ -133,6 +133,7 @@ export class CertInfoFacade  {
     return await this.pipelineService.createAutoPipeline({
       domains: req.domains,
       email,
+      projectId: req.projectId,
       userId: req.userId,
       from: "OpenAPI"
     })

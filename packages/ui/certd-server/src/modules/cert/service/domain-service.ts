@@ -109,10 +109,10 @@ export class DomainService extends BaseService<DomainEntity> {
    * @param userId
    * @param domains //去除* 且去重之后的域名列表
    */
-  async getDomainVerifiers(userId: number, domains: string[]): Promise<DomainVerifiers> {
+  async getDomainVerifiers(userId: number, projectId: number, domains: string[]): Promise<DomainVerifiers> {
 
     const mainDomainMap: Record<string, string> = {}
-    const taskService = this.taskServiceBuilder.create({ userId: userId });
+    const taskService = this.taskServiceBuilder.create({ userId: userId, projectId: projectId });
     const subDomainGetter = await taskService.getSubDomainsGetter();
     const domainParser = new DomainParser(subDomainGetter)
 
@@ -133,6 +133,7 @@ export class DomainService extends BaseService<DomainEntity> {
       where: {
         domain: In(allDomains),
         userId,
+        projectId,
         disabled: false,
       }
     })
@@ -153,6 +154,7 @@ export class DomainService extends BaseService<DomainEntity> {
       where: {
         domain: In(allDomains),
         userId,
+        projectId,
         status: "valid",
       }
     })

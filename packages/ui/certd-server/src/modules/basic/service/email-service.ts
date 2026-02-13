@@ -160,7 +160,7 @@ export class EmailService implements IEmailService {
     const emailConf = await this.sysSettingsService.getSetting<SysEmailConf>(SysEmailConf);
     const template = emailConf?.templates?.[req.type]
     if (isPlus() && template &&  template.addonId) {
-      const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(template.addonId, true, 0)
+      const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(template.addonId, true, 0,null)
       if (addon) {
         content = await addon.buildContent({ data: req.data })
       }
@@ -168,7 +168,7 @@ export class EmailService implements IEmailService {
     if (isPlus() && !content ) {
       //看看有没有通用模版
       if (emailConf?.templates?.common && emailConf?.templates?.common.addonId) {
-        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(emailConf.templates.common.addonId, true, 0)
+        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(emailConf.templates.common.addonId, true, 0,null)
         if (addon) {
           content = await addon.buildContent({ data: req.data })
         }

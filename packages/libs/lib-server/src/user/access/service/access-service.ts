@@ -196,7 +196,7 @@ export class AccessService extends BaseService<AccessEntity> {
     if (ids.length === 0) {
       return [];
     }
-    if (!userId) {
+    if (userId==null) {
       return [];
     }
     return await this.repository.find({

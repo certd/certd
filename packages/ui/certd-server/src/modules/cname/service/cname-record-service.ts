@@ -72,7 +72,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
     if (!param.domain) {
       throw new ValidateException("域名不能为空");
     }
-    if (!param.userId) {
+    if (param.userId == null) {
       throw new ValidateException("userId不能为空");
     }
     if (param.domain.startsWith("*.")) {

@@ -22,13 +22,14 @@ export class SubDomainService extends BaseService<SubDomainEntity> {
     return this.repository;
   }
 
-  async getListByUserId(userId:number):Promise<string[]>{
-    if (!userId) {
+  async getListByUserId(userId:number, projectId?: number):Promise<string[]>{
+    if (userId==null) {
       return [];
     }
     const list = await this.find({
       where: {
         userId,
+        projectId,
         disabled: false,
       },
     });
@@ -37,17 +38,18 @@ export class SubDomainService extends BaseService<SubDomainEntity> {
   }
 
   async add(bean: SubDomainEntity) {
-    const {domain, userId} = bean;
+    const {domain, userId, projectId} = bean;
     if (!domain) {
       throw new Error('域名不能为空');
     }
-    if (!userId) {
+    if (userId==null) {
       throw new Error('用户ID不能为空');
     }
     const exist = await this.repository.findOne({
       where: {
         domain,
         userId,
+        projectId,
       },
     });
    if (exist) {

@@ -1082,7 +1082,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async createAutoPipeline(req: { domains: string[]; email: string; userId: number, from: string }) {
+  async createAutoPipeline(req: { domains: string[]; email: string; userId: number,projectId?:number, from: string }) {
 
     const randomHour = Math.floor(Math.random() * 6);
     const randomMin = Math.floor(Math.random() * 60);
@@ -1162,6 +1162,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     bean.type = "cert_auto";
     bean.disabled = false
     bean.keepHistoryCount = 30
+    bean.projectId = req.projectId
     await this.save(bean)
 
 

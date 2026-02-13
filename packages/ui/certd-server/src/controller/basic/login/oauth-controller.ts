@@ -46,7 +46,7 @@ export class ConnectController extends BaseController {
       throw new Error(`未配置该OAuth类型:${type}`);
     }
 
-    const addon = await this.addonGetterService.getAddonById(setting.addonId, true, 0);
+    const addon = await this.addonGetterService.getAddonById(setting.addonId, true, 0,null);
     if (!addon) {
       throw new Error("初始化OAuth插件失败");
     }
@@ -251,7 +251,7 @@ export class ConnectController extends BaseController {
           provider.addonId = conf.addonId;
           provider.addonTitle = addonEntity.name;
 
-          const addon = await this.addonGetterService.getAddonById(conf.addonId,true,0);
+          const addon = await this.addonGetterService.getAddonById(conf.addonId,true,0,null);
           const {logoutUrl} = await addon.buildLogoutUrl();
           if (logoutUrl){
             provider.logoutUrl = logoutUrl;
