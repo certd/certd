@@ -75,7 +75,7 @@ async function loadUserSettings() {
 
 loadUserSettings();
 const doSave = async (form: any) => {
-  await utils.sleep(1);
+  await utils.sleep(300);
   await api.SiteMonitorSettingsSave({
     ...formState,
   });
