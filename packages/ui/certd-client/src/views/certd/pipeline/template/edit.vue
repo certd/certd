@@ -36,7 +36,7 @@
           <a-collapse v-if="detail?.template?.pipelineId > 0" v-model:active-key="activeKey">
             <a-collapse-panel v-for="(step, stepId) in steps" :key="stepId" class="step-item" :header="step.title">
               <div class="step-inputs flex flex-wrap">
-                <div v-for="(input, key) of step.input" :key="key" class="hover:bg-gray-100 p-5 w-full xl:w-[50%]">
+                <div v-for="(input, key) of step.input" :key="key" class="hover:bg-gray-100 dark:hover:bg-[#2d2d2d] p-5 w-full xl:w-[50%]">
                   <div class="flex flex-between" :title="input.define.helper">
                     <div class="flex flex-1 overflow-hidden mr-5">
                       <span style="min-width: 140px" class="bas">
