@@ -175,7 +175,7 @@ export class DeployCertToAliyunOSS extends AbstractTaskPlugin {
               <PrivateKey>${certInfo.key}</PrivateKey>
               <Certificate>${certInfo.crt}</Certificate>
         `
-      }else{
+      }else {
         const casCert = this.cert as CasCertId;
         certStr = `<CertId>${casCert.certIdentifier}</CertId>`
       }

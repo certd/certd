@@ -141,11 +141,13 @@ export class DeployCertToAliyunApig extends AbstractTaskPlugin {
       const casCert = this.cert as CasCertId;
       if (casCert.certId) {
         certId = casCert.certId;
-      } else {
+      } else if (certInfo.crt) {
         certId = await sslClient.uploadCert({
           name: this.buildCertName(CertReader.getMainDomain(certInfo.crt)),
           cert: certInfo,
         });
+      }else{
+        throw new Error('证书格式错误'+JSON.stringify(this.cert));
       }
     }
 

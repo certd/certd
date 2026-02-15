@@ -106,6 +106,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     let certId: any = this.cert
     if (typeof this.cert === 'object') {
       const certInfo = this.cert as CertInfo;
+      const casCertId = this.cert as CasCertId;
       if (certInfo.crt) {
         this.logger.info('上传证书:', CertName);
         const cert: any = this.cert;
@@ -117,6 +118,10 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
           SSLPub: cert.crt,
           SSLPri: cert.key,
         };
+      }else if (casCertId.certId){
+        certId = casCertId.certId;
+      }else{
+        throw new Error('证书格式错误'+JSON.stringify(this.cert));
       }
     }
     this.logger.info('使用已上传的证书:', certId);
