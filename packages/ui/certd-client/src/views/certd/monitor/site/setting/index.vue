@@ -25,7 +25,7 @@
         </a-form-item>
         <a-form-item :label="t('certd.monitor.setting.dnsServer')" :name="['dnsServer']">
           <div class="flex">
-            <a-select v-model:value="formState.dnsServer" mode="tags" :open="false" />
+            <a-select v-model:value="formState.dnsServer" :token-separators="[' ', ',', '，', '、', '|']" mode="tags" :open="false" />
           </div>
           <div class="helper">{{ t("certd.monitor.setting.dnsServerHelper") }}</div>
         </a-form-item>
