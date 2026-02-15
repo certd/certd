@@ -17,6 +17,7 @@ export type PluginRequestHandleReq<T = any> = {
   action: string;
   input: T;
   data: any;
+  record: { id: number; type: string; title: string };
 };
 
 export type UserInfo = {

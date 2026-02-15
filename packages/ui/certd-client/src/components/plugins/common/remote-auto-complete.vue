@@ -16,6 +16,7 @@
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 import { defineComponent, inject, ref, useAttrs, watch, Ref } from "vue";
 import { PluginDefine } from "@certd/pipeline";
+import { getInputFromForm } from "./utils";
 
 defineOptions({
   name: "RemoteAutoComplete",
@@ -48,18 +49,6 @@ const message = ref("");
 const hasError = ref(false);
 const loading = ref(false);
 
-function getInputFromForm(form: any, pluginType: string) {
-  let input: any = {};
-  if (pluginType === "plugin") {
-    input = form?.input || {};
-  } else if (pluginType === "access") {
-    input = form?.access || {};
-  } else {
-    input = form || {};
-  }
-  return input;
-}
-
 const getOptions = async () => {
   if (loading.value) {
     return;
@@ -75,7 +64,7 @@ const getOptions = async () => {
   }
   const pluginType = getPluginType();
   const { form } = getScope();
-  const input = getInputFromForm(form, pluginType);
+  const { input, record } = getInputFromForm(form, pluginType);
   for (let key in define.input) {
     const inWatches = props.watches?.includes(key);
     const inputDefine = define.input[key];
@@ -99,6 +88,7 @@ const getOptions = async () => {
         action: props.action,
         input,
         data: {},
+        record,
       },
       {
         onError(err: any) {
@@ -140,7 +130,7 @@ watch(
   () => {
     const pluginType = getPluginType();
     const { form, key } = getScope();
-    const input = getInputFromForm(form, pluginType);
+    const { input, record } = getInputFromForm(form, pluginType);
     const watches: any = {};
     if (props.watches && props.watches.length > 0) {
       for (const key of props.watches) {
