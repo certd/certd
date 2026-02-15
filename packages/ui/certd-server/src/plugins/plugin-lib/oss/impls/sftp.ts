@@ -5,6 +5,9 @@ import fs from "fs";
 import { SftpAccess, SshAccess, SshClient } from "../../ssh/index.js";
 
 export default class SftpOssClientImpl extends BaseOssClient<SftpAccess> {
+  getUploaderType() {
+    return 'sftp';
+  }
   async download(fileName: string, savePath: string): Promise<void> {
     const path = this.join(this.rootDir, fileName);
     const client = new SshClient(this.logger);
@@ -48,6 +51,7 @@ export default class SftpOssClientImpl extends BaseOssClient<SftpAccess> {
     const key = this.join(this.rootDir, filePath);
     try {
       const client = new SshClient(this.logger);
+      const uploaderType = this.getUploaderType();
       await client.uploadFiles({
         connectConf: access,
         mkdirs: true,
@@ -57,7 +61,7 @@ export default class SftpOssClientImpl extends BaseOssClient<SftpAccess> {
             remotePath: key,
           },
         ],
-        uploadType: "sftp",
+        uploadType: uploaderType,
         opts: {
           mode: this.access?.fileMode ?? undefined,
         },
