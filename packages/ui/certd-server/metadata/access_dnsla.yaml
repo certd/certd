@@ -17,6 +17,12 @@ input:
     helper: ''
     required: false
     encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 测试授权是否正确
 pluginType: access
 type: builtIn
 scriptFilePath: /plugins/plugin-dnsla/access.js

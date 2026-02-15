@@ -17,6 +17,12 @@ input:
     helper: http://user.yiduncdn.com/console/index.html#/account/config/api,点击开启后获取
     required: true
     encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: onTestRequest
+    helper: 点击测试接口看是否正常
 pluginType: access
 type: builtIn
 scriptFilePath: /plugins/plugin-plus/yidun/access.js

@@ -165,6 +165,12 @@ input:
         value: me-south-1
       - label: sa-east-1
         value: sa-east-1
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 测试授权是否正确
 pluginType: access
 type: builtIn
 scriptFilePath: /plugins/plugin-aws/access.js

@@ -31,7 +31,9 @@ input:
     order: 0
   accessId:
     title: 群晖授权
-    helper: 群晖登录授权，请确保账户是管理员用户组
+    helper: |-
+      群晖登录授权，请确保账户是管理员用户组
+      群晖OTP授权有效期只有30天，您还需要添加“群晖-刷新OTP登录有效期”任务做登录有效期保活
     component:
       name: access-selector
       type: synology

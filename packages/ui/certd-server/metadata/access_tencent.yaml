@@ -41,6 +41,12 @@ input:
     component:
       name: a-switch
       vModel: checked
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: onTestRequest
+    helper: 点击测试接口看是否正常
 pluginType: access
 type: builtIn
 scriptFilePath: /plugins/plugin-lib/tencent/access.js

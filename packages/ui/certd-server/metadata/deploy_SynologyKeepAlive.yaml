@@ -1,0 +1,35 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 0
+name: SynologyKeepAlive
+title: 群晖-刷新OTP登录有效期
+icon: simple-icons:synology
+group: panel
+desc: 群晖登录状态可能30天失效，需要在失效之前登录一次，刷新有效期，您可以将其放在“部署到群晖面板”任务之后
+needPlus: true
+input:
+  accessId:
+    title: 群晖授权
+    helper: 群晖登录授权，请确保账户是管理员用户组
+    component:
+      name: access-selector
+      type: synology
+    required: true
+    order: 0
+  intervalDays:
+    title: 间隔天数
+    helper: 多少天刷新一次，建议15天以内
+    value: 15
+    component:
+      name: a-input-number
+      vModel: value
+    required: true
+    order: 0
+output:
+  lastRefreshTime:
+    title: 上次刷新时间
+    type: SynologyLastRefreshTime
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-plus/synology/plugins/plugin-keep-alive.js

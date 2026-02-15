@@ -17,6 +17,12 @@ input:
     helper: 请前往[多吉云-密钥管理](https://console.dogecloud.com/user/keys)获取
     required: true
     encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 测试授权是否正确
 pluginType: access
 type: builtIn
 scriptFilePath: /plugins/plugin-doge/access.js

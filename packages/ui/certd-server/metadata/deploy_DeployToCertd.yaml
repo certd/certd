@@ -1,0 +1,24 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: DeployToCertd
+title: 部署证书到Certd本身
+icon: mdi:restart
+desc: 【仅管理员可用】 部署证书到 certd的https服务，用于更新 Certd 的 ssl 证书，建议将此任务放在流水线的最后一步
+group: admin
+onlyAdmin: true
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-admin/plugin-deploy-to-certd.js

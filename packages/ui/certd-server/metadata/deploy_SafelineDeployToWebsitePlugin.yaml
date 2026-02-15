@@ -3,9 +3,9 @@ default:
   strategy:
     runStrategy: 1
 name: SafelineDeployToWebsitePlugin
-title: 雷池-更新证书
+title: 雷池-更新证书（支持控制台和防护应用）
 icon: svg:icon-safeline
-desc: 更新长亭雷池WAF的证书
+desc: 更新长亭雷池WAF的证书，支持更新控制台和防护应用的证书。
 group: panel
 needPlus: false
 input:
@@ -68,7 +68,9 @@ input:
                   },
                }
               
-    helper: 请选择要更新的雷池的证书Id，需要先手动到雷池控制台上传一次
+    helper: |-
+      请选择要更新的雷池的证书Id，需要先手动到雷池控制台上传一次
+      如果输入0，则表示新增证书,运行一次之后可以在雷池中使用该证书，最后记得在此处选择新上传的这个证书id，后续将进行自动更新
     order: 0
 output: {}
 pluginType: deploy
