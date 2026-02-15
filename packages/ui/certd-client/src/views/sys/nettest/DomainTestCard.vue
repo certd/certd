@@ -221,14 +221,12 @@ onMounted(() => {
   border: 1px solid #e8e8e8;
   border-radius: 4px;
   overflow: hidden;
-  background-color: #fff;
 
   .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    background-color: #fafafa;
     border-bottom: 1px solid #e8e8e8;
   }
 
@@ -245,13 +243,11 @@ onMounted(() => {
   .input-form {
     margin-bottom: 12px;
     padding: 12px;
-    background-color: #fafafa;
     border-radius: 4px;
   }
 
   .domain-info {
     padding: 5.5px 12px;
-    background-color: #f0f0f0;
     border-radius: 4px;
     display: flex;
     gap: 16px;
@@ -272,7 +268,6 @@ onMounted(() => {
   .summary {
     margin-top: 16px;
     padding: 12px;
-    background-color: #f8f9fa;
     border-radius: 4px;
     .summary-text {
     }
