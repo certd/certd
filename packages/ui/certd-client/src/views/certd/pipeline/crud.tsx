@@ -352,6 +352,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           column: {
             align: "center",
             width: 120,
+            show: false,
             sorter: true,
           },
           form: {
@@ -454,6 +455,18 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
         },
         lastHistoryTime: {
           title: t("certd.fields.lastRun"),
+          type: "datetime",
+          form: {
+            show: false,
+          },
+          column: {
+            sorter: true,
+            width: 150,
+            align: "center",
+          },
+        },
+        nextRunTime: {
+          title: t("certd.fields.nextRunTime"),
           type: "datetime",
           form: {
             show: false,

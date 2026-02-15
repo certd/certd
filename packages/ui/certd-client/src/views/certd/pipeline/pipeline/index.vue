@@ -885,6 +885,7 @@ export default defineComponent({
           saveLoading.value = false;
         }
       };
+
       const edit = () => {
         pipeline.value = cloneDeep(currentPipeline.value);
         currentHistory.value = null;

@@ -48,7 +48,7 @@ import { TaskServiceBuilder } from "./getter/task-service-getter.js";
 import { nanoid } from "nanoid";
 import { set } from "lodash-es";
 import { executorQueue } from "@certd/lib-server";
-
+import parser from "cron-parser";
 const runningTasks: Map<string | number, Executor> = new Map();
 
 
@@ -141,15 +141,46 @@ export class PipelineService extends BaseService<PipelineEntity> {
       }
       // @ts-ignore
       item.stepCount = stepCount;
-      if(item.triggerCount == 0  ){
+      if (item.triggerCount == 0) {
         item.triggerCount = pipeline.triggers?.length;
       }
-      
+
+      //获取下次执行时间
+      if (pipeline.triggers?.length > 0) {
+        const triggers = pipeline.triggers.filter((item) => item.type === 'timer');
+        if (triggers && triggers.length > 0) {
+          let nextTimes: any = [];
+          for (const item of triggers) {
+            if (!item.props?.cron) {
+              continue;
+            }
+            const ret = this.getCronNextTimes(item.props?.cron, 1);
+            nextTimes.push(...ret);
+          }
+          item.nextRunTime = nextTimes[0]
+        } 
+        
+      }
+
       delete item.content;
     }
 
     return result;
   }
+
+  getCronNextTimes(cron: string, count: number = 1) {
+    if (cron == null) {
+      return [];
+    }
+    const nextTimes = [];
+    const interval = parser.parseExpression(cron);
+    for (let i = 0; i < count; i++) {
+      const next = interval.next().getTime();
+      nextTimes.push(dayjs(next).format("YYYY-MM-DD HH:mm:ss"));
+    }
+    return nextTimes;
+  }
+
 
   private async fillLastVars(records: PipelineEntity[]) {
     const pipelineIds: number[] = [];
@@ -220,7 +251,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       //修改
       old = await this.info(bean.id);
     }
-    if (!old || !old.webhookKey ) {
+    if (!old || !old.webhookKey) {
       bean.webhookKey = await this.genWebhookKey();
     }
 

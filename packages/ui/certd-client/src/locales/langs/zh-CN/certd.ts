@@ -167,6 +167,7 @@ export default {
     updateTime: "更新时间",
     triggerType: "触发类型",
     pipelineId: "流水线Id",
+    nextRunTime: "下次运行时间",
   },
   pi: {
     validTime: "流水线有效期",
