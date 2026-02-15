@@ -128,9 +128,10 @@ export class DemoTest extends AbstractTaskPlugin {
       //当以下参数变化时，触发获取选项
       watches: ['certDomains', 'accessId'],
       required: true,
+      multi: true,
     })
   )
-  siteName!: string | string[];
+  siteName!: string[];
 
   //插件实例化时执行的方法
   async onInstance() {}

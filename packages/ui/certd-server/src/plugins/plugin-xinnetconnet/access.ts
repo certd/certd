@@ -50,7 +50,7 @@ export class XinnetConnectAccess extends BaseAccess {
     async onTestRequest() {
       await this.getDomainList({
         pageNo: 1,
-        pageSize: 1,
+        pageSize: 10,
       });
       return "ok";
     }
