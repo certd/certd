@@ -70,6 +70,47 @@ export class ProxmoxAccess extends BaseAccess {
     encrypt: false,
   })
   realm = '';
+
+
+  
+  @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "onTestRequest",
+    },
+    helper: "点击测试接口看是否正常",
+  })
+  testRequest = true;
+
+  async onTestRequest() {
+    await this.getNodeList();
+    return "ok";
+  }
+
+
+  
+  async getNodeList() {
+    const client = await this.getClient();
+    const nodesRes = await client.nodes.index();
+    // this.logger.info('nodes:', nodesRes.response);
+    if (!nodesRes.response?.data) {
+      return []
+    }
+    return nodesRes.response.data
+  }
+
+  async getClient() {
+    const pve = await import('@certd/cv4pve-api-javascript');
+    const client = new pve.PveClient(this.host, this.port);
+    const login = await client.login(this.username, this.password, this.realm || 'pam');
+    if (!login) {
+      throw new Error(`Login failed:${JSON.stringify(login)}`);
+    }
+    const versionRes = await client.version.version();
+    this.ctx.logger.info('Proxmox version:', versionRes.response);
+    return client;
+  }
 }
 
 new ProxmoxAccess();

@@ -37,6 +37,25 @@ export class XinnetConnectAccess extends BaseAccess {
   })
   password = '';
 
+    @AccessInput({
+      title: "测试",
+      component: {
+        name: "api-test",
+        action: "onTestRequest",
+      },
+      helper: "点击测试接口看是否正常",
+    })
+    testRequest = true;
+  
+    async onTestRequest() {
+      await this.getDomainList({
+        pageNo: 1,
+        pageSize: 1,
+      });
+      return "ok";
+    }
+
+
 
   async getDomainList(req: PageSearch): Promise<any> {
     let bodyXml =`

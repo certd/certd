@@ -54,7 +54,7 @@ export class YidunDeployToRCDNPlugin extends AbstractTaskPlugin {
   async onInstance() {}
   async execute(): Promise<void> {
     const access = await this.getAccess<YidunRcdnAccess>(this.accessId);
-    const loginRes = await this.getLoginToken(access);
+    const loginRes = await access.getLoginToken();
 
     const curl = "https://rhcdn.yiduncdn.com/CdnDomainHttps/httpsConfiguration";
     for (const domain of this.domains) {
@@ -78,71 +78,14 @@ export class YidunDeployToRCDNPlugin extends AbstractTaskPlugin {
           private_key: cert.key,
         },
       };
-      await this.doRequest(curl, loginRes, update);
+      await access.doRequest(curl, loginRes, update);
       this.logger.info(`站点${domain}证书更新成功`);
     }
   }
 
-  async getLoginToken(access: YidunRcdnAccess) {
-    const url = "https://rhcdn.yiduncdn.com/login/loginUser";
-    const data = {
-      userAccount: access.username,
-      userPwd: access.password,
-      remember: true,
-    };
-    const http = this.ctx.http;
-    const res: any = await http.request({
-      url,
-      method: "POST",
-      data,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      returnOriginRes: true,
-    });
-    if (!res.data?.success) {
-      throw new Error(res.data?.message);
-    }
+  
 
-    const jsessionId = this.ctx.utils.request.getCookie(res, "JSESSIONID");
-    const token = res.data?.data;
-    return {
-      jsessionId,
-      token,
-    };
-  }
-
-  async getDomainList(loginRes: any) {
-    const url = "https://rhcdn.yiduncdn.com/CdnDomain/queryForDatatables";
-    const data = {
-      draw: 1,
-      start: 0,
-      length: 1000,
-      search: {
-        value: "",
-        regex: false,
-      },
-    };
-
-    const res = await this.doRequest(url, loginRes, data);
-    return res.data?.data;
-  }
-
-  private async doRequest(url: string, loginRes: any, data: any) {
-    const http = this.ctx.http;
-    const res: any = await http.request({
-      url,
-      method: "POST",
-      headers: {
-        Cookie: `JSESSIONID=${loginRes.jsessionId};kuocai_cdn_token=${loginRes.token}`,
-      },
-      data,
-    });
-    if (!res.success) {
-      throw new Error(res.message);
-    }
-    return res;
-  }
+  
 
   async onGetDomainList(data: any) {
     if (!this.accessId) {
@@ -150,9 +93,9 @@ export class YidunDeployToRCDNPlugin extends AbstractTaskPlugin {
     }
     const access = await this.getAccess<YidunRcdnAccess>(this.accessId);
 
-    const loginRes = await this.getLoginToken(access);
+    const loginRes = await access.getLoginToken();
 
-    const list = await this.getDomainList(loginRes);
+    const list = await access.getDomainList(loginRes);
 
     if (!list || list.length === 0) {
       throw new Error("您账户下还没有站点域名，请先添加域名");

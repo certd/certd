@@ -1,4 +1,5 @@
 import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
+import { UniCloudClient } from "@certd/plugin-plus";
 
 /**
  */
@@ -30,6 +31,27 @@ export class UniCloudAccess extends BaseAccess {
   })
   password = "";
 
+  // await this.getToken();
+
+  @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "onTestRequest",
+    },
+    helper: "点击测试接口看是否正常",
+  })
+  testRequest = true;
+
+  async onTestRequest() {
+    const client = new UniCloudClient({
+      access: this,
+      logger: this.ctx.logger,
+      http: this.ctx.http,
+    });
+    await client.getToken();
+    return "ok";
+  }
 }
 
 new UniCloudAccess();

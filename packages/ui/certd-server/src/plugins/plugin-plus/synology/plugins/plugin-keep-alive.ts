@@ -68,7 +68,7 @@ export class SynologyKeepAlivePlugin extends AbstractPlusTaskPlugin {
         this.logger.info(`下一次刷新时间${lastTime.add(this.intervalDays, "day").format("YYYY-MM-DD")}`);
         return "skip";
       }else{
-         this.logger.info(`超过${this.intervalDays}天，需要刷新`);
+        this.logger.info(`超过${this.intervalDays}天，需要刷新`);
       }
 
     }

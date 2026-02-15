@@ -30,6 +30,85 @@ export class YidunRcdnAccess extends BaseAccess {
     encrypt: true,
   })
   password = "";
+
+
+ @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "onTestRequest",
+    },
+    helper: "点击测试接口看是否正常",
+  })
+  testRequest = true;
+
+  async onTestRequest() {
+    const token = await this.getLoginToken();
+    await this.getDomainList(token);
+    return "ok";
+  }
+
+  async getDomainList(loginRes: any) {
+    const url = "https://rhcdn.yiduncdn.com/CdnDomain/queryForDatatables";
+    const data = {
+      draw: 1,
+      start: 0,
+      length: 1000,
+      search: {
+        value: "",
+        regex: false,
+      },
+    };
+
+    const res = await this.doRequest(url, loginRes, data);
+    return res.data?.data;
+  }
+
+  async doRequest(url: string, loginRes: any, data: any) {
+    const http = this.ctx.http;
+    const res: any = await http.request({
+      url,
+      method: "POST",
+      headers: {
+        Cookie: `JSESSIONID=${loginRes.jsessionId};kuocai_cdn_token=${loginRes.token}`,
+      },
+      data,
+    });
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res;
+  }
+
+  async getLoginToken() {
+    const access: YidunRcdnAccess = this
+    const url = "https://rhcdn.yiduncdn.com/login/loginUser";
+    const data = {
+      userAccount: access.username,
+      userPwd: access.password,
+      remember: true,
+    };
+    const http = this.ctx.http;
+    const res: any = await http.request({
+      url,
+      method: "POST",
+      data,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      returnOriginRes: true,
+    });
+    if (!res.data?.success) {
+      throw new Error(res.data?.message);
+    }
+
+    const jsessionId = this.ctx.utils.request.getCookie(res, "JSESSIONID");
+    const token = res.data?.data;
+    return {
+      jsessionId,
+      token,
+    };
+  }
 }
 
 new YidunRcdnAccess();

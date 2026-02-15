@@ -66,8 +66,8 @@ export class ProxmoxUploadCert extends AbstractPlusTaskPlugin {
   //插件执行方法
   async execute(): Promise<void> {
     const { cert } = this;
-
-    const client = await this.getClient();
+    const access = await this.getAccess<ProxmoxAccess>(this.accessId);
+    const client = await access.getClient();
 
     for (const node of this.nodes) {
       this.logger.info(`开始上传证书到节点：${node}`);
@@ -84,30 +84,16 @@ export class ProxmoxUploadCert extends AbstractPlusTaskPlugin {
     this.logger.info('部署成功');
   }
 
-  async onGetNodeList() {
-    const client = await this.getClient();
+   async onGetNodeList() {
 
-    const nodesRes = await client.nodes.index();
-    // this.logger.info('nodes:', nodesRes.response);
-    return nodesRes.response.data.map((node: any) => {
+    const access = await this.getAccess<ProxmoxAccess>(this.accessId);
+    const nodesRes = await access.getNodeList();
+    return nodesRes.map((node: any) => {
       return {
         value: node.node,
         label: node.node,
       };
     });
-  }
-
-  async getClient() {
-    const access: ProxmoxAccess = await this.getAccess<ProxmoxAccess>(this.accessId);
-    const pve = await import('@certd/cv4pve-api-javascript');
-    const client = new pve.PveClient(access.host, access.port);
-    const login = await client.login(access.username, access.password, access.realm || 'pam');
-    if (!login) {
-      throw new Error(`Login failed:${JSON.stringify(login)}`);
-    }
-    const versionRes = await client.version.version();
-    this.logger.info('Proxmox version:', versionRes.response);
-    return client;
   }
 }
 //实例化一下，注册插件

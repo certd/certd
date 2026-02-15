@@ -113,6 +113,19 @@ export class VolcengineClient {
     return service;
   }
 
+  async getStsService() {
+    const CommonService = await this.getServiceCls();
+
+    const service = new CommonService({
+      serviceName: "sts",
+      defaultVersion: "2018-01-01"
+    });
+    service.setAccessKeyId(this.opts.access.accessKeyId);
+    service.setSecretKey(this.opts.access.secretAccessKey);
+    service.setRegion("cn-north-1");
+    return service;
+  }
+
   async getServiceCls() {
     if (this.CommonService) {
       return this.CommonService;

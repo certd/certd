@@ -108,15 +108,10 @@ export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
 
   async onGetDomainList() {
     const access = await this.getAccess<QiniuAccess>(this.accessId);
-    const qiniuClient = new QiniuClient({
-      http: this.ctx.http,
-      access,
-      logger: this.logger,
-    });
-    const url = `https://api.qiniu.com/domain?limit=1000`;
-    const res = await qiniuClient.doRequest(url, 'get');
+    
+    const domains = await access.getDomainList()
 
-    const options = res.domains.map((item: any) => {
+    const options = domains.map((item: any) => {
       return {
         value: item.name,
         label: item.name,
