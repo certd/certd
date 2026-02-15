@@ -67,7 +67,10 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
         set(form, key, column.value);
       }
       //字段配置赋值
-      columnsRef.value[key] = column;
+      if (columnsRef.value) {
+        columnsRef.value[key] = column;
+      }
+
       console.log("form", columnsRef.value);
     });
   }

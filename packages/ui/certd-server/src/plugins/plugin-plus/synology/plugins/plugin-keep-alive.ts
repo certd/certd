@@ -34,11 +34,10 @@ export class SynologyKeepAlivePlugin extends AbstractPlusTaskPlugin {
   @TaskInput({
     title: "间隔天数",
     helper: "多少天刷新一次，建议15天以内",
+    value: 15,
     component: {
-      name: "number-input",
-      type: "number",
-      min: 1,
-      max: 30,
+      name: "a-input-number",
+      vModel:"value",
     },
     required: true,
   })
@@ -51,7 +50,7 @@ export class SynologyKeepAlivePlugin extends AbstractPlusTaskPlugin {
   lastRefreshTime!: number;
 
   async onInstance() {}
-  async execute(): Promise<void> {
+  async execute(): Promise<any> {
     this.logger.info("开始刷新群晖登录有效期");
     const now = dayjs()
     const status = this.getLastStatus();
@@ -61,18 +60,23 @@ export class SynologyKeepAlivePlugin extends AbstractPlusTaskPlugin {
       this.lastRefreshTime = lastRefreshTime;
       const lastTime = dayjs(lastRefreshTime);
       const diffDays = now.diff(lastTime, "day");
+      
+      this.logger.info(`上次刷新时间${lastTime.format("YYYY-MM-DD")}`);
       if (diffDays < this.intervalDays) {
-        this.logger.info(`距离上次刷新有效期${diffDays.toFixed(0)}天（${this.intervalDays}天），无需刷新`);
+        this.logger.info(`距离上次刷新${diffDays}天，不足${this.intervalDays}天，无需刷新`);
         this.logger.info(`下一次刷新时间${lastTime.add(this.intervalDays, "day").format("YYYY-MM-DD")}`);
-        return;
+        return "skip";
+      }else{
+         this.logger.info(`超过${this.intervalDays}天，需要刷新`);
       }
+
     }
 
     // const access: SynologyAccess = await this.getAccess<SynologyAccess>(this.accessId);
     // const client = new SynologyClient(access as any, this.ctx.http, this.ctx.logger, access.skipSslVerify);
     // await client.doLogin();
     // await client.getCertList();
-    this.lastRefreshTime = now.unix();
+    this.lastRefreshTime = now.valueOf();
     this.logger.info("刷新群晖登录有效期成功");
   }
 

@@ -29,6 +29,7 @@ export class UniCloudAccess extends BaseAccess {
     encrypt: true,
   })
   password = "";
+
 }
 
 new UniCloudAccess();

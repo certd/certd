@@ -1,8 +1,6 @@
+import { PageRes, PageSearch } from '@certd/pipeline';
 import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
-import qs from 'qs';
 import { NamesiloAccess } from './access.js';
-import { merge } from 'lodash-es';
-import { Pager, PageRes, PageSearch } from '@certd/pipeline';
 
 export type NamesiloRecord = {
   record_id: string;
@@ -30,31 +28,6 @@ export class NamesiloDnsProvider extends AbstractDnsProvider<NamesiloRecord> {
     return true;
   }
 
-  private async doRequest(url: string, params: any = null) {
-    params = merge(
-      {
-        version: 1,
-        type: 'json',
-        key: this.access.apiKey,
-      },
-      params
-    );
-    const qsString = qs.stringify(params);
-    url = `${url}?${qsString}`;
-    const res = await this.http.request<any, any>({
-      url,
-      baseURL: 'https://www.namesilo.com',
-      method: 'get',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (res.reply?.code !== '300' && res.reply?.code !== 300 && res.reply?.detail!=="success") {
-      throw new Error(`${JSON.stringify(res.reply.detail)}`);
-    }
-    return res.reply;
-  }
 
   /**
    * 创建dns解析记录，用于验证域名所有权
@@ -70,7 +43,7 @@ export class NamesiloDnsProvider extends AbstractDnsProvider<NamesiloRecord> {
     this.logger.info('添加域名解析：', fullRecord, value, type, domain);
 
     //domain=namesilo.com&rrtype=A&rrhost=test&rrvalue=55.55.55.55&rrttl=7207
-    const record: any = await this.doRequest('/api/dnsAddRecord', {
+    const record: any = await this.access.doRequest('/api/dnsAddRecord', {
       domain,
       rrtype: type,
       rrhost: hostRecord,
@@ -97,7 +70,7 @@ export class NamesiloDnsProvider extends AbstractDnsProvider<NamesiloRecord> {
     //这里调用删除txt dns解析记录接口
 
     const recordId = record.record_id;
-    await this.doRequest('/api/dnsDeleteRecord', {
+    await this.access.doRequest('/api/dnsDeleteRecord', {
       domain: options.recordReq.domain,
       rrid: recordId,
     });
@@ -105,22 +78,7 @@ export class NamesiloDnsProvider extends AbstractDnsProvider<NamesiloRecord> {
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
-    
-    const pager = new Pager(req);
-    const ret =await this.doRequest('/api/listDomains', {
-      key:req.searchKey,
-      page: pager.pageNo,
-      pageSize: pager.pageSize,
-    });
-    // this.logger.info("获取域名列表成功:", ret);
-    const list = ret.domains.map((item: any) => ({
-      id: item.domain,
-      domain: item.domain,
-    }));
-    return {
-      total:ret.pager?.total || list.length,
-      list,
-    };
+     return await this.access.getDomainListPage(req);
   }
 }
 

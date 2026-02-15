@@ -82,8 +82,7 @@ export class LuckyUpdateCert extends AbstractPlusTaskPlugin {
         throw new Error(`没有找到证书：Key=${item},请确认该证书是否存在`);
       }
       const remark = old.Remark;
-      const res = await this.doRequest({
-        access,
+      const res = await access.doRequest({
         urlPath: "/api/ssl",
         method: "PUT",
         data: {
@@ -107,44 +106,9 @@ export class LuckyUpdateCert extends AbstractPlusTaskPlugin {
     this.logger.info("部署成功");
   }
 
-  async doRequest(req: { access: LuckyAccess; urlPath: string; data: any; method?: string }) {
-    const { access, urlPath, data, method } = req;
-    let url = `${access.url}/${access.safePath || ""}${urlPath}?_=${Math.floor(new Date().getTime())}`;
-    // 从第7个字符起，将//替换成/
-    const protocol = url.substring(0, 7);
-    let suffix = url.substring(7);
-    suffix = suffix.replaceAll("//", "/");
-    suffix = suffix.replaceAll("//", "/");
-    url = protocol + suffix;
-
-    const headers: any = {
-      // Origin: access.url,
-      "Content-Type": "application/json",
-      // "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.95 Safari/537.36",
-    };
-    headers["openToken"] = access.openToken;
-    const res = await this.http.request({
-      method: method || "POST",
-      url,
-      data,
-      headers,
-      skipSslVerify: true,
-    });
-    if (res.ret !== 0) {
-      throw new Error(`请求失败:${res.msg}`);
-    }
-    return res;
-  }
-
   async onGetCertList() {
     const access: LuckyAccess = await this.getAccess<LuckyAccess>(this.accessId);
-    const res = await this.doRequest({
-      access,
-      urlPath: "/api/ssl",
-      data: {},
-      method: "GET",
-    });
-    const list = res.list;
+    const list = await access.getCertList();
     if (!list || list.length === 0) {
       throw new Error("没有找到证书，请先在SSL/TLS证书页面中手动上传一次证书");
     }

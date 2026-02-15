@@ -41,41 +41,14 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
   async getZoneId(domain: string) {
     this.logger.info('获取zoneId:', domain);
     const url = `https://api.cloudflare.com/client/v4/zones?name=${domain}`;
-    const res = await this.doRequestApi(url, null, 'get');
+    const res = await this.access.doRequestApi(url, null, 'get');
     if (res.result.length === 0) {
       throw new Error(`未找到域名${domain}的zoneId`);
     }
     return res.result[0].id;
   }
 
-  private async doRequestApi(url: string, data: any = null, method = 'post') {
-    try {
-      const res = await this.http.request<any, any>({
-        url,
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.access.apiToken}`,
-        },
-        data,
-        httpProxy: this.access.proxy,
-      });
 
-      if (!res.success) {
-        throw new Error(`${JSON.stringify(res.errors)}`);
-      }
-      return res;
-    } catch (e: any) {
-      const data = e.response?.data;
-      if (data && data.success === false && data.errors && data.errors.length > 0) {
-        if (data.errors[0].code === 81058) {
-          this.logger.info('dns解析记录重复');
-          return null;
-        }
-      }
-      throw e;
-    }
-  }
 
   /**
    * 创建dns解析记录，用于验证域名所有权
@@ -95,7 +68,7 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
 
     // 给domain下创建txt类型的dns解析记录，fullRecord
     const url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`;
-    const res = await this.doRequestApi(url, {
+    const res = await this.access.doRequestApi(url, {
       content: value,
       name: fullRecord,
       type: type,
@@ -119,7 +92,7 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
   async findRecord(zoneId: string, options: CreateRecordOptions): Promise<CloudflareRecord | null> {
     const { fullRecord, value } = options;
     const url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?type=TXT&name=${fullRecord}&content=${value}`;
-    const res = await this.doRequestApi(url, null, 'get');
+    const res = await this.access.doRequestApi(url, null, 'get');
     if (res.result.length === 0) {
       return null;
     }
@@ -142,7 +115,7 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
     const zoneId = record.zone_id;
     const recordId = record.id;
     const url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${recordId}`;
-    await this.doRequestApi(url, null, 'delete');
+    await this.access.doRequestApi(url, null, 'delete');
     this.logger.info(`删除域名解析成功:fullRecord=${fullRecord},value=${value}`);
   }
 
@@ -153,7 +126,7 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
     if (req.searchKey) {
       url += `&name=${req.searchKey}`;
     }
-    const ret = await this.doRequestApi(url, null, 'get');
+    const ret = await this.access.doRequestApi(url, null, 'get');
 
     let list = ret.result || []
     list = list.map((item: any) => ({

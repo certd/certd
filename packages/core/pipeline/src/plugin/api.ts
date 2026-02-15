@@ -299,6 +299,14 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
   buildDomainGroupOptions(options: any[], domains: string[]) {
     return utils.options.buildGroupOptions(options, domains);
   }
+
+  getLastStatus(): Runnable {
+    return this.ctx.lastStatus || ({} as any);
+  }
+
+  getLastOutput(key: string) {
+    return this.getLastStatus().status?.output?.[key];
+  }
 }
 
 export type OutputVO = {

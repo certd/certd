@@ -45,6 +45,26 @@ export class AwsClient {
   }
 
 
+  async getCallerIdentity() {
+    const { STSClient, GetCallerIdentityCommand } = await import ("@aws-sdk/client-sts");
+
+    const client = new STSClient({
+      region: this.access.region || 'us-east-1',
+      credentials: {
+        accessKeyId: this.access.accessKeyId, // 从环境变量中读取
+        secretAccessKey: this.access.secretAccessKey,
+      },
+    });
+
+    const command = new GetCallerIdentityCommand({});
+    const response = await client.send(command);
+    this.logger.info(`     账户ID: ${response.Account}`);
+    this.logger.info(`     ARN: ${response.Arn}`);
+    this.logger.info(`     用户ID: ${response.UserId}`);
+    return response;
+  }
+
+
   async route53ClientGet() {
     const { Route53Client } = await import('@aws-sdk/client-route-53');
     return new Route53Client({
@@ -85,7 +105,7 @@ export class AwsClient {
     const { ListHostedZonesByNameCommand } = await import("@aws-sdk/client-route-53"); // ES Modules import
 
     const client = await this.route53ClientGet();
-    const input:any = { // ListHostedZonesByNameRequest
+    const input: any = { // ListHostedZonesByNameRequest
       MaxItems: req.pageSize,
     };
     if (req.searchKey) {
@@ -93,7 +113,7 @@ export class AwsClient {
     }
     const command = new ListHostedZonesByNameCommand(input);
     const response = await this.doRequest(() => client.send(command));
-    let list :any[]= response.HostedZones || [];
+    let list: any[] = response.HostedZones || [];
     list = list.map((item: any) => ({
       id: item.Id.replace('/hostedzone/', ''),
       domain: item.Name,

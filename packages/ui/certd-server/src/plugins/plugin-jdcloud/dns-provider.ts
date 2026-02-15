@@ -1,6 +1,6 @@
+import { PageRes, PageSearch } from "@certd/pipeline";
 import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { JDCloudAccess } from "./access.js";
-import { Pager, PageRes, PageSearch } from "@certd/pipeline";
 
 @IsDnsProvider({
   name: "jdcloud",
@@ -85,34 +85,11 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
   }
 
   private async  getJDDomainService() {
-    const {JDDomainService} = await import("@certd/jdcloud")
-    const service = new JDDomainService({
-      credentials: {
-        accessKeyId: this.access.accessKeyId,
-        secretAccessKey: this.access.secretAccessKey
-      },
-      regionId: "cn-north-1" //地域信息，某个api调用可以单独传参regionId，如果不传则会使用此配置中的regionId
-    });
-    return service;
+    return await this.access.getJDDomainService();
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
-    const pager = new Pager(req);
-    const service = await this.getJDDomainService();
-    const domainRes = await service.describeDomains({
-      domainName: req.searchKey,
-      pageNumber: pager.pageNo,
-      pageSize: pager.pageSize,
-    })
-    let list = domainRes.result?.dataList || []
-    list = list.map((item: any) => ({
-      id: item.domainId,
-      domain: item.domainName,
-    }));
-    return {
-      total:domainRes.result.totalCount || list.length,
-      list,
-    };
+    return await this.access.getDomainListPage(req);
   }
 
 }

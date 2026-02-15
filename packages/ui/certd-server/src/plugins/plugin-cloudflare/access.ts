@@ -37,6 +37,58 @@ export class CloudflareAccess extends BaseAccess {
     encrypt: false,
   })
   proxy = '';
+
+  @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "TestRequest"
+    },
+    helper: "测试授权是否正确"
+  })
+  testRequest = true;
+
+  async onTestRequest() {
+    await this.getZoneList();
+    return "ok";
+  }
+
+
+  async getZoneList() {
+    const url = `https://api.cloudflare.com/client/v4/zones`;
+    const res = await this.doRequestApi(url, null, 'get');
+    return res.result
+  }
+
+  async doRequestApi(url: string, data: any = null, method = 'post') {
+    try {
+      const res = await this.ctx.http.request<any, any>({
+        url,
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiToken}`,
+        },
+        data,
+        httpProxy: this.proxy,
+      });
+
+      if (!res.success) {
+        throw new Error(`${JSON.stringify(res.errors)}`);
+      }
+      return res;
+    } catch (e: any) {
+      const data = e.response?.data;
+      if (data && data.success === false && data.errors && data.errors.length > 0) {
+        if (data.errors[0].code === 81058) {
+          this.ctx.logger.info('dns解析记录重复');
+          return null;
+        }
+      }
+      throw e;
+    }
+  }
+
 }
 
 new CloudflareAccess();
