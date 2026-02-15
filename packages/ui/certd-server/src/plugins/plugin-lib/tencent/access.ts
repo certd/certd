@@ -57,6 +57,24 @@ export class TencentAccess extends BaseAccess {
   })
   closeExpiresNotify: boolean = true;
 
+
+    
+  @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "onTestRequest",
+    },
+    helper: "点击测试接口看是否正常",
+  })
+  testRequest = true;
+
+  async onTestRequest() {
+    await this.getCallerIdentity();
+    return "ok";
+  }
+
+
   isIntl() {
     return this.accountType === "intl";
   }
@@ -67,5 +85,45 @@ export class TencentAccess extends BaseAccess {
 
   buildEndpoint(endpoint: string) {
     return `${this.intlDomain()}${endpoint}`;
+  }
+
+  async getCallerIdentity(){
+    const client = await this.getStsClient();
+
+     // 调用 GetCallerIdentity 接口
+    const result = await client.GetCallerIdentity();
+    
+    this.ctx.logger.info("✅ 密钥有效！");
+    this.ctx.logger.info(`   账户ID: ${result.AccountId}`);
+    this.ctx.logger.info(`   ARN: ${result.Arn}`);
+    this.ctx.logger.info(`   用户ID: ${result.UserId}`);
+    
+    return {
+      valid: true,
+      accountId: result.AccountId,
+      arn: result.Arn,
+      userId: result.UserId
+    };
+  }
+
+
+  async getStsClient(){
+    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/sts/v20180813/index.js');
+    const StsClient = sdk.v20180813.Client;
+
+    const clientConfig = {
+      credential: {
+        secretId: this.secretId,
+        secretKey: this.secretKey,
+      },
+      region: 'ap-shanghai',
+      profile: {
+        httpProfile: {
+          endpoint: `sts.${this.intlDomain()}tencentcloudapi.com`,
+        },
+      },
+    };
+
+    return new StsClient(clientConfig);
   }
 }

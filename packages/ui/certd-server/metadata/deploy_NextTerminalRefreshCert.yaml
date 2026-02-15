@@ -1,0 +1,58 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: NextTerminalRefreshCert
+title: NextTerminal-更新证书
+icon: clarity:plugin-line
+desc: 更新 Next Terminal 证书
+group: panel
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - CertApply
+    required: true
+    order: 0
+  accessId:
+    title: Next Terminal 授权
+    helper: 选择 Next Terminal 授权配置
+    component:
+      name: access-selector
+      type: nextTerminal
+    required: true
+    order: 0
+  certIds:
+    title: 选择证书
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetCertList
+      search: false
+      pager: false
+      watches:
+        - certDomains
+        - accessId
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 选择要更新的 Next Terminal 证书（支持多选），如果这里没有列出，需要先前往控制台上传证书，之后就可以自动更新
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-next-terminal/plugins/plugin-refresh-cert.js

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.10](https://github.com/certd/certd/compare/v1.38.9...v1.38.10) (2026-02-15)
+
+### Bug Fixes
+
+* 修复1panel 请求失败的bug ([0283662](https://github.com/certd/certd/commit/0283662931ff47d6b5d49f91a30c4a002fe1d108))
+* 修复保存站点监控dns设置，偶尔无法保存成功的bug ([8387fe0](https://github.com/certd/certd/commit/8387fe0d5b2e77b8c2788a10791e5389d97a3e41))
+* 修复任务步骤标题过长导致错位的问题 ([9fb9805](https://github.com/certd/certd/commit/9fb980599f96ccbf61bd46019411db2f13c70e57))
+
+### Performance Improvements
+
+* 监控设置支持逗号分割 ([c23d1d1](https://github.com/certd/certd/commit/c23d1d11b58a6cdfe431a7e8abbd5d955146c38d))
+* 列表中支持下次执行时间显示 ([a3cabd5](https://github.com/certd/certd/commit/a3cabd5f36ed41225ad418098596e9b2c44e31a1))
+* 模版编辑页面，hover反色过亮问题优化 ([e55a3a8](https://github.com/certd/certd/commit/e55a3a82fc6939b940f0c3be4529d74a625f6f4e))
+* 所有授权增加测试按钮 ([7a3e68d](https://github.com/certd/certd/commit/7a3e68d656c1dcdcd814b69891bd2c2c6fe3098a))
+* 优化网络测试页面，夜间模式显示效果 ([305da86](https://github.com/certd/certd/commit/305da86f97d918374819ecd6c50685f09b94ea59))
+* 支持next-terminal ([6f3fd78](https://github.com/certd/certd/commit/6f3fd785e77a33c72bdf4115dc5d498e677d1863))
+* 主题默认跟随系统颜色（自动切换深色浅色模式） ([32c3ce5](https://github.com/certd/certd/commit/32c3ce5c9868569523901a9a939ca5b535ec3277))
+* http校验方式支持scp上传 ([4eb940f](https://github.com/certd/certd/commit/4eb940ffe765a0330331bc6af8396315e36d4e4a))
+
 ## [1.38.9](https://github.com/certd/certd/compare/v1.38.8...v1.38.9) (2026-02-09)
 
 ### Performance Improvements

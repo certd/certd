@@ -19,6 +19,12 @@ input:
     helper: 是否使用http代理
     required: false
     encrypt: false
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 测试授权是否正确
 pluginType: access
 type: builtIn
 scriptFilePath: /plugins/plugin-cloudflare/access.js

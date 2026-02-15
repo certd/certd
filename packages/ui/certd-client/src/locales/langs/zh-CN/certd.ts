@@ -167,6 +167,7 @@ export default {
     updateTime: "更新时间",
     triggerType: "触发类型",
     pipelineId: "流水线Id",
+    nextRunTime: "下次运行时间",
     projectName: "项目",
     adminId: "管理员",
   },

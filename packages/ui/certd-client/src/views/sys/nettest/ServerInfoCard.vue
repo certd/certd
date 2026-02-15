@@ -110,7 +110,6 @@ onMounted(() => {
   }
 
   .info-item {
-    background-color: #fafafa;
     border-radius: 4px;
     padding: 12px;
 

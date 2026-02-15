@@ -160,6 +160,7 @@ export default {
     updateTime: "Update Time",
     triggerType: "Trigger Type",
     pipelineId: "Pipeline Id",
+    nextRunTime: "Next Run Time",
     projectName: "Project",
     adminId: "Admin",
   },

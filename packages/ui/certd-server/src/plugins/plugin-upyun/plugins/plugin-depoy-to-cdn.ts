@@ -160,21 +160,7 @@ export class UpyunDeployToCdn extends AbstractTaskPlugin {
     }
     const access = await this.getAccess<UpyunAccess>(this.accessId);
 
-    const upyunClient = new UpyunClient({
-      access,
-      logger: this.logger,
-      http: this.ctx.http
-    });
-    const cookie = await upyunClient.getLoginToken();
-    const req = {
-      cookie,
-      url: "https://console.upyun.com/api/account/domains/?limit=15&business_type=file&security_cdn=false&websocket=false&key=&domain=",
-      method: "GET",
-      data: {}
-    };
-    const res = await upyunClient.doRequest(req);
-
-    const domains = res.data?.domains;
+    const domains = await access.getCdnList();
     if (!domains || domains.length === 0) {
       throw new Error("没有找到加速域名");
     }

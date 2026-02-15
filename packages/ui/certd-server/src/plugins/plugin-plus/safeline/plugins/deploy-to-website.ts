@@ -1,9 +1,8 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
-import { HttpRequestConfig } from "@certd/basic";
 
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
-import { SafelineAccess } from "../access.js";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { SafelineAccess } from "../access.js";
 
 @IsTaskPlugin({
   name: "SafelineDeployToWebsitePlugin",
@@ -83,7 +82,7 @@ export class SafelineDeployToWebsitePlugin extends AbstractTaskPlugin {
        data.id = parseInt(certId)
        type = "更新"
     }
-    const res = await this.doRequest({
+    const res = await this.access.doRequest({
       url: "/api/open/cert",
       method: "post",
       data:data
@@ -91,25 +90,12 @@ export class SafelineDeployToWebsitePlugin extends AbstractTaskPlugin {
     this.logger.info(`证书<${certId}>${type}成功,ID:${res}`);
   }
 
-  async doRequest(config: HttpRequestConfig<any>) {
-    config.baseURL = this.access.baseUrl;
-    config.skipSslVerify = this.access.skipSslVerify ?? false;
-    config.logRes = false;
-    config.logParams = false;
-    config.headers = {
-      "X-SLCE-API-TOKEN": this.access.apiToken,
-    };
-    const res = await this.ctx.http.request(config);
-    if (!res.err) {
-      return res.data;
-    }
-    throw new Error(res.msg);
-  }
+
 
   // requestHandle
 
   async onGetCertIds() {
-    const res = await this.doRequest({
+    const res = await this.access.doRequest({
       url: "/api/open/cert",
       method: "get",
       data: {},

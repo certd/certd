@@ -13,6 +13,12 @@ input:
     title: SecretKey
     encrypt: true
     helper: SK
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: onTestRequest
+    helper: 点击测试接口看是否正常
 order: 2
 pluginType: access
 type: builtIn

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.10](https://github.com/certd/certd/compare/v1.38.9...v1.38.10) (2026-02-15)
+
+### Bug Fixes
+
+* 修复1panel 请求失败的bug ([0283662](https://github.com/certd/certd/commit/0283662931ff47d6b5d49f91a30c4a002fe1d108))
+
+### Performance Improvements
+
+* 所有授权增加测试按钮 ([7a3e68d](https://github.com/certd/certd/commit/7a3e68d656c1dcdcd814b69891bd2c2c6fe3098a))
+
 ## [1.38.9](https://github.com/certd/certd/compare/v1.38.8...v1.38.9) (2026-02-09)
 
 **Note:** Version bump only for package @certd/pipeline

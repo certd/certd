@@ -58,49 +58,15 @@ export class LeCDNUpdateCertV2 extends AbstractTaskPlugin {
 
   async onInstance() {
     this.access = await this.getAccess<LeCDNAccess>(this.accessId);
-    this.token = await this.getToken();
+    this.access.getToken();
   }
 
-  async doRequest(config: any) {
-    const access = this.access;
-    const Authorization = this.access.type === "token" ? this.access.apiToken : `Bearer ${this.token}`;
-    const res = await this.ctx.http.request({
-      baseURL: access.url,
-      headers: {
-        Authorization,
-      },
-      ...config,
-    });
-    this.checkRes(res);
-    return res.data;
-  }
 
-  async getToken() {
-    if (this.access.type === "token") {
-      return this.access.apiToken;
-    }
-    // http://cdnadmin.kxfox.com/prod-api/login
-    const access = this.access;
-    const res = await this.ctx.http.request({
-      url: `/prod-api/login`,
-      baseURL: access.url,
-      method: "post",
-      data: {
-        //新旧版本不一样，旧版本是username，新版本是email
-        email: access.username,
-        username: access.username,
-        password: access.password,
-      },
-    });
-    this.checkRes(res);
-    //新旧版本不一样，旧版本是access_token，新版本是token
-    return res.data.access_token || res.data.token;
-  }
 
   async getCertInfo(id: number) {
     // http://cdnadmin.kxfox.com/prod-api/certificate/9
     // Bearer edGkiOiIJ8
-    return await this.doRequest({
+    return await this.access.doRequest({
       url: `/prod-api/certificate/${id}`,
       method: "get",
     });
@@ -117,7 +83,7 @@ export class LeCDNUpdateCertV2 extends AbstractTaskPlugin {
 
     this.logger.info(`证书名称：${certInfo.name}`);
 
-    return await this.doRequest({
+    return await this.access.doRequest({
       url: `/prod-api/certificate/${id}`,
       method: "put",
       data: certInfo,
@@ -134,17 +100,13 @@ export class LeCDNUpdateCertV2 extends AbstractTaskPlugin {
     this.logger.info(`更新证书完成`);
   }
 
-  private checkRes(res: any) {
-    if (res.code !== 0 && res.code !== 200) {
-      throw new Error(res.message || JSON.stringify(res));
-    }
-  }
+
 
   async onGetCertList(data: any) {
     if (!this.accessId) {
       throw new Error("请选择Access授权");
     }
-    const res = await this.getCerts();
+    const res = await this.access.getCerts();
     //新旧版本不一样，一个data 一个是items
     const list = res.items || res.data;
     if (!res || list.length === 0) {
@@ -156,18 +118,6 @@ export class LeCDNUpdateCertV2 extends AbstractTaskPlugin {
         label: `${item.name}-${item.domain_name}<${item.id}>`,
         value: item.id,
       };
-    });
-  }
-
-  private async getCerts() {
-    //  http://cdnadmin.kxfox.com/prod-api/certificate?current_page=1&total=3&page_size=10
-    return await this.doRequest({
-      url: `/prod-api/certificate`,
-      method: "get",
-      params: {
-        current_page: 1,
-        page_size: 1000,
-      },
     });
   }
 }

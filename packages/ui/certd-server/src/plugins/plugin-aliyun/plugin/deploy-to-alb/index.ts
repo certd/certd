@@ -316,6 +316,8 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
         certId = certIdRes.certId as any; 
       }else if (casCert.certId){
         certId = casCert.certId;
+      }else{
+        throw new Error('证书格式错误'+JSON.stringify(this.cert));
       }
     }
 

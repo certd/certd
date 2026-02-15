@@ -4,13 +4,13 @@ import { HttpClient, ILogger, utils } from "@certd/basic";
 import * as _ from "lodash-es";
 import { PluginRequestHandleReq } from "../plugin/index.js";
 
-export type AccessRequestHandleReqInput<T = any> = {
-  id?: number;
-  title?: string;
-  access: T;
-};
+// export type AccessRequestHandleReqInput<T = any> = {
+//   id?: number;
+//   title?: string;
+//   access: T;
+// };
 
-export type AccessRequestHandleReq<T = any> = PluginRequestHandleReq<AccessRequestHandleReqInput<T>>;
+export type AccessRequestHandleReq<T = any> = PluginRequestHandleReq<T>;
 
 export type AccessInputDefine = FormItemProps & {
   title: string;

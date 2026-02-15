@@ -30,7 +30,6 @@ import ServerInfoCard from "./ServerInfoCard.vue";
 .page-sys-nettest {
   .nettest-container {
     padding: 16px;
-    background-color: #fff;
   }
 
   .test-areas {

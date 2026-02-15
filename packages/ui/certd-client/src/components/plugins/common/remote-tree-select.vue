@@ -15,6 +15,7 @@
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 import { defineComponent, inject, ref, useAttrs, watch, Ref } from "vue";
 import { PluginDefine } from "@certd/pipeline";
+import { getInputFromForm } from "./utils";
 
 defineOptions({
   name: "RemoteTreeSelect",
@@ -67,7 +68,7 @@ const getOptions = async () => {
   }
   const pluginType = getPluginType();
   const { form } = getScope();
-  const input = (pluginType === "plugin" ? form?.input : form) || {};
+  const { input, record } = getInputFromForm(form, pluginType);
 
   for (let key in define.input) {
     const inWatches = props.watches?.includes(key);
@@ -98,6 +99,7 @@ const getOptions = async () => {
           pageNo,
           pageSize,
         },
+        record,
       },
       {
         onError(err: any) {

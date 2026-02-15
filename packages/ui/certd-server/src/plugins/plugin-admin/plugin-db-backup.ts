@@ -34,8 +34,8 @@ export class DBBackupPlugin extends AbstractPlusTaskPlugin {
       name: "a-select",
       options: [
         { label: "本地复制", value: "local" },
-        { label: "ssh上传", value: "ssh" },
-        { label: "oss上传", value: "oss" },
+        { label: "oss上传（推荐）", value: "oss" },
+        { label: "ssh上传(请使用oss上传方式)", value: "ssh", disabled: true },
       ],
       placeholder: "",
     },
@@ -72,6 +72,7 @@ export class DBBackupPlugin extends AbstractPlusTaskPlugin {
         { value: "tencentcos", label: "腾讯云COS" },
         { value: "ftp", label: "Ftp" },
         { value: "sftp", label: "Sftp" },
+        { value: "scp", label: "SCP" },
       ],
     },
     mergeScript: `

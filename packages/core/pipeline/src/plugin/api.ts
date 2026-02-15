@@ -17,6 +17,7 @@ export type PluginRequestHandleReq<T = any> = {
   action: string;
   input: T;
   data: any;
+  record: { id: number; type: string; title: string };
 };
 
 export type UserInfo = {
@@ -300,6 +301,14 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
 
   buildDomainGroupOptions(options: any[], domains: string[]) {
     return utils.options.buildGroupOptions(options, domains);
+  }
+
+  getLastStatus(): Runnable {
+    return this.ctx.lastStatus || ({} as any);
+  }
+
+  getLastOutput(key: string) {
+    return this.getLastStatus().status?.output?.[key];
   }
 }
 

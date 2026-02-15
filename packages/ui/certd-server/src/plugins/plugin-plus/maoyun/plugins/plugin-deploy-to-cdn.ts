@@ -115,23 +115,7 @@ export class MaoyunDeployToCdn extends AbstractPlusTaskPlugin {
 
   async onGetDomainList() {
     const access: MaoyunAccess = await this.getAccess<MaoyunAccess>(this.accessId);
-    const client = new MaoyunClient({
-      http: this.ctx.http,
-      logger: this.logger,
-      access,
-    });
-    await client.login();
-    const res = await client.doRequest({
-      url: "/cdn/domain",
-      data: {},
-      params: {
-        channel_type: "0,1,2",
-        page: 1,
-        page_size: 1000,
-      },
-      method: "GET",
-    });
-    const list = res.data;
+    const list = await access.getCdnDomainList();
     if (!list || list.length === 0) {
       throw new Error("没有找到加速域名，请先在控制台添加加速域名");
     }

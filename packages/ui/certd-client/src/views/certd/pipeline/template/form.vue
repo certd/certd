@@ -7,7 +7,7 @@
 </template>
 <script setup lang="ts">
 import { get, set } from "lodash-es";
-import { computed, reactive, ref, defineProps } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useStepHelper } from "./utils";
 import { usePluginStore } from "/@/store/plugin";
 

@@ -30,6 +30,87 @@ export class KuocaiCdnAccess extends BaseAccess {
     encrypt: true,
   })
   password = "";
+
+  
+
+  @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "TestRequest",
+    },
+    helper: "点击测试接口看是否正常",
+  })
+  testRequest = true;
+
+  async onTestRequest() {
+    const loginRes = await this.getLoginToken();
+    await this.getDomainList(loginRes);
+    return "ok";
+  } 
+
+  
+  async getLoginToken() {
+    const url = "https://kuocaicdn.com/login/loginUser";
+    const data = {
+      userAccount: this.username,
+      userPwd: this.password,
+      remember: true,
+    };
+    const http = this.ctx.http;
+    const res: any = await http.request({
+      url,
+      method: "POST",
+      data,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      returnOriginRes: true,
+    });
+    if (!res.data?.success) {
+      throw new Error(res.data?.message);
+    }
+
+    const jsessionId = this.ctx.utils.request.getCookie(res, "JSESSIONID");
+    const token = res.data?.data;
+    return {
+      jsessionId,
+      token,
+    };
+  }
+
+  async getDomainList(loginRes: any) {
+    const url = "https://kuocaicdn.com/CdnDomain/queryForDatatables";
+    const data = {
+      draw: 1,
+      start: 0,
+      length: 1000,
+      search: {
+        value: "",
+        regex: false,
+      },
+    };
+
+    const res = await this.doRequest(url, loginRes, data);
+    return res.data?.data;
+  }
+
+  async doRequest(url: string, loginRes: any, data: any) {
+    const http = this.ctx.http;
+    const res: any = await http.request({
+      url,
+      method: "POST",
+      headers: {
+        Cookie: `JSESSIONID=${loginRes.jsessionId};kuocai_cdn_token=${loginRes.token}`,
+      },
+      data,
+    });
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+    return res;
+  }
+  
 }
 
 new KuocaiCdnAccess();

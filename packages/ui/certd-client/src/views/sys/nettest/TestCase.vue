@@ -138,7 +138,6 @@ const resultError = computed(() => {
 .port-info {
   font-size: 12px;
   color: #999;
-  background-color: #f0f0f0;
   padding: 2px 6px;
   border-radius: 3px;
   margin-right: 8px;
@@ -154,7 +153,6 @@ const resultError = computed(() => {
   .error-message,
   .object-result,
   .text-result {
-    background-color: #f8f8f8;
     padding: 8px 10px;
     border-radius: 3px;
     overflow-x: auto;
@@ -170,7 +168,6 @@ const resultError = computed(() => {
   }
 
   .test-log {
-    background-color: #f8f8f8;
     padding: 8px 10px;
     border-radius: 3px;
     overflow-x: auto;

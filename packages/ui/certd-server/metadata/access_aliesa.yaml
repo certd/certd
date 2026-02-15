@@ -24,6 +24,12 @@ input:
           value: ap-southeast-1
     helper: 请选择ESA地区
     required: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
 pluginType: access
 type: builtIn
 scriptFilePath: /plugins/plugin-lib/aliyun/access/aliesa-access.js

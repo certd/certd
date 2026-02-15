@@ -13,6 +13,7 @@
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 import { ref, inject } from "vue";
 import { Form } from "ant-design-vue";
+import { getInputFromForm } from "./utils";
 
 defineOptions({
   name: "ApiTest",
@@ -45,13 +46,15 @@ const doTest = async () => {
   message.value = "";
   hasError.value = false;
   loading.value = true;
+  const { input, record } = getInputFromForm(form, pluginType);
   try {
     const res = await doRequest(
       {
         type: pluginType,
         typeName: form.type,
         action: props.action,
-        input: pluginType === "plugin" ? form.input : form,
+        input,
+        record,
       },
       {
         onError(err: any) {

@@ -1,7 +1,7 @@
 import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 
+import { PageRes, PageSearch } from "@certd/pipeline";
 import { DnslaAccess } from "./access.js";
-import { Pager, PageRes, PageSearch } from "@certd/pipeline";
 
 export type DnslaRecord = {
   id: string;
@@ -25,43 +25,6 @@ export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
   }
 
 
-  private async doRequestApi(url: string, data: any = null, method = 'post') {
-    /**
-     * Basic 认证
-     * 我的账户 API 密钥 中获取 APIID APISecret
-     * APIID=myApiId
-     * APISecret=mySecret
-     * 生成 Basic 令牌
-     * # 用冒号连接 APIID APISecret
-     * str = "myApiId:mySecret"
-     * token = base64Encode(str)
-     * 在请求头中添加 Basic 认证令牌
-     * Authorization: Basic {token}
-     * 响应示例
-     * application/json
-     * {
-     *  "code":200,
-     *  "msg":"",
-     *  "data":{}
-     * }
-     */
-      const token = Buffer.from(`${this.access.apiId}:${this.access.apiSecret}`).toString('base64');
-      const res = await this.http.request<any, any>({
-        url:"https://api.dns.la"+url,
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${token}`,
-        },
-        data,
-      });
-
-      if (res.code !== 200) {
-        throw new Error(res.msg);
-      }
-      return res;
-
-  }
 
   async getDomainDetail(domain:string){
     /**
@@ -88,7 +51,7 @@ export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
      */
 
     const url = `/api/domain?domain=${domain}`;
-    const res = await this.doRequestApi(url, null, 'get');
+    const res = await this.access.doRequestApi(url, null, 'get');
     return res.data
   }
 
@@ -141,7 +104,7 @@ export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
      * CAA	257
      * URL转发	256
      */
-    const res = await this.doRequestApi(url, {
+    const res = await this.access.doRequestApi(url, {
       domainId: domainId,
       type: 16,
       host: fullRecord.replace(`.${domain}`, ''),
@@ -174,27 +137,14 @@ export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
      */
     const recordId = record.id;
     const url = `/api/record?id=${recordId}`;
-    await this.doRequestApi(url, null, 'delete');
+    await this.access.doRequestApi(url, null, 'delete');
     this.logger.info(`删除域名解析成功:fullRecord=${fullRecord},value=${value}`);
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
-    const pager = new Pager(req);
-    const url = `/api/domain?pageIndex=${pager.pageNo}&pageSize=${pager.pageSize}`;
-    const ret = await this.doRequestApi(url, null, 'get');
-
-
-    let list = ret.data.results || []
-    list = list.map((item: any) => ({
-      id: item.id,
-      domain: item.domain,
-    }));
-    const total = ret.data.total || list.length;
-    return {
-      total,
-      list,
-    };
+    return await this.access.getDomainListPage(req);
   }
+ 
 }
 
 //实例化这个provider，将其自动注册到系统中

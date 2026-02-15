@@ -17,6 +17,12 @@ input:
     required: true
     encrypt: true
     helper: 注意：证书申请需要dns解析权限；其他阿里云插件，需要对应的权限，比如证书上传需要证书管理权限；嫌麻烦就用主账号的全量权限的accessKey
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
 pluginType: access
 type: builtIn
 scriptFilePath: /plugins/plugin-lib/aliyun/access/aliyun-access.js

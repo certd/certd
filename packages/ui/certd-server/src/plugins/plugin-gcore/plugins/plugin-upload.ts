@@ -41,47 +41,20 @@ export class GcoreuploadPlugin extends AbstractTaskPlugin {
     required: true,
   })
   accessId!: string;
-  private readonly baseApi = 'https://api.gcore.com';
 
   async onInstance() {}
 
-  private async doRequestApi(url: string, data: any = null, method = 'post', token: string | null = null) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(token ? { authorization: `Bearer ${token}` } : {}),
-    };
-    const res = await this.http.request<any, any>({
-      url,
-      method,
-      data,
-      headers,
-    });
 
-    return res;
-  }
 
   async execute(): Promise<void> {
     const { cert, accessId } = this;
     const access = (await this.getAccess(accessId)) as GcoreAccess;
-    let otp = null;
-    if (access.otpkey) {
-      const response = await this.http.request<any, any>({
-        url: `https://cn-api.my-api.cn/api/totp/?key=${access.otpkey}`,
-        method: 'get',
-      });
-      otp = response;
-      this.logger.info('获取到otp:', otp);
-    }
-    const loginResponse = await this.doRequestApi(`${this.baseApi}/iam/auth/jwt/login`, {
-      username: access.username,
-      password: access.password,
-      ...(otp && { otp }),
-    });
-    const token = loginResponse.access;
+    
+    const token = await access.login();
     this.logger.info('Token 获取成功');
     this.logger.info('开始上传证书');
-    await this.doRequestApi(
-      `${this.baseApi}/cdn/sslData`,
+    await access.doRequestApi(
+      `/cdn/sslData`,
       {
         name: this.certName,
         sslCertificate: cert.crt,

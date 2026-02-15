@@ -1,5 +1,6 @@
 import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
 import { AwsRegions } from './constants.js';
+import { AwsClient } from './libs/aws-client.js';
 
 @IsAccess({
   name: 'aws',
@@ -33,7 +34,7 @@ export class AwsAccess extends BaseAccess {
   @AccessInput({
     title: 'region',
     component: {
-      name:"a-select",
+      name: "a-select",
       options: AwsRegions,
     },
     required: true,
@@ -41,6 +42,25 @@ export class AwsAccess extends BaseAccess {
     options: AwsRegions,
   })
   region = '';
+
+
+  @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "TestRequest"
+    },
+    helper: "测试授权是否正确"
+  })
+  testRequest = true;
+
+  async onTestRequest() {
+
+    const client = new AwsClient({ access: this, logger: this.ctx.logger, region: this.region || 'us-east-1' });
+    await client.getCallerIdentity();
+    return "ok";
+  }
+
 }
 
 new AwsAccess();

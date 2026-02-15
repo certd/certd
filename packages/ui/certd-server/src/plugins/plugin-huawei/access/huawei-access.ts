@@ -29,6 +29,25 @@ export class HuaweiAccess extends BaseAccess {
   accessKeySecret = '';
 
 
+
+  @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "TestRequest"
+    },
+    helper: "点击测试接口是否正常"
+  })
+  testRequest = true;
+
+  accessToken: { expiresAt: number, token: string }
+
+  async onTestRequest() {
+    await this.getProjectList();
+    return "ok"
+  }
+
+
   async getProjectList() {
     const endpoint = "https://iam.cn-north-4.myhuaweicloud.com";
 

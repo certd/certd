@@ -1,6 +1,6 @@
-import { IAccessService, Pager, PageRes, PageSearch } from '@certd/pipeline';
+import { PageRes, PageSearch } from '@certd/pipeline';
 import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
-import { AliesaAccess, AliyunAccess } from '../../plugin-lib/aliyun/index.js';
+import { AliesaAccess } from '../../plugin-lib/aliyun/index.js';
 import { AliyunClientV2 } from '../../plugin-lib/aliyun/lib/aliyun-client-v2.js';
 
 
@@ -17,11 +17,8 @@ export class AliesaDnsProvider extends AbstractDnsProvider {
 
   client: AliyunClientV2
   async onInstance() {
-    const access: AliesaAccess = this.ctx.access as AliesaAccess
-    const accessGetter = await this.ctx.serviceGetter.get("accessService") as IAccessService
-    const aliAccess = await accessGetter.getById(access.accessId) as AliyunAccess
-    const endpoint = `esa.${access.region}.aliyuncs.com`
-    this.client = aliAccess.getClient(endpoint)
+    const access : AliesaAccess = this.ctx.access as AliesaAccess
+    this.client = await access.getEsaClient()
   }
 
 
@@ -103,37 +100,7 @@ export class AliesaDnsProvider extends AbstractDnsProvider {
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
-    const pager = new Pager(req)
-    const ret = await this.client.doRequest({
-      // 接口名称
-      action: "ListSites",
-      // 接口版本
-      version: "2024-09-10",
-      // 接口协议
-      protocol: "HTTPS",
-      // 接口 HTTP 方法
-      method: "GET",
-      authType: "AK",
-      style: "RPC",
-      data: {
-        query: {
-          SiteName: req.searchKey,
-          // ["SiteSearchType"] = "exact";
-          SiteSearchType: "fuzzy",
-          AccessType: "NS",
-          PageSize: pager.pageSize,
-          PageNumber: pager.pageNo,
-        }
-      }
-    })
-    const list = ret.Sites?.map(item => ({
-      domain: item.SiteName,
-      id: item.SiteId,
-    })) 
-    return {
-      list: list || [],
-      total: ret.TotalCount,
-    }
+    return await this.ctx.access.getDomainListPage(req)
   }
 }
 

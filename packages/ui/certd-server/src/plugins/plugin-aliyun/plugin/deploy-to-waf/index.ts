@@ -153,15 +153,17 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
       });
 
       const cert = this.cert as CertInfo;
+      const casCert = this.cert as CasCertInfo;
       if (cert.crt) {
         const certIdRes = await sslClient.uploadCertificate({
           name: this.buildCertName(CertReader.getMainDomain(cert.crt)),
           cert: cert,
         });
         certId = certIdRes.certId as any;
-      }else {
-        const casCert = this.cert as CasCertInfo;
+      } else if (casCert.certId) {
         certId = casCert.certId;
+      } else {
+        throw new Error('证书格式错误'+JSON.stringify(this.cert));
       }
     }
 

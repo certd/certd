@@ -122,7 +122,7 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
       if (casCert.certId) {
         certId = casCert.certId;
         certName = casCert.certName;
-      } else {
+      } else if (certInfo.crt) {
         certName = this.buildCertName(CertReader.getMainDomain(certInfo.crt));
 
         const certIdRes = await sslClient.uploadCertificate({
@@ -131,6 +131,8 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
         });
         certId = certIdRes.certId as any;
         this.logger.info("上传证书成功", certId, certName);
+      }else{
+        throw new Error('证书格式错误'+JSON.stringify(this.cert));
       }
     }
     return {

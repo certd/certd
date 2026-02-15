@@ -38,6 +38,7 @@
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 import { defineComponent, inject, ref, useAttrs, watch, Ref } from "vue";
 import { PluginDefine } from "@certd/pipeline";
+import { getInputFromForm } from "./utils";
 
 defineOptions({
   name: "RemoteSelect",
@@ -79,17 +80,6 @@ const getPluginType: any = inject("get:plugin:type", () => {
   return "plugin";
 });
 
-function getInputFromForm(form: any, pluginType: string) {
-  let input: any = {};
-  if (pluginType === "plugin") {
-    input = form?.input || {};
-  } else if (pluginType === "access") {
-    input = form?.access || {};
-  } else {
-    input = form || {};
-  }
-  return input;
-}
 const searchKeyRef = ref("");
 const optionsRef = ref([]);
 const message = ref("");
@@ -115,7 +105,7 @@ const getOptions = async () => {
   }
   const pluginType = getPluginType();
   const { form } = getScope();
-  const input = getInputFromForm(form, pluginType);
+  const { input, record } = getInputFromForm(form, pluginType);
 
   for (let key in define.input) {
     const inWatches = props.watches?.includes(key);
@@ -141,6 +131,7 @@ const getOptions = async () => {
         typeName: form.type,
         action: props.action,
         input,
+        record,
         data: {
           searchKey: props.search ? searchKeyRef.value : "",
           pageNo,
@@ -211,7 +202,7 @@ watch(
   () => {
     const pluginType = getPluginType();
     const { form, key } = getScope();
-    const input = getInputFromForm(form, pluginType);
+    const { input, record } = getInputFromForm(form, pluginType);
     const watches: any = {};
     if (props.watches && props.watches.length > 0) {
       for (const key of props.watches) {

@@ -58,6 +58,8 @@ export class PipelineEntity {
   // 变量
   lastVars: any;
 
+  nextRunTime: number;
+
   @Column({name: 'order', comment: '排序', nullable: true,})
   order: number;
 
@@ -72,4 +74,5 @@ export class PipelineEntity {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updateTime: Date;
+
 }

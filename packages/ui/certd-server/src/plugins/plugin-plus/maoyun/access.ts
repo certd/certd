@@ -1,4 +1,5 @@
 import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
+import { MaoyunClient } from "@certd/plugin-plus";
 
 /**
  */
@@ -49,6 +50,45 @@ export class MaoyunAccess extends BaseAccess {
     required: false,
   })
   httpProxy!: string;
+
+  @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "TestRequest",
+    },
+    helper: "点击测试接口看是否正常",
+  })
+  testRequest = true;
+
+  async onTestRequest() {
+    await this.getCdnDomainList();
+    return "ok";
+  }
+
+  async getCdnDomainList() {
+    const client = new MaoyunClient({
+      http: this.ctx.http,
+      logger: this.ctx.logger,
+      access: this,
+    });
+    await client.login();
+    const res = await client.doRequest({
+      url: "/cdn/domain",
+      data: {},
+      params: {
+        channel_type: "0,1,2",
+        page: 1,
+        page_size: 1000,
+      },
+      method: "GET",
+    });
+    const list = res.data || [];
+    return list
+  }
+
+
+
 }
 
 new MaoyunAccess();

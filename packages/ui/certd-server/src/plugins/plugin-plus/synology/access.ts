@@ -124,6 +124,23 @@ export class SynologyAccess extends BaseAccess {
   })
   timeout = 120;
 
+  @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "onTestRequest",
+    },
+    helper: "点击测试接口看是否正常",
+  })
+  testRequest = true;
+
+  async onTestRequest() {
+    const client = new SynologyClient(this as any, this.ctx.http, this.ctx.logger, this.skipSslVerify);
+    await client.doLogin();
+    await client.getCertList();
+    return "ok";
+  }
+
   onLoginWithOPTCode(data: { otpCode: string }) {
     const ctx = this.ctx;
     const client = new SynologyClient(this as any, ctx.http, ctx.logger, this.skipSslVerify);

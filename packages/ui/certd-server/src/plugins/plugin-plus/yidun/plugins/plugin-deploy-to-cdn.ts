@@ -1,5 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
+import { YidunAccess } from "../access.js";
 
 @IsTaskPlugin({
   name: "YidunDeployToCDN",
@@ -60,7 +61,11 @@ export class YidunDeployToCDNPlugin extends AbstractTaskPlugin {
   })
   accessId!: string;
 
-  async onInstance() {}
+  access!: YidunAccess;
+
+  async onInstance() {
+    this.access = await this.getAccess<YidunAccess>(this.accessId);
+  }
   async execute(): Promise<void> {
     const { domain, certId, cert } = this;
     if (!domain && !certId) {
@@ -77,35 +82,21 @@ export class YidunDeployToCDNPlugin extends AbstractTaskPlugin {
   private async updateByCertId(cert: CertInfo, certId: number) {
     this.logger.info(`更新证书，证书ID:${certId}`);
     const url = `http://user.yiduncdn.com/v1/certs/${certId}`;
-    await this.doRequest(url, "PUT", {
+
+    const access = await this.getAccess<YidunAccess>(this.accessId);
+
+    await access.doRequest(url, "PUT", {
       cert: cert.crt,
       key: cert.key,
     });
   }
 
-  async doRequest(url: string, method: string, data: any) {
-    const access = await this.getAccess(this.accessId);
-    const { apiKey, apiSecret } = access;
-    const http = this.ctx.http;
-    const res: any = await http.request({
-      url,
-      method,
-      headers: {
-        "api-key": apiKey,
-        "api-secret": apiSecret,
-      },
-      data,
-    });
-    if (res.code != 0) {
-      throw new Error(res.msg);
-    }
-    return res;
-  }
-
+  
   private async updateByDomain(cert: CertInfo) {
     //查询站点
     const siteUrl = "http://user.yiduncdn.com/v1/sites";
-    const res = await this.doRequest(siteUrl, "GET", { domain: this.domain });
+    const access = this.access
+    const res = await access.doRequest(siteUrl, "GET", { domain: this.domain });
     if (res.data.length === 0) {
       throw new Error(`未找到域名相关站点:${this.domain}`);
     }
@@ -127,20 +118,20 @@ export class YidunDeployToCDNPlugin extends AbstractTaskPlugin {
       this.logger.info(`创建证书，域名:${this.domain}`);
       const certUrl = `http://user.yiduncdn.com/v1/certs`;
       const name = this.domain + "_" + new Date().getTime();
-      await this.doRequest(certUrl, "POST", {
+      await access.doRequest(certUrl, "POST", {
         name,
         type: "custom",
         cert: cert.crt,
         key: cert.key,
       });
 
-      const certs: any = await this.doRequest(certUrl, "GET", {
+      const certs: any = await access.doRequest(certUrl, "GET", {
         name,
       });
       const certId = certs.data[0].id;
 
       const siteUrl = "http://user.yiduncdn.com/v1/sites";
-      await this.doRequest(siteUrl, "PUT", { id: site.id, https_listen: { cert: certId } });
+      await access.doRequest(siteUrl, "PUT", { id: site.id, https_listen: { cert: certId } });
     }
   }
 }

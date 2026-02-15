@@ -32,6 +32,47 @@ export class YidunAccess extends BaseAccess {
     encrypt: true,
   })
   apiSecret = "";
+
+  @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "onTestRequest",
+    },
+    helper: "点击测试接口看是否正常",
+  })
+  testRequest = true;
+
+  async onTestRequest() {
+    await this.getDomainList();
+    return "ok";
+  }
+
+  async getDomainList(){
+    const siteUrl = "http://user.yiduncdn.com/v1/sites";
+    const res = await this.doRequest(siteUrl, "GET", { });
+    return res.data
+  }
+
+  async doRequest(url: string, method: string, data: any) {
+      const access = this
+      const { apiKey, apiSecret } = access;
+      const http = this.ctx.http;
+      const res: any = await http.request({
+        url,
+        method,
+        headers: {
+          "api-key": apiKey,
+          "api-secret": apiSecret,
+        },
+        data,
+      });
+      if (res.code != 0) {
+        throw new Error(res.msg);
+      }
+      return res;
+    }
+  
 }
 
 new YidunAccess();

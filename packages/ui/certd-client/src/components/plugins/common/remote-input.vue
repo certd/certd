@@ -9,6 +9,7 @@ import { doRequest } from "/@/components/plugins/lib";
 import { inject, ref, useAttrs } from "vue";
 import { useFormWrapper } from "@fast-crud/fast-crud";
 import { notification } from "ant-design-vue";
+import { getInputFromForm } from "./utils";
 
 defineOptions({
   name: "RemoteInput",
@@ -71,15 +72,18 @@ const doPluginFormSubmit = async (data: any) => {
   }
 
   loading.value = true;
+
   try {
     const pluginType = getPluginType();
     const { form } = getScope();
+    const { input, record } = getInputFromForm(form, pluginType);
     const res = await doRequest({
       type: pluginType,
       typeName: form.type,
       action: props.action,
-      input: pluginType === "plugin" ? form.input : form,
+      input,
       data: data,
+      record,
     });
     //获取返回值 填入到input中
     emit("update:modelValue", res);

@@ -64,6 +64,12 @@ input:
               })
             }
           
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口看是否正常
 pluginType: access
 type: builtIn
 scriptFilePath: /plugins/plugin-plus/lecdn/access.js

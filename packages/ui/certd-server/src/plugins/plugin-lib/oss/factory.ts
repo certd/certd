@@ -23,6 +23,9 @@ export class OssClientFactory {
     } else if (type === "s3") {
       const module = await import("./impls/s3.js");
       return module.default;
+    } else if (type === "scp") {
+      const module = await import("./impls/scp.js");
+      return module.default;
     } else {
       throw new Error(`暂不支持此文件上传方式: ${type}`);
     }

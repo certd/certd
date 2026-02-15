@@ -1,4 +1,5 @@
-import {AccessInput, BaseAccess, IsAccess} from '@certd/pipeline';
+import {AccessInput, BaseAccess, IsAccess, Pager, PageRes, PageSearch} from '@certd/pipeline';
+import { DomainRecord } from '@certd/plugin-lib';
 
 /**
  * 这个注解将注册一个授权配置
@@ -31,6 +32,59 @@ export class JDCloudAccess extends BaseAccess {
     encrypt: true,
   })
   secretAccessKey = '';
+
+
+   @AccessInput({
+    title: "测试",
+    component: {
+      name: "api-test",
+      action: "TestRequest"
+    },
+    helper: "点击测试接口是否正常"
+  })
+  testRequest = true;
+
+  accessToken: { expiresAt: number, token: string }
+
+  async onTestRequest() {
+    await this.getDomainListPage({
+      pageNo: 1,
+      pageSize: 1,
+    });
+    return "ok"
+  }
+
+
+  async  getJDDomainService() {
+    const {JDDomainService} = await import("@certd/jdcloud")
+    const service = new JDDomainService({
+      credentials: {
+        accessKeyId: this.accessKeyId,
+        secretAccessKey: this.secretAccessKey
+      },
+      regionId: "cn-north-1" //地域信息，某个api调用可以单独传参regionId，如果不传则会使用此配置中的regionId
+    });
+    return service;
+  }
+
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+      const pager = new Pager(req);
+      const service = await this.getJDDomainService();
+      const domainRes = await service.describeDomains({
+        domainName: req.searchKey,
+        pageNumber: pager.pageNo,
+        pageSize: pager.pageSize,
+      })
+      let list = domainRes.result?.dataList || []
+      list = list.map((item: any) => ({
+        id: item.domainId,
+        domain: item.domainName,
+      }));
+      return {
+        total:domainRes.result.totalCount || list.length,
+        list,
+      };
+    }
 
 }
 

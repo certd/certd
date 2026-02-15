@@ -18,10 +18,11 @@ input:
       options:
         - label: 本地复制
           value: local
-        - label: ssh上传
-          value: ssh
-        - label: oss上传
+        - label: oss上传（推荐）
           value: oss
+        - label: ssh上传(请使用oss上传方式)
+          value: ssh
+          disabled: true
       placeholder: ''
     helper: 支持本地复制、ssh上传
     required: true
@@ -58,6 +59,8 @@ input:
           label: Ftp
         - value: sftp
           label: Sftp
+        - value: scp
+          label: SCP
     mergeScript: |2-
 
             return {

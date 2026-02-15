@@ -125,7 +125,7 @@ export class OnePanelClient {
 
   async getAccessToken() {
     if (this.access.type === "apikey") {
-      return this.getAccessTokenByApiKey();
+      return await this.getAccessTokenByApiKey();
     } else {
       return await this.getAccessTokenByPassword();
     }

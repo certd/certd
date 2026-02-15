@@ -20,6 +20,7 @@ export const Dicts = {
   uploaderTypeDict: dict({
     data: [
       { label: "SFTP", value: "sftp" },
+      { label: "SCP", value: "scp" },
       { label: "FTP", value: "ftp" },
       { label: "阿里云OSS", value: "alioss" },
       { label: "腾讯云COS", value: "tencentcos" },

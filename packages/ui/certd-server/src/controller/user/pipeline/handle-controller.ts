@@ -35,9 +35,9 @@ export class HandleController extends BaseController {
   @Post('/access', { summary: Constants.per.authOnly })
   async accessRequest(@Body(ALL) body: AccessRequestHandleReq) {
     const {projectId,userId} = await this.getProjectUserIdRead()
-    let inputAccess = body.input.access;
-    if (body.input.id > 0) {
-      const oldEntity = await this.accessService.info(body.input.id);
+    let inputAccess = body.input;
+    if (body.record.id > 0) {
+      const oldEntity = await this.accessService.info(body.record.id);
       if (oldEntity) {
         if (oldEntity.userId !== this.getUserId()) {
           throw new Error('access not found');
@@ -47,7 +47,7 @@ export class HandleController extends BaseController {
         }
         const param: any = {
           type: body.typeName,
-          setting: JSON.stringify(body.input.access),
+          setting: JSON.stringify(body.input),
         };
         this.accessService.encryptSetting(param, oldEntity);
         inputAccess = this.accessService.decryptAccessEntity(param);
@@ -56,7 +56,7 @@ export class HandleController extends BaseController {
     const accessGetter = new AccessGetter(userId,projectId, this.accessService.getById.bind(this.accessService));
     const access = await newAccess(body.typeName, inputAccess,accessGetter);
 
-    mergeUtils.merge(access, body.input);
+    // mergeUtils.merge(access, body.input);
     const res = await access.onRequest(body);
 
     return this.ok(res);
@@ -64,7 +64,7 @@ export class HandleController extends BaseController {
 
   @Post('/notification', { summary: Constants.per.authOnly })
   async notificationRequest(@Body(ALL) body: NotificationRequestHandleReq) {
-    const input = body.input.body;
+    const input = body.input;
 
     const notification = await newNotification(body.typeName, input, {
       http,

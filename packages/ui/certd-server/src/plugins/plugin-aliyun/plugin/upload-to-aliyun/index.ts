@@ -101,7 +101,7 @@ export class UploadCertToAliyun extends AbstractTaskPlugin {
     let certName = ""
     if (this.name){
       certName = this.appendTimeSuffix(this.name)
-    }else{
+    }else {
       certName = this.buildCertName(CertReader.getMainDomain(this.cert.crt))
     }
     const certIdRes = await client.uploadCertificate({
