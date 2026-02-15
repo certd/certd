@@ -1,6 +1,7 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
-import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
+import { AbstractPlusTaskPlugin, SynologyClient } from "@certd/plugin-plus";
 import dayjs from "dayjs";
+import { SynologyAccess } from "../access.js";
 @IsTaskPlugin({
   name: "SynologyKeepAlive",
   title: "群晖-刷新OTP登录有效期",
@@ -72,10 +73,10 @@ export class SynologyKeepAlivePlugin extends AbstractPlusTaskPlugin {
 
     }
 
-    // const access: SynologyAccess = await this.getAccess<SynologyAccess>(this.accessId);
-    // const client = new SynologyClient(access as any, this.ctx.http, this.ctx.logger, access.skipSslVerify);
-    // await client.doLogin();
-    // await client.getCertList();
+    const access: SynologyAccess = await this.getAccess<SynologyAccess>(this.accessId);
+    const client = new SynologyClient(access as any, this.ctx.http, this.ctx.logger, access.skipSslVerify);
+    await client.doLogin();
+    await client.getCertList();
     this.lastRefreshTime = now.valueOf();
     this.logger.info("刷新群晖登录有效期成功");
   }
