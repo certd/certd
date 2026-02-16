@@ -110,9 +110,12 @@ export class EmailService implements IEmailService {
 
   private async sendByCustom(emailConfig: EmailConfig, email: EmailSend, sysTitle: string) {
     const transporter = nodemailer.createTransport(emailConfig);
-
+    let from = `${sysTitle} <${emailConfig.sender}>`;
+    if (emailConfig.sender.includes('<')) {
+      from = emailConfig.sender;
+    }
     const mailOptions = {
-      from: `${sysTitle} <${emailConfig.sender}>`,
+      from: from,
       to: email.receivers.join(', '), // list of receivers
       subject: email.subject,
       text: email.content,

@@ -701,6 +701,7 @@ export default {
   password: "密码",
   pleaseEnterPassword: "请输入密码",
   qqEmailAuthCodeHelper: "如果是qq邮箱，需要到qq邮箱的设置里面申请授权码作为密码",
+  senderEmailHelper: "您可以使用 名称<邮箱> 的格式，来修改发件人名称，例如: autossl<certd@example.com>",
   senderEmail: "发件邮箱",
   pleaseEnterSenderEmail: "请输入发件邮箱",
   useSsl: "是否ssl",

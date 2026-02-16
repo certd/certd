@@ -690,6 +690,7 @@ export default {
   password: "Password",
   pleaseEnterPassword: "Please enter password",
   qqEmailAuthCodeHelper: "If using QQ email, get an authorization code in QQ email settings as the password",
+  senderEmailHelper: "You can use the format: Name<Email> to set the sender name, e.g.: autossl<certd@example.com>",
   senderEmail: "Sender Email",
   pleaseEnterSenderEmail: "Please enter sender email",
   useSsl: "Use SSL",
