@@ -16,21 +16,11 @@ CERTD_HTTPS_port=7002
 
 参考Certd顶部的创建证书流水线教程
 
-### 2、配置复制到本机任务
-将证书复制到certd的证书安装位置   
-证书路径：`ssl/cert.crt`   
-私钥路径：`ssl/cert.key` 
+### 2、配置部署证书到certd任务
 
-![](./images/1.png)
-![](./images/2.png)
+![](./images/4.png)
 
-### 3、配置重启Certd任务
-重启certd的https server，让证书生效
-![img.png](./images/3.png)
-
-
-
-### 4、配置定时任务
+### 3、配置定时任务
 每天定时执行，最终效果如下
 
 ![](./images/ok.png)
