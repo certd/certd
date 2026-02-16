@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.11](https://github.com/certd/certd/compare/v1.38.10...v1.38.11) (2026-02-16)
+
+### Bug Fixes
+
+* 修复1panel2.1.0新版本测试失败的问题 ([8ef1f2e](https://github.com/certd/certd/commit/8ef1f2e395ea5969a95f55535e6c16a65e2b463b))
+
+### Performance Improvements
+
+* 优化登陆页面的黑暗模式 ([e47edda](https://github.com/certd/certd/commit/e47eddaa858f8fffe7a40dfbd14e8cda1dcba4ac))
+* 支持自定义发件人名称，格式：名称<邮箱> ([bab9adc](https://github.com/certd/certd/commit/bab9adce240108d4291eedc67e04abc4a01019e0))
+
 ## [1.38.10](https://github.com/certd/certd/compare/v1.38.9...v1.38.10) (2026-02-15)
 
 ### Bug Fixes
