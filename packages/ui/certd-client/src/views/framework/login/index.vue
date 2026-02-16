@@ -311,6 +311,7 @@ export default defineComponent({
     .input-right {
       width: 160px;
       margin-left: 10px;
+      background: #cfcfcf !important;
     }
 
     .forge-password {

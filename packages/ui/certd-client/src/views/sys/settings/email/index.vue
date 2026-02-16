@@ -30,6 +30,7 @@
               </a-form-item>
               <a-form-item :label="t('certd.senderEmail')" name="sender" :rules="[{ required: true, message: t('certd.pleaseEnterSenderEmail') }]">
                 <a-input v-model:value="formState.sender" />
+                <div class="helper">{{ t("certd.senderEmailHelper") }}</div>
               </a-form-item>
               <a-form-item :label="t('certd.useSsl')" name="secure">
                 <a-switch v-model:checked="formState.secure" />

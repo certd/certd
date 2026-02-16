@@ -191,6 +191,8 @@ export class OnePanelDeployToWebsitePlugin extends AbstractTaskPlugin {
       data: {
         page: 1,
         pageSize: 99999,
+        order: "ascending",
+        orderBy: "expire_date"
       },
       currentNode: this.currentNode,
     });
