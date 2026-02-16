@@ -1,6 +1,6 @@
 <template>
   <div id="userLayout" :class="['user-layout-wrapper']">
-    <div class="login-container flex justify-start">
+    <div class="login-container flex justify-start dark:background-[#141414]">
       <div class="user-layout-content flex-col justify-start">
         <div class="top flex flex-col items-center justify-start">
           <div class="header flex flex-row items-center">
@@ -59,6 +59,14 @@ const sysPublic: Ref<SysPublicSetting> = computed(() => {
 </script>
 
 <style lang="less">
+.dark {
+  .login-container {
+    background: #141414 !important;
+    .desc {
+      color: rgba(227, 227, 227, 0.45) !important;
+    }
+  }
+}
 #userLayout.user-layout-wrapper {
   height: 100%;
 

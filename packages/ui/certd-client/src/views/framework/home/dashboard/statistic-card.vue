@@ -74,6 +74,13 @@ function goDetail(link: any) {
 }
 </script>
 <style lang="less">
+.dark {
+  .data-item {
+    .header {
+      color: rgba(242, 242, 242, 0.85) !important;
+    }
+  }
+}
 .statistic-card {
   margin-bottom: 10px;
   .icon-text {
