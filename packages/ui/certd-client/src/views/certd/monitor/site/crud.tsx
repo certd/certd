@@ -557,13 +557,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         ipAddress: {
-          title: t("certd.monitor.ipAddress"),
+          title: t("monitor.ipAddress"),
           search: {
             show: false,
           },
           type: "text",
           form: {
-            helper: t("certd.monitor.ipAddressHelper"),
+            helper: t("monitor.ipAddressHelper"),
           },
           column: {
             width: 150,
