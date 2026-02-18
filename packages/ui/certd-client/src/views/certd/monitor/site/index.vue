@@ -2,14 +2,14 @@
   <fs-page>
     <template #header>
       <div class="title flex items-center">
-        {{ t("certd.monitor.title") }}
+        {{ t("monitor.title") }}
         <div class="sub flex-1">
           <div>
-            {{ t("certd.monitor.description") }}
-            <router-link to="/certd/monitor/setting">{{ t("certd.monitor.settingLink") }}</router-link>
+            {{ t("monitor.description") }}
+            <router-link to="/certd/monitor/setting">{{ t("monitor.settingLink") }}</router-link>
           </div>
           <div class="flex items-center">
-            {{ t("certd.monitor.limitInfo") }}
+            {{ t("monitor.limitInfo") }}
             <vip-button class="ml-5" mode="nav"></vip-button>
           </div>
         </div>

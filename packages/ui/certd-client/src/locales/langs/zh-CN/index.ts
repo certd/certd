@@ -6,7 +6,8 @@ import preferences from "./preferences";
 import ui from "./ui";
 import guide from "./guide";
 import common from "./common";
-
+import monitor from "./monitor";
+//注意： @符号是保留字符，需要用{'@'}替换
 export default {
   certd,
   authentication,
@@ -16,4 +17,5 @@ export default {
   preferences,
   guide,
   common,
+  monitor,
 };
