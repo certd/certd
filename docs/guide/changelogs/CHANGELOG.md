@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.12](https://github.com/certd/certd/compare/v1.38.11...v1.38.12) (2026-02-18)
+
+### Bug Fixes
+
+* 修复获取群辉deviceid报错的bug ([39d3bf9](https://github.com/certd/certd/commit/39d3bf97d1935918bac575da9d0726310c83c19d))
+
 ## [1.38.11](https://github.com/certd/certd/compare/v1.38.10...v1.38.11) (2026-02-16)
 
 ### Bug Fixes
