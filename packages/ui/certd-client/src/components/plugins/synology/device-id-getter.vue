@@ -13,6 +13,7 @@
 import { inject, ref, useAttrs } from "vue";
 import { Modal } from "ant-design-vue";
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
+import { getInputFromForm } from "../common/utils";
 
 defineOptions({
   name: "DeviceIdGetter",
@@ -34,7 +35,7 @@ const getPluginType: any = inject("get:plugin:type", () => {
 async function loginWithOTPCode(otpCode: string) {
   const { form } = getScope();
   const pluginType = getPluginType();
-
+  const { input, record } = getInputFromForm(form, pluginType);
   return await doRequest({
     type: pluginType,
     typeName: form.type,
@@ -42,7 +43,8 @@ async function loginWithOTPCode(otpCode: string) {
     data: {
       otpCode,
     },
-    input: form,
+    input: input,
+    record,
   });
 }
 
