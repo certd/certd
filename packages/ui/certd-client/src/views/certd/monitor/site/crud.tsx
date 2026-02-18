@@ -84,13 +84,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   function checkAll() {
     Modal.confirm({
-      title: t("certd.monitor.confirmTitle"), // "确认"
-      content: t("certd.monitor.confirmContent"), // "确认触发检查全部站点证书吗?"
+      title: t("monitor.confirmTitle"), // "确认"
+      content: t("monitor.confirmContent"), // "确认触发检查全部站点证书吗?"
       onOk: async () => {
         await siteInfoApi.CheckAll();
         notification.success({
-          message: t("certd.monitor.checkSubmitted"), // "检查任务已提交"
-          description: t("certd.monitor.pleaseRefresh"), // "请稍后刷新页面查看结果"
+          message: t("monitor.checkSubmitted"), // "检查任务已提交"
+          description: t("monitor.pleaseRefresh"), // "请稍后刷新页面查看结果"
         });
       },
     });
@@ -199,7 +199,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 // 非plus
                 if (crudBinding.value.data.length >= 1) {
                   notification.error({
-                    message: t("certd.monitor.basicLimitError"),
+                    message: t("monitor.basicLimitError"),
                   });
                   mitter.emit("openVipModal");
                   return;
@@ -213,7 +213,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 const max = suiteDetail.monitorCount.max;
                 if (max != -1 && max <= suiteDetail.monitorCount.used) {
                   notification.error({
-                    message: t("certd.monitor.limitExceeded", { max }),
+                    message: t("monitor.limitExceeded", { max }),
                   });
                   return;
                 }
@@ -228,7 +228,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           //导入按钮
           import: {
             show: true,
-            text: t("certd.monitor.bulkImport"),
+            text: t("monitor.bulkImport"),
             type: "primary",
             async click() {
               const defaultGroupId = getDefaultGroupId();
@@ -242,7 +242,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           checkAll: {
             show: true,
-            text: t("certd.monitor.checkAll"),
+            text: t("monitor.checkAll"),
             type: "primary",
             click() {
               checkAll();
@@ -266,7 +266,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               await api.DoCheck(row.id);
               await crudExpose.doRefresh();
               notification.success({
-                message: t("certd.monitor.checkSubmittedRefresh"),
+                message: t("monitor.checkSubmittedRefresh"),
               });
             },
           },
@@ -276,7 +276,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             text: null,
             show: compute(({ row }) => row.ipCheck === true),
             tooltip: {
-              title: t("certd.monitor.ipManagement"),
+              title: t("monitor.ipManagement"),
             },
             icon: "entypo:address",
             click: async ({ row }) => {
@@ -306,29 +306,29 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         name: {
-          title: t("certd.monitor.siteName"),
+          title: t("monitor.siteName"),
           search: {
             show: true,
           },
           type: "text",
           form: {
-            rules: [{ required: true, message: t("certd.monitor.enterSiteName") }],
+            rules: [{ required: true, message: t("monitor.enterSiteName") }],
           },
           column: {
             width: 160,
           },
         },
         domain: {
-          title: t("certd.monitor.domain"),
+          title: t("monitor.domain"),
           search: {
             show: true,
           },
           type: "text",
           form: {
             rules: [
-              { required: true, message: t("certd.monitor.enterDomain") },
+              { required: true, message: t("monitor.enterDomain") },
               // @ts-ignore
-              { type: "domains", message: t("certd.monitor.enterValidDomain") },
+              { type: "domains", message: t("monitor.enterValidDomain") },
             ],
           },
           column: {
@@ -349,14 +349,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         httpsPort: {
-          title: t("certd.monitor.httpsPort"),
+          title: t("monitor.httpsPort"),
           search: {
             show: false,
           },
           type: "number",
           form: {
             value: 443,
-            rules: [{ required: true, message: t("certd.monitor.enterPort") }],
+            rules: [{ required: true, message: t("monitor.enterPort") }],
           },
           column: {
             width: 100,
@@ -364,7 +364,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certInfo: {
-          title: t("certd.monitor.certInfo"),
+          title: t("monitor.certInfo"),
           type: "text",
           form: { show: false },
           column: {
@@ -378,10 +378,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                   return (
                     <div>
                       <div>
-                        {t("certd.monitor.issuer")}: {row.certProvider}
+                        {t("monitor.issuer")}: {row.certProvider}
                       </div>
                       <div>
-                        {t("certd.monitor.certDomains")}: {row.certDomains}
+                        {t("monitor.certDomains")}: {row.certDomains}
                       </div>
                     </div>
                   );
@@ -396,7 +396,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certDomains: {
-          title: t("certd.monitor.certDomains"),
+          title: t("monitor.certDomains"),
           search: {
             show: true,
           },
@@ -418,7 +418,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certProvider: {
-          title: t("certd.monitor.certProvider"),
+          title: t("monitor.certProvider"),
           search: {
             show: false,
           },
@@ -436,15 +436,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certStatus: {
-          title: t("certd.monitor.certStatus"),
+          title: t("monitor.certStatus"),
           search: {
             show: true,
           },
           type: "dict-select",
           dict: dict({
             data: [
-              { label: t("certd.monitor.status.ok"), value: "ok", color: "green" },
-              { label: t("certd.monitor.status.expired"), value: "expired", color: "red" },
+              { label: t("monitor.status.ok"), value: "ok", color: "green" },
+              { label: t("monitor.status.expired"), value: "expired", color: "red" },
             ],
           }),
           form: {
@@ -458,7 +458,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         checkStatus: {
-          title: t("certd.monitor.checkStatus"),
+          title: t("monitor.checkStatus"),
           search: {
             show: false,
           },
@@ -481,7 +481,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certEffectiveTime: {
-          title: t("certd.monitor.certEffectiveTime"),
+          title: t("monitor.certEffectiveTime"),
           search: {
             show: false,
           },
@@ -496,7 +496,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certExpiresTime: {
-          title: t("certd.monitor.certExpiresTime"),
+          title: t("monitor.certExpiresTime"),
           search: {
             show: false,
           },
@@ -510,7 +510,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         remainingValidity: {
-          title: t("certd.monitor.remainingValidity"),
+          title: t("monitor.remainingValidity"),
           search: {
             show: false,
           },
@@ -543,7 +543,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               const color = leftDays < certValidDays ? "red" : "#389e0d";
               const percent = (leftDays / effectiveDays) * 100;
               // console.log('cellRender', 'effectiveDays', effectiveDays, 'expiresTime', expiresTime, 'applyTime', applyTime, 'percent', percent, row)
-              return <a-progress title={expireDate + t("certd.monitor.expired")} percent={percent} strokeColor={color} format={(percent: number) => `${leftDays}${t("certd.monitor.days")}`} />;
+              return <a-progress title={expireDate + t("monitor.expired")} percent={percent} strokeColor={color} format={(percent: number) => `${leftDays}${t("monitor.days")}`} />;
             },
           },
         },
@@ -574,7 +574,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         remark: {
-          title: t("certd.monitor.remark"),
+          title: t("monitor.remark"),
           search: {
             show: false,
           },
@@ -589,7 +589,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         lastCheckTime: {
-          title: t("certd.monitor.lastCheckTime"),
+          title: t("monitor.lastCheckTime"),
           search: {
             show: false,
           },
@@ -603,7 +603,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         disabled: {
-          title: t("certd.monitor.disabled"),
+          title: t("monitor.disabled"),
           search: {
             show: false,
           },
@@ -652,7 +652,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         //   }
         // },
         ipCheck: {
-          title: t("certd.monitor.ipCheck"),
+          title: t("monitor.ipCheck"),
           type: "dict-switch",
           dict: dict({
             data: [
@@ -661,9 +661,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             ],
           }),
           form: {
-            helper: t("certd.monitor.ipCheckHelper"),
+            helper: t("monitor.ipCheckHelper"),
             value: false,
-            rules: [{ required: true, message: t("certd.monitor.selectRequired") }],
+            rules: [{ required: true, message: t("monitor.selectRequired") }],
           },
           column: {
             align: "center",
@@ -676,7 +676,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 change({ row, $event }) {
                   Modal.confirm({
                     title: t("common.confirm"),
-                    content: t("certd.monitor.ipCheckConfirm", { status: $event ? t("common.enabled") : t("common.disabled") }),
+                    content: t("monitor.ipCheckConfirm", { status: $event ? t("common.enabled") : t("common.disabled") }),
                     onOk: async () => {
                       await api.IpCheckChange(row.id, $event);
                       await crudExpose.doRefresh();
@@ -694,7 +694,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         } as ColumnCompositionProps,
         ipSyncAuto: {
-          title: t("certd.monitor.ipSyncAuto"),
+          title: t("monitor.ipSyncAuto"),
           type: "dict-switch",
           dict: dict({
             data: [
@@ -715,13 +715,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         ipSyncMode: {
-          title: t("certd.monitor.ipSyncMode"),
+          title: t("monitor.ipSyncMode"),
           type: "dict-select",
           dict: dict({
             data: [
-              { label: t("certd.monitor.ipSyncModeAll"), value: "all" },
-              { label: t("certd.monitor.ipSyncModeIPV4Only"), value: "ipv4" },
-              { label: t("certd.monitor.ipSyncModeIPV6Only"), value: "ipv6" },
+              { label: t("monitor.ipSyncModeAll"), value: "all" },
+              { label: t("monitor.ipSyncModeIPV4Only"), value: "ipv4" },
+              { label: t("monitor.ipSyncModeIPV6Only"), value: "ipv6" },
             ],
           }),
           form: {
@@ -729,7 +729,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: compute(({ form }) => {
               return form.ipSyncAuto;
             }),
-            helper: t("certd.monitor.ipSyncModeHelper"),
+            helper: t("monitor.ipSyncModeHelper"),
           },
           column: {
             width: 100,
@@ -738,7 +738,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         ipIgnoreCoherence: {
-          title: t("certd.monitor.ipIgnoreCoherence"),
+          title: t("monitor.ipIgnoreCoherence"),
           type: "dict-switch",
           dict: dict({
             data: [
@@ -751,7 +751,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: compute(({ form }) => {
               return form.ipCheck;
             }),
-            helper: t("certd.monitor.ipIgnoreCoherenceHelper"),
+            helper: t("monitor.ipIgnoreCoherenceHelper"),
           },
           column: {
             width: 100,
@@ -760,7 +760,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         pipelineId: {
-          title: t("certd.monitor.pipelineId"),
+          title: t("monitor.pipelineId"),
           search: {
             show: false,
           },
@@ -773,7 +773,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certInfoId: {
-          title: t("certd.monitor.certInfoId"),
+          title: t("monitor.certInfoId"),
           search: {
             show: false,
           },
@@ -786,7 +786,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         error: {
-          title: t("certd.monitor.error"),
+          title: t("monitor.error"),
           search: {
             show: false,
           },

@@ -227,9 +227,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               name: "fs-dict-select",
               dict: dict({
                 data: [
-                  { label: t("certd.monitor.cert.expired"), value: "expired" },
-                  { label: t("certd.monitor.cert.expiring"), value: "expiring" },
-                  { label: t("certd.monitor.cert.noExpired"), value: "noExpired" },
+                  { label: t("monitor.cert.expired"), value: "expired" },
+                  { label: t("monitor.cert.expiring"), value: "expiring" },
+                  { label: t("monitor.cert.noExpired"), value: "noExpired" },
                 ],
               }),
             },

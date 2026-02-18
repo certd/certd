@@ -19,6 +19,7 @@
 
               <a-form-item :label="t('certd.smtpPort')" name="port" :rules="[{ required: true, message: t('certd.pleaseEnterSmtpPort') }]">
                 <a-input v-model:value="formState.port" />
+                <div class="helper">{{ t("certd.pleaseEnterSmtpPort") }}</div>
               </a-form-item>
 
               <a-form-item :label="t('certd.username')" :name="['auth', 'user']" :rules="[{ required: true, message: t('certd.pleaseEnterUsername') }]">
@@ -128,9 +129,9 @@ import * as api from "../api";
 import * as emailApi from "./api.email";
 import { notification } from "ant-design-vue";
 import { useSettingStore } from "/src/store/settings";
-import * as _ from "lodash-es";
 import { useI18n } from "/src/locales";
 import AddonSelector from "../../../certd/addon/addon-selector/index.vue";
+import { merge } from "lodash-es";
 const { t } = useI18n();
 defineOptions({
   name: "EmailSetting",
@@ -189,7 +190,7 @@ function fillEmailTemplates(form: any) {
 
 async function load() {
   const data: any = await api.EmailSettingsGet();
-  _.merge(formState, data);
+  merge(formState, data);
 }
 
 onMounted(async () => {
