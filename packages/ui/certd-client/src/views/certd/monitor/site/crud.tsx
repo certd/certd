@@ -14,7 +14,7 @@ import { ref } from "vue";
 import GroupSelector from "../../basic/group/group-selector.vue";
 import { createGroupDictRef } from "../../basic/group/api";
 import { useProjectStore } from "/@/store/project";
-import { myProjectDict } from "../../dicts";
+import { useDicts } from "../../dicts";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const api = siteInfoApi;
@@ -39,7 +39,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     const res = await api.AddObj(form);
     return res;
   };
-
+  const { myProjectDict } = useDicts();
   const settingsStore = useSettingStore();
 
   const checkStatusDict = dict({

@@ -2,7 +2,7 @@ import { useI18n } from "/src/locales";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { pipelineGroupApi } from "./api";
 import { useProjectStore } from "/@/store/project";
-import { myProjectDict } from "../../dicts";
+import { useDicts } from "../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -28,7 +28,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   };
 
   const projectStore = useProjectStore();
-
+  const { myProjectDict } = useDicts();
   return {
     crudOptions: {
       settings: {

@@ -6,7 +6,7 @@ import { Modal } from "ant-design-vue";
 import { mitter } from "/@/utils/util.mitt";
 import { useI18n } from "/src/locales";
 import { useProjectStore } from "/@/store/project";
-import { myProjectDict } from "../dicts";
+import { useDicts } from "../dicts";
 
 export function notificationProvide(api: any) {
   provide("notificationApi", api);
@@ -29,7 +29,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
   };
 
   const projectStore = useProjectStore();
-
+  const { myProjectDict } = useDicts();
   provide("getCurrentPluginDefine", () => {
     return currentDefine;
   });

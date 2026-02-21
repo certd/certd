@@ -11,7 +11,7 @@ import CertView from "/@/views/certd/pipeline/cert-view.vue";
 import { useCertUpload } from "/@/views/certd/pipeline/cert-upload/use";
 import { useSettingStore } from "/@/store/settings";
 import { useProjectStore } from "/@/store/project";
-import { myProjectDict } from "../../dicts";
+import { useDicts } from "../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -36,7 +36,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     return res;
   };
   const router = useRouter();
-
+  const { myProjectDict } = useDicts();
   const settingStore = useSettingStore();
   const projectStore = useProjectStore();
   const model = useModal();

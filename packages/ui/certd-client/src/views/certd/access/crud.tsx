@@ -1,7 +1,7 @@
 // @ts-ignore
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { ref } from "vue";
-import { myProjectDict } from "../dicts";
+import { useDicts } from "../dicts";
 import { useProjectStore } from "/@/store/project";
 import { getCommonColumnDefine } from "/@/views/certd/access/common";
 import { useI18n } from "/src/locales";
@@ -32,6 +32,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const typeRef = ref();
   const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef, api);
   const projectStore = useProjectStore();
+
+  const { myProjectDict } = useDicts();
   return {
     crudOptions: {
       request: {

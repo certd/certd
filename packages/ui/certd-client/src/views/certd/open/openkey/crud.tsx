@@ -4,7 +4,8 @@ import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, Edi
 import { OPEN_API_DOC, openkeyApi } from "./api";
 import { useModal } from "/@/use/use-modal";
 import { useProjectStore } from "/@/store/project";
-import { myProjectDict } from "../../dicts";
+import { computed } from "vue";
+import { useDicts } from "../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -28,6 +29,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     const res = await api.AddObj(form);
     return res;
   };
+  const { myProjectDict } = useDicts();
   const projectStore = useProjectStore();
   const model = useModal();
   return {
@@ -175,6 +177,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           dict: myProjectDict,
           form: {
             show: false,
+          },
+          column: {
+            show: computed(() => {
+              return projectStore.isEnterprise;
+            }),
+            width: 120,
+            align: "center",
+            sorter: true,
           },
         },
         createTime: {

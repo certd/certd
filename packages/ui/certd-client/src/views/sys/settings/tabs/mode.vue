@@ -21,6 +21,7 @@ import { useSettingStore } from "/@/store/settings";
 import { notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
 import { dict } from "@fast-crud/fast-crud";
+import { useProjectStore } from "/@/store/project";
 const { t } = useI18n();
 
 defineOptions({
@@ -53,12 +54,14 @@ async function loadSysSettings() {
 const saveLoading = ref(false);
 loadSysSettings();
 const settingsStore = useSettingStore();
+const projectStore = useProjectStore();
 const onFinish = async (form: any) => {
   try {
     saveLoading.value = true;
 
     await api.SysSettingsSave(form);
     await settingsStore.loadSysSettings();
+    await projectStore.reload();
     notification.success({
       message: t("certd.saveSuccess"),
     });

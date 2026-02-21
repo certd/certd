@@ -10,6 +10,13 @@ export async function GetList(query: any) {
   });
 }
 
+export async function GetMyProjectList() {
+  return await request({
+    url: apiPrefix + "/list",
+    method: "post",
+  });
+}
+
 export async function GetPage(query: any) {
   return await request({
     url: apiPrefix + "/page",

@@ -146,7 +146,7 @@ function createRequestFunction(service: any) {
     };
     const projectStore = useProjectStore();
 
-    if (projectStore.isEnterprise && !config.url.startsWith("/sys")) {
+    if (projectStore.isEnterprise && !config.url.startsWith("/sys") && !config.url.startsWith("http")) {
       configDefault.headers["project-id"] = projectStore.currentProjectId;
     }
 

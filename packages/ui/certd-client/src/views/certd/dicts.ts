@@ -1,6 +1,7 @@
 import { dict } from "@fast-crud/fast-crud";
+import { GetMyProjectList } from "./project/api";
 
-export const projectPermissionDict = dict({
+const projectPermissionDict = dict({
   data: [
     {
       label: "read",
@@ -17,13 +18,24 @@ export const projectPermissionDict = dict({
   ],
 });
 
-export const myProjectDict = dict({
+const myProjectDict = dict({
   url: "/enterprise/project/list",
+  getData: async () => {
+    const res = await GetMyProjectList();
+    return res;
+  },
   value: "id",
   label: "name",
+  immediate: false,
+  onReady: ({ dict }) => {
+    for (const item of dict.data) {
+      item.label = item.name;
+      item.value = item.id;
+    }
+  },
 });
 
-export const userDict = dict({
+const userDict = dict({
   url: "/sys/authority/user/getSimpleUsers",
   value: "id",
   onReady: ({ dict }) => {
@@ -32,3 +44,11 @@ export const userDict = dict({
     }
   },
 });
+
+export function useDicts() {
+  return {
+    projectPermissionDict,
+    myProjectDict,
+    userDict,
+  };
+}

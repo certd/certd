@@ -144,14 +144,14 @@ export class ProjectService extends BaseService<ProjectEntity> {
           } 
           const member = await this.projectMemberService.getMember(projectId, userId);
           if (!member) {
-            throw new Error('项目成员不存在');
+            throw new Error(`用户${userId}不是该项目${projectId}成员`);
           }
           savedPermission = member.permission;
         }
     }
     projectCache.set(cacheKey, savedPermission,{ttl:  3 * 60 * 1000});
     if (!savedPermission) {
-      throw new Error('权限不足');
+      throw new Error(`权限不足，需要${permission}权限`);
     }
     
     if (permission === 'read') {
@@ -161,11 +161,11 @@ export class ProjectService extends BaseService<ProjectEntity> {
       if (savedPermission === 'admin' || savedPermission === 'write') {
         return true
       } else {
-        throw new Error('权限不足');
+        throw new Error(`权限不足，需要${permission}权限`);
       }
     }
     if (savedPermission !== permission) {
-      throw new Error('权限不足');
+      throw new Error(`权限不足，需要${permission}权限`);
     }
     return true
   }

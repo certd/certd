@@ -14,7 +14,7 @@ import GroupSelector from "/@/views/certd/pipeline/group/group-selector.vue";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { useCertViewer } from "/@/views/certd/pipeline/use";
 import { useI18n } from "/src/locales";
-import { myProjectDict } from "../dicts";
+import { useDicts } from "../dicts";
 import { useProjectStore } from "/@/store/project";
 
 export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
@@ -69,7 +69,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
   const settingStore = useSettingStore();
 
   const projectStore = useProjectStore();
-
+  const { myProjectDict } = useDicts();
   const DEFAULT_WILL_EXPIRE_DAYS = settingStore.sysPublic.defaultWillExpireDays || settingStore.sysPublic.defaultCertRenewDays || 15;
 
   function onDialogOpen(opt: any) {
@@ -655,6 +655,14 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           dict: myProjectDict,
           form: {
             show: false,
+          },
+          column: {
+            show: computed(() => {
+              return settingStore.isEnterprise;
+            }),
+            width: 120,
+            align: "center",
+            sorter: true,
           },
         },
         updateTime: {

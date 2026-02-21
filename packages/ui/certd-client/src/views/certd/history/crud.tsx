@@ -6,7 +6,7 @@ import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, Edi
 import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
-import { myProjectDict } from "../dicts";
+import { useDicts } from "../dicts";
 import { useProjectStore } from "/@/store/project";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
@@ -33,7 +33,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const settingStore = useSettingStore();
   const selectedRowKeys: Ref<any[]> = ref([]);
   context.selectedRowKeys = selectedRowKeys;
-
+  const { myProjectDict } = useDicts();
   const projectStore = useProjectStore();
 
   return {

@@ -4,7 +4,7 @@ import { getCommonColumnDefine } from "/@/views/certd/access/common";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { useI18n } from "/src/locales";
 import { useProjectStore } from "/@/store/project";
-import { myProjectDict } from "../../../dicts";
+import { useDicts } from "../../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -41,7 +41,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     selectedRowKey.value = changed;
     ctx.emit("update:modelValue", changed[0]);
   };
-
+  const { myProjectDict } = useDicts();
   const typeRef = ref("aliyun");
   context.typeRef = typeRef;
   const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef, api);

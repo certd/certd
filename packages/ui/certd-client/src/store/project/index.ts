@@ -77,16 +77,46 @@ export const useProjectStore = defineStore("app.project", () => {
     return myProjects.value;
   }
 
+  const isRead = computed(() => {
+    if (!isEnterprise.value) {
+      return true;
+    }
+    return currentProject.value;
+  });
+
+  const isWrite = computed(() => {
+    if (!isEnterprise.value) {
+      return true;
+    }
+    return currentProject.value?.permission === "write" || currentProject.value?.permission === "admin";
+  });
+
+  const isAdmin = computed(() => {
+    if (!isEnterprise.value) {
+      return true;
+    }
+    return currentProject.value?.permission === "admin";
+  });
+
+  function $reset() {
+    myProjects.value = [];
+    currentProjectId.value = "";
+  }
+
   return {
     projects,
     myProjects,
     currentProject,
     currentProjectId,
     isEnterprise,
+    isRead,
+    isWrite,
+    isAdmin,
     getSearchForm,
     loadMyProjects,
     changeCurrentProject,
     reload,
     init,
+    $reset,
   };
 });

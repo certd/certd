@@ -7,7 +7,7 @@ import * as pipelineApi from "../api";
 import { useTemplate } from "/@/views/certd/pipeline/template/use";
 import { useI18n } from "/@/locales";
 import { useProjectStore } from "/@/store/project";
-import { myProjectDict } from "../../dicts";
+import { useDicts } from "../../dicts";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const api = templateApi;
   const { t } = useI18n();
@@ -36,7 +36,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const router = useRouter();
 
   const model = useModal();
-
+  const { myProjectDict } = useDicts();
   const { openCreateFromTemplateDialog } = useTemplate();
 
   return {

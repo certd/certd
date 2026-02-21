@@ -84,7 +84,11 @@ const projectStore = useProjectStore();
 
 <template>
   <BasicLayout @clear-preferences-and-logout="handleLogout">
-    <template #header-left-0> </template>
+    <template #header-left-0>
+      <div v-if="projectStore.isEnterprise" class="ml-1 mr-2">
+        <project-selector class="flex-center header-btn" />
+      </div>
+    </template>
     <template #user-dropdown>
       <UserDropdown :avatar="avatar" :menus="menus" :text="userStore.userInfo?.nickName || userStore.userInfo?.username" description="" tag-text="" @logout="handleLogout" />
     </template>
@@ -92,9 +96,6 @@ const projectStore = useProjectStore();
       <LockScreen :avatar @to-login="handleLogout" />
     </template>
     <template #header-right-0>
-      <div v-if="projectStore.isEnterprise" class="ml-1 mr-2">
-        <project-selector class="flex-center header-btn" />
-      </div>
       <div class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
         <tutorial-button class="flex-center header-btn" mode="nav" />
       </div>
