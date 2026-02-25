@@ -15,6 +15,7 @@ import GroupSelector from "../../basic/group/group-selector.vue";
 import { createGroupDictRef } from "../../basic/group/api";
 import { useProjectStore } from "/@/store/project";
 import { useDicts } from "../../dicts";
+import { useCrudPermission } from "/@/plugin/permission";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const api = siteInfoApi;
@@ -109,6 +110,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   }
 
   const projectStore = useProjectStore();
+  const { hasActionPermission } = useCrudPermission({ permission: context.permission });
   return {
     id: "siteMonitorCrud",
     crudOptions: {
@@ -231,7 +233,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           //导入按钮
           import: {
-            show: true,
+            show: hasActionPermission("write"),
             text: t("monitor.bulkImport"),
             type: "primary",
             async click() {

@@ -17,7 +17,7 @@ import { useI18n } from "/src/locales";
 import { useDicts } from "../dicts";
 import { useProjectStore } from "/@/store/project";
 
-export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog, hasActionPermission } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
   const lastResRef = ref();
 
@@ -124,9 +124,11 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             click() {
               openCertApplyDialog({ key: "CertApply" });
             },
+            show: hasActionPermission("add"),
           },
           uploadCert: {
             order: 2,
+            show: hasActionPermission("uploadCert"),
             text: t("certd.commercialCertHosting"),
             type: "primary",
             tooltip: {
@@ -207,6 +209,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             },
           },
           copy: {
+            show: hasActionPermission("write"),
             click: async context => {
               settingStore.checkPlus();
               const { ui } = useUi();
@@ -224,6 +227,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             class: "need-plus",
           },
           config: {
+            show: hasActionPermission("write"),
             order: 1,
             title: t("certd.actions.editPipeline"),
             type: "link",
@@ -234,6 +238,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             },
           },
           edit: {
+            show: hasActionPermission("write"),
             order: 2,
             title: t("certd.actions.editConfigGroup"),
             icon: "ant-design:setting-outlined",

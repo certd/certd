@@ -12,6 +12,7 @@ import { useI18n } from "/src/locales";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
   const { t } = useI18n();
+  const { hasActionPermission } = context;
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -96,6 +97,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             icon: "ion:add-circle-outline",
           },
           import: {
+            show: hasActionPermission("write"),
             title: "从域名提供商导入域名",
             type: "primary",
             text: "从域名提供商导入",
@@ -111,6 +113,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           syncExpirationDate: {
+            show: hasActionPermission("write"),
             title: "同步域名过期时间",
             type: "primary",
             icon: "ion:refresh-outline",

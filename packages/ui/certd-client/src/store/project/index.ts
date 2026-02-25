@@ -98,6 +98,20 @@ export const useProjectStore = defineStore("app.project", () => {
     return currentProject.value?.permission === "admin";
   });
 
+  function hasPermission(value: string) {
+    if (!isEnterprise.value) {
+      return true;
+    }
+    if (value === "read") {
+      return isRead.value;
+    } else if (value === "write") {
+      return isWrite.value;
+    } else if (value === "admin") {
+      return isAdmin.value;
+    }
+    return false;
+  }
+
   function $reset() {
     myProjects.value = [];
     currentProjectId.value = "";
@@ -118,5 +132,6 @@ export const useProjectStore = defineStore("app.project", () => {
     reload,
     init,
     $reset,
+    hasPermission,
   };
 });

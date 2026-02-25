@@ -6,7 +6,7 @@ import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, 
 import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 import { Modal } from "ant-design-vue";
-import { userDict } from "../dicts";
+import { userDict } from "../../sys/enterprise/dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();

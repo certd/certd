@@ -13,7 +13,7 @@
     </a-alert> -->
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #actionbar-right>
-        <a-dropdown class="ml-1">
+        <a-dropdown v-if="hasActionPermission('write')" class="ml-1">
           <a-button type="primary" class="ant-dropdown-link" @click.prevent>
             {{ t("certd.pipelinePage.addMore") }}
             <DownOutlined />
@@ -68,6 +68,7 @@ import { useSettingStore } from "/@/store/settings";
 import { groupDictRef } from "./group/dicts";
 import { useCertPipelineCreator } from "./certd-form/use";
 import { useRouter } from "vue-router";
+import { useCrudPermission } from "/@/plugin/permission";
 
 defineOptions({
   name: "PipelineManager",
@@ -106,7 +107,10 @@ function openCertApplyDialog(req: { key: string; title: string }) {
   openAddCertdPipelineDialog({ pluginName: req.key, defaultGroupId, title: req.title });
 }
 context.openCertApplyDialog = openCertApplyDialog;
+context.permission = { isProjectPermission: true };
 
+const { hasActionPermission } = useCrudPermission({ permission: { isProjectPermission: true } });
+context.hasActionPermission = hasActionPermission;
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
 // 页面打开后获取列表数据

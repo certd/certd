@@ -78,7 +78,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           add: {
             text: t("certd.template.createTemplate"),
             type: "primary",
-            show: true,
           },
         },
       },
