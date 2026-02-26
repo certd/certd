@@ -34,7 +34,7 @@ export abstract class BaseController {
   fail(msg: string, code?: any) {
     return {
       code: code ? code : Constants.res.error.code,
-      msg: msg ? msg : Constants.res.error.code,
+      message: msg ? msg : Constants.res.error.code,
     };
   }
 
