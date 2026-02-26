@@ -49,6 +49,7 @@
                   </div>
                 </template>
               </v-draggable>
+              <div v-if="currentTask.steps?.length > 0" class="helper mt-6">任务步骤会串行执行，如果前面步骤失败，后面的步骤不会运行</div>
             </a-form-item>
           </div>
         </a-form>
