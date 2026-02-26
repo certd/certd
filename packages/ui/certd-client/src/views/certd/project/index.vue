@@ -30,7 +30,8 @@ const { t } = useI18n();
 defineOptions({
   name: "MyProjectManager",
 });
-const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions });
+const context: any = { permission: { isProjectPermission: true, projectPermission: "admin" } };
+const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
 const selectedRowKeys = context.selectedRowKeys;
 const handleBatchDelete = () => {

@@ -37,11 +37,11 @@
       <div v-if="selectedRowKeys.length > 0" class="batch-actions">
         <div class="batch-actions-inner">
           <span>{{ t("certd.selectedCount", { count: selectedRowKeys.length }) }}</span>
-          <fs-button icon="ion:trash-outline" class="color-red" type="link" :text="t('certd.batchDelete')" @click="batchDelete"></fs-button>
+          <fs-button v-if="hasActionPermission('write')" icon="ion:trash-outline" class="color-red" type="link" :text="t('certd.batchDelete')" @click="batchDelete"></fs-button>
           <batch-rerun :selected-row-keys="selectedRowKeys" @change="batchFinished"></batch-rerun>
-          <change-group :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-group>
-          <change-notification :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-notification>
-          <change-trigger :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-trigger>
+          <change-group v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-group>
+          <change-notification v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-notification>
+          <change-trigger v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-trigger>
         </div>
       </div>
       <template #form-bottom>

@@ -8,6 +8,7 @@ export type UseCrudPermissionExtraProps = {
 export type UseCrudPermissionExtra = (props: UseCrudPermissionExtraProps) => any;
 export type UseCrudPermissionCompProps = {
   isProjectPermission?: boolean;
+  projectPermission?: string;
   prefix?: string;
   extra?: UseCrudPermissionExtra;
   [key: string]: any;
@@ -69,17 +70,17 @@ export function useCrudPermission({ permission }: UseCrudPermissionProps) {
 
     let addPermission = "add";
     if (isProjectPermission) {
-      addPermission = "write";
+      addPermission = per.projectPermission || "write";
     }
 
     let editPermission = "edit";
     if (isProjectPermission) {
-      editPermission = "write";
+      editPermission = per.projectPermission || "write";
     }
 
     let removePermission = "remove";
     if (isProjectPermission) {
-      removePermission = "write";
+      removePermission = per.projectPermission || "write";
     }
     return LodashMerge(
       {

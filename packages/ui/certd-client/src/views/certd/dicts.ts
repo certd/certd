@@ -4,16 +4,22 @@ import { GetMyProjectList } from "./project/api";
 const projectPermissionDict = dict({
   data: [
     {
-      label: "read",
-      value: "只读",
+      value: "read",
+      label: "只读",
+      color: "cyan",
+      icon: "material-symbols:folder-eye-outline-sharp",
     },
     {
-      label: "write",
-      value: "读写",
+      value: "write",
+      label: "读写",
+      color: "green",
+      icon: "material-symbols:edit-square-outline-rounded",
     },
     {
-      label: "admin",
-      value: "管理员",
+      value: "admin",
+      label: "管理员",
+      color: "orange",
+      icon: "material-symbols:manage-accounts-rounded",
     },
   ],
 });

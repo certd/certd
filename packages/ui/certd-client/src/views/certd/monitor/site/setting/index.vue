@@ -37,7 +37,7 @@
           <div class="helper">{{ t("monitor.setting.cronTrigger") }}</div>
         </a-form-item>
         <a-form-item label=" " :colon="false" :wrapper-col="{ span: 16 }">
-          <loading-button type="primary" html-type="button" :click="doSave">{{ t("certd.save") }}</loading-button>
+          <loading-button type="primary" html-type="button" :click="doSave" :disabled="!hasActionPermission('write')">{{ t("certd.save") }}</loading-button>
         </a-form-item>
       </a-form>
     </div>
@@ -55,6 +55,7 @@ import { utils } from "/@/utils";
 import NotificationSelector from "/@/views/certd/notification/notification-selector/index.vue";
 import { useI18n } from "/src/locales";
 import { useSettingStore } from "/src/store/settings";
+import { useCrudPermission } from "/@/plugin/permission";
 
 const { t } = useI18n();
 
@@ -72,6 +73,8 @@ async function loadUserSettings() {
   const data: any = await api.SiteMonitorSettingsGet();
   merge(formState, data);
 }
+
+const { hasActionPermission } = useCrudPermission({ permission: { isProjectPermission: true } });
 
 loadUserSettings();
 const doSave = async (form: any) => {

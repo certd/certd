@@ -124,11 +124,11 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             click() {
               openCertApplyDialog({ key: "CertApply" });
             },
-            show: hasActionPermission("add"),
+            show: hasActionPermission("write"),
           },
           uploadCert: {
             order: 2,
-            show: hasActionPermission("uploadCert"),
+            show: hasActionPermission("write"),
             text: t("certd.commercialCertHosting"),
             type: "primary",
             tooltip: {

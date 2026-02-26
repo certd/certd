@@ -6,7 +6,7 @@ import * as api from "./api";
 import { useSettingStore } from "/@/store/settings";
 import { useUserStore } from "/@/store/user";
 import { useI18n } from "/src/locales";
-import { userDict } from "../../dicts";
+import { useDicts } from "../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -34,6 +34,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const settingStore = useSettingStore();
   const selectedRowKeys: Ref<any[]> = ref([]);
   context.selectedRowKeys = selectedRowKeys;
+
+  const { userDict } = useDicts();
 
   return {
     crudOptions: {

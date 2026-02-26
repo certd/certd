@@ -241,6 +241,10 @@ export const certdResources = [
               icon: "mi:user-check",
               auth: true,
               isMenu: true,
+              show: () => {
+                const projectStore = useProjectStore();
+                return !projectStore.isEnterprise;
+              },
             },
           },
           {
