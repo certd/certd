@@ -1,8 +1,8 @@
 <template>
   <a-tag color="green" class="flex-center flex pointer items-center button-text" title="当前项目">
     <!-- <fs-icon icon="ion:apps" class="mr-1"></fs-icon> -->
-    <fs-icon :icon="currentIcon" class="mr-5"></fs-icon>
     当前项目：{{ projectStore.currentProject?.name || "..." }}
+    <fs-icon :icon="currentIcon" class="ml-5"></fs-icon>
   </a-tag>
 </template>
 

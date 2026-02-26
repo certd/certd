@@ -12,8 +12,8 @@
     </template>
     <div class="rounded pl-3 pr-3 px-2 py-1 flex-center flex pointer items-center bg-accent h-10 button-text" title="当前项目">
       <!-- <fs-icon icon="ion:apps" class="mr-1"></fs-icon> -->
-      <fs-icon :icon="currentIcon" class="mr-5"></fs-icon>
       当前项目：{{ projectStore.currentProject?.name || "..." }}
+      <fs-icon :icon="currentIcon" class="ml-5"></fs-icon>
     </div>
   </a-dropdown>
 </template>

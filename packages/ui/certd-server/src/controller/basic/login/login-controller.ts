@@ -40,9 +40,7 @@ export class LoginController extends BaseController {
   }
 
   private writeTokenCookie(token: { expire: any; token: any }) {
-    this.ctx.cookies.set("certd_token", token.token, {
-      maxAge: 1000 * token.expire
-    });
+    // this.loginService.writeTokenCookie(this.ctx,token);
   }
 
   @Post('/loginBySms', { summary: Constants.per.guest })

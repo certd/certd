@@ -3,8 +3,12 @@ import { notification } from "ant-design-vue";
 import CertView from "/@/views/certd/pipeline/cert-view.vue";
 import { env } from "/@/utils/util.env";
 import { useModal } from "/@/use/use-modal";
+import { useProjectStore } from "/@/store/project";
+import { useUserStore } from "/@/store/user";
 
 export function useCertViewer() {
+  const projectStore = useProjectStore();
+  const userStore = useUserStore();
   const model = useModal();
   const viewCert = async (id: number) => {
     const cert = await api.GetCert(id);
@@ -33,7 +37,11 @@ export function useCertViewer() {
       content: () => {
         const children = [];
         for (const file of files) {
-          const downloadUrl = `${env.API}/pi/history/download?pipelineId=${id}&fileId=${file.id}`;
+          let downloadUrl = `${env.API}/pi/history/download?pipelineId=${id}&fileId=${file.id}`;
+          if (projectStore.isEnterprise) {
+            downloadUrl += `&projectId=${projectStore.currentProject?.id}`;
+          }
+          downloadUrl += `&token=${userStore.getToken}`;
           children.push(
             <div>
               <div class={"flex-o m-5"}>

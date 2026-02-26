@@ -162,12 +162,15 @@ export class CertInfoController extends CrudController<CertInfoService> {
 
   @Get('/download', { summary: Constants.per.authOnly })
   async download(@Query('id') id: number) {
-    await this.checkOwner(this.getService(),id,"read");
+    const {userId,projectId} =await this.checkOwner(this.getService(),id,"read");
     const certInfo = await this.getService().info(id)
     if (certInfo == null) {
       throw new CommonException('file not found');
     }
-    if (certInfo.userId !== this.getUserId()) {
+    if (certInfo.userId !== userId) {
+      throw new CommonException('file not found');
+    }
+    if (projectId && certInfo.projectId !== projectId) {
       throw new CommonException('file not found');
     }
     // koa send file

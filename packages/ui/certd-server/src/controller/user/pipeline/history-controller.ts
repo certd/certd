@@ -241,7 +241,7 @@ export class HistoryController extends CrudController<HistoryService> {
       history = await this.service.getLastHistory(pipelineId);
     }
     if (history == null) {
-      throw new CommonException('historyId is null');
+      throw new CommonException('流水线还未运行过');
     }
     const {projectId} = await this.getProjectUserIdRead()
     if (projectId) {

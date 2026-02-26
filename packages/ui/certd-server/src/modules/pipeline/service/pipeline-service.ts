@@ -842,7 +842,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       .addSelect("count(1)", "count")
       .where({
         userId: param.userId,
-        projectId: param.projectId
+        projectId: param.projectId,
+        isTemplate: false
       })
       .groupBy("status")
       .getRawMany();
@@ -856,7 +857,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       .addSelect("count(1)", "count")
       .where({
         userId: param.userId,
-        projectId: param.projectId
+        projectId: param.projectId,
+        isTemplate: false
       })
       .groupBy("disabled")
       .getRawMany();
@@ -880,7 +882,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       where: {
         userId,
         disabled: false,
-        projectId
+        projectId,
+        isTemplate: false
       }
     });
     await this.fillLastVars(list);
@@ -902,7 +905,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       .addSelect("COUNT(1) AS count")
       .where({
         // 0点
-        createTime: MoreThan(todayEnd.add(-param.days, "day").toDate())
+        createTime: MoreThan(todayEnd.add(-param.days, "day").toDate()),
+        isTemplate: false
       })
       .groupBy("date")
       .getRawMany();
