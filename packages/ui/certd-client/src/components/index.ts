@@ -17,6 +17,8 @@ import NotificationSelector from "../views/certd/notification/notification-selec
 import EmailSelector from "./email-selector/index.vue";
 import ValidTimeFormat from "./valid-time-format.vue";
 import ProjectSelector from "./project-selector/index.vue";
+import ProjectCurrent from "./project-selector/project-current.vue";
+
 export default {
   install(app: any) {
     app.component(
@@ -47,5 +49,6 @@ export default {
     app.use(vip);
     app.use(Plugins);
     app.component("ProjectSelector", ProjectSelector);
+    app.component("ProjectCurrent", ProjectCurrent);
   },
 };

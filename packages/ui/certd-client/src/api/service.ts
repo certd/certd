@@ -136,19 +136,16 @@ function createService() {
  */
 function createRequestFunction(service: any) {
   return function (config: any) {
-    const configDefault = {
+    const configDefault: any = {
       headers: {
         "Content-Type": get(config, "headers.Content-Type", "application/json"),
       } as any,
       timeout: 30000,
       baseURL: env.API,
       data: {},
+      params: {},
     };
     const projectStore = useProjectStore();
-
-    if (projectStore.isEnterprise && !config.url.startsWith("/sys") && !config.url.startsWith("http")) {
-      configDefault.headers["project-id"] = projectStore.currentProjectId;
-    }
 
     const userStore = useUserStore();
     const token = userStore.getToken;
@@ -156,7 +153,12 @@ function createRequestFunction(service: any) {
       // @ts-ignore
       configDefault.headers.Authorization = token;
     }
-    return service(Object.assign(configDefault, config));
+    Object.assign(configDefault, config);
+
+    if (projectStore.isEnterprise && !config.url.startsWith("/sys") && !config.url.startsWith("http")) {
+      configDefault.params.projectId = projectStore.currentProjectId;
+    }
+    return service(configDefault);
   };
 }
 

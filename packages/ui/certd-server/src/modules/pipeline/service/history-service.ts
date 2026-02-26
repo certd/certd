@@ -183,13 +183,16 @@ export class HistoryService extends BaseService<HistoryEntity> {
     }
   }
 
-  async countPerDay(param: { days: number; userId?: any }) {
+  async countPerDay(param: { days: number; userId?: any,projectId?:number }) {
     const todayEnd = dayjs().endOf('day');
     const where: any = {
       createTime: MoreThan(todayEnd.add(-param.days, 'day').toDate()),
     };
     if (param.userId > 0) {
       where.userId = param.userId;
+    }
+    if (param.projectId > 0) {
+      where.projectId = param.projectId;
     }
     const result = await this.getRepository()
       .createQueryBuilder('main')

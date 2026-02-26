@@ -824,35 +824,39 @@ export class PipelineService extends BaseService<PipelineEntity> {
     await this.historyLogService.addOrUpdate(logEntity);
   }
 
-  async count(param: { userId?: any }) {
+  async count(param: { userId?: any,projectId?:number }) {
     const count = await this.repository.count({
       where: {
-        userId: param.userId
+        userId: param.userId,
+        projectId: param.projectId,
+        isTemplate: false
       }
     });
     return count;
   }
 
-  async statusCount(param: { userId?: any } = {}) {
+  async statusCount(param: { userId?: any,projectId?:number } = {}) {
     const statusCount = await this.repository
       .createQueryBuilder()
       .select("status")
       .addSelect("count(1)", "count")
       .where({
-        userId: param.userId
+        userId: param.userId,
+        projectId: param.projectId
       })
       .groupBy("status")
       .getRawMany();
     return statusCount;
   }
 
-  async enableCount(param: { userId?: any } = {}) {
+  async enableCount(param: { userId?: any,projectId?:number } = {}) {
     const statusCount = await this.repository
       .createQueryBuilder()
       .select("disabled")
       .addSelect("count(1)", "count")
       .where({
-        userId: param.userId
+        userId: param.userId,
+        projectId: param.projectId
       })
       .groupBy("disabled")
       .getRawMany();
@@ -866,7 +870,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return result;
   }
 
-  async latestExpiringList({ userId }: any) {
+  async latestExpiringList({ userId,projectId }: any) {
     let list = await this.repository.find({
       select: {
         id: true,
@@ -875,7 +879,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       },
       where: {
         userId,
-        disabled: false
+        disabled: false,
+        projectId
       }
     });
     await this.fillLastVars(list);

@@ -191,11 +191,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async count({ userId }: { userId: number }) {
+  async count({ userId,projectId }: { userId: number,projectId?:number }) {
     const total = await this.repository.count({
       where: {
         userId,
         expiresTime: Not(IsNull()),
+        projectId,
       },
     });
 
@@ -203,6 +204,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       where: {
         userId,
         expiresTime: LessThan(new Date().getTime()),
+        projectId,
       },
     });
 
@@ -210,6 +212,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       where: {
         userId,
         expiresTime: Between(new Date().getTime(), new Date().getTime() + 15 * 24 * 60 * 60 * 1000),
+        projectId,
       },
     });
 
