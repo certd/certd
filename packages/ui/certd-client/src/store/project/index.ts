@@ -13,6 +13,7 @@ export type ProjectItem = {
 
 export const useProjectStore = defineStore("app.project", () => {
   const myProjects = ref([]);
+  const inited = ref(false);
   const lastProjectId = LocalStorage.get("currentProjectId");
   const currentProjectId = ref(lastProjectId); // 直接调用
 
@@ -66,13 +67,16 @@ export const useProjectStore = defineStore("app.project", () => {
   }
 
   async function reload() {
-    const projects = await api.MyProjectList();
-    myProjects.value = projects;
+    debugger;
+    inited.value = false;
+    await init();
   }
 
   async function init() {
-    if (!myProjects.value) {
-      await reload();
+    debugger;
+    if (!inited.value) {
+      await loadMyProjects();
+      inited.value = true;
     }
     return myProjects.value;
   }

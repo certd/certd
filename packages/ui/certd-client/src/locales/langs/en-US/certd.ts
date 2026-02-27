@@ -820,6 +820,17 @@ export default {
       admin: "Admin",
     },
   },
+  project: {
+    noProjectJoined: "You haven't joined any projects yet",
+    applyToJoin: "Please apply to join a project to start using",
+    systemProjects: "System Project List",
+    createdAt: "Created At",
+    applyJoin: "Apply to Join",
+    noSystemProjects: "No system projects available",
+    fetchFailed: "Failed to fetch project list",
+    applySuccess: "Application successful, waiting for admin approval",
+    applyFailed: "Application failed, please try again later",
+  },
   addonSelector: {
     select: "Select",
     placeholder: "select please",

@@ -9,7 +9,8 @@ import { useSettingStore } from "/@/store/settings";
 import { usePermissionStore } from "/@/plugin/permission/store.permission";
 import util from "/@/plugin/permission/util.permission";
 import { useUserStore } from "/@/store/user";
-
+import { useProjectStore } from "../store/project";
+export const PROJECT_BLANK_PATH = "/certd/project/blank";
 function buildAccessedMenus(menus: any) {
   if (menus == null) {
     return;
@@ -124,6 +125,20 @@ function setupAccessGuard(router: Router) {
         };
       }
       return true;
+    } else {
+      // 如果是项目模式
+      const projectStore = useProjectStore();
+      if (projectStore.isEnterprise) {
+        //加载我的项目
+        await projectStore.init();
+        if (!projectStore.currentProject && to.path !== PROJECT_BLANK_PATH) {
+          //没有项目
+          return {
+            path: PROJECT_BLANK_PATH,
+            replace: true,
+          };
+        }
+      }
     }
   });
 }

@@ -43,6 +43,17 @@ export const certdResources = [
         },
       },
       {
+        title: "certd.sysResources.myProjectBlank",
+        name: "MyProjectBlank",
+        path: "/certd/project/blank",
+        component: "/certd/project/blank.vue",
+        meta: {
+          isMenu: false,
+          show: true,
+          icon: "ion:apps",
+        },
+      },
+      {
         title: "certd.pipeline",
         name: "PipelineManager",
         path: "/certd/pipeline",

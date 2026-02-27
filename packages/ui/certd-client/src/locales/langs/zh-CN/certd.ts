@@ -836,4 +836,15 @@ export default {
       admin: "管理员",
     },
   },
+  project: {
+    noProjectJoined: "您还没有加入任何项目",
+    applyToJoin: "请申请加入项目以开始使用",
+    systemProjects: "系统项目列表",
+    createdAt: "创建时间",
+    applyJoin: "申请加入",
+    noSystemProjects: "暂无系统项目",
+    fetchFailed: "获取项目列表失败",
+    applySuccess: "申请成功，等待管理员审核",
+    applyFailed: "申请失败，请稍后重试",
+  },
 };
