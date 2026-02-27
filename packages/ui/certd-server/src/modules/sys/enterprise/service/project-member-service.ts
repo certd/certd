@@ -18,7 +18,7 @@ export class ProjectMemberService extends BaseService<ProjectMemberEntity> {
     return this.repository;
   }
 
-  async add(bean: ProjectMemberEntity) {
+  async add(bean: Partial<ProjectMemberEntity>) {
     const {projectId, userId} = bean;
     if (!projectId) {
       throw new Error('项目ID不能为空');
@@ -38,10 +38,11 @@ export class ProjectMemberService extends BaseService<ProjectMemberEntity> {
    return await super.add(bean)
   }
 
-  async getByUserId(userId: number) {
+  async getByUserId(userId: number,status?:string) {
     return await this.repository.find({
       where: {
         userId,
+        status,
       },
     });
   }

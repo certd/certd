@@ -16,6 +16,9 @@ export class ProjectMemberEntity {
   @Column({ name: 'permission', comment: '权限' })
   permission: string; // read / write / admin
 
+  @Column({ name: 'status', comment: '申请状态' })
+  status: string; // pending / approved / rejected
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

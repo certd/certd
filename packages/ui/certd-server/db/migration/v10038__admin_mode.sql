@@ -82,6 +82,7 @@ CREATE TABLE "cd_project_member"
   "update_time" datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP)
 );
 
+ALTER TABLE cd_project_member ADD COLUMN  status varchar(128);
 
 CREATE INDEX "index_project_member_user_id" ON "cd_project_member" ("user_id");
 CREATE INDEX "index_project_member_project_id" ON "cd_project_member" ("project_id");

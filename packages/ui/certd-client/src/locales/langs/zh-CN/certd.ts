@@ -224,6 +224,7 @@ export default {
     enterpriseSetting: "企业设置",
     myProjectManager: "我的项目",
     myProjectDetail: "项目详情",
+    projectJoin: "加入项目",
   },
   certificateRepo: {
     title: "证书仓库",
@@ -839,12 +840,15 @@ export default {
   project: {
     noProjectJoined: "您还没有加入任何项目",
     applyToJoin: "请申请加入项目以开始使用",
-    systemProjects: "系统项目列表",
+    projectList: "项目列表",
     createdAt: "创建时间",
     applyJoin: "申请加入",
-    noSystemProjects: "暂无系统项目",
+    noProjects: "暂无项目",
     fetchFailed: "获取项目列表失败",
     applySuccess: "申请成功，等待管理员审核",
     applyFailed: "申请失败，请稍后重试",
+    leave: "退出项目",
+    leaveSuccess: "退出项目成功",
+    leaveFailed: "退出项目失败，请稍后重试",
   },
 };

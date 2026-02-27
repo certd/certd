@@ -43,10 +43,10 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.sysResources.myProjectBlank",
-        name: "MyProjectBlank",
-        path: "/certd/project/blank",
-        component: "/certd/project/blank.vue",
+        title: "certd.sysResources.projectJoin",
+        name: "ProjectJoin",
+        path: "/certd/project/join",
+        component: "/certd/project/join.vue",
         meta: {
           isMenu: false,
           show: true,

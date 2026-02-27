@@ -24,6 +24,29 @@ const projectPermissionDict = dict({
   ],
 });
 
+const projectMemberStatusDict = dict({
+  data: [
+    {
+      value: "pending",
+      label: "待审核",
+      color: "orange",
+      icon: "material-symbols:hourglass-top",
+    },
+    {
+      value: "approved",
+      label: "已加入",
+      color: "green",
+      icon: "material-symbols:done-all",
+    },
+    {
+      value: "rejected",
+      label: "已拒绝",
+      color: "red",
+      icon: "material-symbols:close",
+    },
+  ],
+});
+
 const myProjectDict = dict({
   url: "/enterprise/project/list",
   getData: async () => {
@@ -56,5 +79,6 @@ export function useDicts() {
     projectPermissionDict,
     myProjectDict,
     userDict,
+    projectMemberStatusDict,
   };
 }

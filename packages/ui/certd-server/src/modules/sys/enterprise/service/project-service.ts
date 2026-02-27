@@ -3,7 +3,7 @@ import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { LRUCache } from 'lru-cache';
 import { Repository } from 'typeorm';
-import { ProjectEntity } from '../entity/project.js';
+import { ProjectEntity, ProjectMemberItem } from '../entity/project.js';
 import { ProjectMemberService } from './project-member-service.js';
 
 const projectCache = new LRUCache<string, any>({
@@ -65,7 +65,7 @@ export class ProjectService extends BaseService<ProjectEntity> {
 
   async getUserProjects(userId: number) {
 
-    const memberList = await this.projectMemberService.getByUserId(userId);
+    const memberList = await this.projectMemberService.getByUserId(userId,'approved');
     const projectIds = memberList.map(item => item.projectId);
     const projectList = await this.repository.createQueryBuilder('project')
       .where(' project.disabled = false')
@@ -87,6 +87,39 @@ export class ProjectService extends BaseService<ProjectEntity> {
     })
 
     return projectList
+  }
+
+  async getAllWithStatus(userId: number) : Promise<ProjectMemberItem[]> {
+    let projectList:any = await this.find({
+      where: {
+        disabled: false,
+        userId: 0,
+      },
+    }) 
+    const  projectMemberItemList:ProjectMemberItem[] = projectList
+   
+    const memberList = await this.projectMemberService.getByUserId(userId);
+
+    const memberMap = memberList.reduce((prev, cur) => {
+      prev[cur.projectId] = cur as any;
+      return prev;
+    }, {} as Record<number, ProjectMemberItem>);
+
+    projectMemberItemList.forEach(item => {
+      if (item.adminId === userId) {
+        item.permission = 'admin';
+        item.status = 'approved';
+        item.memberId = userId
+      } else {
+        const memberItem :any = memberMap[item.id]
+        if (memberItem) {
+          item.permission = memberItem.permission;
+          item.status = memberItem.status;
+          item.memberId = memberItem.userId
+        }
+      }
+    })
+    return projectMemberItemList
   }
 
   async checkAdminPermission({ userId, projectId }: { userId: number, projectId: number }) {
@@ -143,8 +176,8 @@ export class ProjectService extends BaseService<ProjectEntity> {
             throw new Error('项目已禁用');
           } 
           const member = await this.projectMemberService.getMember(projectId, userId);
-          if (!member) {
-            throw new Error(`用户${userId}不是该项目${projectId}成员`);
+          if (!member || member.status !== 'approved') {
+            throw new Error(`用户${userId}还不是项目${projectId}的成员`);
           }
           savedPermission = member.permission;
         }
@@ -169,4 +202,50 @@ export class ProjectService extends BaseService<ProjectEntity> {
     }
     return true
   }
+
+
+  async applyJoin({ userId, projectId }: { userId: number, projectId: number }) {
+    const project = await this.info(projectId);
+    if (!project) {
+      throw new Error('项目不存在');
+    }
+    if (project.disabled) {
+      throw new Error('项目已禁用');
+    }
+    if (project.adminId === userId) {
+      throw new Error('申请用户已经是该项目的管理员');
+    }
+    const member = await this.projectMemberService.getMember(projectId, userId);
+    if (member && member.status === 'approved') {
+      throw new Error('用户已加入项目');
+    }
+    if (member){
+      this.projectMemberService.update({
+        id: member.id,
+        status: 'pending',
+      })
+    }else{
+      // 加入项目
+      await this.projectMemberService.add({
+        userId,
+        projectId,
+        permission: 'read',
+        status: 'pending',
+      })
+    }
+  }
+
+  async approveJoin({ userId, projectId,status,permission }: { userId: number, projectId: number,status:string,permission:string }) {
+    const member = await this.projectMemberService.getMember(projectId, userId);
+    if (!member) {
+      throw new Error('找不到用户的申请记录');
+    }
+ 
+    await this.projectMemberService.update({
+      id: member.id,
+      status: status,
+      permission,
+    })
+  }
+
 }

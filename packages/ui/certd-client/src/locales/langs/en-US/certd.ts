@@ -218,6 +218,7 @@ export default {
     projectUserManager: "Project User Management",
     myProjectManager: "My Projects",
     myProjectDetail: "Project Detail",
+    projectJoin: "Join Project",
   },
   certificateRepo: {
     title: "Certificate Repository",
@@ -830,6 +831,9 @@ export default {
     fetchFailed: "Failed to fetch project list",
     applySuccess: "Application successful, waiting for admin approval",
     applyFailed: "Application failed, please try again later",
+    leave: "Leave Project",
+    leaveSuccess: "Leave project successful",
+    leaveFailed: "Leave project failed, please try again later",
   },
   addonSelector: {
     select: "Select",

@@ -34,4 +34,10 @@ export class ProjectEntity {
 
   // user permission read write admin
   permission:string
+
 }
+
+export type ProjectMemberItem = {
+  memberId: number;
+  status: string;
+} & ProjectEntity
