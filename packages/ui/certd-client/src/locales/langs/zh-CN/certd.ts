@@ -836,6 +836,7 @@ export default {
       write: "写入",
       admin: "管理员",
     },
+    projectMemberStatus: "成员状态",
   },
   project: {
     noProjectJoined: "您还没有加入任何项目",
@@ -850,5 +851,7 @@ export default {
     leave: "退出项目",
     leaveSuccess: "退出项目成功",
     leaveFailed: "退出项目失败，请稍后重试",
+    applyJoinConfirm: "确认加入项目？",
+    leaveConfirm: "确认退出项目？",
   },
 };

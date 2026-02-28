@@ -4,6 +4,7 @@ import { message } from "ant-design-vue";
 import { computed, ref } from "vue";
 import { useSettingStore } from "../settings";
 import { LocalStorage } from "/@/utils/util.storage";
+import { useUserStore } from "../user";
 
 export type ProjectItem = {
   id: string;
@@ -14,7 +15,9 @@ export type ProjectItem = {
 export const useProjectStore = defineStore("app.project", () => {
   const myProjects = ref([]);
   const inited = ref(false);
-  const lastProjectId = LocalStorage.get("currentProjectId");
+  const userStore = useUserStore();
+  const userId = userStore.getUserInfo?.id;
+  const lastProjectId = LocalStorage.get("currentProjectId:" + userId);
   const currentProjectId = ref(lastProjectId); // 直接调用
 
   const projects = computed(() => {
@@ -67,13 +70,11 @@ export const useProjectStore = defineStore("app.project", () => {
   }
 
   async function reload() {
-    debugger;
     inited.value = false;
     await init();
   }
 
   async function init() {
-    debugger;
     if (!inited.value) {
       await loadMyProjects();
       inited.value = true;

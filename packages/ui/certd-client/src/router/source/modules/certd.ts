@@ -25,8 +25,8 @@ export const certdResources = [
             const projectStore = useProjectStore();
             return projectStore.isEnterprise;
           },
+          isMenu: false,
           icon: "ion:apps",
-          permission: "sys:settings:edit",
           keepAlive: true,
         },
       },
@@ -36,10 +36,12 @@ export const certdResources = [
         path: "/certd/project/detail",
         component: "/certd/project/detail/index.vue",
         meta: {
-          isMenu: false,
-          show: true,
+          show: () => {
+            const projectStore = useProjectStore();
+            return projectStore.isEnterprise;
+          },
+          isMenu: true,
           icon: "ion:apps",
-          permission: "sys:settings:edit",
         },
       },
       {

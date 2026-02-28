@@ -820,6 +820,7 @@ export default {
       write: "Write",
       admin: "Admin",
     },
+    projectMemberStatus: "Member Status",
   },
   project: {
     noProjectJoined: "You haven't joined any projects yet",
@@ -834,6 +835,8 @@ export default {
     leave: "Leave Project",
     leaveSuccess: "Leave project successful",
     leaveFailed: "Leave project failed, please try again later",
+    applyJoinConfirm: "Are you sure you want to apply to join this project?",
+    leaveConfirm: "Are you sure you want to leave this project?",
   },
   addonSelector: {
     select: "Select",

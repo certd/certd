@@ -1,5 +1,6 @@
 import { dict } from "@fast-crud/fast-crud";
 import { GetMyProjectList } from "./project/api";
+import { request } from "/@/api/service";
 
 const projectPermissionDict = dict({
   data: [
@@ -65,8 +66,16 @@ const myProjectDict = dict({
 });
 
 const userDict = dict({
-  url: "/sys/authority/user/getSimpleUsers",
+  url: "/basic/user/getSimpleUsers",
   value: "id",
+  getData: async () => {
+    const res = await request({
+      url: "/basic/user/getSimpleUsers",
+      method: "POST",
+    });
+    return res;
+  },
+  immediate: false,
   onReady: ({ dict }) => {
     for (const item of dict.data) {
       item.label = item.nickName || item.username || item.phoneCode + item.mobile;

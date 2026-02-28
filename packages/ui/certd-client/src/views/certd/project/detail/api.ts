@@ -1,6 +1,6 @@
 import { request } from "/src/api/service";
 
-const apiPrefix = "/enterprise/myProjectMember";
+const apiPrefix = "/enterprise/projectMember";
 const userApiPrefix = "/sys/authority/user";
 export async function GetList(query: any) {
   return await request({
@@ -63,5 +63,15 @@ export async function GetUserSimpleByIds(query: any) {
     url: userApiPrefix + "/getSimpleByIds",
     method: "post",
     data: query,
+  });
+}
+
+export async function ApproveJoin(id: any) {
+  return await request({
+    url: "/enterprise/project/approveJoin",
+    method: "post",
+    data: {
+      id,
+    },
   });
 }

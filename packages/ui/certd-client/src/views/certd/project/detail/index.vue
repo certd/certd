@@ -3,8 +3,14 @@
     <template #header>
       <div class="title">
         {{ t("certd.ent.projectDetailManager") }}
-        <span class="sub">
-          {{ t("certd.ent.projectDetailDescription") }}
+        <span class="sub flex-inline items-center">
+          项目名称 ：<a-tag color="green">{{ project?.name }}</a-tag>
+          <a-divider type="vertical"></a-divider>
+          管理员：<fs-values-format :model-value="project.adminId" :dict="userDict" color="green"></fs-values-format>
+          <!-- <a-divider type="vertical"></a-divider>
+          <fs-values-format :model-value="project.permission" :dict="projectPermissionDict"></fs-values-format>
+          <a-divider type="vertical"></a-divider>
+          <fs-values-format :model-value="project.status" :dict="projectMemberStatusDict"></fs-values-format> -->
         </span>
       </div>
     </template>
@@ -19,13 +25,17 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onMounted } from "vue";
+import { onActivated, onMounted, Ref, ref } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import { message, Modal } from "ant-design-vue";
 import { DeleteBatch } from "./api";
 import { useI18n } from "/src/locales";
 import { useRoute } from "vue-router";
+import { useProjectStore } from "/@/store/project";
+import { request } from "/@/api/service";
+import { useDicts } from "../../dicts";
+import { useCrudPermission } from "/@/plugin/permission";
 
 const { t } = useI18n();
 
@@ -35,11 +45,38 @@ defineOptions({
 
 const route = useRoute();
 const projectIdStr = route.query.projectId as string;
-const projectId = Number(projectIdStr);
+let projectId = Number(projectIdStr);
+const projectStore = useProjectStore();
+if (!projectId) {
+  projectId = projectStore.currentProject?.id;
+}
+
+const { projectPermissionDict, projectMemberStatusDict, userDict } = useDicts();
+
+const project: Ref<any> = ref({});
+
+async function loadProjectDetail() {
+  if (projectId) {
+    const res = await request({
+      url: `/enterprise/project/detail`,
+      method: "post",
+      params: {
+        projectId,
+      },
+    });
+    project.value = res;
+  }
+}
 
 const context: any = {
   projectId,
+  permission: {
+    isProjectPermission: true,
+    projectPermission: "admin",
+  },
 };
+const { hasActionPermission } = useCrudPermission(context);
+context.hasActionPermission = hasActionPermission;
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
 const selectedRowKeys = context.selectedRowKeys;
@@ -61,7 +98,8 @@ const handleBatchDelete = () => {
 };
 
 // 页面打开后获取列表数据
-onMounted(() => {
+onMounted(async () => {
+  await loadProjectDetail();
   crudExpose.doRefresh();
 });
 onActivated(async () => {

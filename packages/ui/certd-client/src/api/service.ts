@@ -156,7 +156,7 @@ function createRequestFunction(service: any) {
     Object.assign(configDefault, config);
 
     if (projectStore.isEnterprise && !config.url.startsWith("/sys") && !config.url.startsWith("http")) {
-      configDefault.params.projectId = projectStore.currentProjectId;
+      configDefault.params.projectId = projectStore.currentProject?.id;
     }
     return service(configDefault);
   };

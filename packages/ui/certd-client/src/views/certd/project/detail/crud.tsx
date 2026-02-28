@@ -7,6 +7,7 @@ import { useSettingStore } from "/@/store/settings";
 import { useUserStore } from "/@/store/user";
 import { useI18n } from "/src/locales";
 import { useDicts } from "../../dicts";
+import { useApprove } from "./use";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -34,8 +35,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const settingStore = useSettingStore();
   const selectedRowKeys: Ref<any[]> = ref([]);
   context.selectedRowKeys = selectedRowKeys;
-
-  const { userDict } = useDicts();
+  const { hasActionPermission } = context;
+  const { userDict, projectMemberStatusDict, projectPermissionDict } = useDicts();
+  const { openApproveDialog } = useApprove();
 
   return {
     crudOptions: {
@@ -118,13 +120,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         permission: {
           title: t("certd.ent.projectPermission"),
           type: "dict-select",
-          dict: dict({
-            data: [
-              { label: t("certd.ent.permission.read"), value: "read", color: "cyan" },
-              { label: t("certd.ent.permission.write"), value: "write", color: "blue" },
-              { label: t("certd.ent.permission.admin"), value: "admin", color: "green" },
-            ],
-          }),
+          dict: projectPermissionDict,
           search: {
             show: true,
           },
@@ -133,6 +129,50 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             width: 200,
+          },
+        },
+        status: {
+          title: t("certd.ent.projectMemberStatus"),
+          type: "dict-select",
+          dict: projectMemberStatusDict,
+          search: {
+            show: true,
+          },
+          form: {
+            show: true,
+          },
+          column: {
+            width: 200,
+            cellRender: ({ row }) => {
+              let approveButton: any = "";
+              if (row.status === "pending" && hasActionPermission("admin")) {
+                approveButton = (
+                  <fs-button
+                    class="ml-2"
+                    type="primary"
+                    size="small"
+                    onClick={async () => {
+                      openApproveDialog({
+                        id: row.id,
+                        permission: row.permission,
+                        onSubmit: async (form: any) => {
+                          await api.ApproveJoin(form);
+                          crudExpose.doRefresh();
+                        },
+                      });
+                    }}
+                  >
+                    审批
+                  </fs-button>
+                );
+              }
+              return (
+                <div class="flex items-center">
+                  <fs-values-format model-value={row.status} dict={projectMemberStatusDict}></fs-values-format>
+                  {approveButton}
+                </div>
+              );
+            },
           },
         },
         createTime: {

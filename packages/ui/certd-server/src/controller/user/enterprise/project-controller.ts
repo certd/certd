@@ -22,6 +22,18 @@ export class UserProjectController extends BaseController {
     return this.service;
   }
 
+   /**
+   * @param body 
+   * @returns 
+   */
+  @Post('/detail', { summary: Constants.per.authOnly })
+  async detail(@Body(ALL) body: any) {
+    const {projectId} = await this.getProjectUserIdRead();
+    const res = await this.service.getDetail(projectId,this.getUserId());
+    return this.ok(res);
+  }
+
+
   /**
    * 我的项目
    * @param body 

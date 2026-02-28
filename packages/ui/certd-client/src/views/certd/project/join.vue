@@ -16,19 +16,22 @@
                 <h3 class="text-md font-bold title">{{ project.name }}</h3>
                 <p class="text-gray-500 text-sm">{{ formatDate(project.createTime) }}</p>
               </div>
-              <div class="flex justify-between items-center">
-                <div v-if="project.status">
-                  <fs-values-format :model-value="project.status" :dict="projectMemberStatusDict"></fs-values-format>
+              <div class="flex-col items-center">
+                <div>管理员： <fs-values-format :model-value="project.adminId" :dict="userDict"></fs-values-format></div>
+                <div class="flex items-center mt-2">
+                  <div v-if="project.status">
+                    <fs-values-format :model-value="project.status" :dict="projectMemberStatusDict"></fs-values-format>
+                  </div>
+                  <div v-if="project.permission"><fs-values-format :model-value="project.permission" :dict="projectPermissionDict"></fs-values-format></div>
                 </div>
-                <div v-if="project.permission"><fs-values-format :model-value="project.permission" :dict="projectPermissionDict"></fs-values-format></div>
               </div>
             </div>
             <template #actions>
-              <span v-if="!project.status || project.status === 'rejected'" class="flex-inline items-center" :title="t('certd.project.applyJoin')" @click="applyToJoin(project.id)">
+              <span v-if="!project.status || project.status === 'rejected'" class="flex-inline items-center text-blue-500" :title="t('certd.project.applyJoin')" @click="applyToJoin(project.id)">
                 <fs-icon class="fs-18 mr-2" icon="mdi:checkbox-marked-circle-outline"></fs-icon>
                 {{ t("certd.project.applyJoin") }}
               </span>
-              <span v-if="project.status === 'pending' || project.status === 'approved'" class="flex-inline items-center" :title="t('certd.project.leave')" @click="leaveProject(project.id)">
+              <span v-if="project.status === 'pending' || project.status === 'approved'" class="flex-inline items-center text-red-500" :title="t('certd.project.leave')" @click="leaveProject(project.id)">
                 <fs-icon class="fs-18 mr-2" icon="mdi:arrow-right-thin-circle-outline"></fs-icon>
                 {{ t("certd.project.leave") }}
               </span>
@@ -48,14 +51,13 @@ import { request } from "/src/api/service";
 import { useProjectStore } from "/@/store/project";
 import dayjs from "dayjs";
 import { useDicts } from "../dicts";
-import { modalProps } from "ant-design-vue/es/modal/Modal";
 
 defineOptions({
   name: "ProjectJoin",
 });
 const { t } = useI18n();
 
-const { projectMemberStatusDict, projectPermissionDict } = useDicts();
+const { projectMemberStatusDict, projectPermissionDict, userDict } = useDicts();
 
 const projects = ref<any[]>([]);
 

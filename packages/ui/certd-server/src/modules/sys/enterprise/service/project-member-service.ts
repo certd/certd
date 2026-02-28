@@ -47,11 +47,12 @@ export class ProjectMemberService extends BaseService<ProjectMemberEntity> {
     });
   }
 
-  async getMember(projectId: number,userId: number) {
+  async getMember(projectId: number,userId: number,status?:string) {
     return await this.repository.findOne({
       where: {
         userId,
         projectId,
+        status,
       },
     });
   }
