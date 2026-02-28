@@ -7,6 +7,7 @@ import { useSettingStore } from "/@/store/settings";
 import { useUserStore } from "/@/store/user";
 import { useI18n } from "/src/locales";
 import { userDict } from "../../dicts";
+import { useDicts } from "/@/views/certd/dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -34,6 +35,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const settingStore = useSettingStore();
   const selectedRowKeys: Ref<any[]> = ref([]);
   context.selectedRowKeys = selectedRowKeys;
+
+  const { projectMemberStatusDict } = useDicts();
 
   return {
     crudOptions: {
@@ -131,6 +134,27 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             width: 200,
+          },
+        },
+        status: {
+          title: t("certd.ent.projectMemberStatus"),
+          type: "dict-select",
+          dict: projectMemberStatusDict,
+          search: {
+            show: true,
+          },
+          form: {
+            show: true,
+          },
+          column: {
+            width: 200,
+            cellRender: ({ row }) => {
+              return (
+                <div class="flex items-center">
+                  <fs-values-format model-value={row.status} dict={projectMemberStatusDict}></fs-values-format>
+                </div>
+              );
+            },
           },
         },
         createTime: {

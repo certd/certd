@@ -2,7 +2,12 @@
   <div class="sys-settings-form sys-settings-mode">
     <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
       <a-form-item :label="t('certd.sys.setting.adminMode')" :name="['public', 'adminMode']">
-        <fs-dict-radio v-model:value="formState.public.adminMode" :dict="adminModeDict" />
+        <div class="w-full flex items-center">
+          <fs-dict-radio v-model:value="formState.public.adminMode" :disabled="!settingsStore.isPlus" :dict="adminModeDict" />
+          <vip-button class="ml-5" mode="button"></vip-button>
+        </div>
+        <div class="intro-desc helper">SaaS模式：每个用户管理自己的流水线和授权资源，独立使用。</div>
+        <div class="intro-desc helper">企业模式：企业内部员工使用，通过项目合作管理流水线证书和授权资源。</div>
       </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
@@ -31,12 +36,12 @@ defineOptions({
 const adminModeDict = dict({
   data: [
     {
-      label: t("certd.sys.setting.enterpriseMode"),
-      value: "enterprise",
-    },
-    {
       label: t("certd.sys.setting.saasMode"),
       value: "saas",
+    },
+    {
+      label: t("certd.sys.setting.enterpriseMode"),
+      value: "enterprise",
     },
   ],
 });

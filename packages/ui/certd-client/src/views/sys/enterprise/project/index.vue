@@ -12,6 +12,7 @@
         </a-tooltip>
       </template>
     </fs-crud>
+    <AdminModeIntro v-if="!projectStore.isEnterprise"></AdminModeIntro>
   </fs-page>
 </template>
 
@@ -22,7 +23,8 @@ import createCrudOptions from "./crud";
 import { message, Modal } from "ant-design-vue";
 import { DeleteBatch } from "./api";
 import { useI18n } from "/src/locales";
-
+import { useProjectStore } from "/@/store/project";
+import AdminModeIntro from "./intro.vue";
 const { t } = useI18n();
 
 defineOptions({
@@ -30,6 +32,7 @@ defineOptions({
 });
 const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions });
 
+const projectStore = useProjectStore();
 const selectedRowKeys = context.selectedRowKeys;
 const handleBatchDelete = () => {
   if (selectedRowKeys.value?.length > 0) {
