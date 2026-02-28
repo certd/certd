@@ -1,8 +1,8 @@
 <template>
-  <div class="admin-mode-intro">
-    <div class="mask">
+  <div v-if="open" class="admin-mode-intro" :style="fixed ? 'position: fixed;' : 'position: absolute;'">
+    <div class="mask" @click="close()">
       <div class="intro-content">
-        <h2 class="intro-title text-xl font-bold">当前为SaaS管理模式，项目管理需要切换到企业模式</h2>
+        <h2 class="intro-title text-xl font-bold">{{ title || "管理模式介绍" }}</h2>
         <div class="mt-8 image-block">
           <div class="flex gap-8">
             <div class="intro-desc flex-1">SaaS模式：每个用户管理自己的流水线和授权资源，独立使用。</div>
@@ -22,11 +22,22 @@
 
 <script setup lang="tsx">
 import { ref } from "vue";
-import { useI18n } from "/src/locales";
 import { useRouter } from "vue-router";
 defineOptions({
   name: "AdminModeIntro",
 });
+
+const props = defineProps<{
+  title?: string;
+  open?: boolean;
+  fixed?: boolean;
+}>();
+
+const emit = defineEmits(["update:open"]);
+
+function close() {
+  emit("update:open", false);
+}
 
 const src = ref("static/images/ent/admin_mode.png");
 

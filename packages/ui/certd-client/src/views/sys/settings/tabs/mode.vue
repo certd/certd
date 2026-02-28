@@ -8,12 +8,15 @@
         </div>
         <div class="intro-desc helper">SaaS模式：每个用户管理自己的流水线和授权资源，独立使用。</div>
         <div class="intro-desc helper">企业模式：企业内部员工使用，通过项目合作管理流水线证书和授权资源。</div>
+        <div><a @click="adminModeIntroOpen = true"> 查看示意图</a></div>
       </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
         <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
       </a-form-item>
     </a-form>
+
+    <AdminModeIntro v-model:open="adminModeIntroOpen" fixed></AdminModeIntro>
   </div>
 </template>
 
@@ -27,11 +30,14 @@ import { notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
 import { dict } from "@fast-crud/fast-crud";
 import { useProjectStore } from "/@/store/project";
+import AdminModeIntro from "/@/views/sys/enterprise/project/intro.vue";
 const { t } = useI18n();
 
 defineOptions({
   name: "SettingMode",
 });
+
+const adminModeIntroOpen = ref(false);
 
 const adminModeDict = dict({
   data: [

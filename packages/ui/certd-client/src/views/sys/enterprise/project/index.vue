@@ -12,7 +12,7 @@
         </a-tooltip>
       </template>
     </fs-crud>
-    <AdminModeIntro v-if="!projectStore.isEnterprise"></AdminModeIntro>
+    <AdminModeIntro v-if="!projectStore.isEnterprise" title="当前为SaaS管理模式，项目管理需要切换到企业模式" :open="true"></AdminModeIntro>
   </fs-page>
 </template>
 
