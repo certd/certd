@@ -26,6 +26,7 @@ export const certdResources = [
           isMenu: false,
           icon: "ion:apps",
           keepAlive: true,
+          auth: true,
         },
       },
       {
@@ -40,6 +41,7 @@ export const certdResources = [
           },
           isMenu: true,
           icon: "ion:apps",
+          auth: true,
         },
       },
       {
@@ -51,6 +53,7 @@ export const certdResources = [
           isMenu: false,
           show: true,
           icon: "ion:apps",
+          auth: true,
         },
       },
       {
@@ -61,6 +64,7 @@ export const certdResources = [
         meta: {
           icon: "ion:analytics-sharp",
           keepAlive: true,
+          auth: true,
         },
       },
       {
@@ -70,6 +74,7 @@ export const certdResources = [
         component: "/certd/pipeline/detail.vue",
         meta: {
           isMenu: false,
+          auth: true,
         },
       },
       {
@@ -80,6 +85,7 @@ export const certdResources = [
         meta: {
           icon: "ion:timer-outline",
           keepAlive: true,
+          auth: true,
         },
       },
       {
@@ -90,6 +96,7 @@ export const certdResources = [
         meta: {
           isMenu: true,
           icon: "ion:duplicate-outline",
+          auth: true,
         },
       },
       {
@@ -99,6 +106,7 @@ export const certdResources = [
         component: "/certd/pipeline/template/edit.vue",
         meta: {
           isMenu: false,
+          auth: true,
         },
       },
       {
@@ -108,6 +116,7 @@ export const certdResources = [
         component: "/certd/pipeline/template/import/index.vue",
         meta: {
           isMenu: false,
+          auth: true,
         },
       },
       {

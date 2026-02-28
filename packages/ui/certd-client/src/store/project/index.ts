@@ -17,7 +17,8 @@ export const useProjectStore = defineStore("app.project", () => {
   const inited = ref(false);
   const userStore = useUserStore();
   const userId = userStore.getUserInfo?.id;
-  const lastProjectId = LocalStorage.get("currentProjectId:" + userId);
+  const lastProjectIdCacheKey = "currentProjectId:" + userId;
+  const lastProjectId = LocalStorage.get(lastProjectIdCacheKey);
   const currentProjectId = ref(lastProjectId); // 直接调用
 
   const projects = computed(() => {
@@ -63,7 +64,7 @@ export const useProjectStore = defineStore("app.project", () => {
 
   function changeCurrentProject(id: string, silent?: boolean) {
     currentProjectId.value = id;
-    LocalStorage.set("currentProjectId", id);
+    LocalStorage.set(lastProjectIdCacheKey, id);
     if (!silent) {
       message.success("切换项目成功");
     }

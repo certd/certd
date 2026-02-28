@@ -35,7 +35,7 @@ defineOptions({
 
 const projectStore = useProjectStore();
 onMounted(async () => {
-  await projectStore.reload();
+  await projectStore.init();
   console.log(projectStore.myProjects);
 });
 

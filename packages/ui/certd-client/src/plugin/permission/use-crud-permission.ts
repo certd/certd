@@ -82,7 +82,6 @@ export function useCrudPermission({ permission }: UseCrudPermissionProps) {
     if (isProjectPermission) {
       removePermission = per.projectPermission || "write";
     }
-    debugger;
     return LodashMerge(
       {
         actionbar: {

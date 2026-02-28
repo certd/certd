@@ -50,6 +50,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
       delete form.lastVars;
       delete form.createTime;
       delete form.id;
+      delete form.webhook;
       let pipeline = form.content;
       if (typeof pipeline === "string" && pipeline.startsWith("{")) {
         pipeline = JSON.parse(form.content);
@@ -75,8 +76,8 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
   function onDialogOpen(opt: any) {
     const searchForm = crudExpose.getSearchValidatedFormData();
     opt.initialForm = {
-      ...opt.initialForm,
       groupId: searchForm.groupId,
+      ...opt.initialForm,
     };
   }
 
@@ -219,7 +220,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
               row = info.pipeline;
               row.content = JSON.parse(row.content);
               row.title = row.title + "_copy";
-              await crudExpose.openCopy({
+              await crudExpose.openAdd({
                 row: row,
                 index: context.index,
               });
