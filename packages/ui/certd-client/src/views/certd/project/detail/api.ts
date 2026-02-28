@@ -66,12 +66,10 @@ export async function GetUserSimpleByIds(query: any) {
   });
 }
 
-export async function ApproveJoin(id: any) {
+export async function ApproveJoin(form: any) {
   return await request({
     url: "/enterprise/project/approveJoin",
     method: "post",
-    data: {
-      id,
-    },
+    data: form,
   });
 }
