@@ -219,6 +219,7 @@ export default {
     myProjectManager: "My Projects",
     myProjectDetail: "Project Detail",
     projectJoin: "Join Project",
+    currentProject: "Current Project",
   },
   certificateRepo: {
     title: "Certificate Repository",

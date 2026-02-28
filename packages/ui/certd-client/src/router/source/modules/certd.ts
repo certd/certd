@@ -1,7 +1,5 @@
-import { useSettingStore } from "/@/store/settings";
-import aboutResource from "/@/router/source/modules/about";
-import i18n from "/@/locales/i18n";
 import { useProjectStore } from "/@/store/project";
+import { useSettingStore } from "/@/store/settings";
 
 export const certdResources = [
   {
@@ -31,8 +29,8 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.sysResources.myProjectDetail",
-        name: "MyProjectDetail",
+        title: "certd.sysResources.currentProject",
+        name: "CurrentProject",
         path: "/certd/project/detail",
         component: "/certd/project/detail/index.vue",
         meta: {

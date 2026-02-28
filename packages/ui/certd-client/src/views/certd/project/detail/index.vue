@@ -2,10 +2,8 @@
   <fs-page class="page-project-detail">
     <template #header>
       <div class="title">
-        {{ t("certd.ent.projectDetailManager") }}
+        当前项目 ：{{ project?.name }}
         <span class="sub flex-inline items-center">
-          项目名称 ：<a-tag color="green">{{ project?.name }}</a-tag>
-          <a-divider type="vertical"></a-divider>
           管理员：<fs-values-format :model-value="project.adminId" :dict="userDict" color="green"></fs-values-format>
           <!-- <a-divider type="vertical"></a-divider>
           <fs-values-format :model-value="project.permission" :dict="projectPermissionDict"></fs-values-format>

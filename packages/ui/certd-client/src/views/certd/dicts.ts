@@ -6,13 +6,13 @@ const projectPermissionDict = dict({
   data: [
     {
       value: "read",
-      label: "只读",
+      label: "查看",
       color: "cyan",
       icon: "material-symbols:folder-eye-outline-sharp",
     },
     {
       value: "write",
-      label: "读写",
+      label: "修改",
       color: "green",
       icon: "material-symbols:edit-square-outline-rounded",
     },

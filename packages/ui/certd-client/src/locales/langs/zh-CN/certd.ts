@@ -225,6 +225,7 @@ export default {
     myProjectManager: "我的项目",
     myProjectDetail: "项目详情",
     projectJoin: "加入项目",
+    currentProject: "当前项目",
   },
   certificateRepo: {
     title: "证书仓库",
@@ -832,8 +833,8 @@ export default {
     projectDetailDescription: "管理项目成员",
     projectPermission: "权限",
     permission: {
-      read: "读取",
-      write: "写入",
+      read: "查看",
+      write: "修改",
       admin: "管理员",
     },
     projectMemberStatus: "成员状态",

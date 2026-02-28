@@ -1,6 +1,6 @@
 <template>
-  <div v-if="open" class="admin-mode-intro" :style="fixed ? 'position: fixed;' : 'position: absolute;'">
-    <div class="mask" @click="close()">
+  <div v-if="open" class="admin-mode-intro" :style="fixed ? 'position: fixed;' : 'position: absolute;'" @click="close()">
+    <div class="mask">
       <div class="intro-content">
         <h2 class="intro-title text-xl font-bold">{{ title || "管理模式介绍" }}</h2>
         <div class="mt-8 image-block">
