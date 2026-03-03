@@ -69,10 +69,8 @@ export abstract class BaseController {
     if (!projectIdStr){
       projectIdStr = this.ctx.request.query["projectId"] as string;
     }
-    if (!projectIdStr){
-      return null
-    }
     if (!projectIdStr) {
+      //这里必须抛异常，否则可能会有权限问题
       throw new Error("projectId 不能为空")
     }
     const userId = this.getUserId()

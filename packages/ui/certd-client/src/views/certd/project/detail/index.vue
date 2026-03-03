@@ -97,6 +97,10 @@ const handleBatchDelete = () => {
 
 // 页面打开后获取列表数据
 onMounted(async () => {
+  if (!projectId) {
+    message.error("您还未选择项目");
+    return;
+  }
   await loadProjectDetail();
   crudExpose.doRefresh();
 });

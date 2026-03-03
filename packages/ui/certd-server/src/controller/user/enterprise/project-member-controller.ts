@@ -64,10 +64,13 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
       userId: this.getUserId(),
       projectId: projectId,
     });
-    return super.update({
+    const res = await this.service.update({
       id: bean.id,
       permission: bean.permission,
+      status: bean.status,
     });
+
+    return this.ok(res);
   }
 
   @Post("/info", { summary: Constants.per.authOnly })

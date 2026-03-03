@@ -10,7 +10,9 @@ import { usePermissionStore } from "/@/plugin/permission/store.permission";
 import util from "/@/plugin/permission/util.permission";
 import { useUserStore } from "/@/store/user";
 import { useProjectStore } from "../store/project";
-export const PROJECT_JOIN_PATH = "/certd/project/join";
+export const PROJECT_PATH_PREFIX = "/certd/project";
+export const SYS_PATH_PREFIX = "/sys";
+
 function buildAccessedMenus(menus: any) {
   if (menus == null) {
     return;
@@ -131,10 +133,10 @@ function setupAccessGuard(router: Router) {
       if (projectStore.isEnterprise) {
         //加载我的项目
         await projectStore.init();
-        if (!projectStore.currentProject && to.path !== PROJECT_JOIN_PATH) {
+        if (!projectStore.currentProject && !to.path.startsWith(PROJECT_PATH_PREFIX) && !to.path.startsWith(SYS_PATH_PREFIX)) {
           //没有项目
           return {
-            path: PROJECT_JOIN_PATH,
+            path: `${PROJECT_PATH_PREFIX}/join`,
             replace: true,
           };
         }

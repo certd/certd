@@ -6,8 +6,10 @@
           <fs-dict-radio v-model:value="formState.public.adminMode" :disabled="!settingsStore.isPlus" :dict="adminModeDict" />
           <vip-button class="ml-5" mode="button"></vip-button>
         </div>
-        <div class="helper">建议在开始使用时选择合适的模式，之后就不要随意切换了。</div>
-        <div><a @click="adminModeIntroOpen = true"> 管理模式介绍</a></div>
+        <div class="helper">SaaS模式：每个用户管理自己的流水线和授权资源，独立使用。</div>
+        <div class="helper">企业模式：通过项目合作管理流水线证书和授权资源，所有用户视为企业内部员工。</div>
+        <div class="helper text-red-500">建议在开始使用时固定一个合适的模式，之后就不要随意切换了。</div>
+        <div><a @click="adminModeIntroOpen = true"> 更多管理模式介绍</a></div>
       </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">

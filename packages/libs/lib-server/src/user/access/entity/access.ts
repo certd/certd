@@ -24,6 +24,9 @@ export class AccessEntity {
   @Column({ name: 'project_id', comment: '项目id' })
   projectId: number;
 
+  @Column({ comment: '权限等级', length: 100 })
+  level: string; // user common system
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

@@ -854,5 +854,6 @@ export default {
     leaveFailed: "退出项目失败，请稍后重试",
     applyJoinConfirm: "确认加入项目？",
     leaveConfirm: "确认退出项目？",
+    viewDetail: "查看详情",
   },
 };

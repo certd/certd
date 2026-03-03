@@ -108,7 +108,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           search: {
             show: true,
           },
-          form: {},
+          form: {
+            rules: [{ required: true, message: "请选择用户" }],
+          },
           editForm: {
             show: false,
           },
@@ -131,6 +133,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             show: true,
+            rules: [{ required: true, message: "请选择权限" }],
           },
           column: {
             width: 200,
@@ -145,6 +148,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             show: true,
+            rules: [{ required: true, message: "请选择状态" }],
           },
           column: {
             width: 200,

@@ -5,6 +5,10 @@
         {{ t("certd.sysResources.projectJoin") }}
         <span v-if="projectStore.projects.length === 0" class="sub">{{ t("certd.project.noProjectJoined") }}</span>
       </div>
+
+      <div class="more">
+        <a-button v-if="userStore.isAdmin" @click="goProjectManager">{{ t("certd.project.projectManager") }}</a-button>
+      </div>
     </template>
     <div class="project-container">
       <h3 class="text-lg font-medium mb-4">{{ t("certd.project.projectList") }}</h3>
@@ -13,20 +17,20 @@
           <a-card :bordered="true" class="project-card">
             <div class="project-card-content">
               <div class="project-info">
-                <h3 class="text-md font-bold title">{{ project.name }}</h3>
-                <p class="text-gray-500 text-sm">{{ formatDate(project.createTime) }}</p>
+                <div class="text-md font-bold title">{{ project.name }}</div>
+                <div class="flex items-center justify-start">管理员： <fs-values-format :model-value="project.adminId" :dict="userDict" color="green"></fs-values-format></div>
+                <p class="text-gray-500 text-sm">创建时间：{{ formatDate(project.createTime) }}</p>
               </div>
-              <div class="flex-col items-center">
-                <div>管理员： <fs-values-format :model-value="project.adminId" :dict="userDict"></fs-values-format></div>
-                <div class="flex items-center mt-2">
-                  <div v-if="project.status">
-                    <fs-values-format :model-value="project.status" :dict="projectMemberStatusDict"></fs-values-format>
-                  </div>
-                  <div v-if="project.permission"><fs-values-format :model-value="project.permission" :dict="projectPermissionDict"></fs-values-format></div>
-                </div>
+              <div class="flex-col items-start">
+                <div v-if="project.status" class="mt-1 flex items-center justify-start">状态：<fs-values-format :model-value="project.status" :dict="projectMemberStatusDict"></fs-values-format></div>
+                <div v-if="project.permission" class="mt-1 flex items-center justify-start">权限：<fs-values-format :model-value="project.permission" :dict="projectPermissionDict"></fs-values-format></div>
               </div>
             </div>
             <template #actions>
+              <span v-if="project.status === 'approved'" class="flex-inline items-center text-blue-500" :title="t('certd.project.viewDetail')" @click="goProjectDetail(project.id)">
+                <fs-icon class="fs-18 mr-2" icon="mdi:eye-outline"></fs-icon>
+                {{ t("certd.project.viewDetail") }}
+              </span>
               <span v-if="!project.status || project.status === 'rejected'" class="flex-inline items-center text-blue-500" :title="t('certd.project.applyJoin')" @click="applyToJoin(project.id)">
                 <fs-icon class="fs-18 mr-2" icon="mdi:checkbox-marked-circle-outline"></fs-icon>
                 {{ t("certd.project.applyJoin") }}
@@ -51,6 +55,8 @@ import { request } from "/src/api/service";
 import { useProjectStore } from "/@/store/project";
 import dayjs from "dayjs";
 import { useDicts } from "../dicts";
+import { useRouter } from "vue-router";
+import { useUserStore } from "/@/store/user";
 
 defineOptions({
   name: "ProjectJoin",
@@ -62,6 +68,17 @@ const { projectMemberStatusDict, projectPermissionDict, userDict } = useDicts();
 const projects = ref<any[]>([]);
 
 const projectStore = useProjectStore();
+const userStore = useUserStore();
+function goProjectManager() {
+  // 假设这里调用跳转到项目管理页的API
+  router.push(`/sys/enterprise/project`);
+}
+
+const router = useRouter();
+function goProjectDetail(projectId: number) {
+  // 假设这里调用跳转到项目详情页的API
+  router.push(`/certd/project/detail?projectId=${projectId}`);
+}
 
 const getSystemProjects = async () => {
   try {
@@ -147,7 +164,6 @@ async function leaveProject(projectId: number) {
       .title {
         font-size: 16px;
         font-weight: bold;
-        margin-bottom: 8px;
       }
     }
   }

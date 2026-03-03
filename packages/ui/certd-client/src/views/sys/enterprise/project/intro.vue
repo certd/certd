@@ -5,8 +5,8 @@
         <h2 class="intro-title text-xl font-bold">{{ title || "管理模式介绍" }}</h2>
         <div class="mt-8 image-block">
           <div class="flex gap-8">
-            <div class="intro-desc flex-1">SaaS模式：每个用户管理自己的流水线和授权资源，独立使用。</div>
-            <div class="intro-desc flex-1">企业模式：企业内部员工使用，通过项目合作管理流水线证书和授权资源。</div>
+            <div class="intro-desc flex-1">SaaS模式：每个用户管理自己的流水线和授权资源，每个用户独立使用。</div>
+            <div class="intro-desc flex-1">企业模式：通过项目合作管理流水线证书和授权资源，所有用户视为企业内部员工。</div>
           </div>
           <div class="image-intro">
             <img :src="src" alt="" />

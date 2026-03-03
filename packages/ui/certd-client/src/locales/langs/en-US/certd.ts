@@ -838,6 +838,7 @@ export default {
     leaveFailed: "Leave project failed, please try again later",
     applyJoinConfirm: "Are you sure you want to apply to join this project?",
     leaveConfirm: "Are you sure you want to leave this project?",
+    viewDetail: "View Detail",
   },
   addonSelector: {
     select: "Select",

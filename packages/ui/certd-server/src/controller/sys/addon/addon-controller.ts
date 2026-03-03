@@ -12,6 +12,11 @@ export class SysAddonController extends AddonController {
     return this.service2;
   }
 
+  async getProjectUserId(permission:string){
+    return {
+      projectId:null,userId:0
+    }
+  }
   getUserId() {
     // checkComm();
     return 0;
