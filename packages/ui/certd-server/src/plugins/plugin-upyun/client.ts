@@ -71,11 +71,18 @@ export class UpyunClient {
         Cookie: req.cookie
       }
     });
+    let errorMessage = null;
     if (res.msg?.errors?.length > 0) {
-      throw new Error(JSON.stringify(res.msg));
+      errorMessage = JSON.stringify(res.msg);
     }
     if(res.data?.error_code){
-      throw new Error(res.data?.message);
+      errorMessage = res.data?.message;
+    }
+    if(errorMessage){
+      if (errorMessage.includes("domain has been bound to this certificate")) {
+        return res;
+      }
+      throw new Error(errorMessage);
     }
     return res;
   }
