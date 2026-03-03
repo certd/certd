@@ -79,12 +79,11 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     if (typeof this.domainName === 'string') {
       this.domainName = [this.domainName];
     }
-
-    const params:any = await this.buildParams();
     for (const domainName of this.domainName) {
       this.logger.info(`[${domainName}]开始部署`)
-      params.DomainName = domainName;
+      const params = await this.buildParams(domainName);
       await this.doRequest(client, params);
+      await this.ctx.utils.sleep(1000);
       this.logger.info(`[${domainName}]部署成功`)
     }
 
@@ -102,7 +101,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     return client;
   }
 
-  async buildParams() {
+  async buildParams(domainName: string) {
     const CertName = (this.certName ?? 'certd') + '-' + dayjs().format('YYYYMMDDHHmmss');
 
     let certId: any = this.cert
@@ -113,6 +112,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
         this.logger.info('上传证书:', CertName);
         const cert: any = this.cert;
         return {
+          DomainName: domainName,
           SSLProtocol: 'on',
           CertName: CertName,
           CertType: 'upload',
@@ -127,6 +127,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     }
     this.logger.info('使用已上传的证书:', certId);
     return {
+      DomainName: domainName,
       SSLProtocol: 'on',
       CertType: 'cas',
       CertName: CertName,
