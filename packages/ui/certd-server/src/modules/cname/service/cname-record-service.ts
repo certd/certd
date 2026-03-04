@@ -164,8 +164,8 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
   //   // 3.  检查原域名是否有cname记录
   // }
 
-  async getWithAccessByDomain(domain: string, userId: number) {
-    const record: CnameRecord = await this.getByDomain(domain, userId);
+  async getWithAccessByDomain(domain: string, userId: number,projectId?:number) {
+    const record: CnameRecord = await this.getByDomain(domain, userId,projectId);
     if (record.cnameProvider.id > 0) {
       //自定义cname服务
       record.cnameProvider.access = await this.accessService.getAccessById(record.cnameProvider.accessId, false);
@@ -179,17 +179,17 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
     return record;
   }
 
-  async getByDomain(domain: string, userId: number, createOnNotFound = true) {
+  async getByDomain(domain: string, userId: number,projectId?:number, createOnNotFound = true) {
     if (!domain) {
       throw new ValidateException("domain不能为空");
     }
     if (userId == null) {
       throw new ValidateException("userId不能为空");
     }
-    let record = await this.getRepository().findOne({ where: { domain, userId } });
+    let record = await this.getRepository().findOne({ where: { domain, userId,projectId } });
     if (record == null) {
       if (createOnNotFound) {
-        record = await this.add({ domain, userId });
+        record = await this.add({ domain, userId,projectId });
       } else {
         throw new ValidateException(`找不到${domain}的CNAME记录`);
       }
@@ -489,8 +489,8 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
     await this.getRepository().update(id, { status: "cname", mainDomain: "" });
   }
 
-  async doImport(req:{ userId: number; domainList: string; cnameProviderId: any }) {
-    const {userId,cnameProviderId,domainList} = req;
+  async doImport(req:{ userId: number; projectId: number; domainList: string; cnameProviderId: any }) {
+    const {userId,projectId,cnameProviderId,domainList} = req;
     const domains = domainList.split("\n").map(item => item.trim()).filter(item => item.length > 0);
     if (domains.length === 0) {
       throw new ValidateException("域名列表不能为空");
@@ -504,18 +504,19 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
       key: "user_"+userId,
       title: "导入CNAME记录",
       run: async (task) => {
-        await this._import({ userId, domains, cnameProviderId },task);
+        await this._import({ userId,projectId, domains, cnameProviderId },task);
       }
     }));
   }
 
-  async _import(req :{ userId: number; domains: string[]; cnameProviderId: any },task:BackTask) {
+  async _import(req :{ userId: number; projectId: number; domains: string[]; cnameProviderId: any },task:BackTask) {
     const userId = req.userId;
     for (const domain of req.domains) {
       const old = await this.getRepository().findOne({
         where: {
           userId: req.userId,
           domain,
+          projectId: req.projectId,
         },
       });
       if (old) {
@@ -526,6 +527,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
           await this.add({
             userId,
             domain: domain,
+            projectId: req.projectId,
             cnameProviderId: req.cnameProviderId,
           });
       }catch(e){

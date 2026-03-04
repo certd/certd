@@ -734,7 +734,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             }),
           },
           column: {
-            width: 100,
+            width: 140,
             sorter: true,
             align: "center",
           },
@@ -757,7 +757,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             helper: t("monitor.ipSyncModeHelper"),
           },
           column: {
-            width: 100,
+            width: 140,
             sorter: true,
             align: "center",
           },
@@ -779,7 +779,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             helper: t("monitor.ipIgnoreCoherenceHelper"),
           },
           column: {
-            width: 100,
+            width: 180,
             sorter: true,
             align: "center",
           },

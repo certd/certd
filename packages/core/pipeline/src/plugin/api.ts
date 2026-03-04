@@ -170,9 +170,7 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
     }
 
     if (this.ctx?.define?.onlyAdmin) {
-      if (!this.isAdmin()) {
-        throw new Error("只有管理员才能运行此任务");
-      }
+      this.checkAdmin();
     }
   }
 
@@ -282,6 +280,12 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
 
   isAdmin() {
     return this.ctx.user.role === "admin";
+  }
+
+  checkAdmin() {
+    if (!this.isAdmin()) {
+      throw new Error("只有“管理员”或“系统级项目”才有权限运行此插件任务");
+    }
   }
 
   getStepFromPipeline(stepId: string) {

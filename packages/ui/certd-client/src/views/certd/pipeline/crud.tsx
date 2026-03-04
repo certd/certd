@@ -16,12 +16,15 @@ import { useCertViewer } from "/@/views/certd/pipeline/use";
 import { useI18n } from "/src/locales";
 import { useDicts } from "../dicts";
 import { useProjectStore } from "/@/store/project";
+import { useCrudPermission } from "/@/plugin/permission";
 
-export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog, hasActionPermission } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog, permission } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
   const lastResRef = ref();
 
   const { t } = useI18n();
+
+  const { hasActionPermission } = useCrudPermission({ permission });
 
   const { openUploadCreateDialog } = useCertUpload();
 

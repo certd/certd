@@ -32,9 +32,7 @@ export class DeployToCertdPlugin extends AbstractTaskPlugin {
   cert!: CertInfo;
   async onInstance() { }
   async execute(): Promise<void> {
-    if (!this.isAdmin()) {
-      throw new Error('只有管理员才能运行此任务');
-    }
+    this.checkAdmin();
 
     //部署证书
     let crtPath = "ssl/cert.crt";

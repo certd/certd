@@ -104,7 +104,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             helper: t("certd.ent.isSystemHelper"),
           },
           column: {
-            width: 100,
+            width: 150,
           },
         },
         adminId: {

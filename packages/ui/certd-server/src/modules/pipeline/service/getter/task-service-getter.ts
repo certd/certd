@@ -59,7 +59,7 @@ export class TaskServiceGetter implements IServiceGetter{
 
   async getCnameProxyService(): Promise<CnameProxyService> {
     const cnameRecordService:CnameRecordService = await  this.appCtx.getAsync("cnameRecordService")
-    return new CnameProxyService(this.userId, cnameRecordService.getWithAccessByDomain.bind(cnameRecordService));
+    return new CnameProxyService(this.userId, this.projectId, cnameRecordService.getWithAccessByDomain.bind(cnameRecordService));
   }
 
   async getNotificationService(): Promise<NotificationGetter> {
