@@ -90,35 +90,21 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         },
-        disabled: {
-          title: t("certd.disabled"),
+        isSystem: {
+          title: t("certd.ent.isSystem"),
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: t("certd.enabled"), value: false, color: "success" },
-              { label: t("certd.disabledLabel"), value: true, color: "error" },
+              { label: t("common.yes"), value: true, color: "success" },
+              { label: t("common.no"), value: false, color: "error" },
             ],
           }),
           form: {
-            value: false,
+            value: true,
+            helper: t("certd.ent.isSystemHelper"),
           },
           column: {
             width: 100,
-            component: {
-              title: t("certd.clickToToggle"),
-              on: {
-                async click({ value, row }) {
-                  Modal.confirm({
-                    title: t("certd.prompt"),
-                    content: t("certd.confirmToggleStatus", { action: !value ? t("certd.disable") : t("certd.enable") }),
-                    onOk: async () => {
-                      await api.SetDisabled(row.id, !value);
-                      await crudExpose.doRefresh();
-                    },
-                  });
-                },
-              },
-            },
           },
         },
         adminId: {

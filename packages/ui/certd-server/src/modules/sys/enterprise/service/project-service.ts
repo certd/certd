@@ -11,9 +11,12 @@ const projectCache = new LRUCache<string, any>({
   ttl: 1000 * 60 * 10,
 });
 
+const ENTERPRISE_USER_ID = -1 //企业模式下 企业userId 固定为-1
+
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class ProjectService extends BaseService<ProjectEntity> {
+ 
   @InjectEntityModel(ProjectEntity)
   repository: Repository<ProjectEntity>;
 
@@ -36,7 +39,7 @@ export class ProjectService extends BaseService<ProjectEntity> {
     const exist = await this.repository.findOne({
       where: {
         name,
-        userId: 0,
+        userId: ENTERPRISE_USER_ID,
       },
     });
     if (exist) {
@@ -57,7 +60,7 @@ export class ProjectService extends BaseService<ProjectEntity> {
   async setDisabled(id: number, disabled: boolean) {
     await this.repository.update({
       id,
-      userId: 0,
+      userId: ENTERPRISE_USER_ID,
     }, {
       disabled,
     });
@@ -69,7 +72,7 @@ export class ProjectService extends BaseService<ProjectEntity> {
     const projectIds = memberList.map(item => item.projectId);
     const projectList = await this.repository.createQueryBuilder('project')
       .where(' project.disabled = false')
-      .where(' project.userId = :userId', { userId: 0 })
+      .where(' project.userId = :userId', { userId: ENTERPRISE_USER_ID })
       .where(' project.id IN (:...projectIds) or project.adminId = :userId', { projectIds, userId })
       .getMany();
 
@@ -93,7 +96,7 @@ export class ProjectService extends BaseService<ProjectEntity> {
     let projectList: any = await this.find({
       where: {
         disabled: false,
-        userId: 0,
+        userId: ENTERPRISE_USER_ID,
       },
     })
     const projectMemberItemList: ProjectMemberItem[] = projectList
@@ -267,6 +270,11 @@ export class ProjectService extends BaseService<ProjectEntity> {
       status: status,
       permission,
     })
+  }
+
+   async isAdmin(projectId: number): Promise<boolean> {
+    const project = await this.info(projectId);
+    return project?.isSystem ?? false;
   }
 
 }

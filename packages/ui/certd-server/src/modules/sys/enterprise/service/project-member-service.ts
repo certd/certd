@@ -23,7 +23,7 @@ export class ProjectMemberService extends BaseService<ProjectMemberEntity> {
     if (!projectId) {
       throw new Error('项目ID不能为空');
     }
-    if (!userId) {
+    if (!userId || userId <= 0) {
       throw new Error('用户ID不能为空');
     }
     const exist = await this.repository.findOne({

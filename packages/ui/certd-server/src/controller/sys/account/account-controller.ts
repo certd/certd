@@ -21,12 +21,18 @@ export class BasicController extends BaseController {
   @Post('/preBindUser', { summary: 'sys:settings:edit' })
   public async preBindUser(@Body(ALL) body: PreBindUserReq) {
     // 设置缓存内容
+    if (body.userId == null || body.userId <= 0) {
+      throw new Error("用户ID不能为空");
+    }
     await this.plusService.userPreBind(body.userId);
     return this.ok({});
   }
 
   @Post('/bindUser', { summary: 'sys:settings:edit' })
   public async bindUser(@Body(ALL) body: BindUserReq) {
+    if (body.userId == null || body.userId <= 0) {
+      throw new Error("用户ID不能为空");
+    }
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     installInfo.bindUserId = body.userId;
     await this.sysSettingsService.saveSetting(installInfo);

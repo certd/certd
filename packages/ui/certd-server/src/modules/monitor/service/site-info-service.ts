@@ -358,7 +358,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   async checkList(sites: SiteInfoEntity[],isCommon: boolean) {
     const cache = {}
     const getFromCache = async (userId: number,projectId?: number) =>{
-      const key = `${userId}-${projectId??""}`
+      const key = `${userId}_${projectId??""}`
       if (cache[key]) {
         return cache[key];
       }
@@ -424,7 +424,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     if (!req.text) {
       throw new Error("text is required");
     }
-    if (!req.userId) {
+    if (req.userId == null) {
       throw new Error("userId is required");
     }
 
@@ -479,7 +479,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   clearSiteMonitorJob(userId: number,projectId?: number) {
-    this.cron.remove(`siteMonitor-${userId}-${projectId||""}`);
+    this.cron.remove(`siteMonitor_${userId}_${projectId||""}`);
   }
 
   async registerSiteMonitorJob(userId?: number,projectId?: number) {
@@ -502,7 +502,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       }
       //注册个人的 或项目的
       this.cron.register({
-        name: `siteMonitor-${userId}-${projectId||""}`,
+        name: `siteMonitor_${userId}_${projectId||""}`,
         cron: setting.cron,
         job: () => this.triggerJobOnce(userId,projectId),
       });
@@ -511,9 +511,9 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   async triggerJobOnce(userId?:number,projectId?:number) {
-    logger.info(`站点证书检查开始执行[${userId??'所有用户'}-${projectId??'所有项目'}]`);
+    logger.info(`站点证书检查开始执行[${userId??'所有用户'}_${projectId??'所有项目'}]`);
     const query:any = { disabled: false };
-    if(userId){
+    if(userId!=null){
       query.userId = userId;
       if(projectId){
         query.projectId = projectId;
@@ -541,7 +541,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       await this.checkList(records,isCommon);
     }
 
-    logger.info(`站点证书检查完成[${userId??'所有用户'}-${projectId??'所有项目'}]`);
+    logger.info(`站点证书检查完成[${userId??'所有用户'}_${projectId??'所有项目'}]`);
   }
 
   async batchDelete(ids: number[], userId: number,projectId?:number): Promise<void> {

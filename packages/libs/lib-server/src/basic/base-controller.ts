@@ -83,7 +83,7 @@ export abstract class BaseController {
     let userId = this.getUserId()
     const projectId = await this.getProjectId(permission)
     if(projectId){
-      userId = 0
+      userId = -1 // 企业管理模式下，用户id固定-1
     }
     return {
       projectId,userId

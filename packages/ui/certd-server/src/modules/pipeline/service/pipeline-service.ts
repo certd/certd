@@ -50,6 +50,7 @@ import { nanoid } from "nanoid";
 import { set } from "lodash-es";
 import { executorQueue } from "@certd/lib-server";
 import parser from "cron-parser";
+import { ProjectService } from "../../sys/enterprise/service/project-service.js";
 const runningTasks: Map<string | number, Executor> = new Map();
 
 
@@ -106,6 +107,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   @Inject()
   certInfoService: CertInfoService;
+
+  @Inject()
+  projectService: ProjectService;
 
   //@ts-ignore
   getRepository() {
@@ -252,6 +256,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       //修改
       old = await this.info(bean.id);
       bean.order = old.order;
+      bean.userId = old.userId;
+      bean.projectId = old.projectId;
     }
     if (!old || !old.webhookKey) {
       bean.webhookKey = await this.genWebhookKey();
@@ -262,6 +268,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
     const pipeline = JSON.parse(bean.content || "{}");
     RunnableCollection.initPipelineRunnableType(pipeline);
+    pipeline.userId = bean.userId;
+    pipeline.projectId = bean.projectId;
     let domains = [];
     if (pipeline.stages) {
       RunnableCollection.each(pipeline.stages, (runnable: any) => {
@@ -295,8 +303,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
     } else if (bean.type === "cert_auto") {
       fromType = "auto";
     }
-    const userId = pipeline.userId || bean.userId;
-    const projectId = pipeline.projectId ?? bean.projectId ??null;
+    const userId = bean.userId;
+    const projectId = bean.projectId ??null;
     await this.certInfoService.updateDomains(pipeline.id, userId, projectId ,  domains, fromType);
     return {
       ...bean,
@@ -672,9 +680,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
     };
 
     const userId = entity.userId;
-    const historyId = await this.historyService.start(entity, triggerType);
+    const projectId = entity.projectId;
     let userIsAdmin = false
-    if(userId){
+
+    if (projectId && projectId>0) {
+      userIsAdmin = await this.projectService.isAdmin(projectId);
+    }else if(userId>0){
       userIsAdmin = await this.userService.isAdmin(userId);
     }
     const user: UserInfo = {
@@ -682,7 +693,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       role: userIsAdmin ? "admin" : "user"
     };
 
-
+     const historyId = await this.historyService.start(entity, triggerType);
     const sysInfo: SysInfo = {};
     if (isComm()) {
       const siteInfo = await this.sysSettingsService.getSetting<SysSiteInfo>(SysSiteInfo);
@@ -690,7 +701,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
 
     const taskServiceGetter = this.taskServiceBuilder.create({
-      userId
+      userId,
+      projectId
     });
     const accessGetter = await taskServiceGetter.get<IAccessService>("accessService");
     const notificationGetter = await taskServiceGetter.get<INotificationService>("notificationService");
@@ -920,7 +932,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       throw new NeedVIPException("此功能需要升级专业版");
     }
     for (const id of ids) {
-      if (userId) {
+      if (userId && userId > 0) {
         await this.checkUserId(id, userId);
       }
       if(projectId){
@@ -1104,6 +1116,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
 
   private async checkUserStatus(userId: number) {
+    if(isEnterprise()){
+      //企业模式不检查用户状态，都允许运行流水线
+      return 
+    }
     const userEntity = await this.userService.info(userId);
     if (userEntity == null) {
       throw new Error("用户不存在");

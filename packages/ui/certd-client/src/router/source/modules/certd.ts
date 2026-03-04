@@ -30,21 +30,6 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.sysResources.currentProject",
-        name: "CurrentProject",
-        path: "/certd/project/detail",
-        component: "/certd/project/detail/index.vue",
-        meta: {
-          show: () => {
-            const projectStore = useProjectStore();
-            return projectStore.isEnterprise;
-          },
-          isMenu: true,
-          icon: "ion:apps",
-          auth: true,
-        },
-      },
-      {
         title: "certd.sysResources.projectJoin",
         name: "ProjectJoin",
         path: "/certd/project/join",
@@ -276,6 +261,21 @@ export const certdResources = [
               icon: "ion:person-outline",
               auth: true,
               isMenu: false,
+            },
+          },
+          {
+            title: "certd.sysResources.projectMemberManager",
+            name: "ProjectMemberManager",
+            path: "/certd/project/detail",
+            component: "/certd/project/detail/index.vue",
+            meta: {
+              show: () => {
+                const projectStore = useProjectStore();
+                return projectStore.isEnterprise;
+              },
+              isMenu: true,
+              icon: "ion:apps",
+              auth: true,
             },
           },
         ],

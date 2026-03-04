@@ -19,6 +19,10 @@ export class ProjectEntity {
   @Column({ name: 'disabled', comment: '禁用' })
   disabled: boolean;
 
+  @Column({ name: 'is_system', comment: '是否系统项目' })
+  isSystem: boolean; //系统项目内的流水线允许运行管理员级别的插件
+
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

@@ -220,6 +220,7 @@ export default {
     myProjectDetail: "Project Detail",
     projectJoin: "Join Project",
     currentProject: "Current Project",
+    projectMemberManager: "Project Member",
   },
   certificateRepo: {
     title: "Certificate Repository",
@@ -822,6 +823,9 @@ export default {
       admin: "Admin",
     },
     projectMemberStatus: "Member Status",
+
+    isSystem: "Is System Project",
+    isSystemHelper: "System-level projects allow running admin plugins",
   },
   project: {
     noProjectJoined: "You haven't joined any projects yet",

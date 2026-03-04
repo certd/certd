@@ -63,7 +63,7 @@ export class TwoFactorService {
   }
 
   async offAuthenticator(userId:number) {
-    if (!userId) {
+    if (!userId || userId <= 0) {
       throw new Error("userId is required");
     }
 

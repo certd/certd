@@ -43,7 +43,7 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
   }
 
   async add(data: SiteIpEntity) {
-    if (!data.userId) {
+    if (data.userId == null) {
       throw new Error("userId is required");
     }
     data.disabled = false;

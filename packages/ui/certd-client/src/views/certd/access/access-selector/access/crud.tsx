@@ -143,7 +143,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             order: 10,
           },
           valueBuilder: ({ row, key, value }) => {
-            row[key] = row.userId > 0 ? "user" : "sys";
+            row[key] = row.userId != 0 ? "user" : "sys";
           },
         },
         ...commonColumnsDefine,

@@ -188,11 +188,11 @@ export class HistoryService extends BaseService<HistoryEntity> {
     const where: any = {
       createTime: MoreThan(todayEnd.add(-param.days, 'day').toDate()),
     };
-    if (param.userId > 0) {
-      where.userId = param.userId;
-    }
+    
     if (param.projectId > 0) {
       where.projectId = param.projectId;
+    }else if (param.userId > 0) {
+      where.userId = param.userId;
     }
     const result = await this.getRepository()
       .createQueryBuilder('main')

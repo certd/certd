@@ -258,12 +258,12 @@ export abstract class BaseService<T> {
 
 export function checkUserProjectParam(userId: number, projectId: number) {
   if (projectId != null ){
-    if( userId !==0) {
+    if( userId !==-1) {
       throw new ValidateException('userId projectId 错误');
     }
     return true
   }else{
-    if( userId > 0) {
+    if( userId != null) {
       return true
     }
      throw new ValidateException('userId不能为空');

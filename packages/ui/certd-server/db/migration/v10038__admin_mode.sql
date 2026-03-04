@@ -6,6 +6,7 @@ CREATE TABLE "cd_project"
   "name"        varchar(512) NOT NULL,
   "admin_id"    integer      NOT NULL,
   "disabled"    boolean      NOT NULL DEFAULT (false),
+  "is_system"   boolean      NOT NULL DEFAULT (false),
   "create_time" datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "update_time" datetime     NOT NULL DEFAULT (CURRENT_TIMESTAMP)
 );
@@ -13,7 +14,7 @@ CREATE TABLE "cd_project"
 
 CREATE INDEX "index_project_user_id" ON "cd_project" ("user_id");
 CREATE INDEX "index_project_admin_id" ON "cd_project" ("admin_id");
-INSERT INTO cd_project (id, user_id, "admin_id", "name", "disabled") VALUES (1, 0, 1,'default', false);
+INSERT INTO cd_project (id, user_id, "admin_id", "name", "disabled") VALUES (1, -1, 1,'default', false,false);
 
 ALTER TABLE cd_cert_info ADD COLUMN  project_id integer;
 CREATE INDEX "index_cert_project_id" ON "cd_cert_info" ("project_id");

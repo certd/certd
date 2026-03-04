@@ -220,12 +220,12 @@ export default {
     netTest: "网络测试",
     enterpriseManager: "企业管理设置",
     projectManager: "项目管理",
-    projectDetail: "项目详情",
     enterpriseSetting: "企业设置",
     myProjectManager: "我的项目",
     myProjectDetail: "项目详情",
     projectJoin: "加入项目",
     currentProject: "当前项目",
+    projectMemberManager: "项目成员管理",
   },
   certificateRepo: {
     title: "证书仓库",
@@ -838,6 +838,9 @@ export default {
       admin: "管理员",
     },
     projectMemberStatus: "成员状态",
+
+    isSystem: "是否系统项目",
+    isSystemHelper: "系统级项目允许运行管理员插件",
   },
   project: {
     noProjectJoined: "您还没有加入任何项目",
