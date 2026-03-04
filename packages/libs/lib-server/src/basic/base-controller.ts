@@ -118,7 +118,7 @@ export abstract class BaseController {
       if(allowAdmin){
         await authService.checkUserIdButAllowAdmin(this.ctx, service, id);
       }else{
-        await authService.checkUserId(this.ctx, service, id);
+        await authService.checkUserId( service, id, userId);
       }
     }
     return {projectId,userId}

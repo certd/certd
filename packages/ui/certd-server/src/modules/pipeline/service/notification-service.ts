@@ -138,21 +138,21 @@ export class NotificationService extends BaseService<NotificationEntity> {
     if (userId==null) {
       throw new ValidateException('userId不能为空');
     }
+    const query:any = {
+       userId,
+    }
+    if (projectId){
+      query.projectId = projectId
+    }
     await this.repository.update(
-      {
-        userId,
-        projectId,
-      },
+      query,
       {
         isDefault: false,
       }
     );
+    query.id = id
     await this.repository.update(
-      {
-        id,
-        userId,
-        projectId,
-      },
+     query,
       {
         isDefault: true,
       }
