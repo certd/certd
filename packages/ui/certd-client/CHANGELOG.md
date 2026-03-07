@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.39.0](https://github.com/certd/certd/compare/v1.38.12...v1.39.0) (2026-03-07)
+
+### Bug Fixes
+
+* 修复发件邮箱无法输入的bug ([27b0348](https://github.com/certd/certd/commit/27b0348e1d3d752f418f851965d6afbc26c0160c))
+* 修复复制流水线保存后丢失分组和排序号的问题 ([bc32648](https://github.com/certd/certd/commit/bc326489abc1d50a0930b4f47aa2d62d3a486798))
+* 修复获取群辉deviceid报错的bug ([79be392](https://github.com/certd/certd/commit/79be392775a2c91848dd5a66a2618adc4e4b48f6))
+* 修复偶尔下载证书报未授权的错误 ([316537e](https://github.com/certd/certd/commit/316537eb4dcbe5ec57784e8bf95ee3cdfd21dce7))
+
+### Features
+
+* 支持企业级管理模式，项目管理，细分权限 ([3734083](https://github.com/certd/certd/commit/37340838b6a61a94b86bfa13cf5da88b26f1315a))
+
+### Performance Improvements
+
+* 当域名管理中没有域名时，创建流水线时不展开域名选择框 ([bb0afe1](https://github.com/certd/certd/commit/bb0afe1fa7b0fc52fde051d24fbe6be69d52f4cc))
+* 任务步骤页面增加串行执行提示说明 ([787f6ef](https://github.com/certd/certd/commit/787f6ef52893d8dc912ee2a7a5b8ce2b73c108c9))
+
 ## [1.38.12](https://github.com/certd/certd/compare/v1.38.11...v1.38.12) (2026-02-18)
 
 ### Bug Fixes
