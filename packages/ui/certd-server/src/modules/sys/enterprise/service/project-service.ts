@@ -69,7 +69,10 @@ export class ProjectService extends BaseService<ProjectEntity> {
   async getUserProjects(userId: number) {
 
     const memberList = await this.projectMemberService.getByUserId(userId, 'approved');
-    const projectIds = memberList.map(item => item.projectId);
+    let projectIds = memberList.map(item => item.projectId); 
+    if (!projectIds || projectIds.length === 0) {
+      projectIds = [0]
+    }
     const projectList = await this.repository.createQueryBuilder('project')
       .where(' project.disabled = false')
       .where(' project.userId = :userId', { userId: ENTERPRISE_USER_ID })

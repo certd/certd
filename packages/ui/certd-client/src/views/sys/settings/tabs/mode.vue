@@ -9,6 +9,7 @@
         <div class="helper">SaaS模式：每个用户管理自己的流水线和授权资源，独立使用。</div>
         <div class="helper">企业模式：通过项目合作管理流水线证书和授权资源，所有用户视为企业内部员工。</div>
         <div class="helper text-red-500">建议在开始使用时固定一个合适的模式，之后就不要随意切换了。</div>
+        <div v-if="settingsStore.isComm" class="helper text-red-500">商业版不建议设置为企业模式，除非你确定要转成企业内部使用</div>
         <div><a @click="adminModeIntroOpen = true"> 更多管理模式介绍</a></div>
       </a-form-item>
 

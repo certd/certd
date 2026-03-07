@@ -14,7 +14,7 @@ CREATE TABLE "cd_project"
 
 CREATE INDEX "index_project_user_id" ON "cd_project" ("user_id");
 CREATE INDEX "index_project_admin_id" ON "cd_project" ("admin_id");
-INSERT INTO cd_project (id, user_id, "admin_id", "name", "disabled") VALUES (1, -1, 1,'default', false,false);
+INSERT INTO cd_project (id, user_id, "admin_id", "name", "disabled", "is_system") VALUES (1, -1, 1,'default', false,false);
 
 ALTER TABLE cd_cert_info ADD COLUMN  project_id integer;
 CREATE INDEX "index_cert_project_id" ON "cd_cert_info" ("project_id");

@@ -858,5 +858,6 @@ export default {
     applyJoinConfirm: "确认加入项目？",
     leaveConfirm: "确认退出项目？",
     viewDetail: "查看详情",
+    projectManage: "项目管理",
   },
 };

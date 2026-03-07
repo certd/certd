@@ -843,6 +843,7 @@ export default {
     applyJoinConfirm: "Are you sure you want to apply to join this project?",
     leaveConfirm: "Are you sure you want to leave this project?",
     viewDetail: "View Detail",
+    projectManage: "Project Manage",
   },
   addonSelector: {
     select: "Select",

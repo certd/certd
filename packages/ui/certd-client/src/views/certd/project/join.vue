@@ -7,7 +7,7 @@
       </div>
 
       <div class="more">
-        <a-button v-if="userStore.isAdmin" @click="goProjectManager">{{ t("certd.project.projectManager") }}</a-button>
+        <a-button v-if="userStore.isAdmin" type="primary" @click="goProjectManager">{{ t("certd.project.projectManage") }}</a-button>
       </div>
     </template>
     <div class="project-container">
