@@ -15,11 +15,18 @@ export type ProjectItem = {
 export const useProjectStore = defineStore("app.project", () => {
   const myProjects = ref([]);
   const inited = ref(false);
+  const currentProjectId = ref(); // 直接调用
+
+  function $reset() {
+    myProjects.value = [];
+    currentProjectId.value = "";
+    inited.value = false;
+  }
   const userStore = useUserStore();
   const userId = userStore.getUserInfo?.id;
   const lastProjectIdCacheKey = "currentProjectId:" + userId;
   const lastProjectId = LocalStorage.get(lastProjectIdCacheKey);
-  const currentProjectId = ref(lastProjectId); // 直接调用
+  currentProjectId.value = lastProjectId;
 
   const projects = computed(() => {
     return myProjects.value;
@@ -116,11 +123,6 @@ export const useProjectStore = defineStore("app.project", () => {
       return isAdmin.value;
     }
     return false;
-  }
-
-  function $reset() {
-    myProjects.value = [];
-    currentProjectId.value = "";
   }
 
   return {
