@@ -30,7 +30,9 @@
 点击确定，等待启动完成
 ![](./images/2.png)
 
-> certd默认使用sqlite数据库，另外支持`mysql`和`postgresql`数据库，[点我了解如何切换其他数据库](../database)
+::: tip
+默认安装使用SQLite数据库，如果需要使用MySQL、PostgreSQL数据库，请参考[多数据库支持](./install/database.md)
+:::
 
 
 ## 二、访问应用

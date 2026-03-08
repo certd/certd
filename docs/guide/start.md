@@ -28,6 +28,11 @@ https://certd.handsfree.work/
 2. [Docker方式部署](./install/docker/)
 3. [源码方式部署](./install/source/)
 
+::: tip
+默认安装使用SQLite数据库，如果需要使用MySQL、PostgreSQL数据库，请参考[多数据库支持](./install/database.md)
+:::
+
+
 
 ### 2. 访问测试
 
