@@ -26,6 +26,9 @@ export class TransferService {
       "openKey",
       "siteIp",
       "access",
+      "history",
+      "historyLog",
+      "storage",
     ]
 
     const services: any = {}
