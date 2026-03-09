@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.1](https://github.com/certd/certd/compare/v1.39.0...v1.39.1) (2026-03-09)
+
+### Performance Improvements
+
+* 支持迁移个人数据到企业项目中 ([c6ca832](https://github.com/certd/certd/commit/c6ca83273779ed84de1b23b5e477063af043d015))
+
 # [1.39.0](https://github.com/certd/certd/compare/v1.38.12...v1.39.0) (2026-03-07)
 
 ### Bug Fixes
