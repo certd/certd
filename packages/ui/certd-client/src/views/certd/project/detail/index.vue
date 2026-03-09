@@ -9,8 +9,12 @@
           <fs-values-format :model-value="project.permission" :dict="projectPermissionDict"></fs-values-format>
           <a-divider type="vertical"></a-divider>
           <fs-values-format :model-value="project.status" :dict="projectMemberStatusDict"></fs-values-format> -->
+          <a-divider type="vertical"></a-divider>
+          <a-button class="mr-5" type="primary" @click="openTransferDialog">个人数据迁移</a-button>
+          <a-button v-if="userStore.isAdmin" type="primary" @click="goProjectManager">{{ t("certd.project.projectManage") }}</a-button>
         </span>
       </div>
+      <div class="more"></div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #pagination-left>
@@ -29,11 +33,13 @@ import createCrudOptions from "./crud";
 import { message, Modal } from "ant-design-vue";
 import { DeleteBatch } from "./api";
 import { useI18n } from "/src/locales";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useProjectStore } from "/@/store/project";
 import { request } from "/@/api/service";
 import { useDicts } from "../../dicts";
 import { useCrudPermission } from "/@/plugin/permission";
+import { useUserStore } from "/@/store/user";
+import { useTransfer } from "./use";
 
 const { t } = useI18n();
 
@@ -48,6 +54,14 @@ const projectStore = useProjectStore();
 if (!projectId) {
   projectId = projectStore.currentProject?.id;
 }
+
+const router = useRouter();
+const userStore = useUserStore();
+function goProjectManager() {
+  router.push(`/sys/enterprise/project`);
+}
+
+const { openTransferDialog } = useTransfer();
 
 const { projectPermissionDict, projectMemberStatusDict, userDict } = useDicts();
 

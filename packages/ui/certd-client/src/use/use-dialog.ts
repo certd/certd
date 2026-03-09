@@ -1,4 +1,5 @@
 import { useFormWrapper } from "@fast-crud/fast-crud";
+import { merge } from "lodash-es";
 
 export type FormOptionReq = {
   title: string;
@@ -7,6 +8,7 @@ export type FormOptionReq = {
   body?: any;
   initialForm?: any;
   zIndex?: number;
+  wrapper?: any;
 };
 
 export function useFormDialog() {
@@ -14,19 +16,23 @@ export function useFormDialog() {
 
   async function openFormDialog(req: FormOptionReq) {
     function createCrudOptions() {
+      const warpper = merge(
+        {
+          zIndex: req.zIndex,
+          title: req.title,
+          saveRemind: false,
+          slots: {
+            "form-body-top": req.body,
+          },
+        },
+        req.wrapper
+      );
       return {
         crudOptions: {
           columns: req.columns,
           form: {
             initialForm: req.initialForm,
-            wrapper: {
-              zIndex: req.zIndex,
-              title: req.title,
-              saveRemind: false,
-              slots: {
-                "form-body-top": req.body,
-              },
-            },
+            wrapper: warpper,
             async afterSubmit() {},
             async doSubmit({ form }: any) {
               if (req.onSubmit) {
