@@ -34,7 +34,12 @@ const { t } = useI18n();
 defineOptions({
   name: "SiteCertMonitor",
 });
-const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions });
+const context: any = {
+  permission: {
+    isProjectPermission: true,
+  },
+};
+const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
 const handleBatchDelete = context.handleBatchDelete;
 

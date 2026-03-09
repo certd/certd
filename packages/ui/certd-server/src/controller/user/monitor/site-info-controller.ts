@@ -26,7 +26,9 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body: any) {
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    body.query.projectId = projectId
+    body.query.userId = userId;
     const certDomains = body.query.certDomains;
     const domain = body.query.domain;
     const name = body.query.name;
@@ -55,13 +57,17 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body: any) {
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    const { projectId, userId } = await this.getProjectUserIdRead()
+    body.query.projectId = projectId
+    body.query.userId = userId;
     return await super.list(body);
   }
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean: any) {
-    bean.userId = this.getUserId();
+    const { projectId, userId } = await this.getProjectUserIdWrite()
+    bean.projectId = projectId
+    bean.userId = userId;
     const res = await this.service.add(bean);
     const entity = await this.service.info(res.id);
     if (entity.disabled) {
@@ -72,8 +78,9 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.service.checkUserId(bean.id, this.getUserId());
+    await this.checkOwner(this.service,bean.id,"write");
     delete bean.userId;
+    delete bean.projectId;
     await this.service.update(bean);
     const entity = await this.service.info(bean.id);
     if (entity.disabled) {
@@ -83,27 +90,27 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   }
   @Post('/info', { summary: Constants.per.authOnly })
   async info(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.service,id,"read");
     return await super.info(id);
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.service,id,"write");
     return await super.delete(id);
   }
 
 
   @Post('/batchDelete', { summary: Constants.per.authOnly })
   async batchDelete(@Body(ALL) body: any) {
-    const userId = this.getUserId();
-    await this.service.batchDelete(body.ids,userId);
+    const { projectId, userId } = await this.getProjectUserIdWrite()
+    await this.service.batchDelete(body.ids,userId,projectId);
     return this.ok();
   }
 
   @Post('/check', { summary: Constants.per.authOnly })
   async check(@Body('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.service,id,"read");
     await this.service.check(id, true, 0);
     await utils.sleep(1000);
     return this.ok();
@@ -111,26 +118,27 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
 
   @Post('/checkAll', { summary: Constants.per.authOnly })
   async checkAll() {
-    const userId = this.getUserId();
-    await this.service.checkAllByUsers(userId);
+    const { projectId, userId } = await this.getProjectUserIdWrite()
+    await this.service.checkAllByUsers(userId,projectId);
     return this.ok();
   }
 
   @Post('/import', { summary: Constants.per.authOnly })
   async doImport(@Body(ALL) body: any) {
-    const userId = this.getUserId();
+    const { projectId, userId } = await this.getProjectUserIdWrite()
     await this.service.doImport({
       text:body.text,
       groupId:body.groupId,
-      userId
+      userId,
+      projectId
     })
     return this.ok();
   }
 
+
   @Post('/ipCheckChange', { summary: Constants.per.authOnly })
   async ipCheckChange(@Body(ALL) bean: any) {
-    const userId = this.getUserId();
-    await this.service.checkUserId(bean.id, userId)
+    await this.checkOwner(this.service,bean.id,"read");
     await this.service.ipCheckChange({
       id: bean.id,
       ipCheck: bean.ipCheck
@@ -140,8 +148,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
 
   @Post('/disabledChange', { summary: Constants.per.authOnly })
   async disabledChange(@Body(ALL) bean: any) {
-    const userId = this.getUserId();
-    await this.service.checkUserId(bean.id, userId)
+    await this.checkOwner(this.service,bean.id,"write");
     await this.service.disabledChange({
       id: bean.id,
       disabled: bean.disabled
@@ -151,18 +158,18 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
 
   @Post("/setting/get", { summary: Constants.per.authOnly })
   async get() {
-    const userId = this.getUserId();
-    const setting = await this.service.getSetting(userId)
+    const { userId, projectId } = await this.getProjectUserIdRead()
+    const setting = await this.service.getSetting(userId, projectId)
     return this.ok(setting);
   }
 
   @Post("/setting/save", { summary: Constants.per.authOnly })
   async save(@Body(ALL) bean: any) {
-    const userId = this.getUserId();
+    const { userId, projectId} = await this.getProjectUserIdWrite()
     const setting = new UserSiteMonitorSetting();
     merge(setting, bean);
 
-    await this.service.saveSetting(userId, setting);
+    await this.service.saveSetting(userId, projectId,setting);
     return this.ok({});
   }
 

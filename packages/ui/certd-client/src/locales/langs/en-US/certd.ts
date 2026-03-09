@@ -1,4 +1,4 @@
-//注意： @符号是保留字符，需要用{'@'}替换
+//注意： @符号是保留字符，需要用{'@'}替换， AI请务必提醒我修改
 export default {
   app: {
     crud: {
@@ -162,6 +162,8 @@ export default {
     triggerType: "Trigger Type",
     pipelineId: "Pipeline Id",
     nextRunTime: "Next Run Time",
+    projectName: "Project",
+    adminId: "Admin",
   },
 
   pi: {
@@ -210,6 +212,15 @@ export default {
     orderManager: "Order Management",
     userSuites: "User Suites",
     netTest: "Network Test",
+
+    enterpriseSetting: "Enterprise Settings",
+    projectManager: "Project Management",
+    projectUserManager: "Project User Management",
+    myProjectManager: "My Projects",
+    myProjectDetail: "Project Detail",
+    projectJoin: "Join Project",
+    currentProject: "Current Project",
+    projectMemberManager: "Project Member",
   },
   certificateRepo: {
     title: "Certificate Repository",
@@ -718,6 +729,10 @@ export default {
       pipelineSetting: "Pipeline Settings",
       oauthSetting: "OAuth2 Settings",
       networkSetting: "Network Settings",
+      adminModeSetting: "Admin Mode Settings",
+      adminModeHelper: "enterprise mode : allow to create and manage pipelines, roles, users, etc.\n saas mode : only allow to create and manage pipelines",
+      enterpriseMode: "Enterprise Mode",
+      saasMode: "SaaS Mode",
 
       showRunStrategy: "Show RunStrategy",
       showRunStrategyHelper: "Allow modify the run strategy of the task",
@@ -795,6 +810,40 @@ export default {
     gotoCnameTip: "Please go to CNAME Record Page",
     fromType: "From Type",
     expirationDate: "Expiration Date",
+  },
+  ent: {
+    projectName: "Project Name",
+    projectDescription: "Project Description",
+    projectDetailManager: "Project Detail",
+    projectDetailDescription: "Manage Project Members",
+    projectPermission: "Permission",
+    permission: {
+      read: "Read",
+      write: "Write",
+      admin: "Admin",
+    },
+    projectMemberStatus: "Member Status",
+
+    isSystem: "Is System Project",
+    isSystemHelper: "System-level projects allow running admin plugins",
+  },
+  project: {
+    noProjectJoined: "You haven't joined any projects yet",
+    applyToJoin: "Please apply to join a project to start using",
+    systemProjects: "System Project List",
+    createdAt: "Created At",
+    applyJoin: "Apply to Join",
+    noSystemProjects: "No system projects available",
+    fetchFailed: "Failed to fetch project list",
+    applySuccess: "Application successful, waiting for admin approval",
+    applyFailed: "Application failed, please try again later",
+    leave: "Leave Project",
+    leaveSuccess: "Leave project successful",
+    leaveFailed: "Leave project failed, please try again later",
+    applyJoinConfirm: "Are you sure you want to apply to join this project?",
+    leaveConfirm: "Are you sure you want to leave this project?",
+    viewDetail: "View Detail",
+    projectManage: "Project Manage",
   },
   addonSelector: {
     select: "Select",

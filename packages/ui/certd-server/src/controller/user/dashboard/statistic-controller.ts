@@ -46,14 +46,15 @@ export class StatisticController extends BaseController {
 
   @Post('/count', { summary: Constants.per.authOnly })
   public async count() {
-    const pipelineCount = await this.pipelineService.count({ userId: this.getUserId() });
-    const pipelineStatusCount = await this.pipelineService.statusCount({ userId: this.getUserId() });
-    const pipelineEnableCount = await this.pipelineService.enableCount({ userId: this.getUserId() });
+    const {userId,projectId} = await this.getProjectUserIdRead();
+    const pipelineCount = await this.pipelineService.count({ userId,projectId });
+    const pipelineStatusCount = await this.pipelineService.statusCount({ userId,projectId });
+    const pipelineEnableCount = await this.pipelineService.enableCount({ userId,projectId });
 
-    const historyCount = await this.historyService.countPerDay({ userId: this.getUserId(), days: 7 });
-    const expiringList = await this.pipelineService.latestExpiringList({ userId: this.getUserId(), count: 5 });
+    const historyCount = await this.historyService.countPerDay({ userId,projectId, days: 7 });
+    const expiringList = await this.pipelineService.latestExpiringList({ userId,projectId, count: 5 });
 
-    const certCount = await this.certInfoService.count({ userId: this.getUserId() });
+    const certCount = await this.certInfoService.count({ userId,projectId });
 
     const count: UserStatisticCount = {
       pipelineCount,

@@ -71,6 +71,12 @@ export class SiteInfoEntity {
   @Column({ name: 'group_id', comment: '分组id' })
   groupId: number;
 
+  @Column({ name: 'ip_address', comment: 'IP地址', length: 128 })
+  ipAddress: string;
+
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
+
   @Column({ name: 'create_time', comment: '创建时间', default: () => 'CURRENT_TIMESTAMP' })
   createTime: Date;
   @Column({ name: 'update_time', comment: '修改时间', default: () => 'CURRENT_TIMESTAMP' })

@@ -138,23 +138,23 @@ export class EmailService implements IEmailService {
   }
 
   async list(userId: any) {
-    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, UserEmailSetting)
+    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId,null, UserEmailSetting)
     return userEmailSetting.list;
   }
 
   async delete(userId: any, email: string) {
-    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, UserEmailSetting)
+    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, null, UserEmailSetting)
     userEmailSetting.list = userEmailSetting.list.filter(item => item !== email);
-    await this.settingsService.saveSetting(userId, userEmailSetting)
+    await this.settingsService.saveSetting(userId, null, userEmailSetting)
   }
   async add(userId: any, email: string) {
-    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, UserEmailSetting)
+    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, null, UserEmailSetting)
     //如果已存在
     if (userEmailSetting.list.includes(email)) {
       return
     }
     userEmailSetting.list.unshift(email)
-    await this.settingsService.saveSetting(userId, userEmailSetting)
+    await this.settingsService.saveSetting(userId, null, userEmailSetting)
   }
 
 
@@ -163,7 +163,7 @@ export class EmailService implements IEmailService {
     const emailConf = await this.sysSettingsService.getSetting<SysEmailConf>(SysEmailConf);
     const template = emailConf?.templates?.[req.type]
     if (isPlus() && template &&  template.addonId) {
-      const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(template.addonId, true, 0)
+      const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(template.addonId, true, 0,null)
       if (addon) {
         content = await addon.buildContent({ data: req.data })
       }
@@ -171,7 +171,7 @@ export class EmailService implements IEmailService {
     if (isPlus() && !content ) {
       //看看有没有通用模版
       if (emailConf?.templates?.common && emailConf?.templates?.common.addonId) {
-        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(emailConf.templates.common.addonId, true, 0)
+        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(emailConf.templates.common.addonId, true, 0,null)
         if (addon) {
           content = await addon.buildContent({ data: req.data })
         }

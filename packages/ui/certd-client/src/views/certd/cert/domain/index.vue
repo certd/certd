@@ -10,7 +10,7 @@
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #pagination-left>
-        <a-tooltip :title="t('certd.batch_delete')">
+        <a-tooltip v-if="hasActionPermission('write')" :title="t('certd.batch_delete')">
           <fs-button icon="DeleteOutlined" @click="handleBatchDelete"></fs-button>
         </a-tooltip>
       </template>
@@ -25,13 +25,22 @@ import createCrudOptions from "./crud";
 import { message, Modal } from "ant-design-vue";
 import { DeleteBatch } from "./api";
 import { useI18n } from "/src/locales";
+import { useCrudPermission } from "/@/plugin/permission";
 
 const { t } = useI18n();
 
 defineOptions({
   name: "DomainManager",
 });
-const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions });
+const context: any = {
+  permission: {
+    isProjectPermission: true,
+  },
+};
+
+const { hasActionPermission } = useCrudPermission({ permission: context.permission });
+context.hasActionPermission = hasActionPermission;
+const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
 const selectedRowKeys = context.selectedRowKeys;
 const handleBatchDelete = () => {

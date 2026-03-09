@@ -1,7 +1,7 @@
 <template>
   <fs-page v-if="pipeline" class="page-pipeline-edit">
     <template #header>
-      <div class="title flex-1">
+      <div class="title flex-0">
         <fs-button class="back" icon="ion:chevron-back-outline" @click="goBack"></fs-button>
         <text-editable v-model="pipeline.title" :hover-show="false" :disabled="!editMode"></text-editable>
       </div>
@@ -46,7 +46,7 @@
             </span>
           </a-tag>
         </div>
-        <div class="basis-40 flex justify-end mr-10">
+        <div v-if="hasActionPermission('write')" class="basis-40 flex justify-end mr-10">
           <template v-if="editMode">
             <fs-button type="primary" :loading="saveLoading" @click="save">保存</fs-button>
             <fs-button class="ml-5" @click="cancel">取消</fs-button>
@@ -333,6 +333,7 @@ import { getCronNextTimes } from "/@/components/cron-editor/utils";
 import { useCertViewer } from "/@/views/certd/pipeline/use";
 import { useI18n } from "/@/locales";
 import TriggerIcon from "./component/trigger-icon.vue";
+import { useCrudPermission } from "/@/plugin/permission";
 
 export default defineComponent({
   name: "PipelineEdit",
@@ -1002,12 +1003,15 @@ export default defineComponent({
     const hasWebhookTrigger = computed(() => {
       return currentPipeline.value?.triggers?.some((item: any) => item.type === "webhook");
     });
+
+    const { hasActionPermission } = useCrudPermission({ permission: { isProjectPermission: true } });
     return {
       isCert,
       pipeline,
       currentHistory,
       histories,
       goBack,
+      hasActionPermission,
       userStore,
       settingStore,
       ...useTaskRet,

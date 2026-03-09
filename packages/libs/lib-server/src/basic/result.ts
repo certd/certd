@@ -1,19 +1,19 @@
 export class Result<T> {
   code: number;
-  msg: string;
+  message: string;
   data: T;
 
-  constructor(code, msg, data?) {
+  constructor(code, message, data?) {
     this.code = code;
-    this.msg = msg;
+    this.message = message;
     this.data = data;
   }
 
-  static error(code = 1, msg, data?: any) {
-    return new Result(code, msg, data);
+  static error(code = 1, message, data?: any) {
+    return new Result(code, message, data);
   }
 
-  static success(msg, data?) {
-    return new Result(0, msg, data);
+  static success(message, data?) {
+    return new Result(0, message, data);
   }
 }

@@ -1,5 +1,5 @@
+import { AccessService } from "@certd/lib-server";
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
-import { AccessService, Constants } from "@certd/lib-server";
 import { AccessController } from "../../user/pipeline/access-controller.js";
 
 /**
@@ -13,6 +13,12 @@ export class SysAccessController extends AccessController {
 
   getService(): AccessService {
     return this.service2;
+  }
+
+  async getProjectUserId(permission:string){
+    return {
+      projectId:null,userId:0
+    }
   }
 
   getUserId() {
@@ -54,7 +60,7 @@ export class SysAccessController extends AccessController {
     return await super.define(type);
   }
 
-  @Post('/getSecretPlain', { summary: Constants.per.authOnly })
+  @Post('/getSecretPlain', { summary: 'sys:settings:view' })
   async getSecretPlain(@Body(ALL) body: { id: number; key: string }) {
     const value = await this.service.getById(body.id, 0);
     return this.ok(value[body.key]);
@@ -69,4 +75,9 @@ export class SysAccessController extends AccessController {
   async simpleInfo(@Query('id') id: number) {
     return await super.simpleInfo(id);
   }
+
+    @Post('/getDictByIds', { summary: 'sys:settings:view' })
+    async getDictByIds(@Body('ids') ids: number[]) {
+      return await super.getDictByIds(ids);
+    }
 }

@@ -1,7 +1,4 @@
-import LayoutPass from "/@/layout/layout-pass.vue";
 import { useSettingStore } from "/@/store/settings";
-import aboutResource from "/@/router/source/modules/about";
-import i18n from "/@/locales/i18n";
 
 export const sysResources = [
   {
@@ -13,6 +10,7 @@ export const sysResources = [
       icon: "ion:settings-outline",
       permission: "sys:settings:view",
       order: 10,
+      auth: true,
     },
     children: [
       {
@@ -27,6 +25,7 @@ export const sysResources = [
           },
           icon: "ion:speedometer-outline",
           permission: "sys:auth:user:view",
+          auth: true,
         },
       },
 
@@ -38,6 +37,33 @@ export const sysResources = [
         meta: {
           icon: "ion:settings-outline",
           permission: "sys:settings:view",
+          auth: true,
+        },
+      },
+      {
+        title: "certd.sysResources.projectManager",
+        name: "ProjectManager",
+        path: "/sys/enterprise/project",
+        component: "/sys/enterprise/project/index.vue",
+        meta: {
+          show: true,
+          auth: true,
+          icon: "ion:apps",
+          permission: "sys:settings:edit",
+          keepAlive: true,
+        },
+      },
+      {
+        title: "certd.sysResources.projectDetail",
+        name: "ProjectDetail",
+        path: "/sys/enterprise/project/detail",
+        component: "/sys/enterprise/project/detail/index.vue",
+        meta: {
+          isMenu: false,
+          show: true,
+          auth: true,
+          icon: "ion:apps",
+          permission: "sys:settings:edit",
         },
       },
       {
@@ -49,6 +75,7 @@ export const sysResources = [
           icon: "ion:earth-outline",
           permission: "sys:settings:view",
           keepAlive: true,
+          auth: true,
         },
       },
       {
@@ -72,6 +99,7 @@ export const sysResources = [
             const settingStore = useSettingStore();
             return settingStore.isComm;
           },
+          auth: true,
           icon: "ion:document-text-outline",
           permission: "sys:settings:view",
         },
@@ -86,6 +114,7 @@ export const sysResources = [
             const settingStore = useSettingStore();
             return settingStore.isComm;
           },
+          auth: true,
           icon: "ion:menu",
           permission: "sys:settings:view",
           keepAlive: true,
@@ -101,6 +130,7 @@ export const sysResources = [
             const settingStore = useSettingStore();
             return settingStore.isComm;
           },
+          auth: true,
           icon: "ion:disc-outline",
           permission: "sys:settings:view",
           keepAlive: true,
@@ -115,6 +145,7 @@ export const sysResources = [
           icon: "ion:extension-puzzle-outline",
           permission: "sys:settings:view",
           keepAlive: true,
+          auth: true,
         },
       },
       {
@@ -127,6 +158,7 @@ export const sysResources = [
           icon: "ion:extension-puzzle",
           permission: "sys:settings:view",
           keepAlive: true,
+          auth: true,
         },
       },
       {
@@ -141,6 +173,7 @@ export const sysResources = [
           },
           icon: "ion:extension-puzzle",
           permission: "sys:settings:view",
+          auth: true,
         },
       },
       {
@@ -152,6 +185,7 @@ export const sysResources = [
           icon: "ion:golf-outline",
           permission: "sys:settings:view",
           keepAlive: true,
+          auth: true,
         },
       },
       {
@@ -163,6 +197,7 @@ export const sysResources = [
           icon: "ion:list-outline",
           permission: "sys:auth:per:view",
           keepAlive: true,
+          auth: true,
         },
       },
       {
@@ -174,6 +209,7 @@ export const sysResources = [
           icon: "ion:people-outline",
           permission: "sys:auth:role:view",
           keepAlive: true,
+          auth: true,
         },
       },
       {
@@ -185,9 +221,9 @@ export const sysResources = [
           icon: "ion:person-outline",
           permission: "sys:auth:user:view",
           keepAlive: true,
+          auth: true,
         },
       },
-
       {
         title: "certd.sysResources.suiteManager",
         name: "SuiteManager",
@@ -201,6 +237,7 @@ export const sysResources = [
             return settingStore.isComm;
           },
           keepAlive: true,
+          auth: true,
         },
         children: [
           {
@@ -215,6 +252,7 @@ export const sysResources = [
               },
               icon: "ion:cart",
               permission: "sys:settings:edit",
+              auth: true,
             },
           },
           {
@@ -230,6 +268,7 @@ export const sysResources = [
               icon: "ion:bag-check",
               permission: "sys:settings:edit",
               keepAlive: true,
+              auth: true,
             },
           },
           {

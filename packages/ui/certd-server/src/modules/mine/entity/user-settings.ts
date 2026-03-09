@@ -15,6 +15,9 @@ export class UserSettingsEntity {
   @Column({ name: 'setting', comment: '设置', length: 1024, nullable: true })
   setting: string;
 
+  @Column({ name: 'project_id', comment: '项目Id' })
+  projectId: number;
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

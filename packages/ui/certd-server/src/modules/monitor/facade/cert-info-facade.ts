@@ -27,10 +27,10 @@ export class CertInfoFacade  {
   @Inject()
   userSettingsService : UserSettingsService
 
-  async getCertInfo(req: { domains?: string; certId?: number; userId: number,autoApply?:boolean,format?:string }) {
-    const { domains, certId, userId } = req;
+  async getCertInfo(req: { domains?: string; certId?: number; userId: number, projectId:number, autoApply?:boolean,format?:string }) {
+    const { domains, certId, userId,projectId } = req;
     if (certId) {
-      return await this.certInfoService.getCertInfoById({ id: certId, userId });
+      return await this.certInfoService.getCertInfoById({ id: certId, userId, projectId });
     }
     if (!domains) {
       throw new CodeException({
@@ -40,12 +40,12 @@ export class CertInfoFacade  {
     }
     const domainArr = domains.split(',');
 
-    const matchedList = await this.certInfoService.getMatchCertList({domains:domainArr,userId})
+    const matchedList = await this.certInfoService.getMatchCertList({domains:domainArr,userId,projectId})
 
     if (matchedList.length === 0 ) {
       if(req.autoApply === true){
         //自动申请，先创建自动申请流水线
-        const pipeline:PipelineEntity = await this.createAutoPipeline({domains:domainArr,userId})
+        const pipeline:PipelineEntity = await this.createAutoPipeline({domains:domainArr,userId,projectId})
         await this.triggerApplyPipeline({pipelineId:pipeline.id})
       }else{
         throw new CodeException({
@@ -69,7 +69,7 @@ export class CertInfoFacade  {
       }
     }
 
-    return await this.certInfoService.getCertInfoById({ id: matched.id, userId: userId,format:req.format });
+    return await this.certInfoService.getCertInfoById({ id: matched.id, userId: userId,projectId,format:req.format });
 
 
 
@@ -103,9 +103,9 @@ export class CertInfoFacade  {
     return matched;
   }
 
-  async createAutoPipeline(req:{domains:string[],userId:number}){
+  async createAutoPipeline(req:{domains:string[],userId:number,projectId:number}){
 
-    const verifierGetter = new DomainVerifierGetter(req.userId, this.domainService)
+    const verifierGetter = new DomainVerifierGetter(req.userId, req.projectId, this.domainService)
 
     const allDomains = []
     for (const item of req.domains) {
@@ -124,7 +124,7 @@ export class CertInfoFacade  {
       }
     }
 
-    const userEmailSetting = await this.userSettingsService.getSetting<UserEmailSetting>(req.userId,UserEmailSetting)
+    const userEmailSetting = await this.userSettingsService.getSetting<UserEmailSetting>(req.userId,null, UserEmailSetting)
     if(!userEmailSetting.list){
       throw new CodeException(Constants.res.openEmailNotFound)
     }
@@ -133,8 +133,9 @@ export class CertInfoFacade  {
     return await this.pipelineService.createAutoPipeline({
       domains: req.domains,
       email,
+      projectId: req.projectId,
       userId: req.userId,
-      from:"OpenAPI"
+      from: "OpenAPI"
     })
 
   }

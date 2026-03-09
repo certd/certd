@@ -34,12 +34,15 @@ export class HandleController extends BaseController {
 
   @Post('/access', { summary: Constants.per.authOnly })
   async accessRequest(@Body(ALL) body: AccessRequestHandleReq) {
-    const userId = this.getUserId();
+    const {projectId,userId} = await this.getProjectUserIdRead()
     let inputAccess = body.input;
     if (body.record.id > 0) {
       const oldEntity = await this.accessService.info(body.record.id);
       if (oldEntity) {
         if (oldEntity.userId !== this.getUserId()) {
+          throw new Error('access not found');
+        }
+        if (oldEntity.projectId && oldEntity.projectId !== projectId) {
           throw new Error('access not found');
         }
         const param: any = {
@@ -50,7 +53,7 @@ export class HandleController extends BaseController {
         inputAccess = this.accessService.decryptAccessEntity(param);
       }
     }
-    const accessGetter = new AccessGetter(userId, this.accessService.getById.bind(this.accessService));
+    const accessGetter = new AccessGetter(userId,projectId, this.accessService.getById.bind(this.accessService));
     const access = await newAccess(body.typeName, inputAccess,accessGetter);
 
     // mergeUtils.merge(access, body.input);
@@ -77,7 +80,7 @@ export class HandleController extends BaseController {
 
   @Post('/plugin', { summary: Constants.per.authOnly })
   async pluginRequest(@Body(ALL) body: PluginRequestHandleReq) {
-    const userId = this.getUserId();
+    const {projectId,userId} = await this.getProjectUserIdRead()
     const pluginDefine = pluginRegistry.get(body.typeName);
     const pluginCls = await pluginDefine.target();
     if (pluginCls == null) {
@@ -98,7 +101,7 @@ export class HandleController extends BaseController {
       });
     };
 
-    const taskServiceGetter = this.taskServiceBuilder.create({userId})
+    const taskServiceGetter = this.taskServiceBuilder.create({userId,projectId})
 
     const accessGetter = await taskServiceGetter.get<IAccessService>("accessService")
     //@ts-ignore
@@ -118,6 +121,7 @@ export class HandleController extends BaseController {
       fileStore: undefined,
       signal: undefined,
       user: {id:userId,role:"user"},
+      projectId,
       // pipelineContext: this.pipelineContext,
       // userContext: this.contextFactory.getContext('user', this.options.userId),
       // fileStore: new FileStore({

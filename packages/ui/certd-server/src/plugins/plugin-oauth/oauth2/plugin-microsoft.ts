@@ -13,7 +13,7 @@ export class MicrosoftOauthProvider extends BaseAddon implements IOauthProvider 
 
   @AddonInput({
     title: "ClientId",
-    helper: "[Azure Portal](https://portal.azure.com/)创建应用后获取",
+    helper: "[Microsoft Entra ID](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps)创建应用后获取",
     required: true,
   })
   clientId = "";
@@ -23,16 +23,17 @@ export class MicrosoftOauthProvider extends BaseAddon implements IOauthProvider 
     component: {
       placeholder: "ClientSecretKey / appSecretKey",
     },
+    helper:"客户端凭据->证书与机密->客户端密码->新客户端密码",
     required: true,
   })
   clientSecretKey = "";
 
   @AddonInput({
     title: "TenantId",
-    helper: "租户ID，留空使用/common端点（需要应用配置为多租户）",
     component: {
       placeholder: "common 或 租户ID",
     },
+    helper:"根据受支持的账户类型填写 common 或 租户ID，默认为common(Microsoft个人账户)。 \n租户ID获取: 概述 -> 目录(租户) ID ",
     value: "common",
     required: false,
   })

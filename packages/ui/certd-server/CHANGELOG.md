@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.39.0](https://github.com/certd/certd/compare/v1.38.12...v1.39.0) (2026-03-07)
+
+### Bug Fixes
+
+* 修复部署到openwrt错误的bug ([2e3d0cc](https://github.com/certd/certd/commit/2e3d0cc57c16c48ad435bc8fde729bacaedde9f5))
+* 修复复制流水线保存后丢失分组和排序号的问题 ([bc32648](https://github.com/certd/certd/commit/bc326489abc1d50a0930b4f47aa2d62d3a486798))
+* 修复京东云域名申请证书报错的bug ([d9c0130](https://github.com/certd/certd/commit/d9c0130b59997144a3c274d456635b800135e43f))
+* 修复偶尔下载证书报未授权的错误 ([316537e](https://github.com/certd/certd/commit/316537eb4dcbe5ec57784e8bf95ee3cdfd21dce7))
+* 修复dcdn多个域名同时部署时 可能会出现证书名称重复的bug ([78c2ced](https://github.com/certd/certd/commit/78c2ced43b1a73d142b0ed783b162b97f545ab06))
+* 优化dcdn部署上传多次证书 偶尔报 The CertName already exists的问题 ([72f850f](https://github.com/certd/certd/commit/72f850f675b500d12ebff2338d1b99d6fab476e1))
+* **cert-plugin:** 优化又拍云客户端错误处理逻辑，当域名已绑定证书时不再抛出异常。 ([92c9ac3](https://github.com/certd/certd/commit/92c9ac382692e6c84140ff787759ab6d39ccbe96))
+* esxi部署失败的bug ([1e44115](https://github.com/certd/certd/commit/1e441154617e6516a9a3610412bf597128c62696))
+
+### Features
+
+* 支持企业级管理模式，项目管理，细分权限 ([3734083](https://github.com/certd/certd/commit/37340838b6a61a94b86bfa13cf5da88b26f1315a))
+
+### Performance Improvements
+
+* 站点监控支持指定ip地址检查 ([83d81b6](https://github.com/certd/certd/commit/83d81b64b3adb375366039e07c87d1ad79121c13))
+
 ## [1.38.12](https://github.com/certd/certd/compare/v1.38.11...v1.38.12) (2026-02-18)
 
 **Note:** Version bump only for package @certd/ui-server

@@ -75,8 +75,24 @@ function transformMysql() {
     pgSql = pgSql.replaceAll(/text/g, 'longtext');
     //双引号 替换成反引号
     pgSql = pgSql.replaceAll(/"/g, '`');
-    //create table if not exists
-    pgSql = pgSql.replaceAll(/CREATE TABLE ([ ]+)`/g, 'CREATE TABLE IF NOT EXISTS `');
+
+    
+    //提取所有的 create table 的表格name
+    const tableNames = pgSql.match(/CREATE TABLE `([^`]*)`/g);
+    if (tableNames && tableNames.length > 0) {
+      for (const item of tableNames) {
+        /**
+         * CREATE TABLE `cd_project`
+CREATE TABLE `cd_project_member`
+CREATE TABLE `cd_audit_log`
+         */
+        //提取表名
+        const tableName = item.match(/`([^`]*)`/)[1];
+        pgSql += `\nALTER TABLE \`${tableName}\` ENGINE = InnoDB;`
+      }
+    }
+   
+
 
     fs.writeFileSync(`./migration-mysql/${notFile}`, pgSql);
   }

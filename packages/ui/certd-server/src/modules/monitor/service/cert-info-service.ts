@@ -11,6 +11,7 @@ export type UploadCertReq = {
   certReader: CertReader;
   fromType?: string;
   userId?: number;
+  projectId?: number;
   file?:any
 };
 
@@ -31,7 +32,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   }
 
   async getUserDomainCount(userId: number) {
-    if (!userId) {
+    if (userId==null) {
       throw new Error('userId is required');
     }
     return await this.repository.sum('domainCount', {
@@ -39,11 +40,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async updateDomains(pipelineId: number, userId: number, domains: string[],fromType?:string) {
+  async updateDomains(pipelineId: number, userId: number, projectId: number, domains: string[],fromType?:string) {
     const found = await this.repository.findOne({
       where: {
         pipelineId,
         userId,
+        projectId,
       },
     });
     const bean = new CertInfoEntity();
@@ -54,6 +56,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       //create
       bean.pipelineId = pipelineId;
       bean.userId = userId;
+      bean.projectId = projectId;
       bean.fromType = fromType
       if (!domains || domains.length === 0) {
         return;
@@ -83,8 +86,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async getMatchCertList(params: { domains: string[]; userId: number }) {
-    const { domains, userId } = params;
+  async getMatchCertList(params: { domains: string[]; userId: number,projectId?:number }) {
+    const { domains, userId,projectId } = params;
     if (!domains) {
       throw new CodeException({
         ...Constants.res.openCertNotFound,
@@ -101,6 +104,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       },
       where: {
         userId,
+        projectId,
       },
       order: {
         id: 'DESC',
@@ -113,9 +117,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async getCertInfoById(req: { id: number; userId: number,format?:string }) {
+  async getCertInfoById(req: { id: number; userId: number,projectId:number,format?:string }) {
     const entity = await this.info(req.id);
-    if (!entity || entity.userId !== req.userId) {
+    if (!entity || entity.userId !== req.userId ) {
+      throw new CodeException(Constants.res.openCertNotFound);
+    }
+    if (req.projectId && entity.projectId !== req.projectId) {
       throw new CodeException(Constants.res.openCertNotFound);
     }
 
@@ -167,7 +174,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     bean.effectiveTime = certReader.effective;
     bean.expiresTime = certReader.expires;
     bean.certProvider = certReader.detail.issuer.commonName;
-    bean.userId = userId
+    bean.userId = userId;
+    bean.projectId = req.projectId;
     if(req.file){
       bean.certFile = req.file
     }
@@ -183,11 +191,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async count({ userId }: { userId: number }) {
+  async count({ userId,projectId }: { userId: number,projectId?:number }) {
     const total = await this.repository.count({
       where: {
         userId,
         expiresTime: Not(IsNull()),
+        projectId,
       },
     });
 
@@ -195,6 +204,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       where: {
         userId,
         expiresTime: LessThan(new Date().getTime()),
+        projectId,
       },
     });
 
@@ -202,6 +212,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       where: {
         userId,
         expiresTime: Between(new Date().getTime(), new Date().getTime() + 15 * 24 * 60 * 60 * 1000),
+        projectId,
       },
     });
 

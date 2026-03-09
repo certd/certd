@@ -46,7 +46,7 @@ export class ConnectController extends BaseController {
       throw new Error(`未配置该OAuth类型:${type}`);
     }
 
-    const addon = await this.addonGetterService.getAddonById(setting.addonId, true, 0);
+    const addon = await this.addonGetterService.getAddonById(setting.addonId, true, 0,null);
     if (!addon) {
       throw new Error("初始化OAuth插件失败");
     }
@@ -70,6 +70,8 @@ export class ConnectController extends BaseController {
     })
     return this.ok({ loginUrl, ticket });
   }
+
+
   @Get('/callback/:type', { summary: Constants.per.guest })
   public async callback(@Param('type') type: string, @Query() query: Record<string, string>) {
 
@@ -154,8 +156,13 @@ export class ConnectController extends BaseController {
       });
     }
 
+    this.writeTokenCookie(loginRes);
     //返回登录成功token
     return this.ok(loginRes);
+  }
+
+  private writeTokenCookie(token: { expire: any; token: any }) {
+    // this.loginService.writeTokenCookie(this.ctx,token);
   }
 
 
@@ -183,6 +190,7 @@ export class ConnectController extends BaseController {
     });
 
     const loginRes = await this.loginService.generateToken(newUser);
+    this.writeTokenCookie(loginRes);
     return this.ok(loginRes);
   }
 
@@ -251,7 +259,7 @@ export class ConnectController extends BaseController {
           provider.addonId = conf.addonId;
           provider.addonTitle = addonEntity.name;
 
-          const addon = await this.addonGetterService.getAddonById(conf.addonId,true,0);
+          const addon = await this.addonGetterService.getAddonById(conf.addonId,true,0,null);
           const {logoutUrl} = await addon.buildLogoutUrl();
           if (logoutUrl){
             provider.logoutUrl = logoutUrl;

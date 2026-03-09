@@ -66,7 +66,8 @@ export class HistoryService extends BaseService<HistoryEntity> {
       pipelineId: pipeline.id,
       title: pipeline.title,
       status: 'start',
-      triggerType
+      triggerType,
+      projectId: pipeline.projectId,
     };
     const { id } = await this.add(bean);
     //清除大于pipeline.keepHistoryCount的历史记录
@@ -182,12 +183,15 @@ export class HistoryService extends BaseService<HistoryEntity> {
     }
   }
 
-  async countPerDay(param: { days: number; userId?: any }) {
+  async countPerDay(param: { days: number; userId?: any,projectId?:number }) {
     const todayEnd = dayjs().endOf('day');
     const where: any = {
       createTime: MoreThan(todayEnd.add(-param.days, 'day').toDate()),
     };
-    if (param.userId > 0) {
+    
+    if (param.projectId > 0) {
+      where.projectId = param.projectId;
+    }else if (param.userId > 0) {
       where.userId = param.userId;
     }
     const result = await this.getRepository()

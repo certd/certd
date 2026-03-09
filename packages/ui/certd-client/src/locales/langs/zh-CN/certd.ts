@@ -1,4 +1,4 @@
-//注意： @符号是保留字符，需要用{'@'}替换
+//注意： @符号是保留字符，需要用{'@'}替换， AI请务必提醒我修改
 export default {
   app: {
     crud: {
@@ -169,6 +169,8 @@ export default {
     triggerType: "触发类型",
     pipelineId: "流水线Id",
     nextRunTime: "下次运行时间",
+    projectName: "项目",
+    adminId: "管理员",
   },
   pi: {
     validTime: "流水线有效期",
@@ -216,6 +218,14 @@ export default {
     orderManager: "订单管理",
     userSuites: "用户套餐",
     netTest: "网络测试",
+    enterpriseManager: "企业管理设置",
+    projectManager: "项目管理",
+    enterpriseSetting: "企业设置",
+    myProjectManager: "我的项目",
+    myProjectDetail: "项目详情",
+    projectJoin: "加入项目",
+    currentProject: "当前项目",
+    projectMemberManager: "项目成员管理",
   },
   certificateRepo: {
     title: "证书仓库",
@@ -720,6 +730,12 @@ export default {
       pipelineSetting: "流水线设置",
       oauthSetting: "第三方登录",
       networkSetting: "网络设置",
+      adminModeSetting: "管理模式",
+      adminModeHelper: "企业管理模式: 企业内部使用，通过项目来隔离权限，流水线、授权数据属于项目。\nsaas模式：供外部用户注册使用，各个用户之间数据隔离，流水线、授权数据属于用户。",
+
+      adminMode: "管理模式",
+      enterpriseMode: "企业模式",
+      saasMode: "SaaS模式",
 
       showRunStrategy: "显示运行策略选择",
       showRunStrategyHelper: "任务设置中是否允许选择运行策略",
@@ -809,5 +825,39 @@ export default {
   addonSelector: {
     select: "选择",
     placeholder: "请选择",
+  },
+  ent: {
+    projectName: "项目名称",
+    projectDescription: "项目描述",
+    projectDetailManager: "项目详情",
+    projectDetailDescription: "管理项目成员",
+    projectPermission: "权限",
+    permission: {
+      read: "查看",
+      write: "修改",
+      admin: "管理员",
+    },
+    projectMemberStatus: "成员状态",
+
+    isSystem: "是否系统项目",
+    isSystemHelper: "系统级项目允许运行管理员插件",
+  },
+  project: {
+    noProjectJoined: "您还没有加入任何项目",
+    applyToJoin: "请申请加入项目以开始使用",
+    projectList: "项目列表",
+    createdAt: "创建时间",
+    applyJoin: "申请加入",
+    noProjects: "暂无项目",
+    fetchFailed: "获取项目列表失败",
+    applySuccess: "申请成功，等待管理员审核",
+    applyFailed: "申请失败，请稍后重试",
+    leave: "退出项目",
+    leaveSuccess: "退出项目成功",
+    leaveFailed: "退出项目失败，请稍后重试",
+    applyJoinConfirm: "确认加入项目？",
+    leaveConfirm: "确认退出项目？",
+    viewDetail: "查看详情",
+    projectManage: "项目管理",
   },
 };

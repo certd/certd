@@ -34,8 +34,14 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
     if (!domainRes.result?.dataList?.length) {
       throw new Error(`域名${domain}在此京东云账号中不存在`)
     }
+    const list = domainRes.result.dataList
 
-    const domainId = domainRes.result.dataList[0].id
+    const found =  list.find((item) => item.domainName === domain)
+    if (!found){
+      throw new Error(`域名${domain}在此京东云账号中不存在`)
+    }
+
+    const domainId = found.id
     this.logger.info("域名ID：", domainId)
     /**
      * hostRecord	String	True		主机记录
@@ -55,11 +61,12 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
           hostRecord: hostRecord,
           hostValue: value,
           type: type,
-          ttl: 100,
+          ttl: 200,
+          viewValue:-1,
         }
       })
       return {
-        recordId: res.result.dataList[0].id,
+        recordId: res.result.dataList.id,
         domainId: domainId
       };
     }catch (e) {

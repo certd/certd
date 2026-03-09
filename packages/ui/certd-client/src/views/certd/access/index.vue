@@ -22,7 +22,7 @@ export default defineComponent({
   setup() {
     const { t } = useI18n();
     const api = createAccessApi("user");
-    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: { api } });
+    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: { api, permission: { isProjectPermission: true } } });
 
     // 页面打开后获取列表数据
     onMounted(() => {

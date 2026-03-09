@@ -4,6 +4,7 @@ import { In, MoreThan, Repository } from "typeorm";
 import {
   AccessService,
   BaseService,
+  isEnterprise,
   NeedSuiteException,
   NeedVIPException,
   PageReq,
@@ -38,7 +39,7 @@ import { CnameRecordService } from "../../cname/service/cname-record-service.js"
 import { PluginConfigGetter } from "../../plugin/service/plugin-config-getter.js";
 import dayjs from "dayjs";
 import { DbAdapter } from "../../db/index.js";
-import { isComm, isPlus } from "@certd/plus-core";
+import { checkPlus, isComm, isPlus } from "@certd/plus-core";
 import { logger, utils } from "@certd/basic";
 import { UrlService } from "./url-service.js";
 import { NotificationService } from "./notification-service.js";
@@ -49,6 +50,7 @@ import { nanoid } from "nanoid";
 import { set } from "lodash-es";
 import { executorQueue } from "@certd/lib-server";
 import parser from "cron-parser";
+import { ProjectService } from "../../sys/enterprise/service/project-service.js";
 const runningTasks: Map<string | number, Executor> = new Map();
 
 
@@ -105,6 +107,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   @Inject()
   certInfoService: CertInfoService;
+
+  @Inject()
+  projectService: ProjectService;
 
   //@ts-ignore
   getRepository() {
@@ -250,6 +255,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (bean.id > 0) {
       //修改
       old = await this.info(bean.id);
+      bean.order = old.order;
+      bean.userId = old.userId;
+      bean.projectId = old.projectId;
     }
     if (!old || !old.webhookKey) {
       bean.webhookKey = await this.genWebhookKey();
@@ -260,6 +268,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
     const pipeline = JSON.parse(bean.content || "{}");
     RunnableCollection.initPipelineRunnableType(pipeline);
+    pipeline.userId = bean.userId;
+    pipeline.projectId = bean.projectId;
     let domains = [];
     if (pipeline.stages) {
       RunnableCollection.each(pipeline.stages, (runnable: any) => {
@@ -286,7 +296,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
 
     await this.doUpdatePipelineJson(bean, pipeline);
-
     //保存域名信息到certInfo表
     let fromType = "pipeline";
     if (bean.type === "cert_upload") {
@@ -294,7 +303,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
     } else if (bean.type === "cert_auto") {
       fromType = "auto";
     }
-    await this.certInfoService.updateDomains(pipeline.id, pipeline.userId || bean.userId, domains, fromType);
+    const userId = bean.userId;
+    const projectId = bean.projectId ??null;
+    await this.certInfoService.updateDomains(pipeline.id, userId, projectId ,  domains, fromType);
     return {
       ...bean,
       version: pipeline.version,
@@ -323,6 +334,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     bean.content = JSON.stringify(pipeline);
     await this.addOrUpdate(bean);
     await this.registerTrigger(bean);
+    return bean
   }
 
   private async checkMaxPipelineCount(bean: PipelineEntity, pipeline: Pipeline, domains: string[]) {
@@ -332,6 +344,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
     //     throw new NeedVIPException(`基础版最多只能创建${freeCount}条流水线`);
     //   }
     // }
+    if(isEnterprise()){
+      //企业模式不限制
+      checkPlus()
+      return;
+    }
+ 
     if (isComm()) {
       //校验pipelineCount
       const suiteSetting = await this.userSuiteService.getSuiteSetting();
@@ -359,6 +377,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         }
       }
     }
+    
   }
 
   async foreachPipeline(callback: (pipeline: PipelineEntity) => void) {
@@ -590,6 +609,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async beforeCheck(entity: PipelineEntity) {
+
+    if(isEnterprise()){
+      checkPlus()
+      return {}
+    }
+
     const validTimeEnabled = await this.isPipelineValidTimeEnabled(entity)
     if (!validTimeEnabled) {
       throw new Error(`流水线${entity.id}已过期，不予执行`);
@@ -613,7 +638,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       const res = await this.beforeCheck(entity);
       suite = res.suite
     } catch (e) {
-      logger.error(`流水线${entity.id}触发${triggerId}失败：${e.message}`);
+      logger.error(`流水线${entity.id}触发失败（${triggerId}）：${e.message}`);
     }
 
     const id = entity.id;
@@ -655,14 +680,20 @@ export class PipelineService extends BaseService<PipelineEntity> {
     };
 
     const userId = entity.userId;
-    const historyId = await this.historyService.start(entity, triggerType);
-    const userIsAdmin = await this.userService.isAdmin(userId);
+    const projectId = entity.projectId;
+    let userIsAdmin = false
+
+    if (projectId && projectId>0) {
+      userIsAdmin = await this.projectService.isAdmin(projectId);
+    }else if(userId>0){
+      userIsAdmin = await this.userService.isAdmin(userId);
+    }
     const user: UserInfo = {
       id: userId,
       role: userIsAdmin ? "admin" : "user"
     };
 
-
+     const historyId = await this.historyService.start(entity, triggerType);
     const sysInfo: SysInfo = {};
     if (isComm()) {
       const siteInfo = await this.sysSettingsService.getSetting<SysSiteInfo>(SysSiteInfo);
@@ -670,7 +701,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
 
     const taskServiceGetter = this.taskServiceBuilder.create({
-      userId
+      userId,
+      projectId
     });
     const accessGetter = await taskServiceGetter.get<IAccessService>("accessService");
     const notificationGetter = await taskServiceGetter.get<INotificationService>("notificationService");
@@ -761,13 +793,30 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return;
   }
 
+  async getProjectId(pipelineId: number) {
+    const pipelineEntity = await this.repository.findOne({
+      select: {
+        projectId: true,
+      },
+      where: {
+        id: pipelineId,
+      },
+    });
+    if(!pipelineEntity){
+      return null
+    }
+    return pipelineEntity.projectId;
+  }
   private async saveHistory(history: RunHistory) {
     //修改pipeline状态
-    const pipelineEntity = new PipelineEntity();
+    let pipelineEntity = new PipelineEntity();
     pipelineEntity.id = parseInt(history.pipeline.id);
     pipelineEntity.status = history.pipeline.status.result + "";
     pipelineEntity.lastHistoryTime = history.pipeline.status.startTime;
     await this.update(pipelineEntity);
+
+    const projectId = await this.getProjectId(pipelineEntity.id);
+    pipelineEntity.projectId = projectId;
 
     const entity: HistoryEntity = new HistoryEntity();
     entity.id = parseInt(history.id);
@@ -775,6 +824,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     entity.status = pipelineEntity.status;
     entity.pipeline = JSON.stringify(history.pipeline);
     entity.pipelineId = parseInt(history.pipeline.id);
+    entity.projectId = pipelineEntity.projectId;
     await this.historyService.save(entity);
 
     const logEntity: HistoryLogEntity = new HistoryLogEntity();
@@ -783,38 +833,45 @@ export class PipelineService extends BaseService<PipelineEntity> {
     logEntity.pipelineId = entity.pipelineId;
     logEntity.historyId = entity.id;
     logEntity.logs = JSON.stringify(history.logs);
+    logEntity.projectId = pipelineEntity.projectId;
     await this.historyLogService.addOrUpdate(logEntity);
   }
 
-  async count(param: { userId?: any }) {
+  async count(param: { userId?: any,projectId?:number }) {
     const count = await this.repository.count({
       where: {
-        userId: param.userId
+        userId: param.userId,
+        projectId: param.projectId,
+        isTemplate: false
       }
     });
     return count;
   }
 
-  async statusCount(param: { userId?: any } = {}) {
+  async statusCount(param: { userId?: any,projectId?:number } = {}) {
     const statusCount = await this.repository
       .createQueryBuilder()
       .select("status")
       .addSelect("count(1)", "count")
       .where({
-        userId: param.userId
+        userId: param.userId,
+        projectId: param.projectId,
+        isTemplate: false
       })
       .groupBy("status")
       .getRawMany();
     return statusCount;
   }
 
-  async enableCount(param: { userId?: any } = {}) {
+  async enableCount(param: { userId?: any,projectId?:number } = {}) {
     const statusCount = await this.repository
       .createQueryBuilder()
       .select("disabled")
       .addSelect("count(1)", "count")
       .where({
-        userId: param.userId
+        userId: param.userId,
+        projectId: param.projectId,
+        isTemplate: false
       })
       .groupBy("disabled")
       .getRawMany();
@@ -828,7 +885,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return result;
   }
 
-  async latestExpiringList({ userId }: any) {
+  async latestExpiringList({ userId,projectId }: any) {
     let list = await this.repository.find({
       select: {
         id: true,
@@ -837,7 +894,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
       },
       where: {
         userId,
-        disabled: false
+        disabled: false,
+        projectId,
+        isTemplate: false
       }
     });
     await this.fillLastVars(list);
@@ -859,7 +918,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       .addSelect("COUNT(1) AS count")
       .where({
         // 0点
-        createTime: MoreThan(todayEnd.add(-param.days, "day").toDate())
+        createTime: MoreThan(todayEnd.add(-param.days, "day").toDate()),
+        isTemplate: false
       })
       .groupBy("date")
       .getRawMany();
@@ -867,25 +927,31 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return result;
   }
 
-  async batchDelete(ids: number[], userId: number) {
+  async batchDelete(ids: number[], userId?: number,projectId?:number) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
     for (const id of ids) {
-      if (userId) {
+      if (userId && userId > 0) {
         await this.checkUserId(id, userId);
+      }
+      if(projectId){
+        await this.checkUserId(id,projectId,"projectId")
       }
       await this.delete(id);
     }
   }
 
-  async batchUpdateGroup(ids: number[], groupId: number, userId: any) {
+  async batchUpdateGroup(ids: number[], groupId: number, userId: any,projectId?:number) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
     const query: any = {}
     if (userId && userId > 0) {
       query.userId = userId;
+    }
+    if(projectId){
+      query.projectId = projectId;
     }
     await this.repository.update(
       {
@@ -897,13 +963,16 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
 
-  async batchUpdateTrigger(ids: number[], trigger: any, userId: any) {
+  async batchUpdateTrigger(ids: number[], trigger: any, userId: any,projectId?:number) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
     const query: any = {}
     if (userId && userId > 0) {
       query.userId = userId;
+    }
+    if(projectId){
+      query.projectId = projectId;
     }
     const list = await this.find({
       where: {
@@ -946,13 +1015,16 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   }
 
-  async batchUpdateNotifications(ids: number[], notification: Notification, userId: any) {
+  async batchUpdateNotifications(ids: number[], notification: Notification, userId: any,projectId?:number) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
     const query: any = {}
     if (userId && userId > 0) {
       query.userId = userId;
+    }
+    if(projectId){
+      query.projectId = projectId;
     }
     const list = await this.find({
       where: {
@@ -981,22 +1053,26 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async batchRerun(ids: number[], userId: any, force: boolean) {
+  async batchRerun(ids: number[], force: boolean,userId: any, projectId?:number) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
 
-    if (!userId || ids.length === 0) {
+    if (userId == null || ids.length === 0) {
       return;
+    }
+    const where:any = {
+        id: In(ids),
+        userId,
+    }
+    if(projectId){
+      where.projectId = projectId
     }
     const list = await this.repository.find({
       select: {
         id: true
       },
-      where: {
-        id: In(ids),
-        userId
-      }
+      where:where
     });
 
     ids = list.map(item => item.id);
@@ -1024,7 +1100,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return await this.repository.count({ where: { userId } });
   }
 
-  async getSimplePipelines(pipelineIds: number[], userId?: number) {
+  async getSimplePipelines(pipelineIds: number[], userId?: number,projectId?:number) {
     return await this.repository.find({
       select: {
         id: true,
@@ -1032,13 +1108,18 @@ export class PipelineService extends BaseService<PipelineEntity> {
       },
       where: {
         id: In(pipelineIds),
-        userId
+        userId,
+        projectId
       }
     });
   }
 
 
   private async checkUserStatus(userId: number) {
+    if(isEnterprise()){
+      //企业模式不检查用户状态，都允许运行流水线
+      return 
+    }
     const userEntity = await this.userService.info(userId);
     if (userEntity == null) {
       throw new Error("用户不存在");
@@ -1060,7 +1141,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async createAutoPipeline(req: { domains: string[]; email: string; userId: number, from: string }) {
+  async createAutoPipeline(req: { domains: string[]; email: string; userId: number,projectId?:number, from: string }) {
 
     const randomHour = Math.floor(Math.random() * 6);
     const randomMin = Math.floor(Math.random() * 60);
@@ -1140,6 +1221,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     bean.type = "cert_auto";
     bean.disabled = false
     bean.keepHistoryCount = 30
+    bean.projectId = req.projectId
     await this.save(bean)
 
 

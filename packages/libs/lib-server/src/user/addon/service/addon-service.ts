@@ -70,7 +70,8 @@ export class AddonService extends BaseService<AddonEntity> {
       name: entity.name,
       userId: entity.userId,
       addonType: entity.addonType,
-      type: entity.type
+      type: entity.type,
+      projectId: entity.projectId
     };
   }
 
@@ -84,17 +85,18 @@ export class AddonService extends BaseService<AddonEntity> {
   }
 
 
-  async getSimpleByIds(ids: number[], userId: any) {
+  async getSimpleByIds(ids: number[], userId: any,projectId?:number) {
     if (ids.length === 0) {
       return [];
     }
-    if (!userId) {
+    if (userId==null) {
       return [];
     }
     return await this.repository.find({
       where: {
         id: In(ids),
-        userId
+        userId,
+        projectId
       },
       select: {
         id: true,
@@ -109,11 +111,12 @@ export class AddonService extends BaseService<AddonEntity> {
   }
 
 
-  async getDefault(userId: number, addonType: string): Promise<any> {
+  async getDefault(userId: number, addonType: string,projectId?:number): Promise<any> {
     const res = await this.repository.findOne({
       where: {
         userId,
-        addonType
+        addonType,
+        projectId
       },
       order: {
         isDefault: "DESC"
@@ -133,21 +136,23 @@ export class AddonService extends BaseService<AddonEntity> {
       type: res.type,
       name: res.name,
       userId: res.userId,
-      setting
+      setting,
+      projectId: res.projectId
     };
   }
 
-  async setDefault(id: number, userId: number, addonType: string) {
+  async setDefault(id: number, userId: number, addonType: string,projectId?:number) {
     if (!id) {
       throw new ValidateException("id不能为空");
     }
-    if (!userId) {
+    if (userId==null) {
       throw new ValidateException("userId不能为空");
     }
     await this.repository.update(
       {
         userId,
-        addonType
+        addonType,
+        projectId
       },
       {
         isDefault: false
@@ -157,7 +162,8 @@ export class AddonService extends BaseService<AddonEntity> {
       {
         id,
         userId,
-        addonType
+        addonType,
+        projectId
       },
       {
         isDefault: true
@@ -165,12 +171,12 @@ export class AddonService extends BaseService<AddonEntity> {
     );
   }
 
-  async getOrCreateDefault(opts: { addonType: string, type: string, inputs: any, userId: any }) {
-    const { addonType, type, inputs, userId } = opts;
+  async getOrCreateDefault(opts: { addonType: string, type: string, inputs: any, userId: any,projectId?:number }) {
+    const { addonType, type, inputs, userId,projectId } = opts;
 
     const addonDefine = this.getDefineByType(type, addonType);
 
-    const defaultConfig = await this.getDefault(userId, addonType);
+    const defaultConfig = await this.getDefault(userId, addonType,projectId);
     if (defaultConfig) {
       return defaultConfig;
     }
@@ -183,17 +189,19 @@ export class AddonService extends BaseService<AddonEntity> {
       type: type,
       name: addonDefine.title,
       setting: JSON.stringify(setting),
-      isDefault: true
+      isDefault: true,
+      projectId
     });
     return this.buildAddonInstanceConfig(res);
   }
 
-  async getOneByType(req:{addonType:string,type:string,userId:number}) {
+  async getOneByType(req:{addonType:string,type:string,userId:number,projectId?:number}) {
     return await this.repository.findOne({
       where: {
         addonType: req.addonType,
         type: req.type,
-        userId: req.userId
+        userId: req.userId,
+        projectId: req.projectId
       }
     });
   }

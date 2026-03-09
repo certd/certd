@@ -18,21 +18,18 @@ export class PluginController extends BaseController {
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Query(ALL) query: any) {
-    query.userId = this.getUserId();
     const list = await this.service.getEnabledBuiltInList();
     return this.ok(list);
   }
 
   @Post('/groups', { summary: Constants.per.authOnly })
   async groups(@Query(ALL) query: any) {
-    query.userId = this.getUserId();
     const group = await this.service.getEnabledBuildInGroup();
     return this.ok(group);
   }
 
   @Post('/groupsList', { summary: Constants.per.authOnly })
   async groupsList(@Query(ALL) query: any) {
-    query.userId = this.getUserId();
     const groups = pluginGroups
     const groupsList:any = []
     for (const key in groups) {

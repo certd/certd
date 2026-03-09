@@ -13,6 +13,9 @@ import { useSiteImport } from "/@/views/certd/monitor/site/use";
 import { ref } from "vue";
 import GroupSelector from "../../basic/group/group-selector.vue";
 import { createGroupDictRef } from "../../basic/group/api";
+import { useProjectStore } from "/@/store/project";
+import { useDicts } from "../../dicts";
+import { useCrudPermission } from "/@/plugin/permission";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const api = siteInfoApi;
@@ -37,7 +40,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     const res = await api.AddObj(form);
     return res;
   };
-
+  const { myProjectDict } = useDicts();
   const settingsStore = useSettingStore();
 
   const checkStatusDict = dict({
@@ -105,6 +108,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       return searchFrom.groupId;
     }
   }
+
+  const projectStore = useProjectStore();
+  const { hasActionPermission } = useCrudPermission({ permission: context.permission });
   return {
     id: "siteMonitorCrud",
     crudOptions: {
@@ -227,7 +233,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           //导入按钮
           import: {
-            show: true,
+            show: hasActionPermission("write"),
             text: t("monitor.bulkImport"),
             type: "primary",
             async click() {
@@ -289,6 +295,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       //   name: "disabled",
       //   show: true,
       // },
+      search: {
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
+      },
       columns: {
         id: {
           title: "ID",
@@ -547,6 +558,20 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         },
+        ipAddress: {
+          title: t("monitor.ipAddress"),
+          search: {
+            show: false,
+          },
+          type: "text",
+          form: {
+            helper: t("monitor.ipAddressHelper"),
+          },
+          column: {
+            width: 150,
+            sorter: true,
+          },
+        },
         groupId: {
           title: t("certd.fields.group"),
           type: "dict-select",
@@ -709,7 +734,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             }),
           },
           column: {
-            width: 100,
+            width: 140,
             sorter: true,
             align: "center",
           },
@@ -732,7 +757,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             helper: t("monitor.ipSyncModeHelper"),
           },
           column: {
-            width: 100,
+            width: 140,
             sorter: true,
             align: "center",
           },
@@ -754,7 +779,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             helper: t("monitor.ipIgnoreCoherenceHelper"),
           },
           column: {
-            width: 100,
+            width: 180,
             sorter: true,
             align: "center",
           },
@@ -798,6 +823,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             cellRender({ value }) {
               return <a-tooltip title={value}>{value}</a-tooltip>;
             },
+          },
+        },
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: myProjectDict,
+          form: {
+            show: false,
           },
         },
       },

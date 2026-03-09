@@ -31,6 +31,9 @@ export class CnameRecordEntity {
   @Column({ comment: '错误信息' })
   error: string
 
+  @Column({ name: 'project_id', comment: '项目Id' })
+  projectId: number;
+
   @Column({
     comment: '创建时间',
     name: 'create_time',

@@ -157,9 +157,7 @@ export class DBBackupPlugin extends AbstractPlusTaskPlugin {
   async onInstance() {}
 
   async execute(): Promise<void> {
-    if (!this.isAdmin()) {
-      throw new Error("只有管理员才能运行此任务");
-    }
+    this.checkAdmin();
 
     this.logger.info("开始备份数据库");
 

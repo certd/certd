@@ -20,10 +20,12 @@ export class PipelineGroupController extends CrudController<PipelineGroupService
 
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body: any) {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     delete body.query.userId;
+    body.query.projectId = projectId;
     const buildQuery = qb => {
-      qb.andWhere('user_id = :userId', { userId: this.getUserId() });
+      qb.andWhere('user_id = :userId', { userId: userId });
     };
     const res = await this.service.page({
       query: body.query,
@@ -36,40 +38,47 @@ export class PipelineGroupController extends CrudController<PipelineGroupService
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body: any) {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    body.query.userId = userId;
+    body.query.projectId = projectId;
     return await super.list(body);
   }
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean: any) {
-    bean.userId = this.getUserId();
+    const {projectId,userId} = await this.getProjectUserIdRead();
+    bean.userId = userId;
+    bean.projectId = projectId;
     return await super.add(bean);
   }
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.service.checkUserId(bean.id, this.getUserId());
+    await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
+    delete bean.projectId;
     return await super.update(bean);
   }
   @Post('/info', { summary: Constants.per.authOnly })
   async info(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(), id, "read");
     return await super.info(id);
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(), id, "write");
     return await super.delete(id);
   }
 
   @Post('/all', { summary: Constants.per.authOnly })
   async all() {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     const list: any = await this.service.find({
       where: {
-        userId: this.getUserId(),
+        userId: userId,
+        projectId: projectId,
       },
     });
     return this.ok(list);

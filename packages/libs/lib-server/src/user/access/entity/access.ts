@@ -8,7 +8,7 @@ export class AccessEntity {
   @PrimaryGeneratedColumn()
   id: number;
   @Column({ name: 'user_id', comment: '用户id' })
-  userId: number;
+  userId: number; // 0为系统级别, -1为企业，大于1为用户
   @Column({ comment: '名称', length: 100 })
   name: string;
 
@@ -20,6 +20,9 @@ export class AccessEntity {
 
   @Column({ name: 'encrypt_setting', comment: '已加密设置', length: 10240, nullable: true })
   encryptSetting: string;
+
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
 
   @Column({
     name: 'create_time',

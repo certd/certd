@@ -118,7 +118,7 @@ jobs:
 #            greper/certd-agent:latest
 #            greper/certd-agent:${{steps.get_certd_version.outputs.result}}
       - name: deploy-certd-doc
-        uses: tyrrrz/action-http-request@master
+        uses: tyrrrz/action-http-request@prime
         with:
           url: ${{ secrets.WEBHOOK_CERTD_DOC }}
           method: POST

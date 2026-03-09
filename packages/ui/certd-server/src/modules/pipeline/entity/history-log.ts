@@ -25,6 +25,9 @@ export class HistoryLogEntity {
   @Column({ comment: '日志内容', length: 40960, nullable: true })
   logs: string;
 
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

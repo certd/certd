@@ -108,8 +108,11 @@ async removeRecord(options: RemoveRecordOptions<DemoRecord>): Promise<void> {
 ### 6. 实例化插件
 
 ```typescript
-//结尾实例化一下，确保插件被注册
-new DemoDnsProvider();
+// 实例化这个 provider，将其自动注册到系统中
+if (isDev()) {
+  // 你的实现 要去掉这个 if，不然生产环境将不会显示
+  new DemoDnsProvider();
+}
 ```
 
 ## 注意事项
@@ -119,12 +122,14 @@ new DemoDnsProvider();
 3. **记录结构**：定义适合对应云平台的记录数据结构，至少包含 id 字段用于删除记录。
 4. **日志输出**：使用 `this.logger` 输出日志，而不是 `console`。
 5. **错误处理**：API 调用失败时应抛出明确的错误信息。
+6. **实例化**：生产环境中应移除 `if (isDev())` 条件，确保插件在生产环境中也能被注册。
 
 ## 完整示例
 
 ```typescript
 import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { DemoAccess } from './access.js';
+import { isDev } from '../../utils/env.js';
 
 type DemoRecord = {
   // 这里定义 Record 记录的数据结构，跟对应云平台接口返回值一样即可，一般是拿到 id 就行，用于删除 txt 解析记录，清理申请痕迹
@@ -200,5 +205,8 @@ export class DemoDnsProvider extends AbstractDnsProvider<DemoRecord> {
 }
 
 // 实例化这个 provider，将其自动注册到系统中
-new DemoDnsProvider();
+if (isDev()) {
+  // 你的实现 要去掉这个 if，不然生产环境将不会显示
+  new DemoDnsProvider();
+}
 ```

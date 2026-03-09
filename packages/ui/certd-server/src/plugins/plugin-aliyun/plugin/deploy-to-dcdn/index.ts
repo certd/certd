@@ -83,6 +83,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
       this.logger.info(`[${domainName}]开始部署`)
       const params = await this.buildParams(domainName);
       await this.doRequest(client, params);
+      await this.ctx.utils.sleep(1000);
       this.logger.info(`[${domainName}]部署成功`)
     }
 

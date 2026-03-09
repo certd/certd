@@ -10,6 +10,9 @@ import { notification } from "ant-design-vue";
 import CertView from "/@/views/certd/pipeline/cert-view.vue";
 import { useCertUpload } from "/@/views/certd/pipeline/cert-upload/use";
 import { useSettingStore } from "/@/store/settings";
+import { useProjectStore } from "/@/store/project";
+import { useDicts } from "../../dicts";
+import { useUserStore } from "/@/store/user";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -34,9 +37,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     return res;
   };
   const router = useRouter();
-
+  const { myProjectDict } = useDicts();
   const settingStore = useSettingStore();
-
+  const projectStore = useProjectStore();
+  const userStore = useUserStore();
   const model = useModal();
   const viewCert = async (row: any) => {
     const cert = await api.GetCert(row.id);
@@ -63,6 +67,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const expireStatus = route?.query?.expireStatus as string;
   const searchInitForm = {
     expiresLeft: expireStatus,
+    ...projectStore.getSearchForm(),
   };
   return {
     crudOptions: {
@@ -137,7 +142,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 notification.error({ message: t("certd.certificateNotGenerated") });
                 return;
               }
-              window.open("/api/monitor/cert/download?id=" + row.id);
+              let url = "/api/monitor/cert/download?id=" + row.id;
+              if (projectStore.isEnterprise) {
+                url += `&projectId=${projectStore.currentProject?.id}`;
+              }
+              url += `&token=${userStore.getToken}`;
+              window.open(url);
             },
           },
         },
@@ -342,6 +352,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 },
               },
             },
+          },
+        },
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: myProjectDict,
+          form: {
+            show: false,
           },
         },
       },

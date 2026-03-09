@@ -15,9 +15,11 @@ const serviceNames = [
 ]
 export class TaskServiceGetter implements IServiceGetter{
   private userId: number;
+  private projectId: number;
   private appCtx : IMidwayContainer;
-  constructor(userId:number,appCtx:IMidwayContainer) {
+  constructor(userId:number,projectId:number,appCtx:IMidwayContainer) {
     this.userId = userId;
+    this.projectId = projectId;
     this.appCtx = appCtx
   }
   async get<T>(serviceName: string): Promise<T> {
@@ -46,28 +48,28 @@ export class TaskServiceGetter implements IServiceGetter{
   async getSubDomainsGetter(): Promise<SubDomainsGetter> {
     const subDomainsService:SubDomainService = await  this.appCtx.getAsync("subDomainService")
     const domainService:DomainService = await  this.appCtx.getAsync("domainService")
-    return new SubDomainsGetter(this.userId, subDomainsService,domainService)
+    return new SubDomainsGetter(this.userId,this.projectId, subDomainsService,domainService)
   }
 
   async getAccessService(): Promise<AccessGetter> {
     const accessService:AccessService = await  this.appCtx.getAsync("accessService")
-    return new AccessGetter(this.userId, accessService.getById.bind(accessService));
+    return new AccessGetter(this.userId, this.projectId, accessService.getById.bind(accessService));
   }
 
 
   async getCnameProxyService(): Promise<CnameProxyService> {
     const cnameRecordService:CnameRecordService = await  this.appCtx.getAsync("cnameRecordService")
-    return new CnameProxyService(this.userId, cnameRecordService.getWithAccessByDomain.bind(cnameRecordService));
+    return new CnameProxyService(this.userId, this.projectId, cnameRecordService.getWithAccessByDomain.bind(cnameRecordService));
   }
 
   async getNotificationService(): Promise<NotificationGetter> {
     const notificationService:NotificationService = await  this.appCtx.getAsync("notificationService")
-    return new NotificationGetter(this.userId, notificationService);
+    return new NotificationGetter(this.userId, this.projectId, notificationService);
   }
 
   async getDomainVerifierGetter(): Promise<DomainVerifierGetter> {
     const domainService:DomainService = await  this.appCtx.getAsync("domainService")
-    return new DomainVerifierGetter(this.userId, domainService);
+    return new DomainVerifierGetter(this.userId, this.projectId, domainService);
   }
 }
 @Provide()
@@ -78,12 +80,14 @@ export class TaskServiceBuilder  {
 
   create(req:TaskServiceCreateReq){
     const userId = req.userId;
-    return new TaskServiceGetter(userId,this.appCtx)
+    const projectId = req.projectId;
+    return new TaskServiceGetter(userId,projectId,this.appCtx)
   }
 }
 
 export type TaskServiceCreateReq = {
   userId: number;
+  projectId?: number;
 }
 
 

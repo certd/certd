@@ -65,6 +65,8 @@ export class SysPublicSettings extends BaseSettings {
   }> = {};
 
   notice?: string;
+
+  adminMode?: "enterprise" | "saas" = "saas";
 }
 
 export class SysPrivateSettings extends BaseSettings {

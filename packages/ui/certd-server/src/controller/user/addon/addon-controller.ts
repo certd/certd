@@ -32,10 +32,12 @@ export class AddonController extends CrudController<AddonService> {
 
   @Post("/page", { summary: Constants.per.authOnly })
   async page(@Body(ALL) body) {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     delete body.query.userId;
+    body.query.projectId = projectId;
     const buildQuery = qb => {
-      qb.andWhere("user_id = :userId", { userId: this.getUserId() });
+      qb.andWhere("user_id = :userId", { userId });
     };
     const res = await this.service.page({
       query: body.query,
@@ -48,14 +50,18 @@ export class AddonController extends CrudController<AddonService> {
 
   @Post("/list", { summary: Constants.per.authOnly })
   async list(@Body(ALL) body) {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    body.query.userId = userId;
+    body.query.projectId = projectId;
     return super.list(body);
   }
 
   @Post("/add", { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean) {
-    bean.userId = this.getUserId();
+    const {userId,projectId} = await this.getProjectUserIdRead();
+    bean.userId = userId;
+    bean.projectId = projectId;
     const type = bean.type;
     const addonType = bean.addonType;
     if (!type || !addonType) {
@@ -73,7 +79,7 @@ export class AddonController extends CrudController<AddonService> {
 
   @Post("/update", { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.service.checkUserId(bean.id, this.getUserId());
+    await this.checkOwner(this.getService(), bean.id, "write");
     const old = await this.service.info(bean.id);
     if (!old) {
       throw new ValidateException("Addon配置不存在");
@@ -90,18 +96,19 @@ export class AddonController extends CrudController<AddonService> {
       }
     }
     delete bean.userId;
+    delete bean.projectId;
     return super.update(bean);
   }
 
   @Post("/info", { summary: Constants.per.authOnly })
   async info(@Query("id") id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(), id, "read");
     return super.info(id);
   }
 
   @Post("/delete", { summary: Constants.per.authOnly })
   async delete(@Query("id") id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(), id, "write");
     return super.delete(id);
   }
 
@@ -133,38 +140,42 @@ export class AddonController extends CrudController<AddonService> {
   async simpleInfo(@Query("addonType") addonType: string, @Query("id") id: number) {
     if (id === 0) {
       //获取默认
-      const res = await this.service.getDefault(this.getUserId(), addonType);
+      const {projectId,userId} = await this.getProjectUserIdRead();
+      const res = await this.service.getDefault(userId, addonType,projectId);
       if (!res) {
         throw new ValidateException("默认Addon配置不存在");
       }
       const simple = await this.service.getSimpleInfo(res.id);
       return this.ok(simple);
     }
-    await this.authService.checkEntityUserId(this.ctx, this.service, id);
+    await this.checkOwner(this.getService(), id, "read",true);
     const res = await this.service.getSimpleInfo(id);
     return this.ok(res);
   }
 
   @Post("/getDefaultId", { summary: Constants.per.authOnly })
   async getDefaultId(@Query("addonType") addonType: string) {
-    const res = await this.service.getDefault(this.getUserId(), addonType);
+    const {projectId,userId} = await this.getProjectUserIdRead();
+    const res = await this.service.getDefault(userId, addonType,projectId);
     return this.ok(res?.id);
   }
 
   @Post("/setDefault", { summary: Constants.per.authOnly })
   async setDefault(@Query("addonType") addonType: string, @Query("id") id: number) {
-    await this.service.checkUserId(id, this.getUserId());
-    const res = await this.service.setDefault(id, this.getUserId(), addonType);
+    const {projectId,userId} = await this.checkOwner(this.getService(), id, "write",true);
+    const res = await this.service.setDefault(id, userId, addonType,projectId);
     return this.ok(res);
   }
 
 
   @Post("/options", { summary: Constants.per.authOnly })
   async options(@Query("addonType") addonType: string) {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     const res = await this.service.list({
       query: {
-        userId: this.getUserId(),
-        addonType
+        userId,
+        addonType,
+        projectId
       }
     });
     for (const item of res) {
@@ -176,22 +187,16 @@ export class AddonController extends CrudController<AddonService> {
 
   @Post("/handle", { summary: Constants.per.authOnly })
   async handle(@Body(ALL) body: AddonRequestHandleReq) {
-    const userId = this.getUserId();
     let inputAddon = body.input.addon;
     if (body.input.id > 0) {
+      await this.checkOwner(this.getService(), body.input.id, "write",true);
       const oldEntity = await this.service.info(body.input.id);
       if (oldEntity) {
-        if (oldEntity.userId !== userId) {
-          throw new Error("addon not found");
-        }
-        // const param: any = {
-        //   type: body.typeName,
-        //   setting: JSON.stringify(body.input.access),
-        // };
         inputAddon = JSON.parse(oldEntity.setting);
       }
     }
-    const serviceGetter = this.taskServiceBuilder.create({ userId });
+    const {projectId,userId} = await this.getProjectUserIdRead();
+    const serviceGetter = this.taskServiceBuilder.create({ userId,projectId });
 
     const ctx = {
       http: http,

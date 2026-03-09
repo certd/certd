@@ -17,9 +17,7 @@ import { httpsServer } from '../../modules/auto/https/server.js';
 export class RestartCertdPlugin extends AbstractTaskPlugin {
   async onInstance() {}
   async execute(): Promise<void> {
-    if (!this.isAdmin()) {
-      throw new Error('只有管理员才能运行此任务');
-    }
+    this.checkAdmin();
     this.logger.info('Certd https server 将在 3 秒后重启');
     await this.ctx.utils.sleep(3000);
     await httpsServer.restart();

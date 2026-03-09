@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.39.0](https://github.com/certd/certd/compare/v1.38.12...v1.39.0) (2026-03-07)
+
+### Bug Fixes
+
+* 修复部署到openwrt错误的bug ([2e3d0cc](https://github.com/certd/certd/commit/2e3d0cc57c16c48ad435bc8fde729bacaedde9f5))
+* 修复发件邮箱无法输入的bug ([27b0348](https://github.com/certd/certd/commit/27b0348e1d3d752f418f851965d6afbc26c0160c))
+* 修复复制流水线保存后丢失分组和排序号的问题 ([bc32648](https://github.com/certd/certd/commit/bc326489abc1d50a0930b4f47aa2d62d3a486798))
+* 修复获取群辉deviceid报错的bug ([79be392](https://github.com/certd/certd/commit/79be392775a2c91848dd5a66a2618adc4e4b48f6))
+* 修复京东云域名申请证书报错的bug ([d9c0130](https://github.com/certd/certd/commit/d9c0130b59997144a3c274d456635b800135e43f))
+* 修复偶尔下载证书报未授权的错误 ([316537e](https://github.com/certd/certd/commit/316537eb4dcbe5ec57784e8bf95ee3cdfd21dce7))
+* 修复dcdn多个域名同时部署时 可能会出现证书名称重复的bug ([78c2ced](https://github.com/certd/certd/commit/78c2ced43b1a73d142b0ed783b162b97f545ab06))
+* 优化dcdn部署上传多次证书 偶尔报 The CertName already exists的问题 ([72f850f](https://github.com/certd/certd/commit/72f850f675b500d12ebff2338d1b99d6fab476e1))
+* **cert-plugin:** 优化又拍云客户端错误处理逻辑，当域名已绑定证书时不再抛出异常。 ([92c9ac3](https://github.com/certd/certd/commit/92c9ac382692e6c84140ff787759ab6d39ccbe96))
+* esxi部署失败的bug ([1e44115](https://github.com/certd/certd/commit/1e441154617e6516a9a3610412bf597128c62696))
+
+### Features
+
+* 支持企业级管理模式，项目管理，细分权限 ([3734083](https://github.com/certd/certd/commit/37340838b6a61a94b86bfa13cf5da88b26f1315a))
+
+### Performance Improvements
+
+* 【破坏性更新】错误返回信息msg字段名统一改成message，与成功的返回结构一致 ([51ab6d6](https://github.com/certd/certd/commit/51ab6d6da1bb551b55b3a6a4a9a945c8d6ace806))
+* 当域名管理中没有域名时，创建流水线时不展开域名选择框 ([bb0afe1](https://github.com/certd/certd/commit/bb0afe1fa7b0fc52fde051d24fbe6be69d52f4cc))
+* 任务步骤页面增加串行执行提示说明 ([787f6ef](https://github.com/certd/certd/commit/787f6ef52893d8dc912ee2a7a5b8ce2b73c108c9))
+* 站点监控支持指定ip地址检查 ([83d81b6](https://github.com/certd/certd/commit/83d81b64b3adb375366039e07c87d1ad79121c13))
+* AI开发插件 skills 定义初步 ([1f68fad](https://github.com/certd/certd/commit/1f68faddb97a978c5a5e731a8895b4bb0587ad83))
+* http请求增加建立连接超时配置 ([3c85602](https://github.com/certd/certd/commit/3c85602ab1fc1953cdc06a6cd75a971d14119179))
+
 ## [1.38.12](https://github.com/certd/certd/compare/v1.38.11...v1.38.12) (2026-02-18)
 
 ### Bug Fixes

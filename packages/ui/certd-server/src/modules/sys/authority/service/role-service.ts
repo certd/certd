@@ -9,6 +9,12 @@ import { PermissionService } from './permission-service.js';
 import * as _ from 'lodash-es';
 import { RolePermissionService } from './role-permission-service.js';
 import { LRUCache } from 'lru-cache';
+
+const permissionCache = new LRUCache<string, any>({
+  max: 1000,
+  ttl: 1000 * 60 * 10,
+});
+
 /**
  * 角色
  */
@@ -24,10 +30,7 @@ export class RoleService extends BaseService<RoleEntity> {
   @Inject()
   rolePermissionService: RolePermissionService;
 
-  permissionCache = new LRUCache<string, any>({
-    max: 1000,
-    ttl: 1000 * 60 * 10,
-  });
+ 
 
   //@ts-ignore
   getRepository() {
@@ -84,7 +87,7 @@ export class RoleService extends BaseService<RoleEntity> {
     //再添加
     await this.addRoles(userId, roles);
 
-    this.permissionCache.clear();
+    permissionCache.clear();
   }
 
   async getPermissionTreeByRoleId(id: any) {
@@ -105,7 +108,7 @@ export class RoleService extends BaseService<RoleEntity> {
         permissionId,
       });
     }
-    this.permissionCache.clear();
+    permissionCache.clear();
   }
 
   async getPermissionSetByRoleIds(roleIds: number[]): Promise<Set<string>> {
@@ -120,12 +123,12 @@ export class RoleService extends BaseService<RoleEntity> {
 
   async getCachedPermissionSetByRoleIds(roleIds: number[]): Promise<Set<string>> {
     const roleIdsKey = roleIds.join(',');
-    let permissionSet = this.permissionCache.get(roleIdsKey);
+    let permissionSet = permissionCache.get(roleIdsKey);
     if (permissionSet) {
       return permissionSet;
     }
     permissionSet = await this.getPermissionSetByRoleIds(roleIds);
-    this.permissionCache.set(roleIdsKey, permissionSet);
+    permissionCache.set(roleIdsKey, permissionSet);
     return permissionSet;
   }
 

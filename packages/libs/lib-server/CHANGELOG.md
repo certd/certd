@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.39.0](https://github.com/certd/certd/compare/v1.38.12...v1.39.0) (2026-03-07)
+
+### Performance Improvements
+
+* 【破坏性更新】错误返回信息msg字段名统一改成message，与成功的返回结构一致 ([51ab6d6](https://github.com/certd/certd/commit/51ab6d6da1bb551b55b3a6a4a9a945c8d6ace806))
+
 ## [1.38.12](https://github.com/certd/certd/compare/v1.38.11...v1.38.12) (2026-02-18)
 
 **Note:** Version bump only for package @certd/lib-server

@@ -1,6 +1,5 @@
+import { useProjectStore } from "/@/store/project";
 import { useSettingStore } from "/@/store/settings";
-import aboutResource from "/@/router/source/modules/about";
-import i18n from "/@/locales/i18n";
 
 export const certdResources = [
   {
@@ -15,6 +14,34 @@ export const certdResources = [
     },
     children: [
       {
+        title: "certd.sysResources.myProjectManager",
+        name: "MyProjectManager",
+        path: "/certd/project",
+        component: "/certd/project/index.vue",
+        meta: {
+          show: () => {
+            const projectStore = useProjectStore();
+            return projectStore.isEnterprise;
+          },
+          isMenu: false,
+          icon: "ion:apps",
+          keepAlive: true,
+          auth: true,
+        },
+      },
+      {
+        title: "certd.sysResources.projectJoin",
+        name: "ProjectJoin",
+        path: "/certd/project/join",
+        component: "/certd/project/join.vue",
+        meta: {
+          isMenu: false,
+          show: true,
+          icon: "ion:apps",
+          auth: true,
+        },
+      },
+      {
         title: "certd.pipeline",
         name: "PipelineManager",
         path: "/certd/pipeline",
@@ -22,6 +49,7 @@ export const certdResources = [
         meta: {
           icon: "ion:analytics-sharp",
           keepAlive: true,
+          auth: true,
         },
       },
       {
@@ -31,6 +59,7 @@ export const certdResources = [
         component: "/certd/pipeline/detail.vue",
         meta: {
           isMenu: false,
+          auth: true,
         },
       },
       {
@@ -41,6 +70,7 @@ export const certdResources = [
         meta: {
           icon: "ion:timer-outline",
           keepAlive: true,
+          auth: true,
         },
       },
       {
@@ -51,6 +81,7 @@ export const certdResources = [
         meta: {
           isMenu: true,
           icon: "ion:duplicate-outline",
+          auth: true,
         },
       },
       {
@@ -60,6 +91,7 @@ export const certdResources = [
         component: "/certd/pipeline/template/edit.vue",
         meta: {
           isMenu: false,
+          auth: true,
         },
       },
       {
@@ -69,6 +101,7 @@ export const certdResources = [
         component: "/certd/pipeline/template/import/index.vue",
         meta: {
           isMenu: false,
+          auth: true,
         },
       },
       {
@@ -213,6 +246,10 @@ export const certdResources = [
               icon: "mi:user-check",
               auth: true,
               isMenu: true,
+              show: () => {
+                const projectStore = useProjectStore();
+                return !projectStore.isEnterprise;
+              },
             },
           },
           {
@@ -224,6 +261,21 @@ export const certdResources = [
               icon: "ion:person-outline",
               auth: true,
               isMenu: false,
+            },
+          },
+          {
+            title: "certd.sysResources.projectMemberManager",
+            name: "ProjectMemberManager",
+            path: "/certd/project/detail",
+            component: "/certd/project/detail/index.vue",
+            meta: {
+              show: () => {
+                const projectStore = useProjectStore();
+                return projectStore.isEnterprise;
+              },
+              isMenu: true,
+              icon: "ion:apps",
+              auth: true,
             },
           },
         ],

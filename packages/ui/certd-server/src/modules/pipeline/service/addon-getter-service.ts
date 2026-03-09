@@ -16,9 +16,10 @@ export class AddonGetterService  {
   addonService: AddonService;
 
 
-  async getAddonById(id: any, checkUserId: boolean, userId?: number, defaultAddon?:{type:string,name:string} ): Promise<any> {
+  async getAddonById(id: any, checkUserId: boolean, userId?: number, projectId?: number, defaultAddon?:{type:string,name:string} ): Promise<any> {
     const serviceGetter = this.taskServiceBuilder.create({
-      userId
+      userId,
+      projectId,
     });
     const ctx = {
       http,
@@ -58,13 +59,13 @@ export class AddonGetterService  {
     return await newAddon(entity.addonType, entity.type, input, ctx);
   }
 
-  async getById(id: any, userId: number): Promise<any> {
-    return await this.getAddonById(id, true, userId);
+  async getById(id: any, userId: number, projectId?: number): Promise<any> {
+    return await this.getAddonById(id, true, userId, projectId);
   }
 
 
-  async getBlank(addonType:string,subType:string){
-    return await this.getAddonById(null,false,0,{
+  async getBlank(addonType:string,subType:string,projectId?: number){
+    return await this.getAddonById(null,false,0,projectId,{
       type: addonType, name:subType
     })
   }

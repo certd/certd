@@ -1,8 +1,10 @@
 // @ts-ignore
-import { useI18n } from "/src/locales";
-import { ref } from "vue";
-import { getCommonColumnDefine } from "/@/views/certd/access/common";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { ref } from "vue";
+import { useDicts } from "../dicts";
+import { useProjectStore } from "/@/store/project";
+import { getCommonColumnDefine } from "/@/views/certd/access/common";
+import { useI18n } from "/src/locales";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -29,6 +31,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const typeRef = ref();
   const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef, api);
+  const projectStore = useProjectStore();
+
+  const { myProjectDict } = useDicts();
   return {
     crudOptions: {
       request: {
@@ -40,6 +45,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       table: {
         remove: {
           confirmMessage: "授权如果已经被使用，可能会导致流水线无法正常运行，请谨慎操作",
+        },
+      },
+      search: {
+        initialForm: {
+          ...projectStore.getSearchForm(),
         },
       },
       rowHandle: {
@@ -111,10 +121,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             order: 10,
           },
           valueBuilder: ({ row, key, value }) => {
-            row[key] = row.userId > 0 ? "user" : "sys";
+            row[key] = row.userId != 0 ? "user" : "sys";
           },
         },
         ...commonColumnsDefine,
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: myProjectDict,
+          form: {
+            show: false,
+          },
+        },
       },
     },
   };

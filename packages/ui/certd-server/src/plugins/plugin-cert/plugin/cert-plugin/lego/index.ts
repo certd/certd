@@ -16,7 +16,7 @@ import { PrivateKeyType } from "./dns.js";
   desc: "支持海量DNS解析提供商，推荐使用，一样的免费通配符域名证书申请，支持多个域名打到同一个证书上",
   default: {
     input: {
-      renewDays: 35,
+      renewDays: 15,
       forceUpdate: false,
     },
     strategy: {

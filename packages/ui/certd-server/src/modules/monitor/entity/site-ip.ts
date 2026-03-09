@@ -33,6 +33,8 @@ export class SiteIpEntity {
   remark: string;
   @Column({ name: "disabled", comment: "禁用启用" })
   disabled: boolean;
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
 
   @Column({ name: 'create_time', comment: '创建时间', default: () => 'CURRENT_TIMESTAMP' })
   createTime: Date;

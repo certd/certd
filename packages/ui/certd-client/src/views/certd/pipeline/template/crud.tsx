@@ -6,6 +6,8 @@ import createCrudOptionsPipeline from "../crud";
 import * as pipelineApi from "../api";
 import { useTemplate } from "/@/views/certd/pipeline/template/use";
 import { useI18n } from "/@/locales";
+import { useProjectStore } from "/@/store/project";
+import { useDicts } from "../../dicts";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const api = templateApi;
   const { t } = useI18n();
@@ -28,11 +30,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     const res = await api.AddObj(form);
     return res;
   };
+
+  const projectStore = useProjectStore();
   const { openCrudFormDialog } = useFormWrapper();
   const router = useRouter();
 
   const model = useModal();
-
+  const { myProjectDict } = useDicts();
   const { openCreateFromTemplateDialog } = useTemplate();
 
   return {
@@ -46,6 +50,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       addForm: {
         onSuccess: ({ res }) => {
           router.push({ path: "/certd/pipeline/template/edit", query: { templateId: res.id, editMode: "true" } });
+        },
+      },
+      search: {
+        initialForm: {
+          ...projectStore.getSearchForm(),
         },
       },
       form: {
@@ -69,7 +78,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           add: {
             text: t("certd.template.createTemplate"),
             type: "primary",
-            show: true,
           },
         },
       },
@@ -230,6 +238,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 </router-link>
               );
             },
+          },
+        },
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: myProjectDict,
+          form: {
+            show: false,
           },
         },
       },

@@ -86,6 +86,9 @@ export type SysPublicSetting = {
   >;
   // 系统通知
   notice?: string;
+
+  // 管理员模式
+  adminMode?: "enterprise" | "saas";
 };
 export type SuiteSetting = {
   enabled?: boolean;

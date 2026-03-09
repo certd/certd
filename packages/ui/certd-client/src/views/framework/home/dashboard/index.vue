@@ -35,6 +35,11 @@
                 <a-divider type="vertical" />
                 <vip-button mode="nav" style="font-size: 12px"></vip-button>
               </template>
+
+              <template v-if="settingsStore.isEnterprise">
+                <a-divider type="vertical" />
+                <project-current></project-current>
+              </template>
               <template v-if="settingsStore.isComm">
                 <a-divider type="vertical" />
                 <suite-card class="m-0"></suite-card>

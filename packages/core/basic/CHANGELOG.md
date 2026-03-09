@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.39.0](https://github.com/certd/certd/compare/v1.38.12...v1.39.0) (2026-03-07)
+
+### Bug Fixes
+
+* esxi部署失败的bug ([1e44115](https://github.com/certd/certd/commit/1e441154617e6516a9a3610412bf597128c62696))
+
+### Performance Improvements
+
+* http请求增加建立连接超时配置 ([3c85602](https://github.com/certd/certd/commit/3c85602ab1fc1953cdc06a6cd75a971d14119179))
+
 ## [1.38.12](https://github.com/certd/certd/compare/v1.38.11...v1.38.12) (2026-02-18)
 
 **Note:** Version bump only for package @certd/basic

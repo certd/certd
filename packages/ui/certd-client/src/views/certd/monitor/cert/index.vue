@@ -21,7 +21,7 @@ const { t } = useI18n();
 defineOptions({
   name: "CertStore",
 });
-const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: {} });
+const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: { permission: { isProjectPermission: true } } });
 
 // 页面打开后获取列表数据
 onMounted(() => {

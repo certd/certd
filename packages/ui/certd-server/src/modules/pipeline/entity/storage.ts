@@ -23,6 +23,9 @@ export class StorageEntity {
   @Column({ comment: 'value', length: 40960, nullable: true })
   value: string;
 
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
+
   @Column({
     name: 'create_time',
     comment: '创建时间',

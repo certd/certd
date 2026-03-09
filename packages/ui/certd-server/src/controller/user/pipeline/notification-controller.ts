@@ -22,10 +22,12 @@ export class NotificationController extends CrudController<NotificationService> 
 
   @Post('/page', { summary: Constants.per.authOnly })
   async page(@Body(ALL) body) {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     delete body.query.userId;
+    body.query.projectId = projectId;
     const buildQuery = qb => {
-      qb.andWhere('user_id = :userId', { userId: this.getUserId() });
+      qb.andWhere('user_id = :userId', { userId:  userId});
     };
     const res = await this.service.page({
       query: body.query,
@@ -38,14 +40,18 @@ export class NotificationController extends CrudController<NotificationService> 
 
   @Post('/list', { summary: Constants.per.authOnly })
   async list(@Body(ALL) body) {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
-    body.query.userId = this.getUserId();
+    body.query.userId = userId;
+    body.query.projectId = projectId;
     return super.list(body);
   }
 
   @Post('/add', { summary: Constants.per.authOnly })
   async add(@Body(ALL) bean) {
-    bean.userId = this.getUserId();
+    const {projectId,userId} = await this.getProjectUserIdRead();
+    bean.userId = userId;
+    bean.projectId = projectId;
     const type = bean.type;
     const define: NotificationDefine = this.service.getDefineByType(type);
     if (!define) {
@@ -59,7 +65,7 @@ export class NotificationController extends CrudController<NotificationService> 
 
   @Post('/update', { summary: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
-    await this.service.checkUserId(bean.id, this.getUserId());
+    await this.checkOwner(this.getService(), bean.id,"write");
     const old = await this.service.info(bean.id);
     if (!old) {
       throw new ValidateException('通知配置不存在');
@@ -75,17 +81,18 @@ export class NotificationController extends CrudController<NotificationService> 
       }
     }
     delete bean.userId;
+    delete bean.projectId;
     return super.update(bean);
   }
   @Post('/info', { summary: Constants.per.authOnly })
   async info(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(), id,"read");
     return super.info(id);
   }
 
   @Post('/delete', { summary: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
+    await this.checkOwner(this.getService(), id,"write");
     return super.delete(id);
   }
 
@@ -118,44 +125,50 @@ export class NotificationController extends CrudController<NotificationService> 
 
   @Post('/simpleInfo', { summary: Constants.per.authOnly })
   async simpleInfo(@Query('id') id: number) {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     if (id === 0) {
       //获取默认
-      const res = await this.service.getDefault(this.getUserId());
+      const res = await this.service.getDefault(userId,projectId);
       if (!res) {
         throw new ValidateException('默认通知配置不存在');
       }
       const simple = await this.service.getSimpleInfo(res.id);
       return this.ok(simple);
     }
-    await this.authService.checkEntityUserId(this.ctx, this.service, id);
+    await this.checkOwner(this.getService(), id,"read",true);
     const res = await this.service.getSimpleInfo(id);
     return this.ok(res);
   }
 
   @Post('/getDefaultId', { summary: Constants.per.authOnly })
   async getDefaultId() {
-    const res = await this.service.getDefault(this.getUserId());
+    const {projectId,userId} = await this.getProjectUserIdRead();
+    const res = await this.service.getDefault(userId,projectId);
     return this.ok(res?.id);
   }
 
   @Post('/setDefault', { summary: Constants.per.authOnly })
   async setDefault(@Query('id') id: number) {
-    await this.service.checkUserId(id, this.getUserId());
-    const res = await this.service.setDefault(id, this.getUserId());
+    const {projectId,userId} = await this.getProjectUserIdRead();
+    await this.checkOwner(this.getService(), id,"write");
+    const res = await this.service.setDefault(id, userId,projectId);
     return this.ok(res);
   }
 
   @Post('/getOrCreateDefault', { summary: Constants.per.authOnly })
   async getOrCreateDefault(@Body('email') email: string) {
-    const res = await this.service.getOrCreateDefault(email, this.getUserId());
+    const {projectId,userId} = await this.getProjectUserIdRead();
+    const res = await this.service.getOrCreateDefault(email, userId,projectId);
     return this.ok(res);
   }
 
   @Post('/options', { summary: Constants.per.authOnly })
   async options() {
+    const {projectId,userId} = await this.getProjectUserIdRead();
     const res = await this.service.list({
       query: {
-        userId: this.getUserId(),
+        userId: userId,
+        projectId: projectId,
       },
     });
     for (const item of res) {

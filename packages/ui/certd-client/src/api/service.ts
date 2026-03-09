@@ -3,6 +3,7 @@ import { get } from "lodash-es";
 import { errorLog, errorCreate } from "./tools";
 import { env } from "/src/utils/util.env";
 import { useUserStore } from "/@/store/user";
+import { useProjectStore } from "../store/project";
 
 export class CodeError extends Error {
   code: number;
@@ -135,21 +136,29 @@ function createService() {
  */
 function createRequestFunction(service: any) {
   return function (config: any) {
-    const configDefault = {
+    const configDefault: any = {
       headers: {
         "Content-Type": get(config, "headers.Content-Type", "application/json"),
-      },
+      } as any,
       timeout: 30000,
       baseURL: env.API,
       data: {},
+      params: {},
     };
+    const projectStore = useProjectStore();
+
     const userStore = useUserStore();
     const token = userStore.getToken;
     if (token != null) {
       // @ts-ignore
       configDefault.headers.Authorization = token;
     }
-    return service(Object.assign(configDefault, config));
+    Object.assign(configDefault, config);
+
+    if (!configDefault.params.projectId && projectStore.isEnterprise && !config.url.startsWith("/sys") && !config.url.startsWith("http")) {
+      configDefault.params.projectId = projectStore.currentProject?.id;
+    }
+    return service(configDefault);
   };
 }
 

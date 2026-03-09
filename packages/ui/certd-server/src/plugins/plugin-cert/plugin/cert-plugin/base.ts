@@ -133,7 +133,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
   }
 
   /**
-   * 检查是否过期，默认提前35天
+   * 检查是否过期，默认提前15天
    * @param expires
    * @param maxDays
    */

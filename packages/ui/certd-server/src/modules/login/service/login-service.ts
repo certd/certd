@@ -199,6 +199,12 @@ export class LoginService {
     return this.generateToken(info);
   }
 
+  writeTokenCookie(ctx:any,token: { expire: any; token: any }) {
+    ctx.cookies.set("certd_token", token.token, {
+      maxAge: 1000 * token.expire
+    });
+  }
+
 
   /**
    * 生成token

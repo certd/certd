@@ -141,6 +141,9 @@ export const useSettingStore = defineStore({
     isComm(): boolean {
       return this.plusInfo?.isComm && (this.plusInfo?.expireTime === -1 || this.plusInfo?.expireTime > new Date().getTime());
     },
+    isEnterprise(): boolean {
+      return this.isPlus && this.sysPublic.adminMode === "enterprise";
+    },
     isAgent(): boolean {
       return this.siteEnv?.agent?.enabled === true;
     },

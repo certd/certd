@@ -16,7 +16,6 @@ https://1panel.cn/docs/installation/online_installation/
 
    ![](./images/store-1.png)
 
-
    ![](./images/store-2.png)
 
 #### 1.2 访问测试：
@@ -40,6 +39,9 @@ admin/123456
 1. 打开`docker-compose.yaml`，整个内容复制下来    
    https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml
 
+::: tip
+默认使用SQLite数据库，如果需要使用MySQL、PostgreSQL数据库，请参考[多数据库支持](./install/database.md)
+:::
 
 2. 然后到 `1Panel->容器->编排->新建编排`
    输入名称，粘贴`docker-compose.yaml`原文内容
@@ -49,7 +51,10 @@ admin/123456
    ![](./images/2.png)
 
 > 默认使用sqlite数据库，数据保存在`/data/certd`目录下，您可以手动备份该目录   
-> certd还支持`mysql`和`postgresql`数据库，[点我了解如何切换其他数据库](../database)
+
+
+
+
 
 #### 2.2 访问测试
 

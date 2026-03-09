@@ -26,6 +26,9 @@ export class HistoryEntity {
   })
   endTime: Date;
 
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
+
   @Column({
     name: 'create_time',
     comment: '创建时间',
@@ -38,6 +41,7 @@ export class HistoryEntity {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updateTime: Date;
+  
 
   pipelineTitle: string;
 

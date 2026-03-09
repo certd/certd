@@ -1,6 +1,8 @@
 import { useI18n } from "/src/locales";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { pipelineGroupApi } from "./api";
+import { useProjectStore } from "/@/store/project";
+import { useDicts } from "../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -25,6 +27,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     return res;
   };
 
+  const projectStore = useProjectStore();
+  const { myProjectDict } = useDicts();
   return {
     crudOptions: {
       settings: {
@@ -43,6 +47,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         addRequest,
         editRequest,
         delRequest,
+      },
+      search: {
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
       },
       form: {
         labelCol: {
@@ -125,6 +134,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             width: 400,
+          },
+        },
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: myProjectDict,
+          form: {
+            show: false,
           },
         },
       },

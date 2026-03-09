@@ -1,4 +1,6 @@
 export default {
+  ipAddress: "IP地址",
+  ipAddressHelper: "填写则固定检查此IP，不从DNS获取域名的IP地址",
   remark: "备注",
   title: "站点证书监控",
   description: "每天0点，检查网站证书的过期时间，到期前10天时将发出提醒（使用默认通知渠道）;",

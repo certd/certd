@@ -22,7 +22,10 @@ export default defineComponent({
   setup() {
     const api = createAddonApi({ from: "user", addonType: "" });
     addonProvide(api);
-    const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: { api } });
+    const { crudBinding, crudRef, crudExpose } = useFs({
+      createCrudOptions,
+      context: { api, permission: { isProjectPermission: true } },
+    });
 
     // 页面打开后获取列表数据
     onMounted(() => {

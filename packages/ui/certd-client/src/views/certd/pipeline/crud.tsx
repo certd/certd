@@ -14,12 +14,17 @@ import GroupSelector from "/@/views/certd/pipeline/group/group-selector.vue";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 import { useCertViewer } from "/@/views/certd/pipeline/use";
 import { useI18n } from "/src/locales";
+import { useDicts } from "../dicts";
+import { useProjectStore } from "/@/store/project";
+import { useCrudPermission } from "/@/plugin/permission";
 
-export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+export default function ({ crudExpose, context: { selectedRowKeys, openCertApplyDialog, permission } }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
   const lastResRef = ref();
 
   const { t } = useI18n();
+
+  const { hasActionPermission } = useCrudPermission({ permission });
 
   const { openUploadCreateDialog } = useCertUpload();
 
@@ -48,6 +53,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
       delete form.lastVars;
       delete form.createTime;
       delete form.id;
+      delete form.webhook;
       let pipeline = form.content;
       if (typeof pipeline === "string" && pipeline.startsWith("{")) {
         pipeline = JSON.parse(form.content);
@@ -66,13 +72,15 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
   const userStore = useUserStore();
   const settingStore = useSettingStore();
 
+  const projectStore = useProjectStore();
+  const { myProjectDict } = useDicts();
   const DEFAULT_WILL_EXPIRE_DAYS = settingStore.sysPublic.defaultWillExpireDays || settingStore.sysPublic.defaultCertRenewDays || 15;
 
   function onDialogOpen(opt: any) {
     const searchForm = crudExpose.getSearchValidatedFormData();
     opt.initialForm = {
-      ...opt.initialForm,
       groupId: searchForm.groupId,
+      ...opt.initialForm,
     };
   }
 
@@ -120,9 +128,11 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             click() {
               openCertApplyDialog({ key: "CertApply" });
             },
+            show: hasActionPermission("write"),
           },
           uploadCert: {
             order: 2,
+            show: hasActionPermission("write"),
             text: t("certd.commercialCertHosting"),
             type: "primary",
             tooltip: {
@@ -147,7 +157,9 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
         },
       },
       search: {
-        col: { span: 3 },
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
       },
       form: {
         afterSubmit({ form, res, mode }) {
@@ -201,6 +213,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             },
           },
           copy: {
+            show: hasActionPermission("write"),
             click: async context => {
               settingStore.checkPlus();
               const { ui } = useUi();
@@ -210,7 +223,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
               row = info.pipeline;
               row.content = JSON.parse(row.content);
               row.title = row.title + "_copy";
-              await crudExpose.openCopy({
+              await crudExpose.openAdd({
                 row: row,
                 index: context.index,
               });
@@ -218,6 +231,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             class: "need-plus",
           },
           config: {
+            show: hasActionPermission("write"),
             order: 1,
             title: t("certd.actions.editPipeline"),
             type: "link",
@@ -228,6 +242,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             },
           },
           edit: {
+            show: hasActionPermission("write"),
             order: 2,
             title: t("certd.actions.editConfigGroup"),
             icon: "ant-design:setting-outlined",
@@ -440,6 +455,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           type: "dict-select",
           search: {
             show: true,
+            col: { span: 2 },
           },
           dict: dict({
             data: statusUtil.getOptions(),
@@ -544,6 +560,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           type: "dict-select",
           search: {
             show: true,
+            col: { span: 2 },
           },
           dict: dict({
             data: [
@@ -639,6 +656,22 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
               }
               return dayjs(value).format("YYYY-MM-DD");
             },
+          },
+        },
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: myProjectDict,
+          form: {
+            show: false,
+          },
+          column: {
+            show: computed(() => {
+              return settingStore.isEnterprise;
+            }),
+            width: 120,
+            align: "center",
+            sorter: true,
           },
         },
         updateTime: {

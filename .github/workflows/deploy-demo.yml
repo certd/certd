@@ -43,7 +43,7 @@ jobs:
         with:
           time: '10' # for 60 seconds
       - name: deploy-certd-demo
-        uses: tyrrrz/action-http-request@master
+        uses: tyrrrz/action-http-request@prime
         with:
           # 通过webhook 触发 certd-demo来部署
           url: ${{ secrets.WEBHOOK_CERTD_DEMO }}

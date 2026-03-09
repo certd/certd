@@ -6,6 +6,8 @@ import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, Edi
 import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
+import { useDicts } from "../dicts";
+import { useProjectStore } from "/@/store/project";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -31,6 +33,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const settingStore = useSettingStore();
   const selectedRowKeys: Ref<any[]> = ref([]);
   context.selectedRowKeys = selectedRowKeys;
+  const { myProjectDict } = useDicts();
+  const projectStore = useProjectStore();
 
   return {
     crudOptions: {
@@ -64,6 +68,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       search: {
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
         formItem: {
           labelCol: {
             style: {
@@ -195,16 +202,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
           },
         },
-        createTime: {
-          title: t("certd.fields.createTime"),
-          type: "datetime",
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: myProjectDict,
           form: {
             show: false,
-          },
-          column: {
-            sorter: true,
-            width: 160,
-            align: "center",
           },
         },
         updateTime: {

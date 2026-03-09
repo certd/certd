@@ -10,6 +10,7 @@ import PageFooter from "./components/footer/index.vue";
 import { useRouter } from "vue-router";
 import MaxKBChat from "/@/components/ai/index.vue";
 import { useI18n } from "vue-i18n";
+import { useProjectStore } from "../store/project";
 
 const { t } = useI18n();
 
@@ -77,10 +78,17 @@ const openChat = (q: string) => {
   chatBox.value.openChat({ q });
 };
 provide("fn:ai.open", openChat);
+
+const projectStore = useProjectStore();
 </script>
 
 <template>
   <BasicLayout @clear-preferences-and-logout="handleLogout">
+    <template #header-left-0>
+      <div v-if="projectStore.isEnterprise" class="ml-1 mr-2">
+        <project-selector class="flex-center header-btn" />
+      </div>
+    </template>
     <template #user-dropdown>
       <UserDropdown :avatar="avatar" :menus="menus" :text="userStore.userInfo?.nickName || userStore.userInfo?.username" description="" tag-text="" @logout="handleLogout" />
     </template>
@@ -94,7 +102,7 @@ provide("fn:ai.open", openChat);
       <div class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full">
         <vip-button class="flex-center header-btn" mode="nav" />
       </div>
-      <div v-if="!settingStore.isComm" class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full">
+      <div v-if="!settingStore.isComm" class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
         <fs-button shape="circle" type="text" icon="ion:logo-github" :text="null" @click="goGithub" />
       </div>
     </template>

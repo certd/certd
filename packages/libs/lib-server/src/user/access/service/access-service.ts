@@ -129,10 +129,11 @@ export class AccessService extends BaseService<AccessEntity> {
       id: entity.id,
       name: entity.name,
       userId: entity.userId,
+      projectId: entity.projectId,
     };
   }
 
-  async getAccessById(id: any, checkUserId: boolean, userId?: number): Promise<any> {
+  async getAccessById(id: any, checkUserId: boolean, userId?: number, projectId?: number): Promise<any> {
     const entity = await this.info(id);
     if (entity == null) {
       throw new Error(`该授权配置不存在,请确认是否已被删除:id=${id}`);
@@ -145,6 +146,9 @@ export class AccessService extends BaseService<AccessEntity> {
         throw new PermissionException('您对该Access授权无访问权限');
       }
     }
+    if (projectId != null && projectId !== entity.projectId) {
+      throw new PermissionException('您对该Access授权无访问权限');
+    }
 
     // const access = accessRegistry.get(entity.type);
     const setting = this.decryptAccessEntity(entity);
@@ -152,12 +156,12 @@ export class AccessService extends BaseService<AccessEntity> {
       id: entity.id,
       ...setting,
     };
-    const accessGetter = new AccessGetter(userId, this.getById.bind(this));
+    const accessGetter = new AccessGetter(userId,projectId, this.getById.bind(this));
     return await newAccess(entity.type, input,accessGetter);
   }
 
-  async getById(id: any, userId: number): Promise<any> {
-    return await this.getAccessById(id, true, userId);
+  async getById(id: any, userId: number, projectId?: number): Promise<any> {
+    return await this.getAccessById(id, true, userId, projectId);
   }
 
   decryptAccessEntity(entity: AccessEntity): any {
@@ -188,23 +192,25 @@ export class AccessService extends BaseService<AccessEntity> {
   }
 
 
-  async getSimpleByIds(ids: number[], userId: any) {
+  async getSimpleByIds(ids: number[], userId: any, projectId?: number) {
     if (ids.length === 0) {
       return [];
     }
-    if (!userId) {
+    if (userId==null) {
       return [];
     }
     return await this.repository.find({
       where: {
         id: In(ids),
         userId,
+        projectId,
       },
       select: {
         id: true,
         name: true,
         type: true,
-        userId:true
+        userId:true,
+        projectId:true,
       },
     });
 

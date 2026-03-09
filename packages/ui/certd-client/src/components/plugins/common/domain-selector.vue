@@ -83,6 +83,7 @@ const props = defineProps<{
   search?: boolean;
   pager?: boolean;
   value?: any[];
+  open?: boolean;
 }>();
 
 const emit = defineEmits<{

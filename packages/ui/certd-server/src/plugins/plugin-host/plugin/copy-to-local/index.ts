@@ -198,9 +198,7 @@ export class CopyCertToLocalPlugin extends AbstractTaskPlugin {
     fs.copyFileSync(srcFile, destFile);
   }
   async execute(): Promise<void> {
-    if (!this.isAdmin()) {
-      throw new Error('只有管理员才能运行此任务');
-    }
+    this.checkAdmin();
 
     let { crtPath, keyPath, icPath, pfxPath, derPath, jksPath } = this;
     const certReader = new CertReader(this.cert);

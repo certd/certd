@@ -21,7 +21,12 @@ import { useI18n } from "/src/locales";
 defineOptions({
   name: "PipelineTemplate",
 });
-const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: {} });
+const { crudBinding, crudRef, crudExpose } = useFs({
+  createCrudOptions,
+  context: {
+    permission: { isProjectPermission: true },
+  },
+});
 const { t } = useI18n();
 // 页面打开后获取列表数据
 onMounted(() => {

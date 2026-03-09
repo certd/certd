@@ -28,6 +28,9 @@ export class AddonEntity {
   @Column({ name: 'is_default', comment: '是否默认',  nullable: false, default: false })
   isDefault: boolean;
 
+  @Column({ name: 'project_id', comment: '项目id' })
+  projectId: number;
+
 
   @Column({
     name: 'create_time',

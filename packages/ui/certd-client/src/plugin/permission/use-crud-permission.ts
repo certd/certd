@@ -1,12 +1,15 @@
 import { usePermission } from "/@/plugin/permission";
 import { merge as LodashMerge } from "lodash-es";
+import { useProjectStore } from "/@/store/project";
 
 export type UseCrudPermissionExtraProps = {
   hasActionPermission: (action: string) => boolean;
 };
 export type UseCrudPermissionExtra = (props: UseCrudPermissionExtraProps) => any;
 export type UseCrudPermissionCompProps = {
-  prefix: string;
+  isProjectPermission?: boolean;
+  projectPermission?: string;
+  prefix?: string;
   extra?: UseCrudPermissionExtra;
   [key: string]: any;
 };
@@ -20,14 +23,31 @@ export type UseCrudPermissionProps = {
 export function useCrudPermission({ permission }: UseCrudPermissionProps) {
   const { hasPermissions } = usePermission();
 
-  const prefix = permission instanceof Object ? permission.prefix : permission;
-
   //根据权限显示按钮
-  function hasActionPermission(action: string) {
+  let hasActionPermission = (action: string) => {
     if (!prefix) {
       return true;
     }
     return hasPermissions(prefix + ":" + action);
+  };
+
+  let per: UseCrudPermissionCompProps = permission as any;
+  if (per == null) {
+    per = { prefix: "" };
+  }
+  if (typeof per === "string") {
+    per = {
+      prefix: per || "",
+    };
+  }
+  let prefix = per.prefix || "";
+  const isProjectPermission = per.isProjectPermission || false;
+  if (isProjectPermission) {
+    const projectStore = useProjectStore();
+    prefix = "";
+    hasActionPermission = function (value: string) {
+      return projectStore.hasPermission(value as string);
+    };
   }
 
   function buildCrudPermission(): any {
@@ -36,25 +56,45 @@ export function useCrudPermission({ permission }: UseCrudPermissionProps) {
     }
 
     let extra = {};
-    if (permission instanceof Object) {
-      extra = permission.extra;
-      if (permission.extra && permission.extra instanceof Function) {
-        extra = permission.extra({ hasActionPermission });
+    if (per instanceof Object) {
+      extra = per.extra;
+      if (per.extra && per.extra instanceof Function) {
+        extra = per.extra({ hasActionPermission });
       }
     }
 
+    let viewPermission = "view";
+    if (isProjectPermission) {
+      viewPermission = "read";
+    }
+
+    let addPermission = "add";
+    if (isProjectPermission) {
+      addPermission = per.projectPermission || "write";
+    }
+
+    let editPermission = "edit";
+    if (isProjectPermission) {
+      editPermission = per.projectPermission || "write";
+    }
+
+    let removePermission = "remove";
+    if (isProjectPermission) {
+      removePermission = per.projectPermission || "write";
+    }
     return LodashMerge(
       {
         actionbar: {
           buttons: {
-            add: { show: hasActionPermission("add") },
+            add: { show: hasActionPermission(addPermission) },
           },
         },
         rowHandle: {
           buttons: {
-            edit: { show: hasActionPermission("edit") },
-            remove: { show: hasActionPermission("remove") },
-            view: { show: hasActionPermission("view") },
+            edit: { show: hasActionPermission(editPermission) },
+            remove: { show: hasActionPermission(removePermission) },
+            view: { show: hasActionPermission(viewPermission) },
+            copy: { show: hasActionPermission(addPermission) },
           },
         },
       },

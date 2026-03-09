@@ -6,7 +6,7 @@ export async function getEmailSettings(sysSettingService: SysSettingsService, us
   let conf = await sysSettingService.getSetting<SysEmailConf>(SysEmailConf);
   if (!conf.host || conf.usePlus == null) {
     //到userSetting里面去找
-    const adminEmailSetting = await userSettingsService.getByKey('email', 1);
+    const adminEmailSetting = await userSettingsService.getByKey('email', 1,null);
     if (adminEmailSetting) {
       const setting = JSON.parse(adminEmailSetting.setting);
       conf = _.merge(conf, setting);

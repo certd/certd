@@ -3,6 +3,8 @@ import { ref } from "vue";
 import { getCommonColumnDefine } from "/@/views/certd/access/common";
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { useI18n } from "/src/locales";
+import { useProjectStore } from "/@/store/project";
+import { useDicts } from "../../../dicts";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -39,11 +41,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     selectedRowKey.value = changed;
     ctx.emit("update:modelValue", changed[0]);
   };
-
+  const { myProjectDict } = useDicts();
   const typeRef = ref("aliyun");
   context.typeRef = typeRef;
   const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef, api);
   commonColumnsDefine.type.form.component.disabled = true;
+  const projectStore = useProjectStore();
   return {
     typeRef,
     crudOptions: {
@@ -58,6 +61,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       search: {
         show: true,
+        initialForm: {
+          ...projectStore.getSearchForm(),
+        },
       },
       form: {
         wrapper: {
@@ -137,10 +143,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             order: 10,
           },
           valueBuilder: ({ row, key, value }) => {
-            row[key] = row.userId > 0 ? "user" : "sys";
+            row[key] = row.userId != 0 ? "user" : "sys";
           },
         },
         ...commonColumnsDefine,
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: myProjectDict,
+          form: {
+            show: false,
+          },
+        },
       },
     },
   };

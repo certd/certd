@@ -1,7 +1,7 @@
 import {Inject, Provide, Scope, ScopeEnum} from "@midwayjs/core";
 import {BaseService, NeedSuiteException, NeedVIPException, SysSettingsService} from "@certd/lib-server";
 import {InjectEntityModel} from "@midwayjs/typeorm";
-import {Repository} from "typeorm";
+import {In, Repository} from "typeorm";
 import {SiteInfoEntity} from "../entity/site-info.js";
 import {siteTester} from "./site-tester.js";
 import dayjs from "dayjs";
@@ -48,7 +48,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   async add(data: SiteInfoEntity) {
-    if (!data.userId) {
+    if (data.userId == null) {
       throw new Error("userId is required");
     }
 
@@ -91,7 +91,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   async getUserMonitorCount(userId: number) {
-    if (!userId) {
+    if (userId==null) {
       throw new Error("userId is required");
     }
     return await this.repository.count({
@@ -110,7 +110,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       throw new Error("站点域名不能为空");
     }
 
-    const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId, UserSiteMonitorSetting);
+    const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId,site.projectId, UserSiteMonitorSetting);
     const dnsServer = setting.dnsServer
     let customDns = null
     if (dnsServer && dnsServer.length > 0) {
@@ -127,7 +127,8 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         host: site.domain,
         port: site.httpsPort,
         retryTimes,
-        customDns
+        customDns,
+        ipAddress: site.ipAddress,
       });
 
       const certi: PeerCertificate = res.certificate;
@@ -162,7 +163,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       }
       await this.update(updateData);
 
-      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId, UserSiteMonitorSetting)
+      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId,site.projectId, UserSiteMonitorSetting)
       //检查ip
       await this.checkAllIp(site,retryTimes,setting);
 
@@ -344,28 +345,29 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     }
   }
 
-  async checkAllByUsers(userId: any) {
-    if (!userId) {
+  async checkAllByUsers(userId: any,projectId?: number) {
+    if (userId==null) {
       throw new Error("userId is required");
     }
     const sites = await this.repository.find({
-      where: {userId}
+      where: {userId,projectId}
     });
     this.checkList(sites,false);
   }
 
   async checkList(sites: SiteInfoEntity[],isCommon: boolean) {
     const cache = {}
-    const getFromCache = async (userId: number) =>{
-      if (cache[userId]) {
-        return cache[userId];
+    const getFromCache = async (userId: number,projectId?: number) =>{
+      const key = `${userId}_${projectId??""}`
+      if (cache[key]) {
+        return cache[key];
       }
-      const setting =  await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId, UserSiteMonitorSetting)
-      cache[userId] = setting
+      const setting =  await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId,projectId, UserSiteMonitorSetting)
+      cache[key] = setting
       return setting;
     }
     for (const site of sites) {
-      const setting = await getFromCache(site.userId)
+      const setting = await getFromCache(site.userId,site.projectId)
       if (isCommon) {
         //公共的检查，排除有设置cron的用户
         if  (setting?.cron) {
@@ -381,17 +383,17 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     }
   }
 
-  async getSetting(userId: number) {
-    return await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId, UserSiteMonitorSetting);
+  async getSetting(userId: number,projectId?: number) {
+    return await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId,projectId, UserSiteMonitorSetting);
   }
 
-  async saveSetting(userId: number, bean: UserSiteMonitorSetting) {
-    await this.userSettingsService.saveSetting(userId, bean);
+  async saveSetting(userId: number,projectId: number, bean: UserSiteMonitorSetting) {
+    await this.userSettingsService.saveSetting(userId,projectId, bean);
     if(bean.cron){
       //注册job
-      await this.registerSiteMonitorJob(userId);
+      await this.registerSiteMonitorJob(userId,projectId);
     }else{
-      this.clearSiteMonitorJob(userId);
+      this.clearSiteMonitorJob(userId,projectId);
     }
   }
 
@@ -418,11 +420,11 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     }
   }
 
-  async doImport(req: { text: string; userId: number,groupId?:number }) {
+  async doImport(req: { text: string; userId: number,groupId?:number,projectId?:number }) {
     if (!req.text) {
       throw new Error("text is required");
     }
-    if (!req.userId) {
+    if (req.userId == null) {
       throw new Error("userId is required");
     }
 
@@ -461,7 +463,8 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         httpsPort: port,
         userId: req.userId,
         remark,
-        groupId: req.groupId
+        groupId: req.groupId,
+        projectId: req.projectId
       });
     }
 
@@ -475,13 +478,13 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     await batchAdd(list);
   }
 
-  clearSiteMonitorJob(userId: number) {
-    this.cron.remove(`siteMonitor-${userId}`);
+  clearSiteMonitorJob(userId: number,projectId?: number) {
+    this.cron.remove(`siteMonitor_${userId}_${projectId||""}`);
   }
 
-  async registerSiteMonitorJob(userId?: number) {
+  async registerSiteMonitorJob(userId?: number,projectId?: number) {
 
-    if(!userId){
+    if(userId == null){
       //注册公共job
       logger.info(`注册站点证书检查定时任务`)
       this.cron.register({
@@ -493,27 +496,30 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       });
       logger.info(`注册站点证书检查定时任务完成`)
     }else{
-      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId, UserSiteMonitorSetting);
+      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId,projectId, UserSiteMonitorSetting);
       if (!setting.cron) {
         return;
       }
-      //注册个人的
+      //注册个人的 或项目的
       this.cron.register({
-        name: `siteMonitor-${userId}`,
+        name: `siteMonitor_${userId}_${projectId||""}`,
         cron: setting.cron,
-        job: () => this.triggerJobOnce(userId),
+        job: () => this.triggerJobOnce(userId,projectId),
       });
     }
 
   }
 
-  async triggerJobOnce(userId?:number) {
-    logger.info(`站点证书检查开始执行[${userId??'所有用户'}]`);
+  async triggerJobOnce(userId?:number,projectId?:number) {
+    logger.info(`站点证书检查开始执行[${userId??'所有用户'}_${projectId??'所有项目'}]`);
     const query:any = { disabled: false };
-    if(userId){
+    if(userId!=null){
       query.userId = userId;
+      if(projectId){
+        query.projectId = projectId;
+      }
       //判断是否已关闭
-      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId, UserSiteMonitorSetting);
+      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId,projectId, UserSiteMonitorSetting);
       if (!setting.cron) {
         return;
       }
@@ -535,6 +541,14 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       await this.checkList(records,isCommon);
     }
 
-    logger.info(`站点证书检查完成[${userId??'所有用户'}]`);
+    logger.info(`站点证书检查完成[${userId??'所有用户'}_${projectId??'所有项目'}]`);
+  }
+
+  async batchDelete(ids: number[], userId: number,projectId?:number): Promise<void> {
+    await this.repository.delete({
+      id: In(ids),
+      userId,
+      projectId,
+    });
   }
 }

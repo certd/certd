@@ -8,6 +8,7 @@ import { useSettingStore } from "/@/store/settings";
 import { message, Modal } from "ant-design-vue";
 import CnameTip from "/@/components/plugins/cert/domains-verify-plan-editor/cname-tip.vue";
 import { useCnameImport } from "./use";
+import { useCrudPermission } from "/@/plugin/permission";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const crudBinding = crudExpose.crudBinding;
   const router = useRouter();
@@ -45,6 +46,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       { label: t("certd.validation_timed_out"), value: "timeout", color: "red" },
     ],
   });
+
+  const { hasActionPermission } = useCrudPermission(context);
   return {
     crudOptions: {
       settings: {
@@ -75,6 +78,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             icon: "ion:add-circle-outline",
           },
           import: {
+            show: hasActionPermission("write"),
             title: "导入CNAME记录",
             type: "primary",
             text: "批量导入",
