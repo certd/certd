@@ -16,6 +16,7 @@ import {SiteIpService} from "./site-ip-service.js";
 import {SiteIpEntity} from "../entity/site-ip.js";
 import {Cron} from "../../cron/cron.js";
 import { dnsContainer } from "./dns-custom.js";
+import { merge } from "lodash-es";
 
 @Provide()
 @Scope(ScopeEnum.Request, {allowDowngrade: true})
@@ -164,6 +165,8 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       await this.update(updateData);
 
       const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId,site.projectId, UserSiteMonitorSetting)
+
+      merge(site,updateData)
       //检查ip
       await this.checkAllIp(site,retryTimes,setting);
 
