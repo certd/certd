@@ -789,6 +789,8 @@ export default {
       reverseProxyHelper: "Reverse proxy for ACME address, used when applying for certificate",
       reverseProxyPlaceholder: "http://le.px.handfree.work",
       reverseProxyEmpty: "No reverse proxy list configured",
+      environmentVars: "Environment Variables",
+      environmentVarsHelper: "configure the runtime environment variables, one per line, format: KEY=VALUE",
     },
   },
   modal: {

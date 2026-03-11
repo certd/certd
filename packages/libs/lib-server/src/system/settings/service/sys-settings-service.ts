@@ -11,6 +11,8 @@ import { BaseService, setAdminMode } from '../../../basic/index.js';
 import { executorQueue } from '../../basic/service/executor-queue.js';
 import { isComm } from '@certd/plus-core';
 const { merge } = mergeUtils;
+
+let lastSaveEnvVars = {};
 /**
  * 设置
  */
@@ -117,12 +119,12 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   }
 
   async savePublicSettings(bean: SysPublicSettings) {
-    if(isComm()){
-      if(bean.adminMode === 'enterprise'){
+    if (isComm()) {
+      if (bean.adminMode === 'enterprise') {
         throw new Error("商业版不支持使用企业管理模式")
       }
     }
-    
+
     await this.saveSetting(bean);
     //让设置生效
     await this.reloadPublicSettings();
@@ -173,6 +175,44 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     }
 
     setSslProviderReverseProxies(privateSetting.reverseProxies);
+
+    //加载环境变量
+    this.setEnvironmentVars(privateSetting.environmentVars);
+  }
+
+  setEnvironmentVars(vars: string) {
+    const envVars = {}
+    if (typeof vars !== 'string') {
+      vars = ""
+    }
+    vars.split('\n').forEach(line => {
+      line = line.trim();
+      if (!line || line.startsWith('#')) {
+        return
+      }
+
+      const arr = line.split("#")
+      if (arr.length > 0) {
+        line = arr[0].trim();
+      }
+      if (!line.includes("=")) {
+        return
+      }
+
+      const [key, value] = line.split('=');
+      if (key && value) {
+        envVars[key.trim()] = value.trim();
+      }
+    });
+    //先删除旧环境变量
+    if (lastSaveEnvVars) {
+      for (const key in lastSaveEnvVars) {
+          delete process.env[key];
+      }
+    }
+
+    merge(process.env, envVars);
+    lastSaveEnvVars = envVars;
   }
 
   async updateByKey(key: string, setting: any) {

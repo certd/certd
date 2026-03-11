@@ -14,6 +14,11 @@
         <div class="helper">{{ t("certd.httpsProxyHelper") }}</div>
       </a-form-item>
 
+      <a-form-item :label="t('certd.sys.setting.environmentVars')" :name="['private', 'environmentVars']">
+        <a-textarea v-model:value="formState.private.environmentVars" :placeholder="environmentVarsExample" rows="4" />
+        <div class="helper">{{ t("certd.sys.setting.environmentVarsHelper") }}</div>
+      </a-form-item>
+
       <a-form-item :label="t('certd.dualStackNetwork')" :name="['private', 'dnsResultOrder']">
         <a-select v-model:value="formState.private.dnsResultOrder">
           <a-select-option value="verbatim">{{ t("certd.default") }}</a-select-option>
@@ -54,6 +59,11 @@ import { util } from "/@/utils";
 defineOptions({
   name: "SettingNetwork",
 });
+
+const environmentVarsExample = ref(
+  `ALIYUN_CLIENT_CONNECT_TIMEOUT=16000 #连接超时，单位毫秒
+ALIYUN_CLIENT_READ_TIMEOUT=16000 #读取数据超时，单位毫秒`
+);
 
 const formState = reactive<Partial<SysSettings>>({
   public: {},
