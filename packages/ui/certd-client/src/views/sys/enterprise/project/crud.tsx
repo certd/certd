@@ -7,6 +7,7 @@ import * as api from "./api";
 import { useSettingStore } from "/@/store/settings";
 import { useUserStore } from "/@/store/user";
 import { useI18n } from "/src/locales";
+import { useProjectStore } from "/@/store/project";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   };
 
   const userStore = useUserStore();
+  const projectStore = useProjectStore();
   const settingStore = useSettingStore();
   const selectedRowKeys: Ref<any[]> = ref([]);
   context.selectedRowKeys = selectedRowKeys;
@@ -60,6 +62,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       rowHandle: {
         minWidth: 200,
         fixed: "right",
+      },
+      form: {
+        onSuccess: async () => {
+          await projectStore.reload();
+          crudExpose?.doRefresh();
+        },
       },
       columns: {
         id: {
