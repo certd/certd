@@ -294,13 +294,9 @@ function useStepForm() {
         currentStep.value.input[key] = pluginSysConfig.sysSetting?.input[key];
       }
     }
-
-    console.log("currentStepTypeChanged:", currentStep.value);
-    console.log("currentStepPlugin:", currentPlugin.value);
   };
 
   const stepSave = async (e: any) => {
-    console.log("currentStepSave", currentStep.value);
     try {
       await stepFormRef.value.validate();
     } catch (e) {

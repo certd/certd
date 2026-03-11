@@ -1,7 +1,7 @@
 <template>
   <div class="remote-select">
     <div class="flex flex-row">
-      <a-select class="remote-select-input" show-search :filter-option="filterOption" :options="optionsRef" :value="value" v-bind="attrs" @click="onClick" @update:value="emit('update:value', $event)">
+      <a-select class="remote-select-input" show-search mode="tags" :filter-option="filterOption" :options="optionsRef" :value="value" v-bind="attrs" @click="onClick" @update:value="updateValue($event)">
         <template #dropdownRender="{ menuNode: menu }">
           <template v-if="search">
             <div class="flex w-full" style="padding: 4px 8px">
@@ -61,12 +61,22 @@ const props = defineProps<
     watches?: string[];
     search?: boolean;
     pager?: boolean;
+    multi?: boolean;
   } & ComponentPropsType
 >();
 
 const emit = defineEmits<{
   "update:value": any;
 }>();
+
+function updateValue(value: any) {
+  if (props.multi) {
+    emit("update:value", value);
+  } else {
+    const last = value?.[value.length - 1];
+    emit("update:value", last);
+  }
+}
 
 const attrs = useAttrs();
 
@@ -80,6 +90,7 @@ const getPluginType: any = inject("get:plugin:type", () => {
   return "plugin";
 });
 
+debugger;
 const searchKeyRef = ref("");
 const optionsRef = ref([]);
 const message = ref("");

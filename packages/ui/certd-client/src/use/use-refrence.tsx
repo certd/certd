@@ -1,5 +1,5 @@
-import * as _ from "lodash-es";
 import { asyncCompute, compute } from "@fast-crud/fast-crud";
+import { merge } from "lodash-es";
 import { computed } from "vue";
 
 export type MergeScriptContext = {
@@ -18,7 +18,7 @@ export function useReference(formItem: any) {
     const script = formItem.mergeScript;
     const func = new Function("ctx", script);
     const merged = func(ctx);
-    _.merge(formItem, merged);
+    merge(formItem, merged);
 
     delete formItem.mergeScript;
   }
