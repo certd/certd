@@ -4,6 +4,7 @@ import { In } from 'typeorm';
 import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
 import { UserService } from '../../../modules/sys/authority/service/user-service.js';
 import { BasicController } from '../../basic/code-controller.js';
+import { RoleService } from '../../../modules/sys/authority/service/role-service.js';
 
 /**
  * 通知
@@ -15,6 +16,8 @@ export class BasicUserController extends BasicController {
   service: UserService;
   @Inject()
   authService: AuthService;
+ @Inject()
+  roleService: RoleService;
 
   getService(): UserService {
     return this.service;
@@ -55,6 +58,17 @@ export class BasicUserController extends BasicController {
       },
     });
     return this.ok(users);
+  }
+
+   @Post('/getSimpleRoles', {summary: Constants.per.authOnly})
+  async getSimpleRoles() {
+    const roles = await this.roleService.find({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+    return this.ok(roles);
   }
 
 }

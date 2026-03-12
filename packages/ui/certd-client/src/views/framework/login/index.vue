@@ -46,10 +46,20 @@
               </a-form-item>
             </template>
           </a-tab-pane>
+          <a-tab-pane key="passkey" :tab="t('authentication.passkeyTab')">
+            <template v-if="formState.loginType === 'passkey'">
+              <div v-if="!passkeySupported" class="text-red-500 text-sm mt-2">
+                {{ t("authentication.passkeyNotSupported") }}
+              </div>
+            </template>
+          </a-tab-pane>
         </a-tabs>
         <a-form-item>
-          <a-button type="primary" size="large" html-type="button" :loading="loading" class="login-button" @click="handleFinish">
+          <a-button v-if="formState.loginType !== 'passkey'" type="primary" size="large" html-type="button" :loading="loading" class="login-button" @click="handleFinish">
             {{ queryBindCode ? t("authentication.bindButton") : t("authentication.loginButton") }}
+          </a-button>
+          <a-button v-else type="primary" size="large" html-type="button" :loading="loading" class="login-button" :disabled="!passkeySupported" @click="handlePasskeyLogin">
+            {{ t("authentication.passkeyLogin") }}
           </a-button>
         </a-form-item>
         <a-form-item>
@@ -94,8 +104,8 @@
     </a-form>
   </div>
 </template>
-<script lang="ts">
-import { computed, defineComponent, nextTick, reactive, ref, toRaw } from "vue";
+<script lang="ts" setup>
+import { computed, nextTick, reactive, ref, toRaw, onMounted } from "vue";
 import { useUserStore } from "/src/store/user";
 import { useSettingStore } from "/@/store/settings";
 import { utils } from "@fast-crud/fast-crud";
@@ -103,193 +113,199 @@ import SmsCode from "/@/views/framework/login/sms-code.vue";
 import { useI18n } from "/@/locales";
 import { LanguageToggle } from "/@/vben/layouts";
 import CaptchaInput from "/@/components/captcha/captcha-input.vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import OauthFooter from "/@/views/framework/oauth/oauth-footer.vue";
 import * as oauthApi from "../oauth/api";
 import { notification } from "ant-design-vue";
-export default defineComponent({
-  name: "LoginPage",
-  components: { LanguageToggle, SmsCode, CaptchaInput, OauthFooter },
-  setup() {
-    const { t } = useI18n();
-    const route = useRoute();
-    const userStore = useUserStore();
+import { request } from "/src/api/service";
+import * as UserApi from "/src/store/user/api.user";
 
-    const queryBindCode = ref(route.query.bindCode as string | undefined);
+const { t } = useI18n();
+const route = useRoute();
+const userStore = useUserStore();
 
-    const queryOauthOnly = route.query.oauthOnly as string;
-    const urlLoginType = route.query.loginType as string | undefined;
-    const verifyCodeInputRef = ref();
-    const loading = ref(false);
+const queryBindCode = ref(route.query.bindCode as string | undefined);
+const queryOauthOnly = route.query.oauthOnly as string;
+const urlLoginType = route.query.loginType as string | undefined;
+const verifyCodeInputRef = ref();
+const loading = ref(false);
 
-    const settingStore = useSettingStore();
-    const formRef = ref();
-    let defaultLoginType = settingStore.sysPublic.defaultLoginType || "password";
-    if (defaultLoginType === "sms") {
-      if (!settingStore.sysPublic.smsLoginEnabled || !settingStore.isComm) {
-        defaultLoginType = "password";
-      }
-    }
-    const formState = reactive({
-      username: "",
-      phoneCode: "86",
-      mobile: "",
-      password: "",
-      loginType: urlLoginType || defaultLoginType, //password
-      smsCode: "",
-      captcha: null,
-      smsCaptcha: null,
-    });
+const settingStore = useSettingStore();
+const formRef = ref();
+let defaultLoginType = settingStore.sysPublic.defaultLoginType || "password";
+if (defaultLoginType === "sms") {
+  if (!settingStore.sysPublic.smsLoginEnabled || !settingStore.isComm) {
+    defaultLoginType = "password";
+  }
+}
+const formState = reactive({
+  username: "",
+  phoneCode: "86",
+  mobile: "",
+  password: "",
+  loginType: urlLoginType || defaultLoginType,
+  smsCode: "",
+  captcha: null,
+  smsCaptcha: null,
+});
 
-    const rules = {
-      mobile: [
-        {
-          required: true,
-          message: "请输入手机号",
-        },
-      ],
-      username: [
-        {
-          required: true,
-          message: "请输入用户名",
-        },
-      ],
-      password: [
-        {
-          required: true,
-          message: "请输入登录密码",
-        },
-      ],
-      smsCode: [
-        {
-          required: true,
-          message: "请输入短信验证码",
-        },
-      ],
-      captcha: [
-        {
-          required: true,
-          message: "请进行验证码验证",
-        },
-      ],
-    };
-    const layout = {
-      labelCol: {
-        span: 0,
-      },
-      wrapperCol: {
-        span: 24,
-      },
-    };
-
-    async function afterLoginSuccess() {
-      if (queryBindCode.value) {
-        await oauthApi.BindUser(queryBindCode.value);
-        notification.success({ message: "绑定第三方账号成功" });
-      }
-    }
-
-    const twoFactor = reactive({
-      loginId: "",
-      verifyCode: "",
-    });
-
-    const handleTwoFactorSubmit = async () => {
-      await userStore.loginByTwoFactor(twoFactor);
-      afterLoginSuccess();
-    };
-
-    const handleFinish = async () => {
-      loading.value = true;
-      try {
-        // formState.captcha = await doCaptchaValidate();
-        // if (!formState.captcha) {
-        //   return;
-        // }
-        const loginType = formState.loginType;
-        await userStore.login(loginType, toRaw(formState));
-        afterLoginSuccess();
-      } catch (e: any) {
-        //@ts-ignore
-        if (e.code === 10020) {
-          //双重认证
-          //@ts-ignore
-          twoFactor.loginId = e.data;
-          await nextTick();
-          verifyCodeInputRef.value.focus();
-        } else {
-          throw e;
-        }
-      } finally {
-        loading.value = false;
-        formState.captcha = null;
-      }
-    };
-
-    const handleFinishFailed = (errors: any) => {
-      utils.logger.log(errors);
-    };
-
-    const resetForm = () => {
-      formRef.value.resetFields();
-    };
-
-    const isLoginError = ref();
-
-    const sysPublicSettings = settingStore.getSysPublic;
-
-    function hasRegisterTypeEnabled() {
-      return sysPublicSettings.registerEnabled && (sysPublicSettings.usernameRegisterEnabled || sysPublicSettings.emailRegisterEnabled || sysPublicSettings.mobileRegisterEnabled || sysPublicSettings.smsLoginEnabled);
-    }
-
-    const captchaInputRef = ref();
-    const captchaInputForSmsCode = ref();
-
-    const isOauthOnly = computed(() => {
-      if (queryOauthOnly === "false" || queryOauthOnly === "0") {
-        return false;
-      }
-      return sysPublicSettings.oauthOnly && settingStore.isPlus && sysPublicSettings.oauthEnabled;
-    });
-
-    return {
-      t,
-      loading,
-      formState,
-      formRef,
-      rules,
-      layout,
-      isOauthOnly,
-      handleFinishFailed,
-      handleFinish,
-      resetForm,
-      isLoginError,
-      sysPublicSettings,
-      hasRegisterTypeEnabled,
-      twoFactor,
-      handleTwoFactorSubmit,
-      verifyCodeInputRef,
-      settingStore,
-      captchaInputRef,
-      captchaInputForSmsCode,
-      queryBindCode,
-    };
+const rules = {
+  mobile: [
+    {
+      required: true,
+      message: "请输入手机号",
+    },
+  ],
+  username: [
+    {
+      required: true,
+      message: "请输入用户名",
+    },
+  ],
+  password: [
+    {
+      required: true,
+      message: "请输入登录密码",
+    },
+  ],
+  smsCode: [
+    {
+      required: true,
+      message: "请输入短信验证码",
+    },
+  ],
+  captcha: [
+    {
+      required: true,
+      message: "请进行验证码验证",
+    },
+  ],
+};
+const layout = {
+  labelCol: {
+    span: 0,
   },
+  wrapperCol: {
+    span: 24,
+  },
+};
+
+const twoFactor = reactive({
+  loginId: "",
+  verifyCode: "",
+});
+
+const passkeySupported = ref(false);
+const passkeyEnabled = ref(false);
+
+const checkPasskeySupport = () => {
+  passkeySupported.value = false;
+  if (typeof window !== "undefined" && "credentials" in navigator && "PublicKeyCredential" in window) {
+    passkeySupported.value = true;
+  }
+};
+
+const handlePasskeyLogin = async () => {
+  if (!passkeySupported.value) {
+    notification.error({ message: t("authentication.passkeyNotSupported") });
+    return;
+  }
+
+  loading.value = true;
+  try {
+    const optionsResponse: any = await request({
+      url: "/passkey/generateAuthentication",
+      method: "post",
+    });
+    const options = optionsResponse;
+
+    const credential = await (navigator.credentials as any).get({
+      publicKey: {
+        challenge: Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)),
+        rpId: options.rpId,
+        allowCredentials: options.allowCredentials || [],
+        timeout: options.timeout || 60000,
+      },
+    });
+
+    if (!credential) {
+      throw new Error("Passkey认证失败");
+    }
+
+    const loginRes: any = await UserApi.loginByPasskey({
+      userId: optionsResponse.userId,
+      credential,
+      challenge: options.challenge,
+    });
+
+    await userStore.onLoginSuccess(loginRes);
+  } catch (e: any) {
+    console.error("Passkey登录失败:", e);
+    notification.error({ message: e.message || "Passkey登录失败" });
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleFinish = async () => {
+  loading.value = true;
+  try {
+    const loginType = formState.loginType;
+    await userStore.login(loginType, toRaw(formState));
+    if (queryBindCode.value) {
+      await oauthApi.BindUser(queryBindCode.value);
+      notification.success({ message: "绑定第三方账号成功" });
+    }
+  } catch (e: any) {
+    if (e.code === 10020) {
+      twoFactor.loginId = e.data;
+      await nextTick();
+      verifyCodeInputRef.value.focus();
+    } else {
+      throw e;
+    }
+  } finally {
+    loading.value = false;
+    formState.captcha = null;
+  }
+};
+
+const handleFinishFailed = (errors: any) => {
+  utils.logger.log(errors);
+};
+
+const handleTwoFactorSubmit = async () => {
+  await userStore.loginByTwoFactor(twoFactor);
+  if (queryBindCode.value) {
+    await oauthApi.BindUser(queryBindCode.value);
+    notification.success({ message: "绑定第三方账号成功" });
+  }
+};
+
+const sysPublicSettings = settingStore.getSysPublic;
+
+const hasRegisterTypeEnabled = () => {
+  return sysPublicSettings.registerEnabled && (sysPublicSettings.usernameRegisterEnabled || sysPublicSettings.emailRegisterEnabled || sysPublicSettings.mobileRegisterEnabled || sysPublicSettings.smsLoginEnabled);
+};
+
+const isOauthOnly = computed(() => {
+  if (queryOauthOnly === "false" || queryOauthOnly === "0") {
+    return false;
+  }
+  return sysPublicSettings.oauthOnly && settingStore.isPlus && sysPublicSettings.oauthEnabled;
+});
+
+onMounted(() => {
+  checkPasskeySupport();
 });
 </script>
 
 <style lang="less">
 .login-page.main {
-  //margin: 20px !important;
   margin-bottom: 100px;
 
   .user-layout-login {
-    //label {
-    //  font-size: 14px;
-    //}
-
     .fs-icon {
-      // color: rgba(0, 0, 0, 0.45);
       margin-right: 4px;
     }
 
@@ -328,7 +344,6 @@ export default defineComponent({
       text-align: left;
       margin-top: 30px;
       margin-bottom: 30px;
-      //line-height: 22px;
 
       .item-icon {
         font-size: 24px;

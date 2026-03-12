@@ -1,7 +1,8 @@
-import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
 import { BaseController, Constants } from '@certd/lib-server';
-import { UserService } from '../../../modules/sys/authority/service/user-service.js';
+import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
+import { PasskeyService } from '../../../modules/login/service/passkey-service.js';
 import { RoleService } from '../../../modules/sys/authority/service/role-service.js';
+import { UserService } from '../../../modules/sys/authority/service/user-service.js';
 
 /**
  */
@@ -10,8 +11,14 @@ import { RoleService } from '../../../modules/sys/authority/service/role-service
 export class MineController extends BaseController {
   @Inject()
   userService: UserService;
+
   @Inject()
   roleService: RoleService;
+
+  @Inject()
+  passkeyService: PasskeyService;
+
+
   @Post('/info', { summary: Constants.per.authOnly })
   public async info() {
     const userId = this.getUserId();
@@ -41,6 +48,32 @@ export class MineController extends BaseController {
       avatar: body.avatar,
       nickName: body.nickName,
     });
+    return this.ok({});
+  }
+
+  @Post('/passkeys', { summary: Constants.per.authOnly })
+  public async getPasskeys() {
+    const userId = this.getUserId();
+    const passkeys = await this.passkeyService.find({
+      select: ['id', 'deviceName', 'registeredAt'],
+      where: { userId }});
+    return this.ok(passkeys);
+  }
+
+  @Post('/unbindPasskey', { summary: Constants.per.authOnly })
+  public async unbindPasskey(@Body(ALL) body: any) {
+    const userId = this.getUserId();
+    const passkeyId = body.id;
+
+    const passkey = await this.passkeyService.findOne({
+      where: { id: passkeyId, userId },
+    });
+
+    if (!passkey) {
+      throw new Error('Passkey不存在');
+    }
+
+    await this.passkeyService.delete([passkey.id]);
     return this.ok({});
   }
 }

@@ -92,6 +92,16 @@ export const useUserStore = defineStore({
       const loginRes = await UserApi.loginByTwoFactor(form);
       return await this.onLoginSuccess(loginRes);
     },
+
+    async loginByPasskey(form: any) {
+      const loginRes = await UserApi.loginByPasskey(form);
+      return await this.onLoginSuccess(loginRes);
+    },
+
+    async registerPasskey(form: any) {
+      return await UserApi.registerPasskey(form);
+    },
+
     async getUserInfoAction(): Promise<UserInfoRes> {
       const userInfo = await UserApi.mine();
       this.setUserInfo(userInfo);

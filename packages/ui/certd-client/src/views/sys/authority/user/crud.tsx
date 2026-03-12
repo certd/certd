@@ -269,7 +269,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           title: t("certd.roles"),
           type: "dict-select",
           dict: dict({
-            url: "/sys/authority/role/list",
+            url: "/basic/user/getSimpleRoles",
             value: "id",
             label: "name",
           }), // 数据字典

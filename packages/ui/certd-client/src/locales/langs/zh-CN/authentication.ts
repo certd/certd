@@ -68,6 +68,14 @@ export default {
 
   smsTab: "手机号登录/注册",
   passwordTab: "密码登录",
+  passkeyTab: "Passkey登录",
+  passkeyLogin: "Passkey登录",
+  passkeyHelper: "使用您的生物识别或安全密钥登录",
+  passkeyNotSupported: "您的浏览器不支持Passkey",
+  passkeyRegister: "注册Passkey",
+  passkeyRegistered: "Passkey已注册",
+  passkeyRegisterSuccess: "Passkey注册成功",
+  passkeyRegisterFailed: "Passkey注册失败",
 
   title: "修改密码",
   weakPasswordWarning: "为了您的账户安全，请立即修改密码",
@@ -92,4 +100,7 @@ export default {
 
   oauthLoginTitle: "其他登录方式",
   oauthOnlyLoginTitle: "登录",
+  registerPasskey: "注册Passkey",
+  deviceName: "设备名称",
+  deviceNameHelper: "请输入当前设备名称，绑定多个时好做区分",
 };

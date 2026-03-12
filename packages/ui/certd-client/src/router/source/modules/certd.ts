@@ -260,7 +260,7 @@ export const certdResources = [
             meta: {
               icon: "ion:person-outline",
               auth: true,
-              isMenu: false,
+              isMenu: true,
             },
           },
           {

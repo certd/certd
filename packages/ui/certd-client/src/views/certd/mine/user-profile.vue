@@ -15,6 +15,9 @@
         </a-descriptions-item>
         <a-descriptions-item :label="t('authentication.email')">{{ userInfo.email }}</a-descriptions-item>
         <a-descriptions-item :label="t('authentication.phoneNumber')">{{ userInfo.phoneCode }}{{ userInfo.mobile }}</a-descriptions-item>
+        <a-descriptions-item label="角色">
+          <fs-values-format :model-value="userInfo.roleIds" :dict="roleDict" />
+        </a-descriptions-item>
         <a-descriptions-item v-if="settingStore.sysPublic.oauthEnabled && settingStore.isPlus" label="第三方账号绑定">
           <template v-for="item in computedOauthBounds" :key="item.name">
             <div v-if="item.addonId" class="flex items-center gap-2 mb-2">
@@ -24,6 +27,21 @@
               <a-button v-else type="primary" @click="bind(item.name)">绑定</a-button>
             </div>
           </template>
+        </a-descriptions-item>
+        <a-descriptions-item label="Passkey">
+          <div v-if="passkeys.length > 0" class="flex flex-col gap-2">
+            <div v-for="passkey in passkeys" :key="passkey.id" class="flex items-center gap-4 p-2 border-b">
+              <fs-icon icon="ion:finger-print" class="text-blue-500 fs-24" />
+              <span class="w-40 truncate" :title="passkey.passkeyId">{{ passkey.deviceName }}</span>
+              <span class="text-sm text-gray-500">{{ formatDate(passkey.registeredAt) }}</span>
+              <a-button type="primary" danger @click="unbindPasskey(passkey.id)">解绑</a-button>
+            </div>
+          </div>
+          <div v-else class="text-gray-500">暂无Passkey</div>
+          <a-button v-if="passkeySupported" type="primary" class="mt-2" @click="registerPasskey">注册Passkey</a-button>
+          <div v-if="!passkeySupported" class="text-red-500 text-sm mt-2">
+            {{ t("authentication.passkeyNotSupported") }}
+          </div>
         </a-descriptions-item>
         <a-descriptions-item :label="t('common.handle')">
           <a-button type="primary" @click="doUpdate">{{ t("authentication.updateProfile") }}</a-button>
@@ -40,9 +58,11 @@ import { computed, onMounted, Ref, ref } from "vue";
 import ChangePasswordButton from "/@/views/certd/mine/change-password-button.vue";
 import { useI18n } from "/src/locales";
 import { useUserProfile } from "./use";
-import { Modal } from "ant-design-vue";
+import { usePasskeyRegister } from "./use";
+import { message, Modal } from "ant-design-vue";
 import { useSettingStore } from "/@/store/settings";
 import { isEmpty } from "lodash-es";
+import { dict } from "@fast-crud/fast-crud";
 
 const { t } = useI18n();
 
@@ -53,11 +73,20 @@ defineOptions({
 const settingStore = useSettingStore();
 
 const userInfo: Ref = ref({});
+const passkeys = ref([]);
+const passkeySupported = ref(false);
 
 const getUserInfo = async () => {
   userInfo.value = await api.getMineInfo();
 };
+const roleDict = dict({
+  url: "/basic/user/getSimpleRoles",
+  value: "id",
+  label: "name",
+});
+
 const { openEditProfileDialog } = useUserProfile();
+const { openRegisterDialog } = usePasskeyRegister();
 
 function doUpdate() {
   openEditProfileDialog({
@@ -69,10 +98,12 @@ function doUpdate() {
 
 const oauthBounds = ref([]);
 const oauthProviders = ref([]);
+
 async function loadOauthBounds() {
   const res = await api.GetOauthBounds();
   oauthBounds.value = res;
 }
+
 async function loadOauthProviders() {
   const res = await api.GetOauthProviders();
   oauthProviders.value = res;
@@ -102,11 +133,115 @@ async function unbind(type: string) {
 }
 
 async function bind(type: string) {
-  //获取第三方登录URL
   const res = await api.OauthBoundUrl(type);
   const loginUrl = res.loginUrl;
   window.location.href = loginUrl;
 }
+
+async function loadPasskeys() {
+  try {
+    const res = await api.GetPasskeys();
+    passkeys.value = res;
+  } catch (e: any) {
+    console.error("加载Passkey失败:", e);
+  }
+}
+
+async function unbindPasskey(id: number) {
+  Modal.confirm({
+    title: "确认解绑吗？",
+    okText: "确认",
+    okType: "danger",
+    onOk: async () => {
+      await api.UnbindPasskey(id);
+      await loadPasskeys();
+    },
+  });
+}
+
+const toBase64Url = (buffer: ArrayBuffer) => {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+};
+
+async function registerPasskey() {
+  if (!passkeySupported.value) {
+    Modal.error({ title: "错误", content: "浏览器不支持Passkey" });
+    return;
+  }
+  await openRegisterDialog({
+    onSubmit: async (ctx: any) => {
+      const deviceName = ctx.form.deviceName;
+      if (!deviceName) {
+        return;
+      }
+      await doRegisterPasskey(deviceName);
+      message.success("Passkey注册成功");
+    },
+  });
+}
+
+async function doRegisterPasskey(deviceName: string) {
+  try {
+    const res: any = await api.generatePasskeyRegistrationOptions();
+    const options = res;
+
+    navigator.credentials.query({
+      publicKey: options,
+    });
+    const credential = await (navigator.credentials as any).create({
+      publicKey: {
+        challenge: Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)),
+        rp: options.rp,
+        pubKeyCredParams: options.pubKeyCredParams,
+        timeout: options.timeout || 60000,
+        attestation: options.attestation,
+        excludeCredentials: options.excludeCredentials || [],
+        user: {
+          id: Uint8Array.from([res.userId]),
+          name: userInfo.value.username,
+          displayName: deviceName,
+        },
+      },
+    });
+
+    if (!credential) {
+      throw new Error("Passkey注册失败");
+    }
+
+    const response = {
+      id: credential.id,
+      type: credential.type,
+      rawId: toBase64Url(credential.rawId),
+      response: {
+        attestationObject: toBase64Url(credential.response.attestationObject),
+        clientDataJSON: toBase64Url(credential.response.clientDataJSON),
+      },
+    };
+
+    const verifyRes: any = await api.verifyPasskeyRegistration(userInfo.value.id, response, options.challenge, deviceName);
+    await loadPasskeys();
+  } catch (e: any) {
+    console.error("Passkey注册失败:", e);
+    Modal.error({ title: "错误", content: e.message || "Passkey注册失败" });
+  }
+}
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleString("zh-CN");
+};
+
+const checkPasskeySupport = () => {
+  passkeySupported.value = false;
+  if (typeof window !== "undefined" && "credentials" in navigator && "PublicKeyCredential" in window) {
+    passkeySupported.value = true;
+  }
+};
 
 const userAvatar = computed(() => {
   if (isEmpty(userInfo.value.avatar)) {
@@ -123,5 +258,7 @@ onMounted(async () => {
   await getUserInfo();
   await loadOauthBounds();
   await loadOauthProviders();
+  await loadPasskeys();
+  checkPasskeySupport();
 });
 </script>

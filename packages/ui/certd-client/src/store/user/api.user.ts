@@ -107,3 +107,42 @@ export async function OauthProviders() {
     method: "post",
   });
 }
+
+export async function generatePasskeyRegistrationOptions() {
+  return await request({
+    url: "/passkey/generateRegistration",
+    method: "post",
+  });
+}
+
+export async function verifyPasskeyRegistration(userId: number, response: any, challenge: string) {
+  return await request({
+    url: "/passkey/verifyRegistration",
+    method: "post",
+    data: { userId, response, challenge },
+  });
+}
+
+export async function generatePasskeyAuthenticationOptions(userId: number) {
+  return await request({
+    url: "/passkey/generateAuthentication",
+    method: "post",
+    data: { userId },
+  });
+}
+
+export async function loginByPasskey(form: { userId: number; credential: any; challenge: string }) {
+  return await request({
+    url: "/loginByPasskey",
+    method: "post",
+    data: form,
+  });
+}
+
+export async function registerPasskey(form: { userId: number; response: any; challenge: string }) {
+  return await request({
+    url: "/passkey/register",
+    method: "post",
+    data: form,
+  });
+}

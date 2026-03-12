@@ -81,6 +81,23 @@ export class LoginController extends BaseController {
     return this.ok(token);
   }
 
+    @Post('/loginByPasskey', { summary: Constants.per.guest })
+    public async loginByPasskey(
+      @Body(ALL)
+      body: any
+    ) {
+      const credential = body.credential;
+      const challenge = body.challenge;
+  
+      const token = await this.loginService.loginByPasskey({
+        credential,
+        challenge,
+      }, this.ctx);
+  
+      // this.writeTokenCookie(token);
+      return this.ok(token);
+    }
+
   @Post('/logout', { summary: Constants.per.authOnly })
   public logout() {
     this.ctx.cookies.set("certd_token", "", {

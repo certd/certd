@@ -18,6 +18,7 @@ import { UserSettingsService } from "../../mine/service/user-settings-service.js
 import { isPlus } from "@certd/plus-core";
 import { AddonService } from "@certd/lib-server";
 import { OauthBoundService } from "./oauth-bound-service.js";
+import { PasskeyService } from "./passkey-service.js";
 
 /**
  */
@@ -44,6 +45,9 @@ export class LoginService {
   addonService: AddonService;
   @Inject()
   oauthBoundService: OauthBoundService;
+
+  @Inject()
+  passkeyService: PasskeyService;
 
   checkIsBlocked(username: string) {
     const blockDurationKey = `login_block_duration:${username}`;
@@ -254,4 +258,10 @@ export class LoginService {
     }
     return this.generateToken(info);
   }
-}
+
+  async loginByPasskey(req: { credential: any; challenge: string }, ctx: any) {
+    const {credential, challenge} = req;
+    const user = await this.passkeyService.loginByPasskey(credential, challenge, ctx);
+    return this.generateToken(user);
+  }}
+

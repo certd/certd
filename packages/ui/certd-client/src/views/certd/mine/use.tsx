@@ -108,3 +108,54 @@ export function useUserProfile() {
     openEditProfileDialog,
   };
 }
+
+export function usePasskeyRegister() {
+  const { openCrudFormDialog } = useFormWrapper();
+  const wrapperRef = ref();
+  async function openRegisterDialog(req: { onSubmit?: (ctx: any) => void }) {
+    const { t } = useI18n();
+
+    const userStore = useUserStore();
+    const deviceNameRef = ref();
+
+    const crudOptions: any = {
+      form: {
+        wrapper: {
+          title: t("authentication.registerPasskey"),
+          width: 500,
+          onOpened(opts: { form: any }) {
+            opts.form.deviceName = "";
+          },
+        },
+        onSubmit: req.onSubmit,
+        afterSubmit: null,
+        onSuccess: null,
+      },
+      columns: {
+        deviceName: {
+          title: t("authentication.deviceName"),
+          type: "text",
+          form: {
+            component: {
+              class: "w-full",
+            },
+            col: {
+              span: 24,
+            },
+            helper: t("authentication.deviceNameHelper"),
+            rules: [{ required: true, message: t("authentication.deviceName") }],
+          },
+        },
+      },
+    };
+
+    const wrapper = await openCrudFormDialog({ crudOptions });
+    wrapperRef.value = wrapper;
+
+    return wrapper;
+  }
+
+  return {
+    openRegisterDialog,
+  };
+}

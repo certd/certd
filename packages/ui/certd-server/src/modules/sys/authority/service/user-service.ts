@@ -25,6 +25,7 @@ export const AdminRoleId = 1
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class UserService extends BaseService<UserEntity> {
+ 
 
   @InjectEntityModel(UserEntity)
   repository: Repository<UserEntity>;
@@ -276,6 +277,10 @@ export class UserService extends BaseService<UserEntity> {
     }
     await this.resetPassword(user.id, data.password)
     return user.username;
+  }
+
+  async getByUsername(username: any) {
+    return await this.findOne({ username });
   }
 
   async changePassword(userId: any, form: any) {

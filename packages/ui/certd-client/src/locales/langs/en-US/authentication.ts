@@ -68,6 +68,14 @@ export default {
 
   smsTab: "Login via SMS code",
   passwordTab: "Password login",
+  passkeyTab: "Passkey Login",
+  passkeyLogin: "Passkey Login",
+  passkeyHelper: "Login with your biometric or security key",
+  passkeyNotSupported: "Your browser does not support Passkey",
+  passkeyRegister: "Register Passkey",
+  passkeyRegistered: "Passkey Registered",
+  passkeyRegisterSuccess: "Passkey registered successfully",
+  passkeyRegisterFailed: "Passkey registration failed",
   title: "Change Password",
   weakPasswordWarning: "For your account security, please change your password immediately",
   changeNow: "Change Now",
@@ -90,4 +98,7 @@ export default {
   updateProfile: "Update Profile",
   oauthLoginTitle: "Other ways of login",
   oauthOnlyLoginTitle: "Login",
+  registerPasskey: "Register Passkey",
+  deviceName: "Device Name",
+  deviceNameHelper: "Please enter the device name， used to identify the device",
 };
