@@ -800,6 +800,8 @@ export default {
       reverseProxyHelper: "证书颁发机构ACME地址的反向代理，在申请证书时自动使用",
       reverseProxyPlaceholder: "http://le.px.handfree.work",
       reverseProxyEmpty: "未配置反向代理",
+      environmentVars: "环境变量",
+      environmentVarsHelper: "配置运行时环境变量，每行一个，格式：KEY=VALUE",
     },
   },
   modal: {

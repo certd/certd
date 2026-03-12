@@ -1,4 +1,4 @@
-import { IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { AliyunAccess } from "../../../../plugin-lib/aliyun/access/index.js";
 import { CertApplyBasePlugin } from "../base.js";
 import { CertReader, createRemoteSelectInputDefine } from "@certd/plugin-lib";
@@ -34,8 +34,9 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
       helper: "订阅模式的证书订单Id",
       typeName: "CertApplyGetFormAliyun",
       component: {
-        name: "RemoteAutoComplete",
+        name: "RemoteSelect",
         vModel: "value",
+        pager: true,
       },
       action: CertApplyGetFormAliyunPlugin.prototype.onGetOrderList.name,
     })
@@ -126,6 +127,7 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
 
     const client = await access.getClient("cas.aliyuncs.com");
 
+    const pager = new Pager(req)
     const res = await client.doRequest({
       // 接口名称
       action: "ListUserCertificateOrder",
@@ -139,12 +141,14 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
       data: {
         query: {
           Status: "ISSUED",
+          CurrentPage: pager.pageNo,
+          ShowSize : pager.pageSize,
         },
       },
     });
     const list = res?.CertificateOrderList || [];
     if (!list || list.length === 0) {
-      throw new Error("没有找到已签发的证书订单");
+      return []
     }
 
     return list.map((item: any) => {

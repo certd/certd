@@ -88,6 +88,10 @@ export class SysPrivateSettings extends BaseSettings {
 
   pipelineMaxRunningCount?: number;
 
+
+  environmentVars?: string = '';
+
+
   sms?: {
     type?: string;
     config?: any;

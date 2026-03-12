@@ -38,6 +38,10 @@ COPY ./patch/ssh2/*.js /app/node_modules/.pnpm/node_modules/ssh2/lib/protocol/
 
 ENV LEGO_VERSION=4.30.1
 ENV LEGO_DOWNLOAD_DIR=/app/tools/lego
+
+ENV ALIYUN_CLIENT_CONNECT_TIMEOUT=10000
+ENV ALIYUN_CLIENT_READ_TIMEOUT=20000
+
 RUN mkdir -p $LEGO_DOWNLOAD_DIR
 
 # 根据架构下载不同的文件

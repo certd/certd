@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.1](https://github.com/certd/certd/compare/v1.39.0...v1.39.1) (2026-03-09)
+
+### Bug Fixes
+
+* 修复企业管理模式下，切换用户登录后，丢失项目列表的bug ([d23c8b4](https://github.com/certd/certd/commit/d23c8b4a2a5f5ab17822c6ee1d4108ac7280b9d1))
+
+### Performance Improvements
+
+* 支持迁移个人数据到企业项目中 ([c6ca832](https://github.com/certd/certd/commit/c6ca83273779ed84de1b23b5e477063af043d015))
+* install tip ([853fdc7](https://github.com/certd/certd/commit/853fdc70a263b62d75c9ff3970607e6bf1c1593b))
+
 # [1.39.0](https://github.com/certd/certd/compare/v1.38.12...v1.39.0) (2026-03-07)
 
 ### Bug Fixes

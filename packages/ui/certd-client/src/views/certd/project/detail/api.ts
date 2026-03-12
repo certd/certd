@@ -73,3 +73,17 @@ export async function ApproveJoin(form: any) {
     data: form,
   });
 }
+
+export async function GetSelfResources() {
+  return await request({
+    url: "/enterprise/transfer/selfResources",
+    method: "post",
+  });
+}
+
+export async function TransferResources() {
+  return await request({
+    url: "/enterprise/transfer/doTransfer",
+    method: "post",
+  });
+}

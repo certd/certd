@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onActivated, onMounted, ref } from "vue";
+import { computed, onActivated, onMounted, provide, ref } from "vue";
 import { dict, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import ChangeGroup from "./components/change-group.vue";
@@ -69,6 +69,7 @@ import { groupDictRef } from "./group/dicts";
 import { useCertPipelineCreator } from "./certd-form/use";
 import { useRouter } from "vue-router";
 import { useCrudPermission } from "/@/plugin/permission";
+import CertdForm from "./certd-form/certd-form.vue";
 
 defineOptions({
   name: "PipelineManager",
@@ -79,10 +80,16 @@ const context: any = {
   selectedRowKeys,
 };
 const router = useRouter();
-const { openAddCertdPipelineDialog } = useCertPipelineCreator();
+
 function onActionbarMoreItemClick(req: { key: string; item: any }) {
   openCertApplyDialog({ key: req.key, title: req.item?.title });
 }
+
+const certdFormRef = ref<typeof CertdForm>();
+const currentPluginRef = ref();
+provide("getCurrentPluginDefine", () => {
+  return currentPluginRef.value;
+});
 
 const addMorePipelineBtns = computed(() => {
   return [
@@ -92,6 +99,7 @@ const addMorePipelineBtns = computed(() => {
     { key: "BatchAddPipeline", title: t("certd.pipelinePage.batchAddPipeline"), icon: "ion:duplicate" },
   ];
 });
+const { openAddCertdPipelineDialog } = useCertPipelineCreator();
 function openCertApplyDialog(req: { key: string; title: string }) {
   if (req.key === "AddPipeline") {
     crudExpose.openAdd({});
@@ -104,7 +112,7 @@ function openCertApplyDialog(req: { key: string; title: string }) {
 
   const searchForm = crudExpose.getSearchValidatedFormData();
   const defaultGroupId = searchForm.groupId;
-  openAddCertdPipelineDialog({ pluginName: req.key, defaultGroupId, title: req.title });
+  openAddCertdPipelineDialog({ pluginName: req.key, defaultGroupId, title: req.title, currentPluginRef });
 }
 context.openCertApplyDialog = openCertApplyDialog;
 context.permission = { isProjectPermission: true };

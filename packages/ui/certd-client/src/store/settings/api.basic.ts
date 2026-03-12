@@ -101,6 +101,8 @@ export type SysPrivateSetting = {
   commonCnameEnabled?: boolean;
   // 同一个用户同时最大运行流水线数量
   pipelineMaxRunningCount?: number;
+  // 环境变量
+  environmentVars?: string;
 
   sms?: {
     type?: string;

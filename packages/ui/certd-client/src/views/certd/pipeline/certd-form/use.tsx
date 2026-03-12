@@ -6,7 +6,7 @@ import { useRouter } from "vue-router";
 import { compute, CreateCrudOptionsRet, dict, useFormWrapper } from "@fast-crud/fast-crud";
 import NotificationSelector from "/@/views/certd/notification/notification-selector/index.vue";
 import { useReference } from "/@/use/use-refrence";
-import { computed, ref } from "vue";
+import { computed, provide, Ref, ref } from "vue";
 import * as api from "../api";
 import { PluginGroup, usePluginStore } from "/@/store/plugin";
 import { createNotificationApi } from "/@/views/certd/notification/api";
@@ -89,9 +89,10 @@ export function useCertPipelineCreator() {
     const inputs: any = {};
     const moreParams = [];
     const doSubmit = req.doSubmit;
-    for (const inputKey in req.certPlugin.input) {
+    const certPlugin = req.certPlugin;
+    for (const inputKey in certPlugin.input) {
       // inputs[inputKey].form.show = true;
-      const inputDefine = cloneDeep(req.certPlugin.input[inputKey]);
+      const inputDefine = cloneDeep(certPlugin.input[inputKey]);
       if (inputDefine.maybeNeed) {
         moreParams.push(inputKey);
       }
@@ -103,7 +104,6 @@ export function useCertPipelineCreator() {
         },
       };
     }
-
     const pluginStore = usePluginStore();
     const randomHour = Math.floor(Math.random() * 6);
     const randomMin = Math.floor(Math.random() * 60);
@@ -322,7 +322,7 @@ export function useCertPipelineCreator() {
     return certPlugins;
   }
 
-  async function openAddCertdPipelineDialog(req: { pluginName: string; defaultGroupId?: number; title?: string }) {
+  async function openAddCertdPipelineDialog(req: { pluginName: string; defaultGroupId?: number; title?: string; currentPluginRef: Ref<any> }) {
     //检查是否流水线数量超出限制
     await checkPipelineLimit();
 
@@ -393,6 +393,8 @@ export function useCertPipelineCreator() {
       message.error("该证书申请插件不存在");
       return;
     }
+
+    req.currentPluginRef.value = certPlugin;
     const { crudOptions } = createCrudOptions({
       certPlugin,
       doSubmit,
