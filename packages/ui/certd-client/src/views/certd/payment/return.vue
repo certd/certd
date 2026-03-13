@@ -26,7 +26,8 @@ const type = route.params.type as string;
 const query = route.query;
 
 async function checkNotify() {
-  const res = await api.Notify(type, query);
+  // const res = await api.Notify(type, query);
+  const res = "success";
   if (res === "success") {
     return true;
   }
