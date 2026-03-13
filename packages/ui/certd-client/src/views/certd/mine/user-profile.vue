@@ -351,6 +351,136 @@ onMounted(async () => {
   }
 }
 
+.dark {
+  .page-user-profile {
+    :deep(.ant-descriptions-item-label) {
+      color: rgba(255, 255, 255, 0.85);
+    }
+  }
+
+  .profile-container {
+    .profile-card,
+    .bindings-card,
+    .passkey-card {
+      background: linear-gradient(135deg, #1f1f1f 0%, #2d2d2d 100%);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+      &:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    .card-header {
+      .header-bg-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        opacity: 0.15;
+      }
+    }
+
+    .header-content {
+      .user-avatar {
+        border-color: #3b3b3b;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      .user-name {
+        color: #e5e5e5;
+      }
+
+      .detail-tag {
+        background: #3b3b3b;
+        color: #e5e5e5;
+
+        .tag-icon {
+          color: #e5e5e5;
+        }
+      }
+    }
+
+    .bindings-list {
+      .binding-item {
+        background: #2d2d2d;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #e5e5e5;
+
+        &:hover {
+          border-color: #667eea;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .binding-name {
+          color: #e5e5e5;
+        }
+
+        .binding-status {
+          &.bound {
+            background: #1a3a2f;
+            color: #4caf50;
+          }
+
+          &.unbound {
+            background: #3a352a;
+            color: #ffb300;
+          }
+        }
+      }
+    }
+
+    .passkey-list {
+      .passkey-item {
+        background: #2d2d2d;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #e5e5e5;
+
+        &:hover {
+          border-color: #667eea;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .passkey-name {
+          color: #e5e5e5;
+        }
+
+        .passkey-meta {
+          .meta-item {
+            color: #b0b0b0;
+          }
+
+          .meta-icon {
+            color: #888888;
+          }
+        }
+      }
+    }
+
+    .empty-state {
+      color: #b0b0b0;
+
+      .empty-icon {
+        opacity: 0.6;
+      }
+    }
+
+    .warning-box {
+      background: #3a2a2a;
+      border-color: #5a3a3a;
+      color: #e5e5e5;
+
+      .warning-icon {
+        color: #ef5350;
+      }
+    }
+
+    .helper {
+      background: #2d2d2d;
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #b0b0b0;
+    }
+  }
+}
+
 .profile-container {
   display: flex;
   flex-direction: column;
