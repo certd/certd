@@ -14,7 +14,7 @@ export class SysAddonController extends AddonController {
 
   async getProjectUserId(permission:string){
     return {
-      projectId:null,userId:0 //0为系统级别
+      projectId:null,userId:0  //0为系统级别
     }
   }
   getUserId() {

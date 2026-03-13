@@ -38,6 +38,7 @@ export type SysPublicSetting = {
   passwordLoginEnabled?: boolean;
   smsLoginEnabled?: boolean;
   defaultLoginType?: string;
+  passkeyEnabled?: boolean;
   selfServicePasswordRetrievalEnabled?: boolean;
 
   limitUserPipelineCount?: number;

@@ -1,6 +1,12 @@
 <template>
   <div class="sys-settings-form sys-settings-oauth">
     <a-form :model="formState" name="register" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
+      <a-form-item :label="t('certd.sys.setting.enablePasskey')" :name="['public', 'passkeyEnabled']">
+        <div class="flex-o">
+          <a-switch v-model:checked="formState.public.passkeyEnabled" :disabled="!settingsStore.isPlus" :title="t('certd.plusFeature')" />
+          <vip-button class="ml-5" mode="button"></vip-button>
+        </div>
+      </a-form-item>
       <a-form-item :label="t('certd.sys.setting.enableOauth')" :name="['public', 'oauthEnabled']">
         <div class="flex-o">
           <a-switch v-model:checked="formState.public.oauthEnabled" :disabled="!settingsStore.isPlus" :title="t('certd.plusFeature')" />

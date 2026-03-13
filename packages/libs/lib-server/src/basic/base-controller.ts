@@ -115,11 +115,17 @@ export abstract class BaseController {
     if (projectId) {
       await authService.checkProjectId(service, id, projectId);
     }else{
-      if(allowAdmin){
-        await authService.checkUserIdButAllowAdmin(this.ctx, service, id);
+
+      if(userId === 0){
+        //系统级别，不检查权限
       }else{
-        await authService.checkUserId( service, id, userId);
+        if(allowAdmin){
+          await authService.checkUserIdButAllowAdmin(this.ctx, service, id);
+        }else{
+          await authService.checkUserId( service, id, userId);
+        }
       }
+     
     }
     return {projectId,userId}
   }

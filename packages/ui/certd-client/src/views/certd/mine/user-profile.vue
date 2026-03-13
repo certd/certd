@@ -3,58 +3,122 @@
     <template #header>
       <div class="title">{{ t("certd.myInfo") }}</div>
     </template>
-    <div class="p-10">
-      <a-descriptions title="" bordered :column="2">
-        <a-descriptions-item :label="t('authentication.username')">{{ userInfo.username }}</a-descriptions-item>
-        <a-descriptions-item :label="t('authentication.nickName')">{{ userInfo.nickName }}</a-descriptions-item>
-        <a-descriptions-item :label="t('authentication.avatar')">
-          <a-avatar v-if="userInfo.avatar" size="large" :src="userAvatar" style="background-color: #eee"> </a-avatar>
-          <a-avatar v-else size="large" style="background-color: #00b4f5">
-            {{ userInfo.username }}
-          </a-avatar>
-        </a-descriptions-item>
-        <a-descriptions-item :label="t('authentication.email')">{{ userInfo.email }}</a-descriptions-item>
-        <a-descriptions-item :label="t('authentication.phoneNumber')">{{ userInfo.phoneCode }}{{ userInfo.mobile }}</a-descriptions-item>
-        <a-descriptions-item label="角色">
-          <fs-values-format :model-value="userInfo.roleIds" :dict="roleDict" />
-        </a-descriptions-item>
-        <a-descriptions-item v-if="settingStore.sysPublic.oauthEnabled && settingStore.isPlus" label="第三方账号绑定">
+    <div class="profile-container md:p-8">
+      <div class="profile-card md:rounded">
+        <div class="card-header">
+          <div class="header-bg-gradient"></div>
+          <div class="header-content">
+            <div class="avatar-wrapper">
+              <a-avatar v-if="userInfo.avatar" :size="100" :src="userAvatar" class="user-avatar"> </a-avatar>
+              <a-avatar v-else size="100" class="user-avatar default-avatar">
+                {{ userInfo.username }}
+              </a-avatar>
+              <!-- <div class="status-indicator"></div> -->
+            </div>
+            <div class="user-info">
+              <h2 class="user-name flex items-center">
+                {{ userInfo.nickName }}
+                <fs-values-format :model-value="userInfo.roleIds" :dict="roleDict" color="blue" />
+              </h2>
+              <div class="user-details">
+                <a-tag color="blue" class="detail-tag">
+                  <span class="tag-icon">👤</span>
+                  {{ userInfo.username }}
+                </a-tag>
+                <a-tag v-if="userInfo.email" color="green" class="detail-tag">
+                  <span class="tag-icon">📧</span>
+                  {{ userInfo.email }}
+                </a-tag>
+                <a-tag v-if="userInfo.mobile" color="purple" class="detail-tag">
+                  <span class="tag-icon">📱</span>
+                  {{ userInfo.mobile }}
+                </a-tag>
+              </div>
+            </div>
+            <div class="action-buttons">
+              <a-button type="primary" class="action-btn" @click="doUpdate">
+                {{ t("authentication.updateProfile") }}
+              </a-button>
+              <change-password-button class="ml-10" :show-button="true" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="settingStore.sysPublic.oauthEnabled && settingStore.isPlus" class="bindings-card md:rounded">
+        <div class="card-title">
+          <fs-icon icon="ion:link-outline" class="title-icon" />
+          <span>第三方账号绑定</span>
+        </div>
+        <div class="bindings-list">
           <template v-for="item in computedOauthBounds" :key="item.name">
-            <div v-if="item.addonId" class="flex items-center gap-2 mb-2">
-              <fs-icon :icon="item.icon" class="mr-2 text-blue-500 w-5 flex justify-center items-center" />
-              <span class="mr-2 w-36">{{ item.title }}</span>
-              <a-button v-if="item.bound" type="primary" danger @click="unbind(item.name)">解绑</a-button>
-              <a-button v-else type="primary" @click="bind(item.name)">绑定</a-button>
+            <div v-if="item.addonId" class="binding-item">
+              <div class="binding-icon">
+                <fs-icon :icon="item.icon" class="icon" />
+              </div>
+              <div class="binding-info">
+                <span class="binding-name">{{ item.title }}</span>
+                <span class="binding-status" :class="item.bound ? 'bound' : 'unbound'">
+                  {{ item.bound ? "已绑定" : "未绑定" }}
+                </span>
+              </div>
+              <a-button v-if="item.bound" type="primary" danger class="action-btn" @click="unbind(item.name)">
+                <template #icon><fs-icon icon="ion:unlink-outline" /></template>
+                解绑
+              </a-button>
+              <a-button v-else type="primary" class="action-btn" @click="bind(item.name)">
+                <template #icon><fs-icon icon="ion:link-outline" /></template>
+                绑定
+              </a-button>
             </div>
           </template>
-        </a-descriptions-item>
-        <a-descriptions-item label="Passkey">
-          <div v-if="passkeys.length > 0" class="flex flex-col gap-2">
-            <div v-for="passkey in passkeys" :key="passkey.id" class="flex items-center gap-4 p-2 border-b">
-              <fs-icon icon="ion:finger-print" class="text-blue-500 fs-24" />
-              <span class="w-40 truncate" :title="passkey.passkeyId">{{ passkey.deviceName }}</span>
-              <span>
-                <div class="text-sm text-gray-500">注册时间：{{ formatDate(passkey.registeredAt) }}</div>
-                <div class="text-sm text-gray-500">最后使用：{{ formatDate(passkey.updateTime) }}</div>
-              </span>
+          <div v-if="computedOauthBounds.length === 0" class="empty-text">暂无可用的第三方账号绑定</div>
+        </div>
+      </div>
 
-              <a-button type="primary" danger @click="unbindPasskey(passkey.id)">解绑</a-button>
+      <div v-if="settingStore.sysPublic.passkeyEnabled && settingStore.isPlus" class="passkey-card md:rounded">
+        <div class="card-title">
+          <fs-icon icon="ion:finger-print" class="title-icon" />
+          <span>Passkey 安全密钥</span>
+        </div>
+        <div class="passkey-list">
+          <div v-for="passkey in passkeys" :key="passkey.id" class="passkey-item">
+            <div class="passkey-icon">
+              <fs-icon icon="ion:finger-print" class="icon" />
             </div>
+            <div class="passkey-info">
+              <div class="passkey-name">{{ passkey.deviceName }}</div>
+              <div class="passkey-meta flex items-center">
+                <span class="meta-item flex items-center">
+                  <fs-icon icon="ion:calendar-outline" class="meta-icon" />
+                  {{ formatDate(passkey.registeredAt) }}
+                </span>
+                <span class="meta-item flex items-center">
+                  <fs-icon icon="ion:time-outline" class="meta-icon" />
+                  最近使用：<fs-time-humanize :model-value="passkey.updateTime" />
+                </span>
+              </div>
+            </div>
+            <a-button type="primary" danger class="remove-btn" @click="unbindPasskey(passkey.id)">
+              <template #icon><fs-icon icon="ion:trash-outline" /></template>
+              移除
+            </a-button>
           </div>
-          <div v-else class="text-gray-500">暂无Passkey</div>
-          <a-button v-if="passkeySupported" type="primary" class="mt-2" @click="registerPasskey">注册Passkey</a-button>
-          <div v-if="!passkeySupported" class="text-red-500 text-sm mt-2">
-            {{ t("authentication.passkeyNotSupported") }}
-          </div>
-          <pre class="helper"
-            >{{ t("authentication.passkeyRegisterHelper") }}
-          </pre>
-        </a-descriptions-item>
-        <a-descriptions-item :label="t('common.handle')">
-          <a-button type="primary" @click="doUpdate">{{ t("authentication.updateProfile") }}</a-button>
-          <change-password-button class="ml-10" :show-button="true"> </change-password-button>
-        </a-descriptions-item>
-      </a-descriptions>
+        </div>
+        <div v-if="passkeys.length === 0" class="empty-state">
+          <fs-icon icon="ion:finger-print" class="empty-icon" />
+          <p class="empty-text">暂无Passkey</p>
+        </div>
+        <div v-if="!passkeySupported" class="warning-box">
+          <fs-icon icon="ion:warning-outline" class="warning-icon" />
+          <span>{{ t("authentication.passkeyNotSupported") }}</span>
+        </div>
+        <a-button v-if="passkeySupported" type="primary" class="add-btn" @click="registerPasskey">
+          <template #icon><fs-icon icon="ion:add-circle-outline" /></template>
+          注册新的Passkey
+        </a-button>
+        <pre class="helper">{{ t("authentication.passkeyRegisterHelper") }}</pre>
+      </div>
     </div>
   </fs-page>
 </template>
@@ -278,3 +342,380 @@ onMounted(async () => {
   checkPasskeySupport();
 });
 </script>
+
+<style lang="less">
+.page-user-profile {
+  :deep(.ant-descriptions-item-label) {
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.85);
+  }
+}
+
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1000px;
+
+  .profile-card,
+  .bindings-card,
+  .passkey-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .bindings-card,
+  .passkey-card {
+    padding: 18px;
+  }
+
+  .profile-card:hover,
+  .bindings-card:hover,
+  .passkey-card:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .card-header {
+    position: relative;
+    padding: 40px 30px;
+  }
+
+  .header-bg-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    opacity: 0.08;
+  }
+
+  .header-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .user-avatar {
+    border: 4px solid #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .status-indicator {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 16px;
+    height: 16px;
+    background: #52c41a;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+  }
+
+  .user-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .user-name {
+    margin: 0 0 12px 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .detail-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+
+  .tag-icon {
+    font-size: 14px;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+
+  .title-icon {
+    font-size: 20px;
+    color: #667eea;
+  }
+
+  .bindings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .binding-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+  }
+
+  .binding-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+  }
+
+  .binding-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+  }
+
+  .binding-icon .icon {
+    font-size: 20px;
+    color: #ffffff;
+  }
+
+  .binding-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .binding-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+
+  .binding-status {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .binding-status.bound {
+    background: #e6fffa;
+    color: #38a169;
+  }
+
+  .binding-status.unbound {
+    background: #fffaf0;
+    color: #d69e2e;
+  }
+
+  .passkey-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .passkey-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+  }
+
+  .passkey-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+  }
+
+  .passkey-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    border-radius: 12px;
+  }
+
+  .passkey-icon .icon {
+    font-size: 24px;
+    color: #ffffff;
+  }
+
+  .passkey-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .passkey-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+  }
+
+  .passkey-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 13px;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #6b7280;
+  }
+
+  .meta-icon {
+    font-size: 14px;
+    color: #9ca3af;
+  }
+
+  .remove-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .remove-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+
+  .empty-text {
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .warning-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #fff7ed;
+    border: 1px solid #fed7d7;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+
+  .warning-icon {
+    font-size: 18px;
+    color: #f56565;
+  }
+
+  .add-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+
+  .add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .helper {
+    background: #f8f9fa;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .header-content {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .user-details {
+      justify-content: center;
+    }
+
+    .action-buttons {
+      justify-content: center;
+      width: 100%;
+    }
+  }
+}
+</style>

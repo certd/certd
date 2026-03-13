@@ -96,7 +96,7 @@ export default {
   nickName: "昵称",
   phoneNumber: "手机号",
   changePassword: "修改密码",
-  updateProfile: "修改个人信息",
+  updateProfile: "修改信息",
 
   oauthLoginTitle: "其他登录方式",
   oauthOnlyLoginTitle: "登录",
@@ -104,4 +104,5 @@ export default {
   deviceName: "设备名称",
   deviceNameHelper: "请输入当前设备名称，绑定多个时好做区分",
   passkeyRegisterHelper: "1、站点域名变更会导致passkey失效;\n2、同一设备同一个用户绑定多次只有最后一次的有效，之前绑定的会失效，需要手动删除",
+  userInfo: "账号信息",
 };

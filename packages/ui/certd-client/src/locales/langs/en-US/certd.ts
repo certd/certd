@@ -727,7 +727,7 @@ export default {
       paymentSetting: "Payment Settings",
       captchaSetting: "Captcha Setting",
       pipelineSetting: "Pipeline Settings",
-      oauthSetting: "OAuth2 Settings",
+      oauthSetting: "Login Settings",
       networkSetting: "Network Settings",
       adminModeSetting: "Admin Mode Settings",
       adminModeHelper: "enterprise mode : allow to create and manage pipelines, roles, users, etc.\n saas mode : only allow to create and manage pipelines",
@@ -769,7 +769,8 @@ export default {
       oauthAutoRedirectHelper: "Whether to auto redirect to OAuth2 login when login (using the first enabled OAuth2 login type)",
       oauthOnly: "OAuth2 Login Only",
       oauthOnlyHelper: "Whether to only allow OAuth2 login, disable password login",
-
+      enablePasskey: "Enable Passkey Login",
+      passkeyEnabledHelper: "Whether to enable Passkey login",
       email: {
         templates: "Email Templates",
         templateType: "Template Type",
