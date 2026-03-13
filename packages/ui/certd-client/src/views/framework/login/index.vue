@@ -233,7 +233,6 @@ const handlePasskeyLogin = async () => {
     }
 
     const loginRes: any = await UserApi.loginByPasskey({
-      userId: optionsResponse.userId,
       credential,
       challenge: options.challenge,
     });

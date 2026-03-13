@@ -58,14 +58,14 @@ export async function OauthBoundUrl(type: string) {
 
 export async function GetPasskeys() {
   return await request({
-    url: "/mine/passkeys",
+    url: "/mine/passkey/list",
     method: "POST",
   });
 }
 
 export async function UnbindPasskey(id: number) {
   return await request({
-    url: "/mine/unbindPasskey",
+    url: "/mine/passkey/unbind",
     method: "POST",
     data: { id },
   });
@@ -110,39 +110,23 @@ export interface PasskeyCredential {
 
 export async function generatePasskeyRegistrationOptions() {
   return await request({
-    url: "/passkey/generateRegistration",
+    url: "/mine/passkey/generateRegistration",
     method: "post",
   });
 }
 
-export async function verifyPasskeyRegistration(userId: number, response: any, challenge: string, deviceName: string) {
+export async function verifyPasskeyRegistration(response: any, challenge: string, deviceName: string) {
   return await request({
-    url: "/passkey/verifyRegistration",
+    url: "/mine/passkey/verifyRegistration",
     method: "post",
-    data: { userId, response, challenge, deviceName },
+    data: { response, challenge, deviceName },
   });
 }
 
-export async function generatePasskeyAuthenticationOptions(userId: number) {
+export async function registerPasskey(response: any, challenge: string, deviceName: string) {
   return await request({
-    url: "/passkey/generateAuthentication",
+    url: "/mine/passkey/register",
     method: "post",
-    data: { userId },
-  });
-}
-
-export async function loginByPasskey(userId: number, credential: any, challenge: string) {
-  return await request({
-    url: "/passkey/login",
-    method: "post",
-    data: { userId, credential, challenge },
-  });
-}
-
-export async function registerPasskey(userId: number, response: any, challenge: string) {
-  return await request({
-    url: "/passkey/register",
-    method: "post",
-    data: { userId, response, challenge },
+    data: { response, challenge, deviceName },
   });
 }

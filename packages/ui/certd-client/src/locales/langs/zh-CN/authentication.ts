@@ -103,4 +103,5 @@ export default {
   registerPasskey: "注册Passkey",
   deviceName: "设备名称",
   deviceNameHelper: "请输入当前设备名称，绑定多个时好做区分",
+  passkeyRegisterHelper: "1、站点域名变更会导致passkey失效;\n2、同一设备同一个用户绑定多次只有最后一次的有效，之前绑定的会失效，需要手动删除",
 };

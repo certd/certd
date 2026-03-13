@@ -1,10 +1,11 @@
 import { cache } from "@certd/basic";
-import { AuthException, BaseService } from "@certd/lib-server";
+import { AuthException, BaseService, SysSettingsService, SysSiteInfo } from "@certd/lib-server";
+import { isComm } from "@certd/plus-core";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { Repository } from "typeorm";
 import { UserService } from "../../sys/authority/service/user-service.js";
 import { PasskeyEntity } from "../entity/passkey.js";
-import { Repository } from "typeorm";
-import { InjectEntityModel } from "@midwayjs/typeorm";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -16,15 +17,31 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
   @InjectEntityModel(PasskeyEntity)
   repository: Repository<PasskeyEntity>;
 
+  @Inject()
+  sysSettingsService: SysSettingsService;
+
   getRepository(): Repository<PasskeyEntity> {
     return this.repository;
+  }
+
+  async getRpInfo(){
+    let rpName = "Certd"
+    if(isComm()){
+      const siteInfo = await this.sysSettingsService.getSetting<SysSiteInfo>(SysSiteInfo);
+      rpName = siteInfo.title || rpName;
+    }
+    return {
+      rpName,
+    }
   }
   async generateRegistrationOptions(userId: number, username: string, remoteIp: string, ctx: any) {
     const { generateRegistrationOptions } = await import("@simplewebauthn/server");
     const user = await this.userService.info(userId);
     
+    const {rpName} = await this.getRpInfo();
+
     const options = await generateRegistrationOptions({
-      rpName: "Certd",
+      rpName: rpName,
       rpID: this.getRpId(ctx),
       userID: new Uint8Array([userId]),
       userName: username,
@@ -184,6 +201,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     }
 
     passkey.counter = verification.counter;
+    passkey.updateTime = new Date();
     await this.repository.save(passkey);
 
     const user = await this.userService.info(passkey.userId);

@@ -33,7 +33,11 @@
             <div v-for="passkey in passkeys" :key="passkey.id" class="flex items-center gap-4 p-2 border-b">
               <fs-icon icon="ion:finger-print" class="text-blue-500 fs-24" />
               <span class="w-40 truncate" :title="passkey.passkeyId">{{ passkey.deviceName }}</span>
-              <span class="text-sm text-gray-500">{{ formatDate(passkey.registeredAt) }}</span>
+              <span>
+                <div class="text-sm text-gray-500">注册时间：{{ formatDate(passkey.registeredAt) }}</div>
+                <div class="text-sm text-gray-500">最后使用：{{ formatDate(passkey.updateTime) }}</div>
+              </span>
+
               <a-button type="primary" danger @click="unbindPasskey(passkey.id)">解绑</a-button>
             </div>
           </div>
@@ -42,6 +46,9 @@
           <div v-if="!passkeySupported" class="text-red-500 text-sm mt-2">
             {{ t("authentication.passkeyNotSupported") }}
           </div>
+          <pre class="helper"
+            >{{ t("authentication.passkeyRegisterHelper") }}
+          </pre>
         </a-descriptions-item>
         <a-descriptions-item :label="t('common.handle')">
           <a-button type="primary" @click="doUpdate">{{ t("authentication.updateProfile") }}</a-button>
@@ -59,10 +66,11 @@ import ChangePasswordButton from "/@/views/certd/mine/change-password-button.vue
 import { useI18n } from "/src/locales";
 import { useUserProfile } from "./use";
 import { usePasskeyRegister } from "./use";
-import { message, Modal } from "ant-design-vue";
+import { message, Modal, notification } from "ant-design-vue";
 import { useSettingStore } from "/@/store/settings";
 import { isEmpty } from "lodash-es";
 import { dict } from "@fast-crud/fast-crud";
+import dayjs from "dayjs";
 
 const { t } = useI18n();
 
@@ -190,9 +198,15 @@ async function doRegisterPasskey(deviceName: string) {
     const res: any = await api.generatePasskeyRegistrationOptions();
     const options = res;
 
-    navigator.credentials.query({
-      publicKey: options,
-    });
+    // navigator.credentials.query({
+    //   publicKey: options,
+    // });
+
+    // const excludeCredentials = passkeys.value.map(item => ({
+    //   id: new TextEncoder().encode(item.passkeyId),
+    //   type: "public-key",
+    // }));
+
     const credential = await (navigator.credentials as any).create({
       publicKey: {
         challenge: Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)),
@@ -200,9 +214,9 @@ async function doRegisterPasskey(deviceName: string) {
         pubKeyCredParams: options.pubKeyCredParams,
         timeout: options.timeout || 60000,
         attestation: options.attestation,
-        excludeCredentials: options.excludeCredentials || [],
+        // excludeCredentials: excludeCredentials,
         user: {
-          id: Uint8Array.from([res.userId]),
+          id: new TextEncoder().encode(options.userId + ""),
           name: userInfo.value.username,
           displayName: deviceName,
         },
@@ -222,18 +236,20 @@ async function doRegisterPasskey(deviceName: string) {
         clientDataJSON: toBase64Url(credential.response.clientDataJSON),
       },
     };
+    console.log("credential", credential, response);
+    debugger;
 
-    const verifyRes: any = await api.verifyPasskeyRegistration(userInfo.value.id, response, options.challenge, deviceName);
+    const verifyRes: any = await api.verifyPasskeyRegistration(response, options.challenge, deviceName);
     await loadPasskeys();
   } catch (e: any) {
     console.error("Passkey注册失败:", e);
-    Modal.error({ title: "错误", content: e.message || "Passkey注册失败" });
+    notification.error({ message: "错误", description: e.message || "Passkey注册失败" });
   }
 }
 
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
-  return new Date(dateString).toLocaleString("zh-CN");
+  return dayjs(dateString).format("YYYY-MM-DD HH:mm:ss");
 };
 
 const checkPasskeySupport = () => {

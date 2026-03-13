@@ -115,23 +115,22 @@ export async function generatePasskeyRegistrationOptions() {
   });
 }
 
-export async function verifyPasskeyRegistration(userId: number, response: any, challenge: string) {
+export async function verifyPasskeyRegistration(response: any, challenge: string) {
   return await request({
     url: "/passkey/verifyRegistration",
     method: "post",
-    data: { userId, response, challenge },
+    data: { response, challenge },
   });
 }
 
-export async function generatePasskeyAuthenticationOptions(userId: number) {
+export async function generatePasskeyAuthenticationOptions() {
   return await request({
     url: "/passkey/generateAuthentication",
     method: "post",
-    data: { userId },
   });
 }
 
-export async function loginByPasskey(form: { userId: number; credential: any; challenge: string }) {
+export async function loginByPasskey(form: { credential: any; challenge: string }) {
   return await request({
     url: "/loginByPasskey",
     method: "post",
@@ -139,7 +138,7 @@ export async function loginByPasskey(form: { userId: number; credential: any; ch
   });
 }
 
-export async function registerPasskey(form: { userId: number; response: any; challenge: string }) {
+export async function registerPasskey(form: { response: any; challenge: string }) {
   return await request({
     url: "/passkey/register",
     method: "post",

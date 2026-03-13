@@ -4,8 +4,8 @@ import { BaseController, Constants } from "@certd/lib-server";
 import { UserService } from "../../../modules/sys/authority/service/user-service.js";
 
 @Provide()
-@Controller('/api/passkey')
-export class PasskeyController extends BaseController {
+@Controller('/api/mine/passkey')
+export class MinePasskeyController extends BaseController {
   @Inject()
   passkeyService: PasskeyService;
 
@@ -39,12 +39,12 @@ export class PasskeyController extends BaseController {
     });
   }
 
-  @Post('/verifyRegistration', { summary: Constants.per.guest })
+  @Post('/verifyRegistration', { summary: Constants.per.authOnly })
   public async verifyRegistration(
     @Body(ALL)
     body: any
   ) {
-    const userId = body.userId;
+    const userId = this.getUserId()
     const response = body.response;
     const challenge = body.challenge;
     const deviceName = body.deviceName;
@@ -60,28 +60,14 @@ export class PasskeyController extends BaseController {
     return this.ok(result);
   }
 
-  @Post('/generateAuthentication', { summary: Constants.per.guest })
-  public async generateAuthentication(
-    @Body(ALL)
-    body: any
-  ) {
-    const options = await this.passkeyService.generateAuthenticationOptions(
-      this.ctx
-    );
+  
 
-    return this.ok({
-      ...options,
-    });
-  }
-
-
-
-  @Post('/register', { summary: Constants.per.guest })
+  @Post('/register', { summary: Constants.per.authOnly })
   public async registerPasskey(
     @Body(ALL)
     body: any
   ) {
-    const userId = body.userId;
+    const userId = this.getUserId();
     const response = body.response;
     const deviceName = body.deviceName;
     const challenge = body.challenge;
@@ -96,4 +82,34 @@ export class PasskeyController extends BaseController {
 
     return this.ok(result);
   }
+
+  
+  @Post('/list', { summary: Constants.per.authOnly })
+  public async getPasskeys() {
+    const userId = this.getUserId();
+    const passkeys = await this.passkeyService.find({
+      select: ['id', 'deviceName', 'registeredAt', 'transports', 'passkeyId' ,'updateTime'],
+      where: { userId },
+      order: { registeredAt: 'DESC' },
+    });
+    return this.ok(passkeys);
+  }
+
+  @Post('/unbind', { summary: Constants.per.authOnly })
+  public async unbindPasskey(@Body(ALL) body: any) {
+    const userId = this.getUserId();
+    const passkeyId = body.id;
+
+    const passkey = await this.passkeyService.findOne({
+      where: { id: passkeyId, userId },
+    });
+
+    if (!passkey) {
+      throw new Error('Passkey不存在');
+    }
+
+    await this.passkeyService.delete([passkey.id]);
+    return this.ok({});
+  }
+
 }

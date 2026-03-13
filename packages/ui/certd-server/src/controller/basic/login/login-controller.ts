@@ -4,6 +4,7 @@ import { AddonService, BaseController, Constants, SysPublicSettings, SysSettings
 import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { checkComm } from "@certd/plus-core";
 import { CaptchaService } from "../../../modules/basic/service/captcha-service.js";
+import { PasskeyService } from "../../../modules/login/service/passkey-service.js";
 
 /**
  */
@@ -22,6 +23,10 @@ export class LoginController extends BaseController {
 
   @Inject()
   captchaService: CaptchaService;
+
+   @Inject()
+  passkeyService: PasskeyService;
+
 
   @Post('/login', { summary: Constants.per.guest })
   public async login(
@@ -81,22 +86,36 @@ export class LoginController extends BaseController {
     return this.ok(token);
   }
 
-    @Post('/loginByPasskey', { summary: Constants.per.guest })
-    public async loginByPasskey(
-      @Body(ALL)
-      body: any
-    ) {
-      const credential = body.credential;
-      const challenge = body.challenge;
+
+
   
-      const token = await this.loginService.loginByPasskey({
-        credential,
-        challenge,
-      }, this.ctx);
-  
-      // this.writeTokenCookie(token);
-      return this.ok(token);
-    }
+  @Post('/passkey/generateAuthentication', { summary: Constants.per.guest })
+  public async generateAuthentication() {
+    const options = await this.passkeyService.generateAuthenticationOptions(
+      this.ctx
+    );
+
+    return this.ok({
+      ...options,
+    });
+  }
+
+  @Post('/loginByPasskey', { summary: Constants.per.guest })
+  public async loginByPasskey(
+    @Body(ALL)
+    body: any
+  ) {
+    const credential = body.credential;
+    const challenge = body.challenge;
+
+    const token = await this.loginService.loginByPasskey({
+      credential,
+      challenge,
+    }, this.ctx);
+
+    // this.writeTokenCookie(token);
+    return this.ok(token);
+  }
 
   @Post('/logout', { summary: Constants.per.authOnly })
   public logout() {

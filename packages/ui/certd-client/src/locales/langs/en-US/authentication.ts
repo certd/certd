@@ -101,4 +101,5 @@ export default {
   registerPasskey: "Register Passkey",
   deviceName: "Device Name",
   deviceNameHelper: "Please enter the device name， used to identify the device",
+  passkeyRegisterHelper: "Site domain change will invalidate passkey",
 };

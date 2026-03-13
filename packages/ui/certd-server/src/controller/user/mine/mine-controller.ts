@@ -50,30 +50,4 @@ export class MineController extends BaseController {
     });
     return this.ok({});
   }
-
-  @Post('/passkeys', { summary: Constants.per.authOnly })
-  public async getPasskeys() {
-    const userId = this.getUserId();
-    const passkeys = await this.passkeyService.find({
-      select: ['id', 'deviceName', 'registeredAt'],
-      where: { userId }});
-    return this.ok(passkeys);
-  }
-
-  @Post('/unbindPasskey', { summary: Constants.per.authOnly })
-  public async unbindPasskey(@Body(ALL) body: any) {
-    const userId = this.getUserId();
-    const passkeyId = body.id;
-
-    const passkey = await this.passkeyService.findOne({
-      where: { id: passkeyId, userId },
-    });
-
-    if (!passkey) {
-      throw new Error('Passkey不存在');
-    }
-
-    await this.passkeyService.delete([passkey.id]);
-    return this.ok({});
-  }
 }
