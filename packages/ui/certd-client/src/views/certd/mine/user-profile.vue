@@ -784,7 +784,7 @@ onMounted(async () => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px 20px;
+    padding: 20px 10px;
     color: #9ca3af;
   }
 

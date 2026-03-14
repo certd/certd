@@ -39,6 +39,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
     }
     return {
       id: entity.id,
+      keyId: entity.keyId,
       name: entity.name,
       userId: entity.userId,
     };
@@ -58,6 +59,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
     if(bean.isDefault){
       await this.setDefault(res.id, bean.userId);
     }
+    bean.keyId = "nt_" + utils.id.simpleNanoId();
     return res
   }
 
@@ -68,6 +70,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
 
     delete bean.userId;
     delete bean.type
+    delete bean.keyId
     const res = await super.update(bean);
     if(bean.isDefault){
       await this.setDefault(bean.id, old.userId);

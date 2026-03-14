@@ -42,6 +42,7 @@
           <change-group v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-group>
           <change-notification v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-notification>
           <change-trigger v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-trigger>
+          <change-project v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-project>
         </div>
       </div>
       <template #form-bottom>
@@ -57,6 +58,8 @@ import { dict, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import ChangeGroup from "./components/change-group.vue";
 import ChangeTrigger from "./components/change-trigger.vue";
+import ChangeProject from "./components/change-project.vue";
+
 import BatchRerun from "./components/batch-rerun.vue";
 import { Modal, notification } from "ant-design-vue";
 import * as api from "./api";

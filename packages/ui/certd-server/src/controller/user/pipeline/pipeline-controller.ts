@@ -262,6 +262,14 @@ export class PipelineController extends CrudController<PipelineService> {
     return this.ok({});
   }
 
+  @Post('/batchTransfer', { summary: Constants.per.authOnly })
+  async batchTransfer(@Body('ids') ids: number[], @Body('toProjectId') toProjectId: number) {
+    await this.checkPermissionCall(async ({})=>{
+      await this.service.batchTransfer(ids, toProjectId);
+    })
+    return this.ok({});
+  }
+
   @Post('/refreshWebhookKey', { summary: Constants.per.authOnly })
   async refreshWebhookKey(@Body('id') id: number) {
     await this.checkOwner(this.getService(), id,"write",true);

@@ -7,8 +7,12 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 export class AccessEntity {
   @PrimaryGeneratedColumn()
   id: number;
+  @Column({ name: 'key_id', comment: 'key_id', length: 100 })
+  keyId: string;
+
   @Column({ name: 'user_id', comment: '用户id' })
   userId: number; // 0为系统级别, -1为企业，大于1为用户
+
   @Column({ comment: '名称', length: 100 })
   name: string;
 

@@ -4,6 +4,7 @@ import { In, Repository } from "typeorm";
 import { AddonDefine, BaseService, PageReq, ValidateException } from "../../../index.js";
 import { addonRegistry } from "../api/index.js";
 import { AddonEntity } from "../entity/addon.js";
+import { utils } from "@certd/basic";
 
 /**
  * Addon
@@ -43,6 +44,7 @@ export class AddonService extends BaseService<AddonEntity> {
     } else {
       param.isSystem = false;
     }
+    param.keyId = "ad_" + utils.id.simpleNanoId();
     delete param._copyFrom;
     return await super.add(param);
   }
@@ -57,6 +59,7 @@ export class AddonService extends BaseService<AddonEntity> {
     if (oldEntity == null) {
       throw new ValidateException("该Addon配置不存在,请确认是否已被删除");
     }
+    delete param.keyId
     return await super.update(param);
   }
 
@@ -67,6 +70,7 @@ export class AddonService extends BaseService<AddonEntity> {
     }
     return {
       id: entity.id,
+      keyId: entity.keyId,
       name: entity.name,
       userId: entity.userId,
       addonType: entity.addonType,
@@ -100,6 +104,7 @@ export class AddonService extends BaseService<AddonEntity> {
       },
       select: {
         id: true,
+        keyId: true,
         name: true,
         addonType: true,
         type: true,
@@ -132,6 +137,7 @@ export class AddonService extends BaseService<AddonEntity> {
     const setting = JSON.parse(res.setting);
     return {
       id: res.id,
+      keyId: res.keyId,
       addonType: res.addonType,
       type: res.type,
       name: res.name,

@@ -5,6 +5,9 @@ export class NotificationEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ name: 'key_id', comment: 'key_id', length: 100 })
+  keyId: string;
+
   @Column({ name: 'user_id', comment: 'UserId' })
   userId: number;
 

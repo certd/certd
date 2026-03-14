@@ -110,6 +110,14 @@ export async function BatchUpdateNotificaiton(pipelineIds: number[], notificatio
   });
 }
 
+export async function BatchUpdateProject(pipelineIds: number[], toProjectId: number): Promise<void> {
+  return await request({
+    url: apiPrefix + "/batchTransfer",
+    method: "post",
+    data: { ids: pipelineIds, toProjectId: toProjectId },
+  });
+}
+
 export async function BatchDelete(pipelineIds: number[]): Promise<void> {
   return await request({
     url: apiPrefix + "/batchDelete",

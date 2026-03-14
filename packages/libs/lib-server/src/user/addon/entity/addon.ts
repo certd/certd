@@ -6,6 +6,8 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 export class AddonEntity {
   @PrimaryGeneratedColumn()
   id: number;
+  @Column({ name: 'key_id', comment: 'key_id', length: 100 })
+  keyId: string;
   @Column({ name: 'user_id', comment: '用户id' })
   userId: number;
   @Column({ comment: '名称', length: 100 })

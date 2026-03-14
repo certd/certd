@@ -5,6 +5,7 @@ import {AccessGetter, BaseService, PageReq, PermissionException, ValidateExcepti
 import {AccessEntity} from '../entity/access.js';
 import {AccessDefine, accessRegistry, newAccess} from '@certd/pipeline';
 import {EncryptService} from './encrypt-service.js';
+import { logger, utils } from '@certd/basic';
 
 /**
  * 授权
@@ -46,6 +47,7 @@ export class AccessService extends BaseService<AccessEntity> {
     }
     delete param._copyFrom
     this.encryptSetting(param, oldEntity);
+    param.keyId = "ac_" + utils.id.simpleNanoId();
     return await super.add(param);
   }
 
@@ -117,6 +119,7 @@ export class AccessService extends BaseService<AccessEntity> {
       throw new ValidateException('该授权配置不存在,请确认是否已被删除');
     }
     this.encryptSetting(param, oldEntity);
+    delete param.keyId
     return await super.update(param);
   }
 
@@ -214,5 +217,37 @@ export class AccessService extends BaseService<AccessEntity> {
       },
     });
 
+  }
+
+  /**
+   * 复制授权到其他项目
+   * @param accessId 
+   * @param projectId 
+   */
+  async copyTo(accessId: number,projectId?: number) {
+    const access = await this.info(accessId);
+    if (access == null) {
+      throw new Error(`该授权配置不存在,请确认是否已被删除:id=${accessId}`);
+    }
+    
+    const keyId = access.keyId;
+    //检查目标项目里是否已经有相同keyId的配置
+    const existAccess = await this.repository.findOne({
+      where: {
+        keyId,
+        projectId,
+      },
+    });
+    if (existAccess) {
+      logger.info(`目标项目已存在相同keyId的授权配置,跳过复制:keyId=${keyId}`);
+      return existAccess.id;
+    }
+    const newAccess = {
+      ...access,
+      id: undefined,
+      projectId,
+    }
+    await this.add(newAccess);
+    return newAccess.id;
   }
 }
