@@ -1,5 +1,5 @@
 import { cache } from "@certd/basic";
-import { AuthException, BaseService, SysSettingsService, SysSiteInfo } from "@certd/lib-server";
+import { AuthException, BaseService, SysInstallInfo, SysSettingsService, SysSiteInfo } from "@certd/lib-server";
 import { isComm } from "@certd/plus-core";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
@@ -10,7 +10,7 @@ import { PasskeyEntity } from "../entity/passkey.js";
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class PasskeyService extends BaseService<PasskeyEntity> {
- 
+
   @Inject()
   userService: UserService;
 
@@ -24,25 +24,36 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     return this.repository;
   }
 
-  async getRpInfo(){
+  async getRpInfo() {
     let rpName = "Certd"
-    if(isComm()){
+    if (isComm()) {
       const siteInfo = await this.sysSettingsService.getSetting<SysSiteInfo>(SysSiteInfo);
       rpName = siteInfo.title || rpName;
     }
+
+    const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
+
+    const url = installInfo.bindUrl || "http://localhost:7001";
+    const uri = new URL(url);
+    const rpId = uri.hostname;
+    const origin = uri.origin;
+
     return {
       rpName,
+      rpId,
+      origin,
     }
   }
   async generateRegistrationOptions(userId: number, username: string, remoteIp: string, ctx: any) {
     const { generateRegistrationOptions } = await import("@simplewebauthn/server");
     const user = await this.userService.info(userId);
-    
-    const {rpName} = await this.getRpInfo();
+
+    const { rpName, rpId } = await this.getRpInfo();
+
 
     const options = await generateRegistrationOptions({
       rpName: rpName,
-      rpID: this.getRpId(ctx),
+      rpID: rpId,
       userID: new Uint8Array([userId]),
       userName: username,
       userDisplayName: user.nickName || username,
@@ -67,17 +78,19 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     ctx: any
   ) {
     const { verifyRegistrationResponse } = await import("@simplewebauthn/server");
-    
+
     const storedUserId = cache.get(`passkey:registration:${challenge}`);
     if (!storedUserId || storedUserId !== userId) {
       throw new AuthException("注册验证失败");
     }
 
+    const { rpId, origin } = await this.getRpInfo();
+
     const verification = await verifyRegistrationResponse({
       response,
       expectedChallenge: challenge,
-      expectedOrigin: this.getOrigin(ctx),
-      expectedRPID: this.getRpId(ctx),
+      expectedOrigin: origin,
+      expectedRPID: rpId,
     });
 
     if (!verification.verified) {
@@ -94,9 +107,10 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
   }
 
   async generateAuthenticationOptions(ctx: any) {
+    const { rpId } = await this.getRpInfo();
     const { generateAuthenticationOptions } = await import("@simplewebauthn/server");
     const options = await generateAuthenticationOptions({
-      rpID: this.getRpId(ctx),
+      rpID: rpId,
       timeout: 60000,
       allowCredentials: [],
     });
@@ -116,22 +130,24 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     ctx: any
   ) {
     const { verifyAuthenticationResponse } = await import("@simplewebauthn/server");
-    
+
     const passkey = await this.repository.findOne({
       where: {
         passkeyId: credential.id,
       },
     });
-    
+
     if (!passkey) {
       throw new AuthException("Passkey不存在");
     }
 
+    const { rpId, origin } = await this.getRpInfo();
+
     const verification = await verifyAuthenticationResponse({
-      response:credential,
+      response: credential,
       expectedChallenge: challenge,
-      expectedOrigin: this.getOrigin(ctx),
-      expectedRPID: this.getRpId(ctx),
+      expectedOrigin: origin,
+      expectedRPID: rpId,
       credential: {
         id: passkey.passkeyId,
         publicKey: new Uint8Array(Buffer.from(passkey.publicKey, 'base64')),
@@ -179,7 +195,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     return { success: true };
   }
 
-  async loginByPasskey( credential: any, challenge: string, ctx: any) {
+  async loginByPasskey(credential: any, challenge: string, ctx: any) {
     const verification = await this.verifyAuthenticationResponse(
       credential,
       challenge,
@@ -191,7 +207,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
         passkeyId: verification.credentialId,
       },
     });
-    
+
     if (!passkey) {
       throw new AuthException("Passkey不存在");
     }
@@ -208,19 +224,19 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     return user;
   }
 
-  private getRpId(ctx: any): string {
-    if (ctx && ctx.request && ctx.request.host) {
-      return ctx.request.host.split(':')[0];
-    }
-    return 'localhost';
-  }
+  // private getRpId(ctx: any): string {
+  //   if (ctx && ctx.request && ctx.request.host) {
+  //     return ctx.request.host.split(':')[0];
+  //   }
+  //   return 'localhost';
+  // }
 
-  private getOrigin(ctx: any): string {
-    if (ctx && ctx.request) {
-      const protocol = ctx.request.protocol;
-      const host = ctx.request.host;
-      return `${protocol}://${host}`;
-    }
-    return 'https://localhost';
-  }
+  // private getOrigin(ctx: any): string {
+  //   if (ctx && ctx.request) {
+  //     const protocol = ctx.request.protocol;
+  //     const host = ctx.request.host;
+  //     return `${protocol}://${host}`;
+  //   }
+  //   return 'https://localhost';
+  // }
 }

@@ -770,7 +770,10 @@ export default {
       oauthOnly: "OAuth2 Login Only",
       oauthOnlyHelper: "Whether to only allow OAuth2 login, disable password login",
       enablePasskey: "Enable Passkey Login",
-      passkeyEnabledHelper: "Whether to enable Passkey login",
+      passkeyHostnameNotSame: "Passkey hostname must be the same as the main domain",
+      passkeyEnabledHelper:
+        "1、Site must enable https \n2、Domain name must not change, otherwise the registered passkey will be invalid \n3、Domain name must be the same as the main domain, otherwise the registered passkey will be invalid",
+
       email: {
         templates: "Email Templates",
         templateType: "Template Type",

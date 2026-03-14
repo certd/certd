@@ -4,7 +4,7 @@
       <!--      <div class="login-title">登录</div>-->
       <template v-if="!isOauthOnly">
         <a-tabs v-model:active-key="formState.loginType" :tab-bar-style="{ textAlign: 'center', borderBottom: 'unset' }">
-          <a-tab-pane key="password" :tab="t('authentication.passwordTab')" :disabled="sysPublicSettings.passwordLoginEnabled !== true">
+          <a-tab-pane key="password" :tab="t('authentication.passwordTab')">
             <template v-if="formState.loginType === 'password'">
               <!--      <div class="login-title">登录</div>-->
               <a-form-item required has-feedback name="username" :rules="rules.username">
@@ -48,7 +48,7 @@
           </a-tab-pane>
           <a-tab-pane key="passkey" :tab="t('authentication.passkeyTab')">
             <template v-if="formState.loginType === 'passkey'">
-              <div v-if="!passkeySupported" class="text-red-500 text-sm mt-2">
+              <div v-if="!passkeySupported" class="text-red-500 text-sm mt-2 text-center mb-10">
                 {{ t("authentication.passkeyNotSupported") }}
               </div>
             </template>

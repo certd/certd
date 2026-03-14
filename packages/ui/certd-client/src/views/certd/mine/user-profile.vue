@@ -45,79 +45,86 @@
         </div>
       </div>
 
-      <div v-if="settingStore.sysPublic.oauthEnabled && settingStore.isPlus" class="bindings-card md:rounded">
-        <div class="card-title">
-          <fs-icon icon="ion:link-outline" class="title-icon" />
-          <span>第三方账号绑定</span>
-        </div>
-        <div class="bindings-list">
-          <template v-for="item in computedOauthBounds" :key="item.name">
-            <div v-if="item.addonId" class="binding-item">
-              <div class="binding-icon">
-                <fs-icon :icon="item.icon" class="icon" />
-              </div>
-              <div class="binding-info">
-                <span class="binding-name">{{ item.title }}</span>
-                <span class="binding-status" :class="item.bound ? 'bound' : 'unbound'">
-                  {{ item.bound ? "已绑定" : "未绑定" }}
-                </span>
-              </div>
-              <a-button v-if="item.bound" type="primary" danger class="action-btn" @click="unbind(item.name)">
-                <template #icon><fs-icon icon="ion:unlink-outline" /></template>
-                解绑
-              </a-button>
-              <a-button v-else type="primary" class="action-btn" @click="bind(item.name)">
-                <template #icon><fs-icon icon="ion:link-outline" /></template>
-                绑定
-              </a-button>
+      <div class="flex flex-wrap">
+        <div class="w-full md:w-1/2 md:pr-2">
+          <div v-if="settingStore.sysPublic.oauthEnabled && settingStore.isPlus" class="bindings-card md:rounded">
+            <div class="card-title">
+              <fs-icon icon="ion:link-outline" class="title-icon" />
+              <span>第三方账号绑定</span>
             </div>
-          </template>
-          <div v-if="computedOauthBounds.length === 0" class="empty-text">暂无可用的第三方账号绑定</div>
-        </div>
-      </div>
-
-      <div v-if="settingStore.sysPublic.passkeyEnabled && settingStore.isPlus" class="passkey-card md:rounded">
-        <div class="card-title">
-          <fs-icon icon="ion:finger-print" class="title-icon" />
-          <span>Passkey 安全密钥</span>
-        </div>
-        <div class="passkey-list">
-          <div v-for="passkey in passkeys" :key="passkey.id" class="passkey-item">
-            <div class="passkey-icon">
-              <fs-icon icon="ion:finger-print" class="icon" />
+            <div class="bindings-list">
+              <template v-for="item in computedOauthBounds" :key="item.name">
+                <div v-if="item.addonId" class="binding-item">
+                  <div class="binding-icon">
+                    <fs-icon :icon="item.icon" class="icon" />
+                  </div>
+                  <div class="binding-info">
+                    <span class="binding-name">{{ item.title }}</span>
+                    <span>
+                      <a-tag v-if="item.bound" color="green" class="bound-tag1">已绑定</a-tag>
+                      <a-tag v-else color="red" class="bound-tag1">未绑定</a-tag>
+                    </span>
+                  </div>
+                  <a-button v-if="item.bound" type="primary" danger class="action-btn" @click="unbind(item.name)">
+                    <template #icon><fs-icon icon="ion:unlink-outline" /></template>
+                    解绑
+                  </a-button>
+                  <a-button v-else type="primary" class="action-btn" @click="bind(item.name)">
+                    <template #icon><fs-icon icon="ion:link-outline" /></template>
+                    绑定
+                  </a-button>
+                </div>
+              </template>
+              <div v-if="computedOauthBounds.length === 0" class="empty-text">暂无可用的第三方账号绑定</div>
             </div>
-            <div class="passkey-info">
-              <div class="passkey-name">{{ passkey.deviceName }}</div>
-              <div class="passkey-meta flex items-center">
-                <span class="meta-item flex items-center">
-                  <fs-icon icon="ion:calendar-outline" class="meta-icon" />
-                  {{ formatDate(passkey.registeredAt) }}
-                </span>
-                <span class="meta-item flex items-center">
-                  <fs-icon icon="ion:time-outline" class="meta-icon" />
-                  最近使用：<fs-time-humanize :model-value="passkey.updateTime" />
-                </span>
-              </div>
-            </div>
-            <a-button type="primary" danger class="remove-btn" @click="unbindPasskey(passkey.id)">
-              <template #icon><fs-icon icon="ion:trash-outline" /></template>
-              移除
-            </a-button>
           </div>
         </div>
-        <div v-if="passkeys.length === 0" class="empty-state">
-          <fs-icon icon="ion:finger-print" class="empty-icon" />
-          <p class="empty-text">暂无Passkey</p>
+
+        <div class="w-full md:w-1/2 md:pl-2">
+          <div v-if="settingStore.sysPublic.passkeyEnabled && settingStore.isPlus" class="passkey-card md:rounded">
+            <div class="card-title">
+              <fs-icon icon="ion:finger-print" class="title-icon" />
+              <span>Passkey 安全密钥</span>
+            </div>
+            <div class="passkey-list">
+              <div v-for="passkey in passkeys" :key="passkey.id" class="passkey-item">
+                <div class="passkey-icon">
+                  <fs-icon icon="ion:finger-print" class="icon" />
+                </div>
+                <div class="passkey-info">
+                  <div class="passkey-name">{{ passkey.deviceName }}</div>
+                  <div class="passkey-meta flex items-center">
+                    <span class="meta-item flex items-center">
+                      <fs-icon icon="ion:calendar-outline" class="meta-icon" />
+                      {{ formatDate(passkey.registeredAt) }}
+                    </span>
+                    <span class="meta-item flex items-center">
+                      <fs-icon icon="ion:time-outline" class="meta-icon" />
+                      最近使用：<fs-time-humanize :model-value="passkey.updateTime" />
+                    </span>
+                  </div>
+                </div>
+                <a-button type="primary" danger class="remove-btn" @click="unbindPasskey(passkey.id)">
+                  <template #icon><fs-icon icon="ion:trash-outline" /></template>
+                  移除
+                </a-button>
+              </div>
+            </div>
+            <div v-if="passkeys.length === 0" class="empty-state">
+              <fs-icon icon="ion:finger-print" class="empty-icon" />
+              <p class="empty-text">暂无Passkey</p>
+            </div>
+            <div v-if="!passkeySupported" class="warning-box">
+              <fs-icon icon="ion:warning-outline" class="warning-icon" />
+              <span>{{ t("authentication.passkeyNotSupported") }}</span>
+            </div>
+            <a-button v-if="passkeySupported" type="primary" class="add-btn" @click="registerPasskey">
+              <template #icon><fs-icon icon="ion:add-circle-outline" /></template>
+              注册新的Passkey
+            </a-button>
+            <pre class="helper">{{ t("authentication.passkeyRegisterHelper") }}</pre>
+          </div>
         </div>
-        <div v-if="!passkeySupported" class="warning-box">
-          <fs-icon icon="ion:warning-outline" class="warning-icon" />
-          <span>{{ t("authentication.passkeyNotSupported") }}</span>
-        </div>
-        <a-button v-if="passkeySupported" type="primary" class="add-btn" @click="registerPasskey">
-          <template #icon><fs-icon icon="ion:add-circle-outline" /></template>
-          注册新的Passkey
-        </a-button>
-        <pre class="helper">{{ t("authentication.passkeyRegisterHelper") }}</pre>
       </div>
     </div>
   </fs-page>
@@ -485,7 +492,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 1000px;
+  // max-width: 1000px;
 
   .profile-card,
   .bindings-card,
@@ -649,7 +656,7 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ebefff 0%, #e5d4ff 100%);
     border-radius: 10px;
   }
 

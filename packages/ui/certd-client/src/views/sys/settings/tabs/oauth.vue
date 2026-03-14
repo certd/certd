@@ -6,6 +6,10 @@
           <a-switch v-model:checked="formState.public.passkeyEnabled" :disabled="!settingsStore.isPlus" :title="t('certd.plusFeature')" />
           <vip-button class="ml-5" mode="button"></vip-button>
         </div>
+        <pre class="helper">{{ t("certd.sys.setting.passkeyEnabledHelper", [bindDomain]) }}</pre>
+        <div v-if="!bindDomainIsSame" class="text-red-500 text-sm mt-2">
+          {{ t("certd.sys.setting.passkeyHostnameNotSame") }}
+        </div>
       </a-form-item>
       <a-form-item :label="t('certd.sys.setting.enableOauth')" :name="['public', 'oauthEnabled']">
         <div class="flex-o">
@@ -85,7 +89,7 @@
 <script setup lang="tsx">
 import { notification } from "ant-design-vue";
 import { merge } from "lodash-es";
-import { reactive, ref, Ref } from "vue";
+import { computed, reactive, ref, Ref } from "vue";
 import AddonSelector from "../../../certd/addon/addon-selector/index.vue";
 import { useSettingStore } from "/@/store/settings";
 import * as api from "/@/views/sys/settings/api";
@@ -106,6 +110,16 @@ const oauthProviders = ref([]);
 async function loadOauthProviders() {
   oauthProviders.value = await api.GetOauthProviders();
 }
+
+const bindDomain = computed(() => {
+  const uri = new URL(settingsStore.installInfo.bindUrl);
+  return uri.hostname;
+});
+
+const bindDomainIsSame = computed(() => {
+  const currentHostname = window.location.hostname;
+  return bindDomain.value === currentHostname;
+});
 
 function fillOauthProviders(form: any) {
   const providers: any = {};
