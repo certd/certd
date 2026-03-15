@@ -8,7 +8,7 @@ import { CertApplyPluginNames} from '@certd/plugin-cert';
   title: '腾讯云-部署到CDN-v2',
   icon: 'svg:icon-tencentcloud',
   group: pluginGroups.tencent.key,
-  desc: '推荐使用',
+  desc: '推荐使用，支持CDN域名以及COS加速域名',
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
