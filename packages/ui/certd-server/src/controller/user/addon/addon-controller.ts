@@ -32,7 +32,7 @@ export class AddonController extends CrudController<AddonService> {
     return this.service;
   }
 
-  @Post("/page", { description: Constants.per.authOnly })
+  @Post("/page", { description: Constants.per.authOnly, summary: "查询Addon分页列表" })
   async page(@Body(ALL) body) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -50,7 +50,7 @@ export class AddonController extends CrudController<AddonService> {
     return this.ok(res);
   }
 
-  @Post("/list", { description: Constants.per.authOnly })
+  @Post("/list", { description: Constants.per.authOnly, summary: "查询Addon列表" })
   async list(@Body(ALL) body) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -59,7 +59,7 @@ export class AddonController extends CrudController<AddonService> {
     return super.list(body);
   }
 
-  @Post("/add", { description: Constants.per.authOnly })
+  @Post("/add", { description: Constants.per.authOnly, summary: "添加Addon" })
   async add(@Body(ALL) bean) {
     const {userId,projectId} = await this.getProjectUserIdRead();
     bean.userId = userId;
@@ -79,7 +79,7 @@ export class AddonController extends CrudController<AddonService> {
     return super.add(bean);
   }
 
-  @Post("/update", { description: Constants.per.authOnly })
+  @Post("/update", { description: Constants.per.authOnly, summary: "更新Addon" })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.getService(), bean.id, "write");
     const old = await this.service.info(bean.id);
@@ -102,25 +102,25 @@ export class AddonController extends CrudController<AddonService> {
     return super.update(bean);
   }
 
-  @Post("/info", { description: Constants.per.authOnly })
+  @Post("/info", { description: Constants.per.authOnly, summary: "查询Addon详情" })
   async info(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "read");
     return super.info(id);
   }
 
-  @Post("/delete", { description: Constants.per.authOnly })
+  @Post("/delete", { description: Constants.per.authOnly, summary: "删除Addon" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write");
     return super.delete(id);
   }
 
-  @Post("/define", { description: Constants.per.authOnly })
+  @Post("/define", { description: Constants.per.authOnly, summary: "查询Addon插件定义" })
   async define(@Query("type") type: string, @Query("addonType") addonType: string) {
     const notification = this.service.getDefineByType(type, addonType);
     return this.ok(notification);
   }
 
-  @Post("/getTypeDict", { description: Constants.per.authOnly })
+  @Post("/getTypeDict", { description: Constants.per.authOnly, summary: "查询Addon插件类型字典" })
   async getTypeDict(@Query("addonType") addonType: string) {
     const list: any = this.service.getDefineList(addonType);
     let dict = [];
@@ -138,7 +138,7 @@ export class AddonController extends CrudController<AddonService> {
     return this.ok(dict);
   }
 
-  @Post("/simpleInfo", { description: Constants.per.authOnly })
+  @Post("/simpleInfo", { description: Constants.per.authOnly, summary: "查询Addon插件简单信息" })
   async simpleInfo(@Query("addonType") addonType: string, @Query("id") id: number) {
     if (id === 0) {
       //获取默认
@@ -155,14 +155,14 @@ export class AddonController extends CrudController<AddonService> {
     return this.ok(res);
   }
 
-  @Post("/getDefaultId", { description: Constants.per.authOnly })
+  @Post("/getDefaultId", { description: Constants.per.authOnly, summary: "查询Addon插件默认配置ID" })
   async getDefaultId(@Query("addonType") addonType: string) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     const res = await this.service.getDefault(userId, addonType,projectId);
     return this.ok(res?.id);
   }
 
-  @Post("/setDefault", { description: Constants.per.authOnly })
+  @Post("/setDefault", { description: Constants.per.authOnly, summary: "设置Addon插件默认配置" })
   async setDefault(@Query("addonType") addonType: string, @Query("id") id: number) {
     const {projectId,userId} = await this.checkOwner(this.getService(), id, "write",true);
     const res = await this.service.setDefault(id, userId, addonType,projectId);
@@ -170,7 +170,7 @@ export class AddonController extends CrudController<AddonService> {
   }
 
 
-  @Post("/options", { description: Constants.per.authOnly })
+  @Post("/options", { description: Constants.per.authOnly, summary: "查询Addon插件配置字典" })
   async options(@Query("addonType") addonType: string) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     const res = await this.service.list({
@@ -187,7 +187,7 @@ export class AddonController extends CrudController<AddonService> {
   }
 
 
-  @Post("/handle", { description: Constants.per.authOnly })
+  @Post("/handle", { description: Constants.per.authOnly, summary: "Addon插件处理请求" })
   async handle(@Body(ALL) body: AddonRequestHandleReq) {
     let inputAddon = body.input.addon;
     if (body.input.id > 0) {

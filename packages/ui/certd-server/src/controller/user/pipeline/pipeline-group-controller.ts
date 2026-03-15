@@ -20,7 +20,7 @@ export class PipelineGroupController extends CrudController<PipelineGroupService
     return this.service;
   }
 
-  @Post('/page', { description: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly, summary: "查询流水线分组分页列表" })
   async page(@Body(ALL) body: any) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -38,7 +38,7 @@ export class PipelineGroupController extends CrudController<PipelineGroupService
     return this.ok(res);
   }
 
-  @Post('/list', { description: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly, summary: "查询流水线分组列表" })
   async list(@Body(ALL) body: any) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -47,7 +47,7 @@ export class PipelineGroupController extends CrudController<PipelineGroupService
     return await super.list(body);
   }
 
-  @Post('/add', { description: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly, summary: "添加流水线分组" })
   async add(@Body(ALL) bean: any) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     bean.userId = userId;
@@ -55,26 +55,26 @@ export class PipelineGroupController extends CrudController<PipelineGroupService
     return await super.add(bean);
   }
 
-  @Post('/update', { description: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly, summary: "更新流水线分组" })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
     return await super.update(bean);
   }
-  @Post('/info', { description: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly, summary: "查询流水线分组详情" })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "read");
     return await super.info(id);
   }
 
-  @Post('/delete', { description: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly, summary: "删除流水线分组" })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "write");
     return await super.delete(id);
   }
 
-  @Post('/all', { description: Constants.per.authOnly })
+  @Post('/all', { description: Constants.per.authOnly, summary: "查询所有流水线分组" })
   async all() {
     const {projectId,userId} = await this.getProjectUserIdRead();
     const list: any = await this.service.find({

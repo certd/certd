@@ -22,7 +22,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
     return this.service;
   }
 
-  @Post('/page', { description: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly, summary: "查询站点IP分页列表" })
   async page(@Body(ALL) body: any) {
     const { projectId, userId } = await this.getProjectUserIdRead()
     body.query = body.query ?? {};
@@ -36,7 +36,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
     return this.ok(res);
   }
 
-  @Post('/list', { description: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly, summary: "查询站点IP列表" })
   async list(@Body(ALL) body: any) {
     body.query = body.query ?? {};
     const { projectId, userId } = await this.getProjectUserIdRead()
@@ -45,7 +45,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
     return await super.list(body);
   }
 
-  @Post('/add', { description: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly, summary: "添加站点IP" })
   async add(@Body(ALL) bean: any) {
     const { projectId, userId } = await this.getProjectUserIdWrite()
     bean.userId = userId;
@@ -60,7 +60,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
     return this.ok(res);
   }
 
-  @Post('/update', { description: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly, summary: "更新站点IP" })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service,bean.id,"write");
     delete bean.userId;
@@ -73,13 +73,13 @@ export class SiteInfoController extends CrudController<SiteIpService> {
     }
     return this.ok();
   }
-  @Post('/info', { description: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly, summary: "查询站点IP详情" })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.service,id,"read");
     return await super.info(id);
   }
 
-  @Post('/delete', { description: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly, summary: "删除站点IP" })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.service,id,"write");
     const entity = await this.service.info(id);
@@ -90,7 +90,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
 
 
 
-  @Post('/check', { description: Constants.per.authOnly })
+  @Post('/check', { description: Constants.per.authOnly, summary: "检查站点IP" })
   async check(@Body('id') id: number) {
     await this.checkOwner(this.service,id,"read");
     const entity = await this.service.info(id);
@@ -101,7 +101,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
     return this.ok();
   }
 
-  @Post('/checkAll', { description: Constants.per.authOnly })
+  @Post('/checkAll', { description: Constants.per.authOnly, summary: "检查所有站点IP" })
   async checkAll(@Body('siteId') siteId: number) {
     await this.getProjectUserIdRead()
     const siteEntity = await this.siteInfoService.info(siteId);
@@ -109,7 +109,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
     return this.ok();
   }
 
-  @Post('/sync', { description: Constants.per.authOnly })
+  @Post('/sync', { description: Constants.per.authOnly, summary: "同步站点IP" })
   async sync(@Body('siteId') siteId: number) {
     await this.getProjectUserIdWrite()
     const entity = await this.siteInfoService.info(siteId)
@@ -117,7 +117,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
     return this.ok();
   }
 
-  @Post('/import', { description: Constants.per.authOnly })
+  @Post('/import', { description: Constants.per.authOnly, summary: "导入站点IP" })
   async doImport(@Body(ALL) body: any) {
     const { userId, projectId } = await this.getProjectUserIdWrite()
     await this.service.doImport({

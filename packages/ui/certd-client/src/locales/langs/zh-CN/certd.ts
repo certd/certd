@@ -782,7 +782,7 @@ export default {
       oauthOnlyHelper: "是否仅使用第三方登录，关闭密码登录（注意：请务必在测试第三方登录功能正常后再开启，否则会导致无法登录）\n 如果无法登录，请访问 http://你的certd地址/#/login?oauthOnly=false 来临时关闭此模式",
       enablePasskey: "启用Passkey登录",
       passkeyHostnameNotSame: "当前域名与主绑定域名不同",
-      passkeyEnabledHelper: "1、站点必须启用https \n2、域名不要变，否则会导致已注册的passkey失效 \n3、域名以主绑定域名为准，当前主域名:{0}",
+      passkeyEnabledHelper: "1、站点必须启用https \n2、passkey的rpId以主绑定域名为准，当前主域名:{0} \n3、站点域名不能变，否则会导致已注册的passkey失效。",
       email: {
         templates: "邮件模板",
         templateType: "模板类型",

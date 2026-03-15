@@ -803,6 +803,9 @@ importers:
       '@midwayjs/logger':
         specifier: 3.4.2
         version: 3.4.2
+      '@midwayjs/swagger':
+        specifier: 3.20.11
+        version: 3.20.11
       '@midwayjs/typeorm':
         specifier: 3.20.11
         version: 3.20.11

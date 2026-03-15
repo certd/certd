@@ -46,7 +46,7 @@ export class StatisticController extends BaseController {
   @Inject()
   certInfoService: CertInfoService;
 
-  @Post('/count', { description: Constants.per.authOnly })
+  @Post('/count', { description: Constants.per.authOnly, summary: "查询仪表盘统计数据" })
   public async count() {
     const {userId,projectId} = await this.getProjectUserIdRead();
     const pipelineCount = await this.pipelineService.count({ userId,projectId });

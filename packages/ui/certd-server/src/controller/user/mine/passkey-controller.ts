@@ -14,7 +14,7 @@ export class MinePasskeyController extends BaseController {
   @Inject()
   userService: UserService;
 
-  @Post('/generateRegistration', { description: Constants.per.authOnly })
+  @Post('/generateRegistration', { description: Constants.per.authOnly, summary: "生成Passkey注册选项" })
   public async generateRegistration(
     @Body(ALL)
     body: any,
@@ -41,7 +41,7 @@ export class MinePasskeyController extends BaseController {
     });
   }
 
-  @Post('/verifyRegistration', { description: Constants.per.authOnly })
+  @Post('/verifyRegistration', { description: Constants.per.authOnly, summary: "验证Passkey注册" })
   public async verifyRegistration(
     @Body(ALL)
     body: any
@@ -64,7 +64,7 @@ export class MinePasskeyController extends BaseController {
 
   
 
-  @Post('/register', { description: Constants.per.authOnly })
+  @Post('/register', { description: Constants.per.authOnly, summary: "注册Passkey" })
   public async registerPasskey(
     @Body(ALL)
     body: any
@@ -86,7 +86,7 @@ export class MinePasskeyController extends BaseController {
   }
 
   
-  @Post('/list', { description: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly, summary: "查询Passkey列表" })
   public async getPasskeys() {
     const userId = this.getUserId();
     const passkeys = await this.passkeyService.find({
@@ -97,7 +97,7 @@ export class MinePasskeyController extends BaseController {
     return this.ok(passkeys);
   }
 
-  @Post('/unbind', { description: Constants.per.authOnly })
+  @Post('/unbind', { description: Constants.per.authOnly, summary: "解绑Passkey" })
   public async unbindPasskey(@Body(ALL) body: any) {
     const userId = this.getUserId();
     const passkeyId = body.id;

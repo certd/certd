@@ -50,4 +50,12 @@ export const openkeyApi = {
       data: { id },
     });
   },
+
+  async GetSecret(id: number) {
+    return await request({
+      url: apiPrefix + "/getSecret",
+      method: "post",
+      data: { id },
+    });
+  },
 };

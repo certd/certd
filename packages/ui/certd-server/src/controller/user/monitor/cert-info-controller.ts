@@ -29,7 +29,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
     return this.service;
   }
 
-  @Post('/page', { description: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly, summary: "查询证书分页列表" })
   async page(@Body(ALL) body: any) {
     body.query = body.query ?? {};
 
@@ -78,7 +78,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
     return this.ok(res);
   }
 
-  @Post('/list', { description: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly, summary: "查询证书列表" })
   async list(@Body(ALL) body: any) {
     body.query = body.query ?? {};
     const { projectId, userId } = await this.getProjectUserIdRead()
@@ -88,7 +88,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
   }
 
 
-  @Post('/getOptionsByIds', { description: Constants.per.authOnly })
+  @Post('/getOptionsByIds', { description: Constants.per.authOnly, summary: "根据ID列表获取证书选项" })
   async getOptionsByIds(@Body(ALL) body: {ids:any[]}) {
     const { projectId, userId } = await this.getProjectUserIdRead()
     const list = await this.service.list({
@@ -113,7 +113,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
     return this.ok(safeList);
   }
 
-  @Post('/add', { description: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly, summary: "添加证书" })
   async add(@Body(ALL) bean: any) {
     const { projectId, userId } = await this.getProjectUserIdWrite()
     bean.projectId = projectId
@@ -121,26 +121,26 @@ export class CertInfoController extends CrudController<CertInfoService> {
     return await super.add(bean);
   }
 
-  @Post('/update', { description: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly, summary: "更新证书" })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service,bean.id,"write");
     delete bean.userId;
     delete bean.projectId;
     return await super.update(bean);
   }
-  @Post('/info', { description: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly, summary: "查询证书详情" })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.service,id,"read");
     return await super.info(id);
   }
 
-  @Post('/delete', { description: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly, summary: "删除证书" })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.service,id,"write");
     return await super.delete(id);
   }
 
-  @Post('/all', { description: Constants.per.authOnly })
+  @Post('/all', { description: Constants.per.authOnly, summary: "查询所有证书" })
   async all() {
     const { projectId, userId } = await this.getProjectUserIdRead()
     const list: any = await this.service.find({
@@ -154,7 +154,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
 
 
 
-  @Post('/getCert', { description: Constants.per.authOnly })
+  @Post('/getCert', { description: Constants.per.authOnly, summary: "获取证书信息" })
   async getCert(@Query('id') id: number) {
     await this.checkOwner(this.getService(),id,"read");
     const certInfoEntity = await this.service.info(id);
@@ -162,7 +162,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
     return this.ok(certInfo);
   }
 
-  @Get('/download', { description: Constants.per.authOnly })
+  @Get('/download', { description: Constants.per.authOnly, summary: "下载证书文件" })
   async download(@Query('id') id: number) {
     const {userId,projectId} =await this.checkOwner(this.getService(),id,"read");
     const certInfo = await this.getService().info(id)

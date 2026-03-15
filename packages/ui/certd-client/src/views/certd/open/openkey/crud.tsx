@@ -145,6 +145,23 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             width: 580,
             sorter: true,
+            cellRender: ({ row, value }) => {
+              async function getSecret(id: number) {
+                row.keySecret = await api.GetSecret(id);
+              }
+              if (value.includes("*")) {
+                return (
+                  <div class="flex items-center flex-between">
+                    {value}
+                    <a-button type="primary" size="small" onClick={() => getSecret(row.id)}>
+                      查看密钥
+                    </a-button>
+                  </div>
+                );
+              } else {
+                return <fs-copyable model-value={value}></fs-copyable>;
+              }
+            },
           },
         },
         scope: {

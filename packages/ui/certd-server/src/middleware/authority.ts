@@ -93,7 +93,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
           await next();
           return;
         } else if (openKey.scope === 'open') {
-          return this.notAuth(ctx);
+          return this.notAuth(ctx, 'open key scope error，need user scope');
         }
       }
 
@@ -113,9 +113,13 @@ export class AuthorityMiddleware implements IWebMiddleware {
     };
   }
 
-  private notAuth(ctx: IMidwayKoaContext) {
+  private notAuth(ctx: IMidwayKoaContext, message?: string) {
     ctx.status = 401;
     ctx.body = Constants.res.auth;
+    if (message) {
+      // @ts-ignore
+      ctx.body.message =message;
+    }
     return;
   }
 

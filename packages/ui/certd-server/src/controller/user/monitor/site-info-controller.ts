@@ -25,7 +25,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     return this.service;
   }
 
-  @Post('/page', { description: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly, summary: "查询站点监控分页列表" })
   async page(@Body(ALL) body: any) {
     body.query = body.query ?? {};
     const { projectId, userId } = await this.getProjectUserIdRead()
@@ -56,7 +56,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     return this.ok(res);
   }
 
-  @Post('/list', { description: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly, summary: "查询站点监控列表" })
   async list(@Body(ALL) body: any) {
     body.query = body.query ?? {};
     const { projectId, userId } = await this.getProjectUserIdRead()
@@ -65,7 +65,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     return await super.list(body);
   }
 
-  @Post('/add', { description: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly, summary: "添加站点监控" })
   async add(@Body(ALL) bean: any) {
     const { projectId, userId } = await this.getProjectUserIdWrite()
     bean.projectId = projectId
@@ -78,7 +78,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     return this.ok(res);
   }
 
-  @Post('/update', { description: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly, summary: "更新站点监控" })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service,bean.id,"write");
     delete bean.userId;
@@ -90,27 +90,27 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     }
     return this.ok();
   }
-  @Post('/info', { description: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly, summary: "查询站点监控详情" })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.service,id,"read");
     return await super.info(id);
   }
 
-  @Post('/delete', { description: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly, summary: "删除站点监控" })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.service,id,"write");
     return await super.delete(id);
   }
 
 
-  @Post('/batchDelete', { description: Constants.per.authOnly })
+  @Post('/batchDelete', { description: Constants.per.authOnly, summary: "批量删除站点监控" })
   async batchDelete(@Body(ALL) body: any) {
     const { projectId, userId } = await this.getProjectUserIdWrite()
     await this.service.batchDelete(body.ids,userId,projectId);
     return this.ok();
   }
 
-  @Post('/check', { description: Constants.per.authOnly })
+  @Post('/check', { description: Constants.per.authOnly, summary: "检查站点监控" })
   async check(@Body('id') id: number) {
     await this.checkOwner(this.service,id,"read");
     await this.service.check(id, true, 0);
@@ -118,14 +118,14 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     return this.ok();
   }
 
-  @Post('/checkAll', { description: Constants.per.authOnly })
+  @Post('/checkAll', { description: Constants.per.authOnly, summary: "检查所有站点监控" })
   async checkAll() {
     const { projectId, userId } = await this.getProjectUserIdWrite()
     await this.service.checkAllByUsers(userId,projectId);
     return this.ok();
   }
 
-  @Post('/import', { description: Constants.per.authOnly })
+  @Post('/import', { description: Constants.per.authOnly, summary: "导入站点监控" })
   async doImport(@Body(ALL) body: any) {
     const { projectId, userId } = await this.getProjectUserIdWrite()
     await this.service.doImport({
@@ -138,7 +138,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   }
 
 
-  @Post('/ipCheckChange', { description: Constants.per.authOnly })
+  @Post('/ipCheckChange', { description: Constants.per.authOnly, summary: "修改IP检查设置" })
   async ipCheckChange(@Body(ALL) bean: any) {
     await this.checkOwner(this.service,bean.id,"read");
     await this.service.ipCheckChange({
@@ -148,7 +148,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     return this.ok();
   }
 
-  @Post('/disabledChange', { description: Constants.per.authOnly })
+  @Post('/disabledChange', { description: Constants.per.authOnly, summary: "修改禁用状态" })
   async disabledChange(@Body(ALL) bean: any) {
     await this.checkOwner(this.service,bean.id,"write");
     await this.service.disabledChange({
@@ -158,14 +158,14 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     return this.ok();
   }
 
-  @Post("/setting/get", { description: Constants.per.authOnly })
+  @Post("/setting/get", { description: Constants.per.authOnly, summary: "获取站点监控设置" })
   async get() {
     const { userId, projectId } = await this.getProjectUserIdRead()
     const setting = await this.service.getSetting(userId, projectId)
     return this.ok(setting);
   }
 
-  @Post("/setting/save", { description: Constants.per.authOnly })
+  @Post("/setting/save", { description: Constants.per.authOnly, summary: "保存站点监控设置" })
   async save(@Body(ALL) bean: any) {
     const { userId, projectId} = await this.getProjectUserIdWrite()
     const setting = new UserSiteMonitorSetting();

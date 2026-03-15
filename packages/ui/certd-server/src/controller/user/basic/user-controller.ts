@@ -25,7 +25,7 @@ export class BasicUserController extends BasicController {
     return this.service;
   }
 
-  @Post('/getSimpleUserByIds', { description: Constants.per.authOnly })
+  @Post('/getSimpleUserByIds', { description: Constants.per.authOnly, summary: "根据ID列表获取用户简单信息" })
   async getSimpleUserByIds(@Body('ids') ids: number[]) {
     if(!isEnterprise()){
        throw new Error('非企业模式不能获取用户信息');
@@ -45,7 +45,7 @@ export class BasicUserController extends BasicController {
     return this.ok(users);
   }
 
-  @Post('/getSimpleUsers', {description: Constants.per.authOnly})
+  @Post('/getSimpleUsers', {description: Constants.per.authOnly, summary: "获取所有用户简单信息"})
   async getSimpleUsers() {
     if(!isEnterprise()){
        throw new Error('非企业模式不能获取所有用户信息');
@@ -62,7 +62,7 @@ export class BasicUserController extends BasicController {
     return this.ok(users);
   }
 
-   @Post('/getSimpleRoles', {description: Constants.per.authOnly})
+   @Post('/getSimpleRoles', {description: Constants.per.authOnly, summary: "获取所有角色简单信息"})
   async getSimpleRoles() {
     const roles = await this.roleService.find({
       select: {

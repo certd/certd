@@ -24,7 +24,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
     return this.service;
   }
 
-  @Post("/page", { description: Constants.per.authOnly })
+  @Post("/page", { description: Constants.per.authOnly, summary: "查询项目成员分页列表" })
   async page(@Body(ALL) body: any) {
     const {projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -32,7 +32,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
     return await super.page(body);
   }
 
-  @Post("/list", { description: Constants.per.authOnly })
+  @Post("/list", { description: Constants.per.authOnly, summary: "查询项目成员列表" })
   async list(@Body(ALL) body: any) {
     const {projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -40,7 +40,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
     return super.list(body);
   }
 
-  @Post("/add", { description: Constants.per.authOnly })
+  @Post("/add", { description: Constants.per.authOnly, summary: "添加项目成员" })
   async add(@Body(ALL) bean: any) {
     const def: any = {
       isDefault: false,
@@ -56,7 +56,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
     return super.add(bean);
   }
 
-  @Post("/update", { description: Constants.per.authOnly }) 
+  @Post("/update", { description: Constants.per.authOnly, summary: "更新项目成员" }) 
   async update(@Body(ALL) bean: any) {
     if (!bean.id) {
       throw new Error("id is required");
@@ -75,7 +75,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
     return this.ok(res);
   }
 
-  @Post("/info", { description: Constants.per.authOnly })
+  @Post("/info", { description: Constants.per.authOnly, summary: "查询项目成员详情" })
   async info(@Query("id") id: number) {
      if (!id) {
       throw new Error("id is required");
@@ -88,7 +88,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
     return super.info(id);
   }
 
-  @Post("/delete", { description: Constants.per.authOnly })
+  @Post("/delete", { description: Constants.per.authOnly, summary: "删除项目成员" })
   async delete(@Query("id") id: number) {
     if (!id) {
       throw new Error("id is required");
@@ -101,7 +101,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
     return super.delete(id);
   }
 
-  @Post("/deleteByIds", { description: Constants.per.authOnly })
+  @Post("/deleteByIds", { description: Constants.per.authOnly, summary: "批量删除项目成员" })
   async deleteByIds(@Body("ids") ids: number[]) {
     for (const id of ids) {
       if (!id) {

@@ -21,7 +21,7 @@ export class MineController extends BaseController {
   passkeyService: PasskeyService;
 
 
-  @Post('/info', { description: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly, summary: "查询用户信息" })
   public async info() {
     const userId = this.getUserId();
     const user = await this.userService.info(userId);
@@ -35,14 +35,14 @@ export class MineController extends BaseController {
     return this.ok(user);
   }
 
-  @Post('/changePassword', { description: Constants.per.authOnly })
+  @Post('/changePassword', { description: Constants.per.authOnly, summary: "修改密码" })
   public async changePassword(@Body(ALL) body: any) {
     const userId = this.getUserId();
     await this.userService.changePassword(userId, body);
     return this.ok({});
   }
 
-  @Post('/updateProfile', { description: Constants.per.authOnly })
+  @Post('/updateProfile', { description: Constants.per.authOnly, summary: "更新用户资料" })
   public async updateProfile(@Body(ALL) body: any) {
     const userId = this.getUserId();
   

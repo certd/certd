@@ -122,7 +122,7 @@ const editableKeys = ref([
     },
     defaultRender(item: any) {
       return () => {
-        return <pre class={"helper"}>{item["helper"]}</pre>;
+        return <pre class={"helper pre"}>{item["helper"]}</pre>;
       };
     },
     editRender(item: any) {

@@ -18,19 +18,19 @@ export class PluginController extends BaseController {
   @Inject()
   pluginConfigService: PluginConfigService;
 
-  @Post('/list', { description: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly, summary: "查询插件列表" })
   async list(@Query(ALL) query: any) {
     const list = await this.service.getEnabledBuiltInList();
     return this.ok(list);
   }
 
-  @Post('/groups', { description: Constants.per.authOnly })
+  @Post('/groups', { description: Constants.per.authOnly, summary: "查询插件分组" })
   async groups(@Query(ALL) query: any) {
     const group = await this.service.getEnabledBuildInGroup();
     return this.ok(group);
   }
 
-  @Post('/groupsList', { description: Constants.per.authOnly })
+  @Post('/groupsList', { description: Constants.per.authOnly, summary: "查询插件分组列表" })
   async groupsList(@Query(ALL) query: any) {
     const groups = pluginGroups
     const groupsList:any = []
@@ -44,13 +44,13 @@ export class PluginController extends BaseController {
     return this.ok(groupsList);
   }
 
-  @Post('/getDefineByType', { description: Constants.per.authOnly })
+  @Post('/getDefineByType', { description: Constants.per.authOnly, summary: "根据类型获取插件定义" })
   async getDefineByType(@Body('type') type: string) {
     const define = await this.service.getDefineByType(type);
     return this.ok(define);
   }
 
-  @Post('/config', { description: Constants.per.authOnly })
+  @Post('/config', { description: Constants.per.authOnly, summary: "获取插件配置" })
   async config(@Body(ALL) body: { id?: number; name?: string; type: string }) {
     const config = await this.pluginConfigService.getPluginConfig(body);
     return this.ok(config);

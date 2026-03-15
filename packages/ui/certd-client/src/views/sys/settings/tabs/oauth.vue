@@ -6,7 +6,7 @@
           <a-switch v-model:checked="formState.public.passkeyEnabled" :disabled="!settingsStore.isPlus" :title="t('certd.plusFeature')" />
           <vip-button class="ml-5" mode="button"></vip-button>
         </div>
-        <pre class="helper">{{ t("certd.sys.setting.passkeyEnabledHelper", [bindDomain]) }}</pre>
+        <pre class="helper pre">{{ t("certd.sys.setting.passkeyEnabledHelper", [bindDomain]) }}</pre>
         <div v-if="!bindDomainIsSame" class="text-red-500 text-sm mt-2">
           {{ t("certd.sys.setting.passkeyHostnameNotSame") }}
         </div>

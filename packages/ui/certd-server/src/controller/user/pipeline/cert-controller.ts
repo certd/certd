@@ -21,7 +21,7 @@ export class CertController extends BaseController {
   userSettingsService: UserSettingsService;
 
 
-  @Post('/get', { description: Constants.per.authOnly })
+  @Post('/get', { description: Constants.per.authOnly, summary: "获取证书" })
   async getCert(@Query('id') id: number) {
 
     const {userId} = await this.getProjectUserIdRead()
@@ -46,7 +46,7 @@ export class CertController extends BaseController {
   }
 
 
-  @Post('/readCertDetail', { description: Constants.per.authOnly })
+  @Post('/readCertDetail', { description: Constants.per.authOnly, summary: "读取证书详情" })
   async readCertDetail(@Body('crt') crt: string) {
     if (!crt) {
       throw new Error('crt is required');

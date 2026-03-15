@@ -17,7 +17,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     return this.service;
   }
 
-  @Post('/page', { description: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly, summary: "查询CNAME记录分页列表" })
   async page(@Body(ALL) body: any) {
     const {userId,projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -41,7 +41,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     return this.ok(pageRet);
   }
 
-  @Post('/list', { description: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly, summary: "查询CNAME记录列表" })
   async list(@Body(ALL) body: any) {
     const {userId,projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -51,7 +51,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     return this.ok(list);
   }
 
-  @Post('/add', { description: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly, summary: "添加CNAME记录" })
   async add(@Body(ALL) bean: any) {
     const {userId,projectId} = await this.getProjectUserIdWrite();
     bean.userId = userId;
@@ -59,7 +59,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     return super.add(bean);
   }
 
-  @Post('/update', { description: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly, summary: "更新CNAME记录" })
   async update(@Body(ALL) bean: any) {
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
@@ -67,19 +67,19 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     return super.update(bean);
   }
 
-  @Post('/info', { description: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly, summary: "查询CNAME记录详情" })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "read");
     return super.info(id);
   }
 
-  @Post('/delete', { description: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly, summary: "删除CNAME记录" })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "write");
     return super.delete(id);
   }
 
-  @Post('/deleteByIds', { description: Constants.per.authOnly })
+  @Post('/deleteByIds', { description: Constants.per.authOnly, summary: "批量删除CNAME记录" })
   async deleteByIds(@Body(ALL) body: any) {
     const {userId,projectId} = await this.getProjectUserIdWrite();
     await this.service.delete(body.ids, {
@@ -88,27 +88,27 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     });
     return this.ok();
   }
-  @Post('/getByDomain', { description: Constants.per.authOnly })
+  @Post('/getByDomain', { description: Constants.per.authOnly, summary: "根据域名获取CNAME记录" })
   async getByDomain(@Body(ALL) body: { domain: string; createOnNotFound: boolean }) {
     const {userId,projectId} = await this.getProjectUserIdRead();
     const res = await this.service.getByDomain(body.domain, userId,projectId, body.createOnNotFound);
     return this.ok(res);
   }
 
-  @Post('/verify', { description: Constants.per.authOnly })
+  @Post('/verify', { description: Constants.per.authOnly, summary: "验证CNAME记录" })
   async verify(@Body(ALL) body: { id: number }) {
     await this.checkOwner(this.getService(), body.id, "read");
     const res = await this.service.verify(body.id);
     return this.ok(res);
   }
 
-  @Post('/resetStatus', { description: Constants.per.authOnly })
+  @Post('/resetStatus', { description: Constants.per.authOnly, summary: "重置CNAME记录状态" })
   async resetStatus(@Body(ALL) body: { id: number }) {
     await this.checkOwner(this.getService(), body.id, "read");
     const res = await this.service.resetStatus(body.id);
     return this.ok(res);
   }
- @Post('/import', { description: Constants.per.authOnly })
+ @Post('/import', { description: Constants.per.authOnly, summary: "导入CNAME记录" })
   async import(@Body(ALL) body: { domainList: string; cnameProviderId: any }) {
     const {userId,projectId} = await this.getProjectUserIdWrite();
     const res = await this.service.doImport({

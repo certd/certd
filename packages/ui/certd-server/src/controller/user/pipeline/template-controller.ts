@@ -19,7 +19,7 @@ export class TemplateController extends CrudController<TemplateService> {
   }
 
 
-  @Post('/page', { description: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly, summary: "查询流水线模版分页列表" })
   async page(@Body(ALL) body) {
     
     body.query = body.query ?? {};
@@ -39,7 +39,7 @@ export class TemplateController extends CrudController<TemplateService> {
     return this.ok(res);
   }
 
-  @Post('/list', { description: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly, summary: "查询流水线模版列表" })
   async list(@Body(ALL) body) {
     body.query = body.query ?? {};
     const { projectId, userId } = await this.getProjectUserIdRead()
@@ -48,7 +48,7 @@ export class TemplateController extends CrudController<TemplateService> {
     return super.list(body);
   }
 
-  @Post('/add', { description: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly, summary: "添加流水线模版" })
   async add(@Body(ALL) bean) {
     const { projectId, userId } = await this.getProjectUserIdRead()
     bean.userId = userId;
@@ -57,40 +57,40 @@ export class TemplateController extends CrudController<TemplateService> {
     return super.add(bean);
   }
 
-  @Post('/update', { description: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly, summary: "更新流水线模版" })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service, bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
     return super.update(bean);
   }
-  @Post('/info', { description: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly, summary: "查询流水线模版详情" })
   async info(@Query('id') id: number) {
      await this.checkOwner(this.service, id, "read");
     return super.info(id);
   }
 
-  @Post('/delete', { description: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly, summary: "删除流水线模版" })
   async delete(@Query('id') id: number) {
      const { userId ,projectId } = await this.getProjectUserIdWrite()
     await this.service.batchDelete([id], userId,projectId);
     return this.ok({});
   }
 
-  @Post('/batchDelete', { description: Constants.per.authOnly })
+  @Post('/batchDelete', { description: Constants.per.authOnly, summary: "批量删除流水线模版" })
   async batchDelete(@Body('ids') ids: number[]) {
     const { userId ,projectId } = await this.getProjectUserIdWrite()
     await this.service.batchDelete(ids, userId,projectId);
     return this.ok({});
   }
 
-  @Post('/detail', { description: Constants.per.authOnly })
+  @Post('/detail', { description: Constants.per.authOnly, summary: "查询流水线模版详情" })
   async detail(@Query('id') id: number) {
     const { userId ,projectId } = await this.getProjectUserIdRead()
     const detail = await this.service.detail(id, userId,projectId);
     return this.ok(detail);
   }
-  @Post('/createPipelineByTemplate', { description: Constants.per.authOnly })
+  @Post('/createPipelineByTemplate', { description: Constants.per.authOnly, summary: "根据模版创建流水线" })
   async createPipelineByTemplate(@Body(ALL) body: any) {
     const { userId ,projectId } = await this.getProjectUserIdWrite()
     body.userId = userId;

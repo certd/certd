@@ -22,7 +22,7 @@ export class TransferController extends BaseController {
    * @param body 
    * @returns 
    */
-  @Post('/selfResources', { description: Constants.per.authOnly })
+  @Post('/selfResources', { description: Constants.per.authOnly, summary: "查询我自己的资源" })
   async selfResources() {
     const userId = this.getUserId();
     const res = await this.service.getUserResources(userId);
@@ -34,7 +34,7 @@ export class TransferController extends BaseController {
    * @param body 
    * @returns 
    */
-  @Post('/doTransfer', { description: Constants.per.authOnly })
+  @Post('/doTransfer', { description: Constants.per.authOnly, summary: "迁移项目资源" })
   async doTransfer() {
     const {projectId} = await this.getProjectUserIdRead();
      const userId = this.getUserId();

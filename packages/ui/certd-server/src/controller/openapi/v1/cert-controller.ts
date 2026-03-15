@@ -25,8 +25,8 @@ export class OpenCertController extends BaseOpenController {
   @Inject()
   encryptService: EncryptService;
 
-  @Get('/get', { description: Constants.per.open })
-  @Post('/get', { description: Constants.per.open })
+  @Get('/get', { description: Constants.per.open, summary: "根据域名或ID获取证书，支持自动申请" })
+  @Post('/get', { description: Constants.per.open, summary: "根据域名或ID获取证书，支持自动申请" })
   async get(@Body(ALL) bean: CertGetReq, @Query(ALL) query: CertGetReq) {
     const openKey: OpenKey = this.ctx.openKey;
     const userId = openKey.userId;

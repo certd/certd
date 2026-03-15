@@ -22,7 +22,7 @@ export class SubDomainController extends CrudController<SubDomainService> {
     return this.service;
   }
 
-  @Post('/parseDomain', { description: Constants.per.authOnly })
+  @Post('/parseDomain', { description: Constants.per.authOnly, summary: "解析域名" })
   async parseDomain(@Body("fullDomain") fullDomain:string) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     const taskService = this.taskServiceBuilder.create({ userId: userId, projectId: projectId });
@@ -33,7 +33,7 @@ export class SubDomainController extends CrudController<SubDomainService> {
   }
 
 
-  @Post('/page', { description: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly, summary: "查询子域名分页列表" })
   async page(@Body(ALL) body) {
     const {userId,projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -51,7 +51,7 @@ export class SubDomainController extends CrudController<SubDomainService> {
     return this.ok(res);
   }
 
-  @Post('/list', { description: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly, summary: "查询子域名列表" })
   async list(@Body(ALL) body) {
     const {userId,projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -60,7 +60,7 @@ export class SubDomainController extends CrudController<SubDomainService> {
     return super.list(body);
   }
 
-  @Post('/add', { description: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly, summary: "添加子域名" })
   async add(@Body(ALL) bean) {
     const {userId,projectId} = await this.getProjectUserIdRead();
     bean.userId = userId;
@@ -68,26 +68,26 @@ export class SubDomainController extends CrudController<SubDomainService> {
     return super.add(bean);
   }
 
-  @Post('/update', { description: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly, summary: "更新子域名" })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
     return super.update(bean);
   }
-  @Post('/info', { description: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly, summary: "查询子域名详情" })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "read");
     return super.info(id);
   }
 
-  @Post('/delete', { description: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly, summary: "删除子域名" })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "write");
     return super.delete(id);
   }
 
-  @Post('/batchDelete', { description: Constants.per.authOnly })
+  @Post('/batchDelete', { description: Constants.per.authOnly, summary: "批量删除子域名" })
   async batchDelete(@Body('ids') ids: number[]) {
     const {userId,projectId} = await this.getProjectUserIdWrite();
     await this.service.batchDelete(ids, userId, projectId);

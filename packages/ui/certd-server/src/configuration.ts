@@ -62,7 +62,10 @@ process.on('uncaughtException', error => {
     upload,
     libServer,
     commercial,
-    swagger,
+    {
+      component: swagger,
+      enabledEnvironment: ['local']
+    },
     {
       component: info,
       enabledEnvironment: ['local'],

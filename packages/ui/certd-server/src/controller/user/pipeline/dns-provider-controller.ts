@@ -14,13 +14,13 @@ export class DnsProviderController extends BaseController {
   @Inject()
   service: DnsProviderService;
 
-  @Post('/list', { description: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly, summary: "查询DNS提供商列表" })
   async list(@Query(ALL) query: any) {
     const list = this.service.getList();
     return this.ok(list);
   }
 
-  @Post('/dnsProviderTypeDict', { description: Constants.per.authOnly })
+  @Post('/dnsProviderTypeDict', { description: Constants.per.authOnly, summary: "查询DNS提供商类型字典" })
   async getDnsProviderTypeDict() {
     const list = this.service.getList();
     const dict = [];

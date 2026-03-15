@@ -122,7 +122,7 @@
               <template #icon><fs-icon icon="ion:add-circle-outline" /></template>
               注册新的Passkey
             </a-button>
-            <pre class="helper">{{ t("authentication.passkeyRegisterHelper") }}</pre>
+            <pre class="helper pre">{{ t("authentication.passkeyRegisterHelper") }}</pre>
           </div>
         </div>
       </div>

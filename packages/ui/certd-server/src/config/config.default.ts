@@ -135,7 +135,101 @@ const development = {
     isGenerateTagForController: false,
     routerFilter: (url: string) => {
       return url.startsWith('/api/sys');
-    }
+    },
+    tags: [
+      {
+        name: 'addon',
+        description: '插件管理'
+      },
+      {
+        name: 'basic-group',
+        description: '基础分组管理'
+      },
+      {
+        name: 'basic-user',
+        description: '基础用户管理'
+      },
+      {
+        name: 'cert',
+        description: '证书管理'
+      },
+      {
+        name: 'pipeline-cname',
+        description: 'CNAME配置管理'
+      },
+      {
+        name: 'dashboard',
+        description: '仪表板统计'
+      },
+      {
+        name: 'enterprise-project',
+        description: '企业项目管理'
+      },
+      {
+        name: 'enterprise-project-member',
+        description: '企业项目成员管理'
+      },
+      {
+        name: 'mine',
+        description: '个人中心'
+      },
+      {
+        name: 'monitor',
+        description: '监控管理'
+      },
+      {
+        name: 'open',
+        description: '开放API KEY管理'
+      },
+      {
+        name: 'pipeline-access',
+        description: '流水线授权配置'
+      },
+      {
+        name: 'pipeline-cert',
+        description: '流水线证书'
+      },
+      {
+        name: 'pipeline-dns-provider',
+        description: '流水线DNS提供商'
+      },
+      {
+        name: 'pipeline-handle',
+        description: '插件请求处理'
+      },
+      {
+        name: 'pipeline-history',
+        description: '流水线执行历史'
+      },
+      {
+        name: 'pipeline-notification',
+        description: '流水线通知配置'
+      },
+      {
+        name: 'pipeline-plugin',
+        description: '流水线插件'
+      },
+      {
+        name: 'pipeline-subdomain',
+        description: '流水线子域名'
+      },
+      {
+        name: 'pipeline-template',
+        description: '流水线模版'
+      },
+      {
+        name: 'pipeline-group',
+        description: '流水线分组'
+      },
+      {
+        name: 'pipeline',
+        description: '流水线管理'
+      },
+      {
+        name: 'openapi',
+        description: '开放API'
+      },
+    ]
   }
 } as MidwayConfig;
 loadDotEnv();
