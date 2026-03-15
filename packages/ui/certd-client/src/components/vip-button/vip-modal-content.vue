@@ -90,7 +90,7 @@
     <div class="mt-10">
       <div class="w-100 flex-col md:flex-row">
         <span>{{ t("vip.site_id") }}：</span>
-        <fs-copyable v-model="computedSiteId" class="mr-2"></fs-copyable>
+        <fs-copyable v-model="computedSiteId" class="mr-2 inline-flex"></fs-copyable>
         <a @click="goBindAccount">{{ t("vip.not_effective") }}</a>
       </div>
     </div>
