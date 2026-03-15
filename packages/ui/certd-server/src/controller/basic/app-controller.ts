@@ -13,7 +13,7 @@ export class AppController extends BaseController {
   @Inject()
   fileService: FileService;
 
-  @Get('/latest', { summary: Constants.per.authOnly })
+  @Get('/latest', { description: Constants.per.authOnly })
   async latest(): Promise<any> {
     try {
       const res = await http.request({
@@ -30,7 +30,7 @@ export class AppController extends BaseController {
     }
   }
 
-  @Get('/favicon', { summary: Constants.per.guest })
+  @Get('/favicon', { description: Constants.per.guest })
   public async getFavicon() {
     if (isComm()) {
       const siteInfo = await this.sysSettingsService.getSetting<SysSiteInfo>(SysSiteInfo);
@@ -47,7 +47,7 @@ export class AppController extends BaseController {
     this.ctx.response.set('Cache-Control', 'public,max-age=25920');
   }
 
-  @Post('/webhook', { summary: Constants.per.guest })
+  @Post('/webhook', { description: Constants.per.guest })
   public async webhook( @Body() body: any) {
     logger.info('webhook', JSON.stringify(body))
     return this.ok("success")

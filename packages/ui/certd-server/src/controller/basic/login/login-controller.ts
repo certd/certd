@@ -28,7 +28,7 @@ export class LoginController extends BaseController {
   passkeyService: PasskeyService;
 
 
-  @Post('/login', { summary: Constants.per.guest })
+  @Post('/login', { description: Constants.per.guest })
   public async login(
     @Body(ALL)
     body: any,
@@ -48,7 +48,7 @@ export class LoginController extends BaseController {
     // this.loginService.writeTokenCookie(this.ctx,token);
   }
 
-  @Post('/loginBySms', { summary: Constants.per.guest })
+  @Post('/loginBySms', { description: Constants.per.guest })
   public async loginBySms(
     @Body(ALL)
     body: any
@@ -71,7 +71,7 @@ export class LoginController extends BaseController {
     return this.ok(token);
   }
 
-  @Post('/loginByTwoFactor', { summary: Constants.per.guest })
+  @Post('/loginByTwoFactor', { description: Constants.per.guest })
   public async loginByTwoFactor(
     @Body(ALL)
     body: any
@@ -89,7 +89,7 @@ export class LoginController extends BaseController {
 
 
   
-  @Post('/passkey/generateAuthentication', { summary: Constants.per.guest })
+  @Post('/passkey/generateAuthentication', { description: Constants.per.guest })
   public async generateAuthentication() {
     const options = await this.passkeyService.generateAuthenticationOptions(
       this.ctx
@@ -100,7 +100,7 @@ export class LoginController extends BaseController {
     });
   }
 
-  @Post('/loginByPasskey', { summary: Constants.per.guest })
+  @Post('/loginByPasskey', { description: Constants.per.guest })
   public async loginByPasskey(
     @Body(ALL)
     body: any
@@ -117,7 +117,7 @@ export class LoginController extends BaseController {
     return this.ok(token);
   }
 
-  @Post('/logout', { summary: Constants.per.authOnly })
+  @Post('/logout', { description: Constants.per.authOnly })
   public logout() {
     this.ctx.cookies.set("certd_token", "", {
       maxAge: 0

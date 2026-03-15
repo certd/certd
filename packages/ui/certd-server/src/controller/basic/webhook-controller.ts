@@ -10,8 +10,8 @@ export class WebhookController extends BaseController {
   @Inject()
   pipelineService: PipelineService;
 
-  @Get('/:webhookKey', { summary: Constants.per.guest })
-  @Post('/:webhookKey', { summary: Constants.per.guest })
+  @Get('/:webhookKey', { description: Constants.per.guest })
+  @Post('/:webhookKey', { description: Constants.per.guest })
   async webhook(@Param('webhookKey') webhookKey: string): Promise<any> {
     await this.pipelineService.triggerByWebhook(webhookKey);
     return this.ok({});

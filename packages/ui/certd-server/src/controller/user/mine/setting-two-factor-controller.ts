@@ -21,14 +21,14 @@ export class UserTwoFactorSettingController extends BaseController {
 
 
 
-  @Post("/get", { summary: Constants.per.authOnly })
+  @Post("/get", { description: Constants.per.authOnly })
   async get() {
     const userId = this.getUserId();
     const setting = await this.service.getSetting<UserTwoFactorSetting>(userId,null, UserTwoFactorSetting);
     return this.ok(setting);
   }
 
-  @Post("/save", { summary: Constants.per.authOnly })
+  @Post("/save", { description: Constants.per.authOnly })
   async save(@Body(ALL) bean: any) {
     if (!isPlus()) {
       throw new Error('本功能需要开通专业版')
@@ -47,14 +47,14 @@ export class UserTwoFactorSettingController extends BaseController {
     return this.ok({});
   }
 
-  @Post("/authenticator/qrcode", { summary: Constants.per.authOnly })
+  @Post("/authenticator/qrcode", { description: Constants.per.authOnly })
   async authenticatorQrcode() {
     const userId = this.getUserId();
     const {qrcode,link,secret} = await this.twoFactorService.getAuthenticatorQrCode(userId);
     return this.ok({qrcode,link,secret}); 
   }
 
-  @Post("/authenticator/save", { summary: Constants.per.authOnly })
+  @Post("/authenticator/save", { description: Constants.per.authOnly })
   async authenticatorSave(@Body(ALL) bean: any) {
     if (!isPlus()) {
       throw new Error('本功能需要开通专业版')
@@ -67,7 +67,7 @@ export class UserTwoFactorSettingController extends BaseController {
     return this.ok();
   }
 
-  @Post("/authenticator/off", { summary: Constants.per.authOnly })
+  @Post("/authenticator/off", { description: Constants.per.authOnly })
   async authenticatorOff() {
     const userId = this.getUserId();
     await this.twoFactorService.offAuthenticator(userId);

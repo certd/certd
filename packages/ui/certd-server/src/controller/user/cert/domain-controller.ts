@@ -18,7 +18,7 @@ export class DomainController extends CrudController<DomainService> {
     return this.service;
   }
 
-  @Post('/page', { summary: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly })
   async page(@Body(ALL) body: any) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -42,7 +42,7 @@ export class DomainController extends CrudController<DomainService> {
     return this.ok(pageRet);
   }
 
-  @Post('/list', { summary: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly })
   async list(@Body(ALL) body: any) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -52,7 +52,7 @@ export class DomainController extends CrudController<DomainService> {
     return this.ok(list);
   }
 
-  @Post('/add', { summary: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly })
   async add(@Body(ALL) bean: any) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     bean.projectId = projectId;
@@ -60,7 +60,7 @@ export class DomainController extends CrudController<DomainService> {
     return super.add(bean);
   }
 
-  @Post('/update', { summary: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly })
   async update(@Body(ALL) bean: any) {
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
@@ -68,19 +68,19 @@ export class DomainController extends CrudController<DomainService> {
     return super.update(bean);
   }
 
-  @Post('/info', { summary: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "read");
     return super.info(id);
   }
 
-  @Post('/delete', { summary: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "write");
     return super.delete(id);
   }
 
-  @Post('/deleteByIds', { summary: Constants.per.authOnly })
+  @Post('/deleteByIds', { description: Constants.per.authOnly })
   async deleteByIds(@Body(ALL) body: any) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     await this.service.delete(body.ids, {
@@ -91,7 +91,7 @@ export class DomainController extends CrudController<DomainService> {
   }
 
 
-  @Post('/import/start', { summary: Constants.per.authOnly })
+  @Post('/import/start', { description: Constants.per.authOnly })
   async importStart(@Body(ALL) body: any) {
     checkPlus();
     const {projectId,userId} = await this.getProjectUserIdRead();
@@ -105,7 +105,7 @@ export class DomainController extends CrudController<DomainService> {
     return this.ok();
   }
 
-  @Post('/import/status', { summary: Constants.per.authOnly })
+  @Post('/import/status', { description: Constants.per.authOnly })
   async importStatus() {
     const {projectId,userId} = await this.getProjectUserIdRead();
     const req = {
@@ -117,7 +117,7 @@ export class DomainController extends CrudController<DomainService> {
   }
 
 
-  @Post('/import/delete', { summary: Constants.per.authOnly })
+  @Post('/import/delete', { description: Constants.per.authOnly })
   async importDelete(@Body(ALL) body: any) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     const { key } = body;
@@ -130,7 +130,7 @@ export class DomainController extends CrudController<DomainService> {
     return this.ok();
   }
 
-  @Post('/import/save', { summary: Constants.per.authOnly })
+  @Post('/import/save', { description: Constants.per.authOnly })
   async importSave(@Body(ALL) body: any) {
     checkPlus();
     const {projectId,userId} = await this.getProjectUserIdRead();
@@ -145,7 +145,7 @@ export class DomainController extends CrudController<DomainService> {
   }
 
 
-  @Post('/sync/expiration/start', { summary: Constants.per.authOnly })
+  @Post('/sync/expiration/start', { description: Constants.per.authOnly })
   async syncExpirationStart(@Body(ALL) body: any) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     await this.service.startSyncExpirationTask({
@@ -154,7 +154,7 @@ export class DomainController extends CrudController<DomainService> {
     })
     return this.ok();
   }
-  @Post('/sync/expiration/status', { summary: Constants.per.authOnly })
+  @Post('/sync/expiration/status', { description: Constants.per.authOnly })
   async syncExpirationStatus(@Body(ALL) body: any) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     const status = await this.service.getSyncExpirationTaskStatus({

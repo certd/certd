@@ -11,7 +11,7 @@ export class SysNetTestController extends BaseController {
   netTestService: NetTestService;
 
 
-  @Post('/domainResolve', { summary: 'sys:settings:view' })
+  @Post('/domainResolve', { description: 'sys:settings:view' })
   public async domainResolve(@Body(ALL) body: { domain: string }) {
 
     const { domain } = body;
@@ -20,7 +20,7 @@ export class SysNetTestController extends BaseController {
   }
 
   // ping
-  @Post('/ping', { summary: 'sys:settings:view' })
+  @Post('/ping', { description: 'sys:settings:view' })
   public async ping(@Body(ALL) body: { domain: string }) {
 
     const { domain } = body;
@@ -29,7 +29,7 @@ export class SysNetTestController extends BaseController {
   }
 
   // telnet 
-  @Post('/telnet', { summary: 'sys:settings:view' })
+  @Post('/telnet', { description: 'sys:settings:view' })
   public async telnet(@Body(ALL) body: { domain: string, port: number }) {
 
     const { domain, port } = body;
@@ -38,7 +38,7 @@ export class SysNetTestController extends BaseController {
   }
 
     // telnet 
-  @Post('/serverInfo', { summary: 'sys:settings:view' })
+  @Post('/serverInfo', { description: 'sys:settings:view' })
   public async serverInfo() {
 
     const result = await this.netTestService.serverInfo();

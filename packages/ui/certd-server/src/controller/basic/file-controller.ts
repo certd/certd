@@ -13,7 +13,7 @@ export class FileController extends BaseController {
   @Inject()
   fileService: FileService;
 
-  @Post('/upload', { summary: Constants.per.authOnly })
+  @Post('/upload', { description: Constants.per.authOnly })
   async upload(@Files() files: UploadFileInfo<string>[], @Fields() fields: any) {
     console.log('files', files, fields);
     const cacheKey = uploadTmpFileCacheKey + nanoid();
@@ -33,7 +33,7 @@ export class FileController extends BaseController {
     });
   }
 
-  @Get('/download', { summary: Constants.per.guest })
+  @Get('/download', { description: Constants.per.guest })
   async download(@Query('key') key: string) {
     let userId: any = null;
     if (!key.startsWith('/public')) {

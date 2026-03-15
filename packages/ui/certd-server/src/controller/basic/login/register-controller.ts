@@ -29,7 +29,7 @@ export class RegisterController extends BaseController {
   @Inject()
   sysSettingsService: SysSettingsService;
 
-  @Post('/register', { summary: Constants.per.guest })
+  @Post('/register', { description: Constants.per.guest })
   public async register(
     @Body(ALL)
     body: RegisterReq,

@@ -31,7 +31,7 @@ export class SysStatisticController extends BaseController {
   @Inject()
   historyService: HistoryService;
 
-  @Post('/count', { summary: 'sys:settings:view' })
+  @Post('/count', { description: 'sys:settings:view' })
   public async count() {
     const userCount = await this.userService.count();
     const userRegisterCountPerDay = await this.userService.registerCountPerDay({ days: 7 });

@@ -22,66 +22,66 @@ export class SysAddonController extends AddonController {
     return 0;
   }
 
-  @Post('/page', { summary: 'sys:settings:view' })
+  @Post('/page', { description: 'sys:settings:view' })
   async page(@Body(ALL) body: any) {
     return await super.page(body);
   }
 
-  @Post('/list', { summary: 'sys:settings:view' })
+  @Post('/list', { description: 'sys:settings:view' })
   async list(@Body(ALL) body: any) {
     return await super.list(body);
   }
 
-  @Post('/add', { summary: 'sys:settings:edit' })
+  @Post('/add', { description: 'sys:settings:edit' })
   async add(@Body(ALL) bean: any) {
     return await super.add(bean);
   }
 
-  @Post('/update', { summary: 'sys:settings:edit' })
+  @Post('/update', { description: 'sys:settings:edit' })
   async update(@Body(ALL) bean: any) {
     return await super.update(bean);
   }
-  @Post('/info', { summary: 'sys:settings:view' })
+  @Post('/info', { description: 'sys:settings:view' })
   async info(@Query('id') id: number) {
     return await super.info(id);
   }
 
-  @Post('/delete', { summary: 'sys:settings:edit' })
+  @Post('/delete', { description: 'sys:settings:edit' })
   async delete(@Query('id') id: number) {
     return await super.delete(id);
   }
-  @Post('/define', { summary: Constants.per.authOnly })
+  @Post('/define', { description: Constants.per.authOnly })
   async define(@Query('type') type: string,@Query('addonType') addonType: string) {
     return await super.define(type,addonType);
   }
 
-  @Post('/getTypeDict', { summary: Constants.per.authOnly })
+  @Post('/getTypeDict', { description: Constants.per.authOnly })
   async getTypeDict(@Query('addonType') addonType: string) {
     return await super.getTypeDict(addonType);
   }
 
-  @Post('/simpleInfo', { summary: Constants.per.authOnly })
+  @Post('/simpleInfo', { description: Constants.per.authOnly })
   async simpleInfo(@Query('addonType') addonType: string,@Query('id') id: number) {
     return await super.simpleInfo(addonType,id);
   }
 
-  @Post('/getDefaultId', { summary: Constants.per.authOnly })
+  @Post('/getDefaultId', { description: Constants.per.authOnly })
   async getDefaultId(@Query('addonType') addonType: string) {
    return await super.getDefaultId(addonType);
   }
 
-  @Post('/setDefault', { summary: Constants.per.authOnly })
+  @Post('/setDefault', { description: Constants.per.authOnly })
   async setDefault(@Query('addonType') addonType: string,@Query('id') id: number) {
     return await super.setDefault(addonType,id);
   }
 
 
-  @Post('/options', { summary: Constants.per.authOnly })
+  @Post('/options', { description: Constants.per.authOnly })
   async options(@Query('addonType') addonType: string) {
     return await super.options(addonType);
   }
 
-  @Post('/handle', { summary: Constants.per.authOnly })
+  @Post('/handle', { description: Constants.per.authOnly })
   async handle(@Body(ALL) body: AddonRequestHandleReq) {
    return await super.handle(body);
   }

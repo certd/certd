@@ -28,7 +28,7 @@ export class UserProjectController extends BaseController {
    * @param body 
    * @returns 
    */
-  @Post('/detail', { summary: Constants.per.authOnly })
+  @Post('/detail', { description: Constants.per.authOnly })
   async detail(@Body(ALL) body: any) {
     const {projectId} = await this.getProjectUserIdRead();
     const res = await this.service.getDetail(projectId,this.getUserId());
@@ -41,7 +41,7 @@ export class UserProjectController extends BaseController {
    * @param body 
    * @returns 
    */
-  @Post('/list', { summary: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly })
   async list(@Body(ALL) body: any) {
     const userId= this.getUserId();
     const res = await this.service.getUserProjects(userId);
@@ -54,21 +54,21 @@ export class UserProjectController extends BaseController {
    * @param body 所有项目
    * @returns 
    */
-  @Post('/all', { summary: Constants.per.authOnly })
+  @Post('/all', { description: Constants.per.authOnly })
   async all(@Body(ALL) body: any) {
     const userId= this.getUserId();
     const res = await this.service.getAllWithStatus(userId);
     return this.ok(res);
   }
 
-  @Post('/applyJoin', { summary: Constants.per.authOnly })
+  @Post('/applyJoin', { description: Constants.per.authOnly })
   async applyJoin(@Body(ALL) body: any) {
     const userId= this.getUserId();
     const res = await this.service.applyJoin({ userId, projectId: body.projectId });
     return this.ok(res);
   }
 
-  @Post('/updateMember', { summary: Constants.per.authOnly })
+  @Post('/updateMember', { description: Constants.per.authOnly })
   async updateMember(@Body(ALL) body: any) {
     const {projectId} = await this.getProjectUserIdAdmin();
     const {status,permission,userId} = body;
@@ -89,7 +89,7 @@ export class UserProjectController extends BaseController {
     return this.ok(res);
   }
 
-  @Post('/approveJoin', { summary: Constants.per.authOnly })
+  @Post('/approveJoin', { description: Constants.per.authOnly })
   async approveJoin(@Body(ALL) body: any) {
     const {projectId} = await this.getProjectUserIdAdmin();
     const {status,permission,userId} = body;
@@ -97,7 +97,7 @@ export class UserProjectController extends BaseController {
     return this.ok(res);
   }
 
-  @Post('/delete', { summary: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly })
   async delete(@Body(ALL) body: any) {
      const {projectId} = await this.getProjectUserIdAdmin();
     await this.projectMemberService.deleteWhere({
@@ -107,7 +107,7 @@ export class UserProjectController extends BaseController {
     return this.ok();
   }
 
-  @Post('/leave', { summary: Constants.per.authOnly })
+  @Post('/leave', { description: Constants.per.authOnly })
   async leave(@Body(ALL) body: any) {
     const {projectId}  = body
      const userId = this.getUserId();

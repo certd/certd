@@ -71,7 +71,7 @@ export class BasicSettingsController extends BaseController {
     return copy;
   }
 
-  @Get("/productInfo", { summary: Constants.per.guest })
+  @Get("/productInfo", { description: Constants.per.guest })
   async getProductInfo() {
     const info = await http.request({
       url: "https://app.handfree.work/certd/info.json"
@@ -80,7 +80,7 @@ export class BasicSettingsController extends BaseController {
 
   }
 
-  @Get("/all", { summary: Constants.per.guest })
+  @Get("/all", { description: Constants.per.guest })
   async getAllSettings() {
     const sysPublic = await this.getSysPublic();
     const installInfo = await this.getInstallInfo();

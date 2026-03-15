@@ -19,7 +19,7 @@ export class ForgotPasswordController extends BaseController {
   @Inject()
   sysSettingsService: SysSettingsService;
 
-  @Post('/forgotPassword', { summary: Constants.per.guest })
+  @Post('/forgotPassword', { description: Constants.per.guest })
   public async forgotPassword(
     @Body(ALL)
     body: any,

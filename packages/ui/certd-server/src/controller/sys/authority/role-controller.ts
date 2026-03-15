@@ -15,7 +15,7 @@ export class RoleController extends CrudController<RoleService> {
     return this.service;
   }
 
-  @Post('/page', { summary: 'sys:auth:role:view' })
+  @Post('/page', { description: 'sys:auth:role:view' })
   async page(
     @Body(ALL)
     body
@@ -23,13 +23,13 @@ export class RoleController extends CrudController<RoleService> {
     return await super.page(body);
   }
 
-  @Post('/list', { summary: 'sys:auth:role:view' })
+  @Post('/list', { description: 'sys:auth:role:view' })
   async list() {
     const ret = await this.service.find({});
     return this.ok(ret);
   }
 
-  @Post('/add', { summary: 'sys:auth:role:add' })
+  @Post('/add', { description: 'sys:auth:role:add' })
   async add(
     @Body(ALL)
     bean
@@ -37,14 +37,14 @@ export class RoleController extends CrudController<RoleService> {
     return await super.add(bean);
   }
 
-  @Post('/update', { summary: 'sys:auth:role:edit' })
+  @Post('/update', { description: 'sys:auth:role:edit' })
   async update(
     @Body(ALL)
     bean
   ) {
     return await super.update(bean);
   }
-  @Post('/delete', { summary: 'sys:auth:role:remove' })
+  @Post('/delete', { description: 'sys:auth:role:remove' })
   async delete(
     @Query('id')
     id: number
@@ -55,7 +55,7 @@ export class RoleController extends CrudController<RoleService> {
     return await super.delete(id);
   }
 
-  @Post('/getPermissionTree', { summary: 'sys:auth:role:view' })
+  @Post('/getPermissionTree', { description: 'sys:auth:role:view' })
   async getPermissionTree(
     @Query('id')
     id: number
@@ -64,7 +64,7 @@ export class RoleController extends CrudController<RoleService> {
     return this.ok(ret);
   }
 
-  @Post('/getPermissionIds', { summary: 'sys:auth:role:view' })
+  @Post('/getPermissionIds', { description: 'sys:auth:role:view' })
   async getPermissionIds(
     @Query('id')
     id: number
@@ -78,7 +78,7 @@ export class RoleController extends CrudController<RoleService> {
    * @param roleId
    * @param permissionIds
    */
-  @Post('/authz', { summary: 'sys:auth:role:edit' })
+  @Post('/authz', { description: 'sys:auth:role:edit' })
   async authz(@Body('roleId') roleId, @Body('permissionIds') permissionIds) {
     await this.service.authz(roleId, permissionIds);
     return this.ok(null);

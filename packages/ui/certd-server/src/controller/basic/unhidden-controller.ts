@@ -32,7 +32,7 @@ export class UnhiddenController {
     sysSettingsService: SysSettingsService;
 
 
-    @Post('/:randomPath', {summary: Constants.per.guest})
+    @Post('/:randomPath', {description: Constants.per.guest})
     async randomPath(@Body("password") password: any) {
         await this.checkUnhiddenPath()
         const hiddenSetting = await this.safeService.getHiddenSetting()
@@ -50,7 +50,7 @@ export class UnhiddenController {
         }
     }
 
-    @Get('/:randomPath', {summary: Constants.per.guest})
+    @Get('/:randomPath', {description: Constants.per.guest})
     async unhiddenGet() {
         await this.checkUnhiddenPath()
         this.ctx.response.body = unhiddenHtml

@@ -6,7 +6,7 @@ import { Constants, SysSettingsService } from '@certd/lib-server';
 export class HomeController {
   @Inject()
   sysSettingsService: SysSettingsService;
-  @Get('/robots.txt', { summary: Constants.per.guest })
+  @Get('/robots.txt', { description: Constants.per.guest })
   async robots(): Promise<string> {
     const publicSettings = await this.sysSettingsService.getPublicSettings();
     if (!publicSettings.robots) {

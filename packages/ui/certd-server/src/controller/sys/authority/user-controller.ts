@@ -28,7 +28,7 @@ export class UserController extends CrudController<UserService> {
     return this.service;
   }
 
-  @Post('/getSimpleUserByIds', {summary: 'sys:auth:user:view'})
+  @Post('/getSimpleUserByIds', {description: 'sys:auth:user:view'})
   async getSimpleUserByIds(@Body('ids') ids: number[]) {
     const users = await this.service.find({
       select: {
@@ -47,7 +47,7 @@ export class UserController extends CrudController<UserService> {
   }
 
 
-  @Post('/getSimpleUsers', {summary: 'sys:auth:user:view'})
+  @Post('/getSimpleUsers', {description: 'sys:auth:user:view'})
   async getSimpleUsers() {
     const users = await this.service.find({
       select: {
@@ -61,7 +61,7 @@ export class UserController extends CrudController<UserService> {
     return this.ok(users);
   }
 
-  @Post('/page', {summary: 'sys:auth:user:view'})
+  @Post('/page', {description: 'sys:auth:user:view'})
   async page(
     @Body(ALL)
       body
@@ -93,7 +93,7 @@ export class UserController extends CrudController<UserService> {
     return ret;
   }
 
-  @Post('/add', {summary: 'sys:auth:user:add'})
+  @Post('/add', {description: 'sys:auth:user:add'})
   async add(
     @Body(ALL)
       bean
@@ -101,7 +101,7 @@ export class UserController extends CrudController<UserService> {
     return await super.add(bean);
   }
 
-  @Post('/update', {summary: 'sys:auth:user:edit'})
+  @Post('/update', {description: 'sys:auth:user:edit'})
   async update(
     @Body(ALL)
       bean
@@ -109,7 +109,7 @@ export class UserController extends CrudController<UserService> {
     return await super.update(bean);
   }
 
-  @Post('/delete', {summary: 'sys:auth:user:remove'})
+  @Post('/delete', {description: 'sys:auth:user:remove'})
   async delete(
     @Query('id')
       id: number
@@ -126,7 +126,7 @@ export class UserController extends CrudController<UserService> {
   /**
    * 解除登录锁定
    */
-  @Post('/unlockBlock', {summary: "sys:auth:user:edit"})
+  @Post('/unlockBlock', {description: "sys:auth:user:edit"})
   public async unlockBlock(@Body('id') id: number) {
     const info = await this.service.info(id, ['password']);
     this.loginService.clearCacheOnSuccess(info.username)
@@ -139,7 +139,7 @@ export class UserController extends CrudController<UserService> {
   /**
    * 当前登录用户的个人信息
    */
-  @Post('/mine', {summary: Constants.per.authOnly})
+  @Post('/mine', {description: Constants.per.authOnly})
   public async mine() {
     const id = this.getUserId();
     const info = await this.service.info(id, ['password']);
@@ -149,7 +149,7 @@ export class UserController extends CrudController<UserService> {
   /**
    * 当前登录用户的权限列表
    */
-  @Post('/permissions', {summary: Constants.per.authOnly})
+  @Post('/permissions', {description: Constants.per.authOnly})
   public async permissions() {
     const id = this.getUserId();
     const permissions = await this.service.getUserPermissions(id);
@@ -159,7 +159,7 @@ export class UserController extends CrudController<UserService> {
   /**
    * 当前登录用户的权限树形列表
    */
-  @Post('/permissionTree', {summary: Constants.per.authOnly})
+  @Post('/permissionTree', {description: Constants.per.authOnly})
   public async permissionTree() {
     const id = this.getUserId();
     const permissions = await this.service.getUserPermissions(id);

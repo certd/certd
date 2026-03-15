@@ -14,7 +14,7 @@ export class SysSettingsController extends BaseController {
 
 
 
-  @Post("/get", { summary: "sys:settings:view" })
+  @Post("/get", { description: "sys:settings:view" })
   async safeGet() {
     const res = await this.safeService.getSafeSetting()
     const clone:SysSafeSetting = cloneDeep(res);
@@ -22,7 +22,7 @@ export class SysSettingsController extends BaseController {
     return this.ok(clone);
   }
 
-  @Post("/save", { summary: "sys:settings:edit" })
+  @Post("/save", { description: "sys:settings:edit" })
   async safeSave(@Body(ALL) body: any) {
     await this.safeService.saveSafeSetting(body);
     return this.ok({});
@@ -31,7 +31,7 @@ export class SysSettingsController extends BaseController {
   /**
    * 立即隐藏
    */
-  @Post("/hidden", { summary: "sys:settings:edit" })
+  @Post("/hidden", { description: "sys:settings:edit" })
   async hiddenImmediate() {
     await this.safeService.hiddenImmediately();
     return this.ok({});

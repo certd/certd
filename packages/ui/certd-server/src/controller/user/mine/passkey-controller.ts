@@ -14,7 +14,7 @@ export class MinePasskeyController extends BaseController {
   @Inject()
   userService: UserService;
 
-  @Post('/generateRegistration', { summary: Constants.per.authOnly })
+  @Post('/generateRegistration', { description: Constants.per.authOnly })
   public async generateRegistration(
     @Body(ALL)
     body: any,
@@ -41,7 +41,7 @@ export class MinePasskeyController extends BaseController {
     });
   }
 
-  @Post('/verifyRegistration', { summary: Constants.per.authOnly })
+  @Post('/verifyRegistration', { description: Constants.per.authOnly })
   public async verifyRegistration(
     @Body(ALL)
     body: any
@@ -64,7 +64,7 @@ export class MinePasskeyController extends BaseController {
 
   
 
-  @Post('/register', { summary: Constants.per.authOnly })
+  @Post('/register', { description: Constants.per.authOnly })
   public async registerPasskey(
     @Body(ALL)
     body: any
@@ -86,7 +86,7 @@ export class MinePasskeyController extends BaseController {
   }
 
   
-  @Post('/list', { summary: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly })
   public async getPasskeys() {
     const userId = this.getUserId();
     const passkeys = await this.passkeyService.find({
@@ -97,7 +97,7 @@ export class MinePasskeyController extends BaseController {
     return this.ok(passkeys);
   }
 
-  @Post('/unbind', { summary: Constants.per.authOnly })
+  @Post('/unbind', { description: Constants.per.authOnly })
   public async unbindPasskey(@Body(ALL) body: any) {
     const userId = this.getUserId();
     const passkeyId = body.id;

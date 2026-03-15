@@ -53,7 +53,7 @@ export class ConnectController extends BaseController {
     return addon as IOauthProvider;
   }
 
-  @Post('/login', { summary: Constants.per.guest })
+  @Post('/login', { description: Constants.per.guest })
   public async login(@Body(ALL) body: { type: string, forType?:string ,from?:string }) {
 
     const addon = await this.getOauthProvider(body.type);
@@ -72,7 +72,7 @@ export class ConnectController extends BaseController {
   }
 
 
-  @Get('/callback/:type', { summary: Constants.per.guest })
+  @Get('/callback/:type', { description: Constants.per.guest })
   public async callback(@Param('type') type: string, @Query() query: Record<string, string>) {
 
     checkPlus()
@@ -123,7 +123,7 @@ export class ConnectController extends BaseController {
 
   }
 
-  @Post('/getLogoutUrl', { summary: Constants.per.guest })
+  @Post('/getLogoutUrl', { description: Constants.per.guest })
   public async logout(@Body(ALL) body: any) {
     checkPlus()
     const addon = await this.getOauthProvider(body.type);
@@ -132,7 +132,7 @@ export class ConnectController extends BaseController {
   }
 
 
-  @Post('/token', { summary: Constants.per.guest })
+  @Post('/token', { description: Constants.per.guest })
   public async token(@Body(ALL) body: { validationCode: string, type: string }) {
     checkPlus()
     const validationValue = await this.codeService.getValidationValue(body.validationCode);
@@ -166,7 +166,7 @@ export class ConnectController extends BaseController {
   }
 
 
-  @Post('/autoRegister', { summary: Constants.per.guest })
+  @Post('/autoRegister', { description: Constants.per.guest })
   public async autoRegister(@Body(ALL) body: { validationCode: string, type: string }) {
 
     const validationValue = this.codeService.getValidationValue(body.validationCode);
@@ -195,7 +195,7 @@ export class ConnectController extends BaseController {
   }
 
 
-  @Post('/bind', { summary: Constants.per.loginOnly })
+  @Post('/bind', { description: Constants.per.loginOnly })
   public async bind(@Body(ALL) body: any) {
     //需要已登录
     const userId = this.getUserId();
@@ -214,7 +214,7 @@ export class ConnectController extends BaseController {
     return this.ok(1);
   }
 
-  @Post('/unbind', { summary: Constants.per.loginOnly })
+  @Post('/unbind', { description: Constants.per.loginOnly })
   public async unbind(@Body(ALL) body: any) {
     //需要已登录
     const userId = this.getUserId();
@@ -225,7 +225,7 @@ export class ConnectController extends BaseController {
     return this.ok(1);
   }
 
-   @Post('/bounds', { summary: Constants.per.loginOnly })
+   @Post('/bounds', { description: Constants.per.loginOnly })
   public async bounds(@Body(ALL) body: any) {
     //需要已登录
     const userId = this.getUserId();
@@ -238,7 +238,7 @@ export class ConnectController extends BaseController {
   }
 
 
-   @Post('/providers', { summary: Constants.per.guest })
+   @Post('/providers', { description: Constants.per.guest })
   public async providers() {
     const defineList = addonRegistry.getDefineList("oauth");
 

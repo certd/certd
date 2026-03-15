@@ -29,7 +29,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
     return this.service;
   }
 
-  @Post('/page', { summary: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly })
   async page(@Body(ALL) body: any) {
     body.query = body.query ?? {};
 
@@ -78,7 +78,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
     return this.ok(res);
   }
 
-  @Post('/list', { summary: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly })
   async list(@Body(ALL) body: any) {
     body.query = body.query ?? {};
     const { projectId, userId } = await this.getProjectUserIdRead()
@@ -88,7 +88,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
   }
 
 
-  @Post('/getOptionsByIds', { summary: Constants.per.authOnly })
+  @Post('/getOptionsByIds', { description: Constants.per.authOnly })
   async getOptionsByIds(@Body(ALL) body: {ids:any[]}) {
     const { projectId, userId } = await this.getProjectUserIdRead()
     const list = await this.service.list({
@@ -113,7 +113,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
     return this.ok(safeList);
   }
 
-  @Post('/add', { summary: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly })
   async add(@Body(ALL) bean: any) {
     const { projectId, userId } = await this.getProjectUserIdWrite()
     bean.projectId = projectId
@@ -121,26 +121,26 @@ export class CertInfoController extends CrudController<CertInfoService> {
     return await super.add(bean);
   }
 
-  @Post('/update', { summary: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service,bean.id,"write");
     delete bean.userId;
     delete bean.projectId;
     return await super.update(bean);
   }
-  @Post('/info', { summary: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.service,id,"read");
     return await super.info(id);
   }
 
-  @Post('/delete', { summary: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.service,id,"write");
     return await super.delete(id);
   }
 
-  @Post('/all', { summary: Constants.per.authOnly })
+  @Post('/all', { description: Constants.per.authOnly })
   async all() {
     const { projectId, userId } = await this.getProjectUserIdRead()
     const list: any = await this.service.find({
@@ -154,7 +154,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
 
 
 
-  @Post('/getCert', { summary: Constants.per.authOnly })
+  @Post('/getCert', { description: Constants.per.authOnly })
   async getCert(@Query('id') id: number) {
     await this.checkOwner(this.getService(),id,"read");
     const certInfoEntity = await this.service.info(id);
@@ -162,7 +162,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
     return this.ok(certInfo);
   }
 
-  @Get('/download', { summary: Constants.per.authOnly })
+  @Get('/download', { description: Constants.per.authOnly })
   async download(@Query('id') id: number) {
     const {userId,projectId} =await this.checkOwner(this.getService(),id,"read");
     const certInfo = await this.getService().info(id)

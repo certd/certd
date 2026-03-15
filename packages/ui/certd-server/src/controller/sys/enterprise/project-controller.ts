@@ -19,18 +19,18 @@ export class SysProjectController extends CrudController<ProjectEntity> {
     return this.service;
   }
 
-  @Post("/page", { summary: "sys:settings:view" })
+  @Post("/page", { description: "sys:settings:view" })
   async page(@Body(ALL) body: any) {
     body.query = body.query ?? {};
     return await super.page(body);
   }
 
-  @Post("/list", { summary: "sys:settings:view" })
+  @Post("/list", { description: "sys:settings:view" })
   async list(@Body(ALL) body: any) {
     return super.list(body);
   }
 
-  @Post("/add", { summary: "sys:settings:edit" })
+  @Post("/add", { description: "sys:settings:edit" })
   async add(@Body(ALL) bean: any) {
     const def: any = {
       isDefault: false,
@@ -45,28 +45,28 @@ export class SysProjectController extends CrudController<ProjectEntity> {
     });
   }
 
-  @Post("/update", { summary: "sys:settings:edit" })
+  @Post("/update", { description: "sys:settings:edit" })
   async update(@Body(ALL) bean: any) {
     bean.userId = this.getUserId();
     return super.update(bean);
   }
 
-  @Post("/info", { summary: "sys:settings:view" })
+  @Post("/info", { description: "sys:settings:view" })
   async info(@Query("id") id: number) {
     return super.info(id);
   }
 
-  @Post("/delete", { summary: "sys:settings:edit" })
+  @Post("/delete", { description: "sys:settings:edit" })
   async delete(@Query("id") id: number) {
     return super.delete(id);
   }
 
-  @Post("/deleteByIds", { summary: "sys:settings:edit" })
+  @Post("/deleteByIds", { description: "sys:settings:edit" })
   async deleteByIds(@Body("ids") ids: number[]) {
     const res = await this.service.delete(ids);
     return this.ok(res);
   }
-  @Post("/setDisabled", { summary: "sys:settings:edit" })
+  @Post("/setDisabled", { description: "sys:settings:edit" })
   async setDisabled(@Body("id") id: number, @Body("disabled") disabled: boolean) {
     await this.service.setDisabled(id, disabled);
     return this.ok();

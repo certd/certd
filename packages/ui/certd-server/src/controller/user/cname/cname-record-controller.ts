@@ -17,7 +17,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     return this.service;
   }
 
-  @Post('/page', { summary: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly })
   async page(@Body(ALL) body: any) {
     const {userId,projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -41,7 +41,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     return this.ok(pageRet);
   }
 
-  @Post('/list', { summary: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly })
   async list(@Body(ALL) body: any) {
     const {userId,projectId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -51,7 +51,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     return this.ok(list);
   }
 
-  @Post('/add', { summary: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly })
   async add(@Body(ALL) bean: any) {
     const {userId,projectId} = await this.getProjectUserIdWrite();
     bean.userId = userId;
@@ -59,7 +59,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     return super.add(bean);
   }
 
-  @Post('/update', { summary: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly })
   async update(@Body(ALL) bean: any) {
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
@@ -67,19 +67,19 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     return super.update(bean);
   }
 
-  @Post('/info', { summary: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "read");
     return super.info(id);
   }
 
-  @Post('/delete', { summary: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "write");
     return super.delete(id);
   }
 
-  @Post('/deleteByIds', { summary: Constants.per.authOnly })
+  @Post('/deleteByIds', { description: Constants.per.authOnly })
   async deleteByIds(@Body(ALL) body: any) {
     const {userId,projectId} = await this.getProjectUserIdWrite();
     await this.service.delete(body.ids, {
@@ -88,27 +88,27 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     });
     return this.ok();
   }
-  @Post('/getByDomain', { summary: Constants.per.authOnly })
+  @Post('/getByDomain', { description: Constants.per.authOnly })
   async getByDomain(@Body(ALL) body: { domain: string; createOnNotFound: boolean }) {
     const {userId,projectId} = await this.getProjectUserIdRead();
     const res = await this.service.getByDomain(body.domain, userId,projectId, body.createOnNotFound);
     return this.ok(res);
   }
 
-  @Post('/verify', { summary: Constants.per.authOnly })
+  @Post('/verify', { description: Constants.per.authOnly })
   async verify(@Body(ALL) body: { id: number }) {
     await this.checkOwner(this.getService(), body.id, "read");
     const res = await this.service.verify(body.id);
     return this.ok(res);
   }
 
-  @Post('/resetStatus', { summary: Constants.per.authOnly })
+  @Post('/resetStatus', { description: Constants.per.authOnly })
   async resetStatus(@Body(ALL) body: { id: number }) {
     await this.checkOwner(this.getService(), body.id, "read");
     const res = await this.service.resetStatus(body.id);
     return this.ok(res);
   }
- @Post('/import', { summary: Constants.per.authOnly })
+ @Post('/import', { description: Constants.per.authOnly })
   async import(@Body(ALL) body: { domainList: string; cnameProviderId: any }) {
     const {userId,projectId} = await this.getProjectUserIdWrite();
     const res = await this.service.doImport({

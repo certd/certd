@@ -21,7 +21,7 @@ export class AccessController extends CrudController<AccessService> {
     return this.service;
   }
 
-  @Post('/page', { summary: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly })
   async page(@Body(ALL) body) {
     const { projectId, userId } = await this.getProjectUserIdRead()
     body.query = body.query ?? {};
@@ -44,7 +44,7 @@ export class AccessController extends CrudController<AccessService> {
     return this.ok(res);
   }
 
-  @Post('/list', { summary: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly })
   async list(@Body(ALL) body) {
     const { projectId, userId } = await this.getProjectUserIdRead()
     body.query = body.query ?? {};
@@ -53,7 +53,7 @@ export class AccessController extends CrudController<AccessService> {
     return super.list(body);
   }
 
-  @Post('/add', { summary: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly })
   async add(@Body(ALL) bean) {
     const { projectId, userId } = await this.getProjectUserIdWrite()
     bean.userId = userId;
@@ -61,39 +61,39 @@ export class AccessController extends CrudController<AccessService> {
     return super.add(bean);
   }
 
-  @Post('/update', { summary: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
     return super.update(bean);
   }
-  @Post('/info', { summary: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "read");
     return super.info(id);
   }
 
-  @Post('/delete', { summary: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id, "write");
     return super.delete(id);
   }
 
-  @Post('/define', { summary: Constants.per.authOnly })
+  @Post('/define', { description: Constants.per.authOnly })
   async define(@Query('type') type: string) {
     const access = this.service.getDefineByType(type);
     return this.ok(access);
   }
 
-  @Post('/getSecretPlain', { summary: Constants.per.authOnly })
+  @Post('/getSecretPlain', { description: Constants.per.authOnly })
   async getSecretPlain(@Body(ALL) body: { id: number; key: string }) {
     const {userId, projectId}  = await this.checkOwner(this.getService(), body.id, "read");
     const value = await this.service.getById(body.id, userId, projectId);  
     return this.ok(value[body.key]);
   }
 
-  @Post('/accessTypeDict', { summary: Constants.per.authOnly })
+  @Post('/accessTypeDict', { description: Constants.per.authOnly })
   async getAccessTypeDict() {
     let list: AccessDefine[] = this.service.getDefineList();
     list = list.sort((a,b) => {
@@ -110,7 +110,7 @@ export class AccessController extends CrudController<AccessService> {
     return this.ok(dict);
   }
 
-  @Post('/simpleInfo', { summary: Constants.per.authOnly })
+  @Post('/simpleInfo', { description: Constants.per.authOnly })
   async simpleInfo(@Query('id') id: number) {
     // await this.authService.checkUserIdButAllowAdmin(this.ctx, this.service, id);
     // await this.checkOwner(this.getService(), id, "read",true);
@@ -118,7 +118,7 @@ export class AccessController extends CrudController<AccessService> {
     return this.ok(res);
   }
 
-  @Post('/getDictByIds', { summary: Constants.per.authOnly })
+  @Post('/getDictByIds', { description: Constants.per.authOnly })
   async getDictByIds(@Body('ids') ids: number[]) {
     const { userId, projectId } = await this.getProjectUserIdRead()
     const res = await this.service.getSimpleByIds(ids, userId, projectId);

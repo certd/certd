@@ -18,19 +18,19 @@ export class PluginController extends BaseController {
   @Inject()
   pluginConfigService: PluginConfigService;
 
-  @Post('/list', { summary: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly })
   async list(@Query(ALL) query: any) {
     const list = await this.service.getEnabledBuiltInList();
     return this.ok(list);
   }
 
-  @Post('/groups', { summary: Constants.per.authOnly })
+  @Post('/groups', { description: Constants.per.authOnly })
   async groups(@Query(ALL) query: any) {
     const group = await this.service.getEnabledBuildInGroup();
     return this.ok(group);
   }
 
-  @Post('/groupsList', { summary: Constants.per.authOnly })
+  @Post('/groupsList', { description: Constants.per.authOnly })
   async groupsList(@Query(ALL) query: any) {
     const groups = pluginGroups
     const groupsList:any = []
@@ -44,13 +44,13 @@ export class PluginController extends BaseController {
     return this.ok(groupsList);
   }
 
-  @Post('/getDefineByType', { summary: Constants.per.authOnly })
+  @Post('/getDefineByType', { description: Constants.per.authOnly })
   async getDefineByType(@Body('type') type: string) {
     const define = await this.service.getDefineByType(type);
     return this.ok(define);
   }
 
-  @Post('/config', { summary: Constants.per.authOnly })
+  @Post('/config', { description: Constants.per.authOnly })
   async config(@Body(ALL) body: { id?: number; name?: string; type: string }) {
     const config = await this.pluginConfigService.getPluginConfig(body);
     return this.ok(config);

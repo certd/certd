@@ -23,18 +23,18 @@ export class SysProjectMemberController extends CrudController<ProjectMemberEnti
     return this.service;
   }
 
-  @Post("/page", { summary: "sys:settings:view" })
+  @Post("/page", { description: "sys:settings:view" })
   async page(@Body(ALL) body: any) {
     body.query = body.query ?? {};
     return await super.page(body);
   }
 
-  @Post("/list", { summary: "sys:settings:view" })
+  @Post("/list", { description: "sys:settings:view" })
   async list(@Body(ALL) body: any) {
     return super.list(body);
   }
 
-  @Post("/add", { summary: "sys:settings:edit" })
+  @Post("/add", { description: "sys:settings:edit" })
   async add(@Body(ALL) bean: any) {
     const def: any = {
       isDefault: false,
@@ -50,7 +50,7 @@ export class SysProjectMemberController extends CrudController<ProjectMemberEnti
     return super.add(bean);
   }
 
-  @Post("/update", { summary: "sys:settings:edit" })
+  @Post("/update", { description: "sys:settings:edit" })
   async update(@Body(ALL) bean: any) {
     if (!bean.id) {
       throw new Error("id is required");
@@ -68,7 +68,7 @@ export class SysProjectMemberController extends CrudController<ProjectMemberEnti
     return this.ok(res);
   }
 
-  @Post("/info", { summary: "sys:settings:view" })
+  @Post("/info", { description: "sys:settings:view" })
   async info(@Query("id") id: number) {
      if (!id) {
       throw new Error("id is required");
@@ -81,7 +81,7 @@ export class SysProjectMemberController extends CrudController<ProjectMemberEnti
     return super.info(id);
   }
 
-  @Post("/delete", { summary: "sys:settings:edit" })
+  @Post("/delete", { description: "sys:settings:edit" })
   async delete(@Query("id") id: number) {
     if (!id) {
       throw new Error("id is required");
@@ -94,7 +94,7 @@ export class SysProjectMemberController extends CrudController<ProjectMemberEnti
     return super.delete(id);
   }
 
-  @Post("/deleteByIds", { summary: "sys:settings:edit" })
+  @Post("/deleteByIds", { description: "sys:settings:edit" })
   async deleteByIds(@Body("ids") ids: number[]) {
     for (const id of ids) {
       if (!id) {

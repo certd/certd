@@ -41,7 +41,7 @@ export class HistoryController extends CrudController<HistoryService> {
     return this.service;
   }
 
-  @Post('/page', { summary: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly })
   async page(@Body(ALL) body: any) {
     const { projectId, userId } = await this.getProjectUserIdRead()
     body.query.projectId = projectId
@@ -88,7 +88,7 @@ export class HistoryController extends CrudController<HistoryService> {
     return this.ok(res);
   }
 
-  @Post('/list', { summary: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly })
   async list(@Body(ALL) body) {
     const { projectId, userId } = await this.getProjectUserIdRead()
     if (!body){
@@ -151,7 +151,7 @@ export class HistoryController extends CrudController<HistoryService> {
     return this.ok(listRet);
   }
 
-  @Post('/add', { summary: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly })
   async add(@Body(ALL) bean: PipelineEntity) {
     const { projectId, userId } = await this.getProjectUserIdRead()
     bean.projectId = projectId
@@ -159,7 +159,7 @@ export class HistoryController extends CrudController<HistoryService> {
     return super.add(bean);
   }
 
-  @Post('/update', { summary: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.getService(), bean.id,"write",true);
     delete bean.userId;
@@ -167,7 +167,7 @@ export class HistoryController extends CrudController<HistoryService> {
     return super.update(bean);
   }
 
-  @Post('/save', { summary: Constants.per.authOnly })
+  @Post('/save', { description: Constants.per.authOnly })
   async save(@Body(ALL) bean: HistoryEntity) {
     const { projectId,userId } = await this.getProjectUserIdWrite()
     bean.userId = userId;
@@ -183,7 +183,7 @@ export class HistoryController extends CrudController<HistoryService> {
     return this.ok(bean.id);
   }
 
-  @Post('/saveLog', { summary: Constants.per.authOnly })
+  @Post('/saveLog', { description: Constants.per.authOnly })
   async saveLog(@Body(ALL) bean: HistoryLogEntity) {
     const { projectId,userId } = await this.getProjectUserIdWrite()
     bean.projectId = projectId;
@@ -198,14 +198,14 @@ export class HistoryController extends CrudController<HistoryService> {
     return this.ok(bean.id);
   }
 
-  @Post('/delete', { summary: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id,"write",true);
     await super.delete(id);
     return this.ok();
   }
 
-  @Post('/deleteByIds', { summary: Constants.per.authOnly })
+  @Post('/deleteByIds', { description: Constants.per.authOnly })
   async deleteByIds(@Body(ALL) body: any) {
     let {userId} = await this.checkOwner(this.getService(), body.ids,"write",true);
     const isAdmin = await this.authService.isAdmin(this.ctx);
@@ -214,21 +214,21 @@ export class HistoryController extends CrudController<HistoryService> {
     return this.ok();
   }
 
-  @Post('/detail', { summary: Constants.per.authOnly })
+  @Post('/detail', { description: Constants.per.authOnly })
   async detail(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id,"read",true);
     const detail = await this.service.detail(id);
     return this.ok(detail);
   }
 
-  @Post('/logs', { summary: Constants.per.authOnly })
+  @Post('/logs', { description: Constants.per.authOnly })
   async logs(@Query('id') id: number) {
     await this.checkOwner(this.logService, id,"read",true);
     const logInfo = await this.logService.info(id);
     return this.ok(logInfo);
   }
 
-  @Post('/files', { summary: Constants.per.authOnly })
+  @Post('/files', { description: Constants.per.authOnly })
   async files(@Query('pipelineId') pipelineId: number, @Query('historyId') historyId: number) {
     const files = await this.getFiles(historyId, pipelineId);
     return this.ok(files);
@@ -269,7 +269,7 @@ export class HistoryController extends CrudController<HistoryService> {
     return await this.service.getFiles(history);
   }
 
-  @Get('/download', { summary: Constants.per.authOnly })
+  @Get('/download', { description: Constants.per.authOnly })
   async download(@Query('pipelineId') pipelineId: number, @Query('historyId') historyId: number, @Query('fileId') fileId: string) {
     const files = await this.getFiles(historyId, pipelineId);
     const file = files.find(f => f.id === fileId);

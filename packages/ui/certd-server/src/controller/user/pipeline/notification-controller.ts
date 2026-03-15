@@ -22,7 +22,7 @@ export class NotificationController extends CrudController<NotificationService> 
     return this.service;
   }
 
-  @Post('/page', { summary: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly })
   async page(@Body(ALL) body) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -40,7 +40,7 @@ export class NotificationController extends CrudController<NotificationService> 
     return this.ok(res);
   }
 
-  @Post('/list', { summary: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly })
   async list(@Body(ALL) body) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
@@ -49,7 +49,7 @@ export class NotificationController extends CrudController<NotificationService> 
     return super.list(body);
   }
 
-  @Post('/add', { summary: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly })
   async add(@Body(ALL) bean) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     bean.userId = userId;
@@ -65,7 +65,7 @@ export class NotificationController extends CrudController<NotificationService> 
     return super.add(bean);
   }
 
-  @Post('/update', { summary: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.getService(), bean.id,"write");
     const old = await this.service.info(bean.id);
@@ -86,25 +86,25 @@ export class NotificationController extends CrudController<NotificationService> 
     delete bean.projectId;
     return super.update(bean);
   }
-  @Post('/info', { summary: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id,"read");
     return super.info(id);
   }
 
-  @Post('/delete', { summary: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id,"write");
     return super.delete(id);
   }
 
-  @Post('/define', { summary: Constants.per.authOnly })
+  @Post('/define', { description: Constants.per.authOnly })
   async define(@Query('type') type: string) {
     const notification = this.service.getDefineByType(type);
     return this.ok(notification);
   }
 
-  @Post('/getTypeDict', { summary: Constants.per.authOnly })
+  @Post('/getTypeDict', { description: Constants.per.authOnly })
   async getTypeDict() {
     const list: any = this.service.getDefineList();
     let dict = [];
@@ -125,7 +125,7 @@ export class NotificationController extends CrudController<NotificationService> 
     return this.ok(dict);
   }
 
-  @Post('/simpleInfo', { summary: Constants.per.authOnly })
+  @Post('/simpleInfo', { description: Constants.per.authOnly })
   async simpleInfo(@Query('id') id: number) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     if (id === 0) {
@@ -142,14 +142,14 @@ export class NotificationController extends CrudController<NotificationService> 
     return this.ok(res);
   }
 
-  @Post('/getDefaultId', { summary: Constants.per.authOnly })
+  @Post('/getDefaultId', { description: Constants.per.authOnly })
   async getDefaultId() {
     const {projectId,userId} = await this.getProjectUserIdRead();
     const res = await this.service.getDefault(userId,projectId);
     return this.ok(res?.id);
   }
 
-  @Post('/setDefault', { summary: Constants.per.authOnly })
+  @Post('/setDefault', { description: Constants.per.authOnly })
   async setDefault(@Query('id') id: number) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     await this.checkOwner(this.getService(), id,"write");
@@ -157,14 +157,14 @@ export class NotificationController extends CrudController<NotificationService> 
     return this.ok(res);
   }
 
-  @Post('/getOrCreateDefault', { summary: Constants.per.authOnly })
+  @Post('/getOrCreateDefault', { description: Constants.per.authOnly })
   async getOrCreateDefault(@Body('email') email: string) {
     const {projectId,userId} = await this.getProjectUserIdRead();
     const res = await this.service.getOrCreateDefault(email, userId,projectId);
     return this.ok(res);
   }
 
-  @Post('/options', { summary: Constants.per.authOnly })
+  @Post('/options', { description: Constants.per.authOnly })
   async options() {
     const {projectId,userId} = await this.getProjectUserIdRead();
     const res = await this.service.list({

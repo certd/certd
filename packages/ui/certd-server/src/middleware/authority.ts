@@ -40,13 +40,13 @@ export class AuthorityMiddleware implements IWebMiddleware {
         await next();
         return;
       }
-      const permission = routeInfo.summary;
+      let permission = routeInfo.description || '';
+      permission = permission.trim().split(' ')[0];
       if (permission == null || permission === '') {
         ctx.status = 500;
         ctx.body = Constants.res.serverError('该路由未配置权限控制:' + ctx.path);
         return;
       }
-
       if (permission === Constants.per.guest) {
         await next();
         return;

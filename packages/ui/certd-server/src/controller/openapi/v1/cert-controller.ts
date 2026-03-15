@@ -25,8 +25,8 @@ export class OpenCertController extends BaseOpenController {
   @Inject()
   encryptService: EncryptService;
 
-  @Get('/get', { summary: Constants.per.open })
-  @Post('/get', { summary: Constants.per.open })
+  @Get('/get', { description: Constants.per.open })
+  @Post('/get', { description: Constants.per.open })
   async get(@Body(ALL) bean: CertGetReq, @Query(ALL) query: CertGetReq) {
     const openKey: OpenKey = this.ctx.openKey;
     const userId = openKey.userId;

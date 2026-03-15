@@ -13,7 +13,7 @@ export class SysPlusController extends BaseController {
   @Inject()
   plusService: PlusService;
 
-  @Post('/active', { summary: 'sys:settings:edit' })
+  @Post('/active', { description: 'sys:settings:edit' })
   async active(@Body(ALL) body) {
     const { code, inviteCode } = body;
 
@@ -21,7 +21,7 @@ export class SysPlusController extends BaseController {
 
     return this.ok(true);
   }
-  @Post('/bindUrl', { summary: 'sys:settings:edit' })
+  @Post('/bindUrl', { description: 'sys:settings:edit' })
   async bindUrl(@Body(ALL) body: { url: string ,url2?:string }) {
     const { url,url2 } = body;  
     await this.plusService.register();
@@ -42,18 +42,18 @@ export class SysPlusController extends BaseController {
     return this.ok(true);
   }
 
-  @Post('/getVipTrial', { summary: 'sys:settings:edit' })
+  @Post('/getVipTrial', { description: 'sys:settings:edit' })
   async getVipTrial(@Body("vipType") vipType?:string) {
     const res = await this.plusService.getVipTrial(vipType);
     return this.ok(res);
   }
-  @Post('/getTodayVipOrderCount', { summary: 'sys:settings:edit' })
+  @Post('/getTodayVipOrderCount', { description: 'sys:settings:edit' })
   async getTodayVipOrderCount() {
     const res = await this.plusService.getTodayOrderCount();
     return this.ok(res);
   }
   //
-  // @Get('/test', { summary: Constants.per.guest })
+  // @Get('/test', { description: Constants.per.guest })
   // async test() {
   //   const subjectId = 'xxxxxx';
   //   const license = '';

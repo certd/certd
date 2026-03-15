@@ -19,7 +19,7 @@ export class TemplateController extends CrudController<TemplateService> {
   }
 
 
-  @Post('/page', { summary: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly })
   async page(@Body(ALL) body) {
     
     body.query = body.query ?? {};
@@ -39,7 +39,7 @@ export class TemplateController extends CrudController<TemplateService> {
     return this.ok(res);
   }
 
-  @Post('/list', { summary: Constants.per.authOnly })
+  @Post('/list', { description: Constants.per.authOnly })
   async list(@Body(ALL) body) {
     body.query = body.query ?? {};
     const { projectId, userId } = await this.getProjectUserIdRead()
@@ -48,7 +48,7 @@ export class TemplateController extends CrudController<TemplateService> {
     return super.list(body);
   }
 
-  @Post('/add', { summary: Constants.per.authOnly })
+  @Post('/add', { description: Constants.per.authOnly })
   async add(@Body(ALL) bean) {
     const { projectId, userId } = await this.getProjectUserIdRead()
     bean.userId = userId;
@@ -57,40 +57,40 @@ export class TemplateController extends CrudController<TemplateService> {
     return super.add(bean);
   }
 
-  @Post('/update', { summary: Constants.per.authOnly })
+  @Post('/update', { description: Constants.per.authOnly })
   async update(@Body(ALL) bean) {
     await this.checkOwner(this.service, bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
     return super.update(bean);
   }
-  @Post('/info', { summary: Constants.per.authOnly })
+  @Post('/info', { description: Constants.per.authOnly })
   async info(@Query('id') id: number) {
      await this.checkOwner(this.service, id, "read");
     return super.info(id);
   }
 
-  @Post('/delete', { summary: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
      const { userId ,projectId } = await this.getProjectUserIdWrite()
     await this.service.batchDelete([id], userId,projectId);
     return this.ok({});
   }
 
-  @Post('/batchDelete', { summary: Constants.per.authOnly })
+  @Post('/batchDelete', { description: Constants.per.authOnly })
   async batchDelete(@Body('ids') ids: number[]) {
     const { userId ,projectId } = await this.getProjectUserIdWrite()
     await this.service.batchDelete(ids, userId,projectId);
     return this.ok({});
   }
 
-  @Post('/detail', { summary: Constants.per.authOnly })
+  @Post('/detail', { description: Constants.per.authOnly })
   async detail(@Query('id') id: number) {
     const { userId ,projectId } = await this.getProjectUserIdRead()
     const detail = await this.service.detail(id, userId,projectId);
     return this.ok(detail);
   }
-  @Post('/createPipelineByTemplate', { summary: Constants.per.authOnly })
+  @Post('/createPipelineByTemplate', { description: Constants.per.authOnly })
   async createPipelineByTemplate(@Body(ALL) body: any) {
     const { userId ,projectId } = await this.getProjectUserIdWrite()
     body.userId = userId;

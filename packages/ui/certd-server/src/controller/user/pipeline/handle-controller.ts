@@ -34,7 +34,7 @@ export class HandleController extends BaseController {
   @Inject()
   notificationService: NotificationService;
 
-  @Post('/access', { summary: Constants.per.authOnly })
+  @Post('/access', { description: Constants.per.authOnly })
   async accessRequest(@Body(ALL) body: AccessRequestHandleReq) {
     const {projectId,userId} = await this.getProjectUserIdRead()
     let inputAccess = body.input;
@@ -64,7 +64,7 @@ export class HandleController extends BaseController {
     return this.ok(res);
   }
 
-  @Post('/notification', { summary: Constants.per.authOnly })
+  @Post('/notification', { description: Constants.per.authOnly })
   async notificationRequest(@Body(ALL) body: NotificationRequestHandleReq) {
     const input = body.input;
 
@@ -80,7 +80,7 @@ export class HandleController extends BaseController {
     return this.ok(res);
   }
 
-  @Post('/plugin', { summary: Constants.per.authOnly })
+  @Post('/plugin', { description: Constants.per.authOnly })
   async pluginRequest(@Body(ALL) body: PluginRequestHandleReq) {
     const {projectId,userId} = await this.getProjectUserIdRead()
     const pluginDefine = pluginRegistry.get(body.typeName);

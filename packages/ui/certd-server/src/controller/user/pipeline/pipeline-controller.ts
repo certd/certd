@@ -32,7 +32,7 @@ export class PipelineController extends CrudController<PipelineService> {
     return this.service;
   }
 
-  @Post('/page', { summary: Constants.per.authOnly })
+  @Post('/page', { description: Constants.per.authOnly })
   async page(@Body(ALL) body) {
     const isAdmin = await this.authService.isAdmin(this.ctx);
     const publicSettings = await this.sysSettingsService.getPublicSettings();
@@ -79,7 +79,7 @@ export class PipelineController extends CrudController<PipelineService> {
     return this.ok(pageRet);
   }
 
-  @Post('/getSimpleByIds', { summary: Constants.per.authOnly })
+  @Post('/getSimpleByIds', { description: Constants.per.authOnly })
   async getSimpleById(@Body(ALL) body) {
     const { projectId, userId } = await this.getProjectUserIdRead()
     const ret = await this.getService().getSimplePipelines(body.ids, userId, projectId);
@@ -87,7 +87,7 @@ export class PipelineController extends CrudController<PipelineService> {
   }
 
 
-  // @Post('/add', { summary: Constants.per.authOnly })
+  // @Post('/add', { description: Constants.per.authOnly })
   // async add(@Body(ALL) bean: PipelineEntity) {
   //   const { projectId, userId } = await this.getProjectUserIdWrite()
   //   bean.userId = userId
@@ -95,7 +95,7 @@ export class PipelineController extends CrudController<PipelineService> {
   //   return super.add(bean);
   // }
 
-  // @Post('/update', { summary: Constants.per.authOnly })
+  // @Post('/update', { description: Constants.per.authOnly })
   // async update(@Body(ALL) bean) {
   //   await this.checkOwner(this.getService(), bean.id,"write",true);
   //   delete bean.userId;
@@ -103,7 +103,7 @@ export class PipelineController extends CrudController<PipelineService> {
   //   return super.update(bean);
   // }
 
-  @Post('/save', { summary: Constants.per.authOnly,description: '新增/更新流水线' })
+  @Post('/save', { description: Constants.per.authOnly, summary: '新增/更新流水线' })
   async save(@Body(ALL) bean: { addToMonitorEnabled: boolean, addToMonitorDomains: string } & PipelineEntity) {
      const { userId ,projectId} = await this.getProjectUserIdWrite()
     if (bean.id > 0) {
@@ -136,14 +136,14 @@ export class PipelineController extends CrudController<PipelineService> {
     return this.ok({ id: bean.id, version: version });
   }
 
-  @Post('/delete', { summary: Constants.per.authOnly })
+  @Post('/delete', { description: Constants.per.authOnly })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id,"write",true);
     await this.service.delete(id);
     return this.ok({});
   }
 
-  @Post('/disabled', { summary: Constants.per.authOnly })
+  @Post('/disabled', { description: Constants.per.authOnly })
   async disabled(@Body(ALL) bean) {
     await this.checkOwner(this.getService(), bean.id,"write",true);
     delete bean.userId;
@@ -152,28 +152,28 @@ export class PipelineController extends CrudController<PipelineService> {
     return this.ok({});
   }
 
-  @Post('/detail', { summary: Constants.per.authOnly })
+  @Post('/detail', { description: Constants.per.authOnly })
   async detail(@Query('id') id: number) {
     await this.checkOwner(this.getService(), id,"read",true);
     const detail = await this.service.detail(id);
     return this.ok(detail);
   }
 
-  @Post('/trigger', { summary: Constants.per.authOnly })
+  @Post('/trigger', { description: Constants.per.authOnly })
   async trigger(@Query('id') id: number, @Query('stepId') stepId?: string) {
     await this.checkOwner(this.getService(), id,"write",true);
     await this.service.trigger(id, stepId, true);
     return this.ok({});
   }
 
-  @Post('/cancel', { summary: Constants.per.authOnly })
+  @Post('/cancel', { description: Constants.per.authOnly })
   async cancel(@Query('historyId') historyId: number) {
     await this.checkOwner(this.historyService, historyId,"write",true);
     await this.service.cancel(historyId);
     return this.ok({});
   }
 
-  @Post('/count', { summary: Constants.per.authOnly })
+  @Post('/count', { description: Constants.per.authOnly })
   async count() {
     const { userId } = await this.getProjectUserIdRead()
     const count = await this.service.count({ userId: userId });
@@ -191,7 +191,7 @@ export class PipelineController extends CrudController<PipelineService> {
     return await callback({userId});
   }
 
-  @Post('/batchDelete', { summary: Constants.per.authOnly })
+  @Post('/batchDelete', { description: Constants.per.authOnly })
   async batchDelete(@Body('ids') ids: number[]) {
     // let { projectId ,userId} = await this.getProjectUserIdWrite()
     // if(projectId){
@@ -210,7 +210,7 @@ export class PipelineController extends CrudController<PipelineService> {
 
 
 
-  @Post('/batchUpdateGroup', { summary: Constants.per.authOnly })
+  @Post('/batchUpdateGroup', { description: Constants.per.authOnly })
   async batchUpdateGroup(@Body('ids') ids: number[], @Body('groupId') groupId: number) {
     // let { projectId ,userId} = await this.getProjectUserIdWrite()
     // if(projectId){
@@ -228,7 +228,7 @@ export class PipelineController extends CrudController<PipelineService> {
   }
 
 
-  @Post('/batchUpdateTrigger', { summary: Constants.per.authOnly })
+  @Post('/batchUpdateTrigger', { description: Constants.per.authOnly })
   async batchUpdateTrigger(@Body('ids') ids: number[], @Body('trigger') trigger: any) {
     // let { projectId ,userId} = await this.getProjectUserIdWrite()
     // if(projectId){
@@ -245,7 +245,7 @@ export class PipelineController extends CrudController<PipelineService> {
     return this.ok({});
   }
 
-  @Post('/batchUpdateNotification', { summary: Constants.per.authOnly })
+  @Post('/batchUpdateNotification', { description: Constants.per.authOnly })
   async batchUpdateNotification(@Body('ids') ids: number[], @Body('notification') notification: any) {
     // const isAdmin = await this.authService.isAdmin(this.ctx);
     // const userId = isAdmin ? undefined : this.getUserId();
@@ -256,7 +256,7 @@ export class PipelineController extends CrudController<PipelineService> {
     return this.ok({});
   }
 
-  @Post('/batchRerun', { summary: Constants.per.authOnly })
+  @Post('/batchRerun', { description: Constants.per.authOnly })
   async batchRerun(@Body('ids') ids: number[], @Body('force') force: boolean) {
     await this.checkPermissionCall(async ({userId,projectId})=>{
       await this.service.batchRerun(ids,  force,userId,projectId);
@@ -264,7 +264,7 @@ export class PipelineController extends CrudController<PipelineService> {
     return this.ok({});
   }
 
-  @Post('/batchTransfer', { summary: Constants.per.authOnly })
+  @Post('/batchTransfer', { description: Constants.per.authOnly })
   async batchTransfer(@Body('ids') ids: number[], @Body('toProjectId') toProjectId: number) {
     await this.checkPermissionCall(async ({})=>{
       await this.service.batchTransfer(ids, toProjectId);
@@ -272,7 +272,7 @@ export class PipelineController extends CrudController<PipelineService> {
     return this.ok({});
   }
 
-  @Post('/refreshWebhookKey', { summary: Constants.per.authOnly })
+  @Post('/refreshWebhookKey', { description: Constants.per.authOnly })
   async refreshWebhookKey(@Body('id') id: number) {
     await this.checkOwner(this.getService(), id,"write",true);
     const res = await this.service.refreshWebhookKey(id);

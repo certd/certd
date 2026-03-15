@@ -53,13 +53,13 @@ export class BasicController extends BaseController {
   @Inject()
   addonGetterService: AddonGetterService;
 
-  @Post('/captcha/get', { summary: Constants.per.guest })
+  @Post('/captcha/get', { description: Constants.per.guest })
   async getCaptcha(@Query("captchaAddonId") captchaAddonId:number) {
       const form = await this.captchaService.getCaptcha(captchaAddonId)
       return this.ok(form);
   }
 
-  @Post('/sendSmsCode', { summary: Constants.per.guest })
+  @Post('/sendSmsCode', { description: Constants.per.guest })
   public async sendSmsCode(
     @Body(ALL)
     body: SmsCodeReq,
@@ -80,7 +80,7 @@ export class BasicController extends BaseController {
     return this.ok(null);
   }
 
-  @Post('/sendEmailCode', { summary: Constants.per.guest })
+  @Post('/sendEmailCode', { description: Constants.per.guest })
   public async sendEmailCode(
     @Body(ALL)
     body: EmailCodeReq,
