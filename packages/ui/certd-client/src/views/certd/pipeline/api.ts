@@ -154,6 +154,7 @@ export type CertInfo = {
   ic: string;
   der: string;
   pfx: string;
+  detail: any;
 };
 
 export async function GetCert(pipelineId: number): Promise<CertInfo> {

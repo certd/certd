@@ -2,6 +2,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { CertificateInfo, crypto } from "@certd/acme-client";
+import cryptoLib from "crypto";
 import { ILogger } from "@certd/basic";
 import dayjs from "dayjs";
 import { uniq } from "lodash-es";
@@ -119,7 +120,26 @@ export class CertReader {
     const detail = crypto.readCertificateInfo(crt.toString());
     const effective = detail.notBefore;
     const expires = detail.notAfter;
+    const fingerprints = CertReader.getFingerprintX509(crt);
+    // @ts-ignore
+    detail.fingerprints = fingerprints;
     return { detail, effective, expires };
+  }
+
+  static getFingerprintX509(crt: string) {
+    try {
+      // 创建X509Certificate实例
+      const cert = new cryptoLib.X509Certificate(crt);
+      // 获取指纹
+      return {
+        fingerprint: cert.fingerprint,
+        fingerprint256: cert.fingerprint256,
+        fingerprint512: cert.fingerprint512,
+      };
+    } catch (error) {
+      console.error("处理证书失败:", error.message);
+      return null;
+    }
   }
 
   getAllDomains() {

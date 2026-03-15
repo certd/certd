@@ -42,7 +42,14 @@ export class CertController extends BaseController {
       }
     }
     const privateVars = await this.storeService.getPipelinePrivateVars(id);
-    return this.ok(privateVars.cert);
+    
+    const certInfo = privateVars.cert;
+    if (certInfo?.crt) {
+      const certReader = new CertReader(certInfo);
+      certInfo.detail = certReader.detail
+    }
+
+    return this.ok(certInfo);
   }
 
 

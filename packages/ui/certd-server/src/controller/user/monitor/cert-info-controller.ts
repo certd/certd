@@ -8,6 +8,7 @@ import { logger } from "@certd/basic";
 import fs from "fs";
 import dayjs from "dayjs";
 import { ApiTags } from "@midwayjs/swagger";
+import { CertReader } from "@certd/plugin-lib";
 
 /**
  */
@@ -159,6 +160,10 @@ export class CertInfoController extends CrudController<CertInfoService> {
     await this.checkOwner(this.getService(),id,"read");
     const certInfoEntity = await this.service.info(id);
     const certInfo = JSON.parse(certInfoEntity.certInfo);
+    if (certInfo?.crt) {
+      const certReader = new CertReader(certInfo);
+      certInfo.detail = certReader.detail
+    }
     return this.ok(certInfo);
   }
 
