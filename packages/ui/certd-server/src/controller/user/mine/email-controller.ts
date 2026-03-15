@@ -2,11 +2,13 @@ import { Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
 import { BaseController } from '@certd/lib-server';
 import { Constants } from '@certd/lib-server';
 import { EmailService } from '../../../modules/basic/service/email-service.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  */
 @Provide()
 @Controller('/api/mine/email')
+@ApiTags(['mine'])
 export class EmailController extends BaseController {
   @Inject()
   emailService: EmailService;

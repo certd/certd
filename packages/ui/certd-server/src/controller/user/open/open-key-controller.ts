@@ -2,11 +2,13 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/c
 import { Constants, CrudController } from '@certd/lib-server';
 import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
 import { OpenKeyService } from '../../../modules/open/service/open-key-service.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  */
 @Provide()
 @Controller('/api/open/key')
+@ApiTags(['open'])
 export class OpenKeyController extends CrudController<OpenKeyService> {
   @Inject()
   service: OpenKeyService;

@@ -4,12 +4,14 @@ import { NotificationService } from '../../../modules/pipeline/service/notificat
 import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
 import { NotificationDefine } from '@certd/pipeline';
 import { checkPlus } from '@certd/plus-core';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  * 通知
  */
 @Provide()
 @Controller('/api/pi/notification')
+@ApiTags(['pipeline-notification'])
 export class NotificationController extends CrudController<NotificationService> {
   @Inject()
   service: NotificationService;

@@ -5,9 +5,11 @@ import { StorageService } from '../../../modules/pipeline/service/storage-servic
 import { CertReader } from "@certd/plugin-cert";
 import { UserSettingsService } from '../../../modules/mine/service/user-settings-service.js';
 import { UserGrantSetting } from '../../../modules/mine/service/models.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 @Provide()
 @Controller('/api/pi/cert')
+@ApiTags(['pipeline-cert'])
 export class CertController extends BaseController {
   @Inject()
   pipelineService: PipelineService;

@@ -3,11 +3,13 @@ import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
 import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
 import { ProjectService } from '../../../modules/sys/enterprise/service/project-service.js';
 import { ProjectMemberService } from '../../../modules/sys/enterprise/service/project-member-service.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  */
 @Provide()
 @Controller('/api/enterprise/project')
+@ApiTags(['enterprise-project'])
 export class UserProjectController extends BaseController {
   @Inject()
   service: ProjectService;

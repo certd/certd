@@ -6,11 +6,13 @@ import { PipelineEntity } from '../../../modules/pipeline/entity/pipeline.js';
 import { HistoryService } from '../../../modules/pipeline/service/history-service.js';
 import { PipelineService } from '../../../modules/pipeline/service/pipeline-service.js';
 import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  * 证书
  */
 @Provide()
+@ApiTags(['pipeline'])
 @Controller('/api/pi/pipeline')
 export class PipelineController extends CrudController<PipelineService> {
   @Inject()
@@ -85,23 +87,23 @@ export class PipelineController extends CrudController<PipelineService> {
   }
 
 
-  @Post('/add', { summary: Constants.per.authOnly })
-  async add(@Body(ALL) bean: PipelineEntity) {
-    const { projectId, userId } = await this.getProjectUserIdWrite()
-    bean.userId = userId
-    bean.projectId = projectId
-    return super.add(bean);
-  }
+  // @Post('/add', { summary: Constants.per.authOnly })
+  // async add(@Body(ALL) bean: PipelineEntity) {
+  //   const { projectId, userId } = await this.getProjectUserIdWrite()
+  //   bean.userId = userId
+  //   bean.projectId = projectId
+  //   return super.add(bean);
+  // }
 
-  @Post('/update', { summary: Constants.per.authOnly })
-  async update(@Body(ALL) bean) {
-    await this.checkOwner(this.getService(), bean.id,"write",true);
-    delete bean.userId;
-    delete bean.projectId;
-    return super.update(bean);
-  }
+  // @Post('/update', { summary: Constants.per.authOnly })
+  // async update(@Body(ALL) bean) {
+  //   await this.checkOwner(this.getService(), bean.id,"write",true);
+  //   delete bean.userId;
+  //   delete bean.projectId;
+  //   return super.update(bean);
+  // }
 
-  @Post('/save', { summary: Constants.per.authOnly })
+  @Post('/save', { summary: Constants.per.authOnly,description: '新增/更新流水线' })
   async save(@Body(ALL) bean: { addToMonitorEnabled: boolean, addToMonitorDomains: string } & PipelineEntity) {
      const { userId ,projectId} = await this.getProjectUserIdWrite()
     if (bean.id > 0) {

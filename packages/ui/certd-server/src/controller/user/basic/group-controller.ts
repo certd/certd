@@ -2,12 +2,14 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/c
 import { Constants, CrudController } from '@certd/lib-server';
 import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
 import { GroupService } from '../../../modules/basic/service/group-service.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  * 通知
  */
 @Provide()
 @Controller('/api/basic/group')
+@ApiTags(['basic-group'])
 export class GroupController extends CrudController<GroupService> {
   @Inject()
   service: GroupService;

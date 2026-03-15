@@ -6,11 +6,13 @@ import { UserSiteMonitorSetting } from "../../../modules/mine/service/models.js"
 import { merge } from "lodash-es";
 import {SiteIpService} from "../../../modules/monitor/service/site-ip-service.js";
 import { utils } from "@certd/basic";
+import { ApiTags } from "@midwayjs/swagger";
 
 /**
  */
 @Provide()
 @Controller('/api/monitor/site')
+@ApiTags(['monitor'])
 export class SiteInfoController extends CrudController<SiteInfoService> {
   @Inject()
   service: SiteInfoService;

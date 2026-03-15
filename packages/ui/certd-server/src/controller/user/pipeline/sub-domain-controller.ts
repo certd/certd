@@ -3,12 +3,14 @@ import { DomainParser } from '@certd/plugin-cert';
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { SubDomainService } from "../../../modules/pipeline/service/sub-domain-service.js";
 import { TaskServiceBuilder } from '../../../modules/pipeline/service/getter/task-service-getter.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  * 子域名托管
  */
 @Provide()
 @Controller('/api/pi/subDomain')
+@ApiTags(['pipeline-subdomain'])
 export class SubDomainController extends CrudController<SubDomainService> {
   @Inject()
   service: SubDomainService;

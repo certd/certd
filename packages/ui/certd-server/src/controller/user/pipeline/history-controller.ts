@@ -12,12 +12,14 @@ import { HistoryLogService } from "../../../modules/pipeline/service/history-log
 import { HistoryService } from "../../../modules/pipeline/service/history-service.js";
 import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
+import { ApiTags } from "@midwayjs/swagger";
 
 /**
  * 证书
  */
 @Provide()
 @Controller('/api/pi/history')
+@ApiTags(['pipeline-history'])
 export class HistoryController extends CrudController<HistoryService> {
   @Inject()
   service: HistoryService;

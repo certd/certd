@@ -5,6 +5,7 @@ import { OpenKey } from "../../../modules/open/service/open-key-service.js";
 import { BaseOpenController } from "../base-open-controller.js";
 import { CertInfoFacade } from "../../../modules/monitor/facade/cert-info-facade.js";
 import { merge } from "lodash-es";
+import { ApiTags } from "@midwayjs/swagger";
 
 export type CertGetReq = {
   domains?: string;
@@ -17,6 +18,7 @@ export type CertGetReq = {
  */
 @Provide()
 @Controller('/api/v1/cert')
+@ApiTags(['openapi'])
 export class OpenCertController extends BaseOpenController {
   @Inject()
   certInfoFacade: CertInfoFacade;

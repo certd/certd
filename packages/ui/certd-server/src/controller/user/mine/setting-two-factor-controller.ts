@@ -5,11 +5,13 @@ import { UserTwoFactorSetting } from "../../../modules/mine/service/models.js";
 import { merge } from "lodash-es";
 import { TwoFactorService } from "../../../modules/mine/service/two-factor-service.js";
 import {isPlus} from "@certd/plus-core";
+import { ApiTags } from "@midwayjs/swagger";
 
 /**
  */
 @Provide()
 @Controller("/api/user/settings/twoFactor")
+@ApiTags(['mine'])
 export class UserTwoFactorSettingController extends BaseController {
   @Inject()
   service: UserSettingsService;

@@ -1,11 +1,13 @@
 import { BaseController, Constants } from '@certd/lib-server';
 import { Controller, Inject, Post, Provide } from '@midwayjs/core';
 import { TransferService } from '../../../modules/sys/enterprise/service/transfer-service.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  */
 @Provide()
 @Controller('/api/enterprise/transfer')
+@ApiTags(['enterprise-project'])
 export class TransferController extends BaseController {
   @Inject()
   service: TransferService;

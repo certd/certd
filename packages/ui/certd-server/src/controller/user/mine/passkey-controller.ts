@@ -2,9 +2,11 @@ import { ALL, Body, Controller, Inject, Post, Provide, RequestIP } from "@midway
 import { PasskeyService } from "../../../modules/login/service/passkey-service.js";
 import { BaseController, Constants } from "@certd/lib-server";
 import { UserService } from "../../../modules/sys/authority/service/user-service.js";
+import { ApiTags } from "@midwayjs/swagger";
 
 @Provide()
 @Controller('/api/mine/passkey')
+@ApiTags(['mine'])
 export class MinePasskeyController extends BaseController {
   @Inject()
   passkeyService: PasskeyService;

@@ -2,12 +2,14 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/c
 import { Constants, CrudController } from '@certd/lib-server';
 import { DomainService } from "../../../modules/cert/service/domain-service.js";
 import { checkPlus } from '@certd/plus-core';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  * 授权
  */
 @Provide()
 @Controller('/api/cert/domain')
+@ApiTags(['cert'])
 export class DomainController extends CrudController<DomainService> {
   @Inject()
   service: DomainService;

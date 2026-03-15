@@ -3,12 +3,14 @@ import { BaseController, Constants } from '@certd/lib-server';
 import { PluginService } from '../../../modules/plugin/service/plugin-service.js';
 import { PluginConfigService } from '../../../modules/plugin/service/plugin-config-service.js';
 import {pluginGroups} from "@certd/pipeline";
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  * 插件
  */
 @Provide()
 @Controller('/api/pi/plugin')
+@ApiTags(['pipeline-plugin'])
 export class PluginController extends BaseController {
   @Inject()
   service: PluginService;

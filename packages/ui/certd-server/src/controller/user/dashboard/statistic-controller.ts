@@ -5,6 +5,7 @@ import { RoleService } from '../../../modules/sys/authority/service/role-service
 import { PipelineService } from '../../../modules/pipeline/service/pipeline-service.js';
 import { HistoryService } from '../../../modules/pipeline/service/history-service.js';
 import { CertInfoService } from '../../../modules/monitor/index.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 export type ChartItem = {
   name: string;
@@ -30,6 +31,7 @@ export type UserStatisticCount = {
  */
 @Provide()
 @Controller('/api/statistic/')
+@ApiTags(['dashboard'])
 export class StatisticController extends BaseController {
   @Inject()
   userService: UserService;

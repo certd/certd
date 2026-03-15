@@ -2,12 +2,14 @@ import {ALL, Body, Controller, Inject, Post, Provide, Query} from '@midwayjs/cor
 import {Constants, CrudController} from '@certd/lib-server';
 import { TemplateService } from '../../../modules/pipeline/service/template-service.js';
 import { checkPlus } from '@certd/plus-core';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  * 流水线模版
  */
 @Provide()
 @Controller('/api/pi/template')
+@ApiTags(['pipeline-template'])
 export class TemplateController extends CrudController<TemplateService> {
   @Inject()
   service: TemplateService;

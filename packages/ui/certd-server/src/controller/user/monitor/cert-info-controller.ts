@@ -7,11 +7,13 @@ import { SelectQueryBuilder } from "typeorm";
 import { logger } from "@certd/basic";
 import fs from "fs";
 import dayjs from "dayjs";
+import { ApiTags } from "@midwayjs/swagger";
 
 /**
  */
 @Provide()
 @Controller('/api/monitor/cert')
+@ApiTags(['cert'])
 export class CertInfoController extends CrudController<CertInfoService> {
   @Inject()
   service: CertInfoService;

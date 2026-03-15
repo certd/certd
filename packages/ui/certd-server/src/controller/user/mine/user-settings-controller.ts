@@ -5,11 +5,13 @@ import { UserSettingsEntity } from "../../../modules/mine/entity/user-settings.j
 import { UserGrantSetting } from "../../../modules/mine/service/models.js";
 import { isPlus } from "@certd/plus-core";
 import { merge } from "lodash-es";
+import { ApiTags } from "@midwayjs/swagger";
 
 /**
  */
 @Provide()
 @Controller('/api/user/settings')
+@ApiTags(['mine'])
 export class UserSettingsController extends CrudController<UserSettingsService> {
   @Inject()
   service: UserSettingsService;

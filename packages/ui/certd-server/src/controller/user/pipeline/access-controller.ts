@@ -3,11 +3,13 @@ import { Constants, CrudController } from '@certd/lib-server';
 import { AccessService } from '@certd/lib-server';
 import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
 import { AccessDefine } from '@certd/pipeline';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  * 授权
  */
 @Provide()
+@ApiTags(['pipeline-access'])
 @Controller('/api/pi/access')
 export class AccessController extends CrudController<AccessService> {
   @Inject()

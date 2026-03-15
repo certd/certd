@@ -131,6 +131,12 @@ const development = {
     contactText: '',
     contactLink: '',
   },
+  swagger: {
+    isGenerateTagForController: false,
+    routerFilter: (url: string) => {
+      return url.startsWith('/api/sys');
+    }
+  }
 } as MidwayConfig;
 loadDotEnv();
 

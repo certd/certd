@@ -116,7 +116,7 @@ export abstract class BaseController {
       await authService.checkProjectId(service, id, projectId);
     }else{
 
-      if(userId === 0){
+      if(userId === Constants.systemUserId){
         //系统级别，不检查权限
       }else{
         if(allowAdmin){

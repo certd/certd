@@ -1,4 +1,4 @@
-import { BaseService, SysSettingsService } from '@certd/lib-server';
+import { BaseService, Constants, SysSettingsService } from '@certd/lib-server';
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { LRUCache } from 'lru-cache';
@@ -11,7 +11,7 @@ const projectCache = new LRUCache<string, any>({
   ttl: 1000 * 60 * 10,
 });
 
-const ENTERPRISE_USER_ID = -1 //企业模式下 企业userId 固定为-1
+const ENTERPRISE_USER_ID = Constants.enterpriseUserId; //企业模式下 企业userId 固定为-1
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -180,6 +180,10 @@ export class ProjectService extends BaseService<ProjectEntity> {
     }
     if (!projectId) {
       throw new Error('项目ID不能为空');
+    }
+
+    if (userId === ENTERPRISE_USER_ID) {
+      return true
     }
 
     const cacheKey = `projectPermission:${projectId}:${userId}`

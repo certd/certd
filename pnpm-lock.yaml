@@ -1527,6 +1527,9 @@ importers:
       '@midwayjs/static-file':
         specifier: 3.20.13
         version: 3.20.13
+      '@midwayjs/swagger':
+        specifier: 3.20.11
+        version: 3.20.11
       '@midwayjs/typeorm':
         specifier: 3.20.11
         version: 3.20.11
@@ -3845,6 +3848,9 @@ packages:
   '@midwayjs/static-file@3.20.13':
     resolution: {integrity: sha512-aX67LvpIPYVWpuhuWSATgTBNvaNbvOFk7wbh0BTS0XRaO6vVieNe0mJoBXFkf89w1qExAHgIPHZDPIoEOHEBiQ==}
     engines: {node: '>=12'}
+
+  '@midwayjs/swagger@3.20.11':
+    resolution: {integrity: sha512-ZF4BJC/ogVYVM4F3ve7Y9cZWDiM+TIAfUFyTNcSw3TgcLB+QnJVHkXSeKXL+PoUHHfE/cztboOk1UEfWxikIuA==}
 
   '@midwayjs/typeorm@3.20.11':
     resolution: {integrity: sha512-QMCUwLhQStK1RuF+7hbpHoPOGT5DxIt4YalJNC8KtnaBMsIBVf4W+7dHbk9WpsBBx/GCraKfTYIoPA2wJWVj5g==}
@@ -16270,6 +16276,8 @@ snapshots:
       ylru: 1.4.0
     transitivePeerDependencies:
       - supports-color
+
+  '@midwayjs/swagger@3.20.11': {}
 
   '@midwayjs/typeorm@3.20.11': {}
 

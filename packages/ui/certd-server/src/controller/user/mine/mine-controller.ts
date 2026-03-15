@@ -3,11 +3,13 @@ import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
 import { PasskeyService } from '../../../modules/login/service/passkey-service.js';
 import { RoleService } from '../../../modules/sys/authority/service/role-service.js';
 import { UserService } from '../../../modules/sys/authority/service/user-service.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  */
 @Provide()
 @Controller('/api/mine')
+@ApiTags(['mine'])
 export class MineController extends BaseController {
   @Inject()
   userService: UserService;

@@ -12,12 +12,14 @@ import { AuthService } from "../../../modules/sys/authority/service/auth-service
 import { checkPlus } from "@certd/plus-core";
 import { http, logger, utils } from "@certd/basic";
 import { TaskServiceBuilder } from "../../../modules/pipeline/service/getter/task-service-getter.js";
+import { ApiTags } from "@midwayjs/swagger";
 
 /**
  * Addon
  */
 @Provide()
 @Controller("/api/addon")
+@ApiTags(['addon'])
 export class AddonController extends CrudController<AddonService> {
   @Inject()
   service: AddonService;

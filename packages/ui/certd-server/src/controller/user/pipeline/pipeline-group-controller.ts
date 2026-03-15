@@ -2,12 +2,14 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/c
 import { Constants, CrudController } from '@certd/lib-server';
 import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
 import { PipelineGroupService } from '../../../modules/pipeline/service/pipeline-group-service.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  * 通知
  */
 @Provide()
 @Controller('/api/pi/pipeline/group')
+@ApiTags(['pipeline-group'])
 export class PipelineGroupController extends CrudController<PipelineGroupService> {
   @Inject()
   service: PipelineGroupService;

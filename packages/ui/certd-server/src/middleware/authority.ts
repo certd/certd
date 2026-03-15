@@ -128,8 +128,11 @@ export class AuthorityMiddleware implements IWebMiddleware {
 
     //校验 openKey
     const openKeyRes = await this.openKeyService.verifyOpenKey(openKey);
-    const roles = await this.roleService.getRoleIdsByUserId(openKeyRes.userId);
-    ctx.user = { id: openKeyRes.userId, roles };
+    let roles = [1]
+    if (!openKeyRes.projectId || openKeyRes.projectId <= 0) {
+      roles = await this.roleService.getRoleIdsByUserId(openKeyRes.userId);
+    }
+    ctx.user = { id: openKeyRes.userId, roles ,projectId:openKeyRes.projectId};
     ctx.openKey = openKeyRes;
     return openKeyRes;
   }

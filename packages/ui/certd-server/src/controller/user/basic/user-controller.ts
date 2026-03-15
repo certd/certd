@@ -5,12 +5,14 @@ import { AuthService } from '../../../modules/sys/authority/service/auth-service
 import { UserService } from '../../../modules/sys/authority/service/user-service.js';
 import { BasicController } from '../../basic/code-controller.js';
 import { RoleService } from '../../../modules/sys/authority/service/role-service.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  * 通知
  */
 @Provide()
 @Controller('/api/basic/user')
+@ApiTags(['basic-user'])
 export class BasicUserController extends BasicController {
   @Inject()
   service: UserService;

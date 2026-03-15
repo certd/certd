@@ -120,4 +120,6 @@ export const Constants = {
       message: '用户邮箱还未配置',
     },
   },
+  systemUserId: 0, // 系统级别userid固定为0
+  enterpriseUserId:  -1 // 企业模式用户id固定为-1
 };

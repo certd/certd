@@ -3,11 +3,13 @@ import { Constants, CrudController } from "@certd/lib-server";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 import { SiteIpService } from "../../../modules/monitor/service/site-ip-service.js";
 import { SiteInfoService } from "../../../modules/monitor/index.js";
+import { ApiTags } from "@midwayjs/swagger";
 
 /**
  */
 @Provide()
 @Controller('/api/monitor/site/ip')
+@ApiTags(['monitor'])
 export class SiteInfoController extends CrudController<SiteIpService> {
   @Inject()
   service: SiteIpService;

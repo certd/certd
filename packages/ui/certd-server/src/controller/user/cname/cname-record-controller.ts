@@ -1,12 +1,14 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
 import { Constants, CrudController } from '@certd/lib-server';
 import { CnameRecordService } from '../../../modules/cname/service/cname-record-service.js';
+import { ApiTags } from '@midwayjs/swagger';
 
 /**
  * 授权
  */
 @Provide()
 @Controller('/api/cname/record')
+@ApiTags(['pipeline-cname'])
 export class CnameRecordController extends CrudController<CnameRecordService> {
   @Inject()
   service: CnameRecordService;

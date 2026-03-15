@@ -4,10 +4,12 @@ import { ProjectMemberEntity } from "../../../modules/sys/enterprise/entity/proj
 import { ProjectMemberService } from "../../../modules/sys/enterprise/service/project-member-service.js";
 import { merge } from "lodash-es";
 import { ProjectService } from "../../../modules/sys/enterprise/service/project-service.js";
+import { ApiTags } from "@midwayjs/swagger";
 /**
  */
 @Provide()
 @Controller("/api/enterprise/projectMember")
+@ApiTags(['enterprise-project-member'])
 export class ProjectMemberController extends CrudController<ProjectMemberEntity> {
   @Inject()
   service: ProjectMemberService;

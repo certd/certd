@@ -16,9 +16,11 @@ import {http, HttpRequestConfig, logger, mergeUtils, utils} from '@certd/basic';
 import {NotificationService} from '../../../modules/pipeline/service/notification-service.js';
 import {TaskServiceBuilder} from "../../../modules/pipeline/service/getter/task-service-getter.js";
 import { cloneDeep } from 'lodash-es';
+import { ApiTags } from '@midwayjs/swagger';
 
 @Provide()
 @Controller('/api/pi/handle')
+@ApiTags(['pipeline-handle'])
 export class HandleController extends BaseController {
   @Inject()
   accessService: AccessService;

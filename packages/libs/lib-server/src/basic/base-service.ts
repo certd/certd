@@ -4,6 +4,7 @@ import { Inject } from '@midwayjs/core';
 import { TypeORMDataSourceManager } from '@midwayjs/typeorm';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager.js';
 import { FindManyOptions } from 'typeorm';
+import { Constants } from './constants.js';
 
 export type PageReq<T = any> = {
   page?: { offset: number; limit: number };
@@ -258,7 +259,7 @@ export abstract class BaseService<T> {
 
 export function checkUserProjectParam(userId: number, projectId: number) {
   if (projectId != null ){
-    if( userId !==-1) {
+    if( userId !== Constants.enterpriseUserId) {
       throw new ValidateException('userId projectId 错误');
     }
     return true
