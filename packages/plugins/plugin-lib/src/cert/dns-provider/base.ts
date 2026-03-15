@@ -1,5 +1,5 @@
 import { HttpClient, ILogger } from "@certd/basic";
-import { PageRes, PageSearch } from "@certd/pipeline";
+import { IAccessService, PageRes, PageSearch } from "@certd/pipeline";
 import punycode from "punycode.js";
 import { CreateRecordOptions, DnsProviderContext, DnsProviderDefine, DomainRecord, IDnsProvider, RemoveRecordOptions } from "./api.js";
 import { dnsProviderRegistry } from "./registry.js";
@@ -58,6 +58,11 @@ export async function createDnsProvider(opts: { dnsProviderType: string; context
   const dnsProviderDefine = dnsProviderPlugin.define as DnsProviderDefine;
   if (dnsProviderDefine.deprecated) {
     context.logger.warn(dnsProviderDefine.deprecated);
+  }
+
+  if (!context.accessGetter) {
+    const accessGetter: IAccessService = await context.serviceGetter.get("accessService");
+    context.accessGetter = accessGetter;
   }
   // @ts-ignore
   const dnsProvider: IDnsProvider = new DnsProviderClass();

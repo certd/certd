@@ -72,14 +72,13 @@ import * as _ from "lodash-es";
 import { nanoid } from "nanoid";
 import PiStepForm from "../step-form/index.vue";
 import { Modal } from "ant-design-vue";
-import { CopyOutlined } from "@ant-design/icons-vue";
 import VDraggable from "vuedraggable";
 import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 import { filter } from "lodash-es";
 export default {
   name: "PiTaskForm",
-  components: { CopyOutlined, PiStepForm, VDraggable },
+  components: { PiStepForm, VDraggable },
   props: {
     editMode: {
       type: Boolean,

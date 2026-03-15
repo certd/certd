@@ -65,6 +65,20 @@ demoKeyId = '';
   encrypt: true, //该属性是否需要加密
 })
 demoKeySecret = '';
+
+
+
+@AccessInput({
+  title: '另外一个授权Id',//标题
+  component: {
+    name:"access-selector", //access选择组件
+    vModel:"modelValue",
+    type: "ssh", // access类型，让用户固定选择这种类型的access
+  },
+  required: true,  //text组件可以省略
+})
+otherAccessId;
+
 ```
 
 ### 4. 实现测试方法
@@ -93,7 +107,7 @@ async onTestRequest() {
 
 ```typescript
 /**
- * 获api接口示例 取域名列表，
+ * api接口示例 获取域名列表，
  */
 async GetDomainList(req: PageSearch): Promise<PageRes<DomainRecord>> {
   //输出日志必须使用ctx.logger

@@ -80,7 +80,8 @@ certDomains!: string[];
   helper: 'demoAccess授权',
   component: {
     name: 'access-selector',
-    type: 'demo', // 固定授权类型
+    vModel:"modelValue",
+    type: "demo", // access类型，让用户固定选择这种类型的access
   },
   // rules: [{ required: true, message: '此项必填' }],
   // required: true, // 必填

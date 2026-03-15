@@ -805,9 +805,11 @@ export default defineComponent({
         let errorMessages: any = [];
         let errorIndex = 1;
         eachSteps(pp, (step: any, task: any, stage: any) => {
-          if (step.disabled !== true) {
-            stepIds.push(step.id);
+          if (step.disabled === true) {
+            return;
           }
+          stepIds.push(step.id);
+
           if (step.input) {
             for (const key in step.input) {
               const value = step.input[key];
