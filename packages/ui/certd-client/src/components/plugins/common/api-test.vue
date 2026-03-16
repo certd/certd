@@ -19,6 +19,7 @@ defineOptions({
   name: "ApiTest",
 });
 
+const fromType: any = inject("getFromType");
 const getScope: any = inject("get:scope");
 const getPluginType: any = inject("get:plugin:type", () => {
   return "access";
@@ -55,6 +56,7 @@ const doTest = async () => {
         action: props.action,
         input,
         record,
+        fromType,
       },
       {
         onError(err: any) {

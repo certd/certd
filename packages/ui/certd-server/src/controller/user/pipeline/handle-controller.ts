@@ -17,6 +17,7 @@ import {NotificationService} from '../../../modules/pipeline/service/notificatio
 import {TaskServiceBuilder} from "../../../modules/pipeline/service/getter/task-service-getter.js";
 import { cloneDeep } from 'lodash-es';
 import { ApiTags } from '@midwayjs/swagger';
+import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
 
 @Provide()
 @Controller('/api/pi/handle')
@@ -29,6 +30,9 @@ export class HandleController extends BaseController {
   emailService: EmailService;
 
   @Inject()
+  authService: AuthService;
+
+  @Inject()
   taskServiceBuilder: TaskServiceBuilder;
 
   @Inject()
@@ -36,16 +40,26 @@ export class HandleController extends BaseController {
 
   @Post('/access', { description: Constants.per.authOnly, summary: "处理授权请求" })
   async accessRequest(@Body(ALL) body: AccessRequestHandleReq) {
-    const {projectId,userId} = await this.getProjectUserIdRead()
+    let {projectId,userId} = await this.getProjectUserIdRead()
+    if (body.fromType === 'sys') {
+      //系统级别的请求
+      const pass = await this.authService.checkPermission(this.ctx, "sys:settings:view");
+      if (!pass) {
+        throw new Error('权限不足');
+      }
+      projectId = null
+      userId = 0
+    }
+   
     let inputAccess = body.input;
     if (body.record.id > 0) {
       const oldEntity = await this.accessService.info(body.record.id);
       if (oldEntity) {
-        if (oldEntity.userId !== userId) {
-          throw new Error('access not found');
+        if (oldEntity.userId !== userId && oldEntity.userId !== this.getUserId()) {
+          throw new Error('您没有权限使用该授权');
         }
         if (oldEntity.projectId && oldEntity.projectId !== projectId) {
-          throw new Error('access not found');
+          throw new Error('您没有权限使用该授权（projectId不匹配）');
         }
         const param: any = {
           type: body.typeName,

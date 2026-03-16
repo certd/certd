@@ -3,6 +3,7 @@ import { request } from "/src/api/service";
 export function createAccessApi(from = "user") {
   const apiPrefix = from === "sys" ? "/sys/access" : "/pi/access";
   return {
+    from,
     async GetList(query: any) {
       if (query?.query) {
         delete query.query.access;

@@ -18,6 +18,7 @@ export type PluginRequestHandleReq<T = any> = {
   input: T;
   data: any;
   record: { id: number; type: string; title: string };
+  fromType?: "sys" | "user"; // sys、user
 };
 
 export type UserInfo = {

@@ -6,6 +6,7 @@ import SecretPlainGetter from "/@/views/certd/access/access-selector/access/secr
 import { utils } from "/@/utils";
 
 export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
+  provide("getFromType", api.from);
   provide("accessApi", api);
   provide("get:plugin:type", () => {
     return "access";

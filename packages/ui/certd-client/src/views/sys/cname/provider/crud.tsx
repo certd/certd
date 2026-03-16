@@ -122,7 +122,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.dnsProviderAuthorization"),
           type: "dict-select",
           dict: dict({
-            url: "/pi/access/list",
+            url: "/sys/access/list",
             value: "id",
             label: "name",
           }),
@@ -133,6 +133,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               type: compute(({ form }) => {
                 return form.dnsProviderType;
               }),
+              from: "sys",
             },
             rules: [{ required: true, message: t("certd.requiredField") }],
           },

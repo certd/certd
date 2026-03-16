@@ -13,11 +13,12 @@ export type RequestHandleReq<T = any> = {
   data?: any;
   input: T;
   record?: any;
+  fromType?: string; // sys、user
 };
 
 export async function doRequest(req: RequestHandleReq, opts: any = {}) {
   const url = `/pi/handle/${req.type}`;
-  const { typeName, action, data, input, record } = req;
+  const { typeName, action, data, input, record, fromType } = req;
   const res = await request({
     url,
     method: "post",
@@ -27,6 +28,7 @@ export async function doRequest(req: RequestHandleReq, opts: any = {}) {
       data,
       input,
       record,
+      fromType,
     },
     ...opts,
   });
