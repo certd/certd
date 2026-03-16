@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.2](https://github.com/certd/certd/compare/v1.39.1...v1.39.2) (2026-03-16)
+
+### Bug Fixes
+
+* 修复当证书更新后第一次站点检查会报与主站证书过期时间不一致错误的bug ([dd999b6](https://github.com/certd/certd/commit/dd999b60a4fe3507ff5e0109d637b4e891b28bdd))
+* 修复京东云报错不准确的bug ([10dd89a](https://github.com/certd/certd/commit/10dd89ae62e438a211a15e729559af823a096583))
+* 修复群晖测试时报addSecret undefine错误 ([5eb4aa3](https://github.com/certd/certd/commit/5eb4aa3a0eab9ffa729c8e813cbf973d9683cc13))
+* cname provider授权修改为sys级别 ([d01bfbe](https://github.com/certd/certd/commit/d01bfbec96a3a2109ec864953b0c9e8c1f95b97b))
+
+### Performance Improvements
+
+* 查看证书增加证书详情显示，包括域名，过期时间，颁发机构，指纹等 ([0b9933d](https://github.com/certd/certd/commit/0b9933df1e8d1685d14271435a8a7488974cc47b))
+* 获取阿里证书订单id组件增加翻页功能，突破50的上限 ([d79db3b](https://github.com/certd/certd/commit/d79db3bd3f0d5ad39664bb47ec3814d43ad93304))
+* 优化个人账户页面 ([e506116](https://github.com/certd/certd/commit/e50611666ef731a903d7bdd8eb62333b97e2cc5b))
+* 支持批量转移流水线到其他项目 ([8a3841f](https://github.com/certd/certd/commit/8a3841f6382b53ce2343307fb035e74fa5383fef))
+* 支持passkey登录 ([10b7644](https://github.com/certd/certd/commit/10b7644bb7ba5f82776537bc0c4f5eb95d5f8e4e))
+* dns-provider 支持bind9 ，support bind9 ([76d12d6](https://github.com/certd/certd/commit/76d12d60624c0672fd3717a80a2cfef6845b14b8))
+
 ## [1.39.1](https://github.com/certd/certd/compare/v1.39.0...v1.39.1) (2026-03-09)
 
 ### Performance Improvements

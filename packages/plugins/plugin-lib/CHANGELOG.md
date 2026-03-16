@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.2](https://github.com/certd/certd/compare/v1.39.1...v1.39.2) (2026-03-16)
+
+### Performance Improvements
+
+* 查看证书增加证书详情显示，包括域名，过期时间，颁发机构，指纹等 ([0b9933d](https://github.com/certd/certd/commit/0b9933df1e8d1685d14271435a8a7488974cc47b))
+* dns-provider 支持bind9 ，support bind9 ([76d12d6](https://github.com/certd/certd/commit/76d12d60624c0672fd3717a80a2cfef6845b14b8))
+
 ## [1.39.1](https://github.com/certd/certd/compare/v1.39.0...v1.39.1) (2026-03-09)
 
 **Note:** Version bump only for package @certd/plugin-lib

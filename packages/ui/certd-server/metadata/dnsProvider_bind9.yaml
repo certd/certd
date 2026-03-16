@@ -1,0 +1,8 @@
+name: bind9
+title: BIND9 DNS
+desc: 通过 SSH 连接到 BIND9 服务器，使用 nsupdate 命令管理 DNS 记录
+icon: clarity:host-line
+accessType: bind9
+pluginType: dnsProvider
+type: builtIn
+scriptFilePath: /plugins/plugin-bind9/dns-provider.js

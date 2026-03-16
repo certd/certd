@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.2](https://github.com/publishlab/node-acme-client/compare/v1.39.1...v1.39.2) (2026-03-16)
+
+### Bug Fixes
+
+* 修复京东云报错不准确的bug ([10dd89a](https://github.com/publishlab/node-acme-client/commit/10dd89ae62e438a211a15e729559af823a096583))
+
 ## [1.39.1](https://github.com/publishlab/node-acme-client/compare/v1.39.0...v1.39.1) (2026-03-09)
 
 **Note:** Version bump only for package @certd/acme-client

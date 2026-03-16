@@ -59,14 +59,14 @@ input:
   orderId:
     title: 证书订单ID
     component:
-      name: RemoteAutoComplete
+      name: RemoteSelect
       vModel: value
       mode: tags
       type: plugin
       typeName: CertApplyGetFormAliyun
       action: onGetOrderList
       search: false
-      pager: false
+      pager: true
       watches:
         - certDomains
         - accessId

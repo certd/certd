@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.2](https://github.com/certd/certd/compare/v1.39.1...v1.39.2) (2026-03-16)
+
+### Bug Fixes
+
+* cname provider授权修改为sys级别 ([d01bfbe](https://github.com/certd/certd/commit/d01bfbec96a3a2109ec864953b0c9e8c1f95b97b))
+
 ## [1.39.1](https://github.com/certd/certd/compare/v1.39.0...v1.39.1) (2026-03-09)
 
 **Note:** Version bump only for package @certd/pipeline

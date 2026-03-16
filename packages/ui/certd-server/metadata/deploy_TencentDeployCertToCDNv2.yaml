@@ -6,7 +6,7 @@ name: TencentDeployCertToCDNv2
 title: 腾讯云-部署到CDN-v2
 icon: svg:icon-tencentcloud
 group: tencent
-desc: 推荐使用
+desc: 推荐使用，支持CDN域名以及COS加速域名
 input:
   cert:
     title: 域名证书

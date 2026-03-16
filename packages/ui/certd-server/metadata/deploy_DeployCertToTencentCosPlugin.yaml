@@ -7,7 +7,7 @@ title: 腾讯云-部署证书到COS
 needPlus: false
 icon: svg:icon-tencentcloud
 group: tencent
-desc: 部署到腾讯云COS源站域名证书【注意：很不稳定，需要重试很多次偶尔才能成功一次】
+desc: 部署到腾讯云COS源站域名证书，注意是源站域名，加速域名请使用腾讯云CDN v2插件【注意：很不稳定，需要重试很多次偶尔才能成功一次】
 input:
   accessId:
     title: Access授权

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.2](https://github.com/certd/certd/compare/v1.39.1...v1.39.2) (2026-03-16)
+
+### Bug Fixes
+
+* 修复京东云报错不准确的bug ([10dd89a](https://github.com/certd/certd/commit/10dd89ae62e438a211a15e729559af823a096583))
+
+### Performance Improvements
+
+* 优化阿里云连接超时时长为10秒，支持配置环境变量 ([1588461](https://github.com/certd/certd/commit/1588461633bd275765daa96fc68320abb58d616d))
+* 优化个人账户页面 ([e506116](https://github.com/certd/certd/commit/e50611666ef731a903d7bdd8eb62333b97e2cc5b))
+* 支持批量转移流水线到其他项目 ([8a3841f](https://github.com/certd/certd/commit/8a3841f6382b53ce2343307fb035e74fa5383fef))
+
 ## [1.39.1](https://github.com/certd/certd/compare/v1.39.0...v1.39.1) (2026-03-09)
 
 **Note:** Version bump only for package @certd/lib-server
