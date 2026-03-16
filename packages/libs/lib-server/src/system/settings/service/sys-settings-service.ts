@@ -9,7 +9,7 @@ import { cache, logger, mergeUtils, setGlobalProxy } from '@certd/basic';
 import * as dns from 'node:dns';
 import { BaseService, setAdminMode } from '../../../basic/index.js';
 import { executorQueue } from '../../basic/service/executor-queue.js';
-import { isComm } from '@certd/plus-core';
+import { isComm, isPlus } from '@certd/plus-core';
 const { merge } = mergeUtils;
 
 let lastSaveEnvVars = {};
@@ -155,7 +155,9 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
 
   async reloadPublicSettings() {
     const publicSetting = await this.getPublicSettings()
-    setAdminMode(publicSetting.adminMode)
+    if (isPlus()){
+      setAdminMode(publicSetting.adminMode  ) 
+    }
   }
 
   async reloadPrivateSettings() {

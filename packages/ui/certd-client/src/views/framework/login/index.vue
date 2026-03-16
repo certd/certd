@@ -46,7 +46,7 @@
               </a-form-item>
             </template>
           </a-tab-pane>
-          <a-tab-pane key="passkey" :tab="t('authentication.passkeyTab')">
+          <a-tab-pane v-if="settingStore.sysPublic.passkeyEnabled && settingStore.isPlus" key="passkey" :tab="t('authentication.passkeyTab')">
             <template v-if="formState.loginType === 'passkey'">
               <div v-if="!passkeySupported" class="text-red-500 text-sm mt-2 text-center mb-10">
                 {{ t("authentication.passkeyNotSupported") }}

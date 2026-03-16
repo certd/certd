@@ -46,8 +46,8 @@
       </div>
 
       <div class="flex flex-wrap">
-        <div class="w-full md:w-1/2 md:pr-2">
-          <div v-if="settingStore.sysPublic.oauthEnabled && settingStore.isPlus" class="bindings-card md:rounded">
+        <div v-if="settingStore.sysPublic.oauthEnabled && settingStore.isPlus" class="w-full md:w-1/2">
+          <div class="bindings-card md:rounded">
             <div class="card-title">
               <fs-icon icon="ion:link-outline" class="title-icon" />
               <span>第三方账号绑定</span>
@@ -80,8 +80,8 @@
           </div>
         </div>
 
-        <div class="w-full md:w-1/2 md:pl-2">
-          <div v-if="settingStore.sysPublic.passkeyEnabled && settingStore.isPlus" class="passkey-card md:rounded">
+        <div v-if="settingStore.sysPublic.passkeyEnabled && settingStore.isPlus" class="w-full md:w-1/2">
+          <div class="passkey-card md:rounded">
             <div class="card-title">
               <fs-icon icon="ion:finger-print" class="title-icon" />
               <span>Passkey 安全密钥</span>
@@ -490,16 +490,17 @@ onMounted(async () => {
 .profile-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
   // max-width: 1000px;
 
   .profile-card,
   .bindings-card,
   .passkey-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    background: #fff;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     overflow: hidden;
     transition: all 0.3s ease;
+    margin: 5px;
   }
 
   .bindings-card,
