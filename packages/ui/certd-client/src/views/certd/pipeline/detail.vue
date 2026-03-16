@@ -30,12 +30,13 @@ const pipelineOptions: PipelineOptions = {
     return {
       pipeline: {
         id: detail.pipeline.id,
-        userId: detail.pipeline.userId,
         stages: [],
         triggers: [],
         ...JSON.parse(detail.pipeline.content || "{}"),
         type: detail.pipeline.type,
         from: detail.pipeline.from,
+        userId: detail.pipeline.userId,
+        projectId: detail.pipeline.projectId,
       },
       validTime: detail.pipeline.validTime,
       webhookKey: detail.pipeline.webhookKey,

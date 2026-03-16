@@ -90,7 +90,6 @@ const getPluginType: any = inject("get:plugin:type", () => {
   return "plugin";
 });
 
-debugger;
 const searchKeyRef = ref("");
 const optionsRef = ref([]);
 const message = ref("");

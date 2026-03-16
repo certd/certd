@@ -3,7 +3,7 @@ default:
   strategy:
     runStrategy: 0
   input:
-    renewDays: 15
+    renewDays: 20
     forceUpdate: false
 name: CertApply
 title: 证书申请（JS版）

@@ -648,6 +648,11 @@ export class PipelineService extends BaseService<PipelineEntity> {
       pipeline.id = id;
     }
 
+    if(entity.userId !=null){
+      pipeline.userId = entity.userId;
+      pipeline.projectId = entity.projectId;
+    }
+
     if (!pipeline.stages || pipeline.stages.length === 0) {
       return;
     }
@@ -1285,7 +1290,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
                   title: "申请证书",
                   runnableType: "step",
                   input: {
-                    renewDays: 18,
+                    renewDays: 20,
                     domains: req.domains,
                     email: req.email,
                     "challengeType": "auto",

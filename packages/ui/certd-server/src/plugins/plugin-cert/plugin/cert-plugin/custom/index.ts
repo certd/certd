@@ -61,7 +61,7 @@ import dayjs from "dayjs";
 export class CertApplyUploadPlugin extends CertApplyBaseConvertPlugin {
   @TaskInput({
     title: "过期前提醒",
-    value: 10,
+    value: 20,
     component: {
       name: "a-input-number",
       vModel: "value",

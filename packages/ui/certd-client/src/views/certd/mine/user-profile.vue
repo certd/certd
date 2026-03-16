@@ -308,7 +308,6 @@ async function doRegisterPasskey(deviceName: string) {
       },
     };
     console.log("credential", credential, response);
-    debugger;
 
     const verifyRes: any = await api.verifyPasskeyRegistration(response, options.challenge, deviceName);
     await loadPasskeys();

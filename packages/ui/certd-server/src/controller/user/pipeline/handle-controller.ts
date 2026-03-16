@@ -41,7 +41,7 @@ export class HandleController extends BaseController {
     if (body.record.id > 0) {
       const oldEntity = await this.accessService.info(body.record.id);
       if (oldEntity) {
-        if (oldEntity.userId !== this.getUserId()) {
+        if (oldEntity.userId !== userId) {
           throw new Error('access not found');
         }
         if (oldEntity.projectId && oldEntity.projectId !== projectId) {

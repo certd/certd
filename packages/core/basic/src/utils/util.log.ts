@@ -19,6 +19,7 @@ export function resetLogConfigure() {
 }
 resetLogConfigure();
 export const logger: ILogger = log4js.getLogger("default") as any;
+logger.addSecret = (secret: string) => {};
 
 export function resetLogFilePath(filePath: string) {
   logFilePath = filePath;
@@ -106,8 +107,8 @@ export class PipelineLogger implements ILogger {
   logger: ILogger;
   customWriter!: (text: string) => void;
 
-  constructor(name: string, write: (text: string) => void) {
-    this.customWriter = write;
+  constructor(name: string, write?: (text: string) => void) {
+    this.customWriter = write || (() => {});
     //@ts-ignore
     this.logger = log4js.getLogger(name);
   }

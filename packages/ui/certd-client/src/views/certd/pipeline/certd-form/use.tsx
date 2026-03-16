@@ -115,7 +115,7 @@ export function useCertPipelineCreator() {
       label: "name",
     });
 
-    const DEFAULT_RENEW_DAYS = settingStore.sysPublic.defaultCertRenewDays || settingStore.sysPublic.defaultWillExpireDays || 15;
+    const DEFAULT_RENEW_DAYS = settingStore.sysPublic.defaultCertRenewDays || settingStore.sysPublic.defaultWillExpireDays || 20;
 
     merge(inputs, {
       renewDays: {
@@ -347,7 +347,7 @@ export function useCertPipelineCreator() {
                     title: "申请证书",
                     runnableType: "step",
                     input: {
-                      renewDays: 15,
+                      renewDays: 20,
                       ...pluginInput,
                     },
                     strategy: {

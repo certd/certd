@@ -33,7 +33,7 @@ const pipelineExample = `
               "title": "申请证书", // 步骤标题
               "runnableType": "step", // 类型标识
               "input": { //输入参数 ，根据插件的配置有不同的参数，具体参数建议通过浏览器F12进行查看
-                "renewDays": 15,
+                "renewDays": 20,
               },
               "strategy": { // 策略
                 "runStrategy": 0 // 运行策略，0：正常执行，1：成功后跳过
