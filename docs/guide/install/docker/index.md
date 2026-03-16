@@ -43,7 +43,7 @@ docker compose up -d
 > https://docs.docker.com/compose/install/linux/   
 
 ::: tip
-默认安装使用SQLite数据库，如果需要使用MySQL、PostgreSQL数据库，请参考[多数据库支持](./install/database.md)
+默认安装使用SQLite数据库，如果需要使用MySQL、PostgreSQL数据库，请参考[多数据库支持](../database.md)
 :::
 
 ### 3. 访问测试

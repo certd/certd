@@ -31,7 +31,7 @@
 ![](./images/2.png)
 
 ::: tip
-默认安装使用SQLite数据库，如果需要使用MySQL、PostgreSQL数据库，请参考[多数据库支持](./install/database.md)
+默认安装使用SQLite数据库，如果需要使用MySQL、PostgreSQL数据库，请参考[多数据库支持](../database.md)
 :::
 
 

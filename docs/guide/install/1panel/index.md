@@ -40,7 +40,7 @@ admin/123456
    https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml
 
 ::: tip
-默认使用SQLite数据库，如果需要使用MySQL、PostgreSQL数据库，请参考[多数据库支持](./install/database.md)
+默认使用SQLite数据库，如果需要使用MySQL、PostgreSQL数据库，请参考[多数据库支持](../database.md)
 :::
 
 2. 然后到 `1Panel->容器->编排->新建编排`
