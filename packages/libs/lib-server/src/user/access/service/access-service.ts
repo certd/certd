@@ -244,10 +244,11 @@ export class AccessService extends BaseService<AccessEntity> {
     }
     const newAccess = {
       ...access,
+      userId:-1,
       id: undefined,
       projectId,
     }
-    await this.add(newAccess);
+    await this.repository.save(newAccess);
     return newAccess.id;
   }
 }

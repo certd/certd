@@ -174,7 +174,7 @@ export default async (client, userOpts) => {
 
 
         } catch (e) {
-            log(`[auto] [${d}] challengeCreateFn threw error: ${e.message}`);
+            log(`[auto] [${d}] challengeCreateFn threw error: ${e.message || e}`);
             await deactivateAuth(e);
             throw e;
         }

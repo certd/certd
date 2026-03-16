@@ -8,7 +8,7 @@ import { JDCloudAccess } from "./access.js";
   desc: "京东云DNS解析提供商",
   accessType: "jdcloud",
   icon: "svg:icon-jdcloud",
-  order:3,
+  order: 3,
 })
 export class JDCloudDnsProvider extends AbstractDnsProvider {
   access!: JDCloudAccess;
@@ -36,8 +36,8 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
     }
     const list = domainRes.result.dataList
 
-    const found =  list.find((item) => item.domainName === domain)
-    if (!found){
+    const found = list.find((item) => item.domainName === domain)
+    if (!found) {
       throw new Error(`域名${domain}在此京东云账号中不存在`)
     }
 
@@ -54,44 +54,33 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
      * weight	Integer	False		解析记录的权重，目前支持权重的有：A/AAAA/CNAME/JNAME，A/AAAA权重范围：0-100、CNAME/JNAME权重范围：1-100。
      * viewValue	Integer	True		解析线路的ID，请调用describeViewTree接口获取基础解
      */
-    try{
-      const res = await service.createResourceRecord({
-        domainId: domainId,
-        req:{
-          hostRecord: hostRecord,
-          hostValue: value,
-          type: type,
-          ttl: 200,
-          viewValue:-1,
-        }
-      })
-      return {
-        recordId: res.result.dataList.id,
-        domainId: domainId
-      };
-    }catch (e) {
-      if (e.error){
-        this.logger.error(JSON.stringify(e.error))
-        throw new Error(JSON.stringify(e.error))
+    const res = await this.access.catchCall(() => service.createResourceRecord({
+      domainId: domainId,
+      req: {
+        hostRecord: hostRecord,
+        hostValue: value,
+        type: type,
+        ttl: 200,
+        viewValue: -1,
       }
-      throw e
-    }
-
-
-
+    }))
+    return {
+      recordId: res.result.dataList.id,
+      domainId: domainId
+    };
   }
 
   async removeRecord(options: RemoveRecordOptions<any>): Promise<any> {
     const record = options.recordRes;
 
     const service = await this.getJDDomainService();
-    await service.deleteResourceRecord({
+    await this.access.catchCall(() => service.deleteResourceRecord({
       domainId: record.domainId,
       resourceRecordId: record.recordId
-    })
+    }))
   }
 
-  private async  getJDDomainService() {
+  private async getJDDomainService() {
     return await this.access.getJDDomainService();
   }
 

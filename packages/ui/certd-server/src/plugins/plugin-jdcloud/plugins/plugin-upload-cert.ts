@@ -61,7 +61,7 @@ export class JDCloudUploadCert extends AbstractTaskPlugin {
     const service = await this.getClient(access);
 
     const certInfo = this.cert as CertInfo;
-    const res = await service.uploadCert({
+    const res = await access.catchCall(() => service.uploadCert({
       /*
     @param {string} opts.certName - 证书名称
 @param {string} opts.keyFile - 私钥
@@ -71,7 +71,7 @@ export class JDCloudUploadCert extends AbstractTaskPlugin {
       certName: this.appendTimeSuffix(this.certName || "certd"),
       certFile: certInfo.crt,
       keyFile: certInfo.key
-    });
+    }));
     this.jdcloudCertId = res.result.certId;
     this.logger.info(`上传证书成功:${JSON.stringify(res)}`);
   }

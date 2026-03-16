@@ -1,4 +1,4 @@
-import {AccessInput, BaseAccess, IsAccess, Pager, PageRes, PageSearch} from '@certd/pipeline';
+import { AccessInput, BaseAccess, IsAccess, Pager, PageRes, PageSearch } from '@certd/pipeline';
 import { DomainRecord } from '@certd/plugin-lib';
 
 /**
@@ -19,7 +19,7 @@ export class JDCloudAccess extends BaseAccess {
     component: {
       placeholder: 'AccessKeyID',
     },
-    helper:"[获取密钥](https://uc.jdcloud.com/account/accesskey)",
+    helper: "[获取密钥](https://uc.jdcloud.com/account/accesskey)",
     required: true,
   })
   accessKeyId = '';
@@ -34,7 +34,7 @@ export class JDCloudAccess extends BaseAccess {
   secretAccessKey = '';
 
 
-   @AccessInput({
+  @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
@@ -55,8 +55,8 @@ export class JDCloudAccess extends BaseAccess {
   }
 
 
-  async  getJDDomainService() {
-    const {JDDomainService} = await import("@certd/jdcloud")
+  async getJDDomainService() {
+    const { JDDomainService } = await import("@certd/jdcloud")
     const service = new JDDomainService({
       credentials: {
         accessKeyId: this.accessKeyId,
@@ -68,24 +68,34 @@ export class JDCloudAccess extends BaseAccess {
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
-      const pager = new Pager(req);
-      const service = await this.getJDDomainService();
-      const domainRes = await service.describeDomains({
-        domainName: req.searchKey,
-        pageNumber: pager.pageNo,
-        pageSize: pager.pageSize,
-      })
-      let list = domainRes.result?.dataList || []
-      list = list.map((item: any) => ({
-        id: item.domainId,
-        domain: item.domainName,
-      }));
-      return {
-        total:domainRes.result.totalCount || list.length,
-        list,
-      };
+    const pager = new Pager(req);
+    const service = await this.getJDDomainService();
+    const domainRes = await this.catchCall(() => service.describeDomains({
+      domainName: req.searchKey,
+      pageNumber: pager.pageNo,
+      pageSize: pager.pageSize,
+    }))
+    let list = domainRes.result?.dataList || []
+    list = list.map((item: any) => ({
+      id: item.domainId,
+      domain: item.domainName,
+    }));
+    return {
+      total: domainRes.result.totalCount || list.length,
+      list,
+    };
+  }
+  async catchCall<T=any>(fn: () => Promise<T>): Promise<T> {
+    try {
+      return await fn();
+    } catch (e) {
+      if (e.error) {
+        this.ctx.logger.error(JSON.stringify(e.error))
+        throw new Error(JSON.stringify(e.error))
+      }
+      throw e
     }
-
+  }
 }
 
 new JDCloudAccess();

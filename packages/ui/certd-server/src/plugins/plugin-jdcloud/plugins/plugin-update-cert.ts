@@ -85,7 +85,7 @@ export class JDCloudUpdateCert extends AbstractTaskPlugin {
     const certInfo = this.cert as CertInfo
     for (const certId of this.certIds) {
       this.logger.info(`开始更新证书：${certId}`)
-      const res = await service.updateCert({
+      const res = await access.catchCall(() => service.updateCert({
       /*
       @param {string} opts.certId - 证书Id
 @param {string} opts.certId - 证书ID
@@ -96,7 +96,7 @@ export class JDCloudUpdateCert extends AbstractTaskPlugin {
         certId,
         certFile: certInfo.crt,
         keyFile:certInfo.key,
-      })
+      }))
       this.logger.info(`更新证书${certId}成功:${JSON.stringify(res)}`);
       await this.ctx.utils.sleep(2000)
     }
@@ -126,10 +126,10 @@ export class JDCloudUpdateCert extends AbstractTaskPlugin {
      * pageNumber	Integer	False	1	pageNumber,默认值1
      * pageSize
      */
-    const res = await service.describeCerts({
+    const res = await access.catchCall(() => service.describeCerts({
       pageNumber: 1,
       pageSize: 100,
-    })
+    }))
     // @ts-ignore
     const list = res?.result?.certListDetails
     if (!list || list.length === 0) {

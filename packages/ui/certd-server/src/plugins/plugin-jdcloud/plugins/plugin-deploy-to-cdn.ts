@@ -71,7 +71,7 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
       this.logger.info(`开始上传证书`);
 
       const sslService = await this.getSslClient(access);
-      const res = await sslService.uploadCert({
+      const res = await access.catchCall(() => sslService.uploadCert({
         // certName	String	True		证书名称
         // keyFile	String	True		私钥
         // certFile	String	True		证书
@@ -80,7 +80,7 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
         keyFile: certInfo.key,
         certFile: certInfo.crt,
         aliasName: certName
-      });
+      }));
       certId = res.result.certId;
     }
 
@@ -152,10 +152,10 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
      * pageNumber	Integer	False	1	pageNumber,默认值1
      * pageSize
      */
-    const res = await service.getDomainList({
+    const res = await access.catchCall(() => service.getDomainList({
       pageNumber: 1,
       pageSize: 50
-    });
+    }));
     // @ts-ignore
     const list = res?.result?.domains;
     if (!list || list.length === 0) {
