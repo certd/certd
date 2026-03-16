@@ -42,7 +42,7 @@
           <change-group v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-group>
           <change-notification v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-notification>
           <change-trigger v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-trigger>
-          <change-project v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-project>
+          <change-project v-if="hasActionPermission('write') && settingStore.isEnterprise" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-project>
         </div>
       </div>
       <template #form-bottom>
