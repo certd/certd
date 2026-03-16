@@ -126,28 +126,47 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
 
     const client = await access.getClient("cas.aliyuncs.com");
 
-    const res = await client.doRequest({
-      // 接口名称
-      action: "ListUserCertificateOrder",
-      // 接口版本
-      version: "2020-04-07",
-      method: "POST",
-      authType: "AK",
-      style: "RPC",
-      // 接口 PATH
-      pathname: `/`,
-      data: {
-        query: {
-          Status: "ISSUED",
-        },
-      },
-    });
-    const list = res?.CertificateOrderList || [];
-    if (!list || list.length === 0) {
-      throw new Error("没有找到已签发的证书订单");
-    }
+    const allOrders = [];
+    let currentPage = 1;
+    const pageSize = 50; // 设置每页获取的数量，默认50
+    let hasMore = true;
 
-    return list.map((item: any) => {
+    while (hasMore) {
+      const res = await client.doRequest({
+        // 接口名称
+        action: "ListUserCertificateOrder",
+        // 接口版本
+        version: "2020-04-07",
+        method: "POST",
+        authType: "AK",
+        style: "RPC",
+        // 接口 PATH
+        pathname: `/`,
+        data: {
+          query: {
+            Status: "ISSUED",
+            CurrentPage: currentPage, // 添加当前页码
+            ShowSize: pageSize,       // 添加每页数量
+          },
+        },
+      });
+
+      const list = res?.CertificateOrderList || [];
+      if (!list || list.length === 0) {
+          hasMore = false;
+        } else {
+          allOrders.push(...list);
+      }
+      if (list.length < pageSize) {
+        hasMore = false;
+      } else {
+        currentPage++;
+      }
+    }
+    if (allOrders.length === 0) {
+        throw new Error("没有找到已签发的证书订单");
+      }
+    return allOrders.map((item: any) => {
       const label = `${item.Domain}<${item.OrderId}>`;
       return {
         label: label,
