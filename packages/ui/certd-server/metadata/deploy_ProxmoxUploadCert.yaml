@@ -34,6 +34,7 @@ input:
       action: onGetNodeList
       search: false
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId

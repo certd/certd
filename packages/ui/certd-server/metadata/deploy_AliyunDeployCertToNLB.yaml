@@ -66,11 +66,13 @@ input:
     component:
       name: remote-select
       vModel: value
+      mode: default
       type: plugin
       typeName: AliyunDeployCertToNLB
       action: onGetRegionList
       search: false
       pager: false
+      multi: false
       watches:
         - certDomains
         - accessId
@@ -99,6 +101,7 @@ input:
       action: onGetLoadBalanceList
       search: false
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId
@@ -127,6 +130,7 @@ input:
       action: onGetListenerList
       search: false
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId

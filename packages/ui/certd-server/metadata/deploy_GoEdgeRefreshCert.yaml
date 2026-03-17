@@ -61,6 +61,7 @@ input:
       action: onGetCertList
       search: true
       pager: true
+      multi: true
       watches:
         - certDomains
         - accessId

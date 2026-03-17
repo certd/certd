@@ -84,6 +84,7 @@ input:
       action: onGetCnameList
       search: true
       pager: true
+      multi: true
       watches:
         - certDomains
         - accessId

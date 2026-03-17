@@ -101,6 +101,7 @@ input:
       action: onGetSiteList
       search: false
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId

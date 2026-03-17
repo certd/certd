@@ -1,6 +1,6 @@
 {
   "name": "@certd/midway-flyway-js",
-  "version": "1.39.2",
+  "version": "1.39.3",
   "description": "midway with flyway, sql upgrade way ",
   "private": false,
   "type": "module",

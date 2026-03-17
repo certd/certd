@@ -1,7 +1,7 @@
 {
   "name": "@certd/pipeline",
   "private": false,
-  "version": "1.39.2",
+  "version": "1.39.3",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -18,8 +18,8 @@
     "compile": "tsc --skipLibCheck --watch"
   },
   "dependencies": {
-    "@certd/basic": "^1.39.2",
-    "@certd/plus-core": "^1.39.2",
+    "@certd/basic": "^1.39.3",
+    "@certd/plus-core": "^1.39.3",
     "dayjs": "^1.11.7",
     "lodash-es": "^4.17.21",
     "reflect-metadata": "^0.1.13"
