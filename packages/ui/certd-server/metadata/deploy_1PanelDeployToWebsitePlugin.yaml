@@ -54,6 +54,7 @@ input:
       action: onGetNodes
       search: false
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId
@@ -82,6 +83,7 @@ input:
       action: onGetSSLIds
       search: false
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId

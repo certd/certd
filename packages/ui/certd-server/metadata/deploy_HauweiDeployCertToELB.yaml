@@ -50,11 +50,13 @@ input:
     component:
       name: remote-select
       vModel: value
+      mode: default
       type: plugin
       typeName: HauweiDeployCertToELB
       action: onGetProjectList
       search: false
       pager: false
+      multi: false
       watches:
         - certDomains
         - accessId
@@ -82,6 +84,7 @@ input:
       action: onGetCertList
       search: true
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId

@@ -63,6 +63,7 @@ input:
       action: onGetCertList
       search: true
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId
@@ -91,6 +92,7 @@ input:
       action: onGetSiteList
       search: true
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId

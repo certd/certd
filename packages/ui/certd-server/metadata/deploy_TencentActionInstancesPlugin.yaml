@@ -85,6 +85,7 @@ input:
       action: onGetInstanceList
       search: false
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId

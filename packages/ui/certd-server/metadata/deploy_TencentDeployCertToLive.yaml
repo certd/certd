@@ -28,6 +28,7 @@ input:
       action: onGetDomainList
       search: false
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId

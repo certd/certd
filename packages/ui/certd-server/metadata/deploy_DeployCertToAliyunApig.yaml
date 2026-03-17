@@ -53,6 +53,7 @@ input:
       action: onGetRegionList
       search: false
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId
@@ -93,6 +94,7 @@ input:
       action: onGetDomainList
       search: false
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId

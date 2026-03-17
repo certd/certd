@@ -67,6 +67,7 @@ input:
       action: onGetOrderList
       search: false
       pager: true
+      multi: true
       watches:
         - certDomains
         - accessId

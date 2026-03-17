@@ -51,6 +51,7 @@ input:
       action: onGetWebsiteList
       search: false
       pager: false
+      multi: true
       watches:
         - certDomains
         - accessId
