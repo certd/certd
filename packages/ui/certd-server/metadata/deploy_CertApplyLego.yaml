@@ -148,6 +148,7 @@ input:
     helper: 兼容Windows Server各个版本
   renewDays:
     title: 更新天数
+    value: 20
     component:
       name: a-input-number
       vModel: value

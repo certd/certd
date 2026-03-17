@@ -99,6 +99,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       expectedChallenge: challenge,
       expectedOrigin: origin,
       expectedRPID: rpId,
+      requireUserVerification: false,
     };
     try {
       verification = await verifyRegistrationResponse(verifyReq);
@@ -164,6 +165,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       expectedChallenge: challenge,
       expectedOrigin: origin,
       expectedRPID: rpId,
+      requireUserVerification: false,
       credential: {
         id: passkey.passkeyId,
         publicKey: new Uint8Array(Buffer.from(passkey.publicKey, 'base64')),

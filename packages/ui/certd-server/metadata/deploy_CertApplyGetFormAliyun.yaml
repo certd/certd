@@ -56,6 +56,18 @@ input:
       type: aliyun
     required: true
     order: 0
+  orderType:
+    title: 订单类型
+    value: CPACK
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - label: 资源虚拟订单（一般选这个）
+          value: CPACK
+        - label: 售卖订单
+          value: BUY
+    order: 0
   orderId:
     title: 证书订单ID
     component:
@@ -68,6 +80,7 @@ input:
       search: false
       pager: true
       multi: true
+      pageSize: 50
       watches:
         - certDomains
         - accessId
@@ -113,6 +126,7 @@ input:
     helper: 兼容Windows Server各个版本
   renewDays:
     title: 更新天数
+    value: 20
     component:
       name: a-input-number
       vModel: value
