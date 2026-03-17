@@ -89,7 +89,10 @@ export class OnePanelDeployToWebsitePlugin extends AbstractTaskPlugin {
       utils: this.ctx.utils,
     });
 
-    const sslIds = this.sslIds;
+    let sslIds = this.sslIds || [];
+    if (typeof sslIds === "string") {
+      sslIds = [sslIds];
+    }
     for (const sslId of sslIds) {
       try {
         const certRes = await this.get1PanelCertInfo(client, sslId);
