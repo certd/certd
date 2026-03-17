@@ -37,7 +37,6 @@ export class MinePasskeyController extends BaseController {
 
     return this.ok({
       ...options,
-      userId
     });
   }
 

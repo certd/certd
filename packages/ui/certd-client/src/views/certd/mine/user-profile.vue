@@ -278,20 +278,24 @@ async function doRegisterPasskey(deviceName: string) {
     //   type: "public-key",
     // }));
 
+    console.log("passkey register options:", options, JSON.stringify(options));
     const publicKey = {
       challenge: Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)),
       rp: options.rp,
       pubKeyCredParams: options.pubKeyCredParams,
       timeout: options.timeout || 60000,
-      attestation: options.attestation,
+      // attestation: options.attestation,
       // excludeCredentials: excludeCredentials,
+      // extensions: options.extensions,
+      // authenticatorSelection: options.authenticatorSelection,
+      // hints: options.hints,
       user: {
         id: new TextEncoder().encode(options.userId + ""),
-        name: userInfo.value.username,
+        name: userInfo.value.username + "@" + deviceName,
         displayName: deviceName,
       },
     };
-    console.log("passkey register publicKey:", publicKey);
+    console.log("passkey register publicKey:", publicKey, JSON.stringify(publicKey));
     const credential = await (navigator.credentials as any).create({
       publicKey,
     });
@@ -312,6 +316,7 @@ async function doRegisterPasskey(deviceName: string) {
     console.log("credential", credential, response);
 
     const verifyRes: any = await api.verifyPasskeyRegistration(response, options.challenge, deviceName);
+    console.log("verifyRes:", verifyRes, JSON.stringify(verifyRes));
     await loadPasskeys();
   } catch (e: any) {
     console.error("Passkey注册失败:", e);

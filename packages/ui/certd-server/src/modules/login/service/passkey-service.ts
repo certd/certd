@@ -60,6 +60,13 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       timeout: 60000,
       attestationType: "none",
       excludeCredentials: [],
+      preferredAuthenticatorType: 'localDevice',
+      authenticatorSelection: {
+        authenticatorAttachment: "cross-platform", 
+        userVerification: "preferred",      
+        residentKey: "preferred",
+        requireResidentKey: false
+      },
     });
     logger.info('[passkey] 注册选项:', JSON.stringify(options));
     cache.set(`passkey:registration:${options.challenge}`, userId, {
@@ -121,6 +128,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       rpID: rpId,
       timeout: 60000,
       allowCredentials: [],
+      userVerification: 'preferred' //'required' | 'preferred' | 'discouraged';
     });
 
     // cache.set(`passkey:authentication:${options.challenge}`, userId, {

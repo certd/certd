@@ -51,8 +51,6 @@ export class AutoAInitSite {
     //加载一次密钥
     await this.sysSettingsService.getSecret();
 
-    //加载设置
-    await this.sysSettingsService.reloadSettings();
 
     // 授权许可
     try {
@@ -60,6 +58,9 @@ export class AutoAInitSite {
     } catch (e) {
       logger.error('授权许可验证失败', e);
     }
+    
+    //加载设置
+    await this.sysSettingsService.reloadSettings();
 
     //加载站点隐藏配置
     await this.safeService.reloadHiddenStatus(true)

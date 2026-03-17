@@ -219,15 +219,22 @@ const handlePasskeyLogin = async () => {
     });
     const options = optionsResponse;
 
+    console.log("passkey authentication options:", options, JSON.stringify(options));
     const credential = await (navigator.credentials as any).get({
       publicKey: {
         challenge: Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)),
         rpId: options.rpId,
         allowCredentials: options.allowCredentials || [],
         timeout: options.timeout || 60000,
+        // attestation: options.attestation,
+        // excludeCredentials: excludeCredentials,
+        // extensions: options.extensions,
+        // authenticatorSelection: options.authenticatorSelection,
+        // hints: options.hints,
       },
     });
 
+    console.log("passkey authentication credential:", credential, JSON.stringify(credential));
     if (!credential) {
       throw new Error("Passkey认证失败");
     }

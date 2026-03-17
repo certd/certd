@@ -95,9 +95,7 @@ export class LoginController extends BaseController {
       this.ctx
     );
 
-    return this.ok({
-      ...options,
-    });
+    return this.ok(options);
   }
 
   @Post('/loginByPasskey', { description: Constants.per.guest })

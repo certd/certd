@@ -88,10 +88,6 @@ export default (req: any) => {
       host: "0.0.0.0",
       port: 3008,
       fs: devServerFs,
-      https: {
-        key: fs.readFileSync("./keys/localhost+1-key.pem"),
-        cert: fs.readFileSync("./keys/localhost+1.pem"),
-      },
       allowedHosts: ["localhost", "127.0.0.1", "yfy.docmirror.cn", "docmirror.top", "*", "local.dev"],
       proxy: {
         // with options
