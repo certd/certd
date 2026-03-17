@@ -278,20 +278,22 @@ async function doRegisterPasskey(deviceName: string) {
     //   type: "public-key",
     // }));
 
-    const credential = await (navigator.credentials as any).create({
-      publicKey: {
-        challenge: Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)),
-        rp: options.rp,
-        pubKeyCredParams: options.pubKeyCredParams,
-        timeout: options.timeout || 60000,
-        attestation: options.attestation,
-        // excludeCredentials: excludeCredentials,
-        user: {
-          id: new TextEncoder().encode(options.userId + ""),
-          name: userInfo.value.username,
-          displayName: deviceName,
-        },
+    const publicKey = {
+      challenge: Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)),
+      rp: options.rp,
+      pubKeyCredParams: options.pubKeyCredParams,
+      timeout: options.timeout || 60000,
+      attestation: options.attestation,
+      // excludeCredentials: excludeCredentials,
+      user: {
+        id: new TextEncoder().encode(options.userId + ""),
+        name: userInfo.value.username,
+        displayName: deviceName,
       },
+    };
+    console.log("passkey register publicKey:", publicKey);
+    const credential = await (navigator.credentials as any).create({
+      publicKey,
     });
 
     if (!credential) {

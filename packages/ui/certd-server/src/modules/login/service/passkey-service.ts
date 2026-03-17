@@ -1,4 +1,4 @@
-import { cache } from "@certd/basic";
+import { cache, logger } from "@certd/basic";
 import { AuthException, BaseService, SysInstallInfo, SysSettingsService, SysSiteInfo } from "@certd/lib-server";
 import { isComm } from "@certd/plus-core";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
@@ -54,14 +54,14 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     const options = await generateRegistrationOptions({
       rpName: rpName,
       rpID: rpId,
-      userID: new Uint8Array([userId]),
+      userID: new TextEncoder().encode(userId + ""),
       userName: username,
       userDisplayName: user.nickName || username,
       timeout: 60000,
       attestationType: "none",
       excludeCredentials: [],
     });
-
+    logger.info('[passkey] 注册选项:', JSON.stringify(options));
     cache.set(`passkey:registration:${options.challenge}`, userId, {
       ttl: 5 * 60 * 1000,
     });
@@ -86,16 +86,24 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
 
     const { rpId, origin } = await this.getRpInfo();
 
-    const verification = await verifyRegistrationResponse({
+    let verification: any = null;
+    const verifyReq = {
       response,
       expectedChallenge: challenge,
       expectedOrigin: origin,
       expectedRPID: rpId,
-    });
-
+    };
+    try {
+      verification = await verifyRegistrationResponse(verifyReq);
+    } catch (error) {
+      // 后端验证时
+      logger.error('[passkey] 注册验证失败:', JSON.stringify(verifyReq));
+      throw new AuthException(`注册验证失败:${error.message || error}`);
+    }
     if (!verification.verified) {
       throw new AuthException("注册验证失败");
     }
+    
 
     cache.delete(`passkey:registration:${challenge}`);
 
