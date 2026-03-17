@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.4](https://github.com/certd/certd/compare/v1.39.3...v1.39.4) (2026-03-17)
+
+### Bug Fixes
+
+* 修复阿里云证书订单翻页问题 ([6d43623](https://github.com/certd/certd/commit/6d43623f459a7594599e50a7ed89d67fcc775518))
+
+### Performance Improvements
+
+* 优化passkey ([9e12412](https://github.com/certd/certd/commit/9e12412f5fa7800df1d7efaf62cd8fd5d79bb569))
+
 ## [1.39.3](https://github.com/certd/certd/compare/v1.39.2...v1.39.3) (2026-03-17)
 
 ### Bug Fixes

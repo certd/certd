@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.4](https://github.com/certd/certd/compare/v1.39.3...v1.39.4) (2026-03-17)
+
+**Note:** Version bump only for package @certd/lib-iframe
+
 ## [1.39.3](https://github.com/certd/certd/compare/v1.39.2...v1.39.3) (2026-03-17)
 
 **Note:** Version bump only for package @certd/lib-iframe
