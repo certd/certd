@@ -1,7 +1,7 @@
 <template>
   <div class="remote-select">
     <div class="flex flex-row">
-      <a-select class="remote-select-input" show-search mode="tags" :filter-option="filterOption" :options="optionsRef" :value="value" v-bind="attrs" @click="onClick" @update:value="updateValue($event)">
+      <a-select ref="selectRef" class="remote-select-input" show-search :filter-option="filterOption" :options="optionsRef" :value="value" v-bind="attrs" @click="onClick" @update:value="updateValue($event)">
         <template #dropdownRender="{ menuNode: menu }">
           <template v-if="search">
             <div class="flex w-full" style="padding: 4px 8px">
@@ -44,6 +44,8 @@ defineOptions({
   name: "RemoteSelect",
 });
 
+const selectRef = ref(null);
+
 const VNodes = defineComponent({
   props: {
     vnodes: {
@@ -61,7 +63,7 @@ const props = defineProps<
     watches?: string[];
     search?: boolean;
     pager?: boolean;
-    mode?: string;
+    multi?: boolean;
   } & ComponentPropsType
 >();
 
@@ -70,13 +72,15 @@ const emit = defineEmits<{
 }>();
 
 function updateValue(value: any) {
-  debugger;
-  if (props.mode === "tags" || props.mode === "multiple") {
-    emit("update:value", value);
-  } else {
-    const last = value?.[value.length - 1];
-    emit("update:value", last);
-  }
+  // if (props.multi !== false) {
+  //   emit("update:value", value);
+  // } else {
+  //   const last = value?.[value.length - 1];
+  //   emit("update:value", last);
+  //   selectRef.value.blur();
+  // }
+
+  emit("update:value", value);
 }
 
 const attrs = useAttrs();

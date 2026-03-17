@@ -54,13 +54,11 @@ export function createRemoteSelectInputDefine(opts?: {
   const helper = opts?.helper || "请选择";
   const search = opts?.search ?? false;
   const pager = opts?.pager ?? false;
-  let mode = "tags";
-  if (opts.multi === false) {
-    mode = undefined;
-  } else {
-    mode = opts?.mode ?? "tags";
+  let mode = "default";
+  const multi = opts?.multi ?? true;
+  if (multi) {
+    mode = "tags";
   }
-
   const item = {
     title,
     component: {
@@ -72,6 +70,7 @@ export function createRemoteSelectInputDefine(opts?: {
       action,
       search,
       pager,
+      multi,
       watches: [certDomainsInputKey, accessIdInputKey, ...watches],
       ...opts.component,
     },
