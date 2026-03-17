@@ -18,7 +18,8 @@
     </template>
     <div class="rounded pl-3 pr-3 px-2 py-1 flex-center flex pointer items-center bg-accent h-10 button-text" title="当前项目">
       <!-- <fs-icon icon="ion:apps" class="mr-1"></fs-icon> -->
-      当前项目：{{ projectStore.currentProject?.name || "..." }}
+      <span class="hidden md:flex"> 当前项目：</span>
+      <span class="text-ellipsis">{{ projectStore.currentProject?.name || "..." }}</span>
       <fs-icon :icon="currentIcon" class="ml-5"></fs-icon>
     </div>
   </a-dropdown>
@@ -58,7 +59,7 @@ const currentIcon = computed(() => {
 <style lang="less">
 .project-selector {
   &.button-text {
-    min-width: 150px;
+    min-width: 100px;
     max-width: 250px;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -88,7 +88,11 @@ export default (req: any) => {
       host: "0.0.0.0",
       port: 3008,
       fs: devServerFs,
-      allowedHosts: ["localhost", "127.0.0.1", "yfy.docmirror.cn", "docmirror.top", "*"],
+      https: {
+        key: fs.readFileSync("./keys/localhost+1-key.pem"),
+        cert: fs.readFileSync("./keys/localhost+1.pem"),
+      },
+      allowedHosts: ["localhost", "127.0.0.1", "yfy.docmirror.cn", "docmirror.top", "*", "local.dev"],
       proxy: {
         // with options
         "/api": {
@@ -100,7 +104,7 @@ export default (req: any) => {
         "/certd/api": {
           //配套后端 https://github.com/fast-crud/fs-server-js
           target: "http://127.0.0.1:7001/api",
-          rewrite: path => path.replace(/^\/certd\/api/, ""),
+          rewrite: (path: any) => path.replace(/^\/certd\/api/, ""),
           //忽略证书
           // agent: new https.Agent({ rejectUnauthorized: false }),
         },

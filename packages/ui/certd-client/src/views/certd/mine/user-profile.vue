@@ -88,7 +88,7 @@
             </div>
             <div class="passkey-list">
               <div v-for="passkey in passkeys" :key="passkey.id" class="passkey-item">
-                <div class="passkey-icon">
+                <div class="passkey-icon hidden md:flex">
                   <fs-icon icon="ion:finger-print" class="icon" />
                 </div>
                 <div class="passkey-info">
@@ -721,7 +721,6 @@ onMounted(async () => {
   .passkey-icon {
     width: 48px;
     height: 48px;
-    display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
@@ -749,8 +748,8 @@ onMounted(async () => {
   .passkey-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    font-size: 13px;
+    gap: 4px;
+    font-size: 12px;
   }
 
   .meta-item {
