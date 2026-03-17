@@ -25,7 +25,7 @@
           </a-row>
         </template>
         <div class="flex-col h-100 overflow-hidden md:ml-5 md:mr-5 step-form-body">
-          <a-tabs v-model:active-key="pluginGroupActive" tab-position="left" class="flex-1 overflow-hidden">
+          <a-tabs v-model:active-key="pluginGroupActive" tab-position="left" class="flex-1 overflow-hidden h-full">
             <template v-for="group of computedPluginGroups" :key="group.key">
               <a-tab-pane v-if="(group.key === 'admin' && userStore.isAdmin) || group.key !== 'admin'" :key="group.key" class="scroll-y">
                 <template #tab>
