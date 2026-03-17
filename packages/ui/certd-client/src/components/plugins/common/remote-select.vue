@@ -61,7 +61,7 @@ const props = defineProps<
     watches?: string[];
     search?: boolean;
     pager?: boolean;
-    multi?: boolean;
+    mode?: string;
   } & ComponentPropsType
 >();
 
@@ -70,7 +70,8 @@ const emit = defineEmits<{
 }>();
 
 function updateValue(value: any) {
-  if (props.multi) {
+  debugger;
+  if (props.mode === "tags" || props.mode === "multiple") {
     emit("update:value", value);
   } else {
     const last = value?.[value.length - 1];
