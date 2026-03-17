@@ -43,6 +43,7 @@ export function createRemoteSelectInputDefine(opts?: {
   pager?: boolean;
   component?: any;
   value?: any;
+  pageSize?: number;
 }) {
   const title = opts?.title || "请选择";
   const certDomainsInputKey = opts?.certDomainsInputKey || "certDomains";
@@ -71,6 +72,7 @@ export function createRemoteSelectInputDefine(opts?: {
       search,
       pager,
       multi,
+      pageSize: opts?.pageSize,
       watches: [certDomainsInputKey, accessIdInputKey, ...watches],
       ...opts.component,
     },

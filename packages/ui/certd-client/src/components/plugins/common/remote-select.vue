@@ -64,6 +64,7 @@ const props = defineProps<
     search?: boolean;
     pager?: boolean;
     multi?: boolean;
+    pageSize?: number;
   } & ComponentPropsType
 >();
 
@@ -103,7 +104,7 @@ const loading = ref(false);
 const pagerRef: Ref = ref({
   pageNo: 1,
   total: 0,
-  pageSize: 100,
+  pageSize: props.pageSize || 100,
 });
 const getOptions = async () => {
   if (loading.value) {

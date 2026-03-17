@@ -28,11 +28,36 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
   })
   accessId!: string;
 
+
+   @TaskInput(
+    {
+      title:"订单类型",
+      value:"CPACK",
+      component:{
+        name:"a-select",
+        vModel:"value",
+        options:[
+          {
+            label:"资源虚拟订单（一般选这个）",
+            value:"CPACK",
+          },
+          {
+            label:"售卖订单",
+            value:"BUY",
+          }
+        ]
+      }
+    }
+  )
+  orderType!: string;
+
+
   @TaskInput(
     createRemoteSelectInputDefine({
       title: "证书订单ID",
       helper: "订阅模式的证书订单Id",
       typeName: "CertApplyGetFormAliyun",
+      pageSize: 50,
       component: {
         name: "RemoteSelect",
         vModel: "value",
@@ -140,6 +165,7 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
       pathname: `/`,
       data: {
         query: {
+          OrderType: this.orderType,
           Status: "ISSUED",
           CurrentPage: pager.pageNo,
           ShowSize : pager.pageSize,
@@ -151,14 +177,27 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
       return []
     }
 
-    return list.map((item: any) => {
-      const label = `${item.Domain}<${item.OrderId}>`;
+    const total = res.TotalCount || 0;
+
+    const records = list.map((item: any) => {
+      let value = item.OrderId;
+      let domain = item.Domain;
+      let label = `${item.Domain}<${item.OrderId}>`;
+      if (!item.OrderId) {
+        label = `${item.CommonName}<${item.Name}>`;
+        value = item.Name;
+        domain = item.CommonName;
+      }
       return {
         label: label,
-        value: item.OrderId,
-        Domain: item.Domain,
+        value: value,
+        Domain: domain,
       };
     });
+    return {
+      list:records,
+      total,
+    }
   }
 }
 

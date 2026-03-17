@@ -6,6 +6,7 @@ import { SiteInfoService } from '../../../modules/monitor/index.js';
 import { HistoryService } from '../../../modules/pipeline/service/history-service.js';
 import { PipelineService } from '../../../modules/pipeline/service/pipeline-service.js';
 import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
+import { PipelineEntity } from '../../../modules/pipeline/entity/pipeline.js';
 
 
 const pipelineExample = `
@@ -183,21 +184,15 @@ export class PipelineController extends CrudController<PipelineService> {
   }
 
 
-  // @Post('/add', { description: Constants.per.authOnly })
-  // async add(@Body(ALL) bean: PipelineEntity) {
-  //   const { projectId, userId } = await this.getProjectUserIdWrite()
-  //   bean.userId = userId
-  //   bean.projectId = projectId
-  //   return super.add(bean);
-  // }
+  @Post('/add', { description: Constants.per.authOnly })
+  async add(@Body(ALL) bean: PipelineEntity) {
+    return await this.save(bean as any);
+  }
 
-  // @Post('/update', { description: Constants.per.authOnly })
-  // async update(@Body(ALL) bean) {
-  //   await this.checkOwner(this.getService(), bean.id,"write",true);
-  //   delete bean.userId;
-  //   delete bean.projectId;
-  //   return super.update(bean);
-  // }
+  @Post('/update', { description: Constants.per.authOnly })
+  async update(@Body(ALL) bean) {
+    return await this.save(bean);
+  }
 
   @Post('/save', { description: Constants.per.authOnly, summary: '新增/更新流水线' })
   async save(@Body() bean: PipelineSaveDTO) {

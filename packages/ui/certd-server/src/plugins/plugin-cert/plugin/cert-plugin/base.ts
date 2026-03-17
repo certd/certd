@@ -20,6 +20,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
 
   @TaskInput({
     title: "更新天数",
+    value:20,
     component: {
       name: "a-input-number",
       vModel: "value",

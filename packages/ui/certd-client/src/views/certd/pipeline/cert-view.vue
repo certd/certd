@@ -100,7 +100,10 @@ function formatDate(dateStr: string): string {
   .cert-detail {
     table {
       width: 100%;
-      table-layout: fixed;
+      table-layout: fixed !important;
+    }
+    .ant-descriptions-item-label {
+      width: 90px;
     }
     .fingerprint {
       .label {
