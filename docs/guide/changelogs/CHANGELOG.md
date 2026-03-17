@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.3](https://github.com/certd/certd/compare/v1.39.2...v1.39.3) (2026-03-17)
+
+### Bug Fixes
+
+* 修复多选框只能单选的bug ([12700e1](https://github.com/certd/certd/commit/12700e1754319513ac02822ff1588d63420b964e))
+* 修复旧版1panel插件 报sslIds is not iterable的错误 ([50db6f0](https://github.com/certd/certd/commit/50db6f0765e7ec9a5698cd99540d90e188634fb1))
+
 ## [1.39.2](https://github.com/certd/certd/compare/v1.39.1...v1.39.2) (2026-03-16)
 
 ### Bug Fixes
