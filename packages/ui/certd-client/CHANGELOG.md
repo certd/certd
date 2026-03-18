@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.5](https://github.com/certd/certd/compare/v1.39.4...v1.39.5) (2026-03-18)
+
+### Bug Fixes
+
+* 修复修改分组报错的bug ([224db7d](https://github.com/certd/certd/commit/224db7da57dbdddf25bcac7faa0a29eb228c5a33))
+
+### Performance Improvements
+
+* passkey 支持Bitwarden ([29f44c6](https://github.com/certd/certd/commit/29f44c67c808bed9ff1c9d4884d39a1a62d043a7))
+* passkey登录放到下方其他登录位置 ([1413e1a](https://github.com/certd/certd/commit/1413e1aff4aabcfd471716338c210fbcfd76c8f9))
+
 ## [1.39.4](https://github.com/certd/certd/compare/v1.39.3...v1.39.4) (2026-03-17)
 
 ### Bug Fixes
