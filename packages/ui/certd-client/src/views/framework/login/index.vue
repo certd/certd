@@ -231,6 +231,12 @@ const handlePasskeyLogin = async () => {
         // extensions: options.extensions,
         // authenticatorSelection: options.authenticatorSelection,
         // hints: options.hints,
+        // 关键配置在这里 👇
+        authenticatorSelection: {
+          residentKey: "required", // 或 "preferred"，请求创建可发现凭证
+          requireResidentKey: true, // 为兼容旧浏览器，设置与 residentKey 相同的值
+          userVerification: "preferred", // 用户验证策略
+        },
       },
     });
 

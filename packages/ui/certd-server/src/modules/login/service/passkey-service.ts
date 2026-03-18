@@ -230,7 +230,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       throw new AuthException("Passkey不存在");
     }
 
-    if (verification.counter <= passkey.counter) {
+    if (verification.counter <= passkey.counter && passkey.counter > 0) {
       throw new AuthException("认证失败:计数器异常");
     }
 

@@ -67,7 +67,7 @@ const props = withDefaults(defineProps<Props>(), {
   hoverDelay: 500,
 });
 
-const emit = defineEmits<{ logout: [] }>();
+const emit = defineEmits<{ logout: []; userProfile: [] }>();
 
 const { globalLockScreenShortcutKey, globalLogoutShortcutKey } = usePreferences();
 const lockStore = useLockStore();
@@ -132,6 +132,11 @@ function handleSubmitLogout() {
   logoutModalApi.close();
 }
 
+function handleUserProfile() {
+  emit("userProfile");
+  openPopover.value = false;
+}
+
 if (enableShortcutKey.value) {
   const keys = useMagicKeys();
   whenever(keys["Alt+KeyQ"]!, () => {
@@ -173,7 +178,7 @@ if (enableShortcutKey.value) {
     </DropdownMenuTrigger>
     <DropdownMenuContent class="mr-2 min-w-[240px] p-0 pb-1">
       <div ref="refContent">
-        <DropdownMenuLabel class="flex items-center p-3">
+        <DropdownMenuLabel class="flex items-center p-3 pointer" @click="handleUserProfile">
           <VbenAvatar :alt="text" :src="avatar" class="size-12" dot dot-class="bottom-0 right-1 border-2 size-4 bg-green-500" />
           <div class="ml-2 w-full">
             <div v-if="tagText || text || $slots.tagText" class="text-foreground mb-1 flex items-center text-sm font-medium">
