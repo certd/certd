@@ -230,9 +230,10 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       throw new AuthException("Passkey不存在");
     }
 
-    if (verification.counter <= passkey.counter && passkey.counter > 0) {
-      throw new AuthException("认证失败:计数器异常");
-    }
+    // 可同步密钥 各个客户端的计数器不是单调递增的，此规范基本上都不遵守了
+    // if (verification.counter <= passkey.counter && passkey.counter > 0) {
+    //   throw new AuthException("认证失败:计数器异常");
+    // }
 
     passkey.counter = verification.counter;
     passkey.updateTime = new Date();
