@@ -4,6 +4,7 @@ on:
     branches: ['v2-dev']
     paths:
       - "trigger/release.trigger"
+  workflow_dispatch:    # 添加手动触发
 #  workflow_run:
 #    workflows: [ "deploy-demo" ]
 #    types:
@@ -25,6 +26,7 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
+          ref: 'v2-dev'
 
       - name: get_certd_version
         id: get_certd_version

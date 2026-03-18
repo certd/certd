@@ -8,6 +8,8 @@ on:
     workflows: [ "build-image" ]
     types:
       - completed
+  workflow_dispatch:    # 添加手动触发
+
 
 
 #  schedule:
@@ -26,6 +28,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: v2-dev
+          
       - name: get_certd_version
         id: get_certd_version
         uses: actions/github-script@v6

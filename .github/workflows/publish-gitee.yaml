@@ -8,7 +8,7 @@ on:
     workflows: [ "build-image-for-release" ]
     types:
       - completed
-
+  workflow_dispatch:    # 添加手动触发
 #  schedule:
 #    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
 #    - cron: '17 19 * * *'
@@ -19,13 +19,16 @@ permissions:
 jobs:
   publish-gitee:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      (github.event.workflow_run.conclusion == 'success')
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
+          ref: 'v2-dev'
             
       - name: publish_to_gitee
         id: publish_to_gitee
