@@ -63,7 +63,6 @@
                 {{ t("authentication.forgotPassword") }}
               </a>
             </div>
-
             <router-link v-if="hasRegisterTypeEnabled() && !queryBindCode" class="register" :to="{ name: 'register' }">
               {{ t("authentication.registerLink") }}
             </router-link>
