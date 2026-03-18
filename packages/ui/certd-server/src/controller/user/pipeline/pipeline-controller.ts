@@ -190,8 +190,10 @@ export class PipelineController extends CrudController<PipelineService> {
   }
 
   @Post('/update', { description: Constants.per.authOnly })
-  async update(@Body(ALL) bean) {
-    return await this.save(bean);
+  async update(@Body(ALL) bean:PipelineEntity) {
+     await this.checkOwner(this.getService(), bean.id,"write",true);
+     await this.service.update(bean as any);
+     return this.ok({});
   }
 
   @Post('/save', { description: Constants.per.authOnly, summary: '新增/更新流水线' })
