@@ -1071,6 +1071,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
+    //允许管理员修改，userId=null
     const query: any = {}
     if (userId && userId > 0) {
       query.userId = userId;
@@ -1123,6 +1124,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
+    //允许管理员修改，userId=null
     const query: any = {}
     if (userId && userId > 0) {
       query.userId = userId;
@@ -1161,9 +1163,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级专业版");
     }
-
-    if (userId == null || ids.length === 0) {
-      return;
+    //允许userId为空，为空则为管理员触发
+    if (ids.length === 0) {
+      throw new Error("参数错误 ids 不能为空");
     }
     const where: any = {
       id: In(ids),
