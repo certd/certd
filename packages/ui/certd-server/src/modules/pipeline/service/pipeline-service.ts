@@ -259,6 +259,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
       bean.order = old.order;
       bean.userId = old.userId;
       bean.projectId = old.projectId;
+      if (bean.content == null) {
+        bean.content = old.content;
+      }
     }
     if (!old || !old.webhookKey) {
       bean.webhookKey = await this.genWebhookKey();

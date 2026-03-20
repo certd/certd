@@ -35,11 +35,15 @@
                 </a-tag>
               </div>
             </div>
-            <div class="action-buttons">
+            <div class="action-buttons gap-2">
               <a-button type="primary" class="action-btn" @click="doUpdate">
                 {{ t("authentication.updateProfile") }}
               </a-button>
-              <change-password-button class="ml-10" :show-button="true" />
+              <change-password-button :show-button="true" />
+
+              <a-button type="primary" class="action-btn" @click="goSecuritySetting">
+                {{ t("authentication.securitySettingTip") }}
+              </a-button>
             </div>
           </div>
         </div>
@@ -142,6 +146,7 @@ import { useSettingStore } from "/@/store/settings";
 import { isEmpty } from "lodash-es";
 import { dict } from "@fast-crud/fast-crud";
 import dayjs from "dayjs";
+import { useRouter } from "vue-router";
 
 const { t } = useI18n();
 
@@ -173,6 +178,11 @@ function doUpdate() {
       await getUserInfo();
     },
   });
+}
+
+const router = useRouter();
+function goSecuritySetting() {
+  router.push("/certd/mine/security");
 }
 
 const oauthBounds = ref([]);
@@ -293,6 +303,12 @@ async function doRegisterPasskey(deviceName: string) {
         id: new TextEncoder().encode(options.userId + ""),
         name: userInfo.value.username + "@" + deviceName,
         displayName: deviceName,
+      },
+      // 关键配置在这里 👇
+      authenticatorSelection: {
+        residentKey: "required", // 或 "preferred"，请求创建可发现凭证
+        requireResidentKey: true, // 为兼容旧浏览器，设置与 residentKey 相同的值
+        userVerification: "preferred", // 用户验证策略
       },
     };
     console.log("passkey register publicKey:", publicKey, JSON.stringify(publicKey));

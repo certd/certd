@@ -103,4 +103,6 @@ export default {
   deviceNameHelper: "Please enter the device name， used to identify the device",
   passkeyRegisterHelper: "Site domain change will invalidate passkey",
   userInfo: "User Info",
+  securitySettingTip: "2FA Setting",
+  securitySetting: "2FA Setting",
 };

@@ -4,6 +4,7 @@
       <div class="oauth-title-text">{{ computedTitle }}</div>
     </div>
     <div class="flex justify-center items-center gap-4 flex-wrap md:flex-nowrap">
+      <passkey-login></passkey-login>
       <template v-for="item in oauthProviderList" :key="item.type">
         <div v-if="item.addonId" class="oauth-icon-button pointer" @click="goOauthLogin(item.name)">
           <div><fs-icon :icon="item.icon" class="text-blue-600 text-40" /></div>
@@ -19,6 +20,7 @@ import * as api from "./api";
 import { useI18n } from "vue-i18n";
 import { useSettingStore } from "/@/store/settings";
 import { useRoute } from "vue-router";
+import PasskeyLogin from "../login/passkey-login.vue";
 
 const oauthProviderList = ref([]);
 const props = defineProps<{

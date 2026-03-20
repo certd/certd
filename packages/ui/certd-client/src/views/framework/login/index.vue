@@ -46,20 +46,10 @@
               </a-form-item>
             </template>
           </a-tab-pane>
-          <a-tab-pane v-if="settingStore.sysPublic.passkeyEnabled && settingStore.isPlus" key="passkey" :tab="t('authentication.passkeyTab')">
-            <template v-if="formState.loginType === 'passkey'">
-              <div v-if="!passkeySupported" class="text-red-500 text-sm mt-2 text-center mb-10">
-                {{ t("authentication.passkeyNotSupported") }}
-              </div>
-            </template>
-          </a-tab-pane>
         </a-tabs>
         <a-form-item>
-          <a-button v-if="formState.loginType !== 'passkey'" type="primary" size="large" html-type="button" :loading="loading" class="login-button" @click="handleFinish">
+          <a-button type="primary" size="large" html-type="button" :loading="loading" class="login-button" @click="handleFinish">
             {{ queryBindCode ? t("authentication.bindButton") : t("authentication.loginButton") }}
-          </a-button>
-          <a-button v-else type="primary" size="large" html-type="button" :loading="loading" class="login-button" :disabled="!passkeySupported" @click="handlePasskeyLogin">
-            {{ t("authentication.passkeyLogin") }}
           </a-button>
         </a-form-item>
         <a-form-item>
@@ -73,7 +63,6 @@
                 {{ t("authentication.forgotPassword") }}
               </a>
             </div>
-
             <router-link v-if="hasRegisterTypeEnabled() && !queryBindCode" class="register" :to="{ name: 'register' }">
               {{ t("authentication.registerLink") }}
             </router-link>
@@ -81,7 +70,7 @@
         </a-form-item>
       </template>
 
-      <div v-if="!queryBindCode && settingStore.sysPublic.oauthEnabled && settingStore.isPlus" class="w-full">
+      <div v-if="!queryBindCode && (settingStore.sysPublic.oauthEnabled || settingStore.sysPublic.passkeyEnabled) && settingStore.isPlus" class="w-full">
         <oauth-footer :oauth-only="isOauthOnly"></oauth-footer>
       </div>
     </a-form>
@@ -195,64 +184,6 @@ const twoFactor = reactive({
   verifyCode: "",
 });
 
-const passkeySupported = ref(false);
-const passkeyEnabled = ref(false);
-
-const checkPasskeySupport = () => {
-  passkeySupported.value = false;
-  if (typeof window !== "undefined" && "credentials" in navigator && "PublicKeyCredential" in window) {
-    passkeySupported.value = true;
-  }
-};
-
-const handlePasskeyLogin = async () => {
-  if (!passkeySupported.value) {
-    notification.error({ message: t("authentication.passkeyNotSupported") });
-    return;
-  }
-
-  loading.value = true;
-  try {
-    const optionsResponse: any = await request({
-      url: "/passkey/generateAuthentication",
-      method: "post",
-    });
-    const options = optionsResponse;
-
-    console.log("passkey authentication options:", options, JSON.stringify(options));
-    const credential = await (navigator.credentials as any).get({
-      publicKey: {
-        challenge: Uint8Array.from(atob(options.challenge.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0)),
-        rpId: options.rpId,
-        allowCredentials: options.allowCredentials || [],
-        timeout: options.timeout || 60000,
-        // attestation: options.attestation,
-        // excludeCredentials: excludeCredentials,
-        // extensions: options.extensions,
-        // authenticatorSelection: options.authenticatorSelection,
-        // hints: options.hints,
-      },
-    });
-
-    console.log("passkey authentication credential:", credential, JSON.stringify(credential));
-    if (!credential) {
-      throw new Error("Passkey认证失败");
-    }
-
-    const loginRes: any = await UserApi.loginByPasskey({
-      credential,
-      challenge: options.challenge,
-    });
-
-    await userStore.onLoginSuccess(loginRes);
-  } catch (e: any) {
-    console.error("Passkey登录失败:", e);
-    notification.error({ message: e.message || "Passkey登录失败" });
-  } finally {
-    loading.value = false;
-  }
-};
-
 const handleFinish = async () => {
   loading.value = true;
   try {
@@ -301,9 +232,7 @@ const isOauthOnly = computed(() => {
   return sysPublicSettings.oauthOnly && settingStore.isPlus && sysPublicSettings.oauthEnabled;
 });
 
-onMounted(() => {
-  checkPasskeySupport();
-});
+onMounted(() => {});
 </script>
 
 <style lang="less">

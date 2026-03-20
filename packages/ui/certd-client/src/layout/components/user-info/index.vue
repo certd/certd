@@ -1,6 +1,6 @@
 <template>
   <a-dropdown>
-    <div class="fs-user-info">{{ t("user.greeting") }}，{{ userStore.getUserInfo?.nickName || userStore.getUserInfo?.username }}</div>
+    <div class="fs-user-info" @click="goUserProfile">{{ t("user.greeting") }}，{{ userStore.getUserInfo?.nickName || userStore.getUserInfo?.username }}</div>
     <template #overlay>
       <a-menu>
         <a-menu-item>

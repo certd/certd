@@ -48,6 +48,9 @@ const avatar = computed(() => {
 async function handleLogout() {
   await userStore.logout(true);
 }
+function goUserProfile() {
+  router.push("/certd/mine/user-profile");
+}
 
 const settingStore = useSettingStore();
 
@@ -90,7 +93,7 @@ const projectStore = useProjectStore();
       </div>
     </template>
     <template #user-dropdown>
-      <UserDropdown :avatar="avatar" :menus="menus" :text="userStore.userInfo?.nickName || userStore.userInfo?.username" description="" tag-text="" @logout="handleLogout" />
+      <UserDropdown :avatar="avatar" :menus="menus" :text="userStore.userInfo?.nickName || userStore.userInfo?.username" description="" tag-text="" @logout="handleLogout" @user-profile="goUserProfile" />
     </template>
     <template #lock-screen>
       <LockScreen :avatar @to-login="handleLogout" />
