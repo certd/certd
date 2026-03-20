@@ -26,7 +26,7 @@ jobs:
       - name: Set git token                 # 3. 给git命令设置token，用于push到目标仓库
         uses: de-vri-es/setup-git-credentials@v2
         with:                              # token 格式为： username:password
-          credentials: https://cnb:${{secrets.TOKEN_CNB}}@cnb.cool
+          credentials: https://cnb:${{secrets.CNB_TOKEN}}@cnb.cool
 
       - name: push to cnb               # 4. 执行同步
         run: |
