@@ -17,6 +17,7 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
+          ref: v2-dev
       - name: Set git user                  # 2. 给git命令设置用户名和邮箱,↙↙↙ 改成你的name和email
         run: |
           git config --global user.name "xiaojunnuo"

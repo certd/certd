@@ -29,6 +29,6 @@ jobs:
 
       - name: push to cnb               # 4. 执行同步
         run: |
-          git remote add upstream https://cnb.cool/certd/certd
+          git remote add upstream https://cnb.cool/certd/certd.git
           git push --set-upstream upstream v2
 
