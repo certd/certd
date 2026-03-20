@@ -104,7 +104,7 @@ const loading = ref(false);
 const pagerRef: Ref = ref({
   pageNo: 1,
   total: 0,
-  pageSize: props.pageSize || 100,
+  pageSize: props.pageSize || 50,
 });
 const getOptions = async () => {
   if (loading.value) {
@@ -182,7 +182,7 @@ const getOptions = async () => {
         pagerRef.value.pageNo = res.pageNo ?? 1;
       }
       if (res.pageSize != null) {
-        pagerRef.value.pageSize = res.pageSize ?? 100;
+        pagerRef.value.pageSize = res.pageSize ?? pageSize;
       }
       if (res.total != null) {
         pagerRef.value.total = res.total ?? list.length;
