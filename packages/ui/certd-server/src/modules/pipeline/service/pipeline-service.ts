@@ -274,6 +274,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
     RunnableCollection.initPipelineRunnableType(pipeline);
     pipeline.userId = bean.userId;
     pipeline.projectId = bean.projectId;
+    if (bean.id) {
+      pipeline.id = bean.id;
+    }
     let domains = [];
     if (pipeline.stages) {
       RunnableCollection.each(pipeline.stages, (runnable: any) => {

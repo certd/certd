@@ -29,15 +29,15 @@ const pipelineOptions: PipelineOptions = {
     onLoaded(detail);
     return {
       pipeline: {
-        id: detail.pipeline.id,
         stages: [],
         triggers: [],
         ...JSON.parse(detail.pipeline.content || "{}"),
-        type: detail.pipeline.type,
-        from: detail.pipeline.from,
+        id: detail.pipeline.id,
         userId: detail.pipeline.userId,
         projectId: detail.pipeline.projectId,
       },
+      type: detail.pipeline.type,
+      from: detail.pipeline.from,
       validTime: detail.pipeline.validTime,
       webhookKey: detail.pipeline.webhookKey,
       id: detail.pipeline.id,
