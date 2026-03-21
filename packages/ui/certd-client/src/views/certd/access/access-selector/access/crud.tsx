@@ -18,6 +18,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     const { form, row } = req;
     form.id = row.id;
     form.type = props.type;
+    delete form.access;
+    delete form.keyId;
     const res = await context.api.UpdateObj(form);
     lastResRef.value = res;
     return res;
@@ -30,6 +32,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const addRequest = async (req: AddReq) => {
     const { form } = req;
     form.type = props.type;
+    delete form.access;
     const res = await context.api.AddObj(form);
     lastResRef.value = res;
     return res;
@@ -70,6 +73,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           width: "1050px",
         },
       },
+
       rowHandle: {
         width: 200,
       },
@@ -88,6 +92,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               onSelectChange([record.id]);
             }, // 点击行
           };
+        },
+        remove: {
+          confirmMessage: "授权如果已经被使用，可能会导致流水线无法正常运行，请谨慎操作",
         },
       },
       columns: {
