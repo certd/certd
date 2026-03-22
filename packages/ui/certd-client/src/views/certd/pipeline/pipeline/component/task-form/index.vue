@@ -29,7 +29,17 @@
             <a-form-item :value="currentTask.steps" name="steps" label="" :wrapper-col="{ span: 24 }" :rules="[{ required: true, message: '至少需要一个步骤，或者你可以点击标题右边删除按钮删除此任务' }]">
               <a-descriptions title="任务步骤" size="small">
                 <template #extra>
-                  <a-button type="primary" @click="stepAdd(currentTask)">添加步骤</a-button>
+                  <div class="flex gap-1">
+                    <a-button type="primary" @click="stepAdd(currentTask)">添加步骤</a-button>
+                    <a-tooltip title="复制此任务下的所有步骤">
+                      <a-button type="default" class="isPlus" :disabled="currentTask.steps?.length === 0" @click="stepsCopy(currentTask)">复制</a-button>
+                    </a-tooltip>
+                    <a-tooltip title="可以从其他任务复制后到此处粘贴">
+                      <a-badge :count="Copyed.getCopyedCount()">
+                        <a-button type="default" class="isPlus" :disabled="Copyed.getCopyedCount() === 0" @click="stepPaste(currentTask)">粘贴</a-button>
+                      </a-badge>
+                    </a-tooltip>
+                  </div>
                 </template>
               </a-descriptions>
               <v-draggable v-model="currentTask.steps" class="step-list" handle=".handle" item-key="id" :disabled="!settingStore.isPlus">
@@ -68,14 +78,15 @@
 
 <script lang="ts">
 import { provide, Ref, ref } from "vue";
-import * as _ from "lodash-es";
 import { nanoid } from "nanoid";
 import PiStepForm from "../step-form/index.vue";
-import { Modal } from "ant-design-vue";
+import { message, Modal } from "ant-design-vue";
 import VDraggable from "vuedraggable";
 import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 import { filter } from "lodash-es";
+import { Copyed } from "./copy";
+import { cloneDeep, merge } from "lodash-es";
 export default {
   name: "PiTaskForm",
   components: { PiStepForm, VDraggable },
@@ -89,6 +100,7 @@ export default {
   setup(props: any, ctx: any) {
     const userStore = useUserStore();
     const settingStore = useSettingStore();
+
     function useStep() {
       const stepFormRef: Ref<any> = ref(null);
       const currentStepIndex = ref(0);
@@ -106,10 +118,42 @@ export default {
       };
 
       const stepCopy = (task: any, step: any, stepIndex: any) => {
-        step = _.cloneDeep(step);
+        settingStore.checkPlus();
+        step = cloneDeep(step);
         step.id = nanoid();
-        step.title = step.title + "_copy";
-        stepAdd(task, step);
+        Copyed.type = "step";
+        Copyed.target = step;
+        message.success("步骤配置复制成功，您可以到其他任务编辑页面进行粘贴");
+      };
+
+      const stepsCopy = (task: any) => {
+        settingStore.checkPlus();
+        const steps = cloneDeep(task.steps);
+        Copyed.type = "steps";
+        Copyed.target = steps;
+        message.success("本任务的所有步骤复制成功，您可以到其他任务编辑页面进行粘贴");
+      };
+
+      const stepPaste = (task: any) => {
+        settingStore.checkPlus();
+        if (!Copyed.target) {
+          message.error("请先复制");
+          return;
+        }
+        if (Copyed.type === "step") {
+          const step = cloneDeep(Copyed.target);
+          step.id = nanoid();
+          step.title = step.title + "_copy";
+          task.steps.push(step);
+        } else if (Copyed.type === "steps") {
+          const steps = cloneDeep(Copyed.target);
+          for (const item of steps) {
+            item.id = nanoid();
+            item.title = item.title + "_copy";
+            task.steps.push(item);
+          }
+        }
+        message.success("粘贴成功");
       };
       const stepEdit = (task: any, step: any, stepIndex: any) => {
         currentStepIndex.value = stepIndex;
@@ -144,7 +188,7 @@ export default {
         step.disabled = !!!step.disabled;
       };
 
-      return { stepAdd, stepEdit, stepCopy, stepDelete, toggleDisabled, stepFormRef };
+      return { stepAdd, stepEdit, stepCopy, stepDelete, toggleDisabled, stepFormRef, stepPaste, stepsCopy };
     }
 
     /**
@@ -181,7 +225,7 @@ export default {
 
       const taskOpen = (task: any, emit: any) => {
         callback.value = emit;
-        currentTask.value = _.merge({ steps: {} }, task);
+        currentTask.value = merge({ steps: {} }, task);
         console.log("currentTaskOpen", currentTask.value);
         taskDrawerShow();
       };
@@ -189,7 +233,7 @@ export default {
       const taskAdd = (emit: any, taskMerge: any) => {
         mode.value = "add";
         const blankTask: any = { id: nanoid(), title: "新任务", steps: [], status: null };
-        const task: any = _.merge(blankTask, taskMerge);
+        const task: any = merge(blankTask, taskMerge);
         taskOpen(task, emit);
       };
 
@@ -262,6 +306,7 @@ export default {
       wrapperCol: { span: 20 },
       ...useTaskForm(),
       ...useStep(),
+      Copyed,
     };
   },
 };
