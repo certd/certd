@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.6](https://github.com/certd/certd/compare/v1.39.5...v1.39.6) (2026-03-22)
+
+### Bug Fixes
+
+* 修复模版id不正确导致修改到错误的模版流水线bug ([b1ff163](https://github.com/certd/certd/commit/b1ff163a2828b205297408d5aed21cf1eff335e8))
+* 修复批量执行按钮无效的bug ([49703f0](https://github.com/certd/certd/commit/49703f08e55b303851086d9f36aca562d7999be6))
+
+### Performance Improvements
+
+* 火山引擎部署alb证书插件支持部署扩展证书以及删除已过期扩展证书 ([ffd2e81](https://github.com/certd/certd/commit/ffd2e8149e3a06bf3eec456ff85dbed793af9e90))
+* 新增阿里云证书清理插件 ([4b7eeaa](https://github.com/certd/certd/commit/4b7eeaa6e0a14d2e461c7c473a920a0966b1fe8e))
+
 ## [1.39.5](https://github.com/certd/certd/compare/v1.39.4...v1.39.5) (2026-03-18)
 
 ### Performance Improvements

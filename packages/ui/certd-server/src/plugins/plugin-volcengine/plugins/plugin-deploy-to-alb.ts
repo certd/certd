@@ -3,6 +3,7 @@ import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { VolcengineAccess } from "../access.js";
 import { VolcengineClient } from "../ve-client.js";
+import dayjs from "dayjs";
 
 @IsTaskPlugin({
   name: "VolcengineDeployToALB",
@@ -30,6 +31,7 @@ export class VolcengineDeployToALB extends AbstractTaskPlugin {
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
+
 
 
   @TaskInput({
@@ -126,6 +128,22 @@ export class VolcengineDeployToALB extends AbstractTaskPlugin {
   listenerList!: string | string[];
 
 
+  @TaskInput({
+    title: "证书部署类型",
+    helper: "选择部署默认证书还是扩展证书",
+    component: {
+      name: "a-select",
+      options: [
+        { label: "默认证书", value: "default" },
+        { label: "扩展证书", value: "extension" }
+      ]
+    },
+    value: "default",
+    required: true
+  })
+  certType!: string;
+
+
   async onInstance() {
   }
 
@@ -149,18 +167,99 @@ export class VolcengineDeployToALB extends AbstractTaskPlugin {
     const service = await this.getAlbService();
     for (const listener of this.listenerList) {
       this.logger.info(`开始部署监听器${listener}证书`);
-      await service.request({
-        action: "ModifyListenerAttributes",
-        query: {
-          ListenerId: listener,
-          CertificateSource: "cert_center",
-          CertCenterCertificateId: certId
-        }
-      });
-      this.logger.info(`部署监听器${listener}证书成功`);
+      if (this.certType === "default") {
+        // 部署默认证书
+        const res = await service.request({
+          action: "ModifyListenerAttributes",
+          query: {
+            ListenerId: listener,
+            CertificateSource: "cert_center",
+            CertCenterCertificateId: certId
+          }
+        });
+        this.logger.info(`部署监听器${listener}默认证书成功，res:${JSON.stringify(res)}`);
+      } else {
+        // 部署扩展证书
+        await this.deployExtensionCertificate(service, listener, certId as string);
+      }
+      await this.ctx.utils.sleep(5000);
     }
 
     this.logger.info("部署完成");
+  }
+
+  private async deployExtensionCertificate(service: any, listenerId: string, certId: string) {
+    // 获取监听器当前的扩展证书列表
+    const domainExtensions = await this.getListenerDomainExtensions(service, listenerId);
+    
+    // 删除过期的扩展证书
+    try {
+      await this.deleteExpiredExtensions(service, listenerId, domainExtensions);
+    } catch (error) {
+      this.logger.error(`删除过期扩展证书失败:${error.message ||error}`);
+    }
+
+    // 新增扩展证书
+    const query: any = {
+      ListenerId: listenerId,
+      "DomainExtensions.1.Action": "create",
+      "DomainExtensions.1.CertificateSource": "cert_center",
+      "DomainExtensions.1.CertCenterCertificateId": certId
+    };
+
+    // 如果有证书域名信息，添加到扩展证书中
+    if (this.certDomains && this.certDomains.length > 0) {
+      query["DomainExtensions.1.Domain"] = this.certDomains[0];
+    }
+
+    await service.request({
+      action: "ModifyListenerAttributes",
+      query: query
+    });
+    this.logger.info(`部署监听器${listenerId}扩展证书成功`);
+  }
+
+  private async getListenerDomainExtensions(service: any, listenerId: string): Promise<any[]> {
+    const res = await service.request({
+      action: "DescribeListenerAttributes",
+      method: "GET",
+      query: {
+        ListenerId: listenerId
+      }
+    });
+    
+    return res.Result.DomainExtensions || [];
+  }
+
+  private async deleteExpiredExtensions(service: any, listenerId: string, domainExtensions: any[]) {
+    const expiredExtensions = [];
+    for (const ext of domainExtensions) {
+      if (!await this.isCertificateExpired(ext)) {
+        expiredExtensions.push(ext);
+      }
+    }
+    if (expiredExtensions.length === 0) {
+      this.logger.info(`没有过期的扩展证书，跳过删除`);
+      return;
+    }
+
+    const query: any = {
+      ListenerId: listenerId
+    };
+    expiredExtensions.forEach((ext, index) => {
+      const idx = index + 1;
+      query[`DomainExtensions.${idx}.Action`] = "delete";
+      query[`DomainExtensions.${idx}.DomainExtensionId`] = ext.DomainExtensionId;
+    });
+    
+    this.logger.info(`准备删除过期扩展证书，数量：${expiredExtensions.length}个，query:${JSON.stringify(query)}`);
+
+    await service.request({
+      action: "ModifyListenerAttributes",
+      query: query
+    });
+    this.logger.info(`删除${expiredExtensions.length}个过期扩展证书成功`);
+     await this.ctx.utils.sleep(5000);
   }
 
 
@@ -187,6 +286,54 @@ export class VolcengineDeployToALB extends AbstractTaskPlugin {
       region: this.regionId
     });
     return service;
+  }
+
+  private async isCertificateExpired(extension: any): Promise<boolean> {
+    try {
+      let certificateId: string;
+      
+      // 根据证书来源获取证书ID
+      if (extension.CertificateSource === "cert_center") {
+        certificateId = extension.CertCenterCertificateId;
+      } else if (extension.CertificateSource === "alb") {
+        this.logger.warn(`ALB证书不支持过期检查，跳过`);
+        return false;
+      } else if (extension.CertificateSource === "pca_leaf") {
+        this.logger.warn(`PCA Leaf证书不支持过期检查，跳过`);
+        return false;
+      } else {
+        this.logger.warn(`未知的证书来源: ${extension.CertificateSource}，跳过`);
+        return false;
+      }
+      
+      if (!certificateId) {
+        this.logger.warn(`证书ID为空，跳过`);
+        return false;
+      }
+      
+      // 获取证书服务
+      const access = await this.getAccess<VolcengineAccess>(this.accessId);
+      const certService = await this.getCertService(access);
+      
+      // 获取证书详情
+      const certDetail = await certService.GetCertificateDetail(certificateId);
+      
+      // 判断证书是否过期
+      if (certDetail.NotAfter) {
+        const expireTime = dayjs(certDetail.NotAfter);
+        const now = dayjs();
+        const isExpired = expireTime.isBefore(now);
+        if (isExpired) {
+          this.logger.info(`证书 ${certificateId} 已过期，过期时间: ${expireTime.toISOString()}`);
+        }
+        return isExpired;
+      }
+      
+      return false;
+    } catch (error) {
+      this.logger.error(`检查证书是否过期失败: ${error.message || error}`);
+      return false;
+    }
   }
 
   async onGetListenerList(data: any) {

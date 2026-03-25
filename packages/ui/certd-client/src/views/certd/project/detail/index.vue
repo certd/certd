@@ -49,6 +49,7 @@ defineOptions({
 
 const route = useRoute();
 const projectIdStr = route.query.projectId as string;
+const migrate = route.query.migrate as string;
 let projectId = Number(projectIdStr);
 const projectStore = useProjectStore();
 if (!projectId) {
@@ -116,7 +117,11 @@ onMounted(async () => {
     return;
   }
   await loadProjectDetail();
-  crudExpose.doRefresh();
+  await crudExpose.doRefresh();
+
+  if (migrate === "true") {
+    openTransferDialog();
+  }
 });
 onActivated(async () => {
   await crudExpose.doRefresh();

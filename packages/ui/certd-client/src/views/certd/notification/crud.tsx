@@ -11,6 +11,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const editRequest = async (req: EditReq) => {
     const { form, row } = req;
     form.id = row.id;
+    delete form.body;
     const res = await api.UpdateObj(form);
     return res;
   };
@@ -21,6 +22,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const addRequest = async (req: AddReq) => {
     const { form } = req;
+    delete form.body;
     const res = await api.AddObj(form);
     return res;
   };

@@ -42,6 +42,17 @@ export class VolcengineClient {
       });
       return res.Result.InstanceId || res.Result.RepeatId;
     };
+
+    service.GetCertificateDetail = async (certificateId: string) => {
+      const res = await service.request({
+        action: "CertificateGetInstance",
+        method: "POST",
+        body: {
+          InstanceId: certificateId
+        }
+      });
+      return res.Result;
+    };
     return service;
   }
 

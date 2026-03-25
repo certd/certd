@@ -795,6 +795,8 @@ export default {
       reverseProxyEmpty: "No reverse proxy list configured",
       environmentVars: "Environment Variables",
       environmentVarsHelper: "configure the runtime environment variables, one per line, format: KEY=VALUE",
+
+      bindUrl: "Bind URL",
     },
   },
   modal: {

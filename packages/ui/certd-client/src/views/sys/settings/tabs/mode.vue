@@ -8,9 +8,10 @@
         </div>
         <div class="helper">SaaS模式：每个用户管理自己的流水线和授权资源，独立使用。</div>
         <div class="helper">企业模式：通过项目合作管理流水线证书和授权资源，所有用户视为企业内部员工。</div>
+        <div class="helper"><a @click="adminModeIntroOpen = true">更多管理模式介绍</a></div>
         <div class="helper text-red-500">建议在开始使用时固定一个合适的模式，之后就不要随意切换了。</div>
+        <div v-if="formState.public.adminMode === 'enterprise'" class="helper">设置为企业模式之后，之前创建的个人数据不会显示，您可以选择<a @click="goCurrentProject"> 将个人数据迁移到项目</a></div>
         <div v-if="settingsStore.isComm" class="helper text-red-500">商业版不建议设置为企业模式，除非你确定要转成企业内部使用</div>
-        <div><a @click="adminModeIntroOpen = true"> 更多管理模式介绍</a></div>
       </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
@@ -33,6 +34,7 @@ import { useI18n } from "/src/locales";
 import { dict } from "@fast-crud/fast-crud";
 import { useProjectStore } from "/@/store/project";
 import AdminModeIntro from "/@/views/sys/enterprise/project/intro.vue";
+import { useRouter } from "vue-router";
 const { t } = useI18n();
 
 defineOptions({
@@ -81,6 +83,16 @@ const onFinish = async (form: any) => {
   } finally {
     saveLoading.value = false;
   }
+};
+
+const router = useRouter();
+const goCurrentProject = () => {
+  router.push({
+    path: "/certd/project/detail",
+    query: {
+      migrate: "true",
+    },
+  });
 };
 </script>
 <style lang="less"></style>

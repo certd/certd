@@ -804,6 +804,7 @@ export default {
       reverseProxyEmpty: "未配置反向代理",
       environmentVars: "环境变量",
       environmentVarsHelper: "配置运行时环境变量，每行一个，格式：KEY=VALUE",
+      bindUrl: "绑定URL",
     },
   },
   modal: {

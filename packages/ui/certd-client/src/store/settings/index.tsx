@@ -272,14 +272,27 @@ export const useSettingStore = defineStore({
     },
     async checkUrlBound() {
       const userStore = useUserStore();
-      const settingStore = useSettingStore();
       if (!userStore.isAdmin) {
         return;
       }
+      const bindUrl = this.installInfo.bindUrl;
+      const bindUrl2 = this.installInfo.bindUrl2;
+      if (!bindUrl) {
+        //绑定url
+        await this.doBindUrl("url");
+      } else {
+        //检查当前url 是否与绑定的url一致
+        const url = window.location.href;
+        if (!url.startsWith(bindUrl) && !url.startsWith(bindUrl2)) {
+          this.openBindUrlModal();
+        }
+      }
+    },
+
+    openBindUrlModal() {
       const event: any = { ModalRef: null };
       mitter.emit("getModal", event);
       const Modal = event.ModalRef;
-      let modalRef: any = null;
       const bindUrl = this.installInfo.bindUrl;
       const bindUrl2 = this.installInfo.bindUrl2;
 
@@ -289,57 +302,47 @@ export const useSettingStore = defineStore({
           modalRef.destroy();
         }
       };
-
-      if (!bindUrl) {
-        //绑定url
-        await this.doBindUrl("url");
-      } else {
-        //检查当前url 是否与绑定的url一致
-        const url = window.location.href;
-        if (!url.startsWith(bindUrl) && !url.startsWith(bindUrl2)) {
-          modalRef = Modal.warning({
-            title: "URL地址未绑定，是否绑定此地址？",
-            width: 500,
-            keyboard: false,
-            content: () => {
-              return (
-                <div class="p-4">
-                  <div class="flex items-center justify-between">
-                    <span>
-                      绑定地址1：
-                      <a-tag color="green">{bindUrl || "未占用"}</a-tag>
-                    </span>
-                    <a-button type="primary" onClick={() => doBindRequest("url")}>
-                      绑定到地址1
-                    </a-button>
-                  </div>
-                  <div class="flex items-center justify-between mt-3">
-                    <span>
-                      绑定地址2：
-                      <a-tag color="green">{bindUrl2 || "未占用"}</a-tag>
-                    </span>
-                    <a-button type="primary" onClick={() => doBindRequest("url2")}>
-                      绑定到地址2
-                    </a-button>
-                  </div>
-                </div>
-              );
-            },
-            onOk: async () => {
-              // await this.doBindUrl();
-              window.location.href = bindUrl;
-            },
-            okButtonProps: {
-              danger: true,
-            },
-            okText: "不，回到原来的地址",
-            cancelText: "不，回到原来的地址",
-            onCancel: () => {
-              window.location.href = bindUrl;
-            },
-          });
-        }
-      }
+      const modalRef: any = Modal.warning({
+        title: "URL地址未绑定，是否绑定此地址？",
+        width: 500,
+        keyboard: false,
+        content: () => {
+          return (
+            <div class="p-4">
+              <div class="flex items-center justify-between">
+                <span>
+                  绑定地址1：
+                  <a-tag color="green">{bindUrl || "未占用"}</a-tag>
+                </span>
+                <a-button type="primary" onClick={() => doBindRequest("url")}>
+                  绑定到地址1
+                </a-button>
+              </div>
+              <div class="flex items-center justify-between mt-3">
+                <span>
+                  绑定地址2：
+                  <a-tag color="green">{bindUrl2 || "未占用"}</a-tag>
+                </span>
+                <a-button type="primary" onClick={() => doBindRequest("url2")}>
+                  绑定到地址2
+                </a-button>
+              </div>
+            </div>
+          );
+        },
+        onOk: async () => {
+          // await this.doBindUrl();
+          window.location.href = bindUrl;
+        },
+        okButtonProps: {
+          danger: true,
+        },
+        okText: "不，回到原来的地址",
+        cancelText: "不，回到原来的地址",
+        onCancel: () => {
+          window.location.href = bindUrl;
+        },
+      });
     },
     async loadProductInfo() {
       try {

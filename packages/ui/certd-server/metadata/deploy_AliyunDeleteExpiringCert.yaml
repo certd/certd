@@ -1,0 +1,63 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 0
+name: AliyunDeleteExpiringCert
+title: 阿里云-删除即将过期证书
+icon: ant-design:aliyun-outlined
+group: aliyun
+desc: 仅删除未使用的证书
+needPlus: true
+input:
+  accessId:
+    title: Access提供者
+    helper: access 授权
+    component:
+      name: access-selector
+      type: aliyun
+    required: true
+    order: 0
+  endpoint:
+    title: 地域
+    helper: 阿里云CAS证书服务地域
+    component:
+      name: a-select
+      options:
+        - value: cas.aliyuncs.com
+          label: 中国大陆
+        - value: cas.ap-southeast-1.aliyuncs.com
+          label: 新加坡
+    required: true
+    value: cas.aliyuncs.com
+    order: 0
+  maxCount:
+    title: 最大删除数量
+    helper: 单次运行最大删除数量
+    value: 100
+    component:
+      name: a-input-number
+      vModel: value
+    required: true
+    order: 0
+  expiringDays:
+    title: 即将过期天数
+    helper: 仅删除有效期小于此天数的证书,0表示完全过期时才删除
+    value: 0
+    component:
+      name: a-input-number
+      vModel: value
+    required: true
+    order: 0
+  checkTimeout:
+    title: 检查超时时间
+    helper: 检查删除任务结果超时时间,单位分钟
+    value: 10
+    component:
+      name: a-input-number
+      vModel: value
+    required: true
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-aliyun/plugin/delete-expiring-cert/index.js

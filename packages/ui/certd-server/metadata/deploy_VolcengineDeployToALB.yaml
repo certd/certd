@@ -96,6 +96,19 @@ input:
       选择要部署证书的监听器
       需要在监听器中选择证书中心，进行跨服务访问授权
     order: 0
+  certType:
+    title: 证书部署类型
+    helper: 选择部署默认证书还是扩展证书
+    component:
+      name: a-select
+      options:
+        - label: 默认证书
+          value: default
+        - label: 扩展证书
+          value: extension
+    value: default
+    required: true
+    order: 0
 output: {}
 pluginType: deploy
 type: builtIn
