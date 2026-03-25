@@ -9,8 +9,7 @@ import { VolcengineClient } from "../ve-client.js";
   title: "火山引擎-部署证书至VOD",
   icon: "svg:icon-volcengine",
   group: pluginGroups.volcengine.key,
-  desc: "部署至火山引擎视频点播(暂不可用)",
-  deprecated:"暂时缺少部署ssl接口",
+  desc: "部署至火山引擎视频点播",
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed
@@ -45,27 +44,55 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
   accessId!: string;
 
 
-  @TaskInput(
-    // createRemoteSelectInputDefine({
-    //   title: "空间名称",
-    //   helper: "选择要部署证书的监听器\n需要在监听器中选择证书中心，进行跨服务访问授权",
-    //   action: VolcengineDeployToVOD.prototype.onGetSpaceList.name,
-    //   watches: ["certDomains", "accessId", "regionId"],
-    //   required: true
-    // })
-    {
-      title: "空间名称",
-      required: true
-    }
-  )
-  spaceName!: string;
+  @TaskInput({
+    title: "区域",
+    helper: "选择火山引擎区域",
+    component: {
+      name: "select",
+      options: [
+        { value: "cn-north-1", label: "华北1（北京）" },
+        { value: "ap-southeast-1", label: "东南亚1（新加坡）" }
+      ]
+    },
+    default: "cn-north-1",
+    required: true
+  })
+  regionId!: string;
 
   @TaskInput(
     createRemoteSelectInputDefine({
-      title: "点播域名",
-      helper: "选择要部署证书的点播域名\n需要先在域名管理页面进行证书中心访问授权（即点击去配置SSL证书）",
+      title: "空间名称",
+      helper: "选择要部署证书的点播空间",
+      action: VolcengineDeployToVOD.prototype.onGetSpaceList.name,
+      watches: ["accessId", "regionId"],
+      multi:false,
+      required: true
+    })
+  )
+  spaceName!: string;
+
+  @TaskInput({
+    title: "域名类型",
+    helper: "选择域名类型",
+    component: {
+      name: "a-select",
+      vModel: "value",
+      options: [
+        { value: "play", label: "点播加速域名" },
+        { value: "image", label: "封面加速域名" }
+      ]
+    },
+    value: "play",
+    required: true
+  })
+  domainType!: string;
+
+  @TaskInput(
+    createRemoteSelectInputDefine({
+      title: "域名",
+      helper: "选择要部署证书的域名\n需要先在域名管理页面进行证书中心访问授权（即点击去配置SSL证书）",
       action: VolcengineDeployToVOD.prototype.onGetDomainList.name,
-      watches: ["certDomains", "accessId", "spaceName"],
+      watches: ["certDomains", "accessId", "spaceName", "domainType"],
       required: true
     })
   )
@@ -77,21 +104,36 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
 
   async execute(): Promise<void> {
     this.logger.info("开始部署证书到火山引擎VOD");
+    
+    if (!this.spaceName) {
+      throw new Error("SpaceName不能为空");
+    }
+    
     const access = await this.getAccess<VolcengineAccess>(this.accessId);
     let certId = await this.uploadOrGetCertId(access);
 
-    const service = await this.getVodService();
-    for (const item of this.domainList) {
-      this.logger.info(`开始部署点播域名${item}证书`);
+    const service = await this.getVodService({ version: "2023-07-01", region: this.regionId });
+    const domains = Array.isArray(this.domainList) ? this.domainList : [this.domainList];
+    for (const domain of domains) {
+      this.logger.info(`开始部署域名${domain}证书`);
       await service.request({
-        action: "ModifyListenerAttributes",
-        query: {
-          ListenerId: item,
-          CertificateSource: "cert_center",
-          CertCenterCertificateId: certId
+        action: "UpdateDomainConfig",
+        method: "POST",
+        body: {
+          SpaceName: this.spaceName,
+          DomainType: this.domainType,
+          Domain: domain,
+          Config: {
+            HTTPS: {
+              Switch: true,
+              CertInfo: {
+                CertId: certId
+              }
+            }
+          }
         }
       });
-      this.logger.info(`部署点播域名${item}证书成功`);
+      this.logger.info(`部署域名${domain}证书成功`);
     }
 
     this.logger.info("部署完成");
@@ -126,7 +168,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
   }
 
 
-  private async getVodService(req?: { version?: string }) {
+  private async getVodService(req?: { version?: string, region?: string }) {
     const access = await this.getAccess<VolcengineAccess>(this.accessId);
 
     const client = new VolcengineClient({
@@ -138,58 +180,61 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
     return await client.getVodService(req);
   }
 
-  // async onGetSpaceList(data: any) {
-  //   if (!this.accessId) {
-  //     throw new Error("请选择Access授权");
-  //   }
-  //   const service = await this.getVodService();
-  //
-  //   const res = await service.request({
-  //     action: "ListSpace",
-  //     method: "GET",
-  //     query: {
-  //       PageSize: 100,
-  //     },
-  //   });
-  //
-  //   const list = res.Result;
-  //   if (!list || list.length === 0) {
-  //     throw new Error("找不到空间，您可以手动填写");
-  //   }
-  //   return list.map((item: any) => {
-  //     return {
-  //       value: item.SpaceName,
-  //       label: `${item.SpaceName}`
-  //     };
-  //   });
-  // }
+  async onGetSpaceList(data: any) {
+    if (!this.accessId) {
+      throw new Error("请选择Access授权");
+    }
+    const service = await this.getVodService({ version: "2021-01-01", region: this.regionId });
+
+    const res = await service.request({
+      action: "ListSpace",
+      body: {}
+    });
+
+    const list = res.Result;
+    if (!list || list.length === 0) {
+      throw new Error("找不到空间，您可以手动填写");
+    }
+    return list.map((item: any) => {
+      return {
+        value: item.SpaceName,
+        label: `${item.SpaceName} (${item.Region})`
+      };
+    });
+  }
 
   async onGetDomainList(data: any) {
     if (!this.accessId) {
       throw new Error("请选择Access授权");
     }
-    const service = await this.getVodService();
+    if (!this.spaceName) {
+      throw new Error("请先选择空间名称");
+    }
+    const service = await this.getVodService({ version: "2023-01-01", region: this.regionId });
 
     const res = await service.request({
       action: "ListDomain",
-      body: {
+      query: {
         SpaceName: this.spaceName,
-        // Offset: 100
+        DomainType: this.domainType
       }
     });
 
     const instances = res.Result?.PlayInstanceInfo?.ByteInstances;
     if (!instances || instances.length === 0) {
-      throw new Error("找不到点播域名，您也可以手动输入点播域名");
+      throw new Error("找不到域名，您也可以手动输入域名");
     }
-    const list = []
+    const list = [];
     for (const item of instances) {
-      for (const domain of item.Domains) {
-        list.push({
-          value: item.Domain,
-          label: item.Domain,
-          domain: domain.Domain
-        });
+      if (item.Domains && item.Domains.length > 0) {
+        for (const domain of item.Domains) {
+          if (domain.Domain) {
+            list.push({
+              value: domain.Domain,
+              label: domain.Domain
+            });
+          }
+        }
       }
     }
     return this.ctx.utils.options.buildGroupOptions(list, this.certDomains);

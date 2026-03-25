@@ -10,7 +10,7 @@ import { VolcengineClient } from "../ve-client.js";
   title: '火山引擎-部署证书至TOS自定义域名',
   icon: 'svg:icon-volcengine',
   group: pluginGroups.volcengine.key,
-  desc: '支持TOS自定义域名的HTTPS证书部署',
+  desc: '仅限TOS自定义域名，加速域名请选择火山引擎的CDN插件',
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,

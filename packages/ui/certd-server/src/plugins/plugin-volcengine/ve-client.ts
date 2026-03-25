@@ -84,7 +84,7 @@ export class VolcengineClient {
     return service;
   }
 
-  async getVodService(opts?: { version?: string }) {
+  async getVodService(opts?: { version?: string, region?: string }) {
     const CommonService = await this.getServiceCls();
 
     const service = new CommonService({
@@ -93,6 +93,7 @@ export class VolcengineClient {
     });
     service.setAccessKeyId(this.opts.access.accessKeyId);
     service.setSecretKey(this.opts.access.secretAccessKey);
+    service.setRegion(opts?.region || "cn-north-1");
 
     return service;
   }
