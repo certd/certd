@@ -8,7 +8,7 @@ import {
   SysSettingsService,
   ValidateException
 } from "@certd/lib-server";
-import { CnameProvider, CnameRecord, IAccessService } from "@certd/pipeline";
+import { CnameProvider, CnameRecord } from "@certd/pipeline";
 import { createDnsProvider, DomainParser, IDnsProvider } from "@certd/plugin-cert";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
@@ -252,7 +252,6 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
     }
 
     await this.getByDomain(bean.domain, bean.userId,bean.projectId);
-
     const taskService = this.taskServiceBuilder.create({ userId: bean.userId, projectId: bean.projectId });
     const subDomainGetter = await taskService.getSubDomainsGetter();
     const domainParser = new DomainParser(subDomainGetter);
@@ -290,10 +289,10 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
         });
       }
 
-      const serviceGetter = this.taskServiceBuilder.create({ userId: bean.userId, projectId: bean.projectId });
-      const accessGetter:IAccessService = await serviceGetter.get("accessService");
-      const access = await accessGetter.getById(cnameProvider.accessId);
-      const context = { access, logger, http, utils, domainParser, serviceGetter };
+      const record = await this.getWithAccessByDomain(bean.domain, bean.userId,bean.projectId);
+
+      const access = record.cnameProvider.access
+      const context = { access, logger, http, utils, domainParser, serviceGetter:taskService };
       const dnsProvider: IDnsProvider = await createDnsProvider({
         dnsProviderType: cnameProvider.dnsProviderType,
         context

@@ -20,7 +20,7 @@ import * as commercial from '@certd/commercial-core';
 import * as upload from '@midwayjs/upload';
 import { setLogger } from '@certd/acme-client';
 import {HiddenMiddleware} from "./middleware/hidden.js";
-import * as swagger from '@midwayjs/swagger';
+// import * as swagger from '@midwayjs/swagger';
 //@ts-ignore
 // process.env.UV_THREADPOOL_SIZE = 2
 process.on('uncaughtException', error => {
@@ -62,10 +62,10 @@ process.on('uncaughtException', error => {
     upload,
     libServer,
     commercial,
-    {
-      component: swagger,
-      enabledEnvironment: ['local']
-    },
+    // {
+    //   component: swagger,
+    //   enabledEnvironment: ['local']
+    // },
     {
       component: info,
       enabledEnvironment: ['local'],
