@@ -124,6 +124,19 @@ export class VolcengineClient {
     return service;
   }
 
+  async getTOSService(opts: { region?: string }) {
+    const { TosClient } = await import("@volcengine/tos-sdk");
+    
+    const client = new TosClient({
+      accessKeyId: this.opts.access.accessKeyId,
+      accessKeySecret: this.opts.access.secretAccessKey,
+      region: opts.region,
+      endpoint: `tos-${opts.region}.volces.com`
+    });
+    
+    return client;
+  }
+
   async getStsService() {
     const CommonService = await this.getServiceCls();
 

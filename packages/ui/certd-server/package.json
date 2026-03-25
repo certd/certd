@@ -87,6 +87,7 @@
     "@simplewebauthn/server": "^13.2.3",
     "@ucloud-sdks/ucloud-sdk-js": "^0.2.4",
     "@volcengine/openapi": "^1.28.1",
+    "@volcengine/tos-sdk": "^2.9.1",
     "ali-oss": "^6.21.0",
     "alipay-sdk": "^4.13.0",
     "axios": "^1.9.0",

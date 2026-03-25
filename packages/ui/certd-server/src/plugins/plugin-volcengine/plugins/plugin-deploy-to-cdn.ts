@@ -100,7 +100,8 @@ export class VolcengineDeployToCDN extends AbstractTaskPlugin {
       await service.UpdateCdnConfig({
         Domain: domain,
         HTTPS: {
-          CertInfo: { CertId: certId },
+          CertInfo: { CertId: certId as string },
+          Switch: true,
         }
       })
       this.logger.info(`部署域名${domain}证书成功`);

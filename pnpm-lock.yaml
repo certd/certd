@@ -49,7 +49,7 @@ importers:
   packages/core/acme-client:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../basic
       '@peculiar/x509':
         specifier: ^1.11.0
@@ -213,10 +213,10 @@ importers:
   packages/core/pipeline:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../basic
       '@certd/plus-core':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../pro/plus-core
       dayjs:
         specifier: ^1.11.7
@@ -412,7 +412,7 @@ importers:
   packages/libs/lib-k8s:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/basic
       '@kubernetes/client-node':
         specifier: 0.21.0
@@ -452,19 +452,19 @@ importers:
   packages/libs/lib-server:
     dependencies:
       '@certd/acme-client':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../pro/plus-core
       '@midwayjs/cache':
         specifier: 3.14.0
@@ -610,16 +610,16 @@ importers:
   packages/plugins/plugin-cert:
     dependencies:
       '@certd/acme-client':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../plugin-lib
       psl:
         specifier: ^1.9.0
@@ -683,16 +683,16 @@ importers:
         specifier: ^3.964.0
         version: 3.964.0(aws-crt@1.26.2)
       '@certd/acme-client':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/pipeline
       '@certd/plus-core':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../pro/plus-core
       '@kubernetes/client-node':
         specifier: 0.21.0
@@ -783,16 +783,16 @@ importers:
   packages/pro/commercial-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/basic
       '@certd/lib-server':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../libs/lib-server
       '@certd/pipeline':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/pipeline
       '@certd/plus-core':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../plus-core
       '@midwayjs/core':
         specifier: 3.20.11
@@ -868,16 +868,16 @@ importers:
   packages/pro/plugin-plus:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../plus-core
       crypto-js:
         specifier: ^4.2.0
@@ -953,7 +953,7 @@ importers:
   packages/pro/plus-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/basic
       dayjs:
         specifier: ^1.11.7
@@ -1249,10 +1249,10 @@ importers:
         version: 0.1.3(zod@3.24.4)
     devDependencies:
       '@certd/lib-iframe':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../libs/lib-iframe
       '@certd/pipeline':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/pipeline
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -1447,46 +1447,46 @@ importers:
         specifier: ^3.990.0
         version: 3.990.0(aws-crt@1.26.2)
       '@certd/acme-client':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/basic
       '@certd/commercial-core':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../pro/commercial-core
       '@certd/cv4pve-api-javascript':
         specifier: ^8.4.2
         version: 8.4.2
       '@certd/jdcloud':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../libs/lib-jdcloud
       '@certd/lib-huawei':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../libs/lib-huawei
       '@certd/lib-k8s':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../libs/lib-k8s
       '@certd/lib-server':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../libs/lib-server
       '@certd/midway-flyway-js':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../libs/midway-flyway-js
       '@certd/pipeline':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../core/pipeline
       '@certd/plugin-cert':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../plugins/plugin-cert
       '@certd/plugin-lib':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../plugins/plugin-lib
       '@certd/plugin-plus':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../pro/plugin-plus
       '@certd/plus-core':
-        specifier: ^1.39.2
+        specifier: ^1.39.6
         version: link:../../pro/plus-core
       '@google-cloud/publicca':
         specifier: ^1.3.0
@@ -1557,6 +1557,9 @@ importers:
       '@volcengine/openapi':
         specifier: ^1.28.1
         version: 1.30.1(buffer@6.0.3)
+      '@volcengine/tos-sdk':
+        specifier: ^2.9.1
+        version: 2.9.1
       ali-oss:
         specifier: ^6.21.0
         version: 6.23.0
@@ -4874,6 +4877,9 @@ packages:
   '@types/http-errors@2.0.4':
     resolution: {integrity: sha512-D0CFMMtydbJAegzOyHjtiKPLlvnm3iTZyZRSZoLq2mRhDdmLfIWOCYPfQJ4cu2erKghU++QvjcUjp/5h7hESpA==}
 
+  '@types/http-proxy@1.17.17':
+    resolution: {integrity: sha512-ED6LB+Z1AVylNTu7hdzuBqOgMnvG/ld6wGCG8wFnAzKX5uyW2K3WD52v0gnLCTK/VLpXtKckgWuyScYK6cSPaw==}
+
   '@types/istanbul-lib-coverage@2.0.6':
     resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
 
@@ -5270,6 +5276,10 @@ packages:
   '@volcengine/openapi@1.30.1':
     resolution: {integrity: sha512-W8R6+7UIhx06s2kpsJ0KF80IKAiIad71HUKssonMChyI37h5oFnPf6zONcX2ikXc5M8xdOiKFRxoCO8ChEob0g==}
     engines: {node: '>=12'}
+
+  '@volcengine/tos-sdk@2.9.1':
+    resolution: {integrity: sha512-hmrBzl7/LpJYezGWytPg6CZk5lvFgmDKUVZJLM3vwZgp3UKSZwgxFA7V0QmLnerPDRpLPAqh0bP8qUBSVHfmhA==}
+    engines: {node: '>=10'}
 
   '@vue-macros/common@1.16.1':
     resolution: {integrity: sha512-Pn/AWMTjoMYuquepLZP813BIcq8DTZiNCoaceuNlvaYuOTd8DqBZWc5u0uOMQZMInwME1mdSmmBAcTluiV9Jtg==}
@@ -5858,6 +5868,9 @@ packages:
   aws4@1.13.2:
     resolution: {integrity: sha512-lHe62zvbTB5eEABUVi/AwVh0ZKY9rMMDhmm+eeyuuUQbQ3+J+fONVQOZyj+DdrvD4BY33uYniyRJ4UJIaSKAfw==}
 
+  axios-adapter-uniapp@0.1.4:
+    resolution: {integrity: sha512-4je5JcWGrrTjPEJXVXJZnOkv+BsnYn/fKbQmjxzdCGFyoQw1gq3tfQ4/WhLzy+Gi9cQJl3K8EH26G7U0BK3wcw==}
+
   axios-mock-adapter@1.22.0:
     resolution: {integrity: sha512-dmI0KbkyAhntUR05YY96qg2H6gg0XMl2+qTW0xmYg6Up+BFBAJYRLROMXRdDEL06/Wqwa0TJThAYvFtSFdRCZw==}
     peerDependencies:
@@ -5865,6 +5878,9 @@ packages:
 
   axios@0.21.4:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
+
+  axios@0.27.2:
+    resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
 
   axios@1.9.0:
     resolution: {integrity: sha512-re4CqKTJaURpzbLHtIi6XpDv20/CnpXOtjRY5/CU32L8gU8ek9UIivcfvSWvmKEngmVbrUtPpdDwWDWL7DNHvg==}
@@ -7469,6 +7485,9 @@ packages:
   eventemitter3@2.0.3:
     resolution: {integrity: sha512-jLN68Dx5kyFHaePoXWPsCGW5qdyZQtLYHkxkg02/Mz6g0kYpDx4FyP6XfArhQdlOC4b8Mv+EMxPo/8La7Tzghg==}
 
+  eventemitter3@4.0.7:
+    resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
+
   eventemitter3@5.0.1:
     resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
 
@@ -8117,6 +8136,19 @@ packages:
     resolution: {integrity: sha512-T1gkAiYYDWYx3V5Bmyu7HcfcvL7mUrTWiM6yOfa3PIphViJ/gFPbvidQ+veqSOHci/PxBcDabeUNCzpOODJZig==}
     engines: {node: '>= 14'}
 
+  http-proxy-middleware@2.0.9:
+    resolution: {integrity: sha512-c1IyJYLYppU574+YI7R4QyX2ystMtVXZwIdzazUIPIJsHuWNd+mho2j+bKoHftndicGj9yh+xjd+l0yj7VeT1Q==}
+    engines: {node: '>=12.0.0'}
+    peerDependencies:
+      '@types/express': ^4.17.13
+    peerDependenciesMeta:
+      '@types/express':
+        optional: true
+
+  http-proxy@1.18.1:
+    resolution: {integrity: sha512-7mz/721AbnJwIVbnaSv1Cz3Am0ZLT/UBwkC92VlxhXv/k/BBQfM2fXElQNC27BVGr0uwUpplYPQM9LnaBMR5NQ==}
+    engines: {node: '>=8.0.0'}
+
   http-signature@1.2.0:
     resolution: {integrity: sha512-CAbnr6Rz4CYQkLYUtSNXxQPUH2gK8f3iWexVlsnMeD+GjlsQ0Xsy1cOX+mN3dtxYomRy21CiOzU8Uhw6OwncEQ==}
     engines: {node: '>=0.8', npm: '>=1.3.7'}
@@ -8419,6 +8451,10 @@ packages:
   is-plain-obj@2.1.0:
     resolution: {integrity: sha512-YWnfyRwxL/+SsrWYfOpUtz5b3YD+nyfkHvjbcanzk8zgyO4ASD67uVMRt8k5bM4lLMDnXfriRhOpemw+NfT1eA==}
     engines: {node: '>=8'}
+
+  is-plain-obj@3.0.0:
+    resolution: {integrity: sha512-gwsOE28k+23GP1B6vFl1oVh/WOzmawBrKwo5Ev6wMKzPkaXaCDIQKzLnvsA42DRlbVTWorkgTKIviAKCWkfUwA==}
+    engines: {node: '>=10'}
 
   is-plain-obj@4.1.0:
     resolution: {integrity: sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg==}
@@ -10990,6 +11026,9 @@ packages:
   require-main-filename@2.0.0:
     resolution: {integrity: sha512-NKN5kMDylKuldxYLSUfrbo5Tuzh4hd+2E8NPPX02mZtn1VuREQToYe/ZdlJy+J3uCpfaiGF05e7B8W0iXbQHmg==}
 
+  requires-port@1.0.0:
+    resolution: {integrity: sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==}
+
   requizzle@0.2.4:
     resolution: {integrity: sha512-JRrFk1D4OQ4SqovXOgdav+K8EAhSB/LJZqCz8tbX0KObcdeM15Ss59ozWMBWmmINMagCwmqn4ZNryUGpBsl6Jw==}
 
@@ -11847,6 +11886,9 @@ packages:
   token-types@4.2.1:
     resolution: {integrity: sha512-6udB24Q737UD/SDsKAHI9FCRP7Bqc9D/MQUV02ORQg5iskjtLJlZJNdN4kKtcdtwCeWIwIHDGaUsTsCCAa8sFQ==}
     engines: {node: '>=10'}
+
+  tos-crc64-js@0.0.1:
+    resolution: {integrity: sha512-l2Ndi9BaDH3gmAJ5VIS/1WeqFcucK41WCbw5dije24k2XtUCclYfvhntWIVHe+0S85QcED4vjqm3AO1izlQ30g==}
 
   tough-cookie@2.5.0:
     resolution: {integrity: sha512-nlLsUzgm1kfLXSXfRZMc1KLAugd4hqJHDTvc2hDIwS3mZAfMEuMbc03SujMF+GEcpaX/qboeycw6iO8JwVv2+g==}
@@ -17722,6 +17764,10 @@ snapshots:
 
   '@types/http-errors@2.0.4': {}
 
+  '@types/http-proxy@1.17.17':
+    dependencies:
+      '@types/node': 20.17.47
+
   '@types/istanbul-lib-coverage@2.0.6': {}
 
   '@types/istanbul-lib-report@3.0.3':
@@ -17747,7 +17793,7 @@ snapshots:
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 18.19.100
+      '@types/node': 20.17.47
 
   '@types/koa-compose@3.2.8':
     dependencies:
@@ -17842,14 +17888,14 @@ snapshots:
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 18.19.100
+      '@types/node': 20.17.47
 
   '@types/semver@7.7.0': {}
 
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 18.19.100
+      '@types/node': 20.17.47
 
   '@types/serve-static@1.15.7':
     dependencies:
@@ -18269,6 +18315,21 @@ snapshots:
       uuid: 8.3.2
     transitivePeerDependencies:
       - buffer
+      - supports-color
+
+  '@volcengine/tos-sdk@2.9.1':
+    dependencies:
+      axios: 0.21.4(debug@4.4.3)
+      axios-adapter-uniapp: 0.1.4(debug@4.4.3)
+      crypto-js: 4.2.0
+      debug: 4.4.3(supports-color@8.1.1)
+      http-proxy-middleware: 2.0.9(debug@4.4.3)
+      lodash: 4.17.21
+      qs: 6.14.0
+      tos-crc64-js: 0.0.1
+      type-fest: 1.4.0
+    transitivePeerDependencies:
+      - '@types/express'
       - supports-color
 
   '@vue-macros/common@1.16.1(vue@3.5.14(typescript@5.9.3))':
@@ -18982,6 +19043,12 @@ snapshots:
 
   aws4@1.13.2: {}
 
+  axios-adapter-uniapp@0.1.4(debug@4.4.3):
+    dependencies:
+      axios: 0.27.2(debug@4.4.3)
+    transitivePeerDependencies:
+      - debug
+
   axios-mock-adapter@1.22.0(axios@1.9.0):
     dependencies:
       axios: 1.9.0(debug@4.4.3)
@@ -18991,6 +19058,13 @@ snapshots:
   axios@0.21.4(debug@4.4.3):
     dependencies:
       follow-redirects: 1.15.9(debug@4.4.3)
+    transitivePeerDependencies:
+      - debug
+
+  axios@0.27.2(debug@4.4.3):
+    dependencies:
+      follow-redirects: 1.15.9(debug@4.4.3)
+      form-data: 4.0.2
     transitivePeerDependencies:
       - debug
 
@@ -20780,13 +20854,13 @@ snapshots:
       resolve: 1.22.10
       semver: 6.3.1
 
-  eslint-plugin-prettier@3.4.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@7.32.0)(prettier@2.8.8):
+  eslint-plugin-prettier@3.4.1(eslint-config-prettier@8.10.0(eslint@7.32.0))(eslint@7.32.0)(prettier@2.8.8):
     dependencies:
       eslint: 7.32.0
       prettier: 2.8.8
       prettier-linter-helpers: 1.0.0
     optionalDependencies:
-      eslint-config-prettier: 8.10.0(eslint@8.57.0)
+      eslint-config-prettier: 8.10.0(eslint@7.32.0)
 
   eslint-plugin-prettier@4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8):
     dependencies:
@@ -20984,6 +21058,8 @@ snapshots:
   event-target-shim@5.0.1: {}
 
   eventemitter3@2.0.3: {}
+
+  eventemitter3@4.0.7: {}
 
   eventemitter3@5.0.1: {}
 
@@ -21746,6 +21822,24 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  http-proxy-middleware@2.0.9(debug@4.4.3):
+    dependencies:
+      '@types/http-proxy': 1.17.17
+      http-proxy: 1.18.1(debug@4.4.3)
+      is-glob: 4.0.3
+      is-plain-obj: 3.0.0
+      micromatch: 4.0.8
+    transitivePeerDependencies:
+      - debug
+
+  http-proxy@1.18.1(debug@4.4.3):
+    dependencies:
+      eventemitter3: 4.0.7
+      follow-redirects: 1.15.9(debug@4.4.3)
+      requires-port: 1.0.0
+    transitivePeerDependencies:
+      - debug
+
   http-signature@1.2.0:
     dependencies:
       assert-plus: 1.0.0
@@ -22016,6 +22110,8 @@ snapshots:
   is-plain-obj@1.1.0: {}
 
   is-plain-obj@2.1.0: {}
+
+  is-plain-obj@3.0.0: {}
 
   is-plain-obj@4.1.0: {}
 
@@ -23190,7 +23286,7 @@ snapshots:
       eslint: 7.32.0
       eslint-config-prettier: 8.10.0(eslint@7.32.0)
       eslint-plugin-node: 11.1.0(eslint@7.32.0)
-      eslint-plugin-prettier: 3.4.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@7.32.0)(prettier@2.8.8)
+      eslint-plugin-prettier: 3.4.1(eslint-config-prettier@8.10.0(eslint@7.32.0))(eslint@7.32.0)(prettier@2.8.8)
       execa: 5.1.1
       inquirer: 7.3.3
       json5: 2.2.3
@@ -24825,6 +24921,8 @@ snapshots:
 
   require-main-filename@2.0.0: {}
 
+  requires-port@1.0.0: {}
+
   requizzle@0.2.4:
     dependencies:
       lodash: 4.17.21
@@ -25825,6 +25923,8 @@ snapshots:
     dependencies:
       '@tokenizer/token': 0.3.0
       ieee754: 1.2.1
+
+  tos-crc64-js@0.0.1: {}
 
   tough-cookie@2.5.0:
     dependencies:
