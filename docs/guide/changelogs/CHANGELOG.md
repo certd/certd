@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.7](https://github.com/certd/certd/compare/v1.39.6...v1.39.7) (2026-03-25)
+
+### Bug Fixes
+
+* 修复cname校验报该授权无权限的bug ([b1eb706](https://github.com/certd/certd/commit/b1eb7069258d6ff2b128091911fa448eaffc5f33))
+
+### Performance Improvements
+
+* 支持部署到火山云tos自定义域名证书 ([af6deb9](https://github.com/certd/certd/commit/af6deb99cd24a69a189b1fdd1df51c8f7816dcda))
+* 支持部署证书到火山引擎vod ([f91d591](https://github.com/certd/certd/commit/f91d591b03c50166d9fa352ba11c62d963869aa5))
+
 ## [1.39.6](https://github.com/certd/certd/compare/v1.39.5...v1.39.6) (2026-03-22)
 
 ### Bug Fixes
