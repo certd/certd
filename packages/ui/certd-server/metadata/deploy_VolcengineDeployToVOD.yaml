@@ -6,8 +6,7 @@ name: VolcengineDeployToVOD
 title: 火山引擎-部署证书至VOD
 icon: svg:icon-volcengine
 group: volcengine
-desc: 部署至火山引擎视频点播(暂不可用)
-deprecated: 暂时缺少部署ssl接口
+desc: 部署至火山引擎视频点播
 input:
   cert:
     title: 域名证书
@@ -44,12 +43,64 @@ input:
       type: volcengine
     required: true
     order: 0
+  regionId:
+    title: 区域
+    helper: 选择火山引擎区域
+    component:
+      name: select
+      options:
+        - value: cn-north-1
+          label: 华北1（北京）
+        - value: ap-southeast-1
+          label: 东南亚1（新加坡）
+    default: cn-north-1
+    required: true
+    order: 0
   spaceName:
     title: 空间名称
+    component:
+      name: remote-select
+      vModel: value
+      mode: default
+      type: plugin
+      action: onGetSpaceList
+      search: false
+      pager: false
+      multi: false
+      watches:
+        - certDomains
+        - accessId
+        - accessId
+        - regionId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 选择要部署证书的点播空间
+    order: 0
+  domainType:
+    title: 域名类型
+    helper: 选择域名类型
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - value: play
+          label: 点播加速域名
+        - value: image
+          label: 封面加速域名
+    value: play
     required: true
     order: 0
   domainList:
-    title: 点播域名
+    title: 域名
     component:
       name: remote-select
       vModel: value
@@ -65,6 +116,7 @@ input:
         - certDomains
         - accessId
         - spaceName
+        - domainType
     required: true
     mergeScript: |2-
 
@@ -77,7 +129,7 @@ input:
                }
               
     helper: |-
-      选择要部署证书的点播域名
+      选择要部署证书的域名
       需要先在域名管理页面进行证书中心访问授权（即点击去配置SSL证书）
     order: 0
 output: {}

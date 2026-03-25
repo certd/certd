@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.7](https://github.com/certd/certd/compare/v1.39.6...v1.39.7) (2026-03-25)
+
+### Bug Fixes
+
+* 修复cname校验报该授权无权限的bug ([b1eb706](https://github.com/certd/certd/commit/b1eb7069258d6ff2b128091911fa448eaffc5f33))
+
 ## [1.39.6](https://github.com/certd/certd/compare/v1.39.5...v1.39.6) (2026-03-22)
 
 **Note:** Version bump only for package @certd/lib-server

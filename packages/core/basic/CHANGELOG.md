@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.7](https://github.com/certd/certd/compare/v1.39.6...v1.39.7) (2026-03-25)
+
+**Note:** Version bump only for package @certd/basic
+
 ## [1.39.6](https://github.com/certd/certd/compare/v1.39.5...v1.39.6) (2026-03-22)
 
 **Note:** Version bump only for package @certd/basic
