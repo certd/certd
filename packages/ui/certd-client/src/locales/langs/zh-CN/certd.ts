@@ -813,7 +813,7 @@ export default {
   },
   domain: {
     domainManager: "域名管理",
-    domainDescription: "管理域名的校验方式，用于申请证书时自动选择验证方式",
+    domainDescription: "流水线校验方式选择“自动选择”时此处配置才有用，支持自动导入；注意：这里只需要管理主域名即可，子域名不要填写（子域名托管和免费二级子域名除外）",
     domain: "域名",
     challengeType: "校验类型",
     dnsProviderType: "DNS提供商类型",
