@@ -1,8 +1,8 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
+import { optionsUtils } from '@certd/basic';
+import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
+import { CertApplyPluginNames, CertReader } from "@certd/plugin-cert";
 import { CertInfo, createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from '@certd/plugin-lib';
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
-import { optionsUtils } from '@certd/basic';
-import { CertApplyPluginNames, CertReader } from "@certd/plugin-cert";
 import { AliyunClient, AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/index.js";
 @IsTaskPlugin({
   name: 'DeployCertToAliyunCDN',
@@ -40,10 +40,10 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
       name: 'output-selector',
       from: [...CertApplyPluginNames, 'uploadCertToAliyun'],
     },
-    template:false,
+    template: false,
     required: true,
   })
-  cert!: CertInfo | CasCertId |number;
+  cert!: CertInfo | CasCertId | number;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
@@ -59,32 +59,20 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   })
   accessId!: string;
 
-  @TaskInput(
-    createRemoteSelectInputDefine({
-      title: 'CDN加速域名',
-      helper: '你在阿里云上配置的CDN加速域名，比如:certd.docmirror.cn',
-      typeName: 'DeployCertToAliyunCDN',
-      action: DeployCertToAliyunCDN.prototype.onGetDomainList.name,
-      watches: ['certDomains', 'accessId'],
-      required: true,
-    })
-  )
-  domainName!: string | string[];
-
   @TaskInput({
     title: '证书所在地域',
     helper: 'cn-hangzhou和ap-southeast-1，默认cn-hangzhou。国际站用户建议使用ap-southeast-1。',
-    value:"cn-hangzhou",
+    value: "cn-hangzhou",
     component: {
       name: 'a-select',
-      options:[
-        {value:'cn-hangzhou',label:'中国大陆'},
-        {value:'ap-southeast-1',label:'新加坡'}
+      options: [
+        { value: 'cn-hangzhou', label: '中国大陆' },
+        { value: 'ap-southeast-1', label: '新加坡' }
       ]
     },
     required: true,
   })
-  certRegion:string
+  certRegion: string
 
   @TaskInput({
     title: '证书名称',
@@ -93,57 +81,131 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   certName!: string;
 
 
+  @TaskInput({
+    title: '域名匹配模式',
+    helper: '根据证书匹配：根据证书域名自动匹配DCDN加速域名自动部署，新增加速域名自动感知，自动新增部署',
+    component: {
+      name: 'a-select',
+      options: [
+        { label: '手动选择', value: 'manual' },
+        { label: '根据证书匹配', value: 'auto' },
+      ],
+    },
+    value: 'manual',
+  })
+  domainMatchMode!: 'manual' | 'auto';
 
-  async onInstance() {}
-  async execute(): Promise<void> {
+  @TaskInput(
+    createRemoteSelectInputDefine({
+      title: 'CDN加速域名',
+      helper: '你在阿里云上配置的CDN加速域名，比如:certd.docmirror.cn',
+      typeName: 'DeployCertToAliyunCDN',
+      action: DeployCertToAliyunCDN.prototype.onGetDomainList.name,
+      watches: ['certDomains', 'accessId'],
+      required: true,
+      mergeScript: `
+        return {
+          show: ctx.compute(({form})=>{
+            return form.domainMatchMode === "manual"
+          })
+        }
+      `,
+      pager:true,
+    })
+  )
+  domainName!: string | string[];
+
+  @TaskOutput({
+    title: '已部署过的DCDN加速域名',
+  })
+  deployedList!: string[];
+
+  async onInstance() { }
+  async execute(): Promise<any> {
     this.logger.info('开始部署证书到阿里云cdn');
     const access = await this.getAccess<AliyunAccess>(this.accessId);
+
+    if (this.cert == null) {
+      throw new Error('域名证书参数为空，请检查前置任务')
+    }
+
+    const client = await this.getClient(access);
     const sslClient = new AliyunSslClient({
       access,
       logger: this.logger,
       endpoint: this.endpoint || 'cas.aliyuncs.com',
     });
 
-    if(this.cert == null){
-      throw new Error('域名证书参数为空，请检查前置任务')
+    if (this.domainMatchMode === 'auto') {
+
+      const { result, deployedList } = await this.autoMatchedDeploy({
+        targetName: 'DCDN加速域名',
+        uploadCert: async () => {
+          return await sslClient.uploadCertOrGet(this.cert);
+        },
+        deployOne: async (req: { target: any, cert: any }) => {
+          return await this.deployOne(client, req.target, req.cert);
+        },
+        getCertDomains:async ()=>{
+           return sslClient.getCertDomains(this.cert);
+        },
+        getDeployTargetList: this.onGetDomainList.bind(this)
+      });
+      this.deployedList = deployedList;
+      return result;
+
+    } else {
+      if (this.isNotChanged()) {
+        this.logger.info('输入参数未变更，跳过');
+        return "skip";
+      }
+      const certId = await this.getOrUploadCasCert(sslClient);
+
+      if (typeof this.domainName === 'string') {
+        this.domainName = [this.domainName];
+      }
+      for (const domain of this.domainName) {
+        await this.deployOne(client, domain, certId );
+      }
     }
 
+    this.logger.info('部署完成');
+  }
+
+  async getOrUploadCasCert(sslClient: AliyunSslClient) {
     let certId: any = this.cert;
-
-    let certName =  this.appendTimeSuffix(this.certName);
-
+    let certName = this.appendTimeSuffix(this.certName);
     if (typeof this.cert === 'object') {
       const certInfo = this.cert as CertInfo;
       const casCert = this.cert as CasCertId;
       if (casCert.certId) {
         certId = casCert.certId;
       } else if (certInfo.crt) {
-        certName = this.buildCertName(CertReader.getMainDomain(certInfo.crt))
+        certName = CertReader.buildCertName(certInfo);
         const certIdRes = await sslClient.uploadCertificate({
-          name:certName,
+          name: certName,
           cert: certInfo,
         });
         certId = certIdRes.certId as any;
-      }else{
-        throw new Error('证书格式错误'+JSON.stringify(this.cert));
+      } else {
+        throw new Error('证书格式错误' + JSON.stringify(this.cert));
       }
     }
 
-    const client = await this.getClient(access);
-
-    if (typeof this.domainName === 'string') {
-      this.domainName = [this.domainName];
+    return {
+      certId,
+      certName,
     }
-    for (const domain of this.domainName) {
-      await this.SetCdnDomainSSLCertificate(client, {
-        CertId: certId,
-        DomainName: domain,
-        CertName: certName,
-        CertRegion:this.certRegion || 'cn-hangzhou',
-      });
-    }
+  }
 
-    this.logger.info('部署完成');
+  async deployOne(client: any, domain: string, cert: any ) {
+    const { certId, certName } = cert;
+    await this.SetCdnDomainSSLCertificate(client, {
+      CertId: certId,
+      DomainName: domain,
+      CertName: certName,
+      CertRegion: this.certRegion || 'cn-hangzhou',
+    });
   }
 
   async getClient(access: AliyunAccess) {
@@ -157,8 +219,8 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     return client;
   }
 
-  async SetCdnDomainSSLCertificate(client: any, params: { CertId: number; DomainName: string,CertName:string,CertRegion:string }) {
-    this.logger.info('设置CDN: ',JSON.stringify(params));
+  async SetCdnDomainSSLCertificate(client: any, params: { CertId: number; DomainName: string, CertName: string, CertRegion: string }) {
+    this.logger.info('设置CDN: ', JSON.stringify(params));
     const requestOption = {
       method: 'POST',
       formatParams: false,
@@ -168,7 +230,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
       'SetCdnDomainSSLCertificate',
       {
         SSLProtocol: 'on',
-        CertType:"cas",
+        CertType: "cas",
         ...params,
       },
       requestOption
@@ -183,7 +245,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     }
   }
 
-  async onGetDomainList(data: any) {
+  async onGetDomainList(data: PageSearch) {
     if (!this.accessId) {
       throw new Error('请选择Access授权');
     }
@@ -191,9 +253,11 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
 
     const client = await this.getClient(access);
 
+    const pager = new Pager(data)
     const params = {
       // 'DomainName': 'aaa',
-      PageSize: 500,
+      PageSize: pager.pageSize || 100,
+      PageNumber: pager.pageNo || 1,
     };
 
     const requestOption = {
@@ -205,8 +269,12 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     this.checkRet(res);
     const pageData = res?.Domains?.PageData;
     if (!pageData || pageData.length === 0) {
-      throw new Error('找不到CDN域名，您可以手动输入');
+        return {
+          list: [],
+          total: 0,
+        };
     }
+    const total  = res?.Domains?.TotalCount || 0;
     const options = pageData.map((item: any) => {
       return {
         value: item.DomainName,
@@ -214,7 +282,10 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
         domain: item.DomainName,
       };
     });
-    return optionsUtils.buildGroupOptions(options, this.certDomains);
+    return {
+      list: optionsUtils.buildGroupOptions(options, this.certDomains),
+      total,
+    };
   }
 }
 new DeployCertToAliyunCDN();

@@ -236,4 +236,19 @@ export class AliyunSslClient {
     }
     return region;
   }
+
+  getCertDomains(cert: CertInfo | number | CasCertId): string[]{
+      const casCert = cert as CasCertId;
+      const certInfo = cert as CertInfo;
+      if (casCert.certId) {
+        if (!casCert.detail){
+          throw new Error('未获取到证书域名列表，请尝试强制重新运行一下流水线');
+        }
+        return casCert.detail?.domains || [];
+      }else if (certInfo.crt){
+        return new CertReader(certInfo).getSimpleDetail().domains || [];
+      }else{
+        throw new Error('未获取到证书域名列表，请尝试强制重新运行一下流水线');
+      }
+  }
 }

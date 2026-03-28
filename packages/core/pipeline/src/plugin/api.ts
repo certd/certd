@@ -377,13 +377,13 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
 
   async autoMatchedDeploy(req: {
     targetName: string;
-    getCertDomains: () => string[];
+    getCertDomains: () => Promise<string[]>;
     uploadCert: () => Promise<any>;
     deployOne: (req: { target: any; cert: any }) => Promise<void>;
     getDeployTargetList: (req: PageSearch) => Promise<{ list: CertTargetItem[]; total: number }>;
   }): Promise<{ result: any; deployedList: any[] }> {
     this.logger.info("证书匹配模式部署");
-    const certDomains = req.getCertDomains();
+    const certDomains = await req.getCertDomains();
     const certTargetList = await this.getAutoMatchedTargets({
       targetName: req.targetName,
       pageSize: 200,

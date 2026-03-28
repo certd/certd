@@ -1,15 +1,13 @@
 import { AbstractTaskPlugin, CertTargetItem, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
-import dayjs from 'dayjs';
 import {
-  CertReader,
   createCertDomainGetterInputDefine,
   createRemoteSelectInputDefine
 } from "@certd/plugin-lib";
+import dayjs from 'dayjs';
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
 
-import { CertInfo } from '@certd/plugin-cert';
-import { CertApplyPluginNames } from '@certd/plugin-cert';
 import { optionsUtils } from "@certd/basic";
+import { CertApplyPluginNames, CertInfo } from '@certd/plugin-cert';
 import { AliyunClient, AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/index.js";
 @IsTaskPlugin({
   name: 'DeployCertToAliyunDCDN',
@@ -78,6 +76,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
       action: DeployCertToAliyunDCDN.prototype.onGetDomainList.name,
       watches: ['certDomains', 'accessId'],
       required: true,
+      pager:true,
       mergeScript: `
         return {
           show: ctx.compute(({form})=>{
@@ -101,32 +100,31 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     const access = (await this.getAccess(this.accessId)) as AliyunAccess;
     const client = await this.getClient(access);
     const sslClient = new AliyunSslClient({ access, logger: this.logger });
-   
-    
+
+
     if (this.domainMatchMode === 'auto') {
-       const { result, deployedList } = await this.autoMatchedDeploy({
-        targetName: 'DCDN加速域名',
+      const { result, deployedList } = await this.autoMatchedDeploy({
+        targetName: 'CDN加速域名',
         uploadCert: async () => {
           return await sslClient.uploadCertOrGet(this.cert);
         },
-        deployOne: async (req:{target:any,cert:any})=>{
+        deployOne: async (req: { target: any, cert: any }) => {
           return await this.deployOne(client, req.target.value, req.cert);
         },
-        getCertDomains: ()=>{
-          return this.getCertDomains();
+        getCertDomains: async ()=>{
+          return sslClient.getCertDomains(this.cert);
         },
-        getDeployTargetList: async (req: PageSearch)=>{
-          return await this.onGetDomainList(req);
-        },
+        getDeployTargetList: this.onGetDomainList.bind(this)
       });
       this.deployedList = deployedList;
       return result;
-      
+
     } else {
       if (this.isNotChanged()) {
         this.logger.info('输入参数未变更，跳过');
         return "skip";
       }
+      
       if (!this.domainName) {
         throw new Error('您还未选择DCDN域名');
       }
@@ -137,27 +135,12 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
         await this.deployOne(client, domainName, aliCrtId);
       }
     }
-    
+
 
     this.logger.info('部署完成');
   }
 
-   getCertDomains(): string[]{
-      const casCert = this.cert as CasCertId;
-      const certInfo = this.cert as CertInfo;
-      if (casCert.certId) {
-        if (!casCert.detail){
-          throw new Error('未获取到证书域名列表，请尝试强制重新运行一下流水线');
-        }
-        return casCert.detail?.domains || [];
-      }else if (certInfo.crt){
-        return new CertReader(certInfo).getSimpleDetail().domains || [];
-      }else{
-        throw new Error('未获取到证书域名列表，请尝试强制重新运行一下流水线');
-      }
-  }
-
-  async deployOne(client: any, domainName: string, aliCrtId: CasCertId){
+  async deployOne(client: any, domainName: string, aliCrtId: CasCertId) {
     this.logger.info(`[${domainName}]开始部署`)
     const params = await this.buildParams(domainName, aliCrtId);
     await this.doRequest(client, params);
@@ -206,7 +189,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   }
 
 
-  async onGetDomainList(data: PageSearch): Promise<{list: CertTargetItem[], total: number}> {
+  async onGetDomainList(data: PageSearch): Promise<{ list: CertTargetItem[], total: number }> {
     if (!this.accessId) {
       throw new Error('请选择Access授权');
     }
@@ -228,7 +211,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     this.checkRet(res);
     const pageData = res?.Domains?.PageData || [];
     const total = res?.Domains?.TotalCount || 0;
-    
+
     const options = pageData.map((item: any) => {
       return {
         value: item.DomainName,
@@ -236,7 +219,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
         domain: item.DomainName,
       };
     });
-    
+
     return {
       list: optionsUtils.buildGroupOptions(options, this.certDomains),
       total: total,
