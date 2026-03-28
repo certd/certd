@@ -256,7 +256,7 @@ export class AcmeService {
     }
     if (providers.domainsVerifyPlan) {
       //按照计划执行
-      const domainVerifyPlan = providers.domainsVerifyPlan[origFullDomain];
+      const domainVerifyPlan = providers.domainsVerifyPlan[origFullDomain] || providers.domainsVerifyPlan[fullDomain];
       if (domainVerifyPlan) {
         if (domainVerifyPlan.type === "dns") {
           checkIpChallenge("dns");
