@@ -4,7 +4,7 @@ import { FileStore } from "../core/file-store.js";
 import { accessRegistry, IAccessService } from "../access/index.js";
 import { ICnameProxyService, IEmailService, IServiceGetter, IUrlService } from "../service/index.js";
 import { CancelError, IContext, RunHistory, RunnableCollection } from "../core/index.js";
-import { HttpRequestConfig, ILogger, logger, utils } from "@certd/basic";
+import { HttpRequestConfig, ILogger, logger, optionsUtils, utils } from "@certd/basic";
 import { HttpClient } from "@certd/basic";
 import dayjs from "dayjs";
 import { IPluginConfigService } from "../service/config.js";
@@ -314,6 +314,11 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
 
   getLastOutput(key: string) {
     return this.getLastStatus().status?.output?.[key];
+  }
+
+  getMatchedDomains(domainList: string[], certDomains: string[]): string[] {
+    const { matched } = optionsUtils.groupByDomain(domainList, certDomains);
+    return matched;
   }
 }
 

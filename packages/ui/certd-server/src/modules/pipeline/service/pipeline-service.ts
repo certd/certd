@@ -941,7 +941,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   async batchDelete(ids: number[], userId?: number, projectId?: number) {
     if (!isPlus()) {
-      throw new NeedVIPException("此功能需要升级专业版");
+      throw new NeedVIPException("此功能需要升级Certd专业版");
     }
     for (const id of ids) {
       if (userId && userId > 0) {
@@ -956,7 +956,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   async batchUpdateGroup(ids: number[], groupId: number, userId: any, projectId?: number) {
     if (!isPlus()) {
-      throw new NeedVIPException("此功能需要升级专业版");
+      throw new NeedVIPException("此功能需要升级Certd专业版");
     }
     const query: any = {}
     if (userId && userId > 0) {
@@ -982,7 +982,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
    */
   async batchTransfer(ids: number[], projectId: number) {
     if (!isPlus()) {
-      throw new NeedVIPException("此功能需要升级专业版");
+      throw new NeedVIPException("此功能需要升级Certd专业版");
     }
     if (!isEnterprise()) {
       throw new Error("当前为非企业模式，不允许转移到其他项目");
@@ -1075,7 +1075,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   async batchUpdateTrigger(ids: number[], trigger: any, userId: any, projectId?: number) {
     if (!isPlus()) {
-      throw new NeedVIPException("此功能需要升级专业版");
+      throw new NeedVIPException("此功能需要升级Certd专业版");
     }
     //允许管理员修改，userId=null
     const query: any = {}
@@ -1128,7 +1128,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   async batchUpdateNotifications(ids: number[], notification: Notification, userId: any, projectId?: number) {
     if (!isPlus()) {
-      throw new NeedVIPException("此功能需要升级专业版");
+      throw new NeedVIPException("此功能需要升级Certd专业版");
     }
     //允许管理员修改，userId=null
     const query: any = {}
@@ -1167,7 +1167,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   async batchRerun(ids: number[], force: boolean, userId: any, projectId?: number) {
     if (!isPlus()) {
-      throw new NeedVIPException("此功能需要升级专业版");
+      throw new NeedVIPException("此功能需要升级Certd专业版");
     }
     //允许userId为空，为空则为管理员触发
     if (ids.length === 0) {

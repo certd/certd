@@ -31,7 +31,7 @@ export class UserTwoFactorSettingController extends BaseController {
   @Post("/save", { description: Constants.per.authOnly, summary: "保存双因子认证设置" })
   async save(@Body(ALL) bean: any) {
     if (!isPlus()) {
-      throw new Error('本功能需要开通专业版')
+      throw new Error('本功能需要开通Certd专业版')
     }
     const userId = this.getUserId();
     const setting = new UserTwoFactorSetting();
@@ -57,7 +57,7 @@ export class UserTwoFactorSettingController extends BaseController {
   @Post("/authenticator/save", { description: Constants.per.authOnly, summary: "保存验证器设置" })
   async authenticatorSave(@Body(ALL) bean: any) {
     if (!isPlus()) {
-      throw new Error('本功能需要开通专业版')
+      throw new Error('本功能需要开通Certd专业版')
     }
     const userId = this.getUserId();
     await this.twoFactorService.saveAuthenticator({

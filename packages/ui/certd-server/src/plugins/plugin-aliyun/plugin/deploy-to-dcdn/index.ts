@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import dayjs from 'dayjs';
 import {
   createCertDomainGetterInputDefine,
@@ -55,6 +55,19 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   })
   certName!: string;
 
+  @TaskInput({
+    title: '域名匹配模式',
+    helper: '选择域名匹配方式',
+    component: {
+      name: 'select',
+      options: [
+        { label: '手动选择', value: 'manual' },
+        { label: '根据证书匹配', value: 'auto' },
+      ],
+    },
+    default: 'manual',
+  })
+  domainMatchMode!: 'manual' | 'auto';
 
   @TaskInput(
     createRemoteSelectInputDefine({
@@ -63,6 +76,13 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
       action: DeployCertToAliyunDCDN.prototype.onGetDomainList.name,
       watches: ['certDomains', 'accessId'],
       required: true,
+      mergeScript: `
+        return {
+          show: ctx.compute(({form})=>{
+            return domainMatchMode === "manual"
+          })
+        }
+      `,
     })
   )
   domainName!: string | string[];
@@ -71,15 +91,30 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   async onInstance() { }
   async execute(): Promise<void> {
     this.logger.info('开始部署证书到阿里云DCDN');
-    if (!this.domainName) {
-      throw new Error('您还未选择DCDN域名');
-    }
     const access = (await this.getAccess(this.accessId)) as AliyunAccess;
     const client = await this.getClient(access);
-    if (typeof this.domainName === 'string') {
-      this.domainName = [this.domainName];
+    
+    let domains: string[] = [];
+    
+    if (this.domainMatchMode === 'auto') {
+      this.logger.info('使用根据证书匹配模式');
+      if (!this.certDomains || this.certDomains.length === 0) {
+        throw new Error('未获取到证书域名信息');
+      }
+      domains = await this.getAutoMatchedDomains(this.certDomains);
+      if (domains.length === 0) {
+        this.logger.warn('未找到匹配的DCDN域名');
+        return;
+      }
+      this.logger.info(`找到 ${domains.length} 个匹配的DCDN域名`);
+    } else {
+      if (!this.domainName) {
+        throw new Error('您还未选择DCDN域名');
+      }
+      domains = typeof this.domainName === 'string' ? [this.domainName] : this.domainName;
     }
-    for (const domainName of this.domainName) {
+    
+    for (const domainName of domains) {
       this.logger.info(`[${domainName}]开始部署`)
       const params = await this.buildParams(domainName);
       await this.doRequest(client, params);
@@ -152,7 +187,36 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   }
 
 
-  async onGetDomainList(data: any) {
+  async getAutoMatchedDomains(certDomains: string[]): Promise<string[]> {
+    const matchedDomains: string[] = [];
+    let pageNumber = 1;
+    
+    while (true) {
+      const result = await this.onGetDomainList({ pageNo: pageNumber });
+      const pageData = result.list;
+      this.logger.info(`获取到 ${pageData.length} 个DCDN域名`);
+      
+      if (!pageData || pageData.length === 0) {
+        break;
+      }
+      
+      const matched = this.getMatchedDomains(pageData, certDomains);
+      matchedDomains.push(...matched);
+      
+      const totalCount = result.total || 0;
+      if (pageNumber * 500 >= totalCount) {
+        break;
+      }
+      
+      pageNumber++;
+    }
+    
+    return matchedDomains;
+  }
+
+
+
+  async onGetDomainList(data: PageSearch) {
     if (!this.accessId) {
       throw new Error('请选择Access授权');
     }
@@ -161,7 +225,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     const client = await this.getClient(access);
 
     const params = {
-      // 'DomainName': 'aaa',
+      PageNumber: data.pageNo || 1,
       PageSize: 500,
     };
 
@@ -172,10 +236,9 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
 
     const res = await client.request('DescribeDcdnUserDomains', params, requestOption);
     this.checkRet(res);
-    const pageData = res?.Domains?.PageData;
-    if (!pageData || pageData.length === 0) {
-      throw new Error('找不到CDN域名，您可以手动输入');
-    }
+    const pageData = res?.Domains?.PageData || [];
+    const total = res?.Domains?.TotalCount || 0;
+    
     const options = pageData.map((item: any) => {
       return {
         value: item.DomainName,
@@ -183,7 +246,11 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
         domain: item.DomainName,
       };
     });
-    return optionsUtils.buildGroupOptions(options, this.certDomains);
+    
+    return {
+      list: optionsUtils.buildGroupOptions(options, this.certDomains),
+      total: total,
+    };
   }
 }
 new DeployCertToAliyunDCDN();

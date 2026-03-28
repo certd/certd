@@ -89,16 +89,55 @@ certDomains!: string[];
 accessId!: string;
 ```
 
-### 4. 实现插件方法
+### 4. 动态显隐配置（mergeScript）
 
-#### 4.1 插件实例化时执行的方法
+使用 `mergeScript` 可以实现根据其他输入值动态控制当前输入项的显隐状态。
+
+```typescript
+@TaskInput({
+  title: '匹配模式',
+  component: {
+    name: 'select',
+    options: [
+      { label: '手动选择', value: 'manual' },
+      { label: '根据证书匹配', value: 'auto' },
+    ],
+  },
+  default: 'manual',
+})
+domainMatchMode!: 'manual' | 'auto';
+
+@TaskInput(
+  createRemoteSelectInputDefine({
+    title: 'DCDN加速域名',
+    helper: '你在阿里云上配置的DCDN加速域名',
+    action: DeployCertToAliyunDCDN.prototype.onGetDomainList.name,
+    watches: ['certDomains', 'accessId'],
+    required: true,
+    mergeScript: `
+      return {
+        show: ctx.compute(({form})=>{
+          return domainMatchMode === "manual"
+        })
+      }
+    `,
+  })
+)
+domainName!: string | string[];
+```
+
+`mergeScript` 中的 `ctx.compute` 函数接收一个回调函数，通过 `form` 参数可以访问表单中的其他字段值。
+
+### 5. 实现插件方法
+
+#### 5.1 插件实例化时执行的方法
 
 ```typescript
 // 插件实例化时执行的方法
 async onInstance() {}
 ```
 
-#### 4.2 插件执行方法
+#### 5.2 插件执行方法
 
 ```typescript
 // 插件执行方法
@@ -130,7 +169,9 @@ async execute(): Promise<void> {
 }
 ```
 
-#### 4.3 后端获取选项方法
+#### 5.3 后端获取选项方法
+
+使用 `createRemoteSelectInputDefine` 创建远程选择输入项，`action` 指向的方法接收 `PageSearch` 参数并返回 `{ list, total }` 格式。
 
 ```typescript
 @TaskInput(
@@ -145,8 +186,8 @@ async execute(): Promise<void> {
 )
 siteName!: string | string[];
 
-// 从后端获取选项的方法
-async onGetSiteList(req: PageSearch) {
+// 从后端获取选项的方法，接收PageSearch参数
+async onGetSiteList(data: PageSearch) {
   if (!this.accessId) {
     throw new Error('请选择Access授权');
   }
@@ -154,7 +195,7 @@ async onGetSiteList(req: PageSearch) {
   // @ts-ignore
   const access = await this.getAccess(this.accessId);
 
-  // const siteRes = await access.GetDomainList(req);
+  // const siteRes = await access.GetDomainList(data);
   // 以下是模拟数据
   const siteRes = [
     { id: 1, siteName: 'site1.com' },
@@ -169,8 +210,12 @@ async onGetSiteList(req: PageSearch) {
       domain: item.siteName,
     };
   });
-  // 将站点域名名称根据证书域名进行匹配分组，分成匹配的和不匹配的两组选项，返回给前端，供用户选择
-  return optionsUtils.buildGroupOptions(options, this.certDomains);
+  
+  // 返回{list, total}格式
+  return {
+    list: optionsUtils.buildGroupOptions(options, this.certDomains),
+    total: siteRes.length,
+  };
 }
 ```
 
@@ -383,7 +428,10 @@ export class DemoTest extends AbstractTaskPlugin {
       };
     });
     //将站点域名名称根据证书域名进行匹配分组，分成匹配的和不匹配的两组选项，返回给前端，供用户选择
-    return optionsUtils.buildGroupOptions(options, this.certDomains);
+    return {
+      list: optionsUtils.buildGroupOptions(options, this.certDomains),
+      total: siteRes.length,
+    };
   }
 }
 ```

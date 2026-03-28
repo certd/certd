@@ -83,7 +83,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
     const define = this.getDefineByType(type)
      //@ts-ignore
     if (define.needPlus && !isPlus()) {
-      throw new NeedVIPException("此通知类型为专业版功能，请升级到专业版或以上级别");
+      throw new NeedVIPException("此通知类型为Certd专业版功能，请升级到专业版或以上级别");
     }
   }
 

@@ -81,7 +81,7 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
   @Post("/grant/save", { description: Constants.per.authOnly, summary: "保存授权设置" })
   async grantSettingsSave(@Body(ALL) bean: UserGrantSetting) {
     if (!isPlus()) {
-      throw new Error('本功能需要开通专业版')
+      throw new Error('本功能需要开通Certd专业版')
     }
     const userId = this.getUserId();
     const setting = new UserGrantSetting();

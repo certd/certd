@@ -180,7 +180,7 @@ export class LoginService {
   async loginByTwoFactor(req: { loginId: string; verifyCode: string }) {
     //检查是否开启多重认证
     if (!isPlus()) {
-      throw new Error('本功能需要开通专业版')
+      throw new Error('本功能需要开通Certd专业版')
     }
     const userId = cache.get(`login_2fa_code:${req.loginId}`)
     if (!userId) {
