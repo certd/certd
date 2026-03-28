@@ -43,6 +43,12 @@ const formats = {
   jks: ["jks"],
   p7b: ["p7b", "key"],
 };
+
+export type SimpleCertDetail = {
+  notBefore: Date;
+  notAfter: Date;
+  domains: string[];
+};
 export class CertReader {
   cert: CertInfo;
 
@@ -114,6 +120,15 @@ export class CertReader {
 
   getCrtDetail(crt: string = this.cert.crt) {
     return CertReader.readCertDetail(crt);
+  }
+
+  getSimpleDetail() {
+    const { detail } = this.getCrtDetail();
+    return {
+      notBefore: detail.notBefore,
+      notAfter: detail.notAfter,
+      domains: this.getAllDomains(),
+    };
   }
 
   static readCertDetail(crt: string) {

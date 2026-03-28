@@ -235,7 +235,6 @@ watch(
     const { form } = value;
     const oldForm: any = oldValue?.form;
     let changed = oldForm == null || optionsRef.value.length == 0;
-    debugger;
     if (props.watches && props.watches.length > 0) {
       for (const key of props.watches) {
         if (oldForm && JSON.stringify(form[key]) != JSON.stringify(oldForm[key])) {

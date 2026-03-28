@@ -334,7 +334,7 @@ export class Executor {
       //参数没有变化
       inputChanged = false;
     }
-    if (step.strategy?.runStrategy === RunStrategy.SkipWhenSucceed) {
+    if (step.strategy?.runStrategy === RunStrategy.SkipWhenSucceed && define.runStrategy !== RunStrategy.AlwaysRun) {
       if (lastResult != null && lastResult === ResultType.success && !inputChanged) {
         step.status!.output = lastNode?.status?.output;
         step.status!.files = lastNode?.status?.files;

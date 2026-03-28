@@ -1,6 +1,7 @@
-import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
+import { AbstractTaskPlugin, CertTargetItem, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import dayjs from 'dayjs';
 import {
+  CertReader,
   createCertDomainGetterInputDefine,
   createRemoteSelectInputDefine
 } from "@certd/plugin-lib";
@@ -9,18 +10,19 @@ import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
 import { CertInfo } from '@certd/plugin-cert';
 import { CertApplyPluginNames } from '@certd/plugin-cert';
 import { optionsUtils } from "@certd/basic";
-import { AliyunClient, CasCertId } from "../../../plugin-lib/aliyun/lib/index.js";
+import { AliyunClient, AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/index.js";
 @IsTaskPlugin({
   name: 'DeployCertToAliyunDCDN',
   title: '阿里云-部署证书至DCDN',
   icon: 'svg:icon-aliyun',
   group: pluginGroups.aliyun.key,
   desc: '依赖证书申请前置任务，自动部署域名证书至阿里云DCDN',
-  default: {
-    strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed,
-    },
-  },
+  runStrategy: RunStrategy.AlwaysRun,
+  // default: {
+  //   strategy: {
+  //     runStrategy: RunStrategy.SkipWhenSucceed,
+  //   },
+  // },
 })
 export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   @TaskInput({
@@ -57,15 +59,15 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
 
   @TaskInput({
     title: '域名匹配模式',
-    helper: '选择域名匹配方式',
+    helper: '根据证书匹配：根据证书域名自动匹配DCDN加速域名自动部署，新增加速域名自动感知，自动新增部署',
     component: {
-      name: 'select',
+      name: 'a-select',
       options: [
         { label: '手动选择', value: 'manual' },
         { label: '根据证书匹配', value: 'auto' },
       ],
     },
-    default: 'manual',
+    value: 'manual',
   })
   domainMatchMode!: 'manual' | 'auto';
 
@@ -79,7 +81,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
       mergeScript: `
         return {
           show: ctx.compute(({form})=>{
-            return domainMatchMode === "manual"
+            return form.domainMatchMode === "manual"
           })
         }
       `,
@@ -87,42 +89,80 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   )
   domainName!: string | string[];
 
+  @TaskOutput({
+    title: '已部署过的DCDN加速域名',
+  })
+  deployedList!: string[];
+
 
   async onInstance() { }
-  async execute(): Promise<void> {
+  async execute(): Promise<any> {
     this.logger.info('开始部署证书到阿里云DCDN');
     const access = (await this.getAccess(this.accessId)) as AliyunAccess;
     const client = await this.getClient(access);
-    
-    let domains: string[] = [];
+    const sslClient = new AliyunSslClient({ access, logger: this.logger });
+   
     
     if (this.domainMatchMode === 'auto') {
-      this.logger.info('使用根据证书匹配模式');
-      if (!this.certDomains || this.certDomains.length === 0) {
-        throw new Error('未获取到证书域名信息');
-      }
-      domains = await this.getAutoMatchedDomains(this.certDomains);
-      if (domains.length === 0) {
-        this.logger.warn('未找到匹配的DCDN域名');
-        return;
-      }
-      this.logger.info(`找到 ${domains.length} 个匹配的DCDN域名`);
+       const { result, deployedList } = await this.autoMatchedDeploy({
+        targetName: 'DCDN加速域名',
+        uploadCert: async () => {
+          return await sslClient.uploadCertOrGet(this.cert);
+        },
+        deployOne: async (req:{target:any,cert:any})=>{
+          return await this.deployOne(client, req.target.value, req.cert);
+        },
+        getCertDomains: ()=>{
+          return this.getCertDomains();
+        },
+        getDeployTargetList: async (req: PageSearch)=>{
+          return await this.onGetDomainList(req);
+        },
+      });
+      this.deployedList = deployedList;
+      return result;
+      
     } else {
+      if (this.isNotChanged()) {
+        this.logger.info('输入参数未变更，跳过');
+        return "skip";
+      }
       if (!this.domainName) {
         throw new Error('您还未选择DCDN域名');
       }
+      let domains: string[] = [];
       domains = typeof this.domainName === 'string' ? [this.domainName] : this.domainName;
+      const aliCrtId = await sslClient.uploadCertOrGet(this.cert);
+      for (const domainName of domains) {
+        await this.deployOne(client, domainName, aliCrtId);
+      }
     }
     
-    for (const domainName of domains) {
-      this.logger.info(`[${domainName}]开始部署`)
-      const params = await this.buildParams(domainName);
-      await this.doRequest(client, params);
-      await this.ctx.utils.sleep(1000);
-      this.logger.info(`[${domainName}]部署成功`)
-    }
 
     this.logger.info('部署完成');
+  }
+
+   getCertDomains(): string[]{
+      const casCert = this.cert as CasCertId;
+      const certInfo = this.cert as CertInfo;
+      if (casCert.certId) {
+        if (!casCert.detail){
+          throw new Error('未获取到证书域名列表，请尝试强制重新运行一下流水线');
+        }
+        return casCert.detail?.domains || [];
+      }else if (certInfo.crt){
+        return new CertReader(certInfo).getSimpleDetail().domains || [];
+      }else{
+        throw new Error('未获取到证书域名列表，请尝试强制重新运行一下流水线');
+      }
+  }
+
+  async deployOne(client: any, domainName: string, aliCrtId: CasCertId){
+    this.logger.info(`[${domainName}]开始部署`)
+    const params = await this.buildParams(domainName, aliCrtId);
+    await this.doRequest(client, params);
+    await this.ctx.utils.sleep(1000);
+    this.logger.info(`[${domainName}]部署成功`)
   }
 
   async getClient(access: AliyunAccess) {
@@ -136,30 +176,9 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     return client;
   }
 
-  async buildParams(domainName: string) {
+  async buildParams(domainName: string, aliCrtId: CasCertId) {
     const CertName = (this.certName ?? 'certd') + '-' + dayjs().format('YYYYMMDDHHmmss');
-
-    let certId: any = this.cert
-    if (typeof this.cert === 'object') {
-      const certInfo = this.cert as CertInfo;
-      const casCertId = this.cert as CasCertId;
-      if (certInfo.crt) {
-        this.logger.info('上传证书:', CertName);
-        const cert: any = this.cert;
-        return {
-          DomainName: domainName,
-          SSLProtocol: 'on',
-          CertName: CertName,
-          CertType: 'upload',
-          SSLPub: cert.crt,
-          SSLPri: cert.key,
-        };
-      }else if (casCertId.certId){
-        certId = casCertId.certId;
-      }else{
-        throw new Error('证书格式错误'+JSON.stringify(this.cert));
-      }
-    }
+    const certId = aliCrtId.certId;
     this.logger.info('使用已上传的证书:', certId);
     return {
       DomainName: domainName,
@@ -187,36 +206,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   }
 
 
-  async getAutoMatchedDomains(certDomains: string[]): Promise<string[]> {
-    const matchedDomains: string[] = [];
-    let pageNumber = 1;
-    
-    while (true) {
-      const result = await this.onGetDomainList({ pageNo: pageNumber });
-      const pageData = result.list;
-      this.logger.info(`获取到 ${pageData.length} 个DCDN域名`);
-      
-      if (!pageData || pageData.length === 0) {
-        break;
-      }
-      
-      const matched = this.getMatchedDomains(pageData, certDomains);
-      matchedDomains.push(...matched);
-      
-      const totalCount = result.total || 0;
-      if (pageNumber * 500 >= totalCount) {
-        break;
-      }
-      
-      pageNumber++;
-    }
-    
-    return matchedDomains;
-  }
-
-
-
-  async onGetDomainList(data: PageSearch) {
+  async onGetDomainList(data: PageSearch): Promise<{list: CertTargetItem[], total: number}> {
     if (!this.accessId) {
       throw new Error('请选择Access授权');
     }

@@ -1,7 +1,7 @@
 import { ILogger, utils } from "@certd/basic";
 import { AliyunAccess } from "../access/index.js";
 import { AliyunClient } from "./index.js";
-import { CertInfo, CertReader } from "@certd/plugin-lib";
+import { CertInfo, CertReader, SimpleCertDetail } from "@certd/plugin-lib";
 
 export type AliyunCertInfo = {
   crt: string; //fullchain证书
@@ -37,6 +37,7 @@ export type CasCertId = {
   certId: number;
   certIdentifier: string;
   certName: string;
+  detail?: SimpleCertDetail;
 }
 export class AliyunSslClient {
   opts: AliyunSslClientOpts;
@@ -119,10 +120,12 @@ export class AliyunSslClient {
     this.checkRet(ret);
     this.opts.logger.info("证书上传成功：aliyunCertId=", ret.CertId);
     //output
+    const certReader = new CertReader(req.cert as any);
     return {
       certId: ret.CertId,
       certName: req.name,
       certIdentifier: this.getCertIdentifier(ret.CertId),
+      detail:certReader.getSimpleDetail(),
     }
   }
 
@@ -136,7 +139,8 @@ export class AliyunSslClient {
       const certInfo = cert as CertInfo;
       // 上传证书到阿里云
       this.logger.info(`开始上传证书`);
-      const certName = CertReader.buildCertName(certInfo);
+      const certReader = new CertReader(certInfo);
+      const certName = certReader.buildCertName();
       const res = await this.uploadCertificate({
         name: certName,
         cert: certInfo
@@ -151,7 +155,7 @@ export class AliyunSslClient {
     return {
       certId,
       certIdentifier,
-      certName
+      certName,
     }
   }
 

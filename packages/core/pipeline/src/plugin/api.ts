@@ -4,13 +4,14 @@ import { FileStore } from "../core/file-store.js";
 import { accessRegistry, IAccessService } from "../access/index.js";
 import { ICnameProxyService, IEmailService, IServiceGetter, IUrlService } from "../service/index.js";
 import { CancelError, IContext, RunHistory, RunnableCollection } from "../core/index.js";
-import { HttpRequestConfig, ILogger, logger, optionsUtils, utils } from "@certd/basic";
+import { domainUtils, HttpRequestConfig, ILogger, logger, optionsUtils, utils } from "@certd/basic";
 import { HttpClient } from "@certd/basic";
 import dayjs from "dayjs";
 import { IPluginConfigService } from "../service/config.js";
-import { upperFirst } from "lodash-es";
+import { cloneDeep, upperFirst } from "lodash-es";
 import { INotificationService } from "../notification/index.js";
 import { TaskEmitter } from "../service/emit.js";
+import { PageSearch } from "../context/index.js";
 
 export type PluginRequestHandleReq<T = any> = {
   typeName: string;
@@ -64,6 +65,7 @@ export type PluginDefine = Registrable & {
   onlyAdmin?: boolean;
   needPlus?: boolean;
   showRunStrategy?: boolean;
+  runStrategy?: any;
   pluginType?: string; //类型
   type?: string; //来源
 };
@@ -80,6 +82,12 @@ export type TaskResult = {
   files?: FileItem[];
   pipelineVars: Record<string, any>;
   pipelinePrivateVars?: Record<string, any>;
+};
+
+export type CertTargetItem = {
+  value: string;
+  label: string;
+  domain: string | string[];
 };
 export type TaskInstanceContext = {
   //流水线定义
@@ -316,9 +324,101 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
     return this.getLastStatus().status?.output?.[key];
   }
 
-  getMatchedDomains(domainList: string[], certDomains: string[]): string[] {
-    const { matched } = optionsUtils.groupByDomain(domainList, certDomains);
+  isDomainMatched(domainList: string | string[], certDomains: string[]): boolean {
+    const matched = domainUtils.match(domainList, certDomains);
     return matched;
+  }
+
+  isNotChanged() {
+    const lastResult = this.ctx?.lastStatus?.status?.status;
+    return !this.ctx.inputChanged && lastResult === "success";
+  }
+
+  async getAutoMatchedTargets(req: {
+    targetName: string;
+    certDomains: string[];
+    pageSize: number;
+    getDeployTargetList: (req: PageSearch) => Promise<{ list: CertTargetItem[]; total: number }>;
+  }): Promise<CertTargetItem[]> {
+    const matchedDomains: CertTargetItem[] = [];
+    let pageNo = 1;
+    const { certDomains } = req;
+
+    const pageSize = req.pageSize || 100;
+    while (true) {
+      const result = await req.getDeployTargetList({
+        pageNo,
+        pageSize,
+      });
+      const pageData = result.list;
+      this.logger.info(`获取到 ${pageData.length} 个 ${req.targetName}`);
+
+      if (!pageData || pageData.length === 0) {
+        break;
+      }
+
+      for (const item of pageData) {
+        const domainName = item.domain;
+        if (this.isDomainMatched(domainName, certDomains)) {
+          matchedDomains.push(item);
+        }
+      }
+
+      const totalCount = result.total || 0;
+      if (pageNo * pageSize >= totalCount || matchedDomains.length == 0) {
+        break;
+      }
+
+      pageNo++;
+    }
+
+    return matchedDomains;
+  }
+
+  async autoMatchedDeploy(req: {
+    targetName: string;
+    getCertDomains: () => string[];
+    uploadCert: () => Promise<any>;
+    deployOne: (req: { target: any; cert: any }) => Promise<void>;
+    getDeployTargetList: (req: PageSearch) => Promise<{ list: CertTargetItem[]; total: number }>;
+  }): Promise<{ result: any; deployedList: any[] }> {
+    this.logger.info("证书匹配模式部署");
+    const certDomains = req.getCertDomains();
+    const certTargetList = await this.getAutoMatchedTargets({
+      targetName: req.targetName,
+      pageSize: 200,
+      certDomains,
+      getDeployTargetList: req.getDeployTargetList,
+    });
+    if (certTargetList.length === 0) {
+      this.logger.warn(`未找到匹配的${req.targetName}`);
+      return { result: "skip", deployedList: [] };
+    }
+    this.logger.info(`找到 ${certTargetList.length} 个匹配的${req.targetName}`);
+
+    //开始部署，检查是否已经部署过
+    const deployedList = cloneDeep(this.getLastStatus()?.status?.output?.deployedList || []);
+    const unDeployedTargets = certTargetList.filter(item => !deployedList.includes(item.value));
+    const count = unDeployedTargets.length;
+    const deployedCount = certTargetList.length - count;
+    if (deployedCount > 0) {
+      this.logger.info(`跳过 ${deployedCount} 个已部署过的${req.targetName}`);
+    }
+    this.logger.info(`需要部署 ${count} 个${req.targetName}`);
+    if (count === 0) {
+      return { result: "skip", deployedList };
+    }
+    this.logger.info(`开始部署`);
+    const aliCrtId = await req.uploadCert();
+    for (const target of unDeployedTargets) {
+      await req.deployOne({
+        cert: aliCrtId,
+        target,
+      });
+      deployedList.push(target.value);
+    }
+    this.logger.info(`本次成功部署 ${count} 个${req.targetName}`);
+    return { result: "success", deployedList };
   }
 }
 
