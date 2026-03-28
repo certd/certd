@@ -108,7 +108,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
         uploadCert: async () => {
           return await sslClient.uploadCertOrGet(this.cert);
         },
-        deployOne: async (req: { target: any, cert: any }) => {
+        deployOne: async (req: { target: CertTargetItem, cert: any }) => {
           return await this.deployOne(client, req.target.value, req.cert);
         },
         getCertDomains: async ()=>{

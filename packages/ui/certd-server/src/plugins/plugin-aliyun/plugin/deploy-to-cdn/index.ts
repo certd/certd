@@ -1,5 +1,5 @@
 import { optionsUtils } from '@certd/basic';
-import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
+import { AbstractTaskPlugin, CertTargetItem, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import { CertApplyPluginNames, CertReader } from "@certd/plugin-cert";
 import { CertInfo, createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from '@certd/plugin-lib';
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
@@ -10,11 +10,12 @@ import { AliyunClient, AliyunSslClient, CasCertId } from "../../../plugin-lib/al
   icon: 'svg:icon-aliyun',
   group: pluginGroups.aliyun.key,
   desc: '自动部署域名证书至阿里云CDN',
-  default: {
-    strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed,
-    },
-  },
+  runStrategy: RunStrategy.AlwaysRun,
+  // default: {
+  //   strategy: {
+  //     runStrategy: RunStrategy.SkipWhenSucceed,
+  //   },
+  // },
 })
 export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   @TaskInput({
@@ -143,8 +144,8 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
         uploadCert: async () => {
           return await sslClient.uploadCertOrGet(this.cert);
         },
-        deployOne: async (req: { target: any, cert: any }) => {
-          return await this.deployOne(client, req.target, req.cert);
+        deployOne: async (req: { target: CertTargetItem, cert: any }) => {
+          return await this.deployOne(client, req.target.value, req.cert);
         },
         getCertDomains:async ()=>{
            return sslClient.getCertDomains(this.cert);

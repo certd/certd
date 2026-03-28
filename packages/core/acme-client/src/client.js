@@ -588,7 +588,8 @@ class AcmeClient {
 
             if (invalidStates.includes(resp.data.status)) {
                 abort();
-                throw new Error(util.formatResponseError(resp));
+                this.log(`[${d}] : 检查状态 = ${resp.data.status} ： ${JSON.stringify(resp.data)}`);
+                throw new Error("校验失败：" + util.formatResponseError(resp));
             }
             else if (pendingStates.includes(resp.data.status)) {
                 throw new Error(`[${d}] Operation is pending or processing（当前仍然在等待状态）`);
