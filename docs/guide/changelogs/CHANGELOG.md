@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.8](https://github.com/certd/certd/compare/v1.39.7...v1.39.8) (2026-03-31)
+
+### Bug Fixes
+
+* 修复某些情况下报没有匹配到任何校验方式的bug ([fe02ce7](https://github.com/certd/certd/commit/fe02ce7b64cf23c4dc4c30daccd5330059a35e9a))
+* 修复上传头像退出登录的bug ([6eb20a1](https://github.com/certd/certd/commit/6eb20a1f2e31d984d9135edbf39c97cdd15621f9))
+
+### Performance Improvements
+
+* 阿里云CDN部署支持根据证书域名自动匹配部署 ([a68301e](https://github.com/certd/certd/commit/a68301e4dcea8b7391ad751aa57555d566297ad9))
+* 阿里云dcdn支持根据证书域名匹配模式 ([df012de](https://github.com/certd/certd/commit/df012dec90590ecba85a69ed6355cfa8382c1da3))
+* 支持部署证书到百度CCE ([a19ea74](https://github.com/certd/certd/commit/a19ea7489c01cdbf795fb51f804bd6d00389f604))
+* dcdn自动匹配部署，支持新增域名感知 ([c6a988b](https://github.com/certd/certd/commit/c6a988bc925886bd7163c1270f2b7a10a57b1c5b))
+
 ## [1.39.7](https://github.com/certd/certd/compare/v1.39.6...v1.39.7) (2026-03-25)
 
 ### Bug Fixes
