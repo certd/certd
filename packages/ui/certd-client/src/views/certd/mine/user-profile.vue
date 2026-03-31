@@ -147,6 +147,7 @@ import { isEmpty } from "lodash-es";
 import { dict } from "@fast-crud/fast-crud";
 import dayjs from "dayjs";
 import { useRouter } from "vue-router";
+import { useUserStore } from "/@/store/user";
 
 const { t } = useI18n();
 
@@ -351,7 +352,7 @@ const checkPasskeySupport = () => {
     passkeySupported.value = true;
   }
 };
-
+const userStore = useUserStore();
 const userAvatar = computed(() => {
   if (isEmpty(userInfo.value.avatar)) {
     return "";
@@ -360,7 +361,7 @@ const userAvatar = computed(() => {
     return userInfo.value.avatar;
   }
 
-  return "api/basic/file/download?&key=" + userInfo.value.avatar;
+  return `api/basic/file/download?token=${userStore.getToken}&key=${userInfo.value.avatar}`;
 });
 
 onMounted(async () => {

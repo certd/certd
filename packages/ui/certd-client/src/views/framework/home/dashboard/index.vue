@@ -3,7 +3,7 @@
     <div class="header-profile flex-wrap bg-white dark:bg-black">
       <div class="flex flex-1">
         <div class="avatar">
-          <a-avatar v-if="userInfo.avatar" size="large" :src="'api/basic/file/download?&key=' + userInfo.avatar" style="background-color: #eee"> </a-avatar>
+          <a-avatar v-if="userInfo.avatar" size="large" :src="avatar" style="background-color: #eee"> </a-avatar>
           <a-avatar v-else size="large" style="background-color: #00b4f5">
             {{ userInfo.username }}
           </a-avatar>
@@ -227,6 +227,16 @@ const defaultExpireDays = computed(() => {
 const userStore = useUserStore();
 const userInfo: ComputedRef<UserInfoRes> = computed(() => {
   return userStore.getUserInfo;
+});
+const avatar = computed(() => {
+  const avt = userStore.getUserInfo?.avatar;
+  if (!avt) {
+    return "";
+  }
+  if (avt.startsWith("http")) {
+    return avt;
+  }
+  return `/api/basic/file/download?key=${avt}`;
 });
 const now = computed(() => {
   const serverTime = Date.now() - settingStore.app.deltaTime;

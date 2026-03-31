@@ -66,7 +66,7 @@ export function useUserProfile() {
                 width: "auto",
               },
               buildUrl(key: string) {
-                return `api/basic/file/download?&key=` + key;
+                return `api/basic/file/download?token=${userStore.getToken}&key=` + key;
               },
             },
           },
@@ -82,7 +82,7 @@ export function useUserProfile() {
               onReady: null,
               uploader: {
                 type: "form",
-                action: "/basic/file/upload",
+                action: "/basic/file/upload?token=" + userStore.getToken,
                 name: "file",
                 headers: {
                   Authorization: "Bearer " + userStore.getToken,
@@ -92,7 +92,7 @@ export function useUserProfile() {
                 },
               },
               buildUrl(key: string) {
-                return `api/basic/file/download?&key=` + key;
+                return `api/basic/file/download?token=${userStore.getToken}&key=` + key;
               },
             },
           },
