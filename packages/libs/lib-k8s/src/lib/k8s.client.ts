@@ -59,9 +59,9 @@ export class K8sClient {
     const yml = loadYaml<KubernetesObject>(manifest);
     const client = this.getKubeClient();
     try {
+      this.logger.info("apply yaml:", yml);
       await client.create(yml);
     } catch (e) {
-      this.logger.error("apply error", e.response?.body);
       if (e.response?.body?.reason === "AlreadyExists") {
         //patch
         this.logger.info("patch existing resource: ", yml.metadata?.name);
@@ -70,11 +70,24 @@ export class K8sClient {
           yml.metadata = {};
         }
         yml.metadata.resourceVersion = existing.body.metadata.resourceVersion;
-        await client.patch(yml);
-        return;
+        const res = await client.patch(yml);
+        return res?.body;
       }
       throw e;
     }
+  }
+
+  async applyPatch(manifest: string) {
+    const yml = loadYaml<KubernetesObject>(manifest);
+    const client = this.getKubeClient();
+    this.logger.info("patch yaml:", yml);
+    const existing = await client.read(yml as any);
+    if (!yml.metadata) {
+      yml.metadata = {};
+    }
+    yml.metadata.resourceVersion = existing.body.metadata.resourceVersion;
+    const res = await client.patch(yml);
+    return res?.body;
   }
 
   /**
@@ -112,6 +125,7 @@ export class K8sClient {
    */
   async createSecret(opts: { namespace: string; body: V1Secret }) {
     const namespace = opts.namespace || "default";
+    this.logger.info("create secret:", opts.body.metadata);
     const created = await this.client.createNamespacedSecret(namespace, opts.body);
     this.logger.info("new secrets:", opts.body.metadata);
     return created.body;
@@ -152,6 +166,8 @@ export class K8sClient {
           this.logger.info(`secret ${secretName} 已创建`);
           return res;
         }
+
+        throw new Error(`secret ${secretName} 不存在`);
       }
       throw e;
     }

@@ -14,7 +14,8 @@
     "build3": "rollup -c",
     "build2": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "pub": "npm publish"
+    "pub": "npm publish",
+    "compile": "tsc --skipLibCheck --watch"
   },
   "dependencies": {
     "@certd/basic": "^1.39.7",

@@ -63,6 +63,21 @@ export class K8sApplyPlugin extends AbstractPlusTaskPlugin {
   // namespace!: string;
 
   @TaskInput({
+    title: "应用策略",
+    helper: "选择使用apply（创建或更新）还是patch（补丁更新）",
+    component: {
+      name: "a-select",
+      options: [
+        { label: "apply(创建)", value: "apply" },
+        { label: "patch(更新)", value: "patch" },
+      ],
+    },
+    value: "apply",
+    required: true,
+  })
+  strategy!: string;
+
+  @TaskInput({
     title: "yaml",
     required: true,
     helper: "apply yaml，模板变量：主域名=${mainDomain}、全部域名=${domains}、过期时间=${expiresTime}、证书PEM=${crt}、证书私钥=${key}、中间证书/CA证书=${ic}、前置任务输出=${preOutput}",
@@ -112,8 +127,13 @@ export class K8sApplyPlugin extends AbstractPlusTaskPlugin {
     try {
       // this.logger.info("apply yaml:", compiledYaml);
       // this.logger.info("apply yamlDoc:", JSON.stringify(doc));
-      const res = await client.apply(compiledYaml);
-      this.logger.info("apply result:", res);
+      if (this.strategy === "apply") {
+        await client.apply(compiledYaml);
+        this.logger.info("apply success");
+      } else {
+        await client.applyPatch(compiledYaml);
+        this.logger.info("patch success");
+      }
     } catch (e) {
       if (e.response?.body) {
         throw new Error(JSON.stringify(e.response.body));
