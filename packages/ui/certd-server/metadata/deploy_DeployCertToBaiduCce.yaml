@@ -1,0 +1,110 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: DeployCertToBaiduCce
+title: 百度云-部署到CCE
+icon: ant-design:cloud-outlined
+desc: 部署到百度云CCE集群Ingress等通过Secret管理证书的应用
+group: baidu
+needPlus: true
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  accessId:
+    title: Access授权
+    helper: 百度云授权AccessKey、SecretKey
+    component:
+      name: access-selector
+      type: baidu
+    required: true
+    order: 0
+  regionId:
+    title: 大区
+    component:
+      name: a-auto-complete
+      vModel: value
+      options:
+        - value: bj
+          label: 北京
+        - value: gz
+          label: 广州
+        - value: su
+          label: 苏州
+        - value: bd
+          label: 保定
+        - value: fwh
+          label: 武汉
+        - value: hkg
+          label: 香港
+        - value: yq
+          label: 阳泉
+        - value: cd
+          label: 成都
+        - value: nj
+          label: 南京
+      placeholder: 集群所属大区
+    required: true
+    order: 0
+  clusterId:
+    title: 集群id
+    component:
+      placeholder: 集群id
+    required: true
+    order: 0
+  secretName:
+    title: 保密字典Id
+    component:
+      placeholder: 保密字典Id
+    helper: 原本存储证书的secret的name
+    required: true
+    order: 0
+  namespace:
+    title: 命名空间
+    value: default
+    component:
+      placeholder: 命名空间
+    required: true
+    order: 0
+  kubeconfigType:
+    title: Kubeconfig类型
+    value: public
+    component:
+      name: a-auto-complete
+      vModel: value
+      options:
+        - value: vpc
+          label: VPC私网IP (BLB VPCIP)
+        - value: public
+          label: 公网IP (BLB EIP)
+      placeholder: 选择集群连接端点类型
+    helper: VPC类型使用私网IP连接，需要certd运行在同一网络环境；public类型使用公网IP连接
+    required: true
+    order: 0
+  skipTLSVerify:
+    title: 忽略证书校验
+    required: false
+    helper: 是否忽略证书校验
+    component:
+      name: a-switch
+      vModel: checked
+    order: 0
+  createOnNotFound:
+    title: Secret自动创建
+    helper: 如果Secret不存在，则创建，百度云的自动创建secret有问题
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-plus/baidu/plugins/plugin-deploy-to-cce.js

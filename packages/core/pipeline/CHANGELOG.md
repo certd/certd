@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.8](https://github.com/certd/certd/compare/v1.39.7...v1.39.8) (2026-03-31)
+
+### Performance Improvements
+
+* 阿里云CDN部署支持根据证书域名自动匹配部署 ([a68301e](https://github.com/certd/certd/commit/a68301e4dcea8b7391ad751aa57555d566297ad9))
+* 阿里云dcdn支持根据证书域名匹配模式 ([df012de](https://github.com/certd/certd/commit/df012dec90590ecba85a69ed6355cfa8382c1da3))
+* dcdn自动匹配部署，支持新增域名感知 ([c6a988b](https://github.com/certd/certd/commit/c6a988bc925886bd7163c1270f2b7a10a57b1c5b))
+
 ## [1.39.7](https://github.com/certd/certd/compare/v1.39.6...v1.39.7) (2026-03-25)
 
 **Note:** Version bump only for package @certd/pipeline

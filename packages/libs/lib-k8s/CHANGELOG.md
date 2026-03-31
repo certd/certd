@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.8](https://github.com/certd/certd/compare/v1.39.7...v1.39.8) (2026-03-31)
+
+### Performance Improvements
+
+* 支持部署证书到百度CCE ([a19ea74](https://github.com/certd/certd/commit/a19ea7489c01cdbf795fb51f804bd6d00389f604))
+
 ## [1.39.7](https://github.com/certd/certd/compare/v1.39.6...v1.39.7) (2026-03-25)
 
 **Note:** Version bump only for package @certd/lib-k8s

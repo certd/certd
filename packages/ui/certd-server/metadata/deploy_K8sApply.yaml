@@ -35,6 +35,19 @@ input:
       type: k8s
     required: true
     order: 0
+  strategy:
+    title: 应用策略
+    helper: 选择使用apply（创建或更新）还是patch（补丁更新）
+    component:
+      name: a-select
+      options:
+        - label: apply(创建)
+          value: apply
+        - label: patch(更新)
+          value: patch
+    value: apply
+    required: true
+    order: 0
   yamlContent:
     title: yaml
     required: true

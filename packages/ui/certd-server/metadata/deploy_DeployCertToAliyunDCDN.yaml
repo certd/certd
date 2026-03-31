@@ -7,6 +7,7 @@ title: 阿里云-部署证书至DCDN
 icon: svg:icon-aliyun
 group: aliyun
 desc: 依赖证书申请前置任务，自动部署域名证书至阿里云DCDN
+runStrategy: 0
 input:
   cert:
     title: 域名证书
@@ -47,6 +48,18 @@ input:
     title: 证书名称
     helper: 上传后将以此名称作为前缀备注
     order: 0
+  domainMatchMode:
+    title: 域名匹配模式
+    helper: 根据证书匹配：根据证书域名自动匹配DCDN加速域名自动部署，新增加速域名自动感知，自动新增部署
+    component:
+      name: a-select
+      options:
+        - label: 手动选择
+          value: manual
+        - label: 根据证书匹配
+          value: auto
+    value: manual
+    order: 0
   domainName:
     title: DCDN加速域名
     component:
@@ -56,7 +69,7 @@ input:
       type: plugin
       action: onGetDomainList
       search: false
-      pager: false
+      pager: true
       multi: true
       watches:
         - certDomains
@@ -66,17 +79,17 @@ input:
     required: true
     mergeScript: |2-
 
-                return {
-                  component:{
-                    form: ctx.compute(({form})=>{
-                      return form
-                    })
-                  },
-               }
-              
+              return {
+                show: ctx.compute(({form})=>{
+                  return form.domainMatchMode === "manual"
+                })
+              }
+            
     helper: 你在阿里云上配置的DCDN加速域名，比如:certd.docmirror.cn
     order: 0
-output: {}
+output:
+  deployedList:
+    title: 已部署过的DCDN加速域名
 pluginType: deploy
 type: builtIn
 scriptFilePath: /plugins/plugin-aliyun/plugin/deploy-to-dcdn/index.js

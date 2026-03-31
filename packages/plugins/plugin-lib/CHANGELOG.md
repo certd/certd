@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.8](https://github.com/certd/certd/compare/v1.39.7...v1.39.8) (2026-03-31)
+
+### Performance Improvements
+
+* dcdn自动匹配部署，支持新增域名感知 ([c6a988b](https://github.com/certd/certd/commit/c6a988bc925886bd7163c1270f2b7a10a57b1c5b))
+
 ## [1.39.7](https://github.com/certd/certd/compare/v1.39.6...v1.39.7) (2026-03-25)
 
 **Note:** Version bump only for package @certd/plugin-lib
