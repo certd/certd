@@ -1,7 +1,7 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
 import dayjs from 'dayjs';
 import { TencentAccess } from '../../../plugin-lib/tencent/index.js';
-import { CertApplyPluginNames} from '@certd/plugin-cert';
+import { CertApplyPluginNames, CertInfo } from '@certd/plugin-cert';
 @IsTaskPlugin({
   name: 'DeployCertToTencentCLB',
   title: '腾讯云-部署到CLB',
@@ -15,6 +15,31 @@ import { CertApplyPluginNames} from '@certd/plugin-cert';
   },
 })
 export class DeployCertToTencentCLB extends AbstractTaskPlugin {
+
+  @TaskInput({
+    title: '域名证书',
+    helper: '请选择前置任务输出的域名证书',
+    component: {
+      name: 'output-selector',
+      from: [...CertApplyPluginNames, 'UploadCertToTencent'],
+    },
+    required: true,
+  })
+  cert!: string | CertInfo;
+
+
+
+  @TaskInput({
+    title: 'Access提供者',
+    helper: 'access授权',
+    component: {
+      name: 'access-selector',
+      type: 'tencent',
+    },
+    required: true,
+  })
+  accessId!: string;
+
   @TaskInput({
     title: '大区',
     component: {
@@ -46,14 +71,10 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
   })
   region!: string;
 
-  @TaskInput({
-    title: '证书名称前缀',
-  })
-  certName!: string;
+
 
   @TaskInput({
     title: '负载均衡ID',
-    helper: '如果没有配置，则根据域名匹配负载均衡下的监听器（根据域名匹配时暂时只支持前100个）',
     required: true,
   })
   loadBalancerId!: string;
@@ -78,26 +99,10 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
   domain!: string | string[];
 
   @TaskInput({
-    title: '域名证书',
-    helper: '请选择前置任务输出的域名证书',
-    component: {
-      name: 'output-selector',
-      from: [...CertApplyPluginNames],
-    },
-    required: true,
+    title: '证书名称前缀',
   })
-  cert!: any;
+  certName!: string;
 
-  @TaskInput({
-    title: 'Access提供者',
-    helper: 'access授权',
-    component: {
-      name: 'access-selector',
-      type: 'tencent',
-    },
-    required: true,
-  })
-  accessId!: string;
 
   client: any;
   async onInstance() {
@@ -234,12 +239,23 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     return name + '-' + dayjs().format('YYYYMMDD-HHmmss');
   }
   buildProps() {
+    const certId = this.cert as string;
+    const certInfo = this.cert as CertInfo;
+    if (typeof this.cert === 'string') {
+      return {
+        Certificate: {
+          CertId: certId,
+        },
+        LoadBalancerId: this.loadBalancerId,
+        ListenerId: this.listenerId,
+      };
+    }
     return {
       Certificate: {
         SSLMode: 'UNIDIRECTIONAL', // 单向认证
-        CertName: this.appendTimeSuffix(this.certName || this.cert.domain),
-        CertKey: this.cert.key,
-        CertContent: this.cert.crt,
+        CertName: this.appendTimeSuffix(this.certName || "certd"),
+        CertKey: certInfo.key,
+        CertContent: certInfo.crt,
       },
       LoadBalancerId: this.loadBalancerId,
       ListenerId: this.listenerId,
