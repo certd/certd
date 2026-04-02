@@ -271,7 +271,7 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       }
 
       const originalRequest = error.config || {};
-      logger.info(`config`, originalRequest);
+      // logger.info(`config`, originalRequest);
       const retry = originalRequest.retry || {};
       if (retry.status && retry.status.includes(status)) {
         if (retry.max > 0 && retry.count < retry.max) {

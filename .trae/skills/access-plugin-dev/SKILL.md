@@ -163,6 +163,16 @@ async doRequest(req: { action: string, data?: any }) {
 }
 ```
 
+--- 开发技巧：实现统一的 API 请求封装
+
+**好处：**
+- **代码复用**：避免在每个 API 方法中重复编写相同的 header 设置和错误处理逻辑
+- **错误处理一致**：统一捕获和处理各种错误情况，确保错误信息格式统一
+- **日志记录完善**：集中记录详细的错误信息，便于调试和问题排查
+- **接口调用简化**：调用方只需关注业务逻辑，无需关心底层请求细节
+- **易于维护**：统一修改 API 调用方式时，只需修改一处代码
+
+
 ## 注意事项
 
 1. **插件命名**：插件名称应简洁明了，反映其功能。
@@ -170,8 +180,11 @@ async doRequest(req: { action: string, data?: any }) {
 3. **日志输出**：必须使用 `this.ctx.logger` 输出日志，而不是 `console`。
 4. **错误处理**：API 调用失败时应抛出明确的错误信息。
 5. **测试方法**：实现 `onTestRequest` 方法，以便用户可以测试授权是否正常。
+6. **统一接口调用方法**：封装统一的 API 请求方法，避免在每个 API 方法调用中重复编写错误处理逻辑。
 
 ## 完整示例
+
+### 示例 1: 通用授权插件
 
 ```typescript
 import { AccessInput, BaseAccess, IsAccess, Pager, PageRes, PageSearch } from '@certd/pipeline';

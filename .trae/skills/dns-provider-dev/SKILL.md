@@ -126,6 +126,8 @@ if (isDev()) {
 
 ## 完整示例
 
+### 示例：通用 DNS Provider
+
 ```typescript
 import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 import { DemoAccess } from './access.js';

@@ -211,3 +211,4 @@ https://certd.handfree.work/
 | --------- |--------- |----------- |
 | [fast-crud](https://gitee.com/fast-crud/fast-crud/)     | <img alt="GitHub stars" src="https://img.shields.io/github/stars/fast-crud/fast-crud?logo=github"/>   | 基于vue3的crud快速开发框架                 |  
 | [dev-sidecar](https://github.com/docmirror/dev-sidecar/) | <img alt="GitHub stars" src="https://img.shields.io/github/stars/docmirror/dev-sidecar?logo=github"/> | 直连访问github工具，无需FQ，解决github无法访问的问题 |
+| [winsvc-manager](https://github.com/greper/winsvc-manager/) | <img alt="GitHub stars" src="https://img.shields.io/github/stars/greper/winsvc-manager?logo=github"/> | 可视化包装应用成为一个Windows服务，使其后台运行 |
