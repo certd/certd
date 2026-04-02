@@ -66,7 +66,6 @@ export class DnsmgrAccess extends BaseAccess {
     const total = resp?.total || 0;
     let list = resp?.rows?.map((item: any) => {
       return {
-        id: item.id,
         domain: item.name,
         ...item,
       };
@@ -76,6 +75,8 @@ export class DnsmgrAccess extends BaseAccess {
       list,
     };
   }
+
+
 
   async createDnsRecord(domainId: string, record: string, value: string, type: string, domain: string) {
     this.ctx.logger.info(`创建DNS记录：${record} ${type} ${value}`);

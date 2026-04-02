@@ -136,7 +136,7 @@ async function emitValue(value: any) {
     const isEnterprice = projectStore.isEnterprise;
     if (isEnterprice) {
       const projectId = projectStore.currentProjectId;
-      if (pipeline.value.projectId !== projectId) {
+      if (pipeline?.value?.projectId !== projectId) {
         message.error(`对不起，您不能修改其他项目流水线的${props.addonType}设置`);
         return;
       }

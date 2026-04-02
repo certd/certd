@@ -78,10 +78,10 @@ export default defineComponent({
     async function emitValue(value) {
       const userId = userStore.userInfo.id;
       const isEnterprice = projectStore.isEnterprise;
-      if (pipeline.value) {
+      if (pipeline?.value) {
         if (isEnterprice) {
           const projectId = projectStore.currentProjectId;
-          if (pipeline.value.projectId !== projectId) {
+          if (pipeline?.value?.projectId !== projectId) {
             message.error(`对不起，您不能修改其他项目流水线的授权`);
             return;
           }
