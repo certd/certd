@@ -48,6 +48,7 @@ import createCrudOptions from "../crud";
 import { addonProvide } from "../common";
 import { useUserStore } from "/@/store/user";
 import { useI18n } from "/src/locales";
+import { useProjectStore } from "/@/store/project";
 
 const { t } = useI18n();
 
@@ -127,13 +128,24 @@ function clear() {
 }
 
 const userStore = useUserStore();
-
+const projectStore = useProjectStore();
 async function emitValue(value: any) {
   // target.value = optionsDictRef.dataMap[value];
-  const userId = userStore.userInfo.id;
-  if (pipeline?.value && pipeline.value.userId !== userId) {
-    message.error(`对不起，您不能修改他人流水线的${props.addonType}设置`);
-    return;
+  if (pipeline.value) {
+    const userId = userStore.userInfo.id;
+    const isEnterprice = projectStore.isEnterprise;
+    if (isEnterprice) {
+      const projectId = projectStore.currentProjectId;
+      if (pipeline.value.projectId !== projectId) {
+        message.error(`对不起，您不能修改其他项目流水线的${props.addonType}设置`);
+        return;
+      }
+    } else {
+      if (pipeline?.value && pipeline.value.userId !== userId) {
+        message.error(`对不起，您不能修改他人流水线的${props.addonType}设置`);
+        return;
+      }
+    }
   }
   emit("change", value);
   emit("update:modelValue", value);

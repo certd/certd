@@ -156,7 +156,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
       if(maxDays < 2){
         maxDays = 2;
       }
-      this.logger.warn(`为避免每次运行都更新证书，更新天数自动减半，调整为${maxDays}`);
+      this.logger.warn(`为避免每次运行都更新证书，更新天数自动减半（即证书最大时长${totalDays}天减半），调整为${maxDays}`);
     }
    
     return {
