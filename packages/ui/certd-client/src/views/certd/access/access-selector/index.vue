@@ -21,7 +21,8 @@ import { defineComponent, reactive, ref, watch, inject } from "vue";
 import CertAccessModal from "./access/index.vue";
 import { createAccessApi } from "../api";
 import { message } from "ant-design-vue";
-
+import { useUserStore } from "/@/store/user";
+import { useProjectStore } from "/@/store/project";
 export default defineComponent({
   name: "AccessSelector",
   components: { CertAccessModal },
@@ -71,11 +72,27 @@ export default defineComponent({
       emitValue(null);
     }
 
+    const userStore = useUserStore();
+    const projectStore = useProjectStore();
+
     async function emitValue(value) {
-      if (pipeline && pipeline?.value && target?.value && pipeline.value.userId !== target.value.userId) {
-        message.error("对不起，您不能修改他人流水线的授权");
-        return;
+      const userId = userStore.userInfo.id;
+      const isEnterprice = projectStore.isEnterprise;
+      if (pipeline.value) {
+        if (isEnterprice) {
+          const projectId = projectStore.currentProjectId;
+          if (pipeline.value.projectId !== projectId) {
+            message.error(`对不起，您不能修改其他项目流水线的授权`);
+            return;
+          }
+        } else {
+          if (pipeline?.value && pipeline.value.userId !== userId) {
+            message.error(`对不起，您不能修改他人流水线的授权`);
+            return;
+          }
+        }
       }
+
       if (value == null) {
         selectedId.value = "";
         target.value = null;
