@@ -65,7 +65,9 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
         { value: 'na-siliconvalley' },
         { value: 'na-toronto' },
         { value: 'sa-saopaulo' },
+        { value: 'ap-taipei' },
       ],
+      helper: '如果列表中没有，您可以手动输入',
     },
     required: true,
   })
