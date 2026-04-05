@@ -71,7 +71,7 @@ export default {
     domain: {
       monitorSettings: "域名监控设置",
       enabled: "启用域名监控",
-      enabledHelper: "启用后，将监控域名管理中的域名的过期时间",
+      enabledHelper: "启用后，监控“域名管理”中域名的过期时间，到期前通知提醒",
       notificationChannel: "通知渠道",
       setNotificationChannel: "设置通知渠道",
       willExpireDays: "到期前天数",
@@ -84,5 +84,24 @@ export default {
     expired: "已过期",
     expiring: "即将过期",
     noExpired: "未过期",
+  },
+  history: {
+    title: "监控执行记录",
+    description: "站点证书、域名等监控任务的执行记录",
+    resultTitle: "状态",
+    contentTitle: "内容",
+    titleTitle: "标题",
+    jobTypeTitle: "任务类型",
+    startAtTitle: "开始时间",
+    endAtTitle: "结束时间",
+    jobResultTitle: "任务结果",
+    jobResult: {
+      done: "完成",
+      start: "开始",
+    },
+    jobType: {
+      domainExpirationCheck: "域名到期检查",
+      siteCertMonitor: "站点证书监控",
+    },
   },
 };

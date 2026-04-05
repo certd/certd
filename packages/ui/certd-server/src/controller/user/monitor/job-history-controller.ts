@@ -45,7 +45,6 @@ export class JobHistoryController extends CrudController<JobHistoryService> {
     return await super.list(body);
   }
 
-
   @Post('/info', { description: Constants.per.authOnly, summary: "查询监控运行历史详情" })
   async info(@Query('id') id: number) {
     await this.checkOwner(this.service,id,"read");
@@ -55,8 +54,12 @@ export class JobHistoryController extends CrudController<JobHistoryService> {
   @Post('/delete', { description: Constants.per.authOnly, summary: "删除监控运行历史" })
   async delete(@Query('id') id: number) {
     await this.checkOwner(this.service,id,"write");
-    const res = await super.delete(id);
-    return res
+    return await super.delete(id);
   }
-
+    @Post('/batchDelete', { description: Constants.per.authOnly, summary: "批量删除监控运行历史" })
+  async batchDelete(@Body('ids') ids: number[]) {
+    const { projectId, userId } = await this.getProjectUserIdWrite()
+    await this.service.batchDelete(ids,userId,projectId);
+    return this.ok();
+  }
 }

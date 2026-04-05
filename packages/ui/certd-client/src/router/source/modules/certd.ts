@@ -247,7 +247,18 @@ export const certdResources = [
             path: "/certd/cert/domain/setting",
             component: "/certd/cert/domain/setting/index.vue",
             meta: {
-              icon: "ion:videocam-outline",
+              icon: "ion:stopwatch-outline",
+              auth: true,
+              isMenu: true,
+            },
+          },
+          {
+            title: "certd.sysResources.jobHistory",
+            name: "JobHistory",
+            path: "/certd/monitor/history",
+            component: "/certd/monitor/history/index.vue",
+            meta: {
+              icon: "ion:barcode-outline",
               auth: true,
               isMenu: true,
             },

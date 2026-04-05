@@ -227,6 +227,7 @@ export default {
     currentProject: "当前项目",
     projectMemberManager: "项目成员管理",
     domainMonitorSetting: "域名监控设置",
+    jobHistory: "监控执行记录",
   },
   certificateRepo: {
     title: "证书仓库",

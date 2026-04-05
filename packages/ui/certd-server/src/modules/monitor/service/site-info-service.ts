@@ -357,10 +357,11 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     if (userId==null) {
       throw new Error("userId is required");
     }
-    const sites = await this.repository.find({
-      where: {userId,projectId}
-    });
-    this.checkList(sites,false);
+    // const sites = await this.repository.find({
+    //   where: {userId,projectId}
+    // });
+    // this.checkList(sites,false);
+    await this.triggerJobOnce(userId,projectId);
   }
 
   async checkList(sites: SiteInfoEntity[],isCommon: boolean) {
@@ -529,7 +530,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       }
       //判断是否已关闭
       const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId,projectId, UserSiteMonitorSetting);
-      if (!setting.cron) {
+      if (setting && !setting.cron) {
         return;
       }
       jobEntity  =  {

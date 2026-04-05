@@ -3,7 +3,7 @@ CREATE TABLE "cd_job_history"
 (
   "id"          integer PRIMARY KEY AUTOINCREMENT NOT NULL,
   "user_id"     integer      NOT NULL,
-  "project_id"  integer      NOT NULL,
+  "project_id"  integer      ,
   "type"        varchar(100) NOT NULL,
   "title"       varchar(512) NOT NULL,
   "related_id"  varchar(100),

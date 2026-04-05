@@ -82,4 +82,23 @@ export default {
     expiring: "Expiring",
     noExpired: "Not Expired",
   },
+  history: {
+    title: "Monitoring Execution Records",
+    description: "Monitoring execution records",
+    resultTitle: "Status",
+    contentTitle: "Content",
+    titleTitle: "Title",
+    jobTypeTitle: "Job Type",
+    startAtTitle: "Start Time",
+    endAtTitle: "End Time",
+    jobResultTitle: "Result",
+    jobResult: {
+      done: "Done",
+      start: "Start",
+    },
+    jobType: {
+      domainExpirationCheck: "Domain Expiration Check",
+      siteCertMonitor: "Site Certificate Monitor",
+    },
+  },
 };
