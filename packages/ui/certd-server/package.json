@@ -141,6 +141,7 @@
     "typeorm": "^0.3.20",
     "uuid": "^10.0.0",
     "wechatpay-node-v3": "^2.2.1",
+    "whoiser": "2.0.0-beta.10",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {

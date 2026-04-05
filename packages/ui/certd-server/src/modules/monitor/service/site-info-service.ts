@@ -17,6 +17,8 @@ import {SiteIpEntity} from "../entity/site-ip.js";
 import {Cron} from "../../cron/cron.js";
 import { dnsContainer } from "./dns-custom.js";
 import { merge } from "lodash-es";
+import { JobHistoryService } from "./job-history-service.js";
+import { JobHistoryEntity } from "../entity/job-history.js";
 
 @Provide()
 @Scope(ScopeEnum.Request, {allowDowngrade: true})
@@ -38,6 +40,9 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
 
   @Inject()
   siteIpService: SiteIpService;
+
+  @Inject()
+  jobHistoryService: JobHistoryService;
 
 
   @Inject()
@@ -516,6 +521,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   async triggerJobOnce(userId?:number,projectId?:number) {
     logger.info(`站点证书检查开始执行[${userId??'所有用户'}_${projectId??'所有项目'}]`);
     const query:any = { disabled: false };
+    let jobEntity :Partial<JobHistoryEntity> = null;
     if(userId!=null){
       query.userId = userId;
       if(projectId){
@@ -526,9 +532,19 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       if (!setting.cron) {
         return;
       }
+      jobEntity  =  {
+        userId,
+        projectId,
+        type:"siteCertMonitor",
+        title: '站点证书检查',
+        result:"start",
+        startAt:new Date().getTime(),
+      }
+      await this.jobHistoryService.add(jobEntity);
     }
     let offset = 0;
     const limit = 50;
+    let count = 0;
     while (true) {
       const res = await this.page({
         query: query,
@@ -541,10 +557,20 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       }
       offset += records.length;
       const isCommon = !userId;
+      count += records.length;
       await this.checkList(records,isCommon);
     }
 
     logger.info(`站点证书检查完成[${userId??'所有用户'}_${projectId??'所有项目'}]`);
+    if(jobEntity){
+      await this.jobHistoryService.update({
+        id: jobEntity.id,
+        result: "done",
+        content:`共检查${count}个站点`,
+        endAt:new Date().getTime(),
+        updateTime:new Date(),
+      });
+    }
   }
 
   async batchDelete(ids: number[], userId: number,projectId?:number): Promise<void> {

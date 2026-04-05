@@ -221,6 +221,7 @@ export default {
     projectJoin: "Join Project",
     currentProject: "Current Project",
     projectMemberManager: "Project Member",
+    domainMonitorSetting: "Domain Monitor Settings",
   },
   certificateRepo: {
     title: "Certificate Repository",

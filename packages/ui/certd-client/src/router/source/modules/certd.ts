@@ -242,6 +242,17 @@ export const certdResources = [
             },
           },
           {
+            title: "certd.sysResources.domainMonitorSetting",
+            name: "DomainMonitorSetting",
+            path: "/certd/cert/domain/setting",
+            component: "/certd/cert/domain/setting/index.vue",
+            meta: {
+              icon: "ion:videocam-outline",
+              auth: true,
+              isMenu: true,
+            },
+          },
+          {
             title: "certd.userSecurity",
             name: "UserSecurity",
             path: "/certd/mine/security",

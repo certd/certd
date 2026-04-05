@@ -128,6 +128,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               }, 2000);
             },
           },
+          monitorSettingSave: {
+            show: hasActionPermission("write"),
+            title: "域名过期监控设置",
+            type: "primary",
+            icon: "ion:save-outline",
+            text: "域名过期监控设置",
+            click: async () => {
+              router.push({
+                path: "/certd/cert/domain/setting",
+              });
+            },
+          },
         },
       },
       columns: {

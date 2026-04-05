@@ -1,20 +1,23 @@
 import { http, logger, utils } from '@certd/basic';
-import { AccessService, BaseService } from '@certd/lib-server';
+import { AccessService, BaseService, isEnterprise } from '@certd/lib-server';
 import { doPageTurn, Pager, PageRes } from '@certd/pipeline';
 import { DomainVerifiers } from "@certd/plugin-cert";
 import { createDnsProvider, dnsProviderRegistry, DomainParser, parseDomainByPsl } from "@certd/plugin-lib";
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import dayjs from 'dayjs';
-import { In, Not, Repository } from 'typeorm';
+import { merge } from 'lodash-es';
+import { In, LessThan, Not, Repository } from 'typeorm';
 import { BackTask, taskExecutor } from '../../basic/service/task-executor.js';
 import { CnameRecordEntity } from "../../cname/entity/cname-record.js";
 import { CnameRecordService } from '../../cname/service/cname-record-service.js';
-import { UserDomainImportSetting } from '../../mine/service/models.js';
+import { UserDomainImportSetting, UserDomainMonitorSetting } from '../../mine/service/models.js';
 import { UserSettingsService } from '../../mine/service/user-settings-service.js';
+import { JobHistoryService } from '../../monitor/service/job-history-service.js';
 import { TaskServiceBuilder } from '../../pipeline/service/getter/task-service-getter.js';
 import { SubDomainService } from "../../pipeline/service/sub-domain-service.js";
 import { DomainEntity } from '../entity/domain.js';
+import { Cron } from '../../cron/cron.js';
 
 export interface SyncFromProviderReq {
   userId: number;
@@ -26,6 +29,8 @@ export interface SyncFromProviderReq {
 
 const DOMAIN_IMPORT_TASK_TYPE = 'domainImportTask'
 const DOMAIN_EXPIRE_TASK_TYPE = 'domainExpirationSyncTask'
+
+const DOMAIN_EXPIRE_CHECK_TYPE = 'domainExpirationCheck'
 
 
 /**
@@ -50,6 +55,14 @@ export class DomainService extends BaseService<DomainEntity> {
 
   @Inject()
   userSettingService: UserSettingsService;
+
+  @Inject()
+  jobHistoryService: JobHistoryService;
+
+  @Inject()
+  cron: Cron;
+
+
 
   //@ts-ignore
   getRepository() {
@@ -320,9 +333,9 @@ export class DomainService extends BaseService<DomainEntity> {
     logger.info(`从域名提供商${dnsProviderType}导入域名完成(${key})，共导入${task.total}个域名，跳过${task.getSkipCount()}个域名，成功${task.getSuccessCount()}个域名，失败${task.getErrorCount()}个域名`)
   }
 
-  async getDomainImportTaskStatus(req: { userId?: number ,projectId?: number}) {
+  async getDomainImportTaskStatus(req: { userId?: number, projectId?: number }) {
     const userId = req.userId || 0
-    const projectId = req.projectId 
+    const projectId = req.projectId
 
     const setting = await this.userSettingService.getSetting<UserDomainImportSetting>(userId, projectId, UserDomainImportSetting)
     const list = setting?.domainImportList || []
@@ -429,8 +442,6 @@ export class DomainService extends BaseService<DomainEntity> {
       await this.deleteDomainImportTask({ userId, projectId, key })
     }
 
-
-
     return await this.addDomainImportTask({ userId, projectId, dnsProviderType, dnsProviderAccessId, index })
   }
 
@@ -441,7 +452,7 @@ export class DomainService extends BaseService<DomainEntity> {
     const userId = req.userId ?? 'all'
     const projectId = req.projectId
     let key = `user_${userId}`
-    if (projectId!=null) {
+    if (projectId != null) {
       key += `_${projectId}`
     }
     const task = taskExecutor.get(DOMAIN_EXPIRE_TASK_TYPE, key)
@@ -452,7 +463,7 @@ export class DomainService extends BaseService<DomainEntity> {
     const userId = req.userId
     const projectId = req.projectId
     let key = `user_${userId ?? 'all'}`
-    if (projectId!=null) {
+    if (projectId != null) {
       key += `_${projectId}`
     }
     taskExecutor.start(new BackTask({
@@ -461,11 +472,15 @@ export class DomainService extends BaseService<DomainEntity> {
       title: `同步注册域名过期时间(${key}))`,
       run: async (task: BackTask) => {
         await this._syncDomainsExpirationDate({ userId, projectId, task })
+        if (userId != null) {
+          await this.startCheckDomainExpiration({ userId, projectId })
+        }
       }
     }))
   }
 
   private async _syncDomainsExpirationDate(req: { userId?: number, projectId?: number, task: BackTask }) {
+
     //同步所有域名的过期时间
     const pager = new Pager({
       pageNo: 1,
@@ -573,7 +588,138 @@ export class DomainService extends BaseService<DomainEntity> {
 
     await doPageTurn({ pager, getPage: getDomainPage, itemHandle: itemHandle })
     const key = `user_${req.userId || 'all'}`
-    logger.info(`同步用户(${key})注册域名过期时间完成(${req.task.getSuccessCount()}个成功，${req.task.getErrorCount()}个失败)`)
+    const log = `同步用户(${key})注册域名过期时间完成(${req.task.getSuccessCount()}个成功，${req.task.getErrorCount()}个失败)`
+    logger.info(log)
   }
 
+
+  public async startCheckDomainExpiration(req: { userId?: number, projectId?: number }) {
+    const { userId, projectId } = req
+    if (userId == null) {
+      throw new Error('userId is required');
+    }
+
+    if (projectId && !isEnterprise()) {
+      logger.warn(`当前未开启企业模式，跳过检查项目(${projectId})的域名过期时间`)
+      return
+    }
+
+    const setting = await this.monitorSettingGet({ userId, projectId })
+    if (!setting || !setting.enabled) {
+      return
+    }
+
+    const jobHistory: any = {
+      userId,
+      projectId,
+      type: DOMAIN_EXPIRE_CHECK_TYPE,
+      title: `检查注册域名过期时间`,
+      startAt: dayjs().valueOf(),
+      result: "start",
+    }
+    await this.jobHistoryService.add(jobHistory)
+
+    const expireDays = setting.willExpireDays || 30
+    const ltTime = dayjs().add(expireDays, 'day').valueOf()
+
+    const total = await this.repository.count({
+      where:{
+        userId,
+        projectId,
+        disabled: false,
+      }
+    })
+    //开始检查域名过期时间
+    const list = await this.repository.find({
+      where: {
+        userId,
+        projectId,
+        disabled: false,
+        expirationDate: LessThan(ltTime)
+      }
+    })
+
+    const now = dayjs().valueOf()
+    let willExpireDomains = []
+    let hasExpireDomains = []
+
+    for (const item of list) {
+      const { expirationDate } = item
+      if (expirationDate < now) {
+        hasExpireDomains.push(item.domain)
+      } else {
+        willExpireDomains.push(item.domain)
+      }
+    }
+
+    const title = `域名过期检查：共${total}个域名，即将过期${willExpireDomains.length}个域名，已过期${hasExpireDomains.length}个域名`
+
+    try {
+      await this.jobHistoryService.update({
+        id: jobHistory.id,
+        content: title,
+        result: "done",
+        endAt: dayjs().valueOf(),
+      })
+
+    } catch (error) {
+      logger.error(`更新域名过期检查任务状态失败:${error.message ?? error}`)
+    }
+
+    if (list.length == 0) {
+      //没有过期域名  不发通知
+      return
+    }
+
+    //发送通知
+    const content = `即将过期域名【${willExpireDomains.length}】:${willExpireDomains.join('，')}
+\n已过期域名【${hasExpireDomains.length}】:${hasExpireDomains.join('，')}`
+    const taskService = this.taskServiceBuilder.create({ userId: userId, projectId: projectId });
+
+    const notificationService = await taskService.getNotificationService()
+    const url = await notificationService.getBindUrl("#/certd/cert/domain");
+    await notificationService.send({
+      id: setting.notificationId,
+      useDefault: true,
+      logger: logger,
+      body: {
+        title: title,
+        content: content,
+        url: url,
+        notificationType: DOMAIN_EXPIRE_CHECK_TYPE
+      }
+    })
+
+  }
+
+
+  public async monitorSettingGet(req: { userId?: number, projectId?: number }) {
+    const { userId, projectId } = req
+    const setting = await this.userSettingService.getSetting<UserDomainMonitorSetting>(userId, projectId, UserDomainMonitorSetting)
+    return setting || {}
+  }
+
+  public async monitorSettingSave(req: { userId?: number, projectId?: number, setting?: any }) {
+    const { userId, projectId, setting } = req
+    const bean: UserDomainMonitorSetting = new UserDomainMonitorSetting()
+    merge(bean, setting)
+    await this.userSettingService.saveSetting<UserDomainMonitorSetting>(userId, projectId, bean)
+    await this.registerMonitorCron({ userId, projectId })
+  }
+
+  public async registerMonitorCron(req: { userId?: number, projectId?: number }) {
+    const { userId, projectId } = req
+    const setting = await this.monitorSettingGet(req)
+    const key = `${DOMAIN_EXPIRE_CHECK_TYPE}:${userId}_${projectId || ''}`
+    this.cron.remove(key)
+    if (setting.enabled) {
+      this.cron.register({
+        cron: setting.cron,
+        name: key,
+        job: async () => {
+          await this.startCheckDomainExpiration({ userId, projectId })
+        },
+      })
+    }
+  }
 }

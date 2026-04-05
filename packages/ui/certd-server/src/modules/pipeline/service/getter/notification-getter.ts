@@ -23,4 +23,8 @@ export class NotificationGetter implements INotificationService {
   async send(req: NotificationSendReq): Promise<void> {
     return await this.notificationService.send(req, this.userId, this.projectId);
   }
+
+  async getBindUrl(url: string) {
+    return await this.notificationService.getBindUrl(url);
+  }
 }

@@ -1,6 +1,5 @@
-import { Config, Configuration, Logger } from '@midwayjs/core';
-import { ILogger } from '@midwayjs/logger';
-import { IMidwayContainer } from '@midwayjs/core';
+import { logger } from '@certd/basic';
+import { Config, Configuration, IMidwayContainer } from '@midwayjs/core';
 import { Cron } from './cron.js';
 
 // ... (see below) ...
@@ -11,18 +10,15 @@ import { Cron } from './cron.js';
 export class CronConfiguration {
   @Config()
   config;
-  @Logger()
-  logger: ILogger;
-
   cron: Cron;
   async onReady(container: IMidwayContainer) {
-    this.logger.info('cron start');
+    logger.info('cron start');
     this.cron = new Cron({
-      logger: this.logger,
+      logger: logger,
       ...this.config,
     });
     container.registerObject('cron', this.cron);
     this.cron.start();
-    this.logger.info('cron started');
+    logger.info('cron started');
   }
 }

@@ -67,6 +67,7 @@ export class AutoCRegisterCron {
     await this.registerUserExpireCheckCron();
 
     await this.registerDomainExpireCheckCron();
+
   }
 
   async registerSiteMonitorCron() {
@@ -211,11 +212,11 @@ export class AutoCRegisterCron {
     if (!isPlus()){
       return
     }
-    // 添加域名即将到期检查任务
+    // 添加域名即将到期同步任务
     const randomWeek = Math.floor(Math.random() * 7) + 1
     const randomHour = Math.floor(Math.random() * 24)
     const randomMinute = Math.floor(Math.random() * 60)
-    logger.info(`注册域名注册过期时间检查任务，每周${randomWeek} ${randomHour}:${randomMinute}检查一次`)
+    logger.info(`注册域名注册过期时间同步任务，每周${randomWeek} ${randomHour}:${randomMinute}检查一次`)
     this.cron.register({
       name: 'domain-expire-check',
       cron: `0 ${randomMinute} ${randomHour} ? * ${randomWeek}`, // 每周随机一天检查一次

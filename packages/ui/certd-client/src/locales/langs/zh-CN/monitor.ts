@@ -68,6 +68,17 @@ export default {
     dnsServerHelper: "使用自定义的域名解析服务器，如：1.1.1.1 , 支持多个",
     certValidDays: "证书到期前天数",
     certValidDaysHelper: "证书到期前多少天发送通知",
+    domain: {
+      monitorSettings: "域名监控设置",
+      enabled: "启用域名监控",
+      enabledHelper: "启用后，将监控域名管理中的域名的过期时间",
+      notificationChannel: "通知渠道",
+      setNotificationChannel: "设置通知渠道",
+      willExpireDays: "到期前天数",
+      willExpireDaysHelper: "域名有效期到期前多少天发送通知",
+      monitorCronSetting: "监控定时设置",
+      cronTrigger: "定时触发监控",
+    },
   },
   cert: {
     expired: "已过期",

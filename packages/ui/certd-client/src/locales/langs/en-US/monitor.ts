@@ -64,6 +64,18 @@ export default {
     dnsServerHelper: "Use a custom domain name resolution server, such as: 1.1.1.1 , support multiple",
     certValidDays: "Certificate Valid Days",
     certValidDaysHelper: "Number of days before expiration to send a notification",
+
+    domain: {
+      monitorSettings: "Domain Monitor Settings",
+      enabled: "Enable Domain Monitor",
+      enabledHelper: "Enable to monitor all domain registration expiration time",
+      notificationChannel: "Notification Channel",
+      setNotificationChannel: "Set the notification channel",
+      willExpireDays: "Will Expire Days",
+      willExpireDaysHelper: "Number of days before expiration to send a notification",
+      monitorCronSetting: "Monitoring Schedule",
+      cronTrigger: "Scheduled trigger for monitoring",
+    },
   },
   cert: {
     expired: "Expired",

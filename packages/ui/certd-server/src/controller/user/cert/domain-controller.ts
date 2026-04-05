@@ -20,7 +20,7 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post('/page', { description: Constants.per.authOnly, summary: "查询域名分页列表" })
   async page(@Body(ALL) body: any) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     body.query.projectId = projectId;
     body.query.userId = userId;
@@ -44,7 +44,7 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post('/list', { description: Constants.per.authOnly, summary: "查询域名列表" })
   async list(@Body(ALL) body: any) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     body.query.projectId = projectId;
     body.query.userId = userId;
@@ -54,7 +54,7 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post('/add', { description: Constants.per.authOnly, summary: "添加域名" })
   async add(@Body(ALL) bean: any) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     bean.projectId = projectId;
     bean.userId = userId;
     return super.add(bean);
@@ -82,7 +82,7 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post('/deleteByIds', { description: Constants.per.authOnly, summary: "批量删除域名" })
   async deleteByIds(@Body(ALL) body: any) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     await this.service.delete(body.ids, {
       userId: userId,
       projectId: projectId,
@@ -94,10 +94,10 @@ export class DomainController extends CrudController<DomainService> {
   @Post('/import/start', { description: Constants.per.authOnly, summary: "开始域名导入任务" })
   async importStart(@Body(ALL) body: any) {
     checkPlus();
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     const { key } = body;
     const req = {
-      key, 
+      key,
       userId: userId,
       projectId: projectId,
     }
@@ -107,7 +107,7 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post('/import/status', { description: Constants.per.authOnly, summary: "查询域名导入任务状态" })
   async importStatus() {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     const req = {
       userId: userId,
       projectId: projectId,
@@ -119,7 +119,7 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post('/import/delete', { description: Constants.per.authOnly, summary: "删除域名导入任务" })
   async importDelete(@Body(ALL) body: any) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     const { key } = body;
     const req = {
       userId: userId,
@@ -133,12 +133,12 @@ export class DomainController extends CrudController<DomainService> {
   @Post('/import/save', { description: Constants.per.authOnly, summary: "保存域名导入任务" })
   async importSave(@Body(ALL) body: any) {
     checkPlus();
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     const { dnsProviderType, dnsProviderAccessId, key } = body;
     const req = {
       userId: userId,
       projectId: projectId,
-      dnsProviderType, dnsProviderAccessId,  key
+      dnsProviderType, dnsProviderAccessId, key
     }
     const item = await this.service.saveDomainImportTask(req);
     return this.ok(item);
@@ -147,7 +147,7 @@ export class DomainController extends CrudController<DomainService> {
 
   @Post('/sync/expiration/start', { description: Constants.per.authOnly, summary: "开始同步域名过期时间任务" })
   async syncExpirationStart(@Body(ALL) body: any) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     await this.service.startSyncExpirationTask({
       userId: userId,
       projectId: projectId,
@@ -156,7 +156,7 @@ export class DomainController extends CrudController<DomainService> {
   }
   @Post('/sync/expiration/status', { description: Constants.per.authOnly, summary: "查询同步域名过期时间任务状态" })
   async syncExpirationStatus(@Body(ALL) body: any) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     const status = await this.service.getSyncExpirationTaskStatus({
       userId: userId,
       projectId: projectId,
@@ -164,5 +164,27 @@ export class DomainController extends CrudController<DomainService> {
     return this.ok(status);
   }
 
+
+
+  @Post('/setting/save', { description: Constants.per.authOnly, summary: "保存域名监控设置" })
+  async settingSave(@Body(ALL) body: any) {
+    const { projectId, userId } = await this.getProjectUserIdWrite();
+    await this.service.monitorSettingSave({
+      userId: userId,
+      projectId: projectId,
+      setting: {...body},
+    })
+    return this.ok();
+  }
+
+  @Post('/setting/get', { description: Constants.per.authOnly, summary: "查询域名监控设置" })
+  async settingGet() {
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    const setting = await this.service.monitorSettingGet({
+      userId: userId,
+      projectId: projectId,
+    })
+    return this.ok(setting);
+  }
 
 }

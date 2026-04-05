@@ -31,6 +31,18 @@ export class UserSiteMonitorSetting extends BaseSettings {
   certValidDays?:number = 14;
 }
 
+
+export class UserDomainMonitorSetting extends BaseSettings {
+  static __title__ = "域名到期监控设置";
+  static __key__ = "user.domain.monitor";
+
+  enabled?:boolean = false;
+  notificationId?:number= 0;
+  cron?:string = undefined;
+  willExpireDays?:number = 30;
+}
+
+
 export class UserEmailSetting extends BaseSettings {
   static __title__ = "用户邮箱设置";
   static __key__ = "user.email";

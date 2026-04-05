@@ -7,6 +7,7 @@ import { IEmailService } from "../service/index.js";
 
 export type NotificationBody = {
   userId?: number;
+  projectId?: number;
   title: string;
   content: string;
   pipeline?: Pipeline;
@@ -20,6 +21,7 @@ export type NotificationBody = {
   pipelineResult?: string;
   pipelineTitle?: string;
   errors?: string;
+  [key: string]: any; // 其他templateData
 };
 
 export type NotificationRequestHandleReqInput<T = any> = {
