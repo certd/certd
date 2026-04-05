@@ -2,7 +2,7 @@ import { http, logger, utils } from '@certd/basic';
 import { AccessService, BaseService, isEnterprise } from '@certd/lib-server';
 import { doPageTurn, Pager, PageRes } from '@certd/pipeline';
 import { DomainVerifiers } from "@certd/plugin-cert";
-import { createDnsProvider, dnsProviderRegistry, DomainParser, parseDomainByPsl } from "@certd/plugin-lib";
+import { createDnsProvider, dnsProviderRegistry, DomainParser } from "@certd/plugin-lib";
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import dayjs from 'dayjs';
@@ -11,13 +11,14 @@ import { In, LessThan, Not, Repository } from 'typeorm';
 import { BackTask, taskExecutor } from '../../basic/service/task-executor.js';
 import { CnameRecordEntity } from "../../cname/entity/cname-record.js";
 import { CnameRecordService } from '../../cname/service/cname-record-service.js';
+import { Cron } from '../../cron/cron.js';
 import { UserDomainImportSetting, UserDomainMonitorSetting } from '../../mine/service/models.js';
 import { UserSettingsService } from '../../mine/service/user-settings-service.js';
 import { JobHistoryService } from '../../monitor/service/job-history-service.js';
 import { TaskServiceBuilder } from '../../pipeline/service/getter/task-service-getter.js';
 import { SubDomainService } from "../../pipeline/service/sub-domain-service.js";
 import { DomainEntity } from '../entity/domain.js';
-import { Cron } from '../../cron/cron.js';
+import { TldClient } from './tld-client.js';
 
 export interface SyncFromProviderReq {
   userId: number;
@@ -487,50 +488,7 @@ export class DomainService extends BaseService<DomainEntity> {
       pageSize: 100,
     })
 
-    const dnsJson = await http.request({
-      url: "https://data.iana.org/rdap/dns.json",
-      method: "GET",
-    })
-    const rdapMap: Record<string, string> = {}
-    for (const item of dnsJson.services) {
-      //  [["store","work"], ["https://rdap.centralnic.com/store/"]],
-      const suffixes = item[0]
-      const urls = item[1]
-      for (const suffix of suffixes) {
-        rdapMap[suffix] = urls[0]
-      }
-    }
-
-    const getDomainExpirationDate = async (domain: string) => {
-      const parsed = parseDomainByPsl(domain)
-      const mainDomain = parsed.domain || ''
-      if (mainDomain !== domain) {
-        req.task.addError(`【${domain}】为子域名，跳过同步`)
-        return
-      }
-      const suffix = parsed.tld || ''
-      const rdapUrl = rdapMap[suffix]
-      if (!rdapUrl) {
-        req.task.addError(`【${domain}】未找到${suffix}的rdap地址`)
-        return
-      }
-      // https://rdap.nic.work/domain/handsfree.work
-      const rdap = await http.request({
-        url: `${rdapUrl}domain/${domain}`,
-        method: "GET",
-      })
-
-      let res: any = {}
-      const events = rdap.events || []
-      for (const item of events) {
-        if (item.eventAction === 'expiration') {
-          res.expirationDate = dayjs(item.eventDate).valueOf()
-        } else if (item.eventAction === 'registration') {
-          res.registrationDate = dayjs(item.eventDate).valueOf()
-        }
-      }
-      return res
-    }
+    const tldClient = new TldClient();
     const query: any = {
       challengeType: "dns",
     }
@@ -561,10 +519,7 @@ export class DomainService extends BaseService<DomainEntity> {
     const itemHandle = async (item: any) => {
       req.task.incrementCurrent()
       try {
-        const res = await getDomainExpirationDate(item.domain)
-        if (!res) {
-          return
-        }
+        const res = await tldClient.getDomainExpirationDate(item.domain)
         const { expirationDate, registrationDate } = res
         if (!expirationDate) {
           req.task.addError(`【${item.domain}】获取域名${item.domain}过期时间失败`)
@@ -581,6 +536,7 @@ export class DomainService extends BaseService<DomainEntity> {
       } catch (error) {
         const errorMsg = `【${item.domain}】${error.message ?? error}`
         req.task.addError(errorMsg)
+        logger.error(errorMsg)
       } finally {
         await utils.sleep(1000)
       }
@@ -645,14 +601,17 @@ export class DomainService extends BaseService<DomainEntity> {
 
     for (const item of list) {
       const { expirationDate } = item
+      const leftDays = dayjs(expirationDate).diff(dayjs(), 'day')
+      //@ts-ignore
+      item.leftDays = leftDays
       if (expirationDate < now) {
-        hasExpireDomains.push(item.domain)
+        hasExpireDomains.push(item)
       } else {
-        willExpireDomains.push(item.domain)
+        willExpireDomains.push(item)
       }
     }
 
-    const title = `域名过期检查：共${total}个域名，即将过期${willExpireDomains.length}个域名，已过期${hasExpireDomains.length}个域名`
+    const title = `域名过期检查：即将过期 ${willExpireDomains.length} 个域名，已过期 ${hasExpireDomains.length} 个域名，共 ${total} 个域名`
 
     try {
       await this.jobHistoryService.update({
@@ -672,8 +631,15 @@ export class DomainService extends BaseService<DomainEntity> {
     }
 
     //发送通知
-    const content = `即将过期域名【${willExpireDomains.length}】:${willExpireDomains.join('，')}
-\n已过期域名【${hasExpireDomains.length}】:${hasExpireDomains.join('，')}`
+    const willExpireDomainsStr = willExpireDomains.map(item => `${item.domain} (剩余${item.leftDays}天)`).join('\n  ')
+    const hasExpireDomainsStr = hasExpireDomains.map(item => `${item.domain} (已过期${item.leftDays}天)`).join('\n  ')
+    const content = `您有域名即将过期，请尽快续费
+
+即将过期域名: ${willExpireDomains.length} 个 (有效期<${expireDays}天)
+  ${willExpireDomainsStr}
+
+已过期域名: ${hasExpireDomains.length} 个
+  ${hasExpireDomainsStr}`
     const taskService = this.taskServiceBuilder.create({ userId: userId, projectId: projectId });
 
     const notificationService = await taskService.getNotificationService()
@@ -686,7 +652,10 @@ export class DomainService extends BaseService<DomainEntity> {
         title: title,
         content: content,
         url: url,
-        notificationType: DOMAIN_EXPIRE_CHECK_TYPE
+        errorMessage: title,
+        notificationType: DOMAIN_EXPIRE_CHECK_TYPE,
+        willExpireDomains,
+        hasExpireDomains,
       }
     })
 
