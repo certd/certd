@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.9](https://github.com/certd/certd/compare/v1.39.8...v1.39.9) (2026-04-05)
+
+### Performance Improvements
+
+* 支持域名到期时间监控通知 ([c6628e7](https://github.com/certd/certd/commit/c6628e7311d6c43c2a784581fb25ec37b29c168d))
+
 ## [1.39.8](https://github.com/certd/certd/compare/v1.39.7...v1.39.8) (2026-03-31)
 
 ### Performance Improvements

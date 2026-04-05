@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.9](https://github.com/certd/certd/compare/v1.39.8...v1.39.9) (2026-04-05)
+
+### Bug Fixes
+
+*  修复cn域名获取不到到期时间的问题 ([73b8e85](https://github.com/certd/certd/commit/73b8e859766097b5251fc4e5051593d686669eb2))
+* 修复某些情况下报无法修改通知的问题 ([d1a6592](https://github.com/certd/certd/commit/d1a65922d7e152d6edcf6c53b70079f16b54a0d3))
+
+### Performance Improvements
+
+* 腾讯云CLB大区增加台北 ([6b109d1](https://github.com/certd/certd/commit/6b109d172f0c7b6ce6ec164dc196d646a65f529f))
+* 优化腾讯云CLB插件支持选择证书id ([c875971](https://github.com/certd/certd/commit/c875971b71dc6d392e56f0a7605281c40d9bb405))
+* 支持域名到期时间监控通知 ([c6628e7](https://github.com/certd/certd/commit/c6628e7311d6c43c2a784581fb25ec37b29c168d))
+* **monitor:** 支持查看监控执行记录 ([b5cc794](https://github.com/certd/certd/commit/b5cc794061c11b7200b669473c25c4bbfc944b61))
+* **plugin-dnsmgr:** 添加彩虹DNS插件支持 ([af50344](https://github.com/certd/certd/commit/af503442b8298c5b89d11cf2ea351d62e66a609e))
+* **spaceship:** 新增Spaceship DNS插件和授权模块 ([21aec77](https://github.com/certd/certd/commit/21aec77e5c3307b5973d4185baba33edcb28926f))
+
 ## [1.39.8](https://github.com/certd/certd/compare/v1.39.7...v1.39.8) (2026-03-31)
 
 ### Bug Fixes

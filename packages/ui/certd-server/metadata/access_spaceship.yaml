@@ -1,0 +1,29 @@
+name: spaceship
+title: Spaceship.com 授权
+icon: clarity:plugin-line
+desc: Spaceship.com API 授权插件
+input:
+  apiKey:
+    title: API Key
+    component:
+      placeholder: 请输入 API Key
+    required: true
+    encrypt: true
+    helper: 前往 [获取 API Key](https://www.spaceship.com/application/api-manager/)
+  apiSecret:
+    title: API Secret
+    component:
+      name: a-input-password
+      vModel: value
+      placeholder: 请输入 API Secret
+    required: true
+    encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 测试 API 连接是否正常
+pluginType: access
+type: builtIn
+scriptFilePath: /plugins/plugin-spaceship/access.js

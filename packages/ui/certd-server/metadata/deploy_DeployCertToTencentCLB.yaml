@@ -8,6 +8,24 @@ icon: svg:icon-tencentcloud
 group: tencent
 desc: 暂时只支持单向认证证书，暂时只支持通用负载均衡
 input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+        - UploadCertToTencent
+    required: true
+    order: 0
+  accessId:
+    title: Access提供者
+    helper: access授权
+    component:
+      name: access-selector
+      type: tencent
+    required: true
+    order: 0
   region:
     title: 大区
     component:
@@ -33,14 +51,12 @@ input:
         - value: na-siliconvalley
         - value: na-toronto
         - value: sa-saopaulo
+        - value: ap-taipei
+      helper: 如果列表中没有，您可以手动输入
     required: true
-    order: 0
-  certName:
-    title: 证书名称前缀
     order: 0
   loadBalancerId:
     title: 负载均衡ID
-    helper: 如果没有配置，则根据域名匹配负载均衡下的监听器（根据域名匹配时暂时只支持前100个）
     required: true
     order: 0
   listenerId:
@@ -57,22 +73,8 @@ input:
       mode: tags
     helper: 如果开启了sni，则此项必须填写，未开启，则不要填写
     order: 0
-  cert:
-    title: 域名证书
-    helper: 请选择前置任务输出的域名证书
-    component:
-      name: output-selector
-      from:
-        - ':cert:'
-    required: true
-    order: 0
-  accessId:
-    title: Access提供者
-    helper: access授权
-    component:
-      name: access-selector
-      type: tencent
-    required: true
+  certName:
+    title: 证书名称前缀
     order: 0
 output: {}
 pluginType: deploy

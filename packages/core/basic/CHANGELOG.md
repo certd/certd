@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.9](https://github.com/certd/certd/compare/v1.39.8...v1.39.9) (2026-04-05)
+
+### Performance Improvements
+
+* **spaceship:** 新增Spaceship DNS插件和授权模块 ([21aec77](https://github.com/certd/certd/commit/21aec77e5c3307b5973d4185baba33edcb28926f))
+
 ## [1.39.8](https://github.com/certd/certd/compare/v1.39.7...v1.39.8) (2026-03-31)
 
 **Note:** Version bump only for package @certd/basic

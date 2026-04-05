@@ -20,8 +20,10 @@
 | 16.| **腾讯云EO DNS** | 腾讯云EO DNS解析提供者 | 
 | 17.| **西部数码** | west dns provider | 
 | 18.| **Dns提供商Demo** | dns provider示例 | 
-| 19.| **51dns** | 51DNS | 
-| 20.| **新网互联** | 新网互联 | 
+| 19.| **彩虹DNS** | 彩虹DNS管理系统 | 
+| 20.| **Spaceship** | Spaceship 域名解析 | 
+| 21.| **51dns** | 51DNS | 
+| 22.| **新网互联** | 新网互联 | 
 
 <style module>
 table th:first-of-type {

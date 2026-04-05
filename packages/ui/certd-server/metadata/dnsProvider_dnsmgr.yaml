@@ -1,0 +1,9 @@
+name: dnsmgr
+title: 彩虹DNS
+desc: 彩虹DNS管理系统
+icon: clarity:plugin-line
+accessType: dnsmgr
+order: 99
+pluginType: dnsProvider
+type: builtIn
+scriptFilePath: /plugins/plugin-dnsmgr/dns-provider.js
