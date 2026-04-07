@@ -204,13 +204,13 @@ const vipTypeDefine: any = {
     desc: t("vip.community_free_version"),
     type: "free",
     icon: "lucide:package-open",
-    privilege: [t("vip.unlimited_certificate_application"), t("vip.unlimited_domain_count"), t("vip.unlimited_certificate_pipelines"), t("vip.common_deployment_plugins"), t("vip.email_webhook_notifications")],
+    privilege: t("vip.free_privilege").split("\n"),
   },
   plus: {
     title: t("vip.professional_edition"),
     desc: t("vip.open_source_support"),
     type: "plus",
-    privilege: [t("vip.vip_group_priority"), t("vip.unlimited_site_certificate_monitoring"), t("vip.more_notification_methods"), t("vip.plugins_fully_open")],
+    privilege: t("vip.plus_privilege").split("\n"),
     trial: {
       title: t("vip.click_to_get_7_day_trial"),
       click: () => {
@@ -227,7 +227,7 @@ const vipTypeDefine: any = {
     desc: t("vip.commercial_license"),
     type: "comm",
     icon: "vaadin:handshake",
-    privilege: [t("vip.all_pro_privileges"), t("vip.allow_commercial_use_modify_logo_title"), t("vip.data_statistics"), t("vip.plugin_management"), t("vip.unlimited_multi_users"), t("vip.support_user_payment")],
+    privilege: t("vip.comm_privilege").split("\n"),
     priceText: props.productInfo.comm.priceText || `¥${props.productInfo.comm.price}/${t("vip.years")}`,
     discountText: props.productInfo.comm.discountText || `¥${props.productInfo.comm.price3}/3${t("vip.years")}`,
     tooltip: props.productInfo.comm.tooltip,

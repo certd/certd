@@ -53,6 +53,7 @@ export default {
   unlimited_certificate_pipelines: "Unlimited certificate pipelines",
   common_deployment_plugins: "Common host, cloud platform, CDN, Baota, 1Panel deployment plugins",
   email_webhook_notifications: "Email, webhook notification methods",
+  free_privilege: "Unlimited certificate applications\nUnlimited domain count\nUnlimited certificate pipelines\nCommon host, cloud platform, CDN, Baota, 1Panel deployment plugins\nEmail, webhook notification methods",
 
   professional_edition: "Professional Edition",
   open_source_support: "Open source requires your sponsorship support",
@@ -60,6 +61,7 @@ export default {
   unlimited_site_certificate_monitoring: "Unlimited site certificate monitoring",
   more_notification_methods: "More notification methods",
   plugins_fully_open: "All plugins open, including Synology and more",
+  plus_privilege: "Access to VIP group, your requests will have priority\nUnlimited site certificate monitoring\nMore notification methods\nAll plugins open, including Synology and more",
   click_to_get_7_day_trial: "Click to get 7-day trial",
   years: "years",
   afdian_support_vip: "Obtain the permanent professional version coupon",
@@ -73,6 +75,7 @@ export default {
   plugin_management: "Plugin management",
   unlimited_multi_users: "Unlimited multi-users",
   support_user_payment: "Supports user payments",
+  comm_privilege: "All professional edition privileges\nAllows commercial use, can modify logo and title\nData statistics\nPlugin management\nUnlimited multi-users\nSupports user payments",
   contact_author_for_trial: "Buy It Now",
   activate: "Activate",
   get_pro_code_after_support: "Go to sponsoring",

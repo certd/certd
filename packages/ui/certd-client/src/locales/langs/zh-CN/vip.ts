@@ -53,6 +53,7 @@ export default {
   unlimited_certificate_pipelines: "证书流水线数量无限制",
   common_deployment_plugins: "常用的主机、云平台、cdn、宝塔、1Panel等部署插件",
   email_webhook_notifications: "邮件、webhook通知方式",
+  free_privilege: "证书申请无限制\n域名数量无限制\n证书流水线数量无限制\n常用的主机、云平台、cdn、宝塔、1Panel等部署插件\n邮件、webhook通知方式",
 
   professional_edition: "专业版",
   open_source_support: "开源需要您的赞助支持，个人和企业内部使用",
@@ -60,6 +61,7 @@ export default {
   unlimited_site_certificate_monitoring: "站点证书监控无限制",
   more_notification_methods: "更多通知方式",
   plugins_fully_open: "插件全开放，群晖等更多插件",
+  plus_privilege: "可加VIP群，您的需求将优先实现\n站点证书监控无限制\n更多通知方式\n插件全开放，群晖等更多插件\n企业模式，项目管理\n域名到期监控\n第三方登录，PassKey登录",
   click_to_get_7_day_trial: "点击获取7天试用",
   years: "年",
   afdian_support_vip: "新用户开通永久专业版立享50优惠券",
@@ -73,6 +75,7 @@ export default {
   plugin_management: "插件管理",
   unlimited_multi_users: "多用户无限制",
   support_user_payment: "支持用户支付（购买套餐，按流水线条数、域名数量、部署次数计费）",
+  comm_privilege: "拥有专业版所有特权\n允许商用，可修改logo、标题\n数据统计\n插件管理\n多用户无限制\n支持用户支付（购买套餐，按流水线条数、域名数量、部署次数计费）",
   activate: "激活",
   get_pro_code_after_support: "前往获取",
   business_contact_author: "",
