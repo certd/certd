@@ -76,10 +76,12 @@ export abstract class BaseService<T> {
    * @param where
    */
   async delete(ids: string | any[], where?: any) {
-    const idArr = this.resolveIdArr(ids);
+    let idArr = this.resolveIdArr(ids);
+    idArr = this.filterIds(idArr);
     if (idArr.length === 0) {
       return;
     }
+  
     await this.getRepository().delete({
       id: In(idArr),
       ...where,
@@ -94,7 +96,9 @@ export abstract class BaseService<T> {
     }
     if (typeof ids === 'string') {
       return ids.split(',');
-    } else {
+    } else if(!Array.isArray(ids)){
+      return [ids];
+    }else {
       return ids;
     }
   }
@@ -217,6 +221,7 @@ export abstract class BaseService<T> {
     if (!Array.isArray(ids)) {
       ids = [ids];
     }
+    ids = this.filterIds(ids);
     const res = await this.getRepository().find({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -234,7 +239,16 @@ export abstract class BaseService<T> {
     throw new PermissionException('权限不足');
   }
 
+ filterIds(ids: any[]) {
+    if (!ids) {
+      throw new ValidateException('ids不能为空');
+    }
+    return ids.filter((item) => {
+      return item!=null && item != ""
+    });
+  }
   async batchDelete(ids: number[], userId: number,projectId?:number) {
+    ids = this.filterIds(ids);
     if(userId!=null){
       const list = await this.getRepository().find({
         where: {

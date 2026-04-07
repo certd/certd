@@ -524,15 +524,12 @@ export class PluginService extends BaseService<PluginEntity> {
       id: pluginEntity.id
     };
   }
-
-
   async deleteByIds(ids: any[]) {
+    ids = this.filterIds(ids);
     for (const id of ids) {
-      await this.unRegisterById(id)
+      await this.unRegisterById(id);
       await this.delete(id);
     }
-   
   }
-
 
 }

@@ -9,6 +9,7 @@ import yaml from "js-yaml";
 import { usePluginImport } from "./use-import";
 import { usePluginConfig } from "./use-config";
 import { useSettingStore } from "/src/store/settings/index";
+import { usePluginStore } from "/@/store/plugin";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const { openConfigDialog } = usePluginConfig();
 
   const settingStore = useSettingStore();
+  const pluginStore = usePluginStore();
   return {
     crudOptions: {
       settings: {
@@ -81,6 +83,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               await openImportDialog({ crudExpose });
             },
           },
+        },
+      },
+      table: {
+        rowKey: "name",
+        remove: {
+          afterRemove: async context => {
+            await pluginStore.reload();
+          },
+          confirmMessage: "确定要删除吗？如果该插件已被使用，删除可能会导致流水线执行失败！",
         },
       },
       rowHandle: {
@@ -141,9 +152,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         },
-      },
-      table: {
-        rowKey: "name",
       },
       tabs: {
         name: "type",
