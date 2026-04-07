@@ -3,11 +3,7 @@ import { SpaceshipAccess } from "./access.js";
 import { PageRes, PageSearch } from "@certd/pipeline";
 
 export type SpaceshipRecord = {
-  id: string;
   name: string;
-  type: string;
-  content: string;
-  domainId: string;
 };
 
 @IsDnsProvider({
@@ -32,7 +28,7 @@ export class SpaceshipProvider extends AbstractDnsProvider<SpaceshipRecord> {
     await this.access.getDomainInfo(domain);
 
     const recordRes = await this.access.doRequest({
-      url: `https://spaceship.dev/api/v1/domains/${domain}/records`,
+      url: `https://spaceship.dev/api/v1/dns/records/${domain}`,
       method: "POST",
       data: {
         force: false,
@@ -41,40 +37,33 @@ export class SpaceshipProvider extends AbstractDnsProvider<SpaceshipRecord> {
             type: type,
             value: value,
             name: hostRecord,
-            ttl: 300
+            ttl: 60
           }
         ]
       }
     });
 
-    return {
-      id: recordRes.items[0].id,
-      name: hostRecord,
-      type: type,
-      content: value,
-      domainId: domain
-    };
+    return recordRes;
   }
 
   async removeRecord(options: RemoveRecordOptions<SpaceshipRecord>): Promise<void> {
-    const recordRes = options.recordRes;
-    this.logger.info("删除域名解析：", recordRes);
+    const recordReq = options.recordReq;
+    this.logger.info("删除域名解析：", recordReq);
 
     await this.access.doRequest({
-      url: `https://spaceship.dev/api/v1/domains/${recordRes.domainId}/records`,
+      // https://spaceship.dev/api/v1/dns/records/xxx.net
+      url: `https://spaceship.dev/api/v1/dns/records/${recordReq.domain}`,
       method: "DELETE",
-      data: {
-        Records: [
-          {
-            type: recordRes.type,
-            value: recordRes.content,
-            name: recordRes.name
-          }
-        ]
-      }
+      data: [
+        {
+          type: recordReq.type,
+          value: recordReq.value,
+          name: recordReq.hostRecord
+        }
+      ]
     });
 
-    this.logger.info("删除域名解析成功:", recordRes.name);
+    this.logger.info("删除域名解析成功:", JSON.stringify(recordReq));
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
