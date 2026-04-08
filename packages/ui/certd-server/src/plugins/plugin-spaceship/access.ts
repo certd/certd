@@ -37,7 +37,7 @@ export class SpaceshipAccess extends BaseAccess {
       name: "api-test",
       action: "TestRequest"
     },
-    helper: "测试 API 连接是否正常"
+    helper: "测试 API 连接是否正常，需要域名查询权限"
   })
   testRequest = true;
 
@@ -48,7 +48,7 @@ export class SpaceshipAccess extends BaseAccess {
 
   async doRequest(options: {
     url: string;
-    method: 'GET' | 'POST' | 'DELETE';
+    method: 'GET' | 'POST' | 'DELETE' | 'PUT';
     params?: any;
     data?: any;
   }) {

@@ -28,8 +28,9 @@ export class SpaceshipProvider extends AbstractDnsProvider<SpaceshipRecord> {
     await this.access.getDomainInfo(domain);
 
     const recordRes = await this.access.doRequest({
+      // https://spaceship.dev/api/v1/dns/records/{domain}
       url: `https://spaceship.dev/api/v1/dns/records/${domain}`,
-      method: "POST",
+      method: "PUT",
       data: {
         force: false,
         items: [

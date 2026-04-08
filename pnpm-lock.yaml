@@ -49,7 +49,7 @@ importers:
   packages/core/acme-client:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../basic
       '@peculiar/x509':
         specifier: ^1.11.0
@@ -213,11 +213,11 @@ importers:
   packages/core/pipeline:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../basic
       '@certd/plus-core':
-        specifier: ^1.39.8
-        version: link:../../pro/plus-core
+        specifier: ^1.39.9
+        version: 1.39.9
       dayjs:
         specifier: ^1.11.7
         version: 1.11.13
@@ -412,7 +412,7 @@ importers:
   packages/libs/lib-k8s:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/basic
       '@kubernetes/client-node':
         specifier: 0.21.0
@@ -452,20 +452,20 @@ importers:
   packages/libs/lib-server:
     dependencies:
       '@certd/acme-client':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.39.8
-        version: link:../../pro/plus-core
+        specifier: ^1.39.9
+        version: 1.39.9
       '@midwayjs/cache':
         specifier: 3.14.0
         version: 3.14.0
@@ -610,16 +610,16 @@ importers:
   packages/plugins/plugin-cert:
     dependencies:
       '@certd/acme-client':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../plugin-lib
       psl:
         specifier: ^1.9.0
@@ -683,17 +683,17 @@ importers:
         specifier: ^3.964.0
         version: 3.964.0(aws-crt@1.26.2)
       '@certd/acme-client':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/pipeline
       '@certd/plus-core':
-        specifier: ^1.39.8
-        version: link:../../pro/plus-core
+        specifier: ^1.39.9
+        version: 1.39.9
       '@kubernetes/client-node':
         specifier: 0.21.0
         version: 0.21.0
@@ -783,16 +783,16 @@ importers:
   packages/pro/commercial-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.8
+        specifier: ^1.39.7
         version: link:../../core/basic
       '@certd/lib-server':
-        specifier: ^1.39.8
+        specifier: ^1.39.7
         version: link:../../libs/lib-server
       '@certd/pipeline':
-        specifier: ^1.39.8
+        specifier: ^1.39.7
         version: link:../../core/pipeline
       '@certd/plus-core':
-        specifier: ^1.39.8
+        specifier: ^1.39.7
         version: link:../plus-core
       '@midwayjs/core':
         specifier: 3.20.11
@@ -868,16 +868,16 @@ importers:
   packages/pro/plugin-plus:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.8
+        specifier: ^1.39.7
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.8
+        specifier: ^1.39.7
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.8
+        specifier: ^1.39.7
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.39.8
+        specifier: ^1.39.7
         version: link:../plus-core
       crypto-js:
         specifier: ^4.2.0
@@ -953,7 +953,7 @@ importers:
   packages/pro/plus-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.8
+        specifier: ^1.39.7
         version: link:../../core/basic
       dayjs:
         specifier: ^1.11.7
@@ -1249,10 +1249,10 @@ importers:
         version: 0.1.3(zod@3.24.4)
     devDependencies:
       '@certd/lib-iframe':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../libs/lib-iframe
       '@certd/pipeline':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/pipeline
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -1447,47 +1447,47 @@ importers:
         specifier: ^3.990.0
         version: 3.990.0(aws-crt@1.26.2)
       '@certd/acme-client':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/basic
       '@certd/commercial-core':
-        specifier: ^1.39.8
-        version: link:../../pro/commercial-core
+        specifier: ^1.39.9
+        version: 1.39.9(better-sqlite3@11.10.0)(mysql2@3.14.1)(pg@8.16.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.100)(typescript@5.9.3))
       '@certd/cv4pve-api-javascript':
         specifier: ^8.4.2
         version: 8.4.2
       '@certd/jdcloud':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../libs/lib-jdcloud
       '@certd/lib-huawei':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../libs/lib-huawei
       '@certd/lib-k8s':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../libs/lib-k8s
       '@certd/lib-server':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../libs/lib-server
       '@certd/midway-flyway-js':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../libs/midway-flyway-js
       '@certd/pipeline':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../core/pipeline
       '@certd/plugin-cert':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../plugins/plugin-cert
       '@certd/plugin-lib':
-        specifier: ^1.39.8
+        specifier: ^1.39.9
         version: link:../../plugins/plugin-lib
       '@certd/plugin-plus':
-        specifier: ^1.39.8
-        version: link:../../pro/plugin-plus
+        specifier: ^1.39.9
+        version: 1.39.9
       '@certd/plus-core':
-        specifier: ^1.39.8
-        version: link:../../pro/plus-core
+        specifier: ^1.39.9
+        version: 1.39.9
       '@google-cloud/publicca':
         specifier: ^1.3.0
         version: 1.3.0(encoding@0.1.13)
@@ -2838,8 +2838,17 @@ packages:
   '@better-scroll/zoom@2.5.1':
     resolution: {integrity: sha512-aGvFY5ooeZWS4RcxQLD+pGLpQHQxpPy0sMZV3yadcd2QK53PK9gS4Dp+BYfRv8lZ4/P2LoNEhr6Wq1DN6+uPlA==}
 
+  '@certd/commercial-core@1.39.9':
+    resolution: {integrity: sha512-oq4rWrK6Xxy9hkxZaUbQbZ2pFgtRcPuqlg9Ud1vtzO8zmFkZY48j+vsUH0V32k1dNr75BIl9r9RFY2Vwc6rcVg==}
+
   '@certd/cv4pve-api-javascript@8.4.2':
     resolution: {integrity: sha512-udGce7ewrVl4DmZvX+17PjsnqsdDIHEDatr8QP0AVrY2p+8JkaSPW4mXCKiLGf82C9K2+GXgT+qNIqgW7tfF9Q==}
+
+  '@certd/plugin-plus@1.39.9':
+    resolution: {integrity: sha512-OdY0glIHQeaGUYwH8KvN++go4QB5KUBmRvw1jzIDKu5pHZEKkEij0UBfeDv8a5CC9ynA+4/aoNPCvB0tncNuCg==}
+
+  '@certd/plus-core@1.39.9':
+    resolution: {integrity: sha512-75Wo4KQoHFxhWwLB3XjRC+ihButagGiaxiwS1u4oVzESW9EqQ+XKcGEw/WJF3oh81dE7orexo2nA4p/PdoTSlg==}
 
   '@certd/vue-js-cron-core@6.0.3':
     resolution: {integrity: sha512-kqzoAMhYz9j6FGNWEODRYtt4NpUEUwjpkU89z5WVg2tCtOcI5VhwyUGOd8AxiBCRfd6PtXvzuqw85PaOps9wrQ==}
@@ -15146,11 +15155,63 @@ snapshots:
     dependencies:
       '@better-scroll/core': 2.5.1
 
+  '@certd/commercial-core@1.39.9(better-sqlite3@11.10.0)(mysql2@3.14.1)(pg@8.16.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.100)(typescript@5.9.3))':
+    dependencies:
+      '@certd/basic': link:packages/core/basic
+      '@certd/lib-server': link:packages/libs/lib-server
+      '@certd/pipeline': link:packages/core/pipeline
+      '@certd/plus-core': 1.39.9
+      '@midwayjs/core': 3.20.11
+      '@midwayjs/koa': 3.20.13
+      '@midwayjs/logger': 3.4.2
+      '@midwayjs/swagger': 3.20.11
+      '@midwayjs/typeorm': 3.20.11
+      dayjs: 1.11.13
+      typeorm: 0.3.24(better-sqlite3@11.10.0)(mysql2@3.14.1)(pg@8.16.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.100)(typescript@5.9.3))
+    transitivePeerDependencies:
+      - '@google-cloud/spanner'
+      - '@sap/hana-client'
+      - babel-plugin-macros
+      - better-sqlite3
+      - hdb-pool
+      - ioredis
+      - mongodb
+      - mssql
+      - mysql2
+      - oracledb
+      - pg
+      - pg-native
+      - pg-query-stream
+      - redis
+      - reflect-metadata
+      - sql.js
+      - sqlite3
+      - supports-color
+      - ts-node
+      - typeorm-aurora-data-api-driver
+
   '@certd/cv4pve-api-javascript@8.4.2':
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
+
+  '@certd/plugin-plus@1.39.9':
+    dependencies:
+      '@certd/basic': link:packages/core/basic
+      '@certd/pipeline': link:packages/core/pipeline
+      '@certd/plugin-lib': link:packages/plugins/plugin-lib
+      '@certd/plus-core': 1.39.9
+      crypto-js: 4.2.0
+      dayjs: 1.11.13
+      form-data: 4.0.2
+      jsrsasign: 11.1.0
+      querystring: 0.2.1
+
+  '@certd/plus-core@1.39.9':
+    dependencies:
+      '@certd/basic': link:packages/core/basic
+      dayjs: 1.11.13
 
   '@certd/vue-js-cron-core@6.0.3':
     dependencies:
@@ -20864,13 +20925,13 @@ snapshots:
       resolve: 1.22.10
       semver: 6.3.1
 
-  eslint-plugin-prettier@3.4.1(eslint-config-prettier@8.10.0(eslint@7.32.0))(eslint@7.32.0)(prettier@2.8.8):
+  eslint-plugin-prettier@3.4.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@7.32.0)(prettier@2.8.8):
     dependencies:
       eslint: 7.32.0
       prettier: 2.8.8
       prettier-linter-helpers: 1.0.0
     optionalDependencies:
-      eslint-config-prettier: 8.10.0(eslint@7.32.0)
+      eslint-config-prettier: 8.10.0(eslint@8.57.0)
 
   eslint-plugin-prettier@4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8):
     dependencies:
@@ -23296,7 +23357,7 @@ snapshots:
       eslint: 7.32.0
       eslint-config-prettier: 8.10.0(eslint@7.32.0)
       eslint-plugin-node: 11.1.0(eslint@7.32.0)
-      eslint-plugin-prettier: 3.4.1(eslint-config-prettier@8.10.0(eslint@7.32.0))(eslint@7.32.0)(prettier@2.8.8)
+      eslint-plugin-prettier: 3.4.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@7.32.0)(prettier@2.8.8)
       execa: 5.1.1
       inquirer: 7.3.3
       json5: 2.2.3
