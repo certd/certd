@@ -7,6 +7,9 @@ import { ILogger } from "@certd/basic";
 import dayjs from "dayjs";
 import { uniq } from "lodash-es";
 
+export interface ICertInfoGetter {
+  getByPipelineId: (pipelineId: number) => Promise<CertInfo>;
+}
 export type CertInfo = {
   crt: string; //fullchain证书
   key: string; //私钥

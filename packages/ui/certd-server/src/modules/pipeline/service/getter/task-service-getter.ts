@@ -9,6 +9,9 @@ import { SubDomainsGetter } from "./sub-domain-getter.js";
 import { DomainVerifierGetter } from "./domain-verifier-getter.js";
 import { DomainService } from "../../../cert/service/domain-service.js";
 import { SubDomainService } from "../sub-domain-service.js";
+import { CertInfoGetter } from "./cert-info-getter.js";
+import { CertInfoService } from "../../../monitor/index.js";
+import { ICertInfoGetter } from "@certd/plugin-lib";
 
 const serviceNames = [
   'ocrService',
@@ -34,6 +37,8 @@ export class TaskServiceGetter implements IServiceGetter{
       return await this.getNotificationService() as T
     } else if (serviceName === 'domainVerifierGetter') {
       return await this.getDomainVerifierGetter() as T
+    } else if (serviceName === 'certInfoGetter') {
+      return await this.getCertInfoGetter() as T
     }else{
       if(!serviceNames.includes(serviceName)){
         throw new Error(`${serviceName} not in whitelist`)
@@ -49,6 +54,11 @@ export class TaskServiceGetter implements IServiceGetter{
     const subDomainsService:SubDomainService = await  this.appCtx.getAsync("subDomainService")
     const domainService:DomainService = await  this.appCtx.getAsync("domainService")
     return new SubDomainsGetter(this.userId,this.projectId, subDomainsService,domainService)
+  }
+
+  async getCertInfoGetter(): Promise<ICertInfoGetter> {
+    const certInfoService:CertInfoService = await  this.appCtx.getAsync("certInfoService")
+    return new CertInfoGetter(this.userId, this.projectId, certInfoService)
   }
 
   async getAccessService(): Promise<AccessGetter> {

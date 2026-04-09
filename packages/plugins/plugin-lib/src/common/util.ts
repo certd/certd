@@ -44,6 +44,10 @@ export function createRemoteSelectInputDefine(opts?: {
   component?: any;
   value?: any;
   pageSize?: number;
+  uploadCert?: {
+    title?: string;
+    columns?: Record<string, any>;
+  };
 }) {
   const title = opts?.title || "请选择";
   const certDomainsInputKey = opts?.certDomainsInputKey || "certDomains";
@@ -74,6 +78,7 @@ export function createRemoteSelectInputDefine(opts?: {
       multi,
       pageSize: opts?.pageSize,
       watches: [certDomainsInputKey, accessIdInputKey, ...watches],
+      uploadCert: opts?.uploadCert,
       ...opts.component,
     },
     value: opts.value,

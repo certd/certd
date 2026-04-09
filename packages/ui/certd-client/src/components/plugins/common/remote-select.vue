@@ -25,8 +25,9 @@
           </div>
         </template>
       </a-select>
-      <div class="ml-5">
+      <div class="ml-5 flex flex-row no-wrap">
         <fs-button :loading="loading" title="刷新选项" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
+        <UploadCert v-if="uploadCert" class="ml-5" v-bind="uploadCert" @submit="refreshOptions"></UploadCert>
       </div>
     </div>
     <div class="helper" :class="{ error: hasError }">
@@ -39,6 +40,8 @@ import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 import { defineComponent, inject, ref, useAttrs, watch, Ref } from "vue";
 import { PluginDefine } from "@certd/pipeline";
 import { getInputFromForm } from "./utils";
+import UploadCert from "./upload-cert.vue";
+import { UploadCertProps } from "./types";
 
 defineOptions({
   name: "RemoteSelect",
@@ -65,9 +68,10 @@ const props = defineProps<
     pager?: boolean;
     multi?: boolean;
     pageSize?: number;
+    uploadCert?: UploadCertProps;
   } & ComponentPropsType
 >();
-
+debugger;
 const emit = defineEmits<{
   "update:value": any;
 }>();
