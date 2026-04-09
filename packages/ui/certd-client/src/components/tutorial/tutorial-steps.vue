@@ -4,7 +4,7 @@
 
     <div class="step-item overflow-hidden">
       <div class="text">
-        <h3 class="title">{{ number }} {{ currentStepItem.title }}</h3>
+        <h3 class="title font-bold">{{ number }} {{ currentStepItem.title }}</h3>
         <div class="description mt-5">
           <div v-for="(desc, index) of currentStepItem.descriptions" :key="index">{{ desc }}</div>
         </div>
@@ -247,6 +247,7 @@ function previewMask() {
 
 <style lang="less">
 .tutorial-steps {
+  display: flex;
   .step-item {
     display: flex !important;
     flex-direction: row;

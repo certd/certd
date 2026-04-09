@@ -65,6 +65,11 @@
               </div>
               <div class="get-show">
                 <template v-if="item.type === 'plus'">
+                  <span class="mr-5">
+                    已有
+                    <span class="color-red"> {{ todayOrderCount.vipTotal }}</span>
+                    位伙伴支持
+                  </span>
                   <a-tooltip :title="t('vip.afdian_support_vip')">
                     <a-button size="small" type="primary" @click="goBuyPlusPage">
                       {{ t("vip.get_after_support") }}
@@ -260,6 +265,9 @@ const todayOrderCount = computed(() => {
   const lastStage = countInfo?.stages?.[countInfo?.stages?.length - 1] || {};
   lastStage.orderCount = orderCount;
 
+  const vipTotal = countInfo?.vipTotal || 0;
+  const showVipTotal = countInfo?.showVipTotal || false;
+  const userTotal = countInfo?.userTotal || 0;
   const stages: any = [];
   stages.push({
     title: countInfo.title,
@@ -273,6 +281,9 @@ const todayOrderCount = computed(() => {
   return {
     enabled: enabled,
     stages: stages,
+    showVipTotal: showVipTotal,
+    vipTotal: vipTotal,
+    userTotal: userTotal,
   };
 });
 

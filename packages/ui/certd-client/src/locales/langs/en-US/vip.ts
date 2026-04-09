@@ -65,7 +65,7 @@ export default {
   click_to_get_7_day_trial: "Click to get 7-day trial",
   years: "years",
   afdian_support_vip: "Obtain the permanent professional version coupon",
-  get_after_support: "Get after sponsoring",
+  get_after_support: "sponsoring",
 
   business_edition: "Business Edition",
   commercial_license: "Commercial license, allowed for external operation",

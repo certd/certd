@@ -251,7 +251,7 @@ function openUpgrade() {
     class: "vip-modal",
     maskClosable: true,
     okText: t("vip.close"),
-    width: 1100,
+    width: 1180,
     content: () => {
       return <VipModalContent placeholder={placeholder} isPlus={isPlus} productInfo={productInfo} goBuyPlusPage={goBuyPlusPage} goBuyCommPage={goBuyCommPage} openStarModal={openStarModal} modalRef={modalRef} />;
     },

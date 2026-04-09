@@ -33,7 +33,7 @@ export default {
       activateCertDesc2: "让证书生效",
       taskSuccessTitle: "部署任务添加成功",
       taskSuccessDesc: "现在可以运行",
-      pluginsTitle: "本系统提供茫茫多的部署插件",
+      pluginsTitle: "本系统提供海量的部署插件",
       pluginsDesc: "您可以根据自身需求将证书部署到各种应用和平台",
     },
   },
