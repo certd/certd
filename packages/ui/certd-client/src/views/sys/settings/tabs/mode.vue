@@ -29,7 +29,7 @@ import { SysSettings } from "/@/views/sys/settings/api";
 import * as api from "/@/views/sys/settings/api";
 import { merge } from "lodash-es";
 import { useSettingStore } from "/@/store/settings";
-import { notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
 import { dict } from "@fast-crud/fast-crud";
 import { useProjectStore } from "/@/store/project";
@@ -80,6 +80,24 @@ const onFinish = async (form: any) => {
     notification.success({
       message: t("certd.saveSuccess"),
     });
+
+    if (formState.public.adminMode === "enterprise") {
+      Modal.confirm({
+        title: "数据迁移",
+        okText: "去迁移",
+        content: () => {
+          return (
+            <div>
+              <div>设置为企业模式之后，之前创建的个人数据不会显示</div>
+              <div>是否前往迁移数据到项目? </div>
+            </div>
+          );
+        },
+        onOk: () => {
+          goCurrentProject();
+        },
+      });
+    }
   } finally {
     saveLoading.value = false;
   }

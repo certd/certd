@@ -118,6 +118,10 @@ export function useTransfer() {
               <div class="text-2xl font-bold"> 迁移到→ </div>
               <div>项目："{projectStore.currentProject?.name}"</div>
             </div>
+            <div class="text-center m-4">
+              <p class="text-red-500">注意；此操作不可逆，一旦迁移，数据将无法还原回个人用户名下。</p>
+            </div>
+
             <div class="flex flex-row items-center justify-center w-full">
               <a-button type="primary" onClick={doTransfer}>
                 确认迁移
