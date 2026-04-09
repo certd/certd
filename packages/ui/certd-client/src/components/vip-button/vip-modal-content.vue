@@ -65,7 +65,7 @@
               </div>
               <div class="get-show">
                 <template v-if="item.type === 'plus'">
-                  <span class="mr-5">
+                  <span v-if="todayOrderCount.showVipTotal" class="mr-5">
                     已有
                     <span class="color-red"> {{ todayOrderCount.vipTotal }}</span>
                     位伙伴支持
@@ -274,6 +274,7 @@ const todayOrderCount = computed(() => {
     vipTotal: countInfo?.vipTotal || 0,
     orderCount: orderCount,
     bg: lastStage.bg,
+    showVipTotal: showVipTotal,
   });
   if (lastStage.orderCount > 0) {
     stages.push(lastStage);

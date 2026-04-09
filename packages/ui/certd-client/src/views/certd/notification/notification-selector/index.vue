@@ -134,18 +134,21 @@ async function emitValue(value: any) {
   const userId = userStore.userInfo.id;
   const isEnterprice = projectStore.isEnterprise;
 
-  if (isEnterprice) {
-    const projectId = projectStore.currentProjectId;
-    if (pipeline?.value?.projectId !== projectId) {
-      message.error("对不起，您不能修改其他项目流水线的通知");
-      return;
-    }
-  } else {
-    if (pipeline?.value?.userId !== userId) {
-      message.error("对不起，您不能修改他人流水线的通知");
-      return;
+  if (pipeline?.value) {
+    if (isEnterprice) {
+      const projectId = projectStore.currentProjectId;
+      if (pipeline?.value?.projectId !== projectId) {
+        message.error("对不起，您不能修改其他项目流水线的通知");
+        return;
+      }
+    } else {
+      if (pipeline?.value?.userId !== userId) {
+        message.error("对不起，您不能修改他人流水线的通知");
+        return;
+      }
     }
   }
+
   emit("change", value);
   emit("update:modelValue", value);
 }
