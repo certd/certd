@@ -121,7 +121,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   @Post('/checkAll', { description: Constants.per.authOnly, summary: "检查所有站点监控" })
   async checkAll() {
     const { projectId, userId } = await this.getProjectUserIdWrite()
-    await this.service.checkAllByUsers(userId,projectId);
+    this.service.triggerJobOnce(userId,projectId);
     return this.ok();
   }
 

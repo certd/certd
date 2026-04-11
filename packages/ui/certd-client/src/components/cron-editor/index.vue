@@ -13,13 +13,11 @@
 </template>
 
 <script lang="ts" setup>
-import parser from "cron-parser";
 import { computed, ref } from "vue";
-import dayjs from "dayjs";
 import { useI18n } from "vue-i18n";
+import { getCronNextTimes } from "/@/components/cron-editor/utils";
 
 const { t } = useI18n();
-import { getCronNextTimes } from "/@/components/cron-editor/utils";
 defineOptions({
   name: "CronEditor",
 });

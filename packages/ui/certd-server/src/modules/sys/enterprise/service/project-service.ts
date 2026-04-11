@@ -284,4 +284,14 @@ export class ProjectService extends BaseService<ProjectEntity> {
     return project?.isSystem ?? false;
   }
 
+
+  async getAllProjectIds() {
+    const projects = await this.repository.find({
+      select: ['id'],
+      where: {
+        disabled: false,
+      },
+    })
+    return projects.map(item => item.id);
+  }
 }

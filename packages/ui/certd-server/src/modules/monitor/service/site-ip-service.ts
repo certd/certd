@@ -320,8 +320,6 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
       for (const item of list) {
         await this.add(item);
       }
-
-      // await this.checkAllByUsers(req.userId);
     };
     await batchAdd(list);
   }

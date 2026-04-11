@@ -400,7 +400,15 @@ export class UserService extends BaseService<UserEntity> {
       id: userId,
       ...body,
     })
+  }
 
-
+  async getAllUserIds() {
+    const users = await this.repository.find({
+      select: ['id'],
+      where: {
+        status: 1,
+      },
+    })
+    return users.map(item => item.id);
   }
 }

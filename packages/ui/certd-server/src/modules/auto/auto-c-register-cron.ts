@@ -1,17 +1,18 @@
-import {Autoload, Config, Init, Inject, Scope, ScopeEnum} from '@midwayjs/core';
-import {PipelineService} from '../pipeline/service/pipeline-service.js';
-import {logger} from '@certd/basic';
-import {SysSettingsService, SysSiteInfo} from '@certd/lib-server';
-import {SiteInfoService} from '../monitor/index.js';
-import {Cron} from '../cron/cron.js';
-import {UserSettingsService} from "../mine/service/user-settings-service.js";
-import {UserSiteMonitorSetting} from "../mine/service/models.js";
-import {getPlusInfo, isPlus} from "@certd/plus-core";
+import { logger } from '@certd/basic';
+import { SysSettingsService, SysSiteInfo } from '@certd/lib-server';
+import { getPlusInfo, isPlus } from "@certd/plus-core";
+import { Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
 import dayjs from "dayjs";
-import {NotificationService} from "../pipeline/service/notification-service.js";
-import {UserService} from "../sys/authority/service/user-service.js";
-import {Between} from "typeorm";
+import { Between } from "typeorm";
 import { DomainService } from '../cert/service/domain-service.js';
+import { Cron } from '../cron/cron.js';
+import { UserSiteMonitorSetting } from "../mine/service/models.js";
+import { UserSettingsService } from "../mine/service/user-settings-service.js";
+import { SiteInfoService } from '../monitor/index.js';
+import { NotificationService } from "../pipeline/service/notification-service.js";
+import { PipelineService } from '../pipeline/service/pipeline-service.js';
+import { UserService } from "../sys/authority/service/user-service.js";
+import { ProjectService } from '../sys/enterprise/service/project-service.js';
 
 @Autoload()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -47,6 +48,9 @@ export class AutoCRegisterCron {
 
   @Inject()
   domainService: DomainService;
+  @Inject()
+  projectService: ProjectService;
+
 
 
   @Init()
@@ -72,9 +76,23 @@ export class AutoCRegisterCron {
 
   async registerSiteMonitorCron() {
     //先注册公共job
-    await this.siteInfoService.registerSiteMonitorJob()
+    logger.info(`注册公共站点证书检查定时任务`)
+    const randomMinute = Math.floor(Math.random() * 60)
+    this.cron.register({
+      name: 'siteMonitor',
+      cron: `0 ${randomMinute} 0 * * *`,
+      job:async ()=>{
+        logger.info(`开始公共站点证书检查任务`)
+        await this.siteInfoService.triggerCommonJob()
+        logger.info(`公共站点证书检查任务完成`)
+      },
+    });
+    logger.info(`注册公共站点证书检查定时任务完成`)
+
+
 
     //注册用户独立的检查时间
+    logger.info(`注册用户独立站点证书检查定时任务`)
     const monitorSettingList = await this.userSettingsService.list({
       query:{
         key: UserSiteMonitorSetting.__key__,
@@ -87,10 +105,11 @@ export class AutoCRegisterCron {
       }
       await this.siteInfoService.registerSiteMonitorJob(item.userId,item.projectId)
     }
+    logger.info(`注册用户独立站点证书检查定时任务完成`)
 
     if (this.immediateTriggerSiteMonitor) {
-      logger.info(`立即触发一次站点证书检查任务`)
-      await this.siteInfoService.triggerJobOnce()
+      logger.info(`立即触发一次公共站点证书检查任务`)
+      await this.siteInfoService.triggerCommonJob()
     }
   }
 
