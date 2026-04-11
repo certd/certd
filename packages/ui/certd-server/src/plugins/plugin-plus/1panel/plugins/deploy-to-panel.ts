@@ -63,17 +63,17 @@ export class OnePanelDeployToPanelPlugin extends AbstractTaskPlugin {
     helper: "SSL模式，只有2.1.x以上版本才支持，旧版本保持默认即可",
     component: {
       name: "a-select",
+      vMode: "value",
       options: [
         { label: "启用SSL(旧版本)", value: "enable" },
         { label: "Strict模式(>=2.1.x)", value: "Enable" },
         { label: "Mux模式(>=2.1.x)", value: "Mux" }
       ],
-      value: "enable",
     },
+    value: "enable",
     required: true,
   })
   sslMode!: string;
-
 
   access: OnePanelAccess;
   async onInstance() {

@@ -126,7 +126,7 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       if (config.skipSslVerify || config.httpProxy) {
         let rejectUnauthorized = true;
         if (config.skipSslVerify) {
-          logger.info("跳过SSL验证");
+          logger.info("忽略接口请求的SSL校验");
           rejectUnauthorized = false;
         }
         const proxy: any = {};

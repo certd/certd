@@ -334,7 +334,7 @@ import { useCertViewer } from "/@/views/certd/pipeline/use";
 import { useI18n } from "/@/locales";
 import TriggerIcon from "./component/trigger-icon.vue";
 import { useCrudPermission } from "/@/plugin/permission";
-
+import { onBeforeRouteLeave } from "vue-router";
 export default defineComponent({
   name: "PipelineEdit",
   // eslint-disable-next-line vue/no-unused-components
@@ -372,10 +372,22 @@ export default defineComponent({
   },
   emits: ["update:modelValue", "update:editMode"],
   setup(props, ctx) {
+    onBeforeRouteLeave((to, from) => {
+      const newPipelineStr = JSON.stringify(pipeline.value || {});
+      if (pipelineOriginStr.value && pipelineOriginStr.value !== newPipelineStr) {
+        const answer = window.confirm("流水线还未保存，确定要离开吗？");
+        if (!answer) {
+          return false; // 返回 false 即可阻止本次路由跳转
+        }
+        return true;
+      }
+    });
+
     const { t } = useI18n();
     //右侧选中的pipeline
     const currentPipeline: Ref<any> = ref({});
     const pipeline: Ref<any> = ref({});
+    const pipelineOriginStr = ref("");
     const pipelineDetail: Ref<any> = ref({});
     const histories: Ref<RunHistory[]> = ref([]);
 
@@ -423,6 +435,7 @@ export default defineComponent({
       await loadCurrentHistoryDetail();
       pipeline.value = currentHistory.value.pipeline;
       currentPipeline.value = currentHistory.value.pipeline;
+      pipelineOriginStr.value = JSON.stringify(pipeline.value);
     };
 
     async function loadHistoryList(reload = false, historyId: number = null) {
@@ -880,6 +893,7 @@ export default defineComponent({
               pipeline.value.version = version;
               currentPipeline.value.version = version;
             }
+            pipelineOriginStr.value = JSON.stringify(pipeline.value);
           }
           if (offEdit) {
             toggleEditMode(false);
