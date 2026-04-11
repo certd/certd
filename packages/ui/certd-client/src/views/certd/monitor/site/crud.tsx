@@ -346,12 +346,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             width: 230,
             sorter: true,
             cellRender({ value, row }) {
-              const url = `https://${value}:${row.httpsPort}`;
+              const domainPort = value + ":" + row.httpsPort;
+              const url = `https://${domainPort}`;
               return (
-                <a-tooltip title={value} placement="left">
-                  <fs-copyable modelValue={value}>
+                <a-tooltip title={domainPort} placement="left">
+                  <fs-copyable modelValue={domainPort} title={domainPort}>
                     <a target="_blank" href={url}>
-                      {value}:{row.httpsPort}
+                      {domainPort}
                     </a>
                   </fs-copyable>
                 </a-tooltip>
