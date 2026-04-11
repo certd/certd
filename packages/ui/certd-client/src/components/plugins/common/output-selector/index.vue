@@ -33,7 +33,7 @@ export default {
     async function onCreate() {
       await pluginStore.init();
       options.value = pluginStore.group.getPreStepOutputOptions({
-        pipeline: pipeline.value,
+        pipeline: pipeline?.value,
         currentStageIndex: currentStageIndex.value,
         currentTaskIndex: currentTaskIndex.value,
         currentStepIndex: currentStepIndex.value,

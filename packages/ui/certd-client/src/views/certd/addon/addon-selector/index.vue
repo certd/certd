@@ -131,7 +131,7 @@ const userStore = useUserStore();
 const projectStore = useProjectStore();
 async function emitValue(value: any) {
   // target.value = optionsDictRef.dataMap[value];
-  if (pipeline.value) {
+  if (pipeline?.value) {
     const userId = userStore.userInfo.id;
     const isEnterprice = projectStore.isEnterprise;
     if (isEnterprice) {

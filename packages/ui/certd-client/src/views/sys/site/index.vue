@@ -88,7 +88,7 @@ const onFinish = async (form: any) => {
 const userStore = useUserStore();
 const uploaderConfig = ref({
   type: "form",
-  action: "/basic/file/upload",
+  action: "/basic/file/upload?token=" + userStore.getToken,
   name: "file",
   headers: {
     Authorization: "Bearer " + userStore.getToken,

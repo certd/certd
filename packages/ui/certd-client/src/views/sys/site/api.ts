@@ -2,7 +2,7 @@
 import { request } from "/src/api/service";
 const apiPrefix = "/sys/site";
 
-export async function SettingsGet(key: string) {
+export async function SettingsGet() {
   return await request({
     url: apiPrefix + "/get",
     method: "post",
