@@ -99,3 +99,11 @@ export async function SyncExpirationStatus() {
     method: "post",
   });
 }
+
+export async function IsSubdomain(body: any) {
+  return await request({
+    url: apiPrefix + "/isSubdomain",
+    method: "post",
+    data: body,
+  });
+}

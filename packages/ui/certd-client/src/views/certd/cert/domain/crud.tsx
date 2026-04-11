@@ -52,6 +52,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   });
 
   const openDomainImportManageDialog = useDomainImportManage();
+
+  const subdomainConfirmed = ref(false);
   return {
     crudOptions: {
       settings: {
@@ -85,10 +87,29 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         fixed: "right",
       },
       form: {
-        beforeSubmit({ form }) {
+        async beforeSubmit({ form }) {
           if (form.challengeType === "cname") {
             throw new Error("CNAME方式请前往CNAME记录页面进行管理");
           }
+          if (form.challengeType === "dns") {
+            const isSubdomain = await api.IsSubdomain({ domain: form.domain });
+            if (isSubdomain && !subdomainConfirmed.value) {
+              Modal.confirm({
+                title: "子域名确认",
+                content: `检测到${form.domain}为子域名，只有托管子域名和免费二级子域名才需要在此处维护，否则会导致申请证书失败，请确认是否继续？`,
+                okText: "确认",
+                okType: "danger",
+                onOk: () => {
+                  subdomainConfirmed.value = true;
+                  crudExpose.getFormWrapperRef().submit();
+                },
+              });
+              return false;
+            }
+          }
+        },
+        afterSubmit({ form }) {
+          subdomainConfirmed.value = false;
         },
       },
       actionbar: {
@@ -163,6 +184,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             required: true,
+            helper: "注意：DNS校验方式下，子域名不需要在此处维护，否则会影响证书申请（子域名托管或免费二级域名除外）",
           },
           editForm: {
             component: {

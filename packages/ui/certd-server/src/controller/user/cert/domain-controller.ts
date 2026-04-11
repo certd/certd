@@ -3,6 +3,7 @@ import { Constants, CrudController } from '@certd/lib-server';
 import { DomainService } from "../../../modules/cert/service/domain-service.js";
 import { checkPlus } from '@certd/plus-core';
 import { ApiTags } from '@midwayjs/swagger';
+import { parseDomainByPsl } from '@certd/plugin-lib';
 
 /**
  * 授权
@@ -185,6 +186,14 @@ export class DomainController extends CrudController<DomainService> {
       projectId: projectId,
     })
     return this.ok(setting);
+  }
+
+  @Post('/isSubdomain', { description: Constants.per.authOnly, summary: "判断是否为子域名" })
+  async isSubdomain(@Body(ALL) body: any) {
+    const { domain } = body;
+    const parsed = parseDomainByPsl(domain)
+    const mainDomain = parsed.domain || ''
+    return this.ok(mainDomain !== domain);
   }
 
 }
