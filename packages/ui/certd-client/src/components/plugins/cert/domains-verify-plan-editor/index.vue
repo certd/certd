@@ -2,7 +2,7 @@
   <div class="domains-verify-plan-editor" :class="{ fullscreen }">
     <div class="fullscreen-modal" @click="fullscreenExit"></div>
     <div class="plan-wrapper">
-      <div class="plan-box">
+      <div class="plan-box bg-white dark:bg-neutral-700">
         <div class="fullscreen-button pointer flex-center" @click="fullscreen = !fullscreen">
           <span v-if="!fullscreen" style="font-size: 10px" class="flex-center">
             这里可以放大
@@ -273,7 +273,7 @@ watch(
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(74, 74, 74, 0.78);
+    // background-color: rgba(74, 74, 74, 0.78);
     z-index: 1000;
     margin: auto;
     display: flex;
@@ -287,7 +287,6 @@ watch(
       .plan-box {
         position: relative;
         margin: auto;
-        background-color: #fff;
       }
     }
 
@@ -315,7 +314,7 @@ watch(
     height: 100%;
     //table-layout: fixed;
     th {
-      background-color: #f5f5f5;
+      // background-color: #f5f5f5;
       border-top: 1px solid #e8e8e8;
       border-left: 1px solid #e8e8e8;
       border-bottom: 1px solid #e8e8e8;

@@ -24,6 +24,9 @@
     </a-tabs>
     <template #footer>
       <fs-button v-if="settingsStore.sysPublic.aiChatEnabled !== false" key="aiChat" :tooltip="{ title: 'AI分析异常' }" type="primary" icon="ion:color-wand-outline" @click="taskModal.onAiChat">AI分析</fs-button>
+      <!-- <fs-button v-if="!settingsStore.isComm && currentStatus === 'error'" key="1v1" :tooltip="{ title: '升级专业版，获得一对一分析服务，为您排忧解难' }" class="isPlus" icon="imingcute:vip-1-line" @click="callService">
+        呼叫专家
+      </fs-button> -->
       <fs-button key="rerun" type="primary" :tooltip="{ title: '强制重新执行此步骤' }" text="重新运行" icon="icon-park-outline:replay-music" @click="triggerRun(activeKey)"></fs-button>
       <fs-button key="downloadLogs" type="primary" :tooltip="{ title: '当前任务日志下载' }" icon="ion:arrow-down-circle-outline" @click="taskModal.onDownloadLogs">下载日志</fs-button>
       <fs-button key="cancel" :tooltip="{ title: '关闭窗口' }" icon="ion:close-circle-outline" @click="taskModal.onOk">关闭</fs-button>
@@ -39,6 +42,7 @@ import PiStatusShow from "/@/views/certd/pipeline/pipeline/component/status-show
 import { usePreferences } from "/@/vben/preferences";
 import { useSettingStore } from "/@/store/settings/index";
 import { notification } from "ant-design-vue";
+import { mitter } from "/@/utils/util.mitt";
 export default {
   name: "PiTaskView",
   components: { PiStatusShow },
@@ -196,6 +200,19 @@ export default {
       taskModal.value.open = false;
     }
 
+    const currentNode = computed(() => {
+      return detail.value?.nodes?.find(item => item.node.id === activeKey.value);
+    });
+    const currentStatus = computed(() => {
+      return currentNode.value?.node?.status?.result || "";
+    });
+
+    function callService() {
+      if (!settingsStore.isPlus) {
+        mitter.emit("openVipModal");
+      }
+    }
+
     const settingsStore = useSettingStore();
     return {
       detail,
@@ -206,6 +223,9 @@ export default {
       tabPosition,
       triggerRun,
       settingsStore,
+      currentNode,
+      currentStatus,
+      callService,
     };
   },
 };
