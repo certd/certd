@@ -58,6 +58,22 @@ export class OnePanelDeployToPanelPlugin extends AbstractTaskPlugin {
   )
   currentNode!: string;
 
+  @TaskInput({
+    title: "SSL模式",
+    helper: "SSL模式，只有2.1.x以上版本才支持，旧版本保持默认即可",
+    component: {
+      name: "a-select",
+      options: [
+        { label: "启用SSL(旧版本)", value: "enable" },
+        { label: "Strict模式(>=2.1.x)", value: "Enable" },
+        { label: "Mux模式(>=2.1.x)", value: "Mux" }
+      ],
+      value: "enable",
+    },
+    required: true,
+  })
+  sslMode!: string;
+
 
   access: OnePanelAccess;
   async onInstance() {
@@ -102,7 +118,7 @@ export class OnePanelDeployToPanelPlugin extends AbstractTaskPlugin {
           cert: this.cert.crt,
           key: this.cert.key,
           domain: domain,
-          ssl: "Enable",
+          ssl: this.sslMode,
           sslID: null,
           sslType: "import-paste",
         },
