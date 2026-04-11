@@ -238,10 +238,14 @@ const avatar = computed(() => {
   }
   return `/api/basic/file/download?key=${avt}`;
 });
+const dateNow = ref(Date.now());
 const now = computed(() => {
-  const serverTime = Date.now() - settingStore.app.deltaTime;
+  const serverTime = dateNow.value - settingStore.app.deltaTime;
   return dayjs(serverTime).format("YYYY-MM-DD HH:mm:ss");
 });
+setInterval(() => {
+  dateNow.value = Date.now();
+}, 5000);
 
 const deltaTimeWarning = computed(() => {
   return Math.abs(settingStore.app.deltaTime) > 1000 * 60 * 4;

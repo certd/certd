@@ -100,9 +100,7 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
     helper: "将检查证书数量限制，如果超限将删除最旧的那张证书",
     required: true
   })
-
   certLimit: number = 2;
-
 
   async onInstance() {
   }
@@ -123,7 +121,7 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
         certId = casCert.certId;
         certName = casCert.certName;
       } else if (certInfo.crt) {
-        certName = this.buildCertName(CertReader.getMainDomain(certInfo.crt));
+        certName = this.buildCertName(CertReader.getMainDomain(certInfo.crt),"certd");
 
         const certIdRes = await sslClient.uploadCertificate({
           name: certName,
