@@ -88,6 +88,7 @@ input:
         - certDomains
         - accessId
         - accessId
+      uploadCert: {}
     required: true
     mergeScript: |2-
 

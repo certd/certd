@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.10](https://github.com/certd/certd/compare/v1.39.9...v1.39.10) (2026-04-11)
+
+### Bug Fixes
+
+* 修复自定义插件删除后没有反注册的bug ([df98463](https://github.com/certd/certd/commit/df9846332596d2afaba53e66d2897aa1c598f9c4))
+
 ## [1.39.9](https://github.com/certd/certd/compare/v1.39.8...v1.39.9) (2026-04-05)
 
 **Note:** Version bump only for package @certd/lib-server

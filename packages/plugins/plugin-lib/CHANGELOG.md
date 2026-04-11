@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.10](https://github.com/certd/certd/compare/v1.39.9...v1.39.10) (2026-04-11)
+
+### Performance Improvements
+
+* 1panel支持先上传证书再选择证书 ([7a9eec8](https://github.com/certd/certd/commit/7a9eec88e8eddf40dba055c072b5b2b0f67c1407))
+
 ## [1.39.9](https://github.com/certd/certd/compare/v1.39.8...v1.39.9) (2026-04-05)
 
 **Note:** Version bump only for package @certd/plugin-lib

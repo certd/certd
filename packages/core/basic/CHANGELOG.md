@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.10](https://github.com/certd/certd/compare/v1.39.9...v1.39.10) (2026-04-11)
+
+### Performance Improvements
+
+* 流水线修改编辑之后，增加未保存提示 ([21620ac](https://github.com/certd/certd/commit/21620ac6bdeb57e43509156a77037fc07c44282a))
+
 ## [1.39.9](https://github.com/certd/certd/compare/v1.39.8...v1.39.9) (2026-04-05)
 
 ### Performance Improvements

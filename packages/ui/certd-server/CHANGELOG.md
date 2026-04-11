@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.10](https://github.com/certd/certd/compare/v1.39.9...v1.39.10) (2026-04-11)
+
+### Bug Fixes
+
+* 修复自定义插件删除后没有反注册的bug ([df98463](https://github.com/certd/certd/commit/df9846332596d2afaba53e66d2897aa1c598f9c4))
+* 修复spaceship创建record报错的bug ([70b46d4](https://github.com/certd/certd/commit/70b46d4a8f89cf8eded21ebb237e8c8ce6c40d30))
+
+### Performance Improvements
+
+* 1panel支持先上传证书再选择证书 ([7a9eec8](https://github.com/certd/certd/commit/7a9eec88e8eddf40dba055c072b5b2b0f67c1407))
+* 部署到1panel面板支持mux模式 ([d05129e](https://github.com/certd/certd/commit/d05129ec67893b0b639003a4bca6878d128f56ad))
+* 流水线修改编辑之后，增加未保存提示 ([21620ac](https://github.com/certd/certd/commit/21620ac6bdeb57e43509156a77037fc07c44282a))
+* 修复检查全部某些情况下无效的bug，优化公共触发站点证书检查定时逻辑 ([ee53589](https://github.com/certd/certd/commit/ee535895a3166c6f9046963e28fa8f22f018b574))
+* 增加域名管理 子域名检查提醒 ([2bdf183](https://github.com/certd/certd/commit/2bdf1832da73a3728f3ac415837bc26e70531cd6))
+
 ## [1.39.9](https://github.com/certd/certd/compare/v1.39.8...v1.39.9) (2026-04-05)
 
 ### Bug Fixes

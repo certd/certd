@@ -23,7 +23,7 @@ input:
     component:
       name: api-test
       action: TestRequest
-    helper: 测试 API 连接是否正常
+    helper: 测试 API 连接是否正常，需要域名查询权限
 pluginType: access
 type: builtIn
 scriptFilePath: /plugins/plugin-spaceship/access.js

@@ -72,6 +72,22 @@ input:
               
     helper: 要更新的1Panel证书的节点信息，目前只有v2存在此概念
     order: 0
+  sslMode:
+    title: SSL模式
+    helper: SSL模式，只有2.1.x以上版本才支持，旧版本保持默认即可
+    component:
+      name: a-select
+      vMode: value
+      options:
+        - label: 启用SSL(旧版本)
+          value: enable
+        - label: Strict模式(>=2.1.x)
+          value: Enable
+        - label: Mux模式(>=2.1.x)
+          value: Mux
+    value: enable
+    required: true
+    order: 0
 output: {}
 pluginType: deploy
 type: builtIn
