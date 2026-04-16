@@ -208,7 +208,7 @@ export class AsyncSsh2Client {
         let hasErrorLog = false;
         stream
           .on("close", (code: any, signal: any) => {
-            this.logger.info(`[${this.connConf.host}][close]:code:${code}`);
+            this.logger.info(`[${this.connConf.host}][close]:code=${code}`);
             /**
              * ]pipeline 执行命令:[10.123.0.2][exec]:cd /d D:\nginx-1.27.5 && D:\nginx-1.27.5\nginx.exe -t && D:\nginx-1.27.5\nginx.exe -s reload
              * [2025-07-09T10:24:11.219] [ERROR]pipeline - [10. 123.0. 2][error]: nginx: the configuration file D: \nginx-1.27. 5/conf/nginx. conf syntax is ok
@@ -279,7 +279,7 @@ export class AsyncSsh2Client {
         }
         stream
           .on("close", (code: any) => {
-            this.logger.info("Stream :: close,code: " + code);
+            this.logger.info("Stream :: close,code = " + code);
             resolve(output);
           })
           .on("data", (ret: Buffer) => {

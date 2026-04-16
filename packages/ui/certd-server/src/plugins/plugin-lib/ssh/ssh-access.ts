@@ -82,7 +82,7 @@ export class SshAccess extends BaseAccess {
 
   @AccessInput({
     title: "伪终端",
-    helper: "如果登录报错：all authentication methods failed，可以尝试开启伪终端模式进行keyboard-interactive方式登录\n开启后对日志输出有一定的影响",
+    helper: "如果登录报错：all authentication methods failed / unable to exec，可以尝试开启伪终端模式进行keyboard-interactive方式登录\n开启后对日志输出有一定的影响",
     component: {
       name: "a-switch",
       vModel: "checked",
