@@ -53,9 +53,11 @@ export class TechnitiumDnsProvider extends AbstractDnsProvider<TechnitiumRecord>
     
     // 构建查询参数
     const params = new URLSearchParams({
+      zone: domain,
       domain: fullRecord,
       type: type,
       text: value,
+      ttl: "60",
     });
 
     // 调用Technitium API创建TXT记录
@@ -78,6 +80,7 @@ export class TechnitiumDnsProvider extends AbstractDnsProvider<TechnitiumRecord>
     
     // 构建查询参数
     const params = new URLSearchParams({
+      zone: domain,
       domain: fullRecord,
       type: 'TXT',
       text: value,
