@@ -68,6 +68,7 @@ export interface ClientAutoOptions {
     preferredChain?: string;
     signal?: AbortSignal;
     profile?:string;
+    waitDnsDiffuseTime?: number;
 }
 
 export class Client {

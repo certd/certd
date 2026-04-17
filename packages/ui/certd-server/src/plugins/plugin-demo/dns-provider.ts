@@ -1,7 +1,8 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
 
-import { DemoAccess } from './access.js';
+import { PageRes, PageSearch } from '@certd/pipeline';
 import { isDev } from '../../utils/env.js';
+import { DemoAccess } from './access.js';
 
 type DemoRecord = {
   // 这里定义Record记录的数据结构，跟对应云平台接口返回值一样即可，一般是拿到id就行，用于删除txt解析记录，清理申请痕迹
@@ -16,7 +17,7 @@ type DemoRecord = {
   icon: 'clarity:plugin-line',
   // 这里是对应的云平台的access类型名称
   accessType: 'demo',
-  order:99,
+  order: 99,
 })
 export class DemoDnsProvider extends AbstractDnsProvider<DemoRecord> {
   access!: DemoAccess;
@@ -73,6 +74,28 @@ export class DemoDnsProvider extends AbstractDnsProvider<DemoRecord> {
     //
 
     this.logger.info('删除域名解析成功:', fullRecord, value);
+  }
+
+  /**
+   * 
+   * @param req 实现获取域名列表
+   * @returns 
+   */
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const res = await this.http.request({
+      // 请求接口获取域名列表
+    })
+    const list = []
+    // const list = res.Domains?.map(item => ({
+    //   id: item.Id,
+    //   domain: item.DomainName,
+    // })) || []
+    
+
+    return {
+      list,
+      total: res.Total,
+    }
   }
 }
 

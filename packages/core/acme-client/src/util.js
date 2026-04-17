@@ -50,15 +50,18 @@ class Backoff {
 
 async function retryPromise(fn, attempts, backoff, logger = log) {
     let aborted = false;
+    let abortedFromUser = false;
 
     try {
-        const setAbort = () => { aborted = true; }
+        const setAbort = (fromUser = false) => { aborted = true; abortedFromUser = fromUser; }
         const data = await fn(setAbort);
         return data;
     }
     catch (e) {
         if (aborted){
-            logger(`用户取消重试`);
+            if (abortedFromUser){
+                logger(`用户取消重试`);
+            }
             throw e;
         }
         if ( ((backoff.attempts + 1) >= attempts)) {

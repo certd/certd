@@ -577,7 +577,7 @@ class AcmeClient {
 
         const verifyFn = async (abort) => {
             if (this.opts.signal && this.opts.signal.aborted) {
-                abort();
+                abort(true);
                 throw new CancelError('用户取消');
             }
 

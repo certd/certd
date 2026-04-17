@@ -1,5 +1,5 @@
 <template>
-  <a-select :value="value" @update:value="onChange">
+  <a-select :value="value" :filter-option="true" @update:value="onChange">
     <a-select-option v-for="item of options" :key="item.value" :value="item.value" :label="item.label">
       <span class="flex-o">
         <fs-icon :icon="item.icon" class="fs-16 color-blue mr-5" />

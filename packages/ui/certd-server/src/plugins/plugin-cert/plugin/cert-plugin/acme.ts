@@ -423,6 +423,7 @@ export class AcmeService {
       signal: this.options.signal,
       profile,
       preferredChain,
+      waitDnsDiffuseTime: this.options.waitDnsDiffuseTime,
     });
 
     const crtString = crt.toString();
