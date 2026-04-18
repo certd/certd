@@ -1,5 +1,4 @@
-import { AccessInput, BaseAccess, IsAccess, Pager, PageRes, PageSearch } from '@certd/pipeline';
-import { DomainRecord } from '@certd/plugin-lib';
+import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
 
 /**
  * HiPM DNSMgr Access
@@ -43,38 +42,31 @@ export class HipmDnsmgrAccess extends BaseAccess {
   testRequest = true;
 
   async onTestRequest() {
-    await this.getDomainList({});
+    await this.getDomainList();
     return '连接成功';
   }
 
   /**
    * 获取域名列表
    */
-  async getDomainList(req: PageSearch): Promise<PageRes<DomainRecord>> {
-    this.ctx.logger.info(`[HiPM DNSMgr] 获取域名列表，req:${JSON.stringify(req)}`);
+  async getDomainList() {
+    this.ctx.logger.info(`[HiPM DNSMgr] 获取域名列表`);
     
-    const pager = new Pager(req);
     const resp = await this.doRequest({
       method: 'GET',
       path: '/domains',
       params: {
-        page: pager.pageNo,
-        pageSize: pager.pageSize,
-        keyword: req.searchKey,
+        page: 1,
+        pageSize: 100,
       },
     });
 
     // DNSMgr 返回数组格式
-    const list = resp?.map((item: any) => ({
+    return resp?.map((item: any) => ({
       id: String(item.id),
       domain: item.name,
       ...item,
     })) || [];
-
-    return {
-      total: list.length,
-      list,
-    };
   }
 
   /**

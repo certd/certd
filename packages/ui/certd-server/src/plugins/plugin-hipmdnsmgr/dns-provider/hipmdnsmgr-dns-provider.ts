@@ -1,6 +1,5 @@
-import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
-import { HipmDnsmgrAccess } from './access.js';
-import { PageRes, PageSearch } from '@certd/pipeline';
+import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { HipmDnsmgrAccess } from '../access/hipmdnsmgr-access.js';
 
 /**
  * HiPM DNSMgr DNS Provider
@@ -12,7 +11,6 @@ import { PageRes, PageSearch } from '@certd/pipeline';
   desc: 'HiPM DNSMgr DNS 解析提供商',
   accessType: 'hipmdnsmgr',
   icon: 'svg:icon-dns',
-  order: 0,
 })
 export class HipmDnsmgrDnsProvider extends AbstractDnsProvider<{ domainId: string; recordId: string; name: string; value: string }> {
   access!: HipmDnsmgrAccess;
@@ -30,8 +28,8 @@ export class HipmDnsmgrDnsProvider extends AbstractDnsProvider<{ domainId: strin
     this.logger.info('[HiPM DNSMgr] 添加域名解析：', fullRecord, value, type, domain);
 
     // 1. 获取域名列表，找到对应的域名 ID
-    const domainList = await this.access.getDomainList({ searchKey: domain });
-    const domainInfo = domainList.list?.find((item: any) => item.domain === domain);
+    const domainList = await this.access.getDomainList();
+    const domainInfo = domainList.find((item: any) => item.domain === domain);
 
     if (!domainInfo) {
       throw new Error(`[HiPM DNSMgr] 未找到域名：${domain}`);
@@ -76,24 +74,4 @@ export class HipmDnsmgrDnsProvider extends AbstractDnsProvider<{ domainId: strin
       this.logger.warn('[HiPM DNSMgr] 无法删除记录，缺少 domainId 或 recordId');
     }
   }
-
-  /**
-   * 获取域名列表（用于前端选择）
-   */
-  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
-    const res = await this.access.getDomainList(req);
-    
-    // 转换格式以适配前端
-    res.list = res.list?.map((item: any) => {
-      return {
-        id: String(item.id),
-        domain: item.domain,
-      };
-    });
-
-    return res;
-  }
 }
-
-// 实例化以触发装饰器注册
-new HipmDnsmgrDnsProvider();
