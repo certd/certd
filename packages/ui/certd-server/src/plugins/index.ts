@@ -46,3 +46,4 @@
 // export * from './plugin-cert/index.js'
 // export * from './plugin-zenlayer/index.js'
 export * from './plugin-dnsmgr/index.js'
+export * from './plugin-hipmdnsmgr/index.js'
