@@ -1,5 +1,5 @@
 <template>
-  <icon-select class="dns-provider-selector" :value="modelValue" :options="options" @update:value="atChange"> </icon-select>
+  <icon-select class="dns-provider-selector" :value="modelValue" :options="options" :filter-option="true" @update:value="atChange"> </icon-select>
 </template>
 
 <script lang="ts">

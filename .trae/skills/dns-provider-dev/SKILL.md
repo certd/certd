@@ -105,6 +105,28 @@ async removeRecord(options: RemoveRecordOptions<DemoRecord>): Promise<void> {
 }
 ```
 
+### 6. 实现 getDomainListPage 方法
+```typescript
+  /**
+   * 实现获取域名列表
+   */
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const pager = new Pager(req);
+    const res = await this.http.request({
+      // 请求接口获取域名列表
+    })
+    const list = res.Domains?.map(item => ({
+      id: item.Id,
+      domain: item.DomainName,
+    })) || []
+
+    return {
+      list,
+      total: res.Total,
+    }
+  }
+```
+
 ### 6. 实例化插件
 
 ```typescript
@@ -204,11 +226,28 @@ export class DemoDnsProvider extends AbstractDnsProvider<DemoRecord> {
 
     this.logger.info('删除域名解析成功:', fullRecord, value);
   }
+
+  /**
+   * 实现获取域名列表
+   */
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const pager = new Pager(req);
+    const res = await this.http.request({
+      // 请求接口获取域名列表
+    })
+    const list = res.Domains?.map(item => ({
+      id: item.Id,
+      domain: item.DomainName,
+    })) || []
+
+    return {
+      list,
+      total: res.Total,
+    }
+  }
 }
 
 // 实例化这个 provider，将其自动注册到系统中
-if (isDev()) {
-  // 你的实现 要去掉这个 if，不然生产环境将不会显示
-  new DemoDnsProvider();
-}
+new DemoDnsProvider();
+
 ```

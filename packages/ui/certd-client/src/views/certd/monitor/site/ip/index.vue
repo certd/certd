@@ -8,7 +8,6 @@
 import { onActivated, onMounted, ref, Ref } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
-import { siteIpApi } from "./api";
 
 defineOptions({
   name: "SiteIpCertMonitor",
@@ -21,11 +20,6 @@ const { crudBinding, crudRef, crudExpose } = useFs({
   context: {
     props,
   },
-});
-
-const siteInfoRef: Ref<any> = ref({});
-onMounted(async () => {
-  siteInfoRef.value = await siteIpApi.GetObj(props.siteId);
 });
 
 // 页面打开后获取列表数据

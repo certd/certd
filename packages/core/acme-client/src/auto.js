@@ -21,7 +21,8 @@ const defaultOpts = {
     },
     challengeRemoveFn: async () => {
         throw new Error("Missing challengeRemoveFn()");
-    }
+    },
+    waitDnsDiffuseTime: 30,
 };
 
 /**

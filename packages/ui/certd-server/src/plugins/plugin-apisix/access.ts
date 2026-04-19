@@ -32,6 +32,27 @@ export class ApisixAccess extends BaseAccess {
   })
   apiKey = '';
 
+  @AccessInput({
+    title: '版本',
+    component: {
+      name:"a-select",
+      options: [
+        {
+          label: "v3.x",
+          value: "3",
+        },
+        {
+          label: "v2.x",
+          value: "2",
+        },
+      ]
+    },
+    helper: "apisix系统的版本",
+    value:"3",
+    required: true,
+  })
+  version = '3';
+
 
   @AccessInput({
     title: "测试",
@@ -49,17 +70,24 @@ export class ApisixAccess extends BaseAccess {
   }
 
   async getCertList(){
+    const sslPath = this.getSslPath();
     const req = {
-      url :"/apisix/admin/ssls",
+      url :`/apisix/admin/${sslPath}`,
       method: "get",
     }
     return await this.doRequest(req);
   }
 
+  getSslPath(){
+    const sslPath = this.version === '3' ? 'ssls' : 'ssl';
+    return sslPath;
+  }
+
   async createCert(opts:{cert:CertInfo}){
     const certReader = new CertReader(opts.cert)
+    const sslPath = this.getSslPath();
     const req = {
-      url :"/apisix/admin/ssls",
+      url :`/apisix/admin/${sslPath}`,
       method: "post",
       data:{
         cert: opts.cert.crt,
@@ -72,8 +100,9 @@ export class ApisixAccess extends BaseAccess {
 
   async updateCert (opts:{cert:CertInfo,id:string}){
     const certReader = new CertReader(opts.cert)
+    const sslPath = this.getSslPath();
     const req = {
-      url :`/apisix/admin/ssls/${opts.id}`,
+      url :`/apisix/admin/${sslPath}/${opts.id}`,
       method: "put",
       data:{
         cert: opts.cert.crt,

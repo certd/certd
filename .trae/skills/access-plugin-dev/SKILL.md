@@ -145,6 +145,20 @@ async doRequest(req: { action: string, data?: any }) {
         utils: typeof utils;
         accessService: IAccessService;
       }
+
+      // this.ctx.http 只有request方法
+      // 方法参数
+      export type HttpRequestConfig<D = any> = {
+        skipSslVerify?: boolean;
+        skipCheckRes?: boolean;
+        logParams?: boolean;
+        logRes?: boolean;
+        logData?: boolean;
+        httpProxy?: string;
+        returnOriginRes?: boolean;
+      } & AxiosRequestConfig<D>;
+
+      
    */
   const res = await this.ctx.http.request({
     url: "https://api.demo.cn/api/",
