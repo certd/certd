@@ -89,22 +89,36 @@ export class SiteTester {
     // 创建 HTTPS 请求
     const requestPromise = safePromise((resolve, reject) => {
       const req = https.request(options, res => {
-        // 获取证书
-        // @ts-ignore
-        const certificate = res.socket.getPeerCertificate();
-        // logger.info('证书信息', certificate);
-        if (certificate.subject == null) {
-          logger.warn("证书信息为空");
-          resolve({
-            certificate: null
-          });
-        }
-        resolve({
-          certificate
-        });
+        // // 获取证书
+        // // @ts-ignore
+        // const certificate = res.socket.getPeerCertificate();
+        // // logger.info('证书信息', certificate);
+        // if (certificate.subject == null) {
+        //   logger.warn("证书信息为空");
+        //   resolve({
+        //     certificate: null
+        //   });
+        // }
+        // resolve({
+        //   certificate
+        // });
         res.socket.end();
         // 关闭响应
         res.destroy();
+      });
+
+      // ✅ 关键：在 'socket' 事件中获取证书（握手完成后立即执行）
+      req.on('socket', (socket:any) => {
+        socket.on('secureConnect', () => {
+          // TLS握手完成，证书已经可用
+          const certificate = socket.getPeerCertificate();
+          if (certificate.subject) {
+            logger.info('证书获取成功', certificate.subject);
+            resolve({
+              certificate
+            });
+          }
+        });
       });
 
       req.on("error", e => {
