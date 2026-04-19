@@ -89,19 +89,6 @@ export class SiteTester {
     // 创建 HTTPS 请求
     const requestPromise = safePromise((resolve, reject) => {
       const req = https.request(options, res => {
-        // 获取证书
-        // @ts-ignore
-        const certificate = res.socket.getPeerCertificate();
-        // logger.info('证书信息', certificate);
-        if (certificate.subject == null) {
-          logger.warn("证书信息为空");
-          resolve({
-            certificate: null
-          });
-        }
-        resolve({
-          certificate
-        });
         res.socket.end();
         // 关闭响应
         res.destroy();
