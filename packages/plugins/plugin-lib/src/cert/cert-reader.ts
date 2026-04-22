@@ -135,7 +135,12 @@ export class CertReader {
   }
 
   static readCertDetail(crt: string) {
-    const detail = crypto.readCertificateInfo(crt.toString());
+    let detail: CertificateInfo;
+    try {
+      detail = crypto.readCertificateInfo(crt.toString());
+    } catch (e) {
+      throw new Error("证书解析失败:" + e.message + "（请确定证书格式，是否与私钥搞反？）");
+    }
     const effective = detail.notBefore;
     const expires = detail.notAfter;
     const fingerprints = CertReader.getFingerprintX509(crt);

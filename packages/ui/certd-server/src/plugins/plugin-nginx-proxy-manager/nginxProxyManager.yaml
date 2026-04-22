@@ -1,0 +1,344 @@
+name: nginxProxyManager
+icon: logos:nginx
+title: Nginx Proxy Manager 授权
+group: null
+desc: 用于登录 Nginx Proxy Manager，并为代理主机证书部署提供授权。
+setting: null
+sysSetting: null
+type: custom
+disabled: false
+version: 1.0.0
+pluginType: access
+author: samler
+input:
+  endpoint:
+    title: NPM 地址
+    component:
+      name: a-input
+      allowClear: true
+      placeholder: https://npm.example.com
+    helper: 请输入 Nginx Proxy Manager 根地址，不要带 /api 后缀。
+    required: true
+  email:
+    title: 邮箱
+    component:
+      name: a-input
+      allowClear: true
+      placeholder: admin@example.com
+    required: true
+  password:
+    title: 密码
+    component:
+      name: a-input-password
+      allowClear: true
+      placeholder: 请输入密码
+    required: true
+    encrypt: true
+  totpSecret:
+    title: TOTP 密钥
+    component:
+      name: a-input-password
+      allowClear: true
+      placeholder: Optional base32 TOTP secret
+    helper: 当 Nginx Proxy Manager 账号开启 2FA 时必填。
+    required: false
+    encrypt: true
+  ignoreTls:
+    title: 忽略无效 TLS
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 仅在 Nginx Proxy Manager 使用自签 HTTPS 证书时开启。
+    required: false
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 测试登录并拉取代理主机列表。
+content: |
+  const { BaseAccess } = await import("@certd/pipeline");
+  const httpsModule = await import("node:https");
+  const { URL } = await import("node:url");
+  const axiosModule = await import("axios");
+  const formDataModule = await import("form-data");
+  const { authenticator } = await import("otplib");
+
+  const https = httpsModule.default ?? httpsModule;
+  const axios = axiosModule.default ?? axiosModule;
+  const FormData = formDataModule.default ?? formDataModule;
+
+  function normalizeEndpoint(endpoint) {
+    const trimmed = String(endpoint ?? "").trim();
+    if (!trimmed) {
+      throw new Error("Nginx Proxy Manager 地址不能为空");
+    }
+
+    const withoutTrailingSlash = trimmed.replace(/\/+$/, "");
+    return withoutTrailingSlash.endsWith("/api")
+      ? withoutTrailingSlash.slice(0, -4)
+      : withoutTrailingSlash;
+  }
+
+  function buildHttpsAgent(endpoint, ignoreTls) {
+    const url = new URL(endpoint);
+    if (url.protocol !== "https:") {
+      return undefined;
+    }
+
+    return new https.Agent({
+      rejectUnauthorized: !ignoreTls,
+    });
+  }
+
+  function describeError(error, action) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const data = error.response?.data;
+      const message =
+        data?.error?.message ||
+        data?.error ||
+        data?.message ||
+        (typeof data === "string" ? data : null) ||
+        error.message;
+      return new Error(`${action} failed${status ? ` (${status})` : ""}: ${message}`);
+    }
+
+    if (error instanceof Error) {
+      return new Error(`${action} failed: ${error.message}`);
+    }
+
+    return new Error(`${action} failed`);
+  }
+
+  class NginxProxyManagerClient {
+    constructor(options) {
+      this.options = options;
+      this.endpoint = normalizeEndpoint(options.endpoint);
+      this.apiBaseUrl = `${this.endpoint}/api`;
+      this.token = undefined;
+      this.tokenPromise = undefined;
+      this.httpClient = axios.create({
+        baseURL: this.apiBaseUrl,
+        timeout: 30000,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+        httpsAgent: buildHttpsAgent(this.endpoint, options.ignoreTls === true),
+        headers: {
+          Accept: "application/json",
+        },
+      });
+    }
+
+    async verifyAccess() {
+      const proxyHosts = await this.getProxyHosts();
+      return {
+        proxyHostCount: proxyHosts.length,
+      };
+    }
+
+    async getProxyHosts(searchQuery) {
+      return await this.requestWithAuth({
+        method: "GET",
+        url: "/nginx/proxy-hosts",
+        params: {
+          expand: "certificate",
+          ...(searchQuery ? { query: searchQuery } : {}),
+        },
+      });
+    }
+
+    async getCertificates(searchQuery) {
+      return await this.requestWithAuth({
+        method: "GET",
+        url: "/nginx/certificates",
+        params: searchQuery ? { query: searchQuery } : undefined,
+      });
+    }
+
+    async getCertificatesWithExpand(searchQuery, expand = []) {
+      return await this.requestWithAuth({
+        method: "GET",
+        url: "/nginx/certificates",
+        params: {
+          ...(searchQuery ? { query: searchQuery } : {}),
+          ...(expand.length > 0 ? { expand: expand.join(",") } : {}),
+        },
+      });
+    }
+
+    async findCustomCertificateByNiceName(niceName) {
+      const certificates = await this.getCertificates(niceName);
+      return certificates.find((certificate) => {
+        return certificate.provider === "other" && certificate.nice_name === niceName;
+      });
+    }
+
+    async createCustomCertificate(niceName, domainNames = []) {
+      return await this.requestWithAuth({
+        method: "POST",
+        url: "/nginx/certificates",
+        data: {
+          provider: "other",
+          nice_name: niceName,
+          domain_names: domainNames,
+        },
+      });
+    }
+
+    async deleteCertificate(certificateId) {
+      await this.requestWithAuth({
+        method: "DELETE",
+        url: `/nginx/certificates/${certificateId}`,
+      });
+    }
+
+    async uploadCertificate(certificateId, payload) {
+      const form = new FormData();
+      form.append("certificate", Buffer.from(payload.certificate, "utf8"), {
+        filename: "fullchain.pem",
+        contentType: "application/x-pem-file",
+      });
+      form.append("certificate_key", Buffer.from(payload.certificateKey, "utf8"), {
+        filename: "privkey.pem",
+        contentType: "application/x-pem-file",
+      });
+      if (payload.intermediateCertificate) {
+        form.append("intermediate_certificate", Buffer.from(payload.intermediateCertificate, "utf8"), {
+          filename: "chain.pem",
+          contentType: "application/x-pem-file",
+        });
+      }
+
+      await this.requestWithAuth({
+        method: "POST",
+        url: `/nginx/certificates/${certificateId}/upload`,
+        data: form,
+        headers: form.getHeaders(),
+      });
+    }
+
+    async assignCertificateToProxyHost(hostId, certificateId) {
+      await this.requestWithAuth({
+        method: "PUT",
+        url: `/nginx/proxy-hosts/${hostId}`,
+        data: {
+          certificate_id: certificateId,
+        },
+      });
+    }
+
+    async login() {
+      if (this.token) {
+        return this.token;
+      }
+
+      if (!this.tokenPromise) {
+        this.tokenPromise = this.performLogin().finally(() => {
+          this.tokenPromise = undefined;
+        });
+      }
+
+      this.token = await this.tokenPromise;
+      return this.token;
+    }
+
+    async performLogin() {
+      const initialLogin = await this.request({
+        method: "POST",
+        url: "/tokens",
+        data: {
+          identity: this.options.email,
+          secret: this.options.password,
+        },
+      });
+
+      if (initialLogin.token) {
+        return initialLogin.token;
+      }
+
+      if (!initialLogin.requires_2fa || !initialLogin.challenge_token) {
+        throw new Error("登录失败：Nginx Proxy Manager 未返回访问令牌");
+      }
+
+      if (!this.options.totpSecret) {
+        throw new Error("登录失败：该 Nginx Proxy Manager 账号启用了 2FA，但未配置 totpSecret");
+      }
+
+      let code;
+      try {
+        code = authenticator.generate(this.options.totpSecret);
+      } catch (error) {
+        throw describeError(error, "Generating TOTP code");
+      }
+
+      const completedLogin = await this.request({
+        method: "POST",
+        url: "/tokens/2fa",
+        data: {
+          challenge_token: initialLogin.challenge_token,
+          code,
+        },
+      });
+
+      if (!completedLogin.token) {
+        throw new Error("2FA 登录失败：Nginx Proxy Manager 未返回访问令牌");
+      }
+
+      return completedLogin.token;
+    }
+
+    async requestWithAuth(config) {
+      const token = await this.login();
+      const headers = {
+        ...(config.headers ?? {}),
+        Authorization: `Bearer ${token}`,
+      };
+
+      return await this.request({
+        ...config,
+        headers,
+      });
+    }
+
+    async request(config) {
+      const action = `${config.method ?? "GET"} ${config.url ?? "/"}`;
+      try {
+        const response = await this.httpClient.request(config);
+        return response.data;
+      } catch (error) {
+        throw describeError(error, action);
+      }
+    }
+  }
+
+  return class NginxProxyManagerAccess extends BaseAccess {
+    endpoint = "";
+    email = "";
+    password = "";
+    totpSecret = "";
+    ignoreTls = false;
+    testRequest = true;
+
+    createClient() {
+      return new NginxProxyManagerClient({
+        endpoint: this.endpoint,
+        email: this.email,
+        password: this.password,
+        totpSecret: this.totpSecret || undefined,
+        ignoreTls: this.ignoreTls === true,
+      });
+    }
+
+    async onTestRequest() {
+      const client = this.createClient();
+      const result = await client.verifyAccess();
+      this.ctx.logger.info(`Nginx Proxy Manager 授权验证成功，找到 ${result.proxyHostCount} 个代理主机`);
+      return `成功（${result.proxyHostCount} 个代理主机）`;
+    }
+
+    async getProxyHostList(req = {}) {
+      const client = this.createClient();
+      return await client.getProxyHosts(req.searchKey);
+    }
+  };

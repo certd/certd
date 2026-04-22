@@ -45,4 +45,5 @@
 // export * from './plugin-plus/index.js'
 // export * from './plugin-cert/index.js'
 // export * from './plugin-zenlayer/index.js'
-export * from './plugin-dnsmgr/index.js'
+// export * from './plugin-dnsmgr/index.js'
+// export * from './plugin-nginx-proxy-manager/index.js'
