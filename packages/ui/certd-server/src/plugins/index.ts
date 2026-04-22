@@ -47,3 +47,4 @@
 // export * from './plugin-zenlayer/index.js'
 // export * from './plugin-dnsmgr/index.js'
 // export * from './plugin-nginx-proxy-manager/index.js'
+// export * from './plugin-hipmdnsmgr/index.js'
