@@ -1,0 +1,71 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: NginxProxyManagerDeploy
+title: Nginx Proxy Manager-部署到主机
+desc: 上传自定义证书到 Nginx Proxy Manager，并绑定到所选主机。
+icon: logos:nginx
+group: panel
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务产出的证书。
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  certDomains:
+    title: 证书域名
+    component:
+      name: cert-domains-getter
+    required: false
+    order: 0
+  accessId:
+    title: NPM授权
+    component:
+      name: access-selector
+      type: nginxProxyManager
+    helper: 选择用于部署的 Nginx Proxy Manager 授权。
+    required: true
+    order: 0
+  proxyHostIds:
+    title: 代理主机
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetProxyHostOptions
+      search: true
+      pager: false
+      multi: true
+      watches:
+        - certDomains
+        - accessId
+    helper: 选择要绑定此证书的一个或多个代理主机。
+    required: true
+    order: 0
+  certificateLabel:
+    title: 证书标识
+    component:
+      name: a-input
+      allowClear: true
+      placeholder: certd_npm_example_com
+    helper: 可选。留空时默认使用 certd_npm_<主域名规范化>。
+    required: false
+    order: 0
+  cleanupMatchingCertificates:
+    title: 自动清理未使用证书
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 部署成功后，自动删除除当前证书外所有未被任何主机引用的证书。
+    required: false
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-nginx-proxy-manager/plugins/plugin-deploy-to-proxy-hosts.js

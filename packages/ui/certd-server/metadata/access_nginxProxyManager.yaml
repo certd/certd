@@ -1,0 +1,53 @@
+name: nginxProxyManager
+title: Nginx Proxy Manager 授权
+desc: 用于登录 Nginx Proxy Manager，并为代理主机证书部署提供授权。
+icon: logos:nginx
+input:
+  endpoint:
+    title: NPM 地址
+    component:
+      name: a-input
+      allowClear: true
+      placeholder: https://npm.example.com
+    helper: 请输入 Nginx Proxy Manager 根地址，不要带 /api 后缀。
+    required: true
+  email:
+    title: 邮箱
+    component:
+      name: a-input
+      allowClear: true
+      placeholder: admin@example.com
+    required: true
+  password:
+    title: 密码
+    component:
+      name: a-input-password
+      allowClear: true
+      placeholder: 请输入密码
+    required: true
+    encrypt: true
+  totpSecret:
+    title: TOTP 密钥
+    component:
+      name: a-input-password
+      allowClear: true
+      placeholder: Optional base32 TOTP secret
+    helper: 当 Nginx Proxy Manager 账号开启 2FA 时必填。
+    required: false
+    encrypt: true
+  ignoreTls:
+    title: 忽略无效 TLS
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 仅在 Nginx Proxy Manager 使用自签 HTTPS 证书时开启。
+    required: false
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: onTestRequest
+    helper: 测试登录并拉取代理主机列表。
+pluginType: access
+type: builtIn
+scriptFilePath: /plugins/plugin-nginx-proxy-manager/access.js

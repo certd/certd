@@ -1,0 +1,38 @@
+name: technitium
+title: Technitium DNS Server
+icon: clarity:server-line
+desc: Technitium DNS Server 自建DNS服务器授权
+input:
+  apiUrl:
+    title: API地址
+    value: http://localhost:5380
+    component:
+      name: a-input
+      allowClear: true
+      placeholder: http://localhost:5380
+    required: true
+  username:
+    title: 用户名
+    component:
+      name: a-input
+      allowClear: true
+      placeholder: admin
+    required: false
+  password:
+    title: 密码
+    component:
+      name: a-input
+      type: password
+      allowClear: true
+      placeholder: 密码
+    required: false
+    encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+pluginType: access
+type: builtIn
+scriptFilePath: /plugins/plugin-technitium/access.js

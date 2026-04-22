@@ -17,6 +17,18 @@ input:
       apiKey
     required: true
     encrypt: true
+  version:
+    title: 版本
+    component:
+      name: a-select
+      options:
+        - label: v3.x
+          value: '3'
+        - label: v2.x
+          value: '2'
+    helper: apisix系统的版本
+    value: '3'
+    required: true
   testRequest:
     title: 测试
     component:

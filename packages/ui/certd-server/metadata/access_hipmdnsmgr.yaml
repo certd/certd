@@ -1,0 +1,27 @@
+name: hipmdnsmgr
+title: HiPM DNSMgr
+icon: svg:icon-dns
+desc: HiPM DNSMgr API Token 授权
+input:
+  endpoint:
+    title: 服务器地址
+    component:
+      name: a-input
+      allowClear: true
+      placeholder: http://localhost:3001
+    required: true
+    helper: 'HiPM DNSMgr 服务器地址，例如: http://localhost:3001'
+  apiToken:
+    title: API Token
+    required: true
+    encrypt: true
+    helper: 在 DNSMgr 设置 > API Token 中创建的令牌
+  testRequest:
+    title: 测试连接
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+pluginType: access
+type: builtIn
+scriptFilePath: /plugins/plugin-hipmdnsmgr/access/hipmdnsmgr-access.js

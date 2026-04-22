@@ -126,12 +126,12 @@ export class NextTerminalAccess extends BaseAccess {
       'Content-Type': 'application/json',
     };
 
-    
-    this.ctx.logger.debug(`Next Terminal API 请求: ${req.method} ${this.baseUrl}${req.url}`);
+    const baseUrl = this.normalizeEndpoint(this.baseUrl);
+    this.ctx.logger.debug(`Next Terminal API 请求: ${req.method} ${baseUrl}${req.url}`);
   
     const resp = await this.ctx.http.request({
       url: req.url,
-      baseURL: this.baseUrl,
+      baseURL: baseUrl,
       method: req.method,
       headers,
       params: req.params,

@@ -95,7 +95,15 @@ https://certd.handfree.work/
 3. 【推荐】[1Panel面板方式部署](https://certd.docmirror.cn/guide/install/1panel/)
 4. 【推荐】[雨云一键部署](https://app.rainyun.com/apps/rca/store/6646/?ref=NzExMDQ2) ： 首充翻倍，每月仅需2.2元    
 [<img src="https://rainyun-apps.cn-nb1.rains3.com/materials/deploy-on-rainyun-cn.svg">](https://app.rainyun.com/apps/rca/store/6646/?ref=NzExMDQ2)
-5. 【不推荐】[源码方式部署 ](https://certd.docmirror.cn/guide/install/source/)
+
+5. 【推荐】[一键安装脚本](https://certd.docmirror.cn/guide/install/docker/)（自动安装 Docker，Certd）：
+```bash
+ curl -fsSL https://raw.atomgit.com/certd/certd/raw/v2/docker/run/install.sh | bash
+```
+
+6. 【不推荐】[源码方式部署 ](https://certd.docmirror.cn/guide/install/source/)
+
+
 
 #### Docker镜像说明：
 * 国内镜像地址:

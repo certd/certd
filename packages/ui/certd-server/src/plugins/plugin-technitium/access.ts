@@ -124,6 +124,9 @@ export class TechnitiumAccess extends BaseAccess {
     this.ctx.logger.info(`获取域名列表，req:${JSON.stringify(req)}`);
     const pager = new Pager(req);
     
+    // 规范API地址
+    this.apiUrl = this.normalizeEndpoint(this.apiUrl);
+    
     // 构建API URL
     const apiUrl = `${this.apiUrl}/api/zones/list`;
     

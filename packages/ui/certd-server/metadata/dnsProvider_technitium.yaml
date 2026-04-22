@@ -1,0 +1,9 @@
+name: technitium
+title: Technitium DNS Server
+desc: Technitium DNS Server 自建DNS服务器
+icon: clarity:server-line
+accessType: technitium
+order: 10
+pluginType: dnsProvider
+type: builtIn
+scriptFilePath: /plugins/plugin-technitium/dns-provider.js

@@ -65,4 +65,8 @@ export abstract class BaseAccess implements IAccess {
     }
     throw new Error(`action ${req.action} not found`);
   }
+
+  normalizeEndpoint(endpoint: string) {
+    return endpoint.replace(/\/$/, "");
+  }
 }

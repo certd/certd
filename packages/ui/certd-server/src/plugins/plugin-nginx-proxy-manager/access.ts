@@ -29,25 +29,6 @@ interface TokenResponse {
   challenge_token?: string;
 }
 
-function normalizeEndpoint(endpoint: string): string {
-  const trimmed = String(endpoint ?? "").trim();
-  if (!trimmed) {
-    throw new Error("Nginx Proxy Manager 地址不能为空");
-  }
-
-  const withoutTrailingSlash = trimmed.replace(/\/+$/, "");
-  return withoutTrailingSlash.endsWith("/api")
-    ? withoutTrailingSlash.slice(0, -4)
-    : withoutTrailingSlash;
-}
-
-function describeError(error: unknown, action: string): Error {
-  if (error instanceof Error) {
-    return new Error(`${action} failed: ${error.message}`);
-  }
-  return new Error(`${action} failed`);
-}
-
 @IsAccess({
   name: "nginxProxyManager",
   title: "Nginx Proxy Manager 授权",
@@ -127,8 +108,27 @@ export class NginxProxyManagerAccess extends BaseAccess {
   private token: string | undefined;
   private tokenPromise: Promise<string> | undefined;
 
+  normalizeEndpoint(endpoint: string): string {
+    const trimmed = String(endpoint ?? "").trim();
+    if (!trimmed) {
+      throw new Error("Nginx Proxy Manager 地址不能为空");
+    }
+
+    const withoutTrailingSlash = trimmed.replace(/\/+$/, "");
+    return withoutTrailingSlash.endsWith("/api")
+      ? withoutTrailingSlash.slice(0, -4)
+      : withoutTrailingSlash;
+  }
+
+  private describeError(error: unknown, action: string): Error {
+    if (error instanceof Error) {
+      return new Error(`${action} failed: ${error.message}`);
+    }
+    return new Error(`${action} failed`);
+  }
+
   private get apiBaseUrl(): string {
-    const endpoint = normalizeEndpoint(this.endpoint);
+    const endpoint = this.normalizeEndpoint(this.endpoint);
     return `${endpoint}/api`;
   }
 
@@ -167,7 +167,7 @@ export class NginxProxyManagerAccess extends BaseAccess {
       url: "/nginx/certificates",
       params: {
         ...(searchQuery ? { query: searchQuery } : {}),
-        ...(expand.length > 0 ? { expand: expand.join(",") } : {}),
+        ...(expand.length > 0 ? { expand: expand.join(", ") } : {}),
       },
     });
   }
@@ -286,7 +286,7 @@ export class NginxProxyManagerAccess extends BaseAccess {
     try {
       code = authenticator.generate(this.totpSecret);
     } catch (error) {
-      throw describeError(error, "Generating TOTP code");
+      throw this.describeError(error, "Generating TOTP code");
     }
 
     const completedLogin = await this.request<TokenResponse>({
@@ -344,9 +344,9 @@ export class NginxProxyManagerAccess extends BaseAccess {
           rejectUnauthorized: false
         } : undefined,
       });
-      return response.data;
+      return response;
     } catch (error) {
-      throw describeError(error, action);
+      throw this.describeError(error, action);
     }
   }
 

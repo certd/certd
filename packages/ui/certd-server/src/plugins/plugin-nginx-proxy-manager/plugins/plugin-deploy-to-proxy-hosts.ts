@@ -5,7 +5,7 @@ import {
   RunStrategy,
   TaskInput,
 } from "@certd/pipeline";
-import { CertInfo, CertReader } from "@certd/plugin-cert";
+import { CertInfo, CertReader, createCertDomainGetterInputDefine } from "@certd/plugin-cert";
 import { NginxProxyManagerAccess, ProxyHost } from "../access.js";
 
 interface ProxyHostOption {
@@ -38,13 +38,7 @@ export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
   })
   cert!: CertInfo;
 
-  @TaskInput({
-    title: "证书域名",
-    component: {
-      name: "cert-domains-getter",
-    },
-    required: false,
-  })
+  @TaskInput(createCertDomainGetterInputDefine())
   certDomains!: string[];
 
   @TaskInput({
@@ -297,7 +291,6 @@ export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
       "dead_hosts",
       "streams",
     ]);
-
     const candidates = certificates.filter((certificate) => {
       return certificate.id !== currentCertificateId;
     });

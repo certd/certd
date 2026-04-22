@@ -36,45 +36,48 @@
 | 32.| **Gcore** | Gcore | 
 | 33.| **Github授权** |  | 
 | 34.| **godaddy授权** |  | 
-| 35.| **金山云授权** |  | 
-| 36.| **FTP授权** |  | 
-| 37.| **七牛OSS授权** |  | 
-| 38.| **腾讯云COS授权** | 腾讯云对象存储授权，包含地域和存储桶 | 
-| 39.| **s3/minio授权** | S3/minio oss授权 | 
-| 40.| **namesilo授权** |  | 
-| 41.| **Next Terminal 授权** | 用于访问 Next Terminal API 的授权配置 | 
-| 42.| **1panel授权** | 账号和密码 | 
-| 43.| **支付宝** |  | 
-| 44.| **白山云授权** |  | 
-| 45.| **宝塔云WAF授权** | 用于连接和管理宝塔云WAF服务的授权配置 | 
-| 46.| **cdnfly授权** |  | 
-| 47.| **k8s授权** |  | 
-| 48.| **括彩云cdn授权** | 括彩云CDN，每月免费30G，[注册即领](https://kuocaicdn.com/register?code=8mn536rrzfbf8) | 
-| 49.| **LeCDN授权** |  | 
-| 50.| **lucky** |  | 
-| 51.| **猫云授权** |  | 
-| 52.| **plesk授权** |  | 
-| 53.| **长亭雷池授权** |  | 
-| 54.| **群晖登录授权** |  | 
-| 55.| **uniCloud** | unicloud授权 | 
-| 56.| **微信支付** |  | 
-| 57.| **易盾rcdn授权** | 易盾CDN，每月免费30G，[注册即领](https://rhcdn.yiduncdn.com/register?code=8mn536rrzfbf8) | 
-| 58.| **易发云短信** | sms.yfyidc.cn/ | 
-| 59.| **易盾DCDN授权** | https://user.yiduncdn.com | 
-| 60.| **易支付** |  | 
-| 61.| **proxmox** |  | 
-| 62.| **Spaceship.com 授权** | Spaceship.com API 授权插件 | 
-| 63.| **UCloud授权** | 优刻得授权 | 
-| 64.| **又拍云** |  | 
-| 65.| **网宿授权** |  | 
-| 66.| **西部数码授权** |  | 
-| 67.| **我爱云授权** | 我爱云CDN | 
-| 68.| **新网授权（代理方式）** |  | 
-| 69.| **新网授权** |  | 
-| 70.| **新网互联授权** | 仅支持代理账号，ip需要加入白名单 | 
-| 71.| **Zenlayer授权** | Zenlayer授权 | 
-| 72.| **GoEdge授权** |  | 
-| 73.| **雨云授权** | https://app.rainyun.com/ | 
+| 35.| **HiPM DNSMgr** | HiPM DNSMgr API Token 授权 | 
+| 36.| **金山云授权** |  | 
+| 37.| **FTP授权** |  | 
+| 38.| **七牛OSS授权** |  | 
+| 39.| **腾讯云COS授权** | 腾讯云对象存储授权，包含地域和存储桶 | 
+| 40.| **s3/minio授权** | S3/minio oss授权 | 
+| 41.| **namesilo授权** |  | 
+| 42.| **Next Terminal 授权** | 用于访问 Next Terminal API 的授权配置 | 
+| 43.| **Nginx Proxy Manager 授权** | 用于登录 Nginx Proxy Manager，并为代理主机证书部署提供授权。 | 
+| 44.| **1panel授权** | 账号和密码 | 
+| 45.| **支付宝** |  | 
+| 46.| **白山云授权** |  | 
+| 47.| **宝塔云WAF授权** | 用于连接和管理宝塔云WAF服务的授权配置 | 
+| 48.| **cdnfly授权** |  | 
+| 49.| **k8s授权** |  | 
+| 50.| **括彩云cdn授权** | 括彩云CDN，每月免费30G，[注册即领](https://kuocaicdn.com/register?code=8mn536rrzfbf8) | 
+| 51.| **LeCDN授权** |  | 
+| 52.| **lucky** |  | 
+| 53.| **猫云授权** |  | 
+| 54.| **plesk授权** |  | 
+| 55.| **长亭雷池授权** |  | 
+| 56.| **群晖登录授权** |  | 
+| 57.| **uniCloud** | unicloud授权 | 
+| 58.| **微信支付** |  | 
+| 59.| **易盾rcdn授权** | 易盾CDN，每月免费30G，[注册即领](https://rhcdn.yiduncdn.com/register?code=8mn536rrzfbf8) | 
+| 60.| **易发云短信** | sms.yfyidc.cn/ | 
+| 61.| **易盾DCDN授权** | https://user.yiduncdn.com | 
+| 62.| **易支付** |  | 
+| 63.| **proxmox** |  | 
+| 64.| **Spaceship.com 授权** | Spaceship.com API 授权插件 | 
+| 65.| **Technitium DNS Server** | Technitium DNS Server 自建DNS服务器授权 | 
+| 66.| **UCloud授权** | 优刻得授权 | 
+| 67.| **又拍云** |  | 
+| 68.| **网宿授权** |  | 
+| 69.| **西部数码授权** |  | 
+| 70.| **我爱云授权** | 我爱云CDN | 
+| 71.| **新网授权（代理方式）** |  | 
+| 72.| **新网授权** |  | 
+| 73.| **新网互联授权** | 仅支持代理账号，ip需要加入白名单 | 
+| 74.| **Zenlayer授权** | Zenlayer授权 | 
+| 75.| **GoEdge授权** |  | 
+| 76.| **雨云授权** | https://app.rainyun.com/ | 
 
 <style module>
 table th:first-of-type {

@@ -13,17 +13,19 @@
 | 9.| **cloudflare** | cloudflare dns provider | 
 | 10.| **dns.la** | dns.la | 
 | 11.| **godaddy** | GoDaddy | 
-| 12.| **华为云** | 华为云DNS解析提供商 | 
-| 13.| **namesilo** | namesilo dns provider | 
-| 14.| **雨云** | 雨云DNS解析提供商 | 
-| 15.| **腾讯云** | 腾讯云域名DNS解析提供者 | 
-| 16.| **腾讯云EO DNS** | 腾讯云EO DNS解析提供者 | 
-| 17.| **西部数码** | west dns provider | 
-| 18.| **Dns提供商Demo** | dns provider示例 | 
-| 19.| **彩虹DNS** | 彩虹DNS管理系统 | 
-| 20.| **Spaceship** | Spaceship 域名解析 | 
-| 21.| **51dns** | 51DNS | 
-| 22.| **新网互联** | 新网互联 | 
+| 12.| **HiPM DNSMgr** | HiPM DNSMgr DNS 解析提供商 | 
+| 13.| **华为云** | 华为云DNS解析提供商 | 
+| 14.| **namesilo** | namesilo dns provider | 
+| 15.| **雨云** | 雨云DNS解析提供商 | 
+| 16.| **Technitium DNS Server** | Technitium DNS Server 自建DNS服务器 | 
+| 17.| **腾讯云** | 腾讯云域名DNS解析提供者 | 
+| 18.| **腾讯云EO DNS** | 腾讯云EO DNS解析提供者 | 
+| 19.| **西部数码** | west dns provider | 
+| 20.| **Dns提供商Demo** | dns provider示例 | 
+| 21.| **彩虹DNS** | 彩虹DNS管理系统 | 
+| 22.| **Spaceship** | Spaceship 域名解析 | 
+| 23.| **51dns** | 51DNS | 
+| 24.| **新网互联** | 新网互联 | 
 
 <style module>
 table th:first-of-type {

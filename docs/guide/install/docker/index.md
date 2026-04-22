@@ -1,6 +1,19 @@
 # Docker方式部署
 
-## 一、安装
+## 一、 一键脚本安装（推荐）
+
+如果您的服务器未安装 Docker，该脚本会自动为您安装 Docker 和 Docker Compose，并启动 Certd 容器。
+
+```bash
+curl -fsSL https://raw.atomgit.com/certd/certd/raw/v2/docker/run/install.sh | bash
+```
+
+> 支持 Ubuntu、Debian、CentOS、Rocky Linux、AlmaLinux 等主流发行版。
+> 如需指定版本，可使用参数：`-v 1.29.0`
+> 如需指定数据保存路径，可使用参数：`-p /data/certd`
+
+
+## 二、手动安装
 
 ### 1. 环境准备
 
