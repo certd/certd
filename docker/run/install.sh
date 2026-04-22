@@ -3,7 +3,7 @@ set -e
 
 CERTD_VERSION="${CERTD_VERSION:-latest}"
 INSTALL_DIR="${INSTALL_DIR:-/opt/certd}"
-COMPOSE_FILE_URL="https://raw.atomgit.com/certd/certd/raw/v2/docker/run/docker-compose.yaml"
+COMPOSE_FILE_URL="https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml"
 COMPOSE_FILE="$INSTALL_DIR/docker-compose.yaml"
 
 DOCKER_MIRROR="https://mirrors.aliyun.com"
@@ -320,29 +320,15 @@ main() {
     COMPOSE_INSTALLED=true
 
     if ! check_docker; then
-        DOCKER_INSTALLED=false
         echo ""
-        read -p "是否安装 Docker? (y/n): " -n 1 -r
-        echo ""
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            install_docker
-        else
-            log_error "Docker 是必需组件，脚本退出"
-            exit 1
-        fi
+        log_info "正在安装 Docker..."
+        install_docker
     fi
 
     if ! check_docker_compose; then
-        COMPOSE_INSTALLED=false
         echo ""
-        read -p "是否安装 Docker Compose? (y/n): " -n 1 -r
-        echo ""
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            install_docker_compose
-        else
-            log_error "Docker Compose 是必需组件，脚本退出"
-            exit 1
-        fi
+        log_info "正在安装 Docker Compose..."
+        install_docker_compose
     fi
 
     download_compose_file

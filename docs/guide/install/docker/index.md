@@ -5,7 +5,7 @@
 如果您的服务器未安装 Docker，该脚本会自动为您安装 Docker 和 Docker Compose，并启动 Certd 容器。
 
 ```bash
-curl -fsSL https://raw.atomgit.com/certd/certd/raw/v2/docker/run/install.sh | bash
+curl -fsSL https://gitee.com/certd/certd/raw/v2/docker/run/install.sh | bash
 ```
 
 > 支持 Ubuntu、Debian、CentOS、Rocky Linux、AlmaLinux 等主流发行版。    

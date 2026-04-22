@@ -98,7 +98,7 @@ https://certd.handfree.work/
 
 5. 【推荐】[一键安装脚本](https://certd.docmirror.cn/guide/install/docker/)（自动安装 Docker，Certd）：
 ```bash
- curl -fsSL https://raw.atomgit.com/certd/certd/raw/v2/docker/run/install.sh | bash
+ curl -fsSL https://gitee.com/certd/certd/raw/v2/docker/run/install.sh | bash
 ```
 
 6. 【不推荐】[源码方式部署 ](https://certd.docmirror.cn/guide/install/source/)
