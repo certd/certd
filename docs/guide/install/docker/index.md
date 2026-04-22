@@ -8,9 +8,9 @@
 curl -fsSL https://raw.atomgit.com/certd/certd/raw/v2/docker/run/install.sh | bash
 ```
 
-> 支持 Ubuntu、Debian、CentOS、Rocky Linux、AlmaLinux 等主流发行版。
-> 如需指定版本，可使用参数：`-v 1.29.0`
-> 如需指定数据保存路径，可使用参数：`-p /data/certd`
+> 支持 Ubuntu、Debian、CentOS、Rocky Linux、AlmaLinux 等主流发行版。    
+> 如需指定版本，可使用参数：`-v 1.29.0`    
+> 如需指定数据保存路径，可使用参数：`-p /data/certd`   
 
 
 ## 二、手动安装
