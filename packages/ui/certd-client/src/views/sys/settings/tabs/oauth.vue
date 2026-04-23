@@ -8,7 +8,7 @@
         </div>
         <pre class="helper pre">{{ t("certd.sys.setting.passkeyEnabledHelper", [bindDomain]) }}</pre>
         <div v-if="!bindDomainIsSame" class="text-red-500 text-sm mt-2">
-          {{ t("certd.sys.setting.passkeyHostnameNotSame") }} <a-button class="ml-2" size="small" type="primary" @click="settingsStore.openBindUrlModal()">{{ t("certd.sys.setting.bindUrl") }}</a-button>
+          {{ t("certd.sys.setting.passkeyHostnameNotSame") }} <a-button class="ml-2" size="small" type="primary" @click="settingsStore.openBindUrlModal({ closable: true })">{{ t("certd.sys.setting.bindUrl") }}</a-button>
         </div>
       </a-form-item>
       <a-form-item :label="t('certd.sys.setting.enableOauth')" :name="['public', 'oauthEnabled']">

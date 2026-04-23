@@ -289,7 +289,7 @@ export const useSettingStore = defineStore({
       }
     },
 
-    openBindUrlModal() {
+    openBindUrlModal(opts: { closable?: boolean } = { closable: false }) {
       const event: any = { ModalRef: null };
       mitter.emit("getModal", event);
       const Modal = event.ModalRef;
@@ -302,10 +302,12 @@ export const useSettingStore = defineStore({
           modalRef.destroy();
         }
       };
+      const { closable = false } = opts;
       const modalRef: any = Modal.warning({
         title: "URL地址未绑定，是否绑定此地址？",
         width: 500,
         keyboard: false,
+        closable,
         content: () => {
           return (
             <div class="p-4">
@@ -338,10 +340,10 @@ export const useSettingStore = defineStore({
           danger: true,
         },
         okText: "不，回到原来的地址",
-        cancelText: "不，回到原来的地址",
-        onCancel: () => {
-          window.location.href = bindUrl;
-        },
+        // cancelText: "不，回到原来的地址",
+        // onOk: () => {
+        //   window.location.href = bindUrl;
+        // },
       });
     },
     async loadProductInfo() {

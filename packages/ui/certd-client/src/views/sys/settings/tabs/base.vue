@@ -26,7 +26,7 @@
       </a-form-item>
 
       <a-form-item :label="t('certd.sys.setting.bindUrl')">
-        <a-button class="ml-2" size="small" type="primary" @click="settingsStore.openBindUrlModal()">{{ t("certd.sys.setting.bindUrl") }}</a-button>
+        <a-button class="ml-2" type="primary" @click="settingsStore.openBindUrlModal({ closable: true })">{{ t("certd.sys.setting.bindUrl") }}</a-button>
       </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
