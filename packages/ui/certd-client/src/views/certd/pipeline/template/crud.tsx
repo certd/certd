@@ -182,6 +182,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               },
               showSelect: false,
               createCrudOptions: createCrudOptionsPipeline,
+              height: "60vh",
               crudOptionsOverride: {
                 actionbar: {
                   show: false,

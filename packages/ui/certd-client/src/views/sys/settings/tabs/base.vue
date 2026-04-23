@@ -25,6 +25,10 @@
         <div class="helper" v-html="t('certd.sys.setting.noticeHelper')"></div>
       </a-form-item>
 
+      <a-form-item :label="t('certd.sys.setting.bindUrl')">
+        <a-button class="ml-2" size="small" type="primary" @click="settingsStore.openBindUrlModal()">{{ t("certd.sys.setting.bindUrl") }}</a-button>
+      </a-form-item>
+
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
         <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
       </a-form-item>

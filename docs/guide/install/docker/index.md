@@ -1,6 +1,8 @@
 # Docker方式部署
 
-## 一、 一键脚本安装（推荐）
+## 一、安装
+
+### 一键脚本安装（推荐）
 
 如果您的服务器未安装 Docker，该脚本会自动为您安装 Docker 和 Docker Compose，并启动 Certd 容器。
 
@@ -9,13 +11,14 @@ curl -fsSL https://gitee.com/certd/certd/raw/v2/docker/run/install.sh | bash
 ```
 
 > 支持 Ubuntu、Debian、CentOS、Rocky Linux、AlmaLinux 等主流发行版。    
-> 如需指定版本，可使用参数：`-v 1.29.0`    
-> 如需指定数据保存路径，可使用参数：`-p /data/certd`   
+> docker-compose文件目录：`/opt/certd` ，升级时需要先进入此目录
+> 运行时数据默认保存路径：`/data/certd` ，可使用参数指定：`-p /data/certd` 
+   
 
 
-## 二、手动安装
+###  手动安装
 
-### 1. 环境准备
+#### 1. 环境准备
 
 1.1  准备一台云服务器
 
@@ -32,9 +35,9 @@ https://docs.docker.com/engine/install/
 
 ```bash
 # 随便创建一个目录
-mkdir certd
+mkdir /opt/certd
 # 进入目录
-cd certd
+cd /opt/certd
 # 下载docker-compose.yaml文件，或者手动下载放到certd目录下
 wget https://gitee.com/certd/certd/raw/v2/docker/run/docker-compose.yaml
 
@@ -67,12 +70,12 @@ https://your_server_ip:7002
 记得修改密码  
 
 
-## 二、升级
+## 二、升级Certd
 
 ::: warning   
 如果您是第一次升级certd版本，切记切记先备份一下数据    
 ```
-# docker-compose.yaml配置
+# 查看/opt/certd/docker-compose.yaml配置
 - /data/certd:/app/data   # 请务必确保 /app/data 这个路径没有改动，固定写死
 ```
 :::
@@ -84,6 +87,7 @@ https://your_server_ip:7002
 
 ### 如果使用`latest`版本
 ```shell
+cd /opt/certd
 #重新拉取镜像
 docker pull registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
 # 重新启动容器

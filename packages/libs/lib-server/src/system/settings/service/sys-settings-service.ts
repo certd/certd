@@ -6,10 +6,10 @@ import { BaseSettings, SysInstallInfo, SysPrivateSettings, SysPublicSettings, Sy
 
 import { getAllSslProviderDomains, setSslProviderReverseProxies } from '@certd/acme-client';
 import { cache, logger, mergeUtils, setGlobalProxy } from '@certd/basic';
+import { isPlus } from '@certd/plus-core';
 import * as dns from 'node:dns';
 import { BaseService, setAdminMode } from '../../../basic/index.js';
 import { executorQueue } from '../../basic/service/executor-queue.js';
-import { isComm, isPlus } from '@certd/plus-core';
 const { merge } = mergeUtils;
 
 let lastSaveEnvVars = {};
