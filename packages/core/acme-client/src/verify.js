@@ -148,7 +148,6 @@ async function walkDnsChallengeRecord(recordName, resolver = dns,deep = 0) {
         /* Authoritative DNS resolver */
         log(`从域名权威服务器获取TXT解析记录`);
         const authoritativeResolver = await util.getAuthoritativeDnsResolver(recordName,log);
-        resolver.setTimeout(10000);
         const res = await walkDnsChallengeRecord(recordName, authoritativeResolver,deep);
         if (res && res.length > 0) {
             for (const item of res) {
