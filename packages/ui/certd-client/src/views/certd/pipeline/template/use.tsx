@@ -7,7 +7,7 @@ import GroupSelector from "/@/views/certd/pipeline/group/group-selector.vue";
 import { ref } from "vue";
 import { fillPipelineByDefaultForm } from "/@/views/certd/pipeline/certd-form/use";
 import { cloneDeep } from "lodash-es";
-import { useI18n } from "vue-i18n";
+import { $t } from "/@/locales";
 
 export function createExtraColumns() {
   const groupDictRef = dict({
@@ -15,7 +15,7 @@ export function createExtraColumns() {
     value: "id",
     label: "name",
   });
-  const { t } = useI18n();
+  const t = $t;
   const randomHour = Math.floor(Math.random() * 6);
   const randomMin = Math.floor(Math.random() * 60);
   return {

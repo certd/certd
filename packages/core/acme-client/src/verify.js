@@ -92,7 +92,6 @@ async function walkDnsChallengeRecord(recordName, resolver = dns,deep = 0) {
     try {
         log(`检查域名 ${recordName} 的TXT记录`);
         const txtRecords = await resolver.resolveTxt(recordName);
-
         if (txtRecords && txtRecords.length) {
             log(`找到 ${txtRecords.length} 条 TXT记录（ ${recordName}）`);
             log(`TXT records: ${JSON.stringify(txtRecords)}`);
@@ -149,6 +148,7 @@ async function walkDnsChallengeRecord(recordName, resolver = dns,deep = 0) {
         /* Authoritative DNS resolver */
         log(`从域名权威服务器获取TXT解析记录`);
         const authoritativeResolver = await util.getAuthoritativeDnsResolver(recordName,log);
+        resolver.setTimeout(10000);
         const res = await walkDnsChallengeRecord(recordName, authoritativeResolver,deep);
         if (res && res.length > 0) {
             for (const item of res) {
