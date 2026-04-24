@@ -1,4 +1,4 @@
-import { dict, useFormWrapper } from "@fast-crud/fast-crud";
+import { compute, dict, useFormWrapper } from "@fast-crud/fast-crud";
 import { checkPipelineLimit, eachSteps } from "/@/views/certd/pipeline/utils";
 import { templateApi } from "/@/views/certd/pipeline/template/api";
 import TemplateForm from "./form.vue";
@@ -7,6 +7,7 @@ import GroupSelector from "/@/views/certd/pipeline/group/group-selector.vue";
 import { ref } from "vue";
 import { fillPipelineByDefaultForm } from "/@/views/certd/pipeline/certd-form/use";
 import { cloneDeep } from "lodash-es";
+import { useI18n } from "vue-i18n";
 
 export function createExtraColumns() {
   const groupDictRef = dict({
@@ -14,24 +15,82 @@ export function createExtraColumns() {
     value: "id",
     label: "name",
   });
+  const { t } = useI18n();
   const randomHour = Math.floor(Math.random() * 6);
   const randomMin = Math.floor(Math.random() * 60);
   return {
-    triggerCron: {
-      title: "定时触发",
-      type: "text",
+    // triggerCron: {
+    //   title: "定时触发",
+    //   type: "text",
+    //   form: {
+    //     value: `0 ${randomMin} ${randomHour} * * *`,
+    //     component: {
+    //       name: "cron-editor",
+    //       vModel: "modelValue",
+    //       placeholder: "0 0 4 * * *",
+    //     },
+    //     col: {
+    //       span: 24,
+    //     },
+    //     helper: "点击上面的按钮，选择每天几点定时执行。\n建议设置为每天触发一次，证书未到期之前任务会跳过，不会重复执行",
+    //     order: 100,
+    //   },
+    // },
+
+    random: {
+      title: "定时类型",
       form: {
-        value: `0 ${randomMin} ${randomHour} * * *`,
+        value: true,
+        helper: "是否给流水线随机设置一个时间",
+        show: compute(({ form }) => {
+          return form.clear !== true;
+        }),
+        component: {
+          name: "fs-dict-switch",
+          vModel: "checked",
+          dict: dict({
+            data: [
+              {
+                label: "随机时间",
+                value: true,
+              },
+              {
+                label: "固定时间",
+                value: false,
+              },
+            ],
+          }),
+        },
+      },
+    },
+    randomRange: {
+      title: "随机时间范围",
+      form: {
+        value: ["00:00:00", "08:00:00"],
+        helper: "随机时间范围，单位秒",
+        component: {
+          //  <a-time-range-picker :bordered="false" />
+          name: "a-time-range-picker",
+          vModel: "value",
+          valueFormat: "HH:mm:ss",
+        },
+        show: compute(({ form }) => {
+          return form.clear !== true && form.random === true;
+        }),
+        rules: [{ required: true, message: "请选择随机时间范围" }],
+      },
+    },
+    triggerCron: {
+      title: t("certd.schedule"),
+      form: {
         component: {
           name: "cron-editor",
           vModel: "modelValue",
-          placeholder: "0 0 4 * * *",
         },
-        col: {
-          span: 24,
-        },
-        helper: "点击上面的按钮，选择每天几点定时执行。\n建议设置为每天触发一次，证书未到期之前任务会跳过，不会重复执行",
-        order: 100,
+        show: compute(({ form }) => {
+          return form.clear !== true && form?.random !== true;
+        }),
+        rules: [{ required: true, message: t("certd.selectCron") }],
       },
     },
     notification: {

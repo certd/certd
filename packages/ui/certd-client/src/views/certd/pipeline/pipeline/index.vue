@@ -374,7 +374,7 @@ export default defineComponent({
   setup(props, ctx) {
     onBeforeRouteLeave((to, from) => {
       const newPipelineStr = JSON.stringify(pipeline.value || {});
-      if (pipelineOriginStr.value && pipelineOriginStr.value !== newPipelineStr) {
+      if (props.editMode && pipelineOriginStr.value && pipelineOriginStr.value !== newPipelineStr) {
         const answer = window.confirm("流水线还未保存，确定要离开吗？");
         if (!answer) {
           return false; // 返回 false 即可阻止本次路由跳转
