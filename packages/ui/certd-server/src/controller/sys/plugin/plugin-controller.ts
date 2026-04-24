@@ -84,6 +84,15 @@ export class PluginController extends CrudController<PluginService> {
     const res = await this.pluginConfigService.saveCommPluginConfig(body);
     return this.ok(res);
   }
+  @Post('/getPluginByName', { description: 'sys:settings:view' })
+  async getPluginByName(@Body('name') name: string) {
+    const res = await this.pluginConfigService.getPluginConfig({
+      name: name,
+      type: 'builtIn'
+    });
+    return this.ok(res);
+  }
+
   @Post('/saveSetting', { description: 'sys:settings:edit' })
   async saveSetting(@Body(ALL) body: PluginConfig) {
     const res = await this.pluginConfigService.savePluginConfig(body);

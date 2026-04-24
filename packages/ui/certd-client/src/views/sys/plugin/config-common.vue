@@ -36,6 +36,13 @@
           </div>
         </a-form-item>
 
+        <a-form-item label="其他配置">
+          <a-button type="primary" @click="doPluginConfig">证书申请插件默认值设置</a-button>
+          <div class="helper">
+            <div>自定义证书申请插件参数</div>
+          </div>
+        </a-form-item>
+
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
           <a-button :loading="saveLoading" type="primary" html-type="submit">保存</a-button>
         </a-form-item>
@@ -47,10 +54,10 @@
 <script lang="ts" setup>
 import AccessSelector from "/@/views/certd/access/access-selector/index.vue";
 import { reactive, ref } from "vue";
-import { CommPluginConfig, GetCommPluginConfigs, SaveCommPluginConfigs } from "/@/views/sys/plugin/api";
+import { CommPluginConfig, GetCommPluginConfigs, SaveCommPluginConfigs, GetPluginByName } from "/@/views/sys/plugin/api";
 import { merge } from "lodash-es";
 import { notification } from "ant-design-vue";
-
+import { usePluginConfig } from "./use-config";
 defineOptions({
   name: "SysPluginConfig",
 });
@@ -87,5 +94,12 @@ const onFinish = async (form: any) => {
 const onFinishFailed = (errorInfo: any) => {
   console.log("Failed:", errorInfo);
 };
+
+const { openConfigDialog } = usePluginConfig();
+
+async function doPluginConfig() {
+  const certApplyInfo = await GetPluginByName("CertApply");
+  await openConfigDialog({ row: certApplyInfo, crudExpose: null });
+}
 </script>
 <style lang="less"></style>

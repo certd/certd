@@ -35,7 +35,9 @@ export function usePluginConfig() {
             },
             afterSubmit() {
               notification.success({ message: t("certd.operationSuccess") });
-              crudExpose.doRefresh();
+              if (crudExpose) {
+                crudExpose.doRefresh();
+              }
             },
             async doSubmit({}: any) {
               const form = configEditorRef.value.getForm();

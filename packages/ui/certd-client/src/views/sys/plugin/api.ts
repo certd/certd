@@ -135,3 +135,11 @@ export async function DoTest(req: { id: number; input: any }): Promise<void> {
     data: req,
   });
 }
+
+export async function GetPluginByName(name: string): Promise<PluginConfigBean> {
+  return await request({
+    url: apiPrefix + "/getPluginByName",
+    method: "post",
+    data: { name },
+  });
+}
