@@ -85,7 +85,7 @@ export function useCertPipelineCreator() {
   const settingStore = useSettingStore();
   const router = useRouter();
 
-  function createCrudOptions(req: { certPlugin: any; doSubmit: any; title?: string }): CreateCrudOptionsRet {
+  function createCrudOptions(req: { certPlugin: any; doSubmit: any; title?: string; initialForm?: any }): CreateCrudOptionsRet {
     const inputs: any = {};
     const moreParams = [];
     const doSubmit = req.doSubmit;
@@ -124,9 +124,11 @@ export function useCertPipelineCreator() {
         },
       },
     });
+
     return {
       crudOptions: {
         form: {
+          initialForm: req.initialForm || {},
           doSubmit,
           wrapper: {
             wrapClassName: "cert_pipeline_create_form",
@@ -326,6 +328,15 @@ export function useCertPipelineCreator() {
     //检查是否流水线数量超出限制
     await checkPipelineLimit();
 
+    //设置系统初始值
+    const initialForm: any = {};
+    const pluginSysConfig = await pluginStore.getPluginConfig({ name: req.pluginName, type: "builtIn" });
+    if (pluginSysConfig.sysSetting?.input) {
+      for (const key in pluginSysConfig.sysSetting?.input) {
+        initialForm[key] = pluginSysConfig.sysSetting?.input[key];
+      }
+    }
+
     async function doSubmit({ form }: any) {
       // const certDetail = readCertDetail(form.cert.crt);
       // 添加certd pipeline
@@ -399,6 +410,7 @@ export function useCertPipelineCreator() {
       certPlugin,
       doSubmit,
       title: req.title,
+      initialForm,
     });
     //@ts-ignore
     crudOptions.columns.groupId.form.value = req.defaultGroupId || undefined;

@@ -178,6 +178,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "dict-select",
           search: {
             show: true,
+            component: {
+              disabled: false,
+            },
           },
           form: {
             order: 0,
