@@ -26,16 +26,20 @@ Created an external account key
 [b64MacKey: xxxxxxxxxxxxxxxx
 keyId: xxxxxxxxxxxxx]
 ```
+![](./images/google-eab.png)
 
 3. 到Certd中，创建一条EAB授权记录，填写keyId(=kid) 和 b64MacKey 信息    
    注意：keyId没有`]`结尾，不要把`]`也复制了   
 
-注意：EAB授权使用过一次之后，会绑定邮箱，后续再次使用时，要使用相同的邮箱    
+注意：EAB授权使用过一次之后，会绑定邮箱，后续再次使用时，要使用相同的邮箱，所以邮箱切记不要修改    
 否则会报错 `Unknown external account binding (EAB) key. This may be due to the EAB key expiring which occurs 7 days after creation`
 
-### 2.2 通过服务账号获取EAB
+4. 创建证书流水线，选择证书提供商为google，选择EAB授权，运行流水线申请证书
 
-此方式可以自动EAB，需要配置代理
+
+### 2.2 通过google服务账号接口获取授权
+
+此方式可以自动获取EAB，需要服务端配置代理
 
 1. 创建服务账号    
 https://console.cloud.google.com/projectselector2/iam-admin/serviceaccounts/create?walkthrough_id=iam--create-service-account&hl=zh-cn#step_index=1
@@ -48,9 +52,7 @@ https://console.cloud.google.com/projectselector2/iam-admin/serviceaccounts/crea
 7. 点击`添加密钥`->`创建新密钥`->`JSON`，下载密钥文件
 8. 将json文件内容粘贴到 certd中 Google服务授权输入框中
 
+9. 创建证书流水线，选择证书提供商为google， 选择服务账号授权，运行流水线申请证书
 
-## 3、 创建证书流水线
-选择证书提供商为google， 选择EAB授权 或 服务账号授权
 
-## 4、 其他就跟正常申请证书一样了
 
