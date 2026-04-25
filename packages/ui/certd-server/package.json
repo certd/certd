@@ -37,6 +37,8 @@
     "pub": "echo 1"
   },
   "dependencies": {
+    "@azure/arm-dns": "^5.1.0",
+    "@azure/identity": "^4.13.1",
     "@alicloud/fc20230330": "^4.1.7",
     "@alicloud/openapi-client": "^0.4.12",
     "@alicloud/openapi-util": "^0.3.2",

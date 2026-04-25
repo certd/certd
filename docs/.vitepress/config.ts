@@ -114,6 +114,7 @@ export default defineConfig({
                         {text: "连接windows主机", link: "/guide/use/host/windows.md"},
                         {text: "Google EAB获取", link: "/guide/use/google/"},
                         {text: "阿里云相关", link: "/guide/use/aliyun/"},
+                        {text: "Azure相关", link: "/guide/use/azure/dns.md"},
                         {text: "数据备份", link: "/guide/use/backup/"},
                         {text: "Certd本身的证书更新", link: "/guide/use/https/index.md"},
                         {text: "js脚本插件使用", link: "/guide/use/custom-script/index.md"},
