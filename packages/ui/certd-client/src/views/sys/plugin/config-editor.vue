@@ -3,7 +3,7 @@
     <div class="origin-metadata w-100%">
       <div class="block-title">
         自定义插件参数配置
-        <div class="helper">可以设置插件选项的配置，设置配置默认值、修改帮助说明、设置是否显示该字段等</div>
+        <div class="helper">可以设置插件选项的配置，设置配置默认值、修改帮助说明、设置是否显示该字段等，在用户申请证书对话框里面使用你自定义设置的展示效果</div>
       </div>
       <div class="p-10">
         <div ref="formRef" class="config-form w-full" :label-col="labelCol" :wrapper-col="wrapperCol">
@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="tsx">
-import { FsRender } from "@fast-crud/fast-crud";
+import { dict, FsRender } from "@fast-crud/fast-crud";
 import { cloneDeep, merge, unset } from "lodash-es";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -67,6 +67,18 @@ const labelCol = ref({
 const wrapperCol = ref({ span: 16 });
 const configForm: any = reactive({});
 
+const showDict = dict({
+  data: [
+    {
+      value: true,
+      label: "显示",
+    },
+    {
+      value: false,
+      label: "不显示",
+    },
+  ],
+});
 function getScope() {
   return {
     form: configForm,
@@ -104,12 +116,25 @@ const editableKeys = ref([
     defaultRender(item: any) {
       return () => {
         const value = item["show"];
-        return value === false ? "不显示" : "显示";
+        let showType = "";
+        let color = "";
+        if (item.mergeScript?.indexOf("show:") >= -1) {
+          showType = "条件显示";
+          color = "orange";
+        } else {
+          showType = value === false ? "不显示" : "显示";
+          color = value === false ? "red" : "green";
+        }
+        return (
+          <a-tag color={color} size="small">
+            {showType}
+          </a-tag>
+        );
       };
     },
     editRender(item: any) {
       return () => {
-        return <a-switch vModel:checked={configForm[item.key]["show"]} />;
+        return <fs-dict-switch vModel:checked={configForm[item.key]["show"]} dict={showDict} />;
       };
     },
   },
