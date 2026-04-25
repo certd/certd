@@ -67,8 +67,8 @@ async function openFormDialog() {
             return form.clear !== true;
           }),
           component: {
-            name: "fs-dict-switch",
-            vModel: "checked",
+            name: "fs-dict-radio",
+            vModel: "value",
             dict: dict({
               data: [
                 {

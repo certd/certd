@@ -13,10 +13,27 @@ import { createNotificationApi } from "/@/views/certd/notification/api";
 import GroupSelector from "../group/group-selector.vue";
 import { useI18n } from "/src/locales";
 import { useSettingStore } from "/@/store/settings";
+import dayjs from "dayjs";
 
 export function fillPipelineByDefaultForm(pipeline: any, form: any) {
   const triggers = [];
-  if (form.triggerCron) {
+
+  //根据随机时间设置触发时间
+  if (form.random === true) {
+    // 随机时间
+    const randomRange = form.randomRange;
+    const start = dayjs().format("YYYY-MM-DD") + " " + randomRange[0];
+    let end = dayjs().format("YYYY-MM-DD") + " " + randomRange[1];
+    if (randomRange[1] < randomRange[0]) {
+      //跨天
+      end = dayjs().add(1, "day").format("YYYY-MM-DD") + " " + randomRange[1];
+    }
+    const startTime = dayjs(start).valueOf();
+    const endTime = dayjs(end).valueOf();
+    const randomTime = Math.floor(Math.random() * (endTime - startTime)) + startTime;
+    const time = dayjs(randomTime).format(" ss:mm:HH").replaceAll(":", " ").replaceAll(" 0", " ").trim();
+    triggers.push({ title: "定时触发", type: "timer", props: { cron: `${time} * * *` } });
+  } else if (form.triggerCron) {
     triggers.push({ title: "定时触发", type: "timer", props: { cron: form.triggerCron } });
   }
   if (form.webhookEnabled) {

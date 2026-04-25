@@ -40,14 +40,18 @@ export function createExtraColumns() {
     random: {
       title: "定时类型",
       form: {
+        order: 100,
         value: true,
         helper: "是否给流水线随机设置一个时间",
         show: compute(({ form }) => {
           return form.clear !== true;
         }),
+        col: {
+          span: 24,
+        },
         component: {
-          name: "fs-dict-switch",
-          vModel: "checked",
+          name: "fs-dict-radio",
+          vModel: "value",
           dict: dict({
             data: [
               {
@@ -66,6 +70,7 @@ export function createExtraColumns() {
     randomRange: {
       title: "随机时间范围",
       form: {
+        order: 100,
         value: ["00:00:00", "08:00:00"],
         helper: "随机时间范围，单位秒",
         component: {
@@ -83,6 +88,7 @@ export function createExtraColumns() {
     triggerCron: {
       title: t("certd.schedule"),
       form: {
+        order: 100,
         component: {
           name: "cron-editor",
           vModel: "modelValue",
@@ -91,6 +97,12 @@ export function createExtraColumns() {
           return form.clear !== true && form?.random !== true;
         }),
         rules: [{ required: true, message: t("certd.selectCron") }],
+      },
+    },
+    blank2: {
+      form: {
+        blank: true,
+        order: 100,
       },
     },
     notification: {
