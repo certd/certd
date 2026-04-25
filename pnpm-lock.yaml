@@ -49,7 +49,7 @@ importers:
   packages/core/acme-client:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../basic
       '@peculiar/x509':
         specifier: ^1.11.0
@@ -213,11 +213,11 @@ importers:
   packages/core/pipeline:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../basic
       '@certd/plus-core':
-        specifier: ^1.39.9
-        version: 1.39.9
+        specifier: ^1.39.10
+        version: link:../../pro/plus-core
       dayjs:
         specifier: ^1.11.7
         version: 1.11.13
@@ -412,7 +412,7 @@ importers:
   packages/libs/lib-k8s:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/basic
       '@kubernetes/client-node':
         specifier: 0.21.0
@@ -452,20 +452,20 @@ importers:
   packages/libs/lib-server:
     dependencies:
       '@certd/acme-client':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.39.9
-        version: 1.39.9
+        specifier: ^1.39.10
+        version: link:../../pro/plus-core
       '@midwayjs/cache':
         specifier: 3.14.0
         version: 3.14.0
@@ -610,16 +610,16 @@ importers:
   packages/plugins/plugin-cert:
     dependencies:
       '@certd/acme-client':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../plugin-lib
       psl:
         specifier: ^1.9.0
@@ -683,17 +683,17 @@ importers:
         specifier: ^3.964.0
         version: 3.964.0(aws-crt@1.26.2)
       '@certd/acme-client':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/pipeline
       '@certd/plus-core':
-        specifier: ^1.39.9
-        version: 1.39.9
+        specifier: ^1.39.10
+        version: link:../../pro/plus-core
       '@kubernetes/client-node':
         specifier: 0.21.0
         version: 0.21.0
@@ -783,16 +783,16 @@ importers:
   packages/pro/commercial-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.7
+        specifier: ^1.39.10
         version: link:../../core/basic
       '@certd/lib-server':
-        specifier: ^1.39.7
+        specifier: ^1.39.10
         version: link:../../libs/lib-server
       '@certd/pipeline':
-        specifier: ^1.39.7
+        specifier: ^1.39.10
         version: link:../../core/pipeline
       '@certd/plus-core':
-        specifier: ^1.39.7
+        specifier: ^1.39.10
         version: link:../plus-core
       '@midwayjs/core':
         specifier: 3.20.11
@@ -868,16 +868,16 @@ importers:
   packages/pro/plugin-plus:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.7
+        specifier: ^1.39.10
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.7
+        specifier: ^1.39.10
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.7
+        specifier: ^1.39.10
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.39.7
+        specifier: ^1.39.10
         version: link:../plus-core
       crypto-js:
         specifier: ^4.2.0
@@ -953,7 +953,7 @@ importers:
   packages/pro/plus-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.7
+        specifier: ^1.39.10
         version: link:../../core/basic
       dayjs:
         specifier: ^1.11.7
@@ -1249,10 +1249,10 @@ importers:
         version: 0.1.3(zod@3.24.4)
     devDependencies:
       '@certd/lib-iframe':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../libs/lib-iframe
       '@certd/pipeline':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/pipeline
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -1447,47 +1447,50 @@ importers:
         specifier: ^3.990.0
         version: 3.990.0(aws-crt@1.26.2)
       '@certd/acme-client':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/basic
       '@certd/commercial-core':
-        specifier: ^1.39.9
-        version: 1.39.9(better-sqlite3@11.10.0)(mysql2@3.14.1)(pg@8.16.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.100)(typescript@5.9.3))
+        specifier: ^1.39.10
+        version: link:../../pro/commercial-core
       '@certd/cv4pve-api-javascript':
         specifier: ^8.4.2
         version: 8.4.2
       '@certd/jdcloud':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../libs/lib-jdcloud
       '@certd/lib-huawei':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../libs/lib-huawei
       '@certd/lib-k8s':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../libs/lib-k8s
       '@certd/lib-server':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../libs/lib-server
       '@certd/midway-flyway-js':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../libs/midway-flyway-js
       '@certd/pipeline':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../core/pipeline
       '@certd/plugin-cert':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../plugins/plugin-cert
       '@certd/plugin-lib':
-        specifier: ^1.39.9
+        specifier: ^1.39.10
         version: link:../../plugins/plugin-lib
       '@certd/plugin-plus':
-        specifier: ^1.39.9
-        version: 1.39.9
+        specifier: ^1.39.10
+        version: link:../../pro/plugin-plus
       '@certd/plus-core':
-        specifier: ^1.39.9
-        version: 1.39.9
+        specifier: ^1.39.10
+        version: link:../../pro/plus-core
+      '@google-cloud/dns':
+        specifier: ^5.3.1
+        version: 5.3.1
       '@google-cloud/publicca':
         specifier: ^1.3.0
         version: 1.3.0(encoding@0.1.13)
@@ -2838,17 +2841,8 @@ packages:
   '@better-scroll/zoom@2.5.1':
     resolution: {integrity: sha512-aGvFY5ooeZWS4RcxQLD+pGLpQHQxpPy0sMZV3yadcd2QK53PK9gS4Dp+BYfRv8lZ4/P2LoNEhr6Wq1DN6+uPlA==}
 
-  '@certd/commercial-core@1.39.9':
-    resolution: {integrity: sha512-oq4rWrK6Xxy9hkxZaUbQbZ2pFgtRcPuqlg9Ud1vtzO8zmFkZY48j+vsUH0V32k1dNr75BIl9r9RFY2Vwc6rcVg==}
-
   '@certd/cv4pve-api-javascript@8.4.2':
     resolution: {integrity: sha512-udGce7ewrVl4DmZvX+17PjsnqsdDIHEDatr8QP0AVrY2p+8JkaSPW4mXCKiLGf82C9K2+GXgT+qNIqgW7tfF9Q==}
-
-  '@certd/plugin-plus@1.39.9':
-    resolution: {integrity: sha512-OdY0glIHQeaGUYwH8KvN++go4QB5KUBmRvw1jzIDKu5pHZEKkEij0UBfeDv8a5CC9ynA+4/aoNPCvB0tncNuCg==}
-
-  '@certd/plus-core@1.39.9':
-    resolution: {integrity: sha512-75Wo4KQoHFxhWwLB3XjRC+ihButagGiaxiwS1u4oVzESW9EqQ+XKcGEw/WJF3oh81dE7orexo2nA4p/PdoTSlg==}
 
   '@certd/vue-js-cron-core@6.0.3':
     resolution: {integrity: sha512-kqzoAMhYz9j6FGNWEODRYtt4NpUEUwjpkU89z5WVg2tCtOcI5VhwyUGOd8AxiBCRfd6PtXvzuqw85PaOps9wrQ==}
@@ -3524,6 +3518,30 @@ packages:
   '@floating-ui/vue@1.1.6':
     resolution: {integrity: sha512-XFlUzGHGv12zbgHNk5FN2mUB7ROul3oG2ENdTpWdE+qMFxyNxWSRmsoyhiEnpmabNm6WnUvR1OvJfUfN4ojC1A==}
 
+  '@google-cloud/common@6.0.0':
+    resolution: {integrity: sha512-IXh04DlkLMxWgYLIUYuHHKXKOUwPDzDgke1ykkkJPe48cGIS9kkL2U/o0pm4ankHLlvzLF/ma1eO86n/bkumIA==}
+    engines: {node: '>=18'}
+
+  '@google-cloud/dns@5.3.1':
+    resolution: {integrity: sha512-1kkLU/si7zpIZpY2yg3pXZ1LH8Ifl/ujhxvxd/1d5e8qQ2pcyrobaxqlCekKltjBA24s/o3Up7Cl9pqj4elxdg==}
+    engines: {node: '>=18'}
+
+  '@google-cloud/paginator@6.0.0':
+    resolution: {integrity: sha512-g5nmMnzC+94kBxOKkLGpK1ikvolTFCC3s2qtE4F+1EuArcJ7HHC23RDQVt3Ra3CqpUYZ+oXNKZ8n5Cn5yug8DA==}
+    engines: {node: '>=18'}
+
+  '@google-cloud/projectify@4.0.0':
+    resolution: {integrity: sha512-MmaX6HeSvyPbWGwFq7mXdo0uQZLGBYCwziiLIGq5JVX+/bdI3SAq6bP98trV5eTWfLuvsMcIC1YJOF2vfteLFA==}
+    engines: {node: '>=14.0.0'}
+
+  '@google-cloud/promisify@4.1.0':
+    resolution: {integrity: sha512-G/FQx5cE/+DqBbOpA5jKsegGwdPniU6PuIEMt+qxWgFxvxuFOzVmp6zYchtYuwAWV5/8Dgs0yAmjvNZv3uXLQg==}
+    engines: {node: '>=18'}
+
+  '@google-cloud/promisify@5.0.0':
+    resolution: {integrity: sha512-N8qS6dlORGHwk7WjGXKOSsLjIjNINCPicsOX6gyyLiYk7mq3MtII96NZ9N2ahwA2vnkLmZODOIH9rlNniYWvCQ==}
+    engines: {node: '>=18'}
+
   '@google-cloud/publicca@1.3.0':
     resolution: {integrity: sha512-Uaqrzs6N8O3lGZx+r9aOxW1KCtE3BBNZEewhcX2UvKW/2CEAV2HmW0bFVYwtiu3zGppkVMz9pXZInz/Q1qOwvQ==}
     engines: {node: '>=14.0.0'}
@@ -3534,6 +3552,11 @@ packages:
 
   '@grpc/proto-loader@0.7.15':
     resolution: {integrity: sha512-tMXdRCfYVixjuFK+Hk0Q1s38gV9zDiDJfWL3h1rv4Qc39oILCu1TRTDt7+fGUI8K4G1Fj125Hx/ru3azECWTyQ==}
+    engines: {node: '>=6'}
+    hasBin: true
+
+  '@grpc/proto-loader@0.8.0':
+    resolution: {integrity: sha512-rc1hOQtjIWGxcxpb9aHAfLpIctjEnsDehj0DAiVfBlmT84uvR0uUtN2hEi/ecvWVjXUGf5qPF4qEgiLOx1YIMQ==}
     engines: {node: '>=6'}
     hasBin: true
 
@@ -5800,6 +5823,10 @@ packages:
     resolution: {integrity: sha512-3CYzex9M9FGQjCGMGyi6/31c8GJbgb0qGyrx5HWxPd0aCwh4cB2YjMb2Xf9UuoogrMrlO9cTqnB5rI5GHZTcUA==}
     engines: {node: '>=0.10.0'}
 
+  arrify@2.0.1:
+    resolution: {integrity: sha512-3duEwti880xqi4eAMN8AyR4a0ByT90zoYdLlevfrvU43vb0YZwZVfxOgxWrLXXXpyugL0hNZc9G6BiB5B3nUug==}
+    engines: {node: '>=8'}
+
   asap@2.0.6:
     resolution: {integrity: sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA==}
 
@@ -5958,7 +5985,7 @@ packages:
   basic-ftp@5.0.5:
     resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
     engines: {node: '>=10.0.0'}
-    deprecated: Security vulnerability fixed in 5.2.0, please upgrade
+    deprecated: Security vulnerability fixed in 5.2.1, please upgrade
 
   bcrypt-pbkdf@1.0.2:
     resolution: {integrity: sha512-qeFIXtP4MSoi6NLqO12WfqARWWuCKi2Rn/9hJLEmtB5yTNr9DqFWkJRCf2qShWzPeAMRnOgCrq0sg/KLv5ES9w==}
@@ -7041,6 +7068,10 @@ packages:
     resolution: {integrity: sha512-SIEkjrG7cZ9GWZQYk/mH+mWtcRPly/3ibVuXO/tP/MFoWz6KiRK77tSMq6YQBPl7RljPtXPQ/JhxbNuCdi1bNw==}
     engines: {node: '>=12'}
 
+  dns-zonefile@0.2.10:
+    resolution: {integrity: sha512-YXs0T8EjhwI3YFpL4l7n9Uy+g/ufmd3WyDSQsI4mrMNlrrdgK6aN0AbNjOkKoHyF59l/x4Y3/z64F3aJWCKWpg==}
+    hasBin: true
+
   doctrine@2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
@@ -7806,9 +7837,17 @@ packages:
     resolution: {integrity: sha512-LDODD4TMYx7XXdpwxAVRAIAuB0bzv0s+ywFonY46k126qzQHT9ygyoa9tncmOiQmmDrik65UYsEkv3lbfqQ3yQ==}
     engines: {node: '>=14'}
 
+  gaxios@7.1.4:
+    resolution: {integrity: sha512-bTIgTsM2bWn3XklZISBTQX7ZSddGW+IO3bMdGaemHZ3tbqExMENHLx6kKZ/KlejgrMtj8q7wBItt51yegqalrA==}
+    engines: {node: '>=18'}
+
   gcp-metadata@6.1.1:
     resolution: {integrity: sha512-a4tiq7E0/5fTjxPAaH4jpjkSv/uCaU2p5KC6HVGrvl0cDjA8iBZv4vv1gyzlmK0ZUKqwpOyQMKzZQe3lTit77A==}
     engines: {node: '>=14'}
+
+  gcp-metadata@8.1.2:
+    resolution: {integrity: sha512-zV/5HKTfCeKWnxG0Dmrw51hEWFGfcF2xiXqcA3+J90WDuP0SvoiSO5ORvcBsifmx/FoIjgQN3oNOGaQ5PhLFkg==}
+    engines: {node: '>=18'}
 
   generate-function@2.3.1:
     resolution: {integrity: sha512-eeB5GfMNeevm/GRYq20ShmsaGcmI81kIX2K9XQx5miC8KdHaC6Jm0qQ8ZNeGOi7wYB8OsdxKs+Y2oVuTFuVwKQ==}
@@ -7966,6 +8005,10 @@ packages:
   good-listener@1.2.2:
     resolution: {integrity: sha512-goW1b+d9q/HIwbVYZzZ6SsTr4IgE+WA44A0GmPIQstuOrgsFcT7VEJ48nmr9GaRtNu0XTKacFLGnBPAM6Afouw==}
 
+  google-auth-library@10.6.2:
+    resolution: {integrity: sha512-e27Z6EThmVNNvtYASwQxose/G57rkRuaRbQyxM2bvYLLX/GqWZ5chWq2EBoUchJbCc57eC9ArzO5wMsEmWftCw==}
+    engines: {node: '>=18'}
+
   google-auth-library@9.15.1:
     resolution: {integrity: sha512-Jb6Z0+nvECVz+2lzSMt9u98UsoakXxA2HGHMCxh+so3n90XgYWkq5dur19JAJV7ONiJY22yBTyJB1TSkvPq9Ng==}
     engines: {node: '>=14'}
@@ -7974,8 +8017,16 @@ packages:
     resolution: {integrity: sha512-zKKLeLfcYBVOzzM48Brtn4EQkKcTli9w6c1ilzFK2NbJvcd4ATD8/XqFExImvE/W5IwMlKKwa5qqVufji3ioNQ==}
     engines: {node: '>=14'}
 
+  google-gax@5.0.6:
+    resolution: {integrity: sha512-1kGbqVQBZPAAu4+/R1XxPQKP0ydbNYoLAr4l0ZO2bMV0kLyLW4I1gAk++qBLWt7DPORTzmWRMsCZe86gDjShJA==}
+    engines: {node: '>=18'}
+
   google-logging-utils@0.0.2:
     resolution: {integrity: sha512-NEgUnEcBiP5HrPzufUkBzJOD/Sxsco3rLNo1F1TNf7ieU8ryUzBhqba8r756CjLX7rn3fHl6iLEwPYuqpoKgQQ==}
+    engines: {node: '>=14'}
+
+  google-logging-utils@1.1.3:
+    resolution: {integrity: sha512-eAmLkjDjAFCVXg7A1unxHsLf961m6y17QFqXqAXGj/gVkKFrEICfStRfwUlGNfeCEjNRa32JEWOUTlYXPyyKvA==}
     engines: {node: '>=14'}
 
   gopd@1.2.0:
@@ -8102,6 +8153,9 @@ packages:
   hosted-git-info@7.0.2:
     resolution: {integrity: sha512-puUZAUKT5m8Zzvs72XWy3HtvVbTWljRE66cP60bxJzAqf2DgICo7lYTY2IHUmLnNpjYvw5bvmoHvPc0QO2a62w==}
     engines: {node: ^16.14.0 || >=18.0.0}
+
+  html-entities@2.6.0:
+    resolution: {integrity: sha512-kig+rMn/QOVRvr7c86gQ8lWXq+Hkv6CbAH1hLu+RG338StTpE8Z0b44SDVaqVu7HGKf27frdmUYEs9hTUX/cLQ==}
 
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
@@ -9041,6 +9095,9 @@ packages:
   lodash.get@4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
     deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
+
+  lodash.groupby@4.6.0:
+    resolution: {integrity: sha512-5dcWxm23+VAoz+awKmBaiBvzox8+RqMgFhi7UvX9DHZr2HdxHXM/Wrf8cfKpsW37RNrvtPn6hSwNqurSILbmJw==}
 
   lodash.includes@4.3.0:
     resolution: {integrity: sha512-W3Bx6mdkRTGtlJISOvVD/lbqjTlPPUDTMnlXZFnVwi9NKJ6tiAk6LVdlhZMm17VZisqhKcgzpO5Wz91PCt5b0w==}
@@ -10732,12 +10789,20 @@ packages:
     resolution: {integrity: sha512-SAzp/O4Yh02jGdRc+uIrGoe87dkN/XtwxfZ4ZyafJHymd79ozp5VG5nyZ7ygqPM5+cpLDjjGnYFUkngonyDPOQ==}
     engines: {node: '>=14.0.0'}
 
+  proto3-json-serializer@3.0.4:
+    resolution: {integrity: sha512-E1sbAYg3aEbXrq0n1ojJkRHQJGE1kaE/O6GLA94y8rnJBfgvOPTOd1b9hOceQK1FFZI9qMh1vBERCyO2ifubcw==}
+    engines: {node: '>=18'}
+
   protobufjs@7.2.5:
     resolution: {integrity: sha512-gGXRSXvxQ7UiPgfw8gevrfRWcTlSbOFg+p/N+JVJEK5VhueL2miT6qTymqAmjr1Q5WbOCyJbyrk6JfWKwlFn6A==}
     engines: {node: '>=12.0.0'}
 
   protobufjs@7.5.2:
     resolution: {integrity: sha512-f2ls6rpO6G153Cy+o2XQ+Y0sARLOZ17+OGVLHrc3VUKcLHYKEKWbkSujdBWQXM7gKn5NTfp0XnRPZn1MIu8n9w==}
+    engines: {node: '>=12.0.0'}
+
+  protobufjs@7.5.5:
+    resolution: {integrity: sha512-3wY1AxV+VBNW8Yypfd1yQY9pXnqTAN+KwQxL8iYm3/BjKYMNg4i0owhEe26PWDOMaIrzeeF98Lqd5NGz4omiIg==}
     engines: {node: '>=12.0.0'}
 
   protocols@2.0.2:
@@ -11085,6 +11150,10 @@ packages:
   retry-request@7.0.2:
     resolution: {integrity: sha512-dUOvLMJ0/JJYEn8NrpOaGNE7X3vpI5XlZS/u0ANjqtcZVKnIxP7IgCFwrKTxENw29emmwug53awKtaMm4i9g5w==}
     engines: {node: '>=14'}
+
+  retry-request@8.0.2:
+    resolution: {integrity: sha512-JzFPAfklk1kjR1w76f0QOIhoDkNkSqW8wYKT08n9yysTmZfB+RQ2QoXoTAeOi1HD9ZipTyTAZg3c4pM/jeqgSw==}
+    engines: {node: '>=18'}
 
   retry@0.12.0:
     resolution: {integrity: sha512-9LkiTwjUh6rT555DtE9rTX+BKByPfrMzEAtnlEtdEwr3Nkffwiihqe2bWADg+OQRjt9gl6ICdmB/ZFDCGAtSow==}
@@ -11536,6 +11605,9 @@ packages:
     resolution: {integrity: sha512-KFxaM7XT+irxvdqSP1LGLgNWbYN7ay5owZ3r/8t77p+EtSUAfUgtl7be3xtqtOmGUl9K9YPO2ca8133RlTjvKw==}
     engines: {node: '>=8.0'}
 
+  string-format-obj@1.1.1:
+    resolution: {integrity: sha512-Mm+sROy+pHJmx0P/0Bs1uxIX6UhGJGj6xDGQZ5zh9v/SZRmLGevp+p0VJxV7lirrkAmQ2mvva/gHKpnF/pTb+Q==}
+
   string-width@4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
     engines: {node: '>=8'}
@@ -11778,6 +11850,10 @@ packages:
 
   teamcity-service-messages@0.1.14:
     resolution: {integrity: sha512-29aQwaHqm8RMX74u2o/h1KbMLP89FjNiMxD9wbF2BbWOnbM+q+d1sCEC+MqCc4QW3NJykn77OMpTFw/xTHIc0w==}
+
+  teeny-request@10.1.2:
+    resolution: {integrity: sha512-Xj0ZAQ0CeuQn6UxCDPLbFRlgcSTUEyO3+wiepr2grjIjyL/lMMs1Z4OwXn8kLvn/V1OuaEP0UY7Na6UDNNsYrQ==}
+    engines: {node: '>=18'}
 
   teeny-request@9.0.0:
     resolution: {integrity: sha512-resvxdc6Mgb7YEThw6G6bExlXKkv6+YbuzGg9xuXxSgxJF7Ozs+o8Y9+2R3sArdWdW8nOokoQb1yrpFB0pQK2g==}
@@ -15155,63 +15231,11 @@ snapshots:
     dependencies:
       '@better-scroll/core': 2.5.1
 
-  '@certd/commercial-core@1.39.9(better-sqlite3@11.10.0)(mysql2@3.14.1)(pg@8.16.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.100)(typescript@5.9.3))':
-    dependencies:
-      '@certd/basic': link:packages/core/basic
-      '@certd/lib-server': link:packages/libs/lib-server
-      '@certd/pipeline': link:packages/core/pipeline
-      '@certd/plus-core': 1.39.9
-      '@midwayjs/core': 3.20.11
-      '@midwayjs/koa': 3.20.13
-      '@midwayjs/logger': 3.4.2
-      '@midwayjs/swagger': 3.20.11
-      '@midwayjs/typeorm': 3.20.11
-      dayjs: 1.11.13
-      typeorm: 0.3.24(better-sqlite3@11.10.0)(mysql2@3.14.1)(pg@8.16.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.100)(typescript@5.9.3))
-    transitivePeerDependencies:
-      - '@google-cloud/spanner'
-      - '@sap/hana-client'
-      - babel-plugin-macros
-      - better-sqlite3
-      - hdb-pool
-      - ioredis
-      - mongodb
-      - mssql
-      - mysql2
-      - oracledb
-      - pg
-      - pg-native
-      - pg-query-stream
-      - redis
-      - reflect-metadata
-      - sql.js
-      - sqlite3
-      - supports-color
-      - ts-node
-      - typeorm-aurora-data-api-driver
-
   '@certd/cv4pve-api-javascript@8.4.2':
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
-
-  '@certd/plugin-plus@1.39.9':
-    dependencies:
-      '@certd/basic': link:packages/core/basic
-      '@certd/pipeline': link:packages/core/pipeline
-      '@certd/plugin-lib': link:packages/plugins/plugin-lib
-      '@certd/plus-core': 1.39.9
-      crypto-js: 4.2.0
-      dayjs: 1.11.13
-      form-data: 4.0.2
-      jsrsasign: 11.1.0
-      querystring: 0.2.1
-
-  '@certd/plus-core@1.39.9':
-    dependencies:
-      '@certd/basic': link:packages/core/basic
-      dayjs: 1.11.13
 
   '@certd/vue-js-cron-core@6.0.3':
     dependencies:
@@ -15804,6 +15828,43 @@ snapshots:
       - '@vue/composition-api'
       - vue
 
+  '@google-cloud/common@6.0.0':
+    dependencies:
+      '@google-cloud/projectify': 4.0.0
+      '@google-cloud/promisify': 4.1.0
+      arrify: 2.0.1
+      duplexify: 4.1.3
+      extend: 3.0.2
+      google-auth-library: 10.6.2
+      html-entities: 2.6.0
+      retry-request: 8.0.2
+      teeny-request: 10.1.2
+    transitivePeerDependencies:
+      - supports-color
+
+  '@google-cloud/dns@5.3.1':
+    dependencies:
+      '@google-cloud/common': 6.0.0
+      '@google-cloud/paginator': 6.0.0
+      '@google-cloud/promisify': 5.0.0
+      arrify: 2.0.1
+      dns-zonefile: 0.2.10
+      google-gax: 5.0.6
+      lodash.groupby: 4.6.0
+      string-format-obj: 1.1.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@google-cloud/paginator@6.0.0':
+    dependencies:
+      extend: 3.0.2
+
+  '@google-cloud/projectify@4.0.0': {}
+
+  '@google-cloud/promisify@4.1.0': {}
+
+  '@google-cloud/promisify@5.0.0': {}
+
   '@google-cloud/publicca@1.3.0(encoding@0.1.13)':
     dependencies:
       google-gax: 4.6.0(encoding@0.1.13)
@@ -15821,6 +15882,13 @@ snapshots:
       lodash.camelcase: 4.3.0
       long: 5.3.2
       protobufjs: 7.5.2
+      yargs: 17.7.2
+
+  '@grpc/proto-loader@0.8.0':
+    dependencies:
+      lodash.camelcase: 4.3.0
+      long: 5.3.2
+      protobufjs: 7.5.5
       yargs: 17.7.2
 
   '@hapi/bourne@3.0.0': {}
@@ -19035,6 +19103,8 @@ snapshots:
 
   arrify@1.0.1: {}
 
+  arrify@2.0.1: {}
+
   asap@2.0.6: {}
 
   asn1@0.2.6:
@@ -20436,6 +20506,8 @@ snapshots:
       test-value: 3.0.0
       walk-back: 5.1.1
 
+  dns-zonefile@0.2.10: {}
+
   doctrine@2.1.0:
     dependencies:
       esutils: 2.0.3
@@ -20925,13 +20997,13 @@ snapshots:
       resolve: 1.22.10
       semver: 6.3.1
 
-  eslint-plugin-prettier@3.4.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@7.32.0)(prettier@2.8.8):
+  eslint-plugin-prettier@3.4.1(eslint-config-prettier@8.10.0(eslint@7.32.0))(eslint@7.32.0)(prettier@2.8.8):
     dependencies:
       eslint: 7.32.0
       prettier: 2.8.8
       prettier-linter-helpers: 1.0.0
     optionalDependencies:
-      eslint-config-prettier: 8.10.0(eslint@8.57.0)
+      eslint-config-prettier: 8.10.0(eslint@7.32.0)
 
   eslint-plugin-prettier@4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8):
     dependencies:
@@ -21463,6 +21535,14 @@ snapshots:
       - encoding
       - supports-color
 
+  gaxios@7.1.4:
+    dependencies:
+      extend: 3.0.2
+      https-proxy-agent: 7.0.6
+      node-fetch: 3.3.2
+    transitivePeerDependencies:
+      - supports-color
+
   gcp-metadata@6.1.1(encoding@0.1.13):
     dependencies:
       gaxios: 6.7.1(encoding@0.1.13)
@@ -21470,6 +21550,14 @@ snapshots:
       json-bigint: 1.0.0
     transitivePeerDependencies:
       - encoding
+      - supports-color
+
+  gcp-metadata@8.1.2:
+    dependencies:
+      gaxios: 7.1.4
+      google-logging-utils: 1.1.3
+      json-bigint: 1.0.0
+    transitivePeerDependencies:
       - supports-color
 
   generate-function@2.3.1:
@@ -21664,6 +21752,17 @@ snapshots:
     dependencies:
       delegate: 3.2.0
 
+  google-auth-library@10.6.2:
+    dependencies:
+      base64-js: 1.5.1
+      ecdsa-sig-formatter: 1.0.11
+      gaxios: 7.1.4
+      gcp-metadata: 8.1.2
+      google-logging-utils: 1.1.3
+      jws: 4.0.0
+    transitivePeerDependencies:
+      - supports-color
+
   google-auth-library@9.15.1(encoding@0.1.13):
     dependencies:
       base64-js: 1.5.1
@@ -21694,7 +21793,25 @@ snapshots:
       - encoding
       - supports-color
 
+  google-gax@5.0.6:
+    dependencies:
+      '@grpc/grpc-js': 1.13.3
+      '@grpc/proto-loader': 0.8.0
+      duplexify: 4.1.3
+      google-auth-library: 10.6.2
+      google-logging-utils: 1.1.3
+      node-fetch: 3.3.2
+      object-hash: 3.0.0
+      proto3-json-serializer: 3.0.4
+      protobufjs: 7.5.5
+      retry-request: 8.0.2
+      rimraf: 5.0.10
+    transitivePeerDependencies:
+      - supports-color
+
   google-logging-utils@0.0.2: {}
+
+  google-logging-utils@1.1.3: {}
 
   gopd@1.2.0: {}
 
@@ -21829,6 +21946,8 @@ snapshots:
   hosted-git-info@7.0.2:
     dependencies:
       lru-cache: 10.4.3
+
+  html-entities@2.6.0: {}
 
   html-escaper@2.0.2: {}
 
@@ -22824,6 +22943,8 @@ snapshots:
 
   lodash.get@4.4.2: {}
 
+  lodash.groupby@4.6.0: {}
+
   lodash.includes@4.3.0: {}
 
   lodash.isboolean@3.0.3: {}
@@ -23357,7 +23478,7 @@ snapshots:
       eslint: 7.32.0
       eslint-config-prettier: 8.10.0(eslint@7.32.0)
       eslint-plugin-node: 11.1.0(eslint@7.32.0)
-      eslint-plugin-prettier: 3.4.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@7.32.0)(prettier@2.8.8)
+      eslint-plugin-prettier: 3.4.1(eslint-config-prettier@8.10.0(eslint@7.32.0))(eslint@7.32.0)(prettier@2.8.8)
       execa: 5.1.1
       inquirer: 7.3.3
       json5: 2.2.3
@@ -24586,6 +24707,10 @@ snapshots:
     dependencies:
       protobufjs: 7.5.2
 
+  proto3-json-serializer@3.0.4:
+    dependencies:
+      protobufjs: 7.5.5
+
   protobufjs@7.2.5:
     dependencies:
       '@protobufjs/aspromise': 1.1.2
@@ -24602,6 +24727,21 @@ snapshots:
       long: 5.3.2
 
   protobufjs@7.5.2:
+    dependencies:
+      '@protobufjs/aspromise': 1.1.2
+      '@protobufjs/base64': 1.1.2
+      '@protobufjs/codegen': 2.0.4
+      '@protobufjs/eventemitter': 1.1.0
+      '@protobufjs/fetch': 1.1.0
+      '@protobufjs/float': 1.0.2
+      '@protobufjs/inquire': 1.1.0
+      '@protobufjs/path': 1.1.2
+      '@protobufjs/pool': 1.1.0
+      '@protobufjs/utf8': 1.1.0
+      '@types/node': 20.17.47
+      long: 5.3.2
+
+  protobufjs@7.5.5:
     dependencies:
       '@protobufjs/aspromise': 1.1.2
       '@protobufjs/base64': 1.1.2
@@ -25039,6 +25179,13 @@ snapshots:
       teeny-request: 9.0.0(encoding@0.1.13)
     transitivePeerDependencies:
       - encoding
+      - supports-color
+
+  retry-request@8.0.2:
+    dependencies:
+      extend: 3.0.2
+      teeny-request: 10.1.2
+    transitivePeerDependencies:
       - supports-color
 
   retry@0.12.0: {}
@@ -25510,6 +25657,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  string-format-obj@1.1.1: {}
+
   string-width@4.2.3:
     dependencies:
       emoji-regex: 8.0.0
@@ -25874,6 +26023,15 @@ snapshots:
       yallist: 5.0.0
 
   teamcity-service-messages@0.1.14: {}
+
+  teeny-request@10.1.2:
+    dependencies:
+      http-proxy-agent: 7.0.2
+      https-proxy-agent: 7.0.6
+      node-fetch: 3.3.2
+      stream-events: 1.0.5
+    transitivePeerDependencies:
+      - supports-color
 
   teeny-request@9.0.0(encoding@0.1.13):
     dependencies:

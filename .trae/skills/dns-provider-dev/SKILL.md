@@ -70,9 +70,9 @@ version: 1.0.0
 #### 你的回答
 
 ```typescript
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions, PageSearch, PageRes, DomainRecord } from '@certd/plugin-cert';
+import { Pager, PageRes, PageSearch } from "@certd/pipeline";
+import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions, DomainRecord } from '@certd/plugin-cert';
 import { DemoAccess } from './access.js';
-import { Pager } from '@certd/pipeline';
 
 type DemoRecord = {
   // 这里定义 Record 记录的数据结构，跟对应云平台接口返回值一样即可
