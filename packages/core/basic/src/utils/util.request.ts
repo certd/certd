@@ -111,8 +111,13 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       if (config.logData == null) {
         config.logData = false;
       }
+      if (config.logReq == null) {
+        config.logReq = true;
+      }
 
-      logger.info(`http request:${config.url}，method:${config.method}`);
+      if (config.logReq !== false) {
+        logger.info(`http request:${config.url}，method:${config.method}`);
+      }
       if (config.logParams !== false && config.params) {
         logger.info(`params:${JSON.stringify(config.params)}`);
       }
@@ -301,6 +306,7 @@ export type HttpClientResponse<R> = any;
 export type HttpRequestConfig<D = any> = {
   skipSslVerify?: boolean;
   skipCheckRes?: boolean;
+  logReq?: boolean;
   logParams?: boolean;
   logRes?: boolean;
   logData?: boolean;
