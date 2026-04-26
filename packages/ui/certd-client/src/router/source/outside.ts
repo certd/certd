@@ -3,6 +3,15 @@ import Error404 from "/src/views/framework/error/404.vue";
 const errorPage = [{ path: "/:pathMatch(.*)*", name: "not-found", component: Error404 }];
 export const outsideResource = [
   {
+    meta: {
+      title: "首页",
+      isMenu: false,
+    },
+    name: "landing",
+    path: "/",
+    component: "/framework/landing/index.vue",
+  },
+  {
     title: "outside",
     name: "outside",
     path: "/outside",

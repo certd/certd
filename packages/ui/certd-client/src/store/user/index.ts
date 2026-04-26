@@ -120,7 +120,7 @@ export const useUserStore = defineStore({
       // await this.getUserInfoAction();
       // const userInfo = await this.getUserInfoAction();
       mitter.emit("app.login", { ...loginData });
-      await router.replace("/");
+      await router.replace("/index");
     },
 
     /**

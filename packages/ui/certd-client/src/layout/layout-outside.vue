@@ -2,7 +2,7 @@
   <div id="userLayout" :class="['user-layout-wrapper']">
     <div class="login-container flex justify-start dark:background-[#141414]">
       <div class="user-layout-content flex-col justify-start">
-        <div class="top flex flex-col items-center justify-start">
+        <div class="top flex flex-col items-center justify-start pointer" @click="goHome">
           <div class="header flex flex-row items-center">
             <img :src="siteInfo.loginLogo" class="logo" alt="logo" />
             <span class="title"></span>
@@ -15,10 +15,13 @@
         </div>
         <div class="footer">
           <div class="copyright">
-            <span v-if="!settingStore.isComm">
+            <span>
               <span>Copyright</span>
               <span>&copy;</span>
               <span>{{ envRef.COPYRIGHT_YEAR }}</span>
+            </span>
+            <span v-if="!settingStore.isComm">
+              <a-divider type="vertical" />
               <span>
                 <a :href="envRef.COPYRIGHT_URL" target="_blank">{{ envRef.COPYRIGHT_NAME }}</a>
               </span>
@@ -47,6 +50,7 @@ import { env } from "/@/utils/util.env";
 import { computed, ref, Ref } from "vue";
 import { useSettingStore } from "/@/store/settings";
 import { SiteInfo, SysPublicSetting } from "/@/store/settings/api.basic";
+import { useRouter } from "vue-router";
 
 const envRef = ref(env);
 const settingStore = useSettingStore();
@@ -56,6 +60,10 @@ const siteInfo: Ref<SiteInfo> = computed(() => {
 const sysPublic: Ref<SysPublicSetting> = computed(() => {
   return settingStore.sysPublic;
 });
+const router = useRouter();
+function goHome() {
+  router.replace("/");
+}
 </script>
 
 <style lang="less">
