@@ -66,6 +66,16 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
+            "name": "server-new",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/packages/ui/certd-server",
+            "runtimeExecutable": "pnpm",
+            "runtimeArgs": ["dev-new"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
             "name": "server-local-plus",
             "type": "node",
             "request": "launch",
