@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.11](https://github.com/certd/certd/compare/v1.39.10...v1.39.11) (2026-04-26)
+
+### Performance Improvements
+
+* 支持部署到nginx-proxy-manager ([2e6e9ed](https://github.com/certd/certd/commit/2e6e9ed9255bcf178edb0eb00d93a7f13c214430))
+
 ## [1.39.10](https://github.com/certd/certd/compare/v1.39.9...v1.39.10) (2026-04-11)
 
 ### Performance Improvements

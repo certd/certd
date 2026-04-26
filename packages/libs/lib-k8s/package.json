@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-k8s",
   "private": false,
-  "version": "1.39.10",
+  "version": "1.39.11",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -18,7 +18,7 @@
     "compile": "tsc --skipLibCheck --watch"
   },
   "dependencies": {
-    "@certd/basic": "^1.39.10",
+    "@certd/basic": "^1.39.11",
     "@kubernetes/client-node": "0.21.0"
   },
   "devDependencies": {

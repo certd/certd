@@ -3,10 +3,10 @@ default:
   strategy:
     runStrategy: 1
 name: AliyunDeployCertToWaf
-title: 阿里云-部署至阿里云WAF
+title: 阿里云-部署至阿里云WAF(cname接入)
 icon: svg:icon-aliyun
 group: aliyun
-desc: 部署证书到阿里云WAF
+desc: 部署证书到阿里云WAF(cname接入)，云资源的请选择另外一个waf插件
 needPlus: false
 input:
   cert:
@@ -128,4 +128,4 @@ input:
 output: {}
 pluginType: deploy
 type: builtIn
-scriptFilePath: /plugins/plugin-aliyun/plugin/deploy-to-waf/index.js
+scriptFilePath: /plugins/plugin-aliyun/plugin/deploy-to-waf/deploy-to-waf-cname.js

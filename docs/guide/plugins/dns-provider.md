@@ -5,27 +5,29 @@
 | 1.| **阿里ESA** | 阿里ESA DNS解析 | 
 | 2.| **阿里云** | 阿里云DNS解析提供商 | 
 | 3.| **AWS Route53** | AWS Route53 DNS解析提供商 | 
-| 4.| **火山引擎** | 火山引擎DNS解析提供商 | 
-| 5.| **京东云** | 京东云DNS解析提供商 | 
-| 6.| **新网(代理方式)** | 新网域名解析(代理方式) | 
-| 7.| **新网** | 新网域名解析 | 
-| 8.| **BIND9 DNS** | 通过 SSH 连接到 BIND9 服务器，使用 nsupdate 命令管理 DNS 记录 | 
-| 9.| **cloudflare** | cloudflare dns provider | 
-| 10.| **dns.la** | dns.la | 
-| 11.| **godaddy** | GoDaddy | 
-| 12.| **HiPM DNSMgr** | HiPM DNSMgr DNS 解析提供商 | 
-| 13.| **华为云** | 华为云DNS解析提供商 | 
-| 14.| **namesilo** | namesilo dns provider | 
-| 15.| **雨云** | 雨云DNS解析提供商 | 
-| 16.| **Technitium DNS Server** | Technitium DNS Server 自建DNS服务器 | 
-| 17.| **腾讯云** | 腾讯云域名DNS解析提供者 | 
-| 18.| **腾讯云EO DNS** | 腾讯云EO DNS解析提供者 | 
-| 19.| **西部数码** | west dns provider | 
-| 20.| **Dns提供商Demo** | dns provider示例 | 
-| 21.| **彩虹DNS** | 彩虹DNS管理系统 | 
-| 22.| **Spaceship** | Spaceship 域名解析 | 
-| 23.| **51dns** | 51DNS | 
-| 24.| **新网互联** | 新网互联 | 
+| 4.| **Azure DNS** | Azure DNS 解析提供商 | 
+| 5.| **火山引擎** | 火山引擎DNS解析提供商 | 
+| 6.| **京东云** | 京东云DNS解析提供商 | 
+| 7.| **新网(代理方式)** | 新网域名解析(代理方式) | 
+| 8.| **新网** | 新网域名解析 | 
+| 9.| **BIND9 DNS** | 通过 SSH 连接到 BIND9 服务器，使用 nsupdate 命令管理 DNS 记录 | 
+| 10.| **cloudflare** | cloudflare dns provider | 
+| 11.| **dns.la** | dns.la | 
+| 12.| **godaddy** | GoDaddy | 
+| 13.| **HiPM DNSMgr** | HiPM DNSMgr DNS 解析提供商 | 
+| 14.| **华为云** | 华为云DNS解析提供商 | 
+| 15.| **namesilo** | namesilo dns provider | 
+| 16.| **雨云** | 雨云DNS解析提供商 | 
+| 17.| **Technitium DNS Server** | Technitium DNS Server 自建DNS服务器 | 
+| 18.| **腾讯云** | 腾讯云域名DNS解析提供者 | 
+| 19.| **腾讯云EO DNS** | 腾讯云EO DNS解析提供者 | 
+| 20.| **西部数码** | west dns provider | 
+| 21.| **Google Cloud DNS** | Google Cloud DNS提供商 | 
+| 22.| **Dns提供商Demo** | dns provider示例 | 
+| 23.| **彩虹DNS** | 彩虹DNS管理系统 | 
+| 24.| **Spaceship** | Spaceship 域名解析 | 
+| 25.| **51dns** | 51DNS | 
+| 26.| **新网互联** | 新网互联 | 
 
 <style module>
 table th:first-of-type {

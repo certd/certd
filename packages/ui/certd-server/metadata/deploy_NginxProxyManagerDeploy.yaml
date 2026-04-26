@@ -18,10 +18,21 @@ input:
     required: true
     order: 0
   certDomains:
-    title: 证书域名
+    title: 当前证书域名
     component:
       name: cert-domains-getter
-    required: false
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: true
     order: 0
   accessId:
     title: NPM授权

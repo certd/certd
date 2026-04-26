@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.11](https://github.com/publishlab/node-acme-client/compare/v1.39.10...v1.39.11) (2026-04-26)
+
+### Performance Improvements
+
+* 为DNS解析器添加超时配置,避免查询时间过长 ([cc5154e](https://github.com/publishlab/node-acme-client/commit/cc5154e04e87f648111119b4eeb4e3cb4dd6cc41))
+* 优化权威域名服务器查询超时时长 ([77db5ec](https://github.com/publishlab/node-acme-client/commit/77db5ecd12c51293e4de178e43ca0067bc70b46d))
+* **technitium:** 添加Technitium DNS Server插件支持 ([edeb817](https://github.com/publishlab/node-acme-client/commit/edeb817c39597e4fa73a17ff4ca3f712f0320fec))
+
 ## [1.39.10](https://github.com/publishlab/node-acme-client/compare/v1.39.9...v1.39.10) (2026-04-11)
 
 **Note:** Version bump only for package @certd/acme-client

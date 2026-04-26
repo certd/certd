@@ -1,0 +1,9 @@
+name: azure-dns
+title: Azure DNS
+desc: Azure DNS 解析提供商
+accessType: azure
+icon: simple-icons:microsoftazure
+order: 1
+pluginType: dnsProvider
+type: builtIn
+scriptFilePath: /plugins/plugin-azure/azure-dns-provider.js

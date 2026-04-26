@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.11](https://github.com/certd/certd/compare/v1.39.10...v1.39.11) (2026-04-26)
+
+### Bug Fixes
+
+* 修复列表页面底部滚动条与表格之间有空白间隙的bug ([71cfcad](https://github.com/certd/certd/commit/71cfcad2a15aac0badd85a10c4012a1e713654d1))
+
 ## [1.39.10](https://github.com/certd/certd/compare/v1.39.9...v1.39.10) (2026-04-11)
 
 ### Bug Fixes

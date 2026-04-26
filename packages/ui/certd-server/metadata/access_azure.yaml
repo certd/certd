@@ -1,0 +1,45 @@
+name: azure
+title: 微软云Azure授权
+desc: ''
+icon: simple-icons:microsoftazure
+input:
+  subscriptionId:
+    title: 订阅 ID
+    component:
+      placeholder: subscriptionId
+    helper: Azure 订阅 ID
+    required: true
+  resourceGroupName:
+    title: 资源组
+    component:
+      placeholder: resourceGroupName
+    helper: DNS 区域所在的资源组名称
+    required: true
+  tenantId:
+    title: 目录(租户) ID
+    component:
+      placeholder: tenantId
+    helper: 目录(租户) ID
+    required: true
+  clientId:
+    title: 应用程序ID
+    component:
+      placeholder: clientId
+    helper: 应用程序(客户端) ID
+    required: true
+  clientSecret:
+    title: 客户端凭据
+    component:
+      placeholder: clientSecret
+    required: true
+    encrypt: true
+    helper: 客户端凭据(机密)->客户端密码->新客户端密码->时间选长一点的->复制值
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 测试授权是否正确
+pluginType: access
+type: builtIn
+scriptFilePath: /plugins/plugin-azure/access.js

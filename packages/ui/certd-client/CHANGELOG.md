@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.11](https://github.com/certd/certd/compare/v1.39.10...v1.39.11) (2026-04-26)
+
+### Bug Fixes
+
+* 修复列表页面底部滚动条与表格之间有空白间隙的bug ([71cfcad](https://github.com/certd/certd/commit/71cfcad2a15aac0badd85a10c4012a1e713654d1))
+* 修复流水线未编辑模式下也提示未保存的bug ([64a3503](https://github.com/certd/certd/commit/64a350364d820725b5e69d22ac2416809092f97d))
+* 修复商业版设置了公共eab，创建流水线仍然会显示需要配置eab的bug ([24dff05](https://github.com/certd/certd/commit/24dff05f6427dadec1e40350214c0167e1d6a73d))
+
+### Performance Improvements
+
+* 模版创建流水线支持随机时间 ([575415b](https://github.com/certd/certd/commit/575415b93a3e10e1c6e5644f71ddc711ea6f8adc))
+* 商业版支持配置证书申请插件参数 ([7ac789c](https://github.com/certd/certd/commit/7ac789c9c7e91cdf08dfdae1bb49186552e370e3))
+* 添加全新的未登录首页和路由配置 ([d1988dc](https://github.com/certd/certd/commit/d1988dc982440472ecf61847ccad76e4c96a80fb))
+* 优化权威域名服务器查询超时时长 ([77db5ec](https://github.com/certd/certd/commit/77db5ecd12c51293e4de178e43ca0067bc70b46d))
+* 支持主动修改绑定url地址 ([11b7cfe](https://github.com/certd/certd/commit/11b7cfe5cb7e88e6ebd68d53acb4e5b556550ca9))
+* **technitium:** 添加Technitium DNS Server插件支持 ([edeb817](https://github.com/certd/certd/commit/edeb817c39597e4fa73a17ff4ca3f712f0320fec))
+
 ## [1.39.10](https://github.com/certd/certd/compare/v1.39.9...v1.39.10) (2026-04-11)
 
 ### Bug Fixes
