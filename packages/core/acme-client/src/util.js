@@ -252,7 +252,7 @@ async function resolveDomainBySoaRecord(recordName, logger = log) {
 
 async function getAuthoritativeDnsResolver(recordName, logger = log) {
     logger(`获取域名${recordName}的权威NS服务器: `);
-    const resolver = new dns.Resolver({ timeout: 10000,maxTimeout: 60000 });
+    const resolver = new dns.Resolver({timeout: 2000,tries: 2});
 
     try {
         /* Resolve root domain by SOA */
@@ -351,4 +351,6 @@ export {
     retrieveTlsAlpnCertificate,
     resolveDomainBySoaRecord
 };
+
+
 

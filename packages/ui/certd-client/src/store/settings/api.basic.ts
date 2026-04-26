@@ -109,6 +109,7 @@ export type SysPrivateSetting = {
     type?: string;
     config?: any;
   };
+  acmeWalkFromAuthoritative?: boolean;
 
   //http请求超时时间
   httpRequestTimeout?: number;

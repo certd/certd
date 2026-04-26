@@ -27,6 +27,7 @@
 
       <a-form-item :label="t('certd.sys.setting.bindUrl')">
         <a-button class="ml-2" type="primary" @click="settingsStore.openBindUrlModal({ closable: true })">{{ t("certd.sys.setting.bindUrl") }}</a-button>
+        <div class="helper" v-html="t('certd.sys.setting.bindUrlHelper')"></div>
       </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">

@@ -303,8 +303,18 @@ export const useSettingStore = defineStore({
         }
       };
       const { closable = false } = opts;
+      let title = "URL地址未绑定，是否绑定此地址？";
+      let okButtonText = "不，回到原来的地址";
+      let okButtonDanger = false;
+      let forceBack = true;
+      if (closable) {
+        title = "绑定URL";
+        okButtonText = "确定";
+        okButtonDanger = false;
+        forceBack = false;
+      }
       const modalRef: any = Modal.warning({
-        title: "URL地址未绑定，是否绑定此地址？",
+        title: title,
         width: 500,
         keyboard: false,
         closable,
@@ -320,6 +330,7 @@ export const useSettingStore = defineStore({
                   绑定到地址1
                 </a-button>
               </div>
+              <div class="helper">各类通知里面会以地址1作为URL显示</div>
               <div class="flex items-center justify-between mt-3">
                 <span>
                   绑定地址2：
@@ -334,12 +345,14 @@ export const useSettingStore = defineStore({
         },
         onOk: async () => {
           // await this.doBindUrl();
-          window.location.href = bindUrl;
+          if (forceBack) {
+            window.location.href = bindUrl;
+          }
         },
         okButtonProps: {
-          danger: true,
+          danger: okButtonDanger,
         },
-        okText: "不，回到原来的地址",
+        okText: okButtonText,
         // cancelText: "不，回到原来的地址",
         // onOk: () => {
         //   window.location.href = bindUrl;

@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { SysSettingsEntity } from '../entity/sys-settings.js';
 import { BaseSettings, SysInstallInfo, SysPrivateSettings, SysPublicSettings, SysSecret, SysSecretBackup } from './models.js';
 
-import { getAllSslProviderDomains, setSslProviderReverseProxies } from '@certd/acme-client';
+import { getAllSslProviderDomains, setSslProviderReverseProxies, setWalkFromAuthoritative } from '@certd/acme-client';
 import { cache, logger, mergeUtils, setGlobalProxy } from '@certd/basic';
 import { isPlus } from '@certd/plus-core';
 import * as dns from 'node:dns';
@@ -180,6 +180,9 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
 
     //加载环境变量
     this.setEnvironmentVars(privateSetting.environmentVars);
+
+    setWalkFromAuthoritative(privateSetting.acmeWalkFromAuthoritative);
+    
   }
 
   setEnvironmentVars(vars: string) {

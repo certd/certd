@@ -760,6 +760,8 @@ export default {
       pipelineMaxRunningCount: "同时最大运行流水线数量",
       pipelineMaxRunningCountHelper: "同一个用户同时运行的最大流水线数量，避免同时触发太多导致ACME账户被限制",
       pipelineMaxRunningCountRecommend: "推荐5-15，默认10",
+      acmeWalkFromAuthoritative: "从权威NS检查TXT记录",
+      acmeWalkFromAuthoritativeHelper: "申请证书时，是否从权威NS服务器检查TXT记录，如果影响申请证书，可以关闭",
 
       fixedCertExpireDays: "固定证书有效期天数",
       fixedCertExpireDaysHelper: "固定证书有效期天数，有助于列表进度条整齐显示",
@@ -807,6 +809,7 @@ export default {
       environmentVars: "环境变量",
       environmentVarsHelper: "配置运行时环境变量，每行一个，格式：KEY=VALUE",
       bindUrl: "绑定URL",
+      bindUrlHelper: "绑定URL，在各类通知中显示你的站点URL",
     },
   },
   modal: {

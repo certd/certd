@@ -53,6 +53,13 @@
         <div class="helper">{{ t("certd.sys.setting.pipelineMaxRunningCountHelper") }}</div>
       </a-form-item>
 
+      <a-form-item :label="t('certd.sys.setting.acmeWalkFromAuthoritative')" :name="['private', 'acmeWalkFromAuthoritative']">
+        <div class="flex items-center">
+          <a-switch v-model:checked="formState.private.acmeWalkFromAuthoritative" />
+        </div>
+        <div class="helper">{{ t("certd.sys.setting.acmeWalkFromAuthoritativeHelper") }}</div>
+      </a-form-item>
+
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
         <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
       </a-form-item>
@@ -76,7 +83,9 @@ defineOptions({
 
 const formState = reactive<Partial<SysSettings>>({
   public: {},
-  private: {},
+  private: {
+    acmeWalkFromAuthoritative: true,
+  },
 });
 
 async function loadSysSettings() {

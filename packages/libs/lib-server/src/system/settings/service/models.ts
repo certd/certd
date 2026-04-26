@@ -92,6 +92,9 @@ export class SysPrivateSettings extends BaseSettings {
   environmentVars?: string = '';
 
 
+  acmeWalkFromAuthoritative?: boolean = true;
+
+
   sms?: {
     type?: string;
     config?: any;

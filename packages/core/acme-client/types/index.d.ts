@@ -220,3 +220,5 @@ export function getAuthoritativeDnsResolver(record:string): Promise<any>;
 export const CancelError: typeof CancelError;
 
 export function resolveDomainBySoaRecord(domain: string): Promise<string>;
+
+export function setWalkFromAuthoritative(value = true): void;

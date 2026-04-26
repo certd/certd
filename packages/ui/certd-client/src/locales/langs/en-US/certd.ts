@@ -749,6 +749,18 @@ export default {
       pipelineValidTimeEnabledHelper: "Whether to enable the valid time of the pipeline",
       certDomainAddToMonitorEnabled: "Add Domain to Certificate Monitor",
       certDomainAddToMonitorEnabledHelper: "Whether to add the domain to the certificate monitor",
+
+      defaultCertRenewDays: "Default Certificate Renew Days",
+      defaultCertRenewDaysHelper: "Default certificate renewal days, helpful for table list progress bar display",
+      defaultCertRenewDaysRecommend: "Recommend 15",
+
+      pipelineMaxRunningCount: "Max Running Count",
+      pipelineMaxRunningCountHelper: "Max running count of the pipeline",
+      pipelineMaxRunningCountRecommend: "Recommend 5-15, default 10",
+
+      acmeWalkFromAuthoritative: "Check TXT Record from Authoritative NS",
+      acmeWalkFromAuthoritativeHelper: "Apply certificate when whether to check the TXT record from authoritative NS server first",
+
       fixedCertExpireDays: "Fixed Cert Expire Days",
       fixedCertExpireDaysHelper: "Fixed cert expiration days, helpful for table list progress bar display",
       fixedCertExpireDaysRecommend: "Recommend 90",
