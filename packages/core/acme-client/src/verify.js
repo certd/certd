@@ -163,6 +163,8 @@ export function createChallengeFn(opts = {}) {
             } catch (e) {
                 log(`权威服务器获取TXT解析记录失败:${e.message}`)
             }
+        }else{
+            log(`跳过从权威服务器获取TXT解析记录`);
         }
 
 
