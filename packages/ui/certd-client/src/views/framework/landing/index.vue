@@ -2,17 +2,17 @@
   <div class="landing-page">
     <nav class="landing-nav">
       <div class="nav-container">
-        <div class="nav-logo">
+        <div class="nav-logo overflow-hidden text-ellipsis whitespace-nowrap">
           <img :src="siteInfo.logo" alt="Certd Logo" class="logo-img" />
-          <span class="logo-text">{{ siteInfo.title }}</span>
+          <span class="logo-text ellipsis">{{ siteInfo.title }}</span>
         </div>
-        <div class="nav-links">
+        <div class="nav-links text-nowrap">
           <ThemeToggle />
           <template v-if="isLoggedIn">
             <router-link to="/index" class="btn btn-primary">控制台</router-link>
-            <div class="user-avatar" @click="goProfile">
+            <!-- <div class="user-avatar" @click="goProfile">
               <div class="avatar-initials">{{ userInitials }}</div>
-            </div>
+            </div> -->
           </template>
           <template v-else>
             <router-link :to="{ name: 'login' }" class="btn btn-outline">登录</router-link>
@@ -25,9 +25,9 @@
     <section class="hero-section">
       <div class="hero-container">
         <div class="hero-content">
-          <h1 class="hero-title">
-            让你的网站证书
-            <span class="gradient-text">永不过期</span>
+          <h1 class="hero-title flex flex-col md:flex-row">
+            <div>让你的网站证书</div>
+            <div class="gradient-text mt-2 md:mt-0 md:ml-4">永不过期</div>
           </h1>
           <p class="hero-description">全自动证书管理系统，首创流水线申请部署证书模式，让你告别证书过期的烦恼。</p>
           <div class="hero-actions">
