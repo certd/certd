@@ -674,8 +674,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
         return;
       }
     }
-
-    const onChanged = async (history: RunHistory) => {
+  
+    const doSaveHistory = async (history: RunHistory) => {
       //保存执行历史
       try {
         logger.info("保存执行历史：", history.id);
@@ -690,6 +690,46 @@ export class PipelineService extends BaseService<PipelineEntity> {
         throw e;
       }
     };
+    class HistorySaver {
+      latest: RunHistory = null;
+      interval: any = null;
+      started: boolean = false;
+      async save(){
+        const latest = this.latest;
+        this.latest = null;
+        if (latest == null) {
+          return;
+        }
+        await doSaveHistory(latest);
+      }
+
+      async start(){
+        this.started = true
+        await this.save();
+        this.interval = setInterval(()=>{
+          this.save();
+        }, 1000 * 5);
+      }
+      async push(history: RunHistory){
+        this.latest = history;
+        if(!this.started){
+         await this.start();
+        }
+      }
+      async done(){
+        clearInterval(this.interval);
+        await this.save();
+      }
+    }
+
+    const historySaver = new HistorySaver();
+    const onChanged = async (history: RunHistory)=>{
+      await historySaver.push(history);
+    }
+    const onFinished = async (history: RunHistory)=>{
+      await onChanged(history);
+      await historySaver.done();
+    }
 
     const userId = entity.userId;
     const projectId = entity.projectId;
@@ -723,6 +763,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       user,
       pipeline,
       onChanged,
+      onFinished,
       accessService: accessGetter,
       cnameProxyService,
       pluginConfigService: this.pluginConfigGetter,

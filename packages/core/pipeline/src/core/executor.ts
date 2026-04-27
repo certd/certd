@@ -23,6 +23,7 @@ export type ExecutorOptions = {
   pipeline: Pipeline;
   storage: IStorage;
   onChanged: (history: RunHistory) => Promise<void>;
+  onFinished: (history: RunHistory) => Promise<void>;
   accessService: IAccessService;
   emailService: IEmailService;
   notificationService: INotificationService;
@@ -47,15 +48,18 @@ export class Executor {
   lastRuntime!: RunHistory;
   options: ExecutorOptions;
   abort: AbortController = new AbortController();
-
   _inited = false;
 
   onChanged: (history: RunHistory) => Promise<void>;
+  onFinished: (history: RunHistory) => Promise<void>;
   constructor(options: ExecutorOptions) {
     this.options = options;
     this.pipeline = cloneDeep(options.pipeline);
     this.onChanged = async (history: RunHistory) => {
       await options.onChanged(history);
+    };
+    this.onFinished = async (history: RunHistory) => {
+      await options.onFinished(history);
     };
     this.pipeline.userId = options.user.id;
     this.contextFactory = new ContextFactory(options.storage);
@@ -77,7 +81,7 @@ export class Executor {
   async cancel() {
     this.abort.abort();
     this.runtime?.cancel(this.pipeline);
-    await this.onChanged(this.runtime);
+    await this.onFinished(this.runtime);
   }
 
   async run(runtimeId: any = 0, triggerType: string) {
@@ -111,7 +115,7 @@ export class Executor {
       this.logger.error("pipeline 执行失败", e);
     } finally {
       clearInterval(intervalFlushLogId);
-      await this.onChanged(this.runtime);
+      await this.onFinished(this.runtime);
       //保存之前移除logs
       const lastRuntime: any = {
         ...this.runtime,
