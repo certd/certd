@@ -803,15 +803,15 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (executor) {
       await executor.cancel();
     }
-    const entity = await this.historyService.info(historyId);
-    if (entity == null) {
-      return;
-    }
-    const pipeline: Pipeline = JSON.parse(entity.pipeline);
-    pipeline.status.status = ResultType.canceled;
-    pipeline.status.result = ResultType.canceled;
-    const runtime = new RunHistory(historyId, null, pipeline);
-    await this.saveHistory(runtime);
+    // const entity = await this.historyService.info(historyId);
+    // if (entity == null) {
+    //   return;
+    // }
+    // const pipeline: Pipeline = JSON.parse(entity.pipeline);
+    // pipeline.status.status = ResultType.canceled;
+    // pipeline.status.result = ResultType.canceled;
+    // const runtime = new RunHistory(historyId, null, pipeline);
+    // await this.saveHistory(runtime);
   }
 
   private getTriggerType(triggerId, pipeline) {
