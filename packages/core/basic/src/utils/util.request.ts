@@ -156,10 +156,11 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
 
       config.retry = merge(
         {
-          status: [421],
+          status: [421, 524],
           count: 0,
           max: 3,
-          delay: 1000,
+          delay: 2000,
+          includes: ["[524]"],
         },
         config.retry
       );
@@ -278,7 +279,19 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       const originalRequest = error.config || {};
       // logger.info(`config`, originalRequest);
       const retry = originalRequest.retry || {};
-      if (retry.status && retry.status.includes(status)) {
+
+      const isRetryStatus = retry.status && retry.status.includes(status);
+      let isRetryMessage = false;
+      if (retry.includes) {
+        for (const item of retry.includes) {
+          if (error.message?.includes(item)) {
+            isRetryMessage = true;
+            break;
+          }
+        }
+      }
+
+      if (isRetryStatus || isRetryMessage) {
         if (retry.max > 0 && retry.count < retry.max) {
           // 重试次数增加
           retry.count++;

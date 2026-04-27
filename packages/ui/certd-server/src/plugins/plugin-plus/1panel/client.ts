@@ -93,6 +93,9 @@ export class OnePanelClient {
     if (res.code === 200) {
       return res.data;
     }
+    if (res?.message?.includes("record not found")){
+      throw new Error("没有找到证书，请确认证书在1panel上是否已被删除，如果被删除请重新选择新的证书id:"+ config.url);
+    }
     throw new Error(res.message);
   }
 

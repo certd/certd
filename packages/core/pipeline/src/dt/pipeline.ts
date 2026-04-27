@@ -87,6 +87,7 @@ export type Notification = {
   options?: EmailOptions;
   notificationId: number;
   title: string;
+  id: string;
 };
 
 export type Pipeline = Runnable & {

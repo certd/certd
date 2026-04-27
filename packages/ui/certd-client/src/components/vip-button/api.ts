@@ -20,5 +20,6 @@ export async function getTodayVipOrderCount() {
   return await request({
     url: "/sys/plus/getTodayVipOrderCount",
     method: "post",
+    showErrorNotify: false,
   });
 }

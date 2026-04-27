@@ -40,3 +40,4 @@ function randomStr(length, options?) {
 }
 
 export const RandomUtil = { randomStr };
+

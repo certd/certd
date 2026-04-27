@@ -1,31 +1,5 @@
 <template>
   <div class="mt-10 vip-active-modal">
-    <div v-if="todayOrderCount.enabled" class="order-count hidden md:flex">
-      <div v-for="(stage, index) in todayOrderCount.stages" :key="index" class="status-item" :class="{ 'status-show': TodayVipOrderCountRef.current === index }">
-        <div class="background">
-          <img :src="stage.bg" alt="" />
-        </div>
-        <div class="flex flex-col order-count-text weight-bold">
-          <div class="count-text ml-4 flex items-center">
-            <fs-icon icon="noto:fire" class="fs-20 mr-2"></fs-icon>
-            <template v-if="stage.vipTotal > 0">
-              <span> 已有 </span>
-              <span class="count-number color-red font-bold text-2xl ml-1 mr-1"> {{ stage.vipTotal }} </span> 位小伙伴赞助，
-              <span>
-                {{ stage.title }}
-              </span>
-            </template>
-            <template v-else>
-              <span> 今日赞助 </span>
-              <span class="count-number color-red font-bold text-2xl ml-1 mr-1"> {{ stage.orderCount }} </span> 人，
-              <span>
-                {{ stage.title }}
-              </span>
-            </template>
-          </div>
-        </div>
-      </div>
-    </div>
     <div v-if="productInfo.notice" class="mt-10">
       <a-alert type="error" :message="productInfo.notice"></a-alert>
     </div>
@@ -248,73 +222,35 @@ const vipTypeDefine: any = {
 const TodayVipOrderCountRef: Ref = ref({ enabled: false, current: 0, stages: [] });
 
 async function getTodayVipOrderCount() {
-  const res = await api.getTodayVipOrderCount();
-  if (res) {
-    TodayVipOrderCountRef.value = res;
-    TodayVipOrderCountRef.value.current = 0;
+  try {
+    const res = await api.getTodayVipOrderCount();
+    if (res) {
+      TodayVipOrderCountRef.value = res;
+      TodayVipOrderCountRef.value.current = 0;
+    }
+  } catch (error) {
+    console.error(error);
   }
 }
 
 const todayOrderCount = computed(() => {
   const countInfo = TodayVipOrderCountRef.value;
-  const enabled = countInfo?.enabled || false;
-  const orderCount = countInfo?.orderCount || 0;
-  for (const stage of countInfo?.stages) {
-    stage.orderCount = stage.countGe || 0;
-  }
-  const lastStage = countInfo?.stages?.[countInfo?.stages?.length - 1] || {};
-  lastStage.orderCount = orderCount;
 
   const vipTotal = countInfo?.vipTotal || 0;
   const showVipTotal = countInfo?.showVipTotal || false;
   const userTotal = countInfo?.userTotal || 0;
-  const stages: any = [];
-  stages.push({
-    title: countInfo.title,
-    vipTotal: countInfo?.vipTotal || 0,
-    orderCount: orderCount,
-    bg: lastStage.bg,
-    showVipTotal: showVipTotal,
-  });
-  if (lastStage.orderCount > 0) {
-    stages.push(lastStage);
-  }
   return {
-    enabled: enabled,
-    stages: stages,
     showVipTotal: showVipTotal,
     vipTotal: vipTotal,
     userTotal: userTotal,
   };
 });
 
-async function scrollOrderCount() {
-  const stages = todayOrderCount.value.stages;
-  if (stages.length === 0) {
-    return;
-  }
-  let index = 0;
-  const doScroll = () => {
-    TodayVipOrderCountRef.value.current = index;
-    index++;
-    if (index >= stages.length) {
-      index = 0;
-    }
-  };
-  doScroll();
-  scrollOrderCountIntervalRef.value = setInterval(doScroll, 7000);
-}
-
-const scrollOrderCountIntervalRef: Ref = ref(null);
 onMounted(async () => {
   await getTodayVipOrderCount();
-  await nextTick();
-  await scrollOrderCount();
 });
 
-onUnmounted(() => {
-  clearInterval(scrollOrderCountIntervalRef.value);
-});
+onUnmounted(() => {});
 </script>
 
 <style lang="less">
