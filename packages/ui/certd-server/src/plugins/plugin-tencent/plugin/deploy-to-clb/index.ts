@@ -246,6 +246,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     if (typeof this.cert === 'string') {
       return {
         Certificate: {
+          SSLMode: 'UNIDIRECTIONAL', // 单向认证
           CertId: certId,
         },
         LoadBalancerId: this.loadBalancerId,
