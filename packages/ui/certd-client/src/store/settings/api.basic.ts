@@ -45,6 +45,7 @@ export type SysPublicSetting = {
   managerOtherUserPipeline?: boolean;
   icpNo?: string;
   mpsNo?: string;
+  customFooter?: string;
   robots?: boolean;
   aiChatEnabled?: boolean;
 

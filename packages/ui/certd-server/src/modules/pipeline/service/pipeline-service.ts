@@ -702,11 +702,16 @@ export class PipelineService extends BaseService<PipelineEntity> {
         }
         await doSaveHistory(latest);
       }
-
       async start(){
         this.started = true
+        //先存一次，确保有数据
         await this.save();
+        setTimeout(()=>{
+          //2秒后保存一次，尽快显示第一个任务的状态
+           this.save();
+        }, 1000 * 2);
         this.interval = setInterval(()=>{
+          //之后每5秒保存一次
           this.save();
         }, 1000 * 5);
       }

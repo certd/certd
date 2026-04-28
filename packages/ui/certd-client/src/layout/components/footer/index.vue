@@ -3,7 +3,7 @@
     <div class="flex items-center">
       <span v-if="!settingStore.isComm">
         <span>Powered by</span>
-        <a> handsfree.work </a>
+        <a href="https://certd.docmirror.cn/" target="_blank"> handfree.work </a>
         <a-divider type="vertical" />
       </span>
 
@@ -21,7 +21,12 @@
 
       <span v-if="sysPublic.mpsNo">
         <a href="http://www.beian.gov.cn/portal/registerSystemInfo" target="_blank">{{ sysPublic.mpsNo }}</a>
+        <a-divider type="vertical" />
       </span>
+
+      <template v-if="sysPublic.customFooter && settingStore.isPlus">
+        <div v-html="sysPublic.customFooter"></div>
+      </template>
     </div>
     <div class="ml-5">v{{ version }}</div>
   </div>

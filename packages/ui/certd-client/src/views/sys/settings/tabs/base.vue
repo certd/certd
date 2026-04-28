@@ -25,6 +25,11 @@
         <div class="helper" v-html="t('certd.sys.setting.noticeHelper')"></div>
       </a-form-item>
 
+      <a-form-item :label="t('certd.sys.setting.customFooter')" :name="['public', 'customFooter']">
+        <a-textarea v-model:value="formState.public.customFooter" :placeholder="t('certd.sys.setting.customFooterPlaceholder')" :rows="5" />
+        <div class="helper" v-html="t('certd.sys.setting.customFooterHelper')"></div>
+      </a-form-item>
+
       <a-form-item :label="t('certd.sys.setting.bindUrl')">
         <a-button class="ml-2" type="primary" @click="settingsStore.openBindUrlModal({ closable: true })">{{ t("certd.sys.setting.bindUrl") }}</a-button>
         <div class="helper" v-html="t('certd.sys.setting.bindUrlHelper')"></div>

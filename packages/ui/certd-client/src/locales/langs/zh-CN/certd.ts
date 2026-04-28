@@ -802,6 +802,10 @@ export default {
       noticeHelper: "系统公告，将在首页显示",
       noticePlaceholder: "系统公告",
 
+      customFooter: "自定义页脚",
+      customFooterHelper: "自定义页脚，支持HTML",
+      customFooterPlaceholder: "自定义页脚",
+
       reverseProxy: "反向代理列表",
       reverseProxyHelper: "证书颁发机构ACME地址的反向代理，在申请证书时自动使用",
       reverseProxyPlaceholder: "http://le.px.handfree.work",

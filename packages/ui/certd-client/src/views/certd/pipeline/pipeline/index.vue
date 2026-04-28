@@ -935,7 +935,7 @@ export default defineComponent({
       };
 
       const historyCancel = () => {
-        changeCurrentHistory();
+        // changeCurrentHistory();
         console.log("currentPipeline", pipeline);
       };
 
