@@ -102,7 +102,9 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
     if (!this.orderId) {
       throw new Error("请先输入证书实例 ID");
     }
-    const certDetail = await this.getCertDetailV2(client, this.orderId);
+    const certificateId = await this.getOrderDetailV2(client, this.orderId);
+    this.logger.info(`获取到证书 ID:${certificateId}`);
+    const certDetail = await this.getCertDetail(client, certificateId);
     this.logger.info(`获取到证书:${certDetail.getAllDomains()}, 过期时间：${dayjs(certDetail.expires).format("YYYY-MM-DD HH:mm:ss")}`);
     return certDetail;
   }
@@ -133,9 +135,9 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
     });
   }
 
-  async getCertDetailV2(client: any, instanceId: string) {
-    const res = await client.doRequest({
-      action: "GetUserCertificateDetail",
+  async getOrderDetailV2(client: any, instanceId: string) {
+    const instanceDetail = await client.doRequest({
+      action: "GetInstanceDetail",
       version: "2020-04-07",
       protocol: "HTTPS",
       method: "POST",
@@ -144,19 +146,17 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
       pathname: `/`,
       data: {
         query: {
-          CertId: instanceId,
+          InstanceId: instanceId,
         },
       },
     });
 
-    const crt = res.Cert;
-    const key = res.Key;
+    const certificateId = instanceDetail.CertificateId;
+    if (!certificateId) {
+      throw new Error(`未找到证书 ID，实例详情：${JSON.stringify(instanceDetail)}`);
+    }
 
-    return new CertReader({
-      crt,
-      key,
-      csr: "",
-    });
+    return certificateId;
   }
 
   async getCertificateState(client: any, orderId: any): Promise<{ CertId: string; Type: string; Domain: string }> {
