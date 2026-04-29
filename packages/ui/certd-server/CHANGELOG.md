@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.12](https://github.com/certd/certd/compare/v1.39.11...v1.39.12) (2026-04-29)
+
+### Bug Fixes
+
+* 修复腾讯云clb部署报缺少sslmode参数的bug ([2f1ad72](https://github.com/certd/certd/commit/2f1ad7201f5ed9e00368a28b9e40907d4b415852))
+
+### Performance Improvements
+
+* 524错误时重试3次 ([00e6d58](https://github.com/certd/certd/commit/00e6d580c2f54af70fe96a214aff87c4b96426c2))
+* 阿里云证书订单支持获取2.0的订单 ([64b3184](https://github.com/certd/certd/commit/64b3184b286fee996002d857b0de588452abdadd))
+* 优化流水线执行时的状态保存性能 ([e00830b](https://github.com/certd/certd/commit/e00830bebcfe6344499e490bc174de96f9fb22d6))
+* 支持页脚自定义 ([c985a13](https://github.com/certd/certd/commit/c985a13544aa31b0eb0783f9a3193a7e8bdc6ed6))
+
 ## [1.39.11](https://github.com/certd/certd/compare/v1.39.10...v1.39.11) (2026-04-26)
 
 ### Bug Fixes

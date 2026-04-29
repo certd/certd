@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.12](https://github.com/certd/certd/compare/v1.39.11...v1.39.12) (2026-04-29)
+
+### Performance Improvements
+
+* 524错误时重试3次 ([00e6d58](https://github.com/certd/certd/commit/00e6d580c2f54af70fe96a214aff87c4b96426c2))
+
 ## [1.39.11](https://github.com/certd/certd/compare/v1.39.10...v1.39.11) (2026-04-26)
 
 **Note:** Version bump only for package @certd/basic

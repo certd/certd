@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.12](https://github.com/certd/certd/compare/v1.39.11...v1.39.12) (2026-04-29)
+
+### Performance Improvements
+
+* 增加权威NS检查开关，某些用户服务器禁止向黑名单NS服务器发请求 ([1aa50cf](https://github.com/certd/certd/commit/1aa50cf53a0deab752f35ec973912e41ab8161b6))
+* 支持页脚自定义 ([c985a13](https://github.com/certd/certd/commit/c985a13544aa31b0eb0783f9a3193a7e8bdc6ed6))
+
 ## [1.39.11](https://github.com/certd/certd/compare/v1.39.10...v1.39.11) (2026-04-26)
 
 ### Bug Fixes

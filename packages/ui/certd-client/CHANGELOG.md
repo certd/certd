@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.12](https://github.com/certd/certd/compare/v1.39.11...v1.39.12) (2026-04-29)
+
+### Bug Fixes
+
+* 调整手机版首页标题被挤开的bug ([eab66e2](https://github.com/certd/certd/commit/eab66e2d1988635985745f2d1b227b958969ee00))
+
+### Performance Improvements
+
+* 524错误时重试3次 ([00e6d58](https://github.com/certd/certd/commit/00e6d580c2f54af70fe96a214aff87c4b96426c2))
+* 增加权威NS检查开关，某些用户服务器禁止向黑名单NS服务器发请求 ([1aa50cf](https://github.com/certd/certd/commit/1aa50cf53a0deab752f35ec973912e41ab8161b6))
+* 支持页脚自定义 ([c985a13](https://github.com/certd/certd/commit/c985a13544aa31b0eb0783f9a3193a7e8bdc6ed6))
+
 ## [1.39.11](https://github.com/certd/certd/compare/v1.39.10...v1.39.11) (2026-04-26)
 
 ### Bug Fixes
