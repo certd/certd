@@ -6,7 +6,7 @@ name: CertApplyGetFormAliyun
 icon: ph:certificate
 title: 获取阿里云订阅证书
 group: cert
-desc: 从阿里云拉取订阅模式的商用证书
+desc: 从阿里云拉取订阅模式的商用证书（支持 API 1.0 和 2.0）
 input:
   domains:
     title: 证书域名
@@ -49,27 +49,28 @@ input:
     order: -1
     helper: 请输入邮箱
   accessId:
-    title: Access授权
-    helper: 阿里云授权AccessKeyId、AccessKeySecret
+    title: Access 授权
+    helper: 阿里云授权 AccessKeyId、AccessKeySecret
     component:
       name: access-selector
       type: aliyun
     required: true
     order: 0
-  orderType:
-    title: 订单类型
-    value: CPACK
+  apiVersion:
+    title: 证书API 版本
+    value: v1
     component:
       name: a-select
       vModel: value
       options:
-        - label: 资源虚拟订单（一般选这个）
-          value: CPACK
-        - label: 售卖订单
-          value: BUY
+        - label: API 1.0 (旧版)
+          value: v1
+        - label: API 2.0 (新版)
+          value: v2
+    helper: 选择阿里云证书 API 版本
     order: 0
   orderId:
-    title: 证书订单ID
+    title: 证书订单 ID
     component:
       name: RemoteSelect
       vModel: value
@@ -95,7 +96,7 @@ input:
                   },
                }
               
-    helper: 订阅模式的证书订单Id
+    helper: 订阅模式的证书订单 Id
     order: 0
   pfxPassword:
     title: 证书加密密码

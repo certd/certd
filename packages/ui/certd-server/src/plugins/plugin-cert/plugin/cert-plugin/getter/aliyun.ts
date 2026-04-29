@@ -55,7 +55,7 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
   @TaskInput(
     createRemoteSelectInputDefine({
       title: "证书订单 ID",
-      helper: "订阅模式的证书订单 Id",
+      helper: "订阅模式的证书订单 Id(在新建流水线时暂时无法获取，可以先随便填个数字，先创建，进入流水线编辑页面再获取选择即可)",
       typeName: "CertApplyGetFormAliyun",
       pageSize: 50,
       component: {
