@@ -112,6 +112,20 @@ export class VolcengineClient {
     return service;
   }
 
+  async getVkeService(opts: { region?: string }) {
+    const CommonService = await this.getServiceCls();
+
+    const service = new CommonService({
+      serviceName: "vke",
+      defaultVersion: "2022-05-12"
+    });
+    service.setAccessKeyId(this.opts.access.accessKeyId);
+    service.setSecretKey(this.opts.access.secretAccessKey);
+    service.setRegion(opts.region);
+
+    return service;
+  }
+
   async getDCDNService( opts?: {  }) {
     const CommonService = await this.getServiceCls();
 
