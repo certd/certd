@@ -1,9 +1,9 @@
 export default {
   email: {
-            title: "Recipient Email",
-            helper: "Enter your recipient email addresses. Multiple addresses are supported.",
-            required: "This field is required",
-          },
+    title: "Recipient Email",
+    helper: "Enter your recipient email addresses. Multiple addresses are supported.",
+    required: "This field is required",
+  },
   notificationDefault: "Use Default Notification",
   notificationType: "Notification Type",
   selectNotificationType: "Please select a notification type",

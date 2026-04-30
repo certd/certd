@@ -78,6 +78,9 @@ export default {
               notice: "系统公告",
               noticeHelper: "系统公告，将在首页显示",
               noticePlaceholder: "系统公告",
+              customFooter: "自定义页脚",
+              customFooterHelper: "自定义站点页脚，将在页面底部显示",
+              customFooterPlaceholder: "自定义页脚内容",
         
               reverseProxy: "反向代理列表",
               reverseProxyHelper: "证书颁发机构ACME地址的反向代理，在申请证书时自动使用",

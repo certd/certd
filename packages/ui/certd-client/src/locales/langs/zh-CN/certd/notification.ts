@@ -1,9 +1,9 @@
 export default {
   email: {
-            title: "收件邮箱",
-            helper: "输入你的收件邮箱地址，支持多个邮箱",
-            required: "此项必填",
-          },
+    title: "收件邮箱",
+    helper: "输入你的收件邮箱地址，支持多个邮箱",
+    required: "此项必填",
+  },
   notificationDefault: "使用默认通知",
   notificationType: "通知类型",
   selectNotificationType: "请选择通知类型",

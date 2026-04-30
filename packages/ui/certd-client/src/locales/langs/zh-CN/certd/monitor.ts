@@ -1,8 +1,8 @@
 export default {
   certificateRepo: {
-            title: "证书仓库",
-            sub: "从流水线生成的证书",
-          },
+    title: "证书仓库",
+    sub: "从流水线生成的证书",
+  },
   actionImportBatch: "批量导入",
   actionSyncIp: "同步IP",
   modalTitleSyncIp: "同步IP",
@@ -36,16 +36,16 @@ export default {
   certificateNotGenerated: "证书还未生成，请先运行流水线",
   viewCertificateTitle: "查看证书",
   viewCert: {
-            title: "查看证书",
-          },
+    title: "查看证书",
+  },
   download: {
-            title: "下载证书",
-          },
+    title: "下载证书",
+  },
   checkStatus: {
-            success: "成功",
-            checking: "检查中",
-            error: "异常",
-          },
+    success: "成功",
+    checking: "检查中",
+    error: "异常",
+  },
   uploadCustomCert: "上传自定义证书",
   sourcePipeline: "证书流水线",
   sourceManualUpload: "托管流水线",
@@ -61,13 +61,13 @@ export default {
   statusChecking: "检查中",
   statusError: "异常",
   modal: {
-            close: "关闭",
-            viewCertificateTitle: "查看证书",
-          },
+    close: "关闭",
+    viewCertificateTitle: "查看证书",
+  },
   domainList: {
-            title: "域名列表",
-            helper: "格式【域名:端口:名称:备注】，一行一个，其中端口、名称、备注可以省略\n比如：\nwww.baidu.com:443:百度:备注文本\nwww.taobao.com::淘宝\nwww.google.com",
-            required: "请输入要导入的域名",
-            placeholder: "www.baidu.com:443:百度:备注文本\nwww.taobao.com::淘宝\nwww.google.com\n",
-          },
+    title: "域名列表",
+    helper: "格式【域名:端口:名称:备注】，一行一个，其中端口、名称、备注可以省略\n比如：\nwww.baidu.com:443:百度:备注文本\nwww.taobao.com::淘宝\nwww.google.com",
+    required: "请输入要导入的域名",
+    placeholder: "www.baidu.com:443:百度:备注文本\nwww.taobao.com::淘宝\nwww.google.com\n",
+  },
 };

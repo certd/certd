@@ -13,15 +13,15 @@ export default {
   inputVerifyCode: "请输入验证码",
   myInfo: "我的信息",
   user: {
-            greeting: "您好",
-            profile: "账号信息",
-            logout: "注销登录",
-        
-            setting: {
-              grantSetting: "授权委托设置",
-              saveSuccess: "保存成功",
-              allowAdminViewCerts: "授权管理员查看和下载证书",
-              allowAdminViewCertsHelper: "允许管理员查看和下载我的所有证书",
-            },
-          },
+    greeting: "您好",
+    profile: "账号信息",
+    logout: "注销登录",
+
+    setting: {
+      grantSetting: "授权委托设置",
+      saveSuccess: "保存成功",
+      allowAdminViewCerts: "授权管理员查看和下载证书",
+      allowAdminViewCertsHelper: "允许管理员查看和下载我的所有证书",
+    },
+  },
 };

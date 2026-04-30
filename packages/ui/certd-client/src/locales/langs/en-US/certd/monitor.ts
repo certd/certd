@@ -1,8 +1,8 @@
 export default {
   certificateRepo: {
-            title: "Certificate Repository",
-            sub: "Certificates generated from pipeline",
-          },
+    title: "Certificate Repository",
+    sub: "Certificates generated from pipeline",
+  },
   actionImportBatch: "Batch Import",
   actionSyncIp: "Sync IP",
   modalTitleSyncIp: "Sync IP",
@@ -36,16 +36,16 @@ export default {
   certificateNotGenerated: "Certificate not yet generated, please run the pipeline first",
   viewCertificateTitle: "View Certificate",
   viewCert: {
-            title: "View Certificate",
-          },
+    title: "View Certificate",
+  },
   download: {
-            title: "Download Certificate",
-          },
+    title: "Download Certificate",
+  },
   checkStatus: {
-            success: "Success",
-            checking: "Checking",
-            error: "Error",
-          },
+    success: "Success",
+    checking: "Checking",
+    error: "Error",
+  },
   uploadCustomCert: "Upload Custom Certificate",
   sourcePipeline: "Cert Apply Pipeline",
   sourceManualUpload: "Hosted Pipeline",
@@ -61,13 +61,13 @@ export default {
   statusChecking: "Checking",
   statusError: "Error",
   modal: {
-            close: "Close",
-            viewCertificateTitle: "View Certificate",
-          },
+    close: "Close",
+    viewCertificateTitle: "View Certificate",
+  },
   domainList: {
-            title: "Domain List",
-            helper: "Format: domain:port:name:remark, one per line. Port and name are optional.\nExamples:\nwww.baidu.com:443:Baidu:remarkText\nwww.taobao.com::Taobao\nwww.google.com",
-            required: "Please enter domains to import",
-            placeholder: "www.baidu.com:443:Baidu\nwww.taobao.com::Taobao\nwww.google.com\n",
-          },
+    title: "Domain List",
+    helper: "Format: domain:port:name:remark, one per line. Port and name are optional.\nExamples:\nwww.baidu.com:443:Baidu:remarkText\nwww.taobao.com::Taobao\nwww.google.com",
+    required: "Please enter domains to import",
+    placeholder: "www.baidu.com:443:Baidu\nwww.taobao.com::Taobao\nwww.google.com\n",
+  },
 };
