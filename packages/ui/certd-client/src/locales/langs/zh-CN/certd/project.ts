@@ -1,0 +1,36 @@
+export default {
+  ent: {
+            projectName: "项目名称",
+            projectDescription: "项目描述",
+            projectDetailManager: "项目详情",
+            projectDetailDescription: "管理项目成员",
+            projectPermission: "权限",
+            permission: {
+              read: "查看",
+              write: "修改",
+              admin: "管理员",
+            },
+            projectMemberStatus: "成员状态",
+        
+            isSystem: "是否系统项目",
+            isSystemHelper: "系统级项目允许运行管理员插件",
+          },
+  project: {
+            noProjectJoined: "您还没有加入任何项目",
+            applyToJoin: "请申请加入项目以开始使用",
+            projectList: "项目列表",
+            createdAt: "创建时间",
+            applyJoin: "申请加入",
+            noProjects: "暂无项目",
+            fetchFailed: "获取项目列表失败",
+            applySuccess: "申请成功，等待管理员审核",
+            applyFailed: "申请失败，请稍后重试",
+            leave: "退出项目",
+            leaveSuccess: "退出项目成功",
+            leaveFailed: "退出项目失败，请稍后重试",
+            applyJoinConfirm: "确认加入项目？",
+            leaveConfirm: "确认退出项目？",
+            viewDetail: "查看详情",
+            projectManage: "项目管理",
+          },
+};

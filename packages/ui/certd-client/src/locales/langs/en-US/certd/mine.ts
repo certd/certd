@@ -1,0 +1,26 @@
+export default {
+  accountInfo: "Account Information",
+  securitySettings: "Security & Settings",
+  confirmDisable2FA: "Are you sure you want to disable two-factor authentication login?",
+  twoFactorAuth: "2FA Two-Factor Authentication Login",
+  rebind: "Rebind",
+  twoFactorAuthHelper: "Enable or disable two-factor authentication login",
+  bindDevice: "Bind Device",
+  step1: "1. Install any authenticator app, for example:",
+  tooltipGoogleServiceError: "If you get a Google service not found error, you can install KK Google Assistant",
+  step2: "2. Scan the QR code to add the account",
+  step3: "3. Enter the verification code",
+  inputVerifyCode: "Please enter the verification code",
+  myInfo: "My Information",
+  user: {
+            greeting: "Hello",
+            profile: "Account Info",
+            logout: "Logout",
+            setting: {
+              grantSetting: "Grant Settings",
+              saveSuccess: "Save Success",
+              allowAdminViewCerts: "Allow Admin view and download Certs",
+              allowAdminViewCertsHelper: "Allow admin view and download all certificates",
+            },
+          },
+};

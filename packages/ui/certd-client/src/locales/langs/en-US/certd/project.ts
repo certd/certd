@@ -1,0 +1,36 @@
+export default {
+  ent: {
+            projectName: "Project Name",
+            projectDescription: "Project Description",
+            projectDetailManager: "Project Detail",
+            projectDetailDescription: "Manage Project Members",
+            projectPermission: "Permission",
+            permission: {
+              read: "Read",
+              write: "Write",
+              admin: "Admin",
+            },
+            projectMemberStatus: "Member Status",
+        
+            isSystem: "Is System Project",
+            isSystemHelper: "System-level projects allow running admin plugins",
+          },
+  project: {
+            noProjectJoined: "You haven't joined any projects yet",
+            applyToJoin: "Please apply to join a project to start using",
+            systemProjects: "System Project List",
+            createdAt: "Created At",
+            applyJoin: "Apply to Join",
+            noSystemProjects: "No system projects available",
+            fetchFailed: "Failed to fetch project list",
+            applySuccess: "Application successful, waiting for admin approval",
+            applyFailed: "Application failed, please try again later",
+            leave: "Leave Project",
+            leaveSuccess: "Leave project successful",
+            leaveFailed: "Leave project failed, please try again later",
+            applyJoinConfirm: "Are you sure you want to apply to join this project?",
+            leaveConfirm: "Are you sure you want to leave this project?",
+            viewDetail: "View Detail",
+            projectManage: "Project Manage",
+          },
+};
