@@ -203,4 +203,5 @@ Get-ChildItem packages\ui\certd-client\src\views\certd
 - 做前端任务时，先定位 `packages/ui/certd-client/src/views/certd` 下的页面，再找对应 `src/api`。
 - 做服务商、DNS、部署、通知相关任务时，先看 `packages/ui/certd-server/src/plugins`，再看 `packages/plugins/plugin-lib` 里的共享辅助能力。
 - 做数据库结构变更时，添加或更新迁移脚本，不要依赖 TypeORM 自动同步。
+- 前端 TS/Vue/locale 等文件改动后，优先只对本次改动文件运行项目现有自动格式化/修复，例如 `corepack pnpm --dir packages\ui\certd-client exec prettier --write <files>` 和 `corepack pnpm --dir packages\ui\certd-client exec eslint --fix <files>`；不要为了格式化无关文件而扩大 diff。项目保留了 `tslint` 依赖，但当前主要使用 ESLint + Prettier。
 - 优先对改动包运行聚焦的测试或类型检查；只有跨包影响明显时再考虑全 monorepo 构建。

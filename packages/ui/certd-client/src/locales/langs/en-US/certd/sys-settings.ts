@@ -81,7 +81,7 @@ export default {
       noticeHelper: "System notice, will be displayed on the login page",
       noticePlaceholder: "System notice",
       customFooter: "Custom Footer",
-      customFooterHelper: "Custom site footer, displayed at the bottom of the page",
+      customFooterHelper: "Custom site footer, displayed at the bottom of the page, support HTML format",
       customFooterPlaceholder: "Custom footer content",
 
       reverseProxy: "Reverse Proxy List",
