@@ -4,8 +4,8 @@
       <div class="sweep-animation"></div>
       <div class="box-content">
         <div class="box-icon">✓</div>
-        <span v-if="modelValue == null" class="status-text">点击进行验证</span>
-        <span v-else class="status-text">验证成功</span>
+        <span v-if="modelValue == null" class="status-text">{{ t("certd.captcha.clickToVerify") }}</span>
+        <span v-else class="status-text">{{ t("certd.captcha.verifySuccess") }}</span>
       </div>
     </div>
   </div>
@@ -13,8 +13,10 @@
 <script setup lang="ts">
 import { notification } from "ant-design-vue";
 import { ref, Ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
 import { loadScript } from "vue-plugin-load-script";
+const { t } = useI18n();
 const loaded = ref(false);
 async function loadCaptchaScript() {
   // 加载验证码js
@@ -56,7 +58,7 @@ function callback(res: { ret: number; ticket: string; randstr: string; errorCode
 
   if (res.errorCode && res.errorCode > 0) {
     notification.error({
-      message: `验证码验证失败：${res.errorMessage || res.errorCode}`,
+      message: t("certd.captcha.verifyFailed", { message: res.errorMessage || res.errorCode }),
     });
   }
 
@@ -83,13 +85,13 @@ function loadErrorCallback(error: any) {
   //   errorMessage: "jsload_error",
   // });
   notification.error({
-    message: `验证码加载失败：${error?.message || error}`,
+    message: t("certd.captcha.loadFailed", { message: error?.message || error }),
   });
 }
 async function triggerCaptcha() {
   if (!loaded.value) {
     notification.error({
-      message: "验证码还未加载完成，请稍后再试",
+      message: t("certd.captcha.notLoaded"),
     });
     return;
   }

@@ -79,9 +79,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           import: {
             show: hasActionPermission("write"),
-            title: "导入CNAME记录",
+            title: t("certd.cname.importRecords"),
             type: "primary",
-            text: "批量导入",
+            text: t("certd.cname.batchImport"),
             icon: "mingcute:vip-1-line",
             click: () => {
               settingStore.checkPlus();
@@ -95,9 +95,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           export: {
-            title: "导出CNAME记录之后，可用于批量导入cname解析到域名注册商",
+            title: t("certd.cname.exportRecordsTip"),
             type: "primary",
-            text: "批量导出",
+            text: t("certd.cname.batchExport"),
             icon: "mingcute:vip-1-line",
             click: () => {
               settingStore.checkPlus();
@@ -235,8 +235,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             cellRender({ value, row }) {
               async function resetStatus() {
                 Modal.confirm({
-                  title: "重置状态",
-                  content: "确定要重置校验状态吗？",
+                  title: t("certd.cname.resetStatus"),
+                  content: t("certd.cname.confirmResetStatus"),
                   onOk: async () => {
                     await api.ResetStatus(row.id);
                     await crudExpose.doRefresh();
@@ -253,7 +253,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                   )}
 
                   {row.status === "valid" && (
-                    <a-tooltip title={"重置校验状态，重新校验"}>
+                    <a-tooltip title={t("certd.cname.resetStatusTooltip")}>
                       <fs-icon class={"ml-5 pointer "} icon="solar:undo-left-square-bold" onClick={resetStatus}></fs-icon>
                     </a-tooltip>
                   )}

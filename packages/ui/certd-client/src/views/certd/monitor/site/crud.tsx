@@ -69,17 +69,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const handleBatchDelete = () => {
     if (selectedRowKeys.value?.length > 0) {
       Modal.confirm({
-        title: "确认",
-        content: `确定要批量删除这${selectedRowKeys.value.length}条记录吗`,
+        title: t("monitor.confirmTitle"),
+        content: t("monitor.batchDeleteConfirm", { count: selectedRowKeys.value.length }),
         async onOk() {
           await api.BatchDelObj(selectedRowKeys.value);
-          message.info("删除成功");
+          message.info(t("monitor.deleteSuccess"));
           crudExpose.doRefresh();
           selectedRowKeys.value = [];
         },
       });
     } else {
-      message.error("请先勾选记录");
+      message.error(t("monitor.selectRecordsFirst"));
     }
   };
 
@@ -265,7 +265,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             type: "link",
             text: null,
             tooltip: {
-              title: "立即检查",
+              title: t("monitor.checkNow"),
             },
             icon: "ion:play-sharp",
             click: async ({ row }) => {

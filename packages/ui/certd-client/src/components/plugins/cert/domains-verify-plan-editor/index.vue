@@ -5,7 +5,7 @@
       <div class="plan-box bg-white dark:bg-neutral-700">
         <div class="fullscreen-button pointer flex-center" @click="fullscreen = !fullscreen">
           <span v-if="!fullscreen" style="font-size: 10px" class="flex-center">
-            这里可以放大
+            {{ t("certd.verifyPlan.expandTip") }}
             <fs-icon icon="ion:arrow-forward-outline"></fs-icon>
           </span>
           <fs-icon :icon="fullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'"></fs-icon>
@@ -13,9 +13,9 @@
         <table class="plan-table">
           <thead>
             <tr>
-              <th style="min-width: 100px">主域名</th>
-              <th>验证方式</th>
-              <th>验证计划</th>
+              <th style="min-width: 100px">{{ t("certd.verifyPlan.mainDomain") }}</th>
+              <th>{{ t("certd.verifyPlan.challengeType") }}</th>
+              <th>{{ t("certd.verifyPlan.challengePlan") }}</th>
             </tr>
           </thead>
           <tbody>
@@ -30,13 +30,13 @@
                 <div class="plan">
                   <div v-if="item.type === 'dns'" class="plan-dns">
                     <div class="form-item">
-                      <span class="label">DNS类型：</span>
+                      <span class="label">{{ t("certd.verifyPlan.dnsType") }}:</span>
                       <span class="input">
                         <fs-dict-select
                           v-model:value="item.dnsProviderType"
                           size="small"
                           :dict="dnsProviderTypeDict"
-                          placeholder="DNS提供商"
+                          :placeholder="t('certd.verifyPlan.dnsProvider')"
                           @change="onPlanChanged"
                           @selected-change="onDnsProviderChange(item, $event)"
                         ></fs-dict-select>
@@ -44,9 +44,9 @@
                     </div>
                     <a-divider type="vertical" />
                     <div class="form-item">
-                      <span class="label">DNS授权：</span>
+                      <span class="label">{{ t("certd.verifyPlan.dnsAccess") }}:</span>
                       <span class="input">
-                        <access-selector v-model="item.dnsProviderAccessId" size="small" :type="item.dnsProviderAccessType || item.dnsProviderType" placeholder="请选择" @change="onPlanChanged"></access-selector>
+                        <access-selector v-model="item.dnsProviderAccessId" size="small" :type="item.dnsProviderAccessType || item.dnsProviderType" :placeholder="t('certd.verifyPlan.pleaseSelect')" @change="onPlanChanged"></access-selector>
                       </span>
                     </div>
                   </div>
@@ -55,7 +55,7 @@
                   </div>
                   <div v-if="item.type === 'http'" class="plan-http">
                     <http-verify-plan v-model="item.httpVerifyPlan" @change="onPlanChanged" />
-                    <div class="helper">证书颁发机构将请求 https://yourdomain/.well-known/acme-challenge/xxxxxx 来验证域名所有权。</div>
+                    <div class="helper">{{ t("certd.verifyPlan.httpHelper") }}</div>
                   </div>
                 </div>
               </td>
@@ -72,6 +72,7 @@
 
 <script lang="ts" setup>
 import { ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { dict, FsDictSelect } from "@fast-crud/fast-crud";
 import AccessSelector from "/@/views/certd/access/access-selector/index.vue";
 import CnameVerifyPlan from "./cname-verify-plan.vue";
@@ -84,17 +85,19 @@ defineOptions({
   name: "DomainsVerifyPlanEditor",
 });
 
+const { t } = useI18n();
+
 const challengeTypeOptions = ref<any[]>([
   {
-    label: "DNS验证",
+    label: t("certd.verifyPlan.dnsChallenge"),
     value: "dns",
   },
   {
-    label: "CNAME验证",
+    label: t("certd.verifyPlan.cnameChallenge"),
     value: "cname",
   },
   {
-    label: "HTTP验证",
+    label: t("certd.verifyPlan.httpChallenge"),
     value: "http",
   },
 ]);

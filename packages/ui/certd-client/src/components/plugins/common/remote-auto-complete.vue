@@ -4,7 +4,7 @@
       <a-auto-complete class="remote-auto-complete-input" :filter-option="filterOption" :options="optionsRef" :value="value" v-bind="attrs" @click="onClick" @update:value="emit('update:value', $event)">
       </a-auto-complete>
       <div class="ml-5">
-        <fs-button :loading="loading" title="刷新选项" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
+        <fs-button :loading="loading" :title="t('certd.pluginCommon.refreshOptions')" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
       </div>
     </div>
     <div class="helper" :class="{ error: hasError }">
@@ -15,12 +15,15 @@
 <script setup lang="ts">
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 import { defineComponent, inject, ref, useAttrs, watch, Ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { PluginDefine } from "@certd/pipeline";
 import { getInputFromForm } from "./utils";
 
 defineOptions({
   name: "RemoteAutoComplete",
 });
+
+const { t } = useI18n();
 
 const props = defineProps<
   {
@@ -93,16 +96,16 @@ const getOptions = async () => {
       {
         onError(err: any) {
           hasError.value = true;
-          message.value = `获取选项出错：${err.message}`;
+          message.value = t("certd.pluginCommon.getOptionsError", { message: err.message });
         },
         showErrorNotify: false,
       }
     );
     const list = res?.list || res || [];
     if (list.length > 0) {
-      message.value = "获取数据成功，请从下拉框中选择";
+      message.value = t("certd.pluginCommon.getDataSuccessSelect");
     } else {
-      message.value = "获取数据成功，没有数据";
+      message.value = t("certd.pluginCommon.getDataSuccessEmpty");
     }
     optionsRef.value = list;
 

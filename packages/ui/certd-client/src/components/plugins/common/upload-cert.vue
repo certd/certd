@@ -1,12 +1,13 @@
 <template>
   <div class="upload-cert">
-    <fs-button v-model:loading="loading" type="primary" text="上传" v-bind="props.button" @click="openUploadCertDialog"></fs-button>
+    <fs-button v-model:loading="loading" type="primary" :text="t('certd.pluginCommon.upload')" v-bind="props.button" @click="openUploadCertDialog"></fs-button>
   </div>
 </template>
 <script lang="ts" setup>
 import { message } from "ant-design-vue";
 import { useFormDialog } from "../../../use/use-dialog";
 import { computed, inject, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { doRequest } from "../lib";
 import { getInputFromForm } from "./utils";
 import { UploadCertProps } from "./types";
@@ -14,6 +15,7 @@ import { merge } from "lodash-es";
 
 const props = defineProps<UploadCertProps>();
 const loading = ref(false);
+const { t } = useI18n();
 
 const emit = defineEmits(["submit"]);
 const { openFormDialog } = useFormDialog();
@@ -28,18 +30,18 @@ const getScope: any = inject("get:scope", () => {
 const getPluginType: any = inject("get:plugin:type", () => {
   return "plugin";
 });
-const title = computed(() => props.title || "上传证书");
+const title = computed(() => props.title || t("certd.pluginCommon.uploadCert"));
 function openUploadCertDialog() {
   const columns = merge(
     {
       certName: {
-        title: "证书名称",
+        title: t("certd.pluginCommon.certName"),
         form: {
           component: {
             name: "a-input",
             vModel: "value",
           },
-          helper: "上传后证书显示名称",
+          helper: t("certd.pluginCommon.certNameHelper"),
         },
       },
     },
@@ -49,7 +51,7 @@ function openUploadCertDialog() {
     title: title.value,
     columns: {
       certName: {
-        title: "证书名称",
+        title: t("certd.pluginCommon.certName"),
         form: {
           component: {
             name: "a-input",
@@ -84,7 +86,7 @@ function openUploadCertDialog() {
             showErrorNotify: true,
           }
         );
-        message.success("上传成功");
+        message.success(t("certd.pluginCommon.uploadSuccess"));
         emit("submit");
       } finally {
         loading.value = false;

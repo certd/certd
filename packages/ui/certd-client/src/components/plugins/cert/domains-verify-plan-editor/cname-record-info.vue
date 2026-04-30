@@ -4,7 +4,7 @@
       <!--    <td class="domain">-->
       <!--      {{ props.domain }}-->
       <!--    </td>-->
-      <td class="host-record" :title="'域名：' + props.domain">
+      <td class="host-record" :title="t('certd.verifyPlan.domainTitle', { domain: props.domain })">
         <fs-copyable v-model="cnameRecord.hostRecord"></fs-copyable>
       </td>
       <td style="text-align: center">CNAME</td>
@@ -16,17 +16,17 @@
         <a-tooltip v-if="cnameRecord.error" :title="cnameRecord.error">
           <fs-icon class="ml-5 color-red" icon="ion:warning-outline"></fs-icon>
         </a-tooltip>
-        <a-tooltip v-if="cnameRecord.status === 'valid'" title="重置校验状态，重新校验">
+        <a-tooltip v-if="cnameRecord.status === 'valid'" :title="t('certd.verifyPlan.resetStatusTooltip')">
           <fs-icon class="ml-2 color-yellow text-md pointer" icon="solar:undo-left-square-bold" @click="resetStatus"></fs-icon>
         </a-tooltip>
       </td>
       <td class="center">
         <template v-if="cnameRecord.status !== 'valid'">
-          <a-button type="primary" size="small" :loading="loading" @click="doVerify">点击验证</a-button>
+          <a-button type="primary" size="small" :loading="loading" @click="doVerify">{{ t("certd.verifyPlan.clickToValidate") }}</a-button>
           <cname-tip :record="cnameRecord"></cname-tip>
         </template>
 
-        <div v-else class="helper" title="后续自动申请证书需要">不要删除CNAME</div>
+        <div v-else class="helper" :title="t('certd.verifyPlan.keepCnameTitle')">{{ t("certd.verifyPlan.keepCname") }}</div>
       </td>
     </tr>
   </tbody>
@@ -35,18 +35,20 @@
 <script lang="ts" setup>
 import { CnameRecord, GetByDomain } from "/@/components/plugins/cert/domains-verify-plan-editor/api";
 import { ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { dict } from "@fast-crud/fast-crud";
 import * as api from "./api.js";
 import CnameTip from "./cname-tip.vue";
 import { Modal } from "ant-design-vue";
 import { utils } from "/@/utils/index.js";
+const { t } = useI18n();
 const statusDict = dict({
   data: [
-    { label: "待设置CNAME", value: "cname", color: "warning" },
-    { label: "验证中", value: "validating", color: "blue" },
-    { label: "验证成功", value: "valid", color: "green" },
-    { label: "验证失败", value: "failed", color: "red" },
-    { label: "验证超时", value: "timeout", color: "red" },
+    { label: t("certd.verifyPlan.status.pendingCname"), value: "cname", color: "warning" },
+    { label: t("certd.verifyPlan.status.validating"), value: "validating", color: "blue" },
+    { label: t("certd.verifyPlan.status.valid"), value: "valid", color: "green" },
+    { label: t("certd.verifyPlan.status.failed"), value: "failed", color: "red" },
+    { label: t("certd.verifyPlan.status.timeout"), value: "timeout", color: "red" },
   ],
 });
 
@@ -125,8 +127,8 @@ async function doVerify() {
 
 async function resetStatus() {
   Modal.confirm({
-    title: "重置状态",
-    content: "确定要重置校验状态吗？",
+    title: t("certd.verifyPlan.resetStatus"),
+    content: t("certd.verifyPlan.confirmResetStatus"),
     onOk: async () => {
       await api.ResetStatus(cnameRecord.value.id);
       await loadRecord();

@@ -7,6 +7,7 @@
 <script setup lang="ts">
 import { doRequest } from "/@/components/plugins/lib";
 import { inject, ref, useAttrs } from "vue";
+import { useI18n } from "vue-i18n";
 import { useFormWrapper } from "@fast-crud/fast-crud";
 import { notification } from "ant-design-vue";
 import { getInputFromForm } from "./utils";
@@ -15,6 +16,7 @@ defineOptions({
   name: "RemoteInput",
 });
 const { openCrudFormDialog } = useFormWrapper();
+const { t } = useI18n();
 const props = defineProps<{
   modelValue: string;
   title: string;
@@ -53,7 +55,7 @@ async function openDialog() {
             saveRemind: false,
           },
           afterSubmit() {
-            notification.success({ message: "操作成功" });
+            notification.success({ message: t("certd.operationSuccess") });
           },
           async doSubmit({ form }: any) {
             return await doPluginFormSubmit(form);

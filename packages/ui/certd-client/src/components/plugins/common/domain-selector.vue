@@ -17,12 +17,12 @@
           <template v-if="search">
             <div class="flex w-full items-center justify-between flex-wrap" style="padding: 4px 8px">
               <div class="flex-1 flex flex-row items-center">
-                <a-input ref="inputRef" v-model:value="searchKeyRef" class="flex-1" allow-clear placeholder="这里可以搜索域名（数据来自“设置->域名管理”），您也可以直接在上面输入框输入" @keydown.enter="doSearch" />
-                <fs-button type="primary" class="m-1" :loading="loading" icon="mingcute:search-2-line" @click="doSearch"> 查询 </fs-button>
+                <a-input ref="inputRef" v-model:value="searchKeyRef" class="flex-1" allow-clear :placeholder="t('certd.pluginCommon.domainSearchPlaceholder')" @keydown.enter="doSearch" />
+                <fs-button type="primary" class="m-1" :loading="loading" icon="mingcute:search-2-line" @click="doSearch">{{ t("certd.pluginCommon.search") }}</fs-button>
               </div>
               <div class="manager flex flex-row items-center">
-                <fs-button type="primary" class="m-1" icon="mingcute:vip-1-line" @click="openDomainImportDialog">导入域名</fs-button>
-                <fs-button class="m-1" type="primary" icon="carbon:gui-management" @click="openDomainManager">管理域名</fs-button>
+                <fs-button type="primary" class="m-1" icon="mingcute:vip-1-line" @click="openDomainImportDialog">{{ t("certd.pluginCommon.importDomain") }}</fs-button>
+                <fs-button class="m-1" type="primary" icon="carbon:gui-management" @click="openDomainManager">{{ t("certd.pluginCommon.manageDomain") }}</fs-button>
               </div>
             </div>
             <div v-if="hasError" class="helper p-2" :class="{ error: hasError }">
@@ -47,7 +47,7 @@
         </template>
       </a-select>
       <div class="ml-5">
-        <fs-button :loading="loading" title="刷新我的域名列表" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
+        <fs-button :loading="loading" :title="t('certd.pluginCommon.refreshMyDomains')" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
       </div>
     </div>
     <div class="helper" :class="{ error: hasError }">
@@ -57,6 +57,7 @@
 </template>
 <script setup lang="ts">
 import { computed, defineComponent, onMounted, ref, Ref, useAttrs } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { Dicts } from "../lib/dicts";
 import { request } from "/@/api/service";
@@ -66,6 +67,8 @@ import { useDomainImportManage } from "/@/views/certd/cert/domain/use";
 defineOptions({
   name: "DomainSelector",
 });
+
+const { t } = useI18n();
 
 const VNodes = defineComponent({
   props: {

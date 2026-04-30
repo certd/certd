@@ -1,5 +1,6 @@
 import Validator from "async-validator";
 import { DomainsVerifyPlanInput } from "./type";
+import { $t } from "/@/locales";
 
 function checkDomainVerifyPlan(rule: any, value: DomainsVerifyPlanInput) {
   if (value == null) {
@@ -13,7 +14,7 @@ function checkDomainVerifyPlan(rule: any, value: DomainsVerifyPlanInput) {
         for (const subDomain of subDomains) {
           const plan = value[domain].cnameVerifyPlan[subDomain];
           if (plan.status !== "valid") {
-            throw new Error(`域名${subDomain}的CNAME未验证通过，请先设置CNAME记录，点击验证按钮`);
+            throw new Error($t("certd.verifyPlan.errors.cnameNotValid", { domain: subDomain }));
           }
         }
       }
@@ -22,7 +23,7 @@ function checkDomainVerifyPlan(rule: any, value: DomainsVerifyPlanInput) {
       for (const item of domains) {
         //如果有通配符域名则不允许使用http校验
         if (item.startsWith("*.")) {
-          throw new Error(`域名${item}为通配符域名，不支持HTTP校验`);
+          throw new Error($t("certd.verifyPlan.errors.wildcardNotSupportHttp", { domain: item }));
         }
       }
 
@@ -31,19 +32,19 @@ function checkDomainVerifyPlan(rule: any, value: DomainsVerifyPlanInput) {
         for (const subDomain of subDomains) {
           const plan = value[domain].httpVerifyPlan[subDomain];
           if (!plan.httpUploaderType) {
-            throw new Error(`域名${subDomain}的上传方式必须填写`);
+            throw new Error($t("certd.verifyPlan.errors.uploadMethodRequired", { domain: subDomain }));
           }
           if (!plan.httpUploaderAccess) {
-            throw new Error(`域名${subDomain}的上传授权信息必须填写`);
+            throw new Error($t("certd.verifyPlan.errors.uploadAccessRequired", { domain: subDomain }));
           }
           if (!plan.httpUploadRootDir) {
-            throw new Error(`域名${subDomain}的网站根路径必须填写`);
+            throw new Error($t("certd.verifyPlan.errors.websiteRootRequired", { domain: subDomain }));
           }
         }
       }
     } else if (type === "dns") {
       if (!value[domain].dnsProviderType || !value[domain].dnsProviderAccessId) {
-        throw new Error(`DNS模式下，域名${domain}的DNS类型和授权信息必须填写`);
+        throw new Error($t("certd.verifyPlan.errors.dnsProviderRequired", { domain }));
       }
     }
   }

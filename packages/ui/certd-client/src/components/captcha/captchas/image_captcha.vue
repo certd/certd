@@ -1,17 +1,18 @@
 <template>
   <div class="flex">
-    <a-input :value="valueRef" placeholder="请输入图片验证码" autocomplete="off" @update:value="onChange">
+    <a-input :value="valueRef" :placeholder="t('certd.captcha.inputImageCode')" autocomplete="off" @update:value="onChange">
       <template #prefix>
         <fs-icon icon="ion:image-outline"></fs-icon>
       </template>
     </a-input>
-    <div class="input-right pointer" title="点击刷新">
+    <div class="input-right pointer" :title="t('certd.captcha.refresh')">
       <img class="image-code" :src="imageCodeSrc" @click="resetImageCode" />
     </div>
   </div>
 </template>
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
 const props = defineProps<{
   modelValue: any;
@@ -20,6 +21,7 @@ const props = defineProps<{
 defineOptions({
   name: "ImageCaptcha",
 });
+const { t } = useI18n();
 const emit = defineEmits(["update:modelValue", "change"]);
 
 const valueRef = ref("");

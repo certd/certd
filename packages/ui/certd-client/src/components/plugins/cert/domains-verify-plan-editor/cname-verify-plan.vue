@@ -2,11 +2,11 @@
   <table class="cname-verify-plan">
     <thead>
       <tr>
-        <td style="width: 160px">主机记录</td>
-        <td style="width: 100px; text-align: center">记录类型</td>
-        <td style="width: 250px">请设置CNAME记录（验证成功以后不要删除）</td>
-        <td style="width: 120px" class="center">状态</td>
-        <td style="width: 90px" class="center">操作</td>
+        <td style="width: 160px">{{ t("certd.verifyPlan.hostRecord") }}</td>
+        <td style="width: 100px; text-align: center">{{ t("certd.verifyPlan.recordType") }}</td>
+        <td style="width: 250px">{{ t("certd.verifyPlan.setCnameRecord") }}</td>
+        <td style="width: 120px" class="center">{{ t("certd.status") }}</td>
+        <td style="width: 90px" class="center">{{ t("certd.verifyPlan.operation") }}</td>
       </tr>
     </thead>
     <template v-for="key in domains" :key="key">
@@ -19,10 +19,13 @@
 import { CnameRecord } from "/@/components/plugins/cert/domains-verify-plan-editor/api";
 import CnameRecordInfo from "/@/components/plugins/cert/domains-verify-plan-editor/cname-record-info.vue";
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 
 defineOptions({
   name: "CnameVerifyPlan",
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(["update:modelValue", "change"]);
 

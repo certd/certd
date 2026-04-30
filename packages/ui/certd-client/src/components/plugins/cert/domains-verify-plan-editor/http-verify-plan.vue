@@ -2,10 +2,10 @@
   <table class="http-verify-plan">
     <thead>
       <tr>
-        <td style="width: 160px">网站域名</td>
-        <td style="width: 100px; text-align: center">上传方式</td>
-        <td style="width: 150px">上传授权</td>
-        <td style="width: 200px">网站根目录路径</td>
+        <td style="width: 160px">{{ t("certd.verifyPlan.websiteDomain") }}</td>
+        <td style="width: 100px; text-align: center">{{ t("certd.verifyPlan.uploadMethod") }}</td>
+        <td style="width: 150px">{{ t("certd.verifyPlan.uploadAccess") }}</td>
+        <td style="width: 200px">{{ t("certd.verifyPlan.websiteRootPath") }}</td>
       </tr>
     </thead>
     <tbody v-if="records" class="http-record-body">
@@ -21,7 +21,7 @@
             <access-selector v-model="item.httpUploaderAccess" :type="item.httpUploaderType" @change="onRecordChange"></access-selector>
           </td>
           <td>
-            <a-input v-model:value="item.httpUploadRootDir" placeholder="网站根目录，如：/www/wwwroot" @change="onRecordChange"></a-input>
+            <a-input v-model:value="item.httpUploadRootDir" :placeholder="t('certd.verifyPlan.websiteRootPlaceholder')" @change="onRecordChange"></a-input>
           </td>
         </tr>
       </template>
@@ -31,6 +31,7 @@
 
 <script lang="ts" setup>
 import { Ref, ref, watch, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
 import { HttpRecord } from "/@/components/plugins/cert/domains-verify-plan-editor/type";
 import { dict } from "@fast-crud/fast-crud";
 import { Dicts } from "/@/components/plugins/lib/dicts";
@@ -38,6 +39,8 @@ import { Dicts } from "/@/components/plugins/lib/dicts";
 defineOptions({
   name: "HttpVerifyPlan",
 });
+
+const { t } = useI18n();
 
 const emit = defineEmits(["update:modelValue", "change"]);
 

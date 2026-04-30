@@ -1,17 +1,18 @@
 import { dict } from "@fast-crud/fast-crud";
+import { $t } from "/@/locales";
 
 export const Dicts = {
   sslProviderDict: dict({
     data: [
-      { value: "letsencrypt", label: "Let‘s Encrypt" },
+      { value: "letsencrypt", label: "Let's Encrypt" },
       { value: "zerossl", label: "ZeroSSL" },
     ],
   }),
   challengeTypeDict: dict({
     data: [
-      { value: "dns", label: "DNS校验", color: "green" },
-      { value: "cname", label: "CNAME代理校验", color: "blue" },
-      { value: "http", label: "HTTP校验", color: "yellow" },
+      { value: "dns", label: $t("certd.verifyPlan.dnsChallenge"), color: "green" },
+      { value: "cname", label: $t("certd.verifyPlan.cnameProxyChallenge"), color: "blue" },
+      { value: "http", label: $t("certd.verifyPlan.httpChallenge"), color: "yellow" },
     ],
   }),
   dnsProviderTypeDict: dict({
@@ -22,17 +23,17 @@ export const Dicts = {
       { label: "SFTP", value: "sftp" },
       { label: "SCP", value: "scp" },
       { label: "FTP", value: "ftp" },
-      { label: "阿里云OSS", value: "alioss" },
-      { label: "腾讯云COS", value: "tencentcos" },
-      { label: "七牛OSS", value: "qiniuoss" },
+      { label: $t("certd.verifyPlan.uploader.aliyunOss"), value: "alioss" },
+      { label: $t("certd.verifyPlan.uploader.tencentCos"), value: "tencentcos" },
+      { label: $t("certd.verifyPlan.uploader.qiniuOss"), value: "qiniuoss" },
       { label: "S3/Minio", value: "s3" },
-      { label: "SSH(已废弃，请选择SFTP方式)", value: "ssh", disabled: true },
+      { label: $t("certd.verifyPlan.uploader.sshDeprecated"), value: "ssh", disabled: true },
     ],
   }),
   domainFromTypeDict: dict({
     data: [
-      { value: "manual", label: "手动" },
-      { value: "auto", label: "自动" },
+      { value: "manual", label: $t("certd.verifyPlan.domainFrom.manual") },
+      { value: "auto", label: $t("certd.verifyPlan.domainFrom.auto") },
     ],
   }),
 };

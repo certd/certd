@@ -5,12 +5,12 @@
         <template #dropdownRender="{ menuNode: menu }">
           <template v-if="search">
             <div class="flex w-full" style="padding: 4px 8px">
-              <a-input ref="inputRef" v-model:value="searchKeyRef" class="flex-1" allow-clear placeholder="查询关键字" @keydown.enter="doSearch" />
+              <a-input ref="inputRef" v-model:value="searchKeyRef" class="flex-1" allow-clear :placeholder="t('certd.pluginCommon.searchKeyword')" @keydown.enter="doSearch" />
               <a-button class="ml-2" :loading="loading" type="text" @click="doSearch">
                 <template #icon>
                   <search-outlined />
                 </template>
-                查询
+                {{ t("certd.pluginCommon.search") }}
               </a-button>
             </div>
             <div v-if="hasError" class="helper p-2" :class="{ error: hasError }">
@@ -26,7 +26,7 @@
         </template>
       </a-select>
       <div class="ml-5 flex flex-row no-wrap">
-        <fs-button :loading="loading" title="刷新选项" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
+        <fs-button :loading="loading" :title="t('certd.pluginCommon.refreshOptions')" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
         <UploadCert v-if="uploadCert" class="ml-5" v-bind="uploadCert" @submit="refreshOptions"></UploadCert>
       </div>
     </div>
@@ -38,6 +38,7 @@
 <script setup lang="ts">
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 import { defineComponent, inject, ref, useAttrs, watch, Ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { PluginDefine } from "@certd/pipeline";
 import { getInputFromForm } from "./utils";
 import UploadCert from "./upload-cert.vue";
@@ -46,6 +47,8 @@ import { UploadCertProps } from "./types";
 defineOptions({
   name: "RemoteSelect",
 });
+
+const { t } = useI18n();
 
 const selectRef = ref(null);
 
@@ -161,7 +164,7 @@ const getOptions = async () => {
       {
         onError(err: any) {
           hasError.value = true;
-          message.value = `获取选项出错：${err.message}`;
+          message.value = t("certd.pluginCommon.getOptionsError", { message: err.message });
           optionsRef.value = [];
         },
         showErrorNotify: false,
@@ -169,9 +172,9 @@ const getOptions = async () => {
     );
     let list = res?.list || res || [];
     if (list.length > 0) {
-      message.value = "获取数据成功，请从下拉框中选择";
+      message.value = t("certd.pluginCommon.getDataSuccessSelect");
     } else {
-      message.value = "获取数据成功，没有数据";
+      message.value = t("certd.pluginCommon.getDataSuccessEmpty");
     }
     list = list.map((item: any) => {
       return {

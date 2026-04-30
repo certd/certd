@@ -1,7 +1,7 @@
 <template>
   <div class="api-test">
     <div>
-      <fs-button :loading="loading" type="primary" text="测试" icon="ion:refresh-outline" @click="doTest"></fs-button>
+      <fs-button :loading="loading" type="primary" :text="t('certd.pluginCommon.test')" icon="ion:refresh-outline" @click="doTest"></fs-button>
     </div>
 
     <div class="helper" :class="{ error: hasError }">
@@ -12,12 +12,15 @@
 <script setup lang="ts">
 import { ComponentPropsType, doRequest } from "/@/components/plugins/lib";
 import { ref, inject } from "vue";
+import { useI18n } from "vue-i18n";
 import { Form } from "ant-design-vue";
 import { getInputFromForm } from "./utils";
 
 defineOptions({
   name: "ApiTest",
 });
+
+const { t } = useI18n();
 
 const fromType: any = inject("getFromType");
 const getScope: any = inject("get:scope");
@@ -61,14 +64,14 @@ const doTest = async () => {
       {
         onError(err: any) {
           hasError.value = true;
-          message.value = `错误：${err.message}`;
+          message.value = t("certd.pluginCommon.errorWithMessage", { message: err.message });
         },
         showErrorNotify: false,
       }
     );
-    message.value = "测试请求成功";
+    message.value = t("certd.pluginCommon.testRequestSuccess");
     if (res) {
-      message.value += `，返回：${JSON.stringify(res)}`;
+      message.value += t("certd.pluginCommon.responseSuffix", { response: JSON.stringify(res) });
     }
   } finally {
     loading.value = false;

@@ -2,6 +2,7 @@ import { dict } from "@fast-crud/fast-crud";
 import { message } from "ant-design-vue";
 import * as api from "./api";
 import { useFormDialog } from "/@/use/use-dialog";
+import { useI18n } from "/@/locales";
 
 export const cnameProviderDict = dict({
   url: "/cname/provider/list",
@@ -10,10 +11,11 @@ export const cnameProviderDict = dict({
 });
 export function useCnameImport() {
   const { openFormDialog } = useFormDialog();
+  const { t } = useI18n();
 
   const columns = {
     domainList: {
-      title: "域名列表",
+      title: t("certd.cname.domainList"),
       type: "text",
       form: {
         component: {
@@ -24,11 +26,11 @@ export function useCnameImport() {
           span: 24,
         },
         required: true,
-        helper: "每个域名一行，批量导入\n泛域名请去掉*.\n已经存在的会自动跳过",
+        helper: t("certd.cname.domainListHelper"),
       },
     },
     cnameProviderId: {
-      title: "CNAME服务",
+      title: t("certd.cname.cnameService"),
       type: "dict-select",
       dict: cnameProviderDict,
       form: {
@@ -39,14 +41,14 @@ export function useCnameImport() {
 
   return function openCnameImportDialog(req: { afterSubmit?: () => void }) {
     openFormDialog({
-      title: "导入CNAME记录",
+      title: t("certd.cname.importRecords"),
       columns: columns,
       onSubmit: async (form: any) => {
         await api.Import({
           domainList: form.domainList,
           cnameProviderId: form.cnameProviderId,
         });
-        message.success("导入任务已提交");
+        message.success(t("certd.cname.importTaskSubmitted"));
         if (req.afterSubmit) {
           req.afterSubmit();
         }

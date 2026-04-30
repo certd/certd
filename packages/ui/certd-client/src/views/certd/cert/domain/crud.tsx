@@ -89,15 +89,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       form: {
         async beforeSubmit({ form }) {
           if (form.challengeType === "cname") {
-            throw new Error("CNAME方式请前往CNAME记录页面进行管理");
+            throw new Error(t("certd.domain.cnameManagedInCnamePage"));
           }
           if (form.challengeType === "dns") {
             const isSubdomain = await api.IsSubdomain({ domain: form.domain });
             if (isSubdomain && !subdomainConfirmed.value) {
               Modal.confirm({
-                title: "子域名确认",
-                content: `检测到${form.domain}为子域名，只有托管子域名和免费二级子域名才需要在此处维护，否则会导致申请证书失败，请确认是否继续？`,
-                okText: "确认",
+                title: t("certd.domain.subdomainConfirmTitle"),
+                content: t("certd.domain.subdomainConfirmContent", { domain: form.domain }),
+                okText: t("common.confirm"),
                 okType: "danger",
                 onOk: () => {
                   subdomainConfirmed.value = true;
@@ -119,9 +119,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           import: {
             show: hasActionPermission("write"),
-            title: "从域名提供商导入域名",
+            title: t("certd.domain.importFromProvider"),
             type: "primary",
-            text: "从域名提供商导入",
+            text: t("certd.domain.importFromProvider"),
             needPlus: true,
             color: "gold",
             icon: "mingcute:vip-1-line",
@@ -135,14 +135,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           syncExpirationDate: {
             show: hasActionPermission("write"),
-            title: "同步域名过期时间",
+            title: t("certd.domain.syncExpirationDate"),
             type: "primary",
             icon: "ion:refresh-outline",
-            text: "同步域名过期时间",
+            text: t("certd.domain.syncExpirationDate"),
             click: async () => {
               await api.SyncExpirationStart();
               notification.success({
-                message: "同步任务已提交",
+                message: t("certd.domain.syncTaskSubmitted"),
               });
               setTimeout(() => {
                 crudExpose.doRefresh();
@@ -151,10 +151,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           monitorSettingSave: {
             show: hasActionPermission("write"),
-            title: "域名过期监控设置",
+            title: t("certd.domain.expirationMonitorSetting"),
             type: "primary",
             icon: "ion:save-outline",
-            text: "域名过期监控设置",
+            text: t("certd.domain.expirationMonitorSetting"),
             click: async () => {
               router.push({
                 path: "/certd/cert/domain/setting",
@@ -184,7 +184,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             required: true,
-            helper: "注意：DNS校验方式下，子域名不需要在此处维护，否则会影响证书申请（子域名托管或免费二级域名除外）",
+            helper: t("certd.domain.subdomainDnsHelper"),
           },
           editForm: {
             component: {
@@ -361,7 +361,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                     <fs-values-format modelValue={row.challengeType} dict={Dicts.challengeTypeDict} color={"auto"}></fs-values-format>
                     <fs-values-format modelValue={row.httpUploaderType} dict={httpUploaderTypeDict} color={"auto"}></fs-values-format>
                     <fs-values-format class={"ml-5"} modelValue={row.httpUploaderAccess} dict={accessDict} color={"auto"}></fs-values-format>
-                    <a-tag class={"ml-5 flex items-center"}>路径：{row.httpUploadRootDir}</a-tag>
+                    <a-tag class={"ml-5 flex items-center"}>{t("certd.domain.path")}: {row.httpUploadRootDir}</a-tag>
                   </div>
                 );
               }

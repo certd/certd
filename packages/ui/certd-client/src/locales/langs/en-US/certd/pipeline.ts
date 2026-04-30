@@ -97,6 +97,7 @@ export default {
             pipeline: "Pipeline",
           },
   editSchedule: "Edit Schedule",
+  webhook: "Webhook",
   timerTrigger: "Timer Trigger",
   schedule: "Schedule",
   selectCron: "Please select a schedule Cron",

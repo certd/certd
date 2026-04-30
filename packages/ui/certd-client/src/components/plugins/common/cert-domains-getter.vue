@@ -9,6 +9,7 @@
 
 <script setup lang="ts">
 import { inject, ref, watch } from "vue";
+import { useI18n } from "/@/locales";
 
 defineOptions({
   name: "CertDomainsGetter",
@@ -24,6 +25,7 @@ const emit = defineEmits<{
 }>();
 
 const pipeline: any = inject("pipeline");
+const { t } = useI18n();
 
 function findStepFromPipeline(targetStepId: string) {
   for (const stage of pipeline.value.stages) {
@@ -40,7 +42,7 @@ function findStepFromPipeline(targetStepId: string) {
 const errorRef = ref("");
 function getStepIdFromInputKey(inputKey: string) {
   if (!inputKey) {
-    errorRef.value = "请先选择域名证书";
+    errorRef.value = t("certd.pluginCommon.selectCertFirst");
     return;
   }
   return inputKey.split(".")[1];
@@ -49,7 +51,7 @@ function getDomainFromPipeline(inputKey: string) {
   let targetStepId = getStepIdFromInputKey(inputKey);
   let certStep = findStepFromPipeline(targetStepId);
   if (!certStep) {
-    errorRef.value = "找不到目标步骤，请先选择域名证书";
+    errorRef.value = t("certd.pluginCommon.targetStepNotFound");
     return;
   }
 
@@ -58,7 +60,7 @@ function getDomainFromPipeline(inputKey: string) {
     targetStepId = getStepIdFromInputKey(firstLevelValue);
     certStep = findStepFromPipeline(targetStepId);
     if (!certStep) {
-      errorRef.value = "找不到目标步骤，请先选择域名证书";
+      errorRef.value = t("certd.pluginCommon.targetStepNotFound");
       return;
     }
   }

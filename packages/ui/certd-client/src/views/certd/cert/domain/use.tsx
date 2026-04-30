@@ -5,12 +5,14 @@ import { compute } from "@fast-crud/fast-crud";
 import { Dicts } from "/@/components/plugins/lib/dicts";
 import { useSettingStore } from "/@/store/settings";
 import DomainImportTaskStatus from "./import.vue";
+import { useI18n } from "/@/locales";
 export function useDomainImport() {
   const { openFormDialog } = useFormDialog();
+  const { t } = useI18n();
 
   const columns = {
     dnsProviderType: {
-      title: "域名提供商",
+      title: t("certd.domain.domainProvider"),
       type: "text",
       form: {
         component: {
@@ -29,14 +31,14 @@ export function useDomainImport() {
       },
     },
     dnsProviderAccessType: {
-      title: "域名提供商访问类型",
+      title: t("certd.domain.domainProviderAccessType"),
       type: "text",
       form: {
         show: false,
       },
     },
     dnsProviderAccessId: {
-      title: "域名提供商授权",
+      title: t("certd.domain.domainProviderAccess"),
       type: "text",
       form: {
         component: {
@@ -52,7 +54,7 @@ export function useDomainImport() {
 
   return function openDomainImportDialog(req: { afterSubmit?: (res?: any) => void; form?: any }) {
     openFormDialog({
-      title: "从域名提供商导入域名",
+      title: t("certd.domain.importFromProvider"),
       columns: columns,
       initialForm: {
         ...req.form,
@@ -73,10 +75,11 @@ export function useDomainImport() {
 
 export function useDomainImportManage() {
   const { openFormDialog } = useFormDialog();
+  const { t } = useI18n();
   const settingStore = useSettingStore();
   return async function openDomainImportManageDialog(req: { afterSubmit?: (res?: any) => void; form?: any; zIndex?: number }) {
     await openFormDialog({
-      title: "从域名提供商导入域名",
+      title: t("certd.domain.importFromProvider"),
       body: () => {
         return <DomainImportTaskStatus />;
       },

@@ -18,6 +18,7 @@ export default {
   project: {
             noProjectJoined: "You haven't joined any projects yet",
             applyToJoin: "Please apply to join a project to start using",
+            projectList: "Project List",
             systemProjects: "System Project List",
             createdAt: "Created At",
             applyJoin: "Apply to Join",

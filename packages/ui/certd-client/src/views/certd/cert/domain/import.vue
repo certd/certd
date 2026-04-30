@@ -1,16 +1,16 @@
 <template>
   <div class="domain-import-task-status min-h-[300px]">
     <div class="action mb-5">
-      <fs-button type="primary" icon="mingcute:vip-1-line" @click="addTask">添加导入任务</fs-button>
-      <fs-button type="primary" icon="ion:refresh-outline" class="ml-2" @click="loadImportTaskStatus">刷新</fs-button>
+      <fs-button type="primary" icon="mingcute:vip-1-line" @click="addTask">{{ t("certd.domain.addImportTask") }}</fs-button>
+      <fs-button type="primary" icon="ion:refresh-outline" class="ml-2" @click="loadImportTaskStatus">{{ t("certd.domain.refresh") }}</fs-button>
     </div>
     <div class="table-container overflow-auto mb-10">
       <table class="cd-table border-gray-300 w-full">
         <thead>
           <tr>
-            <th class="w-[220px]">来源</th>
-            <th class="">进度</th>
-            <th class="w-[220px]">操作</th>
+            <th class="w-[220px]">{{ t("certd.sourcee") }}</th>
+            <th class="">{{ t("certd.domain.progress") }}</th>
+            <th class="w-[220px]">{{ t("certd.domain.operation") }}</th>
           </tr>
         </thead>
         <tbody>
@@ -27,23 +27,23 @@
             <td>
               <div v-if="item.task">
                 <div>
-                  <a-tag color="blue">总数：{{ item.task?.total }}</a-tag>
-                  <a-tag color="success" class="ml-2">成功：{{ item.task?.successCount }}</a-tag>
-                  <a-tag type="info" class="ml-2">跳过：{{ item.task?.skipCount }}</a-tag>
+                  <a-tag color="blue">{{ t("certd.domain.total") }}：{{ item.task?.total }}</a-tag>
+                  <a-tag color="success" class="ml-2">{{ t("certd.success") }}：{{ item.task?.successCount }}</a-tag>
+                  <a-tag type="info" class="ml-2">{{ t("certd.domain.skipped") }}：{{ item.task?.skipCount }}</a-tag>
                   <a-tooltip v-if="item.task?.errors.length > 0">
                     <template #title>
                       <div v-for="error in item.task?.errors" :key="error">{{ error }}</div>
                     </template>
-                    <a-tag color="red" class="ml-2">失败：{{ item.task?.errors.length }}</a-tag>
+                    <a-tag color="red" class="ml-2">{{ t("certd.domain.failed") }}：{{ item.task?.errors.length }}</a-tag>
                   </a-tooltip>
                 </div>
                 <a-progress :percent="item.task?.progress" size="small" status="active" />
               </div>
-              <div v-else>未执行</div>
+              <div v-else>{{ t("certd.domain.notExecuted") }}</div>
             </td>
             <td>
-              <fs-button type="primary" icon="ion:play-outline" :disabled="item.task?.status === 'running'" @click="startTask(item)">执行</fs-button>
-              <fs-button type="primary" class="ml-2" danger icon="ion:trash-outline" @click="deleteTask(item)">删除</fs-button>
+              <fs-button type="primary" icon="ion:play-outline" :disabled="item.task?.status === 'running'" @click="startTask(item)">{{ t("certd.domain.execute") }}</fs-button>
+              <fs-button type="primary" class="ml-2" danger icon="ion:trash-outline" @click="deleteTask(item)">{{ t("certd.domain.delete") }}</fs-button>
             </td>
           </tr>
         </tbody>
@@ -58,11 +58,13 @@ import { onMounted, onUnmounted, ref } from "vue";
 import * as api from "./api";
 import { useDomainImport } from "./use";
 import { useSettingStore } from "/@/store/settings";
+import { useI18n } from "/@/locales";
 defineOptions({
   name: "DomainImportTaskStatus",
 });
 
 const list = ref([]);
+const { t } = useI18n();
 
 async function loadImportTaskStatus() {
   const res = await api.ImportTaskStatus();
@@ -77,8 +79,8 @@ async function startTask(item: any) {
 
 async function deleteTask(item: any) {
   Modal.confirm({
-    title: "确认删除吗？",
-    okText: "确认",
+    title: t("certd.domain.confirmDelete"),
+    okText: t("common.confirm"),
     okType: "danger",
     onOk: async () => {
       await api.ImportTaskDelete(item.key);
