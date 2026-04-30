@@ -21,6 +21,7 @@ import { LayoutFooter } from "./footer";
 import { LayoutHeader } from "./header";
 import { LayoutExtraMenu, LayoutMenu, LayoutMixedMenu, useExtraMenu, useMixedMenu } from "./menu";
 import { LayoutTabbar } from "./tabbar";
+import router from "/@/router";
 
 defineOptions({ name: "BasicLayout" });
 
@@ -160,7 +161,7 @@ const headerSlots = computed(() => {
   >
     <!-- logo -->
     <template #logo>
-      <VbenLogo v-if="preferences.logo.enable" :class="logoClass" :collapsed="logoCollapsed" :src="preferences.logo.source" :text="preferences.app.name" :theme="showHeaderNav ? headerTheme : theme" />
+      <VbenLogo v-if="preferences.logo.enable" class="pointer" :class="logoClass" :collapsed="logoCollapsed" :src="preferences.logo.source" :text="preferences.app.name" :theme="showHeaderNav ? headerTheme : theme" />
     </template>
     <!-- 头部区域 -->
     <template #header>

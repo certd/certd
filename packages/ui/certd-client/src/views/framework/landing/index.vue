@@ -22,7 +22,7 @@
       </div>
     </nav>
 
-    <section class="hero-section">
+    <section class="hero-section bg-[#f7f7fc] dark:bg-[#000000]">
       <div class="hero-container">
         <div class="hero-content">
           <h1 class="hero-title flex flex-col md:flex-row">
@@ -45,7 +45,6 @@
         </div>
       </div>
     </section>
-
     <section id="features" class="features-section">
       <div class="container">
         <div class="section-header">

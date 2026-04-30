@@ -29,6 +29,7 @@ export class SysPublicSettings extends BaseSettings {
   managerOtherUserPipeline = false;
   icpNo?: string;
   mpsNo?: string;
+  customFooter?: string;
   robots?: boolean = true;
   aiChatEnabled = true;
 

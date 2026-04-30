@@ -21,8 +21,14 @@
       </a-form-item>
 
       <a-form-item :label="t('certd.sys.setting.notice')" :name="['public', 'notice']">
-        <a-textarea v-model:value="formState.public.notice" :placeholder="t('certd.sys.setting.noticePlaceholder')" :rows="5" />
+        <a-textarea v-model:value="formState.public.notice" :placeholder="t('certd.sys.setting.noticePlaceholder')" :rows="3" />
         <div class="helper" v-html="t('certd.sys.setting.noticeHelper')"></div>
+      </a-form-item>
+
+      <a-form-item :label="t('certd.sys.setting.customFooter')" :name="['public', 'customFooter']">
+        <a-textarea v-model:value="formState.public.customFooter" :disabled="!settingsStore.isPlus" :placeholder="t('certd.sys.setting.customFooterPlaceholder')" :rows="3" />
+        <div class="helper" v-html="t('certd.sys.setting.customFooterHelper')"></div>
+        <vip-button class="ml-5 justify-start" mode="button"></vip-button>
       </a-form-item>
 
       <a-form-item :label="t('certd.sys.setting.bindUrl')">

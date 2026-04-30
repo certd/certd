@@ -75,7 +75,7 @@
         <div>
           <span v-if="!settingStore.isComm">
             <span>Powered by</span>
-            <a> handfree.work </a>
+            <a href="https://certd.docmirror.cn/" target="_blank"> handfree.work </a>
           </span>
 
           <template v-if="siteInfo.licenseTo">
