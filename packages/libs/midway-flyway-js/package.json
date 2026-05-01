@@ -13,6 +13,7 @@
     "dev-build": "npm run build",
     "test": "midway-bin test --ts -V",
     "test1": "midway-bin test --ts -V -f test/blank.test.ts -t 'hash-check'",
+    "test:unit": "echo no unit tests",
     "cov": "midway-bin cov --ts",
     "prepublish": "npm run build",
     "pub": "npm publish"

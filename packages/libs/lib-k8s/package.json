@@ -14,6 +14,7 @@
     "build3": "rollup -c",
     "build2": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
+    "test:unit": "echo no unit tests",
     "pub": "npm publish",
     "compile": "tsc --skipLibCheck --watch"
   },

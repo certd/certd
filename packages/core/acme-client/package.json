@@ -52,6 +52,7 @@
         "lint-types": "tsd",
         "prepublishOnly": "npm run build-docs",
         "test": "mocha -t 60000 \"test/setup.js\" \"test/**/*.spec.js\"",
+        "test:unit": "echo no unit tests",
         "pub": "npm publish",
         "compile": "echo '1'"
     },

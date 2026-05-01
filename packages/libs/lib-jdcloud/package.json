@@ -8,6 +8,7 @@
   "scripts": {
     "build": "rollup -c ",
     "dev-build": "npm run build",
+    "test:unit": "echo no unit tests",
     "pub": "npm publish"
   },
   "author": "",
