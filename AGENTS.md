@@ -204,5 +204,8 @@ Get-ChildItem packages\ui\certd-client\src\views\certd
 - 做前端任务时，先定位 `packages/ui/certd-client/src/views/certd` 下的页面，再找对应 `src/api`。
 - 做服务商、DNS、部署、通知相关任务时，先看 `packages/ui/certd-server/src/plugins`，再看 `packages/plugins/plugin-lib` 里的共享辅助能力。
 - 做数据库结构变更时，添加或更新迁移脚本，不要依赖 TypeORM 自动同步。
+- 实现新功能或修复行为缺陷前，先补对应单元测试，并先运行测试确认它处于失败状态；再实现功能或修复代码，反复运行聚焦单元测试直到通过。若某项改动确实不适合先写单元测试，应在回复中说明原因和替代验证方式。
+- 后补单元测试时，应先基于对正确行为的实际预期编写测试，而不是为了迎合现有实现改写预期；如果运行后出现红灯，且通过测试需要修改已有实现，应先向用户确认这是确实的 bug，还是原本需求/既有行为就是如此；确认后再修改原始实现，避免把测试补充变成未经确认的行为改动。
+- 后端纯单元测试用例放在 `src` 目录内，并尽量与被测文件相邻，例如 `src/utils/random.test.ts`；对应 `test:unit` 只跑 `src/**/*.test.ts`，构建/打包配置应排除这些 `*.test.ts` 文件。
 - 前端 TS/Vue/locale 等文件改动后，优先只对本次改动文件运行项目现有自动格式化/修复，例如 `corepack pnpm --dir packages\ui\certd-client exec prettier --write <files>` 和 `corepack pnpm --dir packages\ui\certd-client exec eslint --fix <files>`；不要为了格式化无关文件而扩大 diff。项目保留了 `tslint` 依赖，但当前主要使用 ESLint + Prettier。
 - 优先对改动包运行聚焦的测试或类型检查；只有跨包影响明显时再考虑全 monorepo 构建。

@@ -2,14 +2,16 @@ const numbers = "0123456789";
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const specials = "~!@#$%^*()_+-=[]{}|;:,./<>?";
 
+type RandomStrOptions = true | string | { numbers?: false | string; letters?: false | string; specials?: boolean | string };
+
 /**
  * Generate random string
  * @param {Number} length
  * @param {Object} options
  */
-function randomStr(length, options?) {
-  length || (length = 8);
-  options || (options = {});
+function randomStr(length?: number, options?: RandomStrOptions) {
+  length ?? (length = 8);
+  options ?? (options = {});
 
   let chars = "";
   let result = "";
@@ -32,6 +34,10 @@ function randomStr(length, options?) {
     }
   }
 
+  if (chars.length === 0) {
+    throw new Error("randomStr requires at least one available character");
+  }
+
   while (length > 0) {
     length--;
     result += chars[Math.floor(Math.random() * chars.length)];
@@ -40,4 +46,3 @@ function randomStr(length, options?) {
 }
 
 export const RandomUtil = { randomStr };
-

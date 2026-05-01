@@ -19,6 +19,7 @@
     "dev-new": "cross-env NODE_ENV=dev-new mwtsc --watch --run @midwayjs/mock/app",
     "rm-newdb": "rimraf ./data/db-new.sqlite",
     "test": "cross-env NODE_ENV=unittest mocha",
+    "test:unit": "cross-env NODE_ENV=unittest mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
     "cov": "cross-env c8 --all --reporter=text --reporter=lcovonly pnpm run test",
     "lint": "mwts check",
     "lint:fix": "mwts fix",
@@ -161,6 +162,7 @@
     "mocha": "^10.2.0",
     "prettier": "^2.8.8",
     "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
     "typescript": "^5.4.2",
     "why-is-node-running": "^3.2.2"

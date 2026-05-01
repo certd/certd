@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "inlineSourceMap":false,
+    "inlineSourceMap": false,
     "sourceMap": false,
     "noImplicitThis": true,
     "noUnusedLocals": true,
@@ -16,27 +16,17 @@
     "pretty": true,
     "declaration": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": [ "./typings", "./node_modules/@types"],
+    "typeRoots": ["./typings", "./node_modules/@types"],
     "outDir": "dist",
     "rootDir": "src",
     "composite": false,
     "useDefineForClassFields": true,
     "strict": false,
-//    "sourceMap": true,
+    //    "sourceMap": true,
     "resolveJsonModule": true,
     "isolatedModules": false,
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ESNext", "DOM"]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts",
-    "src/**/*.json"
-  ],
-  "exclude": [
-    "*.js",
-    "*.ts",
-    "dist",
-    "node_modules",
-    "test"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.json"],
+  "exclude": ["*.js", "*.ts", "dist", "node_modules", "src/**/*.test.ts", "test"]
 }

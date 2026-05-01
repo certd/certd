@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "inlineSourceMap":false,
+    "inlineSourceMap": false,
     "sourceMap": false,
     "noImplicitThis": true,
     "noUnusedLocals": true,
@@ -22,22 +22,11 @@
     "composite": false,
     "useDefineForClassFields": true,
     "strict": true,
-//    "sourceMap": true,
+    //    "sourceMap": true,
     "resolveJsonModule": true,
     "isolatedModules": false,
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ESNext", "DOM"]
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts",
-    "src/**/*.json"
-  ],
-  "exclude": [
-    "*.js",
-    "*.ts",
-    "*.spec.ts",
-    "dist",
-    "node_modules",
-    "test"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.json"],
+  "exclude": ["*.js", "*.ts", "*.spec.ts", "dist", "node_modules", "src/**/*.test.ts", "test"]
 }

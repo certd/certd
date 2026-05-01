@@ -14,6 +14,7 @@
     "build3": "rollup -c",
     "preview": "vite preview",
     "test": "mocha   --loader=ts-node/esm",
+    "test:unit": "mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
     "pub": "npm publish",
     "compile": "tsc --skipLibCheck --watch"
   },
@@ -42,6 +43,7 @@
     "mocha": "^10.2.0",
     "prettier": "^2.8.8",
     "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
     "typescript": "^5.4.2"
   },

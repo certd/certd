@@ -16,16 +16,10 @@
     "pretty": true,
     "declaration": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": [ "./typings", "./node_modules/@types"],
+    "typeRoots": ["./typings", "./node_modules/@types"],
     "outDir": "dist",
     "rootDir": "src",
     "preserveWatchOutput": true
   },
-  "exclude": [
-    "*.js",
-    "*.ts",
-    "dist",
-    "node_modules",
-    "test"
-  ]
+  "exclude": ["*.js", "*.ts", "dist", "node_modules", "src/**/*.test.ts", "test"]
 }

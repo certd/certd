@@ -1,0 +1,178 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: VolcengineDeployToVKE
+title: 火山引擎-替换VKE证书
+icon: svg:icon-volcengine
+group: volcengine
+desc: 替换火山引擎VKE集群中的TLS Secret证书
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |2-
+
+              return {
+                component:{
+                    inputKey: ctx.compute(({form})=>{
+                      return form.cert
+                    }),
+                }
+              }
+              
+    template: false
+    required: false
+    order: 0
+  accessId:
+    title: Access授权
+    helper: 火山引擎AccessKeyId、AccessKeySecret
+    component:
+      name: access-selector
+      type: volcengine
+    required: true
+    order: 0
+  regionId:
+    title: Region
+    helper: VKE集群所在地域
+    component:
+      name: a-select
+      options:
+        - label: 北京
+          value: cn-beijing
+        - label: 上海
+          value: cn-shanghai
+        - label: 广州
+          value: cn-guangzhou
+        - label: 香港
+          value: cn-hongkong
+        - label: 柔佛
+          value: ap-southeast-1
+        - label: 雅加达
+          value: ap-southeast-3
+    value: cn-beijing
+    required: true
+    order: 0
+  clusterId:
+    title: VKE集群
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetClusterList
+      search: false
+      pager: false
+      multi: true
+      watches:
+        - certDomains
+        - accessId
+        - accessId
+        - regionId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 选择要替换证书的VKE集群，也可以手动输入集群ID
+    order: 0
+  kubeconfigType:
+    title: Kubeconfig类型
+    helper: Public需要集群API Server已开启公网访问；Private需要Certd能访问集群私网地址
+    component:
+      name: a-select
+      options:
+        - label: 公网
+          value: Public
+        - label: 私网
+          value: Private
+        - label: 集群内
+          value: TargetCluster
+    value: Public
+    required: true
+    order: 0
+  namespace:
+    title: 命名空间
+    value: default
+    component:
+      placeholder: 命名空间
+    required: true
+    order: 0
+  targetType:
+    title: 替换方式
+    helper: 按Ingress会自动读取spec.tls[].secretName；按Secret需要手动填写Secret名称
+    component:
+      name: a-select
+      options:
+        - label: 按Ingress替换
+          value: ingress
+        - label: 按Secret替换
+          value: secret
+    value: ingress
+    required: true
+    order: 0
+  ingressName:
+    title: IngressName
+    required: true
+    helper: 根据Ingress名称查找TLS Secret并替换
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form}) => form.targetType === 'ingress'),
+              required: ctx.compute(({form}) => form.targetType === 'ingress')
+            }
+          
+    order: 0
+  secretName:
+    title: Secret名称
+    required: true
+    helper: 存储TLS证书的Secret名称，可填写多个
+    component:
+      name: a-select
+      vModel: value
+      mode: tags
+      open: false
+    mergeScript: |2-
+
+            return {
+              show: ctx.compute(({form}) => form.targetType === 'secret'),
+              required: ctx.compute(({form}) => form.targetType === 'secret')
+            }
+          
+    order: 0
+  createOnNotFound:
+    title: Secret自动创建
+    helper: 如果Secret不存在，则创建kubernetes.io/tls类型Secret
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    order: 0
+  skipTLSVerify:
+    title: 忽略证书校验
+    helper: 连接Kubernetes API Server时跳过TLS校验
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-volcengine/plugins/plugin-deploy-to-vke.js

@@ -51,7 +51,10 @@ function isIpv4(d: string) {
     return false;
   }
   const isIPv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
-  return isIPv4Regex.test(d);
+  if (!isIPv4Regex.test(d)) {
+    return false;
+  }
+  return d.split(".").every(item => Number(item) <= 255);
 }
 
 function isIpv6(d: string) {
