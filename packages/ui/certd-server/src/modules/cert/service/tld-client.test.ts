@@ -80,4 +80,47 @@ describe("TldClient", () => {
       (TldClient as any).rdapSsRequestTimes = originalRequestTimes;
     }
   });
+
+  it("clears rdapSsRequestTimes entries older than 24 hours", async () => {
+    const now = Date.now();
+    const originalRequestTimes = (TldClient as any).rdapSsRequestTimes;
+
+    try {
+      const recentTime = now - 1000 * 60 * 60;
+      const oldTime = now - 25 * 60 * 60 * 1000;
+
+      (TldClient as any).rdapSsRequestTimes = [oldTime, recentTime];
+
+      const client = new TldClient() as any;
+      await client.waitRdapSsRateLimit();
+
+      const times = (TldClient as any).rdapSsRequestTimes;
+      assert.equal(times.length, 2);
+      assert.ok(times.every((t: number) => now - t < 24 * 60 * 60 * 1000));
+    } finally {
+      (TldClient as any).rdapSsRequestTimes = originalRequestTimes;
+    }
+  });
+
+  it("keeps rdapSsRequestTimes entries within 24 hours and removes those exactly at boundary", async () => {
+    const now = Date.now();
+    const originalRequestTimes = (TldClient as any).rdapSsRequestTimes;
+
+    try {
+      const boundaryTime = now - 24 * 60 * 60 * 1000;
+      const withinTime = now - 23 * 60 * 60 * 1000;
+
+      (TldClient as any).rdapSsRequestTimes = [boundaryTime, withinTime];
+
+      const client = new TldClient() as any;
+      await client.waitRdapSsRateLimit();
+
+      const times = (TldClient as any).rdapSsRequestTimes as number[];
+      assert.equal(times.length, 2);
+      assert.ok(times.every((t: number) => now - t < 24 * 60 * 60 * 1000));
+      assert.ok(times.includes(withinTime));
+    } finally {
+      (TldClient as any).rdapSsRequestTimes = originalRequestTimes;
+    }
+  });
 });

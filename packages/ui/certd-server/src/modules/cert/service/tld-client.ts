@@ -18,6 +18,7 @@ export class TldClient {
     { windowMs: 24 * 60 * 60 * 1000, max: 12000 },
   ];
   private static readonly RDAP_SS_MAX_WAIT_MS = 3 * 60 * 1000;
+  private static readonly RDAP_SS_DATA_RETENTION_MS = 24 * 60 * 60 * 1000;
   private static rdapSsRequestTimes: number[] = [];
 
   private rdapMap: Record<string, string> = {};
@@ -177,8 +178,7 @@ export class TldClient {
   private async waitRdapSsRateLimit() {
     while (true) {
       const now = Date.now();
-      const maxWindowMs = Math.max(...TldClient.RDAP_SS_RATE_LIMITS.map(item => item.windowMs));
-      TldClient.rdapSsRequestTimes = TldClient.rdapSsRequestTimes.filter(time => now - time < maxWindowMs);
+      TldClient.rdapSsRequestTimes = TldClient.rdapSsRequestTimes.filter(time => now - time < TldClient.RDAP_SS_DATA_RETENTION_MS);
 
       const waitMs = TldClient.RDAP_SS_RATE_LIMITS.reduce((maxWaitMs, limit) => {
         const times = TldClient.rdapSsRequestTimes.filter(time => now - time < limit.windowMs);
