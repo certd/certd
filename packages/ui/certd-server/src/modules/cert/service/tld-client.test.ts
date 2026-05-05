@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 
 import { http } from "@certd/basic";
 
+import { RdapSsClient } from "./rdap-ss-client.js";
 import { TldClient } from "./tld-client.js";
 
 describe("TldClient", () => {
@@ -35,10 +36,10 @@ describe("TldClient", () => {
   it("queries rdap.ss and parses HK whois date fields", async () => {
     const originalRequest = http.request;
     let requestedConfig: any;
-    const originalRequestTimes = (TldClient as any).rdapSsRequestTimes;
+    const originalRequestTimes = (RdapSsClient as any).requestTimes;
 
     try {
-      (TldClient as any).rdapSsRequestTimes = [];
+      (RdapSsClient as any).requestTimes = [];
       http.request = async (config: any) => {
         requestedConfig = config;
         return {
@@ -52,7 +53,7 @@ describe("TldClient", () => {
         };
       };
 
-      const result = await (new TldClient() as any).getDomainExpirationByRdapSs("google.com.hk");
+      const result = await new RdapSsClient().getDomainInfo("google.com.hk");
 
       assert.equal(requestedConfig.url, "https://rdap.ss/api/query?q=google.com.hk");
       assert.equal(requestedConfig.method, "GET");
@@ -60,67 +61,67 @@ describe("TldClient", () => {
       assert.equal(result.expirationDate, 1795104000000);
     } finally {
       http.request = originalRequest;
-      (TldClient as any).rdapSsRequestTimes = originalRequestTimes;
+      (RdapSsClient as any).requestTimes = originalRequestTimes;
     }
   });
 
   it("throws when rdap.ss rate-limit wait is over 3 minutes", async () => {
     const now = Date.now();
-    const originalRequestTimes = (TldClient as any).rdapSsRequestTimes;
+    const originalRequestTimes = (RdapSsClient as any).requestTimes;
 
     try {
-      (TldClient as any).rdapSsRequestTimes = Array.from({ length: 1200 }, () => now);
-      const client = new TldClient() as any;
+      (RdapSsClient as any).requestTimes = Array.from({ length: 1200 }, () => now);
+      const client = new RdapSsClient() as any;
       client.sleep = async () => {
         throw new Error("should not sleep when wait time is over limit");
       };
 
-      await assert.rejects(() => client.waitRdapSsRateLimit(), /rdap\.ss查询达到速率限制，等待时间超过3分钟/);
+      await assert.rejects(() => client.waitRateLimit(), /rdap\.ss查询达到速率限制，等待时间超过3分钟/);
     } finally {
-      (TldClient as any).rdapSsRequestTimes = originalRequestTimes;
+      (RdapSsClient as any).requestTimes = originalRequestTimes;
     }
   });
 
-  it("clears rdapSsRequestTimes entries older than 24 hours", async () => {
+  it("clears rdap.ss request time entries older than 24 hours", async () => {
     const now = Date.now();
-    const originalRequestTimes = (TldClient as any).rdapSsRequestTimes;
+    const originalRequestTimes = (RdapSsClient as any).requestTimes;
 
     try {
       const recentTime = now - 1000 * 60 * 60;
       const oldTime = now - 25 * 60 * 60 * 1000;
 
-      (TldClient as any).rdapSsRequestTimes = [oldTime, recentTime];
+      (RdapSsClient as any).requestTimes = [oldTime, recentTime];
 
-      const client = new TldClient() as any;
-      await client.waitRdapSsRateLimit();
+      const client = new RdapSsClient() as any;
+      await client.waitRateLimit();
 
-      const times = (TldClient as any).rdapSsRequestTimes;
+      const times = (RdapSsClient as any).requestTimes;
       assert.equal(times.length, 2);
       assert.ok(times.every((t: number) => now - t < 24 * 60 * 60 * 1000));
     } finally {
-      (TldClient as any).rdapSsRequestTimes = originalRequestTimes;
+      (RdapSsClient as any).requestTimes = originalRequestTimes;
     }
   });
 
-  it("keeps rdapSsRequestTimes entries within 24 hours and removes those exactly at boundary", async () => {
+  it("keeps rdap.ss request time entries within 24 hours and removes those exactly at boundary", async () => {
     const now = Date.now();
-    const originalRequestTimes = (TldClient as any).rdapSsRequestTimes;
+    const originalRequestTimes = (RdapSsClient as any).requestTimes;
 
     try {
       const boundaryTime = now - 24 * 60 * 60 * 1000;
       const withinTime = now - 23 * 60 * 60 * 1000;
 
-      (TldClient as any).rdapSsRequestTimes = [boundaryTime, withinTime];
+      (RdapSsClient as any).requestTimes = [boundaryTime, withinTime];
 
-      const client = new TldClient() as any;
-      await client.waitRdapSsRateLimit();
+      const client = new RdapSsClient() as any;
+      await client.waitRateLimit();
 
-      const times = (TldClient as any).rdapSsRequestTimes as number[];
+      const times = (RdapSsClient as any).requestTimes as number[];
       assert.equal(times.length, 2);
       assert.ok(times.every((t: number) => now - t < 24 * 60 * 60 * 1000));
       assert.ok(times.includes(withinTime));
     } finally {
-      (TldClient as any).rdapSsRequestTimes = originalRequestTimes;
+      (RdapSsClient as any).requestTimes = originalRequestTimes;
     }
   });
 });
