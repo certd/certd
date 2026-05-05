@@ -1,3 +1,4 @@
+﻿// @ts-nocheck
 /**
  * Legacy node-forge crypto interface
  *
@@ -112,7 +113,7 @@ function parseDomains(obj) {
  * ```
  */
 
-export async function createPrivateKey(size = 2048) {
+export async function createPrivateKey(size = 2048): Promise<Buffer> {
     const keyPair = await generateKeyPair({ bits: size });
     const pemKey = forge.pki.privateKeyToPem(keyPair.privateKey);
     return Buffer.from(pemKey);
@@ -131,7 +132,7 @@ export async function createPrivateKey(size = 2048) {
  * ```
  */
 
-export const createPublicKey = async (key) => {
+export const createPublicKey = async (key): Promise<Buffer> => {
     const privateKey = forge.pki.privateKeyFromPem(key);
     const publicKey = forge.pki.rsa.setPublicKey(privateKey.n, privateKey.e);
     const pemKey = forge.pki.publicKeyToPem(publicKey);
@@ -174,7 +175,7 @@ export const splitPemChain = (str) => forge.pem.decode(str).map(forge.pem.encode
  * ```
  */
 
-export const getModulus = async (input) => {
+export const getModulus = async (input): Promise<Buffer> => {
     if (!Buffer.isBuffer(input)) {
         input = Buffer.from(input);
     }
@@ -197,7 +198,7 @@ export const getModulus = async (input) => {
  * ```
  */
 
-export const getPublicExponent = async (input) => {
+export const getPublicExponent = async (input): Promise<Buffer> => {
     if (!Buffer.isBuffer(input)) {
         input = Buffer.from(input);
     }

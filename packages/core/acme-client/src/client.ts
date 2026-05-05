@@ -1,3 +1,4 @@
+﻿// @ts-nocheck
 /**
  * ACME client
  *
@@ -570,7 +571,7 @@ class AcmeClient {
      * ```
      */
 
-    async waitForValidStatus(item,d) {
+    async waitForValidStatus(item, d?) {
         if (!item.url) {
             throw new Error(`[${d}] Unable to verify status of item, URL not found`);
         }

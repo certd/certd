@@ -4,8 +4,6 @@
 
 import { AxiosInstance } from 'axios';
 import * as rfc8555 from './rfc8555';
-import {CancelError} from '../src/error.js'
-export * from '../src/error.js'
 
 export type PrivateKeyBuffer = Buffer;
 export type PublicKeyBuffer = Buffer;
@@ -115,6 +113,15 @@ export const directory: {
     zerossl: {
         staging: string,
         production: string
+    },
+    sslcom: {
+        staging: string,
+        production: string,
+        ec: string
+    },
+    litessl: {
+        staging: string,
+        production: string
     }
 };
 
@@ -211,14 +218,16 @@ export const agents: any;
  * Logger
  */
 
+export class CancelError extends Error {
+    constructor(message?: string);
+}
+
 export function setLogger(fn: (message: any, ...args: any[]) => void): void;
 
 export function createChallengeFn(opts?: {logger?:any}): any;
 // export function walkTxtRecord(record: any): Promise<string[]>;
 export function getAuthoritativeDnsResolver(record:string): Promise<any>;
 
-export const CancelError: typeof CancelError;
-
 export function resolveDomainBySoaRecord(domain: string): Promise<string>;
 
-export function setWalkFromAuthoritative(value = true): void;
+export function setWalkFromAuthoritative(value?: boolean): void;

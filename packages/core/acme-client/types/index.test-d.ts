@@ -2,7 +2,7 @@
  * acme-client type definition tests
  */
 
-import * as acme from 'acme-client';
+import * as acme from '..';
 
 (async () => {
     /* Client */
@@ -10,6 +10,7 @@ import * as acme from 'acme-client';
 
     const client = new acme.Client({
         accountKey,
+        sslProvider: 'letsencrypt',
         directoryUrl: acme.directory.letsencrypt.staging
     });
 
@@ -52,7 +53,10 @@ import * as acme from 'acme-client';
     /* Auto */
     await client.auto({
         csr: certCsr,
-        challengeCreateFn: async (authz, challenge, keyAuthorization) => {},
+        challengeCreateFn: async (authz, keyAuthorization) => ({
+            challenge: authz.challenges[0],
+            keyAuthorization: await keyAuthorization(authz.challenges[0])
+        }),
         challengeRemoveFn: async (authz, challenge, keyAuthorization) => {}
     });
 
@@ -63,7 +67,10 @@ import * as acme from 'acme-client';
         skipChallengeVerification: false,
         challengePriority: ['http-01', 'dns-01'],
         preferredChain: 'DST Root CA X3',
-        challengeCreateFn: async (authz, challenge, keyAuthorization) => {},
+        challengeCreateFn: async (authz, keyAuthorization) => ({
+            challenge: authz.challenges[0],
+            keyAuthorization: await keyAuthorization(authz.challenges[0])
+        }),
         challengeRemoveFn: async (authz, challenge, keyAuthorization) => {}
     });
 })();

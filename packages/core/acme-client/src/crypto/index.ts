@@ -1,3 +1,4 @@
+﻿// @ts-nocheck
 /**
  * Native Node.js crypto interface
  *
@@ -67,7 +68,7 @@ function getKeyInfo(keyPem) {
  * ```
  */
 
-export async function createPrivateRsaKey(modulusLength = 2048, encodingType = 'pkcs8') {
+export async function createPrivateRsaKey(modulusLength = 2048, encodingType = 'pkcs8'): Promise<Buffer> {
     const pair = await generateKeyPair('rsa', {
         modulusLength,
         privateKeyEncoding: {
@@ -105,7 +106,7 @@ export const createPrivateKey = createPrivateRsaKey;
  * ```
  */
 
-export const createPrivateEcdsaKey = async (namedCurve = 'P-256', encodingType = 'pkcs8') => {
+export const createPrivateEcdsaKey = async (namedCurve = 'P-256', encodingType = 'pkcs8'): Promise<Buffer> => {
     const pair = await generateKeyPair('ec', {
         namedCurve,
         privateKeyEncoding: {
@@ -129,7 +130,7 @@ export const createPrivateEcdsaKey = async (namedCurve = 'P-256', encodingType =
  * ```
  */
 
-export const getPublicKey = (keyPem) => {
+export const getPublicKey = (keyPem): Buffer => {
     const info = getKeyInfo(keyPem);
 
     const publicKey = info.publicKey.export({

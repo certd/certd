@@ -1,4 +1,13 @@
 {
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "ignorePatterns": [
+    "dist",
+    "node_modules"
+  ],
   "extends": [
     "plugin:prettier/recommended",
     "prettier"
@@ -7,9 +16,12 @@
     "eslint-plugin-import"
   ],
   "env": {
+    "node": true,
+    "es2022": true,
     "mocha": true
   },
   "rules": {
+    "prettier/prettier": "off",
     "@typescript-eslint/no-var-requires": "off",
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/ban-ts-ignore": "off",

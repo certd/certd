@@ -1,7 +1,5 @@
-// @ts-ignore
 import * as acme from "@certd/acme-client";
-import { ClientExternalAccountBindingOptions, UrlMapping } from "@certd/acme-client";
-import { Challenge } from "@certd/acme-client/types/rfc8555.js";
+import type { Challenge, ClientExternalAccountBindingOptions, UrlMapping } from "@certd/acme-client";
 import { ILogger, utils } from "@certd/basic";
 import { IContext } from "@certd/pipeline";
 import { IDnsProvider, IDomainParser } from "@certd/plugin-lib";

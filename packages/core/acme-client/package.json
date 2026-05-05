@@ -5,16 +5,16 @@
     "author": "nmorsman",
     "version": "1.39.12",
     "type": "module",
-    "module": "scr/index.js",
-    "main": "src/index.js",
-    "types": "types/index.d.ts",
+    "module": "./dist/index.js",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "license": "MIT",
     "homepage": "https://github.com/publishlab/node-acme-client",
     "engines": {
         "node": ">= 18"
     },
     "files": [
-        "src",
+        "dist",
         "types"
     ],
     "dependencies": {
@@ -47,14 +47,17 @@
         "typescript": "^5.4.2"
     },
     "scripts": {
-        "build-docs": "jsdoc2md src/client.js > docs/client.md && jsdoc2md src/crypto/index.js > docs/crypto.md && jsdoc2md src/crypto/forge.js > docs/forge.md",
-        "lint": "eslint .",
-        "lint-types": "tsd",
-        "prepublishOnly": "npm run build-docs",
+        "before-build": "node -e \"const fs=require('fs');fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('tsconfig.tsbuildinfo',{force:true});\"",
+        "build": "npm run before-build && tsc --skipLibCheck",
+        "build-docs": "jsdoc2md dist/client.js > docs/client.md && jsdoc2md dist/crypto/index.js > docs/crypto.md && jsdoc2md dist/crypto/forge.js > docs/forge.md",
+        "lint": "eslint \"src/**/*.ts\" \"types/**/*.ts\"",
+        "lint-types": "tsd --files \"types/index.test-d.ts\"",
+        "prepublishOnly": "npm run build && npm run build-docs",
         "test": "mocha -t 60000 \"test/setup.js\" \"test/**/*.spec.js\"",
-        "test:unit": "echo no unit tests",
+        "before-test:unit": "node -e \"const fs=require('fs');fs.rmSync('dist-test',{recursive:true,force:true});fs.rmSync('tsconfig.test.tsbuildinfo',{force:true});\"",
+        "test:unit": "npm run before-test:unit && tsc -p tsconfig.test.json --skipLibCheck && mocha -t 60000 \"dist-test/**/*.test.js\"",
         "pub": "npm publish",
-        "compile": "echo '1'"
+        "compile": "tsc --skipLibCheck --watch"
     },
     "repository": {
         "type": "git",
