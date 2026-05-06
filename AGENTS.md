@@ -208,5 +208,5 @@ Get-ChildItem packages\ui\certd-client\src\views\certd
 - 后补单元测试时，应先基于对正确行为的实际预期编写测试，而不是为了迎合现有实现改写预期；如果运行后出现红灯，且通过测试需要修改已有实现，应先向用户确认这是确实的 bug，还是原本需求/既有行为就是如此；确认后再修改原始实现，避免把测试补充变成未经确认的行为改动。
 - 后端纯单元测试用例放在 `src` 目录内，并尽量与被测文件相邻，例如 `src/utils/random.test.ts`；对应 `test:unit` 只跑 `src/**/*.test.ts`，构建/打包配置应排除这些 `*.test.ts` 文件。
 - 单个 monorepo 包运行单元测试时，优先使用 `corepack pnpm --dir <包目录> test:unit`，例如 `corepack pnpm --dir packages\ui\certd-server test:unit`、`corepack pnpm --dir packages\core\basic test:unit`、`corepack pnpm --dir packages\plugins\plugin-lib test:unit`；也可以用包名过滤，例如 `corepack pnpm --filter @certd/ui-server test:unit`。前端 `packages\ui\certd-client` 暂时不跑单元测试。
-- 前端 TS/Vue/locale 等文件改动后，优先只对本次改动文件运行项目现有自动格式化/修复，例如 `corepack pnpm --dir packages\ui\certd-client exec prettier --write <files>` 和 `corepack pnpm --dir packages\ui\certd-client exec eslint --fix <files>`；不要为了格式化无关文件而扩大 diff。项目保留了 `tslint` 依赖，但当前主要使用 ESLint + Prettier。
+- 前端 TS/Vue/locale 等文件改动后，优先只对本次改动文件运行项目现有自动格式化/修复；Windows/PowerShell 下 Prettier 已验证可用命令为 `packages\ui\certd-client\node_modules\.bin\prettier.cmd --write <files>`，ESLint 可用命令为 `packages\ui\certd-client\node_modules\.bin\eslint.cmd --fix <files>`；不要为了格式化无关文件而扩大 diff。项目保留了 `tslint` 依赖，但当前主要使用 ESLint + Prettier。
 - 优先对改动包运行聚焦的测试或类型检查；只有跨包影响明显时再考虑全 monorepo 构建。

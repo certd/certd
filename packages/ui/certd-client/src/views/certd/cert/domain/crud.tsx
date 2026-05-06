@@ -3,7 +3,7 @@ import { Modal, notification } from "ant-design-vue";
 import { Ref, ref } from "vue";
 import { useRouter } from "vue-router";
 import * as api from "./api";
-import { useDomainImportManage } from "./use";
+import { useDomainImportManage, useSyncExpirationProcess } from "./use";
 import { Dicts } from "/@/components/plugins/lib/dicts";
 import { useSettingStore } from "/@/store/settings";
 import { useUserStore } from "/@/store/user";
@@ -52,6 +52,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   });
 
   const openDomainImportManageDialog = useDomainImportManage();
+  const openSyncExpirationProcessDialog = useSyncExpirationProcess({ crudExpose });
 
   const subdomainConfirmed = ref(false);
   return {
@@ -140,13 +141,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             icon: "ion:refresh-outline",
             text: t("certd.domain.syncExpirationDate"),
             click: async () => {
-              await api.SyncExpirationStart();
-              notification.success({
-                message: t("certd.domain.syncTaskSubmitted"),
-              });
-              setTimeout(() => {
-                crudExpose.doRefresh();
-              }, 2000);
+              try {
+                await api.SyncExpirationStart();
+              } finally {
+                await openSyncExpirationProcessDialog();
+              }
             },
           },
           monitorSettingSave: {
@@ -361,7 +360,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                     <fs-values-format modelValue={row.challengeType} dict={Dicts.challengeTypeDict} color={"auto"}></fs-values-format>
                     <fs-values-format modelValue={row.httpUploaderType} dict={httpUploaderTypeDict} color={"auto"}></fs-values-format>
                     <fs-values-format class={"ml-5"} modelValue={row.httpUploaderAccess} dict={accessDict} color={"auto"}></fs-values-format>
-                    <a-tag class={"ml-5 flex items-center"}>{t("certd.domain.path")}: {row.httpUploadRootDir}</a-tag>
+                    <a-tag class={"ml-5 flex items-center"}>
+                      {t("certd.domain.path")}: {row.httpUploadRootDir}
+                    </a-tag>
                   </div>
                 );
               }
