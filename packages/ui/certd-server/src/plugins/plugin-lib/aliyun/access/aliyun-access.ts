@@ -41,7 +41,7 @@ export class AliyunAccess extends BaseAccess {
 
   async onTestRequest() {
     await this.getCallerIdentity();
-    return "ok"
+    return "ok";
   }
 
 
@@ -64,6 +64,11 @@ export class AliyunAccess extends BaseAccess {
     const sts = await this.getStsClient();
     // 调用 GetCallerIdentity 接口
     const result = await sts.getCallerIdentity();
+    if (result.Code || !result.AccountId) {
+      const message = result.Message || "阿里云密钥校验失败";
+      const code = result.Code ? `[${result.Code}] ` : "";
+      throw new Error(`${code}${message}`);
+    }
 
     this.ctx.logger.log("✅ 密钥有效！");
     this.ctx.logger.log(`   账户ID: ${result.AccountId}`);
