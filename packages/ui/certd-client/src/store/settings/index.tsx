@@ -81,6 +81,7 @@ export const useSettingStore = defineStore({
       registerEnabled: false,
       managerOtherUserPipeline: false,
       icpNo: env.ICP_NO || "",
+      homePageEnabled: true,
     },
     installInfo: {
       siteId: "",

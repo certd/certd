@@ -48,6 +48,7 @@ export type SysPublicSetting = {
   customFooter?: string;
   robots?: boolean;
   aiChatEnabled?: boolean;
+  homePageEnabled?: boolean;
 
   showRunStrategy?: boolean;
 

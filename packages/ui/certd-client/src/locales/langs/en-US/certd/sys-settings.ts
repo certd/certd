@@ -16,6 +16,7 @@ export default {
 
       showRunStrategy: "Show RunStrategy",
       showRunStrategyHelper: "Allow modify the run strategy of the task",
+      homePageEnabled: "Enable Home Page",
 
       captchaEnabled: "Enable Login Captcha",
       captchaHelper: "Whether to enable captcha verification for login",

@@ -14,6 +14,9 @@
       <a-form-item :label="t('certd.allowCrawlers')" :name="['public', 'robots']">
         <a-switch v-model:checked="formState.public.robots" />
       </a-form-item>
+      <a-form-item :label="t('certd.sys.setting.homePageEnabled')" :name="['public', 'homePageEnabled']">
+        <a-switch v-model:checked="formState.public.homePageEnabled" />
+      </a-form-item>
 
       <a-form-item :label="t('certd.enableCommonCnameService')" :name="['private', 'commonCnameEnabled']">
         <a-switch v-model:checked="formState.private.commonCnameEnabled" />
@@ -62,6 +65,7 @@ const formState = reactive<Partial<SysSettings>>({
   public: {
     icpNo: "",
     mpsNo: "",
+    homePageEnabled: true,
   },
   private: {},
 });

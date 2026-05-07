@@ -47,6 +47,13 @@ export function setupCommonGuard(router: Router) {
     const settingStore = useSettingStore();
     await settingStore.initOnce();
 
+    if (to.path === "/" && settingStore.sysPublic?.homePageEnabled === false) {
+      return {
+        path: DEFAULT_HOME_PATH,
+        replace: true,
+      };
+    }
+
     to.meta.loaded = loadedPaths.has(to.path);
 
     // 页面加载进度条

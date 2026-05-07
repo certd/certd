@@ -32,6 +32,7 @@ export class SysPublicSettings extends BaseSettings {
   customFooter?: string;
   robots?: boolean = true;
   aiChatEnabled = true;
+  homePageEnabled = true;
 
 
   //验证码是否开启
@@ -271,4 +272,3 @@ export class SysSafeSetting extends BaseSettings {
     autoHiddenTimes: 5,
   };
 }
-
