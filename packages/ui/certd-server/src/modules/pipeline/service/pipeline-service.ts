@@ -52,6 +52,7 @@ import { set } from "lodash-es";
 import { executorQueue } from "@certd/lib-server";
 import parser from "cron-parser";
 import { ProjectService } from "../../sys/enterprise/service/project-service.js";
+import { CertApplyStepInputPatch, updateCertApplyStepInputs } from "./pipeline-batch-update.js";
 const runningTasks: Map<string | number, Executor> = new Map();
 
 
@@ -1207,6 +1208,37 @@ export class PipelineService extends BaseService<PipelineEntity> {
         type: "other",
         ...notification
       }];
+      await this.doUpdatePipelineJson(item, pipeline);
+    }
+  }
+
+  async batchUpdateCertApplyOptions(ids: number[], options: CertApplyStepInputPatch, userId: any, projectId?: number) {
+    if (!isPlus()) {
+      throw new NeedVIPException("此功能需要升级Certd专业版");
+    }
+    const query: any = {}
+    if (userId && userId > 0) {
+      query.userId = userId;
+    }
+    if (projectId) {
+      query.projectId = projectId;
+    }
+    const list = await this.find({
+      where: {
+        id: In(ids),
+        ...query
+      }
+    });
+
+    for (const item of list) {
+      const pipeline = JSON.parse(item.content);
+      const updatedCount = updateCertApplyStepInputs(pipeline, options, stepType => {
+        const pluginDefine: any = pluginRegistry.getDefine(stepType);
+        return pluginDefine?.input;
+      });
+      if (updatedCount === 0) {
+        continue;
+      }
       await this.doUpdatePipelineJson(item, pipeline);
     }
   }

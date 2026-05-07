@@ -349,6 +349,14 @@ export class PipelineController extends CrudController<PipelineService> {
     return this.ok({});
   }
 
+  @Post('/batchUpdateCertApplyOptions', { description: Constants.per.authOnly, summary: "批量更新证书申请任务配置" })
+  async batchUpdateCertApplyOptions(@Body('ids') ids: number[], @Body('options') options: any) {
+    await this.checkPermissionCall(async ({userId,projectId})=>{
+      await this.service.batchUpdateCertApplyOptions(ids, options, userId,projectId);
+    })
+    return this.ok({});
+  }
+
   @Post('/batchRerun', { description: Constants.per.authOnly, summary: "批量重新运行流水线" })
   async batchRerun(@Body('ids') ids: number[], @Body('force') force: boolean) {
     await this.checkPermissionCall(async ({userId,projectId})=>{

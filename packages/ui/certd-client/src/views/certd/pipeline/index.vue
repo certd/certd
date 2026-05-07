@@ -40,6 +40,7 @@
           <fs-button v-if="hasActionPermission('write')" icon="ion:trash-outline" class="color-red" type="link" :text="t('certd.batchDelete')" @click="batchDelete"></fs-button>
           <batch-rerun :selected-row-keys="selectedRowKeys" @change="batchFinished"></batch-rerun>
           <change-group v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-group>
+          <change-cert-apply-options v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-cert-apply-options>
           <change-notification v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-notification>
           <change-trigger v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-trigger>
           <change-project v-if="hasActionPermission('write') && settingStore.isEnterprise" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-project>
@@ -57,6 +58,7 @@ import { computed, onActivated, onMounted, provide, ref } from "vue";
 import { dict, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import ChangeGroup from "./components/change-group.vue";
+import ChangeCertApplyOptions from "./components/change-cert-apply-options.vue";
 import ChangeTrigger from "./components/change-trigger.vue";
 import ChangeProject from "./components/change-project.vue";
 
