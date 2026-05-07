@@ -33,6 +33,32 @@ describe("TldClient", () => {
     assert.equal(result.expirationDate, 1795104000000);
   });
 
+  it("delegates rdap.ss fallback to RdapSsClient", async () => {
+    const client = new TldClient() as any;
+    const queriedDomains: string[] = [];
+
+    client.init = async () => {};
+    client.getDomainExpirationByRdap = async () => {
+      throw new Error("rdap failed");
+    };
+    client.getDomainExpirationByWhoiser = async () => {
+      throw new Error("whoiser failed");
+    };
+    client.rdapSsClient = {
+      getDomainInfo: async (domain: string) => {
+        queriedDomains.push(domain);
+        return { expirationDate: 1795104000000, registrationDate: 995040000000 };
+      },
+    };
+
+    const result = await client.getDomainExpirationDate("google.com.hk");
+
+    assert.deepEqual(queriedDomains, ["google.com.hk"]);
+    assert.deepEqual(result, { expirationDate: 1795104000000, registrationDate: 995040000000 });
+  });
+});
+
+describe("RdapSsClient", () => {
   it("queries rdap.ss and parses HK whois date fields", async () => {
     const originalRequest = http.request;
     let requestedConfig: any;
