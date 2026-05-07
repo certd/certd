@@ -35,8 +35,8 @@
         </a-dropdown>
       </template>
       <div v-if="selectedRowKeys.length > 0" class="batch-actions">
-        <div class="batch-actions-inner">
-          <span>{{ t("certd.selectedCount", { count: selectedRowKeys.length }) }}</span>
+        <div class="batch-actions-inner overflow-x-auto">
+          <span class="mr-2 inline-flex whitespace-nowrap">{{ t("certd.selectedCount", { count: selectedRowKeys.length }) }}</span>
           <fs-button v-if="hasActionPermission('write')" icon="ion:trash-outline" class="color-red" type="link" :text="t('certd.batchDelete')" @click="batchDelete"></fs-button>
           <batch-rerun :selected-row-keys="selectedRowKeys" @change="batchFinished"></batch-rerun>
           <change-group v-if="hasActionPermission('write')" :selected-row-keys="selectedRowKeys" @change="batchFinished"></change-group>
