@@ -13,10 +13,10 @@ export class EabAccess extends BaseAccess {
     component: {
       name: "a-select",
       options: [
-        { value: "google", label: "Google（免费）", icon: "flat-color-icons:google" },
-        { value: "zerossl", label: "ZeroSSL（免费）", icon: "emojione:digit-zero" },
-        { value: "litessl", label: "litessl（免费）", icon: "roentgen:free" },
-        { value: "sslcom", label: "SSL.com（仅主域名和www免费）", icon: "la:expeditedssl" },
+        { value: "google", label: "Google", icon: "flat-color-icons:google" },
+        { value: "zerossl", label: "ZeroSSL", icon: "emojione:digit-zero" },
+        { value: "litessl", label: "litessl", icon: "roentgen:free" },
+        { value: "sslcom", label: "SSL.com", icon: "la:expeditedssl" },
       ],
     },
     helper: "请选择EAB类型",
@@ -62,11 +62,11 @@ export class EabAccess extends BaseAccess {
     component: {
       name: "refresh-input",
       action: "GenerateAccountKey",
-      buttonText: "刷新",
-      successMessage: "账号私钥已刷新，请保存授权配置",
+      buttonText: "生成",
+      successMessage: "账号私钥已生成，请保存授权配置",
     },
     required: true,
-    helper: "如果修改了KID，请点击刷新重新生成账号私钥\n注意：google的EAB只能生成一次账号私钥，更新私钥需要获取一个新的EAB授权",
+    helper: "如果修改了KID，请点击生成重新生成账号私钥\n注意：google的EAB只能生成一次账号私钥，更新私钥需要获取一个新的EAB授权",
     encrypt: true,
   })
   accountKey = "";
