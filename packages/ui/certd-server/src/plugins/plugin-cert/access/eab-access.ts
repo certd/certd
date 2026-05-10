@@ -62,11 +62,11 @@ export class EabAccess extends BaseAccess {
     component: {
       name: "refresh-input",
       action: "GenerateAccountKey",
-      buttonText: "刷新账号私钥",
+      buttonText: "刷新",
       successMessage: "账号私钥已刷新，请保存授权配置",
     },
     required: true,
-    helper: "如果修改了KID，请点击刷新重新生成账号私钥",
+    helper: "如果修改了KID，请点击刷新重新生成账号私钥\n注意：google的EAB只能生成一次账号私钥，更新私钥需要获取一个新的EAB授权",
     encrypt: true,
   })
   accountKey = "";
