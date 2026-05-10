@@ -3,6 +3,7 @@ import { IAccess } from "../access/index.js";
 export type CnameProvider = {
   id: any;
   domain: string;
+  subdomain?: string;
   title?: string;
   dnsProviderType?: string;
   access?: IAccess;

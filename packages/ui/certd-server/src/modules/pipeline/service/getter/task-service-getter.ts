@@ -12,6 +12,7 @@ import { SubDomainService } from "../sub-domain-service.js";
 import { CertInfoGetter } from "./cert-info-getter.js";
 import { CertInfoService } from "../../../monitor/index.js";
 import { ICertInfoGetter } from "@certd/plugin-lib";
+import { CnameProviderService } from "../../../cname/service/cname-provider-service.js";
 
 const serviceNames = [
   'ocrService',
@@ -53,7 +54,8 @@ export class TaskServiceGetter implements IServiceGetter{
   async getSubDomainsGetter(): Promise<SubDomainsGetter> {
     const subDomainsService:SubDomainService = await  this.appCtx.getAsync("subDomainService")
     const domainService:DomainService = await  this.appCtx.getAsync("domainService")
-    return new SubDomainsGetter(this.userId,this.projectId, subDomainsService,domainService)
+    const cnameProviderService:CnameProviderService = await  this.appCtx.getAsync("cnameProviderService")
+    return new SubDomainsGetter(this.userId,this.projectId, subDomainsService,domainService,cnameProviderService)
   }
 
   async getCertInfoGetter(): Promise<ICertInfoGetter> {
@@ -99,7 +101,6 @@ export type TaskServiceCreateReq = {
   userId: number;
   projectId?: number;
 }
-
 
 
 

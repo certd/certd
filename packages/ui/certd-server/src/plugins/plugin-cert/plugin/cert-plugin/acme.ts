@@ -324,8 +324,8 @@ export class AcmeService {
           const cname: CnameVerifyPlan = domainVerifyPlan.cnameVerifyPlan;
           if (cname) {
             dnsProvider = cname.dnsProvider;
-            domain = await this.options.domainParser.parse(cname.domain);
             fullRecord = cname.fullRecord;
+            domain = await this.options.domainParser.parse(fullRecord);
           } else {
             this.logger.error(`未找到域名${fullDomain}的CNAME校验计划，请修改证书申请配置`);
           }

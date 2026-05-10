@@ -98,6 +98,18 @@ export class CnameProviderService extends BaseService<CnameProviderEntity> {
     return null;
   }
 
+  async getSubDomains() {
+    const list = await this.repository.find({
+      select: {
+        subdomain: true,
+      },
+      where: {
+        disabled: false,
+      },
+    });
+    return list.map(item => item.subdomain?.trim()).filter((item): item is string => !!item);
+  }
+
   async list(req: ListReq): Promise<any[]> {
     const list = await super.list(req);
     const sysPrivateSettings = await this.settingsService.getSetting<SysPrivateSettings>(SysPrivateSettings);

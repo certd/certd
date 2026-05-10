@@ -112,3 +112,65 @@ describe("AcmeService account config", () => {
     assert.match(error.message, /请重新获取EAB授权并刷新ACME账号私钥后重试/);
   });
 });
+
+describe("AcmeService challenge", () => {
+  it("parses cname TXT full record to choose the delegated DNS zone", async () => {
+    const parseCalls: string[] = [];
+    const service = new AcmeService({
+      userId: 1,
+      userContext: {} as any,
+      logger: logger as any,
+      sslProvider: "letsencrypt",
+      domainParser: {
+        async parse(fullDomain: string) {
+          parseCalls.push(fullDomain);
+          if (fullDomain === "certd-key.cname.sub.example.com") {
+            return "sub.example.com";
+          }
+          return "example.com";
+        },
+      } as any,
+    });
+    const dnsProvider = {
+      usePunyCode() {
+        return false;
+      },
+      async createRecord(recordReq: any) {
+        assert.equal(recordReq.domain, "sub.example.com");
+        assert.equal(recordReq.fullRecord, "certd-key.cname.sub.example.com");
+        assert.equal(recordReq.hostRecord, "certd-key.cname");
+        return { id: "record-id" };
+      },
+    } as any;
+
+    await service.challengeCreateFn(
+      {
+        identifier: {
+          value: "www.example.com",
+        },
+        challenges: [
+          {
+            type: "dns-01",
+          },
+        ],
+      },
+      async () => "key-auth",
+      {
+        domainsVerifyPlan: {
+          "www.example.com": {
+            type: "cname",
+            domain: "www.example.com",
+            mainDomain: "example.com",
+            cnameVerifyPlan: {
+              domain: "cname.sub.example.com",
+              fullRecord: "certd-key.cname.sub.example.com",
+              dnsProvider,
+            },
+          },
+        },
+      }
+    );
+
+    assert.deepEqual(parseCalls, ["www.example.com", "certd-key.cname.sub.example.com"]);
+  });
+});

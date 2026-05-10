@@ -11,6 +11,8 @@ export class CnameProviderEntity {
   userId: number;
   @Column({ comment: '域名', length: 100 })
   domain: string;
+  @Column({ comment: '子域名托管', length: 100, nullable: true })
+  subdomain: string;
   @Column({ comment: 'DNS提供商类型', name: 'dns_provider_type', length: 20 })
   dnsProviderType: string;
   @Column({ comment: 'DNS授权Id', name: 'access_id' })
