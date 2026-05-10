@@ -68,12 +68,12 @@ input:
     component:
       name: remote-select
       vModel: value
-      mode: tags
+      mode: default
       type: plugin
       action: onGetClusterList
       search: false
       pager: false
-      multi: true
+      multi: false
       watches:
         - certDomains
         - accessId
@@ -102,8 +102,6 @@ input:
           value: Public
         - label: 私网
           value: Private
-        - label: 集群内
-          value: TargetCluster
     value: Public
     required: true
     order: 0
