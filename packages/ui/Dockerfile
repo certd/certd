@@ -16,13 +16,13 @@ RUN npm install -g pnpm
 
 #RUN cd /workspace/certd-client && pnpm install && npm run build
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
-# RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
+RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 
-RUN cd /workspace/certd-server && \
-    pnpm install --ignore-scripts && \
-    yes | pnpm approve-builds && \
-    pnpm rebuild && \
-    npm run build-on-docker
+# RUN cd /workspace/certd-server && \
+#     pnpm install --ignore-scripts && \
+#     yes | pnpm approve-builds && \
+#     pnpm rebuild && \
+#     npm run build-on-docker
 
 
 FROM node:22-alpine
