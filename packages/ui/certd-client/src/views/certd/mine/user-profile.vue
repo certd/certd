@@ -13,17 +13,23 @@
               <a-avatar v-else size="100" class="user-avatar default-avatar">
                 {{ userInfo.username }}
               </a-avatar>
+              <a-button type="text" size="small" class="avatar-edit-btn" title="修改资料" @click.stop="doUpdate">
+                <template #icon><fs-icon icon="ion:create-outline" /></template>
+              </a-button>
               <!-- <div class="status-indicator"></div> -->
             </div>
             <div class="user-info">
               <h2 class="user-name flex items-center">
-                {{ userInfo.nickName }}
-                <fs-values-format :model-value="userInfo.roleIds" :dict="roleDict" color="blue" />
+                <span>{{ userInfo.nickName }}</span>
+                <a-button type="text" size="small" class="detail-edit-btn" title="修改资料" @click.stop="doUpdate">
+                  <template #icon><fs-icon icon="ion:create-outline" /></template>
+                </a-button>
               </h2>
               <div class="user-details">
                 <a-tag color="blue" class="detail-tag">
                   <span class="tag-icon">👤</span>
                   {{ userInfo.username }}
+                  <fs-values-format :model-value="userInfo.roleIds" type="text" :dict="roleDict" color="blue" />
                 </a-tag>
                 <a-tag color="green" class="detail-tag">
                   <span class="tag-icon">📧</span>
@@ -42,9 +48,6 @@
               </div>
             </div>
             <div class="action-buttons gap-2">
-              <a-button type="primary" class="action-btn" @click="doUpdate">
-                {{ t("authentication.updateProfile") }}
-              </a-button>
               <change-password-button :show-button="true" />
 
               <a-button type="primary" class="action-btn" @click="goSecuritySetting">
@@ -593,6 +596,24 @@ onMounted(async () => {
   .avatar-wrapper {
     position: relative;
     flex-shrink: 0;
+  }
+
+  .avatar-edit-btn {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    padding: 0;
+    color: #667eea;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   }
 
   .user-avatar {
