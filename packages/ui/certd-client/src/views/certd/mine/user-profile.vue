@@ -25,13 +25,19 @@
                   <span class="tag-icon">👤</span>
                   {{ userInfo.username }}
                 </a-tag>
-                <a-tag v-if="userInfo.email" color="green" class="detail-tag">
+                <a-tag color="green" class="detail-tag">
                   <span class="tag-icon">📧</span>
-                  {{ userInfo.email }}
+                  <span>{{ userInfo.email || "未绑定邮箱" }}</span>
+                  <a-button type="text" size="small" class="detail-edit-btn" title="修改邮箱" @click.stop="openBindContact('email')">
+                    <template #icon><fs-icon icon="ion:create-outline" /></template>
+                  </a-button>
                 </a-tag>
-                <a-tag v-if="userInfo.mobile" color="purple" class="detail-tag">
+                <a-tag v-if="contactCapability.smsEnabled" color="purple" class="detail-tag">
                   <span class="tag-icon">📱</span>
-                  {{ userInfo.mobile }}
+                  <span>{{ userInfo.mobile || "未绑定手机号" }}</span>
+                  <a-button type="text" size="small" class="detail-edit-btn" title="修改手机号" @click.stop="openBindContact('mobile')">
+                    <template #icon><fs-icon icon="ion:create-outline" /></template>
+                  </a-button>
                 </a-tag>
               </div>
             </div>
@@ -139,7 +145,7 @@ import * as api from "./api";
 import { computed, onMounted, Ref, ref } from "vue";
 import ChangePasswordButton from "/@/views/certd/mine/change-password-button.vue";
 import { useI18n } from "/src/locales";
-import { useUserProfile } from "./use";
+import { useContactBind, useUserProfile } from "./use";
 import { usePasskeyRegister } from "./use";
 import { message, Modal, notification } from "ant-design-vue";
 import { useSettingStore } from "/@/store/settings";
@@ -160,6 +166,9 @@ const settingStore = useSettingStore();
 const userInfo: Ref = ref({});
 const passkeys = ref([]);
 const passkeySupported = ref(false);
+const contactCapability = ref({
+  smsEnabled: false,
+});
 
 const getUserInfo = async () => {
   userInfo.value = await api.getMineInfo();
@@ -177,6 +186,7 @@ function doUpdate() {
   openEditProfileDialog({
     onUpdated: async () => {
       await getUserInfo();
+      userStore.setUserInfo(userInfo.value);
     },
   });
 }
@@ -235,6 +245,23 @@ async function loadPasskeys() {
   } catch (e: any) {
     console.error("加载Passkey失败:", e);
   }
+}
+
+async function loadContactCapability() {
+  contactCapability.value = await api.GetContactCapability();
+}
+
+const { openContactBindDialog } = useContactBind();
+async function openBindContact(type: "mobile" | "email") {
+  await openContactBindDialog({
+    type,
+    userInfo: userInfo.value,
+    contactCapability: contactCapability.value,
+    onUpdated: async () => {
+      await getUserInfo();
+      userStore.setUserInfo(userInfo.value);
+    },
+  });
 }
 
 async function unbindPasskey(id: number) {
@@ -366,6 +393,7 @@ const userAvatar = computed(() => {
 
 onMounted(async () => {
   await getUserInfo();
+  await loadContactCapability();
   await loadOauthBounds();
   await loadOauthProviders();
   await loadPasskeys();
@@ -611,6 +639,18 @@ onMounted(async () => {
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 13px;
+  }
+
+  .detail-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    margin: -2px -6px -2px 0;
+    padding: 0;
+    color: #667eea;
   }
 
   .tag-icon {
