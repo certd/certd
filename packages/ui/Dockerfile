@@ -16,8 +16,21 @@ RUN npm install -g pnpm
 
 #RUN cd /workspace/certd-client && pnpm install && npm run build
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
-RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
+# RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 
+# 替换为：
+WORKDIR /workspace/certd-server
+
+# 1. 先忽略所有构建脚本安装依赖
+RUN pnpm install --ignore-scripts
+
+# 2. 自动批准所有需要的构建脚本
+RUN yes | pnpm approve-builds
+
+# 3. 重新安装（或仅重建）以执行已批准的脚本并构建项目
+RUN pnpm install && npm run build-on-docker
+
+WORKDIR /workspace/
 
 
 FROM node:22-alpine
