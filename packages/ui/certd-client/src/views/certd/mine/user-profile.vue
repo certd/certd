@@ -28,19 +28,19 @@
               <div class="user-details">
                 <a-tag color="blue" class="detail-tag">
                   <span class="tag-icon">👤</span>
-                  {{ userInfo.username }}
+                  <span class="tag-text">{{ userInfo.username }}</span>
                   <fs-values-format :model-value="userInfo.roleIds" type="text" :dict="roleDict" color="blue" />
                 </a-tag>
                 <a-tag color="green" class="detail-tag">
                   <span class="tag-icon">📧</span>
-                  <span>{{ userInfo.email || "未绑定邮箱" }}</span>
+                  <span class="tag-text">{{ userInfo.email || "未绑定邮箱" }}</span>
                   <a-button type="text" size="small" class="detail-edit-btn" title="修改邮箱" @click.stop="openBindContact('email')">
                     <template #icon><fs-icon icon="ion:create-outline" /></template>
                   </a-button>
                 </a-tag>
                 <a-tag v-if="contactCapability.smsEnabled" color="purple" class="detail-tag">
                   <span class="tag-icon">📱</span>
-                  <span>{{ userInfo.mobile || "未绑定手机号" }}</span>
+                  <span class="tag-text">{{ userInfo.mobile || "未绑定手机号" }}</span>
                   <a-button type="text" size="small" class="detail-edit-btn" title="修改手机号" @click.stop="openBindContact('mobile')">
                     <template #icon><fs-icon icon="ion:create-outline" /></template>
                   </a-button>
@@ -924,18 +924,84 @@ onMounted(async () => {
   }
 
   @media (max-width: 768px) {
+    .card-header {
+      padding: 32px 16px;
+    }
+
     .header-content {
       flex-direction: column;
       text-align: center;
+      gap: 18px;
+    }
+
+    .avatar-wrapper {
+      margin-bottom: 2px;
+    }
+
+    .user-avatar {
+      width: 88px !important;
+      height: 88px !important;
+      line-height: 88px !important;
+    }
+
+    .avatar-edit-btn {
+      right: -2px;
+      bottom: 0;
+    }
+
+    .user-name {
+      justify-content: center;
+      margin-bottom: 14px;
+      font-size: 22px;
+      gap: 6px;
     }
 
     .user-details {
       justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .detail-tag {
+      justify-content: flex-start;
+      width: min(230px, calc(100vw - 96px));
+      min-height: 34px;
+      padding: 5px 8px 5px 12px;
+      border-radius: 12px;
+      white-space: nowrap;
+      margin-right: 0;
+      text-align: left;
+    }
+
+    .tag-icon {
+      flex: 0 0 auto;
+    }
+
+    .tag-text {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .detail-edit-btn {
+      margin: 0 -4px 0 2px;
+      flex: 0 0 auto;
     }
 
     .action-buttons {
       justify-content: center;
       width: 100%;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .action-buttons :deep(.ant-btn) {
+      min-width: 90px;
+      height: 32px;
+      padding: 4px 12px;
     }
   }
 }
