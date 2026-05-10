@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:22-alpine3.21 AS builder
 
 # RUN apk add build-base
 # RUN wget -O - https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar -xj && \
@@ -25,7 +25,7 @@ RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 #     npm run build-on-docker
 
 
-FROM node:22-alpine
+FROM node:22-alpine3.21
 EXPOSE 7001
 EXPOSE 7002
 
