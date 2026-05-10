@@ -1,4 +1,5 @@
 import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
+import * as acme from "@certd/acme-client";
 
 @IsAccess({
   name: "eab",
@@ -7,6 +8,23 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   icon: "ic:outline-lock",
 })
 export class EabAccess extends BaseAccess {
+  @AccessInput({
+    title: "EAB类型",
+    component: {
+      name: "a-select",
+      options: [
+        { value: "google", label: "Google（免费）", icon: "flat-color-icons:google" },
+        { value: "zerossl", label: "ZeroSSL（免费）", icon: "emojione:digit-zero" },
+        { value: "litessl", label: "litessl（免费）", icon: "roentgen:free" },
+        { value: "sslcom", label: "SSL.com（仅主域名和www免费）", icon: "la:expeditedssl" },
+      ],
+    },
+    helper: "请选择EAB类型",
+    required: true,
+    encrypt: false,
+  })
+  eabType = "";
+
   @AccessInput({
     title: "KID",
     component: {
@@ -34,10 +52,35 @@ export class EabAccess extends BaseAccess {
       placeholder: "绑定一个邮箱",
     },
     rules: [{ type: "email", message: "请输入正确的邮箱" }],
-    helper: "Google的EAB申请证书，更换邮箱会导致EAB失效，可以在此处绑定一个邮箱避免此问题",
+    helper: "绑定一个邮箱，避免失效",
     required: true,
   })
   email = "";
+
+  @AccessInput({
+    title: "ACME账号私钥",
+    component: {
+      name: "refresh-input",
+      action: "GenerateAccountKey",
+      buttonText: "刷新账号私钥",
+      successMessage: "账号私钥已刷新，请保存授权配置",
+    },
+    required: true,
+    helper: "如果修改了KID，请点击刷新重新生成账号私钥",
+    encrypt: true,
+  })
+  accountKey = "";
+
+  async onGenerateAccountKey() {
+    if (!this.kid) {
+      throw new Error("请先填写KID");
+    }
+    const key = await acme.crypto.createPrivateKey(2048);
+    return JSON.stringify({
+      kid: this.kid,
+      privateKey: key.toString(),
+    });
+  }
 }
 
 new EabAccess();

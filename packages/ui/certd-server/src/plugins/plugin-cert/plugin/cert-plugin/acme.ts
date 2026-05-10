@@ -49,11 +49,15 @@ export type CertInfo = {
 };
 export type SSLProvider = "letsencrypt" | "google" | "zerossl" | "sslcom" | "letsencrypt_staging";
 export type PrivateKeyType = "rsa_1024" | "rsa_2048" | "rsa_3072" | "rsa_4096" | "ec_256" | "ec_384" | "ec_521";
+type AcmeEabOptions = ClientExternalAccountBindingOptions & {
+  id?: number;
+  accountKey?: string;
+};
 type AcmeServiceOptions = {
   userContext: IContext;
   logger: ILogger;
   sslProvider: SSLProvider;
-  eab?: ClientExternalAccountBindingOptions;
+  eab?: AcmeEabOptions;
   skipLocalVerify?: boolean;
   useMappingProxy?: boolean;
   reverseProxy?: string;
@@ -71,7 +75,7 @@ export class AcmeService {
   logger: ILogger;
   sslProvider: SSLProvider;
   skipLocalVerify = true;
-  eab?: ClientExternalAccountBindingOptions;
+  eab?: AcmeEabOptions;
   constructor(options: AcmeServiceOptions) {
     this.options = options;
     this.userContext = options.userContext;
@@ -85,7 +89,14 @@ export class AcmeService {
   }
 
   async getAccountConfig(email: string, urlMapping: UrlMapping): Promise<any> {
-    const conf = (await this.userContext.getObj(this.buildAccountKey(email))) || {};
+    let conf = (await this.userContext.getObj(this.buildAccountKey(email))) || {};
+    const eabAccountKey = this.getEabAccountPrivateKey();
+    if (eabAccountKey) {
+      conf = {
+        ...((await this.userContext.getObj(this.buildAccessAccountKey())) || {}),
+        key: eabAccountKey,
+      };
+    }
     if (urlMapping && urlMapping.mappings) {
       for (const key in urlMapping.mappings) {
         if (Object.prototype.hasOwnProperty.call(urlMapping.mappings, key)) {
@@ -104,16 +115,49 @@ export class AcmeService {
     return `acme.config.${this.sslProvider}.${email}`;
   }
 
+  buildAccessAccountKey() {
+    return `acme.config.${this.sslProvider}.access.${this.eab.id}`;
+  }
+
+  getEabAccountPrivateKey() {
+    if (!this.eab?.accountKey) {
+      return null;
+    }
+    let accountKey;
+    try {
+      accountKey = JSON.parse(this.eab.accountKey);
+    } catch {
+      return this.eab.accountKey;
+    }
+    if (accountKey.kid !== this.eab.kid) {
+      throw new Error("EAB的KID已变化，请点击刷新重新生成ACME账号私钥");
+    }
+    return accountKey.privateKey;
+  }
+
+  formatCreateAccountError(e: any) {
+    const message = e?.message || "";
+    if (message.includes("Unknown external account binding (EAB) key")) {
+      return new Error(`EAB授权已失效或已过期，请重新获取EAB授权并刷新ACME账号私钥后重试。原始错误：${message}`);
+    }
+    return e;
+  }
+
   async saveAccountConfig(email: string, conf: any) {
+    if (this.getEabAccountPrivateKey()) {
+      // userContext 跟用户走。公共 EAB 场景下这里仅作为当前用户缓存；
+      // 其他用户会通过 onlyReturnExisting 用同一个账号私钥取回 accountUrl。
+      await this.userContext.setObj(this.buildAccessAccountKey(), { accountUrl: conf.accountUrl });
+      return;
+    }
     await this.userContext.setObj(this.buildAccountKey(email), conf);
   }
 
   async getAcmeClient(email: string): Promise<acme.Client> {
-
     const directoryUrl = acme.getDirectoryUrl({ sslProvider: this.sslProvider, pkType: this.options.privateKeyType });
     let targetUrl = directoryUrl.replace("https://", "");
     targetUrl = targetUrl.substring(0, targetUrl.indexOf("/"));
-    
+
     const mappings = {
       "acme-v02.api.letsencrypt.org": "le.px.certd.handfree.work",
       "dv.acme-v02.api.pki.goog": "gg.px.certd.handfree.work",
@@ -171,7 +215,23 @@ export class AcmeService {
         contact: [`mailto:${email}`],
         externalAccountBinding: this.eab,
       };
-      await client.createAccount(accountPayload);
+      if (this.getEabAccountPrivateKey()) {
+        try {
+          // RFC 8555 的 newAccount 支持 onlyReturnExisting。
+          // 使用同一个账号私钥时，CA 会返回已存在账号的 URL，不会再次消费 EAB。
+          await client.createAccount({ onlyReturnExisting: true });
+          conf.accountUrl = client.getAccountUrl();
+          await this.saveAccountConfig(email, conf);
+          return client;
+        } catch (e: any) {
+          this.logger.info(`未找到已存在的ACME账号，准备创建新账号:${e.message}`);
+        }
+      }
+      try {
+        await client.createAccount(accountPayload);
+      } catch (e: any) {
+        throw this.formatCreateAccountError(e);
+      }
       conf.accountUrl = client.getAccountUrl();
       await this.saveAccountConfig(email, conf);
     }

@@ -1,14 +1,13 @@
 import { logger, utils } from '@certd/basic';
 import { UserSuiteService } from '@certd/commercial-core';
-import { Autoload, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
+import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 
-@Autoload()
+@Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
-export class AutoDMitterRegister {
+export class AutoMitterRegister {
   @Inject()
   userSuiteService: UserSuiteService;
 
-  @Init()
   async init() {
     await this.registerOnNewUser();
   }

@@ -11,7 +11,7 @@
     "build": "npm run before-build && rollup -c ",
     "dev-build": "npm run build",
     "preview": "vite preview",
-    "test:unit": "echo no unit tests",
+    "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
     "pub": "npm publish"
   },
   "dependencies": {
@@ -22,6 +22,8 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
+    "cross-env": "^7.0.3",
+    "esmock": "^2.7.5",
     "prettier": "^2.8.8",
     "tslib": "^2.8.1"
   },

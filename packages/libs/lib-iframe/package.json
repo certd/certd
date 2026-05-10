@@ -14,7 +14,7 @@
     "build3": "rollup -c",
     "build2": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test:unit": "echo no unit tests",
+    "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
     "pub": "npm publish"
   },
   "dependencies": {
@@ -24,9 +24,11 @@
     "@types/chai": "^4.3.3",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
+    "cross-env": "^7.0.3",
     "eslint": "^8.24.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "esmock": "^2.7.5",
     "prettier": "^2.8.8",
     "rimraf": "^5.0.5",
     "tslib": "^2.8.1",

@@ -12,6 +12,7 @@ import AccessSelector from "/@/views/certd/access/access-selector/index.vue";
 import InputPassword from "./common/input-password.vue";
 import CertInfoUpdater from "/@/views/certd/pipeline/cert-upload/index.vue";
 import ApiTest from "./common/api-test.vue";
+import RefreshInput from "./common/refresh-input.vue";
 import ParamsShow from "./common/params-show.vue";
 export * from "./cert/index.js";
 export default {
@@ -23,6 +24,7 @@ export default {
     app.component("CertInfoUpdater", CertInfoUpdater);
 
     app.component("ApiTest", ApiTest);
+    app.component("RefreshInput", RefreshInput);
 
     app.component("SynologyDeviceIdGetter", SynologyIdDeviceGetter);
     app.component("RemoteAutoComplete", RemoteAutoComplete);

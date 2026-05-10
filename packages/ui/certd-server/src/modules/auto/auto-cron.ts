@@ -1,7 +1,7 @@
 import { logger } from '@certd/basic';
 import { SysSettingsService, SysSiteInfo } from '@certd/lib-server';
 import { getPlusInfo, isPlus } from "@certd/plus-core";
-import { Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
+import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import dayjs from "dayjs";
 import { Between } from "typeorm";
 import { DomainService } from '../cert/service/domain-service.js';
@@ -14,9 +14,9 @@ import { PipelineService } from '../pipeline/service/pipeline-service.js';
 import { UserService } from "../sys/authority/service/user-service.js";
 import { ProjectService } from '../sys/enterprise/service/project-service.js';
 
-@Autoload()
+@Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
-export class AutoCRegisterCron {
+export class AutoCron {
   @Inject()
   pipelineService: PipelineService;
 
@@ -53,7 +53,6 @@ export class AutoCRegisterCron {
 
 
 
-  @Init()
   async init() {
     logger.info('加载定时trigger开始');
     await this.pipelineService.onStartup(this.immediateTriggerOnce, this.onlyAdminUser);
