@@ -237,8 +237,8 @@ importers:
         specifier: ^1.39.13
         version: link:../basic
       '@certd/plus-core':
-        specifier: ^1.39.12
-        version: link:../../pro/plus-core
+        specifier: ^1.39.13
+        version: 1.39.13
       dayjs:
         specifier: ^1.11.7
         version: 1.11.13
@@ -515,8 +515,8 @@ importers:
         specifier: ^1.39.13
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.39.12
-        version: link:../../pro/plus-core
+        specifier: ^1.39.13
+        version: 1.39.13
       '@midwayjs/cache':
         specifier: 3.14.0
         version: 3.14.0
@@ -767,8 +767,8 @@ importers:
         specifier: ^1.39.13
         version: link:../../core/pipeline
       '@certd/plus-core':
-        specifier: ^1.39.12
-        version: link:../../pro/plus-core
+        specifier: ^1.39.13
+        version: 1.39.13
       '@kubernetes/client-node':
         specifier: 0.21.0
         version: 0.21.0
@@ -867,16 +867,16 @@ importers:
   packages/pro/commercial-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.12
+        specifier: ^1.39.7
         version: link:../../core/basic
       '@certd/lib-server':
-        specifier: ^1.39.12
+        specifier: ^1.39.7
         version: link:../../libs/lib-server
       '@certd/pipeline':
-        specifier: ^1.39.12
+        specifier: ^1.39.7
         version: link:../../core/pipeline
       '@certd/plus-core':
-        specifier: ^1.39.12
+        specifier: ^1.39.7
         version: link:../plus-core
       '@midwayjs/core':
         specifier: 3.20.11
@@ -921,9 +921,6 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.26.1
         version: 8.32.1(eslint@8.57.0)(typescript@5.9.3)
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       eslint:
         specifier: ^8.24.0
         version: 8.57.0
@@ -933,9 +930,6 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
-      mocha:
-        specifier: ^10.2.0
-        version: 10.8.2
       prettier:
         specifier: ^2.8.8
         version: 2.8.8
@@ -958,16 +952,16 @@ importers:
   packages/pro/plugin-plus:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.12
+        specifier: ^1.39.7
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.12
+        specifier: ^1.39.7
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.12
+        specifier: ^1.39.7
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.39.12
+        specifier: ^1.39.7
         version: link:../plus-core
       crypto-js:
         specifier: ^4.2.0
@@ -1012,9 +1006,6 @@ importers:
       chai:
         specifier: 4.3.10
         version: 4.3.10
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       eslint:
         specifier: ^8.41.0
         version: 8.57.0
@@ -1024,9 +1015,6 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
-      esmock:
-        specifier: ^2.7.5
-        version: 2.7.5
       mocha:
         specifier: ^10.2.0
         version: 10.8.2
@@ -1049,7 +1037,7 @@ importers:
   packages/pro/plus-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.12
+        specifier: ^1.39.7
         version: link:../../core/basic
       dayjs:
         specifier: ^1.11.7
@@ -1082,9 +1070,6 @@ importers:
       chai:
         specifier: 4.3.10
         version: 4.3.10
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       eslint:
         specifier: ^8.41.0
         version: 8.57.0
@@ -1094,9 +1079,6 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
-      esmock:
-        specifier: ^2.7.5
-        version: 2.7.5
       mocha:
         specifier: ^10.2.0
         version: 10.8.2
@@ -1564,8 +1546,8 @@ importers:
         specifier: ^1.39.13
         version: link:../../core/basic
       '@certd/commercial-core':
-        specifier: ^1.39.12
-        version: link:../../pro/commercial-core
+        specifier: ^1.39.13
+        version: 1.39.13(better-sqlite3@11.10.0)(mysql2@3.14.1)(pg@8.16.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.100)(typescript@5.9.3))
       '@certd/cv4pve-api-javascript':
         specifier: ^8.4.2
         version: 8.4.2
@@ -1594,11 +1576,11 @@ importers:
         specifier: ^1.39.13
         version: link:../../plugins/plugin-lib
       '@certd/plugin-plus':
-        specifier: ^1.39.12
-        version: link:../../pro/plugin-plus
+        specifier: ^1.39.13
+        version: 1.39.13
       '@certd/plus-core':
-        specifier: ^1.39.12
-        version: link:../../pro/plus-core
+        specifier: ^1.39.13
+        version: 1.39.13
       '@google-cloud/dns':
         specifier: ^5.3.1
         version: 5.3.1
@@ -3018,17 +3000,17 @@ packages:
   '@better-scroll/zoom@2.5.1':
     resolution: {integrity: sha512-aGvFY5ooeZWS4RcxQLD+pGLpQHQxpPy0sMZV3yadcd2QK53PK9gS4Dp+BYfRv8lZ4/P2LoNEhr6Wq1DN6+uPlA==}
 
-  '@certd/commercial-core@1.39.12':
-    resolution: {integrity: sha512-c212drLsSRRqVUfteUC3GE7g/P8n+3Bf3BLi3Ts2YqoaoKYai/LV+0yWvBmJ4hX2uFf+u2/vg6u6PX6k/VC7aA==}
+  '@certd/commercial-core@1.39.13':
+    resolution: {integrity: sha512-AvHmxpgWdYt/QQBEGLA4ASa1YUcXN0jUAHo7sUu2Czon+jpP16YDo328kUsPAhtY4DMzUj1Ozr7HI2n/O81CQQ==}
 
   '@certd/cv4pve-api-javascript@8.4.2':
     resolution: {integrity: sha512-udGce7ewrVl4DmZvX+17PjsnqsdDIHEDatr8QP0AVrY2p+8JkaSPW4mXCKiLGf82C9K2+GXgT+qNIqgW7tfF9Q==}
 
-  '@certd/plugin-plus@1.39.12':
-    resolution: {integrity: sha512-KOQ3tmFAIcCOnmPuFZ3EzObcGSJ1mZ7XjJWyjd8FP1h/pYHLH0GyAG3eNghGd9d7S7uVdiicURdEjjkJboKhIg==}
+  '@certd/plugin-plus@1.39.13':
+    resolution: {integrity: sha512-Q7ddg3NMj6ikT1hnxUxxmFOOkAwDa1RWZsocZashNDXcQkyTGCLg596EIxtuNDKTJa/7Ggb4zHLrkY9OOdEcNg==}
 
-  '@certd/plus-core@1.39.12':
-    resolution: {integrity: sha512-sszgkZL2ywqDcfy+Rv88LVWihvCQiDcPkTiLhpq0FCrYshZfrewwFGqk2mw9xeTgdiGJQ3cjnarHdRLRBAY1mA==}
+  '@certd/plus-core@1.39.13':
+    resolution: {integrity: sha512-5VpUKrt18pK048Z6n5M8R3REUomKkKiID6IfDK8zYlIErSrDofsOuDwUPEofuJM7gZQ8Ovkc6l14KLhSvjLvnw==}
 
   '@certd/vue-js-cron-core@6.0.3':
     resolution: {integrity: sha512-kqzoAMhYz9j6FGNWEODRYtt4NpUEUwjpkU89z5WVg2tCtOcI5VhwyUGOd8AxiBCRfd6PtXvzuqw85PaOps9wrQ==}
@@ -15558,12 +15540,12 @@ snapshots:
     dependencies:
       '@better-scroll/core': 2.5.1
 
-  '@certd/commercial-core@1.39.12(better-sqlite3@11.10.0)(mysql2@3.14.1)(pg@8.16.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.100)(typescript@5.9.3))':
+  '@certd/commercial-core@1.39.13(better-sqlite3@11.10.0)(mysql2@3.14.1)(pg@8.16.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.100)(typescript@5.9.3))':
     dependencies:
       '@certd/basic': link:packages/core/basic
       '@certd/lib-server': link:packages/libs/lib-server
       '@certd/pipeline': link:packages/core/pipeline
-      '@certd/plus-core': 1.39.12
+      '@certd/plus-core': 1.39.13
       '@midwayjs/core': 3.20.11
       '@midwayjs/koa': 3.20.13
       '@midwayjs/logger': 3.4.2
@@ -15599,19 +15581,19 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@certd/plugin-plus@1.39.12':
+  '@certd/plugin-plus@1.39.13':
     dependencies:
       '@certd/basic': link:packages/core/basic
       '@certd/pipeline': link:packages/core/pipeline
       '@certd/plugin-lib': link:packages/plugins/plugin-lib
-      '@certd/plus-core': 1.39.12
+      '@certd/plus-core': 1.39.13
       crypto-js: 4.2.0
       dayjs: 1.11.13
       form-data: 4.0.2
       jsrsasign: 11.1.0
       querystring: 0.2.1
 
-  '@certd/plus-core@1.39.12':
+  '@certd/plus-core@1.39.13':
     dependencies:
       '@certd/basic': link:packages/core/basic
       dayjs: 1.11.13
