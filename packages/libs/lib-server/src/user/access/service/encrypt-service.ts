@@ -1,4 +1,4 @@
-import { Init, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
+import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { Encryptor, SysSecret, SysSettingsService } from '../../../system/index.js';
 
 /**
