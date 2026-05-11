@@ -94,9 +94,15 @@ export function setRunnableIds(pipeline: any) {
   return JSON.parse(content);
 }
 
-export function useCertPipelineCreator() {
+export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref<any> }) {
   const { t } = useI18n();
-  const { openCrudFormDialog } = useFormWrapper();
+
+  function open(opts: any) {
+    return new Promise((resolve, reject) => {
+      formWrapperRef.value.open(opts);
+    });
+  }
+  const { openCrudFormDialog } = useFormWrapper({ open });
 
   const pluginStore = usePluginStore();
   const settingStore = useSettingStore();
@@ -111,10 +117,10 @@ export function useCertPipelineCreator() {
       // inputs[inputKey].form.show = true;
       const inputDefine = cloneDeep(certPlugin.input[inputKey]);
       if (inputDefine.maybeNeed) {
-        moreParams.push(inputKey);
+        moreParams.push("input." + inputKey);
       }
       useReference(inputDefine);
-      inputs[inputKey] = {
+      inputs["input." + inputKey] = {
         title: inputDefine.title,
         form: {
           ...inputDefine,
@@ -135,17 +141,19 @@ export function useCertPipelineCreator() {
     const DEFAULT_RENEW_DAYS = settingStore.sysPublic.defaultCertRenewDays || settingStore.sysPublic.defaultWillExpireDays || 20;
 
     merge(inputs, {
-      renewDays: {
+      "input.renewDays": {
         form: {
           value: DEFAULT_RENEW_DAYS,
         },
       },
     });
 
+    const initialForm = req.initialForm || {};
+    initialForm.type = certPlugin.name;
     return {
       crudOptions: {
         form: {
-          initialForm: req.initialForm || {},
+          initialForm: initialForm,
           doSubmit,
           wrapper: {
             wrapClassName: "cert_pipeline_create_form",
@@ -164,44 +172,6 @@ export function useCertPipelineCreator() {
           },
         },
         columns: {
-          // certApplyPlugin: {
-          //   title: t("certd.plugin.selectTitle"),
-          //   type: "dict-select",
-          //   dict: dict({
-          //     data: [
-          //       { value: "CertApply", label: "JS-ACME" },
-          //       { value: "CertApplyLego", label: "Lego-ACME" },
-          //       { value: "CertApplyGetFormAliyun", label: "Aliyun-Order" },
-          //     ],
-          //   }),
-          //   form: {
-          //     order: 0,
-          //     value: "CertApply",
-          //     helper: {
-          //       render: () => {
-          //         return (
-          //           <ul>
-          //             <li>{t("certd.plugin.jsAcme")}</li>
-          //             <li>{t("certd.plugin.legoAcme")}</li>
-          //             <li>{t("certd.plugin.aliyunOrder")}</li>
-          //           </ul>
-          //         );
-          //       },
-          //     },
-          //     valueChange: {
-          //       handle: async ({ form, value }) => {
-          //         const config = await pluginStore.getPluginConfig({
-          //           name: value,
-          //           type: "builtIn",
-          //         });
-          //         if (config.sysSetting?.input) {
-          //           merge(form, config.sysSetting.input);
-          //         }
-          //       },
-          //       immediate: true,
-          //     },
-          //   },
-          // },
           ...inputs,
           triggerCron: {
             title: t("certd.pipelineForm.triggerCronTitle"),
@@ -346,20 +316,20 @@ export function useCertPipelineCreator() {
     await checkPipelineLimit();
 
     //设置系统初始值
-    const initialForm: any = {};
+    const initialForm: any = { input: {} };
     const pluginSysConfig = await pluginStore.getPluginConfig({ name: req.pluginName, type: "builtIn" });
     if (pluginSysConfig.sysSetting?.input) {
       for (const key in pluginSysConfig.sysSetting?.input) {
-        initialForm[key] = pluginSysConfig.sysSetting?.input[key];
+        initialForm.input[key] = pluginSysConfig.sysSetting?.input[key];
       }
     }
 
     async function doSubmit({ form }: any) {
       // const certDetail = readCertDetail(form.cert.crt);
       // 添加certd pipeline
-      const pluginInput = omit(form, ["triggerCron", "notification", "notificationTarget", "notificationWhen", "certApplyPlugin", "groupId"]);
+      const pluginInput = form.input;
       let pipeline: any = {
-        title: form.domains[0] + "证书自动化",
+        title: pluginInput.domains[0] + "证书自动化",
         runnableType: "pipeline",
         stages: [
           {

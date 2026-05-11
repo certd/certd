@@ -74,7 +74,6 @@ const props = defineProps<
     uploadCert?: UploadCertProps;
   } & ComponentPropsType
 >();
-debugger;
 const emit = defineEmits<{
   "update:value": any;
 }>();
@@ -141,8 +140,7 @@ const getOptions = async () => {
       }
     }
   }
-
-  message.value = "";
+  message.value = "获取中...";
   hasError.value = false;
   loading.value = true;
   const pageNo = pagerRef.value.pageNo;
