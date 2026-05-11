@@ -9,7 +9,7 @@ import { AutoPrint } from "./auto-print.js";
 
 @Autoload()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
-export class AutoRegister {
+export class AutoARegister { //这个A是必须，让他排在第一个 进行init，否则会被其他init模块抢先注册导致报错
   @Inject()
   autoInitSite: AutoInitSite;
 

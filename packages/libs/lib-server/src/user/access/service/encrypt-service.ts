@@ -12,8 +12,7 @@ export class EncryptService {
   @Inject()
   sysSettingService: SysSettingsService;
 
-  @Init()
-  async init() {
+  async doInit() {
     const secret: SysSecret = await this.sysSettingService.getSecret();
     this.encryptor = new Encryptor(secret.encryptSecret);
   }

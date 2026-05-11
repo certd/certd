@@ -1,5 +1,5 @@
 import { logger } from '@certd/basic';
-import { PlusService, SysInstallInfo, SysPrivateSettings, SysSettingsService } from '@certd/lib-server';
+import { EncryptService, PlusService, SysInstallInfo, SysPrivateSettings, SysSettingsService } from '@certd/lib-server';
 import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import crypto from 'crypto';
 import { nanoid } from 'nanoid';
@@ -21,6 +21,10 @@ export class AutoInitSite {
   plusService: PlusService;
   @Inject()
   safeService: SafeService;
+
+  @Inject()
+  encryptService: EncryptService;
+  
 
   async init() {
     logger.info('初始化站点开始');
@@ -50,6 +54,8 @@ export class AutoInitSite {
     //加载一次密钥
     await this.sysSettingsService.getSecret();
 
+    //初始化加密服务
+    await this.encryptService.doInit();
 
     // 授权许可
     try {
