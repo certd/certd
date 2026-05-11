@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-lib",
   "private": false,
-  "version": "1.39.12",
+  "version": "1.39.13",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,7 +13,7 @@
     "build3": "rollup -c",
     "build2": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test:unit": "mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
+    "test:unit": "cross-env NODE_ENV=unittest mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
     "pub": "npm publish",
     "compile": "tsc --skipLibCheck --watch"
   },
@@ -23,10 +23,10 @@
     "@alicloud/pop-core": "^1.7.10",
     "@alicloud/tea-util": "^1.4.11",
     "@aws-sdk/client-s3": "^3.964.0",
-    "@certd/acme-client": "^1.39.12",
-    "@certd/basic": "^1.39.12",
-    "@certd/pipeline": "^1.39.12",
-    "@certd/plus-core": "^1.39.12",
+    "@certd/acme-client": "^1.39.13",
+    "@certd/basic": "^1.39.13",
+    "@certd/pipeline": "^1.39.13",
+    "@certd/plus-core": "^1.39.13",
     "@kubernetes/client-node": "0.21.0",
     "ali-oss": "^6.22.0",
     "basic-ftp": "^5.0.5",
@@ -50,14 +50,16 @@
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
     "chai": "^4.3.6",
+    "cross-env": "^7.0.3",
     "eslint": "^8.24.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "esmock": "^2.7.5",
     "mocha": "^10.1.0",
     "prettier": "^2.8.8",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
     "typescript": "^5.4.2"
   },
-  "gitHead": "898bc9b9f2f75df11ea0803b144862ba98b7511a"
+  "gitHead": "9f7d766cb386b299d4098141f4a47d23e16975e3"
 }

@@ -26,7 +26,7 @@ export class HttpError extends Error {
       return;
     }
 
-    let message = error?.message || error?.response.statusText || error?.code;
+    let message = error?.message || error?.response?.statusText || error?.code;
     if (message && typeof message === "string" && message.indexOf) {
       for (const key in errorMap) {
         if (message.indexOf(key) > -1) {
@@ -267,7 +267,7 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       logger.error(`请求出错：${errorMessage} status:${status},statusText:${error.response?.statusText || error.code},url:${error.config?.url},method:${error.config?.method}。`);
       logger.error("返回数据:", JSON.stringify(error.response?.data));
       if (error.response?.data) {
-        const message = error.response.data.message || error.response.data.msg || error.response.data.error;
+        const message = error.response?.data?.message || error.response?.data?.msg || error.response?.data?.error;
         if (typeof message === "string") {
           error.message = message;
         }

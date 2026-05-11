@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.13](https://github.com/publishlab/node-acme-client/compare/v1.39.12...v1.39.13) (2026-05-10)
+
+### Performance Improvements
+
+* 重构自动加载模块并优化EAB授权处理 ([4755216](https://github.com/publishlab/node-acme-client/commit/4755216505ad18555a50da9d8008c2207c48df86))
+
 ## [1.39.12](https://github.com/publishlab/node-acme-client/compare/v1.39.11...v1.39.12) (2026-04-29)
 
 ### Performance Improvements

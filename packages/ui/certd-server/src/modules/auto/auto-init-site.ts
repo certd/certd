@@ -1,14 +1,14 @@
 import { logger } from '@certd/basic';
 import { PlusService, SysInstallInfo, SysPrivateSettings, SysSettingsService } from '@certd/lib-server';
-import { Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
+import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import crypto from 'crypto';
 import { nanoid } from 'nanoid';
 import { UserService } from '../sys/authority/service/user-service.js';
 import { SafeService } from "../sys/settings/safe-service.js";
 
-@Autoload()
+@Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
-export class AutoAInitSite {
+export class AutoInitSite {
   @Inject()
   userService: UserService;
 
@@ -22,7 +22,6 @@ export class AutoAInitSite {
   @Inject()
   safeService: SafeService;
 
-  @Init()
   async init() {
     logger.info('初始化站点开始');
     await this.startOptimizeDb();

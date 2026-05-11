@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.13](https://github.com/certd/certd/compare/v1.39.12...v1.39.13) (2026-05-10)
+
+### Bug Fixes
+
+* **aliyun-access:** 添加阿里云密钥校验失败的错误处理 ([b75c625](https://github.com/certd/certd/commit/b75c625ddcc0b3110699d8e6175681ef157b25df))
+* cnameProvider域名支持设置子域名托管 ([7266af1](https://github.com/certd/certd/commit/7266af17491a98338022cfb18cfedfb93ca6ef8f))
+* **plugin-aliyun:** 过滤非CAS证书并优化日志信息 ([c4b01da](https://github.com/certd/certd/commit/c4b01da384bc40a241a673ea8bc01ca733c04d83))
+
+### Performance Improvements
+
+* **用户资料:** 新增手机号邮箱绑定功能 ([e0eb0e2](https://github.com/certd/certd/commit/e0eb0e21f6dae24b639c944f9aba2c90496ab1c0))
+* 域名注册过期时间获取再次优化 ([91a1b97](https://github.com/certd/certd/commit/91a1b9755066bf280e194dabf7c3a9f936e2643f))
+* **证书流水线:** 添加批量更新证书申请参数功能 ([63be1c1](https://github.com/certd/certd/commit/63be1c1cbd9b09a3b48f26130c296b1cedcca1ac))
+* 支持火山云vke ([bb46cb0](https://github.com/certd/certd/commit/bb46cb08f71f6ae921543f7e4a6c5f4e0190556e))
+* 重构自动加载模块并优化EAB授权处理 ([4755216](https://github.com/certd/certd/commit/4755216505ad18555a50da9d8008c2207c48df86))
+* **plugin-volcengine:** 支持火山引擎VKE部署插件 ([b8a64a6](https://github.com/certd/certd/commit/b8a64a6b5bf3691a47177de42bc49b798e795feb))
+
 ## [1.39.12](https://github.com/certd/certd/compare/v1.39.11...v1.39.12) (2026-04-29)
 
 ### Bug Fixes

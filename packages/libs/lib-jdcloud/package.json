@@ -1,6 +1,6 @@
 {
   "name": "@certd/jdcloud",
-  "version": "1.39.12",
+  "version": "1.39.13",
   "description": "jdcloud openApi sdk",
   "main": "./dist/bundle.js",
   "module": "./dist/bundle.js",
@@ -8,7 +8,7 @@
   "scripts": {
     "build": "rollup -c ",
     "dev-build": "npm run build",
-    "test:unit": "echo no unit tests",
+    "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
     "pub": "npm publish"
   },
   "author": "",
@@ -30,7 +30,8 @@
     "@typescript-eslint/parser": "^8.26.1",
     "chai": "^4.1.2",
     "config": "^1.30.0",
-    "cross-env": "^5.1.4",
+    "cross-env": "^7.0.3",
+    "esmock": "^2.7.5",
     "js-yaml": "^3.11.0",
     "mocha": "^5.0.0",
     "prettier": "^2.8.8",
@@ -57,5 +58,5 @@
       "fetch"
     ]
   },
-  "gitHead": "898bc9b9f2f75df11ea0803b144862ba98b7511a"
+  "gitHead": "9f7d766cb386b299d4098141f4a47d23e16975e3"
 }

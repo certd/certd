@@ -13,32 +13,41 @@
               <a-avatar v-else size="100" class="user-avatar default-avatar">
                 {{ userInfo.username }}
               </a-avatar>
+              <a-button type="text" size="small" class="avatar-edit-btn" title="修改资料" @click.stop="doUpdate">
+                <template #icon><fs-icon icon="ion:create-outline" /></template>
+              </a-button>
               <!-- <div class="status-indicator"></div> -->
             </div>
             <div class="user-info">
               <h2 class="user-name flex items-center">
-                {{ userInfo.nickName }}
-                <fs-values-format :model-value="userInfo.roleIds" :dict="roleDict" color="blue" />
+                <span>{{ userInfo.nickName }}</span>
+                <a-button type="text" size="small" class="detail-edit-btn" title="修改资料" @click.stop="doUpdate">
+                  <template #icon><fs-icon icon="ion:create-outline" /></template>
+                </a-button>
               </h2>
               <div class="user-details">
                 <a-tag color="blue" class="detail-tag">
                   <span class="tag-icon">👤</span>
-                  {{ userInfo.username }}
+                  <span class="tag-text">{{ userInfo.username }}</span>
+                  <fs-values-format :model-value="userInfo.roleIds" type="text" :dict="roleDict" color="blue" />
                 </a-tag>
-                <a-tag v-if="userInfo.email" color="green" class="detail-tag">
+                <a-tag color="green" class="detail-tag">
                   <span class="tag-icon">📧</span>
-                  {{ userInfo.email }}
+                  <span class="tag-text">{{ userInfo.email || "未绑定邮箱" }}</span>
+                  <a-button type="text" size="small" class="detail-edit-btn" title="修改邮箱" @click.stop="openBindContact('email')">
+                    <template #icon><fs-icon icon="ion:create-outline" /></template>
+                  </a-button>
                 </a-tag>
-                <a-tag v-if="userInfo.mobile" color="purple" class="detail-tag">
+                <a-tag v-if="contactCapability.smsEnabled" color="purple" class="detail-tag">
                   <span class="tag-icon">📱</span>
-                  {{ userInfo.mobile }}
+                  <span class="tag-text">{{ userInfo.mobile || "未绑定手机号" }}</span>
+                  <a-button type="text" size="small" class="detail-edit-btn" title="修改手机号" @click.stop="openBindContact('mobile')">
+                    <template #icon><fs-icon icon="ion:create-outline" /></template>
+                  </a-button>
                 </a-tag>
               </div>
             </div>
             <div class="action-buttons gap-2">
-              <a-button type="primary" class="action-btn" @click="doUpdate">
-                {{ t("authentication.updateProfile") }}
-              </a-button>
               <change-password-button :show-button="true" />
 
               <a-button type="primary" class="action-btn" @click="goSecuritySetting">
@@ -139,7 +148,7 @@ import * as api from "./api";
 import { computed, onMounted, Ref, ref } from "vue";
 import ChangePasswordButton from "/@/views/certd/mine/change-password-button.vue";
 import { useI18n } from "/src/locales";
-import { useUserProfile } from "./use";
+import { useContactBind, useUserProfile } from "./use";
 import { usePasskeyRegister } from "./use";
 import { message, Modal, notification } from "ant-design-vue";
 import { useSettingStore } from "/@/store/settings";
@@ -160,6 +169,9 @@ const settingStore = useSettingStore();
 const userInfo: Ref = ref({});
 const passkeys = ref([]);
 const passkeySupported = ref(false);
+const contactCapability = ref({
+  smsEnabled: false,
+});
 
 const getUserInfo = async () => {
   userInfo.value = await api.getMineInfo();
@@ -177,6 +189,7 @@ function doUpdate() {
   openEditProfileDialog({
     onUpdated: async () => {
       await getUserInfo();
+      userStore.setUserInfo(userInfo.value);
     },
   });
 }
@@ -235,6 +248,23 @@ async function loadPasskeys() {
   } catch (e: any) {
     console.error("加载Passkey失败:", e);
   }
+}
+
+async function loadContactCapability() {
+  contactCapability.value = await api.GetContactCapability();
+}
+
+const { openContactBindDialog } = useContactBind();
+async function openBindContact(type: "mobile" | "email") {
+  await openContactBindDialog({
+    type,
+    userInfo: userInfo.value,
+    contactCapability: contactCapability.value,
+    onUpdated: async () => {
+      await getUserInfo();
+      userStore.setUserInfo(userInfo.value);
+    },
+  });
 }
 
 async function unbindPasskey(id: number) {
@@ -366,6 +396,7 @@ const userAvatar = computed(() => {
 
 onMounted(async () => {
   await getUserInfo();
+  await loadContactCapability();
   await loadOauthBounds();
   await loadOauthProviders();
   await loadPasskeys();
@@ -567,6 +598,24 @@ onMounted(async () => {
     flex-shrink: 0;
   }
 
+  .avatar-edit-btn {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    padding: 0;
+    color: #667eea;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  }
+
   .user-avatar {
     border: 4px solid #ffffff;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -611,6 +660,18 @@ onMounted(async () => {
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 13px;
+  }
+
+  .detail-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    margin: -2px -6px -2px 0;
+    padding: 0;
+    color: #667eea;
   }
 
   .tag-icon {
@@ -863,18 +924,84 @@ onMounted(async () => {
   }
 
   @media (max-width: 768px) {
+    .card-header {
+      padding: 32px 16px;
+    }
+
     .header-content {
       flex-direction: column;
       text-align: center;
+      gap: 18px;
+    }
+
+    .avatar-wrapper {
+      margin-bottom: 2px;
+    }
+
+    .user-avatar {
+      width: 88px !important;
+      height: 88px !important;
+      line-height: 88px !important;
+    }
+
+    .avatar-edit-btn {
+      right: -2px;
+      bottom: 0;
+    }
+
+    .user-name {
+      justify-content: center;
+      margin-bottom: 14px;
+      font-size: 22px;
+      gap: 6px;
     }
 
     .user-details {
       justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .detail-tag {
+      justify-content: flex-start;
+      width: min(230px, calc(100vw - 96px));
+      min-height: 34px;
+      padding: 5px 8px 5px 12px;
+      border-radius: 12px;
+      white-space: nowrap;
+      margin-right: 0;
+      text-align: left;
+    }
+
+    .tag-icon {
+      flex: 0 0 auto;
+    }
+
+    .tag-text {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .detail-edit-btn {
+      margin: 0 -4px 0 2px;
+      flex: 0 0 auto;
     }
 
     .action-buttons {
       justify-content: center;
       width: 100%;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .action-buttons :deep(.ant-btn) {
+      min-width: 90px;
+      height: 32px;
+      padding: 4px 12px;
     }
   }
 }

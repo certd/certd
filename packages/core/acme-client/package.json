@@ -3,7 +3,7 @@
     "description": "Simple and unopinionated ACME client",
     "private": false,
     "author": "nmorsman",
-    "version": "1.39.12",
+    "version": "1.39.13",
     "type": "module",
     "module": "./dist/index.js",
     "main": "./dist/index.js",
@@ -18,7 +18,7 @@
         "types"
     ],
     "dependencies": {
-        "@certd/basic": "^1.39.12",
+        "@certd/basic": "^1.39.13",
         "@peculiar/x509": "^1.11.0",
         "asn1js": "^3.0.5",
         "axios": "^1.9.0",
@@ -35,10 +35,12 @@
         "@typescript-eslint/parser": "^8.26.1",
         "chai": "^4.4.1",
         "chai-as-promised": "^7.1.2",
+        "cross-env": "^7.0.3",
         "eslint": "^8.57.0",
         "eslint-config-prettier": "^8.5.0",
         "eslint-plugin-import": "^2.29.1",
         "eslint-plugin-prettier": "^4.2.1",
+        "esmock": "^2.7.5",
         "jsdoc-to-markdown": "^8.0.1",
         "mocha": "^10.6.0",
         "nock": "^13.5.4",
@@ -55,7 +57,7 @@
         "prepublishOnly": "npm run build && npm run build-docs",
         "test": "mocha -t 60000 \"test/setup.js\" \"test/**/*.spec.js\"",
         "before-test:unit": "node -e \"const fs=require('fs');fs.rmSync('dist-test',{recursive:true,force:true});fs.rmSync('tsconfig.test.tsbuildinfo',{force:true});\"",
-        "test:unit": "npm run before-test:unit && tsc -p tsconfig.test.json --skipLibCheck && mocha -t 60000 \"dist-test/**/*.test.js\"",
+        "test:unit": "cross-env NODE_ENV=unittest npm run before-test:unit && cross-env NODE_ENV=unittest tsc -p tsconfig.test.json --skipLibCheck && cross-env NODE_ENV=unittest mocha -t 60000 \"dist-test/**/*.test.js\"",
         "pub": "npm publish",
         "compile": "tsc --skipLibCheck --watch"
     },
@@ -74,5 +76,5 @@
     "bugs": {
         "url": "https://github.com/publishlab/node-acme-client/issues"
     },
-    "gitHead": "898bc9b9f2f75df11ea0803b144862ba98b7511a"
+    "gitHead": "9f7d766cb386b299d4098141f4a47d23e16975e3"
 }

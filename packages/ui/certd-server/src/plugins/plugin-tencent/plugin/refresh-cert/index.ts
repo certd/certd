@@ -21,6 +21,7 @@ import { omit } from "lodash-es";
   //插件分组
   group: pluginGroups.tencent.key,
   needPlus: false,
+  deprecated: "腾讯更新证书(Id不变)接口已失效，本插件已下架，请使用其他接口",
   default: {
     //默认值配置照抄即可
     strategy: {

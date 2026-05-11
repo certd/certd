@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.13](https://github.com/certd/certd/compare/v1.39.12...v1.39.13) (2026-05-10)
+
+### Bug Fixes
+
+* cnameProvider域名支持设置子域名托管 ([7266af1](https://github.com/certd/certd/commit/7266af17491a98338022cfb18cfedfb93ca6ef8f))
+
+### Performance Improvements
+
+* 重构自动加载模块并优化EAB授权处理 ([4755216](https://github.com/certd/certd/commit/4755216505ad18555a50da9d8008c2207c48df86))
+
 ## [1.39.12](https://github.com/certd/certd/compare/v1.39.11...v1.39.12) (2026-04-29)
 
 ### Performance Improvements

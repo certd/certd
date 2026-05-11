@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-huawei",
   "private": false,
-  "version": "1.39.12",
+  "version": "1.39.13",
   "main": "./dist/bundle.js",
   "module": "./dist/bundle.js",
   "types": "./dist/d/index.d.ts",
@@ -11,7 +11,7 @@
     "build": "npm run before-build && rollup -c ",
     "dev-build": "npm run build",
     "preview": "vite preview",
-    "test:unit": "echo no unit tests",
+    "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
     "pub": "npm publish"
   },
   "dependencies": {
@@ -22,8 +22,10 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
+    "cross-env": "^7.0.3",
+    "esmock": "^2.7.5",
     "prettier": "^2.8.8",
     "tslib": "^2.8.1"
   },
-  "gitHead": "898bc9b9f2f75df11ea0803b144862ba98b7511a"
+  "gitHead": "9f7d766cb386b299d4098141f4a47d23e16975e3"
 }

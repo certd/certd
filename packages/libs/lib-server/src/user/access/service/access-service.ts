@@ -123,6 +123,25 @@ export class AccessService extends BaseService<AccessEntity> {
     return await super.update(param);
   }
 
+  async updateAccess(access: any) {
+    const oldEntity = await this.info(access.id);
+    if (oldEntity == null) {
+      throw new ValidateException('该授权配置不存在,请确认是否已被删除');
+    }
+    const setting = this.decryptAccessEntity(oldEntity);
+    for (const key of Object.keys(access)) {
+      if (key === 'id') {
+        continue;
+      }
+      setting[key] = access[key];
+    }
+    return await this.update({
+      id: access.id,
+      type: oldEntity.type,
+      setting: JSON.stringify(setting),
+    });
+  }
+
   async getSimpleInfo(id: number) {
     const entity = await this.info(id);
     if (entity == null) {

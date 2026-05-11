@@ -9,6 +9,7 @@
     "@lerna-lite/run": "^3.9.3",
     "@lerna-lite/version": "^3.9.3",
     "axios": "^1.9.0",
+    "cross-env": "^7.0.3",
     "medium-zoom": "^1.1.0",
     "vitepress": "^2.0.0-alpha.4",
     "vitepress-plugin-lightbox": "^1.0.2"
@@ -35,7 +36,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "pnpm run copylogs && vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "test:unit": "pnpm -r --workspace-concurrency=1 run test:unit",
+    "test:unit": "cross-env NODE_ENV=unittest pnpm -r --workspace-concurrency=1 run test:unit",
     "pub": "echo 1",
     "dev": "pnpm run -r --parallel  compile ",
     "pub_all":"pnpm run -r --parallel pub ",

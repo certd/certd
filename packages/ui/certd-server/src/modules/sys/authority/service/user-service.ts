@@ -1,6 +1,6 @@
 import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { InjectEntityModel } from '@midwayjs/typeorm';
-import {EntityManager, In, MoreThan, Not, Repository} from 'typeorm';
+import { EntityManager, In, MoreThan, Not, Repository } from 'typeorm';
 import { UserEntity } from '../entity/user.js';
 import * as _ from 'lodash-es';
 import { BaseService, CommonException, Constants, FileService, SysInstallInfo, SysSettingsService } from '@certd/lib-server';
@@ -18,15 +18,22 @@ import { OauthBoundService } from '../../../login/service/oauth-bound-service.js
 export type RegisterType = 'username' | 'mobile' | 'email';
 export type ForgotPasswordType = 'mobile' | 'email';
 
-export const AdminRoleId = 1
+export const AdminRoleId = 1;
+
+export function buildUserContactConflictWhere(value: string, userId: number) {
+  const contact = value?.trim();
+  return [
+    { username: contact, id: Not(userId) },
+    { mobile: contact, id: Not(userId) },
+    { email: contact, id: Not(userId) },
+  ];
+}
 /**
  * 系统用户
  */
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class UserService extends BaseService<UserEntity> {
- 
-
   @InjectEntityModel(UserEntity)
   repository: Repository<UserEntity>;
   @Inject()
@@ -44,9 +51,8 @@ export class UserService extends BaseService<UserEntity> {
   @Inject()
   dbAdapter: DbAdapter;
 
-   @Inject()
+  @Inject()
   oauthBoundService: OauthBoundService;
-
 
   //@ts-ignore
   getRepository() {
@@ -145,7 +151,7 @@ export class UserService extends BaseService<UserEntity> {
     return bcrypt.hashSync(plainPassword, salt);
   }
 
-  async findOne(param: Record<string,any>) {
+  async findOne(param: Record<string, any>) {
     return this.repository.findOne({
       where: param,
     });
@@ -177,11 +183,10 @@ export class UserService extends BaseService<UserEntity> {
     return await this.roleService.getPermissionByRoleIds(roleIds);
   }
 
-  async register(type: string, user: UserEntity,withTx?:(tx: EntityManager)=>Promise<void>) {
+  async register(type: string, user: UserEntity, withTx?: (tx: EntityManager) => Promise<void>) {
     if (!user.password) {
       user.password = simpleNanoId();
     }
-
 
     if (user.username) {
       const username = user.username;
@@ -207,7 +212,6 @@ export class UserService extends BaseService<UserEntity> {
         throw new CommonException('邮箱已被注册');
       }
     }
-
 
     if (!user.username) {
       user.username = 'user_' + simpleNanoId();
@@ -235,7 +239,7 @@ export class UserService extends BaseService<UserEntity> {
       const userRole: UserRoleEntity = UserRoleEntity.of(newUser.id, Constants.role.defaultUser);
       await txManager.save(userRole);
 
-      if(withTx) {
+      if (withTx) {
         await withTx(txManager);
       }
     });
@@ -247,35 +251,26 @@ export class UserService extends BaseService<UserEntity> {
     return newUser;
   }
 
-  async forgotPassword(
-    data: {
-      type: ForgotPasswordType;
-      input?: string,
-      phoneCode?: string,
-      validateCode: string,
-      password: string,
-      confirmPassword: string,
-    }
-  ) {
-    if(!data.type) {
+  async forgotPassword(data: { type: ForgotPasswordType; input?: string; phoneCode?: string; validateCode: string; password: string; confirmPassword: string }) {
+    if (!data.type) {
       throw new CommonException('找回类型不能为空');
     }
-    if(data.password !== data.confirmPassword) {
+    if (data.password !== data.confirmPassword) {
       throw new CommonException('两次输入的密码不一致');
     }
-    const where :any= {
+    const where: any = {
       [data.type]: data.input,
     };
-    if (data.type === 'mobile' ) {
-      where.phoneCode = data.phoneCode ??  '86';
+    if (data.type === 'mobile') {
+      where.phoneCode = data.phoneCode ?? '86';
     }
     const user = await this.findOne({ [data.type]: data.input });
-    console.log('user', user)
-    if(!user) {
+    console.log('user', user);
+    if (!user) {
       throw new CommonException('用户不存在');
       // return;
     }
-    await this.resetPassword(user.id, data.password)
+    await this.resetPassword(user.id, data.password);
     return user.username;
   }
 
@@ -376,30 +371,102 @@ export class UserService extends BaseService<UserEntity> {
   }
 
   async getAdmins() {
-      const admins = await this.userRoleService.find({
-        where: {
-          roleId: AdminRoleId,
-        },
-      });
+    const admins = await this.userRoleService.find({
+      where: {
+        roleId: AdminRoleId,
+      },
+    });
 
-      const userIds = admins.map(item => item.userId);
-      return await this.repository.find({
-        where: {
-          id: In(userIds),
-          status: 1,
-        },
-        order: {
-          updateTime: 'DESC',
-        },
-      })
+    const userIds = admins.map(item => item.userId);
+    return await this.repository.find({
+      where: {
+        id: In(userIds),
+        status: 1,
+      },
+      order: {
+        updateTime: 'DESC',
+      },
+    });
   }
 
   async updateProfile(userId: any, body: any) {
-
     await this.update({
       id: userId,
       ...body,
-    })
+    });
+  }
+
+  async verifyIdentity(userId: number, body: { identityType: 'password' | 'email' | 'mobile'; identityPassword?: string; identityValidateCode?: string }, codeService: any) {
+    const user = await this.info(userId);
+    if (body.identityType === 'password') {
+      const passwordChecked = await this.checkPassword(body.identityPassword, user.password, user.passwordVersion);
+      if (!passwordChecked) {
+        throw new CommonException('密码错误');
+      }
+      return;
+    }
+    if (body.identityType === 'email') {
+      if (!user.email) {
+        throw new CommonException('当前账号未绑定邮箱');
+      }
+      codeService.checkEmailCode({
+        email: user.email,
+        validateCode: body.identityValidateCode,
+        verificationType: 'contactIdentity',
+        throwError: true,
+      });
+      return;
+    }
+    if (body.identityType === 'mobile') {
+      if (!user.mobile) {
+        throw new CommonException('当前账号未绑定手机号');
+      }
+      await codeService.checkSmsCode({
+        mobile: user.mobile,
+        phoneCode: user.phoneCode || '86',
+        smsCode: body.identityValidateCode,
+        verificationType: 'contactIdentity',
+        throwError: true,
+      });
+      return;
+    }
+    throw new CommonException('不支持的验证方式');
+  }
+
+  checkContactIdentityValidation(userId: number, validationCode: string, codeService: any) {
+    const validationValue = codeService.getValidationValue(validationCode);
+    if (!validationValue || validationValue.type !== 'contactIdentity' || validationValue.userId !== userId) {
+      throw new CommonException('请先验证本人操作');
+    }
+  }
+
+  async updateMobile(userId: number, body: { phoneCode?: string; mobile: string }) {
+    const mobile = body.mobile?.trim();
+    if (!mobile) {
+      throw new CommonException('手机号不能为空');
+    }
+    const old = await this.findOne(buildUserContactConflictWhere(mobile, userId));
+    if (old != null) {
+      throw new CommonException('手机号已被占用');
+    }
+    await this.repository.update(userId, {
+      phoneCode: body.phoneCode || '86',
+      mobile,
+    });
+  }
+
+  async updateEmail(userId: number, body: { email: string }) {
+    const email = body.email?.trim();
+    if (!email) {
+      throw new CommonException('邮箱不能为空');
+    }
+    const old = await this.findOne(buildUserContactConflictWhere(email, userId));
+    if (old != null) {
+      throw new CommonException('邮箱已被占用');
+    }
+    await this.repository.update(userId, {
+      email,
+    });
   }
 
   async getAllUserIds() {
@@ -408,7 +475,7 @@ export class UserService extends BaseService<UserEntity> {
       where: {
         status: 1,
       },
-    })
+    });
     return users.map(item => item.id);
   }
 }

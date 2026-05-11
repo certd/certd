@@ -97,6 +97,21 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             width: 200,
           },
         },
+        subdomain: {
+          title: t("certd.cnameProviderSubdomain"),
+          type: "text",
+          form: {
+            component: {
+              placeholder: t("certd.cnameProviderSubdomainPlaceholder"),
+            },
+            helper: t("certd.cnameProviderSubdomainHelper"),
+            rules: [{ pattern: /^[^*]+$/, message: t("certd.cnameDomainPattern") }],
+          },
+          column: {
+            width: 200,
+            show: false,
+          },
+        },
         dnsProviderType: {
           title: t("certd.dnsProvider"),
           type: "dict-select",

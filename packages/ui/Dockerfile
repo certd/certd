@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:22-alpine3.21 AS builder
 
 # RUN apk add build-base
 # RUN wget -O - https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar -xj && \
@@ -18,9 +18,14 @@ RUN npm install -g pnpm@10.33.4
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 
+# RUN cd /workspace/certd-server && \
+#     pnpm install --ignore-scripts && \
+#     yes | pnpm approve-builds && \
+#     pnpm rebuild && \
+#     npm run build-on-docker
 
 
-FROM node:22-alpine
+FROM node:22-alpine3.21
 EXPOSE 7001
 EXPOSE 7002
 

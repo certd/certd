@@ -23,6 +23,37 @@ export async function UpdateProfile(form: any) {
   });
 }
 
+export async function GetContactCapability() {
+  return await request({
+    url: "/mine/contact/capability",
+    method: "POST",
+  });
+}
+
+export async function UpdateMobile(form: any) {
+  return await request({
+    url: "/mine/contact/mobile",
+    method: "POST",
+    data: form,
+  });
+}
+
+export async function VerifyContactIdentity(form: any) {
+  return await request({
+    url: "/mine/contact/verifyIdentity",
+    method: "POST",
+    data: form,
+  });
+}
+
+export async function UpdateEmail(form: any) {
+  return await request({
+    url: "/mine/contact/email",
+    method: "POST",
+    data: form,
+  });
+}
+
 export async function GetOauthBounds() {
   return await request({
     url: "/oauth/bounds",

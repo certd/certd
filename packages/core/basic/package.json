@@ -1,7 +1,7 @@
 {
   "name": "@certd/basic",
   "private": false,
-  "version": "1.39.12",
+  "version": "1.39.13",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,7 +13,7 @@
     "dev-build": "npm run build",
     "preview": "vite preview",
     "test": "mocha   --loader=ts-node/esm",
-    "test:unit": "mocha --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
+    "test:unit": "cross-env NODE_ENV=unittest mocha --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
     "pub": "npm publish",
     "compile": "tsc --skipLibCheck --watch"
   },
@@ -40,9 +40,11 @@
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
     "chai": "4.3.10",
+    "cross-env": "^7.0.3",
     "eslint": "^8.41.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
+    "esmock": "^2.7.5",
     "mocha": "^10.2.0",
     "prettier": "^2.8.8",
     "rimraf": "^5.0.5",
@@ -50,5 +52,5 @@
     "tslib": "^2.8.1",
     "typescript": "^5.4.2"
   },
-  "gitHead": "898bc9b9f2f75df11ea0803b144862ba98b7511a"
+  "gitHead": "9f7d766cb386b299d4098141f4a47d23e16975e3"
 }

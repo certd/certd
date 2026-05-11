@@ -1,4 +1,4 @@
-import { App, Autoload, Config, Init, Inject, Scope, ScopeEnum } from '@midwayjs/core';
+import { App, Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { getPlusInfo, isPlus } from '@certd/plus-core';
 import { isDev, logger } from '@certd/basic';
 
@@ -11,9 +11,9 @@ import { UserService } from '../sys/authority/service/user-service.js';
 import { UserSettingsService } from '../mine/service/user-settings-service.js';
 import { startProxyServer } from './proxy/server.js';
 
-@Autoload()
+@Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
-export class AutoZPrint {
+export class AutoPrint {
   @Inject()
   sysSettingsService: SysSettingsService;
 
@@ -34,7 +34,6 @@ export class AutoZPrint {
   @Config('system.resetAdminPasswd')
   private resetAdminPasswd: boolean;
 
-  @Init()
   async init() {
     //监听https
     this.startHttpsServer();

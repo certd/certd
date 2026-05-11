@@ -36,6 +36,9 @@ importers:
       axios:
         specifier: ^1.9.0
         version: 1.9.0(debug@4.4.3)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       medium-zoom:
         specifier: ^1.1.0
         version: 1.1.0
@@ -49,7 +52,7 @@ importers:
   packages/core/acme-client:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../basic
       '@peculiar/x509':
         specifier: ^1.11.0
@@ -94,6 +97,9 @@ importers:
       chai-as-promised:
         specifier: ^7.1.2
         version: 7.1.2(chai@4.5.0)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -106,6 +112,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       jsdoc-to-markdown:
         specifier: ^8.0.1
         version: 8.0.3
@@ -188,6 +197,9 @@ importers:
       chai:
         specifier: 4.3.10
         version: 4.3.10
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.41.0
         version: 8.57.0
@@ -197,6 +209,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       mocha:
         specifier: ^10.2.0
         version: 10.8.2
@@ -219,11 +234,11 @@ importers:
   packages/core/pipeline:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../basic
       '@certd/plus-core':
         specifier: ^1.39.12
-        version: 1.39.12
+        version: link:../../pro/plus-core
       dayjs:
         specifier: ^1.11.7
         version: 1.11.13
@@ -267,6 +282,9 @@ importers:
       chai:
         specifier: 4.3.10
         version: 4.3.10
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.41.0
         version: 8.57.0
@@ -276,6 +294,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       mocha:
         specifier: ^10.2.0
         version: 10.8.2
@@ -313,6 +334,12 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.26.1
         version: 8.32.1(eslint@8.57.0)(typescript@5.9.3)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       prettier:
         specifier: ^2.8.8
         version: 2.8.8
@@ -335,6 +362,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.26.1
         version: 8.32.1(eslint@8.57.0)(typescript@5.9.3)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.24.0
         version: 8.57.0
@@ -344,6 +374,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       prettier:
         specifier: ^2.8.8
         version: 2.8.8
@@ -403,8 +436,11 @@ importers:
         specifier: ^1.30.0
         version: 1.31.0
       cross-env:
-        specifier: ^5.1.4
-        version: 5.2.1
+        specifier: ^7.0.3
+        version: 7.0.3
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       js-yaml:
         specifier: ^3.11.0
         version: 3.14.1
@@ -421,7 +457,7 @@ importers:
   packages/libs/lib-k8s:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/basic
       '@kubernetes/client-node':
         specifier: 0.21.0
@@ -436,6 +472,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.26.1
         version: 8.32.1(eslint@8.57.0)(typescript@5.9.3)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.24.0
         version: 8.57.0
@@ -445,6 +484,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       prettier:
         specifier: ^2.8.8
         version: 2.8.8
@@ -461,20 +503,20 @@ importers:
   packages/libs/lib-server:
     dependencies:
       '@certd/acme-client':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
         specifier: ^1.39.12
-        version: 1.39.12
+        version: link:../../pro/plus-core
       '@midwayjs/cache':
         specifier: 3.14.0
         version: 3.14.0
@@ -505,9 +547,6 @@ importers:
       better-sqlite3:
         specifier: ^11.1.2
         version: 11.10.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       dayjs:
         specifier: ^1.11.7
         version: 1.11.13
@@ -539,6 +578,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.26.1
         version: 8.32.1(eslint@8.57.0)(typescript@5.9.3)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.24.0
         version: 8.57.0
@@ -548,6 +590,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       mocha:
         specifier: ^10.2.0
         version: 10.8.2
@@ -594,6 +639,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.26.1
         version: 8.32.1(eslint@8.57.0)(typescript@5.9.3)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.24.0
         version: 8.57.0
@@ -609,6 +657,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       prettier:
         specifier: ^2.8.8
         version: 2.8.8
@@ -628,16 +679,16 @@ importers:
   packages/plugins/plugin-cert:
     dependencies:
       '@certd/acme-client':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../plugin-lib
       psl:
         specifier: ^1.9.0
@@ -661,6 +712,9 @@ importers:
       chai:
         specifier: ^4.3.6
         version: 4.5.0
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.24.0
         version: 8.57.0
@@ -670,6 +724,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       mocha:
         specifier: ^10.1.0
         version: 10.8.2
@@ -701,17 +758,17 @@ importers:
         specifier: ^3.964.0
         version: 3.964.0(aws-crt@1.26.2)
       '@certd/acme-client':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/pipeline
       '@certd/plus-core':
         specifier: ^1.39.12
-        version: 1.39.12
+        version: link:../../pro/plus-core
       '@kubernetes/client-node':
         specifier: 0.21.0
         version: 0.21.0
@@ -776,6 +833,9 @@ importers:
       chai:
         specifier: ^4.3.6
         version: 4.5.0
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.24.0
         version: 8.57.0
@@ -785,6 +845,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       mocha:
         specifier: ^10.1.0
         version: 10.8.2
@@ -804,16 +867,16 @@ importers:
   packages/pro/commercial-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.7
+        specifier: ^1.39.12
         version: link:../../core/basic
       '@certd/lib-server':
-        specifier: ^1.39.7
+        specifier: ^1.39.12
         version: link:../../libs/lib-server
       '@certd/pipeline':
-        specifier: ^1.39.7
+        specifier: ^1.39.12
         version: link:../../core/pipeline
       '@certd/plus-core':
-        specifier: ^1.39.7
+        specifier: ^1.39.12
         version: link:../plus-core
       '@midwayjs/core':
         specifier: 3.20.11
@@ -858,6 +921,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.26.1
         version: 8.32.1(eslint@8.57.0)(typescript@5.9.3)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.24.0
         version: 8.57.0
@@ -867,6 +933,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      mocha:
+        specifier: ^10.2.0
+        version: 10.8.2
       prettier:
         specifier: ^2.8.8
         version: 2.8.8
@@ -889,16 +958,16 @@ importers:
   packages/pro/plugin-plus:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.7
+        specifier: ^1.39.12
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.7
+        specifier: ^1.39.12
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.7
+        specifier: ^1.39.12
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.39.7
+        specifier: ^1.39.12
         version: link:../plus-core
       crypto-js:
         specifier: ^4.2.0
@@ -943,6 +1012,9 @@ importers:
       chai:
         specifier: 4.3.10
         version: 4.3.10
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.41.0
         version: 8.57.0
@@ -952,6 +1024,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       mocha:
         specifier: ^10.2.0
         version: 10.8.2
@@ -974,7 +1049,7 @@ importers:
   packages/pro/plus-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.7
+        specifier: ^1.39.12
         version: link:../../core/basic
       dayjs:
         specifier: ^1.11.7
@@ -1007,6 +1082,9 @@ importers:
       chai:
         specifier: 4.3.10
         version: 4.3.10
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.41.0
         version: 8.57.0
@@ -1016,6 +1094,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       mocha:
         specifier: ^10.2.0
         version: 10.8.2
@@ -1139,9 +1220,6 @@ importers:
       cropperjs:
         specifier: ^1.6.1
         version: 1.6.2
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       cssnano:
         specifier: ^7.0.6
         version: 7.0.7(postcss@8.5.6)
@@ -1270,10 +1348,10 @@ importers:
         version: 0.1.3(zod@3.24.4)
     devDependencies:
       '@certd/lib-iframe':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../libs/lib-iframe
       '@certd/pipeline':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/pipeline
       '@rollup/plugin-commonjs':
         specifier: ^25.0.7
@@ -1329,6 +1407,9 @@ importers:
       chai:
         specifier: ^5.1.0
         version: 5.2.0
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       dependency-cruiser:
         specifier: ^16.2.3
         version: 16.10.2
@@ -1356,6 +1437,9 @@ importers:
       eslint-plugin-vue:
         specifier: ^9.23.0
         version: 9.33.0(eslint@8.57.0)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       less:
         specifier: ^4.2.0
         version: 4.3.0
@@ -1474,47 +1558,47 @@ importers:
         specifier: ^4.13.1
         version: 4.13.1
       '@certd/acme-client':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/acme-client
       '@certd/basic':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/basic
       '@certd/commercial-core':
         specifier: ^1.39.12
-        version: 1.39.12(better-sqlite3@11.10.0)(mysql2@3.14.1)(pg@8.16.0)(reflect-metadata@0.2.2)(ts-node@10.9.2(@types/node@18.19.100)(typescript@5.9.3))
+        version: link:../../pro/commercial-core
       '@certd/cv4pve-api-javascript':
         specifier: ^8.4.2
         version: 8.4.2
       '@certd/jdcloud':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../libs/lib-jdcloud
       '@certd/lib-huawei':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../libs/lib-huawei
       '@certd/lib-k8s':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../libs/lib-k8s
       '@certd/lib-server':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../libs/lib-server
       '@certd/midway-flyway-js':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../libs/midway-flyway-js
       '@certd/pipeline':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../core/pipeline
       '@certd/plugin-cert':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../plugins/plugin-cert
       '@certd/plugin-lib':
-        specifier: ^1.39.12
+        specifier: ^1.39.13
         version: link:../../plugins/plugin-lib
       '@certd/plugin-plus':
         specifier: ^1.39.12
-        version: 1.39.12
+        version: link:../../pro/plugin-plus
       '@certd/plus-core':
         specifier: ^1.39.12
-        version: 1.39.12
+        version: link:../../pro/plus-core
       '@google-cloud/dns':
         specifier: ^5.3.1
         version: 5.3.1
@@ -1617,9 +1701,6 @@ importers:
       cron-parser:
         specifier: ^4.9.0
         version: 4.9.0
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
@@ -1786,6 +1867,12 @@ importers:
       c8:
         specifier: ^10.1.2
         version: 10.1.3
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       mocha:
         specifier: ^10.2.0
         version: 10.8.2
@@ -6801,19 +6888,10 @@ packages:
   cropperjs@1.6.2:
     resolution: {integrity: sha512-nhymn9GdnV3CqiEHJVai54TULFAE3VshJTXSqSJKa8yXAKyBKDWdhHarnlIPrshJ0WMFTGuFvG02YjLXfPiuOA==}
 
-  cross-env@5.2.1:
-    resolution: {integrity: sha512-1yHhtcfAd1r4nwQgknowuUNfIT9E8dOMMspC36g45dN+iD1blloi7xp8X/xAIDnjHWyt1uQ8PHk2fkNaym7soQ==}
-    engines: {node: '>=4.0'}
-    hasBin: true
-
   cross-env@7.0.3:
     resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
     engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
     hasBin: true
-
-  cross-spawn@6.0.6:
-    resolution: {integrity: sha512-VqCUuhcd1iB+dsv8gxPttb5iZh/D0iubSP21g36KXdEuf6I5JiioesUVjpCdHV9MZRUfVFlvwtIUyPfxo5trtw==}
-    engines: {node: '>=4.8'}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -7593,6 +7671,10 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
+
+  esmock@2.7.5:
+    resolution: {integrity: sha512-jKwL7yYpVOERalCllSnPur59s9M0gV5BKijtmOKclqDMuhqdS7DT/a7cODjz6w1XusE0wAaHBTrK+zgab/ENgw==}
+    engines: {node: '>=14.16.0'}
 
   esniff@2.0.1:
     resolution: {integrity: sha512-kTUIGKQ/mDPFoJ0oVfcmyJn4iBDRptjNVIzwIFR7tqWXdVI9xfA2RMwY/gbSpJG3lkdWNEjLap/NqVHZiJsdfg==}
@@ -9816,9 +9898,6 @@ packages:
   next-tick@1.1.0:
     resolution: {integrity: sha512-CXdUiJembsNjuToQvxayPZF9Vqht7hewsvy2sOWafLvi2awflj9mOC6bHIg50orX8IJvWKY9wYQ/zB2kogPslQ==}
 
-  nice-try@1.0.5:
-    resolution: {integrity: sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==}
-
   no-case@3.0.4:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
 
@@ -10227,10 +10306,6 @@ packages:
   path-is-absolute@1.0.1:
     resolution: {integrity: sha512-AVbw3UJ2e9bq64vSaS9Am0fje1Pa8pbGqTTsmXfaIiMpnr5DlDhfJOuLj9Sf95ZPVDAUerDfEk88MPmPe7UCQg==}
     engines: {node: '>=0.10.0'}
-
-  path-key@2.0.1:
-    resolution: {integrity: sha512-fEHGKCSmUSDPv4uoj8AlD+joPlq3peND+HRYyxFz4KPw4z926S/b8rIuFs2FYJg3BwsxJf6A9/3eIdLaYC+9Dw==}
-    engines: {node: '>=4'}
 
   path-key@3.1.1:
     resolution: {integrity: sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==}
@@ -11469,17 +11544,9 @@ packages:
   shallow-equal@1.2.1:
     resolution: {integrity: sha512-S4vJDjHHMBaiZuT9NPb616CSmLf618jawtv3sufLl6ivK8WocjAo58cXwbRV1cgqxH0Qbv+iUt6m05eqEa2IRA==}
 
-  shebang-command@1.2.0:
-    resolution: {integrity: sha512-EV3L1+UQWGor21OmnvojK36mhg+TyIKDh3iFBKBohr5xeXIhNBcx8oWdgkTEEQ+BEFFYdLRuqMfd5L84N1V5Vg==}
-    engines: {node: '>=0.10.0'}
-
   shebang-command@2.0.0:
     resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}
     engines: {node: '>=8'}
-
-  shebang-regex@1.0.0:
-    resolution: {integrity: sha512-wpoSFAxys6b2a2wHZ1XpDSgD7N9iVjg29Ph9uV/uaP9Ex/KXlkTZTeddxDPSYQpgvzKLGJke2UU0AzoGCjNIvQ==}
-    engines: {node: '>=0.10.0'}
 
   shebang-regex@3.0.0:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
@@ -20464,21 +20531,9 @@ snapshots:
 
   cropperjs@1.6.2: {}
 
-  cross-env@5.2.1:
-    dependencies:
-      cross-spawn: 6.0.6
-
   cross-env@7.0.3:
     dependencies:
       cross-spawn: 7.0.6
-
-  cross-spawn@6.0.6:
-    dependencies:
-      nice-try: 1.0.5
-      path-key: 2.0.1
-      semver: 5.7.2
-      shebang-command: 1.2.0
-      which: 1.3.1
 
   cross-spawn@7.0.6:
     dependencies:
@@ -21484,6 +21539,8 @@ snapshots:
       text-table: 0.2.0
     transitivePeerDependencies:
       - supports-color
+
+  esmock@2.7.5: {}
 
   esniff@2.0.1:
     dependencies:
@@ -23908,8 +23965,6 @@ snapshots:
 
   next-tick@1.1.0: {}
 
-  nice-try@1.0.5: {}
-
   no-case@3.0.4:
     dependencies:
       lower-case: 2.0.2
@@ -24376,8 +24431,6 @@ snapshots:
   path-exists@5.0.0: {}
 
   path-is-absolute@1.0.1: {}
-
-  path-key@2.0.1: {}
 
   path-key@3.1.1: {}
 
@@ -25728,15 +25781,9 @@ snapshots:
 
   shallow-equal@1.2.1: {}
 
-  shebang-command@1.2.0:
-    dependencies:
-      shebang-regex: 1.0.0
-
   shebang-command@2.0.0:
     dependencies:
       shebang-regex: 3.0.0
-
-  shebang-regex@1.0.0: {}
 
   shebang-regex@3.0.0: {}
 

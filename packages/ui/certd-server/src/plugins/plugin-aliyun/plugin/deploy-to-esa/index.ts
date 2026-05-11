@@ -275,11 +275,13 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
       }
     });
 
-    const list = certListRes.Result;
+    let list = certListRes.Result || [];
+    list = list.filter((item: any) => item.Type === "cas");
     if (!list || list.length === 0) {
-      this.logger.info(`站点[${siteId}]没有证书, 无需删除`);
+      this.logger.info(`站点[${siteId}]没有CAS证书, 无需删除`);
       return 
     }
+    
     if (list.length < certLimit) {
       this.logger.info(`站点[${siteId}]证书数量（${list.length}）未超限制, 无需删除`);
       return;
