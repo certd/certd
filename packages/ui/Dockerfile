@@ -10,9 +10,9 @@ FROM node:22-alpine AS builder
 
 WORKDIR /workspace/
 COPY . /workspace/
-# armv7 目前只能用node18， pnpm9不支持node18,所以pnpm只能用8.15.7版本
-# https://github.com/nodejs/docker-node/issues/1946
-RUN npm install -g pnpm
+# pnpm v11打包会报错（[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts），暂时固定10.33.4版本。
+# https://pnpm.io/zh/migration
+RUN npm install -g pnpm@10.33.4
 
 #RUN cd /workspace/certd-client && pnpm install && npm run build
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
