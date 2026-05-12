@@ -167,6 +167,7 @@ export default async (client, userOpts) => {
                     await client.completeChallenge(challenge);
                 }catch (e) {
                     await deactivateAuth(e);
+                    e.message = `[${d}] ${e.message || "completeChallenge error"}`;
                     throw e;
                 }
                 challengeCompleted = true;
@@ -178,6 +179,7 @@ export default async (client, userOpts) => {
         } catch (e) {
             log(`[auto] [${d}] challengeCreateFn threw error: ${e.message || e}`);
             await deactivateAuth(e);
+            e.message = `[${d}] ${e.message || "challengeCreateFn error"}`;
             throw e;
         }
 
