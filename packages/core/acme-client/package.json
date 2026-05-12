@@ -3,7 +3,7 @@
     "description": "Simple and unopinionated ACME client",
     "private": false,
     "author": "nmorsman",
-    "version": "1.39.13",
+    "version": "1.39.14",
     "type": "module",
     "module": "./dist/index.js",
     "main": "./dist/index.js",
@@ -18,7 +18,7 @@
         "types"
     ],
     "dependencies": {
-        "@certd/basic": "^1.39.13",
+        "@certd/basic": "^1.39.14",
         "@peculiar/x509": "^1.11.0",
         "asn1js": "^3.0.5",
         "axios": "^1.9.0",
@@ -76,5 +76,5 @@
     "bugs": {
         "url": "https://github.com/publishlab/node-acme-client/issues"
     },
-    "gitHead": "9f7d766cb386b299d4098141f4a47d23e16975e3"
+    "gitHead": "bae5a04dcc0a679c290a9805c3ac4a6020eb6ec0"
 }

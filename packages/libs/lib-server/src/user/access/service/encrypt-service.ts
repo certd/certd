@@ -1,4 +1,4 @@
-import { Init, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
+import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
 import { Encryptor, SysSecret, SysSettingsService } from '../../../system/index.js';
 
 /**
@@ -12,8 +12,7 @@ export class EncryptService {
   @Inject()
   sysSettingService: SysSettingsService;
 
-  @Init()
-  async init() {
+  async doInit() {
     const secret: SysSecret = await this.sysSettingService.getSecret();
     this.encryptor = new Encryptor(secret.encryptSecret);
   }

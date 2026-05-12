@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.14](https://github.com/certd/certd/compare/v1.39.13...v1.39.14) (2026-05-11)
+
+### Bug Fixes
+
+* 修复阿里云订阅流水线创建对话框无法获取阿里订单列表的bug ([a362860](https://github.com/certd/certd/commit/a362860137bfb7072893c844fe775edc46070ee1))
+* 修复启动时报密钥备份不存在的问题 ([c966896](https://github.com/certd/certd/commit/c9668965226af6b54e0e576931dcba8b3d188ef3))
+
 ## [1.39.13](https://github.com/certd/certd/compare/v1.39.12...v1.39.13) (2026-05-10)
 
 ### Bug Fixes

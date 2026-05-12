@@ -11,7 +11,17 @@ export type MergeScriptContext = {
 export function useReference(formItem: any) {
   if (formItem.mergeScript) {
     const ctx = {
-      compute,
+      compute: (opts: any) => {
+        const func = (context: any) => {
+          let form = context.form || {};
+          form = form.input || form.body || form.access || form;
+          return opts({
+            ...context,
+            form,
+          });
+        };
+        return compute(func);
+      },
       asyncCompute,
       computed,
     };

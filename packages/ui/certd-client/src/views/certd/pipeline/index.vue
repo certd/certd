@@ -50,6 +50,7 @@
         <div>{{ t("certd.applyCertificate") }}</div>
       </template>
     </fs-crud>
+    <fs-form-wrapper ref="formWrapperRef"></fs-form-wrapper>
   </fs-page>
 </template>
 
@@ -90,10 +91,9 @@ function onActionbarMoreItemClick(req: { key: string; item: any }) {
   openCertApplyDialog({ key: req.key, title: req.item?.title });
 }
 
-const certdFormRef = ref<typeof CertdForm>();
 const currentPluginRef = ref();
 provide("getCurrentPluginDefine", () => {
-  return currentPluginRef.value;
+  return currentPluginRef;
 });
 
 const addMorePipelineBtns = computed(() => {
@@ -104,7 +104,9 @@ const addMorePipelineBtns = computed(() => {
     { key: "BatchAddPipeline", title: t("certd.pipelinePage.batchAddPipeline"), icon: "ion:duplicate" },
   ];
 });
-const { openAddCertdPipelineDialog } = useCertPipelineCreator();
+
+const formWrapperRef = ref<any>();
+const { openAddCertdPipelineDialog } = useCertPipelineCreator({ formWrapperRef });
 function openCertApplyDialog(req: { key: string; title: string }) {
   if (req.key === "AddPipeline") {
     crudExpose.openAdd({});
