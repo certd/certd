@@ -98,7 +98,7 @@ async function autoRegister() {
   //登录成功
   userStore.onLoginSuccess(res);
   //跳转到首页
-  router.replace("/");
+  router.replace("/index");
 }
 </script>
 <style lang="less">
