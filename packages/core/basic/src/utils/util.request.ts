@@ -82,6 +82,7 @@ export class HttpError extends Error {
 export const HttpCommonError = HttpError;
 
 let defaultAgents = createAgent();
+let defaultHeaders: Record<string, string> = {};
 
 export function setGlobalProxy(opts: { httpProxy?: string; httpsProxy?: string }) {
   logger.info("setGlobalProxy:", opts);
@@ -90,6 +91,15 @@ export function setGlobalProxy(opts: { httpProxy?: string; httpsProxy?: string }
 
 export function getGlobalAgents() {
   return defaultAgents;
+}
+
+export function setGlobalHeaders(headers: Record<string, string> = {}) {
+  logger.info("setGlobalHeaders:", Object.keys(headers));
+  defaultHeaders = { ...headers };
+}
+
+export function getGlobalHeaders() {
+  return defaultHeaders;
 }
 
 /**
@@ -147,6 +157,12 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       delete config.skipSslVerify;
       config.httpsAgent = agents.httpsAgent;
       config.httpAgent = agents.httpAgent;
+
+      if (Object.keys(defaultHeaders).length > 0) {
+        const headers = AxiosHeaders.from(defaultHeaders);
+        headers.set(config.headers || {});
+        config.headers = headers;
+      }
 
       // const agent = new https.Agent({
       //   rejectUnauthorized: false  // 允许自签名证书

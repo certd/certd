@@ -5,7 +5,7 @@ import { SysSettingsEntity } from '../entity/sys-settings.js';
 import { BaseSettings, SysInstallInfo, SysPrivateSettings, SysPublicSettings, SysSecret, SysSecretBackup } from './models.js';
 
 import { getAllSslProviderDomains, setSslProviderReverseProxies, setWalkFromAuthoritative } from '@certd/acme-client';
-import { cache, logger, mergeUtils, setGlobalProxy } from '@certd/basic';
+import { cache, logger, mergeUtils, setGlobalHeaders, setGlobalProxy } from '@certd/basic';
 import { isPlus } from '@certd/plus-core';
 import * as dns from 'node:dns';
 import { BaseService, setAdminMode } from '../../../basic/index.js';
@@ -167,6 +167,7 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
       httpsProxy: privateSetting.httpsProxy,
     };
     setGlobalProxy(opts);
+    setGlobalHeaders(this.parseKeyValueText(privateSetting.commonHeaders));
 
     if (privateSetting.dnsResultOrder) {
       dns.setDefaultResultOrder(privateSetting.dnsResultOrder as any);
@@ -185,12 +186,12 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     
   }
 
-  setEnvironmentVars(vars: string) {
-    const envVars = {}
-    if (typeof vars !== 'string') {
-      vars = ""
+  parseKeyValueText(text: string) {
+    const values = {};
+    if (typeof text !== 'string') {
+      text = "";
     }
-    vars.split('\n').forEach(line => {
+    text.split('\n').forEach(line => {
       line = line.trim();
       if (!line || line.startsWith('#')) {
         return
@@ -204,11 +205,18 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
         return
       }
 
-      const [key, value] = line.split('=');
+      const eqIndex = line.indexOf('=');
+      const key = line.substring(0, eqIndex).trim();
+      const value = line.substring(eqIndex + 1).trim();
       if (key && value) {
-        envVars[key.trim()] = value.trim();
+        values[key] = value;
       }
     });
+    return values;
+  }
+
+  setEnvironmentVars(vars: string) {
+    const envVars = this.parseKeyValueText(vars);
     //先删除旧环境变量
     if (lastSaveEnvVars) {
       for (const key in lastSaveEnvVars) {

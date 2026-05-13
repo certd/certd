@@ -91,6 +91,8 @@ export default {
       reverseProxyEmpty: "No reverse proxy list configured",
       environmentVars: "Environment Variables",
       environmentVarsHelper: "configure the runtime environment variables, one per line, format: KEY=VALUE",
+      commonHeaders: "Common Headers",
+      commonHeadersHelper: "Common headers automatically added to server-side HTTP requests, one per line, format: KEY=VALUE. Existing request headers with the same name are not overwritten.",
 
       bindUrl: "Bind URL",
       bindUrlHelper: "Bind URL, used as your site URL in notifications",

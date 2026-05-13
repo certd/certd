@@ -89,6 +89,8 @@ export default {
       reverseProxyEmpty: "未配置反向代理",
       environmentVars: "环境变量",
       environmentVarsHelper: "配置运行时环境变量，每行一个，格式：KEY=VALUE",
+      commonHeaders: "公共请求头",
+      commonHeadersHelper: "服务端发起 HTTP 请求时自动附加的公共请求头，每行一个，格式：KEY=VALUE；请求中已设置同名 Header 时不会覆盖\n注意: 不要将token等敏感内容放在此处，仅限个人和公司内部使用，商业版不要设置",
       bindUrl: "绑定URL",
       bindUrlHelper: "绑定URL，在各类通知中显示你的站点URL",
     },

@@ -99,6 +99,7 @@ export type SuiteSetting = {
 export type SysPrivateSetting = {
   httpProxy?: string;
   httpsProxy?: string;
+  commonHeaders?: string;
   reverseProxies?: any;
   dnsResultOrder?: string;
   commonCnameEnabled?: boolean;

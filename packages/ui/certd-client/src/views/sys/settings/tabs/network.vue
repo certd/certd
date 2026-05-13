@@ -19,6 +19,11 @@
         <div class="helper">{{ t("certd.sys.setting.environmentVarsHelper") }}</div>
       </a-form-item>
 
+      <a-form-item :label="t('certd.sys.setting.commonHeaders')" :name="['private', 'commonHeaders']">
+        <a-textarea v-model:value="formState.private.commonHeaders" :placeholder="commonHeadersExample" rows="4" />
+        <div class="helper">{{ t("certd.sys.setting.commonHeadersHelper") }}</div>
+      </a-form-item>
+
       <a-form-item :label="t('certd.dualStackNetwork')" :name="['private', 'dnsResultOrder']">
         <a-select v-model:value="formState.private.dnsResultOrder">
           <a-select-option value="verbatim">{{ t("certd.default") }}</a-select-option>
@@ -63,6 +68,10 @@ defineOptions({
 const environmentVarsExample = ref(
   `ALIYUN_CLIENT_CONNECT_TIMEOUT=16000 #连接超时，单位毫秒
 ALIYUN_CLIENT_READ_TIMEOUT=16000 #读取数据超时，单位毫秒`
+);
+const commonHeadersExample = ref(
+  `User-Agent=certd
+X-Custom-Header=value`
 );
 
 const formState = reactive<Partial<SysSettings>>({
