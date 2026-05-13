@@ -1,6 +1,31 @@
 import { AddonInput, BaseAddon, IsAddon } from "@certd/lib-server";
 import { BuildLoginUrlReq, BuildLogoutUrlReq, IOauthProvider, OnCallbackReq } from "../api.js";
-import { IconSets } from "../iconsets.js";
+
+const CLOGIN_TYPES = [
+  { label: "QQ", value: "qq", icon: "logos:tencent-qq" },
+  { label: "微信", value: "wx", icon: "logos:wechat-icon" },
+  { label: "支付宝", value: "alipay", icon: "simple-icons:alipay:#0099ff" },
+  { label: "微博", value: "sina", icon: "logos:sina-weibo" },
+  { label: "百度", value: "baidu", icon: "logos:baidu" },
+  { label: "华为", value: "huawei", icon: "simple-icons:huawei:#ff0000" },
+  { label: "小米", value: "xiaomi", icon: "logos:xiaomi-icon" },
+  { label: "谷歌", value: "google", icon: "logos:google-icon" },
+  { label: "微软", value: "microsoft", icon: "logos:microsoft-icon" },
+  { label: "Facebook", value: "facebook", icon: "logos:facebook" },
+  { label: "Twitter", value: "twitter", icon: "logos:twitter" },
+  { label: "钉钉", value: "dingtalk", icon: "logos:dingtalk" },
+  { label: "Gitee", value: "gitee", icon: "simple-icons:gitee:#c71d23" },
+  { label: "Github", value: "github", icon: "logos:github-icon" },
+];
+
+function getCloginType(subtype?: string, loginType?: string | string[]) {
+  const types = Array.isArray(loginType) ? loginType : [loginType];
+  const type = subtype || types.find(item => !!item);
+  if (!type) {
+    throw new Error("请选择彩虹聚合登录类型");
+  }
+  return type;
+}
 
 @IsAddon({
   addonType: "oauth",
@@ -22,38 +47,27 @@ export class CloginOauthProvider extends BaseAddon implements IOauthProvider {
   @AddonInput({
     title: "登录类型",
     component: {
-      name: "a-auto-complete",
-      options: [
-        { label: "QQ", value: "qq" },
-        { label: "微信", value: "wx" },
-        { label: "支付宝", value: "alipay" },
-        { label: "微博", value: "sina" },
-        { label: "百度", value: "baidu" },
-        { label: "华为", value: "huawei" },
-        { label: "小米", value: "xiaomi" },
-        { label: "谷歌", value: "google" },
-        { label: "微软", value: "microsoft" },
-        { label: "Facebook", value: "facebook" },
-        { label: "Twitter", value: "twitter" },
-        { label: "钉钉", value: "dingtalk" },
-        { label: "Gitee", value: "gitee" },
-        { label: "Github", value: "github" },
-      ]
+      name: "a-select",
+      vModel: "value",
+      mode: "tags",
+      multiple: true,
+      options: CLOGIN_TYPES,
     },
     required: true,
   })
-  loginType = "";
+  loginType: string[] | string = [];
 
-  @AddonInput({
-    title: "自定义图标",
-    component: {
-      name:"fs-icon-selector",
-      vModel:"modelValue",
-      iconSets: IconSets,
-    },
-    required: false,
-  })
-  icon = "";
+  get types() {
+    const loginTypes = Array.isArray(this.loginType) ? this.loginType : [this.loginType].filter(Boolean);
+    return loginTypes.map(type => {
+      const option = CLOGIN_TYPES.find(item => item.value === type);
+      return {
+        type,
+        name: option?.label || type,
+        icon: option?.icon,
+      };
+    });
+  }
 
   @AddonInput({
     title: "AppId",
@@ -75,11 +89,12 @@ export class CloginOauthProvider extends BaseAddon implements IOauthProvider {
   async buildLoginUrl(params: BuildLoginUrlReq) {
 
     let redirectUri = params.redirectUri || ""
+    const loginType = getCloginType(params.subtype, this.loginType);
     // if(redirectUri.indexOf("localhost:3008")>=0){
     //   redirectUri = redirectUri.replace("localhost:3008", "certd.handfree.work")
     // }
     const res = await this.ctx.http.request({
-      url: `${this.endpoint}/connect.php?act=login&appid=${this.appId}&appkey=${this.appKey}&type=${this.loginType}&redirect_uri=${redirectUri}`
+      url: `${this.endpoint}/connect.php?act=login&appid=${this.appId}&appkey=${this.appKey}&type=${loginType}&redirect_uri=${redirectUri}`
     })
 
     this.checkRes(res)
@@ -103,8 +118,9 @@ export class CloginOauthProvider extends BaseAddon implements IOauthProvider {
     //校验state
 
     const code = req.code || ""
+    const loginType = getCloginType(req.ticketValue?.subtype, this.loginType);
 
-    const tokenEndpoint = `${this.endpoint}/connect.php?act=callback&appid=${this.appId}&appkey=${this.appKey}&type=${this.loginType}&code=${code}`
+    const tokenEndpoint = `${this.endpoint}/connect.php?act=callback&appid=${this.appId}&appkey=${this.appKey}&type=${loginType}&code=${code}`
     const res = await this.ctx.utils.http.request({
       url: tokenEndpoint,
       method: "post",

@@ -78,11 +78,11 @@
                       <a-tag v-else color="red" class="bound-tag1">未绑定</a-tag>
                     </span>
                   </div>
-                  <a-button v-if="item.bound" type="primary" danger class="action-btn" @click="unbind(item.name)">
+                  <a-button v-if="item.bound" type="primary" danger class="action-btn" @click="unbind(item)">
                     <template #icon><fs-icon icon="ion:unlink-outline" /></template>
                     解绑
                   </a-button>
-                  <a-button v-else type="primary" class="action-btn" @click="bind(item.name)">
+                  <a-button v-else type="primary" class="action-btn" @click="bind(item)">
                     <template #icon><fs-icon icon="ion:link-outline" /></template>
                     绑定
                   </a-button>
@@ -214,7 +214,7 @@ async function loadOauthProviders() {
 
 const computedOauthBounds = computed(() => {
   const list = oauthProviders.value.map(item => {
-    const bound = oauthBounds.value.find(bound => bound.type === item.name);
+    const bound = oauthBounds.value.find(bound => bound.type === buildOauthBoundType(item));
     return {
       ...item,
       bound,
@@ -223,20 +223,24 @@ const computedOauthBounds = computed(() => {
   return list;
 });
 
-async function unbind(type: string) {
+function buildOauthBoundType(item: any) {
+  return item.subtype ? `${item.name}:${item.subtype}` : item.name;
+}
+
+async function unbind(item: any) {
   Modal.confirm({
     title: "确认解绑吗？",
     okText: "确认",
     okType: "danger",
     onOk: async () => {
-      await api.UnbindOauth(type);
+      await api.UnbindOauth(item.name, item.subtype);
       await loadOauthBounds();
     },
   });
 }
 
-async function bind(type: string) {
-  const res = await api.OauthBoundUrl(type);
+async function bind(item: any) {
+  const res = await api.OauthBoundUrl(item.name, item.subtype);
   const loginUrl = res.loginUrl;
   window.location.href = loginUrl;
 }

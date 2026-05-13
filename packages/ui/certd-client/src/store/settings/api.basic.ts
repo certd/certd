@@ -85,6 +85,7 @@ export type SysPublicSetting = {
       type: string;
       title: string;
       addonId: number;
+      icon?: string;
     }
   >;
   // 系统通知

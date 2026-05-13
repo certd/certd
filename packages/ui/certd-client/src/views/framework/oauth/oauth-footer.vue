@@ -5,8 +5,8 @@
     </div>
     <div class="flex justify-center items-center gap-4 flex-wrap md:flex-nowrap">
       <passkey-login></passkey-login>
-      <template v-for="item in oauthProviderList" :key="item.type">
-        <div v-if="item.addonId" class="oauth-icon-button pointer" @click="goOauthLogin(item.name)">
+      <template v-for="item in oauthProviderList" :key="buildProviderKey(item)">
+        <div v-if="item.addonId" class="oauth-icon-button pointer" @click="goOauthLogin(item)">
           <div><fs-icon :icon="item.icon" class="text-blue-600 text-40" /></div>
           <div class="ellipsis title" :title="item.addonTitle || item.title">{{ item.addonTitle || item.title }}</div>
         </div>
@@ -22,7 +22,17 @@ import { useSettingStore } from "/@/store/settings";
 import { useRoute } from "vue-router";
 import PasskeyLogin from "../login/passkey-login.vue";
 
-const oauthProviderList = ref([]);
+type OauthProviderItem = {
+  name: string;
+  type?: string;
+  subtype?: string;
+  title: string;
+  addonTitle?: string;
+  icon: string;
+  addonId?: number;
+};
+
+const oauthProviderList = ref<OauthProviderItem[]>([]);
 const props = defineProps<{
   oauthOnly?: boolean;
 }>();
@@ -42,15 +52,19 @@ onMounted(async () => {
   if (settingStore.sysPublic.oauthAutoRedirect && queryOauthOnly !== "false") {
     const firstOauth = oauthProviderList.value.find(item => item.addonId > 0);
     if (firstOauth) {
-      goOauthLogin(firstOauth.name);
+      goOauthLogin(firstOauth);
     }
   }
 });
 
-async function goOauthLogin(type: string) {
+function buildProviderKey(item: OauthProviderItem) {
+  return `${item.name}:${item.subtype || ""}`;
+}
+
+async function goOauthLogin(item: OauthProviderItem) {
   //获取第三方登录URL
   const from = "web";
-  const res = await api.OauthLogin(type, from);
+  const res = await api.OauthLogin(item.name, "login", from, item.subtype);
   const loginUrl = res.loginUrl;
   window.location.href = loginUrl;
 }

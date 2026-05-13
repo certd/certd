@@ -245,7 +245,8 @@ export class LoginService {
   async loginByOpenId(req: { openId: string, type:string }) {
     const {openId, type} = req;
     const oauthBound = await this.oauthBoundService.findOne({
-      where:{openId, type}
+      where:{openId, type: type.replace(':', '')')}
+    });
     });
     if (oauthBound == null) {
       return null

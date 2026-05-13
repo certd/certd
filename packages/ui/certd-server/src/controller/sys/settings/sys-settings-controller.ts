@@ -135,6 +135,7 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
     await this.service.savePrivateSettings(privateSettings);
     return this.ok({});
   }
+
   @Post('/stopOtherUserTimer', { description: 'sys:settings:edit' })
   async stopOtherUserTimer(@Body(ALL) body) {
     await this.pipelineService.stopOtherUserPipeline(1);

@@ -114,7 +114,7 @@ export async function GetSmsTypeDefine(type: string) {
 
 export async function GetOauthProviders() {
   return await request({
-    url: "/oauth/providers",
+    url: apiPrefix + "/oauth/providers",
     method: "post",
   });
 }

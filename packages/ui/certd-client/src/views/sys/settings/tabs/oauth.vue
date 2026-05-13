@@ -109,6 +109,7 @@ const formState = reactive<Partial<SysSettings>>({
 const oauthProviders = ref([]);
 async function loadOauthProviders() {
   oauthProviders.value = await api.GetOauthProviders();
+  mergeOauthProviderSettings();
 }
 
 const bindDomain = computed(() => {
@@ -163,6 +164,16 @@ const onFinish = async (form: any) => {
 
 function buildCallbackUrl(type: string) {
   return `${window.location.origin}/api/oauth/callback/${type}`;
+}
+
+function mergeOauthProviderSettings() {
+  const savedProviders = formState.public?.oauthProviders || {};
+  for (const item of oauthProviders.value) {
+    const saved = savedProviders[item.name];
+    if (saved) {
+      item.addonId = saved.addonId;
+    }
+  }
 }
 </script>
 <style lang="less">
