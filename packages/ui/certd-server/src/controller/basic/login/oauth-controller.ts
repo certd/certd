@@ -112,7 +112,10 @@ export class ConnectController extends BaseController {
         userInfo,
       });
 
-      const state = JSON.parse(utils.hash.base64Decode(query.state));
+      let state = {forType:""}
+      if (query.state) {
+        state = JSON.parse(utils.hash.base64Decode(query.state));
+      }
 
       const redirectUrl = `${bindUrl}#/oauth/callback/${type}?validationCode=${validationCode}&forType=${state.forType}`;
       this.ctx.redirect(redirectUrl);

@@ -73,9 +73,9 @@ export class CloginOauthProvider extends BaseAddon implements IOauthProvider {
   async buildLoginUrl(params: BuildLoginUrlReq) {
 
     let redirectUri = params.redirectUri || ""
-    if(redirectUri.indexOf("localhost:3008")>=0){
-      redirectUri = redirectUri.replace("localhost:3008", "certd.handfree.work")
-    }
+    // if(redirectUri.indexOf("localhost:3008")>=0){
+    //   redirectUri = redirectUri.replace("localhost:3008", "certd.handfree.work")
+    // }
     const res = await this.ctx.http.request({
       url: `${this.endpoint}/connect.php?act=login&appid=${this.appId}&appkey=${this.appKey}&type=${this.loginType}&redirect_uri=${redirectUri}`
     })
@@ -102,7 +102,7 @@ export class CloginOauthProvider extends BaseAddon implements IOauthProvider {
 
     const code = req.code || ""
 
-    const tokenEndpoint = `http://clogin.yfy.docmirror.cn/connect.php?act=callback&appid=${this.appId}&appkey=${this.appKey}&type=${this.loginType}&code=${code}`
+    const tokenEndpoint = `${this.endpoint}/connect.php?act=callback&appid=${this.appId}&appkey=${this.appKey}&type=${this.loginType}&code=${code}`
     const res = await this.ctx.utils.http.request({
       url: tokenEndpoint,
       method: "post",
