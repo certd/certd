@@ -867,16 +867,16 @@ importers:
   packages/pro/commercial-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.7
+        specifier: ^1.39.14
         version: link:../../core/basic
       '@certd/lib-server':
-        specifier: ^1.39.7
+        specifier: ^1.39.14
         version: link:../../libs/lib-server
       '@certd/pipeline':
-        specifier: ^1.39.7
+        specifier: ^1.39.14
         version: link:../../core/pipeline
       '@certd/plus-core':
-        specifier: ^1.39.7
+        specifier: ^1.39.14
         version: link:../plus-core
       '@midwayjs/core':
         specifier: 3.20.11
@@ -912,6 +912,9 @@ importers:
       '@types/chai':
         specifier: ^4.3.3
         version: 4.3.20
+      '@types/mocha':
+        specifier: ^10.0.1
+        version: 10.0.10
       '@types/node':
         specifier: ^18
         version: 18.19.100
@@ -921,6 +924,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.26.1
         version: 8.32.1(eslint@8.57.0)(typescript@5.9.3)
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.24.0
         version: 8.57.0
@@ -930,6 +936,12 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
+      mocha:
+        specifier: ^10.2.0
+        version: 10.8.2
       prettier:
         specifier: ^2.8.8
         version: 2.8.8
@@ -942,6 +954,9 @@ importers:
       rollup-plugin-visualizer:
         specifier: ^5.8.2
         version: 5.14.0(rollup@3.29.5)
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@18.19.100)(typescript@5.9.3)
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
@@ -952,16 +967,16 @@ importers:
   packages/pro/plugin-plus:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.7
+        specifier: ^1.39.14
         version: link:../../core/basic
       '@certd/pipeline':
-        specifier: ^1.39.7
+        specifier: ^1.39.14
         version: link:../../core/pipeline
       '@certd/plugin-lib':
-        specifier: ^1.39.7
+        specifier: ^1.39.14
         version: link:../../plugins/plugin-lib
       '@certd/plus-core':
-        specifier: ^1.39.7
+        specifier: ^1.39.14
         version: link:../plus-core
       crypto-js:
         specifier: ^4.2.0
@@ -1006,6 +1021,9 @@ importers:
       chai:
         specifier: 4.3.10
         version: 4.3.10
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.41.0
         version: 8.57.0
@@ -1015,6 +1033,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       mocha:
         specifier: ^10.2.0
         version: 10.8.2
@@ -1027,6 +1048,9 @@ importers:
       rollup:
         specifier: ^3.7.4
         version: 3.29.5
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@18.19.100)(typescript@5.9.3)
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
@@ -1037,7 +1061,7 @@ importers:
   packages/pro/plus-core:
     dependencies:
       '@certd/basic':
-        specifier: ^1.39.7
+        specifier: ^1.39.14
         version: link:../../core/basic
       dayjs:
         specifier: ^1.11.7
@@ -1070,6 +1094,9 @@ importers:
       chai:
         specifier: 4.3.10
         version: 4.3.10
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       eslint:
         specifier: ^8.41.0
         version: 8.57.0
@@ -1079,6 +1106,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^4.2.1
         version: 4.2.1(eslint-config-prettier@8.10.0(eslint@8.57.0))(eslint@8.57.0)(prettier@2.8.8)
+      esmock:
+        specifier: ^2.7.5
+        version: 2.7.5
       mocha:
         specifier: ^10.2.0
         version: 10.8.2
@@ -1091,6 +1121,9 @@ importers:
       rollup:
         specifier: ^3.7.4
         version: 3.29.5
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@types/node@18.19.100)(typescript@5.9.3)
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
