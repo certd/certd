@@ -48,7 +48,7 @@ async function handleOauthToken() {
     //登录成功
     userStore.onLoginSuccess(res);
     //跳转到首页
-    router.replace("/");
+    router.replace("/index");
     return;
   }
   if (res.bindRequired) {

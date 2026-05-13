@@ -1,5 +1,6 @@
 import { AddonInput, BaseAddon, IsAddon } from "@certd/lib-server";
 import { BuildLoginUrlReq, BuildLogoutUrlReq, IOauthProvider, OnCallbackReq } from "../api.js";
+import { IconSets } from "../iconsets.js";
 
 @IsAddon({
   addonType: "oauth",
@@ -47,7 +48,8 @@ export class CloginOauthProvider extends BaseAddon implements IOauthProvider {
     title: "自定义图标",
     component: {
       name:"fs-icon-selector",
-      vModel:"modelValue"
+      vModel:"modelValue",
+      iconSets: IconSets,
     },
     required: false,
   })
