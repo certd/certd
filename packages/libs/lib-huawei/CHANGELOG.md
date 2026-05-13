@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.15](https://github.com/certd/certd/compare/v1.39.14...v1.39.15) (2026-05-13)
+
+**Note:** Version bump only for package @certd/lib-huawei
+
 ## [1.39.14](https://github.com/certd/certd/compare/v1.39.13...v1.39.14) (2026-05-11)
 
 **Note:** Version bump only for package @certd/lib-huawei

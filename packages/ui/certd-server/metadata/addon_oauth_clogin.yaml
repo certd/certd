@@ -50,6 +50,18 @@ input:
     component:
       name: fs-icon-selector
       vModel: modelValue
+      iconSets:
+        - streamline-logos
+        - logos
+        - fa-brands
+        - fa-solid
+        - fa-regular
+        - carbon
+        - ion
+        - ant-design
+        - mdi
+        - twemoji
+        - svg-spinners
     required: false
   appId:
     title: AppId

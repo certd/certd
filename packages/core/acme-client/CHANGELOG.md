@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.15](https://github.com/publishlab/node-acme-client/compare/v1.39.14...v1.39.15) (2026-05-13)
+
+### Performance Improvements
+
+* 优化申请时报错日志增加对应域名打印 ([d6e9e59](https://github.com/publishlab/node-acme-client/commit/d6e9e5987bd52ea12ee18745615486eadd4c87ff))
+
 ## [1.39.14](https://github.com/publishlab/node-acme-client/compare/v1.39.13...v1.39.14) (2026-05-11)
 
 **Note:** Version bump only for package @certd/acme-client

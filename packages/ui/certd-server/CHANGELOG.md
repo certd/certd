@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.39.15](https://github.com/certd/certd/compare/v1.39.14...v1.39.15) (2026-05-13)
+
+### Bug Fixes
+
+* 修复第三方登录彩虹登录不上的bug ([bae4f8e](https://github.com/certd/certd/commit/bae4f8e3209d9f9869ecbd7c01655383bac2fe21))
+
+### Performance Improvements
+
+* icon选择器增加一套logo集 ([fdd5848](https://github.com/certd/certd/commit/fdd5848df4055a6ee07dc5eabaaf6b718672882d))
+
 ## [1.39.14](https://github.com/certd/certd/compare/v1.39.13...v1.39.14) (2026-05-11)
 
 ### Bug Fixes
