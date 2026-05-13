@@ -320,6 +320,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("monitor.siteName"),
           search: {
             show: true,
+            col: {
+              span: 3,
+            },
           },
           type: "text",
           form: {
@@ -333,6 +336,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("monitor.domain"),
           search: {
             show: true,
+            col: {
+              span: 3,
+            },
           },
           type: "text",
           form: {
@@ -411,6 +417,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("monitor.certDomains"),
           search: {
             show: true,
+            col: {
+              span: 3,
+            },
           },
           type: "text",
           form: {
@@ -451,6 +460,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("monitor.certStatus"),
           search: {
             show: true,
+            col: {
+              span: 2,
+            },
           },
           type: "dict-select",
           dict: dict({
@@ -472,7 +484,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         checkStatus: {
           title: t("monitor.checkStatus"),
           search: {
-            show: false,
+            show: true,
+            col: {
+              span: 2,
+            },
           },
           type: "dict-select",
           dict: checkStatusDict,
@@ -578,6 +593,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "dict-select",
           search: {
             show: true,
+            col: {
+              span: 3,
+            },
           },
           dict: groupDictRef,
           form: {
@@ -631,7 +649,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         disabled: {
           title: t("monitor.disabled"),
           search: {
-            show: false,
+            show: true,
+            col: {
+              span: 2,
+            },
           },
           type: "dict-switch",
           dict: dict({
