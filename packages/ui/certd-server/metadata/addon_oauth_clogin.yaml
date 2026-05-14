@@ -14,55 +14,54 @@ input:
   loginType:
     title: 登录类型
     component:
-      name: a-auto-complete
+      name: a-select
+      vModel: value
+      mode: tags
+      multiple: true
       options:
         - label: QQ
           value: qq
+          icon: logos:tencent-qq
         - label: 微信
           value: wx
+          icon: logos:wechat-icon
         - label: 支付宝
           value: alipay
+          icon: logos:alipay
         - label: 微博
           value: sina
+          icon: logos:sina-weibo
         - label: 百度
           value: baidu
+          icon: logos:baidu
         - label: 华为
           value: huawei
+          icon: simple-icons:huawei:#ff0000
         - label: 小米
           value: xiaomi
+          icon: logos:xiaomi-icon
         - label: 谷歌
           value: google
+          icon: logos:google-icon
         - label: 微软
           value: microsoft
+          icon: logos:microsoft-icon
         - label: Facebook
           value: facebook
+          icon: logos:facebook
         - label: Twitter
           value: twitter
+          icon: logos:twitter
         - label: 钉钉
           value: dingtalk
+          icon: logos:dingtalk
         - label: Gitee
           value: gitee
+          icon: simple-icons:gitee:#c71d23
         - label: Github
           value: github
+          icon: logos:github-icon
     required: true
-  icon:
-    title: 自定义图标
-    component:
-      name: fs-icon-selector
-      vModel: modelValue
-      iconSets:
-        - streamline-logos
-        - logos
-        - fa-brands
-        - fa-solid
-        - fa-regular
-        - carbon
-        - ion
-        - ant-design
-        - mdi
-        - twemoji
-        - svg-spinners
-    required: false
   appId:
     title: AppId
     helper: 彩虹聚合登录->应用列表->创建应用 获取

@@ -41,9 +41,11 @@ export type BuildLoginUrlReq = {
     redirectUri: string;
     forType?: string;
     from?:string;
+    subtype?: string;
 }
 
 export type BuildLogoutUrlReq = {
+    subtype?: string;
 }
 
 export type LogoutUrlReply = {

@@ -9,8 +9,9 @@
         <div>第三方（{{ oauthType }}）登录成功，您还未绑定账号，请选择</div>
 
         <div class="mt-10">
-          <a-button class="w-full mt-10" type="primary" @click="goBindUser">绑定已有账号</a-button>
-          <a-button v-if="settingStore.sysPublic.registerEnabled" class="w-full mt-10" type="primary" @click="autoRegister">创建新账号</a-button>
+          <a-button v-if="!userStore.isLogined" class="w-full mt-10" type="primary" @click="goBindUser">绑定已有账号</a-button>
+          <a-button v-else class="w-full mt-10" type="primary" @click="doBindCurrent">绑定当前登录账号({{ userStore.getUserInfo.username }} - {{ userStore.getUserInfo.nickName }})</a-button>
+          <a-button v-if="settingStore.sysPublic.registerEnabled" class="w-full mt-10" type="primary" @click="autoRegister">创建新账号绑定</a-button>
         </div>
 
         <div class="w-full mt-10">
@@ -63,6 +64,15 @@ async function handleOauthToken() {
   }
 }
 
+async function doBindCurrent() {
+  await api.BindUser(validationCode);
+  notification.success({
+    message: "绑定成功",
+  });
+  //跳转到首页
+  router.replace("/certd/mine/user-profile");
+}
+
 onMounted(async () => {
   if (error.value) {
     return;
@@ -70,12 +80,7 @@ onMounted(async () => {
 
   if (forType === "bind") {
     //从用户中心页面，进行第三方账号的绑定
-    await api.BindUser(validationCode);
-    notification.success({
-      message: "绑定成功",
-    });
-    //跳转到首页
-    router.replace("/certd/mine/user-profile");
+    await doBindCurrent();
     return;
   }
 
@@ -98,7 +103,7 @@ async function autoRegister() {
   //登录成功
   userStore.onLoginSuccess(res);
   //跳转到首页
-  router.replace("/");
+  router.replace("/index");
 }
 </script>
 <style lang="less">

@@ -38,6 +38,9 @@ export const useUserStore = defineStore({
     getToken(): string {
       return this.token || LocalStorage.get(TOKEN_KEY);
     },
+    isLogined(): boolean {
+      return !!this.getToken;
+    },
     isAdmin(): boolean {
       return this.getUserInfo.roleIds?.includes(1) || this.getUserInfo.id === 1;
     },

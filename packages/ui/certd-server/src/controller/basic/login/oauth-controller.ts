@@ -11,6 +11,24 @@ import { UserEntity } from "../../../modules/sys/authority/entity/user.js";
 import { UserService } from "../../../modules/sys/authority/service/user-service.js";
 import { IOauthProvider } from "../../../plugins/plugin-oauth/api.js";
 
+type OauthProviderSetting = {
+  type: string;
+  title: string;
+  icon?: string;
+  addonId: number;
+  types?: OauthProviderType[];
+};
+
+type OauthProviderType = {
+  type: string;
+  name: string;
+  icon?: string;
+};
+
+function getOauthBoundType(type: string, subtype?: string) {
+  return subtype ? `${type}:${subtype}` : type;
+}
+
 /**
  */
 @Provide()
@@ -41,7 +59,7 @@ export class ConnectController extends BaseController {
     if (!publicSettings?.oauthEnabled) {
       throw new Error("OAuth功能未启用");
     }
-    const setting = publicSettings?.oauthProviders?.[type || ""]
+    const setting = publicSettings?.oauthProviders?.[type || ""] as OauthProviderSetting | undefined;
     if (!setting) {
       throw new Error(`未配置该OAuth类型:${type}`);
     }
@@ -50,19 +68,30 @@ export class ConnectController extends BaseController {
     if (!addon) {
       throw new Error("初始化OAuth插件失败");
     }
-    return addon as IOauthProvider;
+    return {
+      addon: addon as IOauthProvider,
+      setting,
+    };
   }
 
   @Post('/login', { description: Constants.per.guest })
-  public async login(@Body(ALL) body: { type: string, forType?:string ,from?:string }) {
+  public async login(@Body(ALL) body: { type: string, subtype?: string, forType?:string ,from?:string }) {
 
-    const addon = await this.getOauthProvider(body.type);
+    const oauthProvider = await this.getOauthProvider(body.type);
     const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
     const bindUrl = installInfo?.bindUrl || "";
     //构造登录url
     const redirectUrl = `${bindUrl}api/oauth/callback/${body.type}`;
-    const { loginUrl, ticketValue } = await addon.buildLoginUrl({ redirectUri: redirectUrl, forType: body.forType ,from: body.from || "web" });
-    const ticket = this.codeService.setValidationValue(ticketValue)
+    const { loginUrl, ticketValue } = await oauthProvider.addon.buildLoginUrl({
+      redirectUri: redirectUrl,
+      forType: body.forType,
+      from: body.from || "web",
+      subtype: body.subtype,
+    });
+    const ticket = this.codeService.setValidationValue({
+      ...ticketValue,
+      subtype: body.subtype,
+    })
     this.ctx.cookies.set("oauth_ticket", ticket, {
       httpOnly: true,
       // secure: true,
@@ -78,7 +107,7 @@ export class ConnectController extends BaseController {
     checkPlus()
 
     //处理登录回调
-    const addon = await this.getOauthProvider(type);
+    const oauthProvider = await this.getOauthProvider(type);
     const request = this.ctx.request;
     // const ticketValue = this.codeService.getValidationValue(ticket);
     // if (!ticketValue) {
@@ -98,7 +127,7 @@ export class ConnectController extends BaseController {
     const bindUrl = installInfo?.bindUrl || "";
     const currentUrl = `${bindUrl}api/oauth/callback/${type}?${request.querystring}`
     try {
-      const tokenRes = await addon.onCallback({
+      const tokenRes = await oauthProvider.addon.onCallback({
         code: query.code,
         state: query.state,
         ticketValue,
@@ -108,7 +137,7 @@ export class ConnectController extends BaseController {
       const userInfo = tokenRes.userInfo;
 
       const validationCode = await this.codeService.setValidationValue({
-        type,
+        type: getOauthBoundType(type, ticketValue.subtype),
         userInfo,
       });
 
@@ -129,8 +158,10 @@ export class ConnectController extends BaseController {
   @Post('/getLogoutUrl', { description: Constants.per.guest })
   public async logout(@Body(ALL) body: any) {
     checkPlus()
-    const addon = await this.getOauthProvider(body.type);
-    const { logoutUrl } = await addon.buildLogoutUrl(body);
+    const oauthProvider = await this.getOauthProvider(body.type);
+    const { logoutUrl } = await oauthProvider.addon.buildLogoutUrl({
+      ...body,
+    });
     return this.ok({ logoutUrl });
   }
 
@@ -144,7 +175,7 @@ export class ConnectController extends BaseController {
     }
 
     const type = validationValue.type;
-    if (type !== body.type) {
+    if (type !== body.type && !type.startsWith(`${body.type}:`)) {
       throw new Error("校验码错误");
     }
     const userInfo = validationValue.userInfo;
@@ -262,15 +293,31 @@ export class ConnectController extends BaseController {
           provider.addonId = conf.addonId;
           provider.addonTitle = addonEntity.name;
 
-          const addon = await this.addonGetterService.getAddonById(conf.addonId,true,0,null);
-          const {logoutUrl} = await addon.buildLogoutUrl();
+          const addon = await this.addonGetterService.getAddonById(conf.addonId,true,0,null) as IOauthProvider & { icon?: string; types?: OauthProviderType[] };
+          const {logoutUrl} = await addon.buildLogoutUrl({});
           if (logoutUrl){
             provider.logoutUrl = logoutUrl;
           }
           if(addon.icon){
             provider.icon = addon.icon;
           }
+          if(addon.types?.length){
+            provider.types = addon.types;
+          }
         }
+      }
+      if (provider.addonId && provider.types?.length) {
+        for (const subtype of provider.types) {
+          list.push({
+            ...provider,
+            name: type,
+            subtype: subtype.type,
+            title: subtype.name,
+            icon: subtype.icon || provider.icon,
+            addonTitle: subtype.name,
+          });
+        }
+        continue;
       }
       list.push(provider);
     }

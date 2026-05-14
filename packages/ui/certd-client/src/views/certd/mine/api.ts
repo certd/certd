@@ -68,20 +68,23 @@ export async function GetOauthProviders() {
   });
 }
 
-export async function UnbindOauth(type: string) {
+export async function UnbindOauth(type: string, subtype?: string) {
   return await request({
     url: "/oauth/unbind",
     method: "POST",
-    data: { type },
+    data: {
+      type: subtype ? `${type}:${subtype}` : type,
+    },
   });
 }
 
-export async function OauthBoundUrl(type: string) {
+export async function OauthBoundUrl(type: string, subtype?: string) {
   return await request({
     url: "/oauth/login",
     method: "POST",
     data: {
       type,
+      subtype,
       forType: "bind",
     },
   });
