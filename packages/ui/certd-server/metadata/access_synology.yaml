@@ -39,6 +39,8 @@ input:
     component:
       name: a-switch
       vModel: checked
+    col:
+      span: 24
     helper: 是否启用了双重认证
     required: true
   deviceId:
@@ -48,6 +50,8 @@ input:
       name: synology-device-id-getter
       type: access
       typeName: synology
+    col:
+      span: 24
     mergeScript: |2-
 
            return {

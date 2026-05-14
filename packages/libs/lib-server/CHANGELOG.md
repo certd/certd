@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.40.0](https://github.com/certd/certd/compare/v1.39.16...v1.40.0) (2026-05-14)
+
+### Features
+
+* 彩虹登录支持选择多种登录方式 ([7aa0c7e](https://github.com/certd/certd/commit/7aa0c7e491fe660abb62e68792ff5474f19bd5b8))
+
 ## [1.39.16](https://github.com/certd/certd/compare/v1.39.15...v1.39.16) (2026-05-13)
 
 **Note:** Version bump only for package @certd/lib-server

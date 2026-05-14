@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.40.0](https://github.com/certd/certd/compare/v1.39.16...v1.40.0) (2026-05-14)
+
+### Bug Fixes
+
+* 修复第三方登录丢失state时无法在用户信息页面绑定第三方账号的bug ([45dedf5](https://github.com/certd/certd/commit/45dedf5bc779fea852e1f33dda4f31db2765633c))
+* 修复群晖授权没有显示设备id输入框的bug ([2f172b5](https://github.com/certd/certd/commit/2f172b56e9411303ca15138d827bdb9bafdae4d1))
+* 修复自动注册后没有跳转到控制台的bug ([4681ec9](https://github.com/certd/certd/commit/4681ec90088a3eb665427b2ac4047ec5ccefd7b3))
+
+### Features
+
+* 彩虹登录支持选择多种登录方式 ([7aa0c7e](https://github.com/certd/certd/commit/7aa0c7e491fe660abb62e68792ff5474f19bd5b8))
+
+### Performance Improvements
+
+* 头像增加缓存时间 ([7015b1b](https://github.com/certd/certd/commit/7015b1b232602e5168a3eb8bee6d7f1776ae1e74))
+
 ## [1.39.16](https://github.com/certd/certd/compare/v1.39.15...v1.39.16) (2026-05-13)
 
 **Note:** Version bump only for package @certd/ui-client
