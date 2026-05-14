@@ -2,18 +2,18 @@ import { AddonInput, BaseAddon, IsAddon } from "@certd/lib-server";
 import { BuildLoginUrlReq, BuildLogoutUrlReq, IOauthProvider, OnCallbackReq } from "../api.js";
 
 const CLOGIN_TYPES = [
-  { label: "QQ", value: "qq", icon: "logos:tencent-qq" },
-  { label: "微信", value: "wx", icon: "logos:wechat-icon" },
+  { label: "QQ", value: "qq", icon: "icon-park:tencent-qq:#0099ff" },
+  { label: "微信", value: "wx", icon: "simple-icons:wechat:#34C759" },
   { label: "支付宝", value: "alipay", icon: "simple-icons:alipay:#0099ff" },
-  { label: "微博", value: "sina", icon: "logos:sina-weibo" },
-  { label: "百度", value: "baidu", icon: "logos:baidu" },
+  { label: "微博", value: "sina", icon: "uiw:weibo:#FF3B30" },
+  { label: "百度", value: "baidu", icon: "simple-icons:baidu:#007AFF" },
   { label: "华为", value: "huawei", icon: "simple-icons:huawei:#ff0000" },
-  { label: "小米", value: "xiaomi", icon: "logos:xiaomi-icon" },
-  { label: "谷歌", value: "google", icon: "logos:google-icon" },
+  { label: "小米", value: "xiaomi", icon: "simple-icons:xiaomi:#FF9500" },
+  { label: "谷歌", value: "google", icon: "flat-color-icons:google" },
   { label: "微软", value: "microsoft", icon: "logos:microsoft-icon" },
   { label: "Facebook", value: "facebook", icon: "logos:facebook" },
   { label: "Twitter", value: "twitter", icon: "logos:twitter" },
-  { label: "钉钉", value: "dingtalk", icon: "logos:dingtalk" },
+  { label: "钉钉", value: "dingtalk", icon: "ant-design:dingding-outlined:#007AFF" },
   { label: "Gitee", value: "gitee", icon: "simple-icons:gitee:#c71d23" },
   { label: "Github", value: "github", icon: "logos:github-icon" },
 ];
