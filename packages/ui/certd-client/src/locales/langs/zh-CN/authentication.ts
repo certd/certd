@@ -79,8 +79,13 @@ export default {
 
   title: "修改密码",
   weakPasswordWarning: "为了您的账户安全，请立即修改密码",
+  initPasswordWarning: "当前账号还未设置登录密码，请先设置密码",
+  initPasswordTitle: "设置密码",
   changeNow: "立即修改",
+  setNow: "立即设置",
+  notNow: "暂不设置",
   successMessage: "修改成功",
+  initPasswordSuccessMessage: "设置成功",
   oldPassword: "旧密码",
   oldPasswordRequired: "请输入旧密码",
   newPassword: "新密码",

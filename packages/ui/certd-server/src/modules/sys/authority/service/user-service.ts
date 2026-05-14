@@ -1,22 +1,22 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { InjectEntityModel } from '@midwayjs/typeorm';
-import { EntityManager, In, MoreThan, Not, Repository } from 'typeorm';
-import { UserEntity } from '../entity/user.js';
-import * as _ from 'lodash-es';
-import { BaseService, CommonException, Constants, FileService, SysInstallInfo, SysSettingsService } from '@certd/lib-server';
-import { RoleService } from './role-service.js';
-import { PermissionService } from './permission-service.js';
-import { UserRoleService } from './user-role-service.js';
-import { UserRoleEntity } from '../entity/user-role.js';
-import bcrypt from 'bcryptjs';
-import { RandomUtil } from '../../../../utils/random.js';
-import dayjs from 'dayjs';
-import { DbAdapter } from '../../../db/index.js';
-import { simpleNanoId, utils } from '@certd/basic';
-import { OauthBoundService } from '../../../login/service/oauth-bound-service.js';
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { EntityManager, In, MoreThan, Not, Repository } from "typeorm";
+import { UserEntity } from "../entity/user.js";
+import * as _ from "lodash-es";
+import { BaseService, CommonException, Constants, FileService, SysInstallInfo, SysSettingsService } from "@certd/lib-server";
+import { RoleService } from "./role-service.js";
+import { PermissionService } from "./permission-service.js";
+import { UserRoleService } from "./user-role-service.js";
+import { UserRoleEntity } from "../entity/user-role.js";
+import bcrypt from "bcryptjs";
+import { RandomUtil } from "../../../../utils/random.js";
+import dayjs from "dayjs";
+import { DbAdapter } from "../../../db/index.js";
+import { simpleNanoId, utils } from "@certd/basic";
+import { OauthBoundService } from "../../../login/service/oauth-bound-service.js";
 
-export type RegisterType = 'username' | 'mobile' | 'email';
-export type ForgotPasswordType = 'mobile' | 'email';
+export type RegisterType = "username" | "mobile" | "email";
+export type ForgotPasswordType = "mobile" | "email";
 
 export const AdminRoleId = 1;
 
@@ -83,14 +83,14 @@ export class UserService extends BaseService<UserEntity> {
       },
     });
     if (!_.isEmpty(exists)) {
-      throw new CommonException('用户名已经存在');
+      throw new CommonException("用户名已经存在");
     }
     const plainPassword = param.password ?? RandomUtil.randomStr(6);
     param.passwordVersion = 2;
     param.password = await this.genPassword(plainPassword, param.passwordVersion); // 默认密码  建议未改密码不能登陆
 
     if (param.avatar) {
-      param.avatar = await this.fileService.saveFile(0, param.avatar, 'public');
+      param.avatar = await this.fileService.saveFile(0, param.avatar, "public");
     }
 
     await super.add(param);
@@ -107,13 +107,13 @@ export class UserService extends BaseService<UserEntity> {
    */
   async update(param) {
     if (param.id == null) {
-      throw new CommonException('id不能为空');
+      throw new CommonException("id不能为空");
     }
     const userInfo = await this.repository.findOne({
       where: { id: param.id },
     });
     if (!userInfo) {
-      throw new CommonException('用户不存在');
+      throw new CommonException("用户不存在");
     }
 
     if (param.username) {
@@ -125,7 +125,7 @@ export class UserService extends BaseService<UserEntity> {
         { email: username, id: Not(id) },
       ]);
       if (old != null) {
-        throw new CommonException('用户名已被占用');
+        throw new CommonException("用户名已被占用");
       }
     }
     if (!_.isEmpty(param.password)) {
@@ -136,7 +136,7 @@ export class UserService extends BaseService<UserEntity> {
     }
 
     if (param.avatar) {
-      param.avatar = await this.fileService.saveFile(userInfo.id, param.avatar, 'public');
+      param.avatar = await this.fileService.saveFile(userInfo.id, param.avatar, "public");
     }
     await super.update(param);
     await this.roleService.updateRoles(param.id, param.roles);
@@ -168,7 +168,7 @@ export class UserService extends BaseService<UserEntity> {
   async buildPlainPassword(rawPassword: string) {
     const setting: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     if (!setting.siteId) {
-      throw new CommonException('站点ID还未初始化');
+      throw new CommonException("站点ID还未初始化");
     }
     const prefixSiteId = setting.siteId.substring(1, 5);
     return rawPassword + prefixSiteId;
@@ -192,48 +192,47 @@ export class UserService extends BaseService<UserEntity> {
       const username = user.username;
       const old = await this.findOne([{ username: username }, { mobile: username }, { email: username }]);
       if (old != null) {
-        throw new CommonException('用户名已被注册');
+        throw new CommonException("用户名已被注册");
       }
     }
 
     if (user.mobile) {
       const mobile = user.mobile;
 
-      user.nickName = user.username || mobile.substring(0, 3) + '****' + mobile.substring(7);
+      user.nickName = user.username || mobile.substring(0, 3) + "****" + mobile.substring(7);
       const old = await this.findOne([{ username: mobile }, { mobile: mobile }, { email: mobile }]);
       if (old != null) {
-        throw new CommonException('手机号已被注册');
+        throw new CommonException("手机号已被注册");
       }
     }
     if (user.email) {
       const email = user.email;
       const old = await this.findOne([{ username: email }, { mobile: email }, { email: email }]);
       if (old != null) {
-        throw new CommonException('邮箱已被注册');
+        throw new CommonException("邮箱已被注册");
       }
     }
 
     if (!user.username) {
-      user.username = 'user_' + simpleNanoId();
+      user.username = "user_" + simpleNanoId();
     }
 
     let newUser: UserEntity = UserEntity.of({
       username: user.username,
       password: user.password,
-      email: user.email || '',
-      mobile: user.mobile || '',
+      email: user.email || "",
+      mobile: user.mobile || "",
       nickName: user.nickName || user.username,
-      avatar: user.avatar || '',
-      phoneCode: user.phoneCode || '86',
+      avatar: user.avatar || "",
+      phoneCode: user.phoneCode || "86",
       status: 1,
       passwordVersion: 2,
     });
     if (!newUser.password) {
       newUser.password = "changeme";
-    }else{
+    } else {
       newUser.password = await this.genPassword(newUser.password, newUser.passwordVersion);
     }
-   
 
     await this.transaction(async txManager => {
       newUser = await txManager.save(newUser);
@@ -248,28 +247,28 @@ export class UserService extends BaseService<UserEntity> {
 
     delete newUser.password;
 
-    utils.mitter.emit('register', { userId: newUser.id });
+    utils.mitter.emit("register", { userId: newUser.id });
 
     return newUser;
   }
 
   async forgotPassword(data: { type: ForgotPasswordType; input?: string; phoneCode?: string; validateCode: string; password: string; confirmPassword: string }) {
     if (!data.type) {
-      throw new CommonException('找回类型不能为空');
+      throw new CommonException("找回类型不能为空");
     }
     if (data.password !== data.confirmPassword) {
-      throw new CommonException('两次输入的密码不一致');
+      throw new CommonException("两次输入的密码不一致");
     }
     const where: any = {
       [data.type]: data.input,
     };
-    if (data.type === 'mobile') {
-      where.phoneCode = data.phoneCode ?? '86';
+    if (data.type === "mobile") {
+      where.phoneCode = data.phoneCode ?? "86";
     }
     const user = await this.findOne({ [data.type]: data.input });
-    console.log('user', user);
+    console.log("user", user);
     if (!user) {
-      throw new CommonException('用户不存在');
+      throw new CommonException("用户不存在");
       // return;
     }
     await this.resetPassword(user.id, data.password);
@@ -284,7 +283,7 @@ export class UserService extends BaseService<UserEntity> {
     const user = await this.info(userId);
     const passwordChecked = await this.checkPassword(form.password, user.password, user.passwordVersion);
     if (!passwordChecked) {
-      throw new CommonException('原密码错误');
+      throw new CommonException("原密码错误");
     }
     const param = {
       id: userId,
@@ -294,9 +293,26 @@ export class UserService extends BaseService<UserEntity> {
     await this.update(param);
   }
 
+  async initPassword(userId: any, form: any) {
+    const user = await this.info(userId);
+    if (user.password !== "changeme") {
+      throw new CommonException("当前账号已设置密码");
+    }
+    if (!form.newPassword) {
+      throw new CommonException("新密码不能为空");
+    }
+    if (form.newPassword !== form.confirmNewPassword) {
+      throw new CommonException("两次输入的密码不一致");
+    }
+    await this.update({
+      id: userId,
+      password: form.newPassword,
+    });
+  }
+
   async resetPassword(userId: any, newPasswd: string) {
     if (!userId) {
-      throw new CommonException('userId不能为空');
+      throw new CommonException("userId不能为空");
     }
     const param = {
       id: userId,
@@ -307,15 +323,15 @@ export class UserService extends BaseService<UserEntity> {
 
   //@ts-ignore
   async delete(ids: any) {
-    if (typeof ids === 'string') {
-      ids = ids.split(',');
+    if (typeof ids === "string") {
+      ids = ids.split(",");
       ids = ids.map(id => parseInt(id));
     }
     if (ids.length === 0) {
       return;
     }
     if (ids.includes(1)) {
-      throw new CommonException('不能删除管理员');
+      throw new CommonException("不能删除管理员");
     }
     await super.delete(ids);
     await this.oauthBoundService.deleteWhere({
@@ -325,7 +341,7 @@ export class UserService extends BaseService<UserEntity> {
 
   async isAdmin(userId: any) {
     if (!userId) {
-      throw new CommonException('userId不能为空');
+      throw new CommonException("userId不能为空");
     }
     const userRoles = await this.userRoleService.find({
       where: {
@@ -340,7 +356,7 @@ export class UserService extends BaseService<UserEntity> {
 
   async updateStatus(id: number, status: number) {
     if (!id) {
-      throw new CommonException('userId不能为空');
+      throw new CommonException("userId不能为空");
     }
     await this.repository.update(id, {
       status,
@@ -357,16 +373,16 @@ export class UserService extends BaseService<UserEntity> {
   }
 
   async registerCountPerDay(param: { days: number } = { days: 7 }) {
-    const todayEnd = dayjs().endOf('day');
+    const todayEnd = dayjs().endOf("day");
     const result = await this.getRepository()
-      .createQueryBuilder('main')
-      .select(`${this.dbAdapter.date('main.createTime')}  AS date`) // 将UNIX时间戳转换为日期
-      .addSelect('COUNT(1) AS count')
+      .createQueryBuilder("main")
+      .select(`${this.dbAdapter.date("main.createTime")}  AS date`) // 将UNIX时间戳转换为日期
+      .addSelect("COUNT(1) AS count")
       .where({
         // 0点
-        createTime: MoreThan(todayEnd.add(-param.days, 'day').toDate()),
+        createTime: MoreThan(todayEnd.add(-param.days, "day").toDate()),
       })
-      .groupBy('date')
+      .groupBy("date")
       .getRawMany();
 
     return result;
@@ -386,7 +402,7 @@ export class UserService extends BaseService<UserEntity> {
         status: 1,
       },
       order: {
-        updateTime: 'DESC',
+        updateTime: "DESC",
       },
     });
   }
@@ -398,61 +414,61 @@ export class UserService extends BaseService<UserEntity> {
     });
   }
 
-  async verifyIdentity(userId: number, body: { identityType: 'password' | 'email' | 'mobile'; identityPassword?: string; identityValidateCode?: string }, codeService: any) {
+  async verifyIdentity(userId: number, body: { identityType: "password" | "email" | "mobile"; identityPassword?: string; identityValidateCode?: string }, codeService: any) {
     const user = await this.info(userId);
-    if (body.identityType === 'password') {
+    if (body.identityType === "password") {
       const passwordChecked = await this.checkPassword(body.identityPassword, user.password, user.passwordVersion);
       if (!passwordChecked) {
-        throw new CommonException('密码错误');
+        throw new CommonException("密码错误");
       }
       return;
     }
-    if (body.identityType === 'email') {
+    if (body.identityType === "email") {
       if (!user.email) {
-        throw new CommonException('当前账号未绑定邮箱');
+        throw new CommonException("当前账号未绑定邮箱");
       }
       codeService.checkEmailCode({
         email: user.email,
         validateCode: body.identityValidateCode,
-        verificationType: 'contactIdentity',
+        verificationType: "contactIdentity",
         throwError: true,
       });
       return;
     }
-    if (body.identityType === 'mobile') {
+    if (body.identityType === "mobile") {
       if (!user.mobile) {
-        throw new CommonException('当前账号未绑定手机号');
+        throw new CommonException("当前账号未绑定手机号");
       }
       await codeService.checkSmsCode({
         mobile: user.mobile,
-        phoneCode: user.phoneCode || '86',
+        phoneCode: user.phoneCode || "86",
         smsCode: body.identityValidateCode,
-        verificationType: 'contactIdentity',
+        verificationType: "contactIdentity",
         throwError: true,
       });
       return;
     }
-    throw new CommonException('不支持的验证方式');
+    throw new CommonException("不支持的验证方式");
   }
 
   checkContactIdentityValidation(userId: number, validationCode: string, codeService: any) {
     const validationValue = codeService.getValidationValue(validationCode);
-    if (!validationValue || validationValue.type !== 'contactIdentity' || validationValue.userId !== userId) {
-      throw new CommonException('请先验证本人操作');
+    if (!validationValue || validationValue.type !== "contactIdentity" || validationValue.userId !== userId) {
+      throw new CommonException("请先验证本人操作");
     }
   }
 
   async updateMobile(userId: number, body: { phoneCode?: string; mobile: string }) {
     const mobile = body.mobile?.trim();
     if (!mobile) {
-      throw new CommonException('手机号不能为空');
+      throw new CommonException("手机号不能为空");
     }
     const old = await this.findOne(buildUserContactConflictWhere(mobile, userId));
     if (old != null) {
-      throw new CommonException('手机号已被占用');
+      throw new CommonException("手机号已被占用");
     }
     await this.repository.update(userId, {
-      phoneCode: body.phoneCode || '86',
+      phoneCode: body.phoneCode || "86",
       mobile,
     });
   }
@@ -460,11 +476,11 @@ export class UserService extends BaseService<UserEntity> {
   async updateEmail(userId: number, body: { email: string }) {
     const email = body.email?.trim();
     if (!email) {
-      throw new CommonException('邮箱不能为空');
+      throw new CommonException("邮箱不能为空");
     }
     const old = await this.findOne(buildUserContactConflictWhere(email, userId));
     if (old != null) {
-      throw new CommonException('邮箱已被占用');
+      throw new CommonException("邮箱已被占用");
     }
     await this.repository.update(userId, {
       email,
@@ -473,7 +489,7 @@ export class UserService extends BaseService<UserEntity> {
 
   async getAllUserIds() {
     const users = await this.repository.find({
-      select: ['id'],
+      select: ["id"],
       where: {
         status: 1,
       },

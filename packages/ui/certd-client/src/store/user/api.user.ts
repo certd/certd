@@ -38,6 +38,7 @@ export interface UserInfoRes {
   avatar?: string;
   roleIds: number[];
   isWeak?: boolean;
+  needInitPassword?: boolean;
   validTime?: number;
   status?: number;
 }

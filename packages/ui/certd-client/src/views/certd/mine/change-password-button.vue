@@ -9,7 +9,7 @@ import { ref } from "vue";
 import { useI18n } from "/src/locales";
 
 const { t } = useI18n();
-import { CrudOptions, useColumns, useFormWrapper } from "@fast-crud/fast-crud";
+import { compute, CrudOptions, useColumns, useFormWrapper } from "@fast-crud/fast-crud";
 import * as api from "/@/views/certd/mine/api";
 import { notification } from "ant-design-vue";
 import { useUserStore } from "/@/store/user";
@@ -19,6 +19,11 @@ defineProps<{
 }>();
 
 let passwordFormRef = ref();
+
+type OpenOptions = {
+  password?: string;
+  init?: boolean;
+};
 
 const validatePass1 = async (rule: any, value: any) => {
   if (value === "") {
@@ -53,19 +58,33 @@ const passwordFormOptions: CrudOptions = {
       width: "500px",
     },
     async doSubmit({ form }) {
-      await api.changePassword(form);
+      if (form.init) {
+        await api.initPassword(form);
+      } else {
+        await api.changePassword(form);
+      }
       //重新加载用户信息
       await userStore.loadUserInfo();
     },
     async afterSubmit() {
-      notification.success({ message: t("authentication.successMessage") });
+      const formData = passwordFormRef.value?.getFormData?.();
+      const message = formData?.init ? t("authentication.initPasswordSuccessMessage") : t("authentication.successMessage");
+      notification.success({ message });
     },
   },
   columns: {
+    init: {
+      title: "init",
+      type: "text",
+      form: {
+        show: false,
+      },
+    },
     password: {
       title: t("authentication.oldPassword"),
       type: "password",
       form: {
+        show: compute(({ form }) => form.init !== true),
         rules: [{ required: true, message: t("authentication.oldPasswordRequired") }],
       },
     },
@@ -97,12 +116,16 @@ const passwordFormOptions: CrudOptions = {
   },
 };
 
-async function open(opts: { password: "" }) {
+async function open(opts: OpenOptions = {}) {
   const formOptions = buildFormOptions(passwordFormOptions);
   formOptions.newInstance = true; //新实例打开
+  if (opts.init) {
+    formOptions.wrapper.title = t("authentication.initPasswordTitle");
+  }
   passwordFormRef.value = await openDialog(formOptions);
   passwordFormRef.value.setFormData({
-    password: opts.password,
+    init: opts.init === true,
+    password: opts.password || "",
   });
   console.log(passwordFormRef.value);
 }

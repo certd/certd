@@ -15,6 +15,14 @@ export async function changePassword(form: any) {
   });
 }
 
+export async function initPassword(form: any) {
+  return await request({
+    url: "/mine/initPassword",
+    method: "POST",
+    data: form,
+  });
+}
+
 export async function UpdateProfile(form: any) {
   return await request({
     url: "/mine/updateProfile",
