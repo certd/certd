@@ -184,9 +184,9 @@ export class UserService extends BaseService<UserEntity> {
   }
 
   async register(type: string, user: UserEntity, withTx?: (tx: EntityManager) => Promise<void>) {
-    if (!user.password) {
-      user.password = simpleNanoId();
-    }
+    // if (!user.password) {
+    //   user.password = simpleNanoId();
+    // }
 
     if (user.username) {
       const username = user.username;
@@ -229,9 +229,11 @@ export class UserService extends BaseService<UserEntity> {
       passwordVersion: 2,
     });
     if (!newUser.password) {
-      newUser.password = RandomUtil.randomStr(6);
+      newUser.password = "changeme";
+    }else{
+      newUser.password = await this.genPassword(newUser.password, newUser.passwordVersion);
     }
-    newUser.password = await this.genPassword(newUser.password, newUser.passwordVersion);
+   
 
     await this.transaction(async txManager => {
       newUser = await txManager.save(newUser);

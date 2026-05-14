@@ -79,19 +79,13 @@ gitee.userInfo = https://gitee.com/api/v5/user
   async buildLoginUrl(params: BuildLoginUrlReq) {
 
     let scope = "user_info" // Scope of the access request
-    let state:any = {
-      forType: params.forType || 'login',
-    }
-    state = this.ctx.utils.hash.base64(JSON.stringify(state))
-
     const authorizeEndpoint = "https://gitee.com/oauth/authorize"
     const redirectUrl = encodeURIComponent(params.redirectUri)
     // https://gitee.com/oauth/authorize?client_id=5bb5f4158af41c50c7a17b5d9068244e97d3ee572def6a57ed32fd8c9d760ad1&redirect_uri=http%3A%2F%2Fcasdoor.docmirror.cn%3A8000%2Fcallback&response_type=code
-    const loginUrl = `${authorizeEndpoint}?client_id=${this.clientId}&redirect_uri=${redirectUrl}&response_type=code&scope=${scope}&state=${state}`
+    const loginUrl = `${authorizeEndpoint}?client_id=${this.clientId}&redirect_uri=${redirectUrl}&response_type=code&scope=${scope}&state=${params.state}`
     return {
       loginUrl,
       ticketValue: {
-        state,
       },
     };
   }

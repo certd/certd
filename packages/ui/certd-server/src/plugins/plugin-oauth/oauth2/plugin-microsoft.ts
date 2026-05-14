@@ -42,18 +42,12 @@ export class MicrosoftOauthProvider extends BaseAddon implements IOauthProvider 
   async buildLoginUrl(params: BuildLoginUrlReq) {
 
     let scope = "openid profile email User.Read" // Scope of the access request
-    let state:any = {
-      forType: params.forType || 'login',
-    }
-    state = this.ctx.utils.hash.base64(JSON.stringify(state))
-
     const authorizeEndpoint = `https://login.microsoftonline.com/${this.tenantId}/oauth2/v2.0/authorize`
     const redirectUrl = encodeURIComponent(params.redirectUri)
-    const loginUrl = `${authorizeEndpoint}?client_id=${this.clientId}&redirect_uri=${redirectUrl}&response_type=code&scope=${scope}&state=${state}`
+    const loginUrl = `${authorizeEndpoint}?client_id=${this.clientId}&redirect_uri=${redirectUrl}&response_type=code&scope=${scope}&state=${params.state}`
     return {
       loginUrl,
       ticketValue: {
-        state,
       },
     };
   }
