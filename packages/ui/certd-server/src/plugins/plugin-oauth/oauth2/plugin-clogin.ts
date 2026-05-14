@@ -2,7 +2,7 @@ import { AddonInput, BaseAddon, IsAddon } from "@certd/lib-server";
 import { BuildLoginUrlReq, BuildLogoutUrlReq, IOauthProvider, OnCallbackReq } from "../api.js";
 
 const CLOGIN_TYPES = [
-  { label: "QQ", value: "qq", icon: "icon-park:tencent-qq:#0099ff" },
+  { label: "QQ", value: "qq", icon: "cib:tencent-qq:#007AFF" },
   { label: "微信", value: "wx", icon: "simple-icons:wechat:#34C759" },
   { label: "支付宝", value: "alipay", icon: "simple-icons:alipay:#0099ff" },
   { label: "微博", value: "sina", icon: "uiw:weibo:#FF3B30" },
