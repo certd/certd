@@ -5,6 +5,13 @@ import { nanoid } from 'nanoid';
 import { cache } from '@certd/basic';
 import { UploadFileInfo } from '@midwayjs/upload';
 
+const imageExtSet = new Set(['.apng', '.avif', '.bmp', '.gif', '.ico', '.jpeg', '.jpg', '.png', '.svg', '.webp']);
+const imageCacheSeconds = 3 * 24 * 60 * 60;
+
+export function isImageFile(filePath: string) {
+  return imageExtSet.has(filePath.substring(filePath.lastIndexOf('.')).toLowerCase());
+}
+
 /**
  */
 @Provide()
@@ -40,8 +47,11 @@ export class FileController extends BaseController {
       userId = this.getUserId();
     }
     const filePath = this.fileService.getFile(key, userId);
-    this.ctx.response.attachment(filePath);
-    this.ctx.response.set('Cache-Control', 'public,max-age=2592000');
+    if (isImageFile(filePath)) {
+      this.ctx.response.set('Cache-Control', `public,max-age=${imageCacheSeconds}`);
+    } else {
+      this.ctx.response.attachment(filePath);
+    }
     await send(this.ctx, filePath);
   }
 }
