@@ -13,8 +13,9 @@ export function useReference(formItem: any) {
     const ctx = {
       compute: (opts: any) => {
         const func = (context: any) => {
+          debugger;
           let form = context.form || {};
-          form = form.input || form.body || form.access || form;
+          form = form.input || form.body || form;
           return opts({
             ...context,
             form,
