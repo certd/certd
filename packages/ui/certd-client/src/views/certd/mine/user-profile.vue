@@ -396,7 +396,7 @@ const userAvatar = computed(() => {
     return userInfo.value.avatar;
   }
 
-  return `api/basic/file/download?token=${userStore.getToken}&key=${userInfo.value.avatar}`;
+  return `api/basic/file/download?key=${userInfo.value.avatar}`;
 });
 
 onMounted(async () => {

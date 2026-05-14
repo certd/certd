@@ -12,6 +12,18 @@ export function isImageFile(filePath: string) {
   return imageExtSet.has(filePath.substring(filePath.lastIndexOf('.')).toLowerCase());
 }
 
+export function getImageDownloadOptions(filePath: string) {
+  if (!isImageFile(filePath)) {
+    return undefined;
+  }
+  return {
+    maxage: imageCacheSeconds * 1000,
+    setHeaders(res: any) {
+      res.setHeader('Cache-Control', `public,max-age=${imageCacheSeconds}`);
+    },
+  };
+}
+
 /**
  */
 @Provide()
@@ -47,11 +59,10 @@ export class FileController extends BaseController {
       userId = this.getUserId();
     }
     const filePath = this.fileService.getFile(key, userId);
-    if (isImageFile(filePath)) {
-      this.ctx.response.set('Cache-Control', `public,max-age=${imageCacheSeconds}`);
-    } else {
+    const sendOptions = getImageDownloadOptions(filePath);
+    if (!sendOptions) {
       this.ctx.response.attachment(filePath);
     }
-    await send(this.ctx, filePath);
+    await send(this.ctx, filePath, sendOptions);
   }
 }

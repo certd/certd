@@ -20,6 +20,7 @@ import * as commercial from '@certd/commercial-core';
 import * as upload from '@midwayjs/upload';
 import { setLogger } from '@certd/acme-client';
 import {HiddenMiddleware} from "./middleware/hidden.js";
+import { shouldSetDefaultNoCache } from './configuration-cache.js';
 // import * as swagger from '@midwayjs/swagger';
 //@ts-ignore
 // process.env.UV_THREADPOOL_SIZE = 2
@@ -123,7 +124,7 @@ export class MainConfiguration {
 
     this.app.getMiddleware().insertFirst(async (ctx: IMidwayKoaContext, next: NextFunction) => {
       await next();
-      if (ctx.path === '/' || ctx.path === '/index.html' || ctx.path.startsWith("/api")) {
+      if (shouldSetDefaultNoCache(ctx.path, ctx.response.get('Cache-Control'))) {
         ctx.response.set('Cache-Control', 'public,max-age=0');
       }
     });
