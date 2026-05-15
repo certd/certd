@@ -1,7 +1,7 @@
 <template>
   <a-card :title="product.title" class="product-card">
     <template #extra>
-      <fs-values-format v-model="product.type" :dict="productTypeDictRef"></fs-values-format>
+      <fs-values-format :model-value="product.type" :dict="productTypeDictRef"></fs-values-format>
     </template>
 
     <div class="product-intro">{{ product.intro || "暂无介绍" }}</div>
@@ -12,8 +12,12 @@
         <suite-value :model-value="product.content.maxPipelineCount" unit="条" />
       </div>
       <div class="flex-between mt-5">
-        <div class="flex-o"><fs-icon icon="ant-design:check-outlined" class="color-green mr-5" />域名数量：</div>
+        <div class="flex-o"><fs-icon icon="ant-design:check-outlined" class="color-green mr-5" />域名总数量：</div>
         <suite-value :model-value="product.content.maxDomainCount" unit="个" />
+      </div>
+      <div class="flex-between mt-5">
+        <div class="flex-o" style="padding-left: 2em">- 其中泛域名数量：</div>
+        <suite-value :model-value="product.content.maxWildcardDomainCount" unit="个" />
       </div>
       <div class="flex-between mt-5">
         <div class="flex-o">

@@ -14,6 +14,7 @@ export type SuiteDetail = {
   expiresTime?: number;
   pipelineCount?: SuiteValue;
   domainCount?: SuiteValue;
+  wildcardDomainCount?: SuiteValue;
   deployCount?: SuiteValue;
   monitorCount?: SuiteValue;
 };

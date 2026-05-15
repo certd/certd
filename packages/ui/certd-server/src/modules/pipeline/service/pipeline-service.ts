@@ -53,6 +53,7 @@ import { executorQueue } from "@certd/lib-server";
 import parser from "cron-parser";
 import { ProjectService } from "../../sys/enterprise/service/project-service.js";
 import { CertApplyStepInputPatch, updateCertApplyStepInputs } from "./pipeline-batch-update.js";
+import { calcNextSuiteCountUsed } from "./pipeline-suite-limit.js";
 const runningTasks: Map<string | number, Executor> = new Map();
 
 
@@ -76,7 +77,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
   historyService: HistoryService;
   @Inject()
   historyLogService: HistoryLogService;
-
   @Inject()
   pluginConfigGetter: PluginConfigGetter;
 
@@ -287,10 +287,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       });
     }
 
-    if (!isUpdate) {
-      //如果是添加，校验数量
-      await this.checkMaxPipelineCount(bean, pipeline, domains);
-    }
+    await this.checkMaxPipelineCount(bean, pipeline, domains, old);
 
     if (!bean.status) {
       bean.status = ResultType.none;
@@ -345,7 +342,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return bean
   }
 
-  private async checkMaxPipelineCount(bean: PipelineEntity, pipeline: Pipeline, domains: string[]) {
+  private async checkMaxPipelineCount(bean: PipelineEntity, pipeline: Pipeline, domains: string[], old?: PipelineEntity) {
     // if (!isPlus()) {
     //   const count = await this.repository.count();
     //   if (count >= freeCount) {
@@ -363,15 +360,31 @@ export class PipelineService extends BaseService<PipelineEntity> {
       const suiteSetting = await this.userSuiteService.getSuiteSetting();
       if (suiteSetting.enabled) {
         const userSuite = await this.userSuiteService.getMySuiteDetail(bean.userId);
-        if (userSuite?.pipelineCount.max != -1 && userSuite?.pipelineCount.used + 1 > userSuite?.pipelineCount.max) {
+        if (!old && userSuite?.pipelineCount.max != -1 && userSuite?.pipelineCount.used + 1 > userSuite?.pipelineCount.max) {
           throw new NeedSuiteException(`对不起，您最多只能创建${userSuite?.pipelineCount.max}条流水线，请购买或升级套餐`);
         }
 
-        if (userSuite.domainCount.max != -1 && userSuite.domainCount.used + domains.length > userSuite.domainCount.max) {
+        let oldDomainCount = 0;
+        let oldWildcardDomainCount = 0;
+        if (old?.id) {
+          const oldCertInfo = await this.certInfoService.getByPipelineId(old.id);
+          oldDomainCount = oldCertInfo?.domainCount ?? 0;
+          oldWildcardDomainCount = oldCertInfo?.wildcardDomainCount ?? 0;
+        }
+
+        const nextDomainCountUsed = calcNextSuiteCountUsed(userSuite.domainCount.used, oldDomainCount, domains.length);
+        if (userSuite.domainCount.max != -1 && nextDomainCountUsed > userSuite.domainCount.max) {
           throw new NeedSuiteException(`对不起，您最多只能添加${userSuite.domainCount.max}个域名，请购买或升级套餐`);
         }
+
+        const suiteWildcardDomainCount = userSuite.wildcardDomainCount;
+        const wildcardDomainCount = this.certInfoService.countWildcardDomains(domains);
+        const nextWildcardDomainCountUsed = calcNextSuiteCountUsed(suiteWildcardDomainCount.used, oldWildcardDomainCount, wildcardDomainCount);
+        if (suiteWildcardDomainCount.max != -1 && nextWildcardDomainCountUsed > suiteWildcardDomainCount.max) {
+          throw new NeedSuiteException(`对不起，您最多只能添加${suiteWildcardDomainCount.max}个泛域名，请购买或升级套餐`);
+        }
       }
-    } else {
+    } else if (!old) {
       //非商业版校验用户最大流水线数量
       const userId = bean.userId;
       const userIsAdmin = await this.userService.isAdmin(userId);
@@ -1332,7 +1345,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async createAutoPipeline(req: { domains: string[]; email: string; userId: number, projectId?: number, from: string }) {
-
     const randomHour = Math.floor(Math.random() * 6);
     const randomMin = Math.floor(Math.random() * 60);
     const randomCron = `0 ${randomMin} ${randomHour} * * *`;

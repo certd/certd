@@ -40,6 +40,22 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
+  async getUserWildcardDomainCount(userId: number) {
+    if (userId == null) {
+      throw new Error('userId is required');
+    }
+    return await this.repository.sum('wildcardDomainCount', {
+      userId,
+    });
+  }
+
+  countWildcardDomains(domains?: string[]) {
+    if (!domains) {
+      return 0;
+    }
+    return domains.filter(domain => domain?.trim().toLowerCase().startsWith("*.")).length;
+  }
+
   async updateDomains(pipelineId: number, userId: number, projectId: number, domains: string[],fromType?:string) {
     const found = await this.repository.findOne({
       where: {
@@ -67,10 +83,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       bean.domain = '';
       bean.domains = '';
       bean.domainCount = 0;
+      bean.wildcardDomainCount = 0;
     } else {
       bean.domain = domains[0];
       bean.domains = domains.join(',');
       bean.domainCount = domains.length;
+      bean.wildcardDomainCount = this.countWildcardDomains(domains);
     }
 
     await this.addOrUpdate(bean);
@@ -171,6 +189,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     bean.domains = domains.join(',');
     bean.domain = domains[0];
     bean.domainCount = domains.length;
+    bean.wildcardDomainCount = this.countWildcardDomains(domains);
     bean.effectiveTime = certReader.effective;
     bean.expiresTime = certReader.expires;
     bean.certProvider = certReader.detail.issuer.commonName;

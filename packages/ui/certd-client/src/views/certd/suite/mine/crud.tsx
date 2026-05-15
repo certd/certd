@@ -147,7 +147,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         "content.maxDomainCount": {
-          title: "域名数量",
+          title: "域名总数量",
           type: "text",
           form: {
             key: ["content", "maxDomainCount"],
@@ -160,6 +160,28 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             width: 100,
+            component: {
+              name: SuiteValue,
+              vModel: "modelValue",
+              unit: "个",
+            },
+            align: "center",
+          },
+        },
+        "content.maxWildcardDomainCount": {
+          title: "其中泛域名数量",
+          type: "text",
+          form: {
+            key: ["content", "maxWildcardDomainCount"],
+            component: {
+              name: SuiteValueEdit,
+              vModel: "modelValue",
+              unit: "个",
+            },
+            rules: [{ required: true, message: "此项必填" }],
+          },
+          column: {
+            width: 120,
             component: {
               name: SuiteValue,
               vModel: "modelValue",

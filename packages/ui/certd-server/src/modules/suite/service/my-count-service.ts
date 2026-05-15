@@ -21,10 +21,12 @@ export class MyCountService implements IUsedCountService {
     }
     const pipelineCountUsed = await this.pipelineService.getUserPipelineCount(userId);
     const domainCountUsed = await this.certInfoService.getUserDomainCount(userId);
+    const wildcardDomainCountUsed = await this.certInfoService.getUserWildcardDomainCount(userId);
     const monitorCountUsed = await this.siteInfoService.getUserMonitorCount(userId);
     return {
       pipelineCountUsed,
       domainCountUsed,
+      wildcardDomainCountUsed,
       monitorCountUsed,
     };
   }

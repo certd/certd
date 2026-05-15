@@ -11,7 +11,10 @@
         <span class="label">{{ $t("certd.order.specifications") }}：</span>
         <span class="flex-o flex-wrap">
           <span class="flex-o"> {{ $t("certd.order.pipeline") }}<suite-value class="ml-5" :model-value="product.content.maxPipelineCount" :unit="$t('certd.order.unit.pieces')" />； </span>
-          <span class="flex-o"> {{ $t("certd.order.domain") }}<suite-value class="ml-5" :model-value="product.content.maxDomainCount" :unit="$t('certd.order.unit.count')" />； </span>
+          <span class="flex-o"> {{ $t("certd.order.totalDomain") }}<suite-value class="ml-5" :model-value="product.content.maxDomainCount" :unit="$t('certd.order.unit.count')" />； </span>
+          <span class="flex-o" style="padding-left: 2em">
+            - {{ $t("certd.order.includedWildcardDomain") }}<suite-value class="ml-5" :model-value="product.content.maxWildcardDomainCount" :unit="$t('certd.order.unit.count')" />；
+          </span>
           <span class="flex-o"> {{ $t("certd.order.deployTimes") }}<suite-value class="ml-5" :model-value="product.content.maxDeployCount" :unit="$t('certd.order.unit.times')" />； </span>
           <span class="flex-o"> {{ $t("certd.order.monitorCount") }}<suite-value class="ml-5" :model-value="product.content.maxMonitorCount" :unit="$t('certd.order.unit.times')" />； </span>
         </span>

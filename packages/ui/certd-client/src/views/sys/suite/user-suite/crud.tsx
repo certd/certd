@@ -223,6 +223,29 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
           },
         },
+        "content.maxWildcardDomainCount": {
+          title: t("certd.wildcardDomainCountPart"),
+          type: "text",
+          form: {
+            show: false,
+            key: ["content", "maxWildcardDomainCount"],
+            component: {
+              name: SuiteValueEdit,
+              vModel: "modelValue",
+              unit: t("certd.unit_count"),
+            },
+            rules: [{ required: true, message: t("certd.field_required") }],
+          },
+          column: {
+            width: 120,
+            component: {
+              name: SuiteValue,
+              vModel: "modelValue",
+              unit: t("certd.unit_count"),
+            },
+            align: "center",
+          },
+        },
         "content.maxPipelineCount": {
           title: t("certd.pipeline_count"),
           type: "text",

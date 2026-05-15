@@ -20,9 +20,13 @@
             <div class="flex-between mt-5">
               <div class="flex-o">
                 <fs-icon icon="ant-design:check-outlined" class="color-green mr-5" />
-                域名数量：
+                域名总数量：
               </div>
               <suite-value :model-value="detail.domainCount.max" :used="detail.domainCount.used" unit="个" />
+            </div>
+            <div class="flex-between mt-5">
+              <div class="flex-o ml-20">- 其中泛域名数量：</div>
+              <suite-value :model-value="detail.wildcardDomainCount.max" :used="detail.wildcardDomainCount.used" unit="个" />
             </div>
             <div class="flex-between mt-5">
               <div class="flex-o">
