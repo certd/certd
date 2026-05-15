@@ -253,6 +253,14 @@ export class SysSuiteSetting extends BaseSettings {
   intro?: string;
 }
 
+export class SysAutoFixSetting extends BaseSettings {
+  static __title__ = '自动修复记录';
+  static __key__ = 'sys.auto.fix';
+  static __access__ = 'private';
+
+  fixed: Record<string, boolean> = {};
+}
+
 
 export type SiteHidden = {
   enabled: boolean;
