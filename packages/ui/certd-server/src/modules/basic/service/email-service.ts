@@ -8,7 +8,7 @@ import { isComm, isPlus } from '@certd/plus-core';
 import nodemailer from 'nodemailer';
 import { SendMailOptions } from 'nodemailer';
 import { UserSettingsService } from '../../mine/service/user-settings-service.js';
-import { AddonService, PlusService, SysEmailConf, SysSettingsService, SysSiteInfo } from '@certd/lib-server';
+import { AddonService, PlusService, SysEmailConf, SysInstallInfo, SysSettingsService, SysSiteInfo } from '@certd/lib-server';
 import { getEmailSettings } from '../../sys/settings/fix.js';
 import { UserEmailSetting } from "../../mine/service/models.js";
 import { AddonGetterService } from '../../pipeline/service/addon-getter-service.js';
@@ -131,10 +131,19 @@ export class EmailService implements IEmailService {
       data: {
         title: '测试邮件,from certd',
         content: '测试邮件,from certd',
-        url: "https://certd.handfree.work",
+        url: await this.getTestEmailUrl(),
       },
       receivers: [receiver],
     });
+  }
+
+  private async getTestEmailUrl() {
+    const defaultUrl = "https://certd.docmirror.cn";
+    if (!isComm()) {
+      return defaultUrl;
+    }
+    const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
+    return installInfo?.bindUrl || installInfo?.bindUrl2 || defaultUrl;
   }
 
   async list(userId: any) {
@@ -156,7 +165,6 @@ export class EmailService implements IEmailService {
     userEmailSetting.list.unshift(email)
     await this.settingsService.saveSetting(userId, null, userEmailSetting)
   }
-
 
   async sendByTemplate(req: EmailSendByTemplateReq) {
     let content = null
