@@ -33,6 +33,7 @@ export default {
   pipeline_count: "流水线数量",
   unit_item: "条",
   deploy_count: "部署次数",
+  deploy_count_used: "已用部署次数",
   unit_times: "次",
   monitor_count: "证书监控数量",
   duration: "时长",

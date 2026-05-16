@@ -1,6 +1,5 @@
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { sysUserSuiteApi } from "./api";
-import { useRouter } from "vue-router";
 import SuiteValueEdit from "/@/views/sys/suite/product/suite-value-edit.vue";
 import SuiteValue from "/@/views/sys/suite/product/suite-value.vue";
 import DurationValue from "/@/views/sys/suite/product/duration-value.vue";
@@ -32,8 +31,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     const res = await api.PresentSuite(form);
     return res;
   };
-
-  const router = useRouter();
 
   return {
     crudOptions: {
@@ -71,7 +68,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         buttons: {
           view: { show: true },
           copy: { show: false },
-          edit: { show: false },
+          edit: { show: true },
           remove: { show: true },
           // continue:{
           //   text:"续期",
@@ -107,7 +104,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
           },
           form: {
-            show: false,
+            rules: [{ required: true, message: t("certd.field_required") }],
           },
           column: {
             width: 200,
@@ -127,7 +124,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             label: "nickName",
           }),
           form: {
+            show: true,
             component: {
+              disabled: true,
               crossPage: true,
               multiple: false,
               select: {
@@ -183,7 +182,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             ],
           }),
           form: {
-            show: false,
+            show: true,
+            component: {
+              disabled: true,
+            },
           },
           column: {
             width: 80,
@@ -204,7 +206,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.domain_count"),
           type: "text",
           form: {
-            show: false,
             key: ["content", "maxDomainCount"],
             component: {
               name: SuiteValueEdit,
@@ -227,7 +228,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.wildcardDomainCountPart"),
           type: "text",
           form: {
-            show: false,
             key: ["content", "maxWildcardDomainCount"],
             component: {
               name: SuiteValueEdit,
@@ -250,7 +250,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.pipeline_count"),
           type: "text",
           form: {
-            show: false,
             key: ["content", "maxPipelineCount"],
             component: {
               name: SuiteValueEdit,
@@ -273,7 +272,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.deploy_count"),
           type: "text",
           form: {
-            show: false,
             key: ["content", "maxDeployCount"],
             component: {
               name: SuiteValueEdit,
@@ -299,7 +297,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.monitor_count"),
           type: "text",
           form: {
-            show: false,
             key: ["content", "maxMonitorCount"],
             component: {
               name: SuiteValueEdit,
@@ -321,7 +318,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         duration: {
           title: t("certd.duration"),
           type: "text",
-          form: { show: false },
+          form: {
+            rules: [{ required: true, message: t("certd.field_required") }],
+          },
           column: {
             component: {
               name: DurationValue,
@@ -365,7 +364,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.expires_time"),
           type: "date",
           form: {
-            show: false,
+            valueBuilder: ({ value }) => {
+              return dayjs(value);
+            },
+            valueResolve: ({ value }) => {
+              //今天的最后一秒
+              return dayjs(value).endOf("day").valueOf();
+            },
           },
           column: {
             width: 150,
@@ -390,11 +395,54 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           }),
           form: {
             value: true,
-            show: false,
           },
           column: {
             width: 100,
             align: "center",
+          },
+        },
+        deployCountUsed: {
+          title: t("certd.deploy_count_used"),
+          type: "number",
+          form: {
+            value: 0,
+            rules: [{ required: true, message: t("certd.field_required") }],
+          },
+          column: {
+            show: false,
+          },
+        },
+        disabled: {
+          title: t("certd.disabled"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("certd.enabledLabel"), value: false, color: "success" },
+              { label: t("certd.disabledLabel"), value: true, color: "error" },
+            ],
+          }),
+          form: {
+            value: false,
+          },
+          column: {
+            width: 100,
+            align: "center",
+          },
+        },
+        isEmpty: {
+          title: t("certd.status"),
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { label: t("certd.normal"), value: false, color: "success" },
+              { label: t("certd.used_up"), value: true, color: "gray" },
+            ],
+          }),
+          form: {
+            value: false,
+          },
+          column: {
+            show: false,
           },
         },
         createTime: {

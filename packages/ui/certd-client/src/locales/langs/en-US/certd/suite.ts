@@ -33,6 +33,7 @@ export default {
   pipeline_count: "Pipeline Count",
   unit_item: "items",
   deploy_count: "Deploy Count",
+  deploy_count_used: "Used Deploy Count",
   unit_times: "times",
   monitor_count: "Certificate Monitor Count",
   duration: "Duration",
