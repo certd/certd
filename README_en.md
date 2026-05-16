@@ -31,7 +31,7 @@ This project not only supports automated certificate application but also automa
 * Multiple notification methods, including email, webhook, WeChat Work, DingTalk, Lark, and anpush.
 * On-premises deployment, local data storage, simple and quick installation. Images are built by Github Actions, with a transparent process.
 * Multiple security measures, including authorization encryption, site hiding, 2FA, and password brute-force protection.
-* Supports multiple databases such as SQLite, PostgreSQL, and MySQL.
+* Supports multiple databases such as SQLite, PostgreSQL, MySQL, and MariaDB.
 * Open API support.
 * Site certificate monitoring.
 * Multi-user management.
