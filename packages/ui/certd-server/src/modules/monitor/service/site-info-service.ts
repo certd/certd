@@ -1,5 +1,5 @@
 import {Inject, Provide, Scope, ScopeEnum} from "@midwayjs/core";
-import {BaseService, Constants, NeedSuiteException, NeedVIPException, SysSettingsService} from "@certd/lib-server";
+import {BaseService, Constants, isEnterprise, NeedSuiteException, NeedVIPException, SysSettingsService} from "@certd/lib-server";
 import {InjectEntityModel} from "@midwayjs/typeorm";
 import {In, Repository} from "typeorm";
 import {SiteInfoEntity} from "../entity/site-info.js";
@@ -59,25 +59,35 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     return this.repository;
   }
 
-  async add(data: SiteInfoEntity) {
-    if (data.userId == null) {
-      throw new Error("userId is required");
+  async checkMonitorLimit(userId: number) {
+    if (isEnterprise()) {
+      //企业模式不限制
+      return;
     }
 
     if (isComm()) {
       const suiteSetting = await this.userSuiteService.getSuiteSetting();
       if (suiteSetting.enabled) {
-        const userSuite = await this.userSuiteService.getMySuiteDetail(data.userId);
+        const userSuite = await this.userSuiteService.getMySuiteDetail(userId);
         if (userSuite.monitorCount.max != -1 && userSuite.monitorCount.max <= userSuite.monitorCount.used) {
           throw new NeedSuiteException("站点监控数量已达上限，请购买或升级套餐");
         }
       }
     } else if (!isPlus()) {
-      const count = await this.getUserMonitorCount(data.userId);
+      const count = await this.getUserMonitorCount(userId);
       if (count >= 1) {
         throw new NeedVIPException("站点监控数量已达上限，请升级专业版");
       }
     }
+  }
+
+  async add(data: SiteInfoEntity) {
+    if (data.userId == null) {
+      throw new Error("userId is required");
+    }
+
+    await this.checkMonitorLimit(data.userId);
+   
     data.disabled = false;
 
     const found = await this.repository.findOne({
