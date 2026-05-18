@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.40.1](https://github.com/certd/certd/compare/v1.40.0...v1.40.1) (2026-05-18)
+
+### Performance Improvements
+
+* 商业版支持限制泛域名数量 ([c63745d](https://github.com/certd/certd/commit/c63745d1ba30904428ba6b13ab0785298baa5cae))
+* **suite:** 商业版用户已购套餐支持修改 ([bdb3d09](https://github.com/certd/certd/commit/bdb3d09c09fc73e7e5e3401f6ef5588bf8ad5088))
+
 # [1.40.0](https://github.com/certd/certd/compare/v1.39.16...v1.40.0) (2026-05-14)
 
 ### Bug Fixes

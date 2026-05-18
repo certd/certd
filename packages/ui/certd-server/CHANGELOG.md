@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.40.1](https://github.com/certd/certd/compare/v1.40.0...v1.40.1) (2026-05-18)
+
+### Bug Fixes
+
+* 固化华为云sdk版本，避免华为云调用报错 ([59b9ffa](https://github.com/certd/certd/commit/59b9ffadd05faf3982151c48f8d83cbd97419865))
+* **email-service:** 优化商业版测试邮件内容中带的url链接 ([667e7b1](https://github.com/certd/certd/commit/667e7b185bf26558972be01720872f48352b5876))
+
+### Performance Improvements
+
+* 商业版支持限制泛域名数量 ([c63745d](https://github.com/certd/certd/commit/c63745d1ba30904428ba6b13ab0785298baa5cae))
+
 # [1.40.0](https://github.com/certd/certd/compare/v1.39.16...v1.40.0) (2026-05-14)
 
 ### Bug Fixes
