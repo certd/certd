@@ -4,6 +4,7 @@ export interface RegisterReq {
   username: string;
   password: string;
   confirmPassword: string;
+  inviteCode?: string;
 }
 /**
  * @description: Login interface parameters
@@ -18,6 +19,7 @@ export interface SmsLoginReq {
   phoneCode: string;
   smsCode: string;
   randomStr: string;
+  inviteCode?: string;
 }
 
 export interface ForgotPasswordReq {

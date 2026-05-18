@@ -46,6 +46,7 @@ export type TradeCreateReq = {
   duration: number;
   num: number;
   payType: string;
+  useRebateBalance?: boolean;
 };
 
 export async function TradeCreate(form: TradeCreateReq) {

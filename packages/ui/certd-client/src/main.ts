@@ -12,9 +12,11 @@ import plugin from "./plugin/";
 import { setupVben } from "./vben";
 import { util } from "/@/utils";
 import { initPreferences } from "/@/vben/preferences";
+import { inviteUtils } from "/@/utils/util.invite";
 // import "./components/code-editor/import-works";
 // @ts-ignore
 async function bootstrap() {
+  inviteUtils.captureFromLocation();
   const app = createApp(App);
   // app.use(Antd);
   app.use(Antd);

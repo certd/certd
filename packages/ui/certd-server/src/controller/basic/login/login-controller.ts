@@ -64,6 +64,7 @@ export class LoginController extends BaseController {
       mobile: body.mobile,
       smsCode: body.smsCode,
       randomStr: body.randomStr,
+      inviteCode: body.inviteCode,
     });
 
     this.writeTokenCookie(token);

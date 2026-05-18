@@ -28,10 +28,19 @@
         <span class="label">{{ $t("certd.order.price") }}：</span>
         <price-input :edit="false" :model-value="durationSelected.price"></price-input>
       </div>
+      <div v-if="durationSelected.price > 0 && wallet.availableAmount > 0" class="flex-o mt-5">
+        <span class="label">返利抵扣：</span>
+        <a-switch v-model:checked="formRef.useRebateBalance" />
+        <span class="ml-10">可用 {{ amountToYuan(wallet.availableAmount) }} 元，预计抵扣 {{ amountToYuan(expectedRebateAmount) }} 元</span>
+      </div>
+      <div v-if="durationSelected.price > 0 && formRef.useRebateBalance" class="flex-o mt-5">
+        <span class="label">还需支付：</span>
+        <span class="color-red">{{ amountToYuan(expectedThirdPartyAmount) }} 元</span>
+      </div>
 
       <div class="flex-o mt-5">
         <span class="label">{{ $t("certd.order.paymentMethod") }}：</span>
-        <div v-if="durationSelected.price === 0">{{ $t("certd.order.free") }}</div>
+        <div v-if="durationSelected.price === 0 || expectedThirdPartyAmount === 0">{{ $t("certd.order.free") }}</div>
         <fs-dict-select v-else v-model:value="formRef.payType" :dict="paymentsDictRef" style="width: 200px"> </fs-dict-select>
       </div>
     </div>
@@ -39,7 +48,7 @@
 </template>
 
 <script setup lang="tsx">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { GetPaymentTypes, OrderModalOpenReq, TradeCreate } from "/@/views/certd/suite/api";
 import SuiteValue from "/@/views/sys/suite/product/suite-value.vue";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
@@ -49,11 +58,14 @@ import DurationValue from "/@/views/sys/suite/product/duration-value.vue";
 import { useRouter } from "vue-router";
 import qrcode from "qrcode";
 import * as api from "/@/views/certd/suite/api";
+import { GetMyInvite } from "/@/views/certd/invite/api";
+import { util } from "/@/utils";
 const openRef = ref(false);
 
 const product = ref<any>(null);
 const formRef = ref<any>({});
 const durationSelected = ref<any>(null);
+const wallet = ref<any>({ availableAmount: 0 });
 async function open(opts: OrderModalOpenReq) {
   openRef.value = true;
 
@@ -63,6 +75,13 @@ async function open(opts: OrderModalOpenReq) {
   formRef.value.productId = opts.product.id;
   formRef.value.duration = opts.duration;
   formRef.value.num = opts.num ?? 1;
+  formRef.value.useRebateBalance = false;
+  try {
+    const inviteInfo: any = await GetMyInvite();
+    wallet.value = inviteInfo.wallet || { availableAmount: 0 };
+  } catch (e) {
+    wallet.value = { availableAmount: 0 };
+  }
 }
 const paymentsDictRef = dict({
   async getData() {
@@ -76,6 +95,21 @@ const paymentsDictRef = dict({
 });
 
 const router = useRouter();
+
+const expectedRebateAmount = computed(() => {
+  if (!formRef.value.useRebateBalance) {
+    return 0;
+  }
+  return Math.min(wallet.value.availableAmount || 0, durationSelected.value?.price || 0);
+});
+
+const expectedThirdPartyAmount = computed(() => {
+  return Math.max(0, (durationSelected.value?.price || 0) - expectedRebateAmount.value);
+});
+
+function amountToYuan(amount: number) {
+  return util.amount.toYuan(amount || 0);
+}
 
 async function orderCreate() {
   if (durationSelected.value.price === 0) {
@@ -93,7 +127,7 @@ async function orderCreate() {
     return;
   }
 
-  if (!formRef.value.payType) {
+  if (expectedThirdPartyAmount.value > 0 && !formRef.value.payType) {
     notification.error({
       message: "请选择支付方式",
     });
@@ -104,7 +138,16 @@ async function orderCreate() {
     duration: formRef.value.duration,
     num: formRef.value.num ?? 1,
     payType: formRef.value.payType,
+    useRebateBalance: formRef.value.useRebateBalance,
   });
+
+  if (paymentReq.paid) {
+    notification.success({
+      message: "套餐购买成功",
+    });
+    openRef.value = false;
+    return;
+  }
 
   async function onPaid() {
     openRef.value = false;

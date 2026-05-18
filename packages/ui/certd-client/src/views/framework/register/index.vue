@@ -78,6 +78,14 @@
         </a-tab-pane>
       </a-tabs>
 
+      <a-form-item v-if="registerType !== 'mobile'" has-feedback name="inviteCode" label="邀请码">
+        <a-input v-model:value="formState.inviteCode" placeholder="邀请码（选填）" size="large" autocomplete="off">
+          <template #prefix>
+            <fs-icon icon="ion:gift-outline"></fs-icon>
+          </template>
+        </a-input>
+      </a-form-item>
+
       <a-form-item v-if="registerType !== 'mobile'">
         <a-button type="primary" size="large" html-type="submit" class="login-button">注册</a-button>
       </a-form-item>
@@ -97,6 +105,7 @@ import { useSettingStore } from "/@/store/settings";
 import { notification } from "ant-design-vue";
 import CaptchaInput from "/@/components/captcha/captcha-input.vue";
 import { useRouter } from "vue-router";
+import { inviteUtils } from "/@/utils/util.invite";
 export default defineComponent({
   name: "RegisterPage",
   components: { CaptchaInput, EmailCode },
@@ -125,6 +134,7 @@ export default defineComponent({
       confirmPassword: "",
       captcha: null,
       captchaForEmail: null,
+      inviteCode: inviteUtils.get(),
     });
 
     const rules = {
@@ -213,6 +223,7 @@ export default defineComponent({
             email: formState.email,
             captcha: registerType.value === "email" ? formState.captchaForEmail : formState.captcha,
             validateCode: formState.validateCode,
+            inviteCode: formState.inviteCode,
           }) as any
         );
       } finally {

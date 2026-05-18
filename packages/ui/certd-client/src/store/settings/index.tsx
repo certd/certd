@@ -30,6 +30,9 @@ export interface SettingState {
   headerMenus?: HeaderMenus;
   inited?: boolean;
   suiteSetting?: SuiteSetting;
+  inviteSetting?: {
+    enabled?: boolean;
+  };
   app: {
     version?: string;
     time?: number;
@@ -102,6 +105,7 @@ export const useSettingStore = defineStore({
       menus: [],
     },
     suiteSetting: { enabled: false },
+    inviteSetting: { enabled: false },
     inited: false,
     app: {
       version: "",
@@ -196,6 +200,9 @@ export const useSettingStore = defineStore({
       // @ts-ignore
       return this.suiteSetting?.enabled === true;
     },
+    isInviteCommissionEnabled(): boolean {
+      return this.isComm && this.inviteSetting?.enabled === true;
+    },
   },
   actions: {
     checkPlus() {
@@ -215,6 +222,7 @@ export const useSettingStore = defineStore({
       merge(this.plusInfo, allSettings.plusInfo || {});
       merge(this.headerMenus, allSettings.headerMenus || {});
       merge(this.suiteSetting, allSettings.suiteSetting || {});
+      merge(this.inviteSetting, allSettings.inviteSetting || {});
       //@ts-ignore
       this.initSiteInfo(allSettings.siteInfo || {});
       this.initAppInfo(allSettings.app || {});

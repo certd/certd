@@ -97,6 +97,9 @@ export type SysPublicSetting = {
 export type SuiteSetting = {
   enabled?: boolean;
 };
+export type InviteSetting = {
+  enabled?: boolean;
+};
 export type SysPrivateSetting = {
   httpProxy?: string;
   httpsProxy?: string;
@@ -142,6 +145,7 @@ export type AllSettings = {
   siteEnv: SiteEnv;
   headerMenus: HeaderMenus;
   suiteSetting: SuiteSetting;
+  inviteSetting: InviteSetting;
   app: AppInfo;
 };
 

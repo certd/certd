@@ -286,6 +286,38 @@ export const sysResources = [
               keepAlive: true,
             },
           },
+          {
+            title: "certd.sysResources.inviteCommissionSetting",
+            name: "SysInviteCommissionSetting",
+            path: "/sys/suite/invite/setting",
+            component: "/sys/suite/invite/setting.vue",
+            meta: {
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isComm;
+              },
+              icon: "ion:gift-outline",
+              permission: "sys:settings:edit",
+              auth: true,
+              keepAlive: true,
+            },
+          },
+          {
+            title: "certd.sysResources.inviteWithdraw",
+            name: "SysInviteWithdraw",
+            path: "/sys/suite/invite/withdraw",
+            component: "/sys/suite/invite/withdraw.vue",
+            meta: {
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isComm;
+              },
+              icon: "ion:cash-outline",
+              permission: "sys:settings:edit",
+              auth: true,
+              keepAlive: true,
+            },
+          },
         ],
       },
       {

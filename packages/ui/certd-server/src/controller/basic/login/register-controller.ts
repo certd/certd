@@ -3,6 +3,7 @@ import { BaseController, Constants, SysSettingsService } from '@certd/lib-server
 import { RegisterType, UserService } from '../../../modules/sys/authority/service/user-service.js';
 import { CodeService } from '../../../modules/basic/service/code-service.js';
 import { checkComm, checkPlus } from '@certd/plus-core';
+import { InviteService } from '@certd/commercial-core';
 
 export type RegisterReq = {
   type: RegisterType;
@@ -14,6 +15,7 @@ export type RegisterReq = {
 
   validateCode: string;
   captcha:any;
+  inviteCode?: string;
 };
 
 /**
@@ -28,6 +30,9 @@ export class RegisterController extends BaseController {
 
   @Inject()
   sysSettingsService: SysSettingsService;
+
+  @Inject()
+  inviteService: InviteService;
 
   @Post('/register', { description: Constants.per.guest })
   public async register(
@@ -53,10 +58,13 @@ export class RegisterController extends BaseController {
       }
 
       await this.codeService.checkCaptcha(body.captcha,{remoteIp});
-      const newUser = await this.userService.register(body.type, {
+      const registerUser = {
         username: body.username,
         password: body.password,
-      } as any);
+      } as any;
+      const newUser = await this.userService.register(body.type, registerUser, async txManager => {
+        await this.inviteService.bindInvitee(registerUser.id, body.inviteCode, txManager);
+      });
       return this.ok(newUser);
     } else if (body.type === 'mobile') {
       if (sysPublicSettings.mobileRegisterEnabled === false) {
@@ -70,12 +78,15 @@ export class RegisterController extends BaseController {
         smsCode: body.validateCode,
         throwError: true,
       });
-      const newUser = await this.userService.register(body.type, {
+      const registerUser = {
         username: body.username,
         phoneCode: body.phoneCode,
         mobile: body.mobile,
         password: body.password,
-      } as any);
+      } as any;
+      const newUser = await this.userService.register(body.type, registerUser, async txManager => {
+        await this.inviteService.bindInvitee(registerUser.id, body.inviteCode, txManager);
+      });
       return this.ok(newUser);
     } else if (body.type === 'email') {
       if (sysPublicSettings.emailRegisterEnabled === false) {
@@ -87,11 +98,14 @@ export class RegisterController extends BaseController {
         validateCode: body.validateCode,
         throwError: true,
       });
-      const newUser = await this.userService.register(body.type, {
+      const registerUser = {
         username: body.username,
         email: body.email,
         password: body.password,
-      } as any);
+      } as any;
+      const newUser = await this.userService.register(body.type, registerUser, async txManager => {
+        await this.inviteService.bindInvitee(registerUser.id, body.inviteCode, txManager);
+      });
       return this.ok(newUser);
     }
   }

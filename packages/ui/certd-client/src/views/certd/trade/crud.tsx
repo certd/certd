@@ -151,6 +151,30 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         },
+        rebateAmount: {
+          title: "返利抵扣",
+          type: "number",
+          column: {
+            width: 110,
+            component: {
+              name: PriceInput,
+              vModel: "modelValue",
+              edit: false,
+            },
+          },
+        },
+        thirdPartyPayAmount: {
+          title: "实付金额",
+          type: "number",
+          column: {
+            width: 110,
+            component: {
+              name: PriceInput,
+              vModel: "modelValue",
+              edit: false,
+            },
+          },
+        },
         status: {
           title: "状态",
           search: { show: true },
@@ -177,6 +201,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               { label: "支付宝", value: "alipay" },
               { label: "微信", value: "wxpay" },
               { label: "免费", value: "free" },
+              { label: "返利余额", value: "rebate" },
             ],
           }),
           column: {

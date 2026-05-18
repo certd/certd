@@ -19,6 +19,7 @@ import { isPlus } from "@certd/plus-core";
 import { AddonService } from "@certd/lib-server";
 import { OauthBoundService } from "./oauth-bound-service.js";
 import { PasskeyService } from "./passkey-service.js";
+import { InviteService } from "@certd/commercial-core";
 
 /**
  */
@@ -48,6 +49,9 @@ export class LoginService {
 
   @Inject()
   passkeyService: PasskeyService;
+
+  @Inject()
+  inviteService: InviteService;
 
   checkIsBlocked(username: string) {
     const blockDurationKey = `login_block_duration:${username}`;
@@ -111,7 +115,7 @@ export class LoginService {
   }
 
 
-  async loginBySmsCode(req: { mobile: string; phoneCode: string; smsCode: string; randomStr: string }) {
+  async loginBySmsCode(req: { mobile: string; phoneCode: string; smsCode: string; randomStr: string; inviteCode?: string }) {
 
     this.checkIsBlocked(req.mobile)
 
@@ -129,11 +133,14 @@ export class LoginService {
     let info = await this.userService.findOne({phoneCode, mobile: mobile});
     if (info == null) {
       //用户不存在，注册
-      info = await this.userService.register('mobile', {
+      const registerUser = {
         phoneCode,
         mobile,
         password: '',
-      } as any);
+      } as any;
+      info = await this.userService.register('mobile', registerUser, async txManager => {
+        await this.inviteService.bindInvitee(registerUser.id, req.inviteCode, txManager);
+      });
     }
     this.clearCacheOnSuccess(mobile);
     return this.onLoginSuccess(info);
@@ -264,4 +271,3 @@ export class LoginService {
     const user = await this.passkeyService.loginByPasskey(credential, challenge, ctx);
     return this.generateToken(user);
   }}
-
