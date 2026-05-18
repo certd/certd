@@ -9,7 +9,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "before-build": "rimraf dist && rimraf tsconfig.tsbuildinfo && rimraf .rollup.cache",
-    "build": "npm run before-build && tsc --skipLibCheck",
+    "build": "npm run before-build && tsc -p tsconfig.build.json --skipLibCheck",
     "dev-build": "npm run build",
     "test": "midway-bin test --ts -V",
     "test:unit": "cross-env NODE_ENV=unittest mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",

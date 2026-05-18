@@ -6,7 +6,8 @@
   "module": "./dist/bundle.js",
   "types": "./dist/d/index.d.ts",
   "scripts": {
-    "build": "rollup -c ",
+    "before-build": "node -e \"const fs=require('fs');fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('tsconfig.tsbuildinfo',{force:true});fs.rmSync('.rollup.cache',{recursive:true,force:true});\"",
+    "build": "npm run before-build && rollup -c ",
     "dev-build": "npm run build",
     "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
     "pub": "npm publish"

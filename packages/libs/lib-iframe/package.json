@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "before-build": "rimraf dist && rimraf tsconfig.tsbuildinfo && rimraf .rollup.cache",
-    "build": "npm run before-build && tsc --skipLibCheck",
+    "build": "npm run before-build && tsc -p tsconfig.build.json --skipLibCheck",
     "dev-build": "npm run build",
     "build3": "rollup -c",
     "build2": "vue-tsc --noEmit && vite build",

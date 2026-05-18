@@ -50,7 +50,7 @@
     },
     "scripts": {
         "before-build": "node -e \"const fs=require('fs');fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('tsconfig.tsbuildinfo',{force:true});\"",
-        "build": "npm run before-build && tsc --skipLibCheck",
+        "build": "npm run before-build && tsc -p tsconfig.build.json --skipLibCheck",
         "build-docs": "jsdoc2md dist/client.js > docs/client.md && jsdoc2md dist/crypto/index.js > docs/crypto.md && jsdoc2md dist/crypto/forge.js > docs/forge.md",
         "lint": "eslint \"src/**/*.ts\" \"types/**/*.ts\"",
         "lint-types": "tsd --files \"types/index.test-d.ts\"",

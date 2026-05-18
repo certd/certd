@@ -6,7 +6,7 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "inlineSourceMap": false,
-    "sourceMap": false,
+    "sourceMap": true,
     "noImplicitThis": false,
     "noUnusedLocals": false,
     "stripInternal": true,

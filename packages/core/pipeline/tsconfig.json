@@ -8,7 +8,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "inlineSourceMap": false,
-    "sourceMap": false,
+    "sourceMap": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "importHelpers": true,
