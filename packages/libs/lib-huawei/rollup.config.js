@@ -9,6 +9,7 @@ module.exports = {
   output: {
     file: "dist/bundle.js",
     format: "cjs",
+    sourcemap: false,
   },
   plugins: [
     // 解析第三方依赖
@@ -22,10 +23,13 @@ module.exports = {
       // ],
     }),
     Typescript({
+      tsconfig: "./tsconfig.build.json",
       target: "esnext",
       rootDir: "src",
       declaration: true,
       declarationDir: "dist/d",
+      sourceMap: false,
+      inlineSourceMap: false,
       exclude: ["./node_modules/**", "./src/**/*.vue", "./src/**/*.spec.ts"],
       allowSyntheticDefaultImports: true,
     }),

@@ -24,7 +24,7 @@
     "lint": "mwts check",
     "lint:fix": "mwts fix",
     "ci": "pnpm run cov",
-    "build-only": "cross-env NODE_ENV=production mwtsc --cleanOutDir --skipLibCheck",
+    "build-only": "cross-env NODE_ENV=production mwtsc -p tsconfig.build.json --cleanOutDir --skipLibCheck",
     "build": "pnpm run build-only && pnpm run export-metadata",
     "export-metadata": "node export-plugin-yaml.js",
     "export-metadata-only": "node export-plugin-yaml.js docoff",
