@@ -48,6 +48,19 @@ export default function (): CreateCrudOptionsRet {
         realName: { title: "真实姓名", type: "text", column: { width: 120 } },
         account: { title: "收款账号", type: "text", column: { width: 180 } },
         bankName: { title: "开户银行", type: "text", column: { width: 160 } },
+        qrCode: {
+          title: "收款二维码",
+          type: "text",
+          column: {
+            width: 120,
+            cellRender({ value }) {
+              if (!value) {
+                return "-";
+              }
+              return <a-image src={`/api/basic/file/download?key=${value}`} width={48} />;
+            },
+          },
+        },
         auditRemark: { title: "审核备注", type: "text", column: { minWidth: 180 } },
         createTime: { title: "申请时间", type: "datetime", column: { width: 180 } },
       },

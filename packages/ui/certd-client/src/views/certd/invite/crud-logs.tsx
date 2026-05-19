@@ -1,4 +1,4 @@
-import { CreateCrudOptionsRet, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { CreateCrudOptionsRet, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import * as api from "./api";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
 
@@ -14,14 +14,6 @@ export default function (): CreateCrudOptionsRet {
       toolbar: { show: false },
       rowHandle: { show: false },
       columns: {
-        type: {
-          title: "类型",
-          type: "dict-select",
-          dict: dict({
-            data: [{ label: "佣金入账", value: "commission", color: "success" }],
-          }),
-          column: { width: 130 },
-        },
         amount: {
           title: "金额",
           type: "number",
@@ -30,10 +22,25 @@ export default function (): CreateCrudOptionsRet {
             component: { name: PriceInput, vModel: "modelValue", edit: false },
           },
         },
-        inviteeUserDisplay: {
+        simpleUser: {
           title: "被邀请用户",
           type: "text",
-          column: { width: 150 },
+          column: {
+            width: 170,
+            cellRender({ row }) {
+              const simpleUser = row.simpleUser;
+              if (!simpleUser) {
+                return "-";
+              }
+              return (
+                <div class="leading-5">
+                  <div>
+                    {simpleUser.username || "-"} ({simpleUser.id})
+                  </div>
+                </div>
+              );
+            },
+          },
         },
         consumeAmount: {
           title: "消费金额",

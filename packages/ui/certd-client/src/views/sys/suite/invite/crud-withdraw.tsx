@@ -1,5 +1,5 @@
 import { compute, CreateCrudOptionsProps, CreateCrudOptionsRet, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { Modal, notification } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import * as api from "./api";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
 import { useFormDialog } from "/@/use/use-dialog";
@@ -11,10 +11,29 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     return await api.GetWithdraws(query);
   };
 
+  function renderWithdrawDetail(row: any) {
+    return (
+      <a-descriptions class={"w-full"} bordered column={2} size={"small"}>
+        <a-descriptions-item label="渠道类型">{row.channel === "bank" ? "银行卡" : "支付宝"}</a-descriptions-item>
+        <a-descriptions-item label="用户名">{row.userDisplay || row.userId}</a-descriptions-item>
+        <a-descriptions-item label="账号">{row.account || "-"}</a-descriptions-item>
+        <a-descriptions-item label="开户行名称">{row.bankName || "-"}</a-descriptions-item>
+        <a-descriptions-item label="收款二维码" span={2}>
+          {row.qrCode ? <a-image src={`/api/basic/file/download?key=${row.qrCode}`} width={160} /> : <span>-</span>}
+        </a-descriptions-item>
+        <a-descriptions-item label="提现金额">{row.amount / 100} 元</a-descriptions-item>
+      </a-descriptions>
+    );
+  }
+
   async function approve(row: any) {
-    Modal.confirm({
-      title: "确认提现已线下打款？",
-      async onOk() {
+    await openFormDialog({
+      title: "提现审核",
+      wrapper: {
+        width: 760,
+      },
+      body: () => renderWithdrawDetail(row),
+      onSubmit: async () => {
         await api.ApproveWithdraw(row.id);
         await crudExpose.doRefresh();
         notification.success({ message: "已审核通过" });
@@ -24,13 +43,14 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
 
   async function reject(row: any) {
     await openFormDialog({
-      title: "拒绝提现申请",
+      title: "提现审核",
       wrapper: {
-        width: 520,
+        width: 760,
       },
       initialForm: {
         remark: "",
       },
+      body: () => renderWithdrawDetail(row),
       columns: {
         remark: {
           title: "拒绝理由",
@@ -99,6 +119,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             component: { name: PriceInput, vModel: "modelValue", edit: false },
           },
         },
+        userDisplay: { title: "用户名", type: "text", search: { show: true }, column: { width: 140 } },
         status: {
           title: "状态",
           type: "dict-select",
@@ -127,6 +148,19 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         realName: { title: "真实姓名", type: "text", search: { show: true }, column: { width: 120 } },
         account: { title: "收款账号", type: "text", column: { width: 180 } },
         bankName: { title: "开户银行", type: "text", column: { width: 160 } },
+        qrCode: {
+          title: "收款二维码",
+          type: "text",
+          column: {
+            width: 120,
+            cellRender({ value }) {
+              if (!value) {
+                return "-";
+              }
+              return <a-image src={`/api/basic/file/download?key=${value}`} width={48} />;
+            },
+          },
+        },
         auditRemark: { title: "审核备注", type: "text", column: { minWidth: 180 } },
         createTime: { title: "申请时间", type: "datetime", column: { width: 180 } },
       },

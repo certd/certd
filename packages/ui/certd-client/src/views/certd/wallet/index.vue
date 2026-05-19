@@ -40,6 +40,7 @@ import * as api from "./api";
 import createWithdrawCrudOptions from "./crud-withdraw";
 import { util } from "/@/utils";
 import { useFormDialog } from "/@/use/use-dialog";
+import { useUserStore } from "/@/store/user";
 
 defineOptions({ name: "MyWallet" });
 
@@ -47,6 +48,7 @@ const summary = reactive<any>({ availableAmount: 0, frozenAmount: 0, totalIncome
 const withdrawAmountYuan = ref(0);
 const loaded = ref(false);
 const { openFormDialog } = useFormDialog();
+const userStore = useUserStore();
 const { crudBinding: withdrawCrudBinding, crudExpose: withdrawCrudExpose, crudRef: withdrawCrudRef } = useFs({ createCrudOptions: createWithdrawCrudOptions });
 
 function amountToYuan(amount: number) {
@@ -96,6 +98,37 @@ async function openWithdrawSetting() {
         form: {
           col: { span: 24 },
           rules: [{ required: true, message: "请输入收款账号" }],
+        },
+      },
+      qrCode: {
+        title: "收款二维码",
+        type: "cropper-uploader",
+        form: {
+          col: { span: 24 },
+          component: {
+            vModel: "modelValue",
+            valueType: "key",
+            cropper: {
+              aspectRatio: 1,
+              autoCropArea: 1,
+              viewMode: 0,
+            },
+            onReady: null,
+            uploader: {
+              type: "form",
+              action: "/basic/file/upload?token=" + userStore.getToken,
+              name: "file",
+              headers: {
+                Authorization: "Bearer " + userStore.getToken,
+              },
+              successHandle(res: any) {
+                return res;
+              },
+            },
+            buildUrl(key: string) {
+              return `/api/basic/file/download?key=` + key;
+            },
+          },
         },
       },
       bankName: {

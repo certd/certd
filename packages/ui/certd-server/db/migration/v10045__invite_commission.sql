@@ -78,6 +78,7 @@ CREATE TABLE "cd_user_wallet_withdraw"
   "real_name"      varchar(100),
   "account"        varchar(200),
   "bank_name"      varchar(200),
+  "qr_code"        varchar(512),
   "audit_user_id"  integer,
   "audit_remark"   varchar(2048),
   "audit_time"     integer,
