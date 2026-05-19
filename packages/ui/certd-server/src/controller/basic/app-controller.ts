@@ -3,6 +3,11 @@ import { BaseController, Constants, FileService, SysSettingsService, SysSiteInfo
 import { http, logger } from '@certd/basic';
 import { isComm } from '@certd/plus-core';
 
+export function normalizeReleaseVersion(release: { tag_name?: string; name?: string }) {
+  const version = release?.tag_name || release?.name || '';
+  return version.replace(/^v/i, '');
+}
+
 /**
  */
 @Provide()
@@ -17,12 +22,12 @@ export class AppController extends BaseController {
   async latest(): Promise<any> {
     try {
       const res = await http.request({
-        url: 'https://registry.npmmirror.com/@certd/pipeline',
+        url: 'https://api.atomgit.com/api/v5/repos/certd/certd/releases/latest',
         method: 'get',
         logRes: false,
         timeout: 5000,
       });
-      const latest = res['dist-tags'].latest;
+      const latest = normalizeReleaseVersion(res);
       return this.ok(latest);
     } catch (e: any) {
       logger.error(e);

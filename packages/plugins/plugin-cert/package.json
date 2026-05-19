@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-cert",
   "private": false,
-  "version": "1.40.0",
+  "version": "1.40.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,10 +18,10 @@
     "compile": "tsc --skipLibCheck --watch"
   },
   "dependencies": {
-    "@certd/acme-client": "^1.40.0",
-    "@certd/basic": "^1.40.0",
-    "@certd/pipeline": "^1.40.0",
-    "@certd/plugin-lib": "^1.40.0",
+    "@certd/acme-client": "^1.40.1",
+    "@certd/basic": "^1.40.1",
+    "@certd/pipeline": "^1.40.1",
+    "@certd/plugin-lib": "^1.40.1",
     "psl": "^1.9.0",
     "punycode.js": "^2.3.1"
   },
@@ -41,5 +41,5 @@
     "tslib": "^2.8.1",
     "typescript": "^5.4.2"
   },
-  "gitHead": "5801f34b3a40cbbd591805e401613b397bec9775"
+  "gitHead": "73996f055bbff996ee776e7788e5a5cb500fc197"
 }

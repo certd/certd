@@ -56,6 +56,10 @@ export function findStep(pipeline: any, id: string) {
 
 export async function checkPipelineLimit() {
   const settingsStore = useSettingStore();
+  if (settingsStore.isEnterprise) {
+    //企业模式不限制
+    return;
+  }
   if (settingsStore.isComm && settingsStore.suiteSetting.enabled) {
     //检查数量是否超限
 
