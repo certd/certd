@@ -124,7 +124,9 @@ export class MainConfiguration {
 
     this.app.getMiddleware().insertFirst(async (ctx: IMidwayKoaContext, next: NextFunction) => {
       await next();
-      if (shouldSetDefaultNoCache(ctx.path, ctx.response.get('Cache-Control'))) {
+      const path = ctx.path;
+      // 如果是首页则强制设置为不缓存
+      if (path === '/' || path === '/index.html' || shouldSetDefaultNoCache(path, ctx.response.get('Cache-Control')) ) {
         ctx.response.set('Cache-Control', 'public,max-age=0');
       }
     });

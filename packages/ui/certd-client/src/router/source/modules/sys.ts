@@ -303,6 +303,38 @@ export const sysResources = [
             },
           },
           {
+            title: "certd.sysResources.inviteLevel",
+            name: "SysInviteLevel",
+            path: "/sys/suite/invite/level",
+            component: "/sys/suite/invite/level.vue",
+            meta: {
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isComm;
+              },
+              icon: "ion:ribbon-outline",
+              permission: "sys:settings:edit",
+              auth: true,
+              keepAlive: true,
+            },
+          },
+          {
+            title: "certd.sysResources.inviteUserLevel",
+            name: "SysInviteUserLevel",
+            path: "/sys/suite/invite/user-level",
+            component: "/sys/suite/invite/user-level.vue",
+            meta: {
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isComm;
+              },
+              icon: "ion:people-outline",
+              permission: "sys:settings:edit",
+              auth: true,
+              keepAlive: true,
+            },
+          },
+          {
             title: "certd.sysResources.inviteWithdraw",
             name: "SysInviteWithdraw",
             path: "/sys/suite/invite/withdraw",

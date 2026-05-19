@@ -22,6 +22,7 @@ export default {
   mySuite: "My Suite",
   suiteBuy: "Suite Purchase",
   myTrade: "My Orders",
+  inviteCommission: "Incentive Plan",
   paymentReturn: "Payment Return",
   source: "Source Code",
   github: "GitHub",
@@ -46,6 +47,10 @@ export default {
     suiteSetting: "Suite Settings",
     orderManager: "Order Management",
     userSuites: "User Suites",
+    inviteCommissionSetting: "Incentive Plan Settings",
+    inviteLevel: "Promotion Levels",
+    inviteUserLevel: "User Promotion Levels",
+    inviteWithdraw: "Withdrawal Requests",
     netTest: "Network Test",
 
     enterpriseSetting: "Enterprise Settings",

@@ -14,17 +14,17 @@ export default function (): CreateCrudOptionsRet {
       rowHandle: { show: false },
       columns: {
         inviteeUserId: {
-          title: "被邀请人ID",
+          title: "被推广用户ID",
           type: "number",
           column: { width: 140 },
         },
         inviteCode: {
-          title: "邀请码",
+          title: "推广码",
           type: "text",
           column: { width: 160 },
         },
         createTime: {
-          title: "邀请时间",
+          title: "推广时间",
           type: "datetime",
           column: { width: 180 },
         },

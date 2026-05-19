@@ -15,7 +15,7 @@ export default function (): CreateCrudOptionsRet {
       rowHandle: { show: false },
       columns: {
         amount: {
-          title: "金额",
+          title: "收益金额",
           type: "number",
           column: {
             width: 120,
@@ -23,7 +23,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         simpleUser: {
-          title: "被邀请用户",
+          title: "被推广用户",
           type: "text",
           column: {
             width: 170,
@@ -43,7 +43,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         consumeAmount: {
-          title: "消费金额",
+          title: "推广金额",
           type: "number",
           column: {
             width: 120,
