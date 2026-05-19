@@ -60,3 +60,6 @@ DNS problem: NXDOMAIN looking up TXT for  _acme-challenge.xxxxx - check that a D
 1、域名的ns服务器修改成别的了，但申请证书时的DNS提供商选择错误（检查确认，配置正确的DNS提供商）
 2、证书颁发机构与ns域名服务器之间访问不通，无法查询到TXT记录（尝试更换证书颁发机构）
 3、ns服务商解析值生效慢（尝试修改证书申请任务里面的等待生效时长600-1000s）
+
+## 8. 同一份证书上传多次的问题
+同一份证书在阿里云、腾讯云中上传多次，[请使用证书复用功能](../use/pretask/index.md)，避免重复上传。
