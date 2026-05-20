@@ -47,7 +47,7 @@ export class GoogleCommonEabAccountKeyFix {
 
   async init() {
     if (!isComm()) {
-      return;
+      return true;
     }
     try {
       const certApplyConfig = await this.pluginConfigService.getPluginConfig({
@@ -56,31 +56,33 @@ export class GoogleCommonEabAccountKeyFix {
       });
       const googleCommonEabAccessId = certApplyConfig?.sysSetting?.input?.googleCommonEabAccessId;
       if (!googleCommonEabAccessId) {
-        return;
+        return  true;
       }
 
       const eabAccess = await this.accessService.getAccessById(googleCommonEabAccessId, false);
       if (eabAccess.accountKey) {
-        return;
+        return  true;
       }
       if (!eabAccess.kid) {
         logger.info("公共Google EAB授权缺少KID，跳过历史ACME账号私钥修复");
-        return;
+        return true;
       }
 
       const accountConfig = await this.getLegacyGoogleAccountConfig(eabAccess.email);
       const privateKey = accountConfig?.privateKey || accountConfig?.key || accountConfig?.accountKey;
       if (!privateKey) {
         logger.info("未找到可迁移到公共Google EAB授权的历史ACME账号私钥");
-        return;
+        return true;
       }
 
       const accountKey = buildEabAccountKeyValue(eabAccess.kid, privateKey);
       await this.accessService.updateAccess({ id: googleCommonEabAccessId, eabType: "google", accountKey });
       logger.info(`已修复公共Google EAB授权的ACME账号私钥，accessId=${googleCommonEabAccessId}`);
+      return true;
     } catch (e: any) {
       logger.error("修复公共Google EAB授权ACME账号私钥失败", e);
     }
+    return false  
   }
 
   async getLegacyGoogleAccountConfig(email?: string) {

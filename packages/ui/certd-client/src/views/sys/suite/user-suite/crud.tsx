@@ -123,10 +123,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             value: "id",
             label: "nickName",
           }),
+          editForm: {
+            component: {
+              disabled: true,
+            },
+          },
           form: {
             show: true,
             component: {
-              disabled: true,
+              disabled: false,
               crossPage: true,
               multiple: false,
               select: {
@@ -183,9 +188,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           }),
           form: {
             show: true,
-            component: {
-              disabled: true,
-            },
           },
           column: {
             width: 80,

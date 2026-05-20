@@ -41,6 +41,7 @@ export class OauthSubtypeBoundTypeFix {
           await this.convertLegacyAddonLoginTypeToArray(addonEntity, legacyLoginType, manager);
         }
       });
+      return true
     } catch (e: any) {
       logger.error("修复OAuth subtype绑定历史数据失败", e);
     }

@@ -8,7 +8,7 @@ import { SuiteContentWildcardDomainCountFix } from "./suite-content-wildcard-dom
 type AutoFixTask = {
   key: string;
   fix: {
-    init(): Promise<void>;
+    init(): Promise<boolean>;
   };
 };
 
@@ -56,8 +56,8 @@ export class AutoFix {
       if (setting.fixed?.[task.key]) {
         continue;
       }
-      await task.fix.init();
-      setting.fixed[task.key] = true;
+      const ret = await task.fix.init();
+      setting.fixed[task.key] = ret;
       await this.sysSettingsService.saveSetting(setting);
     }
   }

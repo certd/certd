@@ -33,9 +33,11 @@ export class SuiteContentWildcardDomainCountFix {
       if (fixedCount > 0) {
         logger.info(`已修复套餐最大泛域名数量历史数据，数量=${fixedCount}`);
       }
+      return true
     } catch (e: any) {
       logger.error("修复套餐最大泛域名数量历史数据失败", e);
     }
+    return false
   }
 
   private async fixSuiteContentWildcardDomainCountByTable(entityManager: any, tableName: string) {
