@@ -37,7 +37,7 @@
             </div>
             <div class="flex-between mt-5">
               <div class="flex-o"><fs-icon icon="ant-design:check-outlined" class="color-green mr-5" /> 监控站点数：</div>
-              <suite-value :model-value="detail.monitorCount.max" :used="detail.monitorCount.used" unit="次" />
+              <suite-value :model-value="detail.monitorCount.max" :used="detail.monitorCount.used" unit="个" />
             </div>
           </div>
         </template>
