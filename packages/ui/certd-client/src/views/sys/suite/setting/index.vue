@@ -17,6 +17,7 @@
             <div style="height: 400px">
               <ProductManager @refreshed="onTableRefresh"></ProductManager>
             </div>
+            <div class="helper">泛域名数量受域名总数量限制：泛域名会同时占用域名总数量和泛域名数量额度。</div>
             <div class="helper">不建议设置免费套餐，可以在下方配置注册赠送套餐，或者在用户套餐管理中手动赠送套餐</div>
           </a-form-item>
 

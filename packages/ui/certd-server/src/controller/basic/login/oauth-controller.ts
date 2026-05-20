@@ -82,14 +82,22 @@ export class ConnectController extends BaseController {
     const bindUrl = installInfo?.bindUrl || "";
     //构造登录url
     const redirectUrl = `${bindUrl}api/oauth/callback/${body.type}`;
+
+    let stateObj = {
+      forType: body.forType || 'login',
+    }
+    const state = utils.hash.base64(JSON.stringify(stateObj))
     const { loginUrl, ticketValue } = await oauthProvider.addon.buildLoginUrl({
       redirectUri: redirectUrl,
       forType: body.forType,
       from: body.from || "web",
       subtype: body.subtype,
+      state,
     });
+    
     const ticket = this.codeService.setValidationValue({
       ...ticketValue,
+      state,
       subtype: body.subtype,
     })
     this.ctx.cookies.set("oauth_ticket", ticket, {

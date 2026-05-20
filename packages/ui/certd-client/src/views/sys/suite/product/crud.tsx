@@ -59,7 +59,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
             content: {
               header: t("certd.packageContent"),
-              columns: ["content.maxDomainCount", "content.maxPipelineCount", "content.maxDeployCount", "content.maxMonitorCount"],
+              columns: ["content.maxDomainCount", "content.maxWildcardDomainCount", "content.maxPipelineCount", "content.maxDeployCount", "content.maxMonitorCount"],
             },
             price: {
               header: t("certd.price"),
@@ -147,6 +147,28 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             width: 100,
+            component: {
+              name: SuiteValue,
+              vModel: "modelValue",
+              unit: t("certd.unitCount"),
+            },
+          },
+        },
+        "content.maxWildcardDomainCount": {
+          title: t("certd.wildcardDomainCountPart"),
+          type: "text",
+          form: {
+            key: ["content", "maxWildcardDomainCount"],
+            helper: t("certd.wildcardDomainCountHelper"),
+            component: {
+              name: SuiteValueEdit,
+              vModel: "modelValue",
+              unit: t("certd.unitCount"),
+            },
+            rules: [{ required: true, message: t("certd.requiredField") }],
+          },
+          column: {
+            width: 120,
             component: {
               name: SuiteValue,
               vModel: "modelValue",

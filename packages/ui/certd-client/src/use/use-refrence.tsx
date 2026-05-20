@@ -13,7 +13,6 @@ export function useReference(formItem: any) {
     const ctx = {
       compute: (opts: any) => {
         const func = (context: any) => {
-          debugger;
           let form = context.form || {};
           form = form.input || form.body || form; // form.access去掉，历史原因，access的mergeScript会处理form.access
           return opts({

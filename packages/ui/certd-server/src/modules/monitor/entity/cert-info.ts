@@ -18,6 +18,9 @@ export class CertInfoEntity {
   @Column({ name: 'domain_count', comment: '域名数量' })
   domainCount: number;
 
+  @Column({ name: 'wildcard_domain_count', comment: '泛域名数量', default: 0 })
+  wildcardDomainCount: number;
+
   @Column({ name: 'pipeline_id', comment: '关联流水线id' })
   pipelineId: number;
 

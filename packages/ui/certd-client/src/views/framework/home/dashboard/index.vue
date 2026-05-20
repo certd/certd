@@ -204,6 +204,7 @@ const hasNewVersion = computed(() => {
   return isNewVersion(version.value, latestVersion.value);
 });
 async function loadLatestVersion() {
+  // version.value = settingsStore.app.version;  //前端有缓存 可能不准确
   latestVersion.value = await api.GetLatestVersion();
   console.log("latestVersion", latestVersion.value);
 

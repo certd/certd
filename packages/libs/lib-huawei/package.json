@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-huawei",
   "private": false,
-  "version": "1.39.16",
+  "version": "1.40.2",
   "main": "./dist/bundle.js",
   "module": "./dist/bundle.js",
   "types": "./dist/d/index.d.ts",
@@ -27,5 +27,5 @@
     "prettier": "^2.8.8",
     "tslib": "^2.8.1"
   },
-  "gitHead": "bae5a04dcc0a679c290a9805c3ac4a6020eb6ec0"
+  "gitHead": "678b70cee8510a2b5217788c5db9469f49cbd439"
 }

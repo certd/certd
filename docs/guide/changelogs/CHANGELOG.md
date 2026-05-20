@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.40.2](https://github.com/certd/certd/compare/v1.40.1...v1.40.2) (2026-05-19)
+
+### Bug Fixes
+
+* **certd-server:** 调整首页缓存控制头的判断逻辑 ([0499347](https://github.com/certd/certd/commit/0499347588ee544862420ab9a5afd2546d61bc6c))
+
+### Performance Improvements
+
+* **controller:** 更换版本获取源并添加版本标准化处理 ([cb08e06](https://github.com/certd/certd/commit/cb08e061d257ba23a0fefdbfb046a8c759def828))
+
+## [1.40.1](https://github.com/certd/certd/compare/v1.40.0...v1.40.1) (2026-05-18)
+
+### Bug Fixes
+
+* 固化华为云sdk版本，避免华为云调用报错 ([59b9ffa](https://github.com/certd/certd/commit/59b9ffadd05faf3982151c48f8d83cbd97419865))
+* **email-service:** 优化商业版测试邮件内容中带的url链接 ([667e7b1](https://github.com/certd/certd/commit/667e7b185bf26558972be01720872f48352b5876))
+
+### Performance Improvements
+
+* 商业版支持限制泛域名数量 ([c63745d](https://github.com/certd/certd/commit/c63745d1ba30904428ba6b13ab0785298baa5cae))
+* **suite:** 商业版用户已购套餐支持修改 ([bdb3d09](https://github.com/certd/certd/commit/bdb3d09c09fc73e7e5e3401f6ef5588bf8ad5088))
+
+# [1.40.0](https://github.com/certd/certd/compare/v1.39.16...v1.40.0) (2026-05-14)
+
+### Bug Fixes
+
+* 修复第三方登录丢失state时无法在用户信息页面绑定第三方账号的bug ([45dedf5](https://github.com/certd/certd/commit/45dedf5bc779fea852e1f33dda4f31db2765633c))
+* 修复群晖授权没有显示设备id输入框的bug ([2f172b5](https://github.com/certd/certd/commit/2f172b56e9411303ca15138d827bdb9bafdae4d1))
+* 修复自动注册后没有跳转到控制台的bug ([4681ec9](https://github.com/certd/certd/commit/4681ec90088a3eb665427b2ac4047ec5ccefd7b3))
+* 修复clogin登录丢失state问题 ([22f5cfc](https://github.com/certd/certd/commit/22f5cfcfd8462ca74128329eefb3f48b3ee0b7ea))
+* 修复clogin多选类型登录失败的bug ([9f878a3](https://github.com/certd/certd/commit/9f878a353cd49b7b10bb0a95610ad236bc920dd2))
+
+### Features
+
+* 彩虹登录支持选择多种登录方式 ([7aa0c7e](https://github.com/certd/certd/commit/7aa0c7e491fe660abb62e68792ff5474f19bd5b8))
+
+### Performance Improvements
+
+* 第三方登录自动注册的用户支持设置初始化密码 ([a815d02](https://github.com/certd/certd/commit/a815d0245b97efbb948b33d6fc9d49862ce06889))
+* 头像增加缓存时间 ([7015b1b](https://github.com/certd/certd/commit/7015b1b232602e5168a3eb8bee6d7f1776ae1e74))
+
 ## [1.39.16](https://github.com/certd/certd/compare/v1.39.15...v1.39.16) (2026-05-13)
 
 **Note:** Version bump only for package root

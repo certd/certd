@@ -94,16 +94,14 @@ export class CloginOauthProvider extends BaseAddon implements IOauthProvider {
     //   redirectUri = redirectUri.replace("localhost:3008", "certd.handfree.work")
     // }
     const res = await this.ctx.http.request({
-      url: `${this.endpoint}/connect.php?act=login&appid=${this.appId}&appkey=${this.appKey}&type=${loginType}&redirect_uri=${redirectUri}`
+      url: `${this.endpoint}/connect.php?act=login&appid=${this.appId}&appkey=${this.appKey}&type=${loginType}&redirect_uri=${redirectUri}&state=${params.state}`
     })
 
     this.checkRes(res)
 
     return {
       loginUrl: res.url,
-      ticketValue: {
-        state: "",
-      },
+      ticketValue: {},
     };
   }
 

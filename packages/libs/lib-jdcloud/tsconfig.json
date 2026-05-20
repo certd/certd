@@ -21,7 +21,7 @@
     "composite": false,
     "useDefineForClassFields": true,
     "strict": false,
-    "sourceMap": false,
+    "sourceMap": true,
     "inlineSourceMap": false,
     "resolveJsonModule": true,
     "isolatedModules": false,

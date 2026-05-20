@@ -5,6 +5,25 @@ import { nanoid } from 'nanoid';
 import { cache } from '@certd/basic';
 import { UploadFileInfo } from '@midwayjs/upload';
 
+const imageExtSet = new Set(['.apng', '.avif', '.bmp', '.gif', '.ico', '.jpeg', '.jpg', '.png', '.svg', '.webp']);
+const imageCacheSeconds = 3 * 24 * 60 * 60;
+
+export function isImageFile(filePath: string) {
+  return imageExtSet.has(filePath.substring(filePath.lastIndexOf('.')).toLowerCase());
+}
+
+export function getImageDownloadOptions(filePath: string) {
+  if (!isImageFile(filePath)) {
+    return undefined;
+  }
+  return {
+    maxage: imageCacheSeconds * 1000,
+    setHeaders(res: any) {
+      res.setHeader('Cache-Control', `public,max-age=${imageCacheSeconds}`);
+    },
+  };
+}
+
 /**
  */
 @Provide()
@@ -40,8 +59,10 @@ export class FileController extends BaseController {
       userId = this.getUserId();
     }
     const filePath = this.fileService.getFile(key, userId);
-    this.ctx.response.attachment(filePath);
-    this.ctx.response.set('Cache-Control', 'public,max-age=2592000');
-    await send(this.ctx, filePath);
+    const sendOptions = getImageDownloadOptions(filePath);
+    if (!sendOptions) {
+      this.ctx.response.attachment(filePath);
+    }
+    await send(this.ctx, filePath, sendOptions);
   }
 }

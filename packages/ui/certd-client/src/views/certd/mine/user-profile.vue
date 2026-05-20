@@ -48,7 +48,7 @@
               </div>
             </div>
             <div class="action-buttons gap-2">
-              <change-password-button :show-button="true" />
+              <change-password-button ref="changePasswordButtonRef" :show-button="true" />
 
               <a-button type="primary" class="action-btn" @click="goSecuritySetting">
                 {{ t("authentication.securitySettingTip") }}
@@ -387,6 +387,7 @@ const checkPasskeySupport = () => {
   }
 };
 const userStore = useUserStore();
+const changePasswordButtonRef = ref();
 const userAvatar = computed(() => {
   if (isEmpty(userInfo.value.avatar)) {
     return "";
@@ -395,11 +396,26 @@ const userAvatar = computed(() => {
     return userInfo.value.avatar;
   }
 
-  return `api/basic/file/download?token=${userStore.getToken}&key=${userInfo.value.avatar}`;
+  return `api/basic/file/download?key=${userInfo.value.avatar}`;
 });
 
 onMounted(async () => {
   await getUserInfo();
+  userStore.setUserInfo(userInfo.value);
+  if (userInfo.value.needInitPassword === true) {
+    Modal.confirm({
+      title: t("authentication.initPasswordTitle"),
+      content: t("authentication.initPasswordWarning"),
+      okText: t("authentication.setNow"),
+      cancelText: t("authentication.notNow"),
+      closable: true,
+      onOk: () => {
+        changePasswordButtonRef.value.open({
+          init: true,
+        });
+      },
+    });
+  }
   await loadContactCapability();
   await loadOauthBounds();
   await loadOauthProviders();

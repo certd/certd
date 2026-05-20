@@ -4,7 +4,7 @@ import { AutoLoadPlugins } from "./auto-load-plugins.js";
 import { AutoCron } from "./auto-cron.js";
 import { AutoMitterRegister } from "./auto-mitter-register.js";
 import { AutoPipelineEmitterRegister } from "./auto-pipeline-emitter-register.js";
-import { AutoFix } from "./auto-fix.js";
+import { AutoFix } from "./fix/auto-fix.js";
 import { AutoPrint } from "./auto-print.js";
 
 @Autoload()

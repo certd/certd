@@ -42,6 +42,7 @@ export type BuildLoginUrlReq = {
     forType?: string;
     from?:string;
     subtype?: string;
+    state?: string;
 }
 
 export type BuildLogoutUrlReq = {

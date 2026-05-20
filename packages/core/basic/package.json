@@ -1,7 +1,7 @@
 {
   "name": "@certd/basic",
   "private": false,
-  "version": "1.39.16",
+  "version": "1.40.2",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "before-build": "rimraf dist && rimraf tsconfig.tsbuildinfo && rimraf .rollup.cache",
-    "build": "npm run before-build && tsc --skipLibCheck",
+    "build": "npm run before-build && tsc -p tsconfig.build.json --skipLibCheck",
     "dev-build": "npm run build",
     "preview": "vite preview",
     "test": "mocha   --loader=ts-node/esm",
@@ -52,5 +52,5 @@
     "tslib": "^2.8.1",
     "typescript": "^5.4.2"
   },
-  "gitHead": "1c6dc169ac04fd09ef94404a912a15cbb17e1452"
+  "gitHead": "678b70cee8510a2b5217788c5db9469f49cbd439"
 }

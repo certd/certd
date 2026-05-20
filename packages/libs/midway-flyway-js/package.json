@@ -1,6 +1,6 @@
 {
   "name": "@certd/midway-flyway-js",
-  "version": "1.39.16",
+  "version": "1.40.2",
   "description": "midway with flyway, sql upgrade way ",
   "private": false,
   "type": "module",
@@ -9,7 +9,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "before-build": "rimraf dist && rimraf tsconfig.tsbuildinfo && rimraf .rollup.cache",
-    "build": "npm run before-build && tsc --skipLibCheck",
+    "build": "npm run before-build && tsc -p tsconfig.build.json --skipLibCheck",
     "dev-build": "npm run build",
     "test": "midway-bin test --ts -V",
     "test1": "midway-bin test --ts -V -f test/blank.test.ts -t 'hash-check'",
@@ -49,5 +49,5 @@
     "typeorm": "^0.3.11",
     "typescript": "^5.4.2"
   },
-  "gitHead": "bae5a04dcc0a679c290a9805c3ac4a6020eb6ec0"
+  "gitHead": "678b70cee8510a2b5217788c5db9469f49cbd439"
 }
