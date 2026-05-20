@@ -1,5 +1,5 @@
 <template>
-  <div class="flex">
+  <div class="flex captcha-image-input">
     <a-input :value="valueRef" :placeholder="t('certd.captcha.inputImageCode')" autocomplete="off" @update:value="onChange">
       <template #prefix>
         <fs-icon icon="ion:image-outline"></fs-icon>
@@ -71,3 +71,10 @@ function emitChange(value: any) {
   emit("change", value);
 }
 </script>
+<style lang="less">
+.captcha-image-input {
+  .input-right {
+    background-color: #cfcfcf;
+  }
+}
+</style>

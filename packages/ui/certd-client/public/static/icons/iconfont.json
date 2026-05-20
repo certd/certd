@@ -6,6 +6,34 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "5466096",
+      "name": "wechat",
+      "font_class": "wxpay",
+      "unicode": "e735",
+      "unicode_decimal": 59189
+    },
+    {
+      "icon_id": "9186714",
+      "name": "QQ",
+      "font_class": "qq",
+      "unicode": "e667",
+      "unicode_decimal": 58983
+    },
+    {
+      "icon_id": "26267577",
+      "name": "wechat",
+      "font_class": "wechat",
+      "unicode": "e60c",
+      "unicode_decimal": 58892
+    },
+    {
+      "icon_id": "37557578",
+      "name": "acepanel",
+      "font_class": "acepanel",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    },
+    {
       "icon_id": "45984300",
       "name": "飞牛",
       "font_class": "fnos",

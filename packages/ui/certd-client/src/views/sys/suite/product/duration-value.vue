@@ -1,5 +1,5 @@
 <template>
-  <a-tag color="green"> {{ durationDict.dataMap[modelValue]?.label }}</a-tag>
+  <a-tag color="green"> {{ durationDict.dataMap[modelValue]?.label || modelValue + "天" }}</a-tag>
 </template>
 
 <script lang="ts" setup>

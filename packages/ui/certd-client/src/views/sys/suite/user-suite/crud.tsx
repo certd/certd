@@ -332,7 +332,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
         duration: {
           title: t("certd.duration"),
-          type: "text",
+          type: "number",
           addForm: {
             show: false,
           },
