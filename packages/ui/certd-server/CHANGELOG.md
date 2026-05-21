@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.40.3](https://github.com/certd/certd/compare/v1.40.2...v1.40.3) (2026-05-21)
+
+### Bug Fixes
+
+* 修复暗黑模式下注册页面验证码看不清的问题 ([5ba33be](https://github.com/certd/certd/commit/5ba33be30f765f06cafbfcc04f5e25320db01449))
+
 ## [1.40.2](https://github.com/certd/certd/compare/v1.40.1...v1.40.2) (2026-05-19)
 
 ### Bug Fixes
