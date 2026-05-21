@@ -33,3 +33,4 @@ test.js
 .history
 /logs
 .pnpm-lock.yaml
+pnpm-lock.yaml
