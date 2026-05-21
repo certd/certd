@@ -43,7 +43,7 @@ describe("AutoFix", () => {
 
     await autoFix.init();
 
-    assert.deepEqual(calls, ["google", "cert", "suite"]);
+    assert.deepEqual(calls, ["google", "cert", "suite", "oauth"]);
     assert.equal(savedSetting.fixed["google-common-eab-account-key"], true);
     assert.equal(savedSetting.fixed["oauth-subtype-bound-type"], true);
     assert.equal(savedSetting.fixed["cert-info-wildcard-domain-count"], true);
