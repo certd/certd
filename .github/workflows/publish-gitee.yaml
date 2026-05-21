@@ -35,7 +35,7 @@ jobs:
         run: |
           export GITEE_TOKEN=${{ secrets.GITEE_TOKEN }}
           rm -rf ./pnpm*.yaml
-          npm install -g pnpm
+          npm install -g pnpm@10.33.4
           pnpm install
           npm run publish_to_gitee
         working-directory: ./
