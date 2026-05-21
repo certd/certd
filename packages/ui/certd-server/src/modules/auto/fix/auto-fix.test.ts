@@ -23,27 +23,31 @@ describe("AutoFix", () => {
     autoFix.googleCommonEabAccountKeyFix = {
       async init() {
         calls.push("google");
+        return true;
       },
     } as any;
     autoFix.oauthSubtypeBoundTypeFix = {
       async init() {
         calls.push("oauth");
+        return true;
       },
     } as any;
     autoFix.certInfoWildcardDomainCountFix = {
       async init() {
         calls.push("cert");
+        return true;
       },
     } as any;
     autoFix.suiteContentWildcardDomainCountFix = {
       async init() {
         calls.push("suite");
+        return true;
       },
     } as any;
 
     await autoFix.init();
 
-    assert.deepEqual(calls, ["google", "cert", "suite", "oauth"]);
+    assert.deepEqual(calls, ["google", "cert", "suite"]);
     assert.equal(savedSetting.fixed["google-common-eab-account-key"], true);
     assert.equal(savedSetting.fixed["oauth-subtype-bound-type"], true);
     assert.equal(savedSetting.fixed["cert-info-wildcard-domain-count"], true);
