@@ -38,8 +38,8 @@ while true; do
 done
 
 
-echo "安装pnpm, 前提是已经安装了nodejs"
-$SUDO_CMD npm install -g pnpm --registry https://registry.npmmirror.com
+echo "安装pnpm@10.33.4, 前提是已经安装了nodejs"
+$SUDO_CMD npm install -g pnpm@10.33.4 --registry https://registry.npmmirror.com
 echo "安装依赖"
 $SUDO_CMD pnpm install --registry https://registry.npmmirror.com
 
