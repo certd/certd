@@ -194,7 +194,7 @@ cert.jks：jks格式证书文件，java服务器使用
     return pem;
   }
 
-  formatCerts(cert: { crt: string; key: string; csr: string }) {
+  formatCerts(cert: { crt: string; key: string; csr?: string }) {
     const newCert: CertInfo = {
       crt: this.formatCert(cert.crt),
       key: this.formatCert(cert.key),

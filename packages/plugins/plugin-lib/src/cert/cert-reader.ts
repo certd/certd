@@ -13,7 +13,7 @@ export interface ICertInfoGetter {
 export type CertInfo = {
   crt: string; //fullchain证书
   key: string; //私钥
-  csr: string; //csr
+  csr?: string; //csr
   oc?: string; //仅证书，非fullchain证书
   ic?: string; //中间证书
   pfx?: string;

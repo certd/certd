@@ -34,3 +34,4 @@ test.js
 /logs
 .pnpm-lock.yaml
 pnpm-lock.yaml
+.studio/

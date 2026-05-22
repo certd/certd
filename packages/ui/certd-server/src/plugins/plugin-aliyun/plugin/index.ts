@@ -1,4 +1,4 @@
-export * from './deploy-to-cdn/index.js';
+﻿export * from './deploy-to-cdn/index.js';
 export * from './deploy-to-dcdn/index.js';
 export * from './deploy-to-oss/index.js';
 export * from './upload-to-aliyun/index.js';
@@ -10,6 +10,7 @@ export * from './deploy-to-fc/index.js';
 export * from './deploy-to-esa/index.js';
 export * from './deploy-to-ga/index.js';
 export * from './deploy-to-vod/index.js';
+export * from './deploy-to-live/index.js';
 export * from './deploy-to-apigateway/index.js';
 export * from './deploy-to-apig/index.js';
 export * from './deploy-to-ack/index.js';

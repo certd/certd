@@ -20,5 +20,6 @@
     "scm.repositories.visible": 9,
     "scm.repositories.explorer": false,
     "scm.repositories.selectionMode": "multiple",
-    "scm.repositories.sortOrder": "discovery time"
+    "scm.repositories.sortOrder": "discovery time",
+    "git.ignoreLimitWarning": true
 }
