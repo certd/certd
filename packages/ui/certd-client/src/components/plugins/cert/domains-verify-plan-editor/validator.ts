@@ -46,6 +46,14 @@ function checkDomainVerifyPlan(rule: any, value: DomainsVerifyPlanInput) {
       if (!value[domain].dnsProviderType || !value[domain].dnsProviderAccessId) {
         throw new Error($t("certd.verifyPlan.errors.dnsProviderRequired", { domain }));
       }
+    } else if (type === "dns-persist") {
+      const subDomains = Object.keys(value[domain].dnsPersistVerifyPlan || {});
+      for (const subDomain of subDomains) {
+        const plan = value[domain].dnsPersistVerifyPlan[subDomain];
+        if (plan.status !== "valid") {
+          throw new Error(`DNS持久验证记录（${subDomain}）还未校验成功`);
+        }
+      }
     }
   }
   return true;

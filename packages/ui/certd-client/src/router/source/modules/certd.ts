@@ -187,6 +187,17 @@ export const certdResources = [
             },
           },
           {
+            title: "certd.dnsPersistRecord",
+            name: "DnsPersistRecord",
+            path: "/certd/cert/dns-persist",
+            component: "/certd/cert/dns-persist/index.vue",
+            meta: {
+              icon: "ion:shield-half-outline",
+              auth: true,
+              keepAlive: true,
+            },
+          },
+          {
             title: "certd.subDomain",
             name: "SubDomain",
             path: "/certd/pipeline/subDomain",

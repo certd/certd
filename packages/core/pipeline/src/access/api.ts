@@ -19,6 +19,7 @@ export type AccessInputDefine = FormItemProps & {
 };
 export type AccessDefine = Registrable & {
   icon?: string;
+  subtype?: string;
   input?: {
     [key: string]: AccessInputDefine;
   };

@@ -11,14 +11,16 @@
       <td class="record-value" :title="cnameRecord.recordValue">
         <fs-copyable v-model="cnameRecord.recordValue"></fs-copyable>
       </td>
-      <td class="status center flex-center">
-        <fs-values-format v-model="cnameRecord.status" :dict="statusDict" />
-        <a-tooltip v-if="cnameRecord.error" :title="cnameRecord.error">
-          <fs-icon class="ml-5 color-red" icon="ion:warning-outline"></fs-icon>
-        </a-tooltip>
-        <a-tooltip v-if="cnameRecord.status === 'valid'" :title="t('certd.verifyPlan.resetStatusTooltip')">
-          <fs-icon class="ml-2 color-yellow text-md pointer" icon="solar:undo-left-square-bold" @click="resetStatus"></fs-icon>
-        </a-tooltip>
+      <td class="status center">
+        <span class="status-content">
+          <fs-values-format v-model="cnameRecord.status" :dict="statusDict" />
+          <a-tooltip v-if="cnameRecord.error" :title="cnameRecord.error">
+            <fs-icon class="ml-5 color-red" icon="ion:warning-outline"></fs-icon>
+          </a-tooltip>
+          <a-tooltip v-if="cnameRecord.status === 'valid'" :title="t('certd.verifyPlan.resetStatusTooltip')">
+            <fs-icon class="ml-2 color-yellow text-md pointer" icon="solar:undo-left-square-bold" @click="resetStatus"></fs-icon>
+          </a-tooltip>
+        </span>
       </td>
       <td class="center">
         <template v-if="cnameRecord.status !== 'valid'">
@@ -141,6 +143,11 @@ async function resetStatus() {
 .cname-record-info {
   .fs-copyable {
     width: 100%;
+  }
+  .status-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 </style>

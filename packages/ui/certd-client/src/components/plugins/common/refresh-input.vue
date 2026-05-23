@@ -1,8 +1,8 @@
 <template>
   <div class="refresh-input">
     <div class="refresh-input-line">
-      <a-input class="refresh-input-control" :value="value" :placeholder="placeholder" allow-clear @update:value="emit('update:value', $event)"></a-input>
-      <fs-button :loading="loading" type="primary" :text="buttonText" :icon="icon" @click="doRefresh"></fs-button>
+      <a-input class="refresh-input-control" :value="value" :placeholder="placeholder" :allow-clear="!disabled" :disabled="disabled" @update:value="emit('update:value', $event)"></a-input>
+      <fs-button :loading="loading" :disabled="disabled" type="primary" :text="buttonText" :icon="icon" @click="doRefresh"></fs-button>
     </div>
     <div class="helper" :class="{ error: hasError }">
       {{ message }}
@@ -25,6 +25,7 @@ type RefreshInputProps = ComponentPropsType & {
   icon?: string;
   placeholder?: string;
   successMessage?: string;
+  disabled?: boolean;
 };
 
 const fromType: any = inject("getFromType");
@@ -49,6 +50,9 @@ const placeholder = computed(() => props.placeholder || "");
 const successMessage = computed(() => props.successMessage || "刷新成功，请保存配置");
 
 const doRefresh = async () => {
+  if (props.disabled) {
+    return;
+  }
   if (loading.value) {
     return;
   }

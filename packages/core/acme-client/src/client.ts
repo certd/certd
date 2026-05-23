@@ -467,6 +467,10 @@ class AcmeClient {
             return createHash('sha256').update(result).digest('base64url');
         }
 
+        if (challenge.type === 'dns-persist-01') {
+            return '';
+        }
+
         /* https://datatracker.ietf.org/doc/html/rfc8737 */
         if (challenge.type === 'tls-alpn-01') {
             return result;

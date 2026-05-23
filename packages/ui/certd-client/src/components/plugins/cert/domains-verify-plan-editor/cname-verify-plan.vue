@@ -2,11 +2,11 @@
   <table class="cname-verify-plan">
     <thead>
       <tr>
-        <td style="width: 160px">{{ t("certd.verifyPlan.hostRecord") }}</td>
-        <td style="width: 100px; text-align: center">{{ t("certd.verifyPlan.recordType") }}</td>
-        <td style="width: 250px">{{ t("certd.verifyPlan.setCnameRecord") }}</td>
-        <td style="width: 120px" class="center">{{ t("certd.status") }}</td>
-        <td style="width: 90px" class="center">{{ t("certd.verifyPlan.operation") }}</td>
+        <td class="col-host">{{ t("certd.verifyPlan.hostRecord") }}</td>
+        <td class="col-type center">{{ t("certd.verifyPlan.recordType") }}</td>
+        <td class="col-value">{{ t("certd.verifyPlan.setCnameRecord") }}</td>
+        <td class="col-status center">{{ t("certd.status") }}</td>
+        <td class="col-action center">{{ t("certd.verifyPlan.operation") }}</td>
       </tr>
     </thead>
     <template v-for="key in domains" :key="key">
@@ -49,6 +49,21 @@ function onRecordChange(domain: string, record: CnameRecord) {
 .cname-verify-plan {
   width: 100%;
   table-layout: fixed;
+  .col-host {
+    width: 220px;
+  }
+  .col-type {
+    width: 100px;
+  }
+  .col-value {
+    width: 360px;
+  }
+  .col-status {
+    width: 120px;
+  }
+  .col-action {
+    width: 150px;
+  }
   tbody tr td {
     border-top: 1px solid #e8e8e8 !important;
   }

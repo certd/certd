@@ -21,6 +21,10 @@ export default defineComponent({
       type: String, //user | sys
       default: "user",
     },
+    subtype: {
+      type: String,
+      default: "",
+    },
     modelValue: {},
   },
   emits: ["update:modelValue"],
@@ -30,10 +34,17 @@ export default defineComponent({
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
     // 你可以调用此方法，重新初始化crud配置
+    function refreshSearch() {
+      const form: any = { type: props.type };
+      if (props.subtype) {
+        form.subtype = props.subtype;
+      }
+      crudExpose.setSearchFormData({ form, mergeForm: true });
+      crudExpose.doRefresh();
+    }
     function onTypeChanged(value: any) {
       context.typeRef.value = value;
-      crudExpose.setSearchFormData({ form: { type: value }, mergeForm: true });
-      crudExpose.doRefresh();
+      refreshSearch();
     }
     watch(
       () => {
@@ -42,6 +53,14 @@ export default defineComponent({
       value => {
         console.log("access type changed:", value);
         onTypeChanged(value);
+      }
+    );
+    watch(
+      () => {
+        return props.subtype;
+      },
+      () => {
+        refreshSearch();
       }
     );
     // 页面打开后获取列表数据

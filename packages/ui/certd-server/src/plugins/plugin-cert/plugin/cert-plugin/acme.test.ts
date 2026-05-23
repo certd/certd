@@ -1,4 +1,5 @@
 import assert from "assert";
+import { utils } from "@certd/basic";
 import { AcmeService } from "./acme.js";
 
 const logger = {
@@ -172,5 +173,29 @@ describe("AcmeService challenge", () => {
     );
 
     assert.deepEqual(parseCalls, ["www.example.com", "certd-key.cname.sub.example.com"]);
+  });
+
+  it("enables proxy mapping when acme directory request fails", async () => {
+    const originalRequest = utils.http.request;
+    utils.http.request = async () => {
+      throw new Error("timeout");
+    };
+
+    try {
+      const service = new AcmeService({
+        userId: 1,
+        userContext: {} as any,
+        logger: logger as any,
+        sslProvider: "google",
+        domainParser: {} as any,
+      });
+
+      const urlMapping = await service.resolveUrlMapping("https://dv.acme-v02.api.pki.goog/directory");
+
+      assert.equal(urlMapping.enabled, true);
+      assert.equal(urlMapping.mappings["dv.acme-v02.api.pki.goog"], "gg.px.certd.handfree.work");
+    } finally {
+      utils.http.request = originalRequest;
+    }
   });
 });

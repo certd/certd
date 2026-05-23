@@ -57,7 +57,7 @@ export interface ClientExternalAccountBindingOptions {
 
 export interface ClientAutoOptions {
     csr: CsrBuffer | CsrString;
-    challengeCreateFn: (authz: Authorization, keyAuthorization: (challenge:rfc8555.Challenge)=>Promise<string>) => Promise<{recordReq?:any,recordRes?:any,dnsProvider?:any,challenge: rfc8555.Challenge,keyAuthorization:string}>;
+    challengeCreateFn: (authz: Authorization, keyAuthorization: (challenge:rfc8555.Challenge)=>Promise<string>) => Promise<{recordReq?:any,recordRes?:any,dnsProvider?:any,challenge: rfc8555.Challenge,keyAuthorization:string,httpUploader?:any}>;
     challengeRemoveFn: (authz: Authorization, challenge: rfc8555.Challenge, keyAuthorization: string,recordReq:any, recordRes:any,dnsProvider:any,httpUploader:any) => Promise<any>;
     email?: string;
     termsOfServiceAgreed?: boolean;

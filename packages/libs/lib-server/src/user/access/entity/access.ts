@@ -19,6 +19,9 @@ export class AccessEntity {
   @Column({ comment: '类型', length: 100 })
   type: string;
 
+  @Column({ name: 'subtype', comment: '子类型', length: 100, nullable: true })
+  subtype: string;
+
   @Column({ name: 'setting', comment: '设置', length: 10240, nullable: true })
   setting: string;
 

@@ -1,4 +1,4 @@
-import { IAccessService } from '@certd/pipeline';
+import { IAccessService } from "@certd/pipeline";
 
 export class AccessGetter implements IAccessService {
   userId: number;
@@ -15,6 +15,6 @@ export class AccessGetter implements IAccessService {
   }
 
   async getCommonById<T = any>(id: any) {
-    return await this.getter<T>(id, 0,null);
+    return await this.getter<T>(id, 0, null);
   }
 }
