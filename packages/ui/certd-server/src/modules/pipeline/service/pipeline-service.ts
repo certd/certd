@@ -659,6 +659,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       suite = res.suite
     } catch (e) {
       logger.error(`流水线${entity.id}触发失败（${triggerId}）：${e.message}`);
+      return;
     }
 
     const id = entity.id;
