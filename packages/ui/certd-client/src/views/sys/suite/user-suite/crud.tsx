@@ -123,10 +123,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             value: "id",
             label: "nickName",
           }),
+          editForm: {
+            component: {
+              disabled: true,
+            },
+          },
           form: {
             show: true,
             component: {
-              disabled: true,
+              disabled: false,
               crossPage: true,
               multiple: false,
               select: {
@@ -170,11 +175,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         productType: {
           title: t("certd.type"),
           type: "dict-select",
-          editForm: {
-            component: {
-              disabled: true,
-            },
-          },
           dict: dict({
             data: [
               { label: t("certd.package"), value: "suite", color: "green" },
@@ -182,7 +182,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             ],
           }),
           form: {
-            show: true,
+            show: false,
             component: {
               disabled: true,
             },
@@ -205,6 +205,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         "content.maxDomainCount": {
           title: t("certd.domain_count"),
           type: "text",
+          addForm: {
+            show: false,
+          },
           form: {
             key: ["content", "maxDomainCount"],
             component: {
@@ -227,6 +230,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         "content.maxWildcardDomainCount": {
           title: t("certd.wildcardDomainCountPart"),
           type: "text",
+          addForm: {
+            show: false,
+          },
           form: {
             key: ["content", "maxWildcardDomainCount"],
             component: {
@@ -249,6 +255,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         "content.maxPipelineCount": {
           title: t("certd.pipeline_count"),
           type: "text",
+          addForm: {
+            show: false,
+          },
           form: {
             key: ["content", "maxPipelineCount"],
             component: {
@@ -271,6 +280,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         "content.maxDeployCount": {
           title: t("certd.deploy_count"),
           type: "text",
+          addForm: {
+            show: false,
+          },
           form: {
             key: ["content", "maxDeployCount"],
             component: {
@@ -296,6 +308,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         "content.maxMonitorCount": {
           title: t("certd.monitor_count"),
           type: "text",
+          addForm: {
+            show: false,
+          },
           form: {
             key: ["content", "maxMonitorCount"],
             component: {
@@ -317,7 +332,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
         duration: {
           title: t("certd.duration"),
-          type: "text",
+          type: "number",
+          addForm: {
+            show: false,
+          },
           form: {
             rules: [{ required: true, message: t("certd.field_required") }],
           },
@@ -363,6 +381,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         expiresTime: {
           title: t("certd.expires_time"),
           type: "date",
+          addForm: {
+            show: false,
+          },
           form: {
             valueBuilder: ({ value }) => {
               return dayjs(value);
@@ -393,6 +414,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               { label: t("certd.is_present_no"), value: false, color: "blue" },
             ],
           }),
+          addForm: {
+            show: false,
+          },
           form: {
             value: true,
           },
@@ -404,6 +428,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         deployCountUsed: {
           title: t("certd.deploy_count_used"),
           type: "number",
+          addForm: {
+            show: false,
+          },
           form: {
             value: 0,
             rules: [{ required: true, message: t("certd.field_required") }],

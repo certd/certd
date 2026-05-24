@@ -1,17 +1,17 @@
-import {Inject, Provide, Scope, ScopeEnum} from '@midwayjs/core';
-import {InjectEntityModel} from '@midwayjs/typeorm';
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
 import { In, Repository } from "typeorm";
-import {AccessGetter, BaseService, PageReq, PermissionException, ValidateException} from '../../../index.js';
-import {AccessEntity} from '../entity/access.js';
-import {AccessDefine, accessRegistry, newAccess} from '@certd/pipeline';
-import {EncryptService} from './encrypt-service.js';
-import { logger, utils } from '@certd/basic';
+import { AccessGetter, BaseService, PageReq, PermissionException, ValidateException } from "../../../index.js";
+import { AccessEntity } from "../entity/access.js";
+import { AccessDefine, accessRegistry, newAccess } from "@certd/pipeline";
+import { EncryptService } from "./encrypt-service.js";
+import { logger, utils } from "@certd/basic";
 
 /**
  * 授权
  */
 @Provide()
-@Scope(ScopeEnum.Request, {allowDowngrade: true})
+@Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class AccessService extends BaseService<AccessEntity> {
   @InjectEntityModel(AccessEntity)
   repository: Repository<AccessEntity>;
@@ -36,16 +36,16 @@ export class AccessService extends BaseService<AccessEntity> {
 
   async add(param) {
     let oldEntity = null;
-    if (param._copyFrom){
+    if (param._copyFrom) {
       oldEntity = await this.info(param._copyFrom);
       if (oldEntity == null) {
-        throw new ValidateException('该授权配置不存在,请确认是否已被删除');
+        throw new ValidateException("该授权配置不存在,请确认是否已被删除");
       }
-      if (oldEntity.userId  !== param.userId) {
-        throw new ValidateException('您无权查看该授权配置');
+      if (oldEntity.userId !== param.userId) {
+        throw new ValidateException("您无权查看该授权配置");
       }
     }
-    delete param._copyFrom
+    delete param._copyFrom;
     this.encryptSetting(param, oldEntity);
     param.keyId = "ac_" + utils.id.simpleNanoId();
     return await super.add(param);
@@ -62,17 +62,20 @@ export class AccessService extends BaseService<AccessEntity> {
       return;
     }
     const json = JSON.parse(setting);
+    if (accessDefine.subtype) {
+      param.subtype = json[accessDefine.subtype] || null;
+    }
     let oldSetting = {};
     let encryptSetting = {};
-    const firstEncrypt = !oldSettingEntity || !oldSettingEntity.encryptSetting || oldSettingEntity.encryptSetting === '{}';
+    const firstEncrypt = !oldSettingEntity || !oldSettingEntity.encryptSetting || oldSettingEntity.encryptSetting === "{}";
     if (oldSettingEntity) {
-      oldSetting = JSON.parse(oldSettingEntity.setting || '{}');
-      encryptSetting = JSON.parse(oldSettingEntity.encryptSetting || '{}');
+      oldSetting = JSON.parse(oldSettingEntity.setting || "{}");
+      encryptSetting = JSON.parse(oldSettingEntity.encryptSetting || "{}");
     }
     for (const key in json) {
       //加密
       let value = json[key];
-      if (value && typeof value === 'string') {
+      if (value && typeof value === "string") {
         //去除前后空格
         value = value.trim();
         json[key] = value;
@@ -81,7 +84,7 @@ export class AccessService extends BaseService<AccessEntity> {
       if (!accessInputDefine) {
         continue;
       }
-      if (!accessInputDefine.encrypt || !value || typeof value !== 'string') {
+      if (!accessInputDefine.encrypt || !value || typeof value !== "string") {
         //定义无需加密、value为空、不是字符串 这些不需要加密
         encryptSetting[key] = {
           value: value,
@@ -96,7 +99,7 @@ export class AccessService extends BaseService<AccessEntity> {
         const subIndex = Math.min(2, length);
         let starLength = length - subIndex * 2;
         starLength = Math.max(2, starLength);
-        const starString = '*'.repeat(starLength);
+        const starString = "*".repeat(starLength);
         json[key] = value.substring(0, subIndex) + starString + value.substring(value.length - subIndex);
         encryptSetting[key] = {
           value: this.encryptService.encrypt(value),
@@ -116,21 +119,21 @@ export class AccessService extends BaseService<AccessEntity> {
   async update(param) {
     const oldEntity = await this.info(param.id);
     if (oldEntity == null) {
-      throw new ValidateException('该授权配置不存在,请确认是否已被删除');
+      throw new ValidateException("该授权配置不存在,请确认是否已被删除");
     }
     this.encryptSetting(param, oldEntity);
-    delete param.keyId
+    delete param.keyId;
     return await super.update(param);
   }
 
   async updateAccess(access: any) {
     const oldEntity = await this.info(access.id);
     if (oldEntity == null) {
-      throw new ValidateException('该授权配置不存在,请确认是否已被删除');
+      throw new ValidateException("该授权配置不存在,请确认是否已被删除");
     }
     const setting = this.decryptAccessEntity(oldEntity);
     for (const key of Object.keys(access)) {
-      if (key === 'id') {
+      if (key === "id") {
         continue;
       }
       setting[key] = access[key];
@@ -145,11 +148,13 @@ export class AccessService extends BaseService<AccessEntity> {
   async getSimpleInfo(id: number) {
     const entity = await this.info(id);
     if (entity == null) {
-      throw new ValidateException('该授权配置不存在,请确认是否已被删除');
+      throw new ValidateException("该授权配置不存在,请确认是否已被删除");
     }
     return {
       id: entity.id,
       name: entity.name,
+      type: entity.type,
+      subtype: entity.subtype,
       userId: entity.userId,
       projectId: entity.projectId,
     };
@@ -162,14 +167,14 @@ export class AccessService extends BaseService<AccessEntity> {
     }
     if (checkUserId) {
       if (userId == null) {
-        throw new ValidateException('userId不能为空');
+        throw new ValidateException("userId不能为空");
       }
       if (userId !== entity.userId) {
-        throw new PermissionException('您对该Access授权无访问权限');
+        throw new PermissionException("您对该Access授权无访问权限");
       }
     }
     if (projectId != null && projectId !== entity.projectId) {
-      throw new PermissionException('您对该Access授权无访问权限');
+      throw new PermissionException("您对该Access授权无访问权限");
     }
 
     // const access = accessRegistry.get(entity.type);
@@ -178,8 +183,8 @@ export class AccessService extends BaseService<AccessEntity> {
       id: entity.id,
       ...setting,
     };
-    const accessGetter = new AccessGetter(userId,projectId, this.getById.bind(this));
-    return await newAccess(entity.type, input,accessGetter);
+    const accessGetter = new AccessGetter(userId, projectId, this.getById.bind(this));
+    return await newAccess(entity.type, input, accessGetter);
   }
 
   async getById(id: any, userId: number, projectId?: number): Promise<any> {
@@ -188,7 +193,7 @@ export class AccessService extends BaseService<AccessEntity> {
 
   decryptAccessEntity(entity: AccessEntity): any {
     let setting = {};
-    if (entity.encryptSetting && entity.encryptSetting !== '{}') {
+    if (entity.encryptSetting && entity.encryptSetting !== "{}") {
       setting = JSON.parse(entity.encryptSetting);
       for (const key in setting) {
         //解密
@@ -213,12 +218,11 @@ export class AccessService extends BaseService<AccessEntity> {
     return accessRegistry.getDefine(type);
   }
 
-
   async getSimpleByIds(ids: number[], userId: any, projectId?: number) {
     if (ids.length === 0) {
       return [];
     }
-    if (userId==null) {
+    if (userId == null) {
       return [];
     }
     return await this.repository.find({
@@ -231,24 +235,24 @@ export class AccessService extends BaseService<AccessEntity> {
         id: true,
         name: true,
         type: true,
-        userId:true,
-        projectId:true,
+        subtype: true,
+        userId: true,
+        projectId: true,
       },
     });
-
   }
 
   /**
    * 复制授权到其他项目
-   * @param accessId 
-   * @param projectId 
+   * @param accessId
+   * @param projectId
    */
-  async copyTo(accessId: number,projectId?: number) {
+  async copyTo(accessId: number, projectId?: number) {
     const access = await this.info(accessId);
     if (access == null) {
       throw new Error(`该授权配置不存在,请确认是否已被删除:id=${accessId}`);
     }
-    
+
     const keyId = access.keyId;
     //检查目标项目里是否已经有相同keyId的配置
     const existAccess = await this.repository.findOne({
@@ -263,10 +267,10 @@ export class AccessService extends BaseService<AccessEntity> {
     }
     const newAccess = {
       ...access,
-      userId:-1,
+      userId: -1,
       id: undefined,
       projectId,
-    }
+    };
     await this.repository.save(newAccess);
     return newAccess.id;
   }

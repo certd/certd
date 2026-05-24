@@ -363,7 +363,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
         if (!old && userSuite?.pipelineCount.max != -1 && userSuite?.pipelineCount.used + 1 > userSuite?.pipelineCount.max) {
           throw new NeedSuiteException(`对不起，您最多只能创建${userSuite?.pipelineCount.max}条流水线，请购买或升级套餐`);
         }
-
         let oldDomainCount = 0;
         let oldWildcardDomainCount = 0;
         if (old?.id) {

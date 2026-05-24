@@ -119,6 +119,7 @@ export default defineConfig({
                         {text: "Certd本身的证书更新", link: "/guide/use/https/index.md"},
                         {text: "js脚本插件使用", link: "/guide/use/custom-script/index.md"},
                         {text: "邮箱配置", link: "/guide/use/email/index.md"},
+                        {text: "证书复用", link: "/guide/use/pretask/"},
                         {text: "IPv6支持", link: "/guide/use/setting/ipv6.md"},
                         {text: "ESXi", link: "/guide/use/ESXi/index.md"},
                         {text: "宝塔动态IP白名单", link: "/guide/use/baota/white_list.md"},

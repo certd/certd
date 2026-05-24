@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.40.3](https://github.com/certd/certd/compare/v1.40.2...v1.40.3) (2026-05-21)
+
+### Bug Fixes
+
+* 修复暗黑模式下注册页面验证码看不清的问题 ([5ba33be](https://github.com/certd/certd/commit/5ba33be30f765f06cafbfcc04f5e25320db01449))
+
+### Performance Improvements
+
+* 修复商业版套餐添加和修改时的字段显示 ([fb5b00d](https://github.com/certd/certd/commit/fb5b00d73f925036a65ce5003c57c1199578c34d))
+
+## [1.40.2](https://github.com/certd/certd/compare/v1.40.1...v1.40.2) (2026-05-19)
+
+### Bug Fixes
+
+* **certd-server:** 调整首页缓存控制头的判断逻辑 ([0499347](https://github.com/certd/certd/commit/0499347588ee544862420ab9a5afd2546d61bc6c))
+
+### Performance Improvements
+
+* **controller:** 更换版本获取源并添加版本标准化处理 ([cb08e06](https://github.com/certd/certd/commit/cb08e061d257ba23a0fefdbfb046a8c759def828))
+
 ## [1.40.1](https://github.com/certd/certd/compare/v1.40.0...v1.40.1) (2026-05-18)
 
 ### Bug Fixes

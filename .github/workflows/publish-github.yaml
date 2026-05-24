@@ -35,7 +35,7 @@ jobs:
         run: |
           export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
           rm -rf ./pnpm*.yaml
-          npm install -g pnpm
+          npm install -g pnpm@10.33.4
           pnpm install
           npm run publish_to_github
         working-directory: ./

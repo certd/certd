@@ -1,7 +1,7 @@
 {
   "name": "@certd/pipeline",
   "private": false,
-  "version": "1.40.1",
+  "version": "1.40.3",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -19,8 +19,8 @@
     "compile": "tsc --skipLibCheck --watch"
   },
   "dependencies": {
-    "@certd/basic": "^1.40.1",
-    "@certd/plus-core": "^1.40.1",
+    "@certd/basic": "^1.40.3",
+    "@certd/plus-core": "^1.40.3",
     "dayjs": "^1.11.7",
     "lodash-es": "^4.17.21",
     "reflect-metadata": "^0.1.13"
@@ -49,5 +49,5 @@
     "tslib": "^2.8.1",
     "typescript": "^5.4.2"
   },
-  "gitHead": "73996f055bbff996ee776e7788e5a5cb500fc197"
+  "gitHead": "01c91ba294f88bd07fddf9358c4301bbb4027916"
 }

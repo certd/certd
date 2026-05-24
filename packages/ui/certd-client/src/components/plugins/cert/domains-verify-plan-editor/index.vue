@@ -46,12 +46,27 @@
                     <div class="form-item">
                       <span class="label">{{ t("certd.verifyPlan.dnsAccess") }}:</span>
                       <span class="input">
-                        <access-selector v-model="item.dnsProviderAccessId" size="small" :type="item.dnsProviderAccessType || item.dnsProviderType" :placeholder="t('certd.verifyPlan.pleaseSelect')" @change="onPlanChanged"></access-selector>
+                        <access-selector
+                          v-model="item.dnsProviderAccessId"
+                          size="small"
+                          :type="item.dnsProviderAccessType || item.dnsProviderType"
+                          :placeholder="t('certd.verifyPlan.pleaseSelect')"
+                          @change="onPlanChanged"
+                        ></access-selector>
                       </span>
                     </div>
                   </div>
                   <div v-if="item.type === 'cname'" class="plan-cname">
                     <cname-verify-plan v-model="item.cnameVerifyPlan" @change="onPlanChanged" />
+                  </div>
+                  <div v-if="item.type === 'dns-persist'" class="plan-dns-persist">
+                    <dns-persist-verify-plan
+                      v-model="item.dnsPersistVerifyPlan"
+                      :ca-type="caType"
+                      :acme-account-access-id="acmeAccountAccessId"
+                      :common-acme-account-access-id="commonAcmeAccountAccessId"
+                      @change="onPlanChanged"
+                    />
                   </div>
                   <div v-if="item.type === 'http'" class="plan-http">
                     <http-verify-plan v-model="item.httpVerifyPlan" @change="onPlanChanged" />
@@ -76,6 +91,7 @@ import { useI18n } from "vue-i18n";
 import { dict, FsDictSelect } from "@fast-crud/fast-crud";
 import AccessSelector from "/@/views/certd/access/access-selector/index.vue";
 import CnameVerifyPlan from "./cname-verify-plan.vue";
+import DnsPersistVerifyPlan from "./dns-persist-verify-plan.vue";
 import HttpVerifyPlan from "./http-verify-plan.vue";
 import { Form } from "ant-design-vue";
 import { DomainsVerifyPlanInput } from "./type";
@@ -93,6 +109,10 @@ const challengeTypeOptions = ref<any[]>([
     value: "dns",
   },
   {
+    label: "DNS持久验证",
+    value: "dns-persist",
+  },
+  {
     label: t("certd.verifyPlan.cnameChallenge"),
     value: "cname",
   },
@@ -106,6 +126,9 @@ const props = defineProps<{
   modelValue?: DomainsVerifyPlanInput;
   domains?: string[];
   defaultType?: string;
+  caType?: string;
+  acmeAccountAccessId?: number;
+  commonAcmeAccountAccessId?: number;
 }>();
 
 const emit = defineEmits<{
@@ -189,11 +212,15 @@ async function onDomainsChanged(domains: string[]) {
 
     const cnameOrigin = planItem.cnameVerifyPlan;
     const httpOrigin = planItem.httpVerifyPlan;
+    const dnsPersistOrigin = planItem.dnsPersistVerifyPlan;
     planItem.cnameVerifyPlan = {};
     planItem.httpVerifyPlan = {};
+    planItem.dnsPersistVerifyPlan = {};
     const cnamePlan = planItem.cnameVerifyPlan;
     const httpPlan = planItem.httpVerifyPlan;
+    const dnsPersistPlan = planItem.dnsPersistVerifyPlan;
     for (const subDomain of domainGroupItem.keySubDomains) {
+      const wildcard = true;
       if (!cnameOrigin[subDomain]) {
         //@ts-ignore
         planItem.cnameVerifyPlan[subDomain] = {
@@ -225,6 +252,19 @@ async function onDomainsChanged(domains: string[]) {
           domain: subDomain,
         };
       }
+
+      if (!dnsPersistOrigin?.[subDomain]) {
+        //@ts-ignore
+        dnsPersistPlan[subDomain] = {
+          domain: subDomain,
+          wildcard,
+        };
+      } else {
+        dnsPersistPlan[subDomain] = {
+          ...dnsPersistOrigin[subDomain],
+          wildcard,
+        };
+      }
     }
 
     for (const subDomain of Object.keys(cnamePlan)) {
@@ -236,6 +276,12 @@ async function onDomainsChanged(domains: string[]) {
     for (const subDomain of Object.keys(httpPlan)) {
       if (!domainGroupItem.keySubDomains.includes(subDomain)) {
         delete httpPlan[subDomain];
+      }
+    }
+
+    for (const subDomain of Object.keys(dnsPersistPlan)) {
+      if (!domainGroupItem.keySubDomains.includes(subDomain)) {
+        delete dnsPersistPlan[subDomain];
       }
     }
   }
@@ -268,6 +314,7 @@ watch(
   overflow-x: auto;
   .fullscreen-modal {
     display: none;
+    background-color: rgba(0, 0, 0, 0.42);
   }
 
   &.fullscreen {

@@ -1,4 +1,4 @@
-# Certd 开发 Agent 上下文
+﻿# Certd 开发 Agent 上下文
 
 这个文件是给在本仓库工作的开发 agent 看的常驻项目说明。后续会话进入仓库后，应先读取它，再按任务需要查看具体代码，避免每次都重新全量扫描项目。
 
@@ -230,3 +230,6 @@ Get-ChildItem packages\ui\certd-client\src\views\certd
 - 单个 monorepo 包运行单元测试时，优先使用 `corepack pnpm --dir <包目录> test:unit`，例如 `corepack pnpm --dir packages\ui\certd-server test:unit`、`corepack pnpm --dir packages\core\basic test:unit`、`corepack pnpm --dir packages\plugins\plugin-lib test:unit`；也可以用包名过滤，例如 `corepack pnpm --filter @certd/ui-server test:unit`。前端 `packages\ui\certd-client` 暂时不跑单元测试。
 - 前端 TS/Vue/locale 等文件改动后，优先只对本次改动文件运行项目现有自动格式化/修复；Windows/PowerShell 下 Prettier 已验证可用命令为 `packages\ui\certd-client\node_modules\.bin\prettier.cmd --write <files>`，ESLint 可用命令为 `packages\ui\certd-client\node_modules\.bin\eslint.cmd --fix <files>`；不要运行 `vue-tsc` / `pnpm tsc`；不要为了格式化无关文件而扩大 diff。项目保留了 `tslint` 依赖，但当前主要使用 ESLint + Prettier。
 - 优先对改动包运行聚焦的测试；后端可按包运行单元测试，前端优先使用 Prettier/ESLint 做改动文件验证。只有跨包影响明显时再考虑全 monorepo 构建。
+
+- 不要主动运行 `pnpm install` 安装依赖：用户会事先准备好 `node_modules`。如果 `pnpm install` 或 `test:unit` 因缺少依赖、TTY 或网络问题失败，立即停止尝试，告知用户解决环境问题。
+

@@ -21,13 +21,28 @@ export type HttpVerifyPlan = {
 export type DomainVerifyPlan = {
   domain: string;
   mainDomain: string;
-  type: "cname" | "dns" | "http";
+  type: "cname" | "dns" | "http" | "dns-persist";
   dnsProvider?: IDnsProvider;
   cnameVerifyPlan?: CnameVerifyPlan;
   httpVerifyPlan?: HttpVerifyPlan;
+  dnsPersistVerifyPlan?: DnsPersistVerifyPlan;
 };
 export type DomainsVerifyPlan = {
   [key: string]: DomainVerifyPlan;
+};
+
+export type AcmeAccountInfo = {
+  accountKey: string;
+  accountUri: string;
+  caType: SSLProvider | string;
+  email: string;
+  directoryUrl: string;
+};
+
+export type DnsPersistVerifyPlan = {
+  hostRecord: string;
+  recordValue: string;
+  accountUri: string;
 };
 
 export type Providers = {
@@ -38,7 +53,7 @@ export type Providers = {
 export type CertInfo = {
   crt: string; //fullchain证书
   key: string; //私钥
-  csr: string; //csr
+  csr?: string; //csr
   oc?: string; //仅证书，非fullchain证书
   ic?: string; //中间证书
   pfx?: string;
@@ -153,8 +168,7 @@ export class AcmeService {
     await this.userContext.setObj(this.buildAccountKey(email), conf);
   }
 
-  async getAcmeClient(email: string): Promise<acme.Client> {
-    const directoryUrl = acme.getDirectoryUrl({ sslProvider: this.sslProvider, pkType: this.options.privateKeyType });
+  buildUrlMapping(directoryUrl: string): UrlMapping {
     let targetUrl = directoryUrl.replace("https://", "");
     targetUrl = targetUrl.substring(0, targetUrl.indexOf("/"));
 
@@ -174,10 +188,29 @@ export class AcmeService {
     if (this.options.reverseProxy && targetUrl) {
       mappings[targetUrl] = this.options.reverseProxy;
     }
-    const urlMapping: UrlMapping = {
+    return {
       enabled: false,
       mappings,
     };
+  }
+
+  async resolveUrlMapping(directoryUrl: string) {
+    const urlMapping = this.buildUrlMapping(directoryUrl);
+    if (this.options.useMappingProxy) {
+      urlMapping.enabled = true;
+      return urlMapping;
+    }
+    const isOk = await this.testDirectory(directoryUrl);
+    if (!isOk) {
+      this.logger.info("测试访问失败，自动使用代理");
+      urlMapping.enabled = true;
+    }
+    return urlMapping;
+  }
+
+  async getAcmeClient(email: string): Promise<acme.Client> {
+    const directoryUrl = acme.getDirectoryUrl({ sslProvider: this.sslProvider, pkType: this.options.privateKeyType });
+    const urlMapping = await this.resolveUrlMapping(directoryUrl);
     const conf = await this.getAccountConfig(email, urlMapping);
     if (conf.key == null) {
       conf.key = await this.createNewKey();
@@ -185,16 +218,6 @@ export class AcmeService {
       this.logger.info(`创建新的Accountkey:${email}`);
     }
 
-    if (this.options.useMappingProxy) {
-      urlMapping.enabled = true;
-    } else {
-      //测试directory是否可以访问
-      const isOk = await this.testDirectory(directoryUrl);
-      if (!isOk) {
-        this.logger.info("测试访问失败，自动使用代理");
-        urlMapping.enabled = true;
-      }
-    }
     const client = new acme.Client({
       sslProvider: this.sslProvider,
       directoryUrl: directoryUrl,
@@ -236,6 +259,26 @@ export class AcmeService {
       await this.saveAccountConfig(email, conf);
     }
     return client;
+  }
+
+  async getAcmeClientByAccount(account: AcmeAccountInfo): Promise<acme.Client> {
+    if (!account?.accountKey || !account?.accountUri) {
+      throw new Error("ACME账号信息无效，请重新生成ACME账号");
+    }
+    const directoryUrl = account.directoryUrl || acme.getDirectoryUrl({ sslProvider: account.caType, pkType: this.options.privateKeyType });
+    const urlMapping = await this.resolveUrlMapping(directoryUrl);
+    return new acme.Client({
+      sslProvider: account.caType,
+      directoryUrl,
+      accountKey: account.accountKey,
+      accountUrl: account.accountUri,
+      backoffAttempts: this.options.maxCheckRetryCount || 20,
+      backoffMin: 5000,
+      backoffMax: 30 * 1000,
+      urlMapping,
+      signal: this.options.signal,
+      logger: this.logger,
+    });
   }
 
   async createNewKey() {
@@ -300,6 +343,18 @@ export class AcmeService {
       };
     };
 
+    const doDnsPersistVerify = async (challenge: any, plan: DnsPersistVerifyPlan) => {
+      if (challenge == null) {
+        throw new Error("该域名不支持dns-persist-01方式校验，请确认当前CA是否已开放该能力");
+      }
+      this.logger.info("DNS持久验证");
+      challenge.expectedRecordValue = plan.recordValue;
+      return {
+        challenge,
+        keyAuthorization: "",
+      };
+    };
+
     let dnsProvider = providers.dnsProvider;
     let fullRecord = `_acme-challenge.${fullDomain}`;
 
@@ -343,6 +398,9 @@ export class AcmeService {
           } else {
             throw new Error("未找到域名【" + fullDomain + "】的http校验配置");
           }
+        } else if (domainVerifyPlan.type === "dns-persist") {
+          checkIpChallenge("dns-persist");
+          return await doDnsPersistVerify(getChallenge("dns-persist-01"), domainVerifyPlan.dnsPersistVerifyPlan);
         } else {
           throw new Error("不支持的校验类型", domainVerifyPlan.type);
         }
@@ -394,6 +452,8 @@ export class AcmeService {
         this.logger.error("删除解析记录出错：", e);
         throw e;
       }
+    } else if (challenge.type === "dns-persist-01") {
+      this.logger.info(`DNS持久验证无需清理:${fullDomain}`);
     }
   }
 
@@ -407,9 +467,10 @@ export class AcmeService {
     privateKeyType?: string;
     profile?: string;
     preferredChain?: string;
+    acmeAccount?: AcmeAccountInfo;
   }): Promise<CertInfo> {
-    const { email, csrInfo, dnsProvider, domainsVerifyPlan, profile, preferredChain } = options;
-    const client: acme.Client = await this.getAcmeClient(email);
+    const { email, csrInfo, dnsProvider, domainsVerifyPlan, profile, preferredChain, acmeAccount } = options;
+    const client: acme.Client = acmeAccount ? await this.getAcmeClientByAccount(acmeAccount) : await this.getAcmeClient(email);
 
     let domains = options.domains;
     const encodingDomains = [];
@@ -463,12 +524,13 @@ export class AcmeService {
       domainsVerifyPlan,
     };
     /* 自动申请证书 */
+    const challengePriority = domainsVerifyPlan && Object.values(domainsVerifyPlan).some((item: any) => item?.type === "dns-persist") ? ["dns-persist-01"] : ["dns-01", "http-01"];
     const crt = await client.auto({
       csr,
       email: email,
       termsOfServiceAgreed: true,
       skipChallengeVerification: this.skipLocalVerify,
-      challengePriority: ["dns-01", "http-01"],
+      challengePriority,
       challengeCreateFn: async (
         authz: acme.Authorization,
         keyAuthorizationGetter: (challenge: Challenge) => Promise<string>

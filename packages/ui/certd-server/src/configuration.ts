@@ -126,7 +126,7 @@ export class MainConfiguration {
       await next();
       const path = ctx.path;
       // 如果是首页则强制设置为不缓存
-      if (path === '/' || path === '/index.html' || shouldSetDefaultNoCache(path, ctx.response.get('Cache-Control')) ) {
+      if (shouldSetDefaultNoCache(path, ctx.response.get('Cache-Control')) ) {
         ctx.response.set('Cache-Control', 'public,max-age=0');
       }
     });
@@ -138,6 +138,5 @@ export class MainConfiguration {
 
     logger.info('当前环境：', this.app.getEnv()); // prod
     // throw new Error("address family not supported")
-    
   }
 }

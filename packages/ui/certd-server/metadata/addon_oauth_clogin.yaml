@@ -21,10 +21,10 @@ input:
       options:
         - label: QQ
           value: qq
-          icon: cib:tencent-qq:#007AFF
+          icon: svg:icon-qq
         - label: 微信
           value: wx
-          icon: simple-icons:wechat:#34C759
+          icon: svg:icon-wechat
         - label: 支付宝
           value: alipay
           icon: simple-icons:alipay:#0099ff

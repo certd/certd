@@ -1,7 +1,7 @@
 import { CancelError, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { utils } from "@certd/basic";
 
-import { AcmeService, DomainsVerifyPlan, DomainVerifyPlan, PrivateKeyType, SSLProvider } from "./acme.js";
+import { AcmeAccountInfo, AcmeService, DomainsVerifyPlan, DomainVerifyPlan, PrivateKeyType, SSLProvider } from "./acme.js";
 import { createDnsProvider, DnsProviderContext, DnsVerifier, DomainVerifiers, HttpVerifier, IDnsProvider, IDomainVerifierGetter, ISubDomainsGetter } from "@certd/plugin-lib";
 import { CertReader } from "@certd/plugin-lib";
 import { CertApplyBasePlugin } from "./base.js";
@@ -22,14 +22,22 @@ export type HttpRecordInput = {
   httpUploaderAccess: number;
   httpUploadRootDir: string;
 };
+export type DnsPersistRecordInput = {
+  domain: string;
+  status?: string;
+  hostRecord?: string;
+  recordValue?: string;
+  accountUri?: string;
+};
 export type DomainVerifyPlanInput = {
   domain: string;
-  type: "cname" | "dns" | "http";
+  type: "cname" | "dns" | "http" | "dns-persist";
   dnsProviderType?: string;
   dnsProviderAccessType?: string;
   dnsProviderAccessId?: number;
   cnameVerifyPlan?: Record<string, CnameRecordInput>;
   httpVerifyPlan?: Record<string, HttpRecordInput>;
+  dnsPersistVerifyPlan?: Record<string, DnsPersistRecordInput>;
 };
 export type DomainsVerifyPlanInput = {
   [key: string]: DomainVerifyPlanInput;
@@ -99,6 +107,19 @@ const preferredChainMergeScript = (() => {
   },
 })
 export class CertApplyPlugin extends CertApplyBasePlugin {
+  constructor() {
+    super();
+    this.version = 1;
+  }
+
+  @TaskInput({
+    title: "版本",
+    value: 2,
+    isSys: true,
+    show: false,
+  })
+  version?: number;
+
   @TaskInput({
     title: "域名验证方式",
     value: "dns",
@@ -107,6 +128,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       vModel: "value",
       options: [
         { value: "dns", label: "DNS直接验证" },
+        { value: "dns-persist", label: "DNS持久验证" },
         { value: "cname", label: "CNAME代理验证" },
         { value: "http", label: "HTTP文件验证（IP证书只能选它）" },
         { value: "dnses", label: "多DNS提供商" },
@@ -119,11 +141,10 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 3.  <b>HTTP文件验证</b>：不支持泛域名，需要配置网站文件上传（IP证书必须选它）
 4.  <b>多DNS提供商</b>：每个域名可以选择独立的DNS提供商
 5.  <b>自动匹配</b>：此处无需选择校验方式，需要在[域名管理](#/certd/cert/domain)中提前配置好校验方式
+6.  <b>DNS持久验证</b>：需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅 Let's Encrypt 测试环境可以申请
 `,
   })
   challengeType!: string;
-
-  
 
   @TaskInput({
     title: "DNS解析服务商",
@@ -145,7 +166,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     }
     `,
     required: true,
-    helper: "您的域名注册商，或者域名的dns服务器属于哪个平台\n如果这里没有，请选择CNAME代理验证校验方式",
+    helper: "您的域名注册商，或者域名的dns服务器属于哪个平台\n如果这里没有，请选择CNAME代理验证",
   })
   dnsProviderType!: string;
 
@@ -190,18 +211,30 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         }),
         defaultType: ctx.compute(({form})=>{
             return form.challengeType || 'cname'
+        }),
+        caType: ctx.compute(({form})=>{
+            return form.sslProvider
+        }),
+        acmeAccountAccessId: ctx.compute(({form})=>{
+            return form.acmeAccountAccessId
+        }),
+        commonAcmeAccountAccessId: ctx.compute(({form})=>{
+            const key = form.sslProvider + 'CommonAcmeAccountAccessId';
+            return form[key]
         })
       },
       show: ctx.compute(({form})=>{
-          return form.challengeType === 'cname' ||  form.challengeType === 'http' ||  form.challengeType === 'dnses'
+          return form.challengeType === 'cname' ||  form.challengeType === 'http' ||  form.challengeType === 'dnses' || form.challengeType === 'dns-persist'
       }),
       helper: ctx.compute(({form})=>{
           if(form.challengeType === 'cname' ){
               return '请按照上面的提示，给要申请证书的域名添加CNAME记录，添加后，点击验证，验证成功后不要删除记录，申请和续期证书会一直用它'
           }else if (form.challengeType === 'http'){
               return '请按照上面的提示，给每个域名设置文件上传配置，证书申请过程中会上传校验文件到网站根目录的.well-known/acme-challenge/目录下'
-          }else if (form.challengeType === 'http'){
+          }else if (form.challengeType === 'dnses'){
               return '给每个域名单独配置dns提供商'
+          }else if (form.challengeType === 'dns-persist'){
+              return '请先创建并校验_validation-persist TXT持久记录，校验成功后才能提交流水线；当前仅 Let\\'s Encrypt 测试环境可以申请'
           }
       })
     }
@@ -209,7 +242,6 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   })
   domainsVerifyPlan!: DomainsVerifyPlanInput;
 
-  
   @TaskInput({
     title: "证书颁发机构",
     value: "letsencrypt",
@@ -238,11 +270,25 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   googleCommonEabAccessId!: number;
 
   @TaskInput({
+    title: "Google公共ACME账号授权",
+    isSys: true,
+    show: false,
+  })
+  googleCommonAcmeAccountAccessId!: number;
+
+  @TaskInput({
     title: "ZeroSSL公共EAB授权",
     isSys: true,
     show: false,
   })
   zerosslCommonEabAccessId!: number;
+
+  @TaskInput({
+    title: "ZeroSSL公共ACME账号授权",
+    isSys: true,
+    show: false,
+  })
+  zerosslCommonAcmeAccountAccessId!: number;
 
   @TaskInput({
     title: "SSL.com公共EAB授权",
@@ -252,11 +298,25 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   sslcomCommonEabAccessId!: number;
 
   @TaskInput({
+    title: "SSL.com公共ACME账号授权",
+    isSys: true,
+    show: false,
+  })
+  sslcomCommonAcmeAccountAccessId!: number;
+
+  @TaskInput({
     title: "litessl公共EAB授权",
     isSys: true,
     show: false,
   })
   litesslCommonEabAccessId!: number;
+
+  @TaskInput({
+    title: "litessl公共ACME账号授权",
+    isSys: true,
+    show: false,
+  })
+  litesslCommonAcmeAccountAccessId!: number;
 
   @TaskInput({
     title: "EAB授权",
@@ -275,7 +335,16 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
-          console.log("show",form)
+          if (form.version === 2) {
+            return false
+          }
+          if(form.acmeAccountAccessId){
+            return false
+          }
+          const commonAcmeKey = form.sslProvider + 'CommonAcmeAccountAccessId';
+          if (form[commonAcmeKey]) {
+            return false
+          }
             return (form.sslProvider === 'zerossl' && !form.zerosslCommonEabAccessId)
             || (form.sslProvider === 'google' && !form.googleCommonEabAccessId)
             || (form.sslProvider === 'sslcom' && !form.sslcomCommonEabAccessId)
@@ -285,6 +354,31 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     `,
   })
   eabAccessId!: number;
+
+  @TaskInput({
+    title: "ACME账号授权",
+    component: {
+      name: "access-selector",
+      type: "acmeAccount",
+    },
+    required: false,
+    helper: "请选择颁发机构对应的ACME账号",
+    mergeScript: `
+    return {
+        show: ctx.compute(({form})=>{
+            const commonKey = form.sslProvider + 'CommonAcmeAccountAccessId';
+            if (form[commonKey]) {
+              return false
+            }
+            return !!form.sslProvider
+        }),
+        component:{
+          subtype: ctx.compute(({form})=> form.sslProvider)
+        }
+    }
+    `,
+  })
+  acmeAccountAccessId!: number;
 
   @TaskInput({
     title: "服务账号授权",
@@ -298,6 +392,15 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
+            if (form.version === 2) {
+              return false
+            }
+            if(form.acmeAccountAccessId){
+              return false
+            }
+            if(form.googleCommonAcmeAccountAccessId){
+              return false
+            }
             return form.sslProvider === 'google' && !form.googleCommonEabAccessId
         })
     }
@@ -432,7 +535,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   async onInit() {
     let eab: EabAccess = null;
 
-    if (this.sslProvider && !this.sslProvider.startsWith("letsencrypt")) {
+    const isNewVersion = this.version === 2;
+    if (!isNewVersion && this.sslProvider && !this.sslProvider.startsWith("letsencrypt")) {
       if (this.sslProvider === "google" && this.googleAccessId) {
         this.logger.info("当前正在使用 google服务账号授权获取EAB");
         const googleAccess = await this.getAccess(this.googleAccessId);
@@ -499,8 +603,23 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
     let dnsProvider: IDnsProvider = null;
     let domainsVerifyPlan: DomainsVerifyPlan = null;
-    if (this.challengeType === "cname" || this.challengeType === "http" || this.challengeType === "dnses") {
-      domainsVerifyPlan = await this.createDomainsVerifyPlan(domains, this.domainsVerifyPlan);
+    let acmeAccount: AcmeAccountInfo = null;
+    if (this.acmeAccountAccessId) {
+      const access: any = await this.getAccess(this.acmeAccountAccessId);
+      acmeAccount = this.parseAcmeAccount(access.account);
+    } else {
+      acmeAccount = await this.getCommonAcmeAccount();
+    }
+    if (this.version === 2 && !this.sslProvider.startsWith("letsencrypt") && !acmeAccount) {
+      throw new Error("请选择颁发机构对应的ACME账号");
+    }
+    if (this.challengeType === "dns-persist") {
+      if (!acmeAccount) {
+        throw new Error("DNS持久验证需要先选择ACME账号授权");
+      }
+      domainsVerifyPlan = await this.createDnsPersistDomainsVerifyPlan(domains, acmeAccount);
+    } else if (this.challengeType === "cname" || this.challengeType === "http" || this.challengeType === "dnses") {
+      domainsVerifyPlan = await this.createDomainsVerifyPlan(domains, this.domainsVerifyPlan, acmeAccount);
     } else if (this.challengeType === "auto") {
       domainsVerifyPlan = await this.createDomainsVerifyPlanByAuto(domains);
     } else {
@@ -519,6 +638,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         privateKeyType: this.privateKeyType,
         profile: this.certProfile,
         preferredChain: this.preferredChain,
+        acmeAccount,
       });
 
       const certInfo = this.formatCerts(cert);
@@ -552,7 +672,80 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     });
   }
 
-  async createDomainsVerifyPlan(domains: string[], verifyPlanSetting: DomainsVerifyPlanInput): Promise<DomainsVerifyPlan> {
+  parseAcmeAccount(account: string | AcmeAccountInfo): AcmeAccountInfo {
+    if (!account) {
+      throw new Error("ACME账号授权缺少账号信息，请重新生成ACME账号");
+    }
+    const parsed = typeof account === "string" ? JSON.parse(account) : account;
+    if (!parsed.accountKey || !parsed.accountUri) {
+      throw new Error("ACME账号授权无效，请重新生成ACME账号");
+    }
+    return parsed;
+  }
+
+  async getCommonAcmeAccount(): Promise<AcmeAccountInfo | null> {
+    if (!this.sslProvider || this.sslProvider === "letsencrypt" || this.sslProvider === "letsencrypt_staging") {
+      return null;
+    }
+    const commonAccessId = this[`${this.sslProvider}CommonAcmeAccountAccessId`];
+    if (!commonAccessId) {
+      return null;
+    }
+    const accessService: any = this.ctx.accessService;
+    if (!accessService?.getCommonById) {
+      return null;
+    }
+    const access = await accessService.getCommonById(commonAccessId);
+    if (!access?.account) {
+      return null;
+    }
+    this.logger.info(`使用系统公共${this.sslProvider} ACME账号`);
+    return this.parseAcmeAccount(access.account);
+  }
+
+  private async createDnsPersistDomainsVerifyPlan(domains: string[], acmeAccount: AcmeAccountInfo): Promise<DomainsVerifyPlan> {
+    const plan: DomainsVerifyPlan = {};
+    const domainParser = this.acme.options.domainParser;
+    for (const fullDomain of domains) {
+      const domain = fullDomain.replaceAll("*.", "");
+      const mainDomain = await domainParser.parse(domain);
+      const persistRecord = this.domainsVerifyPlan?.[mainDomain]?.dnsPersistVerifyPlan?.[domain];
+      plan[domain] = this.createDnsPersistDomainVerifyPlan(domain, mainDomain, acmeAccount, persistRecord);
+    }
+    return plan;
+  }
+
+  private createDnsPersistDomainVerifyPlan(domain: string, mainDomain: string, acmeAccount: AcmeAccountInfo, persistRecord?: DnsPersistRecordInput): DomainVerifyPlan {
+    if (!persistRecord) {
+      throw new Error(`DNS持久验证记录${domain}不存在，请先创建并校验`);
+    }
+    if (persistRecord.status !== "valid") {
+      throw new Error(`DNS持久验证记录${domain}还未校验成功`);
+    }
+    return {
+      type: "dns-persist",
+      mainDomain,
+      domain,
+      dnsPersistVerifyPlan: {
+        hostRecord: persistRecord.hostRecord || `_validation-persist.${domain}`,
+        recordValue: persistRecord.recordValue || this.buildDnsPersistRecordValue(acmeAccount.accountUri, true),
+        accountUri: persistRecord.accountUri || acmeAccount.accountUri,
+      },
+    };
+  }
+
+  buildDnsPersistRecordValue(accountUri: string, wildcard = false, persistUntil?: number) {
+    const parts = [`letsencrypt.org`, `accounturi=${accountUri}`];
+    if (wildcard !== false) {
+      parts.push("policy=wildcard");
+    }
+    if (persistUntil) {
+      parts.push(`persistUntil=${persistUntil}`);
+    }
+    return parts.join("; ");
+  }
+
+  async createDomainsVerifyPlan(domains: string[], verifyPlanSetting: DomainsVerifyPlanInput, acmeAccount?: AcmeAccountInfo): Promise<DomainsVerifyPlan> {
     const plan: DomainsVerifyPlan = {};
 
     const domainParser = this.acme.options.domainParser;
@@ -569,6 +762,11 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         plan[domain] = await this.createCnameDomainVerifyPlan(domain, mainDomain);
       } else if (planSetting.type === "http") {
         plan[domain] = await this.createHttpDomainVerifyPlan(planSetting.httpVerifyPlan[domain], domain, mainDomain);
+      } else if (planSetting.type === "dns-persist") {
+        if (!acmeAccount) {
+          throw new Error("DNS持久验证需要先选择ACME账号授权");
+        }
+        plan[domain] = this.createDnsPersistDomainVerifyPlan(domain, mainDomain, acmeAccount, planSetting.dnsPersistVerifyPlan?.[domain]);
       }
     }
     return plan;
@@ -677,9 +875,9 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   }
 
   async onGetReverseProxyList() {
-    const sysSettingsService:any = await this.ctx.serviceGetter.get("sysSettingsService");
+    const sysSettingsService: any = await this.ctx.serviceGetter.get("sysSettingsService");
     const sysSettings = await sysSettingsService.getPrivateSettings();
-    return sysSettings.reverseProxyList || []
+    return sysSettings.reverseProxyList || [];
   }
 }
 

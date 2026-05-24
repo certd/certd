@@ -7,7 +7,7 @@
       <passkey-login></passkey-login>
       <template v-for="item in oauthProviderList" :key="buildProviderKey(item)">
         <div v-if="item.addonId" class="oauth-icon-button pointer" @click="goOauthLogin(item)">
-          <div><fs-icon :icon="item.icon" class="text-blue-600 text-40" /></div>
+          <div><fs-icon :icon="item.icon" class="text-40" /></div>
           <div class="ellipsis title" :title="item.addonTitle || item.title">{{ item.addonTitle || item.title }}</div>
         </div>
       </template>
@@ -125,7 +125,6 @@ async function goOauthLogin(item: OauthProviderItem) {
     }
     .fs-icon {
       font-size: 36px;
-      color: #006be6;
       margin: 0px !important;
     }
   }

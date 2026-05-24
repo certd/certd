@@ -4,11 +4,13 @@ import { GoogleCommonEabAccountKeyFix } from "./google-common-eab-account-key-fi
 import { OauthSubtypeBoundTypeFix } from "./oauth-subtype-bound-type-fix.js";
 import { CertInfoWildcardDomainCountFix } from "./cert-info-wildcard-domain-count-fix.js";
 import { SuiteContentWildcardDomainCountFix } from "./suite-content-wildcard-domain-count-fix.js";
+import { LegacyAcmeAccountAccessFix } from "./legacy-acme-account-access-fix.js";
+import { CommonEabToAcmeAccountFix } from "./common-eab-to-acme-account-fix.js";
 
 type AutoFixTask = {
   key: string;
   fix: {
-    init(): Promise<void>;
+    init(): Promise<boolean>;
   };
 };
 
@@ -30,6 +32,12 @@ export class AutoFix {
   @Inject()
   suiteContentWildcardDomainCountFix: SuiteContentWildcardDomainCountFix;
 
+  @Inject()
+  legacyAcmeAccountAccessFix: LegacyAcmeAccountAccessFix;
+
+  @Inject()
+  commonEabToAcmeAccountFix: CommonEabToAcmeAccountFix;
+
   async init() {
     const setting = await this.sysSettingsService.getSetting<SysAutoFixSetting>(SysAutoFixSetting);
     setting.fixed = setting.fixed || {};
@@ -50,14 +58,22 @@ export class AutoFix {
         key: "suite-content-wildcard-domain-count",
         fix: this.suiteContentWildcardDomainCountFix,
       },
+      {
+        key: "legacy-acme-account-access",
+        fix: this.legacyAcmeAccountAccessFix,
+      },
+      {
+        key: "common-eab-to-acme-account",
+        fix: this.commonEabToAcmeAccountFix,
+      },
     ];
 
     for (const task of tasks) {
       if (setting.fixed?.[task.key]) {
         continue;
       }
-      await task.fix.init();
-      setting.fixed[task.key] = true;
+      const ret = await task.fix.init();
+      setting.fixed[task.key] = ret;
       await this.sysSettingsService.saveSetting(setting);
     }
   }
