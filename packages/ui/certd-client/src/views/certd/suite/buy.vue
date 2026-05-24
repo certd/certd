@@ -8,7 +8,7 @@
         <a-col :span="24">
           <a-card>
             <div class="suite-intro-box">
-              <div>说明：① 同一时间只有最新购买的一个套餐生效；② 可以购买多个加量包，加量包立即生效；③ 套餐和加量包内的数量可以叠加</div>
+              <div>{{ buyHelperText }}</div>
               <div v-if="suiteIntro" v-html="suiteIntro"></div>
             </div>
           </a-card>
@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import * as api from "./api";
 import ProductInfo from "/@/views/certd/suite/product-info.vue";
 import OrderModal from "/@/views/certd/suite/order-modal.vue";
@@ -55,9 +55,17 @@ async function doOrder(req: any) {
 }
 
 const suiteIntro = ref("");
+const allowSuiteStack = ref(false);
+const buyHelperText = computed(() => {
+  if (allowSuiteStack.value) {
+    return "说明：可以购买多个套餐和加量包，套餐和加量包内的数量可以叠加";
+  }
+  return "说明：① 同一时间只有最新购买的一个套餐生效；② 可以购买多个加量包，加量包立即生效；③ 套餐和加量包内的数量可以叠加";
+});
 async function loadSuiteIntro() {
   const res = await api.GetSuiteSetting();
   suiteIntro.value = res.intro;
+  allowSuiteStack.value = !!res.allowSuiteStack;
 }
 loadSuiteIntro();
 </script>

@@ -245,6 +245,8 @@ export class SysSuiteSetting extends BaseSettings {
 
   enabled: boolean = false;
 
+  allowSuiteStack: boolean = false;
+
   registerGift?: {
     productId: number;
     duration: number;

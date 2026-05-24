@@ -21,6 +21,11 @@
             <div class="helper">不建议设置免费套餐，可以在下方配置注册赠送套餐，或者在用户套餐管理中手动赠送套餐</div>
           </a-form-item>
 
+          <a-form-item label="套餐支持叠加" name="allowSuiteStack">
+            <a-switch v-model:checked="formState.allowSuiteStack" />
+            <div class="helper">默认只有一个套餐生效。开启此开关，可以让多个套餐可以叠加；加量包无论是否开启此开关都可以叠加。</div>
+          </a-form-item>
+
           <a-form-item label="注册赠送套餐" name="registerGift">
             <suite-duration-selector ref="suiteDurationSelectedRef" v-model="formState.registerGift"></suite-duration-selector>
             <div class="helper">添加套餐后再选择</div>
@@ -73,6 +78,7 @@ const formRef = ref<any>(null);
 const formState = reactive<
   Partial<{
     enabled: boolean;
+    allowSuiteStack: boolean;
     registerGift?: {
       productId?: number;
       duration?: number;
