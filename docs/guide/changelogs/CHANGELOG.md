@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.40.4](https://github.com/certd/certd/compare/v1.40.3...v1.40.4) (2026-05-24)
+
+### Bug Fixes
+
+* **pipeline-service:** 修复流水线运行时超过套餐部署次数仍然能够正常运行的bug ([5e59651](https://github.com/certd/certd/commit/5e59651d45bc91919629e35995ff1b3cff6b87ea))
+
+### Performance Improvements
+
+* 商业版套餐只支持设置为可叠加 ([5e72f75](https://github.com/certd/certd/commit/5e72f75395fb632a30e80c07d35d8ba40ef631fa))
+* 新增阿里云直播证书部署插件 ([8edb6f8](https://github.com/certd/certd/commit/8edb6f8727bd148f106801bef25567880fd35e9e))
+
 ## [1.40.3](https://github.com/certd/certd/compare/v1.40.2...v1.40.3) (2026-05-21)
 
 ### Bug Fixes
