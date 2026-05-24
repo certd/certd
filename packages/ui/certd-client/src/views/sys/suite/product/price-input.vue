@@ -13,11 +13,13 @@ const props = withDefaults(
     modelValue?: number;
     edit?: boolean;
     fontSize?: number;
+    zeroText?: string;
   }>(),
   {
     modelValue: 0,
     edit: false,
     fontSize: 14,
+    zeroText: "¥0",
   }
 );
 
@@ -39,7 +41,7 @@ const priceValue = computed(() => {
 
 const priceLabel = computed(() => {
   if (priceValue.value === 0) {
-    return "免费";
+    return props.zeroText;
   }
   return `¥${priceValue.value}`;
 });

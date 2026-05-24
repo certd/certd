@@ -19,3 +19,7 @@ export async function ApplyWithdraw(amount: number) {
 export async function GetWithdraws(query: any) {
   return await request({ url: "/wallet/withdraw/page", method: "post", data: query });
 }
+
+export async function GetWalletLogs(query: any) {
+  return await request({ url: "/wallet/log/page", method: "post", data: query });
+}

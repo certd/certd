@@ -10,10 +10,12 @@ export default function (): CreateCrudOptionsRet {
   return {
     crudOptions: {
       request: { pageRequest },
+      search: { show: false },
       actionbar: { show: false },
       toolbar: { show: false },
       rowHandle: { show: false },
       columns: {
+        createTime: { title: "申请时间", type: "datetime", column: { width: 180 } },
         amount: {
           title: "金额",
           type: "number",
@@ -62,7 +64,6 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         auditRemark: { title: "审核备注", type: "text", column: { minWidth: 180 } },
-        createTime: { title: "申请时间", type: "datetime", column: { width: 180 } },
       },
     },
   };

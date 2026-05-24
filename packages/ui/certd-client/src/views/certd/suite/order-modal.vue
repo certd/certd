@@ -26,7 +26,7 @@
       </div>
       <div class="flex-o mt-5">
         <span class="label">{{ $t("certd.order.price") }}：</span>
-        <price-input :edit="false" :model-value="durationSelected.price"></price-input>
+        <price-input :edit="false" :model-value="durationSelected.price" zero-text="免费"></price-input>
       </div>
       <div v-if="durationSelected.price > 0 && wallet.availableAmount > 0" class="flex-o mt-5">
         <span class="label">返利抵扣：</span>

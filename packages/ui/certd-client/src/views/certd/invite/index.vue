@@ -1,47 +1,46 @@
 <template>
   <fs-page class="page-invite">
     <template #header>
-      <div class="title">激励计划</div>
+      <div class="title">
+        激励计划
+        <span class="sub"> 邀请好友，获取丰厚佣金奖励 </span>
+      </div>
+      <div class="more">
+        <a-button type="primary" @click="openAgreementDialog(false)">推广协议</a-button>
+      </div>
     </template>
+
     <div v-if="loaded && enabled && inviteInfo.enabled" class="invite-body">
-      <div class="invite-summary">
-        <a-row :gutter="16">
-          <a-col :span="6">
-            <a-statistic title="累计收益" :value="amountToYuan(inviteInfo.summary.totalIncomeAmount)" suffix="元" />
-          </a-col>
-          <a-col :span="6">
-            <a-statistic title="本月收益" :value="amountToYuan(inviteInfo.summary.monthIncomeAmount)" suffix="元" />
-          </a-col>
-          <a-col :span="6">
-            <a-statistic title="推广人数" :value="inviteInfo.summary.inviteeCount || 0" suffix="人" />
-          </a-col>
-          <a-col :span="6">
-            <a-statistic title="累计推广金额" :value="amountToYuan(inviteInfo.summary.promotionAmount)" suffix="元" />
-          </a-col>
-        </a-row>
+      <div class="invite-summary-grid">
+        <div v-for="item in summaryCards" :key="item.key" class="summary-card">
+          <div class="summary-title">{{ item.title }}</div>
+          <div class="summary-value" :class="item.className">{{ item.value }}</div>
+        </div>
       </div>
 
-      <div class="invite-main">
-        <div class="invite-link-row flex-o">
-          <span class="label">邀请码：</span>
+      <div class="invite-link-panel">
+        <div class="invite-info-row">
+          <span class="info-label">邀请码：</span>
           <fs-copyable v-model="inviteInfo.inviteCode" />
         </div>
-        <div class="invite-link-row flex-o mt-10">
-          <span class="label">邀请链接：</span>
+
+        <div class="invite-info-row">
+          <span class="info-label">邀请链接：</span>
           <fs-copyable v-model="inviteInfo.inviteLink" />
         </div>
-        <div class="invite-link-row flex-o mt-10">
-          <span class="label">我的等级：</span>
+
+        <div class="invite-info-row">
+          <span class="info-label">我的等级：</span>
           <a-button type="link" class="level-button" @click="levelDialogOpen = true">
-            {{ inviteInfo.currentLevel?.name || "未设置" }}
-            <span v-if="inviteInfo.currentLevel">（{{ inviteInfo.currentLevel.commissionRate }}%）</span>
+            <span v-if="inviteInfo.currentLevel" class="level-medal" :class="levelMedalClass(inviteInfo.currentLevel)">{{ levelMedal(inviteInfo.currentLevel) }}</span>
+            <span>{{ inviteInfo.currentLevel?.name || "未设置" }}</span>
+            <span v-if="inviteInfo.currentLevel" class="current-level-rate">{{ inviteInfo.currentLevel.commissionRate }}%</span>
           </a-button>
-          <a-button size="small" @click="openAgreementDialog(false)">查看推广协议</a-button>
         </div>
       </div>
 
-      <a-tabs v-model:active-key="activeTab" class="invite-tabs">
-        <a-tab-pane key="invitees" tab="推广成功">
+      <a-tabs v-model:active-key="activeTab" class="invite-tabs" @change="handleTabChange">
+        <a-tab-pane key="invitees" tab="推广成功用户">
           <fs-crud v-if="activeTab === 'invitees'" ref="inviteesCrudRef" class="invite-crud" v-bind="inviteesCrudBinding" />
         </a-tab-pane>
         <a-tab-pane key="logs" tab="收益记录">
@@ -49,6 +48,7 @@
         </a-tab-pane>
       </a-tabs>
     </div>
+
     <div v-else-if="loaded && enabled" class="invite-disabled">
       <a-empty description="请先开通激励计划">
         <a-button type="primary" @click="openAgreementDialog(true)">开通激励计划</a-button>
@@ -56,33 +56,57 @@
     </div>
     <a-empty v-else-if="loaded" description="激励计划未开启" />
 
-    <a-modal v-model:open="levelDialogOpen" title="推广等级" width="720px" :footer="null">
-      <div class="level-list">
-        <div v-for="level in inviteInfo.levelList" :key="level.id" class="level-item" :class="{ active: level.id === inviteInfo.currentLevel?.id }">
-          <div class="level-title">
-            <span>{{ level.name }}</span>
-            <a-tag v-if="level.id === inviteInfo.currentLevel?.id" color="green">当前等级</a-tag>
-            <a-tag v-if="level.isHidden" color="orange">专属等级</a-tag>
+    <a-modal v-model:open="levelDialogOpen" title="推广等级" width="820px" wrap-class-name="invite-level-modal" :footer="null">
+      <div class="level-modal-subtitle">推广越多，等级越高，返佣比例越高</div>
+      <div class="level-card-grid modal-level-grid">
+        <div v-for="level in visibleLevels" :key="level.id" class="level-card" :class="{ active: level.id === inviteInfo.currentLevel?.id }">
+          <div class="level-name">
+            <span class="level-medal" :class="levelMedalClass(level)">{{ levelMedal(level) }}</span>
+            {{ level.name }}
+            <a-tag v-if="level.isHidden" color="orange">专属</a-tag>
           </div>
-          <div class="level-meta">佣金比例 {{ level.commissionRate }}%，累计推广金额达到 {{ amountToYuan(level.minAmount) }} 元</div>
+          <div class="level-rate-label">佣金比例</div>
+          <div class="level-rate">{{ level.commissionRate }}%</div>
+          <div class="level-threshold">累计推广 ≥ {{ amountToYuan(level.minAmount) }} 元</div>
+          <a-tag v-if="level.id === inviteInfo.currentLevel?.id" class="current-tag" color="blue">当前等级</a-tag>
+          <div v-else-if="level.id === inviteInfo.nextLevel?.id" class="next-gap">还差 {{ amountToYuan(inviteInfo.nextLevel.gapAmount) }}</div>
         </div>
-        <div v-if="inviteInfo.nextLevel" class="next-level">距离下一等级「{{ inviteInfo.nextLevel.name }}」还差 {{ amountToYuan(inviteInfo.nextLevel.gapAmount) }} 元推广金额</div>
-        <div v-else class="next-level">已达到当前可自动升级的最高等级</div>
       </div>
+      <div v-if="inviteInfo.nextLevel" class="next-level">距离下一等级「{{ inviteInfo.nextLevel.name }}」还差 {{ amountToYuan(inviteInfo.nextLevel.gapAmount) }} 元推广金额</div>
+      <div v-else class="next-level">已达到当前可自动升级的最高等级</div>
+    </a-modal>
+
+    <a-modal
+      v-model:open="agreementDialogOpen"
+      :title="agreementDialogNeedOpen ? '开通激励计划' : '推广协议'"
+      width="760px"
+      :mask-closable="!agreementDialogNeedOpen"
+      :keyboard="!agreementDialogNeedOpen"
+      :confirm-loading="agreementSubmitting"
+      @ok="handleAgreementOk"
+      @cancel="closeAgreementDialog"
+    >
+      <div class="invite-agreement-content">{{ agreementText }}</div>
+      <div v-if="agreementDialogNeedOpen" class="invite-agreement-confirm">
+        <a-checkbox v-model:checked="agreementAgree">我已阅读并同意推广协议</a-checkbox>
+      </div>
+      <template #footer>
+        <a-button @click="closeAgreementDialog">{{ agreementDialogNeedOpen ? "暂不开通" : "关闭" }}</a-button>
+        <a-button v-if="agreementDialogNeedOpen" type="primary" :disabled="!agreementAgree" :loading="agreementSubmitting" @click="handleAgreementOk">同意并开通</a-button>
+      </template>
     </a-modal>
   </fs-page>
 </template>
 
 <script lang="ts" setup>
-import { h, nextTick, onActivated, onMounted, reactive, ref } from "vue";
-import { useFs } from "@fast-crud/fast-crud";
+import { computed, nextTick, onActivated, onMounted, reactive, ref } from "vue";
+import { FsIcon, useFs } from "@fast-crud/fast-crud";
 import { notification } from "ant-design-vue";
 import * as api from "./api";
 import createInviteesCrudOptions from "./crud-invitees";
 import createLogsCrudOptions from "./crud-logs";
 import { useSettingStore } from "/@/store/settings";
 import { util } from "/@/utils";
-import { useFormDialog } from "/@/use/use-dialog";
 
 defineOptions({ name: "InviteCommission" });
 
@@ -91,7 +115,11 @@ const enabled = ref(false);
 const activeTab = ref("invitees");
 const loaded = ref(false);
 const levelDialogOpen = ref(false);
-const { openFormDialog } = useFormDialog();
+const agreementDialogOpen = ref(false);
+const agreementDialogNeedOpen = ref(false);
+const agreementAgree = ref(false);
+const agreementSubmitting = ref(false);
+const defaultAgreementContent = "请遵守平台推广规则，不得通过虚假注册、刷单、恶意诱导等方式获取收益。平台有权对异常推广行为进行核查，并根据实际情况暂停结算或关闭激励计划资格。";
 
 const inviteInfo = reactive<any>({
   enabled: false,
@@ -111,60 +139,99 @@ function amountToYuan(amount: number) {
   return util.amount.toYuan(amount || 0);
 }
 
-function renderAgreement() {
-  return h("div", { class: "invite-agreement-content" }, inviteInfo.agreementContent || "暂无推广协议内容");
+function moneyText(amount: number) {
+  return `¥ ${amountToYuan(amount)}`;
 }
 
-async function openAgreementDialog(needOpenPlan: boolean) {
-  await openFormDialog({
-    title: needOpenPlan ? "开通激励计划" : "推广协议",
-    wrapper: {
-      width: 720,
-      maskClosable: !needOpenPlan,
-      keyboard: !needOpenPlan,
-    },
-    initialForm: {
-      agree: false,
-    },
-    body: renderAgreement,
-    columns: needOpenPlan
-      ? {
-          agree: {
-            title: "确认",
-            type: "text",
-            form: {
-              col: { span: 24 },
-              component: {
-                name: "a-checkbox",
-                vModel: "checked",
-              },
-              rules: [
-                {
-                  validator: async (_rule: any, value: boolean) => {
-                    if (value === true) {
-                      return true;
-                    }
-                    throw new Error("请勾选同意推广协议");
-                  },
-                },
-              ],
-              helper: "我已阅读并同意推广协议",
-            },
-          },
-        }
-      : {},
-    async onSubmit(form: any) {
-      if (!needOpenPlan) {
-        return;
-      }
-      if (form.agree !== true) {
-        throw new Error("请勾选同意推广协议");
-      }
-      await api.OpenInvitePlan();
-      notification.success({ message: "激励计划已开通" });
-      await refreshInvitePage(true, false);
-    },
-  });
+const summaryCards = computed(() => [
+  {
+    key: "totalIncome",
+    title: "累计收益",
+    value: moneyText(inviteInfo.summary.totalIncomeAmount),
+    className: "income",
+  },
+  {
+    key: "monthIncome",
+    title: "本月收益",
+    value: moneyText(inviteInfo.summary.monthIncomeAmount),
+    className: "income",
+  },
+  {
+    key: "inviteeCount",
+    title: "已推广人数",
+    value: `${inviteInfo.summary.inviteeCount || 0} 人`,
+    className: "people",
+  },
+]);
+
+const visibleLevels = computed(() => {
+  return (inviteInfo.levelList || []).filter((level: any) => !level.disabled);
+});
+
+const agreementText = computed(() => inviteInfo.agreementContent?.trim() || defaultAgreementContent);
+
+function levelMedal(level: any) {
+  const name = `${level?.name || ""}`;
+  if (name.includes("青铜")) {
+    return "铜";
+  }
+  if (name.includes("白银")) {
+    return "银";
+  }
+  if (name.includes("黄金")) {
+    return "金";
+  }
+  if (name.includes("钻石")) {
+    return "钻";
+  }
+  return name.slice(0, 1) || "L";
+}
+
+function levelMedalClass(level: any) {
+  const name = `${level?.name || ""}`;
+  if (name.includes("青铜")) {
+    return "bronze";
+  }
+  if (name.includes("白银")) {
+    return "silver";
+  }
+  if (name.includes("黄金")) {
+    return "gold";
+  }
+  if (name.includes("钻石")) {
+    return "diamond";
+  }
+  return "default";
+}
+
+function openAgreementDialog(needOpenPlan: boolean) {
+  agreementDialogNeedOpen.value = needOpenPlan;
+  agreementAgree.value = false;
+  agreementDialogOpen.value = true;
+}
+
+function closeAgreementDialog() {
+  agreementDialogOpen.value = false;
+}
+
+async function handleAgreementOk() {
+  if (!agreementDialogNeedOpen.value) {
+    closeAgreementDialog();
+    return;
+  }
+  if (!agreementAgree.value) {
+    notification.warning({ message: "请先勾选同意推广协议" });
+    return;
+  }
+  agreementSubmitting.value = true;
+  try {
+    await api.OpenInvitePlan();
+    notification.success({ message: "激励计划已开通" });
+    closeAgreementDialog();
+    await refreshInvitePage(false);
+  } finally {
+    agreementSubmitting.value = false;
+  }
 }
 
 async function loadMyInvite(autoOpenAgreement = false) {
@@ -172,7 +239,7 @@ async function loadMyInvite(autoOpenAgreement = false) {
   Object.assign(inviteInfo, res || {});
   if (autoOpenAgreement && !inviteInfo.enabled) {
     await nextTick();
-    await openAgreementDialog(true);
+    openAgreementDialog(true);
   }
 }
 
@@ -187,7 +254,12 @@ async function refreshActiveList() {
   }
 }
 
-async function refreshInvitePage(refreshAll = false, autoOpenAgreement = true) {
+async function handleTabChange() {
+  await nextTick();
+  await refreshActiveList();
+}
+
+async function refreshInvitePage(autoOpenAgreement = true) {
   await settingStore.initOnce();
   enabled.value = settingStore.isInviteCommissionEnabled;
   loaded.value = true;
@@ -199,10 +271,6 @@ async function refreshInvitePage(refreshAll = false, autoOpenAgreement = true) {
     return;
   }
   await nextTick();
-  if (refreshAll) {
-    await Promise.all([inviteesCrudExpose.doRefresh(), logsCrudExpose.doRefresh()]);
-    return;
-  }
   await refreshActiveList();
 }
 
@@ -228,12 +296,27 @@ onActivated(async () => {
     min-height: 0;
   }
 
+  .invite-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .invite-page-subtitle {
+    margin-top: 4px;
+    color: hsl(var(--muted-foreground));
+    font-size: 13px;
+    font-weight: 400;
+  }
+
   .invite-body {
     display: flex;
     flex: 1;
     flex-direction: column;
     min-height: 0;
     padding: 20px;
+    background: hsl(var(--background-deep));
   }
 
   .invite-disabled {
@@ -243,17 +326,126 @@ onActivated(async () => {
     justify-content: center;
   }
 
-  .invite-summary,
-  .invite-main {
+  .level-subtitle,
+  .level-modal-subtitle {
+    color: hsl(var(--muted-foreground));
+    font-size: 14px;
+  }
+
+  .invite-summary-grid {
+    display: grid;
+    gap: 16px;
+  }
+
+  .invite-summary-grid {
     flex: none;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 18px;
   }
 
-  .invite-summary {
-    margin-bottom: 16px;
+  .summary-card,
+  .invite-link-panel {
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    background: hsl(var(--card));
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   }
 
-  .invite-main {
-    margin-bottom: 12px;
+  .summary-card {
+    min-height: 112px;
+    padding: 22px;
+  }
+
+  .summary-title {
+    margin-bottom: 10px;
+    color: hsl(var(--muted-foreground));
+    font-size: 15px;
+  }
+
+  .summary-value {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 36px;
+  }
+
+  .summary-value.income {
+    color: #c58a35;
+  }
+
+  .summary-value.people {
+    color: #3478f6;
+  }
+
+  .invite-link-panel {
+    flex: none;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+  }
+
+  .invite-info-row {
+    display: flex;
+    align-items: center;
+    min-height: 34px;
+    gap: 10px;
+  }
+
+  .invite-info-row + .invite-info-row {
+    margin-top: 8px;
+  }
+
+  .info-label {
+    width: 92px;
+    flex: none;
+    color: hsl(var(--muted-foreground));
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .current-level-rate {
+    margin-left: 6px;
+    color: #c58a35;
+    font-weight: 700;
+  }
+
+  .level-button {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding-left: 0;
+    gap: 4px;
+  }
+
+  .level-medal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f4d7a1;
+    color: #8a5a16;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .level-medal.bronze {
+    background: #f5d6b7;
+    color: #9a5b22;
+  }
+
+  .level-medal.silver {
+    background: #e5e7eb;
+    color: #4b5563;
+  }
+
+  .level-medal.gold {
+    background: #f8df9b;
+    color: #926c15;
+  }
+
+  .level-medal.diamond {
+    background: #dbeafe;
+    color: #2563eb;
   }
 
   .invite-tabs {
@@ -261,6 +453,10 @@ onActivated(async () => {
     flex: 1;
     flex-direction: column;
     min-height: 0;
+    padding: 0 12px 12px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    background: hsl(var(--card));
   }
 
   .ant-tabs-content-holder,
@@ -280,17 +476,115 @@ onActivated(async () => {
     min-height: 0;
   }
 
-  .label {
-    width: 80px;
-    flex: none;
-    text-align: right;
-    margin-right: 8px;
+  .invite-tabs {
+    .fs-search {
+      display: none;
+    }
+  }
+}
+
+.invite-level-modal {
+  .level-card-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
   }
 
-  .level-button {
-    padding-left: 0;
-    margin-right: 12px;
+  .level-card {
+    position: relative;
+    min-height: 132px;
+    padding: 16px;
+    border: 1px solid hsl(var(--border));
+    border-radius: 8px;
+    background: hsl(var(--card));
+    transition:
+      border-color 0.2s,
+      background-color 0.2s;
   }
+
+  .level-card.active {
+    border-color: #3478f6;
+    background: hsl(var(--primary) / 10%);
+  }
+
+  .level-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: hsl(var(--foreground));
+    font-weight: 700;
+  }
+
+  .level-medal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #f4d7a1;
+    color: #8a5a16;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .level-medal.bronze {
+    background: #f5d6b7;
+    color: #9a5b22;
+  }
+
+  .level-medal.silver {
+    background: #e5e7eb;
+    color: #4b5563;
+  }
+
+  .level-medal.gold {
+    background: #f8df9b;
+    color: #926c15;
+  }
+
+  .level-medal.diamond {
+    background: #dbeafe;
+    color: #2563eb;
+  }
+
+  .level-rate-label {
+    margin-top: 12px;
+    color: hsl(var(--muted-foreground));
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .level-rate {
+    margin-top: 2px;
+    color: #c58a35;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 30px;
+    text-align: center;
+  }
+
+  .level-threshold,
+  .next-gap {
+    margin-top: 6px;
+    color: hsl(var(--muted-foreground));
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .current-tag {
+    display: table;
+    margin: 10px auto 0;
+  }
+
+  .next-gap {
+    color: #3478f6;
+  }
+}
+
+.modal-level-grid {
+  margin-top: 12px;
 }
 
 .invite-agreement-content {
@@ -300,38 +594,49 @@ onActivated(async () => {
   white-space: pre-wrap;
   border: 1px solid #eee;
   border-radius: 6px;
-  background: #fafafa;
+  background: hsl(var(--card));
   line-height: 1.7;
 }
 
-.level-list {
-  .level-item {
-    padding: 12px 14px;
-    border: 1px solid #eee;
-    border-radius: 6px;
-    margin-bottom: 10px;
+.invite-agreement-confirm {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid #e6f4ff;
+  border-radius: 6px;
+  background: #f5fbff;
+}
+
+.level-modal-subtitle {
+  margin-bottom: 12px;
+}
+
+.next-level {
+  margin-top: 16px;
+  color: #3478f6;
+}
+
+@media (max-width: 900px) {
+  .page-invite {
+    .invite-summary-grid,
+    .level-card-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .invite-info-row {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .info-label {
+      width: auto;
+      text-align: left;
+    }
   }
 
-  .level-item.active {
-    border-color: #52c41a;
-    background: #f6ffed;
-  }
-
-  .level-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-  }
-
-  .level-meta {
-    margin-top: 6px;
-    color: #666;
-  }
-
-  .next-level {
-    margin-top: 12px;
-    color: #1677ff;
+  .invite-level-modal {
+    .level-card-grid {
+      grid-template-columns: 1fr;
+    }
   }
 }
 </style>

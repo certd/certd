@@ -47,7 +47,7 @@
     <div class="price flex-between mt-5">
       <div class="flex-o">价格</div>
       <div class="flex-o price-text">
-        <price-input style="color: red" :font-size="20" :model-value="selected?.price" :edit="false" />
+        <price-input style="color: red" :font-size="20" :model-value="selected?.price" :edit="false" zero-text="免费" />
         <span class="ml-5" style="font-size: 12px"> / {{ durationDict.dataMap[selected.duration]?.label }}</span>
       </div>
     </div>

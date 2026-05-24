@@ -9,6 +9,7 @@ export default function (): CreateCrudOptionsRet {
   return {
     crudOptions: {
       request: { pageRequest },
+      search: { show: false },
       actionbar: { show: false },
       toolbar: { show: false },
       rowHandle: { show: false },
