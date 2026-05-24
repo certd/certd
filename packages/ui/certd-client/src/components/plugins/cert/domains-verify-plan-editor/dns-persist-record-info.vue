@@ -22,7 +22,7 @@
       </td>
     </tr>
     <tr v-else>
-      <td colspan="5" class="color-red">{{ errorMessage || "请先选择ACME账号授权" }}</td>
+      <td colspan="5" class="color-red">{{ errorMessage || "请先选择ACME账号" }}</td>
     </tr>
   </tbody>
 </template>

@@ -99,13 +99,13 @@ export class DnsPersistRecordService extends BaseService<DnsPersistRecordEntity>
   async getAcmeAccount(req: DnsPersistRecordBuildReq & { userId: number; projectId?: number }) {
     const accessId = req.acmeAccountAccessId || req.commonAcmeAccountAccessId;
     if (!accessId) {
-      throw new Error("请选择ACME账号授权");
+      throw new Error("请选择ACME账号");
     }
     let access: any;
     if (req.commonAcmeAccountAccessId) {
       const entity = await this.accessService.info(accessId);
       if (!entity || entity.userId !== 0 || entity.type !== "acmeAccount") {
-        throw new Error("公共ACME账号授权不存在");
+        throw new Error("公共ACME账号不存在");
       }
       access = await this.accessService.getAccessById(accessId, false);
     } else {
