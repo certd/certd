@@ -1,6 +1,6 @@
 <template>
   <div class="flex-o price-input">
-    <a-input-number v-if="edit" prefix="¥" :value="priceValue" :precision="2" class="ml-5" @update:value="onPriceChange"> </a-input-number>
+    <a-input-number v-if="edit" prefix="¥" :value="priceValue" :precision="2" class="price-input-number" @update:value="onPriceChange"> </a-input-number>
     <span v-else class="price-text" :style="style">{{ priceLabel }}</span>
   </div>
 </template>
@@ -55,6 +55,12 @@ const onPriceChange = (price: number) => {
 
 <style lang="less">
 .price-input {
+  width: 100%;
+
+  .price-input-number {
+    width: 100%;
+  }
+
   .price-text {
     color: red;
   }

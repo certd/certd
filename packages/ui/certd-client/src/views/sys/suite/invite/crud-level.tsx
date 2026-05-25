@@ -4,6 +4,7 @@ import PriceInput from "/@/views/sys/suite/product/price-input.vue";
 
 export default function (): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
+    query.sort = { prop: "sort", asc: true };
     return await api.GetLevels(query);
   };
   const addRequest = async ({ form }: AddReq) => {
@@ -14,8 +15,7 @@ export default function (): CreateCrudOptionsRet {
     return await api.UpdateLevel(form);
   };
   const delRequest = async ({ row }: DelReq) => {
-    row.disabled = true;
-    return await api.UpdateLevel(row);
+    return await api.DeleteLevel(row.id);
   };
 
   return {
@@ -49,6 +49,25 @@ export default function (): CreateCrudOptionsRet {
           },
           column: { width: 140 },
         },
+        icon: {
+          title: "等级图标",
+          type: "icon",
+          form: {
+            value: "ion:ribbon-outline",
+            rules: [{ required: true, message: "请选择等级图标" }],
+          },
+          column: {
+            width: 90,
+            align: "center",
+            component: {
+              name: "fs-icon",
+              vModel: "icon",
+              style: {
+                fontSize: "22px",
+              },
+            },
+          },
+        },
         minAmount: {
           title: "升级金额",
           type: "number",
@@ -70,23 +89,29 @@ export default function (): CreateCrudOptionsRet {
           },
           column: { width: 110, align: "center", cellRender: ({ value }) => `${value || 0}%` },
         },
-        isHidden: {
-          title: "隐藏等级",
-          type: "dict-switch",
+        levelType: {
+          title: "等级类型",
+          type: "dict-radio",
           dict: dict({
             data: [
-              { label: "普通等级", value: false, color: "success" },
-              { label: "隐藏等级", value: true, color: "warning" },
+              { label: "普通等级", value: "normal", color: "success" },
+              { label: "专属等级", value: "exclusive", color: "warning" },
             ],
           }),
-          form: { value: false },
+          form: {
+            value: "normal",
+            helper: "专属等级可由管理员手动指定，不参与普通用户自动升级。",
+          },
           column: { width: 120, align: "center" },
         },
         sort: {
           title: "排序",
           type: "number",
-          form: { value: 10 },
-          column: { width: 90, align: "center" },
+          form: {
+            value: 10,
+            helper: "排序号越小越靠前。",
+          },
+          column: { width: 90, align: "center", sorter: true },
         },
         disabled: {
           title: "状态",

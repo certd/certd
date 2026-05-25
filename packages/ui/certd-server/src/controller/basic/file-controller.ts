@@ -37,7 +37,7 @@ export class FileController extends BaseController {
   authService: AuthService;
 
   @Post('/upload', { description: Constants.per.authOnly })
-  async upload(@Files() files: UploadFileInfo<string>[], @Fields() fields: any) {
+  async upload(@Files() files: UploadFileInfo<string>[], @Fields() fields: any, @Query('autoSave') autoSave: string) {
     console.log('files', files, fields);
     const cacheKey = uploadTmpFileCacheKey + nanoid();
     const file = files[0];
@@ -51,6 +51,13 @@ export class FileController extends BaseController {
         ttl: 1000 * 60 * 60,
       }
     );
+    if (autoSave === 'true') {
+      const key = await this.fileService.saveFile(this.getUserId(), cacheKey, 'public');
+      return this.ok({
+        key,
+        url: `/api/basic/file/download?key=${encodeURIComponent(key)}`,
+      });
+    }
     return this.ok({
       key: cacheKey,
     });

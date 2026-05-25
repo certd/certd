@@ -1,12 +1,6 @@
 import { CreateCrudOptionsRet, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import * as api from "./api";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
-import { useUserStore } from "/@/store/user";
-
-function buildPrivateFileUrl(key: string) {
-  const userStore = useUserStore();
-  return `/api/basic/file/download?token=${userStore.getToken}&key=${encodeURIComponent(key)}`;
-}
 
 export default function (): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -52,22 +46,6 @@ export default function (): CreateCrudOptionsRet {
             ],
           }),
           column: { width: 110 },
-        },
-        realName: { title: "真实姓名", type: "text", column: { width: 120 } },
-        account: { title: "收款账号", type: "text", column: { width: 180 } },
-        bankName: { title: "开户银行", type: "text", column: { width: 160 } },
-        qrCode: {
-          title: "收款二维码",
-          type: "text",
-          column: {
-            width: 120,
-            cellRender({ value }) {
-              if (!value) {
-                return "-";
-              }
-              return <a-image src={buildPrivateFileUrl(value)} width={48} />;
-            },
-          },
         },
         auditRemark: { title: "审核备注", type: "text", column: { minWidth: 180 } },
       },

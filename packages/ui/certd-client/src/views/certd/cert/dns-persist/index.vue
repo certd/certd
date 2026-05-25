@@ -1,9 +1,9 @@
 <template>
   <fs-page class="page-cert-dns-persist">
     <template #header>
-      <div>
-        <div class="title">DNS持久验证记录</div>
-        <div class="text-orange-500 mt-5">当前仅 Let's Encrypt 测试环境可以申请 DNS 持久验证证书。</div>
+      <div class="title">
+        DNS持久验证记录
+        <span class="red sub" style="color: red">当前仅 Let's Encrypt 测试环境可以申请 DNS 持久验证证书。</span>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"></fs-crud>

@@ -46,7 +46,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           }),
           form: {
             col: { span: 24 },
-            helper: "隐藏等级会自动锁定，不参与自动升级。",
+            helper: "专属等级会自动锁定，不参与自动升级。",
           },
         },
       },
@@ -111,13 +111,13 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           }),
           column: { width: 110, align: "center" },
         },
-        isHidden: {
-          title: "隐藏等级",
-          type: "dict-switch",
+        levelType: {
+          title: "等级类型",
+          type: "dict-select",
           dict: dict({
             data: [
-              { label: "否", value: false, color: "default" },
-              { label: "是", value: true, color: "warning" },
+              { label: "普通等级", value: "normal", color: "success" },
+              { label: "专属等级", value: "exclusive", color: "warning" },
             ],
           }),
           column: { width: 100, align: "center", show: compute(({ row }) => row.levelId) },

@@ -5,10 +5,11 @@ CREATE TABLE `cd_invite_level`
 (
   `id`              bigint PRIMARY KEY AUTO_INCREMENT NOT NULL,
   `name`            varchar(100),
+  `icon`            varchar(100) NOT NULL DEFAULT 'fluent-emoji-flat:2nd-place-medal',
   `sort`            bigint NOT NULL DEFAULT 0,
   `min_amount`      bigint NOT NULL DEFAULT 0,
   `commission_rate` bigint NOT NULL DEFAULT 0,
-  `is_hidden`       boolean NOT NULL DEFAULT false,
+  `level_type`      varchar(30) NOT NULL DEFAULT 'normal',
   `disabled`        boolean NOT NULL DEFAULT false,
   `create_time`     datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time`     datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -28,8 +29,8 @@ CREATE TABLE `cd_invite_user_plan`
 );
 CREATE UNIQUE INDEX `index_invite_user_plan_user_id` ON `cd_invite_user_plan` (`user_id`);
 
-INSERT INTO `cd_invite_level` (`name`, `sort`, `min_amount`, `commission_rate`, `is_hidden`, `disabled`)
-VALUES ('青铜', 10, 0, 10, false, false),
-       ('白银', 20, 100000, 15, false, false),
-       ('黄金', 30, 500000, 20, false, false),
-       ('钻石', 40, 1000000, 30, false, false);
+INSERT INTO `cd_invite_level` (`name`, `icon`, `sort`, `min_amount`, `commission_rate`, `level_type`, `disabled`)
+VALUES ('青铜', 'fluent-emoji-flat:2nd-place-medal', 10, 0, 10, 'normal', false),
+       ('白银', 'fluent-emoji-flat:1st-place-medal', 20, 100000, 15, 'normal', false),
+       ('黄金', 'fluent-emoji-flat:3rd-place-medal', 30, 500000, 20, 'normal', false),
+       ('钻石', 'streamline-color:diamond-2', 40, 1000000, 30, 'normal', false);
