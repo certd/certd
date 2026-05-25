@@ -3,6 +3,12 @@ import { notification } from "ant-design-vue";
 import * as api from "./api";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
 import { useFormDialog } from "/@/use/use-dialog";
+import { useUserStore } from "/@/store/user";
+
+function buildPrivateFileUrl(key: string) {
+  const userStore = useUserStore();
+  return `/api/basic/file/download?token=${userStore.getToken}&key=${encodeURIComponent(key)}`;
+}
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { openFormDialog } = useFormDialog();
@@ -19,7 +25,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         <a-descriptions-item label="账号">{row.account || "-"}</a-descriptions-item>
         <a-descriptions-item label="开户行名称">{row.bankName || "-"}</a-descriptions-item>
         <a-descriptions-item label="收款二维码" span={2}>
-          {row.qrCode ? <a-image src={`/api/basic/file/download?key=${row.qrCode}`} width={160} /> : <span>-</span>}
+          {row.qrCode ? <a-image src={buildPrivateFileUrl(row.qrCode)} width={160} /> : <span>-</span>}
         </a-descriptions-item>
         <a-descriptions-item label="提现金额">{row.amount / 100} 元</a-descriptions-item>
       </a-descriptions>
@@ -157,7 +163,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               if (!value) {
                 return "-";
               }
-              return <a-image src={`/api/basic/file/download?key=${value}`} width={48} />;
+              return <a-image src={buildPrivateFileUrl(value)} width={48} />;
             },
           },
         },

@@ -52,29 +52,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
         return;
       }
 
-      let token = ctx.get('Authorization') || '';
-      token = token.replace('Bearer ', '').trim();
-      if (!token) {
-        //尝试从cookie中获取token
-        const cookie = ctx.headers.cookie;
-        if (cookie) {
-          const items = cookie.split(';');
-          for (const item of items) {
-            if (!item  || !item.trim()) {
-              continue;
-            }
-            const [key, value] = item.split('=');
-            if (key.trim() === 'certd_token') {
-              token = value.trim();
-              break;
-            }
-          }
-        }
-      }
-      if (!token) {
-        //尝试从query中获取token
-        token = (ctx.query.token as string) || '';
-      }
+      const token = this.getTokenFromRequest(ctx);
 
       if (token) {
         try {
@@ -84,6 +62,10 @@ export class AuthorityMiddleware implements IWebMiddleware {
           return this.notAuth(ctx);
         }
       } else {
+        if (permission === Constants.per.guestOptionalAuth) {
+          await next();
+          return;
+        }
         //找找openKey
         const openKey = await this.doOpenHandler(ctx);
         if (!openKey) {
@@ -98,6 +80,10 @@ export class AuthorityMiddleware implements IWebMiddleware {
       }
 
       if (permission === Constants.per.authOnly) {
+        await next();
+        return;
+      }
+      if (permission === Constants.per.guestOptionalAuth) {
         await next();
         return;
       }
@@ -121,6 +107,30 @@ export class AuthorityMiddleware implements IWebMiddleware {
       ctx.body.message =message;
     }
     return;
+  }
+
+  private getTokenFromRequest(ctx: IMidwayKoaContext) {
+    let token = ctx.get('Authorization') || '';
+    token = token.replace('Bearer ', '').trim();
+    if (token) {
+      return token;
+    }
+
+    const cookie = ctx.headers.cookie;
+    if (cookie) {
+      const items = cookie.split(';');
+      for (const item of items) {
+        if (!item  || !item.trim()) {
+          continue;
+        }
+        const [key, value] = item.split('=');
+        if (key.trim() === 'certd_token') {
+          return value.trim();
+        }
+      }
+    }
+
+    return (ctx.query.token as string) || '';
   }
 
   async doOpenHandler(ctx: IMidwayKoaContext) {

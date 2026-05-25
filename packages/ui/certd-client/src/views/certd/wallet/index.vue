@@ -14,9 +14,11 @@
       <div class="wallet-action-panel">
         <div class="wallet-action-title">提现操作</div>
         <div class="wallet-action-content">
-          <a-button type="primary" @click="openWithdrawSetting">提现设置</a-button>
-          <a-input-number v-model:value="withdrawAmountYuan" class="withdraw-amount-input" :min="0" addon-before="提现金额" addon-after="元" />
-          <a-button @click="applyWithdraw">申请提现</a-button>
+          <a-button class="wallet-action-button" type="primary" @click="openWithdrawSetting">提现设置</a-button>
+          <div class="withdraw-amount-field">
+            <a-input-number v-model:value="withdrawAmountYuan" class="withdraw-amount-input" :min="0" addon-before="提现金额" addon-after="元" />
+          </div>
+          <a-button class="wallet-action-button" type="primary" @click="applyWithdraw">申请提现</a-button>
         </div>
       </div>
 
@@ -60,6 +62,10 @@ function amountToYuan(amount: number) {
 
 function moneyText(amount: number) {
   return `¥ ${amountToYuan(amount)}`;
+}
+
+function buildPrivateFileUrl(key: string) {
+  return `/api/basic/file/download?token=${userStore.getToken}&key=${encodeURIComponent(key)}`;
 }
 
 const summaryCards = computed(() => [
@@ -139,6 +145,7 @@ async function openWithdrawSetting() {
         type: "cropper-uploader",
         form: {
           col: { span: 24 },
+          show: compute(({ form }) => form.channel !== "bank"),
           component: {
             vModel: "modelValue",
             valueType: "key",
@@ -160,7 +167,7 @@ async function openWithdrawSetting() {
               },
             },
             buildUrl(key: string) {
-              return `/api/basic/file/download?key=` + key;
+              return buildPrivateFileUrl(key);
             },
           },
         },
@@ -176,6 +183,9 @@ async function openWithdrawSetting() {
       },
     },
     async onSubmit(form: any) {
+      if (form.channel === "bank") {
+        form.qrCode = "";
+      }
       await api.SaveWithdrawSetting(form);
       notification.success({ message: "保存成功" });
     },
@@ -303,13 +313,26 @@ onActivated(async () => {
   .wallet-action-content {
     display: flex;
     align-items: center;
+    flex: 1;
     flex-wrap: wrap;
     justify-content: flex-start;
     gap: 10px;
+    min-width: 0;
   }
 
-  .withdraw-amount-input {
-    width: 240px;
+  .wallet-action-button {
+    flex: none;
+  }
+
+  .withdraw-amount-field {
+    flex: 0 1 280px;
+    min-width: 240px;
+  }
+
+  .withdraw-amount-field,
+  .withdraw-amount-input,
+  .withdraw-amount-input.ant-input-number-group-wrapper {
+    width: 100%;
   }
 
   .wallet-tabs {
@@ -359,8 +382,14 @@ onActivated(async () => {
       justify-content: flex-start;
     }
 
-    .withdraw-amount-input {
+    .wallet-action-button,
+    .withdraw-amount-field {
       width: 100%;
+    }
+
+    .withdraw-amount-field {
+      flex-basis: auto;
+      min-width: 0;
     }
   }
 }

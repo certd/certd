@@ -1,6 +1,12 @@
 import { CreateCrudOptionsRet, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import * as api from "./api";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
+import { useUserStore } from "/@/store/user";
+
+function buildPrivateFileUrl(key: string) {
+  const userStore = useUserStore();
+  return `/api/basic/file/download?token=${userStore.getToken}&key=${encodeURIComponent(key)}`;
+}
 
 export default function (): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -59,7 +65,7 @@ export default function (): CreateCrudOptionsRet {
               if (!value) {
                 return "-";
               }
-              return <a-image src={`/api/basic/file/download?key=${value}`} width={48} />;
+              return <a-image src={buildPrivateFileUrl(value)} width={48} />;
             },
           },
         },

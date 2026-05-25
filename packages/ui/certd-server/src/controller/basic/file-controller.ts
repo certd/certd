@@ -1,9 +1,10 @@
 import { Controller, Fields, Files, Get, Inject, Post, Provide, Query } from '@midwayjs/core';
-import { BaseController, Constants, FileService, UploadFileItem, uploadTmpFileCacheKey } from '@certd/lib-server';
+import { BaseController, Constants, FileService, PermissionException, UploadFileItem, uploadTmpFileCacheKey } from '@certd/lib-server';
 import send from 'koa-send';
 import { nanoid } from 'nanoid';
 import { cache } from '@certd/basic';
 import { UploadFileInfo } from '@midwayjs/upload';
+import { AuthService } from '../../modules/sys/authority/service/auth-service.js';
 
 const imageExtSet = new Set(['.apng', '.avif', '.bmp', '.gif', '.ico', '.jpeg', '.jpg', '.png', '.svg', '.webp']);
 const imageCacheSeconds = 3 * 24 * 60 * 60;
@@ -32,6 +33,9 @@ export class FileController extends BaseController {
   @Inject()
   fileService: FileService;
 
+  @Inject()
+  authService: AuthService;
+
   @Post('/upload', { description: Constants.per.authOnly })
   async upload(@Files() files: UploadFileInfo<string>[], @Fields() fields: any) {
     console.log('files', files, fields);
@@ -52,17 +56,30 @@ export class FileController extends BaseController {
     });
   }
 
-  @Get('/download', { description: Constants.per.guest })
+  @Get('/download', { description: Constants.per.guestOptionalAuth })
   async download(@Query('key') key: string) {
-    let userId: any = null;
-    if (!key.startsWith('/public')) {
-      userId = this.getUserId();
-    }
-    const filePath = this.fileService.getFile(key, userId);
+    const filePath = this.getDownloadFilePath(key);
     const sendOptions = getImageDownloadOptions(filePath);
     if (!sendOptions) {
       this.ctx.response.attachment(filePath);
     }
     await send(this.ctx, filePath, sendOptions);
+  }
+
+  private getDownloadFilePath(key: string) {
+    const isPrivateFile = !key.startsWith('/public');
+    const userId = isPrivateFile ? this.getUserId() : null;
+    try {
+      return this.fileService.getFile(key, userId);
+    } catch (e) {
+      if (!(e instanceof PermissionException) || !isPrivateFile || !this.authService.isAdmin(this.ctx)) {
+        throw e;
+      }
+      const adminFilePath = this.fileService.getFile(key, userId, true);
+      if (!isImageFile(adminFilePath)) {
+        throw e;
+      }
+      return adminFilePath;
+    }
   }
 }
