@@ -68,9 +68,10 @@ input:
       mode: tags
       type: plugin
       action: onGetDomainList
-      search: false
+      search: true
       pager: true
-      multi: true
+      single: false
+      pageSize: 100
       watches:
         - certDomains
         - accessId

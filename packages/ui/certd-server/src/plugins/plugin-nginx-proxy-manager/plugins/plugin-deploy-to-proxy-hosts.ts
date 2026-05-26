@@ -62,7 +62,7 @@ export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
       action: "onGetProxyHostOptions",
       search: true,
       pager: false,
-      multi: true,
+      single: false,
       watches: ["certDomains", "accessId"],
     },
     helper: "选择要绑定此证书的一个或多个代理主机。",

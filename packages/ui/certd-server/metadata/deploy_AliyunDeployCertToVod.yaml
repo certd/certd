@@ -68,7 +68,7 @@ input:
       action: onGetDomainList
       search: true
       pager: true
-      multi: true
+      single: false
       watches:
         - certDomains
         - accessId

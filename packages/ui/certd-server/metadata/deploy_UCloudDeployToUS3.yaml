@@ -51,7 +51,7 @@ input:
       action: onGetBucketList
       search: false
       pager: false
-      multi: true
+      single: false
       watches:
         - certDomains
         - accessId
@@ -78,7 +78,7 @@ input:
       action: onGetDomainList
       search: false
       pager: false
-      multi: true
+      single: false
       watches:
         - certDomains
         - accessId

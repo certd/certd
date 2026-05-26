@@ -52,7 +52,7 @@ input:
       action: onGetProxyHostOptions
       search: true
       pager: false
-      multi: true
+      single: false
       watches:
         - certDomains
         - accessId
