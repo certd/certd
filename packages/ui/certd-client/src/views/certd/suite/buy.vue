@@ -125,7 +125,7 @@ loadSuiteIntro();
 
     .suite-card-col {
       width: 20% !important;
-      min-width: 360px !important;
+      min-width: 354px !important;
     }
   }
 }

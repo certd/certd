@@ -19,25 +19,37 @@
       </div>
 
       <div class="invite-link-panel">
-        <div class="invite-info-row">
-          <span class="info-label">邀请码：</span>
-          <fs-copyable v-model="inviteInfo.inviteCode" />
+        <div class="invite-info-row invite-highlight-row">
+          <div class="info-icon">
+            <fs-icon icon="ion:ticket-outline" />
+          </div>
+          <span class="info-label">邀请码</span>
+          <div class="info-content">
+            <fs-copyable v-model="inviteInfo.inviteCode" />
+          </div>
         </div>
 
-        <div class="invite-info-row">
-          <span class="info-label">邀请链接：</span>
-          <fs-copyable v-model="inviteInfo.inviteLink" />
+        <div class="invite-info-row invite-highlight-row">
+          <div class="info-icon">
+            <fs-icon icon="ion:link-outline" />
+          </div>
+          <span class="info-label">邀请链接</span>
+          <div class="info-content">
+            <fs-copyable v-model="inviteInfo.inviteLink" />
+          </div>
         </div>
 
-        <div class="invite-info-row">
-          <span class="info-label">我的等级：</span>
-          <a-button type="link" class="level-button" @click="levelDialogOpen = true">
-            <span v-if="inviteInfo.currentLevel" class="level-medal">
-              <fs-icon :icon="levelIcon(inviteInfo.currentLevel)" />
-            </span>
-            <span>{{ inviteInfo.currentLevel?.name || "未设置" }}</span>
+        <div class="invite-info-row invite-highlight-row level-highlight-row" @click="levelDialogOpen = true">
+          <div class="info-icon level-info-icon">
+            <fs-icon v-if="inviteInfo.currentLevel" :icon="levelIcon(inviteInfo.currentLevel)" />
+            <fs-icon v-else icon="ion:ribbon-outline" />
+          </div>
+          <span class="info-label">我的等级</span>
+          <div class="info-content level-info-content">
+            <span class="level-name-text">{{ inviteInfo.currentLevel?.name || "未设置" }}</span>
             <span v-if="inviteInfo.currentLevel" class="current-level-rate">{{ inviteInfo.currentLevel.commissionRate }}%</span>
-          </a-button>
+          </div>
+          <fs-icon class="level-open-icon" icon="ion:chevron-forward-outline" />
         </div>
       </div>
 
@@ -320,14 +332,27 @@ onActivated(async () => {
 
   .summary-card,
   .invite-link-panel {
-    border: 1px solid hsl(var(--border));
+    border: 1px solid rgba(148, 163, 184, 0.28);
     border-radius: 8px;
-    background: hsl(var(--card));
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.82)), hsl(var(--card));
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+
+  .summary-card:hover,
+  .invite-link-panel:hover {
+    border-color: rgba(52, 120, 246, 0.34);
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.12);
+    transform: translateY(-2px);
   }
 
   .summary-card {
+    position: relative;
     min-height: 112px;
+    overflow: hidden;
     padding: 22px;
   }
 
@@ -353,7 +378,7 @@ onActivated(async () => {
 
   .invite-link-panel {
     flex: none;
-    padding: 14px 18px;
+    padding: 16px 18px;
     margin-bottom: 18px;
   }
 
@@ -364,22 +389,92 @@ onActivated(async () => {
     gap: 10px;
   }
 
+  .invite-highlight-row {
+    min-height: 48px;
+    padding: 8px 12px;
+    border: 1px solid rgba(52, 120, 246, 0.16);
+    border-radius: 8px;
+    background: rgba(248, 250, 252, 0.72);
+    transition:
+      border-color 0.18s ease,
+      background-color 0.18s ease,
+      box-shadow 0.18s ease;
+  }
+
+  .invite-highlight-row:hover {
+    border-color: rgba(52, 120, 246, 0.34);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+  }
+
+  .level-highlight-row {
+    cursor: pointer;
+  }
+
+  .level-info-icon {
+    color: #8a5a16;
+    font-size: 20px;
+  }
+
   .invite-info-row + .invite-info-row {
     margin-top: 8px;
   }
 
-  .info-label {
-    width: 92px;
+  .info-icon {
+    display: inline-flex;
     flex: none;
-    color: hsl(var(--muted-foreground));
-    text-align: right;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(52, 120, 246, 0.14);
+    border-radius: 8px;
+    background: rgba(52, 120, 246, 0.08);
+    color: #3478f6;
+    font-size: 17px;
+  }
+
+  .info-label {
+    width: 72px;
+    flex: none;
+    color: hsl(var(--foreground));
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
     white-space: nowrap;
+  }
+
+  .info-content {
+    flex: 1;
+    min-width: 0;
   }
 
   .current-level-rate {
     margin-left: 6px;
     color: #c58a35;
     font-weight: 700;
+  }
+
+  .level-info-content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .level-name-text {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+  }
+
+  .level-open-icon {
+    flex: none;
+    color: hsl(var(--muted-foreground));
+    font-size: 16px;
+    transition: transform 0.18s ease;
+  }
+
+  .level-highlight-row:hover .level-open-icon {
+    transform: translateX(2px);
   }
 
   .level-button {
@@ -406,9 +501,10 @@ onActivated(async () => {
     flex-direction: column;
     min-height: 0;
     padding: 0 12px 12px;
-    border: 1px solid hsl(var(--border));
+    border: 1px solid rgba(148, 163, 184, 0.28);
     border-radius: 8px;
-    background: hsl(var(--card));
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
   }
 
   .ant-tabs-content-holder,
@@ -446,17 +542,27 @@ onActivated(async () => {
     position: relative;
     min-height: 132px;
     padding: 16px;
-    border: 1px solid hsl(var(--border));
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.28);
     border-radius: 8px;
-    background: hsl(var(--card));
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.8)), linear-gradient(135deg, rgba(197, 138, 53, 0.14), rgba(52, 120, 246, 0.12));
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
     transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
       border-color 0.2s,
       background-color 0.2s;
   }
 
+  .level-card:hover {
+    border-color: rgba(52, 120, 246, 0.38);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+    transform: translateY(-2px);
+  }
+
   .level-card.active {
     border-color: #3478f6;
-    background: hsl(var(--primary) / 10%);
+    background: linear-gradient(145deg, rgba(236, 244, 255, 0.92), rgba(248, 250, 252, 0.88)), hsl(var(--primary) / 10%);
   }
 
   .level-name {

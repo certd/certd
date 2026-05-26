@@ -102,6 +102,10 @@ onActivated(() => {
 
 <style lang="less">
 .page-sys-invite-level {
+  .fs-crud-container {
+    padding-top: 14px;
+  }
+
   .fs-crud-table {
     display: none;
   }
@@ -110,7 +114,7 @@ onActivated(() => {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
-    padding: 4px 0;
+    padding: 4px 8px;
   }
 
   .level-empty {
@@ -121,12 +125,31 @@ onActivated(() => {
     position: relative;
     min-height: 156px;
     padding: 16px;
-    border: 1px solid hsl(var(--border));
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.28);
     border-radius: 8px;
-    background: hsl(var(--card));
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.78)), linear-gradient(135deg, rgba(52, 120, 246, 0.14), rgba(197, 138, 53, 0.12));
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
     transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
       border-color 0.2s,
       background-color 0.2s;
+  }
+
+  .level-card::before {
+    position: absolute;
+    inset: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.68);
+    border-radius: 6px;
+    content: "";
+    pointer-events: none;
+  }
+
+  .level-card:hover {
+    border-color: rgba(52, 120, 246, 0.42);
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.14);
+    transform: translateY(-3px);
   }
 
   .level-card.disabled {
@@ -146,6 +169,15 @@ onActivated(() => {
       justify-content: center;
       width: 26px;
       height: 26px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+      backdrop-filter: blur(8px);
+    }
+
+    .ant-btn:hover {
+      background: #fff;
+      transform: translateY(-1px);
     }
 
     .fs-icon {
@@ -174,6 +206,7 @@ onActivated(() => {
     height: 22px;
     color: #8a5a16;
     font-size: 20px;
+    filter: drop-shadow(0 4px 8px rgba(197, 138, 53, 0.22));
   }
 
   .level-rate-label {
@@ -186,9 +219,9 @@ onActivated(() => {
   .level-rate {
     margin-top: 2px;
     color: #c58a35;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
-    line-height: 30px;
+    line-height: 34px;
     text-align: center;
   }
 

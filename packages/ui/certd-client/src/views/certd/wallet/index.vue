@@ -299,19 +299,31 @@ onActivated(async () => {
 
   .summary-card,
   .wallet-tabs {
-    border: 1px solid hsl(var(--border));
+    border: 1px solid rgba(148, 163, 184, 0.28);
     border-radius: 8px;
-    background: hsl(var(--card));
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.82)), hsl(var(--card));
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
   }
 
   .summary-card {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
     min-height: 112px;
+    overflow: hidden;
     padding: 22px;
+  }
+
+  .summary-card:hover {
+    border-color: rgba(52, 120, 246, 0.34);
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.12);
+    transform: translateY(-2px);
   }
 
   .summary-card-main {
@@ -345,6 +357,7 @@ onActivated(async () => {
 
   .summary-action-button {
     flex: none;
+    box-shadow: 0 8px 18px rgba(52, 120, 246, 0.22);
   }
 
   .wallet-tabs {
@@ -353,6 +366,7 @@ onActivated(async () => {
     flex-direction: column;
     min-height: 0;
     padding: 0 12px 12px;
+    background: rgba(255, 255, 255, 0.92);
   }
 
   .ant-tabs-content-holder,
