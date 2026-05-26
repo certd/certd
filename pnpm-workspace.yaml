@@ -3,3 +3,5 @@ packages:
   - 'packages/ui/**'
   - '!**/test/**'
 
+linkWorkspacePackages: deep
+preferWorkspacePackages: true
