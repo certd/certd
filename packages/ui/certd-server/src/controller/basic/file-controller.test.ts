@@ -3,7 +3,7 @@
 
 import assert from "node:assert/strict";
 
-import { getImageDownloadOptions, isImageFile } from "./file-controller.js";
+import { FileController, getImageDownloadOptions, isImageFile } from "./file-controller.js";
 
 describe("FileController.isImageFile", () => {
   it("detects uploaded logo image files", () => {
@@ -35,5 +35,25 @@ describe("FileController.isImageFile", () => {
 
   it("does not build cache options for non-image files", () => {
     assert.equal(getImageDownloadOptions("data/upload/private/user/cert.pem"), undefined);
+  });
+});
+
+describe("FileController.upload", () => {
+  it("auto saves uploaded file to public directory when autoSave is true", async () => {
+    const controller = new FileController();
+    controller.fileService = {
+      async saveFile(userId: number, key: string, permission: string) {
+        assert.equal(userId, 1);
+        assert.equal(permission, "public");
+        assert.equal(key.startsWith("tmpfile_key_"), true);
+        return "/public/1/logo.png";
+      },
+    } as any;
+    controller.ctx = { user: { id: 1 } } as any;
+
+    const res = await controller.upload([{ filename: "logo.png", data: "tmp/logo.png" }] as any, {}, "true");
+
+    assert.equal(res.data.key, "/public/1/logo.png");
+    assert.equal(res.data.url, "/api/basic/file/download?key=%2Fpublic%2F1%2Flogo.png");
   });
 });

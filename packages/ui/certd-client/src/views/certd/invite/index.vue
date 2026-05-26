@@ -32,7 +32,9 @@
         <div class="invite-info-row">
           <span class="info-label">我的等级：</span>
           <a-button type="link" class="level-button" @click="levelDialogOpen = true">
-            <span v-if="inviteInfo.currentLevel" class="level-medal" :class="levelMedalClass(inviteInfo.currentLevel)">{{ levelMedal(inviteInfo.currentLevel) }}</span>
+            <span v-if="inviteInfo.currentLevel" class="level-medal">
+              <fs-icon :icon="levelIcon(inviteInfo.currentLevel)" />
+            </span>
             <span>{{ inviteInfo.currentLevel?.name || "未设置" }}</span>
             <span v-if="inviteInfo.currentLevel" class="current-level-rate">{{ inviteInfo.currentLevel.commissionRate }}%</span>
           </a-button>
@@ -61,9 +63,11 @@
       <div class="level-card-grid modal-level-grid">
         <div v-for="level in visibleLevels" :key="level.id" class="level-card" :class="{ active: level.id === inviteInfo.currentLevel?.id }">
           <div class="level-name">
-            <span class="level-medal" :class="levelMedalClass(level)">{{ levelMedal(level) }}</span>
+            <span class="level-medal">
+              <fs-icon :icon="levelIcon(level)" />
+            </span>
             {{ level.name }}
-            <a-tag v-if="level.isHidden" color="orange">专属</a-tag>
+            <a-tag v-if="level.levelType === 'exclusive'" color="orange">专属</a-tag>
           </div>
           <div class="level-rate-label">佣金比例</div>
           <div class="level-rate">{{ level.commissionRate }}%</div>
@@ -86,7 +90,8 @@
       @ok="handleAgreementOk"
       @cancel="closeAgreementDialog"
     >
-      <div class="invite-agreement-content">{{ agreementText }}</div>
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <div class="invite-agreement-content editor-content-view" v-html="agreementText"></div>
       <div v-if="agreementDialogNeedOpen" class="invite-agreement-confirm">
         <a-checkbox v-model:checked="agreementAgree">我已阅读并同意推广协议</a-checkbox>
       </div>
@@ -119,7 +124,7 @@ const agreementDialogOpen = ref(false);
 const agreementDialogNeedOpen = ref(false);
 const agreementAgree = ref(false);
 const agreementSubmitting = ref(false);
-const defaultAgreementContent = "请遵守平台推广规则，不得通过虚假注册、刷单、恶意诱导等方式获取收益。平台有权对异常推广行为进行核查，并根据实际情况暂停结算或关闭激励计划资格。";
+const defaultAgreementContent = "<p>请遵守平台推广规则，不得通过虚假注册、刷单、恶意诱导等方式获取收益。平台有权对异常推广行为进行核查，并根据实际情况暂停结算或关闭激励计划资格。</p>";
 
 const inviteInfo = reactive<any>({
   enabled: false,
@@ -170,38 +175,8 @@ const visibleLevels = computed(() => {
 
 const agreementText = computed(() => inviteInfo.agreementContent?.trim() || defaultAgreementContent);
 
-function levelMedal(level: any) {
-  const name = `${level?.name || ""}`;
-  if (name.includes("青铜")) {
-    return "铜";
-  }
-  if (name.includes("白银")) {
-    return "银";
-  }
-  if (name.includes("黄金")) {
-    return "金";
-  }
-  if (name.includes("钻石")) {
-    return "钻";
-  }
-  return name.slice(0, 1) || "L";
-}
-
-function levelMedalClass(level: any) {
-  const name = `${level?.name || ""}`;
-  if (name.includes("青铜")) {
-    return "bronze";
-  }
-  if (name.includes("白银")) {
-    return "silver";
-  }
-  if (name.includes("黄金")) {
-    return "gold";
-  }
-  if (name.includes("钻石")) {
-    return "diamond";
-  }
-  return "default";
+function levelIcon(level: any) {
+  return level?.icon || "ion:ribbon-outline";
 }
 
 function openAgreementDialog(needOpenPlan: boolean) {
@@ -419,33 +394,10 @@ onActivated(async () => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #f4d7a1;
+    width: 22px;
+    height: 22px;
     color: #8a5a16;
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  .level-medal.bronze {
-    background: #f5d6b7;
-    color: #9a5b22;
-  }
-
-  .level-medal.silver {
-    background: #e5e7eb;
-    color: #4b5563;
-  }
-
-  .level-medal.gold {
-    background: #f8df9b;
-    color: #926c15;
-  }
-
-  .level-medal.diamond {
-    background: #dbeafe;
-    color: #2563eb;
+    font-size: 20px;
   }
 
   .invite-tabs {
@@ -520,33 +472,10 @@ onActivated(async () => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #f4d7a1;
+    width: 22px;
+    height: 22px;
     color: #8a5a16;
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  .level-medal.bronze {
-    background: #f5d6b7;
-    color: #9a5b22;
-  }
-
-  .level-medal.silver {
-    background: #e5e7eb;
-    color: #4b5563;
-  }
-
-  .level-medal.gold {
-    background: #f8df9b;
-    color: #926c15;
-  }
-
-  .level-medal.diamond {
-    background: #dbeafe;
-    color: #2563eb;
+    font-size: 20px;
   }
 
   .level-rate-label {
@@ -591,11 +520,19 @@ onActivated(async () => {
   max-height: 360px;
   padding: 12px;
   overflow: auto;
-  white-space: pre-wrap;
   border: 1px solid #eee;
   border-radius: 6px;
   background: hsl(var(--card));
   line-height: 1.7;
+
+  :deep(img) {
+    max-width: 100%;
+    height: auto;
+  }
+
+  :deep(p) {
+    margin-bottom: 10px;
+  }
 }
 
 .invite-agreement-confirm {

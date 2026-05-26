@@ -8,6 +8,8 @@ export const Constants = {
     guest: '_guest_',
     //无需登录
     anonymous: '_guest_',
+    //无需登录，有 token 时解析当前用户
+    guestOptionalAuth: '_guestOptionalAuth_',
     //仅需要登录
     authOnly: '_authOnly_',
     //仅需要登录

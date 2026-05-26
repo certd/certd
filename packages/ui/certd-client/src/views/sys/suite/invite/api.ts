@@ -24,6 +24,10 @@ export async function UpdateLevel(data: any) {
   return await request({ url: "/sys/invite/level/update", method: "post", data });
 }
 
+export async function DeleteLevel(id: number) {
+  return await request({ url: "/sys/invite/level/delete", method: "post", params: { id } });
+}
+
 export async function GetUserLevels(query: any) {
   return await request({ url: "/sys/invite/user/page", method: "post", data: query });
 }

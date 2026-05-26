@@ -3,6 +3,12 @@ import { notification } from "ant-design-vue";
 import * as api from "./api";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
 import { useFormDialog } from "/@/use/use-dialog";
+import { useUserStore } from "/@/store/user";
+
+function buildPrivateFileUrl(key: string) {
+  const userStore = useUserStore();
+  return `/api/basic/file/download?token=${userStore.getToken}&key=${encodeURIComponent(key)}`;
+}
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { openFormDialog } = useFormDialog();
@@ -12,16 +18,17 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   };
 
   function renderWithdrawDetail(row: any) {
+    const isBank = row.channel === "bank";
     return (
-      <a-descriptions class={"w-full"} bordered column={2} size={"small"}>
+      <a-descriptions class={"w-full"} bordered column={1} size={"small"}>
+        <a-descriptions-item label="提现金额">
+          <span class={"text-red-500"}>{row.amount / 100} 元</span>
+        </a-descriptions-item>
         <a-descriptions-item label="渠道类型">{row.channel === "bank" ? "银行卡" : "支付宝"}</a-descriptions-item>
         <a-descriptions-item label="用户名">{row.userDisplay || row.userId}</a-descriptions-item>
         <a-descriptions-item label="账号">{row.account || "-"}</a-descriptions-item>
-        <a-descriptions-item label="开户行名称">{row.bankName || "-"}</a-descriptions-item>
-        <a-descriptions-item label="收款二维码" span={2}>
-          {row.qrCode ? <a-image src={`/api/basic/file/download?key=${row.qrCode}`} width={160} /> : <span>-</span>}
-        </a-descriptions-item>
-        <a-descriptions-item label="提现金额">{row.amount / 100} 元</a-descriptions-item>
+        {isBank ? <a-descriptions-item label="开户行名称">{row.bankName || "-"}</a-descriptions-item> : null}
+        {!isBank ? <a-descriptions-item label="收款二维码">{row.qrCode ? <a-image src={buildPrivateFileUrl(row.qrCode)} width={160} /> : <span>-</span>}</a-descriptions-item> : null}
       </a-descriptions>
     );
   }
@@ -31,6 +38,11 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       title: "提现审核",
       wrapper: {
         width: 760,
+        buttons: {
+          ok: {
+            text: "确认已转账完成",
+          },
+        },
       },
       body: () => renderWithdrawDetail(row),
       onSubmit: async () => {
@@ -147,17 +159,16 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         },
         realName: { title: "真实姓名", type: "text", search: { show: true }, column: { width: 120 } },
         account: { title: "收款账号", type: "text", column: { width: 180 } },
-        bankName: { title: "开户银行", type: "text", column: { width: 160 } },
-        qrCode: {
-          title: "收款二维码",
+        bankName: {
+          title: "开户银行",
           type: "text",
           column: {
-            width: 120,
-            cellRender({ value }) {
-              if (!value) {
+            width: 160,
+            cellRender({ row, value }) {
+              if (row.channel !== "bank") {
                 return "-";
               }
-              return <a-image src={`/api/basic/file/download?key=${value}`} width={48} />;
+              return value || "-";
             },
           },
         },

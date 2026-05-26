@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.40.4](https://github.com/certd/certd/compare/v1.40.3...v1.40.4) (2026-05-24)
+
+### Performance Improvements
+
+* 新增阿里云直播证书部署插件 ([8edb6f8](https://github.com/certd/certd/commit/8edb6f8727bd148f106801bef25567880fd35e9e))
+
 ## [1.40.3](https://github.com/certd/certd/compare/v1.40.2...v1.40.3) (2026-05-21)
 
 **Note:** Version bump only for package @certd/plugin-lib

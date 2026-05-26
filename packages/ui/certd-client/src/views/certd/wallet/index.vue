@@ -6,17 +6,11 @@
     <div class="wallet-body">
       <div class="wallet-summary-grid">
         <div v-for="item in summaryCards" :key="item.key" class="summary-card">
-          <div class="summary-title">{{ item.title }}</div>
-          <div class="summary-value" :class="item.className">{{ item.value }}</div>
-        </div>
-      </div>
-
-      <div class="wallet-action-panel">
-        <div class="wallet-action-title">提现操作</div>
-        <div class="wallet-action-content">
-          <a-button type="primary" @click="openWithdrawSetting">提现设置</a-button>
-          <a-input-number v-model:value="withdrawAmountYuan" class="withdraw-amount-input" :min="0" addon-before="提现金额" addon-after="元" />
-          <a-button @click="applyWithdraw">申请提现</a-button>
+          <div class="summary-card-main">
+            <div class="summary-title">{{ item.title }}</div>
+            <div class="summary-value" :class="item.className">{{ item.value }}</div>
+          </div>
+          <a-button v-if="item.key === 'availableAmount'" class="summary-action-button" type="primary" @click="openWithdrawDialog">申请提现</a-button>
         </div>
       </div>
 
@@ -33,9 +27,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onActivated, onMounted, reactive, ref } from "vue";
+import { computed, h, onActivated, onMounted, reactive, ref } from "vue";
 import { compute, dict, useFs } from "@fast-crud/fast-crud";
-import { notification } from "ant-design-vue";
+import { Button, notification } from "ant-design-vue";
 import * as api from "./api";
 import createLogsCrudOptions from "./crud-logs";
 import createWithdrawCrudOptions from "./crud-withdraw";
@@ -46,7 +40,6 @@ import { useUserStore } from "/@/store/user";
 defineOptions({ name: "MyWallet" });
 
 const summary = reactive<any>({ availableAmount: 0, frozenAmount: 0, totalIncomeAmount: 0, totalWithdrawAmount: 0 });
-const withdrawAmountYuan = ref(0);
 const loaded = ref(false);
 const activeTab = ref("withdraw");
 const { openFormDialog } = useFormDialog();
@@ -60,6 +53,10 @@ function amountToYuan(amount: number) {
 
 function moneyText(amount: number) {
   return `¥ ${amountToYuan(amount)}`;
+}
+
+function buildPrivateFileUrl(key: string) {
+  return `/api/basic/file/download?token=${userStore.getToken}&key=${encodeURIComponent(key)}`;
 }
 
 const summaryCards = computed(() => [
@@ -95,8 +92,18 @@ async function loadWalletSummary() {
 }
 
 async function openWithdrawSetting() {
-  const setting: any = await api.GetWithdrawSetting();
+  const [setting, walletSetting]: any[] = await Promise.all([api.GetWithdrawSetting(), api.GetWalletSetting()]);
+  const enabledChannels = walletSetting?.withdrawChannels?.length ? walletSetting.withdrawChannels : ["alipay", "bank"];
+  const enabledBanks = walletSetting?.withdrawBanks?.length ? walletSetting.withdrawBanks : [];
+  const channelOptions = [
+    { label: "支付宝", value: "alipay" },
+    { label: "银行卡", value: "bank" },
+  ].filter(item => enabledChannels.includes(item.value));
+  const bankOptions = enabledBanks.map((item: string) => ({ label: item, value: item }));
   const initialForm = Object.assign({ channel: "alipay", realName: "", account: "", bankName: "" }, setting || {});
+  if (!enabledChannels.includes(initialForm.channel)) {
+    initialForm.channel = enabledChannels[0] || "alipay";
+  }
   await openFormDialog({
     title: "提现设置",
     wrapper: {
@@ -108,10 +115,7 @@ async function openWithdrawSetting() {
         title: "提现渠道",
         type: "dict-radio",
         dict: dict({
-          data: [
-            { label: "支付宝", value: "alipay" },
-            { label: "银行卡", value: "bank" },
-          ],
+          data: channelOptions,
         }),
         form: {
           col: { span: 24 },
@@ -136,18 +140,13 @@ async function openWithdrawSetting() {
       },
       qrCode: {
         title: "收款二维码",
-        type: "cropper-uploader",
+        type: "avatar-uploader",
         form: {
           col: { span: 24 },
+          helper: "上传支付宝收款二维码图片",
+          show: compute(({ form }) => form.channel !== "bank"),
           component: {
-            vModel: "modelValue",
             valueType: "key",
-            cropper: {
-              aspectRatio: 1,
-              autoCropArea: 1,
-              viewMode: 0,
-            },
-            onReady: null,
             uploader: {
               type: "form",
               action: "/basic/file/upload?token=" + userStore.getToken,
@@ -160,31 +159,85 @@ async function openWithdrawSetting() {
               },
             },
             buildUrl(key: string) {
-              return `/api/basic/file/download?key=` + key;
+              return buildPrivateFileUrl(key);
             },
           },
         },
       },
       bankName: {
         title: "开户银行",
-        type: "text",
         form: {
           col: { span: 24 },
           show: compute(({ form }) => form.channel === "bank"),
+          component: {
+            name: "a-select",
+            vModel: "value",
+            options: bankOptions,
+            showSearch: true,
+            placeholder: "请选择开户银行",
+          },
           rules: [{ required: compute(({ form }) => form.channel === "bank"), message: "请输入开户银行" }],
         },
       },
     },
     async onSubmit(form: any) {
+      if (form.channel === "bank") {
+        form.qrCode = "";
+      }
       await api.SaveWithdrawSetting(form);
       notification.success({ message: "保存成功" });
     },
   });
 }
 
-async function applyWithdraw() {
-  await api.ApplyWithdraw(util.amount.toCent(withdrawAmountYuan.value || 0));
-  withdrawAmountYuan.value = 0;
+async function openWithdrawDialog() {
+  await openFormDialog({
+    title: "申请提现",
+    wrapper: {
+      width: 520,
+    },
+    initialForm: {
+      amountYuan: null,
+    },
+    body: () =>
+      h("div", { class: "withdraw-dialog-tip" }, [
+        h("span", "提现前需要先设置提现账号。"),
+        h(
+          Button,
+          {
+            size: "small",
+            type: "link",
+            onClick: openWithdrawSetting,
+          },
+          () => "提现设置"
+        ),
+      ]),
+    columns: {
+      amountYuan: {
+        title: "提现金额",
+        form: {
+          col: { span: 24 },
+          component: {
+            name: "a-input-number",
+            vModel: "value",
+            min: 0,
+            precision: 2,
+            addonAfter: "元",
+            style: { width: "100%" },
+          },
+          rules: [{ required: true, message: "请输入提现金额" }],
+        },
+      },
+    },
+    async onSubmit(form: any) {
+      await applyWithdraw(form.amountYuan);
+    },
+  });
+}
+
+async function applyWithdraw(amountYuan: number) {
+  await api.ApplyWithdraw(util.amount.toCent(amountYuan || 0));
+  activeTab.value = "withdraw";
   await loadWalletSummary();
   await Promise.all([withdrawCrudExpose.doRefresh(), logsCrudExpose.doRefresh()]);
   notification.success({ message: "提现申请已提交" });
@@ -233,8 +286,7 @@ onActivated(async () => {
     background: hsl(var(--background-deep));
   }
 
-  .wallet-summary-grid,
-  .wallet-action-panel {
+  .wallet-summary-grid {
     flex: none;
   }
 
@@ -246,7 +298,6 @@ onActivated(async () => {
   }
 
   .summary-card,
-  .wallet-action-panel,
   .wallet-tabs {
     border: 1px solid hsl(var(--border));
     border-radius: 8px;
@@ -255,8 +306,16 @@ onActivated(async () => {
   }
 
   .summary-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
     min-height: 112px;
     padding: 22px;
+  }
+
+  .summary-card-main {
+    min-width: 0;
   }
 
   .summary-title {
@@ -284,32 +343,8 @@ onActivated(async () => {
     color: #3478f6;
   }
 
-  .wallet-action-panel {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 16px;
-    padding: 14px 18px;
-    margin-bottom: 18px;
-  }
-
-  .wallet-action-title {
+  .summary-action-button {
     flex: none;
-    color: hsl(var(--foreground));
-    font-size: 15px;
-    font-weight: 600;
-  }
-
-  .wallet-action-content {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 10px;
-  }
-
-  .withdraw-amount-input {
-    width: 240px;
   }
 
   .wallet-tabs {
@@ -350,18 +385,23 @@ onActivated(async () => {
       grid-template-columns: 1fr;
     }
 
-    .wallet-action-panel {
-      align-items: stretch;
+    .summary-card {
+      align-items: flex-start;
       flex-direction: column;
     }
-
-    .wallet-action-content {
-      justify-content: flex-start;
-    }
-
-    .withdraw-amount-input {
-      width: 100%;
-    }
   }
+}
+
+.withdraw-dialog-tip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border: 1px solid #d9e8ff;
+  border-radius: 6px;
+  background: #f5f9ff;
+  color: #315174;
 }
 </style>

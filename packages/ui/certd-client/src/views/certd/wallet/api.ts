@@ -8,6 +8,10 @@ export async function GetWithdrawSetting() {
   return await request({ url: "/wallet/withdraw/setting/get", method: "post" });
 }
 
+export async function GetWalletSetting() {
+  return await request({ url: "/wallet/settings/get", method: "post" });
+}
+
 export async function SaveWithdrawSetting(data: any) {
   return await request({ url: "/wallet/withdraw/setting/save", method: "post", data });
 }
