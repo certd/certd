@@ -18,7 +18,7 @@
         "types"
     ],
     "dependencies": {
-        "@certd/basic": "workspace:^1.40.4",
+        "@certd/basic": "^1.40.4",
         "@peculiar/x509": "^1.11.0",
         "asn1js": "^3.0.5",
         "axios": "^1.9.0",
