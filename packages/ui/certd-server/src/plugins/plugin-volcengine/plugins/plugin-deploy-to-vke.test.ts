@@ -8,8 +8,8 @@ describe("VolcengineDeployToVKE", () => {
   it("uses a single-select cluster field", () => {
     const clusterInput = (VolcengineDeployToVKE as any).define.input.clusterId;
 
-    assert.equal(clusterInput.component.multi, false);
-    assert.equal(clusterInput.component.mode, "default");
+    assert.equal(clusterInput.component.single, true);
+    assert.equal(clusterInput.component.mode, "tags");
   });
 
   it("sends the configured string ClusterId", async () => {

@@ -34,7 +34,7 @@ describe("plugin-lib common util", () => {
       title: "选择资源",
       action: "ListResource",
       typeName: "resource",
-      multi: false,
+      single: true,
       search: true,
       watches: ["region"],
     });
@@ -46,8 +46,8 @@ describe("plugin-lib common util", () => {
       vModel: "value",
       action: "ListResource",
       typeName: "resource",
-      mode: "default",
-      multi: false,
+      mode: "tags",
+      single: true,
       search: true,
     });
     expect(define.component.watches).to.deep.equal(["certDomains", "accessId", "region"]);
