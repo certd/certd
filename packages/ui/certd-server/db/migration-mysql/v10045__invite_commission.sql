@@ -29,7 +29,7 @@ CREATE TABLE `cd_user_wallet`
 (
   `id`                      bigint PRIMARY KEY AUTO_INCREMENT NOT NULL,
   `user_id`                 bigint,
-  `available_amount`        bigint NOT NULL DEFAULT 0,
+  `total_amount`            bigint NOT NULL DEFAULT 0,
   `frozen_amount`           bigint NOT NULL DEFAULT 0,
   `total_income_amount`     bigint NOT NULL DEFAULT 0,
   `total_consumed_amount`   bigint NOT NULL DEFAULT 0,
