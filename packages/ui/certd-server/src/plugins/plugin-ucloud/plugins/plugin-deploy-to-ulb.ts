@@ -46,7 +46,7 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
       title: "地域",
       helper: "选择UCloud地域",
       action: UCloudDeployToULB.prototype.onGetRegionList.name,
-      multi: false
+      single: true
     })
   )
   region!: string;

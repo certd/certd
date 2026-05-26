@@ -67,7 +67,7 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
       helper: "请选择要部署证书的全球加速实例",
       action: AliyunDeployCertToGA.prototype.onGetAcceleratorList.name,
       watches: ["accessId"],
-      multi: false,
+      single: true,
     })
   )
   acceleratorId!: string;

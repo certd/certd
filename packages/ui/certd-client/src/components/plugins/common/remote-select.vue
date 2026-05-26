@@ -69,7 +69,7 @@ const props = defineProps<
     watches?: string[];
     search?: boolean;
     pager?: boolean;
-    multi?: boolean;
+    single?: boolean;
     pageSize?: number;
     uploadCert?: UploadCertProps;
   } & ComponentPropsType
@@ -79,15 +79,15 @@ const emit = defineEmits<{
 }>();
 
 function updateValue(value: any) {
-  // if (props.multi !== false) {
-  //   emit("update:value", value);
-  // } else {
-  //   const last = value?.[value.length - 1];
-  //   emit("update:value", last);
-  //   selectRef.value.blur();
-  // }
+  if (props.single === true) {
+    const last = value?.[value.length - 1];
+    emit("update:value", last);
+    selectRef.value.blur();
+  } else {
+    emit("update:value", value);
+  }
 
-  emit("update:value", value);
+  // emit("update:value", value);
 }
 
 const attrs = useAttrs();

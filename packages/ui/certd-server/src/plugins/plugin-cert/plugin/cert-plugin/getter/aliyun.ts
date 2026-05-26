@@ -51,7 +51,6 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
   )
   apiVersion!: string;
 
-
   @TaskInput(
     createRemoteSelectInputDefine({
       title: "证书订单 ID",
@@ -61,6 +60,7 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
         name: "RemoteSelect",
         vModel: "value",
         pager: true,
+        single: true,
       },
       action: CertApplyGetFormAliyunPlugin.prototype.onGetOrderList.name,
     })
@@ -216,7 +216,10 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
     });
     const list = res?.CertificateOrderList || [];
     if (!list || list.length === 0) {
-      return [];
+      return {
+        list: [],
+        total: 0,
+      };
     }
 
     const total = res.TotalCount || 0;
@@ -261,7 +264,10 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
 
     const list = res?.InstanceList || [];
     if (!list || list.length === 0) {
-      return [];
+      return {
+        list: [],
+        total: 0,
+      };
     }
 
     const total = res.TotalCount || 0;

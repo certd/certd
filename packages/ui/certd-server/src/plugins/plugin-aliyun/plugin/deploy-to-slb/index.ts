@@ -70,7 +70,7 @@ export class AliyunDeployCertToSLB extends AbstractTaskPlugin {
   @TaskInput(
     createRemoteSelectInputDefine({
       title: 'LB所在地区',
-      multi: false,
+      single: true,
       action: AliyunDeployCertToSLB.prototype.onGetRegionList.name,
       watches: ['accessId'],
     })

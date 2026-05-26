@@ -49,7 +49,7 @@ export class HauweiDeployCertToELB extends AbstractTaskPlugin {
       helper: '请选择项目',
       typeName: 'HauweiDeployCertToELB',
       action: HauweiDeployCertToELB.prototype.onGetProjectList.name,
-      multi:false
+      single: true,
     })
   )
   projectId!: string;

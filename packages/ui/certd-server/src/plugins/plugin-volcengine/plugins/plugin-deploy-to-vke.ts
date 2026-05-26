@@ -70,7 +70,7 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       helper: "选择要替换证书的VKE集群，也可以手动输入集群ID",
       action: VolcengineDeployToVKE.prototype.onGetClusterList.name,
       watches: ["accessId", "regionId"],
-      multi: false,
+      single: true,
       required: true
     })
   )
