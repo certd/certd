@@ -102,6 +102,9 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
     if (!this.orderId) {
       throw new Error("请先输入证书实例 ID");
     }
+    if (Array.isArray(this.orderId) && this.orderId.length > 0) {
+      this.orderId = this.orderId[0]
+    }
     const certificateId = await this.getOrderDetailV2(client, this.orderId);
     this.logger.info(`获取到证书 ID:${certificateId}`);
     const certDetail = await this.getCertDetail(client, certificateId);
