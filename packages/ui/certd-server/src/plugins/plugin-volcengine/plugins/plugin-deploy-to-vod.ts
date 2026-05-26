@@ -65,7 +65,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       helper: "选择要部署证书的点播空间",
       action: VolcengineDeployToVOD.prototype.onGetSpaceList.name,
       watches: ["accessId", "regionId"],
-      multi:false,
+      single:true,
       required: true
     })
   )

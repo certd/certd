@@ -68,7 +68,7 @@ export class AliyunDeployCertToNLB extends AbstractTaskPlugin {
     createRemoteSelectInputDefine({
       title: 'NLB所在地区',
       typeName: 'AliyunDeployCertToNLB',
-      multi: false,
+      single: true,
       action: AliyunDeployCertToNLB.prototype.onGetRegionList.name,
       watches: ['accessId'],
     })

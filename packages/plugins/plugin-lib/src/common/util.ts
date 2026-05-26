@@ -35,7 +35,7 @@ export function createRemoteSelectInputDefine(opts?: {
   helper?: string;
   formItem?: any;
   mode?: string;
-  multi?: boolean;
+  single?: boolean;
   required?: boolean;
   rules?: any;
   mergeScript?: string;
@@ -59,11 +59,8 @@ export function createRemoteSelectInputDefine(opts?: {
   const helper = opts?.helper || "请选择";
   const search = opts?.search ?? false;
   const pager = opts?.pager ?? false;
-  let mode = "default";
-  const multi = opts?.multi ?? true;
-  if (multi) {
-    mode = "tags";
-  }
+  const mode = "tags";
+  const single = opts?.single ?? false;
   const item = {
     title,
     component: {
@@ -75,7 +72,7 @@ export function createRemoteSelectInputDefine(opts?: {
       action,
       search,
       pager,
-      multi,
+      single,
       pageSize: opts?.pageSize,
       watches: [certDomainsInputKey, accessIdInputKey, ...watches],
       uploadCert: opts?.uploadCert,

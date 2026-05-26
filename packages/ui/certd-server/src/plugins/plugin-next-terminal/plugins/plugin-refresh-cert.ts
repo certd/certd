@@ -53,7 +53,7 @@ export class NextTerminalRefreshCert extends AbstractTaskPlugin {
       action: NextTerminalRefreshCert.prototype.onGetCertList.name,
       watches: ['accessId'],
       required: true,
-      multi: true,
+      single: false,
     })
   )
   certIds!: string[];
