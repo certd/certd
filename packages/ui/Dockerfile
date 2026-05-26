@@ -36,6 +36,7 @@ EXPOSE 7002
 
 RUN apk add --no-cache openssl
 RUN apk add --no-cache openjdk8
+RUN apk add --no-cache gcompat
 WORKDIR /app/
 COPY --from=builder /workspace/certd-server/ /app/
 
