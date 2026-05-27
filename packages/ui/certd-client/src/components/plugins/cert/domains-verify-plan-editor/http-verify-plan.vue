@@ -30,10 +30,9 @@
 </template>
 
 <script lang="ts" setup>
-import { Ref, ref, watch, nextTick } from "vue";
+import { nextTick, Ref, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { HttpRecord } from "/@/components/plugins/cert/domains-verify-plan-editor/type";
-import { dict } from "@fast-crud/fast-crud";
 import { Dicts } from "/@/components/plugins/lib/dicts";
 
 defineOptions({

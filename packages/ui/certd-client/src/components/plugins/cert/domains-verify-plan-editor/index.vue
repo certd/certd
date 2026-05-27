@@ -46,7 +46,13 @@
                     <div class="form-item">
                       <span class="label">{{ t("certd.verifyPlan.dnsAccess") }}:</span>
                       <span class="input">
-                        <access-selector v-model="item.dnsProviderAccessId" size="small" :type="item.dnsProviderAccessType || item.dnsProviderType" :placeholder="t('certd.verifyPlan.pleaseSelect')" @change="onPlanChanged"></access-selector>
+                        <access-selector
+                          v-model="item.dnsProviderAccessId"
+                          size="small"
+                          :type="item.dnsProviderAccessType || item.dnsProviderType"
+                          :placeholder="t('certd.verifyPlan.pleaseSelect')"
+                          @change="onPlanChanged"
+                        ></access-selector>
                       </span>
                     </div>
                   </div>
