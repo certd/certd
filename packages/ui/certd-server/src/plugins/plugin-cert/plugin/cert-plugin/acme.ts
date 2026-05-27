@@ -289,15 +289,22 @@ export class AcmeService {
         value: recordValue,
       };
       this.logger.info("添加 TXT 解析记录", JSON.stringify(recordReq));
-      const recordRes = await dnsProvider.createRecord(recordReq);
-      this.logger.info("添加 TXT 解析记录成功", JSON.stringify(recordRes));
-      return {
-        recordReq,
-        recordRes,
-        dnsProvider,
-        challenge,
-        keyAuthorization,
-      };
+      try {
+        const recordRes = await dnsProvider.createRecord(recordReq);
+        this.logger.info("添加 TXT 解析记录成功", JSON.stringify(recordRes));
+         return {
+          recordReq,
+          recordRes,
+          dnsProvider,
+          challenge,
+          keyAuthorization,
+        };
+      } catch (e: any) {
+        //@ts-ignore
+        e.message = `[${dnsProvider?.constructor?.name}错误] ${e.message}`;
+        throw e
+      }
+     
     };
 
     let dnsProvider = providers.dnsProvider;
