@@ -27,15 +27,8 @@ export class HipmDnsmgrDnsProvider extends AbstractDnsProvider<{ domainId: strin
     const { fullRecord, hostRecord, value, type, domain } = options;
     this.logger.info('[HiPM DNSMgr] 添加域名解析：', fullRecord, value, type, domain);
 
-    // 1. 获取域名列表，找到对应的域名 ID
-    const domainList = await this.access.getDomainList();
-    const domainInfo = domainList.find((item: any) => item.domain === domain);
-
-    if (!domainInfo) {
-      throw new Error(`[HiPM DNSMgr] 未找到域名：${domain}`);
-    }
-
-    const domainId = String(domainInfo.id);
+    // 1. 获取域名 ID（双层查询策略）
+    const domainId = await this.access.getDomainId(domain);
     this.logger.debug('[HiPM DNSMgr] 找到域名:', domain, 'ID:', domainId);
 
     // 2. 创建 DNS 记录
