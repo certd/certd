@@ -15,6 +15,11 @@ export default function (): CreateCrudOptionsRet {
       toolbar: { show: false },
       rowHandle: { show: false },
       columns: {
+        createTime: {
+          title: "时间",
+          type: "datetime",
+          column: { width: 180 },
+        },
         amount: {
           title: "收益金额",
           type: "number",
@@ -55,11 +60,6 @@ export default function (): CreateCrudOptionsRet {
           title: "备注",
           type: "text",
           column: { minWidth: 220 },
-        },
-        createTime: {
-          title: "时间",
-          type: "datetime",
-          column: { width: 180 },
         },
       },
     },

@@ -1,6 +1,14 @@
 import { CreateCrudOptionsRet, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import * as api from "./api";
-import PriceInput from "/@/views/sys/suite/product/price-input.vue";
+import { util } from "/@/utils";
+
+function moneyText(amount: number) {
+  const yuan = util.amount.toYuan(Math.abs(amount || 0));
+  if (amount < 0) {
+    return `-¥${yuan}`;
+  }
+  return `¥${yuan}`;
+}
 
 export default function (): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -24,6 +32,7 @@ export default function (): CreateCrudOptionsRet {
               { label: "收益入账", value: "income", color: "success" },
               { label: "余额抵扣", value: "consume", color: "default" },
               { label: "提现冻结", value: "withdraw_freeze", color: "warning" },
+              { label: "提现成功", value: "withdraw", color: "success" },
               { label: "提现成功", value: "withdraw_success", color: "success" },
               { label: "提现退回", value: "withdraw_reject", color: "processing" },
             ],
@@ -35,7 +44,10 @@ export default function (): CreateCrudOptionsRet {
           type: "number",
           column: {
             width: 120,
-            component: { name: PriceInput, vModel: "modelValue", edit: false },
+            cellRender({ value }) {
+              const amount = Number(value || 0);
+              return <span class={amount < 0 ? "text-green-500" : "text-red-500"}>{moneyText(amount)}</span>;
+            },
           },
         },
         balanceAfter: {
@@ -43,7 +55,9 @@ export default function (): CreateCrudOptionsRet {
           type: "number",
           column: {
             width: 130,
-            component: { name: PriceInput, vModel: "modelValue", edit: false },
+            cellRender({ value }) {
+              return <span class="text-red-500">{moneyText(Number(value || 0))}</span>;
+            },
           },
         },
         remark: {

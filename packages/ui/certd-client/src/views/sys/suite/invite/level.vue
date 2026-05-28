@@ -33,7 +33,8 @@
           </div>
           <div class="level-rate-label">佣金比例</div>
           <div class="level-rate">{{ item.commissionRate || 0 }}%</div>
-          <div class="level-threshold">累计推广 ≥ {{ amountToYuan(item.minAmount) }} 元</div>
+          <div v-if="item.levelType === 'exclusive'" class="level-threshold exclusive-threshold">平台指定专属等级</div>
+          <div v-else class="level-threshold">累计推广 ≥ {{ amountToYuan(item.minAmount) }} 元</div>
           <div class="level-meta">
             <a-tag :color="item.disabled ? 'default' : 'success'">{{ item.disabled ? "已禁用" : "已启用" }}</a-tag>
             <span>排序 {{ item.sort || 0 }}</span>
@@ -230,6 +231,10 @@ onActivated(() => {
     color: hsl(var(--muted-foreground));
     font-size: 12px;
     text-align: center;
+  }
+
+  .exclusive-threshold {
+    color: #8a5a16;
   }
 
   .level-meta {

@@ -39,7 +39,8 @@
       <div class="flex-o duration-label">时长</div>
       <div class="duration-list">
         <div v-for="dp of product.durationPrices" :key="dp.duration" class="duration-item" :class="{ active: selected.duration === dp.duration }" @click="selected = dp">
-          {{ durationDict.dataMap[dp.duration]?.label }}
+          <span class="duration-text">{{ durationDict.dataMap[dp.duration]?.label }}</span>
+          <span v-if="discountText(dp)" class="duration-discount">{{ discountText(dp) }}</span>
         </div>
       </div>
     </div>
@@ -48,7 +49,7 @@
       <div class="flex-o">价格</div>
       <div class="flex-o price-text">
         <price-input style="color: red" :font-size="20" :model-value="selected?.price" :edit="false" zero-text="免费" />
-        <span class="ml-5" style="font-size: 12px"> / {{ durationDict.dataMap[selected.duration]?.label }}</span>
+        <span class="price-unit">/ {{ durationDict.dataMap[selected.duration]?.label }}</span>
       </div>
     </div>
 
@@ -61,13 +62,27 @@
 import { durationDict } from "/@/views/certd/suite/api";
 import SuiteValue from "/@/views/sys/suite/product/suite-value.vue";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { dict, FsIcon } from "@fast-crud/fast-crud";
 
 const props = defineProps<{
   product: any;
 }>();
 const selected = ref(props.product.durationPrices[0]);
+
+const originalUnitPrice = computed(() => {
+  const unitPrices = (props.product.durationPrices || [])
+    .map((item: any) => {
+      const duration = Number(item.duration);
+      const price = Number(item.price);
+      if (!duration || duration <= 0 || price <= 0) {
+        return null;
+      }
+      return price / duration;
+    })
+    .filter((item: number | null): item is number => item != null);
+  return Math.max(...unitPrices, 0);
+});
 
 const productTypeDictRef = dict({
   data: [
@@ -77,6 +92,20 @@ const productTypeDictRef = dict({
 });
 
 const emit = defineEmits(["order"]);
+function discountText(durationPrice: any) {
+  const duration = Number(durationPrice.duration);
+  const price = Number(durationPrice.price);
+  if (!duration || duration <= 0 || price <= 0 || originalUnitPrice.value <= 0) {
+    return "";
+  }
+  const currentUnitPrice = price / duration;
+  const discount = Math.round((currentUnitPrice / originalUnitPrice.value) * 100) / 10;
+  if (discount >= 10) {
+    return "";
+  }
+  return `${discount}折`;
+}
+
 async function doOrder() {
   emit("order", { product: props.product, productId: props.product.id, duration: selected.value.duration, price: selected.value.price });
 }
@@ -108,13 +137,21 @@ async function doOrder() {
   .duration-list {
     display: flex;
     flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
     .duration-item {
-      width: 45px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-width: 56px;
+      height: 32px;
       border: 1px solid #cdcdcd;
+      border-radius: 4px;
       text-align: center;
-      padding: 2px;
-      margin: 2px;
+      padding: 3px 6px;
       cursor: pointer;
+      line-height: 16px;
 
       &:hover {
         border-color: #1890ff;
@@ -124,6 +161,44 @@ async function doOrder() {
         background-color: #c1eafb;
       }
     }
+
+    .duration-text {
+      display: block;
+      line-height: 20px;
+      white-space: nowrap;
+    }
+
+    .duration-discount {
+      position: absolute;
+      top: -9px;
+      right: -7px;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 8px 8px 8px 2px;
+      background: #ff4d4f;
+      color: #f5222d;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 16px;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(245, 34, 45, 0.24);
+    }
+  }
+
+  .price-text {
+    flex: none;
+    align-items: baseline;
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
+
+  .price-unit {
+    flex: none;
+    margin-left: 5px;
+    color: hsl(var(--muted-foreground));
+    font-size: 12px;
+    white-space: nowrap;
   }
 }
 </style>

@@ -1,18 +1,10 @@
 import * as api from "./api";
-import { useI18n } from "/src/locales";
-import { computed, Ref, ref } from "vue";
-import { useRouter } from "vue-router";
-import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, utils } from "@fast-crud/fast-crud";
-import { useUserStore } from "/@/store/user";
-import { useSettingStore } from "/@/store/settings";
+import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { Modal } from "ant-design-vue";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
-import SuiteValue from "/@/views/sys/suite/product/suite-value.vue";
 import DurationValue from "/@/views/sys/suite/product/duration-value.vue";
 
-export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
-  const router = useRouter();
-  const { t } = useI18n();
+export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
@@ -21,56 +13,34 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     const res = await api.UpdateObj(form);
     return res;
   };
-  const delRequest = async ({ row }: DelReq) => {
-    return await api.DelObj(row.id);
-  };
-
   const addRequest = async ({ form }: AddReq) => {
     const res = await api.AddObj(form);
     return res;
   };
 
-  const userStore = useUserStore();
-  const settingStore = useSettingStore();
-  const selectedRowKeys: Ref<any[]> = ref([]);
-  context.selectedRowKeys = selectedRowKeys;
-
   return {
     crudOptions: {
-      settings: {
-        plugins: {
-          //这里使用行选择插件，生成行选择crudOptions配置，最终会与crudOptions合并
-          rowSelection: {
-            enabled: true,
-            order: -2,
-            before: true,
-            // handle: (pluginProps,useCrudProps)=>CrudOptions,
-            props: {
-              multiple: true,
-              crossPage: true,
-              selectedRowKeys,
-            },
-          },
-        },
-      },
       request: {
         pageRequest,
         addRequest,
         editRequest,
-        delRequest,
       },
       rowHandle: {
-        width: 240,
+        width: 120,
         fixed: "right",
         buttons: {
           view: { show: false },
           edit: { show: false },
           copy: { show: false },
+          remove: { show: false },
           syncStatus: {
             show: compute(({ row }) => {
               return row.status === "wait_pay";
             }),
-            text: "同步订单状态",
+            title: "同步订单状态",
+            text: null,
+            tooltip: { title: "同步订单状态" },
+            icon: "ant-design:sync-outlined",
             type: "link",
             click: async ({ row }) => {
               Modal.confirm({
@@ -78,6 +48,28 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 content: "确认同步订单状态？",
                 onOk: async () => {
                   await api.SyncStatus(row.id);
+                  await crudExpose.doRefresh();
+                },
+              });
+            },
+          },
+          cancel: {
+            show: compute(({ row }) => {
+              return row.status === "wait_pay";
+            }),
+            title: "取消订单",
+            text: null,
+            tooltip: { title: "取消订单" },
+            icon: "ion:close-circle-outline",
+            type: "link",
+            click: async ({ row }) => {
+              Modal.confirm({
+                title: "确认取消订单？",
+                content: "取消后订单会关闭，已冻结的余额抵扣金额将自动退回。",
+                okText: "确认取消",
+                cancelText: "再想想",
+                onOk: async () => {
+                  await api.CancelObj(row.id);
                   await crudExpose.doRefresh();
                 },
               });
@@ -152,7 +144,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         rebateAmount: {
-          title: "返利抵扣",
+          title: "余额抵扣",
           type: "number",
           column: {
             width: 110,
@@ -201,7 +193,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               { label: "支付宝", value: "alipay" },
               { label: "微信", value: "wxpay" },
               { label: "免费", value: "free" },
-              { label: "返利余额", value: "rebate" },
+              { label: "余额抵扣", value: "rebate" },
             ],
           }),
           column: {

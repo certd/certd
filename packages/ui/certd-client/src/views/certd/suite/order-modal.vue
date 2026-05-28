@@ -4,20 +4,33 @@
       <div class="flex-o mt-5">
         <span class="label">{{ $t("certd.order.package") }}：</span>{{ product.title }}
       </div>
-      <div class="flex-o mt-5">
+      <div v-if="product.intro" class="flex-o mt-5">
         <span class="label">{{ $t("certd.order.description") }}：</span>{{ product.intro }}
       </div>
-      <div class="flex-o mt-5">
+      <div class="order-spec-row mt-5">
         <span class="label">{{ $t("certd.order.specifications") }}：</span>
-        <span class="flex-o flex-wrap">
-          <span class="flex-o"> {{ $t("certd.order.pipeline") }}<suite-value class="ml-5" :model-value="product.content.maxPipelineCount" :unit="$t('certd.order.unit.pieces')" />； </span>
-          <span class="flex-o"> {{ $t("certd.order.totalDomain") }}<suite-value class="ml-5" :model-value="product.content.maxDomainCount" :unit="$t('certd.order.unit.count')" />； </span>
-          <span class="flex-o" style="padding-left: 2em">
-            - {{ $t("certd.order.includedWildcardDomain") }}<suite-value class="ml-5" :model-value="product.content.maxWildcardDomainCount" :unit="$t('certd.order.unit.count')" />；
-          </span>
-          <span class="flex-o"> {{ $t("certd.order.deployTimes") }}<suite-value class="ml-5" :model-value="product.content.maxDeployCount" :unit="$t('certd.order.unit.times')" />； </span>
-          <span class="flex-o"> {{ $t("certd.order.monitorCount") }}<suite-value class="ml-5" :model-value="product.content.maxMonitorCount" :unit="$t('certd.order.unit.times')" />； </span>
-        </span>
+        <div class="spec-grid">
+          <div class="spec-item">
+            <div class="spec-name">{{ $t("certd.order.totalDomain") }}</div>
+            <suite-value :model-value="product.content.maxDomainCount" :unit="$t('certd.order.unit.count')" />
+          </div>
+          <div class="spec-item">
+            <div class="spec-name">{{ $t("certd.order.includedWildcardDomain") }}</div>
+            <suite-value :model-value="product.content.maxWildcardDomainCount" :unit="$t('certd.order.unit.count')" />
+          </div>
+          <div class="spec-item">
+            <div class="spec-name">{{ $t("certd.order.pipeline") }}</div>
+            <suite-value :model-value="product.content.maxPipelineCount" :unit="$t('certd.order.unit.pieces')" />
+          </div>
+          <div class="spec-item">
+            <div class="spec-name">{{ $t("certd.order.deployTimes") }}</div>
+            <suite-value :model-value="product.content.maxDeployCount" :unit="$t('certd.order.unit.times')" />
+          </div>
+          <div class="spec-item">
+            <div class="spec-name">{{ $t("certd.order.monitorCount") }}</div>
+            <suite-value :model-value="product.content.maxMonitorCount" :unit="$t('certd.order.unit.times')" />
+          </div>
+        </div>
       </div>
 
       <div class="flex-o mt-5">
@@ -26,10 +39,10 @@
       </div>
       <div class="flex-o mt-5">
         <span class="label">{{ $t("certd.order.price") }}：</span>
-        <price-input :edit="false" :model-value="durationSelected.price" zero-text="免费"></price-input>
+        <price-input :edit="false" :model-value="durationSelected.price" zero-text="0元"></price-input>
       </div>
       <div v-if="durationSelected.price > 0 && wallet.availableAmount > 0" class="flex-o mt-5">
-        <span class="label">返利抵扣：</span>
+        <span class="label">余额抵扣：</span>
         <a-switch v-model:checked="formRef.useRebateBalance" />
         <span class="ml-10">可用 {{ amountToYuan(wallet.availableAmount) }} 元，预计抵扣 {{ amountToYuan(expectedRebateAmount) }} 元</span>
       </div>
@@ -58,7 +71,7 @@ import DurationValue from "/@/views/sys/suite/product/duration-value.vue";
 import { useRouter } from "vue-router";
 import qrcode from "qrcode";
 import * as api from "/@/views/certd/suite/api";
-import { GetMyInvite } from "/@/views/certd/invite/api";
+import { GetWalletSummary } from "/@/views/certd/wallet/api";
 import { util } from "/@/utils";
 const openRef = ref(false);
 
@@ -77,8 +90,7 @@ async function open(opts: OrderModalOpenReq) {
   formRef.value.num = opts.num ?? 1;
   formRef.value.useRebateBalance = false;
   try {
-    const inviteInfo: any = await GetMyInvite();
-    wallet.value = inviteInfo.wallet || { availableAmount: 0 };
+    wallet.value = await GetWalletSummary();
   } catch (e) {
     wallet.value = { availableAmount: 0 };
   }
@@ -261,12 +273,47 @@ defineExpose({
 </script>
 <style lang="less">
 .order-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
   .label {
     width: 80px;
     text-align: right;
     margin-right: 5px;
     color: #686868;
     flex: none;
+  }
+
+  .order-spec-row {
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .spec-grid {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .spec-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 42px;
+    padding: 8px 10px;
+    gap: 8px;
+    border: 1px solid rgba(52, 120, 246, 0.12);
+    border-radius: 8px;
+    background: rgba(248, 250, 252, 0.86);
+  }
+
+  .spec-name {
+    color: hsl(var(--foreground));
+    font-size: 13px;
+    line-height: 20px;
   }
 }
 

@@ -14,20 +14,29 @@ export default function (): CreateCrudOptionsRet {
       toolbar: { show: false },
       rowHandle: { show: false },
       columns: {
-        inviteeUserId: {
-          title: "被推广用户ID",
-          type: "number",
-          column: { width: 140 },
-        },
-        inviteCode: {
-          title: "推广码",
-          type: "text",
-          column: { width: 160 },
-        },
         createTime: {
-          title: "推广时间",
+          title: "邀请时间",
           type: "datetime",
           column: { width: 180 },
+        },
+        simpleUser: {
+          title: "被邀请用户名",
+          type: "text",
+          column: {
+            minWidth: 180,
+            cellRender({ row }) {
+              const simpleUser = row.simpleUser;
+              if (!simpleUser) {
+                return row.inviteeUserId ? `用户${row.inviteeUserId} (${row.inviteeUserId})` : "-";
+              }
+              return simpleUser.displayName || `${simpleUser.username || "-"} (${simpleUser.id})`;
+            },
+          },
+        },
+        inviteCode: {
+          title: "邀请码",
+          type: "text",
+          column: { width: 160 },
         },
       },
     },

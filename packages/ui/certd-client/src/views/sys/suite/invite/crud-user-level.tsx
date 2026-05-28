@@ -23,7 +23,6 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       initialForm: {
         userId: row.userId,
         levelId: row.levelId,
-        levelLocked: row.levelLocked === true,
       },
       columns: {
         levelId: {
@@ -33,20 +32,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           form: {
             col: { span: 24 },
             rules: [{ required: true, message: "请选择推广等级" }],
-          },
-        },
-        levelLocked: {
-          title: "锁定等级",
-          type: "dict-switch",
-          dict: dict({
-            data: [
-              { label: "自动升级", value: false, color: "success" },
-              { label: "锁定", value: true, color: "warning" },
-            ],
-          }),
-          form: {
-            col: { span: 24 },
-            helper: "专属等级会自动锁定，不参与自动升级。",
+            helper: "专属等级将锁定为当前等级，普通等级将按累计推广金额自动升级。",
           },
         },
       },
@@ -80,8 +66,17 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       },
       columns: {
         userId: { title: "用户ID", type: "number", search: { show: true }, column: { width: 100 } },
-        username: { title: "用户名", type: "text", search: { show: true }, column: { width: 160 } },
-        userDisplay: { title: "显示名称", type: "text", column: { width: 160 } },
+        username: {
+          title: "用户名",
+          type: "text",
+          search: { show: true },
+          column: {
+            width: 180,
+            cellRender({ row }) {
+              return row.simpleUser?.displayName || row.userDisplay || row.username || row.userId;
+            },
+          },
+        },
         enabled: {
           title: "开通状态",
           type: "dict-switch",

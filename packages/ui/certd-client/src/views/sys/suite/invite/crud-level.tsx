@@ -72,6 +72,7 @@ export default function (): CreateCrudOptionsRet {
           title: "升级金额",
           type: "number",
           form: {
+            show: compute(({ form }) => form.levelType !== "exclusive"),
             component: { name: PriceInput, vModel: "modelValue", edit: true },
             rules: [{ required: true, message: "请输入升级金额" }],
           },
@@ -100,7 +101,7 @@ export default function (): CreateCrudOptionsRet {
           }),
           form: {
             value: "normal",
-            helper: "专属等级可由管理员手动指定，不参与普通用户自动升级。",
+            helper: "专属等级可由管理员手动指定，不参与普通用户自动升级。专属等级不会在普通用户端展示。",
           },
           column: { width: 120, align: "center" },
         },

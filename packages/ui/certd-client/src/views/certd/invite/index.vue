@@ -13,8 +13,14 @@
     <div v-if="loaded && enabled && inviteInfo.enabled" class="invite-body">
       <div class="invite-summary-grid">
         <div v-for="item in summaryCards" :key="item.key" class="summary-card">
-          <div class="summary-title">{{ item.title }}</div>
-          <div class="summary-value" :class="item.className">{{ item.value }}</div>
+          <div class="summary-card-main">
+            <div class="summary-title">{{ item.title }}</div>
+            <div class="summary-value" :class="item.className">{{ item.value }}</div>
+          </div>
+          <div v-if="item.key === 'totalIncome'" class="withdraw-action">
+            <div class="withdraw-available">可提现 {{ moneyText(inviteInfo.wallet?.availableAmount) }}</div>
+            <a-button class="summary-action-button" type="primary" @click="gotoWallet">提现</a-button>
+          </div>
         </div>
       </div>
 
@@ -47,14 +53,18 @@
           <span class="info-label">我的等级</span>
           <div class="info-content level-info-content">
             <span class="level-name-text">{{ inviteInfo.currentLevel?.name || "未设置" }}</span>
-            <span v-if="inviteInfo.currentLevel" class="current-level-rate">{{ inviteInfo.currentLevel.commissionRate }}%</span>
+            <span v-if="inviteInfo.currentLevel" class="current-level-rate">
+              <span class="current-level-rate-label">返佣比例</span>
+              <span class="current-level-rate-value">{{ inviteInfo.currentLevel.commissionRate }}%</span>
+            </span>
+            <span v-if="inviteInfo.currentLevel" class="level-rate-desc">好友付费后按此比例计算佣金</span>
           </div>
           <fs-icon class="level-open-icon" icon="ion:chevron-forward-outline" />
         </div>
       </div>
 
       <a-tabs v-model:active-key="activeTab" class="invite-tabs" @change="handleTabChange">
-        <a-tab-pane key="invitees" tab="推广成功用户">
+        <a-tab-pane key="invitees" tab="邀请成功">
           <fs-crud v-if="activeTab === 'invitees'" ref="inviteesCrudRef" class="invite-crud" v-bind="inviteesCrudBinding" />
         </a-tab-pane>
         <a-tab-pane key="logs" tab="收益记录">
@@ -72,6 +82,17 @@
 
     <a-modal v-model:open="levelDialogOpen" title="推广等级" width="820px" wrap-class-name="invite-level-modal" :footer="null">
       <div class="level-modal-subtitle">推广越多，等级越高，返佣比例越高</div>
+      <div class="level-progress-box">
+        <div>
+          <div class="level-progress-label">当前累计推广金额</div>
+          <div class="level-progress-value">¥ {{ amountToYuan(inviteInfo.summary.promotionAmount) }}</div>
+        </div>
+        <div class="level-progress-desc">
+          <template v-if="inviteInfo.nextLevel">距离下一等级「{{ inviteInfo.nextLevel.name }}」还差 {{ amountToYuan(inviteInfo.nextLevel.gapAmount) }} 元</template>
+          <template v-else-if="inviteInfo.currentLevel?.levelType === 'exclusive'">当前为专属等级，不参与自动升级</template>
+          <template v-else>已达到当前可自动升级的最高等级</template>
+        </div>
+      </div>
       <div class="level-card-grid modal-level-grid">
         <div v-for="level in visibleLevels" :key="level.id" class="level-card" :class="{ active: level.id === inviteInfo.currentLevel?.id }">
           <div class="level-name">
@@ -83,7 +104,8 @@
           </div>
           <div class="level-rate-label">佣金比例</div>
           <div class="level-rate">{{ level.commissionRate }}%</div>
-          <div class="level-threshold">累计推广 ≥ {{ amountToYuan(level.minAmount) }} 元</div>
+          <div v-if="level.levelType === 'exclusive'" class="level-threshold exclusive-threshold">平台指定专属等级</div>
+          <div v-else class="level-threshold">累计推广 ≥ {{ amountToYuan(level.minAmount) }} 元</div>
           <a-tag v-if="level.id === inviteInfo.currentLevel?.id" class="current-tag" color="blue">当前等级</a-tag>
           <div v-else-if="level.id === inviteInfo.nextLevel?.id" class="next-gap">还差 {{ amountToYuan(inviteInfo.nextLevel.gapAmount) }}</div>
         </div>
@@ -119,6 +141,7 @@
 import { computed, nextTick, onActivated, onMounted, reactive, ref } from "vue";
 import { FsIcon, useFs } from "@fast-crud/fast-crud";
 import { notification } from "ant-design-vue";
+import { useRouter } from "vue-router";
 import * as api from "./api";
 import createInviteesCrudOptions from "./crud-invitees";
 import createLogsCrudOptions from "./crud-logs";
@@ -127,6 +150,7 @@ import { util } from "/@/utils";
 
 defineOptions({ name: "InviteCommission" });
 
+const router = useRouter();
 const settingStore = useSettingStore();
 const enabled = ref(false);
 const activeTab = ref("invitees");
@@ -144,6 +168,7 @@ const inviteInfo = reactive<any>({
   inviteLink: "",
   agreementContent: "",
   summary: { totalIncomeAmount: 0, monthIncomeAmount: 0, promotionAmount: 0, inviteeCount: 0 },
+  wallet: { availableAmount: 0 },
   currentLevel: null,
   nextLevel: null,
   levelList: [],
@@ -174,6 +199,12 @@ const summaryCards = computed(() => [
     className: "income",
   },
   {
+    key: "promotionAmount",
+    title: "累计推广金额",
+    value: moneyText(inviteInfo.summary.promotionAmount),
+    className: "promotion",
+  },
+  {
     key: "inviteeCount",
     title: "已推广人数",
     value: `${inviteInfo.summary.inviteeCount || 0} 人`,
@@ -189,6 +220,10 @@ const agreementText = computed(() => inviteInfo.agreementContent?.trim() || defa
 
 function levelIcon(level: any) {
   return level?.icon || "ion:ribbon-outline";
+}
+
+function gotoWallet() {
+  router.push({ path: "/certd/wallet" });
 }
 
 function openAgreementDialog(needOpenPlan: boolean) {
@@ -326,7 +361,7 @@ onActivated(async () => {
 
   .invite-summary-grid {
     flex: none;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     margin-bottom: 18px;
   }
 
@@ -351,9 +386,17 @@ onActivated(async () => {
 
   .summary-card {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
     min-height: 112px;
     overflow: hidden;
     padding: 22px;
+  }
+
+  .summary-card-main {
+    min-width: 0;
   }
 
   .summary-title {
@@ -374,6 +417,30 @@ onActivated(async () => {
 
   .summary-value.people {
     color: #3478f6;
+  }
+
+  .summary-value.promotion {
+    color: #16a085;
+  }
+
+  .summary-action-button {
+    flex: none;
+    min-width: 72px;
+  }
+
+  .withdraw-action {
+    display: flex;
+    align-items: flex-end;
+    flex: none;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .withdraw-available {
+    color: hsl(var(--muted-foreground));
+    font-size: 12px;
+    line-height: 18px;
+    white-space: nowrap;
   }
 
   .invite-link-panel {
@@ -450,20 +517,54 @@ onActivated(async () => {
   }
 
   .current-level-rate {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    height: 26px;
     margin-left: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(197, 138, 53, 0.22);
+    border-radius: 6px;
+    background: rgba(197, 138, 53, 0.08);
     color: #c58a35;
+    font-size: 13px;
     font-weight: 700;
+  }
+
+  .current-level-rate-label {
+    height: 100%;
+    padding: 0 8px;
+    border-right: 1px solid rgba(197, 138, 53, 0.18);
+    background: rgba(197, 138, 53, 0.1);
+    color: #8a5a16;
+    font-weight: 500;
+    line-height: 24px;
+  }
+
+  .current-level-rate-value {
+    padding: 0 8px;
+    line-height: 24px;
   }
 
   .level-info-content {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+    min-width: 0;
+    flex-wrap: wrap;
   }
 
   .level-name-text {
+    flex: none;
     color: hsl(var(--foreground));
     font-weight: 600;
+  }
+
+  .level-rate-desc {
+    min-width: 180px;
+    color: hsl(var(--muted-foreground));
+    font-size: 12px;
+    line-height: 20px;
   }
 
   .level-open-icon {
@@ -608,6 +709,10 @@ onActivated(async () => {
     text-align: center;
   }
 
+  .exclusive-threshold {
+    color: #8a5a16;
+  }
+
   .current-tag {
     display: table;
     margin: 10px auto 0;
@@ -620,6 +725,36 @@ onActivated(async () => {
 
 .modal-level-grid {
   margin-top: 12px;
+}
+
+.level-progress-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(52, 120, 246, 0.16);
+  border-radius: 8px;
+  background: rgba(248, 250, 252, 0.86);
+}
+
+.level-progress-label {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+}
+
+.level-progress-value {
+  margin-top: 2px;
+  color: #16a085;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.level-progress-desc {
+  color: #3478f6;
+  font-size: 13px;
+  text-align: right;
 }
 
 .invite-agreement-content {
@@ -679,6 +814,15 @@ onActivated(async () => {
   .invite-level-modal {
     .level-card-grid {
       grid-template-columns: 1fr;
+    }
+
+    .level-progress-box {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .level-progress-desc {
+      text-align: left;
     }
   }
 }

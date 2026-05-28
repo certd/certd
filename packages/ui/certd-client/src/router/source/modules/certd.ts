@@ -371,21 +371,6 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.myWallet",
-            name: "MyWallet",
-            path: "/certd/wallet",
-            component: "/certd/wallet/index.vue",
-            meta: {
-              show: () => {
-                const settingStore = useSettingStore();
-                return settingStore.isComm;
-              },
-              icon: "ion:wallet-outline",
-              auth: true,
-              keepAlive: true,
-            },
-          },
-          {
             title: "certd.inviteCommission",
             name: "InviteCommission",
             path: "/certd/invite",
@@ -396,6 +381,21 @@ export const certdResources = [
                 return settingStore.isComm;
               },
               icon: "ion:gift-outline",
+              auth: true,
+              keepAlive: true,
+            },
+          },
+          {
+            title: "certd.myWallet",
+            name: "MyWallet",
+            path: "/certd/wallet",
+            component: "/certd/wallet/index.vue",
+            meta: {
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isComm;
+              },
+              icon: "ion:wallet-outline",
               auth: true,
               keepAlive: true,
             },
