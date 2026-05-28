@@ -34,6 +34,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           copy: { show: false },
           remove: { show: false },
           syncStatus: {
+            order: 10,
             show: compute(({ row }) => {
               return row.status === "wait_pay";
             }),
@@ -54,6 +55,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             },
           },
           cancel: {
+            order: 99,
             show: compute(({ row }) => {
               return row.status === "wait_pay";
             }),
@@ -62,6 +64,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             tooltip: { title: "取消订单" },
             icon: "ion:close-circle-outline",
             type: "link",
+            danger: true,
             click: async ({ row }) => {
               Modal.confirm({
                 title: "确认取消订单？",
