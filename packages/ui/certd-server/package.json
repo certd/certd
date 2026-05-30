@@ -22,6 +22,7 @@
     "test:unit": "cross-env NODE_ENV=unittest mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
     "cov": "cross-env c8 --all --reporter=text --reporter=lcovonly pnpm run test",
     "lint": "mwts check",
+    "format": "prettier --write src",
     "lint:fix": "mwts fix",
     "ci": "pnpm run cov",
     "build-only": "cross-env NODE_ENV=production mwtsc -p tsconfig.build.json --cleanOutDir --skipLibCheck",
