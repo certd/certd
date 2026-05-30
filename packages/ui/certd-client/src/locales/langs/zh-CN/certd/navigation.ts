@@ -53,6 +53,7 @@ export default {
     inviteLevel: "推广等级",
     inviteUserLevel: "用户推广等级",
     inviteWithdraw: "提现申请记录",
+    activationCodeManager: "激活码管理",
     netTest: "网络测试",
     enterpriseManager: "企业管理设置",
     projectManager: "项目管理",

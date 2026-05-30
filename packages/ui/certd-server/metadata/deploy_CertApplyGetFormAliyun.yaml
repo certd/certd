@@ -81,7 +81,6 @@ input:
       search: false
       pager: true
       single: true
-      pageSize: 50
       watches:
         - certDomains
         - accessId
@@ -96,7 +95,7 @@ input:
                   },
                }
               
-    helper: 订阅模式的证书订单 Id(在新建流水线时暂时无法获取，可以先随便填个数字，先创建，进入流水线编辑页面再获取选择即可)
+    helper: 订阅模式的证书订单 Id
     order: 0
   pfxPassword:
     title: 证书加密密码

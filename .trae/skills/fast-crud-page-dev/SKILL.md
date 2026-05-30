@@ -77,6 +77,58 @@ container:{}, //容器配置 ，对应fs-container
 - 有固定操作栏、统计区、说明区时，这些区域应 `flex: none`，把剩余空间交给表格区域。
 - 修改嵌入式 Fast Crud 页面后，要检查空数据、少量数据和多页数据时表格高度、分页器和空状态是否仍在预期区域内。
 
+## 内置 CRUD 按钮
+
+只要在 `request` 中配置了 `addRequest`、`editRequest`、`delRequest`，Fast Crud 会自动在 `rowHandle` 渲染新增、编辑、删除按钮并完成对应操作，**不需要手写 `openDeleteConfirm`、`openEditDialog` 等方法**。
+
+```typescript
+// crud.tsx
+const addRequest = async ({ form }: AddReq) => await api.AddObj(form);
+const editRequest = async ({ form, row }: EditReq) => {
+  form.id = row.id;
+  return await api.UpdateObj(form);
+};
+const delRequest = async ({ row }: DelReq) => await api.DelObj(row.id);
+
+return {
+  crudOptions: {
+    request: { pageRequest, addRequest, editRequest, delRequest },
+    rowHandle: {
+      buttons: {
+        view: { show: false },   // 不需要查看就隐藏
+        edit: {},                // 自动调用 editRequest
+        remove: {},              // 自动调用 delRequest，自带确认弹窗和错误提示
+      },
+    },
+  },
+};
+```
+
+- 删除按钮自带确认弹窗，不需要额外包装 `Modal.confirm`。
+- 只有**自定义操作**（如禁用、审核、生成激活码）才需要在 `rowHandle.buttons` 中手写 `click` 处理方法。
+- 如果不需要某列操作，直接把对应 key 去掉或设 `show: false`。
+
+## compute 动态计算
+
+当 `rowHandle.buttons` 的 `show`、`disabled` 等属性需要根据行数据动态决定时，**必须使用 `compute` 包裹**，不能直接传函数。
+
+```typescript
+import { compute } from "@fast-crud/fast-crud";
+
+// WRONG: 直接传函数
+show: ({ row }) => row.status === "unused"
+
+// CORRECT: 用 compute 包裹
+show: compute(({ row }) => row.status === "unused")
+```
+
+`compute` 基于 Vue 的 `computed`，但额外支持上下文参数。适用位置：
+- `rowHandle.buttons` 的 `show`、`disabled` 等属性
+- `columns.key.column` 的 `show`、`cellRender` 等
+- `columns.key.form` / `search` 的表单字段属性
+
+参考文档：http://fast-crud.docmirror.cn/guide/advance/compute.html
+
 ## 代码习惯
 
 - 页面命名、API 命名、权限标识和路由结构要贴近同目录已有页面。

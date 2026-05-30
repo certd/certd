@@ -78,3 +78,11 @@ export async function GetSuiteSetting() {
     method: "POST",
   });
 }
+
+export async function UseActivationCode(code: string) {
+  return await request({
+    url: "/suite/activation-code/use",
+    method: "POST",
+    data: { code },
+  });
+}

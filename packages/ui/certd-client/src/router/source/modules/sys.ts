@@ -354,6 +354,22 @@ export const sysResources = [
               keepAlive: true,
             },
           },
+          {
+            title: "certd.sysResources.activationCodeManager",
+            name: "SysProductActivationCode",
+            path: "/sys/suite/activation-code",
+            component: "/sys/suite/activation-code/index.vue",
+            meta: {
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isComm;
+              },
+              icon: "ion:key-outline",
+              permission: "sys:settings:edit",
+              auth: true,
+              keepAlive: true,
+            },
+          },
         ],
       },
       {

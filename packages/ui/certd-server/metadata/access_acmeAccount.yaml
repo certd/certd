@@ -1,0 +1,129 @@
+name: acmeAccount
+title: ACME账号
+desc: 用于复用ACME账号私钥和账号地址，证书申请时不再临时创建账号
+icon: ph:certificate
+subtype: caType
+input:
+  caType:
+    title: 颁发机构
+    component:
+      name: a-select
+      options:
+        - value: letsencrypt
+          label: Let's Encrypt
+        - value: letsencrypt_staging
+          label: Let's Encrypt测试环境
+        - value: google
+          label: Google
+        - value: zerossl
+          label: ZeroSSL
+        - value: litessl
+          label: litessl
+        - value: sslcom
+          label: SSL.com
+    required: true
+    mergeScript: |2-
+
+          return {
+            component: {
+              disabled: ctx.compute(({form})=> !!form.access?.account)
+            }
+          }
+          
+  email:
+    title: 邮箱
+    component:
+      placeholder: user@example.com
+    rules:
+      - type: email
+        message: 请输入正确的邮箱
+    required: true
+    mergeScript: |2-
+
+          return {
+            component: {
+              disabled: ctx.compute(({form})=> !!form.access?.account)
+            }
+          }
+          
+  directoryUrl:
+    title: ACME Directory URL
+    component:
+      placeholder: 自定义ACME服务端点
+    helper: 自定义ACME时必填，其他颁发机构默认自动使用内置端点
+    required: false
+    mergeScript: |2-
+
+          return {
+            show: false,
+          }
+          
+  eabKid:
+    title: EAB KID
+    component:
+      placeholder: 需要EAB的颁发机构生成账号时填写
+    helper: >-
+      需要提供EAB授权
+
+      ZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB
+      Credentials'
+
+      Google:请查看[google获取eab帮助文档](https://certd.docmirror.cn/guide/use/google/),用过一次后会绑定邮箱，后续复用EAB要用同一个邮箱
+
+      SSL.com:[SSL.com账号页面](https://secure.ssl.com/account),然后点击api
+      credentials链接，然后点击编辑按钮，查看Secret key和HMAC key
+
+      litessl:[litesslEAB页面](https://freessl.cn/automation/eab-manager),然后点击新增EAB
+    required: false
+    encrypt: true
+    mergeScript: |2-
+
+          return {
+            show: ctx.compute(({form})=>{
+              const caType = form.access?.caType;
+              return ['google','zerossl','sslcom','litessl'].includes(caType);
+            }),
+            component: {
+              disabled: ctx.compute(({form})=> !!form.access?.account)
+            }
+          }
+          
+  eabHmacKey:
+    title: EAB HMAC Key
+    component:
+      placeholder: 需要EAB的颁发机构生成账号时填写
+    required: false
+    encrypt: true
+    mergeScript: |2-
+
+          return {
+            show: ctx.compute(({form})=>{
+              const caType = form.access?.caType;
+              return ['google','zerossl','sslcom','litessl'].includes(caType);
+            }),
+            component: {
+              disabled: ctx.compute(({form})=> !!form.access?.account)
+            }
+          }
+          
+  account:
+    title: ACME账号信息
+    component:
+      name: refresh-input
+      action: GenerateAccount
+      buttonText: 生成ACME账号
+      successMessage: ACME账号已生成，请保存授权配置
+    required: true
+    helper: 请生成ACME账号，账号一旦生成不允许修改
+    encrypt: true
+    mergeScript: |2-
+
+          return {
+            component: {
+              disabled: ctx.compute(({form})=> !!form.access?.account)
+            }
+          }
+          
+pluginType: access
+type: builtIn
+scriptFilePath: /plugins/plugin-cert/access/acme-account-access.js

@@ -38,6 +38,16 @@ export abstract class BaseService<T> {
     return await dataSource.transaction(callback as any);
   }
 
+  /**
+   * 如果 ctx 有 manager 则复用已有事务，否则开启新事务
+   */
+  protected async transactionWithCtx<T>(ctx: ServiceContext, callback: (manager: EntityManager) => Promise<T>): Promise<T> {
+    if (ctx.manager) {
+      return await callback(ctx.manager);
+    }
+    return (await this.transaction(callback)) as T;
+  }
+
   protected getRepo<E>(ctx: ServiceContext, entity: EntityTarget<E>): Repository<E> {
     if (ctx.manager) {
       return ctx.manager.getRepository(entity);

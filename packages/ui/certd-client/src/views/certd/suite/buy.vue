@@ -14,7 +14,10 @@
           </a-card>
         </a-col>
       </a-row>
-      <a-row :gutter="8" class="mt-10">
+      <div class="suite-buy-action-row mt-10 pl-1">
+        <a-button type="primary" :loading="activating" @click="openActivateDialog">激活码兑换</a-button>
+      </div>
+      <a-row :gutter="8">
         <a-col v-for="item of suites" :key="item.id" class="mb-10 suite-card-col">
           <product-info :product="item" @order="doOrder" />
         </a-col>
@@ -32,13 +35,68 @@
 
 <script lang="ts" setup>
 import { computed, ref } from "vue";
+import { message } from "ant-design-vue";
 import * as api from "./api";
 import ProductInfo from "/@/views/certd/suite/product-info.vue";
 import OrderModal from "/@/views/certd/suite/order-modal.vue";
 import { notification } from "ant-design-vue";
+import { useFormDialog } from "/@/use/use-dialog";
 
 const suites = ref([]);
 const addons = ref([]);
+
+const activationCode = ref("");
+const activating = ref(false);
+const { openFormDialog } = useFormDialog();
+
+async function openActivateDialog() {
+  await openFormDialog({
+    title: "激活码兑换",
+    wrapper: { width: 520 },
+    initialForm: {
+      code: activationCode.value,
+    },
+    columns: {
+      code: {
+        title: "激活码",
+        type: "text",
+        form: {
+          col: { span: 24 },
+          rules: [{ required: true, message: "请输入激活码" }],
+          component: {
+            placeholder: "请输入 CDK 激活码",
+          },
+        },
+      },
+    },
+    async onSubmit(form: any) {
+      activationCode.value = form.code;
+      await doActivate();
+    },
+  });
+}
+
+async function doActivate() {
+  const code = activationCode.value.trim().toUpperCase();
+  if (!code) {
+    message.warning("请输入激活码");
+    return;
+  }
+  activationCode.value = code;
+  activating.value = true;
+  try {
+    const res = await api.UseActivationCode(code);
+    activationCode.value = "";
+    notification.success({
+      message: "激活成功",
+      description: `您已成功激活 ${res.title}，时长 ${res.duration} 天`,
+    });
+  } catch (e: any) {
+    message.error(e?.message || "兑换失败");
+  } finally {
+    activating.value = false;
+  }
+}
 
 async function loadProducts() {
   const list = await api.ProductList();
@@ -86,6 +144,12 @@ loadSuiteIntro();
       //height: 60px;
       //overflow: hidden;
       //text-overflow: ellipsis;
+    }
+    .suite-buy-action-row {
+      width: 100%;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: flex-start;
     }
 
     .suite-list {

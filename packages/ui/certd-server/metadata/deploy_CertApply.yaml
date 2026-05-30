@@ -51,6 +51,12 @@ input:
     required: true
     order: -1
     helper: 请输入邮箱
+  version:
+    title: 版本
+    value: 2
+    isSys: true
+    show: false
+    order: 0
   challengeType:
     title: 域名验证方式
     value: dns
@@ -60,6 +66,8 @@ input:
       options:
         - value: dns
           label: DNS直接验证
+        - value: dns-persist
+          label: DNS持久验证
         - value: cname
           label: CNAME代理验证
         - value: http
@@ -80,6 +88,9 @@ input:
       4.  <b>多DNS提供商</b>：每个域名可以选择独立的DNS提供商
 
       5.  <b>自动匹配</b>：此处无需选择校验方式，需要在[域名管理](#/certd/cert/domain)中提前配置好校验方式
+
+      6.  <b>DNS持久验证</b>：需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅
+      Let's Encrypt 测试环境可以申请
     order: 0
   dnsProviderType:
     title: DNS解析服务商
@@ -103,7 +114,7 @@ input:
     required: true
     helper: |-
       您的域名注册商，或者域名的dns服务器属于哪个平台
-      如果这里没有，请选择CNAME代理验证校验方式
+      如果这里没有，请选择CNAME代理验证
     order: 0
   dnsProviderAccess:
     title: DNS解析授权
@@ -141,18 +152,30 @@ input:
               }),
               defaultType: ctx.compute(({form})=>{
                   return form.challengeType || 'cname'
+              }),
+              caType: ctx.compute(({form})=>{
+                  return form.sslProvider
+              }),
+              acmeAccountAccessId: ctx.compute(({form})=>{
+                  return form.acmeAccountAccessId
+              }),
+              commonAcmeAccountAccessId: ctx.compute(({form})=>{
+                  const key = form.sslProvider + 'CommonAcmeAccountAccessId';
+                  return form[key]
               })
             },
             show: ctx.compute(({form})=>{
-                return form.challengeType === 'cname' ||  form.challengeType === 'http' ||  form.challengeType === 'dnses'
+                return form.challengeType === 'cname' ||  form.challengeType === 'http' ||  form.challengeType === 'dnses' || form.challengeType === 'dns-persist'
             }),
             helper: ctx.compute(({form})=>{
                 if(form.challengeType === 'cname' ){
                     return '请按照上面的提示，给要申请证书的域名添加CNAME记录，添加后，点击验证，验证成功后不要删除记录，申请和续期证书会一直用它'
                 }else if (form.challengeType === 'http'){
-                    return '请按照上面的提示，给每个域名设置文件上传配置，证书申请过程中会上传校验文件到网站根目录的.well-known/acme-challenge/目录下'
-                }else if (form.challengeType === 'http'){
+                    return '请按照上面的提示，给每个域名设置文件上传配置，证书申请过程中会上传校验文件到网站根目录文件夹下，请确保该校验文件可以公网http访问到'
+                }else if (form.challengeType === 'dnses'){
                     return '给每个域名单独配置dns提供商'
+                }else if (form.challengeType === 'dns-persist'){
+                    return '请先创建并校验_validation-persist TXT持久记录，校验成功后才能提交流水线；当前仅 Let\'s Encrypt 测试环境可以申请'
                 }
             })
           }
@@ -195,8 +218,18 @@ input:
     isSys: true
     show: false
     order: 0
+  googleCommonAcmeAccountAccessId:
+    title: Google公共ACME账号
+    isSys: true
+    show: false
+    order: 0
   zerosslCommonEabAccessId:
     title: ZeroSSL公共EAB授权
+    isSys: true
+    show: false
+    order: 0
+  zerosslCommonAcmeAccountAccessId:
+    title: ZeroSSL公共ACME账号
     isSys: true
     show: false
     order: 0
@@ -205,8 +238,18 @@ input:
     isSys: true
     show: false
     order: 0
+  sslcomCommonAcmeAccountAccessId:
+    title: SSL.com公共ACME账号
+    isSys: true
+    show: false
+    order: 0
   litesslCommonEabAccessId:
     title: litessl公共EAB授权
+    isSys: true
+    show: false
+    order: 0
+  litesslCommonAcmeAccountAccessId:
+    title: litessl公共ACME账号
     isSys: true
     show: false
     order: 0
@@ -233,11 +276,50 @@ input:
 
           return {
               show: ctx.compute(({form})=>{
-                console.log("show",form)
+                if (form.version === 2) {
+                  return false
+                }
+                if(form.acmeAccountAccessId){
+                  return false
+                }
+                const commonAcmeKey = form.sslProvider + 'CommonAcmeAccountAccessId';
+                if (form[commonAcmeKey]) {
+                  return false
+                }
                   return (form.sslProvider === 'zerossl' && !form.zerosslCommonEabAccessId)
                   || (form.sslProvider === 'google' && !form.googleCommonEabAccessId)
                   || (form.sslProvider === 'sslcom' && !form.sslcomCommonEabAccessId)
                   || (form.sslProvider === 'litessl' && !form.litesslCommonEabAccessId)
+              })
+          }
+          
+    order: 0
+  acmeAccountAccessId:
+    title: ACME账号
+    component:
+      name: access-selector
+      type: acmeAccount
+    required: false
+    helper: 请选择颁发机构对应的ACME账号
+    mergeScript: |2-
+
+          return {
+              show: ctx.compute(({form})=>{
+                  const commonKey = form.sslProvider + 'CommonAcmeAccountAccessId';
+                  if (form[commonKey]) {
+                    return false
+                  }
+                  return !!form.sslProvider
+              }),
+              component:{
+                subtype: ctx.compute(({form})=> form.sslProvider)
+              },
+              required: ctx.compute(({form})=>{
+                  const commonKey = form.sslProvider + 'CommonAcmeAccountAccessId';
+                  if (form[commonKey]) {
+                    return false
+                  }
+                  return form.version === 2
               })
           }
           
@@ -257,6 +339,15 @@ input:
 
           return {
               show: ctx.compute(({form})=>{
+                  if (form.version === 2) {
+                    return false
+                  }
+                  if(form.acmeAccountAccessId){
+                    return false
+                  }
+                  if(form.googleCommonAcmeAccountAccessId){
+                    return false
+                  }
                   return form.sslProvider === 'google' && !form.googleCommonEabAccessId
               })
           }

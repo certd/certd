@@ -52,6 +52,7 @@ export default {
     inviteLevel: "Promotion Levels",
     inviteUserLevel: "User Promotion Levels",
     inviteWithdraw: "Withdrawal Requests",
+    activationCodeManager: "Activation Code",
     netTest: "Network Test",
 
     enterpriseSetting: "Enterprise Settings",
