@@ -1,13 +1,13 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
-import { CertInfo } from '@certd/plugin-cert';
-import { TencentAccess } from '../../../plugin-lib/tencent/index.js';
-import { CertApplyPluginNames} from '@certd/plugin-cert';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { CertInfo } from "@certd/plugin-cert";
+import { TencentAccess } from "../../../plugin-lib/tencent/index.js";
+import { CertApplyPluginNames } from "@certd/plugin-cert";
 @IsTaskPlugin({
-  name: 'DeployCertToTencentCDN',
-  title: '腾讯云-部署到CDN（废弃）',
-  icon: 'svg:icon-tencentcloud',
+  name: "DeployCertToTencentCDN",
+  title: "腾讯云-部署到CDN（废弃）",
+  icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
-  desc: '已废弃，请使用v2版',
+  desc: "已废弃，请使用v2版",
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -16,10 +16,10 @@ import { CertApplyPluginNames} from '@certd/plugin-cert';
 })
 export class DeployToCdnPlugin extends AbstractTaskPlugin {
   @TaskInput({
-    title: '域名证书',
-    helper: '请选择前置任务输出的域名证书',
+    title: "域名证书",
+    helper: "请选择前置任务输出的域名证书",
     component: {
-      name: 'output-selector',
+      name: "output-selector",
       from: [...CertApplyPluginNames],
     },
     required: true,
@@ -27,25 +27,25 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
   cert!: CertInfo;
 
   @TaskInput({
-    title: 'Access提供者',
-    helper: 'access 授权',
+    title: "Access提供者",
+    helper: "access 授权",
     component: {
-      name: 'access-selector',
-      type: 'tencent',
+      name: "access-selector",
+      type: "tencent",
     },
     required: true,
   })
   accessId!: string;
 
   @TaskInput({
-    title: '证书名称',
-    helper: '证书上传后将以此参数作为名称前缀',
+    title: "证书名称",
+    helper: "证书上传后将以此参数作为名称前缀",
   })
   certName!: string;
 
   @TaskInput({
-    title: 'cdn加速域名',
-    rules: [{ required: true, message: '该项必填' }],
+    title: "cdn加速域名",
+    rules: [{ required: true, message: "该项必填" }],
   })
   domainName!: string;
 
@@ -63,7 +63,7 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
   Client: any;
 
   async onInstance() {
-    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/cdn/v20180606/index.js');
+    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/cdn/v20180606/index.js");
     this.Client = sdk.v20180606.Client;
   }
 
@@ -77,7 +77,7 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
         secretId: accessProvider.secretId,
         secretKey: accessProvider.secretKey,
       },
-      region: '',
+      region: "",
       profile: {
         httpProfile: {
           endpoint: `cdn.${accessProvider.intlDomain()}tencentcloudapi.com`,
@@ -96,7 +96,7 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
   buildParams() {
     return {
       Domain: this.domainName,
-      Route: 'Https.CertInfo',
+      Route: "Https.CertInfo",
       Value: JSON.stringify({
         update: {
           Certificate: this.cert.crt,
@@ -110,13 +110,13 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
     const client = await this.getClient();
     const ret = await client.ModifyDomainConfig(params);
     this.checkRet(ret);
-    this.logger.info('设置腾讯云CDN证书成功:', ret.RequestId);
+    this.logger.info("设置腾讯云CDN证书成功:", ret.RequestId);
     return ret.RequestId;
   }
 
   checkRet(ret: any) {
     if (!ret || ret.Error) {
-      throw new Error('执行失败：' + ret.Error.Code + ',' + ret.Error.Message);
+      throw new Error("执行失败：" + ret.Error.Code + "," + ret.Error.Message);
     }
   }
 }

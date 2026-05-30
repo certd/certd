@@ -1,10 +1,4 @@
-import {
-  IsTaskPlugin,
-  PageSearch,
-  pluginGroups,
-  RunStrategy,
-  TaskInput
-} from "@certd/pipeline";
+import { IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
@@ -22,9 +16,9 @@ import { CmccAccess } from "./access.js";
   default: {
     //默认值配置照抄即可
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class CmccDeployCertToCdn extends AbstractPlusTaskPlugin {
@@ -34,8 +28,8 @@ export class CmccDeployCertToCdn extends AbstractPlusTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
     // required: true, // 必填
   })
   cert!: CertInfo;
@@ -48,9 +42,9 @@ export class CmccDeployCertToCdn extends AbstractPlusTaskPlugin {
     title: "中国移动-授权",
     component: {
       name: "access-selector",
-      type: "cmcc" //固定授权类型
+      type: "cmcc", //固定授权类型
     },
-    required: true //必填
+    required: true, //必填
   })
   accessId!: string;
   //
@@ -61,14 +55,13 @@ export class CmccDeployCertToCdn extends AbstractPlusTaskPlugin {
       helper: "要更新的中国移动CDN域名",
       action: CmccDeployCertToCdn.prototype.onGetDomainList.name,
       pager: false,
-      search: false
+      search: false,
     })
   )
   domainList!: string[];
 
   //插件实例化时执行的方法
-  async onInstance() {
-  }
+  async onInstance() {}
 
   //插件执行方法
   async execute(): Promise<void> {
@@ -77,17 +70,16 @@ export class CmccDeployCertToCdn extends AbstractPlusTaskPlugin {
     const client = await access.getCmccClient();
     this.logger.info(`----------- 开始更新证书：${this.domainList}`);
 
-
     const newCert = await client.uploadCert({
-      cert: this.cert
-    })
+      cert: this.cert,
+    });
 
-    const certId = newCert.unique_id
+    const certId = newCert.unique_id;
     this.logger.info(`----------- 上传证书成功,证书ID:${certId}`);
 
     await client.deployCertToCdn({
       certId: certId,
-      domainNames: this.domainList
+      domainNames: this.domainList,
     });
     this.logger.info(`----------- 更新证书${this.domainList}成功,等待10s`);
     await this.ctx.utils.sleep(10000);
@@ -96,13 +88,12 @@ export class CmccDeployCertToCdn extends AbstractPlusTaskPlugin {
 
   async onGetDomainList(data: PageSearch = {}) {
     const access = await this.getAccess<CmccAccess>(this.accessId);
-    const client= await access.getCmccClient();
-    const res = await client.getDomainList({})
-    const list = res || []
+    const client = await access.getCmccClient();
+    const res = await client.getDomainList({});
+    const list = res || [];
     if (!list || list.length === 0) {
       throw new Error("没有找到加速域名");
     }
-
 
     /**
      * certificate-id
@@ -113,7 +104,7 @@ export class CmccDeployCertToCdn extends AbstractPlusTaskPlugin {
       return {
         label: `${item.domainName}`,
         value: item.domainName,
-        domain: item.domainName
+        domain: item.domainName,
       };
     });
     return {

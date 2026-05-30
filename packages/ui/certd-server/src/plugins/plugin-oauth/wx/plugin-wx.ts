@@ -3,14 +3,13 @@ import { BuildLoginUrlReq, BuildLogoutUrlReq, IOauthProvider, OnCallbackReq } fr
 
 @IsAddon({
   addonType: "oauth",
-  name: 'wx',
-  title: '微信登录',
-  desc: '微信网站应用登录',
+  name: "wx",
+  title: "微信登录",
+  desc: "微信网站应用登录",
   icon: "ion:logo-wechat:green",
   showTest: false,
 })
 export class WxOauthProvider extends BaseAddon implements IOauthProvider {
-
   @AddonInput({
     title: "AppId",
     required: true,
@@ -27,24 +26,22 @@ export class WxOauthProvider extends BaseAddon implements IOauthProvider {
   })
   appSecretKey = "";
 
-
-  wxAccessToken?: { access_token: string, expires_at: number }
+  wxAccessToken?: { access_token: string; expires_at: number };
 
   async buildLoginUrl(params: BuildLoginUrlReq) {
-
     const from = params.from || "web";
     const appId = this.appId;
     const redirect_uri = encodeURIComponent(params.redirectUri);
     let state: any = {
       forType: params.forType,
-      from
-    }
-    state = this.ctx.utils.hash.base64(JSON.stringify(state))
+      from,
+    };
+    state = this.ctx.utils.hash.base64(JSON.stringify(state));
     let scope = "snsapi_userinfo";
-    let loginUrl = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appId}&redirect_uri=${redirect_uri}&response_type=code&scope=${scope}&state=${state}#wechat_redirect`
+    let loginUrl = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appId}&redirect_uri=${redirect_uri}&response_type=code&scope=${scope}&state=${state}#wechat_redirect`;
     if (from === "web") {
       scope = "snsapi_login";
-      loginUrl = `https://open.weixin.qq.com/connect/qrconnect?appid=${appId}&redirect_uri=${redirect_uri}&response_type=code&scope=${scope}&state=${state}#wechat_redirect`
+      loginUrl = `https://open.weixin.qq.com/connect/qrconnect?appid=${appId}&redirect_uri=${redirect_uri}&response_type=code&scope=${scope}&state=${state}#wechat_redirect`;
     }
 
     return {
@@ -78,13 +75,11 @@ export class WxOauthProvider extends BaseAddon implements IOauthProvider {
 
   checkRet(res: any) {
     if (res.errcode) {
-      throw new Error(res.errmsg)
+      throw new Error(res.errmsg);
     }
   }
 
   async onCallback(req: OnCallbackReq) {
-
-
     // GET https://api.weixin.qq.com/sns/oauth2/access_token?appid=wx520c15f417810387&secret=SECRET&code=CODE&grant_type=authorization_code
     const res = await this.http.request({
       url: "https://api.weixin.qq.com/sns/oauth2/access_token",
@@ -95,22 +90,21 @@ export class WxOauthProvider extends BaseAddon implements IOauthProvider {
         code: req.code,
         grant_type: "authorization_code",
       },
-    })
-    this.checkRet(res)
-    const accessToken = res.access_token
-
+    });
+    this.checkRet(res);
+    const accessToken = res.access_token;
 
     // GET https://api.weixin.qq.com/sns/userinfo?access_token=ACCESS_TOKEN&openid=OPENID&lang=zh_CN
     const userInfoRes = await this.http.request({
       url: "https://api.weixin.qq.com/sns/userinfo",
       method: "GET",
       params: {
-        access_token:accessToken,
+        access_token: accessToken,
         openid: res.openid,
         lang: "zh_CN",
       },
-    })
-    this.checkRet(userInfoRes)
+    });
+    this.checkRet(userInfoRes);
 
     return {
       token: {
@@ -123,9 +117,8 @@ export class WxOauthProvider extends BaseAddon implements IOauthProvider {
         nickName: userInfoRes.nickname || "",
         avatar: userInfoRes.headimgurl,
       },
-    }
-  };
-
+    };
+  }
 
   async buildLogoutUrl(params: BuildLogoutUrlReq) {
     return {};

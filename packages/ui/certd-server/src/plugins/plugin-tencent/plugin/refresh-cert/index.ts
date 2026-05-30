@@ -1,12 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IsTaskPlugin,
-  Pager,
-  PageSearch,
-  pluginGroups,
-  RunStrategy,
-  TaskInput
-} from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { TencentAccess } from "../../../plugin-lib/tencent/access.js";
@@ -25,9 +17,9 @@ import { omit } from "lodash-es";
   default: {
     //默认值配置照抄即可
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class TencentRefreshCert extends AbstractTaskPlugin {
@@ -37,8 +29,8 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
     // required: true, // 必填
   })
   cert!: CertInfo;
@@ -51,9 +43,9 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
     title: "腾讯云授权",
     component: {
       name: "access-selector",
-      type: "tencent" //固定授权类型
+      type: "tencent", //固定授权类型
     },
-    required: true //必填
+    required: true, //必填
   })
   accessId!: string;
   //
@@ -64,7 +56,7 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
       helper: "要更新的证书id，如果这里没有，请先给手动绑定一次证书",
       action: TencentRefreshCert.prototype.onGetCertList.name,
       pager: false,
-      search: false
+      search: false,
     })
   )
   certList!: string[];
@@ -98,110 +90,109 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
   // resourceTypes!: string[];
 
   @TaskInput({
-    title: '资源区域',
-    helper:"如果云资源类型区分区域，请选择区域，如果区域在选项中不存在，请手动输入（注意：当前仅支持CLB）",
+    title: "资源区域",
+    helper: "如果云资源类型区分区域，请选择区域，如果区域在选项中不存在，请手动输入（注意：当前仅支持CLB）",
     component: {
-      name: 'remote-tree-select',
-      vModel: 'value',
+      name: "remote-tree-select",
+      vModel: "value",
       action: TencentRefreshCert.prototype.onGetRegionsTree.name,
       pager: false,
       search: false,
-      watches: ['certList'],
+      watches: ["certList"],
     },
     required: false,
   })
   resourceTypesRegions!: string[];
   //插件实例化时执行的方法
-  async onInstance() {
-  }
+  async onInstance() {}
 
   //插件执行方法
   async execute(): Promise<void> {
     const access = await this.getAccess<TencentAccess>(this.accessId);
     const sslClient = new TencentSslClient({
-      access:access,
+      access: access,
       logger: this.logger,
     });
     // await access.createCert({cert:this.cert})
 
-    let resourceTypes = []
-    const resourceTypesRegions = []
-    if(!this.resourceTypesRegions){
-      this.resourceTypesRegions = []
+    const resourceTypes = [];
+    const resourceTypesRegions = [];
+    if (!this.resourceTypesRegions) {
+      this.resourceTypesRegions = [];
     }
     for (const item of this.resourceTypesRegions) {
-      const [type,region] = item.split("_")
-      if (!resourceTypes.includes( type)){
-        resourceTypes.push(type)
+      const [type, region] = item.split("_");
+      if (!resourceTypes.includes(type)) {
+        resourceTypes.push(type);
       }
-      if (!region){
+      if (!region) {
         continue;
       }
-      const resourceType = resourceTypesRegions.find(item => item.ResourceType ==  type)
-      if (!resourceType){
+      const resourceType = resourceTypesRegions.find(item => item.ResourceType == type);
+      if (!resourceType) {
         resourceTypesRegions.push({
           ResourceType: type,
-          Regions: [region]
-        })
-      }else{
-        resourceType.Regions.push(region)
+          Regions: [region],
+        });
+      } else {
+        resourceType.Regions.push(region);
       }
     }
     // resourceTypes = ["clb"] //固定clb
-    const maxRetry = 10
+    const maxRetry = 10;
     for (const certId of this.certList) {
       this.logger.info(`----------- 开始更新证书：${certId}`);
 
-      let deployRes = null
+      let deployRes = null;
 
-      let retryCount = 0
-      while(true){
-        if (retryCount>maxRetry){
+      let retryCount = 0;
+      while (true) {
+        if (retryCount > maxRetry) {
           this.logger.error(`任务创建失败`);
           break;
         }
-        retryCount++
+        retryCount++;
         const params = {
-          "OldCertificateId": certId,
-          "ResourceTypes": resourceTypes,
-          "CertificatePublicKey": "xxx",
-          "CertificatePrivateKey": "xxx",
-          "ResourceTypesRegions":resourceTypesRegions
-        }
+          OldCertificateId: certId,
+          ResourceTypes: resourceTypes,
+          CertificatePublicKey: "xxx",
+          CertificatePrivateKey: "xxx",
+          ResourceTypesRegions: resourceTypesRegions,
+        };
         this.logger.info(`请求参数：${JSON.stringify(params)}`);
-        params.CertificatePublicKey = this.cert.crt
-        params.CertificatePrivateKey = this.cert.key
+        params.CertificatePublicKey = this.cert.crt;
+        params.CertificatePrivateKey = this.cert.key;
         deployRes = await sslClient.UploadUpdateCertificateInstance(params);
-        if (deployRes && deployRes.DeployRecordId>0){
+        if (deployRes && deployRes.DeployRecordId > 0) {
           this.logger.info(`任务创建成功，开始检查结果：${JSON.stringify(deployRes)}`);
           break;
-        }else{
+        } else {
           this.logger.info(`任务创建中，稍后查询：${JSON.stringify(deployRes)}`);
         }
         await this.ctx.utils.sleep(3000);
       }
       this.logger.info(`开始查询部署结果`);
 
-      retryCount=0
-      while(true){
-        if (retryCount>maxRetry){
+      retryCount = 0;
+      while (true) {
+        if (retryCount > maxRetry) {
           this.logger.error(`任务结果检查失败`);
           break;
         }
-        retryCount++
+        retryCount++;
         //查询部署状态
         const deployStatus = await sslClient.DescribeHostUploadUpdateRecordDetail({
-          "DeployRecordId":deployRes.DeployRecordId
-        })
-        const details = deployStatus.DeployRecordDetail
-        let allSuccess = true
+          DeployRecordId: deployRes.DeployRecordId,
+        });
+        const details = deployStatus.DeployRecordDetail;
+        let allSuccess = true;
         for (const item of details) {
-          this.logger.info(`查询结果：${JSON.stringify(omit(item,"RecordDetailList"))}`);
+          this.logger.info(`查询结果：${JSON.stringify(omit(item, "RecordDetailList"))}`);
           if (item.Status === 2) {
-            throw new Error(`任务失败：${JSON.stringify(item.RecordDetailList)}`)
-          }else if (item.Status !== 1) {
+            throw new Error(`任务失败：${JSON.stringify(item.RecordDetailList)}`);
+          } else if (item.Status !== 1) {
             //如果不是成功状态
-            allSuccess = false
+            allSuccess = false;
           }
         }
         if (allSuccess) {
@@ -211,11 +202,9 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
       }
       this.logger.info(`----------- 更新证书${certId}成功`);
     }
-
   }
 
-  async onGetRegionsTree(data: PageSearch = {}){
-
+  async onGetRegionsTree(data: PageSearch = {}) {
     const commonRegions = [
       /**
        * 华南地区（广州）	waf.ap-guangzhou.tencentcloudapi.com
@@ -235,42 +224,42 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
        * 南美地区（圣保罗）	waf.sa-saopaulo.tencentcloudapi.com
        * 欧洲地区（法兰克福）	waf.eu-frankfurt.tencentcloudapi.com
        */
-      {value:"ap-guangzhou", label:"广州"},
-      {value:"ap-shanghai", label:"上海"},
-      {value:"ap-nanjing", label:"南京"},
-      {value:"ap-beijing", label:"北京"},
-      {value:"ap-chengdu", label:"成都"},
-      {value:"ap-chongqing", label:"重庆"},
-      {value:"ap-hongkong", label:"香港"},
-      {value:"ap-singapore", label:"新加坡"},
-      {value:"ap-jakarta", label:"雅加达"},
-      {value:"ap-bangkok", label:"曼谷"},
-      {value:"ap-tokyo", label:"东京"},
-      {value:"ap-seoul", label:"首尔"},
-      {value:"na-ashburn", label:"弗吉尼亚"},
-      {value:"na-siliconvalley", label:"硅谷"},
-      {value:"sa-saopaulo", label:"圣保罗"},
-      {value:"eu-frankfurt", label:"法兰克福"},
-    ]
+      { value: "ap-guangzhou", label: "广州" },
+      { value: "ap-shanghai", label: "上海" },
+      { value: "ap-nanjing", label: "南京" },
+      { value: "ap-beijing", label: "北京" },
+      { value: "ap-chengdu", label: "成都" },
+      { value: "ap-chongqing", label: "重庆" },
+      { value: "ap-hongkong", label: "香港" },
+      { value: "ap-singapore", label: "新加坡" },
+      { value: "ap-jakarta", label: "雅加达" },
+      { value: "ap-bangkok", label: "曼谷" },
+      { value: "ap-tokyo", label: "东京" },
+      { value: "ap-seoul", label: "首尔" },
+      { value: "na-ashburn", label: "弗吉尼亚" },
+      { value: "na-siliconvalley", label: "硅谷" },
+      { value: "sa-saopaulo", label: "圣保罗" },
+      { value: "eu-frankfurt", label: "法兰克福" },
+    ];
 
     function buildTypeRegions(type: string) {
-      const options :any[]= []
+      const options: any[] = [];
       for (const region of commonRegions) {
         options.push({
-          label:  type + "_" + region.label,
+          label: type + "_" + region.label,
           value: type + "_" + region.value,
         });
       }
-      return  options
+      return options;
     }
 
     return [
-      { value: 'cdn',label: 'CDN'},
-      { value: 'ddos',label: 'DDoS'},
-      { value: 'live',label: '直播'},
-      { value: 'vod',label: '点播'},
-      { value: 'teo',label: 'TEO'},
-      { value: 'lighthouse',label: '轻应用服务器'},
+      { value: "cdn", label: "CDN" },
+      { value: "ddos", label: "DDoS" },
+      { value: "live", label: "直播" },
+      { value: "vod", label: "点播" },
+      { value: "teo", label: "TEO" },
+      { value: "lighthouse", label: "轻应用服务器" },
       {
         label: "负载均衡(clb)",
         value: "clb",
@@ -306,26 +295,24 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
         value: "tcb",
         children: buildTypeRegions("tcb"),
       },
-    ]
+    ];
   }
 
   async onGetCertList(data: PageSearch = {}) {
-
-    const access = await this.getAccess<TencentAccess>(this.accessId)
+    const access = await this.getAccess<TencentAccess>(this.accessId);
     const sslClient = new TencentSslClient({
-      access:access,
+      access: access,
       logger: this.logger,
     });
 
     const pager = new Pager(data);
     const offset = pager.getOffset();
-    const limit = pager.pageSize
-    const res = await sslClient.DescribeCertificates({Limit:limit,Offset:offset,SearchKey:data.searchKey})
-    const list = res.Certificates
+    const limit = pager.pageSize;
+    const res = await sslClient.DescribeCertificates({ Limit: limit, Offset: offset, SearchKey: data.searchKey });
+    const list = res.Certificates;
     if (!list || list.length === 0) {
       throw new Error("没有找到证书，你可以直接手动输入id");
     }
-
 
     /**
      * certificate-id

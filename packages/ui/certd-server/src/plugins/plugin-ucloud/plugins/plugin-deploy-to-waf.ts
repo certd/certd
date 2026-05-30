@@ -15,9 +15,9 @@ import { UCloudAccess } from "../access.js";
   default: {
     //默认值配置照抄即可
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class UCloudDeployToWaf extends AbstractTaskPlugin {
@@ -27,11 +27,11 @@ export class UCloudDeployToWaf extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
     // required: true, // 必填
   })
-  cert!: CertInfo ;
+  cert!: CertInfo;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
@@ -41,9 +41,9 @@ export class UCloudDeployToWaf extends AbstractTaskPlugin {
     title: "UCloud授权",
     component: {
       name: "access-selector",
-      type: "ucloud" //固定授权类型
+      type: "ucloud", //固定授权类型
     },
-    required: true //必填
+    required: true, //必填
   })
   accessId!: string;
   //
@@ -53,14 +53,13 @@ export class UCloudDeployToWaf extends AbstractTaskPlugin {
       title: "域名列表",
       helper: "要更新的UCloud域名列表",
 
-      action: UCloudDeployToWaf.prototype.onGetDomainList.name
+      action: UCloudDeployToWaf.prototype.onGetDomainList.name,
     })
   )
   domainList!: string[];
 
   //插件实例化时执行的方法
-  async onInstance() {
-  }
+  async onInstance() {}
 
   //插件执行方法
   async execute(): Promise<void> {
@@ -68,7 +67,7 @@ export class UCloudDeployToWaf extends AbstractTaskPlugin {
 
     const res = await this.addWafDomainCertificateInfo({
       access: access,
-      cert: this.cert
+      cert: this.cert,
     });
     this.logger.info(`----------- 上传证书成功：${JSON.stringify(res)}`);
     const certId = res.Id;
@@ -76,47 +75,43 @@ export class UCloudDeployToWaf extends AbstractTaskPlugin {
     for (const item of this.domainList) {
       this.logger.info(`----------- 开始更新域名：${item}`);
 
-      const domainInfo =await access.WafSiteList({
+      const domainInfo = await access.WafSiteList({
         PageNo: 1,
         PageSize: 10,
-        FullDomain: item
-      })
-      const list = domainInfo.DomainHostList || []
-      if(!list || list.length === 0){
-        throw new Error(`没有找到WAF域名${item}`)
+        FullDomain: item,
+      });
+      const list = domainInfo.DomainHostList || [];
+      if (!list || list.length === 0) {
+        throw new Error(`没有找到WAF域名${item}`);
       }
-      const oldDomainInfo = list[0] as any
+      const oldDomainInfo = list[0] as any;
 
-     
-      const srcIpList = oldDomainInfo.SrcIPInfo.map((item: any) => item.SrcIP)
+      const srcIpList = oldDomainInfo.SrcIPInfo.map((item: any) => item.SrcIP);
 
       await access.invoke({
-        "Action": "UpdateWafDomainHostInfo",
-        "ProjectId": access.projectId,
-        "WorkRegions": oldDomainInfo.WorkRegions,
-        "FullDomain": item,
-        "CertificateID": certId ,
-        "SrcIP":srcIpList
-      })
-     
+        Action: "UpdateWafDomainHostInfo",
+        ProjectId: access.projectId,
+        WorkRegions: oldDomainInfo.WorkRegions,
+        FullDomain: item,
+        CertificateID: certId,
+        SrcIP: srcIpList,
+      });
+
       this.logger.info(`----------- 更新域名证书${item}成功`);
     }
 
     this.logger.info("部署完成");
   }
 
-
   async onGetDomainList(req: PageSearch = {}) {
     const access = await this.getAccess<UCloudAccess>(this.accessId);
 
     const pageNo = req.pageNo ?? 1;
     const pageSize = req.pageSize ?? 100;
-    const res = await access.WafSiteList(
-      {
-        PageNo: pageNo,
-        PageSize: pageSize
-      }
-    );
+    const res = await access.WafSiteList({
+      PageNo: pageNo,
+      PageSize: pageSize,
+    });
     const total = res.TotalCount;
     const list = res.DomainHostList || [];
     if (!list || list.length === 0) {
@@ -131,28 +126,26 @@ export class UCloudDeployToWaf extends AbstractTaskPlugin {
       return {
         label: `${item.FullDomain}<${item.RecordId}>`,
         value: `${item.FullDomain}`,
-        domain: item.FullDomain
+        domain: item.FullDomain,
       };
     });
     return {
       list: this.ctx.utils.options.buildGroupOptions(options, this.certDomains),
       total: total,
       pageNo: pageNo,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
 
-  async addWafDomainCertificateInfo(req: { access: UCloudAccess, cert: CertInfo }) {
-
-    const certReader = new CertReader(req.cert)
-    const certName = certReader.buildCertName()
-    const crtBase64 = this.ctx.utils.hash.base64(req.cert.crt)
-    const keyBase64 = this.ctx.utils.hash.base64(req.cert.key)
-    const allDomains = certReader.getAllDomains().join(",")
-
+  async addWafDomainCertificateInfo(req: { access: UCloudAccess; cert: CertInfo }) {
+    const certReader = new CertReader(req.cert);
+    const certName = certReader.buildCertName();
+    const crtBase64 = this.ctx.utils.hash.base64(req.cert.crt);
+    const keyBase64 = this.ctx.utils.hash.base64(req.cert.key);
+    const allDomains = certReader.getAllDomains().join(",");
 
     const resp = await req.access.invoke({
-      "Action": "AddWafDomainCertificateInfo",
+      Action: "AddWafDomainCertificateInfo",
       /**
        * Domain	string	域名	Yes
  CertificateName	string	证书名称	Yes
@@ -161,17 +154,16 @@ export class UCloudDeployToWaf extends AbstractTaskPlugin {
  SslKeyless	string	keyless开关，默认关闭；可选值：开启(on)，关闭(off)	Yes
  
        */
-      "Domain": allDomains,
-      "CertificateName": certName,
-      "SslPublicKey": crtBase64,
-      "SslPrivateKey": keyBase64,
-      "SslMD": this.ctx.utils.hash.md5(crtBase64),
-      "SslKeyless": "off"
+      Domain: allDomains,
+      CertificateName: certName,
+      SslPublicKey: crtBase64,
+      SslPrivateKey: keyBase64,
+      SslMD: this.ctx.utils.hash.md5(crtBase64),
+      SslKeyless: "off",
     });
     this.ctx.logger.info(`----------- 添加WAF域名证书信息成功，${JSON.stringify(resp)}`);
     return resp;
   }
-
 }
 
 //实例化一下，注册插件

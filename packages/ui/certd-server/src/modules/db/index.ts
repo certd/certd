@@ -1,14 +1,14 @@
-import { SqliteAdapter } from './sqlite.js';
-import { PostgresqlAdapter } from './postgresql.js';
-import { Config, Init, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { SqlAdapter } from './d.js';
-import { MysqlAdapter } from './mysql.js';
+import { SqliteAdapter } from "./sqlite.js";
+import { PostgresqlAdapter } from "./postgresql.js";
+import { Config, Init, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { SqlAdapter } from "./d.js";
+import { MysqlAdapter } from "./mysql.js";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class DbAdapter implements SqlAdapter {
   adapter: SqlAdapter;
-  @Config('typeorm.dataSource.default.type')
+  @Config("typeorm.dataSource.default.type")
   dbType: string;
 
   @Init()
@@ -25,13 +25,13 @@ export class DbAdapter implements SqlAdapter {
   }
 
   isSqlite() {
-    return this.dbType === 'better-sqlite3';
+    return this.dbType === "better-sqlite3";
   }
   isPostgresql() {
-    return this.dbType === 'postgres';
+    return this.dbType === "postgres";
   }
   isMysql() {
-    return this.dbType === 'mysql' || this.dbType === 'mariadb';
+    return this.dbType === "mysql" || this.dbType === "mariadb";
   }
 
   date(columnName: string) {

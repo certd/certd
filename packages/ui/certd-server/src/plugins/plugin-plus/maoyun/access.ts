@@ -84,11 +84,8 @@ export class MaoyunAccess extends BaseAccess {
       method: "GET",
     });
     const list = res.data || [];
-    return list
+    return list;
   }
-
-
-
 }
 
 new MaoyunAccess();

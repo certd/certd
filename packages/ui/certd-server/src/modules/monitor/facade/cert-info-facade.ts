@@ -10,25 +10,23 @@ import { CertInfoService } from "../service/cert-info-service.js";
 import { DomainService } from "../../cert/service/domain-service.js";
 import { DomainVerifierGetter } from "../../pipeline/service/getter/domain-verifier-getter.js";
 
-
 @Provide("CertInfoFacade")
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
-export class CertInfoFacade  {
-
+export class CertInfoFacade {
   @Inject()
   pipelineService: PipelineService;
 
   @Inject()
-  certInfoService: CertInfoService ;
+  certInfoService: CertInfoService;
 
   @Inject()
-  domainService: DomainService
+  domainService: DomainService;
 
   @Inject()
-  userSettingsService : UserSettingsService
+  userSettingsService: UserSettingsService;
 
-  async getCertInfo(req: { domains?: string; certId?: number; userId: number, projectId:number, autoApply?:boolean,format?:string }) {
-    const { domains, certId, userId,projectId } = req;
+  async getCertInfo(req: { domains?: string; certId?: number; userId: number; projectId: number; autoApply?: boolean; format?: string }) {
+    const { domains, certId, userId, projectId } = req;
     if (certId) {
       return await this.certInfoService.getCertInfoById({ id: certId, userId, projectId });
     }
@@ -38,41 +36,38 @@ export class CertInfoFacade  {
         message: "参数错误，certId和domains必须传一个",
       });
     }
-    const domainArr = domains.split(',');
+    const domainArr = domains.split(",");
 
-    const matchedList = await this.certInfoService.getMatchCertList({domains:domainArr,userId,projectId})
+    const matchedList = await this.certInfoService.getMatchCertList({ domains: domainArr, userId, projectId });
 
-    if (matchedList.length === 0 ) {
-      if(req.autoApply === true){
+    if (matchedList.length === 0) {
+      if (req.autoApply === true) {
         //自动申请，先创建自动申请流水线
-        const pipeline:PipelineEntity = await this.createAutoPipeline({domains:domainArr,userId,projectId})
-        await this.triggerApplyPipeline({pipelineId:pipeline.id})
-      }else{
+        const pipeline: PipelineEntity = await this.createAutoPipeline({ domains: domainArr, userId, projectId });
+        await this.triggerApplyPipeline({ pipelineId: pipeline.id });
+      } else {
         throw new CodeException({
           ...Constants.res.openCertNotFound,
-          message:"在证书仓库中没有找到匹配域名的证书，请先创建证书流水线，或传入autoApply参数，自动创建"
+          message: "在证书仓库中没有找到匹配域名的证书，请先创建证书流水线，或传入autoApply参数，自动创建",
         });
       }
     }
-    let matched = this.getMinixMatched(matchedList);
+    const matched = this.getMinixMatched(matchedList);
     if (!matched) {
-      if(req.autoApply === true){
+      if (req.autoApply === true) {
         //如果没有找到有效期内的证书，则自动触发一次申请
-        const first = matchedList[0]
-        await this.triggerApplyPipeline({pipelineId:first.pipelineId})
-        return
-      }else{
+        const first = matchedList[0];
+        await this.triggerApplyPipeline({ pipelineId: first.pipelineId });
+        return;
+      } else {
         throw new CodeException({
           ...Constants.res.openCertNotFound,
-          message:"证书已过期，请触发流水线申请，或者传入autoApply参数，自动触发"
+          message: "证书已过期，请触发流水线申请，或者传入autoApply参数，自动触发",
         });
       }
     }
 
-    return await this.certInfoService.getCertInfoById({ id: matched.id, userId: userId,projectId,format:req.format });
-
-
-
+    return await this.certInfoService.getCertInfoById({ id: matched.id, userId: userId, projectId, format: req.format });
   }
 
   public getMinixMatched(matchedList: CertInfoEntity[]) {
@@ -103,59 +98,55 @@ export class CertInfoFacade  {
     return matched;
   }
 
-  async createAutoPipeline(req:{domains:string[],userId:number,projectId:number}){
+  async createAutoPipeline(req: { domains: string[]; userId: number; projectId: number }) {
+    const verifierGetter = new DomainVerifierGetter(req.userId, req.projectId, this.domainService);
 
-    const verifierGetter = new DomainVerifierGetter(req.userId, req.projectId, this.domainService)
-
-    const allDomains = []
+    const allDomains = [];
     for (const item of req.domains) {
-      allDomains.push(item.replaceAll("*.",""))
+      allDomains.push(item.replaceAll("*.", ""));
     }
-    const verifiers = await verifierGetter.getVerifiers(allDomains)
+    const verifiers = await verifierGetter.getVerifiers(allDomains);
     for (const item of allDomains) {
-      if (!verifiers[item]){
+      if (!verifiers[item]) {
         throw new CodeException({
           ...Constants.res.openDomainNoVerifier,
-          message:`域名${item}没有配置校验方式，请先在域名管理页面配置`,
-          data:{
-            domain:item
-          }
+          message: `域名${item}没有配置校验方式，请先在域名管理页面配置`,
+          data: {
+            domain: item,
+          },
         });
       }
     }
 
-    const userEmailSetting = await this.userSettingsService.getSetting<UserEmailSetting>(req.userId,null, UserEmailSetting)
-    if(!userEmailSetting.list){
-      throw new CodeException(Constants.res.openEmailNotFound)
+    const userEmailSetting = await this.userSettingsService.getSetting<UserEmailSetting>(req.userId, null, UserEmailSetting);
+    if (!userEmailSetting.list) {
+      throw new CodeException(Constants.res.openEmailNotFound);
     }
-    const email = userEmailSetting.list[0]
+    const email = userEmailSetting.list[0];
 
     return await this.pipelineService.createAutoPipeline({
       domains: req.domains,
       email,
       projectId: req.projectId,
       userId: req.userId,
-      from: "OpenAPI"
-    })
-
-  }
-
-  async triggerApplyPipeline(req:{pipelineId:number}){
-    //查询流水线状态
-    const status = await this.pipelineService.getStatus(req.pipelineId)
-    if (status != 'running') {
-      await this.pipelineService.trigger(req.pipelineId)
-      await utils.sleep(1000)
-    }
-    const certInfo = await this.certInfoService.getByPipelineId(req.pipelineId)
-    throw new CodeException({
-      ...Constants.res.openCertApplying,
-      data:{
-        pipelineId:req.pipelineId,
-        certId:certInfo?.id
-      }
+      from: "OpenAPI",
     });
   }
 
-
+  async triggerApplyPipeline(req: { pipelineId: number }) {
+    //查询流水线状态
+    const status = await this.pipelineService.getStatus(req.pipelineId);
+    if (status != "running") {
+      await this.pipelineService.trigger(req.pipelineId);
+      await utils.sleep(1000);
+    }
+    const certInfo = await this.certInfoService.getByPipelineId(req.pipelineId);
+    throw new CodeException({
+      ...Constants.res.openCertApplying,
+      data: {
+        pipelineId: req.pipelineId,
+        certId: certInfo?.id,
+      },
+    });
+  }
 }

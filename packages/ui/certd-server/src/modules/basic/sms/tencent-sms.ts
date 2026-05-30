@@ -1,5 +1,5 @@
-import { TencentAccess } from '../../../plugins/plugin-lib/tencent/access.js';
-import {ISmsService, PluginInputs, SmsPluginCtx} from './api.js';
+import { TencentAccess } from "../../../plugins/plugin-lib/tencent/access.js";
+import { ISmsService, PluginInputs, SmsPluginCtx } from "./api.js";
 
 export type TencentSmsConfig = {
   accessId: string;
@@ -12,53 +12,53 @@ export type TencentSmsConfig = {
 export class TencentSmsService implements ISmsService {
   static getDefine() {
     return {
-      name: 'tencent',
-      desc: '腾讯云短信服务',
+      name: "tencent",
+      desc: "腾讯云短信服务",
       input: {
         accessId: {
-          title: '腾讯云授权',
+          title: "腾讯云授权",
           component: {
-            name: 'access-selector',
-            type: 'tencent',
+            name: "access-selector",
+            type: "tencent",
           },
           required: true,
         },
         region: {
-          title: '区域',
-          value:"ap-beijing",
+          title: "区域",
+          value: "ap-beijing",
           component: {
-            name: 'a-select',
-            vModel: 'value',
-            options:[
-              {value:"ap-beijing",label:"华北地区（北京）"},
-              {value:"ap-guangzhou",label:"华南地区（广州）"},
-              {value:"ap-nanjing",label:"华东地区（南京）"},
-            ]
+            name: "a-select",
+            vModel: "value",
+            options: [
+              { value: "ap-beijing", label: "华北地区（北京）" },
+              { value: "ap-guangzhou", label: "华南地区（广州）" },
+              { value: "ap-nanjing", label: "华东地区（南京）" },
+            ],
           },
-          helper:"随便选一个",
+          helper: "随便选一个",
           required: true,
         },
         signName: {
-          title: '签名',
+          title: "签名",
           component: {
-            name: 'a-input',
-            vModel: 'value',
+            name: "a-input",
+            vModel: "value",
           },
           required: true,
         },
         appId: {
-          title: '应用ID',
+          title: "应用ID",
           component: {
-            name: 'a-input',
-            vModel: 'value',
+            name: "a-input",
+            vModel: "value",
           },
           required: true,
         },
         codeTemplateId: {
-          title: '验证码模板Id',
+          title: "验证码模板Id",
           component: {
-            name: 'a-input',
-            vModel: 'value',
+            name: "a-input",
+            vModel: "value",
           },
           required: true,
         },
@@ -72,12 +72,10 @@ export class TencentSmsService implements ISmsService {
     this.ctx = ctx;
   }
 
-
   async getClient() {
-    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/sms/v20210111/index.js');
+    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/sms/v20210111/index.js");
     const client = sdk.v20210111.Client;
     const access = await this.ctx.accessService.getById<TencentAccess>(this.ctx.config.accessId);
-
 
     // const region = this.region;
     const clientConfig = {
@@ -102,15 +100,11 @@ export class TencentSmsService implements ISmsService {
     const client = await this.getClient();
     const smsConfig = this.ctx.config;
     const params = {
-      "PhoneNumberSet": [
-        `+${phoneCode}${mobile}`
-      ],
-      "SmsSdkAppId": smsConfig.appId,
-      "TemplateId": smsConfig.codeTemplateId,
-      "SignName": smsConfig.signName,
-      "TemplateParamSet": [
-        code
-      ]
+      PhoneNumberSet: [`+${phoneCode}${mobile}`],
+      SmsSdkAppId: smsConfig.appId,
+      TemplateId: smsConfig.codeTemplateId,
+      SignName: smsConfig.signName,
+      TemplateParamSet: [code],
     };
     const ret = await client.SendSms(params);
     this.checkRet(ret);
@@ -118,7 +112,7 @@ export class TencentSmsService implements ISmsService {
 
   checkRet(ret: any) {
     if (!ret || ret.Error) {
-      throw new Error('执行失败：' + ret.Error.Code + ',' + ret.Error.Message);
+      throw new Error("执行失败：" + ret.Error.Code + "," + ret.Error.Message);
     }
   }
 }

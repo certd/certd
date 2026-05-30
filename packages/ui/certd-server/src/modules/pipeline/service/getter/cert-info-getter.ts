@@ -1,7 +1,7 @@
-import { CertInfo, CertReader, ICertInfoGetter } from '@certd/plugin-lib';
-import { CertInfoService } from '../../../monitor/index.js';
+import { CertInfo, CertReader, ICertInfoGetter } from "@certd/plugin-lib";
+import { CertInfoService } from "../../../monitor/index.js";
 
-export class CertInfoGetter implements ICertInfoGetter  {
+export class CertInfoGetter implements ICertInfoGetter {
   userId: number;
   projectId: number;
   certInfoService: CertInfoService;
@@ -12,20 +12,20 @@ export class CertInfoGetter implements ICertInfoGetter  {
   }
   async getByPipelineId(pipelineId: number): Promise<CertInfo> {
     if (!pipelineId) {
-      throw new Error(`流水线id不能为空`)
+      throw new Error(`流水线id不能为空`);
     }
-    const query :any= {
-        pipelineId,
-        userId: this.userId,
-    }
+    const query: any = {
+      pipelineId,
+      userId: this.userId,
+    };
     if (this.projectId) {
-       query.projectId = this.projectId
+      query.projectId = this.projectId;
     }
-    const entity =  await this.certInfoService.findOne({
-      where:query
-    })
+    const entity = await this.certInfoService.findOne({
+      where: query,
+    });
     if (!entity || !entity.certInfo) {
-      throw new Error(`流水线(${pipelineId})还未生成证书，请先运行一次流水线`)
+      throw new Error(`流水线(${pipelineId})还未生成证书，请先运行一次流水线`);
     }
     return new CertReader(JSON.parse(entity.certInfo)).cert;
   }

@@ -74,7 +74,6 @@ export class LegacyAcmeAccountAccessFix {
   @Inject()
   accessService: AccessService;
 
-  
   async init() {
     try {
       const repository = this.storageService.getRepository();

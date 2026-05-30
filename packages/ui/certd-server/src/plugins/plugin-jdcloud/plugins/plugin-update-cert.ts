@@ -5,11 +5,11 @@ import { optionsUtils } from "@certd/basic";
 import { JDCloudAccess } from "../access.js";
 
 @IsTaskPlugin({
-  name: 'JDCloudUpdateCert',
-  title: '京东云-更新已有证书',
-  icon: 'svg:icon-jdcloud',
+  name: "JDCloudUpdateCert",
+  title: "京东云-更新已有证书",
+  icon: "svg:icon-jdcloud",
   group: pluginGroups.jdcloud.key,
-  desc: '更新SSL数字证书中的证书',
+  desc: "更新SSL数字证书中的证书",
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -18,11 +18,11 @@ import { JDCloudAccess } from "../access.js";
 })
 export class JDCloudUpdateCert extends AbstractTaskPlugin {
   @TaskInput({
-    title: '域名证书',
-    helper: '请选择前置任务输出的域名证书',
+    title: "域名证书",
+    helper: "请选择前置任务输出的域名证书",
     component: {
-      name: 'output-selector',
-      from: [...CertApplyPluginNames, 'JDCloudUploadCert'],
+      name: "output-selector",
+      from: [...CertApplyPluginNames, "JDCloudUploadCert"],
     },
     required: true,
   })
@@ -31,38 +31,34 @@ export class JDCloudUpdateCert extends AbstractTaskPlugin {
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
 
-
   @TaskInput({
-    title: 'Access授权',
-    helper: '京东云AccessKeyId、AccessKeySecret',
+    title: "Access授权",
+    helper: "京东云AccessKeyId、AccessKeySecret",
     component: {
-      name: 'access-selector',
-      type: 'jdcloud',
+      name: "access-selector",
+      type: "jdcloud",
     },
     required: true,
   })
   accessId!: string;
 
-
-
   @TaskInput(
     createRemoteSelectInputDefine({
-      title: '要更新的证书id',
-      helper: '您在京东云上已有的证书Id',
+      title: "要更新的证书id",
+      helper: "您在京东云上已有的证书Id",
       action: JDCloudUpdateCert.prototype.onGetCertList.name,
-      watches: ['certDomains', 'accessId'],
+      watches: ["certDomains", "accessId"],
       required: true,
     })
   )
   certIds!: string[];
 
-
   async onInstance() {}
   async execute(): Promise<void> {
-    this.logger.info('开始部署证书到京东云CDN');
+    this.logger.info("开始部署证书到京东云CDN");
     const access = await this.getAccess<JDCloudAccess>(this.accessId);
 
-    const service = await this.getClient(access)
+    const service = await this.getClient(access);
     // let certId = this.cert
     // const certName = this.appendTimeSuffix("certd");
     // if (typeof certId !== 'string') {
@@ -82,42 +78,43 @@ export class JDCloudUpdateCert extends AbstractTaskPlugin {
     //   certId = res.result.certId
     // }
 
-    const certInfo = this.cert as CertInfo
+    const certInfo = this.cert as CertInfo;
     for (const certId of this.certIds) {
-      this.logger.info(`开始更新证书：${certId}`)
-      const res = await access.catchCall(() => service.updateCert({
-      /*
+      this.logger.info(`开始更新证书：${certId}`);
+      const res = await access.catchCall(() =>
+        service.updateCert({
+          /*
       @param {string} opts.certId - 证书Id
 @param {string} opts.certId - 证书ID
 @param {string} opts.keyFile - 私钥
 @param {string} opts.certFile - 证书
 @param {string} callback - callback
        */
-        certId,
-        certFile: certInfo.crt,
-        keyFile:certInfo.key,
-      }))
+          certId,
+          certFile: certInfo.crt,
+          keyFile: certInfo.key,
+        })
+      );
       this.logger.info(`更新证书${certId}成功:${JSON.stringify(res)}`);
-      await this.ctx.utils.sleep(2000)
+      await this.ctx.utils.sleep(2000);
     }
   }
 
-
   async getClient(access: JDCloudAccess) {
-    const {JDSslService} = await import("@certd/jdcloud")
+    const { JDSslService } = await import("@certd/jdcloud");
     const service = new JDSslService({
       credentials: {
         accessKeyId: access.accessKeyId,
-        secretAccessKey: access.secretAccessKey
+        secretAccessKey: access.secretAccessKey,
       },
-      regionId: "cn-north-1" //地域信息，某个api调用可以单独传参regionId，如果不传则会使用此配置中的regionId
+      regionId: "cn-north-1", //地域信息，某个api调用可以单独传参regionId，如果不传则会使用此配置中的regionId
     });
     return service;
   }
 
   async onGetCertList(data: any) {
     if (!this.accessId) {
-      throw new Error('请选择Access授权');
+      throw new Error("请选择Access授权");
     }
     const access = await this.getAccess<JDCloudAccess>(this.accessId);
 
@@ -126,14 +123,16 @@ export class JDCloudUpdateCert extends AbstractTaskPlugin {
      * pageNumber	Integer	False	1	pageNumber,默认值1
      * pageSize
      */
-    const res = await access.catchCall(() => service.describeCerts({
-      pageNumber: 1,
-      pageSize: 100,
-    }))
+    const res = await access.catchCall(() =>
+      service.describeCerts({
+        pageNumber: 1,
+        pageSize: 100,
+      })
+    );
     // @ts-ignore
-    const list = res?.result?.certListDetails
+    const list = res?.result?.certListDetails;
     if (!list || list.length === 0) {
-      throw new Error('找不到证书，您可以手动输入证书id');
+      throw new Error("找不到证书，您可以手动输入证书id");
     }
     const options = list.map((item: any) => {
       return {

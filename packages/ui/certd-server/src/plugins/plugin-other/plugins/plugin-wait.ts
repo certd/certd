@@ -1,12 +1,12 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 
 @IsTaskPlugin({
-  name: 'WaitPlugin',
-  title: '等待',
-  icon: 'ri:rest-time-line',
-  desc: '等待一段时间',
+  name: "WaitPlugin",
+  title: "等待",
+  icon: "ri:rest-time-line",
+  desc: "等待一段时间",
   group: pluginGroups.other.key,
-  showRunStrategy:true,
+  showRunStrategy: true,
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -15,13 +15,13 @@ import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput 
 })
 export class WaitPlugin extends AbstractTaskPlugin {
   @TaskInput({
-    title: '等待时长',
+    title: "等待时长",
     value: 30,
     component: {
-      name: 'a-input-number',
-      vModel: 'value',
+      name: "a-input-number",
+      vModel: "value",
     },
-    helper: '单位：秒',
+    helper: "单位：秒",
     required: true,
   })
   waitTime!: number;
@@ -30,7 +30,7 @@ export class WaitPlugin extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     this.logger.info(`等待${this.waitTime}s`);
     await this.ctx.utils.sleep(this.waitTime * 1000);
-    this.logger.info('等待结束');
+    this.logger.info("等待结束");
   }
 }
 new WaitPlugin();

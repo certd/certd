@@ -1,19 +1,12 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import {
-  BaseService,
-  NeedVIPException,
-  SysInstallInfo,
-  SysSettingsService,
-  SysSiteInfo,
-  ValidateException
-} from "@certd/lib-server";
-import { InjectEntityModel } from '@midwayjs/typeorm';
-import { Repository } from 'typeorm';
-import { NotificationEntity } from '../entity/notification.js';
-import { NotificationInstanceConfig, notificationRegistry, NotificationSendReq, sendNotification } from '@certd/pipeline';
-import { http, utils } from '@certd/basic';
-import { EmailService } from '../../basic/service/email-service.js';
-import { isComm, isPlus } from '@certd/plus-core';
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { BaseService, NeedVIPException, SysInstallInfo, SysSettingsService, SysSiteInfo, ValidateException } from "@certd/lib-server";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { Repository } from "typeorm";
+import { NotificationEntity } from "../entity/notification.js";
+import { NotificationInstanceConfig, notificationRegistry, NotificationSendReq, sendNotification } from "@certd/pipeline";
+import { http, utils } from "@certd/basic";
+import { EmailService } from "../../basic/service/email-service.js";
+import { isComm, isPlus } from "@certd/plus-core";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -35,7 +28,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
   async getSimpleInfo(id: number) {
     const entity = await this.info(id);
     if (entity == null) {
-      throw new ValidateException('该通知配置不存在,请确认是否已被删除');
+      throw new ValidateException("该通知配置不存在,请确认是否已被删除");
     }
     return {
       id: entity.id,
@@ -56,32 +49,31 @@ export class NotificationService extends BaseService<NotificationEntity> {
   async add(bean: NotificationEntity) {
     this.checkNeedPlus(bean.type);
     const res = await super.add(bean);
-    if(bean.isDefault){
+    if (bean.isDefault) {
       await this.setDefault(res.id, bean.userId);
     }
     bean.keyId = "nt_" + utils.id.simpleNanoId();
-    return res
+    return res;
   }
 
   async update(bean: NotificationEntity) {
-
     const old = await this.info(bean.id);
     this.checkNeedPlus(old.type);
 
     delete bean.userId;
-    delete bean.type
-    delete bean.keyId
+    delete bean.type;
+    delete bean.keyId;
     const res = await super.update(bean);
-    if(bean.isDefault){
+    if (bean.isDefault) {
       await this.setDefault(bean.id, old.userId);
     }
 
-    return res
+    return res;
   }
 
-   checkNeedPlus(type: string){
-    const define = this.getDefineByType(type)
-     //@ts-ignore
+  checkNeedPlus(type: string) {
+    const define = this.getDefineByType(type);
+    //@ts-ignore
     if (define.needPlus && !isPlus()) {
       throw new NeedVIPException("此通知类型为Certd专业版功能，请升级到专业版或以上级别");
     }
@@ -89,10 +81,10 @@ export class NotificationService extends BaseService<NotificationEntity> {
 
   async getById(id: number, userId: number, projectId?: number): Promise<NotificationInstanceConfig> {
     if (!id) {
-      throw new ValidateException('id不能为空');
+      throw new ValidateException("id不能为空");
     }
-    if (userId==null) {
-      throw new ValidateException('userId不能为空');
+    if (userId == null) {
+      throw new ValidateException("userId不能为空");
     }
     const res = await this.repository.findOne({
       where: {
@@ -125,7 +117,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
         projectId,
       },
       order: {
-        isDefault: 'DESC',
+        isDefault: "DESC",
       },
     });
     if (!res) {
@@ -136,30 +128,24 @@ export class NotificationService extends BaseService<NotificationEntity> {
 
   async setDefault(id: number, userId: number, projectId?: number) {
     if (!id) {
-      throw new ValidateException('id不能为空');
+      throw new ValidateException("id不能为空");
     }
-    if (userId==null) {
-      throw new ValidateException('userId不能为空');
+    if (userId == null) {
+      throw new ValidateException("userId不能为空");
     }
-    const query:any = {
-       userId,
+    const query: any = {
+      userId,
+    };
+    if (projectId) {
+      query.projectId = projectId;
     }
-    if (projectId){
-      query.projectId = projectId
-    }
-    await this.repository.update(
-      query,
-      {
-        isDefault: false,
-      }
-    );
-    query.id = id
-    await this.repository.update(
-     query,
-      {
-        isDefault: true,
-      }
-    );
+    await this.repository.update(query, {
+      isDefault: false,
+    });
+    query.id = id;
+    await this.repository.update(query, {
+      isDefault: true,
+    });
   }
 
   async getOrCreateDefault(email: string, userId: any, projectId?: number) {
@@ -172,8 +158,8 @@ export class NotificationService extends BaseService<NotificationEntity> {
     };
     const res = await this.repository.save({
       userId,
-      type: 'email',
-      name: '邮件通知',
+      type: "email",
+      name: "邮件通知",
       setting: JSON.stringify(setting),
       isDefault: true,
       projectId,
@@ -199,11 +185,11 @@ export class NotificationService extends BaseService<NotificationEntity> {
 
     if (notifyConfig) {
       //发送通知
-      logger.info('发送通知, 使用通知渠道：' + notifyConfig.name);
+      logger.info("发送通知, 使用通知渠道：" + notifyConfig.name);
 
-      if (notifyConfig.type != 'email') {
+      if (notifyConfig.type != "email") {
         //非邮件通知，需要加上站点名称
-        let siteTitle = 'Certd';
+        let siteTitle = "Certd";
         if (isComm()) {
           const siteInfo = await this.sysSettingsService.getSetting<SysSiteInfo>(SysSiteInfo);
           siteTitle = siteInfo?.title || siteTitle;
@@ -223,7 +209,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
       });
     } else {
       if (req.useEmail && req.emailAddress) {
-        logger.info('使用邮件通知');
+        logger.info("使用邮件通知");
         await this.emailService.send({
           receivers: [req.emailAddress],
           subject: req.body.title,
@@ -235,7 +221,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
 
   async getBindUrl(path: string) {
     const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
-    const bindUrl = installInfo.bindUrl || 'http://127.0.0.1:7001';
+    const bindUrl = installInfo.bindUrl || "http://127.0.0.1:7001";
     return bindUrl + path;
   }
 }

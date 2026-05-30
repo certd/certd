@@ -10,15 +10,11 @@ import { Pager, PageRes, PageSearch } from "@certd/pipeline";
   icon: "svg:icon-rainyun",
 })
 export class RainyunDnsProvider extends AbstractDnsProvider {
-
   client: any;
 
-  async onInstance() {
-
-  }
+  async onInstance() {}
 
   async createRecord(options: CreateRecordOptions): Promise<any> {
-
     const access: RainyunAccess = this.ctx.access as RainyunAccess;
 
     const domainId = await access.getDomainId(options.domain);
@@ -38,17 +34,15 @@ export class RainyunDnsProvider extends AbstractDnsProvider {
         level: 1,
         type: type,
         line: "DEFAULT",
-        ttl: 60
-      }
+        ttl: 60,
+      },
     });
     this.logger.info("添加域名解析成功:", JSON.stringify(options), ret);
     return {
       recordId: ret,
-      domainId: domainId
+      domainId: domainId,
     };
-
   }
-
 
   async removeRecord(options: RemoveRecordOptions<any>): Promise<any> {
     const { fullRecord, value } = options.recordReq;
@@ -69,14 +63,14 @@ export class RainyunDnsProvider extends AbstractDnsProvider {
       offset: pager.getOffset(),
       limit: pager.pageSize,
       query: req.searchKey,
-    })
+    });
     // this.logger.info("获取域名列表成功:", ret);
     const list = ret.list.map((item: any) => ({
       id: item.id,
       domain: item.domain,
     }));
     return {
-      total:ret.total || list.length,
+      total: ret.total || list.length,
       list,
     };
   }

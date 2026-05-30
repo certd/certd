@@ -1,11 +1,11 @@
-import { Init, Inject, MidwayWebRouterService, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { IMidwayKoaContext, IWebMiddleware, NextFunction } from '@midwayjs/koa';
-import jwt from 'jsonwebtoken';
-import { Constants, SysPrivateSettings, SysSettingsService } from '@certd/lib-server';
-import { logger } from '@certd/basic';
-import { AuthService } from '../modules/sys/authority/service/auth-service.js';
-import { OpenKeyService } from '../modules/open/service/open-key-service.js';
-import { RoleService } from '../modules/sys/authority/service/role-service.js';
+import { Init, Inject, MidwayWebRouterService, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { IMidwayKoaContext, IWebMiddleware, NextFunction } from "@midwayjs/koa";
+import jwt from "jsonwebtoken";
+import { Constants, SysPrivateSettings, SysSettingsService } from "@certd/lib-server";
+import { logger } from "@certd/basic";
+import { AuthService } from "../modules/sys/authority/service/auth-service.js";
+import { OpenKeyService } from "../modules/open/service/open-key-service.js";
+import { RoleService } from "../modules/sys/authority/service/role-service.js";
 
 /**
  * 权限校验
@@ -40,11 +40,11 @@ export class AuthorityMiddleware implements IWebMiddleware {
         await next();
         return;
       }
-      let permission = routeInfo.description || '';
-      permission = permission.trim().split(' ')[0];
-      if (permission == null || permission === '') {
+      let permission = routeInfo.description || "";
+      permission = permission.trim().split(" ")[0];
+      if (permission == null || permission === "") {
         ctx.status = 500;
-        ctx.body = Constants.res.serverError('该路由未配置权限控制:' + ctx.path);
+        ctx.body = Constants.res.serverError("该路由未配置权限控制:" + ctx.path);
         return;
       }
       if (permission === Constants.per.guest) {
@@ -58,7 +58,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
         try {
           ctx.user = jwt.verify(token, this.secret);
         } catch (err) {
-          logger.error('token verify error: ', err);
+          logger.error("token verify error: ", err);
           return this.notAuth(ctx);
         }
       } else {
@@ -74,8 +74,8 @@ export class AuthorityMiddleware implements IWebMiddleware {
         if (permission === Constants.per.open) {
           await next();
           return;
-        } else if (openKey.scope === 'open') {
-          return this.notAuth(ctx, 'open key scope error，need user scope');
+        } else if (openKey.scope === "open") {
+          return this.notAuth(ctx, "open key scope error，need user scope");
         }
       }
 
@@ -90,7 +90,7 @@ export class AuthorityMiddleware implements IWebMiddleware {
 
       const pass = await this.authService.checkPermission(ctx, permission);
       if (!pass) {
-        logger.info('not permission: ', ctx.req.url);
+        logger.info("not permission: ", ctx.req.url);
         ctx.status = 200;
         ctx.body = Constants.res.permission;
         return;
@@ -104,49 +104,49 @@ export class AuthorityMiddleware implements IWebMiddleware {
     ctx.body = Constants.res.auth;
     if (message) {
       // @ts-ignore
-      ctx.body.message =message;
+      ctx.body.message = message;
     }
     return;
   }
 
   private getTokenFromRequest(ctx: IMidwayKoaContext) {
-    let token = ctx.get('Authorization') || '';
-    token = token.replace('Bearer ', '').trim();
+    let token = ctx.get("Authorization") || "";
+    token = token.replace("Bearer ", "").trim();
     if (token) {
       return token;
     }
 
     const cookie = ctx.headers.cookie;
     if (cookie) {
-      const items = cookie.split(';');
+      const items = cookie.split(";");
       for (const item of items) {
-        if (!item  || !item.trim()) {
+        if (!item || !item.trim()) {
           continue;
         }
-        const [key, value] = item.split('=');
-        if (key.trim() === 'certd_token') {
+        const [key, value] = item.split("=");
+        if (key.trim() === "certd_token") {
           return value.trim();
         }
       }
     }
 
-    return (ctx.query.token as string) || '';
+    return (ctx.query.token as string) || "";
   }
 
   async doOpenHandler(ctx: IMidwayKoaContext) {
     //开放接口
-    const openKey = ctx.get('x-certd-token') || '';
+    const openKey = ctx.get("x-certd-token") || "";
     if (!openKey) {
       return null;
     }
 
     //校验 openKey
     const openKeyRes = await this.openKeyService.verifyOpenKey(openKey);
-    let roles = [1]
+    let roles = [1];
     if (!openKeyRes.projectId || openKeyRes.projectId <= 0) {
       roles = await this.roleService.getRoleIdsByUserId(openKeyRes.userId);
     }
-    ctx.user = { id: openKeyRes.userId, roles ,projectId:openKeyRes.projectId};
+    ctx.user = { id: openKeyRes.userId, roles, projectId: openKeyRes.projectId };
     ctx.openKey = openKeyRes;
     return openKeyRes;
   }

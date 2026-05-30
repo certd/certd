@@ -1,5 +1,5 @@
-import { INotificationService, NotificationSendReq } from '@certd/pipeline';
-import {NotificationService} from "../notification-service.js";
+import { INotificationService, NotificationSendReq } from "@certd/pipeline";
+import { NotificationService } from "../notification-service.js";
 
 export class NotificationGetter implements INotificationService {
   userId: number;

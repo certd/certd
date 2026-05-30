@@ -4,13 +4,12 @@ import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine } from "@certd/plugin-lib";
 import { resetLogConfigure } from "@certd/basic";
 
-
 @IsTaskPlugin({
-  name: 'HauweiUploadToCCM',
-  title: '华为云-上传证书至CCM',
-  icon: 'svg:icon-huawei',
+  name: "HauweiUploadToCCM",
+  title: "华为云-上传证书至CCM",
+  icon: "svg:icon-huawei",
   group: pluginGroups.huawei.key,
-  desc: '上传证书到华为云云证书管理（CCM）',
+  desc: "上传证书到华为云云证书管理（CCM）",
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -23,9 +22,9 @@ export class HauweiUploadToCCM extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
+      from: [...CertApplyPluginNames],
     },
-    required: true
+    required: true,
   })
   cert!: CertInfo;
 
@@ -37,13 +36,13 @@ export class HauweiUploadToCCM extends AbstractTaskPlugin {
     helper: "华为云授权AccessKeyId、AccessKeySecret",
     component: {
       name: "access-selector",
-      type: "huawei"
+      type: "huawei",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
   @TaskOutput({
-    title: '华为云CertId',
+    title: "华为云CertId",
   })
   huaweiCertId!: string;
 
@@ -55,7 +54,7 @@ export class HauweiUploadToCCM extends AbstractTaskPlugin {
       name: this.appendTimeSuffix("certd"),
       certificate: this.cert.crt,
       private_key: this.cert.key,
-      duplicate_check: false
+      duplicate_check: false,
     });
     this.huaweiCertId = res.certificate_id;
     this.logger.info(`上传证书到华为云ccm完成,certificate_id:${this.huaweiCertId}`);
@@ -66,17 +65,20 @@ export class HauweiUploadToCCM extends AbstractTaskPlugin {
     const { BasicCredentials } = await import("@huaweicloud/huaweicloud-sdk-core");
     const { ClientBuilder } = await import("@huaweicloud/huaweicloud-sdk-core/ClientBuilder.js");
     //@ts-ignore
-    const {HuaweiCcmClient}  = await import("./ccm-client.js")
+    const { HuaweiCcmClient } = await import("./ccm-client.js");
 
     //恢复华为云把log4j的config改了的问题
     resetLogConfigure();
 
     const credentials = new BasicCredentials().withAk(access.accessKeyId).withSk(access.accessKeySecret);
-    const client = new ClientBuilder((hcClient) => {
+    const client = new ClientBuilder(hcClient => {
       return new HuaweiCcmClient(hcClient);
-    }).withCredential(credentials).withEndpoint("https://scm.cn-north-4.myhuaweicloud.com").build();
+    })
+      .withCredential(credentials)
+      .withEndpoint("https://scm.cn-north-4.myhuaweicloud.com")
+      .build();
     return {
-      client
+      client,
     };
   }
 }

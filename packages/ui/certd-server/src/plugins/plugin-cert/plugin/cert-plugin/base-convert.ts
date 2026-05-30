@@ -1,9 +1,8 @@
 import { AbstractTaskPlugin, FileItem, IContext, Step, TaskInput, TaskOutput } from "@certd/pipeline";
 import dayjs from "dayjs";
 import type { CertInfo } from "./acme.js";
-import { CertReader,CertConverter, EVENT_CERT_APPLY_SUCCESS } from "@certd/plugin-lib";
+import { CertReader, CertConverter, EVENT_CERT_APPLY_SUCCESS } from "@certd/plugin-lib";
 import JSZip from "jszip";
-
 
 export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
   @TaskInput({
@@ -16,7 +15,7 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
       placeholder: "请输入证书域名/IP，比如：foo.com , *.foo.com , *.sub.foo.com , *.bar.com , 123.123.123.123",
       tokenSeparators: [",", " ", "，", "、", "|"],
       search: true,
-      pager:true,
+      pager: true,
     },
     rules: [{ type: "domains" }],
     required: true,

@@ -1,15 +1,7 @@
-import {
-  AbstractTaskPlugin,
-  IsTaskPlugin,
-  Pager,
-  PageSearch,
-  pluginGroups,
-  RunStrategy,
-  TaskInput
-} from "@certd/pipeline";
-import {CertApplyPluginNames, CertInfo} from "@certd/plugin-cert";
-import {createCertDomainGetterInputDefine, createRemoteSelectInputDefine} from "@certd/plugin-lib";
-import {KsyunAccess} from "../access.js";
+import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
+import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { KsyunAccess } from "../access.js";
 
 @IsTaskPlugin({
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名
@@ -23,9 +15,9 @@ import {KsyunAccess} from "../access.js";
   default: {
     //默认值配置照抄即可
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class KsyunRefreshCDNCert extends AbstractTaskPlugin {
@@ -35,8 +27,8 @@ export class KsyunRefreshCDNCert extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
     // required: true, // 必填
   })
   cert!: CertInfo;
@@ -49,9 +41,9 @@ export class KsyunRefreshCDNCert extends AbstractTaskPlugin {
     title: "金山云授权",
     component: {
       name: "access-selector",
-      type: "ksyun" //固定授权类型
+      type: "ksyun", //固定授权类型
     },
-    required: true //必填
+    required: true, //必填
   })
   accessId!: string;
   //
@@ -62,14 +54,13 @@ export class KsyunRefreshCDNCert extends AbstractTaskPlugin {
       helper: "要更新的金山云CDN证书id，如果这里没有，请先给cdn域名手动绑定一次证书",
       action: KsyunRefreshCDNCert.prototype.onGetCertList.name,
       pager: false,
-      search: false
+      search: false,
     })
   )
   certList!: string[];
 
   //插件实例化时执行的方法
-  async onInstance() {
-  }
+  async onInstance() {}
 
   //插件执行方法
   async execute(): Promise<void> {
@@ -81,14 +72,14 @@ export class KsyunRefreshCDNCert extends AbstractTaskPlugin {
 
       const oldCert = await access.getCert({
         client,
-        certId:certId
-      })
+        certId: certId,
+      });
 
       await access.updateCert({
         client,
         certId: certId,
         certName: oldCert.CertificateName,
-        cert: this.cert
+        cert: this.cert,
       });
       this.logger.info(`----------- 更新证书${certId}成功`);
     }
@@ -100,17 +91,14 @@ export class KsyunRefreshCDNCert extends AbstractTaskPlugin {
     const access = await this.getAccess<KsyunAccess>(this.accessId);
 
     const client = await access.getCdnClient();
-    const pager = new Pager(data)
-    const res = await access.getCertList({client,
-      pageNo: pager.pageNo ,
-      pageSize: pager.pageSize
-    })
-    const list = res.Certificates
+    const pager = new Pager(data);
+    const res = await access.getCertList({ client, pageNo: pager.pageNo, pageSize: pager.pageSize });
+    const list = res.Certificates;
     if (!list || list.length === 0) {
       throw new Error("没有找到证书，请先在控制台手动上传一次证书");
     }
 
-    const total  = res.TotalCount
+    const total = res.TotalCount;
 
     /**
      * certificate-id
@@ -121,14 +109,14 @@ export class KsyunRefreshCDNCert extends AbstractTaskPlugin {
       return {
         label: `${item.CertificateName}<${item.CertificateId}-${item.ConfigDomainNames}>`,
         value: item.CertificateId,
-        domain: item.ConfigDomainNames
+        domain: item.ConfigDomainNames,
       };
     });
     return {
       list: this.ctx.utils.options.buildGroupOptions(options, this.certDomains),
       total: total,
       pageNo: pager.pageNo,
-      pageSize: pager.pageSize
+      pageSize: pager.pageSize,
     };
   }
 }

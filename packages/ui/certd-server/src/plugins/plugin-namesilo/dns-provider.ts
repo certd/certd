@@ -1,6 +1,6 @@
-import { PageRes, PageSearch } from '@certd/pipeline';
-import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
-import { NamesiloAccess } from './access.js';
+import { PageRes, PageSearch } from "@certd/pipeline";
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { NamesiloAccess } from "./access.js";
 
 export type NamesiloRecord = {
   record_id: string;
@@ -8,12 +8,12 @@ export type NamesiloRecord = {
 
 // 这里通过IsDnsProvider注册一个dnsProvider
 @IsDnsProvider({
-  name: 'namesilo',
-  title: 'namesilo',
-  desc: 'namesilo dns provider',
-  icon: 'simple-icons:namesilo',
+  name: "namesilo",
+  title: "namesilo",
+  desc: "namesilo dns provider",
+  icon: "simple-icons:namesilo",
   // 这里是对应的 cloudflare的access类型名称
-  accessType: 'namesilo',
+  accessType: "namesilo",
 })
 export class NamesiloDnsProvider extends AbstractDnsProvider<NamesiloRecord> {
   access!: NamesiloAccess;
@@ -28,7 +28,6 @@ export class NamesiloDnsProvider extends AbstractDnsProvider<NamesiloRecord> {
     return true;
   }
 
-
   /**
    * 创建dns解析记录，用于验证域名所有权
    */
@@ -40,10 +39,10 @@ export class NamesiloDnsProvider extends AbstractDnsProvider<NamesiloRecord> {
      * domain: 'example.com'
      */
     const { fullRecord, hostRecord, value, type, domain } = options;
-    this.logger.info('添加域名解析：', fullRecord, value, type, domain);
+    this.logger.info("添加域名解析：", fullRecord, value, type, domain);
 
     //domain=namesilo.com&rrtype=A&rrhost=test&rrvalue=55.55.55.55&rrttl=7207
-    const record: any = await this.access.doRequest('/api/dnsAddRecord', {
+    const record: any = await this.access.doRequest("/api/dnsAddRecord", {
       domain,
       rrtype: type,
       rrhost: hostRecord,
@@ -62,15 +61,15 @@ export class NamesiloDnsProvider extends AbstractDnsProvider<NamesiloRecord> {
   async removeRecord(options: RemoveRecordOptions<NamesiloRecord>): Promise<void> {
     const { fullRecord, value } = options.recordReq;
     const record = options.recordRes;
-    this.logger.info('删除域名解析：', fullRecord, value);
+    this.logger.info("删除域名解析：", fullRecord, value);
     if (!record && !record.record_id) {
-      this.logger.info('record为空，不执行删除');
+      this.logger.info("record为空，不执行删除");
       return;
     }
     //这里调用删除txt dns解析记录接口
 
     const recordId = record.record_id;
-    await this.access.doRequest('/api/dnsDeleteRecord', {
+    await this.access.doRequest("/api/dnsDeleteRecord", {
       domain: options.recordReq.domain,
       rrid: recordId,
     });
@@ -78,7 +77,7 @@ export class NamesiloDnsProvider extends AbstractDnsProvider<NamesiloRecord> {
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
-     return await this.access.getDomainListPage(req);
+    return await this.access.getDomainListPage(req);
   }
 }
 

@@ -1,20 +1,20 @@
-import {Inject, Provide, Scope, ScopeEnum} from "@midwayjs/core";
-import {BaseService, Constants, isEnterprise, NeedSuiteException, NeedVIPException, SysSettingsService} from "@certd/lib-server";
-import {InjectEntityModel} from "@midwayjs/typeorm";
-import {In, Repository} from "typeorm";
-import {SiteInfoEntity} from "../entity/site-info.js";
-import {siteTester} from "./site-tester.js";
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { BaseService, Constants, isEnterprise, NeedSuiteException, NeedVIPException, SysSettingsService } from "@certd/lib-server";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { In, Repository } from "typeorm";
+import { SiteInfoEntity } from "../entity/site-info.js";
+import { siteTester } from "./site-tester.js";
 import dayjs from "dayjs";
-import {logger, utils} from "@certd/basic";
-import {PeerCertificate} from "tls";
-import {NotificationService} from "../../pipeline/service/notification-service.js";
-import {isComm, isPlus} from "@certd/plus-core";
-import {UserSuiteService} from "@certd/commercial-core";
-import {UserSettingsService} from "../../mine/service/user-settings-service.js";
-import {UserSiteMonitorSetting} from "../../mine/service/models.js";
-import {SiteIpService} from "./site-ip-service.js";
-import {SiteIpEntity} from "../entity/site-ip.js";
-import {Cron} from "../../cron/cron.js";
+import { logger, utils } from "@certd/basic";
+import { PeerCertificate } from "tls";
+import { NotificationService } from "../../pipeline/service/notification-service.js";
+import { isComm, isPlus } from "@certd/plus-core";
+import { UserSuiteService } from "@certd/commercial-core";
+import { UserSettingsService } from "../../mine/service/user-settings-service.js";
+import { UserSiteMonitorSetting } from "../../mine/service/models.js";
+import { SiteIpService } from "./site-ip-service.js";
+import { SiteIpEntity } from "../entity/site-ip.js";
+import { Cron } from "../../cron/cron.js";
 import { dnsContainer } from "./dns-custom.js";
 import { merge } from "lodash-es";
 import { JobHistoryService } from "./job-history-service.js";
@@ -23,7 +23,7 @@ import { UserService } from "../../sys/authority/service/user-service.js";
 import { ProjectService } from "../../sys/enterprise/service/project-service.js";
 
 @Provide()
-@Scope(ScopeEnum.Request, {allowDowngrade: true})
+@Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class SiteInfoService extends BaseService<SiteInfoEntity> {
   @InjectEntityModel(SiteInfoEntity)
   repository: Repository<SiteInfoEntity>;
@@ -87,18 +87,18 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     }
 
     await this.checkMonitorLimit(data.userId);
-   
+
     data.disabled = false;
 
     const found = await this.repository.findOne({
       where: {
         domain: data.domain,
         userId: data.userId,
-        httpsPort: data.httpsPort || 443
-      }
+        httpsPort: data.httpsPort || 443,
+      },
     });
     if (found) {
-      return {id: found.id};
+      return { id: found.id };
     }
 
     return await super.add(data);
@@ -113,11 +113,11 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   async getUserMonitorCount(userId: number) {
-    if (userId==null) {
+    if (userId == null) {
       throw new Error("userId is required");
     }
     return await this.repository.count({
-      where: {userId}
+      where: { userId },
     });
   }
 
@@ -132,18 +132,18 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       throw new Error("站点域名不能为空");
     }
 
-    const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId,site.projectId, UserSiteMonitorSetting);
-    const dnsServer = setting.dnsServer
-    let customDns = null
+    const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId, site.projectId, UserSiteMonitorSetting);
+    const dnsServer = setting.dnsServer;
+    let customDns = null;
     if (dnsServer && dnsServer.length > 0) {
-      customDns = dnsContainer.getDns(dnsServer) as any
+      customDns = dnsContainer.getDns(dnsServer) as any;
     }
 
     try {
       await this.update({
         id: site.id,
         checkStatus: "checking",
-        lastCheckTime: dayjs().valueOf()
+        lastCheckTime: dayjs().valueOf(),
       });
       const res = await siteTester.test({
         host: site.domain,
@@ -177,56 +177,56 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         certExpiresTime: dayjs(expires).valueOf(),
         lastCheckTime: dayjs().valueOf(),
         error: null,
-        checkStatus: "ok"
+        checkStatus: "ok",
       };
-      logger.info(`测试站点成功：id=${updateData.id},site=${site.name},certEffectiveTime=${updateData.certEffectiveTime},expiresTime=${updateData.certExpiresTime}`)
+      logger.info(`测试站点成功：id=${updateData.id},site=${site.name},certEffectiveTime=${updateData.certEffectiveTime},expiresTime=${updateData.certExpiresTime}`);
       if (site.ipCheck) {
-        delete updateData.checkStatus
+        delete updateData.checkStatus;
       }
       await this.update(updateData);
 
-      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId,site.projectId, UserSiteMonitorSetting)
+      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(site.userId, site.projectId, UserSiteMonitorSetting);
 
-      merge(site,updateData)
+      merge(site, updateData);
       //检查ip
-      await this.checkAllIp(site,retryTimes,setting);
+      await this.checkAllIp(site, retryTimes, setting);
 
       if (!notify) {
         return;
       }
 
       try {
-        await this.sendExpiresNotify(site.id,setting);
+        await this.sendExpiresNotify(site.id, setting);
       } catch (e) {
         logger.error("send notify error", e);
       }
     } catch (e) {
       logger.error("check site error", e);
-      let message = e.message
-      if (!message){
-        message = e.code 
+      let message = e.message;
+      if (!message) {
+        message = e.code;
       }
-      if (e.errors &&e.errors.length > 0){
-        message += "\n"+e.errors.map((item:any)=>item.message).join("\n")
+      if (e.errors && e.errors.length > 0) {
+        message += "\n" + e.errors.map((item: any) => item.message).join("\n");
       }
       await this.update({
         id: site.id,
         checkStatus: "error",
         lastCheckTime: dayjs().valueOf(),
-        error: message
+        error: message,
       });
       if (!notify) {
         return;
       }
       try {
-        await this.sendCheckErrorNotify(site.id,false,setting);
+        await this.sendCheckErrorNotify(site.id, false, setting);
       } catch (e) {
         logger.error("send notify error", e);
       }
     }
   }
 
-  async checkAllIp(site: SiteInfoEntity,retryTimes = null,setting: UserSiteMonitorSetting) {
+  async checkAllIp(site: SiteInfoEntity, retryTimes = null, setting: UserSiteMonitorSetting) {
     if (!site.ipCheck) {
       return;
     }
@@ -248,11 +248,11 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
           errorMessage += `${item.ipAddress}：${item.error}； \n`;
         } else if (item.certExpiresTime !== certExpiresTime && !site.ipIgnoreCoherence) {
           errorMessage += `${item.ipAddress}：与主站证书过期时间不一致(主站：${dayjs(certExpiresTime).format("YYYY-MM-DD")}，IP：${dayjs(item.certExpiresTime).format("YYYY-MM-DD")})； \n`;
-        } else if (isExpired){
+        } else if (isExpired) {
           errorMessage += `${item.ipAddress}：证书已过期(过期时间：${dayjs(item.certExpiresTime).format("YYYY-MM-DD")})； \n`;
-        }else if (isWillExpired){
+        } else if (isWillExpired) {
           errorMessage += `${item.ipAddress}：证书将过期(过期时间：${dayjs(item.certExpiresTime).format("YYYY-MM-DD")})； \n`;
-        }else {
+        } else {
           errorCount--;
         }
       }
@@ -262,7 +262,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
           id: site.id,
           checkStatus: "ok",
           error: "",
-          ipErrorCount: 0
+          ipErrorCount: 0,
         });
         return;
       }
@@ -270,20 +270,19 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         id: site.id,
         checkStatus: "error",
         error: errorMessage,
-        ipErrorCount: errorCount
+        ipErrorCount: errorCount,
       });
       try {
-        await this.sendCheckErrorNotify(site.id, true,setting);
+        await this.sendCheckErrorNotify(site.id, true, setting);
       } catch (e) {
         logger.error("send notify error", e);
       }
     };
     if (site.ipSyncAuto === false) {
-      await this.siteIpService.checkAll(site, retryTimes,onFinished);
-    }else{
-      await this.siteIpService.syncAndCheck(site, retryTimes,onFinished);
+      await this.siteIpService.checkAll(site, retryTimes, onFinished);
+    } else {
+      await this.siteIpService.syncAndCheck(site, retryTimes, onFinished);
     }
-  
   }
 
   /**
@@ -298,13 +297,13 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       throw new Error("站点不存在");
     }
 
-    this.doCheck(site, notify, retryTimes).catch((err) => {
+    this.doCheck(site, notify, retryTimes).catch(err => {
       logger.error("check site error", err);
     });
-    return
+    return;
   }
 
-  async sendCheckErrorNotify(siteId: number, fromIpCheck = false,setting: UserSiteMonitorSetting) {
+  async sendCheckErrorNotify(siteId: number, fromIpCheck = false, setting: UserSiteMonitorSetting) {
     const site = await this.info(siteId);
     const url = await this.notificationService.getBindUrl("#/certd/monitor/site");
     // 发邮件
@@ -319,13 +318,13 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
           content: `站点名称： ${site.name} \n站点域名： ${site.domain} \n错误信息：${site.error}`,
           errorMessage: site.error,
           notificationType: "siteCheckError",
-        }
+        },
       },
       site.userId
     );
   }
 
-  async sendExpiresNotify(siteId: number,setting: UserSiteMonitorSetting) {
+  async sendExpiresNotify(siteId: number, setting: UserSiteMonitorSetting) {
     const tipDays = setting?.certValidDays || 10;
     const site = await this.info(siteId);
     const expires = site.certExpiresTime;
@@ -345,7 +344,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
             url,
             errorMessage: "站点证书即将过期",
             notificationType: "siteCertExpireRemind",
-          }
+          },
         },
         site.userId
       );
@@ -362,7 +361,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
             url,
             errorMessage: "站点证书已过期",
             notificationType: "siteCertExpireRemind",
-          }
+          },
         },
         site.userId
       );
@@ -370,45 +369,44 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   async checkList(sites: SiteInfoEntity[]) {
-    const cache = {}
-    const getFromCache = async (userId: number,projectId?: number) =>{
-      const key = `${userId}_${projectId??""}`
+    const cache = {};
+    const getFromCache = async (userId: number, projectId?: number) => {
+      const key = `${userId}_${projectId ?? ""}`;
       if (cache[key]) {
         return cache[key];
       }
-      const setting =  await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId,projectId, UserSiteMonitorSetting)
-      cache[key] = setting
+      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId, projectId, UserSiteMonitorSetting);
+      cache[key] = setting;
       return setting;
-    }
+    };
     for (const site of sites) {
-      const setting = await getFromCache(site.userId,site.projectId)
-      let retryTimes = setting?.retryTimes
-      this.doCheck(site,true,retryTimes).catch(e => {
+      const setting = await getFromCache(site.userId, site.projectId);
+      const retryTimes = setting?.retryTimes;
+      this.doCheck(site, true, retryTimes).catch(e => {
         logger.error(`检查站点证书失败，${site.domain}`, e.message);
       });
       await utils.sleep(100);
     }
   }
 
-  async getSetting(userId: number,projectId?: number) {
-    return await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId,projectId, UserSiteMonitorSetting);
+  async getSetting(userId: number, projectId?: number) {
+    return await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId, projectId, UserSiteMonitorSetting);
   }
 
-  async saveSetting(userId: number,projectId: number, bean: UserSiteMonitorSetting) {
-    await this.userSettingsService.saveSetting(userId,projectId, bean);
-    if(bean.cron){
+  async saveSetting(userId: number, projectId: number, bean: UserSiteMonitorSetting) {
+    await this.userSettingsService.saveSetting(userId, projectId, bean);
+    if (bean.cron) {
       //注册job
-      await this.registerSiteMonitorJob(userId,projectId);
-    }else{
-      this.clearSiteMonitorJob(userId,projectId);
+      await this.registerSiteMonitorJob(userId, projectId);
+    } else {
+      this.clearSiteMonitorJob(userId, projectId);
     }
   }
 
   async ipCheckChange(req: { id: any; ipCheck: any }) {
-
     await this.update({
       id: req.id,
-      ipCheck: req.ipCheck
+      ipCheck: req.ipCheck,
     });
     if (req.ipCheck) {
       const site = await this.info(req.id);
@@ -419,7 +417,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   async disabledChange(req: { disabled: any; id: any }) {
     await this.update({
       id: req.id,
-      disabled: req.disabled
+      disabled: req.disabled,
     });
     if (!req.disabled) {
       const site = await this.info(req.id);
@@ -427,7 +425,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     }
   }
 
-  async doImport(req: { text: string; userId: number,groupId?:number,projectId?:number }) {
+  async doImport(req: { text: string; userId: number; groupId?: number; projectId?: number }) {
     if (!req.text) {
       throw new Error("text is required");
     }
@@ -459,7 +457,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       if (arr.length > 2) {
         name = arr[2] || domain;
       }
-      let remark:string = "";
+      let remark = "";
       if (arr.length > 3) {
         remark = arr[3] || "";
       }
@@ -471,7 +469,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
         userId: req.userId,
         remark,
         groupId: req.groupId,
-        projectId: req.projectId
+        projectId: req.projectId,
       });
     }
 
@@ -485,77 +483,77 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     await batchAdd(list);
   }
 
-  clearSiteMonitorJob(userId: number,projectId?: number) {
-    this.cron.remove(`siteMonitor_${userId}_${projectId||""}`);
+  clearSiteMonitorJob(userId: number, projectId?: number) {
+    this.cron.remove(`siteMonitor_${userId}_${projectId || ""}`);
   }
 
-  async registerSiteMonitorJob(userId?: number,projectId?: number) {
-    const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId,projectId, UserSiteMonitorSetting);
+  async registerSiteMonitorJob(userId?: number, projectId?: number) {
+    const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId, projectId, UserSiteMonitorSetting);
     if (!setting.cron) {
       return;
     }
     //注册个人的 或项目的
     this.cron.register({
-      name: `siteMonitor_${userId}_${projectId||""}`,
+      name: `siteMonitor_${userId}_${projectId || ""}`,
       cron: setting.cron,
-      job: () => this.triggerJobOnce(userId,projectId),
+      job: () => this.triggerJobOnce(userId, projectId),
     });
   }
 
-  async triggerCommonJob(){
+  async triggerCommonJob() {
     //遍历用户
-    const userIds = await this.userService.getAllUserIds()
+    const userIds = await this.userService.getAllUserIds();
     for (const userId of userIds) {
-      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId,null,UserSiteMonitorSetting)
-      if(setting && setting.cron){
+      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId, null, UserSiteMonitorSetting);
+      if (setting && setting.cron) {
         //该用户有自定义检查时间，跳过公共job
-        continue
+        continue;
       }
-      await this.triggerJobOnce(userId)
+      await this.triggerJobOnce(userId);
     }
 
     //遍历项目
-    const projectIds = await this.projectService.getAllProjectIds()
+    const projectIds = await this.projectService.getAllProjectIds();
     for (const projectId of projectIds) {
-      const userId = Constants.enterpriseUserId
-      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId,projectId,UserSiteMonitorSetting)
-      if(setting && setting.cron){
+      const userId = Constants.enterpriseUserId;
+      const setting = await this.userSettingsService.getSetting<UserSiteMonitorSetting>(userId, projectId, UserSiteMonitorSetting);
+      if (setting && setting.cron) {
         //该项目有自定义检查时间，跳过公共job
-        continue
+        continue;
       }
-      await this.triggerJobOnce(userId,projectId)
+      await this.triggerJobOnce(userId, projectId);
     }
   }
 
-  async triggerJobOnce(userId?:number,projectId?:number) {
-    if(userId==null){
+  async triggerJobOnce(userId?: number, projectId?: number) {
+    if (userId == null) {
       throw new Error("userId is required");
     }
-    const query:any = { disabled: false };
+    const query: any = { disabled: false };
     query.userId = userId;
-    if(projectId){
+    if (projectId) {
       query.projectId = projectId;
     }
     const siteCount = await this.repository.count({
       where: query,
     });
     if (siteCount === 0) {
-      logger.info(`用户/项目[${userId}_${projectId||""}]没有站点证书需要检查`)
+      logger.info(`用户/项目[${userId}_${projectId || ""}]没有站点证书需要检查`);
       return;
     }
 
-    logger.info(`站点证书检查开始执行[${userId}_${projectId||""}]`);
-    
-    let jobEntity :Partial<JobHistoryEntity> = null;
-    
-    jobEntity  =  {
+    logger.info(`站点证书检查开始执行[${userId}_${projectId || ""}]`);
+
+    let jobEntity: Partial<JobHistoryEntity> = null;
+
+    jobEntity = {
       userId,
       projectId,
-      type:"siteCertMonitor",
-      title: '站点证书检查',
-      result:"start",
-      startAt:new Date().getTime(),
-    }
+      type: "siteCertMonitor",
+      title: "站点证书检查",
+      result: "start",
+      startAt: new Date().getTime(),
+    };
     await this.jobHistoryService.add(jobEntity);
     let offset = 0;
     const limit = 50;
@@ -575,17 +573,17 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       await this.checkList(records);
     }
 
-    logger.info(`站点证书检查完成[${userId}_${projectId||""}]`);
+    logger.info(`站点证书检查完成[${userId}_${projectId || ""}]`);
     await this.jobHistoryService.update({
       id: jobEntity.id,
       result: "done",
-      content:`共检查${count}个站点`,
-      endAt:new Date().getTime(),
-      updateTime:new Date(),
+      content: `共检查${count}个站点`,
+      endAt: new Date().getTime(),
+      updateTime: new Date(),
     });
   }
 
-  async batchDelete(ids: number[], userId: number,projectId?:number): Promise<void> {
+  async batchDelete(ids: number[], userId: number, projectId?: number): Promise<void> {
     await this.repository.delete({
       id: In(ids),
       userId,

@@ -1,9 +1,9 @@
-import { ALL, Body, Controller, Inject, Post, Provide, RequestIP } from '@midwayjs/core';
-import { BaseController, Constants, SysSettingsService } from '@certd/lib-server';
-import { RegisterType, UserService } from '../../../modules/sys/authority/service/user-service.js';
-import { CodeService } from '../../../modules/basic/service/code-service.js';
-import { checkComm, checkPlus } from '@certd/plus-core';
-import { InviteService } from '@certd/commercial-core';
+import { ALL, Body, Controller, Inject, Post, Provide, RequestIP } from "@midwayjs/core";
+import { BaseController, Constants, SysSettingsService } from "@certd/lib-server";
+import { RegisterType, UserService } from "../../../modules/sys/authority/service/user-service.js";
+import { CodeService } from "../../../modules/basic/service/code-service.js";
+import { checkComm, checkPlus } from "@certd/plus-core";
+import { InviteService } from "@certd/commercial-core";
 
 export type RegisterReq = {
   type: RegisterType;
@@ -14,14 +14,14 @@ export type RegisterReq = {
   phoneCode?: string;
 
   validateCode: string;
-  captcha:any;
+  captcha: any;
   inviteCode?: string;
 };
 
 /**
  */
 @Provide()
-@Controller('/api/')
+@Controller("/api/")
 export class RegisterController extends BaseController {
   @Inject()
   userService: UserService;
@@ -34,7 +34,7 @@ export class RegisterController extends BaseController {
   @Inject()
   inviteService: InviteService;
 
-  @Post('/register', { description: Constants.per.guest })
+  @Post("/register", { description: Constants.per.guest })
   public async register(
     @Body(ALL)
     body: RegisterReq,
@@ -42,22 +42,22 @@ export class RegisterController extends BaseController {
   ) {
     const sysPublicSettings = await this.sysSettingsService.getPublicSettings();
     if (sysPublicSettings.registerEnabled === false) {
-      throw new Error('当前站点已禁止自助注册功能');
+      throw new Error("当前站点已禁止自助注册功能");
     }
 
-    if (body.username && ["admin","certd"].includes(body.username) ) {
-      throw new Error('用户名不能为保留字');
+    if (body.username && ["admin", "certd"].includes(body.username)) {
+      throw new Error("用户名不能为保留字");
     }
 
-    if (body.type === 'username') {
+    if (body.type === "username") {
       if (sysPublicSettings.usernameRegisterEnabled === false) {
-        throw new Error('当前站点已禁止用户名注册功能');
+        throw new Error("当前站点已禁止用户名注册功能");
       }
       if (!body.username) {
-        throw new Error('用户名不能为空');
+        throw new Error("用户名不能为空");
       }
 
-      await this.codeService.checkCaptcha(body.captcha,{remoteIp});
+      await this.codeService.checkCaptcha(body.captcha, { remoteIp });
       const registerUser = {
         username: body.username,
         password: body.password,
@@ -66,9 +66,9 @@ export class RegisterController extends BaseController {
         await this.inviteService.bindInvitee({ manager: txManager }, { inviteeUserId: registerUser.id, inviteCode: body.inviteCode });
       });
       return this.ok(newUser);
-    } else if (body.type === 'mobile') {
+    } else if (body.type === "mobile") {
       if (sysPublicSettings.mobileRegisterEnabled === false) {
-        throw new Error('当前站点已禁止手机号注册功能');
+        throw new Error("当前站点已禁止手机号注册功能");
       }
       checkComm();
       //验证短信验证码
@@ -88,9 +88,9 @@ export class RegisterController extends BaseController {
         await this.inviteService.bindInvitee({ manager: txManager }, { inviteeUserId: registerUser.id, inviteCode: body.inviteCode });
       });
       return this.ok(newUser);
-    } else if (body.type === 'email') {
+    } else if (body.type === "email") {
       if (sysPublicSettings.emailRegisterEnabled === false) {
-        throw new Error('当前站点已禁止Email注册功能');
+        throw new Error("当前站点已禁止Email注册功能");
       }
       checkPlus();
       this.codeService.checkEmailCode({

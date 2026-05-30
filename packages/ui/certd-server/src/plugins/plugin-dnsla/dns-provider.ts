@@ -9,12 +9,12 @@ export type DnslaRecord = {
 
 // 这里通过IsDnsProvider注册一个dnsProvider
 @IsDnsProvider({
-  name: 'dnsla',
-  title: 'dns.la',
-  desc: 'dns.la',
-  icon: 'arcticons:dns-changer-3',
+  name: "dnsla",
+  title: "dns.la",
+  desc: "dns.la",
+  icon: "arcticons:dns-changer-3",
   // 这里是对应的 cloudflare的access类型名称
-  accessType: 'dnsla',
+  accessType: "dnsla",
 })
 export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
   access!: DnslaAccess;
@@ -24,9 +24,7 @@ export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
     this.access = this.ctx.access as DnslaAccess;
   }
 
-
-
-  async getDomainDetail(domain:string){
+  async getDomainDetail(domain: string) {
     /**
      * 请求示例
      * GET /api/domain?id=85371689655342080&domain=test.com HTTP/1.1
@@ -51,8 +49,8 @@ export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
      */
 
     const url = `/api/domain?domain=${domain}`;
-    const res = await this.access.doRequestApi(url, null, 'get');
-    return res.data
+    const res = await this.access.doRequestApi(url, null, "get");
+    return res.data;
   }
 
   /**
@@ -66,12 +64,11 @@ export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
      * domain: 'example.com'
      */
     const { fullRecord, value, type, domain } = options;
-    this.logger.info('添加域名解析：', fullRecord, value, type, domain);
+    this.logger.info("添加域名解析：", fullRecord, value, type, domain);
 
     const domainDetail = await this.getDomainDetail(domain);
     const domainId = domainDetail.id;
-    this.logger.info('获取domainId成功:', domainId);
-
+    this.logger.info("获取domainId成功:", domainId);
 
     // 给domain下创建txt类型的dns解析记录，fullRecord
     /**
@@ -107,14 +104,13 @@ export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
     const res = await this.access.doRequestApi(url, {
       domainId: domainId,
       type: 16,
-      host: fullRecord.replace(`.${domain}`, ''),
+      host: fullRecord.replace(`.${domain}`, ""),
       data: value,
       ttl: 60,
     });
 
     return res.data;
   }
-
 
   /**
    *  删除dns解析记录,清理申请痕迹
@@ -123,9 +119,9 @@ export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
   async removeRecord(options: RemoveRecordOptions<DnslaRecord>): Promise<void> {
     const { fullRecord, value } = options.recordReq;
     const record = options.recordRes;
-    this.logger.info('删除域名解析：', fullRecord, value);
+    this.logger.info("删除域名解析：", fullRecord, value);
     if (!record) {
-      this.logger.info('record为空，不执行删除');
+      this.logger.info("record为空，不执行删除");
       return;
     }
     //这里调用删除txt dns解析记录接口
@@ -137,14 +133,13 @@ export class DnslaDnsProvider extends AbstractDnsProvider<DnslaRecord> {
      */
     const recordId = record.id;
     const url = `/api/record?id=${recordId}`;
-    await this.access.doRequestApi(url, null, 'delete');
+    await this.access.doRequestApi(url, null, "delete");
     this.logger.info(`删除域名解析成功:fullRecord=${fullRecord},value=${value}`);
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
     return await this.access.getDomainListPage(req);
   }
- 
 }
 
 //实例化这个provider，将其自动注册到系统中

@@ -1,1 +1,1 @@
-export * from './dnspod-access.js';
+export * from "./dnspod-access.js";

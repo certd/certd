@@ -12,12 +12,7 @@ export class HuaweiCcmClient {
 
   /**
    */
-  importCertificate(req: {
-    name: string,
-    certificate: string,
-    private_key: string,
-    duplicate_check: boolean,
-  }) {
+  importCertificate(req: { name: string; certificate: string; private_key: string; duplicate_check: boolean }) {
     const options: any = {
       method: "POST",
       url: "/v3/scm/certificates/import",
@@ -25,7 +20,7 @@ export class HuaweiCcmClient {
       queryParams: {},
       contentType: "application/json",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       /**
        * name
@@ -48,9 +43,8 @@ export class HuaweiCcmClient {
        * duplicate_check
        */
       data: {
-        ...req
-      }
-
+        ...req,
+      },
     };
     // @ts-ignore
     options["responseHeaders"] = ["X-Request-Id"];

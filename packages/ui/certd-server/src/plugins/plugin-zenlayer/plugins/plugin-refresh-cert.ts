@@ -15,9 +15,9 @@ import { ZenlayerAccess } from "../access.js";
   default: {
     //默认值配置照抄即可
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class ZenlayerRefreshCert extends AbstractTaskPlugin {
@@ -27,8 +27,8 @@ export class ZenlayerRefreshCert extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
     // required: true, // 必填
   })
   cert!: CertInfo;
@@ -41,9 +41,9 @@ export class ZenlayerRefreshCert extends AbstractTaskPlugin {
     title: "Zenlayer授权",
     component: {
       name: "access-selector",
-      type: "zenlayer" //固定授权类型
+      type: "zenlayer", //固定授权类型
     },
-    required: true //必填
+    required: true, //必填
   })
   accessId!: string;
   //
@@ -53,14 +53,13 @@ export class ZenlayerRefreshCert extends AbstractTaskPlugin {
       title: "证书ID列表",
       helper: "要更新的Zenlayer证书ID列表",
 
-      action: ZenlayerRefreshCert.prototype.onGetCertList.name
+      action: ZenlayerRefreshCert.prototype.onGetCertList.name,
     })
   )
   certList!: string[];
 
   //插件实例化时执行的方法
-  async onInstance() {
-  }
+  async onInstance() {}
 
   //插件执行方法
   async execute(): Promise<void> {
@@ -70,7 +69,7 @@ export class ZenlayerRefreshCert extends AbstractTaskPlugin {
       await this.updateCert({
         access: access,
         certId: certId,
-        cert: this.cert
+        cert: this.cert,
       });
       this.logger.info(`刷新证书${certId}成功`);
       await this.ctx.utils.sleep(1000);
@@ -79,8 +78,8 @@ export class ZenlayerRefreshCert extends AbstractTaskPlugin {
     this.logger.info("部署完成");
   }
 
-  async updateCert(req:{access:ZenlayerAccess,certId:string, cert: CertInfo}){
-    const {access,certId, cert} = req;
+  async updateCert(req: { access: ZenlayerAccess; certId: string; cert: CertInfo }) {
+    const { access, certId, cert } = req;
     // ModifyCertificate
     await access.doRequest({
       url: "/api/v2/cdn",
@@ -94,7 +93,7 @@ certificateKey
         certificateId: certId,
         certificateContent: cert.crt,
         certificateKey: cert.key,
-      }
+      },
     });
   }
   async onGetCertList(req: PageSearch = {}) {
@@ -102,12 +101,10 @@ certificateKey
 
     const pageNo = req.pageNo ?? 1;
     const pageSize = req.pageSize ?? 100;
-    const res = await access.getCertList(
-      {
-        pageNo: pageNo,
-        pageSize: pageSize
-      }
-    );
+    const res = await access.getCertList({
+      pageNo: pageNo,
+      pageSize: pageSize,
+    });
     const total = res.totalCount;
     const list = res.dataSet || [];
     if (!list || list.length === 0) {
@@ -122,17 +119,16 @@ certificateKey
       return {
         label: `${item.certificateLabel}<${item.certificateId}-${item.common}>`,
         value: `${item.certificateId}`,
-        domain: item.sans
+        domain: item.sans,
       };
     });
     return {
       list: this.ctx.utils.options.buildGroupOptions(options, this.certDomains),
       total: total,
       pageNo: pageNo,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
-
 }
 
 //实例化一下，注册插件

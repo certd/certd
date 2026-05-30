@@ -15,9 +15,9 @@ import { UCloudAccess } from "../access.js";
   default: {
     //默认值配置照抄即可
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class UCloudDeployToCDN extends AbstractTaskPlugin {
@@ -27,11 +27,11 @@ export class UCloudDeployToCDN extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames, ":UCloudCertId:"]
-    }
+      from: [...CertApplyPluginNames, ":UCloudCertId:"],
+    },
     // required: true, // 必填
   })
-  cert!: CertInfo | { type: string, id: number, name: string };
+  cert!: CertInfo | { type: string; id: number; name: string };
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
@@ -41,9 +41,9 @@ export class UCloudDeployToCDN extends AbstractTaskPlugin {
     title: "UCloud授权",
     component: {
       name: "access-selector",
-      type: "ucloud" //固定授权类型
+      type: "ucloud", //固定授权类型
     },
-    required: true //必填
+    required: true, //必填
   })
   accessId!: string;
   //
@@ -53,35 +53,33 @@ export class UCloudDeployToCDN extends AbstractTaskPlugin {
       title: "域名列表",
       helper: "要更新的UCloud域名列表",
 
-      action: UCloudDeployToCDN.prototype.onGetDomainList.name
+      action: UCloudDeployToCDN.prototype.onGetDomainList.name,
     })
   )
   domainList!: string[];
 
   //插件实例化时执行的方法
-  async onInstance() {
-  }
+  async onInstance() {}
 
   //插件执行方法
   async execute(): Promise<void> {
     const access = await this.getAccess<UCloudAccess>(this.accessId);
-    let certType = "ussl"
-    let certId = 0
-    let certName = this.appendTimeSuffix("certd")
+    const certType = "ussl";
+    let certId = 0;
+    let certName = this.appendTimeSuffix("certd");
     // @ts-ignore
     if (this.cert?.id) {
       //从上一步传过来的ssl证书
       // @ts-ignore
-      certId = this.cert.id
+      certId = this.cert.id;
       // @ts-ignore
-      certName = this.cert.name
-
+      certName = this.cert.name;
     } else {
       const cert = await access.SslUploadCert({
-        cert: this.cert as CertInfo
+        cert: this.cert as CertInfo,
       });
-      certId = cert.id
-      certName = cert.name
+      certId = cert.id;
+      certName = cert.name;
     }
 
     for (const item of this.domainList) {
@@ -91,7 +89,7 @@ export class UCloudDeployToCDN extends AbstractTaskPlugin {
         certName: certName,
         domain: item,
         certId: certId,
-        certType: certType
+        certType: certType,
       });
       this.logger.info(`----------- 更新域名证书${item}成功`);
     }
@@ -99,16 +97,13 @@ export class UCloudDeployToCDN extends AbstractTaskPlugin {
     this.logger.info("部署完成");
   }
 
-
-  async deployToCdn(req: { access: any, domain: string, certId: number, certType: string, certName: string }) {
-    const { access, domain, certId, certType, certName } = req
+  async deployToCdn(req: { access: any; domain: string; certId: number; certType: string; certName: string }) {
+    const { access, domain, certId, certType, certName } = req;
 
     const domainsRes = await access.invoke({
-      "Action": "GetUcdnDomainConfig",
-      "ProjectId": access.projectId,
-      "Domain": [
-        domain
-      ]
+      Action: "GetUcdnDomainConfig",
+      ProjectId: access.projectId,
+      Domain: [domain],
     });
 
     const domainList = domainsRes.DomainList || [];
@@ -122,20 +117,19 @@ export class UCloudDeployToCDN extends AbstractTaskPlugin {
     let httpsStatusCn = domainConf.HttpsStatusCn;
     if (httpsStatusAbroad === "disable" && httpsStatusCn === "disable") {
       this.logger.info(`原CDN域名HTTPS未开启，将开启国内加速`);
-      httpsStatusCn = "enable"
+      httpsStatusCn = "enable";
     }
-
 
     const body: any = {
-      "Action": "UpdateUcdnDomainHttpsConfigV2",
-      "DomainId": domainId,
-      "CertName": certName,
-      "CertId": certId,
-      "CertType": certType,
-      EnableHttp2: domainConf.EnableHttp2 ||"0",
+      Action: "UpdateUcdnDomainHttpsConfigV2",
+      DomainId: domainId,
+      CertName: certName,
+      CertId: certId,
+      CertType: certType,
+      EnableHttp2: domainConf.EnableHttp2 || "0",
       RedirectHttp2Https: domainConf.RedirectHttp2Https || "0",
-      TlsVersion: domainConf.TlsVersion || "tlsv1.0,tlsv1.1,tlsv1.2,tlsv1.3"
-    }
+      TlsVersion: domainConf.TlsVersion || "tlsv1.0,tlsv1.1,tlsv1.2,tlsv1.3",
+    };
     if (httpsStatusAbroad === "enable") {
       body.HttpsStatusAbroad = httpsStatusAbroad;
     }
@@ -152,12 +146,10 @@ export class UCloudDeployToCDN extends AbstractTaskPlugin {
 
     const pageNo = req.pageNo ?? 1;
     const pageSize = req.pageSize ?? 100;
-    const res = await access.CdnDominList(
-      {
-        PageNo: pageNo,
-        PageSize: pageSize
-      }
-    );
+    const res = await access.CdnDominList({
+      PageNo: pageNo,
+      PageSize: pageSize,
+    });
     const total = res.TotalCount;
     const list = res.DomainInfoList || [];
     if (!list || list.length === 0) {
@@ -172,17 +164,16 @@ export class UCloudDeployToCDN extends AbstractTaskPlugin {
       return {
         label: `${item.Domain}<${item.DomainId}>`,
         value: `${item.Domain}`,
-        domain: item.Domain
+        domain: item.Domain,
       };
     });
     return {
       list: this.ctx.utils.options.buildGroupOptions(options, this.certDomains),
       total: total,
       pageNo: pageNo,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
-
 }
 
 //实例化一下，注册插件

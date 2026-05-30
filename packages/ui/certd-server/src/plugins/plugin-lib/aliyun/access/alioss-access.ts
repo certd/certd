@@ -27,7 +27,7 @@ export class AliossAccess extends BaseAccess {
       vModel: "value",
       type: "access",
       typeName: "alioss",
-      action: AliossAccess.prototype.onGetRegionList.name
+      action: AliossAccess.prototype.onGetRegionList.name,
     },
     required: true,
   })
@@ -49,8 +49,7 @@ export class AliossAccess extends BaseAccess {
   })
   bucket!: string;
 
-
-  onGetRegionList(){
+  onGetRegionList() {
     return {
       list: [
         { value: "oss-cn-hangzhou", label: "华东1（杭州）" },
@@ -82,8 +81,8 @@ export class AliossAccess extends BaseAccess {
         { value: "oss-eu-west-1", label: "英国（伦敦）" },
         { value: "oss-me-east-1", label: "阿联酋（迪拜）①" },
         { value: "oss-rg-china-mainland", label: "无地域属性（中国内地）" },
-      ]
-    }
+      ],
+    };
   }
 
   async onGetBucketList() {

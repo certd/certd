@@ -12,7 +12,7 @@ export type SpaceshipRecord = {
   desc: "Spaceship 域名解析",
   icon: "clarity:plugin-line",
   accessType: "spaceship",
-  order: 99
+  order: 99,
 })
 export class SpaceshipProvider extends AbstractDnsProvider<SpaceshipRecord> {
   access!: SpaceshipAccess;
@@ -38,10 +38,10 @@ export class SpaceshipProvider extends AbstractDnsProvider<SpaceshipRecord> {
             type: type,
             value: value,
             name: hostRecord,
-            ttl: 60
-          }
-        ]
-      }
+            ttl: 60,
+          },
+        ],
+      },
     });
 
     return recordRes;
@@ -59,9 +59,9 @@ export class SpaceshipProvider extends AbstractDnsProvider<SpaceshipRecord> {
         {
           type: recordReq.type,
           value: recordReq.value,
-          name: recordReq.hostRecord
-        }
-      ]
+          name: recordReq.hostRecord,
+        },
+      ],
     });
 
     this.logger.info("删除域名解析成功:", JSON.stringify(recordReq));
@@ -69,15 +69,15 @@ export class SpaceshipProvider extends AbstractDnsProvider<SpaceshipRecord> {
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
     const res = await this.access.GetDomainList(req);
-    
+
     const list = res.list.map((item: any) => ({
       domain: item.name,
-      id: item.name
+      id: item.name,
     }));
-    
+
     return {
       total: res.total || 0,
-      list: list || []
+      list: list || [],
     };
   }
 }

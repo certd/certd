@@ -91,11 +91,10 @@ export class YidunDeployToCDNPlugin extends AbstractTaskPlugin {
     });
   }
 
-  
   private async updateByDomain(cert: CertInfo) {
     //查询站点
     const siteUrl = "http://user.yiduncdn.com/v1/sites";
-    const access = this.access
+    const access = this.access;
     const res = await access.doRequest(siteUrl, "GET", { domain: this.domain });
     if (res.data.length === 0) {
       throw new Error(`未找到域名相关站点:${this.domain}`);

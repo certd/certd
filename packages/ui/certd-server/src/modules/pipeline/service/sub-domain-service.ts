@@ -1,9 +1,9 @@
-import {Inject, Provide, Scope, ScopeEnum} from '@midwayjs/core';
-import {BaseService, SysSettingsService} from '@certd/lib-server';
-import {InjectEntityModel} from '@midwayjs/typeorm';
-import {Repository} from 'typeorm';
-import {SubDomainEntity} from '../entity/sub-domain.js';
-import {EmailService} from '../../basic/service/email-service.js';
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { BaseService, SysSettingsService } from "@certd/lib-server";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { Repository } from "typeorm";
+import { SubDomainEntity } from "../entity/sub-domain.js";
+import { EmailService } from "../../basic/service/email-service.js";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -22,8 +22,8 @@ export class SubDomainService extends BaseService<SubDomainEntity> {
     return this.repository;
   }
 
-  async getListByUserId(userId:number, projectId?: number):Promise<string[]>{
-    if (userId==null) {
+  async getListByUserId(userId: number, projectId?: number): Promise<string[]> {
+    if (userId == null) {
       return [];
     }
     const list = await this.find({
@@ -34,16 +34,16 @@ export class SubDomainService extends BaseService<SubDomainEntity> {
       },
     });
 
-    return list.map(item=>item.domain);
+    return list.map(item => item.domain);
   }
 
   async add(bean: SubDomainEntity) {
-    const {domain, userId, projectId} = bean;
+    const { domain, userId, projectId } = bean;
     if (!domain) {
-      throw new Error('域名不能为空');
+      throw new Error("域名不能为空");
     }
-    if (userId==null) {
-      throw new Error('用户ID不能为空');
+    if (userId == null) {
+      throw new Error("用户ID不能为空");
     }
     const exist = await this.repository.findOne({
       where: {
@@ -52,10 +52,9 @@ export class SubDomainService extends BaseService<SubDomainEntity> {
         projectId,
       },
     });
-   if (exist) {
-     throw new Error('域名已存在');
-   }
-   return await super.add(bean)
+    if (exist) {
+      throw new Error("域名已存在");
+    }
+    return await super.add(bean);
   }
-
 }

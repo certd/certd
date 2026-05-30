@@ -66,7 +66,7 @@ export class OnePanelDeployToWebsitePlugin extends AbstractTaskPlugin {
       watches: ["accessId"],
       helper: "要更新的1Panel证书id，选择授权之后，从下拉框中选择\nIP需要加白名单，如果是同一台机器部署的，可以试试172.16.0.0/12",
       required: true,
-      uploadCert: {}
+      uploadCert: {},
     })
   )
   sslIds!: string[];
@@ -196,7 +196,7 @@ export class OnePanelDeployToWebsitePlugin extends AbstractTaskPlugin {
         page: 1,
         pageSize: 99999,
         order: "ascending",
-        orderBy: "expire_date"
+        orderBy: "expire_date",
       },
       currentNode: this.currentNode,
     });
@@ -215,11 +215,11 @@ export class OnePanelDeployToWebsitePlugin extends AbstractTaskPlugin {
     return this.ctx.utils.options.buildGroupOptions(list, this.certDomains);
   }
 
-  async onUploadCert(data: { pipelineId: string, certName: string }) {
+  async onUploadCert(data: { pipelineId: string; certName: string }) {
     if (!this.access) {
       throw new Error("请先选择1panel授权");
     }
-    const certInfoGetter = await this.ctx.serviceGetter.get<ICertInfoGetter>("certInfoGetter")
+    const certInfoGetter = await this.ctx.serviceGetter.get<ICertInfoGetter>("certInfoGetter");
     const cert = await certInfoGetter.getByPipelineId(Number(data.pipelineId));
 
     const client = new OnePanelClient({
@@ -243,7 +243,6 @@ export class OnePanelDeployToWebsitePlugin extends AbstractTaskPlugin {
       },
       currentNode: this.currentNode,
     });
-
   }
 }
 new OnePanelDeployToWebsitePlugin();

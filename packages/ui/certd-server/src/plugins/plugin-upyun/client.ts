@@ -3,10 +3,10 @@ import { HttpClient, ILogger } from "@certd/basic";
 import { CertInfo } from "@certd/plugin-cert";
 
 export type UpyunClientOptions = {
-  access: UpyunAccess
+  access: UpyunAccess;
   logger: ILogger;
-  http: HttpClient
-}
+  http: HttpClient;
+};
 
 export class UpyunClient {
   opts: UpyunClientOptions;
@@ -15,7 +15,7 @@ export class UpyunClient {
     this.opts = opts;
   }
 
-  async uploadCert(cookie: string,cert:CertInfo) {
+  async uploadCert(cookie: string, cert: CertInfo) {
     // https://console.upyun.com/api/https/certificate/
     const res = await this.doRequest({
       cookie: cookie,
@@ -23,8 +23,8 @@ export class UpyunClient {
       method: "POST",
       data: {
         certificate: cert.crt,
-        private_key: cert.key
-      }
+        private_key: cert.key,
+      },
     });
     if (!res.data?.result) {
       throw new Error("upload cert failed： " + JSON.stringify(res.data));
@@ -34,51 +34,45 @@ export class UpyunClient {
   }
 
   async getLoginToken() {
-    const access = this.opts.access
+    const access = this.opts.access;
     const http = this.opts.http;
     const res = await http.request({
       url: "https://console.upyun.com/accounts/signin/",
       method: "POST",
       data: {
         username: access.username,
-        password: access.password
+        password: access.password,
       },
       logRes: false,
-      returnOriginRes: true
+      returnOriginRes: true,
     });
-    if (res.data?.errors?.length > 0 ) {
+    if (res.data?.errors?.length > 0) {
       throw new Error(JSON.stringify(res.data.msg));
     }
-    if (res.data?.data?.error_code ) {
-      throw new Error( "登录失败:"+res.data.data.message);
+    if (res.data?.data?.error_code) {
+      throw new Error("登录失败:" + res.data.data.message);
     }
     const cookie = res.headers["set-cookie"];
     return cookie;
   }
 
-  async doRequest(req: {
-    cookie: string,
-    url: string,
-    method: string,
-    data: any
-  }) {
-
+  async doRequest(req: { cookie: string; url: string; method: string; data: any }) {
     const res = await this.opts.http.request({
       url: req.url,
       method: req.method,
       data: req.data,
       headers: {
-        Cookie: req.cookie
-      }
+        Cookie: req.cookie,
+      },
     });
     let errorMessage = null;
     if (res.msg?.errors?.length > 0) {
       errorMessage = JSON.stringify(res.msg);
     }
-    if(res.data?.error_code){
+    if (res.data?.error_code) {
       errorMessage = res.data?.message;
     }
-    if(errorMessage){
+    if (errorMessage) {
       if (errorMessage.includes("domain has been bound to this certificate")) {
         return res;
       }
@@ -86,5 +80,4 @@ export class UpyunClient {
     }
     return res;
   }
-
 }

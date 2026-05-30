@@ -50,7 +50,6 @@ export class LuckyAccess extends BaseAccess {
   })
   openToken = "";
 
-
   @AccessInput({
     title: "测试",
     component: {
@@ -65,7 +64,6 @@ export class LuckyAccess extends BaseAccess {
     await this.getCertList();
     return "ok";
   }
-
 
   async doRequest(req: { urlPath: string; data: any; method?: string }) {
     const { urlPath, data, method } = req;
@@ -103,7 +101,7 @@ export class LuckyAccess extends BaseAccess {
       method: "GET",
     });
     const list = res.list || [];
-    return list
+    return list;
   }
 }
 

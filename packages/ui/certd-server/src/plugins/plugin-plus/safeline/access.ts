@@ -64,9 +64,8 @@ export class SafelineAccess extends BaseAccess {
       data: {},
     });
     const nodes = res?.nodes || [];
-    return nodes
+    return nodes;
   }
-
 
   async doRequest(config: HttpRequestConfig<any>) {
     config.baseURL = this.baseUrl;
@@ -82,7 +81,6 @@ export class SafelineAccess extends BaseAccess {
     }
     throw new Error(res.msg);
   }
-
 }
 
 new SafelineAccess();

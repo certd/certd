@@ -1,11 +1,11 @@
-import { cache, isDev, randomNumber, simpleNanoId } from '@certd/basic';
-import { AccessService, AccessSysGetter, CodeErrorException, SysSettingsService } from '@certd/lib-server';
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { ISmsService } from '../sms/api.js';
-import { SmsServiceFactory } from '../sms/factory.js';
+import { cache, isDev, randomNumber, simpleNanoId } from "@certd/basic";
+import { AccessService, AccessSysGetter, CodeErrorException, SysSettingsService } from "@certd/lib-server";
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { ISmsService } from "../sms/api.js";
+import { SmsServiceFactory } from "../sms/factory.js";
 import { CaptchaService } from "./captcha-service.js";
-import { EmailService } from './email-service.js';
-import { CaptchaRequest } from '../../../plugins/plugin-captcha/api.js';
+import { EmailService } from "./email-service.js";
+import { CaptchaRequest } from "../../../plugins/plugin-captcha/api.js";
 
 // {data: '<svg.../svg>', text: 'abcd'}
 /**
@@ -24,32 +24,30 @@ export class CodeService {
   @Inject()
   captchaService: CaptchaService;
 
-
-
-  async checkCaptcha(body:any,req:CaptchaRequest) {
-    return await this.captchaService.doValidate({form:body,req});
+  async checkCaptcha(body: any, req: CaptchaRequest) {
+    return await this.captchaService.doValidate({ form: body, req });
   }
   /**
    */
   async sendSmsCode(
-    phoneCode = '86',
+    phoneCode = "86",
     mobile: string,
     opts?: {
-      duration?: number,
-      verificationType?: string,
-      verificationCodeLength?: number,
-    },
+      duration?: number;
+      verificationType?: string;
+      verificationCodeLength?: number;
+    }
   ) {
     if (!mobile) {
-      throw new Error('手机号不能为空');
+      throw new Error("手机号不能为空");
     }
 
-    const verificationCodeLength =  Math.floor(Math.max(Math.min(opts?.verificationCodeLength || 4, 8), 4));
+    const verificationCodeLength = Math.floor(Math.max(Math.min(opts?.verificationCodeLength || 4, 8), 4));
     const duration = Math.floor(Math.max(Math.min(opts?.duration || 5, 15), 1));
 
     const sysSettings = await this.sysSettingsService.getPrivateSettings();
     if (!sysSettings.sms?.config?.accessId) {
-      throw new Error('当前站点还未配置短信');
+      throw new Error("当前站点还未配置短信");
     }
     const smsType = sysSettings.sms.type;
     const smsConfig = sysSettings.sms.config;
@@ -66,7 +64,7 @@ export class CodeService {
       phoneCode,
     });
 
-    const key = this.buildSmsCodeKey(phoneCode, mobile,  opts?.verificationType);
+    const key = this.buildSmsCodeKey(phoneCode, mobile, opts?.verificationType);
     cache.set(key, smsCode, {
       ttl: duration * 60 * 1000, //5分钟
     });
@@ -81,38 +79,38 @@ export class CodeService {
   async sendEmailCode(
     email: string,
     opts?: {
-      duration?: number,
-      verificationType?: string,
-      verificationCodeLength?: number,
-    },
+      duration?: number;
+      verificationType?: string;
+      verificationCodeLength?: number;
+    }
   ) {
     if (!email) {
-      throw new Error('Email不能为空');
+      throw new Error("Email不能为空");
     }
 
-
-    const verificationCodeLength =  Math.floor(Math.max(Math.min(opts?.verificationCodeLength || 4, 8), 4));
+    const verificationCodeLength = Math.floor(Math.max(Math.min(opts?.verificationCodeLength || 4, 8), 4));
     const duration = Math.floor(Math.max(Math.min(opts?.duration || 5, 15), 1));
 
     const code = randomNumber(verificationCodeLength);
-   
+
     const templateData = {
-      code, duration, 
+      code,
+      duration,
       title: "验证码",
-      content:`您的验证码是${code}，请勿泄露`,
-       notificationType: "registerCode"
-    }
-    if (opts?.verificationType === 'forgotPassword') {
-       templateData.title = '找回密码';
-      templateData.notificationType = "forgotPassword"
+      content: `您的验证码是${code}，请勿泄露`,
+      notificationType: "registerCode",
+    };
+    if (opts?.verificationType === "forgotPassword") {
+      templateData.title = "找回密码";
+      templateData.notificationType = "forgotPassword";
     }
     await this.emailService.sendByTemplate({
-        type: templateData.notificationType,
-        data: templateData,
-        receivers: [email],
+      type: templateData.notificationType,
+      data: templateData,
+      receivers: [email],
     });
 
-    const key = this.buildEmailCodeKey(email,opts?.verificationType);
+    const key = this.buildEmailCodeKey(email, opts?.verificationType);
     cache.set(key, code, {
       ttl: duration * 60 * 1000, //5分钟
     });
@@ -122,44 +120,43 @@ export class CodeService {
   /**
    * checkSms
    */
-  async checkSmsCode(opts: { mobile: string; phoneCode: string; smsCode: string;  verificationType?: string; throwError: boolean; maxErrorCount?: number }) {
+  async checkSmsCode(opts: { mobile: string; phoneCode: string; smsCode: string; verificationType?: string; throwError: boolean; maxErrorCount?: number }) {
     const key = this.buildSmsCodeKey(opts.phoneCode, opts.mobile, opts.verificationType);
-    return this.checkValidateCode("sms",key, opts.smsCode, opts.throwError, opts.maxErrorCount);
-
+    return this.checkValidateCode("sms", key, opts.smsCode, opts.throwError, opts.maxErrorCount);
   }
 
   buildSmsCodeKey(phoneCode: string, mobile: string, verificationType?: string) {
-    return ['sms', verificationType, phoneCode, mobile].filter(item => !!item).join(':');
+    return ["sms", verificationType, phoneCode, mobile].filter(item => !!item).join(":");
   }
 
   buildEmailCodeKey(email: string, verificationType?: string) {
-    return ['email', verificationType, email].filter(item => !!item).join(':');
+    return ["email", verificationType, email].filter(item => !!item).join(":");
   }
-  checkValidateCode(type:string,key: string, userCode: string, throwError = true, maxErrorCount = 3) {
+  checkValidateCode(type: string, key: string, userCode: string, throwError = true, maxErrorCount = 3) {
     // 记录异常次数key
-    if (isDev() && userCode==="1234567") {
+    if (isDev() && userCode === "1234567") {
       return true;
     }
-    const err_num_key = key + ':err_num';
+    const err_num_key = key + ":err_num";
     //验证邮件验证码
     const code = cache.get(key);
     if (code == null || code !== userCode) {
       let maxRetryCount = false;
       if (!!code && maxErrorCount > 0) {
-        const err_num = cache.get(err_num_key) || 0
-        if(err_num >= maxErrorCount - 1) {
+        const err_num = cache.get(err_num_key) || 0;
+        if (err_num >= maxErrorCount - 1) {
           maxRetryCount = true;
           cache.delete(key);
           cache.delete(err_num_key);
         } else {
           cache.set(err_num_key, err_num + 1, {
-            ttl: 30 * 60 * 1000
+            ttl: 30 * 60 * 1000,
           });
         }
       }
       if (throwError) {
-        const label = type ==='sms' ? '手机' : '邮箱';
-        throw new CodeErrorException(!maxRetryCount ? `${label}验证码错误`: `${label}验证码错误请获取新的验证码`);
+        const label = type === "sms" ? "手机" : "邮箱";
+        throw new CodeErrorException(!maxRetryCount ? `${label}验证码错误` : `${label}验证码错误请获取新的验证码`);
       }
       return false;
     }
@@ -169,8 +166,8 @@ export class CodeService {
   }
 
   checkEmailCode(opts: { validateCode: string; email: string; verificationType?: string; throwError: boolean; maxErrorCount?: number }) {
-    const key = this.buildEmailCodeKey(opts.email,  opts.verificationType);
-    return this.checkValidateCode('email',key, opts.validateCode, opts.throwError, opts.maxErrorCount);
+    const key = this.buildEmailCodeKey(opts.email, opts.verificationType);
+    return this.checkValidateCode("email", key, opts.validateCode, opts.throwError, opts.maxErrorCount);
   }
 
   compile(templateString: string) {
@@ -183,11 +180,10 @@ export class CodeService {
     );
   }
 
-
-  buildValidationValueKey(code:string) {
+  buildValidationValueKey(code: string) {
     return `validationValue:${code}`;
   }
-  setValidationValue(value:any) {
+  setValidationValue(value: any) {
     const randomCode = simpleNanoId(12);
     const key = this.buildValidationValueKey(randomCode);
     cache.set(key, value, {
@@ -195,7 +191,7 @@ export class CodeService {
     });
     return randomCode;
   }
-  getValidationValue(code:string) {
+  getValidationValue(code: string) {
     return cache.get(this.buildValidationValueKey(code));
   }
 }

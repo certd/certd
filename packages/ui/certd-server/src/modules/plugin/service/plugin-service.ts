@@ -15,21 +15,21 @@ import fs from "fs";
 import path from "path";
 
 export type PluginImportReq = {
-  content: string,
+  content: string;
   override?: boolean;
 };
 
- async function importer(modulePath: string) {
+async function importer(modulePath: string) {
   if (!modulePath) {
-    throw new Error("modules path 不能为空")
+    throw new Error("modules path 不能为空");
   }
   if (!modulePath.startsWith("/@/")) {
-    return await import(modulePath)
+    return await import(modulePath);
   }
-  modulePath = modulePath.replace("/@/", "")
+  modulePath = modulePath.replace("/@/", "");
   //替换@为相对地址
-  modulePath = `../../../${modulePath}`
-  return await import(modulePath)
+  modulePath = `../../../${modulePath}`;
+  return await import(modulePath);
 }
 
 @Provide()
@@ -48,14 +48,12 @@ export class PluginService extends BaseService<PluginEntity> {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async page(pageReq: PageReq<PluginEntity>) {
-
     if (pageReq.query.type && pageReq.query.type !== "builtIn") {
       return await super.page(pageReq);
     }
     //仅查询内置插件
     const offset = pageReq.page.offset;
     const limit = pageReq.page.limit;
-
 
     const builtInList = await this.getBuiltInEntityList();
 
@@ -66,11 +64,11 @@ export class PluginService extends BaseService<PluginEntity> {
       records: data,
       total: builtInList.length,
       offset: offset,
-      limit: limit
+      limit: limit,
     };
   }
 
-  async getEnabledBuildInGroup(opts?: { isSimple?: boolean, withSetting?: boolean }) {
+  async getEnabledBuildInGroup(opts?: { isSimple?: boolean; withSetting?: boolean }) {
     const groups = this.builtInPluginService.getGroups();
     if (opts?.isSimple) {
       for (const key in groups) {
@@ -81,7 +79,6 @@ export class PluginService extends BaseService<PluginEntity> {
       }
     }
 
-
     if (!isComm()) {
       return groups;
     }
@@ -91,14 +88,14 @@ export class PluginService extends BaseService<PluginEntity> {
       select: {
         id: true,
         name: true,
-        sysSetting: true
+        sysSetting: true,
       },
       where: {
-        sysSetting: Not(IsNull())
-      }
-    })
+        sysSetting: Not(IsNull()),
+      },
+    });
     //合并插件配置
-    const pluginSettingMap: any = {}
+    const pluginSettingMap: any = {};
     for (const item of settingPlugins) {
       if (!item.sysSetting) {
         continue;
@@ -113,17 +110,16 @@ export class PluginService extends BaseService<PluginEntity> {
       for (const item of group.plugins) {
         const pluginSetting = pluginSettingMap[item.name];
         if (pluginSetting) {
-          item.sysSetting = pluginSetting
+          item.sysSetting = pluginSetting;
         }
       }
     }
 
-
     //排除禁用的
     const list = await this.list({
       query: {
-        disabled: true
-      }
+        disabled: true,
+      },
     });
     const disabledNames = list.map(it => it.name);
     for (const key in groups) {
@@ -145,8 +141,8 @@ export class PluginService extends BaseService<PluginEntity> {
     const list = await this.list({
       query: {
         type: "builtIn",
-        disabled: true
-      }
+        disabled: true,
+      },
     });
     const disabledNames = list.map(it => it.name);
 
@@ -159,8 +155,8 @@ export class PluginService extends BaseService<PluginEntity> {
     const builtInList = this.builtInPluginService.getList();
     const list = await this.list({
       query: {
-        type: "builtIn"
-      }
+        type: "builtIn",
+      },
     });
 
     const records: PluginEntity[] = [];
@@ -177,7 +173,7 @@ export class PluginService extends BaseService<PluginEntity> {
         type: "builtIn",
         icon: item.icon,
         desc: item.desc,
-        group: item.group
+        group: item.group,
       });
       records.push(record);
     }
@@ -215,12 +211,11 @@ export class PluginService extends BaseService<PluginEntity> {
    * @param param 数据
    */
   async add(param: any) {
-
     const old = await this.repository.findOne({
       where: {
         name: param.name,
-        author: param.author
-      }
+        author: param.author,
+      },
     });
 
     if (old) {
@@ -248,11 +243,11 @@ export class PluginService extends BaseService<PluginEntity> {
 
     const res = await super.add({
       ...param,
-      ...plugin
+      ...plugin,
     });
 
     await this.registerById(res.id);
-    return res
+    return res;
   }
 
   async registerById(id: any) {
@@ -276,20 +271,20 @@ export class PluginService extends BaseService<PluginEntity> {
     }
     let name = item.name;
     if (item.author && !item.name.startsWith(`${item.author}/`)) {
-      name = `${item.author}/${item.name}`
+      name = `${item.author}/${item.name}`;
     }
     if (item.pluginType === "access") {
-      accessRegistry.unRegister(name)
+      accessRegistry.unRegister(name);
     } else if (item.pluginType === "deploy") {
-      pluginRegistry.unRegister(name)
+      pluginRegistry.unRegister(name);
     } else if (item.pluginType === "dnsProvider") {
-      dnsProviderRegistry.unRegister(name)
+      dnsProviderRegistry.unRegister(name);
     } else if (item.pluginType === "notification") {
-      notificationRegistry.unRegister(name)
-    }else if (item.pluginType === "addon") {
-      addonRegistry.unRegister(name)
+      notificationRegistry.unRegister(name);
+    } else if (item.pluginType === "addon") {
+      addonRegistry.unRegister(name);
     } else {
-      logger.warn(`不支持的插件类型：${item.pluginType}`)
+      logger.warn(`不支持的插件类型：${item.pluginType}`);
     }
   }
 
@@ -297,8 +292,8 @@ export class PluginService extends BaseService<PluginEntity> {
     const old = await this.repository.findOne({
       where: {
         name: param.name,
-        author: param.author
-      }
+        author: param.author,
+      },
     });
 
     if (old && old.id !== param.id) {
@@ -309,22 +304,21 @@ export class PluginService extends BaseService<PluginEntity> {
     const res = await super.update(param);
 
     await this.registerById(param.id);
-    return res
+    return res;
   }
 
   async compile(code: string) {
     const ts = await import("typescript");
     return ts.transpileModule(code, {
-      compilerOptions: { module: ts.ModuleKind.ESNext }
+      compilerOptions: { module: ts.ModuleKind.ESNext },
     }).outputText;
   }
 
-
   private async getPluginClassFromFile(item: any) {
     const scriptFilePath = item.scriptFilePath;
-    const res = await import((`../../..${scriptFilePath}`))
-    const classNames = Object.keys(res)
-    return res[classNames[classNames.length - 1]]
+    const res = await import(`../../..${scriptFilePath}`);
+    const classNames = Object.keys(res);
+    return res[classNames[classNames.length - 1]];
   }
 
   async getPluginClassFromDb(pluginName: string) {
@@ -341,14 +335,13 @@ export class PluginService extends BaseService<PluginEntity> {
     const info = await this.find({
       where: {
         name: name,
-        author: author
-      }
+        author: author,
+      },
     });
     if (info && info.length > 0) {
       const plugin = info[0];
       try {
-        const AsyncFunction = Object.getPrototypeOf(async () => {
-        }).constructor;
+        const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
         // const script = await this.compile(plugin.content);
         const script = plugin.content;
         const getPluginClass = new AsyncFunction("_ctx", script);
@@ -357,7 +350,6 @@ export class PluginService extends BaseService<PluginEntity> {
         logger.error("编译插件失败:", e);
         throw e;
       }
-
     }
     throw new Error(`插件${pluginName}不存在`);
   }
@@ -367,11 +359,11 @@ export class PluginService extends BaseService<PluginEntity> {
    */
   async registerFromDb() {
     const res = await this.list({
-      buildQuery: ((bq) => {
+      buildQuery: bq => {
         bq.andWhere("type != :type", {
-          type: "builtIn"
+          type: "builtIn",
         });
-      })
+      },
     });
 
     for (const item of res) {
@@ -382,7 +374,7 @@ export class PluginService extends BaseService<PluginEntity> {
   async registerFromLocal(localDir: string) {
     //scan path
     const files = fs.readdirSync(localDir);
-    let list = []
+    let list = [];
     for (const file of files) {
       if (!file.endsWith(".yaml")) {
         continue;
@@ -390,7 +382,6 @@ export class PluginService extends BaseService<PluginEntity> {
       const item = yaml.load(fs.readFileSync(path.join(localDir, file), "utf8"));
 
       list.push(item);
-
     }
     //排序
     list = list.sort((a, b) => {
@@ -408,7 +399,7 @@ export class PluginService extends BaseService<PluginEntity> {
     const item = {
       ...plugin,
       ...metadata,
-      ...extra
+      ...extra,
     };
     delete item.metadata;
     delete item.content;
@@ -416,7 +407,7 @@ export class PluginService extends BaseService<PluginEntity> {
     if (item.author && !item.name.startsWith(`${item.author}/`)) {
       item.name = item.author + "/" + item.name;
     }
-    let name = item.name
+    let name = item.name;
     if (item.addonType) {
       name = item.addonType + ":" + name;
     }
@@ -444,7 +435,7 @@ export class PluginService extends BaseService<PluginEntity> {
         } else {
           return await this.getPluginClassFromDb(name);
         }
-      }
+      },
     });
   }
 
@@ -466,35 +457,34 @@ export class PluginService extends BaseService<PluginEntity> {
       ...info,
       ...metadata,
       ...extra,
-      content
+      content,
     };
 
     return yaml.dump(plugin) as string;
   }
 
   async importPlugin(req: PluginImportReq) {
-
     const loaded = yaml.load(req.content);
     if (!loaded) {
       throw new Error("插件内容不能为空");
     }
-    delete loaded.id
+    delete loaded.id;
 
     const old = await this.repository.findOne({
       where: {
         name: loaded.name,
-        author: loaded.author
-      }
+        author: loaded.author,
+      },
     });
 
     const metadata = {
       input: loaded.input,
-      output: loaded.output
+      output: loaded.output,
     };
     const extra = {
       dependPlugins: loaded.dependPlugins,
       default: loaded.default,
-      showRunStrategy: loaded.showRunStrategy
+      showRunStrategy: loaded.showRunStrategy,
     };
 
     const pluginEntity = {
@@ -502,7 +492,7 @@ export class PluginService extends BaseService<PluginEntity> {
       metadata: yaml.dump(metadata),
       extra: yaml.dump(extra),
       content: loaded.content,
-      disabled: false
+      disabled: false,
     };
     if (!pluginEntity.pluginType) {
       throw new Error(`插件类型不能为空`);
@@ -521,7 +511,7 @@ export class PluginService extends BaseService<PluginEntity> {
     //update
     await this.update(pluginEntity);
     return {
-      id: pluginEntity.id
+      id: pluginEntity.id,
     };
   }
   async deleteByIds(ids: any[]) {
@@ -531,5 +521,4 @@ export class PluginService extends BaseService<PluginEntity> {
       await this.delete(id);
     }
   }
-
 }

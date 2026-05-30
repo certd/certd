@@ -23,7 +23,7 @@ describe("VolcengineDeployToVKE", () => {
       request: async (req: any) => {
         requestBody = req.body;
         return { Result: { Id: "kc-123" } };
-      }
+      },
     });
 
     assert.equal(kubeconfigId, "kc-123");
@@ -35,23 +35,15 @@ describe("VolcengineDeployToVKE", () => {
     plugin.clusterId = "cc1234567890123456789";
     plugin.kubeconfigType = "Public";
 
-    const kubeconfig = [
-      "apiVersion: v1",
-      "clusters:",
-      "- cluster:",
-      "    server: https://example.com",
-      "  name: vke",
-      "contexts: []",
-      "current-context: vke"
-    ].join("\n");
+    const kubeconfig = ["apiVersion: v1", "clusters:", "- cluster:", "    server: https://example.com", "  name: vke", "contexts: []", "current-context: vke"].join("\n");
 
     const result = await (plugin as any).getKubeconfig(
       {
         request: async () => ({
           Result: {
-            Items: [{ Id: "kc-123", Kubeconfig: Buffer.from(kubeconfig).toString("base64") }]
-          }
-        })
+            Items: [{ Id: "kc-123", Kubeconfig: Buffer.from(kubeconfig).toString("base64") }],
+          },
+        }),
       },
       "kc-123"
     );
@@ -66,11 +58,10 @@ describe("VolcengineDeployToVKE", () => {
 
     const message = (plugin as any).formatK8sError({
       status: "Failure",
-      message:
-        'secrets "aaaa" is forbidden: User "2100656669-kd7ubde6lsvqbdgsa40t0" cannot get resource "secrets" in API group "" in the namespace "default"',
+      message: 'secrets "aaaa" is forbidden: User "2100656669-kd7ubde6lsvqbdgsa40t0" cannot get resource "secrets" in API group "" in the namespace "default"',
       reason: "Forbidden",
       details: { name: "aaaa", kind: "secrets" },
-      code: 403
+      code: 403,
     });
 
     assert.match(message, /VKE集群RBAC权限不足/);
@@ -89,8 +80,8 @@ describe("VolcengineDeployToVKE", () => {
       () =>
         (plugin as any).getTargetSecretNames({
           getIngressList: async () => ({
-            items: [{ metadata: { name: "app-web" } }, { metadata: { name: "api-web" } }]
-          })
+            items: [{ metadata: { name: "app-web" } }, { metadata: { name: "api-web" } }],
+          }),
         }),
       /当前命名空间可用Ingress:app-web,api-web/
     );

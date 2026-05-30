@@ -1,18 +1,18 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import type { EmailSend, EmailSendByTemplateReq } from '@certd/pipeline';
-import { IEmailService } from '@certd/pipeline';
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import type { EmailSend, EmailSendByTemplateReq } from "@certd/pipeline";
+import { IEmailService } from "@certd/pipeline";
 
-import { logger } from '@certd/basic';
-import { isComm, isPlus } from '@certd/plus-core';
+import { logger } from "@certd/basic";
+import { isComm, isPlus } from "@certd/plus-core";
 
-import nodemailer from 'nodemailer';
-import { SendMailOptions } from 'nodemailer';
-import { UserSettingsService } from '../../mine/service/user-settings-service.js';
-import { AddonService, PlusService, SysEmailConf, SysInstallInfo, SysSettingsService, SysSiteInfo } from '@certd/lib-server';
-import { getEmailSettings } from '../../sys/settings/fix.js';
+import nodemailer from "nodemailer";
+import { SendMailOptions } from "nodemailer";
+import { UserSettingsService } from "../../mine/service/user-settings-service.js";
+import { AddonService, PlusService, SysEmailConf, SysInstallInfo, SysSettingsService, SysSiteInfo } from "@certd/lib-server";
+import { getEmailSettings } from "../../sys/settings/fix.js";
 import { UserEmailSetting } from "../../mine/service/models.js";
-import { AddonGetterService } from '../../pipeline/service/addon-getter-service.js';
-import { EmailContent, ITemplateProvider } from '../../../plugins/plugin-template/api.js';
+import { AddonGetterService } from "../../pipeline/service/addon-getter-service.js";
+import { EmailContent, ITemplateProvider } from "../../../plugins/plugin-template/api.js";
 
 export type EmailConfig = {
   host: string;
@@ -43,12 +43,11 @@ export class EmailService implements IEmailService {
   @Inject()
   addonGetterService: AddonGetterService;
   @Inject()
-  addonService: AddonService
-
+  addonService: AddonService;
 
   async sendByPlus(email: EmailSend) {
     if (!isPlus()) {
-      throw new Error('plus not enabled');
+      throw new Error("plus not enabled");
     }
 
     /**
@@ -63,13 +62,13 @@ export class EmailService implements IEmailService {
   /**
    */
   async send(email: EmailSend) {
-    logger.info('sendEmail', email);
+    logger.info("sendEmail", email);
 
     if (!email.receivers || email.receivers.length === 0) {
-      throw new Error('收件人不能为空');
+      throw new Error("收件人不能为空");
     }
 
-    let sysTitle = 'Certd';
+    let sysTitle = "Certd";
     if (isComm()) {
       const siteInfo = await this.sysSettingsService.getSetting<SysSiteInfo>(SysSiteInfo);
       if (siteInfo) {
@@ -79,10 +78,9 @@ export class EmailService implements IEmailService {
     let subject = email.subject;
 
     if (!subject) {
-      logger.error(new Error('邮件标题不能为空'));
+      logger.error(new Error("邮件标题不能为空"));
       subject = `邮件标题为空，请联系管理员排查`;
     }
-
 
     if (!subject.includes(`【${sysTitle}】`)) {
       subject = `【${sysTitle}】${subject}`;
@@ -96,27 +94,25 @@ export class EmailService implements IEmailService {
         //自动使用plus发邮件
         return await this.sendByPlus(email);
       }
-      throw new Error('邮件服务器还未设置');
+      throw new Error("邮件服务器还未设置");
     }
-
-
 
     if (emailConf.usePlus && isPlus()) {
       return await this.sendByPlus(email);
     }
     await this.sendByCustom(emailConf, email, sysTitle);
-    logger.info('sendEmail complete: ', email);
+    logger.info("sendEmail complete: ", email);
   }
 
   private async sendByCustom(emailConfig: EmailConfig, email: EmailSend, sysTitle: string) {
     const transporter = nodemailer.createTransport(emailConfig);
     let from = `${sysTitle} <${emailConfig.sender}>`;
-    if (emailConfig.sender.includes('<')) {
+    if (emailConfig.sender.includes("<")) {
       from = emailConfig.sender;
     }
     const mailOptions = {
       from: from,
-      to: email.receivers.join(', '), // list of receivers
+      to: email.receivers.join(", "), // list of receivers
       subject: email.subject,
       text: email.content,
       html: email.html,
@@ -129,8 +125,8 @@ export class EmailService implements IEmailService {
     await this.sendByTemplate({
       type: "common",
       data: {
-        title: '测试邮件,from certd',
-        content: '测试邮件,from certd',
+        title: "测试邮件,from certd",
+        content: "测试邮件,from certd",
         url: await this.getTestEmailUrl(),
       },
       receivers: [receiver],
@@ -147,41 +143,41 @@ export class EmailService implements IEmailService {
   }
 
   async list(userId: any) {
-    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId,null, UserEmailSetting)
+    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, null, UserEmailSetting);
     return userEmailSetting.list;
   }
 
   async delete(userId: any, email: string) {
-    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, null, UserEmailSetting)
+    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, null, UserEmailSetting);
     userEmailSetting.list = userEmailSetting.list.filter(item => item !== email);
-    await this.settingsService.saveSetting(userId, null, userEmailSetting)
+    await this.settingsService.saveSetting(userId, null, userEmailSetting);
   }
   async add(userId: any, email: string) {
-    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, null, UserEmailSetting)
+    const userEmailSetting = await this.settingsService.getSetting<UserEmailSetting>(userId, null, UserEmailSetting);
     //如果已存在
     if (userEmailSetting.list.includes(email)) {
-      return
+      return;
     }
-    userEmailSetting.list.unshift(email)
-    await this.settingsService.saveSetting(userId, null, userEmailSetting)
+    userEmailSetting.list.unshift(email);
+    await this.settingsService.saveSetting(userId, null, userEmailSetting);
   }
 
   async sendByTemplate(req: EmailSendByTemplateReq) {
-    let content = null
+    let content = null;
     const emailConf = await this.sysSettingsService.getSetting<SysEmailConf>(SysEmailConf);
-    const template = emailConf?.templates?.[req.type]
-    if (isPlus() && template &&  template.addonId) {
-      const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(template.addonId, true, 0,null)
+    const template = emailConf?.templates?.[req.type];
+    if (isPlus() && template && template.addonId) {
+      const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(template.addonId, true, 0, null);
       if (addon) {
-        content = await addon.buildContent({ data: req.data })
+        content = await addon.buildContent({ data: req.data });
       }
     }
-    if (isPlus() && !content ) {
+    if (isPlus() && !content) {
       //看看有没有通用模版
       if (emailConf?.templates?.common && emailConf?.templates?.common.addonId) {
-        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(emailConf.templates.common.addonId, true, 0,null)
+        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getAddonById(emailConf.templates.common.addonId, true, 0, null);
         if (addon) {
-          content = await addon.buildContent({ data: req.data })
+          content = await addon.buildContent({ data: req.data });
         }
       }
     }
@@ -189,21 +185,21 @@ export class EmailService implements IEmailService {
     // 没有找到模版，使用默认模版
     if (!content) {
       try {
-        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", req.type)
-        content = await addon.buildDefaultContent({ data: req.data })
+        const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", req.type);
+        content = await addon.buildDefaultContent({ data: req.data });
       } catch (e) {
         // 对应的通知类型模版可能没有注册或者开发
       }
     }
 
     if (!content) {
-      const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", "common")
-      content = await addon.buildDefaultContent({ data: req.data })
+      const addon: ITemplateProvider<EmailContent> = await this.addonGetterService.getBlank("emailTemplate", "common");
+      content = await addon.buildDefaultContent({ data: req.data });
     }
     return await this.send({
       ...content,
       receivers: req.receivers,
       attachments: req.attachments,
-    })
+    });
   }
 }

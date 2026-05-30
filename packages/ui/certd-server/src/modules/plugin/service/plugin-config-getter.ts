@@ -1,6 +1,6 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { IPluginConfigService, PluginConfig } from '@certd/pipeline';
-import { PluginConfigService } from './plugin-config-service.js';
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { IPluginConfigService, PluginConfig } from "@certd/pipeline";
+import { PluginConfigService } from "./plugin-config-service.js";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -11,7 +11,7 @@ export class PluginConfigGetter implements IPluginConfigService {
   async getPluginConfig(pluginName: string): Promise<PluginConfig> {
     const res = await this.pluginConfigService.getPluginConfig({
       name: pluginName,
-      type: 'builtIn',
+      type: "builtIn",
     });
     return {
       name: res.name,

@@ -12,9 +12,9 @@ import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
   needPlus: false,
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 export class AliyunDeployCertToVod extends AbstractTaskPlugin {
   @TaskInput({
@@ -22,9 +22,9 @@ export class AliyunDeployCertToVod extends AbstractTaskPlugin {
     helper: "请选择证书申请任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
+      from: [...CertApplyPluginNames],
     },
-    required: true
+    required: true,
   })
   cert!: CertInfo;
 
@@ -55,22 +55,21 @@ export class AliyunDeployCertToVod extends AbstractTaskPlugin {
       options: [
         { value: "cas.aliyuncs.com", label: "中国大陆" },
         { value: "cas.ap-southeast-1.aliyuncs.com", label: "新加坡" },
-        { value: "cas.eu-central-1.aliyuncs.com", label: "德国（法兰克福）" }
-      ]
+        { value: "cas.eu-central-1.aliyuncs.com", label: "德国（法兰克福）" },
+      ],
     },
-    required: true
+    required: true,
   })
   casEndpoint!: string;
-
 
   @TaskInput({
     title: "Access授权",
     helper: "阿里云授权AccessKeyId、AccessKeySecret",
     component: {
       name: "access-selector",
-      type: "aliyun"
+      type: "aliyun",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
 
@@ -81,22 +80,18 @@ export class AliyunDeployCertToVod extends AbstractTaskPlugin {
       action: AliyunDeployCertToVod.prototype.onGetDomainList.name,
       watches: ["accessId"],
       pager: true,
-      search: true
+      search: true,
     })
   )
   domainList!: string[];
 
-
-  async onInstance() {
-  }
-
+  async onInstance() {}
 
   async execute(): Promise<void> {
     this.logger.info("开始部署证书到阿里云VOD");
     const access = await this.getAccess<AliyunAccess>(this.accessId);
 
     const client = await this.getClient(access);
-
 
     for (const siteId of this.domainList) {
       /**
@@ -122,9 +117,9 @@ export class AliyunDeployCertToVod extends AbstractTaskPlugin {
             CertName: this.appendTimeSuffix("certd"),
             SSLProtocol: "on",
             SSLPub: this.cert.crt,
-            SSLPri: this.cert.key
-          }
-        }
+            SSLPri: this.cert.key,
+          },
+        },
       });
       this.logger.info(`部署站点[${siteId}]证书成功：${JSON.stringify(res)}`);
     }
@@ -161,9 +156,9 @@ export class AliyunDeployCertToVod extends AbstractTaskPlugin {
         query: {
           DomainName: data.searchKey,
           PageNumber: data.pageNo,
-          PageSize: data.pageSize
-        }
-      }
+          PageSize: data.pageSize,
+        },
+      },
     });
 
     const list = res?.Domains.PageData;
@@ -175,12 +170,11 @@ export class AliyunDeployCertToVod extends AbstractTaskPlugin {
       return {
         label: item.DomainName,
         value: item.DomainName,
-        domain: item.DomainName
+        domain: item.DomainName,
       };
     });
     return this.ctx.utils.options.buildGroupOptions(options, this.certDomains);
   }
-
 }
 
 new AliyunDeployCertToVod();

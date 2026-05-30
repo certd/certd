@@ -1,1 +1,1 @@
-import "./plugin-refresh-cert.js"
+import "./plugin-refresh-cert.js";

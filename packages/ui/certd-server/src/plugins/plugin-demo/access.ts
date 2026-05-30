@@ -1,66 +1,65 @@
-import { AccessInput, BaseAccess, IsAccess, Pager, PageRes, PageSearch } from '@certd/pipeline';
-import { DomainRecord } from '@certd/plugin-lib';
+import { AccessInput, BaseAccess, IsAccess, Pager, PageRes, PageSearch } from "@certd/pipeline";
+import { DomainRecord } from "@certd/plugin-lib";
 
 /**
  * 这个注解将注册一个授权配置
  * 在certd的后台管理系统中，用户可以选择添加此类型的授权
  */
 @IsAccess({
-  name: 'demo',
-  title: '授权插件示例',
-  icon: 'clarity:plugin-line', //插件图标
-  desc: '这是一个示例授权插件，用于演示如何实现一个授权插件',
+  name: "demo",
+  title: "授权插件示例",
+  icon: "clarity:plugin-line", //插件图标
+  desc: "这是一个示例授权插件，用于演示如何实现一个授权插件",
 })
 export class DemoAccess extends BaseAccess {
-
-   /**
+  /**
    * 授权属性配置
    */
   @AccessInput({
-    title: '授权方式',
-    value: 'apiKey', //默认值
+    title: "授权方式",
+    value: "apiKey", //默认值
     component: {
       name: "a-select", //基于antdv的输入组件
       vModel: "value", // v-model绑定的属性名
-      options: [ //组件参数
+      options: [
+        //组件参数
         { label: "API密钥（推荐）", value: "apiKey" },
         { label: "账号密码", value: "account" },
       ],
-      placeholder: 'demoKeyId',
+      placeholder: "demoKeyId",
     },
     required: true,
   })
-  apiType = '';
+  apiType = "";
 
   /**
    * 授权属性配置
    */
   @AccessInput({
-    title: '密钥Id',
+    title: "密钥Id",
     component: {
-      name:"a-input",
+      name: "a-input",
       allowClear: true,
-      placeholder: 'demoKeyId',
+      placeholder: "demoKeyId",
     },
     required: true,
   })
-  demoKeyId = '';
+  demoKeyId = "";
 
   @AccessInput({
-    title: '密钥',//标题
-    required: true,  //text组件可以省略
+    title: "密钥", //标题
+    required: true, //text组件可以省略
     encrypt: true, //该属性是否需要加密
   })
-  demoKeySecret = '';
-
+  demoKeySecret = "";
 
   @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "点击测试接口是否正常"
+    helper: "点击测试接口是否正常",
   })
   testRequest = true;
 
@@ -69,7 +68,7 @@ export class DemoAccess extends BaseAccess {
    */
   async onTestRequest() {
     await this.GetDomainList({});
-    return "ok"
+    return "ok";
   }
 
   /**
@@ -85,17 +84,17 @@ export class DemoAccess extends BaseAccess {
         domain: req.searchKey,
         offset: pager.getOffset(),
         limit: pager.pageSize,
-      }
+      },
     });
     const total = resp?.TotalCount || 0;
-    let list = resp?.DomainList?.map((item) => {
+    const list = resp?.DomainList?.map(item => {
       item.domain = item.Domain;
       item.id = item.DomainId;
       return item;
-    })
+    });
     return {
       total,
-      list
+      list,
     };
   }
 
@@ -104,7 +103,7 @@ export class DemoAccess extends BaseAccess {
   /**
    *  通用api调用方法, 具体如何构造请求体，需参考对应应用的API文档
    */
-  async doRequest(req: { action: string, data?: any }) {
+  async doRequest(req: { action: string; data?: any }) {
     /**
         this.ctx中包含很多有用的工具类
         type AccessContext = {
@@ -119,12 +118,12 @@ export class DemoAccess extends BaseAccess {
       method: "POST",
       data: {
         Action: req.action,
-        Body: req.data
-      }
+        Body: req.data,
+      },
     });
 
     if (res.Code !== 0) {
-      //异常处理 
+      //异常处理
       throw new Error(res.Message || "请求失败");
     }
     return res.Resp;

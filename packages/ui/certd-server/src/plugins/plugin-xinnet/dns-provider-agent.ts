@@ -15,7 +15,7 @@ export type XinnetAgentRecord = {
   icon: "svg:icon-xinnet",
   // 这里是对应的 cloudflare的access类型名称
   accessType: "xinnetagent",
-  order: 7
+  order: 7,
 })
 export class XinnetAgentProvider extends AbstractDnsProvider<XinnetAgentRecord> {
   access!: XinnetAgentAccess;
@@ -39,7 +39,6 @@ export class XinnetAgentProvider extends AbstractDnsProvider<XinnetAgentRecord> 
     const { fullRecord, value, type, domain } = options;
     this.logger.info("添加域名解析：", fullRecord, value, type, domain);
 
- 
     /**
      * /api/dns/create
      * domainName	是	string	域名名称	test-xinnet-0516-ceshi.cn
@@ -50,52 +49,48 @@ line	是	string	线路	只能传"默认"
      */
 
     const res = await this.access.doRequest({
-      url:"/api/dns/create",
-      data:{
+      url: "/api/dns/create",
+      data: {
         domainName: domain,
         recordName: fullRecord,
         type: type,
         value: value,
-        line: "默认"
-      }
+        line: "默认",
+      },
     });
 
-  
     return {
-      recordId:res,
-      domainName: domain
+      recordId: res,
+      domainName: domain,
     };
   }
-
 
   /**
    *  删除dns解析记录,清理申请痕迹
    * @param options
    */
   async removeRecord(options: RemoveRecordOptions<XinnetAgentRecord>): Promise<void> {
-   
-    const {domainName,recordId} = options.recordRes;
+    const { domainName, recordId } = options.recordRes;
     await this.access.doRequest({
-      url:"/api/dns/delete",
-      data:{
+      url: "/api/dns/delete",
+      data: {
         recordId: recordId,
-        domainName: domainName
-      }
+        domainName: domainName,
+      },
     });
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
     const res = await this.access.getDomainList(req);
-    const list = res.list.map((item) => ({
+    const list = res.list.map(item => ({
       domain: item.domainName,
-      id: item.domainName
+      id: item.domainName,
     }));
     return {
       list: list || [],
-      total: res.totalRows || 0
-    }
+      total: res.totalRows || 0,
+    };
   }
-
 }
 
 //实例化这个provider，将其自动注册到系统中

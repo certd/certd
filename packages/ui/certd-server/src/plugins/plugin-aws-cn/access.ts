@@ -1,33 +1,32 @@
-import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
+import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
 
 @IsAccess({
-  name: 'aws-cn',
-  title: '亚马逊云科技（国区）授权',
-  desc: '',
-  icon: 'svg:icon-aws',
+  name: "aws-cn",
+  title: "亚马逊云科技（国区）授权",
+  desc: "",
+  icon: "svg:icon-aws",
 })
 export class AwsCNAccess extends BaseAccess {
   @AccessInput({
-    title: 'accessKeyId',
+    title: "accessKeyId",
     component: {
-      placeholder: 'accessKeyId',
+      placeholder: "accessKeyId",
     },
-    helper:
-      '右上角->安全凭证->访问密钥，[点击前往](https://cn-north-1.console.amazonaws.cn/iam/home?region=cn-north-1#/security_credentials/access-key-wizard#)',
+    helper: "右上角->安全凭证->访问密钥，[点击前往](https://cn-north-1.console.amazonaws.cn/iam/home?region=cn-north-1#/security_credentials/access-key-wizard#)",
     required: true,
   })
-  accessKeyId = '';
+  accessKeyId = "";
 
   @AccessInput({
-    title: 'secretAccessKey',
+    title: "secretAccessKey",
     component: {
-      placeholder: 'secretAccessKey',
+      placeholder: "secretAccessKey",
     },
     required: true,
     encrypt: true,
-    helper: '请妥善保管您的安全访问密钥。您可以在AWS管理控制台的IAM中创建新的访问密钥。',
+    helper: "请妥善保管您的安全访问密钥。您可以在AWS管理控制台的IAM中创建新的访问密钥。",
   })
-  secretAccessKey = '';
+  secretAccessKey = "";
 }
 
 new AwsCNAccess();

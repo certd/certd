@@ -9,20 +9,19 @@ import { XinnetClient } from "@certd/plugin-plus";
   name: "xinnet",
   title: "新网授权",
   icon: "svg:icon-xinnet",
-  desc: ""
+  desc: "",
 })
 export class XinnetAccess extends BaseAccess {
-
   /**
    * 授权属性配置
    */
   @AccessInput({
     title: "用户名",
     component: {
-      placeholder: "手机号/用户名"
+      placeholder: "手机号/用户名",
     },
     required: true,
-    encrypt: true
+    encrypt: true,
   })
   username = "";
 
@@ -31,10 +30,10 @@ export class XinnetAccess extends BaseAccess {
     component: {
       name: "a-input-password",
       vModel: "value",
-      placeholder: "登录密码"
+      placeholder: "登录密码",
     },
     required: true,
-    encrypt: true
+    encrypt: true,
   })
   password = "";
 
@@ -42,18 +41,17 @@ export class XinnetAccess extends BaseAccess {
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "测试前请务必先在新网后台关闭异地登录保护、关闭动态口令验证\n如果提示需要短信验证码，请等几个小时后再试"
+    helper: "测试前请务必先在新网后台关闭异地登录保护、关闭动态口令验证\n如果提示需要短信验证码，请等几个小时后再试",
   })
   testRequest = true;
 
   async onTestRequest() {
-
     const client = new XinnetClient({
       access: this,
       logger: this.ctx.logger,
-      http: this.ctx.http
+      http: this.ctx.http,
     });
 
     await client.getDomainList({ pageNo: 1, pageSize: 1 });
@@ -61,9 +59,8 @@ export class XinnetAccess extends BaseAccess {
     return "ok";
   }
 
-
-  getCacheKey () {
-    let hashStr = ""
+  getCacheKey() {
+    let hashStr = "";
     for (const key in this) {
       if (Object.prototype.hasOwnProperty.call(this, key)) {
         const element = this[key];
@@ -73,7 +70,6 @@ export class XinnetAccess extends BaseAccess {
     const hashCode = this.ctx.utils.hash.sha256(hashStr);
     return `xinnet-${hashCode}`;
   }
-
 }
 
 new XinnetAccess();

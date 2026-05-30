@@ -1,1 +1,1 @@
-export * from './deploy-to-cdn/index.js';
+export * from "./deploy-to-cdn/index.js";

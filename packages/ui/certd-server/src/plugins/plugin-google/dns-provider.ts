@@ -1,11 +1,5 @@
 import { Pager, PageRes, PageSearch } from "@certd/pipeline";
-import {
-  AbstractDnsProvider,
-  CreateRecordOptions,
-  DomainRecord,
-  IsDnsProvider,
-  RemoveRecordOptions,
-} from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { GoogleAccess } from "../plugin-cert/access/index.js";
 
 // TODO: 接口待明确 - 需要确认Google Cloud DNS API的具体参数和返回值格式
@@ -31,7 +25,7 @@ export class GoogleCloudDnsProvider extends AbstractDnsProvider<GoogleCloudDnsRe
   access!: GoogleAccess;
   projectId!: string;
   credentials!: any;
-  envHttpsProxy: string = "";
+  envHttpsProxy = "";
 
   async onInstance() {
     this.access = this.ctx.access as GoogleAccess;
@@ -122,9 +116,7 @@ export class GoogleCloudDnsProvider extends AbstractDnsProvider<GoogleCloudDnsRe
         const existingRrdatas = existingRecord.metadata.rrdatas || [];
 
         // 检查值是否已存在（忽略引号）
-        const valueExists = existingRrdatas.some((existing: string) =>
-          this.valuesEqual(existing, value)
-        );
+        const valueExists = existingRrdatas.some((existing: string) => this.valuesEqual(existing, value));
 
         if (valueExists) {
           this.logger.info("Google Cloud DNS: 值已存在，无需重复添加", fullRecord, value);
@@ -206,9 +198,7 @@ export class GoogleCloudDnsProvider extends AbstractDnsProvider<GoogleCloudDnsRe
       const currentRrdatas = existingRecord.metadata.rrdatas || [];
 
       // 检查要删除的值是否存在（忽略引号）
-      const valueIndex = currentRrdatas.findIndex((existing: string) =>
-        this.valuesEqual(existing, value)
-      );
+      const valueIndex = currentRrdatas.findIndex((existing: string) => this.valuesEqual(existing, value));
 
       if (valueIndex === -1) {
         this.logger.info("Google Cloud DNS: 要删除的值不存在", fullRecord, value);
@@ -262,9 +252,7 @@ export class GoogleCloudDnsProvider extends AbstractDnsProvider<GoogleCloudDnsRe
       // 简单的搜索过滤
       let filteredList = list;
       if (req.searchKey) {
-        filteredList = list.filter((item) =>
-          item.domain.toLowerCase().includes(req.searchKey.toLowerCase())
-        );
+        filteredList = list.filter(item => item.domain.toLowerCase().includes(req.searchKey.toLowerCase()));
       }
 
       return {

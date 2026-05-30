@@ -32,9 +32,8 @@ function getOauthBoundType(type: string, subtype?: string) {
 /**
  */
 @Provide()
-@Controller('/api/oauth')
+@Controller("/api/oauth")
 export class ConnectController extends BaseController {
-
   @Inject()
   addonGetterService: AddonGetterService;
   @Inject()
@@ -52,10 +51,8 @@ export class ConnectController extends BaseController {
   @Inject()
   addonService: AddonService;
 
-
-
   private async getOauthProvider(type: string) {
-    const publicSettings = await this.sysSettingsService.getPublicSettings()
+    const publicSettings = await this.sysSettingsService.getPublicSettings();
     if (!publicSettings?.oauthEnabled) {
       throw new Error("OAuth功能未启用");
     }
@@ -64,7 +61,7 @@ export class ConnectController extends BaseController {
       throw new Error(`未配置该OAuth类型:${type}`);
     }
 
-    const addon = await this.addonGetterService.getAddonById(setting.addonId, true, 0,null);
+    const addon = await this.addonGetterService.getAddonById(setting.addonId, true, 0, null);
     if (!addon) {
       throw new Error("初始化OAuth插件失败");
     }
@@ -74,19 +71,18 @@ export class ConnectController extends BaseController {
     };
   }
 
-  @Post('/login', { description: Constants.per.guest })
-  public async login(@Body(ALL) body: { type: string, subtype?: string, forType?:string ,from?:string }) {
-
+  @Post("/login", { description: Constants.per.guest })
+  public async login(@Body(ALL) body: { type: string; subtype?: string; forType?: string; from?: string }) {
     const oauthProvider = await this.getOauthProvider(body.type);
     const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
     const bindUrl = installInfo?.bindUrl || "";
     //构造登录url
     const redirectUrl = `${bindUrl}api/oauth/callback/${body.type}`;
 
-    let stateObj = {
-      forType: body.forType || 'login',
-    }
-    const state = utils.hash.base64(JSON.stringify(stateObj))
+    const stateObj = {
+      forType: body.forType || "login",
+    };
+    const state = utils.hash.base64(JSON.stringify(stateObj));
     const { loginUrl, ticketValue } = await oauthProvider.addon.buildLoginUrl({
       redirectUri: redirectUrl,
       forType: body.forType,
@@ -94,25 +90,23 @@ export class ConnectController extends BaseController {
       subtype: body.subtype,
       state,
     });
-    
+
     const ticket = this.codeService.setValidationValue({
       ...ticketValue,
       state,
       subtype: body.subtype,
-    })
+    });
     this.ctx.cookies.set("oauth_ticket", ticket, {
       httpOnly: true,
       // secure: true,
       // sameSite: "strict",
-    })
+    });
     return this.ok({ loginUrl, ticket });
   }
 
-
-  @Get('/callback/:type', { description: Constants.per.guest })
-  public async callback(@Param('type') type: string, @Query() query: Record<string, string>) {
-
-    checkPlus()
+  @Get("/callback/:type", { description: Constants.per.guest })
+  public async callback(@Param("type") type: string, @Query() query: Record<string, string>) {
+    checkPlus();
 
     //处理登录回调
     const oauthProvider = await this.getOauthProvider(type);
@@ -133,13 +127,13 @@ export class ConnectController extends BaseController {
 
     const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
     const bindUrl = installInfo?.bindUrl || "";
-    const currentUrl = `${bindUrl}api/oauth/callback/${type}?${request.querystring}`
+    const currentUrl = `${bindUrl}api/oauth/callback/${type}?${request.querystring}`;
     try {
       const tokenRes = await oauthProvider.addon.onCallback({
         code: query.code,
         state: query.state,
         ticketValue,
-        currentURL: new URL(currentUrl)
+        currentURL: new URL(currentUrl),
       });
 
       const userInfo = tokenRes.userInfo;
@@ -149,7 +143,7 @@ export class ConnectController extends BaseController {
         userInfo,
       });
 
-      let state = {forType:""}
+      let state = { forType: "" };
       if (query.state) {
         state = JSON.parse(utils.hash.base64Decode(query.state));
       }
@@ -160,12 +154,11 @@ export class ConnectController extends BaseController {
       logger.error(err);
       this.ctx.redirect(`${bindUrl}#/oauth/callback/${type}?error=${err.error_description || err.message}`);
     }
-
   }
 
-  @Post('/getLogoutUrl', { description: Constants.per.guest })
+  @Post("/getLogoutUrl", { description: Constants.per.guest })
   public async logout(@Body(ALL) body: any) {
-    checkPlus()
+    checkPlus();
     const oauthProvider = await this.getOauthProvider(body.type);
     const { logoutUrl } = await oauthProvider.addon.buildLogoutUrl({
       ...body,
@@ -173,10 +166,9 @@ export class ConnectController extends BaseController {
     return this.ok({ logoutUrl });
   }
 
-
-  @Post('/token', { description: Constants.per.guest })
-  public async token(@Body(ALL) body: { validationCode: string, type: string }) {
-    checkPlus()
+  @Post("/token", { description: Constants.per.guest })
+  public async token(@Body(ALL) body: { validationCode: string; type: string }) {
+    checkPlus();
     const validationValue = await this.codeService.getValidationValue(body.validationCode);
     if (!validationValue) {
       throw new Error("校验码错误");
@@ -191,7 +183,6 @@ export class ConnectController extends BaseController {
 
     const loginRes = await this.loginService.loginByOpenId({ openId, type });
     if (loginRes == null) {
-
       return this.ok({
         bindRequired: true,
         validationCode: body.validationCode,
@@ -207,24 +198,22 @@ export class ConnectController extends BaseController {
     // this.loginService.writeTokenCookie(this.ctx,token);
   }
 
-
-  @Post('/autoRegister', { description: Constants.per.guest })
-  public async autoRegister(@Body(ALL) body: { validationCode: string, type: string }) {
-
+  @Post("/autoRegister", { description: Constants.per.guest })
+  public async autoRegister(@Body(ALL) body: { validationCode: string; type: string }) {
     const validationValue = this.codeService.getValidationValue(body.validationCode);
     if (!validationValue) {
       throw new Error("第三方认证授权已过期");
     }
     const userInfo = validationValue.userInfo;
     const oauthType = validationValue.type;
-    let newUser = new UserEntity()
+    let newUser = new UserEntity();
     newUser.username = `${userInfo.nickName}_${simpleNanoId(6)}_${oauthType}`;
     newUser.avatar = userInfo.avatar;
     newUser.nickName = userInfo.nickName || simpleNanoId(6);
     newUser.email = userInfo.email || "";
 
-    newUser = await this.userService.register("username", newUser, async (txManager) => {
-      const oauthBound: OauthBoundEntity = new OauthBoundEntity()
+    newUser = await this.userService.register("username", newUser, async txManager => {
+      const oauthBound: OauthBoundEntity = new OauthBoundEntity();
       oauthBound.userId = newUser.id;
       oauthBound.type = oauthType;
       oauthBound.openId = userInfo.openId;
@@ -236,8 +225,7 @@ export class ConnectController extends BaseController {
     return this.ok(loginRes);
   }
 
-
-  @Post('/bind', { description: Constants.per.loginOnly })
+  @Post("/bind", { description: Constants.per.loginOnly })
   public async bind(@Body(ALL) body: any) {
     //需要已登录
     const userId = this.getUserId();
@@ -256,7 +244,7 @@ export class ConnectController extends BaseController {
     return this.ok(1);
   }
 
-  @Post('/unbind', { description: Constants.per.loginOnly })
+  @Post("/unbind", { description: Constants.per.loginOnly })
   public async unbind(@Body(ALL) body: any) {
     //需要已登录
     const userId = this.getUserId();
@@ -267,20 +255,19 @@ export class ConnectController extends BaseController {
     return this.ok(1);
   }
 
-   @Post('/bounds', { description: Constants.per.loginOnly })
+  @Post("/bounds", { description: Constants.per.loginOnly })
   public async bounds(@Body(ALL) body: any) {
     //需要已登录
     const userId = this.getUserId();
     const bounds = await this.oauthBoundService.find({
-      where :{
+      where: {
         userId,
-      }
+      },
     });
     return this.ok(bounds);
   }
 
-
-   @Post('/providers', { description: Constants.per.guest })
+  @Post("/providers", { description: Constants.per.guest })
   public async providers() {
     const defineList = addonRegistry.getDefineList("oauth");
 
@@ -289,27 +276,27 @@ export class ConnectController extends BaseController {
     const list = [];
 
     for (const item of defineList) {
-      const type = item.name 
+      const type = item.name;
       const conf = oauthProviders[type];
-      const provider:any = {
+      const provider: any = {
         ...item,
-      }
-      delete provider.input
+      };
+      delete provider.input;
       if (conf && conf.addonId) {
         const addonEntity = await this.addonService.info(conf.addonId);
         if (addonEntity) {
           provider.addonId = conf.addonId;
           provider.addonTitle = addonEntity.name;
 
-          const addon = await this.addonGetterService.getAddonById(conf.addonId,true,0,null) as IOauthProvider & { icon?: string; types?: OauthProviderType[] };
-          const {logoutUrl} = await addon.buildLogoutUrl({});
-          if (logoutUrl){
+          const addon = (await this.addonGetterService.getAddonById(conf.addonId, true, 0, null)) as IOauthProvider & { icon?: string; types?: OauthProviderType[] };
+          const { logoutUrl } = await addon.buildLogoutUrl({});
+          if (logoutUrl) {
             provider.logoutUrl = logoutUrl;
           }
-          if(addon.icon){
+          if (addon.icon) {
             provider.icon = addon.icon;
           }
-          if(addon.types?.length){
+          if (addon.types?.length) {
             provider.types = addon.types;
           }
         }

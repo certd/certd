@@ -1,7 +1,7 @@
 import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
-import {CertApplyPluginNames, CertInfo, CertReader} from "@certd/plugin-cert";
-import {createCertDomainGetterInputDefine, createRemoteSelectInputDefine} from "@certd/plugin-lib";
-import {DokployAccess} from "../access.js";
+import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-cert";
+import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { DokployAccess } from "../access.js";
 
 @IsTaskPlugin({
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名
@@ -15,9 +15,9 @@ import {DokployAccess} from "../access.js";
   default: {
     //默认值配置照抄即可
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class DokployRefreshCert extends AbstractTaskPlugin {
@@ -27,8 +27,8 @@ export class DokployRefreshCert extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
     // required: true, // 必填
   })
   cert!: CertInfo;
@@ -41,9 +41,9 @@ export class DokployRefreshCert extends AbstractTaskPlugin {
     title: "Dokploy授权",
     component: {
       name: "access-selector",
-      type: "dokploy" //固定授权类型
+      type: "dokploy", //固定授权类型
     },
-    required: true //必填
+    required: true, //必填
   })
   accessId!: string;
   //
@@ -54,14 +54,13 @@ export class DokployRefreshCert extends AbstractTaskPlugin {
       helper: "要更新的证书名称，如果这里没有，请先给手动绑定一次证书",
       action: DokployRefreshCert.prototype.onGetServerList.name,
       pager: false,
-      search: false
+      search: false,
     })
   )
   serverList!: string[];
 
   //插件实例化时执行的方法
-  async onInstance() {
-  }
+  async onInstance() {}
 
   //插件执行方法
   async execute(): Promise<void> {
@@ -75,11 +74,10 @@ export class DokployRefreshCert extends AbstractTaskPlugin {
 
     const oldCertList = await access.getCertList();
 
-
     const certReader = new CertReader(this.cert);
     for (const serverId of this.serverList) {
       this.logger.info(`----------- 开始部署server证书：${serverId}`);
-      if(!serverId){
+      if (!serverId) {
         this.logger.error(`----------- serverId不能为空，跳过更新`);
         continue;
       }
@@ -95,14 +93,13 @@ export class DokployRefreshCert extends AbstractTaskPlugin {
     await this.ctx.utils.sleep(10000);
     //清理过期证书
     for (const certItem of oldCertList) {
-      
       const certDetail = CertReader.readCertDetail(certItem.certificateData);
-      if (certDetail.expires.getTime() < new Date().getTime()){
-          this.logger.info(`----------- 证书${certItem.certificateId}已过期`);
-          await access.removeCert({id:certItem.certificateId});
-          this.logger.info(`----------- 清理过期证书${certItem.certificateId}成功`);  
-      }else{
-        this.logger.info(`----------- 证书${certItem.certificateId}还未过期`);  
+      if (certDetail.expires.getTime() < new Date().getTime()) {
+        this.logger.info(`----------- 证书${certItem.certificateId}已过期`);
+        await access.removeCert({ id: certItem.certificateId });
+        this.logger.info(`----------- 清理过期证书${certItem.certificateId}成功`);
+      } else {
+        this.logger.info(`----------- 证书${certItem.certificateId}还未过期`);
       }
     }
 
@@ -112,8 +109,8 @@ export class DokployRefreshCert extends AbstractTaskPlugin {
   async onGetServerList(data: PageSearch = {}) {
     const access = await this.getAccess<DokployAccess>(this.accessId);
 
-    const res = await access.getServerList()
-    const list = res
+    const res = await access.getServerList();
+    const list = res;
     if (!list || list.length === 0) {
       throw new Error("没有找到Server，你可以直接手动输入serverId");
     }

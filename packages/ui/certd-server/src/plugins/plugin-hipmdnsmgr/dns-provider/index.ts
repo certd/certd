@@ -1,1 +1,1 @@
-export * from './hipmdnsmgr-dns-provider.js';
+export * from "./hipmdnsmgr-dns-provider.js";

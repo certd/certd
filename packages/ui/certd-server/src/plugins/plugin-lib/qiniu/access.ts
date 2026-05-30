@@ -23,7 +23,7 @@ export class QiniuAccess extends BaseAccess {
   })
   secretKey!: string;
 
-    @AccessInput({
+  @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
@@ -38,18 +38,16 @@ export class QiniuAccess extends BaseAccess {
     return "ok";
   }
 
-
-
   async getDomainList(req: PageSearch = {}) {
-      const qiniuClient = new QiniuClient({
-        http: this.ctx.http,
-        access:this,
-        logger: this.ctx.logger,
-      });
-      const url = `https://api.qiniu.com/domain?limit=${req.pageSize || 1000}`;
-      const res = await qiniuClient.doRequest(url, 'get');
-      return res.domains||[]
-    }
+    const qiniuClient = new QiniuClient({
+      http: this.ctx.http,
+      access: this,
+      logger: this.ctx.logger,
+    });
+    const url = `https://api.qiniu.com/domain?limit=${req.pageSize || 1000}`;
+    const res = await qiniuClient.doRequest(url, "get");
+    return res.domains || [];
+  }
 }
 
 new QiniuAccess();

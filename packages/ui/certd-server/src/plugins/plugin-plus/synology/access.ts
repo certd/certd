@@ -63,7 +63,7 @@ export class SynologyAccess extends BaseAccess {
       name: "a-switch",
       vModel: "checked",
     },
-    col:{span:24},
+    col: { span: 24 },
     helper: "是否启用了双重认证",
     required: true,
   })
@@ -77,7 +77,7 @@ export class SynologyAccess extends BaseAccess {
       type: "access",
       typeName: "synology",
     },
-    col:{span:24},
+    col: { span: 24 },
     mergeScript: `
      return {
         component:{

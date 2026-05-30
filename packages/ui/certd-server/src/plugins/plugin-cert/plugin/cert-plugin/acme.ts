@@ -335,7 +335,7 @@ export class AcmeService {
       try {
         const recordRes = await dnsProvider.createRecord(recordReq);
         this.logger.info("添加 TXT 解析记录成功", JSON.stringify(recordRes));
-         return {
+        return {
           recordReq,
           recordRes,
           dnsProvider,
@@ -345,9 +345,8 @@ export class AcmeService {
       } catch (e: any) {
         //@ts-ignore
         e.message = `[${dnsProvider?.constructor?.name}错误] ${e.message}`;
-        throw e
+        throw e;
       }
-     
     };
 
     const doDnsPersistVerify = async (challenge: any, plan: DnsPersistVerifyPlan) => {

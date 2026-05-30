@@ -1,9 +1,9 @@
-import { Controller, Inject, Post, Provide } from '@midwayjs/core';
-import { BaseController } from '@certd/lib-server';
-import { UserService } from '../../../modules/sys/authority/service/user-service.js';
-import { RoleService } from '../../../modules/sys/authority/service/role-service.js';
-import { PipelineService } from '../../../modules/pipeline/service/pipeline-service.js';
-import { HistoryService } from '../../../modules/pipeline/service/history-service.js';
+import { Controller, Inject, Post, Provide } from "@midwayjs/core";
+import { BaseController } from "@certd/lib-server";
+import { UserService } from "../../../modules/sys/authority/service/user-service.js";
+import { RoleService } from "../../../modules/sys/authority/service/role-service.js";
+import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
+import { HistoryService } from "../../../modules/pipeline/service/history-service.js";
 
 export type ChartItem = {
   name: string;
@@ -19,7 +19,7 @@ export type SysStatisticCount = {
 /**
  */
 @Provide()
-@Controller('/api/sys/statistic/')
+@Controller("/api/sys/statistic/")
 export class SysStatisticController extends BaseController {
   @Inject()
   userService: UserService;
@@ -31,7 +31,7 @@ export class SysStatisticController extends BaseController {
   @Inject()
   historyService: HistoryService;
 
-  @Post('/count', { description: 'sys:settings:view' })
+  @Post("/count", { description: "sys:settings:view" })
   public async count() {
     const userCount = await this.userService.count();
     const userRegisterCountPerDay = await this.userService.registerCountPerDay({ days: 7 });

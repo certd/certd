@@ -1,33 +1,33 @@
-import { App, Configuration } from '@midwayjs/core';
-import * as koa from '@midwayjs/koa';
-import { IMidwayKoaContext, NextFunction } from '@midwayjs/koa';
-import * as orm from '@midwayjs/typeorm';
-import * as cache from '@midwayjs/cache';
-import * as validate from '@midwayjs/validate';
-import * as info from '@midwayjs/info';
-import * as staticFile from '@midwayjs/static-file';
-import * as cron from './modules/cron/index.js';
-import * as flyway from '@certd/midway-flyway-js';
-import cors from '@koa/cors';
-import { GlobalExceptionMiddleware } from './middleware/global-exception.js';
-import { PreviewMiddleware } from './middleware/preview.js';
-import { AuthorityMiddleware } from './middleware/authority.js';
-import { logger } from '@certd/basic';
-import { ResetPasswdMiddleware } from './middleware/reset-passwd/middleware.js';
-import DefaultConfig from './config/config.default.js';
-import * as libServer from '@certd/lib-server';
-import * as commercial from '@certd/commercial-core';
-import * as upload from '@midwayjs/upload';
-import { setLogger } from '@certd/acme-client';
-import {HiddenMiddleware} from "./middleware/hidden.js";
-import { shouldSetDefaultNoCache } from './configuration-cache.js';
+import { App, Configuration } from "@midwayjs/core";
+import * as koa from "@midwayjs/koa";
+import { IMidwayKoaContext, NextFunction } from "@midwayjs/koa";
+import * as orm from "@midwayjs/typeorm";
+import * as cache from "@midwayjs/cache";
+import * as validate from "@midwayjs/validate";
+import * as info from "@midwayjs/info";
+import * as staticFile from "@midwayjs/static-file";
+import * as cron from "./modules/cron/index.js";
+import * as flyway from "@certd/midway-flyway-js";
+import cors from "@koa/cors";
+import { GlobalExceptionMiddleware } from "./middleware/global-exception.js";
+import { PreviewMiddleware } from "./middleware/preview.js";
+import { AuthorityMiddleware } from "./middleware/authority.js";
+import { logger } from "@certd/basic";
+import { ResetPasswdMiddleware } from "./middleware/reset-passwd/middleware.js";
+import DefaultConfig from "./config/config.default.js";
+import * as libServer from "@certd/lib-server";
+import * as commercial from "@certd/commercial-core";
+import * as upload from "@midwayjs/upload";
+import { setLogger } from "@certd/acme-client";
+import { HiddenMiddleware } from "./middleware/hidden.js";
+import { shouldSetDefaultNoCache } from "./configuration-cache.js";
 // import * as swagger from '@midwayjs/swagger';
 //@ts-ignore
 // process.env.UV_THREADPOOL_SIZE = 2
-process.on('uncaughtException', error => {
-  console.error('未捕获的异常：', error);
+process.on("uncaughtException", error => {
+  console.error("未捕获的异常：", error);
   // 在这里可以添加日志记录、发送错误通知等操作
-  if(error?.message?.includes('address family not supported')){
+  if (error?.message?.includes("address family not supported")) {
     logger.error("您的服务器不支持监听IPV6格式的地址（::），请配置环境变量: certd_koa_hostname=0.0.0.0");
   }
 });
@@ -48,9 +48,7 @@ process.on('uncaughtException', error => {
 
 @Configuration({
   detectorOptions: {
-    ignore: [
-      '**/plugins/**'
-    ]
+    ignore: ["**/plugins/**"],
   },
   imports: [
     koa,
@@ -69,7 +67,7 @@ process.on('uncaughtException', error => {
     // },
     {
       component: info,
-      enabledEnvironment: ['local'],
+      enabledEnvironment: ["local"],
     },
   ],
   importConfigs: [
@@ -79,12 +77,11 @@ process.on('uncaughtException', error => {
   ],
 })
 export class MainConfiguration {
-  @App('koa')
+  @App("koa")
   app: koa.Application;
 
   async onReady() {
     // 设置flyway logger
-
 
     // add middleware
     // this.app.useMiddleware([ReportMiddleware]);
@@ -93,7 +90,7 @@ export class MainConfiguration {
     //跨域
     this.app.use(
       cors({
-        origin: '*',
+        origin: "*",
       })
     );
     //
@@ -126,8 +123,8 @@ export class MainConfiguration {
       await next();
       const path = ctx.path;
       // 如果是首页则强制设置为不缓存
-      if (shouldSetDefaultNoCache(path, ctx.response.get('Cache-Control')) ) {
-        ctx.response.set('Cache-Control', 'public,max-age=0');
+      if (shouldSetDefaultNoCache(path, ctx.response.get("Cache-Control"))) {
+        ctx.response.set("Cache-Control", "public,max-age=0");
       }
     });
 
@@ -136,6 +133,6 @@ export class MainConfiguration {
       logger.info(text);
     });
 
-    logger.info('当前环境：', this.app.getEnv()); // prod
+    logger.info("当前环境：", this.app.getEnv()); // prod
   }
 }

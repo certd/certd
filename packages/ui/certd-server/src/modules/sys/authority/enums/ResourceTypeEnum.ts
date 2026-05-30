@@ -1,9 +1,9 @@
-import { EnumItem } from '@certd/lib-server';
-import * as _ from 'lodash-es';
+import { EnumItem } from "@certd/lib-server";
+import * as _ from "lodash-es";
 class ResourceTypes {
-  MENU = new EnumItem('menu', '菜单', 'blue');
-  BTN = new EnumItem('btn', '按钮', 'green');
-  ROUTE = new EnumItem('route', '路由', 'red');
+  MENU = new EnumItem("menu", "菜单", "blue");
+  BTN = new EnumItem("btn", "按钮", "green");
+  ROUTE = new EnumItem("route", "路由", "red");
 
   names() {
     const list = [];

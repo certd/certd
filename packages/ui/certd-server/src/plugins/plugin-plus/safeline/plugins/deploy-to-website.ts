@@ -68,29 +68,27 @@ export class SafelineDeployToWebsitePlugin extends AbstractTaskPlugin {
   }
 
   async uploadCert(certId: number) {
-    const data:any = {
+    const data: any = {
       manual: {
         crt: this.cert.crt,
         key: this.cert.key,
       },
       type: 2,
     };
-    let type = "新增"
+    let type = "新增";
     // @ts-ignore
-    if (certId !== "0" && certId >0) {
+    if (certId !== "0" && certId > 0) {
       //@ts-ignore
-       data.id = parseInt(certId)
-       type = "更新"
+      data.id = parseInt(certId);
+      type = "更新";
     }
     const res = await this.access.doRequest({
       url: "/api/open/cert",
       method: "post",
-      data:data
+      data: data,
     });
     this.logger.info(`证书<${certId}>${type}成功,ID:${res}`);
   }
-
-
 
   // requestHandle
 

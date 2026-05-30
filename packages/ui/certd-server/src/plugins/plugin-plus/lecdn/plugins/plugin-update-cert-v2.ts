@@ -61,8 +61,6 @@ export class LeCDNUpdateCertV2 extends AbstractTaskPlugin {
     this.access.getToken();
   }
 
-
-
   async getCertInfo(id: number) {
     // http://cdnadmin.kxfox.com/prod-api/certificate/9
     // Bearer edGkiOiIJ8
@@ -99,8 +97,6 @@ export class LeCDNUpdateCertV2 extends AbstractTaskPlugin {
 
     this.logger.info(`更新证书完成`);
   }
-
-
 
   async onGetCertList(data: any) {
     if (!this.accessId) {

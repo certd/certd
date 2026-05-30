@@ -32,12 +32,12 @@ export class EmailCodeReq {
 }
 
 // 找回密码的验证码有效期
-const FORGOT_PASSWORD_CODE_DURATION = 3
+const FORGOT_PASSWORD_CODE_DURATION = 3;
 
 /**
  */
 @Provide()
-@Controller('/api/basic/code')
+@Controller("/api/basic/code")
 export class BasicController extends BaseController {
   @Inject()
   codeService: CodeService;
@@ -53,13 +53,13 @@ export class BasicController extends BaseController {
   @Inject()
   addonGetterService: AddonGetterService;
 
-  @Post('/captcha/get', { description: Constants.per.guest })
-  async getCaptcha(@Query("captchaAddonId") captchaAddonId:number) {
-      const form = await this.captchaService.getCaptcha(captchaAddonId)
-      return this.ok(form);
+  @Post("/captcha/get", { description: Constants.per.guest })
+  async getCaptcha(@Query("captchaAddonId") captchaAddonId: number) {
+    const form = await this.captchaService.getCaptcha(captchaAddonId);
+    return this.ok(form);
   }
 
-  @Post('/sendSmsCode', { description: Constants.per.guest })
+  @Post("/sendSmsCode", { description: Constants.per.guest })
   public async sendSmsCode(
     @Body(ALL)
     body: SmsCodeReq,
@@ -70,17 +70,17 @@ export class BasicController extends BaseController {
       verificationCodeLength: undefined,
       duration: undefined,
     };
-    if(body?.verificationType === 'forgotPassword') {
+    if (body?.verificationType === "forgotPassword") {
       opts.duration = FORGOT_PASSWORD_CODE_DURATION;
       // opts.verificationCodeLength = 6; //部分厂商这里会设置参数长度这里就不改了
     }
 
-    await this.codeService.checkCaptcha(body.captcha,{remoteIp});
+    await this.codeService.checkCaptcha(body.captcha, { remoteIp });
     await this.codeService.sendSmsCode(body.phoneCode, body.mobile, opts);
     return this.ok(null);
   }
 
-  @Post('/sendEmailCode', { description: Constants.per.guest })
+  @Post("/sendEmailCode", { description: Constants.per.guest })
   public async sendEmailCode(
     @Body(ALL)
     body: EmailCodeReq,
@@ -91,20 +91,18 @@ export class BasicController extends BaseController {
       verificationCodeLength: undefined,
       duration: undefined,
     };
-    
-    if(body?.verificationType === 'forgotPassword') {
+
+    if (body?.verificationType === "forgotPassword") {
       opts.duration = FORGOT_PASSWORD_CODE_DURATION;
       opts.verificationCodeLength = 6;
-    }else{
+    } else {
       opts.duration = 10;
       opts.verificationCodeLength = 6;
     }
 
-
-    await this.codeService.checkCaptcha(body.captcha,{remoteIp});
+    await this.codeService.checkCaptcha(body.captcha, { remoteIp });
     await this.codeService.sendEmailCode(body.email, opts);
     // 设置缓存内容
     return this.ok(null);
   }
-
 }

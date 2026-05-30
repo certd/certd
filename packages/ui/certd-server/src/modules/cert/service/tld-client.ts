@@ -73,7 +73,7 @@ export class TldClient {
       method: "GET",
     });
 
-    let res: DomainInfo = {};
+    const res: DomainInfo = {};
     const events = rdap.events || [];
     for (const item of events) {
       if (item.eventAction === "expiration") {
@@ -96,7 +96,7 @@ export class TldClient {
       timeout: 5000,
     });
 
-    let res: DomainInfo = {};
+    const res: DomainInfo = {};
     /**
      * {
   "Domain Status": [

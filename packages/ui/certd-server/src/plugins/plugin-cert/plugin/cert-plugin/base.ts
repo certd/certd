@@ -20,7 +20,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
 
   @TaskInput({
     title: "更新天数",
-    value:20,
+    value: 20,
     component: {
       name: "a-input-number",
       vModel: "value",
@@ -140,25 +140,25 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
    */
   isWillExpire(cert: CertReader, maxDays = 15) {
     const expires = cert.expires;
-     if (expires == null) {
+    if (expires == null) {
       throw new Error("过期时间不能为空");
     }
-    const begin =  dayjs(cert.detail?.notBefore )
+    const begin = dayjs(cert.detail?.notBefore);
 
     //证书总天数
     const totalDays = Math.floor((expires - begin.valueOf()) / (1000 * 60 * 60 * 24));
-     // 检查有效期
+    // 检查有效期
     const leftDays = Math.floor((expires - dayjs().valueOf()) / (1000 * 60 * 60 * 24));
-     this.logger.info(`证书有效期剩余天数：${leftDays}`);
-    if(totalDays < maxDays){
+    this.logger.info(`证书有效期剩余天数：${leftDays}`);
+    if (totalDays < maxDays) {
       this.logger.warn(`当前更新天数为${maxDays}，证书总天数${totalDays}，总天数小于更新天数（更新天数是指到期前多少天更新证书，您可以在任务配置中调整该值）`);
-      maxDays = Math.floor(totalDays/2);
-      if(maxDays < 2){
+      maxDays = Math.floor(totalDays / 2);
+      if (maxDays < 2) {
         maxDays = 2;
       }
       this.logger.warn(`为避免每次运行都更新证书，更新天数自动减半（即证书最大时长${totalDays}天减半），调整为${maxDays}`);
     }
-   
+
     return {
       isWillExpire: leftDays <= maxDays,
       leftDays,

@@ -1,29 +1,27 @@
 import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
 import { HttpRequestConfig } from "@certd/basic";
 
-
 /**
  */
 @IsAccess({
   name: "github",
   title: "Github授权",
   desc: "",
-  icon: "ion:logo-github"
+  icon: "ion:logo-github",
 })
 export class GithubAccess extends BaseAccess {
-
   @AccessInput({
     title: "接口地址",
     component: {
       placeholder: "可以使用反向代理地址",
       component: {
         name: "a-input",
-        vModel: "value"
-      }
+        vModel: "value",
+      },
     },
-    helper:"默认值：https://api.github.com",
+    helper: "默认值：https://api.github.com",
     encrypt: false,
-    required: false
+    required: false,
   })
   endpoint!: string;
 
@@ -33,12 +31,12 @@ export class GithubAccess extends BaseAccess {
       placeholder: "GithubToken",
       component: {
         name: "a-input",
-        vModel: "value"
-      }
+        vModel: "value",
+      },
     },
-    helper:"支持匿名访问的接口可以不填",
+    helper: "支持匿名访问的接口可以不填",
     encrypt: true,
-    required: false
+    required: false,
   })
   githubToken!: string;
 
@@ -48,41 +46,39 @@ export class GithubAccess extends BaseAccess {
       placeholder: "http://192.168.x.x:10811",
       component: {
         name: "a-input",
-        vModel: "value"
-      }
+        vModel: "value",
+      },
     },
     encrypt: false,
-    required: false
+    required: false,
   })
   httpProxy!: string;
-
 
   @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "点击测试接口是否正常"
+    helper: "点击测试接口是否正常",
   })
   testRequest = true;
 
   async onTestRequest() {
-      await this.getRelease({repoName:"certd/certd"})
-      return "ok"
+    await this.getRelease({ repoName: "certd/certd" });
+    return "ok";
   }
 
-  async getRelease(req:{repoName:string}){
-        const url = `/repos/${req.repoName}/releases/latest`;
-        return await this.doRequest({
-          url,
-          method: "GET",
-          data:{}
-        });
+  async getRelease(req: { repoName: string }) {
+    const url = `/repos/${req.repoName}/releases/latest`;
+    return await this.doRequest({
+      url,
+      method: "GET",
+      data: {},
+    });
   }
 
-
-  async doRequest(req:HttpRequestConfig){
+  async doRequest(req: HttpRequestConfig) {
     /**
      * async function getLatestRelease() {
      *   const { REPO_OWNER, REPO_NAME, API_URL, TOKEN } = CONFIG.GITHUB;
@@ -113,18 +109,18 @@ export class GithubAccess extends BaseAccess {
      * }
      */
 
-    const headers:any = {}
-    if(this.githubToken){
-      headers.Authorization = `token ${this.githubToken}`
+    const headers: any = {};
+    if (this.githubToken) {
+      headers.Authorization = `token ${this.githubToken}`;
     }
-    const baseURL= this.endpoint || "https://api.github.com";
-    const res =  await this.ctx.http.request({
+    const baseURL = this.endpoint || "https://api.github.com";
+    const res = await this.ctx.http.request({
       url: req.url,
       baseURL,
       method: req.method || "POST",
       data: req.data,
       headers,
-      httpProxy: this.httpProxy||undefined,
+      httpProxy: this.httpProxy || undefined,
     });
 
     if (res) {
@@ -133,7 +129,5 @@ export class GithubAccess extends BaseAccess {
     throw new Error(res.message || res);
   }
 }
-
-
 
 new GithubAccess();

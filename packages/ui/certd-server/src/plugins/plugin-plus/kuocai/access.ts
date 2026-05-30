@@ -31,8 +31,6 @@ export class KuocaiCdnAccess extends BaseAccess {
   })
   password = "";
 
-  
-
   @AccessInput({
     title: "测试",
     component: {
@@ -47,9 +45,8 @@ export class KuocaiCdnAccess extends BaseAccess {
     const loginRes = await this.getLoginToken();
     await this.getDomainList(loginRes);
     return "ok";
-  } 
+  }
 
-  
   async getLoginToken() {
     const url = "https://kuocaicdn.com/login/loginUser";
     const data = {
@@ -110,7 +107,6 @@ export class KuocaiCdnAccess extends BaseAccess {
     }
     return res;
   }
-  
 }
 
 new KuocaiCdnAccess();

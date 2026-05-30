@@ -6,7 +6,7 @@ import { SftpAccess, SshAccess, SshClient } from "../../ssh/index.js";
 
 export default class SftpOssClientImpl extends BaseOssClient<SftpAccess> {
   getUploaderType() {
-    return 'sftp';
+    return "sftp";
   }
   async download(fileName: string, savePath: string): Promise<void> {
     const path = this.join(this.rootDir, fileName);

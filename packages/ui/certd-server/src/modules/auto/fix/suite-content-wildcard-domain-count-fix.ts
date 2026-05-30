@@ -14,7 +14,6 @@ export function fixSuiteContentWildcardDomainCount(contentValue?: string) {
   return JSON.stringify(content);
 }
 
-
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class SuiteContentWildcardDomainCountFix {
@@ -33,11 +32,11 @@ export class SuiteContentWildcardDomainCountFix {
       if (fixedCount > 0) {
         logger.info(`已修复套餐最大泛域名数量历史数据，数量=${fixedCount}`);
       }
-      return true
+      return true;
     } catch (e: any) {
       logger.error("修复套餐最大泛域名数量历史数据失败", e);
     }
-    return false
+    return false;
   }
 
   private async fixSuiteContentWildcardDomainCountByTable(entityManager: any, tableName: string) {

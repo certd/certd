@@ -30,8 +30,6 @@ export class K8sAccess extends BaseAccess {
   })
   skipTLSVerify: boolean;
 
-
-
   @AccessInput({
     title: "测试",
     component: {
@@ -43,13 +41,12 @@ export class K8sAccess extends BaseAccess {
   testRequest = true;
 
   async onTestRequest() {
-
-    const k8sClient = await this.getK8sClient()
+    const k8sClient = await this.getK8sClient();
     await k8sClient.getSecrets({
       namespace: "default",
-    })
+    });
     return "ok";
-  } 
+  }
 
   async getK8sClient() {
     const sdk = await import("@certd/lib-k8s");
@@ -62,7 +59,6 @@ export class K8sAccess extends BaseAccess {
     });
     return k8sClient;
   }
-
 }
 
 new K8sAccess();

@@ -20,7 +20,7 @@ export type XinnetRecord = {
   icon: "svg:icon-xinnet",
   // 这里是对应的 cloudflare的access类型名称
   accessType: "xinnet",
-  order: 7
+  order: 7,
 })
 export class XinnetProvider extends AbstractDnsProvider<XinnetRecord> {
   access!: XinnetAccess;
@@ -47,24 +47,24 @@ export class XinnetProvider extends AbstractDnsProvider<XinnetRecord> {
     const client = new XinnetClient({
       logger: this.logger,
       access: this.access,
-      http: this.http
+      http: this.http,
     });
 
     const res = await client.getDomainList({
-      searchKey: domain
+      searchKey: domain,
     });
 
     if (!res.list || res.list.length == 0) {
       throw new Error("域名不存在");
     }
 
-    let list = res.list.map((item) => ({
+    const list = res.list.map(item => ({
       domainName: item.domainName,
-      serviceCode: item.serviceCode
+      serviceCode: item.serviceCode,
     }));
     this.logger.info("域名列表:", JSON.stringify(list));
 
-    const domainItem = list.find((item) => item.domainName === domain);
+    const domainItem = list.find(item => item.domainName === domain);
     if (!domainItem) {
       throw new Error("域名（" + domain + "）不存在");
     }
@@ -72,24 +72,26 @@ export class XinnetProvider extends AbstractDnsProvider<XinnetRecord> {
     const serviceCode = domainItem.serviceCode;
 
     const dcpCookie = await client.getDcpCookie({
-      serviceCode
+      serviceCode,
     });
 
-    const recordRes = await client.addDomainDnsRecord({
-      recordName: hostRecord,
-      type: type,
-      recordValue: value
-    }, {
-      dcpCookie,
-      serviceCode
-    });
+    const recordRes = await client.addDomainDnsRecord(
+      {
+        recordName: hostRecord,
+        type: type,
+        recordValue: value,
+      },
+      {
+        dcpCookie,
+        serviceCode,
+      }
+    );
     return {
       ...recordRes,
       serviceCode,
-      dcpCookie
+      dcpCookie,
     };
   }
-
 
   /**
    *  删除dns解析记录,清理申请痕迹
@@ -99,43 +101,40 @@ export class XinnetProvider extends AbstractDnsProvider<XinnetRecord> {
     const client = new XinnetClient({
       logger: this.logger,
       access: this.access,
-      http: this.http
+      http: this.http,
     });
 
     const recordRes = options.recordRes;
     let dcpCookie = recordRes.dcpCookie;
     if (!dcpCookie) {
       dcpCookie = await client.getDcpCookie({
-        serviceCode: recordRes.serviceCode
+        serviceCode: recordRes.serviceCode,
       });
     }
 
     await client.deleteDomainDnsRecord(recordRes, {
       dcpCookie,
-      serviceCode: recordRes.serviceCode
+      serviceCode: recordRes.serviceCode,
     });
-
-
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
-
     const client = new XinnetClient({
       logger: this.logger,
       access: this.access,
-      http: this.http
+      http: this.http,
     });
-    
-    const res =  await client.getDomainList(req);
 
-    const list = res.list.map((item) => ({
+    const res = await client.getDomainList(req);
+
+    const list = res.list.map(item => ({
       domain: item.domainName,
-      id: item.domainName
+      id: item.domainName,
     }));
     return {
       list: list || [],
-      total: res.totalRows || 0
-    }
+      total: res.totalRows || 0,
+    };
   }
 }
 

@@ -152,7 +152,7 @@ export class OnePanelAccess extends BaseAccess {
         page: 1,
         pageSize: 1,
         order: "ascending",
-        orderBy: "expire_date"
+        orderBy: "expire_date",
       },
     });
     return "ok";

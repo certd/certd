@@ -1,8 +1,8 @@
-import {Body, Controller, Get, Inject, Post, Provide} from '@midwayjs/core';
-import {Constants, NotFoundException, ParamException, SysInstallInfo, SysSettingsService} from '@certd/lib-server';
-import {utils} from "@certd/basic";
-import {hiddenStatus, SafeService} from "../../modules/sys/settings/safe-service.js";
-import {IMidwayKoaContext} from "@midwayjs/koa";
+import { Body, Controller, Get, Inject, Post, Provide } from "@midwayjs/core";
+import { Constants, NotFoundException, ParamException, SysInstallInfo, SysSettingsService } from "@certd/lib-server";
+import { utils } from "@certd/basic";
+import { hiddenStatus, SafeService } from "../../modules/sys/settings/safe-service.js";
+import { IMidwayKoaContext } from "@midwayjs/koa";
 
 const unhiddenHtml = `
 <html lang="en">
@@ -19,48 +19,47 @@ const unhiddenHtml = `
 </body>
 </html>
 
-`
+`;
 
 @Provide()
-@Controller('/api/unhidden')
+@Controller("/api/unhidden")
 export class UnhiddenController {
-    @Inject()
-    ctx: IMidwayKoaContext;
-    @Inject()
-    safeService: SafeService;
-    @Inject()
-    sysSettingsService: SysSettingsService;
+  @Inject()
+  ctx: IMidwayKoaContext;
+  @Inject()
+  safeService: SafeService;
+  @Inject()
+  sysSettingsService: SysSettingsService;
 
-
-    @Post('/:randomPath', {description: Constants.per.guest})
-    async randomPath(@Body("password") password: any) {
-        await this.checkUnhiddenPath()
-        const hiddenSetting = await this.safeService.getHiddenSetting()
-        if (utils.hash.md5(password) === hiddenSetting.openPassword) {
-            //解锁
-            hiddenStatus.isHidden = false;
-            const setting = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo)
-            const bindUrl = setting.bindUrl
-            //解锁成功,跳转回首页,redirect
-            this.ctx.response.redirect(bindUrl || "/");
-            return
-        } else {
-            //密码错误
-            throw new ParamException('解锁密码错误');
-        }
+  @Post("/:randomPath", { description: Constants.per.guest })
+  async randomPath(@Body("password") password: any) {
+    await this.checkUnhiddenPath();
+    const hiddenSetting = await this.safeService.getHiddenSetting();
+    if (utils.hash.md5(password) === hiddenSetting.openPassword) {
+      //解锁
+      hiddenStatus.isHidden = false;
+      const setting = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
+      const bindUrl = setting.bindUrl;
+      //解锁成功,跳转回首页,redirect
+      this.ctx.response.redirect(bindUrl || "/");
+      return;
+    } else {
+      //密码错误
+      throw new ParamException("解锁密码错误");
     }
+  }
 
-    @Get('/:randomPath', {description: Constants.per.guest})
-    async unhiddenGet() {
-        await this.checkUnhiddenPath()
-        this.ctx.response.body = unhiddenHtml
-    }
+  @Get("/:randomPath", { description: Constants.per.guest })
+  async unhiddenGet() {
+    await this.checkUnhiddenPath();
+    this.ctx.response.body = unhiddenHtml;
+  }
 
-    async checkUnhiddenPath() {
-        const hiddenSetting = await this.safeService.getHiddenSetting()
-        if (this.ctx.path != `/api/unhidden/${hiddenSetting.openPath}`) {
-            this.ctx.res.statusCode = 404
-            throw new NotFoundException("Page not found")
-        }
+  async checkUnhiddenPath() {
+    const hiddenSetting = await this.safeService.getHiddenSetting();
+    if (this.ctx.path != `/api/unhidden/${hiddenSetting.openPath}`) {
+      this.ctx.res.statusCode = 404;
+      throw new NotFoundException("Page not found");
     }
+  }
 }

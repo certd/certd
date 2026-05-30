@@ -63,7 +63,6 @@ export class CommonEabToAcmeAccountFix {
   @Inject()
   storageService: StorageService;
 
-  
   async init() {
     try {
       const certApplyConfig = await this.pluginConfigService.getPluginConfig({

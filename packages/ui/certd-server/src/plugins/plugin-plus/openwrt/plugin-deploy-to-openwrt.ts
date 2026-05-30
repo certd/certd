@@ -1,6 +1,6 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
-import {  CertReader } from "@certd/plugin-lib";
+import { CertReader } from "@certd/plugin-lib";
 import { SshAccess } from "../../plugin-lib/ssh/ssh-access.js";
 import { SshClient } from "../../plugin-lib/ssh/ssh.js";
 import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
@@ -43,8 +43,7 @@ export class OpenwrtDeployCertPlugin extends AbstractPlusTaskPlugin {
   })
   accessId!: string;
 
-
-  async onInstance() { }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     const sshConf = await this.getAccess<SshAccess>(this.accessId);
@@ -56,7 +55,7 @@ export class OpenwrtDeployCertPlugin extends AbstractPlusTaskPlugin {
 
     await certReader.readCertFile({
       logger: this.logger,
-      handle: async (ctx) => {
+      handle: async ctx => {
         const crtPath = ctx.tmpCrtPath;
         const keyPath = ctx.tmpKeyPath;
         await sshClient.uploadFiles({
@@ -77,7 +76,7 @@ export class OpenwrtDeployCertPlugin extends AbstractPlusTaskPlugin {
     });
 
     this.logger.info(`证书上传完成，准备重启uhttpd生效`);
-    const cmd = `/etc/init.d/uhttpd restart`
+    const cmd = `/etc/init.d/uhttpd restart`;
 
     await sshClient.exec({
       connectConf: sshConf,

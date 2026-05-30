@@ -9,7 +9,6 @@ import { CaptchaRequest, ICaptchaAddon } from "../api.js";
   showTest: false,
 })
 export class CfTurnstileCaptcha extends BaseAddon implements ICaptchaAddon {
-
   @AddonInput({
     title: "站点密钥",
     component: {
@@ -37,30 +36,28 @@ export class CfTurnstileCaptcha extends BaseAddon implements ICaptchaAddon {
     const { remoteIp } = req;
 
     const formData = new FormData();
-    formData.append('secret', this.secretKey);
-    formData.append('response', token);
-    formData.append('remoteip', remoteIp);
+    formData.append("secret", this.secretKey);
+    formData.append("response", token);
+    formData.append("remoteip", remoteIp);
 
-      const res = await this.http.request({
-        url: 'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        data: formData
-      })
+    const res = await this.http.request({
+      url: "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      method: "POST",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      data: formData,
+    });
 
-      if (res.success) {
-        // Token is valid - process the form
-        return true;
-      } else {
-        // Token is invalid - reject the submission
-        const errorMessage = 'Cloudflare Turnstile 校验失败:' + res['error-codes'].join(', ')
-        this.logger.error(errorMessage);
-        throw new Error(errorMessage);
-      }
-   
-
+    if (res.success) {
+      // Token is valid - process the form
+      return true;
+    } else {
+      // Token is invalid - reject the submission
+      const errorMessage = "Cloudflare Turnstile 校验失败:" + res["error-codes"].join(", ");
+      this.logger.error(errorMessage);
+      throw new Error(errorMessage);
+    }
   }
 
   async getCaptcha(): Promise<any> {

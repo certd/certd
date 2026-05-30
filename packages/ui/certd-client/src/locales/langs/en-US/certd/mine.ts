@@ -13,14 +13,14 @@ export default {
   inputVerifyCode: "Please enter the verification code",
   myInfo: "My Information",
   user: {
-            greeting: "Hello",
-            profile: "Account Info",
-            logout: "Logout",
-            setting: {
-              grantSetting: "Grant Settings",
-              saveSuccess: "Save Success",
-              allowAdminViewCerts: "Allow Admin view and download Certs",
-              allowAdminViewCertsHelper: "Allow admin view and download all certificates",
-            },
-          },
+    greeting: "Hello",
+    profile: "Account Info",
+    logout: "Logout",
+    setting: {
+      grantSetting: "Grant Settings",
+      saveSuccess: "Save Success",
+      allowAdminViewCerts: "Allow Admin view and download Certs",
+      allowAdminViewCertsHelper: "Allow admin view and download all certificates",
+    },
+  },
 };

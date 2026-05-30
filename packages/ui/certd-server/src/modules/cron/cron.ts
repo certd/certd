@@ -1,5 +1,5 @@
-import parser from 'cron-parser';
-import { ILogger, logger } from '@certd/basic';
+import parser from "cron-parser";
+import { ILogger, logger } from "@certd/basic";
 
 export type CronTaskReq = {
   /**
@@ -57,7 +57,7 @@ export class Cron {
   }
 
   start() {
-    this.logger.info('[cron] start');
+    this.logger.info("[cron] start");
     this.queue.forEach(task => {
       task.genNextTime();
     });
@@ -85,11 +85,11 @@ export class Cron {
     }
     this.logger.info(`[cron] register cron : [${req.name}] ,${req.cron}`);
 
-    this.remove(req.name)
+    this.remove(req.name);
 
     const task = new CronTask(req, this.logger);
     this.queue.push(task);
-    this.logger.info('当前定时任务数量：', this.getTaskSize());
+    this.logger.info("当前定时任务数量：", this.getTaskSize());
   }
 
   remove(taskName: string) {
@@ -99,7 +99,7 @@ export class Cron {
       this.queue[index].stop();
       this.queue.splice(index, 1);
     }
-    this.logger.info('当前定时任务数量：', this.getTaskSize());
+    this.logger.info("当前定时任务数量：", this.getTaskSize());
   }
 
   getTaskSize() {

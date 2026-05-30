@@ -1,13 +1,6 @@
 import { createChallengeFn, getAuthoritativeDnsResolver } from "@certd/acme-client";
 import { cache, http, isDev, logger, utils } from "@certd/basic";
-import {
-  AccessService,
-  BaseService,
-  PlusService,
-  SysInstallInfo,
-  SysSettingsService,
-  ValidateException
-} from "@certd/lib-server";
+import { AccessService, BaseService, PlusService, SysInstallInfo, SysSettingsService, ValidateException } from "@certd/lib-server";
 import { CnameProvider, CnameRecord } from "@certd/pipeline";
 import { createDnsProvider, DomainParser, IDnsProvider } from "@certd/plugin-cert";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
@@ -57,7 +50,6 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
 
   @Inject()
   taskServiceBuilder: TaskServiceBuilder;
-
 
   //@ts-ignore
   getRepository() {
@@ -135,7 +127,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
       throw new ValidateException("id不能为空");
     }
     //hostRecord包含所有权校验信息，不允许用户修改hostRecord
-    delete param.hostRecord
+    delete param.hostRecord;
 
     const old = await this.info(param.id);
     if (!old) {
@@ -164,32 +156,32 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
   //   // 3.  检查原域名是否有cname记录
   // }
 
-  async getWithAccessByDomain(domain: string, userId: number,projectId?:number) {
-    const record: CnameRecord = await this.getByDomain(domain, userId,projectId);
+  async getWithAccessByDomain(domain: string, userId: number, projectId?: number) {
+    const record: CnameRecord = await this.getByDomain(domain, userId, projectId);
     if (record.cnameProvider.id > 0) {
       //自定义cname服务
       record.cnameProvider.access = await this.accessService.getAccessById(record.cnameProvider.accessId, false);
     } else {
       record.commonDnsProvider = new CommonDnsProvider({
         config: record.cnameProvider,
-        plusService: this.plusService
+        plusService: this.plusService,
       });
     }
 
     return record;
   }
 
-  async getByDomain(domain: string, userId: number,projectId?:number, createOnNotFound = true) {
+  async getByDomain(domain: string, userId: number, projectId?: number, createOnNotFound = true) {
     if (!domain) {
       throw new ValidateException("domain不能为空");
     }
     if (userId == null) {
       throw new ValidateException("userId不能为空");
     }
-    let record = await this.getRepository().findOne({ where: { domain, userId,projectId } });
+    let record = await this.getRepository().findOne({ where: { domain, userId, projectId } });
     if (record == null) {
       if (createOnNotFound) {
-        record = await this.add({ domain, userId,projectId });
+        record = await this.add({ domain, userId, projectId });
       } else {
         throw new ValidateException(`找不到${domain}的CNAME记录`);
       }
@@ -205,8 +197,8 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
     return {
       ...record,
       cnameProvider: {
-        ...provider
-      } as CnameProvider
+        ...provider,
+      } as CnameProvider,
     } as CnameRecord;
   }
 
@@ -222,17 +214,16 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
       if (domainPrefix) {
         const prefixStr = domainPrefix + ".";
         record.mainDomain = record.domain.substring(prefixStr.length);
-      }else{
+      } else {
         record.mainDomain = record.domain;
       }
 
       if (update) {
         await this.update({
           id: record.id,
-          mainDomain: record.mainDomain
+          mainDomain: record.mainDomain,
         });
       }
-
     }
   }
 
@@ -241,8 +232,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
    * @param id
    */
   async verify(id: number) {
-
-    const {walkTxtRecord} = createChallengeFn({logger});
+    const { walkTxtRecord } = createChallengeFn({ logger });
     const bean = await this.info(id);
     if (!bean) {
       throw new ValidateException(`CnameRecord:${id} 不存在`);
@@ -251,7 +241,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
       return true;
     }
 
-    await this.getByDomain(bean.domain, bean.userId,bean.projectId);
+    await this.getByDomain(bean.domain, bean.userId, bean.projectId);
     const taskService = this.taskServiceBuilder.create({ userId: bean.userId, projectId: bean.projectId });
     const subDomainGetter = await taskService.getSubDomainsGetter();
     const domainParser = new DomainParser(subDomainGetter);
@@ -263,7 +253,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
       value = {
         validating: false,
         pass: false,
-        startTime: new Date().getTime()
+        startTime: new Date().getTime(),
       };
     }
     let ttl = 5 * 60 * 1000;
@@ -285,17 +275,17 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
         //公共CNAME
         return new CommonDnsProvider({
           config: cnameProvider,
-          plusService: this.plusService
+          plusService: this.plusService,
         });
       }
 
-      const record = await this.getWithAccessByDomain(bean.domain, bean.userId,bean.projectId);
+      const record = await this.getWithAccessByDomain(bean.domain, bean.userId, bean.projectId);
 
-      const access = record.cnameProvider.access
-      const context = { access, logger, http, utils, domainParser, serviceGetter:taskService };
+      const access = record.cnameProvider.access;
+      const context = { access, logger, http, utils, domainParser, serviceGetter: taskService };
       const dnsProvider: IDnsProvider = await createDnsProvider({
         dnsProviderType: cnameProvider.dnsProviderType,
-        context
+        context,
       });
       return dnsProvider;
     };
@@ -309,7 +299,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
         }
         await dnsProvider.removeRecord({
           recordReq: value.recordReq,
-          recordRes: value.recordRes
+          recordRes: value.recordRes,
         });
         logger.info("删除CNAME的校验DNS记录成功");
       } catch (e) {
@@ -328,7 +318,6 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
         await clearVerifyRecord();
         return false;
       }
-
 
       const originDomain = await domainParser.parse(bean.domain);
       const fullDomain = `${bean.hostRecord}.${originDomain}`;
@@ -366,7 +355,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
     }
 
     cache.set(cacheKey, value, {
-      ttl: ttl
+      ttl: ttl,
     });
 
     const domain = await domainParser.parse(bean.recordValue);
@@ -377,7 +366,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
       fullRecord: fullRecord,
       hostRecord: hostRecord,
       type: "TXT",
-      value: testRecordValue
+      value: testRecordValue,
     };
 
     const dnsProvider = await buildDnsProvider();
@@ -418,8 +407,6 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
   }
 
   async checkRepeatAcmeChallengeRecords(acmeRecordDomain: string, targetCnameDomain: string) {
-
-    
     let dnsResolver = null;
     try {
       dnsResolver = await getAuthoritativeDnsResolver(acmeRecordDomain);
@@ -443,7 +430,6 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
           throw new Error(`${acmeRecordDomain}存在多个CNAME记录，请删除多余的CNAME记录：${cnameRecord}`);
         }
       }
-
     }
 
     // 确保权威服务器里面没有纯粹的TXT记录
@@ -465,7 +451,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
       return;
     }
 
-    const {walkTxtRecord} = createChallengeFn({logger});
+    const { walkTxtRecord } = createChallengeFn({ logger });
 
     if (cnameRecords.length > 0) {
       // 从cname记录中获取txt记录
@@ -479,7 +465,6 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
         }
       }
     }
-
   }
 
   async resetStatus(id: number) {
@@ -489,27 +474,32 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
     await this.getRepository().update(id, { status: "cname", mainDomain: "" });
   }
 
-  async doImport(req:{ userId: number; projectId: number; domainList: string; cnameProviderId: any }) {
-    const {userId,projectId,cnameProviderId,domainList} = req;
-    const domains = domainList.split("\n").map(item => item.trim()).filter(item => item.length > 0);
+  async doImport(req: { userId: number; projectId: number; domainList: string; cnameProviderId: any }) {
+    const { userId, projectId, cnameProviderId, domainList } = req;
+    const domains = domainList
+      .split("\n")
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
     if (domains.length === 0) {
       throw new ValidateException("域名列表不能为空");
     }
     if (!req.cnameProviderId) {
       throw new ValidateException("CNAME服务提供商不能为空");
     }
-   
-    taskExecutor.start(new BackTask({
-      type:"cnameImport",
-      key: "user_"+userId,
-      title: "导入CNAME记录",
-      run: async (task) => {
-        await this._import({ userId,projectId, domains, cnameProviderId },task);
-      }
-    }));
+
+    taskExecutor.start(
+      new BackTask({
+        type: "cnameImport",
+        key: "user_" + userId,
+        title: "导入CNAME记录",
+        run: async task => {
+          await this._import({ userId, projectId, domains, cnameProviderId }, task);
+        },
+      })
+    );
   }
 
-  async _import(req :{ userId: number; projectId: number; domains: string[]; cnameProviderId: any },task:BackTask) {
+  async _import(req: { userId: number; projectId: number; domains: string[]; cnameProviderId: any }, task: BackTask) {
     const userId = req.userId;
     for (const domain of req.domains) {
       const old = await this.getRepository().findOne({
@@ -523,17 +513,16 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
         logger.warn(`域名${domain}已存在，跳过`);
       }
       //开始导入
-      try{
-          await this.add({
-            userId,
-            domain: domain,
-            projectId: req.projectId,
-            cnameProviderId: req.cnameProviderId,
-          });
-      }catch(e){
+      try {
+        await this.add({
+          userId,
+          domain: domain,
+          projectId: req.projectId,
+          cnameProviderId: req.cnameProviderId,
+        });
+      } catch (e) {
         logger.error(`导入域名${domain}失败：${e.message}`);
       }
     }
-   
   }
 }

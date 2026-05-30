@@ -1,5 +1,5 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { RoleService } from './role-service.js';
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { RoleService } from "./role-service.js";
 
 /**
  * 权限校验
@@ -28,7 +28,7 @@ export class AuthService {
   }
 
   //管理员有权限查看其他用户的数据
-  async checkUserIdButAllowAdmin(ctx: any, service: any, ids: number| number[] = null, userKey = 'userId') {
+  async checkUserIdButAllowAdmin(ctx: any, service: any, ids: number | number[] = null, userKey = "userId") {
     const isAdmin = await this.isAdmin(ctx);
     if (isAdmin) {
       return true;
@@ -36,11 +36,11 @@ export class AuthService {
     await service.checkUserId(ids, ctx.user.id, userKey);
   }
 
-  async checkProjectId(service:any,ids:number| number[] = null,projectId = null){
-    await service.checkUserId(ids, projectId , "projectId");
+  async checkProjectId(service: any, ids: number | number[] = null, projectId = null) {
+    await service.checkUserId(ids, projectId, "projectId");
   }
 
-  async checkUserId(service:any,ids:number| number[] = null,userId = null){
-    await service.checkUserId(ids, userId , "userId");
+  async checkUserId(service: any, ids: number | number[] = null, userId = null) {
+    await service.checkUserId(ids, userId, "userId");
   }
 }

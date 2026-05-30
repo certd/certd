@@ -1,12 +1,12 @@
-import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
-import { CrudController } from '@certd/lib-server';
-import { RoleService } from '../../../modules/sys/authority/service/role-service.js';
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
+import { CrudController } from "@certd/lib-server";
+import { RoleService } from "../../../modules/sys/authority/service/role-service.js";
 
 /**
  * 系统用户
  */
 @Provide()
-@Controller('/api/sys/authority/role')
+@Controller("/api/sys/authority/role")
 export class RoleController extends CrudController<RoleService> {
   @Inject()
   service: RoleService;
@@ -15,7 +15,7 @@ export class RoleController extends CrudController<RoleService> {
     return this.service;
   }
 
-  @Post('/page', { description: 'sys:auth:role:view' })
+  @Post("/page", { description: "sys:auth:role:view" })
   async page(
     @Body(ALL)
     body
@@ -23,13 +23,13 @@ export class RoleController extends CrudController<RoleService> {
     return await super.page(body);
   }
 
-  @Post('/list', { description: 'sys:auth:role:view' })
+  @Post("/list", { description: "sys:auth:role:view" })
   async list() {
     const ret = await this.service.find({});
     return this.ok(ret);
   }
 
-  @Post('/add', { description: 'sys:auth:role:add' })
+  @Post("/add", { description: "sys:auth:role:add" })
   async add(
     @Body(ALL)
     bean
@@ -37,36 +37,36 @@ export class RoleController extends CrudController<RoleService> {
     return await super.add(bean);
   }
 
-  @Post('/update', { description: 'sys:auth:role:edit' })
+  @Post("/update", { description: "sys:auth:role:edit" })
   async update(
     @Body(ALL)
     bean
   ) {
     return await super.update(bean);
   }
-  @Post('/delete', { description: 'sys:auth:role:remove' })
+  @Post("/delete", { description: "sys:auth:role:remove" })
   async delete(
-    @Query('id')
+    @Query("id")
     id: number
   ) {
     if (id === 1) {
-      throw new Error('不能删除默认的管理员角色');
+      throw new Error("不能删除默认的管理员角色");
     }
     return await super.delete(id);
   }
 
-  @Post('/getPermissionTree', { description: 'sys:auth:role:view' })
+  @Post("/getPermissionTree", { description: "sys:auth:role:view" })
   async getPermissionTree(
-    @Query('id')
+    @Query("id")
     id: number
   ) {
     const ret = await this.service.getPermissionTreeByRoleId(id);
     return this.ok(ret);
   }
 
-  @Post('/getPermissionIds', { description: 'sys:auth:role:view' })
+  @Post("/getPermissionIds", { description: "sys:auth:role:view" })
   async getPermissionIds(
-    @Query('id')
+    @Query("id")
     id: number
   ) {
     const ret = await this.service.getPermissionIdsByRoleId(id);
@@ -78,8 +78,8 @@ export class RoleController extends CrudController<RoleService> {
    * @param roleId
    * @param permissionIds
    */
-  @Post('/authz', { description: 'sys:auth:role:edit' })
-  async authz(@Body('roleId') roleId, @Body('permissionIds') permissionIds) {
+  @Post("/authz", { description: "sys:auth:role:edit" })
+  async authz(@Body("roleId") roleId, @Body("permissionIds") permissionIds) {
     await this.service.authz(roleId, permissionIds);
     return this.ok(null);
   }

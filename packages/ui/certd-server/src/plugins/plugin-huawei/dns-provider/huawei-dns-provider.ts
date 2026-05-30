@@ -14,7 +14,7 @@ export type SearchRecordOptions = {
   title: "华为云",
   desc: "华为云DNS解析提供商",
   accessType: "huawei",
-  icon: "svg:icon-huawei"
+  icon: "svg:icon-huawei",
 })
 export class HuaweiDnsProvider extends AbstractDnsProvider {
   client!: HuaweiYunClient;
@@ -23,7 +23,7 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
   dnsEndpoint = "https://dns.cn-south-1.myhuaweicloud.com";
 
   async onInstance() {
-    this.access = this.ctx.access as HuaweiAccess
+    this.access = this.ctx.access as HuaweiAccess;
     const access: any = this.access;
     this.client = new HuaweiYunClient(access, this.logger);
   }
@@ -32,7 +32,7 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
     const url = `${this.dnsEndpoint}/v2/zones`;
     const ret = await this.client.request({
       url,
-      method: "GET"
+      method: "GET",
     });
     return ret.zones;
   }
@@ -55,7 +55,7 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
   async searchRecord(options: SearchRecordOptions): Promise<any> {
     const req: ApiRequestOptions = {
       url: `${this.dnsEndpoint}/v2/zones/${options.zoneId}/recordsets?search_mode=equal&name=${options.fullRecord}.&type=${options.type}`,
-      method: "GET"
+      method: "GET",
     };
     const ret = await this.client.request(req);
     return ret.recordsets;
@@ -70,7 +70,7 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
 
     const records: any = await this.searchRecord({
       zoneId,
-      ...options
+      ...options,
     });
     this.logger.info(`查询${options.type}数量:${records.length}`);
     let found = null;
@@ -97,8 +97,8 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
         data: {
           name: fullRecord + ".",
           type,
-          records: [hwRecordValue, ...found.records]
-        }
+          records: [hwRecordValue, ...found.records],
+        },
       };
       const ret = await this.client.request(req);
       this.logger.info("添加域名解析成功:", value, ret);
@@ -112,8 +112,8 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
           data: {
             name: fullRecord + ".",
             type,
-            records: [hwRecordValue]
-          }
+            records: [hwRecordValue],
+          },
         };
         const ret = await this.client.request(req);
         this.logger.info("添加域名解析成功:", value, ret);
@@ -140,7 +140,7 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
     //查询原来的记录
     const records: any = await this.searchRecord({
       zoneId,
-      ...options.recordReq
+      ...options.recordReq,
     });
     const hwRecordValue = `"${value}"`;
 
@@ -157,8 +157,8 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
             data: {
               name: fullRecord + ".",
               type: found.type,
-              records: found.records.filter((item: string) => item !== hwRecordValue)
-            }
+              records: found.records.filter((item: string) => item !== hwRecordValue),
+            },
           };
           const ret = await this.client.request(req);
           this.logger.info("修改域名解析成功[put]:", value, ret);
@@ -166,36 +166,36 @@ export class HuaweiDnsProvider extends AbstractDnsProvider {
           //删除
           const req: ApiRequestOptions = {
             url: `${this.dnsEndpoint}/v2/zones/${zoneId}/recordsets/${found.id}`,
-            method: "DELETE"
+            method: "DELETE",
           };
           const ret = await this.client.request(req);
           this.logger.info("删除域名解析成功[delete]:", fullRecord, value, ret.RecordId);
         }
-      }else{
-        this.logger.info("没有找到records无需删除", fullRecord, value,found);
+      } else {
+        this.logger.info("没有找到records无需删除", fullRecord, value, found);
       }
-    }else{
+    } else {
       this.logger.info("删除域名解析失败，没有找到解析记录", fullRecord, value);
     }
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
     const pager = new Pager(req);
-     let url = `${this.dnsEndpoint}/v2/zones?offset=${pager.getOffset()}&limit=${pager.pageSize}`;
-     if (req.searchKey){
-      url += `&name=${req.searchKey}`
-     }
+    let url = `${this.dnsEndpoint}/v2/zones?offset=${pager.getOffset()}&limit=${pager.pageSize}`;
+    if (req.searchKey) {
+      url += `&name=${req.searchKey}`;
+    }
     const ret = await this.client.request({
       url,
-      method: "GET"
+      method: "GET",
     });
-    let list = ret.zones || []
+    let list = ret.zones || [];
     list = list.map((item: any) => ({
       id: item.id,
       domain: item.name.endsWith(".") ? item.name.slice(0, -1) : item.name,
     }));
     return {
-      total:ret.metadata.total_count || list.length,
+      total: ret.metadata.total_count || list.length,
       list,
     };
   }

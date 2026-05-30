@@ -83,7 +83,6 @@ export class KuocaiDeployToCDNPlugin extends AbstractTaskPlugin {
     }
   }
 
-
   async onGetDomainList(data: any) {
     if (!this.accessId) {
       throw new Error("请选择Access授权");

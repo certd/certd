@@ -11,7 +11,7 @@ const regionOptions = [
   { label: "广州", value: "cn-guangzhou" },
   { label: "香港", value: "cn-hongkong" },
   { label: "柔佛", value: "ap-southeast-1" },
-  { label: "雅加达", value: "ap-southeast-3" }
+  { label: "雅加达", value: "ap-southeast-3" },
 ];
 
 @IsTaskPlugin({
@@ -22,9 +22,9 @@ const regionOptions = [
   desc: "替换火山引擎VKE集群中的TLS Secret证书",
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 export class VolcengineDeployToVKE extends AbstractTaskPlugin {
   @TaskInput({
@@ -32,9 +32,9 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
+      from: [...CertApplyPluginNames],
     },
-    required: true
+    required: true,
   })
   cert!: CertInfo;
 
@@ -46,9 +46,9 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     helper: "火山引擎AccessKeyId、AccessKeySecret",
     component: {
       name: "access-selector",
-      type: "volcengine"
+      type: "volcengine",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
 
@@ -57,10 +57,10 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     helper: "VKE集群所在地域",
     component: {
       name: "a-select",
-      options: regionOptions
+      options: regionOptions,
     },
     value: "cn-beijing",
-    required: true
+    required: true,
   })
   regionId!: string;
 
@@ -71,7 +71,7 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       action: VolcengineDeployToVKE.prototype.onGetClusterList.name,
       watches: ["accessId", "regionId"],
       single: true,
-      required: true
+      required: true,
     })
   )
   clusterId!: string;
@@ -83,11 +83,11 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       name: "a-select",
       options: [
         { label: "公网", value: "Public" },
-        { label: "私网", value: "Private" }
-      ]
+        { label: "私网", value: "Private" },
+      ],
     },
     value: "Public",
-    required: true
+    required: true,
   })
   kubeconfigType!: "Public" | "Private";
 
@@ -95,9 +95,9 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     title: "命名空间",
     value: "default",
     component: {
-      placeholder: "命名空间"
+      placeholder: "命名空间",
     },
-    required: true
+    required: true,
   })
   namespace!: string;
 
@@ -108,11 +108,11 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       name: "a-select",
       options: [
         { label: "按Ingress替换", value: "ingress" },
-        { label: "按Secret替换", value: "secret" }
-      ]
+        { label: "按Secret替换", value: "secret" },
+      ],
     },
     value: "ingress",
-    required: true
+    required: true,
   })
   targetType!: "ingress" | "secret";
 
@@ -125,7 +125,7 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
         show: ctx.compute(({form}) => form.targetType === 'ingress'),
         required: ctx.compute(({form}) => form.targetType === 'ingress')
       }
-    `
+    `,
   })
   ingressName!: string;
 
@@ -137,14 +137,14 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       name: "a-select",
       vModel: "value",
       mode: "tags",
-      open: false
+      open: false,
     },
     mergeScript: `
       return {
         show: ctx.compute(({form}) => form.targetType === 'secret'),
         required: ctx.compute(({form}) => form.targetType === 'secret')
       }
-    `
+    `,
   })
   secretName!: string | string[];
 
@@ -154,8 +154,8 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     value: false,
     component: {
       name: "a-switch",
-      vModel: "checked"
-    }
+      vModel: "checked",
+    },
   })
   createOnNotFound!: boolean;
 
@@ -165,8 +165,8 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     value: false,
     component: {
       name: "a-switch",
-      vModel: "checked"
-    }
+      vModel: "checked",
+    },
   })
   skipTLSVerify!: boolean;
 
@@ -188,7 +188,7 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       const k8sClient = new this.K8sClient({
         kubeConfigStr: kubeconfig,
         logger: this.logger,
-        skipTLSVerify: this.skipTLSVerify
+        skipTLSVerify: this.skipTLSVerify,
       });
       const secretNames = await this.getTargetSecretNames(k8sClient);
       await this.patchCertSecret({ cert: this.cert, k8sClient, secretNames });
@@ -209,7 +209,7 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     const client = new VolcengineClient({
       logger: this.logger,
       access,
-      http: this.http
+      http: this.http,
     });
     return await client.getVkeService({ region: this.regionId });
   }
@@ -222,8 +222,8 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       body: {
         ClusterId: clusterId,
         Type: this.kubeconfigType,
-        ValidDuration: 3600
-      }
+        ValidDuration: 3600,
+      },
     });
     const kubeconfigId = res.Result?.Id || res.Id;
     if (!kubeconfigId) {
@@ -242,11 +242,11 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
         Filter: {
           ClusterIds: [clusterId],
           Ids: [kubeconfigId],
-          Types: [this.kubeconfigType]
+          Types: [this.kubeconfigType],
         },
         PageNumber: 1,
-        PageSize: 10
-      }
+        PageSize: 10,
+      },
     });
     const items = res.Result?.Items || res.Items || [];
     const item = items.find((it: any) => it.Id === kubeconfigId) || items[0];
@@ -268,8 +268,8 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
         method: "POST",
         body: {
           ClusterId: clusterId,
-          Ids: [kubeconfigId]
-        }
+          Ids: [kubeconfigId],
+        },
       });
       this.logger.info(`已删除临时Kubeconfig:${kubeconfigId}`);
     } catch (e) {
@@ -303,7 +303,9 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     const resource = message.match(/resource "([^"]+)"/)?.[1] || body.details?.kind || "目标资源";
     const namespace = message.match(/namespace "([^"]+)"/)?.[1] || this.namespace;
     const userText = granteeId ? `，用户ID:${granteeId}` : "";
-    return `VKE集群RBAC权限不足：当前火山引擎授权${userText}在集群:${this.getClusterId()} 的命名空间:${namespace} 没有操作 ${resource} 的权限。请在火山引擎 VKE 集群权限管理中，为该用户授予此命名空间的管理员权限，或授予包含 secrets get/create/update/patch 的自定义角色。原始错误:${JSON.stringify(body)}`;
+    return `VKE集群RBAC权限不足：当前火山引擎授权${userText}在集群:${this.getClusterId()} 的命名空间:${namespace} 没有操作 ${resource} 的权限。请在火山引擎 VKE 集群权限管理中，为该用户授予此命名空间的管理员权限，或授予包含 secrets get/create/update/patch 的自定义角色。原始错误:${JSON.stringify(
+      body
+    )}`;
   }
 
   private async getTargetSecretNames(k8sClient: any) {
@@ -315,7 +317,7 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     }
 
     const ingressList = await k8sClient.getIngressList({
-      namespace: this.namespace
+      namespace: this.namespace,
     });
     const ingress = ingressList.items.find((item: any) => item.metadata.name === this.ingressName);
     if (!ingress) {
@@ -341,13 +343,13 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     const body: any = {
       data: {
         "tls.crt": Buffer.from(cert.crt).toString("base64"),
-        "tls.key": Buffer.from(cert.key).toString("base64")
+        "tls.key": Buffer.from(cert.key).toString("base64"),
       },
       metadata: {
         labels: {
-          certd: this.appendTimeSuffix("certd")
-        }
-      }
+          certd: this.appendTimeSuffix("certd"),
+        },
+      },
     };
 
     for (const secretName of secretNames) {
@@ -357,7 +359,7 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
         namespace: this.namespace,
         secretName,
         body,
-        createOnNotFound: this.createOnNotFound
+        createOnNotFound: this.createOnNotFound,
       });
       this.logger.info(`VKE Secret已更新:${secretName}`);
     }
@@ -378,13 +380,13 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       method: "POST",
       body: {
         PageNumber: 1,
-        PageSize: 100
-      }
+        PageSize: 100,
+      },
     });
     const list = res.Result?.Items || res.Items || [];
     return list.map((item: any) => ({
       label: `${item.Name || item.Id}<${item.Id}>`,
-      value: item.Id
+      value: item.Id,
     }));
   }
 }

@@ -1,14 +1,14 @@
-import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
-import { CertInfo } from '@certd/plugin-cert';
+import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { CertInfo } from "@certd/plugin-cert";
 import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
-import { ProxmoxAccess } from '../access.js';
-import { createRemoteSelectInputDefine } from '@certd/plugin-lib';
-import { CertApplyPluginNames} from '@certd/plugin-cert';
+import { ProxmoxAccess } from "../access.js";
+import { createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { CertApplyPluginNames } from "@certd/plugin-cert";
 @IsTaskPlugin({
   //命名规范，插件名称+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名
-  name: 'ProxmoxUploadCert',
-  title: 'Proxmox-上传证书到Proxmox',
-  icon: 'svg:icon-proxmox',
+  name: "ProxmoxUploadCert",
+  title: "Proxmox-上传证书到Proxmox",
+  icon: "svg:icon-proxmox",
   //插件分组
   group: pluginGroups.panel.key,
   needPlus: true,
@@ -23,10 +23,10 @@ import { CertApplyPluginNames} from '@certd/plugin-cert';
 export class ProxmoxUploadCert extends AbstractPlusTaskPlugin {
   //证书选择，此项必须要有
   @TaskInput({
-    title: '域名证书',
-    helper: '请选择前置任务输出的域名证书',
+    title: "域名证书",
+    helper: "请选择前置任务输出的域名证书",
     component: {
-      name: 'output-selector',
+      name: "output-selector",
       from: [...CertApplyPluginNames],
     },
     // required: true, // 必填
@@ -39,10 +39,10 @@ export class ProxmoxUploadCert extends AbstractPlusTaskPlugin {
 
   //授权选择框
   @TaskInput({
-    title: 'Proxmox授权',
+    title: "Proxmox授权",
     component: {
-      name: 'access-selector',
-      type: 'proxmox', //固定授权类型
+      name: "access-selector",
+      type: "proxmox", //固定授权类型
     },
     required: true, //必填
   })
@@ -51,11 +51,11 @@ export class ProxmoxUploadCert extends AbstractPlusTaskPlugin {
 
   @TaskInput(
     createRemoteSelectInputDefine({
-      title: '节点',
-      helper: '要部署证书的节点',
-      typeName: 'ProxmoxUploadCert',
+      title: "节点",
+      helper: "要部署证书的节点",
+      typeName: "ProxmoxUploadCert",
       action: ProxmoxUploadCert.prototype.onGetNodeList.name,
-      watches: ['accessId'],
+      watches: ["accessId"],
     })
   )
   nodes!: string[];
@@ -71,21 +71,19 @@ export class ProxmoxUploadCert extends AbstractPlusTaskPlugin {
 
     for (const node of this.nodes) {
       this.logger.info(`开始上传证书到节点：${node}`);
-      try{
+      try {
         const res = await client.nodes.get(node).certificates.custom.uploadCustomCert(cert.crt, true, cert.key, true);
         this.logger.info(`上传结果：${JSON.stringify(res.response)}`);
-      }catch (e) {
+      } catch (e) {
         this.logger.error(`执行失败：${e.message}，请检查节点名称是否正确`);
-        throw e
+        throw e;
       }
-
     }
 
-    this.logger.info('部署成功');
+    this.logger.info("部署成功");
   }
 
-   async onGetNodeList() {
-
+  async onGetNodeList() {
     const access = await this.getAccess<ProxmoxAccess>(this.accessId);
     const nodesRes = await access.getNodeList();
     return nodesRes.map((node: any) => {

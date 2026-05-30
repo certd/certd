@@ -1,17 +1,17 @@
-import { ALL, Body, Controller, Inject, Post, Provide, Query } from '@midwayjs/core';
-import { Constants, CrudController, ValidateException } from '@certd/lib-server';
-import { NotificationService } from '../../../modules/pipeline/service/notification-service.js';
-import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
-import { NotificationDefine } from '@certd/pipeline';
-import { checkPlus } from '@certd/plus-core';
-import { ApiTags } from '@midwayjs/swagger';
+import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
+import { Constants, CrudController, ValidateException } from "@certd/lib-server";
+import { NotificationService } from "../../../modules/pipeline/service/notification-service.js";
+import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
+import { NotificationDefine } from "@certd/pipeline";
+import { checkPlus } from "@certd/plus-core";
+import { ApiTags } from "@midwayjs/swagger";
 
 /**
  * 通知
  */
 @Provide()
-@Controller('/api/pi/notification')
-@ApiTags(['pipeline-notification'])
+@Controller("/api/pi/notification")
+@ApiTags(["pipeline-notification"])
 export class NotificationController extends CrudController<NotificationService> {
   @Inject()
   service: NotificationService;
@@ -22,14 +22,14 @@ export class NotificationController extends CrudController<NotificationService> 
     return this.service;
   }
 
-  @Post('/page', { description: Constants.per.authOnly, summary: "查询通知配置分页列表" })
+  @Post("/page", { description: Constants.per.authOnly, summary: "查询通知配置分页列表" })
   async page(@Body(ALL) body) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     delete body.query.userId;
     body.query.projectId = projectId;
     const buildQuery = qb => {
-      qb.andWhere('user_id = :userId', { userId:  userId});
+      qb.andWhere("user_id = :userId", { userId: userId });
     };
     const res = await this.service.page({
       query: body.query,
@@ -40,24 +40,24 @@ export class NotificationController extends CrudController<NotificationService> 
     return this.ok(res);
   }
 
-  @Post('/list', { description: Constants.per.authOnly, summary: "查询通知配置列表" })
+  @Post("/list", { description: Constants.per.authOnly, summary: "查询通知配置列表" })
   async list(@Body(ALL) body) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     body.query.userId = userId;
     body.query.projectId = projectId;
     return super.list(body);
   }
 
-  @Post('/add', { description: Constants.per.authOnly, summary: "添加通知配置" })
+  @Post("/add", { description: Constants.per.authOnly, summary: "添加通知配置" })
   async add(@Body(ALL) bean) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     bean.userId = userId;
     bean.projectId = projectId;
     const type = bean.type;
     const define: NotificationDefine = this.service.getDefineByType(type);
     if (!define) {
-      throw new ValidateException('通知类型不存在');
+      throw new ValidateException("通知类型不存在");
     }
     if (define.needPlus) {
       checkPlus();
@@ -65,18 +65,18 @@ export class NotificationController extends CrudController<NotificationService> 
     return super.add(bean);
   }
 
-  @Post('/update', { description: Constants.per.authOnly, summary: "更新通知配置" })
+  @Post("/update", { description: Constants.per.authOnly, summary: "更新通知配置" })
   async update(@Body(ALL) bean) {
-    await this.checkOwner(this.getService(), bean.id,"write");
+    await this.checkOwner(this.getService(), bean.id, "write");
     const old = await this.service.info(bean.id);
     if (!old) {
-      throw new ValidateException('通知配置不存在');
+      throw new ValidateException("通知配置不存在");
     }
     if (old.type !== bean.type) {
       const type = bean.type;
       const define: NotificationDefine = this.service.getDefineByType(type);
       if (!define) {
-        throw new ValidateException('通知类型不存在');
+        throw new ValidateException("通知类型不存在");
       }
       if (define.needPlus) {
         checkPlus();
@@ -86,25 +86,25 @@ export class NotificationController extends CrudController<NotificationService> 
     delete bean.projectId;
     return super.update(bean);
   }
-  @Post('/info', { description: Constants.per.authOnly, summary: "查询通知配置详情" })
-  async info(@Query('id') id: number) {
-    await this.checkOwner(this.getService(), id,"read");
+  @Post("/info", { description: Constants.per.authOnly, summary: "查询通知配置详情" })
+  async info(@Query("id") id: number) {
+    await this.checkOwner(this.getService(), id, "read");
     return super.info(id);
   }
 
-  @Post('/delete', { description: Constants.per.authOnly, summary: "删除通知配置" })
-  async delete(@Query('id') id: number) {
-    await this.checkOwner(this.getService(), id,"write");
+  @Post("/delete", { description: Constants.per.authOnly, summary: "删除通知配置" })
+  async delete(@Query("id") id: number) {
+    await this.checkOwner(this.getService(), id, "write");
     return super.delete(id);
   }
 
-  @Post('/define', { description: Constants.per.authOnly, summary: "查询通知插件定义" })
-  async define(@Query('type') type: string) {
+  @Post("/define", { description: Constants.per.authOnly, summary: "查询通知插件定义" })
+  async define(@Query("type") type: string) {
     const notification = this.service.getDefineByType(type);
     return this.ok(notification);
   }
 
-  @Post('/getTypeDict', { description: Constants.per.authOnly, summary: "查询通知类型字典" })
+  @Post("/getTypeDict", { description: Constants.per.authOnly, summary: "查询通知类型字典" })
   async getTypeDict() {
     const list: any = this.service.getDefineList();
     let dict = [];
@@ -125,48 +125,48 @@ export class NotificationController extends CrudController<NotificationService> 
     return this.ok(dict);
   }
 
-  @Post('/simpleInfo', { description: Constants.per.authOnly, summary: "查询通知配置简单信息" })
-  async simpleInfo(@Query('id') id: number) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+  @Post("/simpleInfo", { description: Constants.per.authOnly, summary: "查询通知配置简单信息" })
+  async simpleInfo(@Query("id") id: number) {
+    const { projectId, userId } = await this.getProjectUserIdRead();
     if (id === 0) {
       //获取默认
-      const res = await this.service.getDefault(userId,projectId);
+      const res = await this.service.getDefault(userId, projectId);
       if (!res) {
-        throw new ValidateException('默认通知配置不存在');
+        throw new ValidateException("默认通知配置不存在");
       }
       const simple = await this.service.getSimpleInfo(res.id);
       return this.ok(simple);
     }
-    await this.checkOwner(this.getService(), id,"read",true);
+    await this.checkOwner(this.getService(), id, "read", true);
     const res = await this.service.getSimpleInfo(id);
     return this.ok(res);
   }
 
-  @Post('/getDefaultId', { description: Constants.per.authOnly, summary: "查询默认通知配置ID" })
+  @Post("/getDefaultId", { description: Constants.per.authOnly, summary: "查询默认通知配置ID" })
   async getDefaultId() {
-    const {projectId,userId} = await this.getProjectUserIdRead();
-    const res = await this.service.getDefault(userId,projectId);
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    const res = await this.service.getDefault(userId, projectId);
     return this.ok(res?.id);
   }
 
-  @Post('/setDefault', { description: Constants.per.authOnly, summary: "设置默认通知配置" })
-  async setDefault(@Query('id') id: number) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
-    await this.checkOwner(this.getService(), id,"write");
-    const res = await this.service.setDefault(id, userId,projectId);
+  @Post("/setDefault", { description: Constants.per.authOnly, summary: "设置默认通知配置" })
+  async setDefault(@Query("id") id: number) {
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    await this.checkOwner(this.getService(), id, "write");
+    const res = await this.service.setDefault(id, userId, projectId);
     return this.ok(res);
   }
 
-  @Post('/getOrCreateDefault', { description: Constants.per.authOnly, summary: "获取或创建默认通知配置" })
-  async getOrCreateDefault(@Body('email') email: string) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
-    const res = await this.service.getOrCreateDefault(email, userId,projectId);
+  @Post("/getOrCreateDefault", { description: Constants.per.authOnly, summary: "获取或创建默认通知配置" })
+  async getOrCreateDefault(@Body("email") email: string) {
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    const res = await this.service.getOrCreateDefault(email, userId, projectId);
     return this.ok(res);
   }
 
-  @Post('/options', { description: Constants.per.authOnly, summary: "查询通知配置选项" })
+  @Post("/options", { description: Constants.per.authOnly, summary: "查询通知配置选项" })
   async options() {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     const res = await this.service.list({
       query: {
         userId: userId,

@@ -1,1 +1,1 @@
-export { isDev } from '@certd/basic';
+export { isDev } from "@certd/basic";

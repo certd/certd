@@ -2,28 +2,26 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
 import { HttpRequestConfig } from "@certd/basic";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
 
-
 /**
  */
 @IsAccess({
   name: "farcdn",
   title: "farcdn授权",
   desc: "",
-  icon: "svg:icon-lucky"
+  icon: "svg:icon-lucky",
 })
 export class FarcdnAccess extends BaseAccess {
   @AccessInput({
     title: "接口地址",
-    value:"https://open.farcdn.net/api/source",
+    value: "https://open.farcdn.net/api/source",
     component: {
       placeholder: "https://open.farcdn.net/api/source",
       name: "a-input",
-      vModel: "value"
+      vModel: "value",
     },
-    required: true
+    required: true,
   })
   endpoint!: string;
-
 
   @AccessInput({
     title: "accessKeyId",
@@ -31,11 +29,11 @@ export class FarcdnAccess extends BaseAccess {
       placeholder: "accessKeyId",
       component: {
         name: "a-input",
-        vModel: "value"
-      }
+        vModel: "value",
+      },
     },
     encrypt: false,
-    required: true
+    required: true,
   })
   accessKeyId!: string;
 
@@ -45,14 +43,13 @@ export class FarcdnAccess extends BaseAccess {
       placeholder: "accessKey",
       component: {
         name: "a-input",
-        vModel: "value"
-      }
+        vModel: "value",
+      },
     },
     encrypt: true,
-    required: true
+    required: true,
   })
   accessKey!: string;
-
 
   @AccessInput({
     title: "HttpProxy",
@@ -60,34 +57,33 @@ export class FarcdnAccess extends BaseAccess {
       placeholder: "http://192.168.x.x:10811",
       component: {
         name: "a-input",
-        vModel: "value"
-      }
+        vModel: "value",
+      },
     },
     encrypt: false,
-    required: false
+    required: false,
   })
   httpProxy!: string;
-
 
   @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "点击测试接口是否正常"
+    helper: "点击测试接口是否正常",
   })
   testRequest = true;
 
   async onTestRequest() {
-      await this.getSSLCertList({size:1});
-      return "ok"
+    await this.getSSLCertList({ size: 1 });
+    return "ok";
   }
 
-  async getSSLCertList(req:{offset?:number,size?:number}){
+  async getSSLCertList(req: { offset?: number; size?: number }) {
     return await this.doRequest({
       url: "/getSSLCertList",
-      data: req
+      data: req,
     });
   }
 
@@ -115,18 +111,15 @@ export class FarcdnAccess extends BaseAccess {
     const params = {
       sslCertId,
     };
-    const res= await this.doRequest({
+    const res = await this.doRequest({
       url: "/findSSLCertConfig",
-      data: params
+      data: params,
     });
     this.ctx.logger.info(`找到证书${sslCertId}: name=${res.name},domain=${res.commonNames},dnsNames=${res.dnsNames}`);
-    return res
+    return res;
   }
 
-  async updateSSLCert(req:{
-    sslCertId: number,
-    cert:CertInfo,
-  }){
+  async updateSSLCert(req: { sslCertId: number; cert: CertInfo }) {
     /**
      * isOn	boolean	✅	是否启用证书	true
      * name	string	✅	证书显示名称	"example.com"
@@ -141,9 +134,9 @@ export class FarcdnAccess extends BaseAccess {
      * commonNames	string[]	✅	证书的通用名称列表	["example.com"]
      */
 
-    const oldCert = await this.findSSLCertConfig(req.sslCertId)
-    const certReader = new CertReader(req.cert)
-    const {detail} = certReader.getCrtDetail();
+    const oldCert = await this.findSSLCertConfig(req.sslCertId);
+    const certReader = new CertReader(req.cert);
+    const { detail } = certReader.getCrtDetail();
     const params = {
       sslCertId: req.sslCertId,
       certData: req.cert.crt,
@@ -155,28 +148,28 @@ export class FarcdnAccess extends BaseAccess {
       dnsNames: certReader.getAltNames(),
       timeBeginAt: detail.notBefore.getTime(),
       timeEndAt: detail.notAfter.getTime(),
-      name: oldCert.name|| certReader.buildCertName(),
-      description:oldCert.description||""
-    }
+      name: oldCert.name || certReader.buildCertName(),
+      description: oldCert.description || "",
+    };
 
     return await this.doRequest({
       url: "/updateSSLCert",
-      data: params
+      data: params,
     });
   }
 
-  async doRequest(req:HttpRequestConfig){
+  async doRequest(req: HttpRequestConfig) {
     const params = {
       ...req.data,
       accessKeyId: this.accessKeyId,
-      accessKey: this.accessKey
+      accessKey: this.accessKey,
     };
-    const res =  await this.ctx.http.request({
+    const res = await this.ctx.http.request({
       url: req.url,
-      baseURL:this.endpoint,
+      baseURL: this.endpoint,
       method: "POST",
       data: params,
-      httpProxy: this.httpProxy||undefined,
+      httpProxy: this.httpProxy || undefined,
     });
 
     if (res.code === 200) {
@@ -185,7 +178,5 @@ export class FarcdnAccess extends BaseAccess {
     throw new Error(res.message || res);
   }
 }
-
-
 
 new FarcdnAccess();

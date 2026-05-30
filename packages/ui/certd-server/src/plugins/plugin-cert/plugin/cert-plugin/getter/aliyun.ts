@@ -28,27 +28,25 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
   })
   accessId!: string;
 
-  @TaskInput(
-    {
-      title: "证书API 版本",
-      value: "v1",
-      component: {
-        name: "a-select",
-        vModel: "value",
-        options: [
-          {
-            label: "API 1.0 (旧版)",
-            value: "v1",
-          },
-          {
-            label: "API 2.0 (新版)",
-            value: "v2",
-          },
-        ],
-      },
-      helper: "选择阿里云证书 API 版本",
-    }
-  )
+  @TaskInput({
+    title: "证书API 版本",
+    value: "v1",
+    component: {
+      name: "a-select",
+      vModel: "value",
+      options: [
+        {
+          label: "API 1.0 (旧版)",
+          value: "v1",
+        },
+        {
+          label: "API 2.0 (新版)",
+          value: "v2",
+        },
+      ],
+    },
+    helper: "选择阿里云证书 API 版本",
+  })
   apiVersion!: string;
 
   @TaskInput(
@@ -67,7 +65,7 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
   )
   orderId!: string;
 
-  async onInit(): Promise<void> { }
+  async onInit(): Promise<void> {}
 
   async doCertApply(): Promise<CertReader> {
     const access = await this.getAccess<AliyunAccess>(this.accessId);
@@ -102,7 +100,7 @@ export class CertApplyGetFormAliyunPlugin extends CertApplyBasePlugin {
       throw new Error("请先输入证书实例 ID");
     }
     if (Array.isArray(this.orderId) && this.orderId.length > 0) {
-      this.orderId = this.orderId[0]
+      this.orderId = this.orderId[0];
     }
     const certificateId = await this.getOrderDetailV2(client, this.orderId);
     this.logger.info(`获取到证书 ID:${certificateId}`);

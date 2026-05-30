@@ -38,7 +38,7 @@ export type CasCertId = {
   certIdentifier: string;
   certName: string;
   detail?: SimpleCertDetail;
-}
+};
 export class AliyunSslClient {
   opts: AliyunSslClientOpts;
   logger: ILogger;
@@ -100,10 +100,10 @@ export class AliyunSslClient {
   }
 
   async uploadCert(req: AliyunSslUploadCertReq) {
-      const {certId} = await this.uploadCertificate(req);
-      return certId;
+    const { certId } = await this.uploadCertificate(req);
+    return certId;
   }
-  async uploadCertificate(req: AliyunSslUploadCertReq) : Promise<CasCertId> {
+  async uploadCertificate(req: AliyunSslUploadCertReq): Promise<CasCertId> {
     const client = await this.getClient();
     const params = {
       Name: req.name,
@@ -125,13 +125,12 @@ export class AliyunSslClient {
       certId: ret.CertId,
       certName: req.name,
       certIdentifier: this.getCertIdentifier(ret.CertId),
-      detail:certReader.getSimpleDetail(),
-    }
+      detail: certReader.getSimpleDetail(),
+    };
   }
 
-  async uploadCertOrGet(cert: CertInfo | number | CasCertId )  :Promise<CasCertId>{
+  async uploadCertOrGet(cert: CertInfo | number | CasCertId): Promise<CasCertId> {
     if (typeof cert === "object") {
-
       const casCert = cert as CasCertId;
       if (casCert.certId) {
         return casCert;
@@ -143,20 +142,20 @@ export class AliyunSslClient {
       const certName = certReader.buildCertName();
       const res = await this.uploadCertificate({
         name: certName,
-        cert: certInfo
+        cert: certInfo,
       });
       this.logger.info("上传证书成功", JSON.stringify(res));
-      return res
+      return res;
     }
     //number类型
     const certId = cert as any;
-    let certName: any = utils.string.appendTimeSuffix(certId);
+    const certName: any = utils.string.appendTimeSuffix(certId);
     const certIdentifier = this.getCertIdentifier(certId);
     return {
       certId,
       certIdentifier,
       certName,
-    }
+    };
   }
 
   async getResourceList(req: AliyunSslGetResourceListReq) {
@@ -237,18 +236,18 @@ export class AliyunSslClient {
     return region;
   }
 
-  getCertDomains(cert: CertInfo | number | CasCertId): string[]{
-      const casCert = cert as CasCertId;
-      const certInfo = cert as CertInfo;
-      if (casCert.certId) {
-        if (!casCert.detail){
-          throw new Error('未获取到证书域名列表，请尝试强制重新运行一下流水线');
-        }
-        return casCert.detail?.domains || [];
-      }else if (certInfo.crt){
-        return new CertReader(certInfo).getSimpleDetail().domains || [];
-      }else{
-        throw new Error('未获取到证书域名列表，请尝试强制重新运行一下流水线');
+  getCertDomains(cert: CertInfo | number | CasCertId): string[] {
+    const casCert = cert as CasCertId;
+    const certInfo = cert as CertInfo;
+    if (casCert.certId) {
+      if (!casCert.detail) {
+        throw new Error("未获取到证书域名列表，请尝试强制重新运行一下流水线");
       }
+      return casCert.detail?.domains || [];
+    } else if (certInfo.crt) {
+      return new CertReader(certInfo).getSimpleDetail().domains || [];
+    } else {
+      throw new Error("未获取到证书域名列表，请尝试强制重新运行一下流水线");
+    }
   }
 }

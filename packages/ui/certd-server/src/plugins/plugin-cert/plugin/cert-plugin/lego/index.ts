@@ -7,7 +7,6 @@ import path from "path";
 import JSZip from "jszip";
 import { PrivateKeyType } from "./dns.js";
 
-
 @IsTaskPlugin({
   name: "CertApplyLego",
   icon: "ph:certificate",

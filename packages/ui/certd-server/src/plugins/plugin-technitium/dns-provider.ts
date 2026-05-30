@@ -1,6 +1,6 @@
-import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 
-import { TechnitiumAccess } from "./access.js"
+import { TechnitiumAccess } from "./access.js";
 
 type TechnitiumRecord = {
   // 记录创建时返回的数据结构
@@ -26,11 +26,11 @@ type TechnitiumRecord = {
 
 // 注册Technitium DNS Server的DNS提供商
 @IsDnsProvider({
-  name: 'technitium',
-  title: 'Technitium DNS Server',
-  desc: 'Technitium DNS Server 自建DNS服务器',
-  icon: 'clarity:server-line',
-  accessType: 'technitium',
+  name: "technitium",
+  title: "Technitium DNS Server",
+  desc: "Technitium DNS Server 自建DNS服务器",
+  icon: "clarity:server-line",
+  accessType: "technitium",
   order: 10,
 })
 export class TechnitiumDnsProvider extends AbstractDnsProvider<TechnitiumRecord> {
@@ -38,7 +38,7 @@ export class TechnitiumDnsProvider extends AbstractDnsProvider<TechnitiumRecord>
 
   async onInstance() {
     this.access = this.ctx.access as TechnitiumAccess;
-    this.logger.debug('access', this.access);
+    this.logger.debug("access", this.access);
   }
 
   /**
@@ -46,11 +46,11 @@ export class TechnitiumDnsProvider extends AbstractDnsProvider<TechnitiumRecord>
    */
   async createRecord(options: CreateRecordOptions): Promise<TechnitiumRecord> {
     const { fullRecord, value, type, domain } = options;
-    this.logger.info('添加域名解析：', fullRecord, value, type, domain);
+    this.logger.info("添加域名解析：", fullRecord, value, type, domain);
 
     // 构建API URL
     const apiUrl = `${this.access.apiUrl}/api/zones/records/add`;
-    
+
     // 构建查询参数
     const params = new URLSearchParams({
       zone: domain,
@@ -61,9 +61,9 @@ export class TechnitiumDnsProvider extends AbstractDnsProvider<TechnitiumRecord>
     });
 
     // 调用Technitium API创建TXT记录
-    const response = await this.access.doRequest({ url: apiUrl, method: 'post', params: params });
+    const response = await this.access.doRequest({ url: apiUrl, method: "post", params: params });
 
-    this.logger.info('创建域名解析成功:', fullRecord, value);
+    this.logger.info("创建域名解析成功:", fullRecord, value);
     return response as TechnitiumRecord;
   }
 
@@ -73,23 +73,23 @@ export class TechnitiumDnsProvider extends AbstractDnsProvider<TechnitiumRecord>
   async removeRecord(options: RemoveRecordOptions<TechnitiumRecord>): Promise<void> {
     const { fullRecord, value, domain } = options.recordReq;
     const record = options.recordRes;
-    this.logger.info('删除域名解析：', domain, fullRecord, value, record);
+    this.logger.info("删除域名解析：", domain, fullRecord, value, record);
 
     // 构建API URL
     const apiUrl = `${this.access.apiUrl}/api/zones/records/delete`;
-    
+
     // 构建查询参数
     const params = new URLSearchParams({
       zone: domain,
       domain: fullRecord,
-      type: 'TXT',
+      type: "TXT",
       text: value,
     });
 
     // 调用Technitium API删除TXT记录
-    await this.access.doRequest({ url: apiUrl, method: 'post', params: params });
+    await this.access.doRequest({ url: apiUrl, method: "post", params: params });
 
-    this.logger.info('删除域名解析成功:', fullRecord, value);
+    this.logger.info("删除域名解析成功:", fullRecord, value);
   }
 }
 

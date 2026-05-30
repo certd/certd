@@ -13,12 +13,9 @@ import { JDCloudAccess } from "./access.js";
 export class JDCloudDnsProvider extends AbstractDnsProvider {
   access!: JDCloudAccess;
 
-
   async onInstance() {
-    this.access = this.ctx.access as JDCloudAccess
+    this.access = this.ctx.access as JDCloudAccess;
   }
-
-
 
   async createRecord(options: CreateRecordOptions): Promise<any> {
     const { fullRecord, hostRecord, value, type, domain } = options;
@@ -29,20 +26,20 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
     const domainRes = await service.describeDomains({
       domainName: domain,
       pageNumber: 1,
-      pageSize: 10
-    })
+      pageSize: 10,
+    });
     if (!domainRes.result?.dataList?.length) {
-      throw new Error(`域名${domain}在此京东云账号中不存在`)
+      throw new Error(`域名${domain}在此京东云账号中不存在`);
     }
-    const list = domainRes.result.dataList
+    const list = domainRes.result.dataList;
 
-    const found = list.find((item) => item.domainName === domain)
+    const found = list.find(item => item.domainName === domain);
     if (!found) {
-      throw new Error(`域名${domain}在此京东云账号中不存在`)
+      throw new Error(`域名${domain}在此京东云账号中不存在`);
     }
 
-    const domainId = found.id
-    this.logger.info("域名ID：", domainId)
+    const domainId = found.id;
+    this.logger.info("域名ID：", domainId);
     /**
      * hostRecord	String	True		主机记录
      * hostValue	String	True		解析记录的值
@@ -54,19 +51,21 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
      * weight	Integer	False		解析记录的权重，目前支持权重的有：A/AAAA/CNAME/JNAME，A/AAAA权重范围：0-100、CNAME/JNAME权重范围：1-100。
      * viewValue	Integer	True		解析线路的ID，请调用describeViewTree接口获取基础解
      */
-    const res = await this.access.catchCall(() => service.createResourceRecord({
-      domainId: domainId,
-      req: {
-        hostRecord: hostRecord,
-        hostValue: value,
-        type: type,
-        ttl: 200,
-        viewValue: -1,
-      }
-    }))
+    const res = await this.access.catchCall(() =>
+      service.createResourceRecord({
+        domainId: domainId,
+        req: {
+          hostRecord: hostRecord,
+          hostValue: value,
+          type: type,
+          ttl: 200,
+          viewValue: -1,
+        },
+      })
+    );
     return {
       recordId: res.result.dataList.id,
-      domainId: domainId
+      domainId: domainId,
     };
   }
 
@@ -74,10 +73,12 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
     const record = options.recordRes;
 
     const service = await this.getJDDomainService();
-    await this.access.catchCall(() => service.deleteResourceRecord({
-      domainId: record.domainId,
-      resourceRecordId: record.recordId
-    }))
+    await this.access.catchCall(() =>
+      service.deleteResourceRecord({
+        domainId: record.domainId,
+        resourceRecordId: record.recordId,
+      })
+    );
   }
 
   private async getJDDomainService() {
@@ -87,7 +88,6 @@ export class JDCloudDnsProvider extends AbstractDnsProvider {
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
     return await this.access.getDomainListPage(req);
   }
-
 }
 
 new JDCloudDnsProvider();

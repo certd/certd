@@ -1,9 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
-import {
-  createCertDomainGetterInputDefine,
-  createRemoteSelectInputDefine
-} from "@certd/plugin-lib";
+import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
 import { AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/ssl-client.js";
 
@@ -16,9 +13,9 @@ import { AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/ssl-c
   needPlus: false,
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 export class AliyunDeployCertToGA extends AbstractTaskPlugin {
   @TaskInput({
@@ -26,11 +23,11 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
     helper: "请选择证书申请任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames, 'uploadCertToAliyun']
+      from: [...CertApplyPluginNames, "uploadCertToAliyun"],
     },
-    required: true
+    required: true,
   })
-  cert!: CertInfo|number | CasCertId;
+  cert!: CertInfo | number | CasCertId;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
@@ -43,10 +40,10 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
       name: "a-select",
       options: [
         { value: "cas.aliyuncs.com", label: "中国大陆" },
-        { value: "cas.ap-southeast-1.aliyuncs.com", label: "新加坡" }
-      ]
+        { value: "cas.ap-southeast-1.aliyuncs.com", label: "新加坡" },
+      ],
     },
-    required: true
+    required: true,
   })
   casEndpoint!: string;
 
@@ -55,9 +52,9 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
     helper: "阿里云授权AccessKeyId、AccessKeySecret",
     component: {
       name: "access-selector",
-      type: "aliyun"
+      type: "aliyun",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
 
@@ -77,7 +74,7 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
       title: "监听",
       helper: "请选择要部署证书的监听",
       action: AliyunDeployCertToGA.prototype.onGetListenerList.name,
-      watches: ["accessId", "acceleratorId"]
+      watches: ["accessId", "acceleratorId"],
     })
   )
   listenerIds!: string[];
@@ -90,8 +87,8 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
       name: "a-select",
       options: [
         { value: "default", label: "默认证书" },
-        { value: "additional", label: "扩展证书" }
-      ]
+        { value: "additional", label: "扩展证书" },
+      ],
     },
     required: true,
   })
@@ -109,21 +106,20 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
             return form.certType === "additional";
           })
         }
-    `
+    `,
     })
   )
   additionalDomains!: string[];
 
-  async onInstance() {
-  }
+  async onInstance() {}
 
   async getAliyunCertId(access: AliyunAccess) {
     const sslClient = new AliyunSslClient({
       access,
       logger: this.logger,
-      endpoint: this.casEndpoint
+      endpoint: this.casEndpoint,
     });
-    return await sslClient.uploadCertOrGet(this.cert as any)
+    return await sslClient.uploadCertOrGet(this.cert as any);
   }
 
   async execute(): Promise<void> {
@@ -133,7 +129,7 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
     const client = await this.getClient(access);
 
     const { certIdentifier } = await this.getAliyunCertId(access);
-    
+
     for (const listenerId of this.listenerIds) {
       if (this.certType === "default") {
         // 更新默认证书
@@ -146,11 +142,9 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
               RegionId: "cn-hangzhou",
               AcceleratorId: this.acceleratorId,
               ListenerId: listenerId,
-              Certificates: [
-               { Id: certIdentifier},
-              ]
-            }
-          }
+              Certificates: [{ Id: certIdentifier }],
+            },
+          },
         });
         this.logger.info(`部署默认证书到实例[${this.acceleratorId}]监听[${listenerId}]成功：${JSON.stringify(res)}`);
       } else if (this.certType === "additional") {
@@ -166,14 +160,12 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
               query: {
                 RegionId: "cn-hangzhou",
                 AcceleratorId: this.acceleratorId,
-                ListenerId: listenerId
-              }
-            }
+                ListenerId: listenerId,
+              },
+            },
           });
 
-          const domainExists = existingCerts.Certificates?.some((cert: any) =>
-            cert.Domain === domain
-          );
+          const domainExists = existingCerts.Certificates?.some((cert: any) => cert.Domain === domain);
 
           if (domainExists) {
             // 更新扩展证书
@@ -187,9 +179,9 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
                   AcceleratorId: this.acceleratorId,
                   ListenerId: listenerId,
                   Domain: domain,
-                  CertificateId: certIdentifier
-                }
-              }
+                  CertificateId: certIdentifier,
+                },
+              },
             });
             this.logger.info(`更新扩展证书到实例[${this.acceleratorId}]监听[${listenerId}]域名[${domain}]成功：${JSON.stringify(res)}`);
           } else {
@@ -203,12 +195,14 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
                   RegionId: "cn-hangzhou",
                   AcceleratorId: this.acceleratorId,
                   ListenerId: listenerId,
-                  Certificates: [{
-                    Id: certIdentifier,
-                    Domain: domain
-                  }]
-                }
-              }
+                  Certificates: [
+                    {
+                      Id: certIdentifier,
+                      Domain: domain,
+                    },
+                  ],
+                },
+              },
             });
             this.logger.info(`新增扩展证书绑定到实例[${this.acceleratorId}]监听[${listenerId}]域名[${domain}]成功：${JSON.stringify(res)}`);
           }
@@ -228,8 +222,8 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
       throw new Error("请选择Access授权");
     }
 
-    const pager = new Pager(data)
-    pager.pageSize = 50
+    const pager = new Pager(data);
+    pager.pageSize = 50;
     const access = await this.getAccess<AliyunAccess>(this.accessId);
 
     const client = await this.getClient(access);
@@ -242,9 +236,9 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
           RegionId: "cn-hangzhou",
           PageNumber: pager.pageNo,
           PageSize: pager.pageSize,
-          State: "active"
-        }
-      }
+          State: "active",
+        },
+      },
     });
 
     const list = res?.Accelerators;
@@ -253,7 +247,7 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
     }
 
     const options = list.map((item: any) => {
-      const label = `${item.Name} (${item.AcceleratorId})`
+      const label = `${item.Name} (${item.AcceleratorId})`;
       return {
         label: label,
         value: item.AcceleratorId,
@@ -279,9 +273,9 @@ export class AliyunDeployCertToGA extends AbstractTaskPlugin {
       data: {
         query: {
           RegionId: "cn-hangzhou",
-          AcceleratorId: this.acceleratorId
-        }
-      }
+          AcceleratorId: this.acceleratorId,
+        },
+      },
     });
 
     const listeners = res?.Listeners;
