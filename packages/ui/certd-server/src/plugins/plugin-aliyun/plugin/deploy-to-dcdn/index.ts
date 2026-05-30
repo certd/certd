@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, CertTargetItem, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
+import { AbstractTaskPlugin, CertTargetItem, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from '@certd/pipeline';
 import {
   createCertDomainGetterInputDefine,
   createRemoteSelectInputDefine
@@ -76,6 +76,8 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
       action: DeployCertToAliyunDCDN.prototype.onGetDomainList.name,
       watches: ['certDomains', 'accessId'],
       required: true,
+      pageSize: 100,
+      search:true,
       pager:true,
       mergeScript: `
         return {
@@ -196,10 +198,12 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     const access = await this.getAccess<AliyunAccess>(this.accessId);
 
     const client = await this.getClient(access);
-
+    const pager = new Pager(data)
     const params = {
-      PageNumber: data.pageNo || 1,
-      PageSize: 500,
+      DomainName: data.searchKey,
+      PageSize: pager.pageSize || 200,
+      PageNumber: pager.pageNo || 1,
+      DomainSearchType: "fuzzy_match"
     };
 
     const requestOption = {
@@ -210,7 +214,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
     const res = await client.request('DescribeDcdnUserDomains', params, requestOption);
     this.checkRet(res);
     const pageData = res?.Domains?.PageData || [];
-    const total = res?.Domains?.TotalCount || 0;
+    const total = res?.TotalCount || 0;
 
     const options = pageData.map((item: any) => {
       return {

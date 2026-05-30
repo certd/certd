@@ -116,7 +116,7 @@ input:
       action: onGetProductList
       search: false
       pager: false
-      multi: true
+      single: false
       watches:
         - certDomains
         - accessId
@@ -146,7 +146,7 @@ input:
       action: onGetContactList
       search: false
       pager: false
-      multi: true
+      single: false
       watches:
         - certDomains
         - accessId

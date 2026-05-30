@@ -84,7 +84,7 @@ input:
       action: onGetCloudResourceList
       search: true
       pager: true
-      multi: true
+      single: false
       watches:
         - certDomains
         - accessId

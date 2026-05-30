@@ -104,6 +104,8 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
       action: DeployCertToAliyunCDN.prototype.onGetDomainList.name,
       watches: ['certDomains', 'accessId'],
       required: true,
+      pageSize: 100,
+      search:true,
       mergeScript: `
         return {
           show: ctx.compute(({form})=>{
@@ -256,9 +258,10 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
 
     const pager = new Pager(data)
     const params = {
-      // 'DomainName': 'aaa',
+      DomainName: data.searchKey,
       PageSize: pager.pageSize || 100,
       PageNumber: pager.pageNo || 1,
+      DomainSearchType: "fuzzy_match"
     };
 
     const requestOption = {
@@ -275,7 +278,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
           total: 0,
         };
     }
-    const total  = res?.Domains?.TotalCount || 0;
+    const total  = res?.TotalCount || 0;
     const options = pageData.map((item: any) => {
       return {
         value: item.DomainName,

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.40.5](https://github.com/certd/certd/compare/v1.40.4...v1.40.5) (2026-05-26)
+
+### Bug Fixes
+
+* 修复阿里云证书订单orderid 选择出错的问题 ([af9047b](https://github.com/certd/certd/commit/af9047bf3c54ce71b11727ccc6220288ed1f57be))
+
 ## [1.40.4](https://github.com/certd/certd/compare/v1.40.3...v1.40.4) (2026-05-24)
 
 **Note:** Version bump only for package @certd/pipeline

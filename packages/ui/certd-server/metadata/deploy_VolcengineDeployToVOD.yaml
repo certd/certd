@@ -61,12 +61,12 @@ input:
     component:
       name: remote-select
       vModel: value
-      mode: default
+      mode: tags
       type: plugin
       action: onGetSpaceList
       search: false
       pager: false
-      multi: false
+      single: true
       watches:
         - certDomains
         - accessId
@@ -109,7 +109,7 @@ input:
       action: onGetDomainList
       search: false
       pager: false
-      multi: true
+      single: false
       watches:
         - certDomains
         - accessId

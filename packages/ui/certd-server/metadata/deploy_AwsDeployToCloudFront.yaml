@@ -133,7 +133,7 @@ input:
       action: onGetDistributions
       search: false
       pager: false
-      multi: true
+      single: false
       watches:
         - certDomains
         - accessId

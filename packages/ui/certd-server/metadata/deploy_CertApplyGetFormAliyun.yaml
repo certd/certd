@@ -80,7 +80,7 @@ input:
       action: onGetOrderList
       search: false
       pager: true
-      multi: true
+      single: true
       pageSize: 50
       watches:
         - certDomains
