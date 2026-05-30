@@ -126,7 +126,7 @@ export class VolcengineClient {
     return service;
   }
 
-  async getDCDNService(opts?: {}) {
+  async getDCDNService(opts?: Record<string, never>) {
     const CommonService = await this.getServiceCls();
 
     const service = new CommonService({

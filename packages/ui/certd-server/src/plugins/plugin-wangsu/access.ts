@@ -55,7 +55,7 @@ export class WangsuAccess extends BaseAccess {
     return "ok";
   }
 
-  async getCertList(req: {}) {
+  async getCertList(req: Record<string, never>) {
     /**
      * certificate-id
      * name

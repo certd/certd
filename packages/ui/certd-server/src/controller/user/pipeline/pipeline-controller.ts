@@ -271,7 +271,8 @@ export class PipelineController extends CrudController<PipelineService> {
   }
 
   private async checkPermissionCall(callback: any) {
-    let { projectId, userId } = await this.getProjectUserIdWrite();
+    const { projectId, userId: uid } = await this.getProjectUserIdWrite();
+    let userId = uid;
     if (projectId) {
       return await callback({ userId, projectId });
     }
