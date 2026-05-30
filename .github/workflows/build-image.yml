@@ -3,8 +3,8 @@ on:
   push:
     branches: ['v2-dev']
     paths:
-      - "trigger/build.trigger"
-  workflow_dispatch:    # 添加手动触发
+      - 'trigger/build.trigger'
+  workflow_dispatch: # 添加手动触发
 #  schedule:
 #    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
 #    - cron: '17 19 * * *'
@@ -37,12 +37,12 @@ jobs:
             const pkg = JSON.parse(jsonContent)
             console.log("certd_version:",pkg.version);
             return pkg.version
-#      - name: Use Node.js
-#        uses: actions/setup-node@v4
-#        with:
-#          node-version: 18
-#          cache: 'npm'
-#        working-directory: ./packages/ui/certd-client
+      #      - name: Use Node.js
+      #        uses: actions/setup-node@v4
+      #        with:
+      #          node-version: 18
+      #          cache: 'npm'
+      #        working-directory: ./packages/ui/certd-client
       - run: |
           npm install -g pnpm@10.33.4
           pnpm install

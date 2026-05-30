@@ -7,29 +7,36 @@ version: 1.0.0
 # Access 插件开发技能
 
 ## 角色定义
+
 你是一名 Certd 插件开发专家，擅长创建和实现 Access 类型的插件，熟悉 TypeScript 编程和 Certd 插件开发规范。
 
 ## 核心指令
+
 请严格按照以下步骤执行任务：
 
 1. **导入必要的依赖**
+
    - 导入 `AccessInput`, `BaseAccess`, `IsAccess`, `Pager`, `PageRes`, `PageSearch` 等必要的类型和装饰器
    - 导入 `DomainRecord` 等相关类型
 
 2. **使用 @IsAccess 注解注册插件**
+
    - 配置插件的唯一标识、标题、图标和描述
    - 继承 `BaseAccess` 类
 
 3. **定义授权属性**
+
    - 使用 `@AccessInput` 注解定义授权属性
    - 配置属性的标题、默认值、组件类型和验证规则
    - 对于敏感信息，设置 `encrypt: true` 进行加密
 
 4. **实现测试方法**
+
    - 添加测试按钮配置
    - 实现 `onTestRequest` 方法，用于测试接口调用是否正常
 
 5. **实现 API 方法**
+
    - 实现必要的 API 方法，如 `GetDomainList`
    - 封装统一的 API 请求方法 `doRequest`，处理错误和日志
 
@@ -39,6 +46,7 @@ version: 1.0.0
    - 实现代码复用，避免重复逻辑
 
 ## 输出规范
+
 - 必须包含完整的插件实现代码，包括所有必要的导入语句
 - 代码必须包含详细的注释说明，解释每个步骤的目的和实现细节
 - 提供完整的示例代码，展示插件的使用方法，包括不同类型的授权方式
@@ -51,6 +59,7 @@ version: 1.0.0
 ### 示例 1: 基本 Access 插件
 
 #### 用户输入
+
 创建一个 Access 插件，用于存储第三方应用的授权信息并提供 API 接口。
 
 #### 你的回答
@@ -70,7 +79,6 @@ import { DomainRecord } from '@certd/plugin-lib';
   desc: '这是一个示例授权插件，用于演示如何实现一个授权插件',
 })
 export class DemoAccess extends BaseAccess {
-
   /**
    * 授权属性配置
    */
@@ -78,16 +86,17 @@ export class DemoAccess extends BaseAccess {
     title: '授权方式',
     value: 'apiKey', //默认值
     component: {
-      name: "a-select", //基于antdv的输入组件
-      vModel: "value", // v-model绑定的属性名
-      options: [ //组件参数
+      name: 'a-select', //基于antdv的输入组件
+      vModel: 'value', // v-model绑定的属性名
+      options: [
+        //组件参数
         {
-          label: "API密钥（推荐）",
-          value: "apiKey"
+          label: 'API密钥（推荐）',
+          value: 'apiKey',
         },
         {
-          label: "账号密码",
-          value: "account"
+          label: '账号密码',
+          value: 'account',
         },
       ],
       placeholder: 'demoKeyId',
@@ -102,7 +111,7 @@ export class DemoAccess extends BaseAccess {
   @AccessInput({
     title: '密钥Id',
     component: {
-      name:"a-input",
+      name: 'a-input',
       allowClear: true,
       placeholder: 'demoKeyId',
     },
@@ -111,19 +120,19 @@ export class DemoAccess extends BaseAccess {
   demoKeyId = '';
 
   @AccessInput({
-    title: '密钥',//标题
-    required: true,  //text组件可以省略
+    title: '密钥', //标题
+    required: true, //text组件可以省略
     encrypt: true, //该属性是否需要加密
   })
   demoKeySecret = '';
 
   @AccessInput({
-    title: "测试",
+    title: '测试',
     component: {
-      name: "api-test",
-      action: "TestRequest"
+      name: 'api-test',
+      action: 'TestRequest',
     },
-    helper: "点击测试接口是否正常"
+    helper: '点击测试接口是否正常',
   })
   testRequest = true;
 
@@ -132,7 +141,7 @@ export class DemoAccess extends BaseAccess {
    */
   async onTestRequest() {
     await this.GetDomainList({});
-    return "ok"
+    return 'ok';
   }
 
   /**
@@ -143,41 +152,41 @@ export class DemoAccess extends BaseAccess {
     this.ctx.logger.info(`获取域名列表，req:${JSON.stringify(req)}`);
     const pager = new Pager(req);
     const resp = await this.doRequest({
-      action: "ListDomains",
+      action: 'ListDomains',
       data: {
         domain: req.searchKey,
         offset: pager.getOffset(),
         limit: pager.pageSize,
-      }
+      },
     });
     const total = resp?.TotalCount || 0;
-    let list = resp?.DomainList?.map((item) => {
+    let list = resp?.DomainList?.map(item => {
       item.domain = item.Domain;
       item.id = item.DomainId;
       return item;
-    })
+    });
     return {
       total,
-      list
+      list,
     };
   }
 
   /**
    * 通用api调用方法, 具体如何构造请求体，需参考对应应用的API文档
    */
-  async doRequest(req: { action: string, data?: any }) {
+  async doRequest(req: { action: string; data?: any }) {
     const res = await this.ctx.http.request({
-      url: "https://api.demo.cn/api/",
-      method: "POST",
+      url: 'https://api.demo.cn/api/',
+      method: 'POST',
       data: {
         Action: req.action,
-        Body: req.data
-      }
+        Body: req.data,
+      },
     });
 
     if (res.Code !== 0) {
-      //异常处理 
-      throw new Error(res.Message || "请求失败");
+      //异常处理
+      throw new Error(res.Message || '请求失败');
     }
     return res.Resp;
   }
@@ -187,6 +196,7 @@ export class DemoAccess extends BaseAccess {
 ### 示例 2: 支持 OAuth 授权的 Access 插件
 
 #### 用户输入
+
 创建一个支持 OAuth 授权方式的 Access 插件。
 
 #### 你的回答
@@ -205,21 +215,20 @@ import { DomainRecord } from '@certd/plugin-lib';
   desc: '这是一个支持OAuth授权的插件示例',
 })
 export class OAuthDemoAccess extends BaseAccess {
-
   @AccessInput({
     title: '授权方式',
     value: 'oauth',
     component: {
-      name: "a-select",
-      vModel: "value",
+      name: 'a-select',
+      vModel: 'value',
       options: [
         {
-          label: "OAuth授权",
-          value: "oauth"
+          label: 'OAuth授权',
+          value: 'oauth',
         },
         {
-          label: "API密钥",
-          value: "apiKey"
+          label: 'API密钥',
+          value: 'apiKey',
         },
       ],
     },
@@ -230,7 +239,7 @@ export class OAuthDemoAccess extends BaseAccess {
   @AccessInput({
     title: '客户端ID',
     component: {
-      name:"a-input",
+      name: 'a-input',
       placeholder: 'Client ID',
     },
     required: true,
@@ -247,7 +256,7 @@ export class OAuthDemoAccess extends BaseAccess {
   @AccessInput({
     title: '授权回调地址',
     component: {
-      name:"a-input",
+      name: 'a-input',
       placeholder: 'https://your-domain.com/callback',
     },
     required: true,
@@ -268,12 +277,12 @@ export class OAuthDemoAccess extends BaseAccess {
   refreshToken = '';
 
   @AccessInput({
-    title: "测试",
+    title: '测试',
     component: {
-      name: "api-test",
-      action: "TestOAuth"
+      name: 'api-test',
+      action: 'TestOAuth',
     },
-    helper: "点击测试OAuth授权是否正常"
+    helper: '点击测试OAuth授权是否正常',
   })
   testOAuth = true;
 
@@ -285,7 +294,7 @@ export class OAuthDemoAccess extends BaseAccess {
       // 测试AccessToken是否有效
       const result = await this.doOAuthRequest('GET', '/api/user/profile');
       this.ctx.logger.info('OAuth测试成功:', result);
-      return "OAuth授权测试成功";
+      return 'OAuth授权测试成功';
     } catch (error) {
       this.ctx.logger.error('OAuth测试失败:', error);
       throw new Error('OAuth授权测试失败');
@@ -300,10 +309,10 @@ export class OAuthDemoAccess extends BaseAccess {
       url: `https://api.oauth-demo.com${endpoint}`,
       method,
       headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${this.accessToken}`,
+        'Content-Type': 'application/json',
       },
-      data
+      data,
     });
 
     if (res.status !== 200) {
@@ -327,8 +336,8 @@ export class OAuthDemoAccess extends BaseAccess {
         grant_type: 'refresh_token',
         refresh_token: this.refreshToken,
         client_id: this.clientId,
-        client_secret: this.clientSecret
-      }
+        client_secret: this.clientSecret,
+      },
     });
 
     if (res.status === 200 && res.data.access_token) {
@@ -349,15 +358,15 @@ export class OAuthDemoAccess extends BaseAccess {
       const res = await this.doOAuthRequest('GET', '/api/domains', {
         search: req.searchKey,
         page: req.page,
-        pageSize: req.pageSize
+        pageSize: req.pageSize,
       });
 
       return {
         total: res.total,
         list: res.items.map((item: any) => ({
           id: item.id,
-          domain: item.domain
-        }))
+          domain: item.domain,
+        })),
       };
     } catch (error) {
       // 尝试刷新AccessToken并重试
@@ -366,15 +375,15 @@ export class OAuthDemoAccess extends BaseAccess {
         const res = await this.doOAuthRequest('GET', '/api/domains', {
           search: req.searchKey,
           page: req.page,
-          pageSize: req.pageSize
+          pageSize: req.pageSize,
         });
 
         return {
           total: res.total,
           list: res.items.map((item: any) => ({
             id: item.id,
-            domain: item.domain
-          }))
+            domain: item.domain,
+          })),
         };
       }
       throw error;
@@ -397,9 +406,13 @@ export class OAuthDemoAccess extends BaseAccess {
 ### 实现统一的 API 请求封装
 
 **好处：**
+
 - **代码复用**：避免在每个 API 方法中重复编写相同的 header 设置和错误处理逻辑
 - **错误处理一致**：统一捕获和处理各种错误情况，确保错误信息格式统一
 - **日志记录完善**：集中记录详细的错误信息，便于调试和问题排查
 - **接口调用简化**：调用方只需关注业务逻辑，无需关心底层请求细节
 - **易于维护**：统一修改 API 调用方式时，只需修改一处代码
+
+```
+
 ```

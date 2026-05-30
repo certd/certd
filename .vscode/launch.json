@@ -1,103 +1,99 @@
 {
-    // 使用 IntelliSense 了解相关属性。 
-    // 悬停以查看现有属性的描述。
-    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-
-        {
-            "name": "client",
-            "type": "node",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/packages/ui/certd-client",
-            "runtimeExecutable": "pnpm",
-            "runtimeArgs": ["dev"],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
-        },
-        {
-            "name": "server",
-            "type": "node",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/packages/ui/certd-server",
-            "runtimeExecutable": "pnpm",
-            "runtimeArgs": ["dev"],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
-        },
-         {
-            "name": "server-mysql",
-            "type": "node",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/packages/ui/certd-server",
-            "runtimeExecutable": "pnpm",
-            "runtimeArgs": ["dev-mysql"],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
-        },
-         {
-            "name": "server-pg",
-            "type": "node",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/packages/ui/certd-server",
-            "runtimeExecutable": "pnpm",
-            "runtimeArgs": ["dev-pg"],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
-        },
-         {
-            "name": "server-pgpl",
-            "type": "node",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/packages/ui/certd-server",
-            "runtimeExecutable": "pnpm",
-            "runtimeArgs": ["dev-pgpl"],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
-        },
-        {
-            "name": "server-common",
-            "type": "node",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/packages/ui/certd-server",
-            "runtimeExecutable": "pnpm",
-            "runtimeArgs": ["dev-commpro"],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
-        },
-        {
-            "name": "server-new",
-            "type": "node",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/packages/ui/certd-server",
-            "runtimeExecutable": "pnpm",
-            "runtimeArgs": ["dev-new"],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
-        },
-        {
-            "name": "server-local-plus",
-            "type": "node",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/packages/ui/certd-server",
-            "runtimeExecutable": "npm",
-            "runtimeArgs": ["run", "dev-localplus"],
-            "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen",
-            "env": {
-                "plus_use_prod": "false",
-                "PLUS_SERVER_BASE_URL": "http://127.0.0.1:11007"
-            }
-        }
-    ],
-    "compounds": [
-        {
-            "name": "all",
-            "configurations": [
-                "server",
-                "client",
-            ],
-            "stopAll": false
-        },
-    ]
+  // 使用 IntelliSense 了解相关属性。
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "client",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/packages/ui/certd-client",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "server",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/packages/ui/certd-server",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "server-mysql",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/packages/ui/certd-server",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev-mysql"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "server-pg",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/packages/ui/certd-server",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev-pg"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "server-pgpl",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/packages/ui/certd-server",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev-pgpl"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "server-common",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/packages/ui/certd-server",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev-commpro"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "server-new",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/packages/ui/certd-server",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev-new"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "server-local-plus",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/packages/ui/certd-server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev-localplus"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "plus_use_prod": "false",
+        "PLUS_SERVER_BASE_URL": "http://127.0.0.1:11007"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "all",
+      "configurations": ["server", "client"],
+      "stopAll": false
+    }
+  ]
 }

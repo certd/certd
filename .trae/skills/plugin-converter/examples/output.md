@@ -65,6 +65,7 @@ node .trae/skills/plugin-converter/resources/convert-plugin-to-yaml.js packages/
 ```
 
 例如：
+
 - `access_demo.yaml`（Access 插件）
 - `deploy_DemoTest.yaml`（Task 插件）
 - `dnsProvider_demo.yaml`（DNS Provider 插件）
