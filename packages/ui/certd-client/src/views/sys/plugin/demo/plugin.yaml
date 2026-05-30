@@ -11,25 +11,25 @@ metadata:
   input:
     endpoint:
       type: string,
-      title: '证书服务接入点',
-      helper: '不会选就按默认',
-      value: 'cas.aliyuncs.com',
+      title: "证书服务接入点"
+      helper: "不会选就按默认"
+      value: "cas.aliyuncs.com"
       component:
-        name: 'a-select',
+        name: "a-select"
         options:
-          - value: 'cas.aliyuncs.com'
-            label: '中国大陆'
+          - value: "cas.aliyuncs.com"
+            label: "中国大陆"
       required: true,
 
     cert:
       type: string,
-      title: '域名证书',
-      helper: '请选择前置任务输出的域名证书',
+      title: "域名证书"
+      helper: "请选择前置任务输出的域名证书"
       component:
-        name: 'output-selector',
+        name: "output-selector"
         from:
-          - 'group:cert_apply',
-          - 'xxx',
+          - "group:cert_apply"
+          - "xxx"
       required: true,
 
 script: |
