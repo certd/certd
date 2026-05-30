@@ -63,7 +63,7 @@ export class RegisterController extends BaseController {
         password: body.password,
       } as any;
       const newUser = await this.userService.register(body.type, registerUser, async txManager => {
-        await this.inviteService.bindInvitee(registerUser.id, body.inviteCode, txManager);
+        await this.inviteService.bindInvitee({ manager: txManager }, { inviteeUserId: registerUser.id, inviteCode: body.inviteCode });
       });
       return this.ok(newUser);
     } else if (body.type === 'mobile') {
@@ -85,7 +85,7 @@ export class RegisterController extends BaseController {
         password: body.password,
       } as any;
       const newUser = await this.userService.register(body.type, registerUser, async txManager => {
-        await this.inviteService.bindInvitee(registerUser.id, body.inviteCode, txManager);
+        await this.inviteService.bindInvitee({ manager: txManager }, { inviteeUserId: registerUser.id, inviteCode: body.inviteCode });
       });
       return this.ok(newUser);
     } else if (body.type === 'email') {
@@ -104,7 +104,7 @@ export class RegisterController extends BaseController {
         password: body.password,
       } as any;
       const newUser = await this.userService.register(body.type, registerUser, async txManager => {
-        await this.inviteService.bindInvitee(registerUser.id, body.inviteCode, txManager);
+        await this.inviteService.bindInvitee({ manager: txManager }, { inviteeUserId: registerUser.id, inviteCode: body.inviteCode });
       });
       return this.ok(newUser);
     }

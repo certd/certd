@@ -1,5 +1,11 @@
 import { useSettingStore } from "/@/store/settings";
 
+function isInviteLevelEnabled() {
+  const settingStore = useSettingStore();
+  const levelEnabled = settingStore.inviteSetting?.levelEnabled;
+  return settingStore.isComm && levelEnabled === true;
+}
+
 export const sysResources = [
   {
     title: "certd.sysResources.sysRoot",
@@ -309,8 +315,7 @@ export const sysResources = [
             component: "/sys/suite/invite/level.vue",
             meta: {
               show: () => {
-                const settingStore = useSettingStore();
-                return settingStore.isComm;
+                return isInviteLevelEnabled();
               },
               icon: "ion:ribbon-outline",
               permission: "sys:settings:edit",
@@ -325,8 +330,7 @@ export const sysResources = [
             component: "/sys/suite/invite/user-level.vue",
             meta: {
               show: () => {
-                const settingStore = useSettingStore();
-                return settingStore.isComm;
+                return isInviteLevelEnabled();
               },
               icon: "ion:people-outline",
               permission: "sys:settings:edit",

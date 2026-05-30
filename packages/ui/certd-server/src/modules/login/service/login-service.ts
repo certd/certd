@@ -139,7 +139,7 @@ export class LoginService {
         password: '',
       } as any;
       info = await this.userService.register('mobile', registerUser, async txManager => {
-        await this.inviteService.bindInvitee(registerUser.id, req.inviteCode, txManager);
+        await this.inviteService.bindInvitee({ manager: txManager }, { inviteeUserId: registerUser.id, inviteCode: req.inviteCode });
       });
     }
     this.clearCacheOnSuccess(mobile);

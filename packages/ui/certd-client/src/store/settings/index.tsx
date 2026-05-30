@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { notification } from "ant-design-vue";
 import * as basicApi from "./api.basic";
-import { AppInfo, HeaderMenus, PlusInfo, SiteEnv, SiteInfo, SuiteSetting, SysInstallInfo, SysPublicSetting } from "./api.basic";
+import { AppInfo, HeaderMenus, InviteSetting, PlusInfo, SiteEnv, SiteInfo, SuiteSetting, SysInstallInfo, SysPublicSetting } from "./api.basic";
 import { useUserStore } from "../user";
 import { mitter } from "/@/utils/util.mitt";
 import { env } from "/@/utils/util.env";
@@ -30,9 +30,7 @@ export interface SettingState {
   headerMenus?: HeaderMenus;
   inited?: boolean;
   suiteSetting?: SuiteSetting;
-  inviteSetting?: {
-    enabled?: boolean;
-  };
+  inviteSetting?: InviteSetting;
   app: {
     version?: string;
     time?: number;
@@ -105,7 +103,7 @@ export const useSettingStore = defineStore({
       menus: [],
     },
     suiteSetting: { enabled: false },
-    inviteSetting: { enabled: false },
+    inviteSetting: { enabled: false, levelEnabled: false, fixedCommissionRate: 10 },
     inited: false,
     app: {
       version: "",

@@ -3,6 +3,7 @@ import { notification } from "ant-design-vue";
 import * as api from "./api";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
 import { useFormDialog } from "/@/use/use-dialog";
+import createCrudOptionsUser from "/@/views/sys/authority/user/crud";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { openFormDialog } = useFormDialog();
@@ -10,6 +11,13 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     url: "/sys/invite/level/list",
     value: "id",
     label: "name",
+  });
+  const userDict = dict({
+    async getNodesByValues(ids: number[]) {
+      return await api.GetSimpleUserByIds(ids);
+    },
+    value: "id",
+    label: "nickName",
   });
 
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -65,15 +73,20 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         },
       },
       columns: {
-        userId: { title: "用户ID", type: "number", search: { show: true }, column: { width: 100 } },
-        username: {
-          title: "用户名",
-          type: "text",
+        userId: {
+          title: "用户",
+          type: "table-select",
           search: { show: true },
-          column: {
-            width: 180,
-            cellRender({ row }) {
-              return row.simpleUser?.displayName || row.userDisplay || row.username || row.userId;
+          dict: userDict,
+          form: {
+            show: false,
+            component: {
+              crossPage: true,
+              multiple: false,
+              select: {
+                placeholder: "点击选择用户",
+              },
+              createCrudOptions: createCrudOptionsUser,
             },
           },
         },

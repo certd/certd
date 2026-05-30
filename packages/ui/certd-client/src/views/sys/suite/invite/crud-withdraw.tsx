@@ -4,6 +4,7 @@ import * as api from "./api";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useUserStore } from "/@/store/user";
+import createCrudOptionsUser from "/@/views/sys/authority/user/crud";
 
 function buildPrivateFileUrl(key: string) {
   const userStore = useUserStore();
@@ -12,6 +13,13 @@ function buildPrivateFileUrl(key: string) {
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { openFormDialog } = useFormDialog();
+  const userDict = dict({
+    async getNodesByValues(ids: number[]) {
+      return await api.GetSimpleUserByIds(ids);
+    },
+    value: "id",
+    label: "nickName",
+  });
 
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetWithdraws(query);
@@ -25,7 +33,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           <span class={"text-red-500"}>{row.amount / 100} 元</span>
         </a-descriptions-item>
         <a-descriptions-item label="渠道类型">{row.channel === "bank" ? "银行卡" : "支付宝"}</a-descriptions-item>
-        <a-descriptions-item label="用户名">{row.userDisplay || row.userId}</a-descriptions-item>
+        <a-descriptions-item label="用户ID">{row.userId}</a-descriptions-item>
         <a-descriptions-item label="账号">{row.account || "-"}</a-descriptions-item>
         {isBank ? <a-descriptions-item label="开户行名称">{row.bankName || "-"}</a-descriptions-item> : null}
         {!isBank ? <a-descriptions-item label="收款二维码">{row.qrCode ? <a-image src={buildPrivateFileUrl(row.qrCode)} width={160} /> : <span>-</span>}</a-descriptions-item> : null}
@@ -122,7 +130,24 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         },
       },
       columns: {
-        userId: { title: "用户ID", type: "number", search: { show: true }, column: { width: 100 } },
+        createTime: { title: "申请时间", type: "datetime", column: { width: 180 } },
+        userId: {
+          title: "用户",
+          type: "table-select",
+          search: { show: true },
+          dict: userDict,
+          form: {
+            show: false,
+            component: {
+              crossPage: true,
+              multiple: false,
+              select: {
+                placeholder: "点击选择用户",
+              },
+              createCrudOptions: createCrudOptionsUser,
+            },
+          },
+        },
         amount: {
           title: "金额",
           type: "number",
@@ -131,7 +156,6 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             component: { name: PriceInput, vModel: "modelValue", edit: false },
           },
         },
-        userDisplay: { title: "用户名", type: "text", search: { show: true }, column: { width: 140 } },
         status: {
           title: "状态",
           type: "dict-select",
@@ -173,7 +197,6 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         auditRemark: { title: "审核备注", type: "text", column: { minWidth: 180 } },
-        createTime: { title: "申请时间", type: "datetime", column: { width: 180 } },
       },
     },
   };

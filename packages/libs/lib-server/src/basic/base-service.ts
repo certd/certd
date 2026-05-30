@@ -1,5 +1,5 @@
 import { PermissionException, ValidateException } from './exception/index.js';
-import { FindOneOptions, In, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityTarget, FindOneOptions, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { Inject } from '@midwayjs/core';
 import { TypeORMDataSourceManager } from '@midwayjs/typeorm';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager.js';
@@ -20,6 +20,10 @@ export type ListReq<T = any> = {
   select?: any;
 };
 
+export type ServiceContext = {
+  manager?: EntityManager;
+};
+
 /**
  * 服务基类
  */
@@ -32,6 +36,14 @@ export abstract class BaseService<T> {
   async transaction(callback: (entityManager: EntityManager) => Promise<any>) {
     const dataSource = this.dataSourceManager.getDataSource('default');
     return await dataSource.transaction(callback as any);
+  }
+
+  protected getRepo<E>(ctx: ServiceContext, entity: EntityTarget<E>): Repository<E> {
+    if (ctx.manager) {
+      return ctx.manager.getRepository(entity);
+    }
+    const dataSource = this.dataSourceManager.getDataSource('default');
+    return dataSource.getRepository(entity);
   }
 
   /**
@@ -81,7 +93,7 @@ export abstract class BaseService<T> {
     if (idArr.length === 0) {
       return;
     }
-  
+
     await this.getRepository().delete({
       id: In(idArr),
       ...where,

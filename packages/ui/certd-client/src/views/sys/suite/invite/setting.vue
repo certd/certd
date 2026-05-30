@@ -8,6 +8,15 @@
         <a-form-item label="开启激励计划" name="enabled">
           <a-switch v-model:checked="settings.enabled" />
         </a-form-item>
+        <a-form-item label="启用推广等级" name="levelEnabled">
+          <a-space>
+            <a-switch v-model:checked="settings.levelEnabled" />
+            <a-button v-if="levelEnabled" type="link" @click="gotoInviteLevel">推广等级设置</a-button>
+          </a-space>
+        </a-form-item>
+        <a-form-item v-if="!settings.levelEnabled" label="佣金比例" name="fixedCommissionRate">
+          <a-input-number v-model:value="settings.fixedCommissionRate" :min="0" :max="100" addon-after="%" />
+        </a-form-item>
         <a-form-item label="最低提现金额" name="minWithdrawAmountYuan">
           <a-input-number v-model:value="settings.minWithdrawAmountYuan" :min="0" addon-after="元" />
         </a-form-item>
@@ -38,13 +47,19 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive } from "vue";
 import { notification } from "ant-design-vue";
+import { useRouter } from "vue-router";
 import * as api from "./api";
 import { util } from "/@/utils";
 import { useSettingStore } from "/@/store/settings";
 import { useUserStore } from "/@/store/user";
+import { useAccessStore } from "/@/vben/stores";
+import { frameworkRoutes } from "/@/router/resolve";
+import { generateMenus } from "/@/vben/utils";
+import utilPermission from "/@/plugin/permission/util.permission";
 
 defineOptions({ name: "SysInviteCommissionSetting" });
 
+const router = useRouter();
 const defaultAgreement = "<p>请遵守平台推广规则，不得通过虚假注册、刷单、恶意诱导等方式获取收益。平台有权对异常推广行为进行核查，并根据实际情况暂停结算或关闭激励计划资格。</p>";
 const defaultWithdrawBanks = [
   "中国工商银行",
@@ -63,13 +78,22 @@ const defaultWithdrawBanks = [
   "兴业银行",
   "浦发银行",
 ];
-const settings = reactive<any>({ enabled: false, agreementContent: "", minWithdrawAmountYuan: 0, withdrawChannels: ["alipay", "bank"], withdrawBanks: defaultWithdrawBanks });
+const settings = reactive<any>({
+  enabled: false,
+  levelEnabled: false,
+  fixedCommissionRate: 10,
+  agreementContent: "",
+  minWithdrawAmountYuan: 0,
+  withdrawChannels: ["alipay", "bank"],
+  withdrawBanks: defaultWithdrawBanks,
+});
 const withdrawChannelOptions = [
   { label: "支付宝", value: "alipay" },
   { label: "银行卡", value: "bank" },
 ];
 const bankOptions = computed(() => defaultWithdrawBanks.map(item => ({ label: item, value: item })));
 const bankChannelEnabled = computed(() => settings.withdrawChannels?.includes("bank"));
+const levelEnabled = computed(() => settings.levelEnabled === true);
 const userStore = useUserStore();
 const editorUploader = {
   type: "form",
@@ -89,6 +113,8 @@ const editorUploader = {
 async function loadSettings() {
   const data: any = await api.GetSettings();
   settings.enabled = !!data?.enabled;
+  settings.levelEnabled = data?.levelEnabled === true;
+  settings.fixedCommissionRate = Number(data?.fixedCommissionRate) || 10;
   settings.agreementContent = data?.agreementContent || defaultAgreement;
   settings.minWithdrawAmountYuan = util.amount.toYuan(data?.minWithdrawAmount || 0);
   settings.withdrawChannels = data?.withdrawChannels?.length ? data.withdrawChannels : ["alipay", "bank"];
@@ -101,15 +127,55 @@ async function saveSettings() {
     notification.warning({ message: "请填写推广协议内容" });
     return;
   }
+  if (!levelEnabled.value && (!settings.fixedCommissionRate || settings.fixedCommissionRate <= 0)) {
+    notification.warning({ message: "关闭推广等级时，请设置佣金比例" });
+    return;
+  }
   await api.SaveSettings({
     enabled: settings.enabled,
+    levelEnabled: levelEnabled.value,
+    fixedCommissionRate: settings.fixedCommissionRate || 0,
     agreementContent: settings.agreementContent || "",
     minWithdrawAmount: util.amount.toCent(settings.minWithdrawAmountYuan || 0),
     withdrawChannels: settings.withdrawChannels || [],
     withdrawBanks,
   });
   await useSettingStore().loadSysSettings();
+  await refreshMenus();
   notification.success({ message: "保存成功" });
+}
+
+function gotoInviteLevel() {
+  router.push({ path: "/sys/suite/invite/level" });
+}
+
+async function refreshMenus() {
+  const accessStore = useAccessStore();
+  const settingStore = useSettingStore();
+  let allMenus = await generateMenus(frameworkRoutes[0].children, router);
+  allMenus = allMenus.concat(settingStore.getHeaderMenus);
+  allMenus = buildAccessedMenus(allMenus);
+  accessStore.setAccessMenus(allMenus);
+}
+
+function buildAccessedMenus(menus: any) {
+  if (menus == null) {
+    return [];
+  }
+  const list: any = [];
+  for (const sub of menus) {
+    if (sub.meta?.permission != null && !utilPermission.hasPermissions(sub.meta.permission)) {
+      continue;
+    }
+    const item: any = {
+      ...sub,
+    };
+    list.push(item);
+    if (sub.children && sub.children.length > 0) {
+      item.children = buildAccessedMenus(sub.children);
+    }
+  }
+  return list;
 }
 
 function isBlankAgreement(content: string) {

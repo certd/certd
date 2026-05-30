@@ -47,3 +47,11 @@ export async function ApproveWithdraw(id: number, remark?: string) {
 export async function RejectWithdraw(id: number, remark: string) {
   return await request({ url: "/sys/wallet/withdraw/reject", method: "post", data: { id, remark } });
 }
+
+export async function GetSimpleUserByIds(ids: number[]) {
+  return await request({
+    url: "/sys/authority/user/getSimpleUserByIds",
+    method: "post",
+    data: { ids },
+  });
+}

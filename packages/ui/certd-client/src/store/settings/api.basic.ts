@@ -99,6 +99,8 @@ export type SuiteSetting = {
 };
 export type InviteSetting = {
   enabled?: boolean;
+  levelEnabled?: boolean;
+  fixedCommissionRate?: number;
 };
 export type SysPrivateSetting = {
   httpProxy?: string;

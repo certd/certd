@@ -6,7 +6,7 @@
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <a-empty v-if="levelList.length === 0" class="level-empty" />
       <div v-else class="level-card-grid">
-        <div v-for="(item, index) of levelList" :key="item.id" class="level-card" :class="{ disabled: item.disabled }">
+        <div v-for="(item, index) of levelList" :key="item.id" class="level-card" :class="{ disabled: item.disabled, exclusive: item.levelType === 'exclusive' }">
           <div class="level-card-actions">
             <a-tooltip title="编辑">
               <a-button type="text" size="small" @click="openEdit({ index, row: item })">
@@ -151,6 +151,17 @@ onActivated(() => {
     border-color: rgba(52, 120, 246, 0.42);
     box-shadow: 0 16px 38px rgba(15, 23, 42, 0.14);
     transform: translateY(-3px);
+  }
+
+  .level-card.exclusive {
+    border-color: rgba(147, 51, 234, 0.34);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(250, 245, 255, 0.86)), linear-gradient(135deg, rgba(147, 51, 234, 0.24), rgba(245, 158, 11, 0.2));
+    box-shadow: 0 12px 32px rgba(88, 28, 135, 0.14);
+  }
+
+  .level-card.exclusive:hover {
+    border-color: rgba(147, 51, 234, 0.52);
+    box-shadow: 0 18px 42px rgba(88, 28, 135, 0.2);
   }
 
   .level-card.disabled {

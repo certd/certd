@@ -65,6 +65,8 @@ export class BasicSettingsController extends BaseController {
     const setting = await this.sysSettingsService.getSetting<SysInviteCommissionSetting>(SysInviteCommissionSetting);
     return {
       enabled: setting.enabled,
+      levelEnabled: setting.levelEnabled === true,
+      fixedCommissionRate: setting.fixedCommissionRate || 10,
     };
   }
 

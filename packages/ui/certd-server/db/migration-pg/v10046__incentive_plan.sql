@@ -23,6 +23,7 @@ CREATE TABLE "cd_invite_user_plan"
   "enabled"        boolean NOT NULL DEFAULT (false),
   "level_id"       bigint NOT NULL DEFAULT 0,
   "level_locked"   boolean NOT NULL DEFAULT (false),
+  "promotion_amount" bigint NOT NULL DEFAULT 0,
   "agreement_time" bigint NOT NULL DEFAULT 0,
   "create_time"    timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "update_time"    timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP)
@@ -31,6 +32,6 @@ CREATE UNIQUE INDEX "index_invite_user_plan_user_id" ON "cd_invite_user_plan" ("
 
 INSERT INTO "cd_invite_level" ("name", "icon", "sort", "min_amount", "commission_rate", "level_type", "disabled")
 VALUES ('青铜', 'fluent-emoji-flat:2nd-place-medal', 10, 0, 10, 'normal', false),
-       ('白银', 'fluent-emoji-flat:1st-place-medal', 20, 100000, 15, 'normal', false),
-       ('黄金', 'fluent-emoji-flat:3rd-place-medal', 30, 500000, 20, 'normal', false),
-       ('钻石', 'streamline-color:diamond-2', 40, 1000000, 30, 'normal', false);
+       ('白银', 'fluent-emoji-flat:1st-place-medal', 20, 10000, 15, 'normal', false),
+       ('黄金', 'fluent-emoji-flat:3rd-place-medal', 30, 50000, 20, 'normal', false),
+       ('钻石', 'streamline-color:diamond-2', 40, 300000, 30, 'normal', false);

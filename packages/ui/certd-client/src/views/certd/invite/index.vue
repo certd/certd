@@ -45,7 +45,7 @@
           </div>
         </div>
 
-        <div class="invite-info-row invite-highlight-row level-highlight-row" @click="levelDialogOpen = true">
+        <div v-if="inviteInfo.levelEnabled" class="invite-info-row invite-highlight-row level-highlight-row" @click="levelDialogOpen = true">
           <div class="info-icon level-info-icon">
             <fs-icon v-if="inviteInfo.currentLevel" :icon="levelIcon(inviteInfo.currentLevel)" />
             <fs-icon v-else icon="ion:ribbon-outline" />
@@ -60,6 +60,19 @@
             <span v-if="inviteInfo.currentLevel" class="level-rate-desc">好友付费后按此比例计算佣金</span>
           </div>
           <fs-icon class="level-open-icon" icon="ion:chevron-forward-outline" />
+        </div>
+        <div v-else class="invite-info-row invite-highlight-row">
+          <div class="info-icon level-info-icon">
+            <fs-icon icon="ion:cash-outline" />
+          </div>
+          <span class="info-label">返佣比例</span>
+          <div class="info-content level-info-content">
+            <span class="current-level-rate fixed-rate-tag">
+              <span class="current-level-rate-label">比例</span>
+              <span class="current-level-rate-value">{{ inviteInfo.fixedCommissionRate || 0 }}%</span>
+            </span>
+            <span class="level-rate-desc">好友付费后按此比例计算佣金</span>
+          </div>
         </div>
       </div>
 
@@ -80,7 +93,7 @@
     </div>
     <a-empty v-else-if="loaded" description="激励计划未开启" />
 
-    <a-modal v-model:open="levelDialogOpen" title="推广等级" width="820px" wrap-class-name="invite-level-modal" :footer="null">
+    <a-modal v-if="inviteInfo.levelEnabled" v-model:open="levelDialogOpen" title="推广等级" width="820px" wrap-class-name="invite-level-modal" :footer="null">
       <div class="level-modal-subtitle">推广越多，等级越高，返佣比例越高</div>
       <div class="level-progress-box">
         <div>
@@ -88,13 +101,13 @@
           <div class="level-progress-value">¥ {{ amountToYuan(inviteInfo.summary.promotionAmount) }}</div>
         </div>
         <div class="level-progress-desc">
-          <template v-if="inviteInfo.nextLevel">距离下一等级「{{ inviteInfo.nextLevel.name }}」还差 {{ amountToYuan(inviteInfo.nextLevel.gapAmount) }} 元</template>
-          <template v-else-if="inviteInfo.currentLevel?.levelType === 'exclusive'">当前为专属等级，不参与自动升级</template>
+          <template v-if="inviteInfo.currentLevel?.levelType === 'exclusive'">当前为专属等级，不参与自动升级</template>
+          <template v-else-if="inviteInfo.nextLevel">距离下一等级「{{ inviteInfo.nextLevel.name }}」还差 {{ amountToYuan(inviteInfo.nextLevel.gapAmount) }} 元</template>
           <template v-else>已达到当前可自动升级的最高等级</template>
         </div>
       </div>
       <div class="level-card-grid modal-level-grid">
-        <div v-for="level in visibleLevels" :key="level.id" class="level-card" :class="{ active: level.id === inviteInfo.currentLevel?.id }">
+        <div v-for="level in visibleLevels" :key="level.id" class="level-card" :class="{ active: level.id === inviteInfo.currentLevel?.id, exclusive: level.levelType === 'exclusive' }">
           <div class="level-name">
             <span class="level-medal">
               <fs-icon :icon="levelIcon(level)" />
@@ -110,8 +123,6 @@
           <div v-else-if="level.id === inviteInfo.nextLevel?.id" class="next-gap">还差 {{ amountToYuan(inviteInfo.nextLevel.gapAmount) }}</div>
         </div>
       </div>
-      <div v-if="inviteInfo.nextLevel" class="next-level">距离下一等级「{{ inviteInfo.nextLevel.name }}」还差 {{ amountToYuan(inviteInfo.nextLevel.gapAmount) }} 元推广金额</div>
-      <div v-else class="next-level">已达到当前可自动升级的最高等级</div>
     </a-modal>
 
     <a-modal
@@ -169,6 +180,8 @@ const inviteInfo = reactive<any>({
   agreementContent: "",
   summary: { totalIncomeAmount: 0, monthIncomeAmount: 0, promotionAmount: 0, inviteeCount: 0 },
   wallet: { availableAmount: 0 },
+  levelEnabled: false,
+  fixedCommissionRate: 10,
   currentLevel: null,
   nextLevel: null,
   levelList: [],
@@ -213,7 +226,12 @@ const summaryCards = computed(() => [
 ]);
 
 const visibleLevels = computed(() => {
-  return (inviteInfo.levelList || []).filter((level: any) => !level.disabled);
+  return (inviteInfo.levelList || []).filter((level: any) => {
+    if (level.disabled) {
+      return false;
+    }
+    return level.levelType !== "exclusive" || level.id === inviteInfo.currentLevel?.id;
+  });
 });
 
 const agreementText = computed(() => inviteInfo.agreementContent?.trim() || defaultAgreementContent);
@@ -546,6 +564,10 @@ onActivated(async () => {
     line-height: 24px;
   }
 
+  .fixed-rate-tag {
+    margin-left: 0;
+  }
+
   .level-info-content {
     display: flex;
     align-items: center;
@@ -664,6 +686,18 @@ onActivated(async () => {
   .level-card.active {
     border-color: #3478f6;
     background: linear-gradient(145deg, rgba(236, 244, 255, 0.92), rgba(248, 250, 252, 0.88)), hsl(var(--primary) / 10%);
+  }
+
+  .level-card.exclusive {
+    border-color: rgba(147, 51, 234, 0.36);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(250, 245, 255, 0.86)), linear-gradient(135deg, rgba(147, 51, 234, 0.24), rgba(245, 158, 11, 0.2));
+    box-shadow: 0 10px 28px rgba(88, 28, 135, 0.14);
+  }
+
+  .level-card.exclusive.active {
+    border-color: rgba(147, 51, 234, 0.64);
+    background: linear-gradient(145deg, rgba(250, 245, 255, 0.96), rgba(255, 251, 235, 0.9)), linear-gradient(135deg, rgba(147, 51, 234, 0.28), rgba(245, 158, 11, 0.24));
+    box-shadow: 0 14px 34px rgba(88, 28, 135, 0.2);
   }
 
   .level-name {
