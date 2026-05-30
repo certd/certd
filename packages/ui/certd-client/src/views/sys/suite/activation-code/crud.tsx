@@ -275,15 +275,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
         code: {
           title: "激活码",
-          type: "copyable",
-          search: { show: true },
+          type: ["text", "copyable"],
+          search: { show: true, col: { span: 3 } },
           column: { width: 300 },
         },
         productId: {
           title: "绑定套餐",
           type: "dict-select",
           dict: productDict,
-          search: { show: true },
+          search: { show: true, col: { span: 3 } },
           column: { width: 150 },
         },
         duration: {
@@ -294,21 +294,21 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         batchNo: {
           title: "批次号",
           type: "text",
-          search: { show: true },
+          search: { show: true, col: { span: 3 } },
           column: { width: 180 },
         },
         status: {
           title: "状态",
           type: "dict-select",
           dict: statusDict,
-          search: { show: true },
+          search: { show: true, col: { span: 3 } },
           column: { width: 100, align: "center" },
         },
         usedUserId: {
           title: "使用用户",
           type: "table-select",
           dict: userDict,
-          search: { show: true },
+          search: { show: true, col: { span: 3 } },
           column: { width: 140 },
           form: {
             show: false,
@@ -336,7 +336,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               { label: "已导出", value: true, color: "warning" },
             ],
           }),
-          search: { show: true },
+          search: { show: true, col: { span: 3 } },
           column: { width: 110, align: "center" },
         },
         exportTime: {
