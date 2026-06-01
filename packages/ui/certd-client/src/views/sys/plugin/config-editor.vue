@@ -17,9 +17,9 @@
             </thead>
             <tbody>
               <template v-for="item in originInputs" :key="item.key">
-                <template v-for="prop in editableKeys" :key="prop.key">
+                <template v-for="prop in getEditableKeys(item)" :key="prop.key">
                   <tr>
-                    <td v-if="prop.key === 'value'" class="border-t-2 p-5" rowspan="3" :class="{ 'border-t-2': prop.key === 'value' }">{{ item.title }}</td>
+                    <td v-if="prop.key === 'value'" class="border-t-2 p-5" :rowspan="getEditableKeys(item).length" :class="{ 'border-t-2': prop.key === 'value' }">{{ item.title }}</td>
                     <td class="border-t p-5" :class="{ 'border-t-2': prop.key === 'value' }">{{ prop.label }}</td>
                     <td class="border-t p-5" :class="{ 'border-t-2': prop.key === 'value' }">
                       <rollbackable :value="configForm[item.key][prop.key]" @set="prop.onSet(item)" @clear="delete configForm[item.key][prop.key]">
@@ -157,6 +157,92 @@ const editableKeys = ref([
   },
 ]);
 
+const optionsMappingKey = {
+  key: "optionsMapping",
+  label: "选项映射",
+  onSet(item: any) {
+    configForm[item.key]["optionsMapping"] = item.optionsMapping ?? null;
+  },
+  defaultRender(item: any) {
+    return () => {
+      const mapping = item["optionsMapping"];
+      if (!mapping || Object.keys(mapping).length === 0) {
+        return <span class="text-gray-400">未设置</span>;
+      }
+      return (
+        <div class="options-mapping-tags">
+          {Object.entries(mapping).map(([key, label]: any) => (
+            <a-tag color="blue" size="small" class="mb-2 mr-2">
+              {key} → {label}
+            </a-tag>
+          ))}
+        </div>
+      );
+    };
+  },
+  editRender(item: any) {
+    return () => {
+      const options = item.component?.options || [];
+      if (options.length === 0) {
+        return <span class="text-gray-400">该组件没有预设选项</span>;
+      }
+
+      const onLabelChange = (optValue: string, newLabel: string) => {
+        const mapping = configForm[item.key]["optionsMapping"] || {};
+        if (newLabel) {
+          mapping[optValue] = newLabel;
+          configForm[item.key]["optionsMapping"] = { ...mapping };
+        } else {
+          delete mapping[optValue];
+          if (Object.keys(mapping).length > 0) {
+            configForm[item.key]["optionsMapping"] = { ...mapping };
+          } else {
+            delete configForm[item.key]["optionsMapping"];
+          }
+        }
+      };
+
+      const getLabel = (optValue: string) => {
+        return configForm[item.key]["optionsMapping"]?.[optValue] || "";
+      };
+
+      return (
+        <div class="options-mapping-editor">
+          <table class="w-full table-auto border-collapse border border-gray-300 text-sm">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="border border-gray-300 px-2 py-1 text-left">选项值</th>
+                <th class="border border-gray-300 px-2 py-1 text-left">原始显示</th>
+                <th class="border border-gray-300 px-2 py-1 text-left">自定义显示</th>
+              </tr>
+            </thead>
+            <tbody>
+              {options.map((opt: any) => (
+                <tr>
+                  <td class="border border-gray-300 px-2 py-1">
+                    <code class="text-xs">{opt.value}</code>
+                  </td>
+                  <td class="border border-gray-300 px-2 py-1 text-gray-500">{opt.label}</td>
+                  <td class="border border-gray-300 px-2 py-1">
+                    <a-input size="small" placeholder={opt.label} value={getLabel(opt.value)} onUpdate:value={(val: string) => onLabelChange(opt.value, val)} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div class="helper mt-1">只需填写需要自定义的选项，留空则使用原始显示内容</div>
+        </div>
+      );
+    };
+  },
+};
+
+function getEditableKeys(item: any) {
+  if (item.component?.name === "a-select" || item.component?.name === "icon-select") {
+    return [...editableKeys.value, optionsMappingKey];
+  }
+  return editableKeys.value;
+}
 const originInputs = computed(() => {
   if (!currentPlugin.value) {
     return;
