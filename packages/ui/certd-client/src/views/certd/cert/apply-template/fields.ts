@@ -66,18 +66,6 @@ export function buildCertApplyTemplateColumns(certPlugin: any) {
         order: 900,
       },
     },
-    disabled: {
-      title: "禁用",
-      type: "switch",
-      form: {
-        value: false,
-        component: {
-          name: "a-switch",
-          vModel: "checked",
-        },
-        order: 901,
-      },
-    },
   });
 
   return columns;
@@ -89,6 +77,6 @@ export function buildTemplateSubmitData(form: any) {
     name: form.name,
     content: pickCertApplyTemplateParams(omit(form, ["id", "name", "content", "isDefault", "disabled"])),
     isDefault: form.isDefault,
-    disabled: form.disabled,
+    disabled: false,
   };
 }

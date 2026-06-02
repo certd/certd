@@ -14,13 +14,26 @@ export class CertApplyTemplateController extends CrudController<CertApplyTemplat
     return this.service;
   }
 
+  private removeContent(data: any) {
+    const records = Array.isArray(data) ? data : data?.records;
+    if (!records) {
+      return data;
+    }
+    for (const item of records) {
+      delete item.content;
+    }
+    return data;
+  }
+
   @Post("/page", { description: Constants.per.authOnly, summary: "查询证书申请参数模版分页列表" })
   async page(@Body(ALL) body: any) {
     const { projectId, userId } = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     body.query.projectId = projectId;
     body.query.userId = userId;
-    return super.page(body);
+    const res = await super.page(body);
+    this.removeContent(res.data);
+    return res;
   }
 
   @Post("/list", { description: Constants.per.authOnly, summary: "查询证书申请参数模版列表" })
@@ -30,7 +43,9 @@ export class CertApplyTemplateController extends CrudController<CertApplyTemplat
     body.query.projectId = projectId;
     body.query.userId = userId;
     body.query.disabled = false;
-    return super.list(body);
+    const res = await super.list(body);
+    this.removeContent(res.data);
+    return res;
   }
 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加证书申请参数模版" })

@@ -29,6 +29,9 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   const delRequest = async ({ row }: DelReq) => {
     return await api.DelObj(row.id);
   };
+  const infoRequest = async ({ row }: DelReq) => {
+    return await api.GetObj(row.id);
+  };
 
   async function setDefault(row: any) {
     await api.SetDefault(row.id);
@@ -36,9 +39,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     await crudExpose.doRefresh();
   }
 
-  async function openForm(row?: any) {
+  async function openForm(entity?: any) {
     const certPlugin: any = await pluginStore.getPluginDefine("CertApply");
     const columns = buildCertApplyTemplateColumns(certPlugin);
+    const row = await infoRequest({ row: entity });
     const content = row?.content ? (typeof row.content === "string" ? JSON.parse(row.content || "{}") : row.content) : {};
     const initialForm = row
       ? {
@@ -85,6 +89,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         addRequest,
         editRequest,
         delRequest,
+        infoRequest,
       },
       search: {
         initialForm: {
@@ -127,15 +132,22 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           type: "dict-switch",
           dict: isDefaultDict,
           column: {
-            width: 150,
+            width: 170,
             cellRender({ value, row }) {
               return (
                 <div class="flex items-center gap-2">
                   <fs-values-format modelValue={value} dict={isDefaultDict}></fs-values-format>
                   {!row.isDefault && (
-                    <a-tooltip title="设为默认">
-                      <fs-icon class="pointer color-primary" icon="ion:star-outline" onClick={() => setDefault(row)}></fs-icon>
-                    </a-tooltip>
+                    <a-button
+                      size="small"
+                      type="link"
+                      onClick={(event: MouseEvent) => {
+                        event.stopPropagation();
+                        setDefault(row);
+                      }}
+                    >
+                      设为默认
+                    </a-button>
                   )}
                 </div>
               );
@@ -145,7 +157,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         disabled: {
           title: "禁用",
           type: "dict-switch",
-          column: { width: 100 },
+          column: { show: false },
+          form: { show: false },
         },
         createTime: {
           title: "创建时间",

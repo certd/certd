@@ -3,23 +3,31 @@ import { CertApplyTemplateService } from "./cert-apply-template-service.js";
 
 function createService(list: any[]) {
   const service = new CertApplyTemplateService();
+  function matchesWhere(item: any, where: any) {
+    for (const key of Object.keys(where)) {
+      const expected = where[key];
+      if (expected?._type === "isNull") {
+        if (item[key] != null) {
+          return false;
+        }
+        continue;
+      }
+      if (expected != null && item[key] !== expected) {
+        return false;
+      }
+    }
+    return true;
+  }
   (service as any).repository = {
     async findOne({ where }: any) {
-      return list.find(item => {
-        if (where.id != null && item.id !== where.id) {
-          return false;
+      return list.find(item => matchesWhere(item, where));
+    },
+    async update(where: any, patch: any) {
+      for (const item of list) {
+        if (matchesWhere(item, where)) {
+          Object.assign(item, patch);
         }
-        if (where.userId != null && item.userId !== where.userId) {
-          return false;
-        }
-        if (where.projectId != null && item.projectId !== where.projectId) {
-          return false;
-        }
-        if (where.isDefault != null && item.isDefault !== where.isDefault) {
-          return false;
-        }
-        return true;
-      });
+      }
     },
   };
   return service;
@@ -148,5 +156,41 @@ describe("CertApplyTemplateService", () => {
       renewDays: 30,
       privateKeyType: "rsa_4096",
     });
+  });
+
+  it("sets default for templates with null project id", async () => {
+    const list = [
+      {
+        id: 1,
+        userId: 10,
+        projectId: null,
+        isDefault: true,
+        disabled: false,
+        content: "{}",
+      },
+      {
+        id: 2,
+        userId: 10,
+        projectId: null,
+        isDefault: false,
+        disabled: false,
+        content: "{}",
+      },
+      {
+        id: 3,
+        userId: 10,
+        projectId: 20,
+        isDefault: true,
+        disabled: false,
+        content: "{}",
+      },
+    ];
+    const service = createService(list);
+
+    await service.setDefault(2, 10, null);
+
+    assert.equal(list[0].isDefault, false);
+    assert.equal(list[1].isDefault, true);
+    assert.equal(list[2].isDefault, true);
   });
 });

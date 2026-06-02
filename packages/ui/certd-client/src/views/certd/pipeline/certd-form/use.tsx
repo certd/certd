@@ -111,7 +111,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
   const router = useRouter();
   const { openCrudFormDialog: openInnerCrudFormDialog } = useFormWrapper();
 
-  function createCrudOptions(req: { certPlugin: any; doSubmit: any; title?: string; initialForm?: any }): CreateCrudOptionsRet {
+  async function createCrudOptions(req: { certPlugin: any; doSubmit: any; title?: string; initialForm?: any }): Promise<CreateCrudOptionsRet> {
     const inputs: any = {};
     const moreParams = [];
     const doSubmit = req.doSubmit;
@@ -153,19 +153,8 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
 
     const initialForm = req.initialForm || {};
     initialForm.type = certPlugin.name;
-    const templateDict = dict({
-      value: "id",
-      label: "name",
-      async getData() {
-        return await certApplyTemplateApi.ListAll();
-      },
-      async getNodesByValues(ids: any[]) {
-        const list = await certApplyTemplateApi.ListAll();
-        return list.filter((item: any) => ids.includes(item.id));
-      },
-      immediate: false,
-    });
     const applyTemplates = reactive<any[]>([]);
+    const selectedTemplateId = ref<number | null>(null);
 
     async function reloadApplyTemplates() {
       const list = await certApplyTemplateApi.ListAll();
@@ -177,6 +166,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
       if (!templateId) {
         return;
       }
+      selectedTemplateId.value = templateId;
       const template = await certApplyTemplateApi.GetObj(templateId);
       const params = pickCertApplyTemplateParams(typeof template.content === "string" ? JSON.parse(template.content || "{}") : template.content);
       form.input = {
@@ -185,11 +175,25 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
       };
     }
 
-    function getSelectedApplyTemplateName(form: any) {
-      if (!form?.applyTemplateId) {
+    async function applyDefaultTemplateToInitialForm() {
+      if (certPlugin.name !== "CertApply") {
+        return;
+      }
+      const list = await reloadApplyTemplates();
+      const defaultTemplate = list.find((item: any) => item.isDefault);
+      if (!defaultTemplate) {
+        return;
+      }
+      await applyTemplateToForm(defaultTemplate.id, initialForm);
+    }
+
+    await applyDefaultTemplateToInitialForm();
+
+    function getSelectedApplyTemplateName() {
+      if (!selectedTemplateId.value) {
         return "选择模版";
       }
-      const template = applyTemplates.find(item => item.id === form.applyTemplateId);
+      const template = applyTemplates.find(item => item.id === selectedTemplateId.value);
       return template?.name || "选择模版";
     }
 
@@ -233,7 +237,6 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                 content: pickCertApplyTemplateParams(form.input),
               });
               await reloadApplyTemplates();
-              await templateDict.reloadDict();
               message.success("保存成功");
             },
           },
@@ -268,7 +271,6 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
             async doSubmit({ form: templateForm }: any) {
               await certApplyTemplateApi.UpdateObj(buildTemplateSubmitData(templateForm));
               await reloadApplyTemplates();
-              await templateDict.reloadDict();
               message.success("保存成功");
             },
           },
@@ -283,7 +285,9 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
         async onOk() {
           await certApplyTemplateApi.DelObj(templateId);
           await reloadApplyTemplates();
-          await templateDict.reloadDict();
+          if (selectedTemplateId.value === templateId) {
+            selectedTemplateId.value = null;
+          }
           message.success("删除成功");
         },
       });
@@ -329,7 +333,6 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                       return;
                     }
                     const templateId = Number(key);
-                    form.applyTemplateId = templateId;
                     applyTemplateToForm(templateId, form);
                   }}
                 >
@@ -374,7 +377,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
           >
             <a-tooltip title="选择参数模版，自动填充证书申请参数">
               <a-button>
-                <span class="inline-block max-w-48 truncate align-bottom">{getSelectedApplyTemplateName(form)}</span>
+                <span class="inline-block max-w-48 truncate align-bottom">{getSelectedApplyTemplateName()}</span>
                 <fs-icon icon="ion:chevron-down" class="ml-1" />
               </a-button>
             </a-tooltip>
@@ -559,16 +562,6 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
         initialForm.input[key] = pluginSysConfig.sysSetting?.input[key];
       }
     }
-    const defaultTemplate = req.pluginName === "CertApply" ? await certApplyTemplateApi.GetDefault() : null;
-    if (defaultTemplate) {
-      initialForm.applyTemplateId = defaultTemplate.id;
-      const templateParams = pickCertApplyTemplateParams(typeof defaultTemplate.content === "string" ? JSON.parse(defaultTemplate.content || "{}") : defaultTemplate.content);
-      initialForm.input = {
-        ...initialForm.input,
-        ...templateParams,
-      };
-    }
-
     async function doSubmit({ form }: any) {
       // const certDetail = readCertDetail(form.cert.crt);
       // 添加certd pipeline
@@ -638,7 +631,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
     }
 
     req.currentPluginRef.value = certPlugin;
-    const { crudOptions } = createCrudOptions({
+    const { crudOptions } = await createCrudOptions({
       certPlugin,
       doSubmit,
       title: req.title,
