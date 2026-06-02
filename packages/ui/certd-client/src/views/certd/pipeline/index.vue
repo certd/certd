@@ -75,7 +75,6 @@ import { groupDictRef } from "./group/dicts";
 import { useCertPipelineCreator } from "./certd-form/use";
 import { useRouter } from "vue-router";
 import { useCrudPermission } from "/@/plugin/permission";
-import CertdForm from "./certd-form/certd-form.vue";
 
 defineOptions({
   name: "PipelineManager",

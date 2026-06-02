@@ -11,6 +11,8 @@ export type CertGetReq = {
   domains?: string;
   certId: number;
   autoApply?: boolean;
+  autoApplyTemplateId?: number;
+  autoApplyParams?: Record<string, any> | string;
   format?: string; //默认是所有,pem,der,p12,pfx,jks,one,p7b
 };
 
@@ -43,6 +45,8 @@ export class OpenCertController extends BaseOpenController {
       domains: req.domains,
       certId: req.certId,
       autoApply: req.autoApply ?? false,
+      autoApplyTemplateId: req.autoApplyTemplateId,
+      autoApplyParams: typeof req.autoApplyParams === "string" ? JSON.parse(req.autoApplyParams) : req.autoApplyParams,
       format: req.format,
       projectId,
     });

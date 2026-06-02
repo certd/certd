@@ -9,6 +9,8 @@ import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
 import { CertInfoService } from "../service/cert-info-service.js";
 import { DomainService } from "../../cert/service/domain-service.js";
 import { DomainVerifierGetter } from "../../pipeline/service/getter/domain-verifier-getter.js";
+import { CertApplyTemplateService } from "../../cert/service/cert-apply-template-service.js";
+import { CertApplyTemplateParams } from "../../cert/service/cert-apply-template-fields.js";
 
 @Provide("CertInfoFacade")
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -25,7 +27,10 @@ export class CertInfoFacade {
   @Inject()
   userSettingsService: UserSettingsService;
 
-  async getCertInfo(req: { domains?: string; certId?: number; userId: number; projectId: number; autoApply?: boolean; format?: string }) {
+  @Inject()
+  certApplyTemplateService: CertApplyTemplateService;
+
+  async getCertInfo(req: { domains?: string; certId?: number; userId: number; projectId: number; autoApply?: boolean; format?: string; autoApplyTemplateId?: number; autoApplyParams?: CertApplyTemplateParams }) {
     const { domains, certId, userId, projectId } = req;
     if (certId) {
       return await this.certInfoService.getCertInfoById({ id: certId, userId, projectId });
@@ -43,7 +48,13 @@ export class CertInfoFacade {
     if (matchedList.length === 0) {
       if (req.autoApply === true) {
         //自动申请，先创建自动申请流水线
-        const pipeline: PipelineEntity = await this.createAutoPipeline({ domains: domainArr, userId, projectId });
+        const pipeline: PipelineEntity = await this.createAutoPipeline({
+          domains: domainArr,
+          userId,
+          projectId,
+          autoApplyTemplateId: req.autoApplyTemplateId,
+          autoApplyParams: req.autoApplyParams,
+        });
         await this.triggerApplyPipeline({ pipelineId: pipeline.id });
       } else {
         throw new CodeException({
@@ -98,7 +109,7 @@ export class CertInfoFacade {
     return matched;
   }
 
-  async createAutoPipeline(req: { domains: string[]; userId: number; projectId: number }) {
+  async createAutoPipeline(req: { domains: string[]; userId: number; projectId: number; autoApplyTemplateId?: number; autoApplyParams?: CertApplyTemplateParams }) {
     const verifierGetter = new DomainVerifierGetter(req.userId, req.projectId, this.domainService);
 
     const allDomains = [];
@@ -123,6 +134,12 @@ export class CertInfoFacade {
       throw new CodeException(Constants.res.openEmailNotFound);
     }
     const email = userEmailSetting.list[0];
+    const applyParams = await this.certApplyTemplateService.resolveApplyParams({
+      userId: req.userId,
+      projectId: req.projectId,
+      templateId: req.autoApplyTemplateId,
+      params: req.autoApplyParams,
+    });
 
     return await this.pipelineService.createAutoPipeline({
       domains: req.domains,
@@ -130,6 +147,7 @@ export class CertInfoFacade {
       projectId: req.projectId,
       userId: req.userId,
       from: "OpenAPI",
+      applyParams,
     });
   }
 

@@ -12,6 +12,7 @@ export default {
   settings: "Settings",
   accessManager: "Access Management",
   dnsPersistRecord: "DNS Persist Records",
+  certApplyTemplate: "Certificate Apply Templates",
   subDomain: "Subdomain Delegation Settings",
   pipelineGroup: "Pipeline Group Management",
   openKey: "Open API Key",

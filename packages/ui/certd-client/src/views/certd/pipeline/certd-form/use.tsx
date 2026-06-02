@@ -1,12 +1,12 @@
 import { checkPipelineLimit } from "/@/views/certd/pipeline/utils";
 import { cloneDeep, merge, omit } from "lodash-es";
-import { message } from "ant-design-vue";
+import { message, Modal } from "ant-design-vue";
 import { nanoid } from "nanoid";
 import { useRouter } from "vue-router";
 import { compute, CreateCrudOptionsRet, dict, useFormWrapper } from "@fast-crud/fast-crud";
 import NotificationSelector from "/@/views/certd/notification/notification-selector/index.vue";
 import { useReference } from "/@/use/use-refrence";
-import { computed, provide, Ref, ref } from "vue";
+import { computed, provide, reactive, Ref, ref } from "vue";
 import * as api from "../api";
 import { PluginGroup, usePluginStore } from "/@/store/plugin";
 import { createNotificationApi } from "/@/views/certd/notification/api";
@@ -14,6 +14,8 @@ import GroupSelector from "../group/group-selector.vue";
 import { useI18n } from "/src/locales";
 import { useSettingStore } from "/@/store/settings";
 import dayjs from "dayjs";
+import * as certApplyTemplateApi from "/@/views/certd/cert/apply-template/api";
+import { buildCertApplyTemplateColumns, buildTemplateSubmitData, pickCertApplyTemplateParams } from "/@/views/certd/cert/apply-template/fields";
 
 export function fillPipelineByDefaultForm(pipeline: any, form: any) {
   const triggers = [];
@@ -107,6 +109,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
   const pluginStore = usePluginStore();
   const settingStore = useSettingStore();
   const router = useRouter();
+  const { openCrudFormDialog: openInnerCrudFormDialog } = useFormWrapper();
 
   function createCrudOptions(req: { certPlugin: any; doSubmit: any; title?: string; initialForm?: any }): CreateCrudOptionsRet {
     const inputs: any = {};
@@ -150,6 +153,236 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
 
     const initialForm = req.initialForm || {};
     initialForm.type = certPlugin.name;
+    const templateDict = dict({
+      value: "id",
+      label: "name",
+      async getData() {
+        return await certApplyTemplateApi.ListAll();
+      },
+      async getNodesByValues(ids: any[]) {
+        const list = await certApplyTemplateApi.ListAll();
+        return list.filter((item: any) => ids.includes(item.id));
+      },
+      immediate: false,
+    });
+    const applyTemplates = reactive<any[]>([]);
+
+    async function reloadApplyTemplates() {
+      const list = await certApplyTemplateApi.ListAll();
+      applyTemplates.splice(0, applyTemplates.length, ...list);
+      return list;
+    }
+
+    async function applyTemplateToForm(templateId: number, form: any) {
+      if (!templateId) {
+        return;
+      }
+      const template = await certApplyTemplateApi.GetObj(templateId);
+      const params = pickCertApplyTemplateParams(typeof template.content === "string" ? JSON.parse(template.content || "{}") : template.content);
+      form.input = {
+        ...form.input,
+        ...params,
+      };
+    }
+
+    function getSelectedApplyTemplateName(form: any) {
+      if (!form?.applyTemplateId) {
+        return "选择模版";
+      }
+      const template = applyTemplates.find(item => item.id === form.applyTemplateId);
+      return template?.name || "选择模版";
+    }
+
+    async function saveCurrentTemplate(form: any) {
+      await openInnerCrudFormDialog({
+        crudOptions: {
+          columns: {
+            name: {
+              title: "模版名称",
+              type: "text",
+              form: {
+                required: true,
+              },
+            },
+            isDefault: {
+              title: "设为默认",
+              type: "switch",
+              form: {
+                value: false,
+                component: {
+                  name: "a-switch",
+                  vModel: "checked",
+                },
+              },
+            },
+          },
+          form: {
+            mode: "add",
+            wrapper: {
+              width: 520,
+              title: "保存证书申请参数模版",
+              saveRemind: false,
+            },
+            col: {
+              span: 24,
+            },
+            async doSubmit({ form: templateForm }: any) {
+              await certApplyTemplateApi.AddObj({
+                name: templateForm.name,
+                isDefault: templateForm.isDefault,
+                content: pickCertApplyTemplateParams(form.input),
+              });
+              await reloadApplyTemplates();
+              await templateDict.reloadDict();
+              message.success("保存成功");
+            },
+          },
+        },
+      });
+    }
+
+    async function openApplyTemplateEditor(templateId: number) {
+      const row = await certApplyTemplateApi.GetObj(templateId);
+      const columns = buildCertApplyTemplateColumns(certPlugin);
+      const content = row?.content ? (typeof row.content === "string" ? JSON.parse(row.content || "{}") : row.content) : {};
+      await openInnerCrudFormDialog({
+        crudOptions: {
+          columns,
+          form: {
+            mode: "edit",
+            initialForm: {
+              id: row.id,
+              name: row.name,
+              isDefault: row.isDefault,
+              disabled: row.disabled,
+              ...pickCertApplyTemplateParams(content),
+            },
+            wrapper: {
+              width: 1100,
+              title: "编辑证书申请参数模版",
+              saveRemind: false,
+            },
+            col: {
+              span: 12,
+            },
+            async doSubmit({ form: templateForm }: any) {
+              await certApplyTemplateApi.UpdateObj(buildTemplateSubmitData(templateForm));
+              await reloadApplyTemplates();
+              await templateDict.reloadDict();
+              message.success("保存成功");
+            },
+          },
+        },
+      });
+    }
+
+    function deleteApplyTemplate(templateId: number) {
+      Modal.confirm({
+        title: "确认删除该模版？",
+        content: "删除后无法恢复。",
+        async onOk() {
+          await certApplyTemplateApi.DelObj(templateId);
+          await reloadApplyTemplates();
+          await templateDict.reloadDict();
+          message.success("删除成功");
+        },
+      });
+    }
+
+    function stopMenuAction(event: MouseEvent, action: () => void) {
+      event.preventDefault();
+      event.stopPropagation();
+      action();
+    }
+
+    function goApplyTemplateManage() {
+      formWrapperRef.value?.close?.();
+      router.push({ name: "CertApplyTemplate" });
+    }
+
+    function renderTemplateFooter(scope: any) {
+      if (certPlugin.name !== "CertApply") {
+        return null;
+      }
+      const form = scope?.getFormData?.();
+      if (!form) {
+        return null;
+      }
+      return (
+        <div class="flex items-center">
+          <a-dropdown
+            trigger={["click"]}
+            onOpenChange={(open: boolean) => {
+              if (open) {
+                reloadApplyTemplates();
+              }
+            }}
+            v-slots={{
+              overlay: () => (
+                <a-menu
+                  onClick={({ key }: any) => {
+                    if (key === "save") {
+                      saveCurrentTemplate(form);
+                      return;
+                    }
+                    if (key === "empty") {
+                      return;
+                    }
+                    const templateId = Number(key);
+                    form.applyTemplateId = templateId;
+                    applyTemplateToForm(templateId, form);
+                  }}
+                >
+                  {applyTemplates.length === 0 ? (
+                    <a-menu-item key="empty" disabled>
+                      暂无模版
+                    </a-menu-item>
+                  ) : (
+                    applyTemplates.map(item => (
+                      <a-menu-item key={item.id}>
+                        <div class="flex items-center justify-between gap-4 min-w-80">
+                          <span class="truncate">{item.name}</span>
+                          <span class="flex items-center gap-2 shrink-0">
+                            <a-button size="small" type="link" onClick={(event: MouseEvent) => stopMenuAction(event, () => openApplyTemplateEditor(item.id))}>
+                              编辑
+                            </a-button>
+                            <a-button size="small" type="link" danger onClick={(event: MouseEvent) => stopMenuAction(event, () => deleteApplyTemplate(item.id))}>
+                              删除
+                            </a-button>
+                          </span>
+                        </div>
+                      </a-menu-item>
+                    ))
+                  )}
+                  <a-menu-divider />
+                  <a-menu-item key="save">
+                    <div class="flex items-center justify-between gap-4 min-w-80">
+                      <div class="flex items-center">
+                        <fs-icon icon="ion:save-outline" />
+                        <span class="ml-1">保存当前参数为模版</span>
+                      </div>
+                      <a-tooltip title="证书参数模版管理">
+                        <a-button size="small" type="link" onClick={(event: MouseEvent) => stopMenuAction(event, goApplyTemplateManage)}>
+                          <fs-icon icon="ion:list-circle-outline" />
+                        </a-button>
+                      </a-tooltip>
+                    </div>
+                  </a-menu-item>
+                </a-menu>
+              ),
+            }}
+          >
+            <a-tooltip title="选择参数模版，自动填充证书申请参数">
+              <a-button>
+                <span class="inline-block max-w-48 truncate align-bottom">{getSelectedApplyTemplateName(form)}</span>
+                <fs-icon icon="ion:chevron-down" class="ml-1" />
+              </a-button>
+            </a-tooltip>
+          </a-dropdown>
+        </div>
+      );
+    }
+
     return {
       crudOptions: {
         form: {
@@ -160,6 +393,9 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
             width: 1350,
             saveRemind: false,
             title: req.title || t("certd.pipelineForm.createTitle"),
+            slots: {
+              "form-footer-left": renderTemplateFooter,
+            },
           },
           group: {
             groups: {
@@ -322,6 +558,15 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
       for (const key in pluginSysConfig.sysSetting?.input) {
         initialForm.input[key] = pluginSysConfig.sysSetting?.input[key];
       }
+    }
+    const defaultTemplate = req.pluginName === "CertApply" ? await certApplyTemplateApi.GetDefault() : null;
+    if (defaultTemplate) {
+      initialForm.applyTemplateId = defaultTemplate.id;
+      const templateParams = pickCertApplyTemplateParams(typeof defaultTemplate.content === "string" ? JSON.parse(defaultTemplate.content || "{}") : defaultTemplate.content);
+      initialForm.input = {
+        ...initialForm.input,
+        ...templateParams,
+      };
     }
 
     async function doSubmit({ form }: any) {

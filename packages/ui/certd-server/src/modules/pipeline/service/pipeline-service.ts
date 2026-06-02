@@ -32,6 +32,7 @@ import parser from "cron-parser";
 import { ProjectService } from "../../sys/enterprise/service/project-service.js";
 import { CertApplyStepInputPatch, updateCertApplyStepInputs } from "./pipeline-batch-update.js";
 import { calcNextSuiteCountUsed } from "./pipeline-suite-limit.js";
+import { CertApplyTemplateParams } from "../../cert/service/cert-apply-template-fields.js";
 const runningTasks: Map<string | number, Executor> = new Map();
 
 /**
@@ -1298,7 +1299,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async createAutoPipeline(req: { domains: string[]; email: string; userId: number; projectId?: number; from: string }) {
+  async createAutoPipeline(req: { domains: string[]; email: string; userId: number; projectId?: number; from: string; applyParams?: CertApplyTemplateParams }) {
     const randomHour = Math.floor(Math.random() * 6);
     const randomMin = Math.floor(Math.random() * 60);
     const randomCron = `0 ${randomMin} ${randomHour} * * *`;
@@ -1343,9 +1344,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
                   runnableType: "step",
                   input: {
                     renewDays: 20,
-                    domains: req.domains,
-                    email: req.email,
-                    challengeType: "auto",
                     sslProvider: "letsencrypt",
                     privateKeyType: "rsa_2048",
                     certProfile: "classic",
@@ -1356,6 +1354,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
                     waitDnsDiffuseTime: 30,
                     pfxArgs: "-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES",
                     successNotify: true,
+                    ...req.applyParams,
+                    domains: req.domains,
+                    email: req.email,
+                    challengeType: "auto",
                   },
                   strategy: {
                     runStrategy: 0, // 正常执行

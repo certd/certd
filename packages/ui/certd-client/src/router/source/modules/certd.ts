@@ -198,6 +198,17 @@ export const certdResources = [
             },
           },
           {
+            title: "certd.certApplyTemplate",
+            name: "CertApplyTemplate",
+            path: "/certd/cert/apply-template",
+            component: "/certd/cert/apply-template/index.vue",
+            meta: {
+              icon: "ion:list-circle-outline",
+              auth: true,
+              keepAlive: true,
+            },
+          },
+          {
             title: "certd.subDomain",
             name: "SubDomain",
             path: "/certd/pipeline/subDomain",

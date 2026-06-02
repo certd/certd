@@ -12,6 +12,7 @@ export default {
   settings: "设置",
   accessManager: "授权管理",
   dnsPersistRecord: "DNS持久验证记录",
+  certApplyTemplate: "证书申请参数模版",
   subDomain: "子域名托管设置",
   pipelineGroup: "流水线分组管理",
   openKey: "开放接口密钥",
