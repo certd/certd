@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
 import { AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/ssl-client.js";
@@ -78,6 +78,8 @@ export class DeployCertToAliyunApig extends AbstractTaskPlugin {
       action: DeployCertToAliyunApig.prototype.onGetDomainList.name,
       watches: ["region", "accessId", "gatewayType"],
       required: true,
+      pager:true,
+      search:true,
     })
   )
   domainList!: string[];
@@ -183,7 +185,7 @@ export class DeployCertToAliyunApig extends AbstractTaskPlugin {
     this.logger.info(`设置${domainId}证书成功:`, ret.requestId);
   }
 
-  async onGetDomainList(data: any) {
+  async onGetDomainList(data: PageSearch) {
     if (!this.accessId) {
       throw new Error("请选择Access授权");
     }
@@ -193,6 +195,8 @@ export class DeployCertToAliyunApig extends AbstractTaskPlugin {
     if (!this.gatewayType) {
       throw new Error("请选择网关类型");
     }
+
+    const pager  = new Pager(data);
     const access = await this.getAccess<AliyunAccess>(this.accessId);
 
     const client = access.getClient(this.regionEndpoint);
@@ -205,7 +209,9 @@ export class DeployCertToAliyunApig extends AbstractTaskPlugin {
       pathname: `/v1/domains`,
       data: {
         query: {
-          pageSize: 100,
+          nameLike: data.searchKey,
+          pageSize: pager.pageSize,
+          pageNumber: pager.pageNo,
           gatewayType: this.gatewayType,
         },
       },

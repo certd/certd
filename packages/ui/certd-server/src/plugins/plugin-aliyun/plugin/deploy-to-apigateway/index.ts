@@ -69,9 +69,7 @@ export class DeployCertToAliyunApiGateway extends AbstractTaskPlugin {
       action: DeployCertToAliyunApiGateway.prototype.onGetGroupList.name,
       watches: ["regionEndpoint", "accessId"],
       required: true,
-      component: {
-        name: "remote-auto-complete",
-      },
+      single:true
     })
   )
   groupId!: string;
