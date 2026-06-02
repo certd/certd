@@ -568,6 +568,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
               { value: "cert_upload", label: t("certd.types.certUpload") },
               { value: "custom", label: t("certd.types.custom") },
               { value: "template", label: t("certd.types.template") },
+              { value: "cert_auto", label: t("certd.types.certApply") },
             ],
           }),
           form: {

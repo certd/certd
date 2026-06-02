@@ -1,7 +1,7 @@
+import { BaseService, ValidateException } from "@certd/lib-server";
 import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { BaseService, ValidateException } from "@certd/lib-server";
-import { IsNull, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { CertApplyTemplateEntity } from "../entity/cert-apply-template.js";
 import { CertApplyTemplateParams, pickCertApplyCustomParams, pickCertApplyTemplateParams } from "./cert-apply-template-fields.js";
 

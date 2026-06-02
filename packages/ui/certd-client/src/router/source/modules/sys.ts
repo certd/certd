@@ -231,6 +231,44 @@ export const sysResources = [
         },
       },
       {
+        title: "certd.sysResources.userDataManager",
+        name: "UserDataManager",
+        path: "/sys/user-data",
+        redirect: "/sys/pipeline",
+        meta: {
+          icon: "ion:folder-open-outline",
+          permission: "sys:settings:view",
+          keepAlive: true,
+          auth: true,
+        },
+        children: [
+          {
+            title: "certd.sysResources.pipelineManager",
+            name: "SysPipelineManager",
+            path: "/sys/pipeline",
+            component: "/sys/pipeline/index.vue",
+            meta: {
+              icon: "ion:analytics-sharp",
+              permission: "sys:settings:view",
+              keepAlive: true,
+              auth: true,
+            },
+          },
+          {
+            title: "certd.sysResources.siteMonitorManager",
+            name: "SysSiteMonitorManager",
+            path: "/sys/monitor/site",
+            component: "/sys/monitor/site/index.vue",
+            meta: {
+              icon: "ion:videocam-outline",
+              permission: "sys:settings:view",
+              keepAlive: true,
+              auth: true,
+            },
+          },
+        ],
+      },
+      {
         title: "certd.sysResources.suiteManager",
         name: "SuiteManager",
         path: "/sys/suite",
