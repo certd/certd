@@ -26,10 +26,10 @@ export class SubDomainService extends BaseService<SubDomainEntity> {
     if (userId == null) {
       return [];
     }
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const list = await this.find({
       where: {
-        userId,
-        projectId,
+        ...userProjectQuery,
         disabled: false,
       },
     });
@@ -45,11 +45,11 @@ export class SubDomainService extends BaseService<SubDomainEntity> {
     if (userId == null) {
       throw new Error("用户ID不能为空");
     }
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const exist = await this.repository.findOne({
       where: {
         domain,
-        userId,
-        projectId,
+        ...userProjectQuery,
       },
     });
     if (exist) {

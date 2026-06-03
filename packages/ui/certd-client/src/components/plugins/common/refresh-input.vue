@@ -1,7 +1,8 @@
 <template>
   <div class="refresh-input">
     <div class="refresh-input-line">
-      <a-input class="refresh-input-control" :value="value" :placeholder="placeholder" :allow-clear="!disabled" :disabled="disabled" @update:value="emit('update:value', $event)"></a-input>
+      <a-input v-if="type !== 'textarea'" class="refresh-input-control" :value="value" :placeholder="placeholder" :allow-clear="!disabled" :disabled="disabled" @update:value="emit('update:value', $event)"></a-input>
+      <a-textarea v-else class="refresh-input-control" :value="value" :placeholder="placeholder" :rows="rows" :allow-clear="!disabled" :disabled="disabled" @update:value="emit('update:value', $event)"></a-textarea>
       <fs-button :loading="loading" :disabled="disabled" type="primary" :text="buttonText" :icon="icon" @click="doRefresh"></fs-button>
     </div>
     <div class="helper" :class="{ error: hasError }">
@@ -26,6 +27,8 @@ type RefreshInputProps = ComponentPropsType & {
   placeholder?: string;
   successMessage?: string;
   disabled?: boolean;
+  type?: string;
+  rows?: number;
 };
 
 const fromType: any = inject("getFromType");

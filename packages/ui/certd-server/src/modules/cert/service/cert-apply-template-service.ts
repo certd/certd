@@ -54,9 +54,10 @@ export class CertApplyTemplateService extends BaseService<CertApplyTemplateEntit
   }
 
   async getDefault(userId: number, projectId?: number) {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     return await this.repository.findOne({
       where: {
-        ...this.buildUserProjectQuery(userId, projectId),
+        ...userProjectQuery,
         isDefault: true,
         disabled: false,
       },
@@ -84,10 +85,11 @@ export class CertApplyTemplateService extends BaseService<CertApplyTemplateEntit
   }
 
   private async getTemplateById(id: number, userId: number, projectId?: number) {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const template = await this.repository.findOne({
       where: {
         id,
-        ...this.buildUserProjectQuery(userId, projectId),
+        ...userProjectQuery,
       },
     });
     if (!template) {

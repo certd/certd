@@ -57,7 +57,7 @@ export abstract class BaseService<T> {
   }
 
   protected buildUserProjectQuery(userId: number, projectId?: number) {
-    const query: { userId: number; projectId?: number } = {
+    const query: { userId: number; projectId?: number; [key: string]: any } = {
       userId,
     };
     if (projectId != null) {
@@ -282,12 +282,12 @@ export abstract class BaseService<T> {
   async batchDelete(ids: number[], userId: number,projectId?:number) {
     ids = this.filterIds(ids);
     if(userId!=null){
+      const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
       const list = await this.getRepository().find({
         where: {
           // @ts-ignore
           id: In(ids),
-          userId,
-          projectId,
+          ...userProjectQuery,
         },
       })
       // @ts-ignore

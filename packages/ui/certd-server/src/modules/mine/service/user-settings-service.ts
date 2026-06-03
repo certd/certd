@@ -37,23 +37,23 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     };
   }
 
-  async getByKey(key: string, userId: number, projectId: number): Promise<UserSettingsEntity | null> {
+  async getByKey(key: string, userId: number, projectId?: number): Promise<UserSettingsEntity | null> {
     if (userId == null) {
       throw new Error("userId is required");
     }
     if (!key) {
       return null;
     }
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     return await this.repository.findOne({
       where: {
         key,
-        userId,
-        projectId,
+        ...userProjectQuery,
       },
     });
   }
 
-  async getSettingByKey(key: string, userId: number, projectId: number): Promise<any | null> {
+  async getSettingByKey(key: string, userId: number, projectId?: number): Promise<any | null> {
     if (userId == null) {
       throw new Error("userId is required");
     }
@@ -65,11 +65,11 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
   }
 
   async save(bean: UserSettingsEntity) {
+    const userProjectQuery = this.buildUserProjectQuery(bean.userId, bean.projectId);
     const entity = await this.repository.findOne({
       where: {
         key: bean.key,
-        userId: bean.userId,
-        projectId: bean.projectId,
+        ...userProjectQuery,
       },
     });
     if (entity) {
@@ -81,13 +81,13 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     }
   }
 
-  async getSetting<T>(userId: number, projectId: number, type: any, cache = false): Promise<T> {
+  async getSetting<T>(userId: number, projectId: number | undefined, type: any, cache = false): Promise<T> {
     if (userId == null) {
       throw new Error("userId is required");
     }
     const key = type.__key__;
     let cacheKey = key + "_" + userId;
-    if (projectId) {
+    if (projectId != null) {
       cacheKey += "_" + projectId;
     }
 
@@ -108,7 +108,7 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     return newSetting;
   }
 
-  async saveSetting<T extends BaseSettings>(userId: number, projectId: number, bean: T) {
+  async saveSetting<T extends BaseSettings>(userId: number, projectId: number | undefined, bean: T) {
     if (userId == null) {
       throw new Error("userId is required");
     }

@@ -15,6 +15,8 @@
 
 代码可读性优先于短写法。遇到包含业务分支的复杂三元表达式、内联对象、链式调用或条件组合时，优先拆成命名清晰的中间变量、独立分支或小函数，让读代码的人能一眼看出业务意图；不要为了少写几行把逻辑压成难读的一坨。
 
+在对象字面量、查询条件或函数参数里不要内联调用多层 helper，例如 `{ domain, ...this.buildUserProjectQuery(userId, projectId) }`。应先用命名变量承接结果，例如 `const userProjectQuery = this.buildUserProjectQuery(userId, projectId)`，再在对象里展开 `...userProjectQuery`，让条件构造和业务字段都更容易阅读。
+
 ## DRY
 
 遵守 DRY 原则：同一业务规则、字段转换、权限判断、Repository 选择、事务传播、金额计算等逻辑不要在多个地方复制粘贴。第二次出现时可以先保持清晰，第三次出现前应优先抽成局部 helper、service 方法或已有公共工具；抽象要服务于减少真实重复和降低修改风险，不要为了形式上的“复用”制造过度设计。

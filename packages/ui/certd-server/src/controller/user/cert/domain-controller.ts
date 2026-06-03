@@ -84,10 +84,7 @@ export class DomainController extends CrudController<DomainService> {
   @Post("/deleteByIds", { description: Constants.per.authOnly, summary: "批量删除域名" })
   async deleteByIds(@Body(ALL) body: any) {
     const { projectId, userId } = await this.getProjectUserIdRead();
-    await this.service.delete(body.ids, {
-      userId: userId,
-      projectId: projectId,
-    });
+    await this.service.batchDelete(body.ids, userId, projectId);
     return this.ok();
   }
 

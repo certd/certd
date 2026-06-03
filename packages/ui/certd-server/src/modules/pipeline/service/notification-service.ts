@@ -50,7 +50,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
     this.checkNeedPlus(bean.type);
     const res = await super.add(bean);
     if (bean.isDefault) {
-      await this.setDefault(res.id, bean.userId);
+      await this.setDefault(res.id, bean.userId, bean.projectId);
     }
     bean.keyId = "nt_" + utils.id.simpleNanoId();
     return res;
@@ -65,7 +65,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
     delete bean.keyId;
     const res = await super.update(bean);
     if (bean.isDefault) {
-      await this.setDefault(bean.id, old.userId);
+      await this.setDefault(bean.id, old.userId, old.projectId);
     }
 
     return res;
@@ -86,11 +86,11 @@ export class NotificationService extends BaseService<NotificationEntity> {
     if (userId == null) {
       throw new ValidateException("userId不能为空");
     }
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const res = await this.repository.findOne({
       where: {
         id,
-        userId,
-        projectId,
+        ...userProjectQuery,
       },
     });
     if (!res) {
@@ -111,10 +111,10 @@ export class NotificationService extends BaseService<NotificationEntity> {
   }
 
   async getDefault(userId: number, projectId?: number): Promise<NotificationInstanceConfig> {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const res = await this.repository.findOne({
       where: {
-        userId,
-        projectId,
+        ...userProjectQuery,
       },
       order: {
         isDefault: "DESC",
@@ -133,12 +133,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
     if (userId == null) {
       throw new ValidateException("userId不能为空");
     }
-    const query: any = {
-      userId,
-    };
-    if (projectId) {
-      query.projectId = projectId;
-    }
+    const query = this.buildUserProjectQuery(userId, projectId);
     await this.repository.update(query, {
       isDefault: false,
     });

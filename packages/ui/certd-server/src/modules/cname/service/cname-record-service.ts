@@ -178,7 +178,13 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
     if (userId == null) {
       throw new ValidateException("userId不能为空");
     }
-    let record = await this.getRepository().findOne({ where: { domain, userId, projectId } });
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
+    let record = await this.getRepository().findOne({
+      where: {
+        domain,
+        ...userProjectQuery,
+      },
+    });
     if (record == null) {
       if (createOnNotFound) {
         record = await this.add({ domain, userId, projectId });
@@ -501,12 +507,12 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
 
   async _import(req: { userId: number; projectId: number; domains: string[]; cnameProviderId: any }, task: BackTask) {
     const userId = req.userId;
+    const userProjectQuery = this.buildUserProjectQuery(req.userId, req.projectId);
     for (const domain of req.domains) {
       const old = await this.getRepository().findOne({
         where: {
-          userId: req.userId,
           domain,
-          projectId: req.projectId,
+          ...userProjectQuery,
         },
       });
       if (old) {

@@ -161,13 +161,13 @@ export class DnsPersistRecordService extends BaseService<DnsPersistRecordEntity>
   }
   async add(param: any) {
     const record = await this.buildRecordByAcmeAccount(param);
+    const userProjectQuery = this.buildUserProjectQuery(param.userId, param.projectId);
     const exists = await this.findOne({
       where: {
         domain: record.domain,
         caType: record.caType,
         acmeAccountAccessId: record.acmeAccountAccessId,
-        userId: param.userId,
-        projectId: param.projectId,
+        ...userProjectQuery,
       },
     });
     if (exists) {
@@ -225,13 +225,13 @@ export class DnsPersistRecordService extends BaseService<DnsPersistRecordEntity>
   async getByDomain(req: DnsPersistRecordBuildReq & { userId: number; projectId?: number; createOnNotFound?: boolean }) {
     const account = await this.getAcmeAccount(req);
     const domain = this.normalizeDomain(req.domain);
+    const userProjectQuery = this.buildUserProjectQuery(req.userId, req.projectId);
     let record = await this.findOne({
       where: {
         domain,
         caType: account.caType,
         acmeAccountAccessId: account.accessId,
-        userId: req.userId,
-        projectId: req.projectId,
+        ...userProjectQuery,
       },
     });
     if (!record && req.createOnNotFound) {
@@ -310,11 +310,11 @@ export class DnsPersistRecordService extends BaseService<DnsPersistRecordEntity>
     const domainParser = new DomainParser(subDomainsGetter, logger);
     const mainDomain = record.mainDomain || (await domainParser.parse(record.domain));
     const domains = [...new Set([record.domain, mainDomain].filter(Boolean))];
+    const userProjectQuery = this.buildUserProjectQuery(record.userId, record.projectId);
     const list = await this.domainRepository.find({
       where: {
         domain: In(domains),
-        userId: record.userId,
-        projectId: record.projectId,
+        ...userProjectQuery,
         challengeType: "dns",
         disabled: false,
       },

@@ -531,7 +531,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     }
     const query: any = { disabled: false };
     query.userId = userId;
-    if (projectId) {
+    if (projectId != null) {
       query.projectId = projectId;
     }
     const siteCount = await this.repository.count({
@@ -584,10 +584,10 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   async batchDelete(ids: number[], userId: number, projectId?: number): Promise<void> {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     await this.repository.delete({
       id: In(ids),
-      userId,
-      projectId,
+      ...userProjectQuery,
     });
   }
 }

@@ -56,11 +56,11 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   }
 
   async updateDomains(pipelineId: number, userId: number, projectId: number, domains: string[], fromType?: string) {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const found = await this.repository.findOne({
       where: {
         pipelineId,
-        userId,
-        projectId,
+        ...userProjectQuery,
       },
     });
     const bean = new CertInfoEntity();
@@ -112,6 +112,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       });
     }
 
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const list = await this.find({
       select: {
         id: true,
@@ -120,8 +121,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         pipelineId: true,
       },
       where: {
-        userId,
-        projectId,
+        ...userProjectQuery,
       },
       order: {
         id: "DESC",
@@ -210,27 +210,25 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   }
 
   async count({ userId, projectId }: { userId: number; projectId?: number }) {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const total = await this.repository.count({
       where: {
-        userId,
+        ...userProjectQuery,
         expiresTime: Not(IsNull()),
-        projectId,
       },
     });
 
     const expired = await this.repository.count({
       where: {
-        userId,
+        ...userProjectQuery,
         expiresTime: LessThan(new Date().getTime()),
-        projectId,
       },
     });
 
     const expiring = await this.repository.count({
       where: {
-        userId,
+        ...userProjectQuery,
         expiresTime: Between(new Date().getTime(), new Date().getTime() + 15 * 24 * 60 * 60 * 1000),
-        projectId,
       },
     });
 

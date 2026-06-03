@@ -285,11 +285,11 @@ export class SiteIpService extends BaseService<SiteIpEntity> {
       throw new Error("siteId is required");
     }
 
+    const userProjectQuery = this.buildUserProjectQuery(req.userId, req.projectId);
     const siteEntity = await this.siteInfoRepository.findOne({
       where: {
         id: req.siteId,
-        userId: req.userId,
-        projectId: req.projectId,
+        ...userProjectQuery,
       },
     });
     if (!siteEntity) {

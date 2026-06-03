@@ -82,10 +82,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
   @Post("/deleteByIds", { description: Constants.per.authOnly, summary: "批量删除CNAME记录" })
   async deleteByIds(@Body(ALL) body: any) {
     const { userId, projectId } = await this.getProjectUserIdWrite();
-    await this.service.delete(body.ids, {
-      userId,
-      projectId,
-    });
+    await this.service.batchDelete(body.ids, userId, projectId);
     return this.ok();
   }
   @Post("/getByDomain", { description: Constants.per.authOnly, summary: "根据域名获取CNAME记录" })

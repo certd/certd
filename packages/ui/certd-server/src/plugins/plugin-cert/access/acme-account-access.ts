@@ -144,19 +144,35 @@ export class AcmeAccountAccess extends BaseAccess {
       action: "GenerateAccount",
       buttonText: "生成ACME账号",
       successMessage: "ACME账号已生成，请保存授权配置",
+      type:"textarea",
+      rows:4,
     },
+    col:{span:24},
     required: true,
     helper: "请生成ACME账号，账号一旦生成不允许修改",
     encrypt: true,
     mergeScript: `
     return {
       component: {
-        disabled: ctx.compute(({form})=> !!form.access?.account)
+        disabled: ctx.compute(({form})=> !!form.access?.account && !form.access?.editAccount)
       }
     }
     `,
   })
   account = "";
+
+  @AccessInput({
+    title: "修改ACME账号",
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+    required: false,
+    helper: "是否开启修改ACME账号，注意，开启后，会影响DNS持久验证记录",
+    encrypt: false,
+   
+  })
+  editAccount = false;
 
   getDirectoryUrl() {
     if (this.caType === "custom") {
@@ -180,7 +196,7 @@ export class AcmeAccountAccess extends BaseAccess {
       throw new Error("该颁发机构需要填写EAB KID和EAB HMAC Key后才能生成账号");
     }
     const account = await this.createAccountInfo();
-    return JSON.stringify(account);
+    return JSON.stringify(account, null, 2);
   }
 
   private async createAccountInfo(): Promise<AcmeAccountInfo> {

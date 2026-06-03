@@ -136,11 +136,11 @@ export class DomainService extends BaseService<DomainEntity> {
     allDomains = [...new Set(allDomains)];
 
     //从 domain 表中获取配置
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const domainRecords = await this.find({
       where: {
         domain: In(allDomains),
-        userId,
-        projectId,
+        ...userProjectQuery,
         disabled: false,
       },
     });
@@ -163,8 +163,7 @@ export class DomainService extends BaseService<DomainEntity> {
     const cnameRecords = await this.cnameRecordService.find({
       where: {
         domain: In(allDomains),
-        userId,
-        projectId,
+        ...userProjectQuery,
         status: "valid",
       },
     });
@@ -286,11 +285,11 @@ export class DomainService extends BaseService<DomainEntity> {
         domain = domain.slice(0, -1);
       }
 
+      const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
       const old = await this.findOne({
         where: {
           domain,
-          userId,
-          projectId,
+          ...userProjectQuery,
         },
       });
       if (old) {
@@ -573,19 +572,18 @@ export class DomainService extends BaseService<DomainEntity> {
 
     const expireDays = setting.willExpireDays || 30;
     const ltTime = dayjs().add(expireDays, "day").valueOf();
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
 
     const total = await this.repository.count({
       where: {
-        userId,
-        projectId,
+        ...userProjectQuery,
         disabled: false,
       },
     });
     //开始检查域名过期时间
     const list = await this.repository.find({
       where: {
-        userId,
-        projectId,
+        ...userProjectQuery,
         disabled: false,
         expirationDate: LessThan(ltTime),
       },

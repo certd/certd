@@ -876,41 +876,50 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async count(param: { userId?: any; projectId?: number }) {
+    const query: any = {
+      userId: param.userId,
+      isTemplate: false,
+    };
+    if (param.projectId != null) {
+      query.projectId = param.projectId;
+    }
     const count = await this.repository.count({
-      where: {
-        userId: param.userId,
-        projectId: param.projectId,
-        isTemplate: false,
-      },
+      where: query,
     });
     return count;
   }
 
   async statusCount(param: { userId?: any; projectId?: number } = {}) {
+    const query: any = {
+      userId: param.userId,
+      isTemplate: false,
+    };
+    if (param.projectId != null) {
+      query.projectId = param.projectId;
+    }
     const statusCount = await this.repository
       .createQueryBuilder()
       .select("status")
       .addSelect("count(1)", "count")
-      .where({
-        userId: param.userId,
-        projectId: param.projectId,
-        isTemplate: false,
-      })
+      .where(query)
       .groupBy("status")
       .getRawMany();
     return statusCount;
   }
 
   async enableCount(param: { userId?: any; projectId?: number } = {}) {
+    const query: any = {
+      userId: param.userId,
+      isTemplate: false,
+    };
+    if (param.projectId != null) {
+      query.projectId = param.projectId;
+    }
     const statusCount = await this.repository
       .createQueryBuilder()
       .select("disabled")
       .addSelect("count(1)", "count")
-      .where({
-        userId: param.userId,
-        projectId: param.projectId,
-        isTemplate: false,
-      })
+      .where(query)
       .groupBy("disabled")
       .getRawMany();
     const result = {
@@ -924,6 +933,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async latestExpiringList({ userId, projectId }: any) {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     let list = await this.repository.find({
       select: {
         id: true,
@@ -931,9 +941,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
         status: true,
       },
       where: {
-        userId,
+        ...userProjectQuery,
         disabled: false,
-        projectId,
         isTemplate: false,
       },
     });
@@ -1262,6 +1271,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async getSimplePipelines(pipelineIds: number[], userId?: number, projectId?: number) {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     return await this.repository.find({
       select: {
         id: true,
@@ -1269,8 +1279,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       },
       where: {
         id: In(pipelineIds),
-        userId,
-        projectId,
+        ...userProjectQuery,
       },
     });
   }

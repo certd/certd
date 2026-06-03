@@ -225,11 +225,11 @@ export class AccessService extends BaseService<AccessEntity> {
     if (userId == null) {
       return [];
     }
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     return await this.repository.find({
       where: {
         id: In(ids),
-        userId,
-        projectId,
+        ...userProjectQuery,
       },
       select: {
         id: true,
