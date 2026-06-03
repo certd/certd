@@ -48,7 +48,7 @@ import { UserSuiteEntity, UserSuiteService } from "@certd/commercial-core";
 import { CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { TaskServiceBuilder } from "./getter/task-service-getter.js";
 import { nanoid } from "nanoid";
-import { set } from "lodash-es";
+import { cloneDeep, set } from "lodash-es";
 import { executorQueue } from "@certd/lib-server";
 import parser from "cron-parser";
 import { ProjectService } from "../../sys/enterprise/service/project-service.js";
@@ -1152,36 +1152,40 @@ export class PipelineService extends BaseService<PipelineEntity> {
       }
     });
 
+
     for (const item of list) {
       const pipeline = JSON.parse(item.content);
       if (trigger.props === false) {
         //清除trigger
         pipeline.triggers = []
       } else {
+
+        const start = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[0];
+        let end = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[1];
+        if (trigger.randomRange[1] < trigger.randomRange[0]) {
+          //跨天
+          end = dayjs().add(1, "day").format("YYYY-MM-DD") + " " + trigger.randomRange[1];
+        }
+        const startTime = dayjs(start).valueOf();
+        const endTime = dayjs(end).valueOf();
+
+        const triggerConf = cloneDeep(trigger);
         if (trigger.random === true) {
           //随机时间
-          const start = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[0];
-          let end = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[1];
-          if (trigger.randomRange[1] < trigger.randomRange[0]) {
-            //跨天
-            end = dayjs().add(1, "day").format("YYYY-MM-DD") + " " + trigger.randomRange[1];
-          }
-          const startTime = dayjs(start).valueOf();
-          const endTime = dayjs(end).valueOf();
           const randomTime = Math.floor(Math.random() * (endTime - startTime)) + startTime;
           const time = dayjs(randomTime).format(" ss:mm:HH").replaceAll(":", " ").replaceAll(" 0", " ").trim();
-          set(trigger, "props.cron", `${time} * * *`)
+          set(triggerConf, "props.cron", `${time} * * *`)
         }
-        delete trigger.random
-        delete trigger.randomRange;
+        delete triggerConf.random
+        delete triggerConf.randomRange;
         pipeline.triggers = [{
           id: nanoid(),
           title: "定时触发",
-          ...trigger
+          ...triggerConf
         }];
       }
-
       await this.doUpdatePipelineJson(item, pipeline);
+      
     }
 
   }
