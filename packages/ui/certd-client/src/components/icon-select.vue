@@ -15,8 +15,13 @@ const props = defineProps<{
   value: any;
 }>();
 
-const emit = defineEmits(["update:value"]);
+const emit = defineEmits(["update:value", "selected-change"]);
 function onChange(value: any) {
+  const item = props.options.find(item => item.value === value);
   emit("update:value", value);
+  emit("selected-change", {
+    value,
+    ...item,
+  });
 }
 </script>

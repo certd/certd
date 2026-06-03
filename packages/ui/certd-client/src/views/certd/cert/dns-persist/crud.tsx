@@ -180,7 +180,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             },
           },
           column: {
-            width: 180,
+            width: 220,
           },
         },
         caType: {

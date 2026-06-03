@@ -160,9 +160,10 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         onSelectedChange: ctx.compute(({form})=>{
           return ($event)=>{
            form.dnsProviderAccessType = $event.accessType
+           form.dnsProviderAccess = null
           }
         })
-      }
+      },
     }
     `,
     required: true,
@@ -257,7 +258,17 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         { value: "letsencrypt_staging", label: "Let's Encrypt测试环境（仅供测试）", icon: "simple-icons:letsencrypt" },
       ],
     },
-    helper: "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权\nZeroSSL：需要EAB授权，无需翻墙\nSSL.com：仅主域名和www免费,必须设置CAA记录",
+    mergeScript: `return {
+      component:{
+        onSelectedChange: ctx.compute(({form})=>{
+          return ($event)=>{
+            form.acmeAccountAccessId = null
+          }
+        })
+      }
+    }
+    `,
+    helper: "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权，无需翻墙\nSSL.com：仅主域名和www免费,必须设置CAA记录",
     required: true,
   })
   sslProvider!: SSLProvider;

@@ -30,7 +30,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     return await api.DelObj(row.id);
   };
   const infoRequest = async ({ row }: DelReq) => {
-    return await api.GetObj(row.id);
+    if (row?.id) {
+      return await api.GetObj(row.id);
+    }
+    return row;
   };
 
   async function setDefault(row: any) {

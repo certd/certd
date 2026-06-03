@@ -322,7 +322,7 @@ export const useSettingStore = defineStore({
       }
       const modalRef: any = Modal.warning({
         title: title,
-        width: 500,
+        width: 600,
         keyboard: false,
         closable,
         content: () => {
@@ -334,7 +334,7 @@ export const useSettingStore = defineStore({
                   <a-tag color="green">{bindUrl || "未占用"}</a-tag>
                 </span>
                 <a-button type="primary" onClick={() => doBindRequest("url")}>
-                  绑定到地址1
+                  绑定当前URL到地址1
                 </a-button>
               </div>
               <div class="helper">各类通知里面会以地址1作为URL显示</div>
@@ -344,7 +344,7 @@ export const useSettingStore = defineStore({
                   <a-tag color="green">{bindUrl2 || "未占用"}</a-tag>
                 </span>
                 <a-button type="primary" onClick={() => doBindRequest("url2")}>
-                  绑定到地址2
+                  绑定当前URL到地址2
                 </a-button>
               </div>
             </div>
