@@ -15,6 +15,9 @@
             <div>
               <a-form-item :label="t('certd.smtpDomain')" name="host" :rules="[{ required: true, message: t('certd.pleaseEnterSmtpDomain') }]">
                 <a-input v-model:value="formState.host" />
+                <div class="helper">
+                  {{ t("certd.sendFailHelpDoc") }}<a href="https://certd.docmirror.cn/guide/use/email/" target="_blank">{{ t("certd.emailConfigHelpDoc") }}</a>
+                </div>
               </a-form-item>
 
               <a-form-item :label="t('certd.smtpPort')" name="port" :rules="[{ required: true, message: t('certd.pleaseEnterSmtpPort') }]">
@@ -42,7 +45,7 @@
               </a-form-item>
             </div>
           </a-tab-pane>
-          <a-tab-pane key="plus" class="plus" :disabled="!settingStore.isPlus">
+          <a-tab-pane key="plus" class="plus" :disabled="!settingStore.isPlus" v-if="formState.usePlus">
             <template #tab>
               <span class="flex items-center">
                 {{ t("certd.useOfficialEmailServer") }}
@@ -113,7 +116,6 @@
           <div class="helper">
             {{ t("certd.sendFailHelpDoc") }}<a href="https://certd.docmirror.cn/guide/use/email/" target="_blank">{{ t("certd.emailConfigHelpDoc") }}</a>
           </div>
-          <div class="helper">{{ t("certd.tryOfficialEmailServer") }}</div>
         </a-form-item>
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
           <a-button type="primary" :loading="testFormState.loading" html-type="submit">{{ t("certd.test") }}</a-button>
