@@ -1,4 +1,7 @@
 import fs from "fs";
+
+const MYSQL_INDEX_PREFIX_LENGTH = 191;
+const MYSQL_TABLE_OPTIONS = "ENGINE = InnoDB ROW_FORMAT = DYNAMIC";
 /**
  * ## sqlite与postgres不同点
  * 1.
@@ -55,6 +58,88 @@ function transformPG() {
   }
 }
 
+function buildMysqlTableColumnMap(sql) {
+  const tableColumnMap = new Map();
+  const createTableReg = /CREATE TABLE `([^`]*)`[\s\S]*?;/gi;
+  for (const match of sql.matchAll(createTableReg)) {
+    const [statement, tableName] = match;
+    const tableBody = getCreateTableBody(statement);
+    const columnMap = new Map();
+    const columnReg = /`([^`]*)`\s+varchar\((\d+)\)/gi;
+    for (const columnMatch of tableBody.matchAll(columnReg)) {
+      const [, columnName, length] = columnMatch;
+      columnMap.set(columnName, Number(length));
+    }
+    tableColumnMap.set(tableName, columnMap);
+  }
+
+  const alterAddColumnReg = /ALTER TABLE\s+`?([^`\s]+)`?\s+ADD COLUMN\s+`?([^`\s]+)`?\s+varchar\((\d+)\)/gi;
+  for (const match of sql.matchAll(alterAddColumnReg)) {
+    const [, tableName, columnName, length] = match;
+    const columnMap = tableColumnMap.get(tableName) || new Map();
+    columnMap.set(columnName, Number(length));
+    tableColumnMap.set(tableName, columnMap);
+  }
+
+  return tableColumnMap;
+}
+
+function getCreateTableBody(statement) {
+  const start = statement.indexOf("(");
+  const end = statement.lastIndexOf(")");
+  if (start === -1 || end === -1 || end <= start) {
+    return "";
+  }
+  return statement.substring(start + 1, end);
+}
+
+function appendMysqlTableOptions(sql) {
+  const createTableReg = /CREATE TABLE `([^`]*)`[\s\S]*?;/gi;
+  return sql.replace(createTableReg, statement => {
+    const sqlWithoutSemicolon = statement.replace(/;\s*$/, "");
+    const sqlWithoutOptions = sqlWithoutSemicolon.replace(/\s+ENGINE\s*=\s*\w+(?:\s+ROW_FORMAT\s*=\s*\w+)?\s*$/i, "");
+    return `${sqlWithoutOptions} ${MYSQL_TABLE_OPTIONS};`;
+  });
+}
+
+function addMysqlIndexPrefix(sql) {
+  const tableColumnMap = buildMysqlTableColumnMap(sql);
+  const createIndexReg = /CREATE\s+(UNIQUE\s+)?INDEX\s+`([^`]*)`\s+ON\s+`([^`]*)`\s*\(([^;]*)\);/gi;
+  return sql.replace(createIndexReg, (statement, uniqueKeyword, indexName, tableName, columns) => {
+    const columnMap = tableColumnMap.get(tableName);
+    if (!columnMap) {
+      return statement;
+    }
+
+    const parsedColumns = columns.split(",").map(item => {
+      const columnMatch = item.trim().match(/^`([^`]*)`(?:\((\d+)\))?$/);
+      if (!columnMatch) {
+        return item.trim();
+      }
+
+      const [, columnName, prefixLength] = columnMatch;
+      const columnLength = columnMap.get(columnName);
+      if (!columnLength || columnLength <= MYSQL_INDEX_PREFIX_LENGTH) {
+        return item.trim();
+      }
+
+      if (prefixLength && Number(prefixLength) <= MYSQL_INDEX_PREFIX_LENGTH) {
+        return item.trim();
+      }
+
+      // MySQL 5.7 老配置下 utf8mb4 varchar(255) 完整索引可能超过 767/1000 字节限制。
+      if (uniqueKeyword) {
+        throw new Error(`唯一索引 ${indexName} 的字段 ${tableName}.${columnName} 长度超过 ${MYSQL_INDEX_PREFIX_LENGTH}，不能自动改成前缀索引，请缩短字段长度或增加 hash 字段`);
+      }
+
+      return `\`${columnName}\`(${MYSQL_INDEX_PREFIX_LENGTH})`;
+    });
+
+    const unique = uniqueKeyword || "";
+    return `CREATE ${unique}INDEX \`${indexName}\` ON \`${tableName}\` (${parsedColumns.join(", ")});`;
+  });
+}
+
 function transformMysql() {
   // 读取文件列表
   const sqliteFiles = fs.readdirSync("./migration/");
@@ -76,20 +161,8 @@ function transformMysql() {
     //双引号 替换成反引号
     pgSql = pgSql.replaceAll(/"/g, "`");
 
-    //提取所有的 create table 的表格name
-    const tableNames = pgSql.match(/CREATE TABLE `([^`]*)`/g);
-    if (tableNames && tableNames.length > 0) {
-      for (const item of tableNames) {
-        /**
-         * CREATE TABLE `cd_project`
-CREATE TABLE `cd_project_member`
-CREATE TABLE `cd_audit_log`
-         */
-        //提取表名
-        const tableName = item.match(/`([^`]*)`/)[1];
-        pgSql += `\nALTER TABLE \`${tableName}\` ENGINE = InnoDB;`;
-      }
-    }
+    pgSql = appendMysqlTableOptions(pgSql);
+    pgSql = addMysqlIndexPrefix(pgSql);
 
     fs.writeFileSync(`./migration-mysql/${notFile}`, pgSql);
   }

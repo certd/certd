@@ -134,5 +134,7 @@ export class MainConfiguration {
     });
 
     logger.info("当前环境：", this.app.getEnv()); // prod
+
+    
   }
 }
