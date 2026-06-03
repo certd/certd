@@ -56,6 +56,16 @@ export abstract class BaseService<T> {
     return dataSource.getRepository(entity);
   }
 
+  protected buildUserProjectQuery(userId: number, projectId?: number) {
+    const query: { userId: number; projectId?: number } = {
+      userId,
+    };
+    if (projectId != null) {
+      query.projectId = projectId;
+    }
+    return query;
+  }
+
   /**
    * 获得单个ID
    * @param id ID

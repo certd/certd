@@ -47,6 +47,7 @@ Certd 是支持私有化部署的 SSL/TLS 证书自动化管理平台，提供 W
 - 不要把 `packages/ui/certd-server/data/`、`logs/`、生成的 metadata/dist 等运行时或构建产物纳入改动，除非任务明确要求。
 - 做数据库结构变更时，添加或更新迁移脚本，不要依赖 TypeORM 自动同步。
 - 做插件相关任务时，先读取对应 `.trae/skills/<skill>/SKILL.md`，再进入具体实现。
+- 后端 service 拼接可选 `projectId` 查询条件时，不要直接写 `{ userId, projectId }`；应使用 `BaseService.buildUserProjectQuery(userId, projectId)`，只有 `projectId != null` 时才加入查询条件。
 
 ## 工作方式
 

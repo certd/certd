@@ -3,6 +3,7 @@ import { CertApplyTemplateService } from "./cert-apply-template-service.js";
 
 function createService(list: any[]) {
   const service = new CertApplyTemplateService();
+  const updateWhereList: any[] = [];
   function matchesWhere(item: any, where: any) {
     for (const key of Object.keys(where)) {
       const expected = where[key];
@@ -23,6 +24,7 @@ function createService(list: any[]) {
       return list.find(item => matchesWhere(item, where));
     },
     async update(where: any, patch: any) {
+      updateWhereList.push({ ...where });
       for (const item of list) {
         if (matchesWhere(item, where)) {
           Object.assign(item, patch);
@@ -30,6 +32,7 @@ function createService(list: any[]) {
       }
     },
   };
+  (service as any).updateWhereList = updateWhereList;
   return service;
 }
 
@@ -158,7 +161,7 @@ describe("CertApplyTemplateService", () => {
     });
   });
 
-  it("sets default for templates with null project id", async () => {
+  it("does not include project id condition when setting default without project id", async () => {
     const list = [
       {
         id: 1,
@@ -189,8 +192,12 @@ describe("CertApplyTemplateService", () => {
 
     await service.setDefault(2, 10, null);
 
+    assert.deepEqual((service as any).updateWhereList, [
+      { userId: 10 },
+      { userId: 10, id: 2 },
+    ]);
     assert.equal(list[0].isDefault, false);
     assert.equal(list[1].isDefault, true);
-    assert.equal(list[2].isDefault, true);
+    assert.equal(list[2].isDefault, false);
   });
 });

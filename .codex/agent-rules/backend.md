@@ -30,6 +30,7 @@
 - 无事务链路需求的普通查询、纯函数和简单私有方法继续使用明确参数。
 - service 内部需要根据事务上下文选择 Repository 时，优先使用 `BaseService.getRepo(ctx, EntityClass)`；不要在业务方法里反复写 `ctx.manager?.getRepository(Entity) || this.xxxRepository`。
 - 拿到 repo 后 save/update/delete/find 都能做，不需要再包一层 `saveEntity` 之类的单一用途方法。
+- service 拼接用户与项目范围查询条件时，优先使用 `BaseService.buildUserProjectQuery(userId, projectId)`；不要直接写 `{ userId, projectId }`，否则 `projectId` 为空时可能把 `null`/`undefined` 带入 TypeORM 条件，导致查询或 update 不符合预期。
 - `ctx` 类型统一从 `BaseService` 导出的 `ServiceContext` 复用，不要在每个 service 里重复定义。
 - 需要“有事务则复用、无事务则开启”时，使用 `BaseService.transactionWithCtx(ctx, callback)`：`ctx.manager` 存在则直接执行 callback，否则自动 `this.transaction()`。不要在业务代码里手写 `if (ctx.manager) { ... } else { await this.transaction(...) }`。
 - 新增方法注意不要与 `BaseService` 基类方法签名冲突，例如 `delete(id)` vs `BaseService.delete(ids, where?)`，ts-node 下会直接 TS2416 编译报错。冲突时改用具体名称如 `deleteById`。

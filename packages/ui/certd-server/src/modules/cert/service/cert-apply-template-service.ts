@@ -47,16 +47,16 @@ export class CertApplyTemplateService extends BaseService<CertApplyTemplateEntit
     if (entity.disabled) {
       throw new ValidateException("禁用的模版不能设为默认");
     }
-    await this.repository.update({ userId, projectId }, { isDefault: false });
-    await this.repository.update({ id: entity.id, userId, projectId }, { isDefault: true });
+    const query = this.buildUserProjectQuery(userId, projectId);
+    await this.repository.update(query, { isDefault: false });
+    await this.repository.update({ ...query, id: entity.id }, { isDefault: true });
     return entity;
   }
 
   async getDefault(userId: number, projectId?: number) {
     return await this.repository.findOne({
       where: {
-        userId,
-        projectId,
+        ...this.buildUserProjectQuery(userId, projectId),
         isDefault: true,
         disabled: false,
       },
@@ -87,8 +87,7 @@ export class CertApplyTemplateService extends BaseService<CertApplyTemplateEntit
     const template = await this.repository.findOne({
       where: {
         id,
-        userId,
-        projectId,
+        ...this.buildUserProjectQuery(userId, projectId),
       },
     });
     if (!template) {
