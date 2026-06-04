@@ -92,8 +92,8 @@ input:
       mode: tags
       type: plugin
       action: onGetDomainList
-      search: false
-      pager: false
+      search: true
+      pager: true
       single: false
       watches:
         - certDomains

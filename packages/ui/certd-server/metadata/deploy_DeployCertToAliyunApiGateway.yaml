@@ -78,14 +78,14 @@ input:
   groupId:
     title: API分组
     component:
-      name: remote-auto-complete
+      name: remote-select
       vModel: value
       mode: tags
       type: plugin
       action: onGetGroupList
       search: false
       pager: false
-      single: false
+      single: true
       watches:
         - certDomains
         - accessId

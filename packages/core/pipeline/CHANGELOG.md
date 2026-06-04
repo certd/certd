@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.41.0](https://github.com/certd/certd/compare/v1.40.5...v1.41.0) (2026-06-04)
+
+### Bug Fixes
+
+* 修复阿里云证书订单orderid 选择出错的问题 ([41254d1](https://github.com/certd/certd/commit/41254d10b748a2d3e6ba43c7e11411650c748d1b))
+
+### Features
+
+* 支持dns-persist-01持久化验证方式申请证书，优化Acme账号的存储方式 ([67b05e2](https://github.com/certd/certd/commit/67b05e2d75e96b9f855e1ca0b3d0d8d03b92d8e6))
+
 ## [1.40.5](https://github.com/certd/certd/compare/v1.40.4...v1.40.5) (2026-05-26)
 
 ### Bug Fixes
