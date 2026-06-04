@@ -1,5 +1,5 @@
 import createCrudOptionsUser from "/@/views/sys/authority/user/crud";
-import { CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+import { ColumnProps, CreateCrudOptionsProps, CreateCrudOptionsRet, DataFormatterContext, DelReq, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { message, Modal } from "ant-design-vue";
 import dayjs from "dayjs";
 import { ref } from "vue";
@@ -18,6 +18,77 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   };
 
   const selectedRowKeys = ref<number[]>([]);
+  const pipelineTypeDictData = [
+    { value: "cert", label: "证书申请" },
+    { value: "cert_upload", label: "证书上传" },
+    { value: "custom", label: "自定义" },
+    { value: "template", label: "模板" },
+    { value: "cert_auto", label: "证书申请" },
+  ];
+  const disabledDictData = [
+    { label: "启用", value: false, color: "green" },
+    { label: "禁用", value: true, color: "red" },
+  ];
+
+  function findDictLabel(data: any[], value: any) {
+    return data.find(item => item.value === value)?.label ?? value;
+  }
+
+  function formatValidTime(value: any) {
+    if (!value || value <= 0) {
+      return "永久有效";
+    }
+    if (value < Date.now()) {
+      return "已过期";
+    }
+    return dayjs(value).format("YYYY-MM-DD");
+  }
+
+  function getRecordValue(row: any, key: string) {
+    return key.split(".").reduce((target, item) => target?.[item], row);
+  }
+
+  function formatListValue(value: any) {
+    if (Array.isArray(value)) {
+      return value.join(",");
+    }
+    return value ?? "";
+  }
+
+  function exportColumnFilter(col: ColumnProps) {
+    if (!col.key || ["_index", "_selection", "rowHandle"].includes(col.key)) {
+      return false;
+    }
+    if (col.key === "lastVars.certDomains") {
+      return true;
+    }
+    return col.show !== false;
+  }
+
+  function exportDataFormatter(opts: DataFormatterContext) {
+    const { row, originalRow, col, exportCol } = opts;
+    const key = col.key;
+    const value = getRecordValue(originalRow, key);
+
+    if (key === "validTime") {
+      row[key] = formatValidTime(value);
+    } else if (key === "lastVars.certDomains") {
+      row[key] = formatListValue(value);
+    } else if (key === "status") {
+      row[key] = statusUtil.get(value)?.label ?? value;
+    } else if (key === "disabled") {
+      row[key] = findDictLabel(disabledDictData, value);
+    } else if (key === "type") {
+      row[key] = findDictLabel(pipelineTypeDictData, value);
+    } else if (key.includes("Time") && value) {
+      row[key] = dayjs(value).format("YYYY-MM-DD HH:mm:ss");
+    }
+
+    if (col.width) {
+      exportCol.width = col.width / 10;
+    }
+  }
+
   const handleBatchDelete = () => {
     if (!selectedRowKeys.value?.length) {
       message.error("请先选择要删除的记录");
@@ -54,6 +125,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
         export: {
           dataFrom: "search",
+          columnFilter: exportColumnFilter,
+          dataFormatter: exportDataFormatter,
         },
       },
       pagination: {
@@ -185,13 +258,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           dict: dict({
-            data: [
-              { value: "cert", label: "证书申请" },
-              { value: "cert_upload", label: "证书上传" },
-              { value: "custom", label: "自定义" },
-              { value: "template", label: "模板" },
-              { value: "cert_auto", label: "证书申请" },
-            ],
+            data: pipelineTypeDictData,
           }),
           column: {
             width: 110,
@@ -236,10 +303,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
           dict: dict({
-            data: [
-              { label: "启用", value: false, color: "green" },
-              { label: "禁用", value: true, color: "red" },
-            ],
+            data: disabledDictData,
           }),
           column: {
             width: 90,
@@ -268,6 +332,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
             width: 110,
             sorter: true,
+          },
+          form: {
+            show: false,
+          },
+        },
+        "lastVars.certDomains": {
+          title: "证书域名",
+          type: "text",
+          column: {
+            width: 260,
+            show: false,
+            ellipsis: true,
           },
           form: {
             show: false,
@@ -306,7 +382,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
             cellRender({ value }) {
               if (!value || value <= 0) {
-                return "-";
+                return "永久有效";
               }
               if (value < Date.now()) {
                 return <span style={{ color: "red" }}>已过期</span>;
