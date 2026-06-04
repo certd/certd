@@ -27,7 +27,7 @@ const { crudBinding, crudRef, crudExpose } = useFs({
 });
 
 onMounted(() => {
-  crudExpose.doRefresh();
+  // crudExpose.doRefresh();
 });
 
 onActivated(() => {

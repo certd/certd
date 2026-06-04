@@ -40,10 +40,10 @@ async function loadSuiteDetail() {
 
 // 页面打开后获取列表数据
 onMounted(async () => {
+  // await crudExpose.doRefresh();
+});
+onActivated(async () => {
   await loadSuiteDetail();
   await crudExpose.doRefresh();
-});
-onActivated(() => {
-  crudExpose.doRefresh();
 });
 </script>

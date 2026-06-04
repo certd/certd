@@ -25,7 +25,7 @@ const context: any = {
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
 onMounted(() => {
-  crudExpose.doRefresh();
+  // crudExpose.doRefresh();
 });
 onActivated(async () => {
   await crudExpose.doRefresh();

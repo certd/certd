@@ -30,7 +30,7 @@ const { crudBinding, crudRef, crudExpose } = useFs({
 const { t } = useI18n();
 // 页面打开后获取列表数据
 onMounted(() => {
-  crudExpose.doRefresh();
+  // crudExpose.doRefresh();
 });
 onActivated(() => {
   crudExpose.doRefresh();

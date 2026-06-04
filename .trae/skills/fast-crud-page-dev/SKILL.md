@@ -25,7 +25,7 @@ version: 1.0.0
 ## 实现流程
 
 1. 先在 `packages/ui/certd-client/src/views` 下找 1-2 个相近 Fast Crud 页面，沿用它们的导入、布局、命名和权限写法。
-2. 在 `index.vue` 中使用 `fs-crud ref="crudRef" v-bind="crudBinding"`，并在 `onMounted` / `onActivated` 时调用 `crudExpose.doRefresh()`。
+2. 在 `index.vue` 中使用 `fs-crud ref="crudRef" v-bind="crudBinding"`，并在 `onMounted` 或 `onActivated` 时调用 `crudExpose.doRefresh()`；两个生命周期同时存在时只保留一个刷新入口，避免首次进入页面请求两次。
 3. 在 `crud.tsx` 中配置 `request.pageRequest`、`columns`、`search`、`form`、`rowHandle`、`actionbar`、`toolbar` 等，接口分页参数和返回值按现有页面适配。
 4. 操作按钮优先放在 Fast Crud 的 `rowHandle.buttons` 或 `actionbar.buttons` 中；审核、保存设置、批量操作等复杂交互可通过 `context` 调用 `index.vue` 中的方法。
 5. 金额、状态、时间、枚举等字段优先复用项目已有组件、字典和格式化工具；避免在模板里重复堆格式化逻辑。

@@ -17,7 +17,7 @@ defineOptions({ name: "SysInviteWithdraw" });
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
 
 onMounted(() => {
-  crudExpose.doRefresh();
+  // crudExpose.doRefresh();
 });
 onActivated(() => {
   crudExpose.doRefresh();

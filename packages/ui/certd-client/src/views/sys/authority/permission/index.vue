@@ -22,7 +22,7 @@ import { useFs, useUi } from "@fast-crud/fast-crud";
 import { useI18n } from "/src/locales";
 
 export default defineComponent({
-  name: "AuthorityManager",
+  name: "PermissionManager",
   components: { FsPermissionTree },
   setup() {
     // 此处传入permission进行通用按钮权限设置，会通过commonOptions去设置actionbar和rowHandle的按钮的show属性
@@ -32,7 +32,7 @@ export default defineComponent({
 
     // 页面打开后获取列表数据
     onMounted(async () => {
-      await crudExpose.doRefresh();
+      // await crudExpose.doRefresh();
     });
     onActivated(async () => {
       await crudExpose.doRefresh();

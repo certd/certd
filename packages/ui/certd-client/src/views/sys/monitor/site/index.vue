@@ -27,7 +27,7 @@ const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context 
 const handleBatchDelete = context.handleBatchDelete;
 
 onMounted(() => {
-  crudExpose.doRefresh();
+  // crudExpose.doRefresh();
 });
 onActivated(() => {
   crudExpose.doRefresh();

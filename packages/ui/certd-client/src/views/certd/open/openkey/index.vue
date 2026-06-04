@@ -23,7 +23,7 @@ const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context:
 
 // 页面打开后获取列表数据
 onMounted(() => {
-  crudExpose.doRefresh();
+  // crudExpose.doRefresh();
 });
 onActivated(() => {
   crudExpose.doRefresh();

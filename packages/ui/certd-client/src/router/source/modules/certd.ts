@@ -82,6 +82,7 @@ export const certdResources = [
           isMenu: true,
           icon: "ion:duplicate-outline",
           auth: true,
+          keepAlive: true,
         },
       },
       {
@@ -282,6 +283,7 @@ export const certdResources = [
             meta: {
               icon: "ion:barcode-outline",
               auth: true,
+              keepAlive: true,
               isMenu: true,
             },
           },
@@ -350,6 +352,7 @@ export const certdResources = [
               },
               icon: "ion:gift-outline",
               auth: true,
+              keepAlive: true,
             },
           },
           {

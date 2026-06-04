@@ -37,7 +37,7 @@ import { useCrudPermission } from "/@/plugin/permission";
 const { t } = useI18n();
 
 defineOptions({
-  name: "CnameRecord",
+  name: "SubDomain",
 });
 const context: any = {
   permission: {
@@ -68,7 +68,7 @@ const handleBatchDelete = () => {
 
 // 页面打开后获取列表数据
 onMounted(() => {
-  crudExpose.doRefresh();
+  // crudExpose.doRefresh();
 });
 onActivated(async () => {
   await crudExpose.doRefresh();

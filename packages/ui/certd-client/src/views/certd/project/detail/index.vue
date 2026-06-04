@@ -117,7 +117,7 @@ onMounted(async () => {
     return;
   }
   await loadProjectDetail();
-  await crudExpose.doRefresh();
+  // await crudExpose.doRefresh();
 
   if (migrate === "true") {
     openTransferDialog();

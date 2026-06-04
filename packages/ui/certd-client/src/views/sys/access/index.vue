@@ -24,7 +24,7 @@ export default defineComponent({
 
     // 页面打开后获取列表数据
     onMounted(() => {
-      crudExpose.doRefresh();
+      // crudExpose.doRefresh();
     });
 
     onActivated(async () => {

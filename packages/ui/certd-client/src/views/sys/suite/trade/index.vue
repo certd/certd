@@ -16,16 +16,16 @@ import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 
 defineOptions({
-  name: "TradeManager",
+  name: "OrderManager",
 });
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
 
 // 页面打开后获取列表数据
 onMounted(() => {
-  crudExpose.doRefresh();
+  // crudExpose.doRefresh();
 });
-onActivated(async () => {
-  await crudExpose.doRefresh();
+onActivated(() => {
+  crudExpose.doRefresh();
 });
 </script>
 <style lang="less"></style>

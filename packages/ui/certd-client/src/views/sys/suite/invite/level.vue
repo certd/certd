@@ -94,7 +94,7 @@ function confirmRemove(opts: any) {
 }
 
 onMounted(() => {
-  crudExpose.doRefresh();
+  // crudExpose.doRefresh();
 });
 onActivated(() => {
   crudExpose.doRefresh();
