@@ -1,7 +1,33 @@
+
 # Change Log
 
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+# [1.41.0](https://github.com/certd/certd/compare/v1.40.5...v1.41.0) (2026-06-04)
+
+### Bug Fixes
+
+* 修复阿里云证书订单orderid 选择出错的问题 ([41254d1](https://github.com/certd/certd/commit/41254d10b748a2d3e6ba43c7e11411650c748d1b))
+* **monitor:** 修复开放接口自动创建证书流水线重复触发和等待时间不足的问题 ([91d5c90](https://github.com/certd/certd/commit/91d5c90eb0eaf65c81dddbd2d4d4b404cb8b4d07))
+* **pipeline:** 修复批量随机修改定时没有生效的bug ([2e19dda](https://github.com/certd/certd/commit/2e19dda72e70b525a7c269e18e963a5ee602f59f))
+
+### Features
+
+* 商业版支持邀请返佣功能 ([f9a310b](https://github.com/certd/certd/commit/f9a310b6c3bbf30f221482a0c59e9c30080bdfc8))
+* 商业版支持邀请推广功能 ([f1d2a10](https://github.com/certd/certd/commit/f1d2a1033a0f8d3dbd91fc9793e07bd0b858b539))
+* 新增管理员针对用户流水线和证书监控管理功能 ([0211552](https://github.com/certd/certd/commit/021155278e7375f8487b0531ed1b5ad52512f007))
+* 新增套餐激活码功能，通过CDK兑换套餐 ([81d6289](https://github.com/certd/certd/commit/81d6289a8631b073b49f24dee4b14bb1c8f31071))
+* 新增推广等级激励功能 ([5096df5](https://github.com/certd/certd/commit/5096df5cc0d8f0ad8aa327b8e2a900ba23714bd8))
+* 新增证书申请参数模版管理，开放接口支持使用证书参数模版和指定证书申请参数 ([f8b71a0](https://github.com/certd/certd/commit/f8b71a0e612fad527cf49136335e0b46f0f379cd))
+* 支持dns-persist-01持久化验证方式申请证书，优化Acme账号的存储方式 ([67b05e2](https://github.com/certd/certd/commit/67b05e2d75e96b9f855e1ca0b3d0d8d03b92d8e6))
+
+### Performance Improvements
+
+* 插件全局配置支持下拉选项自定义映射功能 ([c637985](https://github.com/certd/certd/commit/c637985575b09196b04cce37ac14fbe68c029bde))
+* 商业版提现增加收款二维码上传 ([83a5a21](https://github.com/certd/certd/commit/83a5a21f956e50942541f1532f3a8dcaa5821d34))
+* **aliyun-apig:** 优化阿里云API网关部署插件的查询及翻页 ([3e4b7f3](https://github.com/certd/certd/commit/3e4b7f30ac6f3c976c8274bdf256c69b8a2c46db))
+* **trade:** 优化商品购买页面的规格展示和折扣计算，支持订单取消 ([6624769](https://github.com/certd/certd/commit/66247690326ce2789900fc9110c08b3502cea655))
 
 ## [1.40.5](https://github.com/certd/certd/compare/v1.40.4...v1.40.5) (2026-05-26)
 
