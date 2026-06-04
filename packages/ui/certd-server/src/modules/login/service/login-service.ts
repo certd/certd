@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { AuthException, CommonException, Need2FAException, SysPrivateSettings, SysSettingsService } from "@certd/lib-server";
 import { RoleService } from "../../sys/authority/service/role-service.js";
 import { UserEntity } from "../../sys/authority/entity/user.js";
-import { cache, utils } from "@certd/basic";
+import { cache, logger, utils } from "@certd/basic";
 import { LoginErrorException } from "@certd/lib-server";
 import { CodeService } from "../../basic/service/code-service.js";
 import { TwoFactorService } from "../../mine/service/two-factor-service.js";
@@ -14,6 +14,7 @@ import { AddonService } from "@certd/lib-server";
 import { OauthBoundService } from "./oauth-bound-service.js";
 import { PasskeyService } from "./passkey-service.js";
 import { InviteService } from "@certd/commercial-core";
+import { EntityManager } from "typeorm";
 
 /**
  */
@@ -108,6 +109,19 @@ export class LoginService {
     throw new LoginErrorException(errorMessage, leftTimes);
   }
 
+  async register(type: string, user: UserEntity, inviteCode?: string, withTx?: (tx: EntityManager) => Promise<void>) {
+    const newUser = await this.userService.register(type, user, withTx);
+    if (!inviteCode) {
+      return newUser;
+    }
+    try {
+      await this.inviteService.bindInvitee({}, { inviteeUserId: newUser.id, inviteCode });
+    } catch (e) {
+      logger.error("绑定邀请关系失败，不影响用户注册", e);
+    }
+    return newUser;
+  }
+
   async loginBySmsCode(req: { mobile: string; phoneCode: string; smsCode: string; randomStr: string; inviteCode?: string }) {
     this.checkIsBlocked(req.mobile);
 
@@ -130,9 +144,7 @@ export class LoginService {
         mobile,
         password: "",
       } as any;
-      info = await this.userService.register("mobile", registerUser, async txManager => {
-        await this.inviteService.bindInvitee({ manager: txManager }, { inviteeUserId: registerUser.id, inviteCode: req.inviteCode });
-      });
+      info = await this.register("mobile", registerUser, req.inviteCode);
     }
     this.clearCacheOnSuccess(mobile);
     return this.onLoginSuccess(info);

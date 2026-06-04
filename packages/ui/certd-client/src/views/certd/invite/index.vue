@@ -300,7 +300,7 @@ async function handleTabChange() {
 }
 
 async function refreshInvitePage(autoOpenAgreement = true) {
-  await settingStore.initOnce();
+  await settingStore.init();
   enabled.value = settingStore.isInviteCommissionEnabled;
   loaded.value = true;
   if (!enabled.value) {

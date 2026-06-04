@@ -389,7 +389,7 @@ export const certdResources = [
             meta: {
               show: () => {
                 const settingStore = useSettingStore();
-                return settingStore.isComm;
+                return settingStore.isInviteCommissionEnabled;
               },
               icon: "ion:gift-outline",
               auth: true,

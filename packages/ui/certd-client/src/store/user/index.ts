@@ -136,12 +136,12 @@ export const useUserStore = defineStore({
         } catch (e) {
           console.error("注销登录请求失败：", e);
         }
+        // 第三方登录注销
+        this.oauthLogout();
       }
 
       this.resetState();
       resetAllStores();
-      // 第三方登录注销
-      await this.oauthLogout();
       goLogin && router.push("/login");
       mitter.emit("app.logout");
     },

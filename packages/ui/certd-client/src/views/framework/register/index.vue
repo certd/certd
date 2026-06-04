@@ -215,6 +215,8 @@ export default defineComponent({
 
     const handleFinish = async (values: any) => {
       try {
+        //先注销登录
+        userStore.resetState();
         await userStore.register(
           toRaw({
             type: registerType.value,

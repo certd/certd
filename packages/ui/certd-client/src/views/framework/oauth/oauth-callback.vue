@@ -29,6 +29,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useUserStore } from "/@/store/user";
 import { notification } from "ant-design-vue";
 import { useSettingStore } from "/@/store/settings";
+import { inviteUtils } from "/@/utils/util.invite";
 
 const route = useRoute();
 const router = useRouter();
@@ -99,7 +100,7 @@ async function goBindUser() {
 
 async function autoRegister() {
   //自动注册账号
-  const res = await api.AutoRegister(oauthType, bindCode.value);
+  const res = await api.AutoRegister(oauthType, bindCode.value, inviteUtils.get());
   //登录成功
   userStore.onLoginSuccess(res);
   //跳转到首页

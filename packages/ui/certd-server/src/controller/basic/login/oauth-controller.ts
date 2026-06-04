@@ -8,7 +8,6 @@ import { LoginService } from "../../../modules/login/service/login-service.js";
 import { OauthBoundService } from "../../../modules/login/service/oauth-bound-service.js";
 import { AddonGetterService } from "../../../modules/pipeline/service/addon-getter-service.js";
 import { UserEntity } from "../../../modules/sys/authority/entity/user.js";
-import { UserService } from "../../../modules/sys/authority/service/user-service.js";
 import { IOauthProvider } from "../../../plugins/plugin-oauth/api.js";
 
 type OauthProviderSetting = {
@@ -42,8 +41,6 @@ export class ConnectController extends BaseController {
   loginService: LoginService;
   @Inject()
   codeService: CodeService;
-  @Inject()
-  userService: UserService;
 
   @Inject()
   oauthBoundService: OauthBoundService;
@@ -199,7 +196,7 @@ export class ConnectController extends BaseController {
   }
 
   @Post("/autoRegister", { description: Constants.per.guest })
-  public async autoRegister(@Body(ALL) body: { validationCode: string; type: string }) {
+  public async autoRegister(@Body(ALL) body: { validationCode: string; type: string; inviteCode?: string }) {
     const validationValue = this.codeService.getValidationValue(body.validationCode);
     if (!validationValue) {
       throw new Error("第三方认证授权已过期");
@@ -212,7 +209,7 @@ export class ConnectController extends BaseController {
     newUser.nickName = userInfo.nickName || simpleNanoId(6);
     newUser.email = userInfo.email || "";
 
-    newUser = await this.userService.register("username", newUser, async txManager => {
+    newUser = await this.loginService.register("username", newUser, body.inviteCode, async txManager => {
       const oauthBound: OauthBoundEntity = new OauthBoundEntity();
       oauthBound.userId = newUser.id;
       oauthBound.type = oauthType;
