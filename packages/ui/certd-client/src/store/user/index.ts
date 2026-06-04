@@ -15,6 +15,7 @@ import { resetAllStores, useAccessStore } from "/@/vben/stores";
 
 import { useUserStore as vbenUserStore } from "/@/vben/stores/modules/user";
 import { request } from "/@/api/service";
+import { inviteUtils } from "/@/utils/util.invite";
 
 interface UserState {
   userInfo: Nullable<UserInfoRes>;
@@ -66,6 +67,9 @@ export const useUserStore = defineStore({
     },
     async register(user: RegisterReq) {
       await UserApi.register(user);
+      if (user.inviteCode) {
+        inviteUtils.clear();
+      }
       notification.success({
         message: "注册成功，请登录",
       });
@@ -85,6 +89,9 @@ export const useUserStore = defineStore({
       let loginRes: any = null;
       if (loginType === "sms") {
         loginRes = await UserApi.loginBySms(params as SmsLoginReq);
+        if ((params as SmsLoginReq).inviteCode) {
+          inviteUtils.clear();
+        }
       } else {
         loginRes = await UserApi.login(params as LoginReq);
       }

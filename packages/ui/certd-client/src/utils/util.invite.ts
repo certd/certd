@@ -41,6 +41,10 @@ export const inviteUtils = {
     }
   },
 
+  clear() {
+    localStorage.removeItem(INVITE_STORAGE_KEY);
+  },
+
   captureFromLocation() {
     const hashQuery = window.location.hash?.split("?")[1] || "";
     const search = window.location.search?.replace(/^\?/, "") || "";

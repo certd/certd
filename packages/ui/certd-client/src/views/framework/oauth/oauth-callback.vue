@@ -100,7 +100,11 @@ async function goBindUser() {
 
 async function autoRegister() {
   //自动注册账号
-  const res = await api.AutoRegister(oauthType, bindCode.value, inviteUtils.get());
+  const inviteCode = inviteUtils.get();
+  const res = await api.AutoRegister(oauthType, bindCode.value, inviteCode);
+  if (inviteCode) {
+    inviteUtils.clear();
+  }
   //登录成功
   userStore.onLoginSuccess(res);
   //跳转到首页
