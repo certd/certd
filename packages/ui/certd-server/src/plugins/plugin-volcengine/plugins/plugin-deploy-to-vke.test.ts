@@ -3,6 +3,7 @@
 import assert from "node:assert/strict";
 
 import { VolcengineDeployToVKE } from "./plugin-deploy-to-vke.js";
+import { CertInfo } from "@certd/plugin-cert";
 
 describe("VolcengineDeployToVKE", () => {
   it("uses a single-select cluster field", () => {
@@ -85,5 +86,66 @@ describe("VolcengineDeployToVKE", () => {
         }),
       /当前命名空间可用Ingress:app-web,api-web/
     );
+  });
+
+  it("creates Secret with cert_center format for new non-tls secrets", async () => {
+    const plugin = new VolcengineDeployToVKE();
+    plugin.namespace = "default";
+    plugin.targetType = "secret";
+    plugin.secretName = "test-tls";
+    plugin.createOnNotFound = true;
+    plugin.logger = { info: () => undefined } as any;
+    plugin.appendTimeSuffix = (s: string) => s + "-test";
+
+    let secretBody: any;
+    await (plugin as any).patchCertSecret({
+      certId: "cert-abc123",
+      k8sClient: {
+        patchSecret: async (opts: any) => {
+          secretBody = opts.body;
+          return {};
+        },
+        client: {
+          readNamespacedSecret: async () => {
+            throw Object.assign(new Error("Not Found"), { response: { body: { code: 404 } } });
+          },
+        },
+      },
+      secretNames: ["test-tls"],
+    });
+
+    assert.equal(secretBody.type, "Opaque");
+    assert.equal(secretBody.data["cert_id"], Buffer.from("cert-abc123").toString("base64"));
+    assert.equal(secretBody.data["cert_source"], Buffer.from("cert_center").toString("base64"));
+  });
+
+  it("uses tls.crt/tls.key format for kubernetes.io/tls secrets", async () => {
+    const plugin = new VolcengineDeployToVKE();
+    plugin.namespace = "default";
+    plugin.targetType = "secret";
+    plugin.secretName = "test-tls";
+    plugin.logger = { info: () => undefined } as any;
+    plugin.appendTimeSuffix = (s: string) => s + "-test";
+    plugin.cert = { crt: "MY_CRT", key: "MY_KEY" } as CertInfo;
+
+    let secretBody: any;
+    await (plugin as any).patchCertSecret({
+      certId: "cert-abc123",
+      k8sClient: {
+        patchSecret: async (opts: any) => {
+          secretBody = opts.body;
+          return {};
+        },
+        client: {
+          readNamespacedSecret: async () => ({
+            body: { type: "kubernetes.io/tls" },
+          }),
+        },
+      },
+      secretNames: ["test-tls"],
+    });
+
+    assert.equal(secretBody.data["tls.crt"], Buffer.from("MY_CRT").toString("base64"));
+    assert.equal(secretBody.data["tls.key"], Buffer.from("MY_KEY").toString("base64"));
   });
 });
