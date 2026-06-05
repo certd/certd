@@ -6,7 +6,8 @@ name: VolcengineDeployToVKE
 title: 火山引擎-替换VKE证书
 icon: svg:icon-volcengine
 group: volcengine
-desc: 将证书上传至火山引擎证书中心后，通过 cert_center 方式替换VKE集群中的Secret
+desc: 替换火山引擎VKE集群中的TLS Secret证书
+needPlus: true
 input:
   cert:
     title: 域名证书
@@ -15,7 +16,7 @@ input:
       name: output-selector
       from:
         - ':cert:'
-        - 'VolcengineUploadToCertCenter'
+        - VolcengineUploadToCertCenter
     required: true
     order: 0
   certDomains:
@@ -119,11 +120,11 @@ input:
     component:
       name: a-select
       options:
-        - label: 按Ingress替换
-          value: ingress
         - label: 按Secret替换
           value: secret
-    value: ingress
+        - label: 按Ingress替换
+          value: ingress
+    value: secret
     required: true
     order: 0
   ingressName:
@@ -169,7 +170,6 @@ input:
             }
           
     order: 0
-
   createOnNotFound:
     title: Secret自动创建
     helper: 如果Secret不存在，则创建Opaque类型Secret
