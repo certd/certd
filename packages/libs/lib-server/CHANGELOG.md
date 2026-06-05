@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.41.1](https://github.com/certd/certd/compare/v1.41.0...v1.41.1) (2026-06-05)
+
+### Performance Improvements
+
+* **settings:** 新增NO_PROXY代理排除配置 ([c0df8be](https://github.com/certd/certd/commit/c0df8be83237e323c2c9a5bd02507430a86a00cc))
+
 # [1.41.0](https://github.com/certd/certd/compare/v1.40.5...v1.41.0) (2026-06-04)
 
 ### Bug Fixes
