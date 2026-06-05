@@ -46,16 +46,13 @@
 </template>
 
 <script lang="ts" setup>
-import { useMounted } from "/@/use/use-mounted";
-import { computed, onActivated, onMounted } from "vue";
-import { useMounted } from "/@/use/use-mounted";
-import { Modal, notification } from "ant-design-vue";
-import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
-import createCrudOptions from "./crud-level";
+import { Modal, notification } from "ant-design-vue";
+import { computed } from "vue";
 import * as api from "./api";
-import { useMounted } from "/@/use/use-mounted";
+import createCrudOptions from "./crud-level";
 import { util } from "/@/utils";
+import { useMounted } from "/@/use/use-mounted";
 
 defineOptions({ name: "SysInviteLevel" });
 

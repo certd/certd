@@ -11,10 +11,9 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onMounted } from "vue";
-import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
+import { useMounted } from "/@/use/use-mounted";
 
 defineOptions({
   name: "CertApplyTemplate",

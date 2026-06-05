@@ -14,19 +14,13 @@
 </template>
 
 <script lang="ts" setup>
-import { useMounted } from "/@/use/use-mounted";
-import { onActivated, onMounted } from "vue";
-import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
-import createCrudOptions from "./crud";
-import { useMounted } from "/@/use/use-mounted";
 import { message, Modal } from "ant-design-vue";
-import { useMounted } from "/@/use/use-mounted";
 import { DeleteBatch } from "./api";
+import createCrudOptions from "./crud";
+import { useCrudPermission } from "/@/plugin/permission";
 import { useMounted } from "/@/use/use-mounted";
 import { useI18n } from "/src/locales";
-import { useMounted } from "/@/use/use-mounted";
-import { useCrudPermission } from "/@/plugin/permission";
 
 const { t } = useI18n();
 

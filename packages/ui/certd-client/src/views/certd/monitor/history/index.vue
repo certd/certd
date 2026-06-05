@@ -21,10 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
-import { useMounted } from "/@/use/use-mounted";
-import { onActivated, onMounted } from "vue";
 import createCrudOptions from "./crud";
 import { useMounted } from "/@/use/use-mounted";
 import { useI18n } from "/src/locales";
