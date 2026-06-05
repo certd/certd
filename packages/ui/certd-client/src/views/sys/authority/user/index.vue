@@ -8,9 +8,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, onActivated } from "vue";
-import { useCrud, useExpose, useFs } from "@fast-crud/fast-crud";
+import { useFs } from "@fast-crud/fast-crud";
+import { defineComponent } from "vue";
 import createCrudOptions from "./crud";
+import { useMounted } from "/@/use/use-mounted";
 export default defineComponent({
   name: "UserManager",
   setup() {
