@@ -11,7 +11,9 @@
 </template>
 
 <script lang="ts" setup>
+import { useMounted } from "/@/use/use-mounted";
 import { onActivated, onMounted } from "vue";
+import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 
@@ -25,12 +27,5 @@ const { crudBinding, crudRef, crudExpose } = useFs({
     permission: { isProjectPermission: true },
   },
 });
-
-onMounted(() => {
-  // crudExpose.doRefresh();
-});
-
-onActivated(() => {
-  crudExpose.doRefresh();
-});
+useMounted(() => crudExpose.doRefresh());
 </script>

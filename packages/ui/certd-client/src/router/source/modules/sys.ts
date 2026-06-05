@@ -311,7 +311,7 @@ export const sysResources = [
               },
               icon: "ion:bag-check",
               permission: "sys:settings:edit",
-              keepAlive: true,
+              keepAlive: false,
               auth: true,
             },
           },

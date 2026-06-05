@@ -11,9 +11,12 @@
 </template>
 
 <script lang="ts" setup>
+import { useMounted } from "/@/use/use-mounted";
 import { onActivated, onMounted } from "vue";
+import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
+import { useMounted } from "/@/use/use-mounted";
 import { useI18n } from "/src/locales";
 
 const { t } = useI18n();
@@ -22,12 +25,5 @@ defineOptions({
   name: "CertStore",
 });
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: { permission: { isProjectPermission: true } } });
-
-// 页面打开后获取列表数据
-onMounted(() => {
-  // crudExpose.doRefresh();
-});
-onActivated(() => {
-  crudExpose.doRefresh();
-});
+useMounted(() => crudExpose.doRefresh());
 </script>

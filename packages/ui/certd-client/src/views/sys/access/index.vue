@@ -11,7 +11,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onActivated, onMounted } from "vue";
+import { defineComponent } from "vue";
+import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "../../certd/access/crud";
 import { createAccessApi } from "/@/views/certd/access/api";
@@ -21,15 +22,7 @@ export default defineComponent({
   setup() {
     const api = createAccessApi("sys");
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: { api } });
-
-    // 页面打开后获取列表数据
-    onMounted(() => {
-      // crudExpose.doRefresh();
-    });
-
-    onActivated(async () => {
-      await crudExpose.doRefresh();
-    });
+    useMounted(() => crudExpose.doRefresh());
 
     return {
       crudBinding,

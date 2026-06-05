@@ -1,9 +1,10 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
-import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { utils } from "@certd/basic";
+import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
+import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import { VolcengineAccess } from "../access.js";
 import { VolcengineClient } from "../ve-client.js";
-import { utils } from "@certd/basic";
 
 const regionOptions = [
   { label: "北京", value: "cn-beijing" },
@@ -20,13 +21,14 @@ const regionOptions = [
   icon: "svg:icon-volcengine",
   group: pluginGroups.volcengine.key,
   desc: "替换火山引擎VKE集群中的TLS Secret证书",
+  needPlus:true,
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
 })
-export class VolcengineDeployToVKE extends AbstractTaskPlugin {
+export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
   @TaskInput({
     title: "域名证书",
     helper: "请选择前置任务输出的域名证书",

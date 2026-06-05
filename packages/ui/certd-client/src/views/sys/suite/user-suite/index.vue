@@ -11,7 +11,9 @@
 </template>
 
 <script lang="ts" setup>
+import { useMounted } from "/@/use/use-mounted";
 import { onActivated, onMounted } from "vue";
+import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 
@@ -19,12 +21,5 @@ defineOptions({
   name: "UserSuites",
 });
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: {} });
-
-// 页面打开后获取列表数据
-onMounted(() => {
-  // crudExpose.doRefresh();
-});
-onActivated(() => {
-  crudExpose.doRefresh();
-});
+useMounted(() => crudExpose.doRefresh());
 </script>

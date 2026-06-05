@@ -104,15 +104,7 @@ export default defineComponent({
     // 更多关于按钮权限的源代码设置，请参考 ./src/plugin/fast-crud/index.js （75-77行）
 
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: { authz, permission } });
-
-    // 页面打开后获取列表数据
-    onMounted(() => {
-      // crudExpose.doRefresh();
-    });
-
-    onActivated(async () => {
-      await crudExpose.doRefresh();
-    });
+    useMounted(() => crudExpose.doRefresh());
     return {
       crudBinding,
       crudRef,

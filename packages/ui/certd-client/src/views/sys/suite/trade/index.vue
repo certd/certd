@@ -11,21 +11,15 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onMounted } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
+import { useMounted } from "/@/use/use-mounted";
 
 defineOptions({
   name: "OrderManager",
 });
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
 
-// 页面打开后获取列表数据
-onMounted(() => {
-  // crudExpose.doRefresh();
-});
-onActivated(() => {
-  crudExpose.doRefresh();
-});
+useMounted(() => crudExpose.doRefresh());
 </script>
 <style lang="less"></style>

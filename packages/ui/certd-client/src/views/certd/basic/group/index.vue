@@ -11,7 +11,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onActivated, onMounted } from "vue";
+import { defineComponent } from "vue";
+import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 
@@ -24,14 +25,7 @@ export default defineComponent({
         permission: { isProjectPermission: true },
       },
     });
-
-    // 页面打开后获取列表数据
-    onMounted(() => {
-      // crudExpose.doRefresh();
-    });
-    onActivated(() => {
-      crudExpose.doRefresh();
-    });
+    useMounted(() => crudExpose.doRefresh());
 
     return {
       crudBinding,
