@@ -11,7 +11,7 @@ import { PipelineEntity } from "../../../modules/pipeline/entity/pipeline.js";
 const pipelineExample = `
 // 流水线配置示例，实际传送时要去掉注释
 {
-  "title": "handsfree.work证书自动化", //标题
+  "title": "handfree.work证书自动化", //标题
   "runnableType": "pipeline", //类型，固定为pipeline
   "projectId": 1, // 项目ID， 未开启企业模式，无需传递
   "type": "cert", // 流水线类型，cert：证书自动化, custom ：自定义流水线

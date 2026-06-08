@@ -71,7 +71,7 @@ input:
                   },
                }
               
-    helper: 你在七牛云上配置的CDN加速域名，比如:certd.handsfree.work
+    helper: 你在七牛云上配置的CDN加速域名，比如:certd.handfree.work
     order: 0
 output: {}
 pluginType: deploy

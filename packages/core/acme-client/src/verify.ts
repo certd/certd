@@ -263,4 +263,4 @@ export function createChallengeFn(opts = {}) {
 
 
 
-// createChallengeFn({logger:{info:console.log}}).walkDnsChallengeRecord("handsfree.work")
+// createChallengeFn({logger:{info:console.log}}).walkDnsChallengeRecord("handfree.work")

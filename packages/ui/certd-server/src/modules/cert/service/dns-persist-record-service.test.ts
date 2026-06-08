@@ -28,12 +28,12 @@ describe("DnsPersistRecordService", () => {
     const service = new DnsPersistRecordService();
 
     const record = await service.buildRecord({
-      domain: "aaa.handsfree.work",
+      domain: "aaa.handfree.work",
       accountUri: "https://example.com/acct/1",
     });
 
     assert.equal(record.hostRecord, "_validation-persist.aaa");
-    assert.equal(record.mainDomain, "handsfree.work");
+    assert.equal(record.mainDomain, "handfree.work");
     assert.equal(record.recordValue, "letsencrypt.org; accounturi=https://example.com/acct/1; policy=wildcard");
   });
 

@@ -17,7 +17,7 @@ import { QiniuAccess, QiniuClient } from "../../plugin-lib/qiniu/index.js";
 export class QiniuDeployCertToOSS extends AbstractTaskPlugin {
   @TaskInput({
     title: "自定义源站域名",
-    helper: "你在七牛云上配置的OSS域名，比如:certd.handsfree.work",
+    helper: "你在七牛云上配置的OSS域名，比如:certd.handfree.work",
     required: true,
   })
   domainName!: string;

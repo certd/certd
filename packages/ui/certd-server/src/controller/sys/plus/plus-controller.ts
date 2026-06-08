@@ -60,7 +60,7 @@ export class SysPlusController extends BaseController {
   //   const bindUrl = 'http://127.0.0.1:7001/';
   //   const service = new PlusRequestService({
   //     subjectId: subjectId,
-  //     plusServerBaseUrls: ['https://api.ai.handsfree.work'],
+  //     plusServerBaseUrls: ['https://api.ai.handfree.work'],
   //   });
   //   const body = { subjectId, appKey: 'kQth6FHM71IPV3qdWc', url: bindUrl };
   //

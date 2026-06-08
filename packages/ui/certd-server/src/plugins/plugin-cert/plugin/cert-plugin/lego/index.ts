@@ -32,7 +32,7 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
   //     vModel: "value",
   //     options: [
   //       { value: "https://acme-v02.api.letsencrypt.org/directory", label: "Let's Encrypt" },
-  //       { value: "https://letsencrypt.proxy.handsfree.work/directory", label: "Let's Encrypt代理，letsencrypt.org无法访问时使用" },
+  //       { value: "https://letsencrypt.proxy.handfree.work/directory", label: "Let's Encrypt代理，letsencrypt.org无法访问时使用" },
   //     ],
   //   },
   //   required: true,
