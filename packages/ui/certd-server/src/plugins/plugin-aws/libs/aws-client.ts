@@ -30,16 +30,23 @@ export class AwsClient {
       },
     });
 
-    const cert = certInfo.crt.split("-----END CERTIFICATE-----")[0] + "-----END CERTIFICATE-----";
+    // Split the full PEM chain: first block is the leaf cert, the rest is the intermediate chain
+    const pemBlocks = certInfo.crt.split(/(?<=-----END CERTIFICATE-----)/);
+    const cert = pemBlocks[0].trim();
+    const chain = pemBlocks
+      .slice(1)
+      .join("")
+      .trim();
+
     // 构建上传参数
     const data = await acmClient.send(
       new ImportCertificateCommand({
         Certificate: Buffer.from(cert),
         PrivateKey: Buffer.from(certInfo.key),
-        // CertificateChain: certificateChain, // 可选
+        CertificateChain: chain ? Buffer.from(chain) : undefined,
       })
     );
-    console.log("Upload successful:", data);
+    this.logger.info(`Upload successful: ${data.CertificateArn}`);
     // 返回证书 ARN（Amazon Resource Name）
     return data.CertificateArn;
   }
