@@ -72,16 +72,10 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const access = await this.getAccess<AwsAccess>(this.accessId);
 
-    const acmClient = new AwsClient({
-      access,
-      region: this.region,
-      logger: this.logger,
-    });
-
     let certId = this.cert as string;
     if (typeof this.cert !== "string") {
       //先上传
-      certId = await this.uploadToACM(acmClient, this.cert);
+      certId = await this.uploadToACM(access, this.cert);
     }
     //部署到CloudFront
 
@@ -96,39 +90,38 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
 
     // update-distribution
     for (const distributionId of this.distributionIds) {
-      // get-distribution-config (with retry for throttling)
-      const configData = await acmClient.withRetry(() =>
-        cloudFrontClient.send(new GetDistributionConfigCommand({ Id: distributionId }))
-      );
+      // get-distribution-config
+      const getDistributionConfigCommand = new GetDistributionConfigCommand({
+        Id: distributionId,
+      });
 
-      await acmClient.withRetry(() =>
-        cloudFrontClient.send(
-          new UpdateDistributionCommand({
-            DistributionConfig: {
-              ...configData.DistributionConfig,
-              ViewerCertificate: {
-                ...configData.DistributionConfig.ViewerCertificate,
-                CloudFrontDefaultCertificate: false,
-                ACMCertificateArn: certId,
-              },
-            },
-            Id: distributionId,
-            IfMatch: configData.ETag,
-          })
-        )
-      );
+      const configData = await cloudFrontClient.send(getDistributionConfigCommand);
 
-      this.logger.info(`证书已提交到 ${distributionId}，等待全局部署完成…`);
-      // Wait for this distribution to fully propagate before moving to the next one.
-      // Updating a distribution that is still InProgress results in a PreconditionFailed error.
-      await acmClient.waitForDistributionDeployed(cloudFrontClient, distributionId);
-      this.logger.info(`部署 ${distributionId} 完成`);
+      const updateDistributionCommand = new UpdateDistributionCommand({
+        DistributionConfig: {
+          ...configData.DistributionConfig,
+          ViewerCertificate: {
+            ...configData.DistributionConfig.ViewerCertificate,
+            CloudFrontDefaultCertificate: false,
+            ACMCertificateArn: certId,
+          },
+        },
+        Id: distributionId,
+        IfMatch: configData.ETag,
+      });
+      await cloudFrontClient.send(updateDistributionCommand);
+      this.logger.info(`部署${distributionId}完成:`);
     }
     this.logger.info("部署完成");
   }
 
-  private async uploadToACM(acmClient: AwsClient, cert: CertInfo) {
-    const awsCertARN = await acmClient.withRetry(() => acmClient.importCertificate(cert));
+  private async uploadToACM(access: AwsAccess, cert: CertInfo) {
+    const acmClient = new AwsClient({
+      access,
+      region: this.region,
+      logger: this.logger,
+    });
+    const awsCertARN = await acmClient.importCertificate(cert);
     this.logger.info("证书上传成功,id=", awsCertARN);
     return awsCertARN;
   }
