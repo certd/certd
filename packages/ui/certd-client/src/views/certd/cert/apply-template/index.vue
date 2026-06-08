@@ -11,9 +11,9 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onMounted } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
+import { useMounted } from "/@/use/use-mounted";
 
 defineOptions({
   name: "CertApplyTemplate",
@@ -25,12 +25,5 @@ const { crudBinding, crudRef, crudExpose } = useFs({
     permission: { isProjectPermission: true },
   },
 });
-
-onMounted(() => {
-  crudExpose.doRefresh();
-});
-
-onActivated(() => {
-  crudExpose.doRefresh();
-});
+useMounted(() => crudExpose.doRefresh());
 </script>

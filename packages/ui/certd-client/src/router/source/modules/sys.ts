@@ -112,7 +112,7 @@ export const sysResources = [
       },
       {
         title: "certd.sysResources.headerMenus",
-        name: "HeaderMenus",
+        name: "SettingsHeaderMenus",
         path: "/sys/settings/header-menus",
         component: "/sys/settings/header-menus/index.vue",
         meta: {
@@ -128,7 +128,7 @@ export const sysResources = [
       },
       {
         title: "certd.sysResources.sysAccess",
-        name: "SysAccess",
+        name: "SysAccessManager",
         path: "/sys/access",
         component: "/sys/access/index.vue",
         meta: {
@@ -311,7 +311,7 @@ export const sysResources = [
               },
               icon: "ion:bag-check",
               permission: "sys:settings:edit",
-              keepAlive: true,
+              keepAlive: false,
               auth: true,
             },
           },

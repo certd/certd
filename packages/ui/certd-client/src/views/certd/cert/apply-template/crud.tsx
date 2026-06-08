@@ -109,7 +109,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
       },
       rowHandle: {
         fixed: "right",
-        width: 120,
+        width: 200,
         buttons: {
           edit: {
             click: ({ row }) => openForm(row),

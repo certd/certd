@@ -82,11 +82,24 @@ export class HttpError extends Error {
 export const HttpCommonError = HttpError;
 
 let defaultAgents = createAgent();
+const directAgents = createAgent();
+let defaultProxyOptions: GlobalProxyOptions = {};
 let defaultHeaders: Record<string, string> = {};
 
-export function setGlobalProxy(opts: { httpProxy?: string; httpsProxy?: string }) {
+export type GlobalProxyOptions = {
+  httpProxy?: string;
+  httpsProxy?: string;
+  noProxy?: string;
+};
+
+export function setGlobalProxy(opts: GlobalProxyOptions) {
   logger.info("setGlobalProxy:", opts);
-  defaultAgents = createAgent(opts);
+  defaultProxyOptions = { ...opts };
+  defaultAgents = createAgent({
+    httpProxy: opts.httpProxy,
+    httpsProxy: opts.httpsProxy,
+  });
+  setProxyEnvironment(opts);
 }
 
 export function getGlobalAgents() {
@@ -137,21 +150,25 @@ export function createAxiosService({ logger }: { logger: ILogger }) {
       if (config.timeout == null) {
         config.timeout = 15000;
       }
-      let agents = defaultAgents;
-      if (config.skipSslVerify || config.httpProxy) {
-        let rejectUnauthorized = true;
+      const bypassProxy = shouldBypassProxy(config, defaultProxyOptions.noProxy);
+      const useCustomProxy = !!config.httpProxy && !bypassProxy;
+      let agents = bypassProxy ? directAgents : defaultAgents;
+      if (bypassProxy) {
+        logger.info("命中no_proxy配置，跳过代理:", config.url);
+      }
+      if (config.skipSslVerify || useCustomProxy) {
+        const agentOptions: any = {};
         if (config.skipSslVerify) {
           logger.info("忽略接口请求的SSL校验");
-          rejectUnauthorized = false;
+          agentOptions.rejectUnauthorized = false;
         }
-        const proxy: any = {};
-        if (config.httpProxy) {
+        if (useCustomProxy) {
           logger.info("使用自定义http代理:", config.httpProxy);
-          proxy.httpProxy = config.httpProxy;
-          proxy.httpsProxy = config.httpProxy;
+          agentOptions.httpProxy = config.httpProxy;
+          agentOptions.httpsProxy = config.httpProxy;
         }
 
-        agents = createAgent({ rejectUnauthorized, ...proxy } as any);
+        agents = createAgent(agentOptions);
       }
 
       delete config.skipSslVerify;
@@ -354,7 +371,7 @@ export type CreateAgentOptions = {
   httpsProxy?: string;
 } & nodeHttp.AgentOptions;
 export function createAgent(opts: CreateAgentOptions = {}) {
-  opts = merge(
+  const { httpProxy, httpsProxy, ...agentOptions } = merge(
     {
       autoSelectFamily: true,
       autoSelectFamilyAttemptTimeout: 1000,
@@ -364,34 +381,163 @@ export function createAgent(opts: CreateAgentOptions = {}) {
   );
 
   let httpAgent, httpsAgent;
-  const httpProxy = opts.httpProxy;
   if (httpProxy) {
-    process.env.HTTP_PROXY = httpProxy;
-    process.env.http_proxy = httpProxy;
     logger.info("use httpProxy:", httpProxy);
-    httpAgent = new HttpProxyAgent(httpProxy, opts as any);
-    merge(httpAgent.options, opts);
+    httpAgent = new HttpProxyAgent(httpProxy, agentOptions as any);
+    merge(httpAgent.options, agentOptions);
   } else {
-    process.env.HTTP_PROXY = "";
-    process.env.http_proxy = "";
-    httpAgent = new nodeHttp.Agent(opts);
+    httpAgent = new nodeHttp.Agent(agentOptions);
   }
-  const httpsProxy = opts.httpsProxy;
   if (httpsProxy) {
-    process.env.HTTPS_PROXY = httpsProxy;
-    process.env.https_proxy = httpsProxy;
     logger.info("use httpsProxy:", httpsProxy);
-    httpsAgent = new HttpsProxyAgent(httpsProxy, opts as any);
-    merge(httpsAgent.options, opts);
+    httpsAgent = new HttpsProxyAgent(httpsProxy, agentOptions as any);
+    merge(httpsAgent.options, agentOptions);
   } else {
-    process.env.HTTPS_PROXY = "";
-    process.env.https_proxy = "";
-    httpsAgent = new https.Agent(opts);
+    httpsAgent = new https.Agent(agentOptions);
   }
   return {
     httpAgent,
     httpsAgent,
   };
+}
+
+function setProxyEnvironment(opts: GlobalProxyOptions = {}) {
+  setEnvValue("HTTP_PROXY", opts.httpProxy);
+  setEnvValue("http_proxy", opts.httpProxy);
+  setEnvValue("HTTPS_PROXY", opts.httpsProxy);
+  setEnvValue("https_proxy", opts.httpsProxy);
+  const noProxy = normalizeNoProxyText(opts.noProxy);
+  setEnvValue("NO_PROXY", noProxy);
+  setEnvValue("no_proxy", noProxy);
+}
+
+function setEnvValue(key: string, value?: string) {
+  process.env[key] = value || "";
+}
+
+function shouldBypassProxy(config: AxiosRequestConfig, noProxy?: string) {
+  if (!noProxy) {
+    return false;
+  }
+  const target = getRequestTarget(config);
+  if (!target) {
+    return false;
+  }
+  return splitNoProxyRules(noProxy).some(item => isNoProxyMatched(item, target));
+}
+
+function getRequestTarget(config: AxiosRequestConfig) {
+  try {
+    const baseURL = config.baseURL || undefined;
+    const url = new URL(config.url || "", baseURL);
+    return {
+      hostname: normalizeHost(url.hostname),
+      port: url.port,
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+export function isNoProxyMatched(rule: string, target: { hostname: string; port: string }) {
+  if (rule === "*") {
+    return true;
+  }
+
+  const normalizedRule = normalizeNoProxyRule(rule);
+  if (!normalizedRule.host) {
+    return false;
+  }
+  if (normalizedRule.port && normalizedRule.port !== target.port) {
+    return false;
+  }
+
+  const host = normalizeHost(target.hostname);
+  if (normalizedRule.host.includes("*")) {
+    return wildcardHostMatched(normalizedRule.host, host);
+  }
+  if (normalizedRule.host.startsWith("*.")) {
+    const suffix = normalizedRule.host.substring(1);
+    return host.endsWith(suffix);
+  }
+  if (normalizedRule.host.startsWith(".")) {
+    return host === normalizedRule.host.substring(1) || host.endsWith(normalizedRule.host);
+  }
+  return host === normalizedRule.host || host.endsWith(`.${normalizedRule.host}`);
+}
+
+function normalizeNoProxyRule(rule: string) {
+  let value = rule.trim().toLowerCase();
+  if (value.includes("://")) {
+    try {
+      const url = new URL(value);
+      return {
+        host: normalizeHost(url.hostname),
+        port: url.port,
+      };
+    } catch (e) {
+      return {
+        host: "",
+        port: "",
+      };
+    }
+  }
+
+  let port = "";
+  if (value.startsWith("[")) {
+    const closeIndex = value.indexOf("]");
+    const host = value.substring(1, closeIndex);
+    const rest = value.substring(closeIndex + 1);
+    if (rest.startsWith(":")) {
+      port = rest.substring(1);
+    }
+    return {
+      host: normalizeHost(host),
+      port,
+    };
+  }
+
+  const colonCount = (value.match(/:/g) || []).length;
+  const portIndex = value.lastIndexOf(":");
+  if (colonCount === 1 && portIndex > -1) {
+    port = value.substring(portIndex + 1);
+    value = value.substring(0, portIndex);
+  }
+  return {
+    host: normalizeHost(value),
+    port,
+  };
+}
+
+function normalizeHost(host: string) {
+  let value = host.trim().toLowerCase();
+  if (value.startsWith("[") && value.endsWith("]")) {
+    value = value.substring(1, value.length - 1);
+  }
+  return value;
+}
+
+function wildcardHostMatched(rule: string, host: string) {
+  const pattern = rule.split("*").map(escapeRegExp).join(".*");
+  return new RegExp(`^${pattern}$`).test(host);
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeNoProxyText(noProxy?: string) {
+  return splitNoProxyRules(noProxy).join(",");
+}
+
+function splitNoProxyRules(noProxy?: string) {
+  if (!noProxy) {
+    return [];
+  }
+  return noProxy
+    .split(/[,\s]+/)
+    .map(item => item.trim())
+    .filter(Boolean);
 }
 
 export async function download(req: { http: HttpClient; config: HttpRequestConfig; savePath: string; logger: ILogger }) {

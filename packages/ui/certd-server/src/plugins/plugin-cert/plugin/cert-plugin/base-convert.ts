@@ -102,6 +102,7 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
 
     this._result.pipelineVars.certEffectiveTime = dayjs(certReader.detail.notBefore).valueOf();
     this._result.pipelineVars.certExpiresTime = dayjs(certReader.detail.notAfter).valueOf();
+    this._result.pipelineVars.certDomains = certReader.getAllDomains();
     if (!this._result.pipelinePrivateVars) {
       this._result.pipelinePrivateVars = {};
     }

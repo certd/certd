@@ -25,7 +25,7 @@ version: 1.0.0
 ## 实现流程
 
 1. 先在 `packages/ui/certd-client/src/views` 下找 1-2 个相近 Fast Crud 页面，沿用它们的导入、布局、命名和权限写法。
-2. 在 `index.vue` 中使用 `fs-crud ref="crudRef" v-bind="crudBinding"`，并在 `onMounted` / `onActivated` 时调用 `crudExpose.doRefresh()`。
+2. 在 `index.vue` 中使用 `fs-crud ref="crudRef" v-bind="crudBinding"`，并在 `onMounted` 或 `onActivated` 时调用 `crudExpose.doRefresh()`；两个生命周期同时存在时只保留一个刷新入口，避免首次进入页面请求两次。
 3. 在 `crud.tsx` 中配置 `request.pageRequest`、`columns`、`search`、`form`、`rowHandle`、`actionbar`、`toolbar` 等，接口分页参数和返回值按现有页面适配。
 4. 操作按钮优先放在 Fast Crud 的 `rowHandle.buttons` 或 `actionbar.buttons` 中；审核、保存设置、批量操作等复杂交互可通过 `context` 调用 `index.vue` 中的方法。
 5. 金额、状态、时间、枚举等字段优先复用项目已有组件、字典和格式化工具；避免在模板里重复堆格式化逻辑。
@@ -76,6 +76,84 @@ container:{}, //容器配置 ，对应fs-container
 - 独立列表页通常可直接让 `fs-page` / 页面内容区撑满；如果表格嵌在 tabs、详情页、上下分区或弹窗里，要从页面根容器到 `fs-crud` 建立完整的 flex 高度链路：父容器 `display: flex; flex-direction: column; min-height: 0`，中间内容区和 tab pane 使用 `flex: 1; min-height: 0`，`fs-crud` 本身也使用 `flex: 1; min-height: 0`。
 - 有固定操作栏、统计区、说明区时，这些区域应 `flex: none`，把剩余空间交给表格区域。
 - 修改嵌入式 Fast Crud 页面后，要检查空数据、少量数据和多页数据时表格高度、分页器和空状态是否仍在预期区域内。
+
+## 列表导出
+
+- 列表需要导出时，优先使用 Fast Crud 工具栏导出能力，不要另写一套导出按钮或后端接口，除非数据必须跨权限、跨分页或异步生成文件。
+- 导出当前搜索条件下的数据时，在 `toolbar.export` 中设置 `dataFrom: "search"`，并显式打开导出按钮。
+- 导出列必须输出 Excel 可读的纯文本或数字；不要直接导出对象、数组、VNode、进度条组件、开关组件、时间戳毫秒值等。
+- 有隐藏但业务上需要导出的字段时，把字段定义为普通列并设置 `column.show: false`，再在 `columnFilter` 中对该字段返回 `true`。例如证书域名这类只用于导出的辅助列。
+- 嵌套字段可以使用 `lastVars.certDomains` 这类 key；导出格式化时用安全取值函数读取嵌套值。
+- `dataFormatter` 中统一格式化特殊字段：时间字段转 `YYYY-MM-DD HH:mm:ss`，日期类有效期转业务文案或 `YYYY-MM-DD`，枚举/开关转字典 label，数组转逗号分隔字符串，对象转明确的业务摘要。
+
+```typescript
+import { ColumnProps, DataFormatterContext } from "@fast-crud/fast-crud";
+import dayjs from "dayjs";
+
+function getRecordValue(row: any, key: string) {
+  return key.split(".").reduce((target, item) => target?.[item], row);
+}
+
+function formatListValue(value: any) {
+  if (Array.isArray(value)) {
+    return value.join(",");
+  }
+  return value ?? "";
+}
+
+function exportColumnFilter(col: ColumnProps) {
+  if (!col.key || ["_index", "_selection", "rowHandle"].includes(col.key)) {
+    return false;
+  }
+  if (col.key === "lastVars.certDomains") {
+    return true;
+  }
+  return col.show !== false;
+}
+
+function exportDataFormatter(opts: DataFormatterContext) {
+  const { row, originalRow, col, exportCol } = opts;
+  const key = col.key;
+  const value = getRecordValue(originalRow, key);
+
+  if (key === "lastVars.certDomains") {
+    row[key] = formatListValue(value);
+  } else if (key.includes("Time") && value) {
+    row[key] = dayjs(value).format("YYYY-MM-DD HH:mm:ss");
+  }
+
+  if (col.width) {
+    exportCol.width = col.width / 10;
+  }
+}
+
+return {
+  crudOptions: {
+    toolbar: {
+      buttons: {
+        export: { show: true },
+      },
+      export: {
+        dataFrom: "search",
+        columnFilter: exportColumnFilter,
+        dataFormatter: exportDataFormatter,
+      },
+    },
+    columns: {
+      "lastVars.certDomains": {
+        title: "证书域名",
+        type: "text",
+        column: {
+          show: false,
+          width: 260,
+          ellipsis: true,
+        },
+        form: { show: false },
+      },
+    },
+  },
+};
+```
 
 ## 内置 CRUD 按钮
 

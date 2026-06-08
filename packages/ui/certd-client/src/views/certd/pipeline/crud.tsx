@@ -1,4 +1,4 @@
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
+import { AddReq, ColumnProps, CreateCrudOptionsProps, CreateCrudOptionsRet, DataFormatterContext, DelReq, dict, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
 import { Modal, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { computed, ref } from "vue";
@@ -75,6 +75,17 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
   const projectStore = useProjectStore();
   const { myProjectDict } = useDicts();
   const DEFAULT_WILL_EXPIRE_DAYS = settingStore.sysPublic.defaultWillExpireDays || settingStore.sysPublic.defaultCertRenewDays || 15;
+  const pipelineTypeDictData = [
+    { value: "cert", label: t("certd.types.certApply") },
+    { value: "cert_upload", label: t("certd.types.certUpload") },
+    { value: "custom", label: t("certd.types.custom") },
+    { value: "template", label: t("certd.types.template") },
+    { value: "cert_auto", label: t("certd.types.certApply") },
+  ];
+  const disabledDictData = [
+    { value: false, label: t("certd.fields.enabledLabel") },
+    { value: true, label: t("certd.fields.disabledLabel") },
+  ];
 
   function onDialogOpen(opt: any) {
     const searchForm = crudExpose.getSearchValidatedFormData();
@@ -82,6 +93,79 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
       groupId: searchForm.groupId,
       ...opt.initialForm,
     };
+  }
+
+  function getRecordValue(row: any, key: string) {
+    return key.split(".").reduce((target, item) => target?.[item], row);
+  }
+
+  function findDictLabel(data: any[], value: any) {
+    return data.find(item => item.value === value)?.label ?? value;
+  }
+
+  function formatValidTime(value: any) {
+    if (!value || value <= 0) {
+      return t("certd.pi.permanentValid");
+    }
+    if (value < Date.now()) {
+      return t("certd.hasExpired");
+    }
+    return dayjs(value).format("YYYY-MM-DD");
+  }
+
+  function formatRemainingValidity(lastVars: any) {
+    const expiresTime = lastVars?.certExpiresTime;
+    if (!expiresTime) {
+      return "-";
+    }
+    const leftDays = dayjs(expiresTime).diff(dayjs(), "day");
+    if (leftDays < 0) {
+      return t("certd.hasExpired");
+    }
+    return `${leftDays}${t("certd.days")}`;
+  }
+
+  function formatListValue(value: any) {
+    if (Array.isArray(value)) {
+      return value.join(",");
+    }
+    return value ?? "";
+  }
+
+  function exportColumnFilter(col: ColumnProps) {
+    if (!col.key || ["_index", "_selection", "rowHandle"].includes(col.key)) {
+      return false;
+    }
+    if (col.key === "lastVars.certDomains") {
+      return true;
+    }
+    return col.show !== false;
+  }
+
+  function exportDataFormatter(opts: DataFormatterContext) {
+    const { row, originalRow, col, exportCol } = opts;
+    const key = col.key;
+    const value = getRecordValue(originalRow, key);
+
+    if (key === "validTime") {
+      row[key] = formatValidTime(value);
+    } else if (key === "lastVars") {
+      row[key] = formatRemainingValidity(value);
+    } else if (key === "lastVars.certDomains") {
+      row[key] = formatListValue(value);
+    } else if (key === "status") {
+      row[key] = statusUtil.get(value)?.label ?? value;
+    } else if (key === "disabled") {
+      row[key] = findDictLabel(disabledDictData, value);
+    } else if (key === "type") {
+      row[key] = findDictLabel(pipelineTypeDictData, value);
+    } else if (key.includes("Time") && value) {
+      row[key] = dayjs(value).format("YYYY-MM-DD HH:mm:ss");
+    }
+
+    if (col.width) {
+      exportCol.width = col.width / 10;
+    }
   }
 
   return {
@@ -176,6 +260,18 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
         remove: {
           confirmTitle: t("certd.table.confirmDeleteTitle"),
           confirmMessage: t("certd.table.confirmDeleteMessage"),
+        },
+      },
+      toolbar: {
+        buttons: {
+          export: {
+            show: true,
+          },
+        },
+        export: {
+          dataFrom: "search",
+          columnFilter: exportColumnFilter,
+          dataFormatter: exportDataFormatter,
         },
       },
       tabs: {
@@ -419,6 +515,19 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             width: 150,
           },
         },
+        "lastVars.certDomains": {
+          title: t("certd.fields.certDomains"),
+          type: "text",
+          form: {
+            show: false,
+          },
+          column: {
+            width: 260,
+            show: false,
+            ellipsis: true,
+            showTitle: true,
+          },
+        },
         "lastVars.certEffectiveTime": {
           title: t("certd.fields.effectiveTime"),
           search: {
@@ -503,10 +612,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             },
           },
           dict: dict({
-            data: [
-              { value: false, label: t("certd.fields.enabledLabel") },
-              { value: true, label: t("certd.fields.disabledLabel") },
-            ],
+            data: disabledDictData,
           }),
           form: {
             value: false,
@@ -563,13 +669,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             col: { span: 2 },
           },
           dict: dict({
-            data: [
-              { value: "cert", label: t("certd.types.certApply") },
-              { value: "cert_upload", label: t("certd.types.certUpload") },
-              { value: "custom", label: t("certd.types.custom") },
-              { value: "template", label: t("certd.types.template") },
-              { value: "cert_auto", label: t("certd.types.certApply") },
-            ],
+            data: pipelineTypeDictData,
           }),
           form: {
             show: false,
@@ -650,7 +750,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             align: "center",
             cellRender({ value }) {
               if (!value || value <= 0) {
-                return "-";
+                return t("certd.pi.permanentValid");
               }
               if (value < Date.now()) {
                 return t("certd.hasExpired");

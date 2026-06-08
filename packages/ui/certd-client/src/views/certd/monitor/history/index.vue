@@ -22,8 +22,8 @@
 
 <script lang="ts" setup>
 import { useFs } from "@fast-crud/fast-crud";
-import { onActivated, onMounted } from "vue";
 import createCrudOptions from "./crud";
+import { useMounted } from "/@/use/use-mounted";
 import { useI18n } from "/src/locales";
 const { t } = useI18n();
 defineOptions({
@@ -37,12 +37,5 @@ const context: any = {
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
 const handleBatchDelete = context.handleBatchDelete;
-
-// 页面打开后获取列表数据
-onMounted(() => {
-  crudExpose.doRefresh();
-});
-onActivated(() => {
-  crudExpose.doRefresh();
-});
+useMounted(() => crudExpose.doRefresh());
 </script>

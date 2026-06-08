@@ -15,7 +15,7 @@
 
 <script lang="ts" setup>
 import { useFs } from "@fast-crud/fast-crud";
-import { onActivated, onMounted } from "vue";
+import { useMounted } from "/@/use/use-mounted";
 import createCrudOptions from "./crud";
 
 defineOptions({
@@ -25,11 +25,5 @@ defineOptions({
 const context: any = {};
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 const handleBatchDelete = context.handleBatchDelete;
-
-onMounted(() => {
-  crudExpose.doRefresh();
-});
-onActivated(() => {
-  crudExpose.doRefresh();
-});
+useMounted(() => crudExpose.doRefresh());
 </script>

@@ -16,13 +16,13 @@ import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 
 defineOptions({
-  name: "ProductActivationCodeManager",
+  name: "SysProductActivationCode",
 });
 
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
 
 onMounted(() => {
-  crudExpose.doRefresh();
+  // crudExpose.doRefresh();
 });
 onActivated(async () => {
   await crudExpose.doRefresh();

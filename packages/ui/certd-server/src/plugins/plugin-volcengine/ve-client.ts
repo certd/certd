@@ -1,4 +1,4 @@
-import { VolcengineAccess } from "./access.js";
+﻿import { VolcengineAccess } from "./access.js";
 import { HttpClient, ILogger } from "@certd/basic";
 
 export type VolcengineOpts = {

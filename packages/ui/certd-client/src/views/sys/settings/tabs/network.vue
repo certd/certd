@@ -14,6 +14,11 @@
         <div class="helper">{{ t("certd.httpsProxyHelper") }}</div>
       </a-form-item>
 
+      <a-form-item :label="t('certd.noProxy')" :name="['private', 'noProxy']">
+        <a-textarea v-model:value="formState.private.noProxy" :placeholder="t('certd.noProxyPlaceholder')" rows="3" />
+        <div class="helper">{{ t("certd.noProxyHelper") }}</div>
+      </a-form-item>
+
       <a-form-item :label="t('certd.sys.setting.environmentVars')" :name="['private', 'environmentVars']">
         <a-textarea v-model:value="formState.private.environmentVars" :placeholder="environmentVarsExample" rows="4" />
         <div class="helper">{{ t("certd.sys.setting.environmentVarsHelper") }}</div>

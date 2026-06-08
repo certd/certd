@@ -41,6 +41,7 @@ export default {
   pi: {
     validTime: "流水线有效期",
     validTimeHelper: "不填则为永久有效",
+    permanentValid: "永久有效",
   },
   types: {
     certApply: "证书申请",

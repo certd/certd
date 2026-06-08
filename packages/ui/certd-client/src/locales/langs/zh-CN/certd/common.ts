@@ -86,6 +86,7 @@ export default {
     pipelineContent: "流水线内容",
     scheduledTaskCount: "定时任务数",
     deployTaskCount: "部署任务数",
+    certDomains: "证书域名",
     remainingValidity: "到期剩余",
     effectiveTime: "生效时间",
     expiryTime: "过期时间",

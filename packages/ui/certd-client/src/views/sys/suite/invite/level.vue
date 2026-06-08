@@ -46,12 +46,13 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onActivated, onMounted } from "vue";
-import { Modal, notification } from "ant-design-vue";
 import { useFs } from "@fast-crud/fast-crud";
-import createCrudOptions from "./crud-level";
+import { Modal, notification } from "ant-design-vue";
+import { computed } from "vue";
 import * as api from "./api";
+import createCrudOptions from "./crud-level";
 import { util } from "/@/utils";
+import { useMounted } from "/@/use/use-mounted";
 
 defineOptions({ name: "SysInviteLevel" });
 
@@ -92,13 +93,7 @@ function confirmRemove(opts: any) {
     },
   });
 }
-
-onMounted(() => {
-  crudExpose.doRefresh();
-});
-onActivated(() => {
-  crudExpose.doRefresh();
-});
+useMounted(() => crudExpose.doRefresh());
 </script>
 
 <style lang="less">

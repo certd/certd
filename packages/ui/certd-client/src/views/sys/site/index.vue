@@ -123,4 +123,12 @@ const loginLogoCropperOptions = ref({
   border-radius: 0 !important;
   margin-top: 0 !important;
 }
+
+.page-sys-site {
+  .sys-settings-form {
+    width: 900px;
+    max-width: 100%;
+    padding: 20px;
+  }
+}
 </style>

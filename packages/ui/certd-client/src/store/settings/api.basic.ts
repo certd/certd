@@ -105,6 +105,7 @@ export type InviteSetting = {
 export type SysPrivateSetting = {
   httpProxy?: string;
   httpsProxy?: string;
+  noProxy?: string;
   commonHeaders?: string;
   reverseProxies?: any;
   dnsResultOrder?: string;

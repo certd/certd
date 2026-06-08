@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.41.1](https://github.com/certd/certd/compare/v1.41.0...v1.41.1) (2026-06-05)
+
+### Performance Improvements
+
+* 流水线、监控站点支持导出 ([99fd308](https://github.com/certd/certd/commit/99fd3083f259cdb96fd656f04858dd708d1251c7))
+* 优化列表页面请求两次的问题 ([5546af5](https://github.com/certd/certd/commit/5546af518e92c765513787ccaf8e856be789bcf9))
+* 优化邀请注册流程 ([7a71e45](https://github.com/certd/certd/commit/7a71e45799d782d0691606fb42b4236f1d3009b0))
+* **settings:** 新增NO_PROXY代理排除配置 ([c0df8be](https://github.com/certd/certd/commit/c0df8be83237e323c2c9a5bd02507430a86a00cc))
+
 # [1.41.0](https://github.com/certd/certd/compare/v1.40.5...v1.41.0) (2026-06-04)
 
 ### Bug Fixes
