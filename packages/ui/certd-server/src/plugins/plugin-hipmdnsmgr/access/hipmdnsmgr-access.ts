@@ -47,7 +47,53 @@ export class HipmDnsmgrAccess extends BaseAccess {
   }
 
   /**
-   * 获取域名列表
+   * 获取域名 ID（双层查询策略）
+   * 方案1: 使用 keyword 参数直接查询（高效）
+   * 方案2: 列表匹配作为冗余（兼容旧版本 API）
+   */
+  async getDomainId(domainName: string): Promise<string> {
+    this.ctx.logger.info(`[HiPM DNSMgr] 尝试通过keyword查询域名: ${domainName}`);
+    
+    // 方案1: 使用 keyword 参数直接查询
+    try {
+      const resp = await this.doRequest({
+        method: 'GET',
+        path: '/domains',
+        params: {
+          page: 1,
+          pageSize: 1,
+          keyword: domainName,
+        },
+      });
+
+      // 检查是否找到精确匹配的域名
+      if (resp && Array.isArray(resp) && resp.length > 0) {
+        const domain = resp.find((item: any) => item.name === domainName);
+        if (domain) {
+          this.ctx.logger.info(`[HiPM DNSMgr] 通过keyword查询成功: domain=${domainName}, id=${domain.id}`);
+          return String(domain.id);
+        }
+      }
+    } catch (error: any) {
+      this.ctx.logger.warn(`[HiPM DNSMgr] keyword查询失败，尝试列表匹配: ${error.message}`);
+    }
+
+    // 方案2: 如果 keyword 查询未找到，使用列表匹配作为冗余
+    this.ctx.logger.info(`[HiPM DNSMgr] keyword查询未找到，尝试列表匹配: ${domainName}`);
+    
+    const domainList = await this.getDomainList();
+    const domainInfo = domainList.find((item: any) => item.domain === domainName);
+
+    if (!domainInfo) {
+      throw new Error(`[HiPM DNSMgr] 未找到域名：${domainName}`);
+    }
+
+    this.ctx.logger.info(`[HiPM DNSMgr] 通过列表匹配成功: domain=${domainName}, id=${domainInfo.id}`);
+    return String(domainInfo.id);
+  }
+
+  /**
+   * 获取域名列表（保留用于向后兼容）
    */
   async getDomainList() {
     this.ctx.logger.info(`[HiPM DNSMgr] 获取域名列表`);
