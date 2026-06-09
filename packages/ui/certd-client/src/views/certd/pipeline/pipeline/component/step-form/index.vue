@@ -172,9 +172,9 @@ function useStepForm() {
 
   const stepTypeSelected = (item: any) => {
     if (item.needPlus && !settingStore.isPlus) {
-      message.warn("此插件需要开通专业版才能使用");
+      message.warn("此插件需要开通Certd专业版才能使用");
       mitter.emit("openVipModal");
-      throw new Error("此插件需要开通专业版才能使用");
+      throw new Error("此插件需要开通Certd专业版才能使用");
     }
     currentStep.value.type = item.name;
     currentStep.value.title = item.title;

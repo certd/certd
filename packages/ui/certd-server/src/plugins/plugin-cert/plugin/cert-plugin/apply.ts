@@ -160,9 +160,13 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         onSelectedChange: ctx.compute(({form})=>{
           return ($event)=>{
            form.dnsProviderAccessType = $event.accessType
-           form.dnsProviderAccess = null
           }
-        })
+        }),
+        onChange: ctx.compute(({form})=>{
+          return ($event)=>{
+            form.dnsProviderAccess = null
+          }
+        }),
       },
     }
     `,
