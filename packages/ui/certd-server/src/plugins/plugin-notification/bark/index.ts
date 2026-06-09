@@ -13,31 +13,31 @@
  * }'
  */
 
-import { BaseNotification, IsNotification, NotificationBody, NotificationInput } from '@certd/pipeline';
+import { BaseNotification, IsNotification, NotificationBody, NotificationInput } from "@certd/pipeline";
 
 @IsNotification({
-  name: 'bark',
-  title: 'Bark 通知',
-  desc: 'Bark 推送通知插件',
+  name: "bark",
+  title: "Bark 通知",
+  desc: "Bark 推送通知插件",
   needPlus: true,
 })
 export class BarkNotification extends BaseNotification {
   @NotificationInput({
-    title: '服务地址',
+    title: "服务地址",
     component: {
-      placeholder: 'https://api.day.app/your_key',
+      placeholder: "https://api.day.app/your_key",
     },
     required: true,
-    helper: '你的bark服务地址+key',
+    helper: "你的bark服务地址+key",
   })
-  webhook = '';
+  webhook = "";
 
   @NotificationInput({
-    title: '忽略证书校验',
+    title: "忽略证书校验",
     value: false,
     component: {
-      name: 'a-switch',
-      vModel: 'checked',
+      name: "a-switch",
+      vModel: "checked",
     },
     required: false,
   })
@@ -45,7 +45,7 @@ export class BarkNotification extends BaseNotification {
 
   async send(body: NotificationBody) {
     if (!this.webhook) {
-      throw new Error('服务器地址不能为空');
+      throw new Error("服务器地址不能为空");
     }
 
     const payload = {
@@ -55,9 +55,9 @@ export class BarkNotification extends BaseNotification {
 
     await this.http.request({
       url: `${this.webhook}`,
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
       },
       data: payload,
       skipSslVerify: this.skipSslVerify,

@@ -8,7 +8,7 @@ import { FlexCDNClient } from "./client.js";
   name: "flexcdn",
   title: "FlexCDN授权",
   desc: "",
-  icon: "svg:icon-lucky"
+  icon: "svg:icon-lucky",
 })
 export class FlexCDNAccess extends BaseAccess {
   @AccessInput({
@@ -16,9 +16,9 @@ export class FlexCDNAccess extends BaseAccess {
     component: {
       placeholder: "http://xxxxxxx:8080",
       name: "a-input",
-      vModel: "value"
+      vModel: "value",
     },
-    required: true
+    required: true,
   })
   endpoint!: string;
 
@@ -31,15 +31,15 @@ export class FlexCDNAccess extends BaseAccess {
       options: [
         {
           value: "user",
-          label: "普通用户"
+          label: "普通用户",
         },
         {
           value: "admin",
-          label: "管理员"
-        }
-      ]
+          label: "管理员",
+        },
+      ],
     },
-    required: true
+    required: true,
   })
   type!: string;
 
@@ -49,11 +49,11 @@ export class FlexCDNAccess extends BaseAccess {
       placeholder: "accessKeyId",
       component: {
         name: "a-input",
-        vModel: "value"
-      }
+        vModel: "value",
+      },
     },
     encrypt: false,
-    required: true
+    required: true,
   })
   accessKeyId!: string;
 
@@ -63,11 +63,11 @@ export class FlexCDNAccess extends BaseAccess {
       placeholder: "accessKey",
       component: {
         name: "a-input",
-        vModel: "value"
-      }
+        vModel: "value",
+      },
     },
     encrypt: true,
-    required: true
+    required: true,
   })
   accessKey!: string;
 
@@ -75,7 +75,7 @@ export class FlexCDNAccess extends BaseAccess {
     title: "忽略证书校验",
     component: {
       name: "a-switch",
-      vModel: "checked"
+      vModel: "checked",
     },
     encrypt: false,
     required: true,
@@ -87,9 +87,9 @@ export class FlexCDNAccess extends BaseAccess {
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "点击测试接口看是否正常"
+    helper: "点击测试接口看是否正常",
   })
   testRequest = true;
 
@@ -98,7 +98,7 @@ export class FlexCDNAccess extends BaseAccess {
     const client = new FlexCDNClient({
       logger: this.ctx.logger,
       http,
-      access: this
+      access: this,
     });
     const token = await client.getToken();
     if (token) {

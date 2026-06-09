@@ -12,9 +12,9 @@ import { VolcengineClient } from "../ve-client.js";
   desc: "部署至火山引擎视频点播",
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 export class VolcengineDeployToVOD extends AbstractTaskPlugin {
   @TaskInput({
@@ -22,27 +22,25 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames, "VolcengineUploadToCertCenter"]
+      from: [...CertApplyPluginNames, "VolcengineUploadToCertCenter"],
     },
-    required: true
+    required: true,
   })
   cert!: CertInfo | string;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
 
-
   @TaskInput({
     title: "Access授权",
     helper: "火山引擎AccessKeyId、AccessKeySecret",
     component: {
       name: "access-selector",
-      type: "volcengine"
+      type: "volcengine",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
-
 
   @TaskInput({
     title: "区域",
@@ -51,11 +49,11 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       name: "select",
       options: [
         { value: "cn-north-1", label: "华北1（北京）" },
-        { value: "ap-southeast-1", label: "东南亚1（新加坡）" }
-      ]
+        { value: "ap-southeast-1", label: "东南亚1（新加坡）" },
+      ],
     },
     default: "cn-north-1",
-    required: true
+    required: true,
   })
   regionId!: string;
 
@@ -65,8 +63,8 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       helper: "选择要部署证书的点播空间",
       action: VolcengineDeployToVOD.prototype.onGetSpaceList.name,
       watches: ["accessId", "regionId"],
-      single:true,
-      required: true
+      single: true,
+      required: true,
     })
   )
   spaceName!: string;
@@ -79,11 +77,11 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       vModel: "value",
       options: [
         { value: "play", label: "点播加速域名" },
-        { value: "image", label: "封面加速域名" }
-      ]
+        { value: "image", label: "封面加速域名" },
+      ],
     },
     value: "play",
-    required: true
+    required: true,
   })
   domainType!: string;
 
@@ -93,24 +91,22 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       helper: "选择要部署证书的域名\n需要先在域名管理页面进行证书中心访问授权（即点击去配置SSL证书）",
       action: VolcengineDeployToVOD.prototype.onGetDomainList.name,
       watches: ["certDomains", "accessId", "spaceName", "domainType"],
-      required: true
+      required: true,
     })
   )
   domainList!: string | string[];
 
-
-  async onInstance() {
-  }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     this.logger.info("开始部署证书到火山引擎VOD");
-    
+
     if (!this.spaceName) {
       throw new Error("SpaceName不能为空");
     }
-    
+
     const access = await this.getAccess<VolcengineAccess>(this.accessId);
-    let certId = await this.uploadOrGetCertId(access);
+    const certId = await this.uploadOrGetCertId(access);
 
     const service = await this.getVodService({ version: "2023-07-01", region: this.regionId });
     const domains = Array.isArray(this.domainList) ? this.domainList : [this.domainList];
@@ -127,18 +123,17 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
             HTTPS: {
               Switch: true,
               CertInfo: {
-                CertId: certId
-              }
-            }
-          }
-        }
+                CertId: certId,
+              },
+            },
+          },
+        },
       });
       this.logger.info(`部署域名${domain}证书成功`);
     }
 
     this.logger.info("部署完成");
   }
-
 
   private async uploadOrGetCertId(access: VolcengineAccess) {
     const certService = await this.getCertService(access);
@@ -148,7 +143,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       this.logger.info(`开始上传证书`);
       certId = await certService.ImportCertificate({
         certName: this.appendTimeSuffix("certd"),
-        cert: certInfo
+        cert: certInfo,
       });
       this.logger.info(`上传证书成功:${certId}`);
     } else {
@@ -161,20 +156,19 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
     const client = new VolcengineClient({
       logger: this.logger,
       access,
-      http: this.http
+      http: this.http,
     });
 
     return await client.getCertCenterService();
   }
 
-
-  private async getVodService(req?: { version?: string, region?: string }) {
+  private async getVodService(req?: { version?: string; region?: string }) {
     const access = await this.getAccess<VolcengineAccess>(this.accessId);
 
     const client = new VolcengineClient({
       logger: this.logger,
       access,
-      http: this.http
+      http: this.http,
     });
 
     return await client.getVodService(req);
@@ -188,7 +182,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
 
     const res = await service.request({
       action: "ListSpace",
-      body: {}
+      body: {},
     });
 
     const list = res.Result;
@@ -198,7 +192,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
     return list.map((item: any) => {
       return {
         value: item.SpaceName,
-        label: `${item.SpaceName} (${item.Region})`
+        label: `${item.SpaceName} (${item.Region})`,
       };
     });
   }
@@ -216,8 +210,8 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       action: "ListDomain",
       query: {
         SpaceName: this.spaceName,
-        DomainType: this.domainType
-      }
+        DomainType: this.domainType,
+      },
     });
 
     const instances = res.Result?.PlayInstanceInfo?.ByteInstances;
@@ -231,7 +225,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
           if (domain.Domain) {
             list.push({
               value: domain.Domain,
-              label: domain.Domain
+              label: domain.Domain,
             });
           }
         }

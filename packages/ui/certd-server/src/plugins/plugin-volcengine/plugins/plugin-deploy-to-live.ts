@@ -12,9 +12,9 @@ import { VolcengineClient } from "../ve-client.js";
   desc: "部署至火山引擎视频直播",
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 export class VolcengineDeployToLive extends AbstractTaskPlugin {
   @TaskInput({
@@ -22,27 +22,25 @@ export class VolcengineDeployToLive extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
+      from: [...CertApplyPluginNames],
     },
-    required: true
+    required: true,
   })
   cert!: CertInfo;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
 
-
   @TaskInput({
     title: "Access授权",
     helper: "火山引擎AccessKeyId、AccessKeySecret",
     component: {
       name: "access-selector",
-      type: "volcengine"
+      type: "volcengine",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
-
 
   @TaskInput(
     createRemoteSelectInputDefine({
@@ -50,20 +48,17 @@ export class VolcengineDeployToLive extends AbstractTaskPlugin {
       helper: "选择要部署证书的直播域名",
       action: VolcengineDeployToLive.prototype.onGetDomainList.name,
       watches: ["certDomains", "accessId"],
-      required: true
+      required: true,
     })
   )
   domainList!: string | string[];
 
-
-  async onInstance() {
-  }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     this.logger.info("开始部署证书到火山引擎视频直播");
     const service = await this.getLiveService();
-    let certId = await this.uploadCert(service);
-
+    const certId = await this.uploadCert(service);
 
     for (const item of this.domainList) {
       this.logger.info(`开始部署直播域名${item}证书`);
@@ -72,8 +67,8 @@ export class VolcengineDeployToLive extends AbstractTaskPlugin {
         body: {
           Domain: item,
           HTTPS: true,
-          ChainID: certId
-        }
+          ChainID: certId,
+        },
       });
       this.logger.info(`部署直播域名${item}证书成功`);
     }
@@ -81,17 +76,16 @@ export class VolcengineDeployToLive extends AbstractTaskPlugin {
     this.logger.info("部署完成");
   }
 
-
   private async uploadCert(liveService: any) {
     const res = await liveService.request({
       action: "CreateCert",
       body: {
         Rsa: {
           Pubkey: this.cert.crt,
-          Prikey: this.cert.key
+          Prikey: this.cert.key,
         },
-        UseWay: "https"
-      }
+        UseWay: "https",
+      },
     });
 
     const certId = res.Result.ChainID;
@@ -99,14 +93,13 @@ export class VolcengineDeployToLive extends AbstractTaskPlugin {
     return certId;
   }
 
-
   private async getLiveService() {
     const access = await this.getAccess<VolcengineAccess>(this.accessId);
 
     const client = new VolcengineClient({
       logger: this.logger,
       access,
-      http: this.http
+      http: this.http,
     });
 
     return await client.getLiveService();
@@ -121,9 +114,9 @@ export class VolcengineDeployToLive extends AbstractTaskPlugin {
     const res = await service.request({
       action: "ListDomainDetail",
       body: {
-        "PageNum": 1,
-        "PageSize": 100
-      }
+        PageNum: 1,
+        PageSize: 100,
+      },
     });
 
     const list = res.Result?.DomainList;
@@ -134,7 +127,7 @@ export class VolcengineDeployToLive extends AbstractTaskPlugin {
       return {
         value: item.Domain,
         label: `${item.Domain}<${item.Type}>`,
-        domain: item.Domain
+        domain: item.Domain,
       };
     });
     return this.ctx.utils.options.buildGroupOptions(options, this.certDomains);

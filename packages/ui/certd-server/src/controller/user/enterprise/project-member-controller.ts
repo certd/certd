@@ -1,4 +1,4 @@
-import { CrudController, SysSettingsService,Constants } from "@certd/lib-server";
+import { CrudController, SysSettingsService, Constants } from "@certd/lib-server";
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
 import { ProjectMemberEntity } from "../../../modules/sys/enterprise/entity/project-member.js";
 import { ProjectMemberService } from "../../../modules/sys/enterprise/service/project-member-service.js";
@@ -9,7 +9,7 @@ import { ApiTags } from "@midwayjs/swagger";
  */
 @Provide()
 @Controller("/api/enterprise/projectMember")
-@ApiTags(['enterprise-project-member'])
+@ApiTags(["enterprise-project-member"])
 export class ProjectMemberController extends CrudController<ProjectMemberEntity> {
   @Inject()
   service: ProjectMemberService;
@@ -26,7 +26,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询项目成员分页列表" })
   async page(@Body(ALL) body: any) {
-    const {projectId} = await this.getProjectUserIdRead();
+    const { projectId } = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     body.query.projectId = projectId;
     return await super.page(body);
@@ -34,7 +34,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
 
   @Post("/list", { description: Constants.per.authOnly, summary: "查询项目成员列表" })
   async list(@Body(ALL) body: any) {
-    const {projectId} = await this.getProjectUserIdRead();
+    const { projectId } = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     body.query.projectId = projectId;
     return super.list(body);
@@ -56,12 +56,12 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
     return super.add(bean);
   }
 
-  @Post("/update", { description: Constants.per.authOnly, summary: "更新项目成员" }) 
+  @Post("/update", { description: Constants.per.authOnly, summary: "更新项目成员" })
   async update(@Body(ALL) bean: any) {
     if (!bean.id) {
       throw new Error("id is required");
     }
-    const projectId = await this.service.getProjectId(bean.id)
+    const projectId = await this.service.getProjectId(bean.id);
     await this.projectService.checkAdminPermission({
       userId: this.getUserId(),
       projectId: projectId,
@@ -77,13 +77,13 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
 
   @Post("/info", { description: Constants.per.authOnly, summary: "查询项目成员详情" })
   async info(@Query("id") id: number) {
-     if (!id) {
+    if (!id) {
       throw new Error("id is required");
     }
-    const projectId = await this.service.getProjectId(id)
+    const projectId = await this.service.getProjectId(id);
     await this.projectService.checkReadPermission({
       userId: this.getUserId(),
-      projectId:projectId,
+      projectId: projectId,
     });
     return super.info(id);
   }
@@ -93,10 +93,10 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
     if (!id) {
       throw new Error("id is required");
     }
-    const projectId = await this.service.getProjectId(id)
+    const projectId = await this.service.getProjectId(id);
     await this.projectService.checkAdminPermission({
       userId: this.getUserId(),
-      projectId:projectId,
+      projectId: projectId,
     });
     return super.delete(id);
   }
@@ -107,14 +107,14 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
       if (!id) {
         throw new Error("id is required");
       }
-      const projectId = await this.service.getProjectId(id)
+      const projectId = await this.service.getProjectId(id);
       await this.projectService.checkAdminPermission({
         userId: this.getUserId(),
-        projectId:projectId,
+        projectId: projectId,
       });
       await this.service.delete(id as any);
     }
-   
+
     return this.ok({});
   }
 }

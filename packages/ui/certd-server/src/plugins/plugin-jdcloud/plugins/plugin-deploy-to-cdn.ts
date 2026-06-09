@@ -12,9 +12,9 @@ import { JDCloudAccess } from "../access.js";
   desc: "京东云内容分发网络",
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 export class JDCloudDeployToCDN extends AbstractTaskPlugin {
   @TaskInput({
@@ -22,27 +22,25 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames, "JDCloudUploadCert"]
+      from: [...CertApplyPluginNames, "JDCloudUploadCert"],
     },
-    required: true
+    required: true,
   })
   cert!: CertInfo | number;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
 
-
   @TaskInput({
     title: "Access授权",
     helper: "京东云AccessKeyId、AccessKeySecret",
     component: {
       name: "access-selector",
-      type: "jdcloud"
+      type: "jdcloud",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
-
 
   @TaskInput(
     createRemoteSelectInputDefine({
@@ -50,14 +48,12 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
       helper: "你在京东云上配置的CDN加速域名，比如:certd.docmirror.cn",
       action: JDCloudDeployToCDN.prototype.onGetDomainList.name,
       watches: ["certDomains", "accessId"],
-      required: true
+      required: true,
     })
   )
   domainName!: string | string[];
 
-
-  async onInstance() {
-  }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     this.logger.info("开始部署证书到京东云CDN");
@@ -71,16 +67,18 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
       this.logger.info(`开始上传证书`);
 
       const sslService = await this.getSslClient(access);
-      const res = await access.catchCall(() => sslService.uploadCert({
-        // certName	String	True		证书名称
-        // keyFile	String	True		私钥
-        // certFile	String	True		证书
-        // aliasName	String	False		证书别名
-        certName: certName,
-        keyFile: certInfo.key,
-        certFile: certInfo.crt,
-        aliasName: certName
-      }));
+      const res = await access.catchCall(() =>
+        sslService.uploadCert({
+          // certName	String	True		证书名称
+          // keyFile	String	True		私钥
+          // certFile	String	True		证书
+          // aliasName	String	False		证书别名
+          certName: certName,
+          keyFile: certInfo.key,
+          certFile: certInfo.crt,
+          aliasName: certName,
+        })
+      );
       certId = res.result.certId;
     }
 
@@ -107,7 +105,7 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
         certFrom: "ssl",
         sslCertId: certId, // 不用certId 方式，会报证书已存在错误，目前还没找到怎么查询重复证书
         syncToSsl: false,
-        certName: certName
+        certName: certName,
       });
       this.logger.info(`部署域名${domain}证书成功:${JSON.stringify(res)}`);
       await this.ctx.utils.sleep(2000);
@@ -116,15 +114,14 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
     this.logger.info("部署完成");
   }
 
-
   async getClient(access: JDCloudAccess) {
     const { JDCdnService } = await import("@certd/jdcloud");
     const service = new JDCdnService({
       credentials: {
         accessKeyId: access.accessKeyId,
-        secretAccessKey: access.secretAccessKey
+        secretAccessKey: access.secretAccessKey,
       },
-      regionId: "cn-north-1" //地域信息，某个api调用可以单独传参regionId，如果不传则会使用此配置中的regionId
+      regionId: "cn-north-1", //地域信息，某个api调用可以单独传参regionId，如果不传则会使用此配置中的regionId
     });
     return service;
   }
@@ -134,9 +131,9 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
     const service = new JDSslService({
       credentials: {
         accessKeyId: access.accessKeyId,
-        secretAccessKey: access.secretAccessKey
+        secretAccessKey: access.secretAccessKey,
       },
-      regionId: "cn-north-1" //地域信息，某个api调用可以单独传参regionId，如果不传则会使用此配置中的regionId
+      regionId: "cn-north-1", //地域信息，某个api调用可以单独传参regionId，如果不传则会使用此配置中的regionId
     });
     return service;
   }
@@ -152,10 +149,12 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
      * pageNumber	Integer	False	1	pageNumber,默认值1
      * pageSize
      */
-    const res = await access.catchCall(() => service.getDomainList({
-      pageNumber: 1,
-      pageSize: 50
-    }));
+    const res = await access.catchCall(() =>
+      service.getDomainList({
+        pageNumber: 1,
+        pageSize: 50,
+      })
+    );
     // @ts-ignore
     const list = res?.result?.domains;
     if (!list || list.length === 0) {
@@ -165,7 +164,7 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
       return {
         value: item.domain,
         label: item.domain,
-        domain: item.domain
+        domain: item.domain,
       };
     });
     return optionsUtils.buildGroupOptions(options, this.certDomains);

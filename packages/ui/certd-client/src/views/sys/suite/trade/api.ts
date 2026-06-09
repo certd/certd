@@ -26,11 +26,11 @@ export async function UpdateObj(obj: any) {
   });
 }
 
-export async function DelObj(id: any) {
+export async function CancelObj(id: any) {
   return await request({
-    url: apiPrefix + "/delete",
+    url: apiPrefix + "/cancel",
     method: "post",
-    params: { id },
+    data: { id },
   });
 }
 
@@ -47,14 +47,6 @@ export async function GetDetail(id: any) {
     url: apiPrefix + "/detail",
     method: "post",
     params: { id },
-  });
-}
-
-export async function DeleteBatch(ids: any[]) {
-  return await request({
-    url: apiPrefix + "/deleteByIds",
-    method: "post",
-    data: { ids },
   });
 }
 

@@ -1,9 +1,9 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { BaseService } from '@certd/lib-server';
-import { InjectEntityModel } from '@midwayjs/typeorm';
-import { Repository } from 'typeorm';
-import { PipelineGroupEntity } from '../entity/pipeline-group.js';
-import { merge } from 'lodash-es';
+import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { BaseService } from "@certd/lib-server";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { Repository } from "typeorm";
+import { PipelineGroupEntity } from "../entity/pipeline-group.js";
+import { merge } from "lodash-es";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })

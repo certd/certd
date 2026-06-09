@@ -56,7 +56,7 @@ export class FileService {
     return key;
   }
 
-  getFile(key: string, userId?: number) {
+  getFile(key: string, userId?: number, allowAnyPrivateUser = false) {
     if (!key) {
       throw new ParamException('参数错误');
     }
@@ -70,7 +70,7 @@ export class FileService {
     const keyArr = key.split('/');
     const permission = keyArr[1];
     const userIdMd5 = keyArr[2];
-    if (permission !== 'public') {
+    if (permission !== 'public' && !allowAnyPrivateUser) {
       //非公开文件需要验证用户
       const userIdStr = Buffer.from(Buffer.from(userIdMd5, 'hex').toString('base64')).toString();
       const userIdInt: number = parseInt(userIdStr, 10);

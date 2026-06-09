@@ -1,0 +1,29 @@
+<template>
+  <fs-page>
+    <template #header>
+      <div class="title flex items-center">用户流水线管理</div>
+    </template>
+    <fs-crud ref="crudRef" v-bind="crudBinding">
+      <template #pagination-left>
+        <a-tooltip title="批量删除">
+          <fs-button icon="DeleteOutlined" class="need-plus" @click="handleBatchDelete"></fs-button>
+        </a-tooltip>
+      </template>
+    </fs-crud>
+  </fs-page>
+</template>
+
+<script lang="ts" setup>
+import { useMounted } from "/@/use/use-mounted";
+import { useFs } from "@fast-crud/fast-crud";
+import createCrudOptions from "./crud";
+
+defineOptions({
+  name: "SysPipelineManager",
+});
+
+const context: any = {};
+const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
+const handleBatchDelete = context.handleBatchDelete;
+useMounted(() => crudExpose.doRefresh());
+</script>

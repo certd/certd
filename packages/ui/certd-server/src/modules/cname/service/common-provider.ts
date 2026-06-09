@@ -1,7 +1,7 @@
-import {CreateRecordOptions, DnsProviderContext, DomainRecord, IDnsProvider, RemoveRecordOptions} from '@certd/plugin-cert';
-import {PlusService} from '@certd/lib-server';
-import punycode from 'punycode.js'
-import { Pager, PageRes } from '@certd/pipeline';
+import { CreateRecordOptions, DnsProviderContext, DomainRecord, IDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { PlusService } from "@certd/lib-server";
+import punycode from "punycode.js";
+import { Pager, PageRes } from "@certd/pipeline";
 export type CommonCnameProvider = {
   id: number;
   domain: string;
@@ -10,8 +10,8 @@ export type CommonCnameProvider = {
 export const CommonProviders = [
   {
     id: -1,
-    domain: 'cname.certd.com.cn',
-    title: '公共CNAME服务',
+    domain: "cname.certd.com.cn",
+    title: "公共CNAME服务",
   },
 ];
 
@@ -25,7 +25,7 @@ export class CommonDnsProvider implements IDnsProvider {
     this.plusService = opts.plusService;
   }
   getDomainListPage(pager: Pager): Promise<PageRes<DomainRecord>> {
-    throw new Error('公共CNAME服务不支持获取域名列表');
+    throw new Error("公共CNAME服务不支持获取域名列表");
   }
 
   /**
@@ -44,24 +44,22 @@ export class CommonDnsProvider implements IDnsProvider {
     return punycode.decode(domain);
   }
 
-
   usePunyCode(): boolean {
-    return false
+    return false;
   }
 
-  async onInstance() {
-  }
+  async onInstance() {}
 
   async createRecord(options: CreateRecordOptions) {
     if (!this.config.domain.endsWith(options.domain)) {
-      throw new Error('cname服务域名不匹配');
+      throw new Error("cname服务域名不匹配");
     }
 
     await this.plusService.register();
 
     const res = await this.plusService.requestWithToken({
-      url: '/activation/certd/cname/recordCreate',
-      method: 'post',
+      url: "/activation/certd/cname/recordCreate",
+      method: "post",
       data: {
         subjectId: await this.plusService.getSubjectId(),
         domain: options.domain,
@@ -75,8 +73,8 @@ export class CommonDnsProvider implements IDnsProvider {
 
   async removeRecord(options: RemoveRecordOptions<any>) {
     const res = await this.plusService.requestWithToken({
-      url: '/activation/certd/cname/recordRemove',
-      method: 'post',
+      url: "/activation/certd/cname/recordRemove",
+      method: "post",
       data: {
         subjectId: await this.plusService.getSubjectId(),
         domain: options.recordReq.domain,

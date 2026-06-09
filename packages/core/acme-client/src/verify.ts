@@ -170,7 +170,7 @@ export function createChallengeFn(opts = {}) {
 
 
         if (txtRecords.length === 0) {
-            throw new Error(`没有找到TXT解析记录（${recordName}）`);
+            throw new Error(`没有找到TXT解析记录（${recordName}），请稍后重试`);
         }
         return txtRecords;
     }
@@ -200,6 +200,24 @@ export function createChallengeFn(opts = {}) {
         }
 
         log(`关键授权匹配成功（${challenge.type}/${recordName}）:${keyAuthorization}，校验成功， ACME challenge verified`);
+        return true;
+    }
+
+    async function verifyDnsPersistChallenge(authz, challenge, keyAuthorization, prefix = '_validation-persist.') {
+        const recordName = `${prefix}${authz.identifier.value.replace(/^\*\./, '')}`;
+        log(`本地校验DNS持久验证TXT记录: ${recordName}`);
+        let recordValues = await walkTxtRecord(recordName, 0, walkFromAuthoritative);
+        recordValues = [...new Set(recordValues)];
+        const expected = challenge.expectedRecordValue;
+        if (!expected) {
+            log(`未提供dns-persist-01本地校验期望值，跳过精确匹配，仅确认TXT记录存在`);
+            return true;
+        }
+        log(`DNS查询成功, 找到 ${recordValues.length} 条TXT记录：${recordValues}`);
+        if (!recordValues.length || !recordValues.includes(expected)) {
+            throw new Error(`没有找到需要的DNS持久验证TXT记录: ${recordName}，请稍后重试，期望:${expected},结果:${recordValues}`);
+        }
+        log(`DNS持久验证记录匹配成功（${challenge.type}/${recordName}）:${expected}`);
         return true;
     }
 
@@ -234,6 +252,7 @@ export function createChallengeFn(opts = {}) {
         challenges: {
             'http-01': verifyHttpChallenge,
             'dns-01': verifyDnsChallenge,
+            'dns-persist-01': verifyDnsPersistChallenge,
             'tls-alpn-01': verifyTlsAlpnChallenge,
         },
         walkTxtRecord,

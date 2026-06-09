@@ -1,36 +1,29 @@
 ---
 name: Plugin Apply
 about: 部署插件申请支持
-title: "[Plugin] "
+title: '[Plugin] '
 labels: feature
 ---
 
 > > 感谢您支持certd，请按如下规范提交issue
-> 如果有条件，请尽量在[github上提交](https://github.com/certd/certd/issues)
+> > 如果有条件，请尽量在[github上提交](https://github.com/certd/certd/issues)
 
 # 新部署插件申请支持
 
 ## 1. 需求描述
-`请在此处简要描述你的需求`
 
+`请在此处简要描述你的需求`
 
 ## 2. 要部署证书应用的信息
 
 1. 应用名称：
 
-
 2. 应用网址/项目地址/官方网站：
-
 
 3. 管理证书界面截图（或者手动部署证书方式介绍及截图）：
 
-
 4. 是否有API接口，接口地址：
-
 
 5. 如果没有API接口，网页登录是否需要验证码：
 
-
 6. 是否可以提供测试账号？（如果可以请留下联系方式或者加作者好友）
-
-

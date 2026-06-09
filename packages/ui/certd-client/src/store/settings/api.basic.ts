@@ -97,9 +97,15 @@ export type SysPublicSetting = {
 export type SuiteSetting = {
   enabled?: boolean;
 };
+export type InviteSetting = {
+  enabled?: boolean;
+  levelEnabled?: boolean;
+  fixedCommissionRate?: number;
+};
 export type SysPrivateSetting = {
   httpProxy?: string;
   httpsProxy?: string;
+  noProxy?: string;
   commonHeaders?: string;
   reverseProxies?: any;
   dnsResultOrder?: string;
@@ -142,6 +148,7 @@ export type AllSettings = {
   siteEnv: SiteEnv;
   headerMenus: HeaderMenus;
   suiteSetting: SuiteSetting;
+  inviteSetting: InviteSetting;
   app: AppInfo;
 };
 

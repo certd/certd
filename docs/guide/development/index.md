@@ -39,13 +39,21 @@ pnpm install
 pnpm init
 ```
 
+### lib包编译:
+将packages下面依赖的包都编译一遍，并监听改动。
+```shell
+pnpm dev
+```
+
 ### 启动 server:
+启动server
 ```shell
 cd packages/ui/certd-server
 pnpm dev
 ```
 
 ### 启动 client:
+启动前端
 ```shell
 cd packages/ui/certd-client
 pnpm dev

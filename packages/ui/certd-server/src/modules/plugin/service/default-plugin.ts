@@ -1,6 +1,5 @@
 import { CertApplyPluginNames } from "@certd/plugin-cert";
 
-
 export function getDefaultAccessPlugin() {
   const metadata = `
 input:
@@ -18,7 +17,7 @@ input:
     component:
       name: a-input
       allowClear: true
-`
+`;
 
   const script = `
 // 必须使用 await import 来引入模块
@@ -31,19 +30,18 @@ return class DemoAccess extends BaseAccess {
 }
 `;
   return {
-    metadata:metadata,
-    content: script
+    metadata: metadata,
+    content: script,
   };
 }
 
 export function getDefaultDeployPlugin() {
-
-  let certApplyNames = ''
+  let certApplyNames = "";
   for (const name of CertApplyPluginNames) {
     certApplyNames += `
-        - "${name}"`
+        - "${name}"`;
   }
-  const metadata =`
+  const metadata = `
 input:   # 插件的输入参数
   cert:
     title: 前置任务证书
@@ -90,8 +88,7 @@ input:   # 插件的输入参数
 #output:  # 输出参数，一般插件都不需要配置此项
 #  outputName:
 #
-`
-
+`;
 
   const script = `
 // 要用await来import模块
@@ -129,10 +126,10 @@ return class DemoTask extends AbstractTaskPlugin {
     // this.outputName = xxxx //设置输出参数，可以被其他插件选择使用
   }
 }
-`
+`;
   return {
     metadata: metadata,
-    content: script
+    content: script,
   };
 }
 
@@ -144,7 +141,7 @@ accessType: aliyun # 授权类型名称
 #dependLibs: # 依赖的插件，应用商店安装时会先安装依赖插件
 #  aliyun: *
 
-  `
+  `;
 
   const script = `
 const { AbstractDnsProvider } = await import("@certd/pipeline")
@@ -186,10 +183,10 @@ return class DemoDnsProvider extends AbstractDnsProvider {
   }
 }
 
-`
+`;
 
   return {
     metadata: metadata,
-    content: script
-  }
+    content: script,
+  };
 }

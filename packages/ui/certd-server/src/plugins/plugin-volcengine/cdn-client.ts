@@ -10,7 +10,6 @@ export class VolcengineCdnClient {
     this.opts = opts;
   }
 
-
   async getCdnClient() {
     if (this.service) {
       return this.service;
@@ -34,15 +33,15 @@ export class VolcengineCdnClient {
       PrivateKey: cert.key,
       EncryType: "inter_cert",
       Repeatable: false,
-      Desc: certName
+      Desc: certName,
     });
 
     if (res.ResponseMetadata?.Error) {
       if (res.ResponseMetadata?.Error?.Code?.includes("Duplicated")) {
         // 证书已存在，ID为 cert-16293a8524844a3e8e30ed62f8e5bc94。
-        const message = res.ResponseMetadata?.Error?.Message
+        const message = res.ResponseMetadata?.Error?.Message;
         const reg = /ID为 (\S+)。/;
-        const certId =  message.match(reg)?.[1]
+        const certId = message.match(reg)?.[1];
         if (certId) {
           this.opts.logger.info(`证书已存在，ID为 ${certId}`);
           return certId;
@@ -51,10 +50,8 @@ export class VolcengineCdnClient {
       throw new Error(JSON.stringify(res.ResponseMetadata?.Error));
     }
 
-    const certId = res.Result.CertId
-    this.opts.logger.info(`上传证书成功:${certId}`)
+    const certId = res.Result.CertId;
+    this.opts.logger.info(`上传证书成功:${certId}`);
     return certId;
-
-
   }
 }

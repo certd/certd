@@ -5,6 +5,7 @@ function createChallengeTypeDict() {
   return dict({
     data: [
       { value: "dns", label: $t("certd.verifyPlan.dnsChallenge"), color: "green" },
+      { value: "dns-persist", label: "DNS持久验证", color: "cyan" },
       { value: "cname", label: $t("certd.verifyPlan.cnameProxyChallenge"), color: "blue" },
       { value: "http", label: $t("certd.verifyPlan.httpChallenge"), color: "yellow" },
     ],
@@ -39,7 +40,12 @@ export const Dicts = {
   sslProviderDict: dict({
     data: [
       { value: "letsencrypt", label: "Let's Encrypt" },
+      { value: "letsencrypt_staging", label: "Let's Encrypt测试环境" },
+      { value: "google", label: "Google" },
       { value: "zerossl", label: "ZeroSSL" },
+      { value: "sslcom", label: "SSL.com" },
+      { value: "litessl", label: "litessl" },
+      { value: "custom", label: "自定义ACME" },
     ],
   }),
   get challengeTypeDict() {

@@ -6,7 +6,7 @@
 
     <div class="sys-plugin-config settings-form">
       <a-form :model="formState" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish" @finish-failed="onFinishFailed">
-        <a-form-item label="公共Google EAB授权" :name="['CertApply', 'sysSetting', 'input', 'googleCommonEabAccessId']">
+        <a-form-item v-show="false" label="公共Google EAB授权" :name="['CertApply', 'sysSetting', 'input', 'googleCommonEabAccessId']">
           <access-selector v-model:model-value="formState.CertApply.sysSetting.input.googleCommonEabAccessId" type="eab" from="sys"></access-selector>
           <div class="helper">
             <div>设置公共Google EAB授权给用户使用，避免用户自己去翻墙获取Google EAB授权</div>
@@ -16,7 +16,14 @@
           </div>
         </a-form-item>
 
-        <a-form-item label="公共ZeroSSL EAB授权" :name="['CertApply', 'sysSetting', 'input', 'zerosslCommonEabAccessId']">
+        <a-form-item label="公共Google ACME账号" :name="['CertApply', 'sysSetting', 'input', 'googleCommonAcmeAccountAccessId']">
+          <access-selector v-model:model-value="formState.CertApply.sysSetting.input.googleCommonAcmeAccountAccessId" type="acmeAccount" subtype="google" from="sys"></access-selector>
+          <div class="helper">
+            <div>优先推荐配置公共ACME账号。配置后普通用户申请Google证书时无需选择账号，也不会重复消费公共EAB。</div>
+          </div>
+        </a-form-item>
+
+        <a-form-item v-show="false" label="公共ZeroSSL EAB授权" :name="['CertApply', 'sysSetting', 'input', 'zerosslCommonEabAccessId']">
           <access-selector v-model:model-value="formState.CertApply.sysSetting.input.zerosslCommonEabAccessId" type="eab" from="sys"></access-selector>
           <div class="helper">
             <div>设置公共ZeroSSL EAB授权给用户使用，避免用户自己去翻墙获取Zero EAB授权</div>
@@ -26,7 +33,11 @@
           </div>
         </a-form-item>
 
-        <a-form-item label="公共litessl EAB授权" :name="['CertApply', 'sysSetting', 'input', 'litesslCommonEabAccessId']">
+        <a-form-item label="公共ZeroSSL ACME账号" :name="['CertApply', 'sysSetting', 'input', 'zerosslCommonAcmeAccountAccessId']">
+          <access-selector v-model:model-value="formState.CertApply.sysSetting.input.zerosslCommonAcmeAccountAccessId" type="acmeAccount" subtype="zerossl" from="sys"></access-selector>
+        </a-form-item>
+
+        <a-form-item v-show="false" label="公共litessl EAB授权" :name="['CertApply', 'sysSetting', 'input', 'litesslCommonEabAccessId']">
           <access-selector v-model:model-value="formState.CertApply.sysSetting.input.litesslCommonEabAccessId" type="eab" from="sys"></access-selector>
           <div class="helper">
             <div>设置公共litessl EAB授权给用户使用，避免用户自己获取litessl EAB授权</div>
@@ -34,6 +45,10 @@
               <a href="https://freessl.cn/automation/eab-manager">litessl EAB授权管理 </a>
             </div>
           </div>
+        </a-form-item>
+
+        <a-form-item label="公共litessl ACME账号" :name="['CertApply', 'sysSetting', 'input', 'litesslCommonAcmeAccountAccessId']">
+          <access-selector v-model:model-value="formState.CertApply.sysSetting.input.litesslCommonAcmeAccountAccessId" type="acmeAccount" subtype="litessl" from="sys"></access-selector>
         </a-form-item>
 
         <a-form-item label="其他配置">

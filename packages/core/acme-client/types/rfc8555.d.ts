@@ -97,7 +97,11 @@ export interface DnsChallenge extends ChallengeAbstract {
     token: string;
 }
 
-export type Challenge = HttpChallenge | DnsChallenge;
+export interface DnsPersistChallenge extends ChallengeAbstract {
+    type: 'dns-persist-01';
+}
+
+export type Challenge = HttpChallenge | DnsChallenge | DnsPersistChallenge;
 
 /**
  * Certificate

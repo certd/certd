@@ -1,0 +1,37 @@
+ALTER TABLE cd_invite_commission_log ADD COLUMN level_id integer NOT NULL DEFAULT 0;
+ALTER TABLE cd_invite_commission_log ADD COLUMN commission_rate integer NOT NULL DEFAULT 0;
+
+CREATE TABLE "cd_invite_level"
+(
+  "id"              integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+  "name"            varchar(100),
+  "icon"            varchar(100) NOT NULL DEFAULT 'fluent-emoji-flat:2nd-place-medal',
+  "sort"            integer NOT NULL DEFAULT 0,
+  "min_amount"      integer NOT NULL DEFAULT 0,
+  "commission_rate" integer NOT NULL DEFAULT 0,
+  "level_type"      varchar(30) NOT NULL DEFAULT 'normal',
+  "disabled"        boolean NOT NULL DEFAULT (false),
+  "create_time"     datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  "update_time"     datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+);
+CREATE INDEX "index_invite_level_sort" ON "cd_invite_level" ("sort");
+
+CREATE TABLE "cd_invite_user_plan"
+(
+  "id"             integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+  "user_id"        integer,
+  "enabled"        boolean NOT NULL DEFAULT (false),
+  "level_id"       integer NOT NULL DEFAULT 0,
+  "level_locked"   boolean NOT NULL DEFAULT (false),
+  "promotion_amount" integer NOT NULL DEFAULT 0,
+  "agreement_time" integer NOT NULL DEFAULT 0,
+  "create_time"    datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  "update_time"    datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+);
+CREATE UNIQUE INDEX "index_invite_user_plan_user_id" ON "cd_invite_user_plan" ("user_id");
+
+INSERT INTO "cd_invite_level" ("name", "icon", "sort", "min_amount", "commission_rate", "level_type", "disabled")
+VALUES ('青铜', 'fluent-emoji-flat:2nd-place-medal', 10, 0, 10, 'normal', false),
+       ('白银', 'fluent-emoji-flat:1st-place-medal', 20, 10000, 15, 'normal', false),
+       ('黄金', 'fluent-emoji-flat:3rd-place-medal', 30, 50000, 20, 'normal', false),
+       ('钻石', 'streamline-color:diamond-2', 40, 300000, 30, 'normal', false);

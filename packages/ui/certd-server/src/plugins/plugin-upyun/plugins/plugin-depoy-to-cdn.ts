@@ -10,16 +10,16 @@ import { UpyunClient } from "../client.js";
   name: "UpyunDeployToCdn",
   title: "又拍云-部署证书到CDN/USS",
   icon: "svg:icon-upyun",
-  desc:"支持又拍云CDN，又拍云云存储USS",
+  desc: "支持又拍云CDN，又拍云云存储USS",
   //插件分组
   group: pluginGroups.cdn.key,
   needPlus: false,
   default: {
     //默认值配置照抄即可
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class UpyunDeployToCdn extends AbstractTaskPlugin {
@@ -29,8 +29,8 @@ export class UpyunDeployToCdn extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
     // required: true, // 必填
   })
   cert!: CertInfo;
@@ -42,13 +42,12 @@ export class UpyunDeployToCdn extends AbstractTaskPlugin {
     title: "Upyun授权",
     component: {
       name: "access-selector",
-      type: "upyun" //固定授权类型
+      type: "upyun", //固定授权类型
     },
-    required: true //必填
+    required: true, //必填
   })
   accessId!: string;
   //
-
 
   @TaskInput(
     createRemoteSelectInputDefine({
@@ -56,46 +55,45 @@ export class UpyunDeployToCdn extends AbstractTaskPlugin {
       helper: "选择加速域名，可以手动输入",
       typeName: "UpyunDeployToCdn",
       action: UpyunDeployToCdn.prototype.onGetCdnList.name,
-      watches: ["accessId"]
+      watches: ["accessId"],
     })
   )
   cdnList!: string[];
 
   @TaskInput({
     title: "强制HTTPS",
-    value:"keep",
+    value: "keep",
     component: {
       name: "a-select",
-      vModel:"value",
-      options:[
-        {value:"true","label":"强制HTTPS"},
-        {value:"false","label":"不强制HTTPS"},
-        {value:"keep","label":"保持原样"}
-      ]
+      vModel: "value",
+      options: [
+        { value: "true", label: "强制HTTPS" },
+        { value: "false", label: "不强制HTTPS" },
+        { value: "keep", label: "保持原样" },
+      ],
     },
-    required: true //必填
+    required: true, //必填
   })
   forceHttps!: string;
 
   @TaskInput({
     title: "开启HTTPS",
-    value:"true",
+    value: "true",
     component: {
       name: "a-select",
-      vModel:"value",
-      options:[
-        {value:"true","label":"开启HTTPS"},
-        {value:"false","label":"关闭HTTPS"},
-        {value:"keep","label":"保持原样"}
-      ]
+      vModel: "value",
+      options: [
+        { value: "true", label: "开启HTTPS" },
+        { value: "false", label: "关闭HTTPS" },
+        { value: "keep", label: "保持原样" },
+      ],
     },
-    required: true //必填
+    required: true, //必填
   })
   https!: string;
 
   //插件实例化时执行的方法
-  async onInstance() {
-  }
+  async onInstance() {}
 
   //插件执行方法
   async execute(): Promise<void> {
@@ -104,39 +102,38 @@ export class UpyunDeployToCdn extends AbstractTaskPlugin {
     const upyunClient = new UpyunClient({
       access,
       logger: this.logger,
-      http: this.ctx.http
+      http: this.ctx.http,
     });
     const cookie = await upyunClient.getLoginToken();
     this.logger.info(`登录成功`);
     const certId = await upyunClient.uploadCert(cookie, this.cert);
     this.logger.info(`上传证书成功：${certId}`);
     for (const item of this.cdnList) {
-
       this.logger.info(`开始部署证书：${item}`);
 
-      const data1 :any= {
+      const data1: any = {
         crt_id: certId,
         domain_name: item,
-      }
+      };
 
-      const res1=await upyunClient.doRequest({
+      const res1 = await upyunClient.doRequest({
         cookie: cookie,
         url: "https://console.upyun.com/api/https/migrate/domain",
         method: "POST",
-        data: data1
+        data: data1,
       });
 
       this.logger.info(`设置证书成功：${JSON.stringify(res1)}`);
 
-      const data2 :any= {
+      const data2: any = {
         certificate_id: certId,
         domain: item,
-      }
+      };
 
-      if (this.forceHttps !== 'keep') {
+      if (this.forceHttps !== "keep") {
         data2.force_https = Boolean(this.forceHttps);
       }
-      if (this.https !=='keep') {
+      if (this.https !== "keep") {
         data2.https = Boolean(this.https);
       }
 
@@ -145,14 +142,13 @@ export class UpyunDeployToCdn extends AbstractTaskPlugin {
         cookie: cookie,
         url: "https://console.upyun.com/api/https/certificate/manager",
         method: "POST",
-        data: data2
+        data: data2,
       });
       this.logger.info(`设置证书参数成功：${JSON.stringify(res2)}`);
     }
 
     this.logger.info("部署成功");
   }
-
 
   async onGetCdnList() {
     if (!this.accessId) {
@@ -168,7 +164,7 @@ export class UpyunDeployToCdn extends AbstractTaskPlugin {
     for (const domain of domains) {
       list.push({
         domain: domain.domain,
-        bucket: domain.bucket_name
+        bucket: domain.bucket_name,
       });
     }
 
@@ -176,12 +172,10 @@ export class UpyunDeployToCdn extends AbstractTaskPlugin {
       return {
         value: item.domain,
         label: `${item.domain}<${item.bucket}>`,
-        domain: item.domain
+        domain: item.domain,
       };
     });
     return optionsUtils.buildGroupOptions(options, this.certDomains);
-
-
   }
 }
 

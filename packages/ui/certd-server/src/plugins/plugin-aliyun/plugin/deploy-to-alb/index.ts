@@ -1,9 +1,6 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-cert";
-import {
-  createCertDomainGetterInputDefine,
-  createRemoteSelectInputDefine
-} from "@certd/plugin-lib";
+import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
 import { AliyunClient, AliyunSslClient, CasCertId } from "../../../plugin-lib/aliyun/lib/index.js";
 import { AliyunClientV2 } from "../../../plugin-lib/aliyun/lib/aliyun-client-v2.js";
@@ -17,9 +14,9 @@ import { AliyunClientV2 } from "../../../plugin-lib/aliyun/lib/aliyun-client-v2.
   needPlus: false,
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 export class AliyunDeployCertToALB extends AbstractTaskPlugin {
   @TaskInput({
@@ -27,9 +24,9 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
     helper: "请选择证书申请任务输出的域名证书\n或者选择前置任务“上传证书到阿里云”任务的证书ID，可以减少上传到阿里云的证书数量",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames, "uploadCertToAliyun"]
+      from: [...CertApplyPluginNames, "uploadCertToAliyun"],
     },
-    required: true
+    required: true,
   })
   cert!: CertInfo | CasCertId | number;
 
@@ -45,10 +42,10 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       options: [
         { value: "cas.aliyuncs.com", label: "中国大陆" },
         { value: "cas.ap-southeast-1.aliyuncs.com", label: "新加坡" },
-        { value: "cas.eu-central-1.aliyuncs.com", label: "德国（法兰克福）" }
-      ]
+        { value: "cas.eu-central-1.aliyuncs.com", label: "德国（法兰克福）" },
+      ],
     },
-    required: true
+    required: true,
   })
   casEndpoint!: string;
 
@@ -57,9 +54,9 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
     helper: "阿里云授权AccessKeyId、AccessKeySecret",
     component: {
       name: "access-selector",
-      type: "aliyun"
+      type: "aliyun",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
 
@@ -69,7 +66,7 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       typeName: "AliyunDeployCertToALB",
       single: true,
       action: AliyunDeployCertToALB.prototype.onGetRegionList.name,
-      watches: ["accessId"]
+      watches: ["accessId"],
     })
   )
   regionId: string;
@@ -80,7 +77,7 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       helper: "要部署证书的负载均衡ID",
       typeName: "AliyunDeployCertToALB",
       action: AliyunDeployCertToALB.prototype.onGetLoadBalanceList.name,
-      watches: ["regionId"]
+      watches: ["regionId"],
     })
   )
   loadBalancers!: string[];
@@ -91,11 +88,10 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       helper: "要部署证书的监听器列表",
       typeName: "AliyunDeployCertToALB",
       action: AliyunDeployCertToALB.prototype.onGetListenerList.name,
-      watches: ["loadBalancers"]
+      watches: ["loadBalancers"],
     })
   )
   listeners!: string[];
-
 
   @TaskInput({
     title: "部署证书类型",
@@ -106,18 +102,17 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       options: [
         {
           label: "默认证书",
-          value: "default"
+          value: "default",
         },
         {
           label: "扩展证书",
-          value: "extension"
-        }
-      ]
+          value: "extension",
+        },
+      ],
     },
-    required: true
-  }
-  )
-  deployType: string = "default";
+    required: true,
+  })
+  deployType = "default";
 
   @TaskInput({
     title: "是否清理过期证书",
@@ -126,14 +121,11 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       name: "a-switch",
       vModel: "checked",
     },
-    required: true
-  }
-  )
+    required: true,
+  })
   clearExpiredCert: boolean;
 
-
-  async onInstance() {
-  }
+  async onInstance() {}
 
   async getLBClient(access: AliyunAccess, region: string) {
     const client = new AliyunClient({ logger: this.logger });
@@ -144,7 +136,7 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       accessKeySecret: access.accessKeySecret,
       //https://wafopenapi.cn-hangzhou.aliyuncs.com
       endpoint: `https://alb.${region}.aliyuncs.com`,
-      apiVersion: version
+      apiVersion: version,
     });
     return client;
   }
@@ -166,9 +158,9 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       const client = await this.getLBClient(access, this.regionId);
       await this.deployDefaultCert(certId, client);
     }
-    if (this.clearExpiredCert!==false) {
+    if (this.clearExpiredCert !== false) {
       this.logger.info(`准备开始清理过期证书`);
-      await this.ctx.utils.sleep(30000)
+      await this.ctx.utils.sleep(30000);
       for (const listener of this.listeners) {
         try {
           await this.clearInvalidCert(albClientV2, listener);
@@ -188,9 +180,9 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
         ListenerId: listener,
         Certificates: [
           {
-            CertificateId: certId
-          }
-        ]
+            CertificateId: certId,
+          },
+        ],
       };
 
       const res = await client.request("UpdateListenerAttribute", params);
@@ -212,11 +204,11 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
             ListenerId: listenerId,
             Certificates: [
               {
-                CertificateId: certId
-              }
-            ]
-          }
-        }
+                CertificateId: certId,
+              },
+            ],
+          },
+        },
       });
 
       this.logger.info(`部署监听器${listenerId}的扩展证书成功`);
@@ -232,23 +224,22 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       version: "2020-06-16",
       data: {
         query: {
-          ListenerId: listener
-        }
-      }
+          ListenerId: listener,
+        },
+      },
     };
     const res = await client.doRequest(req);
     const list = res.Certificates;
     if (list.length === 0) {
       this.logger.info(`监听器${listener}没有绑定证书`);
-      return
+      return;
     }
 
     const sslClient = new AliyunSslClient({
       access: client.access,
       logger: this.logger,
-      endpoint: this.casEndpoint
+      endpoint: this.casEndpoint,
     });
-
 
     const certIds = [];
     for (const item of list) {
@@ -273,7 +264,7 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
     }
     if (invalidCertIds.length === 0) {
       this.logger.info(`监听器${listener}没有过期的证书`);
-      return
+      return;
     }
     this.logger.info(`开始解绑过期的证书:${invalidCertIds}，listener:${listener}`);
     await client.doRequest({
@@ -284,13 +275,13 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       data: {
         query: {
           ListenerId: listener,
-          Certificates: invalidCertIds.map((item) => {
+          Certificates: invalidCertIds.map(item => {
             return {
-              CertificateId: item
-            }
-          })
-        }
-      }
+              CertificateId: item,
+            };
+          }),
+        },
+      },
     });
     this.logger.info(`解绑过期证书成功`);
   }
@@ -298,13 +289,12 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
   async getAliyunCertId(access: AliyunAccess) {
     let certId: any = this.cert;
     if (typeof this.cert === "object") {
-
       const certInfo = this.cert as CertInfo;
-      const casCert =  this.cert as CasCertId;
+      const casCert = this.cert as CasCertId;
       const sslClient = new AliyunSslClient({
         access,
         logger: this.logger,
-        endpoint: this.casEndpoint
+        endpoint: this.casEndpoint,
       });
 
       if (certInfo.crt) {
@@ -313,11 +303,11 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
           name: certName,
           cert: certInfo,
         });
-        certId = certIdRes.certId as any; 
-      }else if (casCert.certId){
+        certId = certIdRes.certId as any;
+      } else if (casCert.certId) {
         certId = casCert.certId;
-      }else{
-        throw new Error('证书格式错误'+JSON.stringify(this.cert));
+      } else {
+        throw new Error("证书格式错误" + JSON.stringify(this.cert));
       }
     }
 
@@ -341,7 +331,7 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       return {
         label: item.LocalName,
         value: item.RegionId,
-        endpoint: item.RegionEndpoint
+        endpoint: item.RegionEndpoint,
       };
     });
   }
@@ -357,7 +347,7 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
     const client = await this.getLBClient(access, this.regionId);
 
     const params = {
-      MaxResults: 100
+      MaxResults: 100,
     };
     const res = await client.request("ListLoadBalancers", params);
     this.checkRet(res);
@@ -369,7 +359,7 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       const label = `${item.LoadBalancerId}<${item.LoadBalancerName}}>`;
       return {
         label: label,
-        value: item.LoadBalancerId
+        value: item.LoadBalancerId,
       };
     });
   }
@@ -385,7 +375,7 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
     const client = await this.getLBClient(access, this.regionId);
 
     const params: any = {
-      MaxResults: 100
+      MaxResults: 100,
     };
     if (this.loadBalancers && this.loadBalancers.length > 0) {
       params.LoadBalancerIds = this.loadBalancers;
@@ -401,19 +391,16 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
       return {
         label: label,
         value: item.ListenerId,
-        lbid: item.LoadBalancerId
+        lbid: item.LoadBalancerId,
       };
     });
   }
-
 
   checkRet(ret: any) {
     if (ret.Code != null) {
       throw new Error(ret.Message);
     }
   }
-
-
 }
 
 new AliyunDeployCertToALB();

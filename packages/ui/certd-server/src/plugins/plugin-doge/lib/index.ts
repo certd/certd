@@ -1,14 +1,14 @@
-import crypto from 'crypto';
-import querystring from 'querystring';
-import { DogeCloudAccess } from '../access.js';
-import { HttpClient, ILogger } from '@certd/basic';
+import crypto from "crypto";
+import querystring from "querystring";
+import { DogeCloudAccess } from "../access.js";
+import { HttpClient, ILogger } from "@certd/basic";
 
 export class DogeClient {
   accessKey: string;
   secretKey: string;
   http: HttpClient;
   logger: ILogger;
-  constructor(access: DogeCloudAccess, http: HttpClient,logger: ILogger) {
+  constructor(access: DogeCloudAccess, http: HttpClient, logger: ILogger) {
     this.accessKey = access.accessKey;
     this.secretKey = access.secretKey;
     this.http = http;
@@ -21,26 +21,26 @@ export class DogeClient {
 
     const body = jsonMode ? JSON.stringify(data) : querystring.encode(data);
     const sign = crypto
-      .createHmac('sha1', this.secretKey)
-      .update(Buffer.from(apiPath + '\n' + body, 'utf8'))
-      .digest('hex');
-    const authorization = 'TOKEN ' + this.accessKey + ':' + sign;
+      .createHmac("sha1", this.secretKey)
+      .update(Buffer.from(apiPath + "\n" + body, "utf8"))
+      .digest("hex");
+    const authorization = "TOKEN " + this.accessKey + ":" + sign;
     const res: any = await this.http.request({
-      url: 'https://api.dogecloud.com' + apiPath,
-      method: 'POST',
+      url: "https://api.dogecloud.com" + apiPath,
+      method: "POST",
       data: body,
-      responseType: 'json',
+      responseType: "json",
       headers: {
-        'Content-Type': jsonMode ? 'application/json' : 'application/x-www-form-urlencoded',
+        "Content-Type": jsonMode ? "application/json" : "application/x-www-form-urlencoded",
         Authorization: authorization,
       },
     });
 
     if (res.code == null && ignoreResNullCode) {
       //ignore
-      this.logger.warn('执行出错：', res);
+      this.logger.warn("执行出错：", res);
     } else if (res.code !== 200) {
-      throw new Error('API Error: ' + res.msg);
+      throw new Error("API Error: " + res.msg);
     }
     return res.data;
   }

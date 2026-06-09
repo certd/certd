@@ -3,14 +3,12 @@ on:
   push:
     branches: ['v2-dev']
     paths:
-      - "trigger/deploy.trigger"
+      - 'trigger/deploy.trigger'
   workflow_run:
-    workflows: [ "build-image" ]
+    workflows: ['build-image']
     types:
       - completed
-  workflow_dispatch:    # 添加手动触发
-
-
+  workflow_dispatch: # 添加手动触发
 
 #  schedule:
 #    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
@@ -28,7 +26,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: v2-dev
-          
+
       - name: get_certd_version
         id: get_certd_version
         uses: actions/github-script@v6

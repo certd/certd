@@ -1,4 +1,4 @@
-import { BaseNotification, IsNotification, NotificationBody, NotificationInput } from '@certd/pipeline';
+import { BaseNotification, IsNotification, NotificationBody, NotificationInput } from "@certd/pipeline";
 
 /**
  * POST请求
@@ -38,43 +38,42 @@ Content-Type: application/json
 }
  */
 @IsNotification({
-  name: 'meow',
-  title: 'MeoW通知',
-  desc: 'https://api.chuckfang.com/',
+  name: "meow",
+  title: "MeoW通知",
+  desc: "https://api.chuckfang.com/",
   needPlus: false,
 })
 export class MeowNotification extends BaseNotification {
-
   @NotificationInput({
-    title: 'MeoW接口地址',
+    title: "MeoW接口地址",
     component: {
-      placeholder: 'https://api.xxxxxx.com',
+      placeholder: "https://api.xxxxxx.com",
     },
     required: true,
   })
-  endpoint = '';
+  endpoint = "";
 
   @NotificationInput({
-    title: '昵称',
+    title: "昵称",
     component: {
-      placeholder: '',
+      placeholder: "",
     },
     required: true,
   })
-  nickName = '';
+  nickName = "";
 
   async send(body: NotificationBody) {
     if (!this.nickName) {
-      throw new Error('昵称不能为空');
+      throw new Error("昵称不能为空");
     }
     let endpoint = this.endpoint;
-    if (!endpoint.endsWith('/')) {
-      endpoint += '/';
+    if (!endpoint.endsWith("/")) {
+      endpoint += "/";
     }
     const url = `${endpoint}${this.nickName}/`;
     const res = await this.http.request({
       url: url,
-      method: 'POST',
+      method: "POST",
       data: {
         text: body.title,
         msg: body.content,

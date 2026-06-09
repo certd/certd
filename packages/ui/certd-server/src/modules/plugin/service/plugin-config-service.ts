@@ -1,5 +1,5 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { PluginService } from './plugin-service.js';
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { PluginService } from "./plugin-service.js";
 
 export type PluginConfig = {
   name: string;
@@ -20,7 +20,6 @@ export type PluginFindReq = {
   type: string;
 };
 
-
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class PluginConfigService {
@@ -31,18 +30,18 @@ export class PluginConfigService {
     const configs: CommPluginConfig = {};
 
     configs.CertApply = await this.getPluginConfig({
-      name: 'CertApply',
-      type: 'builtIn',
+      name: "CertApply",
+      type: "builtIn",
     });
     return configs;
   }
 
   async saveCommPluginConfig(config: CommPluginConfig) {
-    config.CertApply.name  = 'CertApply';
+    config.CertApply.name = "CertApply";
     await this.savePluginConfig(config.CertApply);
   }
 
-  async savePluginConfig( config: PluginConfig) {
+  async savePluginConfig(config: PluginConfig) {
     const name = config.name;
     const sysSetting = config?.sysSetting;
     if (!sysSetting) {
@@ -55,12 +54,12 @@ export class PluginConfigService {
       await this.pluginService.add({
         name,
         sysSetting: JSON.stringify(sysSetting),
-        type: 'builtIn',
+        type: "builtIn",
         disabled: false,
         author: "certd",
       });
     } else {
-      let setting = JSON.parse(pluginEntity.sysSetting || "{}");
+      const setting = JSON.parse(pluginEntity.sysSetting || "{}");
       if (sysSetting.metadata) {
         setting.metadata = sysSetting.metadata;
       }
@@ -73,7 +72,7 @@ export class PluginConfigService {
 
   async get(req: PluginFindReq) {
     if (!req.name && !req.id) {
-      throw new Error('plugin s name or id is required');
+      throw new Error("plugin s name or id is required");
     }
     return await this.pluginService.getRepository().findOne({
       where: {

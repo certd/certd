@@ -1,39 +1,39 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 /**
  * cname配置
  */
-@Entity('cd_cname_provider')
+@Entity("cd_cname_provider")
 export class CnameProviderEntity {
   @PrimaryGeneratedColumn()
   id: number;
-  @Column({ comment: 'userId', name: 'user_id' })
+  @Column({ comment: "userId", name: "user_id" })
   userId: number;
-  @Column({ comment: '域名', length: 100 })
+  @Column({ comment: "域名", length: 100 })
   domain: string;
-  @Column({ comment: '子域名托管', length: 100, nullable: true })
+  @Column({ comment: "子域名托管", length: 100, nullable: true })
   subdomain: string;
-  @Column({ comment: 'DNS提供商类型', name: 'dns_provider_type', length: 20 })
+  @Column({ comment: "DNS提供商类型", name: "dns_provider_type", length: 20 })
   dnsProviderType: string;
-  @Column({ comment: 'DNS授权Id', name: 'access_id' })
+  @Column({ comment: "DNS授权Id", name: "access_id" })
   accessId: number;
-  @Column({ comment: '是否默认', name: 'is_default' })
+  @Column({ comment: "是否默认", name: "is_default" })
   isDefault: boolean;
-  @Column({ comment: '是否禁用', name: 'disabled' })
+  @Column({ comment: "是否禁用", name: "disabled" })
   disabled: boolean;
-  @Column({ comment: '备注', length: 200 })
+  @Column({ comment: "备注", length: 200 })
   remark: string;
 
   @Column({
-    comment: '创建时间',
-    name: 'create_time',
-    default: () => 'CURRENT_TIMESTAMP',
+    comment: "创建时间",
+    name: "create_time",
+    default: () => "CURRENT_TIMESTAMP",
   })
   createTime: Date;
   @Column({
-    comment: '修改时间',
-    name: 'update_time',
-    default: () => 'CURRENT_TIMESTAMP',
+    comment: "修改时间",
+    name: "update_time",
+    default: () => "CURRENT_TIMESTAMP",
   })
   updateTime: Date;
 

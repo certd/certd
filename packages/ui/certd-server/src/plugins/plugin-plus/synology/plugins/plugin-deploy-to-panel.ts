@@ -58,10 +58,10 @@ export class SynologyDeployToPanel extends AbstractPlusTaskPlugin {
   async onInstance() {}
   async execute(): Promise<void> {
     const access: SynologyAccess = await this.getAccess<SynologyAccess>(this.accessId);
-     if (access.deviceId){
-      this.logger.warn(`检测到您开启了二次认证，建议将证书申请任务的更新天数修改为65天，以保证每个月在群辉部署执行一次，刷新二次认证的有效期`); 
+    if (access.deviceId) {
+      this.logger.warn(`检测到您开启了二次认证，建议将证书申请任务的更新天数修改为65天，以保证每个月在群辉部署执行一次，刷新二次认证的有效期`);
     }
-   
+
     const client = new SynologyClient(access as any, this.ctx.http, this.ctx.logger, access.skipSslVerify);
     // await client.init();
     await client.doLogin();
@@ -76,16 +76,14 @@ export class SynologyDeployToPanel extends AbstractPlusTaskPlugin {
         throw new Error(`未找到证书: ${this.certName}`);
       }
       this.logger.info(`找到证书: ${certItem.id}`);
-      await client.updateCertToPanel(certItem,this.cert);
+      await client.updateCertToPanel(certItem, this.cert);
     } else {
       this.logger.info("开始更新全部证书");
       for (const item of certListRes.certificates) {
         this.logger.info(`更新证书: ${item.id}`);
-        await client.updateCertToPanel(item,this.cert);
+        await client.updateCertToPanel(item, this.cert);
       }
     }
   }
-
-  
 }
 new SynologyDeployToPanel();

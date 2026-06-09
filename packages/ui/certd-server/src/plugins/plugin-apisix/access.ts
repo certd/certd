@@ -1,6 +1,6 @@
-import {AccessInput, BaseAccess, IsAccess} from "@certd/pipeline";
-import {HttpRequestConfig} from "@certd/basic";
-import {CertInfo, CertReader} from "@certd/plugin-cert";
+import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
+import { HttpRequestConfig } from "@certd/basic";
+import { CertInfo, CertReader } from "@certd/plugin-cert";
 
 /**
  */
@@ -8,10 +8,9 @@ import {CertInfo, CertReader} from "@certd/plugin-cert";
   name: "apisix",
   title: "APISIX授权",
   desc: "",
-  icon: "svg:icon-lucky"
+  icon: "svg:icon-lucky",
 })
 export class ApisixAccess extends BaseAccess {
-
   @AccessInput({
     title: "Apisix管理地址",
     component: {
@@ -19,23 +18,23 @@ export class ApisixAccess extends BaseAccess {
     },
     required: true,
   })
-  endpoint = '';
+  endpoint = "";
 
   @AccessInput({
-    title: 'ApiKey',
+    title: "ApiKey",
     component: {
-      placeholder: 'ApiKey',
+      placeholder: "ApiKey",
     },
     helper: "[参考文档](https://apisix.apache.org/docs/apisix/admin-api/#using-environment-variables)在config中配置admin apiKey",
     required: true,
     encrypt: true,
   })
-  apiKey = '';
+  apiKey = "";
 
   @AccessInput({
-    title: '版本',
+    title: "版本",
     component: {
-      name:"a-select",
+      name: "a-select",
       options: [
         {
           label: "v3.x",
@@ -45,78 +44,77 @@ export class ApisixAccess extends BaseAccess {
           label: "v2.x",
           value: "2",
         },
-      ]
+      ],
     },
     helper: "apisix系统的版本",
-    value:"3",
+    value: "3",
     required: true,
   })
-  version = '3';
-
+  version = "3";
 
   @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "点击测试接口是否正常"
+    helper: "点击测试接口是否正常",
   })
   testRequest = true;
 
   async onTestRequest() {
     await this.getCertList();
-    return "ok"
+    return "ok";
   }
 
-  async getCertList(){
+  async getCertList() {
     const sslPath = this.getSslPath();
     const req = {
-      url :`/apisix/admin/${sslPath}`,
+      url: `/apisix/admin/${sslPath}`,
       method: "get",
-    }
+    };
     return await this.doRequest(req);
   }
 
-  getSslPath(){
-    const sslPath = this.version === '3' ? 'ssls' : 'ssl';
+  getSslPath() {
+    const sslPath = this.version === "3" ? "ssls" : "ssl";
     return sslPath;
   }
 
-  async createCert(opts:{cert:CertInfo}){
-    const certReader = new CertReader(opts.cert)
+  async createCert(opts: { cert: CertInfo }) {
+    const certReader = new CertReader(opts.cert);
     const sslPath = this.getSslPath();
     const req = {
-      url :`/apisix/admin/${sslPath}`,
+      url: `/apisix/admin/${sslPath}`,
       method: "post",
-      data:{
+      data: {
         cert: opts.cert.crt,
         key: opts.cert.key,
-        snis: certReader.getAllDomains()
-      }
-    }
+        snis: certReader.getAllDomains(),
+      },
+    };
     return await this.doRequest(req);
   }
 
-  async updateCert (opts:{cert:CertInfo,id:string}){
-    const certReader = new CertReader(opts.cert)
+  async updateCert(opts: { cert: CertInfo; id: string }) {
+    const certReader = new CertReader(opts.cert);
     const sslPath = this.getSslPath();
     const req = {
-      url :`/apisix/admin/${sslPath}/${opts.id}`,
+      url: `/apisix/admin/${sslPath}/${opts.id}`,
       method: "put",
-      data:{
+      data: {
         cert: opts.cert.crt,
         key: opts.cert.key,
-        snis: certReader.getAllDomains()
-      }
-    }
+        snis: certReader.getAllDomains(),
+      },
+    };
     return await this.doRequest(req);
   }
 
-  async doRequest(req: HttpRequestConfig){
+  async doRequest(req: HttpRequestConfig) {
     const headers = {
       "X-API-KEY": this.apiKey,
-      ...req.headers
+      ...req.headers,
     };
     return await this.ctx.http.request({
       headers,
@@ -125,9 +123,6 @@ export class ApisixAccess extends BaseAccess {
       logRes: false,
     });
   }
-
-
 }
-
 
 new ApisixAccess();

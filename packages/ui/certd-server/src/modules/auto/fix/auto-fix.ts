@@ -4,6 +4,8 @@ import { GoogleCommonEabAccountKeyFix } from "./google-common-eab-account-key-fi
 import { OauthSubtypeBoundTypeFix } from "./oauth-subtype-bound-type-fix.js";
 import { CertInfoWildcardDomainCountFix } from "./cert-info-wildcard-domain-count-fix.js";
 import { SuiteContentWildcardDomainCountFix } from "./suite-content-wildcard-domain-count-fix.js";
+import { LegacyAcmeAccountAccessFix } from "./legacy-acme-account-access-fix.js";
+import { CommonEabToAcmeAccountFix } from "./common-eab-to-acme-account-fix.js";
 
 type AutoFixTask = {
   key: string;
@@ -30,6 +32,12 @@ export class AutoFix {
   @Inject()
   suiteContentWildcardDomainCountFix: SuiteContentWildcardDomainCountFix;
 
+  @Inject()
+  legacyAcmeAccountAccessFix: LegacyAcmeAccountAccessFix;
+
+  @Inject()
+  commonEabToAcmeAccountFix: CommonEabToAcmeAccountFix;
+
   async init() {
     const setting = await this.sysSettingsService.getSetting<SysAutoFixSetting>(SysAutoFixSetting);
     setting.fixed = setting.fixed || {};
@@ -49,6 +57,14 @@ export class AutoFix {
       {
         key: "suite-content-wildcard-domain-count",
         fix: this.suiteContentWildcardDomainCountFix,
+      },
+      {
+        key: "legacy-acme-account-access",
+        fix: this.legacyAcmeAccountAccessFix,
+      },
+      {
+        key: "common-eab-to-acme-account",
+        fix: this.commonEabToAcmeAccountFix,
       },
     ];
 

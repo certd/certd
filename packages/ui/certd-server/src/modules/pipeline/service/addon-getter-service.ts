@@ -8,15 +8,13 @@ import { AddonService, newAddon, PermissionException, ValidateException } from "
  */
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
-export class AddonGetterService  {
-
+export class AddonGetterService {
   @Inject()
   taskServiceBuilder: TaskServiceBuilder;
   @Inject()
   addonService: AddonService;
 
-
-  async getAddonById(id: any, checkUserId: boolean, userId?: number, projectId?: number, defaultAddon?:{type:string,name:string} ): Promise<any> {
+  async getAddonById(id: any, checkUserId: boolean, userId?: number, projectId?: number, defaultAddon?: { type: string; name: string }): Promise<any> {
     const serviceGetter = this.taskServiceBuilder.create({
       userId,
       projectId,
@@ -25,8 +23,8 @@ export class AddonGetterService  {
       http,
       logger,
       utils,
-      serviceGetter
-    }
+      serviceGetter,
+    };
 
     if (!id) {
       if (!defaultAddon) {
@@ -53,7 +51,7 @@ export class AddonGetterService  {
     const setting = JSON.parse(entity.setting ?? "{}");
     const input = {
       id: entity.id,
-      ...setting
+      ...setting,
     };
 
     return await newAddon(entity.addonType, entity.type, input, ctx);
@@ -63,11 +61,10 @@ export class AddonGetterService  {
     return await this.getAddonById(id, true, userId, projectId);
   }
 
-
-  async getBlank(addonType:string,subType:string,projectId?: number){
-    return await this.getAddonById(null,false,0,projectId,{
-      type: addonType, name:subType
-    })
+  async getBlank(addonType: string, subType: string, projectId?: number) {
+    return await this.getAddonById(null, false, 0, projectId, {
+      type: addonType,
+      name: subType,
+    });
   }
-
 }

@@ -14,7 +14,7 @@ function createAccess(result: Record<string, unknown>) {
   access.getStsClient = async () =>
     ({
       getCallerIdentity: async () => result,
-    }) as any;
+    } as any);
   return access;
 }
 

@@ -1,1 +1,1 @@
-export * from './plugin-qnap.js';
+export * from "./plugin-qnap.js";

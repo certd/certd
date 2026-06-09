@@ -14,9 +14,9 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onMounted } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
+import { useMounted } from "/@/use/use-mounted";
 import { useI18n } from "/src/locales";
 defineOptions({
   name: "PipelineTemplate",
@@ -28,11 +28,5 @@ const { crudBinding, crudRef, crudExpose } = useFs({
   },
 });
 const { t } = useI18n();
-// 页面打开后获取列表数据
-onMounted(() => {
-  crudExpose.doRefresh();
-});
-onActivated(() => {
-  crudExpose.doRefresh();
-});
+useMounted(() => crudExpose.doRefresh());
 </script>

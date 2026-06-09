@@ -6,23 +6,23 @@ import { Dns51Client } from "./client.js";
 
 export type Dns51Record = {
   id: number;
-  domainId: number,
+  domainId: number;
 };
 
 // 这里通过IsDnsProvider注册一个dnsProvider
 @IsDnsProvider({
-  name: '51dns',
-  title: '51dns',
-  desc: '51DNS',
-  icon: 'arcticons:dns-changer-3',
+  name: "51dns",
+  title: "51dns",
+  desc: "51DNS",
+  icon: "arcticons:dns-changer-3",
   // 这里是对应的 cloudflare的access类型名称
-  accessType: '51dns',
-  order:999,
+  accessType: "51dns",
+  order: 999,
 })
 export class Dns51DnsProvider extends AbstractDnsProvider<Dns51Record> {
   access!: Dns51Access;
 
-  client!:Dns51Client;
+  client!: Dns51Client;
   async onInstance() {
     //一些初始化的操作
     // 也可以通过ctx成员变量传递context
@@ -43,29 +43,25 @@ export class Dns51DnsProvider extends AbstractDnsProvider<Dns51Record> {
      * type: 'TXT',
      * domain: 'example.com'
      */
-    const { fullRecord,hostRecord, value, type, domain } = options;
-    this.logger.info('添加域名解析：', fullRecord, value, type, domain);
-
-
-
+    const { fullRecord, hostRecord, value, type, domain } = options;
+    this.logger.info("添加域名解析：", fullRecord, value, type, domain);
 
     const domainId = await this.client.getDomainId(domain);
-    this.logger.info('获取domainId成功:', domainId);
+    this.logger.info("获取domainId成功:", domainId);
 
     const res = await this.client.createRecord({
       domain: domain,
       domainId: domainId,
-      type: 'TXT',
+      type: "TXT",
       host: hostRecord,
       data: value,
       ttl: 300,
-    })
+    });
     return {
       id: res.id,
       domainId: domainId,
     };
   }
-
 
   /**
    *  删除dns解析记录,清理申请痕迹
@@ -74,9 +70,9 @@ export class Dns51DnsProvider extends AbstractDnsProvider<Dns51Record> {
   async removeRecord(options: RemoveRecordOptions<Dns51Record>): Promise<void> {
     const { fullRecord, value } = options.recordReq;
     const record = options.recordRes;
-    this.logger.info('删除域名解析：', fullRecord, value);
+    this.logger.info("删除域名解析：", fullRecord, value);
     if (!record) {
-      this.logger.info('record为空，不执行删除');
+      this.logger.info("record为空，不执行删除");
       return;
     }
     //这里调用删除txt dns解析记录接口
@@ -86,16 +82,16 @@ export class Dns51DnsProvider extends AbstractDnsProvider<Dns51Record> {
      * Authorization: Basic {token}
      * 请求参数
      */
-    const {id,domainId} = record
+    const { id, domainId } = record;
     await this.client.deleteRecord({
       id,
-      domainId
-    })
+      domainId,
+    });
     this.logger.info(`删除域名解析成功:fullRecord=${fullRecord},id=${id}`);
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
-    return await this.client.getDomainListPage(req)
+    return await this.client.getDomainListPage(req);
   }
 }
 

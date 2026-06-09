@@ -3,14 +3,13 @@ import { BuildLoginUrlReq, BuildLogoutUrlReq, IOauthProvider, OnCallbackReq } fr
 
 @IsAddon({
   addonType: "oauth",
-  name: 'github',
-  title: 'GitHub认证',
-  desc: 'GitHub OAuth2登录',
-  icon:"simple-icons:github",
+  name: "github",
+  title: "GitHub认证",
+  desc: "GitHub OAuth2登录",
+  icon: "simple-icons:github",
   showTest: false,
 })
 export class GithubOauthProvider extends BaseAddon implements IOauthProvider {
-
   @AddonInput({
     title: "ClientId",
     helper: "[GitHub Developer Settings](https://github.com/settings/developers)创建应用后获取",
@@ -28,56 +27,54 @@ export class GithubOauthProvider extends BaseAddon implements IOauthProvider {
   clientSecretKey = "";
 
   async buildLoginUrl(params: BuildLoginUrlReq) {
-
-    let scope = "user:email" // Scope of the access request
-    const authorizeEndpoint = "https://github.com/login/oauth/authorize"
-    const redirectUrl = encodeURIComponent(params.redirectUri)
-    const loginUrl = `${authorizeEndpoint}?client_id=${this.clientId}&redirect_uri=${redirectUrl}&response_type=code&scope=${scope}&state=${params.state}`
+    const scope = "user:email"; // Scope of the access request
+    const authorizeEndpoint = "https://github.com/login/oauth/authorize";
+    const redirectUrl = encodeURIComponent(params.redirectUri);
+    const loginUrl = `${authorizeEndpoint}?client_id=${this.clientId}&redirect_uri=${redirectUrl}&response_type=code&scope=${scope}&state=${params.state}`;
     return {
       loginUrl,
-      ticketValue: {  },
+      ticketValue: {},
     };
   }
 
   async onCallback(req: OnCallbackReq) {
-    
-    const code = req.code || ""
+    const code = req.code || "";
 
-    const tokenEndpoint = "https://github.com/login/oauth/access_token"
+    const tokenEndpoint = "https://github.com/login/oauth/access_token";
 
-    const uri = new URL(req.currentURL)
-    const redirectUri = `${uri.origin}${uri.pathname}`
-    const res = await this.ctx.utils.http.request( {
-        url: tokenEndpoint,
-        method: "post",
-        headers: {
-          "Accept": "application/json"
-        },
-        data:{
-          client_id: this.clientId,
-          client_secret: this.clientSecretKey,
-          code,
-          redirect_uri: redirectUri
-        }
-    })
-    
-    const tokens = res
+    const uri = new URL(req.currentURL);
+    const redirectUri = `${uri.origin}${uri.pathname}`;
+    const res = await this.ctx.utils.http.request({
+      url: tokenEndpoint,
+      method: "post",
+      headers: {
+        Accept: "application/json",
+      },
+      data: {
+        client_id: this.clientId,
+        client_secret: this.clientSecretKey,
+        code,
+        redirect_uri: redirectUri,
+      },
+    });
 
-    const userInfoEndpoint = "https://api.github.com/user"
+    const tokens = res;
+
+    const userInfoEndpoint = "https://api.github.com/user";
 
     // 获取用户信息
-     const userInfoRes = await this.ctx.utils.http.request( {
-        url: userInfoEndpoint,
-        method: "get",
-        headers: {
-          "Authorization": `Bearer ${tokens.access_token}`,
-          "Accept": "application/json"
-        }
-    })
-    const userInfo = userInfoRes
+    const userInfoRes = await this.ctx.utils.http.request({
+      url: userInfoEndpoint,
+      method: "get",
+      headers: {
+        Authorization: `Bearer ${tokens.access_token}`,
+        Accept: "application/json",
+      },
+    });
+    const userInfo = userInfoRes;
 
     return {
-      token:{
+      token: {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
         expiresIn: tokens.expires_in,
@@ -87,8 +84,8 @@ export class GithubOauthProvider extends BaseAddon implements IOauthProvider {
         nickName: userInfo.login || userInfo.name || "",
         avatar: userInfo.avatar_url,
       },
-    }
-  };
+    };
+  }
 
   async buildLogoutUrl(params: BuildLogoutUrlReq) {
     return {};

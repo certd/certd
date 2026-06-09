@@ -1,27 +1,17 @@
-import {ALL, Body, Controller, Inject, Post, Provide} from '@midwayjs/core';
-import {AccessGetter, AccessService, BaseController, Constants} from '@certd/lib-server';
-import {
-  AccessRequestHandleReq,
-  IAccessService,
-  ITaskPlugin,
-  newAccess,
-  newNotification,
-  NotificationRequestHandleReq,
-  pluginRegistry,
-  PluginRequestHandleReq,
-  TaskInstanceContext,
-} from '@certd/pipeline';
-import {EmailService} from '../../../modules/basic/service/email-service.js';
-import {http, HttpRequestConfig, logger, mergeUtils, utils} from '@certd/basic';
-import {NotificationService} from '../../../modules/pipeline/service/notification-service.js';
-import {TaskServiceBuilder} from "../../../modules/pipeline/service/getter/task-service-getter.js";
-import { cloneDeep } from 'lodash-es';
-import { ApiTags } from '@midwayjs/swagger';
-import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
+import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
+import { AccessGetter, AccessService, BaseController, Constants } from "@certd/lib-server";
+import { AccessRequestHandleReq, IAccessService, ITaskPlugin, newAccess, newNotification, NotificationRequestHandleReq, pluginRegistry, PluginRequestHandleReq, TaskInstanceContext } from "@certd/pipeline";
+import { EmailService } from "../../../modules/basic/service/email-service.js";
+import { http, HttpRequestConfig, logger, mergeUtils, utils } from "@certd/basic";
+import { NotificationService } from "../../../modules/pipeline/service/notification-service.js";
+import { TaskServiceBuilder } from "../../../modules/pipeline/service/getter/task-service-getter.js";
+import { cloneDeep } from "lodash-es";
+import { ApiTags } from "@midwayjs/swagger";
+import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 
 @Provide()
-@Controller('/api/pi/handle')
-@ApiTags(['pipeline-handle'])
+@Controller("/api/pi/handle")
+@ApiTags(["pipeline-handle"])
 export class HandleController extends BaseController {
   @Inject()
   accessService: AccessService;
@@ -38,28 +28,28 @@ export class HandleController extends BaseController {
   @Inject()
   notificationService: NotificationService;
 
-  @Post('/access', { description: Constants.per.authOnly, summary: "处理授权请求" })
+  @Post("/access", { description: Constants.per.authOnly, summary: "处理授权请求" })
   async accessRequest(@Body(ALL) body: AccessRequestHandleReq) {
-    let {projectId,userId} = await this.getProjectUserIdRead()
-    if (body.fromType === 'sys') {
+    let { projectId, userId } = await this.getProjectUserIdRead();
+    if (body.fromType === "sys") {
       //系统级别的请求
       const pass = await this.authService.checkPermission(this.ctx, "sys:settings:view");
       if (!pass) {
-        throw new Error('权限不足');
+        throw new Error("权限不足");
       }
-      projectId = null
-      userId = 0
+      projectId = null;
+      userId = 0;
     }
-   
+
     let inputAccess = body.input;
     if (body.record.id > 0) {
       const oldEntity = await this.accessService.info(body.record.id);
       if (oldEntity) {
         if (oldEntity.userId !== userId && oldEntity.userId !== this.getUserId()) {
-          throw new Error('您没有权限使用该授权');
+          throw new Error("您没有权限使用该授权");
         }
         if (oldEntity.projectId && oldEntity.projectId !== projectId) {
-          throw new Error('您没有权限使用该授权（projectId不匹配）');
+          throw new Error("您没有权限使用该授权（projectId不匹配）");
         }
         const param: any = {
           type: body.typeName,
@@ -69,8 +59,8 @@ export class HandleController extends BaseController {
         inputAccess = this.accessService.decryptAccessEntity(param);
       }
     }
-    const accessGetter = new AccessGetter(userId,projectId, this.accessService.getById.bind(this.accessService));
-    const access = await newAccess(body.typeName, inputAccess,accessGetter);
+    const accessGetter = new AccessGetter(userId, projectId, this.accessService.getById.bind(this.accessService));
+    const access = await newAccess(body.typeName, inputAccess, accessGetter);
 
     // mergeUtils.merge(access, body.input);
     const res = await access.onRequest(body);
@@ -78,7 +68,7 @@ export class HandleController extends BaseController {
     return this.ok(res);
   }
 
-  @Post('/notification', { description: Constants.per.authOnly, summary: "处理通知请求" })
+  @Post("/notification", { description: Constants.per.authOnly, summary: "处理通知请求" })
   async notificationRequest(@Body(ALL) body: NotificationRequestHandleReq) {
     const input = body.input;
 
@@ -94,9 +84,9 @@ export class HandleController extends BaseController {
     return this.ok(res);
   }
 
-  @Post('/plugin', { description: Constants.per.authOnly, summary: "处理插件请求" })
+  @Post("/plugin", { description: Constants.per.authOnly, summary: "处理插件请求" })
   async pluginRequest(@Body(ALL) body: PluginRequestHandleReq) {
-    const {projectId,userId} = await this.getProjectUserIdRead()
+    const { projectId, userId } = await this.getProjectUserIdRead();
     const pluginDefine = pluginRegistry.get(body.typeName);
     const pluginCls = await pluginDefine.target();
     if (pluginCls == null) {
@@ -117,14 +107,14 @@ export class HandleController extends BaseController {
       });
     };
 
-    const taskServiceGetter = this.taskServiceBuilder.create({userId,projectId})
+    const taskServiceGetter = this.taskServiceBuilder.create({ userId, projectId });
 
-    const accessGetter = await taskServiceGetter.get<IAccessService>("accessService")
+    const accessGetter = await taskServiceGetter.get<IAccessService>("accessService");
     //@ts-ignore
     const taskCtx: TaskInstanceContext = {
       pipeline: undefined,
       step: undefined,
-      define: cloneDeep( pluginDefine.define),
+      define: cloneDeep(pluginDefine.define),
       lastStatus: undefined,
       http,
       download,
@@ -136,7 +126,7 @@ export class HandleController extends BaseController {
       userContext: undefined,
       fileStore: undefined,
       signal: undefined,
-      user: {id:userId,role:"user"},
+      user: { id: userId, role: "user" },
       projectId,
       // pipelineContext: this.pipelineContext,
       // userContext: this.contextFactory.getContext('user', this.options.userId),
@@ -147,7 +137,7 @@ export class HandleController extends BaseController {
       // }),
       // signal: this.abort.signal,
       utils,
-      serviceGetter:taskServiceGetter
+      serviceGetter: taskServiceGetter,
     };
     instance.setCtx(taskCtx);
     mergeUtils.merge(plugin, body.input);

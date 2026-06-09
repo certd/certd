@@ -1,7 +1,7 @@
-import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from '@certd/plugin-cert';
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 
-import { CloudflareAccess } from './access.js';
-import { Pager, PageRes, PageSearch } from '@certd/pipeline';
+import { CloudflareAccess } from "./access.js";
+import { Pager, PageRes, PageSearch } from "@certd/pipeline";
 
 export type CloudflareRecord = {
   id: string;
@@ -18,12 +18,12 @@ export type CloudflareRecord = {
 
 // 这里通过IsDnsProvider注册一个dnsProvider
 @IsDnsProvider({
-  name: 'cloudflare',
-  title: 'cloudflare',
-  desc: 'cloudflare dns provider',
-  icon: 'simple-icons:cloudflare',
+  name: "cloudflare",
+  title: "cloudflare",
+  desc: "cloudflare dns provider",
+  icon: "simple-icons:cloudflare",
   // 这里是对应的 cloudflare的access类型名称
-  accessType: 'cloudflare',
+  accessType: "cloudflare",
 })
 export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord> {
   access!: CloudflareAccess;
@@ -39,16 +39,14 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
   }
 
   async getZoneId(domain: string) {
-    this.logger.info('获取zoneId:', domain);
+    this.logger.info("获取zoneId:", domain);
     const url = `https://api.cloudflare.com/client/v4/zones?name=${domain}`;
-    const res = await this.access.doRequestApi(url, null, 'get');
+    const res = await this.access.doRequestApi(url, null, "get");
     if (res.result.length === 0) {
       throw new Error(`未找到域名${domain}的zoneId`);
     }
     return res.result[0].id;
   }
-
-
 
   /**
    * 创建dns解析记录，用于验证域名所有权
@@ -61,10 +59,10 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
      * domain: 'example.com'
      */
     const { fullRecord, value, type, domain } = options;
-    this.logger.info('添加域名解析：', fullRecord, value, type, domain);
+    this.logger.info("添加域名解析：", fullRecord, value, type, domain);
 
     const zoneId = await this.getZoneId(domain);
-    this.logger.info('获取zoneId成功:', zoneId);
+    this.logger.info("获取zoneId成功:", zoneId);
 
     // 给domain下创建txt类型的dns解析记录，fullRecord
     const url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`;
@@ -92,7 +90,7 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
   async findRecord(zoneId: string, options: CreateRecordOptions): Promise<CloudflareRecord | null> {
     const { fullRecord, value } = options;
     const url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?type=TXT&name=${fullRecord}&content=${value}`;
-    const res = await this.access.doRequestApi(url, null, 'get');
+    const res = await this.access.doRequestApi(url, null, "get");
     if (res.result.length === 0) {
       return null;
     }
@@ -106,29 +104,29 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
   async removeRecord(options: RemoveRecordOptions<CloudflareRecord>): Promise<void> {
     const { fullRecord, value } = options.recordReq;
     const record = options.recordRes;
-    this.logger.info('删除域名解析：', fullRecord, value);
+    this.logger.info("删除域名解析：", fullRecord, value);
     if (!record) {
-      this.logger.info('record为空，不执行删除');
+      this.logger.info("record为空，不执行删除");
       return;
     }
     //这里调用删除txt dns解析记录接口
     const zoneId = record.zone_id;
     const recordId = record.id;
     const url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${recordId}`;
-    await this.access.doRequestApi(url, null, 'delete');
+    await this.access.doRequestApi(url, null, "delete");
     this.logger.info(`删除域名解析成功:fullRecord=${fullRecord},value=${value}`);
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
     const pager = new Pager(req);
-    
+
     let url = `https://api.cloudflare.com/client/v4/zones?page=${pager.pageNo}&per_page=${pager.pageSize}`;
     if (req.searchKey) {
       url += `&name=${req.searchKey}`;
     }
-    const ret = await this.access.doRequestApi(url, null, 'get');
+    const ret = await this.access.doRequestApi(url, null, "get");
 
-    let list = ret.result || []
+    let list = ret.result || [];
     list = list.map((item: any) => ({
       id: item.id,
       domain: item.name,

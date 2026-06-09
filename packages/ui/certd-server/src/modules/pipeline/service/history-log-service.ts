@@ -1,8 +1,8 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { InjectEntityModel } from '@midwayjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { BaseService } from '@certd/lib-server';
-import { HistoryLogEntity } from '../entity/history-log.js';
+import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { In, Repository } from "typeorm";
+import { BaseService } from "@certd/lib-server";
+import { HistoryLogEntity } from "../entity/history-log.js";
 
 /**
  * 证书申请

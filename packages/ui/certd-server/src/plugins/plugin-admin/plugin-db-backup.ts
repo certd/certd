@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import JSZip from "jszip";
 import * as os from "node:os";
-import { OssClientContext, ossClientFactory, OssClientRemoveByOpts} from "../plugin-lib/oss/index.js";
+import { OssClientContext, ossClientFactory, OssClientRemoveByOpts } from "../plugin-lib/oss/index.js";
 import { SshAccess, SshClient } from "../plugin-lib/ssh/index.js";
 import { pipeline } from "stream/promises";
 const defaultBackupDir = "certd_backup";

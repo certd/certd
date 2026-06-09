@@ -1,4 +1,4 @@
-import { CnameRecord, ICnameProxyService } from '@certd/pipeline';
+import { CnameRecord, ICnameProxyService } from "@certd/pipeline";
 
 export class CnameProxyService implements ICnameProxyService {
   userId: number;

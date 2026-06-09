@@ -3,26 +3,24 @@ import { HttpRequestConfig } from "@certd/basic";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
 import dayjs from "dayjs";
 
-
 /**
  */
 @IsAccess({
   name: "goedge",
   title: "GoEdge授权",
   icon: "fa-solid:leaf:#6C6BF6",
-  order: 100
+  order: 100,
 })
 export class GoEdgeAccess extends BaseAccess {
-
   @AccessInput({
     title: "系统地址",
     component: {
       name: "a-input",
-      vModel: "value"
+      vModel: "value",
     },
     helper: "例如：http://yourdomain.com:8002， 需要在API节点配置中开启HTTP访问地址",
     encrypt: false,
-    required: true
+    required: true,
   })
   endpoint!: string;
 
@@ -34,16 +32,16 @@ export class GoEdgeAccess extends BaseAccess {
       options: [
         {
           label: "用户",
-          value: "user"
+          value: "user",
         },
         {
           label: "管理员",
-          value: "admin"
-        }
-      ]
+          value: "admin",
+        },
+      ],
     },
     encrypt: false,
-    required: true
+    required: true,
   })
   userType!: string;
 
@@ -53,10 +51,10 @@ export class GoEdgeAccess extends BaseAccess {
 管理员AccessKey：在”系统用户-用户-详情-AccessKey” 中创建。`,
     component: {
       name: "a-input",
-      vModel: "value"
+      vModel: "value",
     },
     encrypt: false,
-    required: true
+    required: true,
   })
   accessKeyId!: string;
 
@@ -64,30 +62,28 @@ export class GoEdgeAccess extends BaseAccess {
     title: "accessKey",
     component: {
       name: "a-input",
-      vModel: "value"
+      vModel: "value",
     },
     encrypt: true,
-    required: true
+    required: true,
   })
   accessKey!: string;
-
-
 
   @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "点击测试接口是否正常"
+    helper: "点击测试接口是否正常",
   })
   testRequest = true;
 
-  accessToken: { expiresAt: number, token: string }
+  accessToken: { expiresAt: number; token: string };
 
   async onTestRequest() {
     await this.getCertList({ pageSize: 1 });
-    return "ok"
+    return "ok";
   }
 
   /**
@@ -115,14 +111,14 @@ export class GoEdgeAccess extends BaseAccess {
     "ocspError": ""
    * @returns 
    */
-  async getCertList(req: { pageNo?: number, pageSize?: number, query?: string, onlyUser?: boolean, userId?: number }) {
+  async getCertList(req: { pageNo?: number; pageSize?: number; query?: string; onlyUser?: boolean; userId?: number }) {
     const pageNo = req.pageNo ?? 1;
     const pageSize = req.pageSize ?? 20;
     const body: any = {
       keyword: req.query ?? "",
       offset: (pageNo - 1) * pageSize,
       size: pageSize,
-    }
+    };
     if (req.onlyUser) {
       body["onlyUser"] = true;
     }
@@ -133,14 +129,14 @@ export class GoEdgeAccess extends BaseAccess {
     const countRes = await this.doRequest({
       url: `/SSLCertService/countSSLCerts`,
       method: "POST",
-      data: body
+      data: body,
     });
     const total = countRes.count || 9999;
 
     const res = await this.doRequest({
       url: `/SSLCertService/listSSLCerts`,
       method: "POST",
-      data: body
+      data: body,
     });
     // this.ctx.logger.info("getCertList",JSON.stringify(res));
     const sslCertsJSON = this.ctx.utils.hash.base64Decode(res.sslCertsJSON) || "[]";
@@ -149,20 +145,19 @@ export class GoEdgeAccess extends BaseAccess {
       total: total,
       list: sslCerts || [],
       pageNo: pageNo,
-      pageSize: pageSize
-    }
+      pageSize: pageSize,
+    };
   }
 
-  async doCertReplace(req: { certId: number, cert: CertInfo }) {
-
-    let sslCert:any = {}
+  async doCertReplace(req: { certId: number; cert: CertInfo }) {
+    let sslCert: any = {};
     try {
       const res = await this.doRequest({
         url: `/SSLCertService/findEnabledSSLCertConfig`,
         method: "POST",
         data: {
           sslCertId: req.certId,
-        }
+        },
       });
       const sslCertJSON = this.ctx.utils.hash.base64Decode(res.sslCertJSON) || "{}";
       sslCert = JSON.parse(sslCertJSON);
@@ -171,7 +166,7 @@ export class GoEdgeAccess extends BaseAccess {
     }
 
     const certReader = new CertReader(req.cert);
-    const dnsNames = certReader.getAllDomains()
+    const dnsNames = certReader.getAllDomains();
 
     // /product/sslcenter/{id}
     return await this.doRequest({
@@ -206,11 +201,9 @@ export class GoEdgeAccess extends BaseAccess {
   []string dnsNames;
   []string commonNames;
          */
-      }
+      },
     });
-
   }
-
 
   async getToken() {
     // /APIAccessTokenService/getAPIAccessToken
@@ -223,17 +216,16 @@ export class GoEdgeAccess extends BaseAccess {
       method: "POST",
       data: {
         type: this.userType,
-        "accessKeyId": this.accessKeyId,
-        "accessKey": this.accessKey,
-      }
+        accessKeyId: this.accessKeyId,
+        accessKey: this.accessKey,
+      },
     });
     this.accessToken = res;
     return res;
   }
 
   async doRequest(req: HttpRequestConfig) {
-
-    const headers: Record<string, string> = {}
+    const headers: Record<string, string> = {};
     if (!req.url.endsWith("/getAPIAccessToken")) {
       if (!this.accessToken || this.accessToken.expiresAt < dayjs().unix()) {
         await this.getToken();
@@ -252,7 +244,7 @@ export class GoEdgeAccess extends BaseAccess {
       params: req.params,
       headers: {
         ...headers,
-        ...req.headers
+        ...req.headers,
       },
       // httpProxy: this.httpProxy||undefined,
     });
@@ -263,7 +255,5 @@ export class GoEdgeAccess extends BaseAccess {
     throw new Error(res.message || res);
   }
 }
-
-
 
 new GoEdgeAccess();

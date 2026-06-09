@@ -1,12 +1,12 @@
-import { SysEmailConf, SysSettingsService } from '@certd/lib-server';
-import * as _ from 'lodash-es';
-import { UserSettingsService } from '../../mine/service/user-settings-service.js';
+import { SysEmailConf, SysSettingsService } from "@certd/lib-server";
+import * as _ from "lodash-es";
+import { UserSettingsService } from "../../mine/service/user-settings-service.js";
 
 export async function getEmailSettings(sysSettingService: SysSettingsService, userSettingsService: UserSettingsService): Promise<SysEmailConf> {
   let conf = await sysSettingService.getSetting<SysEmailConf>(SysEmailConf);
   if (!conf.host || conf.usePlus == null) {
     //到userSetting里面去找
-    const adminEmailSetting = await userSettingsService.getByKey('email', 1,null);
+    const adminEmailSetting = await userSettingsService.getByKey("email", 1, null);
     if (adminEmailSetting) {
       const setting = JSON.parse(adminEmailSetting.setting);
       conf = _.merge(conf, setting);

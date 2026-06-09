@@ -56,12 +56,12 @@ export class GoogleCommonEabAccountKeyFix {
       });
       const googleCommonEabAccessId = certApplyConfig?.sysSetting?.input?.googleCommonEabAccessId;
       if (!googleCommonEabAccessId) {
-        return  true;
+        return true;
       }
 
       const eabAccess = await this.accessService.getAccessById(googleCommonEabAccessId, false);
       if (eabAccess.accountKey) {
-        return  true;
+        return true;
       }
       if (!eabAccess.kid) {
         logger.info("公共Google EAB授权缺少KID，跳过历史ACME账号私钥修复");
@@ -82,7 +82,7 @@ export class GoogleCommonEabAccountKeyFix {
     } catch (e: any) {
       logger.error("修复公共Google EAB授权ACME账号私钥失败", e);
     }
-    return false  
+    return false;
   }
 
   async getLegacyGoogleAccountConfig(email?: string) {

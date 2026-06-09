@@ -4,10 +4,10 @@ import { TencentAccess } from "../../../plugin-lib/tencent/access.js";
 import { TencentSslClient } from "../../../plugin-lib/tencent/index.js";
 
 @IsTaskPlugin({
-  name: 'UploadCertToTencent',
-  title: '腾讯云-上传证书到腾讯云',
-  icon: 'svg:icon-tencentcloud',
-  desc: '上传成功后输出：tencentCertId',
+  name: "UploadCertToTencent",
+  title: "腾讯云-上传证书到腾讯云",
+  icon: "svg:icon-tencentcloud",
+  desc: "上传成功后输出：tencentCertId",
   group: pluginGroups.tencent.key,
   default: {
     strategy: {
@@ -20,21 +20,21 @@ export class UploadCertToTencent extends AbstractTaskPlugin {
   // name!: string;
 
   @TaskInput({
-    title: 'Access授权',
-    helper: 'access授权',
+    title: "Access授权",
+    helper: "access授权",
     component: {
-      name: 'access-selector',
-      type: 'tencent',
+      name: "access-selector",
+      type: "tencent",
     },
     required: true,
   })
   accessId!: string;
 
   @TaskInput({
-    title: '域名证书',
-    helper: '请选择前置任务输出的域名证书',
+    title: "域名证书",
+    helper: "请选择前置任务输出的域名证书",
     component: {
-      name: 'output-selector',
+      name: "output-selector",
       from: [...CertApplyPluginNames],
     },
     required: true,
@@ -42,13 +42,13 @@ export class UploadCertToTencent extends AbstractTaskPlugin {
   cert!: any;
 
   @TaskOutput({
-    title: '上传成功后的腾讯云CertId',
+    title: "上传成功后的腾讯云CertId",
   })
   tencentCertId?: string;
 
   Client: any;
   async onInstance() {
-    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js');
+    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js");
     this.Client = sdk.v20191205.Client;
   }
 
@@ -68,11 +68,9 @@ export class UploadCertToTencent extends AbstractTaskPlugin {
     this.tencentCertId = tencentCertId;
   }
 
-
-
   checkRet(ret: any) {
     if (!ret || ret.Error) {
-      throw new Error('执行失败：' + ret.Error.Code + ',' + ret.Error.Message);
+      throw new Error("执行失败：" + ret.Error.Code + "," + ret.Error.Message);
     }
   }
 }

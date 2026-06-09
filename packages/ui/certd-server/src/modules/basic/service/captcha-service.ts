@@ -12,15 +12,14 @@ export class CaptchaService {
   @Inject()
   addonGetterService: AddonGetterService;
 
-
   async getCaptcha(captchaAddonId?: number) {
     if (!captchaAddonId) {
       const settings = await this.sysSettingsService.getPublicSettings();
       captchaAddonId = settings.captchaAddonId ?? 0;
     }
-    const addon: ICaptchaAddon = await this.addonGetterService.getAddonById(captchaAddonId, true, 0,null, {
+    const addon: ICaptchaAddon = await this.addonGetterService.getAddonById(captchaAddonId, true, 0, null, {
       type: "captcha",
-      name: "image"
+      name: "image",
     });
     if (!addon) {
       throw new Error("验证码插件还未配置");
@@ -28,8 +27,7 @@ export class CaptchaService {
     return await addon.getCaptcha();
   }
 
-
-  async doValidate(opts: { form: any, must?: boolean, captchaAddonId?: number,req:CaptchaRequest }) {
+  async doValidate(opts: { form: any; must?: boolean; captchaAddonId?: number; req: CaptchaRequest }) {
     if (!opts.captchaAddonId) {
       const settings = await this.sysSettingsService.getPublicSettings();
       opts.captchaAddonId = settings.captchaAddonId ?? 0;
@@ -46,13 +44,11 @@ export class CaptchaService {
     if (!opts.form) {
       throw new Error("请输入验证码");
     }
-    const res = await addon.onValidate(opts.form,opts.req);
+    const res = await addon.onValidate(opts.form, opts.req);
     if (!res) {
       throw new Error("验证码错误");
     }
 
     return true;
-
   }
-
 }

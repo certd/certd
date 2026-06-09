@@ -13,9 +13,9 @@ import { UCloudRegions } from "./constants.js";
   needPlus: false,
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 export class UCloudDeployToULB extends AbstractTaskPlugin {
   @TaskInput({
@@ -23,8 +23,8 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
   })
   cert!: CertInfo;
 
@@ -35,9 +35,9 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
     title: "UCloud授权",
     component: {
       name: "access-selector",
-      type: "ucloud"
+      type: "ucloud",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
 
@@ -46,7 +46,7 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
       title: "地域",
       helper: "选择UCloud地域",
       action: UCloudDeployToULB.prototype.onGetRegionList.name,
-      single: true
+      single: true,
     })
   )
   region!: string;
@@ -60,9 +60,7 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
   )
   certNameList!: string[];
 
-
-  async onInstance() {
-  }
+  async onInstance() {}
 
   async onGetRegionList(req: PageSearch = {}) {
     const access = await this.getAccess<UCloudAccess>(this.accessId);
@@ -74,7 +72,7 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
       throw new Error("没有获取到UCloud地域列表");
     }
 
-    const haveSet = {}
+    const haveSet = {};
     list = list.filter((item: any) => {
       const region = item.Region;
       if (haveSet[region]) {
@@ -82,13 +80,13 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
       }
       haveSet[region] = true;
       return true;
-    })
-    let options = list.map((item: any) => {
+    });
+    const options = list.map((item: any) => {
       const region = item.Region;
-      const name = UCloudRegions.find((r) => r.value === region)?.label || item.RegionName;
+      const name = UCloudRegions.find(r => r.value === region)?.label || item.RegionName;
       return {
         label: `${name}(${item.Region})`,
-        value: item.Region
+        value: item.Region,
       };
     });
 
@@ -96,21 +94,20 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
       list: options,
       total: options.length,
       pageNo: 1,
-      pageSize: options.length
+      pageSize: options.length,
     };
   }
-
 
   async execute(): Promise<void> {
     const access = await this.getAccess<UCloudAccess>(this.accessId);
     const allCertList = await this.getAllCert(access);
-    const certMap = {}
-    allCertList.forEach((item) => {
+    const certMap = {};
+    allCertList.forEach(item => {
       if (!item.name) {
         return;
       }
       certMap[item.name] = item;
-    })
+    });
 
     for (const certName of this.certNameList) {
       this.logger.info(`----------- 开始更新证书：${certName}`);
@@ -126,10 +123,10 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
         continue;
       }
 
-      const bakCertName = `${certName}_${oldCert.id}_${Date.now()}`
-      let certId = await this.uploadCertToULB({
+      const bakCertName = `${certName}_${oldCert.id}_${Date.now()}`;
+      const certId = await this.uploadCertToULB({
         access,
-        certName:bakCertName,
+        certName: bakCertName,
       });
       this.logger.info(`----------- 上传证书${bakCertName}完成`);
 
@@ -140,7 +137,6 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
         certName,
       });
       this.logger.info(`----------- 证书${certName}部署完成`);
-
     }
 
     await this.ctx.utils.sleep(2000);
@@ -151,13 +147,13 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
   }
 
   async clearExpiredCert(access: UCloudAccess, allCertList: any[]) {
-    const now = Date.now()/1000;
-    const expiredCertList = allCertList.filter((item) => {
+    const now = Date.now() / 1000;
+    const expiredCertList = allCertList.filter(item => {
       if (!item.notAfter) {
         return false;
       }
       return item.notAfter < now;
-    })
+    });
     if (!expiredCertList || expiredCertList.length === 0) {
       this.logger.info(`----------- 没有过期证书需要清理`);
       return;
@@ -166,10 +162,10 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
       this.logger.info(`----------- 清理过期证书：${cert.name} ${cert.id}`);
       try {
         await access.invoke({
-          "Action": "DeleteSSL",
-          "Region": this.region,
-          "ProjectId": access.projectId,
-          "SSLId": cert.id,
+          Action: "DeleteSSL",
+          Region: this.region,
+          ProjectId: access.projectId,
+          SSLId: cert.id,
         });
         this.logger.info(`----------- 清理过期证书成功：${cert.name} ${cert.id}`);
       } catch (error) {
@@ -177,12 +173,7 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
       }
     }
   }
-  async updateSSLBinding(req: {
-    access: UCloudAccess,
-    oldSSL: any,
-    newSSLId: string,
-    certName: string,
-  }) {
+  async updateSSLBinding(req: { access: UCloudAccess; oldSSL: any; newSSLId: string; certName: string }) {
     const access = req.access;
     const oldSSLId = req.oldSSL.id;
     const newSSLId = req.newSSLId;
@@ -192,11 +183,11 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
     } else {
       this.logger.info(`----------- 更新ULB证书绑定：${oldSSLId} -> ${newSSLId}`);
       await access.invoke({
-        "Action": "UpdateSSLBinding",
-        "Region": this.region,
-        "ProjectId": access.projectId,
-        "OldSSLId": oldSSLId,
-        "NewSSLId": newSSLId,
+        Action: "UpdateSSLBinding",
+        Region: this.region,
+        ProjectId: access.projectId,
+        OldSSLId: oldSSLId,
+        NewSSLId: newSSLId,
       });
       this.logger.info(`----------- 更新ULB证书绑定成功: ${newSSLId}`);
     }
@@ -204,51 +195,46 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
     // 更新证书名称
     this.logger.info(`----------- 更新ULB证书名称：${newSSLId} -> ${req.certName}`);
     await access.invoke({
-      "Action": "UpdateSSLAttribute",
-      "Region": this.region,
-      "ProjectId": access.projectId,
-      "SSLId": newSSLId,
-      "SSLName": req.certName,
+      Action: "UpdateSSLAttribute",
+      Region: this.region,
+      ProjectId: access.projectId,
+      SSLId: newSSLId,
+      SSLName: req.certName,
     });
     this.logger.info(`----------- 更新ULB证书名称成功：${req.certName}`);
     await this.ctx.utils.sleep(5000);
     try {
       this.logger.info(`----------- 删除ULB旧证书：${oldSSLId}`);
       await access.invoke({
-        "Action": "DeleteSSL",
-        "Region": this.region,
-        "ProjectId": access.projectId,
-        "SSLId": oldSSLId,
+        Action: "DeleteSSL",
+        Region: this.region,
+        ProjectId: access.projectId,
+        SSLId: oldSSLId,
       });
       this.logger.info(`----------- 删除ULB旧证书成功：${oldSSLId}`);
     } catch (error) {
       this.logger.error(`----------- 删除ULB旧证书失败：${oldSSLId}`, error);
     }
-
   }
 
-  async uploadCertToULB(req: {
-    access: UCloudAccess,
-    certName: string,
-  }) {
+  async uploadCertToULB(req: { access: UCloudAccess; certName: string }) {
     const access = req.access;
     const certName = req.certName;
-    const certContent = `${this.cert.crt}\n${this.cert.key}`
+    const certContent = `${this.cert.crt}\n${this.cert.key}`;
     const res = await access.invoke({
-      "Action": "CreateSSL",
-      "Region": this.region,
-      "ProjectId": access.projectId,
-      "SSLName": certName,
-      "SSLContent": certContent,
+      Action: "CreateSSL",
+      Region: this.region,
+      ProjectId: access.projectId,
+      SSLName: certName,
+      SSLContent: certContent,
     });
 
     if (res.RetCode !== 0) {
-      throw new Error(`创建ULB证书失败: ${res.Message || '未知错误'}`);
+      throw new Error(`创建ULB证书失败: ${res.Message || "未知错误"}`);
     }
 
     return res.SSLId;
   }
-
 
   async getAllCert(access: UCloudAccess) {
     const certList = [] as any[];
@@ -268,27 +254,23 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
     return certList;
   }
 
-
   async getCertPage(access: UCloudAccess, req: PageSearch = {}) {
     const pageNo = req.pageNo ?? 1;
     const pageSize = req.pageSize ?? 100;
 
     const res = await access.invoke({
-      "Action": "DescribeSSLV2",
-      "Region": this.region,
-      "ProjectId": access.projectId,
-      "Offset": (pageNo - 1) * pageSize,
-      "Limit": pageSize
+      Action: "DescribeSSLV2",
+      Region: this.region,
+      ProjectId: access.projectId,
+      Offset: (pageNo - 1) * pageSize,
+      Limit: pageSize,
     });
 
     let list = res.DataSet || [];
     const total = res.TotalCount || list.length;
 
     list = list.map((item: any) => {
-      const domains = [
-        ...item.Domains.split(','),
-        ...item.DNSNames.split(',')
-      ]
+      const domains = [...item.Domains.split(","), ...item.DNSNames.split(",")];
       return {
         id: item.SSLId,
         name: item.SSLName,
@@ -298,7 +280,7 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
         createTime: item.CreateTime,
         relations: item.Relations,
       };
-    })
+    });
     return {
       list: list,
       total: total,
@@ -327,7 +309,6 @@ export class UCloudDeployToULB extends AbstractTaskPlugin {
       total: total,
     };
   }
-
 }
 
 new UCloudDeployToULB();

@@ -12,9 +12,9 @@ import { VolcengineClient } from "../ve-client.js";
   desc: "部署至火山引擎负载均衡",
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 export class VolcengineDeployToCLB extends AbstractTaskPlugin {
   @TaskInput({
@@ -22,24 +22,23 @@ export class VolcengineDeployToCLB extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames, "VolcengineUploadToCertCenter"]
+      from: [...CertApplyPluginNames, "VolcengineUploadToCertCenter"],
     },
-    required: true
+    required: true,
   })
   cert!: CertInfo | string;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
 
-
   @TaskInput({
     title: "Access授权",
     helper: "火山引擎AccessKeyId、AccessKeySecret",
     component: {
       name: "access-selector",
-      type: "volcengine"
+      type: "volcengine",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
 
@@ -109,15 +108,13 @@ export class VolcengineDeployToCLB extends AbstractTaskPlugin {
         { label: "重庆", value: "cn-chengdu" },
         { label: "香港", value: "cn-hongkong" },
         { label: "柔佛", value: "ap-southeast-1" },
-        { label: "雅加达", value: "ap-southeast-3" }
-
-      ]
+        { label: "雅加达", value: "ap-southeast-3" },
+      ],
     },
     value: "cn-beijing",
-    required: true
+    required: true,
   })
   regionId!: string;
-
 
   @TaskInput(
     createRemoteSelectInputDefine({
@@ -125,14 +122,12 @@ export class VolcengineDeployToCLB extends AbstractTaskPlugin {
       helper: "选择要部署证书的监听器\n<span class='color-blue'>需要在监听器中选择证书中心，进行跨服务访问授权</span>",
       action: VolcengineDeployToCLB.prototype.onGetListenerList.name,
       watches: ["certDomains", "accessId", "regionId"],
-      required: true
+      required: true,
     })
   )
   listenerList!: string | string[];
 
-
-  async onInstance() {
-  }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     this.logger.info("开始部署证书到火山引擎CLB");
@@ -143,8 +138,8 @@ export class VolcengineDeployToCLB extends AbstractTaskPlugin {
       const certInfo = this.cert as CertInfo;
       this.logger.info(`开始上传证书`);
       certId = await certService.ImportCertificate({
-        certName:this.appendTimeSuffix("certd"),
-        cert:certInfo
+        certName: this.appendTimeSuffix("certd"),
+        cert: certInfo,
       });
       this.logger.info(`上传证书成功:${certId}`);
     } else {
@@ -159,8 +154,8 @@ export class VolcengineDeployToCLB extends AbstractTaskPlugin {
         query: {
           ListenerId: listener,
           CertificateSource: "cert_center",
-          CertCenterCertificateId: certId
-        }
+          CertCenterCertificateId: certId,
+        },
       });
       this.logger.info(`部署监听器${listener}证书成功`);
     }
@@ -168,12 +163,11 @@ export class VolcengineDeployToCLB extends AbstractTaskPlugin {
     this.logger.info("部署完成");
   }
 
-
   private async getCertService(access: VolcengineAccess) {
     const client = new VolcengineClient({
       logger: this.logger,
       access,
-      http: this.http
+      http: this.http,
     });
 
     return await client.getCertCenterService();
@@ -188,7 +182,7 @@ export class VolcengineDeployToCLB extends AbstractTaskPlugin {
       action: "DescribeLoadBalancers",
       method: "GET",
       query: {
-        PageSize: 100
+        PageSize: 100,
       },
     });
 
@@ -197,7 +191,7 @@ export class VolcengineDeployToCLB extends AbstractTaskPlugin {
     return list.map((item: any) => {
       return {
         value: item.LoadBalancerId,
-        label: `${item.LoadBalancerName}<${item.Description}>`
+        label: `${item.LoadBalancerName}<${item.Description}>`,
       };
     });
   }
@@ -208,11 +202,11 @@ export class VolcengineDeployToCLB extends AbstractTaskPlugin {
     const client = new VolcengineClient({
       logger: this.logger,
       access,
-      http: this.http
+      http: this.http,
     });
 
     const service = await client.getClbService({
-      region: this.regionId
+      region: this.regionId,
     });
     return service;
   }
@@ -228,7 +222,7 @@ export class VolcengineDeployToCLB extends AbstractTaskPlugin {
       method: "GET",
       query: {
         PageSize: 100,
-        Protocol: "HTTPS"
+        Protocol: "HTTPS",
       },
     });
 
@@ -239,7 +233,7 @@ export class VolcengineDeployToCLB extends AbstractTaskPlugin {
     return list.map((item: any) => {
       return {
         value: item.ListenerId,
-        label: `${item.ListenerName}<${item.Description}:${item.ListenerId}>`
+        label: `${item.ListenerName}<${item.Description}:${item.ListenerId}>`,
       };
     });
   }

@@ -1,53 +1,51 @@
-import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
+import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
 
 @IsAccess({
-  name: 'Gcore',
-  title: 'Gcore',
-  desc: 'Gcore',
-  icon: 'clarity:plugin-line',
+  name: "Gcore",
+  title: "Gcore",
+  desc: "Gcore",
+  icon: "clarity:plugin-line",
 })
 export class GcoreAccess extends BaseAccess {
   @AccessInput({
-    title: 'username',
+    title: "username",
     component: {
-      placeholder: 'username',
+      placeholder: "username",
     },
     required: true,
   })
-  username = '';
+  username = "";
   @AccessInput({
-    title: 'password',
+    title: "password",
     component: {
-      placeholder: 'password',
+      placeholder: "password",
     },
     required: true,
     encrypt: true,
   })
-  password = '';
+  password = "";
   @AccessInput({
-    title: 'totp key',
+    title: "totp key",
     component: {
-      placeholder: 'totp key',
+      placeholder: "totp key",
     },
     encrypt: true,
   })
-  otpkey = '';
-
-
+  otpkey = "";
 
   @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "点击测试接口是否正常"
+    helper: "点击测试接口是否正常",
   })
   testRequest = true;
 
   async onTestRequest() {
     await this.login();
-    return "ok"
+    return "ok";
   }
 
   async login() {
@@ -55,10 +53,10 @@ export class GcoreAccess extends BaseAccess {
     if (this.otpkey) {
       const response = await this.ctx.http.request<any, any>({
         url: `https://cn-api.my-api.cn/api/totp/?key=${this.otpkey}`,
-        method: 'get',
+        method: "get",
       });
       otp = response;
-      this.ctx.logger.info('获取到otp:', otp);
+      this.ctx.logger.info("获取到otp:", otp);
     }
     const loginResponse = await this.doRequestApi(`/iam/auth/jwt/login`, {
       username: this.username,
@@ -66,14 +64,14 @@ export class GcoreAccess extends BaseAccess {
       ...(otp && { otp }),
     });
     const token = loginResponse.access;
-    this.ctx.logger.info('Token 获取成功');
+    this.ctx.logger.info("Token 获取成功");
     return token;
   }
 
-  async doRequestApi(url: string, data: any = null, method = 'post', token: string | null = null) {
-    const baseApi = 'https://api.gcore.com';
+  async doRequestApi(url: string, data: any = null, method = "post", token: string | null = null) {
+    const baseApi = "https://api.gcore.com";
     const headers = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(token ? { authorization: `Bearer ${token}` } : {}),
     };
     const res = await this.ctx.http.request<any, any>({

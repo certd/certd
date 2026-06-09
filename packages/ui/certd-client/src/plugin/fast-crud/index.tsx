@@ -107,6 +107,9 @@ function install(app: App, options: any = {}) {
           scroll: {
             x: 960,
           },
+          rowSelection: {
+            fixed: "left",
+          },
           size: "small",
           pagination: false,
           onResizeColumn: (w: number, col: any) => {

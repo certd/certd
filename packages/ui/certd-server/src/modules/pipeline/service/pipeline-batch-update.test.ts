@@ -115,7 +115,10 @@ describe("pipeline batch update", () => {
       },
     };
 
-    assert.equal(updateCertApplyStepInputs(pipeline, {}, stepType => inputDefines[stepType]), 0);
+    assert.equal(
+      updateCertApplyStepInputs(pipeline, {}, stepType => inputDefines[stepType]),
+      0
+    );
     assert.equal(
       updateCertApplyStepInputs(
         pipeline,

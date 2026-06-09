@@ -129,7 +129,7 @@ async doRequest(req: { action: string, data?: any }) {
   });
 
   if (res.Code !== 0) {
-    //异常处理 
+    //异常处理
     throw new Error(res.Message || "请求失败");
   }
   return res.Resp;

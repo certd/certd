@@ -1,66 +1,65 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity('pi_plugin')
+@Entity("pi_plugin")
 export class PluginEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'name', comment: 'Key' })
+  @Column({ name: "name", comment: "Key" })
   name: string;
 
-  @Column({ name: 'icon', comment: '图标' })
+  @Column({ name: "icon", comment: "图标" })
   icon: string;
 
-  @Column({ name: 'title', comment: '标题' })
+  @Column({ name: "title", comment: "标题" })
   title: string;
 
-  @Column({ name: 'group', comment: '分组' })
+  @Column({ name: "group", comment: "分组" })
   group: string;
 
-  @Column({ name: 'desc', comment: '描述' })
+  @Column({ name: "desc", comment: "描述" })
   desc: string;
 
-  @Column({ comment: '配置', length: 40960 })
+  @Column({ comment: "配置", length: 40960 })
   setting: string;
 
-  @Column({ name: 'sys_setting', comment: '系统配置', length: 40960 })
+  @Column({ name: "sys_setting", comment: "系统配置", length: 40960 })
   sysSetting: string;
 
-  @Column({ comment: '脚本', length: 40960 })
+  @Column({ comment: "脚本", length: 40960 })
   content: string;
 
-  @Column({ comment: '类型', length: 100, nullable: true })
+  @Column({ comment: "类型", length: 100, nullable: true })
   type: string; // builtIn | local | download
 
-  @Column({ comment: '启用/禁用', default: false })
+  @Column({ comment: "启用/禁用", default: false })
   disabled: boolean;
 
-  @Column({ comment: '版本', length: 100, nullable: true })
+  @Column({ comment: "版本", length: 100, nullable: true })
   version: string;
 
-  @Column({ comment: '插件类型', length: 100, nullable: true })
+  @Column({ comment: "插件类型", length: 100, nullable: true })
   pluginType: string;
 
-  @Column({ comment: '元数据', length: 40960, nullable: true })
+  @Column({ comment: "元数据", length: 40960, nullable: true })
   metadata: string;
 
-  @Column({ comment: '额外配置', length: 40960, nullable: true })
+  @Column({ comment: "额外配置", length: 40960, nullable: true })
   extra: string;
 
-  @Column({ comment: '作者', length: 100, nullable: true })
+  @Column({ comment: "作者", length: 100, nullable: true })
   author: string;
 
-
   @Column({
-    name: 'create_time',
-    comment: '创建时间',
-    default: () => 'CURRENT_TIMESTAMP',
+    name: "create_time",
+    comment: "创建时间",
+    default: () => "CURRENT_TIMESTAMP",
   })
   createTime: Date;
   @Column({
-    name: 'update_time',
-    comment: '修改时间',
-    default: () => 'CURRENT_TIMESTAMP',
+    name: "update_time",
+    comment: "修改时间",
+    default: () => "CURRENT_TIMESTAMP",
   })
   updateTime: Date;
 }

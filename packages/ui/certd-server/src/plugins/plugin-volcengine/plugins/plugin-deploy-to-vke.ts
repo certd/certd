@@ -1,9 +1,10 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
-import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { utils } from "@certd/basic";
+import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
+import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import { VolcengineAccess } from "../access.js";
 import { VolcengineClient } from "../ve-client.js";
-import { utils } from "@certd/basic";
 
 const regionOptions = [
   { label: "北京", value: "cn-beijing" },
@@ -11,7 +12,7 @@ const regionOptions = [
   { label: "广州", value: "cn-guangzhou" },
   { label: "香港", value: "cn-hongkong" },
   { label: "柔佛", value: "ap-southeast-1" },
-  { label: "雅加达", value: "ap-southeast-3" }
+  { label: "雅加达", value: "ap-southeast-3" },
 ];
 
 @IsTaskPlugin({
@@ -20,23 +21,24 @@ const regionOptions = [
   icon: "svg:icon-volcengine",
   group: pluginGroups.volcengine.key,
   desc: "替换火山引擎VKE集群中的TLS Secret证书",
+  needPlus:true,
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
-export class VolcengineDeployToVKE extends AbstractTaskPlugin {
+export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
   @TaskInput({
     title: "域名证书",
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
+      from: [...CertApplyPluginNames, "VolcengineUploadToCertCenter"],
     },
-    required: true
+    required: true,
   })
-  cert!: CertInfo;
+  cert!: CertInfo | string;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
@@ -46,9 +48,9 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     helper: "火山引擎AccessKeyId、AccessKeySecret",
     component: {
       name: "access-selector",
-      type: "volcengine"
+      type: "volcengine",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
 
@@ -57,10 +59,10 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     helper: "VKE集群所在地域",
     component: {
       name: "a-select",
-      options: regionOptions
+      options: regionOptions,
     },
     value: "cn-beijing",
-    required: true
+    required: true,
   })
   regionId!: string;
 
@@ -71,7 +73,7 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       action: VolcengineDeployToVKE.prototype.onGetClusterList.name,
       watches: ["accessId", "regionId"],
       single: true,
-      required: true
+      required: true,
     })
   )
   clusterId!: string;
@@ -83,11 +85,11 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       name: "a-select",
       options: [
         { label: "公网", value: "Public" },
-        { label: "私网", value: "Private" }
-      ]
+        { label: "私网", value: "Private" },
+      ],
     },
     value: "Public",
-    required: true
+    required: true,
   })
   kubeconfigType!: "Public" | "Private";
 
@@ -95,9 +97,9 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     title: "命名空间",
     value: "default",
     component: {
-      placeholder: "命名空间"
+      placeholder: "命名空间",
     },
-    required: true
+    required: true,
   })
   namespace!: string;
 
@@ -107,12 +109,12 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     component: {
       name: "a-select",
       options: [
+        { label: "按Secret替换", value: "secret" },
         { label: "按Ingress替换", value: "ingress" },
-        { label: "按Secret替换", value: "secret" }
-      ]
+      ],
     },
-    value: "ingress",
-    required: true
+    value: "secret",
+    required: true,
   })
   targetType!: "ingress" | "secret";
 
@@ -125,37 +127,45 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
         show: ctx.compute(({form}) => form.targetType === 'ingress'),
         required: ctx.compute(({form}) => form.targetType === 'ingress')
       }
-    `
+    `,
   })
   ingressName!: string;
 
   @TaskInput({
     title: "Secret名称",
     required: true,
-    helper: "存储TLS证书的Secret名称，可填写多个",
+    helper: "选择要替换的Secret，可多选",
     component: {
-      name: "a-select",
+      name: "remote-select",
       vModel: "value",
       mode: "tags",
-      open: false
+      type: "plugin",
+      action: "onGetSecretList",
+      search: false,
+      pager: false,
+      single: false,
+      watches: ["certDomains", "accessId", "regionId", "clusterId", "kubeconfigType", "namespace"],
     },
     mergeScript: `
       return {
         show: ctx.compute(({form}) => form.targetType === 'secret'),
-        required: ctx.compute(({form}) => form.targetType === 'secret')
+        required: ctx.compute(({form}) => form.targetType === 'secret'),
+        component: {
+          form: ctx.compute(({form}) => form)
+        }
       }
-    `
+    `,
   })
   secretName!: string | string[];
 
   @TaskInput({
     title: "Secret自动创建",
-    helper: "如果Secret不存在，则创建kubernetes.io/tls类型Secret",
+    helper: "如果Secret不存在，则创建Opaque类型Secret",
     value: false,
     component: {
       name: "a-switch",
-      vModel: "checked"
-    }
+      vModel: "checked",
+    },
   })
   createOnNotFound!: boolean;
 
@@ -165,8 +175,8 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     value: false,
     component: {
       name: "a-switch",
-      vModel: "checked"
-    }
+      vModel: "checked",
+    },
   })
   skipTLSVerify!: boolean;
 
@@ -181,6 +191,23 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     this.logger.info("开始替换火山引擎VKE证书");
     const access = await this.getAccess<VolcengineAccess>(this.accessId);
     const vkeService = await this.getVkeService(access);
+
+    // 上传证书到证书中心
+    let certId: string;
+    if (typeof this.cert !== "string") {
+      const certInfo = this.cert as CertInfo;
+      this.logger.info("开始上传证书到证书中心");
+      const certService = await this.getCertService(access);
+      certId = await certService.ImportCertificate({
+        certName: this.appendTimeSuffix("certd"),
+        cert: certInfo,
+      });
+      this.logger.info("上传证书到证书中心成功:" + certId);
+    } else {
+      certId = this.cert;
+      this.logger.info("使用已有证书中心ID:" + certId);
+    }
+
     const kubeconfigId = await this.createKubeconfig(vkeService);
 
     try {
@@ -188,10 +215,10 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       const k8sClient = new this.K8sClient({
         kubeConfigStr: kubeconfig,
         logger: this.logger,
-        skipTLSVerify: this.skipTLSVerify
+        skipTLSVerify: this.skipTLSVerify,
       });
       const secretNames = await this.getTargetSecretNames(k8sClient);
-      await this.patchCertSecret({ cert: this.cert, k8sClient, secretNames });
+      await this.patchCertSecret({ certId, k8sClient, secretNames });
     } catch (e) {
       if (e.response?.body) {
         throw new Error(this.formatK8sError(e.response.body));
@@ -205,11 +232,20 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     this.logger.info("VKE证书替换完成");
   }
 
+  private async getCertService(access: VolcengineAccess) {
+    const client = new VolcengineClient({
+      logger: this.logger,
+      access,
+      http: this.http,
+    });
+    return await client.getCertCenterService();
+  }
+
   private async getVkeService(access: VolcengineAccess) {
     const client = new VolcengineClient({
       logger: this.logger,
       access,
-      http: this.http
+      http: this.http,
     });
     return await client.getVkeService({ region: this.regionId });
   }
@@ -222,8 +258,8 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       body: {
         ClusterId: clusterId,
         Type: this.kubeconfigType,
-        ValidDuration: 3600
-      }
+        ValidDuration: 3600,
+      },
     });
     const kubeconfigId = res.Result?.Id || res.Id;
     if (!kubeconfigId) {
@@ -242,11 +278,11 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
         Filter: {
           ClusterIds: [clusterId],
           Ids: [kubeconfigId],
-          Types: [this.kubeconfigType]
+          Types: [this.kubeconfigType],
         },
         PageNumber: 1,
-        PageSize: 10
-      }
+        PageSize: 10,
+      },
     });
     const items = res.Result?.Items || res.Items || [];
     const item = items.find((it: any) => it.Id === kubeconfigId) || items[0];
@@ -268,8 +304,8 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
         method: "POST",
         body: {
           ClusterId: clusterId,
-          Ids: [kubeconfigId]
-        }
+          Ids: [kubeconfigId],
+        },
       });
       this.logger.info(`已删除临时Kubeconfig:${kubeconfigId}`);
     } catch (e) {
@@ -293,6 +329,11 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
   }
 
   private formatK8sError(body: any) {
+    if (body?.code === 422 && body?.message?.includes("field is immutable")) {
+      const secretName = body.details?.name || "未知";
+      return `Secret类型不可变：Secret ${secretName} 已是kubernetes.io/tls类型，type字段不可修改。\n请删除该Secret后重试，或选择正确的Secret。\n原始错误:${JSON.stringify(body)}`;
+    }
+
     if (body?.code !== 403 || body?.reason !== "Forbidden") {
       return JSON.stringify(body);
     }
@@ -303,7 +344,9 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     const resource = message.match(/resource "([^"]+)"/)?.[1] || body.details?.kind || "目标资源";
     const namespace = message.match(/namespace "([^"]+)"/)?.[1] || this.namespace;
     const userText = granteeId ? `，用户ID:${granteeId}` : "";
-    return `VKE集群RBAC权限不足：当前火山引擎授权${userText}在集群:${this.getClusterId()} 的命名空间:${namespace} 没有操作 ${resource} 的权限。请在火山引擎 VKE 集群权限管理中，为该用户授予此命名空间的管理员权限，或授予包含 secrets get/create/update/patch 的自定义角色。原始错误:${JSON.stringify(body)}`;
+    return `VKE集群RBAC权限不足：当前火山引擎授权${userText}在集群:${this.getClusterId()} 的命名空间:${namespace} 没有操作 ${resource} 的权限。请在火山引擎 VKE 集群权限管理中，为该用户授予此命名空间的管理员权限，或授予包含 secrets get/create/update/patch 的自定义角色。原始错误:${JSON.stringify(
+      body
+    )}`;
   }
 
   private async getTargetSecretNames(k8sClient: any) {
@@ -315,7 +358,7 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     }
 
     const ingressList = await k8sClient.getIngressList({
-      namespace: this.namespace
+      namespace: this.namespace,
     });
     const ingress = ingressList.items.find((item: any) => item.metadata.name === this.ingressName);
     if (!ingress) {
@@ -332,34 +375,71 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
     return secretNames;
   }
 
-  private async patchCertSecret(options: { cert: CertInfo; k8sClient: any; secretNames: string[] }) {
-    const { cert, k8sClient, secretNames } = options;
+  private async patchCertSecret(options: { certId: string; k8sClient: any; secretNames: string[] }) {
+    const { certId, k8sClient, secretNames } = options;
     if (!secretNames || secretNames.length === 0) {
       throw new Error("Secret名称不能为空");
     }
 
-    const body: any = {
-      data: {
-        "tls.crt": Buffer.from(cert.crt).toString("base64"),
-        "tls.key": Buffer.from(cert.key).toString("base64")
-      },
-      metadata: {
-        labels: {
-          certd: this.appendTimeSuffix("certd")
-        }
-      }
-    };
-
     for (const secretName of secretNames) {
+      let useTlsFormat = false;
+      try {
+        const res = await k8sClient.client.readNamespacedSecret(secretName, this.namespace);
+        useTlsFormat = res.body?.type === "kubernetes.io/tls";
+      } catch (e) {
+        // Secret 不存在，将走创建逻辑
+      }
+
+      let body: any;
+      if (useTlsFormat) {
+        let crt: string;
+        let key: string;
+        if (typeof this.cert === "string") {
+          const access = await this.getAccess<VolcengineAccess>(this.accessId);
+          const certService = await this.getCertService(access);
+          const detail = await certService.GetCertificateDetail(this.cert);
+          crt = detail.CertificateChain || "";
+          key = detail.PrivateKey || "";
+          this.logger.info("从证书中心获取证书详情成功");
+        } else {
+          crt = this.cert.crt;
+          key = this.cert.key;
+        }
+        body = {
+          data: {
+            "tls.crt": Buffer.from(crt).toString("base64"),
+            "tls.key": Buffer.from(key).toString("base64"),
+          },
+          metadata: {
+            labels: {
+              certd: this.appendTimeSuffix("certd"),
+            },
+          },
+        };
+      } else {
+        body = {
+          type: "Opaque",
+          data: {
+            cert_id: Buffer.from(certId).toString("base64"),
+            cert_source: Buffer.from("cert_center").toString("base64"),
+          },
+          metadata: {
+            labels: {
+              certd: this.appendTimeSuffix("certd"),
+            },
+          },
+        };
+      }
+
       body.metadata.name = secretName;
-      this.logger.info(`开始更新VKE Secret:${secretName}`);
+      this.logger.info("开始更新VKE Secret:" + secretName);
       await k8sClient.patchSecret({
         namespace: this.namespace,
         secretName,
         body,
-        createOnNotFound: this.createOnNotFound
+        createOnNotFound: this.createOnNotFound,
       });
-      this.logger.info(`VKE Secret已更新:${secretName}`);
+      this.logger.info("VKE Secret已更新:" + secretName);
     }
 
     if (this.targetType === "ingress" && this.ingressName) {
@@ -378,15 +458,44 @@ export class VolcengineDeployToVKE extends AbstractTaskPlugin {
       method: "POST",
       body: {
         PageNumber: 1,
-        PageSize: 100
-      }
+        PageSize: 100,
+      },
     });
     const list = res.Result?.Items || res.Items || [];
     return list.map((item: any) => ({
       label: `${item.Name || item.Id}<${item.Id}>`,
-      value: item.Id
+      value: item.Id,
     }));
   }
+  async onGetSecretList() {
+    if (!this.accessId) {
+      throw new Error("请选择Access授权");
+    }
+    if (!this.clusterId) {
+      throw new Error("请选择VKE集群");
+    }
+    const access = await this.getAccess<VolcengineAccess>(this.accessId);
+    const vkeService = await this.getVkeService(access);
+    const kubeconfigId = await this.createKubeconfig(vkeService);
+
+    try {
+      const kubeconfig = await this.getKubeconfig(vkeService, kubeconfigId);
+      const k8sClient = new this.K8sClient({
+        kubeConfigStr: kubeconfig,
+        logger: this.logger,
+        skipTLSVerify: this.skipTLSVerify,
+      });
+      const res = await k8sClient.getSecrets({ namespace: this.namespace || "default" });
+      const list = res.body?.items || res.items || [];
+      return list.map((item: any) => ({
+        label: item.metadata.name,
+        value: item.metadata.name,
+      }));
+    } finally {
+      await this.deleteKubeconfig(vkeService, kubeconfigId);
+    }
+  }
+
 }
 
 new VolcengineDeployToVKE();

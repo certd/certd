@@ -1,8 +1,8 @@
 // 获取框架
-const WebFramework = require('@midwayjs/koa').Framework;
-const { Bootstrap } = require('@midwayjs/bootstrap');
+const WebFramework = require("@midwayjs/koa").Framework;
+const { Bootstrap } = require("@midwayjs/bootstrap");
 
-const DirectoryFileDetector = require('@midwayjs/core').DirectoryFileDetector;
+const DirectoryFileDetector = require("@midwayjs/core").DirectoryFileDetector;
 
 const baseDir = process.cwd();
 const customFileDetector = new DirectoryFileDetector({
@@ -12,7 +12,7 @@ const customFileDetector = new DirectoryFileDetector({
 module.exports = async () => {
   // 加载框架并执行
   await Bootstrap.configure({
-    ignore: ["**/plugins/**","/plugins/","plugins","dist/plugins","/dist/plugins","dist\\plugins","dist/plugins"],
+    ignore: ["**/plugins/**", "/plugins/", "plugins", "dist/plugins", "/dist/plugins", "dist\\plugins", "dist/plugins"],
     moduleDetector: customFileDetector,
   }).run();
   // 获取依赖注入容器

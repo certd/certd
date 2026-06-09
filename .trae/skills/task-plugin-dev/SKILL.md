@@ -7,12 +7,15 @@ version: 1.0.0
 # Task 插件开发技能
 
 ## 角色定义
+
 你是一名 Certd 插件开发专家，擅长创建和实现 Task 类型的插件，熟悉 TypeScript 编程和 Certd 插件开发规范。
 
 ## 核心指令
+
 请严格按照以下步骤执行任务：
 
 1. **导入必要的依赖**
+
    - 导入 `AbstractTaskPlugin`, `IsTaskPlugin`, `PageSearch`, `pluginGroups`, `RunStrategy`, `TaskInput` 等必要的类型和装饰器
    - 导入 `CertInfo`, `CertReader` 等证书相关类型
    - 导入 `createCertDomainGetterInputDefine`, `createRemoteSelectInputDefine` 等工具函数
@@ -20,22 +23,26 @@ version: 1.0.0
    - 导入 `CertApplyPluginNames` 等常量
 
 2. **使用 @IsTaskPlugin 注解注册插件**
+
    - 配置插件的唯一标识、标题、图标
    - 设置插件分组
    - 配置默认策略（如 `SkipWhenSucceed`）
    - 确保类名与插件名称一致
 
 3. **定义任务输入参数**
+
    - 使用 `@TaskInput` 注解定义各种输入参数
    - 必须包含证书选择参数，用于获取前置任务输出的域名证书
    - 可以添加授权选择框、文本输入、选择框等参数
    - 使用 `createCertDomainGetterInputDefine` 获取证书域名列表
 
 4. **实现动态显隐配置**
+
    - 使用 `mergeScript` 实现根据其他输入值动态控制输入项的显隐状态
    - 利用 `ctx.compute` 函数访问表单中的其他字段值
 
 5. **实现插件方法**
+
    - **onInstance 方法**：插件实例化时执行的初始化操作
    - **execute 方法**：插件的核心执行逻辑
      - 获取授权信息
@@ -55,6 +62,7 @@ version: 1.0.0
    - 授权获取：使用 `this.getAccess(accessId)` 获取授权信息
 
 ## 输出规范
+
 - 必须包含完整的插件实现代码
 - 代码必须包含详细的注释说明
 - 提供完整的示例代码，展示插件的使用方法
@@ -65,6 +73,7 @@ version: 1.0.0
 ### 示例 1: 基本 Task 插件
 
 #### 用户输入
+
 创建一个 Task 插件，用于将证书部署到对应的应用上。
 
 #### 你的回答
@@ -74,7 +83,7 @@ import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from '@certd/plugin-lib';
 import { optionsUtils } from '@certd/basic';
-import { CertApplyPluginNames} from '@certd/plugin-cert';
+import { CertApplyPluginNames } from '@certd/plugin-cert';
 
 @IsTaskPlugin({
   //命名规范，插件类型+功能，大写字母开头，驼峰命名
@@ -281,6 +290,7 @@ export class DemoTest extends AbstractTaskPlugin {
 ### 示例 2: Nginx 部署 Task 插件
 
 #### 用户输入
+
 创建一个 Task 插件，用于将证书部署到 Nginx 服务器上。
 
 #### 你的回答
@@ -459,6 +469,7 @@ new NginxDeploy();
 ### 示例 3: 阿里云 OSS 部署 Task 插件
 
 #### 用户输入
+
 创建一个 Task 插件，用于将证书部署到阿里云 OSS 上。
 
 #### 你的回答
@@ -628,6 +639,7 @@ new AliyunOSSDeploy();
 ## 部署逻辑注意事项
 
 1. **部署接口逻辑**：
+
    - 研究应用的部署接口逻辑，一般有两种：
      a. 用户选择网站ID，给网站部署新证书
      b. 用户选择证书ID，只需要更新证书即可
@@ -635,6 +647,7 @@ new AliyunOSSDeploy();
    - 确保出错后重新运行能够回归到正常状态
 
 2. **前置证书选择**：
+
    - 前置证书可以是原始的 `certInfo` 类型，也可能是上传到平台之后返回的证书id
    - 根据接口要求选择合适的证书类型：
      a. 如果接口需要上传后的证书id，那么部署时要先将证书上传，再部署
@@ -643,4 +656,7 @@ new AliyunOSSDeploy();
 
 3. **证书清理**：
    - 如果是先上传再部署的，那么在部署完成后，可能需要考虑清理证书
+
+```
+
 ```

@@ -13,19 +13,18 @@ import { AcePanelAccess } from "../access.js";
   needPlus: true,
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
-
 export class AcePanelDeployToWebsite extends AbstractPlusTaskPlugin {
   @TaskInput({
     title: "域名证书",
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
   })
   cert!: CertInfo;
 
@@ -36,9 +35,9 @@ export class AcePanelDeployToWebsite extends AbstractPlusTaskPlugin {
     title: "ACEPanel授权",
     component: {
       name: "access-selector",
-      type: "acepanel"
+      type: "acepanel",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
 
@@ -48,13 +47,12 @@ export class AcePanelDeployToWebsite extends AbstractPlusTaskPlugin {
       helper: "选择需要部署证书的网站",
       action: AcePanelDeployToWebsite.prototype.onGetWebsiteList.name,
       pager: false,
-      search: false
+      search: false,
     })
   )
   websiteList!: number[];
 
-  async onInstance() {
-  }
+  async onInstance() {}
 
   async onGetWebsiteList(data: PageSearch = {}) {
     const access = await this.getAccess<AcePanelAccess>(this.accessId);
@@ -65,9 +63,9 @@ export class AcePanelDeployToWebsite extends AbstractPlusTaskPlugin {
     }
     const options = items.map((item: any) => {
       return {
-        label: `${item.name} (${item.domains.join(', ')})`,
+        label: `${item.name} (${item.domains.join(", ")})`,
         value: item.id,
-        domain: item.domains
+        domain: item.domains,
       };
     });
     return {
@@ -83,7 +81,7 @@ export class AcePanelDeployToWebsite extends AbstractPlusTaskPlugin {
     const result = await access.uploadCert(this.cert.crt, this.cert.key);
     const certId = result.data.id;
     this.logger.info(`证书上传成功，证书ID：${certId}`);
-    this.logger.info(`证书域名：${result.data.domains.join(', ')}`);
+    this.logger.info(`证书域名：${result.data.domains.join(", ")}`);
 
     // 部署证书到选择的网站
     if (this.websiteList && this.websiteList.length > 0) {

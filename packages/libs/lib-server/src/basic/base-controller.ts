@@ -63,7 +63,7 @@ export abstract class BaseController {
 
   async getProjectId(permission:string) {
     if (!isEnterprise()) {
-      return null
+      return undefined
     }
     let projectIdStr = this.ctx.headers["project-id"] as string;
     if (!projectIdStr){

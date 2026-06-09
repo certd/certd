@@ -7,15 +7,19 @@ version: 1.0.0
 # 插件转换工具技能
 
 ## 角色定义
+
 你是一名 Certd 插件开发专家，擅长使用插件转换工具将 Certd 插件转换为 YAML 配置文件，熟悉命令行工具的使用和 Certd 插件开发规范。
 
 ## 核心指令
+
 请严格按照以下步骤执行任务：
 
 1. **定位工具位置**
+
    - 工具位于 `trae/skills/convert-plugin-to-yaml.js`
 
 2. **了解功能特性**
+
    - 单个插件转换：支持指定单个插件文件进行转换
    - 批量插件转换：支持指定目录批量转换多个插件
    - 自动类型识别：自动识别插件类型（Access、Task、DNS Provider、Notification、Addon）
@@ -27,6 +31,7 @@ version: 1.0.0
    - 可复用函数：导出了可复用的函数，便于其他模块调用
 
 3. **使用工具**
+
    - 基本用法：`node trae/skills/convert-plugin-to-yaml.js <插件文件路径>`
    - 批量转换：`node trae/skills/convert-plugin-to-yaml.js <目录路径>`
    - 自定义输出目录：`node trae/skills/convert-plugin-to-yaml.js <插件文件路径> --output <输出目录>`
@@ -39,6 +44,7 @@ version: 1.0.0
      - 自定义输出目录：`node trae/skills/convert-plugin-to-yaml.js packages/ui/certd-server/src/plugins/plugin-demo/access.js --output ./configs`
 
 4. **理解转换过程**
+
    - 加载插件模块：使用 `import()` 动态加载指定的插件文件
    - 分析插件定义：检查模块导出的对象，寻找带有 `define` 属性的插件
    - 识别插件类型：根据插件的继承关系或属性识别插件类型
@@ -46,10 +52,12 @@ version: 1.0.0
    - 保存配置文件：将生成的配置保存到 `./metadata` 目录
 
 5. **了解输出说明**
+
    - 命令行输出：插件加载状态、插件导出的对象列表、插件类型识别结果、生成的 YAML 配置内容、配置文件保存路径
    - 配置文件命名规则：`<插件类型>[_<子类型>]_<插件名称>.yaml`
 
 6. **理解插件类型识别逻辑**
+
    - DNS Provider：如果插件定义中包含 `accessType` 属性
    - Task：如果插件继承自 `AbstractTaskPlugin`
    - Notification：如果插件继承自 `BaseNotification`
@@ -64,6 +72,7 @@ version: 1.0.0
    - 错误处理：如果插件加载失败或识别失败，工具会输出错误信息但不会终止执行
 
 ## 输出规范
+
 - 必须包含工具的使用方法和示例
 - 必须包含转换过程的详细说明
 - 必须包含输出说明和配置文件命名规则
@@ -75,6 +84,7 @@ version: 1.0.0
 ### 示例 1: 转换单个 Access 插件
 
 #### 用户输入
+
 将 Access 插件转换为 YAML 配置文件。
 
 #### 你的回答
@@ -85,6 +95,7 @@ node trae/skills/convert-plugin-to-yaml.js packages/ui/certd-server/src/plugins/
 ```
 
 #### 输出
+
 ```bash
 $ node trae/skills/convert-plugin-to-yaml.js packages/ui/certd-server/src/plugins/plugin-demo/access.js
 开始转换插件: packages/ui/certd-server/src/plugins/plugin-demo/access.js
@@ -109,6 +120,7 @@ YAML 配置已保存到: ./metadata/access_demo.yaml
 ### 示例 2: 批量转换插件
 
 #### 用户输入
+
 批量转换目录中的所有插件为 YAML 配置文件。
 
 #### 你的回答
@@ -119,6 +131,7 @@ node trae/skills/convert-plugin-to-yaml.js packages/ui/certd-server/src/plugins/
 ```
 
 #### 输出
+
 ```bash
 $ node trae/skills/convert-plugin-to-yaml.js packages/ui/certd-server/src/plugins/
 开始转换目录: packages/ui/certd-server/src/plugins/
@@ -189,6 +202,7 @@ YAML 配置已保存到: ./metadata/dns-provider_demo.yaml
 ### 示例 3: 自定义输出目录
 
 #### 用户输入
+
 将插件转换为 YAML 配置文件，并保存到自定义目录。
 
 #### 你的回答
@@ -199,6 +213,7 @@ node trae/skills/convert-plugin-to-yaml.js packages/ui/certd-server/src/plugins/
 ```
 
 #### 输出
+
 ```bash
 $ node trae/skills/convert-plugin-to-yaml.js packages/ui/certd-server/src/plugins/plugin-demo/access.js --output ./configs
 开始转换插件: packages/ui/certd-server/src/plugins/plugin-demo/access.js
@@ -225,14 +240,17 @@ YAML 配置已保存到: ./configs/access_demo.yaml
 ### 常见问题
 
 1. **模块加载失败**
+
    - 原因：插件文件依赖未安装或路径错误
    - 解决：确保已安装所有依赖，检查文件路径是否正确
 
 2. **插件类型识别失败**
+
    - 原因：插件未正确继承基类或缺少必要的属性
    - 解决：检查插件代码，确保正确继承对应的基类
 
 3. **YAML 配置生成失败**
+
    - 原因：插件定义格式不正确
    - 解决：检查插件的 `define` 属性格式是否正确
 
@@ -262,9 +280,9 @@ YAML 配置已保存到: ./configs/access_demo.yaml
 
 ```javascript
 export {
-  convertSinglePlugin,  // 转换单个插件
-  loadSingleModule,     // 加载单个模块
-  isPrototypeOf         // 检查原型关系
+  convertSinglePlugin, // 转换单个插件
+  loadSingleModule, // 加载单个模块
+  isPrototypeOf, // 检查原型关系
 };
 ```
 

@@ -1,6 +1,6 @@
-import { HttpClient, ILogger } from '@certd/basic';
-import { CertInfo, CertReader } from '@certd/plugin-cert';
-import * as crypto from 'crypto';
+import { HttpClient, ILogger } from "@certd/basic";
+import { CertInfo, CertReader } from "@certd/plugin-cert";
+import * as crypto from "crypto";
 export interface CmcdnConfig {
   tenantId: string;
   tenantKey: string;
@@ -25,18 +25,18 @@ export class CmccClient {
    */
   constructor(config: CmcdnConfig) {
     this.config = {
-      endpoint: 'https://p.cdn.10086.cn/',
+      endpoint: "https://p.cdn.10086.cn/",
       ...config,
     };
-    this.http = config.http
+    this.http = config.http;
     this.logger = config.logger;
 
     if (!this.config.tenantId) {
-      throw new Error('tenantId is required');
+      throw new Error("tenantId is required");
     }
 
     if (!this.config.tenantKey) {
-      throw new Error('tenantKey is required');
+      throw new Error("tenantKey is required");
     }
   }
 
@@ -46,7 +46,7 @@ export class CmccClient {
    * @returns SHA256哈希值
    */
   private sha256Hex(data: string): string {
-    return crypto.createHash('sha256').update(data).digest('hex');
+    return crypto.createHash("sha256").update(data).digest("hex");
   }
 
   /**
@@ -74,7 +74,7 @@ export class CmccClient {
    * @returns 签名
    */
   private generateApiSign(body: any, token: string): string {
-    const bodyStr = body ? JSON.stringify(body) : '';
+    const bodyStr = body ? JSON.stringify(body) : "";
     return this.sha256Hex(bodyStr + token);
   }
 
@@ -88,8 +88,6 @@ export class CmccClient {
     }
     return Date.now() < this.tokenExpiresAt;
   }
-
-
 
   /**
    * 获取认证token
@@ -114,17 +112,17 @@ export class CmccClient {
 
     const response = await this.http.request({
       baseURL: this.config.endpoint,
-      url: '/api/authentication',
-      method: 'POST',
+      url: "/api/authentication",
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
       data: authRequest,
       skipSslVerify: true,
       logParams: false,
       logRes: false,
-      logData: false
+      logData: false,
     });
 
     this.token = response.token;
@@ -144,18 +142,18 @@ export class CmccClient {
 
     // 设置默认headers
     const defaultHeaders: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/vnd.cmcdn+json',
-      'CMCDN-Auth-Token': token,
+      "Content-Type": "application/json",
+      Accept: "application/vnd.cmcdn+json",
+      "CMCDN-Auth-Token": token,
     };
 
     // 生成签名
-    if (req.method === 'POST' || req.method === 'PUT') {
+    if (req.method === "POST" || req.method === "PUT") {
       const signature = this.generateApiSign(req.data, token);
-      defaultHeaders['HTTP-X-CMCDN-Signature'] = signature;
+      defaultHeaders["HTTP-X-CMCDN-Signature"] = signature;
     } else {
       const signature = this.sha256Hex(token);
-      defaultHeaders['HTTP-X-CMCDN-Signature'] = signature;
+      defaultHeaders["HTTP-X-CMCDN-Signature"] = signature;
     }
 
     // 合并自定义headers
@@ -172,7 +170,7 @@ export class CmccClient {
         skipSslVerify: true,
         logParams: false,
         logRes: false,
-        logData: false
+        logData: false,
       });
       if (response.error_code != 0) {
         this.logger.error(`接口请求失败,${JSON.stringify(response)}`);
@@ -283,16 +281,15 @@ export class CmccClient {
   ]
   }
    */
-  async getDomainList(req: { domainName?: string, domainStatus?: string }) {
-
+  async getDomainList(req: { domainName?: string; domainStatus?: string }) {
     const res = await this.doRequest({
       url: "/api/domain_list",
       method: "GET",
       params: {
         domainName: req.domainName,
         domainStatus: req.domainStatus,
-      }
-    })
+      },
+    });
 
     this.logger.info("getDomainList", res);
 
@@ -364,7 +361,6 @@ export class CmccClient {
   12.1.4.2请求报文示例
    */
   async uploadCert(req: { cert: CertInfo }) {
-
     const certReader = new CertReader(req.cert);
     const res = await this.doRequest({
       url: "/api/config/action?commandType=saveCrt&version=1",
@@ -373,8 +369,8 @@ export class CmccClient {
         certificate: req.cert.crt,
         private_key: req.cert.key,
         crt_name: certReader.buildCertName(),
-      }
-    })
+      },
+    });
 
     this.logger.info("uploadCert", res);
 
@@ -382,10 +378,10 @@ export class CmccClient {
   }
 
   /**
-   * 
-   * @param req 
+   *
+   * @param req
    */
-  async deployCertToCdn(req: { domainNames: string[], certId: string }) {
+  async deployCertToCdn(req: { domainNames: string[]; certId: string }) {
     // /api/config/action?commandType = manageDomainBaseConfig&version = 1
     const res = await this.doRequest({
       url: "/api/config/action?commandType=manageDomainBaseConfig&version=1",
@@ -395,11 +391,10 @@ export class CmccClient {
         domains: req.domainNames,
         https_enable: true,
         unique_id: req.certId,
-      }
-    })
+      },
+    });
     this.logger.info("deployCertToCdn", res);
 
     return res.data;
   }
-
 }

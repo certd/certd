@@ -13,7 +13,7 @@ export class Bind9Access extends BaseAccess {
     component: {
       name: "access-selector",
       type: "ssh",
-      vModel:"modelValue"
+      vModel: "modelValue",
     },
     required: true,
   })
@@ -37,7 +37,7 @@ export class Bind9Access extends BaseAccess {
       placeholder: "53",
     },
   })
-  dnsPort: number = 53;
+  dnsPort = 53;
 
   @AccessInput({
     title: "测试",

@@ -43,14 +43,13 @@ export class AliesaAccess extends BaseAccess {
   })
   region = "";
 
-
-   @AccessInput({
+  @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "点击测试接口是否正常"
+    helper: "点击测试接口是否正常",
   })
   testRequest = true;
 
@@ -59,51 +58,50 @@ export class AliesaAccess extends BaseAccess {
       pageNo: 1,
       pageSize: 1,
     });
-    return "ok"
+    return "ok";
   }
 
-
-  async getEsaClient(){
-    const access: AliesaAccess = this
-    const aliAccess = await this.ctx.accessService.getById(access.accessId) as AliyunAccess
-    const endpoint = `esa.${access.region}.aliyuncs.com`
-    return aliAccess.getClient(endpoint)
+  async getEsaClient() {
+    const access: AliesaAccess = this;
+    const aliAccess = (await this.ctx.accessService.getById(access.accessId)) as AliyunAccess;
+    const endpoint = `esa.${access.region}.aliyuncs.com`;
+    return aliAccess.getClient(endpoint);
   }
 
-   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
-      const pager = new Pager(req)
-      const client = await this.getEsaClient()
-      const ret = await client.doRequest({
-        // 接口名称
-        action: "ListSites",
-        // 接口版本
-        version: "2024-09-10",
-        // 接口协议
-        protocol: "HTTPS",
-        // 接口 HTTP 方法
-        method: "GET",
-        authType: "AK",
-        style: "RPC",
-        data: {
-          query: {
-            SiteName: req.searchKey,
-            // ["SiteSearchType"] = "exact";
-            SiteSearchType: "fuzzy",
-            AccessType: "NS",
-            PageSize: pager.pageSize,
-            PageNumber: pager.pageNo,
-          }
-        }
-      })
-      const list = ret.Sites?.map(item => ({
-        domain: item.SiteName,
-        id: item.SiteId,
-      })) 
-      return {
-        list: list || [],
-        total: ret.TotalCount,
-      }
-    }
+  async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    const pager = new Pager(req);
+    const client = await this.getEsaClient();
+    const ret = await client.doRequest({
+      // 接口名称
+      action: "ListSites",
+      // 接口版本
+      version: "2024-09-10",
+      // 接口协议
+      protocol: "HTTPS",
+      // 接口 HTTP 方法
+      method: "GET",
+      authType: "AK",
+      style: "RPC",
+      data: {
+        query: {
+          SiteName: req.searchKey,
+          // ["SiteSearchType"] = "exact";
+          SiteSearchType: "fuzzy",
+          AccessType: "NS",
+          PageSize: pager.pageSize,
+          PageNumber: pager.pageNo,
+        },
+      },
+    });
+    const list = ret.Sites?.map(item => ({
+      domain: item.SiteName,
+      id: item.SiteId,
+    }));
+    return {
+      list: list || [],
+      total: ret.TotalCount,
+    };
+  }
 }
 
 new AliesaAccess();

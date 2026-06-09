@@ -81,6 +81,7 @@ export class SysPrivateSettings extends BaseSettings {
 
   httpsProxy? = '';
   httpProxy? = '';
+  noProxy? = '';
   commonHeaders?: string = '';
 
   reverseProxies?: Record<string, string> = {};

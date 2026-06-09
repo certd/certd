@@ -1,11 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IsTaskPlugin,
-  PageSearch,
-  pluginGroups,
-  RunStrategy,
-  TaskInput
-} from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { WangsuAccess } from "../access.js";
@@ -22,9 +15,9 @@ import { WangsuAccess } from "../access.js";
   default: {
     //默认值配置照抄即可
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class WangsuRefreshCert extends AbstractTaskPlugin {
@@ -34,8 +27,8 @@ export class WangsuRefreshCert extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
     // required: true, // 必填
   })
   cert!: CertInfo;
@@ -48,9 +41,9 @@ export class WangsuRefreshCert extends AbstractTaskPlugin {
     title: "网宿授权",
     component: {
       name: "access-selector",
-      type: "wangsu" //固定授权类型
+      type: "wangsu", //固定授权类型
     },
-    required: true //必填
+    required: true, //必填
   })
   accessId!: string;
   //
@@ -61,14 +54,13 @@ export class WangsuRefreshCert extends AbstractTaskPlugin {
       helper: "要更新的网宿证书id",
       action: WangsuRefreshCert.prototype.onGetCertList.name,
       pager: false,
-      search: false
+      search: false,
     })
   )
   certList!: string[];
 
   //插件实例化时执行的方法
-  async onInstance() {
-  }
+  async onInstance() {}
 
   //插件执行方法
   async execute(): Promise<void> {
@@ -78,7 +70,7 @@ export class WangsuRefreshCert extends AbstractTaskPlugin {
       this.logger.info(`----------- 开始更新证书：${item}`);
       await access.updateCert({
         certId: item,
-        cert: this.cert
+        cert: this.cert,
       });
       this.logger.info(`----------- 更新证书${item}成功`);
     }
@@ -100,19 +92,19 @@ export class WangsuRefreshCert extends AbstractTaskPlugin {
      * dns-names
      */
     const options = list.map((item: any) => {
-      const domains = item["dns-names"]
+      const domains = item["dns-names"];
       const certId = item["certificate-id"];
       return {
         label: `${item.name}<${certId}-${domains[0]}>`,
         value: certId,
-        domain: item["dns-names"]
+        domain: item["dns-names"],
       };
     });
     return {
       list: this.ctx.utils.options.buildGroupOptions(options, this.certDomains),
       total: list.length,
       pageNo: 1,
-      pageSize: list.length
+      pageSize: list.length,
     };
   }
 }

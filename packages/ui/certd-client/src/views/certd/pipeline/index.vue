@@ -75,7 +75,6 @@ import { groupDictRef } from "./group/dicts";
 import { useCertPipelineCreator } from "./certd-form/use";
 import { useRouter } from "vue-router";
 import { useCrudPermission } from "/@/plugin/permission";
-import CertdForm from "./certd-form/certd-form.vue";
 
 defineOptions({
   name: "PipelineManager",
@@ -130,7 +129,7 @@ const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context 
 
 // 页面打开后获取列表数据
 onMounted(() => {
-  crudExpose.doRefresh();
+  // crudExpose.doRefresh();
 });
 
 onActivated(async () => {

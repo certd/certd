@@ -94,7 +94,7 @@ export class TencentCaptcha extends BaseAddon implements ICaptchaAddon {
         this.logger.error("腾讯云验证码账户欠费，临时放行：", err.message);
         return true;
       }
-      throw err
+      throw err;
     }
   }
 

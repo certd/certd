@@ -55,12 +55,12 @@ export class SysProjectMemberController extends CrudController<ProjectMemberEnti
     if (!bean.id) {
       throw new Error("id is required");
     }
-    const projectId = await this.service.getProjectId(bean.id)
+    const projectId = await this.service.getProjectId(bean.id);
     await this.projectService.checkAdminPermission({
       userId: this.getUserId(),
       projectId: projectId,
     });
-    const res =await this.service.update({
+    const res = await this.service.update({
       id: bean.id,
       permission: bean.permission,
       status: bean.status,
@@ -70,13 +70,13 @@ export class SysProjectMemberController extends CrudController<ProjectMemberEnti
 
   @Post("/info", { description: "sys:settings:view" })
   async info(@Query("id") id: number) {
-     if (!id) {
+    if (!id) {
       throw new Error("id is required");
     }
-    const projectId = await this.service.getProjectId(id)
+    const projectId = await this.service.getProjectId(id);
     await this.projectService.checkReadPermission({
       userId: this.getUserId(),
-      projectId:projectId,
+      projectId: projectId,
     });
     return super.info(id);
   }
@@ -86,10 +86,10 @@ export class SysProjectMemberController extends CrudController<ProjectMemberEnti
     if (!id) {
       throw new Error("id is required");
     }
-    const projectId = await this.service.getProjectId(id)
+    const projectId = await this.service.getProjectId(id);
     await this.projectService.checkAdminPermission({
       userId: this.getUserId(),
-      projectId:projectId,
+      projectId: projectId,
     });
     return super.delete(id);
   }
@@ -100,14 +100,14 @@ export class SysProjectMemberController extends CrudController<ProjectMemberEnti
       if (!id) {
         throw new Error("id is required");
       }
-      const projectId = await this.service.getProjectId(id)
+      const projectId = await this.service.getProjectId(id);
       await this.projectService.checkAdminPermission({
         userId: this.getUserId(),
-        projectId:projectId,
+        projectId: projectId,
       });
       await this.service.delete(id as any);
     }
-   
+
     return this.ok({});
   }
 }

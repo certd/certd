@@ -3,12 +3,12 @@ on:
   push:
     branches: ['v2-dev']
     paths:
-      - "trigger/publish.trigger"
+      - 'trigger/publish.trigger'
   workflow_run:
-    workflows: [ "build-image-for-release" ]
+    workflows: ['build-image-for-release']
     types:
       - completed
-  workflow_dispatch:    # 添加手动触发
+  workflow_dispatch: # 添加手动触发
 #  schedule:
 #    - # 国际时间 19:17 执行，北京时间3:17  ↙↙↙ 改成你想要每天自动执行的时间
 #    - cron: '17 19 * * *'
@@ -50,7 +50,7 @@ jobs:
           pnpm install
           npm run build
         working-directory: ./packages/ui/certd-client
-            
+
       - name: publish_to_atomgit
         id: publish_to_atomgit
         run: |
@@ -62,4 +62,3 @@ jobs:
           pnpm install
           npm run publish_to_atomgit
         working-directory: ./
-     

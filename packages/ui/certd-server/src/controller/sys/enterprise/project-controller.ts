@@ -40,7 +40,7 @@ export class SysProjectController extends CrudController<ProjectEntity> {
     bean.userId = this.getUserId();
     return super.add({
       ...bean,
-      userId:-1, //企业用户id固定为-1
+      userId: -1, //企业用户id固定为-1
       adminId: bean.userId,
     });
   }

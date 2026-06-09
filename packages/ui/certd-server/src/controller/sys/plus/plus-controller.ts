@@ -1,11 +1,11 @@
-import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
-import { BaseController, PlusService, SysInstallInfo, SysSettingsService } from '@certd/lib-server';
-import { logger } from '@certd/basic';
+import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
+import { BaseController, PlusService, SysInstallInfo, SysSettingsService } from "@certd/lib-server";
+import { logger } from "@certd/basic";
 
 /**
  */
 @Provide()
-@Controller('/api/sys/plus')
+@Controller("/api/sys/plus")
 export class SysPlusController extends BaseController {
   @Inject()
   sysSettingsService: SysSettingsService;
@@ -13,7 +13,7 @@ export class SysPlusController extends BaseController {
   @Inject()
   plusService: PlusService;
 
-  @Post('/active', { description: 'sys:settings:edit' })
+  @Post("/active", { description: "sys:settings:edit" })
   async active(@Body(ALL) body) {
     const { code, inviteCode } = body;
 
@@ -21,33 +21,32 @@ export class SysPlusController extends BaseController {
 
     return this.ok(true);
   }
-  @Post('/bindUrl', { description: 'sys:settings:edit' })
-  async bindUrl(@Body(ALL) body: { url: string ,url2?:string }) {
-    const { url,url2 } = body;  
+  @Post("/bindUrl", { description: "sys:settings:edit" })
+  async bindUrl(@Body(ALL) body: { url: string; url2?: string }) {
+    const { url, url2 } = body;
     await this.plusService.register();
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
-    await this.plusService.bindUrl(url,url2);
+    await this.plusService.bindUrl(url, url2);
     installInfo.bindUrl = url;
     installInfo.bindUrl2 = url2;
     await this.sysSettingsService.saveSetting(installInfo);
 
     //重新验证vip
-    try{
+    try {
       await this.plusService.verify();
-    }catch(e){
+    } catch (e) {
       logger.error(`验证配置失败:${e}`);
     }
-  
 
     return this.ok(true);
   }
 
-  @Post('/getVipTrial', { description: 'sys:settings:edit' })
-  async getVipTrial(@Body("vipType") vipType?:string) {
+  @Post("/getVipTrial", { description: "sys:settings:edit" })
+  async getVipTrial(@Body("vipType") vipType?: string) {
     const res = await this.plusService.getVipTrial(vipType);
     return this.ok(res);
   }
-  @Post('/getTodayVipOrderCount', { description: 'sys:settings:edit' })
+  @Post("/getTodayVipOrderCount", { description: "sys:settings:edit" })
   async getTodayVipOrderCount() {
     const res = await this.plusService.getTodayOrderCount();
     return this.ok(res);

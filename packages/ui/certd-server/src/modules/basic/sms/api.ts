@@ -1,4 +1,4 @@
-import { FormItemProps, IAccessService } from '@certd/pipeline';
+import { FormItemProps, IAccessService } from "@certd/pipeline";
 
 export interface ISmsService {
   sendSmsCode(opts: { mobile: string; code: string; phoneCode: string }): Promise<void>;

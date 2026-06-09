@@ -15,9 +15,9 @@ import { RainyunAccess } from "../access.js";
   default: {
     //默认值配置照抄即可
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class RainyunRefreshCert extends AbstractTaskPlugin {
@@ -27,8 +27,8 @@ export class RainyunRefreshCert extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
     // required: true, // 必填
   })
   cert!: CertInfo;
@@ -41,9 +41,9 @@ export class RainyunRefreshCert extends AbstractTaskPlugin {
     title: "雨云授权",
     component: {
       name: "access-selector",
-      type: "rainyun" //固定授权类型
+      type: "rainyun", //固定授权类型
     },
-    required: true //必填
+    required: true, //必填
   })
   accessId!: string;
   //
@@ -53,14 +53,13 @@ export class RainyunRefreshCert extends AbstractTaskPlugin {
       title: "证书Id",
       helper: "要更新的rainyun证书id",
 
-      action: RainyunRefreshCert.prototype.onGetCertList.name
+      action: RainyunRefreshCert.prototype.onGetCertList.name,
     })
   )
   certList!: number[];
 
   //插件实例化时执行的方法
-  async onInstance() {
-  }
+  async onInstance() {}
 
   //插件执行方法
   async execute(): Promise<void> {
@@ -70,7 +69,7 @@ export class RainyunRefreshCert extends AbstractTaskPlugin {
       this.logger.info(`----------- 开始更新证书：${item}`);
       await access.doCertReplace({
         certId: item,
-        cert: this.cert
+        cert: this.cert,
       });
       this.logger.info(`----------- 更新证书${item}成功`);
     }
@@ -85,7 +84,7 @@ export class RainyunRefreshCert extends AbstractTaskPlugin {
     const pageSize = req.pageSize ?? 100;
     const res = await access.getCertList({
       pageNo,
-      pageSize
+      pageSize,
     });
     const total = res.total;
     const list = res.list;
@@ -97,14 +96,14 @@ export class RainyunRefreshCert extends AbstractTaskPlugin {
       return {
         label: `${item.Domain}<${item.ID}>`,
         value: item.ID,
-        domain: item.Domain.split(",").map(item => item.trim())
+        domain: item.Domain.split(",").map(item => item.trim()),
       };
     });
     return {
       list: this.ctx.utils.options.buildGroupOptions(options, this.certDomains),
       total: total,
       pageNo: pageNo,
-      pageSize: pageSize
+      pageSize: pageSize,
     };
   }
 }

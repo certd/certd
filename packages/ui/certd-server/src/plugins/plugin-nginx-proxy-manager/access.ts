@@ -115,9 +115,7 @@ export class NginxProxyManagerAccess extends BaseAccess {
     }
 
     const withoutTrailingSlash = trimmed.replace(/\/+$/, "");
-    return withoutTrailingSlash.endsWith("/api")
-      ? withoutTrailingSlash.slice(0, -4)
-      : withoutTrailingSlash;
+    return withoutTrailingSlash.endsWith("/api") ? withoutTrailingSlash.slice(0, -4) : withoutTrailingSlash;
   }
 
   private describeError(error: unknown, action: string): Error {
@@ -158,10 +156,7 @@ export class NginxProxyManagerAccess extends BaseAccess {
     });
   }
 
-  async getCertificatesWithExpand(
-    searchQuery?: string,
-    expand: string[] = []
-  ): Promise<Certificate[]> {
+  async getCertificatesWithExpand(searchQuery?: string, expand: string[] = []): Promise<Certificate[]> {
     return await this.requestWithAuth<Certificate[]>({
       method: "GET",
       url: "/nginx/certificates",
@@ -174,15 +169,12 @@ export class NginxProxyManagerAccess extends BaseAccess {
 
   async findCustomCertificateByNiceName(niceName: string): Promise<Certificate | undefined> {
     const certificates = await this.getCertificates(niceName);
-    return certificates.find((certificate) => {
+    return certificates.find(certificate => {
       return certificate.provider === "other" && certificate.nice_name === niceName;
     });
   }
 
-  async createCustomCertificate(
-    niceName: string,
-    domainNames: string[] = []
-  ): Promise<Certificate> {
+  async createCustomCertificate(niceName: string, domainNames: string[] = []): Promise<Certificate> {
     return await this.requestWithAuth<Certificate>({
       method: "POST",
       url: "/nginx/certificates",
@@ -277,9 +269,7 @@ export class NginxProxyManagerAccess extends BaseAccess {
     }
 
     if (!this.totpSecret) {
-      throw new Error(
-        "登录失败：该 Nginx Proxy Manager 账号启用了 2FA，但未配置 totpSecret"
-      );
+      throw new Error("登录失败：该 Nginx Proxy Manager 账号启用了 2FA，但未配置 totpSecret");
     }
 
     let code: string;
@@ -305,13 +295,7 @@ export class NginxProxyManagerAccess extends BaseAccess {
     return completedLogin.token;
   }
 
-  private async requestWithAuth<T>(config: {
-    method: string;
-    url: string;
-    params?: Record<string, unknown>;
-    data?: unknown;
-    headers?: Record<string, string>;
-  }): Promise<T> {
+  private async requestWithAuth<T>(config: { method: string; url: string; params?: Record<string, unknown>; data?: unknown; headers?: Record<string, string> }): Promise<T> {
     const token = await this.login();
     const headers = {
       ...(config.headers ?? {}),
@@ -324,13 +308,7 @@ export class NginxProxyManagerAccess extends BaseAccess {
     });
   }
 
-  private async request<T>(config: {
-    method: string;
-    url: string;
-    params?: Record<string, unknown>;
-    data?: unknown;
-    headers?: Record<string, string>;
-  }): Promise<T> {
+  private async request<T>(config: { method: string; url: string; params?: Record<string, unknown>; data?: unknown; headers?: Record<string, string> }): Promise<T> {
     const action = `${config.method ?? "GET"} ${config.url ?? "/"}`;
     try {
       const response = await this.ctx.http.request({
@@ -340,9 +318,11 @@ export class NginxProxyManagerAccess extends BaseAccess {
         data: config.data,
         headers: config.headers,
         timeout: 30000,
-        httpsAgent: this.ignoreTls ? {
-          rejectUnauthorized: false
-        } : undefined,
+        httpsAgent: this.ignoreTls
+          ? {
+              rejectUnauthorized: false,
+            }
+          : undefined,
       });
       return response;
     } catch (error) {
@@ -352,9 +332,7 @@ export class NginxProxyManagerAccess extends BaseAccess {
 
   async onTestRequest(): Promise<string> {
     const result = await this.verifyAccess();
-    this.ctx.logger.info(
-      `Nginx Proxy Manager 授权验证成功，找到 ${result.proxyHostCount} 个代理主机`
-    );
+    this.ctx.logger.info(`Nginx Proxy Manager 授权验证成功，找到 ${result.proxyHostCount} 个代理主机`);
     return `成功（${result.proxyHostCount} 个代理主机）`;
   }
 

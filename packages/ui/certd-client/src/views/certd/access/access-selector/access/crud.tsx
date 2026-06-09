@@ -12,6 +12,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const { props, ctx, api } = context;
   const lastResRef = ref();
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
+    query.query = query.query || {};
+    if (props.subtype) {
+      query.query.subtype = props.subtype;
+    } else {
+      delete query.query.subtype;
+    }
     return await context.api.GetList(query);
   };
   const editRequest = async (req: EditReq) => {
@@ -47,7 +53,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const { myProjectDict } = useDicts();
   const typeRef = ref("aliyun");
   context.typeRef = typeRef;
-  const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef, api);
+  const commonColumnsDefine = getCommonColumnDefine(crudExpose, typeRef, api, props.subtype);
   commonColumnsDefine.type.form.component.disabled = true;
   const projectStore = useProjectStore();
   return {

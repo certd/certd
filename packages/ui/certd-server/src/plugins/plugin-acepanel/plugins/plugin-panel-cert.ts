@@ -1,6 +1,6 @@
-import {IsTaskPlugin, pluginGroups, RunStrategy, TaskInput} from "@certd/pipeline";
-import {CertApplyPluginNames, CertInfo} from "@certd/plugin-cert";
-import {AcePanelAccess} from "../access.js";
+import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
+import { AcePanelAccess } from "../access.js";
 import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 
 @IsTaskPlugin({
@@ -12,19 +12,18 @@ import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
   needPlus: true,
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
-
 export class AcePanelPanelCert extends AbstractPlusTaskPlugin {
   @TaskInput({
     title: "域名证书",
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
   })
   cert!: CertInfo;
 
@@ -32,14 +31,13 @@ export class AcePanelPanelCert extends AbstractPlusTaskPlugin {
     title: "ACEPanel授权",
     component: {
       name: "access-selector",
-      type: "acepanel"
+      type: "acepanel",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
 
-  async onInstance() {
-  }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     const access = await this.getAccess<AcePanelAccess>(this.accessId);
@@ -50,4 +48,4 @@ export class AcePanelPanelCert extends AbstractPlusTaskPlugin {
   }
 }
 
-new AcePanelPanelCert();  
+new AcePanelPanelCert();

@@ -18,8 +18,8 @@ import { ApiTags } from "@midwayjs/swagger";
  * 证书
  */
 @Provide()
-@Controller('/api/pi/history')
-@ApiTags(['pipeline-history'])
+@Controller("/api/pi/history")
+@ApiTags(["pipeline-history"])
 export class HistoryController extends CrudController<HistoryService> {
   @Inject()
   service: HistoryService;
@@ -41,10 +41,10 @@ export class HistoryController extends CrudController<HistoryService> {
     return this.service;
   }
 
-  @Post('/page', { description: Constants.per.authOnly, summary: "查询流水线执行历史分页列表" })
+  @Post("/page", { description: Constants.per.authOnly, summary: "查询流水线执行历史分页列表" })
   async page(@Body(ALL) body: any) {
-    const { projectId, userId } = await this.getProjectUserIdRead()
-    body.query.projectId = projectId
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    body.query.projectId = projectId;
 
     const isAdmin = await this.authService.isAdmin(this.ctx);
     const publicSettings = await this.sysSettingsService.getPublicSettings();
@@ -64,7 +64,7 @@ export class HistoryController extends CrudController<HistoryService> {
       const pipelines = await this.pipelineService.list({
         query: pipelineQuery,
         buildQuery: qb => {
-          qb.andWhere('title like :title', { title: `%${pipelineTitle}%` });
+          qb.andWhere("title like :title", { title: `%${pipelineTitle}%` });
         },
       });
       pipelineIds = pipelines.map(p => p.id);
@@ -88,14 +88,14 @@ export class HistoryController extends CrudController<HistoryService> {
     return this.ok(res);
   }
 
-  @Post('/list', { description: Constants.per.authOnly, summary: "查询流水线执行历史列表" })
+  @Post("/list", { description: Constants.per.authOnly, summary: "查询流水线执行历史列表" })
   async list(@Body(ALL) body) {
-    const { projectId, userId } = await this.getProjectUserIdRead()
-    if (!body){
-      body = {}
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    if (!body) {
+      body = {};
     }
-    if (projectId){
-      body.projectId = projectId
+    if (projectId) {
+      body.projectId = projectId;
     }
 
     const isAdmin = this.authService.isAdmin(this.ctx);
@@ -111,7 +111,7 @@ export class HistoryController extends CrudController<HistoryService> {
     };
     const withDetail = body.withDetail;
     delete body.withDetail;
-    let select: any = null
+    let select: any = null;
     if (!withDetail) {
       select = {
         pipeline: true, // 后面这里改成false
@@ -129,9 +129,9 @@ export class HistoryController extends CrudController<HistoryService> {
     }
     const listRet = await this.getService().list({
       query: body,
-      sort: { prop: 'id', asc: false },
+      sort: { prop: "id", asc: false },
       buildQuery,
-      select
+      select,
     });
 
     for (const item of listRet) {
@@ -144,92 +144,92 @@ export class HistoryController extends CrudController<HistoryService> {
 
       //@ts-ignore
       item.version = json.version;
-      item.status = json.status.result
+      item.status = json.status.result;
       delete item.pipeline;
     }
 
     return this.ok(listRet);
   }
 
-  @Post('/add', { description: Constants.per.authOnly, summary: "添加流水线执行历史" })
+  @Post("/add", { description: Constants.per.authOnly, summary: "添加流水线执行历史" })
   async add(@Body(ALL) bean: PipelineEntity) {
-    const { projectId, userId } = await this.getProjectUserIdRead()
-    bean.projectId = projectId
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    bean.projectId = projectId;
     bean.userId = userId;
     return super.add(bean);
   }
 
-  @Post('/update', { description: Constants.per.authOnly, summary: "更新流水线执行历史" })
+  @Post("/update", { description: Constants.per.authOnly, summary: "更新流水线执行历史" })
   async update(@Body(ALL) bean) {
-    await this.checkOwner(this.getService(), bean.id,"write",true);
+    await this.checkOwner(this.getService(), bean.id, "write", true);
     delete bean.userId;
     delete bean.projectId;
     return super.update(bean);
   }
 
-  @Post('/save', { description: Constants.per.authOnly, summary: "保存流水线执行历史" })
+  @Post("/save", { description: Constants.per.authOnly, summary: "保存流水线执行历史" })
   async save(@Body(ALL) bean: HistoryEntity) {
-    const { projectId,userId } = await this.getProjectUserIdWrite()
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.userId = userId;
     bean.projectId = projectId;
     if (bean.id > 0) {
       //修改
       delete bean.projectId;
       delete bean.userId;
-      await this.checkOwner(this.getService(), bean.id,"write",true);
+      await this.checkOwner(this.getService(), bean.id, "write", true);
     }
-   
+
     await this.service.save(bean);
     return this.ok(bean.id);
   }
 
-  @Post('/saveLog', { description: Constants.per.authOnly, summary: "保存流水线执行日志" })
+  @Post("/saveLog", { description: Constants.per.authOnly, summary: "保存流水线执行日志" })
   async saveLog(@Body(ALL) bean: HistoryLogEntity) {
-    const { projectId,userId } = await this.getProjectUserIdWrite()
+    const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.projectId = projectId;
     bean.userId = userId;
     if (bean.id > 0) {
       //修改
       delete bean.projectId;
       delete bean.userId;
-      await this.checkOwner(this.logService, bean.id,"write",true);
+      await this.checkOwner(this.logService, bean.id, "write", true);
     }
     await this.logService.save(bean);
     return this.ok(bean.id);
   }
 
-  @Post('/delete', { description: Constants.per.authOnly, summary: "删除流水线执行历史" })
-  async delete(@Query('id') id: number) {
-    await this.checkOwner(this.getService(), id,"write",true);
+  @Post("/delete", { description: Constants.per.authOnly, summary: "删除流水线执行历史" })
+  async delete(@Query("id") id: number) {
+    await this.checkOwner(this.getService(), id, "write", true);
     await super.delete(id);
     return this.ok();
   }
 
-  @Post('/deleteByIds', { description: Constants.per.authOnly, summary: "批量删除流水线执行历史" })
+  @Post("/deleteByIds", { description: Constants.per.authOnly, summary: "批量删除流水线执行历史" })
   async deleteByIds(@Body(ALL) body: any) {
-    let {userId} = await this.checkOwner(this.getService(), body.ids,"write",true);
+    let { userId } = await this.checkOwner(this.getService(), body.ids, "write", true);
     const isAdmin = await this.authService.isAdmin(this.ctx);
     userId = isAdmin ? null : userId;
     await this.getService().deleteByIds(body.ids, userId);
     return this.ok();
   }
 
-  @Post('/detail', { description: Constants.per.authOnly, summary: "查询流水线执行历史详情" })
-  async detail(@Query('id') id: number) {
-    await this.checkOwner(this.getService(), id,"read",true);
+  @Post("/detail", { description: Constants.per.authOnly, summary: "查询流水线执行历史详情" })
+  async detail(@Query("id") id: number) {
+    await this.checkOwner(this.getService(), id, "read", true);
     const detail = await this.service.detail(id);
     return this.ok(detail);
   }
 
-  @Post('/logs', { description: Constants.per.authOnly, summary: "查询流水线执行日志" })
-  async logs(@Query('id') id: number) {
-    await this.checkOwner(this.logService, id,"read",true);
+  @Post("/logs", { description: Constants.per.authOnly, summary: "查询流水线执行日志" })
+  async logs(@Query("id") id: number) {
+    await this.checkOwner(this.logService, id, "read", true);
     const logInfo = await this.logService.info(id);
     return this.ok(logInfo);
   }
 
-  @Post('/files', { description: Constants.per.authOnly, summary: "查询流水线执行文件" })
-  async files(@Query('pipelineId') pipelineId: number, @Query('historyId') historyId: number) {
+  @Post("/files", { description: Constants.per.authOnly, summary: "查询流水线执行文件" })
+  async files(@Query("pipelineId") pipelineId: number, @Query("historyId") historyId: number) {
     const files = await this.getFiles(historyId, pipelineId);
     return this.ok(files);
   }
@@ -243,24 +243,24 @@ export class HistoryController extends CrudController<HistoryService> {
       history = await this.service.getLastHistory(pipelineId);
     }
     if (history == null) {
-      throw new CommonException('流水线还未运行过');
+      throw new CommonException("流水线还未运行过");
     }
-    const {projectId} = await this.getProjectUserIdRead()
+    const { projectId } = await this.getProjectUserIdRead();
     if (projectId) {
       //enterprise模式
-      if(history.projectId !== projectId){
-        throw new PermissionException("您没有权限下载该流水线证书，请先加入该项目："+history.projectId);
+      if (history.projectId !== projectId) {
+        throw new PermissionException("您没有权限下载该流水线证书，请先加入该项目：" + history.projectId);
       }
       //有权限下载
-    }else if (history.userId !== this.getUserId()) {
+    } else if (history.userId !== this.getUserId()) {
       // 如果是管理员，检查用户是否有授权管理员查看
-      const isAdmin = await this.isAdmin()
+      const isAdmin = await this.isAdmin();
       if (!isAdmin) {
         throw new PermissionException();
       }
       // 是否允许管理员查看
       const setting = await this.userSettingsService.getSetting<UserGrantSetting>(history.userId, null, UserGrantSetting, false);
-      if (setting?.allowAdminViewCerts!==true) {
+      if (setting?.allowAdminViewCerts !== true) {
         //不允许管理员查看
         throw new PermissionException("该流水线的用户还未授权管理员下载证书，请先让用户在”设置->授权委托“中打开开关");
       }
@@ -269,12 +269,12 @@ export class HistoryController extends CrudController<HistoryService> {
     return await this.service.getFiles(history);
   }
 
-  @Get('/download', { description: Constants.per.authOnly, summary: "下载流水线执行文件" })
-  async download(@Query('pipelineId') pipelineId: number, @Query('historyId') historyId: number, @Query('fileId') fileId: string) {
+  @Get("/download", { description: Constants.per.authOnly, summary: "下载流水线执行文件" })
+  async download(@Query("pipelineId") pipelineId: number, @Query("historyId") historyId: number, @Query("fileId") fileId: string) {
     const files = await this.getFiles(historyId, pipelineId);
     const file = files.find(f => f.id === fileId);
     if (file == null) {
-      throw new CommonException('file not found');
+      throw new CommonException("file not found");
     }
     // koa send file
     // 下载文件的名称
@@ -284,7 +284,7 @@ export class HistoryController extends CrudController<HistoryService> {
     logger.info(`download:${path}`);
     // 以流的形式下载文件
     this.ctx.attachment(path);
-    this.ctx.set('Content-Type', 'application/octet-stream');
+    this.ctx.set("Content-Type", "application/octet-stream");
 
     return fs.createReadStream(path);
   }

@@ -1,5 +1,5 @@
-import { Provide } from '@midwayjs/core';
-import { dnsProviderRegistry } from '@certd/plugin-cert';
+import { Provide } from "@midwayjs/core";
+import { dnsProviderRegistry } from "@certd/plugin-cert";
 
 @Provide()
 export class DnsProviderService {

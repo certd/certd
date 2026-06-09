@@ -12,9 +12,8 @@ export type UploadCertReq = {
   fromType?: string;
   userId?: number;
   projectId?: number;
-  file?:any
+  file?: any;
 };
-
 
 @Provide("CertInfoService")
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -32,19 +31,19 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
   }
 
   async getUserDomainCount(userId: number) {
-    if (userId==null) {
-      throw new Error('userId is required');
+    if (userId == null) {
+      throw new Error("userId is required");
     }
-    return await this.repository.sum('domainCount', {
+    return await this.repository.sum("domainCount", {
       userId,
     });
   }
 
   async getUserWildcardDomainCount(userId: number) {
     if (userId == null) {
-      throw new Error('userId is required');
+      throw new Error("userId is required");
     }
-    return await this.repository.sum('wildcardDomainCount', {
+    return await this.repository.sum("wildcardDomainCount", {
       userId,
     });
   }
@@ -56,12 +55,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     return domains.filter(domain => domain?.trim().toLowerCase().startsWith("*.")).length;
   }
 
-  async updateDomains(pipelineId: number, userId: number, projectId: number, domains: string[],fromType?:string) {
+  async updateDomains(pipelineId: number, userId: number, projectId: number, domains: string[], fromType?: string) {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const found = await this.repository.findOne({
       where: {
         pipelineId,
-        userId,
-        projectId,
+        ...userProjectQuery,
       },
     });
     const bean = new CertInfoEntity();
@@ -73,26 +72,26 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       bean.pipelineId = pipelineId;
       bean.userId = userId;
       bean.projectId = projectId;
-      bean.fromType = fromType
+      bean.fromType = fromType;
       if (!domains || domains.length === 0) {
         return;
       }
     }
 
     if (!domains || domains.length === 0) {
-      bean.domain = '';
-      bean.domains = '';
+      bean.domain = "";
+      bean.domains = "";
       bean.domainCount = 0;
       bean.wildcardDomainCount = 0;
     } else {
       bean.domain = domains[0];
-      bean.domains = domains.join(',');
+      bean.domains = domains.join(",");
       bean.domainCount = domains.length;
       bean.wildcardDomainCount = this.countWildcardDomains(domains);
     }
 
     await this.addOrUpdate(bean);
-    return bean.id
+    return bean.id;
   }
 
   async deleteByPipelineId(id: number) {
@@ -104,40 +103,40 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async getMatchCertList(params: { domains: string[]; userId: number,projectId?:number }) {
-    const { domains, userId,projectId } = params;
+  async getMatchCertList(params: { domains: string[]; userId: number; projectId?: number }) {
+    const { domains, userId, projectId } = params;
     if (!domains) {
       throw new CodeException({
         ...Constants.res.openCertNotFound,
-        message:"域名不能为空"
+        message: "域名不能为空",
       });
     }
 
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const list = await this.find({
       select: {
         id: true,
         domains: true,
-        expiresTime:true,
-        pipelineId:true,
+        expiresTime: true,
+        pipelineId: true,
       },
       where: {
-        userId,
-        projectId,
+        ...userProjectQuery,
       },
       order: {
-        id: 'DESC',
+        id: "DESC",
       },
     });
     //遍历查找
     return list.filter(item => {
-      const itemDomains = item.domains.split(',');
+      const itemDomains = item.domains.split(",");
       return utils.domain.match(domains, itemDomains);
     });
   }
 
-  async getCertInfoById(req: { id: number; userId: number,projectId:number,format?:string }) {
+  async getCertInfoById(req: { id: number; userId: number; projectId: number; format?: string }) {
     const entity = await this.info(req.id);
-    if (!entity || entity.userId !== req.userId ) {
+    if (!entity || entity.userId !== req.userId) {
       throw new CodeException(Constants.res.openCertNotFound);
     }
     if (req.projectId && entity.projectId !== req.projectId) {
@@ -153,13 +152,13 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       ...certReader.toCertInfo(req.format),
       detail: {
         id: entity.id,
-        domains: entity.domains.split(','),
+        domains: entity.domains.split(","),
         notAfter: certReader.expires,
       },
     };
   }
 
-  async updateCertByPipelineId(pipelineId: number, cert: CertInfo,file?:string,fromType = 'pipeline') {
+  async updateCertByPipelineId(pipelineId: number, cert: CertInfo, file?: string, fromType = "pipeline") {
     const found = await this.repository.findOne({
       where: {
         pipelineId,
@@ -169,14 +168,14 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       id: found?.id,
       certReader: new CertReader(cert),
       fromType,
-      file
+      file,
     });
     return bean;
   }
 
   private async updateCert(req: UploadCertReq) {
     const bean = new CertInfoEntity();
-    const { id, fromType,userId, certReader } = req;
+    const { id, fromType, userId, certReader } = req;
     if (id) {
       bean.id = id;
     } else {
@@ -186,7 +185,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     bean.certInfo = JSON.stringify(certInfo);
     bean.applyTime = new Date().getTime();
     const domains = certReader.detail.domains.altNames;
-    bean.domains = domains.join(',');
+    bean.domains = domains.join(",");
     bean.domain = domains[0];
     bean.domainCount = domains.length;
     bean.wildcardDomainCount = this.countWildcardDomains(domains);
@@ -195,8 +194,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     bean.certProvider = certReader.detail.issuer.commonName;
     bean.userId = userId;
     bean.projectId = req.projectId;
-    if(req.file){
-      bean.certFile = req.file
+    if (req.file) {
+      bean.certFile = req.file;
     }
     await this.addOrUpdate(bean);
     return bean;
@@ -210,28 +209,26 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async count({ userId,projectId }: { userId: number,projectId?:number }) {
+  async count({ userId, projectId }: { userId: number; projectId?: number }) {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const total = await this.repository.count({
       where: {
-        userId,
+        ...userProjectQuery,
         expiresTime: Not(IsNull()),
-        projectId,
       },
     });
 
     const expired = await this.repository.count({
       where: {
-        userId,
+        ...userProjectQuery,
         expiresTime: LessThan(new Date().getTime()),
-        projectId,
       },
     });
 
     const expiring = await this.repository.count({
       where: {
-        userId,
+        ...userProjectQuery,
         expiresTime: Between(new Date().getTime(), new Date().getTime() + 15 * 24 * 60 * 60 * 1000),
-        projectId,
       },
     });
 

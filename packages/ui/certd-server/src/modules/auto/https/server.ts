@@ -1,8 +1,8 @@
-import https from 'node:https';
-import fs from 'fs';
-import { Application } from '@midwayjs/koa';
-import { createSelfCertificate } from './self-certificate.js';
-import {logger, safePromise} from '@certd/basic';
+import https from "node:https";
+import fs from "fs";
+import { Application } from "@midwayjs/koa";
+import { createSelfCertificate } from "./self-certificate.js";
+import { logger, safePromise } from "@certd/basic";
 
 export type HttpsServerOptions = {
   enabled: boolean;
@@ -33,24 +33,24 @@ export class HttpsServer {
 
   start(opts: HttpsServerOptions) {
     if (!opts) {
-      logger.error('https配置不能为空');
+      logger.error("https配置不能为空");
       return;
     }
     this.opts = opts;
-    logger.info('=========================================');
+    logger.info("=========================================");
     if (!opts.key || !opts.cert) {
-      logger.error('证书路径未配置，无法启动https服务，请先配置：koa.https.key和koa.https.cert');
+      logger.error("证书路径未配置，无法启动https服务，请先配置：koa.https.key和koa.https.cert");
       return;
     }
 
     if (!fs.existsSync(opts.key) || !fs.existsSync(opts.cert)) {
-      logger.info('证书文件不存在,将生成自签名证书');
+      logger.info("证书文件不存在,将生成自签名证书");
       createSelfCertificate({
         crtPath: opts.cert,
         keyPath: opts.key,
       });
     }
-    logger.info('准备启动https服务');
+    logger.info("准备启动https服务");
     const httpServer = https.createServer(
       {
         cert: fs.readFileSync(opts.cert),
@@ -59,7 +59,7 @@ export class HttpsServer {
       opts.app.callback()
     );
     this.server = httpServer;
-    let hostname = opts.hostname ||  '::';
+    let hostname = opts.hostname || "::";
     // A function that runs in the context of the http server
     // and reports what type of server listens on which port
     function listeningReporter() {
@@ -71,19 +71,18 @@ export class HttpsServer {
       httpServer.listen(opts.port, hostname, listeningReporter);
       return httpServer;
     } catch (e) {
-      if ( e.message?.includes("address family not supported")) {
-        hostname = "0.0.0.0"
+      if (e.message?.includes("address family not supported")) {
+        hostname = "0.0.0.0";
         logger.error(`${e.message}，尝试监听${hostname}`, e);
-        try{
+        try {
           httpServer.listen(opts.port, hostname, listeningReporter);
           return httpServer;
-        }catch (e) {
-          logger.error('启动https服务失败', e);
+        } catch (e) {
+          logger.error("启动https服务失败", e);
         }
-      }else{
-        logger.error('启动https服务失败', e);
+      } else {
+        logger.error("启动https服务失败", e);
       }
-
     }
   }
 }

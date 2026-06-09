@@ -1,13 +1,13 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
-import dayjs from 'dayjs';
-import { TencentAccess } from '../../../plugin-lib/tencent/index.js';
-import { CertApplyPluginNames, CertInfo } from '@certd/plugin-cert';
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import dayjs from "dayjs";
+import { TencentAccess } from "../../../plugin-lib/tencent/index.js";
+import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 @IsTaskPlugin({
-  name: 'DeployCertToTencentCLB',
-  title: '腾讯云-部署到CLB',
-  icon: 'svg:icon-tencentcloud',
+  name: "DeployCertToTencentCLB",
+  title: "腾讯云-部署到CLB",
+  icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
-  desc: '暂时只支持单向认证证书，暂时只支持通用负载均衡',
+  desc: "暂时只支持单向认证证书，暂时只支持通用负载均衡",
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -15,96 +15,90 @@ import { CertApplyPluginNames, CertInfo } from '@certd/plugin-cert';
   },
 })
 export class DeployCertToTencentCLB extends AbstractTaskPlugin {
-
   @TaskInput({
-    title: '域名证书',
-    helper: '请选择前置任务输出的域名证书',
+    title: "域名证书",
+    helper: "请选择前置任务输出的域名证书",
     component: {
-      name: 'output-selector',
-      from: [...CertApplyPluginNames, 'UploadCertToTencent'],
+      name: "output-selector",
+      from: [...CertApplyPluginNames, "UploadCertToTencent"],
     },
     required: true,
   })
   cert!: string | CertInfo;
 
-
-
   @TaskInput({
-    title: 'Access提供者',
-    helper: 'access授权',
+    title: "Access提供者",
+    helper: "access授权",
     component: {
-      name: 'access-selector',
-      type: 'tencent',
+      name: "access-selector",
+      type: "tencent",
     },
     required: true,
   })
   accessId!: string;
 
   @TaskInput({
-    title: '大区',
+    title: "大区",
     component: {
-      name: 'a-auto-complete',
-      vModel: 'value',
+      name: "a-auto-complete",
+      vModel: "value",
       options: [
-        { value: 'ap-guangzhou' },
-        { value: 'ap-beijing' },
-        { value: 'ap-chengdu' },
-        { value: 'ap-chongqing' },
-        { value: 'ap-hongkong' },
-        { value: 'ap-jakarta' },
-        { value: 'ap-mumbai' },
-        { value: 'ap-nanjing' },
-        { value: 'ap-seoul' },
-        { value: 'ap-shanghai' },
-        { value: 'ap-shanghai-fsi' },
-        { value: 'ap-shenzhen-fsi' },
-        { value: 'ap-singapore' },
-        { value: 'ap-tokyo' },
-        { value: 'eu-frankfurt' },
-        { value: 'na-ashburn' },
-        { value: 'na-siliconvalley' },
-        { value: 'na-toronto' },
-        { value: 'sa-saopaulo' },
-        { value: 'ap-taipei' },
+        { value: "ap-guangzhou" },
+        { value: "ap-beijing" },
+        { value: "ap-chengdu" },
+        { value: "ap-chongqing" },
+        { value: "ap-hongkong" },
+        { value: "ap-jakarta" },
+        { value: "ap-mumbai" },
+        { value: "ap-nanjing" },
+        { value: "ap-seoul" },
+        { value: "ap-shanghai" },
+        { value: "ap-shanghai-fsi" },
+        { value: "ap-shenzhen-fsi" },
+        { value: "ap-singapore" },
+        { value: "ap-tokyo" },
+        { value: "eu-frankfurt" },
+        { value: "na-ashburn" },
+        { value: "na-siliconvalley" },
+        { value: "na-toronto" },
+        { value: "sa-saopaulo" },
+        { value: "ap-taipei" },
       ],
-      helper: '如果列表中没有，您可以手动输入',
+      helper: "如果列表中没有，您可以手动输入",
     },
     required: true,
   })
   region!: string;
 
-
-
   @TaskInput({
-    title: '负载均衡ID',
+    title: "负载均衡ID",
     required: true,
   })
   loadBalancerId!: string;
 
   @TaskInput({
-    title: '监听器ID',
+    title: "监听器ID",
     required: true,
   })
   listenerId!: string;
 
   @TaskInput({
-    title: '域名',
+    title: "域名",
     required: false,
     component: {
-      name: 'a-select',
-      vModel: 'value',
+      name: "a-select",
+      vModel: "value",
       open: false,
-      mode: 'tags',
+      mode: "tags",
     },
-    helper: '如果开启了sni，则此项必须填写，未开启，则不要填写',
+    helper: "如果开启了sni，则此项必须填写，未开启，则不要填写",
   })
   domain!: string | string[];
 
   @TaskInput({
-    title: '证书名称前缀',
+    title: "证书名称前缀",
   })
   certName!: string;
-
 
   client: any;
   async onInstance() {
@@ -112,7 +106,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
   }
 
   async getClient() {
-    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/clb/v20180317/index.js');
+    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/clb/v20180317/index.js");
     const ClbClient = sdk.v20180317.Client;
 
     const accessProvider = (await this.getAccess(this.accessId)) as TencentAccess;
@@ -204,7 +198,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     const params = this.buildProps();
     const ret = await client.ModifyListener(params);
     this.checkRet(ret);
-    this.logger.info('设置腾讯云CLB证书成功:', ret.RequestId, '->loadBalancerId:', this.loadBalancerId, 'listenerId', this.listenerId);
+    this.logger.info("设置腾讯云CLB证书成功:", ret.RequestId, "->loadBalancerId:", this.loadBalancerId, "listenerId", this.listenerId);
     return ret;
   }
 
@@ -214,9 +208,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     params.Domain = domain;
     const ret = await client.ModifyDomainAttributes(params);
     this.checkRet(ret);
-    this.logger.info(
-      `[${domain}] 设置腾讯云CLB证书(sni)任务已提交:taskId：${ret.RequestId}，loadBalancerId:${this.loadBalancerId}，listenerId:${this.listenerId}`
-    );
+    this.logger.info(`[${domain}] 设置腾讯云CLB证书(sni)任务已提交:taskId：${ret.RequestId}，loadBalancerId:${this.loadBalancerId}，listenerId:${this.listenerId}`);
 
     const requestId = ret.RequestId;
     while (true) {
@@ -236,17 +228,17 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
   }
   appendTimeSuffix(name: string) {
     if (name == null) {
-      name = 'certd';
+      name = "certd";
     }
-    return name + '-' + dayjs().format('YYYYMMDD-HHmmss');
+    return name + "-" + dayjs().format("YYYYMMDD-HHmmss");
   }
   buildProps() {
     const certId = this.cert as string;
     const certInfo = this.cert as CertInfo;
-    if (typeof this.cert === 'string') {
+    if (typeof this.cert === "string") {
       return {
         Certificate: {
-          SSLMode: 'UNIDIRECTIONAL', // 单向认证
+          SSLMode: "UNIDIRECTIONAL", // 单向认证
           CertId: certId,
         },
         LoadBalancerId: this.loadBalancerId,
@@ -255,7 +247,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     }
     return {
       Certificate: {
-        SSLMode: 'UNIDIRECTIONAL', // 单向认证
+        SSLMode: "UNIDIRECTIONAL", // 单向认证
         CertName: this.appendTimeSuffix(this.certName || "certd"),
         CertKey: certInfo.key,
         CertContent: certInfo.crt,
@@ -268,7 +260,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
   async getCLBList(client: any) {
     const params = {
       Limit: 100, // 最大暂时只支持100个，暂时没做翻页
-      OrderBy: 'CreateTime',
+      OrderBy: "CreateTime",
       OrderType: 0,
       // ...this.DescribeLoadBalancers,
     };
@@ -281,7 +273,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     // HTTPS
     const params = {
       LoadBalancerId: balancerId,
-      Protocol: 'HTTPS',
+      Protocol: "HTTPS",
       ListenerIds: listenerIds,
     };
     const ret = await client.DescribeListeners(params);
@@ -291,7 +283,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
 
   checkRet(ret: any) {
     if (!ret || ret.Error) {
-      throw new Error('执行失败：' + ret.Error.Code + ',' + ret.Error.Message);
+      throw new Error("执行失败：" + ret.Error.Code + "," + ret.Error.Message);
     }
   }
 }

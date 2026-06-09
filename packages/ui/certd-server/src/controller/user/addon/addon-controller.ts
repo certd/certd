@@ -1,13 +1,5 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
-import {
-  AddonDefine,
-  AddonRequestHandleReq,
-  AddonService,
-  Constants,
-  CrudController,
-  newAddon,
-  ValidateException
-} from "@certd/lib-server";
+import { AddonDefine, AddonRequestHandleReq, AddonService, Constants, CrudController, newAddon, ValidateException } from "@certd/lib-server";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 import { checkPlus } from "@certd/plus-core";
 import { http, logger, utils } from "@certd/basic";
@@ -19,14 +11,14 @@ import { ApiTags } from "@midwayjs/swagger";
  */
 @Provide()
 @Controller("/api/addon")
-@ApiTags(['addon'])
+@ApiTags(["addon"])
 export class AddonController extends CrudController<AddonService> {
   @Inject()
   service: AddonService;
   @Inject()
   authService: AuthService;
   @Inject()
-  taskServiceBuilder:TaskServiceBuilder
+  taskServiceBuilder: TaskServiceBuilder;
 
   getService(): AddonService {
     return this.service;
@@ -34,7 +26,7 @@ export class AddonController extends CrudController<AddonService> {
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询Addon分页列表" })
   async page(@Body(ALL) body) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     delete body.query.userId;
     body.query.projectId = projectId;
@@ -45,14 +37,14 @@ export class AddonController extends CrudController<AddonService> {
       query: body.query,
       page: body.page,
       sort: body.sort,
-      buildQuery
+      buildQuery,
     });
     return this.ok(res);
   }
 
   @Post("/list", { description: Constants.per.authOnly, summary: "查询Addon列表" })
   async list(@Body(ALL) body) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     body.query = body.query ?? {};
     body.query.userId = userId;
     body.query.projectId = projectId;
@@ -61,7 +53,7 @@ export class AddonController extends CrudController<AddonService> {
 
   @Post("/add", { description: Constants.per.authOnly, summary: "添加Addon" })
   async add(@Body(ALL) bean) {
-    const {userId,projectId} = await this.getProjectUserIdRead();
+    const { userId, projectId } = await this.getProjectUserIdRead();
     bean.userId = userId;
     bean.projectId = projectId;
     const type = bean.type;
@@ -129,7 +121,7 @@ export class AddonController extends CrudController<AddonService> {
         value: item.name,
         label: item.title,
         needPlus: item.needPlus ?? false,
-        icon: item.icon
+        icon: item.icon,
       });
     }
     dict = dict.sort(a => {
@@ -142,43 +134,42 @@ export class AddonController extends CrudController<AddonService> {
   async simpleInfo(@Query("addonType") addonType: string, @Query("id") id: number) {
     if (id === 0) {
       //获取默认
-      const {projectId,userId} = await this.getProjectUserIdRead();
-      const res = await this.service.getDefault(userId, addonType,projectId);
+      const { projectId, userId } = await this.getProjectUserIdRead();
+      const res = await this.service.getDefault(userId, addonType, projectId);
       if (!res) {
         throw new ValidateException("默认Addon配置不存在");
       }
       const simple = await this.service.getSimpleInfo(res.id);
       return this.ok(simple);
     }
-    await this.checkOwner(this.getService(), id, "read",true);
+    await this.checkOwner(this.getService(), id, "read", true);
     const res = await this.service.getSimpleInfo(id);
     return this.ok(res);
   }
 
   @Post("/getDefaultId", { description: Constants.per.authOnly, summary: "查询Addon插件默认配置ID" })
   async getDefaultId(@Query("addonType") addonType: string) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
-    const res = await this.service.getDefault(userId, addonType,projectId);
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    const res = await this.service.getDefault(userId, addonType, projectId);
     return this.ok(res?.id);
   }
 
   @Post("/setDefault", { description: Constants.per.authOnly, summary: "设置Addon插件默认配置" })
   async setDefault(@Query("addonType") addonType: string, @Query("id") id: number) {
-    const {projectId,userId} = await this.checkOwner(this.getService(), id, "write",true);
-    const res = await this.service.setDefault(id, userId, addonType,projectId);
+    const { projectId, userId } = await this.checkOwner(this.getService(), id, "write", true);
+    const res = await this.service.setDefault(id, userId, addonType, projectId);
     return this.ok(res);
   }
 
-
   @Post("/options", { description: Constants.per.authOnly, summary: "查询Addon插件配置字典" })
   async options(@Query("addonType") addonType: string) {
-    const {projectId,userId} = await this.getProjectUserIdRead();
+    const { projectId, userId } = await this.getProjectUserIdRead();
     const res = await this.service.list({
       query: {
         userId,
         addonType,
-        projectId
-      }
+        projectId,
+      },
     });
     for (const item of res) {
       delete item.setting;
@@ -186,25 +177,24 @@ export class AddonController extends CrudController<AddonService> {
     return this.ok(res);
   }
 
-
   @Post("/handle", { description: Constants.per.authOnly, summary: "Addon插件处理请求" })
   async handle(@Body(ALL) body: AddonRequestHandleReq) {
     let inputAddon = body.input.addon;
     if (body.input.id > 0) {
-      await this.checkOwner(this.getService(), body.input.id, "write",true);
+      await this.checkOwner(this.getService(), body.input.id, "write", true);
       const oldEntity = await this.service.info(body.input.id);
       if (oldEntity) {
         inputAddon = JSON.parse(oldEntity.setting);
       }
     }
-    const {projectId,userId} = await this.getProjectUserIdRead();
-    const serviceGetter = this.taskServiceBuilder.create({ userId,projectId });
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    const serviceGetter = this.taskServiceBuilder.create({ userId, projectId });
 
     const ctx = {
       http: http,
       logger: logger,
       utils: utils,
-      serviceGetter
+      serviceGetter,
     };
     const addon = await newAddon(body.addonType, body.typeName, inputAddon, ctx);
     const res = await addon.onRequest(body);

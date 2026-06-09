@@ -67,7 +67,7 @@ export class OnePanelDeployToPanelPlugin extends AbstractTaskPlugin {
       options: [
         { label: "启用SSL(旧版本)", value: "enable" },
         { label: "Strict模式(>=2.1.x)", value: "Enable" },
-        { label: "Mux模式(>=2.1.x)", value: "Mux" }
+        { label: "Mux模式(>=2.1.x)", value: "Mux" },
       ],
     },
     value: "enable",
@@ -81,14 +81,12 @@ export class OnePanelDeployToPanelPlugin extends AbstractTaskPlugin {
   }
   //http://xxx:xxxx/1panel/swagger/index.html#/App/get_apps__key
   async execute(): Promise<void> {
-
     const client = new OnePanelClient({
       access: this.access,
       http: this.http,
       logger: this.logger,
       utils: this.ctx.utils,
     });
-
 
     const certReader = new CertReader(this.cert);
     const domain = certReader.getMainDomain();
@@ -129,7 +127,6 @@ export class OnePanelDeployToPanelPlugin extends AbstractTaskPlugin {
 
     await this.ctx.utils.sleep(10000);
     this.logger.info(`证书更新完成`);
-
   }
 
   isNeedUpdate(certRes: any) {
@@ -139,8 +136,6 @@ export class OnePanelDeployToPanelPlugin extends AbstractTaskPlugin {
     }
     return true;
   }
-
-
 
   async onGetNodes() {
     const options = [{ label: "主节点", value: "local" }];
@@ -166,6 +161,5 @@ export class OnePanelDeployToPanelPlugin extends AbstractTaskPlugin {
     // console.log('resp', resp)
     return [...options, ...(resp?.map(item => ({ label: `${item.addr}(${item.name})`, value: item.name })) || [])];
   }
-
 }
 new OnePanelDeployToPanelPlugin();

@@ -41,7 +41,7 @@ function generateAESKey(): string {
   const randomBytes = new Uint8Array(keyLength);
   crypto.getRandomValues(randomBytes);
   return Array.from(randomBytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
+    .map(b => b.toString(16).padStart(2, "0"))
     .join("");
 }
 

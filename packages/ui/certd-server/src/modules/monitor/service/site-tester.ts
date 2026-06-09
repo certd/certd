@@ -2,7 +2,7 @@ import { logger, safePromise, utils } from "@certd/basic";
 import { merge } from "lodash-es";
 import https from "https";
 import { PeerCertificate } from "tls";
-import {DnsCustom} from "./dns-custom.js";
+import { DnsCustom } from "./dns-custom.js";
 
 export type SiteTestReq = {
   host: string; // 只用域名部分
@@ -20,8 +20,8 @@ export type SiteTestRes = {
 
 export class SiteTester {
   async test(req: SiteTestReq): Promise<SiteTestRes> {
-    const req_ = {...req}
-    delete req_.customDns
+    const req_ = { ...req };
+    delete req_.customDns;
     logger.info("测试站点:", JSON.stringify(req_));
     const maxRetryTimes = req.retryTimes == null ? 3 : req.retryTimes;
     let tryCount = 0;
@@ -49,40 +49,40 @@ export class SiteTester {
       {
         port: 443,
         method: "GET",
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
       },
       req
     );
 
-    let customLookup = null
+    let customLookup = null;
     if (req.ipAddress) {
       //使用固定的ip
       const ipAddress = req.ipAddress;
       options.headers = {
         host: options.host,
         //sni
-        servername: options.host
+        servername: options.host,
       };
       options.host = ipAddress;
-    }else if (req.customDns ) {
+    } else if (req.customDns) {
       // 非ip address 请求时
-      const customDns = req.customDns
-      customLookup = async (hostname:string, options:any, callback)=> {
+      const customDns = req.customDns;
+      customLookup = async (hostname: string, options: any, callback) => {
         console.log(hostname, options);
 
         // { family: undefined, hints: 0, all: true }
-        const res = await customDns.lookup(hostname, options)
-        console.log("custom lookup res:",res)
+        const res = await customDns.lookup(hostname, options);
+        console.log("custom lookup res:", res);
         if (!res || res.length === 0) {
           callback(new Error("没有解析到IP"));
         }
         callback(null, res);
-      }
+      };
     }
 
-    const agentOptions:any = { keepAlive: false };
+    const agentOptions: any = { keepAlive: false };
     if (customLookup) {
-      agentOptions.lookup = customLookup
+      agentOptions.lookup = customLookup;
     }
     options.agent = new https.Agent(agentOptions);
 
@@ -95,19 +95,19 @@ export class SiteTester {
       });
 
       // ✅ 关键：在 'socket' 事件中获取证书（握手完成后立即执行）
-      req.on('socket', (socket:any) => {
-        socket.on('secureConnect', () => {
+      req.on("socket", (socket: any) => {
+        socket.on("secureConnect", () => {
           // TLS握手完成，证书已经可用
           const certificate = socket.getPeerCertificate();
           if (certificate.subject) {
-            logger.info('证书获取成功', certificate.subject);
+            logger.info("证书获取成功", certificate.subject);
             resolve({
-              certificate
+              certificate,
             });
-          }else{
+          } else {
             logger.warn("证书信息为空");
             resolve({
-              certificate: null
+              certificate: null,
             });
           }
         });

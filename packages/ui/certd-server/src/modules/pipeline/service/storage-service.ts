@@ -1,8 +1,8 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { InjectEntityModel } from '@midwayjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { BaseService } from '@certd/lib-server';
-import { StorageEntity } from '../entity/storage.js';
+import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { In, Repository } from "typeorm";
+import { BaseService } from "@certd/lib-server";
+import { StorageEntity } from "../entity/storage.js";
 
 /**
  */
@@ -19,7 +19,7 @@ export class StorageService extends BaseService<StorageEntity> {
 
   async get(where: { scope: any; namespace: any; userId: number; version: string; key: string }) {
     if (where.userId == null) {
-      throw new Error('userId 不能为空');
+      throw new Error("userId 不能为空");
     }
     return await this.repository.findOne({
       where,
@@ -34,7 +34,7 @@ export class StorageService extends BaseService<StorageEntity> {
     if (ret != null) {
       entity.id = ret.id;
       if (ret.userId !== entity.userId) {
-        throw new Error('您没有权限修改此数据');
+        throw new Error("您没有权限修改此数据");
       }
       await this.repository.save(entity);
     } else {
@@ -49,9 +49,9 @@ export class StorageService extends BaseService<StorageEntity> {
     }
     return await this.repository.find({
       where: {
-        scope: 'pipeline',
+        scope: "pipeline",
         namespace: In(pipelineIds),
-        key: 'vars',
+        key: "vars",
       },
     });
   }
@@ -62,9 +62,9 @@ export class StorageService extends BaseService<StorageEntity> {
     }
     const res = await this.repository.findOne({
       where: {
-        scope: 'pipeline',
-        namespace: pipelineId + '',
-        key: 'privateVars',
+        scope: "pipeline",
+        namespace: pipelineId + "",
+        key: "privateVars",
       },
     });
     if (!res) {

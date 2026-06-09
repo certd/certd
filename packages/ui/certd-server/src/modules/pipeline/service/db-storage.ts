@@ -1,5 +1,5 @@
-import { IStorage } from '@certd/pipeline';
-import { StorageService } from './storage-service.js';
+import { IStorage } from "@certd/pipeline";
+import { StorageService } from "./storage-service.js";
 
 export class DbStorage implements IStorage {
   /**
@@ -13,7 +13,7 @@ export class DbStorage implements IStorage {
   }
 
   async remove(scope: string, namespace: string, version: string, key: string): Promise<void> {
-    throw new Error('Method not implemented.');
+    throw new Error("Method not implemented.");
   }
 
   async get(scope: string, namespace: string, version: string, key: string): Promise<string | null> {

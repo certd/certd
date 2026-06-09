@@ -46,6 +46,7 @@ export type TradeCreateReq = {
   duration: number;
   num: number;
   payType: string;
+  useRebateBalance?: boolean;
 };
 
 export async function TradeCreate(form: TradeCreateReq) {
@@ -75,5 +76,13 @@ export async function GetSuiteSetting() {
   return await request({
     url: "/suite/settings/get",
     method: "POST",
+  });
+}
+
+export async function UseActivationCode(code: string) {
+  return await request({
+    url: "/suite/activation-code/use",
+    method: "POST",
+    data: { code },
   });
 }

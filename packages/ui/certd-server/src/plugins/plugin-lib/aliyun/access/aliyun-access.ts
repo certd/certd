@@ -33,9 +33,9 @@ export class AliyunAccess extends BaseAccess {
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "点击测试接口是否正常"
+    helper: "点击测试接口是否正常",
   })
   testRequest = true;
 
@@ -44,23 +44,20 @@ export class AliyunAccess extends BaseAccess {
     return "ok";
   }
 
-
   async getStsClient() {
-    const StsClient = await import('@alicloud/sts-sdk');
+    const StsClient = await import("@alicloud/sts-sdk");
 
     // 配置凭证
     const sts = new StsClient.default({
-      endpoint: 'sts.aliyuncs.com',
+      endpoint: "sts.aliyuncs.com",
       accessKeyId: this.accessKeyId,
       accessKeySecret: this.accessKeySecret,
     });
 
-    return sts
+    return sts;
   }
 
-
   async getCallerIdentity() {
-
     const sts = await this.getStsClient();
     // 调用 GetCallerIdentity 接口
     const result = await sts.getCallerIdentity();
@@ -79,10 +76,9 @@ export class AliyunAccess extends BaseAccess {
       valid: true,
       accountId: result.AccountId,
       arn: result.Arn,
-      userId: result.UserId
+      userId: result.UserId,
     };
   }
-
 
   getSslClient({ endpoint }: { endpoint: string }) {
     const client = new AliyunSslClient({
@@ -90,10 +86,8 @@ export class AliyunAccess extends BaseAccess {
       logger: this.ctx.logger,
       endpoint,
     });
-    return client
+    return client;
   }
-
-
 
   getClient(endpoint: string) {
     return new AliyunClientV2({

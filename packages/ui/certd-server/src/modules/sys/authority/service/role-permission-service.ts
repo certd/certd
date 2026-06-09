@@ -1,8 +1,8 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { InjectEntityModel } from '@midwayjs/typeorm';
-import { Repository } from 'typeorm';
-import { BaseService } from '@certd/lib-server';
-import { RolePermissionEntity } from '../entity/role-permission.js';
+import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { Repository } from "typeorm";
+import { BaseService } from "@certd/lib-server";
+import { RolePermissionEntity } from "../entity/role-permission.js";
 
 /**
  * 角色->权限

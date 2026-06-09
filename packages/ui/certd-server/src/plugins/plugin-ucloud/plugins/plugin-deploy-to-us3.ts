@@ -12,9 +12,9 @@ import { UCloudAccess } from "../access.js";
   needPlus: false,
   default: {
     strategy: {
-      runStrategy: RunStrategy.SkipWhenSucceed
-    }
-  }
+      runStrategy: RunStrategy.SkipWhenSucceed,
+    },
+  },
 })
 export class UCloudDeployToUS3 extends AbstractTaskPlugin {
   @TaskInput({
@@ -22,10 +22,10 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
     helper: "请选择前置任务输出的域名证书",
     component: {
       name: "output-selector",
-      from: [...CertApplyPluginNames]
-    }
+      from: [...CertApplyPluginNames],
+    },
   })
-  cert!: CertInfo ;
+  cert!: CertInfo;
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
@@ -34,9 +34,9 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
     title: "UCloud授权",
     component: {
       name: "access-selector",
-      type: "ucloud"
+      type: "ucloud",
     },
-    required: true
+    required: true,
   })
   accessId!: string;
 
@@ -44,7 +44,7 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
     createRemoteSelectInputDefine({
       title: "存储桶",
       helper: "要更新的UCloud存储桶",
-      action: UCloudDeployToUS3.prototype.onGetBucketList.name
+      action: UCloudDeployToUS3.prototype.onGetBucketList.name,
     })
   )
   bucket!: string;
@@ -53,17 +53,16 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
     createRemoteSelectInputDefine({
       title: "域名列表",
       helper: "要更新的UCloud域名列表",
-      action: UCloudDeployToUS3.prototype.onGetDomainList.name
+      action: UCloudDeployToUS3.prototype.onGetDomainList.name,
     })
   )
   domainList!: string[];
 
-  async onInstance() {
-  }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     const access = await this.getAccess<UCloudAccess>(this.accessId);
-    let certName = this.appendTimeSuffix("certd")
+    const certName = this.appendTimeSuffix("certd");
     let cert: CertInfo;
 
     for (const domain of this.domainList) {
@@ -73,7 +72,7 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
         bucket: this.bucket,
         domain: domain,
         cert: cert,
-        certName: certName
+        certName: certName,
       });
       this.logger.info(`----------- 更新存储桶${this.bucket}的域名${domain}证书成功`);
     }
@@ -81,17 +80,17 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
     this.logger.info("部署完成");
   }
 
-  async deployToUS3(req: { access: any, bucket: string, domain: string, cert: CertInfo, certName: string }) {
-    const { access, bucket, domain, cert, certName } = req
+  async deployToUS3(req: { access: any; bucket: string; domain: string; cert: CertInfo; certName: string }) {
+    const { access, bucket, domain, cert, certName } = req;
 
     const body: any = {
-      "Action": "UpdateUFileSSLCert",
-      "BucketName": bucket,
-      "Domain": domain,
-      "CertificateName": certName,
-      "Certificate": cert.crt,
-      "CertificateKey": cert.key
-    }
+      Action: "UpdateUFileSSLCert",
+      BucketName: bucket,
+      Domain: domain,
+      CertificateName: certName,
+      Certificate: cert.crt,
+      CertificateKey: cert.key,
+    };
 
     this.logger.info(`----------- 更新对象存储SSL证书${bucket}:${domain}，${JSON.stringify(body)}`);
     const resp = await access.invoke(body);
@@ -103,20 +102,20 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
 
     const pageNo = req.pageNo ?? 1;
     const pageSize = req.pageSize ?? 100;
-    
+
     try {
       const resp = await access.invoke({
-        "Action": "DescribeBucket",
-        "ProjectId": access.projectId,
-        "Offset": (pageNo - 1) * pageSize,
-        "Limit": pageSize
+        Action: "DescribeBucket",
+        ProjectId: access.projectId,
+        Offset: (pageNo - 1) * pageSize,
+        Limit: pageSize,
       });
 
       this.logger.info(`获取到存储桶列表:${JSON.stringify(resp)}`);
-      
+
       const buckets = resp.DataSet || [];
       const total = buckets.length;
-      
+
       if (!buckets || buckets.length === 0) {
         throw new Error("没有找到存储桶，请先在控制台创建存储桶");
       }
@@ -125,15 +124,15 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
         return {
           label: `${item.BucketName}<${item.Region}>`,
           value: `${item.BucketName}`,
-          bucket: item.BucketName
+          bucket: item.BucketName,
         };
       });
-      
+
       return {
         list: this.ctx.utils.options.buildGroupOptions(options, this.certDomains),
         total: total,
         pageNo: pageNo,
-        pageSize: pageSize
+        pageSize: pageSize,
       };
     } catch (err) {
       this.logger.error(`获取存储桶列表失败:${err}`);
@@ -143,35 +142,30 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
 
   async onGetDomainList(req: PageSearch = {}) {
     const access = await this.getAccess<UCloudAccess>(this.accessId);
-    
+
     if (!this.bucket) {
       throw new Error("请先选择存储桶");
     }
-    
+
     try {
       const resp = await access.invoke({
-        "Action": "DescribeBucket",
-        "ProjectId": access.projectId,
-        "BucketName": this.bucket
+        Action: "DescribeBucket",
+        ProjectId: access.projectId,
+        BucketName: this.bucket,
       });
 
       this.logger.info(`获取到存储桶域名列表:${JSON.stringify(resp)}`);
-      
+
       const buckets = resp.DataSet || [];
       if (!buckets || buckets.length === 0) {
         throw new Error(`没有找到存储桶${this.bucket}`);
       }
-      
+
       const bucketInfo = buckets[0];
       const domainSet = bucketInfo.Domain || {};
-      
-      const allDomains = [
-        ...(domainSet.Src || []),
-        ...(domainSet.Cdn || []),
-        ...(domainSet.CustomSrc || []),
-        ...(domainSet.CustomCdn || [])
-      ];
-      
+
+      const allDomains = [...(domainSet.Src || []), ...(domainSet.Cdn || []), ...(domainSet.CustomSrc || []), ...(domainSet.CustomCdn || [])];
+
       if (!allDomains || allDomains.length === 0) {
         throw new Error(`没有找到存储桶${this.bucket}的域名，请先在控制台为存储桶添加域名`);
       }
@@ -180,15 +174,15 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
         return {
           label: domain,
           value: domain,
-          domain: domain
+          domain: domain,
         };
       });
-      
+
       return {
         list: this.ctx.utils.options.buildGroupOptions(options, this.certDomains),
         total: allDomains.length,
         pageNo: 1,
-        pageSize: allDomains.length
+        pageSize: allDomains.length,
       };
     } catch (err) {
       this.logger.error(`获取存储桶域名列表失败:${err}`);

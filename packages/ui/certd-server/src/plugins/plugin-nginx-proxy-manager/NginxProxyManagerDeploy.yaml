@@ -17,7 +17,7 @@ input:
     component:
       name: output-selector
       from:
-        - ':cert:'
+        - ":cert:"
     required: true
     order: 0
   certDomains:

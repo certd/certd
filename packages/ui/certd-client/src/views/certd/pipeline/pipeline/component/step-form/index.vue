@@ -213,6 +213,10 @@ function useStepForm() {
   const stepOpen = (step: any, emit: any) => {
     callback.value = emit;
     currentStep.value = merge({ input: {}, strategy: {} }, step);
+    // 旧版证书申请任务没有 version 字段，编辑时补成 1，保持旧任务继续走兼容逻辑。
+    if (mode.value === "edit" && currentStep.value.type === "CertApply" && currentStep.value.input?.version == null) {
+      currentStep.value.input.version = 1;
+    }
     if (step.type) {
       changeCurrentPlugin(currentStep.value);
     }

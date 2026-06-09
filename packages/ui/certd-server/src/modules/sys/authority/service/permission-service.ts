@@ -1,8 +1,8 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { InjectEntityModel } from '@midwayjs/typeorm';
-import { Repository } from 'typeorm';
-import { BaseService } from '@certd/lib-server';
-import { PermissionEntity } from '../entity/permission.js';
+import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { Repository } from "typeorm";
+import { BaseService } from "@certd/lib-server";
+import { PermissionEntity } from "../entity/permission.js";
 
 /**
  * 权限资源
@@ -21,7 +21,7 @@ export class PermissionService extends BaseService<PermissionEntity> {
   async tree(options: any = {}) {
     if (options.order == null) {
       options.order = {
-        sort: 'ASC',
+        sort: "ASC",
       };
     }
     const list = await this.find(options);

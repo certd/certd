@@ -43,8 +43,7 @@ export class EsxiDeployCertPlugin extends AbstractPlusTaskPlugin {
   })
   accessId!: string;
 
-
-  async onInstance() { }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     const sshConf = await this.getAccess<SshAccess>(this.accessId);
@@ -56,7 +55,7 @@ export class EsxiDeployCertPlugin extends AbstractPlusTaskPlugin {
 
     await certReader.readCertFile({
       logger: this.logger,
-      handle: async (ctx) => {
+      handle: async ctx => {
         const crtPath = ctx.tmpCrtPath;
         const keyPath = ctx.tmpKeyPath;
         await sshClient.uploadFiles({
@@ -77,7 +76,7 @@ export class EsxiDeployCertPlugin extends AbstractPlusTaskPlugin {
     });
 
     const cmd = `/etc/init.d/hostd restart
-/etc/init.d/vpxa restart`
+/etc/init.d/vpxa restart`;
 
     await sshClient.exec({
       connectConf: sshConf,

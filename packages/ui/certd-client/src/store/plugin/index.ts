@@ -57,6 +57,18 @@ export class PluginGroups {
         for (const plugin of groups[key].plugins) {
           if (plugin.sysSetting) {
             merge(plugin.input, plugin.sysSetting.metadata?.input || {});
+            // 应用选项映射
+            for (const key of Object.keys(plugin.input)) {
+              const inputDef = plugin.input[key];
+              if (inputDef.optionsMapping && inputDef.component?.options) {
+                const mapping = inputDef.optionsMapping;
+                for (const opt of inputDef.component.options) {
+                  if (mapping[opt.value] !== undefined) {
+                    opt.label = mapping[opt.value];
+                  }
+                }
+              }
+            }
           }
         }
       }

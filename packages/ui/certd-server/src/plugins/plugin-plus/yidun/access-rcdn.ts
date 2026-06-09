@@ -31,8 +31,7 @@ export class YidunRcdnAccess extends BaseAccess {
   })
   password = "";
 
-
- @AccessInput({
+  @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
@@ -81,7 +80,7 @@ export class YidunRcdnAccess extends BaseAccess {
   }
 
   async getLoginToken() {
-    const access: YidunRcdnAccess = this
+    const access: YidunRcdnAccess = this;
     const url = "https://rhcdn.yiduncdn.com/login/loginUser";
     const data = {
       userAccount: access.username,

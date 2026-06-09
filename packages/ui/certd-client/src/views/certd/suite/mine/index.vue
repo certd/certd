@@ -15,14 +15,14 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onActivated, onMounted, ref } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
+import { computed, ref } from "vue";
 import createCrudOptions from "./crud";
 import { mySuiteApi, SuiteDetail } from "/@/views/certd/suite/mine/api";
 import SuiteCard from "/@/views/framework/home/dashboard/suite-card.vue";
-
+import { useMounted } from "/@/use/use-mounted";
 defineOptions({
-  name: "MySuites",
+  name: "MySuite",
 });
 const detail = ref<SuiteDetail>({});
 const currentSuite = computed(() => {
@@ -39,11 +39,8 @@ async function loadSuiteDetail() {
 }
 
 // 页面打开后获取列表数据
-onMounted(async () => {
+useMounted(async () => {
   await loadSuiteDetail();
   await crudExpose.doRefresh();
-});
-onActivated(() => {
-  crudExpose.doRefresh();
 });
 </script>

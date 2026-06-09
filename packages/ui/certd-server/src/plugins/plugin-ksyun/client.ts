@@ -1,53 +1,50 @@
-import crypto from 'crypto';
-import querystring from 'querystring'
-import {HttpClient, HttpRequestConfig, ILogger} from "@certd/basic";
+import crypto from "crypto";
+import querystring from "querystring";
+import { HttpClient, HttpRequestConfig, ILogger } from "@certd/basic";
 
 export class KsyunClient {
-
   accessKeyId: string;
   secretAccessKey: string;
   region: string;
   service: string;
   endpoint: string;
   logger: ILogger;
-  http: HttpClient
-  constructor(opts:{accessKeyId:string; secretAccessKey:string; region?:string; service :string;endpoint :string,logger:ILogger,http:HttpClient}) {
+  http: HttpClient;
+  constructor(opts: { accessKeyId: string; secretAccessKey: string; region?: string; service: string; endpoint: string; logger: ILogger; http: HttpClient }) {
     this.accessKeyId = opts.accessKeyId;
     this.secretAccessKey = opts.secretAccessKey;
-    this.region = opts.region || 'cn-beijing-6';
+    this.region = opts.region || "cn-beijing-6";
     this.service = opts.service;
-    this.endpoint =opts.endpoint
+    this.endpoint = opts.endpoint;
     this.logger = opts.logger;
     this.http = opts.http;
   }
 
-
- async doRequest(opts: {action:string;version:string} &HttpRequestConfig){
-    const config =  this.signRequest({
-      method: opts.method || 'GET',
-      url: opts.url || '/2016-09-01/domain/GetCdnDomains',
+  async doRequest(opts: { action: string; version: string } & HttpRequestConfig) {
+    const config = this.signRequest({
+      method: opts.method || "GET",
+      url: opts.url || "/2016-09-01/domain/GetCdnDomains",
       baseURL: `https://${this.endpoint}`,
       params: opts.params,
       headers: {
-        'X-Action': opts.action,
-        'X-Version': opts.version
+        "X-Action": opts.action,
+        "X-Version": opts.version,
       },
-      data: opts.data
+      data: opts.data,
     });
 
-    try{
+    try {
       return await this.http.request({
         ...config,
-        data: opts.data
-      })
-    }catch (e) {
-      this.logger.error(e.request)
-      if (e.response?.data?.Error?.Message){
-        throw new Error(e.response?.data?.Error?.Message)
+        data: opts.data,
+      });
+    } catch (e) {
+      this.logger.error(e.request);
+      if (e.response?.data?.Error?.Message) {
+        throw new Error(e.response?.data?.Error?.Message);
       }
-      throw e
+      throw e;
     }
-
   }
 
   /**
@@ -58,31 +55,31 @@ export class KsyunClient {
   signRequest(config) {
     // 确保有必要的配置
     if (!this.accessKeyId || !this.secretAccessKey) {
-      throw new Error('AccessKeyId and SecretAccessKey are required');
+      throw new Error("AccessKeyId and SecretAccessKey are required");
     }
 
     // 设置默认值
-    config.method = config.method || 'GET';
+    config.method = config.method || "GET";
     config.headers = config.headers || {};
 
     // 获取当前时间并设置 X-Amz-Date
     const requestDate = this.getRequestDate();
-    config.headers['x-amz-date'] = requestDate;
+    config.headers["x-amz-date"] = requestDate;
 
     // 处理不同的请求方法
-    let canonicalQueryString = '';
-    let hashedPayload = this.hashPayload(config.data || '');
+    let canonicalQueryString = "";
+    let hashedPayload = this.hashPayload(config.data || "");
 
-    if (config.method.toUpperCase() === 'GET') {
+    if (config.method.toUpperCase() === "GET") {
       // GET 请求 - 参数在 URL 中
-      const urlParts = config.url.split('?');
+      const urlParts = config.url.split("?");
       const path = urlParts[0];
-      const query = urlParts[1] || '';
+      const query = urlParts[1] || "";
 
       // 合并现有查询参数和额外参数
       const queryParams = {
         ...querystring.parse(query),
-        ...(config.params || {})
+        ...(config.params || {}),
       };
 
       // 生成规范查询字符串
@@ -91,8 +88,8 @@ export class KsyunClient {
       config.params = {}; // 清空 params，因为已经合并到 URL 中
     } else {
       // POST/PUT 等请求 - 参数在 body 中
-      canonicalQueryString = '';
-      if (config.data && typeof config.data === 'object') {
+      canonicalQueryString = "";
+      if (config.data && typeof config.data === "object") {
         // 如果 data 是对象，转换为 JSON 字符串
         config.data = JSON.stringify(config.data);
         hashedPayload = this.hashPayload(config.data);
@@ -100,13 +97,7 @@ export class KsyunClient {
     }
 
     // 生成规范请求
-    const canonicalRequest = this.createCanonicalRequest(
-      config.method,
-      config.url,
-      canonicalQueryString,
-      config.headers,
-      hashedPayload
-    );
+    const canonicalRequest = this.createCanonicalRequest(config.method, config.url, canonicalQueryString, config.headers, hashedPayload);
 
     // 生成签名字符串
     const credentialScope = this.createCredentialScope(requestDate);
@@ -117,11 +108,7 @@ export class KsyunClient {
 
     // 生成 Authorization 头
     const signedHeaders = this.getSignedHeaders(config.headers);
-    const authorizationHeader = this.createAuthorizationHeader(
-      credentialScope,
-      signedHeaders,
-      signature
-    );
+    const authorizationHeader = this.createAuthorizationHeader(credentialScope, signedHeaders, signature);
 
     // 添加 Authorization 头
     config.headers.Authorization = authorizationHeader;
@@ -136,11 +123,11 @@ export class KsyunClient {
   getRequestDate() {
     const now = new Date();
     const year = now.getUTCFullYear();
-    const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(now.getUTCDate()).padStart(2, '0');
-    const hours = String(now.getUTCHours()).padStart(2, '0');
-    const minutes = String(now.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+    const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(now.getUTCDate()).padStart(2, "0");
+    const hours = String(now.getUTCHours()).padStart(2, "0");
+    const minutes = String(now.getUTCMinutes()).padStart(2, "0");
+    const seconds = String(now.getUTCSeconds()).padStart(2, "0");
 
     return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
   }
@@ -151,10 +138,10 @@ export class KsyunClient {
    * @returns {string} 哈希后的16进制字符串
    */
   hashPayload(payload) {
-    if (typeof payload !== 'string') {
-      payload = '';
+    if (typeof payload !== "string") {
+      payload = "";
     }
-    return crypto.createHash('sha256').update(payload).digest('hex').toLowerCase();
+    return crypto.createHash("sha256").update(payload).digest("hex").toLowerCase();
   }
 
   /**
@@ -177,7 +164,7 @@ export class KsyunClient {
     const sortedKeys = Object.keys(encodedParams).sort();
 
     // 构建查询字符串
-    return sortedKeys.map(key => `${key}=${encodedParams[key]}`).join('&');
+    return sortedKeys.map(key => `${key}=${encodedParams[key]}`).join("&");
   }
 
   /**
@@ -186,9 +173,7 @@ export class KsyunClient {
    * @returns {string} 编码后的字符串
    */
   uriEncode(str) {
-    return encodeURIComponent(str)
-      .replace(/[^A-Za-z0-9\-_.~]/g, c =>
-        '%' + c.charCodeAt(0).toString(16).toUpperCase());
+    return encodeURIComponent(str).replace(/[^A-Za-z0-9\-_.~]/g, c => "%" + c.charCodeAt(0).toString(16).toUpperCase());
   }
 
   /**
@@ -202,20 +187,13 @@ export class KsyunClient {
    */
   createCanonicalRequest(method, url, queryString, headers, hashedPayload) {
     // 获取规范 URI
-    const urlObj = new URL(url, 'http://dummy.com'); // 使用虚拟基础 URL 来解析路径
-    const canonicalUri = this.uriEncodePath(urlObj.pathname) || '/';
+    const urlObj = new URL(url, "http://dummy.com"); // 使用虚拟基础 URL 来解析路径
+    const canonicalUri = this.uriEncodePath(urlObj.pathname) || "/";
 
     // 获取规范 headers 和 signed headers
     const { canonicalHeaders, signedHeaders } = this.createCanonicalHeaders(headers);
 
-    return [
-      method.toUpperCase(),
-      canonicalUri,
-      queryString,
-      canonicalHeaders,
-      signedHeaders,
-      hashedPayload
-    ].join('\n');
+    return [method.toUpperCase(), canonicalUri, queryString, canonicalHeaders, signedHeaders, hashedPayload].join("\n");
   }
 
   /**
@@ -225,7 +203,10 @@ export class KsyunClient {
    */
   uriEncodePath(path) {
     // 分割路径为各个部分，分别编码
-    return path.split('/').map(part => this.uriEncode(part)).join('/');
+    return path
+      .split("/")
+      .map(part => this.uriEncode(part))
+      .join("/");
   }
 
   /**
@@ -235,15 +216,15 @@ export class KsyunClient {
    */
   createCanonicalHeaders(headers) {
     // 处理 headers
-    const headerMap:any = {};
+    const headerMap: any = {};
 
     // 标准化 headers
     for (const key in headers) {
       if (headers.hasOwnProperty(key)) {
         const lowerKey = key.toLowerCase();
-        let value = headers[key]
+        let value = headers[key];
         if (value) {
-         value = value.toString().replace(/\s+/g, ' ').trim();
+          value = value.toString().replace(/\s+/g, " ").trim();
           headerMap[lowerKey] = value;
         }
       }
@@ -251,21 +232,21 @@ export class KsyunClient {
 
     // 确保 host 和 x-amz-date 存在
     if (!headerMap.host) {
-      const url = headers.host ||this.endpoint || 'cdn.api.ksyun.com'; // 默认值
-      headerMap.host = url.replace(/^https?:\/\//, '').split('/')[0];
+      const url = headers.host || this.endpoint || "cdn.api.ksyun.com"; // 默认值
+      headerMap.host = url.replace(/^https?:\/\//, "").split("/")[0];
     }
 
     // 按 header 名称排序
     const sortedHeaderNames = Object.keys(headerMap).sort();
 
     // 构建规范 headers
-    let canonicalHeaders = '';
+    let canonicalHeaders = "";
     for (const name of sortedHeaderNames) {
       canonicalHeaders += `${name}:${headerMap[name]}\n`;
     }
 
     // 构建 signed headers
-    const signedHeaders = sortedHeaderNames.join(';');
+    const signedHeaders = sortedHeaderNames.join(";");
 
     return { canonicalHeaders, signedHeaders };
   }
@@ -286,7 +267,7 @@ export class KsyunClient {
    * @returns {string} 信任状范围字符串
    */
   createCredentialScope(requestDate) {
-    const date = requestDate.split('T')[0];
+    const date = requestDate.split("T")[0];
     return `${date}/${this.region}/${this.service}/aws4_request`;
   }
 
@@ -298,18 +279,10 @@ export class KsyunClient {
    * @returns {string} 签名字符串
    */
   createStringToSign(requestDate, credentialScope, canonicalRequest) {
-    const algorithm = 'AWS4-HMAC-SHA256';
-    const hashedCanonicalRequest = crypto.createHash('sha256')
-      .update(canonicalRequest)
-      .digest('hex')
-      .toLowerCase();
+    const algorithm = "AWS4-HMAC-SHA256";
+    const hashedCanonicalRequest = crypto.createHash("sha256").update(canonicalRequest).digest("hex").toLowerCase();
 
-    return [
-      algorithm,
-      requestDate,
-      credentialScope,
-      hashedCanonicalRequest
-    ].join('\n');
+    return [algorithm, requestDate, credentialScope, hashedCanonicalRequest].join("\n");
   }
 
   /**
@@ -319,13 +292,13 @@ export class KsyunClient {
    * @returns {string} 签名值
    */
   calculateSignature(requestDate, stringToSign) {
-    const date = requestDate.split('T')[0];
+    const date = requestDate.split("T")[0];
     const kDate = this.hmac(`AWS4${this.secretAccessKey}`, date);
     const kRegion = this.hmac(kDate, this.region);
     const kService = this.hmac(kRegion, this.service);
-    const kSigning = this.hmac(kService, 'aws4_request');
+    const kSigning = this.hmac(kService, "aws4_request");
 
-    return this.hmac(kSigning, stringToSign, 'hex');
+    return this.hmac(kSigning, stringToSign, "hex");
   }
 
   /**
@@ -336,7 +309,7 @@ export class KsyunClient {
    * @returns {string|Buffer} HMAC 结果
    */
   hmac(key, data, encoding = null) {
-    const hmac = crypto.createHmac('sha256', key);
+    const hmac = crypto.createHmac("sha256", key);
     hmac.update(data);
     return encoding ? hmac.digest(encoding) : hmac.digest();
   }
@@ -352,6 +325,3 @@ export class KsyunClient {
     return `AWS4-HMAC-SHA256 Credential=${this.accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
   }
 }
-
-
-

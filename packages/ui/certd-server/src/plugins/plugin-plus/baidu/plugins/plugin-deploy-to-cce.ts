@@ -227,7 +227,7 @@ export class DeployCertToBaiduCcePlugin extends AbstractTaskPlugin {
       secretNames = [secretName];
     }
     for (const secret of secretNames) {
-      await k8sClient.patchSecret({ namespace, secretName: secret, body ,createOnNotFound: this.createOnNotFound});
+      await k8sClient.patchSecret({ namespace, secretName: secret, body, createOnNotFound: this.createOnNotFound });
       this.logger.info(`cert secret已更新: ${secret}`);
     }
   }

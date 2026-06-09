@@ -30,8 +30,6 @@ export class CtyunAccess extends BaseAccess {
   })
   securityKey = "";
 
-
-
   @AccessInput({
     title: "测试",
     component: {
@@ -43,23 +41,23 @@ export class CtyunAccess extends BaseAccess {
   testRequest = true;
 
   async onTestRequest() {
-    await this.getCdnDomainList()
+    await this.getCdnDomainList();
     return "ok";
   }
 
-   async getCdnDomainList() {
-      const http: HttpClient = this.ctx.http;
-      const client = new CtyunClient({
-        access:this,
-        http,
-        logger: this.ctx.logger,
-      });
-  
-      // 008 是天翼云的CDN加速域名产品码
-      const all = await client.getDomainList({ productCode: "008" });
-      const list = all || []
-      return list
-    }
+  async getCdnDomainList() {
+    const http: HttpClient = this.ctx.http;
+    const client = new CtyunClient({
+      access: this,
+      http,
+      logger: this.ctx.logger,
+    });
+
+    // 008 是天翼云的CDN加速域名产品码
+    const all = await client.getDomainList({ productCode: "008" });
+    const list = all || [];
+    return list;
+  }
 }
 
 new CtyunAccess();

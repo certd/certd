@@ -1,13 +1,13 @@
-import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from '@certd/pipeline';
-import { CertInfo, CertReader } from '@certd/plugin-cert';
-import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from '@certd/plugin-lib';
-import { optionsUtils } from '@certd/basic';
-import { CertApplyPluginNames} from '@certd/plugin-cert';
+import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { CertInfo, CertReader } from "@certd/plugin-cert";
+import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
+import { optionsUtils } from "@certd/basic";
+import { CertApplyPluginNames } from "@certd/plugin-cert";
 @IsTaskPlugin({
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名
-  name: 'DemoTest',
-  title: 'Demo-测试插件',
-  icon: 'clarity:plugin-line',
+  name: "DemoTest",
+  title: "Demo-测试插件",
+  icon: "clarity:plugin-line",
   //插件分组
   group: pluginGroups.other.key,
   default: {
@@ -21,37 +21,37 @@ import { CertApplyPluginNames} from '@certd/plugin-cert';
 export class DemoTest extends AbstractTaskPlugin {
   //测试参数
   @TaskInput({
-    title: '属性示例',
-    value: '默认值',
+    title: "属性示例",
+    value: "默认值",
     component: {
       //前端组件配置，具体配置见组件文档 https://www.antdv.com/components/input-cn
-      name: 'a-input',
-      vModel: 'value', //双向绑定组件的props名称
+      name: "a-input",
+      vModel: "value", //双向绑定组件的props名称
     },
-    helper: '帮助说明,[链接](https://certd.docmirror.cn)',
+    helper: "帮助说明,[链接](https://certd.docmirror.cn)",
     required: false, //是否必填
   })
   text!: string;
 
   //测试参数
   @TaskInput({
-    title: '选择框',
+    title: "选择框",
     component: {
       //前端组件配置，具体配置见组件文档 https://www.antdv.com/components/select-cn
-      name: 'a-auto-complete',
-      vModel: 'value',
+      name: "a-auto-complete",
+      vModel: "value",
       options: [
         //选项列表
-        { value: 'show', label: '动态显' },
-        { value: 'hide', label: '动态隐' },
+        { value: "show", label: "动态显" },
+        { value: "hide", label: "动态隐" },
       ],
     },
   })
   select!: string;
 
   @TaskInput({
-    title: '动态显隐',
-    helper: '我会根据选择框的值进行显隐',
+    title: "动态显隐",
+    helper: "我会根据选择框的值进行显隐",
     show: true, //动态计算的值会覆盖它
     //动态计算脚本， mergeScript返回的对象会合并当前配置，此处演示 show的值会被动态计算结果覆盖，show的值根据用户选择的select的值决定
     mergeScript: `
@@ -66,16 +66,16 @@ export class DemoTest extends AbstractTaskPlugin {
 
   //测试参数
   @TaskInput({
-    title: '多选框',
+    title: "多选框",
     component: {
       //前端组件配置，具体配置见组件文档 https://www.antdv.com/components/select-cn
-      name: 'a-select',
-      vModel: 'value',
-      mode: 'tags',
+      name: "a-select",
+      vModel: "value",
+      mode: "tags",
       multiple: true,
       options: [
-        { value: '1', label: '选项1' },
-        { value: '2', label: '选项2' },
+        { value: "1", label: "选项1" },
+        { value: "2", label: "选项2" },
       ],
     },
   })
@@ -83,20 +83,20 @@ export class DemoTest extends AbstractTaskPlugin {
 
   //测试参数
   @TaskInput({
-    title: 'switch',
+    title: "switch",
     component: {
       //前端组件配置，具体配置见组件文档 https://www.antdv.com/components/switch-cn
-      name: 'a-switch',
-      vModel: 'checked',
+      name: "a-switch",
+      vModel: "checked",
     },
   })
   switch!: boolean;
   //证书选择，此项必须要有
   @TaskInput({
-    title: '域名证书',
-    helper: '请选择前置任务输出的域名证书',
+    title: "域名证书",
+    helper: "请选择前置任务输出的域名证书",
     component: {
-      name: 'output-selector',
+      name: "output-selector",
       from: [...CertApplyPluginNames],
     },
     // required: true, // 必填
@@ -109,11 +109,11 @@ export class DemoTest extends AbstractTaskPlugin {
 
   //授权选择框
   @TaskInput({
-    title: 'demo授权',
-    helper: 'demoAccess授权',
+    title: "demo授权",
+    helper: "demoAccess授权",
     component: {
-      name: 'access-selector',
-      type: 'demo', //固定授权类型
+      name: "access-selector",
+      type: "demo", //固定授权类型
     },
     // rules: [{ required: true, message: '此项必填' }],
     // required: true, //必填
@@ -122,11 +122,11 @@ export class DemoTest extends AbstractTaskPlugin {
 
   @TaskInput(
     createRemoteSelectInputDefine({
-      title: '从后端获取选项',
-      helper: '选择时可以从后端获取选项',
+      title: "从后端获取选项",
+      helper: "选择时可以从后端获取选项",
       action: DemoTest.prototype.onGetSiteList.name,
       //当以下参数变化时，触发获取选项
-      watches: ['certDomains', 'accessId'],
+      watches: ["certDomains", "accessId"],
       required: true,
       single: false,
     })
@@ -142,23 +142,23 @@ export class DemoTest extends AbstractTaskPlugin {
 
     try {
       const access = await this.getAccess(accessId);
-      this.logger.debug('access', access);
+      this.logger.debug("access", access);
     } catch (e) {
-      this.logger.error('获取授权失败', e);
+      this.logger.error("获取授权失败", e);
     }
 
     try {
       const certReader = new CertReader(cert);
-      this.logger.debug('certReader', certReader);
+      this.logger.debug("certReader", certReader);
     } catch (e) {
-      this.logger.error('读取crt失败', e);
+      this.logger.error("读取crt失败", e);
     }
 
-    this.logger.info('DemoTestPlugin execute');
-    this.logger.info('text:', text);
-    this.logger.info('select:', select);
-    this.logger.info('switch:', this.switch);
-    this.logger.info('授权id:', accessId);
+    this.logger.info("DemoTestPlugin execute");
+    this.logger.info("text:", text);
+    this.logger.info("select:", select);
+    this.logger.info("switch:", this.switch);
+    this.logger.info("授权id:", accessId);
 
     // const res = await this.http.request({
     //   url: 'https://api.demo.com',
@@ -174,7 +174,7 @@ export class DemoTest extends AbstractTaskPlugin {
   //此方法演示，如何让前端在添加插件时可以从后端获取选项，这里是后端返回选项的方法
   async onGetSiteList(req: PageSearch) {
     if (!this.accessId) {
-      throw new Error('请选择Access授权');
+      throw new Error("请选择Access授权");
     }
 
     // @ts-ignore
@@ -183,9 +183,9 @@ export class DemoTest extends AbstractTaskPlugin {
     // const siteRes = await access.GetDomainList(req);
     //以下是模拟数据
     const siteRes = [
-      { id: 1, siteName: 'site1.com' },
-      { id: 2, siteName: 'site2.com' },
-      { id: 3, siteName: 'site2.com' },
+      { id: 1, siteName: "site1.com" },
+      { id: 2, siteName: "site2.com" },
+      { id: 3, siteName: "site2.com" },
     ];
     //转换为前端所需要的格式
     const options = siteRes.map((item: any) => {

@@ -9,13 +9,12 @@ export class BaseEmailTemplateProvider extends BaseAddon implements ITemplatePro
       props: {
         type: "info",
         message: "在标题和内容模版中，通过${name}引用参数，例如： 感谢注册，您的注册验证码为：${code}",
-      }
+      },
     },
     order: -9,
     col: { span: 24 },
   })
   useIntro = "";
-
 
   @AddonInput({
     title: "邮件格式",
@@ -25,8 +24,8 @@ export class BaseEmailTemplateProvider extends BaseAddon implements ITemplatePro
         options: [
           { label: "HTML", value: "html" },
           { label: "TEXT", value: "text" },
-        ]
-      }
+        ],
+      },
     },
     order: 9,
     col: { span: 24 },
@@ -42,7 +41,7 @@ export class BaseEmailTemplateProvider extends BaseAddon implements ITemplatePro
       name: "a-input",
       props: {
         placeholder: "邮件标题模版",
-      }
+      },
     },
     col: { span: 24 },
   })
@@ -60,30 +59,29 @@ export class BaseEmailTemplateProvider extends BaseAddon implements ITemplatePro
   })
   contentTemplate = "";
 
-
   async buildContent(params: BuildContentReq): Promise<EmailContent> {
     const data = {
-      title:"",
-      content:"",
-      url:"",
+      title: "",
+      content: "",
+      url: "",
       ...params.data,
-    }
-    const title = this.compile(this.titleTemplate)(data)
-    const content = this.compile(this.contentTemplate)(data)
+    };
+    const title = this.compile(this.titleTemplate)(data);
+    const content = this.compile(this.contentTemplate)(data);
 
     const body: any = {
       subject: title,
-    }
+    };
     if (this.formatType === "html") {
-      body.html = content
+      body.html = content;
     } else {
-      body.content = content
+      body.content = content;
     }
-    return body
-  };
+    return body;
+  }
 
   async buildDefaultContent(params: BuildContentReq): Promise<EmailContent> {
-    throw new Error("请实现 buildDefaultContent 方法")
+    throw new Error("请实现 buildDefaultContent 方法");
   }
 
   // compile(templateString: string) {
@@ -95,11 +93,13 @@ export class BaseEmailTemplateProvider extends BaseAddon implements ITemplatePro
   //   };
   // }
 
-  compile(templateString:string) {
-    return new Function('data', `    with(data || {}) {
+  compile(templateString: string) {
+    return new Function(
+      "data",
+      `    with(data || {}) {
         return \`${templateString}\`;
       }
-    `);
+    `
+    );
   }
-
 }

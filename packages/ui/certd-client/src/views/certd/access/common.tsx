@@ -1,11 +1,11 @@
 import { ColumnCompositionProps, dict } from "@fast-crud/fast-crud";
-import { computed, provide, ref, toRef } from "vue";
+import { provide, ref, toRef } from "vue";
 import { useReference } from "/@/use/use-refrence";
 import { forEach, get, merge, set } from "lodash-es";
 import SecretPlainGetter from "/@/views/certd/access/access-selector/access/secret-plain-getter.vue";
 import { utils } from "/@/utils";
 
-export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
+export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, fixedSubtype?: string) {
   provide("getFromType", api.from);
   provide("accessApi", api);
   provide("get:plugin:type", () => {
@@ -34,6 +34,13 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any) {
       }
     }
     console.log('crudBinding.value[mode + "Form"].columns', columnsRef.value);
+    if (mode === "add" && define.subtype && fixedSubtype) {
+      form.access = form.access || {};
+      const subtypeKey = `access.${define.subtype}`;
+      if (get(form, subtypeKey) == null) {
+        set(form, subtypeKey, fixedSubtype);
+      }
+    }
     forEach(define.input, (value: any, mapKey: any) => {
       const key = "access." + mapKey;
       const field = {

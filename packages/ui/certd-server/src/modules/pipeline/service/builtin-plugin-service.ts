@@ -1,6 +1,6 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { pluginGroups, pluginRegistry } from '@certd/pipeline';
-import { cloneDeep } from 'lodash-es';
+import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { pluginGroups, pluginRegistry } from "@certd/pipeline";
+import { cloneDeep } from "lodash-es";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -14,23 +14,23 @@ export class BuiltInPluginService {
         continue;
       }
       //@ts-ignore
-      if(Plugin.define?.type && Plugin.define?.type.toLowerCase() !== 'builtin'){
+      if (Plugin.define?.type && Plugin.define?.type.toLowerCase() !== "builtin") {
         continue;
       }
       list.push({ ...Plugin.define, key });
     }
     list = list.sort((a, b) => {
-      return (a.order ?? 10 )- (b.order ?? 10);
+      return (a.order ?? 10) - (b.order ?? 10);
     });
     return list;
   }
 
   getGroups() {
-    const groups:any = cloneDeep(pluginGroups);
+    const groups: any = cloneDeep(pluginGroups);
     for (const key in groups) {
       const group = groups[key];
       group.plugins = group.plugins.sort((a, b) => {
-        return (a.order ?? 10 )- (b.order ?? 10);
+        return (a.order ?? 10) - (b.order ?? 10);
       });
     }
     return groups;

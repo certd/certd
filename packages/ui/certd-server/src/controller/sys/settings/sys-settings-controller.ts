@@ -1,14 +1,5 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query, RequestIP } from "@midwayjs/core";
-import {
-  addonRegistry,
-  AddonService,
-  CrudController,
-  SysPrivateSettings,
-  SysPublicSettings,
-  SysSafeSetting,
-  SysSettingsEntity,
-  SysSettingsService
-} from "@certd/lib-server";
+import { addonRegistry, AddonService, CrudController, SysPrivateSettings, SysPublicSettings, SysSafeSetting, SysSettingsEntity, SysSettingsService } from "@certd/lib-server";
 import { cloneDeep, merge } from "lodash-es";
 import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
 import { UserSettingsService } from "../../../modules/mine/service/user-settings-service.js";
@@ -17,11 +8,10 @@ import { http, logger, utils } from "@certd/basic";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { SmsServiceFactory } from "../../../modules/basic/sms/factory.js";
 
-
 /**
  */
 @Provide()
-@Controller('/api/sys/settings')
+@Controller("/api/sys/settings")
 export class SysSettingsController extends CrudController<SysSettingsService> {
   @Inject()
   service: SysSettingsService;
@@ -31,84 +21,84 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   pipelineService: PipelineService;
   @Inject()
   codeService: CodeService;
- @Inject()
+  @Inject()
   addonService: AddonService;
 
   getService() {
     return this.service;
   }
 
-  @Post('/page', { description: 'sys:settings:view' })
+  @Post("/page", { description: "sys:settings:view" })
   async page(@Body(ALL) body) {
     return super.page(body);
   }
 
-  @Post('/list', { description: 'sys:settings:view' })
+  @Post("/list", { description: "sys:settings:view" })
   async list(@Body(ALL) body) {
     return super.list(body);
   }
 
-  @Post('/add', { description: 'sys:settings:edit' })
+  @Post("/add", { description: "sys:settings:edit" })
   async add(@Body(ALL) bean) {
     return super.add(bean);
   }
 
-  @Post('/update', { description: 'sys:settings:edit' })
+  @Post("/update", { description: "sys:settings:edit" })
   async update(@Body(ALL) bean) {
     await this.service.checkUserId(bean.id, this.getUserId());
     return super.update(bean);
   }
-  @Post('/info', { description: 'sys:settings:view' })
-  async info(@Query('id') id: number) {
+  @Post("/info", { description: "sys:settings:view" })
+  async info(@Query("id") id: number) {
     await this.service.checkUserId(id, this.getUserId());
     return super.info(id);
   }
 
-  @Post('/delete', { description: 'sys:settings:edit' })
-  async delete(@Query('id') id: number) {
+  @Post("/delete", { description: "sys:settings:edit" })
+  async delete(@Query("id") id: number) {
     await this.service.checkUserId(id, this.getUserId());
     return super.delete(id);
   }
 
-  @Post('/save', { description: 'sys:settings:edit' })
+  @Post("/save", { description: "sys:settings:edit" })
   async save(@Body(ALL) bean: SysSettingsEntity) {
     await this.service.save(bean);
     return this.ok({});
   }
 
-  @Post('/get', { description: 'sys:settings:view' })
-  async get(@Query('key') key: string) {
+  @Post("/get", { description: "sys:settings:view" })
+  async get(@Query("key") key: string) {
     const entity = await this.service.getByKey(key);
     return this.ok(entity);
   }
 
   // savePublicSettings
-  @Post('/getEmailSettings', { description: 'sys:settings:view' })
+  @Post("/getEmailSettings", { description: "sys:settings:view" })
   async getEmailSettings(@Body(ALL) body) {
     const conf = await getEmailSettings(this.service, this.userSettingsService);
     return this.ok(conf);
   }
 
-   @Post('/getEmailTemplates', { description: 'sys:settings:view' })
+  @Post("/getEmailTemplates", { description: "sys:settings:view" })
   async getEmailTemplates(@Body(ALL) body) {
     const conf = await getEmailSettings(this.service, this.userSettingsService);
-    const templates = conf.templates ||  {}
+    const templates = conf.templates || {};
 
-    const emailTemplateProviders = await this.addonService.getDefineList("emailTemplate")
+    const emailTemplateProviders = await this.addonService.getDefineList("emailTemplate");
 
-    const proviers = []
+    const proviers = [];
     for (const item of emailTemplateProviders) {
-      const templateConf = templates[item.name] || {}
+      const templateConf = templates[item.name] || {};
       proviers.push({
         name: item.name,
         title: item.title,
-        addonId : templateConf.addonId,
-      })
+        addonId: templateConf.addonId,
+      });
     }
     return this.ok(proviers);
   }
 
-  @Post('/saveEmailSettings', { description: 'sys:settings:edit' })
+  @Post("/saveEmailSettings", { description: "sys:settings:edit" })
   async saveEmailSettings(@Body(ALL) body) {
     const conf = await getEmailSettings(this.service, this.userSettingsService);
     merge(conf, body);
@@ -116,7 +106,7 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
     return this.ok(conf);
   }
 
-  @Post('/getSysSettings', { description: 'sys:settings:view' })
+  @Post("/getSysSettings", { description: "sys:settings:view" })
   async getSysSettings() {
     const publicSettings = await this.service.getPublicSettings();
     let privateSettings = await this.service.getPrivateSettings();
@@ -125,7 +115,7 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   }
 
   // savePublicSettings
-  @Post('/saveSysSettings', { description: 'sys:settings:edit' })
+  @Post("/saveSysSettings", { description: "sys:settings:edit" })
   async saveSysSettings(@Body(ALL) body: { public: SysPublicSettings; private: SysPrivateSettings }) {
     const publicSettings = await this.service.getPublicSettings();
     const privateSettings = await this.service.getPrivateSettings();
@@ -136,21 +126,21 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
     return this.ok({});
   }
 
-  @Post('/stopOtherUserTimer', { description: 'sys:settings:edit' })
+  @Post("/stopOtherUserTimer", { description: "sys:settings:edit" })
   async stopOtherUserTimer(@Body(ALL) body) {
     await this.pipelineService.stopOtherUserPipeline(1);
     return this.ok({});
   }
 
-  @Post('/testProxy', { description: 'sys:settings:edit' })
+  @Post("/testProxy", { description: "sys:settings:edit" })
   async testProxy(@Body(ALL) body) {
-    const google = 'https://www.google.com/';
-    const baidu = 'https://www.baidu.com/';
+    const google = "https://www.google.com/";
+    const baidu = "https://www.baidu.com/";
     let googleRes = false;
     try {
       await http.request({
         url: google,
-        method: 'GET',
+        method: "GET",
         timeout: 5000,
         logRes: false,
         logParams: false,
@@ -158,13 +148,13 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
       googleRes = true;
     } catch (e) {
       googleRes = e.message;
-      logger.info('test google error:', e);
+      logger.info("test google error:", e);
     }
     let baiduRes = false;
     try {
       await http.request({
         url: baidu,
-        method: 'GET',
+        method: "GET",
         timeout: 5000,
         logRes: false,
         logParams: false,
@@ -172,7 +162,7 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
       baiduRes = true;
     } catch (e) {
       baiduRes = e.message;
-      logger.info('test baidu error:', e);
+      logger.info("test baidu error:", e);
     }
     return this.ok({
       google: googleRes,
@@ -180,51 +170,48 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
     });
   }
 
-  @Post('/testSms', { description: 'sys:settings:edit' })
+  @Post("/testSms", { description: "sys:settings:edit" })
   async testSms(@Body(ALL) body) {
-    await this.codeService.sendSmsCode(body.phoneCode, body.mobile );
+    await this.codeService.sendSmsCode(body.phoneCode, body.mobile);
     return this.ok({});
   }
 
-  @Post('/getSmsTypeDefine', { description: 'sys:settings:view' })
-  async getSmsTypeDefine(@Body('type') type: string) {
-    const define =await SmsServiceFactory.getDefine(type);
+  @Post("/getSmsTypeDefine", { description: "sys:settings:view" })
+  async getSmsTypeDefine(@Body("type") type: string) {
+    const define = await SmsServiceFactory.getDefine(type);
     return this.ok(define);
   }
-
-
 
   @Post("/safe/get", { description: "sys:settings:view" })
   async safeGet() {
     const res = await this.service.getSetting<SysSafeSetting>(SysSafeSetting);
-    const clone:SysSafeSetting = cloneDeep(res);
+    const clone: SysSafeSetting = cloneDeep(res);
     delete clone.hidden?.openPassword;
     return this.ok(clone);
   }
 
   @Post("/safe/save", { description: "sys:settings:edit" })
   async safeSave(@Body(ALL) body: any) {
-    if(body.hidden.openPassword){
+    if (body.hidden.openPassword) {
       body.hidden.openPassword = utils.hash.md5(body.hidden.openPassword);
     }
-    const blankSetting = new SysSafeSetting()
+    const blankSetting = new SysSafeSetting();
     const setting = await this.service.getSetting<SysSafeSetting>(SysSafeSetting);
-    const newSetting = merge(blankSetting,cloneDeep(setting), body);
-    if(newSetting.hidden?.enabled && !newSetting.hidden?.openPassword){
-      throw new Error("首次设置需要填写解锁密码")
+    const newSetting = merge(blankSetting, cloneDeep(setting), body);
+    if (newSetting.hidden?.enabled && !newSetting.hidden?.openPassword) {
+      throw new Error("首次设置需要填写解锁密码");
     }
     await this.service.saveSetting(blankSetting);
     return this.ok({});
   }
 
-
   @Post("/captchaTest", { description: "sys:settings:edit" })
-  async captchaTest(@Body(ALL) body: any,@RequestIP() remoteIp: string) {
-    await this.codeService.checkCaptcha(body,{remoteIp});
+  async captchaTest(@Body(ALL) body: any, @RequestIP() remoteIp: string) {
+    await this.codeService.checkCaptcha(body, { remoteIp });
     return this.ok({});
   }
 
-  @Post('/oauth/providers', { description: 'sys:settings:view' })
+  @Post("/oauth/providers", { description: "sys:settings:view" })
   async oauthProviders() {
     const list = await addonRegistry.getDefineList("oauth");
     return this.ok(list);

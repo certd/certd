@@ -1,9 +1,9 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { InjectEntityModel } from '@midwayjs/typeorm';
-import { Repository } from 'typeorm';
-import { BaseService, ListReq, SysPrivateSettings, SysSettingsService, ValidateException } from '@certd/lib-server';
-import { CnameProviderEntity } from '../entity/cname-provider.js';
-import { CommonProviders } from './common-provider.js';
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { Repository } from "typeorm";
+import { BaseService, ListReq, SysPrivateSettings, SysSettingsService, ValidateException } from "@certd/lib-server";
+import { CnameProviderEntity } from "../entity/cname-provider.js";
+import { CommonProviders } from "./common-provider.js";
 
 /**
  * 授权
@@ -63,7 +63,7 @@ export class CnameProviderService extends BaseService<CnameProviderEntity> {
     for (const id of ids) {
       const info = await this.info(id);
       if (info.isDefault) {
-        throw new ValidateException('默认的CNAME服务不能删除，请先修改为非默认值');
+        throw new ValidateException("默认的CNAME服务不能删除，请先修改为非默认值");
       }
     }
     await super.delete(ids);
@@ -85,7 +85,7 @@ export class CnameProviderService extends BaseService<CnameProviderEntity> {
     if (def) {
       return def;
     }
-    const founds = await this.repository.find({ take: 1, order: { createTime: 'DESC' }, where: { disabled: false } });
+    const founds = await this.repository.find({ take: 1, order: { createTime: "DESC" }, where: { disabled: false } });
     if (founds && founds.length > 0) {
       return founds[0];
     }
@@ -127,5 +127,4 @@ export class CnameProviderService extends BaseService<CnameProviderEntity> {
     }
     return await super.info(id, infoIgnoreProperty);
   }
-
 }

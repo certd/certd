@@ -8,10 +8,9 @@ import { CertInfo } from "@certd/plugin-cert";
   name: "dokploy",
   title: "Dokploy授权",
   desc: "",
-  icon: "svg:icon-lucky"
+  icon: "svg:icon-lucky",
 })
 export class DokployAccess extends BaseAccess {
-
   @AccessInput({
     title: "Dokploy地址",
     component: {
@@ -19,12 +18,12 @@ export class DokployAccess extends BaseAccess {
     },
     required: true,
   })
-  endpoint = '';
+  endpoint = "";
 
   @AccessInput({
-    title: 'ApiKey',
+    title: "ApiKey",
     component: {
-      placeholder: 'ApiKey',
+      placeholder: "ApiKey",
     },
     // naAyXbZmxtsfrDfneOCeirbQNIICmBgfBiYXQwryPIUOdzPkXkfnaKjeAdbOQdwp
     //tlyvdNzojaFkNfGScALLmyuFHkHcYWaxoYjiDzWFHcnZAWdjOquMSqBwHLvGDGZK
@@ -32,73 +31,71 @@ export class DokployAccess extends BaseAccess {
     required: true,
     encrypt: true,
   })
-  apiKey = '';
-
+  apiKey = "";
 
   @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "点击测试接口是否正常"
+    helper: "点击测试接口是否正常",
   })
   testRequest = true;
 
   async onTestRequest() {
     await this.getCertList();
-    return "ok"
+    return "ok";
   }
 
-  async getServerList(){
+  async getServerList() {
     const req = {
-      url :"/api/server.all",
+      url: "/api/server.all",
       method: "get",
-    }
+    };
     return await this.doRequest(req);
   }
 
-  async getCertList(){
+  async getCertList() {
     const req = {
-      url :"/api/certificates.all",
+      url: "/api/certificates.all",
       method: "get",
-    }
+    };
     return await this.doRequest(req);
   }
 
-  async createCert(opts:{cert:CertInfo,serverId:string,name:string}){
+  async createCert(opts: { cert: CertInfo; serverId: string; name: string }) {
     const req = {
-      url :"/api/certificates.create",
+      url: "/api/certificates.create",
       method: "post",
-      data:{
+      data: {
         // certificateId:opts.certificateId,
-        "name": opts.name,
-        "certificateData": opts.cert.crt,
-        "privateKey": opts.cert.key,
-        "serverId": opts.serverId,
+        name: opts.name,
+        certificateData: opts.cert.crt,
+        privateKey: opts.cert.key,
+        serverId: opts.serverId,
         autoRenew: false,
-        organizationId : ""
-      }
-    }
+        organizationId: "",
+      },
+    };
     return await this.doRequest(req);
   }
 
-
-  async removeCert (opts:{id:string}){
+  async removeCert(opts: { id: string }) {
     const req = {
-      url :"/api/certificates.remove",
+      url: "/api/certificates.remove",
       method: "post",
-      data:{
-        certificateId:opts.id,
-      }
-    }
+      data: {
+        certificateId: opts.id,
+      },
+    };
     return await this.doRequest(req);
   }
 
-  async doRequest(req: HttpRequestConfig){
+  async doRequest(req: HttpRequestConfig) {
     const headers = {
       "x-api-key": this.apiKey,
-      ...req.headers
+      ...req.headers,
     };
     return await this.ctx.http.request({
       headers,
@@ -107,9 +104,6 @@ export class DokployAccess extends BaseAccess {
       logRes: false,
     });
   }
-
-
 }
-
 
 new DokployAccess();

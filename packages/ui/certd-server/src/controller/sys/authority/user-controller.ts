@@ -1,17 +1,17 @@
-import {Provide, Controller, Post, Inject, Body, Query, ALL} from '@midwayjs/core';
-import {UserService} from '../../../modules/sys/authority/service/user-service.js';
-import {CrudController} from '@certd/lib-server';
-import {RoleService} from '../../../modules/sys/authority/service/role-service.js';
-import {PermissionService} from '../../../modules/sys/authority/service/permission-service.js';
-import {Constants} from '@certd/lib-server';
-import {In} from 'typeorm';
-import {LoginService} from "../../../modules/login/service/login-service.js";
+import { Provide, Controller, Post, Inject, Body, Query, ALL } from "@midwayjs/core";
+import { UserService } from "../../../modules/sys/authority/service/user-service.js";
+import { CrudController } from "@certd/lib-server";
+import { RoleService } from "../../../modules/sys/authority/service/role-service.js";
+import { PermissionService } from "../../../modules/sys/authority/service/permission-service.js";
+import { Constants } from "@certd/lib-server";
+import { In } from "typeorm";
+import { LoginService } from "../../../modules/login/service/login-service.js";
 
 /**
  * 系统用户
  */
 @Provide()
-@Controller('/api/sys/authority/user')
+@Controller("/api/sys/authority/user")
 export class UserController extends CrudController<UserService> {
   @Inject()
   service: UserService;
@@ -28,8 +28,8 @@ export class UserController extends CrudController<UserService> {
     return this.service;
   }
 
-  @Post('/getSimpleUserByIds', {description: 'sys:auth:user:view'})
-  async getSimpleUserByIds(@Body('ids') ids: number[]) {
+  @Post("/getSimpleUserByIds", { description: "sys:auth:user:view" })
+  async getSimpleUserByIds(@Body("ids") ids: number[]) {
     const users = await this.service.find({
       select: {
         id: true,
@@ -46,8 +46,7 @@ export class UserController extends CrudController<UserService> {
     return this.ok(users);
   }
 
-
-  @Post('/getSimpleUsers', {description: 'sys:auth:user:view'})
+  @Post("/getSimpleUsers", { description: "sys:auth:user:view" })
   async getSimpleUsers() {
     const users = await this.service.find({
       select: {
@@ -61,10 +60,10 @@ export class UserController extends CrudController<UserService> {
     return this.ok(users);
   }
 
-  @Post('/page', {description: 'sys:auth:user:view'})
+  @Post("/page", { description: "sys:auth:user:view" })
   async page(
     @Body(ALL)
-      body
+    body
   ) {
     const ret = await super.page(body);
 
@@ -93,32 +92,32 @@ export class UserController extends CrudController<UserService> {
     return ret;
   }
 
-  @Post('/add', {description: 'sys:auth:user:add'})
+  @Post("/add", { description: "sys:auth:user:add" })
   async add(
     @Body(ALL)
-      bean
+    bean
   ) {
     return await super.add(bean);
   }
 
-  @Post('/update', {description: 'sys:auth:user:edit'})
+  @Post("/update", { description: "sys:auth:user:edit" })
   async update(
     @Body(ALL)
-      bean
+    bean
   ) {
     return await super.update(bean);
   }
 
-  @Post('/delete', {description: 'sys:auth:user:remove'})
+  @Post("/delete", { description: "sys:auth:user:remove" })
   async delete(
-    @Query('id')
-      id: number
+    @Query("id")
+    id: number
   ) {
     if (id === 1) {
-      throw new Error('不能删除默认的管理员角色');
+      throw new Error("不能删除默认的管理员角色");
     }
     if (id === 3) {
-      throw new Error('不能删除默认的普通用户角色');
+      throw new Error("不能删除默认的普通用户角色");
     }
     return await super.delete(id);
   }
@@ -126,12 +125,12 @@ export class UserController extends CrudController<UserService> {
   /**
    * 解除登录锁定
    */
-  @Post('/unlockBlock', {description: "sys:auth:user:edit"})
-  public async unlockBlock(@Body('id') id: number) {
-    const info = await this.service.info(id, ['password']);
-    this.loginService.clearCacheOnSuccess(info.username)
+  @Post("/unlockBlock", { description: "sys:auth:user:edit" })
+  public async unlockBlock(@Body("id") id: number) {
+    const info = await this.service.info(id, ["password"]);
+    this.loginService.clearCacheOnSuccess(info.username);
     if (info.mobile) {
-      this.loginService.clearCacheOnSuccess(info.mobile)
+      this.loginService.clearCacheOnSuccess(info.mobile);
     }
     return this.ok(info);
   }
@@ -139,17 +138,17 @@ export class UserController extends CrudController<UserService> {
   /**
    * 当前登录用户的个人信息
    */
-  @Post('/mine', {description: Constants.per.authOnly})
+  @Post("/mine", { description: Constants.per.authOnly })
   public async mine() {
     const id = this.getUserId();
-    const info = await this.service.info(id, ['password']);
+    const info = await this.service.info(id, ["password"]);
     return this.ok(info);
   }
 
   /**
    * 当前登录用户的权限列表
    */
-  @Post('/permissions', {description: Constants.per.authOnly})
+  @Post("/permissions", { description: Constants.per.authOnly })
   public async permissions() {
     const id = this.getUserId();
     const permissions = await this.service.getUserPermissions(id);
@@ -159,15 +158,11 @@ export class UserController extends CrudController<UserService> {
   /**
    * 当前登录用户的权限树形列表
    */
-  @Post('/permissionTree', {description: Constants.per.authOnly})
+  @Post("/permissionTree", { description: Constants.per.authOnly })
   public async permissionTree() {
     const id = this.getUserId();
     const permissions = await this.service.getUserPermissions(id);
     const tree = this.permissionService.buildTree(permissions);
     return this.ok(tree);
   }
-
-
-
-
 }

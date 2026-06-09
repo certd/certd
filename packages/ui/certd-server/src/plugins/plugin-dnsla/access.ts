@@ -1,50 +1,49 @@
-import { IsAccess, AccessInput, BaseAccess, PageSearch, PageRes, Pager } from '@certd/pipeline';
-import { DomainRecord } from '@certd/plugin-lib';
+import { IsAccess, AccessInput, BaseAccess, PageSearch, PageRes, Pager } from "@certd/pipeline";
+import { DomainRecord } from "@certd/plugin-lib";
 
 /**
  * 这个注解将注册一个授权配置
  * 在certd的后台管理系统中，用户可以选择添加此类型的授权
  */
 @IsAccess({
-  name: 'dnsla',
-  title: 'dns.la授权',
-  icon: 'arcticons:dns-changer-3',
-  desc: '',
+  name: "dnsla",
+  title: "dns.la授权",
+  icon: "arcticons:dns-changer-3",
+  desc: "",
 })
 export class DnslaAccess extends BaseAccess {
   /**
    * 授权属性配置
    */
   @AccessInput({
-    title: 'APIID',
+    title: "APIID",
     component: {
-      placeholder: 'APIID',
+      placeholder: "APIID",
     },
     helper: "从我的账户->API密钥中获取 APIID APISecret",
     required: true,
     encrypt: false,
   })
-  apiId = '';
+  apiId = "";
 
   @AccessInput({
-    title: 'APISecret',
+    title: "APISecret",
     component: {
-      placeholder: '',
+      placeholder: "",
     },
-    helper:
-      '',
+    helper: "",
     required: false,
     encrypt: true,
   })
-  apiSecret = '';
+  apiSecret = "";
 
   @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "测试授权是否正确"
+    helper: "测试授权是否正确",
   })
   testRequest = true;
 
@@ -56,13 +55,12 @@ export class DnslaAccess extends BaseAccess {
     return "ok";
   }
 
-
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
     const pager = new Pager(req);
     const url = `/api/domainList?pageIndex=${pager.pageNo}&pageSize=${pager.pageSize}`;
-    const ret = await this.doRequestApi(url, null, 'get');
+    const ret = await this.doRequestApi(url, null, "get");
 
-    let list = ret.data.results || []
+    let list = ret.data.results || [];
     list = list.map((item: any) => ({
       id: item.id,
       domain: item.domain,
@@ -74,9 +72,7 @@ export class DnslaAccess extends BaseAccess {
     };
   }
 
-
-
-  async doRequestApi(url: string, data: any = null, method = 'post') {
+  async doRequestApi(url: string, data: any = null, method = "post") {
     /**
      * Basic 认证
      * 我的账户 API 密钥 中获取 APIID APISecret
@@ -96,12 +92,12 @@ export class DnslaAccess extends BaseAccess {
      *  "data":{}
      * }
      */
-    const token = Buffer.from(`${this.apiId}:${this.apiSecret}`).toString('base64');
+    const token = Buffer.from(`${this.apiId}:${this.apiSecret}`).toString("base64");
     const res = await this.ctx.http.request<any, any>({
       url: "https://api.dns.la" + url,
       method,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Basic ${token}`,
       },
       data,
@@ -111,9 +107,7 @@ export class DnslaAccess extends BaseAccess {
       throw new Error(res.msg);
     }
     return res;
-
   }
-
 }
 
 new DnslaAccess();

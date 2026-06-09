@@ -26,13 +26,14 @@ export async function OauthToken(type: string, validationCode: string) {
   });
 }
 
-export async function AutoRegister(type: string, code: string) {
+export async function AutoRegister(type: string, code: string, inviteCode?: string) {
   return await request({
     url: apiPrefix + `/autoRegister`,
     method: "post",
     data: {
       validationCode: code,
       type,
+      inviteCode,
     },
   });
 }

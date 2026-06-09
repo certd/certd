@@ -34,7 +34,7 @@ export type OssClientContext = {
 };
 
 export abstract class BaseOssClient<A> implements IOssClient {
-  rootDir: string = "";
+  rootDir = "";
   access: A = null;
   logger: ILogger;
   utils: typeof utils;

@@ -1,2 +1,2 @@
-import './aliyun-dns-provider.js';
-import './aliesa-dns-provider.js';
+import "./aliyun-dns-provider.js";
+import "./aliesa-dns-provider.js";

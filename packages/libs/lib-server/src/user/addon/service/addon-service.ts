@@ -96,11 +96,11 @@ export class AddonService extends BaseService<AddonEntity> {
     if (userId==null) {
       return [];
     }
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     return await this.repository.find({
       where: {
         id: In(ids),
-        userId,
-        projectId
+        ...userProjectQuery,
       },
       select: {
         id: true,
@@ -117,11 +117,11 @@ export class AddonService extends BaseService<AddonEntity> {
 
 
   async getDefault(userId: number, addonType: string,projectId?:number): Promise<any> {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const res = await this.repository.findOne({
       where: {
-        userId,
         addonType,
-        projectId
+        ...userProjectQuery,
       },
       order: {
         isDefault: "DESC"
@@ -154,27 +154,17 @@ export class AddonService extends BaseService<AddonEntity> {
     if (userId==null) {
       throw new ValidateException("userId不能为空");
     }
-    await this.repository.update(
-      {
-        userId,
-        addonType,
-        projectId
-      },
-      {
-        isDefault: false
-      }
-    );
-    await this.repository.update(
-      {
-        id,
-        userId,
-        addonType,
-        projectId
-      },
-      {
-        isDefault: true
-      }
-    );
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
+    const query = {
+      addonType,
+      ...userProjectQuery,
+    };
+    await this.repository.update(query, {
+      isDefault: false
+    });
+    await this.repository.update({ ...query, id }, {
+      isDefault: true
+    });
   }
 
   async getOrCreateDefault(opts: { addonType: string, type: string, inputs: any, userId: any,projectId?:number }) {
@@ -202,12 +192,12 @@ export class AddonService extends BaseService<AddonEntity> {
   }
 
   async getOneByType(req:{addonType:string,type:string,userId:number,projectId?:number}) {
+    const userProjectQuery = this.buildUserProjectQuery(req.userId, req.projectId);
     return await this.repository.findOne({
       where: {
         addonType: req.addonType,
         type: req.type,
-        userId: req.userId,
-        projectId: req.projectId
+        ...userProjectQuery,
       }
     });
   }

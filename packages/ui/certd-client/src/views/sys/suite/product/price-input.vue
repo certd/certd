@@ -1,6 +1,6 @@
 <template>
   <div class="flex-o price-input">
-    <a-input-number v-if="edit" prefix="¥" :value="priceValue" :precision="2" class="ml-5" @update:value="onPriceChange"> </a-input-number>
+    <a-input-number v-if="edit" prefix="¥" :value="priceValue" :precision="2" class="price-input-number" @update:value="onPriceChange"> </a-input-number>
     <span v-else class="price-text" :style="style">{{ priceLabel }}</span>
   </div>
 </template>
@@ -13,11 +13,13 @@ const props = withDefaults(
     modelValue?: number;
     edit?: boolean;
     fontSize?: number;
+    zeroText?: string;
   }>(),
   {
     modelValue: 0,
     edit: false,
     fontSize: 14,
+    zeroText: "¥0",
   }
 );
 
@@ -39,7 +41,7 @@ const priceValue = computed(() => {
 
 const priceLabel = computed(() => {
   if (priceValue.value === 0) {
-    return "免费";
+    return props.zeroText;
   }
   return `¥${priceValue.value}`;
 });
@@ -53,6 +55,12 @@ const onPriceChange = (price: number) => {
 
 <style lang="less">
 .price-input {
+  width: 100%;
+
+  .price-input-number {
+    width: 100%;
+  }
+
   .price-text {
     color: red;
   }

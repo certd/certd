@@ -1,5 +1,5 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { http, logger, utils } from '@certd/basic';
+import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { http, logger, utils } from "@certd/basic";
 
 // 使用@certd/basic包中已有的utils.sp.spawn函数替代自定义的asyncExec
 // 该函数已经内置了Windows系统编码问题的解决方案
@@ -9,9 +9,9 @@ export type NetTestResult = {
   message: string; //结果
   testLog: string; //测试日志
   error?: string; //执行错误信息
-}
+};
 
-@Provide('nettestService')
+@Provide("nettestService")
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class NetTestService {
   /**
@@ -22,7 +22,7 @@ export class NetTestService {
    */
   async telnet(domain: string, port: number): Promise<NetTestResult> {
     try {
-      let command = '';
+      let command = "";
 
       if (this.isWindows()) {
         // Windows系统使用PowerShell执行测试，避免输入重定向问题
@@ -36,25 +36,22 @@ export class NetTestService {
       // 使用utils.sp.spawn执行命令，它会自动处理Windows编码问题
       const output = await utils.sp.spawn({
         cmd: command,
-        logger: undefined // 可以根据需要传入logger
+        logger: undefined, // 可以根据需要传入logger
       });
 
       // 判断测试是否成功
-      const success = this.isWindows()
-        ? output.includes('端口连接成功')
-        : output.includes(' open');
+      const success = this.isWindows() ? output.includes("端口连接成功") : output.includes(" open");
 
       // 处理结果
       return {
         success,
-        message: success ? '端口连接测试成功' : '端口连接测试失败',
+        message: success ? "端口连接测试成功" : "端口连接测试失败",
         testLog: output,
       };
-
     } catch (error) {
       return {
         success: false,
-        message: 'Telnet测试执行失败',
+        message: "Telnet测试执行失败",
         testLog: error.stdout || error.stderr || error?.message || String(error),
         error: error.stderr || error?.message || String(error),
       };
@@ -68,7 +65,7 @@ export class NetTestService {
    */
   async ping(domain: string): Promise<NetTestResult> {
     try {
-      let command = '';
+      let command = "";
 
       if (this.isWindows()) {
         // Windows系统ping命令，发送4个包
@@ -81,33 +78,30 @@ export class NetTestService {
       // 使用utils.sp.spawn执行命令
       const output = await utils.sp.spawn({
         cmd: command,
-        logger: undefined
+        logger: undefined,
       });
 
       // 判断测试是否成功
-      const success = this.isWindows()
-        ? output.includes('TTL=')
-        : output.includes('time=');
+      const success = this.isWindows() ? output.includes("TTL=") : output.includes("time=");
 
       return {
         success,
-        message: success ? 'Ping测试成功' : 'Ping测试失败',
+        message: success ? "Ping测试成功" : "Ping测试失败",
         testLog: output,
       };
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        message: 'Ping测试执行失败',
-        testLog: error.stderr|| error.stdout ||  errorMessage,
-        error: errorMessage
+        message: "Ping测试执行失败",
+        testLog: error.stderr || error.stdout || errorMessage,
+        error: errorMessage,
       };
     }
   }
 
   private isWindows() {
-    return process.platform === 'win32';
+    return process.platform === "win32";
   }
 
   /**
@@ -117,7 +111,7 @@ export class NetTestService {
    */
   async domainResolve(domain: string): Promise<NetTestResult> {
     try {
-      let command = '';
+      let command = "";
       if (this.isWindows()) {
         // Windows系统使用nslookup命令
         command = `nslookup ${domain}`;
@@ -129,39 +123,37 @@ export class NetTestService {
       // 使用utils.sp.spawn执行命令
       const output = await utils.sp.spawn({
         cmd: command,
-        logger: undefined
+        logger: undefined,
       });
 
       // 判断测试是否成功
-      const success = output.includes('Address:') || output.includes('IN	A') || output.includes('IN	AAAA') ||
-        (this.isWindows() && output.includes('Name:'));
+      const success = output.includes("Address:") || output.includes("IN	A") || output.includes("IN	AAAA") || (this.isWindows() && output.includes("Name:"));
 
       return {
         success,
-        message: success ? '域名解析测试成功' : '域名解析测试失败',
+        message: success ? "域名解析测试成功" : "域名解析测试失败",
         testLog: output,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        message: '域名解析测试执行失败',
-        testLog: error.stdoout ||  error.stderr || errorMessage,
-        error: errorMessage
+        message: "域名解析测试执行失败",
+        testLog: error.stdoout || error.stderr || errorMessage,
+        error: errorMessage,
       };
     }
   }
 
-
   async getLocalIP(): Promise<string[]> {
     try {
       const output = await utils.sp.spawn({
-        cmd: 'ip a | grep \'inet \' | grep -v \'127.0.0.1\' | awk \'{print $2}\' | cut -d/ -f1',
-        logger: undefined
+        cmd: "ip a | grep 'inet ' | grep -v '127.0.0.1' | awk '{print $2}' | cut -d/ -f1",
+        logger: undefined,
       });
       // 去除 inet 前缀
-      let ips = output.trim().replace(/inet /g, '');
-      return ips.split('\n').filter(ip => ip.length > 0);
+      const ips = output.trim().replace(/inet /g, "");
+      return ips.split("\n").filter(ip => ip.length > 0);
     } catch (error) {
       return [error instanceof Error ? error.message : String(error)];
     }
@@ -170,12 +162,12 @@ export class NetTestService {
   async getPublicIP(): Promise<string[]> {
     try {
       const res = await http.request({
-        url:"https://ipinfo.io/ip",
-        method:"GET",
-      })
-      return[res]
+        url: "https://ipinfo.io/ip",
+        method: "GET",
+      });
+      return [res];
     } catch (error) {
-      return [error instanceof Error ? error.message : String(error)]
+      return [error instanceof Error ? error.message : String(error)];
     }
   }
 
@@ -183,30 +175,30 @@ export class NetTestService {
     let dnsServers: string[] = [];
     try {
       const output = await utils.sp.spawn({
-        cmd: 'cat /etc/resolv.conf | grep nameserver | awk \'{print $2}\'',
-        logger: undefined
+        cmd: "cat /etc/resolv.conf | grep nameserver | awk '{print $2}'",
+        logger: undefined,
       });
-      dnsServers = output.trim().split('\n');
+      dnsServers = output.trim().split("\n");
     } catch (error) {
       dnsServers = [error instanceof Error ? error.message : String(error)];
     }
-    try{
+    try {
       /**
        * /app # cat /etc/resolv.conf | grep "ExtServers"
 # ExtServers: [223.5.5.5 223.6.6.6]
        */
       const extDnsServers = await utils.sp.spawn({
         cmd: 'cat /etc/resolv.conf | grep "ExtServers"',
-        logger: undefined
+        logger: undefined,
       });
-      const line = extDnsServers.trim()
-      if (line.includes('ExtServers') && line.includes('[')) {
-        const extDns = line.substring(line.indexOf('[') + 1, line.indexOf(']')).split(' ');
-        const dnsList = extDns.map(item=>`Ext:${item}`)
-        dnsServers = dnsServers.concat(dnsList); 
+      const line = extDnsServers.trim();
+      if (line.includes("ExtServers") && line.includes("[")) {
+        const extDns = line.substring(line.indexOf("[") + 1, line.indexOf("]")).split(" ");
+        const dnsList = extDns.map(item => `Ext:${item}`);
+        dnsServers = dnsServers.concat(dnsList);
       }
     } catch (error) {
-      logger.error('获取DNS ExtServers 服务器失败', error);
+      logger.error("获取DNS ExtServers 服务器失败", error);
       // dnsServers.push(error instanceof Error ? error.message : String(error));
     }
     return dnsServers;
@@ -216,16 +208,15 @@ export class NetTestService {
    * @returns 服务器信息
    */
   async serverInfo(): Promise<any> {
-
     const res = {
-      localIP:  [],
-      publicIP:  [],
+      localIP: [],
+      publicIP: [],
       dnsServers: [],
-    }
+    };
 
     res.localIP = await this.getLocalIP();
     res.publicIP = await this.getPublicIP();
     res.dnsServers = await this.getDNSservers();
-    return res
+    return res;
   }
 }

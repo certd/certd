@@ -1,10 +1,4 @@
-import {
-  AbstractTaskPlugin,
-  IsTaskPlugin,
-  pluginGroups,
-  RunStrategy,
-  TaskInput,
-} from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertInfo, CertReader, createCertDomainGetterInputDefine } from "@certd/plugin-cert";
 import { NginxProxyManagerAccess, ProxyHost } from "../access.js";
 
@@ -94,7 +88,9 @@ export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
   cleanupMatchingCertificates = false;
 
   private normalizeDomain(domain: string): string {
-    return String(domain ?? "").trim().toLowerCase();
+    return String(domain ?? "")
+      .trim()
+      .toLowerCase();
   }
 
   private wildcardMatches(pattern: string, candidate: string): boolean {
@@ -110,11 +106,7 @@ export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
     const normalizedLeft = this.normalizeDomain(left);
     const normalizedRight = this.normalizeDomain(right);
 
-    return (
-      normalizedLeft === normalizedRight ||
-      this.wildcardMatches(normalizedLeft, normalizedRight) ||
-      this.wildcardMatches(normalizedRight, normalizedLeft)
-    );
+    return normalizedLeft === normalizedRight || this.wildcardMatches(normalizedLeft, normalizedRight) || this.wildcardMatches(normalizedRight, normalizedLeft);
   }
 
   private sanitizeDomainSegment(value: string): string {
@@ -147,7 +139,7 @@ export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
 
   private resolveCertificateDomains(cert: CertInfo, configuredDomains: string | string[] | null | undefined): string[] {
     const configured = this.normalizeStringList(configuredDomains)
-      .map((value) => String(value).trim())
+      .map(value => String(value).trim())
       .filter(Boolean);
 
     if (configured.length > 0) {
@@ -168,9 +160,7 @@ export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
     }
 
     const hostDomains = host.domain_names ?? [];
-    return hostDomains.some((hostDomain) =>
-      certDomains.some((certDomain) => this.isDomainMatch(hostDomain, certDomain))
-    );
+    return hostDomains.some(hostDomain => certDomains.some(certDomain => this.isDomainMatch(hostDomain, certDomain)));
   }
 
   private buildProxyHostOptions(hosts: ProxyHost[], certDomains: string[]) {
@@ -215,19 +205,14 @@ export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
     return Array.from(
       new Set(
         this.normalizeStringList(proxyHostIds as string | string[] | null | undefined)
-          .map((value) => Number.parseInt(String(value), 10))
-          .filter((value) => Number.isInteger(value) && value > 0)
+          .map(value => Number.parseInt(String(value), 10))
+          .filter(value => Number.isInteger(value) && value > 0)
       )
     );
   }
 
   private certificateHasBindings(certificate: { proxy_hosts?: unknown[]; redirection_hosts?: unknown[]; dead_hosts?: unknown[]; streams?: unknown[] }): boolean {
-    return (
-      (certificate.proxy_hosts?.length ?? 0) > 0 ||
-      (certificate.redirection_hosts?.length ?? 0) > 0 ||
-      (certificate.dead_hosts?.length ?? 0) > 0 ||
-      (certificate.streams?.length ?? 0) > 0
-    );
+    return (certificate.proxy_hosts?.length ?? 0) > 0 || (certificate.redirection_hosts?.length ?? 0) > 0 || (certificate.dead_hosts?.length ?? 0) > 0 || (certificate.streams?.length ?? 0) > 0;
   }
 
   async execute(): Promise<void> {
@@ -238,8 +223,7 @@ export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
       throw new Error("请至少选择一个 Nginx Proxy Manager 代理主机");
     }
 
-    const certificateLabel =
-      this.certificateLabel?.trim() || this.buildDefaultCertificateLabel(this.cert);
+    const certificateLabel = this.certificateLabel?.trim() || this.buildDefaultCertificateLabel(this.cert);
     const certificateDomains = this.resolveCertificateDomains(this.cert, this.certDomains);
 
     let certificate = await access.findCustomCertificateByNiceName(certificateLabel);
@@ -285,13 +269,8 @@ export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
   }
 
   private async cleanupOldCertificates(access: NginxProxyManagerAccess, currentCertificateId: number): Promise<void> {
-    const certificates = await access.getCertificatesWithExpand(undefined, [
-      "proxy_hosts",
-      "redirection_hosts",
-      "dead_hosts",
-      "streams",
-    ]);
-    const candidates = certificates.filter((certificate) => {
+    const certificates = await access.getCertificatesWithExpand(undefined, ["proxy_hosts", "redirection_hosts", "dead_hosts", "streams"]);
+    const candidates = certificates.filter(certificate => {
       return certificate.id !== currentCertificateId;
     });
 
@@ -321,11 +300,7 @@ export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
     }
 
     if (deletedIds.length > 0) {
-      this.logger.info(
-        `自动清理完成，共删除 ${deletedIds.length} 张旧证书：${deletedIds
-          .map((id) => `#${id}`)
-          .join(", ")}`
-      );
+      this.logger.info(`自动清理完成，共删除 ${deletedIds.length} 张旧证书：${deletedIds.map(id => `#${id}`).join(", ")}`);
     } else {
       this.logger.info("未删除任何旧证书");
     }

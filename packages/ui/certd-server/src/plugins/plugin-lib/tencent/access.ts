@@ -55,10 +55,8 @@ export class TencentAccess extends BaseAccess {
       vModel: "checked",
     },
   })
-  closeExpiresNotify: boolean = true;
+  closeExpiresNotify = true;
 
-
-    
   @AccessInput({
     title: "测试",
     component: {
@@ -74,7 +72,6 @@ export class TencentAccess extends BaseAccess {
     return "ok";
   }
 
-
   isIntl() {
     return this.accountType === "intl";
   }
@@ -87,28 +84,27 @@ export class TencentAccess extends BaseAccess {
     return `${this.intlDomain()}${endpoint}`;
   }
 
-  async getCallerIdentity(){
+  async getCallerIdentity() {
     const client = await this.getStsClient();
 
-     // 调用 GetCallerIdentity 接口
+    // 调用 GetCallerIdentity 接口
     const result = await client.GetCallerIdentity();
-    
+
     this.ctx.logger.info("✅ 密钥有效！");
     this.ctx.logger.info(`   账户ID: ${result.AccountId}`);
     this.ctx.logger.info(`   ARN: ${result.Arn}`);
     this.ctx.logger.info(`   用户ID: ${result.UserId}`);
-    
+
     return {
       valid: true,
       accountId: result.AccountId,
       arn: result.Arn,
-      userId: result.UserId
+      userId: result.UserId,
     };
   }
 
-
-  async getStsClient(){
-    const sdk = await import('tencentcloud-sdk-nodejs/tencentcloud/services/sts/v20180813/index.js');
+  async getStsClient() {
+    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/sts/v20180813/index.js");
     const StsClient = sdk.v20180813.Client;
 
     const clientConfig = {
@@ -116,7 +112,7 @@ export class TencentAccess extends BaseAccess {
         secretId: this.secretId,
         secretKey: this.secretKey,
       },
-      region: 'ap-shanghai',
+      region: "ap-shanghai",
       profile: {
         httpProfile: {
           endpoint: `sts.${this.intlDomain()}tencentcloudapi.com`,

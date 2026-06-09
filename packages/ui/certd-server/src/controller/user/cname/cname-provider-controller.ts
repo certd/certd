@@ -1,15 +1,15 @@
-import { ALL, Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
-import { BaseController, Constants } from '@certd/lib-server';
-import { CnameRecordService } from '../../../modules/cname/service/cname-record-service.js';
-import { CnameProviderService } from '../../../modules/cname/service/cname-provider-service.js';
-import { ApiTags } from '@midwayjs/swagger';
+import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
+import { BaseController, Constants } from "@certd/lib-server";
+import { CnameRecordService } from "../../../modules/cname/service/cname-record-service.js";
+import { CnameProviderService } from "../../../modules/cname/service/cname-provider-service.js";
+import { ApiTags } from "@midwayjs/swagger";
 
 /**
  * 授权
  */
 @Provide()
-@Controller('/api/cname/provider')
-@ApiTags(['pipeline-cname'])
+@Controller("/api/cname/provider")
+@ApiTags(["pipeline-cname"])
 export class CnameProviderController extends BaseController {
   @Inject()
   service: CnameRecordService;
@@ -20,7 +20,7 @@ export class CnameProviderController extends BaseController {
     return this.service;
   }
 
-  @Post('/list', { description: Constants.per.authOnly, summary: "查询CNAME提供商列表" })
+  @Post("/list", { description: Constants.per.authOnly, summary: "查询CNAME提供商列表" })
   async list(@Body(ALL) body: any) {
     const res = await this.providerService.list({});
     return this.ok(res);

@@ -1,4 +1,4 @@
-import { SqlAdapter } from './d.js';
+import { SqlAdapter } from "./d.js";
 
 export class MysqlAdapter implements SqlAdapter {
   date(columnName: string) {

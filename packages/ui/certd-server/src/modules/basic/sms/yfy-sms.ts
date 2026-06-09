@@ -1,6 +1,6 @@
-import { http, utils } from '@certd/basic';
-import { ISmsService, PluginInputs, SmsPluginCtx } from './api.js';
-import { YfySmsAccess } from '../../../plugins/plugin-plus/yidun/access-sms.js';
+import { http, utils } from "@certd/basic";
+import { ISmsService, PluginInputs, SmsPluginCtx } from "./api.js";
+import { YfySmsAccess } from "../../../plugins/plugin-plus/yidun/access-sms.js";
 
 export type YfySmsConfig = {
   accessId: string;
@@ -10,22 +10,22 @@ export type YfySmsConfig = {
 export class YfySmsService implements ISmsService {
   static getDefine() {
     return {
-      name: 'yfysms',
-      desc: '易发云短信',
+      name: "yfysms",
+      desc: "易发云短信",
       input: {
         accessId: {
-          title: '易发云短信授权',
+          title: "易发云短信授权",
           component: {
-            name: 'access-selector',
-            type: 'yfysms',
+            name: "access-selector",
+            type: "yfysms",
           },
           required: true,
         },
         signName: {
-          title: '签名',
+          title: "签名",
           component: {
-            name: 'a-input',
-            vModel: 'value',
+            name: "a-input",
+            vModel: "value",
           },
           required: true,
         },
@@ -44,10 +44,10 @@ export class YfySmsService implements ISmsService {
     const access = await this.ctx.accessService.getById<YfySmsAccess>(this.ctx.config.accessId);
 
     const res = await http.request({
-      url: 'http://sms.yfyidc.cn/sms/',
-      method: 'post',
+      url: "http://sms.yfyidc.cn/sms/",
+      method: "post",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       data: {
         /**
@@ -75,40 +75,40 @@ export class YfySmsService implements ISmsService {
        * 9	用户已封禁
        * 10	未实名认证
        */
-      let message = '';
+      let message = "";
       switch (res) {
         case 1:
-          message = '余额不足';
+          message = "余额不足";
           break;
         case 2:
-          message = '用户不存在';
+          message = "用户不存在";
           break;
         case 3:
-          message = 'KEY错误';
+          message = "KEY错误";
           break;
         case 4:
-          message = '发送失败';
+          message = "发送失败";
           break;
         case 5:
-          message = '签名不存在';
+          message = "签名不存在";
           break;
         case 6:
-          message = '签名审核未通过';
+          message = "签名审核未通过";
           break;
         case 7:
-          message = '当前发信短信已达到上限';
+          message = "当前发信短信已达到上限";
           break;
         case 8:
-          message = '有违规词';
+          message = "有违规词";
           break;
         case 9:
-          message = '用户已封禁';
+          message = "用户已封禁";
           break;
         case 10:
-          message = '未实名认证';
+          message = "未实名认证";
           break;
         default:
-          message = '未知错误';
+          message = "未知错误";
       }
       throw new Error(`发送短信失败:${message}`);
     }

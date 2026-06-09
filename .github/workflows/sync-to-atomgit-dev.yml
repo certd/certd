@@ -12,24 +12,23 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout work repo            # 1. 检出当前仓库(certd-sync-work)
+      - name: Checkout work repo # 1. 检出当前仓库(certd-sync-work)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
           ref: v2-dev
-      - name: Set git user                  # 2. 给git命令设置用户名和邮箱,↙↙↙ 改成你的name和email
+      - name: Set git user # 2. 给git命令设置用户名和邮箱,↙↙↙ 改成你的name和email
         run: |
           git config --global user.name "xiaojunnuo"
           git config --global user.email "xiaojunnuo@qq.com"
 
-      - name: Set git token                 # 3. 给git命令设置token，用于push到目标仓库
+      - name: Set git token # 3. 给git命令设置token，用于push到目标仓库
         uses: de-vri-es/setup-git-credentials@v2
-        with:                              # token 格式为： username:password
+        with: # token 格式为： username:password
           credentials: https://greper:${{secrets.ATOMGIT_TOKEN}}@atomgit.com
 
-      - name: push to atomgit               # 4. 执行同步
+      - name: push to atomgit # 4. 执行同步
         run: |
           git remote add upstream https://atomgit.com/certd/certd
           git push --set-upstream upstream v2-dev
-

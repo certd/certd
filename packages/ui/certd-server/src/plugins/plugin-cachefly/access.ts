@@ -1,49 +1,45 @@
-import { AccessInput, BaseAccess, IsAccess } from '@certd/pipeline';
+import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
 
 @IsAccess({
-  name: 'CacheFly',
-  title: 'CacheFly',
-  desc: 'CacheFly',
-  icon: 'clarity:plugin-line',
+  name: "CacheFly",
+  title: "CacheFly",
+  desc: "CacheFly",
+  icon: "clarity:plugin-line",
 })
 export class CacheflyAccess extends BaseAccess {
-
-
-
   @AccessInput({
-    title: 'username',
+    title: "username",
     component: {
-      placeholder: 'username',
+      placeholder: "username",
     },
     required: true,
   })
-  username = '';
+  username = "";
   @AccessInput({
-    title: 'password',
+    title: "password",
     component: {
-      placeholder: 'password',
+      placeholder: "password",
     },
     required: true,
     encrypt: true,
   })
-  password = '';
+  password = "";
   @AccessInput({
-    title: 'totp key',
+    title: "totp key",
     component: {
-      placeholder: 'totp key',
+      placeholder: "totp key",
     },
     encrypt: true,
   })
-  otpkey = '';
-
+  otpkey = "";
 
   @AccessInput({
     title: "测试",
     component: {
       name: "api-test",
-      action: "TestRequest"
+      action: "TestRequest",
     },
-    helper: "测试授权是否正确"
+    helper: "测试授权是否正确",
   })
   testRequest = true;
 
@@ -52,16 +48,15 @@ export class CacheflyAccess extends BaseAccess {
     return "ok";
   }
 
-
-  async login(){
+  async login() {
     let otp = null;
     if (this.otpkey) {
       const response = await this.ctx.http.request<any, any>({
         url: `https://cn-api.my-api.cn/api/totp/?key=${this.otpkey}`,
-        method: 'get',
+        method: "get",
       });
       otp = response;
-      this.ctx.logger.info('获取到otp:', otp);
+      this.ctx.logger.info("获取到otp:", otp);
     }
     const loginResponse = await this.doRequestApi(`/api/2.6/auth/login`, {
       username: this.username,
@@ -69,17 +64,16 @@ export class CacheflyAccess extends BaseAccess {
       ...(otp && { otp }),
     });
     const token = loginResponse.token;
-    this.ctx.logger.info('Token 获取成功');
+    this.ctx.logger.info("Token 获取成功");
     return token;
   }
 
-  async doRequestApi(url: string, data: any = null, method = 'post', token: string | null = null) {
-
-    const baseApi = 'https://api.cachefly.com';
+  async doRequestApi(url: string, data: any = null, method = "post", token: string | null = null) {
+    const baseApi = "https://api.cachefly.com";
 
     const headers = {
-      'Content-Type': 'application/json',
-      ...(token ? { 'x-cf-authorization': `Bearer ${token}` } : {}),
+      "Content-Type": "application/json",
+      ...(token ? { "x-cf-authorization": `Bearer ${token}` } : {}),
     };
     const res = await this.ctx.http.request<any, any>({
       url,

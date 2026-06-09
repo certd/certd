@@ -14,15 +14,14 @@ export class TwoFactorService {
   @Inject()
   userService: UserService;
 
-
   async getAuthenticatorQrCode(userId: any) {
-    const setting = await this.getSetting(userId)
+    const setting = await this.getSetting(userId);
 
     const authenticatorSetting = setting.authenticator;
     if (!authenticatorSetting.secret) {
-      const { authenticator  } = await import("otplib");
+      const { authenticator } = await import("otplib");
 
-      authenticatorSetting.secret = authenticator.generateSecret()
+      authenticatorSetting.secret = authenticator.generateSecret();
       await this.userSettingsService.saveSetting(userId, null, setting);
     }
 
@@ -34,14 +33,13 @@ export class TwoFactorService {
     //生成qrcode base64
     const qrcode = await import("qrcode");
     const qrcodeBase64 = await qrcode.toDataURL(qrcodeContent);
-    return {qrcode:qrcodeBase64,link:qrcodeContent,secret}
-
+    return { qrcode: qrcodeBase64, link: qrcodeContent, secret };
   }
 
   async saveAuthenticator(req: { userId: any; verifyCode: any }) {
     const userId = req.userId;
     const { authenticator } = await import("otplib");
-    const setting = await this.getSetting(userId)
+    const setting = await this.getSetting(userId);
 
     const authenticatorSetting = setting.authenticator;
     if (!authenticatorSetting.secret) {
@@ -62,26 +60,25 @@ export class TwoFactorService {
     await this.userSettingsService.saveSetting(userId, null, setting);
   }
 
-  async offAuthenticator(userId:number) {
+  async offAuthenticator(userId: number) {
     if (!userId || userId <= 0) {
       throw new Error("userId is required");
     }
 
-    const setting = await this.getSetting(userId)
+    const setting = await this.getSetting(userId);
     setting.authenticator.enabled = false;
     setting.authenticator.verified = false;
-    setting.authenticator.secret = '';
+    setting.authenticator.secret = "";
     await this.userSettingsService.saveSetting(userId, null, setting);
   }
 
-  async getSetting(userId:number) {
+  async getSetting(userId: number) {
     return await this.userSettingsService.getSetting<UserTwoFactorSetting>(userId, null, UserTwoFactorSetting);
-
   }
 
   async verifyAuthenticatorCode(userId: any, verifyCode: string) {
     const { authenticator } = await import("otplib");
-    const setting = await this.getSetting(userId)
+    const setting = await this.getSetting(userId);
     if (!setting.authenticator.enabled) {
       throw new Error("authenticator 未开启");
     }

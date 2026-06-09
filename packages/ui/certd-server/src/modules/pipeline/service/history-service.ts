@@ -1,16 +1,16 @@
-import { Config, Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { InjectEntityModel } from '@midwayjs/typeorm';
-import { In, MoreThan, Repository } from 'typeorm';
-import { BaseService, PageReq } from '@certd/lib-server';
-import { HistoryEntity } from '../entity/history.js';
-import { PipelineEntity } from '../entity/pipeline.js';
-import { HistoryDetail } from '../entity/vo/history-detail.js';
-import { HistoryLogService } from './history-log-service.js';
-import { FileItem, FileStore, Pipeline, RunnableCollection } from '@certd/pipeline';
+import { Config, Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { In, MoreThan, Repository } from "typeorm";
+import { BaseService, PageReq } from "@certd/lib-server";
+import { HistoryEntity } from "../entity/history.js";
+import { PipelineEntity } from "../entity/pipeline.js";
+import { HistoryDetail } from "../entity/vo/history-detail.js";
+import { HistoryLogService } from "./history-log-service.js";
+import { FileItem, FileStore, Pipeline, RunnableCollection } from "@certd/pipeline";
 
-import dayjs from 'dayjs';
-import { DbAdapter } from '../../db/index.js';
-import { logger } from '@certd/basic';
+import dayjs from "dayjs";
+import { DbAdapter } from "../../db/index.js";
+import { logger } from "@certd/basic";
 
 /**
  * 证书申请
@@ -29,7 +29,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
   @Inject()
   dbAdapter: DbAdapter;
 
-  @Config('certd')
+  @Config("certd")
   private certdConfig: any;
 
   //@ts-ignore
@@ -60,12 +60,12 @@ export class HistoryService extends BaseService<HistoryEntity> {
     return new HistoryDetail(entity, log);
   }
 
-  async start(pipeline: PipelineEntity,triggerType:string) {
+  async start(pipeline: PipelineEntity, triggerType: string) {
     const bean = {
       userId: pipeline.userId,
       pipelineId: pipeline.id,
       title: pipeline.title,
-      status: 'start',
+      status: "start",
       triggerType,
       projectId: pipeline.projectId,
     };
@@ -104,7 +104,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
           pipelineId,
         },
         order: {
-          id: 'ASC',
+          id: "ASC",
         },
         skip: 0,
         take: deleteCountBatch,
@@ -130,7 +130,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
         pipelineId,
       },
       order: {
-        id: 'DESC',
+        id: "DESC",
       },
     });
   }
@@ -139,7 +139,7 @@ export class HistoryService extends BaseService<HistoryEntity> {
     const status: Pipeline = JSON.parse(history.pipeline);
     const files: FileItem[] = [];
     RunnableCollection.each([status], runnable => {
-      if (runnable.runnableType !== 'step') {
+      if (runnable.runnableType !== "step") {
         return;
       }
       if (runnable.status?.files != null) {
@@ -174,32 +174,32 @@ export class HistoryService extends BaseService<HistoryEntity> {
     try {
       const fileStore = new FileStore({
         rootDir: this.certdConfig.fileRootDir,
-        scope: id + '',
-        parent: '0',
+        scope: id + "",
+        parent: "0",
       });
-      fileStore.deleteByParent(id + '', '');
+      fileStore.deleteByParent(id + "", "");
     } catch (e) {
-      logger.error('删除文件失败', e);
+      logger.error("删除文件失败", e);
     }
   }
 
-  async countPerDay(param: { days: number; userId?: any,projectId?:number }) {
-    const todayEnd = dayjs().endOf('day');
+  async countPerDay(param: { days: number; userId?: any; projectId?: number }) {
+    const todayEnd = dayjs().endOf("day");
     const where: any = {
-      createTime: MoreThan(todayEnd.add(-param.days, 'day').toDate()),
+      createTime: MoreThan(todayEnd.add(-param.days, "day").toDate()),
     };
-    
+
     if (param.projectId > 0) {
       where.projectId = param.projectId;
-    }else if (param.userId > 0) {
+    } else if (param.userId > 0) {
       where.userId = param.userId;
     }
     const result = await this.getRepository()
-      .createQueryBuilder('main')
-      .select(`${this.dbAdapter.date('main.createTime')}  AS date`) // 将UNIX时间戳转换为日期
-      .addSelect('COUNT(1) AS count')
+      .createQueryBuilder("main")
+      .select(`${this.dbAdapter.date("main.createTime")}  AS date`) // 将UNIX时间戳转换为日期
+      .addSelect("COUNT(1) AS count")
       .where(where)
-      .groupBy('date')
+      .groupBy("date")
       .getRawMany();
 
     return result;

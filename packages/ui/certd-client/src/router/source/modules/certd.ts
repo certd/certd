@@ -82,6 +82,7 @@ export const certdResources = [
           isMenu: true,
           icon: "ion:duplicate-outline",
           auth: true,
+          keepAlive: true,
         },
       },
       {
@@ -187,6 +188,28 @@ export const certdResources = [
             },
           },
           {
+            title: "certd.dnsPersistRecord",
+            name: "DnsPersistRecord",
+            path: "/certd/cert/dns-persist",
+            component: "/certd/cert/dns-persist/index.vue",
+            meta: {
+              icon: "ion:shield-half-outline",
+              auth: true,
+              keepAlive: true,
+            },
+          },
+          {
+            title: "certd.certApplyTemplate",
+            name: "CertApplyTemplate",
+            path: "/certd/cert/apply-template",
+            component: "/certd/cert/apply-template/index.vue",
+            meta: {
+              icon: "ion:list-circle-outline",
+              auth: true,
+              keepAlive: true,
+            },
+          },
+          {
             title: "certd.subDomain",
             name: "SubDomain",
             path: "/certd/pipeline/subDomain",
@@ -260,6 +283,7 @@ export const certdResources = [
             meta: {
               icon: "ion:barcode-outline",
               auth: true,
+              keepAlive: true,
               isMenu: true,
             },
           },
@@ -324,10 +348,11 @@ export const certdResources = [
             meta: {
               show: () => {
                 const settingStore = useSettingStore();
-                return settingStore.isComm;
+                return settingStore.isInviteCommissionEnabled;
               },
               icon: "ion:gift-outline",
               auth: true,
+              keepAlive: true,
             },
           },
           {
@@ -355,6 +380,36 @@ export const certdResources = [
                 return settingStore.isComm;
               },
               icon: "ion:bag-check-outline",
+              auth: true,
+              keepAlive: true,
+            },
+          },
+          {
+            title: "certd.inviteCommission",
+            name: "InviteCommission",
+            path: "/certd/invite",
+            component: "/certd/invite/index.vue",
+            meta: {
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isInviteCommissionEnabled;
+              },
+              icon: "ion:gift-outline",
+              auth: true,
+              keepAlive: true,
+            },
+          },
+          {
+            title: "certd.myWallet",
+            name: "MyWallet",
+            path: "/certd/wallet",
+            component: "/certd/wallet/index.vue",
+            meta: {
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isComm;
+              },
+              icon: "ion:wallet-outline",
               auth: true,
               keepAlive: true,
             },

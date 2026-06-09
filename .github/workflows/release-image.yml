@@ -3,8 +3,8 @@ on:
   push:
     branches: ['v2-dev']
     paths:
-      - "trigger/release.trigger"
-  workflow_dispatch:    # 添加手动触发
+      - 'trigger/release.trigger'
+  workflow_dispatch: # 添加手动触发
 #  workflow_run:
 #    workflows: [ "deploy-demo" ]
 #    types:
@@ -43,12 +43,12 @@ jobs:
             const pkg = JSON.parse(jsonContent)
             console.log("certd_version:",pkg.version);
             return pkg.version
-#      - name: Use Node.js
-#        uses: actions/setup-node@v4
-#        with:
-#          node-version: 18
-#          cache: 'npm'
-#        working-directory: ./packages/ui/certd-client
+      #      - name: Use Node.js
+      #        uses: actions/setup-node@v4
+      #        with:
+      #          node-version: 18
+      #          cache: 'npm'
+      #        working-directory: ./packages/ui/certd-client
       - run: |
           npm install -g pnpm@10.33.4
           pnpm install
@@ -108,17 +108,17 @@ jobs:
             ghcr.io/${{ github.repository }}:armv7
             ghcr.io/${{ github.repository }}:${{steps.get_certd_version.outputs.result}}-armv7
 
-#      - name: Build agent
-#        uses: docker/build-push-action@v6
-#        with:
-#          platforms: linux/amd64,linux/arm64
-#          push: true
-#          context: ./packages/ui/agent/
-#          tags: |
-#            registry.cn-shenzhen.aliyuncs.com/handsfree/certd-agent:latest
-#            registry.cn-shenzhen.aliyuncs.com/handsfree/certd-agent:${{steps.get_certd_version.outputs.result}}
-#            greper/certd-agent:latest
-#            greper/certd-agent:${{steps.get_certd_version.outputs.result}}
+      #      - name: Build agent
+      #        uses: docker/build-push-action@v6
+      #        with:
+      #          platforms: linux/amd64,linux/arm64
+      #          push: true
+      #          context: ./packages/ui/agent/
+      #          tags: |
+      #            registry.cn-shenzhen.aliyuncs.com/handsfree/certd-agent:latest
+      #            registry.cn-shenzhen.aliyuncs.com/handsfree/certd-agent:${{steps.get_certd_version.outputs.result}}
+      #            greper/certd-agent:latest
+      #            greper/certd-agent:${{steps.get_certd_version.outputs.result}}
       - name: deploy-certd-doc
         uses: tyrrrz/action-http-request@prime
         with:
@@ -132,4 +132,3 @@ jobs:
             Content-Type: application/json
           retry-count: 3
           retry-delay: 5000
-   

@@ -1,4 +1,4 @@
-import { utils } from '@certd/basic';
+import { utils } from "@certd/basic";
 
 export async function request(config: any): Promise<any> {
   try {

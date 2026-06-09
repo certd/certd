@@ -9,7 +9,7 @@ import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy
 import { CertInfo, CertReader } from '@certd/plugin-cert';
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from '@certd/plugin-lib';
 import { optionsUtils } from '@certd/basic';
-import { CertApplyPluginNames} from '@certd/plugin-cert';
+import { CertApplyPluginNames } from '@certd/plugin-cert';
 ```
 
 ### 2. 使用 @IsTaskPlugin 注解注册插件

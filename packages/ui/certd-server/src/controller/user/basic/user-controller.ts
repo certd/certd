@@ -1,34 +1,34 @@
-import { Constants, isEnterprise } from '@certd/lib-server';
-import { Body, Controller, Inject, Post, Provide } from '@midwayjs/core';
-import { In } from 'typeorm';
-import { AuthService } from '../../../modules/sys/authority/service/auth-service.js';
-import { UserService } from '../../../modules/sys/authority/service/user-service.js';
-import { BasicController } from '../../basic/code-controller.js';
-import { RoleService } from '../../../modules/sys/authority/service/role-service.js';
-import { ApiTags } from '@midwayjs/swagger';
+import { Constants, isEnterprise } from "@certd/lib-server";
+import { Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
+import { In } from "typeorm";
+import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
+import { UserService } from "../../../modules/sys/authority/service/user-service.js";
+import { BasicController } from "../../basic/code-controller.js";
+import { RoleService } from "../../../modules/sys/authority/service/role-service.js";
+import { ApiTags } from "@midwayjs/swagger";
 
 /**
  * 通知
  */
 @Provide()
-@Controller('/api/basic/user')
-@ApiTags(['basic-user'])
+@Controller("/api/basic/user")
+@ApiTags(["basic-user"])
 export class BasicUserController extends BasicController {
   @Inject()
   service: UserService;
   @Inject()
   authService: AuthService;
- @Inject()
+  @Inject()
   roleService: RoleService;
 
   getService(): UserService {
     return this.service;
   }
 
-  @Post('/getSimpleUserByIds', { description: Constants.per.authOnly, summary: "根据ID列表获取用户简单信息" })
-  async getSimpleUserByIds(@Body('ids') ids: number[]) {
-    if(!isEnterprise()){
-       throw new Error('非企业模式不能获取用户信息');
+  @Post("/getSimpleUserByIds", { description: Constants.per.authOnly, summary: "根据ID列表获取用户简单信息" })
+  async getSimpleUserByIds(@Body("ids") ids: number[]) {
+    if (!isEnterprise()) {
+      throw new Error("非企业模式不能获取用户信息");
     }
     const users = await this.service.find({
       select: {
@@ -45,10 +45,10 @@ export class BasicUserController extends BasicController {
     return this.ok(users);
   }
 
-  @Post('/getSimpleUsers', {description: Constants.per.authOnly, summary: "获取所有用户简单信息"})
+  @Post("/getSimpleUsers", { description: Constants.per.authOnly, summary: "获取所有用户简单信息" })
   async getSimpleUsers() {
-    if(!isEnterprise()){
-       throw new Error('非企业模式不能获取所有用户信息');
+    if (!isEnterprise()) {
+      throw new Error("非企业模式不能获取所有用户信息");
     }
     const users = await this.service.find({
       select: {
@@ -62,7 +62,7 @@ export class BasicUserController extends BasicController {
     return this.ok(users);
   }
 
-   @Post('/getSimpleRoles', {description: Constants.per.authOnly, summary: "获取所有角色简单信息"})
+  @Post("/getSimpleRoles", { description: Constants.per.authOnly, summary: "获取所有角色简单信息" })
   async getSimpleRoles() {
     const roles = await this.roleService.find({
       select: {
@@ -72,5 +72,4 @@ export class BasicUserController extends BasicController {
     });
     return this.ok(roles);
   }
-
 }

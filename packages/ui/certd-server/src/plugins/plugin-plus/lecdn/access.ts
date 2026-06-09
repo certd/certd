@@ -86,7 +86,6 @@ export class LeCDNAccess extends BaseAccess {
   })
   apiToken = "";
 
-
   @AccessInput({
     title: "测试",
     component: {
@@ -102,11 +101,9 @@ export class LeCDNAccess extends BaseAccess {
   async onTestRequest() {
     await this.getCerts();
     return "ok";
-  } 
+  }
 
-
-  
-   async getCerts() {
+  async getCerts() {
     //  http://cdnadmin.kxfox.com/prod-api/certificate?current_page=1&total=3&page_size=10
     return await this.doRequest({
       url: `/prod-api/certificate`,
@@ -118,8 +115,7 @@ export class LeCDNAccess extends BaseAccess {
     });
   }
 
-    async doRequest(config: any) {
-
+  async doRequest(config: any) {
     const token = await this.getToken();
     const access = this;
     const Authorization = access.type === "token" ? access.apiToken : `Bearer ${token}`;
@@ -134,41 +130,39 @@ export class LeCDNAccess extends BaseAccess {
     return res.data;
   }
 
-
   async getToken() {
-      if (this.type === "token") {
-        return this.apiToken;
-      }
-      if (this._token){
-        return this._token;
-      }
-      // http://cdnadmin.kxfox.com/prod-api/login
-      const access = this;
-      const res = await this.ctx.http.request({
-        url: `/prod-api/login`,
-        baseURL: access.url,
-        method: "post",
-        data: {
-          //新旧版本不一样，旧版本是username，新版本是email
-          email: access.username,
-          username: access.username,
-          password: access.password,
-        },
-      });
-      this.checkRes(res);
-      //新旧版本不一样，旧版本是access_token，新版本是token
-      const token = res.data.access_token || res.data.token;
-
-      this._token = token;
-      return token;
+    if (this.type === "token") {
+      return this.apiToken;
     }
+    if (this._token) {
+      return this._token;
+    }
+    // http://cdnadmin.kxfox.com/prod-api/login
+    const access = this;
+    const res = await this.ctx.http.request({
+      url: `/prod-api/login`,
+      baseURL: access.url,
+      method: "post",
+      data: {
+        //新旧版本不一样，旧版本是username，新版本是email
+        email: access.username,
+        username: access.username,
+        password: access.password,
+      },
+    });
+    this.checkRes(res);
+    //新旧版本不一样，旧版本是access_token，新版本是token
+    const token = res.data.access_token || res.data.token;
 
-      private checkRes(res: any) {
+    this._token = token;
+    return token;
+  }
+
+  private checkRes(res: any) {
     if (res.code !== 0 && res.code !== 200) {
       throw new Error(res.message || JSON.stringify(res));
     }
   }
-
 }
 
 new LeCDNAccess();

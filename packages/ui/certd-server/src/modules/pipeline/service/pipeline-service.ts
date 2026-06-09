@@ -1,32 +1,10 @@
 import { Config, Inject, Provide, Scope, ScopeEnum, sleep } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { In, MoreThan, Repository } from "typeorm";
-import {
-  AccessService,
-  BaseService,
-  isEnterprise,
-  NeedSuiteException,
-  NeedVIPException,
-  PageReq,
-  SysPublicSettings,
-  SysSettingsService,
-  SysSiteInfo
-} from "@certd/lib-server";
+import { AccessService, BaseService, isEnterprise, NeedSuiteException, NeedVIPException, PageReq, SysPublicSettings, SysSettingsService, SysSiteInfo } from "@certd/lib-server";
 import { PipelineEntity } from "../entity/pipeline.js";
 import { PipelineDetail } from "../entity/vo/pipeline-detail.js";
-import {
-  Executor,
-  IAccessService,
-  ICnameProxyService,
-  INotificationService, Notification,
-  Pipeline,
-  pluginRegistry,
-  ResultType,
-  RunHistory,
-  RunnableCollection,
-  SysInfo,
-  UserInfo
-} from "@certd/pipeline";
+import { Executor, IAccessService, ICnameProxyService, INotificationService, Notification, Pipeline, pluginRegistry, ResultType, RunHistory, RunnableCollection, SysInfo, UserInfo } from "@certd/pipeline";
 import { DbStorage } from "./db-storage.js";
 import { StorageService } from "./storage-service.js";
 import { Cron } from "../../cron/cron.js";
@@ -48,14 +26,14 @@ import { UserSuiteEntity, UserSuiteService } from "@certd/commercial-core";
 import { CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { TaskServiceBuilder } from "./getter/task-service-getter.js";
 import { nanoid } from "nanoid";
-import { set } from "lodash-es";
+import { cloneDeep, set } from "lodash-es";
 import { executorQueue } from "@certd/lib-server";
 import parser from "cron-parser";
 import { ProjectService } from "../../sys/enterprise/service/project-service.js";
 import { CertApplyStepInputPatch, updateCertApplyStepInputs } from "./pipeline-batch-update.js";
 import { calcNextSuiteCountUsed } from "./pipeline-suite-limit.js";
+import { CertApplyTemplateParams } from "../../cert/service/cert-apply-template-fields.js";
 const runningTasks: Map<string | number, Executor> = new Map();
-
 
 /**
  * 证书申请
@@ -154,9 +132,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
       //获取下次执行时间
       if (pipeline.triggers?.length > 0) {
-        const triggers = pipeline.triggers.filter((item) => item.type === 'timer');
+        const triggers = pipeline.triggers.filter(item => item.type === "timer");
         if (triggers && triggers.length > 0) {
-          let nextTimes: any = [];
+          const nextTimes: any = [];
           for (const item of triggers) {
             if (!item.props?.cron) {
               continue;
@@ -164,9 +142,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
             const ret = this.getCronNextTimes(item.props?.cron, 1);
             nextTimes.push(...ret);
           }
-          item.nextRunTime = nextTimes[0]
+          item.nextRunTime = nextTimes[0];
         }
-
       }
 
       delete item.content;
@@ -175,7 +152,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return result;
   }
 
-  getCronNextTimes(cron: string, count: number = 1) {
+  getCronNextTimes(cron: string, count = 1) {
     if (cron == null) {
       return [];
     }
@@ -187,7 +164,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
     return nextTimes;
   }
-
 
   private async fillLastVars(records: PipelineEntity[]) {
     const pipelineIds: number[] = [];
@@ -235,8 +211,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-
-
   /**
    * 获取详情
    * @param id
@@ -269,7 +243,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
 
     const isUpdate = bean.id > 0 && old != null;
-
 
     const pipeline = JSON.parse(bean.content || "{}");
     RunnableCollection.initPipelineRunnableType(pipeline);
@@ -334,12 +307,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
     pipeline.version++;
 
-    bean.triggerCount = pipeline.triggers?.filter((trigger) => trigger.type === "timer").length || 0;
+    bean.triggerCount = pipeline.triggers?.filter(trigger => trigger.type === "timer").length || 0;
 
     bean.content = JSON.stringify(pipeline);
     await this.addOrUpdate(bean);
     await this.registerTrigger(bean);
-    return bean
+    return bean;
   }
 
   private async checkMaxPipelineCount(bean: PipelineEntity, pipeline: Pipeline, domains: string[], old?: PipelineEntity) {
@@ -351,7 +324,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     // }
     if (isEnterprise()) {
       //企业模式不限制
-      checkPlus()
+      checkPlus();
       return;
     }
 
@@ -397,18 +370,17 @@ export class PipelineService extends BaseService<PipelineEntity> {
         }
       }
     }
-
   }
 
   async foreachPipeline(callback: (pipeline: PipelineEntity) => void) {
     const idEntityList = await this.repository.find({
       select: {
-        id: true
+        id: true,
       },
       where: {
         disabled: false,
-        isTemplate: false
-      }
+        isTemplate: false,
+      },
     });
     const ids = idEntityList.map(item => {
       return item.id;
@@ -428,7 +400,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     //分段加载记录
     for (const idArr of idsSpan) {
       const list = await this.repository.findBy({
-        id: In(idArr)
+        id: In(idArr),
       });
 
       for (const entity of list) {
@@ -478,11 +450,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
       } catch (e) {
         logger.error(e);
       }
-
     }
   }
-
-
 
   async trigger(id: any, stepId?: string, doCheck = false) {
     const entity: PipelineEntity = await this.info(id);
@@ -499,7 +468,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         } catch (e) {
           logger.error("手动job执行失败：", e);
         }
-      }
+      },
     });
   }
 
@@ -511,7 +480,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         logger.error(e.message);
         await this.update({
           id: pipelineId,
-          status: "no_deploy_count"
+          status: "no_deploy_count",
         });
       }
       throw e;
@@ -595,22 +564,21 @@ export class PipelineService extends BaseService<PipelineEntity> {
             } catch (e) {
               logger.error("定时job执行失败：", e);
             }
-          }
+          },
         });
-      }
+      },
     });
     logger.info("当前定时器数量：", this.cron.getTaskSize());
   }
-
 
   async isPipelineValidTimeEnabled(entity: PipelineEntity) {
     const settings = await this.sysSettingsService.getPublicSettings();
     if (isPlus() && settings.pipelineValidTimeEnabled) {
       if (entity.validTime > 0 && entity.validTime < Date.now()) {
-        return false
+        return false;
       }
     }
-    return true
+    return true;
   }
 
   /**
@@ -629,13 +597,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async beforeCheck(entity: PipelineEntity) {
-
     if (isEnterprise()) {
-      checkPlus()
-      return {}
+      checkPlus();
+      return {};
     }
 
-    const validTimeEnabled = await this.isPipelineValidTimeEnabled(entity)
+    const validTimeEnabled = await this.isPipelineValidTimeEnabled(entity);
     if (!validTimeEnabled) {
       throw new Error(`流水线${entity.id}已过期，不予执行`);
     }
@@ -647,16 +614,15 @@ export class PipelineService extends BaseService<PipelineEntity> {
     await this.checkUserStatus(entity.userId);
 
     return {
-      suite
-    }
+      suite,
+    };
   }
 
   async doRun(entity: PipelineEntity, triggerId: string, stepId?: string) {
-
-    let suite: any = null
+    let suite: any = null;
     try {
       const res = await this.beforeCheck(entity);
-      suite = res.suite
+      suite = res.suite;
     } catch (e) {
       logger.error(`流水线${entity.id}触发失败（${triggerId}）：${e.message}`);
       return;
@@ -668,7 +634,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       pipeline.id = id;
     }
 
-    if(entity.userId !=null){
+    if (entity.userId != null) {
       pipeline.userId = entity.userId;
       pipeline.projectId = entity.projectId;
     }
@@ -688,7 +654,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         return;
       }
     }
-  
+
     const doSaveHistory = async (history: RunHistory) => {
       //保存执行历史
       try {
@@ -707,8 +673,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
     class HistorySaver {
       latest: RunHistory = null;
       interval: any = null;
-      started: boolean = false;
-      async save(){
+      started = false;
+      async save() {
         const latest = this.latest;
         this.latest = null;
         if (latest == null) {
@@ -716,43 +682,43 @@ export class PipelineService extends BaseService<PipelineEntity> {
         }
         await doSaveHistory(latest);
       }
-      async start(){
-        this.started = true
+      async start() {
+        this.started = true;
         //先存一次，确保有数据
         await this.save();
-        setTimeout(()=>{
+        setTimeout(() => {
           //2秒后保存一次，尽快显示第一个任务的状态
-           this.save();
+          this.save();
         }, 1000 * 2);
-        this.interval = setInterval(()=>{
+        this.interval = setInterval(() => {
           //之后每5秒保存一次
           this.save();
         }, 1000 * 5);
       }
-      async push(history: RunHistory){
+      async push(history: RunHistory) {
         this.latest = history;
-        if(!this.started){
-         await this.start();
+        if (!this.started) {
+          await this.start();
         }
       }
-      async done(){
+      async done() {
         clearInterval(this.interval);
         await this.save();
       }
     }
 
     const historySaver = new HistorySaver();
-    const onChanged = async (history: RunHistory)=>{
+    const onChanged = async (history: RunHistory) => {
       await historySaver.push(history);
-    }
-    const onFinished = async (history: RunHistory)=>{
+    };
+    const onFinished = async (history: RunHistory) => {
       await onChanged(history);
       await historySaver.done();
-    }
+    };
 
     const userId = entity.userId;
     const projectId = entity.projectId;
-    let userIsAdmin = false
+    let userIsAdmin = false;
 
     if (projectId && projectId > 0) {
       userIsAdmin = await this.projectService.isAdmin(projectId);
@@ -761,7 +727,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
     const user: UserInfo = {
       id: userId,
-      role: userIsAdmin ? "admin" : "user"
+      role: userIsAdmin ? "admin" : "user",
     };
 
     const historyId = await this.historyService.start(entity, triggerType);
@@ -773,7 +739,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
     const taskServiceGetter = this.taskServiceBuilder.create({
       userId,
-      projectId
+      projectId,
     });
     const accessGetter = await taskServiceGetter.get<IAccessService>("accessService");
     const notificationGetter = await taskServiceGetter.get<INotificationService>("notificationService");
@@ -792,7 +758,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       notificationService: notificationGetter,
       fileRootDir: this.certdConfig.fileRootDir,
       sysInfo,
-      serviceGetter: taskServiceGetter
+      serviceGetter: taskServiceGetter,
     });
     try {
       runningTasks.set(historyId, executor);
@@ -875,13 +841,13 @@ export class PipelineService extends BaseService<PipelineEntity> {
       },
     });
     if (!pipelineEntity) {
-      return null
+      return null;
     }
     return pipelineEntity.projectId;
   }
   private async saveHistory(history: RunHistory) {
     //修改pipeline状态
-    let pipelineEntity = new PipelineEntity();
+    const pipelineEntity = new PipelineEntity();
     pipelineEntity.id = parseInt(history.pipeline.id);
     pipelineEntity.status = history.pipeline.status.result + "";
     pipelineEntity.lastHistoryTime = history.pipeline.status.startTime;
@@ -909,42 +875,51 @@ export class PipelineService extends BaseService<PipelineEntity> {
     await this.historyLogService.addOrUpdate(logEntity);
   }
 
-  async count(param: { userId?: any, projectId?: number }) {
+  async count(param: { userId?: any; projectId?: number }) {
+    const query: any = {
+      userId: param.userId,
+      isTemplate: false,
+    };
+    if (param.projectId != null) {
+      query.projectId = param.projectId;
+    }
     const count = await this.repository.count({
-      where: {
-        userId: param.userId,
-        projectId: param.projectId,
-        isTemplate: false
-      }
+      where: query,
     });
     return count;
   }
 
-  async statusCount(param: { userId?: any, projectId?: number } = {}) {
+  async statusCount(param: { userId?: any; projectId?: number } = {}) {
+    const query: any = {
+      userId: param.userId,
+      isTemplate: false,
+    };
+    if (param.projectId != null) {
+      query.projectId = param.projectId;
+    }
     const statusCount = await this.repository
       .createQueryBuilder()
       .select("status")
       .addSelect("count(1)", "count")
-      .where({
-        userId: param.userId,
-        projectId: param.projectId,
-        isTemplate: false
-      })
+      .where(query)
       .groupBy("status")
       .getRawMany();
     return statusCount;
   }
 
-  async enableCount(param: { userId?: any, projectId?: number } = {}) {
+  async enableCount(param: { userId?: any; projectId?: number } = {}) {
+    const query: any = {
+      userId: param.userId,
+      isTemplate: false,
+    };
+    if (param.projectId != null) {
+      query.projectId = param.projectId;
+    }
     const statusCount = await this.repository
       .createQueryBuilder()
       .select("disabled")
       .addSelect("count(1)", "count")
-      .where({
-        userId: param.userId,
-        projectId: param.projectId,
-        isTemplate: false
-      })
+      .where(query)
       .groupBy("disabled")
       .getRawMany();
     const result = {
@@ -958,18 +933,18 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async latestExpiringList({ userId, projectId }: any) {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     let list = await this.repository.find({
       select: {
         id: true,
         title: true,
-        status: true
+        status: true,
       },
       where: {
-        userId,
+        ...userProjectQuery,
         disabled: false,
-        projectId,
-        isTemplate: false
-      }
+        isTemplate: false,
+      },
     });
     await this.fillLastVars(list);
     list = list.filter(item => {
@@ -991,7 +966,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       .where({
         // 0点
         createTime: MoreThan(todayEnd.add(-param.days, "day").toDate()),
-        isTemplate: false
+        isTemplate: false,
       })
       .groupBy("date")
       .getRawMany();
@@ -1008,7 +983,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         await this.checkUserId(id, userId);
       }
       if (projectId) {
-        await this.checkUserId(id, projectId, "projectId")
+        await this.checkUserId(id, projectId, "projectId");
       }
       await this.delete(id);
     }
@@ -1018,7 +993,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
-    const query: any = {}
+    const query: any = {};
     if (userId && userId > 0) {
       query.userId = userId;
     }
@@ -1028,14 +1003,11 @@ export class PipelineService extends BaseService<PipelineEntity> {
     await this.repository.update(
       {
         id: In(ids),
-        ...query
+        ...query,
       },
       { groupId }
     );
   }
-
-
-
 
   /**
    * 批量转移到其他项目
@@ -1050,7 +1022,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!projectId || projectId <= 0) {
       throw new Error("projectId不能为空");
     }
-    const userId = -1 // 强制为-1
+    const userId = -1; // 强制为-1
 
     async function eachSteps(pipeline, callback) {
       for (const stage of pipeline.stages) {
@@ -1061,7 +1033,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
         }
       }
     }
-
 
     for (const id of ids) {
       const pipelineEntity = await this.info(id);
@@ -1080,16 +1051,16 @@ export class PipelineService extends BaseService<PipelineEntity> {
         userId: userId,
         projectId: projectId,
         groupId: null,
-      }
+      };
 
       const pipeline = JSON.parse(pipelineEntity.content);
       pipeline.userId = userId;
       pipeline.projectId = projectId;
 
       //转移和修改access 和 Notification
-      await eachSteps(pipeline, async (step) => {
+      await eachSteps(pipeline, async step => {
         const type = step.type;
-        //plugin 
+        //plugin
         const pluginDefine: any = pluginRegistry.getDefine(type);
         if (pluginDefine) {
           for (const key in step.input) {
@@ -1097,48 +1068,40 @@ export class PipelineService extends BaseService<PipelineEntity> {
             if (!value || value <= 0) {
               continue;
             }
-            if (!pluginDefine.input[key]){
+            if (!pluginDefine.input[key]) {
               continue;
             }
             const componentName = pluginDefine.input[key].component?.name;
             if (componentName === "access-selector" || componentName === "AccessSelector") {
               //这是一个授权ID属性，检查是否需要转移授权
-              const newAccessId = await this.accessService.copyTo(value,projectId);
+              const newAccessId = await this.accessService.copyTo(value, projectId);
               step.input[key] = newAccessId;
             }
           }
         }
-      })
-      pipeline.notifications = [
+      });
+      (pipeline.notifications = [
         {
-          "type": "custom",
-          "when": [
-            "error",
-            "turnToSuccess"
-          ],
-          "notificationId": 0,
-          "title": "使用默认通知",
-          "id": nanoid()
-        }
-      ],
-
-      entity.content = JSON.stringify(pipeline);
+          type: "custom",
+          when: ["error", "turnToSuccess"],
+          notificationId: 0,
+          title: "使用默认通知",
+          id: nanoid(),
+        },
+      ]),
+        (entity.content = JSON.stringify(pipeline));
       await this.unregisterTriggers(entity.id);
       await this.repository.save(entity);
-      await this.save(entity)
+      await this.save(entity);
     }
-
-
-
   }
-
 
   async batchUpdateTrigger(ids: number[], trigger: any, userId: any, projectId?: number) {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
     //允许管理员修改，userId=null
-    const query: any = {}
+    const query: any = {};
     if (userId && userId > 0) {
       query.userId = userId;
     }
@@ -1148,39 +1111,42 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const list = await this.find({
       where: {
         id: In(ids),
-        ...query
-      }
+        ...query,
+      },
     });
+
 
     for (const item of list) {
       const pipeline = JSON.parse(item.content);
       if (trigger.props === false) {
         //清除trigger
-        pipeline.triggers = []
+        pipeline.triggers = [];
       } else {
+
+        const start = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[0];
+        let end = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[1];
+        if (trigger.randomRange[1] < trigger.randomRange[0]) {
+          //跨天
+          end = dayjs().add(1, "day").format("YYYY-MM-DD") + " " + trigger.randomRange[1];
+        }
+        const startTime = dayjs(start).valueOf();
+        const endTime = dayjs(end).valueOf();
+
+        const triggerConf = cloneDeep(trigger);
         if (trigger.random === true) {
           //随机时间
-          const start = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[0];
-          let end = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[1];
-          if (trigger.randomRange[1] < trigger.randomRange[0]) {
-            //跨天
-            end = dayjs().add(1, "day").format("YYYY-MM-DD") + " " + trigger.randomRange[1];
-          }
-          const startTime = dayjs(start).valueOf();
-          const endTime = dayjs(end).valueOf();
           const randomTime = Math.floor(Math.random() * (endTime - startTime)) + startTime;
           const time = dayjs(randomTime).format(" ss:mm:HH").replaceAll(":", " ").replaceAll(" 0", " ").trim();
-          set(trigger, "props.cron", `${time} * * *`)
+          set(triggerConf, "props.cron", `${time} * * *`)
         }
-        delete trigger.random
-        delete trigger.randomRange;
+        delete triggerConf.random
+        delete triggerConf.randomRange;
         pipeline.triggers = [{
           id: nanoid(),
           title: "定时触发",
-          ...trigger
+          ...triggerConf
         }];
       }
-
       await this.doUpdatePipelineJson(item, pipeline);
     }
 
@@ -1191,7 +1157,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
     //允许管理员修改，userId=null
-    const query: any = {}
+    const query: any = {};
     if (userId && userId > 0) {
       query.userId = userId;
     }
@@ -1201,26 +1167,28 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const list = await this.find({
       where: {
         id: In(ids),
-        ...query
-      }
+        ...query,
+      },
     });
 
     for (const item of list) {
       const pipeline = JSON.parse(item.content);
-      pipeline.notifications = [{
-        id: nanoid(),
-        title: "通知",
-        /**
-         * type: NotificationType;
-         *   when: NotificationWhen[];
-         *   options: EmailOptions;
-         *   notificationId: number;
-         *   title: string;
-         *   subType: string;
-         */
-        type: "other",
-        ...notification
-      }];
+      pipeline.notifications = [
+        {
+          id: nanoid(),
+          title: "通知",
+          /**
+           * type: NotificationType;
+           *   when: NotificationWhen[];
+           *   options: EmailOptions;
+           *   notificationId: number;
+           *   title: string;
+           *   subType: string;
+           */
+          type: "other",
+          ...notification,
+        },
+      ];
       await this.doUpdatePipelineJson(item, pipeline);
     }
   }
@@ -1229,7 +1197,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
-    const query: any = {}
+    const query: any = {};
     if (userId && userId > 0) {
       query.userId = userId;
     }
@@ -1239,8 +1207,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const list = await this.find({
       where: {
         id: In(ids),
-        ...query
-      }
+        ...query,
+      },
     });
 
     for (const item of list) {
@@ -1267,15 +1235,15 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const where: any = {
       id: In(ids),
       userId,
-    }
+    };
     if (projectId) {
-      where.projectId = projectId
+      where.projectId = projectId;
     }
     const list = await this.repository.find({
       select: {
-        id: true
+        id: true,
       },
-      where: where
+      where: where,
     });
 
     ids = list.map(item => item.id);
@@ -1293,35 +1261,33 @@ export class PipelineService extends BaseService<PipelineEntity> {
           } else {
             await this.run(id, null);
           }
-        }
+        },
       });
     }
   }
-
 
   async getUserPipelineCount(userId) {
     return await this.repository.count({ where: { userId } });
   }
 
   async getSimplePipelines(pipelineIds: number[], userId?: number, projectId?: number) {
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     return await this.repository.find({
       select: {
         id: true,
-        title: true
+        title: true,
       },
       where: {
         id: In(pipelineIds),
-        userId,
-        projectId
-      }
+        ...userProjectQuery,
+      },
     });
   }
-
 
   private async checkUserStatus(userId: number) {
     if (isEnterprise()) {
       //企业模式不检查用户状态，都允许运行流水线
-      return
+      return;
     }
     const userEntity = await this.userService.info(userId);
     if (userEntity == null) {
@@ -1344,12 +1310,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async createAutoPipeline(req: { domains: string[]; email: string; userId: number, projectId?: number, from: string }) {
+  async createAutoPipeline(req: { domains: string[]; email: string; userId: number; projectId?: number; from: string; applyParams?: CertApplyTemplateParams }) {
     const randomHour = Math.floor(Math.random() * 6);
     const randomMin = Math.floor(Math.random() * 60);
     const randomCron = `0 ${randomMin} ${randomHour} * * *`;
 
-    let pipeline: any = {
+    const pipeline: any = {
       title: req.domains[0] + `证书自动申请【${req.from ?? "OpenAPI"}】`,
       runnableType: "pipeline",
       triggers: [
@@ -1359,8 +1325,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
           props: {
             cron: randomCron,
           },
-          type: "timer"
-        }
+          type: "timer",
+        },
       ],
       notifications: [
         {
@@ -1369,7 +1335,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
           when: ["error", "turnToSuccess", "success"],
           notificationId: 0,
           title: "默认通知",
-        }
+        },
       ],
       stages: [
         {
@@ -1389,30 +1355,31 @@ export class PipelineService extends BaseService<PipelineEntity> {
                   runnableType: "step",
                   input: {
                     renewDays: 20,
+                    sslProvider: "letsencrypt",
+                    privateKeyType: "rsa_2048",
+                    certProfile: "classic",
+                    preferredChain: "ISRG Root X1",
+                    useProxy: false,
+                    skipLocalVerify: false,
+                    maxCheckRetryCount: 20,
+                    waitDnsDiffuseTime: 30,
+                    pfxArgs: "-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES",
+                    successNotify: true,
+                    ...req.applyParams,
                     domains: req.domains,
                     email: req.email,
-                    "challengeType": "auto",
-                    "sslProvider": "letsencrypt",
-                    "privateKeyType": "rsa_2048",
-                    "certProfile": "classic",
-                    "preferredChain": "ISRG Root X1",
-                    "useProxy": false,
-                    "skipLocalVerify": false,
-                    "maxCheckRetryCount": 20,
-                    "waitDnsDiffuseTime": 30,
-                    "pfxArgs": "-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES",
-                    "successNotify": true
+                    challengeType: "auto",
                   },
                   strategy: {
-                    runStrategy: 0 // 正常执行
+                    runStrategy: 0, // 正常执行
                   },
-                  type: "CertApply"
-                }
-              ]
-            }
-          ]
-        }
-      ]
+                  type: "CertApply",
+                },
+              ],
+            },
+          ],
+        },
+      ],
     };
 
     const bean = new PipelineEntity();
@@ -1421,11 +1388,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
     bean.userId = req.userId;
     bean.status = "none";
     bean.type = "cert_auto";
-    bean.disabled = false
-    bean.keepHistoryCount = 30
-    bean.projectId = req.projectId
-    await this.save(bean)
-
+    bean.disabled = false;
+    bean.keepHistoryCount = 30;
+    bean.projectId = req.projectId;
+    await this.save(bean);
 
     return bean;
   }
@@ -1433,11 +1399,11 @@ export class PipelineService extends BaseService<PipelineEntity> {
   async getStatus(pipelineId: number) {
     const res = await this.repository.findOne({
       select: {
-        status: true
+        status: true,
       },
       where: {
-        id: pipelineId
-      }
+        id: pipelineId,
+      },
     });
     return res?.status;
   }
@@ -1445,11 +1411,11 @@ export class PipelineService extends BaseService<PipelineEntity> {
   async getPipelineUserId(pipelineId: number) {
     const res = await this.repository.findOne({
       select: {
-        userId: true
+        userId: true,
       },
       where: {
-        id: pipelineId
-      }
+        id: pipelineId,
+      },
     });
     return res?.userId;
   }
@@ -1474,9 +1440,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
         content: true,
       },
       where: {
-        webhookKey
-      }
-    })
+        webhookKey,
+      },
+    });
     if (!pipelineEntity) {
       throw new Error("webhookKey不存在");
     }

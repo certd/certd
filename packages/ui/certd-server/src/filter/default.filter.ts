@@ -1,5 +1,5 @@
-import { Catch } from '@midwayjs/core';
-import { Context } from '@midwayjs/koa';
+import { Catch } from "@midwayjs/core";
+import { Context } from "@midwayjs/koa";
 
 @Catch()
 export class DefaultErrorFilter {

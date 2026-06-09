@@ -165,6 +165,7 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     const opts = {
       httpProxy: privateSetting.httpProxy,
       httpsProxy: privateSetting.httpsProxy,
+      noProxy: privateSetting.noProxy,
     };
     setGlobalProxy(opts);
     setGlobalHeaders(this.parseKeyValueText(privateSetting.commonHeaders));

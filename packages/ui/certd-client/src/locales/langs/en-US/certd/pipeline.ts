@@ -41,6 +41,7 @@ export default {
   pi: {
     validTime: "Piepline Valid Time",
     validTimeHelper: "Not filled in means permanent validity",
+    permanentValid: "Permanent",
   },
   types: {
     certApply: "Cert Apply",

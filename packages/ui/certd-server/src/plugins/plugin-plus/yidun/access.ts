@@ -48,31 +48,30 @@ export class YidunAccess extends BaseAccess {
     return "ok";
   }
 
-  async getDomainList(){
+  async getDomainList() {
     const siteUrl = "http://user.yiduncdn.com/v1/sites";
-    const res = await this.doRequest(siteUrl, "GET", { });
-    return res.data
+    const res = await this.doRequest(siteUrl, "GET", {});
+    return res.data;
   }
 
   async doRequest(url: string, method: string, data: any) {
-      const access = this
-      const { apiKey, apiSecret } = access;
-      const http = this.ctx.http;
-      const res: any = await http.request({
-        url,
-        method,
-        headers: {
-          "api-key": apiKey,
-          "api-secret": apiSecret,
-        },
-        data,
-      });
-      if (res.code != 0) {
-        throw new Error(res.msg);
-      }
-      return res;
+    const access = this;
+    const { apiKey, apiSecret } = access;
+    const http = this.ctx.http;
+    const res: any = await http.request({
+      url,
+      method,
+      headers: {
+        "api-key": apiKey,
+        "api-secret": apiSecret,
+      },
+      data,
+    });
+    if (res.code != 0) {
+      throw new Error(res.msg);
     }
-  
+    return res;
+  }
 }
 
 new YidunAccess();

@@ -455,8 +455,8 @@ onMounted(async () => {
 
     .card-header {
       .header-bg-gradient {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        opacity: 0.15;
+        background: rgba(255, 255, 255, 0.04);
+        opacity: 1;
       }
     }
 
@@ -572,8 +572,9 @@ onMounted(async () => {
   .bindings-card,
   .passkey-card {
     background: #fff;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
     transition: all 0.3s ease;
     margin: 5px;
   }
@@ -586,13 +587,15 @@ onMounted(async () => {
   .profile-card:hover,
   .bindings-card:hover,
   .passkey-card:hover {
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border-color: rgba(148, 163, 184, 0.34);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
     transform: translateY(-2px);
   }
 
   .card-header {
     position: relative;
     padding: 40px 30px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.9)), hsl(var(--card));
   }
 
   .header-bg-gradient {
@@ -601,8 +604,8 @@ onMounted(async () => {
     left: 0;
     right: 0;
     height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    opacity: 0.08;
+    background: radial-gradient(circle at 14% 22%, rgba(52, 120, 246, 0.08), transparent 34%), radial-gradient(circle at 86% 18%, rgba(197, 138, 53, 0.08), transparent 32%);
+    opacity: 1;
   }
 
   .header-content {
@@ -631,14 +634,14 @@ onMounted(async () => {
     padding: 0;
     color: #667eea;
     background: #ffffff;
-    border: 1px solid #e5e7eb;
+    border: 1px solid rgba(148, 163, 184, 0.34);
     border-radius: 50%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
   }
 
   .user-avatar {
     border: 4px solid #ffffff;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
   }
 
   .status-indicator {
@@ -678,7 +681,9 @@ onMounted(async () => {
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    border-radius: 20px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.72);
     font-size: 13px;
   }
 

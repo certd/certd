@@ -82,6 +82,7 @@ export default {
     pipelineContent: "Pipeline Content",
     scheduledTaskCount: "Scheduled Task Count",
     deployTaskCount: "Deployment Task Count",
+    certDomains: "Certificate Domains",
     remainingValidity: "Remaining Validity",
     effectiveTime: "Effective time",
     expiryTime: "Expiry Time",

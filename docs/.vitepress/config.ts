@@ -135,6 +135,7 @@ export default defineConfig({
                         {text: "支付宝配置", link: "/guide/use/comm/payments/alipay.md"},
                         {text: "微信支付配置", link: "/guide/use/comm/payments/wxpay.md"},
                         {text: "彩虹易支付配置", link: "/guide/use/comm/payments/yizhifu.md"},
+                        {text: "插件选项映射", link: "/guide/use/comm/plugin/"},
                     ]
                 },
                 {
