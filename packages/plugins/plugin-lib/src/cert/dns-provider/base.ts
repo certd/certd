@@ -1,7 +1,7 @@
 import { HttpClient, ILogger } from "@certd/basic";
 import { IAccessService, PageRes, PageSearch } from "@certd/pipeline";
 import punycode from "punycode.js";
-import { CreateRecordOptions, DnsProviderContext, DnsProviderDefine, DomainRecord, IDnsProvider, RemoveRecordOptions } from "./api.js";
+import { CreateRecordOptions, DnsProviderContext, DnsProviderDefine, DnsResolveRecord, DomainRecord, IDnsProvider, RemoveRecordOptions } from "./api.js";
 import { dnsProviderRegistry } from "./registry.js";
 export abstract class AbstractDnsProvider<T = any> implements IDnsProvider<T> {
   ctx!: DnsProviderContext;
@@ -47,6 +47,10 @@ export abstract class AbstractDnsProvider<T = any> implements IDnsProvider<T> {
   abstract removeRecord(options: RemoveRecordOptions<T>): Promise<void>;
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+    throw new Error("Method not implemented.");
+  }
+
+  async getRecordListPage(domain: string, req: PageSearch): Promise<PageRes<DnsResolveRecord>> {
     throw new Error("Method not implemented.");
   }
 }

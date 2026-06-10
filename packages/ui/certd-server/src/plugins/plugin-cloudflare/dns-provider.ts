@@ -1,4 +1,4 @@
-import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, DnsResolveRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 
 import { CloudflareAccess } from "./access.js";
 import { Pager, PageRes, PageSearch } from "@certd/pipeline";
@@ -131,6 +131,34 @@ export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord>
       id: item.id,
       domain: item.name,
     }));
+    const total = ret.result_info.total_count || list.length;
+    return {
+      total,
+      list,
+    };
+  }
+
+  async getRecordListPage(domain: string, req: PageSearch): Promise<PageRes<DnsResolveRecord>> {
+    const pager = new Pager(req);
+
+    const zoneId = await this.getZoneId(domain);
+    let url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?page=${pager.pageNo}&per_page=${pager.pageSize}`;
+    if (req.searchKey) {
+      url += `&name=${req.searchKey}`;
+    }
+    const ret = await this.access.doRequestApi(url, null, "get");
+
+    let list = ret.result || [];
+    list = list.map((item: any) => {
+      const hostRecord = item.name === domain ? "@" : item.name.slice(0, item.name.length - domain.length - 1);
+      return {
+        id: item.id,
+        hostRecord,
+        fullRecord: item.name,
+        type: item.type,
+        value: item.content,
+      };
+    });
     const total = ret.result_info.total_count || list.length;
     return {
       total,

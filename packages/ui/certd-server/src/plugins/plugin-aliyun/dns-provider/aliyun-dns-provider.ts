@@ -1,4 +1,4 @@
-import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, DnsResolveRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { AliyunAccess } from "../../plugin-lib/aliyun/access/aliyun-access.js";
 import { AliyunClient } from "../../plugin-lib/aliyun/index.js";
 import { Pager, PageRes, PageSearch } from "@certd/pipeline";
@@ -171,6 +171,35 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
         id: item.DomainId,
         domain: item.DomainName,
       })) || [];
+
+    return {
+      list,
+      total: ret.TotalCount,
+    };
+  }
+
+  async getRecordListPage(domain: string, req: PageSearch): Promise<PageRes<DnsResolveRecord>> {
+    const pager = new Pager(req);
+    const params = {
+      RegionId: "cn-hangzhou",
+      DomainName: domain,
+      PageSize: pager.pageSize,
+      PageNumber: pager.pageNo,
+    };
+
+    const requestOption = {
+      method: "POST",
+    };
+
+    const ret = await this.client.request("DescribeDomainRecords", params, requestOption);
+    const rawList = ret.DomainRecords?.Record || [];
+    const list = rawList.map(item => ({
+      id: item.RecordId,
+      hostRecord: item.RR,
+      fullRecord: item.RR === "@" ? domain : `${item.RR}.${domain}`,
+      type: item.Type,
+      value: item.Value,
+    }));
 
     return {
       list,

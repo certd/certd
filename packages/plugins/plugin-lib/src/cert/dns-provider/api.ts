@@ -34,6 +34,14 @@ export type DomainRecord = {
   domain: string;
 };
 
+export type DnsResolveRecord = {
+  id: string;
+  hostRecord: string;
+  fullRecord: string;
+  type: string;
+  value: string;
+};
+
 export interface IDnsProvider<T = any> {
   onInstance(): Promise<void>;
 
@@ -59,6 +67,8 @@ export interface IDnsProvider<T = any> {
   usePunyCode(): boolean;
 
   getDomainListPage(pager: PageSearch): Promise<PageRes<DomainRecord>>;
+
+  getRecordListPage?(domain: string, pager: PageSearch): Promise<PageRes<DnsResolveRecord>>;
 }
 
 export interface ISubDomainsGetter {

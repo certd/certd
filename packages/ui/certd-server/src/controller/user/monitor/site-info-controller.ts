@@ -136,6 +136,55 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     return this.ok();
   }
 
+  @Post("/import/save", { description: Constants.per.authOnly, summary: "保存站点证书监控导入任务" })
+  async siteInfoImportSave(@Body(ALL) body: any) {
+    const { projectId, userId } = await this.getProjectUserIdWrite();
+    const { dnsProviderType, dnsProviderAccessId, key, groupId } = body;
+    const item = await this.service.saveSiteInfoImportTask({
+      userId: userId,
+      projectId: projectId,
+      dnsProviderType,
+      dnsProviderAccessId,
+      key,
+      groupId,
+    });
+    return this.ok(item);
+  }
+
+  @Post("/import/status", { description: Constants.per.authOnly, summary: "查询站点证书监控导入任务状态" })
+  async siteInfoImportStatus() {
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    const task = await this.service.getSiteInfoImportTaskStatus({
+      userId: userId,
+      projectId: projectId,
+    });
+    return this.ok(task);
+  }
+
+  @Post("/import/delete", { description: Constants.per.authOnly, summary: "删除站点证书监控导入任务" })
+  async siteInfoImportDelete(@Body(ALL) body: any) {
+    const { projectId, userId } = await this.getProjectUserIdWrite();
+    const { key } = body;
+    await this.service.deleteSiteInfoImportTask({
+      userId: userId,
+      projectId: projectId,
+      key,
+    });
+    return this.ok();
+  }
+
+  @Post("/import/start", { description: Constants.per.authOnly, summary: "开始站点证书监控导入任务" })
+  async siteInfoImportStart(@Body(ALL) body: any) {
+    const { projectId, userId } = await this.getProjectUserIdWrite();
+    const { key } = body;
+    await this.service.startSiteInfoImportTask({
+      key,
+      userId: userId,
+      projectId: projectId,
+    });
+    return this.ok();
+  }
+
   @Post("/ipCheckChange", { description: Constants.per.authOnly, summary: "修改IP检查设置" })
   async ipCheckChange(@Body(ALL) bean: any) {
     await this.checkOwner(this.service, bean.id, "read");

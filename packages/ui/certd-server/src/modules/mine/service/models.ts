@@ -58,3 +58,10 @@ export class UserDomainImportSetting extends BaseSettings {
 
   domainImportList: { dnsProviderType: string; dnsProviderAccessId: number; key: string; title: string; icon?: string }[];
 }
+
+export class UserSiteInfoImportSetting extends BaseSettings {
+  static __title__ = "用户站点证书监控导入设置";
+  static __key__ = "user.siteInfo.import";
+
+  siteInfoImportList: { dnsProviderType: string; dnsProviderAccessId: number; key: string; title: string; icon?: string; groupId?: number }[];
+}

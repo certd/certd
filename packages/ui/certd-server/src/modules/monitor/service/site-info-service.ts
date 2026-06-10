@@ -1,26 +1,30 @@
-import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
-import { BaseService, Constants, isEnterprise, NeedSuiteException, NeedVIPException, SysSettingsService } from "@certd/lib-server";
-import { InjectEntityModel } from "@midwayjs/typeorm";
-import { In, Repository } from "typeorm";
-import { SiteInfoEntity } from "../entity/site-info.js";
-import { siteTester } from "./site-tester.js";
-import dayjs from "dayjs";
-import { logger, utils } from "@certd/basic";
-import { PeerCertificate } from "tls";
-import { NotificationService } from "../../pipeline/service/notification-service.js";
-import { isComm, isPlus } from "@certd/plus-core";
+import { http, logger, utils } from "@certd/basic";
 import { UserSuiteService } from "@certd/commercial-core";
-import { UserSettingsService } from "../../mine/service/user-settings-service.js";
-import { UserSiteMonitorSetting } from "../../mine/service/models.js";
-import { SiteIpService } from "./site-ip-service.js";
-import { SiteIpEntity } from "../entity/site-ip.js";
-import { Cron } from "../../cron/cron.js";
-import { dnsContainer } from "./dns-custom.js";
+import { AccessService, BaseService, Constants, isEnterprise, NeedSuiteException, NeedVIPException, SysSettingsService } from "@certd/lib-server";
+import { Pager } from "@certd/pipeline";
+import { createDnsProvider, dnsProviderRegistry, DomainParser } from "@certd/plugin-lib";
+import { isComm, isPlus } from "@certd/plus-core";
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import dayjs from "dayjs";
 import { merge } from "lodash-es";
-import { JobHistoryService } from "./job-history-service.js";
-import { JobHistoryEntity } from "../entity/job-history.js";
+import { PeerCertificate } from "tls";
+import { In, Repository } from "typeorm";
+import { BackTask, taskExecutor } from "../../basic/service/task-executor.js";
+import { Cron } from "../../cron/cron.js";
+import { UserSiteInfoImportSetting, UserSiteMonitorSetting } from "../../mine/service/models.js";
+import { UserSettingsService } from "../../mine/service/user-settings-service.js";
+import { TaskServiceBuilder } from "../../pipeline/service/getter/task-service-getter.js";
+import { NotificationService } from "../../pipeline/service/notification-service.js";
 import { UserService } from "../../sys/authority/service/user-service.js";
 import { ProjectService } from "../../sys/enterprise/service/project-service.js";
+import { JobHistoryEntity } from "../entity/job-history.js";
+import { SiteInfoEntity } from "../entity/site-info.js";
+import { SiteIpEntity } from "../entity/site-ip.js";
+import { dnsContainer } from "./dns-custom.js";
+import { JobHistoryService } from "./job-history-service.js";
+import { SiteIpService } from "./site-ip-service.js";
+import { siteTester } from "./site-tester.js";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -52,6 +56,12 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   projectService: ProjectService;
 
   @Inject()
+  accessService: AccessService;
+
+  @Inject()
+  taskServiceBuilder: TaskServiceBuilder;
+
+  @Inject()
   cron: Cron;
 
   //@ts-ignore
@@ -64,7 +74,6 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       //企业模式不限制
       return;
     }
-
     if (isComm()) {
       const suiteSetting = await this.userSuiteService.getSuiteSetting();
       if (suiteSetting.enabled) {
@@ -481,6 +490,219 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
       // await this.checkAllByUsers(req.userId);
     };
     await batchAdd(list);
+  }
+
+  async startSiteInfoImportTask(req: { userId: number; projectId: number; key: string }) {
+    const key = req.key;
+    const setting = await this.userSettingsService.getSetting<UserSiteInfoImportSetting>(req.userId, req.projectId, UserSiteInfoImportSetting);
+    const item = setting.siteInfoImportList.find(item => item.key === key);
+    if (!item) {
+      throw new Error(`站点监控导入任务（${key}）还未注册`);
+    }
+    const { dnsProviderType, dnsProviderAccessId, title, groupId } = item;
+
+    const TASK_TYPE = "siteInfoImportTask";
+    taskExecutor.start(
+      new BackTask({
+        type: TASK_TYPE,
+        key,
+        title,
+        run: async (task: BackTask) => {
+          await this._syncSitesFromProvider(
+            {
+              userId: req.userId,
+              projectId: req.projectId,
+              dnsProviderType,
+              dnsProviderAccessId,
+              groupId,
+            },
+            task
+          );
+        },
+      })
+    );
+  }
+
+  private async _syncSitesFromProvider(req: { userId: number; projectId: number; dnsProviderType: string; dnsProviderAccessId: number; groupId?: number }, task: BackTask) {
+    const { userId, projectId, dnsProviderType, dnsProviderAccessId, groupId } = req;
+
+    const serviceGetter = this.taskServiceBuilder.create({ userId, projectId });
+    const subDomainGetter = await serviceGetter.getSubDomainsGetter();
+    const domainParser = new DomainParser(subDomainGetter);
+
+    const access = await this.accessService.getById(dnsProviderAccessId, userId, projectId);
+    const context = { access, logger, http, utils, domainParser, serviceGetter };
+    const dnsProvider = await createDnsProvider({ dnsProviderType, context });
+
+    // 1. 先获取主域名列表（每个 domain 翻页）
+    const domainPager = new Pager({ pageNo: 1, pageSize: 50 });
+    const domainList: string[] = [];
+    while (true) {
+      const pageRet = await dnsProvider.getDomainListPage(domainPager);
+      for (const item of pageRet.list || []) {
+        domainList.push(item.domain);
+      }
+      if (!pageRet.list || pageRet.list.length < domainPager.pageSize) {
+        break;
+      }
+      domainPager.pageNo++;
+    }
+
+    // 2. 根据 provider 是否支持 getRecordListPage 决定处理方式
+    const skipTypes = new Set(["TXT", "NS", "SOA", "SRV", "CAA", "PTR"]);
+    for (const domain of domainList) {
+      if (!dnsProvider.getRecordListPage) {
+        // 不支持解析记录列表时，直接把主域名作为一个站点
+        try {
+          await this.add({
+            userId,
+            projectId,
+            groupId,
+            domain,
+            name: domain,
+            httpsPort: 443,
+          } as any);
+          task.incrementCurrent();
+        } catch (e) {
+          if (e.message && e.message.indexOf("已达上限") >= 0) {
+            task.addError(`${domain}: ${e.message}`);
+            break;
+          }
+          task.incrementSkip();
+        }
+        continue;
+      }
+      // 支持 getRecordListPage：翻页获取解析记录，过滤掉泛域名(*.)和不支持的类型
+      const recordPager = new Pager({ pageNo: 1, pageSize: 100 });
+      while (true) {
+        const pageRet = await dnsProvider.getRecordListPage(domain, recordPager);
+        for (const record of pageRet.list || []) {
+          task.incrementCurrent();
+          const typeUpper = (record.type || "").toUpperCase();
+          if (skipTypes.has(typeUpper)) {
+            task.incrementSkip();
+            continue;
+          }
+          const fullRecord = record.fullRecord;
+          if (!fullRecord || fullRecord.startsWith("*.") || fullRecord.startsWith("_acme-challenge")) {
+            task.incrementSkip();
+            continue;
+          }
+          try {
+            await this.add({
+              userId,
+              projectId,
+              groupId,
+              domain: fullRecord,
+              name: fullRecord,
+              httpsPort: 443,
+            } as any);
+          } catch (e) {
+            if (e.message && e.message.indexOf("已达上限") >= 0) {
+              task.addError(`${fullRecord}: ${e.message}`);
+              return;
+            }
+            task.incrementSkip();
+          }
+        }
+        if (!pageRet.list || pageRet.list.length < recordPager.pageSize) {
+          break;
+        }
+        recordPager.pageNo++;
+      }
+    }
+    task.setTotal(task.current || task.total || 0);
+    logger.info(`从域名提供商${dnsProviderType}导入站点完成，共处理${task.current}个记录，跳过${task.getSkipCount()}个，成功${task.getSuccessCount()}个，失败${task.getErrorCount()}个`);
+  }
+
+  async getSiteInfoImportTaskStatus(req: { userId?: number; projectId?: number }) {
+    const userId = req.userId || 0;
+    const projectId = req.projectId;
+    const setting = await this.userSettingsService.getSetting<UserSiteInfoImportSetting>(userId, projectId, UserSiteInfoImportSetting);
+    const list = setting?.siteInfoImportList || [];
+    const TASK_TYPE = "siteInfoImportTask";
+    const taskList: any = [];
+    for (const item of list) {
+      const { key } = item;
+      const task = taskExecutor.get(TASK_TYPE, key);
+      taskList.push({ ...item, task });
+    }
+    return taskList;
+  }
+
+  async getSiteInfoImportProviderTitle(req: { userId?: number; projectId?: number; dnsProviderType: string; dnsProviderAccessId: number }) {
+    const userId = req.userId || 0;
+    const projectId = req.projectId;
+    const { dnsProviderType, dnsProviderAccessId } = req;
+    const dnsProviderDefine = dnsProviderRegistry.getDefine(dnsProviderType);
+    if (!dnsProviderDefine) {
+      throw new Error(`该域名提供商（${dnsProviderType}）不存在，请检查是否已被注册`);
+    }
+    const access = await this.accessService.getSimpleInfo(dnsProviderAccessId);
+    if (!access || access.userId !== userId) {
+      throw new Error(`该授权（${dnsProviderAccessId}）不存在，请检查是否已被删除`);
+    }
+    if (projectId && access.projectId !== projectId) {
+      throw new Error(`该授权（${dnsProviderAccessId}）不存在，请检查是否已被删除`);
+    }
+    return {
+      title: `${dnsProviderDefine.title}_${access.name || ""}`,
+      icon: dnsProviderDefine.icon || "",
+    };
+  }
+
+  async addSiteInfoImportTask(req: { userId?: number; projectId?: number; dnsProviderType: string; dnsProviderAccessId: number; index?: number; groupId?: number }) {
+    const userId = req.userId || 0;
+    const projectId = req.projectId;
+    const { dnsProviderType, dnsProviderAccessId, index = 0, groupId } = req;
+    const key = `user_${userId}_${dnsProviderType}_${dnsProviderAccessId}`;
+    const { title, icon } = await this.getSiteInfoImportProviderTitle(req);
+    const setting = await this.userSettingsService.getSetting<UserSiteInfoImportSetting>(userId, projectId, UserSiteInfoImportSetting);
+    setting.siteInfoImportList = setting.siteInfoImportList || [];
+    if (setting.siteInfoImportList.find(item => item.key === key)) {
+      throw new Error(`该站点监控导入任务${key}已存在`);
+    }
+    const access = await this.accessService.getAccessById(dnsProviderAccessId, true, userId, projectId);
+    if (!access) {
+      throw new Error(`该授权（${dnsProviderAccessId}）不存在，请检查是否已被删除`);
+    }
+    const item = { dnsProviderType, dnsProviderAccessId, key, title, icon: icon || "", groupId };
+    setting.siteInfoImportList.splice(index, 0, item);
+    await this.userSettingsService.saveSetting(userId, projectId, setting);
+    return item;
+  }
+
+  async deleteSiteInfoImportTask(req: { userId?: number; projectId?: number; key: string }) {
+    const userId = req.userId || 0;
+    const projectId = req.projectId;
+    const { key } = req;
+    const setting = await this.userSettingsService.getSetting<UserSiteInfoImportSetting>(userId, projectId, UserSiteInfoImportSetting);
+    setting.siteInfoImportList = setting.siteInfoImportList || [];
+    const index = setting.siteInfoImportList.findIndex(item => item.key === key);
+    if (index === -1) {
+      throw new Error(`该站点监控导入任务${key}不存在`);
+    }
+    setting.siteInfoImportList.splice(index, 1);
+    const TASK_TYPE = "siteInfoImportTask";
+    taskExecutor.clear(TASK_TYPE, key);
+    await this.userSettingsService.saveSetting(userId, projectId, setting);
+  }
+
+  async saveSiteInfoImportTask(req: { userId?: number; projectId?: number; dnsProviderType: string; dnsProviderAccessId: number; key?: string; groupId?: number }) {
+    const userId = req.userId || 0;
+    const projectId = req.projectId;
+    const { dnsProviderType, dnsProviderAccessId, key, groupId } = req;
+    const setting = await this.userSettingsService.getSetting<UserSiteInfoImportSetting>(userId, projectId, UserSiteInfoImportSetting);
+    setting.siteInfoImportList = setting.siteInfoImportList || [];
+    let index = 0;
+    if (key) {
+      index = setting.siteInfoImportList.findIndex(item => item.key === key);
+      if (index === -1) {
+        throw new Error(`该站点监控导入任务${key}不存在`);
+      }
+      await this.deleteSiteInfoImportTask({ userId, projectId, key });
+    }
+    return await this.addSiteInfoImportTask({ userId, projectId, dnsProviderType, dnsProviderAccessId, index, groupId });
   }
 
   clearSiteMonitorJob(userId: number, projectId?: number) {

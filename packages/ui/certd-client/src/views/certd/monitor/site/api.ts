@@ -72,6 +72,36 @@ export const siteInfoApi = {
     });
   },
 
+  async ImportTaskSave(body: any) {
+    return await request({
+      url: apiPrefix + "/import/save",
+      method: "post",
+      data: body,
+    });
+  },
+  async ImportTaskStatus() {
+    return await request({
+      url: apiPrefix + "/import/status",
+      method: "post",
+    });
+  },
+  async ImportTaskDelete(key: string) {
+    return await request({
+      url: apiPrefix + "/import/delete",
+      method: "post",
+      data: { key },
+    });
+  },
+  async ImportTaskStart(key: string) {
+    return await request({
+      url: apiPrefix + "/import/start",
+      method: "post",
+      data: { key },
+    });
+  },
+
+
+
   async DisabledChange(id: number, disabled: boolean) {
     return await request({
       url: apiPrefix + "/disabledChange",

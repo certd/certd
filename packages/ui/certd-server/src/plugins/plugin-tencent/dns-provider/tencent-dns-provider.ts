@@ -1,4 +1,4 @@
-import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DnsResolveRecord, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { TencentAccess } from "../../plugin-lib/tencent/index.js";
 import { Pager, PageRes, PageSearch } from "@certd/pipeline";
 
@@ -112,6 +112,30 @@ export class TencentDnsProvider extends AbstractDnsProvider {
       domain: item.Name,
     }));
     const total = ret.DomainCountInfo?.AllTotal || list.length;
+    return { total, list };
+  }
+
+  async getRecordListPage(domain: string, req: PageSearch): Promise<PageRes<DnsResolveRecord>> {
+    const pager = new Pager(req);
+
+    const params: any = {
+      Domain: domain,
+      Offset: pager.getOffset(),
+      Limit: pager.pageSize,
+    };
+    if (req.searchKey) {
+      params.Subdomain = req.searchKey;
+    }
+    const ret = await this.client.DescribeRecordList(params);
+    let list = ret.RecordList || [];
+    list = list.map((item: any) => ({
+      id: String(item.RecordId),
+      hostRecord: item.Name,
+      fullRecord: item.Name === "@" ? domain : `${item.Name}.${domain}`,
+      type: item.Type,
+      value: item.Value,
+    }));
+    const total = ret.TotalCount || list.length;
     return { total, list };
   }
 }
