@@ -37,5 +37,5 @@ pnpm-lock.yaml
 .studio/
 
 # Certd 推广报告，仅本地使用
-/popularize/
+/popularize/reports/
 
