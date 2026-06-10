@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.41.2](https://github.com/certd/certd/compare/v1.41.1...v1.41.2) (2026-06-10)
+
+### Bug Fixes
+
+* **cert-plugin:** 修复DNS提供商授权无法回显的bug ([016ae86](https://github.com/certd/certd/commit/016ae865b1d914fe5792e77a08e3ab5358df5f89))
+
+### Performance Improvements
+
+* 新增站点证书监控从DNS解析记录批量导入功能 ([f9541fa](https://github.com/certd/certd/commit/f9541fab701e01ba57af061da322204c894adfb8))
+
 ## [1.41.1](https://github.com/certd/certd/compare/v1.41.0...v1.41.1) (2026-06-05)
 
 ### Performance Improvements

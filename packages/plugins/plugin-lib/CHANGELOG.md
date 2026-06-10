@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.41.2](https://github.com/certd/certd/compare/v1.41.1...v1.41.2) (2026-06-10)
+
+### Performance Improvements
+
+* 新增站点证书监控从DNS解析记录批量导入功能 ([f9541fa](https://github.com/certd/certd/commit/f9541fab701e01ba57af061da322204c894adfb8))
+
 ## [1.41.1](https://github.com/certd/certd/compare/v1.41.0...v1.41.1) (2026-06-05)
 
 **Note:** Version bump only for package @certd/plugin-lib
