@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.41.2](https://github.com/certd/certd/compare/v1.41.1...v1.41.2) (2026-06-10)
+
+### Bug Fixes
+
+* **cert-plugin:** 修复DNS提供商授权无法回显的bug ([016ae86](https://github.com/certd/certd/commit/016ae865b1d914fe5792e77a08e3ab5358df5f89))
+* Parse PEM chain and import certificate chain ([#747](https://github.com/certd/certd/issues/747)) ([454912d](https://github.com/certd/certd/commit/454912d31407d350cbd170953ccbd0564e74fd6c))
+
+### Performance Improvements
+
+* 添加AWS Rate Limit应对措施 ([#748](https://github.com/certd/certd/issues/748)) ([56b8c68](https://github.com/certd/certd/commit/56b8c689ec2b5cff49010a8c765483dd36803e9d))
+* 新增站点证书监控从DNS解析记录批量导入功能 ([f9541fa](https://github.com/certd/certd/commit/f9541fab701e01ba57af061da322204c894adfb8))
+* 优化 HiPM DNSMgr 插件，添加域名查询双层策略 ([#744](https://github.com/certd/certd/issues/744)) @WUHINS ([0f3f851](https://github.com/certd/certd/commit/0f3f8519e04d95cb848e28b98a3d4fcbed481fce))
+
+### Reverts
+
+* Revert "perf: 添加AWS Rate Limit应对措施 (#748)" (#749) ([5e8bdac](https://github.com/certd/certd/commit/5e8bdac00850bed4f5f2a272bee42c490730ec21)), closes [#748](https://github.com/certd/certd/issues/748) [#749](https://github.com/certd/certd/issues/749)
+
 ## [1.41.1](https://github.com/certd/certd/compare/v1.41.0...v1.41.1) (2026-06-05)
 
 ### Performance Improvements
