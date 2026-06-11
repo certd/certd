@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.41.3](https://github.com/certd/certd/compare/v1.41.2...v1.41.3) (2026-06-11)
+
+### Bug Fixes
+
+* 修复litessl无法申请证书，报authorization must be pending 错误的问题 ([d6cd9d1](https://github.com/certd/certd/commit/d6cd9d136d2812b2335917305f36d6d9414507ad))
+
+### Performance Improvements
+
+* 首页夜间模式主图切换为黑色背景 ([15484bc](https://github.com/certd/certd/commit/15484bc119fef7a0ca7f3fdab01d665fde47e688))
+
 ## [1.41.2](https://github.com/certd/certd/compare/v1.41.1...v1.41.2) (2026-06-10)
 
 ### Bug Fixes
