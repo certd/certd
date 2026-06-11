@@ -38,4 +38,5 @@ pnpm-lock.yaml
 
 # Certd 推广报告，仅本地使用
 /popularize/reports/
-
+output/
+.uploads/

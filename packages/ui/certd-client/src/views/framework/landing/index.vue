@@ -41,7 +41,7 @@
           </div>
         </div>
         <div class="hero-image-wrapper">
-          <img src="/static/images/certd-intro.png" alt="Certd Intro" class="hero-image" />
+          <img :src="isDark ? '/static/images/certd-intro-dark.png' : '/static/images/certd-intro.png'" alt="Certd Intro" class="hero-image" />
         </div>
       </div>
     </section>
@@ -121,7 +121,8 @@ import { useAccessStore } from "/@/vben/stores";
 import { SiteInfo, SysPublicSetting } from "/@/store/settings/api.basic";
 import ThemeToggle from "/@/vben/layouts/widgets/theme-toggle/theme-toggle.vue";
 import { useRouter } from "vue-router";
-
+import { usePreferences } from "/@/vben/preferences";
+const { isDark } = usePreferences();
 const envRef = ref(env);
 const settingStore = useSettingStore();
 const userStore = useUserStore();
@@ -381,7 +382,7 @@ onMounted(() => {
   padding: 0 24px;
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
-  gap: 60px;
+  gap: 10px;
   align-items: center;
 }
 
@@ -440,7 +441,7 @@ onMounted(() => {
 .hero-image {
   width: 100%;
   height: auto;
-  max-width: 550px;
+  max-width: 600px;
 }
 
 .section-header {
