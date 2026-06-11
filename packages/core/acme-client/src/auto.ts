@@ -172,7 +172,7 @@ export default async (client, userOpts) => {
                 }
                 challengeCompleted = true;
                 log(`[auto] [${d}] 等待返回valid状态`);
-                await client.waitForValidStatus(challenge,d);
+                await client.waitForValidStatus(authz,d);
             });
 
 
