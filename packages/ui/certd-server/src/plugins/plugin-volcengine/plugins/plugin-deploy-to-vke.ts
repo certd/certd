@@ -21,7 +21,7 @@ const regionOptions = [
   icon: "svg:icon-volcengine",
   group: pluginGroups.volcengine.key,
   desc: "替换火山引擎VKE集群中的TLS Secret证书",
-  needPlus:true,
+  needPlus: true,
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -495,7 +495,6 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
       await this.deleteKubeconfig(vkeService, kubeconfigId);
     }
   }
-
 }
 
 new VolcengineDeployToVKE();

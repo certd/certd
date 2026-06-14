@@ -29,7 +29,7 @@ export class HipmDnsmgrDnsProvider extends AbstractDnsProvider<{ domainId: strin
 
     // 1. 获取域名 ID（双层查询策略）
     const domainId = await this.access.getDomainId(domain);
-    this.logger.debug('[HiPM DNSMgr] 找到域名:', domain, 'ID:', domainId);
+    this.logger.debug("[HiPM DNSMgr] 找到域名:", domain, "ID:", domainId);
 
     // 2. 创建 DNS 记录
     const name = hostRecord; // 使用子域名，如 _acme-challenge

@@ -192,10 +192,7 @@ describe("CertApplyTemplateService", () => {
 
     await service.setDefault(2, 10, null);
 
-    assert.deepEqual((service as any).updateWhereList, [
-      { userId: 10 },
-      { userId: 10, id: 2 },
-    ]);
+    assert.deepEqual((service as any).updateWhereList, [{ userId: 10 }, { userId: 10, id: 2 }]);
     assert.equal(list[0].isDefault, false);
     assert.equal(list[1].isDefault, true);
     assert.equal(list[2].isDefault, false);

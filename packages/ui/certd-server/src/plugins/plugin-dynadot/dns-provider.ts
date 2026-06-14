@@ -3,10 +3,13 @@ import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, 
 import { DynadotAccess } from "./access.js";
 
 export type DynadotRecord = {
-  subdomain: string;
-  sub_record_type: string;
-  sub_record: string;
+  sub_host: string;
+  record_type: string;
+  record_value1: string;
 };
+
+type SubRecordItem = DynadotRecord & { record_value2: string };
+type MainRecordItem = { record_type: string; record_value1: string; record_value2: string };
 
 @IsDnsProvider({
   name: "dynadot",
@@ -27,43 +30,22 @@ export class DynadotDnsProvider extends AbstractDnsProvider<DynadotRecord> {
     this.logger.info("添加域名解析：", fullRecord, value, type, domain);
 
     try {
-      const existingRecords = await this.getDnsRecords(domain);
-      const subdomainIndex = existingRecords.subRecords.length;
+      const subRecords = [
+        {
+          sub_host: hostRecord,
+          record_type: type.toLowerCase(),
+          record_value1: value,
+          record_value2: "",
+        }
+      ]
 
-      const setParams: any = {
-        command: "set_dns2",
-        domain,
-        key: this.access.apiKey,
-      };
-
-      for (let i = 0; i < existingRecords.mainRecords.length; i++) {
-        const rec = existingRecords.mainRecords[i];
-        setParams[`main_record_type${i}`] = rec.type;
-        setParams[`main_record${i}`] = rec.value;
-        setParams[`main_recordx${i}`] = rec.extra || "";
-      }
-
-      for (let i = 0; i < existingRecords.subRecords.length; i++) {
-        const rec = existingRecords.subRecords[i];
-        setParams[`subdomain${i}`] = rec.subdomain;
-        setParams[`sub_record_type${i}`] = rec.type;
-        setParams[`sub_record${i}`] = rec.value;
-        setParams[`sub_recordx${i}`] = rec.extra || "";
-      }
-
-      setParams[`subdomain${subdomainIndex}`] = hostRecord;
-      setParams[`sub_record_type${subdomainIndex}`] = type;
-      setParams[`sub_record${subdomainIndex}`] = value;
-      setParams[`sub_recordx${subdomainIndex}`] = "";
-      setParams.ttl = 600;
-
-      await this.access.doRequest(setParams);
+      await this.postRecords(domain, {subRecords, mainRecords: [], addToCurrent: true});
 
       this.logger.info("添加域名解析成功：", fullRecord, value);
       return {
-        subdomain: hostRecord,
-        sub_record_type: type,
-        sub_record: value,
+        sub_host: hostRecord,
+        record_type: type.toLowerCase(),
+        record_value1: value,
       };
     } catch (error) {
       this.logger.error("创建DNS记录失败:", error);
@@ -76,47 +58,37 @@ export class DynadotDnsProvider extends AbstractDnsProvider<DynadotRecord> {
     const record = options.recordRes;
     this.logger.info("删除域名解析：", fullRecord, value);
 
-    try {
-      if (!record || !record.subdomain) {
-        this.logger.info("record为空，不执行删除");
-        return;
-      }
-
-      const existingRecords = await this.getDnsRecords(domain);
-
-      const setParams: any = {
-        command: "set_dns2",
-        domain,
-        key: this.access.apiKey,
-      };
-
-      for (let i = 0; i < existingRecords.mainRecords.length; i++) {
-        const rec = existingRecords.mainRecords[i];
-        setParams[`main_record_type${i}`] = rec.type;
-        setParams[`main_record${i}`] = rec.value;
-        setParams[`main_recordx${i}`] = rec.extra || "";
-      }
-
-      let newIndex = 0;
-      for (let i = 0; i < existingRecords.subRecords.length; i++) {
-        const rec = existingRecords.subRecords[i];
-        if (rec.subdomain === record.subdomain && rec.type === record.sub_record_type && rec.value === record.sub_record) {
-          continue;
-        }
-        setParams[`subdomain${newIndex}`] = rec.subdomain;
-        setParams[`sub_record_type${newIndex}`] = rec.type;
-        setParams[`sub_record${newIndex}`] = rec.value;
-        setParams[`sub_recordx${newIndex}`] = rec.extra || "";
-        newIndex++;
-      }
-      setParams.ttl = 600;
-
-      await this.access.doRequest(setParams);
-
-      this.logger.info("删除域名解析成功:", fullRecord, value);
-    } catch (error) {
-      this.logger.error("删除DNS记录失败:", error);
+    if (!record || !record.sub_host) {
+      this.logger.info("record为空，不执行删除");
+      return;
     }
+
+    const existingRecords = await this.getDnsRecords(domain);
+
+    const beforeCount = existingRecords.subRecords.length;
+    existingRecords.subRecords = existingRecords.subRecords.filter(item => !(item.sub_host === record.sub_host && item.record_type === record.record_type && item.record_value1 === record.record_value1));
+
+    if (beforeCount === existingRecords.subRecords.length) {
+      this.logger.info("未找到要删除的DNS记录，可能已被移除或不存在:", fullRecord);
+      return;
+    }
+
+    if (existingRecords.mainRecords.length == 0) {
+      existingRecords.mainRecords = [
+        {
+          record_type: "txt",
+          record_value1: "init_txt_by_certd",
+          record_value2: "",
+        }
+      ]
+    }
+
+    await this.postRecords(domain, {
+      ...existingRecords,
+      addToCurrent: false,
+    });
+
+    this.logger.info("删除域名解析成功:", fullRecord, value);
   }
 
   async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
@@ -124,49 +96,53 @@ export class DynadotDnsProvider extends AbstractDnsProvider<DynadotRecord> {
   }
 
   private async getDnsRecords(domain: string): Promise<{
-    mainRecords: Array<{ type: string; value: string; extra: string }>;
-    subRecords: Array<{ subdomain: string; type: string; value: string; extra: string }>;
+    mainRecords: MainRecordItem[];
+    subRecords: SubRecordItem[];
   }> {
-    const res = await this.access.doRequest({
-      command: "get_dns",
-      domain,
-    });
-
-    const dnsContent = res.GetDnsResponse?.DnsContent || res.GetDnsResponse?.dnsContent || {};
-
-    const mainRecords: Array<{ type: string; value: string; extra: string }> = [];
-    const subRecords: Array<{ subdomain: string; type: string; value: string; extra: string }> = [];
-
-    const MAX_MAIN = 20;
-    const MAX_SUB = 100;
-
-    for (let i = 0; i < MAX_MAIN; i++) {
-      const type = dnsContent[`MainRecordType${i}`];
-      const value = dnsContent[`MainRecord${i}`];
-      if (value !== undefined && value !== null && value !== "") {
-        mainRecords.push({
-          type: type || "",
-          value: String(value),
-          extra: String(dnsContent[`MainRecordX${i}`] || ""),
-        });
-      }
+    let res: any;
+    try {
+      res = await this.access.doRequest({
+        method: "GET",
+        path: `/restful/v2/domains/${domain}/records`,
+      });
+    } catch (e: any) {
+      this.logger.info("获取DNS记录失败，域名可能尚未配置DNS记录，将视为空记录:");
+      return { mainRecords: [], subRecords: [] };
     }
 
-    for (let i = 0; i < MAX_SUB; i++) {
-      const subdomain = dnsContent[`SubDomain${i}`];
-      const type = dnsContent[`SubRecordType${i}`];
-      const value = dnsContent[`SubRecord${i}`];
-      if (value !== undefined && value !== null && value !== "" && subdomain !== undefined && subdomain !== null && subdomain !== "") {
-        subRecords.push({
-          subdomain: String(subdomain),
-          type: type || "",
-          value: String(value),
-          extra: String(dnsContent[`SubRecordX${i}`] || ""),
-        });
-      }
-    }
+    const glueInfo = res.data?.glue_info || {};
+
+    const subRecords: SubRecordItem[] = (glueInfo.dns_sub_list || [])
+      .filter((item: any) => item.sub_host && item.record_value1)
+      .map((item: any) => ({
+        sub_host: item.sub_host || "",
+        record_type: item.record_type || "",
+        record_value1: item.record_value1 || "",
+        record_value2: item.record_value2 || "",
+      }));
+
+    const mainRecords: MainRecordItem[] = (glueInfo.dns_main_list || [])
+      .filter((item: any) => item.record_value1)
+      .map((item: any) => ({
+        record_type: item.record_type || "",
+        record_value1: String(item.record_value1),
+        record_value2: String(item.record_value2 || ""),
+      }));
 
     return { mainRecords, subRecords };
+  }
+
+  private async postRecords(domain: string, records: { mainRecords: MainRecordItem[]; subRecords: SubRecordItem[] ,addToCurrent: boolean}): Promise<void> {
+    await this.access.doRequest({
+      method: "POST",
+      path: `/restful/v2/domains/${domain}/records`,
+      data: {
+        dns_main_list: records.mainRecords,
+        dns_sub_list: records.subRecords,
+        ttl: 300,
+        add_dns_to_current_setting: records.addToCurrent || false,
+      },
+    });
   }
 }
 

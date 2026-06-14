@@ -98,17 +98,17 @@ export class LegacyAcmeAccountAccessFix {
           continue;
         }
         const name = buildAcmeAccountAccessName(parsedKey.caType, parsedKey.email);
-        const query =  {
-            userId: record.userId,
-            type: "acmeAccount",
-            subtype: parsedKey.caType,
-            name,
-        } as any
+        const query = {
+          userId: record.userId,
+          type: "acmeAccount",
+          subtype: parsedKey.caType,
+          name,
+        } as any;
         if (record.projectId) {
           query.projectId = record.projectId;
         }
         const exists = await this.accessService.findOne({
-          where:query,
+          where: query,
         });
         if (exists) {
           continue;

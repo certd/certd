@@ -897,13 +897,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (param.projectId != null) {
       query.projectId = param.projectId;
     }
-    const statusCount = await this.repository
-      .createQueryBuilder()
-      .select("status")
-      .addSelect("count(1)", "count")
-      .where(query)
-      .groupBy("status")
-      .getRawMany();
+    const statusCount = await this.repository.createQueryBuilder().select("status").addSelect("count(1)", "count").where(query).groupBy("status").getRawMany();
     return statusCount;
   }
 
@@ -915,13 +909,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (param.projectId != null) {
       query.projectId = param.projectId;
     }
-    const statusCount = await this.repository
-      .createQueryBuilder()
-      .select("disabled")
-      .addSelect("count(1)", "count")
-      .where(query)
-      .groupBy("disabled")
-      .getRawMany();
+    const statusCount = await this.repository.createQueryBuilder().select("disabled").addSelect("count(1)", "count").where(query).groupBy("disabled").getRawMany();
     const result = {
       enabled: 0,
       disabled: 0,
@@ -1115,14 +1103,12 @@ export class PipelineService extends BaseService<PipelineEntity> {
       },
     });
 
-
     for (const item of list) {
       const pipeline = JSON.parse(item.content);
       if (trigger.props === false) {
         //清除trigger
         pipeline.triggers = [];
       } else {
-
         const start = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[0];
         let end = dayjs().format("YYYY-MM-DD") + " " + trigger.randomRange[1];
         if (trigger.randomRange[1] < trigger.randomRange[0]) {
@@ -1137,19 +1123,20 @@ export class PipelineService extends BaseService<PipelineEntity> {
           //随机时间
           const randomTime = Math.floor(Math.random() * (endTime - startTime)) + startTime;
           const time = dayjs(randomTime).format(" ss:mm:HH").replaceAll(":", " ").replaceAll(" 0", " ").trim();
-          set(triggerConf, "props.cron", `${time} * * *`)
+          set(triggerConf, "props.cron", `${time} * * *`);
         }
-        delete triggerConf.random
+        delete triggerConf.random;
         delete triggerConf.randomRange;
-        pipeline.triggers = [{
-          id: nanoid(),
-          title: "定时触发",
-          ...triggerConf
-        }];
+        pipeline.triggers = [
+          {
+            id: nanoid(),
+            title: "定时触发",
+            ...triggerConf,
+          },
+        ];
       }
       await this.doUpdatePipelineJson(item, pipeline);
     }
-
   }
 
   async batchUpdateNotifications(ids: number[], notification: Notification, userId: any, projectId?: number) {

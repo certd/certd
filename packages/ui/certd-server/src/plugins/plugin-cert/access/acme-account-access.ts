@@ -144,10 +144,10 @@ export class AcmeAccountAccess extends BaseAccess {
       action: "GenerateAccount",
       buttonText: "生成ACME账号",
       successMessage: "ACME账号已生成，请保存授权配置",
-      type:"textarea",
-      rows:4,
+      type: "textarea",
+      rows: 4,
     },
-    col:{span:24},
+    col: { span: 24 },
     required: true,
     helper: "请生成ACME账号，账号一旦生成不允许修改",
     encrypt: true,
@@ -170,7 +170,6 @@ export class AcmeAccountAccess extends BaseAccess {
     required: false,
     helper: "是否开启修改ACME账号，注意，开启后，会影响DNS持久验证记录",
     encrypt: false,
-   
   })
   editAccount = false;
 

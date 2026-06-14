@@ -33,10 +33,7 @@ export class AwsClient {
     // Split the full PEM chain: first block is the leaf cert, the rest is the intermediate chain
     const pemBlocks = certInfo.crt.split(/(?<=-----END CERTIFICATE-----)/);
     const cert = pemBlocks[0].trim();
-    const chain = pemBlocks
-      .slice(1)
-      .join("")
-      .trim();
+    const chain = pemBlocks.slice(1).join("").trim();
 
     // 构建上传参数
     const data = await acmClient.send(

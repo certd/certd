@@ -53,12 +53,12 @@ export class HipmDnsmgrAccess extends BaseAccess {
    */
   async getDomainId(domainName: string): Promise<string> {
     this.ctx.logger.info(`[HiPM DNSMgr] 尝试通过keyword查询域名: ${domainName}`);
-    
+
     // 方案1: 使用 keyword 参数直接查询
     try {
       const resp = await this.doRequest({
-        method: 'GET',
-        path: '/domains',
+        method: "GET",
+        path: "/domains",
         params: {
           page: 1,
           pageSize: 1,
@@ -80,7 +80,7 @@ export class HipmDnsmgrAccess extends BaseAccess {
 
     // 方案2: 如果 keyword 查询未找到，使用列表匹配作为冗余
     this.ctx.logger.info(`[HiPM DNSMgr] keyword查询未找到，尝试列表匹配: ${domainName}`);
-    
+
     const domainList = await this.getDomainList();
     const domainInfo = domainList.find((item: any) => item.domain === domainName);
 

@@ -69,7 +69,7 @@ export class DeployCertToAliyunApiGateway extends AbstractTaskPlugin {
       action: DeployCertToAliyunApiGateway.prototype.onGetGroupList.name,
       watches: ["regionEndpoint", "accessId"],
       required: true,
-      single:true
+      single: true,
     })
   )
   groupId!: string;
