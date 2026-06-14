@@ -25,6 +25,8 @@ import { DeleteBatch } from "./api";
 import { useI18n } from "/src/locales";
 import { useCrudPermission } from "/@/plugin/permission";
 import AdminModeIntro from "./intro.vue";
+import { useProjectStore } from "/@/store/project";
+
 const { t } = useI18n();
 
 defineOptions({

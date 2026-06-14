@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref} from "vue";
 import createCrudOptions from "./crud.js";
 import FsPermissionTree from "./fs-permission-tree.vue";
 import { usePermission } from "/src/plugin/permission";
