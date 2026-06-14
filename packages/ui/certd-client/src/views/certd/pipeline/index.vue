@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onActivated, onMounted, provide, ref } from "vue";
+import { computed, provide, ref } from "vue";
 import { dict, useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import ChangeGroup from "./components/change-group.vue";
@@ -67,7 +67,7 @@ import BatchRerun from "./components/batch-rerun.vue";
 import { Modal, notification } from "ant-design-vue";
 import * as api from "./api";
 import { useI18n } from "/src/locales";
-
+import { useMounted } from "/@/use/use-mounted";
 const { t } = useI18n();
 import ChangeNotification from "/@/views/certd/pipeline/components/change-notification.vue";
 import { useSettingStore } from "/@/store/settings";
@@ -128,11 +128,7 @@ context.hasActionPermission = hasActionPermission;
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
 // 页面打开后获取列表数据
-onMounted(() => {
-  // crudExpose.doRefresh();
-});
-
-onActivated(async () => {
+useMounted(async () => {
   await groupDictRef.reloadDict();
   await crudExpose.doRefresh();
 });

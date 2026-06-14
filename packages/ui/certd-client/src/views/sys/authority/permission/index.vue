@@ -14,27 +14,25 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onActivated, onMounted, ref } from "vue";
+import { defineComponent } from "vue";
 import createCrudOptions from "./crud.js";
 import FsPermissionTree from "./fs-permission-tree.vue";
 import { usePermission } from "/src/plugin/permission";
 import { useFs, useUi } from "@fast-crud/fast-crud";
 import { useI18n } from "/src/locales";
+import { useMounted } from "/@/use/use-mounted";
 
 export default defineComponent({
   name: "PermissionManager",
   components: { FsPermissionTree },
   setup() {
     // 此处传入permission进行通用按钮权限设置，会通过commonOptions去设置actionbar和rowHandle的按钮的show属性
-    // 更多关于按钮权限的源代码设置，请参考 ./src/plugin/fast-crud/index.js （75-77行）
+    // 更多关于按钮权限的源代码的说明，请参考 ./src/plugin/fast-crud/index.js （75-77行）
     const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context: { permission: "sys:auth:per" } });
     const { t } = useI18n();
 
     // 页面打开后获取列表数据
-    onMounted(async () => {
-      // await crudExpose.doRefresh();
-    });
-    onActivated(async () => {
+    useMounted(async () => {
       await crudExpose.doRefresh();
     });
 

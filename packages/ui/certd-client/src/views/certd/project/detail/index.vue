@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onMounted, Ref, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";

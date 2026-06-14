@@ -15,7 +15,8 @@
     "build2": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
-    "pub": "npm publish"
+    "pub": "npm publish",
+    "compile": "npm run build"
   },
   "dependencies": {
     "nanoid": "^4.0.0"

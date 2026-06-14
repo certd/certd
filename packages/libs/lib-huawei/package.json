@@ -12,7 +12,8 @@
     "dev-build": "npm run build",
     "preview": "vite preview",
     "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
-    "pub": "npm publish"
+    "pub": "npm publish",
+    "compile": "npm run build"
   },
   "dependencies": {
     "axios": "^1.9.0",

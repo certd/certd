@@ -16,7 +16,8 @@
     "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
     "cov": "midway-bin cov --ts",
     "prepublish": "npm run build",
-    "pub": "npm publish"
+    "pub": "npm publish",
+    "compile": "npm run build"
   },
   "keywords": [],
   "author": "greper",

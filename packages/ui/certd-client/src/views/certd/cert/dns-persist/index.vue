@@ -11,9 +11,9 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onMounted } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
+import { useMounted } from "/@/use/use-mounted";
 
 defineOptions({
   name: "DnsPersistRecord",
@@ -24,10 +24,8 @@ const context: any = {
 };
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
-onMounted(() => {
-  // crudExpose.doRefresh();
-});
-onActivated(async () => {
+// 页面打开后获取列表数据
+useMounted(async () => {
   await crudExpose.doRefresh();
 });
 </script>

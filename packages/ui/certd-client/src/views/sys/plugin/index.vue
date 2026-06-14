@@ -17,12 +17,12 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onMounted } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import { message, Modal } from "ant-design-vue";
 import { DeleteBatch } from "./api";
 import { useI18n } from "/src/locales";
+import { useMounted } from "/@/use/use-mounted";
 
 const { t } = useI18n();
 
@@ -31,15 +31,11 @@ defineOptions({
 });
 const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions });
 
-onActivated(async () => {
-  await crudExpose.doRefresh();
-});
-
 const selectedRowKeys = context.selectedRowKeys;
 const handleBatchDelete = () => {
   if (selectedRowKeys.value?.length > 0) {
     Modal.confirm({
-      title: t("certd.confirm"),
+      title: t("certd.pluginManagement"),
       content: t("certd.batchDeleteConfirm", { count: selectedRowKeys.value.length }),
       async onOk() {
         await DeleteBatch(selectedRowKeys.value);
@@ -49,13 +45,13 @@ const handleBatchDelete = () => {
       },
     });
   } else {
-    message.error(t("certd.pleaseSelectRecord"));
+    message.error(t("certd.selectRecordFirst"));
   }
 };
 
 // 页面打开后获取列表数据
-onMounted(() => {
-  crudExpose.doRefresh();
+useMounted(async () => {
+  await crudExpose.doRefresh();
 });
 </script>
 <style lang="less"></style>
