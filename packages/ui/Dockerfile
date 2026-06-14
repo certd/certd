@@ -42,7 +42,6 @@ EXPOSE 7002
 #     apt-get install --yes wget && \
 #     apt-get install --yes dnsutils  
 
-
 WORKDIR /app/
 COPY --from=builder /workspace/certd-server/ /app/
 
@@ -57,14 +56,14 @@ ENV ALIYUN_CLIENT_READ_TIMEOUT=20000
 RUN mkdir -p $LEGO_DOWNLOAD_DIR
 
 # 根据架构下载不同的文件
-RUN ARCH=$(uname -m) && \
-    if [ "$ARCH" = "x86_64" ]; then \
-        wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_amd64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_amd64.tar.gz; \
-    elif [ "$ARCH" = "aarch64" ]; then \
-        wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_arm64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_arm64.tar.gz; \
-    else \
-        echo "Unsupported architecture: $ARCH"; \
-    fi
+# RUN ARCH=$(uname -m) && \
+#     if [ "$ARCH" = "x86_64" ]; then \
+#         wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_amd64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_amd64.tar.gz; \
+#     elif [ "$ARCH" = "aarch64" ]; then \
+#         wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_arm64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_arm64.tar.gz; \
+#     else \
+#         echo "Unsupported architecture: $ARCH"; \
+#     fi
 
 ENV TZ=Asia/Shanghai
 ENV NODE_ENV=production
