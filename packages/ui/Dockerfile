@@ -1,5 +1,5 @@
-FROM node:22-alpine3.21 AS builder
-
+#FROM node:22-alpine3.21 AS builder
+FROM node:22.22-trixie-slim AS builder
 # RUN apk add build-base
 # RUN wget -O - https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar -xj && \
 #     cd jemalloc-5.3.0 && \
@@ -25,7 +25,7 @@ RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 #     npm run build-on-docker
 
 
-FROM node:22-alpine3.21
+FROM node:22.22-trixie-slim
 EXPOSE 7001
 EXPOSE 7002
 
@@ -34,9 +34,16 @@ EXPOSE 7002
 # ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
 
 
-RUN apk add --no-cache openssl
-RUN apk add --no-cache openjdk8
-RUN apk add --no-cache gcompat
+RUN apt-get update && \
+    apt-get install --yes openssl && \
+    apt-get install --yes openjdk8 && \
+    apt-get install --yes gcompat && \
+    apt-get install --yes netcat-openbsd && \
+    apt-get install --yes iputils-ping && \
+    apt-get install --yes wget && \
+    apt-get install --yes dnsutils  
+
+
 WORKDIR /app/
 COPY --from=builder /workspace/certd-server/ /app/
 
