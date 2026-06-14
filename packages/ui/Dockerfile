@@ -34,13 +34,13 @@ EXPOSE 7002
 # ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
 
 
-RUN apt-get update && \
-    apt-get install --yes openssl && \
-    apt-get install --yes openjdk8 && \
-    apt-get install --yes netcat-openbsd && \
-    apt-get install --yes iputils-ping && \
-    apt-get install --yes wget && \
-    apt-get install --yes dnsutils  
+# RUN apt-get update && \
+#     apt-get install --yes openssl && \
+#     apt-get install --yes openjdk8 && \
+#     apt-get install --yes netcat-openbsd && \
+#     apt-get install --yes iputils-ping && \
+#     apt-get install --yes wget && \
+#     apt-get install --yes dnsutils  
 
 
 WORKDIR /app/
