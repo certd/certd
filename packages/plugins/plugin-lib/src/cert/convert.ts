@@ -132,7 +132,7 @@ export class CertConverter {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      await this.exec(`keytool -importkeystore -srckeystore ${p12Path} -srcstoretype PKCS12 -srcstorepass "${jksPassword}" -destkeystore ${jksPath} -deststoretype PKCS12 -deststorepass "${jksPassword}" `);
+      await this.exec(`keytool -importkeystore -srckeystore ${p12Path} -srcstoretype PKCS12 -srcstorepass "${jksPassword}" -destkeystore ${jksPath} -deststoretype JKS -deststorepass "${jksPassword}" `);
       fs.unlinkSync(p12Path);
 
       const fileBuffer = fs.readFileSync(jksPath);
