@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.41.4](https://github.com/certd/certd/compare/v1.41.3...v1.41.4) (2026-06-14)
+
+### Bug Fixes
+
+* 修复设置里面不显示tab页签，导致某些页面需要点击查询按钮才有数据出来的bug ([c1b5a35](https://github.com/certd/certd/commit/c1b5a35f90a7d4b41397717b5c27905bc68e1bfb))
+
 ## [1.41.3](https://github.com/certd/certd/compare/v1.41.2...v1.41.3) (2026-06-11)
 
 **Note:** Version bump only for package @certd/jdcloud

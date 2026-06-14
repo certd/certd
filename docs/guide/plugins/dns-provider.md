@@ -13,21 +13,22 @@
 | 9.| **BIND9 DNS** | 通过 SSH 连接到 BIND9 服务器，使用 nsupdate 命令管理 DNS 记录 | 
 | 10.| **cloudflare** | cloudflare dns provider | 
 | 11.| **dns.la** | dns.la | 
-| 12.| **godaddy** | GoDaddy | 
-| 13.| **HiPM DNSMgr** | HiPM DNSMgr DNS 解析提供商 | 
-| 14.| **华为云** | 华为云DNS解析提供商 | 
-| 15.| **namesilo** | namesilo dns provider | 
-| 16.| **雨云** | 雨云DNS解析提供商 | 
-| 17.| **Technitium DNS Server** | Technitium DNS Server 自建DNS服务器 | 
-| 18.| **腾讯云** | 腾讯云域名DNS解析提供者 | 
-| 19.| **腾讯云EO DNS** | 腾讯云EO DNS解析提供者 | 
-| 20.| **西部数码** | west dns provider | 
-| 21.| **Google Cloud DNS** | Google Cloud DNS提供商 | 
-| 22.| **Dns提供商Demo** | dns provider示例 | 
-| 23.| **彩虹DNS** | 彩虹DNS管理系统 | 
-| 24.| **Spaceship** | Spaceship 域名解析 | 
-| 25.| **51dns** | 51DNS | 
-| 26.| **新网互联** | 新网互联 | 
+| 12.| **Dynadot** | Dynadot DNS提供商 | 
+| 13.| **godaddy** | GoDaddy | 
+| 14.| **HiPM DNSMgr** | HiPM DNSMgr DNS 解析提供商 | 
+| 15.| **华为云** | 华为云DNS解析提供商 | 
+| 16.| **namesilo** | namesilo dns provider | 
+| 17.| **雨云** | 雨云DNS解析提供商 | 
+| 18.| **Technitium DNS Server** | Technitium DNS Server 自建DNS服务器 | 
+| 19.| **腾讯云** | 腾讯云域名DNS解析提供者 | 
+| 20.| **腾讯云EO DNS** | 腾讯云EO DNS解析提供者 | 
+| 21.| **西部数码** | west dns provider | 
+| 22.| **Google Cloud DNS** | Google Cloud DNS提供商 | 
+| 23.| **Dns提供商Demo** | dns provider示例 | 
+| 24.| **彩虹DNS** | 彩虹DNS管理系统 | 
+| 25.| **Spaceship** | Spaceship 域名解析 | 
+| 26.| **51dns** | 51DNS | 
+| 27.| **新网互联** | 新网互联 | 
 
 <style module>
 table th:first-of-type {

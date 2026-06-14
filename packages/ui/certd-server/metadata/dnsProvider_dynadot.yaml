@@ -1,0 +1,8 @@
+name: dynadot
+title: Dynadot
+desc: Dynadot DNS提供商
+icon: simple-icons:dynatrace
+accessType: dynadot
+pluginType: dnsProvider
+type: builtIn
+scriptFilePath: /plugins/plugin-dynadot/dns-provider.js
