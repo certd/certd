@@ -1,5 +1,5 @@
-#FROM node:22-alpine3.21 AS builder
-FROM node:22.22-trixie-slim AS builder
+FROM node:22-alpine3.21 AS builder
+
 # RUN apk add build-base
 # RUN wget -O - https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar -xj && \
 #     cd jemalloc-5.3.0 && \
@@ -25,7 +25,7 @@ RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 #     npm run build-on-docker
 
 
-FROM node:22.22-trixie-slim
+FROM node:22-alpine3.21
 EXPOSE 7001
 EXPOSE 7002
 
@@ -34,14 +34,9 @@ EXPOSE 7002
 # ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
 
 
-# RUN apt-get update && \
-#     apt-get install --yes openssl && \
-#     apt-get install --yes openjdk8 && \
-#     apt-get install --yes netcat-openbsd && \
-#     apt-get install --yes iputils-ping && \
-#     apt-get install --yes wget && \
-#     apt-get install --yes dnsutils  
-
+RUN apk add --no-cache openssl
+RUN apk add --no-cache openjdk8
+# RUN apk add --no-cache gcompat
 WORKDIR /app/
 COPY --from=builder /workspace/certd-server/ /app/
 
@@ -56,14 +51,14 @@ ENV ALIYUN_CLIENT_READ_TIMEOUT=20000
 RUN mkdir -p $LEGO_DOWNLOAD_DIR
 
 # 根据架构下载不同的文件
-# RUN ARCH=$(uname -m) && \
-#     if [ "$ARCH" = "x86_64" ]; then \
-#         wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_amd64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_amd64.tar.gz; \
-#     elif [ "$ARCH" = "aarch64" ]; then \
-#         wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_arm64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_arm64.tar.gz; \
-#     else \
-#         echo "Unsupported architecture: $ARCH"; \
-#     fi
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_amd64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_amd64.tar.gz; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_arm64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_arm64.tar.gz; \
+    else \
+        echo "Unsupported architecture: $ARCH"; \
+    fi
 
 ENV TZ=Asia/Shanghai
 ENV NODE_ENV=production
