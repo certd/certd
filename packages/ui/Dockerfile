@@ -48,6 +48,7 @@ RUN apt-get update && \
         iputils-ping \
         dnsutils \
         iproute2 \
+        ncurses-base \
     && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /usr/share/keyrings/adoptium.gpg > /dev/null \
     && echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list \
     && apt-get update \
@@ -58,7 +59,7 @@ RUN apt-get update && \
 
 WORKDIR /app/
 
-
+ENV TERM xterm
 ENV LEGO_VERSION=4.30.1
 ENV LEGO_DOWNLOAD_DIR=/app/tools/lego
 
