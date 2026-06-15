@@ -377,7 +377,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       type: "acmeAccount",
     },
     required: false,
-    helper: "请选择颁发机构对应的ACME账号",
+    helper: "点击选择->添加->生成ACME账号即可，无需到外部网站注册账号",
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{

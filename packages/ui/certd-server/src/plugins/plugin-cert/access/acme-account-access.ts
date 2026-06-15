@@ -138,7 +138,7 @@ export class AcmeAccountAccess extends BaseAccess {
   eabHmacKey = "";
 
   @AccessInput({
-    title: "ACME账号信息",
+    title: "生成ACME账号",
     component: {
       name: "refresh-input",
       action: "GenerateAccount",
@@ -149,7 +149,7 @@ export class AcmeAccountAccess extends BaseAccess {
     },
     col: { span: 24 },
     required: true,
-    helper: "请生成ACME账号，账号一旦生成不允许修改",
+    helper: "请点击右边按钮生成ACME账号，账号一旦生成不允许修改",
     encrypt: true,
     mergeScript: `
     return {
