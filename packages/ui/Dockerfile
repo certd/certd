@@ -47,6 +47,7 @@ RUN apt-get update && \
         netcat-openbsd \
         iputils-ping \
         dnsutils \
+        iproute2 \
     && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /usr/share/keyrings/adoptium.gpg > /dev/null \
     && echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list \
     && apt-get update \
