@@ -227,7 +227,11 @@ export class DeployCertToAliyunApig extends AbstractTaskPlugin {
         domain: item.name,
       };
     });
-    return optionsUtils.buildGroupOptions(options, this.certDomains);
+    const records = optionsUtils.buildGroupOptions(options, this.certDomains);
+    return {
+      list: records,
+      total: res?.data?.totalSize || 0,
+    }
   }
 
   async onGetRegionList(data: any) {

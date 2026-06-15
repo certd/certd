@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { optionsUtils } from "@certd/basic";
@@ -70,6 +70,8 @@ export class DeployCertToAliyunApiGateway extends AbstractTaskPlugin {
       watches: ["regionEndpoint", "accessId"],
       required: true,
       single: true,
+      pager: true,
+      search: true,
     })
   )
   groupId!: string;
@@ -122,7 +124,7 @@ export class DeployCertToAliyunApiGateway extends AbstractTaskPlugin {
     this.logger.info(`设置${domainName}证书成功:`, ret.RequestId);
   }
 
-  async onGetGroupList(data: any) {
+  async onGetGroupList(data: PageSearch) {
     if (!this.accessId) {
       throw new Error("请选择Access授权");
     }
@@ -131,23 +133,36 @@ export class DeployCertToAliyunApiGateway extends AbstractTaskPlugin {
     }
     const access = await this.getAccess<AliyunAccess>(this.accessId);
     const client = access.getClient(this.regionEndpoint);
+
+    const pager = new Pager(data)
     const res = await client.doRequest({
       // 接口名称
       action: "DescribeApiGroups",
       // 接口版本
       version: "2016-07-14",
-      data: {},
+      data: {
+        query: {
+          GroupName: data.searchKey,
+          PageNumber: pager.pageNo,
+          PageSize: pager.pageSize,
+        },
+      },
     });
     const list = res?.ApiGroupAttributes?.ApiGroupAttribute;
     if (!list || list.length === 0) {
       throw new Error("没有数据，您可以手动输入API网关ID");
     }
-    return list.map((item: any) => {
+    const records = list.map((item: any) => {
       return {
         value: item.GroupId,
         label: `${item.GroupName}<${item.GroupId}>`,
       };
     });
+
+    return {
+      list: records,
+      total: res?.TotalCount || 0,
+    }
   }
 
   async onGetDomainList(data: any) {
