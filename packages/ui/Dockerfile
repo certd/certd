@@ -1,4 +1,4 @@
-FROM node:22-alpine3.21 AS builder
+FROM node:22-trixie-slim AS builder
 
 # RUN apk add build-base
 # RUN wget -O - https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar -xj && \
@@ -25,7 +25,7 @@ RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 #     npm run build-on-docker
 
 
-FROM node:22-alpine3.21
+FROM node:22-trixie-slim
 EXPOSE 7001
 EXPOSE 7002
 
@@ -34,9 +34,27 @@ EXPOSE 7002
 # ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
 
 
-RUN apk add --no-cache openssl
-RUN apk add --no-cache openjdk8
+# RUN apk add --no-cache openssl
+# RUN apk add --no-cache openjdk8
 # RUN apk add --no-cache gcompat
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        gnupg \
+        wget \
+        openssl \
+        netcat-openbsd \
+        iputils-ping \
+        dnsutils \
+    && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /usr/share/keyrings/adoptium.gpg > /dev/null \
+    && echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends temurin-8-jre \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+
 WORKDIR /app/
 COPY --from=builder /workspace/certd-server/ /app/
 
