@@ -15,8 +15,7 @@
     "vitepress-plugin-lightbox": "^1.0.2"
   },
   "scripts": {
-    "start": "lerna bootstrap --hoist",
-    "start:server": "cd ./packages/ui/certd-server && pnpm start",
+    "start": "cd ./packages/ui/certd-server && pnpm start",
     "devb": "lerna run dev-build",
     "i-all": "lerna link && lerna exec npm install  ",
     "publish": "pnpm run prepublishOnly2  && lerna publish --force-publish=pro/plus-core --conventional-commits && pnpm run afterpublishOnly ",

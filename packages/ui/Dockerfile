@@ -56,9 +56,7 @@ RUN apt-get update && \
 
 
 WORKDIR /app/
-COPY --from=builder /workspace/certd-server/ /app/
 
-COPY ./patch/ssh2/*.js /app/node_modules/.pnpm/node_modules/ssh2/lib/protocol/
 
 ENV LEGO_VERSION=4.30.1
 ENV LEGO_DOWNLOAD_DIR=/app/tools/lego
@@ -81,6 +79,9 @@ RUN ARCH=$(uname -m) && \
 ENV TZ=Asia/Shanghai
 ENV NODE_ENV=production
 ENV MIDWAY_SERVER_ENV=production
+
+COPY --from=builder /workspace/certd-server/ /app/
+COPY ./patch/ssh2/*.js /app/node_modules/.pnpm/node_modules/ssh2/lib/protocol/
 CMD ["node", "--optimize-for-size", "./bootstrap.js"]
 
 
