@@ -377,7 +377,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       type: "acmeAccount",
     },
     required: false,
-    helper: "账号是直接本地生成，无需到外部注册账号，点击选择按钮->添加->生成ACME账号",
+    helper: "直接本地生成，无需外部注册\n点击选择按钮->添加->填写邮箱->生成账号即可",
     mergeScript: `
     return {
         show: ctx.compute(({form})=>{
