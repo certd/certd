@@ -170,8 +170,9 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     setGlobalProxy(opts);
     setGlobalHeaders(this.parseKeyValueText(privateSetting.commonHeaders));
     
-    dns.setDefaultResultOrder(privateSetting.dnsResultOrder as any || 'ipv4first');
-
+    if (privateSetting.dnsResultOrder) {
+      dns.setDefaultResultOrder(privateSetting.dnsResultOrder as any);
+    }
     if (privateSetting.pipelineMaxRunningCount) {
       executorQueue.setMaxRunningCount(privateSetting.pipelineMaxRunningCount);
     }
