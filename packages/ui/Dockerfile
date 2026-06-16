@@ -63,9 +63,8 @@ RUN ARCH=$(uname -m) && \
         wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_amd64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_amd64.tar.gz; \
     elif [ "$ARCH" = "aarch64" ]; then \
         wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_arm64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_arm64.tar.gz; \
-    elif [ "$ARCH" = "armv7l" ] || [ "$ARCH" = "arm" ]; then \
-        wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_arm.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_arm.tar.gz; \
     else \
+        # armv7 不支持lego 不要再尝试了
         echo "Unsupported architecture: $ARCH"; \
     fi
 
