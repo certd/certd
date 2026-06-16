@@ -1,12 +1,9 @@
-FROM node:22-trixie-slim AS builder
+# 根据目标平台选择基础镜像：amd64/arm64 用 trixie-slim，arm/v7 没有 trixie-slim 发布，回退到 alpine
+FROM --platform=linux/amd64 node:22-trixie-slim AS base-amd64
+FROM --platform=linux/arm64 node:22-trixie-slim AS base-arm64
+FROM --platform=linux/arm/v7 node:22-alpine AS base-armv7
 
-# RUN apk add build-base
-# RUN wget -O - https://github.com/jemalloc/jemalloc/releases/download/5.3.0/jemalloc-5.3.0.tar.bz2 | tar -xj && \
-#     cd jemalloc-5.3.0 && \
-#     ./configure && \
-#     make && \
-#     make install
-
+FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT} AS builder
 
 WORKDIR /workspace/
 COPY . /workspace/
@@ -14,47 +11,41 @@ COPY . /workspace/
 # https://pnpm.io/zh/migration
 RUN npm install -g pnpm@10.33.4
 
-#RUN cd /workspace/certd-client && pnpm install && npm run build
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
 
-# RUN cd /workspace/certd-server && \
-#     pnpm install --ignore-scripts && \
-#     yes | pnpm approve-builds && \
-#     pnpm rebuild && \
-#     npm run build-on-docker
 
-
-FROM node:22-trixie-slim
+FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT}
 EXPOSE 7001
 EXPOSE 7002
 
-# 安装jemalloc内存分配器，优化内存占用 -- 基本没用，反而更高了
-# COPY --from=builder /usr/local/lib/libjemalloc.so.2 /usr/local/lib/
-# ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so.2
-
-
-# RUN apk add --no-cache openssl
-# RUN apk add --no-cache openjdk8
-# RUN apk add --no-cache gcompat
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ca-certificates \
-        gnupg \
-        wget \
-        openssl \
-        netcat-openbsd \
-        iputils-ping \
-        dnsutils \
-        iproute2 \
-    && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /usr/share/keyrings/adoptium.gpg > /dev/null \
-    && echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends temurin-8-jre \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
+# 根据基础镜像发行版选择包管理器：trixie-slim 走 apt-get，alpine 走 apk
+# alpine 上没有 netcat-openbsd / iputils-ping / dnsutils / iproute2 这些 Debian 包名，
+# 但存在功能等价的 apk 包（busybox 已内置 ping/nslookup，需要额外安装 netcat-openbsd / iproute2 / bind-tools）
+RUN if [ -f /etc/debian_version ]; then \
+        apt-get update && \
+        apt-get install -y --no-install-recommends \
+            ca-certificates \
+            gnupg \
+            wget \
+            openssl \
+            netcat-openbsd \
+            iputils-ping \
+            dnsutils \
+            iproute2 \
+        && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /usr/share/keyrings/adoptium.gpg > /dev/null \
+        && echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends temurin-8-jre \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/*; \
+    elif [ -f /etc/alpine-release ]; then \
+        apk add --no-cache \
+            openssl \
+            openjdk8-jre \
+    else \
+        echo "Unsupported base image"; exit 1; \
+    fi
 
 WORKDIR /app/
 
@@ -73,6 +64,8 @@ RUN ARCH=$(uname -m) && \
         wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_amd64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_amd64.tar.gz; \
     elif [ "$ARCH" = "aarch64" ]; then \
         wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_arm64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_arm64.tar.gz; \
+    elif [ "$ARCH" = "armv7l" ] || [ "$ARCH" = "arm" ]; then \
+        wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_arm.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_arm.tar.gz; \
     else \
         echo "Unsupported architecture: $ARCH"; \
     fi
@@ -84,7 +77,6 @@ ENV MIDWAY_SERVER_ENV=production
 COPY --from=builder /workspace/certd-server/ /app/
 COPY ./patch/ssh2/*.js /app/node_modules/.pnpm/node_modules/ssh2/lib/protocol/
 CMD ["node", "--optimize-for-size", "./bootstrap.js"]
-
 
 
 
