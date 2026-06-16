@@ -19,12 +19,11 @@ FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT}
 EXPOSE 7001
 EXPOSE 7002
 
-# 根据基础镜像发行版选择包管理器：trixie-slim 走 apt-get，alpine 走 apk
-# alpine 上没有 netcat-openbsd / iputils-ping / dnsutils / iproute2 这些 Debian 包名，
-# 但存在功能等价的 apk 包（busybox 已内置 ping/nslookup，需要额外安装 netcat-openbsd / iproute2 / bind-tools）
+# 根据基础镜像发行版选择包管理器
+# trixie-slim -> apt-get, alpine -> apk
 RUN if [ -f /etc/debian_version ]; then \
-        apt-get update && \
-        apt-get install -y --no-install-recommends \
+        apt-get update \
+        && apt-get install -y --no-install-recommends \
             ca-certificates \
             gnupg \
             wget \
@@ -42,14 +41,14 @@ RUN if [ -f /etc/debian_version ]; then \
     elif [ -f /etc/alpine-release ]; then \
         apk add --no-cache \
             openssl \
-            openjdk8-jre \
+            openjdk8-jre; \
     else \
         echo "Unsupported base image"; exit 1; \
     fi
 
 WORKDIR /app/
 
-ENV TERM xterm
+ENV TERM=xterm
 ENV LEGO_VERSION=4.30.1
 ENV LEGO_DOWNLOAD_DIR=/app/tools/lego
 
@@ -77,6 +76,3 @@ ENV MIDWAY_SERVER_ENV=production
 COPY --from=builder /workspace/certd-server/ /app/
 COPY ./patch/ssh2/*.js /app/node_modules/.pnpm/node_modules/ssh2/lib/protocol/
 CMD ["node", "--optimize-for-size", "./bootstrap.js"]
-
-
-
