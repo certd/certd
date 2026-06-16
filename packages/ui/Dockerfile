@@ -1,7 +1,7 @@
 # 根据目标平台选择基础镜像：amd64/arm64 用 trixie-slim，arm/v7 没有 trixie-slim 发布，回退到 alpine
 FROM --platform=linux/amd64 node:22-trixie-slim AS base-amd64
 FROM --platform=linux/arm64 node:22-trixie-slim AS base-arm64
-FROM --platform=linux/arm/v7 node:22-alpine AS base-armv7
+FROM --platform=linux/arm/v7 node:22-alpine AS base-arm-v7
 
 FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT} AS builder
 
