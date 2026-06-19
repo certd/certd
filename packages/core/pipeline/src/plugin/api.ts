@@ -46,6 +46,8 @@ export type PluginDefine = Registrable & {
   default?: any;
   group?: string;
   icon?: string;
+  dependPlugins?: Record<string, string>;
+  dependPackages?: Record<string, string>;
   input?: {
     [key: string]: TaskInputDefine;
   };
@@ -73,6 +75,8 @@ export type ITaskPlugin = {
   onInstance(): Promise<void>;
   execute(): Promise<void | string>;
   onRequest(req: PluginRequestHandleReq<any>): Promise<any>;
+  setCtx(ctx: TaskInstanceContext): Promise<void>;
+  importRuntime?(specifier: string): Promise<any>;
   [key: string]: any;
 };
 
@@ -146,6 +150,17 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
   logger!: ILogger;
   http!: HttpClient;
   accessService!: IAccessService;
+  runtimeDepsService?: {
+    ensureRuntimeDependencies(pluginKeys: string | string[]): Promise<any>;
+    importRuntime(specifier: string): Promise<any>;
+  };
+
+  async importRuntime(specifier: string) {
+    if (!this.runtimeDepsService) {
+      return await import(specifier);
+    }
+    return await this.runtimeDepsService.importRuntime(specifier);
+  }
 
   clearLastStatus() {
     this._result.clearLastStatus = true;
@@ -161,11 +176,17 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
     }
   }
 
-  setCtx(ctx: TaskInstanceContext) {
+  async setCtx(ctx: TaskInstanceContext) {
     this.ctx = ctx;
     this.logger = ctx.logger;
     this.accessService = ctx.accessService;
     this.http = ctx.http;
+    if (!this.runtimeDepsService && this.ctx.serviceGetter) {
+      this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
+    }
+    if (this.runtimeDepsService && this.ctx.define?.name) {
+      await this.runtimeDepsService.ensureRuntimeDependencies(`plugin:${this.ctx.define.name}`);
+    }
     // 将证书加入secret
     // @ts-ignore
     if (this.cert && this.cert.crt && this.cert.key) {

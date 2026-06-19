@@ -7,6 +7,7 @@ import { NotificationInstanceConfig, notificationRegistry, NotificationSendReq, 
 import { http, utils } from "@certd/basic";
 import { EmailService } from "../../basic/service/email-service.js";
 import { isComm, isPlus } from "@certd/plus-core";
+import { TaskServiceBuilder } from "./getter/task-service-getter.js";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -19,6 +20,9 @@ export class NotificationService extends BaseService<NotificationEntity> {
 
   @Inject()
   sysSettingsService: SysSettingsService;
+
+  @Inject()
+  taskServiceBuilder: TaskServiceBuilder;
 
   //@ts-ignore
   getRepository() {
@@ -199,6 +203,7 @@ export class NotificationService extends BaseService<NotificationEntity> {
           logger: logger,
           utils: utils,
           emailService: this.emailService,
+          serviceGetter: this.taskServiceBuilder.create({ userId, projectId }),
         },
         body: req.body,
       });

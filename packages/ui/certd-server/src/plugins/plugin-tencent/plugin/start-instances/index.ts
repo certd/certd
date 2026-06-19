@@ -8,6 +8,9 @@ import { TencentAccess } from "../../../plugin-lib/tencent/access.js";
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "腾讯云实例开关机",
+  dependPlugins: {
+    "access:tencent": "*",
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.AlwaysRun,
@@ -137,7 +140,7 @@ export class TencentActionInstancesPlugin extends AbstractTaskPlugin {
 
   async getCvmClient() {
     const accessProvider = await this.getAccess<TencentAccess>(this.accessId);
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/cvm/v20170312/index.js");
+    const sdk = await this.importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/cvm/v20170312/index.js");
     const CvmClient = sdk.v20170312.Client;
 
     if (!this.region) {

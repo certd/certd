@@ -11,6 +11,9 @@ import { TencentSslClient } from "../../../plugin-lib/tencent/index.js";
   icon: "svg:icon-tencentcloud",
   desc: "腾讯云边缘安全加速平台EdgeOne(EO)",
   group: pluginGroups.tencent.key,
+  dependPlugins: {
+    "access:tencent": "*",
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -85,7 +88,7 @@ export class DeployCertToTencentEO extends AbstractTaskPlugin {
   Client: any;
 
   async onInstance() {
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/teo/v20220901/index.js");
+    const sdk = await (this as any).importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/teo/v20220901/index.js");
     this.Client = sdk.v20220901.Client;
   }
 

@@ -44,7 +44,7 @@ export class AliyunSmsService implements ISmsService {
 
   ctx: SmsPluginCtx<AliyunSmsConfig>;
 
-  setCtx(ctx: any) {
+  async setCtx(ctx: any) {
     this.ctx = ctx;
   }
 

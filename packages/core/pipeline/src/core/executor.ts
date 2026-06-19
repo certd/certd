@@ -387,7 +387,7 @@ export class Executor {
       }),
       serviceGetter: this.options.serviceGetter,
     };
-    instance.setCtx(taskCtx);
+    await instance.setCtx(taskCtx);
 
     await instance.onInstance();
     const result = await instance.execute();

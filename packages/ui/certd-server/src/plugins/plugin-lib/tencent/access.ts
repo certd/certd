@@ -1,11 +1,16 @@
 import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
 
-@IsAccess({
+const tencentAccessDefine: any = {
   name: "tencent",
   title: "腾讯云",
   icon: "svg:icon-tencentcloud",
   order: 0,
-})
+  dependPackages: {
+    "tencentcloud-sdk-nodejs": "^4.1.112",
+  },
+};
+
+@IsAccess(tencentAccessDefine)
 export class TencentAccess extends BaseAccess {
   @AccessInput({
     title: "secretId",
@@ -104,7 +109,7 @@ export class TencentAccess extends BaseAccess {
   }
 
   async getStsClient() {
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/sts/v20180813/index.js");
+    const sdk = await (this as any).importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/sts/v20180813/index.js");
     const StsClient = sdk.v20180813.Client;
 
     const clientConfig = {

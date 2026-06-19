@@ -87,7 +87,7 @@ export class CommonDnsProvider implements IDnsProvider {
     return res;
   }
 
-  setCtx(ctx: DnsProviderContext): void {
+  async setCtx(ctx: DnsProviderContext): Promise<void> {
     this.ctx = ctx;
   }
 }

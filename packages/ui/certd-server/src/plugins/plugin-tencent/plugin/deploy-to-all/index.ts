@@ -9,6 +9,9 @@ import { TencentSslClient } from "../../../plugin-lib/tencent/index.js";
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "支持负载均衡、CDN、DDoS、直播、点播、Web应用防火墙、API网关、TEO、容器服务、对象存储、轻应用服务器、云原生微服务、云开发",
+  dependPlugins: {
+    "access:tencent": "*",
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -108,7 +111,7 @@ export class DeployCertToTencentAll extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const access = await this.getAccess(this.accessId);
 
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js");
+    const sdk = await (this as any).importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js");
     const Client = sdk.v20191205.Client;
     const client = new Client({
       credential: {

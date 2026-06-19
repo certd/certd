@@ -7,6 +7,17 @@ export abstract class AbstractDnsProvider<T = any> implements IDnsProvider<T> {
   ctx!: DnsProviderContext;
   http!: HttpClient;
   logger!: ILogger;
+  runtimeDepsService?: {
+    ensureRuntimeDependencies(pluginKeys: string | string[]): Promise<any>;
+    importRuntime(specifier: string): Promise<any>;
+  };
+
+  async importRuntime(specifier: string) {
+    if (!this.runtimeDepsService) {
+      return await import(specifier);
+    }
+    return await this.runtimeDepsService.importRuntime(specifier);
+  }
 
   usePunyCode(): boolean {
     //是否使用punycode来添加解析记录
@@ -30,10 +41,16 @@ export abstract class AbstractDnsProvider<T = any> implements IDnsProvider<T> {
     return punycode.toUnicode(domain);
   }
 
-  setCtx(ctx: DnsProviderContext) {
+  async setCtx(ctx: DnsProviderContext) {
     this.ctx = ctx;
     this.logger = ctx.logger;
     this.http = ctx.http;
+    if (!this.runtimeDepsService && this.ctx.serviceGetter) {
+      this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
+    }
+    if (this.runtimeDepsService && this.ctx.define?.name) {
+      await this.runtimeDepsService.ensureRuntimeDependencies(`dnsProvider:${this.ctx.define.name}`);
+    }
   }
 
   async parseDomain(fullDomain: string) {
@@ -68,9 +85,10 @@ export async function createDnsProvider(opts: { dnsProviderType: string; context
     const accessGetter: IAccessService = await context.serviceGetter.get("accessService");
     context.accessGetter = accessGetter;
   }
+  context.define = dnsProviderDefine;
   // @ts-ignore
   const dnsProvider: IDnsProvider = new DnsProviderClass();
-  dnsProvider.setCtx(context);
+  await dnsProvider.setCtx(context);
   await dnsProvider.onInstance();
   return dnsProvider;
 }

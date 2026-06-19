@@ -68,12 +68,20 @@ export class TencentSmsService implements ISmsService {
 
   ctx: SmsPluginCtx<TencentSmsConfig>;
 
-  setCtx(ctx: any) {
+  async setCtx(ctx: any) {
     this.ctx = ctx;
+    if (this.ctx.runtimeDepsService) {
+      await this.ctx.runtimeDepsService.ensureDependencies({
+        "tencentcloud-sdk-nodejs": "^4.1.112",
+      });
+    }
   }
 
   async getClient() {
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/sms/v20210111/index.js");
+    if (!this.ctx.runtimeDepsService) {
+      throw new Error("动态依赖服务未初始化，无法加载腾讯云短信SDK");
+    }
+    const sdk = await this.ctx.runtimeDepsService.importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/sms/v20210111/index.js");
     const client = sdk.v20210111.Client;
     const access = await this.ctx.accessService.getById<TencentAccess>(this.ctx.config.accessId);
 

@@ -61,7 +61,8 @@ export async function newNotification(type: string, input: any, ctx: Notificatio
     throw new Error("ctx is required");
   }
   plugin.setDefine(register.define);
-  plugin.setCtx(ctx);
+  ctx.define = ctx.define || register.define;
+  await plugin.setCtx(ctx);
   await plugin.onInstance();
   return plugin;
 }

@@ -13,6 +13,7 @@ import { CertInfoGetter } from "./cert-info-getter.js";
 import { CertInfoService } from "../../../monitor/index.js";
 import { ICertInfoGetter } from "@certd/plugin-lib";
 import { CnameProviderService } from "../../../cname/service/cname-provider-service.js";
+import { RuntimeDepsService } from "../../../runtime-deps/runtime-deps-service.js";
 
 const serviceNames = ["ocrService"];
 export class TaskServiceGetter implements IServiceGetter {
@@ -38,6 +39,8 @@ export class TaskServiceGetter implements IServiceGetter {
       return (await this.getDomainVerifierGetter()) as T;
     } else if (serviceName === "certInfoGetter") {
       return (await this.getCertInfoGetter()) as T;
+    } else if (serviceName === "runtimeDepsService") {
+      return (await this.getRuntimeDepsService()) as T;
     } else {
       if (!serviceNames.includes(serviceName)) {
         throw new Error(`${serviceName} not in whitelist`);
@@ -63,7 +66,9 @@ export class TaskServiceGetter implements IServiceGetter {
 
   async getAccessService(): Promise<AccessGetter> {
     const accessService: AccessService = await this.appCtx.getAsync("accessService");
-    return new AccessGetter(this.userId, this.projectId, accessService.getById.bind(accessService));
+    const runtimeDepsService = await this.getRuntimeDepsService();
+    const getAccessById = accessService.getById.bind(accessService);
+    return new AccessGetter(this.userId, this.projectId, getAccessById, runtimeDepsService);
   }
 
   async getCnameProxyService(): Promise<CnameProxyService> {
@@ -79,6 +84,10 @@ export class TaskServiceGetter implements IServiceGetter {
   async getDomainVerifierGetter(): Promise<DomainVerifierGetter> {
     const domainService: DomainService = await this.appCtx.getAsync("domainService");
     return new DomainVerifierGetter(this.userId, this.projectId, domainService);
+  }
+
+  async getRuntimeDepsService(): Promise<RuntimeDepsService> {
+    return await this.appCtx.getAsync("runtimeDepsService");
   }
 }
 @Provide()

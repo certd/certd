@@ -8,6 +8,9 @@ import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "暂时只支持单向认证证书，暂时只支持通用负载均衡",
+  dependPlugins: {
+    "access:tencent": "*",
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -106,7 +109,7 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
   }
 
   async getClient() {
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/clb/v20180317/index.js");
+    const sdk = await (this as any).importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/clb/v20180317/index.js");
     const ClbClient = sdk.v20180317.Client;
 
     const accessProvider = (await this.getAccess(this.accessId)) as TencentAccess;

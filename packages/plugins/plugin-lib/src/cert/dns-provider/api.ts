@@ -4,6 +4,8 @@ import { IAccess, IAccessService, IServiceGetter, PageRes, PageSearch, Registrab
 export type DnsProviderDefine = Registrable & {
   accessType: string;
   icon?: string;
+  dependPlugins?: Record<string, string>;
+  dependPackages?: Record<string, string>;
 };
 
 export type CreateRecordOptions = {
@@ -27,6 +29,7 @@ export type DnsProviderContext = {
   domainParser: IDomainParser;
   serviceGetter: IServiceGetter;
   accessGetter?: IAccessService;
+  define?: DnsProviderDefine;
 };
 
 export type DomainRecord = {
@@ -61,7 +64,7 @@ export interface IDnsProvider<T = any> {
 
   removeRecord(options: RemoveRecordOptions<T>): Promise<void>;
 
-  setCtx(ctx: DnsProviderContext): void;
+  setCtx(ctx: DnsProviderContext): Promise<void>;
 
   //中文域名是否需要punycode转码，如果返回True，则使用punycode来添加解析记录，否则使用中文域名添加解析记录
   usePunyCode(): boolean;

@@ -8,6 +8,7 @@ import { TaskServiceBuilder } from "../../../modules/pipeline/service/getter/tas
 import { cloneDeep } from "lodash-es";
 import { ApiTags } from "@midwayjs/swagger";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
+import { RuntimeDepsService } from "../../../modules/runtime-deps/runtime-deps-service.js";
 
 @Provide()
 @Controller("/api/pi/handle")
@@ -27,6 +28,9 @@ export class HandleController extends BaseController {
 
   @Inject()
   notificationService: NotificationService;
+
+  @Inject()
+  runtimeDepsService: RuntimeDepsService;
 
   @Post("/access", { description: Constants.per.authOnly, summary: "处理授权请求" })
   async accessRequest(@Body(ALL) body: AccessRequestHandleReq) {
@@ -59,8 +63,16 @@ export class HandleController extends BaseController {
         inputAccess = this.accessService.decryptAccessEntity(param);
       }
     }
-    const accessGetter = new AccessGetter(userId, projectId, this.accessService.getById.bind(this.accessService));
-    const access = await newAccess(body.typeName, inputAccess, accessGetter);
+    const getAccessById = this.accessService.getById.bind(this.accessService);
+    const accessGetter = new AccessGetter(userId, projectId, getAccessById, this.runtimeDepsService);
+    const accessContext = {
+      http,
+      logger,
+      utils,
+      accessService: accessGetter,
+      define: undefined,
+    } as any;
+    const access = await newAccess(body.typeName, inputAccess, accessGetter, accessContext);
 
     // mergeUtils.merge(access, body.input);
     const res = await access.onRequest(body);
@@ -70,14 +82,17 @@ export class HandleController extends BaseController {
 
   @Post("/notification", { description: Constants.per.authOnly, summary: "处理通知请求" })
   async notificationRequest(@Body(ALL) body: NotificationRequestHandleReq) {
+    const { projectId, userId } = await this.getProjectUserIdRead();
     const input = body.input;
+    const serviceGetter = this.taskServiceBuilder.create({ userId, projectId });
 
     const notification = await newNotification(body.typeName, input, {
       http,
       logger,
       utils,
       emailService: this.emailService,
-    });
+      serviceGetter,
+    } as any);
 
     const res = await notification.onRequest(body);
 
@@ -138,8 +153,8 @@ export class HandleController extends BaseController {
       // signal: this.abort.signal,
       utils,
       serviceGetter: taskServiceGetter,
-    };
-    instance.setCtx(taskCtx);
+    } as any;
+    await instance.setCtx(taskCtx);
     mergeUtils.merge(plugin, body.input);
     await instance.onInstance();
     const res = await plugin.onRequest(body);

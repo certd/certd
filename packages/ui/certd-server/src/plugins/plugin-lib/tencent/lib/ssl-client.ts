@@ -15,7 +15,7 @@ export class TencentSslClient {
     this.region = opts.region;
   }
   async getSslClient(): Promise<any> {
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js");
+    const sdk = await this.access.importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js");
     const SslClient = sdk.v20191205.Client;
 
     const clientConfig = {
