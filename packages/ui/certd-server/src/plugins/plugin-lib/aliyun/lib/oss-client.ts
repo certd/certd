@@ -17,7 +17,7 @@ export class AliossClient {
       return;
     }
     // @ts-ignore
-    const OSS = await import("ali-oss");
+    const OSS = await this.access.importRuntime("ali-oss");
     const ossClient = new OSS.default({
       accessKeyId: this.access.accessKeyId,
       accessKeySecret: this.access.accessKeySecret,

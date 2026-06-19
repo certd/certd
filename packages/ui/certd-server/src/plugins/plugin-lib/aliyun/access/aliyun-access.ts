@@ -45,7 +45,7 @@ export class AliyunAccess extends BaseAccess {
   }
 
   async getStsClient() {
-    const StsClient = await import("@alicloud/sts-sdk");
+    const StsClient = await this.importRuntime("@alicloud/sts-sdk");
 
     // 配置凭证
     const sts = new StsClient.default({

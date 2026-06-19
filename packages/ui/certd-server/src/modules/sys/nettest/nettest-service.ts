@@ -41,10 +41,7 @@ export class NetTestService {
 
       // 判断测试是否成功
       const normalizedOutput = output.toLowerCase();
-      const success = this.isWindows()
-        ? normalizedOutput.includes("端口连接成功")
-        : normalizedOutput.includes("succeeded!") || normalizedOutput.includes("connected to") || normalizedOutput.includes(" open");
-
+      const success = this.isWindows() ? normalizedOutput.includes("端口连接成功") : normalizedOutput.includes("succeeded!") || normalizedOutput.includes("connected to") || normalizedOutput.includes(" open");
 
       // 处理结果
       return {

@@ -16,7 +16,9 @@
     "preview": "vite preview",
     "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
     "pub": "npm publish",
-    "compile": "npm run build"
+    "compile": "npm run build",
+    "format": "prettier --write src",
+    "lint": "eslint --fix"
   },
   "dependencies": {
     "nanoid": "^4.0.0"

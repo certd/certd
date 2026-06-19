@@ -1,14 +1,17 @@
 import { getGlobalAgents, ILogger } from "@certd/basic";
+import { ImportRuntime } from "@certd/pipeline";
 
 export class AliyunClient {
   client: any;
   logger: ILogger;
   agent: any;
   useROAClient: boolean;
+  importRuntime: ImportRuntime;
 
-  constructor(opts: { logger: ILogger; useROAClient?: boolean }) {
+  constructor(opts: { logger: ILogger; useROAClient?: boolean; importRuntime?: ImportRuntime }) {
     this.logger = opts.logger;
     this.useROAClient = opts.useROAClient || false;
+    this.importRuntime = opts.importRuntime || (async (specifier: string) => await import(specifier));
     const agents = getGlobalAgents();
     this.agent = agents.httpsAgent;
   }
@@ -17,13 +20,12 @@ export class AliyunClient {
     if (this.useROAClient) {
       return await this.getROAClient();
     }
-    const Core = await import("@alicloud/pop-core");
+    const Core = await this.importRuntime("@alicloud/pop-core");
     return Core.default;
   }
 
   async getROAClient() {
-    const Core = await import("@alicloud/pop-core");
-    console.log("aliyun sdk", Core);
+    const Core = await this.importRuntime("@alicloud/pop-core");
     // @ts-ignore
     return Core.ROAClient;
   }

@@ -9,6 +9,7 @@ import { NpmRegistryResolver } from "./npm-registry-resolver.js";
 import { Registry, accessRegistry, notificationRegistry, pluginRegistry } from "@certd/pipeline";
 import { dnsProviderRegistry } from "@certd/plugin-lib";
 import { addonRegistry } from "@certd/lib-server";
+import { logger, ILogger } from "@certd/basic";
 
 export type RuntimeDependencyPluginDefine = {
   name: string;
@@ -72,12 +73,14 @@ type CommandRunnerResult = {
 };
 
 type CommandRunner = {
+  // @ts-ignore
   run(command: string, args: string[], options: { cwd: string; timeoutMs: number; env?: NodeJS.ProcessEnv }): Promise<CommandRunnerResult>;
 };
 
 const PROCESS_LOCKS = new Map<string, Promise<unknown>>();
 
 class DefaultCommandRunner implements CommandRunner {
+  // @ts-ignore
   async run(command: string, args: string[], options: { cwd: string; timeoutMs: number; env?: NodeJS.ProcessEnv }): Promise<CommandRunnerResult> {
     return await new Promise<CommandRunnerResult>(resolve => {
       let stdout = "";
@@ -87,6 +90,7 @@ class DefaultCommandRunner implements CommandRunner {
         cwd: options.cwd,
         env: options.env,
         windowsHide: true,
+        // @ts-ignore
         shell: process.platform === "win32",
       });
 
@@ -182,18 +186,18 @@ export class RuntimeDepsService {
     return { dependencies: merged, conflicts };
   }
 
-  async ensureInstalled(plugins: RuntimeDependencyPluginDefine[]): Promise<InstallResult> {
+  async ensureInstalled(options: { plugins: RuntimeDependencyPluginDefine[]; logger?: ILogger }): Promise<InstallResult> {
+    const { plugins, logger: log } = options;
     const { dependencies, conflicts } = this.resolveDependenciesFromPlugins(plugins);
     if (conflicts.length > 0) {
       const conflict = conflicts[0];
-      throw new Error(
-        `动态依赖版本冲突: ${conflict.packageName} => ${conflict.ranges.map(item => `${item.pluginName}:${item.range}`).join(", ")}`
-      );
+      throw new Error(`动态依赖版本冲突: ${conflict.packageName} => ${conflict.ranges.map(item => `${item.pluginName}:${item.range}`).join(", ")}`);
     }
-    return await this.ensureDependencies(dependencies);
+    return await this.ensureDependencies({ dependencies, logger: log });
   }
 
-  async ensureDependencies(dependencies: Record<string, string>): Promise<InstallResult> {
+  async ensureDependencies(options: { dependencies: Record<string, string>; logger?: ILogger }): Promise<InstallResult> {
+    const { dependencies, logger: log } = options;
     if (!this.enabled) {
       return {
         registryUrl: "",
@@ -209,7 +213,7 @@ export class RuntimeDepsService {
     const dependenciesHash = this.createDependenciesHash(dependencies);
     let installPromise = this.installPromises.get(dependenciesHash);
     if (!installPromise) {
-      installPromise = this.doEnsureInstalled(dependencies).catch(error => {
+      installPromise = this.doEnsureInstalled({ dependencies, logger: log }).catch(error => {
         this.installPromises.delete(dependenciesHash);
         throw error;
       });
@@ -223,7 +227,8 @@ export class RuntimeDepsService {
     return this.collectDependencies(expandedPlugins);
   }
 
-  async ensureRuntimeDependencies(pluginKeys: string | string[]): Promise<InstallResult> {
+  async ensureRuntimeDependencies(options: { pluginKeys: string | string[]; logger?: ILogger }): Promise<InstallResult> {
+    const { pluginKeys, logger: log } = options;
     const keys = Array.isArray(pluginKeys) ? pluginKeys : [pluginKeys];
     const pluginDefines = keys.map(pluginKey => this.getDefineByPluginKey(pluginKey));
     if (pluginDefines.every(pluginDefine => !pluginDefine.dependPackages && !pluginDefine.dependPlugins)) {
@@ -233,19 +238,23 @@ export class RuntimeDepsService {
       };
     }
     const expandedPluginDefines = pluginDefines.flatMap(pluginDefine => this.resolvePluginDependencies(pluginDefine));
-    return await this.ensureInstalled(expandedPluginDefines);
+    return await this.ensureInstalled({ plugins: expandedPluginDefines, logger: log });
   }
 
-  private async doEnsureInstalled(dependencies: Record<string, string>): Promise<InstallResult> {
+  private async doEnsureInstalled(options: { dependencies: Record<string, string>; logger?: ILogger }): Promise<InstallResult> {
+    let { dependencies } = options;
+    const log = options.logger || logger;
     return await this.withInstallLock(async () => {
       const rootDir = this.getRuntimeDepsRootDir();
       const packageJsonPath = path.join(rootDir, "package.json");
       const lockPath = path.join(rootDir, "pnpm-lock.yaml");
+      log.info(`第三方依赖安装: ${JSON.stringify(dependencies)}`);
       dependencies = this.mergeInstalledDependencies(this.readManifestDependencies(packageJsonPath), dependencies);
       const dependenciesHash = this.createDependenciesHash(dependencies);
       const statePath = path.join(rootDir, "install-state.json");
       const currentState = this.readInstallState(statePath);
       if (currentState?.dependenciesHash === dependenciesHash && fs.existsSync(path.join(rootDir, "node_modules"))) {
+        log.info("第三方依赖已安装");
         return { registryUrl: currentState.registryUrl || "", packageJsonPath };
       }
       const manifest = {
@@ -260,10 +269,12 @@ export class RuntimeDepsService {
       const env = this.buildChildEnv(registryUrl);
       const command = this.getPnpmCommand();
       const pnpmVersion = await this.getPnpmVersion(command, env);
-      const args = ["install", "--prod", "--ignore-scripts", "--ignore-workspace", "--reporter=append-only"];
+      const args = ["install", "--prod", "--ignore-scripts", "--ignore-workspace", "--no-frozen-lockfile", "--reporter=append-only"];
       if (registryUrl) {
         args.push(`--registry=${registryUrl}`);
       }
+
+      log.info(`开始安装第三方依赖: ${Object.keys(dependencies).join(", ")}`);
       const result = await this.commandRunner.run(command, args, {
         cwd: rootDir,
         timeoutMs: this.installTimeoutMs,
@@ -277,6 +288,7 @@ export class RuntimeDepsService {
           failedAt: new Date().toISOString(),
           registryUrl,
           dependenciesHash,
+          // @ts-ignore
           nodeVersion: process.version,
           pnpmVersion,
           lockFileExists: fs.existsSync(lockPath),
@@ -288,35 +300,37 @@ export class RuntimeDepsService {
         installedAt: new Date().toISOString(),
         registryUrl,
         dependenciesHash,
+        // @ts-ignore
         nodeVersion: process.version,
         pnpmVersion,
         lockFileExists: fs.existsSync(lockPath),
       });
+      log.info("第三方依赖安装完成");
       return { registryUrl, packageJsonPath };
     });
   }
 
-  async importRuntime(specifier: string) {
+  async importRuntime(specifier: string,logger?:ILogger) {
     if (this.isNativeImportSpecifier(specifier)) {
       return await import(specifier);
     }
 
-    const resolved = await this.resolveImportSpecifier(specifier);
+    const resolved = await this.resolveImportSpecifier(specifier,logger);
     return await import(pathToFileURL(resolved).href);
   }
 
-  private async resolveImportSpecifier(specifier: string) {
+  private async resolveImportSpecifier(specifier: string,logger?:ILogger) {
     try {
       return this.resolveRuntimeSpecifier(specifier).resolved;
     } catch (runtimeError: any) {
       if (!this.isModuleNotFoundError(runtimeError)) {
         throw runtimeError;
       }
-      return await this.resolveMissingRuntimeSpecifier(specifier, runtimeError);
+      return await this.resolveMissingRuntimeSpecifier(specifier, runtimeError,logger);
     }
   }
 
-  private async resolveMissingRuntimeSpecifier(specifier: string, runtimeError: any) {
+  private async resolveMissingRuntimeSpecifier(specifier: string, runtimeError: any,logger?:ILogger) {
     const packageName = this.parsePackageName(specifier);
     const lazyRange = this.lazyDependencies?.[packageName];
     if (!lazyRange) {
@@ -327,7 +341,7 @@ export class RuntimeDepsService {
       }
     }
     try {
-      await this.ensureLazyDependency(packageName);
+      await this.ensureLazyDependency(packageName,logger);
       return this.resolveRuntimeSpecifier(specifier).resolved;
     } catch (lazyError: any) {
       return this.resolveProjectSpecifier(specifier, lazyError).resolved;
@@ -378,7 +392,7 @@ export class RuntimeDepsService {
     return parts[0];
   }
 
-  private async ensureLazyDependency(packageName: string) {
+  private async ensureLazyDependency(packageName: string,logger?:ILogger) {
     const range = this.lazyDependencies?.[packageName];
     if (!range) {
       throw new Error(`动态依赖未安装且未配置懒加载版本: ${packageName}`);
@@ -386,7 +400,7 @@ export class RuntimeDepsService {
     const dependencies = {
       [packageName]: range,
     };
-    await this.ensureDependencies(dependencies);
+    await this.ensureDependencies({ dependencies,logger });
   }
 
   private isModuleNotFoundError(error: any) {
@@ -485,6 +499,7 @@ export class RuntimeDepsService {
     while (true) {
       try {
         const fd = fs.openSync(lockFile, "wx");
+        // @ts-ignore
         fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, createdAt: new Date().toISOString() }), "utf8");
         return fd;
       } catch (error: any) {
@@ -506,6 +521,28 @@ export class RuntimeDepsService {
       }
       await new Promise(resolve => setTimeout(resolve, 300));
     }
+  }
+
+  async clearRuntimeDeps() {
+    const rootDir = this.getRuntimeDepsRootDir();
+    const normalizedRootDir = path.normalize(rootDir);
+    if (!normalizedRootDir.endsWith(path.normalize(".runtime-deps"))) {
+      throw new Error(`动态依赖目录配置异常，拒绝清理: ${rootDir}`);
+    }
+    await this.withInstallLock(async () => {
+      if (fs.existsSync(rootDir)) {
+        const entries = fs.readdirSync(rootDir);
+        for (const entry of entries) {
+          if (entry === ".install.lock") {
+            continue;
+          }
+          const entryPath = path.join(rootDir, entry);
+          fs.rmSync(entryPath, { recursive: true, force: true });
+        }
+      }
+      this.installPromises.clear();
+      return undefined;
+    });
   }
 
   private readInstallState(statePath: string): any {
@@ -547,6 +584,7 @@ export class RuntimeDepsService {
     return dependencies;
   }
 
+  // @ts-ignore
   private async getPnpmVersion(command: string, env: NodeJS.ProcessEnv) {
     const rootDir = this.getRuntimeDepsRootDir();
     const result = await this.commandRunner.run(command, ["--version"], {
@@ -568,6 +606,7 @@ export class RuntimeDepsService {
   }
 
   private buildChildEnv(registryUrl: string) {
+    // @ts-ignore
     const env = { ...process.env };
     for (const key of ["NODE_OPTIONS", "VSCODE_INSPECTOR_OPTIONS", "NODE_INSPECTOR_PORT", "NODE_DEBUG"]) {
       if (!env[key]) {

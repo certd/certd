@@ -231,7 +231,7 @@ export class DeployCertToAliyunApig extends AbstractTaskPlugin {
     return {
       list: records,
       total: res?.data?.totalSize || 0,
-    }
+    };
   }
 
   async onGetRegionList(data: any) {

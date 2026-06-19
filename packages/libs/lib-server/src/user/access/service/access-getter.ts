@@ -1,9 +1,6 @@
-import { IAccessService } from "@certd/pipeline";
+import { IAccessService, IRuntimeDepsService } from "@certd/pipeline";
 
-export type AccessRuntimeDepsService = {
-  ensureRuntimeDependencies(pluginKeys: string | string[]): Promise<any>;
-  importRuntime(specifier: string): Promise<any>;
-};
+export type AccessRuntimeDepsService = IRuntimeDepsService;
 
 export class AccessGetter implements IAccessService {
   userId: number;

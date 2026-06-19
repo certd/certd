@@ -36,10 +36,10 @@ export class DynadotDnsProvider extends AbstractDnsProvider<DynadotRecord> {
           record_type: type.toLowerCase(),
           record_value1: value,
           record_value2: "",
-        }
-      ]
+        },
+      ];
 
-      await this.postRecords(domain, {subRecords, mainRecords: [], addToCurrent: true});
+      await this.postRecords(domain, { subRecords, mainRecords: [], addToCurrent: true });
 
       this.logger.info("添加域名解析成功：", fullRecord, value);
       return {
@@ -79,8 +79,8 @@ export class DynadotDnsProvider extends AbstractDnsProvider<DynadotRecord> {
           record_type: "txt",
           record_value1: "init_txt_by_certd",
           record_value2: "",
-        }
-      ]
+        },
+      ];
     }
 
     await this.postRecords(domain, {
@@ -132,7 +132,7 @@ export class DynadotDnsProvider extends AbstractDnsProvider<DynadotRecord> {
     return { mainRecords, subRecords };
   }
 
-  private async postRecords(domain: string, records: { mainRecords: MainRecordItem[]; subRecords: SubRecordItem[] ,addToCurrent: boolean}): Promise<void> {
+  private async postRecords(domain: string, records: { mainRecords: MainRecordItem[]; subRecords: SubRecordItem[]; addToCurrent: boolean }): Promise<void> {
     await this.access.doRequest({
       method: "POST",
       path: `/restful/v2/domains/${domain}/records`,

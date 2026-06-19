@@ -4,6 +4,7 @@ import {
   accessRegistry,
   FormItemProps,
   IAccessService,
+  IRuntimeDepsService,
   IServiceGetter,
   PluginRequestHandleReq,
   Registrable
@@ -66,25 +67,19 @@ export abstract class BaseAddon implements IAddon {
   ctx!: AddonContext;
   http!: HttpClient;
   logger!: ILogger;
-  runtimeDepsService?: {
-    ensureRuntimeDependencies(pluginKeys: string | string[]): Promise<any>;
-    importRuntime(specifier: string): Promise<any>;
-  };
+  runtimeDepsService?: IRuntimeDepsService;
 
   async importRuntime(specifier: string) {
     if (!this.runtimeDepsService) {
       return await import(specifier);
     }
-    return await this.runtimeDepsService.importRuntime(specifier);
+    return await this.runtimeDepsService.importRuntime(specifier, this.logger);
   }
 
   title!: string;
 
-
-
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   async onInstance() {}
-
 
   async getAccess<T = any>(accessId: string | number, isCommon = false) {
     if (accessId == null) {
@@ -119,7 +114,6 @@ export abstract class BaseAddon implements IAddon {
     return res as T;
   }
 
-
   async setCtx(ctx: AddonContext) {
     this.ctx = ctx;
     this.http = ctx.http;
@@ -128,7 +122,7 @@ export abstract class BaseAddon implements IAddon {
       this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
     }
     if (this.runtimeDepsService && this.define?.addonType && this.define?.name) {
-      await this.runtimeDepsService.ensureRuntimeDependencies(`addon:${this.define.addonType}:${this.define.name}`);
+      await this.runtimeDepsService.ensureRuntimeDependencies({ pluginKeys: `addon:${this.define.addonType}:${this.define.name}`, logger: this.logger });
     }
   }
   setDefine = (define:AddonDefine) => {

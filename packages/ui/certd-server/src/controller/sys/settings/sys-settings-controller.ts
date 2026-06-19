@@ -7,6 +7,7 @@ import { getEmailSettings } from "../../../modules/sys/settings/fix.js";
 import { http, logger, utils } from "@certd/basic";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { SmsServiceFactory } from "../../../modules/basic/sms/factory.js";
+import { RuntimeDepsService } from "../../../modules/runtime-deps/runtime-deps-service.js";
 
 /**
  */
@@ -23,6 +24,8 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   codeService: CodeService;
   @Inject()
   addonService: AddonService;
+  @Inject()
+  runtimeDepsService: RuntimeDepsService;
 
   getService() {
     return this.service;
@@ -215,5 +218,11 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   async oauthProviders() {
     const list = await addonRegistry.getDefineList("oauth");
     return this.ok(list);
+  }
+
+  @Post("/clearRuntimeDeps", { description: "sys:settings:edit" })
+  async clearRuntimeDeps() {
+    await this.runtimeDepsService.clearRuntimeDeps();
+    return this.ok(true);
   }
 }

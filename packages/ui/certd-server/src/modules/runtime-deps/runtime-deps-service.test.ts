@@ -46,6 +46,7 @@ describe("RuntimeDepsService", () => {
         }
         assert.equal(args[0], "install");
         assert.ok(args.includes("--ignore-workspace"));
+        assert.ok(args.includes("--no-frozen-lockfile"));
         return { stdout: "", stderr: "", code: 0 };
       },
     } as any;
@@ -295,7 +296,7 @@ describe("RuntimeDepsService", () => {
       target: async () => ({} as any),
     });
     try {
-      await service.ensureRuntimeDependencies("plugin:runtimeDepsKey");
+      await service.ensureRuntimeDependencies({ pluginKeys: "plugin:runtimeDepsKey" });
 
       const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, "package.json"), "utf8"));
       assert.deepEqual(manifest.dependencies, { keyed: "^1.0.0" });
@@ -332,7 +333,7 @@ describe("RuntimeDepsService", () => {
       target: async () => ({} as any),
     });
     try {
-      await service.ensureRuntimeDependencies(["access:runtimeDepsArrayAccess", "addon:captcha:runtimeDepsArrayAddon"]);
+      await service.ensureRuntimeDependencies({ pluginKeys: ["access:runtimeDepsArrayAccess", "addon:captcha:runtimeDepsArrayAddon"] });
 
       const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, "package.json"), "utf8"));
       assert.deepEqual(manifest.dependencies, {
@@ -375,10 +376,7 @@ describe("RuntimeDepsService", () => {
   it("reports bare dependent plugin names as invalid format", () => {
     const service = new RuntimeDepsService();
 
-    assert.throws(
-      () => service.resolvePluginDependencies({ name: "deploy", pluginType: "deploy", dependPlugins: { runtimeDepsBareName: "*" } }),
-      /插件依赖格式错误/
-    );
+    assert.throws(() => service.resolvePluginDependencies({ name: "deploy", pluginType: "deploy", dependPlugins: { runtimeDepsBareName: "*" } }), /插件依赖格式错误/);
   });
 
   it("records runtime install environment state", async () => {
@@ -438,10 +436,7 @@ describe("RuntimeDepsService", () => {
     serviceA.commandRunner = commandRunner as any;
     serviceB.commandRunner = commandRunner as any;
 
-    await Promise.all([
-      serviceA.ensureInstalled([{ name: "a", dependPackages: { foo: "^1.0.0" } }]),
-      serviceB.ensureInstalled([{ name: "a", dependPackages: { foo: "^1.0.0" } }]),
-    ]);
+    await Promise.all([serviceA.ensureInstalled([{ name: "a", dependPackages: { foo: "^1.0.0" } }]), serviceB.ensureInstalled([{ name: "a", dependPackages: { foo: "^1.0.0" } }])]);
 
     assert.equal(installCount, 1);
   });
@@ -486,5 +481,28 @@ describe("RuntimeDepsService", () => {
         process.env.VSCODE_INSPECTOR_OPTIONS = oldInspectorOptions;
       }
     }
+  });
+
+  it("clears runtime dependency directory", async () => {
+    const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-clear-"));
+    const runtimeRootDir = path.join(rootDir, ".runtime-deps");
+    fs.mkdirSync(path.join(runtimeRootDir, "node_modules", "foo"), { recursive: true });
+    fs.writeFileSync(path.join(runtimeRootDir, "package.json"), "{}", "utf8");
+    const service = new RuntimeDepsService();
+    service.runtimeDepsRootDir = runtimeRootDir;
+    service.installTimeoutMs = 1000;
+
+    await service.clearRuntimeDeps();
+
+    assert.equal(fs.existsSync(runtimeRootDir), true);
+    assert.equal(fs.readdirSync(runtimeRootDir).length, 0);
+  });
+
+  it("rejects clearing unexpected runtime dependency path", async () => {
+    const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-clear-invalid-"));
+    const service = new RuntimeDepsService();
+    service.runtimeDepsRootDir = rootDir;
+
+    await assert.rejects(() => service.clearRuntimeDeps(), /动态依赖目录配置异常/);
   });
 });
