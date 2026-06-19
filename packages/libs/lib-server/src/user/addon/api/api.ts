@@ -27,6 +27,8 @@ export type AddonInputDefine = FormItemProps & {
 export type AddonDefine = Registrable & {
   addonType: string;
   needPlus?: boolean;
+  dependPlugins?: Record<string, string>;
+  dependPackages?: Record<string, string>;
   input?: {
     [key: string]: AddonInputDefine;
   };
@@ -64,6 +66,17 @@ export abstract class BaseAddon implements IAddon {
   ctx!: AddonContext;
   http!: HttpClient;
   logger!: ILogger;
+  runtimeDepsService?: {
+    ensureRuntimeDependencies(pluginKeys: string | string[]): Promise<any>;
+    importRuntime(specifier: string): Promise<any>;
+  };
+
+  async importRuntime(specifier: string) {
+    if (!this.runtimeDepsService) {
+      return await import(specifier);
+    }
+    return await this.runtimeDepsService.importRuntime(specifier);
+  }
 
   title!: string;
 
@@ -107,10 +120,16 @@ export abstract class BaseAddon implements IAddon {
   }
 
 
-  setCtx(ctx: AddonContext) {
+  async setCtx(ctx: AddonContext) {
     this.ctx = ctx;
     this.http = ctx.http;
     this.logger = ctx.logger;
+    if (!this.runtimeDepsService && this.ctx.serviceGetter) {
+      this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
+    }
+    if (this.runtimeDepsService && this.define?.addonType && this.define?.name) {
+      await this.runtimeDepsService.ensureRuntimeDependencies(`addon:${this.define.addonType}:${this.define.name}`);
+    }
   }
   setDefine = (define:AddonDefine) => {
     this.define = define;

@@ -67,7 +67,9 @@ export async function newAccess(type: string, input: any, accessService: IAccess
       accessService,
     };
   }
-  access.setCtx(ctx);
+  ctx.define = ctx.define || register.define;
+  access.runtimeDepsService = (accessService as any).runtimeDepsService;
+  await access.setCtx(ctx);
   access._type = type;
   return access;
 }

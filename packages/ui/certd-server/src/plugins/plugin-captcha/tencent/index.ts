@@ -8,6 +8,9 @@ import { TencentAccess } from "../../plugin-lib/tencent/access.js";
   title: "腾讯云验证码",
   desc: "",
   showTest: false,
+  dependPackages: {
+    "tencentcloud-sdk-nodejs": "^4.1.112",
+  },
 })
 export class TencentCaptcha extends BaseAddon implements ICaptchaAddon {
   @AddonInput({
@@ -50,7 +53,7 @@ export class TencentCaptcha extends BaseAddon implements ICaptchaAddon {
 
     const access = await this.getAccess<TencentAccess>(this.accessId);
 
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/captcha/v20190722/index.js");
+    const sdk = await this.importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/captcha/v20190722/index.js");
 
     const CaptchaClient = sdk.v20190722.Client;
 

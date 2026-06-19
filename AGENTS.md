@@ -54,10 +54,12 @@ Certd 是支持私有化部署的 SSL/TLS 证书自动化管理平台，提供 W
 - 先读本文；需要代码导航、目录入口、参考文件或验证命令时读 `.codex/repo-map.md`。
 - 任务涉及后端、前端、插件、测试或代码风格时，先读取 `.codex/agent-rules/` 下对应规则文件，再查看具体代码。
 - 在 PowerShell 中读取中文、Markdown、locale、文档类文件时，显式使用 `Get-Content -Encoding utf8`；如果仍乱码，再执行 `[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()` 后重试。
+- 在 PowerShell 中使用 `rg` 搜索包含引号、括号、反斜杠等特殊字符的模式时，优先用单引号包裹整个 pattern，例如 `rg 'await import\("tencentcloud-sdk-nodejs' packages/ui/certd-server/src -g '*.ts'`；不要在双引号字符串里再直接写未转义的 `"`，否则 PowerShell 会截断参数并把后半段当成文件路径，出现 `The string is missing the terminator` 或 `rg: xxx: 系统找不到指定的文件`。
 - 做后端任务时，先定位 `packages/ui/certd-server/src/modules` 下的模块，以及相关 entity/service/controller。
 - 做前端任务时，先定位 `packages/ui/certd-client/src/views/certd` 下的页面，再找对应 `src/api`。
 - 做服务商、DNS、部署、通知相关任务时，先看 `packages/ui/certd-server/src/plugins`，再看 `packages/plugins/plugin-lib` 里的共享辅助能力。
 - 优先沿用现有模块、插件、服务模式，再考虑新增抽象；避免为了形式上的“复用”制造过度设计。
+- 为了提升可读性，不要把一个方法调用链直接塞进另一个方法的参数里；应先用有意义的局部变量承载返回值，再把变量传入下一步调用。
 - 实现新功能或修复行为缺陷前，优先补对应单元测试并确认红灯，再实现代码并跑聚焦验证。确实不适合先写测试时，在回复中说明原因和替代验证方式。
 - 后补单元测试时，先按正确行为写预期；如果红灯需要修改既有实现，先向用户确认这是 bug 还是既有需求，避免未经确认改变行为。
 - 优先对改动包运行聚焦测试或格式化/ESLint；只有跨包影响明显时再考虑更大范围构建。

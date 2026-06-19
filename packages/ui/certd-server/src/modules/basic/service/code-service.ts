@@ -6,6 +6,7 @@ import { SmsServiceFactory } from "../sms/factory.js";
 import { CaptchaService } from "./captcha-service.js";
 import { EmailService } from "./email-service.js";
 import { CaptchaRequest } from "../../../plugins/plugin-captcha/api.js";
+import { RuntimeDepsService } from "../../runtime-deps/runtime-deps-service.js";
 
 // {data: '<svg.../svg>', text: 'abcd'}
 /**
@@ -23,6 +24,9 @@ export class CodeService {
 
   @Inject()
   captchaService: CaptchaService;
+
+  @Inject()
+  runtimeDepsService: RuntimeDepsService;
 
   async checkCaptcha(body: any, req: CaptchaRequest) {
     return await this.captchaService.doValidate({ form: body, req });
@@ -53,9 +57,10 @@ export class CodeService {
     const smsConfig = sysSettings.sms.config;
     const sender: ISmsService = await SmsServiceFactory.createSmsService(smsType);
     const accessGetter = new AccessSysGetter(this.accessService);
-    sender.setCtx({
+    await sender.setCtx({
       accessService: accessGetter,
       config: smsConfig,
+      runtimeDepsService: this.runtimeDepsService,
     });
     const smsCode = randomNumber(verificationCodeLength);
     await sender.sendSmsCode({

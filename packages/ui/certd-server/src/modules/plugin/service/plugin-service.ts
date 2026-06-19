@@ -13,13 +13,21 @@ import yaml from "js-yaml";
 import { getDefaultAccessPlugin, getDefaultDeployPlugin, getDefaultDnsPlugin } from "./default-plugin.js";
 import fs from "fs";
 import path from "path";
+import { RuntimeDepsService } from "../../runtime-deps/runtime-deps-service.js";
 
 export type PluginImportReq = {
   content: string;
   override?: boolean;
 };
 
-async function importer(modulePath: string) {
+function isBareModuleSpecifier(modulePath: string) {
+  if (modulePath.startsWith(".") || modulePath.startsWith("/") || modulePath.startsWith("file:") || modulePath.startsWith("node:")) {
+    return false;
+  }
+  return !/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(modulePath);
+}
+
+async function importLocalModule(modulePath: string) {
   if (!modulePath) {
     throw new Error("modules path 不能为空");
   }
@@ -40,6 +48,9 @@ export class PluginService extends BaseService<PluginEntity> {
 
   @Inject()
   builtInPluginService: BuiltInPluginService;
+
+  @Inject()
+  runtimeDepsService: RuntimeDepsService;
 
   //@ts-ignore
   getRepository() {
@@ -314,6 +325,16 @@ export class PluginService extends BaseService<PluginEntity> {
     }).outputText;
   }
 
+  async importer(modulePath: string) {
+    if (!modulePath) {
+      throw new Error("modules path 不能为空");
+    }
+    if (!isBareModuleSpecifier(modulePath)) {
+      return await importLocalModule(modulePath);
+    }
+    return await this.runtimeDepsService.importRuntime(modulePath);
+  }
+
   private async getPluginClassFromFile(item: any) {
     const scriptFilePath = item.scriptFilePath;
     const res = await import(`../../..${scriptFilePath}`);
@@ -345,6 +366,7 @@ export class PluginService extends BaseService<PluginEntity> {
         // const script = await this.compile(plugin.content);
         const script = plugin.content;
         const getPluginClass = new AsyncFunction("_ctx", script);
+        const importer = this.importer.bind(this);
         return await getPluginClass({ logger: logger, import: importer });
       } catch (e) {
         logger.error("编译插件失败:", e);
@@ -439,6 +461,24 @@ export class PluginService extends BaseService<PluginEntity> {
     });
   }
 
+  async getRuntimeDependencyPluginDefines() {
+    const builtInList = await this.getEnabledBuiltInList();
+    const customList = await this.list({
+      buildQuery: bq => {
+        bq.andWhere("type != :type", {
+          type: "builtIn",
+        });
+      },
+    });
+    const list = [...builtInList];
+    for (const plugin of customList) {
+      const metadata = plugin.metadata ? yaml.load(plugin.metadata) : {};
+      const extra = plugin.extra ? yaml.load(plugin.extra) : {};
+      list.push({ ...plugin, ...metadata, ...extra });
+    }
+    return list.filter(item => item.dependPackages);
+  }
+
   async exportPlugin(id: number) {
     const info = await this.info(id);
     if (!info) {
@@ -483,6 +523,7 @@ export class PluginService extends BaseService<PluginEntity> {
     };
     const extra = {
       dependPlugins: loaded.dependPlugins,
+      dependPackages: loaded.dependPackages,
       default: loaded.default,
       showRunStrategy: loaded.showRunStrategy,
     };

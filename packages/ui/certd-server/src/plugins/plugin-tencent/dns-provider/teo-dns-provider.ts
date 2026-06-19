@@ -7,6 +7,9 @@ import { TencentAccess } from "../../plugin-lib/tencent/access.js";
   desc: "腾讯云EO DNS解析提供者",
   accessType: "tencent",
   icon: "svg:icon-tencentcloud",
+  dependPlugins: {
+    "access:tencent": "*",
+  },
 })
 export class TencentEoDnsProvider extends AbstractDnsProvider {
   access!: TencentAccess;
@@ -24,7 +27,7 @@ export class TencentEoDnsProvider extends AbstractDnsProvider {
         },
       },
     };
-    const teosdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/teo/v20220901/index.js");
+    const teosdk = await this.importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/teo/v20220901/index.js");
     const TeoClient = teosdk.v20220901.Client;
     // 实例化要请求产品的client对象,clientProfile是可选的
     this.client = new TeoClient(clientConfig);

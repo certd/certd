@@ -63,9 +63,7 @@ export async function newAddon(addonType:string,type: string, input: any, ctx: A
     throw new Error("ctx is required");
   }
   plugin.setDefine(register.define);
-  plugin.setCtx(ctx);
+  await plugin.setCtx(ctx);
   await plugin.onInstance();
   return plugin;
 }
-
-

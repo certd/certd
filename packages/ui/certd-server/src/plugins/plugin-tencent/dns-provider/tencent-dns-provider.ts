@@ -2,13 +2,18 @@ import { AbstractDnsProvider, CreateRecordOptions, DnsResolveRecord, DomainRecor
 import { TencentAccess } from "../../plugin-lib/tencent/index.js";
 import { Pager, PageRes, PageSearch } from "@certd/pipeline";
 
-@IsDnsProvider({
+const tencentDnsProviderDefine: any = {
   name: "tencent",
   title: "腾讯云",
   desc: "腾讯云域名DNS解析提供者",
   accessType: "tencent",
   icon: "svg:icon-tencentcloud",
-})
+  dependPlugins: {
+    "access:tencent": "*",
+  },
+};
+
+@IsDnsProvider(tencentDnsProviderDefine)
 export class TencentDnsProvider extends AbstractDnsProvider {
   access!: TencentAccess;
 
@@ -27,7 +32,7 @@ export class TencentDnsProvider extends AbstractDnsProvider {
         },
       },
     };
-    const dnspodSdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/dnspod/v20210323/index.js");
+    const dnspodSdk = await (this as any).importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/dnspod/v20210323/index.js");
     const DnspodClient = dnspodSdk.v20210323.Client;
     // 实例化要请求产品的client对象,clientProfile是可选的
     this.client = new DnspodClient(clientConfig);

@@ -10,6 +10,9 @@ import { TencentAccess, TencentSslClient } from "../../../plugin-lib/tencent/ind
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "仅删除未使用的证书",
+  dependPlugins: {
+    "access:tencent": "*",
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.AlwaysRun,
