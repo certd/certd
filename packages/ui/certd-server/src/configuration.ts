@@ -31,7 +31,6 @@ process.on("uncaughtException", error => {
     logger.error("您的服务器不支持监听IPV6格式的地址（::），请配置环境变量: certd_koa_hostname=0.0.0.0");
   }
 });
-
 // function startHeapLog() {
 //   function format(bytes: any) {
 //     return (bytes / 1024 / 1024).toFixed(2) + ' MB';

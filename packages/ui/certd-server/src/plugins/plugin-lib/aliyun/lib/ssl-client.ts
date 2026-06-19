@@ -55,7 +55,7 @@ export class AliyunSslClient {
 
   async getClient() {
     const access = this.opts.access;
-    const client = new AliyunClient({ logger: this.opts.logger });
+    const client = new AliyunClient({ logger: this.opts.logger, importRuntime: access.importRuntime.bind(access) });
 
     let endpoint = this.opts.endpoint || "cas.aliyuncs.com";
     if (this.opts.endpoint == null && this.opts.region) {

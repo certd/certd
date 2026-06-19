@@ -15,11 +15,11 @@
     "test:unit": "cross-env NODE_ENV=unittest mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
     "test1": "midway-bin test --ts -V -f test/blank.test.ts -t 'hash-check'",
     "cov": "midway-bin cov --ts",
-    "lint": "mwts check",
-    "lint:fix": "mwts fix",
     "prepublish": "npm run build",
     "pub": "npm publish",
-    "compile": "tsc --skipLibCheck --watch"
+    "compile": "tsc --skipLibCheck --watch",
+    "format": "prettier --write src",
+    "lint": "eslint --fix"
   },
   "keywords": [],
   "author": "greper",

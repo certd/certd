@@ -332,7 +332,7 @@ export class PluginService extends BaseService<PluginEntity> {
     if (!isBareModuleSpecifier(modulePath)) {
       return await importLocalModule(modulePath);
     }
-    return await this.runtimeDepsService.importRuntime(modulePath);
+    return await this.runtimeDepsService.importRuntime(modulePath, logger);
   }
 
   private async getPluginClassFromFile(item: any) {

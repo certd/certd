@@ -38,9 +38,7 @@ export class NpmRegistryResolver {
 
     const candidates = (config?.candidates || []).filter(Boolean);
     const probes = await Promise.allSettled(candidates.map(registryUrl => this.probe(registryUrl)));
-    const okList = probes
-      .map(item => (item.status === "fulfilled" ? item.value : null))
-      .filter((item): item is RegistryProbeResult => !!item && item.ok);
+    const okList = probes.map(item => (item.status === "fulfilled" ? item.value : null)).filter((item): item is RegistryProbeResult => !!item && item.ok);
 
     if (okList.length > 0) {
       okList.sort((a, b) => a.elapsedMs - b.elapsedMs);

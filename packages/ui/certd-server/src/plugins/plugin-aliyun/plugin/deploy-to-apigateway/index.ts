@@ -134,7 +134,7 @@ export class DeployCertToAliyunApiGateway extends AbstractTaskPlugin {
     const access = await this.getAccess<AliyunAccess>(this.accessId);
     const client = access.getClient(this.regionEndpoint);
 
-    const pager = new Pager(data)
+    const pager = new Pager(data);
     const res = await client.doRequest({
       // 接口名称
       action: "DescribeApiGroups",
@@ -162,7 +162,7 @@ export class DeployCertToAliyunApiGateway extends AbstractTaskPlugin {
     return {
       list: records,
       total: res?.TotalCount || 0,
-    }
+    };
   }
 
   async onGetDomainList(data: any) {

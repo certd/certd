@@ -15,7 +15,7 @@ export class AwsIAMClient {
   }
   async importCertificate(certInfo: CertInfo, certName: string) {
     // 创建 IAM 客户端
-    const { IAMClient, UploadServerCertificateCommand } = await import("@aws-sdk/client-iam");
+    const { IAMClient, UploadServerCertificateCommand } = await this.access.importRuntime("@aws-sdk/client-iam");
     const iamClient = new IAMClient({
       region: this.region, // 替换为您的 AWS 区域
       credentials: {

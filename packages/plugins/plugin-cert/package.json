@@ -15,7 +15,9 @@
     "preview": "vite preview",
     "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
     "pub": "npm publish",
-    "compile": "tsc --skipLibCheck --watch"
+    "compile": "tsc --skipLibCheck --watch",
+    "format": "prettier --write src",
+    "lint": "eslint --fix"
   },
   "dependencies": {
     "@certd/acme-client": "^1.41.4",

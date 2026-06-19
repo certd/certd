@@ -143,3 +143,10 @@ export async function GetPluginByName(name: string): Promise<PluginConfigBean> {
     data: { name },
   });
 }
+
+export async function ClearRuntimeDeps(): Promise<void> {
+  return await request({
+    url: "/sys/settings/clearRuntimeDeps",
+    method: "post",
+  });
+}

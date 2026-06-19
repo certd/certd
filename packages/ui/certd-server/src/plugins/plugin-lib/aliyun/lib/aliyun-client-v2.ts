@@ -30,7 +30,7 @@ export class AliyunClientV2 {
     if (this.client) {
       return this.client;
     }
-    const $OpenApi = await import("@alicloud/openapi-client");
+    const $OpenApi = await this.access.importRuntime("@alicloud/openapi-client");
     // const Credential = await import("@alicloud/credentials");
     // //@ts-ignore
     // const credential = new Credential.default.default({
@@ -52,9 +52,9 @@ export class AliyunClientV2 {
   async doRequest(req: AliyunClientV2Req) {
     const client = await this.getClient();
 
-    const $OpenApi = await import("@alicloud/openapi-client");
-    const $Util = await import("@alicloud/tea-util");
-    const OpenApiUtil = await import("@alicloud/openapi-util");
+    const $OpenApi = await this.access.importRuntime("@alicloud/openapi-client");
+    const $Util = await this.access.importRuntime("@alicloud/tea-util");
+    const OpenApiUtil = await this.access.importRuntime("@alicloud/openapi-util");
     const params = new $OpenApi.Params({
       // 接口名称
       action: req.action,

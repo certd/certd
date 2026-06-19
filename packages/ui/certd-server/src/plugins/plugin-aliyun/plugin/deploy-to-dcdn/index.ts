@@ -143,7 +143,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   }
 
   async getClient(access: AliyunAccess) {
-    const client = new AliyunClient({ logger: this.logger });
+    const client = new AliyunClient({ logger: this.logger, importRuntime: access.importRuntime.bind(access) });
     await client.init({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,

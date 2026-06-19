@@ -3,7 +3,7 @@ import { Registrable } from "../registry/index.js";
 import { FormItemProps, HistoryResult, Pipeline } from "../dt/index.js";
 import { HttpClient, ILogger, utils } from "@certd/basic";
 import * as _ from "lodash-es";
-import { IEmailService, IServiceGetter } from "../service/index.js";
+import { IEmailService, IRuntimeDepsService, IServiceGetter } from "../service/index.js";
 
 export type NotificationBody = {
   userId?: number;
@@ -89,16 +89,13 @@ export abstract class BaseNotification implements INotification {
   ctx!: NotificationContext;
   http!: HttpClient;
   logger!: ILogger;
-  runtimeDepsService?: {
-    ensureRuntimeDependencies(pluginKeys: string | string[]): Promise<any>;
-    importRuntime(specifier: string): Promise<any>;
-  };
+  runtimeDepsService?: IRuntimeDepsService;
 
   async importRuntime(specifier: string) {
     if (!this.runtimeDepsService) {
       return await import(specifier);
     }
-    return await this.runtimeDepsService.importRuntime(specifier);
+    return await this.runtimeDepsService.importRuntime(specifier, this.logger);
   }
 
   async doSend(body: NotificationBody) {
@@ -116,7 +113,7 @@ export abstract class BaseNotification implements INotification {
       this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
     }
     if (this.runtimeDepsService && this.ctx.define?.name) {
-      await this.runtimeDepsService.ensureRuntimeDependencies(`notification:${this.ctx.define.name}`);
+      await this.runtimeDepsService.ensureRuntimeDependencies({ pluginKeys: `notification:${this.ctx.define.name}`, logger: this.logger });
     }
   }
   setDefine = (define: NotificationDefine) => {

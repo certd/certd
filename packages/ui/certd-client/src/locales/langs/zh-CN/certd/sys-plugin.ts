@@ -40,4 +40,7 @@ export default {
   pluginManagement: "插件管理",
   pluginBetaWarning: "自定义插件处于BETA测试版，后续可能会有破坏性变更",
   pleaseSelectRecord: "请先勾选记录",
+  clearRuntimeDeps: "清理第三方依赖缓存",
+  clearRuntimeDepsConfirm: "确定要清理第三方依赖缓存吗？清理后下次执行流水线时将重新安装所需依赖。",
+  clearRuntimeDepsSuccess: "第三方依赖缓存清理成功",
 };

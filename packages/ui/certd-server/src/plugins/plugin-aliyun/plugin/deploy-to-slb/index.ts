@@ -130,7 +130,7 @@ export class AliyunDeployCertToSLB extends AbstractTaskPlugin {
   async onInstance() {}
 
   async getLBClient(access: AliyunAccess, region: string) {
-    const client = new AliyunClient({ logger: this.logger });
+    const client = new AliyunClient({ logger: this.logger, importRuntime: access.importRuntime.bind(access) });
     const version = "2014-05-15";
     await client.init({
       accessKeyId: access.accessKeyId,

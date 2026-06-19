@@ -1,5 +1,6 @@
 import { TencentAccess } from "../access.js";
 import { ILogger, safePromise } from "@certd/basic";
+import { ImportRuntime } from "@certd/pipeline";
 import fs from "fs";
 
 export class TencentCosClient {
@@ -7,16 +8,18 @@ export class TencentCosClient {
   logger: ILogger;
   region: string;
   bucket: string;
+  importRuntime: ImportRuntime;
 
-  constructor(opts: { access: TencentAccess; logger: ILogger; region: string; bucket: string }) {
+  constructor(opts: { access: TencentAccess; logger: ILogger; region: string; bucket: string; importRuntime?: ImportRuntime }) {
     this.access = opts.access;
     this.logger = opts.logger;
     this.bucket = opts.bucket;
     this.region = opts.region;
+    this.importRuntime = opts.importRuntime || (async (specifier: string) => await import(specifier));
   }
 
   async getCosClient() {
-    const sdk = await import("cos-nodejs-sdk-v5");
+    const sdk = await this.importRuntime("cos-nodejs-sdk-v5");
     const clientConfig = {
       SecretId: this.access.secretId,
       SecretKey: this.access.secretKey,

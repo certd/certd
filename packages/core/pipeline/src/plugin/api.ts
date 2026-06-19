@@ -10,7 +10,7 @@ import { INotificationService } from "../notification/index.js";
 import { Registrable } from "../registry/index.js";
 import { IPluginConfigService } from "../service/config.js";
 import { TaskEmitter } from "../service/emit.js";
-import { ICnameProxyService, IEmailService, IServiceGetter, IUrlService } from "../service/index.js";
+import { ICnameProxyService, IEmailService, IRuntimeDepsService, IServiceGetter, IUrlService } from "../service/index.js";
 
 export type PluginRequestHandleReq<T = any> = {
   typeName: string;
@@ -150,16 +150,13 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
   logger!: ILogger;
   http!: HttpClient;
   accessService!: IAccessService;
-  runtimeDepsService?: {
-    ensureRuntimeDependencies(pluginKeys: string | string[]): Promise<any>;
-    importRuntime(specifier: string): Promise<any>;
-  };
+  runtimeDepsService?: IRuntimeDepsService;
 
   async importRuntime(specifier: string) {
     if (!this.runtimeDepsService) {
       return await import(specifier);
     }
-    return await this.runtimeDepsService.importRuntime(specifier);
+    return await this.runtimeDepsService.importRuntime(specifier, this.logger);
   }
 
   clearLastStatus() {
@@ -185,7 +182,7 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
       this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
     }
     if (this.runtimeDepsService && this.ctx.define?.name) {
-      await this.runtimeDepsService.ensureRuntimeDependencies(`plugin:${this.ctx.define.name}`);
+      await this.runtimeDepsService.ensureRuntimeDependencies({ pluginKeys: `plugin:${this.ctx.define.name}`, logger: this.logger });
     }
     // 将证书加入secret
     // @ts-ignore

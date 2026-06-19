@@ -1,5 +1,5 @@
 import { HttpClient, ILogger } from "@certd/basic";
-import { IAccessService, PageRes, PageSearch } from "@certd/pipeline";
+import { IAccessService, IRuntimeDepsService, PageRes, PageSearch } from "@certd/pipeline";
 import punycode from "punycode.js";
 import { CreateRecordOptions, DnsProviderContext, DnsProviderDefine, DnsResolveRecord, DomainRecord, IDnsProvider, RemoveRecordOptions } from "./api.js";
 import { dnsProviderRegistry } from "./registry.js";
@@ -7,16 +7,13 @@ export abstract class AbstractDnsProvider<T = any> implements IDnsProvider<T> {
   ctx!: DnsProviderContext;
   http!: HttpClient;
   logger!: ILogger;
-  runtimeDepsService?: {
-    ensureRuntimeDependencies(pluginKeys: string | string[]): Promise<any>;
-    importRuntime(specifier: string): Promise<any>;
-  };
+  runtimeDepsService?: IRuntimeDepsService;
 
   async importRuntime(specifier: string) {
     if (!this.runtimeDepsService) {
       return await import(specifier);
     }
-    return await this.runtimeDepsService.importRuntime(specifier);
+    return await this.runtimeDepsService.importRuntime(specifier, this.logger);
   }
 
   usePunyCode(): boolean {
@@ -49,7 +46,7 @@ export abstract class AbstractDnsProvider<T = any> implements IDnsProvider<T> {
       this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
     }
     if (this.runtimeDepsService && this.ctx.define?.name) {
-      await this.runtimeDepsService.ensureRuntimeDependencies(`dnsProvider:${this.ctx.define.name}`);
+      await this.runtimeDepsService.ensureRuntimeDependencies({ pluginKeys: `dnsProvider:${this.ctx.define.name}`, logger: this.logger });
     }
   }
 

@@ -32,7 +32,7 @@ export class PipelineEmitter {
   }
   off(event: string, listener: PipelineEventListener) {
     if (this.events[event]) {
-      this.events[event] = this.events[event].filter((l) => l !== listener);
+      this.events[event] = this.events[event].filter(l => l !== listener);
     }
   }
   once(event: string, listener: PipelineEventListener) {

@@ -15,7 +15,9 @@
     "preview": "vite preview",
     "test:unit": "cross-env NODE_ENV=unittest mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
     "pub": "npm publish",
-    "compile": "tsc --skipLibCheck --watch"
+    "compile": "tsc --skipLibCheck --watch",
+    "format": "prettier --write src",
+    "lint": "eslint --fix"
   },
   "dependencies": {
     "@alicloud/openapi-client": "^0.4.15",

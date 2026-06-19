@@ -122,7 +122,7 @@ export class AzureAccess extends BaseAccess {
 
     this.ctx.logger.info(`找到 DNS 区域: ${matchingZone.name}, ID: ${matchingZone.id}`);
     return {
-      id: matchingZone.id.split("/").pop()!,
+      id: matchingZone.id.split("/").pop() || "",
       name: matchingZone.name,
     };
   }
@@ -136,7 +136,7 @@ export class AzureAccess extends BaseAccess {
     }
 
     list = list.map((item: any) => ({
-      id: item.id.split("/").pop()!,
+      id: item.id.split("/").pop() || "",
       domain: item.name,
     }));
 

@@ -241,7 +241,7 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
   }
 
   async getClient(aliyunProvider: any, regionId: string) {
-    const client = new AliyunClient({ logger: this.logger, useROAClient: true });
+    const client = new AliyunClient({ logger: this.logger, useROAClient: true, importRuntime: aliyunProvider.importRuntime.bind(aliyunProvider) });
     await client.init({
       accessKeyId: aliyunProvider.accessKeyId,
       accessKeySecret: aliyunProvider.accessKeySecret,

@@ -72,7 +72,9 @@ export class TencentSmsService implements ISmsService {
     this.ctx = ctx;
     if (this.ctx.runtimeDepsService) {
       await this.ctx.runtimeDepsService.ensureDependencies({
-        "tencentcloud-sdk-nodejs": "^4.1.112",
+        dependencies: {
+          "tencentcloud-sdk-nodejs": "^4.1.112",
+        },
       });
     }
   }
