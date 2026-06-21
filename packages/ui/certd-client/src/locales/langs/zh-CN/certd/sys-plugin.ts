@@ -41,6 +41,7 @@ export default {
   pluginBetaWarning: "自定义插件处于BETA测试版，后续可能会有破坏性变更",
   pleaseSelectRecord: "请先勾选记录",
   clearRuntimeDeps: "清理第三方依赖缓存",
-  clearRuntimeDepsConfirm: "确定要清理第三方依赖缓存吗？清理后下次执行流水线时将重新安装所需依赖。",
-  clearRuntimeDepsSuccess: "第三方依赖缓存清理成功",
+  clearRuntimeDepsTooltip: "清除后需重启 certd 容器，否则已缓存模块不会重新读取",
+  clearRuntimeDepsConfirm: "确定要清理第三方依赖缓存吗？清理后请重启 certd 容器以确保重新加载依赖。",
+  clearRuntimeDepsSuccess: "第三方依赖缓存清理成功，请重启 certd 容器",
 };

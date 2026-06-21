@@ -441,16 +441,20 @@ export class RuntimeDepsService {
 
   private getDefineByPluginKey(pluginKey: string, owner?: RuntimeDependencyPluginDefine): RuntimeDependencyPluginDefine {
     const parts = pluginKey.split(":");
-    const [pluginType, subtype, name] = parts;
-    if (parts.length < 2 || (pluginType === "addon" && parts.length !== 3) || (pluginType !== "addon" && parts.length !== 2)) {
+    let [pluginType, subtype, name] = parts;
+    if (parts.length === 2) {
+      name = subtype;
+    }else if (parts.length === 3) {
+      //无修改
+    } else {
       const ownerName = owner?.name || pluginKey;
       throw new Error(`插件依赖格式错误: ${ownerName} 依赖 ${pluginKey}，请使用 plugin:name、access:name、notification:name、dnsProvider:name 或 addon:subtype:name 格式`);
     }
     const registryMap: Record<string, { registry: Registry<any>; key: string; pluginType: string; addonType?: string }> = {
-      plugin: { registry: pluginRegistry, key: subtype, pluginType: "plugin" },
-      access: { registry: accessRegistry, key: subtype, pluginType: "access" },
-      notification: { registry: notificationRegistry, key: subtype, pluginType: "notification" },
-      dnsProvider: { registry: dnsProviderRegistry, key: subtype, pluginType: "dnsProvider" },
+      plugin: { registry: pluginRegistry, key: name, pluginType: "plugin" },
+      access: { registry: accessRegistry, key: name, pluginType: "access" },
+      notification: { registry: notificationRegistry, key: name, pluginType: "notification" },
+      dnsProvider: { registry: dnsProviderRegistry, key: name, pluginType: "dnsProvider" },
       addon: { registry: addonRegistry, key: `${subtype}:${name}`, pluginType: "addon", addonType: subtype },
     };
     const target = registryMap[pluginType];

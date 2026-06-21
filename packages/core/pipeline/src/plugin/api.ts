@@ -150,11 +150,11 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
   logger!: ILogger;
   http!: HttpClient;
   accessService!: IAccessService;
-  runtimeDepsService?: IRuntimeDepsService;
+  runtimeDepsService!: IRuntimeDepsService;
 
   async importRuntime(specifier: string) {
     if (!this.runtimeDepsService) {
-      return await import(specifier);
+      throw new Error("runtimeDepsService 未初始化");
     }
     return await this.runtimeDepsService.importRuntime(specifier, this.logger);
   }

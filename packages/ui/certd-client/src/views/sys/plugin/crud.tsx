@@ -87,6 +87,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
             icon: "ion:trash-outline",
             text: t("certd.clearRuntimeDeps"),
+            tooltip: { title: t("certd.clearRuntimeDepsTooltip") },
             type: "primary",
             danger: true,
             async click() {

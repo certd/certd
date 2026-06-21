@@ -37,7 +37,7 @@
     "tsc": "tsc --skipLibCheck",
     "slimming": "node ./slimming.js",
     "pub": "echo 1",
-    "compile": "tsc --skipLibCheck --watch",
+    "compile": "",
     "lint1": "eslint --fix"
   },
   "dependencies": {
