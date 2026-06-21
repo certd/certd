@@ -11,7 +11,7 @@ export abstract class AbstractDnsProvider<T = any> implements IDnsProvider<T> {
 
   async importRuntime(specifier: string) {
     if (!this.runtimeDepsService) {
-      return await import(specifier);
+      throw new Error("runtimeDepsService 未初始化");
     }
     return await this.runtimeDepsService.importRuntime(specifier, this.logger);
   }
