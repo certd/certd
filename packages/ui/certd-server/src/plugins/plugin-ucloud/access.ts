@@ -73,7 +73,7 @@ export class UCloudAccess extends BaseAccess {
     if (this.client) {
       return this.client;
     }
-    const { Client } = await import("@ucloud-sdks/ucloud-sdk-js");
+    const { Client } = await this.importRuntime("@ucloud-sdks/ucloud-sdk-js");
     const client = new Client({
       config: {
         region: region || "cn-bj2",
@@ -197,7 +197,7 @@ export class UCloudAccess extends BaseAccess {
   }
 
   async invoke(req: { Action: string; [key: string]: any }) {
-    const { Request } = await import("@ucloud-sdks/ucloud-sdk-js");
+    const { Request } = await this.importRuntime("@ucloud-sdks/ucloud-sdk-js");
     const client = await this.getClient();
     const resp = await client.invoke(
       new Request({

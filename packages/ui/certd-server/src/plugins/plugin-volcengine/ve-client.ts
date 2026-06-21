@@ -1,4 +1,4 @@
-﻿import { VolcengineAccess } from "./access.js";
+import { VolcengineAccess } from "./access.js";
 import { HttpClient, ILogger } from "@certd/basic";
 
 export type VolcengineOpts = {
@@ -140,7 +140,7 @@ export class VolcengineClient {
   }
 
   async getTOSService(opts: { region?: string }) {
-    const { TosClient } = await import("@volcengine/tos-sdk");
+    const { TosClient } = await this.opts.access.importRuntime("@volcengine/tos-sdk");
 
     const client = new TosClient({
       accessKeyId: this.opts.access.accessKeyId,
@@ -169,7 +169,7 @@ export class VolcengineClient {
     if (this.CommonService) {
       return this.CommonService;
     }
-    const { Service } = await import("@volcengine/openapi");
+    const { Service } = await this.opts.access.importRuntime("@volcengine/openapi");
 
     class CommonService extends Service {
       Generic: any;

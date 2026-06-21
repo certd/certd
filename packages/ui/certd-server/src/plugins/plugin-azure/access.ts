@@ -75,7 +75,7 @@ export class AzureAccess extends BaseAccess {
     this.ctx.logger.info("开始测试 Azure 认证...");
 
     // 1. 先测试身份认证，获取访问令牌
-    const { ClientSecretCredential } = await import("@azure/identity");
+    const { ClientSecretCredential } = await this.importRuntime("@azure/identity");
 
     const credential = new ClientSecretCredential(this.tenantId, this.clientId, this.clientSecret);
 
@@ -88,8 +88,8 @@ export class AzureAccess extends BaseAccess {
   }
 
   async getDnsManagementClient() {
-    const { DnsManagementClient } = await import("@azure/arm-dns");
-    const { ClientSecretCredential } = await import("@azure/identity");
+    const { DnsManagementClient } = await this.importRuntime("@azure/arm-dns");
+    const { ClientSecretCredential } = await this.importRuntime("@azure/identity");
 
     const credential = new ClientSecretCredential(this.tenantId, this.clientId, this.clientSecret);
 

@@ -52,7 +52,7 @@ export class GoogleCloudDnsProvider extends AbstractDnsProvider<GoogleCloudDnsRe
   }
 
   private async getGoogleDnsClient() {
-    const { DNS } = await import("@google-cloud/dns");
+    const { DNS } = await this.importRuntime("@google-cloud/dns");
     return new DNS({ credentials: this.credentials });
   }
 
