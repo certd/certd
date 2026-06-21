@@ -14,7 +14,7 @@ export class VolcengineCdnClient {
     if (this.service) {
       return this.service;
     }
-    const { cdn } = await import("@volcengine/openapi");
+    const { cdn } = await this.opts.access.importRuntime("@volcengine/openapi");
     const service = new cdn.CdnService();
     // 设置ak、sk
     service.setAccessKeyId(this.opts.access.accessKeyId);

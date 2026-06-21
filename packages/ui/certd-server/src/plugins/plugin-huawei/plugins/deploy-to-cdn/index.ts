@@ -120,8 +120,8 @@ export class HauweiDeployCertToCDN extends AbstractTaskPlugin {
 
   async getCdnClient() {
     const access = await this.getAccess<HuaweiAccess>(this.accessId);
-    const { BasicCredentials } = await import("@huaweicloud/huaweicloud-sdk-core");
-    const cdn = await import("@huaweicloud/huaweicloud-sdk-cdn/v2/public-api.js");
+    const { BasicCredentials } = await this.importRuntime("@huaweicloud/huaweicloud-sdk-core");
+    const cdn = await this.importRuntime("@huaweicloud/huaweicloud-sdk-cdn/v2/public-api.js");
     //恢复华为云把log4j的config改了的问题
     resetLogConfigure();
     const credentials = new BasicCredentials().withAk(access.accessKeyId).withSk(access.accessKeySecret);

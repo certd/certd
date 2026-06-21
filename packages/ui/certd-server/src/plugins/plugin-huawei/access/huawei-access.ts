@@ -48,8 +48,8 @@ export class HuaweiAccess extends BaseAccess {
   async getProjectList() {
     const endpoint = "https://iam.cn-north-4.myhuaweicloud.com";
 
-    const { BasicCredentials } = await import("@huaweicloud/huaweicloud-sdk-core");
-    const iam = await import("@huaweicloud/huaweicloud-sdk-iam/v3/public-api.js");
+    const { BasicCredentials } = await this.importRuntime("@huaweicloud/huaweicloud-sdk-core");
+    const iam = await this.importRuntime("@huaweicloud/huaweicloud-sdk-iam/v3/public-api.js");
     //恢复华为云把log4j的config改了的问题
     resetLogConfigure();
     const credentials: any = new BasicCredentials().withAk(this.accessKeyId).withSk(this.accessKeySecret);
