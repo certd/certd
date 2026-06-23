@@ -12,7 +12,7 @@ COPY . /workspace/
 RUN npm install -g pnpm@10.33.4
 
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
-RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
+RUN cd /workspace/certd-server && pnpm install --production && npm run build-on-docker
 
 
 FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT}
@@ -71,6 +71,9 @@ RUN ARCH=$(uname -m) && \
 ENV TZ=Asia/Shanghai
 ENV NODE_ENV=production
 ENV MIDWAY_SERVER_ENV=production
+
+RUN npm install -g pnpm@10.33.4
+
 
 COPY --from=builder /workspace/certd-server/ /app/
 COPY ./patch/ssh2/*.js /app/node_modules/.pnpm/node_modules/ssh2/lib/protocol/
