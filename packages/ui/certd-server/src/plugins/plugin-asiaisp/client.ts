@@ -188,21 +188,40 @@ export class AsiaIspClient {
    */
   async uploadCert(req: { cert: CertInfo; name?: string }): Promise<number> {
     const certReader = new CertReader(req.cert);
-    const certName = req.name || certReader.buildCertName();
+    const certName = req.name || certReader.buildCertName("", true);
 
-    const res = await this.doRequest({
-      method: "POST",
-      action: "certificateUpload",
-      data: {
-        name: certName,
-        publicKey: req.cert.crt,
-        privateKey: req.cert.key,
-      },
-    });
+    try {
+      const res = await this.doRequest({
+        method: "POST",
+        action: "certificateUpload",
+        data: {
+          name: certName,
+          publicKey: req.cert.crt,
+          privateKey: req.cert.key,
+        },
+      });
+      const certId = res.data;
+      this.logger.info(`上传证书成功，证书ID: ${certId}`);
+      return certId;
+    } catch (e: any) {
+      const msg = e.message || "";
+      const isExists = msg.includes("Certificate already exists") || e.code ==='80003' ||
+      msg.includes("Certificate note name already exists") || e.code ==='80010'
+      //返回数据: {"code":"80010","msg":"Certificate note name already exists","data":null} 
+      if (!isExists) {
+        throw e;
+      }
 
-    const certId = res.data;
-    this.logger.info(`上传证书成功，证书ID: ${certId}`);
-    return certId;
+      this.logger.info(`证书已存在，按名称查找: ${certName}`);
+      const list = await this.getCertList();
+      const found = list.find((item: any) => item.name === certName);
+      if (!found) {
+        throw new Error(`证书已存在但无法查询到: ${certName}`);
+      }
+      const certId = Number(found.certId);
+      this.logger.info(`复用已有证书，证书ID: ${certId}`);
+      return certId;
+    }
   }
 
   /**
