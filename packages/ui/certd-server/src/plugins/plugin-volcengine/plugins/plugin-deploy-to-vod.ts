@@ -46,7 +46,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
     title: "区域",
     helper: "选择火山引擎区域",
     component: {
-      name: "select",
+      name: "a-select",
       options: [
         { value: "cn-north-1", label: "华北1（北京）" },
         { value: "ap-southeast-1", label: "东南亚1（新加坡）" },
@@ -85,12 +85,29 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
   })
   domainType!: string;
 
+  @TaskInput({
+    title: "源站类型",
+    helper: "选择源站类型",
+    component: {
+      name: "a-select",
+      vModel: "value",
+      options: [
+        { value: 1, label: "点播源站" },
+        { value: 2, label: "自定义源站" },
+      ],
+      value: 1,
+      helper: "注意：封面加速域名不支持自定义源站",
+    },
+    required: false,
+  })
+  sourceStationType!: number | undefined;
+
   @TaskInput(
     createRemoteSelectInputDefine({
       title: "域名",
       helper: "选择要部署证书的域名\n需要先在域名管理页面进行证书中心访问授权（即点击去配置SSL证书）",
       action: VolcengineDeployToVOD.prototype.onGetDomainList.name,
-      watches: ["certDomains", "accessId", "spaceName", "domainType"],
+      watches: ["certDomains", "accessId", "spaceName", "domainType", "sourceStationType"],
       required: true,
     })
   )
@@ -206,12 +223,17 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
     }
     const service = await this.getVodService({ version: "2023-01-01", region: this.regionId });
 
+    const query: Record<string, any> = {
+      SpaceName: this.spaceName,
+      DomainType: this.domainType,
+    };
+    if (this.sourceStationType !== undefined) {
+      query.SourceStationType = this.sourceStationType;
+    }
+
     const res = await service.request({
       action: "ListDomain",
-      query: {
-        SpaceName: this.spaceName,
-        DomainType: this.domainType,
-      },
+      query,
     });
 
     const instances = res.Result?.PlayInstanceInfo?.ByteInstances;
