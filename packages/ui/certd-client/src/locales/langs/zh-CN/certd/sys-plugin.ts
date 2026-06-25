@@ -27,6 +27,8 @@ export default {
   version: "版本",
   pluginDependencies: "插件依赖",
   pluginDependenciesHelper: "格式: [作者/]插件名[:版本]，需先安装依赖插件",
+  thirdPartyDependencies: "第三方依赖",
+  thirdPartyDependenciesHelper: "格式: npm包名: 版本号，运行时自动安装",
   editableRunStrategy: "可编辑运行策略",
   editable: "可编辑",
   notEditable: "不可编辑",
