@@ -280,9 +280,14 @@ export class CertReader {
     return `${prefix}_${domain}_${timeStr}.${suffix}`;
   }
 
-  buildCertName(prefix: string = "") {
+  buildCertName(prefix: string = "", useHash: boolean = false) {
     let domain = this.getMainDomain();
     domain = domain.replaceAll(".", "_").replaceAll("*", "_");
+    if (useHash) {
+      const domains = JSON.stringify(this.getAllDomains());
+      const hash = cryptoLib.createHash("md5").update(domains).digest("hex").slice(0, 16);
+      return `${prefix}_${domain}_${hash}`;
+    }
     return `${prefix}_${domain}_${dayjs().format("YYYYMMDDHHmmssSSS")}`;
   }
 
@@ -293,7 +298,7 @@ export class CertReader {
     return name + "_" + dayjs().format("YYYYMMDDHHmmssSSS");
   }
 
-  static buildCertName(cert: CertInfo) {
-    return new CertReader(cert).buildCertName();
+  static buildCertName(cert: CertInfo, useHash: boolean = false) {
+    return new CertReader(cert).buildCertName("", useHash);
   }
 }
