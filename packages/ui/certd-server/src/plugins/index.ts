@@ -30,8 +30,9 @@
 // export * from './plugin-wangsu/index.js'
 // export * from './plugin-admin/index.js'
 // export * from './plugin-ksyun/index.js'
-// export * from './plugin-apisix/index.js'
-// export * from './plugin-dokploy/index.js'
+// export * from './plugin-apisix/index.js';
+// export * from './plugin-asiaisp/index.js';
+// export * from './plugin-dokploy/index.js';
 // export * from './plugin-godaddy/index.js'
 // export * from './plugin-captcha/index.js'
 // export * from './plugin-xinnet/index.js'

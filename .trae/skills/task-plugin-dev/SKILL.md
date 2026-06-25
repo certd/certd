@@ -211,6 +211,9 @@ export class DemoTest extends AbstractTaskPlugin {
       //当以下参数变化时，触发获取选项
       watches: ['certDomains', 'accessId'],
       required: true,
+      single: false, // 是否单选
+      pager: true, // 是否卡其分页查询
+      search: true, // 是否开启搜索
     })
   )
   siteName!: string | string[];
@@ -260,9 +263,12 @@ export class DemoTest extends AbstractTaskPlugin {
       throw new Error('请选择Access授权');
     }
 
+    const pager = new Pager(req);
+
     // @ts-ignore
     const access = await this.getAccess(this.accessId);
-
+    //
+    // 根据接口情况是否支持翻页查询，和关键字查询， 传递对应的参数，pager.pageNo,pager.pageSize, req.searchKey
     // const siteRes = await access.GetDomainList(req);
     //以下是模拟数据
     const siteRes = [
