@@ -1,6 +1,7 @@
 # Certd 开发 Agent 上下文
 
 进入仓库后先读本文。本文同时包含常驻规则、仓库地图、常用入口和验证命令；不要依赖分散规则文件。
+思考时也要使用中文。
 
 ## 项目定位
 
@@ -60,7 +61,6 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 
 - 后端聚焦单测：`corepack pnpm --dir packages\ui\certd-server test:unit`。
 - 后端完整测试：`corepack pnpm --dir packages\ui\certd-server test`。
-- 前端构建：`corepack pnpm --dir packages\ui\certd-client build`。
 - 前端改动文件格式化：`packages\ui\certd-client\node_modules\.bin\prettier.cmd --write <files>`。
 - 前端改动文件 ESLint 修复：`packages\ui\certd-client\node_modules\.bin\eslint.cmd --fix <files>`。
 - 后端改动文件 lint fix：`corepack pnpm  --dir packages\ui\certd-server run lint`。

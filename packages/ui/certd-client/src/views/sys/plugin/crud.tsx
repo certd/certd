@@ -7,6 +7,7 @@ import { Modal, message } from "ant-design-vue";
 //@ts-ignore
 import yaml from "js-yaml";
 import { usePluginImport } from "./use-import";
+import KvInput from "/@/components/plugins/common/kv-input.vue";
 import { usePluginConfig } from "./use-config";
 import { useSettingStore } from "/src/store/settings/index";
 import { usePluginStore } from "/@/store/plugin";
@@ -37,6 +38,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     return res;
   };
 
+  // const infoRequest = async ({ row }: AddReq) => {
+  //   return await api.GetObj(row.id);
+  // };
+
   const selectedRowKeys: Ref<any[]> = ref([]);
   context.selectedRowKeys = selectedRowKeys;
 
@@ -66,6 +71,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         addRequest,
         editRequest,
         delRequest,
+        // infoRequest,
       },
       actionbar: {
         buttons: {
@@ -187,6 +193,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 id: opts.res.id,
               },
             });
+          } else {
+            crudExpose.doRefresh();
           }
         },
       },
@@ -363,12 +371,24 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "text",
           form: {
             component: {
-              name: "a-select",
-              mode: "tags",
-              open: false,
-              allowClear: true,
+              name: KvInput,
+              vModel: "modelValue",
             },
             helper: t("certd.pluginDependenciesHelper"),
+          },
+          column: {
+            show: false,
+          },
+        },
+        "extra.dependPackages": {
+          title: t("certd.thirdPartyDependencies"),
+          type: "text",
+          form: {
+            component: {
+              name: KvInput,
+              vModel: "modelValue",
+            },
+            helper: t("certd.thirdPartyDependenciesHelper"),
           },
           column: {
             show: false,
@@ -419,12 +439,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: false,
           },
           valueBuilder({ row }) {
-            if (row.extra) {
+            if (typeof row.extra === "string") {
               row.extra = yaml.load(row.extra);
             }
           },
           valueResolve({ row }) {
-            if (row.extra) {
+            if (row.extra && typeof row.extra === "object") {
               row.extra = yaml.dump(row.extra);
             }
           },
