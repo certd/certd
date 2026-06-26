@@ -52,7 +52,7 @@ describe("RuntimeDepsService", () => {
     } as any;
 
     const plugins: RuntimeDependencyPluginDefine[] = [{ name: "a", dependPackages: { foo: "^1.0.0" } }];
-    const result = await service.ensureInstalled(plugins);
+    const result = await service.ensureInstalled({ plugins });
 
     assert.equal(result.registryUrl, "https://registry.npmmirror.com");
     assert.ok(fs.existsSync(path.join(rootDir, "package.json")));
@@ -78,7 +78,7 @@ describe("RuntimeDepsService", () => {
       },
     } as any;
 
-    await service.ensureDependencies({ directPkg: "^1.0.0" });
+    await service.ensureDependencies({ dependencies: { directPkg: "^1.0.0" } });
 
     const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, "package.json"), "utf8"));
     assert.deepEqual(manifest.dependencies, { directPkg: "^1.0.0" });
@@ -238,8 +238,8 @@ describe("RuntimeDepsService", () => {
       },
     } as any;
 
-    await service.ensureInstalled([{ name: "a", pluginType: "deploy", dependPackages: { foo: "^1.0.0" } }]);
-    await service.ensureInstalled([{ name: "b", pluginType: "deploy", dependPackages: { bar: "^2.0.0" } }]);
+    await service.ensureInstalled({ plugins: [{ name: "a", pluginType: "deploy", dependPackages: { foo: "^1.0.0" } }] });
+    await service.ensureInstalled({ plugins: [{ name: "b", pluginType: "deploy", dependPackages: { bar: "^2.0.0" } }] });
 
     const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, "package.json"), "utf8"));
     assert.deepEqual(manifest.dependencies, {
@@ -399,7 +399,7 @@ describe("RuntimeDepsService", () => {
       },
     } as any;
 
-    await service.ensureInstalled([{ name: "a", dependPackages: { foo: "^1.0.0" } }]);
+    await service.ensureInstalled({ plugins: [{ name: "a", dependPackages: { foo: "^1.0.0" } }] });
 
     const state = JSON.parse(fs.readFileSync(path.join(rootDir, "install-state.json"), "utf8"));
     assert.equal(state.nodeVersion, process.version);
@@ -436,7 +436,7 @@ describe("RuntimeDepsService", () => {
     serviceA.commandRunner = commandRunner as any;
     serviceB.commandRunner = commandRunner as any;
 
-    await Promise.all([serviceA.ensureInstalled([{ name: "a", dependPackages: { foo: "^1.0.0" } }]), serviceB.ensureInstalled([{ name: "a", dependPackages: { foo: "^1.0.0" } }])]);
+    await Promise.all([serviceA.ensureInstalled({ plugins: [{ name: "a", dependPackages: { foo: "^1.0.0" } }] }), serviceB.ensureInstalled({ plugins: [{ name: "a", dependPackages: { foo: "^1.0.0" } }] })]);
 
     assert.equal(installCount, 1);
   });
@@ -468,7 +468,7 @@ describe("RuntimeDepsService", () => {
         },
       } as any;
 
-      await service.ensureInstalled([{ name: "a", dependPackages: { foo: "^1.0.0" } }]);
+      await service.ensureInstalled({ plugins: [{ name: "a", dependPackages: { foo: "^1.0.0" } }] });
     } finally {
       if (oldNodeOptions == null) {
         delete process.env.NODE_OPTIONS;
