@@ -35,7 +35,7 @@ export class AccessService extends BaseService<AccessEntity> {
     return res;
   }
 
-  async add(param) {
+  async add(param: any): Promise<{ id: number; [key: string]: any }> {
     let oldEntity = null;
     if (param._copyFrom) {
       oldEntity = await this.info(param._copyFrom);

@@ -112,7 +112,7 @@ export class CommonEabToAcmeAccountFix {
       return null;
     }
     const email = eabAccess.email || `${caType}@common.certd.local`;
-    const exists = await this.accessService.findOne({
+    const exists: any = await this.accessService.findOne({
       where: {
         userId: 0,
         projectId: null,
