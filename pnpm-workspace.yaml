@@ -1,5 +1,5 @@
 packages:
-  - 'packages/**'  # <--------------开发插件请注释掉这一行，PR时本修改不要提交
+  - 'packages/**' # <--------------开发插件请注释掉这一行，PR时本修改不要提交
   - 'packages/ui/**'
   - '!**/test/**'
   - '!packages/libs/libs/lib-huawei'
@@ -7,6 +7,20 @@ packages:
   - '!packages/libs/libs/lib-jdcloud'
   # - '!packages/libs/libs/lib-k8s' # k8s引用了basic
   - '!packages/libs/libs/midway-flyway-js'
+
+#  禁止放开这里的注释，不要配置allowBuilds
+# allowBuilds:
+#   aws-crt: set this to true or false
+#   better-sqlite3: set this to true or false
+#   core-js: set this to true or false
+#   cos-js-sdk-v5: set this to true or false
+#   cpu-features: set this to true or false
+#   es5-ext: set this to true or false
+#   esbuild: set this to true or false
+#   ssh2: set this to true or false
+#   unrs-resolver: set this to true or false
+#   vue-demi: set this to true or false
+  
 
 linkWorkspacePackages: deep
 preferWorkspacePackages: true

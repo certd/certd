@@ -180,7 +180,8 @@ https://certd.handfree.work/
 3. 获得专业版功能
 
 
-> [50元专业版优惠券限时领取](https://app.handfree.work/subject/#/app/certd/product)  https://app.handfree.work/subject/#/app/certd/product      
+> [50元专业版优惠券限时领取](https://app.handfree.work/subject/#/app/certd/product) 
+> https://app.handfree.work/subject/#/app/certd/product      
 > app.handfree.work是Certd官方激活码购买平台
 
 

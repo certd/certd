@@ -1,9 +1,10 @@
 import { HttpClient } from "@certd/basic";
-import { AbstractTaskPlugin, CertTargetItem, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
+import { CertTargetItem, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine } from "@certd/plugin-lib";
-import { BaotaClient } from "../lib/client.js";
+import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
 import { BaotaAccess } from "../access.js";
+import { BaotaClient } from "../lib/client.js";
 
 /**
  * 宝塔-全自动部署插件
@@ -17,8 +18,9 @@ import { BaotaAccess } from "../access.js";
   group: pluginGroups.panel.key,
   desc: "根据证书域名自动匹配宝塔站点，全自动部署SSL证书。新增加速域名自动感知，自动新增部署",
   runStrategy: RunStrategy.AlwaysRun,
+  needPlus: true,
 })
-export class BaotaAutoDeploySiteCert extends AbstractTaskPlugin {
+export class BaotaAutoDeploySiteCert extends AbstractPlusTaskPlugin {
   /** 域名证书 */
   @TaskInput({
     title: "域名证书",
@@ -37,7 +39,7 @@ export class BaotaAutoDeploySiteCert extends AbstractTaskPlugin {
   /** 宝塔授权 */
   @TaskInput({
     title: "宝塔授权",
-    helper: "baota的接口密钥",
+    helper: "将自动查找证书匹配的站点，检查证书即将过期的站点并更新",
     component: {
       name: "access-selector",
       type: "baota",
@@ -55,7 +57,7 @@ export class BaotaAutoDeploySiteCert extends AbstractTaskPlugin {
   async onInstance() {}
 
   async execute(): Promise<any> {
-    this.logger.info("开始宝塔全自动部署证书");
+    this.logger.info(`开始宝塔全自动部署证书: ${this.certDomains.join(",")}`);
     const access = await this.getAccess<BaotaAccess>(this.accessId);
     const http: HttpClient = this.ctx.http;
     const client = new BaotaClient(access, http);

@@ -59,12 +59,11 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 
 ## 常用验证
 
-- 后端聚焦单测：`corepack pnpm --dir packages\ui\certd-server test:unit`。
-- 后端完整测试：`corepack pnpm --dir packages\ui\certd-server test`。
 - 前端改动文件格式化：`packages\ui\certd-client\node_modules\.bin\prettier.cmd --write <files>`。
 - 前端改动文件 ESLint 修复：`packages\ui\certd-client\node_modules\.bin\eslint.cmd --fix <files>`。
-- 后端改动文件 lint fix：`corepack pnpm  --dir packages\ui\certd-server run lint`。
-- 其他package lint fix：`corepack pnpm  --dir packages\xxx\xxxx run lint`。
+- 后端单元测试：`cd packages\ui\certd-server && npm run unit`。
+- 后端改动文件 lint fix：`cd packages\ui\certd-server && npm run lint`。
+- 其他package lint fix：`cd packages\xxx\xxxx && npm run lint`。
 
 ## 通用工作规则
 
@@ -164,7 +163,6 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 插件依赖的第三方 SDK 可能通过 runtime-deps 动态安装到后端运行目录 `./data/.runtime-deps`。分析阿里云、腾讯云等 SDK 行为时，需要进入该目录阅读实际安装版本代码。
 - 修改证书申请、验证、部署或通知行为时，先判断归属：ACME client、pipeline 核心、后端 module/service/entity/controller、具体插件、前端 view/form/schema。
 - 单个服务商或部署目标的问题，不要轻易修改共享 pipeline/core；只有可复用公共语义或跨插件一致行为才上移到 `packages/core/pipeline` 或 `packages/plugins/plugin-lib`。
-- ACME / EAB：公共 EAB 可能只能创建一次账号；跨用户复用公共 EAB 时，应保存并复用同一个 ACME account private key。
 - `newAccount({ onlyReturnExisting: true })` 可用同一个 account private key 取回已创建账号 URL，且不会再次消费 EAB。
 - 修改 EAB `kid` 后，应重新生成绑定该 `kid` 的 account private key；否则应阻止继续申请并提示刷新账号私钥。
 - 插件开发前先读对应技能：`.trae/skills/dns-provider-dev/SKILL.md`、`.trae/skills/task-plugin-dev/SKILL.md`、`.trae/skills/access-plugin-dev/SKILL.md`、`.trae/skills/plugin-converter/SKILL.md`。
@@ -206,5 +204,5 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 后端纯单测放在 `src/**/*.test.ts`，尽量与被测文件相邻；`test:unit` 只跑这些文件，构建/打包应排除 `*.test.ts`。
 - 单测需要 mock ESM 静态 import 时，优先使用 `esmock`，不要为了测试改业务代码结构。
 - 各包 `test:unit` 脚本应显式设置 `NODE_ENV=unittest`。
-- 单包单测优先用 `corepack pnpm --dir <包目录> test:unit`，例如 `corepack pnpm --dir packages\ui\certd-server test:unit`。
+- 单包单测优先用 `cd <包目录> && npm run test:unit`，例如 `cd packages\ui\certd-server && npm run test:unit`。
 - 优先对改动包运行聚焦测试或格式化/ESLint；只有跨包影响明显时再考虑更大范围构建。
