@@ -3,6 +3,8 @@ title: 腾讯云
 desc: 腾讯云域名DNS解析提供者
 accessType: tencent
 icon: svg:icon-tencentcloud
+dependPlugins:
+  access:tencent: '*'
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-tencent/dns-provider/tencent-dns-provider.js

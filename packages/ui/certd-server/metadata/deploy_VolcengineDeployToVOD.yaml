@@ -47,7 +47,7 @@ input:
     title: 区域
     helper: 选择火山引擎区域
     component:
-      name: select
+      name: a-select
       options:
         - value: cn-north-1
           label: 华北1（北京）
@@ -110,6 +110,8 @@ input:
           label: 点播源站
         - value: 2
           label: 自定义源站
+      value: 1
+      helper: 注意：封面加速域名不支持自定义源站
     required: false
     order: 0
   domainList:
