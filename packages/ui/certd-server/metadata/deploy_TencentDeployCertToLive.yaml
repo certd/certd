@@ -8,6 +8,8 @@ icon: svg:icon-tencentcloud
 desc: https://console.cloud.tencent.com/live/
 group: tencent
 needPlus: false
+dependPlugins:
+  access:tencent: '*'
 input:
   accessId:
     title: Access提供者

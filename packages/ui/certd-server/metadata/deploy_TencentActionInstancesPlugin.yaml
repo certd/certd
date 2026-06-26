@@ -7,6 +7,8 @@ title: 腾讯云-实例开关机
 icon: svg:icon-tencentcloud
 group: tencent
 desc: 腾讯云实例开关机
+dependPlugins:
+  access:tencent: '*'
 needPlus: false
 input:
   accessId:

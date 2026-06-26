@@ -12,6 +12,8 @@ desc: |-
   1. serverless集群请使用K8S部署插件；
   2. Opaque类型需要【上传到腾讯云】作为前置任务；
   3. ApiServer需要开通公网访问（或者certd可访问），实际上底层仍然是通过KubeClient进行部署
+dependPlugins:
+  access:tencent: '*'
 input:
   ingressClass:
     title: ingress证书类型

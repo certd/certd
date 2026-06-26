@@ -83,8 +83,8 @@ input:
       mode: tags
       type: plugin
       action: onGetGroupList
-      search: false
-      pager: false
+      search: true
+      pager: true
       single: true
       watches:
         - certDomains

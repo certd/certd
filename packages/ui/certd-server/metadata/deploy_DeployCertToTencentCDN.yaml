@@ -7,6 +7,8 @@ title: 腾讯云-部署到CDN（废弃）
 icon: svg:icon-tencentcloud
 group: tencent
 desc: 已废弃，请使用v2版
+dependPlugins:
+  access:tencent: '*'
 input:
   cert:
     title: 域名证书

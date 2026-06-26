@@ -2,6 +2,8 @@ name: tencent
 title: 腾讯云
 icon: svg:icon-tencentcloud
 order: 0
+dependPackages:
+  tencentcloud-sdk-nodejs: ^4.1.112
 input:
   secretId:
     title: secretId
