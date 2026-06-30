@@ -2,6 +2,18 @@
 
 ## 一、安装
 
+### 镜像版本选择
+
+Certd 提供多种 Docker 镜像版本，您可以根据需要选择：
+
+| 版本标签 | 基础系统  | 说明 |
+| --- | --- | --- | --- |
+| `latest` / `[version]` | Alpine Linux  | 默认版本，镜像体积小 |
+| `slim` / `[version]-slim` | Debian slim | glibc版本，dns解析兼容性更好（可能需要配置security_opt -seccomp=unconfined）|
+| `armv7` / `[version]-armv7` | Alpine Linux | ARMv7 架构专用版本 |
+
+> 如果您不确定使用哪个版本，请使用默认的 `latest` 版本。
+
 ### 一键脚本安装（推荐）
 
 如果您的服务器未安装 Docker，该脚本会自动为您安装 Docker 和 Docker Compose，并启动 Certd 容器。
