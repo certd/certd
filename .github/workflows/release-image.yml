@@ -94,21 +94,21 @@ jobs:
             greper/certd:${{steps.get_certd_version.outputs.result}}
             ghcr.io/${{ github.repository }}:latest
             ghcr.io/${{ github.repository }}:${{steps.get_certd_version.outputs.result}}
-      - name: Build alpine
+      - name: Build slim
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64,linux/arm64
           push: true
           context: ./packages/ui/
           build-args: |
-            base_type=alpine
+            base_type=slim
           tags: |
-            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:alpine
-            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}-alpine
-            greper/certd:alpine
-            greper/certd:${{steps.get_certd_version.outputs.result}}-alpine
-            ghcr.io/${{ github.repository }}:alpine
-            ghcr.io/${{ github.repository }}:${{steps.get_certd_version.outputs.result}}-alpine
+            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:slim
+            registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}-slim
+            greper/certd:slim
+            greper/certd:${{steps.get_certd_version.outputs.result}}-slim
+            ghcr.io/${{ github.repository }}:slim
+            ghcr.io/${{ github.repository }}:${{steps.get_certd_version.outputs.result}}-slim
 
       - name: Build armv7
         uses: docker/build-push-action@v6

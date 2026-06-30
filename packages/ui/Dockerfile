@@ -1,4 +1,4 @@
-ARG base_type=slim
+ARG base_type=alpine
 
 # 根据 base_type 参数选择基础镜像系列
 FROM --platform=linux/amd64 node:22-alpine AS base-amd64-alpine
@@ -21,17 +21,16 @@ RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 RUN cd /workspace/certd-server && pnpm install --production && npm run build-on-docker
 
 
-ARG base_type=slim
+ARG base_type=alpine
 
 FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT}-${base_type}
 EXPOSE 7001
 EXPOSE 7002
 
-ARG base_type=slim
+ARG base_type=alpine
 
 # 根据基础镜像发行版选择包管理器
 # trixie-slim -> apt-get, alpine -> apk
-# base_type=alpine 时不安装 openjdk
 RUN if [ -f /etc/debian_version ]; then \
         apt-get update \
         && apt-get install -y --no-install-recommends \
@@ -43,20 +42,14 @@ RUN if [ -f /etc/debian_version ]; then \
             iputils-ping \
             dnsutils \
             iproute2 \
-        && if [ "$base_type" != "alpine" ]; then \
-            wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /usr/share/keyrings/adoptium.gpg > /dev/null \
-            && echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list \
-            && apt-get update \
-            && apt-get install -y --no-install-recommends temurin-8-jre; \
-        fi \
+        && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /usr/share/keyrings/adoptium.gpg > /dev/null \
+        && echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends temurin-8-jre \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/*; \
     elif [ -f /etc/alpine-release ]; then \
-        if [ "$base_type" = "alpine" ]; then \
-            apk add --no-cache openssl; \
-        else \
-            apk add --no-cache openssl openjdk8-jre; \
-        fi; \
+        apk add --no-cache openssl openjdk8-jre; \
     else \
         echo "Unsupported base image"; exit 1; \
     fi
