@@ -1,9 +1,15 @@
-# 根据目标平台选择基础镜像：amd64/arm64 用 trixie-slim，arm/v7 没有 trixie-slim 发布，回退到 alpine
-FROM --platform=linux/amd64 node:22-trixie-slim AS base-amd64
-FROM --platform=linux/arm64 node:22-trixie-slim AS base-arm64
-FROM --platform=linux/arm/v7 node:22-alpine AS base-arm-v7
+ARG base_type=slim
 
-FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT} AS builder
+# 根据 base_type 参数选择基础镜像系列
+FROM --platform=linux/amd64 node:22-alpine AS base-amd64-alpine
+FROM --platform=linux/arm64 node:22-alpine AS base-arm64-alpine
+FROM --platform=linux/arm/v7 node:22-alpine AS base-arm-v7-alpine
+
+FROM --platform=linux/amd64 node:22-trixie-slim AS base-amd64-slim
+FROM --platform=linux/arm64 node:22-trixie-slim AS base-arm64-slim
+FROM --platform=linux/arm/v7 node:22-alpine AS base-arm-v7-slim
+
+FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT}-${base_type} AS builder
 
 WORKDIR /workspace/
 COPY . /workspace/
@@ -15,12 +21,17 @@ RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
 RUN cd /workspace/certd-server && pnpm install --production && npm run build-on-docker
 
 
-FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT}
+ARG base_type=slim
+
+FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT}-${base_type}
 EXPOSE 7001
 EXPOSE 7002
 
+ARG base_type=slim
+
 # 根据基础镜像发行版选择包管理器
 # trixie-slim -> apt-get, alpine -> apk
+# base_type=alpine 时不安装 openjdk
 RUN if [ -f /etc/debian_version ]; then \
         apt-get update \
         && apt-get install -y --no-install-recommends \
@@ -32,16 +43,20 @@ RUN if [ -f /etc/debian_version ]; then \
             iputils-ping \
             dnsutils \
             iproute2 \
-        && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /usr/share/keyrings/adoptium.gpg > /dev/null \
-        && echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list \
-        && apt-get update \
-        && apt-get install -y --no-install-recommends temurin-8-jre \
+        && if [ "$base_type" != "alpine" ]; then \
+            wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /usr/share/keyrings/adoptium.gpg > /dev/null \
+            && echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list \
+            && apt-get update \
+            && apt-get install -y --no-install-recommends temurin-8-jre; \
+        fi \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/*; \
     elif [ -f /etc/alpine-release ]; then \
-        apk add --no-cache \
-            openssl \
-            openjdk8-jre; \
+        if [ "$base_type" = "alpine" ]; then \
+            apk add --no-cache openssl; \
+        else \
+            apk add --no-cache openssl openjdk8-jre; \
+        fi; \
     else \
         echo "Unsupported base image"; exit 1; \
     fi
