@@ -6,6 +6,7 @@ import cryptoLib from "crypto";
 import { ILogger } from "@certd/basic";
 import dayjs from "dayjs";
 import { uniq } from "lodash-es";
+import JSZip from "jszip";
 
 export interface ICertInfoGetter {
   getByPipelineId: (pipelineId: number) => Promise<CertInfo>;
@@ -300,5 +301,71 @@ export class CertReader {
 
   static buildCertName(cert: CertInfo, useHash: boolean = false) {
     return new CertReader(cert).buildCertName("", useHash);
+  }
+
+  async buildZip(): Promise<Buffer> {
+    const cert = this.cert;
+
+    const zip = new JSZip();
+
+    if (cert.crt) {
+      zip.file("证书.pem", cert.crt);
+    }
+    if (cert.key) {
+      zip.file("私钥.pem", cert.key);
+    }
+    if (cert.ic) {
+      zip.file("中间证书.pem", cert.ic);
+    }
+    if (cert.crt) {
+      zip.file("cert.crt", cert.crt);
+    }
+    if (cert.key) {
+      zip.file("cert.key", cert.key);
+    }
+    if (cert.ic) {
+      zip.file("intermediate.crt", cert.ic);
+    }
+    if (cert.oc) {
+      zip.file("origin.crt", cert.oc);
+    }
+    if (cert.one) {
+      zip.file("one.pem", cert.one);
+    }
+    if (cert.p7b) {
+      zip.file("cert.p7b", cert.p7b);
+    }
+    if (cert.pfx) {
+      zip.file("cert.pfx", Buffer.from(cert.pfx, "base64"));
+    }
+    if (cert.der) {
+      zip.file("cert.der", Buffer.from(cert.der, "base64"));
+    }
+    if (cert.jks) {
+      zip.file("cert.jks", Buffer.from(cert.jks, "base64"));
+    }
+
+    zip.file(
+      "说明.txt",
+      `证书文件说明
+cert.crt：证书文件，包含证书链，pem格式
+cert.key：私钥文件，pem格式
+intermediate.crt：中间证书文件，pem格式
+origin.crt：原始证书文件，不含证书链，pem格式
+one.pem： 证书和私钥简单合并成一个文件，pem格式，crt正文+key正文
+cert.pfx：pfx格式证书文件，iis服务器使用
+cert.der：der格式证书文件
+cert.jks：jks格式证书文件，java服务器使用
+    `
+    );
+
+    return zip.generateAsync({ type: "nodebuffer" });
+  }
+
+  buildZipFilename(prefix = "cert"): string {
+    let domain = this.getMainDomain();
+    domain = domain.replaceAll(".", "_").replaceAll("*", "_");
+    const timeStr = dayjs().format("YYYYMMDDHHmmss");
+    return `${prefix}_${domain}_${timeStr}.zip`;
   }
 }

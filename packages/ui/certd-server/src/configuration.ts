@@ -131,7 +131,6 @@ export class MainConfiguration {
     setLogger((text: string) => {
       logger.info(text);
     });
-
     logger.info("当前环境：", this.app.getEnv()); // prod
   }
 }

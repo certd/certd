@@ -17,15 +17,6 @@ input:
         - ':cert:'
     required: true
     order: 0
-  certZip:
-    title: 证书压缩文件
-    helper: 请选择前置任务输出的域名证书压缩文件
-    component:
-      name: output-selector
-      from:
-        - ':certZip:'
-    required: true
-    order: 0
   email:
     title: 接收邮箱
     component:

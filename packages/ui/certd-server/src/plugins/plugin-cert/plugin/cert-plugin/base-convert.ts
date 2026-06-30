@@ -1,8 +1,7 @@
-import { AbstractTaskPlugin, FileItem, IContext, Step, TaskInput, TaskOutput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IContext, Step, TaskInput, TaskOutput } from "@certd/pipeline";
+import { CertConverter, CertReader, EVENT_CERT_APPLY_SUCCESS } from "@certd/plugin-lib";
 import dayjs from "dayjs";
 import type { CertInfo } from "./acme.js";
-import { CertReader, CertConverter, EVENT_CERT_APPLY_SUCCESS } from "@certd/plugin-lib";
-import JSZip from "jszip";
 
 export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
   @TaskInput({
@@ -72,12 +71,6 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
   })
   cert?: CertInfo;
 
-  @TaskOutput({
-    title: "域名证书压缩文件",
-    type: "certZip",
-  })
-  certZip?: FileItem;
-
   async onInstance() {
     this.userContext = this.ctx.userContext;
     this.lastStatus = this.ctx.lastStatus as Step;
@@ -108,7 +101,7 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
     }
     this._result.pipelinePrivateVars.cert = cert;
 
-    if (isNew) {
+    if (isNew || !cert.pfx) {
       try {
         const converter = new CertConverter({ logger: this.logger });
         const res = await converter.convert({
@@ -137,54 +130,6 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
         this.logger.error("转换证书格式失败", e);
       }
     }
-
-    if (isNew) {
-      const zipFileName = certReader.buildCertFileName("zip", certReader.detail.notBefore);
-      await this.zipCert(cert, zipFileName);
-    } else {
-      this.extendsFiles();
-    }
-    this.certZip = this._result.files[0];
-  }
-
-  async zipCert(cert: CertInfo, filename: string) {
-    const zip = new JSZip();
-    zip.file("证书.pem", cert.crt);
-    zip.file("私钥.pem", cert.key);
-    zip.file("中间证书.pem", cert.ic);
-    zip.file("cert.crt", cert.crt);
-    zip.file("cert.key", cert.key);
-    zip.file("intermediate.crt", cert.ic);
-    zip.file("origin.crt", cert.oc);
-    zip.file("one.pem", cert.one);
-    zip.file("cert.p7b", cert.p7b);
-    if (cert.pfx) {
-      zip.file("cert.pfx", Buffer.from(cert.pfx, "base64"));
-    }
-    if (cert.der) {
-      zip.file("cert.der", Buffer.from(cert.der, "base64"));
-    }
-    if (cert.jks) {
-      zip.file("cert.jks", Buffer.from(cert.jks, "base64"));
-    }
-
-    zip.file(
-      "说明.txt",
-      `证书文件说明
-cert.crt：证书文件，包含证书链，pem格式
-cert.key：私钥文件，pem格式
-intermediate.crt：中间证书文件，pem格式
-origin.crt：原始证书文件，不含证书链，pem格式
-one.pem： 证书和私钥简单合并成一个文件，pem格式，crt正文+key正文
-cert.pfx：pfx格式证书文件，iis服务器使用
-cert.der：der格式证书文件
-cert.jks：jks格式证书文件，java服务器使用
-    `
-    );
-
-    const content = await zip.generateAsync({ type: "nodebuffer" });
-    this.saveFile(filename, content);
-    this.logger.info(`已保存文件:${filename}`);
   }
 
   formatCert(pem: string) {
