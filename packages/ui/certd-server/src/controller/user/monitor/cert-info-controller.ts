@@ -5,7 +5,6 @@ import { CertInfoService } from "../../../modules/monitor/index.js";
 import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
 import { SelectQueryBuilder } from "typeorm";
 import { logger } from "@certd/basic";
-import fs from "fs";
 import dayjs from "dayjs";
 import { ApiTags } from "@midwayjs/swagger";
 import { CertReader } from "@certd/plugin-lib";
@@ -167,29 +166,29 @@ export class CertInfoController extends CrudController<CertInfoService> {
   @Get("/download", { description: Constants.per.authOnly, summary: "下载证书文件" })
   async download(@Query("id") id: number) {
     const { userId, projectId } = await this.checkOwner(this.getService(), id, "read");
-    const certInfo = await this.getService().info(id);
-    if (certInfo == null) {
+    const certInfoEntity = await this.getService().info(id);
+    if (certInfoEntity == null) {
       throw new CommonException("file not found");
     }
-    if (certInfo.userId !== userId) {
+    if (certInfoEntity.userId !== userId) {
       throw new CommonException("file not found");
     }
-    if (projectId && certInfo.projectId !== projectId) {
+    if (projectId && certInfoEntity.projectId !== projectId) {
       throw new CommonException("file not found");
     }
-    // koa send file
-    // 下载文件的名称
-    // const filename = file.filename;
-    // 要下载的文件的完整路径
-    const path = certInfo.certFile;
-    if (!path) {
-      throw new CommonException("file not found");
+    if (!certInfoEntity.certInfo) {
+      throw new CommonException("证书数据未生成");
     }
-    logger.info(`download:${path}`);
-    // 以流的形式下载文件
-    this.ctx.attachment(path);
-    this.ctx.set("Content-Type", "application/octet-stream");
 
-    return fs.createReadStream(path);
+    const certInfo = JSON.parse(certInfoEntity.certInfo);
+    const certReader = new CertReader(certInfo);
+    const zipBuffer = await certReader.buildZip();
+    const filename = certReader.buildZipFilename("cert");
+
+    logger.info(`download cert zip: ${filename}, size: ${zipBuffer.length}`);
+
+    this.ctx.attachment(filename);
+    this.ctx.set("Content-Type", "application/zip");
+    this.ctx.body = zipBuffer;
   }
 }

@@ -556,9 +556,6 @@ output:
   cert:
     title: 域名证书
     type: cert
-  certZip:
-    title: 域名证书压缩文件
-    type: certZip
 pluginType: deploy
 type: builtIn
 scriptFilePath: /plugins/plugin-cert/plugin/cert-plugin/apply.js

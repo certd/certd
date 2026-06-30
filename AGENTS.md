@@ -77,6 +77,20 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 注释优先使用中文，尤其是业务规则、兼容逻辑、协议细节和隐藏风险；文件已有英文风格或引用外部术语时可保持一致。
 - 遵守 DRY 和单一职责；第三次出现的业务规则、字段转换、权限判断、Repository 选择、事务传播、金额计算等逻辑，应优先抽成合适 helper 或 service 方法。
 
+
+## 测试与验证
+
+- 务必写单元测试，覆盖主要业务逻辑。
+- 实现新功能或修复行为缺陷前，优先补单元测试并先确认红灯，再实现并跑聚焦验证。
+- 确实不适合先写测试时，在回复中说明原因和替代验证方式。
+- 后补单元测试时，按正确行为写预期；若红灯需要修改既有实现，先向用户确认这是 bug 还是既有需求，避免未经确认改变行为。
+- 后端纯单测放在 `src/**/*.test.ts`，尽量与被测文件相邻；`test:unit` 只跑这些文件，构建/打包应排除 `*.test.ts`。
+- 单测需要 mock ESM 静态 import 时，优先使用 `esmock`，不要为了测试改业务代码结构。
+- 各包 `test:unit` 脚本应显式设置 `NODE_ENV=unittest`。
+- 单包单测优先用 `cd <包目录> && npm run test:unit`，例如 `cd packages\ui\certd-server && npm run test:unit`。
+- 优先对改动包运行聚焦测试或格式化/ESLint；只有跨包影响明显时再考虑更大范围构建。
+
+
 ## 后端规则
 
 - 后端主包是 `packages/ui/certd-server`，使用 Node.js、ESM、TypeScript、MidwayJS 3、Koa、TypeORM 和 SQL 迁移。
@@ -196,13 +210,3 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 后端业务数据、接口、实体、权限、迁移：改 `packages/ui/certd-server/src/modules` 与 `src/controller`。
 - 表单、列表、插件配置 UI：改 `packages/ui/certd-client/src/views/certd` 及对应 `src/api`。
 
-## 测试与验证
-
-- 实现新功能或修复行为缺陷前，优先补单元测试并先确认红灯，再实现并跑聚焦验证。
-- 确实不适合先写测试时，在回复中说明原因和替代验证方式。
-- 后补单元测试时，按正确行为写预期；若红灯需要修改既有实现，先向用户确认这是 bug 还是既有需求，避免未经确认改变行为。
-- 后端纯单测放在 `src/**/*.test.ts`，尽量与被测文件相邻；`test:unit` 只跑这些文件，构建/打包应排除 `*.test.ts`。
-- 单测需要 mock ESM 静态 import 时，优先使用 `esmock`，不要为了测试改业务代码结构。
-- 各包 `test:unit` 脚本应显式设置 `NODE_ENV=unittest`。
-- 单包单测优先用 `cd <包目录> && npm run test:unit`，例如 `cd packages\ui\certd-server && npm run test:unit`。
-- 优先对改动包运行聚焦测试或格式化/ESLint；只有跨包影响明显时再考虑更大范围构建。

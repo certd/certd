@@ -138,10 +138,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             type: "link",
             icon: "ant-design:download-outlined",
             async click({ row }) {
-              if (!row.certFile) {
-                notification.error({ message: t("certd.certificateNotGenerated") });
-                return;
-              }
               let url = "/api/monitor/cert/download?id=" + row.id;
               if (projectStore.isEnterprise) {
                 url += `&projectId=${projectStore.currentProject?.id}`;
