@@ -84,7 +84,6 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
     const emitter = this.ctx.emitter;
     const value = {
       cert: this.cert,
-      file: this._result.files[0].path,
     };
     await emitter.emit(EVENT_CERT_APPLY_SUCCESS, value);
   }

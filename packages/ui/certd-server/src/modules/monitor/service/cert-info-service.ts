@@ -12,7 +12,6 @@ export type UploadCertReq = {
   fromType?: string;
   userId?: number;
   projectId?: number;
-  file?: any;
 };
 
 @Provide("CertInfoService")
@@ -158,7 +157,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     };
   }
 
-  async updateCertByPipelineId(pipelineId: number, cert: CertInfo, file?: string, fromType = "pipeline") {
+  async updateCertByPipelineId(pipelineId: number, cert: CertInfo, fromType = "pipeline") {
     const found = await this.repository.findOne({
       where: {
         pipelineId,
@@ -168,7 +167,6 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       id: found?.id,
       certReader: new CertReader(cert),
       fromType,
-      file,
     });
     return bean;
   }
@@ -194,9 +192,6 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     bean.certProvider = certReader.detail.issuer.commonName;
     bean.userId = userId;
     bean.projectId = req.projectId;
-    if (req.file) {
-      bean.certFile = req.file;
-    }
     await this.addOrUpdate(bean);
     return bean;
   }

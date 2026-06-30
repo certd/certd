@@ -42,6 +42,7 @@ export class CertInfoEntity {
   @Column({ name: "cert_info", comment: "证书详情" })
   certInfo: string;
 
+  // Deprecated 废弃
   @Column({ name: "cert_file", comment: "证书下载" })
   certFile: string;
 
