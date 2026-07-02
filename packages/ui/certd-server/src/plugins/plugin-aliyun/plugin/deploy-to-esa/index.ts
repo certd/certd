@@ -11,7 +11,7 @@ import dayjs from "dayjs";
   title: "阿里云-部署至ESA",
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
-  desc: "部署证书到阿里云ESA(边缘安全加速)，自动删除过期证书",
+  desc: "部署证书到阿里云ESA(边缘安全加速)，支持边缘证书和SaaS证书两种模式",
   needPlus: false,
   default: {
     strategy: {
@@ -76,6 +76,22 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
   })
   accessId!: string;
 
+  @TaskInput({
+    title: "部署模式",
+    value: "edge",
+    component: {
+      name: "a-radio-group",
+      vModel: "value",
+      options: [
+        { label: "边缘证书", value: "edge" },
+        { label: "SaaS证书", value: "saas" },
+      ],
+    },
+    helper: "边缘证书：将证书部署到站点的边缘节点；SaaS证书：将证书部署到站点的SaaS域名",
+    required: true,
+  })
+  deployMode!: "edge" | "saas";
+
   @TaskInput(
     createRemoteSelectInputDefine({
       title: "站点",
@@ -85,6 +101,29 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
     })
   )
   siteIds!: string[];
+
+  @TaskInput(
+    createRemoteSelectInputDefine({
+      title: "SaaS域名",
+      helper: "请选择要部署证书的SaaS域名（SaaS证书模式下必选）",
+      action: AliyunDeployCertToESA.prototype.onGetCustomHostnameList.name,
+      watches: ["siteIds", "accessId", "regionId"],
+      required: false,
+      mergeScript: `
+        return {
+          show: ctx.compute(({form})=>{
+            return form.deployMode === 'saas'
+          }),
+          component:{
+            form: ctx.compute(({form})=>{
+              return form
+            })
+          },
+        }
+      `,
+    })
+  )
+  saasDomainIds!: string[];
 
   @TaskInput({
     title: "免费证书数量限制",
@@ -135,20 +174,27 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
   }
 
   async execute(): Promise<void> {
-    this.logger.info("开始部署证书到阿里云");
+    this.logger.info("开始部署证书到阿里云ESA");
     const access = await this.getAccess<AliyunAccess>(this.accessId);
 
     const client = await this.getClient(access);
 
     const { certId, certName } = await this.getAliyunCertId(access);
 
+    if (this.deployMode === "saas") {
+      await this.executeSaaS(client, certId, certName);
+    } else {
+      await this.executeEdge(client, certId, certName);
+    }
+  }
+
+  async executeEdge(client: AliyunClientV2, certId: number, certName: string) {
+    this.logger.info("边缘证书模式");
     for (const siteId of this.siteIds) {
       await this.clearSiteLimitCert(client, siteId);
       try {
         const res = await client.doRequest({
-          // 接口名称
           action: "SetCertificate",
-          // 接口版本
           version: "2024-09-10",
           data: {
             body: {
@@ -159,7 +205,7 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
             },
           },
         });
-        this.logger.info(`部署站点[${siteId}]证书成功：${JSON.stringify(res)}`);
+        this.logger.info(`部署站点[${siteId}]边缘证书成功：${JSON.stringify(res)}`);
       } catch (e) {
         if (e.message.includes("Certificate.Duplicated")) {
           this.logger.info(`站点[${siteId}]证书已存在,无需重复部署`);
@@ -171,6 +217,47 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
           await this.clearSiteExpiredCert(client, siteId);
         } catch (e) {
           this.logger.error(`清理站点[${siteId}]过期证书失败`, e);
+        }
+      }
+    }
+  }
+
+  async executeSaaS(client: AliyunClientV2, certId: number, certName: string) {
+    this.logger.info("SaaS证书模式");
+
+    if (!this.siteIds || this.siteIds.length === 0) {
+      throw new Error("SaaS证书模式下请先选择站点");
+    }
+    if (this.siteIds.length > 1) {
+      throw new Error(`SaaS证书模式下站点只能单选，当前已选择 ${this.siteIds.length} 个站点，请修改为只选择一个站点`);
+    }
+
+    if (!this.saasDomainIds || this.saasDomainIds.length === 0) {
+      throw new Error("SaaS证书模式下请选择要部署的SaaS域名");
+    }
+
+    for (const hostnameId of this.saasDomainIds) {
+      this.logger.info(`开始更新SaaS域名[${hostnameId}]证书`);
+      try {
+        const res = await client.doRequest({
+          action: "UpdateCustomHostname",
+          version: "2024-09-10",
+          data: {
+            body: {
+              HostnameId: parseInt(hostnameId, 10),
+              SslFlag: "on",
+              CertType: "cas",
+              CasId: certId,
+              CasRegion: this.regionId,
+            },
+          },
+        });
+        this.logger.info(`更新SaaS域名[${hostnameId}]证书成功：${JSON.stringify(res)}`);
+      } catch (e) {
+        if (e.message?.includes("Certificate.Duplicated")) {
+          this.logger.info(`SaaS域名[${hostnameId}]证书已存在,无需重复部署`);
+        } else {
+          throw e;
         }
       }
     }
@@ -205,6 +292,48 @@ export class AliyunDeployCertToESA extends AbstractTaskPlugin {
         label: item.SiteName,
         value: item.SiteId,
         domain: item.SiteName,
+      };
+    });
+    return this.ctx.utils.options.buildGroupOptions(options, this.certDomains);
+  }
+
+  async onGetCustomHostnameList(data: any) {
+    if (!this.accessId) {
+      throw new Error("请选择Access授权");
+    }
+    if (!this.siteIds || this.siteIds.length === 0) {
+      throw new Error("请先选择站点");
+    }
+    if (this.siteIds.length > 1) {
+      throw new Error("SaaS模式下站点只能单选，请先修改站点选择");
+    }
+
+    const siteId = this.siteIds[0];
+    const access = await this.getAccess<AliyunAccess>(this.accessId);
+    const client = await this.getClient(access);
+
+    const res = await client.doRequest({
+      action: "ListCustomHostnames",
+      version: "2024-09-10",
+      data: {
+        body: {
+          SiteId: parseInt(siteId, 10),
+          PageSize: 500,
+          PageNumber: 1,
+        },
+      },
+    });
+
+    const hostnames = res?.Hostnames;
+    if (!hostnames || hostnames.length === 0) {
+      throw new Error("该站点下没有找到SaaS域名，请先在ESA控制台添加SaaS域名");
+    }
+
+    const options = hostnames.map((item: any) => {
+      return {
+        label: `${item.Hostname}（${item.Status}）`,
+        value: String(item.HostnameId),
+        domain: item.Hostname,
       };
     });
     return this.ctx.utils.options.buildGroupOptions(options, this.certDomains);
