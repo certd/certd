@@ -54,13 +54,7 @@ export class AsiaIspClient {
   /**
    * 生成 HMAC-SHA1 签名，结果做 URL-safe Base64（替换 + → -，/ → _）
    */
-  private buildSignature(opts: {
-    body?: any;
-    method: string;
-    nonce: string;
-    queryString: string;
-    timestamp: string;
-  }): string {
+  private buildSignature(opts: { body?: any; method: string; nonce: string; queryString: string; timestamp: string }): string {
     const { body, method, nonce, queryString, timestamp } = opts;
     const sk = this.config.accessKeySecret;
 
@@ -71,13 +65,7 @@ export class AsiaIspClient {
       pieces.push(`body=${JSON.stringify(body)}`);
     }
 
-    pieces.push(
-      `method=${method}`,
-      `nonce=${nonce}`,
-      `queryString=${queryString}`,
-      `timestamp=${timestamp}`,
-      `uri=${URI}`
-    );
+    pieces.push(`method=${method}`, `nonce=${nonce}`, `queryString=${queryString}`, `timestamp=${timestamp}`, `uri=${URI}`);
 
     const message = pieces.join("&");
     const hmac = crypto.createHmac("sha1", sk).update(message).digest("base64");
@@ -88,11 +76,7 @@ export class AsiaIspClient {
   /**
    * 通用 API 请求（完全对齐 Python 实现）
    */
-  async doRequest(req: {
-    method: string;
-    action: string;
-    data?: any;
-  }): Promise<any> {
+  async doRequest(req: { method: string; action: string; data?: any }): Promise<any> {
     const { method, action, data } = req;
     const nonce = String(Math.floor(Math.random() * 90000000) + 10000000);
     const timestamp = Date.now().toString();
@@ -205,9 +189,8 @@ export class AsiaIspClient {
       return certId;
     } catch (e: any) {
       const msg = e.message || "";
-      const isExists = msg.includes("Certificate already exists") || e.code ==='80003' ||
-      msg.includes("Certificate note name already exists") || e.code ==='80010'
-      //返回数据: {"code":"80010","msg":"Certificate note name already exists","data":null} 
+      const isExists = msg.includes("Certificate already exists") || e.code === "80003" || msg.includes("Certificate note name already exists") || e.code === "80010";
+      //返回数据: {"code":"80010","msg":"Certificate note name already exists","data":null}
       if (!isExists) {
         throw e;
       }
@@ -240,11 +223,7 @@ export class AsiaIspClient {
    * 部署证书到 CDN 域名（修改域名配置，绑定证书）
    * PUT /openapi/v3/stat?action=domainModify
    */
-  async deployCertToDomain(req: {
-    domain: string;
-    certId: number;
-    protocol: string;
-  }): Promise<void> {
+  async deployCertToDomain(req: { domain: string; certId: number; protocol: string }): Promise<void> {
     await this.doRequest({
       method: "PUT",
       action: "domainModify",
