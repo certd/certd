@@ -100,7 +100,7 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
 
     if (this.domainMatchMode === "auto") {
       const { result, deployedList } = await this.autoMatchedDeploy({
-        targetName: "CDN加速域名",
+        targetName: "DCDN加速域名",
         uploadCert: async () => {
           return await sslClient.uploadCertOrGet(this.cert);
         },
@@ -190,13 +190,15 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
 
     const client = await this.getClient(access);
     const pager = new Pager(data);
-    const params = {
-      DomainName: data.searchKey,
+    const params: any = {
       PageSize: pager.pageSize || 200,
       PageNumber: pager.pageNo || 1,
       DomainSearchType: "fuzzy_match",
     };
 
+    if (data.searchKey) {
+      params.DomainName = data.searchKey;
+    }
     const requestOption = {
       method: "POST",
       formatParams: false,

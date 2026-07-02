@@ -254,12 +254,15 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     const client = await this.getClient(access);
 
     const pager = new Pager(data);
-    const params = {
-      DomainName: data.searchKey,
+    const params: any = {
       PageSize: pager.pageSize || 100,
       PageNumber: pager.pageNo || 1,
       DomainSearchType: "fuzzy_match",
     };
+
+    if (data.searchKey) {
+      params.DomainName = data.searchKey;
+    }
 
     const requestOption = {
       method: "POST",
