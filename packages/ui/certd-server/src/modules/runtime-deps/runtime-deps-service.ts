@@ -310,27 +310,27 @@ export class RuntimeDepsService {
     });
   }
 
-  async importRuntime(specifier: string,logger?:ILogger) {
+  async importRuntime(specifier: string, logger?: ILogger) {
     if (this.isNativeImportSpecifier(specifier)) {
       return await import(specifier);
     }
 
-    const resolved = await this.resolveImportSpecifier(specifier,logger);
+    const resolved = await this.resolveImportSpecifier(specifier, logger);
     return await import(pathToFileURL(resolved).href);
   }
 
-  private async resolveImportSpecifier(specifier: string,logger?:ILogger) {
+  private async resolveImportSpecifier(specifier: string, logger?: ILogger) {
     try {
       return this.resolveRuntimeSpecifier(specifier).resolved;
     } catch (runtimeError: any) {
       if (!this.isModuleNotFoundError(runtimeError)) {
         throw runtimeError;
       }
-      return await this.resolveMissingRuntimeSpecifier(specifier, runtimeError,logger);
+      return await this.resolveMissingRuntimeSpecifier(specifier, runtimeError, logger);
     }
   }
 
-  private async resolveMissingRuntimeSpecifier(specifier: string, runtimeError: any,logger?:ILogger) {
+  private async resolveMissingRuntimeSpecifier(specifier: string, runtimeError: any, logger?: ILogger) {
     const packageName = this.parsePackageName(specifier);
     const lazyRange = this.lazyDependencies?.[packageName];
     if (!lazyRange) {
@@ -341,7 +341,7 @@ export class RuntimeDepsService {
       }
     }
     try {
-      await this.ensureLazyDependency(packageName,logger);
+      await this.ensureLazyDependency(packageName, logger);
       return this.resolveRuntimeSpecifier(specifier).resolved;
     } catch (lazyError: any) {
       return this.resolveProjectSpecifier(specifier, lazyError).resolved;
@@ -392,7 +392,7 @@ export class RuntimeDepsService {
     return parts[0];
   }
 
-  private async ensureLazyDependency(packageName: string,logger?:ILogger) {
+  private async ensureLazyDependency(packageName: string, logger?: ILogger) {
     const range = this.lazyDependencies?.[packageName];
     if (!range) {
       throw new Error(`动态依赖未安装且未配置懒加载版本: ${packageName}`);
@@ -400,7 +400,7 @@ export class RuntimeDepsService {
     const dependencies = {
       [packageName]: range,
     };
-    await this.ensureDependencies({ dependencies,logger });
+    await this.ensureDependencies({ dependencies, logger });
   }
 
   private isModuleNotFoundError(error: any) {
@@ -444,7 +444,7 @@ export class RuntimeDepsService {
     let [pluginType, subtype, name] = parts;
     if (parts.length === 2) {
       name = subtype;
-    }else if (parts.length === 3) {
+    } else if (parts.length === 3) {
       //无修改
     } else {
       const ownerName = owner?.name || pluginKey;
