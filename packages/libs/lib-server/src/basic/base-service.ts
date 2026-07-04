@@ -56,7 +56,7 @@ export abstract class BaseService<T> {
     return dataSource.getRepository(entity);
   }
 
-  protected buildUserProjectQuery(userId: number, projectId?: number) {
+  public buildUserProjectQuery(userId: number, projectId?: number) {
     const query: { userId: number; projectId?: number; [key: string]: any } = {
       userId,
     };

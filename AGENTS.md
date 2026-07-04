@@ -102,7 +102,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 只有需要事务传播时才定义 `ctx`；普通查询、纯函数和简单私有方法继续使用明确参数。
 - 需要按事务上下文取 Repository 时，用 `BaseService.getRepo(ctx, EntityClass)`。
 - 需要“有事务则复用、无事务则开启”时，用 `BaseService.transactionWithCtx(ctx, callback)`。
-- 拼接可选 `projectId` 查询条件时，用 `BaseService.buildUserProjectQuery(userId, projectId)`；不要直接写 `{ userId, projectId }`。
+- 拼接可选 `projectId` 查询条件时，**必须**使用 `BaseService.buildUserProjectQuery(userId, projectId)`，禁止直接写 `{ userId, projectId }`。因为 `projectId` 可能为 `null`/`undefined`，直接放入查询会生成错误的 `WHERE projectId = NULL` 条件。
 - `ctx` 类型复用 `BaseService` 导出的 `ServiceContext`。
 - 新增 service 方法避免与 `BaseService` 方法签名冲突，例如不要用 `delete(id)` 覆盖 `delete(ids, where?)`；改用 `deleteById` 等具体名称。
 
