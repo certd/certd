@@ -150,7 +150,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
     // 检查有效期
     const leftDays = Math.floor((expires - dayjs().valueOf()) / (1000 * 60 * 60 * 24));
     this.logger.info(`证书有效期剩余天数：${leftDays}`);
-    if (totalDays < maxDays) {
+    if (totalDays < 10 && totalDays < maxDays) {
       this.logger.warn(`当前更新天数为${maxDays}，证书总天数${totalDays}，总天数小于更新天数（更新天数是指到期前多少天更新证书，您可以在任务配置中调整该值）`);
       maxDays = Math.floor(totalDays / 2);
       if (maxDays < 2) {
