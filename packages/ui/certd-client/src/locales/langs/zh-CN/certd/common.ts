@@ -70,7 +70,7 @@ export default {
   confirmToggleStatus: "确定要{action}吗？",
   batchDelete: "批量删除",
   sourcee: "来源",
-  clickToToggle: "点击切换启用/禁用",
+  clickToToggle: "点击启用/禁用",
   nickName: "昵称",
   avatar: "头像",
   expires: "过期",
