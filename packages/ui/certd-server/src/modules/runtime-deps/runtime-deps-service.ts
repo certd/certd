@@ -441,7 +441,8 @@ export class RuntimeDepsService {
 
   private getDefineByPluginKey(pluginKey: string, owner?: RuntimeDependencyPluginDefine): RuntimeDependencyPluginDefine {
     const parts = pluginKey.split(":");
-    let [pluginType, subtype, name] = parts;
+    const [pluginType, subtype, rawName] = parts;
+    let name = rawName;
     if (parts.length === 2) {
       name = subtype;
     } else if (parts.length === 3) {

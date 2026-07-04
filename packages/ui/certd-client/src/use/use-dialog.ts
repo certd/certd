@@ -31,6 +31,13 @@ export function useFormDialog() {
         crudOptions: {
           columns: req.columns,
           form: {
+            labelCol: {
+              // @ts-ignore
+              span: null,
+              style: {
+                width: "100px",
+              },
+            },
             initialForm: req.initialForm,
             wrapper: warpper,
             async afterSubmit() {},
@@ -44,7 +51,7 @@ export function useFormDialog() {
       };
     }
     const { crudOptions } = createCrudOptions();
-    await openCrudFormDialog({ crudOptions });
+    return await openCrudFormDialog({ crudOptions });
   }
   return {
     openFormDialog,

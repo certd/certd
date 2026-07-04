@@ -18,6 +18,10 @@ defineProps<{
   showButton: boolean;
 }>();
 
+const emit = defineEmits<{
+  (e: "close"): void;
+}>();
+
 let passwordFormRef = ref();
 
 type OpenOptions = {
@@ -68,8 +72,8 @@ const passwordFormOptions: CrudOptions = {
     },
     async afterSubmit() {
       const formData = passwordFormRef.value?.getFormData?.();
-      const message = formData?.init ? t("authentication.initPasswordSuccessMessage") : t("authentication.successMessage");
-      notification.success({ message });
+      const msg = formData?.init ? t("authentication.initPasswordSuccessMessage") : t("authentication.successMessage");
+      notification.success({ message: msg });
     },
   },
   columns: {
@@ -84,6 +88,7 @@ const passwordFormOptions: CrudOptions = {
       title: t("authentication.oldPassword"),
       type: "password",
       form: {
+        //@ts-ignore
         show: compute(({ form }) => form.init !== true),
         rules: [{ required: true, message: t("authentication.oldPasswordRequired") }],
       },
@@ -118,16 +123,18 @@ const passwordFormOptions: CrudOptions = {
 
 async function open(opts: OpenOptions = {}) {
   const formOptions = buildFormOptions(passwordFormOptions);
-  formOptions.newInstance = true; //新实例打开
+  formOptions.newInstance = true;
   if (opts.init) {
     formOptions.wrapper.title = t("authentication.initPasswordTitle");
   }
+  formOptions.wrapper.onClosed = () => {
+    emit("close");
+  };
   passwordFormRef.value = await openDialog(formOptions);
   passwordFormRef.value.setFormData({
     init: opts.init === true,
     password: opts.password || "",
   });
-  console.log(passwordFormRef.value);
 }
 
 const scope = ref({
