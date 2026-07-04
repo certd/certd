@@ -69,7 +69,7 @@ export class MinePasskeyController extends BaseController {
   public async getPasskeys() {
     const userId = this.getUserId();
     const passkeys = await this.passkeyService.find({
-      select: ["id", "deviceName", "registeredAt", "transports", "passkeyId", "updateTime"],
+      select: ["id", "deviceName", "registeredAt", "transports", "passkeyId", "rpId", "updateTime"],
       where: { userId },
       order: { registeredAt: "DESC" },
     });
