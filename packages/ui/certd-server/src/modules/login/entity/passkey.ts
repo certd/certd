@@ -11,7 +11,7 @@ export class PasskeyEntity {
   @Column({ name: "device_name", comment: "设备名称" })
   deviceName: string;
 
-  @Column({ name: "passkey_id", comment: "passkey_id" })
+  @Column({ name: "passkey_id", comment: "passkey_id", unique: true })
   passkeyId: string;
 
   @Column({ name: "public_key", comment: "公钥", type: "text" })
@@ -22,6 +22,9 @@ export class PasskeyEntity {
 
   @Column({ name: "transports", comment: "传输方式", type: "text", nullable: true })
   transports: string;
+
+  @Column({ name: "rp_id", comment: "注册时的rpId，域名可能会变", nullable: true })
+  rpId: string;
 
   @Column({ name: "registered_at", comment: "注册时间" })
   registeredAt: number;

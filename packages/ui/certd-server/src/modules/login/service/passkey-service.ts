@@ -1,5 +1,5 @@
 import { cache, logger } from "@certd/basic";
-import { AuthException, BaseService, SysInstallInfo, SysSettingsService, SysSiteInfo } from "@certd/lib-server";
+import { AuthException, BaseService, SysSettingsService, SysSiteInfo } from "@certd/lib-server";
 import { isComm } from "@certd/plus-core";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
@@ -23,19 +23,15 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     return this.repository;
   }
 
-  async getRpInfo() {
+  async getRpInfo(ctx: any) {
     let rpName = "Certd";
     if (isComm()) {
       const siteInfo = await this.sysSettingsService.getSetting<SysSiteInfo>(SysSiteInfo);
       rpName = siteInfo.title || rpName;
     }
 
-    const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
-
-    const url = installInfo.bindUrl || "http://localhost:7001";
-    const uri = new URL(url);
-    const rpId = uri.hostname;
-    const origin = uri.origin;
+    const rpId = ctx.hostname;
+    const origin = ctx.origin;
 
     return {
       rpName,
@@ -47,7 +43,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     const { generateRegistrationOptions } = await import("@simplewebauthn/server");
     const user = await this.userService.info(userId);
 
-    const { rpName, rpId } = await this.getRpInfo();
+    const { rpName, rpId } = await this.getRpInfo(ctx);
 
     const options = await generateRegistrationOptions({
       rpName: rpName,
@@ -84,7 +80,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       throw new AuthException("注册验证失败");
     }
 
-    const { rpId, origin } = await this.getRpInfo();
+    const { rpId, origin } = await this.getRpInfo(ctx);
 
     let verification: any = null;
     const verifyReq = {
@@ -115,7 +111,7 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
   }
 
   async generateAuthenticationOptions(ctx: any) {
-    const { rpId } = await this.getRpInfo();
+    const { rpId } = await this.getRpInfo(ctx);
     const { generateAuthenticationOptions } = await import("@simplewebauthn/server");
     const options = await generateAuthenticationOptions({
       rpID: rpId,
@@ -146,13 +142,19 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       throw new AuthException("Passkey不存在");
     }
 
-    const { rpId, origin } = await this.getRpInfo();
+    const { rpId, origin } = await this.getRpInfo(ctx);
+
+    if (passkey.rpId && passkey.rpId !== rpId) {
+      throw new AuthException(`当前站点域名(${rpId})与Passkey注册域名(${passkey.rpId})不一致，请在${passkey.rpId}域名下使用该Passkey登录`);
+    }
+
+    const expectedRPID = passkey.rpId || rpId;
 
     const verification = await verifyAuthenticationResponse({
       response: credential,
       expectedChallenge: challenge,
       expectedOrigin: origin,
-      expectedRPID: rpId,
+      expectedRPID,
       requireUserVerification: false,
       credential: {
         id: passkey.passkeyId,
@@ -164,6 +166,11 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
 
     if (!verification.verified) {
       throw new AuthException("认证验证失败");
+    }
+
+    if (!passkey.rpId) {
+      passkey.rpId = rpId;
+      await this.repository.save(passkey);
     }
 
     cache.delete(`passkey:authentication:${challenge}`);
@@ -178,12 +185,15 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
   async registerPasskey(userId: number, response: any, challenge: string, deviceName: string, ctx: any) {
     const verification = await this.verifyRegistrationResponse(userId, response, challenge, ctx);
 
+    const rpInfo = await this.getRpInfo(ctx);
+
     await this.add({
       userId,
       passkeyId: verification.credentialId,
       publicKey: Buffer.from(verification.credentialPublicKey).toString("base64"),
       counter: verification.counter,
       deviceName,
+      rpId: rpInfo.rpId,
       registeredAt: Date.now(),
     });
 
@@ -215,20 +225,4 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
     const user = await this.userService.info(passkey.userId);
     return user;
   }
-
-  // private getRpId(ctx: any): string {
-  //   if (ctx && ctx.request && ctx.request.host) {
-  //     return ctx.request.host.split(':')[0];
-  //   }
-  //   return 'localhost';
-  // }
-
-  // private getOrigin(ctx: any): string {
-  //   if (ctx && ctx.request) {
-  //     const protocol = ctx.request.protocol;
-  //     const host = ctx.request.host;
-  //     return `${protocol}://${host}`;
-  //   }
-  //   return 'https://localhost';
-  // }
 }

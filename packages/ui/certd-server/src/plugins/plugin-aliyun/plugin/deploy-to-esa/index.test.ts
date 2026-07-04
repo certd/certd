@@ -28,10 +28,7 @@ describe("AliyunDeployCertToESA", () => {
     plugin.deployMode = "saas";
     plugin.siteIds = [];
 
-    await assert.rejects(
-      () => (plugin as any).executeSaaS(null, null, 1, "test"),
-      /SaaS证书模式下请先选择站点/
-    );
+    await assert.rejects(() => (plugin as any).executeSaaS(null, null, 1, "test"), /SaaS证书模式下请先选择站点/);
   });
 
   it("executeSaaS throws error when multiple sites are selected", async () => {
@@ -40,10 +37,7 @@ describe("AliyunDeployCertToESA", () => {
     plugin.deployMode = "saas";
     plugin.siteIds = ["site1", "site2"];
 
-    await assert.rejects(
-      () => (plugin as any).executeSaaS(null, null, 1, "test"),
-      /SaaS证书模式下站点只能单选/
-    );
+    await assert.rejects(() => (plugin as any).executeSaaS(null, null, 1, "test"), /SaaS证书模式下站点只能单选/);
   });
 
   it("executeSaaS throws error when no SaaS domains selected", async () => {
@@ -53,10 +47,7 @@ describe("AliyunDeployCertToESA", () => {
     plugin.siteIds = ["site1"];
     plugin.saasDomainIds = [];
 
-    await assert.rejects(
-      () => (plugin as any).executeSaaS(null, null, 1, "test"),
-      /SaaS证书模式下请选择要部署的SaaS域名/
-    );
+    await assert.rejects(() => (plugin as any).executeSaaS(null, null, 1, "test"), /SaaS证书模式下请选择要部署的SaaS域名/);
   });
 
   it("executeSaaS calls UpdateCustomHostname for each selected SaaS domain", async () => {
