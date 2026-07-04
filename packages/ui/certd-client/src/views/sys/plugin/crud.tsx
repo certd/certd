@@ -450,7 +450,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         disabled: {
-          title: t("certd.enableDisable"),
+          title: t("certd.clickToToggle"),
           type: "dict-switch",
           dict: dict({
             data: [

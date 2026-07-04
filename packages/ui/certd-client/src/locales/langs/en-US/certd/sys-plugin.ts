@@ -26,9 +26,10 @@ export default {
   store: "Store",
   version: "Version",
   pluginDependencies: "Plugin Dependencies",
-  pluginDependenciesHelper: "Format: [author/]pluginName[:version]. Required plugins must be installed first",
+  pluginDependenciesHelper:
+    "Format: pluginType:pluginName, use * for version\nSupported: plugin:name, access:name, notification:name, dnsProvider:name, addon:subtype:name\nExample: access:AliyunAccess, plugin:DeployToAliyunCDN",
   thirdPartyDependencies: "Third-party Dependencies",
-  thirdPartyDependenciesHelper: "Format: npmPackageName: version. Auto-installed at runtime",
+  thirdPartyDependenciesHelper: "Format: npmPackageName: version. Auto-installed at runtime\nExample: aliyun-sdk: ^1.0.0",
   editableRunStrategy: "Editable Run Strategy",
   editable: "Editable",
   notEditable: "Not Editable",
