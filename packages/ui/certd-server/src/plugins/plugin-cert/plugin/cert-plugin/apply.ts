@@ -375,6 +375,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     component: {
       name: "access-selector",
       type: "acmeAccount",
+      defaultSelect: true,
     },
     required: false,
     helper: "直接本地生成，无需外部注册\n点击选择按钮->添加->填写邮箱->生成账号即可",

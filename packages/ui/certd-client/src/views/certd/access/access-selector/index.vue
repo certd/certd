@@ -16,8 +16,8 @@
   </div>
 </template>
 
-<script>
-import { defineComponent, reactive, ref, watch, inject } from "vue";
+<script lang="ts">
+import { defineComponent, reactive, ref, watch, inject, onMounted } from "vue";
 import CertAccessModal from "./access/index.vue";
 import { createAccessApi } from "../api";
 import { message } from "ant-design-vue";
@@ -52,6 +52,10 @@ export default defineComponent({
       default: "user",
     },
     disabled: {
+      type: Boolean,
+      default: false,
+    },
+    defaultSelect: {
       type: Boolean,
       default: false,
     },
@@ -158,12 +162,43 @@ export default defineComponent({
       },
     });
 
+    async function selectFirst(clearCurrent = false) {
+      if (!clearCurrent && props.modelValue) {
+        return;
+      }
+      const searchForm = projectStore.getSearchForm();
+      const query: any = {
+        query: {
+          type: props.type,
+          ...searchForm,
+        },
+        page: { page: 1, pageSize: 1 },
+        sort: { prop: "id", order: "ascending" },
+      };
+      if (props.subtype) {
+        query.query.subtype = props.subtype;
+      }
+      const res = await api.GetList(query);
+      const records = res?.records || [];
+      if (records.length > 0) {
+        await emitValue(records[0].id);
+      }
+    }
+
+    onMounted(async () => {
+      if (!props.defaultSelect) {
+        return;
+      }
+      await selectFirst();
+    });
+
     return {
       clear,
       target,
       selectedId,
       providerDefine,
       chooseForm,
+      selectFirst,
     };
   },
 });
