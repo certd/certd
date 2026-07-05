@@ -74,7 +74,7 @@ input:
       credentials链接，然后点击编辑按钮，查看Secret key和HMAC key
 
       litessl:[litesslEAB页面](https://freessl.cn/automation/eab-manager),然后点击新增EAB
-    required: false
+    required: true
     encrypt: true
     mergeScript: |2-
 
@@ -92,7 +92,7 @@ input:
     title: EAB HMAC Key
     component:
       placeholder: 需要EAB的颁发机构生成账号时填写
-    required: false
+    required: true
     encrypt: true
     mergeScript: |2-
 
