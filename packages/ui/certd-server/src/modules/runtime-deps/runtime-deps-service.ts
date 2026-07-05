@@ -130,7 +130,7 @@ class DefaultCommandRunner implements CommandRunner {
 }
 
 @Provide()
-@Scope(ScopeEnum.Request, { allowDowngrade: true })
+@Scope(ScopeEnum.Singleton)
 export class RuntimeDepsService {
   @Config("runtimeDeps.rootDir")
   runtimeDepsRootDir = "./data/.runtime-deps";
@@ -212,6 +212,13 @@ export class RuntimeDepsService {
     }
     const dependenciesHash = this.createDependenciesHash(dependencies);
     let installPromise = this.installPromises.get(dependenciesHash);
+    if (installPromise) {
+      const nodeModulesPath = path.join(this.getRuntimeDepsRootDir(), "node_modules");
+      if (!fs.existsSync(nodeModulesPath)) {
+        this.installPromises.delete(dependenciesHash);
+        installPromise = undefined;
+      }
+    }
     if (!installPromise) {
       installPromise = this.doEnsureInstalled({ dependencies, logger: log }).catch(error => {
         this.installPromises.delete(dependenciesHash);
@@ -490,7 +497,15 @@ export class RuntimeDepsService {
     } finally {
       if (fd != null) {
         fs.closeSync(fd);
-        fs.rmSync(lockFile, { force: true });
+        try {
+          fs.rmSync(lockFile, { force: true });
+        } catch {
+          try {
+            fs.rmSync(lockFile, { force: true });
+          } catch {
+            // Windows 下 closeSync 后文件句柄可能未立即释放，忽略清理失败
+          }
+        }
       }
       releaseProcessLock();
       if (PROCESS_LOCKS.get(lockFile) === current) {
