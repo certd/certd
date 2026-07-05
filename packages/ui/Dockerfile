@@ -87,6 +87,6 @@ RUN npm install -g pnpm@10.33.4
 
 
 COPY --from=builder /workspace/certd-server/ /app/
-RUN cd /workspace/certd-server && pnpm install --production
+RUN pnpm install --production
 COPY ./patch/ssh2/*.js /app/node_modules/.pnpm/node_modules/ssh2/lib/protocol/
 CMD ["node", "--optimize-for-size", "./bootstrap.js"]
