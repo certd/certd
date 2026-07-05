@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.42.0](https://github.com/certd/certd/compare/v1.41.4...v1.42.0) (2026-07-05)
+
+### Features
+
+* 通过插件配置懒加载依赖，动态加载第三方依赖包，精简安装镜像大小 ([01568ca](https://github.com/certd/certd/commit/01568ca1489069046b5a89ebdd4ced2f7f6ddf93))
+
+### Performance Improvements
+
+* 【破坏性更新】 证书压缩包不再生成文件存储，而是实时打包下载，证书申请插件不再输出certZip ([7cff1a9](https://github.com/certd/certd/commit/7cff1a98424120585205889874b3ef4956a30583))
+* 优化用户体验，首次访问时弹出邮箱账号绑定用以初始化账号 ([608cc2a](https://github.com/certd/certd/commit/608cc2a81ff0b4872c9fe11ed9c9c0b4b90a12a3))
+* 支持全自动匹配部署宝塔网站证书 ([4dff48e](https://github.com/certd/certd/commit/4dff48e807c32a7623ec9206cf39c88e88f89f6a))
+* dns默认ipv4first ([194463b](https://github.com/certd/certd/commit/194463bea9e797315aa7a724f4b2930701570419))
+
 ## [1.41.4](https://github.com/certd/certd/compare/v1.41.3...v1.41.4) (2026-06-14)
 
 **Note:** Version bump only for package @certd/lib-server

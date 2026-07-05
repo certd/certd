@@ -314,6 +314,7 @@ input:
     component:
       name: access-selector
       type: acmeAccount
+      defaultSelect: true
     required: false
     helper: |-
       直接本地生成，无需外部注册

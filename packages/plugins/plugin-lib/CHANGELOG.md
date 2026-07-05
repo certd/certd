@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.42.0](https://github.com/certd/certd/compare/v1.41.4...v1.42.0) (2026-07-05)
+
+### Bug Fixes
+
+* 修复jdk证书格式的问题 ([260f5ae](https://github.com/certd/certd/commit/260f5ae777b83493b0c578fe30fd00ec0c873226))
+
+### Features
+
+* 通过插件配置懒加载依赖，动态加载第三方依赖包，精简安装镜像大小 ([01568ca](https://github.com/certd/certd/commit/01568ca1489069046b5a89ebdd4ced2f7f6ddf93))
+
+### Performance Improvements
+
+* 【破坏性更新】 证书压缩包不再生成文件存储，而是实时打包下载，证书申请插件不再输出certZip ([7cff1a9](https://github.com/certd/certd/commit/7cff1a98424120585205889874b3ef4956a30583))
+* 新增橙域网络(asia-isp) CDN证书部署插件 ([b48831e](https://github.com/certd/certd/commit/b48831e60b0059bef7ef9a34ab61c9dd2f684641))
+
 ## [1.41.4](https://github.com/certd/certd/compare/v1.41.3...v1.41.4) (2026-06-14)
 
 **Note:** Version bump only for package @certd/plugin-lib

@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.42.0](https://github.com/certd/certd/compare/v1.41.4...v1.42.0) (2026-07-05)
+
+### Performance Improvements
+
+* 【破坏性更新】 证书压缩包不再生成文件存储，而是实时打包下载，证书申请插件不再输出certZip ([7cff1a9](https://github.com/certd/certd/commit/7cff1a98424120585205889874b3ef4956a30583))
+* 优化用户体验，首次访问时弹出邮箱账号绑定用以初始化账号 ([608cc2a](https://github.com/certd/certd/commit/608cc2a81ff0b4872c9fe11ed9c9c0b4b90a12a3))
+* **passkey:** passkey支持多域名rpid ([79f6586](https://github.com/certd/certd/commit/79f65868ca0f5162bbc2f935ce89abc28011d816))
+* **plugin:** 在线插件编辑支持配置第三方依赖和插件依赖 ([635f069](https://github.com/certd/certd/commit/635f069012d4193cfb7cb051c96e28eec1247ca2))
+
 ## [1.41.4](https://github.com/certd/certd/compare/v1.41.3...v1.41.4) (2026-06-14)
 
 ### Bug Fixes

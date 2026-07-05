@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.42.0](https://github.com/publishlab/node-acme-client/compare/v1.41.4...v1.42.0) (2026-07-05)
+
+### Performance Improvements
+
+* 新增橙域网络(asia-isp) CDN证书部署插件 ([b48831e](https://github.com/publishlab/node-acme-client/commit/b48831e60b0059bef7ef9a34ab61c9dd2f684641))
+
 ## [1.41.4](https://github.com/publishlab/node-acme-client/compare/v1.41.3...v1.41.4) (2026-06-14)
 
 **Note:** Version bump only for package @certd/acme-client

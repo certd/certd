@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.42.0](https://github.com/certd/certd/compare/v1.41.4...v1.42.0) (2026-07-05)
+
+### Bug Fixes
+
+* 修复jdk证书格式的问题 ([260f5ae](https://github.com/certd/certd/commit/260f5ae777b83493b0c578fe30fd00ec0c873226))
+* 修复telegram - 符号转义问题 ([d5882f1](https://github.com/certd/certd/commit/d5882f16bedb09baf09ace92049b02872620f5dc))
+* **aliyun:** 修复阿里云CDN/DCDN根据证书自动匹配不到证书的bug ([1ae185d](https://github.com/certd/certd/commit/1ae185d0bc356f4678bc38ca0582ce3396f82ebe))
+
+### Features
+
+* 通过插件配置懒加载依赖，动态加载第三方依赖包，精简安装镜像大小 ([01568ca](https://github.com/certd/certd/commit/01568ca1489069046b5a89ebdd4ced2f7f6ddf93))
+
+### Performance Improvements
+
+*  阿里云ESA证书部署支持SaaS模式 ([82276b5](https://github.com/certd/certd/commit/82276b53a8474a18a3d0237050907c994fc748f0))
+* 【破坏性更新】 证书压缩包不再生成文件存储，而是实时打包下载，证书申请插件不再输出certZip ([7cff1a9](https://github.com/certd/certd/commit/7cff1a98424120585205889874b3ef4956a30583))
+* 火山引擎点播插件支持部署到自定义源站域名 ([095791c](https://github.com/certd/certd/commit/095791cdc2b7c1f4b913b634643afec5e30fe9b0))
+* 基础镜像改成node:22-trixie-slim，对网络兼容性更好 ([c66a2bd](https://github.com/certd/certd/commit/c66a2bd77ab6dbb3e3fe2c00562b66287a9429ea))
+* 新增橙域网络(asia-isp) CDN证书部署插件 ([b48831e](https://github.com/certd/certd/commit/b48831e60b0059bef7ef9a34ab61c9dd2f684641))
+* 优化阿里云API网关增加翻页查询 ([ed58ae3](https://github.com/certd/certd/commit/ed58ae3c5339e4a0238a92acfe7ea6d2f566ea28))
+* 优化用户体验，首次访问时弹出邮箱账号绑定用以初始化账号 ([608cc2a](https://github.com/certd/certd/commit/608cc2a81ff0b4872c9fe11ed9c9c0b4b90a12a3))
+* 优化ACME账号字段的选择提示 ([bfd3cac](https://github.com/certd/certd/commit/bfd3cacc687fc5cbc3cb2ca3cadbc140de300dc2))
+* 支持全自动匹配部署宝塔网站证书 ([4dff48e](https://github.com/certd/certd/commit/4dff48e807c32a7623ec9206cf39c88e88f89f6a))
+* **cert-plugin:** 调整更新天数自动减半逻辑，仅7天ip证书生效，其他情况下不减半 ([56e5524](https://github.com/certd/certd/commit/56e5524a0f4af3645d70bc3b3ec750b45ba8de10))
+* dns默认ipv4first ([194463b](https://github.com/certd/certd/commit/194463bea9e797315aa7a724f4b2930701570419))
+* **passkey:** passkey支持多域名rpid ([79f6586](https://github.com/certd/certd/commit/79f65868ca0f5162bbc2f935ce89abc28011d816))
+* **plugin:** 在线插件编辑支持配置第三方依赖和插件依赖 ([635f069](https://github.com/certd/certd/commit/635f069012d4193cfb7cb051c96e28eec1247ca2))
+
 ## [1.41.4](https://github.com/certd/certd/compare/v1.41.3...v1.41.4) (2026-06-14)
 
 ### Bug Fixes

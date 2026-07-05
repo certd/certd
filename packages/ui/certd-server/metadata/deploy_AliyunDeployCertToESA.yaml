@@ -32,6 +32,7 @@ input:
                     }),
                 }
               }
+              
     template: false
     required: false
     order: 0
@@ -109,11 +110,11 @@ input:
                     })
                   },
                }
+              
     helper: 请选择要部署证书的站点
     order: 0
   saasDomainIds:
     title: SaaS域名
-    helper: 请选择要部署证书的SaaS域名（SaaS证书模式下必选）
     component:
       name: remote-select
       vModel: value
@@ -132,16 +133,18 @@ input:
     required: false
     mergeScript: |2-
 
-        return {
-          show: ctx.compute(({form})=>{
-            return form.deployMode === 'saas'
-          }),
-          component:{
-            form: ctx.compute(({form})=>{
-              return form
-            })
-          },
-        }
+              return {
+                show: ctx.compute(({form})=>{
+                  return form.deployMode === 'saas'
+                }),
+                component:{
+                  form: ctx.compute(({form})=>{
+                    return form
+                  })
+                },
+              }
+            
+    helper: 请选择要部署证书的SaaS域名（SaaS证书模式下必选）
     order: 0
   certLimit:
     title: 免费证书数量限制
