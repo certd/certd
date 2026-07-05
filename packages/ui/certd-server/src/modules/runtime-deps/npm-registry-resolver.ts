@@ -15,7 +15,7 @@ export type RegistryProbeResult = {
 };
 
 @Provide()
-@Scope(ScopeEnum.Request, { allowDowngrade: true })
+@Scope(ScopeEnum.Singleton)
 export class NpmRegistryResolver {
   @Config("runtimeDeps.registry")
   config!: NpmRegistryResolverConfig;
