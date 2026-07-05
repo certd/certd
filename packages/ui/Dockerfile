@@ -18,11 +18,14 @@ COPY . /workspace/
 RUN npm install -g pnpm@10.33.4
 
 RUN cp /workspace/certd-client/dist/* /workspace/certd-server/public/ -rf
-RUN cd /workspace/certd-server && pnpm install --production && npm run build-on-docker
-
+RUN cd /workspace/certd-server && pnpm install && npm run build-on-docker
+RUN rm -rf /workspace/certd-server/node_modules
 
 ARG base_type=alpine
 
+# ------------------------------------------------------------------
+# 构建生产环境镜像
+# ------------------------------------------------------------------
 FROM base-${TARGETARCH}${TARGETVARIANT:+-}${TARGETVARIANT}-${base_type}
 EXPOSE 7001
 EXPOSE 7002
@@ -84,5 +87,6 @@ RUN npm install -g pnpm@10.33.4
 
 
 COPY --from=builder /workspace/certd-server/ /app/
+RUN cd /workspace/certd-server && pnpm install --production
 COPY ./patch/ssh2/*.js /app/node_modules/.pnpm/node_modules/ssh2/lib/protocol/
 CMD ["node", "--optimize-for-size", "./bootstrap.js"]
