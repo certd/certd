@@ -1376,7 +1376,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     bean.status = "none";
     bean.type = "cert_auto";
     bean.disabled = false;
-    bean.keepHistoryCount = 30;
+    bean.keepHistoryCount = 100;
     bean.projectId = req.projectId;
     await this.save(bean);
 
