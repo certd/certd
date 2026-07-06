@@ -160,7 +160,7 @@ export async function createPipelineByTemplate(opts: { templateId: number; title
   return await templateApi.CreatePipelineByTemplate({
     title,
     content: JSON.stringify(pipeline),
-    keepHistoryCount: keepHistoryCount ?? 30,
+    keepHistoryCount: keepHistoryCount ?? 100,
     groupId,
     templateId,
   });
