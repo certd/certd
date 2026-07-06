@@ -38,21 +38,16 @@ RUN if [ -f /etc/debian_version ]; then \
         apt-get update \
         && apt-get install -y --no-install-recommends \
             ca-certificates \
-            gnupg \
             wget \
             openssl \
             netcat-openbsd \
             iputils-ping \
             dnsutils \
             iproute2 \
-        && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /usr/share/keyrings/adoptium.gpg > /dev/null \
-        && echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" | tee /etc/apt/sources.list.d/adoptium.list \
-        && apt-get update \
-        && apt-get install -y --no-install-recommends temurin-8-jre \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/*; \
     elif [ -f /etc/alpine-release ]; then \
-        apk add --no-cache openssl openjdk8-jre; \
+        apk add --no-cache openssl wget ca-certificates; \
     else \
         echo "Unsupported base image"; exit 1; \
     fi
@@ -62,6 +57,9 @@ WORKDIR /app/
 ENV TERM=xterm
 ENV LEGO_VERSION=4.30.1
 ENV LEGO_DOWNLOAD_DIR=/app/tools/lego
+
+ENV JKS_GO_VERSION=1.0.3
+ENV JKS_GO_DOWNLOAD_DIR=/app/tools/jks-go
 
 ENV ALIYUN_CLIENT_CONNECT_TIMEOUT=10000
 ENV ALIYUN_CLIENT_READ_TIMEOUT=20000
@@ -76,6 +74,26 @@ RUN ARCH=$(uname -m) && \
         wget -O $LEGO_DOWNLOAD_DIR/lego_v${LEGO_VERSION}_linux_arm64.tar.gz https://github.com/go-acme/lego/releases/download/v${LEGO_VERSION}/lego_v${LEGO_VERSION}_linux_arm64.tar.gz; \
     else \
         # armv7 不支持lego 不要再尝试了
+        echo "Unsupported architecture: $ARCH"; \
+    fi
+
+RUN mkdir -p $JKS_GO_DOWNLOAD_DIR
+
+# 根据架构下载jks-go
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        wget -O $JKS_GO_DOWNLOAD_DIR/jks-go_linux_amd64 https://github.com/certd/jks-go/releases/download/v${JKS_GO_VERSION}/jks-go_linux_amd64 && \
+        chmod +x $JKS_GO_DOWNLOAD_DIR/jks-go_linux_amd64 && \
+        ln -s $JKS_GO_DOWNLOAD_DIR/jks-go_linux_amd64 /usr/local/bin/jks-go; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        wget -O $JKS_GO_DOWNLOAD_DIR/jks-go_linux_arm64 https://github.com/certd/jks-go/releases/download/v${JKS_GO_VERSION}/jks-go_linux_arm64 && \
+        chmod +x $JKS_GO_DOWNLOAD_DIR/jks-go_linux_arm64 && \
+        ln -s $JKS_GO_DOWNLOAD_DIR/jks-go_linux_arm64 /usr/local/bin/jks-go; \
+    elif [ "$ARCH" = "armv7l" ]; then \
+        wget -O $JKS_GO_DOWNLOAD_DIR/jks-go_linux_arm_armv7 https://github.com/certd/jks-go/releases/download/v${JKS_GO_VERSION}/jks-go_linux_arm_armv7 && \
+        chmod +x $JKS_GO_DOWNLOAD_DIR/jks-go_linux_arm_armv7 && \
+        ln -s $JKS_GO_DOWNLOAD_DIR/jks-go_linux_arm_armv7 /usr/local/bin/jks-go; \
+    else \
         echo "Unsupported architecture: $ARCH"; \
     fi
 

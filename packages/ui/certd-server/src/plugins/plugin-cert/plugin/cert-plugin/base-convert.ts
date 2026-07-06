@@ -100,7 +100,7 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
     }
     this._result.pipelinePrivateVars.cert = cert;
 
-    if (isNew || !cert.pfx) {
+    if (isNew || !cert.pfx || !cert.der || !cert.jks || !cert.p7b) {
       try {
         const converter = new CertConverter({ logger: this.logger });
         const res = await converter.convert({
