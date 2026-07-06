@@ -605,7 +605,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
       const { id } = await api.Save({
         title: pipeline.title,
         content: JSON.stringify(pipeline),
-        keepHistoryCount: 30,
+        keepHistoryCount: 100,
         type: "cert",
         groupId,
         addToMonitorEnabled: form.addToMonitorEnabled,

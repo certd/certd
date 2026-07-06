@@ -55,16 +55,13 @@ export class MineController extends BaseController {
     //@ts-ignore
     user.needInitPassword = needInitPassword;
 
-    const { projectId } = await this.getProjectUserIdRead();
-    const userProjectQuery = this.accessService.buildUserProjectQuery(userId, projectId);
     const existingAccess = await this.accessService.findOne({
-      where: { type: "acmeAccount", subtype: "letsencrypt", ...userProjectQuery },
+      where: { type: "acmeAccount", subtype: "letsencrypt", userId },
     });
     if (!existingAccess) {
       //@ts-ignore
       user.needInitAccount = true;
     }
-
     return this.ok(user);
   }
 
