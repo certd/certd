@@ -30,8 +30,8 @@ export class PasskeyService extends BaseService<PasskeyEntity> {
       rpName = siteInfo.title || rpName;
     }
 
-    const rpId = ctx.hostname;
-    const origin = ctx.origin;
+    const origin = ctx.headers.origin || ctx.origin;
+    const rpId = origin ? new URL(origin).hostname : ctx.hostname;
 
     return {
       rpName,
