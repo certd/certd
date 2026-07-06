@@ -1,4 +1,4 @@
-import { AccessGetter, AccessService, BaseController, Constants, isEnterprise, SysSettingsService } from "@certd/lib-server";
+import { AccessGetter, AccessService, BaseController, Constants, SysSettingsService } from "@certd/lib-server";
 import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
 import { PasskeyService } from "../../../modules/login/service/passkey-service.js";
 import { RoleService } from "../../../modules/sys/authority/service/role-service.js";
