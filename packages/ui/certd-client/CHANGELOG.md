@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.42.1](https://github.com/certd/certd/compare/v1.42.0...v1.42.1) (2026-07-06)
+
+### Bug Fixes
+
+* **login:** 修复输入法 composing 状态下回车触发提交的问题 ([b74db81](https://github.com/certd/certd/commit/b74db81304bbe68476bbec5ea4307a2264060e92))
+
+### Performance Improvements
+
+* **pipeline:** 将默认历史保留条数从30调整为100 ([d3e4677](https://github.com/certd/certd/commit/d3e4677ea4fac8e7533749d7f4187e410489e536))
+
 # [1.42.0](https://github.com/certd/certd/compare/v1.41.4...v1.42.0) (2026-07-05)
 
 ### Performance Improvements

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.42.1](https://github.com/certd/certd/compare/v1.42.0...v1.42.1) (2026-07-06)
+
+### Performance Improvements
+
+* **certd-server:** 使用 jks-go转换jks证书，大幅精简镜像大小 ([c78898e](https://github.com/certd/certd/commit/c78898e4c10dd1701467d2e42e3f72bd8f2a352f))
+
 # [1.42.0](https://github.com/certd/certd/compare/v1.41.4...v1.42.0) (2026-07-05)
 
 ### Bug Fixes
