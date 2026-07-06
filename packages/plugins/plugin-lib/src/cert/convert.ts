@@ -1,4 +1,4 @@
-import { ILogger, sp } from "@certd/basic";
+import { ILogger, sp, http } from "@certd/basic";
 import type { CertInfo } from "./cert-reader.js";
 import { CertReader, CertReaderHandleContext } from "./cert-reader.js";
 import path from "path";
@@ -50,6 +50,81 @@ export class CertConverter {
       cmd: cmd,
       logger: this.logger,
     });
+  }
+
+  async getJksGoPath(): Promise<string> {
+    const osType = process.platform === "win32" ? "windows" : "linux";
+    const jksGoDir = path.resolve("./tools/jks-go");
+    const JKS_GO_VERSION = process.env.JKS_GO_VERSION || "1.0.0";
+
+    const versionFile = path.join(jksGoDir, "version");
+    const finalPath = path.join(jksGoDir, osType === "windows" ? "jks-go.exe" : "jks-go");
+
+    let needDownload = false;
+    if (!fs.existsSync(finalPath)) {
+      needDownload = true;
+    } else if (!fs.existsSync(versionFile)) {
+      needDownload = true;
+    } else {
+      const currentVersion = fs.readFileSync(versionFile, "utf-8").trim();
+      if (currentVersion !== JKS_GO_VERSION) {
+        this.logger.info(`jks-go版本不匹配,当前版本:${currentVersion},期望版本:${JKS_GO_VERSION},准备重新下载`);
+        needDownload = true;
+      }
+    }
+
+    if (!needDownload) {
+      return finalPath;
+    }
+
+    if (!fs.existsSync(jksGoDir)) {
+      fs.mkdirSync(jksGoDir, { recursive: true });
+    }
+
+    const arch = process.arch;
+    let platformArch = "amd64";
+    if (arch === "arm64") {
+      platformArch = "arm64";
+    } else if (arch === "arm") {
+      platformArch = "arm_armv7";
+    }
+
+    let jksGoFileName = `jks-go_${osType}_${platformArch}`;
+    if (osType === "windows") {
+      jksGoFileName += ".exe";
+    }
+
+    const jksGoFilePath = path.join(jksGoDir, jksGoFileName);
+    this.logger.info(`jks-go文件不存在或版本不匹配,准备下载:${jksGoFileName}`);
+    const downloadUrl = `https://atomgit.com/certd/jks-go/releases/download/v${JKS_GO_VERSION}/${jksGoFileName}`;
+    // https://atomgit.com/certd/jks-go/releases/download/v1.0.2/jks-go_linux_amd64
+    const response = await http.request({
+      url: downloadUrl,
+      method: "GET",
+      responseType: "arraybuffer",
+      logRes: false,
+      logParams: false,
+      logData: false,
+    });
+
+    const buffer = Buffer.from(response);
+    fs.writeFileSync(jksGoFilePath, buffer);
+    this.logger.info("下载jks-go成功");
+
+    if (fs.existsSync(finalPath)) {
+      fs.unlinkSync(finalPath);
+    }
+    fs.copyFileSync(jksGoFilePath, finalPath);
+    if (osType === "linux") {
+      await sp.spawn({
+        cmd: `chmod +x ${finalPath}`,
+      });
+    }
+
+    fs.writeFileSync(versionFile, JKS_GO_VERSION, "utf-8");
+    this.logger.info(`jks-go版本已更新为:${JKS_GO_VERSION}`);
+
+    return finalPath;
   }
 
   private async convertPfx(opts: CertReaderHandleContext, pfxPassword: string, pfxArgs: string) {
@@ -118,22 +193,22 @@ export class CertConverter {
     const jksPassword = pfxPassword || "123456";
     try {
       const randomStr = Math.floor(Math.random() * 1000000) + "";
+      const { tmpOnePath } = opts;
 
-      const p12Path = path.join(os.tmpdir(), "/certd/tmp/", randomStr + `_cert.p12`);
-      const { tmpCrtPath, tmpKeyPath } = opts;
-      let passwordArg = "-passout pass:";
-      if (jksPassword) {
-        passwordArg = `-password pass:${jksPassword}`;
-      }
-      await this.exec(`openssl pkcs12 -export -in ${tmpCrtPath} -inkey ${tmpKeyPath} -out ${p12Path} -name certd ${passwordArg}`);
-
-      const jksPath = path.join(os.tmpdir(), "/certd/tmp/", randomStr + `_cert.jks`);
-      const dir = path.dirname(jksPath);
+      const bundlePath = path.join(os.tmpdir(), "/certd/tmp/", randomStr + `_bundle.pem`);
+      const dir = path.dirname(bundlePath);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
       }
-      await this.exec(`keytool -importkeystore -srckeystore ${p12Path} -srcstoretype PKCS12 -srcstorepass "${jksPassword}" -destkeystore ${jksPath} -deststoretype JKS -deststorepass "${jksPassword}" `);
-      fs.unlinkSync(p12Path);
+
+      const crtContent = fs.readFileSync(tmpOnePath);
+      fs.writeFileSync(bundlePath, crtContent);
+
+      const jksPath = path.join(os.tmpdir(), "/certd/tmp/", randomStr + `_cert.jks`);
+
+      const jksGoPath = await this.getJksGoPath();
+      await this.exec(`${jksGoPath} -importkeystore -srckeystore ${bundlePath} -srcstoretype PEM -destkeystore ${jksPath} -deststorepass "${jksPassword}"`);
+      fs.unlinkSync(bundlePath);
 
       const fileBuffer = fs.readFileSync(jksPath);
       const certBase64 = fileBuffer.toString("base64");

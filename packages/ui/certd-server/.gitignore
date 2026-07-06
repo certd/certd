@@ -20,6 +20,7 @@ run/
 
 .env.pgpl.yaml
 tools/lego/*
+tools/jks-go
 !tools/lego/readme.md
 test.mjs
 isolate-*.log
