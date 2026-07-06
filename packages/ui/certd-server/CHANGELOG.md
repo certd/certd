@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.42.1](https://github.com/certd/certd/compare/v1.42.0...v1.42.1) (2026-07-06)
+
+### Bug Fixes
+
+* 修复多域名无法使用passkey登录的bug ([d176f9c](https://github.com/certd/certd/commit/d176f9cc0ebd051a614bfac74d1616d1945fc9a3))
+* 修复企业模式下登录报projectId不能为空的问题 ([a65366b](https://github.com/certd/certd/commit/a65366bbe1aadea8baaffbdadab58a5b631d9417))
+
+### Performance Improvements
+
+* **certd-server:** 使用 jks-go转换jks证书，大幅精简镜像大小 ([c78898e](https://github.com/certd/certd/commit/c78898e4c10dd1701467d2e42e3f72bd8f2a352f))
+* **pipeline:** 将默认历史保留条数从30调整为100 ([d3e4677](https://github.com/certd/certd/commit/d3e4677ea4fac8e7533749d7f4187e410489e536))
+
 # [1.42.0](https://github.com/certd/certd/compare/v1.41.4...v1.42.0) (2026-07-05)
 
 ### Bug Fixes
