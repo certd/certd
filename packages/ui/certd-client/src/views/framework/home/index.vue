@@ -15,11 +15,14 @@ import { Modal, notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
 import { request } from "/@/api/service";
 import { useFormDialog } from "/@/use/use-dialog";
+import { useSettingStore } from "/@/store/settings/index.jsx";
 
 const { t } = useI18n();
 const { openFormDialog } = useFormDialog();
 
 const userStore = useUserStore();
+const settingStore = useSettingStore();
+
 const changePasswordButtonRef = ref();
 const emailFormWrapperRef = ref<any>();
 
@@ -34,6 +37,9 @@ const validateEmailConfirm = async (_rule: any, value: string) => {
 };
 
 async function checkAndSetupAccount() {
+  if (settingStore.isEnterprise) {
+    return;
+  }
   try {
     const userInfo = userStore.getUserInfo as any;
     if (!userInfo.needInitAccount) {
