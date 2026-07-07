@@ -16,7 +16,7 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
   async onInstance() {
     const access: AliyunAccess = this.ctx.access as AliyunAccess;
 
-    this.client = new AliyunClient({ logger: this.logger, importRuntime: access.importRuntime.bind(access) });
+    this.client = new AliyunClient({ logger: this.logger, importRuntime: this.importRuntime.bind(this) });
     await this.client.init({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
