@@ -199,7 +199,7 @@ export class AsiaIspClient {
       const list = await this.getCertList();
       const found = list.find((item: any) => item.name === certName);
       if (!found) {
-        throw new Error(`证书已存在但无法查询到: ${certName}`);
+        throw new Error(`证书已存在但无法查询到: 请重新申请一份证书，或者将已有证书名称修改为：${certName}`);
       }
       const certId = Number(found.certId);
       this.logger.info(`复用已有证书，证书ID: ${certId}`);
