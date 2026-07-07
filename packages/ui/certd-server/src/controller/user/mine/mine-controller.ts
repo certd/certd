@@ -1,4 +1,4 @@
-import { AccessGetter, AccessService, BaseController, Constants, SysSettingsService } from "@certd/lib-server";
+import { AccessGetter, AccessService, BaseController, Constants, isEnterprise, SysSettingsService } from "@certd/lib-server";
 import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
 import { PasskeyService } from "../../../modules/login/service/passkey-service.js";
 import { RoleService } from "../../../modules/sys/authority/service/role-service.js";
@@ -54,14 +54,18 @@ export class MineController extends BaseController {
     delete user.password;
     //@ts-ignore
     user.needInitPassword = needInitPassword;
-
-    const existingAccess = await this.accessService.findOne({
-      where: { type: "acmeAccount", subtype: "letsencrypt", userId },
-    });
-    if (!existingAccess) {
-      //@ts-ignore
-      user.needInitAccount = true;
+    //@ts-ignore
+    user.needInitAccount = false;
+    if (!isEnterprise()) {
+      const existingAccess = await this.accessService.findOne({
+        where: { type: "acmeAccount", subtype: "letsencrypt", userId },
+      });
+      if (!existingAccess) {
+        //@ts-ignore
+        user.needInitAccount = true;
+      }
     }
+   
     return this.ok(user);
   }
 
@@ -146,8 +150,7 @@ export class MineController extends BaseController {
 
   @Post("/accountInit", { description: Constants.per.authOnly, summary: "初始化Let's Encrypt ACME账号和邮件通知" })
   public async accountInit(@Body("email") email?: string) {
-    const { projectId, userId } = await this.getProjectUserIdWrite();
-
+    let userId = this.getUserId();
     let userEmail = email;
     let user: any = null;
     if (!userEmail) {
@@ -169,10 +172,10 @@ export class MineController extends BaseController {
 
     await this.emailService.add(userId, userEmail);
 
-    await this.notificationService.getOrCreateDefault(userEmail, userId, projectId);
+    await this.notificationService.getOrCreateDefault(userEmail, userId);
 
     const getAccessById = this.accessService.getById.bind(this.accessService);
-    const accessGetter = new AccessGetter(userId, projectId, getAccessById);
+    const accessGetter = new AccessGetter(userId, undefined, getAccessById);
     const accessContext = {
       http,
       logger,
@@ -187,7 +190,7 @@ export class MineController extends BaseController {
       type: "acmeAccount",
       name: "Let's Encrypt",
       userId,
-      projectId,
+      projectId:undefined,
       setting: JSON.stringify({
         caType: "letsencrypt",
         email: userEmail,
