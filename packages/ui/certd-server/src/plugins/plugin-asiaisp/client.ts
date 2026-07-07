@@ -114,14 +114,20 @@ export class AsiaIspClient {
 
       if (response.code !== "0") {
         this.logger.error(`接口请求失败: code=${response.code}, msg=${response.msg}`);
-        throw new Error(response.msg || "接口请求失败");
+        const e= new Error(response.msg || "接口请求失败");
+        // @ts-ignore
+        e.errorCode = response.code;
+        throw e;
       }
 
       return response;
     } catch (error: any) {
-      if (error.message && !error.message.includes("接口请求失败")) {
-        this.logger.error(`接口请求异常: ${error.message}`);
-        throw new Error(`接口请求异常: ${error.message}`);
+      const response = error.response
+      if (response && response.data) {
+        const e =  new Error(response.data.msg || error.message || "接口请求失败");
+        // @ts-ignore
+        e.errorCode = response.data.code;
+        throw e;
       }
       throw error;
     }
@@ -189,7 +195,7 @@ export class AsiaIspClient {
       return certId;
     } catch (e: any) {
       const msg = e.message || "";
-      const isExists = msg.includes("Certificate already exists") || e.code === "80003" || msg.includes("Certificate note name already exists") || e.code === "80010";
+      const isExists = msg.includes("Certificate already exists") || e.errorCode === "80003" || msg.includes("Certificate note name already exists") || e.errorCode === "80010";
       //返回数据: {"code":"80010","msg":"Certificate note name already exists","data":null}
       if (!isExists) {
         throw e;
@@ -224,15 +230,23 @@ export class AsiaIspClient {
    * PUT /openapi/v3/stat?action=domainModify
    */
   async deployCertToDomain(req: { domain: string; certId: number; protocol: string }): Promise<void> {
-    await this.doRequest({
-      method: "PUT",
-      action: "domainModify",
-      data: {
-        domain: req.domain,
-        certId: `${req.certId}`,
-        protocol: req.protocol || "https",
-      },
-    });
+    try {
+      await this.doRequest({
+        method: "PUT",
+        action: "domainModify",
+        data: {
+          domain: req.domain,
+          certId: `${req.certId}`,
+          protocol: req.protocol || "https",
+        },
+      });
+    } catch (e: any) {
+      if (e.errorCode === "50024") {
+        this.logger.info(`域名 ${req.domain} 已绑定该证书 ${req.certId}，无需重复绑定`);
+        return;
+      }
+      throw e
+    }
     this.logger.info(`部署证书到域名成功: ${req.domain}, certId=${req.certId}`);
   }
 }
