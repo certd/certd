@@ -88,6 +88,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
   @TaskInput({
     title: "源站类型",
     helper: "选择源站类型",
+    value: 1,
     component: {
       name: "a-select",
       vModel: "value",
@@ -95,7 +96,6 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
         { value: 1, label: "点播源站" },
         { value: 2, label: "自定义源站" },
       ],
-      value: 1,
       helper: "注意：封面加速域名不支持自定义源站",
     },
     required: false,
