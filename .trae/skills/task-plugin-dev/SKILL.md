@@ -641,6 +641,7 @@ new AliyunOSSDeploy();
 4. **日志输出**：使用 `this.logger` 输出日志，而不是 `console`，参数文本化，不要传对象，否则会输出`[object Object]}`。
 5. **错误处理**：执行过程中的错误应被捕获并记录。
 6. **授权获取**：使用 `this.getAccess(accessId)` 获取授权信息。
+7. **旧版数据兼容**： 新增@TaskInput注解的插件参数，必须要考虑旧版数据兼容，比如新增一个deployType参数，有两种值：`default`和`custom`，需要在使用时判空，走旧版逻辑。
 
 ## 部署逻辑注意事项
 
