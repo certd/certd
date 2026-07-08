@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.42.3](https://github.com/certd/certd/compare/v1.42.2...v1.42.3) (2026-07-08)
+
+### Bug Fixes
+
+* **volcengine-alb:** 修复火山引擎ALB 默认证书部署类型会部署到扩展证书的问题 ([0a068a2](https://github.com/certd/certd/commit/0a068a274673e9768954e9f7367c267d44f3b530))
+
 ## [1.42.2](https://github.com/certd/certd/compare/v1.42.1...v1.42.2) (2026-07-07)
 
 ### Bug Fixes
