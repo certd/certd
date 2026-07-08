@@ -400,6 +400,7 @@ export class OAuthDemoAccess extends BaseAccess {
 4. **错误处理**：API 调用失败时应抛出明确的错误信息。
 5. **测试方法**：实现 `onTestRequest` 方法，以便用户可以测试授权是否正常。
 6. **统一接口调用**：封装统一的 API 请求方法，避免重复编写错误处理逻辑。
+7. **旧版数据兼容**： 新增注解的插件参数，必须要考虑旧版数据兼容，比如新增一个deployType参数，有两种值：`default`和`custom`，需要在使用时判空，走旧版逻辑。
 
 ## 开发技巧
 

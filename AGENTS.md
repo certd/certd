@@ -210,3 +210,8 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 后端业务数据、接口、实体、权限、迁移：改 `packages/ui/certd-server/src/modules` 与 `src/controller`。
 - 表单、列表、插件配置 UI：改 `packages/ui/certd-client/src/views/certd` 及对应 `src/api`。
 
+## 注意事项
+
+### 旧版数据兼容
+
+- 新增插件参数时，必须要考虑旧版数据兼容，比如新增一个deployType参数，有两种值：`default`和`custom`，需要在使用时判空，走旧版逻辑。
