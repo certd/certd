@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.42.2](https://github.com/certd/certd/compare/v1.42.1...v1.42.2) (2026-07-07)
+
+### Bug Fixes
+
+* 修复火山视频点播源站选择不到自定义源站的bug ([0071bcb](https://github.com/certd/certd/commit/0071bcb0e4dd108c86d7ca01820a9f6e6960e440))
+* 修复企业模式下弹出邮箱绑定提醒的问题 ([8d9dad9](https://github.com/certd/certd/commit/8d9dad9c82f6f2fd3ab3040068946a33f37145b1))
+* 修复AsiaIsp CDN证书重复情况下部署失败的问题 ([c3d6db3](https://github.com/certd/certd/commit/c3d6db3f1ef2f1c897b7989521fe8809dffaded1))
+* 修复cname用阿里云校验时报找不到runtimeDepsService的错误 ([072edd7](https://github.com/certd/certd/commit/072edd7affee424ab3411f4d41d338f084d7cac6))
+
 ## [1.42.1](https://github.com/certd/certd/compare/v1.42.0...v1.42.1) (2026-07-06)
 
 ### Bug Fixes
