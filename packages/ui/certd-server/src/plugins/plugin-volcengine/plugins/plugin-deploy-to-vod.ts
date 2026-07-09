@@ -78,6 +78,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       options: [
         { value: "play", label: "点播加速域名" },
         { value: "image", label: "封面加速域名" },
+        { value: "third", label: "自定义源站" },
       ],
     },
     value: "play",
@@ -85,29 +86,14 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
   })
   domainType!: string;
 
-  @TaskInput({
-    title: "源站类型",
-    helper: "选择源站类型",
-    value: 1,
-    component: {
-      name: "a-select",
-      vModel: "value",
-      options: [
-        { value: 1, label: "点播源站" },
-        { value: 2, label: "自定义源站" },
-      ],
-      helper: "注意：封面加速域名不支持自定义源站",
-    },
-    required: false,
-  })
-  sourceStationType!: number | undefined;
+
 
   @TaskInput(
     createRemoteSelectInputDefine({
       title: "域名",
       helper: "选择要部署证书的域名\n需要先在域名管理页面进行证书中心访问授权（即点击去配置SSL证书）",
       action: VolcengineDeployToVOD.prototype.onGetDomainList.name,
-      watches: ["certDomains", "accessId", "spaceName", "domainType", "sourceStationType"],
+      watches: ["certDomains", "accessId", "spaceName", "domainType"],
       required: true,
     })
   )
@@ -227,10 +213,6 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       SpaceName: this.spaceName,
       DomainType: this.domainType,
     };
-    if (this.sourceStationType !== undefined) {
-      query.SourceStationType = this.sourceStationType;
-    }
-
     const res = await service.request({
       action: "ListDomain",
       query,
