@@ -114,7 +114,7 @@ export class AsiaIspClient {
 
       if (response.code !== "0") {
         this.logger.error(`接口请求失败: code=${response.code}, msg=${response.msg}`);
-        const e= new Error(response.msg || "接口请求失败");
+        const e = new Error(response.msg || "接口请求失败");
         // @ts-ignore
         e.errorCode = response.code;
         throw e;
@@ -122,9 +122,9 @@ export class AsiaIspClient {
 
       return response;
     } catch (error: any) {
-      const response = error.response
+      const response = error.response;
       if (response && response.data) {
-        const e =  new Error(response.data.msg || error.message || "接口请求失败");
+        const e = new Error(response.data.msg || error.message || "接口请求失败");
         // @ts-ignore
         e.errorCode = response.data.code;
         throw e;
@@ -245,7 +245,7 @@ export class AsiaIspClient {
         this.logger.info(`域名 ${req.domain} 已绑定该证书 ${req.certId}，无需重复绑定`);
         return;
       }
-      throw e
+      throw e;
     }
     this.logger.info(`部署证书到域名成功: ${req.domain}, certId=${req.certId}`);
   }

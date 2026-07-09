@@ -65,7 +65,7 @@ export class MineController extends BaseController {
         user.needInitAccount = true;
       }
     }
-   
+
     return this.ok(user);
   }
 
@@ -150,7 +150,7 @@ export class MineController extends BaseController {
 
   @Post("/accountInit", { description: Constants.per.authOnly, summary: "初始化Let's Encrypt ACME账号和邮件通知" })
   public async accountInit(@Body("email") email?: string) {
-    let userId = this.getUserId();
+    const userId = this.getUserId();
     let userEmail = email;
     let user: any = null;
     if (!userEmail) {
@@ -190,7 +190,7 @@ export class MineController extends BaseController {
       type: "acmeAccount",
       name: "Let's Encrypt",
       userId,
-      projectId:undefined,
+      projectId: undefined,
       setting: JSON.stringify({
         caType: "letsencrypt",
         email: userEmail,
