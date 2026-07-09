@@ -132,6 +132,5 @@ export class MainConfiguration {
       logger.info(text);
     });
     logger.info("当前环境：", this.app.getEnv()); // prod
-    
   }
 }
