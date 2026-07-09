@@ -281,12 +281,12 @@ export class DemoTest extends AbstractTaskPlugin {
       return {
         value: item.siteName,
         label: item.siteName,
-        domain: item.siteName,
+        domain: item.siteName, //这里必须要包含domain 否则后面分组时候全部分配到未匹配中
       };
     });
     //将站点域名名称根据证书域名进行匹配分组，分成匹配的和不匹配的两组选项，返回给前端，供用户选择
     return {
-      list: optionsUtils.buildGroupOptions(options, this.certDomains),
+      list: optionsUtils.buildGroupOptions(options, this.certDomains), //分组后的列表
       total: siteRes.length,
     };
   }

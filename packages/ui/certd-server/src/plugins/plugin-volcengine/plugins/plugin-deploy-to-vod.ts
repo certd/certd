@@ -108,7 +108,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
 
     const access = await this.getAccess<VolcengineAccess>(this.accessId);
     const certId = await this.uploadOrGetCertId(access);
-
+    await this.ctx.utils.sleep(3000);
     const domainTypeMapping: Record<string, string> = {
       play: "vod_play",
       image: "vod_image",
@@ -243,6 +243,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       return {
         value: item.Domain,
         label: item.Domain,
+        domain : item.Domain,
       };
     });
     return this.ctx.utils.options.buildGroupOptions(list, this.certDomains);
