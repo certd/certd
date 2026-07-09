@@ -125,8 +125,8 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
         body: {
           SpaceName: this.spaceName,
           DomainType: apiDomainType,
-          Domain: domain,
           UpdateCdnConfigParam: {
+            Domain: domain,
             HTTPS: {
               Switch: true,
               CertInfo: {
