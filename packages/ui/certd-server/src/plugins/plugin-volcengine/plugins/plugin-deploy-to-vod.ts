@@ -243,7 +243,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       return {
         value: item.Domain,
         label: item.Domain,
-        domain : item.Domain,
+        domain: item.Domain,
       };
     });
     return this.ctx.utils.options.buildGroupOptions(list, this.certDomains);

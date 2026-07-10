@@ -2,6 +2,7 @@ import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
 import { BaseController, SysSafeSetting } from "@certd/lib-server";
 import { cloneDeep } from "lodash-es";
 import { SafeService } from "../../../modules/sys/settings/safe-service.js";
+import { AuditType, AuditAction } from "../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -22,6 +23,11 @@ export class SysSettingsController extends BaseController {
   @Post("/save", { description: "sys:settings:edit" })
   async safeSave(@Body(ALL) body: any) {
     await this.safeService.saveSafeSetting(body);
+    await this.auditLog({
+      type: AuditType.settings,
+      action: AuditAction.update,
+      content: "修改了安全设置",
+    });
     return this.ok({});
   }
 

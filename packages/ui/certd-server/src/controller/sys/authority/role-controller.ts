@@ -1,6 +1,7 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
 import { CrudController } from "@certd/lib-server";
 import { RoleService } from "../../../modules/sys/authority/service/role-service.js";
+import { AuditType, AuditAction } from "../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * 系统用户
@@ -34,7 +35,13 @@ export class RoleController extends CrudController<RoleService> {
     @Body(ALL)
     bean
   ) {
-    return await super.add(bean);
+    const res = await super.add(bean);
+    await this.auditLog({
+      type: AuditType.role,
+      action: AuditAction.add,
+      content: `新增了角色「${bean.name}」(ID:${res.data})`,
+    });
+    return res;
   }
 
   @Post("/update", { description: "sys:auth:role:edit" })
@@ -42,7 +49,13 @@ export class RoleController extends CrudController<RoleService> {
     @Body(ALL)
     bean
   ) {
-    return await super.update(bean);
+    const res = await super.update(bean);
+    await this.auditLog({
+      type: AuditType.role,
+      action: AuditAction.update,
+      content: `修改了角色「${bean.name}」(ID:${bean.id})`,
+    });
+    return res;
   }
   @Post("/delete", { description: "sys:auth:role:remove" })
   async delete(
@@ -52,7 +65,13 @@ export class RoleController extends CrudController<RoleService> {
     if (id === 1) {
       throw new Error("不能删除默认的管理员角色");
     }
-    return await super.delete(id);
+    const res = await super.delete(id);
+    await this.auditLog({
+      type: AuditType.role,
+      action: AuditAction.delete,
+      content: `删除了角色(ID:${id})`,
+    });
+    return res;
   }
 
   @Post("/getPermissionTree", { description: "sys:auth:role:view" })

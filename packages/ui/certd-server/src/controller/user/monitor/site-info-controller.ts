@@ -7,6 +7,7 @@ import { merge } from "lodash-es";
 import { SiteIpService } from "../../../modules/monitor/service/site-ip-service.js";
 import { utils } from "@certd/basic";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType, AuditAction } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -20,7 +21,6 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   authService: AuthService;
   @Inject()
   siteIpService: SiteIpService;
-
   getService(): SiteInfoService {
     return this.service;
   }
@@ -75,6 +75,11 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     if (entity.disabled) {
       this.service.check(entity.id, true, 0);
     }
+    this.auditLog({
+      type: AuditType.monitor,
+      action: AuditAction.add,
+      content: `新增了站点监控「${bean.name}」(ID:${res.id}, 域名:${bean.domain})`,
+    });
     return this.ok(res);
   }
 
@@ -88,6 +93,11 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     if (entity.disabled) {
       this.service.check(entity.id, true, 0);
     }
+    this.auditLog({
+      type: AuditType.monitor,
+      action: AuditAction.update,
+      content: `修改了站点监控「${bean.name}」(ID:${bean.id})`,
+    });
     return this.ok();
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询站点监控详情" })
@@ -99,13 +109,24 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除站点监控" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.service, id, "write");
-    return await super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({
+      type: AuditType.monitor,
+      action: AuditAction.delete,
+      content: `删除了站点监控(ID:${id})`,
+    });
+    return res;
   }
 
   @Post("/batchDelete", { description: Constants.per.authOnly, summary: "批量删除站点监控" })
   async batchDelete(@Body(ALL) body: any) {
     const { projectId, userId } = await this.getProjectUserIdWrite();
     await this.service.batchDelete(body.ids, userId, projectId);
+    this.auditLog({
+      type: AuditType.monitor,
+      action: AuditAction.batchDelete,
+      content: `批量删除了${body.ids.length}条站点监控`,
+    });
     return this.ok();
   }
 

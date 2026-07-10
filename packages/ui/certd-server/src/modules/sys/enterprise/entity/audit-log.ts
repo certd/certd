@@ -10,7 +10,7 @@ export class AuditLogEntity {
   @Column({ name: "user_id", comment: "UserId" })
   userId: number;
 
-  @Column({ name: "user_name", comment: "用户名" })
+  @Column({ name: "username", comment: "用户名" })
   userName: string;
 
   @Column({ name: "project_id", comment: "ProjectId" })

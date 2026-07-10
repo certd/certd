@@ -127,4 +127,18 @@ export abstract class BaseController {
     }
     return { projectId, userId };
   }
+
+  async auditLog(bean: { type: string; action: string; content: string; projectId?: number; projectName?: string }) {
+    const auditService: any = await this.applicationContext.getAsync("auditService");
+    await auditService.log({
+      userId: this.getUserId(),
+      type: bean.type,
+      action: bean.action,
+      content: bean.content,
+      username: this.ctx.user?.username,
+      projectId: bean.projectId,
+      projectName: bean.projectName,
+      ipAddress: this.ctx.ip,
+    });
+  }
 }

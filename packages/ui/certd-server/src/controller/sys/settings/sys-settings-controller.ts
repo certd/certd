@@ -8,6 +8,7 @@ import { http, logger, utils } from "@certd/basic";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { SmsServiceFactory } from "../../../modules/basic/sms/factory.js";
 import { RuntimeDepsService } from "../../../modules/runtime-deps/runtime-deps-service.js";
+import { AuditType, AuditAction } from "../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -66,6 +67,11 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   @Post("/save", { description: "sys:settings:edit" })
   async save(@Body(ALL) bean: SysSettingsEntity) {
     await this.service.save(bean);
+    await this.auditLog({
+      type: AuditType.settings,
+      action: AuditAction.update,
+      content: "修改了系统设置",
+    });
     return this.ok({});
   }
 
