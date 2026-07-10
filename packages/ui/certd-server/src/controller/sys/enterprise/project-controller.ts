@@ -3,6 +3,7 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/c
 import { ProjectService } from "../../../modules/sys/enterprise/service/project-service.js";
 import { ProjectEntity } from "../../../modules/sys/enterprise/entity/project.js";
 import { merge } from "lodash-es";
+import { AuditType, AuditAction } from "../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -38,17 +39,29 @@ export class SysProjectController extends CrudController<ProjectEntity> {
     };
     merge(bean, def);
     bean.userId = this.getUserId();
-    return super.add({
+    const res = await super.add({
       ...bean,
       userId: -1, //企业用户id固定为-1
       adminId: bean.userId,
     });
+    await this.auditLog({
+      type: AuditType.project,
+      action: AuditAction.add,
+      content: `新增了项目「${bean.name}」(ID:${res.data})`,
+    });
+    return res;
   }
 
   @Post("/update", { description: "sys:settings:edit" })
   async update(@Body(ALL) bean: any) {
     bean.userId = this.getUserId();
-    return super.update(bean);
+    const res = await super.update(bean);
+    await this.auditLog({
+      type: AuditType.project,
+      action: AuditAction.update,
+      content: `修改了项目「${bean.name}」(ID:${bean.id})`,
+    });
+    return res;
   }
 
   @Post("/info", { description: "sys:settings:view" })
@@ -58,7 +71,13 @@ export class SysProjectController extends CrudController<ProjectEntity> {
 
   @Post("/delete", { description: "sys:settings:edit" })
   async delete(@Query("id") id: number) {
-    return super.delete(id);
+    const res = await super.delete(id);
+    await this.auditLog({
+      type: AuditType.project,
+      action: AuditAction.delete,
+      content: `删除了项目(ID:${id})`,
+    });
+    return res;
   }
 
   @Post("/deleteByIds", { description: "sys:settings:edit" })
@@ -69,6 +88,13 @@ export class SysProjectController extends CrudController<ProjectEntity> {
   @Post("/setDisabled", { description: "sys:settings:edit" })
   async setDisabled(@Body("id") id: number, @Body("disabled") disabled: boolean) {
     await this.service.setDisabled(id, disabled);
+    const project = await this.service.info(id);
+    const actionText = disabled ? "禁用了" : "启用了";
+    await this.auditLog({
+      type: AuditType.project,
+      action: AuditAction.disable,
+      content: `${actionText}项目「${project.name}」(ID:${id})`,
+    });
     return this.ok();
   }
 }

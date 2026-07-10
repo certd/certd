@@ -411,6 +411,18 @@ export const sysResources = [
         ],
       },
       {
+        title: "certd.sysResources.auditLog",
+        name: "SysAuditLog",
+        path: "/sys/audit",
+        component: "/sys/audit/index.vue",
+        meta: {
+          icon: "ion:document-text-outline",
+          permission: "sys:settings:view",
+          keepAlive: true,
+          auth: true,
+        },
+      },
+      {
         title: "certd.sysResources.netTest",
         name: "NetTest",
         path: "/sys/nettest",

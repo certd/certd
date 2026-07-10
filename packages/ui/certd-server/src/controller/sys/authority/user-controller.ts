@@ -6,6 +6,7 @@ import { PermissionService } from "../../../modules/sys/authority/service/permis
 import { Constants } from "@certd/lib-server";
 import { In } from "typeorm";
 import { LoginService } from "../../../modules/login/service/login-service.js";
+import { AuditType, AuditAction } from "../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * 系统用户
@@ -97,7 +98,13 @@ export class UserController extends CrudController<UserService> {
     @Body(ALL)
     bean
   ) {
-    return await super.add(bean);
+    const res = await super.add(bean);
+    await this.auditLog({
+      type: AuditType.user,
+      action: AuditAction.add,
+      content: `新增了用户「${bean.username}」(ID:${res.data})`,
+    });
+    return res;
   }
 
   @Post("/update", { description: "sys:auth:user:edit" })
@@ -105,7 +112,13 @@ export class UserController extends CrudController<UserService> {
     @Body(ALL)
     bean
   ) {
-    return await super.update(bean);
+    const res = await super.update(bean);
+    await this.auditLog({
+      type: AuditType.user,
+      action: AuditAction.update,
+      content: `修改了用户「${bean.username}」(ID:${bean.id})`,
+    });
+    return res;
   }
 
   @Post("/delete", { description: "sys:auth:user:remove" })
@@ -119,7 +132,13 @@ export class UserController extends CrudController<UserService> {
     if (id === 3) {
       throw new Error("不能删除默认的普通用户角色");
     }
-    return await super.delete(id);
+    const res = await super.delete(id);
+    await this.auditLog({
+      type: AuditType.user,
+      action: AuditAction.delete,
+      content: `删除了用户(ID:${id})`,
+    });
+    return res;
   }
 
   /**

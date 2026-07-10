@@ -19,6 +19,7 @@ import sysauthority from "./certd/sys-authority";
 import syscname from "./certd/sys-cname";
 import tutorial from "./certd/tutorial";
 import cron from "./certd/cron";
+import audit from "./certd/audit";
 
 // Note: @ is reserved in locale messages; use {'@'} when needed.
 export default {
@@ -43,4 +44,5 @@ export default {
   ...syscname,
   ...tutorial,
   ...cron,
+  ...audit,
 };

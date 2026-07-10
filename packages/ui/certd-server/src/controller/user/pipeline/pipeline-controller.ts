@@ -7,6 +7,7 @@ import { HistoryService } from "../../../modules/pipeline/service/history-servic
 import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 import { PipelineEntity } from "../../../modules/pipeline/entity/pipeline.js";
+import { AuditType, AuditAction } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 const pipelineExample = `
 // 流水线配置示例，实际传送时要去掉注释
@@ -123,6 +124,7 @@ export class PipelineController extends CrudController<PipelineService> {
   @Inject()
   siteInfoService: SiteInfoService;
 
+
   getService() {
     return this.service;
   }
@@ -196,7 +198,8 @@ export class PipelineController extends CrudController<PipelineService> {
   @Post("/save", { description: Constants.per.authOnly, summary: "新增/更新流水线" })
   async save(@Body() bean: PipelineSaveDTO) {
     const { userId, projectId } = await this.getProjectUserIdWrite();
-    if (bean.id > 0) {
+    const isNew = bean.id <= 0;
+    if (!isNew) {
       const { userId, projectId } = await this.checkOwner(this.getService(), bean.id, "write", true);
       bean.userId = userId;
       bean.projectId = projectId;
@@ -206,16 +209,22 @@ export class PipelineController extends CrudController<PipelineService> {
     }
 
     if (!this.isAdmin()) {
-      // 非管理员用户 不允许设置流水线有效期
       delete bean.validTime;
     }
 
     const { version } = await this.service.save(bean as any);
-    //是否增加证书监控
+
+    const title = bean.title;
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: isNew ? AuditAction.add : AuditAction.update,
+      content: isNew ? `创建了流水线「${title}」(ID:${bean.id})` : `修改了流水线「${title}」(ID:${bean.id})`,
+      projectId,
+    });
+
     if (bean.addToMonitorEnabled && bean.addToMonitorDomains) {
       const sysPublicSettings = await this.sysSettingsService.getPublicSettings();
       if (isPlus() && sysPublicSettings.certDomainAddToMonitorEnabled) {
-        //增加证书监控
         await this.siteInfoService.doImport({
           text: bean.addToMonitorDomains,
           userId: userId,
@@ -230,6 +239,11 @@ export class PipelineController extends CrudController<PipelineService> {
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write", true);
     await this.service.delete(id);
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: AuditAction.delete,
+      content: `删除了流水线(ID:${id})`,
+    });
     return this.ok({});
   }
 
@@ -253,6 +267,11 @@ export class PipelineController extends CrudController<PipelineService> {
   async trigger(@Query("id") id: number, @Query("stepId") stepId?: string) {
     await this.checkOwner(this.getService(), id, "write", true);
     await this.service.trigger(id, stepId, true);
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: AuditAction.execute,
+      content: `手动执行了流水线(ID:${id})`,
+    });
     return this.ok({});
   }
 
@@ -260,6 +279,11 @@ export class PipelineController extends CrudController<PipelineService> {
   async cancel(@Query("historyId") historyId: number) {
     await this.checkOwner(this.historyService, historyId, "write", true);
     await this.service.cancel(historyId);
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: AuditAction.cancel,
+      content: `取消了流水线执行(historyId:${historyId})`,
+    });
     return this.ok({});
   }
 
@@ -283,62 +307,52 @@ export class PipelineController extends CrudController<PipelineService> {
 
   @Post("/batchDelete", { description: Constants.per.authOnly, summary: "批量删除流水线" })
   async batchDelete(@Body("ids") ids: number[]) {
-    // let { projectId ,userId} = await this.getProjectUserIdWrite()
-    // if(projectId){
-    //   await this.service.batchDelete(ids, null,projectId);
-    //   return this.ok({});
-    // }
-    // const isAdmin = await this.authService.isAdmin(this.ctx);
-    // userId = isAdmin ? undefined : userId;
-    // await this.service.batchDelete(ids, userId);
-    // return this.ok({});
     await this.checkPermissionCall(async ({ userId, projectId }) => {
       await this.service.batchDelete(ids, userId, projectId);
+    });
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: AuditAction.batchDelete,
+      content: `批量删除了${ids.length}条流水线`,
     });
     return this.ok({});
   }
 
   @Post("/batchUpdateGroup", { description: Constants.per.authOnly, summary: "批量更新流水线分组" })
   async batchUpdateGroup(@Body("ids") ids: number[], @Body("groupId") groupId: number) {
-    // let { projectId ,userId} = await this.getProjectUserIdWrite()
-    // if(projectId){
-    //   await this.service.batchUpdateGroup(ids, groupId, null,projectId);
-    //   return this.ok({});
-    // }
-
-    // const isAdmin = await this.authService.isAdmin(this.ctx);
-    // userId = isAdmin ? undefined : this.getUserId();
-    // await this.service.batchUpdateGroup(ids, groupId, userId);
     await this.checkPermissionCall(async ({ userId, projectId }) => {
       await this.service.batchUpdateGroup(ids, groupId, userId, projectId);
+    });
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: AuditAction.batchUpdate,
+      content: `批量修改了${ids.length}条流水线分组`,
     });
     return this.ok({});
   }
 
   @Post("/batchUpdateTrigger", { description: Constants.per.authOnly, summary: "批量更新流水线触发器" })
   async batchUpdateTrigger(@Body("ids") ids: number[], @Body("trigger") trigger: any) {
-    // let { projectId ,userId} = await this.getProjectUserIdWrite()
-    // if(projectId){
-    //  await this.service.batchUpdateTrigger(ids, trigger, null,projectId);
-    //   return this.ok({});
-    // }
-
-    // const isAdmin = await this.authService.isAdmin(this.ctx);
-    // userId = isAdmin ? undefined : this.getUserId();
-    // await this.service.batchUpdateTrigger(ids, trigger, userId);
     await this.checkPermissionCall(async ({ userId, projectId }) => {
       await this.service.batchUpdateTrigger(ids, trigger, userId, projectId);
+    });
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: AuditAction.batchUpdate,
+      content: `批量修改了${ids.length}条流水线触发器`,
     });
     return this.ok({});
   }
 
   @Post("/batchUpdateNotification", { description: Constants.per.authOnly, summary: "批量更新流水线通知" })
   async batchUpdateNotification(@Body("ids") ids: number[], @Body("notification") notification: any) {
-    // const isAdmin = await this.authService.isAdmin(this.ctx);
-    // const userId = isAdmin ? undefined : this.getUserId();
-    // await this.service.batchUpdateNotifications(ids, notification, userId);
     await this.checkPermissionCall(async ({ userId, projectId }) => {
       await this.service.batchUpdateNotifications(ids, notification, userId, projectId);
+    });
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: AuditAction.batchUpdate,
+      content: `批量修改了${ids.length}条流水线通知`,
     });
     return this.ok({});
   }
@@ -348,6 +362,11 @@ export class PipelineController extends CrudController<PipelineService> {
     await this.checkPermissionCall(async ({ userId, projectId }) => {
       await this.service.batchUpdateCertApplyOptions(ids, options, userId, projectId);
     });
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: AuditAction.batchUpdate,
+      content: `批量修改了${ids.length}条流水线证书申请配置`,
+    });
     return this.ok({});
   }
 
@@ -355,6 +374,11 @@ export class PipelineController extends CrudController<PipelineService> {
   async batchRerun(@Body("ids") ids: number[], @Body("force") force: boolean) {
     await this.checkPermissionCall(async ({ userId, projectId }) => {
       await this.service.batchRerun(ids, force, userId, projectId);
+    });
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: AuditAction.execute,
+      content: `批量重新执行了${ids.length}条流水线`,
     });
     return this.ok({});
   }
@@ -364,6 +388,11 @@ export class PipelineController extends CrudController<PipelineService> {
     await this.checkPermissionCall(async ({}) => {
       await this.service.batchTransfer(ids, toProjectId);
     });
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: AuditAction.batchUpdate,
+      content: `批量迁移了${ids.length}条流水线`,
+    });
     return this.ok({});
   }
 
@@ -371,6 +400,11 @@ export class PipelineController extends CrudController<PipelineService> {
   async refreshWebhookKey(@Body("id") id: number) {
     await this.checkOwner(this.getService(), id, "write", true);
     const res = await this.service.refreshWebhookKey(id);
+    this.auditLog({
+      type: AuditType.pipeline,
+      action: AuditAction.update,
+      content: `刷新了流水线(ID:${id})的Webhook密钥`,
+    });
     return this.ok({
       webhookKey: res,
     });
