@@ -2,7 +2,7 @@ import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
 import { BaseController, SysSafeSetting } from "@certd/lib-server";
 import { cloneDeep } from "lodash-es";
 import { SafeService } from "../../../modules/sys/settings/safe-service.js";
-import { AuditType, AuditAction } from "../../modules/sys/enterprise/service/audit-constants.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -11,6 +11,10 @@ import { AuditType, AuditAction } from "../../modules/sys/enterprise/service/aud
 export class SysSettingsController extends BaseController {
   @Inject()
   safeService: SafeService;
+
+  getAuditType(): string {
+    return AuditType.settings;
+  }
 
   @Post("/get", { description: "sys:settings:view" })
   async safeGet() {
@@ -24,8 +28,6 @@ export class SysSettingsController extends BaseController {
   async safeSave(@Body(ALL) body: any) {
     await this.safeService.saveSafeSetting(body);
     await this.auditLog({
-      type: AuditType.settings,
-      action: AuditAction.update,
       content: "修改了安全设置",
     });
     return this.ok({});
@@ -34,9 +36,10 @@ export class SysSettingsController extends BaseController {
   /**
    * 立即隐藏
    */
-  @Post("/hidden", { description: "sys:settings:edit" })
+  @Post("/hidden", { description: "sys:settings:edit", summary: "立刻隐藏系统" })
   async hiddenImmediate() {
     await this.safeService.hiddenImmediately();
+    await this.auditLog({ content: "立刻隐藏了系统" });
     return this.ok({});
   }
 }

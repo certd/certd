@@ -3,6 +3,7 @@ import { Constants, CrudController } from "@certd/lib-server";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 import { GroupService } from "../../../modules/basic/service/group-service.js";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * 通知
@@ -18,6 +19,10 @@ export class GroupController extends CrudController<GroupService> {
 
   getService(): GroupService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.pipelineGroup;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询分组分页列表" })
@@ -52,7 +57,9 @@ export class GroupController extends CrudController<GroupService> {
     const { projectId, userId } = await this.getProjectUserIdRead();
     bean.projectId = projectId;
     bean.userId = userId;
-    return await super.add(bean);
+    const res = await super.add(bean);
+    this.auditLog({ content: `新增了分组「${bean.name}」(ID:${res.data})` });
+    return res;
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新分组" })
@@ -60,7 +67,9 @@ export class GroupController extends CrudController<GroupService> {
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
-    return await super.update(bean);
+    const res = await super.update(bean);
+    this.auditLog({ content: `修改了分组「${bean.name}」(ID:${bean.id})` });
+    return res;
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询分组详情" })
   async info(@Query("id") id: number) {
@@ -71,7 +80,9 @@ export class GroupController extends CrudController<GroupService> {
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除分组" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write");
-    return await super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({ content: `删除了分组(ID:${id})` });
+    return res;
   }
 
   @Post("/all", { description: Constants.per.authOnly, summary: "查询所有分组" })

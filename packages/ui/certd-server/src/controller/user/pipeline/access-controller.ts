@@ -4,7 +4,7 @@ import { AccessService } from "@certd/lib-server";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 import { AccessDefine } from "@certd/pipeline";
 import { ApiTags } from "@midwayjs/swagger";
-import { AuditType, AuditAction } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * 授权
@@ -19,6 +19,10 @@ export class AccessController extends CrudController<AccessService> {
   authService: AuthService;
   getService(): AccessService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.access;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询授权配置分页列表" })
@@ -60,8 +64,6 @@ export class AccessController extends CrudController<AccessService> {
     bean.projectId = projectId;
     const res = await super.add(bean);
     this.auditLog({
-      type: AuditType.access,
-      action: AuditAction.add,
       content: `新增了授权「${bean.name}」(ID:${res.data}, 类型:${bean.type})`,
     });
     return res;
@@ -74,8 +76,6 @@ export class AccessController extends CrudController<AccessService> {
     delete bean.projectId;
     const res = await super.update(bean);
     this.auditLog({
-      type: AuditType.access,
-      action: AuditAction.update,
       content: `修改了授权「${bean.name}」(ID:${bean.id})`,
     });
     return res;
@@ -91,8 +91,6 @@ export class AccessController extends CrudController<AccessService> {
     await this.checkOwner(this.getService(), id, "write");
     const res = await super.delete(id);
     this.auditLog({
-      type: AuditType.access,
-      action: AuditAction.delete,
       content: `删除了授权(ID:${id})`,
     });
     return res;

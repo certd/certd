@@ -8,6 +8,7 @@ import { logger } from "@certd/basic";
 import dayjs from "dayjs";
 import { ApiTags } from "@midwayjs/swagger";
 import { CertReader } from "@certd/plugin-lib";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -27,6 +28,10 @@ export class CertInfoController extends CrudController<CertInfoService> {
 
   getService(): CertInfoService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.monitor;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询证书分页列表" })
@@ -117,7 +122,9 @@ export class CertInfoController extends CrudController<CertInfoService> {
     const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.projectId = projectId;
     bean.userId = userId;
-    return await super.add(bean);
+    const res = await super.add(bean);
+    this.auditLog({ content: `新增了证书(ID:${res.data})` });
+    return res;
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新证书" })
@@ -125,7 +132,9 @@ export class CertInfoController extends CrudController<CertInfoService> {
     await this.checkOwner(this.service, bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
-    return await super.update(bean);
+    const res = await super.update(bean);
+    this.auditLog({ content: `修改了证书(ID:${bean.id})` });
+    return res;
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询证书详情" })
   async info(@Query("id") id: number) {
@@ -136,7 +145,9 @@ export class CertInfoController extends CrudController<CertInfoService> {
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除证书" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.service, id, "write");
-    return await super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({ content: `删除了证书(ID:${id})` });
+    return res;
   }
 
   @Post("/all", { description: Constants.per.authOnly, summary: "查询所有证书" })

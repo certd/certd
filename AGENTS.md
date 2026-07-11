@@ -215,3 +215,17 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 ### 旧版数据兼容
 
 - 新增插件参数时，必须要考虑旧版数据兼容，比如新增一个deployType参数，有两种值：`default`和`custom`，需要在使用时判空，走旧版逻辑。
+
+## 前端路由与国际化
+
+- 路由 `meta.title` 是 **i18n 国际化 key**，必须在 `src/locales/langs/zh-CN/` 和 `src/locales/langs/en-US/` 对应的模块文件中添加翻译。
+- 示例：路由 `title: "certd.auditLog"` 需要在中英 locales 文件中有对应 key（`"certd.auditLog": "操作日志"` / `"certd.auditLog": "Audit Log"`）。
+- 菜单通过路由自动生成，需设置 `meta.isMenu: true` 才会出现在左侧菜单。
+- Plus 版功能菜单需设置 `meta.show: () => { const settingStore = useSettingStore(); return settingStore.isPlus; }`。
+
+## 审计日志
+
+- 审计日志是 Plus 版功能，非 Plus 版不会写入。
+- Controller 继承 `BaseController`，通过 `this.auditLog({ content: "xxx" })` 记录日志。
+- `getAuditType()` 返回类型常量，中间件自动从 ctx.path 判定 scope（`/api/sys/` → system，其他 → user）。
+- 操作日志有系统级（scope=system）和用户级（scope=user）区分。

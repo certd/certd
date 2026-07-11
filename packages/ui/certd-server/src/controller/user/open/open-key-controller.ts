@@ -3,7 +3,7 @@ import { Constants, CrudController } from "@certd/lib-server";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 import { OpenKeyService } from "../../../modules/open/service/open-key-service.js";
 import { ApiTags } from "@midwayjs/swagger";
-import { AuditType, AuditAction } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -17,6 +17,10 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
   authService: AuthService;
   getService(): OpenKeyService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.openKey;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询开放API密钥分页列表" })
@@ -58,8 +62,6 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
     body.userId = userId;
     const res = await this.service.add(body);
     this.auditLog({
-      type: AuditType.openKey,
-      action: AuditAction.add,
       content: `新增了API密钥(ID:${res.id}, scope:${body.scope})`,
     });
     return this.ok(res);
@@ -72,8 +74,6 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
     delete bean.projectId;
     await this.service.update(bean);
     this.auditLog({
-      type: AuditType.openKey,
-      action: AuditAction.update,
       content: `修改了API密钥(ID:${bean.id})`,
     });
     return this.ok();
@@ -102,8 +102,6 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
     await this.checkOwner(this.getService(), id, "write");
     const res = await super.delete(id);
     this.auditLog({
-      type: AuditType.openKey,
-      action: AuditAction.delete,
       content: `删除了API密钥(ID:${id})`,
     });
     return res;

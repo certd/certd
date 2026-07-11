@@ -13,17 +13,20 @@ export class SysAuditLogController extends BaseController {
 
   @Post("/page", { description: Constants.per.authOnly, summary: "分页查询审计日志" })
   async page(@Body(ALL) body: any) {
+    if (body.query?.scope) {
+      delete body.query.userId;
+    }
     const pageRet = await this.auditService.page(body);
     return this.ok(pageRet);
   }
 
-  @Post("/delete", { description: Constants.per.authOnly })
+  @Post("/delete", { description: Constants.per.authOnly, summary: "删除审计日志" })
   async delete(@Query("id") id: number) {
-    await this.auditService.delete(id);
+    await this.auditService.delete([id]);
     return this.ok({});
   }
 
-  @Post("/clean", { description: Constants.per.authOnly })
+  @Post("/clean", { description: Constants.per.authOnly, summary: "清理过期审计日志" })
   async clean(@Body("retentionDays") retentionDays: number) {
     const count = await this.auditService.cleanExpired(retentionDays || 90);
     return this.ok({ deletedCount: count });

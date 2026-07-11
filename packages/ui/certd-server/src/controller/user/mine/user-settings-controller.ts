@@ -6,6 +6,7 @@ import { UserGrantSetting } from "../../../modules/mine/service/models.js";
 import { isPlus } from "@certd/plus-core";
 import { merge } from "lodash-es";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -18,6 +19,10 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
 
   getService() {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.mine;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询用户设置分页列表" })
@@ -62,6 +67,7 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
   async save(@Body(ALL) bean: UserSettingsEntity) {
     bean.userId = this.getUserId();
     await this.service.save(bean);
+    this.auditLog({ content: "保存了用户设置" });
     return this.ok({});
   }
 
@@ -88,6 +94,7 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
     merge(setting, bean);
 
     await this.service.saveSetting(userId, null, setting);
+    this.auditLog({ content: "保存了授权设置" });
     return this.ok({});
   }
 }

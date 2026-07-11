@@ -4,6 +4,7 @@ import { ApiTags } from "@midwayjs/swagger";
 import { SiteInfoService } from "../../../modules/monitor/index.js";
 import { JobHistoryService } from "../../../modules/monitor/service/job-history-service.js";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -20,6 +21,10 @@ export class JobHistoryController extends CrudController<JobHistoryService> {
 
   getService(): JobHistoryService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.jobHistory;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询监控运行历史分页列表" })
@@ -54,12 +59,15 @@ export class JobHistoryController extends CrudController<JobHistoryService> {
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除监控运行历史" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.service, id, "write");
-    return await super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({ content: `删除了监控运行历史(ID:${id})` });
+    return res;
   }
   @Post("/batchDelete", { description: Constants.per.authOnly, summary: "批量删除监控运行历史" })
   async batchDelete(@Body("ids") ids: number[]) {
     const { projectId, userId } = await this.getProjectUserIdWrite();
     await this.service.batchDelete(ids, userId, projectId);
+    this.auditLog({ content: `批量删除了${ids.length}条监控运行历史` });
     return this.ok();
   }
 }

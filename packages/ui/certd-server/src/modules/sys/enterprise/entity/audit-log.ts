@@ -10,8 +10,11 @@ export class AuditLogEntity {
   @Column({ name: "user_id", comment: "UserId" })
   userId: number;
 
+  @Column({ name: "scope", comment: "system/user" })
+  scope: string;
+
   @Column({ name: "username", comment: "用户名" })
-  userName: string;
+  username: string;
 
   @Column({ name: "project_id", comment: "ProjectId" })
   projectId: number;

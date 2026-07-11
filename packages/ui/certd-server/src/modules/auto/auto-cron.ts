@@ -67,7 +67,7 @@ export class AutoCron {
 
     await this.registerDomainExpireCheckCron();
 
-    await this.registerAuditCleanCron();
+    // await this.registerAuditCleanCron();
   }
 
   async registerSiteMonitorCron() {

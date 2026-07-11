@@ -1,4 +1,6 @@
 import { CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, UserPageQuery, UserPageRes, dict } from "@fast-crud/fast-crud";
+import { useI18n } from "/src/locales";
+import { useDicts } from "../dicts";
 
 const typeDict = dict({
   url: "/pi/audit/dict",
@@ -21,6 +23,8 @@ const actionDict = dict({
 });
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+  const { t } = useI18n();
+  const { myProjectDict } = useDicts();
   const api = context.api;
 
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -45,6 +49,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           view: { show: false },
           edit: { show: false },
           remove: { show: true },
+          copy: { show: false },
         },
       },
       columns: {
@@ -61,7 +66,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
             component: {
               name: "a-range-picker",
-              vModel: ["createTime_start", "createTime_end"],
             },
           },
           column: { width: 170, sorter: true },
@@ -77,17 +81,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
         action: {
           title: "操作动作",
-          type: "dict-select",
-          dict: actionDict,
+          type: "text",
           search: { show: true },
-          column: { width: 100 },
+          column: { width: 200, tooltip: true },
           form: { show: false },
         },
         content: {
-          title: "内容",
+          title: "备注",
           type: "text",
           search: { show: true },
-          column: { minWidth: 300 },
+          column: { width: 700, tooltip: true },
           form: { show: false },
         },
         ipAddress: {
@@ -95,6 +98,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "text",
           column: { width: 140 },
           form: { show: false },
+        },
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: myProjectDict,
+          form: {
+            show: false,
+          },
         },
       },
     },
