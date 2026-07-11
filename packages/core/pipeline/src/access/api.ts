@@ -62,9 +62,6 @@ export abstract class BaseAccess implements IAccess {
     if (!this.runtimeDepsService && this.ctx.serviceGetter) {
       this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
     }
-    if (this.runtimeDepsService && this.ctx.define?.name) {
-      await this.runtimeDepsService.ensureRuntimeDependencies({ pluginKeys: `access:${this.ctx.define.name}`, logger: this.ctx.logger });
-    }
   }
 
   async onRequest(req: AccessRequestHandleReq) {

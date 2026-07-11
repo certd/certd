@@ -1,29 +1,20 @@
-import { IAccessService, IRuntimeDepsService } from "@certd/pipeline";
-
-export type AccessRuntimeDepsService = IRuntimeDepsService;
+import { IAccessService } from "@certd/pipeline";
 
 export class AccessGetter implements IAccessService {
   userId: number;
   projectId?: number;
-  runtimeDepsService?: AccessRuntimeDepsService;
-  getter: <T>(id: any, userId?: number, projectId?: number, ignorePermission?: boolean, runtimeDepsService?: AccessRuntimeDepsService) => Promise<T>;
-  constructor(
-    userId: number,
-    projectId: number,
-    getter: (id: any, userId: number, projectId?: number, ignorePermission?: boolean, runtimeDepsService?: AccessRuntimeDepsService) => Promise<any>,
-    runtimeDepsService?: AccessRuntimeDepsService
-  ) {
+  getter: <T>(id: any, userId?: number, projectId?: number, ignorePermission?: boolean) => Promise<T>;
+  constructor(userId: number, projectId: number, getter: (id: any, userId: number, projectId?: number, ignorePermission?: boolean) => Promise<any>) {
     this.userId = userId;
     this.projectId = projectId;
     this.getter = getter;
-    this.runtimeDepsService = runtimeDepsService;
   }
 
   async getById<T = any>(id: any) {
-    return await this.getter<T>(id, this.userId, this.projectId, false, this.runtimeDepsService);
+    return await this.getter<T>(id, this.userId, this.projectId, false);
   }
 
   async getCommonById<T = any>(id: any) {
-    return await this.getter<T>(id, 0, null, false, this.runtimeDepsService);
+    return await this.getter<T>(id, 0, null, false);
   }
 }

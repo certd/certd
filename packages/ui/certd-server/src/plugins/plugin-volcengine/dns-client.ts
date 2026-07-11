@@ -21,7 +21,8 @@ export class VolcengineDnsClient {
   }
 
   async doRequest(req: VolcengineReq) {
-    const { Signer } = await this.opts.access.importRuntime("@volcengine/openapi");
+    const importRuntime = this.opts.importRuntime || this.opts.access.importRuntime.bind(this.opts.access);
+    const { Signer } = await importRuntime("@volcengine/openapi");
 
     // http request data
     const openApiRequestData: any = {

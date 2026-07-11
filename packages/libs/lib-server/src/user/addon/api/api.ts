@@ -121,9 +121,6 @@ export abstract class BaseAddon implements IAddon {
     if (!this.runtimeDepsService && this.ctx.serviceGetter) {
       this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
     }
-    if (this.runtimeDepsService && this.define?.addonType && this.define?.name) {
-      await this.runtimeDepsService.ensureRuntimeDependencies({ pluginKeys: `addon:${this.define.addonType}:${this.define.name}`, logger: this.logger });
-    }
   }
   setDefine = (define:AddonDefine) => {
     this.define = define;
