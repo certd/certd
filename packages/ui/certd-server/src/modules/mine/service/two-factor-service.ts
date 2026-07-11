@@ -2,6 +2,7 @@ import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { UserSettingsService } from "./user-settings-service.js";
 import { UserTwoFactorSetting } from "./models.js";
 import { UserService } from "../../sys/authority/service/user-service.js";
+import { RuntimeDepsService } from "../../runtime-deps/runtime-deps-service.js";
 
 /**
  * 授权
@@ -13,13 +14,15 @@ export class TwoFactorService {
   userSettingsService: UserSettingsService;
   @Inject()
   userService: UserService;
+  @Inject()
+  runtimeDepsService: RuntimeDepsService;
 
   async getAuthenticatorQrCode(userId: any) {
     const setting = await this.getSetting(userId);
 
     const authenticatorSetting = setting.authenticator;
     if (!authenticatorSetting.secret) {
-      const { authenticator } = await import("otplib");
+      const { authenticator } = await this.runtimeDepsService.importRuntime("otplib");
 
       authenticatorSetting.secret = authenticator.generateSecret();
       await this.userSettingsService.saveSetting(userId, null, setting);
@@ -38,7 +41,7 @@ export class TwoFactorService {
 
   async saveAuthenticator(req: { userId: any; verifyCode: any }) {
     const userId = req.userId;
-    const { authenticator } = await import("otplib");
+    const { authenticator } = await this.runtimeDepsService.importRuntime("otplib");
     const setting = await this.getSetting(userId);
 
     const authenticatorSetting = setting.authenticator;
@@ -77,7 +80,7 @@ export class TwoFactorService {
   }
 
   async verifyAuthenticatorCode(userId: any, verifyCode: string) {
-    const { authenticator } = await import("otplib");
+    const { authenticator } = await this.runtimeDepsService.importRuntime("otplib");
     const setting = await this.getSetting(userId);
     if (!setting.authenticator.enabled) {
       throw new Error("authenticator 未开启");

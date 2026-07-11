@@ -57,12 +57,12 @@ input:
       action: TestRequest
     helper: 测试登录并拉取代理主机列表。
 content: |
-  const { BaseAccess } = await import("@certd/pipeline");
-  const httpsModule = await import("node:https");
-  const { URL } = await import("node:url");
-  const axiosModule = await import("axios");
-  const formDataModule = await import("form-data");
-  const { authenticator } = await import("otplib");
+  const runtimeImport = import;
+  const { BaseAccess } = await runtimeImport("@certd/pipeline");
+  const httpsModule = await runtimeImport("node:https");
+  const { URL } = await runtimeImport("node:url");
+  const axiosModule = await runtimeImport("axios");
+  const formDataModule = await runtimeImport("form-data");
 
   const https = httpsModule.default ?? httpsModule;
   const axios = axiosModule.default ?? axiosModule;
@@ -114,6 +114,7 @@ content: |
   class NginxProxyManagerClient {
     constructor(options) {
       this.options = options;
+      this.importFn = options.importFn;
       this.endpoint = normalizeEndpoint(options.endpoint);
       this.apiBaseUrl = `${this.endpoint}/api`;
       this.token = undefined;
@@ -267,6 +268,7 @@ content: |
 
       let code;
       try {
+        const { authenticator } = await this.importFn("otplib");
         code = authenticator.generate(this.options.totpSecret);
       } catch (error) {
         throw describeError(error, "Generating TOTP code");
@@ -327,6 +329,7 @@ content: |
         password: this.password,
         totpSecret: this.totpSecret || undefined,
         ignoreTls: this.ignoreTls === true,
+        importFn: this.importRuntime.bind(this),
       });
     }
 
