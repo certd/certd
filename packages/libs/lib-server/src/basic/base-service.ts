@@ -279,7 +279,7 @@ export abstract class BaseService<T> {
       return item != null && item != "";
     });
   }
-  async batchDelete(ids: number[], userId: number, projectId?: number) {
+  async batchDelete(ids: number[], userId: number, projectId?: number): Promise<number> {
     ids = this.filterIds(ids);
     if (userId != null) {
       const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
@@ -295,6 +295,7 @@ export abstract class BaseService<T> {
     }
 
     await this.delete(ids);
+    return ids.length;
   }
 
   async findOne(options: FindOneOptions<T>) {

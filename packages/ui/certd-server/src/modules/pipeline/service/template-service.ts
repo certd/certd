@@ -87,7 +87,7 @@ export class TemplateService extends BaseService<TemplateEntity> {
     };
   }
 
-  async batchDelete(ids: number[], userId: number, projectId?: number) {
+  async batchDelete(ids: number[], userId: number, projectId?: number): Promise<number> {
     const where: any = {
       id: In(ids),
     };
@@ -102,6 +102,7 @@ export class TemplateService extends BaseService<TemplateEntity> {
     const pipelineIds = list.map(item => item.pipelineId);
     await this.delete(ids);
     await this.pipelineService.batchDelete(pipelineIds, userId, projectId);
+    return ids.length;
   }
 
   async createPipelineByTemplate(body: PipelineEntity) {
