@@ -962,7 +962,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return result;
   }
 
-  async batchDelete(ids: number[], userId?: number, projectId?: number) {
+  async batchDelete(ids: number[], userId?: number, projectId?: number):Promise<number> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
@@ -974,7 +974,9 @@ export class PipelineService extends BaseService<PipelineEntity> {
         await this.checkUserId(id, projectId, "projectId");
       }
       await this.delete(id);
+      ids.push(id); 
     }
+    return ids.length
   }
 
   async batchUpdateGroup(ids: number[], groupId: number, userId: any, projectId?: number) {
