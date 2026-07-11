@@ -3,6 +3,7 @@ import type { IMidwayContainer } from "@midwayjs/core";
 import * as koa from "@midwayjs/koa";
 import { Constants } from "./constants.js";
 import { isEnterprise } from "./mode.js";
+import type { AuditLogContext } from "./audit.js";
 
 export abstract class BaseController {
   @Inject()
@@ -128,17 +129,42 @@ export abstract class BaseController {
     return { projectId, userId };
   }
 
-  async auditLog(bean: { type: string; action: string; content: string; projectId?: number; projectName?: string }) {
-    const auditService: any = await this.applicationContext.getAsync("auditService");
-    await auditService.log({
-      userId: this.getUserId(),
-      type: bean.type,
-      action: bean.action,
-      content: bean.content,
-      username: this.ctx.user?.username,
-      projectId: bean.projectId,
-      projectName: bean.projectName,
-      ipAddress: this.ctx.ip,
-    });
+  getAuditType(): string {
+    return "unknown";
+  }
+
+  auditLog(bean: { type?: string; action?: string; content?: string; append?: string | string[]; projectId?: number; userId?: number; username?: string } = {}) {
+    const auditLog = this.ensureAuditLogContext();
+    auditLog.enabled = true;
+    if (bean.userId != null) {
+      auditLog.userId = bean.userId;
+    }
+    if (bean.username != null) {
+      auditLog.username = bean.username;
+    }
+    if (bean.type != null) {
+      auditLog.type = bean.type;
+    }
+    if (bean.action != null) {
+      auditLog.action = bean.action;
+    }
+    if (bean.projectId != null) {
+      auditLog.projectId = bean.projectId;
+    }
+    if (bean.content) {
+      auditLog.content = bean.content;
+    }
+    if (bean.append) {
+      const items = Array.isArray(bean.append) ? bean.append : [bean.append];
+      const old = Array.isArray(auditLog.append) ? auditLog.append : auditLog.append ? [auditLog.append] : [];
+      auditLog.append = [...old, ...items].filter(item => item && String(item).trim());
+    }
+  }
+
+  private ensureAuditLogContext(): AuditLogContext {
+    if (!this.ctx.auditLog) {
+      this.ctx.auditLog = {};
+    }
+    return this.ctx.auditLog;
   }
 }

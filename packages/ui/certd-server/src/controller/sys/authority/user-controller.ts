@@ -6,7 +6,7 @@ import { PermissionService } from "../../../modules/sys/authority/service/permis
 import { Constants } from "@certd/lib-server";
 import { In } from "typeorm";
 import { LoginService } from "../../../modules/login/service/login-service.js";
-import { AuditType, AuditAction } from "../../modules/sys/enterprise/service/audit-constants.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * 系统用户
@@ -24,6 +24,10 @@ export class UserController extends CrudController<UserService> {
 
   @Inject()
   loginService: LoginService;
+
+  getAuditType(): string {
+    return AuditType.user;
+  }
 
   getService() {
     return this.service;
@@ -93,35 +97,31 @@ export class UserController extends CrudController<UserService> {
     return ret;
   }
 
-  @Post("/add", { description: "sys:auth:user:add" })
+  @Post("/add", { description: "sys:auth:user:add", summary: "新增用户" })
   async add(
     @Body(ALL)
     bean
   ) {
     const res = await super.add(bean);
     await this.auditLog({
-      type: AuditType.user,
-      action: AuditAction.add,
       content: `新增了用户「${bean.username}」(ID:${res.data})`,
     });
     return res;
   }
 
-  @Post("/update", { description: "sys:auth:user:edit" })
+  @Post("/update", { description: "sys:auth:user:edit", summary: "修改用户" })
   async update(
     @Body(ALL)
     bean
   ) {
     const res = await super.update(bean);
     await this.auditLog({
-      type: AuditType.user,
-      action: AuditAction.update,
       content: `修改了用户「${bean.username}」(ID:${bean.id})`,
     });
     return res;
   }
 
-  @Post("/delete", { description: "sys:auth:user:remove" })
+  @Post("/delete", { description: "sys:auth:user:remove", summary: "删除用户" })
   async delete(
     @Query("id")
     id: number
@@ -134,8 +134,6 @@ export class UserController extends CrudController<UserService> {
     }
     const res = await super.delete(id);
     await this.auditLog({
-      type: AuditType.user,
-      action: AuditAction.delete,
       content: `删除了用户(ID:${id})`,
     });
     return res;
@@ -144,13 +142,14 @@ export class UserController extends CrudController<UserService> {
   /**
    * 解除登录锁定
    */
-  @Post("/unlockBlock", { description: "sys:auth:user:edit" })
+  @Post("/unlockBlock", { description: "sys:auth:user:edit", summary: "解锁登录锁定" })
   public async unlockBlock(@Body("id") id: number) {
     const info = await this.service.info(id, ["password"]);
     this.loginService.clearCacheOnSuccess(info.username);
     if (info.mobile) {
       this.loginService.clearCacheOnSuccess(info.mobile);
     }
+    await this.auditLog({ content: `解锁了用户登录锁定(ID:${id})` });
     return this.ok(info);
   }
 

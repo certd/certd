@@ -296,6 +296,11 @@ export const certdResources = [
               icon: "ion:document-text-outline",
               auth: true,
               keepAlive: true,
+              isMenu: true,
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isPlus;
+              },
             },
           },
           {

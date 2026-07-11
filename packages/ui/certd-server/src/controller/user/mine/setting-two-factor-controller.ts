@@ -6,6 +6,7 @@ import { merge } from "lodash-es";
 import { TwoFactorService } from "../../../modules/mine/service/two-factor-service.js";
 import { isPlus } from "@certd/plus-core";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -18,6 +19,10 @@ export class UserTwoFactorSettingController extends BaseController {
 
   @Inject()
   twoFactorService: TwoFactorService;
+
+  getAuditType(): string {
+    return AuditType.mine;
+  }
 
   @Post("/get", { description: Constants.per.authOnly, summary: "获取双因子认证设置" })
   async get() {
@@ -42,6 +47,7 @@ export class UserTwoFactorSettingController extends BaseController {
     }
 
     await this.service.saveSetting(userId, null, setting);
+    this.auditLog({ content: "保存了双因子认证设置" });
     return this.ok({});
   }
 
@@ -62,6 +68,7 @@ export class UserTwoFactorSettingController extends BaseController {
       userId,
       verifyCode: bean.verifyCode,
     });
+    this.auditLog({ content: "保存了验证器设置" });
     return this.ok();
   }
 
@@ -69,6 +76,7 @@ export class UserTwoFactorSettingController extends BaseController {
   async authenticatorOff() {
     const userId = this.getUserId();
     await this.twoFactorService.offAuthenticator(userId);
+    this.auditLog({ content: "关闭了验证器" });
     return this.ok();
   }
 }

@@ -503,6 +503,7 @@ export class CnameRecordService extends BaseService<CnameRecordEntity> {
         },
       })
     );
+    return { count: domains.length };
   }
 
   async _import(req: { userId: number; projectId: number; domains: string[]; cnameProviderId: any }, task: BackTask) {

@@ -7,7 +7,7 @@ import { merge } from "lodash-es";
 import { SiteIpService } from "../../../modules/monitor/service/site-ip-service.js";
 import { utils } from "@certd/basic";
 import { ApiTags } from "@midwayjs/swagger";
-import { AuditType, AuditAction } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -23,6 +23,10 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   siteIpService: SiteIpService;
   getService(): SiteInfoService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.monitor;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询站点监控分页列表" })
@@ -76,8 +80,6 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
       this.service.check(entity.id, true, 0);
     }
     this.auditLog({
-      type: AuditType.monitor,
-      action: AuditAction.add,
       content: `新增了站点监控「${bean.name}」(ID:${res.id}, 域名:${bean.domain})`,
     });
     return this.ok(res);
@@ -94,8 +96,6 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
       this.service.check(entity.id, true, 0);
     }
     this.auditLog({
-      type: AuditType.monitor,
-      action: AuditAction.update,
       content: `修改了站点监控「${bean.name}」(ID:${bean.id})`,
     });
     return this.ok();
@@ -111,8 +111,6 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     await this.checkOwner(this.service, id, "write");
     const res = await super.delete(id);
     this.auditLog({
-      type: AuditType.monitor,
-      action: AuditAction.delete,
       content: `删除了站点监控(ID:${id})`,
     });
     return res;
@@ -121,11 +119,9 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   @Post("/batchDelete", { description: Constants.per.authOnly, summary: "批量删除站点监控" })
   async batchDelete(@Body(ALL) body: any) {
     const { projectId, userId } = await this.getProjectUserIdWrite();
-    await this.service.batchDelete(body.ids, userId, projectId);
+    const count = await this.service.batchDelete(body.ids, userId, projectId);
     this.auditLog({
-      type: AuditType.monitor,
-      action: AuditAction.batchDelete,
-      content: `批量删除了${body.ids.length}条站点监控`,
+      content: `批量删除了${count}条站点监控`,
     });
     return this.ok();
   }
@@ -154,6 +150,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
       userId,
       projectId,
     });
+    this.auditLog({ content: "导入了站点监控" });
     return this.ok();
   }
 
@@ -191,6 +188,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
       projectId: projectId,
       key,
     });
+    this.auditLog({ content: "删除了站点监控导入任务" });
     return this.ok();
   }
 
@@ -203,6 +201,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
       userId: userId,
       projectId: projectId,
     });
+    this.auditLog({ content: "开始了站点监控导入任务" });
     return this.ok();
   }
 

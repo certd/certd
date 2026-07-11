@@ -5,6 +5,7 @@ import { ProjectMemberService } from "../../../modules/sys/enterprise/service/pr
 import { merge } from "lodash-es";
 import { ProjectService } from "../../../modules/sys/enterprise/service/project-service.js";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 /**
  */
 @Provide()
@@ -22,6 +23,10 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
 
   getService<T>() {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.enterprise;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询项目成员分页列表" })
@@ -53,7 +58,9 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
       projectId: bean.projectId,
     });
 
-    return super.add(bean);
+    const res = await super.add(bean);
+    this.auditLog({ content: `新增了项目成员(ID:${res.data})` });
+    return res;
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新项目成员" })
@@ -71,7 +78,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
       permission: bean.permission,
       status: bean.status,
     });
-
+    this.auditLog({ content: `修改了项目成员(ID:${bean.id})` });
     return this.ok(res);
   }
 
@@ -98,7 +105,9 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
       userId: this.getUserId(),
       projectId: projectId,
     });
-    return super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({ content: `删除了项目成员(ID:${id})` });
+    return res;
   }
 
   @Post("/deleteByIds", { description: Constants.per.authOnly, summary: "批量删除项目成员" })
@@ -115,6 +124,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
       await this.service.delete(id as any);
     }
 
+    this.auditLog({ content: `批量删除了${ids.length}条项目成员` });
     return this.ok({});
   }
 }

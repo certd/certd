@@ -4,6 +4,7 @@ import { AuthService } from "../../../modules/sys/authority/service/auth-service
 import { SiteIpService } from "../../../modules/monitor/service/site-ip-service.js";
 import { SiteInfoService } from "../../../modules/monitor/index.js";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -20,6 +21,10 @@ export class SiteInfoController extends CrudController<SiteIpService> {
 
   getService(): SiteIpService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.siteIp;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询站点IP分页列表" })
@@ -57,6 +62,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
       const { domain, httpsPort } = siteEntity;
       this.service.check(res.id, domain, httpsPort);
     }
+    this.auditLog({ content: `新增了站点IP(ID:${res.id})` });
     return this.ok(res);
   }
 
@@ -71,6 +77,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
       const { domain, httpsPort } = siteEntity;
       this.service.check(siteEntity.id, domain, httpsPort);
     }
+    this.auditLog({ content: `修改了站点IP(ID:${bean.id})` });
     return this.ok();
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询站点IP详情" })
@@ -85,6 +92,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
     const entity = await this.service.info(id);
     const res = await super.delete(id);
     await this.service.updateIpCount(entity.siteId);
+    this.auditLog({ content: `删除了站点IP(ID:${id})` });
     return res;
   }
 
@@ -124,6 +132,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
       siteId: body.siteId,
       projectId,
     });
+    this.auditLog({ content: "导入了站点IP" });
     return this.ok();
   }
 }

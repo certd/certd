@@ -805,11 +805,12 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     });
   }
 
-  async batchDelete(ids: number[], userId: number, projectId?: number): Promise<void> {
+  async batchDelete(ids: number[], userId: number, projectId?: number): Promise<number> {
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
-    await this.repository.delete({
+    const result = await this.repository.delete({
       id: In(ids),
       ...userProjectQuery,
     });
+    return result.affected || 0;
   }
 }

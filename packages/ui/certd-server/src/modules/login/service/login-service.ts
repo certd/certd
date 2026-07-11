@@ -64,7 +64,7 @@ export class LoginService {
     cache.delete(`login_block_duration:${username}`);
   }
 
-  addErrorTimes(username: string, errorMessage: string) {
+  addErrorTimes(username: string, errorMessage: string, userId?: number) {
     const errorTimesKey = `login_error_times:${username}`;
     const blockTimesKey = `login_block_times:${username}`;
     const blockDurationKey = `login_block_duration:${username}`;
@@ -100,13 +100,13 @@ export class LoginService {
       });
       // 清除error次数
       cache.delete(errorTimesKey);
-      throw new LoginErrorException(`登录失败次数过多，请${leftMin}分钟后重试`, 0);
+      throw new LoginErrorException(`登录失败次数过多，请${leftMin}分钟后重试`, 0, userId);
     }
     const leftTimes = maxRetryTimes - errorTimes;
     if (leftTimes < 3) {
-      throw new LoginErrorException(`登录失败(${errorMessage})，剩余尝试次数：${leftTimes}`, leftTimes);
+      throw new LoginErrorException(`登录失败(${errorMessage})，剩余尝试次数：${leftTimes}`, leftTimes, userId);
     }
-    throw new LoginErrorException(errorMessage, leftTimes);
+    throw new LoginErrorException(errorMessage, leftTimes, userId);
   }
 
   async register(type: string, user: UserEntity, inviteCode?: string, withTx?: (tx: EntityManager) => Promise<void>) {
@@ -166,7 +166,7 @@ export class LoginService {
     }
     const right = await this.userService.checkPassword(password, info.password, info.passwordVersion);
     if (!right) {
-      this.addErrorTimes(username, "用户名或密码错误");
+      this.addErrorTimes(username, "用户名或密码错误", info.id);
     }
     this.clearCacheOnSuccess(username);
     return this.onLoginSuccess(info);
@@ -251,6 +251,7 @@ export class LoginService {
     return {
       token,
       expire,
+      userId: user.id,
     };
   }
 

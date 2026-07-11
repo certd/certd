@@ -1,4 +1,7 @@
 import { CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, UserPageQuery, UserPageRes, dict } from "@fast-crud/fast-crud";
+import { Modal } from "ant-design-vue";
+import { useI18n } from "/src/locales";
+import { useDicts } from "/@/views/certd/dicts";
 
 const typeDict = dict({
   url: "/sys/audit/dict",
@@ -21,6 +24,8 @@ const actionDict = dict({
 });
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
+  const { t } = useI18n();
+  const { myProjectDict } = useDicts();
   const api = context.api;
 
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
@@ -31,19 +36,39 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   };
 
   const cleanExpired = async () => {
-    await api.Clean(90);
-    crudExpose.doRefresh();
+    Modal.confirm({
+      title: "确认清理",
+      content: "确定要清理90天前的审计日志吗？此操作不可撤销。",
+      okText: "确认清理",
+      okType: "danger",
+      cancelText: "取消",
+      async onOk() {
+        await api.Clean(90);
+        crudExpose.doRefresh();
+      },
+    });
   };
 
   return {
     crudOptions: {
       request: { pageRequest, delRequest },
+      tabs: {
+        name: "scope",
+        show: true,
+        dict: {
+          data: [
+            { value: "system", label: "系统级", color: "red" },
+            { value: "user", label: "用户级", color: "blue" },
+          ],
+        },
+      },
       actionbar: {
         buttons: {
           add: { show: false },
           clean: {
             text: "清理过期日志(90天)",
-            type: "default",
+            type: "primary",
+            danger: true,
             click: cleanExpired,
           },
         },
@@ -55,12 +80,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           view: { show: false },
           edit: { show: false },
           remove: { show: true },
+          copy: { show: false },
         },
       },
       search: {
-        initialForm: {
-          sort: { prop: "id", asc: false },
-        },
+        initialForm: { scope: "system" },
       },
       columns: {
         id: {
@@ -76,13 +100,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
             component: {
               name: "a-range-picker",
-              vModel: ["createTime_start", "createTime_end"],
             },
           },
           column: { width: 170, sorter: true },
           form: { show: false },
         },
-        userName: {
+        username: {
           title: "操作人",
           type: "text",
           search: { show: true },
@@ -90,7 +113,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           form: { show: false },
         },
         type: {
-          title: "操作类型",
+          title: "类型",
           type: "dict-select",
           dict: typeDict,
           search: { show: true },
@@ -98,24 +121,44 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           form: { show: false },
         },
         action: {
-          title: "操作动作",
-          type: "dict-select",
-          dict: actionDict,
+          title: "操作",
+          type: "text",
           search: { show: true },
-          column: { width: 100 },
+          column: { width: 200, tooltip: true },
           form: { show: false },
         },
         content: {
-          title: "内容",
+          title: "备注",
           type: "text",
           search: { show: true },
-          column: { minWidth: 300 },
+          column: { width: 500, tooltip: true },
           form: { show: false },
         },
         ipAddress: {
           title: "IP地址",
           type: "text",
           column: { width: 140 },
+          form: { show: false },
+        },
+        projectId: {
+          title: t("certd.fields.projectName"),
+          type: "dict-select",
+          dict: myProjectDict,
+          form: {
+            show: false,
+          },
+        },
+        scope: {
+          title: "范围",
+          type: "dict-select",
+          dict: dict({
+            data: [
+              { value: "system", label: "系统级", color: "blue" },
+              { value: "user", label: "用户级", color: "green" },
+            ],
+          }),
+          search: { show: true },
+          column: { width: 100 },
           form: { show: false },
         },
       },

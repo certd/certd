@@ -5,7 +5,7 @@ import { AuthService } from "../../../modules/sys/authority/service/auth-service
 import { NotificationDefine } from "@certd/pipeline";
 import { checkPlus } from "@certd/plus-core";
 import { ApiTags } from "@midwayjs/swagger";
-import { AuditType, AuditAction } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * 通知
@@ -20,6 +20,10 @@ export class NotificationController extends CrudController<NotificationService> 
   authService: AuthService;
   getService(): NotificationService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.notification;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询通知配置分页列表" })
@@ -64,8 +68,6 @@ export class NotificationController extends CrudController<NotificationService> 
     }
     const res = await super.add(bean);
     this.auditLog({
-      type: AuditType.notification,
-      action: AuditAction.add,
       content: `新增了通知配置「${bean.name}」(ID:${res.data}, 类型:${bean.type})`,
     });
     return res;
@@ -92,8 +94,6 @@ export class NotificationController extends CrudController<NotificationService> 
     delete bean.projectId;
     const res = await super.update(bean);
     this.auditLog({
-      type: AuditType.notification,
-      action: AuditAction.update,
       content: `修改了通知配置「${bean.name}」(ID:${bean.id})`,
     });
     return res;
@@ -109,8 +109,6 @@ export class NotificationController extends CrudController<NotificationService> 
     await this.checkOwner(this.getService(), id, "write");
     const res = await super.delete(id);
     this.auditLog({
-      type: AuditType.notification,
-      action: AuditAction.delete,
       content: `删除了通知配置(ID:${id})`,
     });
     return res;
@@ -172,6 +170,7 @@ export class NotificationController extends CrudController<NotificationService> 
     const { projectId, userId } = await this.getProjectUserIdRead();
     await this.checkOwner(this.getService(), id, "write");
     const res = await this.service.setDefault(id, userId, projectId);
+    this.auditLog({ content: `设置了默认通知配置(ID:${id})` });
     return this.ok(res);
   }
 

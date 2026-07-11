@@ -417,9 +417,13 @@ export const sysResources = [
         component: "/sys/audit/index.vue",
         meta: {
           icon: "ion:document-text-outline",
-          permission: "sys:settings:view",
           keepAlive: true,
           auth: true,
+          isMenu: true,
+          show: () => {
+            const settingStore = useSettingStore();
+            return settingStore.isPlus;
+          },
         },
       },
       {

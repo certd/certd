@@ -1,9 +1,10 @@
-import { ALL, Body, Controller, Inject, Post, Provide, RequestIP } from "@midwayjs/core";
+﻿import { ALL, Body, Controller, Inject, Post, Provide, RequestIP } from "@midwayjs/core";
 import { BaseController, Constants, SysSettingsService } from "@certd/lib-server";
 import { RegisterType } from "../../../modules/sys/authority/service/user-service.js";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { checkComm, checkPlus } from "@certd/plus-core";
 import { LoginService } from "../../../modules/login/service/login-service.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 export type RegisterReq = {
   type: RegisterType;
@@ -31,7 +32,11 @@ export class RegisterController extends BaseController {
   @Inject()
   sysSettingsService: SysSettingsService;
 
-  @Post("/register", { description: Constants.per.guest })
+  getAuditType(): string {
+    return AuditType.login;
+  }
+
+  @Post("/register", { description: Constants.per.guest, summary: "用户注册" })
   public async register(
     @Body(ALL)
     body: RegisterReq,
@@ -60,6 +65,7 @@ export class RegisterController extends BaseController {
         password: body.password,
       } as any;
       const newUser = await this.loginService.register(body.type, registerUser, body.inviteCode);
+      this.auditLog({ userId: newUser.id, username: body.username, content: `用户「${body.username}」注册成功` });
       return this.ok(newUser);
     } else if (body.type === "mobile") {
       if (sysPublicSettings.mobileRegisterEnabled === false) {
@@ -80,6 +86,7 @@ export class RegisterController extends BaseController {
         password: body.password,
       } as any;
       const newUser = await this.loginService.register(body.type, registerUser, body.inviteCode);
+      this.auditLog({ userId: newUser.id, username: body.mobile, content: `用户「${body.mobile}」注册成功` });
       return this.ok(newUser);
     } else if (body.type === "email") {
       if (sysPublicSettings.emailRegisterEnabled === false) {
@@ -97,6 +104,7 @@ export class RegisterController extends BaseController {
         password: body.password,
       } as any;
       const newUser = await this.loginService.register(body.type, registerUser, body.inviteCode);
+      this.auditLog({ userId: newUser.id, username: body.email, content: `用户「${body.email}」注册成功` });
       return this.ok(newUser);
     }
   }

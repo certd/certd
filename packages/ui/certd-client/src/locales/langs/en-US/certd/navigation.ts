@@ -18,6 +18,7 @@ export default {
   openKey: "Open API Key",
   notification: "Notification Settings",
   siteMonitorSetting: "Site Monitor Settings",
+  auditLog: "Audit Log",
   userSecurity: "Security Settings",
   userProfile: "Account Info",
   userGrant: "Grant Delegation",
@@ -67,6 +68,7 @@ export default {
     projectJoin: "Join Project",
     currentProject: "Current Project",
     projectMemberManager: "Project Member",
+    auditLog: "Audit Log",
     domainMonitorSetting: "Domain Monitor Settings",
   },
 };
