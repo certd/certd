@@ -105,7 +105,7 @@ export class PaymentAlipay implements IPaymentProvider {
   }
 
   private async createAlipaySdk() {
-    const AlipaySdk = await import("alipay-sdk");
+    const AlipaySdk = await this.access.importRuntime("alipay-sdk");
 
     const alipaySdk = new AlipaySdk.AlipaySdk({
       appId: this.access.appId,
