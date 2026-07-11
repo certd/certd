@@ -8,7 +8,6 @@ import { TaskServiceBuilder } from "../../../modules/pipeline/service/getter/tas
 import { cloneDeep } from "lodash-es";
 import { ApiTags } from "@midwayjs/swagger";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
-import { RuntimeDepsService } from "../../../modules/runtime-deps/runtime-deps-service.js";
 
 @Provide()
 @Controller("/api/pi/handle")
@@ -28,9 +27,6 @@ export class HandleController extends BaseController {
 
   @Inject()
   notificationService: NotificationService;
-
-  @Inject()
-  runtimeDepsService: RuntimeDepsService;
 
   @Post("/access", { description: Constants.per.authOnly, summary: "处理授权请求" })
   async accessRequest(@Body(ALL) body: AccessRequestHandleReq) {
@@ -64,12 +60,14 @@ export class HandleController extends BaseController {
       }
     }
     const getAccessById = this.accessService.getById.bind(this.accessService);
-    const accessGetter = new AccessGetter(userId, projectId, getAccessById, this.runtimeDepsService);
+    const accessGetter = new AccessGetter(userId, projectId, getAccessById);
+    const serviceGetter = this.taskServiceBuilder.create({ userId, projectId });
     const accessContext = {
       http,
       logger,
       utils,
       accessService: accessGetter,
+      serviceGetter,
       define: undefined,
     } as any;
     const access = await newAccess(body.typeName, inputAccess, accessGetter, accessContext);

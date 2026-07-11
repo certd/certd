@@ -9,6 +9,7 @@ import { http, logger, utils } from "@certd/basic";
 import { ApiTags } from "@midwayjs/swagger";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { EmailService } from "../../../modules/basic/service/email-service.js";
+import { TaskServiceBuilder } from "../../../modules/pipeline/service/getter/task-service-getter.js";
 
 /**
  */
@@ -39,6 +40,9 @@ export class MineController extends BaseController {
 
   @Inject()
   emailService: EmailService;
+
+  @Inject()
+  taskServiceBuilder: TaskServiceBuilder;
 
   @Post("/info", { description: Constants.per.authOnly, summary: "查询用户信息" })
   public async info() {
@@ -176,11 +180,13 @@ export class MineController extends BaseController {
 
     const getAccessById = this.accessService.getById.bind(this.accessService);
     const accessGetter = new AccessGetter(userId, undefined, getAccessById);
+    const serviceGetter = this.taskServiceBuilder.create({ userId });
     const accessContext = {
       http,
       logger,
       utils,
       accessService: accessGetter,
+      serviceGetter,
       define: undefined,
     } as any;
     const access = await newAccess("acmeAccount", { caType: "letsencrypt", email: userEmail }, accessGetter, accessContext);

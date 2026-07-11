@@ -112,9 +112,6 @@ export abstract class BaseNotification implements INotification {
     if (!this.runtimeDepsService && this.ctx.serviceGetter) {
       this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
     }
-    if (this.runtimeDepsService && this.ctx.define?.name) {
-      await this.runtimeDepsService.ensureRuntimeDependencies({ pluginKeys: `notification:${this.ctx.define.name}`, logger: this.logger });
-    }
   }
   setDefine = (define: NotificationDefine) => {
     this.define = define;

@@ -66,9 +66,8 @@ export class TaskServiceGetter implements IServiceGetter {
 
   async getAccessService(): Promise<AccessGetter> {
     const accessService: AccessService = await this.appCtx.getAsync("accessService");
-    const runtimeDepsService = await this.getRuntimeDepsService();
     const getAccessById = accessService.getById.bind(accessService);
-    return new AccessGetter(this.userId, this.projectId, getAccessById, runtimeDepsService);
+    return new AccessGetter(this.userId, this.projectId, getAccessById);
   }
 
   async getCnameProxyService(): Promise<CnameProxyService> {
