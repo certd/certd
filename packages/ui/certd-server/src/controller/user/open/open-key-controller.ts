@@ -20,7 +20,7 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
   }
 
   getAuditType(): string {
-    return AuditType.openKey;
+    return AuditType.openKey.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询开放API密钥分页列表" })

@@ -16,7 +16,7 @@ export class DnsPersistRecordController extends CrudController<DnsPersistRecordS
   }
 
   getAuditType(): string {
-    return AuditType.dnsPersist;
+    return AuditType.dnsPersist.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询DNS持久验证记录分页列表" })
@@ -34,7 +34,7 @@ export class DnsPersistRecordController extends CrudController<DnsPersistRecordS
     bean.projectId = projectId;
     bean.userId = userId;
     const res = await this.getService().add(bean);
-    this.auditLog({ content: `新增了DNS持久验证记录(ID:${res.id})` });
+    this.auditLog({ content: `新增了DNS持久验证记录「${bean.domain}」(ID:${res.id})` });
     return this.ok(res);
   }
 

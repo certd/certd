@@ -12,11 +12,33 @@ export type AuditLogContext = {
   append?: string | string[];
   content?: string;
   projectId?: number;
-  projectName?: string;
   enabled?: boolean;
-  allowAnonymous?: boolean;
   scope?: string;
   userId?: number;
   username?: string;
+  success?: boolean;
+};
+
+/** 审计日志方法的参数类型 */
+export type AuditLogParam = {
+  type?: string;
+  action?: string;
+  content?: string;
+  append?: string | string[];
+  projectId?: number;
+  userId?: number;
+  username?: string;
+};
+
+/** AuditService.log() 参数类型 */
+export type AuditLogWriteParam = {
+  userId: number;
+  type: string;
+  action: string;
+  content: string;
+  username?: string;
+  projectId?: number;
+  ipAddress?: string;
+  scope?: string;
   success?: boolean;
 };

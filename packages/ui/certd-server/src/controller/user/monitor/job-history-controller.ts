@@ -24,7 +24,7 @@ export class JobHistoryController extends CrudController<JobHistoryService> {
   }
 
   getAuditType(): string {
-    return AuditType.jobHistory;
+    return AuditType.jobHistory.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询监控运行历史分页列表" })

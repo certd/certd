@@ -31,7 +31,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
   }
 
   getAuditType(): string {
-    return AuditType.monitor;
+    return AuditType.monitor.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询证书分页列表" })
@@ -123,7 +123,7 @@ export class CertInfoController extends CrudController<CertInfoService> {
     bean.projectId = projectId;
     bean.userId = userId;
     const res = await super.add(bean);
-    this.auditLog({ content: `新增了证书(ID:${res.data})` });
+    this.auditLog({ content: `新增了证书「${bean.domain}」(ID:${res.data})` });
     return res;
   }
 

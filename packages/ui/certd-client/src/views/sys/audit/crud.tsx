@@ -127,6 +127,19 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: { width: 200, tooltip: true },
           form: { show: false },
         },
+        success: {
+          title: "结果",
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { value: true, label: "成功", color: "success" },
+              { value: false, label: "失败", color: "error" },
+            ],
+          }),
+          column: { width: 100, align: "center" },
+          form: { show: false },
+          search: { show: true },
+        },
         content: {
           title: "备注",
           type: "text",

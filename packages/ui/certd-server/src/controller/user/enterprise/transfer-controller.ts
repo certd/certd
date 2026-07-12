@@ -18,7 +18,7 @@ export class TransferController extends BaseController {
   }
 
   getAuditType(): string {
-    return AuditType.enterprise;
+    return AuditType.enterprise.value;
   }
 
   /**

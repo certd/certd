@@ -16,7 +16,7 @@ export class MinePasskeyController extends BaseController {
   userService: UserService;
 
   getAuditType(): string {
-    return AuditType.mine;
+    return AuditType.mine.value;
   }
 
   @Post("/generateRegistration", { description: Constants.per.authOnly, summary: "生成Passkey注册选项" })

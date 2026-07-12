@@ -22,7 +22,7 @@ export class AccessController extends CrudController<AccessService> {
   }
 
   getAuditType(): string {
-    return AuditType.access;
+    return AuditType.access.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询授权配置分页列表" })

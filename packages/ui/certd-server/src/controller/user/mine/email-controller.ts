@@ -15,7 +15,7 @@ export class EmailController extends BaseController {
   emailService: EmailService;
 
   getAuditType(): string {
-    return AuditType.mine;
+    return AuditType.mine.value;
   }
 
   @Post("/test", { description: Constants.per.authOnly, summary: "测试邮件发送" })

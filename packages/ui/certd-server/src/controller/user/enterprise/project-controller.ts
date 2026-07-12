@@ -26,7 +26,7 @@ export class UserProjectController extends BaseController {
   }
 
   getAuditType(): string {
-    return AuditType.enterprise;
+    return AuditType.enterprise.value;
   }
 
   /**

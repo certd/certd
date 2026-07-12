@@ -16,7 +16,7 @@ export class CertApplyTemplateController extends CrudController<CertApplyTemplat
   }
 
   getAuditType(): string {
-    return AuditType.certTemplate;
+    return AuditType.certTemplate.value;
   }
 
   private removeContent(data: any) {
@@ -59,7 +59,7 @@ export class CertApplyTemplateController extends CrudController<CertApplyTemplat
     bean.projectId = projectId;
     bean.userId = userId;
     const res = await super.add(bean);
-    this.auditLog({ content: `新增了证书参数模版(ID:${res.data})` });
+    this.auditLog({ content: `新增了证书参数模版「${bean.name}」(ID:${res.data})` });
     return res;
   }
 
@@ -69,7 +69,7 @@ export class CertApplyTemplateController extends CrudController<CertApplyTemplat
     delete bean.userId;
     delete bean.projectId;
     const res = await super.update(bean);
-    this.auditLog({ content: `修改了证书参数模版(ID:${bean.id})` });
+    this.auditLog({ content: `修改了证书参数模版「${bean.name}」(ID:${bean.id})` });
     return res;
   }
 

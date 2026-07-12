@@ -413,8 +413,8 @@ export const sysResources = [
       {
         title: "certd.sysResources.auditLog",
         name: "SysAuditLog",
-        path: "/sys/audit",
-        component: "/sys/audit/index.vue",
+        path: "/sys/enterprise/audit",
+        component: "/sys/enterprise/audit/index.vue",
         meta: {
           icon: "ion:document-text-outline",
           keepAlive: true,

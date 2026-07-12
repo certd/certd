@@ -18,7 +18,7 @@ export class CnameRecordController extends CrudController<CnameProviderService> 
   }
 
   getAuditType(): string {
-    return AuditType.cname;
+    return AuditType.cname.value;
   }
 
   @Post("/page", { description: "sys:settings:view" })

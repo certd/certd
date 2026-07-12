@@ -22,7 +22,7 @@ export class GroupController extends CrudController<GroupService> {
   }
 
   getAuditType(): string {
-    return AuditType.pipelineGroup;
+    return AuditType.pipelineGroup.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询分组分页列表" })

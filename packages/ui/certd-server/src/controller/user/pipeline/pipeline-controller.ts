@@ -129,7 +129,7 @@ export class PipelineController extends CrudController<PipelineService> {
   }
 
   getAuditType(): string {
-    return AuditType.pipeline;
+    return AuditType.pipeline.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询流水线分页列表" })

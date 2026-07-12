@@ -20,7 +20,7 @@ export class BasicController extends BaseController {
   sysSettingsService: SysSettingsService;
 
   getAuditType(): string {
-    return AuditType.account;
+    return AuditType.account.value;
   }
 
   @Post("/preBindUser", { description: "sys:settings:edit", summary: "预绑定用户" })

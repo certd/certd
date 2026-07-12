@@ -9,7 +9,6 @@ export class AuditLogMiddleware implements IWebMiddleware {
   @Inject()
   auditService: AuditService;
 
-
   resolve() {
     return async (ctx: IMidwayKoaContext, next: NextFunction) => {
       try {
@@ -42,12 +41,12 @@ export class AuditLogMiddleware implements IWebMiddleware {
         auditLog.userId = err.userId;
       }
     }
-   
+
     const type = auditLog.type || (await this.resolveControllerType(routeInfo.controllerClz, ctx as any));
     const action = auditLog.action || routeInfo.summary || "";
     const append = auditLog.append;
     const appendList = Array.isArray(append) ? append : append ? [append] : [];
-    const content = auditLog.content || appendList.filter(item => item && String(item).trim()).join(" ");
+    const content = auditLog.content || appendList.filter(item => item && String(item).trim()).join(" ") || action;
 
     if (!content) {
       return;
@@ -55,7 +54,7 @@ export class AuditLogMiddleware implements IWebMiddleware {
 
     const projectId = auditLog.projectId ?? ctx.projectId ?? 0;
     const scope = auditLog.scope || (ctx.path.startsWith("/api/sys/") ? "system" : "user");
-    const ipAddress =  ctx.ip || "";
+    const ipAddress = ctx.ip || "";
 
     await this.auditService.log({
       userId: auditLog.userId ?? ctx.user?.id ?? 0,
@@ -64,7 +63,6 @@ export class AuditLogMiddleware implements IWebMiddleware {
       content,
       username: auditLog.username || ctx.user?.username,
       projectId,
-      projectName: auditLog.projectName,
       ipAddress,
       scope,
       success: isSuccess,

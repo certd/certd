@@ -33,7 +33,7 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   }
 
   getAuditType(): string {
-    return AuditType.settings;
+    return AuditType.settings.value;
   }
 
   @Post("/page", { description: "sys:settings:view", summary: "查询系统设置分页列表" })

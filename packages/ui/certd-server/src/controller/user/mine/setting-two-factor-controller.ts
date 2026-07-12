@@ -21,7 +21,7 @@ export class UserTwoFactorSettingController extends BaseController {
   twoFactorService: TwoFactorService;
 
   getAuditType(): string {
-    return AuditType.mine;
+    return AuditType.mine.value;
   }
 
   @Post("/get", { description: Constants.per.authOnly, summary: "获取双因子认证设置" })

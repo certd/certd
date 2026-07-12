@@ -14,7 +14,6 @@ describe("AuditLogContext type", () => {
       append: ["ID:5"],
       content: "删除了流水线(ID:5)",
       projectId: 3,
-      projectName: "默认项目",
       enabled: true,
     };
 

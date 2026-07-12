@@ -24,7 +24,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
   }
 
   getAuditType(): string {
-    return AuditType.siteIp;
+    return AuditType.siteIp.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询站点IP分页列表" })
@@ -62,7 +62,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
       const { domain, httpsPort } = siteEntity;
       this.service.check(res.id, domain, httpsPort);
     }
-    this.auditLog({ content: `新增了站点IP(ID:${res.id})` });
+    this.auditLog({ content: `新增了站点IP「${bean.ipAddress}」(ID:${res.id})` });
     return this.ok(res);
   }
 
@@ -92,7 +92,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
     const entity = await this.service.info(id);
     const res = await super.delete(id);
     await this.service.updateIpCount(entity.siteId);
-    this.auditLog({ content: `删除了站点IP(ID:${id})` });
+    this.auditLog({ content: `删除了站点IP「${entity.ipAddress}」(ID:${id})` });
     return res;
   }
 
