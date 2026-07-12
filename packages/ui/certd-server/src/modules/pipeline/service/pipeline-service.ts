@@ -974,6 +974,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
         await this.checkUserId(id, projectId, "projectId");
       }
       await this.delete(id);
+      ids.push(id); 
     }
     return ids.length;
   }

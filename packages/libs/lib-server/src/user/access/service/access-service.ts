@@ -1,8 +1,8 @@
-import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { ApplicationContext, Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import type { IMidwayContainer } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { In, Repository } from "typeorm";
 import { AccessGetter, BaseService, PageReq, PermissionException, ValidateException } from "../../../index.js";
-import type { AccessRuntimeDepsService } from "./access-getter.js";
 import { AccessEntity } from "../entity/access.js";
 import { AccessDefine, accessRegistry, newAccess } from "@certd/pipeline";
 import { EncryptService } from "./encrypt-service.js";
@@ -19,6 +19,9 @@ export class AccessService extends BaseService<AccessEntity> {
 
   @Inject()
   encryptService: EncryptService;
+
+  @ApplicationContext()
+  applicationContext: IMidwayContainer;
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
@@ -161,7 +164,7 @@ export class AccessService extends BaseService<AccessEntity> {
     };
   }
 
-  async getAccessById(id: any, checkUserId: boolean, userId?: number, projectId?: number, runtimeDepsService?: AccessRuntimeDepsService): Promise<any> {
+  async getAccessById(id: any, checkUserId: boolean, userId?: number, projectId?: number): Promise<any> {
     const entity = await this.info(id);
     if (entity == null) {
       throw new Error(`该授权配置不存在,请确认是否已被删除:id=${id}`);
@@ -184,20 +187,23 @@ export class AccessService extends BaseService<AccessEntity> {
       id: entity.id,
       ...setting,
     };
+    const taskServiceBuilder: any = await this.applicationContext.getAsync("taskServiceBuilder");
+    const serviceGetter = taskServiceBuilder.create({ userId: userId || 0, projectId });
     const getAccessById = this.getById.bind(this);
-    const accessGetter = new AccessGetter(userId, projectId, getAccessById, runtimeDepsService);
+    const accessGetter = new AccessGetter(userId, projectId, getAccessById);
     const accessContext = {
       logger,
       http,
       utils,
       accessService: accessGetter,
+      serviceGetter,
     } as any;
     const access = await newAccess(entity.type, input, accessGetter, accessContext);
     return access;
   }
 
-  async getById(id: any, userId: number, projectId?: number, _ignorePermission?: boolean, runtimeDepsService?: AccessRuntimeDepsService): Promise<any> {
-    return await this.getAccessById(id, true, userId, projectId, runtimeDepsService);
+  async getById(id: any, userId: number, projectId?: number, _ignorePermission?: boolean): Promise<any> {
+    return await this.getAccessById(id, true, userId, projectId);
   }
 
   decryptAccessEntity(entity: AccessEntity): any {

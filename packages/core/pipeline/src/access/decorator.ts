@@ -47,7 +47,7 @@ export function AccessInput(input?: AccessInputDefine): PropertyDecorator {
   };
 }
 
-export async function newAccess(type: string, input: any, accessService: IAccessService, ctx?: AccessContext) {
+export async function newAccess(type: string, input: any, accessService: IAccessService, ctx: AccessContext) {
   const register = accessRegistry.get(type);
   if (register == null) {
     throw new Error(`access ${type} not found`);

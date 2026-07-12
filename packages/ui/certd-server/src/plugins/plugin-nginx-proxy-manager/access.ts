@@ -1,6 +1,5 @@
 import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
 import FormData from "form-data";
-import { authenticator } from "otplib";
 
 export interface ProxyHost {
   id: number;
@@ -274,6 +273,7 @@ export class NginxProxyManagerAccess extends BaseAccess {
 
     let code: string;
     try {
+      const { authenticator } = await this.importRuntime("otplib");
       code = authenticator.generate(this.totpSecret);
     } catch (error) {
       throw this.describeError(error, "Generating TOTP code");

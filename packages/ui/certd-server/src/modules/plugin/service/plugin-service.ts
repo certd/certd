@@ -270,6 +270,7 @@ export class PluginService extends BaseService<PluginEntity> {
       return;
     }
     await this.registerPlugin(item);
+    await this.runtimeDepsService.refreshPluginDeps();
   }
 
   async unRegisterById(id: any) {
@@ -297,6 +298,7 @@ export class PluginService extends BaseService<PluginEntity> {
     } else {
       logger.warn(`不支持的插件类型：${item.pluginType}`);
     }
+    await this.runtimeDepsService.refreshPluginDeps();
   }
 
   async update(param: any) {
