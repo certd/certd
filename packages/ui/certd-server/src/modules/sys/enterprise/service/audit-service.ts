@@ -25,13 +25,13 @@ export class AuditService extends BaseService<AuditLogEntity> {
       const end = pageReq.query.createTime[1];
       delete pageReq.query.createTime;
       pageReq.buildQuery = (qb: any) => {
-          qb.andWhere("main.createTime BETWEEN :start AND :end", { start, end });
+        qb.andWhere("main.createTime BETWEEN :start AND :end", { start, end });
       };
     }
     return await super.page(pageReq);
   }
 
-  async log(params: { userId: number; type: string; action: string; content: string; username?: string; projectId?: number; ipAddress?: string; scope?: string }): Promise<void> {
+  async log(params: { userId: number; type: string; action: string; content: string; username?: string; projectId?: number; projectName?: string; ipAddress?: string; scope?: string; success?: boolean }): Promise<void> {
     try {
       let { username } = params;
       if (!username && params.userId != null) {
@@ -47,9 +47,10 @@ export class AuditService extends BaseService<AuditLogEntity> {
       entity.action = params.action;
       entity.content = params.content;
       entity.projectId = params.projectId || 0;
-      entity.projectName = "";
+      entity.projectName = params.projectName || "";
       entity.ipAddress = params.ipAddress || "";
       entity.scope = params.scope || "user";
+      entity.success = params.success ?? true;
       await this.repository.save(entity);
     } catch (e) {
       logger.error("写入审计日志失败:", e);

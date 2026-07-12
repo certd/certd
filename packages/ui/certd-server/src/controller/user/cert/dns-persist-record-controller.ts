@@ -33,7 +33,7 @@ export class DnsPersistRecordController extends CrudController<DnsPersistRecordS
     const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.projectId = projectId;
     bean.userId = userId;
-     const res = await this.getService().add(bean);
+    const res = await this.getService().add(bean);
     this.auditLog({ content: `新增了DNS持久验证记录(ID:${res.id})` });
     return this.ok(res);
   }

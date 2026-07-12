@@ -18,4 +18,5 @@ export type AuditLogContext = {
   scope?: string;
   userId?: number;
   username?: string;
+  success?: boolean;
 };

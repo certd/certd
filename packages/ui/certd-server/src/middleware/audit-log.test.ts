@@ -94,14 +94,15 @@ describe("AuditLogMiddleware", () => {
     assert.equal(records.length, 0);
   });
 
-  it("skips failed response", async () => {
+  it("writes audit log with success=false on failed response", async () => {
     const { middleware, records } = createMiddleware();
     const ctx = createCtx();
     ctx.body = Constants.res.error;
 
     await middleware.resolve()(ctx, async () => {});
 
-    assert.equal(records.length, 0);
+    assert.equal(records.length, 1);
+    assert.equal(records[0].success, false);
   });
 
   it("skips anonymous request", async () => {
