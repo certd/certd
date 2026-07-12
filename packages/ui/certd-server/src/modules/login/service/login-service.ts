@@ -252,6 +252,7 @@ export class LoginService {
       token,
       expire,
       userId: user.id,
+      username: user.username,
     };
   }
 

@@ -34,6 +34,9 @@ export class AuditLogEntity {
   @Column({ name: "ip_address", comment: "IP地址" })
   ipAddress: string;
 
+  @Column({ name: "success", comment: "是否成功", default: true })
+  success: boolean;
+
   @Column({
     name: "create_time",
     comment: "创建时间",

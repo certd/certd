@@ -7,8 +7,6 @@ import { CaptchaService } from "../../../modules/basic/service/captcha-service.j
 import { PasskeyService } from "../../../modules/login/service/passkey-service.js";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
-/**
- */
 @Provide()
 @Controller("/api/")
 export class LoginController extends BaseController {
@@ -46,10 +44,10 @@ export class LoginController extends BaseController {
     try {
       const token = await this.loginService.loginByPassword(body);
       this.writeTokenCookie(token);
-      this.auditLog({ userId: token.userId, username: body.username, content: `用户「${body.username}」登录成功` });
+      this.auditLog({ userId: token.userId, username: token.username, content: `用户「${body.username}」登录成功` });
       return this.ok(token);
-    } catch (err:any) {
-      this.auditLog({userId:err.userId, username: body.username, content: `用户「${body.username}」登录失败` });
+    } catch (err: any) {
+      this.auditLog({userId:err.userId,  username: body.username, content: `用户「${body.username}」登录失败：${err.message}` });
       throw err;
     }
   }
@@ -79,10 +77,10 @@ export class LoginController extends BaseController {
       });
 
       this.writeTokenCookie(token);
-      this.auditLog({ userId: token.userId, username: body.mobile, content: `用户「${body.mobile}」短信登录成功` });
+      this.auditLog({ userId: token.userId, username: token.username, content: `用户「${body.mobile}」短信登录成功` });
       return this.ok(token);
-    } catch (err) {
-      this.auditLog({ userId: err.userId, username: body.mobile, content: `用户「${body.mobile}」短信登录失败` });
+    } catch (err: any) {
+      this.auditLog({userId: err.userId, username: body.mobile, content: `用户「${body.mobile}」短信登录失败：${err.message}` });
       throw err;
     }
   }
@@ -99,10 +97,10 @@ export class LoginController extends BaseController {
       });
 
       this.writeTokenCookie(token);
-      this.auditLog({ userId: token.userId, username: body.loginId, content: `用户「${body.loginId}」两步验证登录成功` });
+      this.auditLog({ userId: token.userId, username: token.username, content: `用户「${body.loginId}」两步验证登录成功` });
       return this.ok(token);
-    } catch (err) {
-      this.auditLog({ userId: err.userId, username: body.loginId, content: `用户「${body.loginId}」两步验证登录失败` });
+    } catch (err: any) {
+      this.auditLog({userId: err.userId, username: body.loginId, content: `用户「${body.loginId}」两步验证登录失败：${err.message}` });
       throw err;
     }
   }
@@ -132,10 +130,10 @@ export class LoginController extends BaseController {
       );
 
       this.writeTokenCookie(token);
-      this.auditLog({ userId: token.userId, content: "用户Passkey登录成功" });
+      this.auditLog({ userId: token.userId, username: token.username, content: "用户Passkey登录成功" });
       return this.ok(token);
-    } catch (err) {
-      this.auditLog({ userId: err.userId, content: "用户Passkey登录失败" });
+    } catch (err: any) {
+      this.auditLog({userId: err.userId, username: body.credential, content: `用户Passkey登录失败：${err.message}` });
       throw err;
     }
   }

@@ -54,7 +54,7 @@ export class ForgotPasswordController extends BaseController {
     } else {
       throw new CommonException("暂不支持的找回类型,请联系管理员找回");
     }
-    const {id,username} = await this.userService.forgotPassword(body);
+    const { id, username } = await this.userService.forgotPassword(body);
     username && this.loginService.clearCacheOnSuccess(username);
     this.auditLog({ userId: id, content: "用户请求找回密码" });
     return this.ok();
