@@ -20,6 +20,9 @@ export class AccessService extends BaseService<AccessEntity> {
   @Inject()
   encryptService: EncryptService;
 
+  @Inject("runtimeDepsService")
+  runtimeDepsService: any;
+
   @ApplicationContext()
   applicationContext: IMidwayContainer;
 
@@ -191,6 +194,7 @@ export class AccessService extends BaseService<AccessEntity> {
     const serviceGetter = taskServiceBuilder.create({ userId: userId || 0, projectId });
     const getAccessById = this.getById.bind(this);
     const accessGetter = new AccessGetter(userId, projectId, getAccessById);
+    accessGetter.runtimeDepsService = this.runtimeDepsService;
     const accessContext = {
       logger,
       http,

@@ -4,6 +4,7 @@ export class AccessGetter implements IAccessService {
   userId: number;
   projectId?: number;
   getter: <T>(id: any, userId?: number, projectId?: number, ignorePermission?: boolean) => Promise<T>;
+  runtimeDepsService?: any;
   constructor(userId: number, projectId: number, getter: (id: any, userId: number, projectId?: number, ignorePermission?: boolean) => Promise<any>) {
     this.userId = userId;
     this.projectId = projectId;
