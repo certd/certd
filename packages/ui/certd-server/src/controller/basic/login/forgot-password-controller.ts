@@ -1,4 +1,4 @@
-﻿import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
+import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
 import { BaseController, CommonException, Constants, SysSettingsService } from "@certd/lib-server";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { UserService } from "../../../modules/sys/authority/service/user-service.js";
@@ -21,7 +21,7 @@ export class ForgotPasswordController extends BaseController {
   sysSettingsService: SysSettingsService;
 
   getAuditType(): string {
-    return AuditType.login;
+    return AuditType.login.value;
   }
 
   @Post("/forgotPassword", { description: Constants.per.guest, summary: "找回密码" })

@@ -24,7 +24,7 @@ export class SubDomainController extends CrudController<SubDomainService> {
   }
 
   getAuditType(): string {
-    return AuditType.subDomain;
+    return AuditType.subDomain.value;
   }
 
   @Post("/parseDomain", { description: Constants.per.authOnly, summary: "解析域名" })
@@ -70,7 +70,7 @@ export class SubDomainController extends CrudController<SubDomainService> {
     bean.userId = userId;
     bean.projectId = projectId;
     const res = await super.add(bean);
-    this.auditLog({ content: `新增了子域名(ID:${res.data})` });
+    this.auditLog({ content: `新增了子域名「${bean.domain}」(ID:${res.data})` });
     return res;
   }
 

@@ -17,7 +17,7 @@ export class SysPipelineController extends CrudController<PipelineService> {
   }
 
   getAuditType(): string {
-    return AuditType.pipeline;
+    return AuditType.pipeline.value;
   }
 
   @Post("/page", { description: "sys:settings:view", summary: "管理员查询用户流水线分页列表" })

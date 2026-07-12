@@ -20,7 +20,7 @@ export class TemplateController extends CrudController<TemplateService> {
   }
 
   getAuditType(): string {
-    return AuditType.template;
+    return AuditType.template.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询流水线模版分页列表" })
@@ -58,7 +58,7 @@ export class TemplateController extends CrudController<TemplateService> {
     bean.projectId = projectId;
     checkPlus();
     const res = await super.add(bean);
-    this.auditLog({ content: `新增了流水线模版「${bean.name}」(ID:${res.data})` });
+    this.auditLog({ content: `新增了流水线模版「${bean.title}」(ID:${res.data})` });
     return res;
   }
 
@@ -68,7 +68,7 @@ export class TemplateController extends CrudController<TemplateService> {
     delete bean.userId;
     delete bean.projectId;
     const res = await super.update(bean);
-    this.auditLog({ content: `修改了流水线模版「${bean.name}」(ID:${bean.id})` });
+    this.auditLog({ content: `修改了流水线模版「${bean.title}」(ID:${bean.id})` });
     return res;
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询流水线模版详情" })

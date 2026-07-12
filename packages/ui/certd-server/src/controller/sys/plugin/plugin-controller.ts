@@ -21,7 +21,7 @@ export class PluginController extends CrudController<PluginService> {
   }
 
   getAuditType(): string {
-    return AuditType.plugin;
+    return AuditType.plugin.value;
   }
 
   @Post("/page", { description: "sys:settings:view" })

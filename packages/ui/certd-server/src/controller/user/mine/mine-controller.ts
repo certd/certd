@@ -43,7 +43,7 @@ export class MineController extends BaseController {
   emailService: EmailService;
 
   getAuditType(): string {
-    return AuditType.mine;
+    return AuditType.mine.value;
   }
   @Inject()
   taskServiceBuilder: TaskServiceBuilder;

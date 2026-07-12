@@ -13,7 +13,7 @@ export class SysSettingsController extends BaseController {
   safeService: SafeService;
 
   getAuditType(): string {
-    return AuditType.settings;
+    return AuditType.settings.value;
   }
 
   @Post("/get", { description: "sys:settings:view" })

@@ -26,7 +26,7 @@ export class UserController extends CrudController<UserService> {
   loginService: LoginService;
 
   getAuditType(): string {
-    return AuditType.user;
+    return AuditType.user.value;
   }
 
   getService() {

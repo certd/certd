@@ -23,7 +23,7 @@ export class NotificationController extends CrudController<NotificationService> 
   }
 
   getAuditType(): string {
-    return AuditType.notification;
+    return AuditType.notification.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询通知配置分页列表" })

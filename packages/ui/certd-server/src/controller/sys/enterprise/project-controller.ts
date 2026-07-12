@@ -17,7 +17,7 @@ export class SysProjectController extends CrudController<ProjectEntity> {
   sysSettingsService: SysSettingsService;
 
   getAuditType(): string {
-    return AuditType.project;
+    return AuditType.project.value;
   }
 
   getService<T>() {

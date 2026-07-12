@@ -21,7 +21,7 @@ export class DomainController extends CrudController<DomainService> {
   }
 
   getAuditType(): string {
-    return AuditType.domain;
+    return AuditType.domain.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询域名分页列表" })

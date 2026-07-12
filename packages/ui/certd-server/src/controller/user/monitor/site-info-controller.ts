@@ -26,7 +26,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   }
 
   getAuditType(): string {
-    return AuditType.monitor;
+    return AuditType.monitor.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询站点监控分页列表" })

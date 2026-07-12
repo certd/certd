@@ -1,4 +1,4 @@
-﻿import { logger, simpleNanoId, utils } from "@certd/basic";
+import { logger, simpleNanoId, utils } from "@certd/basic";
 import { addonRegistry, AddonService, BaseController, Constants, SysInstallInfo, SysSettingsService } from "@certd/lib-server";
 import { checkPlus } from "@certd/plus-core";
 import { ALL, Body, Controller, Get, Inject, Param, Post, Provide, Query } from "@midwayjs/core";
@@ -50,7 +50,7 @@ export class ConnectController extends BaseController {
   addonService: AddonService;
 
   getAuditType(): string {
-    return AuditType.login;
+    return AuditType.login.value;
   }
 
   private async getOauthProvider(type: string) {

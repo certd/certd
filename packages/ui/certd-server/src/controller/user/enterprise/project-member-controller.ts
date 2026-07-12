@@ -26,7 +26,7 @@ export class ProjectMemberController extends CrudController<ProjectMemberEntity>
   }
 
   getAuditType(): string {
-    return AuditType.enterprise;
+    return AuditType.enterprise.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询项目成员分页列表" })

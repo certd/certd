@@ -24,7 +24,7 @@ export class SysProjectMemberController extends CrudController<ProjectMemberEnti
   }
 
   getAuditType(): string {
-    return AuditType.enterprise;
+    return AuditType.enterprise.value;
   }
 
   @Post("/page", { description: "sys:settings:view", summary: "查询项目成员分页列表" })

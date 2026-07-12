@@ -17,7 +17,7 @@ export class RoleController extends CrudController<RoleService> {
   }
 
   getAuditType(): string {
-    return AuditType.role;
+    return AuditType.role.value;
   }
 
   @Post("/page", { description: "sys:auth:role:view" })

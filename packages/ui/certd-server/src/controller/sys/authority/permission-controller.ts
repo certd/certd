@@ -16,7 +16,7 @@ export class PermissionController extends CrudController<PermissionService> {
     return this.service;
   }
   getAuditType(): string {
-    return AuditType.permission;
+    return AuditType.permission.value;
   }
 
   @Post("/page", { description: "sys:auth:per:view", summary: "查询权限分页列表" })

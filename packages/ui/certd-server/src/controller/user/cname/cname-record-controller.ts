@@ -19,7 +19,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
   }
 
   getAuditType(): string {
-    return AuditType.cname;
+    return AuditType.cname.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询CNAME记录分页列表" })

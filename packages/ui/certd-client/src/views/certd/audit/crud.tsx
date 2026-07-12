@@ -1,4 +1,4 @@
-import { CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, UserPageQuery, UserPageRes, dict } from "@fast-crud/fast-crud";
+import { ColumnProps, DataFormatterContext, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, UserPageQuery, UserPageRes, dict } from "@fast-crud/fast-crud";
 import { useI18n } from "/src/locales";
 import { useDicts } from "../dicts";
 
@@ -9,16 +9,6 @@ const typeDict = dict({
     const api = createAuditApi();
     const res = await api.GetDict();
     return res.types || [];
-  },
-});
-
-const actionDict = dict({
-  url: "/pi/audit/dict",
-  getData: async () => {
-    const { createAuditApi } = await import("./api");
-    const api = createAuditApi();
-    const res = await api.GetDict();
-    return res.actions || [];
   },
 });
 
@@ -37,6 +27,22 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   return {
     crudOptions: {
       request: { pageRequest, delRequest },
+      toolbar: {
+        buttons: {
+          export: { show: true },
+        },
+        export: {
+          dataFrom: "search",
+          columnFilter: (col: ColumnProps) => col.show === true,
+          dataFormatter: (opts: DataFormatterContext) => {
+            const { row, originalRow, col } = opts;
+            const key = col.key;
+            if (key === "createTime" && originalRow[key]) {
+              row[key] = new Date(originalRow[key]).toLocaleString();
+            }
+          },
+        },
+      },
       actionbar: {
         buttons: {
           add: { show: false },
@@ -85,6 +91,19 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           search: { show: true },
           column: { width: 200, tooltip: true },
           form: { show: false },
+        },
+        success: {
+          title: "结果",
+          type: "dict-switch",
+          dict: dict({
+            data: [
+              { value: true, label: "成功", color: "success" },
+              { value: false, label: "失败", color: "error" },
+            ],
+          }),
+          column: { width: 100, align: "center" },
+          form: { show: false },
+          search: { show: true },
         },
         content: {
           title: "备注",

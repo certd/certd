@@ -22,7 +22,7 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
   }
 
   getAuditType(): string {
-    return AuditType.mine;
+    return AuditType.mine.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询用户设置分页列表" })

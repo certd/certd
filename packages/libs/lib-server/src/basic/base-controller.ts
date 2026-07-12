@@ -3,7 +3,7 @@ import type { IMidwayContainer } from "@midwayjs/core";
 import * as koa from "@midwayjs/koa";
 import { Constants } from "./constants.js";
 import { isEnterprise } from "./mode.js";
-import type { AuditLogContext } from "./audit.js";
+import type { AuditLogContext, AuditLogParam } from "./audit.js";
 
 export abstract class BaseController {
   @Inject()
@@ -133,7 +133,7 @@ export abstract class BaseController {
     return "unknown";
   }
 
-  auditLog(bean: { type?: string; action?: string; content?: string; append?: string | string[]; projectId?: number; userId?: number; username?: string } = {}) {
+  auditLog(bean: AuditLogParam = {}) {
     const auditLog = this.ensureAuditLogContext();
     auditLog.enabled = true;
     if (bean.userId != null) {

@@ -16,7 +16,7 @@ export class SysSiteInfoController extends CrudController<SiteInfoService> {
   }
 
   getAuditType(): string {
-    return AuditType.monitor;
+    return AuditType.monitor.value;
   }
 
   @Post("/page", { description: "sys:settings:view", summary: "管理员查询站点监控分页列表" })

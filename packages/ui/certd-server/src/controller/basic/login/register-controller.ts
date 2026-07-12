@@ -1,4 +1,4 @@
-﻿import { ALL, Body, Controller, Inject, Post, Provide, RequestIP } from "@midwayjs/core";
+import { ALL, Body, Controller, Inject, Post, Provide, RequestIP } from "@midwayjs/core";
 import { BaseController, Constants, SysSettingsService } from "@certd/lib-server";
 import { RegisterType } from "../../../modules/sys/authority/service/user-service.js";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
@@ -33,7 +33,7 @@ export class RegisterController extends BaseController {
   sysSettingsService: SysSettingsService;
 
   getAuditType(): string {
-    return AuditType.login;
+    return AuditType.login.value;
   }
 
   @Post("/register", { description: Constants.per.guest, summary: "用户注册" })

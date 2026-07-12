@@ -26,7 +26,7 @@ export class AddonController extends CrudController<AddonService> {
   }
 
   getAuditType(): string {
-    return AuditType.addon;
+    return AuditType.addon.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询Addon分页列表" })
