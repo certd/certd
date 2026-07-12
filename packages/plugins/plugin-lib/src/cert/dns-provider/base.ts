@@ -45,9 +45,6 @@ export abstract class AbstractDnsProvider<T = any> implements IDnsProvider<T> {
     if (!this.runtimeDepsService && this.ctx.serviceGetter) {
       this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
     }
-    if (this.runtimeDepsService && this.ctx.define?.name) {
-      await this.runtimeDepsService.ensureRuntimeDependencies({ pluginKeys: `dnsProvider:${this.ctx.define.name}`, logger: this.logger });
-    }
   }
 
   async parseDomain(fullDomain: string) {

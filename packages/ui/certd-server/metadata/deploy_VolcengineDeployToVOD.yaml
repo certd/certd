@@ -96,23 +96,10 @@ input:
           label: 点播加速域名
         - value: image
           label: 封面加速域名
+        - value: third
+          label: 自定义源站
     value: play
     required: true
-    order: 0
-  sourceStationType:
-    title: 源站类型
-    helper: 选择源站类型
-    value: 1
-    component:
-      name: a-select
-      vModel: value
-      options:
-        - value: 1
-          label: 点播源站
-        - value: 2
-          label: 自定义源站
-      helper: 注意：封面加速域名不支持自定义源站
-    required: false
     order: 0
   domainList:
     title: 域名
@@ -132,7 +119,6 @@ input:
         - accessId
         - spaceName
         - domainType
-        - sourceStationType
     required: true
     mergeScript: |2-
 

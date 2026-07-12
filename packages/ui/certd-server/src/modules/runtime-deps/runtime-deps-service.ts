@@ -150,6 +150,11 @@ export class RuntimeDepsService {
   @Config("runtimeDeps.lazyDependencies")
   lazyDependencies: Record<string, string> = {};
 
+  /**
+   * 从插件 registry 收集到的懒加载依赖，键为包名，值为版本范围
+   */
+  pluginLazyDependencies: Record<string, string> = {};
+
   @Inject()
   registryResolver!: NpmRegistryResolver;
 
@@ -339,7 +344,8 @@ export class RuntimeDepsService {
 
   private async resolveMissingRuntimeSpecifier(specifier: string, runtimeError: any, logger?: ILogger) {
     const packageName = this.parsePackageName(specifier);
-    const lazyRange = this.lazyDependencies?.[packageName];
+    const mergedDeps = this.getMergedLazyDependencies();
+    const lazyRange = mergedDeps[packageName];
     if (!lazyRange) {
       try {
         return this.resolveProjectSpecifier(specifier, runtimeError).resolved;
@@ -563,6 +569,56 @@ export class RuntimeDepsService {
       this.installPromises.clear();
       return undefined;
     });
+  }
+
+  /**
+   * 合并 package.json 的 lazyDependencies 和插件注册表收集到的 dependPackages
+   * 插件依赖优先（同名时使用插件声明的版本）
+   */
+  getMergedLazyDependencies(): Record<string, string> {
+    return { ...this.lazyDependencies, ...this.pluginLazyDependencies };
+  }
+
+  /**
+   * 从所有插件注册表中收集 dependPackages，合并到 pluginLazyDependencies
+   */
+  collectPluginDeps() {
+    const registries: Array<{ registry: Registry<any>; keyFormatter?: (name: string) => string }> = [
+      { registry: pluginRegistry },
+      { registry: accessRegistry },
+      { registry: notificationRegistry },
+      { registry: dnsProviderRegistry },
+      { registry: addonRegistry },
+    ];
+
+    const deps: Record<string, string> = {};
+    for (const { registry } of registries) {
+      const defineList = registry.getDefineList();
+      for (const define of defineList) {
+        const dependPackages = (define as any).dependPackages as Record<string, string> | undefined;
+        if (!dependPackages) {
+          continue;
+        }
+        for (const [pkgName, range] of Object.entries(dependPackages)) {
+          const existing = deps[pkgName];
+          if (existing && !areRangesCompatible(existing, range)) {
+            logger.warn(`懒加载依赖版本冲突: ${pkgName} => ${existing} vs ${range}，保留已有版本`);
+            continue;
+          }
+          deps[pkgName] = range;
+        }
+      }
+    }
+
+    this.pluginLazyDependencies = deps;
+    logger.info(`从插件注册表收集到 ${Object.keys(deps).length} 个懒加载依赖`);
+  }
+
+  /**
+   * 刷新插件懒加载依赖：收集所有插件的 dependPackages 到内存列表，实际安装延迟到 importRuntime 时触发
+   */
+  async refreshPluginDeps() {
+    this.collectPluginDeps();
   }
 
   private readInstallState(statePath: string): any {

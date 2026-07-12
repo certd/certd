@@ -181,9 +181,6 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
     if (!this.runtimeDepsService && this.ctx.serviceGetter) {
       this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
     }
-    if (this.runtimeDepsService && this.ctx.define?.name) {
-      await this.runtimeDepsService.ensureRuntimeDependencies({ pluginKeys: `plugin:${this.ctx.define.name}`, logger: this.logger });
-    }
     // 将证书加入secret
     // @ts-ignore
     if (this.cert && this.cert.crt && this.cert.key) {
