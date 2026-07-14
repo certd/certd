@@ -95,7 +95,7 @@ export class TencentDeployCertToLive extends AbstractTaskPlugin {
 
   async getLiveClient() {
     const accessProvider = await this.getAccess<TencentAccess>(this.accessId);
-    const sdk = await (this as any).importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/live/v20180801/index.js");
+    const sdk = await this.importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/live/v20180801/index.js");
     const CssClient = sdk.v20180801.Client;
 
     const clientConfig = {

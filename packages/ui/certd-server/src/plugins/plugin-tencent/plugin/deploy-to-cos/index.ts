@@ -142,7 +142,7 @@ export class DeployCertToTencentCosPlugin extends AbstractTaskPlugin {
   async onGetDomainList(data: any) {
     const access = await this.getAccess(this.accessId);
 
-    const cosv5 = await (this as any).importRuntime("cos-nodejs-sdk-v5");
+    const cosv5 = await this.importRuntime("cos-nodejs-sdk-v5");
     const cos = new cosv5.default({
       SecretId: access.secretId,
       SecretKey: access.secretKey,

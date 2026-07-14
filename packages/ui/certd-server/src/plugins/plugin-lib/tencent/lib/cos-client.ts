@@ -1,21 +1,25 @@
-import { TencentAccess } from "../access.js";
+﻿import { TencentAccess } from "../access.js";
 import { ILogger, safePromise } from "@certd/basic";
-import { ImportRuntime } from "@certd/pipeline";
 import fs from "fs";
+import { importRuntime as importRuntimeDirect } from "@certd/pipeline";
 
 export class TencentCosClient {
   access: TencentAccess;
   logger: ILogger;
   region: string;
   bucket: string;
-  importRuntime: ImportRuntime;
 
-  constructor(opts: { access: TencentAccess; logger: ILogger; region: string; bucket: string; importRuntime?: ImportRuntime }) {
+
+  constructor(opts: { access: TencentAccess; logger: ILogger; region: string; bucket: string }) {
     this.access = opts.access;
     this.logger = opts.logger;
     this.bucket = opts.bucket;
     this.region = opts.region;
-    this.importRuntime = opts.importRuntime || (async (specifier: string) => await import(specifier));
+
+  }
+
+  async importRuntime(specifier: string) {
+    return await importRuntimeDirect(specifier, this.logger);
   }
 
   async getCosClient() {
@@ -118,3 +122,4 @@ export class TencentCosClient {
     });
   }
 }
+

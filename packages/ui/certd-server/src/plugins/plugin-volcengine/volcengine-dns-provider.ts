@@ -22,7 +22,6 @@ export class VolcengineDnsProvider extends AbstractDnsProvider {
       access: this.access,
       logger: this.logger,
       http: this.http,
-      importRuntime: this.importRuntime.bind(this),
     });
   }
 

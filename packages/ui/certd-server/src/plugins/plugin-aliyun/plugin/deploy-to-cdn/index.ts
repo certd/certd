@@ -1,4 +1,4 @@
-import { optionsUtils } from "@certd/basic";
+﻿import { optionsUtils } from "@certd/basic";
 import { AbstractTaskPlugin, CertTargetItem, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertReader } from "@certd/plugin-cert";
 import { CertInfo, createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
@@ -136,7 +136,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
       access,
       logger: this.logger,
       endpoint: this.endpoint || "cas.aliyuncs.com",
-    });
+      });
 
     if (this.domainMatchMode === "auto") {
       const { result, deployedList } = await this.autoMatchedDeploy({
@@ -209,7 +209,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   }
 
   async getClient(access: AliyunAccess) {
-    const client = new AliyunClient({ logger: this.logger, importRuntime: access.importRuntime.bind(access) });
+    const client = new AliyunClient({ logger: this.logger });
     await client.init({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
@@ -293,3 +293,4 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   }
 }
 new DeployCertToAliyunCDN();
+

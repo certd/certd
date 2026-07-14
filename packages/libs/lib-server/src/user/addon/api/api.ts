@@ -1,15 +1,6 @@
 import { HttpClient, ILogger, utils } from "@certd/basic";
-import {upperFirst} from "lodash-es";
-import {
-  accessRegistry,
-  FormItemProps,
-  IAccessService,
-  IRuntimeDepsService,
-  IServiceGetter,
-  PluginRequestHandleReq,
-  Registrable
-} from "@certd/pipeline";
-
+import { upperFirst } from "lodash-es";
+import { accessRegistry, FormItemProps, IAccessService, IServiceGetter, PluginRequestHandleReq, Registrable, getRuntimeDepsService } from "@certd/pipeline";
 
 export type AddonRequestHandleReqInput<T = any> = {
   id?: number;
@@ -19,7 +10,7 @@ export type AddonRequestHandleReqInput<T = any> = {
 
 export type AddonRequestHandleReq<T = any> = {
   addonType: string;
-} &PluginRequestHandleReq<AddonRequestHandleReqInput<T>>;
+} & PluginRequestHandleReq<AddonRequestHandleReqInput<T>>;
 
 export type AddonInputDefine = FormItemProps & {
   title: string;
@@ -48,8 +39,6 @@ export type AddonInstanceConfig = {
   };
 };
 
-
-
 export interface IAddon {
   ctx: AddonContext;
   [key: string]: any;
@@ -67,13 +56,9 @@ export abstract class BaseAddon implements IAddon {
   ctx!: AddonContext;
   http!: HttpClient;
   logger!: ILogger;
-  runtimeDepsService?: IRuntimeDepsService;
 
   async importRuntime(specifier: string) {
-    if (!this.runtimeDepsService) {
-      return await import(specifier);
-    }
-    return await this.runtimeDepsService.importRuntime(specifier, this.logger);
+    return await getRuntimeDepsService().importRuntime(specifier, this.logger);
   }
 
   title!: string;
@@ -85,7 +70,7 @@ export abstract class BaseAddon implements IAddon {
     if (accessId == null) {
       throw new Error("您还没有配置授权");
     }
-    const accessService = await this.ctx.serviceGetter.get<IAccessService>("accessService")
+    const accessService = await this.ctx.serviceGetter.get<IAccessService>("accessService");
     let res: any = null;
     if (isCommon) {
       res = await accessService.getCommonById(accessId);
@@ -118,15 +103,12 @@ export abstract class BaseAddon implements IAddon {
     this.ctx = ctx;
     this.http = ctx.http;
     this.logger = ctx.logger;
-    if (!this.runtimeDepsService && this.ctx.serviceGetter) {
-      this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
-    }
   }
-  setDefine = (define:AddonDefine) => {
+  setDefine = (define: AddonDefine) => {
     this.define = define;
   };
 
-  async onRequest(req:AddonRequestHandleReq) {
+  async onRequest(req: AddonRequestHandleReq) {
     if (!req.action) {
       throw new Error("action is required");
     }
@@ -144,9 +126,7 @@ export abstract class BaseAddon implements IAddon {
     }
     throw new Error(`action ${req.action} not found`);
   }
-
 }
-
 
 export interface IAddonGetter {
   getById<T = any>(id: any): Promise<T>;

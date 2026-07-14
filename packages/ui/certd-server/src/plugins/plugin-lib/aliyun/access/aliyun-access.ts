@@ -1,4 +1,4 @@
-import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
+﻿import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
 import { AliyunClientV2 } from "../lib/aliyun-client-v2.js";
 import { AliyunSslClient } from "../lib/ssl-client.js";
 @IsAccess({
@@ -85,7 +85,7 @@ export class AliyunAccess extends BaseAccess {
       access: this,
       logger: this.ctx.logger,
       endpoint,
-    });
+      });
     return client;
   }
 
@@ -94,8 +94,9 @@ export class AliyunAccess extends BaseAccess {
       access: this,
       logger: this.ctx.logger,
       endpoint: endpoint,
-    });
+      });
   }
 }
 
 new AliyunAccess();
+

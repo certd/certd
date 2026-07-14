@@ -109,7 +109,7 @@ export class TencentAccess extends BaseAccess {
   }
 
   async getStsClient() {
-    const sdk = await (this as any).importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/sts/v20180813/index.js");
+    const sdk = await this.importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/sts/v20180813/index.js");
     const StsClient = sdk.v20180813.Client;
 
     const clientConfig = {

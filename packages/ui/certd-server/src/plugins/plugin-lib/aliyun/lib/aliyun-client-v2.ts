@@ -1,5 +1,6 @@
-import { ILogger } from "@certd/basic";
+﻿import { ILogger } from "@certd/basic";
 import { AliyunAccess } from "../access/aliyun-access.js";
+import { importRuntime as importRuntimeDirect } from "@certd/pipeline";
 
 export type AliyunClientV2Req = {
   action: string;
@@ -19,18 +20,24 @@ export class AliyunClientV2 {
   logger: ILogger;
   endpoint: string;
 
+
   client: any;
   constructor(opts: { access: AliyunAccess; logger: ILogger; endpoint: string }) {
     this.access = opts.access;
     this.logger = opts.logger;
     this.endpoint = opts.endpoint;
+
+  }
+
+  async importRuntime(name: string) {
+    return await importRuntimeDirect(name, this.logger);
   }
 
   async getClient() {
     if (this.client) {
       return this.client;
     }
-    const $OpenApi = await this.access.importRuntime("@alicloud/openapi-client");
+    const $OpenApi = await this.importRuntime("@alicloud/openapi-client");
     // const Credential = await import("@alicloud/credentials");
     // //@ts-ignore
     // const credential = new Credential.default.default({
@@ -52,9 +59,9 @@ export class AliyunClientV2 {
   async doRequest(req: AliyunClientV2Req) {
     const client = await this.getClient();
 
-    const $OpenApi = await this.access.importRuntime("@alicloud/openapi-client");
-    const $Util = await this.access.importRuntime("@alicloud/tea-util");
-    const OpenApiUtil = await this.access.importRuntime("@alicloud/openapi-util");
+    const $OpenApi = await this.importRuntime("@alicloud/openapi-client");
+    const $Util = await this.importRuntime("@alicloud/tea-util");
+    const OpenApiUtil = await this.importRuntime("@alicloud/openapi-util");
     const params = new $OpenApi.Params({
       // 接口名称
       action: req.action,
@@ -89,3 +96,4 @@ export class AliyunClientV2 {
     return res?.body;
   }
 }
+

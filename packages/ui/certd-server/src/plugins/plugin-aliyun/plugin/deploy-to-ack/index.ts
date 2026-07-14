@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+﻿import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { utils } from "@certd/basic";
 
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
@@ -241,7 +241,7 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
   }
 
   async getClient(aliyunProvider: any, regionId: string) {
-    const client = new AliyunClient({ logger: this.logger, useROAClient: true, importRuntime: aliyunProvider.importRuntime.bind(aliyunProvider) });
+    const client = new AliyunClient({ logger: this.logger, useROAClient: true });
     await client.init({
       accessKeyId: aliyunProvider.accessKeyId,
       accessKeySecret: aliyunProvider.accessKeySecret,
@@ -275,3 +275,4 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
 }
 
 new DeployCertToAliyunAckPlugin();
+

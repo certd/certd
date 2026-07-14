@@ -137,8 +137,8 @@ export class AliyunDeployCertToFC extends AbstractTaskPlugin {
 
     const client = await this.getClient(access);
 
-    const $Util = await access.importRuntime("@alicloud/tea-util");
-    const $OpenApi = await access.importRuntime("@alicloud/openapi-client");
+    const $Util = await this.importRuntime("@alicloud/tea-util");
+    const $OpenApi = await this.importRuntime("@alicloud/openapi-client");
 
     let privateKey = this.cert.key;
     try {
@@ -204,7 +204,7 @@ export class AliyunDeployCertToFC extends AbstractTaskPlugin {
   }
 
   async getClient(access: AliyunAccess) {
-    const $OpenApi = await access.importRuntime("@alicloud/openapi-client");
+    const $OpenApi = await this.importRuntime("@alicloud/openapi-client");
     const config = new $OpenApi.Config({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
@@ -221,8 +221,8 @@ export class AliyunDeployCertToFC extends AbstractTaskPlugin {
     const access = await this.getAccess<AliyunAccess>(this.accessId);
     const client = await this.getClient(access);
 
-    const $OpenApi = await access.importRuntime("@alicloud/openapi-client");
-    const $Util = await access.importRuntime("@alicloud/tea-util");
+    const $OpenApi = await this.importRuntime("@alicloud/openapi-client");
+    const $Util = await this.importRuntime("@alicloud/tea-util");
     const params = new $OpenApi.Params({
       // 接口名称
       action: "ListCustomDomains",
