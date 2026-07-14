@@ -24,7 +24,7 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   codeService: CodeService;
   @Inject()
   addonService: AddonService;
-getService() {
+  getService() {
     return this.service;
   }
 
@@ -223,8 +223,3 @@ getService() {
     return this.ok(true);
   }
 }
-
-
-
-
-

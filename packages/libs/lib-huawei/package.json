@@ -28,7 +28,8 @@
     "cross-env": "^7.0.3",
     "esmock": "^2.7.5",
     "prettier": "3.3.3",
-    "tslib": "^2.8.1"
+    "tslib": "^2.8.1",
+    "eslint": "^8.57.0"
   },
   "gitHead": "268cd6cc9cb4f1f3d5d5d77859a82f18f0cb6db7"
 }

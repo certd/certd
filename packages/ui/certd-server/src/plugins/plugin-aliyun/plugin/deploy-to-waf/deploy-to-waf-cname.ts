@@ -144,7 +144,7 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
         access,
         logger: this.logger,
         endpoint: this.casEndpoint,
-        });
+      });
 
       const cert = this.cert as CertInfo;
       const casCert = this.cert as CasCertInfo;
@@ -250,4 +250,3 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToWaf();
-

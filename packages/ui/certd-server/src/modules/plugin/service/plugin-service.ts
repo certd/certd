@@ -48,7 +48,7 @@ export class PluginService extends BaseService<PluginEntity> {
   @Inject()
   builtInPluginService: BuiltInPluginService;
 
-//@ts-ignore
+  //@ts-ignore
   getRepository() {
     return this.repository;
   }
@@ -297,7 +297,7 @@ export class PluginService extends BaseService<PluginEntity> {
     await this.refreshPluginDeps();
   }
 
-  async refreshPluginDeps(){
+  async refreshPluginDeps() {
     const service = getRuntimeDepsService();
     service.refreshPluginDeps();
   }
@@ -566,5 +566,3 @@ export class PluginService extends BaseService<PluginEntity> {
     }
   }
 }
-
-

@@ -13,7 +13,7 @@ export class AutoLoadPlugins {
   @Inject()
   pluginService: PluginService;
 
-  @Config('runtimeDeps')
+  @Config("runtimeDeps")
   runtimeDepsConfig: any;
 
   async init() {
@@ -34,23 +34,20 @@ export class AutoLoadPlugins {
     }
     // await import("../../plugins/index.js")
     await this.pluginService.registerFromDb();
-    
+
     await registerPaymentProviders();
     logger.info(`加载插件完成，加载模式:${process.env.certd_plugin_loadmode}`);
 
     //初始化第三方依赖服务
-    initRuntimeDepsService(this.runtimeDepsConfig,{
-        pluginRegistry,
-        accessRegistry,
-        notificationRegistry,
-        dnsProviderRegistry,
-        addonRegistry,
-      });
+    initRuntimeDepsService(this.runtimeDepsConfig, {
+      pluginRegistry,
+      accessRegistry,
+      notificationRegistry,
+      dnsProviderRegistry,
+      addonRegistry,
+    });
     // 收集插件 dependPackages 并安装
     const service = getRuntimeDepsService();
     service.refreshPluginDeps();
   }
 }
-
-
-

@@ -136,7 +136,7 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
       access,
       logger: this.logger,
       endpoint: this.endpoint || "cas.aliyuncs.com",
-      });
+    });
 
     if (this.domainMatchMode === "auto") {
       const { result, deployedList } = await this.autoMatchedDeploy({
@@ -293,4 +293,3 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
   }
 }
 new DeployCertToAliyunCDN();
-

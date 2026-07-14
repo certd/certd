@@ -20,13 +20,11 @@ export class AliyunClientV2 {
   logger: ILogger;
   endpoint: string;
 
-
   client: any;
   constructor(opts: { access: AliyunAccess; logger: ILogger; endpoint: string }) {
     this.access = opts.access;
     this.logger = opts.logger;
     this.endpoint = opts.endpoint;
-
   }
 
   async importRuntime(name: string) {
@@ -96,4 +94,3 @@ export class AliyunClientV2 {
     return res?.body;
   }
 }
-

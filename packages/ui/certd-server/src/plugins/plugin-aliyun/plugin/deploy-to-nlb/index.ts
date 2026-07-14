@@ -221,7 +221,7 @@ export class AliyunDeployCertToNLB extends AbstractTaskPlugin {
       access: client.access,
       logger: this.logger,
       endpoint: this.casEndpoint,
-      });
+    });
 
     const certIds = [];
     for (const item of list) {
@@ -286,7 +286,7 @@ export class AliyunDeployCertToNLB extends AbstractTaskPlugin {
         access,
         logger: this.logger,
         endpoint: this.casEndpoint,
-        });
+      });
 
       const certName = this.buildCertName(CertReader.getMainDomain(certInfo.crt));
 
@@ -389,4 +389,3 @@ export class AliyunDeployCertToNLB extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToNLB();
-

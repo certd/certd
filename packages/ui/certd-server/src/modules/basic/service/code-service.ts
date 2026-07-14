@@ -7,7 +7,6 @@ import { CaptchaService } from "./captcha-service.js";
 import { EmailService } from "./email-service.js";
 import { CaptchaRequest } from "../../../plugins/plugin-captcha/api.js";
 
-
 // {data: '<svg.../svg>', text: 'abcd'}
 /**
  */
@@ -25,7 +24,7 @@ export class CodeService {
   @Inject()
   captchaService: CaptchaService;
 
-async checkCaptcha(body: any, req: CaptchaRequest) {
+  async checkCaptcha(body: any, req: CaptchaRequest) {
     return await this.captchaService.doValidate({ form: body, req });
   }
   /**
@@ -196,7 +195,3 @@ async checkCaptcha(body: any, req: CaptchaRequest) {
     return cache.get(this.buildValidationValueKey(code));
   }
 }
-
-
-
-

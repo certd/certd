@@ -9,13 +9,11 @@ export class TencentCosClient {
   region: string;
   bucket: string;
 
-
   constructor(opts: { access: TencentAccess; logger: ILogger; region: string; bucket: string }) {
     this.access = opts.access;
     this.logger = opts.logger;
     this.bucket = opts.bucket;
     this.region = opts.region;
-
   }
 
   async importRuntime(specifier: string) {
@@ -122,4 +120,3 @@ export class TencentCosClient {
     });
   }
 }
-

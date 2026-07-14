@@ -85,7 +85,7 @@ export class AliyunAccess extends BaseAccess {
       access: this,
       logger: this.ctx.logger,
       endpoint,
-      });
+    });
     return client;
   }
 
@@ -94,9 +94,8 @@ export class AliyunAccess extends BaseAccess {
       access: this,
       logger: this.ctx.logger,
       endpoint: endpoint,
-      });
+    });
   }
 }
 
 new AliyunAccess();
-

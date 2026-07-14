@@ -316,4 +316,3 @@ export class AliyunDeployCertToWafCloud extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToWafCloud();
-

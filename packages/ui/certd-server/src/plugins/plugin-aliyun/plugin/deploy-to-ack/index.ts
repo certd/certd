@@ -275,4 +275,3 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
 }
 
 new DeployCertToAliyunAckPlugin();
-
