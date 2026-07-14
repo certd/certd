@@ -7,7 +7,6 @@ export class AliyunClient {
   agent: any;
   useROAClient: boolean;
 
-
   constructor(opts: { logger: ILogger; useROAClient?: boolean }) {
     this.logger = opts.logger;
     this.useROAClient = opts.useROAClient || false;
@@ -82,4 +81,3 @@ export class AliyunClient {
     return res;
   }
 }
-

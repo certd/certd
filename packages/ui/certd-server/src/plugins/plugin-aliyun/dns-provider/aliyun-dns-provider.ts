@@ -209,4 +209,3 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
 }
 
 new AliyunDnsProvider();
-

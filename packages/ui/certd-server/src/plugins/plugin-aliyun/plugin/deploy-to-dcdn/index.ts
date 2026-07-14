@@ -224,4 +224,3 @@ export class DeployCertToAliyunDCDN extends AbstractTaskPlugin {
   }
 }
 new DeployCertToAliyunDCDN();
-

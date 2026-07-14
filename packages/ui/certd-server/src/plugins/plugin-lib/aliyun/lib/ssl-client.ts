@@ -12,7 +12,6 @@ export type AliyunSslClientOpts = {
   logger: ILogger;
   endpoint?: string;
   region?: string;
-
 };
 
 export type AliyunSslGetResourceListReq = {
@@ -47,7 +46,6 @@ export class AliyunSslClient {
   constructor(opts: AliyunSslClientOpts) {
     this.opts = opts;
     this.logger = opts.logger;
-
   }
 
   checkRet(ret: any) {
@@ -254,5 +252,3 @@ export class AliyunSslClient {
     }
   }
 }
-
-

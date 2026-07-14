@@ -19,7 +19,7 @@ export default class TencentOssClientImpl extends BaseOssClient<TencentCosAccess
       logger: this.logger,
       region: this.access.region,
       bucket: this.access.bucket,
-      });
+    });
   }
   async download(filePath: string, savePath: string): Promise<void> {
     const key = this.join(this.rootDir, filePath);
@@ -52,4 +52,3 @@ export default class TencentOssClientImpl extends BaseOssClient<TencentCosAccess
     this.logger.info(`文件删除成功: ${filePath}`);
   }
 }
-

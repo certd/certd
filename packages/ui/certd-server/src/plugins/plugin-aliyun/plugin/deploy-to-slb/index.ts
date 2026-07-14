@@ -234,7 +234,7 @@ export class AliyunDeployCertToSLB extends AbstractTaskPlugin {
       access,
       logger: this.logger,
       endpoint: this.casEndpoint,
-      });
+    });
 
     if (typeof this.cert === "object") {
       const name = this.appendTimeSuffix("certd");
@@ -412,4 +412,3 @@ export class AliyunDeployCertToSLB extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToSLB();
-

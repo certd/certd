@@ -4,7 +4,6 @@ import { UserSettingsService } from "./user-settings-service.js";
 import { UserTwoFactorSetting } from "./models.js";
 import { UserService } from "../../sys/authority/service/user-service.js";
 
-
 /**
  * 授权
  */
@@ -15,7 +14,7 @@ export class TwoFactorService {
   userSettingsService: UserSettingsService;
   @Inject()
   userService: UserService;
-async getAuthenticatorQrCode(userId: any) {
+  async getAuthenticatorQrCode(userId: any) {
     const setting = await this.getSetting(userId);
 
     const authenticatorSetting = setting.authenticator;
@@ -89,6 +88,3 @@ async getAuthenticatorQrCode(userId: any) {
     return true;
   }
 }
-
-
-
