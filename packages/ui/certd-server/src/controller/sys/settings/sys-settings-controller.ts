@@ -1,3 +1,4 @@
+﻿import { getRuntimeDepsService } from "@certd/pipeline";
 import { ALL, Body, Controller, Inject, Post, Provide, Query, RequestIP } from "@midwayjs/core";
 import { addonRegistry, AddonService, CrudController, SysPrivateSettings, SysPublicSettings, SysSafeSetting, SysSettingsEntity, SysSettingsService } from "@certd/lib-server";
 import { cloneDeep, merge } from "lodash-es";
@@ -7,7 +8,6 @@ import { getEmailSettings } from "../../../modules/sys/settings/fix.js";
 import { http, logger, utils } from "@certd/basic";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { SmsServiceFactory } from "../../../modules/basic/sms/factory.js";
-import { RuntimeDepsService } from "../../../modules/runtime-deps/runtime-deps-service.js";
 
 /**
  */
@@ -24,10 +24,7 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
   codeService: CodeService;
   @Inject()
   addonService: AddonService;
-  @Inject()
-  runtimeDepsService: RuntimeDepsService;
-
-  getService() {
+getService() {
     return this.service;
   }
 
@@ -222,7 +219,12 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
 
   @Post("/clearRuntimeDeps", { description: "sys:settings:edit" })
   async clearRuntimeDeps() {
-    await this.runtimeDepsService.clearRuntimeDeps();
+    await getRuntimeDepsService().clearRuntimeDeps();
     return this.ok(true);
   }
 }
+
+
+
+
+

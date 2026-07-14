@@ -10,12 +10,15 @@ export class VolcengineCdnClient {
     this.opts = opts;
   }
 
+  async importRuntime(packageName: string) {
+    return this.opts.access.importRuntime(packageName);
+  }
+
   async getCdnClient() {
     if (this.service) {
       return this.service;
     }
-    const importRuntime = this.opts.importRuntime || this.opts.access.importRuntime.bind(this.opts.access);
-    const { cdn } = await importRuntime("@volcengine/openapi");
+    const { cdn } = await this.importRuntime("@volcengine/openapi");
     const service = new cdn.CdnService();
     // 设置ak、sk
     service.setAccessKeyId(this.opts.access.accessKeyId);

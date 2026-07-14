@@ -1,4 +1,4 @@
-import { cache, isDev, randomNumber, simpleNanoId } from "@certd/basic";
+﻿import { cache, isDev, randomNumber, simpleNanoId } from "@certd/basic";
 import { AccessService, AccessSysGetter, CodeErrorException, SysSettingsService } from "@certd/lib-server";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { ISmsService } from "../sms/api.js";
@@ -6,7 +6,7 @@ import { SmsServiceFactory } from "../sms/factory.js";
 import { CaptchaService } from "./captcha-service.js";
 import { EmailService } from "./email-service.js";
 import { CaptchaRequest } from "../../../plugins/plugin-captcha/api.js";
-import { RuntimeDepsService } from "../../runtime-deps/runtime-deps-service.js";
+
 
 // {data: '<svg.../svg>', text: 'abcd'}
 /**
@@ -25,10 +25,7 @@ export class CodeService {
   @Inject()
   captchaService: CaptchaService;
 
-  @Inject()
-  runtimeDepsService: RuntimeDepsService;
-
-  async checkCaptcha(body: any, req: CaptchaRequest) {
+async checkCaptcha(body: any, req: CaptchaRequest) {
     return await this.captchaService.doValidate({ form: body, req });
   }
   /**
@@ -60,7 +57,6 @@ export class CodeService {
     await sender.setCtx({
       accessService: accessGetter,
       config: smsConfig,
-      runtimeDepsService: this.runtimeDepsService,
     });
     const smsCode = randomNumber(verificationCodeLength);
     await sender.sendSmsCode({
@@ -200,3 +196,7 @@ export class CodeService {
     return cache.get(this.buildValidationValueKey(code));
   }
 }
+
+
+
+

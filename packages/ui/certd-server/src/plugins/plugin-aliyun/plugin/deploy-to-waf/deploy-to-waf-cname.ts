@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+﻿import { AbstractTaskPlugin, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { AliyunAccess } from "../../../plugin-lib/aliyun/access/index.js";
@@ -115,7 +115,7 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
   async onInstance() {}
 
   async getWafClient(access: AliyunAccess) {
-    const client = new AliyunClient({ logger: this.logger, importRuntime: access.importRuntime.bind(access) });
+    const client = new AliyunClient({ logger: this.logger });
     await client.init({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
@@ -144,7 +144,7 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
         access,
         logger: this.logger,
         endpoint: this.casEndpoint,
-      });
+        });
 
       const cert = this.cert as CertInfo;
       const casCert = this.cert as CasCertInfo;
@@ -250,3 +250,4 @@ export class AliyunDeployCertToWaf extends AbstractTaskPlugin {
 }
 
 new AliyunDeployCertToWaf();
+

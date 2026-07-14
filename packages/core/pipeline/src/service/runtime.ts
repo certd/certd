@@ -1,27 +1,3 @@
-/**
- * 运行时动态导入函数类型
- */
-export type ImportRuntime = (specifier: string, logger?: ILogger) => Promise<any>;
-
-/**
- * 日志接口
- */
-export type ILogger = {
-  info: (message: string) => void;
-};
-
-/**
- * 运行时依赖服务参数
- */
-export type EnsureRuntimeDepsOptions = {
-  pluginKeys: string | string[];
-  logger?: ILogger;
-};
-
-/**
- * 运行时依赖服务接口
- */
-export interface IRuntimeDepsService {
-  ensureRuntimeDependencies(options: EnsureRuntimeDepsOptions): Promise<any>;
-  importRuntime: ImportRuntime;
-}
+﻿// 类型已迁至 runtime-deps-service.ts，通过 index.ts 重新导出
+// 此文件保留空壳，避免已有引用报错
+export * from "./runtime-deps-service.js";
