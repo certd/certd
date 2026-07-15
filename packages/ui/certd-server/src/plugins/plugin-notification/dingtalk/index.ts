@@ -121,7 +121,7 @@ export class DingTalkNotification extends BaseNotification {
       at.isAtAll = true;
     }
 
-    const color = body.errorMessage ? "red" : "green";
+    const color = body.errorMessage ?  "#CC0000": "#00CC66";
     const res = await this.http.request({
       url: webhook,
       method: "POST",
