@@ -95,6 +95,10 @@ export abstract class BaseNotification implements INotification {
   }
 
   async doSend(body: NotificationBody) {
+    if (body.content) {
+      const content = body.content?.replace(/\n/g, "   \n");
+      body.content = content;
+    }
     return await this.send(body);
   }
   abstract send(body: NotificationBody): Promise<void>;
