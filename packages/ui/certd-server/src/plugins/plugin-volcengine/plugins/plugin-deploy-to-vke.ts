@@ -268,7 +268,7 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
       body: {
         ClusterId: clusterId,
         Type: this.kubeconfigType,
-        ValidDuration: 3600,
+        ValidDuration: 26280, //3年
       },
     });
     const kubeconfigId = res.Result?.Id || res.Id;
@@ -303,7 +303,18 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
         PageSize: 10,
       },
     });
-    const items = res.Result?.Items || res.Items || [];
+    let items = res.Result?.Items || res.Items || [];
+    if (items.length === 0) {
+      return null;
+    }
+    const now = new Date();
+    items = items.filter((it: any) => {
+      if (!it.ExpireTime) {
+        return true;
+      }
+      const expireTime = new Date(it.ExpireTime);
+      return expireTime > now;
+    });
     if (items.length === 0) {
       return null;
     }
