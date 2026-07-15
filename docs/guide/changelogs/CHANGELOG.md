@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.42.5](https://github.com/certd/certd/compare/v1.42.4...v1.42.5) (2026-07-15)
+
+### Bug Fixes
+
+* 修复上传到cos报runtimeDepsService未初始化的问题 ([167b303](https://github.com/certd/certd/commit/167b303faeca02cc11cf97e4be2a3df914852167))
+* 修复dingtalk通知格式没有换行的bug ([7ed1be9](https://github.com/certd/certd/commit/7ed1be994f8b4b74cdeb38743060c912c027248b))
+
+### Performance Improvements
+
+* 给SQLITE_IOERR_WRITE增加友好报错提示，将certd:latest镜像改为certd:slim ([b91c9e4](https://github.com/certd/certd/commit/b91c9e4ea671cb359ef164e27864de1d66cba9d3))
+* 优化vke keubconfig获取方式，改成先查询，如果没有再创建临时config ([604fa5b](https://github.com/certd/certd/commit/604fa5be634d099d797bfee5c2b0f26ce0ac8461))
+
 ## [1.42.4](https://github.com/certd/certd/compare/v1.42.3...v1.42.4) (2026-07-11)
 
 ### Bug Fixes
