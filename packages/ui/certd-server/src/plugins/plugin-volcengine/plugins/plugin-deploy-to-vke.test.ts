@@ -19,16 +19,23 @@ describe("VolcengineDeployToVKE", () => {
     plugin.kubeconfigType = "Public";
     plugin.logger = { info: () => undefined } as any;
 
-    let requestBody: any;
-    const kubeconfigId = await (plugin as any).createKubeconfig({
+    let createRequestBody: any;
+    const kubeconfig = ["apiVersion: v1", "clusters:", "- cluster:", "    server: https://example.com", "  name: vke", "contexts: []", "current-context: vke"].join("\n");
+    const vkeService = {
       request: async (req: any) => {
-        requestBody = req.body;
-        return { Result: { Id: "kc-123" } };
+        if (req.action === "CreateKubeconfig") {
+          createRequestBody = req.body;
+          return { Result: { Id: "kc-123" } };
+        } else if (req.action === "ListKubeconfigs") {
+          return { Result: { Items: [{ Id: "kc-123", Kubeconfig: Buffer.from(kubeconfig).toString("base64") }] } };
+        }
+        return {};
       },
-    });
+    };
+    const kubeconfigStr = await (plugin as any).createKubeconfig({ vkeService });
 
-    assert.equal(kubeconfigId, "kc-123");
-    assert.equal(requestBody.ClusterId, "cc1234567890123456789");
+    assert.equal(createRequestBody.ClusterId, "cc1234567890123456789");
+    assert.equal(kubeconfigStr, kubeconfig);
   });
 
   it("decodes the base64 kubeconfig returned by VKE", async () => {
@@ -38,16 +45,15 @@ describe("VolcengineDeployToVKE", () => {
 
     const kubeconfig = ["apiVersion: v1", "clusters:", "- cluster:", "    server: https://example.com", "  name: vke", "contexts: []", "current-context: vke"].join("\n");
 
-    const result = await (plugin as any).getKubeconfig(
-      {
-        request: async () => ({
-          Result: {
-            Items: [{ Id: "kc-123", Kubeconfig: Buffer.from(kubeconfig).toString("base64") }],
-          },
-        }),
-      },
-      "kc-123"
-    );
+    const vkeService = {
+      request: async () => ({
+        Result: {
+          Items: [{ Id: "kc-123", Kubeconfig: Buffer.from(kubeconfig).toString("base64") }],
+        },
+      }),
+    };
+
+    const result = await (plugin as any).getKubeconfig({ vkeService, kubeconfigId: "kc-123" });
 
     assert.equal(result, kubeconfig);
   });
