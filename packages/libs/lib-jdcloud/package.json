@@ -1,6 +1,6 @@
 {
   "name": "@certd/jdcloud",
-  "version": "1.42.4",
+  "version": "1.42.5",
   "description": "jdcloud openApi sdk",
   "main": "./dist/bundle.js",
   "module": "./dist/bundle.js",
@@ -35,12 +35,12 @@
     "chai": "^5.1.0",
     "config": "^1.30.0",
     "cross-env": "^7.0.3",
+    "eslint": "^8.57.0",
     "esmock": "^2.7.5",
     "js-yaml": "^3.11.0",
     "mocha": "^10.6.0",
     "prettier": "3.3.3",
-    "tslib": "^2.8.1",
-    "eslint": "^8.57.0"
+    "tslib": "^2.8.1"
   },
   "engines": {
     "node": ">= 8.6.0",
