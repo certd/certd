@@ -1,4 +1,4 @@
-import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+﻿import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { addonRegistry, BaseService, PageReq } from "@certd/lib-server";
 import { PluginEntity } from "../entity/plugin.js";
 import { InjectEntityModel } from "@midwayjs/typeorm";
@@ -6,14 +6,13 @@ import { IsNull, Not, Repository } from "typeorm";
 import { isComm } from "@certd/plus-core";
 import { BuiltInPluginService } from "../../pipeline/service/builtin-plugin-service.js";
 import { merge } from "lodash-es";
-import { accessRegistry, notificationRegistry, pluginRegistry } from "@certd/pipeline";
 import { dnsProviderRegistry } from "@certd/plugin-cert";
 import { logger } from "@certd/basic";
 import yaml from "js-yaml";
 import { getDefaultAccessPlugin, getDefaultDeployPlugin, getDefaultDnsPlugin } from "./default-plugin.js";
 import fs from "fs";
 import path from "path";
-import { RuntimeDepsService } from "../../runtime-deps/runtime-deps-service.js";
+import { importRuntime as importRuntimeDirect, getRuntimeDepsService, pluginRegistry, accessRegistry, notificationRegistry } from "@certd/pipeline";
 
 export type PluginImportReq = {
   content: string;
@@ -48,9 +47,6 @@ export class PluginService extends BaseService<PluginEntity> {
 
   @Inject()
   builtInPluginService: BuiltInPluginService;
-
-  @Inject()
-  runtimeDepsService: RuntimeDepsService;
 
   //@ts-ignore
   getRepository() {
@@ -270,7 +266,7 @@ export class PluginService extends BaseService<PluginEntity> {
       return;
     }
     await this.registerPlugin(item);
-    await this.runtimeDepsService.refreshPluginDeps();
+    await this.refreshPluginDeps();
   }
 
   async unRegisterById(id: any) {
@@ -298,7 +294,12 @@ export class PluginService extends BaseService<PluginEntity> {
     } else {
       logger.warn(`不支持的插件类型：${item.pluginType}`);
     }
-    await this.runtimeDepsService.refreshPluginDeps();
+    await this.refreshPluginDeps();
+  }
+
+  async refreshPluginDeps() {
+    const service = getRuntimeDepsService();
+    service.refreshPluginDeps();
   }
 
   async update(param: any) {
@@ -334,7 +335,7 @@ export class PluginService extends BaseService<PluginEntity> {
     if (!isBareModuleSpecifier(modulePath)) {
       return await importLocalModule(modulePath);
     }
-    return await this.runtimeDepsService.importRuntime(modulePath, logger);
+    return await importRuntimeDirect(modulePath, logger);
   }
 
   private async getPluginClassFromFile(item: any) {

@@ -39,6 +39,7 @@
     "test:unit": "cross-env NODE_ENV=unittest pnpm -r --workspace-concurrency=1 run test:unit",
     "pub": "echo 1",
     "dev": "pnpm run -r --parallel  compile ",
+    "lint_all": "pnpm run -r --parallel  lint ",
     "pub_all": "node ./scripts/pub-all.js",
     "release": "time /t >trigger/release.trigger && git add trigger/release.trigger && git commit -m \"build: release\" && git push",
     "publish_to_atomgit": "node --experimental-json-modules ./scripts/publish-atomgit.js",

@@ -1,4 +1,4 @@
-import { ILogger, utils } from "@certd/basic";
+﻿import { ILogger, utils } from "@certd/basic";
 import { AliyunAccess } from "../access/index.js";
 import { AliyunClient } from "./index.js";
 import { CertInfo, CertReader, SimpleCertDetail } from "@certd/plugin-lib";
@@ -42,6 +42,7 @@ export type CasCertId = {
 export class AliyunSslClient {
   opts: AliyunSslClientOpts;
   logger: ILogger;
+
   constructor(opts: AliyunSslClientOpts) {
     this.opts = opts;
     this.logger = opts.logger;
@@ -55,7 +56,7 @@ export class AliyunSslClient {
 
   async getClient() {
     const access = this.opts.access;
-    const client = new AliyunClient({ logger: this.opts.logger, importRuntime: access.importRuntime.bind(access) });
+    const client = new AliyunClient({ logger: this.opts.logger });
 
     let endpoint = this.opts.endpoint || "cas.aliyuncs.com";
     if (this.opts.endpoint == null && this.opts.region) {

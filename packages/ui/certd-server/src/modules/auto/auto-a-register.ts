@@ -1,11 +1,11 @@
-import { Autoload, Init, Inject, Scope, ScopeEnum } from "@midwayjs/core";
+﻿import { Autoload, Init, Inject, Scope, ScopeEnum } from "@midwayjs/core";
+import { AutoCron } from "./auto-cron.js";
 import { AutoInitSite } from "./auto-init-site.js";
 import { AutoLoadPlugins } from "./auto-load-plugins.js";
-import { AutoCron } from "./auto-cron.js";
 import { AutoMitterRegister } from "./auto-mitter-register.js";
 import { AutoPipelineEmitterRegister } from "./auto-pipeline-emitter-register.js";
-import { AutoFix } from "./fix/auto-fix.js";
 import { AutoPrint } from "./auto-print.js";
+import { AutoFix } from "./fix/auto-fix.js";
 
 @Autoload()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })

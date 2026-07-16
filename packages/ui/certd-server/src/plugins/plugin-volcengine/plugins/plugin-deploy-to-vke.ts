@@ -208,10 +208,10 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
       this.logger.info("使用已有证书中心ID:" + certId);
     }
 
-    const kubeconfigId = await this.createKubeconfig(vkeService);
-
-    try {
-      const kubeconfig = await this.getKubeconfig(vkeService, kubeconfigId);
+    const userId = await access.getUserId();
+    this.logger.info(`当前用户ID:${userId}`);
+    const kubeconfig = await this.getOrCreateKubeconfig({ vkeService, userId });
+    try{
       const k8sClient = new this.K8sClient({
         kubeConfigStr: kubeconfig,
         logger: this.logger,
@@ -224,9 +224,7 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
         throw new Error(this.formatK8sError(e.response.body));
       }
       throw e;
-    } finally {
-      await this.deleteKubeconfig(vkeService, kubeconfigId);
-    }
+    } 
 
     await utils.sleep(5000);
     this.logger.info("VKE证书替换完成");
@@ -250,7 +248,19 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
     return await client.getVkeService({ region: this.regionId });
   }
 
-  private async createKubeconfig(vkeService: any) {
+  async getOrCreateKubeconfig(opts: {vkeService: any, userId: number }) : Promise<string> {
+    //  先查询
+    let kubeconfig = await this.getKubeconfig(opts);
+    //  如果不存在，再创建
+    if (!kubeconfig) {
+      return await this.createKubeconfig(opts);
+    }
+    return kubeconfig;
+  }
+
+  
+  private async createKubeconfig(opts: {vkeService: any}) {
+    const {vkeService} = opts;
     const clusterId = this.getClusterId();
     const res = await vkeService.request({
       action: "CreateKubeconfig",
@@ -258,7 +268,7 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
       body: {
         ClusterId: clusterId,
         Type: this.kubeconfigType,
-        ValidDuration: 3600,
+        ValidDuration: 26280, //3年
       },
     });
     const kubeconfigId = res.Result?.Id || res.Id;
@@ -266,25 +276,49 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
       throw new Error(`生成VKE Kubeconfig失败：${JSON.stringify(res)}`);
     }
     this.logger.info(`已生成临时Kubeconfig:${kubeconfigId}`);
-    return kubeconfigId;
+
+    const config = await this.getKubeconfig({ vkeService, kubeconfigId });
+    return config;
   }
 
-  private async getKubeconfig(vkeService: any, kubeconfigId: string) {
+  private async getKubeconfig(opts: {vkeService: any, kubeconfigId?: string, userId?:number }) {
+    const {vkeService, kubeconfigId, userId} = opts;
     const clusterId = this.getClusterId();
+    const query: any = {
+      ClusterIds: [clusterId],
+      Types: [this.kubeconfigType],
+    }
+    if (kubeconfigId) {
+      query.Ids = [kubeconfigId];
+    }
+    if (userId) {
+      query.UserIds = [userId];
+    }
     const res = await vkeService.request({
       action: "ListKubeconfigs",
       method: "POST",
       body: {
-        Filter: {
-          ClusterIds: [clusterId],
-          Ids: [kubeconfigId],
-          Types: [this.kubeconfigType],
-        },
+        Filter: query,
         PageNumber: 1,
         PageSize: 10,
       },
     });
-    const items = res.Result?.Items || res.Items || [];
+    let items = res.Result?.Items || res.Items || [];
+    if (items.length === 0) {
+      return null;
+    }
+    const now = new Date();
+    items = items.filter((it: any) => {
+      if (!it.ExpireTime) {
+        return true;
+      }
+      const expireTime = new Date(it.ExpireTime);
+      return expireTime > now;
+    });
+    if (items.length === 0) {
+      return null;
+    }
+
     const item = items.find((it: any) => it.Id === kubeconfigId) || items[0];
     const kubeconfig = item?.Kubeconfig;
     if (!kubeconfig) {
@@ -293,25 +327,25 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
     return this.decodeKubeconfig(kubeconfig);
   }
 
-  private async deleteKubeconfig(vkeService: any, kubeconfigId?: string) {
-    if (!kubeconfigId) {
-      return;
-    }
-    const clusterId = this.getClusterId();
-    try {
-      await vkeService.request({
-        action: "DeleteKubeconfigs",
-        method: "POST",
-        body: {
-          ClusterId: clusterId,
-          Ids: [kubeconfigId],
-        },
-      });
-      this.logger.info(`已删除临时Kubeconfig:${kubeconfigId}`);
-    } catch (e) {
-      this.logger.warn(`删除临时Kubeconfig失败:${e.message || e}`);
-    }
-  }
+  // private async deleteKubeconfig(vkeService: any, kubeconfigId?: string) {
+  //   if (!kubeconfigId) {
+  //     return;
+  //   }
+  //   const clusterId = this.getClusterId();
+  //   try {
+  //     await vkeService.request({
+  //       action: "DeleteKubeconfigs",
+  //       method: "POST",
+  //       body: {
+  //         ClusterId: clusterId,
+  //         Ids: [kubeconfigId],
+  //       },
+  //     });
+  //     this.logger.info(`已删除临时Kubeconfig:${kubeconfigId}`);
+  //   } catch (e) {
+  //     this.logger.warn(`删除临时Kubeconfig失败:${e.message || e}`);
+  //   }
+  // }
 
   private getClusterId() {
     if (!this.clusterId) {
@@ -476,24 +510,19 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
     }
     const access = await this.getAccess<VolcengineAccess>(this.accessId);
     const vkeService = await this.getVkeService(access);
-    const kubeconfigId = await this.createKubeconfig(vkeService);
-
-    try {
-      const kubeconfig = await this.getKubeconfig(vkeService, kubeconfigId);
-      const k8sClient = new this.K8sClient({
-        kubeConfigStr: kubeconfig,
-        logger: this.logger,
-        skipTLSVerify: this.skipTLSVerify,
-      });
-      const res = await k8sClient.getSecrets({ namespace: this.namespace || "default" });
-      const list = res.body?.items || res.items || [];
-      return list.map((item: any) => ({
-        label: item.metadata.name,
-        value: item.metadata.name,
-      }));
-    } finally {
-      await this.deleteKubeconfig(vkeService, kubeconfigId);
-    }
+    const userId = await access.getUserId();
+    const kubeconfig = await this.getOrCreateKubeconfig({ vkeService, userId });
+    const k8sClient = new this.K8sClient({
+      kubeConfigStr: kubeconfig,
+      logger: this.logger,
+      skipTLSVerify: this.skipTLSVerify,
+    });
+    const res = await k8sClient.getSecrets({ namespace: this.namespace || "default" });
+    const list = res.body?.items || res.items || [];
+    return list.map((item: any) => ({
+      label: item.metadata.name,
+      value: item.metadata.name,
+    }));
   }
 }
 

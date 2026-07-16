@@ -10,7 +10,7 @@ import { INotificationService } from "../notification/index.js";
 import { Registrable } from "../registry/index.js";
 import { IPluginConfigService } from "../service/config.js";
 import { TaskEmitter } from "../service/emit.js";
-import { ICnameProxyService, IEmailService, IRuntimeDepsService, IServiceGetter, IUrlService } from "../service/index.js";
+import { ICnameProxyService, IEmailService, IServiceGetter, IUrlService, getRuntimeDepsService } from "../service/index.js";
 
 export type PluginRequestHandleReq<T = any> = {
   typeName: string;
@@ -76,7 +76,7 @@ export type ITaskPlugin = {
   execute(): Promise<void | string>;
   onRequest(req: PluginRequestHandleReq<any>): Promise<any>;
   setCtx(ctx: TaskInstanceContext): Promise<void>;
-  importRuntime?(specifier: string): Promise<any>;
+  importRuntime(specifier: string): Promise<any>;
   [key: string]: any;
 };
 
@@ -150,13 +150,9 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
   logger!: ILogger;
   http!: HttpClient;
   accessService!: IAccessService;
-  runtimeDepsService!: IRuntimeDepsService;
 
   async importRuntime(specifier: string) {
-    if (!this.runtimeDepsService) {
-      throw new Error("runtimeDepsService 未初始化");
-    }
-    return await this.runtimeDepsService.importRuntime(specifier, this.logger);
+    return await getRuntimeDepsService().importRuntime(specifier, this.logger);
   }
 
   clearLastStatus() {
@@ -178,9 +174,6 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
     this.logger = ctx.logger;
     this.accessService = ctx.accessService;
     this.http = ctx.http;
-    if (!this.runtimeDepsService && this.ctx.serviceGetter) {
-      this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
-    }
     // 将证书加入secret
     // @ts-ignore
     if (this.cert && this.cert.crt && this.cert.key) {

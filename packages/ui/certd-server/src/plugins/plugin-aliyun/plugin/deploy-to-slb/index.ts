@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+﻿import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertInfo } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { CertApplyPluginNames } from "@certd/plugin-cert";
@@ -130,7 +130,7 @@ export class AliyunDeployCertToSLB extends AbstractTaskPlugin {
   async onInstance() {}
 
   async getLBClient(access: AliyunAccess, region: string) {
-    const client = new AliyunClient({ logger: this.logger, importRuntime: access.importRuntime.bind(access) });
+    const client = new AliyunClient({ logger: this.logger });
     const version = "2014-05-15";
     await client.init({
       accessKeyId: access.accessKeyId,

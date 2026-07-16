@@ -53,7 +53,7 @@ export class UploadCertToTencent extends AbstractTaskPlugin {
 
   Client: any;
   async onInstance() {
-    const sdk = await (this as any).importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js");
+    const sdk = await this.importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js");
     this.Client = sdk.v20191205.Client;
   }
 

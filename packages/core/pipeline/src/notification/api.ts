@@ -3,7 +3,7 @@ import { Registrable } from "../registry/index.js";
 import { FormItemProps, HistoryResult, Pipeline } from "../dt/index.js";
 import { HttpClient, ILogger, utils } from "@certd/basic";
 import * as _ from "lodash-es";
-import { IEmailService, IRuntimeDepsService, IServiceGetter } from "../service/index.js";
+import { IEmailService, IServiceGetter, getRuntimeDepsService } from "../service/index.js";
 
 export type NotificationBody = {
   userId?: number;
@@ -89,16 +89,16 @@ export abstract class BaseNotification implements INotification {
   ctx!: NotificationContext;
   http!: HttpClient;
   logger!: ILogger;
-  runtimeDepsService?: IRuntimeDepsService;
 
   async importRuntime(specifier: string) {
-    if (!this.runtimeDepsService) {
-      return await import(specifier);
-    }
-    return await this.runtimeDepsService.importRuntime(specifier, this.logger);
+    return await getRuntimeDepsService().importRuntime(specifier, this.logger);
   }
 
   async doSend(body: NotificationBody) {
+    if (body.content) {
+      const content = body.content?.replace(/\n/g, "   \n");
+      body.content = content;
+    }
     return await this.send(body);
   }
   abstract send(body: NotificationBody): Promise<void>;
@@ -109,9 +109,6 @@ export abstract class BaseNotification implements INotification {
     this.ctx = ctx;
     this.http = ctx.http;
     this.logger = ctx.logger;
-    if (!this.runtimeDepsService && this.ctx.serviceGetter) {
-      this.runtimeDepsService = await this.ctx.serviceGetter.get("runtimeDepsService");
-    }
   }
   setDefine = (define: NotificationDefine) => {
     this.define = define;
