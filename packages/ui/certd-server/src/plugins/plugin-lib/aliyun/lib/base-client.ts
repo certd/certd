@@ -1,19 +1,22 @@
-import { getGlobalAgents, ILogger } from "@certd/basic";
-import { ImportRuntime } from "@certd/pipeline";
+﻿import { getGlobalAgents, ILogger } from "@certd/basic";
+import { importRuntime as importRuntimeDirect } from "@certd/pipeline";
 
 export class AliyunClient {
   client: any;
   logger: ILogger;
   agent: any;
   useROAClient: boolean;
-  importRuntime: ImportRuntime;
 
-  constructor(opts: { logger: ILogger; useROAClient?: boolean; importRuntime?: ImportRuntime }) {
+  constructor(opts: { logger: ILogger; useROAClient?: boolean }) {
     this.logger = opts.logger;
     this.useROAClient = opts.useROAClient || false;
-    this.importRuntime = opts.importRuntime || (async (specifier: string) => await import(specifier));
+
     const agents = getGlobalAgents();
     this.agent = agents.httpsAgent;
+  }
+
+  async importRuntime(specifier: string) {
+    return await importRuntimeDirect(specifier, this.logger);
   }
 
   async getSdk() {

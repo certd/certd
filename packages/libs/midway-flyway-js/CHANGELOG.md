@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.42.5](https://github.com/certd/certd/compare/v1.42.4...v1.42.5) (2026-07-15)
+
+### Performance Improvements
+
+* 给SQLITE_IOERR_WRITE增加友好报错提示，将certd:latest镜像改为certd:slim ([b91c9e4](https://github.com/certd/certd/commit/b91c9e4ea671cb359ef164e27864de1d66cba9d3))
+
 ## [1.42.4](https://github.com/certd/certd/compare/v1.42.3...v1.42.4) (2026-07-11)
 
 **Note:** Version bump only for package @certd/midway-flyway-js

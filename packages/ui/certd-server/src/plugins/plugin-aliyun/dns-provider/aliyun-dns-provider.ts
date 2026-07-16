@@ -1,4 +1,4 @@
-import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, DnsResolveRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+﻿import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, DnsResolveRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { AliyunAccess } from "../../plugin-lib/aliyun/access/aliyun-access.js";
 import { AliyunClient } from "../../plugin-lib/aliyun/index.js";
 import { Pager, PageRes, PageSearch } from "@certd/pipeline";
@@ -16,7 +16,7 @@ export class AliyunDnsProvider extends AbstractDnsProvider {
   async onInstance() {
     const access: AliyunAccess = this.ctx.access as AliyunAccess;
 
-    this.client = new AliyunClient({ logger: this.logger, importRuntime: this.importRuntime.bind(this) });
+    this.client = new AliyunClient({ logger: this.logger });
     await this.client.init({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,
