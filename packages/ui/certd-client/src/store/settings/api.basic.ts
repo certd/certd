@@ -11,6 +11,7 @@ export type AppInfo = {
   version?: string;
   time?: number;
   deltaTime?: number;
+  releaseMode?: string;
 };
 export type SiteInfo = {
   title?: string;

@@ -26,5 +26,7 @@ export default {
     expiringCerts: "最快到期证书",
     supportedTasks: "已支持的部署任务总览",
     changeLog: "更新日志",
+    stableRelease: "稳定版",
+    latestRelease: "预览版",
   },
 };
