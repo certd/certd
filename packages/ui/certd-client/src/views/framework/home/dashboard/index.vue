@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="dashboard-user">
     <div class="header-profile flex-wrap bg-white dark:bg-black">
       <div class="flex flex-1">
@@ -23,9 +23,9 @@
               <template v-if="userStore.isAdmin">
                 <a-divider type="vertical" />
                 <a-badge :dot="hasNewVersion">
-                  <a-tag color="blue" class="flex-inline pointer mr-0" :title="t('certd.dashboard.latestVersion', { version: latestVersion })" @click="openUpgradeUrl()">
+                  <a-tag color="blue" class="flex-inline pointer mr-0" :title="'v' + version + ' ' + (settingsStore.app.releaseMode === 'stable' ? '稳定版' : '预览版')" @click="openUpgradeUrl()">
                     <fs-icon icon="ion:rocket-outline" class="mr-5"></fs-icon>
-                    v{{ version }}
+                    v{{ version }}-{{ settingsStore.app.releaseMode }}
                   </a-tag>
                 </a-badge>
                 <a-divider type="vertical" />
@@ -179,7 +179,6 @@ defineOptions({
 
 const version = ref(import.meta.env.VITE_APP_VERSION);
 const latestVersion = ref("");
-
 function isNewVersion(version: string, latestVersion: string) {
   if (!latestVersion) {
     return false;
