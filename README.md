@@ -107,11 +107,13 @@ https://certd.handfree.work/
 
 **镜像版本：**
 
-| 版本标签 | 基础系统  | 说明 |
-| --- | --- | --- | --- |
-| `latest` / `[version]` | Alpine Linux  | 默认版本，镜像体积小 |
-| `slim` / `[version]-slim` | Debian slim  | 基于glibc，dns解析兼容性好（可能需要配置security_opt -seccomp=unconfined） |
-| `armv7` / `[version]-armv7` | Alpine Linux | ARMv7 架构专用版本 |
+
+| 标签 | 指定版本 | 基础系统  | 说明 |   
+| ---  | ---  | --- | --- |   
+| `latest` |  `[version]` | Alpine Linux  | 默认版本，镜像体积小 |    
+| `slim` |  `[version]-slim` | Debian slim  | 基于glibc，dns解析兼容性好（可能需要配置security_opt -seccomp=unconfined） |
+| `armv7` |  `[version]-armv7` | Alpine Linux | ARMv7 架构专用版本 |
+
 
 **镜像地址：**
 
