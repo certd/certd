@@ -1,4 +1,4 @@
-# Certd
+﻿# Certd
 
 [中文](./README.md) | English
 
@@ -95,21 +95,44 @@ You can choose one of the following deployment methods based on your needs:
 
 #### Docker Image Information:
 
-- Domestic Image Addresses:
-  - `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest`
-  - `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:armv7`, `[version]-armv7`
-- DockerHub Addresses:
-  - `https://hub.docker.com/r/greper/certd`
-  - `greper/certd:latest`
-  - `greper/certd:armv7`, `greper/certd:[version]-armv7`
-- GitHub Packages Addresses:
+**Release channels:**
 
-  - `ghcr.io/certd/certd:latest`
-  - `ghcr.io/certd/certd:armv7`, `ghcr.io/certd/certd:[version]-armv7`
+| Channel | Description |
+| --- | --- |
+| `stable` / `slim-stable` | **Stable version**, production-ready and fully tested, recommended for production environments |
+| `latest` / `slim` / `armv7` | **Preview version**, latest development build with newest features but potentially less stable |
+
+**Image tags:**
+
+| Channel | Tag | Versioned Tag | Base System | Description |
+| --- | --- | --- | --- | --- |
+| **Stable** | `stable` | `[version]-stable` | Alpine Linux | Recommended for production |
+| | `slim-stable` | `[version]-slim-stable` | Debian slim | Better DNS resolution compatibility |
+| **Preview** | `latest` | `[version]` | Alpine Linux | Default, small image size |
+| | `slim` | `[version]-slim` | Debian slim | Better DNS resolution compatibility |
+| | `armv7` | `[version]-armv7` | Alpine Linux | ARMv7 architecture |
+
+**Stable version image addresses:**
+
+| Registry | `stable` | `slim-stable` |
+| --- | --- | --- |
+| Aliyun | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:stable` | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:slim-stable` |
+| Docker Hub | `greper/certd:stable` | `greper/certd:slim-stable` |
+| GitHub Packages | `ghcr.io/certd/certd:stable` | `ghcr.io/certd/certd:slim-stable` |
+
+**Preview version image addresses:**
+
+| Registry | `latest` | `slim` | `armv7` |
+| --- | --- | --- | --- |
+| Aliyun | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest` | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:slim` | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:armv7` |
+| Docker Hub | `greper/certd:latest` | `greper/certd:slim` | `greper/certd:armv7` |
+| GitHub Packages | `ghcr.io/certd/certd:latest` | `ghcr.io/certd/certd:slim` | `ghcr.io/certd/certd:armv7` |
+
+> For versioned tags, replace tag name with `[version]-tag`, e.g. replace `stable` with `[version]-stable`
 
 - Images are built automatically by `Actions`, with a transparent process. Please use them with confidence.
-  - [Click here to view image build logs](https://github.com/certd/certd/actions/workflows/build-image.yml)
-
+  - [Click here to view preview version build logs](https://github.com/certd/certd/actions/workflows/release-image.yml)
+  - [Click here to view stable version release logs](https://github.com/certd/certd/actions/workflows/stable-release.yml)
 ![](./docs/images/action/action-build.jpg)
 
 > Note:
