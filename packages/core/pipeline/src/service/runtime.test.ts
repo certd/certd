@@ -1,4 +1,4 @@
-﻿import assert from "assert";
+import assert from "assert";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -34,6 +34,9 @@ describe("RuntimeDepsService", () => {
       async resolve() {
         return "https://registry.npmmirror.com";
       },
+      async resolveOrdered() {
+        return ["https://registry.npmmirror.com"];
+      },
     } as any;
     service.commandRunner = {
       async run(command: string, args: string[]) {
@@ -59,6 +62,9 @@ describe("RuntimeDepsService", () => {
     service.registryResolver = {
       async resolve() {
         return "";
+      },
+      async resolveOrdered() {
+        return [""];
       },
     } as any;
     service.commandRunner = {
@@ -100,6 +106,9 @@ describe("RuntimeDepsService", () => {
       async resolve() {
         return "";
       },
+      async resolveOrdered() {
+        return [""];
+      },
     } as any;
     service.commandRunner = {
       async run(command: string, args: string[]) {
@@ -126,6 +135,9 @@ describe("RuntimeDepsService", () => {
     service.registryResolver = {
       async resolve() {
         return "";
+      },
+      async resolveOrdered() {
+        return [""];
       },
     } as any;
     service.commandRunner = {
@@ -166,6 +178,9 @@ describe("RuntimeDepsService", () => {
     service.registryResolver = {
       async resolve() {
         return "";
+      },
+      async resolveOrdered() {
+        return [""];
       },
     } as any;
     service.commandRunner = {
@@ -210,6 +225,9 @@ describe("RuntimeDepsService", () => {
     service.registryResolver = {
       async resolve() {
         return "";
+      },
+      async resolveOrdered() {
+        return [""];
       },
     } as any;
     service.commandRunner = {
@@ -279,6 +297,9 @@ describe("RuntimeDepsService", () => {
         async resolve() {
           return "";
         },
+        async resolveOrdered() {
+          return [""];
+        },
       } as any;
       service.commandRunner = {
         async run(command: string, args: string[], options: { env?: NodeJS.ProcessEnv }) {
@@ -315,7 +336,7 @@ describe("RuntimeDepsService", () => {
 });
 
 describe("NpmRegistryResolver", () => {
-  it("chooses the fastest successful registry in auto mode", async () => {
+  it("returns the fastest successful registry via resolve()", async () => {
     const resolver = new NpmRegistryResolver({
       mode: "auto",
       candidates: ["https://slow.example.com", "https://fast.example.com"],
@@ -340,5 +361,61 @@ describe("NpmRegistryResolver", () => {
     });
     const result = await resolver.resolve();
     assert.equal(result, "https://registry.example.com");
+  });
+  it("returns ordered list via resolveOrdered (fastest first)", async () => {
+    const resolver = new NpmRegistryResolver({
+      mode: "auto",
+      candidates: ["https://slow.example.com", "https://fast.example.com"],
+      probeTimeoutMs: 100,
+      cacheTtlMs: 1000,
+    });
+    resolver.probe = async (registryUrl: string) => ({
+      registryUrl,
+      ok: true,
+      elapsedMs: registryUrl.includes("fast") ? 10 : 50,
+    });
+    const result = await resolver.resolveOrdered();
+    assert.deepEqual(result, ["https://fast.example.com", "https://slow.example.com"]);
+  });
+  it("includes failed registries at the end of resolveOrdered", async () => {
+    const resolver = new NpmRegistryResolver({
+      mode: "auto",
+      candidates: ["https://good.example.com", "https://bad.example.com"],
+      probeTimeoutMs: 100,
+      cacheTtlMs: 1000,
+    });
+    resolver.probe = async (registryUrl: string) => {
+      if (registryUrl.includes("bad")) {
+        return { registryUrl, ok: false, elapsedMs: 200 };
+      }
+      return { registryUrl, ok: true, elapsedMs: 30 };
+    };
+    const result = await resolver.resolveOrdered();
+    assert.deepEqual(result, ["https://good.example.com", "https://bad.example.com"]);
+  });
+  it("returns empty ordered list when no candidates", async () => {
+    const resolver = new NpmRegistryResolver({ mode: "auto", candidates: [] });
+    const result = await resolver.resolveOrdered();
+    assert.deepEqual(result, []);
+    const single = await resolver.resolve();
+    assert.equal(single, "");
+  });
+  it("re-validates cached URL on resolveOrdered call", async () => {
+    let probeCount = 0;
+    const resolver = new NpmRegistryResolver({
+      mode: "auto",
+      candidates: ["https://mirror.example.com"],
+      cacheTtlMs: 60000,
+    });
+    resolver.probe = async (registryUrl: string) => {
+      probeCount++;
+      return { registryUrl, ok: true, elapsedMs: 10 };
+    };
+    const first = await resolver.resolveOrdered();
+    assert.deepEqual(first, ["https://mirror.example.com"]);
+    assert.equal(probeCount, 1);
+    const second = await resolver.resolveOrdered();
+    assert.deepEqual(second, ["https://mirror.example.com"]);
+    assert.equal(probeCount, 2);
   });
 });

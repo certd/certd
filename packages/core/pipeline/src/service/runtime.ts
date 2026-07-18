@@ -1,4 +1,4 @@
-﻿import fs from "fs";
+import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
 import crypto from "crypto";
@@ -89,7 +89,7 @@ export type RegistryProbeResult = {
 
 export class NpmRegistryResolver {
   config: NpmRegistryResolverConfig;
-  private cache?: { registryUrl: string; expiresAt: number };
+  private cache?: { orderedUrls: string[]; expiresAt: number };
 
   constructor(config?: NpmRegistryResolverConfig) {
     this.config = config || {};
@@ -105,21 +105,67 @@ export class NpmRegistryResolver {
     }
     const cached = this.cache;
     if (cached && cached.expiresAt > Date.now()) {
-      return cached.registryUrl;
+      const fastUrl = cached.orderedUrls[0];
+      if (fastUrl) {
+        const probeResult = await this.probe(fastUrl);
+        if (probeResult.ok) {
+          return cached.orderedUrls[0] || "";
+        }
+      }
+      this.cache = undefined;
     }
     const candidates = (config?.candidates || []).filter(Boolean);
     if (candidates.length === 0) {
       return "";
     }
-    const probes = await Promise.allSettled(candidates.map(registryUrl => this.probe(registryUrl)));
-    const okList = probes.map(item => (item.status === "fulfilled" ? item.value : null)).filter((item): item is RegistryProbeResult => !!item && item.ok);
-    if (okList.length > 0) {
-      okList.sort((a, b) => a.elapsedMs - b.elapsedMs);
-      const best = okList[0].registryUrl;
-      this.cache = { registryUrl: best, expiresAt: Date.now() + (config?.cacheTtlMs || 6 * 60 * 60 * 1000) };
-      return best;
+    const orderedUrls = await this.internalProbeAll(candidates);
+    this.cache = { orderedUrls, expiresAt: Date.now() + (config?.cacheTtlMs ?? 300_000) };
+    return orderedUrls[0] || "";
+  }
+
+  async resolveOrdered(): Promise<string[]> {
+    const config = this.config;
+    if (config?.mode === "fixed" && config.fixedUrl) {
+      return [config.fixedUrl];
     }
-    return "";
+    if (config?.mode === "system") {
+      return [];
+    }
+    const cached = this.cache;
+    if (cached && cached.expiresAt > Date.now()) {
+      const fastUrl = cached.orderedUrls[0];
+      if (fastUrl) {
+        const probeResult = await this.probe(fastUrl);
+        if (probeResult.ok) {
+          return cached.orderedUrls;
+        }
+      }
+      this.cache = undefined;
+    }
+    const candidates = (config?.candidates || []).filter(Boolean);
+    if (candidates.length === 0) {
+      return [];
+    }
+    const orderedUrls = await this.internalProbeAll(candidates);
+    this.cache = { orderedUrls, expiresAt: Date.now() + (config?.cacheTtlMs ?? 300_000) };
+    return orderedUrls;
+  }
+
+  private async internalProbeAll(candidates: string[]): Promise<string[]> {
+    const probes = await Promise.allSettled(candidates.map(registryUrl => this.probe(registryUrl)));
+    const okList: RegistryProbeResult[] = [];
+    const failList: RegistryProbeResult[] = [];
+    for (const item of probes) {
+      const result = item.status === "fulfilled" ? item.value : null;
+      if (result && result.ok) {
+        okList.push(result);
+      } else if (result) {
+        failList.push(result);
+      }
+    }
+    okList.sort((a, b) => a.elapsedMs - b.elapsedMs);
+    failList.sort((a, b) => a.elapsedMs - b.elapsedMs);
+    return [...okList.map(r => r.registryUrl), ...failList.map(r => r.registryUrl)];
   }
 
   async probe(registryUrl: string): Promise<RegistryProbeResult> {
@@ -368,6 +414,7 @@ export class RuntimeDepsService {
       await this.ensureLazyDependency(packageName, logger);
       return this.resolveRuntimeSpecifier(specifier).resolved;
     } catch (lazyError: any) {
+      logger?.error?.(`动态依赖安装失败: ${lazyError.message}`);
       return this.resolveProjectSpecifier(specifier, lazyError).resolved;
     }
   }
@@ -508,30 +555,37 @@ export class RuntimeDepsService {
       const env = this.buildChildEnv(registryUrl);
       const command = this.getPnpmCommand();
       const pnpmVersion = await this.getPnpmVersion(command, env);
-      const args = ["install", "--prod", "--ignore-scripts", "--ignore-workspace", "--no-frozen-lockfile", "--reporter=append-only"];
-      if (registryUrl) {
-        args.push(`--registry=${registryUrl}`);
+      const allRegistryUrls = await this.registryResolver.resolveOrdered();
+      const urlsToTry = allRegistryUrls.length > 0 ? allRegistryUrls : [""];
+      let lastError: string | undefined;
+      for (const tryUrl of urlsToTry) {
+        const args = ["install", "--prod", "--ignore-scripts", "--ignore-workspace", "--no-frozen-lockfile", "--reporter=append-only"];
+        if (tryUrl) {
+          args.push(`--registry=${tryUrl}`);
+        }
+        const tryEnv = tryUrl ? this.buildChildEnv(tryUrl) : env;
+        log.info(`开始安装第三方依赖: ${Object.keys(dependencies).join(", ")}${tryUrl ? `，镜像: ${tryUrl}` : ""}`);
+        const result = await this.commandRunner.run(command, args, { cwd: rootDir, timeoutMs: this.installTimeoutMs, env: tryEnv });
+        if (result.code === 0) {
+          this.writeInstallState(statePath, { installedAt: new Date().toISOString(), registryUrl: tryUrl, dependenciesHash, nodeVersion: process.version, pnpmVersion, lockFileExists: fs.existsSync(lockPath) });
+          log.info("第三方依赖安装完成");
+          return { registryUrl: tryUrl, packageJsonPath };
+        }
+        lastError = result.stderr || result.stdout || "unknown error";
+        log.warn?.(`镜像 ${tryUrl || "默认"} 安装失败${urlsToTry.length > 1 ? "，尝试下一个镜像..." : ""}`);
       }
-      log.info(`开始安装第三方依赖: ${Object.keys(dependencies).join(", ")}`);
-      const result = await this.commandRunner.run(command, args, { cwd: rootDir, timeoutMs: this.installTimeoutMs, env });
-      if (result.code !== 0) {
-        const message = result.stderr || result.stdout || "unknown error";
-        this.writeInstallState(statePath, {
-          ...currentState,
-          installedAt: currentState?.installedAt,
-          failedAt: new Date().toISOString(),
-          registryUrl,
-          dependenciesHash,
-          nodeVersion: process.version,
-          pnpmVersion,
-          lockFileExists: fs.existsSync(lockPath),
-          lastError: message,
-        });
-        throw new Error(`动态依赖安装失败: ${message}`);
-      }
-      this.writeInstallState(statePath, { installedAt: new Date().toISOString(), registryUrl, dependenciesHash, nodeVersion: process.version, pnpmVersion, lockFileExists: fs.existsSync(lockPath) });
-      log.info("第三方依赖安装完成");
-      return { registryUrl, packageJsonPath };
+      this.writeInstallState(statePath, {
+        ...currentState,
+        installedAt: currentState?.installedAt,
+        failedAt: new Date().toISOString(),
+        registryUrl: urlsToTry[0],
+        dependenciesHash,
+        nodeVersion: process.version,
+        pnpmVersion,
+        lockFileExists: fs.existsSync(lockPath),
+        lastError,
+      });
+      throw new Error(`动态依赖安装失败: ${lastError}`);
     });
   }
 
