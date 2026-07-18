@@ -23,9 +23,9 @@
               <template v-if="userStore.isAdmin">
                 <a-divider type="vertical" />
                 <a-badge :dot="hasNewVersion">
-                  <a-tag color="blue" class="flex-inline pointer mr-0" :title="'v' + version + ' ' + (settingsStore.app.releaseMode === 'stable' ? '稳定版' : '预览版')" @click="openUpgradeUrl()">
+                  <a-tag color="blue" class="flex-inline pointer mr-0" :title="'v' + version + ' ' + (settingsStore.app.releaseMode === 'stable' ? '稳定版' : '')" @click="openUpgradeUrl()">
                     <fs-icon icon="ion:rocket-outline" class="mr-5"></fs-icon>
-                    v{{ version }}-{{ settingsStore.app.releaseMode }}
+                    v{{ version }} {{ settingsStore.app.releaseMode === "stable" ? "stable" : "" }}
                   </a-tag>
                 </a-badge>
                 <a-divider type="vertical" />
