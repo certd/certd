@@ -43,7 +43,7 @@ export class TransferController extends BaseController {
     const { projectId } = await this.getProjectUserIdRead();
     const userId = this.getUserId();
     await this.service.transferAll(userId, projectId);
-    this.auditLog({ content: "迁移了项目资源" });
+    this.auditLog({ content: `迁移了项目资源 「用户ID:${userId} -> 项目ID:${projectId}」` });
     return this.ok();
   }
 }

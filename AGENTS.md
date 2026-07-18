@@ -229,5 +229,6 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 
 - 审计日志是 Plus 版功能，非 Plus 版不会写入。
 - Controller 继承 `BaseController`，通过 `this.auditLog({ content: "xxx" })` 记录日志。
+- Controller 中的 `@Post("/add", {  summary: "xxxx" })`, 这个summary是必须要的，他是日志action字段的来源
 - `getAuditType()` 返回类型常量，中间件自动从 ctx.path 判定 scope（`/api/sys/` → system，其他 → user）。
 - 操作日志有系统级（scope=system）和用户级（scope=user）区分。

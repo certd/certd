@@ -111,7 +111,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     await this.checkOwner(this.service, id, "write");
     const res = await super.delete(id);
     this.auditLog({
-      content: `删除了站点监控(ID:${id})`,
+      content: `删除了站点监控 「ID:${id}」`,
     });
     return res;
   }
@@ -150,7 +150,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
       userId,
       projectId,
     });
-    this.auditLog({ content: "导入了站点监控" });
+    this.auditLog({ content: `导入了站点监控 「${body.text}」` });
     return this.ok();
   }
 
@@ -222,6 +222,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
       id: bean.id,
       disabled: bean.disabled,
     });
+    this.auditLog({ content: `${bean.disabled ? "禁用" : "启用"}` });
     return this.ok();
   }
 
@@ -239,6 +240,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     merge(setting, bean);
 
     await this.service.saveSetting(userId, projectId, setting);
+    this.auditLog({});
     return this.ok({});
   }
 }

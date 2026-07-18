@@ -94,7 +94,7 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
     merge(setting, bean);
 
     await this.service.saveSetting(userId, null, setting);
-    this.auditLog({ content: "保存了授权设置" });
+    this.auditLog({ content: `保存了授权设置 「${setting.allowAdminViewCerts ? "允许管理员查看证书" : "禁止管理员查看证书"}」` });
     return this.ok({});
   }
 }
