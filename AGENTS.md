@@ -214,15 +214,6 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 
 ## 其他注意事项
 
-
-### 换行符（LF / CRLF）
-
-- 本项目源码使用 **LF** 换行符。Windows 上通过 Python 写文件时，open(path, "w", encoding="utf-8") 默认使用 **CRLF**，会破坏文件格式。
-- **修复方案**：写文件时用 open(path, "w", encoding="utf-8", newline="\n") 明确指定 LF。
-- 如果已经写入 CRLF，用以下 PowerShell 修复：
-  `powershell
-  git add --renormalize . && git commit -m "fix line endings"
-  `
 ### 旧版数据兼容
 
 - 新增插件参数时，必须要考虑旧版数据兼容，比如新增一个deployType参数，有两种值：`default`和`custom`，需要在使用时判空，走旧版逻辑。
