@@ -2,11 +2,11 @@ version: '3.3' # 兼容旧版docker-compose
 services:
   certd:
     # 镜像                                                  #  ↓↓↓↓↓ ---- 镜像版本号，建议改成固定版本号,例如：certd:1.29.0
-    image: registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
+    image: registry.cn-shenzhen.aliyuncs.com/certd/certd:latest
     # image: ghcr.io/certd/certd:latest                    #   --------- 如果 报镜像not found，可以尝试其他镜像源
     # image: greper/certd:latest
                                                            #   --------- 生产建议使用稳定版， latest改成stable即可
-    # image: registry.cn-shenzhen.aliyuncs.com/handsfree/certd:stable  
+    # image: registry.cn-shenzhen.aliyuncs.com/certd/certd:stable  
 
 
     # security_opt:                                        #   --------- 如果slim镜像下启动报错，尝试去掉这两行注释
