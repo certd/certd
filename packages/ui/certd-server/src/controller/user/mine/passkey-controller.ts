@@ -67,7 +67,7 @@ export class MinePasskeyController extends BaseController {
 
     const result = await this.passkeyService.registerPasskey(userId, response, challenge, deviceName, this.ctx);
 
-    this.auditLog({ content: "注册了Passkey" });
+    this.auditLog({ content: `注册了Passkey ${deviceName}` });
     return this.ok(result);
   }
 
@@ -96,7 +96,7 @@ export class MinePasskeyController extends BaseController {
     }
 
     await this.passkeyService.delete([passkey.id]);
-    this.auditLog({ content: "解绑了Passkey" });
+    this.auditLog({ content: `解绑了Passkey ${passkey.deviceName}` });
     return this.ok({});
   }
 }

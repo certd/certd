@@ -36,10 +36,10 @@ export class SysSettingsController extends BaseController {
   /**
    * 立即隐藏
    */
-  @Post("/hidden", { description: "sys:settings:edit", summary: "立刻隐藏系统" })
+  @Post("/hidden", { description: "sys:settings:edit", summary: "隐藏系统" })
   async hiddenImmediate() {
     await this.safeService.hiddenImmediately();
-    await this.auditLog({ content: "立刻隐藏了系统" });
+    await this.auditLog({ content: "隐藏了系统" });
     return this.ok({});
   }
 }

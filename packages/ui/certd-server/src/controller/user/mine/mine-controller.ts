@@ -101,7 +101,7 @@ export class MineController extends BaseController {
       avatar: body.avatar,
       nickName: body.nickName,
     });
-    this.auditLog({ content: "更新了个人资料" });
+    this.auditLog({ content: `更新了个人资料` });
     return this.ok({});
   }
 
@@ -140,8 +140,14 @@ export class MineController extends BaseController {
       phoneCode: body.phoneCode,
       mobile: body.mobile,
     });
-    this.auditLog({ content: "修改了手机号" });
+    //手机号脱敏处理
+    const mobile = this.maskPhone(body.mobile);
+    this.auditLog({ content: `修改了手机号 「${mobile}」` });
     return this.ok({});
+  }
+
+  private maskPhone(phone: string) {
+    return phone.replace(/(\d{3})\d{4}(\d{4})/, "$1****$2");
   }
 
   @Post("/contact/email", { description: Constants.per.authOnly, summary: "绑定或修改邮箱" })
@@ -157,7 +163,7 @@ export class MineController extends BaseController {
     await this.userService.updateEmail(userId, {
       email: body.email,
     });
-    this.auditLog({ content: "修改了邮箱" });
+    this.auditLog({ content: `修改了邮箱地址 「${body.email}」` });
     return this.ok({});
   }
 
