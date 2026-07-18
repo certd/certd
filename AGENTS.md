@@ -70,6 +70,8 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 先读本文，再按任务读取具体代码或技能文件。
 - PowerShell 读取中文、Markdown、locale、文档类文件时使用 `Get-Content -Raw -Encoding UTF8`；仍乱码时先执行 `[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()`。
 - PowerShell 中用 `rg` 搜索含引号、括号、反斜杠的 pattern 时，优先用单引号包裹整个 pattern，例如 `rg 'await import\("tencentcloud-sdk-nodejs' packages/ui/certd-server/src -g '*.ts'`。
+- 手工编辑或创建文件时优先使用 `apply_patch`。单个文件内有多处不连续改动时，拆成多个独立的 `*** Update File` 块，每块只改一处附近上下文；不要在同一个 update hunk 里强塞多个 `@@`。
+- 只有真正机械化的大批量替换、格式化或生成任务才考虑脚本/工具。若必须使用临时脚本，应放在临时目录并在同一个受控步骤内完成创建、执行、删除；不要把临时脚本落在仓库里跨多步工具调用执行。
 - 不要主动运行 `pnpm install`；缺依赖、TTY、网络导致安装或测试失败时，停止尝试并说明环境问题。
 - 优先沿用现有模块、插件、service、页面模式；不要为形式上的复用制造过度抽象。
 - 代码可读性优先于短写法。复杂条件、三元表达式、链式调用、内联对象和多层 helper 调用要拆成命名清晰的中间变量或小方法。
@@ -210,7 +212,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 后端业务数据、接口、实体、权限、迁移：改 `packages/ui/certd-server/src/modules` 与 `src/controller`。
 - 表单、列表、插件配置 UI：改 `packages/ui/certd-client/src/views/certd` 及对应 `src/api`。
 
-## 注意事项
+## 其他注意事项
 
 
 ### 换行符（LF / CRLF）
