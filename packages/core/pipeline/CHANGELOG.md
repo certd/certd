@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.42.6](https://github.com/certd/certd/compare/v1.42.5...v1.42.6) (2026-07-18)
+
+### Performance Improvements
+
+* 优化动态加载依赖镜像地址，多次重试 ([5f53b81](https://github.com/certd/certd/commit/5f53b81c75dd242b4260ac08cae14c6d1a08a883))
+
 ## [1.42.5](https://github.com/certd/certd/compare/v1.42.4...v1.42.5) (2026-07-15)
 
 ### Bug Fixes

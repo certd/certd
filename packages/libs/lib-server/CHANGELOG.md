@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.42.6](https://github.com/certd/certd/compare/v1.42.5...v1.42.6) (2026-07-18)
+
+### Bug Fixes
+
+* 修复正常批量删除流水线报权限不足的bug ([5b50083](https://github.com/certd/certd/commit/5b500830a122c6c42dab054e57fed509050f94da))
+
 ## [1.42.5](https://github.com/certd/certd/compare/v1.42.4...v1.42.5) (2026-07-15)
 
 ### Bug Fixes

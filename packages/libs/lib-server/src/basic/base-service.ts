@@ -253,7 +253,6 @@ export abstract class BaseService<T> {
     if (!Array.isArray(ids)) {
       ids = [ids];
     }
-    ids = this.filterIds(ids);
     const res = await this.getRepository().find({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -266,7 +265,7 @@ export abstract class BaseService<T> {
       },
     });
     if (!res || res.length === ids.length) {
-      return;
+      return ids;
     }
     throw new PermissionException("权限不足");
   }
@@ -280,6 +279,12 @@ export abstract class BaseService<T> {
     });
   }
   async batchDelete(ids: number[], userId: number, projectId?: number): Promise<number> {
+    if (!ids || ids.length === 0) {
+      throw new ValidateException("ids不能为空");
+    }
+    if (!Array.isArray(ids)) {
+      ids = [ids];
+    }
     ids = this.filterIds(ids);
     if (userId != null) {
       const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
