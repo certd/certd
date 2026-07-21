@@ -1,7 +1,7 @@
 import { Config, Inject, Provide, Scope, ScopeEnum, sleep } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { In, MoreThan, Repository } from "typeorm";
-import { AccessService, BaseService, isEnterprise, NeedSuiteException, NeedVIPException, PageReq, SysPublicSettings, SysSettingsService, SysSiteInfo } from "@certd/lib-server";
+import { AccessService, BaseService, isEnterprise, NeedSuiteException, NeedVIPException, PageReq, SysPublicSettings, SysSettingsService, SysSiteInfo, ValidateException } from "@certd/lib-server";
 import { PipelineEntity } from "../entity/pipeline.js";
 import { PipelineDetail } from "../entity/vo/pipeline-detail.js";
 import { Executor, IAccessService, ICnameProxyService, INotificationService, Notification, Pipeline, pluginRegistry, ResultType, RunHistory, RunnableCollection, SysInfo, UserInfo } from "@certd/pipeline";
@@ -966,15 +966,19 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
+    if (!ids || ids.length === 0) {
+      throw new ValidateException("ids不能为空");
+    }
+    ids = this.filterIds(ids);
+
+    if (userId && userId > 0) {
+      await this.checkUserId(ids, userId);
+    }
+    if (projectId) {
+      await this.checkUserId(ids, projectId, "projectId");
+    }
     for (const id of ids) {
-      if (userId && userId > 0) {
-        await this.checkUserId(id, userId);
-      }
-      if (projectId) {
-        await this.checkUserId(id, projectId, "projectId");
-      }
       await this.delete(id);
-      ids.push(id);
     }
     return ids.length;
   }
