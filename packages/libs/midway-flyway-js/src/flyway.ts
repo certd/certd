@@ -93,17 +93,19 @@ export class Flyway {
         await queryRunner.commitTransaction();
       } catch (err) {
         this.logger.error(err);
+        this.errorTip(err);
         await this.storeSqlExecLog(file.script, filepath, false, queryRunner);
         await queryRunner.rollbackTransaction();
-
-        if (err.code === "SQLITE_IOERR_WRITE") {
-          this.logger.warn("SQLite数据库写入失败，可能您的操作系统版本太低，请将「certd:latest」镜像改为「certd:slim」即可。（如需指定版本可以修改成「certd:[version]-slim」）", file.script);
-        }
-
         throw err;
       }
     }
     this.logger.info("[ midfly ] end-------------");
+  }
+
+  private errorTip(err: any) {
+    if (err.code === "SQLITE_IOERR_WRITE") {
+      this.logger.warn("SQLite数据库写入失败，可能您的操作系统版本太低，请将「certd:latest」镜像改为「certd:slim」即可。（如需指定版本可以修改成「certd:[version]-slim」）");
+    }
   }
 
   private async storeSqlExecLog(filename: string, filepath: string, success: boolean, queryRunner: QueryRunner) {
@@ -265,6 +267,7 @@ export class Flyway {
       await queryRunner.query(sql);
     } catch (err: any) {
       this.logger.error("exec sql error ： ", err.message, err);
+      this.errorTip(err);
       throw err;
     }
   }
