@@ -82,6 +82,51 @@ export async function ImportPlugin(body: any) {
   });
 }
 
+export type OnlinePluginBean = {
+  id?: number;
+  appId?: number;
+  author?: string;
+  pluginType?: string;
+  name?: string;
+  fullName?: string;
+  title?: string;
+  icon?: string;
+  group?: string;
+  desc?: string;
+  latest?: string;
+  status?: string;
+  downloadCount?: number;
+  installed?: boolean;
+  installedVersion?: string;
+  upgradeAvailable?: boolean;
+  localPluginId?: number;
+  localDisabled?: boolean;
+  syncTime?: number;
+};
+
+export async function OnlinePluginList(body: { pluginType?: string; group?: string; keyword?: string }): Promise<OnlinePluginBean[]> {
+  return await request({
+    url: apiPrefix + "/online/list",
+    method: "post",
+    data: body,
+  });
+}
+
+export async function OnlinePluginSync(): Promise<OnlinePluginBean[]> {
+  return await request({
+    url: apiPrefix + "/online/sync",
+    method: "post",
+  });
+}
+
+export async function OnlinePluginInstall(body: { fullName: string; version?: string }) {
+  return await request({
+    url: apiPrefix + "/online/install",
+    method: "post",
+    data: body,
+  });
+}
+
 export type PluginConfigBean = {
   name: string;
   disabled: boolean;

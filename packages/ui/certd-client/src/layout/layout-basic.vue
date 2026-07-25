@@ -108,10 +108,10 @@ const projectStore = useProjectStore();
       <div v-if="!settingStore.isComm" class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
         <fs-button shape="circle" type="text" icon="ion:logo-github" :text="null" @click="goGithub" />
       </div>
+      <MaxKBChat v-if="settingsStore.sysPublic.aiChatEnabled !== false" ref="chatBox" />
     </template>
     <template #footer>
       <PageFooter></PageFooter>
-      <MaxKBChat v-if="settingsStore.sysPublic.aiChatEnabled !== false" ref="chatBox" />
     </template>
   </BasicLayout>
 </template>

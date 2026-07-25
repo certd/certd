@@ -12,59 +12,21 @@
         </template>
       </div>
       <div class="hidden md:block">
-        <fs-icon class="icon-button" :icon="fullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'" @click="fullscreen = !fullscreen"></fs-icon>
+        <a-space>
+          <fs-icon class="icon-button" :icon="fullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'" @click="fullscreen = !fullscreen"></fs-icon>
+        </a-space>
       </div>
     </template>
     <template v-if="currentStep">
       <pi-container v-if="currentStep._isAdd" class="pi-step-form">
-        <template #header>
-          <a-row :gutter="10" class="mb-10">
-            <a-col :span="24" style="padding-left: 20px">
-              <a-input-search v-model:value="pluginSearch.keyword" placeholder="搜索插件" :allow-clear="true" :show-search="true"></a-input-search>
-            </a-col>
-          </a-row>
-        </template>
         <div class="flex-col h-100 overflow-hidden md:ml-5 md:mr-5 step-form-body">
-          <a-tabs v-model:active-key="pluginGroupActive" tab-position="left" class="flex-1 overflow-hidden h-full">
-            <template v-for="group of computedPluginGroups" :key="group.key">
-              <a-tab-pane v-if="(group.key === 'admin' && userStore.isAdmin) || group.key !== 'admin'" :key="group.key" class="scroll-y">
-                <template #tab>
-                  <div class="cd-step-form-tab-label">
-                    <fs-icon :icon="group.icon" class="mr-2" />
-                    <div>{{ group.title }}</div>
-                  </div>
-                </template>
-                <a-row v-if="!group.plugins || group.plugins.length === 0" :gutter="10">
-                  <a-col class="flex-o">
-                    <div class="flex-o m-10">没有找到插件</div>
-                  </a-col>
-                </a-row>
-                <a-row v-else :gutter="10">
-                  <a-col v-for="item of group.plugins" :key="item.key" class="step-plugin w-full md:w-[50%]">
-                    <a-card
-                      hoverable
-                      :class="{ current: item.name === currentStep.type }"
-                      @click="stepTypeSelected(item)"
-                      @dblclick="
-                        stepTypeSelected(item);
-                        stepTypeSave();
-                      "
-                    >
-                      <a-card-meta>
-                        <template #title>
-                          <fs-icon class="plugin-icon" :icon="item.icon || 'clarity:plugin-line'"></fs-icon>
-                          <span class="title" :title="item.title">{{ item.title }}</span>
-                          <vip-button v-if="item.needPlus" mode="icon" />
-                        </template>
-                        <template #description>
-                          <span :title="item.desc" v-html="transformDesc(item.desc)"></span>
-                        </template>
-                      </a-card-meta>
-                    </a-card>
-                  </a-col>
-                </a-row>
-              </a-tab-pane>
-            </template>
+          <a-tabs v-model:active-key="pluginSourceActive" class="step-plugin-source-tabs flex-1 overflow-hidden h-full">
+            <a-tab-pane key="local" tab="已安装插件" class="h-full">
+              <LocalPluginSelector :selected-type="currentStep.type" @select="stepTypeSelected" @confirm="handlePluginConfirm" />
+            </a-tab-pane>
+            <a-tab-pane v-if="userStore.isAdmin" key="market" tab="插件市场" class="h-full step-market-pane">
+              <OnlinePluginSelector :selected-type="currentStep.type" @select="stepTypeSelected" @confirm="handlePluginConfirm" @uninstalled="handleOnlinePluginUninstalled" />
+            </a-tab-pane>
           </a-tabs>
         </div>
         <template #footer>
@@ -117,28 +79,30 @@
 
 <script lang="tsx" setup>
 import { message, Modal } from "ant-design-vue";
-import { computed, provide, ref, Ref, watch } from "vue";
+import { provide, ref, Ref } from "vue";
 import { merge, cloneDeep } from "lodash-es";
 import { nanoid } from "nanoid";
-import { usePluginStore, PluginGroups } from "/@/store/plugin";
+import { usePluginStore } from "/@/store/plugin";
 import { useCompute } from "@fast-crud/fast-crud";
 import { useReference } from "/@/use/use-refrence";
 import { useSettingStore } from "/@/store/settings";
 import { mitter } from "/@/utils/util.mitt";
 import { utils } from "/@/utils";
 import { useUserStore } from "/@/store/user";
+import LocalPluginSelector from "./local-plugin-selector.vue";
+import OnlinePluginSelector from "./online-plugin-selector.vue";
 
 defineOptions({
   name: "PiStepForm",
 });
-const props = defineProps({
+defineProps({
   editMode: {
     type: Boolean,
     default: true,
   },
 });
 
-const emit = defineEmits(["update"]);
+defineEmits(["update"]);
 
 const pluginStore = usePluginStore();
 const userStore = useUserStore();
@@ -171,6 +135,9 @@ function useStepForm() {
   });
 
   const stepTypeSelected = (item: any) => {
+    if (item.__online) {
+      return;
+    }
     if (item.needPlus && !settingStore.isPlus) {
       message.warn("此插件需要开通Certd专业版才能使用");
       mitter.emit("openVipModal");
@@ -339,55 +306,24 @@ function useStepForm() {
     };
   };
 
-  const pluginSearch = ref({
-    keyword: "",
-    result: [],
-  });
-  const pluginGroupActive = ref("all");
-  const pluginGroup: Ref = ref();
-  const pluginStore = usePluginStore();
+  const pluginSourceActive = ref("local");
+  const handlePluginConfirm = async (item: any) => {
+    stepTypeSelected(item);
+    await stepTypeSave();
+  };
 
-  async function loadPluginGroups() {
-    pluginGroup.value = await pluginStore.getGroups();
-  }
-
-  loadPluginGroups();
-  const computedPluginGroups: any = computed(() => {
-    if (!pluginGroup.value) {
-      return {};
+  const handleOnlinePluginUninstalled = (plugin: any) => {
+    if (currentStep.value.type === plugin.fullName) {
+      currentStep.value.type = undefined;
+      currentStep.value.title = "新任务";
     }
-    const group = pluginGroup.value as PluginGroups;
-    const groups = group.groups;
-    if (pluginSearch.value.keyword) {
-      const keyword = pluginSearch.value.keyword.toLowerCase();
-      const list = groups.all.plugins.filter((plugin: any) => {
-        return plugin.title?.toLowerCase().includes(keyword) || plugin.desc?.toLowerCase().includes(keyword) || plugin.name?.toLowerCase().includes(keyword);
-      });
-      return {
-        search: { key: "search", title: "搜索结果", plugins: list },
-      };
-    } else {
-      return groups;
-    }
-  });
-  watch(
-    () => {
-      return pluginSearch.value.keyword;
-    },
-    (val: any) => {
-      if (val) {
-        pluginGroupActive.value = "search";
-      } else {
-        pluginGroupActive.value = "all";
-      }
-    }
-  );
+  };
 
   return {
-    pluginGroupActive,
-    computedPluginGroups,
-    pluginSearch,
+    pluginSourceActive,
     stepTypeSelected,
+    handlePluginConfirm,
+    handleOnlinePluginUninstalled,
     stepTypeSave,
     stepFormRef,
     mode,
@@ -436,31 +372,27 @@ const labelCol = ref({ span: 6 });
 const wrapperCol = ref({ span: 16 });
 
 const stepFormRes = useStepForm();
-const { pluginGroupActive, computedPluginGroups, pluginSearch, stepTypeSelected, stepTypeSave, stepFormRef, stepDrawerVisible, currentStep, currentPlugin, stepSave, stepDelete, getScopeFunc, fullscreen } = stepFormRes;
+const {
+  pluginSourceActive,
+  stepTypeSelected,
+  handlePluginConfirm,
+  handleOnlinePluginUninstalled,
+  stepTypeSave,
+  stepFormRef,
+  stepDrawerVisible,
+  currentStep,
+  currentPlugin,
+  stepSave,
+  stepDelete,
+  getScopeFunc,
+  fullscreen,
+} = stepFormRes;
 defineExpose({
   ...stepFormRes,
 });
 </script>
 
 <style lang="less">
-.cd-step-form-tab-label {
-  // 包括dropdown
-  display: flex;
-  align-items: center;
-  //width: 120px;
-  .fs-icon {
-    display: flex;
-    align-items: center;
-    color: #00b7ff;
-
-    svg {
-      vertical-align: middle !important;
-      display: flex;
-      align-items: center;
-    }
-  }
-}
-
 .step-form-drawer {
   max-width: 100%;
 
@@ -514,6 +446,10 @@ defineExpose({
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
+      width: 22px;
+      font-size: 22px;
+      line-height: 22px;
     }
 
     .body {
@@ -542,7 +478,9 @@ defineExpose({
         .ant-card-meta-title {
           display: flex;
           flex-direction: row;
+          align-items: center;
           justify-content: flex-start;
+          min-height: 22px;
         }
 
         .ant-avatar {
@@ -558,19 +496,21 @@ defineExpose({
           display: block;
           overflow: hidden;
           text-overflow: ellipsis;
+          line-height: 22px;
         }
       }
 
       .ant-card-body {
         padding: 14px;
-        height: 100px;
+        min-height: 100px;
+        padding-bottom: 6px;
 
         overflow-y: hidden;
 
         .ant-card-meta-description {
           font-size: 12px;
           line-height: 20px;
-          height: 40px;
+          min-height: 40px;
           color: #7f7f7f;
         }
       }

@@ -50,6 +50,7 @@ export default {
   default: "默认",
   success: "成功",
   test: "测试",
+  operation: "操作",
   testButton: "测试",
   operationSuccess: "操作成功",
   batch_delete: "批量删除",

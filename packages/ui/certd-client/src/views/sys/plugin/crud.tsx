@@ -110,6 +110,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         },
       },
       table: {
+        show: false,
         rowKey: "name",
         remove: {
           afterRemove: async context => {
@@ -136,7 +137,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           remove: {
             order: 999,
             show: compute(({ row }) => {
-              return row.type === "custom";
+              return row.type === "custom" || row.type === "store";
             }),
           },
           export: {
@@ -347,7 +348,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             data: [
               { label: t("certd.builtIn"), value: "builtIn" },
               { label: t("certd.custom"), value: "custom" },
-              { label: t("certd.store"), value: "store" },
+              { label: t("certd.installedStorePlugin"), value: "store" },
             ],
           }),
           column: {

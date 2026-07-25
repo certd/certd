@@ -1,8 +1,9 @@
 ﻿import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
-import { addonRegistry, BaseService, PageReq } from "@certd/lib-server";
+import { addonRegistry, BaseService, PageReq, PlusService } from "@certd/lib-server";
 import { PluginEntity } from "../entity/plugin.js";
+import { PluginMarketItemEntity } from "../entity/plugin-market-item.js";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { IsNull, Not, Repository } from "typeorm";
+import { Brackets, IsNull, Not, Repository } from "typeorm";
 import { isComm } from "@certd/plus-core";
 import { BuiltInPluginService } from "../../pipeline/service/builtin-plugin-service.js";
 import { merge } from "lodash-es";
@@ -17,7 +18,114 @@ import { importRuntime as importRuntimeDirect, getRuntimeDepsService, pluginRegi
 export type PluginImportReq = {
   content: string;
   override?: boolean;
+  type?: "custom" | "store";
 };
+
+export type OnlinePluginListReq = {
+  pluginType?: string;
+  group?: string;
+  keyword?: string;
+};
+
+export type OnlinePluginInstallReq = {
+  fullName: string;
+  version?: string;
+};
+
+export type OnlinePluginBean = {
+  id?: number;
+  appId?: number;
+  author?: string;
+  pluginType?: string;
+  name?: string;
+  fullName?: string;
+  title?: string;
+  icon?: string;
+  group?: string;
+  desc?: string;
+  latest?: string;
+  status?: string;
+  downloadCount?: number;
+  installed?: boolean;
+  installedVersion?: string;
+  upgradeAvailable?: boolean;
+  localPluginId?: number;
+  localDisabled?: boolean;
+  syncTime?: number;
+};
+
+const ONLINE_PLUGIN_SYNC_PAGE_SIZE = 200;
+
+export function parseOnlinePluginFullName(fullName: string) {
+  const parts = (fullName || "")
+    .trim()
+    .split("/")
+    .map(item => item.trim());
+  if (parts.length !== 2 || !parts[0] || !parts[1] || parts[1].includes(":") || parts[1].includes("/")) {
+    throw new Error("插件标识格式错误");
+  }
+  return {
+    author: parts[0],
+    name: parts[1],
+  };
+}
+
+function compareOnlinePluginVersion(current: string, latest: string) {
+  const normalize = (version: string) => {
+    return (version || "").trim().replace(/^[vV]/, "");
+  };
+  const currentText = normalize(current);
+  const latestText = normalize(latest);
+  const currentParts = currentText.split(".");
+  const latestParts = latestText.split(".");
+  const maxLength = Math.max(currentParts.length, latestParts.length);
+
+  for (let index = 0; index < maxLength; index++) {
+    const currentPart = Number(currentParts[index] || 0);
+    const latestPart = Number(latestParts[index] || 0);
+    if (!Number.isInteger(currentPart) || !Number.isInteger(latestPart)) {
+      return currentText.localeCompare(latestText);
+    }
+    if (currentPart > latestPart) {
+      return 1;
+    }
+    if (currentPart < latestPart) {
+      return -1;
+    }
+  }
+  return 0;
+}
+
+export function isOnlinePluginUpgradeAvailable(installedVersion?: string, latestVersion?: string) {
+  const installed = (installedVersion || "").trim();
+  const latest = (latestVersion || "").trim();
+  if (!installed || !latest) {
+    return false;
+  }
+  return compareOnlinePluginVersion(installed, latest) < 0;
+}
+
+function fillOnlinePluginYamlVersion(content: string, version?: string) {
+  const versionText = (version || "").trim();
+  if (!versionText) {
+    return content;
+  }
+  const loaded = yaml.load(content);
+  if (!loaded || typeof loaded !== "object" || Array.isArray(loaded)) {
+    throw new Error("插件 YAML 内容格式错误");
+  }
+  return yaml.dump(
+    {
+      ...(loaded as Record<string, any>),
+      version: versionText,
+    },
+    {
+      lineWidth: -1,
+      noRefs: true,
+      sortKeys: false,
+    }
+  );
+}
 
 function isBareModuleSpecifier(modulePath: string) {
   if (modulePath.startsWith(".") || modulePath.startsWith("/") || modulePath.startsWith("file:") || modulePath.startsWith("node:")) {
@@ -45,8 +153,14 @@ export class PluginService extends BaseService<PluginEntity> {
   @InjectEntityModel(PluginEntity)
   repository: Repository<PluginEntity>;
 
+  @InjectEntityModel(PluginMarketItemEntity)
+  pluginMarketItemRepository: Repository<PluginMarketItemEntity>;
+
   @Inject()
   builtInPluginService: BuiltInPluginService;
+
+  @Inject("plusService")
+  plusService: PlusService;
 
   //@ts-ignore
   getRepository() {
@@ -267,6 +381,234 @@ export class PluginService extends BaseService<PluginEntity> {
     }
     await this.registerPlugin(item);
     await this.refreshPluginDeps();
+  }
+
+  private getOnlinePluginFullName(item: OnlinePluginBean) {
+    if (item.fullName) {
+      return item.fullName;
+    }
+    if (item.author && item.name) {
+      return `${item.author}/${item.name}`;
+    }
+    return "";
+  }
+
+  private normalizeOnlinePluginMarketItem(item: OnlinePluginBean, syncTime: number, old?: PluginMarketItemEntity) {
+    return this.pluginMarketItemRepository.create({
+      id: old?.id,
+      appId: item.appId,
+      fullName: this.getOnlinePluginFullName(item),
+      author: item.author,
+      name: item.name,
+      pluginType: item.pluginType,
+      title: item.title,
+      icon: item.icon,
+      group: item.group,
+      desc: item.desc,
+      latest: item.latest,
+      status: item.status,
+      downloadCount: item.downloadCount,
+      syncTime,
+      updateTime: new Date(),
+    });
+  }
+
+  private toOnlinePluginBean(item: PluginMarketItemEntity): OnlinePluginBean {
+    return {
+      id: item.id,
+      appId: item.appId,
+      fullName: item.fullName,
+      author: item.author,
+      name: item.name,
+      pluginType: item.pluginType,
+      title: item.title,
+      icon: item.icon,
+      group: item.group,
+      desc: item.desc,
+      latest: item.latest,
+      status: item.status,
+      downloadCount: item.downloadCount,
+      syncTime: item.syncTime,
+    };
+  }
+
+  private async findOnlinePluginMarketItems(req: OnlinePluginListReq) {
+    const query = req || {};
+    const keyword = (query.keyword || "").trim().toLowerCase();
+    const builder = this.pluginMarketItemRepository.createQueryBuilder("item");
+    if (query.pluginType) {
+      builder.andWhere("item.pluginType = :pluginType", {
+        pluginType: query.pluginType,
+      });
+    }
+    if (query.group) {
+      builder.andWhere("item.group = :group", {
+        group: query.group,
+      });
+    }
+    if (keyword) {
+      builder.andWhere(
+        new Brackets(qb => {
+          qb.where("LOWER(item.fullName) LIKE :keyword", { keyword: `%${keyword}%` })
+            .orWhere("LOWER(item.author) LIKE :keyword", { keyword: `%${keyword}%` })
+            .orWhere("LOWER(item.name) LIKE :keyword", { keyword: `%${keyword}%` })
+            .orWhere("LOWER(item.title) LIKE :keyword", { keyword: `%${keyword}%` })
+            .orWhere("LOWER(item.desc) LIKE :keyword", { keyword: `%${keyword}%` })
+            .orWhere("LOWER(item.group) LIKE :keyword", { keyword: `%${keyword}%` })
+            .orWhere("LOWER(item.pluginType) LIKE :keyword", { keyword: `%${keyword}%` });
+        })
+      );
+    }
+    return await builder.orderBy("item.pluginType", "ASC").addOrderBy("item.group", "ASC").addOrderBy("item.title", "ASC").addOrderBy("item.fullName", "ASC").addOrderBy("item.id", "ASC").getMany();
+  }
+
+  private async findInstalledOnlinePlugin(parsed: { author: string; name: string }, record: OnlinePluginBean) {
+    const fullName = record.fullName || `${parsed.author}/${parsed.name}`;
+    const where: any[] = [
+      {
+        author: parsed.author,
+        name: parsed.name,
+      },
+      {
+        name: fullName,
+      },
+    ];
+    if (record.pluginType) {
+      where.push({
+        pluginType: record.pluginType,
+        name: parsed.name,
+      });
+    }
+    return await this.repository.findOne({
+      where,
+    });
+  }
+
+  private async attachOnlineInstallState(list: OnlinePluginBean[]) {
+    const records: OnlinePluginBean[] = [];
+    for (const item of list) {
+      const record: OnlinePluginBean = { ...item };
+      const fullName = this.getOnlinePluginFullName(record);
+      record.fullName = fullName;
+
+      let parsed: { author: string; name: string };
+      try {
+        parsed = parseOnlinePluginFullName(fullName);
+      } catch (e) {
+        record.installed = false;
+        record.upgradeAvailable = false;
+        records.push(record);
+        continue;
+      }
+
+      const localPlugin = await this.findInstalledOnlinePlugin(parsed, record);
+      record.installed = !!localPlugin;
+      record.localPluginId = localPlugin?.id;
+      record.localDisabled = localPlugin?.disabled;
+      record.installedVersion = localPlugin?.version;
+      record.upgradeAvailable = localPlugin ? isOnlinePluginUpgradeAvailable(localPlugin.version, record.latest) : false;
+      records.push(record);
+    }
+    return records;
+  }
+
+  async onlinePluginList(req: OnlinePluginListReq) {
+    const list = await this.findOnlinePluginMarketItems(req);
+    return await this.attachOnlineInstallState(list.map(item => this.toOnlinePluginBean(item)));
+  }
+
+  async syncOnlinePluginList() {
+    await this.plusService.register();
+
+    // 只同步市场列表元数据，插件 YAML 内容仍然在安装时按版本下载。
+    const pluginMap = new Map<string, OnlinePluginBean>();
+    let pageStart = 0;
+    while (true) {
+      const res = await this.plusService.request({
+        url: "/activation/plugin/list",
+        method: "post",
+        data: {
+          page: {
+            start: pageStart,
+            limit: ONLINE_PLUGIN_SYNC_PAGE_SIZE,
+            orderBy: [
+              {
+                name: "id",
+                asc: false,
+              },
+            ],
+          },
+        },
+      });
+      const list = res?.list || [];
+      for (const item of list) {
+        const record = { ...item };
+        const fullName = this.getOnlinePluginFullName(record);
+        if (!fullName) {
+          continue;
+        }
+        record.fullName = fullName;
+        pluginMap.set(fullName, record);
+      }
+      if (list.length < ONLINE_PLUGIN_SYNC_PAGE_SIZE) {
+        break;
+      }
+      pageStart += ONLINE_PLUGIN_SYNC_PAGE_SIZE;
+    }
+    const existingList = await this.pluginMarketItemRepository.find();
+    const existingMap = new Map(existingList.map(item => [item.fullName, item]));
+    const syncTime = Date.now();
+    const records = Array.from(pluginMap.values()).map(item => {
+      return this.normalizeOnlinePluginMarketItem(item, syncTime, existingMap.get(item.fullName));
+    });
+    await this.pluginMarketItemRepository.save(records);
+    return await this.onlinePluginList({});
+  }
+
+  async installOnlinePlugin(req: OnlinePluginInstallReq) {
+    const fullName = (req.fullName || "").trim();
+    parseOnlinePluginFullName(fullName);
+
+    await this.plusService.register();
+    const res = await this.plusService.request({
+      url: "/activation/plugin/download",
+      method: "post",
+      data: {
+        fullName,
+        version: req.version || "",
+      },
+    });
+    if (!res?.content) {
+      throw new Error("插件内容为空");
+    }
+
+    const content = fillOnlinePluginYamlVersion(res.content, res.version?.version || req.version);
+    const importRes = await this.importPlugin({
+      content,
+      override: true,
+      type: "store",
+    });
+    await this.refreshOnlinePluginDownloadCount(res.fullName || fullName, res.plugin?.downloadCount);
+    return {
+      ...importRes,
+      fullName: res.fullName || fullName,
+      plugin: res.plugin,
+      version: res.version,
+    };
+  }
+
+  private async refreshOnlinePluginDownloadCount(fullName: string, downloadCount?: number) {
+    if (!this.pluginMarketItemRepository || !fullName || downloadCount == null) {
+      return;
+    }
+    await this.pluginMarketItemRepository.update(
+      {
+        fullName,
+      },
+      {
+        downloadCount,
+      }
+    );
   }
 
   async unRegisterById(id: any) {
@@ -533,6 +875,7 @@ export class PluginService extends BaseService<PluginEntity> {
 
     const pluginEntity = {
       ...loaded,
+      type: req.type || loaded.type || "custom",
       metadata: yaml.dump(metadata),
       extra: yaml.dump(extra),
       content: loaded.content,

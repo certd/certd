@@ -1,7 +1,7 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
 import { merge } from "lodash-es";
 import { CrudController } from "@certd/lib-server";
-import { PluginImportReq, PluginService } from "../../../modules/plugin/service/plugin-service.js";
+import { OnlinePluginInstallReq, OnlinePluginListReq, PluginImportReq, PluginService } from "../../../modules/plugin/service/plugin-service.js";
 import { CommPluginConfig, PluginConfig, PluginConfigService } from "../../../modules/plugin/service/plugin-config-service.js";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 /**
@@ -112,6 +112,26 @@ export class PluginController extends CrudController<PluginService> {
   async import(@Body(ALL) body: PluginImportReq) {
     const res = await this.service.importPlugin(body);
     await this.auditLog({ content: "导入了插件配置" });
+    return this.ok(res);
+  }
+
+  @Post("/online/list", { description: "sys:settings:view", summary: "查询在线插件" })
+  async onlineList(@Body(ALL) body: OnlinePluginListReq) {
+    const res = await this.service.onlinePluginList(body);
+    return this.ok(res);
+  }
+
+  @Post("/online/sync", { description: "sys:settings:edit", summary: "同步在线插件" })
+  async onlineSync() {
+    const res = await this.service.syncOnlinePluginList();
+    await this.auditLog({ content: "同步了在线插件市场" });
+    return this.ok(res);
+  }
+
+  @Post("/online/install", { description: "sys:settings:edit", summary: "安装在线插件" })
+  async onlineInstall(@Body(ALL) body: OnlinePluginInstallReq) {
+    const res = await this.service.installOnlinePlugin(body);
+    await this.auditLog({ content: `安装了在线插件「${body.fullName}」` });
     return this.ok(res);
   }
 
