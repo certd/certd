@@ -389,6 +389,9 @@ export class Executor {
     };
     await instance.setCtx(taskCtx);
 
+    if (!(instance instanceof AbstractTaskPlugin)) {
+      throw new Error(`插件类型错误：${step.type}不是AbstractTaskPlugin的实例`);
+    }
     await instance.onInstance();
     const result = await instance.execute();
     //执行结果处理
@@ -398,6 +401,7 @@ export class Executor {
     }
     //输出上下文变量到output context
     forEach(define.output, (item: any, key: any) => {
+      // @ts-ignore
       step.status!.output[key] = instance[key];
       // const stepOutputKey = `step.${step.id}.${key}`;
       // this.runtime.context[stepOutputKey] = instance[key];
@@ -411,7 +415,8 @@ export class Executor {
       merge(vars, instance._result.pipelineVars);
       await this.pipelineContext.setObj("vars", vars);
     }
-    if (Object.keys(instance._result.pipelinePrivateVars).length > 0) {
+    // @ts-ignore
+    if (Object.keys(instance._result?.pipelinePrivateVars).length > 0) {
       // 判断 pipelineVars 有值时更新
       let vars = await this.pipelineContext.getObj("privateVars");
       vars = vars || {};
