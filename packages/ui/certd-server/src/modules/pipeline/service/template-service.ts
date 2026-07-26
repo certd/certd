@@ -88,6 +88,7 @@ export class TemplateService extends BaseService<TemplateEntity> {
   }
 
   async batchDelete(ids: number[], userId: number, projectId?: number): Promise<number> {
+    ids = this.filterIds(ids);
     const where: any = {
       id: In(ids),
     };
