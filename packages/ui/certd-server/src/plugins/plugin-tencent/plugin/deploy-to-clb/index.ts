@@ -1,7 +1,8 @@
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import dayjs from "dayjs";
 import { TencentAccess } from "../../../plugin-lib/tencent/index.js";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
+import { createRemoteSelectInputDefine } from "@certd/plugin-lib";
 @IsTaskPlugin({
   name: "DeployCertToTencentCLB",
   title: "腾讯云-部署到CLB",
@@ -73,29 +74,44 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
   })
   region!: string;
 
-  @TaskInput({
-    title: "负载均衡ID",
-    required: true,
-  })
+  @TaskInput(
+    createRemoteSelectInputDefine({
+      title: "负载均衡ID",
+      helper: "请选择要部署证书的负载均衡",
+      action: DeployCertToTencentCLB.prototype.onGetCLBList.name,
+      watches: ["region"],
+      single: true,
+      pager: false,
+      search: false,
+    })
+  )
   loadBalancerId!: string;
 
-  @TaskInput({
-    title: "监听器ID",
-    required: true,
-  })
+  @TaskInput(
+    createRemoteSelectInputDefine({
+      title: "监听器ID",
+      helper: "请选择要部署证书的HTTPS监听器",
+      action: DeployCertToTencentCLB.prototype.onGetListenerList.name,
+      watches: ["region", "loadBalancerId"],
+      single: true,
+      pager: false,
+      search: false,
+    })
+  )
   listenerId!: string;
 
-  @TaskInput({
-    title: "域名",
-    required: false,
-    component: {
-      name: "a-select",
-      vModel: "value",
-      open: false,
-      mode: "tags",
-    },
-    helper: "如果开启了sni，则此项必须填写，未开启，则不要填写",
-  })
+  @TaskInput(
+    createRemoteSelectInputDefine({
+      title: "域名",
+      helper: "如果开启了SNI，请选择要部署证书的域名；未开启SNI时可以留空",
+      action: DeployCertToTencentCLB.prototype.onGetDomainList.name,
+      watches: ["region", "loadBalancerId", "listenerId"],
+      required: false,
+      single: false,
+      pager: false,
+      search: false,
+    })
+  )
   domain!: string | string[];
 
   @TaskInput({
@@ -272,6 +288,27 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     return ret.LoadBalancerSet;
   }
 
+  async onGetCLBList(data: PageSearch) {
+    if (!this.accessId) {
+      throw new Error("请选择Access提供者");
+    }
+
+    const client = await this.getClient();
+    const list = await this.getCLBList(client);
+    if (!list || list.length === 0) {
+      return [];
+    }
+
+    return list.map((item: any) => {
+      const loadBalancerId = item.LoadBalancerId;
+      const loadBalancerName = item.LoadBalancerName || loadBalancerId;
+      return {
+        value: loadBalancerId,
+        label: `${loadBalancerName}<${loadBalancerId}>`,
+      };
+    });
+  }
+
   async getListenerList(client: any, balancerId: any, listenerIds: any) {
     // HTTPS
     const params = {
@@ -282,6 +319,57 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     const ret = await client.DescribeListeners(params);
     this.checkRet(ret);
     return ret.Listeners;
+  }
+
+  async onGetListenerList(data: PageSearch) {
+    if (!this.accessId) {
+      throw new Error("请选择Access提供者");
+    }
+    if (!this.loadBalancerId) {
+      throw new Error("请先选择负载均衡");
+    }
+
+    const client = await this.getClient();
+    const list = await this.getListenerList(client, this.loadBalancerId, null);
+    if (!list || list.length === 0) {
+      return [];
+    }
+
+    return list.map((item: any) => {
+      const listenerId = item.ListenerId;
+      const listenerName = item.ListenerName || "HTTPS监听器";
+      const port = item.Port ? `:${item.Port}` : "";
+      return {
+        value: listenerId,
+        label: `${listenerName}${port}<${listenerId}>`,
+      };
+    });
+  }
+
+  async onGetDomainList(data: PageSearch) {
+    if (!this.accessId) {
+      throw new Error("请选择Access提供者");
+    }
+    if (!this.loadBalancerId) {
+      throw new Error("请先选择负载均衡");
+    }
+    if (!this.listenerId) {
+      throw new Error("请先选择监听器");
+    }
+
+    const client = await this.getClient();
+    const listeners = await this.getListenerList(client, this.loadBalancerId, [this.listenerId]);
+    const listener = listeners?.[0];
+    const domains = listener?.Rules?.map((rule: any) => rule.Domain).filter(Boolean) || [];
+    const uniqueDomains = [...new Set(domains)];
+
+    return uniqueDomains.map(domain => {
+      return {
+        value: domain,
+        label: domain,
+        domain,
+      };
+    });
   }
 
   checkRet(ret: any) {
