@@ -806,6 +806,8 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   async batchDelete(ids: number[], userId: number, projectId?: number): Promise<number> {
+
+    ids = this.filterIds(ids);
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const result = await this.repository.delete({
       id: In(ids),

@@ -571,8 +571,14 @@ export class RuntimeDepsService {
           log.info("第三方依赖安装完成");
           return { registryUrl: tryUrl, packageJsonPath };
         }
-        lastError = result.stderr || result.stdout || "unknown error";
-        log.warn?.(`镜像 ${tryUrl || "默认"} 安装失败${urlsToTry.length > 1 ? "，尝试下一个镜像..." : ""}`);
+        const errOutput = (result.stderr || "").trim();
+        const outOutput = (result.stdout || "").trim();
+        lastError = errOutput || outOutput || "unknown error";
+        log.info(`镜像 ${tryUrl || "默认"} 安装失败，退出码: ${result.code}${urlsToTry.length > 1 ? "，尝试下一个镜像..." : ""}`);
+        log.info(`  pnpm stderr: ${(errOutput || "(空)").slice(0, 2000)}`);
+        if (outOutput) {
+          log.info(`  pnpm stdout: ${outOutput.slice(0, 2000)}`);
+        }
       }
       this.writeInstallState(statePath, {
         ...currentState,
