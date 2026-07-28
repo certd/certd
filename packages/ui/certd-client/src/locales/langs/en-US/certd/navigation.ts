@@ -64,6 +64,7 @@ export default {
     projectUserManager: "Project User Management",
     myProjectManager: "My Projects",
     myProjectDetail: "Project Detail",
+    projectDetail: "Project Detail",
     projectJoin: "Join Project",
     currentProject: "Current Project",
     projectMemberManager: "Project Member",
