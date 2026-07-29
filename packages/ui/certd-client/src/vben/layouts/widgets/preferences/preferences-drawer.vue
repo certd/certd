@@ -16,9 +16,9 @@ import type { SegmentedItem } from "/@/vben//shadcn-ui";
 
 import { computed, ref } from "vue";
 
-import { Copy, RotateCw, X } from "/@/vben/icons";
+import { ClipboardPaste, Copy, RotateCw, X } from "/@/vben/icons";
 import { $t, loadLocaleMessages } from "/@/locales";
-import { clearPreferencesCache, preferences, resetPreferences, usePreferences } from "/@/vben/preferences";
+import { clearPreferencesCache, preferences, resetPreferences, updatePreferences, usePreferences } from "/@/vben/preferences";
 
 import { useVbenDrawer } from "/@/vben//popup-ui";
 import { VbenButton, VbenIconButton, VbenSegmented } from "/@/vben//shadcn-ui";
@@ -150,6 +150,30 @@ async function handleCopy() {
   await copy(JSON.stringify(diffPreference.value, null, 2));
 
   message.copyPreferencesSuccess?.($t("preferences.copyPreferencesSuccessTitle"), $t("preferences.copyPreferencesSuccess"));
+}
+
+function isPreferencesPayload(value: unknown): value is Record<string, any> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+  // 至少包含偏好设置的一个已知顶层字段，避免导入无关 JSON
+  const knownKeys = ["app", "theme", "logo", "sidebar", "header", "tabbar", "breadcrumb", "navigation", "widget", "footer", "copyright", "shortcutKeys", "transition"];
+  return knownKeys.some(key => Object.prototype.hasOwnProperty.call(value, key));
+}
+
+async function handleImport() {
+  try {
+    const text = await navigator.clipboard.readText();
+    const data = JSON.parse(text);
+    if (!isPreferencesPayload(data)) {
+      throw new Error("invalid preferences payload");
+    }
+    updatePreferences(data);
+    if (data.app?.locale) {
+      await loadLocaleMessages(data.app.locale);
+    }
+    message.copyPreferencesSuccess?.($t("preferences.importPreferencesSuccessTitle"), $t("preferences.importPreferencesSuccess"));
+  } catch (error) {}
 }
 
 async function handleClearCache() {
@@ -310,13 +334,21 @@ async function handleReset() {
       </div>
 
       <template #footer>
-        <VbenButton :disabled="!diffPreference" class="mx-4 w-full" size="sm" variant="default" @click="handleCopy">
-          <Copy class="mr-2 size-3" />
-          {{ $t("preferences.copyPreferences") }}
-        </VbenButton>
-        <VbenButton :disabled="!diffPreference" class="mr-4 w-full" size="sm" variant="ghost" @click="handleClearCache">
-          {{ $t("preferences.clearAndLogout") }}
-        </VbenButton>
+        <div class="flex w-full flex-col gap-2 px-1">
+          <div class="flex w-full gap-2">
+            <VbenButton :disabled="!diffPreference" class="w-full" size="sm" variant="default" @click="handleCopy">
+              <Copy class="mr-2 size-3" />
+              {{ $t("preferences.copyPreferences") }}
+            </VbenButton>
+            <VbenButton class="w-full" size="sm" variant="outline" @click="handleImport">
+              <ClipboardPaste class="mr-2 size-3" />
+              {{ $t("preferences.importPreferences") }}
+            </VbenButton>
+          </div>
+          <VbenButton :disabled="!diffPreference" class="w-full" size="sm" variant="ghost" @click="handleClearCache">
+            {{ $t("preferences.clearAndLogout") }}
+          </VbenButton>
+        </div>
       </template>
     </Drawer>
   </div>

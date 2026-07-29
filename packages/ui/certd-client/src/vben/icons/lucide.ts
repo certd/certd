@@ -18,6 +18,7 @@ export {
   CircleCheckBig,
   CircleHelp,
   Copy,
+  ClipboardPaste,
   CornerDownLeft,
   Ellipsis,
   Expand,
