@@ -19,6 +19,7 @@ export {
   CircleHelp,
   Copy,
   ClipboardPaste,
+  CloudUpload,
   CornerDownLeft,
   Ellipsis,
   Expand,

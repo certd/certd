@@ -16,21 +16,27 @@ import type { SegmentedItem } from "/@/vben//shadcn-ui";
 
 import { computed, ref } from "vue";
 
-import { ClipboardPaste, Copy, RotateCw, X } from "/@/vben/icons";
+import { ClipboardPaste, CloudUpload, Copy, RotateCw, X } from "/@/vben/icons";
 import { $t, loadLocaleMessages } from "/@/locales";
-import { clearPreferencesCache, preferences, resetPreferences, updatePreferences, usePreferences } from "/@/vben/preferences";
+import { clearPreferencesCache, preferences, resetPreferences, usePreferences } from "/@/vben/preferences";
 
 import { useVbenDrawer } from "/@/vben//popup-ui";
 import { VbenButton, VbenIconButton, VbenSegmented } from "/@/vben//shadcn-ui";
 import { globalShareState } from "/@/vben//shared/global-state";
+import { useUserStore } from "/@/store/user";
 
 import { useClipboard } from "@vueuse/core";
 
 import { Animation, Block, Breadcrumb, BuiltinTheme, ColorMode, Content, Copyright, Footer, General, GlobalShortcutKeys, Header, Layout, Navigation, Radius, Sidebar, Tabbar, Theme, Widget } from "./blocks";
+import { applyPreferencesFromAccount, isPreferencesPayload, savePreferencesToAccount } from "./account-sync";
+
+import { message as antdMessage } from "ant-design-vue";
 
 const emit = defineEmits<{ clearPreferencesAndLogout: [] }>();
 
 const message = globalShareState.getMessage();
+const userStore = useUserStore();
+const savingToAccount = ref(false);
 
 const appLocale = defineModel<SupportedLanguagesType>("appLocale");
 const appDynamicTitle = defineModel<boolean>("appDynamicTitle");
@@ -150,15 +156,7 @@ async function handleCopy() {
   await copy(JSON.stringify(diffPreference.value, null, 2));
 
   message.copyPreferencesSuccess?.($t("preferences.copyPreferencesSuccessTitle"), $t("preferences.copyPreferencesSuccess"));
-}
-
-function isPreferencesPayload(value: unknown): value is Record<string, any> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return false;
-  }
-  // 至少包含偏好设置的一个已知顶层字段，避免导入无关 JSON
-  const knownKeys = ["app", "theme", "logo", "sidebar", "header", "tabbar", "breadcrumb", "navigation", "widget", "footer", "copyright", "shortcutKeys", "transition"];
-  return knownKeys.some(key => Object.prototype.hasOwnProperty.call(value, key));
+  antdMessage.success($t("preferences.copyPreferencesSuccessTitle"));
 }
 
 async function handleImport() {
@@ -168,12 +166,31 @@ async function handleImport() {
     if (!isPreferencesPayload(data)) {
       throw new Error("invalid preferences payload");
     }
-    updatePreferences(data);
-    if (data.app?.locale) {
-      await loadLocaleMessages(data.app.locale);
-    }
+    await applyPreferencesFromAccount(data);
     message.copyPreferencesSuccess?.($t("preferences.importPreferencesSuccessTitle"), $t("preferences.importPreferencesSuccess"));
-  } catch (error) {}
+    antdMessage.success($t("preferences.importPreferencesSuccess"));
+  } catch {
+    antdMessage.error($t("preferences.importPreferencesError"));
+  }
+}
+
+async function handleSaveToAccount() {
+  if (!userStore.isLogined) {
+    antdMessage.warning($t("preferences.saveToAccountNeedLogin"));
+    return;
+  }
+  if (savingToAccount.value) {
+    return;
+  }
+  savingToAccount.value = true;
+  try {
+    // 重置后 diff 为空时保存 {}；后续登录拉取到空数据则继续使用本地偏好
+    await savePreferencesToAccount((diffPreference.value as Record<string, any>) || {});
+  } catch (e: any) {
+    antdMessage.error(e?.message || $t("preferences.saveToAccountError"));
+  } finally {
+    savingToAccount.value = false;
+  }
 }
 
 async function handleClearCache() {
@@ -345,6 +362,10 @@ async function handleReset() {
               {{ $t("preferences.importPreferences") }}
             </VbenButton>
           </div>
+          <VbenButton :disabled="!userStore.isLogined || savingToAccount" class="w-full" size="sm" variant="outline" @click="handleSaveToAccount">
+            <CloudUpload class="mr-2 size-3" />
+            {{ $t("preferences.saveToAccount") }}
+          </VbenButton>
           <VbenButton :disabled="!diffPreference" class="w-full" size="sm" variant="ghost" @click="handleClearCache">
             {{ $t("preferences.clearAndLogout") }}
           </VbenButton>
