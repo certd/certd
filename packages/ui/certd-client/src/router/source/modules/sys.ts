@@ -155,19 +155,6 @@ export const sysResources = [
         },
       },
       {
-        title: "certd.sysResources.sysPluginEdit",
-        name: "SysPluginEdit",
-        path: "/sys/plugin/edit",
-        component: "/sys/plugin/edit.vue",
-        meta: {
-          isMenu: false,
-          icon: "ion:extension-puzzle",
-          permission: "sys:settings:view",
-          keepAlive: true,
-          auth: true,
-        },
-      },
-      {
         title: "certd.sysResources.sysPluginConfig",
         name: "SysPluginConfig",
         path: "/sys/plugin/config",

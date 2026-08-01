@@ -9,69 +9,80 @@
       'is-installed': isInstalled,
       'is-disabled': isDisabled,
     }"
-    @click="emit('click', plugin)"
-    @dblclick="emit('dblclick', plugin)"
+    @click="handleCardClick"
+    @dblclick="handleCardDoubleClick"
   >
     <div class="plugin-card__head">
       <div class="plugin-card__main">
         <fs-icon class="plugin-icon plugin-card__icon" :icon="plugin.icon || 'clarity:plugin-line'" />
         <div class="plugin-card__title-wrap">
-          <router-link v-if="source === 'local' && plugin.type === 'custom'" class="plugin-card__title" :title="plugin.title || plugin.name" :to="`/sys/plugin/edit?id=${plugin.id}`" @click.stop>
+          <a v-if="showEditButton" class="plugin-card__title" :title="plugin.title || plugin.name" href="#" @click.stop.prevent="editPlugin">
             {{ plugin.title || plugin.name }}
-          </router-link>
+          </a>
           <span v-else class="plugin-card__title" :title="plugin.title || plugin.name">{{ plugin.title || plugin.name }}</span>
+          <a-tooltip v-if="plugin.aiCheckStatus === 'passed'" :title="t('certd.onlinePluginAiReviewPassed')">
+            <fs-icon class="plugin-card__ai-check-icon" icon="ion:shield-checkmark-outline" />
+          </a-tooltip>
         </div>
       </div>
       <div class="plugin-card__actions">
-        <template v-if="source === 'local'">
-          <div class="plugin-card__tools">
-            <a-tooltip v-if="plugin.type === 'custom'" title="编辑">
-              <a-button class="plugin-card__tool" type="text" size="small" @click.stop="emit('edit', plugin)">
-                <template #icon>
-                  <fs-icon icon="ion:create-outline" />
-                </template>
-              </a-button>
-            </a-tooltip>
-            <a-tooltip v-if="plugin.type === 'custom'" title="复制">
-              <a-button class="plugin-card__tool" type="text" size="small" @click.stop="emit('copy', plugin)">
-                <template #icon>
-                  <fs-icon icon="ion:copy-outline" />
-                </template>
-              </a-button>
-            </a-tooltip>
-            <a-tooltip v-if="plugin.type === 'custom'" :title="t('certd.export')">
-              <a-button class="plugin-card__tool" type="text" size="small" @click.stop="emit('export-plugin', plugin)">
-                <template #icon>
-                  <fs-icon icon="ion:cloud-download-outline" />
-                </template>
-              </a-button>
-            </a-tooltip>
-            <a-tooltip v-if="showConfig" title="配置">
-              <a-button class="plugin-card__tool" type="text" size="small" @click.stop="emit('config', plugin)">
-                <template #icon>
-                  <fs-icon icon="ion:settings-outline" />
-                </template>
-              </a-button>
-            </a-tooltip>
-          </div>
-          <div v-if="canRemoveLocal" class="plugin-card__action-zone plugin-card__local-action-zone">
-            <a-tag color="green" class="plugin-status-tag">{{ t("certd.onlinePluginInstalled") }}</a-tag>
-            <a-button class="plugin-card__action-button" size="small" danger ghost @click.stop="emit('remove', plugin)">
-              {{ t("certd.onlinePluginUninstall") }}
+        <div v-if="showEditButton || showConfigButton || showToolMenu" class="plugin-card__tools">
+          <a-tooltip v-if="showEditButton" title="编辑">
+            <a-button class="plugin-card__tool" type="text" size="small" @click.stop="editPlugin">
+              <template #icon>
+                <fs-icon icon="ion:create-outline" />
+              </template>
             </a-button>
-          </div>
-        </template>
-        <template v-else-if="plugin.installed">
-          <div v-if="plugin.localPluginId" class="plugin-card__action-zone" :class="{ 'is-loading': uninstallLoading }">
+          </a-tooltip>
+          <a-tooltip v-if="copyHandler && canCopyPlugin" title="复制">
+            <a-button class="plugin-card__tool" type="text" size="small" @click.stop="copyPlugin">
+              <template #icon>
+                <fs-icon icon="ion:copy-outline" />
+              </template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip v-if="isOwnImportedPlugin" :title="t('certd.export')">
+            <a-button class="plugin-card__tool" type="text" size="small" @click.stop="exportPlugin">
+              <template #icon>
+                <fs-icon icon="ion:download-outline" />
+              </template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip v-if="canPublishPlugin" :title="t('certd.onlinePluginPublish')">
+            <a-button class="plugin-card__tool" type="text" size="small" :loading="isPublishingPlugin(plugin)" @click.stop="publishPlugin">
+              <template #icon>
+                <fs-icon icon="ion:cloud-upload-outline" />
+              </template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip v-if="showConfigButton" title="配置">
+            <a-button class="plugin-card__tool" type="text" size="small" @click.stop="openConfig">
+              <template #icon>
+                <fs-icon icon="ion:settings-outline" />
+              </template>
+            </a-button>
+          </a-tooltip>
+        </div>
+        <div v-if="source === 'local' && canRemoveLocal" class="plugin-card__action-zone plugin-card__local-action-zone">
+          <a-tooltip title="删除">
+            <a-button class="plugin-card__action-button" type="text" size="small" danger :loading="isActionLoading('remove')" @click.stop="removePlugin">
+              <template #icon>
+                <fs-icon icon="ion:trash-outline" />
+              </template>
+            </a-button>
+          </a-tooltip>
+        </div>
+        <template v-else-if="plugin.installed && source !== 'local'">
+          <div v-if="plugin.localPluginId" class="plugin-card__action-zone" :class="{ 'is-loading': isActionLoading('uninstall') }">
             <a-tag color="green" class="plugin-status-tag">{{ t("certd.onlinePluginInstalled") }}</a-tag>
-            <a-button class="plugin-card__action-button" size="small" danger ghost :loading="uninstallLoading" @click.stop="emit('uninstall', plugin)">
+            <a-button class="plugin-card__action-button" size="small" danger ghost :loading="isActionLoading('uninstall')" @click.stop="uninstallPlugin">
               {{ t("certd.onlinePluginUninstall") }}
             </a-button>
           </div>
           <a-tag v-else color="green" class="plugin-status-tag">{{ t("certd.onlinePluginInstalled") }}</a-tag>
         </template>
-        <div v-else class="plugin-card__action-zone plugin-card__install-zone" :class="{ 'is-loading': installLoading }">
-          <a-button class="plugin-card__action-button" size="small" type="primary" :loading="installLoading" @click.stop="emit('install', plugin)">
+        <div v-else-if="source !== 'local'" class="plugin-card__action-zone plugin-card__install-zone" :class="{ 'is-loading': isActionLoading('install') }">
+          <a-button class="plugin-card__action-button" size="small" type="primary" :loading="isActionLoading('install')" @click.stop="installPlugin">
             {{ t("certd.onlinePluginInstall") }}
           </a-button>
         </div>
@@ -85,7 +96,7 @@
     <div class="plugin-card__meta">
       <template v-if="source === 'local'">
         <a-tooltip :title="toggleTitle">
-          <a-tag class="plugin-status-tag" :color="plugin.disabled ? 'default' : 'green'" @click.stop="emit('toggle-disabled', plugin)">
+          <a-tag class="plugin-status-tag" :class="{ 'is-loading': isActionLoading('toggle') }" :color="plugin.disabled ? 'default' : 'green'" @click.stop="togglePlugin">
             {{ plugin.disabled ? t("certd.onlinePluginDisabled") : t("certd.onlinePluginEnabled") }}
           </a-tag>
         </a-tooltip>
@@ -95,7 +106,7 @@
       </template>
       <template v-else-if="!simple">
         <a-tooltip v-if="plugin.installed && plugin.localPluginId" :title="toggleTitle">
-          <a-tag class="plugin-status-tag" :class="{ 'is-loading': toggleLoading }" :color="plugin.localDisabled ? 'default' : 'green'" @click.stop="emit('toggle-disabled', plugin)">
+          <a-tag class="plugin-status-tag" :class="{ 'is-loading': isActionLoading('toggle') }" :color="plugin.localDisabled ? 'default' : 'green'" @click.stop="togglePlugin">
             {{ plugin.localDisabled ? t("certd.onlinePluginDisabled") : t("certd.onlinePluginEnabled") }}
           </a-tag>
         </a-tooltip>
@@ -108,23 +119,32 @@
           </a-tag>
         </a-tooltip>
       </template>
-      <a-tooltip :title="versionTitle">
+      <a-tooltip v-if="!isBuiltInPlugin" :title="versionTitle">
         <span class="plugin-card__version" :class="{ 'is-upgradable': plugin.upgradeAvailable }" @click.stop="handleVersionClick">
           v{{ currentVersion }}
           <fs-icon v-if="plugin.upgradeAvailable" class="plugin-card__version-icon" icon="carbon:upgrade" />
         </span>
       </a-tooltip>
-      <span v-if="source !== 'local' && authorName" class="plugin-card__author" :title="`${t('certd.author')}：${authorName}`">
-        <fs-icon icon="ion:person-circle-outline" />
-        <span>{{ authorName }}</span>
-      </span>
+      <a-tooltip v-if="source !== 'local' && authorName" :title="plugin.selfAuthored ? '这是我自己提交的插件' : `${t('certd.author')}：${authorName}`">
+        <span class="plugin-card__author" :class="{ 'is-self-authored': plugin.selfAuthored }">
+          <fs-icon :icon="plugin.selfAuthored ? 'ion:person-circle' : 'ion:person-circle-outline'" />
+          <span>{{ authorName }}</span>
+        </span>
+      </a-tooltip>
     </div>
   </a-card>
 </template>
 
 <script lang="ts" setup>
-import { computed } from "vue";
+import { computed, h, ref } from "vue";
+import { message, Modal } from "ant-design-vue";
+import { useFormDialog } from "/@/use/use-dialog";
 import { useI18n } from "/src/locales";
+import { usePluginStore } from "/@/store/plugin";
+import * as api from "../api";
+import { usePluginConfig } from "../use-config";
+import { usePluginPublish } from "../use-publish";
+import PluginEditDialogBody from "./plugin-edit-dialog-body.vue";
 
 defineOptions({
   name: "PluginItemCard",
@@ -137,29 +157,61 @@ const props = withDefaults(
     current?: boolean;
     simple?: boolean;
     showConfig?: boolean;
-    installLoading?: boolean;
-    uninstallLoading?: boolean;
-    toggleLoading?: boolean;
+    editable?: boolean;
+    copyHandler?: (plugin: any) => void | Promise<void>;
   }>(),
   {
     source: "market",
+    copyHandler: undefined,
   }
 );
 
 const emit = defineEmits<{
   (e: "click", plugin: any): void;
   (e: "dblclick", plugin: any): void;
-  (e: "edit", plugin: any): void;
-  (e: "copy", plugin: any): void;
-  (e: "export-plugin", plugin: any): void;
-  (e: "config", plugin: any): void;
-  (e: "remove", plugin: any): void;
-  (e: "install", plugin: any): void;
-  (e: "uninstall", plugin: any): void;
-  (e: "toggle-disabled", plugin: any): void;
+  (e: "changed", payload: { plugin: any; action: PluginCardAction }): void;
 }>();
 
 const { t } = useI18n();
+const pluginStore = usePluginStore();
+const { openConfigDialog } = usePluginConfig();
+const { isPublishingPlugin, publishLocalPlugin } = usePluginPublish();
+const { openFormDialog } = useFormDialog();
+const actionLoading = ref<PluginCardAction | "">("");
+const editDialogBodyRef = ref();
+
+type PluginCardAction = "edit" | "copy" | "export" | "publish" | "config" | "install" | "uninstall" | "remove" | "toggle";
+
+const editPluginId = computed(() => {
+  return props.plugin.localPluginId || props.plugin.id;
+});
+
+const canEditPlugin = computed(() => {
+  if (props.editable != null) {
+    return props.editable;
+  }
+  return props.plugin.type === "custom";
+});
+
+const isOwnImportedPlugin = computed(() => {
+  return props.source === "local" && canEditPlugin.value;
+});
+
+const isAvailableLocally = computed(() => {
+  return props.source === "local" || !!props.plugin.installed;
+});
+
+const canCopyPlugin = computed(() => {
+  return isOwnImportedPlugin.value || (props.source === "market" && !!props.plugin.selfAuthored && isAvailableLocally.value);
+});
+
+const showEditButton = computed(() => {
+  return canEditPlugin.value && isAvailableLocally.value;
+});
+
+const showConfigButton = computed(() => {
+  return !!props.showConfig && isAvailableLocally.value;
+});
 
 const isInstalled = computed(() => {
   return props.source !== "local" && props.plugin.installed;
@@ -170,7 +222,19 @@ const isDisabled = computed(() => {
 });
 
 const canRemoveLocal = computed(() => {
-  return props.plugin.type === "custom" || props.plugin.type === "store";
+  return isOwnImportedPlugin.value;
+});
+
+const isBuiltInPlugin = computed(() => {
+  return props.source === "local" && props.plugin.type === "builtIn";
+});
+
+const canPublishPlugin = computed(() => {
+  return canEditPlugin.value && isAvailableLocally.value && (!props.plugin.status || !!props.plugin.selfAuthored);
+});
+
+const showToolMenu = computed(() => {
+  return !isBuiltInPlugin.value && (isOwnImportedPlugin.value || canPublishPlugin.value);
 });
 
 const fullName = computed(() => {
@@ -201,6 +265,9 @@ const pluginTypeLabel = computed(() => {
 });
 
 const sourceLabel = computed(() => {
+  if (props.source === "local" && props.plugin.type !== "builtIn") {
+    return t("certd.localPlugin");
+  }
   const labelMap: Record<string, string> = {
     builtIn: t("certd.builtIn"),
     custom: t("certd.custom"),
@@ -237,6 +304,201 @@ const toggleTitle = computed(() => {
   return disabled ? t("certd.onlinePluginClickToEnable") : t("certd.onlinePluginClickToDisable");
 });
 
+function isActionLoading(action: PluginCardAction) {
+  return actionLoading.value === action;
+}
+
+function handleCardClick() {
+  if (props.source === "local") {
+    if (showEditButton.value) {
+      void editPlugin();
+    }
+    return;
+  }
+  emit("click", props.plugin);
+}
+
+function handleCardDoubleClick() {
+  if (props.source !== "local") {
+    emit("dblclick", props.plugin);
+  }
+}
+
+function emitChanged(action: PluginCardAction) {
+  emit("changed", {
+    plugin: props.plugin,
+    action,
+  });
+}
+
+async function runAction(action: PluginCardAction, callback: () => Promise<void>, options?: { emitChanged?: boolean }) {
+  if (actionLoading.value) {
+    return;
+  }
+  actionLoading.value = action;
+  try {
+    await callback();
+    if (options?.emitChanged !== false) {
+      emitChanged(action);
+    }
+  } finally {
+    actionLoading.value = "";
+  }
+}
+
+async function editPlugin() {
+  await openFormDialog({
+    title: `编辑插件 ${props.plugin.title || props.plugin.name}`,
+    columns: {},
+    noneForm: true,
+    wrapper: {
+      width: 1480,
+      destroyOnClose: true,
+      maskClosable: false,
+      okText: "保存",
+      cancelText: "关闭",
+      class: "plugin-edit-dialog",
+    },
+    body: () =>
+      h(PluginEditDialogBody, {
+        ref: editDialogBodyRef,
+        pluginId: editPluginId.value,
+      }),
+    async onSubmit() {
+      await editDialogBodyRef.value?.save?.();
+      emitChanged("edit");
+    },
+  });
+}
+
+async function copyPlugin() {
+  if (!props.copyHandler) {
+    return;
+  }
+  await runAction(
+    "copy",
+    async () => {
+      await props.copyHandler?.(props.plugin);
+    },
+    { emitChanged: true }
+  );
+}
+
+async function exportPlugin() {
+  await runAction(
+    "export",
+    async () => {
+      const content = await api.ExportPlugin(props.plugin.id);
+      if (!content) {
+        return;
+      }
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${props.plugin.name}.yaml`;
+      link.click();
+      URL.revokeObjectURL(url);
+    },
+    { emitChanged: false }
+  );
+}
+
+async function publishPlugin() {
+  await publishLocalPlugin(
+    { ...props.plugin, id: editPluginId.value },
+    {
+      async afterPublish() {
+        emitChanged("publish");
+      },
+    }
+  );
+}
+
+async function openConfig() {
+  await openConfigDialog({
+    row: props.plugin,
+    onSuccess: async () => {
+      emitChanged("config");
+    },
+  });
+}
+
+async function installPlugin() {
+  const fullName = fullNameValue();
+  if (!fullName) {
+    return;
+  }
+  await runAction("install", async () => {
+    await api.OnlinePluginInstall({
+      fullName,
+      version: props.plugin.latest,
+    });
+    message.success(t("certd.onlinePluginInstallSuccess"));
+  });
+}
+
+function uninstallPlugin() {
+  if (!props.plugin.localPluginId) {
+    return;
+  }
+  Modal.confirm({
+    title: t("certd.confirm"),
+    content: t("certd.onlinePluginDeleteConfirm", { name: fullNameValue() || props.plugin.title || props.plugin.name }),
+    async onOk() {
+      await runAction("uninstall", async () => {
+        await api.DelObj(props.plugin.localPluginId);
+        message.success(t("certd.onlinePluginUninstallSuccess"));
+      });
+    },
+  });
+}
+
+function removePlugin() {
+  if (!props.plugin.id) {
+    return;
+  }
+  Modal.confirm({
+    title: t("certd.confirm"),
+    content: "确定要删除吗？如果该插件已被使用，删除可能会导致流水线执行失败！",
+    async onOk() {
+      await runAction("remove", async () => {
+        await api.DelObj(props.plugin.id);
+        message.success(t("certd.onlinePluginUninstallSuccess"));
+      });
+    },
+  });
+}
+
+function togglePlugin() {
+  const id = props.source === "local" ? props.plugin.id : props.plugin.localPluginId;
+  const canToggleBuiltInPlugin = props.source === "local" && props.plugin.type === "builtIn" && !!props.plugin.name;
+  if (!id && !canToggleBuiltInPlugin) {
+    return;
+  }
+  Modal.confirm({
+    title: t("certd.confirm"),
+    content: `${t("certd.confirmToggle")} ${isDisabled.value ? t("certd.enable") : t("certd.disable")}?`,
+    maskClosable: true,
+    async onOk() {
+      await runAction("toggle", async () => {
+        await api.SetDisabled({
+          id: id || undefined,
+          name: props.plugin.name,
+          type: props.source === "local" ? props.plugin.type : "store",
+          disabled: !isDisabled.value,
+        });
+        await pluginStore.reload();
+        message.success(t("certd.operationSuccess"));
+      });
+    },
+  });
+}
+
+function fullNameValue() {
+  return fullName.value;
+}
+
 function formatDownloadCount(count: number) {
   if (count >= 10000) {
     return `${(count / 10000).toFixed(1).replace(/\.0$/, "")}w`;
@@ -248,7 +510,15 @@ function handleVersionClick() {
   if (props.source === "local" || !props.plugin.upgradeAvailable) {
     return;
   }
-  emit("install", props.plugin);
+  Modal.confirm({
+    title: "升级插件",
+    content: `确认将 ${props.plugin.title || props.plugin.name} 升级到 v${props.plugin.latest} 吗？`,
+    okText: "确认升级",
+    cancelText: "取消",
+    async onOk() {
+      await installPlugin();
+    },
+  });
 }
 </script>
 
@@ -304,7 +574,7 @@ function handleVersionClick() {
 
   .plugin-card__head {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
   }
@@ -313,17 +583,17 @@ function handleVersionClick() {
     display: flex;
     min-width: 0;
     flex: 1;
-    align-items: flex-start;
+    align-items: center;
   }
 
   .plugin-card__icon {
     flex: none;
-    margin-top: 1px;
+    margin-top: 0;
   }
 
   .plugin-card__main .plugin-icon {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     width: 22px;
     height: 22px;
@@ -334,14 +604,19 @@ function handleVersionClick() {
   }
 
   .plugin-card__title-wrap {
+    display: flex;
     min-width: 0;
     flex: 1;
+    align-items: center;
+    gap: 4px;
     margin-left: 8px;
   }
 
   .plugin-card__title {
     display: block;
     min-width: 0;
+    flex: 0 1 auto;
+    max-width: 100%;
     overflow: hidden;
     color: #1f2937;
     font-size: 14px;
@@ -378,6 +653,14 @@ function handleVersionClick() {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
+    &.is-self-authored {
+      color: #1677ff;
+
+      .fs-icon {
+        color: #1677ff;
+      }
+    }
   }
 
   .plugin-card__actions {
@@ -392,14 +675,9 @@ function handleVersionClick() {
 
   .plugin-card__tools {
     display: flex;
-    min-width: max-content;
     flex: none;
     align-items: center;
     gap: 1px;
-    opacity: 0.76;
-    transition-duration: 160ms;
-    transition-property: opacity;
-    transition-timing-function: ease-out;
   }
 
   .plugin-card__tool {
@@ -417,7 +695,14 @@ function handleVersionClick() {
     transition-timing-function: ease-out;
 
     .fs-icon {
+      display: flex;
+      width: 16px;
+      height: 16px;
+      flex: none;
+      align-items: center;
+      justify-content: center;
       font-size: 15px;
+      line-height: 1;
     }
 
     &:hover {
@@ -482,7 +767,14 @@ function handleVersionClick() {
   }
 
   .plugin-card__local-action-zone {
-    width: 76px;
+    width: 28px;
+
+    .plugin-card__action-button {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
   }
 
   .plugin-card__install-zone {
@@ -493,12 +785,6 @@ function handleVersionClick() {
       pointer-events: auto;
       transform: translateY(0) scale(1);
       filter: blur(0);
-    }
-  }
-
-  &:hover {
-    .plugin-card__tools {
-      opacity: 1;
     }
   }
 
@@ -568,6 +854,13 @@ function handleVersionClick() {
       font-size: 13px;
       line-height: 1;
     }
+  }
+
+  .plugin-card__ai-check-icon {
+    flex: none;
+    color: #52c41a;
+    font-size: 16px;
+    line-height: 1;
   }
 
   &.is-simple {

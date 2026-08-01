@@ -85,7 +85,9 @@ export async function ImportPlugin(body: any) {
 export type OnlinePluginBean = {
   id?: number;
   appId?: number;
+  developerId?: number;
   author?: string;
+  type?: string;
   pluginType?: string;
   name?: string;
   fullName?: string;
@@ -96,12 +98,40 @@ export type OnlinePluginBean = {
   latest?: string;
   status?: string;
   downloadCount?: number;
+  score?: number;
+  aiCheckStatus?: string;
+  selfAuthored?: boolean;
   installed?: boolean;
   installedVersion?: string;
   upgradeAvailable?: boolean;
   localPluginId?: number;
   localDisabled?: boolean;
+  localEditable?: boolean;
   syncTime?: number;
+};
+
+export type OnlinePluginVersionBean = {
+  id?: number;
+  pluginId?: number;
+  version?: string;
+  minAppVersion?: string;
+  maxAppVersion?: string;
+  status?: string;
+  publishedAt?: number;
+  reviewStatus?: string;
+  reviewReason?: string;
+  reviewedAt?: number;
+  aiCheckStatus?: string;
+  aiCheckResult?: string;
+};
+
+export type OnlinePluginCommentBean = {
+  id?: number;
+  createdAt?: number;
+  updatedAt?: number;
+  userId?: number;
+  score?: number;
+  comment?: string;
 };
 
 export async function OnlinePluginList(body: { pluginType?: string; group?: string; keyword?: string }): Promise<OnlinePluginBean[]> {
@@ -119,9 +149,104 @@ export async function OnlinePluginSync(): Promise<OnlinePluginBean[]> {
   });
 }
 
+export async function OnlinePluginSetting(): Promise<{ lastSyncTime?: number }> {
+  return await request({
+    url: apiPrefix + "/online/setting",
+    method: "post",
+  });
+}
+
 export async function OnlinePluginInstall(body: { fullName: string; version?: string }) {
   return await request({
     url: apiPrefix + "/online/install",
+    method: "post",
+    data: body,
+  });
+}
+
+export async function OnlinePluginDetail(body: { pluginId?: number; fullName?: string; commentPageNo?: number; commentPageSize?: number }): Promise<{
+  plugin: OnlinePluginBean;
+  versions: OnlinePluginVersionBean[];
+  myScore?: number;
+  myComment?: string;
+  comments?: OnlinePluginCommentBean[];
+  commentsTotal?: number;
+}> {
+  return await request({
+    url: apiPrefix + "/online/detail",
+    method: "post",
+    data: body,
+  });
+}
+
+export async function OnlinePluginSource(body: { pluginId?: number; fullName?: string; version?: string }): Promise<{ plugin: OnlinePluginBean; version: OnlinePluginVersionBean; content: string }> {
+  return await request({
+    url: apiPrefix + "/online/source",
+    method: "post",
+    data: body,
+  });
+}
+
+export async function OnlinePluginRate(body: { pluginId?: number; fullName?: string; score: number; comment: string }): Promise<{ plugin: OnlinePluginBean; myScore?: number; myComment?: string }> {
+  return await request({
+    url: apiPrefix + "/online/rate",
+    method: "post",
+    data: body,
+  });
+}
+
+export async function OnlinePluginSubmitVersion(body: { fullName: string; version: string; content: string; minAppVersion?: string; maxAppVersion?: string }) {
+  return await request({
+    url: apiPrefix + "/online/version/submit",
+    method: "post",
+    data: body,
+  });
+}
+
+export async function OnlinePluginPublish(body: { id: number; version?: string; minAppVersion?: string; maxAppVersion?: string }) {
+  return await request({
+    url: apiPrefix + "/online/publish",
+    method: "post",
+    data: body,
+  });
+}
+
+export async function OnlinePluginPublishInfo(body: { id: number }): Promise<{
+  localPlugin: OnlinePluginBean;
+  authorRegistered?: boolean;
+  author?: OnlinePluginAuthorBean;
+  marketPlugin?: OnlinePluginBean;
+  versions: OnlinePluginVersionBean[];
+}> {
+  return await request({
+    url: apiPrefix + "/online/publish/info",
+    method: "post",
+    data: body,
+  });
+}
+
+export type OnlinePluginAuthorBean = {
+  id?: number;
+  appId?: number;
+  appOwnerId?: number;
+  developerId?: number;
+  name?: string;
+  displayName?: string;
+  avatar?: string;
+  desc?: string;
+  status?: string;
+};
+
+export async function OnlinePluginAuthorGet(): Promise<{ registered?: boolean; author?: OnlinePluginAuthorBean }> {
+  return await request({
+    url: apiPrefix + "/online/author/get",
+    method: "post",
+  });
+}
+
+export async function OnlinePluginAuthorAdd(body: { name: string; displayName?: string; avatar?: string; desc?: string }): Promise<OnlinePluginAuthorBean> {
+  return await request({
+    url: apiPrefix + "/online/author/add",
     method: "post",
     data: body,
   });
@@ -139,6 +264,9 @@ export type CertApplyPluginSysInput = {
   googleCommonEabAccessId?: number;
   zerosslCommonEabAccessId?: number;
   litesslCommonEabAccessId?: number;
+  googleCommonAcmeAccountAccessId?: number;
+  zerosslCommonAcmeAccountAccessId?: number;
+  litesslCommonAcmeAccountAccessId?: number;
 };
 export type PluginSysSetting<T> = {
   sysSetting: {

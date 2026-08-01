@@ -1,5 +1,5 @@
 <template>
-  <a-drawer v-model:open="stepDrawerVisible" :wrap-style="{ maxWidth: '100vw' }" placement="right" :closable="true" width="760px" class="step-form-drawer" :class="{ fullscreen }">
+  <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="760px" class="step-form-drawer" :class="{ fullscreen }">
     <template #title>
       <div>
         编辑步骤
@@ -30,7 +30,7 @@
           </a-tabs>
         </div>
         <template #footer>
-          <div style="padding: 20px; margin-left: 100px">
+          <div class="bottom-button">
             <a-button v-if="editMode" type="primary" @click="stepTypeSave"> 确定</a-button>
           </div>
         </template>
@@ -396,6 +396,10 @@ defineExpose({
 .step-form-drawer {
   max-width: 100%;
 
+  .ant-drawer-content-wrapper {
+    max-width: 100vw;
+  }
+
   .ant-tabs-nav .ant-tabs-tab {
     margin-top: 10px !important;
     padding: 8px 14px !important;
@@ -434,6 +438,83 @@ defineExpose({
   }
 
   .pi-step-form {
+    .step-plugin-source-pane-local,
+    .step-plugin-source-pane-online {
+      display: flex;
+      height: 100%;
+      min-height: 0;
+      flex-direction: column;
+    }
+
+    .step-plugin-search {
+      flex: none;
+      padding: 0 0 12px;
+    }
+
+    .step-plugin-selector-tabs {
+      min-height: 0;
+
+      > .ant-tabs-nav {
+        width: 136px;
+        flex: 0 0 136px;
+        overflow: hidden;
+      }
+
+      > .ant-tabs-nav .ant-tabs-nav-wrap,
+      > .ant-tabs-nav .ant-tabs-nav-list {
+        width: 100%;
+      }
+
+      > .ant-tabs-nav .ant-tabs-tab {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .cd-step-form-tab-label {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+
+        .fs-icon {
+          display: flex;
+          align-items: center;
+          color: #00b7ff;
+
+          svg {
+            vertical-align: middle !important;
+            display: flex;
+            align-items: center;
+          }
+        }
+
+        > div:last-child {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      > .ant-tabs-content-holder {
+        min-width: 0;
+        min-height: 0;
+        flex: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-right: 10px;
+      }
+
+      > .ant-tabs-content-holder > .ant-tabs-content {
+        height: auto;
+        min-height: 100%;
+      }
+
+      > .ant-tabs-content-holder > .ant-tabs-content > .ant-tabs-tabpane {
+        padding-right: 0 !important;
+        overflow: visible !important;
+      }
+    }
+
     .bottom-button {
       padding: 20px;
       padding-bottom: 5px;
