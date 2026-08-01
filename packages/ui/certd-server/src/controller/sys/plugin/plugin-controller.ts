@@ -3,13 +3,10 @@ import { merge } from "lodash-es";
 import { CrudController } from "@certd/lib-server";
 import {
   OnlinePluginAuthorAddReq,
-  OnlinePluginDetailReq,
   OnlinePluginInstallReq,
   OnlinePluginListReq,
   OnlinePluginPublishInfoReq,
   OnlinePluginPublishReq,
-  OnlinePluginRateReq,
-  OnlinePluginSourceReq,
   OnlinePluginVersionSubmitReq,
   PluginImportReq,
   PluginService,
@@ -40,11 +37,6 @@ export class PluginController extends CrudController<PluginService> {
   async page(@Body(ALL) body: any) {
     body.query = body.query ?? {};
     return await super.page(body);
-  }
-
-  @Post("/list", { description: "sys:settings:view" })
-  async list(@Body(ALL) body: any) {
-    return super.list(body);
   }
 
   @Post("/add", { description: "sys:settings:edit", summary: "添加插件" })
@@ -81,13 +73,6 @@ export class PluginController extends CrudController<PluginService> {
   async delete(@Query("id") id: number) {
     const res = await this.service.deleteByIds([id]);
     await this.auditLog({ content: `删除了插件(ID:${id})` });
-    return this.ok(res);
-  }
-
-  @Post("/deleteByIds", { description: "sys:settings:edit", summary: "批量删除插件" })
-  async deleteByIds(@Body("ids") ids: number[]) {
-    const res = await this.service.deleteByIds(ids);
-    await this.auditLog({ content: `批量删除了${ids.length}条插件` });
     return this.ok(res);
   }
 
@@ -156,25 +141,6 @@ export class PluginController extends CrudController<PluginService> {
   async onlineInstall(@Body(ALL) body: OnlinePluginInstallReq) {
     const res = await this.service.installOnlinePlugin(body);
     await this.auditLog({ content: `安装了在线插件「${body.fullName}」` });
-    return this.ok(res);
-  }
-
-  @Post("/online/detail", { description: "sys:settings:view", summary: "查看在线插件详情" })
-  async onlineDetail(@Body(ALL) body: OnlinePluginDetailReq) {
-    const res = await this.service.onlinePluginDetail(body);
-    return this.ok(res);
-  }
-
-  @Post("/online/source", { description: "sys:settings:view", summary: "查看在线插件源代码" })
-  async onlineSource(@Body(ALL) body: OnlinePluginSourceReq) {
-    const res = await this.service.onlinePluginSource(body);
-    return this.ok(res);
-  }
-
-  @Post("/online/rate", { description: "sys:settings:edit", summary: "在线插件评分" })
-  async onlineRate(@Body(ALL) body: OnlinePluginRateReq) {
-    const res = await this.service.rateOnlinePlugin(body);
-    await this.auditLog({ content: `给在线插件「${body.fullName || body.pluginId}」评分` });
     return this.ok(res);
   }
 

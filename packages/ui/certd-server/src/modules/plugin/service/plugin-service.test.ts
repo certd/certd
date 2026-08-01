@@ -13,6 +13,7 @@ function createPluginRepositoryMock(options: RepoOptions = {}) {
   const state = {
     savedRows: [] as any[],
     updates: [] as any[],
+    findCalls: 0,
     queryRows: options.queryRows || options.marketRows || [],
     installedRows: options.installedRows || [],
     existingStoreRows: options.existingStoreRows || [],
@@ -179,7 +180,11 @@ function createPluginRepositoryMock(options: RepoOptions = {}) {
       return record;
     },
     async find(options?: any) {
+      state.findCalls += 1;
       if (options?.where?.type === "store") {
+        if (options.where.installed === true) {
+          return state.installedRows;
+        }
         return state.existingStoreRows;
       }
       return [];
@@ -244,6 +249,15 @@ describe("PluginService online plugins", () => {
           latest: "1.0.1",
           title: "Deploy Demo",
         },
+        {
+          type: "store",
+          fullName: "greper/DeployToOther",
+          author: "greper",
+          name: "DeployToOther",
+          pluginType: "deploy",
+          latest: "1.0.1",
+          title: "Deploy Other",
+        },
       ],
       installedRows: [
         {
@@ -263,11 +277,13 @@ describe("PluginService online plugins", () => {
 
     const list = await service.onlinePluginList({});
 
-    assert.equal(list.length, 1);
+    assert.equal(list.length, 2);
     assert.equal(list[0].installed, true);
     assert.equal(list[0].installedVersion, "1.0.0");
     assert.equal(list[0].upgradeAvailable, true);
     assert.equal(list[0].localPluginId, 3);
+    assert.equal(list[1].installed, false);
+    assert.equal((service.repository as any).state.findCalls, 1);
   });
 
   it("does not treat uninstalled market rows as installed plugins", async () => {
@@ -675,7 +691,6 @@ describe("PluginService online plugins", () => {
     assert.equal(requestConfig.url, "/activation/plugin/publish");
     assert.equal(requestConfig.method, "post");
     assert.deepEqual(requestConfig.data, {
-      userId: 12,
       content: "name: custom-one\nversion: 1.2.3\n",
       version: "1.2.3",
       minAppVersion: "",
@@ -719,15 +734,12 @@ describe("PluginService online plugins", () => {
     assert.deepEqual(requestConfigs[0], {
       url: "/activation/plugin/author/get",
       method: "post",
-      data: {
-        userId: 23,
-      },
+      data: {},
     });
     assert.deepEqual(requestConfigs[1], {
       url: "/activation/plugin/author/add",
       method: "post",
       data: {
-        userId: 23,
         name: "developer",
         displayName: "Developer",
         avatar: "",

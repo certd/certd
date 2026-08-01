@@ -103,6 +103,18 @@ export abstract class BaseService<T> {
   }
 
   /**
+   * 按条件直接更新，不触发子类 update 的业务生命周期。
+   */
+  async updateWhere(where: any, data: any) {
+    await this.getRepository().update(
+      {
+        ...where,
+      },
+      data
+    );
+  }
+
+  /**
    * 删除
    * @param ids 删除的ID集合 如：[1,2,3] 或者 1,2,3
    * @param where

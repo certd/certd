@@ -76,6 +76,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 优先沿用现有模块、插件、service、页面模式；不要为形式上的复用制造过度抽象。
 - 代码可读性优先于短写法。复杂条件、三元表达式、链式调用、内联对象和多层 helper 调用要拆成命名清晰的中间变量或小方法。
 - 方法调用链不要直接塞进另一个方法参数；先用有意义的局部变量承接返回值，再传入下一步。
+- 不要在单一表达式内嵌套分支、对象构造与方法调用。优先使用清晰的 `if/else` 分支；仅在确实能降低复杂度时才提取有意义的中间变量，避免为拆分而增加阅读跳转。
 - 注释优先使用中文，尤其是业务规则、兼容逻辑、协议细节和隐藏风险；文件已有英文风格或引用外部术语时可保持一致。
 - 遵守 DRY 和单一职责；第三次出现的业务规则、字段转换、权限判断、Repository 选择、事务传播、金额计算等逻辑，应优先抽成合适 helper 或 service 方法。
 
@@ -104,6 +105,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 只有需要事务传播时才定义 `ctx`；普通查询、纯函数和简单私有方法继续使用明确参数。
 - 需要按事务上下文取 Repository 时，用 `BaseService.getRepo(ctx, EntityClass)`。
 - 需要“有事务则复用、无事务则开启”时，用 `BaseService.transactionWithCtx(ctx, callback)`。
+- 基础 CRUD 数据访问优先复用 `BaseService` 的 `find`、`findOne`、`list`、`page`、`update`、`deleteWhere` 等方法；不要从 `repository.createQueryBuilder()` 开始重复实现完整查询或更新。仅将关键词组合筛选、联表、业务排序等基类无法表达的部分放入 `list/page` 的 `buildQuery`。
 - 拼接可选 `projectId` 查询条件时，**必须**使用 `BaseService.buildUserProjectQuery(userId, projectId)`，禁止直接写 `{ userId, projectId }`。因为 `projectId` 可能为 `null`/`undefined`，直接放入查询会生成错误的 `WHERE projectId = NULL` 条件。
 - `ctx` 类型复用 `BaseService` 导出的 `ServiceContext`。
 - 新增 service 方法避免与 `BaseService` 方法签名冲突，例如不要用 `delete(id)` 覆盖 `delete(ids, where?)`；改用 `deleteById` 等具体名称。
