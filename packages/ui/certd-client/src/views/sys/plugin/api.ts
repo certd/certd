@@ -42,22 +42,6 @@ export async function GetObj(id: any) {
   });
 }
 
-export async function GetDetail(id: any) {
-  return await request({
-    url: apiPrefix + "/detail",
-    method: "post",
-    params: { id },
-  });
-}
-
-export async function DeleteBatch(ids: any[]) {
-  return await request({
-    url: apiPrefix + "/deleteByIds",
-    method: "post",
-    data: { ids },
-  });
-}
-
 export async function SetDisabled(data: { id?: number; name?: string; type?: string; disabled: boolean }) {
   return await request({
     url: apiPrefix + "/setDisabled",
@@ -125,15 +109,6 @@ export type OnlinePluginVersionBean = {
   aiCheckResult?: string;
 };
 
-export type OnlinePluginCommentBean = {
-  id?: number;
-  createdAt?: number;
-  updatedAt?: number;
-  userId?: number;
-  score?: number;
-  comment?: string;
-};
-
 export async function OnlinePluginList(body: { pluginType?: string; group?: string; keyword?: string }): Promise<OnlinePluginBean[]> {
   return await request({
     url: apiPrefix + "/online/list",
@@ -159,37 +134,6 @@ export async function OnlinePluginSetting(): Promise<{ lastSyncTime?: number }> 
 export async function OnlinePluginInstall(body: { fullName: string; version?: string }) {
   return await request({
     url: apiPrefix + "/online/install",
-    method: "post",
-    data: body,
-  });
-}
-
-export async function OnlinePluginDetail(body: { pluginId?: number; fullName?: string; commentPageNo?: number; commentPageSize?: number }): Promise<{
-  plugin: OnlinePluginBean;
-  versions: OnlinePluginVersionBean[];
-  myScore?: number;
-  myComment?: string;
-  comments?: OnlinePluginCommentBean[];
-  commentsTotal?: number;
-}> {
-  return await request({
-    url: apiPrefix + "/online/detail",
-    method: "post",
-    data: body,
-  });
-}
-
-export async function OnlinePluginSource(body: { pluginId?: number; fullName?: string; version?: string }): Promise<{ plugin: OnlinePluginBean; version: OnlinePluginVersionBean; content: string }> {
-  return await request({
-    url: apiPrefix + "/online/source",
-    method: "post",
-    data: body,
-  });
-}
-
-export async function OnlinePluginRate(body: { pluginId?: number; fullName?: string; score: number; comment: string }): Promise<{ plugin: OnlinePluginBean; myScore?: number; myComment?: string }> {
-  return await request({
-    url: apiPrefix + "/online/rate",
     method: "post",
     data: body,
   });
@@ -296,14 +240,6 @@ export async function SaveCommPluginConfigs(data: CommPluginConfig): Promise<voi
 export async function savePluginSetting(req: { name: string; sysSetting: any }): Promise<void> {
   return await request({
     url: apiPrefix + "/saveSetting",
-    method: "post",
-    data: req,
-  });
-}
-
-export async function DoTest(req: { id: number; input: any }): Promise<void> {
-  return await request({
-    url: apiPrefix + "/doTest",
     method: "post",
     data: req,
   });

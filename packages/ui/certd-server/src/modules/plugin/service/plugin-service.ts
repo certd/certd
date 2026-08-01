@@ -38,15 +38,6 @@ export type OnlinePluginDetailReq = {
   commentPageSize?: number;
 };
 
-export type OnlinePluginSourceReq = OnlinePluginDetailReq & {
-  version?: string;
-};
-
-export type OnlinePluginRateReq = OnlinePluginDetailReq & {
-  score: number;
-  comment: string;
-};
-
 export type OnlinePluginVersionSubmitReq = {
   fullName: string;
   version: string;
@@ -356,7 +347,7 @@ export class PluginService extends BaseService<PluginEntity> {
     }
 
     // 初始化设置
-    const settingPlugins = await this.repository.find({
+    const settingPlugins = await this.find({
       select: {
         id: true,
         name: true,
@@ -459,7 +450,7 @@ export class PluginService extends BaseService<PluginEntity> {
     }
     if (id > 0) {
       //update
-      await this.repository.update({ id }, { disabled });
+      await this.updateWhere({ id }, { disabled });
       return;
     }
 
@@ -484,7 +475,7 @@ export class PluginService extends BaseService<PluginEntity> {
    */
   async add(param: any) {
     param.type = normalizePluginSourceType(param.type);
-    const old = await this.repository.findOne({
+    const old = await this.findOne({
       where: {
         name: param.name,
         author: param.author,
@@ -609,61 +600,52 @@ export class PluginService extends BaseService<PluginEntity> {
   private async findOnlinePluginRecords(req: OnlinePluginListReq) {
     const query = req || {};
     const keyword = (query.keyword || "").trim().toLowerCase();
-    const builder = this.repository.createQueryBuilder("item");
-    builder.where("item.type = :type", {
+    const listQuery: Partial<PluginEntity> = {
       type: "store",
-    });
+    };
     if (query.pluginType) {
-      builder.andWhere("item.pluginType = :pluginType", {
-        pluginType: query.pluginType,
-      });
+      listQuery.pluginType = query.pluginType;
     }
     if (query.group) {
-      builder.andWhere("item.group = :group", {
-        group: query.group,
-      });
+      listQuery.group = query.group;
     }
-    if (keyword) {
-      builder.andWhere(
-        new Brackets(qb => {
-          qb.where("LOWER(COALESCE(item.fullName, '')) LIKE :keyword", { keyword: `%${keyword}%` })
-            .orWhere("LOWER(item.author) LIKE :keyword", { keyword: `%${keyword}%` })
-            .orWhere("LOWER(item.name) LIKE :keyword", { keyword: `%${keyword}%` })
-            .orWhere("LOWER(item.title) LIKE :keyword", { keyword: `%${keyword}%` })
-            .orWhere("LOWER(item.desc) LIKE :keyword", { keyword: `%${keyword}%` })
-            .orWhere("LOWER(item.group) LIKE :keyword", { keyword: `%${keyword}%` })
-            .orWhere("LOWER(item.pluginType) LIKE :keyword", { keyword: `%${keyword}%` });
-        })
-      );
-    }
-    return await builder.orderBy("item.pluginType", "ASC").addOrderBy("item.group", "ASC").addOrderBy("item.title", "ASC").addOrderBy("item.fullName", "ASC").addOrderBy("item.id", "ASC").getMany();
+    return await this.list({
+      query: listQuery,
+      buildQuery: builder => {
+        if (keyword) {
+          builder.andWhere(
+            new Brackets(qb => {
+              qb.where("LOWER(COALESCE(main.fullName, '')) LIKE :keyword", { keyword: `%${keyword}%` })
+                .orWhere("LOWER(main.author) LIKE :keyword", { keyword: `%${keyword}%` })
+                .orWhere("LOWER(main.name) LIKE :keyword", { keyword: `%${keyword}%` })
+                .orWhere("LOWER(main.title) LIKE :keyword", { keyword: `%${keyword}%` })
+                .orWhere("LOWER(main.desc) LIKE :keyword", { keyword: `%${keyword}%` })
+                .orWhere("LOWER(main.group) LIKE :keyword", { keyword: `%${keyword}%` })
+                .orWhere("LOWER(main.pluginType) LIKE :keyword", { keyword: `%${keyword}%` });
+            })
+          );
+        }
+        builder.orderBy("main.pluginType", "ASC").addOrderBy("main.group", "ASC").addOrderBy("main.title", "ASC").addOrderBy("main.fullName", "ASC").addOrderBy("main.id", "ASC");
+      },
+    });
   }
 
-  private async findInstalledOnlinePlugin(parsed: { author: string; name: string }, record: OnlinePluginBean) {
+  private findInstalledOnlinePlugin(installedPlugins: PluginEntity[], parsed: { author: string; name: string }, record: OnlinePluginBean) {
     const fullName = record.fullName || `${parsed.author}/${parsed.name}`;
-    const builder = this.repository
-      .createQueryBuilder("plugin")
-      .where("plugin.type = :type", { type: "store" })
-      .andWhere("plugin.installed = :installed", { installed: true })
-      .andWhere(
-        new Brackets(qb => {
-          qb.where("plugin.fullName = :fullName", { fullName }).orWhere("plugin.name = :fullName", { fullName }).orWhere("plugin.author = :author AND plugin.name = :name", {
-            author: parsed.author,
-            name: parsed.name,
-          });
-          if (record.pluginType) {
-            qb.orWhere("plugin.pluginType = :pluginType AND plugin.name = :name", {
-              pluginType: record.pluginType,
-              name: parsed.name,
-            });
-          }
-        })
-      );
-    return await builder.getOne();
+    return installedPlugins.find(plugin => {
+      if (plugin.fullName === fullName || plugin.name === fullName) {
+        return true;
+      }
+      if (plugin.author === parsed.author && plugin.name === parsed.name) {
+        return true;
+      }
+      return !!record.pluginType && plugin.pluginType === record.pluginType && plugin.name === parsed.name;
+    });
   }
 
   private async attachOnlineInstallState(list: OnlinePluginBean[]) {
     const records: OnlinePluginBean[] = [];
+    const parsedRecords = new Map<OnlinePluginBean, { author: string; name: string }>();
     let bindUserId = 0;
     if (this.sysSettingsService) {
       const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
@@ -686,14 +668,31 @@ export class PluginService extends BaseService<PluginEntity> {
         continue;
       }
 
-      const localPlugin = await this.findInstalledOnlinePlugin(parsed, record);
+      parsedRecords.set(record, parsed);
+      records.push(record);
+    }
+
+    const installedPlugins =
+      parsedRecords.size > 0
+        ? await this.find({
+            where: {
+              type: "store",
+              installed: true,
+            },
+          })
+        : [];
+    for (const record of records) {
+      const parsed = parsedRecords.get(record);
+      if (!parsed) {
+        continue;
+      }
+      const localPlugin = this.findInstalledOnlinePlugin(installedPlugins, parsed, record);
       record.installed = !!localPlugin;
       record.localPluginId = localPlugin?.id;
       record.localDisabled = localPlugin?.disabled;
       record.installedVersion = localPlugin?.version;
       record.upgradeAvailable = localPlugin ? isOnlinePluginUpgradeAvailable(localPlugin.version, record.latest) : false;
       record.localEditable = canEditStorePlugin(localPlugin?.developerId ?? record.developerId, bindUserId);
-      records.push(record);
     }
     return records;
   }
@@ -751,7 +750,7 @@ export class PluginService extends BaseService<PluginEntity> {
       }
       pageStart += ONLINE_PLUGIN_SYNC_PAGE_SIZE;
     }
-    const existingList = await this.repository.find({
+    const existingList = await this.find({
       where: {
         type: "store",
       },
@@ -767,7 +766,7 @@ export class PluginService extends BaseService<PluginEntity> {
     const records = Array.from(pluginMap.values()).map(item => {
       return this.normalizeOnlinePluginRecord(item, syncTime, existingMap.get(item.fullName));
     });
-    await this.repository.save(records);
+    await this.addOrUpdate(records);
     await this.saveOnlinePluginSyncTime(syncTime);
     return await this.onlinePluginList({});
   }
@@ -810,14 +809,12 @@ export class PluginService extends BaseService<PluginEntity> {
 
   async onlinePluginDetail(req: OnlinePluginDetailReq) {
     await this.plusService.register();
-    const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
     const res = await this.plusService.request({
       url: "/activation/plugin/detail",
       method: "post",
       data: {
         pluginId: req.pluginId || 0,
         fullName: req.fullName || "",
-        userId: installInfo.bindUserId || 0,
         commentPageNo: req.commentPageNo || 1,
         commentPageSize: req.commentPageSize || 5,
       },
@@ -825,52 +822,6 @@ export class PluginService extends BaseService<PluginEntity> {
     if (res?.plugin) {
       const [plugin] = await this.attachOnlineInstallState([res.plugin]);
       res.plugin = plugin;
-    }
-    return res;
-  }
-
-  async onlinePluginSource(req: OnlinePluginSourceReq) {
-    await this.plusService.register();
-    const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
-    return await this.plusService.request({
-      url: "/activation/plugin/source",
-      method: "post",
-      data: {
-        pluginId: req.pluginId || 0,
-        fullName: req.fullName || "",
-        version: req.version || "",
-        userId: installInfo.bindUserId || 0,
-      },
-    });
-  }
-
-  async rateOnlinePlugin(req: OnlinePluginRateReq) {
-    const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
-    if (!installInfo.bindUserId) {
-      throw new Error("请先绑定账号后再评分");
-    }
-    await this.plusService.register();
-    const res = await this.plusService.request({
-      url: "/activation/plugin/rate",
-      method: "post",
-      data: {
-        pluginId: req.pluginId || 0,
-        fullName: req.fullName || "",
-        userId: installInfo.bindUserId,
-        score: req.score,
-        comment: req.comment,
-      },
-    });
-    if (res?.plugin?.score != null) {
-      await this.repository.update(
-        {
-          type: "store",
-          fullName: res.plugin.fullName || req.fullName,
-        },
-        {
-          score: res.plugin.score,
-        }
-      );
     }
     return res;
   }
@@ -885,7 +836,6 @@ export class PluginService extends BaseService<PluginEntity> {
       url: "/activation/plugin/version/submit",
       method: "post",
       data: {
-        userId: installInfo.bindUserId,
         fullName: req.fullName,
         version: req.version,
         content: req.content,
@@ -919,7 +869,6 @@ export class PluginService extends BaseService<PluginEntity> {
       url: "/activation/plugin/publish",
       method: "post",
       data: {
-        userId: installInfo.bindUserId,
         content,
         version: req.version || plugin.version || "",
         minAppVersion: req.minAppVersion || "",
@@ -955,25 +904,22 @@ export class PluginService extends BaseService<PluginEntity> {
   }
 
   async getOnlinePluginAuthor(): Promise<OnlinePluginAuthorGetReply> {
-    const bindUserId = await this.getBindUserId("发布插件");
+    await this.getBindUserId("发布插件");
     await this.plusService.register();
     return await this.plusService.request({
       url: "/activation/plugin/author/get",
       method: "post",
-      data: {
-        userId: bindUserId,
-      },
+      data: {},
     });
   }
 
   async addOnlinePluginAuthor(req: OnlinePluginAuthorAddReq): Promise<OnlinePluginAuthorBean> {
-    const bindUserId = await this.getBindUserId("注册插件作者");
+    await this.getBindUserId("注册插件作者");
     await this.plusService.register();
     return await this.plusService.request({
       url: "/activation/plugin/author/add",
       method: "post",
       data: {
-        userId: bindUserId,
         name: req.name,
         displayName: req.displayName || "",
         avatar: req.avatar || "",
@@ -1042,7 +988,7 @@ export class PluginService extends BaseService<PluginEntity> {
     if (!fullName || downloadCount == null) {
       return;
     }
-    await this.repository.update(
+    await this.updateWhere(
       {
         type: "store",
         fullName,
@@ -1092,7 +1038,7 @@ export class PluginService extends BaseService<PluginEntity> {
 
   async update(param: any) {
     param.type = normalizePluginSourceType(param.type);
-    const old = await this.repository.findOne({
+    const old = await this.findOne({
       where: {
         name: param.name,
         author: param.author,
@@ -1303,27 +1249,29 @@ export class PluginService extends BaseService<PluginEntity> {
     const fullName = loaded.fullName || (loaded.author && loaded.name ? `${loaded.author}/${loaded.name}` : "");
     const entityType = normalizePluginSourceType(req.type || loaded.type);
 
-    const old =
-      entityType === "store"
-        ? await this.repository.findOne({
-            where: [
-              {
-                type: "store",
-                fullName,
-              },
-              {
-                type: "store",
-                author: loaded.author,
-                name: loaded.name,
-              },
-            ],
-          })
-        : await this.repository.findOne({
-            where: {
-              name: loaded.name,
-              author: loaded.author,
-            },
-          });
+    let old: PluginEntity | null;
+    if (entityType === "store") {
+      old = await this.findOne({
+        where: [
+          {
+            type: "store",
+            fullName,
+          },
+          {
+            type: "store",
+            author: loaded.author,
+            name: loaded.name,
+          },
+        ],
+      });
+    } else {
+      old = await this.findOne({
+        where: {
+          name: loaded.name,
+          author: loaded.author,
+        },
+      });
+    }
 
     const metadata = {
       input: loaded.input,
@@ -1381,7 +1329,7 @@ export class PluginService extends BaseService<PluginEntity> {
       }
       await this.unRegisterById(id);
       if (item.type === "store" && item.developerId) {
-        await this.repository.update(
+        await this.updateWhere(
           { id },
           {
             installed: false,
