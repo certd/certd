@@ -42,9 +42,10 @@ process.on("uncaughtException", error => {
 //   }
 //   setInterval(log, 200);
 //   log()
-// }
-// startHeapLog();
+// }127.0.0.1
 
+
+// startHeapLog();
 @Configuration({
   detectorOptions: {
     ignore: ["**/plugins/**"],

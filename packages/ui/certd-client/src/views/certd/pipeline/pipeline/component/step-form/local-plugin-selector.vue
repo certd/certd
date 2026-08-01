@@ -3,8 +3,8 @@
     <div class="step-plugin-search">
       <a-input-search v-model:value="localPluginSearch.keyword" placeholder="搜索本地插件" :allow-clear="true" :show-search="true"></a-input-search>
     </div>
-    <a-tabs v-model:active-key="pluginGroupActive" tab-position="left" class="flex-1 overflow-hidden h-full">
-      <a-tab-pane v-for="group of computedLocalPluginGroups" :key="group.key" class="scroll-y">
+    <a-tabs v-model:active-key="pluginGroupActive" tab-position="left" class="step-plugin-selector-tabs flex-1 overflow-hidden h-full">
+      <a-tab-pane v-for="group of computedLocalPluginGroups" :key="group.key" class="step-plugin-list-pane">
         <template #tab>
           <div class="cd-step-form-tab-label" @click="handleLocalPluginGroupChange(group.key)">
             <fs-icon :icon="group.icon" class="mr-2" />

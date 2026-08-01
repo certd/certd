@@ -41,7 +41,6 @@ export default {
     headerMenus: "顶部菜单设置",
     sysAccess: "系统级授权",
     sysPlugin: "插件管理",
-    sysPluginEdit: "编辑插件",
     sysPluginConfig: "证书插件配置",
     accountBind: "账号绑定",
     permissionManager: "权限管理",

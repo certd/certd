@@ -13,7 +13,7 @@
 
 <script setup lang="tsx">
 import { IframeClient } from "@certd/lib-iframe";
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
 import * as api from "./api";
@@ -23,6 +23,7 @@ defineOptions({
   name: "AccountBind",
 });
 const iframeRef = ref();
+let iframeClient: IframeClient | undefined;
 
 const userStore = useUserStore();
 const settingStore = useSettingStore();
@@ -40,9 +41,10 @@ type SubjectInfo = {
   installAt?: number;
   vipType?: string;
   expiresAt?: number;
+  userId?: number;
 };
 onMounted(() => {
-  const iframeClient = new IframeClient(iframeRef.value, (e: any) => {
+  iframeClient = new IframeClient(iframeRef.value, (e: any) => {
     notification.error({
       message: " error",
       description: e.message,
@@ -54,6 +56,7 @@ onMounted(() => {
       installAt: settingStore.installInfo.installTime,
       vipType: settingStore.plusInfo.vipType || "free",
       expiresAt: settingStore.plusInfo.expireTime,
+      userId: settingStore.installInfo.bindUserId || undefined,
     };
     return subjectInfo;
   });
@@ -83,6 +86,11 @@ onMounted(() => {
       description: "Certd专业版/商业版已激活",
     });
   });
+});
+
+onBeforeUnmount(() => {
+  iframeClient?.destroy();
+  iframeClient = undefined;
 });
 </script>
 

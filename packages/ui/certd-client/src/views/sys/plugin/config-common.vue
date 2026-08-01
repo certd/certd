@@ -114,7 +114,12 @@ const { openConfigDialog } = usePluginConfig();
 
 async function doPluginConfig() {
   const certApplyInfo = await GetPluginByName("CertApply");
-  await openConfigDialog({ row: certApplyInfo, crudExpose: null });
+  await openConfigDialog({
+    row: certApplyInfo,
+    onSuccess: async () => {
+      await loadForm();
+    },
+  });
 }
 </script>
 <style lang="less"></style>

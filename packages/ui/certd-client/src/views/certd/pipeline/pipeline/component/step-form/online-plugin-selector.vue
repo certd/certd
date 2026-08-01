@@ -3,8 +3,8 @@
     <div class="step-plugin-search">
       <a-input-search v-model:value="onlinePluginSearch.keyword" placeholder="搜索插件市场" :allow-clear="true" :show-search="true" :loading="onlineLoading" @search="handleOnlinePluginSearch"></a-input-search>
     </div>
-    <a-tabs v-model:active-key="onlinePluginGroupActive" tab-position="left" class="flex-1 overflow-hidden h-full step-market-tabs">
-      <a-tab-pane v-for="group of computedOnlinePluginGroups" :key="group.key" class="scroll-y">
+    <a-tabs v-model:active-key="onlinePluginGroupActive" tab-position="left" class="step-plugin-selector-tabs step-market-tabs flex-1 overflow-hidden h-full">
+      <a-tab-pane v-for="group of computedOnlinePluginGroups" :key="group.key" class="step-plugin-list-pane">
         <template #tab>
           <div class="cd-step-form-tab-label" @click="handleOnlinePluginGroupChange(group.key)">
             <fs-icon :icon="group.icon" class="mr-2" />
@@ -17,19 +17,7 @@
           <div class="step-market-content">
             <a-row :gutter="[12, 12]">
               <a-col v-for="item of group.plugins" :key="item.key || item.fullName" class="step-plugin market-plugin-col w-full md:w-[50%]">
-                <PluginItemCard
-                  :plugin="item"
-                  simple
-                  :current="isOnlinePluginCurrent(item)"
-                  :install-loading="isOnlineActionLoading(item, 'install')"
-                  :uninstall-loading="isOnlineActionLoading(item, 'uninstall')"
-                  :toggle-loading="isOnlineActionLoading(item, 'toggle')"
-                  @click="onlinePluginSelected(item)"
-                  @dblclick="handleOnlinePluginCardDblclick(item)"
-                  @install="installOnlineStepPlugin"
-                  @uninstall="uninstallOnlineStepPlugin"
-                  @toggle-disabled="toggleOnlineStepPluginDisabled"
-                />
+                <PluginItemCard :plugin="item" simple :current="isOnlinePluginCurrent(item)" @click="onlinePluginSelected(item)" @dblclick="handleOnlinePluginCardDblclick(item)" @changed="handleOnlinePluginChanged" />
               </a-col>
             </a-row>
             <div class="online-plugin-pagination">
@@ -43,7 +31,6 @@
 </template>
 
 <script lang="ts" setup>
-import { message, Modal } from "ant-design-vue";
 import { computed, ref, Ref, watch } from "vue";
 import { PluginGroups, usePluginStore } from "/@/store/plugin";
 import { useUserStore } from "/@/store/user";
@@ -71,7 +58,6 @@ const pluginGroup: Ref<PluginGroups | undefined> = ref();
 const onlinePlugins: Ref<pluginApi.OnlinePluginBean[]> = ref([]);
 const onlineGroupPlugins: Ref<pluginApi.OnlinePluginBean[]> = ref([]);
 const onlineLoading: Ref<boolean> = ref(false);
-const onlineActionLoading: Ref<string> = ref("");
 const onlineGroupLoaded: Ref<boolean> = ref(false);
 const onlinePluginSearch = ref({
   keyword: "",
@@ -215,86 +201,15 @@ function getPagedOnlinePlugins(groupKey: string) {
   return list.slice(start, start + onlinePageSize);
 }
 
-function getOnlinePluginActionKey(plugin: pluginApi.OnlinePluginBean, action: "install" | "uninstall" | "toggle") {
-  if (!plugin.fullName) {
-    return "";
+async function handleOnlinePluginChanged(payload: { plugin: any; action: string }) {
+  if (payload.action === "uninstall" && props.selectedType === payload.plugin.fullName) {
+    emit("uninstalled", payload.plugin);
   }
-  return `${action}:${plugin.fullName}`;
-}
-
-function isOnlineActionLoading(plugin: pluginApi.OnlinePluginBean, action: "install" | "uninstall" | "toggle") {
-  return onlineActionLoading.value === getOnlinePluginActionKey(plugin, action);
-}
-
-async function installOnlineStepPlugin(plugin: any) {
-  if (!plugin.fullName) {
-    return;
-  }
-  onlineActionLoading.value = getOnlinePluginActionKey(plugin, "install");
-  try {
-    await pluginApi.OnlinePluginInstall({
-      fullName: plugin.fullName,
-      version: plugin.latest,
-    });
-    message.success(t("certd.onlinePluginInstallSuccess"));
+  if (payload.action === "install" || payload.action === "uninstall") {
     await pluginStore.reload();
-    await loadPluginGroups();
-    await loadOnlinePlugins(true, { silent: true });
-  } finally {
-    onlineActionLoading.value = "";
   }
-}
-
-function uninstallOnlineStepPlugin(plugin: any) {
-  if (!plugin.localPluginId || !plugin.fullName) {
-    return;
-  }
-  Modal.confirm({
-    title: t("certd.confirm"),
-    content: t("certd.onlinePluginDeleteConfirm", { name: plugin.fullName }),
-    async onOk() {
-      onlineActionLoading.value = getOnlinePluginActionKey(plugin, "uninstall");
-      try {
-        await pluginApi.DelObj(plugin.localPluginId);
-        message.success(t("certd.onlinePluginUninstallSuccess"));
-        if (props.selectedType === plugin.fullName) {
-          emit("uninstalled", plugin);
-        }
-        await pluginStore.reload();
-        await loadPluginGroups();
-        await loadOnlinePlugins(true, { silent: true });
-      } finally {
-        onlineActionLoading.value = "";
-      }
-    },
-  });
-}
-
-function toggleOnlineStepPluginDisabled(plugin: any) {
-  if (!plugin.localPluginId || !plugin.fullName) {
-    return;
-  }
-  Modal.confirm({
-    title: t("certd.confirm"),
-    content: `${t("certd.confirmToggle")} ${!plugin.localDisabled ? t("certd.disable") : t("certd.enable")}?`,
-    async onOk() {
-      onlineActionLoading.value = getOnlinePluginActionKey(plugin, "toggle");
-      try {
-        await pluginApi.SetDisabled({
-          id: plugin.localPluginId,
-          name: plugin.name,
-          type: "store",
-          disabled: !plugin.localDisabled,
-        });
-        message.success(t("certd.operationSuccess"));
-        await pluginStore.reload();
-        await loadPluginGroups();
-        await loadOnlinePlugins(true, { silent: true });
-      } finally {
-        onlineActionLoading.value = "";
-      }
-    },
-  });
+  await loadPluginGroups();
+  await loadOnlinePlugins(true, { silent: true });
 }
 
 function getInstalledPlugin(plugin: any) {

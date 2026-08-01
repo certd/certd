@@ -568,6 +568,7 @@ export class RuntimeDepsService {
         const result = await this.commandRunner.run(command, args, { cwd: rootDir, timeoutMs: this.installTimeoutMs, env: tryEnv });
         if (result.code === 0) {
           this.writeInstallState(statePath, { installedAt: new Date().toISOString(), registryUrl: tryUrl, dependenciesHash, nodeVersion: process.version, pnpmVersion, lockFileExists: fs.existsSync(lockPath) });
+          log.info(`${result.stdout?.slice(-2000) || "无npm安装日志输出"}`);
           log.info("第三方依赖安装完成");
           return { registryUrl: tryUrl, packageJsonPath };
         }
@@ -575,9 +576,9 @@ export class RuntimeDepsService {
         const outOutput = (result.stdout || "").trim();
         lastError = errOutput || outOutput || "unknown error";
         log.info(`镜像 ${tryUrl || "默认"} 安装失败，退出码: ${result.code}${urlsToTry.length > 1 ? "，尝试下一个镜像..." : ""}`);
-        log.info(`  pnpm stderr: ${(errOutput || "(空)").slice(0, 2000)}`);
+        log.info(`  pnpm stderr: ${(errOutput || "无npm安装日志输出").slice(-2000)}`);
         if (outOutput) {
-          log.info(`  pnpm stdout: ${outOutput.slice(0, 2000)}`);
+          log.info(`  pnpm stdout: ${outOutput.slice(-2000)}`);
         }
       }
       this.writeInstallState(statePath, {

@@ -1,7 +1,6 @@
 import * as api from "./api";
 import { useI18n } from "/src/locales";
 import { Ref, ref, computed } from "vue";
-import { useRouter } from "vue-router";
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { Modal, message } from "ant-design-vue";
 //@ts-ignore
@@ -11,9 +10,9 @@ import KvInput from "/@/components/plugins/common/kv-input.vue";
 import { usePluginConfig } from "./use-config";
 import { useSettingStore } from "/src/store/settings/index";
 import { usePluginStore } from "/@/store/plugin";
+import PluginAuthorField from "./components/plugin-author-field.vue";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
-  const router = useRouter();
   const { t } = useI18n();
 
   let lastType = "";
@@ -50,6 +49,70 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const settingStore = useSettingStore();
   const pluginStore = usePluginStore();
+  const syncLoading = ref(false);
+  const lastSyncTime = ref(0);
+  const autoSyncInterval = 30 * 24 * 60 * 60 * 1000;
+  const syncButtonTitle = computed(() => {
+    if (!lastSyncTime.value) {
+      return t("certd.onlinePluginNotSynced");
+    }
+    return t("certd.onlinePluginLastSyncTime", {
+      time: formatSyncTime(lastSyncTime.value),
+    });
+  });
+
+  function formatSyncTime(time: number) {
+    return new Date(time).toLocaleString();
+  }
+
+  function needAutoSync(time: number) {
+    if (!time) {
+      return true;
+    }
+    return Date.now() - time > autoSyncInterval;
+  }
+
+  function canEditStorePlugin(row: any) {
+    if (row.type !== "store") {
+      return false;
+    }
+    if (typeof row.localEditable === "boolean") {
+      return row.localEditable;
+    }
+    const bindUserId = Number(settingStore.installInfo?.bindUserId || 0);
+    return !row.developerId || (!!bindUserId && Number(row.developerId) === bindUserId);
+  }
+
+  async function syncOnlinePlugins(options?: { showSuccess?: boolean }) {
+    if (syncLoading.value) {
+      return;
+    }
+    syncLoading.value = true;
+    try {
+      await api.OnlinePluginSync();
+      const setting = await api.OnlinePluginSetting();
+      lastSyncTime.value = setting.lastSyncTime || Date.now();
+      await pluginStore.reload();
+      crudExpose.doRefresh();
+      if (options?.showSuccess !== false) {
+        message.success(t("certd.onlinePluginSyncSuccess"));
+      }
+    } finally {
+      syncLoading.value = false;
+    }
+  }
+
+  async function loadOnlinePluginSetting() {
+    const setting = await api.OnlinePluginSetting();
+    lastSyncTime.value = setting.lastSyncTime || 0;
+    if (needAutoSync(lastSyncTime.value)) {
+      await syncOnlinePlugins({ showSuccess: false });
+    }
+  }
+
+  loadOnlinePluginSetting().catch(e => {
+    console.warn("load online plugin setting failed", e);
+  });
   return {
     crudOptions: {
       settings: {
@@ -89,6 +152,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               await openImportDialog({ crudExpose });
             },
           },
+          syncOnline: {
+            show: true,
+            icon: "ion:sync-outline",
+            type: "primary",
+            text: t("certd.onlinePluginSync"),
+            tooltip: { title: syncButtonTitle },
+            loading: syncLoading,
+            async click() {
+              await syncOnlinePlugins();
+            },
+          },
           clearRuntimeDeps: {
             show: true,
             icon: "ion:trash-outline",
@@ -126,13 +200,21 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         buttons: {
           edit: {
             show: compute(({ row }) => {
-              return row.type === "custom";
+              return canEditStorePlugin(row);
             }),
           },
           copy: {
             show: compute(({ row }) => {
-              return row.type === "custom";
+              return canEditStorePlugin(row);
             }),
+            async click({ row }) {
+              const copyRow = { ...row };
+              delete copyRow.fullName;
+              delete copyRow.id;
+              crudExpose.openCopy({
+                row: copyRow,
+              });
+            },
           },
           remove: {
             order: 999,
@@ -146,7 +228,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             title: t("certd.export"),
             type: "link",
             show: compute(({ row }) => {
-              return row.type === "custom";
+              return canEditStorePlugin(row);
             }),
             async click({ row }) {
               const content = await api.ExportPlugin(row.id);
@@ -172,7 +254,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             async click({ row }) {
               await openConfigDialog({
                 row,
-                crudExpose,
+                onSuccess: async () => {
+                  crudExpose.doRefresh();
+                },
               });
             },
           },
@@ -187,16 +271,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       form: {
         onSuccess(opts: any) {
-          if (opts.res?.id) {
-            router.push({
-              name: "SysPluginEdit",
-              query: {
-                id: opts.res.id,
-              },
-            });
-          } else {
-            crudExpose.doRefresh();
-          }
+          crudExpose.doRefresh();
         },
       },
       columns: {
@@ -287,19 +362,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.author"),
           type: "text",
           search: {
+            component: {
+              name: "a-input",
+              vModel: "value",
+            },
             show: true,
           },
           form: {
             show: true,
-            helper: t("certd.authorHelper"),
-            rules: [
-              { required: true },
-              {
-                type: "pattern",
-                pattern: /^[a-zA-Z][a-zA-Z0-9]+$/,
-                message: t("certd.authorRuleMsg"),
-              },
-            ],
+            component: {
+              name: PluginAuthorField,
+              vModel: "modelValue",
+            },
           },
           column: {
             width: 200,
@@ -316,9 +390,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             width: 300,
             cellRender({ row }) {
-              if (row.type === "custom") {
-                return <router-link to={`/sys/plugin/edit?id=${row.id}`}>{row.title}</router-link>;
-              }
               return <div>{row.title}</div>;
             },
           },
@@ -339,7 +410,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
           },
           form: {
-            value: "custom",
+            value: "store",
             component: {
               disabled: true,
             },
@@ -347,8 +418,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           dict: dict({
             data: [
               { label: t("certd.builtIn"), value: "builtIn" },
-              { label: t("certd.custom"), value: "custom" },
-              { label: t("certd.installedStorePlugin"), value: "store" },
+              { label: t("certd.store"), value: "store" },
             ],
           }),
           column: {
@@ -473,6 +543,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                   Modal.confirm({
                     title: t("certd.confirm"),
                     content: `${t("certd.confirmToggle")} ${!value ? t("certd.disable") : t("certd.enable")}?`,
+                    maskClosable: true,
                     onOk: async () => {
                       await api.SetDisabled({
                         id: row.id,
@@ -480,7 +551,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                         type: row.type,
                         disabled: !value,
                       });
-                      await crudExpose.doRefresh();
+                      crudExpose.doRefresh();
                     },
                   });
                 },
@@ -491,6 +562,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         group: {
           title: t("certd.pluginGroup"),
           type: "dict-select",
+          search: {
+            show: true,
+          },
           dict: dict({
             url: "/pi/plugin/groupsList",
             label: "title",

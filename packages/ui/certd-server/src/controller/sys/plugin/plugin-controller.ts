@@ -1,7 +1,19 @@
 import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/core";
 import { merge } from "lodash-es";
 import { CrudController } from "@certd/lib-server";
-import { OnlinePluginInstallReq, OnlinePluginListReq, PluginImportReq, PluginService } from "../../../modules/plugin/service/plugin-service.js";
+import {
+  OnlinePluginAuthorAddReq,
+  OnlinePluginDetailReq,
+  OnlinePluginInstallReq,
+  OnlinePluginListReq,
+  OnlinePluginPublishInfoReq,
+  OnlinePluginPublishReq,
+  OnlinePluginRateReq,
+  OnlinePluginSourceReq,
+  OnlinePluginVersionSubmitReq,
+  PluginImportReq,
+  PluginService,
+} from "../../../modules/plugin/service/plugin-service.js";
 import { CommPluginConfig, PluginConfig, PluginConfigService } from "../../../modules/plugin/service/plugin-config-service.js";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 /**
@@ -40,8 +52,13 @@ export class PluginController extends CrudController<PluginService> {
     const def: any = {
       isDefault: false,
       disabled: false,
+      type: "store",
     };
     merge(bean, def);
+    bean.fullName = bean.name;
+    if (bean.author){
+      bean.fullName = bean.author + "/" + bean.name;
+    }
     const res = await super.add(bean);
     await this.auditLog({ content: `新增了插件「${bean.name}」(ID:${res.data}, 类型:${bean.type})` });
     return res;
@@ -49,6 +66,7 @@ export class PluginController extends CrudController<PluginService> {
 
   @Post("/update", { description: "sys:settings:edit", summary: "更新插件" })
   async update(@Body(ALL) bean: any) {
+    await this.service.ensurePluginEditable(bean.id);
     const res = await super.update(bean);
     await this.auditLog({ content: `修改了插件「${bean.name}」(ID:${bean.id})` });
     return res;
@@ -121,6 +139,12 @@ export class PluginController extends CrudController<PluginService> {
     return this.ok(res);
   }
 
+  @Post("/online/setting", { description: "sys:settings:view", summary: "查询在线插件同步设置" })
+  async onlineSetting() {
+    const res = await this.service.getOnlinePluginSetting();
+    return this.ok(res);
+  }
+
   @Post("/online/sync", { description: "sys:settings:edit", summary: "同步在线插件" })
   async onlineSync() {
     const res = await this.service.syncOnlinePluginList();
@@ -132,6 +156,58 @@ export class PluginController extends CrudController<PluginService> {
   async onlineInstall(@Body(ALL) body: OnlinePluginInstallReq) {
     const res = await this.service.installOnlinePlugin(body);
     await this.auditLog({ content: `安装了在线插件「${body.fullName}」` });
+    return this.ok(res);
+  }
+
+  @Post("/online/detail", { description: "sys:settings:view", summary: "查看在线插件详情" })
+  async onlineDetail(@Body(ALL) body: OnlinePluginDetailReq) {
+    const res = await this.service.onlinePluginDetail(body);
+    return this.ok(res);
+  }
+
+  @Post("/online/source", { description: "sys:settings:view", summary: "查看在线插件源代码" })
+  async onlineSource(@Body(ALL) body: OnlinePluginSourceReq) {
+    const res = await this.service.onlinePluginSource(body);
+    return this.ok(res);
+  }
+
+  @Post("/online/rate", { description: "sys:settings:edit", summary: "在线插件评分" })
+  async onlineRate(@Body(ALL) body: OnlinePluginRateReq) {
+    const res = await this.service.rateOnlinePlugin(body);
+    await this.auditLog({ content: `给在线插件「${body.fullName || body.pluginId}」评分` });
+    return this.ok(res);
+  }
+
+  @Post("/online/version/submit", { description: "sys:settings:edit", summary: "提交在线插件版本" })
+  async onlineVersionSubmit(@Body(ALL) body: OnlinePluginVersionSubmitReq) {
+    const res = await this.service.submitOnlinePluginVersion(body);
+    await this.auditLog({ content: `提交了在线插件「${body.fullName}」的新版本` });
+    return this.ok(res);
+  }
+
+  @Post("/online/publish", { description: "sys:settings:edit", summary: "发布本地插件到市场" })
+  async onlinePublish(@Body(ALL) body: OnlinePluginPublishReq) {
+    const res = await this.service.publishLocalPlugin(body);
+    await this.auditLog({ content: `发布了本地插件(ID:${body.id})到插件市场` });
+    return this.ok(res);
+  }
+
+  @Post("/online/author/get", { description: "sys:settings:view", summary: "查询在线插件作者" })
+  async onlineAuthorGet() {
+    const res = await this.service.getOnlinePluginAuthor();
+    return this.ok(res);
+  }
+
+  @Post("/online/author/add", { description: "sys:settings:edit", summary: "注册在线插件作者" })
+  async onlineAuthorAdd(@Body(ALL) body: OnlinePluginAuthorAddReq) {
+    const res = await this.service.addOnlinePluginAuthor(body);
+    await this.auditLog({ content: `注册了在线插件作者「${body.name}」` });
+    return this.ok(res);
+  }
+
+  @Post("/online/publish/info", { description: "sys:settings:view", summary: "查询本地插件发布信息" })
+  async onlinePublishInfo(@Body(ALL) body: OnlinePluginPublishInfoReq) {
+    const res = await this.service.getOnlinePluginPublishInfo(body);
     return this.ok(res);
   }
 

@@ -36,6 +36,116 @@
   align-items: center;
 }
 
+.cd-card-section {
+  padding: 14px;
+  border: 1px solid #e8edf3;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.cd-card-section-title {
+  margin-bottom: 12px;
+  color: #1f2937;
+  font-weight: 700;
+
+  &.cd-card-section-title--compact {
+    margin-bottom: 10px;
+  }
+}
+
+.cd-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+}
+
+.cd-meta-item {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+
+.cd-meta-label {
+  color: #7b8794;
+}
+
+.cd-meta-value {
+  min-width: 0;
+  color: #1f2937;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.cd-tip-box {
+  padding: 10px 12px;
+  border: 1px solid #e8edf3;
+  border-radius: 8px;
+  background: #f6f8fb;
+  color: #526172;
+  line-height: 22px;
+
+  &.cd-tip-box-warning {
+    border-color: #ffd591;
+    background: #fff7e6;
+    color: #ad6800;
+  }
+
+  &.cd-tip-box-danger {
+    border-color: #ffccc7;
+    background: #fff2f0;
+    color: #cf1322;
+    line-height: 21px;
+  }
+}
+
+.cd-tip-title {
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+
+.cd-form-row {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+
+.cd-form-label {
+  padding-top: 5px;
+  color: #5f6b7a;
+}
+
+.cd-text-input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 32px;
+  padding: 4px 11px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  outline: none;
+  background: #ffffff;
+  color: #1f2937;
+
+  &.cd-text-input-error {
+    border-color: #ff4d4f;
+  }
+}
+
+.cd-field-error {
+  margin-top: 6px;
+  color: #cf1322;
+  font-size: 12px;
+}
+
+.cd-text-danger {
+  color: #cf1322;
+}
+
+.cd-text-muted {
+  color: #8c8c8c;
+}
+
 .ant-drawer-content {
   &.fullscreen {
     position: fixed;
@@ -138,5 +248,11 @@ button.ant-btn.ant-btn-default.isPlus {
       border-color: hsl(0, 0%, 31%);
       color: rgba(233, 233, 233, 0.25);
     }
+  }
+}
+
+.fs-form-none-content {
+  .fs-form-wrapper{
+    .fs-form-content{display: none;}
   }
 }

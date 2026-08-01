@@ -41,8 +41,6 @@
 
 <script lang="ts" setup>
 import { ref, Ref, inject, toRef } from "vue";
-import { useFormWrapper } from "@fast-crud/fast-crud";
-import yaml from "js-yaml";
 const activeKey = ref([]);
 
 const getPlugin: any = inject("get:plugin");
