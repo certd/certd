@@ -21,6 +21,7 @@
           <a-tag color="blue">API 模式</a-tag>
         </div>
         <a-textarea class="plugin-ai-dev__prompt-text" :value="prompt" readonly :rows="24" placeholder="生成后复制到 Codex 或 Trae 中运行。" />
+        <div class="plugin-ai-dev__prompt-warning">该提示词包含 Certd 的访问 Token，请勿泄露给他人</div>
       </div>
     </section>
   </div>
@@ -130,8 +131,8 @@ ${token}
 6. 使用当前 Token 调用 Certd API，通过 /sys/plugin/find 查询插件和 Access。
 7. 开发 Task 或 DNS 插件前，先查询对应 Access，优先复用 Access 提供的 API/SDK 能力。
 8. 如果没有 Access，先创建 Access 插件；如果 Access 的 editable 为 true 且缺少能力，可以先修改 Access。
-9. 在当前工作区创建并使用 tmp-online-plugin-dev 作为本次插件开发临时目录，历史记录、临时 YAML、脚本草稿和调试记录都放在该目录下。
-10. 修改任何插件前，先在 tmp-online-plugin-dev/history 下保存完整 YAML 历史记录，便于恢复。
+9. 在当前工作区创建并使用 .tmp/online-plugin-dev 作为本次插件开发临时目录，历史记录、临时 YAML、脚本草稿和调试记录都放在该目录下。
+10. 修改任何插件前，先在 .tmp/online-plugin-dev/history 下保存完整 YAML 历史记录，便于恢复。
 11. 通过 Certd API 读取和保存完整插件 YAML，不使用 WebSocket，不依赖浏览器草稿。
 12. 保存完成后向用户报告 API 操作结果，不自动发布。
 
@@ -219,6 +220,14 @@ onMounted(loadPluginOptions);
     min-height: 0;
     font-family: Consolas, "Courier New", monospace;
     font-size: 12px;
+  }
+
+  &__prompt-warning {
+    flex: none;
+    margin-top: 8px;
+    color: #d4380d;
+    font-size: 12px;
+    line-height: 20px;
   }
 }
 </style>
