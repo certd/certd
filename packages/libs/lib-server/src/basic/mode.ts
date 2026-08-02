@@ -1,12 +1,12 @@
-let adminMode = "saas"
+let adminMode = "saas";
 
-export function setAdminMode(mode:string = "saas"){
-  adminMode = mode
+export function setAdminMode(mode: string = "saas") {
+  adminMode = mode;
 }
-export function getAdminMode(){
-  return adminMode
+export function getAdminMode() {
+  return adminMode;
 }
 
-export function isEnterprise(){
-  return adminMode === "enterprise"
+export function isEnterprise() {
+  return adminMode === "enterprise";
 }
