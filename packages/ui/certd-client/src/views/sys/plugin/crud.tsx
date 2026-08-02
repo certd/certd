@@ -21,6 +21,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       query.page.offset = 0;
     }
     lastType = query?.query?.type;
+    const queryData = query.query || {};
+    const sortBy = queryData.sortBy;
+    delete queryData.sortBy;
+    if (sortBy === "score" || sortBy === "downloadCount") {
+      query.sort = {
+        prop: sortBy,
+        asc: false,
+      };
+    } else {
+      delete query.sort;
+    }
     return await api.GetList(query);
   };
   const editRequest = async ({ form, row }: EditReq) => {
@@ -218,6 +229,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           remove: {
             order: 999,
+            //@ts-ignore
             show: compute(({ row }) => {
               return row.type === "custom" || row.type === "store";
             }),
@@ -227,6 +239,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             icon: "ion:cloud-download-outline",
             title: t("certd.export"),
             type: "link",
+            //@ts-ignore
             show: compute(({ row }) => {
               return canEditStorePlugin(row);
             }),
@@ -283,6 +296,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               disabled: false,
             },
+            col: {
+              span: 3,
+            },
           },
           form: {
             order: 0,
@@ -334,6 +350,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "text",
           search: {
             show: true,
+            col: {
+              span: 3,
+            },
           },
           form: {
             show: true,
@@ -367,6 +386,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               vModel: "value",
             },
             show: true,
+            col: {
+              span: 2,
+            },
           },
           form: {
             show: true,
@@ -380,9 +402,60 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: false,
           },
         },
+        onlyMine: {
+          title: "只看我的",
+          type: "dict-switch",
+          search: {
+            show: true,
+            col: {
+              span: 2,
+            },
+          },
+          form: {
+            show: false,
+          },
+          column: {
+            show: false,
+          },
+          dict: dict({
+            data: [
+              { label: "否", value: false },
+              { label: "是", value: true },
+            ],
+          }),
+        },
+        sortBy: {
+          title: "排序",
+          type: "dict-select",
+          search: {
+            show: true,
+            col: {
+              span: 3,
+            },
+          },
+          form: {
+            show: false,
+          },
+          column: {
+            show: false,
+          },
+          dict: dict({
+            data: [
+              { label: "默认排序", value: "" },
+              { label: "评分最高", value: "score" },
+              { label: "下载最多", value: "downloadCount" },
+            ],
+          }),
+        },
         title: {
           title: t("certd.titlea"),
           type: "text",
+          search: {
+            show: false,
+            col: {
+              span: 3,
+            },
+          },
           form: {
             helper: t("certd.titleHelper"),
             rules: [{ required: true }],
@@ -408,6 +481,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "dict-select",
           search: {
             show: true,
+            col: {
+              span: 3,
+            },
+            component: {
+              disabled: false,
+            },
           },
           form: {
             value: "store",
@@ -564,6 +643,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "dict-select",
           search: {
             show: true,
+            col: {
+              span: 3,
+            },
           },
           dict: dict({
             url: "/pi/plugin/groupsList",

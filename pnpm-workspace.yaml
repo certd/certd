@@ -2,11 +2,11 @@ packages:
   - 'packages/**' # <--------------开发插件请注释掉这一行，PR时本修改不要提交
   - 'packages/ui/**'
   - '!**/test/**'
-  - '!packages/libs/libs/lib-huawei'
-  - '!packages/libs/libs/lib-iframe'
-  - '!packages/libs/libs/lib-jdcloud'
+  # - '!packages/libs/libs/lib-huawei'
+  # - '!packages/libs/libs/lib-iframe'
+  # - '!packages/libs/libs/lib-jdcloud'
   # - '!packages/libs/libs/lib-k8s' # k8s引用了basic
-  - '!packages/libs/libs/midway-flyway-js'
+  # - '!packages/libs/libs/midway-flyway-js'
 
 #  禁止放开这里的注释，不要配置allowBuilds
 # allowBuilds:

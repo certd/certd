@@ -23,7 +23,7 @@ defineOptions({
   name: "AccountBind",
 });
 const iframeRef = ref();
-let iframeClient: IframeClient | undefined;
+let iframeClient: IframeClient = undefined;
 
 const userStore = useUserStore();
 const settingStore = useSettingStore();
@@ -89,7 +89,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  iframeClient?.destroy();
+  iframeClient?.close();
   iframeClient = undefined;
 });
 </script>

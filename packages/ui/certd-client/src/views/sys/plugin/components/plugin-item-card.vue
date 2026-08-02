@@ -118,6 +118,12 @@
             <span>{{ formatDownloadCount(plugin.downloadCount || 0) }}</span>
           </a-tag>
         </a-tooltip>
+        <a-tooltip :title="`平均评分 ${formatScore(plugin.score)} 星`">
+          <a-tag class="plugin-card__score">
+            <fs-icon icon="ion:star" />
+            <span>{{ formatScore(plugin.score) }}</span>
+          </a-tag>
+        </a-tooltip>
       </template>
       <a-tooltip v-if="!isBuiltInPlugin" :title="versionTitle">
         <span class="plugin-card__version" :class="{ 'is-upgradable': plugin.upgradeAvailable }" @click.stop="handleVersionClick">
@@ -506,6 +512,14 @@ function formatDownloadCount(count: number) {
   return `${count}`;
 }
 
+function formatScore(score?: number) {
+  const value = Number(score || 0);
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+  return value.toFixed(1).replace(/\.0$/, "");
+}
+
 function handleVersionClick() {
   if (props.source === "local" || !props.plugin.upgradeAvailable) {
     return;
@@ -856,6 +870,19 @@ function handleVersionClick() {
     }
   }
 
+  .plugin-card__score {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: #d48806;
+
+    .fs-icon {
+      color: #faad14;
+      font-size: 13px;
+      line-height: 1;
+    }
+  }
+
   .plugin-card__ai-check-icon {
     flex: none;
     color: #52c41a;
@@ -922,6 +949,10 @@ function handleVersionClick() {
     .plugin-card__version,
     .plugin-card__download-count {
       color: rgba(255, 255, 255, 0.48);
+    }
+
+    .plugin-card__score {
+      color: #ffc53d;
     }
 
     .plugin-card__meta {
