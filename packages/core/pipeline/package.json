@@ -18,7 +18,7 @@
     "pub": "npm publish",
     "compile": "tsc --skipLibCheck --watch",
     "format": "prettier --write src",
-    "lint": "eslint --fix"
+    "lint": "eslint --fix --ext .ts src"
   },
   "dependencies": {
     "@certd/basic": "^1.42.6",

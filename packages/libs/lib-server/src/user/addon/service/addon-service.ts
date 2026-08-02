@@ -49,7 +49,6 @@ export class AddonService extends BaseService<AddonEntity> {
     return await super.add(param);
   }
 
-
   /**
    * 修改
    * @param param 数据
@@ -59,7 +58,7 @@ export class AddonService extends BaseService<AddonEntity> {
     if (oldEntity == null) {
       throw new ValidateException("该Addon配置不存在,请确认是否已被删除");
     }
-    delete param.keyId
+    delete param.keyId;
     return await super.update(param);
   }
 
@@ -75,10 +74,9 @@ export class AddonService extends BaseService<AddonEntity> {
       userId: entity.userId,
       addonType: entity.addonType,
       type: entity.type,
-      projectId: entity.projectId
+      projectId: entity.projectId,
     };
   }
-
 
   getDefineList(addonType: string) {
     return addonRegistry.getDefineList(addonType);
@@ -88,12 +86,11 @@ export class AddonService extends BaseService<AddonEntity> {
     return addonRegistry.getDefine(type, prefix) as AddonDefine;
   }
 
-
-  async getSimpleByIds(ids: number[], userId: any,projectId?:number) {
+  async getSimpleByIds(ids: number[], userId: any, projectId?: number) {
     if (ids.length === 0) {
       return [];
     }
-    if (userId==null) {
+    if (userId == null) {
       return [];
     }
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
@@ -109,14 +106,12 @@ export class AddonService extends BaseService<AddonEntity> {
         addonType: true,
         type: true,
         userId: true,
-        isSystem: true
-      }
+        isSystem: true,
+      },
     });
-
   }
 
-
-  async getDefault(userId: number, addonType: string,projectId?:number): Promise<any> {
+  async getDefault(userId: number, addonType: string, projectId?: number): Promise<any> {
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const res = await this.repository.findOne({
       where: {
@@ -124,8 +119,8 @@ export class AddonService extends BaseService<AddonEntity> {
         ...userProjectQuery,
       },
       order: {
-        isDefault: "DESC"
-      }
+        isDefault: "DESC",
+      },
     });
     if (!res) {
       return null;
@@ -143,15 +138,15 @@ export class AddonService extends BaseService<AddonEntity> {
       name: res.name,
       userId: res.userId,
       setting,
-      projectId: res.projectId
+      projectId: res.projectId,
     };
   }
 
-  async setDefault(id: number, userId: number, addonType: string,projectId?:number) {
+  async setDefault(id: number, userId: number, addonType: string, projectId?: number) {
     if (!id) {
       throw new ValidateException("id不能为空");
     }
-    if (userId==null) {
+    if (userId == null) {
       throw new ValidateException("userId不能为空");
     }
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
@@ -160,24 +155,27 @@ export class AddonService extends BaseService<AddonEntity> {
       ...userProjectQuery,
     };
     await this.repository.update(query, {
-      isDefault: false
+      isDefault: false,
     });
-    await this.repository.update({ ...query, id }, {
-      isDefault: true
-    });
+    await this.repository.update(
+      { ...query, id },
+      {
+        isDefault: true,
+      }
+    );
   }
 
-  async getOrCreateDefault(opts: { addonType: string, type: string, inputs: any, userId: any,projectId?:number }) {
-    const { addonType, type, inputs, userId,projectId } = opts;
+  async getOrCreateDefault(opts: { addonType: string; type: string; inputs: any; userId: any; projectId?: number }) {
+    const { addonType, type, inputs, userId, projectId } = opts;
 
     const addonDefine = this.getDefineByType(type, addonType);
 
-    const defaultConfig = await this.getDefault(userId, addonType,projectId);
+    const defaultConfig = await this.getDefault(userId, addonType, projectId);
     if (defaultConfig) {
       return defaultConfig;
     }
     const setting = {
-      ...inputs
+      ...inputs,
     };
     const res = await this.repository.save({
       userId,
@@ -186,19 +184,19 @@ export class AddonService extends BaseService<AddonEntity> {
       name: addonDefine.title,
       setting: JSON.stringify(setting),
       isDefault: true,
-      projectId
+      projectId,
     });
     return this.buildAddonInstanceConfig(res);
   }
 
-  async getOneByType(req:{addonType:string,type:string,userId:number,projectId?:number}) {
+  async getOneByType(req: { addonType: string; type: string; userId: number; projectId?: number }) {
     const userProjectQuery = this.buildUserProjectQuery(req.userId, req.projectId);
     return await this.repository.findOne({
       where: {
         addonType: req.addonType,
         type: req.type,
         ...userProjectQuery,
-      }
+      },
     });
   }
 }
