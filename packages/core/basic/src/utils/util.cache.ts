@@ -11,9 +11,12 @@ export class LocalCache<V = any> {
   cache: Map<string, { value: V; expiresAt: number }>;
   constructor(opts: { clearInterval?: number } = {}) {
     this.cache = new Map();
-    const intervalId = setInterval(() => {
-      this.clearExpires();
-    }, opts.clearInterval ?? 5 * 60 * 1000);
+    const intervalId = setInterval(
+      () => {
+        this.clearExpires();
+      },
+      opts.clearInterval ?? 5 * 60 * 1000
+    );
     intervalId.unref?.();
   }
 
