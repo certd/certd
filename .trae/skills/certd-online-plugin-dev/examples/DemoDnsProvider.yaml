@@ -1,0 +1,119 @@
+name: DemoDnsProvider
+icon: fa-solid:frog
+title: Demo-Dns提供商插件示例  # 模块-插件名
+desc: 这只是一个示例
+type: custom
+version: 1.0.0
+pluginType: dnsProvider
+author: greper
+accessType: aliyun # 需要的授权类型
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+content: |+
+
+  const { AbstractDnsProvider } = await _ctx.import("@certd/pipeline")
+  return class DemoDnsProvider extends AbstractDnsProvider {
+    // 创建dns解析记录，用于验证域名所有权 【必须实现】
+    async createRecord(options) {
+      /**
+       * fullRecord: '_acme-challenge.test.example.com',
+       * value: 一串uuid
+       * type: 'TXT',
+       * domain: 'example.com'
+       */
+      const { fullRecord, value, type, domain } = options;
+      const access = this.ctx.access
+      this.logger.info('添加域名解析：', fullRecord, value, type, domain);
+      // const record = await sdk.createRecord() // 调用对应的接口创建解析记录
+
+      //返回解析记录，用于后面清理
+      return record
+    }
+
+    /**
+     *  删除dns解析记录,清理申请痕迹【必须实现】
+     * @param options
+     */
+    async removeRecord(options) {
+      const { fullRecord, value } = options.recordReq;
+      const record = options.recordRes;  // createRecord接口返回的record
+      const access = this.ctx.access
+      this.logger.info('删除域名解析：', fullRecord, value);
+      if (!record) {
+        this.logger.info('record为空，不执行删除');
+        return;
+      }
+      const recordId = record.id;
+      // 这里调用删除txt dns解析记录接口
+      // sdk.removeRecord(recordId)
+      this.logger.info("删除域名解析成功");
+    }
+
+    /**
+     * 获取域名列表 【可选,没有实现的话，不支持在certd域名管理中导入域名列表，不影响证书申请】
+     * @param req
+     * @returns
+     */
+    async getDomainListPage(req: PageSearch): Promise<PageRes<DomainRecord>> {
+      const pager = new Pager(req);
+      const params = {
+        RegionId: "cn-hangzhou",
+        PageSize: pager.pageSize,
+        PageNumber: pager.pageNo,
+      };
+
+      const requestOption = {
+        method: "POST",
+      };
+
+      const ret = await this.client.request("DescribeDomains", params, requestOption);
+      const list =
+        ret.Domains?.Domain?.map(item => ({
+          id: item.DomainId,
+          domain: item.DomainName,
+        })) || [];
+
+      return {
+        list,
+        total: ret.TotalCount,
+      };
+    }
+
+    /**
+     * 获取域名解析记录列表 【可选,没有实现的话，不支持在站点监控里面导入网址，不影响证书申请】
+     * @param domain
+     * @param req
+     * @returns
+     */
+    async getRecordListPage(domain: string, req: PageSearch): Promise<PageRes<DnsResolveRecord>> {
+      const pager = new Pager(req);
+      const params = {
+        RegionId: "cn-hangzhou",
+        DomainName: domain,
+        PageSize: pager.pageSize,
+        PageNumber: pager.pageNo,
+      };
+
+      const requestOption = {
+        method: "POST",
+      };
+
+      const ret = await this.client.request("DescribeDomainRecords", params, requestOption);
+      const rawList = ret.DomainRecords?.Record || [];
+      const list = rawList.map(item => ({
+        id: item.RecordId,
+        hostRecord: item.RR,
+        fullRecord: item.RR === "@" ? domain : `${item.RR}.${domain}`,
+        type: item.Type,
+        value: item.Value,
+      }));
+
+      return {
+        list,
+        total: ret.TotalCount,
+      };
+    }
+  }
+

@@ -2,7 +2,7 @@
 import { addonRegistry, BaseService, PageReq, PlusService, SysInstallInfo, SysPluginSetting, SysSettingsService } from "@certd/lib-server";
 import { PluginEntity } from "../entity/plugin.js";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Brackets, IsNull, Not, Repository } from "typeorm";
+import { Brackets, IsNull, Like, Not, Repository } from "typeorm";
 import { isComm } from "@certd/plus-core";
 import { BuiltInPluginService } from "../../pipeline/service/builtin-plugin-service.js";
 import { merge } from "lodash-es";
@@ -24,6 +24,18 @@ export type OnlinePluginListReq = {
   pluginType?: string;
   group?: string;
   keyword?: string;
+};
+
+export type PluginFindReq = {
+  type?: "builtIn" | "store";
+  pluginType?: string;
+  group?: string;
+  name?: string;
+  author?: string;
+  keyword?: string;
+  keywords?: string[];
+  includeBuiltIn?: boolean;
+  includeStore?: boolean;
 };
 
 export type OnlinePluginInstallReq = {
@@ -99,6 +111,7 @@ export type OnlinePluginBean = {
   downloadCount?: number;
   score?: number;
   aiCheckStatus?: string;
+  editable?: boolean;
   selfAuthored?: boolean;
   installed?: boolean;
   installedVersion?: string;
@@ -297,6 +310,106 @@ export class PluginService extends BaseService<PluginEntity> {
       const keyword = `${query.name}`.trim().toLowerCase();
       records = records.filter(item => (item.name || "").toLowerCase().includes(keyword));
     }
+    const keywords = this.normalizePluginFindKeywords(query as any);
+    if (keywords.length > 0) {
+      records = records.filter(item => {
+        return keywords.some(keyword => {
+          return [item.name, item.title, item.desc, item.group, item.pluginType].some(value => `${value || ""}`.toLowerCase().includes(keyword));
+        });
+      });
+    }
+    return records;
+  }
+
+  private normalizePluginFindKeywords(req: PluginFindReq) {
+    const values = [...(req.keywords || []), req.keyword || ""];
+    return values.map(item => `${item || ""}`.trim().toLowerCase()).filter((item, index, list) => item.length > 0 && list.indexOf(item) === index);
+  }
+
+  async findPlugins(req: PluginFindReq = {}) {
+    const includeBuiltIn = req.includeBuiltIn ?? req.type !== "store";
+    const includeStore = req.includeStore ?? req.type !== "builtIn";
+    const records: any[] = [];
+
+    if (includeBuiltIn) {
+      const builtInQuery = {
+        ...req,
+        type: "builtIn",
+      };
+      const builtInList = this.filterBuiltInList(await this.getBuiltInEntityList(), builtInQuery);
+      records.push(
+        ...builtInList.map(item => {
+          const record = {
+            ...item,
+            type: "builtIn",
+            editable: false,
+          };
+          delete (record as any).content;
+          delete (record as any).setting;
+          delete (record as any).sysSetting;
+          delete (record as any).metadata;
+          delete (record as any).extra;
+          return record;
+        })
+      );
+    }
+
+    if (includeStore) {
+      const storeQuery: any = {
+        type: "store",
+      };
+      if (req.pluginType) {
+        storeQuery.pluginType = req.pluginType;
+      }
+      if (req.group) {
+        storeQuery.group = req.group;
+      }
+      if (req.name) {
+        storeQuery.name = Like(`%${req.name}%`);
+      }
+      if (req.author) {
+        storeQuery.author = req.author;
+      }
+
+      let storeWhere: any = storeQuery;
+      const keywords = this.normalizePluginFindKeywords(req);
+      if (keywords.length > 0) {
+        const searchFields = ["fullName", "name", "title", "desc", "group", "pluginType"];
+        storeWhere = keywords.flatMap(keyword => {
+          const keywordLike = Like(`%${keyword}%`);
+          return searchFields.map(field => {
+            return {
+              ...storeQuery,
+              [field]: keywordLike,
+            };
+          });
+        });
+      }
+      const storeList = await this.find({
+        where: storeWhere,
+        order: {
+          pluginType: "ASC",
+          group: "ASC",
+          title: "ASC",
+          fullName: "ASC",
+          id: "ASC",
+        } as any,
+      });
+      let bindUserId = 0;
+      if (this.sysSettingsService) {
+        const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
+        bindUserId = installInfo.bindUserId || 0;
+      }
+      records.push(
+        ...storeList.map(item => {
+          return {
+            ...this.toOnlinePluginBean(item),
+            editable: canEditStorePlugin(item.developerId, bindUserId),
+          };
+        })
+      );
+    }
+
     return records;
   }
 
@@ -431,7 +544,7 @@ export class PluginService extends BaseService<PluginEntity> {
   }
 
   async getBuiltInEntityList() {
-    const builtInList = this.builtInPluginService.getList();
+    const builtInList = this.builtInPluginService.getAllList();
     const list = await this.list({
       query: {
         type: "builtIn",

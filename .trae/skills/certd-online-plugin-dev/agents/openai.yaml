@@ -1,0 +1,4 @@
+interface:
+  display_name: "Certd 在线插件开发"
+  short_description: "通过本地 Agent Server 使用 Codex 或 Trae 开发 Certd 在线插件"
+  default_prompt: "启动本地 Agent Server，读取插件 YAML 和对应类型规范，按需求修改 content 并返回完整 YAML 草稿。"

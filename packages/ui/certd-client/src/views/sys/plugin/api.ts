@@ -10,6 +10,24 @@ export async function GetList(query: any) {
   });
 }
 
+export async function FindPlugins(query: {
+  type?: "builtIn" | "store";
+  pluginType?: string;
+  group?: string;
+  name?: string;
+  author?: string;
+  keyword?: string;
+  keywords?: string[];
+  includeBuiltIn?: boolean;
+  includeStore?: boolean;
+}) {
+  return await request({
+    url: apiPrefix + "/find",
+    method: "post",
+    data: query,
+  });
+}
+
 export async function AddObj(obj: any) {
   return await request({
     url: apiPrefix + "/add",
@@ -84,6 +102,7 @@ export type OnlinePluginBean = {
   downloadCount?: number;
   score?: number;
   aiCheckStatus?: string;
+  editable?: boolean;
   selfAuthored?: boolean;
   installed?: boolean;
   installedVersion?: string;

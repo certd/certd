@@ -8,6 +8,7 @@ import {
   OnlinePluginPublishInfoReq,
   OnlinePluginPublishReq,
   OnlinePluginVersionSubmitReq,
+  PluginFindReq,
   PluginImportReq,
   PluginService,
 } from "../../../modules/plugin/service/plugin-service.js";
@@ -37,6 +38,12 @@ export class PluginController extends CrudController<PluginService> {
   async page(@Body(ALL) body: any) {
     body.query = body.query ?? {};
     return await super.page(body);
+  }
+
+  @Post("/find", { description: "sys:settings:view", summary: "查询插件" })
+  async find(@Body(ALL) body: PluginFindReq) {
+    const res = await this.service.findPlugins(body || {});
+    return this.ok(res);
   }
 
   @Post("/add", { description: "sys:settings:edit", summary: "添加插件" })
@@ -182,4 +189,5 @@ export class PluginController extends CrudController<PluginService> {
     const res = await this.service.exportPlugin(id);
     return this.ok(res);
   }
+
 }
