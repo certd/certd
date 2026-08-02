@@ -13,7 +13,7 @@
     "pub": "npm publish",
     "compile": "npm run build",
     "format": "prettier --write src",
-    "lint": "eslint --fix"
+    "lint": "eslint --fix --ext .ts src"
   },
   "author": "",
   "license": "Apache",
