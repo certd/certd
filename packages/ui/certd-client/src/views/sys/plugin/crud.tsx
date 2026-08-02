@@ -11,6 +11,7 @@ import { usePluginConfig } from "./use-config";
 import { useSettingStore } from "/src/store/settings/index";
 import { usePluginStore } from "/@/store/plugin";
 import PluginAuthorField from "./components/plugin-author-field.vue";
+import { usePluginAiDev } from "./use-ai-dev";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -57,6 +58,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const { openImportDialog } = usePluginImport();
   const { openConfigDialog } = usePluginConfig();
+  const { openAiDevDialog } = usePluginAiDev();
 
   const settingStore = useSettingStore();
   const pluginStore = usePluginStore();
@@ -149,6 +151,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       actionbar: {
         buttons: {
+          aiDev: {
+            show: true,
+            icon: "ion:sparkles-outline",
+            text: "AI 开发插件",
+            type: "primary",
+            async click() {
+              await openAiDevDialog();
+            },
+          },
           add: {
             show: true,
             icon: "ion:ios-add-circle-outline",

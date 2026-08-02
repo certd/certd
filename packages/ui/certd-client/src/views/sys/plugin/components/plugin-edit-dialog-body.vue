@@ -3,6 +3,7 @@
     <div class="plugin-edit-dialog-body__header">
       <span>插件名称：</span>
       <fs-copyable :model-value="pluginName" />
+      <a-button v-if="canEditPlugin" class="plugin-edit-dialog-body__ai-dev" @click="openAiDev">AI 开发</a-button>
       <a-button v-if="canEditPlugin" class="plugin-edit-dialog-body__publish" :loading="isPublishingPlugin(plugin)" @click="doPublish">发布到插件市场</a-button>
     </div>
     <div class="plugin-edit-dialog-body__content">
@@ -41,6 +42,7 @@ import createCrudOptions from "../crud";
 import { usePluginPublish } from "../use-publish";
 import { usePluginStore } from "/@/store/plugin";
 import { useSettingStore } from "/@/store/settings";
+import { usePluginAiDev } from "../use-ai-dev";
 
 defineOptions({
   name: "PluginEditDialogBody",
@@ -61,6 +63,7 @@ const formOptionsRef: Ref = ref();
 const baseFormRef: Ref = ref({});
 const saveLoading = ref(false);
 const { isPublishingPlugin, publishLocalPlugin } = usePluginPublish();
+const { openAiDevDialog } = usePluginAiDev();
 
 function initFormOptions() {
   const formCrudOptions = createCrudOptions({
@@ -161,6 +164,13 @@ async function doPublish() {
   });
 }
 
+async function openAiDev() {
+  await openAiDevDialog({
+    pluginId: props.pluginId,
+    pluginName: pluginName.value,
+  });
+}
+
 onMounted(loadPlugin);
 
 defineExpose({
@@ -184,6 +194,14 @@ defineExpose({
 
   &__publish {
     margin-left: auto;
+  }
+
+  &__ai-dev {
+    margin-left: auto;
+  }
+
+  &__ai-dev + &__publish {
+    margin-left: 8px;
   }
 
   &__content {

@@ -4,6 +4,7 @@
   align-items: center;
   font-size: 16px;
 }
+
 .fs-icon {
   font-size: 16px;
 }
@@ -12,6 +13,7 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
+
   .fs-iconify {
     margin-right: 5px;
   }
@@ -191,6 +193,7 @@
 
 body a {
   color: #1890ff;
+
   &:hover {
     color: #40a9ff;
   }
@@ -216,10 +219,12 @@ span.fs-icon-svg {
     &:first-child {
       margin-right: 5px;
     }
+
     &:last-child {
       margin-left: 5px;
     }
   }
+
   .fs-icon,
   .fs-button-icon {
     margin: 0 !important;
@@ -252,13 +257,48 @@ button.ant-btn.ant-btn-default.isPlus {
 }
 
 .fs-form-none-content {
-  .fs-form-wrapper{
-    .fs-form-content{display: none;}
+  .fs-form-wrapper {
+    .fs-form-content {
+      display: none;
+    }
   }
 }
 
-.fs-actionbar{
+.fs-actionbar {
   display: flex;
   align-items: center;
-  gap:4px;
+  gap: 4px;
+}
+
+.fs-icon-image-container {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  img {
+    &.font-size-16 {
+      width: 16px;
+      height: 16px;
+    }
+
+    &.font-size-18 {
+      width: 18px;
+      height: 18px;
+    }
+
+    &.font-size-20 {
+      width: 20px;
+      height: 20px;
+    }
+
+    &.font-size-24 {
+      width: 24px;
+      height: 24px;
+    }
+
+    &.font-size-32 {
+      width: 32px;
+      height: 32px;
+    }
+  }
 }

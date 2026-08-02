@@ -1,0 +1,100 @@
+name: DemoDeploy
+icon: logos:amp-icon
+title: Demo-部署插件示例  # 模块-插件名
+group: cdn
+desc: 这仅仅是一个示例
+version: 1.0.0
+pluginType: deploy
+author: greper
+input:
+  cert:
+    title: 前置任务证书
+    helper: 请选择前置任务产生的证书
+    component:
+      name: output-selector
+      vModel: modelValue
+      from:
+        - ':cert:'
+    required: true
+  certDomains:
+    title: 当前证书域名
+    component:
+      name: cert-domains-getter
+    mergeScript: |
+      return {
+        component:{
+            inputKey: ctx.compute(({form})=>{
+              return form.cert
+            }),
+        }
+      }
+    required: true
+  accessId:
+    title: Access授权
+    helper: xxxx的授权
+    component:
+      name: access-selector
+      type: aliyun
+    required: true
+  key1:
+    title: 输入示例1
+    required: false
+  key2:
+    title: 可选项
+    component:
+      name: a-select
+      vMode: value
+      options:
+        - value: '1'
+          label: 选项1
+        - value: '2'
+          label: 选项2
+    required: false
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+content: >
+
+  // 要用await来import模块
+
+  const { AbstractTaskPlugin } = await _ctx.import("@certd/pipeline")
+
+  // 使用_ctx.import("/@/xxx.js") 以绝对路径引用模块，/@相当于根路径
+
+  const {AliyunAccess} = await _ctx.import("/@/plugins/plugin-lib/aliyun/access/index.js")
+
+  _ctx.logger.info("AliyunAccess:",AliyunAccess)
+
+  // 要返回一个继承AbstractTaskPlugin的class
+
+  return class DemoTask extends AbstractTaskPlugin {
+    // 这里是插件的输入参数，对应左边的input配置
+    cert;
+    certDomains;
+    accessId;
+    key1;
+    key2;
+    // 编写执行方法
+    async execute(){
+      // 根据accessId获取授权配置
+      const access = await this.getAccess(this.accessId)
+
+      //必须使用this.logger打印日志
+      // this.logger.info("cert:",this.cert);
+      this.logger.info("certDomains:",this.certDomains);
+      this.logger.info("access:",access);
+      this.logger.info("key1:",this.key1);
+      this.logger.info("key2:",this.key2);
+      this.logger.info("开始xxx部署任务")
+      // 你的部署任务代码 【必须实现】
+      // this.ctx里面有一些常用的方法类，比如utils、http、logger等
+      const res = await this.ctx.http.request({url:"https://www.baidu.com"})
+      if(res.error){
+        //抛出异常，终止任务，否则将被判定为执行成功
+        throw new Error("部署失败:"+res.message)
+      }
+      this.logger.info("执行成功")
+      // this.outputName = xxxx //设置输出参数，可以被其他插件选择使用
+    }
+  }
