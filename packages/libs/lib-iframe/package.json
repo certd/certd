@@ -18,7 +18,7 @@
     "pub": "npm publish",
     "compile": "npm run build",
     "format": "prettier --write src",
-    "lint": "eslint --fix"
+    "lint": "eslint --fix --ext .ts src"
   },
   "dependencies": {
     "nanoid": "^5.0.7"
