@@ -64,6 +64,7 @@ export default {
     enterpriseSetting: "企业设置",
     myProjectManager: "我的项目",
     myProjectDetail: "项目详情",
+    projectDetail: "项目详情",
     projectJoin: "加入项目",
     currentProject: "当前项目",
     projectMemberManager: "项目成员管理",
