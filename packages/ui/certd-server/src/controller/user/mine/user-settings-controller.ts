@@ -129,6 +129,7 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
     entity.userId = userId;
     entity.setting = JSON.stringify({ preferences });
     await this.service.save(entity);
+    this.auditLog({ content: "保存了用户偏好设置" });
     return this.ok({});
   }
 }
