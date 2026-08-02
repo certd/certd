@@ -70,6 +70,9 @@ export class IframeClient {
     this.requestQueue = {};
     this.handlers = {};
   }
+  public close() {
+    this.destroy();
+  }
   public isInFrame() {
     return window.self !== window.top;
   }

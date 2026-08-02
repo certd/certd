@@ -286,6 +286,49 @@ describe("PluginService online plugins", () => {
     assert.equal((service.repository as any).state.findCalls, 1);
   });
 
+  it("filters market plugins by the current bound developer when onlyMine is enabled", async () => {
+    const service = new PluginService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return { bindUserId: 12 };
+      },
+    } as any;
+    service.repository = createPluginRepositoryMock({
+      marketRows: [
+        {
+          id: 1,
+          type: "store",
+          developerId: 12,
+          fullName: "developer/owned-plugin",
+          author: "developer",
+          name: "owned-plugin",
+        },
+        {
+          id: 2,
+          type: "store",
+          developerId: 20,
+          fullName: "other/other-plugin",
+          author: "other",
+          name: "other-plugin",
+        },
+      ],
+    }) as any;
+
+    const page = await service.page({
+      query: {
+        type: "store",
+        onlyMine: true,
+      } as any,
+      page: {
+        offset: 0,
+        limit: 20,
+      },
+    });
+
+    assert.equal(page.total, 1);
+    assert.equal(page.records[0].fullName, "developer/owned-plugin");
+  });
+
   it("does not treat uninstalled market rows as installed plugins", async () => {
     const service = new PluginService();
     service.repository = createPluginRepositoryMock({
@@ -334,14 +377,14 @@ describe("PluginService online plugins", () => {
               total: 201,
             },
             list: Array.from({ length: 200 }, (_, index) => ({
-                author: "developer",
-                name: `plugin-${index + 1}`,
-                pluginType: "deploy",
-                title: `plugin ${index + 1}`,
-                latest: "1.0.0",
-                status: "published",
-                aiCheckStatus: "passed",
-              })),
+              author: "developer",
+              name: `plugin-${index + 1}`,
+              pluginType: "deploy",
+              title: `plugin ${index + 1}`,
+              latest: "1.0.0",
+              status: "published",
+              aiCheckStatus: "passed",
+            })),
           };
         }
         assert.equal(config.data.page.start, 200);
@@ -622,6 +665,77 @@ describe("PluginService online plugins", () => {
     assert.equal(updatedPlugin.downloadCount, 20);
     assert.equal(updatedPlugin.syncTime, 123);
     assert.equal(updatedPlugin.installed, true);
+  });
+
+  it("reuses a legacy custom plugin when switching an online plugin version", async () => {
+    const service = new PluginService();
+    const findOptions: any[] = [];
+    let updatedPlugin: any;
+
+    (service as any).findOne = async (options: any) => {
+      findOptions.push(options);
+      if (findOptions.length === 1) {
+        return null;
+      }
+      return {
+        id: 7,
+        type: "custom",
+        author: "greper2",
+        name: "BaishanUpdateCert666",
+      };
+    };
+    service.update = async plugin => {
+      updatedPlugin = plugin;
+    };
+
+    await service.importPlugin({
+      type: "store",
+      override: true,
+      content: "name: BaishanUpdateCert666\npluginType: deploy\nauthor: greper2\ncontent: |\n  return class Demo {}\n",
+    });
+
+    assert.equal(findOptions.length, 2);
+    assert.deepEqual(findOptions[1].where, {
+      author: "greper2",
+      name: "BaishanUpdateCert666",
+    });
+    assert.equal(updatedPlugin.id, 7);
+    assert.equal(updatedPlugin.type, "store");
+    assert.equal(updatedPlugin.installed, true);
+  });
+
+  it("updates a store plugin without conflicting with a legacy custom plugin of the same name", async () => {
+    const service = new PluginService();
+    let savedPlugin: any;
+
+    (service as any).findOne = async (options: any) => {
+      assert.deepEqual(options.where, {
+        type: "store",
+        fullName: "greper2/BaishanUpdateCert666",
+      });
+      return {
+        id: 7,
+        type: "store",
+        fullName: "greper2/BaishanUpdateCert666",
+      };
+    };
+    service.unRegisterById = async () => {};
+    service.registerById = async () => {};
+    service.repository = {
+      async save(plugin: any) {
+        savedPlugin = plugin;
+      },
+    } as any;
+
+    await service.update({
+      id: 7,
+      type: "store",
+      fullName: "greper2/BaishanUpdateCert666",
+      author: "greper2",
+      name: "BaishanUpdateCert666",
+    });
+
+    assert.equal(savedPlugin.id, 7);
   });
 
   it("marks an uninstalled market plugin as installed after importing it again", async () => {

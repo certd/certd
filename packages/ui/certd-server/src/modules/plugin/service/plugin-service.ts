@@ -303,12 +303,28 @@ export class PluginService extends BaseService<PluginEntity> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async page(pageReq: PageReq<PluginEntity>) {
     pageReq.query = pageReq.query || {};
-    if (pageReq.query.type === "custom") {
-      pageReq.query.type = "store";
+    const query = pageReq.query as Partial<PluginEntity> & { onlyMine?: boolean };
+    const onlyMine = query.onlyMine === true;
+    delete query.onlyMine;
+    if (onlyMine) {
+      const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
+      if (!installInfo.bindUserId) {
+        return {
+          records: [],
+          total: 0,
+          offset: pageReq.page.offset,
+          limit: pageReq.page.limit,
+        };
+      }
+      query.type = "store";
+      query.developerId = installInfo.bindUserId;
     }
-    if (pageReq.query.type && pageReq.query.type !== "builtIn") {
+    if (query.type === "custom") {
+      query.type = "store";
+    }
+    if (query.type && query.type !== "builtIn") {
       const pageRes = await super.page(pageReq);
-      if (pageReq.query.type === "store") {
+      if (query.type === "store") {
         pageRes.records = (await this.attachOnlineInstallState(pageRes.records.map(item => this.toOnlinePluginBean(item)))) as any;
       }
       return pageRes;
@@ -1038,12 +1054,22 @@ export class PluginService extends BaseService<PluginEntity> {
 
   async update(param: any) {
     param.type = normalizePluginSourceType(param.type);
-    const old = await this.findOne({
-      where: {
-        name: param.name,
-        author: param.author,
-      },
-    });
+    let old: PluginEntity | null;
+    if (param.type === "store" && param.fullName) {
+      old = await this.findOne({
+        where: {
+          type: "store",
+          fullName: param.fullName,
+        },
+      });
+    } else {
+      old = await this.findOne({
+        where: {
+          name: param.name,
+          author: param.author,
+        },
+      });
+    }
 
     if (old && old.id !== param.id) {
       throw new Error(`插件${param.author}/${param.name}已存在`);
@@ -1264,6 +1290,15 @@ export class PluginService extends BaseService<PluginEntity> {
           },
         ],
       });
+      if (!old) {
+        // 兼容旧版本仍标记为 custom 的在线插件，覆盖安装时应复用原记录。
+        old = await this.findOne({
+          where: {
+            author: loaded.author,
+            name: loaded.name,
+          },
+        });
+      }
     } else {
       old = await this.findOne({
         where: {

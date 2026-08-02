@@ -51,7 +51,7 @@ const iframeSrc = computed(() => {
   return `${baseUrl}/#/app/certd/plugin/${plugin.id || 0}?${params.toString()}`;
 });
 
-let iframeClient: IframeClient;
+let iframeClient: IframeClient = undefined;
 
 watch(
   () => props.open,
@@ -71,12 +71,10 @@ watch(
 );
 
 onBeforeUnmount(() => {
-  //@ts-ignore
   iframeClient?.destroy();
 });
 
 function setupIframeClient() {
-  //@ts-ignore
   iframeClient?.destroy();
   if (!iframeRef.value) {
     return;
