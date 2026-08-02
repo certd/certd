@@ -5,6 +5,7 @@ import { IContext } from "@certd/pipeline";
 import { IDnsProvider, IDomainParser } from "@certd/plugin-lib";
 import punycode from "punycode.js";
 import { IOssClient } from "../../../plugin-lib/index.js";
+import { NonRetryableException } from "@certd/lib-server";
 export type CnameVerifyPlan = {
   type?: string;
   domain: string;
@@ -531,38 +532,47 @@ export class AcmeService {
     };
     /* 自动申请证书 */
     const challengePriority = domainsVerifyPlan && Object.values(domainsVerifyPlan).some((item: any) => item?.type === "dns-persist") ? ["dns-persist-01"] : ["dns-01", "http-01"];
-    const crt = await client.auto({
-      csr,
-      email: email,
-      termsOfServiceAgreed: true,
-      skipChallengeVerification: this.skipLocalVerify,
-      challengePriority,
-      challengeCreateFn: async (
-        authz: acme.Authorization,
-        keyAuthorizationGetter: (challenge: Challenge) => Promise<string>
-      ): Promise<{ recordReq?: any; recordRes?: any; dnsProvider?: any; challenge: Challenge; keyAuthorization: string }> => {
-        return await this.challengeCreateFn(authz, keyAuthorizationGetter, providers);
-      },
-      challengeRemoveFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string, recordReq: any, recordRes: any, dnsProvider: IDnsProvider, httpUploader: IOssClient): Promise<any> => {
-        return await this.challengeRemoveFn(authz, challenge, keyAuthorization, recordReq, recordRes, dnsProvider, httpUploader);
-      },
-      signal: this.options.signal,
-      profile,
-      preferredChain,
-      waitDnsDiffuseTime: this.options.waitDnsDiffuseTime,
-    });
+    try {
+      const crt = await client.auto({
+        csr,
+        email: email,
+        termsOfServiceAgreed: true,
+        skipChallengeVerification: this.skipLocalVerify,
+        challengePriority,
+        challengeCreateFn: async (
+          authz: acme.Authorization,
+          keyAuthorizationGetter: (challenge: Challenge) => Promise<string>
+        ): Promise<{ recordReq?: any; recordRes?: any; dnsProvider?: any; challenge: Challenge; keyAuthorization: string }> => {
+          return await this.challengeCreateFn(authz, keyAuthorizationGetter, providers);
+        },
+        challengeRemoveFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string, recordReq: any, recordRes: any, dnsProvider: IDnsProvider, httpUploader: IOssClient): Promise<any> => {
+          return await this.challengeRemoveFn(authz, challenge, keyAuthorization, recordReq, recordRes, dnsProvider, httpUploader);
+        },
+        signal: this.options.signal,
+        profile,
+        preferredChain,
+        waitDnsDiffuseTime: this.options.waitDnsDiffuseTime,
+      });
 
-    const crtString = crt.toString();
-    const cert: CertInfo = {
-      crt: crtString,
-      key: key.toString(),
-      csr: csr.toString(),
-    };
-    /* Done */
-    this.logger.debug(`CSR:\n${cert.csr}`);
-    this.logger.debug(`Certificate:\n${cert.crt}`);
-    this.logger.info("证书申请成功");
-    return cert;
+      const crtString = crt.toString();
+      const cert: CertInfo = {
+        crt: crtString,
+        key: key.toString(),
+        csr: csr.toString(),
+      };
+      /* Done */
+      this.logger.debug(`CSR:\n${cert.csr}`);
+      this.logger.debug(`Certificate:\n${cert.crt}`);
+      this.logger.info("证书申请成功");
+      return cert;
+    } catch (e) {
+      const message = e?.message;
+      const REDUNDANT_WILDCARD_DOMAIN_ERROR = "redundant with a wildcard domain in the same request";
+      if (message != null && message.indexOf(REDUNDANT_WILDCARD_DOMAIN_ERROR) >= 0) {
+        throw new NonRetryableException(`通配符域名已经包含了普通域名，请删除其中一个（${message}）`);
+      }
+      throw e;
+    }
   }
 
   buildCommonNameByDomains(domains: string | string[]): {
