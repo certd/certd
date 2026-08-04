@@ -65,12 +65,12 @@ export class CertApplyLegoPlugin extends CertApplyBasePlugin {
   environment!: string;
 
   @TaskInput({
-    title: "EAB授权",
+    title: "EAB access",
     component: {
       name: "access-selector",
       type: "eab",
     },
-    helper: "如果需要提供EAB授权",
+    helper: "If EAB access is required",
   })
   legoEabAccessId!: number;
 

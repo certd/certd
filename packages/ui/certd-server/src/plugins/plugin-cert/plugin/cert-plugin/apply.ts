@@ -334,7 +334,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   litesslCommonAcmeAccountAccessId!: number;
 
   @TaskInput({
-    title: "EAB授权",
+    title: "EAB access",
     component: {
       name: "access-selector",
       type: "eab",

@@ -62,7 +62,7 @@ export default defineComponent({
     }
     function cancelTask() {
       Modal.confirm({
-        title: "ConfirmCancel",
+        title: "Confirm cancellation",
         content: "Cancel this task?",
         okText: "Confirm",
         cancelText: "Cancel",
