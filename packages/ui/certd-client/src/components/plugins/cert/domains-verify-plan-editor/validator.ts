@@ -51,7 +51,7 @@ function checkDomainVerifyPlan(rule: any, value: DomainsVerifyPlanInput) {
       for (const subDomain of subDomains) {
         const plan = value[domain].dnsPersistVerifyPlan[subDomain];
         if (plan.status !== "valid") {
-          throw new Error(`DNS持久验证记录（${subDomain}）还未校验成功`);
+          throw new Error(`DNS persistent validation record (${subDomain}) has not been validated successfully`);
         }
       }
     }

@@ -12,7 +12,7 @@
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #pagination-left>
-        <a-tooltip title="批量删除">
+        <a-tooltip title="Batch delete">
           <fs-button icon="DeleteOutlined" @click="handleBatchDelete"></fs-button>
         </a-tooltip>
       </template>

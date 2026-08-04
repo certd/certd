@@ -40,9 +40,9 @@
               <div class="get-show">
                 <template v-if="item.type === 'plus'">
                   <span v-if="todayOrderCount.showVipTotal" class="mr-5">
-                    已有
+                    Already
                     <span class="color-red"> {{ todayOrderCount.vipTotal }}</span>
-                    位伙伴支持
+                    supporters
                   </span>
                   <a-tooltip :title="t('vip.afdian_support_vip')">
                     <a-button size="small" type="primary" @click="goBuyPlusPage">

@@ -58,7 +58,7 @@
               <img class="full-w" :src="authenticatorForm.qrcodeSrc" />
             </div>
             <div class="ml-20 mt-5">
-              <div>您也可以手动添加：</div>
+              <div>You can also add it manually:</div>
               <div class="flex mt-5">
                 <a-tag type="primary" color="green" class="mr-2">Secret：</a-tag>
                 <fs-copyable :model-value="authenticatorForm.secret" />

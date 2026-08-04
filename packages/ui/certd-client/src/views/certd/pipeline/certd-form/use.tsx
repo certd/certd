@@ -20,9 +20,9 @@ import { buildCertApplyTemplateColumns, buildTemplateSubmitData, pickCertApplyTe
 export function fillPipelineByDefaultForm(pipeline: any, form: any) {
   const triggers = [];
 
-  //根据随机时间设置触发时间
+  //根据Random Time设置触发时间
   if (form.random === true) {
-    // 随机时间
+    // Random Time
     const randomRange = form.randomRange;
     const start = dayjs().format("YYYY-MM-DD") + " " + randomRange[0];
     let end = dayjs().format("YYYY-MM-DD") + " " + randomRange[1];
@@ -34,12 +34,12 @@ export function fillPipelineByDefaultForm(pipeline: any, form: any) {
     const endTime = dayjs(end).valueOf();
     const randomTime = Math.floor(Math.random() * (endTime - startTime)) + startTime;
     const time = dayjs(randomTime).format(" ss:mm:HH").replaceAll(":", " ").replaceAll(" 0", " ").trim();
-    triggers.push({ title: "定时触发", type: "timer", props: { cron: `${time} * * *` } });
+    triggers.push({ title: "Scheduled trigger", type: "timer", props: { cron: `${time} * * *` } });
   } else if (form.triggerCron) {
-    triggers.push({ title: "定时触发", type: "timer", props: { cron: form.triggerCron } });
+    triggers.push({ title: "Scheduled trigger", type: "timer", props: { cron: form.triggerCron } });
   }
   if (form.webhookEnabled) {
-    triggers.push({ title: "Webhook触发", type: "webhook" });
+    triggers.push({ title: "Webhook trigger", type: "webhook" });
   }
   const notifications = [];
   if (form.notification != null) {
@@ -47,7 +47,7 @@ export function fillPipelineByDefaultForm(pipeline: any, form: any) {
       type: "custom",
       when: form.notificationWhen || ["error", "turnToSuccess"],
       notificationId: form.notification,
-      title: form.notificationTarget?.name || "自定义通知",
+      title: form.notificationTarget?.name || "Custom notification",
     });
   }
   pipeline.triggers = triggers;
@@ -191,10 +191,10 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
 
     function getSelectedApplyTemplateName() {
       if (!selectedTemplateId.value) {
-        return "选择模版";
+        return "Select template";
       }
       const template = applyTemplates.find(item => item.id === selectedTemplateId.value);
-      return template?.name || "选择模版";
+      return template?.name || "Select template";
     }
 
     async function saveCurrentTemplate(form: any) {
@@ -202,14 +202,14 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
         crudOptions: {
           columns: {
             name: {
-              title: "模版名称",
+              title: "Template name",
               type: "text",
               form: {
                 required: true,
               },
             },
             isDefault: {
-              title: "设为默认",
+              title: "Set as default",
               type: "switch",
               form: {
                 value: false,
@@ -224,7 +224,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
             mode: "add",
             wrapper: {
               width: 520,
-              title: "保存证书申请参数模版",
+              title: "Save certificate apply parameter template",
               saveRemind: false,
             },
             col: {
@@ -237,7 +237,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                 content: pickCertApplyTemplateParams(form.input),
               });
               await reloadApplyTemplates();
-              message.success("保存成功");
+              message.success("Saved successfully");
             },
           },
         },
@@ -262,7 +262,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
             },
             wrapper: {
               width: 1100,
-              title: "编辑证书申请参数模版",
+              title: "Edit certificate apply parameter template",
               saveRemind: false,
             },
             col: {
@@ -271,7 +271,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
             async doSubmit({ form: templateForm }: any) {
               await certApplyTemplateApi.UpdateObj(buildTemplateSubmitData(templateForm));
               await reloadApplyTemplates();
-              message.success("保存成功");
+              message.success("Saved successfully");
             },
           },
         },
@@ -280,15 +280,15 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
 
     function deleteApplyTemplate(templateId: number) {
       Modal.confirm({
-        title: "确认删除该模版？",
-        content: "删除后无法恢复。",
+        title: "Delete this template?",
+        content: "This cannot be undone.",
         async onOk() {
           await certApplyTemplateApi.DelObj(templateId);
           await reloadApplyTemplates();
           if (selectedTemplateId.value === templateId) {
             selectedTemplateId.value = null;
           }
-          message.success("删除成功");
+          message.success("Deleted successfully");
         },
       });
     }
@@ -338,7 +338,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                 >
                   {applyTemplates.length === 0 ? (
                     <a-menu-item key="empty" disabled>
-                      暂无模版
+                      No templates available
                     </a-menu-item>
                   ) : (
                     applyTemplates.map(item => (
@@ -346,12 +346,8 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                         <div class="flex items-center justify-between gap-4 min-w-80">
                           <span class="truncate">{item.name}</span>
                           <span class="flex items-center gap-2 shrink-0">
-                            <a-button size="small" type="link" onClick={(event: MouseEvent) => stopMenuAction(event, () => openApplyTemplateEditor(item.id))}>
-                              编辑
-                            </a-button>
-                            <a-button size="small" type="link" danger onClick={(event: MouseEvent) => stopMenuAction(event, () => deleteApplyTemplate(item.id))}>
-                              删除
-                            </a-button>
+                            <a-button size="small" type="link" onClick={(event: MouseEvent) => stopMenuAction(event, () => openApplyTemplateEditor(item.id))}>Edit</a-button>
+                            <a-button size="small" type="link" danger onClick={(event: MouseEvent) => stopMenuAction(event, () => deleteApplyTemplate(item.id))}>Delete</a-button>
                           </span>
                         </div>
                       </a-menu-item>
@@ -362,9 +358,9 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                     <div class="flex items-center justify-between gap-4 min-w-80">
                       <div class="flex items-center">
                         <fs-icon icon="ion:save-outline" />
-                        <span class="ml-1">保存当前参数为模版</span>
+                        <span class="ml-1">Save current parameters as template</span>
                       </div>
-                      <a-tooltip title="证书参数模版管理">
+                      <a-tooltip title="Certificate parameter template management">
                         <a-button size="small" type="link" onClick={(event: MouseEvent) => stopMenuAction(event, goApplyTemplateManage)}>
                           <fs-icon icon="ion:list-circle-outline" />
                         </a-button>
@@ -375,7 +371,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
               ),
             }}
           >
-            <a-tooltip title="选择参数模版，自动填充证书申请参数">
+            <a-tooltip title="Select a parameter template to auto-fill certificate apply parameters">
               <a-button>
                 <span class="inline-block max-w-48 truncate align-bottom">{getSelectedApplyTemplateName()}</span>
                 <fs-icon icon="ion:chevron-down" class="ml-1" />
@@ -420,7 +416,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
               component: {
                 name: "cron-editor",
                 vModel: "modelValue",
-                placeholder: "0 0 4 * * * (表示凌晨4点执行)",
+                placeholder: "0 0 4 * * * (runs at 04:00)",
               },
               helper: t("certd.pipelineForm.triggerCronHelper"),
               order: 100,
@@ -567,20 +563,20 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
       // 添加certd pipeline
       const pluginInput = form.input;
       let pipeline: any = {
-        title: pluginInput.domains[0] + "证书自动化",
+        title: pluginInput.domains[0] + " certificate automation",
         runnableType: "pipeline",
         stages: [
           {
-            title: "证书申请阶段",
+            title: "Certificate apply stage",
             maxTaskCount: 1,
             runnableType: "stage",
             tasks: [
               {
-                title: "证书申请任务",
+                title: "Certificate apply task",
                 runnableType: "task",
                 steps: [
                   {
-                    title: "申请证书",
+                    title: "Apply certificate",
                     runnableType: "step",
                     input: {
                       renewDays: 20,
@@ -613,20 +609,20 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
       });
       if (form.email) {
         try {
-          //创建一个默认的邮件通知
+          //创建一个Default的邮件通知
           const notificationApi = createNotificationApi();
           await notificationApi.GetOrCreateDefault({ email: form.email });
         } catch (e) {
           console.error(e);
         }
       }
-      message.success("创建成功,请添加证书部署任务");
+      message.success("Created successfully. Add a certificate deployment task");
       router.push({ path: "/certd/pipeline/detail", query: { id, editMode: "true" } });
     }
     const certPlugins = await getCertPlugins();
     const certPlugin = certPlugins.find(plugin => plugin.name === req.pluginName);
     if (!certPlugin) {
-      message.error("该证书申请插件不存在");
+      message.error("This certificate apply plugin does not exist");
       return;
     }
 

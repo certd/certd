@@ -1,6 +1,6 @@
 export default {
-  ipAddress: "IP地址",
-  ipAddressHelper: "填写则固定检查此IP，不从DNS获取域名的IP地址",
+  ipAddress: "IP Address",
+  ipAddressHelper: "If set, checks this fixed IP instead of resolving the domain through DNS",
   remark: "Remark",
   title: "Site Certificate Monitoring",
   description: "Check website certificates' expiration at 0:00 daily; reminders sent 10 days before expiration (using default notification channel);",

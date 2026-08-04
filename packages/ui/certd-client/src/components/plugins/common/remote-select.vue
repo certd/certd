@@ -140,7 +140,7 @@ const getOptions = async () => {
       }
     }
   }
-  message.value = "获取中...";
+  message.value = "Loading...";
   hasError.value = false;
   loading.value = true;
   const pageNo = pagerRef.value.pageNo;

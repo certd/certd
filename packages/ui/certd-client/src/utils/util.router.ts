@@ -16,7 +16,7 @@ async function open(path: any) {
       // 导航成功 (包括重新导航的情况)
     }
   } catch (e) {
-    console.error("导航失败", e);
+    console.error("Navigation failed", e);
   }
 }
 

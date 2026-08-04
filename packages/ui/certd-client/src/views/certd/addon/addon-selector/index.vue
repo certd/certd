@@ -137,12 +137,12 @@ async function emitValue(value: any) {
     if (isEnterprice) {
       const projectId = projectStore.currentProjectId;
       if (pipeline?.value?.projectId !== projectId) {
-        message.error(`对不起，您不能修改其他项目流水线的${props.addonType}设置`);
+        message.error(`Sorry, you cannot change ${props.addonType} settings for pipelines in other projects`);
         return;
       }
     } else {
       if (pipeline?.value && pipeline.value.userId !== userId) {
-        message.error(`对不起，您不能修改他人流水线的${props.addonType}设置`);
+        message.error(`Sorry, you cannot change ${props.addonType} settings for another user's pipeline`);
         return;
       }
     }

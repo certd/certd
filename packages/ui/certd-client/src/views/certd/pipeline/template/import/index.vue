@@ -3,12 +3,12 @@
     <template #header>
       <div class="title flex flex-1 items-center">
         <fs-button class="back" icon="ion:chevron-back-outline" @click="goBack"></fs-button>
-        <div class="ml-10">从模版{{ detail?.template?.title }}批量创建流水线</div>
+        <div class="ml-10">Batch create pipelines from template {{ detail?.template?.title }}</div>
       </div>
     </template>
     <fs-form v-if="importFromOptions" ref="formRef" class="mt-10" v-bind="importFromOptions"> </fs-form>
     <div class="p-10">
-      <a-button class="ml-20" type="primary" @click="doImport">确定导入 </a-button>
+      <a-button class="ml-20" type="primary" @click="doImport">Confirm import </a-button>
     </div>
   </fs-page>
 </template>
@@ -81,18 +81,18 @@ async function doImport() {
       progress.value.current = progress.value.current + 1;
     }
     notification.success({
-      message: "导入完成",
+      message: "Import completed",
     });
 
     importTableRef.clear();
   }
   requestImport();
   Modal.info({
-    title: "导入中",
+    title: "Importing",
     content() {
       return (
         <div>
-          当前导入进度： {progress.value.current} / {progress.value.total}
+          Current import progress:  {progress.value.current} / {progress.value.total}
         </div>
       );
     },

@@ -109,7 +109,7 @@ const challengeTypeOptions = ref<any[]>([
     value: "dns",
   },
   {
-    label: "DNS持久验证",
+    label: "DNS persistent validation",
     value: "dns-persist",
   },
   {

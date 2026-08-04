@@ -53,7 +53,7 @@ function createService() {
       // 这个状态码是和后端约定的
       if (dataAxios?.code === undefined) {
         // 如果没有 code 代表这不是项目后端开发的接口
-        errorCreate(`非标准返回：${dataAxios}， ${response.config.url}`, showErrorNotify);
+        errorCreate(`Non-standard response: ${dataAxios}, ${response.config.url}`, showErrorNotify);
         return dataAxios;
       }
       const { code } = dataAxios;
@@ -65,56 +65,56 @@ function createService() {
           return dataAxios?.data;
         default:
           // 不是正确的 code
-          const errorMessage = dataAxios.msg || dataAxios.message || "未知错误";
+          const errorMessage = dataAxios.msg || dataAxios.message || "Unknown error";
           // @ts-ignore
           if (response?.config?.onError) {
             const err = new CodeError(errorMessage, dataAxios.code, dataAxios.data);
             // @ts-ignore
             response.config.onError(err);
           }
-          errorCreate(`${errorMessage} （请求接口： ${response.config.url}）`, showErrorNotify, dataAxios);
+          errorCreate(`${errorMessage} (request: ${response.config.url})`, showErrorNotify, dataAxios);
       }
     },
     error => {
       const status = get(error, "response.status");
       switch (status) {
         case 400:
-          error.message = "请求错误";
+          error.message = "Bad request";
           break;
         case 401:
-          error.message = "未授权，请登录";
+          error.message = "Unauthorized, please log in";
           break;
         case 403:
-          error.message = "拒绝访问";
+          error.message = "Access denied";
           break;
         case 404:
-          error.message = `请求地址出错`;
+          error.message = `Request URL error`;
           break;
         case 408:
-          error.message = "请求超时";
+          error.message = "Request timed out";
           break;
         case 500:
-          error.message = "服务器内部错误";
+          error.message = "Internal server error";
           break;
         case 501:
-          error.message = "服务未实现";
+          error.message = "Service not implemented";
           break;
         case 502:
-          error.message = "网关错误";
+          error.message = "Gateway error";
           break;
         case 503:
-          error.message = "服务不可用";
+          error.message = "Service unavailable";
           break;
         case 504:
-          error.message = "网关超时";
+          error.message = "Gateway timeout";
           break;
         case 505:
-          error.message = "HTTP版本不受支持";
+          error.message = "HTTP version not supported";
           break;
         default:
           break;
       }
-      error.message += `（ 请求接口：${error.response?.config?.url}）`;
+      error.message += ` (request: ${error.response?.config?.url})`;
       errorLog(error, error?.response?.config?.showErrorNotify);
       if (status === 401) {
         const userStore = useUserStore();

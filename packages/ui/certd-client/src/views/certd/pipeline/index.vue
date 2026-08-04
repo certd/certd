@@ -22,7 +22,7 @@
             <a-menu @click="onActionbarMoreItemClick">
               <!-- <a-menu-item key="CertApplyUpload" class="flex items-center">
                 <fs-icon icon="ion:business-outline" />
-                商用证书托管流水线
+                Commercial certificate hosting pipeline
               </a-menu-item> -->
               <a-menu-item v-for="item in addMorePipelineBtns" :key="item.key" :title="item.title">
                 <div class="flex items-center">
@@ -127,7 +127,7 @@ const { hasActionPermission } = useCrudPermission({ permission: { isProjectPermi
 context.hasActionPermission = hasActionPermission;
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 
-// 页面打开后获取列表数据
+// Fetch list data when the page opens.
 useMounted(async () => {
   await groupDictRef.reloadDict();
   await crudExpose.doRefresh();
@@ -141,11 +141,11 @@ function batchFinished() {
 }
 function batchDelete() {
   Modal.confirm({
-    title: "确认删除",
-    content: "确定要删除选中的数据吗？",
+    title: "Confirm Delete",
+    content: "Are you sure you want to delete the selected data?",
     async onOk() {
       await api.BatchDelete(selectedRowKeys.value);
-      notification.success({ message: "删除成功" });
+      notification.success({ message: "Deleted successfully" });
       await crudExpose.doRefresh();
       selectedRowKeys.value = [];
     },

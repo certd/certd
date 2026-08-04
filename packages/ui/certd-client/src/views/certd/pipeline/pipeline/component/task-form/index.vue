@@ -2,7 +2,7 @@
   <a-drawer v-model:open="taskDrawerVisible" placement="right" :closable="true" width="700px" class="pi-task-form" @after-open-change="taskDrawerOnAfterVisibleChange">
     <template #title>
       <div>
-        编辑任务
+        Edit Task
         <a-button v-if="editMode" danger @click="taskDelete()">
           <template #icon><DeleteOutlined /></template>
         </a-button>
@@ -14,29 +14,35 @@
           <fs-form-item
             v-model="currentTask.title"
             :item="{
-              title: '任务名称',
+              title: 'Task Name',
               key: 'title',
               component: {
                 name: 'a-input',
                 vModel: 'value',
               },
-              rules: [{ required: true, message: '此项必填' }],
+              rules: [{ required: true, message: 'This field is required' }],
             }"
             :get-context-fn="blankFn"
           />
 
           <div class="steps">
-            <a-form-item :value="currentTask.steps" name="steps" label="" :wrapper-col="{ span: 24 }" :rules="[{ required: true, message: '至少需要一个步骤，或者你可以点击标题右边删除按钮删除此任务' }]">
-              <a-descriptions title="任务步骤" size="small">
+            <a-form-item
+              :value="currentTask.steps"
+              name="steps"
+              label=""
+              :wrapper-col="{ span: 24 }"
+              :rules="[{ required: true, message: 'At least one step is required, or you can delete this task using the delete button next to the title' }]"
+            >
+              <a-descriptions title="Task Steps" size="small">
                 <template #extra>
                   <div class="flex gap-1">
-                    <a-button type="primary" @click="stepAdd(currentTask)">添加步骤</a-button>
-                    <a-tooltip title="复制此任务下的所有步骤">
-                      <a-button type="default" class="isPlus" :disabled="currentTask.steps?.length === 0" @click="stepsCopy(currentTask)">复制</a-button>
+                    <a-button type="primary" @click="stepAdd(currentTask)">Add Step</a-button>
+                    <a-tooltip title="Copy all steps in this task">
+                      <a-button type="default" class="isPlus" :disabled="currentTask.steps?.length === 0" @click="stepsCopy(currentTask)">Copy</a-button>
                     </a-tooltip>
-                    <a-tooltip title="可以从其他任务复制后到此处粘贴">
+                    <a-tooltip title="Paste steps copied from another task here">
                       <a-badge :count="Copyed.getCopyedCount()">
-                        <a-button type="default" class="isPlus" :disabled="Copyed.getCopyedCount() === 0" @click="stepPaste(currentTask)">粘贴</a-button>
+                        <a-button type="default" class="isPlus" :disabled="Copyed.getCopyedCount() === 0" @click="stepPaste(currentTask)">Paste</a-button>
                       </a-badge>
                     </a-tooltip>
                   </div>
@@ -50,16 +56,16 @@
                       <h4 class="title" :class="{ disabled: element.disabled, deleted: element.disabled }" :title="element.title">{{ element.title }}</h4>
                     </div>
                     <div class="action">
-                      <a key="edit" @click="stepEdit(currentTask, element, index)">编辑</a>
-                      <a key="edit" @click="stepCopy(currentTask, element, index)">复制</a>
-                      <a key="remove" @click="stepDelete(currentTask, index)">删除</a>
-                      <a key="disabled" @click="toggleDisabled(currentTask, element)">{{ element.disabled ? "启用" : "禁用" }}</a>
-                      <fs-icon v-plus class="icon-button handle cursor-move" title="拖动排序" icon="ion:move-outline"></fs-icon>
+                      <a key="edit" @click="stepEdit(currentTask, element, index)">Edit</a>
+                      <a key="edit" @click="stepCopy(currentTask, element, index)">Copy</a>
+                      <a key="remove" @click="stepDelete(currentTask, index)">Delete</a>
+                      <a key="disabled" @click="toggleDisabled(currentTask, element)">{{ element.disabled ? "Enable" : "Disable" }}</a>
+                      <fs-icon v-plus class="icon-button handle cursor-move" title="Drag to reorder" icon="ion:move-outline"></fs-icon>
                     </div>
                   </div>
                 </template>
               </v-draggable>
-              <div v-if="currentTask.steps?.length > 0" class="helper mt-6">任务步骤会串行执行，如果前面步骤失败，后面的步骤不会运行</div>
+              <div v-if="currentTask.steps?.length > 0" class="helper mt-6">Task steps run sequentially. If a previous step fails, following steps will not run.</div>
             </a-form-item>
           </div>
         </a-form>
@@ -68,7 +74,7 @@
 
         <template #footer>
           <a-form-item v-if="editMode" :wrapper-col="{ span: 14, offset: 4 }">
-            <a-button type="primary" @click="taskSave"> 确定 </a-button>
+            <a-button type="primary" @click="taskSave"> Confirm </a-button>
           </a-form-item>
         </template>
       </pi-container>
@@ -110,7 +116,7 @@ export default {
         stepFormRef.value.stepAdd((type: any, value: any) => {
           if (type === "save") {
             task.steps.push(value);
-            if (!task.title || task.title === "新任务") {
+            if (!task.title || task.title === "New Task") {
               task.title = value.title;
             }
           }
@@ -123,7 +129,7 @@ export default {
         step.id = nanoid();
         Copyed.type = "step";
         Copyed.target = step;
-        message.success("步骤配置复制成功，您可以到其他任务编辑页面进行粘贴");
+        message.success("Step configuration copied. You can paste it in another task editor.");
       };
 
       const stepsCopy = (task: any) => {
@@ -131,13 +137,13 @@ export default {
         const steps = cloneDeep(task.steps);
         Copyed.type = "steps";
         Copyed.target = steps;
-        message.success("本任务的所有步骤复制成功，您可以到其他任务编辑页面进行粘贴");
+        message.success("All steps in this task were copied. You can paste them in another task editor.");
       };
 
       const stepPaste = (task: any) => {
         settingStore.checkPlus();
         if (!Copyed.target) {
-          message.error("请先复制");
+          message.error("Please copy something first");
           return;
         }
         if (Copyed.type === "step") {
@@ -153,7 +159,7 @@ export default {
             task.steps.push(item);
           }
         }
-        message.success("粘贴成功");
+        message.success("Pasted successfully");
       };
       const stepEdit = (task: any, step: any, stepIndex: any) => {
         currentStepIndex.value = stepIndex;
@@ -176,8 +182,8 @@ export default {
 
       const stepDelete = (task: any, stepIndex: any) => {
         Modal.confirm({
-          title: "确认",
-          content: `确定要删除此步骤吗？`,
+          title: "Confirm",
+          content: `Are you sure you want to delete this step?`,
           async onOk() {
             task.steps.splice(stepIndex, 1);
           },
@@ -207,7 +213,7 @@ export default {
           {
             type: "string",
             required: true,
-            message: "请输入名称",
+            message: "Please enter a name",
           },
         ],
       });
@@ -232,7 +238,7 @@ export default {
 
       const taskAdd = (emit: any, taskMerge: any) => {
         mode.value = "add";
-        const blankTask: any = { id: nanoid(), title: "新任务", steps: [], status: null };
+        const blankTask: any = { id: nanoid(), title: "New Task", steps: [], status: null };
         const task: any = merge(blankTask, taskMerge);
         taskOpen(task, emit);
       };
@@ -252,7 +258,7 @@ export default {
         try {
           await taskFormRef.value.validate();
         } catch (e) {
-          console.error("表单验证失败:", e);
+          console.error("Form validation failed:", e);
           return;
         }
         const task: any = currentTask.value;
@@ -271,8 +277,8 @@ export default {
 
       const taskDelete = () => {
         Modal.confirm({
-          title: "确认",
-          content: `确定要删除此任务吗？`,
+          title: "Confirm",
+          content: `Are you sure you want to delete this task?`,
           async onOk() {
             callback.value("delete");
             taskDrawerClose();

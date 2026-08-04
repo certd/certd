@@ -31,7 +31,7 @@ export function response(data = {}, message = "", code = 0) {
  * @param {Any} data 返回值
  * @param {String} message 状态信息
  */
-export function responseSuccess(data = {}, message = "成功") {
+export function responseSuccess(data = {}, message = "Success") {
   return response(data, message);
 }
 
@@ -41,7 +41,7 @@ export function responseSuccess(data = {}, message = "成功") {
  * @param {String} message 状态信息
  * @param {Number} code 状态码
  */
-export function responseError(data = {}, message = "请求失败", code = 500) {
+export function responseError(data = {}, message = "Request failed", code = 500) {
   return response(data, message, code);
 }
 
@@ -57,7 +57,7 @@ export function errorLog(error: any, notify = true) {
     message = error.response.data.message;
   }
   if (message.indexOf("ssl3_get_record:wrong version number") >= 0) {
-    message = "http协议错误，服务端要求http协议，请检查是否使用了https请求";
+    message = "HTTP protocol error: the server requires HTTP. Check whether HTTPS was used by mistake";
   }
   if (notify) {
     // 显示提示

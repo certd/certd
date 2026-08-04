@@ -17,13 +17,13 @@ const props = defineProps({
 const triggerTypeIconBind = computed(() => {
   const triggerType = props.triggerType;
   let icon = "hugeicons:tap-05:#ff9900";
-  let title = "手动触发";
+  let title = "Manual Trigger";
   if (triggerType === "webhook") {
     icon = "mdi:link-variant:blue";
-    title = "Webhook 触发";
+    title = "Webhook Trigger";
   } else if (triggerType === "timer") {
     icon = "mdi:schedule:green";
-    title = "定时器触发";
+    title = "Scheduled Trigger";
   }
   return {
     icon,

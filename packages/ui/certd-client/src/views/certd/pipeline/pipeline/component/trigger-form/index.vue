@@ -52,7 +52,7 @@
 
         <template #footer>
           <a-form-item v-if="editMode" :wrapper-col="{ span: 14, offset: 4 }">
-            <a-button type="primary" @click="triggerSave"> 确定 </a-button>
+            <a-button type="primary" @click="triggerSave"> Confirm </a-button>
           </a-form-item>
         </template>
       </pi-container>
@@ -128,7 +128,7 @@ export default {
         const trigger = { id: nanoid(), title: t("certd.timerTrigger"), type: "timer", props: {} };
         if (triggerType === "webhook") {
           trigger.type = "webhook";
-          trigger.title = "Webhook触发";
+          trigger.title = "Webhook Trigger";
         }
         triggerOpen(trigger, emit);
       };
@@ -148,7 +148,7 @@ export default {
         try {
           await triggerFormRef.value.validate();
         } catch (e) {
-          console.error("表单验证失败:", e);
+          console.error("Form validation failed:", e);
           return;
         }
 
@@ -173,12 +173,12 @@ export default {
 
       function typeValueChange(value) {
         if (value === "webhook") {
-          if (currentTrigger.value.title === "定时触发" || !currentTrigger.value.title) {
-            currentTrigger.value.title = "Webhook触发";
+          if (currentTrigger.value.title === "Scheduled Trigger" || !currentTrigger.value.title) {
+            currentTrigger.value.title = "Webhook Trigger";
           }
         } else if (value === "timer") {
-          if (currentTrigger.value.title === "Webhook触发" || !currentTrigger.value.title) {
-            currentTrigger.value.title = "定时触发";
+          if (currentTrigger.value.title === "Webhook Trigger" || !currentTrigger.value.title) {
+            currentTrigger.value.title = "Scheduled Trigger";
           }
         }
         currentTrigger.value.type = value;

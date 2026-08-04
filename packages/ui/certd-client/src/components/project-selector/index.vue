@@ -11,14 +11,14 @@
         <a-menu-item key="join">
           <div class="flex items-center w-full">
             <fs-icon icon="ion:add" class="mr-1"></fs-icon>
-            <span>加入其他项目</span>
+            <span>Join another project</span>
           </div>
         </a-menu-item>
       </a-menu>
     </template>
-    <div class="rounded pl-3 pr-3 px-2 py-1 flex-center flex pointer items-center bg-accent h-10 button-text" title="当前项目">
+    <div class="rounded pl-3 pr-3 px-2 py-1 flex-center flex pointer items-center bg-accent h-10 button-text" title="Current project">
       <!-- <fs-icon icon="ion:apps" class="mr-1"></fs-icon> -->
-      <span class="hidden md:flex"> 当前项目：</span>
+      <span class="hidden md:flex"> Current project: </span>
       <span class="text-ellipsis">{{ projectStore.currentProject?.name || "..." }}</span>
       <fs-icon :icon="currentIcon" class="ml-5"></fs-icon>
     </div>

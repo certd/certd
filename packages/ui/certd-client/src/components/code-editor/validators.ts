@@ -8,11 +8,11 @@ const jsonRule = {
         JSON.parse(value);
       } catch (e: any) {
         console.error(e);
-        throw new Error("json格式错误:" + e.message);
+        throw new Error("Invalid JSON format: " + e.message);
       }
     }
   },
-  message: "json格式错误",
+  message: "Invalid JSON format",
 };
 
 const yamlRule = {
@@ -24,11 +24,11 @@ const yamlRule = {
         yaml.load(value, { schema: yaml.JSON_SCHEMA });
       } catch (e: any) {
         console.error(e);
-        throw new Error("yaml格式错误:" + e.message);
+        throw new Error("Invalid YAML format: " + e.message);
       }
     }
   },
-  message: "yaml格式错误",
+  message: "Invalid YAML format",
 };
 
 export const FsEditorCodeValidators = {

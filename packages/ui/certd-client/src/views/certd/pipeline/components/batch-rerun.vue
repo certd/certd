@@ -31,11 +31,11 @@ async function openFormDialog() {
   const crudOptions: any = {
     columns: {
       force: {
-        title: "运行模式",
+        title: "Run Mode",
         form: {
           value: false,
           required: true,
-          helper: "强制重新运行：清除流水线所有状态，全部重新执行\n普通运行：成功过的任务会跳过",
+          helper: "Force rerun: clear all pipeline state and rerun everything\nNormal run: tasks that already succeeded will be skipped",
           component: {
             name: "fs-dict-radio",
             vModel: "value",
@@ -45,11 +45,11 @@ async function openFormDialog() {
             dict: dict({
               data: [
                 {
-                  label: "普通运行",
+                  label: "Normal Run",
                   value: false,
                 },
                 {
-                  label: "强制重新运行",
+                  label: "Force Rerun",
                   value: true,
                 },
               ],

@@ -2,9 +2,9 @@
   <fs-page>
     <template #header>
       <div class="title flex-baseline">
-        我的套餐
+        My Plans
         <div class="sub">
-          <div class="flex-o flex-wrap">当前套餐：<suite-card></suite-card></div>
+          <div class="flex-o flex-wrap">Current Plan: <suite-card></suite-card></div>
         </div>
       </div>
     </template>

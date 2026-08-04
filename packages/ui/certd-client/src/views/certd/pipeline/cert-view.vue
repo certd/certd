@@ -2,25 +2,25 @@
   <div class="cert-view">
     <div class="cert-detail mt-4">
       <a-descriptions class="w-full" bordered :column="2" size="small">
-        <a-descriptions-item label="主域名">
+        <a-descriptions-item label="Main Domain">
           <a-tag color="blue">{{ props.cert.detail?.domains?.commonName || "-" }}</a-tag>
         </a-descriptions-item>
-        <a-descriptions-item label="颁发机构">
+        <a-descriptions-item label="Issuer">
           <a-tag color="green">{{ props.cert.detail?.issuer?.commonName || "-" }}</a-tag>
         </a-descriptions-item>
-        <a-descriptions-item label="备用域名" :span="2">
+        <a-descriptions-item label="Subject Alternative Names" :span="2">
           <a-tag v-for="(domain, index) in props.cert.detail?.domains?.altNames || []" :key="index" color="blue">
             {{ domain }}
           </a-tag>
           <span v-if="!props.cert.detail?.domains?.altNames?.length">-</span>
         </a-descriptions-item>
-        <a-descriptions-item label="生效时间">
+        <a-descriptions-item label="Valid From">
           {{ formatDate(props.cert.detail?.notBefore) }}
         </a-descriptions-item>
-        <a-descriptions-item label="过期时间">
+        <a-descriptions-item label="Expires At">
           {{ formatDate(props.cert.detail?.notAfter) }}
         </a-descriptions-item>
-        <a-descriptions-item label="指纹">
+        <a-descriptions-item label="Fingerprint">
           <div class="w-full flex flex-col fingerprint">
             <div class="flex flex-nowrap">
               <span class="font-bold label">SHA-1:</span> <fs-copyable class="inline-flex overflow-ellipsis text" :model-value="props.cert.detail?.fingerprints?.fingerprint || '-'"></fs-copyable>
@@ -43,7 +43,7 @@
               <div class="title">
                 <div class="font-bold">{{ item.name }}({{ item.fileName }})</div>
                 <fs-copyable :model-value="item.content" :button="{ show: false }">
-                  <a-tag color="success">复制</a-tag>
+                  <a-tag color="success">Copy</a-tag>
                 </fs-copyable>
               </div>
             </template>
@@ -65,9 +65,9 @@ const props = defineProps<{
 }>();
 
 const certFiles = ref([
-  { name: "证书", fileName: "fullchain.pem", key: "crt", content: props.cert.crt },
-  { name: "私钥", fileName: "private.pem", key: "key", content: props.cert.key },
-  { name: "中间证书", fileName: "chain.pem", key: "ic", content: props.cert.ic },
+  { name: "Certificate", fileName: "fullchain.pem", key: "crt", content: props.cert.crt },
+  { name: "Private Key", fileName: "private.pem", key: "key", content: props.cert.key },
+  { name: "Intermediate Certificate", fileName: "chain.pem", key: "ic", content: props.cert.ic },
 ]);
 
 function formatDate(dateStr: string): string {

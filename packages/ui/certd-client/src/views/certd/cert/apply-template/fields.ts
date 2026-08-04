@@ -18,7 +18,7 @@ export function pickCertApplyTemplateParams(input: any = {}) {
 export function buildCertApplyTemplateColumns(certPlugin: any) {
   const columns: any = {
     name: {
-      title: "模版名称",
+      title: "Template name",
       type: "text",
       form: {
         required: true,
@@ -55,7 +55,7 @@ export function buildCertApplyTemplateColumns(certPlugin: any) {
 
   merge(columns, {
     isDefault: {
-      title: "默认模版",
+      title: "Default template",
       type: "switch",
       form: {
         value: false,

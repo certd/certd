@@ -39,16 +39,16 @@
       </div>
       <div class="flex-o mt-5">
         <span class="label">{{ $t("certd.order.price") }}：</span>
-        <price-input :edit="false" :model-value="durationSelected.price" zero-text="0元"></price-input>
+        <price-input :edit="false" :model-value="durationSelected.price" zero-text="0 yuan"></price-input>
       </div>
       <div v-if="durationSelected.price > 0 && wallet.availableAmount > 0" class="flex-o mt-5">
-        <span class="label">余额抵扣：</span>
+        <span class="label">Balance Deduction: </span>
         <a-switch v-model:checked="formRef.useRebateBalance" />
-        <span class="ml-10">可用 {{ amountToYuan(wallet.availableAmount) }} 元，预计抵扣 {{ amountToYuan(expectedRebateAmount) }} 元</span>
+        <span class="ml-10">Available {{ amountToYuan(wallet.availableAmount) }} yuan，Estimated deduction {{ amountToYuan(expectedRebateAmount) }} yuan</span>
       </div>
       <div v-if="durationSelected.price > 0 && formRef.useRebateBalance" class="flex-o mt-5">
-        <span class="label">还需支付：</span>
-        <span class="color-red">{{ amountToYuan(expectedThirdPartyAmount) }} 元</span>
+        <span class="label">Remaining Payment: </span>
+        <span class="color-red">{{ amountToYuan(expectedThirdPartyAmount) }} yuan</span>
       </div>
 
       <div class="flex-o mt-5">
@@ -125,7 +125,7 @@ function amountToYuan(amount: number) {
 
 async function orderCreate() {
   if (durationSelected.value.price === 0) {
-    //如果是0，直接请求创建订单
+    // Create the order directly when the price is zero.
     await api.TradeCreateFree({
       productId: formRef.value.productId,
       duration: formRef.value.duration,
@@ -133,7 +133,7 @@ async function orderCreate() {
       payType: "free",
     });
     notification.success({
-      message: "套餐购买成功",
+      message: "Plan purchased successfully",
     });
     openRef.value = false;
     return;
@@ -141,7 +141,7 @@ async function orderCreate() {
 
   if (expectedThirdPartyAmount.value > 0 && !formRef.value.payType) {
     notification.error({
-      message: "请选择支付方式",
+      message: "Please select a payment method",
     });
     return;
   }
@@ -155,7 +155,7 @@ async function orderCreate() {
 
   if (paymentReq.paid) {
     notification.success({
-      message: "套餐购买成功",
+      message: "Plan purchased successfully",
     });
     openRef.value = false;
     return;
@@ -182,19 +182,19 @@ async function orderCreate() {
     return;
   } else {
     notification.error({
-      message: "暂不支持该支付方式",
+      message: "This payment method is not supported yet",
     });
     return;
   }
 
   Modal.confirm({
-    title: "请在新页面完成支付",
-    content: "是否确认已完成支付",
+    title: "Please complete payment on the new page",
+    content: "Confirm that payment has been completed?",
     onOk: async () => {
       onPaid();
     },
-    cancelText: "取消支付",
-    okText: "已完成支付",
+    cancelText: "Cancel Payment",
+    okText: "Payment Completed",
   });
 }
 
@@ -208,9 +208,9 @@ async function doWxpay(qrcodeText: string, onPaid: () => Promise<void>) {
 
   Modal.confirm({
     wrapClassName: "modal-confirm-center",
-    title: "请微信扫码支付",
-    okText: "已完成支付",
-    cancelText: "取消支付",
+    title: "Scan with WeChat to pay",
+    okText: "Payment Completed",
+    cancelText: "Cancel Payment",
     icon() {
       return "";
     },
@@ -230,16 +230,16 @@ async function doWxpay(qrcodeText: string, onPaid: () => Promise<void>) {
 function doYizhifu(paymentReq: any) {
   console.log("doYizhifu", paymentReq);
   /**
-   * 商户ID	pid	是	Int	1001
-   * 支付方式	type	否	String	alipay	支付方式列表
-   * 商户订单号	out_trade_no	是	String	20160806151343349
-   * 异步通知地址	notify_url	是	String	http://www.pay.com/notify_url.php	服务器异步通知地址
-   * 跳转通知地址	return_url	是	String	http://www.pay.com/return_url.php	页面跳转通知地址
-   * 商品名称	name	是	String	VIP会员	如超过127个字节会自动截取
-   * 商品金额	money	是	String	1.00	单位：元，最大2位小数
-   * 业务扩展参数	param	否	String	没有请留空	支付后原样返回
-   * 签名字符串	sign	是	String	202cb962ac59075b964b07152d234b70	签名算法点此查看
-   * 签名类型	sign_type	是	String	MD5	默认为MD5
+   * 商户ID	pid	Yes	Int	1001
+   * 支付方式	type	No	String	alipay	支付方式列表
+   * 商户订单号	out_trade_no	Yes	String	20160806151343349
+   * 异步通知地址	notify_url	Yes	String	http://www.pay.com/notify_url.php	服务器异步通知地址
+   * 跳转通知地址	return_url	Yes	String	http://www.pay.com/return_url.php	页面跳转通知地址
+   * 商品名称	name	Yes	String	VIP会员	如超过127个字节会自动截取
+   * 商品金额	money	Yes	String	1.00	单位：yuan，最大2位小数
+   * 业务扩展参数	param	No	String	没有请留空	支付后原样返回
+   * 签名字符串	sign	Yes	String	202cb962ac59075b964b07152d234b70	签名算法点此查看
+   * 签名Type	sign_type	Yes	String	MD5	默认为MD5
    */
   const form = document.createElement("form");
   form.action = paymentReq.url;

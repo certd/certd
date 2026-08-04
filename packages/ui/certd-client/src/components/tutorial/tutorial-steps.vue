@@ -238,7 +238,7 @@ function stepChanged(index: number) {
 }
 function previewMask() {
   return (
-    <div title="点击放大" class="h-100 w-100">
+    <div title="Click to enlarge" class="h-100 w-100">
       {" "}
     </div>
   );

@@ -178,7 +178,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 },
               },
               select: {
-                placeholder: "点击选择",
+                placeholder: "Click to select",
               },
               showSelect: false,
               createCrudOptions: createCrudOptionsPipeline,

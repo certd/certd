@@ -21,33 +21,33 @@ const binding = computed(() => {
     return {};
   }
   if (userSuite.activeTime == null) {
-    return { color: "blue", text: "未使用" };
+    return { color: "blue", text: "Unused" };
   }
   const now = dayjs().valueOf();
-  //已过期
+  //Expired
   const isExpired = userSuite.expiresTime != -1 && now > userSuite.expiresTime;
   if (isExpired) {
-    return { color: "error", text: "已过期" };
+    return { color: "error", text: "Expired" };
   }
-  //如果在激活时间之前
+  //如果在Activation Time之前
   if (now < userSuite.activeTime) {
-    return { color: "blue", text: "待生效" };
+    return { color: "blue", text: "Pending" };
   }
 
   if (userSuite.isEmpty) {
-    return { color: "gray", text: "已用完" };
+    return { color: "gray", text: "Used Up" };
   }
 
-  //是否是当前套餐
+  //YesNoYesCurrent Plan
   if (props.currentSuite && props.currentSuite.productType === "suite" && props.currentSuite.id === userSuite.id) {
-    return { color: "success", text: "当前套餐" };
+    return { color: "success", text: "Current Plan" };
   }
-  // 是否在激活时间和过期时间之间
+  // YesNo在Activation Time和Expiration Time之间
   if (now > userSuite.activeTime && (userSuite.expiresTime == -1 || now < userSuite.expiresTime)) {
     if (userSuite.productType === "suite") {
-      return { color: "success", text: "有效期内" };
+      return { color: "success", text: "Valid" };
     }
-    return { color: "success", text: "生效中" };
+    return { color: "success", text: "Active" };
   }
   return {};
 });

@@ -2,7 +2,7 @@
   <div class="cert-info-updater w-full flex items-center">
     <div class="flex-o">
       <a-tag>{{ domain }}</a-tag>
-      <fs-button type="primary" size="small" class="ml-1" icon="ion:upload" text="更新证书" @click="onUploadClick" />
+      <fs-button type="primary" size="small" class="ml-1" icon="ion:upload" text="Update certificate" @click="onUploadClick" />
     </div>
   </div>
 </template>

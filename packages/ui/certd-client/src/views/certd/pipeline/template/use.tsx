@@ -32,17 +32,17 @@ export function createExtraColumns() {
     //     col: {
     //       span: 24,
     //     },
-    //     helper: "点击上面的按钮，选择每天几点定时执行。\n建议设置为每天触发一次，证书未到期之前任务会跳过，不会重复执行",
+    //     helper: "点击上面的按钮，选择每天几点定时执行。\n建议设置为每天触发一times，证书未到期之前任务会跳过，不会重复执行",
     //     order: 100,
     //   },
     // },
 
     random: {
-      title: "定时类型",
+      title: "Schedule Type",
       form: {
         order: 100,
         value: true,
-        helper: "是否给流水线随机设置一个时间",
+        helper: "Whether to assign a random time to the pipeline",
         show: compute(({ form }) => {
           return form.clear !== true;
         }),
@@ -55,11 +55,11 @@ export function createExtraColumns() {
           dict: dict({
             data: [
               {
-                label: "随机时间",
+                label: "Random Time",
                 value: true,
               },
               {
-                label: "固定时间",
+                label: "Fixed Time",
                 value: false,
               },
             ],
@@ -68,11 +68,11 @@ export function createExtraColumns() {
       },
     },
     randomRange: {
-      title: "随机时间范围",
+      title: "Random Time Range",
       form: {
         order: 100,
         value: ["00:00:00", "08:00:00"],
-        helper: "随机时间范围，单位秒",
+        helper: "Random time range, in seconds",
         component: {
           //  <a-time-range-picker :bordered="false" />
           name: "a-time-range-picker",
@@ -82,7 +82,7 @@ export function createExtraColumns() {
         show: compute(({ form }) => {
           return form.clear !== true && form.random === true;
         }),
-        rules: [{ required: true, message: "请选择随机时间范围" }],
+        rules: [{ required: true, message: "Please select the random time range" }],
       },
     },
     triggerCron: {
@@ -106,7 +106,7 @@ export function createExtraColumns() {
       },
     },
     notification: {
-      title: "失败通知",
+      title: "Failure Notification",
       type: "text",
       form: {
         value: 0,
@@ -120,11 +120,11 @@ export function createExtraColumns() {
           },
         },
         order: 101,
-        helper: "任务执行失败实时提醒",
+        helper: "Real-time alerts for task execution failures",
       },
     },
     groupId: {
-      title: "流水线分组",
+      title: "Pipeline groups",
       type: "dict-select",
       dict: groupDictRef,
       form: {
@@ -174,10 +174,10 @@ export function useTemplate() {
     await checkPipelineLimit();
     const detail = await templateApi.GetDetail(req.templateId);
     if (!detail) {
-      throw new Error("模板不存在");
+      throw new Error("Template does not exist");
     }
     if (!detail.template?.pipelineId) {
-      throw new Error("还未绑定模版流水线");
+      throw new Error("No template pipeline is bound yet");
     }
     const templateProps = JSON.parse(detail.template.content || "{}");
     const pipeline = detail.pipeline;
@@ -217,7 +217,7 @@ export function useTemplate() {
       form: {
         doSubmit,
         wrapper: {
-          title: `从模版<${detail.template.title}>创建流水线`,
+          title: `Create Pipeline from Template <${detail.template.title}>`,
           width: 1100,
           slots: {
             "form-body-top": () => {
@@ -232,13 +232,13 @@ export function useTemplate() {
       },
       columns: {
         title: {
-          title: "流水线标题",
+          title: "Pipeline Title",
           type: "text",
           form: {
             component: {
-              placeholder: "请输入流水线标题",
+              placeholder: "Please enter the pipeline title",
             },
-            rules: [{ required: true, message: "请输入流水线标题" }],
+            rules: [{ required: true, message: "Please enter the pipeline title" }],
           },
         },
         ...createExtraColumns(),

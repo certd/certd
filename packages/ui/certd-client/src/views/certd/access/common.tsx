@@ -67,14 +67,14 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, f
         if (!column.rules) {
           column.rules = [];
         }
-        column.rules.push({ required: true, message: "此项必填" });
+        column.rules.push({ required: true, message: "This field is required" });
       }
 
-      //设置默认值
+      //Set default value
       if (column.value != null && get(form, key) == null) {
         set(form, key, column.value);
       }
-      //字段配置赋值
+      //Assign field configuration
       if (columnsRef.value) {
         columnsRef.value[key] = column;
       }
@@ -87,7 +87,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, f
 
   return {
     type: {
-      title: "类型",
+      title: "Type",
       type: "dict-select",
       dict: AccessTypeDictRef,
       search: {
@@ -121,7 +121,7 @@ export function getCommonColumnDefine(crudExpose: any, typeRef: any, api: any, f
             );
           },
         },
-        rules: [{ required: true, message: "请选择类型" }],
+        rules: [{ required: true, message: "Please select a type" }],
         valueChange: {
           immediate: true,
           async handle({ value, mode, form, immediate }) {

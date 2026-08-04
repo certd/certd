@@ -1,8 +1,8 @@
 <template>
   <div>
-    <h1>支付成功</h1>
+    <h1>Payment Successful</h1>
     <div>
-      <a-button type="primary" @click="handleBack">返回</a-button>
+      <a-button type="primary" @click="handleBack">Back</a-button>
     </div>
   </div>
 </template>

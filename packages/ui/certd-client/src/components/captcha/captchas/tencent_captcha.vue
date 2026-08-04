@@ -68,7 +68,7 @@ function callback(res: { ret: number; ticket: string; randstr: string; errorCode
       randstr: res.randstr,
     });
   } else if (res.ret === 2) {
-    console.log("用户主动关闭验证码");
+    console.log("User closed the captcha");
   }
 }
 

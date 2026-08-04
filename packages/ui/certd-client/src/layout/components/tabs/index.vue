@@ -7,7 +7,7 @@
             <template #tab>
               <span class="flex-o">
                 <fs-icon :icon="item.meta.icon" class="mr-5"></fs-icon>
-                {{ item.meta?.title || "未命名" }}
+                {{ item.meta?.title || "Untitled" }}
               </span>
             </template>
           </a-tab-pane>
@@ -28,21 +28,13 @@
         <template #overlay>
           <a-menu @click="(command: any) => handleControlItemClick(command)">
             <a-menu-item key="left">
-              <fs-icon name="arrow-left" class="fs-mr-10" />
-              关闭左侧
-            </a-menu-item>
+              <fs-icon name="arrow-left" class="fs-mr-10" />Close tabs to the left</a-menu-item>
             <a-menu-item key="right">
-              <fs-icon name="arrow-right" class="fs-mr-10" />
-              关闭右侧
-            </a-menu-item>
+              <fs-icon name="arrow-right" class="fs-mr-10" />Close tabs to the right</a-menu-item>
             <a-menu-item key="other">
-              <fs-icon name="times" class="fs-mr-10" />
-              关闭其它
-            </a-menu-item>
+              <fs-icon name="times" class="fs-mr-10" />Close other tabs</a-menu-item>
             <a-menu-item key="all">
-              <fs-icon name="times-circle" class="fs-mr-10" />
-              全部关闭
-            </a-menu-item>
+              <fs-icon name="times-circle" class="fs-mr-10" />Close all tabs</a-menu-item>
           </a-menu>
         </template>
       </a-dropdown-button>
@@ -85,12 +77,12 @@ export default {
       contextmenuFlag: false,
       contentmenuX: 0,
       contentmenuY: 0,
-      contextmenuListIndex: [{ icon: "times-circle", title: "关闭全部", value: "all" }],
+      contextmenuListIndex: [{ icon: "times-circle", title: "Close all", value: "all" }],
       contextmenuList: [
-        { icon: "arrow-left", title: "关闭左侧", value: "left" },
-        { icon: "arrow-right", title: "关闭右侧", value: "right" },
-        { icon: "times", title: "关闭其它", value: "other" },
-        { icon: "times-circle", title: "关闭全部", value: "all" },
+        { icon: "arrow-left", title: "Close tabs to the left", value: "left" },
+        { icon: "arrow-right", title: "Close tabs to the right", value: "right" },
+        { icon: "times", title: "Close other tabs", value: "other" },
+        { icon: "times-circle", title: "Close all", value: "all" },
       ],
       tagName: "/index",
     };
@@ -163,7 +155,7 @@ export default {
           this.closeAll();
           break;
         default:
-          this.$message.error("无效的操作");
+          this.$message.error("Invalid operation");
           break;
       }
     },

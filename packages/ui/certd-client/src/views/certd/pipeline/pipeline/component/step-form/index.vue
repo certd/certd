@@ -2,7 +2,7 @@
   <a-drawer v-model:open="stepDrawerVisible" :wrap-style="{ maxWidth: '100vw' }" placement="right" :closable="true" width="760px" class="step-form-drawer" :class="{ fullscreen }">
     <template #title>
       <div>
-        编辑步骤
+        Edit Step
         <template v-if="editMode">
           <a-button @click="stepDelete()">
             <template #icon>
@@ -20,7 +20,7 @@
         <template #header>
           <a-row :gutter="10" class="mb-10">
             <a-col :span="24" style="padding-left: 20px">
-              <a-input-search v-model:value="pluginSearch.keyword" placeholder="搜索插件" :allow-clear="true" :show-search="true"></a-input-search>
+              <a-input-search v-model:value="pluginSearch.keyword" placeholder="Search plugins" :allow-clear="true" :show-search="true"></a-input-search>
             </a-col>
           </a-row>
         </template>
@@ -36,7 +36,7 @@
                 </template>
                 <a-row v-if="!group.plugins || group.plugins.length === 0" :gutter="10">
                   <a-col class="flex-o">
-                    <div class="flex-o m-10">没有找到插件</div>
+                    <div class="flex-o m-10">No plugins found</div>
                   </a-col>
                 </a-row>
                 <a-row v-else :gutter="10">
@@ -69,7 +69,7 @@
         </div>
         <template #footer>
           <div style="padding: 20px; margin-left: 100px">
-            <a-button v-if="editMode" type="primary" @click="stepTypeSave"> 确定</a-button>
+            <a-button v-if="editMode" type="primary" @click="stepTypeSave"> Confirm</a-button>
           </div>
         </template>
       </pi-container>
@@ -88,13 +88,13 @@
             <fs-form-item
               v-model="currentStep.title"
               :item="{
-                title: '任务名称',
+                title: 'Task Name',
                 key: 'title',
                 component: {
                   name: 'a-input',
                   vModel: 'value',
                 },
-                rules: [{ required: true, message: '此项必填' }],
+                rules: [{ required: true, message: 'This field is required' }],
               }"
               :get-context-fn="getScopeFunc"
             />
@@ -107,7 +107,7 @@
         </div>
         <template #footer>
           <div v-if="editMode" class="bottom-button">
-            <a-button type="primary" @click="stepSave"> 确定</a-button>
+            <a-button type="primary" @click="stepSave"> Confirm</a-button>
           </div>
         </template>
       </pi-container>
@@ -165,16 +165,16 @@ function useStepForm() {
       {
         type: "string",
         required: true,
-        message: "请输入名称",
+        message: "Please enter a name",
       },
     ],
   });
 
   const stepTypeSelected = (item: any) => {
     if (item.needPlus && !settingStore.isPlus) {
-      message.warn("此插件需要开通Certd专业版才能使用");
+      message.warn("This plugin requires Certd Pro");
       mitter.emit("openVipModal");
-      throw new Error("此插件需要开通Certd专业版才能使用");
+      throw new Error("This plugin requires Certd Pro");
     }
     currentStep.value.type = item.name;
     currentStep.value.title = item.title;
@@ -184,14 +184,14 @@ function useStepForm() {
   const stepTypeSave = async () => {
     currentStep.value._isAdd = false;
     if (currentStep.value.type == null) {
-      message.warn("请先选择类型");
+      message.warn("Please select a type first");
       return;
     }
 
-    // 给step的input设置默认值
+    // Set default values for step input
     await changeCurrentPlugin(currentStep.value);
 
-    //合并默认值
+    //Merge default values
     merge(
       currentStep.value,
       {
@@ -213,7 +213,7 @@ function useStepForm() {
   const stepOpen = (step: any, emit: any) => {
     callback.value = emit;
     currentStep.value = merge({ input: {}, strategy: {} }, step);
-    // 旧版证书申请任务没有 version 字段，编辑时补成 1，保持旧任务继续走兼容逻辑。
+    // Legacy certificate request tasks do not have a version field; set it to 1 when editing to keep compatibility.
     if (mode.value === "edit" && currentStep.value.type === "CertApply" && currentStep.value.input?.version == null) {
       currentStep.value.input.version = 1;
     }
@@ -227,7 +227,7 @@ function useStepForm() {
     mode.value = "add";
     const step: any = {
       id: nanoid(),
-      title: "新任务",
+      title: "New Task",
       type: undefined,
       _isAdd: true,
       input: {},
@@ -272,7 +272,7 @@ function useStepForm() {
     const pluginDefine = await pluginStore.getPluginDefine(stepType);
     // let pluginDefine = pluginGroups.get(stepType);
     if (pluginDefine == null) {
-      console.log("插件未找到", stepType);
+      console.log("Plugin not found", stepType);
       return;
     }
     // pluginDefine = _.cloneDeep(pluginDefine);
@@ -286,12 +286,12 @@ function useStepForm() {
 
     for (let key in pluginDefine.input) {
       const column = pluginDefine.input[key];
-      //设置初始值
+      //Set initial values
       if ((column.default != null || column.value != null) && currentStep.value.input[key] == null) {
         currentStep.value.input[key] = column.default ?? column.value;
       }
     }
-    //设置系统初始值
+    //Set system initial values
     const pluginSysConfig = await pluginStore.getPluginConfig({ name: pluginDefine.name, type: "builtIn" });
     if (pluginSysConfig.sysSetting?.input) {
       for (const key in pluginSysConfig.sysSetting?.input) {
@@ -304,7 +304,7 @@ function useStepForm() {
     try {
       await stepFormRef.value.validate();
     } catch (e) {
-      console.error("表单验证失败:", e);
+      console.error("Form validation failed:", e);
       return;
     }
 
@@ -313,11 +313,11 @@ function useStepForm() {
   };
 
   const stepDelete = () => {
-    //检查输出依赖
+    //Check output dependencies
 
     Modal.confirm({
-      title: "确认",
-      content: `确定要删除此步骤吗？`,
+      title: "Confirm",
+      content: `Are you sure you want to delete this step?`,
       async onOk() {
         callback.value("delete");
         stepDrawerClose();
@@ -364,7 +364,7 @@ function useStepForm() {
         return plugin.title?.toLowerCase().includes(keyword) || plugin.desc?.toLowerCase().includes(keyword) || plugin.name?.toLowerCase().includes(keyword);
       });
       return {
-        search: { key: "search", title: "搜索结果", plugins: list },
+        search: { key: "search", title: "Search Results", plugins: list },
       };
     } else {
       return groups;
@@ -408,28 +408,28 @@ function useStepForm() {
 }
 
 const runStrategyProps = ref({
-  title: "运行策略",
+  title: "Run Strategy",
   key: "strategy.runStrategy",
   component: {
     name: "a-select",
     vModel: "value",
     options: [
-      { value: 0, label: "正常运行（仅证书申请任务需要选它，除非你需要这个任务不跳过，每次都运行）" },
-      { value: 1, label: "成功后跳过（其他任务请选择它）" },
+      { value: 0, label: "Always run (use this for certificate request tasks, or when this task must run every time)" },
+      { value: 1, label: "Skip after success (recommended for most non-certificate tasks)" },
     ],
   },
   helper: {
     render: () => {
       return (
         <div>
-          <div class="color-green">一般保持默认即可</div>
-          <div>正常运行：每次都运行，证书任务需要每次都运行</div>
-          <div>成功后跳过：该任务成功一次之后跳过，不重复执行（证书变化之后才会再次运行）</div>
+          <div class="color-green">The default is usually fine.</div>
+          <div>Always run: run every time. Certificate tasks should usually run every time.</div>
+          <div>Skip after success: skip this task after it succeeds once, and run again only when the certificate changes.</div>
         </div>
       );
     },
   },
-  rules: [{ required: true, message: "此项必填" }],
+  rules: [{ required: true, message: "This field is required" }],
 });
 
 const labelCol = ref({ span: 6 });
@@ -444,7 +444,7 @@ defineExpose({
 
 <style lang="less">
 .cd-step-form-tab-label {
-  // 包括dropdown
+  // Including dropdowns
   display: flex;
   align-items: center;
   //width: 120px;

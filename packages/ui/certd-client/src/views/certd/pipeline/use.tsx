@@ -13,14 +13,14 @@ export function useCertViewer() {
   const viewCert = async (id: number) => {
     const cert = await api.GetCert(id);
     if (!cert) {
-      notification.error({ message: "请先运行一次流水线" });
+      notification.error({ message: "Please run the pipeline once first" });
       return;
     }
 
     model.success({
-      title: "查看证书",
+      title: "View Certificate",
       maskClosable: true,
-      okText: "关闭",
+      okText: "Close",
       width: 800,
       content: () => {
         return <CertView cert={cert}></CertView>;

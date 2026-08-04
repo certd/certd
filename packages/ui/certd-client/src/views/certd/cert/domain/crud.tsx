@@ -93,7 +93,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             throw new Error(t("certd.domain.cnameManagedInCnamePage"));
           }
           if (form.challengeType === "dns-persist") {
-            throw new Error("DNS持久验证记录请在DNS持久验证记录页面管理");
+            throw new Error("Manage DNS persistent validation records on the DNS Persistent Validation Records page");
           }
           if (form.challengeType === "dns") {
             const isSubdomain = await api.IsSubdomain({ domain: form.domain });
@@ -226,8 +226,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 });
               } else if (value === "dns-persist") {
                 Modal.confirm({
-                  title: "请前往DNS持久验证记录页面添加记录",
-                  content: "DNS持久验证需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅 Let's Encrypt 测试环境可以申请。",
+                  title: "Add records on the DNS Persistent Validation Records page",
+                  content: "DNS persistent validation requires configuring an ACME account and a _validation-persist persistent TXT record first. Renewals will no longer add or delete DNS records. Currently, only the Let's Encrypt staging environment is supported.",
                   async onOk() {
                     router.push({
                       path: "/certd/cert/dns-persist",

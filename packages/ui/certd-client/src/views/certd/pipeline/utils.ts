@@ -67,9 +67,9 @@ export async function checkPipelineLimit() {
     const max = suiteDetail.pipelineCount.max;
     if (max != -1 && max <= suiteDetail.pipelineCount.used) {
       notification.error({
-        message: `对不起，您最多只能创建${max}条流水线，请购买或升级套餐`,
+        message: `Sorry, you can create at most  pipelines. Please purchase or upgrade your plan`,
       });
-      throw new Error("流水线数量超限");
+      throw new Error("Pipeline quota exceeded");
     }
   }
 }

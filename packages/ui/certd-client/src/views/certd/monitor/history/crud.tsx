@@ -43,17 +43,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const handleBatchDelete = () => {
     if (selectedRowKeys.value?.length > 0) {
       Modal.confirm({
-        title: "确认",
-        content: `确定要批量删除这${selectedRowKeys.value.length}条记录吗`,
+        title: "Confirm",
+        content: `Are you sure you want to batch delete these  records?`,
         async onOk() {
           await api.BatchDelObj(selectedRowKeys.value);
-          message.info("删除成功");
+          message.info("Deleted successfully");
           crudExpose.doRefresh();
           selectedRowKeys.value = [];
         },
       });
     } else {
-      message.error("请先勾选记录");
+      message.error("Please select records first");
     }
   };
 

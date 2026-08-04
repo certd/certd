@@ -1,5 +1,5 @@
 <template>
-  <a-modal v-model:open="taskModal.open" class="pi-task-view" title="任务日志" style="width: 80%" v-bind="taskModal">
+  <a-modal v-model:open="taskModal.open" class="pi-task-view" title="Task Logs" style="width: 80%" v-bind="taskModal">
     <a-tabs v-model:active-key="activeKey" :tab-position="tabPosition" animated>
       <a-tab-pane v-for="item of detail.nodes" :key="item.node.id">
         <template #tab>
@@ -9,8 +9,8 @@
               <!--              <fs-icon icon="ion:chevron-forward-circle" class="text-md mr-1"></fs-icon>-->
               <span class="flex-1 ellipsis">{{ item.node.title }}</span>
 
-              <a-tooltip title="强制重新执行此步骤">
-                <fs-icon class="pointer color-blue ml-1" style="font-size: 16px" title="强制重新执行此步骤" icon="icon-park-outline:replay-music" @click="triggerRun(item.node.id)"></fs-icon>
+              <a-tooltip title="Force rerun this step">
+                <fs-icon class="pointer color-blue ml-1" style="font-size: 16px" title="Force rerun this step" icon="icon-park-outline:replay-music" @click="triggerRun(item.node.id)"></fs-icon>
               </a-tooltip>
             </span>
           </div>
@@ -23,14 +23,16 @@
       </a-tab-pane>
     </a-tabs>
     <template #footer>
-      <fs-button v-if="settingsStore.sysPublic.aiChatEnabled !== false" key="aiChat" :tooltip="{ title: 'AI分析异常' }" type="primary" icon="ion:color-wand-outline" @click="taskModal.onAiChat">AI分析</fs-button>
-      <!-- <fs-button v-if="!settingsStore.isComm && currentStatus === 'error'" key="1v1" :tooltip="{ title: '升级专业版，获得一对一分析服务，为您排忧解难' }" class="isPlus" icon="imingcute:vip-1-line" @click="callService">
-        呼叫专家
+      <fs-button v-if="settingsStore.sysPublic.aiChatEnabled !== false" key="aiChat" :tooltip="{ title: 'Analyze error with AI' }" type="primary" icon="ion:color-wand-outline" @click="taskModal.onAiChat"
+        >AI Analysis</fs-button
+      >
+      <!-- <fs-button v-if="!settingsStore.isComm && currentStatus === 'error'" key="1v1" :tooltip="{ title: 'Upgrade to Pro for one-on-one analysis support' }" class="isPlus" icon="imingcute:vip-1-line" @click="callService">
+        Call Expert
       </fs-button> -->
-      <fs-button key="rerun" type="primary" :tooltip="{ title: '强制重新执行此步骤' }" text="重新运行" icon="icon-park-outline:replay-music" @click="triggerRun(activeKey)"></fs-button>
-      <fs-button key="downloadLogs" type="primary" :tooltip="{ title: '当前任务日志下载' }" icon="ion:arrow-down-circle-outline" @click="taskModal.onDownloadLogs">下载日志</fs-button>
-      <fs-button key="cancel" :tooltip="{ title: '关闭窗口' }" icon="ion:close-circle-outline" @click="taskModal.onOk">关闭</fs-button>
-      <!--      <fs-button key="submit" :tooltip="{ title: '关闭窗口' }" icon="ion:checkmark-circle-outline" type="primary" @click="taskModal.onOk">确定</fs-button>-->
+      <fs-button key="rerun" type="primary" :tooltip="{ title: 'Force rerun this step' }" text="Rerun" icon="icon-park-outline:replay-music" @click="triggerRun(activeKey)"></fs-button>
+      <fs-button key="downloadLogs" type="primary" :tooltip="{ title: 'Download current task logs' }" icon="ion:arrow-down-circle-outline" @click="taskModal.onDownloadLogs">Download Logs</fs-button>
+      <fs-button key="cancel" :tooltip="{ title: 'Close window' }" icon="ion:close-circle-outline" @click="taskModal.onOk">Close</fs-button>
+      <!--      <fs-button key="submit" :tooltip="{ title: 'Close window' }" icon="ion:checkmark-circle-outline" type="primary" @click="taskModal.onOk">Confirm</fs-button>-->
     </template>
   </a-modal>
 </template>
@@ -62,7 +64,7 @@ export default {
         const logs = currentHistory.value?.logs[activeKey.value];
         if (!logs || logs.length === 0) {
           notification.warning({
-            message: "没有日志",
+            message: "No logs",
           });
           return;
         }
@@ -74,7 +76,7 @@ export default {
         a.click();
         URL.revokeObjectURL(a.href);
       },
-      cancelText: "关闭",
+      cancelText: "Close",
     });
     const { isMobile } = usePreferences();
     const tabPosition = computed(() => {
@@ -110,7 +112,7 @@ export default {
       const nodes: any = [];
       // nodes.push({
       //   node: task,
-      //   type: "任务",
+      //   type: "Task",
       //   tab: 0,
       //   logs: [],
       //   result: {}
@@ -118,7 +120,7 @@ export default {
       for (let step of task.steps) {
         nodes.push({
           node: step,
-          type: "步骤",
+          type: "Step",
           tab: 2,
           logs: [],
         });
@@ -129,7 +131,7 @@ export default {
         if (!el) {
           return;
         }
-        //判断当前是否在底部
+        //Check whether currently at bottom
         let isBottom = true;
         if (el) {
           isBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 5;
@@ -139,7 +141,7 @@ export default {
         }
         await nextTick();
         el = document.querySelector(`.pi-task-view-logs.id-${node.node.id}`);
-        //如果在底部则滚动到底部
+        //Scroll to bottom if already at bottom
         if (isBottom && el) {
           el?.scrollTo({
             top: el.scrollHeight,

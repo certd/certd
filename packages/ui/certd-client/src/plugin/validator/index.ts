@@ -48,7 +48,7 @@ export function isDomain(rule: any, value: any) {
       continue;
     }
     if (!compiled.test(domain)) {
-      throw new Error(`域名有误：${domain}，请输入正确的域名`);
+      throw new Error(`Invalid domain: ${domain}. Enter a valid domain`);
     }
   }
   return true;
@@ -63,7 +63,7 @@ export function isFilePath(rule: any, value: any) {
   }
   // 文件名不能用*?"<>|等特殊符号
   if (!/^[^*?"<>|]*$/.test(value)) {
-    throw new Error(`文件名不能包含*?"<>|等特殊字符`);
+    throw new Error(`File names cannot contain special characters such as *?"<>|`);
   }
   return true;
 }

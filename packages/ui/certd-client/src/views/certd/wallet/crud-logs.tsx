@@ -23,24 +23,24 @@ export default function (): CreateCrudOptionsRet {
       toolbar: { show: false },
       rowHandle: { show: false },
       columns: {
-        createTime: { title: "时间", type: "datetime", column: { width: 180 } },
+        createTime: { title: "Time", type: "datetime", column: { width: 180 } },
         type: {
-          title: "类型",
+          title: "Type",
           type: "dict-select",
           dict: dict({
             data: [
-              { label: "收益入账", value: "income", color: "success" },
-              { label: "余额抵扣", value: "consume", color: "default" },
-              { label: "提现冻结", value: "withdraw_freeze", color: "warning" },
-              { label: "提现成功", value: "withdraw", color: "success" },
-              { label: "提现成功", value: "withdraw_success", color: "success" },
-              { label: "提现退回", value: "withdraw_reject", color: "processing" },
+              { label: "Earnings Credit", value: "income", color: "success" },
+              { label: "Balance Deduction", value: "consume", color: "default" },
+              { label: "Withdrawal Frozen", value: "withdraw_freeze", color: "warning" },
+              { label: "Withdrawal Successful", value: "withdraw", color: "success" },
+              { label: "Withdrawal Successful", value: "withdraw_success", color: "success" },
+              { label: "Withdrawal Returned", value: "withdraw_reject", color: "processing" },
             ],
           }),
           column: { width: 120 },
         },
         amount: {
-          title: "变动金额",
+          title: "Change Amount",
           type: "number",
           column: {
             width: 120,
@@ -51,7 +51,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         balanceAfter: {
-          title: "变动后余额",
+          title: "Balance After Change",
           type: "number",
           column: {
             width: 130,
@@ -61,7 +61,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         remark: {
-          title: "备注",
+          title: "Remarks",
           type: "text",
           column: { minWidth: 220 },
         },

@@ -138,12 +138,12 @@ async function emitValue(value: any) {
     if (isEnterprice) {
       const projectId = projectStore.currentProjectId;
       if (pipeline?.value?.projectId !== projectId) {
-        message.error("对不起，您不能修改其他项目流水线的通知");
+        message.error("Sorry, you cannot modify notifications for pipelines in another project");
         return;
       }
     } else {
       if (pipeline?.value?.userId !== userId) {
-        message.error("对不起，您不能修改他人流水线的通知");
+        message.error("Sorry, you cannot modify notifications for another user’s pipeline");
         return;
       }
     }

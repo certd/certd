@@ -1,6 +1,6 @@
 <template>
   <div class="fs-theme-color-picker">
-    <h4>主题色</h4>
+    <h4>Theme color</h4>
     <div class="fs-theme-colors">
       <a-tooltip v-for="(item, index) in colorList" :key="index" class="fs-theme-color-item">
         <template #title>
@@ -18,35 +18,35 @@
 import { defineComponent, ref } from "vue";
 const colorListDefine = [
   {
-    key: "薄暮",
+    key: "Dust Red",
     color: "#f5222d",
   },
   {
-    key: "火山",
+    key: "Volcano",
     color: "#fa541c",
   },
   {
-    key: "日暮",
+    key: "Sunset",
     color: "#faad14",
   },
   {
-    key: "明青",
+    key: "Cyan",
     color: "#13c2c2",
   },
   {
-    key: "极光绿",
+    key: "Polar Green",
     color: "#52c41a",
   },
   {
-    key: "拂晓蓝（默认）",
+    key: "Daybreak Blue (default)",
     color: "#1890ff",
   },
   {
-    key: "极客蓝",
+    key: "Geek Blue",
     color: "#2f54eb",
   },
   {
-    key: "酱紫",
+    key: "Purple",
     color: "#722ed1",
   },
 ];

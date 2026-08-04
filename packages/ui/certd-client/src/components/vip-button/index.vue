@@ -119,7 +119,7 @@ const expireTime = computed(() => {
 const expiredDays = computed(() => {
   if (settingStore.plusInfo?.isPlus && !settingStore.isPlus) {
     const days = dayjs().diff(dayjs(settingStore.plusInfo.expireTime), "day");
-    return `${settingStore.vipLabel}已过期${days}天`;
+    return `${settingStore.vipLabel} expired ${days} days ago`;
   }
   return "";
 });

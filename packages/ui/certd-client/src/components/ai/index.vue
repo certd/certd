@@ -15,10 +15,10 @@
           ></path>
         </svg>
       </div>
-      <div class="maxkb-title">🌟 遇见问题，不再有障碍！</div>
-      <p>你好，我是你的智能小助手。<br />点我，开启高效解答模式，让问题变成过去式。</p>
+      <div class="maxkb-title">Need help? Get answers faster.</div>
+      <p>Hi, I am your assistant.<br />Click to open the help chat and get answers faster.</p>
       <div class="maxkb-button">
-        <button @click="closeGuide">我知道了</button>
+        <button @click="closeGuide">Got it</button>
       </div>
       <span class="maxkb-arrow"></span>
     </div>

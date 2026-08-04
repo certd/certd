@@ -3,14 +3,14 @@
     <div v-if="payResult == null" class="flex-o m-20 w-100">
       <a-spin />
     </div>
-    <a-result v-else-if="payResult" status="success" title="支付成功">
+    <a-result v-else-if="payResult" status="success" title="Payment Successful">
       <template #extra>
-        <a-button key="console" type="primary" @click="goHome">回首页</a-button>
+        <a-button key="console" type="primary" @click="goHome">Back Home</a-button>
       </template>
     </a-result>
-    <a-result v-else status="error" title="支付失败">
+    <a-result v-else status="error" title="Payment Failed">
       <template #extra>
-        <a-button key="console" type="primary" @click="goHome">回首页</a-button>
+        <a-button key="console" type="primary" @click="goHome">Back Home</a-button>
       </template>
     </a-result>
   </div>

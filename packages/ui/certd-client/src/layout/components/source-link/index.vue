@@ -1,7 +1,7 @@
 <template>
   <div v-if="showSourceLink" class="fs-source-link-group">
-    <div class="fs-source-link" @click="goSource('https://gitee.com')">本页源码（Gitee）</div>
-    <div class="fs-source-link" @click="goSource('https://github.com')">本页源码（Github）</div>
+    <div class="fs-source-link" @click="goSource('https://gitee.com')">Page source (Gitee)</div>
+    <div class="fs-source-link" @click="goSource('https://github.com')">Page source (GitHub)</div>
   </div>
 </template>
 

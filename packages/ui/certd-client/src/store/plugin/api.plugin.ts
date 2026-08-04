@@ -30,7 +30,7 @@ function initPlugins(plugins: any) {
         if (field.rules == null) {
           field.rules = [];
         }
-        field.rules.push({ required: true, message: "此项必填" });
+        field.rules.push({ required: true, message: "This field is required" });
       }
       plugin.input[key] = field;
     }

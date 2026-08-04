@@ -14,7 +14,7 @@ export function registerRouterHook() {
         // @ts-ignore
         if (!util.hasPermissions(to.meta.permission)) {
           //没有权限
-          message.warn("对不起，您没有权限");
+          message.warn("Sorry, you do not have permission");
           //throw new Error("对不起，您没有权限");
           NProgress.done();
           return false;
@@ -35,7 +35,7 @@ export function registerRouterHook() {
       console.log("PM load success");
       return { ...to, replace: true };
     } catch (e) {
-      console.error("加载动态路由失败", e);
+      console.error("Failed to load dynamic routes", e);
       return false;
     }
   });

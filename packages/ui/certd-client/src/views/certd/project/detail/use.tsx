@@ -10,24 +10,24 @@ export function useApprove() {
   const { projectPermissionDict, projectMemberStatusDict, userDict } = useDicts();
   function openApproveDialog({ id, permission, onSubmit }: { id: any; permission: any; onSubmit: any }) {
     openFormDialog({
-      title: "审批加入申请",
+      title: "Approve Join Request",
       columns: {
         permission: {
-          title: "成员权限",
+          title: "Member Permission",
           type: "dict-select",
           dict: projectPermissionDict,
         },
         status: {
-          title: "审批结果",
+          title: "Approval Result",
           type: "dict-radio",
           dict: dict({
             data: [
               {
-                label: "通过",
+                label: "Approve",
                 value: "approved",
               },
               {
-                label: "拒绝",
+                label: "Reject",
                 value: "rejected",
               },
             ],
@@ -53,18 +53,18 @@ export function useTransfer() {
 
   async function doTransfer() {
     Modal.confirm({
-      title: "请确认",
+      title: "Please Confirm",
       content: () => (
         <div>
-          <p>确认迁移个人资源数据到当前项目？</p>
-          <p class="text-red-500">注意；此操作不可逆，一旦迁移，数据将无法还原回个人用户名下。</p>
+          <p>Confirm migrating personal resource data to the current project?</p>
+          <p class="text-red-500">Warning: this operation is irreversible. After migration, data cannot be restored to the personal user account.</p>
         </div>
       ),
-      okText: "确认",
+      okText: "Confirm",
       okType: "primary",
       onOk: async () => {
         await api.TransferResources();
-        message.success("迁移成功");
+        message.success("Migration successful");
         await loadMyResources();
       },
     });
@@ -80,7 +80,7 @@ export function useTransfer() {
   async function openTransferDialog() {
     await loadMyResources();
     openFormDialog({
-      title: "迁移我的个人资源到当前企业项目",
+      title: "Migrate My Personal Resources to the Current Enterprise Project",
       wrapper: {
         buttons: {
           ok: {
@@ -96,35 +96,35 @@ export function useTransfer() {
           <div class="p-8">
             <div class="flex flex-row items-center justify-evenly w-full">
               <div>
-                <h3 class="text-lg font-bold">我原有的个人资源数量</h3>
+                <h3 class="text-lg font-bold">My Existing Personal Resource Counts</h3>
                 <div class="mt-4">
-                  <p>流水线：{selfResources.value.pipeline}</p>
-                  <p>流水线历史：{selfResources.value.history}</p>
-                  <p>流水线历史日志：{selfResources.value.historyLog}</p>
-                  <p>流水线分组：{selfResources.value.pipelineGroup}</p>
-                  <p>存储：{selfResources.value.storage}</p>
-                  <p>证书：{selfResources.value.certInfo}</p>
-                  <p>授权：{selfResources.value.access}</p>
-                  <p>站点监控：{selfResources.value.siteMonitor}</p>
-                  <p>通知：{selfResources.value.notification}</p>
-                  <p>站点监控分组：{selfResources.value.group}</p>
+                  <p>Pipelines: {selfResources.value.pipeline}</p>
+                  <p>Pipeline History: {selfResources.value.history}</p>
+                  <p>Pipeline History Logs: {selfResources.value.historyLog}</p>
+                  <p>Pipeline Groups: {selfResources.value.pipelineGroup}</p>
+                  <p>Storage: {selfResources.value.storage}</p>
+                  <p>Certificates: {selfResources.value.certInfo}</p>
+                  <p>Authorizations: {selfResources.value.access}</p>
+                  <p>Site Monitoring: {selfResources.value.siteMonitor}</p>
+                  <p>Notifications: {selfResources.value.notification}</p>
+                  <p>Site Monitoring Groups: {selfResources.value.group}</p>
 
-                  <p>流水线模版：{selfResources.value.template}</p>
-                  <p>域名：{selfResources.value.domain}</p>
-                  <p>子域名托管：{selfResources.value.subdomain}</p>
-                  <p>cname记录：{selfResources.value.cnameRecord}</p>
+                  <p>Pipeline Templates: {selfResources.value.template}</p>
+                  <p>Domains: {selfResources.value.domain}</p>
+                  <p>Subdomain Hosting: {selfResources.value.subdomain}</p>
+                  <p>CNAME Records: {selfResources.value.cnameRecord}</p>
                 </div>
               </div>
-              <div class="text-2xl font-bold"> 迁移到→ </div>
-              <div>项目："{projectStore.currentProject?.name}"</div>
+              <div class="text-2xl font-bold">  Migrate to → </div>
+              <div>Project: "{projectStore.currentProject?.name}"</div>
             </div>
             <div class="text-center m-4">
-              <p class="text-red-500">注意；此操作不可逆，一旦迁移，数据将无法还原回个人用户名下。</p>
+              <p class="text-red-500">Warning: this operation is irreversible. After migration, data cannot be restored to the personal user account.</p>
             </div>
 
             <div class="flex flex-row items-center justify-center w-full">
               <a-button type="primary" onClick={doTransfer}>
-                确认迁移
+                Confirm Migration
               </a-button>
             </div>
           </div>

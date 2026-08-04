@@ -4,39 +4,39 @@
       <fs-values-format :model-value="product.type" :dict="productTypeDictRef"></fs-values-format>
     </template>
 
-    <div class="product-intro">{{ product.intro || "暂无介绍" }}</div>
+    <div class="product-intro">{{ product.intro || "No introduction available" }}</div>
     <a-divider />
     <div>
       <div class="flex-between mt-5">
-        <div class="flex-o"><fs-icon icon="ant-design:check-outlined" class="color-green mr-5" /> 流水线条数：</div>
-        <suite-value :model-value="product.content.maxPipelineCount" unit="条" />
+        <div class="flex-o"><fs-icon icon="ant-design:check-outlined" class="color-green mr-5" /> Pipelines: </div>
+        <suite-value :model-value="product.content.maxPipelineCount" unit="items" />
       </div>
       <div class="flex-between mt-5">
-        <div class="flex-o"><fs-icon icon="ant-design:check-outlined" class="color-green mr-5" />域名总数量：</div>
-        <suite-value :model-value="product.content.maxDomainCount" unit="个" />
+        <div class="flex-o"><fs-icon icon="ant-design:check-outlined" class="color-green mr-5" />Total Domains: </div>
+        <suite-value :model-value="product.content.maxDomainCount" unit="items" />
       </div>
       <div class="flex-between mt-5">
-        <div class="flex-o" style="padding-left: 2em">- 其中泛域名数量：</div>
-        <suite-value :model-value="product.content.maxWildcardDomainCount" unit="个" />
+        <div class="flex-o" style="padding-left: 2em">- Wildcard Domains Included: </div>
+        <suite-value :model-value="product.content.maxWildcardDomainCount" unit="items" />
       </div>
       <div class="flex-between mt-5">
         <div class="flex-o">
           <fs-icon icon="ant-design:check-outlined" class="color-green mr-5" />
-          部署次数：
-          <a-tooltip title="只有运行成功才会扣除部署次数">
+          Deployments:
+          <a-tooltip title="Deployments are deducted only when the run succeeds">
             <fs-icon class="font-size-16 ml-5" icon="mingcute:question-line"></fs-icon>
           </a-tooltip>
         </div>
-        <suite-value :model-value="product.content.maxDeployCount" unit="次" />
+        <suite-value :model-value="product.content.maxDeployCount" unit="times" />
       </div>
       <div class="flex-between mt-5">
-        <div class="flex-o"><fs-icon icon="ant-design:check-outlined" class="color-green mr-5" /> 证书监控：</div>
-        <suite-value :model-value="product.content.maxMonitorCount" unit="个" />
+        <div class="flex-o"><fs-icon icon="ant-design:check-outlined" class="color-green mr-5" /> Certificate Monitoring: </div>
+        <suite-value :model-value="product.content.maxMonitorCount" unit="items" />
       </div>
     </div>
     <a-divider />
     <div class="duration flex-between mt-5">
-      <div class="flex-o duration-label">时长</div>
+      <div class="flex-o duration-label">Duration</div>
       <div class="duration-list">
         <div v-for="dp of product.durationPrices" :key="dp.duration" class="duration-item" :class="{ active: selected.duration === dp.duration }" @click="selected = dp">
           <span class="duration-text">{{ durationDict.dataMap[dp.duration]?.label }}</span>
@@ -46,15 +46,15 @@
     </div>
     <a-divider />
     <div class="price flex-between mt-5">
-      <div class="flex-o">价格</div>
+      <div class="flex-o">Price</div>
       <div class="flex-o price-text">
-        <price-input style="color: red" :font-size="20" :model-value="selected?.price" :edit="false" zero-text="免费" />
+        <price-input style="color: red" :font-size="20" :model-value="selected?.price" :edit="false" zero-text="Free" />
         <span class="price-unit">/ {{ durationDict.dataMap[selected.duration]?.label }}</span>
       </div>
     </div>
 
     <template #actions>
-      <a-button type="primary" @click="doOrder">立即购买</a-button>
+      <a-button type="primary" @click="doOrder">Purchase Now</a-button>
     </template>
   </a-card>
 </template>
@@ -86,8 +86,8 @@ const originalUnitPrice = computed(() => {
 
 const productTypeDictRef = dict({
   data: [
-    { value: "suite", label: "套餐", color: "green" },
-    { value: "addon", label: "加量包", color: "blue" },
+    { value: "suite", label: "Plan", color: "green" },
+    { value: "addon", label: "Add-on Pack", color: "blue" },
   ],
 });
 
@@ -103,7 +103,7 @@ function discountText(durationPrice: any) {
   if (discount >= 10) {
     return "";
   }
-  return `${discount}折`;
+  return `${discount}% off`;
 }
 
 async function doOrder() {

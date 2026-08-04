@@ -177,10 +177,10 @@ function install(app: App, options: any = {}) {
         rowHandle: {
           fixed: "right",
           buttons: {
-            view: { type: "link", text: null, icon: "ion:eye-outline", tooltip: { title: "查看" } },
-            copy: { show: true, type: "link", text: null, icon: "ion:copy-outline", tooltip: { title: "复制" } },
-            edit: { type: "link", text: null, icon: "ion:create-outline", tooltip: { title: "编辑" } },
-            remove: { type: "link", style: { color: "red" }, text: null, icon: "ion:trash-outline", tooltip: { title: "删除" } },
+            view: { type: "link", text: null, icon: "ion:eye-outline", tooltip: { title: "View" } },
+            copy: { show: true, type: "link", text: null, icon: "ion:copy-outline", tooltip: { title: "Copy" } },
+            edit: { type: "link", text: null, icon: "ion:create-outline", tooltip: { title: "Edit" } },
+            remove: { type: "link", style: { color: "red" }, text: null, icon: "ion:trash-outline", tooltip: { title: "Delete" } },
           },
           dropdown: {
             more: {
@@ -236,9 +236,9 @@ function install(app: App, options: any = {}) {
           },
           async afterSubmit({ mode }) {
             if (mode === "add") {
-              notification.success({ message: "添加成功" });
+              notification.success({ message: "Added successfully" });
             } else if (mode === "edit") {
-              notification.success({ message: "保存成功" });
+              notification.success({ message: "Saved successfully" });
             }
           },
           wrapperCol: {

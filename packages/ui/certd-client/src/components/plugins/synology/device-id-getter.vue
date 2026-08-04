@@ -3,7 +3,7 @@
     <contextHolder />
     <a-input v-bind="attrs" :value="value" :allow-clear="true" @update:value="emit('update:value', $event)">
       <template #suffix>
-        <a-tag class="cursor-pointer" @click="getDeviceId">获取设备ID</a-tag>
+        <a-tag class="cursor-pointer" @click="getDeviceId">Get device ID</a-tag>
       </template>
     </a-input>
   </div>
@@ -52,18 +52,18 @@ const [modal, contextHolder] = Modal.useModal();
 async function getDeviceId() {
   //打开对话框
   modal.confirm({
-    title: "请输入OTP验证码",
+    title: "Enter OTP code",
     maskClosable: true,
     content: () => {
       return (
         <a-form-item-rest>
-          <a-input v-model:value={otpCodeRef.value} placeholder="请输入OTP验证码" />
+          <a-input v-model:value={otpCodeRef.value} placeholder="Enter OTP code" />
         </a-form-item-rest>
       );
     },
     onOk: async () => {
       const res = await loginWithOTPCode(otpCodeRef.value);
-      console.log("did返回", res);
+      console.log("Device ID response", res);
       emit("update:value", res.did);
     },
   });

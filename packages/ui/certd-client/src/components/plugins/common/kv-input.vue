@@ -1,17 +1,15 @@
 <template>
   <div class="kv-input">
     <div v-for="(item, index) of items" :key="index" class="kv-row">
-      <a-input :value="item.key" placeholder="名称" class="kv-key" @input="onKeyChange(index, $event)" @blur="emitValue" />
+      <a-input :value="item.key" placeholder="Name" class="kv-key" @input="onKeyChange(index, $event)" @blur="emitValue" />
       <span class="kv-sep">:</span>
-      <a-input :value="item.value" placeholder="版本" class="kv-value" @input="onValueChange(index, $event)" @blur="emitValue" />
+      <a-input :value="item.value" placeholder="Version" class="kv-value" @input="onValueChange(index, $event)" @blur="emitValue" />
       <a-button type="link" danger @click="removeItem(index)">
         <template #icon><DeleteOutlined /></template>
       </a-button>
     </div>
     <a-button type="dashed" block @click="addItem">
-      <template #icon><PlusOutlined /></template>
-      添加
-    </a-button>
+      <template #icon><PlusOutlined /></template>Add</a-button>
   </div>
 </template>
 
