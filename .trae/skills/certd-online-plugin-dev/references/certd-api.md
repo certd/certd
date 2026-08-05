@@ -5,7 +5,7 @@
 ## 查询插件
 
 ```http
-POST /sys/plugin/find
+POST /scoped/sys/ai/plugin/find
 Content-Type: application/json
 Authorization: <token>
 ```
@@ -28,19 +28,19 @@ Authorization: <token>
 - `type: "store"` 且没有 `appId`、`developerId`：本地插件。
 
 结果中的 `editable` 是唯一的编辑权限依据；不能只按插件来源判断是否可修改。
-列表结果只返回插件基础信息，不返回 `content`、`setting`、`sysSetting`、`metadata` 或 `extra`。需要完整 YAML 时再调用 `/sys/plugin/export`。
+列表结果只返回插件基础信息，不返回 `content`、`setting`、`sysSetting`、`metadata` 或 `extra`。需要完整 YAML 时再调用 `/scoped/sys/ai/plugin/export`。
 
 ## 读取插件信息
 
 ```http
-POST /sys/plugin/info?id=12
+POST /scoped/sys/ai/plugin/info?id=12
 Authorization: <token>
 ```
 
 ## 导出完整 YAML
 
 ```http
-POST /sys/plugin/export
+POST /scoped/sys/ai/plugin/export
 Content-Type: application/json
 Authorization: <token>
 ```
@@ -53,22 +53,10 @@ Authorization: <token>
 
 ## 保存插件
 
-已有插件使用：
+使用完整 YAML 导入：
 
 ```http
-POST /sys/plugin/update
-```
-
-新插件使用：
-
-```http
-POST /sys/plugin/add
-```
-
-也可以使用完整 YAML 导入：
-
-```http
-POST /sys/plugin/import
+POST /scoped/sys/ai/plugin/import
 ```
 
 ```json
@@ -79,4 +67,4 @@ POST /sys/plugin/import
 }
 ```
 
-保存后重新调用 `/sys/plugin/find` 或 `/sys/plugin/info` 验证。
+保存后重新调用 `/scoped/sys/ai/plugin/find` 或 `/scoped/sys/ai/plugin/info` 验证。

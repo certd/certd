@@ -22,4 +22,4 @@
 - `change.md` 只记录插件 ID、版本、时间和脱敏修改摘要。
 - 不保存 Token、证书、私钥、Cookie、环境变量和真实授权值。
 - 恢复历史版本前先备份当前 YAML。
-- 恢复后通过 `/sys/plugin/update` 或 `/sys/plugin/import` 写回 Certd。
+- 恢复后通过 `/scoped/sys/ai/plugin/import` 写回 Certd。

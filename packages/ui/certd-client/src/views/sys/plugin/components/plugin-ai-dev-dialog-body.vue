@@ -21,7 +21,7 @@
           <a-tag color="blue">API 模式</a-tag>
         </div>
         <a-textarea class="plugin-ai-dev__prompt-text" :value="prompt" readonly :rows="24" placeholder="生成后复制到 Codex 或 Trae 中运行。" />
-        <div class="plugin-ai-dev__prompt-warning">该提示词包含 Certd 的访问 Token，请勿泄露给他人</div>
+        <div class="plugin-ai-dev__prompt-warning">提示词使用受限且短时有效的 AI 开发 Token，可正常提供给可信 Agent，请勿公开或随意转发</div>
       </div>
     </section>
   </div>
@@ -31,7 +31,6 @@
 import { onMounted, ref } from "vue";
 import { message } from "ant-design-vue";
 import * as api from "../api";
-import { useUserStore } from "/@/store/user";
 import { env } from "/src/utils/util.env";
 
 defineOptions({
@@ -43,7 +42,6 @@ const props = defineProps<{
   pluginName?: string;
 }>();
 
-const userStore = useUserStore();
 const requirement = ref("");
 const selectedPluginId = ref<number | string | undefined>(props.pluginId);
 const pluginOptions = ref<{ label: string; value: number | string }[]>([]);
@@ -93,17 +91,17 @@ async function createPrompt() {
   }
   creating.value = true;
   try {
-    prompt.value = buildPrompt();
+    const accessToken = await api.GetScopedAccessToken(["sys/ai"]);
+    prompt.value = buildPrompt(accessToken.token);
     message.success("启动提示词已生成");
   } finally {
     creating.value = false;
   }
 }
 
-function buildPrompt() {
+function buildPrompt(token: string) {
   const pluginLabel = props.pluginName || selectedPluginId.value;
   const pluginText = pluginLabel ? `当前插件：${pluginLabel}` : "当前为新插件开发";
-  const token = userStore.getToken || "";
   const certdUrl = window.location.origin;
   const apiBase = new URL(env.API || "/api", certdUrl).toString().replace(/\/$/, "");
   return `你是 Certd 在线插件开发 Agent。
@@ -119,8 +117,10 @@ ${certdUrl}
 Certd API 地址：
 ${apiBase}
 
-当前用户 Token：
+受限的 Certd AccessToken（仅能访问插件查询、编辑相关的几个接口）：
 ${token}
+
+如果token过期，请向用户重新申请AccessToken. （让用户重新生成提示词，到里面复制上面这一串新AccessToken给你）
 
 开发流程：
 1. 开始开发前，先检查当前工作目录是否已经是 certd 项目：应能看到 package.json、packages/ui/certd-server/src/plugins/、.trae/skills/ 等特征。
@@ -128,12 +128,12 @@ ${token}
 3. 如果当前目录不是 certd 项目，或缺少该技能，则先拉取 certd 仓库代码：优先 https://atomgit.com/certd/certd/，如果 AtomGit 拉取失败，再使用 https://github.com/certd/certd。
 4. 加载 .trae/skills/certd-online-plugin-dev/SKILL.md，并按插件类型加载对应子 Skill。
 5. 参考 certd 项目下已有内置插件 packages/ui/certd-server/src/plugins/ 的实现方式进行开发。
-6. 使用当前 Token 调用 Certd API，通过 /sys/plugin/find 查询插件和 Access。
+6. 使用受限 Token 调用 Certd API，只能访问 /scoped/sys/ai/plugin/ 前缀接口；通过 /scoped/sys/ai/plugin/find 查询插件和 Access。
 7. 开发 Task 或 DNS 插件前，先查询对应 Access，优先复用 Access 提供的 API/SDK 能力。
 8. 如果没有 Access，先创建 Access 插件；如果 Access 的 editable 为 true 且缺少能力，可以先修改 Access。
 9. 在当前工作区创建并使用 .tmp/online-plugin-dev 作为本次插件开发临时目录，历史记录、临时 YAML、脚本草稿和调试记录都放在该目录下。
 10. 修改任何插件前，先在 .tmp/online-plugin-dev/history 下保存完整 YAML 历史记录，便于恢复。
-11. 通过 Certd API 读取和保存完整插件 YAML，不使用 WebSocket，不依赖浏览器草稿。
+11. 读取完整 YAML 使用 /scoped/sys/ai/plugin/export，保存完整 YAML 使用 /scoped/sys/ai/plugin/import；不使用 WebSocket，不依赖浏览器草稿。
 12. 保存完成后向用户报告 API 操作结果，不自动发布。
 
 认证请求要求：

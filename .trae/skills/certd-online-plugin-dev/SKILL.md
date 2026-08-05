@@ -43,7 +43,7 @@ Certd 插件按来源分为三类：
 
 ## API 认证
 
-提示词会提供 Certd API 地址和当前用户 Token。调用 API 时使用：
+提示词会提供 Certd API 地址和仅限 AI 插件开发接口的受限 Token。调用 API 时使用：
 
 ```http
 Authorization: <token>
@@ -57,7 +57,7 @@ Content-Type: application/json
 Node 请求须直接读取 UTF-8 文件或在 Node 内构造 JSON，并使用 `JSON.stringify`：
 
 ```javascript
-const response = await fetch(`${apiBase}/sys/plugin/find`, {
+const response = await fetch(`${apiBase}/scoped/sys/ai/plugin/find`, {
   method: "POST",
   headers: { Authorization: token, "Content-Type": "application/json; charset=utf-8" },
   body: JSON.stringify({ keywords: ["nginx"], includeBuiltIn: true, includeStore: true }),
@@ -66,28 +66,28 @@ const response = await fetch(`${apiBase}/sys/plugin/find`, {
 
 ## UTF-8 保存
 
-在 Windows 上，Node 直接以 UTF-8 读取 YAML 并用 `JSON.stringify` 发送；不要让 PowerShell 转发含中文的 YAML/JSON。保存后检查中文字段不含 `?`，再调用 `/sys/plugin/find` 或 `/sys/plugin/info` 验证。
+在 Windows 上，Node 直接以 UTF-8 读取 YAML 并用 `JSON.stringify` 发送；不要让 PowerShell 转发含中文的 YAML/JSON。保存后检查中文字段不含 `?`，再调用 `/scoped/sys/ai/plugin/find` 或 `/scoped/sys/ai/plugin/info` 验证。
 
 ## API 工作流
 
-1. 使用 `/sys/plugin/find` 查询插件和 Access，可通过 `keywords` 数组传递多个关键词。
+1. 使用 `/scoped/sys/ai/plugin/find` 查询插件和 Access，可通过 `keywords` 数组传递多个关键词。
 2. 查询结果包含 `editable`：
    - `editable: true`：允许当前 Agent 修改并保存。
    - `editable: false`：只能读取和使用，不能修改。
-3. 读取完整 YAML 时调用 `/sys/plugin/export`。
-4. 所有插件保存统一调用 `/sys/plugin/import`，并始终传递完整 YAML：
+3. 读取完整 YAML 时调用 `/scoped/sys/ai/plugin/export`。
+4. 所有插件保存统一调用 `/scoped/sys/ai/plugin/import`，并始终传递完整 YAML：
    - 新插件使用 `override: false`。
    - 已有插件使用 `override: true`；导入接口根据 `author` 和 `name` 定位并覆盖已有记录。
 5. 不使用 `/sys/plugin/add` 或 `/sys/plugin/update` 保存插件，避免保存路径分叉、字段丢失和 Windows 请求兼容性问题。
-6. 保存完成后重新调用 `/sys/plugin/find` 或 `/sys/plugin/info` 验证结果。
+6. 保存完成后重新调用 `/scoped/sys/ai/plugin/find` 或 `/scoped/sys/ai/plugin/info` 验证结果。
 
-`/sys/plugin/find` 会在一次请求中分别查询内置插件和 `store` 插件，再合并返回；`store` 插件需按上述字段区分市场插件与本地插件。
+`/scoped/sys/ai/plugin/find` 会在一次请求中分别查询内置插件和 `store` 插件，再合并返回；`store` 插件需按上述字段区分市场插件与本地插件。
 
 详细请求字段见 `references/certd-api.md`。
 
 ## Access 协作
 
-开发 Task 或 DNS Provider 前，先用 `/sys/plugin/find` 查询对应 Access：
+开发 Task 或 DNS Provider 前，先用 `/scoped/sys/ai/plugin/find` 查询对应 Access：
 
 1. 如果没有对应 Access，先创建 Access 插件，再创建业务插件。
 2. 如果已有 Access，先读取它的完整 YAML 和 `content`。

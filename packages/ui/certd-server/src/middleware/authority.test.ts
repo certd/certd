@@ -55,3 +55,36 @@ describe("AuthorityMiddleware guestOptionalAuth", () => {
     assert.deepEqual(ctx.user.roles, [1]);
   });
 });
+
+describe("AuthorityMiddleware scoped token", () => {
+  it("rejects a scoped token outside its API prefix", async () => {
+    const middleware = createMiddleware(Constants.per.authOnly);
+    const ctx = createCtx();
+    ctx.path = "/api/sys/plugin/find";
+    const token = jwt.sign({ id: 1, roles: [1], scoped: ["sys/ai"] }, middleware.secret);
+    ctx.get = (name: string) => (name === "Authorization" ? `Bearer ${token}` : "");
+    let called = false;
+
+    await middleware.resolve()(ctx, async () => {
+      called = true;
+    });
+
+    assert.equal(called, false);
+    assert.equal(ctx.status, 403);
+  });
+
+  it("allows a scoped token within its API prefix", async () => {
+    const middleware = createMiddleware(Constants.per.authOnly);
+    const ctx = createCtx();
+    ctx.path = "/api/scoped/sys/ai/plugin/find";
+    const token = jwt.sign({ id: 1, roles: [1], scoped: ["sys/ai"] }, middleware.secret);
+    ctx.get = (name: string) => (name === "Authorization" ? `Bearer ${token}` : "");
+    let called = false;
+
+    await middleware.resolve()(ctx, async () => {
+      called = true;
+    });
+
+    assert.equal(called, true);
+  });
+});

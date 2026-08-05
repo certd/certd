@@ -55,7 +55,7 @@ export class PluginController extends CrudController<PluginService> {
     };
     merge(bean, def);
     bean.fullName = bean.name;
-    if (bean.author){
+    if (bean.author) {
       bean.fullName = bean.author + "/" + bean.name;
     }
     const res = await super.add(bean);
@@ -189,5 +189,4 @@ export class PluginController extends CrudController<PluginService> {
     const res = await this.service.exportPlugin(id);
     return this.ok(res);
   }
-
 }
