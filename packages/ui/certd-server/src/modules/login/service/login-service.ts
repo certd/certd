@@ -256,6 +256,33 @@ export class LoginService {
     };
   }
 
+  async generateScopedAccessToken(user: { id: number; username: string; roles: number[] }, scoped: string[]) {
+    const normalizedScopes = [...new Set((scoped || []).map(item => `${item || ""}`.trim()).filter(Boolean))];
+    if (normalizedScopes.length === 0) {
+      throw new CommonException("scoped不能为空");
+    }
+    const setting = await this.sysSettingsService.getSetting<SysPrivateSettings>(SysPrivateSettings);
+    const expire = Math.min(this.jwt.expire, 6 * 60 * 60);
+    const token = jwt.sign(
+      {
+        username: user.username,
+        id: user.id,
+        roles: user.roles,
+        scoped: normalizedScopes,
+      },
+      setting.jwtKey,
+      { expiresIn: expire }
+    );
+
+    return {
+      token,
+      expire,
+      userId: user.id,
+      username: user.username,
+      scoped: normalizedScopes,
+    };
+  }
+
   async loginByOpenId(req: { openId: string; type: string }) {
     const { openId, type } = req;
     const oauthBound = await this.oauthBoundService.findOne({

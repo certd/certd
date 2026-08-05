@@ -8,6 +8,7 @@ const tencentDnsProviderDefine: any = {
   desc: "腾讯云域名DNS解析提供者",
   accessType: "tencent",
   icon: "svg:icon-tencentcloud",
+  order: 0,
   dependPlugins: {
     "access:tencent": "*",
   },

@@ -28,6 +28,14 @@ export async function FindPlugins(query: {
   });
 }
 
+export async function GetScopedAccessToken(scoped: string[]): Promise<{ token: string; expire: number; scoped: string[] }> {
+  return await request({
+    url: "/sys/basic/getScopedAccessToken",
+    method: "post",
+    data: { scoped },
+  });
+}
+
 export async function AddObj(obj: any) {
   return await request({
     url: apiPrefix + "/add",

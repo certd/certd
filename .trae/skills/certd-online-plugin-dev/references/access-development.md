@@ -4,9 +4,9 @@ Access 插件负责保存授权配置，也负责封装平台 API/SDK，供 Task
 
 ## 查询顺序
 
-1. 调用 `/sys/plugin/find`，使用 `pluginType: access`。
+1. 调用 `/scoped/sys/ai/plugin/find`，使用 `pluginType: access`。
 2. 根据 `name`、`author`、`fullName` 识别目标 Access。
-3. 使用 `/sys/plugin/export` 读取完整 YAML。
+3. 使用 `/scoped/sys/ai/plugin/export` 读取完整 YAML。
 4. 检查 `content` 中已经提供的方法。
 
 ## 修改规则
