@@ -131,17 +131,13 @@ export class VolcengineDeployToDCDN extends AbstractTaskPlugin {
       }
     }
 
-    //域名十个十个的分割
-    const splitSize = 2;
-
-    for (let i = 0; i < domainList.length; i += splitSize) {
-      const batch = domainList.slice(i, i + splitSize);
-      this.logger.info(`开始部署证书到域名:${batch}`);
+    for (let i = 0; i < domainList.length; i++) {
+      this.logger.info(`开始部署证书到域名:${domainList[i]}`);
       const res = await service.request({
         action: "CreateCertBind",
         method: "POST",
         body: {
-          DomainNames: batch,
+          DomainNames: [domainList[i]],
           CertSource: "volc",
           CertId: certId,
         },
