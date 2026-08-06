@@ -1,18 +1,18 @@
 import { logger } from "@certd/basic";
 
 export type TaskItem = {
-  task: ()=>Promise<void>;
-}
+  task: () => Promise<void>;
+};
 
-export class UserTaskQueue{
+export class UserTaskQueue {
   userId: number;
   pendingQueue: TaskItem[] = [];
   runningQueue: TaskItem[] = [];
-  getMaxRunningCount: ()=>number ;
+  getMaxRunningCount: () => number;
 
-  constructor(req: { userId: number ,getMaxRunningCount: ()=>number }) {
+  constructor(req: { userId: number; getMaxRunningCount: () => number }) {
     this.userId = req.userId;
-    this.getMaxRunningCount = req.getMaxRunningCount ;
+    this.getMaxRunningCount = req.getMaxRunningCount;
   }
 
   addTask(task: TaskItem) {
@@ -34,10 +34,10 @@ export class UserTaskQueue{
     }
     // 执行任务
     this.runningQueue.push(task);
-    const call = async ()=>{
-      try{
+    const call = async () => {
+      try {
         await task.task();
-      }finally{
+      } finally {
         // 任务执行完成，从运行队列中移除
         const index = this.runningQueue.indexOf(task);
         if (index > -1) {
@@ -46,16 +46,15 @@ export class UserTaskQueue{
         // 继续执行下一个任务
         this.runTask();
       }
-    }
+    };
     logger.info(`[user_${this.userId}]执行任务，当前运行队列：${this.runningQueue.length}, 等待队列：${this.pendingQueue.length}`);
-    call()
+    call();
   }
 }
 
-export class ExecutorQueue{
+export class ExecutorQueue {
   queues: Record<number, UserTaskQueue> = {};
   maxRunningCount: number = 10;
-
 
   setMaxRunningCount(count: number) {
     this.maxRunningCount = count;
@@ -64,7 +63,7 @@ export class ExecutorQueue{
   getUserQueue(userId: number) {
     const userQueue = this.queues[userId];
     if (!userQueue) {
-      this.queues[userId] = new UserTaskQueue({ userId, getMaxRunningCount: ()=>this.maxRunningCount });
+      this.queues[userId] = new UserTaskQueue({ userId, getMaxRunningCount: () => this.maxRunningCount });
     }
     return this.queues[userId];
   }
@@ -73,7 +72,6 @@ export class ExecutorQueue{
     const userQueue = this.getUserQueue(userId);
     userQueue.addTask(task);
   }
- 
 }
 
 export const executorQueue = new ExecutorQueue();

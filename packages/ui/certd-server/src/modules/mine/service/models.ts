@@ -52,6 +52,14 @@ export class UserGrantSetting extends BaseSettings {
   allowAdminViewCerts = false;
 }
 
+export class UserPreferencesSetting extends BaseSettings {
+  static __title__ = "用户偏好设置";
+  static __key__ = "user.preferences";
+
+  /** 偏好差异配置（相对默认值），与前端 diffPreference 结构一致 */
+  preferences: Record<string, any> = {};
+}
+
 export class UserDomainImportSetting extends BaseSettings {
   static __title__ = "用户域名导入设置";
   static __key__ = "user.domain.import";

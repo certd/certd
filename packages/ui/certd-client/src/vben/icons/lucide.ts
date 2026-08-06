@@ -18,6 +18,8 @@ export {
   CircleCheckBig,
   CircleHelp,
   Copy,
+  ClipboardPaste,
+  CloudUpload,
   CornerDownLeft,
   Ellipsis,
   Expand,

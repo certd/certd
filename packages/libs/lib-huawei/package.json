@@ -15,7 +15,7 @@
     "pub": "npm publish",
     "compile": "npm run build",
     "format": "prettier --write src",
-    "lint": "eslint --fix"
+    "lint": "eslint --fix --ext .ts src"
   },
   "dependencies": {
     "axios": "^1.9.0",

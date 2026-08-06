@@ -1,5 +1,5 @@
-import { IAccessService } from '@certd/pipeline';
-import { AccessService } from './access-service.js';
+import { IAccessService } from "@certd/pipeline";
+import { AccessService } from "./access-service.js";
 
 export class AccessSysGetter implements IAccessService {
   accessService: AccessService;

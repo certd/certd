@@ -1,5 +1,6 @@
-import { CancelError, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { utils } from "@certd/basic";
+import { NonRetryableException } from "@certd/lib-server";
 
 import { AcmeAccountInfo, AcmeService, DomainsVerifyPlan, DomainVerifyPlan, PrivateKeyType, SSLProvider } from "./acme.js";
 import { createDnsProvider, DnsProviderContext, DnsVerifier, DomainVerifiers, HttpVerifier, IDnsProvider, IDomainVerifierGetter, ISubDomainsGetter } from "@certd/plugin-lib";
@@ -61,6 +62,7 @@ const preferredChainConfigs = {
 } as const;
 
 const preferredChainSupportedProviders = Object.keys(preferredChainConfigs);
+const CERT_APPLY_RETRY_DELAY_MS = 30_000;
 
 const preferredChainMergeScript = (() => {
   const configs = JSON.stringify(preferredChainConfigs);
@@ -551,6 +553,20 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   })
   waitDnsDiffuseTime = 30;
 
+  @TaskInput({
+    title: "证书申请失败重试次数",
+    value: 0,
+    component: {
+      name: "a-input-number",
+      vModel: "value",
+      min: 0,
+      step: 1,
+    },
+    maybeNeed: true,
+    helper: "证书申请失败后，等待30秒再自动重试；0表示不重试",
+  })
+  certApplyRetryCount = 0;
+
   acme!: AcmeService;
 
   eab!: EabAccess;
@@ -651,33 +667,52 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       dnsProvider = await this.createDnsProvider(dnsProviderType, access);
     }
 
-    try {
-      const cert = await this.acme.order({
-        email,
-        domains,
-        dnsProvider,
-        domainsVerifyPlan,
-        csrInfo,
-        privateKeyType: this.privateKeyType,
-        profile: this.certProfile,
-        preferredChain: this.preferredChain,
-        acmeAccount,
-      });
+    const cert = await this.orderWithRetry({
+      email,
+      domains,
+      dnsProvider,
+      domainsVerifyPlan,
+      csrInfo,
+      privateKeyType: this.privateKeyType,
+      profile: this.certProfile,
+      preferredChain: this.preferredChain,
+      acmeAccount,
+    });
 
-      const certInfo = this.formatCerts(cert);
-      return new CertReader(certInfo);
-    } catch (e: any) {
-      const message: string = e?.message;
-      if (message != null && message.indexOf("redundant with a wildcard domain in the same request") >= 0) {
-        this.logger.error(e);
-        throw new Error(`通配符域名已经包含了普通域名，请删除其中一个（${message}）`);
+    const certInfo = this.formatCerts(cert);
+    return new CertReader(certInfo);
+  }
+
+  private async orderWithRetry(orderOptions: Parameters<AcmeService["order"]>[0]) {
+    const maxRetryCount = this.getCertApplyRetryCount();
+    let retryCount = 0;
+
+    while (true) {
+      try {
+        return await this.acme.order(orderOptions);
+      } catch (e: any) {
+        if (e instanceof NonRetryableException) {
+          throw e;
+        }
+        if (e?.name === "CancelError" || retryCount >= maxRetryCount) {
+          throw e;
+        }
+
+        retryCount++;
+        this.logger.warn(`证书申请失败，等待30秒后重试（${retryCount}/${maxRetryCount}）`, e);
+        await utils.sleep(CERT_APPLY_RETRY_DELAY_MS);
       }
-      if (e.name === "CancelError") {
-        throw new CancelError(e.message);
-      }
-      throw e;
     }
   }
+
+  private getCertApplyRetryCount() {
+    const retryCount = Number(this.certApplyRetryCount);
+    if (!Number.isFinite(retryCount) || retryCount <= 0) {
+      return 0;
+    }
+    return Math.floor(retryCount);
+  }
+
 
   async createDnsProvider(dnsProviderType: string, dnsProviderAccess: any): Promise<IDnsProvider> {
     const domainParser = this.acme.options.domainParser;
