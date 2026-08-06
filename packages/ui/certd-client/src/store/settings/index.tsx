@@ -390,4 +390,10 @@ export const useSettingStore = defineStore({
 
 mitter.on("app.login", async () => {
   await useSettingStore().init();
+  try {
+    const { loadPreferencesFromAccount } = await import("/@/vben/layouts/widgets/preferences/account-sync");
+    await loadPreferencesFromAccount();
+  } catch (e) {
+    console.error("加载账号偏好设置失败", e);
+  }
 });
