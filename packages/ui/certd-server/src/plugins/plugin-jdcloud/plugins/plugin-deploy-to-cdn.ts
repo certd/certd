@@ -53,6 +53,22 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
   )
   domainName!: string | string[];
 
+  @TaskInput({
+    title: "跳转类型",
+    helper: "http与https之间的跳转方式，default：不强制跳转",
+    value: "default",
+    component: {
+      name: "a-select",
+      options: [
+        { label: "默认", value: "default" },
+        { label: "强制跳转http", value: "http" },
+        { label: "强制跳转https", value: "https" },
+      ],
+    },
+    required: false,
+  })
+  jumpType;
+
   async onInstance() {}
 
   async execute(): Promise<void> {
@@ -101,7 +117,7 @@ export class JDCloudDeployToCDN extends AbstractTaskPlugin {
         httpType: "https",
         // certificate: certInfo.crt,
         // rsaKey: certInfo.key,
-        jumpType: "default",
+        jumpType: this.jumpType || "default", // 旧版数据未配置跳转类型时，走默认跳转
         certFrom: "ssl",
         sslCertId: certId, // 不用certId 方式，会报证书已存在错误，目前还没找到怎么查询重复证书
         syncToSsl: false,
