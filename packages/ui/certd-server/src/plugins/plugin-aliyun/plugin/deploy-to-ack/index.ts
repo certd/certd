@@ -144,6 +144,17 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
   })
   createOnNotFound: boolean;
 
+  @TaskInput({
+    title: "调试模式",
+    value: false,
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+    helper: "是否开启调试模式，开启后将打印更多日志",
+  })
+  debug: boolean;
+
   K8sClient: any;
   async onInstance() {
     const sdk = await import("@certd/lib-k8s");
@@ -157,10 +168,14 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
     const kubeConfigStr = await this.getKubeConfig(client, clusterId, isPrivateIpAddress);
 
     this.logger.info("kubeconfig已成功获取");
+    if (this.debug) {
+      this.logger.info("kubeconfig:", kubeConfigStr);
+    }
     const k8sClient = new this.K8sClient({
       kubeConfigStr,
       logger: this.logger,
       skipTLSVerify: this.skipTLSVerify,
+      debug: this.debug,
     });
     await this.patchCertSecret({ cert, k8sClient });
 
@@ -173,7 +188,7 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
     }
   }
 
-  async restartIngress(options: { k8sClient: any }) {
+  async restartIngress(options: { k8sClient: any; }) {
     const { k8sClient } = options;
     const { namespace } = this;
 
@@ -184,6 +199,7 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
         },
       },
     };
+   
     const ingressList = await k8sClient.getIngressList({ namespace });
     this.logger.info("ingressList:", ingressList);
     if (!ingressList || !ingressList.items) {
@@ -210,7 +226,7 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
     }
   }
 
-  async patchCertSecret(options: { cert: CertInfo; k8sClient: any }) {
+  async patchCertSecret(options: { cert: CertInfo; k8sClient: any; }) {
     const { cert, k8sClient } = options;
     const crt = cert.crt;
     const key = cert.key;
@@ -266,6 +282,9 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
 
     try {
       const res = await client.request(httpMethod, uriPath, queries, body, headers, requestOption);
+      if (this.debug) {
+        this.logger.info("res:", res);
+      }
       return res.config;
     } catch (e) {
       console.error("请求出错：", e);
