@@ -10,7 +10,7 @@ import { Decorator } from "../decorator/index.js";
 import { ICnameProxyService, IEmailService, IPluginConfigService, IServiceGetter, IUrlService } from "../service/index.js";
 import { FileStore } from "./file-store.js";
 import { cloneDeep, forEach, merge } from "lodash-es";
-import { INotificationService } from "../notification/index.js";
+import { INotificationService, PipelineNotificationTypes } from "../notification/index.js";
 import { taskEmitterCreate } from "../service/emit.js";
 import { RunnableError } from "./exceptions.js";
 
@@ -480,7 +480,7 @@ export class Executor {
       if (notification.type === "email" && notification.options?.receivers) {
         try {
           await this.options.emailService?.sendByTemplate({
-            type: "pipelineResult",
+            type: PipelineNotificationTypes.PipelineResult,
             data: templateData,
             receivers: notification.options?.receivers,
           });
@@ -496,7 +496,7 @@ export class Executor {
             useEmail: false,
             logger: this.logger,
             body: {
-              notificationType: "pipelineResult",
+              notificationType: PipelineNotificationTypes.PipelineResult,
               title: subject,
               content,
               userId: this.pipeline.userId,

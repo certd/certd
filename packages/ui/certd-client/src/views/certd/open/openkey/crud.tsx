@@ -77,6 +77,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             type: "primary",
             async click({ row }) {
               const apiToken = await api.GetApiToken(row.id);
+              const openApiUrl = `${window.location.origin}/api/v1`;
 
               model.success({
                 title: t("certd.gen.title"),
@@ -95,6 +96,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                       </div>
                       <div class={"m-10 p-10"} style={{ border: "1px solid #333" }}>
                         <fs-copyable model-value={apiToken}></fs-copyable>
+                      </div>
+                      <div class={"m-10 p-10"}>{t("certd.gen.apiAddress")}</div>
+                      <div class={"m-10 p-10"} style={{ border: "1px solid #333" }}>
+                        <fs-copyable model-value={openApiUrl}></fs-copyable>
                       </div>
                     </div>
                   );

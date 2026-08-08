@@ -10,5 +10,6 @@ export default {
     contentPart1: "测试x-certd-token如下，您可以在3分钟内使用它进行",
     openApi: "开放接口",
     contentPart2: "请求测试",
+    apiAddress: "接口地址",
   },
 };
