@@ -117,6 +117,10 @@ export const Constants = {
       code: 20014,
       message: "域名校验方式未配置",
     },
+    openPipelineError: {
+      code: 20015,
+      message: "流水线执行异常，请稍后重试",
+    },
     openEmailNotFound: {
       code: 20021,
       message: "用户邮箱还未配置",

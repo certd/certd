@@ -153,7 +153,16 @@ export class CertInfoFacade {
 
   async triggerApplyPipeline(req: { pipelineId: number }) {
     //查询流水线状态
-    const status = await this.pipelineService.getStatus(req.pipelineId);
+    const pipelineStatus = await this.pipelineService.getStatus(req.pipelineId);
+    const status = pipelineStatus?.status;
+    if (status === "error" && !this.canRetryErrorPipeline(pipelineStatus?.updateTime)) {
+      throw new CodeException({
+        ...Constants.res.openPipelineError,
+        data: {
+          pipelineId: req.pipelineId,
+        },
+      });
+    }
     if (status != "running" && status != "start") {
       await this.pipelineService.trigger(req.pipelineId);
       await utils.sleep(2000);
@@ -166,5 +175,13 @@ export class CertInfoFacade {
         certId: certInfo?.id,
       },
     });
+  }
+
+  private canRetryErrorPipeline(updateTime?: Date) {
+    if (!updateTime) {
+      return false;
+    }
+    const retryInterval = 3 * 60 * 60 * 1000;
+    return Date.now() - updateTime.getTime() >= retryInterval;
   }
 }
