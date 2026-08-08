@@ -1,5 +1,5 @@
 import { http, logger, utils } from "@certd/basic";
-import { AccessService, BaseService, isEnterprise } from "@certd/lib-server";
+import { AccessService, BaseService, isEnterprise, NotificationTypes } from "@certd/lib-server";
 import { doPageTurn, Pager, PageRes } from "@certd/pipeline";
 import { DomainVerifiers } from "@certd/plugin-cert";
 import { createDnsProvider, dnsProviderRegistry, DomainParser } from "@certd/plugin-lib";
@@ -646,7 +646,7 @@ export class DomainService extends BaseService<DomainEntity> {
         content: content,
         url: url,
         errorMessage: title,
-        notificationType: DOMAIN_EXPIRE_CHECK_TYPE,
+        notificationType: NotificationTypes.DomainExpirationCheck,
         willExpireDomains,
         hasExpireDomains,
       },

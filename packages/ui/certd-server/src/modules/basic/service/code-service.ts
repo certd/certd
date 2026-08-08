@@ -1,5 +1,5 @@
 ﻿import { cache, isDev, randomNumber, simpleNanoId } from "@certd/basic";
-import { AccessService, AccessSysGetter, CodeErrorException, SysSettingsService } from "@certd/lib-server";
+import { AccessService, AccessSysGetter, CodeErrorException, NotificationTypes, SysSettingsService } from "@certd/lib-server";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { ISmsService } from "../sms/api.js";
 import { SmsServiceFactory } from "../sms/factory.js";
@@ -93,16 +93,16 @@ export class CodeService {
 
     const code = randomNumber(verificationCodeLength);
 
-    const templateData = {
+    const templateData: any = {
       code,
       duration,
       title: "验证码",
       content: `您的验证码是${code}，请勿泄露`,
-      notificationType: "registerCode",
+      notificationType: NotificationTypes.RegisterCode,
     };
     if (opts?.verificationType === "forgotPassword") {
       templateData.title = "找回密码";
-      templateData.notificationType = "forgotPassword";
+      templateData.notificationType = NotificationTypes.ForgotPassword;
     }
     await this.emailService.sendByTemplate({
       type: templateData.notificationType,

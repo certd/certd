@@ -1,5 +1,5 @@
 import { logger } from "@certd/basic";
-import { SysSettingsService, SysSiteInfo } from "@certd/lib-server";
+import { NotificationTypes, SysSettingsService, SysSiteInfo } from "@certd/lib-server";
 import { getPlusInfo, isPlus } from "@certd/plus-core";
 import { Config, Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import dayjs from "dayjs";
@@ -151,7 +151,7 @@ export class AutoCron {
                   content,
                   errorMessage: title,
                   url,
-                  notificationType: "vipExpireRemind",
+                  notificationType: NotificationTypes.VipExpireRemind,
                 },
               },
               adminUser.id
@@ -203,7 +203,7 @@ export class AutoCron {
                   content,
                   errorMessage: title,
                   url,
-                  notificationType: "userExpireRemind",
+                  notificationType: NotificationTypes.UserExpireRemind,
                 },
               },
               user.id

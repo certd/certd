@@ -1,4 +1,5 @@
 import { NotificationBody, Step, TaskInput } from "@certd/pipeline";
+import { NotificationTypes } from "@certd/lib-server";
 import dayjs from "dayjs";
 import { CertReader } from "@certd/plugin-lib";
 import { pick } from "lodash-es";
@@ -174,7 +175,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
 证书有效期：${dayjs(certReader.expires).format("YYYY-MM-DD HH:mm:ss")}\n
 `,
       url: url,
-      notificationType: "certApplySuccess",
+      notificationType: NotificationTypes.CertApplySuccess,
     };
     try {
       await this.ctx.notificationService.send({

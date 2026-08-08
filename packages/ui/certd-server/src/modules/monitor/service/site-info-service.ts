@@ -1,6 +1,6 @@
 import { http, logger, utils } from "@certd/basic";
 import { UserSuiteService } from "@certd/commercial-core";
-import { AccessService, BaseService, Constants, isEnterprise, NeedSuiteException, NeedVIPException, SysSettingsService } from "@certd/lib-server";
+import { AccessService, BaseService, Constants, isEnterprise, NeedSuiteException, NeedVIPException, NotificationTypes, SysSettingsService } from "@certd/lib-server";
 import { Pager } from "@certd/pipeline";
 import { createDnsProvider, dnsProviderRegistry, DomainParser } from "@certd/plugin-lib";
 import { isComm, isPlus } from "@certd/plus-core";
@@ -326,7 +326,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
           title: `站点证书${fromIpCheck ? "(IP)" : ""}检查出错<${site.name}>`,
           content: `站点名称： ${site.name} \n站点域名： ${site.domain} \n错误信息：${site.error}`,
           errorMessage: site.error,
-          notificationType: "siteCheckError",
+          notificationType: NotificationTypes.SiteCheckError,
         },
       },
       site.userId
@@ -352,7 +352,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
             content,
             url,
             errorMessage: "站点证书即将过期",
-            notificationType: "siteCertExpireRemind",
+            notificationType: NotificationTypes.SiteCertExpireRemind,
           },
         },
         site.userId
@@ -369,7 +369,7 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
             content,
             url,
             errorMessage: "站点证书已过期",
-            notificationType: "siteCertExpireRemind",
+            notificationType: NotificationTypes.SiteCertExpireRemind,
           },
         },
         site.userId
@@ -806,7 +806,6 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   }
 
   async batchDelete(ids: number[], userId: number, projectId?: number): Promise<number> {
-
     ids = this.filterIds(ids);
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     await this.repository.delete({
