@@ -63,7 +63,7 @@ export interface SettingState {
 
 const defaultSiteInfo: SiteInfo = {
   title: env.TITLE || "Certd",
-  slogan: env.SLOGAN || $t("certd.landing.slogan"),
+  slogan: env.SLOGAN || "让你的证书永不过期",
   logo: env.LOGO || "/static/images/logo/logo.svg",
   loginLogo: env.LOGIN_LOGO || "/static/images/logo/rect-block.svg",
   licenseTo: "",

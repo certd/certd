@@ -32,7 +32,7 @@ const validateEmailConfirm = async (_rule: any, value: string) => {
   }
   const formData = emailFormWrapperRef.value?.getFormData?.();
   if (formData && value !== formData.email) {
-    throw new Error(t("certd.accountInit.emailMismatch"));
+    throw new Error("两次输入的邮箱地址不一致");
   }
 };
 
@@ -55,7 +55,7 @@ async function checkAndSetupAccount() {
     }
 
     emailFormWrapperRef.value = await openFormDialog({
-      title: t("certd.accountInit.title"),
+      title: "绑定邮箱",
       wrapper: {
         width: 560,
       },
@@ -67,40 +67,40 @@ async function checkAndSetupAccount() {
           data: { email: form.email },
         });
         notification.success({
-          message: t("certd.accountInit.success"),
+          message: "邮箱绑定成功",
         });
       },
       body: () => {
-        return <a-alert class="mb-4" message={t("certd.accountInit.description")} type="success" show-icon></a-alert>;
+        return <a-alert class="mb-4" message="为保证用户体验，请先绑定邮箱，初始化您的账号" type="success" show-icon></a-alert>;
       },
       columns: {
         email: {
-          title: t("certd.accountInit.email"),
+          title: "邮箱",
           type: "text",
           form: {
             col: { span: 24 },
             component: {
-              placeholder: t("certd.accountInit.emailPlaceholder"),
+              placeholder: "请输入邮箱地址",
             },
-            helper: t("certd.accountInit.emailHelper"),
+            helper: "请输入您的邮箱",
             rules: [
-              { required: true, message: t("certd.accountInit.emailRequired") },
-              { type: "email", message: t("certd.accountInit.emailInvalid") },
+              { required: true, message: "请输入邮箱地址" },
+              { type: "email", message: "请输入有效的邮箱地址" },
             ],
           },
         },
         emailConfirm: {
-          title: t("certd.accountInit.emailConfirm"),
+          title: "确认邮箱",
           type: "text",
           form: {
             col: { span: 24 },
             component: {
-              placeholder: t("certd.accountInit.emailConfirmPlaceholder"),
+              placeholder: "请再次输入邮箱地址",
             },
-            helper: t("certd.accountInit.emailConfirmHelper"),
+            helper: "请再次输入邮箱，以确认邮箱地址无误",
             rules: [
-              { required: true, message: t("certd.accountInit.emailConfirmRequired") },
-              { type: "email", message: t("certd.accountInit.emailInvalid") },
+              { required: true, message: "请再次输入邮箱地址" },
+              { type: "email", message: "请输入有效的邮箱地址" },
               { validator: validateEmailConfirm, trigger: "blur" },
             ],
           },
