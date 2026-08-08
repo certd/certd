@@ -1390,15 +1390,15 @@ export class PipelineService extends BaseService<PipelineEntity> {
   }
 
   async getStatus(pipelineId: number) {
-    const res = await this.repository.findOne({
+    return await this.repository.findOne({
       select: {
         status: true,
+        updateTime: true,
       },
       where: {
         id: pipelineId,
       },
     });
-    return res?.status;
   }
 
   async getPipelineUserId(pipelineId: number) {
