@@ -4,8 +4,8 @@
       <div class="flex flex-col h-8 border-dashed border-2 rounded-md p-1">
         <fs-copyable :model-value="webhookUrl" class="flex-1 overflow-hidden"></fs-copyable>
       </div>
-      <a-button class="mt-2" type="primary" size="small" @click="refreshWebhookKey">Regenerate</a-button>
-      <div class="helper">Supports POST and GET requests. The webhook URL is unique per pipeline.</div>
+      <a-button class="mt-2" type="primary" size="small" @click="refreshWebhookKey">重新生成</a-button>
+      <div class="helper">支持post和get请求（同一个流水线的webhook地址是唯一的）</div>
     </a-form-item>
   </div>
 </template>
@@ -40,9 +40,9 @@ onMounted(() => {
 
 const refreshWebhookKey = () => {
   Modal.confirm({
-    title: "Regenerate the Webhook URL?",
-    content: "After regeneration, the old webhook URL will become invalid",
-    okText: "Confirm",
+    title: "确认重新生成Webhook URL吗？",
+    content: "重新生成后，旧的webhook地址将失效",
+    okText: "确认",
     okType: "danger",
     onOk: async () => {
       await doRefreshWebhookKey();

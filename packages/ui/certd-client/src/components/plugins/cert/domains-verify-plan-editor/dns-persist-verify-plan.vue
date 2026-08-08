@@ -2,11 +2,11 @@
   <table class="dns-persist-verify-plan">
     <thead>
       <tr>
-        <td class="col-host">TXT hostname</td>
-        <td class="col-type center">Record type</td>
-        <td class="col-value">Set the TXT record (do not delete it after validation succeeds)</td>
-        <td class="col-status center">Status</td>
-        <td class="col-action center">Actions</td>
+        <td class="col-host">TXT主机名</td>
+        <td class="col-type center">记录类型</td>
+        <td class="col-value">请设置TXT记录（验证成功以后不要删除）</td>
+        <td class="col-status center">状态</td>
+        <td class="col-action center">操作</td>
       </tr>
     </thead>
     <template v-for="key in domains" :key="key">

@@ -2,8 +2,8 @@
   <fs-page>
     <template #header>
       <div class="title">
-        Group Management
-        <span class="sub">Pipeline groups</span>
+        分组管理
+        <span class="sub">流水线分组</span>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>

@@ -12,7 +12,7 @@ function transformOneResource(resource: any, parent: any) {
     resource.meta = {};
   }
   const meta = resource.meta;
-  meta.title = meta.title ?? resource.title ?? "Untitled";
+  meta.title = meta.title ?? resource.title ?? "未命名";
   if (resource.title == null) {
     resource.title = meta.title;
   }

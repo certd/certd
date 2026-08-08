@@ -23,7 +23,7 @@ const util = {
   },
   requirePermissions: (value: any) => {
     if (!util.hasPermissions(value)) {
-      message.error("Sorry, you do not have permission to perform this action");
+      message.error("对不起，您没有权限执行此操作");
       throw new NoPermissionError();
     }
   },

@@ -1,7 +1,7 @@
 <template>
   <fs-crud ref="crudRef" class="template-import-table" v-bind="crudBinding">
     <template #actionbar-right>
-      <div class="helper ml-10">1. Click Add to add a row. 2. Enter the pipeline parameters. 3. Click Confirm Create on the right to create pipelines in bulk.</div>
+      <div class="helper ml-10">1. 点击添加按钮，添加一行记录； 2.输入流水线参数； 3. 点击右边“确认创建”，批量创建流水线。</div>
     </template>
   </fs-crud>
 </template>
@@ -41,13 +41,13 @@ const { getStepsMap } = useStepHelper(pluginStore);
 function buildColumns(steps: any) {
   const columns: any = {
     title: {
-      title: "Pipeline Title",
+      title: "流水线标题",
       type: "text",
       form: {
         component: {
-          placeholder: "Please enter the pipeline title",
+          placeholder: "请输入流水线标题",
         },
-        rules: [{ required: true, message: "Please enter the pipeline title" }],
+        rules: [{ required: true, message: "请输入流水线标题" }],
       },
     },
   };

@@ -2,8 +2,8 @@
   <fs-page>
     <template #header>
       <div class="title">
-        Notification Management
-        <span class="sub">Manage notification configuration</span>
+        通知管理
+        <span class="sub">管理通知配置</span>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>

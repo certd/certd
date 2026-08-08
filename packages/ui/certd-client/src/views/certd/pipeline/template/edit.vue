@@ -7,9 +7,9 @@
       </div>
 
       <div class="more flex items-center flex-1 justify-end">
-        <loading-button type="primary" @click="doSave">Save template</loading-button>
-        <loading-button class="ml-10" type="primary" @click="useTemplateCreate">Use template</loading-button>
-        <loading-button class="ml-10" type="primary" danger @click="doDelete">Delete template</loading-button>
+        <loading-button type="primary" @click="doSave">保存模版</loading-button>
+        <loading-button class="ml-10" type="primary" @click="useTemplateCreate">使用模版</loading-button>
+        <loading-button class="ml-10" type="primary" danger @click="doDelete">删除模版</loading-button>
       </div>
     </template>
     <div class="page-template-edit">
@@ -18,8 +18,8 @@
         <div class="task-list w-50%">
           <div class="block-title flex flex-between">
             <div>
-              Template pipeline parameters
-              <div class="helper">Click plus to add a field as a template variable</div>
+              模版流水线参数
+              <div class="helper">点击加号，将字段作为模版变量</div>
             </div>
             <div class="more">
               <router-link
@@ -29,7 +29,7 @@
                   query: { id: detail?.template?.pipelineId, editMode: true },
                 }"
               >
-                Edit template pipeline
+                修改模版流水线
               </router-link>
             </div>
           </div>
@@ -44,8 +44,8 @@
                       </span>
                       <span :title="input.value" class="ellipsis flex-1 text-nowrap">= {{ input.value }}</span>
                     </div>
-                    <fs-button v-if="!templateProps.input[stepId + '.' + key]" size="small" type="primary" icon="ion:add" title="Add as template variable" @click="addToProps(step.id, key)"></fs-button>
-                    <fs-button v-else size="small" danger icon="ion:close" title="Delete template variable" @click="removeToProps(step.id, key)" />
+                    <fs-button v-if="!templateProps.input[stepId + '.' + key]" size="small" type="primary" icon="ion:add" title="添加为模版变量" @click="addToProps(step.id, key)"></fs-button>
+                    <fs-button v-else size="small" danger icon="ion:close" title="删除模版变量" @click="removeToProps(step.id, key)" />
                   </div>
                 </div>
               </div>
@@ -54,9 +54,11 @@
 
           <div v-else-if="detail?.template?.pipelineId === 0">
             <div class="p-20 flex flex-col flex-center text-sm">
-              <div class="mb-10">No template pipeline bound yet</div>
+              <div class="mb-10">还未绑定模版流水线</div>
               <div>
-                <a-button type="primary" @click="bindPipelineByCreate">Create new pipeline as template</a-button>or<a-button type="primary" @click="bindPipelineByCopy">Copy from existing pipeline</a-button>
+                <a-button type="primary" @click="bindPipelineByCreate">创建新流水线作为模版</a-button>
+                或
+                <a-button type="primary" @click="bindPipelineByCopy">从已有流水线复制</a-button>
               </div>
             </div>
           </div>
@@ -64,8 +66,8 @@
 
         <div class="template-props w-50%">
           <div class="block-title">
-            Template variables
-            <div class="helper">When creating a pipeline from this template, only enter these fields; other fields use the values on the left</div>
+            模版变量
+            <div class="helper">根据模版创建流水线时，只需要输入以下这些字段，其他字段将使用左侧的值</div>
           </div>
           <div class="p-10">
             <!--          <fs-form v-bind="templateFormOptions"></fs-form>-->
@@ -158,19 +160,19 @@ async function doSave() {
     content: JSON.stringify(templateProps.value),
   });
   notification.success({
-    message: "Saved successfully",
+    message: "保存成功",
   });
 }
 
 const tabbar = useTabbarStore();
 async function doDelete() {
   Modal.confirm({
-    title: "Delete template?",
-    content: "After deletion, this template pipeline can no longer be used",
+    title: "确定删除模版？",
+    content: "删除后，该模版流水线将不能再使用",
     onOk() {
       templateApi.DelObj(detail.value.template.id);
       notification.success({
-        message: "Deleted successfully",
+        message: "删除成功",
       });
       tabbar.closeTab({ fullPath: route.fullPath } as any, router);
     },

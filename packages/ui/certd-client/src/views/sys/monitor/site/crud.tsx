@@ -17,15 +17,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const selectedRowKeys = ref<number[]>([]);
   const handleBatchDelete = () => {
     if (!selectedRowKeys.value?.length) {
-      message.error("Please select records to delete first");
+      message.error("请先选择要删除的记录");
       return;
     }
     Modal.confirm({
-      title: "Confirm",
-      content: `Are you sure you want to delete the selected ${selectedRowKeys.value.length} site monitor records?`,
+      title: "确认",
+      content: `确认删除选中的 ${selectedRowKeys.value.length} 条站点监控记录？`,
       async onOk() {
         await api.BatchDelObj(selectedRowKeys.value);
-        message.success("Deleted successfully");
+        message.success("删除成功");
         selectedRowKeys.value = [];
         await crudExpose.doRefresh();
       },
@@ -35,9 +35,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const checkStatusDict = dict({
     data: [
-      { label: "Normal", value: "ok", color: "green" },
-      { label: "Checking", value: "checking", color: "blue" },
-      { label: "Error", value: "error", color: "red" },
+      { label: "正常", value: "ok", color: "green" },
+      { label: "检查中", value: "checking", color: "blue" },
+      { label: "异常", value: "error", color: "red" },
     ],
   });
 
@@ -103,7 +103,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         userId: {
-          title: "User",
+          title: "用户",
           type: "table-select",
           search: {
             show: true,
@@ -124,7 +124,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               crossPage: true,
               multiple: false,
               select: {
-                placeholder: "Click to select user",
+                placeholder: "点击选择用户",
               },
               createCrudOptions: createCrudOptionsUser,
             },
@@ -134,7 +134,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         projectId: {
-          title: "Project ID",
+          title: "项目ID",
           type: "number",
           search: {
             show: true,
@@ -151,7 +151,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         name: {
-          title: "Site Name",
+          title: "站点名称",
           type: "text",
           search: {
             show: true,
@@ -167,7 +167,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         domain: {
-          title: "Domain",
+          title: "域名",
           type: "text",
           search: {
             show: true,
@@ -196,7 +196,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certDomains: {
-          title: "Certificate Domains",
+          title: "证书域名",
           type: "text",
           search: {
             show: true,
@@ -217,7 +217,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certProvider: {
-          title: "Issuer",
+          title: "颁发机构",
           type: "text",
           column: {
             width: 200,
@@ -232,7 +232,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certStatus: {
-          title: "Certificate Status",
+          title: "证书状态",
           type: "dict-select",
           search: {
             show: true,
@@ -242,8 +242,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           dict: dict({
             data: [
-              { label: "Normal", value: "ok", color: "green" },
-              { label: "Expired", value: "expired", color: "red" },
+              { label: "正常", value: "ok", color: "green" },
+              { label: "已过期", value: "expired", color: "red" },
             ],
           }),
           column: {
@@ -256,7 +256,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         checkStatus: {
-          title: "Check Status",
+          title: "检查状态",
           type: "dict-select",
           search: {
             show: true,
@@ -282,7 +282,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         certExpiresTime: {
-          title: "Certificate Expiration Time",
+          title: "证书到期时间",
           type: "datetime",
           column: {
             sorter: true,
@@ -293,7 +293,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         remainingValidity: {
-          title: "Remaining Validity",
+          title: "剩余有效期",
           type: "date",
           column: {
             width: 120,
@@ -304,7 +304,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               }
               const leftDays = dayjs(row.certExpiresTime).diff(dayjs(), "day");
               const color = leftDays < 15 ? "red" : "#389e0d";
-              return <span style={{ color }}>{leftDays} days</span>;
+              return <span style={{ color }}>{leftDays}天</span>;
             },
           },
           form: {
@@ -312,7 +312,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         lastCheckTime: {
-          title: "Last Check Time",
+          title: "上次检查时间",
           type: "datetime",
           column: {
             sorter: true,
@@ -323,7 +323,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         disabled: {
-          title: "Status",
+          title: "状态",
           type: "dict-select",
           search: {
             show: true,
@@ -333,8 +333,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           dict: dict({
             data: [
-              { label: "Enabled", value: false, color: "green" },
-              { label: "Disabled", value: true, color: "red" },
+              { label: "启用", value: false, color: "green" },
+              { label: "禁用", value: true, color: "red" },
             ],
           }),
           column: {
@@ -347,7 +347,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         remark: {
-          title: "Remark",
+          title: "备注",
           type: "textarea",
           column: {
             width: 200,
@@ -362,7 +362,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         createTime: {
-          title: "Created At",
+          title: "创建时间",
           type: "datetime",
           column: {
             width: 155,

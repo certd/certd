@@ -16,7 +16,7 @@ export function useCertUpload() {
 
   const certInputs = {
     "uploadCert.crt": {
-      title: "Certificate",
+      title: "证书",
       type: "text",
       form: {
         component: {
@@ -27,14 +27,14 @@ export function useCertUpload() {
             placeholder: "-----BEGIN CERTIFICATE-----\n...\n...\n-----END CERTIFICATE-----",
           },
         },
-        helper: "Choose a PEM certificate file or paste it here",
-        rules: [{ required: true, message: "This field is required" }],
+        helper: "选择pem格式证书文件，或者粘贴到此",
+        rules: [{ required: true, message: "此项必填" }],
         col: { span: 24 },
         order: -9999,
       },
     },
     "uploadCert.key": {
-      title: "Certificate private key",
+      title: "证书私钥",
       type: "text",
       form: {
         component: {
@@ -45,8 +45,8 @@ export function useCertUpload() {
             placeholder: "-----BEGIN PRIVATE KEY-----\n...\n...\n-----END PRIVATE KEY----- ",
           },
         },
-        helper: "Choose a PEM certificate private key file or paste it here",
-        rules: [{ required: true, message: "This field is required" }],
+        helper: "选择pem格式证书私钥文件，或者粘贴到此",
+        rules: [{ required: true, message: "此项必填" }],
         col: { span: 24 },
         order: -9999,
       },
@@ -115,7 +115,7 @@ export function useCertUpload() {
             ...cloneDeep(certInputs),
             ...inputs,
             notification: {
-              title: "Failure notification",
+              title: "失败通知",
               type: "text",
               form: {
                 value: 0,
@@ -129,11 +129,11 @@ export function useCertUpload() {
                   },
                 },
                 order: 101,
-                helper: "Real-time alerts when task execution fails",
+                helper: "任务执行失败实时提醒",
               },
             },
             groupId: {
-              title: "Pipeline group",
+              title: "流水线分组",
               type: "dict-select",
               dict: groupDictRef,
               form: {
@@ -148,7 +148,7 @@ export function useCertUpload() {
           },
           form: {
             wrapper: {
-              title: "Upload certificate and create deployment pipeline",
+              title: "上传证书&创建部署流水线",
               saveRemind: false,
             },
             async doSubmit({ form }: any) {
@@ -161,11 +161,11 @@ export function useCertUpload() {
                   type: "custom",
                   when: ["error", "turnToSuccess", "success"],
                   notificationId: form.notification,
-                  title: form.notificationTarget?.name || "Custom notification",
+                  title: form.notificationTarget?.name || "自定义通知",
                 });
               }
 
-              const pipelineTitle = domains[0] + " uploaded certificate deployment";
+              const pipelineTitle = domains[0] + "上传证书部署";
               const input = omit(form, ["id", "cert", "notification", "notificationTarget"]);
               const pipeline = {
                 title: pipelineTitle,
@@ -173,18 +173,18 @@ export function useCertUpload() {
                 stages: [
                   {
                     id: nanoid(10),
-                    title: "Uploaded certificate parsing stage",
+                    title: "上传证书解析阶段",
                     maxTaskCount: 1,
                     runnableType: "stage",
                     tasks: [
                       {
                         id: nanoid(10),
-                        title: "Parse and convert uploaded certificate",
+                        title: "上传证书解析转换",
                         runnableType: "task",
                         steps: [
                           {
                             id: nanoid(10),
-                            title: "Parse and convert uploaded certificate",
+                            title: "上传证书解析转换",
                             runnableType: "step",
                             input: {
                               cert: cert,
@@ -234,7 +234,7 @@ export function useCertUpload() {
           },
           form: {
             wrapper: {
-              title: "Manually upload certificate",
+              title: "手动上传证书",
               saveRemind: false,
             },
             async afterSubmit() {},

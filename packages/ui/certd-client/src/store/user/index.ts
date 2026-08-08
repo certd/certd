@@ -71,14 +71,14 @@ export const useUserStore = defineStore({
         inviteUtils.clear();
       }
       notification.success({
-        message: "Registration succeeded. Please log in",
+        message: "注册成功，请登录",
       });
       await router.replace("/login");
     },
     async forgotPassword(params: ForgotPasswordReq): Promise<any> {
       await UserApi.forgotPassword(params);
       notification.success({
-        message: "Password reset succeeded. Please log in",
+        message: "密码已重置，请登录",
       });
       await router.replace("/login");
     },
@@ -141,7 +141,7 @@ export const useUserStore = defineStore({
         try {
           await UserApi.logout(); //主要是清空cookie
         } catch (e) {
-          console.error("Logout request failed:", e);
+          console.error("注销登录请求失败：", e);
         }
         // 第三方登录注销
         this.oauthLogout();
@@ -165,7 +165,7 @@ export const useUserStore = defineStore({
               showErrorNotify: false,
             });
           } catch (e) {
-            console.error("Third-party logout failed:", e);
+            console.error("注销第三方登录失败：", e);
           }
         }
       }

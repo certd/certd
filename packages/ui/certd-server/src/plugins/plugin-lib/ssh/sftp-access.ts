@@ -2,31 +2,31 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
 
 @IsAccess({
   name: "sftp",
-  title: "SFTP Authorization",
+  title: "SFTP授权",
   desc: "",
   icon: "clarity:host-line",
   input: {},
 })
 export class SftpAccess extends BaseAccess {
   @AccessInput({
-    title: "SSH Authorization",
+    title: "SSH授权",
     component: {
       name: "access-selector",
       type: "ssh",
       vModel: "modelValue",
     },
-    helper: "Please select an SSH authorization",
+    helper: "请选择一个SSH授权",
     required: true,
   })
   sshAccess!: string;
   @AccessInput({
-    title: "File Permissions",
+    title: "文件权限",
     component: {
       name: "a-input",
       vModel: "value",
       placeholder: "777",
     },
-    helper: "Whether to change file permissions after upload",
+    helper: "文件上传后是否修改文件权限",
   })
   fileMode!: string;
 }

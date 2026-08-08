@@ -13,7 +13,7 @@
               <a-avatar v-else size="100" class="user-avatar default-avatar">
                 {{ userInfo.username }}
               </a-avatar>
-              <a-button type="text" size="small" class="avatar-edit-btn" title="Edit profile" @click.stop="doUpdate">
+              <a-button type="text" size="small" class="avatar-edit-btn" title="修改资料" @click.stop="doUpdate">
                 <template #icon><fs-icon icon="ion:create-outline" /></template>
               </a-button>
               <!-- <div class="status-indicator"></div> -->
@@ -21,7 +21,7 @@
             <div class="user-info">
               <h2 class="user-name flex items-center">
                 <span>{{ userInfo.nickName }}</span>
-                <a-button type="text" size="small" class="detail-edit-btn" title="Edit profile" @click.stop="doUpdate">
+                <a-button type="text" size="small" class="detail-edit-btn" title="修改资料" @click.stop="doUpdate">
                   <template #icon><fs-icon icon="ion:create-outline" /></template>
                 </a-button>
               </h2>
@@ -33,15 +33,15 @@
                 </a-tag>
                 <a-tag color="green" class="detail-tag">
                   <span class="tag-icon">📧</span>
-                  <span class="tag-text">{{ userInfo.email || "No email bound" }}</span>
-                  <a-button type="text" size="small" class="detail-edit-btn" title="Change email" @click.stop="openBindContact('email')">
+                  <span class="tag-text">{{ userInfo.email || "未绑定邮箱" }}</span>
+                  <a-button type="text" size="small" class="detail-edit-btn" title="修改邮箱" @click.stop="openBindContact('email')">
                     <template #icon><fs-icon icon="ion:create-outline" /></template>
                   </a-button>
                 </a-tag>
                 <a-tag v-if="contactCapability.smsEnabled" color="purple" class="detail-tag">
                   <span class="tag-icon">📱</span>
-                  <span class="tag-text">{{ userInfo.mobile || "No mobile number bound" }}</span>
-                  <a-button type="text" size="small" class="detail-edit-btn" title="Change mobile number" @click.stop="openBindContact('mobile')">
+                  <span class="tag-text">{{ userInfo.mobile || "未绑定手机号" }}</span>
+                  <a-button type="text" size="small" class="detail-edit-btn" title="修改手机号" @click.stop="openBindContact('mobile')">
                     <template #icon><fs-icon icon="ion:create-outline" /></template>
                   </a-button>
                 </a-tag>
@@ -63,7 +63,7 @@
           <div class="bindings-card md:rounded">
             <div class="card-title">
               <fs-icon icon="ion:link-outline" class="title-icon" />
-              <span>Third-party account bindings</span>
+              <span>第三方账号绑定</span>
             </div>
             <div class="bindings-list">
               <template v-for="item in computedOauthBounds" :key="item.name">
@@ -74,17 +74,21 @@
                   <div class="binding-info">
                     <span class="binding-name">{{ item.title }}</span>
                     <span>
-                      <a-tag v-if="item.bound" color="green" class="bound-tag1">Bound</a-tag>
-                      <a-tag v-else color="red" class="bound-tag1">Not bound</a-tag>
+                      <a-tag v-if="item.bound" color="green" class="bound-tag1">已绑定</a-tag>
+                      <a-tag v-else color="red" class="bound-tag1">未绑定</a-tag>
                     </span>
                   </div>
                   <a-button v-if="item.bound" type="primary" danger class="action-btn" @click="unbind(item)">
-                    <template #icon><fs-icon icon="ion:unlink-outline" /></template>Unbind</a-button>
+                    <template #icon><fs-icon icon="ion:unlink-outline" /></template>
+                    解绑
+                  </a-button>
                   <a-button v-else type="primary" class="action-btn" @click="bind(item)">
-                    <template #icon><fs-icon icon="ion:link-outline" /></template>Bind</a-button>
+                    <template #icon><fs-icon icon="ion:link-outline" /></template>
+                    绑定
+                  </a-button>
                 </div>
               </template>
-              <div v-if="computedOauthBounds.length === 0" class="empty-text">No third-party account bindings available</div>
+              <div v-if="computedOauthBounds.length === 0" class="empty-text">暂无可用的第三方账号绑定</div>
             </div>
           </div>
         </div>
@@ -93,7 +97,7 @@
           <div class="passkey-card md:rounded">
             <div class="card-title">
               <fs-icon icon="ion:finger-print" class="title-icon" />
-              <span>Passkey security keys</span>
+              <span>Passkey 安全密钥</span>
             </div>
             <div class="passkey-list">
               <div v-for="passkey in passkeys" :key="passkey.id" class="passkey-item">
@@ -113,24 +117,28 @@
                     </span>
                     <span class="meta-item flex items-center">
                       <fs-icon icon="ion:time-outline" class="meta-icon" />
-                      Last used: <fs-time-humanize :model-value="passkey.updateTime" />
+                      最近使用：<fs-time-humanize :model-value="passkey.updateTime" />
                     </span>
                   </div>
                 </div>
                 <a-button type="primary" danger class="remove-btn" @click="unbindPasskey(passkey.id)">
-                  <template #icon><fs-icon icon="ion:trash-outline" /></template>Remove</a-button>
+                  <template #icon><fs-icon icon="ion:trash-outline" /></template>
+                  移除
+                </a-button>
               </div>
             </div>
             <div v-if="passkeys.length === 0" class="empty-state">
               <fs-icon icon="ion:finger-print" class="empty-icon" />
-              <p class="empty-text">No passkeys</p>
+              <p class="empty-text">暂无Passkey</p>
             </div>
             <div v-if="!passkeySupported" class="warning-box">
               <fs-icon icon="ion:warning-outline" class="warning-icon" />
               <span>{{ t("authentication.passkeyNotSupported") }}</span>
             </div>
             <a-button v-if="passkeySupported" type="primary" class="add-btn" @click="registerPasskey">
-              <template #icon><fs-icon icon="ion:add-circle-outline" /></template>Register new passkey</a-button>
+              <template #icon><fs-icon icon="ion:add-circle-outline" /></template>
+              注册新的Passkey
+            </a-button>
             <pre class="helper pre">{{ t("authentication.passkeyRegisterHelper") }}</pre>
           </div>
         </div>
@@ -225,8 +233,8 @@ function buildOauthBoundType(item: any) {
 
 async function unbind(item: any) {
   Modal.confirm({
-    title: "Confirm unbind?",
-    okText: "Confirm",
+    title: "确认解绑吗？",
+    okText: "确认",
     okType: "danger",
     onOk: async () => {
       await api.UnbindOauth(item.name, item.subtype);
@@ -246,7 +254,7 @@ async function loadPasskeys() {
     const res = await api.GetPasskeys();
     passkeys.value = res;
   } catch (e: any) {
-    console.error("Failed to load passkeys:", e);
+    console.error("加载Passkey失败:", e);
   }
 }
 
@@ -269,8 +277,8 @@ async function openBindContact(type: "mobile" | "email") {
 
 async function unbindPasskey(id: number) {
   Modal.confirm({
-    title: "Confirm unbind?",
-    okText: "Confirm",
+    title: "确认解绑吗？",
+    okText: "确认",
     okType: "danger",
     onOk: async () => {
       await api.UnbindPasskey(id);
@@ -290,7 +298,7 @@ const toBase64Url = (buffer: ArrayBuffer) => {
 
 async function registerPasskey() {
   if (!passkeySupported.value) {
-    Modal.error({ title: "Error", content: "Browser does not support passkeys" });
+    Modal.error({ title: "错误", content: "浏览器不支持Passkey" });
     return;
   }
   await openRegisterDialog({
@@ -300,7 +308,7 @@ async function registerPasskey() {
         return;
       }
       await doRegisterPasskey(deviceName);
-      message.success("Passkey registered successfully");
+      message.success("Passkey注册成功");
     },
   });
 }
@@ -348,7 +356,7 @@ async function doRegisterPasskey(deviceName: string) {
     });
 
     if (!credential) {
-      throw new Error("Passkey registration failed");
+      throw new Error("Passkey注册失败");
     }
 
     const response = {
@@ -366,8 +374,8 @@ async function doRegisterPasskey(deviceName: string) {
     console.log("verifyRes:", verifyRes, JSON.stringify(verifyRes));
     await loadPasskeys();
   } catch (e: any) {
-    console.error("Passkey registration failed:", e);
-    notification.error({ message: "Error", description: e.message || "Passkey registration failed" });
+    console.error("Passkey注册失败:", e);
+    notification.error({ message: "错误", description: e.message || "Passkey注册失败" });
   }
 }
 

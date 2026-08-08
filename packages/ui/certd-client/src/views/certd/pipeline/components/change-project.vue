@@ -1,5 +1,5 @@
 <template>
-  <fs-button icon="mdi:format-list-group" class="need-plus" type="link" text="Move to Another Project" @click="openProjectSelectDialog"></fs-button>
+  <fs-button icon="mdi:format-list-group" class="need-plus" type="link" text="转到其他项目" @click="openProjectSelectDialog"></fs-button>
 </template>
 <script setup lang="ts">
 import * as api from "../api";
@@ -31,11 +31,11 @@ async function openProjectSelectDialog() {
   const crudOptions: any = {
     columns: {
       toProjectId: {
-        title: "Move to Project",
+        title: "转到项目",
         type: "dict-select",
         dict: pipelineProjectDictRef,
         form: {
-          rules: [{ required: true, message: "Please select a project" }],
+          rules: [{ required: true, message: "请选择项目" }],
         },
       },
     },
@@ -54,7 +54,7 @@ async function openProjectSelectDialog() {
         },
       },
       wrapper: {
-        title: "Batch Move to Another Project",
+        title: "批量转到其他项目",
         width: 600,
       },
     },

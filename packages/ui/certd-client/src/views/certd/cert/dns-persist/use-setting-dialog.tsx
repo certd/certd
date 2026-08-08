@@ -43,24 +43,24 @@ export function useDnsPersistSettingDialog() {
       }
       if (form.mode === "manual") {
         await TriggerVerify(record.id);
-        message.success("Validation submitted");
+        message.success("已提交校验");
         await req.onDone?.();
         return;
       }
       if (!form.dnsProviderType || !form.dnsProviderAccess) {
-        throw new Error("Select a DNS provider and authorization");
+        throw new Error("请选择DNS服务商和授权");
       }
       await CreateTxt({
         id: record.id,
         dnsProviderType: form.dnsProviderType,
         dnsProviderAccess: form.dnsProviderAccess,
       });
-      message.success("TXT record created");
+      message.success("TXT记录已创建");
       await req.onDone?.();
     }
 
     await openFormDialog({
-      title: "Set DNS TXT record",
+      title: "设置DNS TXT记录",
       wrapper: {
         width: 680,
         buttons: {
@@ -69,29 +69,29 @@ export function useDnsPersistSettingDialog() {
           },
           ok: {
             show: true,
-            text: "Confirm",
+            text: "确定",
           },
         },
       },
       body: () => (
         <div>
           <a-radio-group value={form.mode} buttonStyle="solid" class="mb-10" onUpdate:value={(value: string) => (form.mode = value)}>
-            <a-radio-button value="manual">Add manually</a-radio-button>
-            <a-radio-button value="auto">Add with authorization</a-radio-button>
+            <a-radio-button value="manual">手动添加</a-radio-button>
+            <a-radio-button value="auto">选择授权添加</a-radio-button>
           </a-radio-group>
           {form.mode === "manual" ? (
             <div>
-              <a-alert class="mb-10" type="info" show-icon message="Add the TXT record below in your DNS console, then click Confirm to validate immediately." />
-              {copyableRow("Main domain", record.mainDomain)}
-              {copyableRow("TXT hostname", record.hostRecord)}
-              {copyableRow("TXT value", record.recordValue)}
+              <a-alert class="mb-10" type="info" show-icon message="请到DNS解析控制台添加以下TXT记录，添加后点击确定会立即校验。" />
+              {copyableRow("主域名", record.mainDomain)}
+              {copyableRow("TXT主机名", record.hostRecord)}
+              {copyableRow("TXT值", record.recordValue)}
             </div>
           ) : (
             <div>
-              <a-alert class="mb-10" type="info" show-icon message="Select a DNS provider and authorization. The system will create the TXT record and complete validation in the background." />
-              {copyableRow("Main domain", record.mainDomain)}
+              <a-alert class="mb-10" type="info" show-icon message="请选择DNS服务商和授权，系统会创建TXT记录，后续校验由后台完成。" />
+              {copyableRow("主域名", record.mainDomain)}
               <div class="mb-10 flex items-center">
-                <div style={{ width: "90px", flexShrink: 0 }}>DNS provider</div>
+                <div style={{ width: "90px", flexShrink: 0 }}>DNS服务商</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <DnsProviderSelector
                     class="w-full"
@@ -108,7 +108,7 @@ export function useDnsPersistSettingDialog() {
                 </div>
               </div>
               <div class="mb-10 flex items-center">
-                <div style={{ width: "90px", flexShrink: 0 }}>DNS authorization</div>
+                <div style={{ width: "90px", flexShrink: 0 }}>DNS授权</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <AccessSelector
                     modelValue={form.dnsProviderAccess}

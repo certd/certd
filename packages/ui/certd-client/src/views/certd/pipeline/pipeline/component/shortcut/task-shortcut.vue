@@ -36,7 +36,7 @@ async function openDialog() {
         columns: {
           ...props.form.columns,
           immediateRun: {
-            title: "Run Now",
+            title: "立即运行",
             type: "switch",
             span: 24,
             form: {
@@ -45,7 +45,7 @@ async function openDialog() {
                 name: "a-switch",
                 vModel: "checked",
               },
-              helper: "Whether to trigger the pipeline immediately after saving",
+              helper: "保存后是否立即触发运行流水线",
             },
           },
         },
@@ -55,7 +55,7 @@ async function openDialog() {
             saveRemind: false,
           },
           afterSubmit() {
-            notification.success({ message: "Operation successful" });
+            notification.success({ message: "操作成功" });
           },
           async doSubmit({ form }: any) {
             return await doPluginFormSubmit(form);
@@ -88,13 +88,13 @@ const doPluginFormSubmit = async (formData: any) => {
       const { save, findStep } = getPipelineScope();
       const step = findStep(props.stepId);
       if (step) {
-        // Array overwrite merge
+        // 数组覆盖合并
         mergeWith(step.input, res.input, (objValue, srcValue) => {
           if (isArray(objValue)) {
             return srcValue;
           }
         });
-        //Save without changing the current edit state
+        //保存，但不改变当前编辑状态
         save(false);
       }
     }

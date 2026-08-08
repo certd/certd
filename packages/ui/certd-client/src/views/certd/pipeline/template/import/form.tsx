@@ -10,7 +10,7 @@ export function createFormOptions(detail: Ref): any {
     columns: {
       ...createExtraColumns(),
       templateProps: {
-        title: "Pipeline import",
+        title: "流水线导入",
         type: "text",
         form: {
           order: 1,

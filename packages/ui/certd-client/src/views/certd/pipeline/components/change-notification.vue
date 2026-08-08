@@ -1,5 +1,5 @@
 <template>
-  <fs-button icon="mdi:format-list-group" class="need-plus" type="link" text="Change Notification" @click="openFormDialog"></fs-button>
+  <fs-button icon="mdi:format-list-group" class="need-plus" type="link" text="修改通知" @click="openFormDialog"></fs-button>
 </template>
 <script setup lang="ts">
 import { useFormWrapper } from "@fast-crud/fast-crud";
@@ -24,7 +24,7 @@ async function batchUpdateRequest(form: any) {
    */
   await api.BatchUpdateNotificaiton(props.selectedRowKeys, {
     type: "other",
-    title: form.title || "Notification",
+    title: form.title || "通知",
     when: form.when,
     notificationId: form.notificationId,
   });
@@ -38,7 +38,7 @@ async function openFormDialog() {
   const crudOptions: any = {
     columns: {
       when: {
-        title: "Trigger Timing",
+        title: "触发时机",
         form: {
           value: ["error", "turnToSuccess"],
           component: {
@@ -46,29 +46,29 @@ async function openFormDialog() {
             vModel: "value",
             mode: "multiple",
             options: [
-              { value: "start", label: "On Start" },
-              { value: "success", label: "On Success" },
-              { value: "turnToSuccess", label: "On Failure to Success" },
-              { value: "error", label: "On Failure" },
+              { value: "start", label: "开始时" },
+              { value: "success", label: "成功时" },
+              { value: "turnToSuccess", label: "失败转成功时" },
+              { value: "error", label: "失败时" },
             ],
           },
-          helper: `It is recommended to select only 'On Failure' and 'On Failure to Success'`,
-          rules: [{ required: true, message: "This field is required" }],
+          helper: `建议仅选择'失败时'和'失败转成功'两种即可`,
+          rules: [{ required: true, message: "此项必填" }],
         },
       },
       notificationId: {
-        title: "Notification Configuration",
+        title: "通知配置",
         form: {
           component: {
             name: NotificationSelector,
             on: {
               selectedChange({ form, $event }: any) {
-                form.title = $event?.name || "Notification";
+                form.title = $event?.name || "通知";
               },
             },
           },
-          helper: "Please select a notification method",
-          rules: [{ required: true, message: "This field is required" }],
+          helper: "请选择通知方式",
+          rules: [{ required: true, message: "此项必填" }],
         },
       },
     },
@@ -87,7 +87,7 @@ async function openFormDialog() {
         },
       },
       wrapper: {
-        title: "Batch Change Notification",
+        title: "批量修改通知",
         width: 600,
       },
     },

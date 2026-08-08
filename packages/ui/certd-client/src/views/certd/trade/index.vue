@@ -1,7 +1,7 @@
 <template>
   <fs-page class="page-cert">
     <template #header>
-      <div class="title">My Orders</div>
+      <div class="title">我的订单</div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding" />
   </fs-page>

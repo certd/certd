@@ -1,7 +1,7 @@
 <template>
   <fs-page class="page-wallet">
     <template #header>
-      <div class="title">My Wallet</div>
+      <div class="title">我的钱包</div>
     </template>
     <div class="wallet-body">
       <div class="wallet-summary-grid">
@@ -10,15 +10,15 @@
             <div class="summary-title">{{ item.title }}</div>
             <div class="summary-value" :class="item.className">{{ item.value }}</div>
           </div>
-          <a-button v-if="item.key === 'availableAmount'" class="summary-action-button" type="primary" @click="openWithdrawDialog">Request Withdrawal</a-button>
+          <a-button v-if="item.key === 'availableAmount'" class="summary-action-button" type="primary" @click="openWithdrawDialog">申请提现</a-button>
         </div>
       </div>
 
       <a-tabs v-model:active-key="activeTab" class="wallet-tabs" @change="refreshActiveList">
-        <a-tab-pane key="withdraw" tab="Withdrawal Records">
+        <a-tab-pane key="withdraw" tab="提现记录">
           <fs-crud v-if="activeTab === 'withdraw'" ref="withdrawCrudRef" class="wallet-crud" v-bind="withdrawCrudBinding" />
         </a-tab-pane>
-        <a-tab-pane key="logs" tab="Balance Details">
+        <a-tab-pane key="logs" tab="余额明细">
           <fs-crud v-if="activeTab === 'logs'" ref="logsCrudRef" class="wallet-crud" v-bind="logsCrudBinding" />
         </a-tab-pane>
       </a-tabs>
@@ -63,25 +63,25 @@ function buildPrivateFileUrl(key: string) {
 const summaryCards = computed(() => [
   {
     key: "availableAmount",
-    title: "Available Balance",
+    title: "可用余额",
     value: moneyText(summary.availableAmount),
     className: "available",
   },
   {
     key: "frozenAmount",
-    title: "Frozen Balance",
+    title: "冻结余额",
     value: moneyText(summary.frozenAmount),
     className: "frozen",
   },
   {
     key: "totalIncomeAmount",
-    title: "Total Income",
+    title: "累计收入",
     value: moneyText(summary.totalIncomeAmount),
     className: "income",
   },
   {
     key: "totalWithdrawAmount",
-    title: "Total Withdrawals",
+    title: "累计提现",
     value: moneyText(summary.totalWithdrawAmount),
     className: "withdraw",
   },
@@ -97,8 +97,8 @@ async function openWithdrawSetting() {
   const enabledChannels = walletSetting?.withdrawChannels?.length ? walletSetting.withdrawChannels : ["alipay", "bank"];
   const enabledBanks = walletSetting?.withdrawBanks?.length ? walletSetting.withdrawBanks : [];
   const channelOptions = [
-    { label: "Alipay", value: "alipay" },
-    { label: "Bank Card", value: "bank" },
+    { label: "支付宝", value: "alipay" },
+    { label: "银行卡", value: "bank" },
   ].filter(item => enabledChannels.includes(item.value));
   const bankOptions = enabledBanks.map((item: string) => ({ label: item, value: item }));
   const initialForm = Object.assign({ channel: "alipay", realName: "", account: "", bankName: "" }, setting || {});
@@ -106,45 +106,45 @@ async function openWithdrawSetting() {
     initialForm.channel = enabledChannels[0] || "alipay";
   }
   await openFormDialog({
-    title: "Withdrawal Settings",
+    title: "提现设置",
     wrapper: {
       width: 560,
     },
     initialForm,
     columns: {
       channel: {
-        title: "Withdrawal Channel",
+        title: "提现渠道",
         type: "dict-radio",
         dict: dict({
           data: channelOptions,
         }),
         form: {
           col: { span: 24 },
-          rules: [{ required: true, message: "Please select a withdrawal channel" }],
+          rules: [{ required: true, message: "请选择提现渠道" }],
         },
       },
       realName: {
-        title: "Real Name",
+        title: "真实姓名",
         type: "text",
         form: {
           col: { span: 24 },
-          rules: [{ required: true, message: "Please enter the real name" }],
+          rules: [{ required: true, message: "请输入真实姓名" }],
         },
       },
       account: {
-        title: "Receiving Account",
+        title: "收款账号",
         type: "text",
         form: {
           col: { span: 24 },
-          rules: [{ required: true, message: "Please enter the receiving account" }],
+          rules: [{ required: true, message: "请输入收款账号" }],
         },
       },
       qrCode: {
-        title: "Payment QR Code",
+        title: "收款二维码",
         type: "avatar-uploader",
         form: {
           col: { span: 24 },
-          helper: "Upload the Alipay payment QR code image",
+          helper: "上传支付宝收款二维码图片",
           show: compute(({ form }) => form.channel !== "bank"),
           component: {
             valueType: "key",
@@ -166,7 +166,7 @@ async function openWithdrawSetting() {
         },
       },
       bankName: {
-        title: "Bank",
+        title: "开户银行",
         form: {
           col: { span: 24 },
           show: compute(({ form }) => form.channel === "bank"),
@@ -175,9 +175,9 @@ async function openWithdrawSetting() {
             vModel: "value",
             options: bankOptions,
             showSearch: true,
-            placeholder: "Please select a bank",
+            placeholder: "请选择开户银行",
           },
-          rules: [{ required: compute(({ form }) => form.channel === "bank"), message: "Please enter the bank" }],
+          rules: [{ required: compute(({ form }) => form.channel === "bank"), message: "请输入开户银行" }],
         },
       },
     },
@@ -186,14 +186,14 @@ async function openWithdrawSetting() {
         form.qrCode = "";
       }
       await api.SaveWithdrawSetting(form);
-      notification.success({ message: "Saved successfully" });
+      notification.success({ message: "保存成功" });
     },
   });
 }
 
 async function openWithdrawDialog() {
   await openFormDialog({
-    title: "Request Withdrawal",
+    title: "申请提现",
     wrapper: {
       width: 520,
     },
@@ -202,7 +202,7 @@ async function openWithdrawDialog() {
     },
     body: () =>
       h("div", { class: "withdraw-dialog-tip" }, [
-        h("span", "Set up a withdrawal account before withdrawing."),
+        h("span", "提现前需要先设置提现账号。"),
         h(
           Button,
           {
@@ -210,12 +210,12 @@ async function openWithdrawDialog() {
             type: "link",
             onClick: openWithdrawSetting,
           },
-          () => "Withdrawal Settings"
+          () => "提现设置"
         ),
       ]),
     columns: {
       amountYuan: {
-        title: "Withdrawal Amount",
+        title: "提现金额",
         form: {
           col: { span: 24 },
           component: {
@@ -223,10 +223,10 @@ async function openWithdrawDialog() {
             vModel: "value",
             min: 0,
             precision: 2,
-            addonAfter: "yuan",
+            addonAfter: "元",
             style: { width: "100%" },
           },
-          rules: [{ required: true, message: "Please enter the withdrawal amount" }],
+          rules: [{ required: true, message: "请输入提现金额" }],
         },
       },
     },
@@ -241,7 +241,7 @@ async function applyWithdraw(amountYuan: number) {
   activeTab.value = "withdraw";
   await loadWalletSummary();
   await Promise.all([withdrawCrudExpose.doRefresh(), logsCrudExpose.doRefresh()]);
-  notification.success({ message: "Withdrawal request submitted" });
+  notification.success({ message: "提现申请已提交" });
 }
 
 async function refreshActiveList() {

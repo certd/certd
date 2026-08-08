@@ -5,9 +5,9 @@
       <fs-icon class="cd-icon-button" icon="ion:close-circle-outline" @click="clear"></fs-icon>
     </span>
     <span v-else class="mlr-5 text-gray">{{ placeholder }}</span>
-    <a-button class="ml-5" :disabled="disabled" :size="size" @click="chooseForm.open">Select</a-button>
+    <a-button class="ml-5" :disabled="disabled" :size="size" @click="chooseForm.open">选择</a-button>
     <a-form-item-rest v-if="chooseForm.show">
-      <a-modal v-model:open="chooseForm.show" title="Select Authorization Provider" width="900px" @ok="chooseForm.ok">
+      <a-modal v-model:open="chooseForm.show" title="选择授权提供者" width="900px" @ok="chooseForm.ok">
         <div style="height: 400px; position: relative">
           <cert-access-modal v-model="selectedId" :type="type" :subtype="subtype" :from="from"></cert-access-modal>
         </div>
@@ -41,7 +41,7 @@ export default defineComponent({
     },
     placeholder: {
       type: String,
-      default: "Please select",
+      default: "请选择",
     },
     size: {
       type: String,
@@ -90,12 +90,12 @@ export default defineComponent({
         if (isEnterprice) {
           const projectId = projectStore.currentProjectId;
           if (pipeline?.value?.projectId !== projectId) {
-            message.error(`Sorry, you cannot change authorization for pipelines in another project`);
+            message.error(`对不起，您不能修改其他项目流水线的授权`);
             return;
           }
         } else {
           if (pipeline?.value && pipeline.value.userId !== userId) {
-            message.error(`Sorry, you cannot change authorization for pipelines owned by another user`);
+            message.error(`对不起，您不能修改他人流水线的授权`);
             return;
           }
         }
@@ -147,7 +147,7 @@ export default defineComponent({
       }
     );
 
-    //May be empty when not editing in a pipeline
+    //当不在pipeline中编辑时，可能为空
     const pipeline = inject("pipeline", null);
 
     const chooseForm = reactive({

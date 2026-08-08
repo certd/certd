@@ -8,7 +8,7 @@ export interface AddonTypeDefine {
 export const AddonTypeDefines: Record<string, AddonTypeDefine> = {
   captcha: {
     name: "captcha",
-    title: "Captcha",
+    title: "验证码",
     showDefault: false,
     showTest: false,
   },

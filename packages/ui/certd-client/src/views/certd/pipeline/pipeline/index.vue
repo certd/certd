@@ -11,17 +11,17 @@
             <span class="flex">
               <fs-icon icon="ion:time-outline"></fs-icon>
               <span v-if="pipelineDetail.lastVars?.certExpiresTime > Date.now()">
-                Certificate expires: <FsTimeHumanize :model-value="pipelineDetail.lastVars?.certExpiresTime" :options="{ units: ['d'] }" format="YYYY-MM-DD"></FsTimeHumanize>
+                证书过期时间：<FsTimeHumanize :model-value="pipelineDetail.lastVars?.certExpiresTime" :options="{ units: ['d'] }" format="YYYY-MM-DD"></FsTimeHumanize>
               </span>
-              <span v-else> Certificate expired <FsTimeHumanize :model-value="pipelineDetail.lastVars?.certExpiresTime" :options="{ units: ['d'] }" format="YYYY-MM-DD"></FsTimeHumanize></span>
+              <span v-else> 证书已过期 <FsTimeHumanize :model-value="pipelineDetail.lastVars?.certExpiresTime" :options="{ units: ['d'] }" format="YYYY-MM-DD"></FsTimeHumanize></span>
             </span>
           </a-tag>
 
-          <a-tag class="mr-5 pointer" color="green" type="primary" text="View Certificate" @click="viewCert(pipeline.id)">
-            <span class="flex"><fs-icon icon="ant-design:eye-outlined"></fs-icon> View Certificate</span>
+          <a-tag class="mr-5 pointer" color="green" type="primary" text="查看证书" @click="viewCert(pipeline.id)">
+            <span class="flex"><fs-icon icon="ant-design:eye-outlined"></fs-icon> 查看证书</span>
           </a-tag>
-          <a-tag class="mr-5 pointer" color="green" type="primary" text="Download Certificate" @click="downloadCert(pipeline.id)">
-            <span class="flex"> <fs-icon icon="ant-design:download-outlined"></fs-icon> Download Certificate </span>
+          <a-tag class="mr-5 pointer" color="green" type="primary" text="下载证书" @click="downloadCert(pipeline.id)">
+            <span class="flex"> <fs-icon icon="ant-design:download-outlined"></fs-icon> 下载证书 </span>
           </a-tag>
         </div>
 
@@ -29,30 +29,30 @@
           <a-tag v-if="nextTriggerTimes" color="blue">
             <span class="flex">
               <fs-icon icon="ion:time-outline"></fs-icon>
-              Next run time: {{ nextTriggerTimes }}
+              下次执行时间：{{ nextTriggerTimes }}
             </span>
           </a-tag>
           <a-tag v-else-if="nextTriggerTimes === false" color="red">
             <span class="flex">
               <fs-icon icon="ion:caret-forward-circle-outline"></fs-icon>
-              No trigger source configured. This pipeline will not run automatically.
+              未设置触发源，不会自动执行
             </span>
           </a-tag>
           <a-tag v-if="pipelineDetail.validTime > 0 && settingStore.sysPublic.pipelineValidTimeEnabled && settingStore.isPlus" :color="pipelineDetail.validTime > Date.now() ? 'green' : 'red'">
             <span class="flex">
               <fs-icon icon="ion:time-outline"></fs-icon>
-              <span v-if="pipelineDetail.validTime > Date.now()"> Valid until: <FsTimeHumanize :model-value="pipelineDetail.validTime" :options="{ units: ['d'] }" format="YYYY-MM-DD"></FsTimeHumanize> </span>
-              <span v-else> Expired </span>
+              <span v-if="pipelineDetail.validTime > Date.now()"> 有效期：<FsTimeHumanize :model-value="pipelineDetail.validTime" :options="{ units: ['d'] }" format="YYYY-MM-DD"></FsTimeHumanize> </span>
+              <span v-else> 已过期 </span>
             </span>
           </a-tag>
         </div>
         <div v-if="hasActionPermission('write')" class="basis-40 flex justify-end mr-10">
           <template v-if="editMode">
-            <fs-button type="primary" :loading="saveLoading" @click="save">Save</fs-button>
-            <fs-button class="ml-5" @click="cancel">Cancel</fs-button>
+            <fs-button type="primary" :loading="saveLoading" @click="save">保存</fs-button>
+            <fs-button class="ml-5" @click="cancel">取消</fs-button>
           </template>
           <template v-else>
-            <fs-button icon="ant-design:edit-outlined" type="primary" @click="edit">Edit</fs-button>
+            <fs-button icon="ant-design:edit-outlined" type="primary" @click="edit">编辑</fs-button>
           </template>
         </div>
       </div>
@@ -66,7 +66,7 @@
               <template #header>
                 <div class="stage first-stage">
                   <div class="title">
-                    <text-editable model-value="Trigger Source" :disabled="true" />
+                    <text-editable model-value="触发源" :disabled="true" />
                   </div>
                   <div class="tasks">
                     <div class="task-container first-task">
@@ -76,7 +76,7 @@
                       <div class="task">
                         <a-button shape="round" type="primary" @click="run()">
                           <fs-icon icon="ion:play"></fs-icon>
-                          Manual Trigger
+                          手动触发
                         </a-button>
                       </div>
                     </div>
@@ -99,7 +99,7 @@
                       <div class="task">
                         <a-button shape="round" type="dashed" @click="triggerAdd">
                           <fs-icon icon="ion:add-circle-outline"></fs-icon>
-                          Trigger Source (Schedule)
+                          触发源（定时）
                         </a-button>
                       </div>
                     </div>
@@ -110,7 +110,7 @@
                       <div class="task">
                         <a-button shape="round" type="dashed" @click="triggerAdd('webhook')">
                           <fs-icon icon="ion:add-circle-outline"></fs-icon>
-                          Trigger Source (Webhook)
+                          触发源（Webhook）
                         </a-button>
                       </div>
                     </div>
@@ -123,7 +123,7 @@
                   <div class="title" @mousedown.stop>
                     <text-editable v-model="stage.title" :disabled="!editMode"></text-editable>
                     <div v-plus class="icon-box stage-move-handle">
-                      <fs-icon v-if="editMode" title="Drag to reorder" icon="ion:move-outline"></fs-icon>
+                      <fs-icon v-if="editMode" title="拖动排序" icon="ion:move-outline"></fs-icon>
                     </div>
                   </div>
                   <v-draggable v-model="stage.tasks" item-key="id" class="tasks" group="task" handle=".task-move-handle" :disabled="!settingStore.isPlus" @mousedown.stop>
@@ -137,21 +137,21 @@
                       >
                         <div class="line line-left">
                           <div class="flow-line"></div>
-                          <fs-icon v-if="editMode" class="add-stage-btn" title="Add new stage" icon="ion:add-circle" @click="stageAdd(index)"></fs-icon>
+                          <fs-icon v-if="editMode" class="add-stage-btn" title="添加新阶段" icon="ion:add-circle" @click="stageAdd(index)"></fs-icon>
                         </div>
                         <div class="line line-right">
                           <div class="flow-line"></div>
                         </div>
                         <div class="task">
                           <a-button shape="round" @click="taskEdit(stage, index, task, taskIndex)">
-                            <a-popover title="Steps" :trigger="editMode ? 'none' : 'hover'">
+                            <a-popover title="步骤" :trigger="editMode ? 'none' : 'hover'">
                               <!--                          :open="true"-->
                               <template #content>
                                 <div v-for="(item, stepIndex) of task.steps" :key="item.id" class="flex-o w-100">
                                   <span class="ellipsis flex-1 step-title" :class="{ disabled: item.disabled, deleted: item.disabled }"> {{ stepIndex + 1 }}. {{ item.title }} </span>
                                   <pi-status-show v-if="!editMode" :status="item.status?.result"></pi-status-show>
-                                  <a-tooltip title="Force rerun this step">
-                                    <fs-icon v-if="!editMode" class="pointer color-blue ml-2" style="font-size: 16px" title="Force rerun this step" icon="icon-park-outline:replay-music" @click="run(item.id)"></fs-icon>
+                                  <a-tooltip title="强制重新执行此步骤">
+                                    <fs-icon v-if="!editMode" class="pointer color-blue ml-2" style="font-size: 16px" title="强制重新执行此步骤" icon="icon-park-outline:replay-music" @click="run(item.id)"></fs-icon>
                                   </a-tooltip>
                                 </div>
                               </template>
@@ -162,10 +162,10 @@
                             </a-popover>
                           </a-button>
                           <div class="icon-box action copy">
-                            <fs-icon v-if="editMode" title="Copy" icon="ion:copy-outline" @click="taskCopy(stage, index, task)"></fs-icon>
+                            <fs-icon v-if="editMode" title="复制" icon="ion:copy-outline" @click="taskCopy(stage, index, task)"></fs-icon>
                           </div>
                           <div v-plus class="icon-box task-move-handle action drag">
-                            <fs-icon v-if="editMode" title="Drag to reorder" icon="ion:move-outline"></fs-icon>
+                            <fs-icon v-if="editMode" title="拖动排序" icon="ion:move-outline"></fs-icon>
                           </div>
                           <div class="shortcut">
                             <TaskShortcuts :task="task" />
@@ -185,7 +185,7 @@
                           <a-tooltip>
                             <a-button type="dashed" shape="round" @click="taskAdd(stage, index)">
                               <fs-icon class="font-20" icon="ion:add-circle-outline"></fs-icon>
-                              Add Task
+                              添加任务
                             </a-button>
                           </a-tooltip>
                         </div>
@@ -197,18 +197,18 @@
               <template #footer>
                 <div v-if="editMode" class="stage last-stage">
                   <div class="title">
-                    <text-editable model-value="New Stage" :disabled="true" />
+                    <text-editable model-value="新阶段" :disabled="true" />
                   </div>
                   <div class="tasks">
                     <div class="task-container first-task">
                       <div class="line line-left">
                         <div class="flow-line"></div>
-                        <fs-icon class="add-stage-btn" title="Add new stage" icon="ion:add-circle" @click="stageAdd()"></fs-icon>
+                        <fs-icon class="add-stage-btn" title="添加新阶段" icon="ion:add-circle" @click="stageAdd()"></fs-icon>
                       </div>
                       <div class="task">
                         <a-button shape="round" type="dashed" @click="stageAdd()">
                           <fs-icon icon="ion:add-circle-outline"></fs-icon>
-                          Add Task
+                          添加任务
                         </a-button>
                       </div>
                     </div>
@@ -219,7 +219,7 @@
                       <div class="task">
                         <a-button shape="round" type="dashed" @click="notificationAdd()">
                           <fs-icon icon="ion:add-circle-outline"></fs-icon>
-                          Add Notification
+                          添加通知
                         </a-button>
                       </div>
                     </div>
@@ -231,7 +231,7 @@
                         <a-button shape="round" @click="notificationEdit(item, ii as number)">
                           <div class="flex-o w-100">
                             <fs-icon icon="ion:notifications"></fs-icon>
-                            <span class="ellipsis flex-1 step-title align-left"> [Notification] {{ item.title || item.type }} </span>
+                            <span class="ellipsis flex-1 step-title align-left"> 【通知】 {{ item.title || item.type }} </span>
                           </div>
                         </a-button>
                       </div>
@@ -240,7 +240,7 @@
                 </div>
                 <div v-else class="stage last-stage">
                   <div class="title">
-                    <text-editable model-value="End" :disabled="true" />
+                    <text-editable model-value="结束" :disabled="true" />
                   </div>
                   <div v-if="pipeline.notifications?.length > 0" class="tasks">
                     <div v-for="(item, index) of pipeline.notifications" :key="index" class="task-container" :class="{ 'first-task': index == 0 }">
@@ -251,7 +251,7 @@
                         <a-button shape="round" @click="notificationEdit(item, index)">
                           <div class="flex-o w-100">
                             <fs-icon icon="ion:notifications"></fs-icon>
-                            <span class="ellipsis flex-1 step-title align-left"> [Notification] {{ item.title || item.type }} </span>
+                            <span class="ellipsis flex-1 step-title align-left"> 【通知】 {{ item.title || item.type }} </span>
                           </div>
                         </a-button>
                       </div>
@@ -265,7 +265,7 @@
                       <div class="task">
                         <a-button shape="round" type="dashed">
                           <fs-icon icon="ion:notifications"></fs-icon>
-                          Notification Not Configured
+                          通知未设置
                         </a-button>
                       </div>
                     </div>
@@ -282,7 +282,7 @@
           <fs-icon v-if="logsCollapse" icon="ion:chevron-back-outline"></fs-icon>
           <fs-icon v-else icon="ion:chevron-forward-outline"></fs-icon>
         </div>
-        <a-page-header title="Run History" sub-title="Click a task to view logs" class="logs-block" :ghost="false">
+        <a-page-header title="运行历史" sub-title="点任务可查看日志" class="logs-block" :ghost="false">
           <a-timeline class="mt-10">
             <template v-for="item of histories" :key="item.id">
               <pi-history-timeline-item
@@ -375,16 +375,16 @@ export default defineComponent({
     onBeforeRouteLeave((to, from) => {
       const newPipelineStr = JSON.stringify(pipeline.value || {});
       if (props.editMode && pipelineOriginStr.value && pipelineOriginStr.value !== newPipelineStr) {
-        const answer = window.confirm("The pipeline has not been saved. Are you sure you want to leave?");
+        const answer = window.confirm("流水线还未保存，确定要离开吗？");
         if (!answer) {
-          return false; // Returning false prevents this route navigation
+          return false; // 返回 false 即可阻止本次路由跳转
         }
         return true;
       }
     });
 
     const { t } = useI18n();
-    //Selected pipeline on the right
+    //右侧选中的pipeline
     const currentPipeline: Ref<any> = ref({});
     const pipeline: Ref<any> = ref({});
     const pipelineOriginStr = ref("");
@@ -423,7 +423,7 @@ export default defineComponent({
     };
     const changeCurrentHistory = async (history?: RunHistory) => {
       if (!history) {
-        //Cancel history view mode
+        //取消历史记录查看模式
         currentHistory.value = null;
         pipeline.value = cloneDeep(currentPipeline.value);
         eachStages(pipeline.value.stages, item => {
@@ -456,9 +456,9 @@ export default defineComponent({
 
       if (historyList.length > 0) {
         if (historyId > 0) {
-          //If a history is passed, show it as current first
+          //如果传递了history，优先显示历史记录作为当前
           const found = histories.value.find(item => {
-            //string == int
+            //字符串==int
             return item.id == historyId;
           });
           if (found) {
@@ -468,7 +468,7 @@ export default defineComponent({
         }
         //@ts-ignore
         if (historyList[0]?.version === pipeline.value?.version) {
-          //If the current pipeline version matches the latest history record, set that record as current
+          //如果当前的流水线版本与历史记录最后一条一致，则将该记录设置为current
           await changeCurrentHistory(historyList[0]);
         }
       }
@@ -494,7 +494,7 @@ export default defineComponent({
               await loadCurrentHistoryDetail();
               pipeline.value = currentHistory.value.pipeline;
               // if (currentHistory.value.pipeline?.status?.status !== "start") {
-              // It seems refresh does not happen unless true is passed
+              // 不传true好像不会刷新
               //   await loadHistoryList(true);
               // }
             }
@@ -540,7 +540,7 @@ export default defineComponent({
         pipelineDetail.value = detail;
         currentPipeline.value = merge(
           {
-            title: "New Pipeline",
+            title: "新管道流程",
             stages: [],
             triggers: [],
             notifications: [],
@@ -645,15 +645,15 @@ export default defineComponent({
       const stageAdd = (stageIndex = pipeline.value.stages.length) => {
         const stage: any = {
           id: nanoid(),
-          title: "New Stage",
+          title: "新阶段",
           tasks: [],
           status: null,
         };
         //stage: any, stageIndex: number, onSuccess
         useTaskRet.taskAdd(stage, stageIndex, () => {
           let task = stage.tasks[0] as any;
-          stage.title = task.title + " Stage";
-          //Insert stage
+          stage.title = task.title + "阶段";
+          //插入阶段
           pipeline.value.stages.splice(stageIndex, 0, stage);
         });
       };
@@ -751,8 +751,8 @@ export default defineComponent({
         if (props.editMode) {
           const res = await new Promise((resolve, reject) => {
             Modal.confirm({
-              title: "Save Required Before Running Pipeline",
-              content: "Save first?",
+              title: "需要保存才能运行管道",
+              content: "是否先保存",
               onOk() {
                 save();
                 resolve(true);
@@ -767,21 +767,21 @@ export default defineComponent({
           }
         }
         if (!props.options.doTrigger) {
-          message.warn("Running is not supported yet");
+          message.warn("暂不支持运行");
           return;
         }
         if (pipeline.value.stages == null || pipeline.value.stages.length === 0) {
-          message.warn("Please add stages and tasks first");
+          message.warn("请先添加阶段和任务");
           return;
         }
         Modal.confirm({
-          title: "Confirm",
-          content: `Are you sure you want to trigger the run manually?`,
+          title: "确认",
+          content: `确定要手动触发运行吗？`,
           async onOk() {
             //@ts-ignore
             await changeCurrentHistory(null);
             if (histories.value.length > 0) {
-              //Check whether this is the latest pipeline version
+              //看是不是最新的pipeline版本
               if (pipeline.value?.version !== histories.value[0].pipeline?.version) {
                 const detail: PipelineDetail = await props.options.getPipelineDetail({ pipelineId: pipeline.value.id });
                 pipeline.value = detail.pipeline;
@@ -789,7 +789,7 @@ export default defineComponent({
             }
 
             await props.options.doTrigger({ pipelineId: pipeline.value.id, stepId: stepId });
-            notification.success({ message: "Pipeline has started running" });
+            notification.success({ message: "管道已经开始运行" });
           },
         });
       };
@@ -810,10 +810,10 @@ export default defineComponent({
         validateErrors.value = {};
 
         const stepIds: string[] = [];
-        //Validate that output IDs are correct
+        //校验output id是否正确
         const pp = pipeline.value;
 
-        //Check whether the output step ID exists
+        //检查输出的stepid是否存在
         let hasError = false;
         let errorMessages: any = [];
         let errorIndex = 1;
@@ -837,7 +837,7 @@ export default defineComponent({
               const paramName = arr[2];
               if (!stepIds.includes(stepId)) {
                 hasError = true;
-                const message = `${step.title} prerequisite output step ${paramName} does not exist or has been disabled`;
+                const message = `${step.title}的前置输出步骤${paramName}不存在或已被禁用`;
                 errorIndex++;
                 addValidateError(task.id, {
                   message,
@@ -883,7 +883,7 @@ export default defineComponent({
           if (props.options.doSave) {
             currentPipeline.value = pipeline.value;
 
-            //Remove empty stage
+            //移除空阶段
             remove(pipeline.value.stages, (item: Stage) => {
               return item.tasks.length === 0;
             });
@@ -939,7 +939,7 @@ export default defineComponent({
         console.log("currentPipeline", pipeline);
       };
 
-      // Get browser width
+      // 获取浏览器宽度
       const viewWidth = window.innerWidth;
       const logsCollapse = ref(viewWidth < 768 ? true : false);
 
@@ -968,26 +968,26 @@ export default defineComponent({
             isDragging = true;
             startX = e.pageX - scrollableDiv.offsetLeft;
             scrollLeft = scrollableDiv.scrollLeft;
-            scrollableDiv.style.cursor = "grabbing"; // show grabbing cursor while dragging
+            scrollableDiv.style.cursor = "grabbing"; // 按住时变成抓手
             e.stopPropagation();
           });
 
           scrollableDiv.addEventListener("mouseleave", () => {
             isDragging = false;
-            scrollableDiv.style.cursor = "grab"; // restore cursor when leaving
+            scrollableDiv.style.cursor = "grab"; // 离开时恢复光标
           });
 
           scrollableDiv.addEventListener("mouseup", () => {
             isDragging = false;
-            scrollableDiv.style.cursor = "grab"; // restore cursor on release
+            scrollableDiv.style.cursor = "grab"; // 松开时恢复光标
           });
 
           scrollableDiv.addEventListener("mousemove", (e: any) => {
-            if (!isDragging) return; // exit if mouse is not held down
+            if (!isDragging) return; // 如果没有按住鼠标，退出
             e.preventDefault();
             const x = e.pageX - scrollableDiv.offsetLeft;
-            const walk = (x - startX) * 2; // movement speed
-            scrollableDiv.scrollLeft = scrollLeft - walk; // update scroll position
+            const walk = (x - startX) * 2; // 移动的速度
+            scrollableDiv.scrollLeft = scrollLeft - walk; // 更新滚动位置
           });
         }
       });

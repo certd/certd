@@ -73,7 +73,7 @@ export const useProjectStore = defineStore("app.project", () => {
     currentProjectId.value = id;
     LocalStorage.set(lastProjectIdCacheKey, id);
     if (!silent) {
-      message.success("Project switched successfully");
+      message.success("切换项目成功");
     }
   }
 

@@ -182,7 +182,7 @@ const notificationSave = async (e: any) => {
   try {
     await notificationFormRef.value.validate();
   } catch (e) {
-    console.error("Form validation failed:", e);
+    console.error("表单验证失败:", e);
     return;
   }
 

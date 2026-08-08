@@ -19,7 +19,7 @@ const emit = defineEmits<{
 }>();
 async function batchUpdateRequest(form: any) {
   await api.BatchUpdateTrigger(props.selectedRowKeys, {
-    title: "Scheduled Trigger",
+    title: "定时触发",
     type: "timer",
     props: form.clear ? false : form.props,
     random: form.random,
@@ -37,7 +37,7 @@ async function openFormDialog() {
   const crudOptions: any = {
     columns: {
       clear: {
-        title: "Set/Clear",
+        title: "设置/清空",
         form: {
           value: false,
           component: {
@@ -46,11 +46,11 @@ async function openFormDialog() {
             dict: dict({
               data: [
                 {
-                  label: "Set Schedule",
+                  label: "设置定时",
                   value: false,
                 },
                 {
-                  label: "Clear Schedule",
+                  label: "清空定时",
                   value: true,
                 },
               ],
@@ -59,10 +59,10 @@ async function openFormDialog() {
         },
       },
       random: {
-        title: "Random Time",
+        title: "随机时间",
         form: {
           value: true,
-          helper: "Whether to assign a random time to the pipeline",
+          helper: "是否给流水线随机设置一个时间",
           show: compute(({ form }) => {
             return form.clear !== true;
           }),
@@ -72,11 +72,11 @@ async function openFormDialog() {
             dict: dict({
               data: [
                 {
-                  label: "Random Time",
+                  label: "随机时间",
                   value: true,
                 },
                 {
-                  label: "Fixed Time",
+                  label: "固定时间",
                   value: false,
                 },
               ],
@@ -85,10 +85,10 @@ async function openFormDialog() {
         },
       },
       randomRange: {
-        title: "Random Time Range",
+        title: "随机时间范围",
         form: {
           value: ["00:00:00", "08:00:00"],
-          helper: "Random time range, in seconds",
+          helper: "随机时间范围，单位秒",
           component: {
             //  <a-time-range-picker :bordered="false" />
             name: "a-time-range-picker",
@@ -98,7 +98,7 @@ async function openFormDialog() {
           show: compute(({ form }) => {
             return form.clear !== true && form.random === true;
           }),
-          rules: [{ required: true, message: "Please selectRandom Time Range" }],
+          rules: [{ required: true, message: "请选择随机时间范围" }],
         },
       },
       "props.cron": {

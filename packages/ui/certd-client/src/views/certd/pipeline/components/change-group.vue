@@ -1,5 +1,5 @@
 <template>
-  <fs-button icon="mdi:format-list-group" class="need-plus" type="link" text="Change Group" @click="openGroupSelectDialog"></fs-button>
+  <fs-button icon="mdi:format-list-group" class="need-plus" type="link" text="修改分组" @click="openGroupSelectDialog"></fs-button>
 </template>
 <script setup lang="ts">
 import * as api from "../api";
@@ -31,11 +31,11 @@ async function openGroupSelectDialog() {
   const crudOptions: any = {
     columns: {
       groupId: {
-        title: "Group",
+        title: "分组",
         type: "dict-select",
         dict: pipelineGroupDictRef,
         form: {
-          rules: [{ required: true, message: "Please select a group" }],
+          rules: [{ required: true, message: "请选择分组" }],
         },
       },
     },
@@ -54,7 +54,7 @@ async function openGroupSelectDialog() {
         },
       },
       wrapper: {
-        title: "Batch Change Group",
+        title: "批量修改分组",
         width: 600,
       },
     },

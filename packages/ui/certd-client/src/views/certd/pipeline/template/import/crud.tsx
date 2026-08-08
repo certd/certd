@@ -19,31 +19,31 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           //导入按钮
           import: {
             show: false,
-            text: "Batch import",
+            text: "批量导入",
             type: "primary",
             click() {
               const modal = Modal.info({
-                title: "Batch import",
-                okText: "Close",
+                title: "批量导入",
+                okText: "关闭",
                 content() {
                   async function onChange(e: any) {
                     const file = e.target.files[0];
                     await importTable(crudExpose, { file, append: true });
                     modal.destroy();
                     notification.success({
-                      message: "Import succeeded",
+                      message: "导入成功",
                     });
                   }
                   return (
                     <div>
                       <p>
-                        1、<a href={"template-import.csv"}>Download import template</a>
+                        1、<a href={"template-import.csv"}>下载导入模板</a>
                       </p>
                       <p>
-                        2、<span>Fill template data</span>
+                        2、<span>模板填充数据</span>
                       </p>
                       <p>
-                        <span>3. Import:</span>
+                        <span>3、导入：</span>
                         <input type={"file"} onInput={onChange}></input>
                       </p>
                     </div>

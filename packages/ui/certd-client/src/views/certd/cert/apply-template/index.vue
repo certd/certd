@@ -2,8 +2,8 @@
   <fs-page class="page-cert-apply-template">
     <template #header>
       <div class="title">
-        Certificate Apply Parameter Templates
-        <span class="sub">Preset certificate apply parameters, excluding domains and validation method</span>
+        证书申请参数模版
+        <span class="sub">预设证书申请参数，不包含域名和校验方式</span>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>

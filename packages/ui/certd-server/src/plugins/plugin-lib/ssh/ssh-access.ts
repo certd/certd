@@ -1,7 +1,7 @@
 import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
 @IsAccess({
   name: "ssh",
-  title: "Host Login Authorization",
+  title: "主机登录授权",
   desc: "",
   icon: "clarity:host-line",
   input: {},
@@ -9,42 +9,42 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
 })
 export class SshAccess extends BaseAccess {
   @AccessInput({
-    title: "Host Address",
+    title: "主机地址",
     component: {
-      placeholder: "Host domain or IP address",
+      placeholder: "主机域名或IP地址",
     },
     required: true,
   })
   host!: string;
   @AccessInput({
-    title: "Port",
+    title: "端口",
     value: 22,
     component: {
       name: "a-input-number",
       placeholder: "22",
     },
-    rules: [{ required: true, message: "This field is required" }],
+    rules: [{ required: true, message: "此项必填" }],
   })
   port!: number;
   @AccessInput({
-    title: "Username",
+    title: "用户名",
     value: "root",
-    rules: [{ required: true, message: "This field is required" }],
+    rules: [{ required: true, message: "此项必填" }],
   })
   username!: string;
   @AccessInput({
-    title: "Password",
+    title: "密码",
     component: {
       name: "a-input-password",
       vModel: "value",
     },
     encrypt: true,
-    helper: "A login password or private key is required",
+    helper: "登录密码或密钥必填一项",
   })
   password!: string;
   @AccessInput({
-    title: "Private Key Login",
-    helper: "A private key or password is required",
+    title: "私钥登录",
+    helper: "私钥或密码必填一项",
     component: {
       name: "pem-input",
       vModel: "modelValue",
@@ -54,8 +54,8 @@ export class SshAccess extends BaseAccess {
   privateKey!: string;
 
   @AccessInput({
-    title: "Private Key Passphrase",
-    helper: "If your private key has a passphrase",
+    title: "私钥密码",
+    helper: "如果你的私钥有密码的话",
     component: {
       name: "a-input-password",
       vModel: "value",
@@ -65,24 +65,24 @@ export class SshAccess extends BaseAccess {
   passphrase!: string;
 
   @AccessInput({
-    title: "Script Type",
+    title: "脚本类型",
     helper: "bash 、sh 、fish",
     component: {
       name: "a-select",
       vModel: "value",
       options: [
-        { value: "default", label: "Default" },
+        { value: "default", label: "默认" },
         { value: "sh", label: "sh" },
         { value: "bash", label: "bash" },
-        { value: "fish", label: "fish (set -e is not supported)" },
+        { value: "fish", label: "fish(不支持set -e)" },
       ],
     },
   })
   scriptType: string;
 
   @AccessInput({
-    title: "Pseudo Terminal",
-    helper: "If login fails with: all authentication methods failed / unable to exec, try enabling pseudo-terminal mode for keyboard-interactive login.\nThis may affect log output.",
+    title: "伪终端",
+    helper: "如果登录报错：all authentication methods failed / unable to exec，可以尝试开启伪终端模式进行keyboard-interactive方式登录\n开启后对日志输出有一定的影响",
     component: {
       name: "a-switch",
       vModel: "checked",
@@ -91,8 +91,8 @@ export class SshAccess extends BaseAccess {
   pty!: boolean;
 
   @AccessInput({
-    title: "SOCKS Proxy",
-    helper: "SOCKS proxy configuration, format: socks5://user:password@host:port",
+    title: "socks代理",
+    helper: "socks代理配置，格式：socks5://user:password@host:port",
     component: {
       name: "a-input",
       vModel: "value",
@@ -103,8 +103,8 @@ export class SshAccess extends BaseAccess {
   socksProxy!: string;
 
   @AccessInput({
-    title: "Timeout",
-    helper: "Command execution timeout in seconds, default 30 minutes",
+    title: "超时时间",
+    helper: "执行命令的超时时间，单位秒,默认30分钟",
     component: {
       name: "a-input-number",
     },
@@ -112,8 +112,8 @@ export class SshAccess extends BaseAccess {
   timeout: number;
 
   @AccessInput({
-    title: "Windows",
-    helper: "Select this for Windows hosts.\nWindows requires [OpenSSH](https://certd.docmirror.cn/guide/use/host/windows.html).",
+    title: "是否Windows",
+    helper: "如果是Windows主机，请勾选此项\n并且需要windows[安装OpenSSH](https://certd.docmirror.cn/guide/use/host/windows.html)",
     component: {
       name: "a-switch",
       vModel: "checked",
@@ -122,13 +122,13 @@ export class SshAccess extends BaseAccess {
   windows = false;
 
   @AccessInput({
-    title: "Command Encoding",
-    helper: "If this is a Windows host and output is garbled, try GBK",
+    title: "命令编码",
+    helper: "如果是Windows主机，且出现乱码了，请尝试设置为GBK",
     component: {
       name: "a-select",
       vModel: "value",
       options: [
-        { value: "", label: "Default" },
+        { value: "", label: "默认" },
         { value: "GBK", label: "GBK" },
         { value: "UTF8", label: "UTF-8" },
       ],
@@ -137,7 +137,7 @@ export class SshAccess extends BaseAccess {
   encoding: string;
 
   @AccessInput({
-    title: "Test",
+    title: "测试",
     component: {
       name: "api-test",
       type: "access",
@@ -153,7 +153,7 @@ export class SshAccess extends BaseAccess {
             },
          }
         `,
-    helper: "Click to test",
+    helper: "点击测试",
   })
   testRequest = true;
 

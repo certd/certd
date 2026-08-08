@@ -19,15 +19,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const selectedRowKeys = ref<number[]>([]);
   const pipelineTypeDictData = [
-    { value: "cert", label: "Certificate Apply" },
-    { value: "cert_upload", label: "Certificate Upload" },
-    { value: "custom", label: "Custom" },
-    { value: "template", label: "Template" },
-    { value: "cert_auto", label: "Certificate Apply" },
+    { value: "cert", label: "证书申请" },
+    { value: "cert_upload", label: "证书上传" },
+    { value: "custom", label: "自定义" },
+    { value: "template", label: "模板" },
+    { value: "cert_auto", label: "证书申请" },
   ];
   const disabledDictData = [
-    { label: "Enabled", value: false, color: "green" },
-    { label: "Disabled", value: true, color: "red" },
+    { label: "启用", value: false, color: "green" },
+    { label: "禁用", value: true, color: "red" },
   ];
 
   function findDictLabel(data: any[], value: any) {
@@ -36,10 +36,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   function formatValidTime(value: any) {
     if (!value || value <= 0) {
-      return "Permanent";
+      return "永久有效";
     }
     if (value < Date.now()) {
-      return "Expired";
+      return "已过期";
     }
     return dayjs(value).format("YYYY-MM-DD");
   }
@@ -91,16 +91,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const handleBatchDelete = () => {
     if (!selectedRowKeys.value?.length) {
-      message.error("Please select records to delete first");
+      message.error("请先选择要删除的记录");
       return;
     }
     settingStore.checkPlus();
     Modal.confirm({
-      title: "Confirm",
-      content: `Are you sure you want to delete the selected ${selectedRowKeys.value.length} user pipelines? This will also clear the related execution history, logs, and certificate repository records.`,
+      title: "确认",
+      content: `确认删除选中的 ${selectedRowKeys.value.length} 条用户流水线？删除后会清理对应执行历史、日志和证书仓库记录。`,
       async onOk() {
         await api.BatchDelObj(selectedRowKeys.value);
-        message.success("Deleted successfully");
+        message.success("删除成功");
         selectedRowKeys.value = [];
         await crudExpose.doRefresh();
       },
@@ -178,7 +178,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         userId: {
-          title: "User",
+          title: "用户",
           type: "table-select",
           search: {
             show: true,
@@ -199,7 +199,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               crossPage: true,
               multiple: false,
               select: {
-                placeholder: "Click to select user",
+                placeholder: "点击选择用户",
               },
               createCrudOptions: createCrudOptionsUser,
             },
@@ -209,7 +209,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         projectId: {
-          title: "Project ID",
+          title: "项目ID",
           type: "number",
           search: {
             show: true,
@@ -226,11 +226,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         title: {
-          title: "Pipeline Name",
+          title: "流水线名称",
           type: "text",
           search: {
             show: true,
-            title: "Keyword",
+            title: "关键词",
             component: {
               name: "a-input",
             },
@@ -249,7 +249,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         type: {
-          title: "Type",
+          title: "类型",
           type: "dict-select",
           search: {
             show: true,
@@ -273,7 +273,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         status: {
-          title: "Run Status",
+          title: "运行状态",
           type: "dict-select",
           search: {
             show: true,
@@ -294,7 +294,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         disabled: {
-          title: "Status",
+          title: "状态",
           type: "dict-select",
           search: {
             show: true,
@@ -315,7 +315,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         stepCount: {
-          title: "Deployment Tasks",
+          title: "部署任务数",
           type: "number",
           column: {
             align: "center",
@@ -326,7 +326,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         triggerCount: {
-          title: "Scheduled Tasks",
+          title: "定时任务数",
           type: "number",
           column: {
             align: "center",
@@ -338,7 +338,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         "lastVars.certDomains": {
-          title: "Certificate Domains",
+          title: "证书域名",
           type: "text",
           column: {
             width: 260,
@@ -350,7 +350,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         lastHistoryTime: {
-          title: "Last Run Time",
+          title: "最后执行时间",
           type: "datetime",
           column: {
             sorter: true,
@@ -362,7 +362,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         nextRunTime: {
-          title: "Next Run Time",
+          title: "下次执行时间",
           type: "datetime",
           column: {
             sorter: true,
@@ -374,7 +374,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         validTime: {
-          title: "Valid Until",
+          title: "有效期",
           type: "date",
           column: {
             sorter: true,
@@ -382,10 +382,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
             cellRender({ value }) {
               if (!value || value <= 0) {
-                return "Permanent";
+                return "永久有效";
               }
               if (value < Date.now()) {
-                return <span style={{ color: "red" }}>Expired</span>;
+                return <span style={{ color: "red" }}>已过期</span>;
               }
               return dayjs(value).format("YYYY-MM-DD");
             },
@@ -395,7 +395,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         remark: {
-          title: "Remark",
+          title: "备注",
           type: "textarea",
           column: {
             width: 200,
@@ -410,7 +410,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         createTime: {
-          title: "Created At",
+          title: "创建时间",
           type: "datetime",
           column: {
             width: 155,
@@ -422,7 +422,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         updateTime: {
-          title: "Updated At",
+          title: "更新时间",
           type: "datetime",
           column: {
             width: 155,

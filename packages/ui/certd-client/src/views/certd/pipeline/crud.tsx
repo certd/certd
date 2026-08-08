@@ -190,7 +190,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
               crossPage: false,
               selectedRowKeys,
               onSelectedChanged(selected) {
-                console.log("Selection changed:", selected);
+                console.log("已选择变化：", selected);
               },
             },
           },

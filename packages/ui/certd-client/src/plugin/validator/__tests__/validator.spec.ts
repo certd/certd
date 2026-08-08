@@ -13,13 +13,13 @@ describe("domain_validator", () => {
     function test() {
       return isDomain({ allowDotStart: true }, value);
     }
-    expect(test).to.throw(Error, "Invalid domain: &.cc.com. Enter a valid domain");
+    expect(test).to.throw(Error, "域名有误：&.cc.com，请输入正确的域名");
 
     value = ["a,cc.com"];
-    expect(test).to.throw(Error, "Invalid domain: a. Enter a valid domain");
+    expect(test).to.throw(Error, "域名有误：a,cc.com，请输入正确的域名");
 
     value = ["&cc.com"];
-    expect(test).to.throw(Error, "Invalid domain: &cc.com. Enter a valid domain");
+    expect(test).to.throw(Error, "域名有误：&cc.com，请输入正确的域名");
 
     value = [".cc.com"];
     expect(test()).to.be.true;
@@ -30,16 +30,16 @@ describe("domain_validator", () => {
     function test() {
       return isDomain({ allowDotStart: false }, value);
     }
-    expect(test).to.throw(Error, "Invalid domain: &.cc.com. Enter a valid domain");
+    expect(test).to.throw(Error, "域名有误：&.cc.com，请输入正确的域名");
 
     value = ["&cc.com"];
-    expect(test).to.throw(Error, "Invalid domain: &cc.com. Enter a valid domain");
+    expect(test).to.throw(Error, "域名有误：&cc.com，请输入正确的域名");
 
     value = ["a,cc.com"];
-    expect(test).to.throw(Error, "Invalid domain: a. Enter a valid domain");
+    expect(test).to.throw(Error, "域名有误：a,cc.com，请输入正确的域名");
 
     value = [".cc.com"];
-    expect(test).to.throw(Error, "Invalid domain: .cc.com. Enter a valid domain");
+    expect(test).to.throw(Error, "域名有误：.cc.com，请输入正确的域名");
   });
 
   it("isFilePath", () => {
@@ -57,7 +57,7 @@ describe("domain_validator", () => {
     //*?“<>|等特殊字符
 
     value = "/a/&/b>c.txt";
-    const errorMessage = 'File names cannot contain special characters such as *?"<>|';
+    const errorMessage = '文件名不能包含*?"<>|等特殊字符';
     expect(test).to.throw(Error, errorMessage);
 
     value = "/a/&/b<c.txt";

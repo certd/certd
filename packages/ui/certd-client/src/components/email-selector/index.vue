@@ -10,11 +10,13 @@
       <v-nodes :vnodes="menu" />
       <a-divider style="margin: 4px 0" />
       <div class="w-full flex flex-row p-5">
-        <a-input ref="inputRef" v-model:value="newEmail" class="flex-1" placeholder="Add a new email" @keydown.enter="addItem" />
+        <a-input ref="inputRef" v-model:value="newEmail" class="flex-1" placeholder="添加新邮箱" @keydown.enter="addItem" />
         <a-button class="ml-5" type="primary" @click="addItem">
           <template #icon>
             <plus-outlined />
-          </template>Add email</a-button>
+          </template>
+          添加邮箱
+        </a-button>
       </div>
     </template>
   </a-select>
@@ -58,14 +60,14 @@ async function addItem() {
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+\.)+[a-zA-Z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]{2,}))$/;
   if (!regExp.test(email)) {
     notification.error({
-      message: "Enter a valid email address",
+      message: "请填写正确的邮箱地址",
     });
     return;
   }
 
   if (emails.value.find(item => item.value === email)) {
     notification.warning({
-      message: "This email already exists",
+      message: "此邮箱已存在",
     });
     return;
   }
@@ -79,8 +81,8 @@ async function addItem() {
 
 async function deleteItem(value: string) {
   Modal.confirm({
-    title: "Delete email",
-    content: "Are you sure you want to delete this email?",
+    title: "删除邮箱",
+    content: "确定要删除此邮箱吗？",
     onOk: async () => {
       await api.EmailDelete(value);
       emails.value = emails.value.filter(item => item.value !== value);

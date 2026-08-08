@@ -1,5 +1,5 @@
 <template>
-  <fs-button icon="ph:certificate" class="need-plus" type="link" text="Change Certificate Request Options" @click="openFormDialog"></fs-button>
+  <fs-button icon="ph:certificate" class="need-plus" type="link" text="修改证书申请参数" @click="openFormDialog"></fs-button>
 </template>
 
 <script setup lang="ts">
@@ -83,7 +83,7 @@ async function openFormDialog() {
       //@ts-ignore
       async doSubmit({ form }) {
         if (!hasAnyBatchUpdateValue(form)) {
-          throw new Error("Please select at least one option to change");
+          throw new Error("请至少选择一个要修改的参数");
         }
         await batchUpdateRequest(form);
       },
@@ -96,7 +96,7 @@ async function openFormDialog() {
         },
       },
       wrapper: {
-        title: "Batch Change Certificate Request Options",
+        title: "批量修改证书申请参数",
         width: 620,
       },
     },

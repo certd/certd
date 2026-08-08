@@ -11,8 +11,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   const { openCrudFormDialog } = useFormWrapper();
   const isDefaultDict = dict({
     data: [
-      { value: true, label: "Default", color: "green" },
-      { value: false, label: "No", color: "gray" },
+      { value: true, label: "默认", color: "green" },
+      { value: false, label: "否", color: "gray" },
     ],
   });
 
@@ -38,7 +38,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
 
   async function setDefault(row: any) {
     await api.SetDefault(row.id);
-    message.success("Set successfully");
+    message.success("设置成功");
     await crudExpose.doRefresh();
   }
 
@@ -64,7 +64,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           initialForm,
           wrapper: {
             width: 1100,
-            title: row ? "Edit certificate apply parameter template" : "Add certificate apply parameter template",
+            title: row ? "编辑证书申请参数模版" : "新增证书申请参数模版",
             saveRemind: false,
           },
           col: {
@@ -125,13 +125,13 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           form: { show: false },
         },
         name: {
-          title: "Template name",
+          title: "模版名称",
           type: "text",
           search: { show: true },
           column: { minWidth: 220 },
         },
         isDefault: {
-          title: "Default",
+          title: "默认",
           type: "dict-switch",
           dict: isDefaultDict,
           column: {
@@ -148,7 +148,9 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                         event.stopPropagation();
                         setDefault(row);
                       }}
-                    >Set as default</a-button>
+                    >
+                      设为默认
+                    </a-button>
                   )}
                 </div>
               );
@@ -156,18 +158,18 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         disabled: {
-          title: "Disabled",
+          title: "禁用",
           type: "dict-switch",
           column: { show: false },
           form: { show: false },
         },
         createTime: {
-          title: "Created at",
+          title: "创建时间",
           type: "datetime",
           column: { width: 180 },
         },
         content: {
-          title: "Configuration",
+          title: "配置",
           type: "text",
           column: { show: false },
           form: { show: false },

@@ -38,15 +38,15 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             show: compute(({ row }) => {
               return row.status === "wait_pay";
             }),
-            title: "Sync Order Status",
+            title: "同步订单状态",
             text: null,
-            tooltip: { title: "Sync Order Status" },
+            tooltip: { title: "同步订单状态" },
             icon: "ant-design:sync-outlined",
             type: "link",
             click: async ({ row }) => {
               Modal.confirm({
-                title: "Confirm",
-                content: "Confirm syncing order status?",
+                title: "确认",
+                content: "确认同步订单状态？",
                 onOk: async () => {
                   await api.SyncStatus(row.id);
                   await crudExpose.doRefresh();
@@ -59,18 +59,18 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             show: compute(({ row }) => {
               return row.status === "wait_pay";
             }),
-            title: "Cancel Order",
+            title: "取消订单",
             text: null,
-            tooltip: { title: "Cancel Order" },
+            tooltip: { title: "取消订单" },
             icon: "ion:close-circle-outline",
             type: "link",
             danger: true,
             click: async ({ row }) => {
               Modal.confirm({
-                title: "Confirm Cancel Order?",
-                content: "After cancellation, the order will be closed and frozen balance deductions will be returned automatically.",
-                okText: "Confirm Cancellation",
-                cancelText: "Think Again",
+                title: "确认取消订单？",
+                content: "取消后订单会关闭，已冻结的余额抵扣金额将自动退回。",
+                okText: "确认取消",
+                cancelText: "再想想",
                 onOk: async () => {
                   await api.CancelObj(row.id);
                   await crudExpose.doRefresh();
@@ -105,7 +105,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         tradeNo: {
-          title: "Order Number",
+          title: "订单号",
           type: "text",
           search: { show: true },
           form: {
@@ -116,7 +116,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         title: {
-          title: "Product Name",
+          title: "商品名称",
           type: "text",
           search: { show: true },
           column: {
@@ -124,7 +124,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         duration: {
-          title: "Duration",
+          title: "时长",
           type: "number",
           column: {
             width: 100,
@@ -135,7 +135,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         amount: {
-          title: "Amount",
+          title: "金额",
           type: "number",
           column: {
             width: 100,
@@ -147,7 +147,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         rebateAmount: {
-          title: "Balance Deduction",
+          title: "余额抵扣",
           type: "number",
           column: {
             width: 110,
@@ -159,7 +159,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         thirdPartyPayAmount: {
-          title: "Actual Paid Amount",
+          title: "实付金额",
           type: "number",
           column: {
             width: 110,
@@ -171,14 +171,14 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         status: {
-          title: "Status",
+          title: "状态",
           search: { show: true },
           type: "dict-select",
           dict: dict({
             data: [
-              { label: "Pending Payment", value: "wait_pay", color: "warning" },
-              { label: "Paid", value: "paid", color: "success" },
-              { label: "Closed", value: "closed", color: "error" },
+              { label: "待支付", value: "wait_pay", color: "warning" },
+              { label: "已支付", value: "paid", color: "success" },
+              { label: "已关闭", value: "closed", color: "error" },
             ],
           }),
           column: {
@@ -187,16 +187,16 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         payType: {
-          title: "Payment Method",
+          title: "支付方式",
           search: { show: true },
           type: "dict-select",
           dict: dict({
             data: [
-              { label: "Aggregated Payment", value: "yizhifu" },
-              { label: "Alipay", value: "alipay" },
-              { label: "WeChat", value: "wxpay" },
-              { label: "Free", value: "free" },
-              { label: "Balance Deduction", value: "rebate" },
+              { label: "聚合支付", value: "yizhifu" },
+              { label: "支付宝", value: "alipay" },
+              { label: "微信", value: "wxpay" },
+              { label: "免费", value: "free" },
+              { label: "余额抵扣", value: "rebate" },
             ],
           }),
           column: {
@@ -208,14 +208,14 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         payTime: {
-          title: "Payment Time",
+          title: "支付时间",
           type: "datetime",
           column: {
             width: 160,
           },
         },
         createTime: {
-          title: "Created Time",
+          title: "创建时间",
           type: "datetime",
           form: {
             show: false,
@@ -227,7 +227,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         updateTime: {
-          title: "Updated Time",
+          title: "更新时间",
           type: "datetime",
           form: {
             show: false,

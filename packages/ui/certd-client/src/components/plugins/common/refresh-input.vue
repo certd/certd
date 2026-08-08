@@ -47,10 +47,10 @@ const message = ref("");
 const hasError = ref(false);
 
 const action = computed(() => props.action);
-const buttonText = computed(() => props.buttonText || "Refresh");
+const buttonText = computed(() => props.buttonText || "刷新");
 const icon = computed(() => props.icon || "ion:refresh-outline");
 const placeholder = computed(() => props.placeholder || "");
-const successMessage = computed(() => props.successMessage || "Refresh succeeded. Save the configuration");
+const successMessage = computed(() => props.successMessage || "刷新成功，请保存配置");
 
 const doRefresh = async () => {
   if (props.disabled) {
@@ -61,7 +61,7 @@ const doRefresh = async () => {
   }
   if (!action.value) {
     hasError.value = true;
-    message.value = "Missing refresh action configuration";
+    message.value = "缺少刷新动作配置";
     return;
   }
 

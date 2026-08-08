@@ -20,7 +20,7 @@ export function useUserProfile() {
   async function openEditProfileDialog(req: { onUpdated?: (ctx: any) => void }) {
     const detail = await userProfileApi.getMineInfo();
     if (!detail) {
-      throw new Error("User profile does not exist");
+      throw new Error("用户资料不存在");
     }
 
     const { t } = useI18n();
@@ -34,7 +34,7 @@ export function useUserProfile() {
     }
 
     await openFormDialog({
-      title: `Edit user profile`,
+      title: `编辑用户资料`,
       wrapper: {
         width: 600,
       },
@@ -152,18 +152,18 @@ export function useContactBind() {
   const { openFormDialog } = useFormDialog();
 
   async function openContactBindDialog(req: { type: "mobile" | "email"; userInfo: any; contactCapability: { smsEnabled?: boolean }; onUpdated?: () => Promise<void> | void }) {
-    const methods = [{ label: "Password", value: "password" }];
+    const methods = [{ label: "密码", value: "password" }];
     if (req.userInfo.email) {
-      methods.push({ label: "Email", value: "email" });
+      methods.push({ label: "邮箱", value: "email" });
     }
     if (req.contactCapability.smsEnabled && req.userInfo.mobile) {
-      methods.push({ label: "Mobile number", value: "mobile" });
+      methods.push({ label: "手机号", value: "mobile" });
     }
 
     async function openChangeDialog(identityValidationCode: string) {
       const isMobile = req.type === "mobile";
       await openFormDialog({
-        title: isMobile ? (req.userInfo.mobile ? "Change mobile number" : "Bind mobile number") : req.userInfo.email ? "Change email" : "Bind email",
+        title: isMobile ? (req.userInfo.mobile ? "修改手机号" : "绑定手机号") : req.userInfo.email ? "修改邮箱" : "绑定邮箱",
         wrapper: {
           width: 560,
         },
@@ -189,12 +189,12 @@ export function useContactBind() {
               identityValidationCode,
             });
           }
-          message.success("Binding information updated");
+          message.success("绑定信息已更新");
           await req.onUpdated?.();
         },
         columns: {
           phoneCode: {
-            title: "Country code",
+            title: "区号",
             type: "text",
             form: {
               col: {
@@ -202,13 +202,13 @@ export function useContactBind() {
               },
               show: isMobile,
               component: {
-                placeholder: "Country code",
+                placeholder: "区号",
               },
-              rules: [{ required: isMobile, message: "Enter country code" }],
+              rules: [{ required: isMobile, message: "请输入区号" }],
             },
           },
           mobile: {
-            title: "Mobile number",
+            title: "手机号",
             type: "text",
             form: {
               col: {
@@ -216,16 +216,16 @@ export function useContactBind() {
               },
               show: isMobile,
               component: {
-                placeholder: "Enter mobile number",
+                placeholder: "请输入手机号",
               },
               rules: [
-                { required: isMobile, message: "Enter mobile number" },
-                { pattern: /^\d{4,20}$/, message: "Enter a valid mobile number" },
+                { required: isMobile, message: "请输入手机号" },
+                { pattern: /^\d{4,20}$/, message: "请输入正确的手机号" },
               ],
             },
           },
           email: {
-            title: "Email",
+            title: "邮箱",
             type: "text",
             form: {
               col: {
@@ -233,16 +233,16 @@ export function useContactBind() {
               },
               show: !isMobile,
               component: {
-                placeholder: "Enter email",
+                placeholder: "请输入邮箱",
               },
               rules: [
-                { required: !isMobile, message: "Enter email" },
-                { type: "email", message: "Enter a valid email" },
+                { required: !isMobile, message: "请输入邮箱" },
+                { type: "email", message: "请输入正确的邮箱" },
               ],
             },
           },
           contactCaptcha: {
-            title: "Captcha",
+            title: "图形验证码",
             form: {
               col: {
                 span: 24,
@@ -251,11 +251,11 @@ export function useContactBind() {
                 name: CaptchaInput,
                 vModel: "modelValue",
               },
-              rules: [{ required: true, message: "Complete the captcha" }],
+              rules: [{ required: true, message: "请完成图形验证码" }],
             },
           },
           contactValidateCode: {
-            title: isMobile ? "New mobile verification code" : "New email verification code",
+            title: isMobile ? "新手机号验证码" : "新邮箱验证码",
             form: {
               col: {
                 span: 24,
@@ -266,7 +266,7 @@ export function useContactBind() {
                 form: compute(({ form }) => form),
                 type: req.type,
               },
-              rules: [{ required: true, message: "Enter verification code" }],
+              rules: [{ required: true, message: "请输入验证码" }],
             },
           },
         },
@@ -274,7 +274,7 @@ export function useContactBind() {
     }
 
     await openFormDialog({
-      title: "Verify your identity",
+      title: "验证本人操作",
       wrapper: {
         width: 520,
       },
@@ -294,7 +294,7 @@ export function useContactBind() {
       },
       columns: {
         identityType: {
-          title: "Verification method",
+          title: "验证方式",
           form: {
             col: {
               span: 24,
@@ -306,7 +306,7 @@ export function useContactBind() {
                 data: methods,
               }),
             },
-            rules: [{ required: true, message: "Select a verification method" }],
+            rules: [{ required: true, message: "请选择验证方式" }],
             valueChange({ form }: { form: any }) {
               form.identityPassword = "";
               form.identityCaptcha = null;
@@ -315,7 +315,7 @@ export function useContactBind() {
           },
         },
         identityPassword: {
-          title: "Login password",
+          title: "登录密码",
           type: "password",
           form: {
             col: {
@@ -323,13 +323,13 @@ export function useContactBind() {
             },
             show: compute(({ form }) => form.identityType === "password"),
             component: {
-              placeholder: "Enter login password",
+              placeholder: "请输入登录密码",
             },
-            rules: [{ required: true, message: "Enter login password" }],
+            rules: [{ required: true, message: "请输入登录密码" }],
           },
         },
         identityCaptcha: {
-          title: "Captcha",
+          title: "图形验证码",
           form: {
             col: {
               span: 24,
@@ -339,11 +339,11 @@ export function useContactBind() {
               name: CaptchaInput,
               vModel: "modelValue",
             },
-            rules: [{ required: true, message: "Complete the captcha" }],
+            rules: [{ required: true, message: "请完成图形验证码" }],
           },
         },
         identityValidateCode: {
-          title: "Verification code",
+          title: "验证码",
           form: {
             col: {
               span: 24,
@@ -355,7 +355,7 @@ export function useContactBind() {
               form: compute(({ form }) => form),
               userInfo: req.userInfo,
             },
-            rules: [{ required: true, message: "Enter verification code" }],
+            rules: [{ required: true, message: "请输入验证码" }],
           },
         },
       },

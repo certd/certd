@@ -46,7 +46,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       table: {
         remove: {
-          confirmMessage: "If this authorization is already in use, deleting it may prevent pipelines from running correctly. Please proceed carefully.",
+          confirmMessage: "授权如果已经被使用，可能会导致流水线无法正常运行，请谨慎操作",
         },
       },
       search: {
@@ -85,13 +85,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         name: {
-          title: "Name",
+          title: "名称",
           type: "text",
           search: {
             show: true,
           },
           form: {
-            rules: [{ required: true, message: "This field is required" }],
+            rules: [{ required: true, message: "必填项" }],
             order: -11,
           },
           column: {
@@ -100,12 +100,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         from: {
-          title: "Level",
+          title: "级别",
           type: "dict-select",
           dict: dict({
             data: [
-              { label: "System", value: "sys" },
-              { label: "User", value: "user" },
+              { label: "系统", value: "sys" },
+              { label: "用户", value: "user" },
             ],
           }),
           search: {

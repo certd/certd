@@ -56,7 +56,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         buttons: {
           add: { show: false },
           buy: {
-            text: "Purchase",
+            text: "购买",
             type: "primary",
             click() {
               router.push({
@@ -102,20 +102,20 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         title: {
-          title: "Plan Name",
+          title: "套餐名称",
           type: "text",
           search: {
             show: true,
           },
           form: {
-            rules: [{ required: true, message: "This field is required" }],
+            rules: [{ required: true, message: "此项必填" }],
           },
           column: {
             width: 200,
           },
         },
         productType: {
-          title: "Type",
+          title: "类型",
           type: "dict-select",
           editForm: {
             component: {
@@ -124,12 +124,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           dict: dict({
             data: [
-              { label: "Plan", value: "suite", color: "green" },
-              { label: "Add-on Pack", value: "addon", color: "blue" },
+              { label: "套餐", value: "suite", color: "green" },
+              { label: "加量包", value: "addon", color: "blue" },
             ],
           }),
           form: {
-            rules: [{ required: true, message: "This field is required" }],
+            rules: [{ required: true, message: "此项必填" }],
           },
           column: {
             width: 80,
@@ -147,89 +147,89 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         "content.maxDomainCount": {
-          title: "Total Domains",
+          title: "域名总数量",
           type: "text",
           form: {
             key: ["content", "maxDomainCount"],
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: "items",
+              unit: "个",
             },
-            rules: [{ required: true, message: "This field is required" }],
+            rules: [{ required: true, message: "此项必填" }],
           },
           column: {
             width: 100,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: "items",
+              unit: "个",
             },
             align: "center",
           },
         },
         "content.maxWildcardDomainCount": {
-          title: "Wildcard Domains Included",
+          title: "其中泛域名数量",
           type: "text",
           form: {
             key: ["content", "maxWildcardDomainCount"],
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: "items",
+              unit: "个",
             },
-            rules: [{ required: true, message: "This field is required" }],
+            rules: [{ required: true, message: "此项必填" }],
           },
           column: {
             width: 120,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: "items",
+              unit: "个",
             },
             align: "center",
           },
         },
         "content.maxPipelineCount": {
-          title: "Pipelines",
+          title: "流水线数量",
           type: "text",
           form: {
             key: ["content", "maxPipelineCount"],
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: "items",
+              unit: "条",
             },
-            rules: [{ required: true, message: "This field is required" }],
+            rules: [{ required: true, message: "此项必填" }],
           },
           column: {
             width: 100,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: "items",
+              unit: "条",
             },
             align: "center",
           },
         },
         "content.maxDeployCount": {
-          title: "Deployments",
+          title: "部署次数",
           type: "text",
           form: {
             key: ["content", "maxDeployCount"],
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: "times",
+              unit: "次",
             },
-            rules: [{ required: true, message: "This field is required" }],
+            rules: [{ required: true, message: "此项必填" }],
           },
           column: {
             width: 100,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: "times",
+              unit: "次",
               used: compute(({ row }) => {
                 return row.deployCountUsed;
               }),
@@ -238,29 +238,29 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         "content.maxMonitorCount": {
-          title: "Certificate Monitors",
+          title: "证书监控数量",
           type: "text",
           form: {
             key: ["content", "maxMonitorCount"],
             component: {
               name: SuiteValueEdit,
               vModel: "modelValue",
-              unit: "items",
+              unit: "个",
             },
-            rules: [{ required: true, message: "This field is required" }],
+            rules: [{ required: true, message: "此项必填" }],
           },
           column: {
             width: 120,
             component: {
               name: SuiteValue,
               vModel: "modelValue",
-              unit: "items",
+              unit: "个",
             },
             align: "center",
           },
         },
         duration: {
-          title: "Duration",
+          title: "时长",
           type: "text",
           form: {},
           column: {
@@ -273,7 +273,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         status: {
-          title: "Status",
+          title: "状态",
           type: "text",
           form: { show: false },
           column: {
@@ -294,14 +294,14 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         activeTime: {
-          title: "Activation Time",
+          title: "激活时间",
           type: "date",
           column: {
             width: 150,
           },
         },
         expiresTime: {
-          title: "Expiration Time",
+          title: "过期时间",
           type: "date",
           column: {
             width: 150,
@@ -316,12 +316,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         isPresent: {
-          title: "Gifted",
+          title: "是否赠送",
           type: "dict-switch",
           dict: dict({
             data: [
-              { label: "Yes", value: true, color: "success" },
-              { label: "No", value: false, color: "blue" },
+              { label: "是", value: true, color: "success" },
+              { label: "否", value: false, color: "blue" },
             ],
           }),
           form: {

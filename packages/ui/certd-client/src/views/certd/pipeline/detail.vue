@@ -101,22 +101,22 @@ function useTour() {
     //@ts-ignore
     tour.value.steps = [
       {
-        title: "Certificate pipeline created successfully",
-        description: "This is the certificate task that was just created. Click it to modify certificate request parameters.",
+        title: "恭喜创建证书流水线成功",
+        description: "这里就是我们刚创建的证书任务，点击可以修改证书申请参数",
         target: () => {
           return document.querySelector(".pipeline .stages .stage_0 .task");
         },
       },
       {
-        title: "Add certificate deployment task",
-        description: "After the certificate is issued, it still needs to be deployed. Click here to add a certificate deployment task.",
+        title: "添加部署证书任务",
+        description: "证书申请成功之后还需要部署证书，点击这里可以添加证书部署任务",
         target: () => {
           return document.querySelector(".pipeline .stages .last-stage .tasks .task");
         },
       },
       {
-        title: "Run pipeline manually",
-        description: "Click here to run the pipeline manually.",
+        title: "手动运行流水线",
+        description: "点击此处可以手动运行流水线",
         target: () => {
           return document.querySelector(".pipeline .stages .first-stage .tasks .task");
         },

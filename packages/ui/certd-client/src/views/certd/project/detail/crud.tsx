@@ -85,7 +85,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         projectId: {
-          title: "Project ID",
+          title: "项目ID",
           type: "text",
           search: {
             show: false,
@@ -103,7 +103,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         userId: {
-          title: "User",
+          title: "用户",
           type: "dict-select",
           dict: userDict,
           search: {
@@ -111,7 +111,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             show: true,
-            rules: [{ required: true, message: "Please select a user" }],
+            rules: [{ required: true, message: "请选择用户" }],
           },
           editForm: {
             show: false,
@@ -129,7 +129,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             show: true,
-            rules: [{ required: true, message: "Please select a permission" }],
+            rules: [{ required: true, message: "请选择权限" }],
           },
           column: {
             width: 200,
@@ -144,7 +144,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           form: {
             show: true,
-            rules: [{ required: true, message: "Please select a status" }],
+            rules: [{ required: true, message: "请选择状态" }],
           },
           column: {
             width: 200,
@@ -168,7 +168,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                       });
                     }}
                   >
-                    Approve
+                    审批
                   </fs-button>
                 );
               }

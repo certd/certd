@@ -15,26 +15,26 @@ export default function (): CreateCrudOptionsRet {
       rowHandle: { show: false },
       columns: {
         createTime: {
-          title: "Invitation Time",
+          title: "邀请时间",
           type: "datetime",
           column: { width: 180 },
         },
         simpleUser: {
-          title: "Invited Username",
+          title: "被邀请用户名",
           type: "text",
           column: {
             minWidth: 180,
             cellRender({ row }) {
               const simpleUser = row.simpleUser;
               if (!simpleUser) {
-                return row.inviteeUserId ? `User  (${row.inviteeUserId})` : "-";
+                return row.inviteeUserId ? `用户${row.inviteeUserId} (${row.inviteeUserId})` : "-";
               }
               return simpleUser.displayName || `${simpleUser.username || "-"} (${simpleUser.id})`;
             },
           },
         },
         inviteCode: {
-          title: "Invitation Code",
+          title: "邀请码",
           type: "text",
           column: { width: 160 },
         },

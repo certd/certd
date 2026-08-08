@@ -6,19 +6,19 @@ const projectPermissionDict = dict({
   data: [
     {
       value: "read",
-      label: "View",
+      label: "查看",
       color: "cyan",
       icon: "material-symbols:folder-eye-outline-sharp",
     },
     {
       value: "write",
-      label: "Edit",
+      label: "修改",
       color: "green",
       icon: "material-symbols:edit-square-outline-rounded",
     },
     {
       value: "admin",
-      label: "Admin",
+      label: "管理员",
       color: "orange",
       icon: "material-symbols:manage-accounts-rounded",
     },
@@ -29,19 +29,19 @@ const projectMemberStatusDict = dict({
   data: [
     {
       value: "pending",
-      label: "Pending review",
+      label: "待审核",
       color: "orange",
       icon: "material-symbols:hourglass-top",
     },
     {
       value: "approved",
-      label: "Joined",
+      label: "已加入",
       color: "green",
       icon: "material-symbols:done-all",
     },
     {
       value: "rejected",
-      label: "Rejected",
+      label: "已拒绝",
       color: "red",
       icon: "material-symbols:close",
     },

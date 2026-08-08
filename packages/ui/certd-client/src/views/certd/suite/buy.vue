@@ -1,7 +1,7 @@
 <template>
   <fs-page class="page-suite-buy">
     <template #header>
-      <div class="title">Plan Purchase</div>
+      <div class="title">套餐购买</div>
     </template>
     <div class="suite-buy-content">
       <a-row class="w-100" :gutter="8">
@@ -15,7 +15,7 @@
         </a-col>
       </a-row>
       <div class="suite-buy-action-row mt-10 pl-1">
-        <a-button type="primary" :loading="activating" @click="openActivateDialog">Redeem Activation Code</a-button>
+        <a-button type="primary" :loading="activating" @click="openActivateDialog">激活码兑换</a-button>
       </div>
       <a-row :gutter="8">
         <a-col v-for="item of suites" :key="item.id" class="mb-10 suite-card-col">
@@ -26,7 +26,7 @@
         </a-col>
       </a-row>
 
-      <a-empty v-if="suites.length == 0 && addons.length == 0" class="w-100 mt-10" description="No plans available for purchase" />
+      <a-empty v-if="suites.length == 0 && addons.length == 0" class="w-100 mt-10" description="暂无套餐可购买" />
     </div>
 
     <order-modal ref="orderModalRef" />
@@ -51,20 +51,20 @@ const { openFormDialog } = useFormDialog();
 
 async function openActivateDialog() {
   await openFormDialog({
-    title: "Redeem Activation Code",
+    title: "激活码兑换",
     wrapper: { width: 520 },
     initialForm: {
       code: activationCode.value,
     },
     columns: {
       code: {
-        title: "Activation Code",
+        title: "激活码",
         type: "text",
         form: {
           col: { span: 24 },
-          rules: [{ required: true, message: "Please enter the activation code" }],
+          rules: [{ required: true, message: "请输入激活码" }],
           component: {
-            placeholder: "Please enter the CDK activation code",
+            placeholder: "请输入 CDK 激活码",
           },
         },
       },
@@ -79,7 +79,7 @@ async function openActivateDialog() {
 async function doActivate() {
   const code = activationCode.value.trim().toUpperCase();
   if (!code) {
-    message.warning("Please enter the activation code");
+    message.warning("请输入激活码");
     return;
   }
   activationCode.value = code;
@@ -88,11 +88,11 @@ async function doActivate() {
     const res = await api.UseActivationCode(code);
     activationCode.value = "";
     notification.success({
-      message: "Activation successful",
-      description: `You have successfully activated ${res.title} for ${res.duration} days`,
+      message: "激活成功",
+      description: `您已成功激活 ${res.title}，时长 ${res.duration} 天`,
     });
   } catch (e: any) {
-    message.error(e?.message || "Redeem failed");
+    message.error(e?.message || "兑换失败");
   } finally {
     activating.value = false;
   }
@@ -116,9 +116,9 @@ const suiteIntro = ref("");
 const allowSuiteStack = ref(false);
 const buyHelperText = computed(() => {
   if (allowSuiteStack.value) {
-    return "Note: you can purchase multiple plans and add-on packs. Quotas from plans and add-ons can be combined";
+    return "说明：可以购买多个套餐和加量包，套餐和加量包内的数量可以叠加";
   }
-  return "Note: 1. Only the most recently purchased plan is active at a time. 2. Multiple add-on packs can be purchased and take effect immediately. 3. Quotas from plans and add-ons can be combined";
+  return "说明：① 同一时间只有最新购买的一个套餐生效；② 可以购买多个加量包，加量包立即生效；③ 套餐和加量包内的数量可以叠加";
 });
 async function loadSuiteIntro() {
   const res = await api.GetSuiteSetting();

@@ -54,7 +54,7 @@ const label = computed(() => {
     return "";
   }
   if (props.value === -1) {
-    return "Never expires";
+    return "永久";
   }
   return null;
 });

@@ -14,15 +14,15 @@
       <td class="center">
         <template v-if="dnsPersistRecord.status !== 'valid'">
           <a-space>
-            <a-button type="primary" size="small" @click="openSettingDialog">Set TXT</a-button>
-            <a-button type="primary" size="small" :loading="loading" @click="doVerify">Validate</a-button>
+            <a-button type="primary" size="small" @click="openSettingDialog">设置TXT</a-button>
+            <a-button type="primary" size="small" :loading="loading" @click="doVerify">校验</a-button>
           </a-space>
         </template>
-        <div v-else class="helper">Do not delete the TXT record</div>
+        <div v-else class="helper">请勿删除TXT记录</div>
       </td>
     </tr>
     <tr v-else>
-      <td colspan="5" class="color-red">{{ errorMessage || "Select an ACME account first" }}</td>
+      <td colspan="5" class="color-red">{{ errorMessage || "请先选择ACME账号" }}</td>
     </tr>
   </tbody>
 </template>
@@ -54,10 +54,10 @@ const emit = defineEmits<{
 
 const statusDict = dict({
   data: [
-    { value: "pending", label: "Pending setup", color: "warning" },
-    { value: "validating", label: "Validating", color: "blue" },
-    { value: "valid", label: "Valid", color: "green" },
-    { value: "failed", label: "Retry required", color: "red" },
+    { value: "pending", label: "待设置", color: "warning" },
+    { value: "validating", label: "校验中", color: "blue" },
+    { value: "valid", label: "有效", color: "green" },
+    { value: "failed", label: "请重试", color: "red" },
   ],
 });
 
@@ -117,7 +117,7 @@ async function doVerify() {
   loading.value = true;
   try {
     const ok = await Verify(dnsPersistRecord.value.id);
-    message[ok ? "success" : "error"](ok ? "Validation succeeded" : "No matching TXT record found. Try again later");
+    message[ok ? "success" : "error"](ok ? "校验成功" : "未找到匹配的TXT记录，请稍后重试");
     await loadRecord();
   } finally {
     loading.value = false;

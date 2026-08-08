@@ -16,12 +16,12 @@ export default function (): CreateCrudOptionsRet {
       rowHandle: { show: false },
       columns: {
         createTime: {
-          title: "Time",
+          title: "时间",
           type: "datetime",
           column: { width: 180 },
         },
         amount: {
-          title: "Earnings Amount",
+          title: "收益金额",
           type: "number",
           column: {
             width: 120,
@@ -29,7 +29,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         simpleUser: {
-          title: "Referred User",
+          title: "被推广用户",
           type: "text",
           column: {
             width: 170,
@@ -49,7 +49,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         consumeAmount: {
-          title: "Referral Amount",
+          title: "推广金额",
           type: "number",
           column: {
             width: 120,
@@ -57,7 +57,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         remark: {
-          title: "Remarks",
+          title: "备注",
           type: "text",
           column: { minWidth: 220 },
         },

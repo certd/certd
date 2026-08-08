@@ -182,7 +182,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - `newAccount({ onlyReturnExisting: true })` 可用同一个 account private key 取回已创建账号 URL，且不会再次消费 EAB。
 - 修改 EAB `kid` 后，应重新生成绑定该 `kid` 的 account private key；否则应阻止继续申请并提示刷新账号私钥。
 - 插件开发前先读对应技能：`.trae/skills/dns-provider-dev/SKILL.md`、`.trae/skills/task-plugin-dev/SKILL.md`、`.trae/skills/access-plugin-dev/SKILL.md`、`.trae/skills/plugin-converter/SKILL.md`。
-- `.tools/skills` is a directory link to `.trae/skills`; update only `.trae/skills` and do not copy a second copy.
+- `.codex/skills` 是指向 `.trae/skills` 的目录链接；更新技能只维护 `.trae/skills`，不要复制第二份。
 
 ### 流水线与插件地图
 

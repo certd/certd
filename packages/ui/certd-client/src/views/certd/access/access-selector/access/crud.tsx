@@ -96,11 +96,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           return {
             onClick: () => {
               onSelectChange([record.id]);
-            }, // click row
+            }, // 点击行
           };
         },
         remove: {
-          confirmMessage: "If this authorization is already in use, deleting it may prevent pipelines from running correctly. Please proceed carefully.",
+          confirmMessage: "授权如果已经被使用，可能会导致流水线无法正常运行，请谨慎操作",
         },
       },
       columns: {

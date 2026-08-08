@@ -154,7 +154,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                   <div class="flex items-center flex-between">
                     {value}
                     <a-button type="primary" size="small" onClick={() => getSecret(row.id)}>
-                      View Secret
+                      查看密钥
                     </a-button>
                   </div>
                 );

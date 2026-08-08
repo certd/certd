@@ -45,9 +45,9 @@ export class AsyncSsh2Client {
   }
 
   async connect() {
-    this.logger.info(`Connecting，${this.connConf.host}:${this.connConf.port}`);
+    this.logger.info(`开始连接，${this.connConf.host}:${this.connConf.port}`);
     if (this.connConf.socksProxy) {
-      this.logger.info(`Using proxy ${this.connConf.socksProxy}`);
+      this.logger.info(`使用代理${this.connConf.socksProxy}`);
       if (typeof this.connConf.port === "string") {
         this.connConf.port = parseInt(this.connConf.port);
       }
@@ -63,7 +63,7 @@ export class AsyncSsh2Client {
           port: this.connConf.port,
         },
       });
-      this.logger.info("Proxy connected");
+      this.logger.info("代理连接成功");
       this.connConf.sock = info.socket;
     }
 
@@ -75,11 +75,11 @@ export class AsyncSsh2Client {
         const conn = new ssh2.default.Client();
         conn
           .on("error", (err: any) => {
-            this.logger.error("Connection failed", err);
+            this.logger.error("连接失败", err);
             reject(err);
           })
           .on("ready", () => {
-            this.logger.info("Connected");
+            this.logger.info("连接成功");
             this.conn = conn;
             resolve(this.conn);
           })
@@ -109,7 +109,7 @@ export class AsyncSsh2Client {
   }
   async getSftp() {
     return safePromise((resolve, reject) => {
-      this.logger.info("Get SFTP");
+      this.logger.info("获取sftp");
       this.conn.sftp((err: any, sftp: any) => {
         if (err) {
           reject(err);
@@ -123,14 +123,14 @@ export class AsyncSsh2Client {
   async fastPut(options: { sftp: any; localPath: string; remotePath: string; opts?: { mode?: string } }) {
     const { sftp, localPath, remotePath, opts } = options;
     return safePromise((resolve, reject) => {
-      this.logger.info(`Starting upload：${localPath} => ${remotePath}`);
+      this.logger.info(`开始上传：${localPath} => ${remotePath}`);
       sftp.fastPut(localPath, remotePath, { ...(opts ?? {}) }, (err: Error) => {
         if (err) {
           reject(err);
-          this.logger.error("Check that the path includes a file name, is not a directory, does not contain special characters such as * or ?, and has write permission");
+          this.logger.error("请确认路径是否包含文件名，路径本身不能是目录，路径不能有*?之类的特殊符号，要有写入权限");
           return;
         }
-        this.logger.info(`File uploaded successfully：${localPath} => ${remotePath}`);
+        this.logger.info(`上传文件成功：${localPath} => ${remotePath}`);
         resolve({});
       });
     });
@@ -153,13 +153,13 @@ export class AsyncSsh2Client {
   async unlink(options: { sftp: any; remotePath: string }) {
     const { sftp, remotePath } = options;
     return safePromise((resolve, reject) => {
-      this.logger.info(`Deleting remote file：${remotePath}`);
+      this.logger.info(`开始删除远程文件：${remotePath}`);
       sftp.unlink(remotePath, (err: Error) => {
         if (err) {
           reject(err);
           return;
         }
-        this.logger.info(`File deleted successfully：${remotePath}`);
+        this.logger.info(`删除文件成功：${remotePath}`);
         resolve({});
       });
     });
@@ -179,7 +179,7 @@ export class AsyncSsh2Client {
     } = {}
   ): Promise<string> {
     if (!script) {
-      this.logger.info("script is empty, canceling execution");
+      this.logger.info("script 为空，取消执行");
       return;
     }
     let iconv: any = await import("iconv-lite");
@@ -190,11 +190,11 @@ export class AsyncSsh2Client {
     // }
 
     if (script.includes(" -i ")) {
-      this.logger.warn("Interactive commands are not supported; do not use the -i option");
+      this.logger.warn("不支持交互式命令，请不要使用-i参数");
     }
 
     return safePromise((resolve, reject) => {
-      this.logger.info(`Executing command：[${this.connConf.host}][exec]: \n` + script);
+      this.logger.info(`执行命令：[${this.connConf.host}][exec]: \n` + script);
       // pty 伪终端，window下的输出会带上conhost.exe之类的多余的字符串，影响返回结果判断
       // linux下 当使用keyboard-interactive 登录时，需要pty
       const pty = this.connConf.pty; //linux下开启伪终端，windows下不开启
@@ -210,7 +210,7 @@ export class AsyncSsh2Client {
           .on("close", (code: any, signal: any) => {
             this.logger.info(`[${this.connConf.host}][close]:code=${code}`);
             /**
-             * ]pipeline Executing command:[10.123.0.2][exec]:cd /d D:\nginx-1.27.5 && D:\nginx-1.27.5\nginx.exe -t && D:\nginx-1.27.5\nginx.exe -s reload
+             * ]pipeline 执行命令:[10.123.0.2][exec]:cd /d D:\nginx-1.27.5 && D:\nginx-1.27.5\nginx.exe -t && D:\nginx-1.27.5\nginx.exe -s reload
              * [2025-07-09T10:24:11.219] [ERROR]pipeline - [10. 123.0. 2][error]: nginx: the configuration file D: \nginx-1.27. 5/conf/nginx. conf syntax is ok
              * [2025-07-09T10:24:11.231] [ERROR][10. 123. 0. 2] [error]: nginx: configuration file D: \nginx-1.27.5/conf/nginx.conf test is successful
              * pipeline-
@@ -253,7 +253,7 @@ export class AsyncSsh2Client {
             stdErr += err;
             hasErrorLog = true;
             if (err.includes("sudo: a password is required")) {
-              this.logger.warn("Configure passwordless sudo or the command cannot execute");
+              this.logger.warn("请配置sudo免密，否则命令无法执行");
             }
             this.logger.error(`[${this.connConf.host}][error]: ` + err.trimEnd());
           });
@@ -265,7 +265,7 @@ export class AsyncSsh2Client {
     const stripAnsiModule = await import("strip-ansi");
     const stripAnsi = stripAnsiModule.default;
     return safePromise<any>((resolve, reject) => {
-      this.logger.info(`Executing shell script：[${this.connConf.host}][shell]: ` + script);
+      this.logger.info(`执行shell脚本：[${this.connConf.host}][shell]: ` + script);
       this.conn.shell((err: Error, stream: any) => {
         if (err) {
           reject(err);
@@ -371,16 +371,16 @@ export class SshClient {
     await this._call({
       connectConf,
       callable: async (conn: AsyncSsh2Client) => {
-        this.logger.info("Starting upload");
+        this.logger.info("开始上传");
         if (mkdirs !== false) {
-          this.logger.info("Initializing parent directory");
+          this.logger.info("初始化父目录");
           for (const transport of transports) {
             const filePath = path.dirname(transport.remotePath);
             let mkdirCmd = `mkdir -p ${filePath} `;
             if (conn.windows) {
               if (filePath.indexOf("/") > -1) {
                 this.logger.info("--------------------------");
-                this.logger.info("Note: on Windows, file path separators should be \\\\ rather than /");
+                this.logger.info("请注意：windows下，文件目录分隔应该写成\\而不是/");
                 this.logger.info("--------------------------");
               }
               const isCmd = await this.isCmd(conn);
@@ -407,7 +407,7 @@ export class SshClient {
           }
         }
 
-        this.logger.info("All files uploaded successfully");
+        this.logger.info("文件全部上传成功");
       },
     });
   }
@@ -419,7 +419,7 @@ export class SshClient {
     const { conn, localPath, remotePath } = options;
     return safePromise((resolve, reject) => {
       // 关键步骤：构造 SCP 命令
-      this.logger.info(`Starting upload：${localPath} => ${remotePath}`);
+      this.logger.info(`开始上传：${localPath} => ${remotePath}`);
       conn.conn.exec(
         `scp -t ${remotePath}`, // -t 表示目标模式
         (err, stream) => {
@@ -442,7 +442,7 @@ export class SshClient {
               })
               .pipe(stream)
               .on("finish", async () => {
-                this.logger.info(`Upload completed：${localPath} => ${remotePath}`);
+                this.logger.info(`上传完成：${localPath} => ${remotePath}`);
                 resolve(true);
               })
               .on("error", reject);
@@ -460,14 +460,14 @@ export class SshClient {
       connectConf,
       callable: async (conn: AsyncSsh2Client) => {
         const sftp = await conn.getSftp();
-        this.logger.info("Starting delete");
+        this.logger.info("开始删除");
         for (const file of files) {
           await conn.unlink({
             sftp,
             remotePath: file,
           });
         }
-        this.logger.info("All files deleted successfully");
+        this.logger.info("文件全部删除成功");
       },
     });
   }
@@ -597,14 +597,14 @@ export class SshClient {
     } catch (e: any) {
       if (e.message?.indexOf("All configured authentication methods failed") > -1) {
         this.logger.error(e);
-        throw new Error("Login failed. Check whether the username, password, or key is correct");
+        throw new Error("登录失败，请检查用户名/密码/密钥是否正确");
       }
       throw e;
     }
     let timeoutId = null;
     try {
       timeoutId = setTimeout(() => {
-        this.logger.info("Execution timed out, disconnecting");
+        this.logger.info("执行超时，断开连接");
         conn.end();
       }, 1000 * (connectConf.timeout || 1800));
       return await callable(conn);

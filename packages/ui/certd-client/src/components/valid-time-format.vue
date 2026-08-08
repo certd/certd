@@ -1,6 +1,6 @@
 <template>
   <div class="valid-time-format">
-    <a-tag v-if="isExpired" color="red">{{ prefix || "" }}Expired</a-tag>
+    <a-tag v-if="isExpired" color="red">{{ prefix || "" }}已过期</a-tag>
     <a-tag v-if="isValid" color="green" :title="date">
       <fs-time-humanize v-if="humanize" :model-value="modelValue" :options="{ largest: 1, units: ['y', 'd', 'h'] }" :use-format-greater="30000000000" />
       <template v-else> {{ prefix || "" }}{{ date }} </template>

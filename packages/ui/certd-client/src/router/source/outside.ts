@@ -4,7 +4,7 @@ const errorPage = [{ path: "/:pathMatch(.*)*", name: "not-found", component: Err
 export const outsideResource = [
   {
     meta: {
-      title: "Home",
+      title: "首页",
       isMenu: false,
     },
     name: "landing",
@@ -19,7 +19,7 @@ export const outsideResource = [
     children: [
       {
         meta: {
-          title: "Login",
+          title: "登录",
         },
         name: "login",
         path: "/login",
@@ -27,7 +27,7 @@ export const outsideResource = [
       },
       {
         meta: {
-          title: "Register",
+          title: "注册",
         },
         name: "register",
         path: "/register",
@@ -35,7 +35,7 @@ export const outsideResource = [
       },
       {
         meta: {
-          title: "Forgot password",
+          title: "找回密码",
         },
         name: "forgotPassword",
         path: "/forgotPassword",
@@ -43,7 +43,7 @@ export const outsideResource = [
       },
       {
         meta: {
-          title: "Third-party login callback",
+          title: "第三方登录回调",
         },
         name: "oauthCallback",
         path: "/oauth/callback/:type",

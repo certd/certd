@@ -9,8 +9,8 @@
       <a-tag class="ml-0 mr-1" :color="status.color" :closable="status.value === 'start'" @close="cancelTask">
         {{ status.label }}
       </a-tag>
-      <a-tag v-if="isCurrent" class="pointer ml-0 mr-1" color="green" :closable="true" @close="cancel">Current</a-tag>
-      <a-tag v-else-if="!editMode" class="pointer ml-0 mr-1" color="blue" @click="view">View</a-tag>
+      <a-tag v-if="isCurrent" class="pointer ml-0 mr-1" color="green" :closable="true" @close="cancel">当前</a-tag>
+      <a-tag v-else-if="!editMode" class="pointer ml-0 mr-1" color="blue" @click="view">查看</a-tag>
     </p>
   </a-timeline-item>
 </template>
@@ -62,14 +62,14 @@ export default defineComponent({
     }
     function cancelTask() {
       Modal.confirm({
-        title: "ConfirmCancel",
-        content: "Cancel this task?",
-        okText: "Confirm",
-        cancelText: "Cancel",
+        title: "确认取消",
+        content: "确认取消该任务吗？",
+        okText: "确认",
+        cancelText: "取消",
         onOk: async () => {
           await api.Cancel(props.historyId);
           notification.success({
-            message: "Task canceled successfully",
+            message: "任务取消成功",
           });
         },
       });

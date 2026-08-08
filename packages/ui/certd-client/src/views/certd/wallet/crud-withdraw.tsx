@@ -15,9 +15,9 @@ export default function (): CreateCrudOptionsRet {
       toolbar: { show: false },
       rowHandle: { show: false },
       columns: {
-        createTime: { title: "Application Time", type: "datetime", column: { width: 180 } },
+        createTime: { title: "申请时间", type: "datetime", column: { width: 180 } },
         amount: {
-          title: "Amount",
+          title: "金额",
           type: "number",
           column: {
             width: 120,
@@ -25,29 +25,29 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         status: {
-          title: "Status",
+          title: "状态",
           type: "dict-select",
           dict: dict({
             data: [
-              { label: "Pending Review", value: "pending", color: "warning" },
-              { label: "Approved", value: "approved", color: "success" },
-              { label: "Rejected", value: "rejected", color: "error" },
+              { label: "待审核", value: "pending", color: "warning" },
+              { label: "已通过", value: "approved", color: "success" },
+              { label: "已拒绝", value: "rejected", color: "error" },
             ],
           }),
           column: { width: 110 },
         },
         channel: {
-          title: "Withdrawal Channel",
+          title: "提现渠道",
           type: "dict-select",
           dict: dict({
             data: [
-              { label: "Alipay", value: "alipay" },
-              { label: "Bank Card", value: "bank" },
+              { label: "支付宝", value: "alipay" },
+              { label: "银行卡", value: "bank" },
             ],
           }),
           column: { width: 110 },
         },
-        auditRemark: { title: "Audit Remarks", type: "text", column: { minWidth: 180 } },
+        auditRemark: { title: "审核备注", type: "text", column: { minWidth: 180 } },
       },
     },
   };

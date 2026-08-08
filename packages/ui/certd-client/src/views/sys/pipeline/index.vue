@@ -1,11 +1,11 @@
 <template>
   <fs-page>
     <template #header>
-      <div class="title flex items-center">User Pipeline Management</div>
+      <div class="title flex items-center">用户流水线管理</div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #pagination-left>
-        <a-tooltip title="Batch Delete">
+        <a-tooltip title="批量删除">
           <fs-button icon="DeleteOutlined" class="need-plus" @click="handleBatchDelete"></fs-button>
         </a-tooltip>
       </template>

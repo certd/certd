@@ -2,15 +2,15 @@
   <fs-page class="page-project-detail">
     <template #header>
       <div class="title">
-        Current Project: {{ project?.name }}
+        当前项目 ：{{ project?.name }}
         <span class="sub flex-inline items-center">
-          Admin: <fs-values-format :model-value="project.adminId" :dict="userDict" color="green"></fs-values-format>
+          管理员：<fs-values-format :model-value="project.adminId" :dict="userDict" color="green"></fs-values-format>
           <!-- <a-divider type="vertical"></a-divider>
           <fs-values-format :model-value="project.permission" :dict="projectPermissionDict"></fs-values-format>
           <a-divider type="vertical"></a-divider>
           <fs-values-format :model-value="project.status" :dict="projectMemberStatusDict"></fs-values-format> -->
           <a-divider type="vertical"></a-divider>
-          <a-button class="mr-5" type="primary" @click="openTransferDialog">Personal Data Migration</a-button>
+          <a-button class="mr-5" type="primary" @click="openTransferDialog">个人数据迁移</a-button>
           <a-button v-if="userStore.isAdmin" type="primary" @click="goProjectManager">{{ t("certd.project.projectManage") }}</a-button>
         </span>
       </div>
@@ -114,7 +114,7 @@ const handleBatchDelete = () => {
 // 页面打开后获取列表数据
 onMounted(async () => {
   if (!projectId) {
-    message.error("You have not selected a project");
+    message.error("您还未选择项目");
     return;
   }
   await loadProjectDetail();

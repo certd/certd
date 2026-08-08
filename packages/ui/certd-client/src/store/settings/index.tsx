@@ -113,12 +113,12 @@ export const useSettingStore = defineStore({
     productInfo: {
       notice: "",
       plus: {
-        name: "Pro",
+        name: "专业版",
         price: 29.9,
         price3: 89.9,
       },
       comm: {
-        name: "Commercial",
+        name: "商业版",
         price: 399,
         price3: 899,
       },
@@ -158,7 +158,7 @@ export const useSettingStore = defineStore({
         return "";
       }
       if (this.plusInfo?.expireTime === -1) {
-        return "Perpetual";
+        return "永久";
       }
       //@ts-ignore
       return dayjs(this.plusInfo?.expireTime).format("YYYY-MM-DD");
@@ -310,13 +310,13 @@ export const useSettingStore = defineStore({
         }
       };
       const { closable = false } = opts;
-      let title = "URL is not bound. Bind this address?";
-      let okButtonText = "No, return to the original address";
+      let title = "URL地址未绑定，是否绑定此地址？";
+      let okButtonText = "不，回到原来的地址";
       let okButtonDanger = false;
       let forceBack = true;
       if (closable) {
-        title = "Bind URL";
-        okButtonText = "Confirm";
+        title = "绑定URL";
+        okButtonText = "确定";
         okButtonDanger = false;
         forceBack = false;
       }
@@ -330,21 +330,21 @@ export const useSettingStore = defineStore({
             <div class="p-4">
               <div class="flex items-center justify-between">
                 <span>
-                  Bound address 1:
-                  <a-tag color="green">{bindUrl || "Available"}</a-tag>
+                  绑定地址1：
+                  <a-tag color="green">{bindUrl || "未占用"}</a-tag>
                 </span>
                 <a-button type="primary" onClick={() => doBindRequest("url")}>
-                  Bind current URL to address 1
+                  绑定当前URL到地址1
                 </a-button>
               </div>
-              <div class="helper">Notifications will use address 1 as the displayed URL</div>
+              <div class="helper">各类通知里面会以地址1作为URL显示</div>
               <div class="flex items-center justify-between mt-3">
                 <span>
-                  Bound address 2:
-                  <a-tag color="green">{bindUrl2 || "Available"}</a-tag>
+                  绑定地址2：
+                  <a-tag color="green">{bindUrl2 || "未占用"}</a-tag>
                 </span>
                 <a-button type="primary" onClick={() => doBindRequest("url2")}>
-                  Bind current URL to address 2
+                  绑定当前URL到地址2
                 </a-button>
               </div>
             </div>
@@ -394,6 +394,6 @@ mitter.on("app.login", async () => {
     const { loadPreferencesFromAccount } = await import("/@/vben/layouts/widgets/preferences/account-sync");
     await loadPreferencesFromAccount();
   } catch (e) {
-    console.error("Failed to load account preferences", e);
+    console.error("加载账号偏好设置失败", e);
   }
 });

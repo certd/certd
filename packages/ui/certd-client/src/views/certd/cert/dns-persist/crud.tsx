@@ -32,11 +32,11 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
   });
   const statusDict = dict({
     data: [
-      { value: "pending", label: "Pending setup", color: "warning" },
-      { value: "created", label: "Created", color: "blue" },
-      { value: "validating", label: "Validating", color: "blue" },
-      { value: "valid", label: "Valid", color: "green" },
-      { value: "failed", label: "Retry required", color: "red" },
+      { value: "pending", label: "待设置", color: "warning" },
+      { value: "created", label: "已创建", color: "blue" },
+      { value: "validating", label: "校验中", color: "blue" },
+      { value: "valid", label: "有效", color: "green" },
+      { value: "failed", label: "请重试", color: "red" },
     ],
   });
 
@@ -51,7 +51,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     const res = await api.DelObj(row.id);
     if (res?.message) {
       notification.warning({
-        message: "Delete the TXT record at the provider",
+        message: "请到供应商删除TXT记录",
         description: res.message,
         duration: 0,
       });
@@ -70,7 +70,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     const setting = JSON.parse(access.setting || "{}");
     const account = parseAccount(setting.account);
     if (!account?.accountUri) {
-      message.error("The ACME account authorization is missing accountUri. Regenerate the account");
+      message.error("ACME账号授权缺少accountUri，请重新生成账号");
       return;
     }
     const record = await api.BuildRecord({
@@ -88,7 +88,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
 
   async function verifyRecord(row: any) {
     const ok = await api.Verify(row.id);
-    message[ok ? "success" : "error"](ok ? "Validation succeeded" : "No matching TXT record found. Try again later");
+    message[ok ? "success" : "error"](ok ? "校验成功" : "未找到匹配的TXT记录，请稍后重试");
     await crudExpose.doRefresh();
     return ok;
   }
@@ -130,7 +130,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           form: { show: false },
         },
         domain: {
-          title: "Domain",
+          title: "域名",
           type: "text",
           search: { show: true },
           form: {
@@ -141,7 +141,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         mainDomain: {
-          title: "Main domain",
+          title: "主域名",
           type: "text",
           form: {
             show: false,
@@ -152,7 +152,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         wildcard: {
-          title: "Wildcard",
+          title: "通配符",
           type: "dict-switch",
           form: {
             show: false,
@@ -161,7 +161,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           column: { show: false },
         },
         acmeAccountAccessId: {
-          title: "ACME account authorization",
+          title: "ACME账号授权",
           type: "dict-select",
           dict: accessDict,
           form: {
@@ -184,7 +184,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         caType: {
-          title: "Issuer",
+          title: "颁发机构",
           type: "dict-select",
           dict: Dicts.sslProviderDict,
           form: {
@@ -199,10 +199,10 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           column: { width: 120 },
         },
         persistUntil: {
-          title: "Valid until",
+          title: "有效期至",
           type: "datetime",
           form: {
-            helper: "Optional; empty means long-term valid",
+            helper: "可选；为空表示长期有效",
             order: 20,
             valueChange({ form }) {
               fillRecord(form);
@@ -211,7 +211,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           column: { width: 180, order: 900 },
         },
         hostRecord: {
-          title: "TXT hostname",
+          title: "TXT主机名",
           type: "copyable",
           form: {
             show: false,
@@ -228,7 +228,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         recordValue: {
-          title: "Set TXT record",
+          title: "请设置TXT记录",
           type: "copyable",
           form: {
             show: false,
@@ -245,7 +245,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         dnsProviderType: {
-          title: "DNS provider",
+          title: "DNS服务商",
           type: "dict-select",
           dict: dnsProviderTypeDict,
           form: {
@@ -257,7 +257,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           column: { show: false },
         },
         dnsProviderAccess: {
-          title: "DNS authorization",
+          title: "DNS授权",
           type: "dict-select",
           dict: accessDict,
           form: {
@@ -274,7 +274,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           column: { show: false },
         },
         status: {
-          title: "Status",
+          title: "状态",
           type: "dict-select",
           dict: statusDict,
           form: {
@@ -286,8 +286,8 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
             cellRender({ value, row }) {
               async function resetStatus() {
                 Modal.confirm({
-                  title: "Revalidate",
-                  content: "Reset this record status to pending setup and revalidate?",
+                  title: "重新校验",
+                  content: "确认将该记录状态重置为待设置，并重新校验吗？",
                   onOk: async () => {
                     await api.UpdateObj({ id: row.id, status: "pending" });
                     await verifyRecord(row);
@@ -298,7 +298,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                 <div class={"flex flex-left"}>
                   <fs-values-format modelValue={value} dict={statusDict}></fs-values-format>
                   {row.status === "valid" && (
-                    <a-tooltip title="Revoke and revalidate">
+                    <a-tooltip title="撤销并重新校验">
                       <fs-icon class={"ml-5 pointer color-yellow"} icon="solar:undo-left-square-bold" onClick={resetStatus}></fs-icon>
                     </a-tooltip>
                   )}
@@ -308,7 +308,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         triggerValidate: {
-          title: "Validate",
+          title: "校验",
           type: "text",
           form: {
             show: false,
@@ -321,11 +321,15 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
               return (
                 <a-space>
                   {row.status === "valid" ? (
-                    <span class="text-gray-500">Do not delete the TXT record</span>
+                    <span class="text-gray-500">请勿删除TXT记录</span>
                   ) : (
                     <>
-                      <a-button type="primary" size="small" onClick={() => showRecordHelp(row)}>Set TXT</a-button>
-                      <a-button type="primary" size="small" onClick={() => verifyRecord(row)}>Validate</a-button>
+                      <a-button type="primary" size="small" onClick={() => showRecordHelp(row)}>
+                        设置TXT
+                      </a-button>
+                      <a-button type="primary" size="small" onClick={() => verifyRecord(row)}>
+                        校验
+                      </a-button>
                     </>
                   )}
                 </a-space>
