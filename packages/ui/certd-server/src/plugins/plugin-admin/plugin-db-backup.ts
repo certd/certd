@@ -45,7 +45,7 @@ export class DBBackupPlugin extends AbstractPlusTaskPlugin {
   backupMode = "local";
 
   @TaskInput({
-    title: "Host login access",
+    title: "主机登录授权",
     component: {
       name: "access-selector",
       type: "ssh",

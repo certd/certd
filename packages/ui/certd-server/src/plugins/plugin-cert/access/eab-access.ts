@@ -3,13 +3,13 @@ import * as acme from "@certd/acme-client";
 
 @IsAccess({
   name: "eab",
-  title: "EAB access",
-  desc: "ZeroSSL certificate issuance requires EAB access",
+  title: "EAB授权",
+  desc: "ZeroSSL证书申请需要EAB授权",
   icon: "ic:outline-lock",
 })
 export class EabAccess extends BaseAccess {
   @AccessInput({
-    title: "EAB type",
+    title: "EAB类型",
     component: {
       name: "a-select",
       options: [
@@ -19,7 +19,7 @@ export class EabAccess extends BaseAccess {
         { value: "sslcom", label: "SSL.com", icon: "la:expeditedssl" },
       ],
     },
-    helper: "Please select an EAB type",
+    helper: "请选择EAB类型",
     required: true,
     encrypt: false,
   })
@@ -30,7 +30,7 @@ export class EabAccess extends BaseAccess {
     component: {
       placeholder: "kid / keyId",
     },
-    helper: "EAB KID. Google calls this keyId; SSL.com calls this Account/ACME Key.",
+    helper: "EAB KID， google的叫 keyId，ssl.com的叫Account/ACME Key",
     required: true,
     encrypt: true,
   })
@@ -40,7 +40,7 @@ export class EabAccess extends BaseAccess {
     component: {
       placeholder: "HMAC Key / b64MacKey",
     },
-    helper: "EAB HMAC Key. Google calls this b64MacKey.",
+    helper: "EAB HMAC Key ，google的叫b64MacKey",
     required: true,
     encrypt: true,
   })
@@ -49,31 +49,31 @@ export class EabAccess extends BaseAccess {
   @AccessInput({
     title: "email",
     component: {
-      placeholder: "Bind an email address",
+      placeholder: "绑定一个邮箱",
     },
-    rules: [{ type: "email", message: "Please enter a valid email address" }],
-    helper: "Bind an email address to avoid expiration",
+    rules: [{ type: "email", message: "请输入正确的邮箱" }],
+    helper: "绑定一个邮箱，避免失效",
     required: true,
   })
   email = "";
 
   @AccessInput({
-    title: "ACME account private key",
+    title: "ACME账号私钥",
     component: {
       name: "refresh-input",
       action: "GenerateAccountKey",
-      buttonText: "Generate",
-      successMessage: "The account private key has been generated. Please save the access configuration.",
+      buttonText: "生成",
+      successMessage: "账号私钥已生成，请保存授权配置",
     },
     required: true,
-    helper: "If you changed the KID, click Generate to regenerate the account private key.\nNote: Google EAB can generate an account private key only once. Updating the private key requires a new EAB access.",
+    helper: "如果修改了KID，请点击生成重新生成账号私钥\n注意：google的EAB只能生成一次账号私钥，更新私钥需要获取一个新的EAB授权",
     encrypt: true,
   })
   accountKey = "";
 
   async onGenerateAccountKey() {
     if (!this.kid) {
-      throw new Error("Please enter the KID first");
+      throw new Error("请先填写KID");
     }
     const key = await acme.crypto.createPrivateKey(2048);
     return JSON.stringify({
