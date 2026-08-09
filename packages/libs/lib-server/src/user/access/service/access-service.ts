@@ -289,4 +289,15 @@ export class AccessService extends BaseService<AccessEntity> {
     await this.repository.save(newAccess);
     return newAccess.id;
   }
+
+  async getDefaultByType({ type, userId, projectId, subtype }) {
+    return await this.repository.findOne({
+      where: {
+        type,
+        userId,
+        projectId,
+        subtype,
+      },
+    });
+  }
 }

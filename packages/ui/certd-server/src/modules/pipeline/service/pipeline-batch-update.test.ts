@@ -79,6 +79,44 @@ describe("pipeline batch update", () => {
     });
   });
 
+  it("updates automatic domain verification, issuer and ACME account", () => {
+    const pipeline: any = {
+      stages: [
+        {
+          tasks: [
+            {
+              steps: [
+                {
+                  type: "CertApply",
+                  input: {
+                    challengeType: "dns",
+                    sslProvider: "letsencrypt",
+                    acmeAccountAccessId: 1,
+                    renewDays: 20,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    updateCertApplyStepInputs(pipeline, {
+      challengeType: "auto",
+      sslProvider: "google",
+      acmeAccountAccessId: 2,
+      renewDays: 10,
+    });
+
+    assert.deepEqual(pipeline.stages[0].tasks[0].steps[0].input, {
+      challengeType: "auto",
+      sslProvider: "google",
+      acmeAccountAccessId: 2,
+      renewDays: 10,
+    });
+  });
+
   it("updates uploaded cert pipelines only for fields defined by the plugin", () => {
     const pipeline: any = {
       stages: [

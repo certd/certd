@@ -555,7 +555,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
   @TaskInput({
     title: "证书申请失败重试次数",
-    value: 0,
+    value: 1,
     component: {
       name: "a-input-number",
       vModel: "value",
@@ -565,7 +565,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     maybeNeed: true,
     helper: "证书申请失败后，等待30秒再自动重试；0表示不重试",
   })
-  certApplyRetryCount = 0;
+  certApplyRetryCount?: number;
 
   acme!: AcmeService;
 
@@ -706,7 +706,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   }
 
   private getCertApplyRetryCount() {
-    const retryCount = Number(this.certApplyRetryCount);
+    const retryCount = Number(this.certApplyRetryCount || 1);
     if (!Number.isFinite(retryCount) || retryCount <= 0) {
       return 0;
     }

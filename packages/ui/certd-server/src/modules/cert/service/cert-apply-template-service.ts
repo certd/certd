@@ -74,7 +74,7 @@ export class CertApplyTemplateService extends BaseService<CertApplyTemplateEntit
   }
 
   private async getTemplateParams(req: ResolveApplyTemplateReq) {
-    if (!req.templateId) {
+    if (req.templateId == null) {
       return {};
     }
     const template = await this.getTemplateById(req.templateId, req.userId, req.projectId);
@@ -85,6 +85,10 @@ export class CertApplyTemplateService extends BaseService<CertApplyTemplateEntit
   }
 
   private async getTemplateById(id: number, userId: number, projectId?: number) {
+    if (id === 0) {
+       //获取默认模版
+       return await this.getDefault(userId, projectId);
+    }
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const template = await this.repository.findOne({
       where: {

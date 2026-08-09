@@ -1303,11 +1303,18 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async createAutoPipeline(req: { domains: string[]; email: string; userId: number; projectId?: number; from: string; applyParams?: CertApplyTemplateParams }) {
+  async createAutoPipeline(req: { domains: string[]; userId: number; projectId?: number; from: string; applyParams?: CertApplyTemplateParams }) {
     const randomHour = Math.floor(Math.random() * 6);
     const randomMin = Math.floor(Math.random() * 60);
     const randomCron = `0 ${randomMin} ${randomHour} * * *`;
 
+    const applyParams:any = {
+      ...req.applyParams,
+      domains: req.domains,
+    }
+    if (!applyParams.challengeType) {
+      applyParams.challengeType = "auto";
+    }
     const pipeline: any = {
       title: req.domains[0] + `证书自动申请【${req.from ?? "OpenAPI"}】`,
       runnableType: "pipeline",
@@ -1351,17 +1358,14 @@ export class PipelineService extends BaseService<PipelineEntity> {
                     sslProvider: "letsencrypt",
                     privateKeyType: "rsa_2048",
                     certProfile: "classic",
-                    preferredChain: "ISRG Root X1",
+                    preferredChain: "ISRG Root X2",
                     useProxy: false,
                     skipLocalVerify: false,
                     maxCheckRetryCount: 20,
                     waitDnsDiffuseTime: 30,
                     pfxArgs: "-macalg SHA1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES",
                     successNotify: true,
-                    ...req.applyParams,
-                    domains: req.domains,
-                    email: req.email,
-                    challengeType: "auto",
+                    ...applyParams,
                   },
                   strategy: {
                     runStrategy: 0, // 正常执行
