@@ -116,3 +116,57 @@ docker-compose up -d
 访问MySQL版本测试，数据已成功迁移     
 
 确认没有问题之后，删除旧版certd
+
+
+## 三、问题
+
+### 1. 迁移到PG之后，所有表的Sequence会从1开始
+
+执行如下sql 语句，批量将所有表的id自增设置到当前数据的最大值
+```sql
+DO $$
+DECLARE
+    rec RECORD;
+    seq_name TEXT;
+    max_id BIGINT;
+BEGIN
+    -- 遍历所有用户表（排除系统schema）
+    FOR rec IN 
+        SELECT table_schema, table_name
+        FROM information_schema.tables
+        WHERE table_type = 'BASE TABLE'
+          AND table_schema NOT IN ('pg_catalog', 'information_schema')
+    LOOP
+        -- 检查表是否存在名为 'id' 的列
+        IF EXISTS (
+            SELECT 1 
+            FROM information_schema.columns 
+            WHERE table_schema = rec.table_schema 
+              AND table_name = rec.table_name 
+              AND column_name = 'id'
+        ) THEN
+            -- 获取该列关联的序列名（如果是 serial 或 identity 列）
+            seq_name := pg_get_serial_sequence(
+                quote_ident(rec.table_schema) || '.' || quote_ident(rec.table_name), 
+                'id'
+            );
+            
+            IF seq_name IS NOT NULL THEN
+                -- 查询当前表中 id 的最大值
+                EXECUTE format('SELECT MAX(id) FROM %I.%I', rec.table_schema, rec.table_name) INTO max_id;
+                
+                IF max_id IS NULL THEN
+                    -- 表为空，将序列重置为初始值 1（下次调用 nextval 返回 1）
+                    PERFORM setval(seq_name, 1, false);
+                    RAISE NOTICE '表 %.% 为空，序列 % 已重置为 1', rec.table_schema, rec.table_name, seq_name;
+                ELSE
+                    -- 将序列当前值设置为最大值，下次调用 nextval 返回 max_id + 1
+                    PERFORM setval(seq_name, max_id, true);
+                    RAISE NOTICE '表 %.% 的序列 % 已设置为 %', rec.table_schema, rec.table_name, seq_name, max_id;
+                END IF;
+            END IF;
+        END IF;
+    END LOOP;
+END $$;
+
+```
