@@ -21,3 +21,10 @@ export class TextException extends BaseException {
     super(name, code, message, data);
   }
 }
+
+export class TextedException extends TextException {
+  constructor(res: { code: number; message: string; data?: any; name?: string }) {
+    const { code, message, data, name } = res;
+    super(name || "TextedException", code, message, data);
+  }
+}
