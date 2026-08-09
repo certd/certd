@@ -42,8 +42,7 @@ process.on("uncaughtException", error => {
 //   }
 //   setInterval(log, 200);
 //   log()
-// }127.0.0.1
-
+// }
 // startHeapLog();
 @Configuration({
   detectorOptions: {
