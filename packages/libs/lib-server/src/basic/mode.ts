@@ -1,3 +1,6 @@
+import { logger } from "@certd/basic";
+import { isPlus } from "@certd/plus-core";
+
 let adminMode = "saas";
 
 export function setAdminMode(mode: string = "saas") {
@@ -8,5 +11,12 @@ export function getAdminMode() {
 }
 
 export function isEnterprise() {
-  return adminMode === "enterprise";
+  const isEnterprise = adminMode === "enterprise";
+  if (!isPlus()) {
+    if (isEnterprise) {
+      logger.warn("不是VIP，无法使用企业项目管理功能，退回普通模式");
+    }
+    return false;
+  }
+  return isEnterprise;
 }
