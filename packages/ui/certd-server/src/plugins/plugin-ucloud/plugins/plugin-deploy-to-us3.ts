@@ -2,6 +2,7 @@ import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { UCloudAccess } from "../access.js";
+import { UCloudRegions } from "./constants.js";
 
 @IsTaskPlugin({
   name: "UCloudDeployToUS3",
@@ -42,6 +43,16 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
 
   @TaskInput(
     createRemoteSelectInputDefine({
+      title: "地域",
+      helper: "选择UCloud地域",
+      action: UCloudDeployToUS3.prototype.onGetRegionList.name,
+      single: true,
+    })
+  )
+  region!: string;
+
+  @TaskInput(
+    createRemoteSelectInputDefine({
       title: "存储桶",
       helper: "要更新的UCloud存储桶",
       action: UCloudDeployToUS3.prototype.onGetBucketList.name,
@@ -58,7 +69,7 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
   )
   domainList!: string[];
 
-  async onInstance() {}
+  async onInstance() { }
 
   async execute(): Promise<void> {
     const access = await this.getAccess<UCloudAccess>(this.accessId);
@@ -78,6 +89,43 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
     }
 
     this.logger.info("部署完成");
+  }
+
+
+  async onGetRegionList(req: PageSearch = {}) {
+    const access = await this.getAccess<UCloudAccess>(this.accessId);
+
+    const res = await access.GetRegion();
+    let list = res.Regions || [];
+
+    if (!list || list.length === 0) {
+      throw new Error("没有获取到UCloud地域列表");
+    }
+
+    const haveSet = {};
+    list = list.filter((item: any) => {
+      const region = item.Region;
+      if (haveSet[region]) {
+        return false;
+      }
+      haveSet[region] = true;
+      return true;
+    });
+    const options = list.map((item: any) => {
+      const region = item.Region;
+      const name = UCloudRegions.find(r => r.value === region)?.label || item.RegionName;
+      return {
+        label: `${name}(${item.Region})`,
+        value: item.Region,
+      };
+    });
+
+    return {
+      list: options,
+      total: options.length,
+      pageNo: 1,
+      pageSize: options.length,
+    };
   }
 
   async deployToUS3(req: { access: any; bucket: string; domain: string; cert: CertInfo; certName: string }) {
@@ -105,6 +153,7 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
 
     try {
       const resp = await access.invoke({
+        region: this.region,
         Action: "DescribeBucket",
         ProjectId: access.projectId,
         Offset: (pageNo - 1) * pageSize,
