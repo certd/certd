@@ -73,6 +73,15 @@ type CommandRunner = {
   run(command: string, args: string[], options: { cwd: string; timeoutMs: number; env?: NodeJS.ProcessEnv }): Promise<CommandRunnerResult>;
 };
 
+type InstallLockInfo = {
+  processInstanceId?: string;
+  createdAt?: string;
+};
+
+type AcquiredInstallLock = {
+  fd: number;
+};
+
 export type NpmRegistryResolverConfig = {
   mode?: "auto" | "fixed" | "system";
   fixedUrl?: string;
@@ -213,6 +222,9 @@ function areRangesCompatible(a: string, b: string) {
 }
 
 const PROCESS_LOCKS = new Map<string, Promise<unknown>>();
+const PROCESS_INSTANCE_ID = crypto.randomUUID();
+const INVALID_INSTALL_LOCK_GRACE_MS = 5000;
+const MAX_INSTALL_LOCK_AGE_MS = 20 * 60 * 1000;
 
 class DefaultCommandRunner implements CommandRunner {
   async run(command: string, args: string[], options: { cwd: string; timeoutMs: number; env?: NodeJS.ProcessEnv }): Promise<CommandRunnerResult> {
@@ -609,20 +621,14 @@ export class RuntimeDepsService {
       releaseProcessLock = resolve;
     });
     PROCESS_LOCKS.set(lockFile, current);
-    let fd: number | undefined;
+    let lock: AcquiredInstallLock | undefined;
     try {
-      fd = await this.acquireFileLock(lockFile);
+      lock = await this.acquireFileLock(lockFile);
       return await run();
     } finally {
-      if (fd != null) {
-        fs.closeSync(fd);
-        try {
-          fs.rmSync(lockFile, { force: true });
-        } catch {
-          try {
-            fs.rmSync(lockFile, { force: true });
-          } catch {}
-        }
+      if (lock) {
+        fs.closeSync(lock.fd);
+        this.removeOwnedInstallLock(lockFile);
       }
       releaseProcessLock();
       if (PROCESS_LOCKS.get(lockFile) === current) {
@@ -636,11 +642,14 @@ export class RuntimeDepsService {
     while (true) {
       try {
         const fd = fs.openSync(lockFile, "wx");
-        fs.writeFileSync(fd, JSON.stringify({ pid: process.pid, createdAt: new Date().toISOString() }), "utf8");
-        return fd;
+        fs.writeFileSync(fd, JSON.stringify({ processInstanceId: PROCESS_INSTANCE_ID, createdAt: new Date().toISOString() }), "utf8");
+        return { fd };
       } catch (error: any) {
         if (error?.code !== "EEXIST") {
           throw error;
+        }
+        if (this.removeExpiredInstallLock(lockFile)) {
+          continue;
         }
         if (Date.now() > deadline) {
           throw new Error(`动态依赖安装锁等待超时: ${lockFile}`);
@@ -656,6 +665,59 @@ export class RuntimeDepsService {
         throw new Error(`动态依赖安装锁等待超时: ${lockFile}`);
       }
       await new Promise(resolve => setTimeout(resolve, 300));
+    }
+  }
+
+  private removeExpiredInstallLock(lockFile: string) {
+    const lockInfo = this.readInstallLockInfo(lockFile);
+    if (!lockInfo) {
+      return this.removeExpiredInvalidInstallLock(lockFile);
+    }
+    if (!this.isInstallLockExpired(lockInfo)) {
+      return false;
+    }
+    try {
+      fs.rmSync(lockFile, { force: true });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private removeOwnedInstallLock(lockFile: string) {
+    const lockInfo = this.readInstallLockInfo(lockFile);
+    if (lockInfo?.processInstanceId !== PROCESS_INSTANCE_ID) {
+      return;
+    }
+    try {
+      fs.rmSync(lockFile, { force: true });
+    } catch {}
+  }
+
+  private isInstallLockExpired(lockInfo: InstallLockInfo) {
+    const createdAt = Date.parse(lockInfo.createdAt || "");
+    return !Number.isNaN(createdAt) && Date.now() - createdAt >= MAX_INSTALL_LOCK_AGE_MS;
+  }
+
+  private removeExpiredInvalidInstallLock(lockFile: string) {
+    try {
+      const stat = fs.statSync(lockFile);
+      if (Date.now() - stat.mtimeMs < INVALID_INSTALL_LOCK_GRACE_MS) {
+        return false;
+      }
+      fs.rmSync(lockFile, { force: true });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private readInstallLockInfo(lockFile: string): InstallLockInfo | null {
+    try {
+      const content = fs.readFileSync(lockFile, "utf8");
+      return JSON.parse(content) as InstallLockInfo;
+    } catch {
+      return null;
     }
   }
 

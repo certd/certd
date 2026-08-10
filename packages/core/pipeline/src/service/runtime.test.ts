@@ -82,6 +82,63 @@ describe("RuntimeDepsService", () => {
     assert.deepEqual(manifest.dependencies, { directPkg: "^1.0.0" });
   });
 
+  it("recovers from a lock that exceeds the maximum duration", async () => {
+    const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-deps-stale-lock-"));
+    fs.writeFileSync(path.join(rootDir, ".install.lock"), JSON.stringify({ processInstanceId: "previous-instance", createdAt: "2020-01-01T00:00:00.000Z" }), "utf8");
+    const service = new RuntimeDepsService({ rootDir, installTimeoutMs: 50 }, null);
+    service.registryResolver = {
+      async resolve() {
+        return "";
+      },
+      async resolveOrdered() {
+        return [""];
+      },
+    } as any;
+    service.commandRunner = {
+      async run(command: string, args: string[]) {
+        assert.equal(command, "pnpm");
+        if (args.includes("--version")) {
+          return { stdout: "9.1.0\n", stderr: "", code: 0 };
+        }
+        fs.mkdirSync(path.join(rootDir, "node_modules"), { recursive: true });
+        return { stdout: "", stderr: "", code: 0 };
+      },
+    } as any;
+
+    await service.ensureDependencies({ dependencies: { directPkg: "^1.0.0" } });
+    assert.equal(fs.existsSync(path.join(rootDir, ".install.lock")), false);
+  });
+
+  it("recovers from an expired malformed lock", async () => {
+    const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-deps-invalid-lock-"));
+    const lockPath = path.join(rootDir, ".install.lock");
+    fs.writeFileSync(lockPath, "{", "utf8");
+    const expiredAt = new Date(Date.now() - 6000);
+    fs.utimesSync(lockPath, expiredAt, expiredAt);
+    const service = new RuntimeDepsService({ rootDir, installTimeoutMs: 50 }, null);
+    service.registryResolver = {
+      async resolve() {
+        return "";
+      },
+      async resolveOrdered() {
+        return [""];
+      },
+    } as any;
+    service.commandRunner = {
+      async run(command: string, args: string[]) {
+        assert.equal(command, "pnpm");
+        if (args.includes("--version")) {
+          return { stdout: "9.1.0\n", stderr: "", code: 0 };
+        }
+        fs.mkdirSync(path.join(rootDir, "node_modules"), { recursive: true });
+        return { stdout: "", stderr: "", code: 0 };
+      },
+    } as any;
+
+    await service.ensureDependencies({ dependencies: { directPkg: "^1.0.0" } });
+    assert.equal(fs.existsSync(lockPath), false);
+  });
+
   it("imports from runtime node_modules without installing", async () => {
     const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-deps-import-"));
     const packageDir = path.join(rootDir, "node_modules", "runtime-only");
