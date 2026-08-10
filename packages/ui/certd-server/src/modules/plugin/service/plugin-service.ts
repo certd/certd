@@ -111,6 +111,7 @@ export type OnlinePluginBean = {
   downloadCount?: number;
   score?: number;
   aiCheckStatus?: string;
+  vip?: string;
   editable?: boolean;
   selfAuthored?: boolean;
   installed?: boolean;
@@ -684,6 +685,7 @@ export class PluginService extends BaseService<PluginEntity> {
       downloadCount: item.downloadCount,
       score: item.score,
       aiCheckStatus: item.aiCheckStatus,
+      vip: item.vip,
       syncTime,
       type: old?.type || "store",
       disabled: old?.disabled ?? false,
@@ -718,6 +720,7 @@ export class PluginService extends BaseService<PluginEntity> {
       downloadCount: item.downloadCount,
       score: item.score,
       aiCheckStatus: item.aiCheckStatus,
+      vip: item.vip,
       syncTime: item.syncTime,
       installed: isInstalled,
       localPluginId: isInstalled ? item.id : undefined,

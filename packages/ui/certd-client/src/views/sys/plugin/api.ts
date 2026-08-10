@@ -110,6 +110,7 @@ export type OnlinePluginBean = {
   downloadCount?: number;
   score?: number;
   aiCheckStatus?: string;
+  vip?: string;
   editable?: boolean;
   selfAuthored?: boolean;
   installed?: boolean;
