@@ -23,6 +23,9 @@
           <a-tooltip v-if="plugin.aiCheckStatus === 'passed'" :title="t('certd.onlinePluginAiReviewPassed')">
             <fs-icon class="plugin-card__ai-check-icon" icon="ion:shield-checkmark-outline" />
           </a-tooltip>
+          <a-tooltip v-if="requiresVip" title="需要 Plus 会员">
+            <fs-icon class="plugin-card__vip-icon" icon="lucide:crown" />
+          </a-tooltip>
         </div>
       </div>
       <div class="plugin-card__actions">
@@ -225,6 +228,10 @@ const isInstalled = computed(() => {
 
 const isDisabled = computed(() => {
   return props.source === "local" ? props.plugin.disabled : props.plugin.localDisabled;
+});
+
+const requiresVip = computed(() => {
+  return props.plugin.vip === "plus" || props.plugin.needPlus === true;
 });
 
 const canRemoveLocal = computed(() => {
@@ -624,6 +631,13 @@ function handleVersionClick() {
     align-items: center;
     gap: 4px;
     margin-left: 8px;
+  }
+
+  .plugin-card__vip-icon {
+    flex: none;
+    color: #faad14;
+    font-size: 16px;
+    line-height: 1;
   }
 
   .plugin-card__title {

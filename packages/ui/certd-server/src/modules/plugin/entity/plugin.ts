@@ -77,6 +77,9 @@ export class PluginEntity {
   @Column({ name: "ai_check_status", comment: "最新版本AI审核状态", length: 32, default: "" })
   aiCheckStatus: string;
 
+  @Column({ comment: "最低VIP等级", length: 50, nullable: true })
+  vip: string;
+
   @Column({ name: "sync_time", comment: "同步时间", nullable: true })
   syncTime: number;
 
