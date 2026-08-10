@@ -196,9 +196,9 @@ export class UCloudAccess extends BaseAccess {
     return resp;
   }
 
-  async invoke(req: { Action: string; [key: string]: any }) {
+  async invoke(req: { Action: string;region?:string; [key: string]: any }) {
     const { Request } = await this.importRuntime("@ucloud-sdks/ucloud-sdk-js");
-    const client = await this.getClient();
+    const client = await this.getClient(req.region);
     const resp = await client.invoke(
       new Request({
         ...req,
