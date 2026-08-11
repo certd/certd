@@ -168,6 +168,14 @@ export async function OnlinePluginInstall(body: { fullName: string; version?: st
   });
 }
 
+export async function OnlinePluginUninstall(id: number) {
+  return await request({
+    url: apiPrefix + "/online/uninstall",
+    method: "post",
+    data: { id },
+  });
+}
+
 export async function OnlinePluginSubmitVersion(body: { fullName: string; version: string; content: string; minAppVersion?: string; maxAppVersion?: string }) {
   return await request({
     url: apiPrefix + "/online/version/submit",
