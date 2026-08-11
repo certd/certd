@@ -83,8 +83,9 @@ function initFormOptions() {
 initFormOptions();
 
 const pluginName = computed(() => {
-  if (plugin.value.author) {
-    return `${plugin.value.author}/${plugin.value.name}`;
+  const author = String(plugin.value.author || "").trim();
+  if (author && author.toLowerCase() !== "local") {
+    return `${author}/${plugin.value.name}`;
   }
   return plugin.value.name || "";
 });

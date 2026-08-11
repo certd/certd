@@ -44,7 +44,6 @@ process.on("uncaughtException", error => {
 //   log()
 // }
 
-
 // startHeapLog();
 @Configuration({
   detectorOptions: {

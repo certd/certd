@@ -236,6 +236,13 @@ describe("PluginService online plugins", () => {
     assert.equal(getPluginFullName({ name: "developer/plugin", author: "developer" }), "developer/plugin");
   });
 
+  it("requires a user-provided author for local store plugin edits", async () => {
+    const service = new PluginService();
+
+    await assert.rejects(() => service.add({ type: "store", author: "local", name: "demo", pluginType: "deploy" }), /请先填写插件作者/);
+    await assert.rejects(() => service.update({ id: 1, type: "store", author: "", name: "demo" }), /请先填写插件作者/);
+  });
+
   it("marks online plugins with local installation state", async () => {
     const service = new PluginService();
     service.repository = createPluginRepositoryMock({
@@ -563,9 +570,12 @@ describe("PluginService online plugins", () => {
         assert.deepEqual(config.data, { fullName: "greper/DeployToDemo", version: "1.0.1" });
         return {
           fullName: "greper/DeployToDemo",
-          content: "name: DeployToDemo\npluginType: deploy\nauthor: greper\ncontent: |\n  return class Demo {}\n",
+          content: "name: DeployToDemo\npluginType: deploy\nauthor: local\ncontent: |\n  return class Demo {}\n",
           plugin: {
             fullName: "greper/DeployToDemo",
+            author: "greper",
+            appId: 3,
+            developerId: 12,
             downloadCount: 88,
           },
           version: {
@@ -592,6 +602,8 @@ describe("PluginService online plugins", () => {
     assert.equal(importReq.override, true);
     assert.equal(importReq.type, "store");
     assert.match(importReq.content, /DeployToDemo/);
+    assert.match(importReq.content, /^author: greper$/m);
+    assert.match(importReq.content, /^fullName: greper\/DeployToDemo$/m);
     assert.deepEqual(downloadUpdates[0].where, {
       type: "store",
       fullName: "greper/DeployToDemo",
@@ -770,6 +782,7 @@ describe("PluginService online plugins", () => {
   it("publishes a local store plugin through activation with exported content", async () => {
     const service = new PluginService();
     let requestConfig: any;
+    let updatedPlugin: any;
     let registered = false;
 
     service.sysSettingsService = {
@@ -783,9 +796,28 @@ describe("PluginService online plugins", () => {
       },
       async request(config: any) {
         requestConfig = config;
-        return { plugin: { fullName: "developer/custom-one" }, version: { version: "1.2.3" } };
+        return {
+          plugin: {
+            appId: 3,
+            developerId: 12,
+            author: "developer",
+            fullName: "developer/custom-one",
+            latest: "1.2.3",
+            status: "reviewing",
+          },
+          version: { version: "1.2.3" },
+        };
       },
     } as any;
+    service.getOnlinePluginAuthor = async () => {
+      return {
+        registered: true,
+        author: {
+          id: 2,
+          name: "developer",
+        },
+      };
+    };
     service.info = async () => {
       return {
         id: 7,
@@ -797,6 +829,9 @@ describe("PluginService online plugins", () => {
     service.exportPlugin = async () => {
       return "name: custom-one\nversion: 1.2.3\n";
     };
+    service.update = async plugin => {
+      updatedPlugin = plugin;
+    };
 
     const res = await service.publishLocalPlugin({ id: 7 });
 
@@ -804,12 +839,15 @@ describe("PluginService online plugins", () => {
     assert.equal(res.plugin.fullName, "developer/custom-one");
     assert.equal(requestConfig.url, "/activation/plugin/publish");
     assert.equal(requestConfig.method, "post");
-    assert.deepEqual(requestConfig.data, {
-      content: "name: custom-one\nversion: 1.2.3\n",
-      version: "1.2.3",
-      minAppVersion: "",
-      maxAppVersion: "",
-    });
+    assert.match(requestConfig.data.content, /^author: developer$/m);
+    assert.match(requestConfig.data.content, /^fullName: developer\/custom-one$/m);
+    assert.equal(requestConfig.data.version, "1.2.3");
+    assert.equal(requestConfig.data.minAppVersion, "");
+    assert.equal(requestConfig.data.maxAppVersion, "");
+    assert.equal(updatedPlugin.appId, 3);
+    assert.equal(updatedPlugin.developerId, 12);
+    assert.equal(updatedPlugin.author, "developer");
+    assert.equal(updatedPlugin.fullName, "developer/custom-one");
   });
 
   it("gets and creates online plugin author for the bound user", async () => {

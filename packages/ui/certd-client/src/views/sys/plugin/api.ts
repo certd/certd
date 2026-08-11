@@ -159,11 +159,12 @@ export async function OnlinePluginSetting(): Promise<{ lastSyncTime?: number }> 
   });
 }
 
-export async function OnlinePluginInstall(body: { fullName: string; version?: string }) {
+export async function OnlinePluginInstall(body: { fullName: string; version?: string }, options?: { showErrorNotify?: boolean }) {
   return await request({
     url: apiPrefix + "/online/install",
     method: "post",
     data: body,
+    showErrorNotify: options?.showErrorNotify,
   });
 }
 

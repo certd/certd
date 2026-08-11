@@ -1,7 +1,7 @@
 <template>
   <div class="plugin-author-field">
-    <span v-if="authorName" class="plugin-author-field__name">{{ authorName }}</span>
-    <a-button v-else type="link" size="small" :loading="loading" @click="registerAuthor">注册作者</a-button>
+    <a-input :value="modelValue" placeholder="请输入作者名称" @update:value="emit('update:modelValue', $event)" />
+    <a-button type="link" size="small" :loading="loading" @click="registerAuthor">注册作者</a-button>
   </div>
 </template>
 
@@ -15,16 +15,20 @@ defineOptions({ name: "PluginAuthorField" });
 const props = defineProps<{ modelValue?: string }>();
 const emit = defineEmits<{ (event: "update:modelValue", value: string): void }>();
 const loading = ref(false);
-const registeredAuthor = ref<api.OnlinePluginAuthorBean>();
 const { registerPluginAuthor } = usePluginPublish();
-const authorName = computed(() => props.modelValue || registeredAuthor.value?.name || "");
+const isLocalAuthor = computed(() => {
+  return (
+    String(props.modelValue || "")
+      .trim()
+      .toLowerCase() === "local"
+  );
+});
 
 async function loadAuthor() {
   loading.value = true;
   try {
     const result = await api.OnlinePluginAuthorGet();
-    registeredAuthor.value = result.author;
-    if (!props.modelValue && result.author?.name) {
+    if ((!props.modelValue || isLocalAuthor.value) && result.author?.name) {
       emit("update:modelValue", result.author.name);
     }
   } catch {
@@ -39,11 +43,15 @@ async function registerAuthor() {
   if (!author?.name) {
     return;
   }
-  registeredAuthor.value = author;
   emit("update:modelValue", author.name);
 }
 
-onMounted(loadAuthor);
+onMounted(async () => {
+  if (isLocalAuthor.value) {
+    emit("update:modelValue", "");
+  }
+  await loadAuthor();
+});
 </script>
 
 <style lang="less">
@@ -51,9 +59,11 @@ onMounted(loadAuthor);
   display: flex;
   min-height: 32px;
   align-items: center;
+  gap: 6px;
 
-  &__name {
-    color: #1f2937;
+  .ant-input {
+    min-width: 0;
+    flex: 1;
   }
 }
 </style>
