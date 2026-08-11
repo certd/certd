@@ -68,6 +68,7 @@ const { openAiDevDialog } = usePluginAiDev();
 function initFormOptions() {
   const formCrudOptions = createCrudOptions({
     // 编辑弹框只复用插件表单字段，不需要 CRUD 实例。
+    // @ts-ignore
     crudExpose: {},
     context: {},
   });
@@ -106,6 +107,7 @@ async function loadPlugin() {
   const pluginObj = await api.GetObj(props.pluginId);
   plugin.value = pluginObj;
   const baseForm = { ...pluginObj };
+  baseForm.vip = baseForm.vip || "free";
   if (baseForm.extra) {
     baseForm.extra = yaml.load(baseForm.extra);
   }
@@ -181,7 +183,8 @@ defineExpose({
 <style lang="less">
 .plugin-edit-dialog-body {
   display: flex;
-  min-height: 680px;
+  height: 100%;
+  overflow: hidden;
   flex-direction: column;
 
   &__header {
@@ -207,6 +210,7 @@ defineExpose({
   &__content {
     display: grid;
     min-height: 0;
+    overflow: hidden;
     flex: 1;
     grid-template-columns: minmax(260px, 0.72fr) minmax(330px, 1fr) minmax(430px, 1.35fr);
     gap: 16px;
@@ -229,10 +233,12 @@ defineExpose({
   &__base-content {
     min-height: 0;
     flex: 1;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .fs-editor-code {
+    height: auto;
     min-height: 0;
     flex: 1;
   }
