@@ -24,7 +24,7 @@
             <fs-icon class="plugin-card__ai-check-icon" icon="ion:shield-checkmark-outline" />
           </a-tooltip>
           <a-tooltip v-if="requiresVip" title="需要 Plus 会员">
-            <fs-icon class="plugin-card__vip-icon" icon="lucide:crown" />
+            <fs-icon class="plugin-card__vip-icon" icon="mingcute:vip-1-line" />
           </a-tooltip>
         </div>
       </div>
@@ -364,13 +364,13 @@ async function editPlugin() {
     title: `编辑插件 ${props.plugin.title || props.plugin.name}`,
     columns: {},
     noneForm: true,
+    className: "plugin-edit-dialog",
     wrapper: {
       width: 1480,
       destroyOnClose: true,
       maskClosable: false,
       okText: "保存",
       cancelText: "关闭",
-      class: "plugin-edit-dialog",
     },
     body: () =>
       h(PluginEditDialogBody, {
@@ -989,6 +989,12 @@ function handleVersionClick() {
         color: #91caff;
       }
     }
+  }
+}
+
+.plugin-edit-dialog {
+  .ant-modal-body .fs-form-body {
+    height: 66vh;
   }
 }
 </style>

@@ -1,5 +1,5 @@
 export default {
-  titlea: "名称",
+  titlea: "中文名称",
   pluginFile: "插件文件",
   selectPluginFile: "选择插件文件",
   overrideSameName: "同名覆盖",

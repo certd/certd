@@ -519,6 +519,22 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         },
+        vip: {
+          title: "会员要求",
+          type: "dict-select",
+          dict: dict({
+            data: [
+              { label: "免费", value: "free" },
+              { label: "专业版", value: "plus" },
+            ],
+          }),
+          form: {
+            value: "free",
+          },
+          column: {
+            show: false,
+          },
+        },
         version: {
           title: t("certd.version"),
           type: "text",
