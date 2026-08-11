@@ -407,6 +407,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               name: PluginAuthorField,
               vModel: "modelValue",
             },
+            rules: [{ required: true, message: "请先注册并选择插件作者" }],
           },
           column: {
             width: 200,

@@ -599,12 +599,27 @@ export class PluginService extends BaseService<PluginEntity> {
     return this.builtInPluginService.getByType(type);
   }
 
+  private normalizeStorePluginAuthor(plugin: Record<string, any>) {
+    const author = `${plugin.author || ""}`.trim();
+    if (!author) {
+      throw new Error("请先填写插件作者");
+    }
+    plugin.author = author;
+    const name = `${plugin.name || ""}`.trim();
+    if (name) {
+      plugin.fullName = `${author}/${name}`;
+    }
+  }
+
   /**
    * 新增
    * @param param 数据
    */
   async add(param: any) {
     param.type = normalizePluginSourceType(param.type);
+    if (param.type === "store") {
+      this.normalizeStorePluginAuthor(param);
+    }
     const old = await this.findOne({
       where: {
         name: param.name,
@@ -924,7 +939,18 @@ export class PluginService extends BaseService<PluginEntity> {
       throw new Error("插件内容为空");
     }
 
-    const content = fillOnlinePluginYamlVersion(res.content, res.version?.version || req.version);
+    const downloadedFullName = (res.fullName || res.plugin?.fullName || fullName).trim();
+    const downloadedIdentity = parseOnlinePluginFullName(downloadedFullName);
+    const downloadedContent = fillOnlinePluginYamlVersion(res.content, res.version?.version || req.version);
+    const contentPlugin = yaml.load(downloadedContent) as Record<string, any>;
+    if (!contentPlugin || typeof contentPlugin !== "object") {
+      throw new Error("插件内容格式错误");
+    }
+    contentPlugin.author = res.plugin?.author || downloadedIdentity.author;
+    contentPlugin.fullName = downloadedFullName;
+    contentPlugin.appId = res.plugin?.appId || contentPlugin.appId;
+    contentPlugin.developerId = res.plugin?.developerId || contentPlugin.developerId;
+    const content = yaml.dump(contentPlugin);
     const importRes = await this.importPlugin({
       content,
       override: true,
@@ -995,9 +1021,23 @@ export class PluginService extends BaseService<PluginEntity> {
     if (!canEditStorePlugin(plugin.developerId, installInfo.bindUserId)) {
       throw new Error("当前绑定账号无权编辑该插件");
     }
-    const content = await this.exportPlugin(req.id);
+    const authorReply = await this.getOnlinePluginAuthor();
+    const author = authorReply.author;
+    if (!authorReply.registered || !author?.name) {
+      throw new Error("请先注册插件作者后再发布插件");
+    }
+
+    const exportedContent = await this.exportPlugin(req.id);
+    const publishContent = yaml.load(exportedContent) as Record<string, any>;
+    if (!publishContent || typeof publishContent !== "object") {
+      throw new Error("插件内容格式错误");
+    }
+    publishContent.author = author.name;
+    publishContent.fullName = `${author.name}/${plugin.name}`;
+    const content = yaml.dump(publishContent);
+
     await this.plusService.register();
-    return await this.plusService.request({
+    const publishReply = await this.plusService.request({
       url: "/activation/plugin/publish",
       method: "post",
       data: {
@@ -1007,6 +1047,21 @@ export class PluginService extends BaseService<PluginEntity> {
         maxAppVersion: req.maxAppVersion || "",
       },
     });
+
+    const marketPlugin = publishReply?.plugin as OnlinePluginBean | undefined;
+    const publishedAuthor = marketPlugin?.author || author.name;
+    const publishedFullName = marketPlugin?.fullName || `${publishedAuthor}/${plugin.name}`;
+    await this.update({
+      ...plugin,
+      appId: marketPlugin?.appId || plugin.appId,
+      developerId: marketPlugin?.developerId || installInfo.bindUserId,
+      author: publishedAuthor,
+      fullName: publishedFullName,
+      latest: marketPlugin?.latest || plugin.latest,
+      status: marketPlugin?.status || plugin.status,
+      vip: marketPlugin?.vip || plugin.vip,
+    });
+    return publishReply;
   }
 
   async ensurePluginEditable(id: number) {
@@ -1170,6 +1225,9 @@ export class PluginService extends BaseService<PluginEntity> {
 
   async update(param: any) {
     param.type = normalizePluginSourceType(param.type);
+    if (param.type === "store") {
+      this.normalizeStorePluginAuthor(param);
+    }
     let old: PluginEntity | null;
     if (param.type === "store" && param.fullName) {
       old = await this.findOne({
@@ -1388,8 +1446,11 @@ export class PluginService extends BaseService<PluginEntity> {
     }
     delete loaded.id;
 
-    const fullName = loaded.fullName || (loaded.author && loaded.name ? `${loaded.author}/${loaded.name}` : "");
     const entityType = normalizePluginSourceType(req.type || loaded.type);
+    if (entityType === "store") {
+      this.normalizeStorePluginAuthor(loaded);
+    }
+    const fullName = loaded.fullName || (loaded.author && loaded.name ? `${loaded.author}/${loaded.name}` : "");
 
     let old: PluginEntity | null;
     if (entityType === "store") {

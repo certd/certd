@@ -442,12 +442,48 @@ async function installPlugin() {
   if (!fullName) {
     return;
   }
-  await runAction("install", async () => {
-    await api.OnlinePluginInstall({
-      fullName,
-      version: props.plugin.latest,
+  try {
+    await runAction("install", async () => {
+      await api.OnlinePluginInstall(
+        {
+          fullName,
+          version: props.plugin.latest,
+        },
+        {
+          showErrorNotify: false,
+        }
+      );
+      message.success(t("certd.onlinePluginInstallSuccess"));
     });
-    message.success(t("certd.onlinePluginInstallSuccess"));
+  } catch (error: any) {
+    if (!isOnlinePluginMissing(error)) {
+      throw error;
+    }
+    confirmRemoveMissingOnlinePlugin();
+  }
+}
+
+function isOnlinePluginMissing(error: unknown) {
+  return error instanceof Error && error.message.includes("插件不存在");
+}
+
+function confirmRemoveMissingOnlinePlugin() {
+  if (!props.plugin.id) {
+    return;
+  }
+  Modal.confirm({
+    title: "插件不存在",
+    content: `在线市场已找不到插件「${fullNameValue() || props.plugin.title || props.plugin.name}」，是否删除本地同步的插件记录？`,
+    okText: "删除插件",
+    cancelText: "保留记录",
+    okButtonProps: { danger: true },
+    async onOk() {
+      await runAction("remove", async () => {
+        await api.DelObj(props.plugin.id);
+        await pluginStore.reload();
+        message.success("插件记录已删除");
+      });
+    },
   });
 }
 
