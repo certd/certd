@@ -496,7 +496,8 @@ function uninstallPlugin() {
     content: t("certd.onlinePluginDeleteConfirm", { name: fullNameValue() || props.plugin.title || props.plugin.name }),
     async onOk() {
       await runAction("uninstall", async () => {
-        await api.DelObj(props.plugin.localPluginId);
+        await api.OnlinePluginUninstall(props.plugin.localPluginId);
+        await pluginStore.reload();
         message.success(t("certd.onlinePluginUninstallSuccess"));
       });
     },

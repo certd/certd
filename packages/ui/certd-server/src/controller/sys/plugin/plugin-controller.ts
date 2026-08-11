@@ -151,6 +151,13 @@ export class PluginController extends CrudController<PluginService> {
     return this.ok(res);
   }
 
+  @Post("/online/uninstall", { description: "sys:settings:edit", summary: "卸载在线插件" })
+  async onlineUninstall(@Body("id") id: number) {
+    const res = await this.service.uninstallOnlinePlugin(id);
+    await this.auditLog({ content: `卸载了在线插件(ID:${id})` });
+    return this.ok(res);
+  }
+
   @Post("/online/version/submit", { description: "sys:settings:edit", summary: "提交在线插件版本" })
   async onlineVersionSubmit(@Body(ALL) body: OnlinePluginVersionSubmitReq) {
     const res = await this.service.submitOnlinePluginVersion(body);

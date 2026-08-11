@@ -952,7 +952,7 @@ describe("PluginService online plugins", () => {
     assert.equal(info.versions[0].reviewStatus, "ai_pending");
   });
 
-  it("uninstalls synced store plugins without deleting market metadata", async () => {
+  it("deletes plugins regardless of their market synchronization state", async () => {
     const service = new PluginService();
     const updates: any[] = [];
     const deleted: number[] = [];
@@ -995,7 +995,40 @@ describe("PluginService online plugins", () => {
     await service.deleteByIds([7, 8]);
 
     assert.deepEqual(unregistered, [7, 8]);
-    assert.deepEqual(deleted, [8]);
+    assert.deepEqual(deleted, [7, 8]);
+    assert.deepEqual(updates, []);
+  });
+
+  it("uninstalls a synced online plugin without deleting market metadata", async () => {
+    const service = new PluginService();
+    const updates: any[] = [];
+    const deleted: number[] = [];
+    const unregistered: number[] = [];
+
+    service.repository = {
+      async update(where: any, values: any) {
+        updates.push({ where, values });
+      },
+    } as any;
+    service.info = async (id: number) => {
+      return {
+        id,
+        type: "store",
+        developerId: 12,
+        installed: true,
+      } as any;
+    };
+    service.unRegisterById = async id => {
+      unregistered.push(id);
+    };
+    service.delete = (async (id: any) => {
+      deleted.push(Number(id));
+    }) as any;
+
+    await service.uninstallOnlinePlugin(7);
+
+    assert.deepEqual(unregistered, [7]);
+    assert.deepEqual(deleted, []);
     assert.deepEqual(updates, [
       {
         where: { id: 7 },
@@ -1005,5 +1038,25 @@ describe("PluginService online plugins", () => {
         },
       },
     ]);
+  });
+
+  it("does not uninstall a local plugin through the online uninstall operation", async () => {
+    const service = new PluginService();
+    const deleted: number[] = [];
+
+    service.info = async (id: number) => {
+      return {
+        id,
+        type: "store",
+        installed: false,
+      } as any;
+    };
+    service.delete = (async (id: any) => {
+      deleted.push(Number(id));
+    }) as any;
+
+    await assert.rejects(service.uninstallOnlinePlugin(7), /在线插件/);
+
+    assert.deepEqual(deleted, []);
   });
 });

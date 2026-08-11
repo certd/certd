@@ -1540,17 +1540,22 @@ export class PluginService extends BaseService<PluginEntity> {
         continue;
       }
       await this.unRegisterById(id);
-      if (item.type === "store" && item.developerId) {
-        await this.updateWhere(
-          { id },
-          {
-            installed: false,
-            disabled: false,
-          }
-        );
-        continue;
-      }
       await this.delete(id);
     }
+  }
+
+  async uninstallOnlinePlugin(id: number) {
+    const item = await this.info(id);
+    if (!item || item.type !== "store" || !item.developerId) {
+      throw new Error("该插件不是已同步的在线插件");
+    }
+    await this.unRegisterById(id);
+    await this.updateWhere(
+      { id },
+      {
+        installed: false,
+        disabled: false,
+      }
+    );
   }
 }
