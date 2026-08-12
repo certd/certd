@@ -103,9 +103,11 @@ docker-compose up -d
 
 ![db-6.png](images/db-sync-1.jpg)
 ![db-7.png](images/db-sync-2.png)
-![db-8.png](images/db-sync-3.png)
+![db-8.png](images/db-sync-3-0.png)
+![db-8.png](images/db-sync-3-1.png)
 下一步、下一步，直到数据加载设置，勾选`在加载前截断目标表`（此选项很重要，并且会清空mysql certd数据库中的数据）
 ![db-7.png](images/db-sync-4.png)
+> 重要： 在插入行后做提交，也改成5000或以下，避免内存溢出
 
 #### 5. 导入完成
 
