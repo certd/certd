@@ -121,6 +121,63 @@ export default {
   helpDocLink: "帮助文档",
   suite: "套餐",
   helpDoc: "帮助说明",
+  landing: {
+    console: "控制台",
+    login: "登录",
+    register: "注册",
+    slogan: "让你的证书永不过期",
+    heroTitle: "让你的网站证书",
+    heroHighlight: "永不过期",
+    heroDescription: "全自动证书管理系统，首创流水线申请部署证书模式，让你告别证书过期的烦恼。",
+    getStarted: "立即开始",
+    featuresTitle: "强大功能特性",
+    featuresSubtitle: "支持所有主流云服务商和部署场景",
+    benefits: {
+      autoRenewal: "自动续期",
+      centralizedManagement: "集中管理",
+      statusMonitoring: "状态监控",
+      costSaving: "节省成本",
+      secureReliable: "安全可靠",
+    },
+    features: {
+      autoApply: {
+        title: "全自动申请证书",
+        description: "支持 DNS-01、HTTP-01、CNAME 代理等多种域名验证方式",
+      },
+      autoDeploy: {
+        title: "全自动部署更新",
+        description: "支持 110+ 部署插件，覆盖主流云服务商",
+      },
+      certFormats: {
+        title: "多种证书格式",
+        description: "支持 pem、pfx、der、jks、p7b 多种格式",
+      },
+      wildcardSupport: {
+        title: "泛域名支持",
+        description: "支持免费通配符域名，多域名打到一个证书",
+      },
+      notifications: {
+        title: "多种通知方式",
+        description: "邮件、webhook、企微、钉钉、飞书等通知",
+      },
+      security: {
+        title: "安全保障",
+        description: "授权加密、2FA、密码防爆破，数据本地保存",
+      },
+      databases: {
+        title: "多数据库支持",
+        description: "支持 SQLite、PostgreSQL、MySQL 多种数据库",
+      },
+      openApi: {
+        title: "开放 API 接口",
+        description: "提供 RESTful API，方便集成到其他系统",
+      },
+      siteMonitor: {
+        title: "站点证书监控",
+        description: "定时监控证书过期时间，提前预警",
+      },
+    },
+  },
   pluginCommon: {
     test: "测试",
     errorWithMessage: "错误：{message}",
