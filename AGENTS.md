@@ -136,6 +136,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 做前端任务时，先定位 `packages/ui/certd-client/src/views/certd` 下的页面，再找对应 `src/api`。
 - 不要运行前端 `pnpm tsc` / `vue-tsc`；当前 `vue-tsc@1.8.27` 会抛无效内部错误。前端 `test:unit` 只是占位脚本，也不要跑。
 - 前端 TS/Vue/locale 改动后，只对本次改动文件运行现有 Prettier / ESLint：`packages\ui\certd-client\node_modules\.bin\prettier.cmd --write <files>` 和 `packages\ui\certd-client\node_modules\.bin\eslint.cmd --fix <files>`。
+- Vue 模板中需要用 JSX 动态渲染时，使用 `<script setup lang="tsx">` 编写；不要使用 `h()` 创建 VNode。
 - 列表管理、后台管理、记录查询、CRUD 表格页面优先使用 Fast Crud；开发或重构前读 `.trae/skills/fast-crud-page-dev/SKILL.md`。
 - 只有轻量只读展示、强交互自定义界面或既有页面模式明显不适合 Fast Crud 时，才手写 `a-table` / 自定义列表，并在回复中说明。
 - 内嵌 Fast Crud 时，外层必须有稳定高度或完整 `flex: 1; min-height: 0` 链路。
