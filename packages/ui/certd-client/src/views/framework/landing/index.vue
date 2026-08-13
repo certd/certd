@@ -7,16 +7,17 @@
           <span class="logo-text ellipsis">{{ siteInfo.title }}</span>
         </div>
         <div class="nav-links text-nowrap">
+          <LanguageToggle />
           <ThemeToggle />
           <template v-if="isLoggedIn">
-            <router-link to="/index" class="btn btn-primary">控制台</router-link>
+            <router-link to="/index" class="btn btn-primary">{{ t("certd.landing.console") }}</router-link>
             <!-- <div class="user-avatar" @click="goProfile">
               <div class="avatar-initials">{{ userInitials }}</div>
             </div> -->
           </template>
           <template v-else>
-            <router-link :to="{ name: 'login' }" class="btn btn-outline">登录</router-link>
-            <router-link v-if="hasRegisterEnabled" :to="{ name: 'register' }" class="btn btn-primary">注册</router-link>
+            <router-link :to="{ name: 'login' }" class="btn btn-outline">{{ t("certd.landing.login") }}</router-link>
+            <router-link v-if="hasRegisterEnabled" :to="{ name: 'register' }" class="btn btn-primary">{{ t("certd.landing.register") }}</router-link>
           </template>
         </div>
       </div>
@@ -26,12 +27,12 @@
       <div class="hero-container">
         <div class="hero-content">
           <h1 class="hero-title flex flex-col md:flex-row">
-            <div>让你的网站证书</div>
-            <div class="gradient-text mt-2 md:mt-0 md:ml-4">永不过期</div>
+            <div>{{ t("certd.landing.heroTitle") }}</div>
+            <div class="gradient-text mt-2 md:mt-0 md:ml-4">{{ t("certd.landing.heroHighlight") }}</div>
           </h1>
-          <p class="hero-description">全自动证书管理系统，首创流水线申请部署证书模式，让你告别证书过期的烦恼。</p>
+          <p class="hero-description">{{ t("certd.landing.heroDescription") }}</p>
           <div class="hero-actions">
-            <router-link :to="{ name: 'login' }" class="btn btn-large btn-primary">立即开始</router-link>
+            <router-link :to="{ name: 'login' }" class="btn btn-large btn-primary">{{ t("certd.landing.getStarted") }}</router-link>
           </div>
           <div class="hero-benefits">
             <div v-for="(benefit, index) in heroBenefits" :key="index" class="benefit-item">
@@ -48,8 +49,8 @@
     <section id="features" class="features-section">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">强大功能特性</h2>
-          <p class="section-subtitle">支持所有主流云服务商和部署场景</p>
+          <h2 class="section-title">{{ t("certd.landing.featuresTitle") }}</h2>
+          <p class="section-subtitle">{{ t("certd.landing.featuresSubtitle") }}</p>
         </div>
         <div class="features-grid">
           <div v-for="(feature, index) in features" :key="index" class="feature-card" :style="{ animationDelay: `${index * 0.08}s` }">
@@ -120,9 +121,12 @@ import { useUserStore } from "/@/store/user";
 import { useAccessStore } from "/@/vben/stores";
 import { SiteInfo, SysPublicSetting } from "/@/store/settings/api.basic";
 import ThemeToggle from "/@/vben/layouts/widgets/theme-toggle/theme-toggle.vue";
+import { LanguageToggle } from "/@/vben/layouts";
 import { useRouter } from "vue-router";
 import { usePreferences } from "/@/vben/preferences";
+import { useI18n } from "/@/locales";
 const { isDark } = usePreferences();
+const { t } = useI18n();
 const envRef = ref(env);
 const settingStore = useSettingStore();
 const userStore = useUserStore();
@@ -149,74 +153,74 @@ function goProfile() {
   router.push("/certd/mine/user-profile");
 }
 
-const heroBenefits = ref([
+const heroBenefits = computed(() => [
   {
     icon: "♻️",
-    text: "自动续期",
+    text: t("certd.landing.benefits.autoRenewal"),
   },
   {
     icon: "📊",
-    text: "集中管理",
+    text: t("certd.landing.benefits.centralizedManagement"),
   },
   {
     icon: "🔔",
-    text: "状态监控",
+    text: t("certd.landing.benefits.statusMonitoring"),
   },
   {
     icon: "💰",
-    text: "节省成本",
+    text: t("certd.landing.benefits.costSaving"),
   },
   {
     icon: "🛡️",
-    text: "安全可靠",
+    text: t("certd.landing.benefits.secureReliable"),
   },
 ]);
 
-const features = ref([
+const features = computed(() => [
   {
     icon: "🔐",
-    title: "全自动申请证书",
-    description: "支持 DNS-01、HTTP-01、CNAME 代理等多种域名验证方式",
+    title: t("certd.landing.features.autoApply.title"),
+    description: t("certd.landing.features.autoApply.description"),
   },
   {
     icon: "🚀",
-    title: "全自动部署更新",
-    description: "支持 110+ 部署插件，覆盖主流云服务商",
+    title: t("certd.landing.features.autoDeploy.title"),
+    description: t("certd.landing.features.autoDeploy.description"),
   },
   {
     icon: "📄",
-    title: "多种证书格式",
-    description: "支持 pem、pfx、der、jks、p7b 多种格式",
+    title: t("certd.landing.features.certFormats.title"),
+    description: t("certd.landing.features.certFormats.description"),
   },
   {
     icon: "🌐",
-    title: "泛域名支持",
-    description: "支持免费通配符域名，多域名打到一个证书",
+    title: t("certd.landing.features.wildcardSupport.title"),
+    description: t("certd.landing.features.wildcardSupport.description"),
   },
   {
     icon: "🔔",
-    title: "多种通知方式",
-    description: "邮件、webhook、企微、钉钉、飞书等通知",
+    title: t("certd.landing.features.notifications.title"),
+    description: t("certd.landing.features.notifications.description"),
   },
   {
     icon: "🔒",
-    title: "安全保障",
-    description: "授权加密、2FA、密码防爆破，数据本地保存",
+    title: t("certd.landing.features.security.title"),
+    description: t("certd.landing.features.security.description"),
   },
   {
     icon: "💾",
-    title: "多数据库支持",
-    description: "支持 SQLite、PostgreSQL、MySQL 多种数据库",
+    title: t("certd.landing.features.databases.title"),
+    description: t("certd.landing.features.databases.description"),
   },
   {
     icon: "🔌",
-    title: "开放 API 接口",
-    description: "提供 RESTful API，方便集成到其他系统",
+    title: t("certd.landing.features.openApi.title"),
+    description: t("certd.landing.features.openApi.description"),
   },
   {
     icon: "📊",
-    title: "站点证书监控",
-    description: "定时监控证书过期时间，提前预警",
+    title: t("certd.landing.features.siteMonitor.title"),
+    description: t("certd.landing.features.siteMonitor.description"),
   },
 ]);
 
