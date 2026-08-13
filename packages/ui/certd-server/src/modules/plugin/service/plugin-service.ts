@@ -464,24 +464,6 @@ export class PluginService extends BaseService<PluginEntity> {
     });
   }
 
-  async getRuntimeDependencyPluginDefines() {
-    const builtInList = await this.getEnabledBuiltInList();
-    const customList = await this.list({
-      buildQuery: bq => {
-        bq.andWhere("type != :type", {
-          type: "builtIn",
-        });
-      },
-    });
-    const list = [...builtInList];
-    for (const plugin of customList) {
-      const metadata = plugin.metadata ? yaml.load(plugin.metadata) : {};
-      const extra = plugin.extra ? yaml.load(plugin.extra) : {};
-      list.push({ ...plugin, ...metadata, ...extra });
-    }
-    return list.filter(item => item.dependPackages);
-  }
-
   async exportPlugin(id: number) {
     const info = await this.info(id);
     if (!info) {
