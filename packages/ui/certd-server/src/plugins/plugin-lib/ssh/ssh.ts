@@ -24,14 +24,61 @@ export type SshConnectConfig = {
   sock?: any;
 };
 
+export const MAX_JUMP_HOST_DEPTH = 5;
+
+export type JumpConnectionContext = {
+  depth: number;
+  accessIds: number[];
+  hosts: SshAccess[];
+};
+
+type JumpHostConfig = {
+  config: SshAccess;
+  accessId?: number;
+};
+
+export function nextJumpConnectionContext(context: JumpConnectionContext, jumpHost: SshAccess, accessId?: number): JumpConnectionContext {
+  if (context.depth >= MAX_JUMP_HOST_DEPTH) {
+    throw new Error(`跳板机层级不能超过${MAX_JUMP_HOST_DEPTH}层`);
+  }
+  if ((accessId && context.accessIds.includes(accessId)) || context.hosts.includes(jumpHost)) {
+    throw new Error("检测到跳板机循环引用");
+  }
+  return {
+    depth: context.depth + 1,
+    accessIds: accessId ? [...context.accessIds, accessId] : context.accessIds,
+    hosts: [...context.hosts, jumpHost],
+  };
+}
+
+export async function createJumpSocket(jumpConnection: any, target: Pick<SshAccess, "host" | "port">): Promise<any> {
+  const targetPort = Number(target.port);
+  return await safePromise((resolve, reject) => {
+    jumpConnection.forwardOut("127.0.0.1", 0, target.host, targetPort, (err: Error, stream: any) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(stream);
+    });
+  });
+}
+
 export class AsyncSsh2Client {
   conn: any;
+  jumpClient: AsyncSsh2Client | null = null;
+  jumpConnectionContext: JumpConnectionContext;
   logger: ILogger;
   connConf: SshAccess & SshConnectConfig;
   windows = false;
   encoding: string;
-  constructor(connConf: SshAccess, logger: ILogger) {
-    this.connConf = connConf;
+  constructor(connConf: SshAccess, logger: ILogger, jumpConnectionContext?: JumpConnectionContext) {
+    this.connConf = { ...connConf } as SshAccess & SshConnectConfig;
+    this.jumpConnectionContext = jumpConnectionContext ?? {
+      depth: 0,
+      accessIds: [],
+      hosts: [connConf],
+    };
     this.logger = logger;
     this.windows = connConf.windows || false;
     this.encoding = connConf.encoding;
@@ -45,31 +92,80 @@ export class AsyncSsh2Client {
   }
 
   async connect() {
-    this.logger.info(`开始连接，${this.connConf.host}:${this.connConf.port}`);
-    if (this.connConf.socksProxy) {
-      this.logger.info(`使用代理${this.connConf.socksProxy}`);
-      if (typeof this.connConf.port === "string") {
-        this.connConf.port = parseInt(this.connConf.port);
+    try {
+      this.logger.info(`开始连接，${this.connConf.host}:${this.connConf.port}`);
+      const jumpHost = await this.getJumpHost();
+      if (jumpHost) {
+        await this.connectThroughJumpHost(jumpHost);
+      }
+      if (this.connConf.socksProxy && !this.connConf.sock) {
+        this.logger.info(`使用代理${this.connConf.socksProxy}`);
+        if (typeof this.connConf.port === "string") {
+          this.connConf.port = parseInt(this.connConf.port);
+        }
+
+        const { SocksClient } = await import("socks");
+
+        const proxyOption = this.parseSocksProxyFromUri(this.connConf.socksProxy);
+        const info = await SocksClient.createConnection({
+          proxy: proxyOption,
+          command: "connect",
+          destination: {
+            host: this.connConf.host,
+            port: this.connConf.port,
+          },
+        });
+        this.logger.info("代理连接成功");
+        this.connConf.sock = info.socket;
       }
 
-      const { SocksClient } = await import("socks");
-
-      const proxyOption = this.parseSocksProxyFromUri(this.connConf.socksProxy);
-      const info = await SocksClient.createConnection({
-        proxy: proxyOption,
-        command: "connect",
-        destination: {
-          host: this.connConf.host,
-          port: this.connConf.port,
-        },
-      });
-      this.logger.info("代理连接成功");
-      this.connConf.sock = info.socket;
+      return await this.connectClient();
+    } catch (error) {
+      this.end();
+      throw error;
     }
+  }
 
+  private async connectThroughJumpHost(jumpHost: JumpHostConfig) {
+    const nextContext = nextJumpConnectionContext(this.jumpConnectionContext, jumpHost.config, jumpHost.accessId);
+    this.logger.info(`通过跳板机连接，${jumpHost.config.host}:${jumpHost.config.port}`);
+    this.jumpClient = new AsyncSsh2Client(jumpHost.config, this.logger, nextContext);
+    await this.jumpClient.connect();
+
+    this.connConf.sock = await createJumpSocket(this.jumpClient.conn, this.connConf);
+  }
+
+  private async getJumpHost(): Promise<JumpHostConfig | undefined> {
+    if (this.connConf.jumpHost) {
+      return {
+        config: this.connConf.jumpHost,
+      };
+    }
+    const jumpHostAccessId = this.connConf.jumpHostAccessId;
+    if (!jumpHostAccessId) {
+      return undefined;
+    }
+    const accessService = this.connConf.ctx?.accessService;
+    if (!accessService) {
+      throw new Error("无法获取跳板机授权");
+    }
+    const jumpHost = await accessService.getById<SshAccess>(jumpHostAccessId);
+    if (!jumpHost) {
+      throw new Error(`跳板机(${jumpHostAccessId})授权不存在或无访问权限`);
+    }
+    return {
+      config: jumpHost,
+      accessId: jumpHostAccessId,
+    };
+  }
+
+  private async connectClient() {
     const ssh2 = await import("ssh2");
     const ssh2Constants = await import("ssh2/lib/protocol/constants.js");
     const { SUPPORTED_KEX, SUPPORTED_SERVER_HOST_KEY, SUPPORTED_CIPHER, SUPPORTED_MAC } = ssh2Constants.default;
+    const connectConfig = { ...this.connConf };
+    delete connectConfig.jumpHost;
+    delete connectConfig.jumpHostAccessId;
     return safePromise((resolve, reject) => {
       try {
         const conn = new ssh2.default.Client();
@@ -93,7 +189,7 @@ export class AsyncSsh2Client {
             // and for different purposes (not only auth)
           })
           .connect({
-            ...this.connConf,
+            ...connectConfig,
             tryKeyboard: true,
             algorithms: {
               serverHostKey: SUPPORTED_SERVER_HOST_KEY,
@@ -307,6 +403,10 @@ export class AsyncSsh2Client {
       this.conn.end();
       this.conn.destroy();
       this.conn = null;
+    }
+    if (this.jumpClient) {
+      this.jumpClient.end();
+      this.jumpClient = null;
     }
   }
 
