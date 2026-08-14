@@ -39,7 +39,7 @@
     "slimming": "node ./slimming.js",
     "pub": "echo 1",
     "compile": "",
-    "lint1": "eslint --fix"
+    "lint1": "eslint --fix --ext .ts src"
   },
   "dependencies": {
     "@certd/acme-client": "^1.42.6",
