@@ -119,9 +119,46 @@
               </template>
 
               <template #item="{ element: stage, index }">
-                <div :key="stage.id" class="stage" :class="{ 'last-stage': isLastStage(index), ['stage_' + index]: true }">
+                <div :key="stage.id" class="stage" :class="{ 'last-stage': isLastStage(index), ['stage_' + index]: true }" :style="getStageStyle(stage)">
                   <div class="title" @mousedown.stop>
-                    <text-editable v-model="stage.title" :disabled="!editMode"></text-editable>
+                    <template v-if="isStageBatchEditing(stage.id)">
+                      <div class="stage-batch-actions">
+                        <a-tooltip title="全选任务">
+                          <a-checkbox
+                            :aria-label="`全选${stage.title}中的任务`"
+                            :checked="isAllTasksSelected(stage)"
+                            :indeterminate="isTasksSelectionIndeterminate(stage)"
+                            @click.stop
+                            @change="toggleAllTasks(stage, $event.target.checked)"
+                          />
+                        </a-tooltip>
+                        <!-- <a-tag v-if="getSelectedTaskCount(stage) > 0" color="blue">{{ getSelectedTaskCount(stage) }}</a-tag> -->
+                        <a-tooltip title="批量启用任务">
+                          <a-button type="text" size="small" :disabled="getSelectedTaskCount(stage) === 0" @click="batchEnableTasks(stage)">
+                            <fs-icon :class="{ 'text-green-600': getSelectedTaskCount(stage) !== 0 }" icon="ion:power-outline"></fs-icon>
+                          </a-button>
+                        </a-tooltip>
+                        <a-tooltip title="批量禁用任务">
+                          <a-button type="text" size="small" :disabled="getSelectedTaskCount(stage) === 0" @click="batchDisableTasks(stage)">
+                            <fs-icon icon="ion:stop-circle-outline"></fs-icon>
+                          </a-button>
+                        </a-tooltip>
+                        <a-tooltip title="批量删除任务">
+                          <a-button danger type="text" size="small" :disabled="getSelectedTaskCount(stage) === 0" @click="batchDeleteTasks(stage)">
+                            <fs-icon icon="ion:trash-outline"></fs-icon>
+                          </a-button>
+                        </a-tooltip>
+                        <a-tooltip title="退出批量编辑">
+                          <a-button type="text" size="small" @click="setStageBatchEditing(stage, false)">
+                            <fs-icon icon="ion:close-outline"></fs-icon>
+                          </a-button>
+                        </a-tooltip>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <text-editable v-model="stage.title" :disabled="!editMode"></text-editable>
+                      <a-button v-if="editMode && stage.tasks.length > 0" type="text" size="small" class="stage-batch-edit-button" @click="setStageBatchEditing(stage, true)">批量编辑</a-button>
+                    </template>
                     <div v-plus class="icon-box stage-move-handle">
                       <fs-icon v-if="editMode" title="拖动排序" icon="ion:move-outline"></fs-icon>
                     </div>
@@ -135,6 +172,14 @@
                           'validate-error': hasValidateError(task.id),
                         }"
                       >
+                        <a-checkbox
+                          v-if="isStageBatchEditing(stage.id)"
+                          class="task-select"
+                          :aria-label="`选择任务${task.title}`"
+                          :checked="isTaskSelected(stage.id, task.id)"
+                          @click.stop
+                          @change="toggleTaskSelection(stage.id, task.id, $event.target.checked)"
+                        />
                         <div class="line line-left">
                           <div class="flow-line"></div>
                           <fs-icon v-if="editMode" class="add-stage-btn" title="添加新阶段" icon="ion:add-circle" @click="stageAdd(index)"></fs-icon>
@@ -192,6 +237,7 @@
                       </div>
                     </template>
                   </v-draggable>
+                  <div v-if="editMode" class="stage-resize-handle" title="拖动调整阶段宽度" @mousedown.stop.prevent="startStageResize(stage, $event)"></div>
                 </div>
               </template>
               <template #footer>
@@ -335,6 +381,7 @@ import { useI18n } from "/@/locales";
 import TriggerIcon from "./component/trigger-icon.vue";
 import { useCrudPermission } from "/@/plugin/permission";
 import { onBeforeRouteLeave } from "vue-router";
+import { disableTasks, enableTasks, getStageWidth, removeSelectedItems, setStageWidth } from "./component/batch-actions";
 export default defineComponent({
   name: "PipelineEdit",
   // eslint-disable-next-line vue/no-unused-components
@@ -572,8 +619,107 @@ export default defineComponent({
       const taskFormRef: Ref<any> = ref(null);
       const currentStageIndex = ref(0);
       const currentTaskIndex = ref(0);
+      const selectedTaskIds = ref<Record<string, string[]>>({});
+      const batchEditingStageIds = ref<Record<string, boolean>>({});
       provide("currentStageIndex", currentStageIndex);
       provide("currentTaskIndex", currentTaskIndex);
+
+      const getSelectedTaskIds = (stage: any) => {
+        const taskIds = new Set(stage.tasks.map((task: any) => task.id));
+        return (selectedTaskIds.value[stage.id] || []).filter(taskId => taskIds.has(taskId));
+      };
+
+      const getSelectedTaskCount = (stage: any) => {
+        return getSelectedTaskIds(stage).length;
+      };
+
+      const isTaskSelected = (stageId: string, taskId: string) => {
+        return (selectedTaskIds.value[stageId] || []).includes(taskId);
+      };
+
+      const toggleTaskSelection = (stageId: string, taskId: string, selected: boolean) => {
+        const taskIds = new Set(selectedTaskIds.value[stageId] || []);
+        if (selected) {
+          taskIds.add(taskId);
+        } else {
+          taskIds.delete(taskId);
+        }
+        selectedTaskIds.value[stageId] = [...taskIds];
+      };
+
+      const isAllTasksSelected = (stage: any) => {
+        return stage.tasks.length > 0 && getSelectedTaskCount(stage) === stage.tasks.length;
+      };
+
+      const isTasksSelectionIndeterminate = (stage: any) => {
+        const selectedCount = getSelectedTaskCount(stage);
+        return selectedCount > 0 && selectedCount < stage.tasks.length;
+      };
+
+      const toggleAllTasks = (stage: any, selected: boolean) => {
+        selectedTaskIds.value[stage.id] = selected ? stage.tasks.map((task: any) => task.id) : [];
+      };
+
+      const clearTaskSelection = (stageId: string) => {
+        selectedTaskIds.value[stageId] = [];
+      };
+
+      const isStageBatchEditing = (stageId: string) => {
+        return batchEditingStageIds.value[stageId] === true;
+      };
+
+      const setStageBatchEditing = (stage: any, enabled: boolean) => {
+        batchEditingStageIds.value[stage.id] = enabled;
+        if (!enabled) {
+          clearTaskSelection(stage.id);
+        }
+      };
+
+      const clearTaskBatchEditing = () => {
+        selectedTaskIds.value = {};
+        batchEditingStageIds.value = {};
+      };
+
+      watch(
+        () => props.editMode,
+        editMode => {
+          if (!editMode) {
+            clearTaskBatchEditing();
+          }
+        }
+      );
+
+      const batchEnableTasks = (stage: any) => {
+        const selectedIds = new Set(getSelectedTaskIds(stage));
+        stage.tasks = enableTasks(stage.tasks, selectedIds);
+        clearTaskSelection(stage.id);
+      };
+
+      const batchDisableTasks = (stage: any) => {
+        const selectedIds = new Set(getSelectedTaskIds(stage));
+        stage.tasks = disableTasks(stage.tasks, selectedIds);
+        clearTaskSelection(stage.id);
+      };
+
+      const batchDeleteTasks = (stage: any) => {
+        const selectedIds = new Set(getSelectedTaskIds(stage));
+        const selectedCount = selectedIds.size;
+        if (selectedCount === 0) {
+          return;
+        }
+
+        Modal.confirm({
+          title: "确认",
+          content: `确定要删除选中的 ${selectedCount} 个任务吗？`,
+          onOk() {
+            stage.tasks = removeSelectedItems(stage.tasks, selectedIds);
+            clearTaskSelection(stage.id);
+            if (stage.tasks.length === 0) {
+              remove(pipeline.value.stages, (item: Runnable) => item.id === stage.id);
+            }
+          },
+        });
+      };
 
       function useTaskView() {
         const taskViewRef: Ref<any> = ref(null);
@@ -638,10 +784,29 @@ export default defineComponent({
         }
       };
 
-      return { taskAdd, taskEdit, taskCopy, taskFormRef, ...taskView };
+      return {
+        taskAdd,
+        taskEdit,
+        taskCopy,
+        taskFormRef,
+        isStageBatchEditing,
+        setStageBatchEditing,
+        isTaskSelected,
+        getSelectedTaskCount,
+        isAllTasksSelected,
+        isTasksSelectionIndeterminate,
+        toggleTaskSelection,
+        toggleAllTasks,
+        batchEnableTasks,
+        batchDisableTasks,
+        batchDeleteTasks,
+        ...taskView,
+      };
     }
 
     function useStage(useTaskRet: any) {
+      let clearStageResize: (() => void) | null = null;
+
       const stageAdd = (stageIndex = pipeline.value.stages.length) => {
         const stage: any = {
           id: nanoid(),
@@ -658,6 +823,35 @@ export default defineComponent({
         });
       };
 
+      const getStageStyle = (stage: any) => {
+        return { width: `${getStageWidth(stage)}px` };
+      };
+
+      const startStageResize = (stage: any, event: MouseEvent) => {
+        clearStageResize?.();
+
+        const startX = event.clientX;
+        const startWidth = getStageWidth(stage);
+        const onMouseMove = (moveEvent: MouseEvent) => {
+          setStageWidth(stage, startWidth + moveEvent.clientX - startX);
+        };
+        const onMouseUp = () => {
+          clearStageResize?.();
+        };
+
+        clearStageResize = () => {
+          document.removeEventListener("mousemove", onMouseMove);
+          document.removeEventListener("mouseup", onMouseUp);
+          clearStageResize = null;
+        };
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+      };
+
+      onUnmounted(() => {
+        clearStageResize?.();
+      });
+
       function isLastStage(index: number) {
         return false;
       }
@@ -665,6 +859,8 @@ export default defineComponent({
       return {
         stageAdd,
         isLastStage,
+        getStageStyle,
+        startStageResize,
       };
     }
 
@@ -1112,7 +1308,12 @@ export default defineComponent({
       height: 100%;
 
       .stage {
+        --stage-selection-center: 38px;
         width: 300px;
+        min-width: 260px;
+        max-width: 720px;
+        flex: 0 0 auto;
+        position: relative;
         border-right: 1px solid #c7c7c7;
 
         .is-add {
@@ -1125,13 +1326,46 @@ export default defineComponent({
         }
 
         .title {
+          box-sizing: border-box;
+          min-height: 72px;
           padding: 20px;
           color: gray;
           display: flex;
+          align-items: center;
+
+          .stage-batch-edit-button {
+            margin-left: auto;
+          }
 
           .stage-move-handle {
             cursor: move;
             margin-left: 4px;
+          }
+        }
+
+        .stage-batch-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex: 1;
+          margin-left: calc(var(--stage-selection-center) - 28px);
+
+          .ant-tag {
+            margin-right: 0;
+          }
+        }
+
+        .stage-resize-handle {
+          position: absolute;
+          top: 0;
+          right: -4px;
+          z-index: 20;
+          width: 8px;
+          height: 100%;
+          cursor: col-resize;
+
+          &:hover {
+            border-right: 2px solid #1677ff;
           }
         }
 
@@ -1258,6 +1492,8 @@ export default defineComponent({
               flex-direction: column;
               justify-content: center;
               align-items: center;
+              width: calc(100% - 100px);
+              min-width: 160px;
               height: 100%;
               z-index: 2;
 
@@ -1293,7 +1529,7 @@ export default defineComponent({
               }
 
               .ant-btn {
-                width: 200px;
+                width: 100%;
               }
 
               position: relative;
@@ -1303,6 +1539,14 @@ export default defineComponent({
                 bottom: -10px;
                 left: 20px;
               }
+            }
+
+            .task-select {
+              position: absolute;
+              top: 50%;
+              left: calc(var(--stage-selection-center) - 8px);
+              z-index: 3;
+              transform: translateY(-50%);
             }
           }
         }

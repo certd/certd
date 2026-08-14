@@ -7,6 +7,7 @@ import { TencentAccess } from "../../plugin-lib/tencent/access.js";
   desc: "腾讯云EO DNS解析提供者",
   accessType: "tencent",
   icon: "svg:icon-tencentcloud",
+  order: 0,
   dependPlugins: {
     "access:tencent": "*",
   },

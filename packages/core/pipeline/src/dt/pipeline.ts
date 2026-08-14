@@ -47,6 +47,10 @@ export type Stage = Runnable & {
   concurrency: ConcurrencyStrategy;
   next: NextStrategy;
   maxTaskCount?: number;
+  style?: {
+    width?: number;
+    [key: string]: any;
+  };
 };
 
 export type Trigger = {
