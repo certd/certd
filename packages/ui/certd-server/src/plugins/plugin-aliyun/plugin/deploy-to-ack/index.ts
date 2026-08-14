@@ -188,7 +188,7 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
     }
   }
 
-  async restartIngress(options: { k8sClient: any; }) {
+  async restartIngress(options: { k8sClient: any }) {
     const { k8sClient } = options;
     const { namespace } = this;
 
@@ -199,7 +199,7 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
         },
       },
     };
-   
+
     const ingressList = await k8sClient.getIngressList({ namespace });
     this.logger.info("ingressList:", ingressList);
     if (!ingressList || !ingressList.items) {
@@ -226,7 +226,7 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
     }
   }
 
-  async patchCertSecret(options: { cert: CertInfo; k8sClient: any; }) {
+  async patchCertSecret(options: { cert: CertInfo; k8sClient: any }) {
     const { cert, k8sClient } = options;
     const crt = cert.crt;
     const key = cert.key;

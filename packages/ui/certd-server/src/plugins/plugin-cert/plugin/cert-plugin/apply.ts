@@ -713,7 +713,6 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     return Math.floor(retryCount);
   }
 
-
   async createDnsProvider(dnsProviderType: string, dnsProviderAccess: any): Promise<IDnsProvider> {
     const domainParser = this.acme.options.domainParser;
     const context: DnsProviderContext = {

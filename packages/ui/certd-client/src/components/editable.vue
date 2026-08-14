@@ -24,6 +24,7 @@ export default {
       type: String,
       default: "",
     },
+    //@ts-ignore
     input: {
       type: Object,
     },

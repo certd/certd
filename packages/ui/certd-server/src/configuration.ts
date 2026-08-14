@@ -32,7 +32,6 @@ process.on("uncaughtException", error => {
   }
 });
 
-
 // function startHeapLog() {
 //   function format(bytes: any) {
 //     return (bytes / 1024 / 1024).toFixed(2) + ' MB';

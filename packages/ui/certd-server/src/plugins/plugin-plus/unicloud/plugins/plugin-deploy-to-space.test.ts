@@ -20,7 +20,7 @@ describe("UniCloudDeployToSpace", () => {
     plugin.provider = "alipay";
     plugin.logger = { info: () => undefined } as any;
     plugin.http = {} as any;
-    plugin.getAccess = async () => ({ email: "user@example.com", password: "password" }) as any;
+    plugin.getAccess = async () => ({ email: "user@example.com", password: "password" } as any);
 
     const originalGetDomainList = UniCloudClient.prototype.getDomainList;
     UniCloudClient.prototype.getDomainList = async request => {

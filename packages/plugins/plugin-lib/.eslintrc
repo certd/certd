@@ -19,5 +19,9 @@
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-unused-vars": "off",
     "max-len": [0, 160, 2, { "ignoreUrls": true }]
-  }
+  },
+  "ignorePatterns": [
+    "node_modules/**",
+    "dist/**"
+  ]
 }

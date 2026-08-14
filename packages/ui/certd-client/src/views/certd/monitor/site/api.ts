@@ -100,8 +100,6 @@ export const siteInfoApi = {
     });
   },
 
-
-
   async DisabledChange(id: number, disabled: boolean) {
     return await request({
       url: apiPrefix + "/disabledChange",

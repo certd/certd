@@ -17,7 +17,7 @@
     "serve": "vite preview",
     "preview": "vite preview",
     "pretty-quick": "pretty-quick",
-    "lint-fix": "eslint --fix --ext .js --ext .jsx --ext .vue --ext .ts --ext .tsx src/",
+    "lint": "eslint --fix  --ext .vue --ext .ts --ext .tsx src/",
     "format": "prettier --write src",
     "upgrade": "yarn upgrade-interactive --latest",
     "tsc": "vue-tsc --noEmit --skipLibCheck",

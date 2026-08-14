@@ -30,7 +30,9 @@ export function useHoverToggle(refElement: Arrayable<MaybeElementRef>, delay: ((
   const isOutsideAll = computed(() => isHovers.every(v => !v.value));
 
   function setValueDelay(val: boolean) {
-    timer.value && clearTimeout(timer.value);
+    if (timer.value) {
+      clearTimeout(timer.value);
+    }
     timer.value = setTimeout(
       () => {
         value.value = val;
@@ -58,7 +60,9 @@ export function useHoverToggle(refElement: Arrayable<MaybeElementRef>, delay: ((
   };
 
   onUnmounted(() => {
-    timer.value && clearTimeout(timer.value);
+    if (timer.value) {
+      clearTimeout(timer.value);
+    }
   });
 
   return [value, controller] as [typeof value, typeof controller];

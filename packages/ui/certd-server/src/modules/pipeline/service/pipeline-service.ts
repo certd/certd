@@ -1308,10 +1308,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
     const randomMin = Math.floor(Math.random() * 60);
     const randomCron = `0 ${randomMin} ${randomHour} * * *`;
 
-    const applyParams:any = {
+    const applyParams: any = {
       ...req.applyParams,
       domains: req.domains,
-    }
+    };
     if (!applyParams.challengeType) {
       applyParams.challengeType = "auto";
     }
