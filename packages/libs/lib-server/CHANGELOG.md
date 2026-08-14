@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.43.0](https://github.com/certd/certd/compare/v1.42.6...v1.43.0) (2026-08-14)
+
+### Features
+
+* 优化开放接口证书自动申请功能 ([6339cdf](https://github.com/certd/certd/commit/6339cdffa9f79505dada5617d8c7fcfacc419a2e))
+
+### Performance Improvements
+
+* 统一通知类型常量管理，新增开放接口通知能力 ([edb249c](https://github.com/certd/certd/commit/edb249c2ad3c173dbfd04d8d156f895a6706ffd1))
+
 ## [1.42.6](https://github.com/certd/certd/compare/v1.42.5...v1.42.6) (2026-07-18)
 
 ### Bug Fixes

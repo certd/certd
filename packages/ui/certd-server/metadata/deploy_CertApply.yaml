@@ -508,6 +508,17 @@ input:
     maybeNeed: true
     helper: 等待解析生效时长（秒），如果使用CNAME方式校验，本地验证失败，可以尝试延长此时间（比如5-10分钟）
     order: 0
+  certApplyRetryCount:
+    title: 证书申请失败重试次数
+    value: 1
+    component:
+      name: a-input-number
+      vModel: value
+      min: 0
+      step: 1
+    maybeNeed: true
+    helper: 证书申请失败后，等待30秒再自动重试；0表示不重试
+    order: 0
   pfxPassword:
     title: 证书加密密码
     component:
