@@ -131,6 +131,14 @@ input:
       name: a-switch
       vModel: checked
     order: 0
+  debug:
+    title: 调试模式
+    value: false
+    component:
+      name: a-switch
+      vModel: checked
+    helper: 是否开启调试模式，开启后将打印更多日志
+    order: 0
 output: {}
 pluginType: deploy
 type: builtIn

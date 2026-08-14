@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.43.0](https://github.com/certd/certd/compare/v1.42.6...v1.43.0) (2026-08-14)
+
+### Bug Fixes
+
+* **ui:** 修复oauth设置页保存后未正确刷新的问题 ([8ab699a](https://github.com/certd/certd/commit/8ab699a9104b47e02a88ad764e995a495deb775e))
+
+### Features
+
+* 优化开放接口证书自动申请功能 ([6339cdf](https://github.com/certd/certd/commit/6339cdffa9f79505dada5617d8c7fcfacc419a2e))
+* **pipeline:** 新增流水线批量编辑、阶段宽度调整功能 ([e5a1844](https://github.com/certd/certd/commit/e5a18448522be88bc504a45a46ad599f3c39ca30))
+
+### Performance Improvements
+
+* 统一通知类型常量管理，新增开放接口通知能力 ([edb249c](https://github.com/certd/certd/commit/edb249c2ad3c173dbfd04d8d156f895a6706ffd1))
+* 优化第三方登录设置提示 ([1468eb1](https://github.com/certd/certd/commit/1468eb1ef292a9e21a2a43131b86b8acb3688307))
+* 证书成功通知增加有效期显示 ([f1b6704](https://github.com/certd/certd/commit/f1b67049d16ebcabe6d6d9b6cb53a8a2b7a9265c))
+* Improve English localization coverage ([#778](https://github.com/certd/certd/issues/778)) @MephistoJB ([bd82147](https://github.com/certd/certd/commit/bd821474969a22078b9d2e73518e765b8c9a26c7))
+* **ui:** 域名选择器支持点击复制域名 ([b173311](https://github.com/certd/certd/commit/b173311468d2c1f318d1333257c3ebcf916da071))
+
 ## [1.42.6](https://github.com/certd/certd/compare/v1.42.5...v1.42.6) (2026-07-18)
 
 **Note:** Version bump only for package @certd/ui-client
