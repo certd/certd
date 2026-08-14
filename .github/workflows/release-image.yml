@@ -86,6 +86,8 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
+          provenance: false
+          sbom: false
           context: ./packages/ui/
           tags: |
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest
@@ -99,6 +101,8 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
+          provenance: false
+          sbom: false
           context: ./packages/ui/
           build-args: |
             base_type=slim
@@ -115,6 +119,8 @@ jobs:
         with:
           platforms: linux/arm/v7
           push: true
+          provenance: false
+          sbom: false
           context: ./packages/ui/
           tags: |
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:armv7
