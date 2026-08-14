@@ -59,13 +59,13 @@
         <div class="flex-o">
           <a-switch v-model:checked="formState.public.oauthOnly" :disabled="!settingsStore.isPlus" :title="t('certd.plusFeature')" />
         </div>
-        <div class="helper">{{ t("certd.sys.setting.oauthOnlyHelper") }}</div>
+        <div class="helper text-red-500">{{ t("certd.sys.setting.oauthOnlyHelper") }}</div>
       </a-form-item>
       <a-form-item v-if="formState.public.oauthEnabled" :label="t('certd.sys.setting.oauthAutoRedirect')" :name="['public', 'oauthAutoRedirect']">
         <div class="flex-o">
           <a-switch v-model:checked="formState.public.oauthAutoRedirect" :disabled="!settingsStore.isPlus" :title="t('certd.plusFeature')" />
         </div>
-        <div class="helper">{{ t("certd.sys.setting.oauthAutoRedirectHelper") }}</div>
+        <div class="helper text-red-500">{{ t("certd.sys.setting.oauthAutoRedirectHelper") }}</div>
       </a-form-item>
       <a-form-item v-if="formState.public.oauthEnabled" :label="t('certd.sys.setting.oauthAutoRegister')" :name="['public', 'oauthAutoRegister']">
         <div class="flex-o">
