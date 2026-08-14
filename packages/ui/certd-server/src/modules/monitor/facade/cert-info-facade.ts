@@ -140,18 +140,18 @@ export class CertInfoFacade {
     });
 
     if (!applyParams.email) {
-        let email = null;
-        const userEmailSetting = await this.userSettingsService.getSetting<UserEmailSetting>(req.userId, null, UserEmailSetting);
-        if (userEmailSetting.list && userEmailSetting.list.length > 0) {
-          email = userEmailSetting.list[0];
-          applyParams.email = email;
-        }
+      let email = null;
+      const userEmailSetting = await this.userSettingsService.getSetting<UserEmailSetting>(req.userId, null, UserEmailSetting);
+      if (userEmailSetting.list && userEmailSetting.list.length > 0) {
+        email = userEmailSetting.list[0];
+        applyParams.email = email;
+      }
     }
 
     if (!applyParams.acmeAccountAccessId) {
       //如果没有配置acmeAccountAccessId，则默认使用默认的acmeAccountAccessId
       applyParams.sslProvider = "letsencrypt";
-      const defaultAccount = await this.accessService.getDefaultByType({type:"acmeAccount",userId:req.userId,projectId:req.projectId,subtype:"letsencrypt"});
+      const defaultAccount = await this.accessService.getDefaultByType({ type: "acmeAccount", userId: req.userId, projectId: req.projectId, subtype: "letsencrypt" });
       if (defaultAccount) {
         applyParams.acmeAccountAccessId = defaultAccount.id;
       }

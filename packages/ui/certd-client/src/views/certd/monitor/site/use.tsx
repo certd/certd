@@ -130,11 +130,7 @@ export function useSiteImportTaskManage() {
   const { openFormDialog } = useFormDialog();
   const { t } = useI18n();
   const settingStore = useSettingStore();
-  return async function openSiteImportTaskManageDialog(req: {
-    afterSubmit?: (res?: any) => void;
-    form?: any;
-    zIndex?: number;
-  }) {
+  return async function openSiteImportTaskManageDialog(req: { afterSubmit?: (res?: any) => void; form?: any; zIndex?: number }) {
     settingStore.checkPlus();
     await openFormDialog({
       title: t("certd.domain.importFromProvider"),

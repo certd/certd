@@ -142,7 +142,6 @@ export class SshAccess extends BaseAccess {
   })
   encoding: string;
 
-
   @AccessInput({
     title: "跳板机SSH授权",
     component: {

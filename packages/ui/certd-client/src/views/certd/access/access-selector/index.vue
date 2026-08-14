@@ -64,9 +64,9 @@ export default defineComponent({
   setup(props, ctx) {
     const api = createAccessApi(props.from);
 
-    const target:Ref<any> = ref({});
+    const target: Ref<any> = ref({});
     const selectedId = ref();
-    async function refreshTarget(value:any) {
+    async function refreshTarget(value: any) {
       selectedId.value = value;
       if (value > 0) {
         target.value = await api.GetSimpleInfo(value);
@@ -83,7 +83,7 @@ export default defineComponent({
     const userStore = useUserStore();
     const projectStore = useProjectStore();
 
-    async function emitValue(value:any) {
+    async function emitValue(value: any) {
       const userId = userStore.userInfo.id;
       const isEnterprice = projectStore.isEnterprise;
       if (pipeline?.value) {
@@ -132,7 +132,7 @@ export default defineComponent({
 
     const providerDefine = ref({});
 
-    async function refreshProviderDefine(type:any) {
+    async function refreshProviderDefine(type: any) {
       providerDefine.value = await api.GetProviderDefine(type);
     }
     watch(

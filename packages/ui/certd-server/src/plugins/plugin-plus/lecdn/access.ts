@@ -117,7 +117,8 @@ export class LeCDNAccess extends BaseAccess {
 
   async doRequest(config: any) {
     const token = await this.getToken();
-    const access = this;
+    // @ts-ignore
+    const access = this as any;
     const Authorization = access.type === "token" ? access.apiToken : `Bearer ${token}`;
     const res = await this.ctx.http.request({
       baseURL: access.url,
@@ -138,7 +139,8 @@ export class LeCDNAccess extends BaseAccess {
       return this._token;
     }
     // http://cdnadmin.kxfox.com/prod-api/login
-    const access = this;
+    // @ts-ignore
+    const access = this as any;
     const res = await this.ctx.http.request({
       url: `/prod-api/login`,
       baseURL: access.url,
