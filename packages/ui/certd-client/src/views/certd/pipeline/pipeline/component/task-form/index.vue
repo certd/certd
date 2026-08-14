@@ -46,6 +46,13 @@
                 <template #item="{ element, index }">
                   <div class="step-row">
                     <div class="text">
+                      <a-checkbox
+                        v-if="editMode && stepBatchEditing"
+                        :aria-label="`选择步骤${element.title}`"
+                        :checked="isStepSelected(element.id)"
+                        @click.stop
+                        @change="toggleStepSelection(element.id, $event.target.checked)"
+                      />
                       <fs-icon icon="ion:flash"></fs-icon>
                       <h4 class="title" :class="{ disabled: element.disabled, deleted: element.disabled }" :title="element.title">{{ element.title }}</h4>
                     </div>
@@ -59,6 +66,40 @@
                   </div>
                 </template>
               </v-draggable>
+              <div v-if="editMode && currentTask.steps?.length > 0" class="step-batch-actions">
+                <a-button v-if="!stepBatchEditing" type="text" size="small" @click="setStepBatchEditing(true)">批量编辑</a-button>
+                <template v-else>
+                  <a-tooltip title="全选步骤">
+                    <a-checkbox
+                      :aria-label="`全选${currentTask.title}中的步骤`"
+                      :checked="isAllStepsSelected(currentTask)"
+                      :indeterminate="isStepsSelectionIndeterminate(currentTask)"
+                      @change="toggleAllSteps(currentTask, $event.target.checked)"
+                    />
+                  </a-tooltip>
+                  <!-- <a-tag v-if="selectedStepCount > 0" color="blue">{{ selectedStepCount }}</a-tag> -->
+                  <a-tooltip title="批量启用步骤">
+                    <a-button type="text" size="small" :disabled="selectedStepCount === 0" @click="batchEnableSteps(currentTask)">
+                      <fs-icon :class="{ 'text-green-600': selectedStepCount !== 0 }" icon="ion:power-outline"></fs-icon>
+                    </a-button>
+                  </a-tooltip>
+                  <a-tooltip title="批量禁用步骤">
+                    <a-button type="text" size="small" :disabled="selectedStepCount === 0" @click="batchDisableSteps(currentTask)">
+                      <fs-icon icon="ion:stop-circle-outline"></fs-icon>
+                    </a-button>
+                  </a-tooltip>
+                  <a-tooltip title="批量删除步骤">
+                    <a-button danger type="text" size="small" :disabled="selectedStepCount === 0" @click="batchDeleteSteps(currentTask)">
+                      <fs-icon icon="ion:trash-outline"></fs-icon>
+                    </a-button>
+                  </a-tooltip>
+                  <a-tooltip title="退出批量编辑">
+                    <a-button type="text" size="small" @click="setStepBatchEditing(false)">
+                      <fs-icon icon="ion:close-outline"></fs-icon>
+                    </a-button>
+                  </a-tooltip>
+                </template>
+              </div>
               <div v-if="currentTask.steps?.length > 0" class="helper mt-6">任务步骤会串行执行，如果前面步骤失败，后面的步骤不会运行</div>
             </a-form-item>
           </div>
@@ -77,7 +118,7 @@
 </template>
 
 <script lang="ts">
-import { provide, Ref, ref } from "vue";
+import { computed, provide, Ref, ref } from "vue";
 import { nanoid } from "nanoid";
 import PiStepForm from "../step-form/index.vue";
 import { message, Modal } from "ant-design-vue";
@@ -87,6 +128,7 @@ import { useSettingStore } from "/@/store/settings";
 import { filter } from "lodash-es";
 import { Copyed } from "./copy";
 import { cloneDeep, merge } from "lodash-es";
+import { disableSteps, enableSteps, removeSelectedItems } from "../batch-actions";
 export default {
   name: "PiTaskForm",
   components: { PiStepForm, VDraggable },
@@ -100,11 +142,74 @@ export default {
   setup(props: any, ctx: any) {
     const userStore = useUserStore();
     const settingStore = useSettingStore();
+    const selectedStepIds = ref<string[]>([]);
+    const stepBatchEditing = ref(false);
 
     function useStep() {
       const stepFormRef: Ref<any> = ref(null);
       const currentStepIndex = ref(0);
       provide("currentStepIndex", currentStepIndex);
+
+      const selectedStepCount = computed(() => selectedStepIds.value.length);
+
+      const isStepSelected = (stepId: string) => {
+        return selectedStepIds.value.includes(stepId);
+      };
+
+      const toggleStepSelection = (stepId: string, selected: boolean) => {
+        const stepIds = new Set(selectedStepIds.value);
+        if (selected) {
+          stepIds.add(stepId);
+        } else {
+          stepIds.delete(stepId);
+        }
+        selectedStepIds.value = [...stepIds];
+      };
+
+      const isAllStepsSelected = (task: any) => {
+        return task.steps.length > 0 && selectedStepCount.value === task.steps.length;
+      };
+
+      const isStepsSelectionIndeterminate = (task: any) => {
+        return selectedStepCount.value > 0 && selectedStepCount.value < task.steps.length;
+      };
+
+      const toggleAllSteps = (task: any, selected: boolean) => {
+        selectedStepIds.value = selected ? task.steps.map((step: any) => step.id) : [];
+      };
+
+      const setStepBatchEditing = (enabled: boolean) => {
+        stepBatchEditing.value = enabled;
+        if (!enabled) {
+          selectedStepIds.value = [];
+        }
+      };
+
+      const batchEnableSteps = (task: any) => {
+        task.steps = enableSteps(task.steps, new Set(selectedStepIds.value));
+        selectedStepIds.value = [];
+      };
+
+      const batchDisableSteps = (task: any) => {
+        task.steps = disableSteps(task.steps, new Set(selectedStepIds.value));
+        selectedStepIds.value = [];
+      };
+
+      const batchDeleteSteps = (task: any) => {
+        const selectedCount = selectedStepCount.value;
+        if (selectedCount === 0) {
+          return;
+        }
+
+        Modal.confirm({
+          title: "确认",
+          content: `确定要删除选中的 ${selectedCount} 个步骤吗？`,
+          onOk() {
+            task.steps = removeSelectedItems(task.steps, new Set(selectedStepIds.value));
+            selectedStepIds.value = [];
+          },
+        });
+      };
       const stepAdd = (task: any, stepDef?: any) => {
         currentStepIndex.value = task.steps.length;
         stepFormRef.value.stepAdd((type: any, value: any) => {
@@ -164,6 +269,7 @@ export default {
             console.log("step.save", step, type, value);
             if (type === "delete") {
               task.steps.splice(stepIndex, 1);
+              selectedStepIds.value = selectedStepIds.value.filter(stepId => task.steps.some((item: any) => item.id === stepId));
             } else if (type === "save") {
               task.steps[stepIndex] = { ...value };
             }
@@ -180,6 +286,7 @@ export default {
           content: `确定要删除此步骤吗？`,
           async onOk() {
             task.steps.splice(stepIndex, 1);
+            selectedStepIds.value = selectedStepIds.value.filter(stepId => task.steps.some((step: any) => step.id === stepId));
           },
         });
       };
@@ -188,7 +295,27 @@ export default {
         step.disabled = !!!step.disabled;
       };
 
-      return { stepAdd, stepEdit, stepCopy, stepDelete, toggleDisabled, stepFormRef, stepPaste, stepsCopy };
+      return {
+        stepAdd,
+        stepEdit,
+        stepCopy,
+        stepDelete,
+        toggleDisabled,
+        stepFormRef,
+        stepPaste,
+        stepsCopy,
+        selectedStepCount,
+        isStepSelected,
+        toggleStepSelection,
+        isAllStepsSelected,
+        isStepsSelectionIndeterminate,
+        toggleAllSteps,
+        stepBatchEditing,
+        setStepBatchEditing,
+        batchEnableSteps,
+        batchDisableSteps,
+        batchDeleteSteps,
+      };
     }
 
     /**
@@ -217,6 +344,8 @@ export default {
       };
       const taskDrawerClose = () => {
         taskDrawerVisible.value = false;
+        stepBatchEditing.value = false;
+        selectedStepIds.value = [];
       };
 
       const taskDrawerOnAfterVisibleChange = (val: any) => {
@@ -225,6 +354,8 @@ export default {
 
       const taskOpen = (task: any, emit: any) => {
         callback.value = emit;
+        selectedStepIds.value = [];
+        stepBatchEditing.value = false;
         currentTask.value = merge({ steps: {} }, task);
         console.log("currentTaskOpen", currentTask.value);
         taskDrawerShow();
@@ -326,6 +457,18 @@ export default {
 
   .steps {
     margin: 0;
+
+    .step-batch-actions {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0 10px;
+
+      .ant-tag {
+        margin: 0;
+      }
+    }
   }
   .ant-list .ant-list-item .ant-list-item-meta .ant-list-item-meta-title {
     margin: 0;
