@@ -274,16 +274,6 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
 
     await this.doUpdatePipelineJson(bean, pipeline);
-    //保存域名信息到certInfo表
-    let fromType = "pipeline";
-    if (bean.type === "cert_upload") {
-      fromType = "upload";
-    } else if (bean.type === "cert_auto") {
-      fromType = "auto";
-    }
-    const userId = bean.userId;
-    const projectId = bean.projectId ?? null;
-    await this.certInfoService.updateDomains(pipeline.id, userId, projectId, domains, fromType);
     return {
       ...bean,
       version: pipeline.version,

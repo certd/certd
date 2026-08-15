@@ -575,6 +575,42 @@ export class AcmeService {
     }
   }
 
+  /**
+   * 吊销证书
+   *
+   * 优先使用ACME账号私钥签名吊销请求（RFC 8555 §7.6 方式一）；
+   * 未提供ACME账号时，使用证书私钥签名吊销请求（RFC 8555 §7.6 方式二），此时无需账号信息。
+   */
+  async revokeCert(req: { cert: CertInfo; acmeAccount?: AcmeAccountInfo }) {
+    const { cert, acmeAccount } = req;
+    if (!cert?.crt) {
+      throw new Error("证书内容为空，无法吊销");
+    }
+    if (acmeAccount) {
+      // 方式一：使用ACME账号私钥签名
+      const client = await this.getAcmeClientByAccount(acmeAccount);
+      await client.revokeCertificate(cert.crt);
+      this.logger.info("证书吊销成功（ACME账号方式）");
+      return;
+    }
+    // 方式二：使用证书私钥签名
+    if (!cert.key) {
+      throw new Error("证书私钥为空，无法使用证书私钥方式吊销，请先在该流水线中配置ACME账号");
+    }
+    const directoryUrl = acme.getDirectoryUrl({ sslProvider: this.sslProvider, pkType: "rsa_2048" });
+    const urlMapping = await this.resolveUrlMapping(directoryUrl);
+    const client = new acme.Client({
+      sslProvider: this.sslProvider,
+      directoryUrl,
+      accountKey: cert.key,
+      urlMapping,
+      logger: this.logger,
+    });
+    // 使用证书私钥签名吊销请求（JWS header 携带证书公钥 jwk，而非账号 kid）
+    await client.revokeCertificate(cert.crt, {}, { includeJwsKid: false });
+    this.logger.info("证书吊销成功（证书私钥方式）");
+  }
+
   buildCommonNameByDomains(domains: string | string[]): {
     commonName?: string;
     altNames: string[] | undefined;

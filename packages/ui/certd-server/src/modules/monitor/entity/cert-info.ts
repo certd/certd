@@ -1,6 +1,18 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
 
+/**
+ * 证书仓库记录状态
+ * active: 激活（当前有效，可被流水线/开放API使用）
+ * inactive: 未激活（已被新证书替换的旧证书，允许吊销）
+ * revoked: 已吊销（已向CA吊销，不可再使用）
+ */
+export const CertStatus = {
+  active: "active",
+  inactive: "inactive",
+  revoked: "revoked",
+} as const;
+
 @Entity("cd_cert_info")
 export class CertInfoEntity {
   @PrimaryGeneratedColumn()
@@ -48,6 +60,17 @@ export class CertInfoEntity {
 
   @Column({ name: "project_id", comment: "项目id" })
   projectId: number;
+
+  @Column({
+    name: "status",
+    comment: "状态:active=激活,inactive=未激活,revoked=已吊销",
+    length: 20,
+    default: CertStatus.active,
+  })
+  status: string;
+
+  @Column({ name: "revoke_time", comment: "吊销时间", nullable: true })
+  revokeTime: number;
 
   @Column({
     name: "create_time",
