@@ -62,7 +62,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 前端改动文件格式化：`packages\ui\certd-client\node_modules\.bin\prettier.cmd --write <files>`。
 - 前端改动文件 ESLint 修复：`packages\ui\certd-client\node_modules\.bin\eslint.cmd --fix <files>`。
 - 后端单元测试：`cd packages\ui\certd-server && npm run unit`。
-- 后端改动文件 lint fix：`cd packages\ui\certd-server && npm run lint`。
+- 后端改动文件 lint fix：`cd packages\ui\certd-server && npm run lint`（该脚本即 `mwts fix`，对改动文件执行 ESLint 自动修复）。
 - 其他package lint fix：`cd packages\xxx\xxxx && npm run lint`。
 
 ## 通用工作规则

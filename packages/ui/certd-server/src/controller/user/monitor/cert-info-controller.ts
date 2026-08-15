@@ -139,6 +139,13 @@ export class CertInfoController extends CrudController<CertInfoService> {
     return await super.delete(id);
   }
 
+  @Post("/revoke", { description: Constants.per.authOnly, summary: "吊销证书" })
+  async revoke(@Body(ALL) body: { id: number }) {
+    const { userId, projectId } = await this.getProjectUserIdWrite();
+    await this.service.revoke(body.id, userId, projectId);
+    return this.ok(true);
+  }
+
   @Post("/all", { description: Constants.per.authOnly, summary: "查询所有证书" })
   async all() {
     const { projectId, userId } = await this.getProjectUserIdRead();
