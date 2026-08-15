@@ -123,7 +123,14 @@ You can choose one of the following deployment methods based on your needs:
 
 ## 5. Ecosystem
 
-### 1. Client Tool: SSL-Assistant
+### 1. Official Client: Certd Client
+
+`Certd Client` is the official Certd certificate deployment client that runs on application servers. It automatically discovers local Nginx, Apache, and IIS sites, retrieves new certificates from Certd, and deploys them locally. It is designed for servers that should not expose SSH or cannot be accessed directly by Certd.
+
+Project Home: [AtomGit](https://atomgit.com/certd/certd-client/) | [GitHub](https://github.com/certd/certd-client/)
+Downloads: [AtomGit Releases](https://atomgit.com/certd/certd-client/releases) | [GitHub Releases](https://github.com/certd/certd-client/releases)
+
+### 2. Third-Party Client: SSL-Assistant
 
 `SSL Assistant` is a certificate deployment and management assistant client that runs on hosts. It supports automatic scanning of the host's `Nginx` configuration and pulling certificates from `Certd` for deployment. This tool is very useful when you don't want to expose your SSH host password.
 

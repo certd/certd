@@ -141,7 +141,14 @@ https://certd.handfree.work/
 
 ## 五、生态
 
-### 1. 客户端工具 SSL-Assistant
+### 1. 官方客户端 Certd Client
+
+`Certd Client` 是 Certd 官方证书部署客户端，运行于应用服务器上。自动发现本机 Nginx、Apache 和 IIS 站点，从 Certd 获取新证书并部署到本机。适用于不希望服务器开放 SSH、无法由 Certd 直接访问目标服务器的场景。
+
+项目主页：[AtomGit](https://atomgit.com/certd/certd-client/) | [GitHub](https://github.com/certd/certd-client/)
+下载地址：[AtomGit Releases](https://atomgit.com/certd/certd-client/releases) | [GitHub Releases](https://github.com/certd/certd-client/releases)
+
+### 2. 第三方客户端 SSL-Assistant
 
 `SSL Assistant` 是一个运行于主机上的证书部署管理助手客户端。  
 支持自动扫描主机`Nginx`配置，然后从`Certd`拉取证书并部署。  

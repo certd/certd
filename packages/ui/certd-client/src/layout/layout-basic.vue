@@ -75,6 +75,9 @@ onMounted(async () => {
 function goGithub() {
   window.open("https://github.com/certd/certd");
 }
+function goCertdClient() {
+  window.open("https://github.com/certd/certd-client");
+}
 const settingsStore = useSettingStore();
 const chatBox = ref();
 const openChat = (q: string) => {
@@ -104,6 +107,9 @@ const projectStore = useProjectStore();
       </div>
       <div class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full">
         <vip-button class="flex-center header-btn" mode="nav" />
+      </div>
+      <div class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
+        <fs-button shape="circle" type="text" icon="clarity:host-solid-badged" :text="null" :tooltip="{ title: t('certd.client') }" @click="goCertdClient" />
       </div>
       <div v-if="!settingStore.isComm" class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
         <fs-button shape="circle" type="text" icon="ion:logo-github" :text="null" @click="goGithub" />
