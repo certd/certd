@@ -8,6 +8,9 @@
         </a-button>
       </div>
     </template>
+    <template #extra>
+      <fs-button shape="circle" type="text" icon="clarity:host-solid-badged" :text="null" :tooltip="{ title: 'certd无法访问主机？试试主动拉取证书的客户端CertdClient吧' }" @click="goCertdClient" />
+    </template>
     <template v-if="currentTask">
       <pi-container class="task-form-container">
         <a-form ref="taskFormRef" class="task-form md:ml-20 md:mr-20" :model="currentTask" :label-col="labelCol" :wrapper-col="wrapperCol">
@@ -144,6 +147,10 @@ export default {
     const settingStore = useSettingStore();
     const selectedStepIds = ref<string[]>([]);
     const stepBatchEditing = ref(false);
+
+    function goCertdClient() {
+      window.open("https://github.com/certd/certd-client");
+    }
 
     function useStep() {
       const stepFormRef: Ref<any> = ref(null);
@@ -433,6 +440,7 @@ export default {
     return {
       userStore,
       settingStore,
+      goCertdClient,
       labelCol: { span: 4 },
       wrapperCol: { span: 20 },
       ...useTaskForm(),

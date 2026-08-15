@@ -27,6 +27,7 @@ export default {
   myWallet: "我的钱包",
   inviteCommission: "激励计划",
   paymentReturn: "支付返回",
+  client: "主机自动拉取证书客户端",
   source: "源码",
   github: "github",
   gitee: "gitee",

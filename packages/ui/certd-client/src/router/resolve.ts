@@ -1,7 +1,6 @@
 import LayoutPass from "/src/layout/layout-pass.vue";
 import { cloneDeep } from "lodash-es";
 import { outsideResource } from "./source/outside";
-import { headerResource } from "./source/header";
 import { frameworkResource } from "./source/framework";
 const modules = import.meta.glob("/src/views/**/*.vue");
 
@@ -144,11 +143,9 @@ function flatSubRouters(routers: any) {
 
 const frameworkRet = buildMenusAndRouters(frameworkResource);
 const outsideRet = buildMenusAndRouters(outsideResource);
-const headerRet = buildMenusAndRouters(headerResource);
 
 const outsideRoutes = outsideRet.routes;
 const frameworkRoutes = frameworkRet.routes;
 const routes = [...outsideRoutes, ...frameworkRoutes];
 const frameworkMenus = frameworkRet.menus;
-const headerMenus = headerRet.menus;
-export { routes, outsideRoutes, frameworkRoutes, frameworkMenus, headerMenus, findMenus, filterMenus };
+export { routes, outsideRoutes, frameworkRoutes, frameworkMenus, findMenus, filterMenus };

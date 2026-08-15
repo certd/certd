@@ -26,6 +26,7 @@ export default {
   myTrade: "My Orders",
   inviteCommission: "Incentive Plan",
   paymentReturn: "Payment Return",
+  client: "Certd Client",
   source: "Source Code",
   github: "GitHub",
   gitee: "Gitee",
