@@ -192,6 +192,23 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 插件开发前先读对应技能：`.trae/skills/dns-provider-dev/SKILL.md`、`.trae/skills/task-plugin-dev/SKILL.md`、`.trae/skills/access-plugin-dev/SKILL.md`、`.trae/skills/plugin-converter/SKILL.md`。
 - `.codex/skills` 是指向 `.trae/skills` 的目录链接；更新技能只维护 `.trae/skills`，不要复制第二份。
 
+### 后置任务（AfterTask）机制
+
+- 概念：流水线主体运行结束后，按触发条件执行的任务；插件声明 `supportAfterTask: true` 后即可在后置任务中复用（如吊销旧证书 `CertRevokeOld`）。触发条件 `when`：`success`（主体执行成功）、`error`（主体失败）、`turnToSuccess`（主体被手动标记成功）。
+- 实现位置：`packages/core/pipeline/src/core/executor.ts`（`runAfterTasks` / `runOneAfterTask` / `executeAfterTaskPlugin`）与 `plugin/api.ts`。
+- **后置任务与普通任务步骤的执行链路完全一致**：`executeAfterTaskPlugin` 构造无 strategy 的伪 Step 后调用共用 `executePlugin`；不要给 executePlugin 增加差异化参数——后置任务与普通插件唯一区别是触发时机判断（`matchAfterTaskWhen`）。
+- 后置任务失败：`runAfterTasks` 聚合错误（格式 `后置任务[标题]执行失败：...`）并 throw → `runWithHistory` 将流水线整体标记为失败 → 统一走 error 通知；不再单独发送后置任务失败通知。
+- 后置任务没有内置等待时长：需要等待时由插件自身处理（`AbstractTaskPlugin.sleep(ms)` + `checkSignal()`）。
+- 未触发/禁用：写日志并标记 skip/disabled（与任务同语义），状态存 `afterTask.status`，日志 key 为 `afterTask.{id}`。
+- 通知在流水线整体（主体 + 后置任务）执行完成后发送，内容附加后置任务执行结果摘要。
+
+### 流水线执行与状态写入规则
+
+- `run()` 时序：`notification("start")` → `runtime.start(pipeline)` → `runtime.clearNotificationStatus()`（start 时机状态不参与显示）→ `runWithHistory(主体 + 后置任务)` → 成功/失败通知。`clearNotificationStatus` 不得移到 `notification("start")` 之前。
+- **插件主动返回 "skip" 时，runStep 仍必须执行结果处理**（把实例输出属性写回 `step.status.output` / files 等）：否则保存的 lastRuntime 缺少输出，下次运行按上次结果做判断时（如 SkipWhenSucceed、证书未过期判断 `readLastCert`）会读不到上次证书，导致不跳过、重新申请（曾出 bug：第二次运行状态丢失）。SkipWhenSucceed 策略跳过的步骤，输出/files 直接从 lastStatus 拷贝（executePlugin 返回 `skipped: true`），此时可跳过结果处理。
+- 事件机制：`emit.ts` 为泛型 `PipelineEmitter<T> implements TaskEmitter<T>`，`emit(name, event)` 直接传事件对象，不再包装 `{pipeline, step, event}`；`PipelineEvent<T> = { cert: T; runnableId: string; pipelineId: number }`（`plugin/api.ts`）。
+- 证书申请成功事件：`base-convert.ts` `emitCertApplySuccess` 发 `{ cert, pipelineId: ctx.pipeline.id, runnableId: ctx.step.id }`；后端监听在 `auto-pipeline-emitter-register.ts`，写入证书仓库（`updateCertByPipelineId(pipelineId, cert, fromType, taskId)`，userId/projectId 从 pipeline 实体读取）。
+
 ### 流水线与插件地图
 
 - `packages/core/pipeline/src/index.ts`：核心导出入口，导出 `core`、`dt`、`access`、`registry`、`plugin`、`context`、`decorator`、`service`、`notification`。
