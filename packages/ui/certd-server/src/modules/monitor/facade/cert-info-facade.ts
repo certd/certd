@@ -33,8 +33,8 @@ export class CertInfoFacade {
   @Inject()
   accessService: AccessService;
 
-  async getCertInfo(req: { domains?: string; certId?: number; userId: number; projectId: number; autoApply?: boolean; format?: string; autoApplyTemplateId?: number; autoApplyParams?: CertApplyTemplateParams }) {
-    const { domains, certId, userId, projectId } = req;
+  async getCertInfo(req: { domains?: string; certId?: number; pipelineId?: number; userId: number; projectId: number; autoApply?: boolean; format?: string; autoApplyTemplateId?: number; autoApplyParams?: CertApplyTemplateParams }) {
+    const { domains, certId, pipelineId, userId, projectId } = req;
     if (certId) {
       return await this.certInfoService.getCertInfoById({ id: certId, userId, projectId });
     }
@@ -46,7 +46,7 @@ export class CertInfoFacade {
     }
     const domainArr = domains.split(",");
 
-    const matchedList = await this.certInfoService.getMatchCertList({ domains: domainArr, userId, projectId });
+    const matchedList = await this.certInfoService.getMatchCertList({ domains: domainArr, userId, projectId, pipelineId });
 
     if (matchedList.length === 0) {
       if (req.autoApply === true) {

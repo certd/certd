@@ -17,7 +17,7 @@
     "cov": "midway-bin cov --ts",
     "prepublish": "npm run build",
     "pub": "npm publish",
-    "compile": "npm run build",
+    "compile": "rimraf dist && npm run build",
     "format": "prettier --write src",
     "lint": "eslint --fix --ext .ts src"
   },
