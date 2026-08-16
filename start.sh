@@ -2,7 +2,7 @@
 set -e
 
 # 设置SUDO命令
-if [[ "$(uname -s)" =~ ^MINGW || "$(uname -s)" =~ ^CYGWIN || "$(uname -s)" =~ ^MSYS ]]; then
+if [[ "$(uname -s)" =~ ^MINGW || "$(uname -s)" =~ ^CYGWIN || "$(uname -s)" =~ ^MSYS || "$(id -u)" == "0" ]]; then
     SUDO_CMD=""
     SUDO_CMD_E=""
 else
@@ -80,7 +80,8 @@ fi
 # 覆盖解压缩
 unzip -o -q $front_zip -d ./public
 
-echo "启动服务"
+echo "安装成功，即将启动服务"
+echo "如果没有改动，后续可以使用 ./start_fast.sh 快速启动服务"
 
 # 前台运行
 if [ $confirmNohup != "y" ]; then
