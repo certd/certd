@@ -57,28 +57,39 @@ echo "构建完成"
 
 echo "下载前端ui"
 front_zip="ui-$version.zip"
-# 如果zip有了就不下载
-if [ -f ./$front_zip ]; then
-  echo "$front_zip 已经存在，不需要下载"
+# 校验zip文件是否完整可用
+is_valid_zip() {
+  if [ ! -f "./$front_zip" ]; then
+    return 1
+  fi
+  unzip -tq "./$front_zip" > /dev/null 2>&1
+}
+# 如果zip已经存在且完整，就不需要下载
+if is_valid_zip; then
+  echo "$front_zip 已经存在且完整，不需要下载"
 else
-  echo "$front_zip 不存在，开始下载"
+  echo "$front_zip 不存在或已损坏，开始下载"
   # 下载之前清理一下
   rm -rf ui-*.zip
   # https://atomgit.com/certd/certd/releases/download/v1.37.16/ui-1.37.16.zip
-  # 判断是否下载失败
   URL="https://atomgit.com/certd/certd/releases/download/v$version/ui-$version.zip"
   if command -v wget &> /dev/null; then
     wget -O "$front_zip" "$URL"
   elif command -v curl &> /dev/null; then
-      curl -L -o "$front_zip" "$URL"
+    # -f 让 curl 在 HTTP 错误（如 404）时也返回非零退出码
+    curl -fL -o "$front_zip" "$URL"
   else
-      echo "错误：需要 wget 或 curl 来下载前端文件包，请先安装 wget 或 curl"
-      exit 1
+    echo "错误：需要 wget 或 curl 来下载前端文件包，请先安装 wget 或 curl"
+    exit 1
   fi
-
+  # 下载后再校验一次，防止下载到不完整/损坏的文件
+  if ! is_valid_zip; then
+    echo "错误：$front_zip 下载失败或不完整，请删除该文件后重新运行"
+    exit 1
+  fi
 fi
 # 覆盖解压缩
-unzip -o -q $front_zip -d ./public
+unzip -o -q "$front_zip" -d ./public
 
 echo "安装成功，即将启动服务"
 echo "如果没有改动，后续可以使用 ./start_fast.sh 快速启动服务"
