@@ -23,7 +23,7 @@ import { logger, utils } from "@certd/basic";
 import { UrlService } from "./url-service.js";
 import { NotificationService } from "./notification-service.js";
 import { UserSuiteEntity, UserSuiteService } from "@certd/commercial-core";
-import { CertInfoService } from "../../monitor/service/cert-info-service.js";
+import { ApplyTaskInfo, CertInfoService } from "../../monitor/service/cert-info-service.js";
 import { TaskServiceBuilder } from "./getter/task-service-getter.js";
 import { nanoid } from "nanoid";
 import { cloneDeep, set } from "lodash-es";
@@ -251,16 +251,25 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (bean.id) {
       pipeline.id = bean.id;
     }
-    let domains = [];
+    // 收集流水线中所有证书申请任务（CertApply 类步骤）：仓库按任务 id 维护 active 记录，保持一一对应
+    const applyTasks: ApplyTaskInfo[] = [];
     if (pipeline.stages) {
       RunnableCollection.each(pipeline.stages, (runnable: any) => {
         if (runnable.runnableType === "step" && runnable.type.indexOf("CertApply") >= 0) {
-          domains = runnable.input.domains || [];
+          applyTasks.push({
+            taskId: runnable.id,
+            domains: runnable.input.domains || [],
+          });
         }
       });
     }
+    // 流水线占用的全部域名（用于配额校验，多申请任务时汇总）
+    const allDomains: string[] = [];
+    for (const task of applyTasks) {
+      allDomains.push(...task.domains);
+    }
 
-    await this.checkMaxPipelineCount(bean, pipeline, domains, old);
+    await this.checkMaxPipelineCount(bean, pipeline, allDomains, old);
 
     if (!bean.status) {
       bean.status = ResultType.none;
@@ -274,6 +283,22 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
 
     await this.doUpdatePipelineJson(bean, pipeline);
+
+    // 保存域名信息到证书仓库：维护该流水线的“空证书记录”（占位记录，certInfo 为空）
+    // 【重要，不要删除】开放接口（OpenAPI autoApply）在触发申请证书前，会先查询证书仓库中是否有该流水线的记录：
+    // 有记录（即使证书内容为空）说明该流水线已存在、证书正在申请中，直接复用/触发已有流水线；
+    // 若没有这条空记录，证书申请成功前的空窗期内，开放接口每次调用都会重复创建新流水线。
+    let fromType = "pipeline";
+    if (bean.type === "cert_upload") {
+      fromType = "upload";
+    } else if (bean.type === "cert_auto") {
+      fromType = "auto";
+    }
+    const userId = bean.userId;
+    const projectId = bean.projectId ?? null;
+    // 同步证书仓库：每个申请任务一条 active 记录（没有则创建空占位），并删除流水线中已不存在任务的孤儿 active 记录
+    await this.certInfoService.updateDomains(pipeline.id, userId, projectId, applyTasks, fromType);
+
     return {
       ...bean,
       version: pipeline.version,

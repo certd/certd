@@ -108,6 +108,13 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - `ctx` 类型复用 `BaseService` 导出的 `ServiceContext`。
 - 新增 service 方法避免与 `BaseService` 方法签名冲突，例如不要用 `delete(id)` 覆盖 `delete(ids, where?)`；改用 `deleteById` 等具体名称。
 
+### 证书仓库（cd_cert_info）空证书记录【必须保留】
+
+- 保存流水线时（`PipelineService.save`）会调用 `CertInfoService.updateDomains` 同步该流水线的 active 证书记录（占位记录，`certInfo` 为空）。**这些记录必须保留，不要删除**：开放接口（OpenAPI `autoApply`）触发申请证书前，会先查询证书仓库中是否有该流水线的记录——有记录（即使证书内容为空）说明该流水线已存在、证书正在申请中，直接复用/触发已有流水线；若删掉这些记录，在证书申请成功前的空窗期内，开放接口每次调用都会重复创建新流水线。
+- 同步规则（`updateDomains`，只处理 active 记录，inactive/revoked 历史保留）：① 流水线中每个证书申请任务（CertApply 类步骤）对应仓库一条 active 记录（按 `task_id` 关联），没有则创建空证书记录；② 删除孤儿 active 记录（流水线中已不存在对应任务 id 的，含 `task_id` 为空的历史遗留）；③ 一个流水线多个申请任务时维护多条记录，随时保持一致。
+- `updateCertByPipelineId`（申请证书成功后写入仓库）中同样**不得删除**该流水线的空证书记录；新证书总是新建一条 active 记录，并按相同 `task_id` 把同流水线其他 active 记录标记为 inactive，避免同一流水线出现多条 active。
+- 吊销旧证书（`CertRevokeOld` 后置任务）按证书申请任务 id（`task_id`）精确匹配：只吊销同一申请任务产出的 inactive 旧证书，不误伤其他任务仍在使用的证书。
+
 ### 后端地图
 
 - `packages/ui/certd-server/bootstrap.js`：Midway 启动入口，使用 `@midwayjs/bootstrap`。

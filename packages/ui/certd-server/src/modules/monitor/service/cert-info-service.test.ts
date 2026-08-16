@@ -44,7 +44,7 @@ describe("CertInfoService", () => {
       } as any;
       service.pipelineRepository = {
         async findOne() {
-          return null;
+          return { id: 1, userId: 2, projectId: 3, type: "cert_upload" };
         },
       } as any;
       let newBean: any = null;
@@ -78,7 +78,7 @@ describe("CertInfoService", () => {
       } as any;
       service.pipelineRepository = {
         async findOne() {
-          return { type: "cert_upload" };
+          return { id: 1, userId: 2, projectId: 3, type: "cert_upload" };
         },
       } as any;
       let newId = 0;
@@ -96,7 +96,7 @@ describe("CertInfoService", () => {
       };
 
       const cert = createSelfSignedCert();
-      const bean = await service.updateCertByPipelineId(1, cert, "pipeline", 2, 3);
+      const bean = await service.updateCertByPipelineId(1, cert, "pipeline");
 
       assert.equal(newId, 100);
       assert.equal(bean.pipelineId, 1);
@@ -122,7 +122,7 @@ describe("CertInfoService", () => {
       } as any;
       service.pipelineRepository = {
         async findOne() {
-          return { type: "custom" };
+          return { id: 1, userId: 2, projectId: 3, type: "custom" };
         },
       } as any;
       service.addOrUpdate = async (bean: any) => {
@@ -131,43 +131,218 @@ describe("CertInfoService", () => {
       };
 
       const cert = createSelfSignedCert();
-      const bean = await service.updateCertByPipelineId(1, cert, "pipeline", 2, 3);
+      const bean = await service.updateCertByPipelineId(1, cert, "pipeline");
 
       assert.equal(bean.fromType, "pipeline");
       assert.equal(bean.pipelineId, 1);
     });
 
-    it("清理该流水线残留的空占位记录", async () => {
+    it("传申请任务id时，新证书记录任务id，且只把同任务旧证书标记为未激活", async () => {
       const service = new CertInfoService();
-      // 历史占位记录（无证书内容）
-      const existing = { id: 10, userId: 2, projectId: null, pipelineId: 1, fromType: "pipeline", status: CertStatus.active, certInfo: null };
+      service.repository = {
+        async findOne() {
+          return null;
+        },
+        async delete() {},
+      } as any;
+      service.pipelineRepository = {
+        async findOne() {
+          return { id: 1, userId: 2, projectId: 3, type: "cert_auto" };
+        },
+      } as any;
+      let newBean: any = null;
+      service.addOrUpdate = async (bean: any) => {
+        bean.id = 100;
+        newBean = bean;
+        return bean;
+      };
+      let updateWhere: any = null;
+      let updateSet: any = null;
+      service.repository.update = async (where: any, set: any) => {
+        updateWhere = where;
+        updateSet = set;
+        return {} as any;
+      };
+
+      const cert = createSelfSignedCert();
+      await service.updateCertByPipelineId(1, cert, "pipeline", "apply-step-1");
+
+      // 新证书记录了申请任务 id
+      assert.equal(newBean.taskId, "apply-step-1");
+      // 旧证书标记未激活的条件限定为同任务 id（不误伤其他任务的证书）
+      assert.equal(updateWhere.pipelineId, 1);
+      assert.equal(updateWhere.status, CertStatus.active);
+      assert.equal(updateWhere.taskId, "apply-step-1");
+      assert.equal(updateSet.status, CertStatus.inactive);
+    });
+
+    it("空证书记录（带任务id）在申请成功后标记为未激活，避免同流水线多条 active 记录", async () => {
+      const service = new CertInfoService();
+      // 保存流水线时创建的空证书记录（占位，certInfo 为空，已记录申请任务id）
+      const emptyRecord = { id: 184, userId: 2, projectId: 1, pipelineId: 209, fromType: "pipeline", status: CertStatus.active, taskId: "PgaUhdeO1DWB_BLbIlzqV", certInfo: null };
+      service.repository = {
+        async findOne() {
+          return emptyRecord;
+        },
+      } as any;
+      service.pipelineRepository = {
+        async findOne() {
+          return { id: 209, userId: 2, projectId: 1, type: "cert_auto" };
+        },
+      } as any;
+      service.addOrUpdate = async (bean: any) => {
+        bean.id = 185;
+        return bean;
+      };
+      let updateWhere: any = null;
+      let updateSet: any = null;
+      service.repository.update = async (where: any, set: any) => {
+        updateWhere = where;
+        updateSet = set;
+        return {} as any;
+      };
+
+      const cert = createSelfSignedCert();
+      await service.updateCertByPipelineId(209, cert, "pipeline", "PgaUhdeO1DWB_BLbIlzqV");
+
+      // 空证书记录因 taskId 相同被标记为未激活，只剩新证书保持 active
+      assert.equal(updateWhere.pipelineId, 209);
+      assert.equal(updateWhere.taskId, "PgaUhdeO1DWB_BLbIlzqV");
+      assert.equal(updateSet.status, CertStatus.inactive);
+    });
+
+    it("updateDomains 保存流水线时为申请任务创建空证书记录（记录任务id）", async () => {
+      const service = new CertInfoService();
+      service.repository = {
+        async findOne() {
+          return null;
+        },
+        async delete() {},
+      } as any;
+      let newBean: any = null;
+      service.addOrUpdate = async (bean: any) => {
+        newBean = bean;
+        bean.id = 100;
+        return bean;
+      };
+
+      await service.updateDomains(1, 2, 3, [{ taskId: "apply-step-1", domains: ["a.com", "b.com"] }], "auto");
+
+      // 创建了空证书记录（certInfo 为空），绑定流水线/用户/项目/申请任务id与域名信息
+      assert.equal(newBean.pipelineId, 1);
+      assert.equal(newBean.userId, 2);
+      assert.equal(newBean.projectId, 3);
+      assert.equal(newBean.fromType, "auto");
+      assert.equal(newBean.taskId, "apply-step-1");
+      assert.equal(newBean.domain, "a.com");
+      assert.equal(newBean.domains, "a.com,b.com");
+      assert.equal(newBean.domainCount, 2);
+      assert.equal(newBean.certInfo, undefined);
+    });
+
+    it("updateDomains 已有 active 记录时更新域名信息，不新建记录", async () => {
+      const service = new CertInfoService();
+      const existing = { id: 10, pipelineId: 1, userId: 2, projectId: 3, fromType: "auto", taskId: "apply-step-1", status: CertStatus.active };
       service.repository = {
         async findOne() {
           return existing;
         },
-        async update() {},
+        async delete() {},
       } as any;
-      service.pipelineRepository = {
+      let newBean: any = null;
+      service.addOrUpdate = async (bean: any) => {
+        newBean = bean;
+        bean.id = 10;
+        return bean;
+      };
+
+      await service.updateDomains(1, 2, 3, [{ taskId: "apply-step-1", domains: ["c.com"] }], "auto");
+
+      // 复用已有记录（保留原 id 与 taskId），只更新域名信息
+      assert.equal(newBean.id, 10);
+      assert.equal(newBean.domain, "c.com");
+      assert.equal(newBean.domains, "c.com");
+      assert.equal(newBean.domainCount, 1);
+    });
+
+    it("updateDomains 一个流水线多个申请任务时，每个任务维护一条记录", async () => {
+      const service = new CertInfoService();
+      let findOneCount = 0;
+      service.repository = {
+        async findOne() {
+          findOneCount++;
+          return null;
+        },
+        async delete() {},
+      } as any;
+      const createdBeans: any[] = [];
+      service.addOrUpdate = async (bean: any) => {
+        createdBeans.push({ ...bean });
+        bean.id = 100 + createdBeans.length;
+        return bean;
+      };
+
+      await service.updateDomains(
+        1,
+        2,
+        3,
+        [
+          { taskId: "apply-a", domains: ["a.com"] },
+          { taskId: "apply-b", domains: ["b.com"] },
+        ],
+        "auto"
+      );
+
+      // 每个申请任务各创建一条 active 记录
+      assert.equal(createdBeans.length, 2);
+      assert.equal(createdBeans[0].taskId, "apply-a");
+      assert.equal(createdBeans[0].domain, "a.com");
+      assert.equal(createdBeans[1].taskId, "apply-b");
+      assert.equal(createdBeans[1].domain, "b.com");
+      assert.equal(createdBeans[0].status, CertStatus.active);
+      assert.equal(createdBeans[1].status, CertStatus.active);
+    });
+
+    it("updateDomains 删除孤儿 active 记录（流水线中已不存在的任务，含 taskId 为空的遗留记录）", async () => {
+      const service = new CertInfoService();
+      service.repository = {
         async findOne() {
           return null;
         },
       } as any;
+      service.addOrUpdate = async (bean: any) => {
+        bean.id = 100;
+        return bean;
+      };
       let deleteWhere: any = null;
       service.repository.delete = async (where: any) => {
         deleteWhere = where;
         return {} as any;
       };
-      service.addOrUpdate = async (bean: any) => {
-        bean.id = 100;
-        return bean;
+
+      await service.updateDomains(1, 2, 3, [{ taskId: "apply-b", domains: ["b.com"] }], "auto");
+
+      // 只删除 active 记录：taskId 为 NULL（遗留）或不在流水线中的任务
+      assert.equal(deleteWhere.pipelineId, 1);
+      assert.equal(deleteWhere.status, CertStatus.active);
+      // 孤儿条件：taskId IS NULL 或 NOT IN (流水线中的任务id)
+      assert.ok(deleteWhere.taskId != null, "应包含 taskId 孤儿过滤条件");
+    });
+
+    it("updateDomains 流水线没有申请任务时，删除该流水线所有 active 记录", async () => {
+      const service = new CertInfoService();
+      service.repository = {} as any;
+      let deleteWhere: any = null;
+      service.repository.delete = async (where: any) => {
+        deleteWhere = where;
+        return {} as any;
       };
 
-      const cert = createSelfSignedCert();
-      await service.updateCertByPipelineId(1, cert);
+      await service.updateDomains(1, 2, 3, [], "pipeline");
 
+      // 没有申请任务 → 该流水线的 active 记录全部清理（无任务可对应）
       assert.equal(deleteWhere.pipelineId, 1);
-      assert.equal(deleteWhere.certInfo._type, "isNull");
-      assert.equal(deleteWhere.id._value, 100);
+      assert.equal(deleteWhere.status, CertStatus.active);
     });
   });
 
@@ -181,7 +356,7 @@ describe("CertInfoService", () => {
           projectId: null,
           status: CertStatus.active,
           certInfo: "{}",
-        }) as any;
+        } as any);
 
       await assert.rejects(() => service.revoke(1, 2), /只有未激活状态的证书才允许执行吊销/);
     });
@@ -195,7 +370,7 @@ describe("CertInfoService", () => {
           projectId: null,
           status: CertStatus.revoked,
           certInfo: "{}",
-        }) as any;
+        } as any);
 
       await assert.rejects(() => service.revoke(1, 2), /只有未激活状态的证书才允许执行吊销/);
     });
@@ -211,7 +386,7 @@ describe("CertInfoService", () => {
           status: CertStatus.inactive,
           certInfo: JSON.stringify(cert),
           pipelineId: 5,
-        }) as any;
+        } as any);
       service.pipelineRepository = {
         async findOne() {
           return {
@@ -279,7 +454,7 @@ describe("CertInfoService", () => {
           status: CertStatus.inactive,
           certInfo: JSON.stringify(cert),
           pipelineId: 5,
-        }) as any;
+        } as any);
       service.pipelineRepository = {
         async findOne() {
           return null;

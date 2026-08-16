@@ -263,6 +263,30 @@
                         <div class="flow-line"></div>
                       </div>
                       <div class="task">
+                        <a-button shape="round" type="dashed" @click="afterTaskAdd()">
+                          <fs-icon icon="ion:add-circle-outline"></fs-icon>
+                          添加后置任务
+                        </a-button>
+                      </div>
+                    </div>
+                    <div v-for="(item, ii) of pipeline.afterTasks" :key="ii" class="task-container">
+                      <div class="line line-left">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" @click="afterTaskEdit(item, ii as number)">
+                          <div class="flex-o w-100">
+                            <fs-icon icon="ion:flash-outline"></fs-icon>
+                            <span class="ellipsis flex-1 step-title align-left"> 【后置】 {{ item.title || item.type }} </span>
+                          </div>
+                        </a-button>
+                      </div>
+                    </div>
+                    <div class="task-container">
+                      <div class="line line-left">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
                         <a-button shape="round" type="dashed" @click="notificationAdd()">
                           <fs-icon icon="ion:add-circle-outline"></fs-icon>
                           添加通知
@@ -288,16 +312,31 @@
                   <div class="title">
                     <text-editable model-value="结束" :disabled="true" />
                   </div>
-                  <div v-if="pipeline.notifications?.length > 0" class="tasks">
+                  <div v-if="pipeline.notifications?.length > 0 || pipeline.afterTasks?.length > 0" class="tasks">
+                    <div v-for="(item, index) of pipeline.afterTasks" :key="index" class="task-container" :class="{ 'first-task': pipeline.notifications?.length === 0 && index == 0 }">
+                      <div class="line line-left">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" :title="item.title || item.type" @click="viewNodeLogs(`afterTask.${item.id}`, t('certd.view_after_task_log'), item)">
+                          <div class="flex-o w-100">
+                            <fs-icon icon="ion:flash-outline"></fs-icon>
+                            <span class="ellipsis flex-1 step-title align-left"> 【后置】 {{ item.title || item.type }} </span>
+                            <pi-status-show v-if="item.status?.result" :status="item.status.result"></pi-status-show>
+                          </div>
+                        </a-button>
+                      </div>
+                    </div>
                     <div v-for="(item, index) of pipeline.notifications" :key="index" class="task-container" :class="{ 'first-task': index == 0 }">
                       <div class="line line-left">
                         <div class="flow-line"></div>
                       </div>
                       <div class="task">
-                        <a-button shape="round" @click="notificationEdit(item, index)">
+                        <a-button shape="round" :title="item.title || item.type" @click="viewNodeLogs(`notification.${item.id}`, t('certd.view_notification_log'), item)">
                           <div class="flex-o w-100">
                             <fs-icon icon="ion:notifications"></fs-icon>
                             <span class="ellipsis flex-1 step-title align-left"> 【通知】 {{ item.title || item.type }} </span>
+                            <pi-status-show v-if="item.status?.result" :status="item.status.result"></pi-status-show>
                           </div>
                         </a-button>
                       </div>
@@ -350,6 +389,7 @@
     <pi-trigger-form ref="triggerFormRef" :edit-mode="editMode"></pi-trigger-form>
     <pi-task-view ref="taskViewRef" @run="run"></pi-task-view>
     <PiNotificationForm ref="notificationFormRef" :edit-mode="editMode"></PiNotificationForm>
+    <PiAfterTaskForm ref="afterTaskFormRef" :edit-mode="editMode"></PiAfterTaskForm>
   </fs-page>
 </template>
 
@@ -360,6 +400,7 @@ import { useRouter } from "vue-router";
 import PiTaskForm from "./component/task-form/index.vue";
 import PiTriggerForm from "./component/trigger-form/index.vue";
 import PiNotificationForm from "./component/notification-form/index.vue";
+import PiAfterTaskForm from "./component/after-task-form/index.vue";
 import PiTaskView from "./component/task-view/index.vue";
 import PiStatusShow from "./component/status-show.vue";
 import VDraggable from "vuedraggable";
@@ -393,6 +434,7 @@ export default defineComponent({
     PiTaskView,
     PiStatusShow,
     PiNotificationForm,
+    PiAfterTaskForm,
     VDraggable,
     TaskShortcuts,
     TriggerIcon,
@@ -591,6 +633,7 @@ export default defineComponent({
             stages: [],
             triggers: [],
             notifications: [],
+            afterTasks: [],
           },
           detail.pipeline
         );
@@ -722,7 +765,6 @@ export default defineComponent({
       };
 
       function useTaskView() {
-        const taskViewRef: Ref<any> = ref(null);
         const taskViewOpen = (task: any) => {
           taskViewRef.value.open(task);
         };
@@ -896,6 +938,20 @@ export default defineComponent({
       };
     }
 
+    // 任务日志弹窗引用（任务/后置任务/通知日志查看共用）
+    const taskViewRef: Ref<any> = ref(null);
+
+    // 查看后置任务/通知的运行日志（复用任务日志弹窗，按节点id读取运行历史日志）
+    function viewNodeLogs(nodeId: string, title: string, node: any) {
+      if (taskViewRef.value) {
+        taskViewRef.value.taskViewOpenNode({
+          id: nodeId,
+          title,
+          status: node?.status,
+        });
+      }
+    }
+
     function useNotification() {
       const notificationFormRef = ref();
       const notificationAdd = () => {
@@ -921,7 +977,8 @@ export default defineComponent({
             }
           });
         } else {
-          notificationFormRef.value.notificationView(notification, (type: string, value: any) => {});
+          // 非编辑模式：查看通知发送日志
+          viewNodeLogs(`notification.${notification.id}`, t("certd.view_notification_log"), notification);
         }
       };
       const notificationDelete = (notification: any, index: any) => {
@@ -938,6 +995,52 @@ export default defineComponent({
         notificationEdit,
         notificationDelete,
         notificationFormRef,
+      };
+    }
+
+    function useAfterTask() {
+      const afterTaskFormRef = ref();
+      const afterTaskAdd = () => {
+        afterTaskFormRef.value.afterTaskAdd((type: string, value: any) => {
+          if (type === "save") {
+            if (pipeline.value.afterTasks == null) {
+              pipeline.value.afterTasks = [];
+            }
+            pipeline.value.afterTasks.push(value);
+          }
+        });
+      };
+      const afterTaskEdit = (afterTask: any, index: any) => {
+        if (afterTaskFormRef.value == null) {
+          return;
+        }
+        if (props.editMode) {
+          afterTaskFormRef.value.afterTaskEdit(afterTask, (type: string, value: any) => {
+            if (type === "delete") {
+              pipeline.value.afterTasks.splice(index, 1);
+            } else if (type === "save") {
+              pipeline.value.afterTasks[index] = value;
+            }
+          });
+        } else {
+          // 非编辑模式：查看后置任务执行日志
+          viewNodeLogs(`afterTask.${afterTask.id}`, t("certd.view_after_task_log"), afterTask);
+        }
+      };
+      const afterTaskDelete = (afterTask: any, index: any) => {
+        Modal.confirm({
+          title: t("certd.confirm"),
+          content: t("certd.after_task_delete_confirm"),
+          async onOk() {
+            pipeline.value.afterTasks.splice(index, 1);
+          },
+        });
+      };
+      return {
+        afterTaskAdd,
+        afterTaskEdit,
+        afterTaskDelete,
+        afterTaskFormRef,
       };
     }
 
@@ -1218,6 +1321,7 @@ export default defineComponent({
 
     const { hasActionPermission } = useCrudPermission({ permission: { isProjectPermission: true } });
     return {
+      t,
       isCert,
       pipeline,
       currentHistory,
@@ -1232,7 +1336,9 @@ export default defineComponent({
       ...actions,
       ...useHistory(),
       ...useNotification(),
+      ...useAfterTask(),
       ...useScroll(),
+      viewNodeLogs,
       nextTriggerTimes,
       viewCert,
       downloadCert,

@@ -36,6 +36,9 @@ export class CertInfoEntity {
   @Column({ name: "pipeline_id", comment: "关联流水线id" })
   pipelineId: number;
 
+  @Column({ name: "task_id", comment: "证书申请任务id（流水线中的申请步骤id）", nullable: true })
+  taskId: string;
+
   @Column({ name: "apply_time", comment: "申请时间" })
   applyTime: number;
 

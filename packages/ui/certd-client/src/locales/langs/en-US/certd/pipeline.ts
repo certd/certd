@@ -118,6 +118,13 @@ export default {
   please_select_trigger_time: "Please select notification trigger time",
   please_select_notification_config: "Please select notification configuration",
   confirm_delete_trigger: "Are you sure you want to delete this trigger?",
+  edit_after_task: "Edit After-Task",
+  after_task_name: "After-Task Name",
+  after_task_plugin: "After-Task Plugin",
+  after_task_when_helper: "Choose on which pipeline results this after-task runs",
+  after_task_delete_confirm: "Are you sure you want to delete this after-task?",
+  view_notification_log: "Notification Log",
+  view_after_task_log: "After-Task Log",
   dates: {
     years: "{count} years",
     months: "{count} months",

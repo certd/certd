@@ -1,7 +1,7 @@
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { AccessService, BaseService, CodeException, Constants, PageReq } from "@certd/lib-server";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Between, IsNull, LessThan, Not, Repository } from "typeorm";
+import { Between, In, IsNull, LessThan, Not, Or, Repository } from "typeorm";
 import { CertInfoEntity, CertStatus } from "../entity/cert-info.js";
 import { logger, utils } from "@certd/basic";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
@@ -15,6 +15,15 @@ export type UploadCertReq = {
   userId?: number;
   projectId?: number;
   pipelineId?: number;
+  taskId?: string;
+};
+
+/**
+ * 流水线中的证书申请任务信息（保存流水线时同步证书仓库用）
+ */
+export type ApplyTaskInfo = {
+  taskId: string;
+  domains: string[];
 };
 
 @Provide("CertInfoService")
@@ -76,8 +85,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async getMatchCertList(params: { domains: string[]; userId: number; projectId?: number }) {
-    const { domains, userId, projectId } = params;
+  async getMatchCertList(params: { domains: string[]; userId: number; projectId?: number; pipelineId?: number }) {
+    const { domains, userId, projectId, pipelineId } = params;
     if (!domains) {
       throw new CodeException({
         ...Constants.res.openCertNotFound,
@@ -86,6 +95,9 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     }
 
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
+    if (pipelineId) {
+      userProjectQuery.pipelineId = pipelineId;
+    }
     const list = await this.find({
       select: {
         id: true,
@@ -137,12 +149,22 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
    * 流水线申请证书成功后写入证书仓库
    *
    * 每条流水线可保留多条证书记录：
-   * 1. 新证书总是新建一条激活状态（active）的记录，并绑定流水线id；
+   * 1. 新证书总是新建一条激活状态（active）的记录，并绑定流水线id与申请任务id；
    * 2. 证书来源（fromType）保持与该流水线原有记录一致（如 upload/auto）；
-   * 3. 同流水线其他激活状态的证书记录被标记为未激活（inactive）；
-   * 4. 顺带清理该流水线残留的空占位记录（无证书内容的历史数据）。
+   * 3. 同流水线、同申请任务的其他激活状态的证书记录被标记为未激活（inactive）；
+   * 4. 【重要】不得删除该流水线的空证书记录（certInfo 为空、由保存流水线时 updateDomains 维护的占位记录）。
+   *    开放接口（OpenAPI autoApply）正是根据证书仓库中是否有该流水线的记录来判断“是否已申请过”：
+   *    若删掉这条空记录，证书申请成功前开放接口会反复触发创建新流水线。空证书记录必须保留。
    */
-  async updateCertByPipelineId(pipelineId: number, cert: CertInfo, fromType = "pipeline", userId?: number, projectId?: number) {
+  async updateCertByPipelineId(pipelineId: number, cert: CertInfo, fromType?: string, taskId?: string) {
+    const pipeline = await this.pipelineRepository.findOne({
+      where: { id: pipelineId },
+    });
+
+    if (!pipeline) {
+      throw new CodeException(Constants.res.openCertNotFound);
+    }
+
     // 查找该流水线已有的记录，用于继承来源、用户、项目信息（旧证书记录或历史占位记录）
     const anyRecord = await this.repository.findOne({
       where: { pipelineId },
@@ -151,8 +173,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     // 新证书来源保持与该流水线原有记录一致；无记录时按流水线类型推导（cert_upload=upload, cert_auto=auto）
     const pipelineType = await this.getPipelineFromType(pipelineId);
     const certFromType = anyRecord?.fromType || pipelineType || fromType;
-    const certUserId = userId ?? anyRecord?.userId;
-    const certProjectId = projectId ?? anyRecord?.projectId;
+    const certUserId = pipeline?.userId;
+    const certProjectId = pipeline?.projectId;
 
     const bean = await this.updateCert({
       certReader: new CertReader(cert),
@@ -160,25 +182,87 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       userId: certUserId,
       projectId: certProjectId,
       pipelineId,
+      taskId,
     });
-    // 清理该流水线残留的空占位记录（不再维护占位证书）
-    await this.repository.delete({
-      pipelineId,
-      certInfo: IsNull(),
-      id: Not(bean.id),
-    });
-    // 旧证书标记为未激活
+    // 旧证书标记为未激活（仅同申请任务产出的旧证书，避免误伤其他任务仍在使用的证书）
     await this.repository.update(
       {
         pipelineId,
         status: CertStatus.active,
         id: Not(bean.id),
+        taskId: taskId ?? IsNull(),
       },
       {
         status: CertStatus.inactive,
       }
     );
     return bean;
+  }
+
+  /**
+   * 保存流水线时同步证书仓库的 active 记录（占位记录，certInfo 为空）
+   *
+   * 【重要，不要删除】仓库中的 active 记录是开放接口（OpenAPI autoApply）判断“该域名是否已申请过”的依据：
+   * 开放接口触发申请证书前，会先查询证书仓库中是否有该流水线的记录——有记录（即使证书内容为空）
+   * 说明该流水线已存在、证书正在申请中，直接复用/触发已有流水线，而不是再创建一条新的。
+   * 若没有这些记录，在证书申请成功前的空窗期内，开放接口每次调用都会重复创建新流水线。
+   *
+   * 同步规则（只处理 active 记录，inactive/revoked 历史保留不动）：
+   * 1. 流水线中每个证书申请任务（CertApply 类步骤）对应仓库中一条 active 记录（按 taskId 关联）：
+   *    - 已有 active 记录（可能是空证书记录或最新申请的真证书）→ 更新域名信息，保持 active；
+   *    - 没有 → 创建一条空证书记录（active）。
+   * 2. 删除孤儿记录：流水线中已不存在对应申请任务 id 的 active 记录（任务被删除/替换后残留），
+   *    避免仓库中留下找不到来源的 active 记录；历史 inactive/revoked 记录不删。
+   */
+  async updateDomains(pipelineId: number, userId: number, projectId: number, applyTasks: ApplyTaskInfo[], fromType?: string) {
+    if (!applyTasks || applyTasks.length === 0) {
+      //流水线没有证书申请任务：删除该流水线所有 active 记录（占位记录由申请任务维护，任务没了记录一并清理）
+      await this.repository.delete({
+        pipelineId,
+        ...this.buildUserProjectQuery(userId, projectId),
+        status: CertStatus.active,
+      });
+      return;
+    }
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
+    const taskIds = applyTasks.map(task => task.taskId);
+    for (const task of applyTasks) {
+      // 每个申请任务维护一条 active 记录（不重复创建，最新真证书申请成功后旧记录会被标记为 inactive）
+      const found = await this.repository.findOne({
+        where: {
+          pipelineId,
+          taskId: task.taskId,
+          status: CertStatus.active,
+          ...userProjectQuery,
+        },
+      });
+      const bean = new CertInfoEntity();
+      if (found) {
+        //已有 active 记录（空占位或真证书）：更新域名信息
+        bean.id = found.id;
+      } else {
+        //创建空证书记录
+        bean.pipelineId = pipelineId;
+        bean.userId = userId;
+        bean.projectId = projectId;
+        bean.fromType = fromType;
+        bean.taskId = task.taskId;
+        bean.status = CertStatus.active;
+      }
+      const taskDomains = task.domains || [];
+      bean.domain = taskDomains[0] || "";
+      bean.domains = taskDomains.join(",");
+      bean.domainCount = taskDomains.length;
+      bean.wildcardDomainCount = this.countWildcardDomains(taskDomains);
+      await this.addOrUpdate(bean);
+    }
+    // 删除孤儿 active 记录：流水线中已不存在的申请任务（含历史遗留 taskId 为空的 active 记录）
+    await this.repository.delete({
+      pipelineId,
+      ...userProjectQuery,
+      status: CertStatus.active,
+      taskId: Or(IsNull(), Not(In(taskIds))),
+    });
   }
 
   /**
@@ -223,6 +307,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     bean.expiresTime = certReader.expires;
     bean.certProvider = certReader.detail.issuer.commonName;
     bean.pipelineId = req.pipelineId;
+    bean.taskId = req.taskId;
     bean.userId = userId;
     bean.projectId = req.projectId;
     await this.addOrUpdate(bean);
@@ -356,7 +441,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async count({ userId, projectId,status }: { userId: number; projectId?: number,status?:string }) {  
+  async count({ userId, projectId, status }: { userId: number; projectId?: number; status?: string }) {
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const total = await this.repository.count({
       where: {

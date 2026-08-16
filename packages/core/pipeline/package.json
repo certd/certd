@@ -16,10 +16,10 @@
     "test": "mocha   --loader=ts-node/esm",
     "test:unit": "cross-env NODE_ENV=unittest mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
     "pub": "npm publish",
-    "compile": "tsc --skipLibCheck --watch",
+    "compile": "rimraf dist && tsc --skipLibCheck --watch",
     "format": "prettier --write src",
     "lint": "eslint --fix --ext .ts src"
-  },
+  },  
   "dependencies": {
     "@certd/basic": "^1.43.0",
     "@certd/plus-core": "^1.43.0",

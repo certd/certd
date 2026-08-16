@@ -45,7 +45,8 @@
         "nock": "^13.5.4",
         "prettier": "3.3.3",
         "tsd": "^0.31.1",
-        "typescript": "^5.4.2"
+        "typescript": "^5.4.2",
+        "rimraf": "^5.0.5"
     },
     "scripts": {
         "before-build": "node -e \"const fs=require('fs');fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('tsconfig.tsbuildinfo',{force:true});\"",
@@ -57,7 +58,7 @@
         "before-test:unit": "node -e \"const fs=require('fs');fs.rmSync('dist-test',{recursive:true,force:true});fs.rmSync('tsconfig.test.tsbuildinfo',{force:true});\"",
         "test:unit": "cross-env NODE_ENV=unittest npm run before-test:unit && cross-env NODE_ENV=unittest tsc -p tsconfig.test.json --skipLibCheck && cross-env NODE_ENV=unittest mocha -t 60000 \"dist-test/**/*.test.js\"",
         "pub": "npm publish",
-        "compile": "tsc --skipLibCheck --watch",
+        "compile": "rimraf dist &&tsc --skipLibCheck --watch",
         "format": "prettier --write src"
     },
     "repository": {
