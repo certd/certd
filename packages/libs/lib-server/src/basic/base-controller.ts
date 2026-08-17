@@ -3,6 +3,7 @@ import type { IMidwayContainer } from "@midwayjs/core";
 import * as koa from "@midwayjs/koa";
 import { Constants } from "./constants.js";
 import { isEnterprise } from "./mode.js";
+import type { AuditLogContext, AuditLogParam } from "./audit.js";
 
 export abstract class BaseController {
   @Inject()
@@ -126,5 +127,44 @@ export abstract class BaseController {
       }
     }
     return { projectId, userId };
+  }
+
+  getAuditType(): string {
+    return "unknown";
+  }
+
+  auditLog(bean: AuditLogParam = {}) {
+    const auditLog = this.ensureAuditLogContext();
+    auditLog.enabled = true;
+    if (bean.userId != null) {
+      auditLog.userId = bean.userId;
+    }
+    if (bean.username != null) {
+      auditLog.username = bean.username;
+    }
+    if (bean.type != null) {
+      auditLog.type = bean.type;
+    }
+    if (bean.action != null) {
+      auditLog.action = bean.action;
+    }
+    if (bean.projectId != null) {
+      auditLog.projectId = bean.projectId;
+    }
+    if (bean.content) {
+      auditLog.content = bean.content;
+    }
+    if (bean.append) {
+      const items = Array.isArray(bean.append) ? bean.append : [bean.append];
+      const old = Array.isArray(auditLog.append) ? auditLog.append : auditLog.append ? [auditLog.append] : [];
+      auditLog.append = [...old, ...items].filter(item => item && String(item).trim());
+    }
+  }
+
+  private ensureAuditLogContext(): AuditLogContext {
+    if (!this.ctx.auditLog) {
+      this.ctx.auditLog = {};
+    }
+    return this.ctx.auditLog;
   }
 }

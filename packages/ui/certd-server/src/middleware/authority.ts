@@ -40,6 +40,8 @@ export class AuthorityMiddleware implements IWebMiddleware {
         await next();
         return;
       }
+      ctx.auditRouteInfo = routeInfo;
+      this.extractProjectId(ctx);
       let permission = routeInfo.description || "";
       permission = permission.trim().split(" ")[0];
       if (permission == null || permission === "") {
@@ -107,6 +109,16 @@ export class AuthorityMiddleware implements IWebMiddleware {
       ctx.body.message = message;
     }
     return;
+  }
+
+  private extractProjectId(ctx: IMidwayKoaContext) {
+    const headerVal = ctx.headers["project-id"] as string;
+    const queryVal = (ctx.request as any)?.query?.projectId;
+    const bodyVal = (ctx.request as any)?.body?.projectId;
+    const raw = headerVal || queryVal || bodyVal;
+    if (raw != null && raw !== "") {
+      ctx.projectId = parseInt(String(raw), 10) || 0;
+    }
   }
 
   private getTokenFromRequest(ctx: IMidwayKoaContext) {

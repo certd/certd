@@ -3,6 +3,7 @@ import { Constants, CrudController } from "@certd/lib-server";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 import { PipelineGroupService } from "../../../modules/pipeline/service/pipeline-group-service.js";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * 通知
@@ -18,6 +19,10 @@ export class PipelineGroupController extends CrudController<PipelineGroupService
 
   getService(): PipelineGroupService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.pipelineGroup.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询流水线分组分页列表" })
@@ -52,7 +57,9 @@ export class PipelineGroupController extends CrudController<PipelineGroupService
     const { projectId, userId } = await this.getProjectUserIdRead();
     bean.userId = userId;
     bean.projectId = projectId;
-    return await super.add(bean);
+    const res = await super.add(bean);
+    this.auditLog({ content: `新增了流水线分组「${bean.name}」(ID:${res.data})` });
+    return res;
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新流水线分组" })
@@ -60,7 +67,9 @@ export class PipelineGroupController extends CrudController<PipelineGroupService
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
-    return await super.update(bean);
+    const res = await super.update(bean);
+    this.auditLog({ content: `修改了流水线分组「${bean.name}」(ID:${bean.id})` });
+    return res;
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询流水线分组详情" })
   async info(@Query("id") id: number) {
@@ -71,7 +80,9 @@ export class PipelineGroupController extends CrudController<PipelineGroupService
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除流水线分组" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write");
-    return await super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({ content: `删除了流水线分组(ID:${id})` });
+    return res;
   }
 
   @Post("/all", { description: Constants.per.authOnly, summary: "查询所有流水线分组" })

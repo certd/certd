@@ -12,6 +12,7 @@ import cors from "@koa/cors";
 import { GlobalExceptionMiddleware } from "./middleware/global-exception.js";
 import { PreviewMiddleware } from "./middleware/preview.js";
 import { AuthorityMiddleware } from "./middleware/authority.js";
+import { AuditLogMiddleware } from "./middleware/audit-log.js";
 import { logger } from "@certd/basic";
 import { ResetPasswdMiddleware } from "./middleware/reset-passwd/middleware.js";
 import DefaultConfig from "./config/config.default.js";
@@ -113,6 +114,7 @@ export class MainConfiguration {
       PreviewMiddleware,
       //授权处理
       AuthorityMiddleware,
+      AuditLogMiddleware,
 
       //resetPasswd,重置密码模式下不提供服务
       ResetPasswdMiddleware,

@@ -11,7 +11,7 @@ function createMiddleware(permission: string) {
   middleware.secret = "test-secret";
   middleware.webRouterService = {
     async getMatchedRouterInfo() {
-      return { description: permission };
+      return { description: permission, summary: "测试路由" };
     },
   } as any;
   return middleware;
@@ -41,6 +41,7 @@ describe("AuthorityMiddleware guestOptionalAuth", () => {
 
     assert.equal(called, true);
     assert.equal(ctx.user, undefined);
+    assert.equal(ctx.auditRouteInfo.summary, "测试路由");
   });
 
   it("sets user when token is provided", async () => {

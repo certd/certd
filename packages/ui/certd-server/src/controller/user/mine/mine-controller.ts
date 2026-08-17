@@ -9,6 +9,7 @@ import { http, logger, utils } from "@certd/basic";
 import { ApiTags } from "@midwayjs/swagger";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { EmailService } from "../../../modules/basic/service/email-service.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 import { TaskServiceBuilder } from "../../../modules/pipeline/service/getter/task-service-getter.js";
 
 /**
@@ -41,6 +42,9 @@ export class MineController extends BaseController {
   @Inject()
   emailService: EmailService;
 
+  getAuditType(): string {
+    return AuditType.mine.value;
+  }
   @Inject()
   taskServiceBuilder: TaskServiceBuilder;
 
@@ -77,6 +81,7 @@ export class MineController extends BaseController {
   public async changePassword(@Body(ALL) body: any) {
     const userId = this.getUserId();
     await this.userService.changePassword(userId, body);
+    this.auditLog({ content: "修改了密码" });
     return this.ok({});
   }
 
@@ -84,6 +89,7 @@ export class MineController extends BaseController {
   public async initPassword(@Body(ALL) body: any) {
     const userId = this.getUserId();
     await this.userService.initPassword(userId, body);
+    this.auditLog({ content: "初始化了密码" });
     return this.ok({});
   }
 
@@ -95,6 +101,7 @@ export class MineController extends BaseController {
       avatar: body.avatar,
       nickName: body.nickName,
     });
+    this.auditLog({ content: "更新了个人资料" });
     return this.ok({});
   }
 
@@ -133,6 +140,7 @@ export class MineController extends BaseController {
       phoneCode: body.phoneCode,
       mobile: body.mobile,
     });
+    this.auditLog({ content: "修改了手机号" });
     return this.ok({});
   }
 
@@ -149,6 +157,7 @@ export class MineController extends BaseController {
     await this.userService.updateEmail(userId, {
       email: body.email,
     });
+    this.auditLog({ content: "修改了邮箱" });
     return this.ok({});
   }
 
@@ -204,6 +213,7 @@ export class MineController extends BaseController {
       }),
     });
 
+    this.auditLog({ content: "初始化了Let's Encrypt ACME账号和邮件通知" });
     return this.ok({ success: true });
   }
 }
