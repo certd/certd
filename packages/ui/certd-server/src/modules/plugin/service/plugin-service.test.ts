@@ -265,6 +265,15 @@ describe("PluginService online plugins", () => {
           latest: "1.0.1",
           title: "Deploy Other",
         },
+        {
+          type: "store",
+          fullName: "other/DeployToDemo",
+          author: "other",
+          name: "DeployToDemo",
+          pluginType: "deploy",
+          latest: "1.0.1",
+          title: "Deploy Demo From Other Author",
+        },
       ],
       installedRows: [
         {
@@ -284,12 +293,13 @@ describe("PluginService online plugins", () => {
 
     const list = await service.onlinePluginList({});
 
-    assert.equal(list.length, 2);
+    assert.equal(list.length, 3);
     assert.equal(list[0].installed, true);
     assert.equal(list[0].installedVersion, "1.0.0");
     assert.equal(list[0].upgradeAvailable, true);
     assert.equal(list[0].localPluginId, 3);
     assert.equal(list[1].installed, false);
+    assert.equal(list[2].installed, false);
     assert.equal((service.repository as any).state.findCalls, 1);
   });
 

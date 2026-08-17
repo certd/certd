@@ -71,10 +71,12 @@ watch(
 );
 
 onBeforeUnmount(() => {
+  //@ts-ignore
   iframeClient?.destroy();
 });
 
 function setupIframeClient() {
+  //@ts-ignore
   iframeClient?.destroy();
   if (!iframeRef.value) {
     return;

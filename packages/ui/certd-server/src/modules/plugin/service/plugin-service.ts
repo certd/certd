@@ -622,8 +622,8 @@ export class PluginService extends BaseService<PluginEntity> {
     }
     const old = await this.findOne({
       where: {
-        name: param.name,
-        author: param.author,
+        type: "store",
+        fullName: param.fullName,
       },
     });
 
@@ -777,16 +777,10 @@ export class PluginService extends BaseService<PluginEntity> {
     });
   }
 
-  private findInstalledOnlinePlugin(installedPlugins: PluginEntity[], parsed: { author: string; name: string }, record: OnlinePluginBean) {
-    const fullName = record.fullName || `${parsed.author}/${parsed.name}`;
+  private findInstalledOnlinePlugin(installedPlugins: PluginEntity[], record: OnlinePluginBean) {
+    const fullName = record.fullName || "";
     return installedPlugins.find(plugin => {
-      if (plugin.fullName === fullName || plugin.name === fullName) {
-        return true;
-      }
-      if (plugin.author === parsed.author && plugin.name === parsed.name) {
-        return true;
-      }
-      return !!record.pluginType && plugin.pluginType === record.pluginType && plugin.name === parsed.name;
+      return plugin.fullName === fullName;
     });
   }
 
@@ -833,7 +827,7 @@ export class PluginService extends BaseService<PluginEntity> {
       if (!parsed) {
         continue;
       }
-      const localPlugin = this.findInstalledOnlinePlugin(installedPlugins, parsed, record);
+      const localPlugin = this.findInstalledOnlinePlugin(installedPlugins, record);
       record.installed = !!localPlugin;
       record.localPluginId = localPlugin?.id;
       record.localDisabled = localPlugin?.disabled;

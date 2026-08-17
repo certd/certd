@@ -108,7 +108,7 @@ const projectStore = useProjectStore();
       <div class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full">
         <vip-button class="flex-center header-btn" mode="nav" />
       </div>
-      <div class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
+      <div v-if="!settingStore.isComm" class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
         <fs-button shape="circle" type="text" icon="clarity:host-solid-badged" :text="null" :tooltip="{ title: t('certd.client') }" @click="goCertdClient" />
       </div>
       <div v-if="!settingStore.isComm" class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">

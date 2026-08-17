@@ -170,5 +170,62 @@ loadPluginGroups();
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
+
+  .step-plugin {
+    display: flex;
+
+    .ant-card {
+      width: 100%;
+      margin-bottom: 10px;
+      cursor: pointer;
+
+      &.current {
+        border-color: #00b7ff;
+      }
+
+      .ant-card-meta-title {
+        display: flex;
+        min-height: 22px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      .ant-avatar {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+
+      .title {
+        display: block;
+        min-width: 0;
+        flex: 1;
+        margin-left: 5px;
+        overflow: hidden;
+        line-height: 22px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .ant-card-body {
+      min-height: 100px;
+      padding: 14px 14px 6px;
+      overflow-y: hidden;
+
+      .ant-card-meta-description {
+        min-height: 40px;
+        color: #7f7f7f;
+        font-size: 12px;
+        line-height: 20px;
+      }
+
+      .plugin-icon {
+        color: #00b7ff;
+        font-size: 18px;
+      }
+    }
+  }
 }
 </style>

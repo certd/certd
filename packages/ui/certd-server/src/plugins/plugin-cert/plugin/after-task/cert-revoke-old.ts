@@ -16,7 +16,7 @@ import { CertStatus } from "../../../../modules/monitor/entity/cert-info.js";
   name: "CertRevokeOld",
   title: "吊销旧证书",
   group: "cert",
-  icon: "mdi:certificate-remove-outline",
+  icon: "tabler:certificate-off",
   desc: "新证书申请成功，并全部部署成功后，吊销本流水线产生的旧证书。（注意 如果本流水线证书还在别处有使用或手动部署，请慎重添加此吊销任务）",
   supportAfterTask: true,
 })
