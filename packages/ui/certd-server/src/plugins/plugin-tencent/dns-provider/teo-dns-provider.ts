@@ -11,7 +11,6 @@ import { TencentAccess } from "../../plugin-lib/tencent/access.js";
   dependPlugins: {
     "access:tencent": "*",
   },
-  order: 1,
 })
 export class TencentEoDnsProvider extends AbstractDnsProvider {
   access!: TencentAccess;

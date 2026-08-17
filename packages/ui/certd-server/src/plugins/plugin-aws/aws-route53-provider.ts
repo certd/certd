@@ -9,7 +9,7 @@ import { PageRes, PageSearch } from "@certd/pipeline";
   desc: "AWS Route53 DNS解析提供商",
   accessType: "aws",
   icon: "svg:icon-aws",
-  order: 0,
+  order: 1,
 })
 export class AwsRoute53Provider extends AbstractDnsProvider {
   client: AwsClient;

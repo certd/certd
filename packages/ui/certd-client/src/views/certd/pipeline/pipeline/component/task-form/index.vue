@@ -9,7 +9,15 @@
       </div>
     </template>
     <template #extra>
-      <fs-button shape="circle" type="text" icon="clarity:host-solid-badged" :text="null" :tooltip="{ title: 'certd无法访问主机？试试主动拉取证书的客户端CertdClient吧' }" @click="goCertdClient" />
+      <fs-button
+        v-if="!settingStore.isComm"
+        shape="circle"
+        type="text"
+        icon="clarity:host-solid-badged"
+        :text="null"
+        :tooltip="{ title: 'Certd无法访问主机？试试主动拉取证书的客户端CertdClient吧' }"
+        @click="goCertdClient"
+      />
     </template>
     <template v-if="currentTask">
       <pi-container class="task-form-container">
@@ -70,7 +78,11 @@
                 </template>
               </v-draggable>
               <div v-if="editMode && currentTask.steps?.length > 0" class="step-batch-actions">
-                <a-button v-if="!stepBatchEditing" type="text" size="small" @click="setStepBatchEditing(true)">批量编辑</a-button>
+                <a-tooltip v-if="!stepBatchEditing" title="批量编辑（专业版）">
+                  <a-button type="text" size="small" class="need-plus" @click="setStepBatchEditing(true)">
+                    <fs-icon icon="tdesign:ai-edit-1"></fs-icon>
+                  </a-button>
+                </a-tooltip>
                 <template v-else>
                   <a-tooltip title="全选步骤">
                     <a-checkbox
@@ -132,6 +144,7 @@ import { filter } from "lodash-es";
 import { Copyed } from "./copy";
 import { cloneDeep, merge } from "lodash-es";
 import { disableSteps, enableSteps, removeSelectedItems } from "../batch-actions";
+import { settings } from "nprogress";
 export default {
   name: "PiTaskForm",
   components: { PiStepForm, VDraggable },
@@ -186,6 +199,10 @@ export default {
       };
 
       const setStepBatchEditing = (enabled: boolean) => {
+        if (enabled) {
+          // 批量编辑步骤为专业版功能，非专业版用户点击后弹出升级提示并中断
+          settingStore.checkPlus();
+        }
         stepBatchEditing.value = enabled;
         if (!enabled) {
           selectedStepIds.value = [];

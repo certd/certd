@@ -157,7 +157,11 @@
                     </template>
                     <template v-else>
                       <text-editable v-model="stage.title" :disabled="!editMode"></text-editable>
-                      <a-button v-if="editMode && stage.tasks.length > 0" type="text" size="small" class="stage-batch-edit-button" @click="setStageBatchEditing(stage, true)">批量编辑</a-button>
+                      <a-tooltip v-if="editMode && stage.tasks.length > 0" title="批量编辑（专业版）">
+                        <a-button type="text" size="small" class="stage-batch-edit-button need-plus" @click="setStageBatchEditing(stage, true)">
+                          <fs-icon icon="tdesign:ai-edit-1"></fs-icon>
+                        </a-button>
+                      </a-tooltip>
                     </template>
                     <div v-plus class="icon-box stage-move-handle">
                       <fs-icon v-if="editMode" title="拖动排序" icon="ion:move-outline"></fs-icon>
@@ -712,6 +716,10 @@ export default defineComponent({
       };
 
       const setStageBatchEditing = (stage: any, enabled: boolean) => {
+        if (enabled) {
+          // 批量编辑任务为专业版功能，非专业版用户点击后弹出升级提示并中断
+          settingStore.checkPlus();
+        }
         batchEditingStageIds.value[stage.id] = enabled;
         if (!enabled) {
           clearTaskSelection(stage.id);

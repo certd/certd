@@ -627,7 +627,7 @@ function handleVersionClick() {
     display: flex;
     min-height: 148px;
     flex-direction: column;
-    padding: 14px 16px 12px;
+    padding: 14px 16px 8px;
   }
 
   .plugin-card__head {
@@ -942,6 +942,10 @@ function handleVersionClick() {
   }
 
   &.is-simple {
+    .ant-card-body {
+      min-height: 128px;
+    }
+
     .plugin-card__desc {
       min-height: 40px;
       margin-bottom: 4px;
