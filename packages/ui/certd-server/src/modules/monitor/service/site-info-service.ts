@@ -808,10 +808,10 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
   async batchDelete(ids: number[], userId: number, projectId?: number): Promise<number> {
     ids = this.filterIds(ids);
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
-    await this.repository.delete({
+    const result = await this.repository.delete({
       id: In(ids),
       ...userProjectQuery,
     });
-    return ids.length;
+    return result.affected || 0;
   }
 }

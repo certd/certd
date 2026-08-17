@@ -2,6 +2,7 @@ import { BaseController, Constants } from "@certd/lib-server";
 import { Controller, Inject, Post, Provide } from "@midwayjs/core";
 import { TransferService } from "../../../modules/sys/enterprise/service/transfer-service.js";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -14,6 +15,10 @@ export class TransferController extends BaseController {
 
   getService(): TransferService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.enterprise.value;
   }
 
   /**
@@ -38,6 +43,7 @@ export class TransferController extends BaseController {
     const { projectId } = await this.getProjectUserIdRead();
     const userId = this.getUserId();
     await this.service.transferAll(userId, projectId);
+    this.auditLog({ content: "迁移了项目资源" });
     return this.ok();
   }
 }

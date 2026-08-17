@@ -74,6 +74,27 @@ async function createRelease(versionTitle, content) {
     return response.data
 }
 
+// 设置 release 为预览版 (pre-release)
+async function setReleaseAsPre(versionTitle, name, body) {
+    const response = await axios.request({
+        method: "PATCH",
+        url: `https://api.atomgit.com/api/v5/repos/certd/certd/releases/v${versionTitle}`,
+        headers: {
+            "Content-Type": "application/json"
+        },
+        params: {
+            access_token: AtomgitAccessToken
+        },
+        data: {
+            name: name,
+            body: body,
+            release_status: "pre"
+        },
+    })
+    console.log("setReleaseAsPre success")
+    return response.data
+}
+
 /**
  * 获取Release附件上传地址
 GET
@@ -154,6 +175,7 @@ async function publishToAtomgit() {
     const { versionTitle, content } = getVersionContent()
     try{
         const release = await createRelease(versionTitle, content)
+        await setReleaseAsPre(versionTitle, `v${versionTitle}`, content)
         const uploadUrl = await getUploadUrl(versionTitle)
         const fileName = `./packages/ui/certd-client/ui.zip`
         const fileData = fs.createReadStream(fileName)

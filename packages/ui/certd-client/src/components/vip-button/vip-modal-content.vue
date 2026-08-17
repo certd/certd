@@ -139,7 +139,7 @@ async function doActive() {
       title: t("vip.successTitle"),
       content: t("vip.successContent", {
         vipLabel,
-        expireDate: dayjs(settingStore.plusInfo.expireTime).format("YYYY-MM-DD"),
+        expireDate: settingStore.plusInfo.expireTime === -1 ? t("vip.permanent") : dayjs(settingStore.plusInfo.expireTime).format("YYYY-MM-DD"),
       }),
       onOk() {
         if (!(settingStore.installInfo.bindUserId > 0)) {

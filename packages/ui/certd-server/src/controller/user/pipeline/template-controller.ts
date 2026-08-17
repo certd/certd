@@ -3,6 +3,7 @@ import { Constants, CrudController } from "@certd/lib-server";
 import { TemplateService } from "../../../modules/pipeline/service/template-service.js";
 import { checkPlus } from "@certd/plus-core";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * 流水线模版
@@ -16,6 +17,10 @@ export class TemplateController extends CrudController<TemplateService> {
 
   getService() {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.template.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询流水线模版分页列表" })
@@ -52,7 +57,9 @@ export class TemplateController extends CrudController<TemplateService> {
     bean.userId = userId;
     bean.projectId = projectId;
     checkPlus();
-    return super.add(bean);
+    const res = await super.add(bean);
+    this.auditLog({ content: `新增了流水线模版「${bean.title}」(ID:${res.data})` });
+    return res;
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新流水线模版" })
@@ -60,7 +67,9 @@ export class TemplateController extends CrudController<TemplateService> {
     await this.checkOwner(this.service, bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
-    return super.update(bean);
+    const res = await super.update(bean);
+    this.auditLog({ content: `修改了流水线模版「${bean.title}」(ID:${bean.id})` });
+    return res;
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询流水线模版详情" })
   async info(@Query("id") id: number) {
@@ -72,6 +81,7 @@ export class TemplateController extends CrudController<TemplateService> {
   async delete(@Query("id") id: number) {
     const { userId, projectId } = await this.getProjectUserIdWrite();
     await this.service.batchDelete([id], userId, projectId);
+    this.auditLog({ content: `删除了流水线模版(ID:${id})` });
     return this.ok({});
   }
 
@@ -79,6 +89,7 @@ export class TemplateController extends CrudController<TemplateService> {
   async batchDelete(@Body("ids") ids: number[]) {
     const { userId, projectId } = await this.getProjectUserIdWrite();
     await this.service.batchDelete(ids, userId, projectId);
+    this.auditLog({ content: `批量删除了${ids.length}条流水线模版` });
     return this.ok({});
   }
 
@@ -95,6 +106,7 @@ export class TemplateController extends CrudController<TemplateService> {
     body.projectId = projectId;
     checkPlus();
     const res = await this.service.createPipelineByTemplate(body);
+    this.auditLog({ content: `根据模版创建了流水线(ID:${res.id})` });
     return this.ok(res);
   }
 }

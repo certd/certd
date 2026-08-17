@@ -998,7 +998,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     return ids.length;
   }
 
-  async batchUpdateGroup(ids: number[], groupId: number, userId: any, projectId?: number) {
+  async batchUpdateGroup(ids: number[], groupId: number, userId: any, projectId?: number): Promise<number> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
@@ -1009,19 +1009,20 @@ export class PipelineService extends BaseService<PipelineEntity> {
     if (projectId) {
       query.projectId = projectId;
     }
-    await this.repository.update(
+    const result = await this.repository.update(
       {
         id: In(ids),
         ...query,
       },
       { groupId }
     );
+    return result.affected || 0;
   }
 
   /**
    * 批量转移到其他项目
    */
-  async batchTransfer(ids: number[], projectId: number) {
+  async batchTransfer(ids: number[], projectId: number): Promise<number> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
@@ -1103,9 +1104,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
       await this.repository.save(entity);
       await this.save(entity);
     }
+    return ids.length;
   }
 
-  async batchUpdateTrigger(ids: number[], trigger: any, userId: any, projectId?: number) {
+  async batchUpdateTrigger(ids: number[], trigger: any, userId: any, projectId?: number): Promise<any> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
@@ -1158,9 +1160,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
       }
       await this.doUpdatePipelineJson(item, pipeline);
     }
+    return list.length;
   }
 
-  async batchUpdateNotifications(ids: number[], notification: Notification, userId: any, projectId?: number) {
+  async batchUpdateNotifications(ids: number[], notification: Notification, userId: any, projectId?: number): Promise<number> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
@@ -1199,9 +1202,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
       ];
       await this.doUpdatePipelineJson(item, pipeline);
     }
+    return list.length;
   }
 
-  async batchUpdateCertApplyOptions(ids: number[], options: CertApplyStepInputPatch, userId: any, projectId?: number) {
+  async batchUpdateCertApplyOptions(ids: number[], options: CertApplyStepInputPatch, userId: any, projectId?: number): Promise<number> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
@@ -1230,9 +1234,10 @@ export class PipelineService extends BaseService<PipelineEntity> {
       }
       await this.doUpdatePipelineJson(item, pipeline);
     }
+    return list.length;
   }
 
-  async batchRerun(ids: number[], force: boolean, userId: any, projectId?: number) {
+  async batchRerun(ids: number[], force: boolean, userId: any, projectId?: number): Promise<number> {
     if (!isPlus()) {
       throw new NeedVIPException("此功能需要升级Certd专业版");
     }
@@ -1258,6 +1263,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
     //异步执行
     this.startBatchRerun(userId, ids, force);
+    return ids.length;
   }
 
   startBatchRerun(userId: number, ids: number[], force: boolean) {
