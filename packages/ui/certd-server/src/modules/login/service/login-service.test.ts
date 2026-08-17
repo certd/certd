@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import jwt from "jsonwebtoken";
 import { LoginService } from "./login-service.js";
 
 function createLoginService() {
@@ -74,5 +75,30 @@ describe("LoginService.register", () => {
     assert.equal(calls.withTx.length, 1);
     assert.equal(calls.withTx[0], txManager);
     assert.equal(calls.bindInvitee.length, 0);
+  });
+});
+
+describe("LoginService.generateScopedAccessToken", () => {
+  it("adds the requested scopes to a short-lived JWT", async () => {
+    const service = new LoginService();
+    (service as any).jwt = { expire: 7200 };
+    service.sysSettingsService = {
+      async getSetting() {
+        return { jwtKey: "test-secret" };
+      },
+    } as any;
+
+    const result = await service.generateScopedAccessToken(
+      {
+        id: 1,
+        username: "admin",
+        roles: [1],
+      },
+      ["sys/ai"]
+    );
+    const payload = jwt.verify(result.token, "test-secret") as jwt.JwtPayload;
+
+    assert.deepEqual(payload.scoped, ["sys/ai"]);
+    assert.equal(result.expire, 3600);
   });
 });

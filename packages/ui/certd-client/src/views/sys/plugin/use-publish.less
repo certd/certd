@@ -1,0 +1,136 @@
+.sys-plugin-publish {
+  margin: 2px;
+
+  &__hero {
+    display: flex;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid #e4ecf7;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f7fbff 0%, #eef5ff 55%, #f8fbff 100%);
+  }
+
+  &__icon-wrap {
+    display: flex;
+    width: 54px;
+    height: 54px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(64, 120, 192, 0.16);
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(31, 77, 132, 0.08);
+  }
+
+  &__icon {
+    color: #2f6fbb;
+    font-size: 30px;
+  }
+
+  &__hero-main {
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__title-line,
+  &__version-line,
+  &__author-register,
+  &__review-icons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__title-line {
+    gap: 10px;
+  }
+
+  &__title {
+    color: #172033;
+    font-size: 18px;
+    font-weight: 700;
+    word-break: break-all;
+  }
+
+  &__desc {
+    margin-top: 4px;
+    color: #526172;
+    line-height: 22px;
+    word-break: break-all;
+  }
+
+  &__sections,
+  &__latest-version {
+    display: grid;
+    gap: 12px;
+  }
+
+  &__sections {
+    margin-top: 16px;
+  }
+
+  &__latest-version {
+    gap: 10px;
+  }
+
+  &__meta-full {
+    grid-column: 1 / -1;
+  }
+
+  &__version {
+    color: #1f2937;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__review-icons {
+    gap: 6px;
+  }
+
+  &__review-icon {
+    display: block;
+    flex: 0 0 auto;
+    font-size: 16px;
+    line-height: 1;
+
+    &.is-ai {
+      &.is-passed {
+        color: #52c41a;
+      }
+
+      &.is-pending {
+        color: #faad14;
+      }
+
+      &.is-rejected {
+        color: #ff4d4f;
+      }
+    }
+
+    &.is-admin {
+      color: #1677ff;
+
+      &.is-rejected {
+        color: #ff4d4f;
+      }
+    }
+  }
+
+  &__rejected-reasons {
+    display: grid;
+    gap: 4px;
+    padding: 8px 10px;
+    border-left: 3px solid #ff7875;
+    border-radius: 4px;
+    background: #fff2f0;
+    color: #a61d24;
+    font-size: 12px;
+    line-height: 19px;
+    word-break: break-word;
+  }
+
+  &__prompt {
+    margin-bottom: 12px;
+  }
+}

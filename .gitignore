@@ -40,3 +40,5 @@ pnpm-lock.yaml
 /popularize/reports/
 output/
 .uploads/
+.certd-plugin-history/
+.tmp

@@ -25,6 +25,13 @@ export const AuditType = {
   jobHistory: { value: "jobHistory", label: "监控历史", color: "default" },
   account: { value: "account", label: "账号管理", color: "geekblue" },
   plus: { value: "plus", label: "Plus许可", color: "volcano" },
+  site: { value: "site", label: "站点设置", color: "blue" },
+  wallet: { value: "wallet", label: "钱包管理", color: "gold" },
+  invite: { value: "invite", label: "邀请管理", color: "cyan" },
+  trade: { value: "trade", label: "交易订单", color: "volcano" },
+  product: { value: "product", label: "产品管理", color: "purple" },
+  activationCode: { value: "activationCode", label: "激活码管理", color: "orange" },
+  userSuite: { value: "userSuite", label: "用户套餐", color: "geekblue" },
 } as const;
 
 export const AuditAction = {

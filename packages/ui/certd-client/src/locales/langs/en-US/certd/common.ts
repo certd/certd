@@ -46,6 +46,7 @@ export default {
   default: "Default",
   success: "Success",
   test: "Test",
+  operation: "Operation",
   testButton: "Test",
   operationSuccess: "Operation successful",
   batch_delete: "Batch Delete",

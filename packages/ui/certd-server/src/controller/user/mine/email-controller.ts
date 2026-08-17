@@ -22,7 +22,7 @@ export class EmailController extends BaseController {
   public async test(@Body("receiver") receiver) {
     const userId = super.getUserId();
     await this.emailService.test(userId, receiver);
-    this.auditLog({ content: "测试了邮件发送" });
+    this.auditLog({ content: "测试邮件发送" });
     return this.ok({});
   }
 
@@ -37,7 +37,7 @@ export class EmailController extends BaseController {
   public async add(@Body("email") email) {
     const userId = super.getUserId();
     await this.emailService.add(userId, email);
-    this.auditLog({ content: "添加了邮件" });
+    this.auditLog({ content: `添加了邮箱地址 「${email}」` });
     return this.ok({});
   }
 
@@ -45,7 +45,7 @@ export class EmailController extends BaseController {
   public async delete(@Body("email") email) {
     const userId = super.getUserId();
     await this.emailService.delete(userId, email);
-    this.auditLog({ content: "删除了邮件" });
+    this.auditLog({ content: `删除了邮箱地址 「${email}」` });
     return this.ok({});
   }
 }

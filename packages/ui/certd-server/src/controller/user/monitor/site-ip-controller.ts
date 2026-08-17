@@ -132,7 +132,7 @@ export class SiteInfoController extends CrudController<SiteIpService> {
       siteId: body.siteId,
       projectId,
     });
-    this.auditLog({ content: "导入了站点IP" });
+    this.auditLog({ content: `导入了站点IP 「${body.text}」` });
     return this.ok();
   }
 }

@@ -47,7 +47,7 @@ export class UserTwoFactorSettingController extends BaseController {
     }
 
     await this.service.saveSetting(userId, null, setting);
-    this.auditLog({ content: "保存了双因子认证设置" });
+    this.auditLog({ content: `保存了双因子认证设置 ${setting.authenticator.enabled ? "启用" : "禁用"}` });
     return this.ok({});
   }
 
@@ -68,7 +68,7 @@ export class UserTwoFactorSettingController extends BaseController {
       userId,
       verifyCode: bean.verifyCode,
     });
-    this.auditLog({ content: "保存了验证器设置" });
+    this.auditLog({ content: `保存了验证器设置` });
     return this.ok();
   }
 

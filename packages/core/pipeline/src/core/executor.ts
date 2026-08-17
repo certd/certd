@@ -456,6 +456,9 @@ export class Executor {
     };
     await instance.setCtx(taskCtx);
 
+    if (!(instance instanceof AbstractTaskPlugin)) {
+      throw new Error(`插件类型错误：${step.type}不是AbstractTaskPlugin的实例`);
+    }
     await instance.onInstance();
     const result = await instance.execute();
     return { instance, result, skipped: false };

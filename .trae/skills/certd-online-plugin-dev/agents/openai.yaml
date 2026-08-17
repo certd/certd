@@ -1,0 +1,4 @@
+interface:
+  display_name: "Certd 在线插件开发"
+  short_description: "通过 Certd API 使用 Codex 或 Trae 开发在线插件"
+  default_prompt: "读取在线插件 YAML 和对应类型规范，按需求修改 content，保存历史记录后通过 Certd API 写回。"
