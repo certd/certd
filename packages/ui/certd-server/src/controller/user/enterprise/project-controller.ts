@@ -68,7 +68,7 @@ export class UserProjectController extends BaseController {
   async applyJoin(@Body(ALL) body: any) {
     const userId = this.getUserId();
     const res = await this.service.applyJoin({ userId, projectId: body.projectId });
-    this.auditLog({ content: "申请了加入项目" });
+    this.auditLog({ content: `申请了加入项目 项目ID:${body.projectId}` });
     return this.ok(res);
   }
 
@@ -90,7 +90,7 @@ export class UserProjectController extends BaseController {
       status,
       permission,
     });
-    this.auditLog({ content: "更新了项目成员" });
+    this.auditLog({ content: `更新了项目成员 「项目ID:${projectId} 用户ID:${userId}」` });
     return this.ok(res);
   }
 
@@ -99,7 +99,7 @@ export class UserProjectController extends BaseController {
     const { projectId } = await this.getProjectUserIdAdmin();
     const { status, permission, userId } = body;
     const res = await this.service.approveJoin({ userId, projectId: projectId, status, permission });
-    this.auditLog({ content: "审批了加入项目申请" });
+    this.auditLog({ content: `审批了加入项目申请 「项目ID:${projectId} 用户ID:${userId}」` });
     return this.ok(res);
   }
 
@@ -110,7 +110,7 @@ export class UserProjectController extends BaseController {
       projectId,
       userId: body.userId,
     });
-    this.auditLog({ content: "删除了项目成员" });
+    this.auditLog({ content: `删除了项目成员 「项目ID:${projectId} 用户ID:${body.userId}」` });
     return this.ok();
   }
 
@@ -122,7 +122,7 @@ export class UserProjectController extends BaseController {
       projectId,
       userId,
     });
-    this.auditLog({ content: "离开了项目" });
+    this.auditLog({ content: `离开了项目 「项目ID:${projectId} 用户ID:${userId}」` });
     return this.ok();
   }
 }

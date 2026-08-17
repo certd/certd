@@ -24,6 +24,7 @@ export type CloudflareRecord = {
   icon: "simple-icons:cloudflare",
   // 这里是对应的 cloudflare的access类型名称
   accessType: "cloudflare",
+  order: 1,
 })
 export class CloudflareDnsProvider extends AbstractDnsProvider<CloudflareRecord> {
   access!: CloudflareAccess;

@@ -9,12 +9,15 @@ export type FormOptionReq = {
   initialForm?: any;
   zIndex?: number;
   wrapper?: any;
+  noneForm?: boolean; //是否隐藏表单，只显示注入的body
+  className?: string; // 自定义类名，用于包裹表单
 };
 
 export function useFormDialog() {
   const { openCrudFormDialog } = useFormWrapper();
 
   async function openFormDialog(req: FormOptionReq) {
+    const noneForm = req.noneForm ?? Object.keys(req?.columns || {}).length === 0;
     function createCrudOptions() {
       const warpper = merge(
         {
@@ -24,6 +27,7 @@ export function useFormDialog() {
           slots: {
             "form-body-top": req.body,
           },
+          wrapClassName: (noneForm ? "fs-form-none-content" : "") + " " + (req.className || ""),
         },
         req.wrapper
       );

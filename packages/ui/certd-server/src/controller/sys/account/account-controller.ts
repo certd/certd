@@ -29,7 +29,6 @@ export class BasicController extends BaseController {
       throw new Error("用户ID不能为空");
     }
     await this.plusService.userPreBind(body.userId);
-    await this.auditLog({ content: `预绑定了用户(ID:${body.userId})` });
     return this.ok({});
   }
 
@@ -41,7 +40,7 @@ export class BasicController extends BaseController {
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     installInfo.bindUserId = body.userId;
     await this.sysSettingsService.saveSetting(installInfo);
-    await this.auditLog({ content: `绑定了用户(ID:${body.userId})` });
+    await this.auditLog({ content: `绑定了袖手科技用户(ID:${body.userId})` });
     return this.ok({});
   }
 
@@ -50,14 +49,13 @@ export class BasicController extends BaseController {
     const installInfo: SysInstallInfo = await this.sysSettingsService.getSetting(SysInstallInfo);
     installInfo.bindUserId = null;
     await this.sysSettingsService.saveSetting(installInfo);
-    await this.auditLog({ content: "解绑了用户" });
+    await this.auditLog({ content: "解绑了袖手科技用户" });
     return this.ok({});
   }
 
   @Post("/updateLicense", { description: "sys:settings:edit", summary: "更新许可证" })
   public async updateLicense(@Body(ALL) body: { license: string }) {
     await this.plusService.updateLicense(body.license);
-    await this.auditLog({ content: "更新了许可证" });
     return this.ok(true);
   }
 }

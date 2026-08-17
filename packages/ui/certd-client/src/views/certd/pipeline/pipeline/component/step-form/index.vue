@@ -1,5 +1,5 @@
 <template>
-  <a-drawer v-model:open="stepDrawerVisible" :wrap-style="{ maxWidth: '100vw' }" placement="right" :closable="true" width="760px" class="step-form-drawer" :class="{ fullscreen }">
+  <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="760px" class="step-form-drawer" :class="{ fullscreen }">
     <template #title>
       <div>
         编辑步骤
@@ -12,16 +12,25 @@
         </template>
       </div>
       <div class="hidden md:block">
-        <fs-icon class="icon-button" :icon="fullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'" @click="fullscreen = !fullscreen"></fs-icon>
+        <a-space>
+          <fs-icon class="icon-button" :icon="fullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'" @click="fullscreen = !fullscreen"></fs-icon>
+        </a-space>
       </div>
     </template>
     <template v-if="currentStep">
       <pi-container v-if="currentStep._isAdd" class="pi-step-form">
         <div class="flex-col h-100 overflow-hidden md:ml-5 md:mr-5 step-form-body">
-          <plugin-selector :model-value="currentStep.type" @select="stepTypeSelected" @confirm="stepTypeConfirm"></plugin-selector>
+          <a-tabs v-model:active-key="pluginSourceActive" class="step-plugin-source-tabs flex-1 overflow-hidden h-full">
+            <a-tab-pane key="local" tab="已安装插件" class="h-full">
+              <LocalPluginSelector :selected-type="currentStep.type" @select="stepTypeSelected" @confirm="handlePluginConfirm" />
+            </a-tab-pane>
+            <a-tab-pane v-if="userStore.isAdmin" key="market" tab="插件市场" class="h-full step-market-pane">
+              <OnlinePluginSelector :selected-type="currentStep.type" @select="stepTypeSelected" @confirm="handlePluginConfirm" @uninstalled="handleOnlinePluginUninstalled" />
+            </a-tab-pane>
+          </a-tabs>
         </div>
         <template #footer>
-          <div style="padding: 20px; margin-left: 100px">
+          <div class="bottom-button">
             <a-button v-if="editMode" type="primary" @click="stepTypeSave"> 确定</a-button>
           </div>
         </template>
@@ -80,18 +89,23 @@ import { useSettingStore } from "/@/store/settings";
 import { mitter } from "/@/utils/util.mitt";
 import { utils } from "/@/utils";
 import PluginSelector from "../plugin-selector/index.vue";
+import { useUserStore } from "/@/store/user";
+import LocalPluginSelector from "./local-plugin-selector.vue";
+import OnlinePluginSelector from "./online-plugin-selector.vue";
 
 defineOptions({
   name: "PiStepForm",
 });
-const props = defineProps({
+defineProps({
   editMode: {
     type: Boolean,
     default: true,
   },
 });
 
-const emit = defineEmits(["update"]);
+defineEmits(["update"]);
+
+const userStore = useUserStore();
 
 const pluginStore = usePluginStore();
 function transformDesc(desc: string = "") {
@@ -123,6 +137,9 @@ function useStepForm() {
   });
 
   const stepTypeSelected = (item: any) => {
+    if (item.__online) {
+      return;
+    }
     if (item.needPlus && !settingStore.isPlus) {
       message.warn("此插件需要开通Certd专业版才能使用");
       mitter.emit("openVipModal");
@@ -297,8 +314,24 @@ function useStepForm() {
     };
   };
 
+  const pluginSourceActive = ref("local");
+  const handlePluginConfirm = async (item: any) => {
+    stepTypeSelected(item);
+    await stepTypeSave();
+  };
+
+  const handleOnlinePluginUninstalled = (plugin: any) => {
+    if (currentStep.value.type === plugin.fullName) {
+      currentStep.value.type = undefined;
+      currentStep.value.title = "新任务";
+    }
+  };
+
   return {
+    pluginSourceActive,
     stepTypeSelected,
+    handlePluginConfirm,
+    handleOnlinePluginUninstalled,
     stepTypeSave,
     stepTypeConfirm,
     stepFormRef,
@@ -348,7 +381,21 @@ const labelCol = ref({ span: 6 });
 const wrapperCol = ref({ span: 16 });
 
 const stepFormRes = useStepForm();
-const { stepTypeSelected, stepTypeSave, stepTypeConfirm, stepFormRef, stepDrawerVisible, currentStep, currentPlugin, stepSave, stepDelete, getScopeFunc, fullscreen } = stepFormRes;
+const {
+  pluginSourceActive,
+  stepTypeSelected,
+  handlePluginConfirm,
+  handleOnlinePluginUninstalled,
+  stepTypeSave,
+  stepFormRef,
+  stepDrawerVisible,
+  currentStep,
+  currentPlugin,
+  stepSave,
+  stepDelete,
+  getScopeFunc,
+  fullscreen,
+} = stepFormRes;
 defineExpose({
   ...stepFormRes,
 });
@@ -357,6 +404,15 @@ defineExpose({
 <style lang="less">
 .step-form-drawer {
   max-width: 100%;
+
+  .ant-drawer-content-wrapper {
+    max-width: 100vw;
+  }
+
+  .ant-tabs-nav .ant-tabs-tab {
+    margin-top: 10px !important;
+    padding: 8px 14px !important;
+  }
 
   &.fullscreen {
     .pi-step-form {
@@ -387,6 +443,83 @@ defineExpose({
   }
 
   .pi-step-form {
+    .step-plugin-source-pane-local,
+    .step-plugin-source-pane-online {
+      display: flex;
+      height: 100%;
+      min-height: 0;
+      flex-direction: column;
+    }
+
+    .step-plugin-search {
+      flex: none;
+      padding: 0 0 12px;
+    }
+
+    .step-plugin-selector-tabs {
+      min-height: 0;
+
+      > .ant-tabs-nav {
+        width: 136px;
+        flex: 0 0 136px;
+        overflow: hidden;
+      }
+
+      > .ant-tabs-nav .ant-tabs-nav-wrap,
+      > .ant-tabs-nav .ant-tabs-nav-list {
+        width: 100%;
+      }
+
+      > .ant-tabs-nav .ant-tabs-tab {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .cd-step-form-tab-label {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+
+        .fs-icon {
+          display: flex;
+          align-items: center;
+          color: #00b7ff;
+
+          svg {
+            vertical-align: middle !important;
+            display: flex;
+            align-items: center;
+          }
+        }
+
+        > div:last-child {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      > .ant-tabs-content-holder {
+        min-width: 0;
+        min-height: 0;
+        flex: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-right: 10px;
+      }
+
+      > .ant-tabs-content-holder > .ant-tabs-content {
+        height: auto;
+        min-height: 100%;
+      }
+
+      > .ant-tabs-content-holder > .ant-tabs-content > .ant-tabs-tabpane {
+        padding-right: 0 !important;
+        overflow: visible !important;
+      }
+    }
+
     .bottom-button {
       padding: 20px;
       padding-bottom: 5px;

@@ -54,8 +54,10 @@ jobs:
             -f Dockerfile.stable \
             -t registry.cn-shenzhen.aliyuncs.com/handsfree/certd:stable \
             -t registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{ inputs.version }}-stable \
-            -t greper/certd:stable \
-            -t greper/certd:${{ inputs.version }}-stable \
+            -t registry.cn-shenzhen.aliyuncs.com/certd/certd:stable \
+            -t registry.cn-shenzhen.aliyuncs.com/certd/certd:${{ inputs.version }}-stable \
+            -t certd/certd:stable \
+            -t certd/certd:${{ inputs.version }}-stable \
             -t ghcr.io/${{ github.repository }}:stable \
             -t ghcr.io/${{ github.repository }}:${{ inputs.version }}-stable \
             .
@@ -71,8 +73,10 @@ jobs:
             -f Dockerfile.slim-stable \
             -t registry.cn-shenzhen.aliyuncs.com/handsfree/certd:slim-stable \
             -t registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{ inputs.version }}-slim-stable \
-            -t greper/certd:slim-stable \
-            -t greper/certd:${{ inputs.version }}-slim-stable \
+            -t registry.cn-shenzhen.aliyuncs.com/certd/certd:slim-stable \
+            -t registry.cn-shenzhen.aliyuncs.com/certd/certd:${{ inputs.version }}-slim-stable \
+            -t certd/certd:slim-stable \
+            -t certd/certd:${{ inputs.version }}-slim-stable \
             -t ghcr.io/${{ github.repository }}:slim-stable \
             -t ghcr.io/${{ github.repository }}:${{ inputs.version }}-slim-stable \
             .

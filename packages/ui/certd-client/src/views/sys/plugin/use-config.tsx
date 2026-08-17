@@ -12,7 +12,7 @@ export function usePluginConfig() {
 
   const pluginStore = usePluginStore();
   // @ts-ignore
-  async function openConfigDialog({ row, crudExpose }) {
+  async function openConfigDialog({ row, onSuccess }) {
     const configEditorRef = ref();
     function createCrudOptions() {
       return {
@@ -33,10 +33,10 @@ export function usePluginConfig() {
                 },
               },
             },
-            afterSubmit() {
+            async afterSubmit() {
               notification.success({ message: t("certd.operationSuccess") });
-              if (crudExpose) {
-                crudExpose.doRefresh();
+              if (onSuccess) {
+                await onSuccess();
               }
             },
             async doSubmit({}: any) {

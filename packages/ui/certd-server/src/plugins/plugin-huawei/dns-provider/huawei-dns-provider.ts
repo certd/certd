@@ -15,6 +15,7 @@ export type SearchRecordOptions = {
   desc: "华为云DNS解析提供商",
   accessType: "huawei",
   icon: "svg:icon-huawei",
+  order: 1,
 })
 export class HuaweiDnsProvider extends AbstractDnsProvider {
   client!: HuaweiYunClient;

@@ -41,7 +41,6 @@ export default {
     headerMenus: "Top Menu Settings",
     sysAccess: "System-level Authorization",
     sysPlugin: "Plugin Management",
-    sysPluginEdit: "Edit Plugin",
     sysPluginConfig: "Certificate Plugin Configuration",
     accountBind: "Account Binding",
     permissionManager: "Permission Management",

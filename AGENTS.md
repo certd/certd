@@ -68,6 +68,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 ## 通用工作规则
 
 - 先读本文，再按任务读取具体代码或技能文件。
+- 与用户沟通、代码注释、文档、日志和面向用户的界面文案，尽量使用中文；技术专有名词、代码标识符、第三方库名称和命令可保留英文。
 - PowerShell 读取中文、Markdown、locale、文档类文件时使用 `Get-Content -Raw -Encoding UTF8`；仍乱码时先执行 `[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()`。
 - PowerShell 中用 `rg` 搜索含引号、括号、反斜杠的 pattern 时，优先用单引号包裹整个 pattern，例如 `rg 'await import\("tencentcloud-sdk-nodejs' packages/ui/certd-server/src -g '*.ts'`。
 - 手工编辑或创建文件时优先使用 `apply_patch`。单个文件内有多处不连续改动时，拆成多个独立的 `*** Update File` 块，每块只改一处附近上下文；不要在同一个 update hunk 里强塞多个 `@@`。
@@ -76,14 +77,15 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 优先沿用现有模块、插件、service、页面模式；不要为形式上的复用制造过度抽象。
 - 代码可读性优先于短写法。复杂条件、三元表达式、链式调用、内联对象和多层 helper 调用要拆成命名清晰的中间变量或小方法。
 - 方法调用链不要直接塞进另一个方法参数；先用有意义的局部变量承接返回值，再传入下一步。
+- 不要在单一表达式内嵌套分支、对象构造与方法调用。优先使用清晰的 `if/else` 分支；仅在确实能降低复杂度时才提取有意义的中间变量，避免为拆分而增加阅读跳转。
 - 注释优先使用中文，尤其是业务规则、兼容逻辑、协议细节和隐藏风险；文件已有英文风格或引用外部术语时可保持一致。
 - 遵守 DRY 和单一职责；第三次出现的业务规则、字段转换、权限判断、Repository 选择、事务传播、金额计算等逻辑，应优先抽成合适 helper 或 service 方法。
 
 
 ## 测试与验证
 
-- 务必写单元测试，覆盖主要业务逻辑。
-- 实现新功能或修复行为缺陷前，优先补单元测试并先确认红灯，再实现并跑聚焦验证。
+- 新功能、缺陷修复和重构遵循 TDD：先编写或更新测试，覆盖正常路径、边界条件和明确的错误处理；先运行测试确认 RED，再实现最小改动，最后运行聚焦测试确认 GREEN。
+- 单元测试应优先直接测试原始业务方法，不要为了方便测试而抽取没有业务价值的 helper；数据库、RPC 和其他外部依赖可以使用 mock 隔离。
 - 确实不适合先写测试时，在回复中说明原因和替代验证方式。
 - 后补单元测试时，按正确行为写预期；若红灯需要修改既有实现，先向用户确认这是 bug 还是既有需求，避免未经确认改变行为。
 - 后端纯单测放在 `src/**/*.test.ts`，尽量与被测文件相邻；`test:unit` 只跑这些文件，构建/打包应排除 `*.test.ts`。
@@ -91,6 +93,12 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 各包 `test:unit` 脚本应显式设置 `NODE_ENV=unittest`。
 - 单包单测优先用 `cd <包目录> && npm run test:unit`，例如 `cd packages\ui\certd-server && npm run test:unit`。
 - 优先对改动包运行聚焦测试或格式化/ESLint；只有跨包影响明显时再考虑更大范围构建。
+
+## 规范回顾
+
+- 每次任务收尾时，回顾用户提出的要求，识别其中可跨任务复用、稳定且不与既有规则冲突的约束。
+- 只将经过确认的共性要求精炼后写入本文；一次性任务细节、临时偏好和未经确认的推断不要写入长期规范。
+- 更新本文后检查规则是否清晰、可执行，并删除重复或互相矛盾的表述。
 
 
 ## 后端规则
@@ -104,6 +112,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 只有需要事务传播时才定义 `ctx`；普通查询、纯函数和简单私有方法继续使用明确参数。
 - 需要按事务上下文取 Repository 时，用 `BaseService.getRepo(ctx, EntityClass)`。
 - 需要“有事务则复用、无事务则开启”时，用 `BaseService.transactionWithCtx(ctx, callback)`。
+- 基础 CRUD 数据访问优先复用 `BaseService` 的 `find`、`findOne`、`list`、`page`、`update`、`deleteWhere` 等方法；不要从 `repository.createQueryBuilder()` 开始重复实现完整查询或更新。仅将关键词组合筛选、联表、业务排序等基类无法表达的部分放入 `list/page` 的 `buildQuery`。
 - 拼接可选 `projectId` 查询条件时，**必须**使用 `BaseService.buildUserProjectQuery(userId, projectId)`，禁止直接写 `{ userId, projectId }`。因为 `projectId` 可能为 `null`/`undefined`，直接放入查询会生成错误的 `WHERE projectId = NULL` 条件。
 - `ctx` 类型复用 `BaseService` 导出的 `ServiceContext`。
 - 新增 service 方法避免与 `BaseService` 方法签名冲突，例如不要用 `delete(id)` 覆盖 `delete(ids, where?)`；改用 `deleteById` 等具体名称。
@@ -147,6 +156,9 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 列表管理、后台管理、记录查询、CRUD 表格页面优先使用 Fast Crud；开发或重构前读 `.trae/skills/fast-crud-page-dev/SKILL.md`。
 - 只有轻量只读展示、强交互自定义界面或既有页面模式明显不适合 Fast Crud 时，才手写 `a-table` / 自定义列表，并在回复中说明。
 - 内嵌 Fast Crud 时，外层必须有稳定高度或完整 `flex: 1; min-height: 0` 链路。
+- 前端组件样式统一写在 `<style>` / Less / CSS 文件里，通过样式名映射到元素；尽量不要在元素上直接写 `style`。
+- 每个组件都要有一个稳定的根样式名，并把组件下方样式全部包在该根样式名内；尽量不要使用 `scoped`。
+- 可复用的公共样式名放在 `packages/ui/certd-client/src/style` 下维护，优先使用 `cd-` 前缀，避免散落在业务组件里重复定义。
 - 后台管理列表展示或筛选用户字段时，优先参考 `packages/ui/certd-client/src/views/sys/suite/user-suite/crud.tsx` 的 `userId` 字段模式，用 `table-select` + `/sys/authority/user/getSimpleUserByIds` 字典回显和搜索。
 - 对话框里只做确认可用 `Modal.confirm`；有字段输入、表单校验或提交字段时，必须用 `useFormDialog` / `openFormDialog`。
 
@@ -239,15 +251,6 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 
 ## 其他注意事项
 
-
-### 换行符（LF / CRLF）
-
-- 本项目源码使用 **LF** 换行符。Windows 上通过 Python 写文件时，open(path, "w", encoding="utf-8") 默认使用 **CRLF**，会破坏文件格式。
-- **修复方案**：写文件时用 open(path, "w", encoding="utf-8", newline="\n") 明确指定 LF。
-- 如果已经写入 CRLF，用以下 PowerShell 修复：
-  `powershell
-  git add --renormalize . && git commit -m "fix line endings"
-  `
 ### 旧版数据兼容
 
 - 新增插件参数时，必须要考虑旧版数据兼容，比如新增一个deployType参数，有两种值：`default`和`custom`，需要在使用时判空，走旧版逻辑。
@@ -263,5 +266,6 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 
 - 审计日志是 Plus 版功能，非 Plus 版不会写入。
 - Controller 继承 `BaseController`，通过 `this.auditLog({ content: "xxx" })` 记录日志。
+- Controller 中的 `@Post("/add", {  summary: "xxxx" })`, 这个summary是必须要的，他是日志action字段的来源
 - `getAuditType()` 返回类型常量，中间件自动从 ctx.path 判定 scope（`/api/sys/` → system，其他 → user）。
 - 操作日志有系统级（scope=system）和用户级（scope=user）区分。

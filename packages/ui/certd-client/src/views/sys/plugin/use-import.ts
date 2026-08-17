@@ -66,6 +66,7 @@ export function usePluginImport() {
             async doSubmit({ form }: any) {
               return await api.ImportPlugin({
                 ...form,
+                type: "store",
               });
             },
           },

@@ -153,6 +153,22 @@ export class PluginGroups {
   }
 }
 
+function filterInstalledPluginGroups(groups: { [key: string]: PluginGroup }) {
+  const filteredGroups: { [key: string]: PluginGroup } = {};
+  for (const [key, group] of Object.entries(groups)) {
+    filteredGroups[key] = {
+      ...group,
+      plugins: group.plugins.filter(plugin => {
+        if (plugin.type !== "store") {
+          return true;
+        }
+        return plugin.installed === true;
+      }),
+    };
+  }
+  return filteredGroups;
+}
+
 export const usePluginStore = defineStore({
   id: "app.plugin",
   state: (): PluginState => ({
@@ -162,8 +178,9 @@ export const usePluginStore = defineStore({
   actions: {
     async reload() {
       const groups = await api.GetGroups({});
-      this.group = new PluginGroups(groups, { mergeSetting: true });
-      this.originGroup = new PluginGroups(cloneDeep(groups));
+      const installedGroups = filterInstalledPluginGroups(groups);
+      this.group = new PluginGroups(installedGroups, { mergeSetting: true });
+      this.originGroup = new PluginGroups(cloneDeep(installedGroups));
       console.log("group", this.group);
       console.log("originGroup", this.originGroup);
     },

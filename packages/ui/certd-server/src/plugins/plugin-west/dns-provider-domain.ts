@@ -10,7 +10,7 @@ type westRecord = {
     record_id: number;
   };
 };
-
+// 这个别删，在WestDnsProvider有使用
 export class WestDnsProviderDomain extends AbstractDnsProvider<westRecord> {
   access!: WestAccess;
 

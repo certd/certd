@@ -9,7 +9,7 @@
     "dev-start": "cross-env NODE_ENV=dev  node --optimize-for-size ./bootstrap.js",
     "dc": "cd ../../../ && pnpm run dev",
     "dev": "cross-env NODE_ENV=dev mwtsc --watch --run  @midwayjs/mock/app",
-    "dev-commlocal": "cross-env NODE_ENV=dev-commlocal mwtsc --watch --run @midwayjs/mock/app",
+    "dev-localcomm": "cross-env NODE_ENV=dev-localcomm mwtsc --watch --run @midwayjs/mock/app",
     "dev-commpro": "cross-env NODE_ENV=dev-commpro mwtsc --watch --run @midwayjs/mock/app",
     "dev-pg": "cross-env NODE_ENV=dev-pg mwtsc --watch --run @midwayjs/mock/app",
     "dev-mysql": "cross-env NODE_ENV=dev-mysql mwtsc --watch --run @midwayjs/mock/app",
