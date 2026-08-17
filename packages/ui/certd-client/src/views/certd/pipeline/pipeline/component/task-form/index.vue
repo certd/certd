@@ -78,7 +78,7 @@
                 </template>
               </v-draggable>
               <div v-if="editMode && currentTask.steps?.length > 0" class="step-batch-actions">
-                <a-tooltip v-if="!stepBatchEditing" title="批量编辑（专业版）">
+                <a-tooltip v-if="!stepBatchEditing" title="批量编辑步骤">
                   <a-button type="text" size="small" class="need-plus" @click="setStepBatchEditing(true)">
                     <fs-icon icon="tdesign:ai-edit-1"></fs-icon>
                   </a-button>
@@ -525,6 +525,9 @@ export default {
         > * {
           margin: 0px;
           margin-right: 15px;
+        }
+
+        .fs-icon {
         }
       }
       .action {

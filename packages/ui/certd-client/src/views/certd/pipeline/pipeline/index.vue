@@ -156,8 +156,8 @@
                       </div>
                     </template>
                     <template v-else>
-                      <text-editable v-model="stage.title" :disabled="!editMode"></text-editable>
-                      <a-tooltip v-if="editMode && stage.tasks.length > 0" title="批量编辑（专业版）">
+                      <text-editable v-model="stage.title" :disabled="!editMode" title="编辑阶段标题"></text-editable>
+                      <a-tooltip v-if="editMode && stage.tasks.length > 0" title="批量编辑任务">
                         <a-button type="text" size="small" class="stage-batch-edit-button need-plus" @click="setStageBatchEditing(stage, true)">
                           <fs-icon icon="tdesign:ai-edit-1"></fs-icon>
                         </a-button>
