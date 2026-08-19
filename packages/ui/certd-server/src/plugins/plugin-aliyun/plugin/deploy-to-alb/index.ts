@@ -149,15 +149,32 @@ export class AliyunDeployCertToALB extends AbstractTaskPlugin {
     this.logger.info(`开始部署证书到阿里云(alb)`);
     const access = await this.getAccess<AliyunAccess>(this.accessId);
     const certId = await this.getAliyunCertId(access);
-
+    
     //部署扩展证书
     const albClientV2 = this.getALBClientV2(access);
+
+
+     if (this.clearExpiredCert !== false) {
+      this.logger.info(`准备开始清理过期证书`);
+      for (const listener of this.listeners) {
+        try {
+          await this.clearInvalidCert(albClientV2, listener);
+        } catch (e) {
+          this.logger.error(`清理监听器${listener}的过期证书失败`, e);
+        }
+      }
+    }
+    
+    this.logger.info(`开始部署证书`);
+
     if (this.deployType === "extension") {
       await this.deployExtensionCert(albClientV2, certId);
     } else {
       const client = await this.getLBClient(access, this.regionId);
       await this.deployDefaultCert(certId, client);
     }
+    
+
     if (this.clearExpiredCert !== false) {
       this.logger.info(`准备开始清理过期证书`);
       await this.ctx.utils.sleep(30000);
