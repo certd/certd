@@ -44,7 +44,7 @@
 
 <script lang="ts" setup>
 import { ref, reactive, computed, onMounted, watch } from "vue";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { DomainResolve, PingTest, TelnetTest } from "./api";
 import TestCase from "./TestCase.vue";
 
@@ -193,7 +193,7 @@ async function runAllTests() {
 
   // 检查是否有域名
   if (!domain) {
-    message.error("请输入域名");
+    notification.error({ message: "请输入域名" });
     return;
   }
 
@@ -203,7 +203,7 @@ async function runAllTests() {
   try {
     await Promise.allSettled([domainResolveRef.value?.test(), pingTestRef.value?.test(), telnetTestRef.value?.test()]);
   } catch (error) {
-    message.error("部分测试执行失败，请查看详细结果");
+    notification.error({ message: "部分测试执行失败，请查看详细结果" });
   } finally {
     loading.value = false;
   }

@@ -4,7 +4,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { useFormDialog } from "../../../use/use-dialog";
 import { computed, inject, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -86,7 +86,7 @@ function openUploadCertDialog() {
             showErrorNotify: true,
           }
         );
-        message.success(t("certd.pluginCommon.uploadSuccess"));
+        notification.success({ message: t("certd.pluginCommon.uploadSuccess") });
         emit("submit");
       } finally {
         loading.value = false;

@@ -562,6 +562,7 @@ export class PluginService extends BaseService<PluginEntity> {
       }
       merge(record, {
         name: item.name,
+        fullName: item.name,
         title: item.title,
         type: "builtIn",
         icon: item.icon,
@@ -601,7 +602,7 @@ export class PluginService extends BaseService<PluginEntity> {
 
   private normalizeStorePluginAuthor(plugin: Record<string, any>) {
     const author = `${plugin.author || ""}`.trim();
-    if (!author) {
+    if (!author || author.toLowerCase() === "local") {
       throw new Error("请先填写插件作者");
     }
     plugin.author = author;
@@ -1449,20 +1450,13 @@ export class PluginService extends BaseService<PluginEntity> {
     let old: PluginEntity | null;
     if (entityType === "store") {
       old = await this.findOne({
-        where: [
-          {
-            type: "store",
-            fullName,
-          },
-          {
-            type: "store",
-            author: loaded.author,
-            name: loaded.name,
-          },
-        ],
+        where: {
+          type: "store",
+          fullName,
+        },
       });
       if (!old) {
-        // 兼容旧版本仍标记为 custom 的在线插件，覆盖安装时应复用原记录。
+        // 兼容迁移前的旧插件：没有 fullName 时按作者和名称找回，并在下面补齐 fullName。
         old = await this.findOne({
           where: {
             author: loaded.author,

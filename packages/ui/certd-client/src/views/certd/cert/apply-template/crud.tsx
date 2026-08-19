@@ -1,5 +1,5 @@
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, useFormWrapper, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import * as api from "./api";
 import { useProjectStore } from "/@/store/project";
 import { usePluginStore } from "/@/store/plugin";
@@ -38,7 +38,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
 
   async function setDefault(row: any) {
     await api.SetDefault(row.id);
-    message.success("设置成功");
+    notification.success({ message: "设置成功" });
     await crudExpose.doRefresh();
   }
 

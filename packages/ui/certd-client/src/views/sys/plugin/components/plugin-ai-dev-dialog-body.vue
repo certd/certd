@@ -29,7 +29,7 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import * as api from "../api";
 import { env } from "/src/utils/util.env";
 
@@ -86,14 +86,14 @@ async function loadPluginOptions() {
 
 async function createPrompt() {
   if (!requirement.value.trim()) {
-    message.warning("请先填写插件开发需求");
+    notification.warning({ message: "请先填写插件开发需求" });
     return;
   }
   creating.value = true;
   try {
     const accessToken = await api.GetScopedAccessToken(["sys/ai"]);
     prompt.value = buildPrompt(accessToken.token);
-    message.success("启动提示词已生成");
+    notification.success({ message: "启动提示词已生成" });
   } finally {
     creating.value = false;
   }
@@ -152,7 +152,7 @@ async function copyPrompt() {
     return;
   }
   await navigator.clipboard.writeText(prompt.value);
-  message.success("已复制启动提示词");
+  notification.success({ message: "已复制启动提示词" });
 }
 
 onMounted(loadPluginOptions);

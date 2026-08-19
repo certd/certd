@@ -9,7 +9,7 @@
 
 <script lang="ts" setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { IframeClient } from "@certd/lib-iframe";
 import * as api from "../api";
 import { usePluginStore } from "/@/store/plugin";
@@ -82,7 +82,7 @@ function setupIframeClient() {
     return;
   }
   iframeClient = new IframeClient(iframeRef.value, (error: any) => {
-    message.error(error?.message || "插件操作失败");
+    notification.error({ message: error?.message || "插件操作失败" });
   });
   iframeClient.register("installPlugin", async req => {
     return await installPluginVersion(req.data);

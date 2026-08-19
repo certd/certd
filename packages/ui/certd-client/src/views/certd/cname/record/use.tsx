@@ -1,5 +1,5 @@
 import { dict } from "@fast-crud/fast-crud";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import * as api from "./api";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useI18n } from "/@/locales";
@@ -48,7 +48,7 @@ export function useCnameImport() {
           domainList: form.domainList,
           cnameProviderId: form.cnameProviderId,
         });
-        message.success(t("certd.cname.importTaskSubmitted"));
+        notification.success({ message: t("certd.cname.importTaskSubmitted") });
         if (req.afterSubmit) {
           req.afterSubmit();
         }

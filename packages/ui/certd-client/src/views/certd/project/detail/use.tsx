@@ -3,7 +3,7 @@ import { useDicts } from "../../dicts";
 import { useFormDialog } from "/@/use/use-dialog";
 import * as api from "./api";
 import { useProjectStore } from "/@/store/project";
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import { Ref, ref } from "vue";
 export function useApprove() {
   const { openFormDialog } = useFormDialog();
@@ -64,7 +64,7 @@ export function useTransfer() {
       okType: "primary",
       onOk: async () => {
         await api.TransferResources();
-        message.success("迁移成功");
+        notification.success({ message: "迁移成功" });
         await loadMyResources();
       },
     });
