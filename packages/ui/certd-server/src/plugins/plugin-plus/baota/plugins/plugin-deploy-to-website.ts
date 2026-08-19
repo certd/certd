@@ -88,7 +88,7 @@ export class BaotaDeployWebSiteCert extends AbstractTaskPlugin {
   })
   siteName!: string | string[];
 
-  async onInstance() { }
+  async onInstance() {}
   async execute(): Promise<void> {
     const { cert, accessId } = this;
     const access = await this.getAccess(accessId);
@@ -134,7 +134,7 @@ export class BaotaDeployWebSiteCert extends AbstractTaskPlugin {
             this.logger.error(e.message);
             this.logger.warn(`首先请确认站点 ${site} 是否存在，如果存在，请到宝塔上手动保存一下该站点证书试试`);
           }
-          throw e
+          throw e;
         }
       });
     }

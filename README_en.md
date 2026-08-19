@@ -1,4 +1,4 @@
-# Certd
+﻿# Certd
 
 [中文](./README.md) | English
 
@@ -95,21 +95,44 @@ You can choose one of the following deployment methods based on your needs:
 
 #### Docker Image Information:
 
-- Domestic Image Addresses:
-  - `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest`
-  - `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:armv7`, `[version]-armv7`
-- DockerHub Addresses:
-  - `https://hub.docker.com/r/greper/certd`
-  - `greper/certd:latest`
-  - `greper/certd:armv7`, `greper/certd:[version]-armv7`
-- GitHub Packages Addresses:
+**Release channels:**
 
-  - `ghcr.io/certd/certd:latest`
-  - `ghcr.io/certd/certd:armv7`, `ghcr.io/certd/certd:[version]-armv7`
+| Channel | Description |
+| --- | --- |
+| `stable` / `slim-stable` | **Stable version**, production-ready and fully tested, recommended for production environments |
+| `latest` / `slim` / `armv7` | **Preview version**, latest development build with newest features but potentially less stable |
+
+**Image tags:**
+
+| Channel | Tag | Versioned Tag | Base System | Description |
+| --- | --- | --- | --- | --- |
+| **Stable** | `stable` | `[version]-stable` | Alpine Linux | Recommended for production |
+| | `slim-stable` | `[version]-slim-stable` | Debian slim | Better DNS resolution compatibility |
+| **Preview** | `latest` | `[version]` | Alpine Linux | Default, small image size |
+| | `slim` | `[version]-slim` | Debian slim | Better DNS resolution compatibility |
+| | `armv7` | `[version]-armv7` | Alpine Linux | ARMv7 architecture |
+
+**Stable version image addresses:**
+
+| Registry | `stable` | `slim-stable` |
+| --- | --- | --- |
+| Aliyun | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:stable` | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:slim-stable` |
+| Docker Hub | `greper/certd:stable` | `greper/certd:slim-stable` |
+| GitHub Packages | `ghcr.io/certd/certd:stable` | `ghcr.io/certd/certd:slim-stable` |
+
+**Preview version image addresses:**
+
+| Registry | `latest` | `slim` | `armv7` |
+| --- | --- | --- | --- |
+| Aliyun | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest` | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:slim` | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:armv7` |
+| Docker Hub | `greper/certd:latest` | `greper/certd:slim` | `greper/certd:armv7` |
+| GitHub Packages | `ghcr.io/certd/certd:latest` | `ghcr.io/certd/certd:slim` | `ghcr.io/certd/certd:armv7` |
+
+> For versioned tags, replace tag name with `[version]-tag`, e.g. replace `stable` with `[version]-stable`
 
 - Images are built automatically by `Actions`, with a transparent process. Please use them with confidence.
-  - [Click here to view image build logs](https://github.com/certd/certd/actions/workflows/build-image.yml)
-
+  - [Click here to view preview version build logs](https://github.com/certd/certd/actions/workflows/release-image.yml)
+  - [Click here to view stable version release logs](https://github.com/certd/certd/actions/workflows/stable-release.yml)
 ![](./docs/images/action/action-build.jpg)
 
 > Note:
@@ -123,7 +146,14 @@ You can choose one of the following deployment methods based on your needs:
 
 ## 5. Ecosystem
 
-### 1. Client Tool: SSL-Assistant
+### 1. Official Client: Certd Client
+
+`Certd Client` is the official Certd certificate deployment client that runs on application servers. It automatically discovers local Nginx, Apache, and IIS sites, retrieves new certificates from Certd, and deploys them locally. It is designed for servers that should not expose SSH or cannot be accessed directly by Certd.
+
+Project Home: [AtomGit](https://atomgit.com/certd/certd-client/) | [GitHub](https://github.com/certd/certd-client/)
+Downloads: [AtomGit Releases](https://atomgit.com/certd/certd-client/releases) | [GitHub Releases](https://github.com/certd/certd-client/releases)
+
+### 2. Third-Party Client: SSL-Assistant
 
 `SSL Assistant` is a certificate deployment and management assistant client that runs on hosts. It supports automatic scanning of the host's `Nginx` configuration and pulling certificates from `Certd` for deployment. This tool is very useful when you don't want to expose your SSH host password.
 

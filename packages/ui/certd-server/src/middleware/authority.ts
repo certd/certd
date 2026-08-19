@@ -40,6 +40,8 @@ export class AuthorityMiddleware implements IWebMiddleware {
         await next();
         return;
       }
+      ctx.auditRouteInfo = routeInfo;
+      this.extractProjectId(ctx);
       let permission = routeInfo.description || "";
       permission = permission.trim().split(" ")[0];
       if (permission == null || permission === "") {
@@ -60,6 +62,9 @@ export class AuthorityMiddleware implements IWebMiddleware {
         } catch (err) {
           logger.error("token verify error: ", err);
           return this.notAuth(ctx);
+        }
+        if (!this.isScopedTokenPathAllowed(ctx)) {
+          return this.notScoped(ctx);
         }
       } else {
         if (permission === Constants.per.guestOptionalAuth) {
@@ -107,6 +112,45 @@ export class AuthorityMiddleware implements IWebMiddleware {
       ctx.body.message = message;
     }
     return;
+  }
+
+  private notScoped(ctx: IMidwayKoaContext) {
+    ctx.status = 403;
+    ctx.body = Constants.res.permission;
+    return;
+  }
+
+  private isScopedTokenPathAllowed(ctx: IMidwayKoaContext) {
+    const user = ctx.user as { scoped?: unknown } | undefined;
+    if (!user || !("scoped" in user)) {
+      return true;
+    }
+    if (!Array.isArray(user.scoped) || user.scoped.length === 0) {
+      return false;
+    }
+
+    const requestPath = ctx.path.replace(/^\/+|\/+$/g, "");
+    return user.scoped.some(scope => {
+      if (typeof scope !== "string") {
+        return false;
+      }
+      const normalizedScope = scope.trim().replace(/^\/+|\/+$/g, "");
+      if (!/^[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*$/.test(normalizedScope)) {
+        return false;
+      }
+      const scopedPrefix = `api/scoped/${normalizedScope}`;
+      return requestPath === scopedPrefix || requestPath.startsWith(`${scopedPrefix}/`);
+    });
+  }
+
+  private extractProjectId(ctx: IMidwayKoaContext) {
+    const headerVal = ctx.headers["project-id"] as string;
+    const queryVal = (ctx.request as any)?.query?.projectId;
+    const bodyVal = (ctx.request as any)?.body?.projectId;
+    const raw = headerVal || queryVal || bodyVal;
+    if (raw != null && raw !== "") {
+      ctx.projectId = parseInt(String(raw), 10) || 0;
+    }
   }
 
   private getTokenFromRequest(ctx: IMidwayKoaContext) {

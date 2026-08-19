@@ -279,3 +279,11 @@ export class SysSafeSetting extends BaseSettings {
     autoHiddenTimes: 5,
   };
 }
+
+export class SysPluginSetting extends BaseSettings {
+  static __title__ = "系统插件设置";
+  static __key__ = "sys.plugin";
+  static __access__ = "private";
+
+  lastSyncTime?: number;
+}

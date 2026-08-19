@@ -5,9 +5,8 @@ import { CodeService } from "../../../modules/basic/service/code-service.js";
 import { checkComm } from "@certd/plus-core";
 import { CaptchaService } from "../../../modules/basic/service/captcha-service.js";
 import { PasskeyService } from "../../../modules/login/service/passkey-service.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
-/**
- */
 @Provide()
 @Controller("/api/")
 export class LoginController extends BaseController {
@@ -27,7 +26,11 @@ export class LoginController extends BaseController {
   @Inject()
   passkeyService: PasskeyService;
 
-  @Post("/login", { description: Constants.per.guest })
+  getAuditType(): string {
+    return AuditType.login.value;
+  }
+
+  @Post("/login", { description: Constants.per.guest, summary: "用户名密码登录" })
   public async login(
     @Body(ALL)
     body: any,
@@ -38,16 +41,22 @@ export class LoginController extends BaseController {
     if (settings.captchaEnabled === true) {
       await this.captchaService.doValidate({ form: body.captcha, must: false, captchaAddonId: settings.captchaAddonId, req: { remoteIp } });
     }
-    const token = await this.loginService.loginByPassword(body);
-    this.writeTokenCookie(token);
-    return this.ok(token);
+    try {
+      const token = await this.loginService.loginByPassword(body);
+      this.writeTokenCookie(token);
+      this.auditLog({ userId: token.userId, username: token.username, content: `用户「${body.username}」登录成功` });
+      return this.ok(token);
+    } catch (err: any) {
+      this.auditLog({ userId: err.userId, username: body.username, content: `用户「${body.username}」登录失败：${err.message}` });
+      throw err;
+    }
   }
 
   private writeTokenCookie(token: { expire: any; token: any }) {
     // this.loginService.writeTokenCookie(this.ctx,token);
   }
 
-  @Post("/loginBySms", { description: Constants.per.guest })
+  @Post("/loginBySms", { description: Constants.per.guest, summary: "短信验证码登录" })
   public async loginBySms(
     @Body(ALL)
     body: any
@@ -58,31 +67,42 @@ export class LoginController extends BaseController {
     }
     checkComm();
 
-    const token = await this.loginService.loginBySmsCode({
-      phoneCode: body.phoneCode,
-      mobile: body.mobile,
-      smsCode: body.smsCode,
-      randomStr: body.randomStr,
-      inviteCode: body.inviteCode,
-    });
+    try {
+      const token = await this.loginService.loginBySmsCode({
+        phoneCode: body.phoneCode,
+        mobile: body.mobile,
+        smsCode: body.smsCode,
+        randomStr: body.randomStr,
+        inviteCode: body.inviteCode,
+      });
 
-    this.writeTokenCookie(token);
-
-    return this.ok(token);
+      this.writeTokenCookie(token);
+      this.auditLog({ userId: token.userId, username: token.username, content: `用户「${body.mobile}」短信登录成功` });
+      return this.ok(token);
+    } catch (err: any) {
+      this.auditLog({ userId: err.userId, username: body.mobile, content: `用户「${body.mobile}」短信登录失败：${err.message}` });
+      throw err;
+    }
   }
 
-  @Post("/loginByTwoFactor", { description: Constants.per.guest })
+  @Post("/loginByTwoFactor", { description: Constants.per.guest, summary: "两步验证登录" })
   public async loginByTwoFactor(
     @Body(ALL)
     body: any
   ) {
-    const token = await this.loginService.loginByTwoFactor({
-      loginId: body.loginId,
-      verifyCode: body.verifyCode,
-    });
+    try {
+      const token = await this.loginService.loginByTwoFactor({
+        loginId: body.loginId,
+        verifyCode: body.verifyCode,
+      });
 
-    this.writeTokenCookie(token);
-    return this.ok(token);
+      this.writeTokenCookie(token);
+      this.auditLog({ userId: token.userId, username: token.username, content: `用户「${body.loginId}」两步验证登录成功` });
+      return this.ok(token);
+    } catch (err: any) {
+      this.auditLog({ userId: err.userId, username: body.loginId, content: `用户「${body.loginId}」两步验证登录失败：${err.message}` });
+      throw err;
+    }
   }
 
   @Post("/passkey/generateAuthentication", { description: Constants.per.guest })
@@ -92,24 +112,30 @@ export class LoginController extends BaseController {
     return this.ok(options);
   }
 
-  @Post("/loginByPasskey", { description: Constants.per.guest })
+  @Post("/loginByPasskey", { description: Constants.per.guest, summary: "Passkey登录" })
   public async loginByPasskey(
     @Body(ALL)
     body: any
   ) {
-    const credential = body.credential;
-    const challenge = body.challenge;
+    try {
+      const credential = body.credential;
+      const challenge = body.challenge;
 
-    const token = await this.loginService.loginByPasskey(
-      {
-        credential,
-        challenge,
-      },
-      this.ctx
-    );
+      const token = await this.loginService.loginByPasskey(
+        {
+          credential,
+          challenge,
+        },
+        this.ctx
+      );
 
-    // this.writeTokenCookie(token);
-    return this.ok(token);
+      this.writeTokenCookie(token);
+      this.auditLog({ userId: token.userId, username: token.username, content: "用户Passkey登录成功" });
+      return this.ok(token);
+    } catch (err: any) {
+      this.auditLog({ userId: err.userId, username: body.credential, content: `用户Passkey登录失败：${err.message}` });
+      throw err;
+    }
   }
 
   @Post("/logout", { description: Constants.per.authOnly })

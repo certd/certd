@@ -6,7 +6,7 @@ import * as querystring from "node:querystring";
 export class BaotaClient {
   access: BaotaAccess;
   http: HttpClient;
-  logger: ILogger
+  logger: ILogger;
 
   constructor(access: BaotaAccess, http: HttpClient) {
     this.access = access;

@@ -272,7 +272,7 @@ export class UserService extends BaseService<UserEntity> {
       // return;
     }
     await this.resetPassword(user.id, data.password);
-    return user.username;
+    return user;
   }
 
   async getByUsername(username: any) {

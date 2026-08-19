@@ -37,12 +37,12 @@ export class SysAccessController extends AccessController {
     return await super.list(body);
   }
 
-  @Post("/add", { description: "sys:settings:edit" })
+  @Post("/add", { description: "sys:settings:edit", summary: "添加系统授权配置" })
   async add(@Body(ALL) bean: any) {
     return await super.add(bean);
   }
 
-  @Post("/update", { description: "sys:settings:edit" })
+  @Post("/update", { description: "sys:settings:edit", summary: "更新系统授权配置" })
   async update(@Body(ALL) bean: any) {
     return await super.update(bean);
   }
@@ -51,7 +51,7 @@ export class SysAccessController extends AccessController {
     return await super.info(id);
   }
 
-  @Post("/delete", { description: "sys:settings:edit" })
+  @Post("/delete", { description: "sys:settings:edit", summary: "删除系统授权配置" })
   async delete(@Query("id") id: number) {
     return await super.delete(id);
   }

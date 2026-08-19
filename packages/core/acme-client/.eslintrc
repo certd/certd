@@ -4,10 +4,6 @@
     "ecmaVersion": 2022,
     "sourceType": "module"
   },
-  "ignorePatterns": [
-    "dist",
-    "node_modules"
-  ],
   "extends": [
     "plugin:prettier/recommended",
     "prettier"
@@ -36,5 +32,9 @@
         "ignoreUrls": true
       }
     ]
-  }
+  },
+  "ignorePatterns": [
+    "node_modules/**",
+    "dist/**"
+  ]
 }

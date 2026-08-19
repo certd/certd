@@ -12,6 +12,7 @@ import { SiteInfoService } from "../monitor/index.js";
 import { NotificationService } from "../pipeline/service/notification-service.js";
 import { PipelineService } from "../pipeline/service/pipeline-service.js";
 import { UserService } from "../sys/authority/service/user-service.js";
+import { AuditService } from "../sys/enterprise/service/audit-service.js";
 import { ProjectService } from "../sys/enterprise/service/project-service.js";
 
 @Provide()
@@ -50,16 +51,14 @@ export class AutoCron {
   domainService: DomainService;
   @Inject()
   projectService: ProjectService;
+  @Inject()
+  auditService: AuditService;
 
   async init() {
     logger.info("加载定时trigger开始");
     await this.pipelineService.onStartup(this.immediateTriggerOnce, this.onlyAdminUser);
     logger.info("加载定时trigger完成");
-    //
-    // const meta = getClassMetadata(CLASS_KEY, this.echoPlugin);
-    // console.log('meta', meta);
-    // const metas = listPropertyDataFromClass(CLASS_KEY, this.echoPlugin);
-    // console.log('metas', metas);
+
     await this.registerSiteMonitorCron();
 
     await this.registerPlusExpireCheckCron();
@@ -67,6 +66,8 @@ export class AutoCron {
     await this.registerUserExpireCheckCron();
 
     await this.registerDomainExpireCheckCron();
+
+    // await this.registerAuditCleanCron();
   }
 
   async registerSiteMonitorCron() {
@@ -237,5 +238,11 @@ export class AutoCron {
         await this.domainService.startSyncExpirationTask({});
       },
     });
+  }
+
+  async registerAuditCleanCron() {
+    logger.info("注册审计日志清理定时任务");
+    this.auditService.registerCleanCron();
+    logger.info("注册审计日志清理定时任务完成");
   }
 }

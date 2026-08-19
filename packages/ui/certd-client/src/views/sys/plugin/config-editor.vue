@@ -49,6 +49,9 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Rollbackable from "./rollbackable.vue";
 import { usePluginStore } from "/@/store/plugin";
+import * as api from "./api";
+// @ts-ignore js-yaml 没有在当前前端包中提供类型声明。
+import yaml from "js-yaml";
 const route = useRoute();
 const router = useRouter();
 const pluginStore = usePluginStore();
@@ -264,12 +267,35 @@ function clearFormValue(key: string) {
   console.log(key, configForm);
 }
 
+function getPluginOriginName() {
+  if (props.plugin.fullName) {
+    return props.plugin.fullName;
+  }
+  if (props.plugin.author && props.plugin.name) {
+    return `${props.plugin.author}/${props.plugin.name}`;
+  }
+  return props.plugin.name;
+}
+
 async function loadPluginSetting() {
-  currentPlugin.value = await pluginStore.getPluginDefineFromOrigin(props.plugin.name);
-  for (const key in currentPlugin.value.input) {
+  const originName = getPluginOriginName();
+  currentPlugin.value = await pluginStore.getPluginDefineFromOrigin(originName);
+  if (!currentPlugin.value?.input && originName !== props.plugin.name) {
+    currentPlugin.value = await pluginStore.getPluginDefineFromOrigin(props.plugin.name);
+  }
+  if (!currentPlugin.value?.input && props.plugin.id) {
+    const plugin = await api.GetObj(props.plugin.localPluginId || props.plugin.id);
+    const metadata = plugin.metadata ? yaml.load(plugin.metadata) : {};
+    currentPlugin.value = {
+      ...plugin,
+      ...(metadata || {}),
+    };
+  }
+  const input = currentPlugin.value?.input || {};
+  for (const key in input) {
     configForm[key] = {};
   }
-  const setting = props.plugin.sysSetting;
+  const setting = currentPlugin.value?.sysSetting || props.plugin.sysSetting;
   if (setting) {
     const settingJson = JSON.parse(setting);
     merge(configForm, settingJson.metadata?.input || {});

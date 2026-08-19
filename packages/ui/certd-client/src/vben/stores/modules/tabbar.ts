@@ -46,7 +46,7 @@ export const useTabbarStore = defineStore("core-tabbar", {
      */
     async _bulkCloseByPaths(paths: string[]) {
       this.tabs = this.tabs.filter(item => {
-        return !paths.includes(getTabPath(item));
+        return !paths.includes(getTabPath(item as any));
       });
 
       this.updateCacheTabs();
@@ -61,7 +61,9 @@ export const useTabbarStore = defineStore("core-tabbar", {
         return;
       }
       const index = this.tabs.findIndex(item => item.fullPath === fullPath);
-      index !== -1 && this.tabs.splice(index, 1);
+      if (index !== -1 && this.tabs[index]) {
+        this.tabs.splice(index, 1);
+      }
     },
     /**
      * @zh_CN 跳转到默认标签页
@@ -100,7 +102,7 @@ export const useTabbarStore = defineStore("core-tabbar", {
       }
 
       const tabIndex = this.tabs.findIndex(tab => {
-        return getTabPath(tab) === getTabPath(routeTab);
+        return getTabPath(tab as any) === getTabPath(routeTab as any);
       });
 
       if (tabIndex === -1) {
@@ -112,11 +114,15 @@ export const useTabbarStore = defineStore("core-tabbar", {
         if (maxNumOfOpenTab > 0 && this.tabs.filter(tab => tab.name === routeTab.name).length >= maxNumOfOpenTab) {
           // 关闭第一个
           const index = this.tabs.findIndex(item => item.name === routeTab.name);
-          index !== -1 && this.tabs.splice(index, 1);
+          if (index !== -1) {
+            this.tabs.splice(index, 1);
+          }
         } else if (maxCount > 0 && this.tabs.length >= maxCount) {
           // 关闭第一个
           const index = this.tabs.findIndex(item => !Reflect.has(item.meta, "affixTab") || !item.meta.affixTab);
-          index !== -1 && this.tabs.splice(index, 1);
+          if (index !== -1) {
+            this.tabs.splice(index, 1);
+          }
         }
         this.tabs.push(tab);
       } else {
@@ -145,7 +151,7 @@ export const useTabbarStore = defineStore("core-tabbar", {
      * @zh_CN 关闭所有标签页
      */
     async closeAllTabs(router: Router) {
-      const newTabs = this.tabs.filter(tab => isAffixTab(tab));
+      const newTabs = this.tabs.filter(tab => isAffixTab(tab as any));
       this.tabs = newTabs.length > 0 ? newTabs : [...this.tabs].splice(0, 1);
       await this._goToDefaultTab(router);
       this.updateCacheTabs();
@@ -155,7 +161,7 @@ export const useTabbarStore = defineStore("core-tabbar", {
      * @param tab
      */
     async closeLeftTabs(tab: TabDefinition) {
-      const index = this.tabs.findIndex(item => getTabPath(item) === getTabPath(tab));
+      const index = this.tabs.findIndex(item => getTabPath(item as any) === getTabPath(tab as any));
 
       if (index < 1) {
         return;
@@ -165,8 +171,8 @@ export const useTabbarStore = defineStore("core-tabbar", {
       const paths: string[] = [];
 
       for (const item of leftTabs) {
-        if (!isAffixTab(item)) {
-          paths.push(getTabPath(item));
+        if (!isAffixTab(item as any)) {
+          paths.push(getTabPath(item as any));
         }
       }
       await this._bulkCloseByPaths(paths);
@@ -176,18 +182,18 @@ export const useTabbarStore = defineStore("core-tabbar", {
      * @param tab
      */
     async closeOtherTabs(tab: TabDefinition) {
-      const closePaths = this.tabs.map(item => getTabPath(item));
+      const closePaths = this.tabs.map(item => getTabPath(item as any));
 
       const paths: string[] = [];
 
       for (const path of closePaths) {
         if (path !== tab.fullPath) {
-          const closeTab = this.tabs.find(item => getTabPath(item) === path);
+          const closeTab = this.tabs.find(item => getTabPath(item as any) === path);
           if (!closeTab) {
             continue;
           }
-          if (!isAffixTab(closeTab)) {
-            paths.push(getTabPath(closeTab));
+          if (!isAffixTab(closeTab as any)) {
+            paths.push(getTabPath(closeTab as any));
           }
         }
       }
@@ -198,15 +204,15 @@ export const useTabbarStore = defineStore("core-tabbar", {
      * @param tab
      */
     async closeRightTabs(tab: TabDefinition) {
-      const index = this.tabs.findIndex(item => getTabPath(item) === getTabPath(tab));
+      const index = this.tabs.findIndex(item => getTabPath(item as any) === getTabPath(tab as any));
 
       if (index !== -1 && index < this.tabs.length - 1) {
         const rightTabs = this.tabs.slice(index + 1);
 
         const paths: string[] = [];
         for (const item of rightTabs) {
-          if (!isAffixTab(item)) {
-            paths.push(getTabPath(item));
+          if (!isAffixTab(item as any)) {
+            paths.push(getTabPath(item as any));
           }
         }
         await this._bulkCloseByPaths(paths);
@@ -252,14 +258,14 @@ export const useTabbarStore = defineStore("core-tabbar", {
      */
     async closeTabByKey(key: string, router: Router) {
       const originKey = decodeURIComponent(key);
-      const index = this.tabs.findIndex(item => getTabPath(item) === originKey);
+      const index = this.tabs.findIndex(item => getTabPath(item as any) === originKey);
       if (index === -1) {
         return;
       }
 
       const tab = this.tabs[index];
       if (tab) {
-        await this.closeTab(tab, router);
+        await this.closeTab(tab as TabDefinition, router);
       }
     },
 
@@ -268,7 +274,7 @@ export const useTabbarStore = defineStore("core-tabbar", {
      * @param path
      */
     getTabByPath(path: string) {
-      return this.getTabs.find(item => getTabPath(item) === path) as TabDefinition;
+      return this.getTabs.find(item => getTabPath(item as any) === path) as TabDefinition;
     },
     /**
      * @zh_CN 新窗口打开标签页
@@ -283,7 +289,7 @@ export const useTabbarStore = defineStore("core-tabbar", {
      * @param tab
      */
     async pinTab(tab: TabDefinition) {
-      const index = this.tabs.findIndex(item => getTabPath(item) === getTabPath(tab));
+      const index = this.tabs.findIndex(item => getTabPath(item as any) === getTabPath(tab as any));
       if (index !== -1) {
         const oldTab = this.tabs[index];
         tab.meta.affixTab = true;
@@ -292,9 +298,9 @@ export const useTabbarStore = defineStore("core-tabbar", {
         this.tabs.splice(index, 1, tab);
       }
       // 过滤固定tabs，后面更改affixTabOrder的值的话可能会有问题，目前行464排序affixTabs没有设置值
-      const affixTabs = this.tabs.filter(tab => isAffixTab(tab));
+      const affixTabs = this.tabs.filter(tab => isAffixTab(tab as any));
       // 获得固定tabs的index
-      const newIndex = affixTabs.findIndex(item => getTabPath(item) === getTabPath(tab));
+      const newIndex = affixTabs.findIndex(item => getTabPath(item as any) === getTabPath(tab as any));
       // 交换位置重新排序
       await this.sortTabs(index, newIndex);
     },
@@ -324,7 +330,7 @@ export const useTabbarStore = defineStore("core-tabbar", {
       if (tab?.meta?.newTabTitle) {
         return;
       }
-      const findTab = this.tabs.find(item => getTabPath(item) === getTabPath(tab));
+      const findTab = this.tabs.find(item => getTabPath(item as any) === getTabPath(tab as any));
       if (findTab) {
         findTab.meta.newTabTitle = undefined;
         await this.updateCacheTabs();
@@ -348,7 +354,7 @@ export const useTabbarStore = defineStore("core-tabbar", {
      * @param title
      */
     async setTabTitle(tab: TabDefinition, title: string) {
-      const findTab = this.tabs.find(item => getTabPath(item) === getTabPath(tab));
+      const findTab = this.tabs.find(item => getTabPath(item as any) === getTabPath(tab as any));
 
       if (findTab) {
         findTab.meta.newTabTitle = title;
@@ -389,7 +395,7 @@ export const useTabbarStore = defineStore("core-tabbar", {
      * @param tab
      */
     async unpinTab(tab: TabDefinition) {
-      const index = this.tabs.findIndex(item => getTabPath(item) === getTabPath(tab));
+      const index = this.tabs.findIndex(item => getTabPath(item as any) === getTabPath(tab as any));
 
       if (index !== -1) {
         const oldTab = this.tabs[index];
@@ -399,7 +405,7 @@ export const useTabbarStore = defineStore("core-tabbar", {
         this.tabs.splice(index, 1, tab);
       }
       // 过滤固定tabs，后面更改affixTabOrder的值的话可能会有问题，目前行464排序affixTabs没有设置值
-      const affixTabs = this.tabs.filter(tab => isAffixTab(tab));
+      const affixTabs = this.tabs.filter(tab => isAffixTab(tab as any));
       // 获得固定tabs的index,使用固定tabs的下一个位置也就是活动tabs的第一个位置
       const newIndex = affixTabs.length;
       // 交换位置重新排序
@@ -432,8 +438,8 @@ export const useTabbarStore = defineStore("core-tabbar", {
   },
   getters: {
     affixTabs(): TabDefinition[] {
-      const affixTabs = this.tabs.filter(tab => isAffixTab(tab));
-
+      const affixTabs = this.tabs.filter(tab => isAffixTab(tab as any));
+      //@ts-ignore
       return affixTabs.sort((a, b) => {
         const orderA = (a.meta?.affixTabOrder ?? 0) as number;
         const orderB = (b.meta?.affixTabOrder ?? 0) as number;
@@ -447,7 +453,8 @@ export const useTabbarStore = defineStore("core-tabbar", {
       return [...this.excludeCachedTabs];
     },
     getTabs(): TabDefinition[] {
-      const normalTabs = this.tabs.filter(tab => !isAffixTab(tab));
+      const normalTabs = this.tabs.filter(tab => !isAffixTab(tab as any));
+      //@ts-ignore
       return [...this.affixTabs, ...normalTabs].filter(Boolean);
     },
   },

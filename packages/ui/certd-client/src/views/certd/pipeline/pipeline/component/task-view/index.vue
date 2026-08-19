@@ -16,9 +16,12 @@
           </div>
         </template>
         <div class="pi-task-view-logs" :class="'id-' + item.node.id" style="overflow: auto">
-          <template v-for="(logItem, index) of item.logs" :key="index">
-            <span :class="logItem.color"> {{ logItem.time }}</span> <span>{{ logItem.content }}</span>
+          <template v-if="item.logs && item.logs.length > 0">
+            <template v-for="(logItem, index) of item.logs" :key="index">
+              <span :class="logItem.color"> {{ logItem.time }}</span> <span>{{ logItem.content }}</span>
+            </template>
           </template>
+          <div v-else class="pi-task-view-logs-empty">暂无日志（该节点本次运行未触发或没有日志记录）</div>
         </div>
       </a-tab-pane>
     </a-tabs>
@@ -105,16 +108,72 @@ export default {
     const detail = ref({ nodes: [] });
     const activeKey = ref();
     const currentHistory: Ref<RunHistory> | undefined = inject("currentHistory");
+
+    async function scrollBottom(node: any, force = false) {
+      let el = document.querySelector(`.pi-task-view-logs.id-${node.node.id}`);
+      if (!el) {
+        return;
+      }
+      //判断当前是否在底部
+      let isBottom = true;
+      if (el) {
+        isBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 5;
+      }
+      if (force) {
+        isBottom = true;
+      }
+      await nextTick();
+      el = document.querySelector(`.pi-task-view-logs.id-${node.node.id}`);
+      //如果在底部则滚动到底部
+      if (isBottom && el) {
+        el?.scrollTo({
+          top: el.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    }
+
+    // 绑定节点日志（从运行历史 logs 按节点id读取，支持着色与滚动）
+    function bindNodeLogs(node: any) {
+      if (currentHistory?.value?.logs == null) {
+        return;
+      }
+      node.logs = computed(() => {
+        if (currentHistory?.value?.logs && currentHistory.value?.logs[node.node.id] != null) {
+          const logs = currentHistory.value?.logs[node.node.id];
+          const list = [];
+          for (let log of logs) {
+            const index = log.indexOf("]", 27) + 1;
+            const time = log.substring(0, index);
+            const content = log.substring(index);
+            const color = time.includes("ERROR") ? "red" : time.includes("WARN") ? "yellow" : "green";
+            list.push({
+              time,
+              content,
+              color,
+            });
+          }
+          return list;
+        }
+        return [];
+      });
+
+      watch(
+        () => {
+          return node.logs.value.length;
+        },
+        async () => {
+          await scrollBottom(node);
+        }
+      );
+      nextTick(() => {
+        scrollBottom(node, true);
+      });
+    }
+
     const taskViewOpen = (task: any) => {
       taskModal.value.open = true;
       const nodes: any = [];
-      // nodes.push({
-      //   node: task,
-      //   type: "任务",
-      //   tab: 0,
-      //   logs: [],
-      //   result: {}
-      // });
       for (let step of task.steps) {
         nodes.push({
           node: step,
@@ -124,64 +183,8 @@ export default {
         });
       }
 
-      async function scrollBottom(node: any, force = false) {
-        let el = document.querySelector(`.pi-task-view-logs.id-${node.node.id}`);
-        if (!el) {
-          return;
-        }
-        //判断当前是否在底部
-        let isBottom = true;
-        if (el) {
-          isBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 5;
-        }
-        if (force) {
-          isBottom = true;
-        }
-        await nextTick();
-        el = document.querySelector(`.pi-task-view-logs.id-${node.node.id}`);
-        //如果在底部则滚动到底部
-        if (isBottom && el) {
-          el?.scrollTo({
-            top: el.scrollHeight,
-            behavior: "smooth",
-          });
-        }
-      }
-
       for (let node of nodes) {
-        if (currentHistory?.value?.logs != null) {
-          node.logs = computed(() => {
-            if (currentHistory?.value?.logs && currentHistory.value?.logs[node.node.id] != null) {
-              const logs = currentHistory.value?.logs[node.node.id];
-              const list = [];
-              for (let log of logs) {
-                const index = log.indexOf("]", 27) + 1;
-                const time = log.substring(0, index);
-                const content = log.substring(index);
-                const color = time.includes("ERROR") ? "red" : time.includes("WARN") ? "yellow" : "green";
-                list.push({
-                  time,
-                  content,
-                  color,
-                });
-              }
-              return list;
-            }
-            return [];
-          });
-
-          watch(
-            () => {
-              return node.logs.value.length;
-            },
-            async () => {
-              await scrollBottom(node);
-            }
-          );
-          nextTick(() => {
-            scrollBottom(node, true);
-          });
-        }
+        bindNodeLogs(node);
       }
 
       if (task.steps.length > 0) {
@@ -189,6 +192,20 @@ export default {
       }
 
       detail.value = { nodes };
+    };
+
+    // 查看单个节点日志（用于后置任务/通知等不在步骤树中的节点）
+    const taskViewOpenNode = (node: any) => {
+      taskModal.value.open = true;
+      activeKey.value = node.id;
+      const logNode: any = {
+        node,
+        type: "节点",
+        tab: 0,
+        logs: [],
+      };
+      bindNodeLogs(logNode);
+      detail.value = { nodes: [logNode] };
     };
 
     const taskViewClose = () => {
@@ -219,6 +236,7 @@ export default {
       taskModal,
       activeKey,
       taskViewOpen,
+      taskViewOpenNode,
       taskViewClose,
       tabPosition,
       triggerRun,

@@ -1,56 +1,14 @@
-import fs from "fs";
-import path from "path";
-import { spawn } from "child_process";
-import crypto from "crypto";
-import { createRequire } from "module";
-import { pathToFileURL } from "url";
 import { logger as defaultLogger } from "@certd/basic";
+import { spawn } from "child_process";
+import fs from "fs";
+import { createRequire } from "module";
+import path from "path";
+import { pathToFileURL } from "url";
 import type { Registry } from "../registry/registry.js";
 export type ILogger = {
   info: (message: string) => void;
   warn?: (message: string) => void;
   error?: (message: string, ...args: any[]) => void;
-};
-
-export type ImportRuntime = (specifier: string, logger?: ILogger) => Promise<any>;
-
-export type EnsureRuntimeDepsOptions = {
-  pluginKeys: string | string[];
-  logger?: ILogger;
-};
-
-export interface IRuntimeDepsService {
-  ensureRuntimeDependencies(options: EnsureRuntimeDepsOptions): Promise<any>;
-  importRuntime: ImportRuntime;
-}
-
-export type RuntimeDependencyPluginDefine = {
-  name: string;
-  key?: string;
-  title?: string;
-  version?: string;
-  pluginType?: string;
-  addonType?: string;
-  dependPlugins?: Record<string, string>;
-  dependPackages?: Record<string, string>;
-};
-
-type RegisteredDefineLike = RuntimeDependencyPluginDefine & {
-  key?: string;
-  pluginType?: string;
-  addonType?: string;
-  dependPlugins?: Record<string, string>;
-  dependPackages?: Record<string, string>;
-};
-
-type DependencyConflict = {
-  packageName: string;
-  ranges: Array<{ pluginName: string; range: string }>;
-};
-
-type CollectDependenciesResult = {
-  dependencies: Record<string, string>;
-  conflicts: DependencyConflict[];
 };
 
 type InstallResult = {
@@ -73,15 +31,6 @@ type CommandRunner = {
   run(command: string, args: string[], options: { cwd: string; timeoutMs: number; env?: NodeJS.ProcessEnv }): Promise<CommandRunnerResult>;
 };
 
-type InstallLockInfo = {
-  processInstanceId?: string;
-  createdAt?: string;
-};
-
-type AcquiredInstallLock = {
-  fd: number;
-};
-
 export type NpmRegistryResolverConfig = {
   mode?: "auto" | "fixed" | "system";
   fixedUrl?: string;
@@ -102,34 +51,6 @@ export class NpmRegistryResolver {
 
   constructor(config?: NpmRegistryResolverConfig) {
     this.config = config || {};
-  }
-
-  async resolve(): Promise<string> {
-    const config = this.config;
-    if (config?.mode === "fixed" && config.fixedUrl) {
-      return config.fixedUrl;
-    }
-    if (config?.mode === "system") {
-      return "";
-    }
-    const cached = this.cache;
-    if (cached && cached.expiresAt > Date.now()) {
-      const fastUrl = cached.orderedUrls[0];
-      if (fastUrl) {
-        const probeResult = await this.probe(fastUrl);
-        if (probeResult.ok) {
-          return cached.orderedUrls[0] || "";
-        }
-      }
-      this.cache = undefined;
-    }
-    const candidates = (config?.candidates || []).filter(Boolean);
-    if (candidates.length === 0) {
-      return "";
-    }
-    const orderedUrls = await this.internalProbeAll(candidates);
-    this.cache = { orderedUrls, expiresAt: Date.now() + (config?.cacheTtlMs ?? 300_000) };
-    return orderedUrls[0] || "";
   }
 
   async resolveOrdered(): Promise<string[]> {
@@ -197,7 +118,6 @@ export class NpmRegistryResolver {
 
 export type RuntimeDepsConfig = {
   rootDir?: string;
-  autoInstall?: boolean;
   enabled?: boolean;
   installTimeoutMs?: number;
   pnpmCommand?: string;
@@ -221,10 +141,7 @@ function areRangesCompatible(a: string, b: string) {
   return left[0] === right[0];
 }
 
-const PROCESS_LOCKS = new Map<string, Promise<unknown>>();
-const PROCESS_INSTANCE_ID = crypto.randomUUID();
-const INVALID_INSTALL_LOCK_GRACE_MS = 5000;
-const MAX_INSTALL_LOCK_AGE_MS = 20 * 60 * 1000;
+let INSTALL_LOCKER: any = null;
 
 class DefaultCommandRunner implements CommandRunner {
   async run(command: string, args: string[], options: { cwd: string; timeoutMs: number; env?: NodeJS.ProcessEnv }): Promise<CommandRunnerResult> {
@@ -269,7 +186,6 @@ class DefaultCommandRunner implements CommandRunner {
 
 export class RuntimeDepsService {
   runtimeDepsRootDir: string;
-  autoInstall: boolean;
   enabled: boolean;
   installTimeoutMs: number;
   pnpmCommand: string;
@@ -277,14 +193,12 @@ export class RuntimeDepsService {
   registryResolver!: NpmRegistryResolver;
   commandRunner: CommandRunner = new DefaultCommandRunner();
   pluginLazyDependencies: Record<string, string> = {};
-  private installPromises = new Map<string, Promise<InstallResult>>();
   private registriesMap: Record<string, { registry: Registry<any>; pluginType: string; addonType?: string }> | null = null;
 
   constructor(config: RuntimeDepsConfig, registries: any) {
     this.runtimeDepsRootDir = config?.rootDir ?? "./data/.runtime-deps";
-    this.autoInstall = config?.autoInstall ?? true;
     this.enabled = config?.enabled ?? true;
-    this.installTimeoutMs = config?.installTimeoutMs ?? 120000;
+    this.installTimeoutMs = config?.installTimeoutMs ?? 60000;
     this.pnpmCommand = config?.pnpmCommand ?? "";
     this.lazyDependencies = config?.lazyDependencies ?? {};
     this.registryResolver = new NpmRegistryResolver(config?.registry);
@@ -313,121 +227,84 @@ export class RuntimeDepsService {
     this.registriesMap = map;
   }
 
-  collectDependencies(plugins: RuntimeDependencyPluginDefine[]): CollectDependenciesResult {
-    const merged: Record<string, string> = {};
-    const seen: Record<string, Array<{ pluginName: string; range: string }>> = {};
-    for (const plugin of plugins) {
-      const deps = plugin.dependPackages || {};
-      for (const [packageName, range] of Object.entries(deps)) {
-        seen[packageName] ||= [];
-        seen[packageName].push({ pluginName: plugin.name, range });
-      }
-    }
-    const conflicts: DependencyConflict[] = [];
-    for (const [packageName, ranges] of Object.entries(seen)) {
-      const first = ranges[0]?.range;
-      if (!first) {
-        continue;
-      }
-      const conflict = ranges.some(item => !areRangesCompatible(first, item.range));
-      if (conflict) {
-        conflicts.push({ packageName, ranges });
-        continue;
-      }
-      merged[packageName] = first;
-    }
-    return { dependencies: merged, conflicts };
-  }
-
-  async ensureInstalled(options: { plugins: RuntimeDependencyPluginDefine[]; logger?: ILogger }): Promise<InstallResult> {
-    const { plugins, logger: log } = options;
-    const { dependencies, conflicts } = this.resolveDependenciesFromPlugins(plugins);
-    if (conflicts.length > 0) {
-      const conflict = conflicts[0];
-      throw new Error(`动态依赖版本冲突: ${conflict.packageName} => ${conflict.ranges.map(item => `${item.pluginName}:${item.range}`).join(", ")}`);
-    }
-    return await this.ensureDependencies({ dependencies, logger: log });
-  }
-
   async ensureDependencies(options: { dependencies: Record<string, string>; logger?: ILogger }): Promise<InstallResult> {
     const { dependencies, logger: log } = options;
-    if (!this.enabled) {
-      return { registryUrl: "", packageJsonPath: path.join(this.getRuntimeDepsRootDir(), "package.json") };
-    }
-    if (!this.autoInstall) {
-      return { registryUrl: "", packageJsonPath: path.join(this.getRuntimeDepsRootDir(), "package.json") };
-    }
-    const dependenciesHash = this.createDependenciesHash(dependencies);
-    let installPromise = this.installPromises.get(dependenciesHash);
-    if (installPromise) {
-      const nodeModulesPath = path.join(this.getRuntimeDepsRootDir(), "node_modules");
-      if (!fs.existsSync(nodeModulesPath)) {
-        this.installPromises.delete(dependenciesHash);
-        installPromise = undefined;
-      }
-    }
-    if (!installPromise) {
-      installPromise = this.doEnsureInstalled({ dependencies, logger: log }).catch(error => {
-        this.installPromises.delete(dependenciesHash);
-        throw error;
-      });
-      this.installPromises.set(dependenciesHash, installPromise);
-    }
-    return await installPromise;
-  }
 
-  resolveDependenciesFromPlugins(plugins: RuntimeDependencyPluginDefine[]): CollectDependenciesResult {
-    const expandedPlugins = plugins.flatMap(plugin => this.resolvePluginDependencies(plugin));
-    return this.collectDependencies(expandedPlugins);
-  }
-
-  async ensureRuntimeDependencies(options: { pluginKeys: string | string[]; logger?: ILogger }): Promise<InstallResult> {
-    const { pluginKeys, logger: log } = options;
-    const keys = Array.isArray(pluginKeys) ? pluginKeys : [pluginKeys];
-    const pluginDefines = keys.map(pluginKey => this.getDefineByPluginKey(pluginKey));
-    if (pluginDefines.every(pluginDefine => !pluginDefine.dependPackages && !pluginDefine.dependPlugins)) {
-      return { registryUrl: "", packageJsonPath: path.join(this.getRuntimeDepsRootDir(), "package.json") };
+    if (INSTALL_LOCKER) {
+      throw new Error("动态安装依赖正在执行中，请稍后再试");
     }
-    const expandedPluginDefines = pluginDefines.flatMap(pluginDefine => this.resolvePluginDependencies(pluginDefine));
-    return await this.ensureInstalled({ plugins: expandedPluginDefines, logger: log });
+    INSTALL_LOCKER = true;
+    const installPromise = this.doEnsureInstalled({ dependencies, logger: log }).finally(() => {
+      INSTALL_LOCKER = null;
+    });
+    // 25s 内如果没返回就提前返回
+    // AI注意，不要改我的实现，这里提前在25s就报超时是我故意这么做的实现
+    // 因为前端配置的超时时间是30s，大部分的情况下install会在25s内完成，所以这里提前在25s就报超时，并且容忍60s的install
+    const timeoutPromise: Promise<any> = new Promise((resolve, reject) => setTimeout(() => reject(new Error("安装依赖超时，请稍后重试")), 25 * 1000));
+    return await Promise.race([installPromise, timeoutPromise]);
   }
 
   async importRuntime(specifier: string, logger: ILogger = defaultLogger) {
     if (this.isNativeImportSpecifier(specifier)) {
+      //是否本地模块
       return await import(specifier);
     }
-    const resolved = await this.resolveImportSpecifier(specifier, logger);
+
+    let resolved: string;
+    try {
+      //尝试加载本项目依赖
+      resolved = this.resolveProjectSpecifier(specifier).resolved;
+    } catch (error) {
+      if (!this.isModuleNotFoundError(error)) {
+        throw error;
+      }
+      resolved = await this.resolveLazyOrInstallSpecifier(specifier, logger);
+    }
+    if (!resolved) {
+      throw new Error(`依赖未安装成功: ${specifier}`);
+    }
+
     return await import(pathToFileURL(resolved).href);
   }
 
-  private async resolveImportSpecifier(specifier: string, logger: ILogger = defaultLogger) {
+  //动态获取模块解析
+  private async resolveLazyOrInstallSpecifier(specifier: string, logger: ILogger = defaultLogger) {
     try {
+      //解析动态目录里面的模块是否存在
       return this.resolveRuntimeSpecifier(specifier).resolved;
     } catch (runtimeError: any) {
       if (!this.isModuleNotFoundError(runtimeError)) {
+        //其他错误
         throw runtimeError;
       }
-      return await this.resolveMissingRuntimeSpecifier(specifier, runtimeError, logger);
+      if (!this.enabled) {
+        throw new Error("动态安装依赖未开启");
+      }
+      //模块不存在，安装
+      await this.installLazyDependencies(specifier, logger);
+
+      try {
+        return this.resolveRuntimeSpecifier(specifier).resolved;
+      } catch (lazyError: any) {
+        // logger?.error?.(`动态依赖安装失败: ${lazyError.message}`);
+        throw new Error(`依赖加载失败，可能动态依赖未安装成功: ${lazyError.message}`, { cause: lazyError });
+      }
     }
   }
 
-  private async resolveMissingRuntimeSpecifier(specifier: string, runtimeError: any, logger?: ILogger) {
+  //不存在模块动态依赖安装，再获取解析
+  private async installLazyDependencies(specifier: string, logger?: ILogger) {
     const packageName = this.parsePackageName(specifier);
     const mergedDeps = this.getMergedLazyDependencies();
     const lazyRange = mergedDeps[packageName];
     if (!lazyRange) {
-      try {
-        return this.resolveProjectSpecifier(specifier, runtimeError).resolved;
-      } catch {
-        throw new Error(`动态依赖未安装且未配置懒加载版本: ${packageName}`);
-      }
+      throw new Error(`动态依赖未安装且未配置懒加载版本: ${packageName}`);
     }
     try {
-      await this.ensureLazyDependency(packageName, logger);
-      return this.resolveRuntimeSpecifier(specifier).resolved;
+      await this.ensureDependencies({ dependencies: { [packageName]: lazyRange }, logger });
     } catch (lazyError: any) {
-      logger?.error?.(`动态依赖安装失败: ${lazyError.message}`);
-      return this.resolveProjectSpecifier(specifier, lazyError).resolved;
+      // logger?.error?.(`动态依赖安装失败: ${lazyError.message}`);
+      throw new Error(`动态依赖安装失败: ${packageName}: ${lazyError.message}`, { cause: lazyError });
     }
   }
 
@@ -435,6 +312,7 @@ export class RuntimeDepsService {
     return specifier.startsWith(".") || specifier.startsWith("/") || specifier.startsWith("file:") || specifier.startsWith("node:");
   }
 
+  //尝试加载runtime依赖
   private resolveRuntimeSpecifier(specifier: string): RuntimeImportResolveResult {
     const packageName = this.parsePackageName(specifier);
     const packageJsonPath = path.join(this.getRuntimeDepsRootDir(), "package.json");
@@ -443,19 +321,13 @@ export class RuntimeDepsService {
     return { packageName, resolved };
   }
 
-  private resolveProjectSpecifier(specifier: string, cause?: any): RuntimeImportResolveResult {
-    try {
-      const packageName = this.parsePackageName(specifier);
-      const packageJsonPath = path.resolve("package.json");
-      const require = createRequire(packageJsonPath);
-      const resolved = require.resolve(specifier);
-      return { packageName, resolved };
-    } catch (projectError: any) {
-      if (cause) {
-        projectError.cause = cause;
-      }
-      throw projectError;
-    }
+  //尝试加载本地依赖
+  private resolveProjectSpecifier(specifier: string): RuntimeImportResolveResult {
+    const packageName = this.parsePackageName(specifier);
+    const packageJsonPath = path.resolve("package.json");
+    const require = createRequire(packageJsonPath);
+    const resolved = require.resolve(specifier);
+    return { packageName, resolved };
   }
 
   private parsePackageName(specifier: string) {
@@ -475,250 +347,50 @@ export class RuntimeDepsService {
     return parts[0];
   }
 
-  private async ensureLazyDependency(packageName: string, logger?: ILogger) {
-    const range = this.lazyDependencies?.[packageName];
-    if (!range) {
-      throw new Error(`动态依赖未安装且未配置懒加载版本: ${packageName}`);
-    }
-    await this.ensureDependencies({ dependencies: { [packageName]: range }, logger });
-  }
-
   private isModuleNotFoundError(error: any) {
     return error?.code === "MODULE_NOT_FOUND" || error?.code === "ERR_MODULE_NOT_FOUND";
-  }
-
-  resolvePluginDependencies(current: RuntimeDependencyPluginDefine): RuntimeDependencyPluginDefine[] {
-    const resolved: RuntimeDependencyPluginDefine[] = [];
-    const visited = new Set<string>();
-    const visit = (item: RuntimeDependencyPluginDefine) => {
-      const key = this.buildPluginDependencyKey(item);
-      if (visited.has(key)) {
-        return;
-      }
-      visited.add(key);
-      resolved.push(item);
-      for (const [dependencyName, expectedRange] of Object.entries(item.dependPlugins || {})) {
-        const dependency = this.getDefineByPluginKey(dependencyName, item);
-        if (!isPluginVersionCompatible(dependency, expectedRange)) {
-          throw new Error(`插件依赖版本冲突: ${item.name} 依赖 ${dependencyName}@${expectedRange}，当前版本为 ${dependency.version || "未声明"}`);
-        }
-        visit(dependency);
-      }
-    };
-    visit(current);
-    return resolved;
-  }
-
-  private buildPluginDependencyKey(plugin: RuntimeDependencyPluginDefine) {
-    if (plugin.pluginType === "addon" && plugin.addonType) {
-      return `addon:${plugin.addonType}:${plugin.name}`;
-    }
-    const pluginType = plugin.pluginType === "deploy" ? "plugin" : plugin.pluginType || "unknown";
-    return `${pluginType}:${plugin.name}`;
-  }
-
-  private getDefineByPluginKey(pluginKey: string, owner?: RuntimeDependencyPluginDefine): RuntimeDependencyPluginDefine {
-    const parts = pluginKey.split(":");
-    let pluginType: string, name: string, subtype: string | undefined;
-    if (parts.length === 2) {
-      [pluginType, name] = parts;
-    } else if (parts.length === 3) {
-      [pluginType, subtype, name] = parts;
-    } else {
-      const ownerName = owner?.name || pluginKey;
-      throw new Error(`插件依赖格式错误: ${ownerName} 依赖 ${pluginKey}`);
-    }
-    if (!this.registriesMap) {
-      throw new Error("注册表未设置，请先调用 setRegistries");
-    }
-    const target = this.registriesMap[pluginType];
-    if (!target) {
-      const ownerName = owner?.name || pluginKey;
-      throw new Error(`插件依赖格式错误: ${ownerName} 依赖 ${pluginKey}，未知插件类型 ${pluginType}`);
-    }
-    // addon 类型的 key 需要包含 subtype
-    const registryKey = pluginType === "addon" && subtype ? `${subtype}:${name}` : name;
-    const define = target.registry.getDefine(registryKey) as RegisteredDefineLike;
-    if (!define) {
-      throw new Error(`插件依赖缺失: ${owner?.name || pluginKey} 依赖 ${pluginKey}，但该插件未注册或已禁用`);
-    }
-    return { ...define, key: pluginKey, pluginType: target.pluginType, addonType: target.addonType };
   }
 
   private async doEnsureInstalled(options: { dependencies: Record<string, string>; logger?: ILogger }): Promise<InstallResult> {
     let { dependencies } = options;
     const log = options.logger || defaultLogger;
-    return await this.withInstallLock(async () => {
-      const rootDir = this.getRuntimeDepsRootDir();
-      const packageJsonPath = path.join(rootDir, "package.json");
-      const lockPath = path.join(rootDir, "pnpm-lock.yaml");
-      log.info(`第三方依赖安装: ${JSON.stringify(dependencies)}`);
-      dependencies = this.mergeInstalledDependencies(this.readManifestDependencies(packageJsonPath), dependencies);
-      const dependenciesHash = this.createDependenciesHash(dependencies);
-      const statePath = path.join(rootDir, "install-state.json");
-      const currentState = this.readInstallState(statePath);
-      if (currentState?.dependenciesHash === dependenciesHash && fs.existsSync(path.join(rootDir, "node_modules"))) {
-        log.info("第三方依赖已安装");
-        return { registryUrl: currentState.registryUrl || "", packageJsonPath };
-      }
-      const manifest = { name: "certd-runtime-deps", private: true, type: "module", dependencies };
-      fs.writeFileSync(packageJsonPath, JSON.stringify(manifest, null, 2), "utf8");
-      const registryUrl = await this.registryResolver.resolve();
-      const env = this.buildChildEnv(registryUrl);
-      const command = this.getPnpmCommand();
-      const pnpmVersion = await this.getPnpmVersion(command, env);
-      const allRegistryUrls = await this.registryResolver.resolveOrdered();
-      const urlsToTry = allRegistryUrls.length > 0 ? allRegistryUrls : [""];
-      let lastError: string | undefined;
-      for (const tryUrl of urlsToTry) {
-        const args = ["install", "--prod", "--ignore-scripts", "--ignore-workspace", "--no-frozen-lockfile", "--reporter=append-only"];
-        if (tryUrl) {
-          args.push(`--registry=${tryUrl}`);
-        }
-        const tryEnv = tryUrl ? this.buildChildEnv(tryUrl) : env;
-        log.info(`开始安装第三方依赖: ${Object.keys(dependencies).join(", ")}${tryUrl ? `，镜像: ${tryUrl}` : ""}`);
-        const result = await this.commandRunner.run(command, args, { cwd: rootDir, timeoutMs: this.installTimeoutMs, env: tryEnv });
-        if (result.code === 0) {
-          this.writeInstallState(statePath, { installedAt: new Date().toISOString(), registryUrl: tryUrl, dependenciesHash, nodeVersion: process.version, pnpmVersion, lockFileExists: fs.existsSync(lockPath) });
-          log.info(`${result.stdout?.slice(-2000) || "无npm安装日志输出"}`);
-          log.info("第三方依赖安装完成");
-          return { registryUrl: tryUrl, packageJsonPath };
-        }
-        const errOutput = (result.stderr || "").trim();
-        const outOutput = (result.stdout || "").trim();
-        lastError = errOutput || outOutput || "unknown error";
-        log.info(`镜像 ${tryUrl || "默认"} 安装失败，退出码: ${result.code}${urlsToTry.length > 1 ? "，尝试下一个镜像..." : ""}`);
-        log.info(`  pnpm stderr: ${(errOutput || "无npm安装日志输出").slice(-2000)}`);
-        if (outOutput) {
-          log.info(`  pnpm stdout: ${outOutput.slice(-2000)}`);
-        }
-      }
-      this.writeInstallState(statePath, {
-        ...currentState,
-        installedAt: currentState?.installedAt,
-        failedAt: new Date().toISOString(),
-        registryUrl: urlsToTry[0],
-        dependenciesHash,
-        nodeVersion: process.version,
-        pnpmVersion,
-        lockFileExists: fs.existsSync(lockPath),
-        lastError,
-      });
-      throw new Error(`动态依赖安装失败: ${lastError}`);
-    });
-  }
-
-  private async withInstallLock<T>(run: () => Promise<T>): Promise<T> {
     const rootDir = this.getRuntimeDepsRootDir();
-    fs.mkdirSync(rootDir, { recursive: true });
-    const lockFile = path.join(rootDir, ".install.lock");
-    const previous = PROCESS_LOCKS.get(lockFile);
-    if (previous) {
-      await previous.catch(() => undefined);
+    if (!fs.existsSync(rootDir)) {
+      fs.mkdirSync(rootDir, { recursive: true });
     }
-    let releaseProcessLock!: () => void;
-    const current = new Promise<void>(resolve => {
-      releaseProcessLock = resolve;
-    });
-    PROCESS_LOCKS.set(lockFile, current);
-    let lock: AcquiredInstallLock | undefined;
-    try {
-      lock = await this.acquireFileLock(lockFile);
-      return await run();
-    } finally {
-      if (lock) {
-        fs.closeSync(lock.fd);
-        this.removeOwnedInstallLock(lockFile);
-      }
-      releaseProcessLock();
-      if (PROCESS_LOCKS.get(lockFile) === current) {
-        PROCESS_LOCKS.delete(lockFile);
-      }
-    }
-  }
+    const packageJsonPath = path.join(rootDir, "package.json");
+    log.info(`第三方依赖安装: ${JSON.stringify(dependencies)}`);
+    dependencies = this.mergeInstalledDependencies(this.readManifestDependencies(packageJsonPath), dependencies);
 
-  private async acquireFileLock(lockFile: string) {
-    const deadline = Date.now() + this.installTimeoutMs;
-    while (true) {
-      try {
-        const fd = fs.openSync(lockFile, "wx");
-        fs.writeFileSync(fd, JSON.stringify({ processInstanceId: PROCESS_INSTANCE_ID, createdAt: new Date().toISOString() }), "utf8");
-        return { fd };
-      } catch (error: any) {
-        if (error?.code !== "EEXIST") {
-          throw error;
-        }
-        if (this.removeExpiredInstallLock(lockFile)) {
-          continue;
-        }
-        if (Date.now() > deadline) {
-          throw new Error(`动态依赖安装锁等待超时: ${lockFile}`);
-        }
-        await this.waitForExternalLock(lockFile, deadline);
+    const manifest = { name: "certd-runtime-deps", private: true, type: "module", dependencies };
+    fs.writeFileSync(packageJsonPath, JSON.stringify(manifest, null, 2), "utf8");
+    const allRegistryUrls = await this.registryResolver.resolveOrdered();
+    const urlsToTry = allRegistryUrls.length > 0 ? allRegistryUrls : [""];
+    const command = this.getPnpmCommand();
+    let lastError: string | undefined;
+    for (const tryUrl of urlsToTry) {
+      const args = ["install", "--prod", "--ignore-scripts", "--ignore-workspace", "--no-frozen-lockfile", "--reporter=append-only"];
+      if (tryUrl) {
+        args.push(`--registry=${tryUrl}`);
+      }
+      const tryEnv = this.buildChildEnv(tryUrl);
+      log.info(`开始安装第三方依赖: ${Object.keys(dependencies).join(", ")}${tryUrl ? `，镜像: ${tryUrl}` : ""}`);
+      const result = await this.commandRunner.run(command, args, { cwd: rootDir, timeoutMs: this.installTimeoutMs, env: tryEnv });
+      if (result.code === 0) {
+        log.info(`${result.stdout?.slice(-2000) || "无npm安装日志输出"}`);
+        log.info("第三方依赖安装完成");
+        return { registryUrl: tryUrl, packageJsonPath };
+      }
+      const errOutput = (result.stderr || "").trim();
+      const outOutput = (result.stdout || "").trim();
+      lastError = errOutput || outOutput || "unknown error";
+      log.info(`镜像 ${tryUrl || "默认"} 安装失败，退出码: ${result.code}${urlsToTry.length > 1 ? "，尝试下一个镜像..." : ""}`);
+      log.info(`  pnpm stderr: ${(errOutput || "无npm安装日志输出").slice(-2000)}`);
+      if (outOutput) {
+        log.info(`  pnpm stdout: ${outOutput.slice(-2000)}`);
       }
     }
-  }
-
-  private async waitForExternalLock(lockFile: string, deadline: number) {
-    while (fs.existsSync(lockFile)) {
-      if (Date.now() > deadline) {
-        throw new Error(`动态依赖安装锁等待超时: ${lockFile}`);
-      }
-      await new Promise(resolve => setTimeout(resolve, 300));
-    }
-  }
-
-  private removeExpiredInstallLock(lockFile: string) {
-    const lockInfo = this.readInstallLockInfo(lockFile);
-    if (!lockInfo) {
-      return this.removeExpiredInvalidInstallLock(lockFile);
-    }
-    if (!this.isInstallLockExpired(lockInfo)) {
-      return false;
-    }
-    try {
-      fs.rmSync(lockFile, { force: true });
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  private removeOwnedInstallLock(lockFile: string) {
-    const lockInfo = this.readInstallLockInfo(lockFile);
-    if (lockInfo?.processInstanceId !== PROCESS_INSTANCE_ID) {
-      return;
-    }
-    try {
-      fs.rmSync(lockFile, { force: true });
-    } catch {}
-  }
-
-  private isInstallLockExpired(lockInfo: InstallLockInfo) {
-    const createdAt = Date.parse(lockInfo.createdAt || "");
-    return !Number.isNaN(createdAt) && Date.now() - createdAt >= MAX_INSTALL_LOCK_AGE_MS;
-  }
-
-  private removeExpiredInvalidInstallLock(lockFile: string) {
-    try {
-      const stat = fs.statSync(lockFile);
-      if (Date.now() - stat.mtimeMs < INVALID_INSTALL_LOCK_GRACE_MS) {
-        return false;
-      }
-      fs.rmSync(lockFile, { force: true });
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  private readInstallLockInfo(lockFile: string): InstallLockInfo | null {
-    try {
-      const content = fs.readFileSync(lockFile, "utf8");
-      return JSON.parse(content) as InstallLockInfo;
-    } catch {
-      return null;
-    }
+    throw new Error(`动态依赖安装失败: ${lastError}`);
   }
 
   async clearRuntimeDeps() {
@@ -727,19 +399,17 @@ export class RuntimeDepsService {
     if (!normalizedRootDir.endsWith(path.normalize(".runtime-deps"))) {
       throw new Error(`动态依赖目录配置异常，拒绝清理: ${rootDir}`);
     }
-    await this.withInstallLock(async () => {
-      if (fs.existsSync(rootDir)) {
-        const entries = fs.readdirSync(rootDir);
-        for (const entry of entries) {
-          if (entry === ".install.lock") {
-            continue;
-          }
-          fs.rmSync(path.join(rootDir, entry), { recursive: true, force: true });
-        }
+
+    if (INSTALL_LOCKER) {
+      throw new Error("仍有依赖正在安装，请稍后");
+    }
+
+    if (fs.existsSync(rootDir)) {
+      const entries = fs.readdirSync(rootDir);
+      for (const entry of entries) {
+        fs.rmSync(path.join(rootDir, entry), { recursive: true, force: true });
       }
-      this.installPromises.clear();
-      return undefined;
-    });
+    }
   }
 
   getMergedLazyDependencies(): Record<string, string> {
@@ -776,21 +446,6 @@ export class RuntimeDepsService {
     this.collectPluginDeps(logger);
   }
 
-  private readInstallState(statePath: string): any {
-    if (!fs.existsSync(statePath)) {
-      return null;
-    }
-    try {
-      return JSON.parse(fs.readFileSync(statePath, "utf8"));
-    } catch {
-      return null;
-    }
-  }
-
-  private writeInstallState(statePath: string, state: any) {
-    fs.writeFileSync(statePath, JSON.stringify(state, null, 2), "utf8");
-  }
-
   private readManifestDependencies(packageJsonPath: string): Record<string, string> {
     if (!fs.existsSync(packageJsonPath)) {
       return {};
@@ -813,14 +468,6 @@ export class RuntimeDepsService {
       dependencies[packageName] = installedRange || range;
     }
     return dependencies;
-  }
-
-  private async getPnpmVersion(command: string, env: NodeJS.ProcessEnv) {
-    const result = await this.commandRunner.run(command, ["--version"], { cwd: this.getRuntimeDepsRootDir(), timeoutMs: Math.min(this.installTimeoutMs, 10000), env });
-    if (result.code !== 0) {
-      return "";
-    }
-    return (result.stdout || result.stderr || "").trim();
   }
 
   private getPnpmCommand() {
@@ -861,20 +508,6 @@ export class RuntimeDepsService {
   getRuntimeDepsRootDir() {
     return path.resolve(this.runtimeDepsRootDir);
   }
-
-  private createDependenciesHash(dependencies: Record<string, string>) {
-    return crypto.createHash("sha256").update(JSON.stringify(dependencies)).digest("hex");
-  }
-}
-
-function isPluginVersionCompatible(plugin: RuntimeDependencyPluginDefine, expectedRange: string) {
-  if (!expectedRange || expectedRange === "*") {
-    return true;
-  }
-  if (!plugin.version) {
-    return false;
-  }
-  return areRangesCompatible(expectedRange, plugin.version);
 }
 
 let runtimeDepsServiceInstance: RuntimeDepsService | null = null;

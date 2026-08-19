@@ -4,7 +4,7 @@ import { UserService } from "../../../modules/sys/authority/service/user-service
 import { RoleService } from "../../../modules/sys/authority/service/role-service.js";
 import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
 import { HistoryService } from "../../../modules/pipeline/service/history-service.js";
-import { CertInfoService } from "../../../modules/monitor/index.js";
+import { CertInfoService, CertStatus } from "../../../modules/monitor/index.js";
 import { ApiTags } from "@midwayjs/swagger";
 
 export type ChartItem = {
@@ -56,7 +56,7 @@ export class StatisticController extends BaseController {
     const historyCount = await this.historyService.countPerDay({ userId, projectId, days: 7 });
     const expiringList = await this.pipelineService.latestExpiringList({ userId, projectId, count: 5 });
 
-    const certCount = await this.certInfoService.count({ userId, projectId });
+    const certCount = await this.certInfoService.count({ userId, projectId, status: CertStatus.active });
 
     const count: UserStatisticCount = {
       pipelineCount,

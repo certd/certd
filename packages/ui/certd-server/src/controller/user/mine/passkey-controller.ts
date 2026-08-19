@@ -3,6 +3,7 @@ import { PasskeyService } from "../../../modules/login/service/passkey-service.j
 import { BaseController, Constants } from "@certd/lib-server";
 import { UserService } from "../../../modules/sys/authority/service/user-service.js";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 @Provide()
 @Controller("/api/mine/passkey")
@@ -13,6 +14,10 @@ export class MinePasskeyController extends BaseController {
 
   @Inject()
   userService: UserService;
+
+  getAuditType(): string {
+    return AuditType.mine.value;
+  }
 
   @Post("/generateRegistration", { description: Constants.per.authOnly, summary: "生成Passkey注册选项" })
   public async generateRegistration(
@@ -46,7 +51,7 @@ export class MinePasskeyController extends BaseController {
     const deviceName = body.deviceName;
 
     const result = await this.passkeyService.registerPasskey(userId, response, challenge, deviceName, this.ctx);
-
+    this.auditLog({ content: "验证注册了Passkey" });
     return this.ok(result);
   }
 
@@ -62,6 +67,7 @@ export class MinePasskeyController extends BaseController {
 
     const result = await this.passkeyService.registerPasskey(userId, response, challenge, deviceName, this.ctx);
 
+    this.auditLog({ content: `注册了Passkey ${deviceName}` });
     return this.ok(result);
   }
 
@@ -90,6 +96,7 @@ export class MinePasskeyController extends BaseController {
     }
 
     await this.passkeyService.delete([passkey.id]);
+    this.auditLog({ content: `解绑了Passkey ${passkey.deviceName}` });
     return this.ok({});
   }
 }

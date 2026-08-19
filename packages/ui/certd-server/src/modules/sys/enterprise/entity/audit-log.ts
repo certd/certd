@@ -10,14 +10,14 @@ export class AuditLogEntity {
   @Column({ name: "user_id", comment: "UserId" })
   userId: number;
 
-  @Column({ name: "user_name", comment: "用户名" })
-  userName: string;
+  @Column({ name: "scope", comment: "system/user" })
+  scope: string;
+
+  @Column({ name: "username", comment: "用户名" })
+  username: string;
 
   @Column({ name: "project_id", comment: "ProjectId" })
   projectId: number;
-
-  @Column({ name: "project_name", comment: "项目名称" })
-  projectName: string;
 
   @Column({ name: "type", comment: "类型" })
   type: string;
@@ -30,6 +30,9 @@ export class AuditLogEntity {
 
   @Column({ name: "ip_address", comment: "IP地址" })
   ipAddress: string;
+
+  @Column({ name: "success", comment: "是否成功", default: true })
+  success: boolean;
 
   @Column({
     name: "create_time",

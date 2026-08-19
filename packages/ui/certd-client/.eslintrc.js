@@ -32,6 +32,13 @@ module.exports = {
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "vue/multi-word-component-names": "off",
+    "vue/require-default-prop": "off",
+    "vue/no-v-html": "off",
+    "vue/require-prop-types": "off",
+    "@typescript-eslint/no-empty-object-type": "off",
+    "vue/prefer-import-from-vue": "off",
+    "@typescript-eslint/no-unsafe-function-type": "off",
+    "vue/one-component-per-file": "off",
     // "@typescript-eslint/no-unused-vars": [
     //   "error",
     //   {
@@ -71,4 +78,5 @@ module.exports = {
     //   },
     // ],
   },
+  ignorePatterns: ["node_modules/**", "dist/**", "**/*.js","**/**.spec.ts","**/**.test.ts"],
 };

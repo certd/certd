@@ -114,6 +114,13 @@ export default {
   please_select_trigger_time: "请选择通知时机",
   please_select_notification_config: "请选择通知配置",
   confirm_delete_trigger: "确定要删除此触发器吗？",
+  edit_after_task: "编辑后置任务",
+  after_task_name: "后置任务名称",
+  after_task_plugin: "后置任务插件",
+  after_task_when_helper: "选择在流水线什么结果下执行该后置任务",
+  after_task_delete_confirm: "确定要删除此后置任务吗？",
+  view_notification_log: "通知发送日志",
+  view_after_task_log: "后置任务执行日志",
   dates: {
     years: "{count}年",
     months: "{count}月",

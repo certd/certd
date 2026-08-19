@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.43.0](https://github.com/certd/certd/compare/v1.42.6...v1.43.0) (2026-08-14)
+
+### Bug Fixes
+
+* 优化火山引擎dcdn，单个单个部署，规避超时问题 ([cf008b9](https://github.com/certd/certd/commit/cf008b9cff54542dc551fb159578dbd49006229c))
+* **pipeline:** 修复过期/损坏的安装锁导致的依赖安装失败 ([1017a38](https://github.com/certd/certd/commit/1017a38eb48d6778745d4905d9ec4f6067a261d8))
+* **ui:** 修复oauth设置页保存后未正确刷新的问题 ([8ab699a](https://github.com/certd/certd/commit/8ab699a9104b47e02a88ad764e995a495deb775e))
+* **unicloud:** 修复unicloud登录接口改版后请求失败的问题 ([18583f6](https://github.com/certd/certd/commit/18583f6ce025fa8d365fad5a8c9c6020f3bcfbae))
+
+### Features
+
+* 优化开放接口证书自动申请功能 ([6339cdf](https://github.com/certd/certd/commit/6339cdffa9f79505dada5617d8c7fcfacc419a2e))
+* **pipeline:** 新增流水线批量编辑、阶段宽度调整功能 ([e5a1844](https://github.com/certd/certd/commit/e5a18448522be88bc504a45a46ad599f3c39ca30))
+* **ssh:** ssh连接支持跳板机 ([2cb4e55](https://github.com/certd/certd/commit/2cb4e551fa7616f587a2d907f9b513f7df3a9957))
+
+### Performance Improvements
+
+* 部署到京东云CDN支持设置跳转类型 ([e992192](https://github.com/certd/certd/commit/e9921928df011c2435af73b68ebc3d773f13c16a))
+* 统一通知类型常量管理，新增开放接口通知能力 ([edb249c](https://github.com/certd/certd/commit/edb249c2ad3c173dbfd04d8d156f895a6706ffd1))
+* 优化宝塔报错提示 ([1cfa766](https://github.com/certd/certd/commit/1cfa76683b40da9e9198552f2226419d4afa86a3))
+* 优化第三方登录设置提示 ([1468eb1](https://github.com/certd/certd/commit/1468eb1ef292a9e21a2a43131b86b8acb3688307))
+* 优化第三方依赖安装失败日志输出 ([18b2d3a](https://github.com/certd/certd/commit/18b2d3ac2078d0c6636af897f8f66e4eb5ff832c))
+* 优化SqliteError: disk I/O error报错修复提示 ([7d22fe3](https://github.com/certd/certd/commit/7d22fe3d7d0de97bae2ceedd051a0c16a1cd90e3))
+* 证书成功通知增加有效期显示 ([f1b6704](https://github.com/certd/certd/commit/f1b67049d16ebcabe6d6d9b6cb53a8a2b7a9265c))
+* **cert-plugin:** 证书申请支持失败重试 ([0ddb1f6](https://github.com/certd/certd/commit/0ddb1f69d2a46b993e792862ce9952336d532f5b))
+* Improve English localization coverage ([#778](https://github.com/certd/certd/issues/778)) @MephistoJB ([bd82147](https://github.com/certd/certd/commit/bd821474969a22078b9d2e73518e765b8c9a26c7))
+* **install:** 补充迁移到PostgreSQL后，表自增序列从1开始的修复SQL脚本和说明 ([80374ca](https://github.com/certd/certd/commit/80374cae8a43fd17eb180381a093267e466a0bc2))
+* **plugin-ucloud:**  ucloud us3部署插件增加region选择 ([8165a5f](https://github.com/certd/certd/commit/8165a5ff8986e759948c06f924d12e605b2ec8f6))
+* **tencent-clb:** 为腾讯云CLB部署插件支持远程选择输入 ([967846b](https://github.com/certd/certd/commit/967846bef590b76d27e472180b96372ff55cfb6f))
+* **ui:** 域名选择器支持点击复制域名 ([b173311](https://github.com/certd/certd/commit/b173311468d2c1f318d1333257c3ebcf916da071))
+
 ## [1.42.6](https://github.com/certd/certd/compare/v1.42.5...v1.42.6) (2026-07-18)
 
 ### Bug Fixes

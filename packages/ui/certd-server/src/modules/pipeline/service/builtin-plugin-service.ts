@@ -1,5 +1,6 @@
 import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
-import { pluginGroups, pluginRegistry } from "@certd/pipeline";
+import { accessRegistry, pluginGroups, pluginRegistry } from "@certd/pipeline";
+import { dnsProviderRegistry } from "@certd/plugin-cert";
 import { cloneDeep } from "lodash-es";
 
 @Provide()
@@ -23,6 +24,26 @@ export class BuiltInPluginService {
       return (a.order ?? 10) - (b.order ?? 10);
     });
     return list;
+  }
+
+  getAllList() {
+    const pluginList = this.getList();
+    const accessList = accessRegistry.getDefineList().map(item => {
+      return {
+        ...item,
+        pluginType: "access",
+      };
+    });
+    const dnsProviderList = dnsProviderRegistry.getDefineList().map(item => {
+      return {
+        ...item,
+        pluginType: "dnsProvider",
+      };
+    });
+    const list = [...pluginList, ...accessList, ...dnsProviderList];
+    return list.sort((a, b) => {
+      return (a.order ?? 10) - (b.order ?? 10);
+    });
   }
 
   getGroups() {

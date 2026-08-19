@@ -2,6 +2,7 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/c
 import { Constants, CrudController } from "@certd/lib-server";
 import { CnameRecordService } from "../../../modules/cname/service/cname-record-service.js";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * 授权
@@ -15,6 +16,10 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
 
   getService(): CnameRecordService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.cname.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询CNAME记录分页列表" })
@@ -56,7 +61,9 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     const { userId, projectId } = await this.getProjectUserIdWrite();
     bean.userId = userId;
     bean.projectId = projectId;
-    return super.add(bean);
+    const res = await super.add(bean);
+    this.auditLog({ content: `新增了CNAME记录「${bean.domain}」` });
+    return res;
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新CNAME记录" })
@@ -64,7 +71,9 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
-    return super.update(bean);
+    const res = await super.update(bean);
+    this.auditLog({ content: `修改了CNAME记录(ID:${bean.id})` });
+    return res;
   }
 
   @Post("/info", { description: Constants.per.authOnly, summary: "查询CNAME记录详情" })
@@ -76,13 +85,16 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除CNAME记录" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write");
-    return super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({ content: `删除了CNAME记录(ID:${id})` });
+    return res;
   }
 
   @Post("/deleteByIds", { description: Constants.per.authOnly, summary: "批量删除CNAME记录" })
   async deleteByIds(@Body(ALL) body: any) {
     const { userId, projectId } = await this.getProjectUserIdWrite();
     await this.service.batchDelete(body.ids, userId, projectId);
+    this.auditLog({ content: `批量删除了${body.ids.length}条CNAME记录` });
     return this.ok();
   }
   @Post("/getByDomain", { description: Constants.per.authOnly, summary: "根据域名获取CNAME记录" })
@@ -103,6 +115,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
   async resetStatus(@Body(ALL) body: { id: number }) {
     await this.checkOwner(this.getService(), body.id, "read");
     const res = await this.service.resetStatus(body.id);
+    this.auditLog({ content: `重置了CNAME记录状态(ID:${body.id})` });
     return this.ok(res);
   }
   @Post("/import", { description: Constants.per.authOnly, summary: "导入CNAME记录" })
@@ -114,6 +127,7 @@ export class CnameRecordController extends CrudController<CnameRecordService> {
       domainList: body.domainList,
       cnameProviderId: body.cnameProviderId,
     });
+    this.auditLog({ append: `提交${res.count}条` });
     return this.ok(res);
   }
 }

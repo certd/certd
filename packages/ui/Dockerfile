@@ -1,4 +1,4 @@
-ARG base_type=alpine
+﻿ARG base_type=alpine
 
 # 根据 base_type 参数选择基础镜像系列
 FROM --platform=linux/amd64 node:22-alpine AS base-amd64-alpine
@@ -99,6 +99,7 @@ RUN ARCH=$(uname -m) && \
 
 ENV TZ=Asia/Shanghai
 ENV NODE_ENV=production
+ENV certd_release_mode=latest
 ENV MIDWAY_SERVER_ENV=production
 
 RUN npm install -g pnpm@10.33.4

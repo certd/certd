@@ -1,5 +1,5 @@
 <template>
-  <a-drawer v-model:open="stepDrawerVisible" :wrap-style="{ maxWidth: '100vw' }" placement="right" :closable="true" width="760px" class="step-form-drawer" :class="{ fullscreen }">
+  <a-drawer v-model:open="stepDrawerVisible" placement="right" :closable="true" width="760px" class="step-form-drawer" :class="{ fullscreen }">
     <template #title>
       <div>
         编辑步骤
@@ -12,63 +12,25 @@
         </template>
       </div>
       <div class="hidden md:block">
-        <fs-icon class="icon-button" :icon="fullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'" @click="fullscreen = !fullscreen"></fs-icon>
+        <a-space>
+          <fs-icon class="icon-button" :icon="fullscreen ? 'material-symbols:fullscreen-exit' : 'material-symbols:fullscreen'" @click="fullscreen = !fullscreen"></fs-icon>
+        </a-space>
       </div>
     </template>
     <template v-if="currentStep">
       <pi-container v-if="currentStep._isAdd" class="pi-step-form">
-        <template #header>
-          <a-row :gutter="10" class="mb-10">
-            <a-col :span="24" style="padding-left: 20px">
-              <a-input-search v-model:value="pluginSearch.keyword" placeholder="搜索插件" :allow-clear="true" :show-search="true"></a-input-search>
-            </a-col>
-          </a-row>
-        </template>
         <div class="flex-col h-100 overflow-hidden md:ml-5 md:mr-5 step-form-body">
-          <a-tabs v-model:active-key="pluginGroupActive" tab-position="left" class="flex-1 overflow-hidden h-full">
-            <template v-for="group of computedPluginGroups" :key="group.key">
-              <a-tab-pane v-if="(group.key === 'admin' && userStore.isAdmin) || group.key !== 'admin'" :key="group.key" class="scroll-y">
-                <template #tab>
-                  <div class="cd-step-form-tab-label">
-                    <fs-icon :icon="group.icon" class="mr-2" />
-                    <div>{{ group.title }}</div>
-                  </div>
-                </template>
-                <a-row v-if="!group.plugins || group.plugins.length === 0" :gutter="10">
-                  <a-col class="flex-o">
-                    <div class="flex-o m-10">没有找到插件</div>
-                  </a-col>
-                </a-row>
-                <a-row v-else :gutter="10">
-                  <a-col v-for="item of group.plugins" :key="item.key" class="step-plugin w-full md:w-[50%]">
-                    <a-card
-                      hoverable
-                      :class="{ current: item.name === currentStep.type }"
-                      @click="stepTypeSelected(item)"
-                      @dblclick="
-                        stepTypeSelected(item);
-                        stepTypeSave();
-                      "
-                    >
-                      <a-card-meta>
-                        <template #title>
-                          <fs-icon class="plugin-icon" :icon="item.icon || 'clarity:plugin-line'"></fs-icon>
-                          <span class="title" :title="item.title">{{ item.title }}</span>
-                          <vip-button v-if="item.needPlus" mode="icon" />
-                        </template>
-                        <template #description>
-                          <span :title="item.desc" v-html="transformDesc(item.desc)"></span>
-                        </template>
-                      </a-card-meta>
-                    </a-card>
-                  </a-col>
-                </a-row>
-              </a-tab-pane>
-            </template>
+          <a-tabs v-model:active-key="pluginSourceActive" class="step-plugin-source-tabs flex-1 overflow-hidden h-full">
+            <a-tab-pane key="local" tab="已安装插件" class="h-full">
+              <LocalPluginSelector :selected-type="currentStep.type" @select="stepTypeSelected" @confirm="handlePluginConfirm" />
+            </a-tab-pane>
+            <a-tab-pane v-if="userStore.isAdmin" key="market" tab="插件市场" class="h-full step-market-pane">
+              <OnlinePluginSelector :selected-type="currentStep.type" @select="stepTypeSelected" @confirm="handlePluginConfirm" @uninstalled="handleOnlinePluginUninstalled" />
+            </a-tab-pane>
           </a-tabs>
         </div>
         <template #footer>
-          <div style="padding: 20px; margin-left: 100px">
+          <div class="bottom-button">
             <a-button v-if="editMode" type="primary" @click="stepTypeSave"> 确定</a-button>
           </div>
         </template>
@@ -117,31 +79,35 @@
 
 <script lang="tsx" setup>
 import { message, Modal } from "ant-design-vue";
-import { computed, provide, ref, Ref, watch } from "vue";
+import { provide, ref, Ref } from "vue";
 import { merge, cloneDeep } from "lodash-es";
 import { nanoid } from "nanoid";
-import { usePluginStore, PluginGroups } from "/@/store/plugin";
+import { usePluginStore } from "/@/store/plugin";
 import { useCompute } from "@fast-crud/fast-crud";
 import { useReference } from "/@/use/use-refrence";
 import { useSettingStore } from "/@/store/settings";
 import { mitter } from "/@/utils/util.mitt";
 import { utils } from "/@/utils";
+import PluginSelector from "../plugin-selector/index.vue";
 import { useUserStore } from "/@/store/user";
+import LocalPluginSelector from "./local-plugin-selector.vue";
+import OnlinePluginSelector from "./online-plugin-selector.vue";
 
 defineOptions({
   name: "PiStepForm",
 });
-const props = defineProps({
+defineProps({
   editMode: {
     type: Boolean,
     default: true,
   },
 });
 
-const emit = defineEmits(["update"]);
+defineEmits(["update"]);
+
+const userStore = useUserStore();
 
 const pluginStore = usePluginStore();
-const userStore = useUserStore();
 function transformDesc(desc: string = "") {
   return utils.transformLink(desc);
 }
@@ -171,6 +137,9 @@ function useStepForm() {
   });
 
   const stepTypeSelected = (item: any) => {
+    if (item.__online) {
+      return;
+    }
     if (item.needPlus && !settingStore.isPlus) {
       message.warn("此插件需要开通Certd专业版才能使用");
       mitter.emit("openVipModal");
@@ -201,6 +170,12 @@ function useStepForm() {
       currentPlugin.value.default,
       currentStep.value
     );
+  };
+
+  // 双击插件卡片：选中并直接进入插件表单
+  const stepTypeConfirm = (item: any) => {
+    stepTypeSelected(item);
+    stepTypeSave();
   };
 
   const stepDrawerShow = () => {
@@ -339,56 +314,26 @@ function useStepForm() {
     };
   };
 
-  const pluginSearch = ref({
-    keyword: "",
-    result: [],
-  });
-  const pluginGroupActive = ref("all");
-  const pluginGroup: Ref = ref();
-  const pluginStore = usePluginStore();
+  const pluginSourceActive = ref("local");
+  const handlePluginConfirm = async (item: any) => {
+    stepTypeSelected(item);
+    await stepTypeSave();
+  };
 
-  async function loadPluginGroups() {
-    pluginGroup.value = await pluginStore.getGroups();
-  }
-
-  loadPluginGroups();
-  const computedPluginGroups: any = computed(() => {
-    if (!pluginGroup.value) {
-      return {};
+  const handleOnlinePluginUninstalled = (plugin: any) => {
+    if (currentStep.value.type === plugin.fullName) {
+      currentStep.value.type = undefined;
+      currentStep.value.title = "新任务";
     }
-    const group = pluginGroup.value as PluginGroups;
-    const groups = group.groups;
-    if (pluginSearch.value.keyword) {
-      const keyword = pluginSearch.value.keyword.toLowerCase();
-      const list = groups.all.plugins.filter((plugin: any) => {
-        return plugin.title?.toLowerCase().includes(keyword) || plugin.desc?.toLowerCase().includes(keyword) || plugin.name?.toLowerCase().includes(keyword);
-      });
-      return {
-        search: { key: "search", title: "搜索结果", plugins: list },
-      };
-    } else {
-      return groups;
-    }
-  });
-  watch(
-    () => {
-      return pluginSearch.value.keyword;
-    },
-    (val: any) => {
-      if (val) {
-        pluginGroupActive.value = "search";
-      } else {
-        pluginGroupActive.value = "all";
-      }
-    }
-  );
+  };
 
   return {
-    pluginGroupActive,
-    computedPluginGroups,
-    pluginSearch,
+    pluginSourceActive,
     stepTypeSelected,
+    handlePluginConfirm,
+    handleOnlinePluginUninstalled,
     stepTypeSave,
+    stepTypeConfirm,
     stepFormRef,
     mode,
     stepAdd,
@@ -436,33 +381,33 @@ const labelCol = ref({ span: 6 });
 const wrapperCol = ref({ span: 16 });
 
 const stepFormRes = useStepForm();
-const { pluginGroupActive, computedPluginGroups, pluginSearch, stepTypeSelected, stepTypeSave, stepFormRef, stepDrawerVisible, currentStep, currentPlugin, stepSave, stepDelete, getScopeFunc, fullscreen } = stepFormRes;
+const {
+  pluginSourceActive,
+  stepTypeSelected,
+  handlePluginConfirm,
+  handleOnlinePluginUninstalled,
+  stepTypeSave,
+  stepFormRef,
+  stepDrawerVisible,
+  currentStep,
+  currentPlugin,
+  stepSave,
+  stepDelete,
+  getScopeFunc,
+  fullscreen,
+} = stepFormRes;
 defineExpose({
   ...stepFormRes,
 });
 </script>
 
 <style lang="less">
-.cd-step-form-tab-label {
-  // 包括dropdown
-  display: flex;
-  align-items: center;
-  //width: 120px;
-  .fs-icon {
-    display: flex;
-    align-items: center;
-    color: #00b7ff;
-
-    svg {
-      vertical-align: middle !important;
-      display: flex;
-      align-items: center;
-    }
-  }
-}
-
 .step-form-drawer {
   max-width: 100%;
+
+  .ant-drawer-content-wrapper {
+    max-width: 100vw;
+  }
 
   .ant-tabs-nav .ant-tabs-tab {
     margin-top: 10px !important;
@@ -473,10 +418,6 @@ defineExpose({
     .pi-step-form {
       .body {
         margin: auto;
-
-        .step-plugin {
-          width: 16.666666%;
-        }
 
         .step-form {
           display: flex;
@@ -502,78 +443,91 @@ defineExpose({
   }
 
   .pi-step-form {
+    .step-plugin-source-pane-local,
+    .step-plugin-source-pane-online {
+      display: flex;
+      height: 100%;
+      min-height: 0;
+      flex-direction: column;
+    }
+
+    .step-plugin-search {
+      flex: none;
+      padding: 0 0 12px;
+    }
+
+    .step-plugin-selector-tabs {
+      min-height: 0;
+
+      > .ant-tabs-nav {
+        width: 136px;
+        flex: 0 0 136px;
+        overflow: hidden;
+      }
+
+      > .ant-tabs-nav .ant-tabs-nav-wrap,
+      > .ant-tabs-nav .ant-tabs-nav-list {
+        width: 100%;
+      }
+
+      > .ant-tabs-nav .ant-tabs-tab {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .cd-step-form-tab-label {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+
+        .fs-icon {
+          display: flex;
+          align-items: center;
+          color: #00b7ff;
+
+          svg {
+            vertical-align: middle !important;
+            display: flex;
+            align-items: center;
+          }
+        }
+
+        > div:last-child {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      > .ant-tabs-content-holder {
+        min-width: 0;
+        min-height: 0;
+        flex: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-right: 10px;
+      }
+
+      > .ant-tabs-content-holder > .ant-tabs-content {
+        height: auto;
+        min-height: 100%;
+      }
+
+      > .ant-tabs-content-holder > .ant-tabs-content > .ant-tabs-tabpane {
+        padding-right: 0 !important;
+        overflow: visible !important;
+      }
+    }
+
     .bottom-button {
       padding: 20px;
       padding-bottom: 5px;
       margin-left: 100px;
     }
 
-    .plugin-icon {
-      font-size: 22px;
-      color: #00b7ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
     .body {
       padding: 0px;
-
-      .step-plugin {
-      }
-
-      .ant-tabs-content {
-        height: 100%;
-      }
-
-      .ant-tabs-tabpane {
-        padding-right: 10px;
-        overflow-y: auto;
-        overflow-x: hidden;
-      }
-
-      .ant-card {
-        margin-bottom: 10px;
-
-        &.current {
-          border-color: #00b7ff;
-        }
-
-        .ant-card-meta-title {
-          display: flex;
-          flex-direction: row;
-          justify-content: flex-start;
-        }
-
-        .ant-avatar {
-          width: 24px;
-          height: 24px;
-          flex-shrink: 0;
-        }
-
-        .title {
-          margin-left: 5px;
-          white-space: nowrap;
-          flex: 1;
-          display: block;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      }
-
-      .ant-card-body {
-        padding: 14px;
-        height: 100px;
-
-        overflow-y: hidden;
-
-        .ant-card-meta-description {
-          font-size: 12px;
-          line-height: 20px;
-          height: 40px;
-          color: #7f7f7f;
-        }
-      }
     }
   }
 }

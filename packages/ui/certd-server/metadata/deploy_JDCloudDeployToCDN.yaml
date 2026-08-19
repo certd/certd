@@ -72,6 +72,21 @@ input:
               
     helper: 你在京东云上配置的CDN加速域名，比如:certd.docmirror.cn
     order: 0
+  jumpType:
+    title: 跳转类型
+    helper: http与https之间的跳转方式，default：不强制跳转
+    value: default
+    component:
+      name: a-select
+      options:
+        - label: 默认
+          value: default
+        - label: 强制跳转http
+          value: http
+        - label: 强制跳转https
+          value: https
+    required: false
+    order: 0
 output: {}
 pluginType: deploy
 type: builtIn

@@ -1,6 +1,6 @@
 {
   "name": "@certd/midway-flyway-js",
-  "version": "1.42.6",
+  "version": "1.43.0",
   "description": "midway with flyway, sql upgrade way ",
   "private": false,
   "type": "module",
@@ -17,7 +17,7 @@
     "cov": "midway-bin cov --ts",
     "prepublish": "npm run build",
     "pub": "npm publish",
-    "compile": "npm run build",
+    "compile": "rimraf dist && npm run build",
     "format": "prettier --write src",
     "lint": "eslint --fix --ext .ts src"
   },
@@ -52,5 +52,5 @@
     "typeorm": "^0.3.20",
     "typescript": "^5.4.2"
   },
-  "gitHead": "246ee83015bf5589adc2a5fa3d1388c8d9a2a252"
+  "gitHead": "5558376baee9e3568b00a8355a23898427efadf8"
 }

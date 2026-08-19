@@ -4,6 +4,7 @@ import { AccessService } from "@certd/lib-server";
 import { AuthService } from "../../../modules/sys/authority/service/auth-service.js";
 import { AccessDefine } from "@certd/pipeline";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * 授权
@@ -16,9 +17,12 @@ export class AccessController extends CrudController<AccessService> {
   service: AccessService;
   @Inject()
   authService: AuthService;
-
   getService(): AccessService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.access.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询授权配置分页列表" })
@@ -58,7 +62,11 @@ export class AccessController extends CrudController<AccessService> {
     const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.userId = userId;
     bean.projectId = projectId;
-    return super.add(bean);
+    const res = await super.add(bean);
+    this.auditLog({
+      content: `新增了授权「${bean.name}」(ID:${res.data}, 类型:${bean.type})`,
+    });
+    return res;
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新授权配置" })
@@ -66,7 +74,11 @@ export class AccessController extends CrudController<AccessService> {
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
-    return super.update(bean);
+    const res = await super.update(bean);
+    this.auditLog({
+      content: `修改了授权「${bean.name}」(ID:${bean.id})`,
+    });
+    return res;
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询授权配置详情" })
   async info(@Query("id") id: number) {
@@ -77,7 +89,11 @@ export class AccessController extends CrudController<AccessService> {
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除授权配置" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write");
-    return super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({
+      content: `删除了授权(ID:${id})`,
+    });
+    return res;
   }
 
   @Post("/define", { description: Constants.per.authOnly, summary: "查询授权插件定义" })

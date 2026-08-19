@@ -63,6 +63,14 @@ export const certInfoApi = {
     });
   },
 
+  async Revoke(id: number) {
+    return await request({
+      url: apiPrefix + "/revoke",
+      method: "post",
+      data: { id },
+    });
+  },
+
   async GetOptionsByIds(ids: number[]): Promise<any[]> {
     return await request({
       url: apiPrefix + "/getOptionsByIds",

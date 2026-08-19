@@ -164,7 +164,7 @@ export class PlusService {
       baseURL: plusRequestService.getBaseURL(),
       method: "post",
       headers: {
-        Authorization: `Berear ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     const res = await http.request(config);
@@ -172,5 +172,10 @@ export class PlusService {
       throw new Error(res.message);
     }
     return res.data;
+  }
+
+  async request(config: HttpRequestConfig) {
+    const plusRequestService = await this.getPlusRequestService();
+    return await plusRequestService.request(config);
   }
 }

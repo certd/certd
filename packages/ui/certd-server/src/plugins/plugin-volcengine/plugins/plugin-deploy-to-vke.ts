@@ -211,7 +211,7 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
     const userId = await access.getUserId();
     this.logger.info(`当前用户ID:${userId}`);
     const kubeconfig = await this.getOrCreateKubeconfig({ vkeService, userId });
-    try{
+    try {
       const k8sClient = new this.K8sClient({
         kubeConfigStr: kubeconfig,
         logger: this.logger,
@@ -224,7 +224,7 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
         throw new Error(this.formatK8sError(e.response.body));
       }
       throw e;
-    } 
+    }
 
     await utils.sleep(5000);
     this.logger.info("VKE证书替换完成");
@@ -248,9 +248,9 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
     return await client.getVkeService({ region: this.regionId });
   }
 
-  async getOrCreateKubeconfig(opts: {vkeService: any, userId: number }) : Promise<string> {
+  async getOrCreateKubeconfig(opts: { vkeService: any; userId: number }): Promise<string> {
     //  先查询
-    let kubeconfig = await this.getKubeconfig(opts);
+    const kubeconfig = await this.getKubeconfig(opts);
     //  如果不存在，再创建
     if (!kubeconfig) {
       return await this.createKubeconfig(opts);
@@ -258,9 +258,8 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
     return kubeconfig;
   }
 
-  
-  private async createKubeconfig(opts: {vkeService: any}) {
-    const {vkeService} = opts;
+  private async createKubeconfig(opts: { vkeService: any }) {
+    const { vkeService } = opts;
     const clusterId = this.getClusterId();
     const res = await vkeService.request({
       action: "CreateKubeconfig",
@@ -281,13 +280,13 @@ export class VolcengineDeployToVKE extends AbstractPlusTaskPlugin {
     return config;
   }
 
-  private async getKubeconfig(opts: {vkeService: any, kubeconfigId?: string, userId?:number }) {
-    const {vkeService, kubeconfigId, userId} = opts;
+  private async getKubeconfig(opts: { vkeService: any; kubeconfigId?: string; userId?: number }) {
+    const { vkeService, kubeconfigId, userId } = opts;
     const clusterId = this.getClusterId();
     const query: any = {
       ClusterIds: [clusterId],
       Types: [this.kubeconfigType],
-    }
+    };
     if (kubeconfigId) {
       query.Ids = [kubeconfigId];
     }

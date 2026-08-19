@@ -2,6 +2,7 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/c
 import { Constants, CrudController } from "@certd/lib-server";
 import { ApiTags } from "@midwayjs/swagger";
 import { DnsPersistRecordService } from "../../../modules/cert/service/dns-persist-record-service.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 @Provide()
 @Controller("/api/cert/dns-persist")
@@ -12,6 +13,10 @@ export class DnsPersistRecordController extends CrudController<DnsPersistRecordS
 
   getService(): DnsPersistRecordService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.dnsPersist.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询DNS持久验证记录分页列表" })
@@ -28,7 +33,9 @@ export class DnsPersistRecordController extends CrudController<DnsPersistRecordS
     const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.projectId = projectId;
     bean.userId = userId;
-    return super.add(bean);
+    const res = await this.getService().add(bean);
+    this.auditLog({ content: `新增了DNS持久验证记录「${bean.domain}」(ID:${res.id})` });
+    return this.ok(res);
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新DNS持久验证记录" })
@@ -36,7 +43,9 @@ export class DnsPersistRecordController extends CrudController<DnsPersistRecordS
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
-    return super.update(bean);
+    const res = await super.update(bean);
+    this.auditLog({ content: `修改了DNS持久验证记录(ID:${bean.id})` });
+    return res;
   }
 
   @Post("/info", { description: Constants.per.authOnly, summary: "查询DNS持久验证记录详情" })
@@ -49,6 +58,7 @@ export class DnsPersistRecordController extends CrudController<DnsPersistRecordS
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write");
     await this.service.delete(id as any);
+    this.auditLog({ content: `删除了DNS持久验证记录(ID:${id})` });
     return this.ok({
       message: this.service.lastDeleteMessage,
     });
@@ -80,12 +90,16 @@ export class DnsPersistRecordController extends CrudController<DnsPersistRecordS
   @Post("/triggerVerify", { description: Constants.per.authOnly, summary: "后台验证DNS持久验证记录" })
   async triggerVerify(@Body(ALL) body: { id: number }) {
     await this.checkOwner(this.getService(), body.id, "write");
-    return this.ok(await this.service.triggerVerify(body.id));
+    const res = await this.service.triggerVerify(body.id);
+    this.auditLog({ content: `触发了DNS持久验证(ID:${body.id})` });
+    return this.ok(res);
   }
 
   @Post("/createTxt", { description: Constants.per.authOnly, summary: "一键创建DNS持久验证TXT记录" })
   async createTxt(@Body(ALL) body: { id: number; dnsProviderType?: string; dnsProviderAccess?: number }) {
     await this.checkOwner(this.getService(), body.id, "write");
-    return this.ok(await this.service.createDnsTxt(body));
+    const res = await this.service.createDnsTxt(body);
+    this.auditLog({ content: `一键创建了DNS持久验证TXT记录(ID:${body.id})` });
+    return this.ok(res);
   }
 }

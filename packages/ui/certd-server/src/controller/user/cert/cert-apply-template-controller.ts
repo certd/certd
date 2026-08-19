@@ -2,6 +2,7 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/c
 import { Constants, CrudController } from "@certd/lib-server";
 import { ApiTags } from "@midwayjs/swagger";
 import { CertApplyTemplateService } from "../../../modules/cert/service/cert-apply-template-service.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 @Provide()
 @Controller("/api/cert/apply-template")
@@ -12,6 +13,10 @@ export class CertApplyTemplateController extends CrudController<CertApplyTemplat
 
   getService(): CertApplyTemplateService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.certTemplate.value;
   }
 
   private removeContent(data: any) {
@@ -53,7 +58,9 @@ export class CertApplyTemplateController extends CrudController<CertApplyTemplat
     const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.projectId = projectId;
     bean.userId = userId;
-    return super.add(bean);
+    const res = await super.add(bean);
+    this.auditLog({ content: `新增了证书参数模版「${bean.name}」(ID:${res.data})` });
+    return res;
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新证书申请参数模版" })
@@ -61,7 +68,9 @@ export class CertApplyTemplateController extends CrudController<CertApplyTemplat
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
-    return super.update(bean);
+    const res = await super.update(bean);
+    this.auditLog({ content: `修改了证书参数模版「${bean.name}」(ID:${bean.id})` });
+    return res;
   }
 
   @Post("/info", { description: Constants.per.authOnly, summary: "查询证书申请参数模版详情" })
@@ -73,13 +82,17 @@ export class CertApplyTemplateController extends CrudController<CertApplyTemplat
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除证书申请参数模版" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write");
-    return super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({ content: `删除了证书参数模版(ID:${id})` });
+    return res;
   }
 
   @Post("/setDefault", { description: Constants.per.authOnly, summary: "设置默认证书申请参数模版" })
   async setDefault(@Body("id") id: number) {
     const { projectId, userId } = await this.getProjectUserIdWrite();
-    return this.ok(await this.service.setDefault(id, userId, projectId));
+    const defaultId = await this.service.setDefault(id, userId, projectId);
+    this.auditLog({ content: `设置了默认证书参数模版(ID:${id})` });
+    return this.ok(defaultId);
   }
 
   @Post("/default", { description: Constants.per.authOnly, summary: "查询默认证书申请参数模版" })

@@ -59,21 +59,90 @@ input:
     order: 0
   loadBalancerId:
     title: 负载均衡ID
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetCLBList
+      search: false
+      pager: false
+      single: true
+      watches:
+        - certDomains
+        - accessId
+        - region
     required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 请选择要部署证书的负载均衡
     order: 0
   listenerId:
     title: 监听器ID
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetListenerList
+      search: false
+      pager: false
+      single: true
+      watches:
+        - certDomains
+        - accessId
+        - region
+        - loadBalancerId
     required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 请选择要部署证书的HTTPS监听器
     order: 0
   domain:
     title: 域名
-    required: false
     component:
-      name: a-select
+      name: remote-select
       vModel: value
-      open: false
       mode: tags
-    helper: 如果开启了sni，则此项必须填写，未开启，则不要填写
+      type: plugin
+      action: onGetDomainList
+      search: false
+      pager: false
+      single: false
+      watches:
+        - certDomains
+        - accessId
+        - region
+        - loadBalancerId
+        - listenerId
+    required: false
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 如果开启了SNI，请选择要部署证书的域名；未开启SNI时可以留空
     order: 0
   certName:
     title: 证书名称前缀

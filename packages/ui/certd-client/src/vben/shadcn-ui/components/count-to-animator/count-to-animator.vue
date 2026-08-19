@@ -67,7 +67,9 @@ watch([() => props.startVal, () => props.endVal], () => {
 });
 
 onMounted(() => {
-  props.autoplay && start();
+  if (props.autoplay) {
+    start();
+  }
 });
 
 function start() {

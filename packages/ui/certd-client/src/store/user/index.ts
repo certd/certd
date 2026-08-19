@@ -149,7 +149,9 @@ export const useUserStore = defineStore({
 
       this.resetState();
       resetAllStores();
-      goLogin && router.push("/login");
+      if (goLogin) {
+        router.push("/login");
+      }
       mitter.emit("app.logout");
     },
 

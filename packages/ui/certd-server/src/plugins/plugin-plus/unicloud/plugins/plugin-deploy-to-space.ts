@@ -79,10 +79,11 @@ export class UniCloudDeployToSpace extends AbstractTaskPlugin {
   @TaskInput({
     title: "空间域名",
     component: {
-      name: "a-select",
+      name: "remote-select",
       vModel: "value",
       mode: "tags",
-      open: false,
+      action: "onGetDomainList",
+      watches: ["accessId", "spaceId", "provider"],
     },
     helper: "空间域名",
   })
@@ -104,8 +105,37 @@ export class UniCloudDeployToSpace extends AbstractTaskPlugin {
         spaceId: this.spaceId,
         cert: this.cert,
       });
+      await this.ctx.utils.sleep(2000);
     }
     this.logger.info("部署成功");
+  }
+
+  async onGetDomainList() {
+    if (!this.accessId) {
+      throw new Error("请选择uniCloud授权");
+    }
+    if (!this.spaceId) {
+      throw new Error("请填写服务空间ID");
+    }
+    if (!this.provider) {
+      throw new Error("请选择空间提供商");
+    }
+
+    const access = await this.getAccess<UniCloudAccess>(this.accessId);
+    const client = new UniCloudClient({
+      access,
+      logger: this.logger,
+      http: this.http,
+    });
+    const domains = await client.getDomainList({
+      provider: this.provider,
+      spaceId: this.spaceId,
+    });
+    return domains.map(item => ({
+      value: item.domain,
+      label: item.domain,
+      domain: item.domain,
+    }));
   }
 }
 new UniCloudDeployToSpace();

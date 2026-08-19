@@ -50,10 +50,14 @@ input:
   domains:
     title: 空间域名
     component:
-      name: a-select
+      name: remote-select
       vModel: value
       mode: tags
-      open: false
+      action: onGetDomainList
+      watches:
+        - accessId
+        - spaceId
+        - provider
     helper: 空间域名
     order: 0
 output: {}

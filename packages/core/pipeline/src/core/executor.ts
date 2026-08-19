@@ -1,9 +1,9 @@
-import { ConcurrencyStrategy, NotificationWhen, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task, ResultError } from "../dt/index.js";
+import { AfterTask, ConcurrencyStrategy, HistoryResult, NotificationWhen, Pipeline, ResultType, Runnable, RunStrategy, Stage, Step, Task, ResultError } from "../dt/index.js";
 import { RunHistory, RunnableCollection } from "./run-history.js";
 import { AbstractTaskPlugin, ITaskPlugin, PluginDefine, pluginRegistry, TaskInstanceContext, UserInfo } from "../plugin/index.js";
 import { ContextFactory, IContext } from "./context.js";
 import { IStorage } from "./storage.js";
-import { createAxiosService, hashUtils, HttpRequestConfig, ILogger, logger, utils } from "@certd/basic";
+import { buildLogger, createAxiosService, hashUtils, HttpRequestConfig, ILogger, logger, utils } from "@certd/basic";
 import { IAccessService } from "../access/index.js";
 import { RegistryItem } from "../registry/index.js";
 import { Decorator } from "../decorator/index.js";
@@ -11,7 +11,7 @@ import { ICnameProxyService, IEmailService, IPluginConfigService, IServiceGetter
 import { FileStore } from "./file-store.js";
 import { cloneDeep, forEach, merge } from "lodash-es";
 import { INotificationService, PipelineNotificationTypes } from "../notification/index.js";
-import { taskEmitterCreate } from "../service/emit.js";
+import { pipelineEmitter } from "../service/emit.js";
 import { RunnableError } from "./exceptions.js";
 
 export type SysInfo = {
@@ -95,21 +95,44 @@ export class Executor {
       await this.notification("start");
 
       this.runtime.start(this.pipeline);
+
+      //清理通知 和后置任务的状态（start 时机的状态不需要显示，此后从干净状态重新判断）
+      this.runtime.clearNotificationStatus();
       intervalFlushLogId = setInterval(async () => {
         await this.onChanged(this.runtime);
       }, 5000);
 
-      const result = await this.runWithHistory(this.pipeline, "pipeline", async () => {
-        return await this.runStages(this.pipeline);
-      });
-      if (result === ResultType.success) {
+      let result: ResultType;
+      let error: any = null;
+      try {
+        result = await this.runWithHistory(this.pipeline, "pipeline", async () => {
+          const stagesResult = await this.runStages(this.pipeline);
+
+          // 执行后置任务（失败时流水线整体视为执行失败）
+          const afterTaskResult = await this.runAfterTasks({ result: stagesResult });
+          return this.compositionResultType([...afterTaskResult, stagesResult]);
+        });
+      } catch (e: any) {
+        result = ResultType.error;
+        error = e;
+        this.logger.error("pipeline 执行失败", e);
+      }
+
+      // 通知在后置任务之后发送（通知中附加后置任务执行结果与错误信息）
+      const finalResult = result;
+      if (finalResult === ResultType.success) {
         if (this.lastRuntime && this.lastRuntime.pipeline.status?.status === ResultType.error) {
           await this.notification("turnToSuccess");
         } else {
           await this.notification("success");
         }
+      } else if (finalResult === ResultType.skip) {
+        await this.notification("skip");
+      } else if (finalResult === ResultType.error) {
+        await this.notification("error", error);
       }
-      return result;
+
+      return finalResult;
     } catch (e: any) {
       await this.notification("error", e);
       this.logger.error("pipeline 执行失败", e);
@@ -277,8 +300,53 @@ export class Executor {
   private async runStep(step: Step) {
     const currentLogger = this.runtime._loggers[step.id];
     this.currentStatusMap.add(step);
-    const lastStatus = this.lastStatusMap.get(step.id);
-    //执行任务
+    const plugin: RegistryItem<AbstractTaskPlugin> = pluginRegistry.get(step.type);
+    // @ts-ignore
+    const define: PluginDefine = plugin?.define;
+
+    const { instance, result, skipped } = await this.executePlugin(step, currentLogger);
+    if (result === ResultType.skip && skipped) {
+      // SkipWhenSucceed 跳过：状态与输出已在 executePlugin 内拷贝，无需结果处理
+      return result;
+    }
+
+    //执行结果处理（插件主动返回 skip 时也会执行：插件可能已把输出写入实例属性，需写回历史）
+    if (instance._result.clearLastStatus) {
+      //是否需要清除所有状态
+      this.lastStatusMap.clear();
+    }
+    //输出上下文变量到output context
+    forEach(define.output, (item: any, key: any) => {
+      step.status!.output[key] = instance[key];
+    });
+    step.status!.files = instance.getFiles();
+    //更新pipeline vars
+    if (Object.keys(instance._result.pipelineVars).length > 0) {
+      // 判断 pipelineVars 有值时更新
+      let vars = await this.pipelineContext.getObj("vars");
+      vars = vars || {};
+      merge(vars, instance._result.pipelineVars);
+      await this.pipelineContext.setObj("vars", vars);
+    }
+    if (Object.keys(instance._result.pipelinePrivateVars).length > 0) {
+      // 判断 pipelineVars 有值时更新
+      let vars = await this.pipelineContext.getObj("privateVars");
+      vars = vars || {};
+      merge(vars, instance._result.pipelinePrivateVars);
+      await this.pipelineContext.setObj("privateVars", vars);
+    }
+
+    return result;
+  }
+
+  /**
+   * 实例化插件并执行（任务步骤与后置任务共用同一执行链路）
+   * 负责：插件实例化、系统参数注入、output-selector 解析、参数哈希与跳过判断、执行上下文构建与插件执行。
+   * 后置任务通过伪步骤（无 strategy）复用，SkipWhenSucceed 跳过判断自然不触发。
+   * @param step 步骤（后置任务传伪步骤）
+   * @param currentLogger 当前节点日志logger
+   */
+  private async executePlugin(step: Step, currentLogger: ILogger): Promise<{ instance: ITaskPlugin; result: any; skipped: boolean }> {
     const plugin: RegistryItem<AbstractTaskPlugin> = pluginRegistry.get(step.type);
     if (!plugin) {
       currentLogger.error(`未找到插件${step.type}`);
@@ -295,13 +363,11 @@ export class Executor {
       currentLogger.error(`实例化插件失败:${step.type}:${e.message}`);
       throw new Error(`实例化插件失败`, e);
     }
-
     // @ts-ignore
     const define: PluginDefine = plugin.define;
-    const pluginName = define.name;
-    const pluginConfig = await this.options.pluginConfigService.getPluginConfig(pluginName);
-    //从outputContext读取输入参数
-    const input = cloneDeep(step.input);
+    const pluginConfig = await this.options.pluginConfigService.getPluginConfig(define.name);
+    //从配置读取输入参数
+    const input = cloneDeep(step.input || {});
     const sysInput = pluginConfig.sysSetting?.input || {};
     //注入系统设置参数
     for (const sysInputKey in sysInput) {
@@ -327,22 +393,25 @@ export class Executor {
       }
     });
 
+    //计算参数哈希与是否变化（供插件 ctx.inputChanged 与跳过判断使用；后置任务伪步骤不在 lastStatusMap 中，恒为 true）
     const newInputHash = hashUtils.md5(JSON.stringify(input));
-    step.status!.inputHash = newInputHash;
-    //判断是否需要跳过
-    const lastNode = this.lastStatusMap.get(step.id);
-    const lastResult = lastNode?.status?.status;
+    if (step.status) {
+      step.status.inputHash = newInputHash;
+    }
+    const lastStatus = this.lastStatusMap.get(step.id);
     let inputChanged = true;
-    const lastInputHash = lastNode?.status?.inputHash;
+    const lastInputHash = lastStatus?.status?.inputHash;
     if (lastInputHash && newInputHash && lastInputHash === newInputHash) {
       //参数没有变化
       inputChanged = false;
     }
+    //跳过判断（SkipWhenSucceed 策略；后置任务伪步骤无 strategy 不触发）
     if (step.strategy?.runStrategy === RunStrategy.SkipWhenSucceed && define.runStrategy !== RunStrategy.AlwaysRun) {
+      const lastResult = lastStatus?.status?.status;
       if (lastResult != null && lastResult === ResultType.success && !inputChanged) {
-        step.status!.output = lastNode?.status?.output;
-        step.status!.files = lastNode?.status?.files;
-        return ResultType.skip;
+        step.status!.output = lastStatus?.status?.output;
+        step.status!.files = lastStatus?.status?.files;
+        return { instance, result: ResultType.skip, skipped: true };
       }
     }
 
@@ -381,45 +450,218 @@ export class Executor {
       signal: this.abort.signal,
       utils,
       user: this.options.user,
-      emitter: taskEmitterCreate({
-        step,
-        pipeline: this.pipeline,
-      }),
+      emitter: pipelineEmitter,
       serviceGetter: this.options.serviceGetter,
+      projectId: this.pipeline.projectId,
     };
     await instance.setCtx(taskCtx);
 
+    if (!(instance instanceof AbstractTaskPlugin)) {
+      throw new Error(`插件类型错误：${step.type}不是AbstractTaskPlugin的实例`);
+    }
     await instance.onInstance();
     const result = await instance.execute();
-    //执行结果处理
-    if (instance._result.clearLastStatus) {
-      //是否需要清除所有状态
-      this.lastStatusMap.clear();
-    }
-    //输出上下文变量到output context
-    forEach(define.output, (item: any, key: any) => {
-      step.status!.output[key] = instance[key];
-      // const stepOutputKey = `step.${step.id}.${key}`;
-      // this.runtime.context[stepOutputKey] = instance[key];
-    });
-    step.status!.files = instance.getFiles();
-    //更新pipeline vars
-    if (Object.keys(instance._result.pipelineVars).length > 0) {
-      // 判断 pipelineVars 有值时更新
-      let vars = await this.pipelineContext.getObj("vars");
-      vars = vars || {};
-      merge(vars, instance._result.pipelineVars);
-      await this.pipelineContext.setObj("vars", vars);
-    }
-    if (Object.keys(instance._result.pipelinePrivateVars).length > 0) {
-      // 判断 pipelineVars 有值时更新
-      let vars = await this.pipelineContext.getObj("privateVars");
-      vars = vars || {};
-      merge(vars, instance._result.pipelinePrivateVars);
-      await this.pipelineContext.setObj("privateVars", vars);
-    }
+    return { instance, result, skipped: false };
+  }
 
+  /**
+   * 执行后置任务（流水线运行结束后触发）
+   * 后置任务失败时流水线整体视为执行失败：收集所有失败任务的错误信息返回（不再单独发送通知）
+   * @returns 聚合错误（有后置任务失败时返回 Error，否则返回 null）
+   */
+  private async runAfterTasks(opts: { result: ResultType }): Promise<ResultType[]> {
+    const { result } = opts;
+    const pipelineResult = result;
+    if (!this.pipeline.afterTasks || this.pipeline.afterTasks.length === 0) {
+      return [];
+    }
+    const afterTaskResults: ResultType[] = [];
+    const errorList: { afterTask: AfterTask; err: Error }[] = [];
+    for (const afterTask of this.pipeline.afterTasks) {
+      if (this.abort.signal.aborted) {
+        //用户取消，不再执行后续后置任务
+        break;
+      }
+      if (afterTask.disabled) {
+        // 已禁用：记录日志与状态（与任务 disabled 同语义）
+        await this.markAfterTaskSkipped(afterTask, ResultType.disabled, `后置任务已禁用，不执行`, pipelineResult);
+        continue;
+      }
+      if (!this.matchAfterTaskWhen(afterTask, pipelineResult)) {
+        // 触发条件不满足：记录日志与跳过状态（与任务 skip 同语义）
+        await this.markAfterTaskSkipped(afterTask, ResultType.skip, `后置任务未触发：当前运行结果 ${pipelineResult}，触发条件 ${(afterTask.when || []).join(",")}`, pipelineResult);
+        continue;
+      }
+      try {
+        const res = await this.runOneAfterTask(afterTask);
+        afterTaskResults.push(res);
+      } catch (err: any) {
+        errorList.push({ afterTask, err });
+      }
+    }
+    if (errorList.length > 0) {
+      // 聚合所有失败后置任务的错误信息，抛出后由 runWithHistory 将流水线整体标记为失败
+      const errMessage = errorList.map(item => `后置任务[${item.afterTask.title}]执行失败：${item.err.message}`).join("\n");
+      throw new Error(errMessage);
+    }
+    return afterTaskResults;
+  }
+
+  /**
+   * 记录后置任务未执行（未触发/禁用）的日志与状态
+   * 日志与任务一致包含“开始/结束”两条；状态与任务 skip/disabled 一致，前端显示对应图标
+   */
+  private async markAfterTaskSkipped(afterTask: AfterTask, result: ResultType, message: string, pipelineResult: ResultType) {
+    const logKey = this.buildAfterTaskLogKey(afterTask);
+    const taskLogger = this.buildTaskLogger(logKey);
+    const now = new Date().getTime();
+    taskLogger.info(message);
+    afterTask.status = {
+      output: {},
+      status: result === ResultType.disabled ? ResultType.canceled : ResultType.skip,
+      result,
+      startTime: now,
+      endTime: now,
+      message,
+    };
+  }
+
+  /**
+   * 判断后置任务触发条件是否满足（与通知 when 同语义）
+   */
+  private matchAfterTaskWhen(afterTask: AfterTask, pipelineResult: ResultType): boolean {
+    const whenList = afterTask.when || [];
+    if (whenList.includes("success") && pipelineResult === ResultType.success) {
+      return true;
+    }
+    if (whenList.includes("error") && pipelineResult === ResultType.error) {
+      return true;
+    }
+    // 失败转成功：本次成功且上一次运行失败
+    if (whenList.includes("turnToSuccess") && pipelineResult === ResultType.success && this.lastRuntime?.pipeline?.status?.status === ResultType.error) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 执行单个后置任务：记录状态与日志，失败时返回错误（由流水线整体承担失败结果）
+   * @returns 失败时返回错误对象，成功/跳过/取消返回 null
+   */
+  private async runOneAfterTask(afterTask: AfterTask): Promise<ResultType> {
+    const logKey = this.buildAfterTaskLogKey(afterTask);
+    const taskLogger = this.buildTaskLogger(logKey);
+    const status: HistoryResult = {
+      output: {},
+      status: ResultType.start,
+      result: ResultType.start,
+      startTime: new Date().getTime(),
+    };
+    afterTask.status = status;
+    taskLogger.info(`后置任务开始执行，触发条件:${(afterTask.when || []).join(",")}`);
+    try {
+      if (this.abort.signal.aborted) {
+        //用户取消
+        status.status = ResultType.canceled;
+        status.result = ResultType.canceled;
+        status.endTime = new Date().getTime();
+        status.message = "用户取消";
+        taskLogger.warn("用户取消，后置任务不执行");
+        return ResultType.canceled;
+      }
+      const result = await this.executeAfterTaskPlugin(afterTask, taskLogger);
+      if (result === "skip") {
+        // 跳过：记录日志与状态（与任务 skip 同语义）
+        await this.markAfterTaskSkipped(afterTask, ResultType.skip, `后置任务已跳过`, ResultType.success);
+        return ResultType.skip;
+      }
+      status.status = ResultType.success;
+      status.result = ResultType.success;
+      status.endTime = new Date().getTime();
+      taskLogger.info("后置任务执行成功");
+      return ResultType.success;
+    } catch (e: any) {
+      status.status = ResultType.error;
+      status.result = ResultType.error;
+      status.endTime = new Date().getTime();
+      status.message = e.message;
+      taskLogger.error(`后置任务执行失败：`, e);
+      // 抛出由 runAfterTasks 聚合；聚合错误抛出后由 runWithHistory 将流水线整体标记为失败（不再单独发送通知）
+      throw e;
+    }
+  }
+
+  /**
+   * 后置任务日志在运行历史中的key（与任务日志同机制，可点击查看）
+   */
+  private buildAfterTaskLogKey(afterTask: AfterTask): string {
+    return `afterTask.${afterTask.id}`;
+  }
+
+  /**
+   * 构建一个写入运行历史日志的logger（任务/通知/后置任务共用）
+   */
+  private buildTaskLogger(logKey: string): ILogger {
+    if (this.runtime._loggers[logKey]) {
+      return this.runtime._loggers[logKey];
+    }
+    const taskLogger = buildLogger((text: string) => {
+      if (!this.runtime.logs[logKey]) {
+        this.runtime.logs[logKey] = [];
+      }
+      this.runtime.logs[logKey].push(text);
+    });
+    this.runtime._loggers[logKey] = taskLogger;
+    return taskLogger;
+  }
+
+  /**
+   * 执行后置任务插件：与任务步骤共用同一执行链路（伪Step，插件可访问流水线上下文与运行结果）
+   */
+  private async executeAfterTaskPlugin(afterTask: AfterTask, taskLogger: ILogger): Promise<void | string> {
+    const plugin: RegistryItem<AbstractTaskPlugin> = pluginRegistry.get(afterTask.type);
+    // 伪步骤：与任务步骤完全相同的插件执行链路（无 strategy，跳过判断自然不触发）
+    const pseudoStep: Step = {
+      id: this.buildAfterTaskLogKey(afterTask),
+      title: afterTask.title || plugin?.define?.name,
+      type: afterTask.type,
+      input: afterTask.input || {},
+      status: afterTask.status,
+    };
+    const { result } = await this.executePlugin(pseudoStep, taskLogger);
     return result;
+  }
+
+  /**
+   * 收集后置任务执行结果摘要（成功/失败/跳过等），用于附加到通知内容
+   */
+  private buildAfterTaskSummary(): string {
+    if (!this.pipeline.afterTasks || this.pipeline.afterTasks.length === 0) {
+      return "";
+    }
+    const lines: string[] = [];
+    const resultTextMap: Record<string, string> = {
+      success: "执行成功",
+      error: "执行失败",
+      skip: "未触发",
+      disabled: "已禁用",
+      canceled: "已取消",
+    };
+    for (const afterTask of this.pipeline.afterTasks) {
+      const result = afterTask.status?.result;
+      if (result == null) {
+        continue;
+      }
+      if (result === ResultType.error) {
+        lines.push(` - ${afterTask.title} 执行失败，错误详情：${afterTask.status?.message || ""}`);
+      } else {
+        lines.push(` - ${afterTask.title} ${resultTextMap[result] || result}`);
+      }
+    }
+    if (lines.length === 0) {
+      return "";
+    }
+    return `\n\n后置任务执行结果：\n${lines.join("\n")}`;
   }
 
   async notification(when: NotificationWhen, error?: any) {
@@ -463,6 +705,10 @@ export class Executor {
         errors = error.message;
         content = `流水线ID:${this.pipeline.id}，运行ID:${this.runtime.id}\n\n${this.currentStatusMap?.currentStep?.title} 执行失败\n\n错误详情:${error.message}`;
       }
+    } else if (when === "skip") {
+      pipelineResult = "执行跳过";
+      subject = `${pipelineResult}，${this.pipeline.title}【${this.pipeline.id}】`;
+      content = `流水线ID:${this.pipeline.id}，运行ID:${this.runtime.id}\n\n${this.currentStatusMap?.currentStep?.title} 执行跳过\n`;
     } else {
       return;
     }
@@ -470,31 +716,60 @@ export class Executor {
     templateData.errors = errors;
     templateData.pipelineResult = pipelineResult;
     templateData.title = subject;
+    // 附加后置任务执行结果（通知在后置任务之后发送，可看到后置任务的成功/失败详情）
+    const afterTaskSummary = this.buildAfterTaskSummary();
+    if (afterTaskSummary) {
+      content += afterTaskSummary;
+    }
     templateData.content = content;
 
     for (const notification of this.pipeline.notifications) {
+      // 记录通知日志（无论是否触发，便于确认通知发送情况）
+      const logKey = `notification.${notification.id}`;
+      const notificationLogger = this.buildTaskLogger(logKey);
       if (!notification.when.includes(when)) {
+        // 触发条件不满足：记录“开始/结束”两条日志；若本次运行尚未触发过，则标记为跳过（与任务 skip 同语义）
+        const skipMessage = `通知未触发：当前时机 ${when}，通知触发条件 ${(notification.when || []).join(",")}`;
+        notificationLogger.info(skipMessage);
+        if (notification.status == null) {
+          const now = new Date().getTime();
+          notification.status = {
+            output: {},
+            status: ResultType.skip,
+            result: ResultType.skip,
+            startTime: now,
+            endTime: now,
+            message: skipMessage,
+          };
+        }
         continue;
       }
+      const notificationStatus: HistoryResult = {
+        output: {},
+        status: ResultType.start,
+        result: ResultType.start,
+        startTime: new Date().getTime(),
+      };
+      notification.status = notificationStatus;
+      notificationLogger.info(`通知开始发送，触发时机:${when}，通知方式:${notification.type}，标题:${subject}`);
 
-      if (notification.type === "email" && notification.options?.receivers) {
-        try {
+      try {
+        if (notification.type === "email" && notification.options?.receivers) {
           await this.options.emailService?.sendByTemplate({
             type: PipelineNotificationTypes.PipelineResult,
             data: templateData,
             receivers: notification.options?.receivers,
           });
-        } catch (e) {
-          logger.error("send email error", e);
-        }
-      } else {
-        try {
+          notificationStatus.status = ResultType.success;
+          notificationStatus.result = ResultType.success;
+          notificationLogger.info("邮件通知发送成功");
+        } else {
           //发送通知
           await this.options.notificationService.send({
             id: notification.notificationId,
             useDefault: true,
             useEmail: false,
-            logger: this.logger,
+            logger: notificationLogger,
             body: {
               notificationType: PipelineNotificationTypes.PipelineResult,
               title: subject,
@@ -507,9 +782,17 @@ export class Executor {
               ...templateData,
             },
           });
-        } catch (e) {
-          logger.error("send notification error", e);
+          notificationStatus.status = ResultType.success;
+          notificationStatus.result = ResultType.success;
+          notificationLogger.info("通知发送成功");
         }
+      } catch (e: any) {
+        notificationStatus.status = ResultType.error;
+        notificationStatus.result = ResultType.error;
+        notificationStatus.message = e.message;
+        notificationLogger.error("通知发送失败：", e);
+      } finally {
+        notificationStatus.endTime = new Date().getTime();
       }
     }
   }

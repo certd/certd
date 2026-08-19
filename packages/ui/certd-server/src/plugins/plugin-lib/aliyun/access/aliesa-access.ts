@@ -62,7 +62,8 @@ export class AliesaAccess extends BaseAccess {
   }
 
   async getEsaClient() {
-    const access: AliesaAccess = this;
+    // @ts-ignore
+    const access: AliesaAccess = this as any;
     const aliAccess = (await this.ctx.accessService.getById(access.accessId)) as AliyunAccess;
     const endpoint = `esa.${access.region}.aliyuncs.com`;
     return aliAccess.getClient(endpoint);

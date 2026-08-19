@@ -6,7 +6,9 @@ export default {
     const isComm = settingStore.isComm;
     const { value } = binding;
     if ((value === false && isComm) || (value === true && !isComm)) {
-      el.parentNode && el.parentNode.removeChild(el);
+      if (el.parentNode) {
+        el.parentNode.removeChild(el);
+      }
     }
   },
 };

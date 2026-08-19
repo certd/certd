@@ -5,6 +5,7 @@ import { checkPlus } from "@certd/plus-core";
 import { http, logger, utils } from "@certd/basic";
 import { TaskServiceBuilder } from "../../../modules/pipeline/service/getter/task-service-getter.js";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * Addon
@@ -22,6 +23,10 @@ export class AddonController extends CrudController<AddonService> {
 
   getService(): AddonService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.addon.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询Addon分页列表" })
@@ -68,7 +73,9 @@ export class AddonController extends CrudController<AddonService> {
     if (define.needPlus) {
       checkPlus();
     }
-    return super.add(bean);
+    const res = await super.add(bean);
+    this.auditLog({ content: `新增了Addon「${bean.name}」(ID:${res.data}, 类型:${bean.type})` });
+    return res;
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新Addon" })
@@ -91,7 +98,9 @@ export class AddonController extends CrudController<AddonService> {
     }
     delete bean.userId;
     delete bean.projectId;
-    return super.update(bean);
+    const res = await super.update(bean);
+    this.auditLog({ content: `修改了Addon「${bean.name}」(ID:${bean.id})` });
+    return res;
   }
 
   @Post("/info", { description: Constants.per.authOnly, summary: "查询Addon详情" })
@@ -103,7 +112,9 @@ export class AddonController extends CrudController<AddonService> {
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除Addon" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write");
-    return super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({ content: `删除了Addon(ID:${id})` });
+    return res;
   }
 
   @Post("/define", { description: Constants.per.authOnly, summary: "查询Addon插件定义" })
@@ -158,6 +169,7 @@ export class AddonController extends CrudController<AddonService> {
   async setDefault(@Query("addonType") addonType: string, @Query("id") id: number) {
     const { projectId, userId } = await this.checkOwner(this.getService(), id, "write", true);
     const res = await this.service.setDefault(id, userId, addonType, projectId);
+    this.auditLog({ content: `设置了默认Addon(ID:${id})` });
     return this.ok(res);
   }
 

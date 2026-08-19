@@ -288,6 +288,22 @@ export const certdResources = [
             },
           },
           {
+            title: "certd.auditLog",
+            name: "AuditLog",
+            path: "/certd/audit",
+            component: "/certd/audit/index.vue",
+            meta: {
+              icon: "ion:document-text-outline",
+              auth: true,
+              keepAlive: true,
+              isMenu: true,
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isPlus;
+              },
+            },
+          },
+          {
             title: "certd.userSecurity",
             name: "UserSecurity",
             path: "/certd/mine/security",

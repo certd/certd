@@ -19,7 +19,6 @@
 </template>
 
 <script lang="ts" setup>
-
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import { message, Modal } from "ant-design-vue";

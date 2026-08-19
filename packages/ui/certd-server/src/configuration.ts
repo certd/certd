@@ -12,6 +12,7 @@ import cors from "@koa/cors";
 import { GlobalExceptionMiddleware } from "./middleware/global-exception.js";
 import { PreviewMiddleware } from "./middleware/preview.js";
 import { AuthorityMiddleware } from "./middleware/authority.js";
+import { AuditLogMiddleware } from "./middleware/audit-log.js";
 import { logger } from "@certd/basic";
 import { ResetPasswdMiddleware } from "./middleware/reset-passwd/middleware.js";
 import DefaultConfig from "./config/config.default.js";
@@ -31,6 +32,7 @@ process.on("uncaughtException", error => {
     logger.error("您的服务器不支持监听IPV6格式的地址（::），请配置环境变量: certd_koa_hostname=0.0.0.0");
   }
 });
+
 // function startHeapLog() {
 //   function format(bytes: any) {
 //     return (bytes / 1024 / 1024).toFixed(2) + ' MB';
@@ -42,9 +44,7 @@ process.on("uncaughtException", error => {
 //   setInterval(log, 200);
 //   log()
 // }
-
 // startHeapLog();
-
 @Configuration({
   detectorOptions: {
     ignore: ["**/plugins/**"],
@@ -78,10 +78,8 @@ process.on("uncaughtException", error => {
 export class MainConfiguration {
   @App("koa")
   app: koa.Application;
-
   async onReady() {
     // 设置flyway logger
-
     // add middleware
     // this.app.useMiddleware([ReportMiddleware]);
     // add filter
@@ -113,6 +111,7 @@ export class MainConfiguration {
       PreviewMiddleware,
       //授权处理
       AuthorityMiddleware,
+      AuditLogMiddleware,
 
       //resetPasswd,重置密码模式下不提供服务
       ResetPasswdMiddleware,

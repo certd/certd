@@ -6,13 +6,22 @@
 
 Certd 提供多种 Docker 镜像版本，您可以根据需要选择：
 
-| 版本标签 | 基础系统  | 说明 |
-| --- | --- | --- | --- |
-| `latest` / `[version]` | Alpine Linux  | 默认版本，镜像体积小 |
-| `slim` / `[version]-slim` | Debian slim | glibc版本，dns解析兼容性更好（可能需要配置security_opt -seccomp=unconfined）|
-| `armv7` / `[version]-armv7` | Alpine Linux | ARMv7 架构专用版本 |
+**最新版本：**   
 
-> 如果您不确定使用哪个版本，请使用默认的 `latest` 版本。
+| 版本 | 标签 | 说明 |
+| --- | --- | --- |
+| 预览版【默认】 | `certd:latest` | 指向最新开发版本，包含最新功能，但稳定性不如稳定版  | 
+| 稳定版 | `certd:stable` | 指向经过充分测试的生产就绪版本，推荐生产环境使用  |  
+
+**系统版本分支：**
+
+| 分支版本标签 | 基础系统  | 说明 | 指定版本 |  稳定版 | 
+| --- | --- | --- | --- | --- |
+| `certd:latest` 【默认】 | Alpine Linux  | 默认版本，镜像体积小 | `certd:[version]` | `certd:[version-]stable` |
+| `certd:slim`  | Debian slim | glibc版本，dns解析兼容性更好（可能需要配置security_opt -seccomp=unconfined）| `certd:[version-]slim` | `certd:[version-]slim-stable` |
+| `certd:armv7`  | Alpine Linux | ARMv7 架构专用版本 | `certd:[version]-armv7` | `certd:[version-]armv7-ststable` |  
+
+> 如果您不确定使用哪个版本，请使用默认的 `certd:latest` 版本。
 
 ### 一键脚本安装（推荐）
 

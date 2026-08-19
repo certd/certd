@@ -49,9 +49,11 @@ describe("domain_validator", () => {
       return isFilePath({}, value);
     }
 
+    //@ts-ignore
     expect(test()).to.be.true;
 
     value = "/a/&/bc";
+    //@ts-ignore
     expect(test()).to.be.true;
 
     //*?“<>|等特殊字符

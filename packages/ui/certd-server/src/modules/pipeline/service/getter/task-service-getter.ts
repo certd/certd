@@ -1,4 +1,4 @@
-﻿import { IServiceGetter } from "@certd/pipeline";
+import { IServiceGetter } from "@certd/pipeline";
 import { ApplicationContext, IMidwayContainer, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { AccessGetter, AccessService } from "@certd/lib-server";
 import { CnameProxyService } from "./cname-proxy-service.js";
@@ -14,7 +14,7 @@ import { CertInfoService } from "../../../monitor/index.js";
 import { ICertInfoGetter } from "@certd/plugin-lib";
 import { CnameProviderService } from "../../../cname/service/cname-provider-service.js";
 
-const serviceNames = ["ocrService"];
+const serviceNames = ["ocrService", "certInfoService"];
 export class TaskServiceGetter implements IServiceGetter {
   private userId: number;
   private projectId: number;
@@ -46,6 +46,7 @@ export class TaskServiceGetter implements IServiceGetter {
       if (!service) {
         throw new Error(`${serviceName} not found`);
       }
+      return service as T;
     }
   }
 

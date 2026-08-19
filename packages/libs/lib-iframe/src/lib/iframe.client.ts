@@ -29,10 +29,12 @@ export class IframeClient {
   onError?: any;
 
   handlers: Record<string, (data: IframeMessageData<any>) => Promise<void>> = {};
+  private messageHandler: (event: MessageEvent<IframeMessageData<any>>) => Promise<void>;
+
   constructor(iframe?: HTMLIFrameElement, onError?: (e: any) => void) {
     this.iframe = iframe;
     this.onError = onError;
-    window.addEventListener("message", async (event: MessageEvent<IframeMessageData<any>>) => {
+    this.messageHandler = async (event: MessageEvent<IframeMessageData<any>>) => {
       const data = event.data;
       if (data.action) {
         console.log(`收到消息[isSub:${this.isInFrame()}]`, data);
@@ -51,7 +53,8 @@ export class IframeClient {
           await this.send("reply", {}, data.id, 500, e.message);
         }
       }
-    });
+    };
+    window.addEventListener("message", this.messageHandler);
 
     this.register("reply", async data => {
       const req = this.requestQueue[data.replyId!];
@@ -61,11 +64,20 @@ export class IframeClient {
       }
     });
   }
-  isInFrame() {
+
+  public destroy() {
+    window.removeEventListener("message", this.messageHandler);
+    this.requestQueue = {};
+    this.handlers = {};
+  }
+  public close() {
+    this.destroy();
+  }
+  public isInFrame() {
     return window.self !== window.top;
   }
 
-  register<T = any>(action: string, handler: (data: IframeMessageData<T>) => Promise<any>) {
+  public register<T = any>(action: string, handler: (data: IframeMessageData<T>) => Promise<any>) {
     this.handlers[action] = handler;
   }
 

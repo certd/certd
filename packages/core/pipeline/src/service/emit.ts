@@ -1,13 +1,6 @@
 import { logger } from "@certd/basic";
-import { Pipeline, Runnable } from "../dt";
-
 export type PipelineEventListener = (...args: any[]) => Promise<void>;
-export type PipelineEvent<T> = {
-  pipeline: Pipeline;
-  step: Runnable;
-  event: T;
-};
-export class PipelineEmitter {
+export class PipelineEmitter<T> implements TaskEmitter<T> {
   events: Record<string, PipelineEventListener[]>;
   constructor() {
     this.events = {};
@@ -18,7 +11,7 @@ export class PipelineEmitter {
     }
     this.events[event].push(listener);
   }
-  async emit<T>(name: string, event: PipelineEvent<T>) {
+  async emit<T>(name: string, event: T) {
     const listeners = this.events[name];
     if (listeners) {
       for (const listener of listeners) {
@@ -46,23 +39,6 @@ export class PipelineEmitter {
 
 export const pipelineEmitter = new PipelineEmitter();
 
-export type TaskEmitterCreateReq = {
-  step: Runnable;
-  pipeline: Pipeline;
+export type TaskEmitter<T> = {
+  emit: (name: string, event: T) => Promise<void>;
 };
-
-export type TaskEmitter = {
-  emit: <T>(name: string, event: T) => Promise<void>;
-};
-
-export function taskEmitterCreate(req: TaskEmitterCreateReq) {
-  return {
-    emit: async <T>(name: string, event: T) => {
-      await pipelineEmitter.emit(name, {
-        pipeline: req.pipeline,
-        step: req.step,
-        event,
-      });
-    },
-  } as TaskEmitter;
-}

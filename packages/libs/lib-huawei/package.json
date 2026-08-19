@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-huawei",
   "private": false,
-  "version": "1.42.6",
+  "version": "1.43.0",
   "main": "./dist/bundle.js",
   "module": "./dist/bundle.js",
   "types": "./dist/d/index.d.ts",
@@ -13,7 +13,7 @@
     "preview": "vite preview",
     "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
     "pub": "npm publish",
-    "compile": "npm run build",
+    "compile": "rimraf dist && npm run build",
     "format": "prettier --write src",
     "lint": "eslint --fix --ext .ts src"
   },
@@ -31,5 +31,5 @@
     "prettier": "3.3.3",
     "tslib": "^2.8.1"
   },
-  "gitHead": "246ee83015bf5589adc2a5fa3d1388c8d9a2a252"
+  "gitHead": "5558376baee9e3568b00a8355a23898427efadf8"
 }
