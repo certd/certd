@@ -1,5 +1,5 @@
 import { compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { Modal, message, notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { Ref, ref } from "vue";
 import * as api from "./api";
 import { useFormDialog } from "/@/use/use-dialog";
@@ -195,7 +195,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   async function doExport() {
     if (selectedRowKeys.value.length === 0) {
-      message.warning("请先勾选要导出的激活码");
+      notification.warning({ message: "请先勾选要导出的激活码" });
       return;
     }
     Modal.confirm({

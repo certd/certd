@@ -154,7 +154,7 @@ import ChangePasswordButton from "/@/views/certd/mine/change-password-button.vue
 import { useI18n } from "/src/locales";
 import { useContactBind, useUserProfile } from "./use";
 import { usePasskeyRegister } from "./use";
-import { message, Modal, notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { useSettingStore } from "/@/store/settings";
 import { isEmpty } from "lodash-es";
 import { dict } from "@fast-crud/fast-crud";
@@ -308,7 +308,7 @@ async function registerPasskey() {
         return;
       }
       await doRegisterPasskey(deviceName);
-      message.success("Passkey注册成功");
+      notification.success({ message: "Passkey注册成功" });
     },
   });
 }

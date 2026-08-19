@@ -50,7 +50,7 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useI18n } from "/src/locales";
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import { request } from "/src/api/service";
 import { useProjectStore } from "/@/store/project";
 import dayjs from "dayjs";
@@ -89,7 +89,7 @@ const getSystemProjects = async () => {
     });
     projects.value = response || [];
   } catch (error) {
-    message.error(t("certd.project.fetchFailed"));
+    notification.error({ message: t("certd.project.fetchFailed") });
     console.error("获取项目列表失败:", error);
   }
 };
@@ -105,7 +105,7 @@ const applyToJoin = async (projectId: number) => {
         method: "post",
         data: { projectId },
       });
-      message.success(t("certd.project.applySuccess"));
+      notification.success({ message: t("certd.project.applySuccess") });
       await getSystemProjects();
       // 申请成功后可以刷新页面或跳转到项目列表
     },
@@ -134,7 +134,7 @@ async function leaveProject(projectId: number) {
         method: "post",
         data: { projectId },
       });
-      message.success(t("certd.project.leaveSuccess"));
+      notification.success({ message: t("certd.project.leaveSuccess") });
       // 退出成功后可以刷新页面或跳转到项目列表
       await getSystemProjects();
     },

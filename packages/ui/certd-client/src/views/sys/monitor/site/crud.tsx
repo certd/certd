@@ -1,6 +1,6 @@
 import createCrudOptionsUser from "/@/views/sys/authority/user/crud";
 import { CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { message, Modal } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { ref } from "vue";
 import { sysSiteMonitorApi } from "./api";
@@ -17,7 +17,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const selectedRowKeys = ref<number[]>([]);
   const handleBatchDelete = () => {
     if (!selectedRowKeys.value?.length) {
-      message.error("请先选择要删除的记录");
+      notification.error({ message: "请先选择要删除的记录" });
       return;
     }
     Modal.confirm({
@@ -25,7 +25,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       content: `确认删除选中的 ${selectedRowKeys.value.length} 条站点监控记录？`,
       async onOk() {
         await api.BatchDelObj(selectedRowKeys.value);
-        message.success("删除成功");
+        notification.success({ message: "删除成功" });
         selectedRowKeys.value = [];
         await crudExpose.doRefresh();
       },

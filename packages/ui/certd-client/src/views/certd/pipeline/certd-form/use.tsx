@@ -1,6 +1,6 @@
 import { checkPipelineLimit } from "/@/views/certd/pipeline/utils";
 import { cloneDeep, merge, omit } from "lodash-es";
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import { nanoid } from "nanoid";
 import { useRouter } from "vue-router";
 import { compute, CreateCrudOptionsRet, dict, useFormWrapper } from "@fast-crud/fast-crud";
@@ -237,7 +237,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                 content: pickCertApplyTemplateParams(form.input),
               });
               await reloadApplyTemplates();
-              message.success("保存成功");
+              notification.success({ message: "保存成功" });
             },
           },
         },
@@ -271,7 +271,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
             async doSubmit({ form: templateForm }: any) {
               await certApplyTemplateApi.UpdateObj(buildTemplateSubmitData(templateForm));
               await reloadApplyTemplates();
-              message.success("保存成功");
+              notification.success({ message: "保存成功" });
             },
           },
         },
@@ -288,7 +288,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
           if (selectedTemplateId.value === templateId) {
             selectedTemplateId.value = null;
           }
-          message.success("删除成功");
+          notification.success({ message: "删除成功" });
         },
       });
     }
@@ -620,13 +620,13 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
           console.error(e);
         }
       }
-      message.success("创建成功,请添加证书部署任务");
+      notification.success({ message: "创建成功,请添加证书部署任务" });
       router.push({ path: "/certd/pipeline/detail", query: { id, editMode: "true" } });
     }
     const certPlugins = await getCertPlugins();
     const certPlugin = certPlugins.find(plugin => plugin.name === req.pluginName);
     if (!certPlugin) {
-      message.error("该证书申请插件不存在");
+      notification.error({ message: "该证书申请插件不存在" });
       return;
     }
 

@@ -6,8 +6,8 @@
       current,
       'is-simple': simple,
       'is-local': source === 'local',
-      'is-installed': isInstalled,
-      'is-disabled': isDisabled,
+      'is-installed': pluginCardState.isInstalled,
+      'is-disabled': pluginCardState.isDisabled,
     }"
     @click="handleCardClick"
     @dblclick="handleCardDoubleClick"
@@ -16,66 +16,57 @@
       <div class="plugin-card__main">
         <fs-icon class="plugin-icon plugin-card__icon" :icon="plugin.icon || 'clarity:plugin-line'" />
         <div class="plugin-card__title-wrap">
-          <a v-if="showEditButton" class="plugin-card__title" :title="plugin.title || plugin.name" href="#" @click.stop.prevent="editPlugin">
+          <a v-if="pluginCardState.showEditButton" class="plugin-card__title" :title="plugin.title || plugin.name" href="#" @click.stop.prevent="editPlugin">
             {{ plugin.title || plugin.name }}
           </a>
           <span v-else class="plugin-card__title" :title="plugin.title || plugin.name">{{ plugin.title || plugin.name }}</span>
           <a-tooltip v-if="plugin.aiCheckStatus === 'passed'" :title="t('certd.onlinePluginAiReviewPassed')">
             <fs-icon class="plugin-card__ai-check-icon" icon="ion:shield-checkmark-outline" />
           </a-tooltip>
-          <a-tooltip v-if="requiresVip" title="需要 Plus 会员">
+          <a-tooltip v-if="pluginCardState.requiresVip" title="需要 Plus 会员">
             <fs-icon class="plugin-card__vip-icon" icon="mingcute:vip-1-line" />
           </a-tooltip>
         </div>
       </div>
       <div class="plugin-card__actions">
-        <div v-if="showEditButton || showConfigButton || showToolMenu" class="plugin-card__tools">
-          <a-tooltip v-if="showEditButton" title="编辑">
+        <div v-if="pluginCardState.showEditButton || pluginCardState.showConfigButton" class="plugin-card__tools">
+          <a-tooltip v-if="pluginCardState.showEditButton" title="编辑">
             <a-button class="plugin-card__tool" type="text" size="small" @click.stop="editPlugin">
               <template #icon>
                 <fs-icon icon="ion:create-outline" />
               </template>
             </a-button>
           </a-tooltip>
-          <a-tooltip v-if="copyHandler && canCopyPlugin" title="复制">
+          <a-tooltip v-if="copyHandler && pluginCardState.canCopyPlugin" title="复制">
             <a-button class="plugin-card__tool" type="text" size="small" @click.stop="copyPlugin">
               <template #icon>
                 <fs-icon icon="ion:copy-outline" />
               </template>
             </a-button>
           </a-tooltip>
-          <a-tooltip v-if="isOwnImportedPlugin" :title="t('certd.export')">
-            <a-button class="plugin-card__tool" type="text" size="small" @click.stop="exportPlugin">
-              <template #icon>
-                <fs-icon icon="ion:download-outline" />
-              </template>
-            </a-button>
-          </a-tooltip>
-          <a-tooltip v-if="canPublishPlugin" :title="t('certd.onlinePluginPublish')">
+          <a-tooltip v-if="pluginCardState.canPublishPlugin" :title="t('certd.onlinePluginPublish')">
             <a-button class="plugin-card__tool" type="text" size="small" :loading="isPublishingPlugin(plugin)" @click.stop="publishPlugin">
               <template #icon>
                 <fs-icon icon="ion:cloud-upload-outline" />
               </template>
             </a-button>
           </a-tooltip>
-          <a-tooltip v-if="showConfigButton" title="配置">
+          <a-tooltip v-if="pluginCardState.showConfigButton" title="配置">
             <a-button class="plugin-card__tool" type="text" size="small" @click.stop="openConfig">
               <template #icon>
                 <fs-icon icon="ion:settings-outline" />
               </template>
             </a-button>
           </a-tooltip>
-        </div>
-        <div v-if="source === 'local' && canRemoveLocal" class="plugin-card__action-zone plugin-card__local-action-zone">
-          <a-tooltip title="删除">
-            <a-button class="plugin-card__action-button" type="text" size="small" danger :loading="isActionLoading('remove')" @click.stop="removePlugin">
+          <a-tooltip v-if="pluginCardState.canRemovePlugin" title="删除">
+            <a-button class="plugin-card__tool" type="text" size="small" danger :loading="isActionLoading('remove')" @click.stop="removePlugin">
               <template #icon>
                 <fs-icon icon="ion:trash-outline" />
               </template>
             </a-button>
           </a-tooltip>
         </div>
-        <template v-else-if="plugin.installed && source !== 'local'">
+        <template v-if="pluginCardState.isCloudPlugin && pluginCardState.isInstalled">
           <div v-if="plugin.localPluginId" class="plugin-card__action-zone" :class="{ 'is-loading': isActionLoading('uninstall') }">
             <a-tag color="green" class="plugin-status-tag">{{ t("certd.onlinePluginInstalled") }}</a-tag>
             <a-button class="plugin-card__action-button" size="small" danger ghost :loading="isActionLoading('uninstall')" @click.stop="uninstallPlugin">
@@ -84,7 +75,7 @@
           </div>
           <a-tag v-else color="green" class="plugin-status-tag">{{ t("certd.onlinePluginInstalled") }}</a-tag>
         </template>
-        <div v-else-if="source !== 'local'" class="plugin-card__action-zone plugin-card__install-zone" :class="{ 'is-loading': isActionLoading('install') }">
+        <div v-else-if="pluginCardState.isCloudPlugin" class="plugin-card__action-zone plugin-card__install-zone" :class="{ 'is-loading': isActionLoading('install') }">
           <a-button class="plugin-card__action-button" size="small" type="primary" :loading="isActionLoading('install')" @click.stop="installPlugin">
             {{ t("certd.onlinePluginInstall") }}
           </a-button>
@@ -128,7 +119,7 @@
           </a-tag>
         </a-tooltip>
       </template>
-      <a-tooltip v-if="!isBuiltInPlugin" :title="versionTitle">
+      <a-tooltip v-if="!pluginCardState.isBuiltInPlugin" :title="versionTitle">
         <span class="plugin-card__version" :class="{ 'is-upgradable': plugin.upgradeAvailable }" @click.stop="handleVersionClick">
           v{{ currentVersion }}
           <fs-icon v-if="plugin.upgradeAvailable" class="plugin-card__version-icon" icon="carbon:upgrade" />
@@ -145,15 +136,15 @@
 </template>
 
 <script lang="ts" setup>
+import { Modal, notification } from "ant-design-vue";
 import { computed, h, ref } from "vue";
-import { message, Modal } from "ant-design-vue";
-import { useFormDialog } from "/@/use/use-dialog";
-import { useI18n } from "/src/locales";
-import { usePluginStore } from "/@/store/plugin";
 import * as api from "../api";
 import { usePluginConfig } from "../use-config";
 import { usePluginPublish } from "../use-publish";
 import PluginEditDialogBody from "./plugin-edit-dialog-body.vue";
+import { usePluginStore } from "/@/store/plugin";
+import { useFormDialog } from "/@/use/use-dialog";
+import { useI18n } from "/src/locales";
 
 defineOptions({
   name: "PluginItemCard",
@@ -189,65 +180,33 @@ const { openFormDialog } = useFormDialog();
 const actionLoading = ref<PluginCardAction | "">("");
 const editDialogBodyRef = ref();
 
-type PluginCardAction = "edit" | "copy" | "export" | "publish" | "config" | "install" | "uninstall" | "remove" | "toggle";
+type PluginCardAction = "edit" | "copy" | "publish" | "config" | "install" | "uninstall" | "remove" | "toggle";
 
-const editPluginId = computed(() => {
-  return props.plugin.localPluginId || props.plugin.id;
-});
+const pluginCardState = computed(() => {
+  const isLocal = props.source === "local";
+  const isCloudPlugin = Number(props.plugin.developerId) > 0;
+  const isBuiltInPlugin = props.plugin.type === "builtIn";
+  const isAvailableLocally = isLocal || !!props.plugin.installed;
+  const canEditPlugin = props.editable != null ? props.editable : !isCloudPlugin;
+  const canManagePlugin = !isBuiltInPlugin && canEditPlugin && isAvailableLocally;
 
-const canEditPlugin = computed(() => {
-  if (props.editable != null) {
-    return props.editable;
-  }
-  return props.plugin.type === "custom";
-});
-
-const isOwnImportedPlugin = computed(() => {
-  return props.source === "local" && canEditPlugin.value;
-});
-
-const isAvailableLocally = computed(() => {
-  return props.source === "local" || !!props.plugin.installed;
-});
-
-const canCopyPlugin = computed(() => {
-  return isOwnImportedPlugin.value || (props.source === "market" && !!props.plugin.selfAuthored && isAvailableLocally.value);
-});
-
-const showEditButton = computed(() => {
-  return canEditPlugin.value && isAvailableLocally.value;
-});
-
-const showConfigButton = computed(() => {
-  return !!props.showConfig && isAvailableLocally.value;
-});
-
-const isInstalled = computed(() => {
-  return props.source !== "local" && props.plugin.installed;
-});
-
-const isDisabled = computed(() => {
-  return props.source === "local" ? props.plugin.disabled : props.plugin.localDisabled;
-});
-
-const requiresVip = computed(() => {
-  return props.plugin.vip === "plus" || props.plugin.needPlus === true;
-});
-
-const canRemoveLocal = computed(() => {
-  return isOwnImportedPlugin.value;
-});
-
-const isBuiltInPlugin = computed(() => {
-  return props.source === "local" && props.plugin.type === "builtIn";
-});
-
-const canPublishPlugin = computed(() => {
-  return canEditPlugin.value && isAvailableLocally.value && (!props.plugin.status || !!props.plugin.selfAuthored);
-});
-
-const showToolMenu = computed(() => {
-  return !isBuiltInPlugin.value && (isOwnImportedPlugin.value || canPublishPlugin.value);
+  return {
+    editPluginId: props.plugin.localPluginId || props.plugin.id,
+    isLocal,
+    isCloudPlugin,
+    canEditPlugin,
+    isAvailableLocally,
+    canManagePlugin,
+    canCopyPlugin: canManagePlugin,
+    showEditButton: canManagePlugin,
+    showConfigButton: !!props.showConfig,
+    isInstalled: isCloudPlugin && !!props.plugin.installed,
+    isDisabled: isLocal ? !!props.plugin.disabled : !!props.plugin.localDisabled,
+    requiresVip: props.plugin.vip === "plus" || props.plugin.needPlus === true,
+    canRemovePlugin: isLocal && canManagePlugin,
+    isBuiltInPlugin,
+    canPublishPlugin: canManagePlugin,
+  };
 });
 
 const fullName = computed(() => {
@@ -323,7 +282,7 @@ function isActionLoading(action: PluginCardAction) {
 
 function handleCardClick() {
   if (props.source === "local") {
-    if (showEditButton.value) {
+    if (pluginCardState.value.showEditButton) {
       void editPlugin();
     }
     return;
@@ -375,7 +334,7 @@ async function editPlugin() {
     body: () =>
       h(PluginEditDialogBody, {
         ref: editDialogBodyRef,
-        pluginId: editPluginId.value,
+        pluginId: pluginCardState.value.editPluginId,
       }),
     async onSubmit() {
       await editDialogBodyRef.value?.save?.();
@@ -397,29 +356,9 @@ async function copyPlugin() {
   );
 }
 
-async function exportPlugin() {
-  await runAction(
-    "export",
-    async () => {
-      const content = await api.ExportPlugin(props.plugin.id);
-      if (!content) {
-        return;
-      }
-      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${props.plugin.name}.yaml`;
-      link.click();
-      URL.revokeObjectURL(url);
-    },
-    { emitChanged: false }
-  );
-}
-
 async function publishPlugin() {
   await publishLocalPlugin(
-    { ...props.plugin, id: editPluginId.value },
+    { ...props.plugin, id: pluginCardState.value.editPluginId },
     {
       async afterPublish() {
         emitChanged("publish");
@@ -453,11 +392,12 @@ async function installPlugin() {
           showErrorNotify: false,
         }
       );
-      message.success(t("certd.onlinePluginInstallSuccess"));
+      notification.success({ message: t("certd.onlinePluginInstallSuccess") });
     });
   } catch (error: any) {
     if (!isOnlinePluginMissing(error)) {
-      throw error;
+      notification.error({ message: error.message });
+      return;
     }
     confirmRemoveMissingOnlinePlugin();
   }
@@ -481,7 +421,7 @@ function confirmRemoveMissingOnlinePlugin() {
       await runAction("remove", async () => {
         await api.DelObj(props.plugin.id);
         await pluginStore.reload();
-        message.success("插件记录已删除");
+        notification.success({ message: "插件记录已删除" });
       });
     },
   });
@@ -498,14 +438,14 @@ function uninstallPlugin() {
       await runAction("uninstall", async () => {
         await api.OnlinePluginUninstall(props.plugin.localPluginId);
         await pluginStore.reload();
-        message.success(t("certd.onlinePluginUninstallSuccess"));
+        notification.success({ message: t("certd.onlinePluginUninstallSuccess") });
       });
     },
   });
 }
 
 function removePlugin() {
-  if (!props.plugin.id) {
+  if (!pluginCardState.value.canRemovePlugin || !props.plugin.id) {
     return;
   }
   Modal.confirm({
@@ -514,7 +454,7 @@ function removePlugin() {
     async onOk() {
       await runAction("remove", async () => {
         await api.DelObj(props.plugin.id);
-        message.success(t("certd.onlinePluginUninstallSuccess"));
+        notification.success({ message: "插件记录已删除" });
       });
     },
   });
@@ -528,7 +468,7 @@ function togglePlugin() {
   }
   Modal.confirm({
     title: t("certd.confirm"),
-    content: `${t("certd.confirmToggle")} ${isDisabled.value ? t("certd.enable") : t("certd.disable")}?`,
+    content: `${t("certd.confirmToggle")} ${pluginCardState.value.isDisabled ? t("certd.enable") : t("certd.disable")}?`,
     maskClosable: true,
     async onOk() {
       await runAction("toggle", async () => {
@@ -536,10 +476,10 @@ function togglePlugin() {
           id: id || undefined,
           name: props.plugin.name,
           type: props.source === "local" ? props.plugin.type : "store",
-          disabled: !isDisabled.value,
+          disabled: !pluginCardState.value.isDisabled,
         });
         await pluginStore.reload();
-        message.success(t("certd.operationSuccess"));
+        notification.success({ message: t("certd.operationSuccess") });
       });
     },
   });
@@ -828,17 +768,6 @@ function handleVersionClick() {
         transform: translateY(0) scale(1);
         filter: blur(0);
       }
-    }
-  }
-
-  .plugin-card__local-action-zone {
-    width: 28px;
-
-    .plugin-card__action-button {
-      opacity: 1;
-      pointer-events: auto;
-      transform: translateY(0) scale(1);
-      filter: blur(0);
     }
   }
 

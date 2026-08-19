@@ -136,7 +136,7 @@
 import { computed, provide, Ref, ref } from "vue";
 import { nanoid } from "nanoid";
 import PiStepForm from "../step-form/index.vue";
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import VDraggable from "vuedraggable";
 import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
@@ -252,7 +252,7 @@ export default {
         step.id = nanoid();
         Copyed.type = "step";
         Copyed.target = step;
-        message.success("步骤配置复制成功，您可以到其他任务编辑页面进行粘贴");
+        notification.success({ message: "步骤配置复制成功，您可以到其他任务编辑页面进行粘贴" });
       };
 
       const stepsCopy = (task: any) => {
@@ -260,13 +260,13 @@ export default {
         const steps = cloneDeep(task.steps);
         Copyed.type = "steps";
         Copyed.target = steps;
-        message.success("本任务的所有步骤复制成功，您可以到其他任务编辑页面进行粘贴");
+        notification.success({ message: "本任务的所有步骤复制成功，您可以到其他任务编辑页面进行粘贴" });
       };
 
       const stepPaste = (task: any) => {
         settingStore.checkPlus();
         if (!Copyed.target) {
-          message.error("请先复制");
+          notification.error({ message: "请先复制" });
           return;
         }
         if (Copyed.type === "step") {
@@ -282,7 +282,7 @@ export default {
             task.steps.push(item);
           }
         }
-        message.success("粘贴成功");
+        notification.success({ message: "粘贴成功" });
       };
       const stepEdit = (task: any, step: any, stepIndex: any) => {
         currentStepIndex.value = stepIndex;

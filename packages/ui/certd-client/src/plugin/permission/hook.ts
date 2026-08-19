@@ -2,7 +2,7 @@ import router from "/src/router";
 import { useUserStore } from "/@/store/user";
 import { usePermissionStore } from "./store.permission";
 import util from "./util.permission";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import NProgress from "nprogress";
 export function registerRouterHook() {
   // 注册路由beforeEach钩子，在第一次加载路由页面时，加载权限
@@ -14,7 +14,7 @@ export function registerRouterHook() {
         // @ts-ignore
         if (!util.hasPermissions(to.meta.permission)) {
           //没有权限
-          message.warn("对不起，您没有权限");
+          notification.warning({ message: "对不起，您没有权限" });
           //throw new Error("对不起，您没有权限");
           NProgress.done();
           return false;

@@ -36,7 +36,7 @@
 <script lang="tsx" setup>
 import { inject, ref, Ref, watch } from "vue";
 import { createNotificationApi } from "../api";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { dict } from "@fast-crud/fast-crud";
 import createCrudOptions from "../crud";
 import { notificationProvide } from "/@/views/certd/notification/common";
@@ -138,12 +138,12 @@ async function emitValue(value: any) {
     if (isEnterprice) {
       const projectId = projectStore.currentProjectId;
       if (pipeline?.value?.projectId !== projectId) {
-        message.error("对不起，您不能修改其他项目流水线的通知");
+        notification.error({ message: "对不起，您不能修改其他项目流水线的通知" });
         return;
       }
     } else {
       if (pipeline?.value?.userId !== userId) {
-        message.error("对不起，您不能修改他人流水线的通知");
+        notification.error({ message: "对不起，您不能修改他人流水线的通知" });
         return;
       }
     }

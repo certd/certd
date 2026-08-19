@@ -204,6 +204,14 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 插件开发前先读对应技能：`.trae/skills/dns-provider-dev/SKILL.md`、`.trae/skills/task-plugin-dev/SKILL.md`、`.trae/skills/access-plugin-dev/SKILL.md`、`.trae/skills/plugin-converter/SKILL.md`。
 - `.codex/skills` 是指向 `.trae/skills` 的目录链接；更新技能只维护 `.trae/skills`，不要复制第二份。
 
+### 插件市场身份与卡片操作
+
+- 插件唯一身份是 `fullName`：有作者时为 `author/name`，内置插件为其 `name`。数据库判重、同步/安装匹配、前端列表 `key` 和 Fast Crud `rowKey` 都必须使用 `fullName`，不得退回仅按 `name` 匹配。
+- 新增或导入本地插件必须生成 `fullName`；旧插件若缺失 `fullName`，应在迁移或兼容更新时按作者和名称补齐，避免同名不同作者的插件互相覆盖或误判已安装。
+- 插件分为四类：内置插件（无作者，需通过内置插件接口获取）、导入/自开发插件（无 `developerId`）、云端同步未安装插件（有 `developerId` 且 `installed=false`）、云端已安装插件（有 `developerId` 且 `installed=true`）。
+- 云端插件是否属于当前用户，只能以当前站点绑定账号的 `userId === developerId` 判断；不要以 `localEditable` 或插件名称、作者名称等字段代替。
+- 插件管理卡片所有类型都必须有“配置”入口。导入/自开发插件应显示编辑、复制、发布、删除；当前用户自己的已安装云端插件应显示编辑、复制、发布，但云端插件一律不显示删除。云端插件按 `installed` 显示安装或卸载，且管理操作和卸载入口可同时存在，不能互相覆盖。
+
 ### 后置任务（AfterTask）机制
 
 - 概念：流水线主体运行结束后，按触发条件执行的任务；插件声明 `supportAfterTask: true` 后即可在后置任务中复用（如吊销旧证书 `CertRevokeOld`）。触发条件 `when`：`success`（主体执行成功）、`error`（主体失败）、`turnToSuccess`（主体被手动标记成功）。

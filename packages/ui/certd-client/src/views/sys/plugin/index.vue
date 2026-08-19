@@ -11,10 +11,10 @@
       <div v-else class="plugin-card-grid">
         <PluginItemCard
           v-for="item of pluginList"
-          :key="item.id || item.name"
+          :key="item.fullName"
           :source="getPluginCardSource(item)"
           :plugin="item"
-          :show-config="settingStore.isComm"
+          show-config
           :editable="canEditPlugin(item)"
           :copy-handler="copyPlugin"
           @changed="handlePluginChanged"
@@ -53,7 +53,7 @@ const pluginList = computed(() => {
 });
 
 function getPluginCardSource(row: any) {
-  return row.type === "store" && (row.appId || row.developerId) ? "market" : "local";
+  return row.type === "store" && Number(row.developerId) > 0 ? "market" : "local";
 }
 
 function canEditPlugin(row: any) {
@@ -63,11 +63,9 @@ function canEditPlugin(row: any) {
   if (row.type !== "store") {
     return false;
   }
-  if (typeof row.localEditable === "boolean") {
-    return row.localEditable;
-  }
   const bindUserId = Number(settingStore.installInfo?.bindUserId || 0);
-  return !row.developerId || (!!bindUserId && Number(row.developerId) === bindUserId);
+  const developerId = Number(row.developerId || 0);
+  return !developerId || (!!bindUserId && developerId === bindUserId);
 }
 
 function openPluginDetail(row: any) {

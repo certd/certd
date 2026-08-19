@@ -99,7 +99,7 @@
 </template>
 
 <script lang="ts" setup>
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import dayjs from "dayjs";
 import { computed, nextTick, onMounted, onUnmounted, reactive, Ref, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -128,7 +128,7 @@ const formState = reactive({
 
 async function doActive() {
   if (!formState.code) {
-    message.error(t("vip.enterCode"));
+    notification.error({ message: t("vip.enterCode") });
     throw new Error(t("vip.enterCode"));
   }
   const res = await api.doActive(formState);

@@ -1,5 +1,5 @@
 import { reactive, ref } from "vue";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useI18n } from "/src/locales";
 import { usePluginStore } from "/@/store/plugin";
@@ -497,7 +497,7 @@ export function usePluginPublish() {
       }
       await pluginStore.reload();
       await options?.afterPublish?.();
-      message.success(t("certd.onlinePluginPublishSuccess"));
+      notification.success({ message: t("certd.onlinePluginPublishSuccess") });
     } finally {
       publishingPluginId.value = "";
     }
