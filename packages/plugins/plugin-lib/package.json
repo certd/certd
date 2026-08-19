@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-lib",
   "private": false,
-  "version": "1.42.6",
+  "version": "1.43.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,14 +12,14 @@
     "dev-build": "npm run build",
     "test:unit": "cross-env NODE_ENV=unittest mocha",
     "pub": "npm publish",
-    "compile": "tsc --skipLibCheck --watch",
+    "compile": "rimraf dist && tsc --skipLibCheck --watch",
     "format": "prettier --write src",
     "lint": "eslint --fix --ext .ts src"
   },
   "dependencies": {
-    "@certd/acme-client": "^1.42.6",
-    "@certd/basic": "^1.42.6",
-    "@certd/pipeline": "^1.42.6",
+    "@certd/acme-client": "^1.43.0",
+    "@certd/basic": "^1.43.0",
+    "@certd/pipeline": "^1.43.0",
     "dayjs": "^1.11.7",
     "jszip": "^3.10.1",
     "lodash-es": "^4.17.21",
@@ -45,5 +45,5 @@
     "tslib": "^2.8.1",
     "typescript": "^5.4.2"
   },
-  "gitHead": "246ee83015bf5589adc2a5fa3d1388c8d9a2a252"
+  "gitHead": "5558376baee9e3568b00a8355a23898427efadf8"
 }

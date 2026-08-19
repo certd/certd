@@ -8,6 +8,7 @@ import { LoginService } from "../../../modules/login/service/login-service.js";
 import { OauthBoundService } from "../../../modules/login/service/oauth-bound-service.js";
 import { AddonGetterService } from "../../../modules/pipeline/service/addon-getter-service.js";
 import { UserEntity } from "../../../modules/sys/authority/entity/user.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 import { IOauthProvider } from "../../../plugins/plugin-oauth/api.js";
 
 type OauthProviderSetting = {
@@ -48,6 +49,10 @@ export class ConnectController extends BaseController {
   @Inject()
   addonService: AddonService;
 
+  getAuditType(): string {
+    return AuditType.login.value;
+  }
+
   private async getOauthProvider(type: string) {
     const publicSettings = await this.sysSettingsService.getPublicSettings();
     if (!publicSettings?.oauthEnabled) {
@@ -68,12 +73,11 @@ export class ConnectController extends BaseController {
     };
   }
 
-  @Post("/login", { description: Constants.per.guest })
+  @Post("/login", { description: Constants.per.guest, summary: "第三方登录" })
   public async login(@Body(ALL) body: { type: string; subtype?: string; forType?: string; from?: string }) {
     const oauthProvider = await this.getOauthProvider(body.type);
     const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
     const bindUrl = installInfo?.bindUrl || "";
-    //构造登录url
     const redirectUrl = `${bindUrl}api/oauth/callback/${body.type}`;
 
     const stateObj = {
@@ -95,8 +99,6 @@ export class ConnectController extends BaseController {
     });
     this.ctx.cookies.set("oauth_ticket", ticket, {
       httpOnly: true,
-      // secure: true,
-      // sameSite: "strict",
     });
     return this.ok({ loginUrl, ticket });
   }
@@ -153,7 +155,7 @@ export class ConnectController extends BaseController {
     }
   }
 
-  @Post("/getLogoutUrl", { description: Constants.per.guest })
+  @Post("/getLogoutUrl", { description: Constants.per.guest, summary: "第三方登出" })
   public async logout(@Body(ALL) body: any) {
     checkPlus();
     const oauthProvider = await this.getOauthProvider(body.type);
@@ -195,7 +197,7 @@ export class ConnectController extends BaseController {
     // this.loginService.writeTokenCookie(this.ctx,token);
   }
 
-  @Post("/autoRegister", { description: Constants.per.guest })
+  @Post("/autoRegister", { description: Constants.per.guest, summary: "第三方自动注册" })
   public async autoRegister(@Body(ALL) body: { validationCode: string; type: string; inviteCode?: string }) {
     const validationValue = this.codeService.getValidationValue(body.validationCode);
     if (!validationValue) {
@@ -219,12 +221,12 @@ export class ConnectController extends BaseController {
 
     const loginRes = await this.loginService.generateToken(newUser);
     this.writeTokenCookie(loginRes);
+    this.auditLog({ userId: newUser.id, content: `第三方账号自动注册,类型: ${body.type}` });
     return this.ok(loginRes);
   }
 
-  @Post("/bind", { description: Constants.per.loginOnly })
+  @Post("/bind", { description: Constants.per.loginOnly, summary: "绑定第三方账号" })
   public async bind(@Body(ALL) body: any) {
-    //需要已登录
     const userId = this.getUserId();
     const validationValue = this.codeService.getValidationValue(body.validationCode);
     if (!validationValue) {
@@ -238,17 +240,18 @@ export class ConnectController extends BaseController {
       type,
       openId,
     });
+    this.auditLog({ userId, content: `第三方账号绑定,类型: ${body.type}` });
     return this.ok(1);
   }
 
-  @Post("/unbind", { description: Constants.per.loginOnly })
+  @Post("/unbind", { description: Constants.per.loginOnly, summary: "解绑第三方账号" })
   public async unbind(@Body(ALL) body: any) {
-    //需要已登录
     const userId = this.getUserId();
     await this.oauthBoundService.unbind({
       userId,
       type: body.type,
     });
+    this.auditLog({ userId, content: `第三方账号解绑,类型: ${body.type}` });
     return this.ok(1);
   }
 

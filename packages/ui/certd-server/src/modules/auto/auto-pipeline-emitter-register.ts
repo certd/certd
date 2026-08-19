@@ -1,8 +1,7 @@
+import { pipelineEmitter, PipelineEvent } from "@certd/pipeline";
+import { CertInfo, EVENT_CERT_APPLY_SUCCESS } from "@certd/plugin-cert";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { CertInfoService } from "../monitor/index.js";
-import { pipelineEmitter } from "@certd/pipeline";
-import { CertInfo, EVENT_CERT_APPLY_SUCCESS } from "@certd/plugin-cert";
-import { PipelineEvent } from "@certd/pipeline";
 
 @Provide()
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
@@ -15,8 +14,10 @@ export class AutoPipelineEmitterRegister {
   }
 
   async onCertApplySuccess() {
-    pipelineEmitter.on(EVENT_CERT_APPLY_SUCCESS, async (event: PipelineEvent<{ cert: CertInfo }>) => {
-      await this.certInfoService.updateCertByPipelineId(event.pipeline.id, event.event.cert);
+    pipelineEmitter.on(EVENT_CERT_APPLY_SUCCESS, async (event: PipelineEvent<CertInfo>) => {
+      const taskId = event.runnableId;
+      const pipelineId = event.pipelineId;
+      await this.certInfoService.updateCertByPipelineId(pipelineId, event.cert, "pipeline", taskId);
     });
   }
 }

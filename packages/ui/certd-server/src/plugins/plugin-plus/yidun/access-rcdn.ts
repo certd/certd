@@ -80,7 +80,8 @@ export class YidunRcdnAccess extends BaseAccess {
   }
 
   async getLoginToken() {
-    const access: YidunRcdnAccess = this;
+    // @ts-ignore
+    const access: YidunRcdnAccess = this as any;
     const url = "https://rhcdn.yiduncdn.com/login/loginUser";
     const data = {
       userAccount: access.username,

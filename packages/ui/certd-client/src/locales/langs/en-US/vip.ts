@@ -104,4 +104,5 @@ export default {
   not_effective: "Not effective or duration not sync?",
   learn_more: "More privileges",
   question: "More VIP related questions",
+  permanent: "Permanent",
 };

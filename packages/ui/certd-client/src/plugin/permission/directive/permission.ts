@@ -5,7 +5,10 @@ export default {
     const hasPermission = permissionUtil.hasPermissions(value);
 
     if (!hasPermission) {
-      el.parentNode && el.parentNode.removeChild(el);
+      if (el.parentNode) {
+        //@ @ts-ignore
+        el.parentNode.removeChild(el);
+      }
     }
   },
 };

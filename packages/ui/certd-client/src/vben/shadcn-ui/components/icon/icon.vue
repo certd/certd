@@ -9,6 +9,8 @@ import { isFunction, isHttpUrl, isObject, isString } from "/@/vben/shared/utils"
 const props = defineProps<{
   // 没有是否显示默认图标
   fallback?: boolean;
+  // 图标组件
+  // @ts-ignore
   icon?: Component | Function | string;
 }>();
 

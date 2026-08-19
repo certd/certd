@@ -1,18 +1,4 @@
-const PREFERENCES_KNOWN_KEYS = [
-  "app",
-  "theme",
-  "logo",
-  "sidebar",
-  "header",
-  "tabbar",
-  "breadcrumb",
-  "navigation",
-  "widget",
-  "footer",
-  "copyright",
-  "shortcutKeys",
-  "transition",
-];
+const PREFERENCES_KNOWN_KEYS = ["app", "theme", "logo", "sidebar", "header", "tabbar", "breadcrumb", "navigation", "widget", "footer", "copyright", "shortcutKeys", "transition"];
 
 /**
  * 解析用户偏好设置 payload。
@@ -24,10 +10,7 @@ export function parseUserPreferencesPayload(value: unknown): Record<string, any>
     return null;
   }
   const raw = value as Record<string, any>;
-  const preferences =
-    raw.preferences != null && typeof raw.preferences === "object" && !Array.isArray(raw.preferences)
-      ? (raw.preferences as Record<string, any>)
-      : raw;
+  const preferences = raw.preferences != null && typeof raw.preferences === "object" && !Array.isArray(raw.preferences) ? (raw.preferences as Record<string, any>) : raw;
   const preferenceKeys = Object.keys(preferences);
   // 空对象表示重置后的默认偏好
   if (preferenceKeys.length === 0) {

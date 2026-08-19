@@ -103,4 +103,5 @@ export default {
   not_effective: "VIP没有生效/时长未同步?",
   learn_more: "更多特权(加VIP群等)",
   question: "更多VIP相关问题",
+  permanent: "永久",
 };

@@ -19,7 +19,7 @@ export type GoogleCloudDnsRecord = {
   desc: "Google Cloud DNS提供商",
   icon: "flat-color-icons:google",
   accessType: "google",
-  order: 50,
+  order: 2,
 })
 export class GoogleCloudDnsProvider extends AbstractDnsProvider<GoogleCloudDnsRecord> {
   access!: GoogleAccess;

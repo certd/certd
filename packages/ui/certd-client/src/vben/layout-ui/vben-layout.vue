@@ -321,7 +321,11 @@ watch(
 
 {
   const mouseMove = () => {
-    mouseY.value > headerWrapperHeight.value ? (headerIsHidden.value = true) : (headerIsHidden.value = false);
+    if (mouseY.value > headerWrapperHeight.value) {
+      headerIsHidden.value = true;
+    } else {
+      headerIsHidden.value = false;
+    }
   };
   watch(
     [() => props.headerMode, () => mouseY.value],

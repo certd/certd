@@ -1,3 +1,4 @@
+// @ts-ignore
 import { isFunction, isObject, isString } from "@vue/shared";
 
 /**

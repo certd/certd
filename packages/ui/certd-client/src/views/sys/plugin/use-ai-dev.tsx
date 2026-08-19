@@ -1,0 +1,38 @@
+import { h, ref } from "vue";
+import { useFormDialog } from "/@/use/use-dialog";
+import PluginAiDevDialogBody from "./components/plugin-ai-dev-dialog-body.vue";
+
+export type PluginAiDevOpenOptions = {
+  pluginId?: number | string;
+  pluginName?: string;
+};
+
+export function usePluginAiDev() {
+  const { openFormDialog } = useFormDialog();
+
+  async function openAiDevDialog(options: PluginAiDevOpenOptions = {}) {
+    const bodyRef = ref();
+    await openFormDialog({
+      title: "AI 开发插件",
+      columns: {},
+      noneForm: true,
+      wrapper: {
+        width: 980,
+        destroyOnClose: true,
+        maskClosable: false,
+        footer: null,
+        class: "plugin-ai-dev-dialog",
+      },
+      body: () =>
+        h(PluginAiDevDialogBody, {
+          ref: bodyRef,
+          pluginId: options.pluginId,
+          pluginName: options.pluginName,
+        }),
+    });
+  }
+
+  return {
+    openAiDevDialog,
+  };
+}

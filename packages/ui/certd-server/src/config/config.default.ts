@@ -109,9 +109,8 @@ const development = {
   runtimeDeps: {
     enabled: true,
     rootDir: "./data/.runtime-deps",
-    autoInstall: true,
     pnpmCommand: "",
-    installTimeoutMs: 120000,
+    installTimeoutMs: 60000,
     lazyDependencies: pkg.lazyDependencies || {},
     registry: {
       mode: "auto",

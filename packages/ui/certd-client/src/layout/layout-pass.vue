@@ -2,9 +2,8 @@
   <router-view> </router-view>
 </template>
 
-<!--<script lang="ts" setup>-->
-<!--import { usePageStore } from "/@/store/modules/page";-->
+<script lang="ts" setup>
+import { useSettingStore } from "../store/settings";
 
-<!--const pageStore = usePageStore();-->
-<!--const keepAlive = pageStore.keepAlive;-->
-<!--</script>-->
+const settingsStore = useSettingStore();
+</script>

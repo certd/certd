@@ -3,6 +3,7 @@ import { CrudController } from "@certd/lib-server";
 import { ApiTags } from "@midwayjs/swagger";
 import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
 import { checkPlus } from "@certd/plus-core";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 @Provide()
 @Controller("/api/sys/pipeline")
@@ -13,6 +14,10 @@ export class SysPipelineController extends CrudController<PipelineService> {
 
   getService(): PipelineService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.pipeline.value;
   }
 
   @Post("/page", { description: "sys:settings:view", summary: "管理员查询用户流水线分页列表" })
@@ -41,13 +46,16 @@ export class SysPipelineController extends CrudController<PipelineService> {
   @Post("/delete", { description: "sys:settings:edit", summary: "管理员删除用户流水线" })
   async delete(@Query("id") id: number) {
     await this.service.delete(id);
+    await this.auditLog({ content: `管理员删除了用户流水线(ID:${id})` });
     return this.ok();
   }
 
   @Post("/batchDelete", { description: "sys:settings:edit", summary: "管理员批量删除用户流水线" })
   async batchDelete(@Body("ids") ids: number[]) {
     checkPlus();
+    const count = ids.length;
     await this.service.batchDelete(ids);
+    await this.auditLog({ content: `管理员批量删除了${count}条用户流水线` });
     return this.ok();
   }
 }

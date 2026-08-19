@@ -1,4 +1,4 @@
-# Certd
+﻿# Certd
 
 中文 | [English](./README_en.md)
 
@@ -105,33 +105,56 @@ https://certd.handfree.work/
 
 #### Docker镜像说明：
 
-**镜像版本：**
+##### 1. 镜像地址格式：
+
+```
+registry.cn-shenzhen.aliyuncs.com/certd/certd:[version-][system-][latest/stable]  
+------------ ↑ 镜像地址 ------------- ↑ 镜像名 -- ↑指定版本- ↑基础系统- ↑最新版本类型             
+```
+##### 2. 版本标签：
+
+**最新版本标签：**
+
+| 版本 | 标签 | 说明 |
+| --- | --- | --- |
+| 最新预览版【默认】 | `certd:latest` | 指向最新开发版本，包含最新功能，但稳定性不如稳定版  | 
+| 最新稳定版 | `certd:stable` | 指向经过充分测试的生产就绪版本，推荐生产环境使用  |  
+
+**系统分支版本：**
+
+> 根据基础镜像不同，分为如下三个分支版本，没有特殊需求选择默认的即可（他们功能是一样的）
+
+| 系统版本 | 版本标签 |   基础系统 | 说明 | 稳定版标签 | 
+| --- | --- | --- | --- | --- | 
+| alpine【默认】 | `certd:latest` |  Alpine Linux | 默认版本，镜像体积小  | `certd:stable` |
+| slim | `certd:slim` |  Debian slim | 基于glibc，dns解析兼容性好 | `certd:slim-stable` |
+| armv7 | `certd:armv7` |  Alpine Linux | ARMv7 架构专用版本 | `certd:armv7-stable` |
+
+##### 2. 镜像地址：
+
+| 镜像仓库 | 最新预览版  | slim | armv7 | 
+| --- | --- | --- | --- | 
+| 阿里云【默认】 | `registry.cn-shenzhen.aliyuncs.com/certd/certd:latest` | `certd:slim` | `certd:armv7` |
+| Docker Hub | `greper/certd:latest` | `certd:slim` |
+| GitHub Packages | `ghcr.io/certd/certd:latest` | `certd:slim` | `certd:armv7` |
 
 
-| 标签 | 指定版本 | 基础系统  | 说明 |   
-| ---  | ---  | --- | --- |   
-| `latest` |  `[version]` | Alpine Linux  | 默认版本，镜像体积小 |    
-| `slim` |  `[version]-slim` | Debian slim  | 基于glibc，dns解析兼容性好（可能需要配置security_opt -seccomp=unconfined） |
-| `armv7` |  `[version]-armv7` | Alpine Linux | ARMv7 架构专用版本 |
+> 注意： 
+> 1. 后面的各个版本省略了镜像地址，使用时需要将镜像地址拼接完整。
+> 2. 稳定版在后面加 `-stable` 即可。
+> 3. 如需指定具体的版本号，在冒号后面加 `version-`即可，例如 `certd:1.42.1-stable`。
 
 
-**镜像地址：**
-
-| 镜像仓库 | latest | slim | armv7 |
-| --- | --- | --- | --- |
-| 阿里云 | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:latest` | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:slim` | `registry.cn-shenzhen.aliyuncs.com/handsfree/certd:armv7` |
-| Docker Hub | `greper/certd:latest` | `greper/certd:slim` | `greper/certd:armv7` |
-| GitHub Packages | `ghcr.io/certd/certd:latest` | `ghcr.io/certd/certd:slim` | `ghcr.io/certd/certd:armv7` |
-
-> 带版本号的标签请将 `latest` / `slim` / `armv7` 替换为 `[version]` / `[version]-slim` / `[version]-armv7`
+##### 3. 镜像构建说明：
 
 - 镜像构建通过`Actions`自动执行，过程公开透明，请放心使用
-  - [点我查看镜像构建日志](https://github.com/certd/certd/actions/workflows/build-image.yml)
+  - [点我查看预览版构建日志](https://github.com/certd/certd/actions/workflows/release-image.yml)
+  - [点我查看稳定版发布日志](https://github.com/certd/certd/actions/workflows/stable-release.yml)
 
 ![](./docs/images/action/action-build.jpg)
 
-> 注意：
->
+##### 4. 安全注意事项：
+
 > - 本应用存储的证书、授权信息等属于高度敏感数据，请做好安全防护
 > - 请务必使用HTTPS协议访问本应用，避免被中间人攻击
 > - 请务必使用web应用防火墙防护本应用，防止XSS、SQL注入等攻击
@@ -141,7 +164,14 @@ https://certd.handfree.work/
 
 ## 五、生态
 
-### 1. 客户端工具 SSL-Assistant
+### 1. 官方客户端 Certd Client
+
+`Certd Client` 是 Certd 官方证书部署客户端，运行于应用服务器上。自动发现本机 Nginx、Apache 和 IIS 站点，从 Certd 获取新证书并部署到本机。适用于不希望服务器开放 SSH、无法由 Certd 直接访问目标服务器的场景。
+
+项目主页：[AtomGit](https://atomgit.com/certd/certd-client/) | [GitHub](https://github.com/certd/certd-client/)
+下载地址：[AtomGit Releases](https://atomgit.com/certd/certd-client/releases) | [GitHub Releases](https://github.com/certd/certd-client/releases)
+
+### 2. 第三方客户端 SSL-Assistant
 
 `SSL Assistant` 是一个运行于主机上的证书部署管理助手客户端。  
 支持自动扫描主机`Nginx`配置，然后从`Certd`拉取证书并部署。  

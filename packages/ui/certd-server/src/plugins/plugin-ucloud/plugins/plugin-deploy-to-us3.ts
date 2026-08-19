@@ -69,7 +69,7 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
   )
   domainList!: string[];
 
-  async onInstance() { }
+  async onInstance() {}
 
   async execute(): Promise<void> {
     const access = await this.getAccess<UCloudAccess>(this.accessId);
@@ -90,7 +90,6 @@ export class UCloudDeployToUS3 extends AbstractTaskPlugin {
 
     this.logger.info("部署完成");
   }
-
 
   async onGetRegionList(req: PageSearch = {}) {
     const access = await this.getAccess<UCloudAccess>(this.accessId);

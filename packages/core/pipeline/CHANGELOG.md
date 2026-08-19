@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.43.0](https://github.com/certd/certd/compare/v1.42.6...v1.43.0) (2026-08-14)
+
+### Bug Fixes
+
+* **pipeline:** 修复过期/损坏的安装锁导致的依赖安装失败 ([1017a38](https://github.com/certd/certd/commit/1017a38eb48d6778745d4905d9ec4f6067a261d8))
+
+### Features
+
+* **pipeline:** 新增流水线批量编辑、阶段宽度调整功能 ([e5a1844](https://github.com/certd/certd/commit/e5a18448522be88bc504a45a46ad599f3c39ca30))
+
+### Performance Improvements
+
+* 统一通知类型常量管理，新增开放接口通知能力 ([edb249c](https://github.com/certd/certd/commit/edb249c2ad3c173dbfd04d8d156f895a6706ffd1))
+* 优化第三方依赖安装失败日志输出 ([18b2d3a](https://github.com/certd/certd/commit/18b2d3ac2078d0c6636af897f8f66e4eb5ff832c))
+
 ## [1.42.6](https://github.com/certd/certd/compare/v1.42.5...v1.42.6) (2026-07-18)
 
 ### Performance Improvements

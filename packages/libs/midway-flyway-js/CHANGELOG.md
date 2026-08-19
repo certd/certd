@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.43.0](https://github.com/certd/certd/compare/v1.42.6...v1.43.0) (2026-08-14)
+
+### Performance Improvements
+
+* 优化SqliteError: disk I/O error报错修复提示 ([7d22fe3](https://github.com/certd/certd/commit/7d22fe3d7d0de97bae2ceedd051a0c16a1cd90e3))
+
 ## [1.42.6](https://github.com/certd/certd/compare/v1.42.5...v1.42.6) (2026-07-18)
 
 **Note:** Version bump only for package @certd/midway-flyway-js

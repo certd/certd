@@ -59,9 +59,10 @@ export default {
       oauthAutoRegisterCheckedText: "自动注册",
       oauthAutoRegisterUnCheckedText: "用户选择",
       oauthAutoRedirect: "自动跳转第三方登录",
-      oauthAutoRedirectHelper: "是否自动跳转第三方登录（使用第一个已启用的第三方登录类型）",
+      oauthAutoRedirectHelper:
+        "是否自动跳转第三方登录（使用第一个已启用的第三方登录类型）\n 注意：请务必先测试第三方登录功能正常后再开启，否则会导致无法登录\n 如果无法登录，请访问 http://你的certd地址/#/login?oauthOnly=false 来临时关闭此模式",
       oauthOnly: "仅使用第三方登录",
-      oauthOnlyHelper: "是否仅使用第三方登录，关闭密码登录（注意：请务必在测试第三方登录功能正常后再开启，否则会导致无法登录）\n 如果无法登录，请访问 http://你的certd地址/#/login?oauthOnly=false 来临时关闭此模式",
+      oauthOnlyHelper: "是否仅使用第三方登录，关闭密码登录\n 注意：请务必在测试第三方登录功能正常后再开启，否则会导致无法登录\n 如果无法登录，请访问 http://你的certd地址/#/login?oauthOnly=false 来临时关闭此模式",
       enablePasskey: "启用Passkey登录",
       passkeyHostnameNotSame: "当前域名与主绑定域名不同",
       passkeyEnabledHelper: "1、站点必须启用https \n2、passkey的rpId以主绑定域名为准，当前主域名:{0} \n3、站点域名不能变，否则会导致已注册的passkey失效。",

@@ -25,5 +25,7 @@ export default {
     expiringCerts: "Soon-to-Expire Certificates",
     supportedTasks: "Overview of Supported Deployment Tasks",
     changeLog: "Change Log",
+    stableRelease: "Stable",
+    latestRelease: "Preview",
   },
 };

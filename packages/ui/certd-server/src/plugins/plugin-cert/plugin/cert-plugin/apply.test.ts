@@ -49,9 +49,10 @@ describe("CertApplyPlugin dns-persist verify plan", () => {
 });
 
 describe("CertApplyPlugin certificate apply retry", () => {
-  it("does not retry by default", async () => {
+  it("retries once by default", async () => {
     const plugin: any = new CertApplyPlugin();
     let orderCount = 0;
+    const waitTimes: number[] = [];
     const error = new Error("apply failed");
     plugin.logger = { warn() {} };
     plugin.acme = {
@@ -61,9 +62,18 @@ describe("CertApplyPlugin certificate apply retry", () => {
       },
     };
 
-    await assert.rejects(plugin.orderWithRetry({}), error);
-    assert.equal(orderCount, 1);
-    assert.equal(plugin.certApplyRetryCount, 0);
+    const originalSleep = utils.sleep;
+    utils.sleep = async (waitTime: number) => {
+      waitTimes.push(waitTime);
+    };
+
+    try {
+      await assert.rejects(plugin.orderWithRetry({}), error);
+      assert.equal(orderCount, 2);
+      assert.deepEqual(waitTimes, [30_000]);
+    } finally {
+      utils.sleep = originalSleep;
+    }
   });
 
   it("retries after a 30-second cooldown and succeeds before reaching the limit", async () => {
