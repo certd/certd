@@ -218,10 +218,11 @@ export type OnlinePluginAuthorBean = {
   status?: string;
 };
 
-export async function OnlinePluginAuthorGet(): Promise<{ registered?: boolean; author?: OnlinePluginAuthorBean }> {
+export async function OnlinePluginAuthorGet(options?: { showErrorNotify?: boolean }): Promise<{ registered?: boolean; author?: OnlinePluginAuthorBean }> {
   return await request({
     url: apiPrefix + "/online/author/get",
     method: "post",
+    showErrorNotify: options?.showErrorNotify,
   });
 }
 

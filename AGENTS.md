@@ -89,7 +89,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 确实不适合先写测试时，在回复中说明原因和替代验证方式。
 - 后补单元测试时，按正确行为写预期；若红灯需要修改既有实现，先向用户确认这是 bug 还是既有需求，避免未经确认改变行为。
 - 后端纯单测放在 `src/**/*.test.ts`，尽量与被测文件相邻；`test:unit` 只跑这些文件，构建/打包应排除 `*.test.ts`。
-- 单测需要 mock ESM 静态 import 时，优先使用 `esmock`，不要为了测试改业务代码结构。
+- 单测需要 mock ESM 静态 import（如 `@certd/plus-core` 的 `isPlus`、第三方包）时，**优先使用 `esmock`**，通过 `esmock(被测模块路径, { 依赖模块: { 导出: mock实现 } })` 加载被测模块并替换依赖；**不要为了测试给业务代码加注入点/改业务结构**（如不需要给类加 `isPlusFn` 之类的可注入属性）。
 - 各包 `test:unit` 脚本应显式设置 `NODE_ENV=unittest`。
 - 单包单测优先用 `cd <包目录> && npm run test:unit`，例如 `cd packages\ui\certd-server && npm run test:unit`。
 - 优先对改动包运行聚焦测试或格式化/ESLint；只有跨包影响明显时再考虑更大范围构建。
@@ -150,6 +150,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 
 - 前端主包是 `packages/ui/certd-client`，使用 Vue 3、Vite、TypeScript、Ant Design Vue、Fast Crud、Pinia、vue-router、vue-i18n。
 - 做前端任务时，先定位 `packages/ui/certd-client/src/views/certd` 下的页面，再找对应 `src/api`。
+- 前端用户提示**统一使用 `notification`**（ant-design-vue 的 `notification.success({ message: X })` / `.error` / `.warning` / `.info`），**不要使用 `message` API**；`src/vben/` 目录（vben 框架内置布局/组件）保持原样不动。
 - 不要运行前端 `pnpm tsc` / `vue-tsc`；当前 `vue-tsc@1.8.27` 会抛无效内部错误。前端 `test:unit` 只是占位脚本，也不要跑。
 - 前端 TS/Vue/locale 改动后，只对本次改动文件运行现有 Prettier / ESLint：`packages\ui\certd-client\node_modules\.bin\prettier.cmd --write <files>` 和 `packages\ui\certd-client\node_modules\.bin\eslint.cmd --fix <files>`。
 - Vue 模板中需要用 JSX 动态渲染时，使用 `<script setup lang="tsx">` 编写；不要使用 `h()` 创建 VNode。

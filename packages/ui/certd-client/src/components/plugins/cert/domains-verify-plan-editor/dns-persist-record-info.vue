@@ -29,7 +29,7 @@
 
 <script lang="ts" setup>
 import { dict } from "@fast-crud/fast-crud";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { ref, watch } from "vue";
 import { GetByDomain, Verify } from "/@/views/certd/cert/dns-persist/api";
 import { useDnsPersistSettingDialog } from "/@/views/certd/cert/dns-persist/use-setting-dialog";
@@ -117,7 +117,7 @@ async function doVerify() {
   loading.value = true;
   try {
     const ok = await Verify(dnsPersistRecord.value.id);
-    message[ok ? "success" : "error"](ok ? "校验成功" : "未找到匹配的TXT记录，请稍后重试");
+    notification[ok ? "success" : "error"]({ message: ok ? "校验成功" : "未找到匹配的TXT记录，请稍后重试" });
     await loadRecord();
   } finally {
     loading.value = false;

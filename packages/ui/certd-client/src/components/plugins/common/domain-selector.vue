@@ -62,7 +62,7 @@ import { computed, defineComponent, onMounted, ref, Ref, useAttrs } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useClipboard } from "@vueuse/core";
-import { message as antdMessage } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { Dicts } from "../lib/dicts";
 import { request } from "/@/api/service";
 import { openRouteInNewWindow } from "/@/vben/utils";
@@ -251,7 +251,7 @@ function tagRender(tag: { value: string; label: string; closable: boolean; onClo
         event.preventDefault();
         event.stopPropagation();
         await copy(value);
-        antdMessage.success("复制成功");
+        notification.success({ message: "复制成功" });
       }}
     >
       {tag.label}
@@ -267,7 +267,7 @@ async function copySelectedDomains(event: MouseEvent) {
     return;
   }
   await copy(domains);
-  antdMessage.success("复制成功");
+  notification.success({ message: "复制成功" });
 }
 </script>
 

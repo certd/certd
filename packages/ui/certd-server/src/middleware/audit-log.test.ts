@@ -2,7 +2,14 @@
 
 import assert from "node:assert/strict";
 import { Constants } from "@certd/lib-server";
-import { AuditLogMiddleware } from "./audit-log.js";
+import esmock from "esmock";
+
+// 通过 esmock 加载被测模块并 mock 专业版判断（isPlus），无需在实现里加注入点
+const { AuditLogMiddleware } = await esmock("./audit-log.js", {
+  "@certd/plus-core": {
+    isPlus: () => true,
+  },
+});
 
 class TestController {
   import() {}
@@ -22,7 +29,6 @@ function createMiddleware() {
       records.push(record);
     },
   } as any;
-  (middleware as any).isPlusFn = async () => true;
   return { middleware, records };
 }
 
