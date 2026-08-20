@@ -13,3 +13,5 @@ SET "full_name" = CASE
   ELSE "name"
 END
 WHERE "full_name" IS NULL OR TRIM("full_name") = '';
+
+ALTER TABLE "cd_domain" ADD COLUMN "remark" varchar(500) NOT NULL DEFAULT '';
