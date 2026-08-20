@@ -6,3 +6,4 @@ ALTER TABLE "pi_plugin" ADD COLUMN "ai_check_status" varchar(32) NOT NULL DEFAUL
 
 ALTER TABLE "pi_plugin" ADD COLUMN "vip" varchar(50);
 
+ALTER TABLE "cd_domain" ADD COLUMN "remark" varchar(500) NOT NULL DEFAULT '';
