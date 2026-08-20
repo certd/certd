@@ -93,7 +93,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
         const remark = form.remark.trim();
         if (!remark) {
           notification.error({ message: "请填写拒绝理由" });
-          throw new Error("请填写拒绝理由");
+          return false;
         }
         await api.RejectWithdraw(row.id, remark);
         await crudExpose.doRefresh();

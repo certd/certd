@@ -149,15 +149,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       actionbar: {
         buttons: {
-          aiDev: {
-            show: true,
-            icon: "ion:sparkles-outline",
-            text: "AI 开发插件",
-            type: "primary",
-            async click() {
-              await openAiDevDialog();
-            },
-          },
           add: {
             show: true,
             icon: "ion:ios-add-circle-outline",
@@ -170,6 +161,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             type: "primary",
             async click() {
               await openImportDialog({ crudExpose });
+            },
+          },
+          aiDev: {
+            show: true,
+            icon: "ion:sparkles-outline",
+            text: "AI 开发插件",
+            type: "primary",
+            async click() {
+              await openAiDevDialog();
             },
           },
           syncOnline: {

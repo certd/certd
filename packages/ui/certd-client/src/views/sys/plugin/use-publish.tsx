@@ -65,7 +65,10 @@ export function usePluginPublish() {
         },
         async onSubmit(form: any) {
           if (form.name?.trim() !== form.nameConfirm?.trim()) {
-            throw new Error("两次输入的作者名称不一致");
+            notification.error({
+              message: "两次输入的作者名称不一致",
+            });
+            return false;
           }
           const author = await api.OnlinePluginAuthorAdd({
             name: form.name,
@@ -96,7 +99,18 @@ export function usePluginPublish() {
             form: {
               col: { span: 24 },
               helper: "请再次输入相同名称。作者名称注册后不允许修改。",
-              rules: [{ required: true, message: "请再次输入作者名称" }],
+              rules: [
+                { required: true, message: "请再次输入作者名称" },
+                {
+                  validator: (rule: any, value: string, callback: any) => {
+                    if (value !== form.name) {
+                      callback(new Error("两次输入的作者名称不一致"));
+                    } else {
+                      callback();
+                    }
+                  },
+                },
+              ],
             },
           },
         },
