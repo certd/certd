@@ -13,6 +13,9 @@ export class DomainEntity {
   @Column({ comment: "主域名", length: 100 })
   domain: string;
 
+  @Column({ comment: "备注", name: "remark", length: 500, default: "" })
+  remark: string;
+
   @Column({ comment: "校验类型", name: "challenge_type", length: 50 })
   challengeType: string;
 
