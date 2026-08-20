@@ -40,7 +40,7 @@ export function usePluginPublish() {
   }
 
   function registerPluginAuthor() {
-    return new Promise<api.OnlinePluginAuthorBean | undefined>(resolve => {
+    return new Promise<api.OnlinePluginAuthorBean | undefined>(async resolve => {
       let resolved = false;
       const resolveAuthor = (author?: api.OnlinePluginAuthorBean) => {
         if (resolved) {
@@ -50,7 +50,7 @@ export function usePluginPublish() {
         resolve(author);
       };
 
-      void openFormDialog({
+      const formRes = await openFormDialog({
         title: t("certd.onlinePluginAuthorRegister"),
         wrapper: {
           width: 560,
@@ -102,11 +102,9 @@ export function usePluginPublish() {
               rules: [
                 { required: true, message: "请再次输入作者名称" },
                 {
-                  validator: (rule: any, value: string, callback: any) => {
-                    if (value !== form.name) {
-                      callback(new Error("两次输入的作者名称不一致"));
-                    } else {
-                      callback();
+                  validator: async (rule: any, value: string) => {
+                    if (value !== formRes?.getFormData().name) {
+                      throw new Error("两次输入的作者名称不一致");
                     }
                   },
                 },
