@@ -157,10 +157,15 @@ export class PipelineService extends BaseService<PipelineEntity> {
       return [];
     }
     const nextTimes = [];
-    const interval = parser.parseExpression(cron);
-    for (let i = 0; i < count; i++) {
-      const next = interval.next().getTime();
-      nextTimes.push(dayjs(next).format("YYYY-MM-DD HH:mm:ss"));
+    try {
+      const interval = parser.parseExpression(cron);
+      for (let i = 0; i < count; i++) {
+        const next = interval.next().getTime();
+        nextTimes.push(dayjs(next).format("YYYY-MM-DD HH:mm:ss"));
+      }
+    } catch (e) {
+      //历史数据中可能存在无效的cron表达式（例如2月31号），这里容错，避免流水线列表接口报错
+      logger.warn(`cron表达式解析失败：${cron}`, e);
     }
     return nextTimes;
   }
@@ -311,6 +316,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
    * @param pipeline
    */
   async doUpdatePipelineJson(bean: PipelineEntity, pipeline: Pipeline) {
+    //保存前校验定时触发器cron表达式，避免无效表达式（例如2月31号）入库后导致流水线列表加载和定时任务注册报错
+    this.checkTriggers(pipeline);
     await this.unregisterTriggers(bean);
     if (pipeline.title) {
       bean.title = pipeline.title;
@@ -328,6 +335,37 @@ export class PipelineService extends BaseService<PipelineEntity> {
     await this.addOrUpdate(bean);
     await this.registerTrigger(bean);
     return bean;
+  }
+
+  /**
+   * 校验流水线中所有定时触发器（timer）的cron表达式是否有效
+   * cron-parser无法解析的表达式（例如2月31号）会导致流水线列表加载和定时任务注册报错，保存前必须拦截
+   */
+  private checkTriggers(pipeline: Pipeline) {
+    if (pipeline.triggers == null) {
+      return;
+    }
+    for (const trigger of pipeline.triggers) {
+      if (trigger.type !== "timer") {
+        continue;
+      }
+      const cron = trigger.props?.cron;
+      if (cron == null || cron.trim() === "") {
+        continue;
+      }
+      this.checkCronExpression(cron);
+    }
+  }
+
+  /**
+   * 校验单个cron表达式是否可被cron-parser解析，不可解析时抛出友好错误
+   */
+  private checkCronExpression(cron: string) {
+    try {
+      parser.parseExpression(cron.trim());
+    } catch (e) {
+      throw new ValidateException(`定时触发cron表达式无效：${cron.trim()}，请检查日期是否正确（例如2月没有31号）`);
+    }
   }
 
   private async checkMaxPipelineCount(bean: PipelineEntity, pipeline: Pipeline, domains: string[], old?: PipelineEntity) {
@@ -558,6 +596,13 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
     if (cron.startsWith("* ")) {
       cron = "0 " + cron.substring(2);
+    }
+    //校验cron表达式有效性，无效（例如2月31号）时跳过注册，避免保存或启动时抛异常
+    try {
+      parser.parseExpression(cron);
+    } catch (e) {
+      logger.warn(`cron表达式无效，跳过定时任务注册：${cron}`, e);
+      return;
     }
     const triggerId = trigger.id;
     const name = this.buildCronKey(pipelineId, triggerId);
