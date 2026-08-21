@@ -7,6 +7,7 @@ import { Modal, notification } from "ant-design-vue";
 import yaml from "js-yaml";
 import { usePluginImport } from "./use-import";
 import KvInput from "/@/components/plugins/common/kv-input.vue";
+import DependPluginsInput from "./components/depend-plugins-input.vue";
 import { usePluginConfig } from "./use-config";
 import { useSettingStore } from "/src/store/settings/index";
 import { usePluginStore } from "/@/store/plugin";
@@ -326,6 +327,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               { label: t("certd.auth"), value: "access" },
               { label: t("certd.dns"), value: "dnsProvider" },
               { label: t("certd.deployPlugin"), value: "deploy" },
+              { label: "通知", value: "notification" },
+              { label: "Addon", value: "addon" },
             ],
           }),
           column: {
@@ -547,7 +550,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "text",
           form: {
             component: {
-              name: KvInput,
+              name: DependPluginsInput,
               vModel: "modelValue",
             },
             helper: t("certd.pluginDependenciesHelper"),

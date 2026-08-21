@@ -122,6 +122,7 @@
       <a-tooltip v-if="!pluginCardState.isBuiltInPlugin" :title="versionTitle">
         <span class="plugin-card__version" :class="{ 'is-upgradable': plugin.upgradeAvailable }" @click.stop="handleVersionClick">
           v{{ currentVersion }}
+          <fs-icon v-if="hasLocalUnpublishedChanges" class="plugin-card__version-warning-icon" icon="ion:warning-outline" />
           <fs-icon v-if="plugin.upgradeAvailable" class="plugin-card__version-icon" icon="carbon:upgrade" />
         </span>
       </a-tooltip>
@@ -135,12 +136,13 @@
   </a-card>
 </template>
 
-<script lang="ts" setup>
+<script lang="tsx" setup>
 import { Modal, notification } from "ant-design-vue";
-import { computed, h, ref } from "vue";
+import { computed, ref } from "vue";
 import * as api from "../api";
 import { usePluginConfig } from "../use-config";
 import { usePluginPublish } from "../use-publish";
+import { compareVersions, fullNameValueFor, isOnlinePluginMissing, useOnlineInstall } from "../use-online-install";
 import PluginEditDialogBody from "./plugin-edit-dialog-body.vue";
 import { usePluginStore } from "/@/store/plugin";
 import { useFormDialog } from "/@/use/use-dialog";
@@ -177,6 +179,7 @@ const pluginStore = usePluginStore();
 const { openConfigDialog } = usePluginConfig();
 const { isPublishingPlugin, publishLocalPlugin } = usePluginPublish();
 const { openFormDialog } = useFormDialog();
+const { resolveOnlinePluginDependencies, installOnlinePluginChain, openDependencyDetail } = useOnlineInstall();
 const actionLoading = ref<PluginCardAction | "">("");
 const editDialogBodyRef = ref();
 
@@ -256,6 +259,9 @@ const currentVersion = computed(() => {
 });
 
 const versionTitle = computed(() => {
+  if (hasLocalUnpublishedChanges.value) {
+    return `${t("certd.version")} v${currentVersion.value}，${t("certd.onlinePluginUnpublishedChanges")}`;
+  }
   if (props.source === "local") {
     return `${t("certd.version")} v${currentVersion.value}`;
   }
@@ -269,6 +275,15 @@ const versionTitle = computed(() => {
     return t("certd.dashboard.latestVersion", { version: `v${props.plugin.latest}` });
   }
   return `${t("certd.version")} -`;
+});
+
+/**
+ * 本地存在未发布的改动：当前版本（本地 version / 已安装 installedVersion）高于云端已发布版本 latest。
+ * latest 高于当前版本时走 upgradeAvailable 的升级提示。
+ */
+const hasLocalUnpublishedChanges = computed(() => {
+  const currentVersion = props.source === "local" ? props.plugin.version : props.plugin.installedVersion;
+  return !!currentVersion && !!props.plugin.latest && compareVersions(currentVersion, props.plugin.latest) > 0;
 });
 
 const toggleTitle = computed(() => {
@@ -331,11 +346,7 @@ async function editPlugin() {
       okText: "保存",
       cancelText: "关闭",
     },
-    body: () =>
-      h(PluginEditDialogBody, {
-        ref: editDialogBodyRef,
-        pluginId: pluginCardState.value.editPluginId,
-      }),
+    body: () => <PluginEditDialogBody ref={editDialogBodyRef} pluginId={pluginCardState.value.editPluginId} />,
     async onSubmit() {
       await editDialogBodyRef.value?.save?.();
       emitChanged("edit");
@@ -381,30 +392,74 @@ async function installPlugin() {
   if (!fullName) {
     return;
   }
+  let dependencies: any[] = [];
   try {
-    await runAction("install", async () => {
-      await api.OnlinePluginInstall(
-        {
-          fullName,
-          version: props.plugin.latest,
-        },
-        {
-          showErrorNotify: false,
+    dependencies = await resolveOnlinePluginDependencies(props.plugin);
+  } catch (error: any) {
+    if (isDependencyNotSynced(error)) {
+      // 依赖插件未同步到本地市场列表时，明确弹窗引导先同步
+      Modal.warning({
+        title: t("certd.onlinePluginDependencyNotFound"),
+        content: `${error.message}，请先同步插件市场，确认依赖插件已发布后再安装`,
+        okText: t("certd.confirm"),
+      });
+      return;
+    }
+    notification.error({ message: error.message || String(error) });
+    return;
+  }
+
+  if (dependencies.length > 0) {
+    Modal.confirm({
+      title: t("certd.onlinePluginDependenciesTitle"),
+      content: (
+        <div class="plugin-dependency-confirm">
+          <div>{t("certd.onlinePluginDependenciesPrompt")}</div>
+          <ul class="plugin-dependency-confirm__list">
+            {dependencies.map(item => (
+              <li key={fullNameValueFor(item)}>
+                <a
+                  class="plugin-dependency-confirm__item"
+                  onClick={(event: MouseEvent) => {
+                    event.stopPropagation();
+                    openDependencyDetail(item);
+                  }}
+                >
+                  {item.title || item.name || item.fullName} ({fullNameValueFor(item)})
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ),
+      okText: t("certd.onlinePluginInstallDependencies"),
+      cancelText: t("certd.cancel"),
+      async onOk() {
+        try {
+          await runAction("install", () => installOnlinePluginChain(dependencies, props.plugin));
+        } catch (error: any) {
+          // 依赖安装失败时给出明确错误提示，并保持弹窗打开便于重试
+          notification.error({ message: error.message || String(error) });
+          throw error;
         }
-      );
-      notification.success({ message: t("certd.onlinePluginInstallSuccess") });
+      },
     });
+    return;
+  }
+
+  try {
+    await runAction("install", () => installOnlinePluginChain([], props.plugin));
   } catch (error: any) {
     if (!isOnlinePluginMissing(error)) {
-      notification.error({ message: error.message });
+      notification.error({ message: error.message || String(error) });
       return;
     }
     confirmRemoveMissingOnlinePlugin();
   }
 }
 
-function isOnlinePluginMissing(error: unknown) {
-  return error instanceof Error && error.message.includes("插件不存在");
+function isDependencyNotSynced(error: any) {
+  return error instanceof Error && error.message.includes(t("certd.onlinePluginDependencyNotFound"));
 }
 
 function confirmRemoveMissingOnlinePlugin() {
@@ -838,6 +893,14 @@ function handleVersionClick() {
     line-height: 1;
   }
 
+  .plugin-card__version-warning-icon {
+    margin-left: 2px;
+    color: #faad14;
+    font-size: 14px;
+    line-height: 1;
+    vertical-align: -1px;
+  }
+
   .plugin-card__download-count {
     display: inline-flex;
     align-items: center;
@@ -965,6 +1028,56 @@ function handleVersionClick() {
 .plugin-edit-dialog {
   .ant-modal-body .fs-form-body {
     height: 66vh;
+  }
+}
+
+.plugin-dependency-confirm {
+  .plugin-dependency-confirm__list {
+    max-height: 240px;
+    margin: 8px 0 0;
+    padding-left: 20px;
+    overflow: auto;
+    color: #5f6b7a;
+    font-size: 12px;
+    line-height: 22px;
+
+    .plugin-dependency-confirm__item {
+      color: #1677ff;
+      cursor: pointer;
+
+      &:hover {
+        color: #0958d9;
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.plugin-dependency-detail-dialog {
+  .plugin-dependency-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .plugin-dependency-detail__item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 13px;
+      line-height: 20px;
+    }
+
+    .plugin-dependency-detail__label {
+      width: 76px;
+      flex: none;
+      color: #8c8c8c;
+      text-align: right;
+    }
+
+    .plugin-dependency-detail__desc {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
   }
 }
 </style>
