@@ -111,6 +111,7 @@ export type OnlinePluginBean = {
   score?: number;
   aiCheckStatus?: string;
   vip?: string;
+  dependPlugins?: Record<string, string>;
   editable?: boolean;
   selfAuthored?: boolean;
   installed?: boolean;
@@ -120,6 +121,7 @@ export type OnlinePluginBean = {
   localDisabled?: boolean;
   localEditable?: boolean;
   syncTime?: number;
+  addonType?: string;
 };
 
 export type OnlinePluginVersionBean = {
