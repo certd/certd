@@ -76,12 +76,12 @@ const columns = {
   },
   needEAB: {
     title: t("certd.sys.setting.customAcmeNeedEab"),
-    component: {
-      name: "a-switch",
-      vModel: "checked",
-    },
     form: {
       value: false,
+      component: {
+        name: "a-switch",
+        vModel: "checked",
+      },
     },
   },
 };
