@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { BasicLayout, LockScreen, UserDropdown } from "/@/vben/layouts";
 
 import { computed, onErrorCaptured, onMounted, provide, ref } from "vue";
@@ -20,14 +20,14 @@ const router = useRouter();
 const menus = computed(() => [
   {
     handler: () => {
-      router.push("/certd/mine/user-profile");
+      router.push("/cert/mine/user-profile");
     },
     icon: "fa-solid:book",
     text: t("certd.accountInfo"),
   },
   {
     handler: () => {
-      router.push("/certd/mine/security");
+      router.push("/cert/mine/security");
     },
     icon: "fluent:shield-keyhole-16-regular",
     text: t("certd.securitySettings"),
@@ -49,7 +49,7 @@ async function handleLogout() {
   await userStore.logout(true);
 }
 function goUserProfile() {
-  router.push("/certd/mine/user-profile");
+  router.push("/cert/mine/user-profile");
 }
 
 const settingStore = useSettingStore();

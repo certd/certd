@@ -72,7 +72,7 @@
     <div class="statistic-data m-20">
       <a-row :gutter="20" class="flex-wrap">
         <a-col :md="6" :xs="24">
-          <statistic-card icon="fluent-color:data-line-24" :title="t('certd.dashboard.pipelineCount')" :count="count.pipelineCount" link="/certd/pipeline" :sub-counts="count.pipelineEnableCount">
+          <statistic-card icon="fluent-color:data-line-24" :title="t('certd.dashboard.pipelineCount')" :count="count.pipelineCount" link="/cert/pipeline" :sub-counts="count.pipelineEnableCount">
             <template v-if="count.pipelineCount === 0" #default>
               <div class="flex-center flex-1 flex-col">
                 <div style="font-size: 18px; font-weight: 700">{{ t("certd.dashboard.noPipeline") }}</div>
@@ -80,7 +80,7 @@
               </div>
             </template>
             <template #footer>
-              <router-link to="/certd/pipeline" class="flex"> <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" /> {{ t("certd.dashboard.managePipeline") }} </router-link>
+              <router-link to="/cert/pipeline" class="flex"> <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" /> {{ t("certd.dashboard.managePipeline") }} </router-link>
             </template>
           </statistic-card>
         </a-col>
@@ -90,14 +90,14 @@
           </statistic-card>
         </a-col> -->
         <a-col :md="6" :xs="24">
-          <statistic-card icon="fluent-color:certificate-24" :title="t('certd.dashboard.certCount')" :count="count.certCount" link="/certd/monitor/cert" :sub-counts="count.certStatusCount">
+          <statistic-card icon="fluent-color:certificate-24" :title="t('certd.dashboard.certCount')" :count="count.certCount" link="/cert/monitor/cert" :sub-counts="count.certStatusCount">
             <template v-if="count.certCount === 0" #default>
               <div class="flex-center flex-1 flex-col">
                 <div style="font-size: 18px; font-weight: 700">{{ t("certd.dashboard.noCert") }}</div>
               </div>
             </template>
             <template #footer>
-              <router-link to="/certd/monitor/cert" class="flex"> <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" /> {{ t("certd.dashboard.manageCert") }} </router-link>
+              <router-link to="/cert/monitor/cert" class="flex"> <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" /> {{ t("certd.dashboard.manageCert") }} </router-link>
             </template>
           </statistic-card>
         </a-col>
@@ -256,7 +256,7 @@ const deltaTimeTip = computed(() => {
 });
 const router = useRouter();
 function goPipeline() {
-  router.push({ path: "/certd/pipeline" });
+  router.push({ path: "/cert/pipeline" });
 }
 
 const count: any = ref({});
@@ -288,16 +288,16 @@ function transformStatusCount() {
   ];
   const certCount = count.value.certCount;
   count.value.certStatusCount = [
-    { name: t("certd.dashboard.certExpiredCount"), value: certCount.expired, color: "red", checkIcon: "mingcute:warning-fill:#f44336", link: { path: "/certd/monitor/cert", query: { expireStatus: "expired" } } },
+    { name: t("certd.dashboard.certExpiredCount"), value: certCount.expired, color: "red", checkIcon: "mingcute:warning-fill:#f44336", link: { path: "/cert/monitor/cert", query: { expireStatus: "expired" } } },
     {
       name: t("certd.dashboard.certExpiringCount"),
       value: certCount.expiring,
       color: "yellow",
       checkIcon: "mingcute:alert-fill:#ff9800",
       title: `到期不足${defaultExpireDays.value}天`,
-      link: { path: "/certd/monitor/cert", query: { expireStatus: "expiring" } },
+      link: { path: "/cert/monitor/cert", query: { expireStatus: "expiring" } },
     },
-    { name: t("certd.dashboard.certNoExpireCount"), value: certCount.notExpired, color: "green", link: { path: "/certd/monitor/cert", query: { expireStatus: "noExpired" } } },
+    { name: t("certd.dashboard.certNoExpireCount"), value: certCount.notExpired, color: "green", link: { path: "/cert/monitor/cert", query: { expireStatus: "noExpired" } } },
   ];
   count.value.certCount = certCount.total;
 }

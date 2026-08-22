@@ -1,4 +1,4 @@
-import { AddReq, ColumnProps, CreateCrudOptionsProps, CreateCrudOptionsRet, DataFormatterContext, DelReq, dict, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
+﻿import { AddReq, ColumnProps, CreateCrudOptionsProps, CreateCrudOptionsRet, DataFormatterContext, DelReq, dict, EditReq, UserPageQuery, UserPageRes, useUi } from "@fast-crud/fast-crud";
 import { Modal, notification } from "ant-design-vue";
 import dayjs from "dayjs";
 import { computed, ref } from "vue";
@@ -248,7 +248,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
       form: {
         afterSubmit({ form, res, mode }) {
           if (mode === "add") {
-            router.push({ path: "/certd/pipeline/detail", query: { id: res.id, editMode: "true" } });
+            router.push({ path: "/cert/pipeline/detail", query: { id: res.id, editMode: "true" } });
           }
         },
         wrapper: {
@@ -305,7 +305,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
           view: {
             show: false,
             click({ row }) {
-              router.push({ path: "/certd/pipeline/detail", query: { id: row.id, editMode: "false" } });
+              router.push({ path: "/cert/pipeline/detail", query: { id: row.id, editMode: "false" } });
             },
           },
           copy: {
@@ -334,7 +334,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             dropdown: true,
             icon: "ant-design:edit-outlined",
             click({ row }) {
-              router.push({ path: "/certd/pipeline/detail", query: { id: row.id, editMode: "true" } });
+              router.push({ path: "/cert/pipeline/detail", query: { id: row.id, editMode: "true" } });
             },
           },
           edit: {
@@ -425,7 +425,7 @@ export default function ({ crudExpose, context: { selectedRowKeys, openCertApply
             sorter: true,
             showTitle: true,
             cellRender: ({ row, value }) => {
-              return <router-link to={{ path: "/certd/pipeline/detail", query: { id: row.id, editMode: false } }}>{value}</router-link>;
+              return <router-link to={{ path: "/cert/pipeline/detail", query: { id: row.id, editMode: false } }}>{value}</router-link>;
             },
           },
         },

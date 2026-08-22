@@ -10,8 +10,13 @@ import { usePermissionStore } from "/@/plugin/permission/store.permission";
 import util from "/@/plugin/permission/util.permission";
 import { useUserStore } from "/@/store/user";
 import { useProjectStore } from "../store/project";
-export const PROJECT_PATH_PREFIX = "/certd/project";
+export const PROJECT_PATH_PREFIX = "/cert/project";
 export const SYS_PATH_PREFIX = "/sys";
+
+/**
+ * 旧版 /certd 路由前缀：/certd -> /cert 迁移后，兼容用户复制保存的旧地址，自动跳转到新路径
+ */
+const LEGACY_CERTD_PATH_PREFIX = "/certd";
 
 function buildAccessedMenus(menus: any) {
   if (menus == null) {
@@ -44,6 +49,17 @@ export function setupCommonGuard(router: Router) {
   const loadedPaths = new Set<string>();
 
   router.beforeEach(async to => {
+    // 旧版 /certd 地址兼容：自动跳转到 /cert 对应路径（保留 query/hash）
+    if (to.path === LEGACY_CERTD_PATH_PREFIX || to.path.startsWith(LEGACY_CERTD_PATH_PREFIX + "/")) {
+      const targetPath = "/cert" + to.path.slice(LEGACY_CERTD_PATH_PREFIX.length) || "/cert/pipeline";
+      return {
+        path: targetPath,
+        query: to.query,
+        hash: to.hash,
+        replace: true,
+      };
+    }
+
     const settingStore = useSettingStore();
     await settingStore.initOnce();
 

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <fs-page class="page-invite">
     <template #header>
       <div class="title">
@@ -242,7 +242,7 @@ function levelIcon(level: any) {
 }
 
 function gotoWallet() {
-  router.push({ path: "/certd/wallet" });
+  router.push({ path: "/cert/wallet" });
 }
 
 function openAgreementDialog(needOpenPlan: boolean) {

@@ -77,7 +77,7 @@ function goProjectManager() {
 const router = useRouter();
 function goProjectDetail(projectId: number) {
   // 假设这里调用跳转到项目详情页的API
-  router.push(`/certd/project/detail?projectId=${projectId}`);
+  router.push(`/cert/project/detail?projectId=${projectId}`);
 }
 
 const getSystemProjects = async () => {

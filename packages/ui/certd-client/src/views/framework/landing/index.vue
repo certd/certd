@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="landing-page">
     <nav class="landing-nav">
       <div class="nav-container">
@@ -150,7 +150,7 @@ const userInitials = computed(() => {
 });
 
 function goProfile() {
-  router.push("/certd/mine/user-profile");
+  router.push("/cert/mine/user-profile");
 }
 
 const heroBenefits = computed(() => [

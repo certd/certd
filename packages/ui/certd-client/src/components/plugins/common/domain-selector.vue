@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="domain-select">
     <div class="flex flex-row">
       <a-select
@@ -217,8 +217,8 @@ const challengeTypeDict = Dicts.challengeTypeDict;
 const router = useRouter();
 function openDomainManager(e: any) {
   e.preventDefault();
-  // router.push("/certd/cert/domain");
-  openRouteInNewWindow("/certd/cert/domain");
+  // router.push("/cert/cert/domain");
+  openRouteInNewWindow("/cert/cert/domain");
 }
 
 const openDomainImportManageDialog = useDomainImportManage();
