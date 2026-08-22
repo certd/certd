@@ -71,6 +71,25 @@ export class SysPublicSettings extends BaseSettings {
   adminMode?: "enterprise" | "saas" = "saas";
 }
 
+/**
+ * 证书颁发机构配置（内置 + 自定义ACME，管理员在「流水线设置」中维护）
+ * - 内置项（builtIn=true）：系统预置，前端不允许修改和删除
+ * - 自定义项：sslProvider 为唯一标识（如 myca），配置后可在证书申请任务和ACME账号授权中作为颁发机构使用
+ */
+export type CustomAcmeProvider = {
+  sslProvider: string;
+  title: string;
+  directoryUrl: string;
+  // 反向代理地址（不带协议前缀，如 myca-proxy.example.com）；可选
+  reverseProxy?: string;
+  // 是否需要EAB（外部账号绑定）；内置CA与自定义CA均可配置，控制EAB输入框显隐与生成账号校验
+  needEAB?: boolean;
+  // 是否内置颁发机构（内置不允许修改删除）
+  builtIn?: boolean;
+  // 其他参数后期扩展
+  [key: string]: any;
+};
+
 export class SysPrivateSettings extends BaseSettings {
   static __title__ = "系统私有设置";
   static __access__ = "private";
@@ -103,6 +122,16 @@ export class SysPrivateSettings extends BaseSettings {
     type: "aliyun",
     config: {},
   };
+
+  // 证书颁发机构配置列表（内置 + 自定义ACME），内置项 builtIn=true 不允许修改删除
+  customAcmeProviders?: CustomAcmeProvider[] = [
+    { sslProvider: "letsencrypt", title: "Let's Encrypt", directoryUrl: "https://acme-v02.api.letsencrypt.org/directory", needEAB: false, builtIn: true },
+    { sslProvider: "letsencrypt_staging", title: "Let's Encrypt测试环境", directoryUrl: "https://acme-staging-v02.api.letsencrypt.org/directory", needEAB: false, builtIn: true },
+    { sslProvider: "google", title: "Google", directoryUrl: "https://dv.acme-v02.api.pki.goog/directory", needEAB: true, builtIn: true },
+    { sslProvider: "zerossl", title: "ZeroSSL", directoryUrl: "https://acme.zerossl.com/v2/DV90", needEAB: true, builtIn: true },
+    { sslProvider: "litessl", title: "litessl", directoryUrl: "https://acme.litessl.com/acme/v2/directory", needEAB: true, builtIn: true },
+    { sslProvider: "sslcom", title: "SSL.com", directoryUrl: "https://acme.ssl.com/sslcom-dv-rsa", needEAB: true, builtIn: true },
+  ];
 
   removeSecret() {
     const clone = cloneDeep(this);

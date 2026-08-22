@@ -41,6 +41,21 @@ export default {
       acmeWalkFromAuthoritative: "Check TXT Record from Authoritative NS",
       acmeWalkFromAuthoritativeHelper: "Apply certificate when whether to check the TXT record from authoritative NS server first",
 
+      customAcmeManage: "Custom ACME Management",
+      customAcmeManageHelper:
+        "Configure certificate authorities (built-in + custom ACME). Built-in providers cannot be modified or deleted. Custom ACME providers (intranet CA, enterprise CA or any RFC 8555 compatible ACME service) become selectable as certificate authorities in apply tasks and ACME account authorization",
+      customAcmeName: "Name",
+      customAcmeSslProvider: "SSL Provider",
+      customAcmeSslProviderHelper: "Unique identifier, e.g. myca; used to distinguish providers in pipeline and ACME account",
+      customAcmeReverseProxy: "Reverse Proxy",
+      customAcmeReverseProxyHelper: "Optional; reverse proxy address when the ACME endpoint is not directly reachable, without http://",
+      customAcmeAdd: "Add Custom ACME",
+      customAcmeBuiltIn: "Built-in",
+      customAcmeDeleteConfirmTitle: "Delete Custom ACME",
+      customAcmeDeleteConfirmContent: "Deleting '{title}' may affect pipelines using it to apply certificates. Are you sure?",
+      customAcmeSaveCheck: "Name, sslProvider and Directory URL are required",
+      customAcmeSslProviderUnique: "The sslProvider identifier must be unique",
+
       fixedCertExpireDays: "Fixed Cert Expire Days",
       fixedCertExpireDaysHelper: "Fixed cert expiration days, helpful for table list progress bar display",
       fixedCertExpireDaysRecommend: "Recommend 90",

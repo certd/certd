@@ -16,6 +16,7 @@ export type UploadCertReq = {
   projectId?: number;
   pipelineId?: number;
   taskId?: string;
+  acmeAccountAccessId?: number;
 };
 
 /**
@@ -187,6 +188,9 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       order: { id: "DESC" },
     });
 
+    // 解析ACME账号授权id，随证书记录落库：吊销旧证书时直接读表，无需再解析流水线
+    const acmeAccountAccessId = this.parseAcmeAccountAccessId(pipeline);
+
     const bean = await this.updateCert({
       certReader: new CertReader(cert),
       fromType: certFromType,
@@ -195,6 +199,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       pipelineId,
       taskId,
       id: placeholderRecord?.id,
+      acmeAccountAccessId,
     });
     // 旧证书标记为未激活（仅同申请任务产出的旧证书，避免误伤其他任务仍在使用的证书）
     await this.repository.update(
@@ -324,8 +329,21 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     bean.taskId = req.taskId;
     bean.userId = userId;
     bean.projectId = req.projectId;
+    // 吊销旧证书时直接使用记录上的ACME账号授权id（无需再解析流水线）
+    bean.acmeAccountAccessId = req.acmeAccountAccessId;
     await this.addOrUpdate(bean);
     return bean;
+  }
+
+  /**
+   * 从流水线配置中解析证书申请任务使用的ACME账号授权id（写入证书记录，吊销时读表使用）
+   */
+  private parseAcmeAccountAccessId(pipeline?: PipelineEntity): number | undefined {
+    if (!pipeline?.content) {
+      return undefined;
+    }
+    const input = this.parseCertApplyInput(pipeline.content);
+    return input?.acmeAccountAccessId;
   }
 
   /**
@@ -366,8 +384,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     }
     const certInfo = JSON.parse(entity.certInfo) as CertInfo;
 
-    // 从关联流水线解析证书颁发机构与ACME账号
-    const { sslProvider, acmeAccount, useProxy, reverseProxy } = await this.resolveRevokeParams(entity.pipelineId, userId, projectId);
+    // 优先使用证书记录上保存的ACME账号授权id（吊销不再解析流水线）；旧数据没有该字段时回退解析流水线
+    const { sslProvider, acmeAccount, useProxy, reverseProxy } = await this.resolveRevokeParamsWithEntity(entity, userId, projectId);
     if (!acmeAccount && !sslProvider) {
       throw new CodeException({
         ...Constants.res.openCertNotFound,
@@ -385,6 +403,28 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         revokeTime: Date.now(),
       }
     );
+  }
+
+  /**
+   * 解析吊销所需参数（sslProvider / acmeAccount / 代理配置）
+   *
+   * 优先使用证书记录上保存的 acmeAccountAccessId 直接取ACME账号（无需查询流水线）；
+   * 记录上没有该字段（旧数据或非ACME来源）时，回退到从流水线配置解析（旧版兼容）。
+   */
+  private async resolveRevokeParamsWithEntity(entity: CertInfoEntity, userId: number, projectId?: number): Promise<{ sslProvider?: string; acmeAccount?: any; useProxy?: boolean; reverseProxy?: string }> {
+    if (entity.acmeAccountAccessId) {
+      const access = await this.accessService.getAccessById(entity.acmeAccountAccessId, true, userId, projectId);
+      if (access?.getAccount) {
+        const acmeAccount = access.getAccount();
+        return {
+          sslProvider: acmeAccount?.caType,
+          acmeAccount,
+          useProxy: undefined,
+          reverseProxy: undefined,
+        };
+      }
+    }
+    return this.resolveRevokeParams(entity.pipelineId, userId, projectId);
   }
 
   /**

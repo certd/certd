@@ -63,7 +63,7 @@ export type CertInfo = {
   one?: string;
   p7b?: string;
 };
-export type SSLProvider = "letsencrypt" | "google" | "zerossl" | "sslcom" | "letsencrypt_staging";
+export type SSLProvider = "letsencrypt" | "google" | "zerossl" | "sslcom" | "letsencrypt_staging" | "custom";
 export type PrivateKeyType = "rsa_1024" | "rsa_2048" | "rsa_3072" | "rsa_4096" | "ec_256" | "ec_384" | "ec_521";
 type AcmeEabOptions = ClientExternalAccountBindingOptions & {
   id?: number;
@@ -83,6 +83,10 @@ type AcmeServiceOptions = {
   userId: number;
   domainParser: IDomainParser;
   waitDnsDiffuseTime?: number;
+  /**
+   * 自定义ACME Directory URL（sslProvider=custom 时必填，其他颁发机构缺省使用内置端点）
+   */
+  directoryUrl?: string;
 };
 
 export class AcmeService {
@@ -210,7 +214,7 @@ export class AcmeService {
   }
 
   async getAcmeClient(email: string): Promise<acme.Client> {
-    const directoryUrl = acme.getDirectoryUrl({ sslProvider: this.sslProvider, pkType: this.options.privateKeyType });
+    const directoryUrl = this.getDirectoryUrl();
     const urlMapping = await this.resolveUrlMapping(directoryUrl);
     const conf = await this.getAccountConfig(email, urlMapping);
     if (conf.key == null) {
@@ -280,6 +284,20 @@ export class AcmeService {
       signal: this.options.signal,
       logger: this.logger,
     });
+  }
+
+  /**
+   * 获取ACME Directory URL：
+   * 优先使用自定义 directoryUrl（自定义ACME）；缺省时使用内置颁发机构端点
+   */
+  getDirectoryUrl() {
+    if (this.options.directoryUrl) {
+      return this.options.directoryUrl;
+    }
+    if (this.sslProvider === "custom") {
+      throw new Error("自定义ACME需要填写Directory URL");
+    }
+    return acme.getDirectoryUrl({ sslProvider: this.sslProvider, pkType: this.options.privateKeyType });
   }
 
   async createNewKey() {
@@ -597,7 +615,7 @@ export class AcmeService {
     if (!cert.key) {
       throw new Error("证书私钥为空，无法使用证书私钥方式吊销，请先在该流水线中配置ACME账号");
     }
-    const directoryUrl = acme.getDirectoryUrl({ sslProvider: this.sslProvider, pkType: "rsa_2048" });
+    const directoryUrl = this.getDirectoryUrl();
     const urlMapping = await this.resolveUrlMapping(directoryUrl);
     const client = new acme.Client({
       sslProvider: this.sslProvider,
