@@ -75,6 +75,7 @@ process.on("uncaughtException", error => {
     },
   ],
 })
+
 export class MainConfiguration {
   @App("koa")
   app: koa.Application;

@@ -242,7 +242,6 @@ describe("AcmeService custom directoryUrl", () => {
           getDirectoryUrl() {
             throw new Error("不应调用内置目录获取");
           },
-          getSslProviderReverseProxies: () => ({}),
           Client: class {
             constructor(opts: any) {
               recordedDirectoryUrl = opts.directoryUrl;

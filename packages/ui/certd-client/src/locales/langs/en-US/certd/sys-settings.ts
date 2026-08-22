@@ -48,7 +48,8 @@ export default {
       customAcmeSslProvider: "SSL Provider",
       customAcmeSslProviderHelper: "Unique identifier, e.g. myca; used to distinguish providers in pipeline and ACME account",
       customAcmeReverseProxy: "Reverse Proxy",
-      customAcmeReverseProxyHelper: "Optional; reverse proxy address when the ACME endpoint is not directly reachable, without http://",
+      customAcmeReverseProxyHelper:
+        "For example, for Let's Encrypt, configure the reverse proxy on your overseas server: proxy_pass https://acme-v02.api.letsencrypt.org/; then fill in your reverse proxy server domain here, without http://",
       customAcmeAdd: "Add Custom ACME",
       customAcmeEdit: "Edit Custom ACME",
       customAcmeNeedEab: "Need EAB",
@@ -103,10 +104,6 @@ export default {
       customFooterHelper: "Custom site footer, displayed at the bottom of the page, support HTML format",
       customFooterPlaceholder: "Custom footer content",
 
-      reverseProxy: "Reverse Proxy List",
-      reverseProxyHelper: "Reverse proxy for ACME address, used when applying for certificate",
-      reverseProxyPlaceholder: "http://le.px.handfree.work",
-      reverseProxyEmpty: "No reverse proxy list configured",
       environmentVars: "Environment Variables",
       environmentVarsHelper: "configure the runtime environment variables, one per line, format: KEY=VALUE",
       commonHeaders: "Common Headers",

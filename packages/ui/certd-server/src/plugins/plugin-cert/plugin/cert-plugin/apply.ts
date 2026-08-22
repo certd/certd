@@ -570,18 +570,17 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   // 当前颁发机构在系统「流水线设置」中的配置（内置 + 自定义），onInit 时解析
   private acmeProvider?: CustomAcmeProvider;
 
-  async onInit() {
-   
-
-   
-  }
+  async onInit() {}
 
   private async getAcmeClient() {
     if (this.acme) {
       return this.acme;
     }
 
-     let eab: EabAccess = null;
+    // 解析当前颁发机构的系统配置（内置 + 自定义），自定义未配置时直接报错
+    this.acmeProvider = await this.getAcmeProvider();
+
+    let eab: EabAccess = null;
     const isNewVersion = this.version === 2;
     // 内置非 LE 颁发机构需要走EAB获取流程；自定义ACME无需EAB（其EAB在ACME账号授权中按需选填）
     if (!isNewVersion && this.sslProvider && !this.sslProvider.startsWith("letsencrypt") && this.acmeProvider?.builtIn) {
@@ -611,8 +610,6 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     this.eab = eab;
     const subDomainsGetter = await this.ctx.serviceGetter.get<ISubDomainsGetter>("subDomainsGetter");
     const domainParser = new DomainParser(subDomainsGetter, this.logger);
-     // 解析当前颁发机构的系统配置（内置 + 自定义），自定义未配置时直接报错
-    this.acmeProvider = await this.getAcmeProvider();
 
     this.acme = new AcmeService({
       userId: this.ctx.user.id,
@@ -980,12 +977,6 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
         dnsProvider,
       },
     };
-  }
-
-  async onGetReverseProxyList() {
-    const sysSettingsService: any = await this.ctx.serviceGetter.get("sysSettingsService");
-    const sysSettings = await sysSettingsService.getPrivateSettings();
-    return sysSettings.reverseProxyList || [];
   }
 }
 

@@ -181,12 +181,13 @@ describe("CertApplyPlugin custom 颁发机构", () => {
     };
   }
 
-  it("onInit 从CustomAcmeProviderService读取 directoryUrl 和 reverseProxy 传入 AcmeService", async () => {
+  it("getAcmeClient 懒加载应用自定义ACME配置（directoryUrl、reverseProxy）", async () => {
     const plugin: any = new CertApplyPlugin();
     plugin.version = 2;
     plugin.sslProvider = "myca";
     plugin.email = "user@example.com";
     plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
+    plugin.userContext = {};
     plugin.ctx = {
       serviceGetter: createCustomAcmeServiceGetter({
         async getBySslProvider(sslProvider: string) {
@@ -204,19 +205,23 @@ describe("CertApplyPlugin custom 颁发机构", () => {
       signal: undefined,
     };
 
-    await plugin.onInit();
+    const client = await plugin.getAcmeClient();
 
+    // 懒加载：首次调用构建 AcmeService 并应用颁发机构配置
     assert.equal(plugin.acme.options.directoryUrl, "https://myca.example.com/directory");
     // 自定义ACME配置了反向代理地址时优先使用
     assert.equal(plugin.acme.options.reverseProxy, "myca-proxy.example.com");
+    // 第二次调用返回同一实例（懒加载缓存）
+    assert.equal(await plugin.getAcmeClient(), client);
   });
 
-  it("内置颁发机构不传自定义 directoryUrl", async () => {
+  it("内置颁发机构懒加载时不传自定义 directoryUrl", async () => {
     const plugin: any = new CertApplyPlugin();
     plugin.version = 2;
     plugin.sslProvider = "letsencrypt";
     plugin.email = "user@example.com";
     plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
+    plugin.userContext = {};
     plugin.ctx = {
       serviceGetter: createCustomAcmeServiceGetter({
         async getBySslProvider(sslProvider: string) {
@@ -233,13 +238,13 @@ describe("CertApplyPlugin custom 颁发机构", () => {
       signal: undefined,
     };
 
-    await plugin.onInit();
+    await plugin.getAcmeClient();
 
     // 内置颁发机构走内置端点，不传自定义 directoryUrl
     assert.equal(plugin.acme.options.directoryUrl, undefined);
   });
 
-  it("自定义ACME未配置时 onInit 给出明确报错", async () => {
+  it("自定义ACME未配置时 getAcmeClient 给出明确报错", async () => {
     const plugin: any = new CertApplyPlugin();
     plugin.version = 2;
     plugin.sslProvider = "not-exist";
@@ -254,7 +259,7 @@ describe("CertApplyPlugin custom 颁发机构", () => {
       signal: undefined,
     };
 
-    await assert.rejects(() => plugin.onInit(), /未找到颁发机构【not-exist】的配置/);
+    await assert.rejects(() => plugin.getAcmeClient(), /未找到颁发机构【not-exist】的配置/);
   });
 
   it("onSslProviderList 返回系统配置的全部颁发机构（内置 + 自定义）", async () => {
@@ -285,7 +290,7 @@ describe("CertApplyPlugin custom 颁发机构", () => {
     assert.equal(values.includes("custom"), false);
   });
 
-  it("颁发机构为空时 onInit 给出明确提示", async () => {
+  it("颁发机构为空时 getAcmeClient 给出明确提示", async () => {
     const plugin: any = new CertApplyPlugin();
     plugin.version = 2;
     plugin.sslProvider = null;
@@ -296,7 +301,7 @@ describe("CertApplyPlugin custom 颁发机构", () => {
       signal: undefined,
     };
 
-    await assert.rejects(() => plugin.onInit(), /请先选择证书颁发机构/);
+    await assert.rejects(() => plugin.getAcmeClient(), /请先选择证书颁发机构/);
   });
 
   it("自定义颁发机构不支持 DNS 持久验证", async () => {
@@ -304,7 +309,18 @@ describe("CertApplyPlugin custom 颁发机构", () => {
     plugin.version = 2;
     plugin.sslProvider = "myca";
     plugin.challengeType = "dns-persist";
-    plugin.acmeProvider = { sslProvider: "myca", title: "我的CA", directoryUrl: "https://myca.example.com/directory", builtIn: false };
+    plugin.email = "user@example.com";
+    plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
+    plugin.userContext = {};
+    plugin.ctx = {
+      serviceGetter: createCustomAcmeServiceGetter({
+        async getBySslProvider() {
+          return { sslProvider: "myca", title: "我的CA", directoryUrl: "https://myca.example.com/directory", builtIn: false };
+        },
+      }),
+      user: { id: 1 },
+      signal: undefined,
+    };
 
     await assert.rejects(() => plugin.doCertApply(), /DNS持久验证/);
   });

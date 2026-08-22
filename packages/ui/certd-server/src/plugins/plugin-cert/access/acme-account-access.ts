@@ -43,7 +43,7 @@ export class AcmeAccountAccess extends BaseAccess {
       typeName: "acmeAccount",
       action: "onCaTypeList",
       single: true,
-      mode: "tags"
+      mode: "tags",
     },
     required: true,
     mergeScript: `
