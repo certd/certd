@@ -1,4 +1,4 @@
-﻿import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { addonRegistry, BaseService, PageReq, PlusService, SysInstallInfo, SysPluginSetting, SysSettingsService } from "@certd/lib-server";
 import { PluginEntity } from "../entity/plugin.js";
 import { InjectEntityModel } from "@midwayjs/typeorm";
@@ -9,7 +9,7 @@ import { merge } from "lodash-es";
 import { dnsProviderRegistry } from "@certd/plugin-cert";
 import { logger } from "@certd/basic";
 import yaml from "js-yaml";
-import { getDefaultAccessPlugin, getDefaultDeployPlugin, getDefaultDnsPlugin } from "./default-plugin.js";
+import { getDefaultAccessPlugin, getDefaultDeployPlugin, getDefaultDnsPlugin, getDefaultNotificationPlugin } from "./default-plugin.js";
 import fs from "fs";
 import path from "path";
 import { importRuntime as importRuntimeDirect, getRuntimeDepsService, pluginRegistry, accessRegistry, notificationRegistry } from "@certd/pipeline";
@@ -112,6 +112,7 @@ export type OnlinePluginBean = {
   score?: number;
   aiCheckStatus?: string;
   vip?: string;
+  dependPlugins?: Record<string, string>;
   editable?: boolean;
   selfAuthored?: boolean;
   installed?: boolean;
@@ -217,6 +218,38 @@ function fillOnlinePluginYamlVersion(content: string, version?: string) {
       sortKeys: false,
     }
   );
+}
+
+/**
+ * 把依赖插件声明序列化为 YAML 字符串；空依赖返回 null，不落库。
+ */
+function toDependPluginsYaml(dependPlugins?: Record<string, string> | null): string | null {
+  if (!dependPlugins || typeof dependPlugins !== "object" || Array.isArray(dependPlugins) || Object.keys(dependPlugins).length === 0) {
+    return null;
+  }
+  return yaml.dump(dependPlugins);
+}
+
+/**
+ * 解析依赖插件声明。depend_plugins 字段存的是 YAML 字符串；
+ * 兼容直接传入对象（如内置插件本地 YAML 注册）和旧数据。
+ */
+function parseDependPlugins(value?: string | Record<string, string> | null): Record<string, string> {
+  if (!value) {
+    return {};
+  }
+  if (typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, string>;
+  }
+  try {
+    const parsed = yaml.load(value);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as Record<string, string>;
+    }
+  } catch (e) {
+    // 解析失败按无依赖处理，避免脏数据阻断注册
+  }
+  return {};
 }
 
 function isBareModuleSpecifier(modulePath: string) {
@@ -565,6 +598,7 @@ export class PluginService extends BaseService<PluginEntity> {
         fullName: item.name,
         title: item.title,
         type: "builtIn",
+        pluginType: item.pluginType,
         icon: item.icon,
         desc: item.desc,
         group: item.group,
@@ -600,6 +634,46 @@ export class PluginService extends BaseService<PluginEntity> {
     return this.builtInPluginService.getByType(type);
   }
 
+  /**
+   * 表单可能直接提交对象形式的 dependPlugins（KvInput），落库前统一序列化为 YAML 字符串。
+   */
+  private normalizeDependPluginsParam(param: any) {
+    if (param.dependPlugins && typeof param.dependPlugins === "object" && !Array.isArray(param.dependPlugins)) {
+      param.dependPlugins = toDependPluginsYaml(param.dependPlugins);
+    }
+  }
+
+  /**
+   * 前端仍以 extra.dependPlugins 作为依赖声明的主存储提交（旧提交方式不变），
+   * depend_plugins 列作为它的冗余，这里从 extra 取值写入列，保证列表/依赖树可以快速读取。
+   */
+  private normalizeDependPluginsFromExtra(param: any) {
+    let extra: any = param.extra;
+    if (typeof extra === "string") {
+      try {
+        extra = yaml.load(extra) || {};
+      } catch (e) {
+        extra = undefined;
+      }
+    }
+    const extraDependPlugins = extra && typeof extra === "object" && !Array.isArray(extra) ? extra.dependPlugins : undefined;
+    if (extraDependPlugins != null) {
+      // 表单以 extra.dependPlugins 提交：冗余写入列
+      if (typeof extraDependPlugins === "object" && !Array.isArray(extraDependPlugins)) {
+        param.dependPlugins = toDependPluginsYaml(extraDependPlugins);
+      } else if (typeof extraDependPlugins === "string") {
+        param.dependPlugins = extraDependPlugins;
+      }
+    } else if (param.dependPlugins == null) {
+      // extra 中没有依赖声明、也没有顶层提交，列与主存储保持一致（清空）
+      param.dependPlugins = null;
+    }
+    // extra 以对象形式提交（部分提交路径未序列化）时，统一转回字符串，避免落库成 [object Object]
+    if (param.extra && typeof param.extra === "object" && !Array.isArray(param.extra)) {
+      param.extra = yaml.dump(param.extra);
+    }
+  }
+
   private normalizeStorePluginAuthor(plugin: Record<string, any>) {
     const author = `${plugin.author || ""}`.trim();
     if (!author || author.toLowerCase() === "local") {
@@ -617,6 +691,8 @@ export class PluginService extends BaseService<PluginEntity> {
    * @param param 数据
    */
   async add(param: any) {
+    this.normalizeDependPluginsParam(param);
+    this.normalizeDependPluginsFromExtra(param);
     param.type = normalizePluginSourceType(param.type);
     if (param.type === "store") {
       this.normalizeStorePluginAuthor(param);
@@ -646,6 +722,9 @@ export class PluginService extends BaseService<PluginEntity> {
       plugin = getDefaultDeployPlugin();
     } else if (param.pluginType === "dnsProvider") {
       plugin = getDefaultDnsPlugin();
+      delete param.group;
+    } else if (param.pluginType === "notification") {
+      plugin = getDefaultNotificationPlugin();
       delete param.group;
     } else {
       throw new Error(`插件类型${param.pluginType}不支持`);
@@ -684,6 +763,17 @@ export class PluginService extends BaseService<PluginEntity> {
 
   private normalizeOnlinePluginRecord(item: OnlinePluginBean, syncTime: number, old?: PluginEntity) {
     const fullName = this.getOnlinePluginFullName(item);
+    let extra: Record<string, any> = {};
+    if (old?.extra) {
+      try {
+        extra = (yaml.load(old.extra) as Record<string, any>) || {};
+      } catch (e) {
+        extra = {};
+      }
+    }
+    // extra 是依赖声明的主存储，同步时以远程为准覆盖；depend_plugins 列是其冗余。
+    // 远程下掉依赖后本地旧的 dependPlugins 一并清理，不再残留。
+    extra.dependPlugins = item.dependPlugins || {};
     return this.repository.create({
       id: old?.id,
       appId: item.appId,
@@ -702,6 +792,8 @@ export class PluginService extends BaseService<PluginEntity> {
       score: item.score,
       aiCheckStatus: item.aiCheckStatus,
       vip: item.vip,
+      dependPlugins: toDependPluginsYaml(item.dependPlugins),
+      extra: Object.keys(extra).length > 0 ? yaml.dump(extra) : null,
       syncTime,
       type: old?.type || "store",
       disabled: old?.disabled ?? false,
@@ -710,7 +802,6 @@ export class PluginService extends BaseService<PluginEntity> {
       sysSetting: old?.sysSetting,
       content: old?.content,
       metadata: old?.metadata,
-      extra: old?.extra,
       version: old?.version,
       updateTime: new Date(),
     });
@@ -718,6 +809,17 @@ export class PluginService extends BaseService<PluginEntity> {
 
   private toOnlinePluginBean(item: PluginEntity): OnlinePluginBean {
     const isInstalled = item.installed === true;
+    // 优先读取独立字段 depend_plugins；旧数据里依赖声明可能还残留在 extra 中，作为兜底。
+    const dependPlugins = parseDependPlugins(item.dependPlugins);
+    let legacyDependPlugins: Record<string, string> = {};
+    if (Object.keys(dependPlugins).length === 0 && item.extra) {
+      try {
+        const extra = (yaml.load(item.extra) as { dependPlugins?: Record<string, string> }) || {};
+        legacyDependPlugins = extra.dependPlugins || {};
+      } catch (e) {
+        legacyDependPlugins = {};
+      }
+    }
     return {
       id: item.id,
       appId: item.appId,
@@ -737,6 +839,7 @@ export class PluginService extends BaseService<PluginEntity> {
       score: item.score,
       aiCheckStatus: item.aiCheckStatus,
       vip: item.vip,
+      dependPlugins: Object.keys(dependPlugins).length > 0 ? dependPlugins : legacyDependPlugins,
       syncTime: item.syncTime,
       installed: isInstalled,
       localPluginId: isInstalled ? item.id : undefined,
@@ -1219,6 +1322,8 @@ export class PluginService extends BaseService<PluginEntity> {
   }
 
   async update(param: any) {
+    this.normalizeDependPluginsParam(param);
+    this.normalizeDependPluginsFromExtra(param);
     param.type = normalizePluginSourceType(param.type);
     if (param.type === "store") {
       this.normalizeStorePluginAuthor(param);
@@ -1360,6 +1465,14 @@ export class PluginService extends BaseService<PluginEntity> {
     delete item.metadata;
     delete item.content;
     delete item.extra;
+    // depend_plugins 字段存的是 YAML 字符串，注册时解析为对象供运行时使用；
+    // 旧数据里依赖声明可能还在 extra 中（{...extra} 已合并），这里统一兜底。
+    const columnDependPlugins = parseDependPlugins(plugin.dependPlugins);
+    if (Object.keys(columnDependPlugins).length > 0) {
+      item.dependPlugins = columnDependPlugins;
+    } else if (typeof item.dependPlugins !== "object" || item.dependPlugins == null) {
+      item.dependPlugins = {};
+    }
     const fullName = getPluginFullName(item);
     item.name = fullName;
     const name = getPluginRegistryName(item);
@@ -1415,8 +1528,9 @@ export class PluginService extends BaseService<PluginEntity> {
     if (!info) {
       throw new Error("插件不存在");
     }
-    const metadata = yaml.load(info.metadata || "");
-    const extra = yaml.load(info.extra || "");
+    // yaml.load 空字符串会返回 undefined，统一兜底为空对象，避免展开/取值崩溃
+    const metadata = (yaml.load(info.metadata || "") as Record<string, any>) || {};
+    const extra = (yaml.load(info.extra || "") as Record<string, any>) || {};
     const content = info.content;
     delete info.metadata;
     delete info.extra;
@@ -1430,6 +1544,13 @@ export class PluginService extends BaseService<PluginEntity> {
       ...extra,
       content,
     };
+    // depend_plugins 字段存的是 YAML 字符串，导出时恢复为对象；旧数据可能在 extra 中。
+    const columnDependPlugins = parseDependPlugins(info.dependPlugins);
+    const legacyDependPlugins = extra.dependPlugins && typeof extra.dependPlugins === "object" ? extra.dependPlugins : undefined;
+    plugin.dependPlugins = Object.keys(columnDependPlugins).length > 0 ? columnDependPlugins : legacyDependPlugins;
+    if (!plugin.dependPlugins) {
+      delete plugin.dependPlugins;
+    }
 
     return yaml.dump(plugin) as string;
   }
@@ -1478,6 +1599,7 @@ export class PluginService extends BaseService<PluginEntity> {
       output: loaded.output,
     };
     const extra = {
+      // extra 作为依赖声明的主存储（前端编辑表单读取），depend_plugins 列是其冗余
       dependPlugins: loaded.dependPlugins,
       dependPackages: loaded.dependPackages,
       default: loaded.default,
@@ -1490,6 +1612,7 @@ export class PluginService extends BaseService<PluginEntity> {
       developerId: entityType === "store" ? old?.developerId ?? loaded.developerId : loaded.developerId,
       fullName: entityType === "store" ? fullName || old?.fullName : old?.fullName,
       type: entityType,
+      dependPlugins: toDependPluginsYaml(loaded.dependPlugins),
       metadata: yaml.dump(metadata),
       extra: yaml.dump(extra),
       content: loaded.content,
