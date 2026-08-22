@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <fs-page class="page-user-profile">
     <template #header>
       <div class="title">{{ t("certd.myInfo") }}</div>
@@ -200,7 +200,7 @@ function doUpdate() {
 
 const router = useRouter();
 function goSecuritySetting() {
-  router.push("/certd/mine/security");
+  router.push("/cert/mine/security");
 }
 
 const oauthBounds = ref([]);

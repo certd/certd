@@ -1,4 +1,4 @@
-import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+﻿import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { mySuiteApi as api } from "./api";
 import { useRouter } from "vue-router";
 import SuiteValueEdit from "/@/views/sys/suite/product/suite-value-edit.vue";
@@ -60,7 +60,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             type: "primary",
             click() {
               router.push({
-                path: "/certd/suite/buy",
+                path: "/cert/suite/buy",
               });
             },
           },

@@ -1,4 +1,4 @@
-// @ts-ignore
+﻿// @ts-ignore
 import { useI18n } from "/src/locales";
 //
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, useFormWrapper, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
@@ -397,7 +397,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               on: {
                 onClick({ row }) {
-                  router.push({ path: "/certd/pipeline/detail", query: { id: row.pipelineId, editMode: "false" } });
+                  router.push({ path: "/cert/pipeline/detail", query: { id: row.pipelineId, editMode: "false" } });
                 },
               },
             },

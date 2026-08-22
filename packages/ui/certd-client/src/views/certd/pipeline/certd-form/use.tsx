@@ -1,4 +1,4 @@
-import { checkPipelineLimit } from "/@/views/certd/pipeline/utils";
+﻿import { checkPipelineLimit } from "/@/views/certd/pipeline/utils";
 import { cloneDeep, merge, omit } from "lodash-es";
 import { notification, Modal, message } from "ant-design-vue";
 import { nanoid } from "nanoid";
@@ -622,7 +622,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
       }
       //这里要用message 因为流水线详情页面，右上角有编辑保存按钮，Notification会把他们挡住
       message.success("创建成功,请添加证书部署任务");
-      router.push({ path: "/certd/pipeline/detail", query: { id, editMode: "true" } });
+      router.push({ path: "/cert/pipeline/detail", query: { id, editMode: "true" } });
     }
     const certPlugins = await getCertPlugins();
     const certPlugin = certPlugins.find(plugin => plugin.name === req.pluginName);
