@@ -39,15 +39,6 @@
           {{ t("certd.dualStackNetworkHelper") }}, <a href="https://certd.docmirror.cn/guide/use/setting/ipv6.html" target="_blank">{{ t("certd.helpDocLink") }}</a>
         </div>
       </a-form-item>
-      <a-form-item :label="t('certd.sys.setting.reverseProxy')" :name="['private', 'reverseProxy']">
-        <div class="mt-5">
-          <div v-for="(value, key) in formState.private.reverseProxies" :key="key" class="flex items-center p-2 border-b border-gray-300">
-            <span class="flex-1">{{ key }}</span>
-            <span class="flex-1 ml-5"><a-input v-model:value="formState.private.reverseProxies[key]" placeholder="proxy.xxxx.com" allow-clear /></span>
-          </div>
-        </div>
-        <div class="helper">{{ t("certd.sys.setting.reverseProxyHelper") }}</div>
-      </a-form-item>
 
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
         <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
@@ -100,7 +91,6 @@ const settingsStore = useSettingStore();
 const onFinish = async (form: any) => {
   try {
     saveLoading.value = true;
-    form.private.reverseProxies = formState.private.reverseProxies;
     await api.SysSettingsSave(form);
     await settingsStore.loadSysSettings();
     notification.success({

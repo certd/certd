@@ -4,7 +4,7 @@ import { Repository } from "typeorm";
 import { SysSettingsEntity } from "../entity/sys-settings.js";
 import { BaseSettings, SysInstallInfo, SysPrivateSettings, SysPublicSettings, SysSecret, SysSecretBackup } from "./models.js";
 
-import { getAllSslProviderDomains, setSslProviderReverseProxies, setWalkFromAuthoritative } from "@certd/acme-client";
+import { setWalkFromAuthoritative } from "@certd/acme-client";
 import { cache, logger, mergeUtils, setGlobalHeaders, setGlobalProxy } from "@certd/basic";
 import { isPlus } from "@certd/plus-core";
 import * as dns from "node:dns";
@@ -131,14 +131,7 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   }
 
   async getPrivateSettings(): Promise<SysPrivateSettings> {
-    const res = await this.getSetting<SysPrivateSettings>(SysPrivateSettings);
-    const sslProviderDomains = getAllSslProviderDomains();
-    for (const domain of sslProviderDomains) {
-      if (!res.reverseProxies[domain]) {
-        res.reverseProxies[domain] = "";
-      }
-    }
-    return res;
+    return await this.getSetting<SysPrivateSettings>(SysPrivateSettings);
   }
 
   async savePrivateSettings(bean: SysPrivateSettings) {
@@ -176,8 +169,6 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     if (privateSetting.pipelineMaxRunningCount) {
       executorQueue.setMaxRunningCount(privateSetting.pipelineMaxRunningCount);
     }
-
-    setSslProviderReverseProxies(privateSetting.reverseProxies);
 
     //加载环境变量
     this.setEnvironmentVars(privateSetting.environmentVars);

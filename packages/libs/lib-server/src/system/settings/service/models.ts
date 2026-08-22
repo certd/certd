@@ -102,6 +102,8 @@ export class SysPrivateSettings extends BaseSettings {
   noProxy? = "";
   commonHeaders?: string = "";
 
+  // 已废弃：旧版「网络设置-反代设置」数据，仅用于兼容迁移（迁移到 customAcmeProviders 内置项的 reverseProxy）
+  // 新配置统一在 customAcmeProviders 中维护，不再读取本字段做全局反代
   reverseProxies?: Record<string, string> = {};
 
   dnsResultOrder? = "";

@@ -181,15 +181,6 @@ export class AcmeService {
       "acme-v02.api.letsencrypt.org": "le.px.certd.handfree.work",
       "dv.acme-v02.api.pki.goog": "gg.px.certd.handfree.work",
     };
-    const reverseProxies = acme.getSslProviderReverseProxies();
-    if (reverseProxies) {
-      for (const key in reverseProxies) {
-        const value = reverseProxies[key];
-        if (value) {
-          mappings[key] = value;
-        }
-      }
-    }
     if (this.options.reverseProxy && targetUrl) {
       mappings[targetUrl] = this.options.reverseProxy;
     }
