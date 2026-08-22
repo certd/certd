@@ -199,6 +199,36 @@ describe("AcmeService challenge", () => {
       utils.http.request = originalRequest;
     }
   });
+
+  it("显式配置 reverseProxy 时强制启用 urlMapping，不再依赖直连测试", async () => {
+    const originalRequest = utils.http.request;
+    let requestCount = 0;
+    utils.http.request = async () => {
+      requestCount++;
+      return {};
+    };
+
+    try {
+      const service = new AcmeService({
+        userId: 1,
+        userContext: {} as any,
+        logger: logger as any,
+        sslProvider: "custom",
+        directoryUrl: "https://myca.example.com/directory",
+        reverseProxy: "myca-proxy.example.com",
+        domainParser: {} as any,
+      });
+
+      const urlMapping = await service.resolveUrlMapping("https://myca.example.com/directory");
+
+      // 配置了反向代理地址时直接启用，不进行直连测试
+      assert.equal(urlMapping.enabled, true);
+      assert.equal(urlMapping.mappings["myca.example.com"], "myca-proxy.example.com");
+      assert.equal(requestCount, 0);
+    } finally {
+      utils.http.request = originalRequest;
+    }
+  });
 });
 
 describe("AcmeService custom directoryUrl", () => {

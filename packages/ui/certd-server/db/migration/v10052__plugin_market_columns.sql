@@ -1,6 +1,6 @@
 ALTER TABLE "pi_plugin" ADD COLUMN "app_id" integer;
 ALTER TABLE "pi_plugin" ADD COLUMN "developer_id" integer;
-ALTER TABLE "pi_plugin" ADD COLUMN "full_name" varchar(200);
+ALTER TABLE "pi_plugin" ADD COLUMN "full_name" varchar(191);
 ALTER TABLE "pi_plugin" ADD COLUMN "latest" varchar(100);
 ALTER TABLE "pi_plugin" ADD COLUMN "status" varchar(100);
 ALTER TABLE "pi_plugin" ADD COLUMN "download_count" integer;

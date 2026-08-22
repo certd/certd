@@ -59,6 +59,13 @@ describe("AcmeAccountAccess", () => {
 });
 
 describe("AcmeAccountAccess custom CA", () => {
+  it("颁发机构为空时 getDirectoryUrl 给出明确提示", async () => {
+    const access = new AcmeAccountAccess();
+    access.caType = null as any;
+
+    await assert.rejects(() => access.getDirectoryUrl(), /请先选择颁发机构/);
+  });
+
   it("custom caType 返回自定义 directoryUrl（旧版兼容）", async () => {
     const access = new AcmeAccountAccess();
     access.caType = "custom";

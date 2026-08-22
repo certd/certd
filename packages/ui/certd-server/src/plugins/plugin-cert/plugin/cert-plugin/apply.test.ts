@@ -224,7 +224,7 @@ describe("CertApplyPlugin custom 颁发机构", () => {
           return {
             sslProvider: "letsencrypt",
             title: "Let's Encrypt",
-            directoryUrl: "https://acme-v02.api.letsencrypt.org/directory",
+            directoryUrl: "",
             builtIn: true,
           };
         },
@@ -263,9 +263,9 @@ describe("CertApplyPlugin custom 颁发机构", () => {
       serviceGetter: createCustomAcmeServiceGetter({
         async getAll() {
           return [
-            { sslProvider: "letsencrypt", title: "Let's Encrypt", directoryUrl: "https://acme-v02.api.letsencrypt.org/directory", builtIn: true },
-            { sslProvider: "google", title: "Google", directoryUrl: "https://dv.acme-v02.api.pki.goog/directory", builtIn: true },
-            { sslProvider: "letsencrypt_staging", title: "Let's Encrypt测试环境", directoryUrl: "https://acme-staging-v02.api.letsencrypt.org/directory", builtIn: true },
+            { sslProvider: "letsencrypt", title: "Let's Encrypt", directoryUrl: "", builtIn: true },
+            { sslProvider: "google", title: "Google", directoryUrl: "", builtIn: true },
+            { sslProvider: "letsencrypt_staging", title: "Let's Encrypt测试环境", directoryUrl: "", builtIn: true },
             { sslProvider: "myca", title: "我的CA", directoryUrl: "https://myca.example.com/directory", builtIn: false },
             { sslProvider: "myca2", title: "二号CA", directoryUrl: "https://myca2.example.com/directory", builtIn: false },
           ];
@@ -283,6 +283,20 @@ describe("CertApplyPlugin custom 颁发机构", () => {
     assert.ok(values.includes("myca2"));
     // 旧版 custom 入口已隐藏
     assert.equal(values.includes("custom"), false);
+  });
+
+  it("颁发机构为空时 onInit 给出明确提示", async () => {
+    const plugin: any = new CertApplyPlugin();
+    plugin.version = 2;
+    plugin.sslProvider = null;
+    plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
+    plugin.ctx = {
+      serviceGetter: createCustomAcmeServiceGetter({}),
+      user: { id: 1 },
+      signal: undefined,
+    };
+
+    await assert.rejects(() => plugin.onInit(), /请先选择证书颁发机构/);
   });
 
   it("自定义颁发机构不支持 DNS 持久验证", async () => {
