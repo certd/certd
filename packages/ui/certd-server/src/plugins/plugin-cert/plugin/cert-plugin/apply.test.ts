@@ -168,3 +168,130 @@ describe("CertApplyPlugin certificate apply retry", () => {
     assert.equal(orderCount, 1);
   });
 });
+
+describe("CertApplyPlugin custom 颁发机构", () => {
+  function createCustomAcmeServiceGetter(customAcmeProviderService: any) {
+    return {
+      async get(name: string) {
+        if (name === "customAcmeProviderService") {
+          return customAcmeProviderService;
+        }
+        return {};
+      },
+    };
+  }
+
+  it("onInit 从CustomAcmeProviderService读取 directoryUrl 和 reverseProxy 传入 AcmeService", async () => {
+    const plugin: any = new CertApplyPlugin();
+    plugin.version = 2;
+    plugin.sslProvider = "myca";
+    plugin.email = "user@example.com";
+    plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
+    plugin.ctx = {
+      serviceGetter: createCustomAcmeServiceGetter({
+        async getBySslProvider(sslProvider: string) {
+          assert.equal(sslProvider, "myca");
+          return {
+            sslProvider: "myca",
+            title: "我的CA",
+            directoryUrl: "https://myca.example.com/directory",
+            reverseProxy: "myca-proxy.example.com",
+            builtIn: false,
+          };
+        },
+      }),
+      user: { id: 1 },
+      signal: undefined,
+    };
+
+    await plugin.onInit();
+
+    assert.equal(plugin.acme.options.directoryUrl, "https://myca.example.com/directory");
+    // 自定义ACME配置了反向代理地址时优先使用
+    assert.equal(plugin.acme.options.reverseProxy, "myca-proxy.example.com");
+  });
+
+  it("内置颁发机构不传自定义 directoryUrl", async () => {
+    const plugin: any = new CertApplyPlugin();
+    plugin.version = 2;
+    plugin.sslProvider = "letsencrypt";
+    plugin.email = "user@example.com";
+    plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
+    plugin.ctx = {
+      serviceGetter: createCustomAcmeServiceGetter({
+        async getBySslProvider(sslProvider: string) {
+          assert.equal(sslProvider, "letsencrypt");
+          return {
+            sslProvider: "letsencrypt",
+            title: "Let's Encrypt",
+            directoryUrl: "https://acme-v02.api.letsencrypt.org/directory",
+            builtIn: true,
+          };
+        },
+      }),
+      user: { id: 1 },
+      signal: undefined,
+    };
+
+    await plugin.onInit();
+
+    // 内置颁发机构走内置端点，不传自定义 directoryUrl
+    assert.equal(plugin.acme.options.directoryUrl, undefined);
+  });
+
+  it("自定义ACME未配置时 onInit 给出明确报错", async () => {
+    const plugin: any = new CertApplyPlugin();
+    plugin.version = 2;
+    plugin.sslProvider = "not-exist";
+    plugin.logger = { info() {}, warn() {}, error() {}, debug() {} };
+    plugin.ctx = {
+      serviceGetter: createCustomAcmeServiceGetter({
+        async getBySslProvider() {
+          return undefined;
+        },
+      }),
+      user: { id: 1 },
+      signal: undefined,
+    };
+
+    await assert.rejects(() => plugin.onInit(), /未找到颁发机构【not-exist】的配置/);
+  });
+
+  it("onSslProviderList 返回系统配置的全部颁发机构（内置 + 自定义）", async () => {
+    const plugin: any = new CertApplyPlugin();
+    plugin.ctx = {
+      serviceGetter: createCustomAcmeServiceGetter({
+        async getAll() {
+          return [
+            { sslProvider: "letsencrypt", title: "Let's Encrypt", directoryUrl: "https://acme-v02.api.letsencrypt.org/directory", builtIn: true },
+            { sslProvider: "google", title: "Google", directoryUrl: "https://dv.acme-v02.api.pki.goog/directory", builtIn: true },
+            { sslProvider: "letsencrypt_staging", title: "Let's Encrypt测试环境", directoryUrl: "https://acme-staging-v02.api.letsencrypt.org/directory", builtIn: true },
+            { sslProvider: "myca", title: "我的CA", directoryUrl: "https://myca.example.com/directory", builtIn: false },
+            { sslProvider: "myca2", title: "二号CA", directoryUrl: "https://myca2.example.com/directory", builtIn: false },
+          ];
+        },
+      }),
+    };
+
+    const options = await plugin.onSslProviderList();
+
+    const values = options.map((item: any) => item.value);
+    assert.ok(values.includes("letsencrypt"));
+    assert.ok(values.includes("google"));
+    assert.ok(values.includes("letsencrypt_staging"));
+    assert.ok(values.includes("myca"));
+    assert.ok(values.includes("myca2"));
+    // 旧版 custom 入口已隐藏
+    assert.equal(values.includes("custom"), false);
+  });
+
+  it("自定义颁发机构不支持 DNS 持久验证", async () => {
+    const plugin: any = new CertApplyPlugin();
+    plugin.version = 2;
+    plugin.sslProvider = "myca";
+    plugin.challengeType = "dns-persist";
+    plugin.acmeProvider = { sslProvider: "myca", title: "我的CA", directoryUrl: "https://myca.example.com/directory", builtIn: false };
+
+    await assert.rejects(() => plugin.doCertApply(), /DNS持久验证/);
+  });
+});

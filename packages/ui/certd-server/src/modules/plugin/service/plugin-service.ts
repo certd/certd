@@ -1486,8 +1486,8 @@ export class PluginService extends BaseService<PluginEntity> {
 
     const pluginEntity = {
       ...loaded,
-      appId: entityType === "store" ? (old?.appId ?? loaded.appId) : loaded.appId,
-      developerId: entityType === "store" ? (old?.developerId ?? loaded.developerId) : loaded.developerId,
+      appId: entityType === "store" ? old?.appId ?? loaded.appId : loaded.appId,
+      developerId: entityType === "store" ? old?.developerId ?? loaded.developerId : loaded.developerId,
       fullName: entityType === "store" ? fullName || old?.fullName : old?.fullName,
       type: entityType,
       metadata: yaml.dump(metadata),

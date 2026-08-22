@@ -39,6 +39,9 @@ export class CertInfoEntity {
   @Column({ name: "task_id", comment: "证书申请任务id（流水线中的申请步骤id）", nullable: true })
   taskId: string;
 
+  @Column({ name: "acme_account_access_id", comment: "ACME账号授权id（吊销旧证书时直接使用，无需再解析流水线）", nullable: true })
+  acmeAccountAccessId: number;
+
   @Column({ name: "apply_time", comment: "申请时间" })
   applyTime: number;
 

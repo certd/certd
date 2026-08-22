@@ -33,7 +33,17 @@ export class CertInfoFacade {
   @Inject()
   accessService: AccessService;
 
-  async getCertInfo(req: { domains?: string; certId?: number; pipelineId?: number; userId: number; projectId: number; autoApply?: boolean; format?: string; autoApplyTemplateId?: number; autoApplyParams?: CertApplyTemplateParams }) {
+  async getCertInfo(req: {
+    domains?: string;
+    certId?: number;
+    pipelineId?: number;
+    userId: number;
+    projectId: number;
+    autoApply?: boolean;
+    format?: string;
+    autoApplyTemplateId?: number;
+    autoApplyParams?: CertApplyTemplateParams;
+  }) {
     const { domains, certId, pipelineId, userId, projectId } = req;
     if (certId) {
       return await this.certInfoService.getCertInfoById({ id: certId, userId, projectId });

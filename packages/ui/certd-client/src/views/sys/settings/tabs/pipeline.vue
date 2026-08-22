@@ -60,6 +60,30 @@
         <div class="helper">{{ t("certd.sys.setting.acmeWalkFromAuthoritativeHelper") }}</div>
       </a-form-item>
 
+      <a-divider />
+
+      <div class="custom-acme-manage">
+        <div class="custom-acme-manage-title">{{ t("certd.sys.setting.customAcmeManage") }}</div>
+        <div class="helper">{{ t("certd.sys.setting.customAcmeManageHelper") }}</div>
+
+        <div v-for="(provider, index) in customAcmeProviders" :key="index" class="custom-acme-row">
+          <a-tag v-if="provider.builtIn" color="blue">{{ t("certd.sys.setting.customAcmeBuiltIn") }}</a-tag>
+          <a-input v-model:value="provider.title" :placeholder="t('certd.sys.setting.customAcmeName')" :disabled="provider.builtIn" />
+          <a-input v-model:value="provider.sslProvider" :placeholder="t('certd.sys.setting.customAcmeSslProvider')" :disabled="provider.builtIn" />
+          <a-input v-model:value="provider.directoryUrl" placeholder="https://your-ca.example.com/directory" :disabled="provider.builtIn" />
+          <a-input v-model:value="provider.reverseProxy" :placeholder="t('certd.sys.setting.customAcmeReverseProxy')" :disabled="provider.builtIn" />
+          <a-button v-if="!provider.builtIn" type="text" danger @click="removeCustomAcmeProvider(index)">
+            <template #icon>
+              <delete-outlined />
+            </template>
+          </a-button>
+        </div>
+
+        <div class="flex mt-10">
+          <a-button @click="addCustomAcmeProvider">+ {{ t("certd.sys.setting.customAcmeAdd") }}</a-button>
+        </div>
+      </div>
+
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
         <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
       </a-form-item>
@@ -68,12 +92,13 @@
 </template>
 
 <script setup lang="tsx">
-import { reactive, ref } from "vue";
+import { reactive, ref, computed } from "vue";
 import { SysSettings } from "/@/views/sys/settings/api";
 import * as api from "/@/views/sys/settings/api";
 import { merge } from "lodash-es";
 import { useSettingStore } from "/@/store/settings";
-import { notification } from "ant-design-vue";
+import { DeleteOutlined } from "@ant-design/icons-vue";
+import { Modal, notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
 const { t } = useI18n();
 
@@ -85,6 +110,7 @@ const formState = reactive<Partial<SysSettings>>({
   public: {},
   private: {
     acmeWalkFromAuthoritative: true,
+    customAcmeProviders: [],
   },
 });
 
@@ -96,7 +122,67 @@ async function loadSysSettings() {
 const saveLoading = ref(false);
 loadSysSettings();
 const settingsStore = useSettingStore();
+
+// 自定义ACME管理：随主表单一起保存（数据在 private.customAcmeProviders）
+const customAcmeProviders = computed(() => formState.private?.customAcmeProviders || []);
+
+function addCustomAcmeProvider() {
+  if (!formState.private) {
+    formState.private = {};
+  }
+  if (!formState.private.customAcmeProviders) {
+    formState.private.customAcmeProviders = [];
+  }
+  formState.private.customAcmeProviders.push({
+    title: "",
+    sslProvider: "",
+    directoryUrl: "",
+    reverseProxy: "",
+    needEAB: false,
+    builtIn: false,
+  });
+}
+
+function removeCustomAcmeProvider(index: number) {
+  const provider = customAcmeProviders.value[index];
+  if (!provider) {
+    return;
+  }
+  Modal.confirm({
+    title: t("certd.sys.setting.customAcmeDeleteConfirmTitle"),
+    content: t("certd.sys.setting.customAcmeDeleteConfirmContent", { title: provider.title }),
+    onOk() {
+      customAcmeProviders.value.splice(index, 1);
+    },
+  });
+}
+
+// 校验自定义ACME配置（内置项只读，无需校验）
+function validateCustomAcmeProviders(): string | null {
+  const seen = new Set<string>();
+  for (const provider of customAcmeProviders.value) {
+    if (provider.builtIn) {
+      continue;
+    }
+    if (!provider.title || !provider.sslProvider || !provider.directoryUrl) {
+      return t("certd.sys.setting.customAcmeSaveCheck");
+    }
+    if (seen.has(provider.sslProvider)) {
+      return t("certd.sys.setting.customAcmeSslProviderUnique");
+    }
+    seen.add(provider.sslProvider);
+  }
+  return null;
+}
+
 const onFinish = async (form: any) => {
+  const checkMessage = validateCustomAcmeProviders();
+  if (checkMessage) {
+    notification.warning({
+      message: checkMessage,
+    });
+    return;
+  }
   try {
     saveLoading.value = true;
 
@@ -110,4 +196,27 @@ const onFinish = async (form: any) => {
   }
 };
 </script>
-<style lang="less"></style>
+<style lang="less">
+.sys-settings-pipeline {
+  .custom-acme-manage {
+    margin-top: 10px;
+
+    .custom-acme-manage-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .custom-acme-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+
+      .ant-input {
+        flex: 1;
+      }
+    }
+  }
+}
+</style>

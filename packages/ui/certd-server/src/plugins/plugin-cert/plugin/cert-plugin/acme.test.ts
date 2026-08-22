@@ -1,4 +1,5 @@
 import assert from "assert";
+import esmock from "esmock";
 import { utils } from "@certd/basic";
 import { AcmeService } from "./acme.js";
 
@@ -197,5 +198,75 @@ describe("AcmeService challenge", () => {
     } finally {
       utils.http.request = originalRequest;
     }
+  });
+});
+
+describe("AcmeService custom directoryUrl", () => {
+  it("传入 directoryUrl 时使用自定义ACME端点，不再调用内置目录", async () => {
+    const originalRequest = utils.http.request;
+    utils.http.request = async () => ({});
+    try {
+      let recordedDirectoryUrl: string | null = null;
+      const { AcmeService: CustomAcmeService } = await esmock("./acme.js", {
+        "@certd/acme-client": {
+          getDirectoryUrl() {
+            throw new Error("不应调用内置目录获取");
+          },
+          getSslProviderReverseProxies: () => ({}),
+          Client: class {
+            constructor(opts: any) {
+              recordedDirectoryUrl = opts.directoryUrl;
+            }
+            async createAccount() {}
+            getAccountUrl() {
+              return "https://myca.example.com/acct/1";
+            }
+          },
+          crypto: {
+            createPrivateKey: async () => "account-key",
+          },
+        },
+      });
+
+      const service = new CustomAcmeService({
+        userId: 1,
+        userContext: {
+          async getObj() {
+            return { key: "account-key" };
+          },
+          async setObj() {},
+        } as any,
+        logger: logger as any,
+        sslProvider: "custom",
+        directoryUrl: "https://myca.example.com/directory",
+        domainParser: {} as any,
+      });
+
+      await service.getAcmeClient("user@example.com");
+
+      assert.equal(recordedDirectoryUrl, "https://myca.example.com/directory");
+    } finally {
+      utils.http.request = originalRequest;
+    }
+  });
+
+  it("custom 颁发机构未传 directoryUrl 时报错", async () => {
+    const { AcmeService: CustomAcmeService } = await esmock("./acme.js", {
+      "@certd/acme-client": {
+        getDirectoryUrl() {
+          throw new Error("内置目录中不存在 custom");
+        },
+      },
+    });
+
+    const service = new CustomAcmeService({
+      userId: 1,
+      userContext: {} as any,
+      logger: logger as any,
+      sslProvider: "custom",
+      domainParser: {} as any,
+    });
+
+    await assert.rejects(() => service.getAcmeClient("user@example.com"), /自定义ACME需要填写Directory URL/);
   });
 });

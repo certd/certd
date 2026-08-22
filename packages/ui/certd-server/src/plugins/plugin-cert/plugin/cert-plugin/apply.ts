@@ -1,9 +1,9 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { utils } from "@certd/basic";
-import { NonRetryableException } from "@certd/lib-server";
+import { CustomAcmeProvider, NonRetryableException } from "@certd/lib-server";
 
 import { AcmeAccountInfo, AcmeService, DomainsVerifyPlan, DomainVerifyPlan, PrivateKeyType, SSLProvider } from "./acme.js";
-import { createDnsProvider, DnsProviderContext, DnsVerifier, DomainVerifiers, HttpVerifier, IDnsProvider, IDomainVerifierGetter, ISubDomainsGetter } from "@certd/plugin-lib";
+import { createDnsProvider, DnsProviderContext, DnsVerifier, DomainVerifiers, HttpVerifier, IDnsProvider, IDomainVerifierGetter, ISubDomainsGetter, createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { CertReader } from "@certd/plugin-lib";
 import { CertApplyBasePlugin } from "./base.js";
 import { GoogleClient } from "../../libs/google.js";
@@ -249,34 +249,28 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   })
   domainsVerifyPlan!: DomainsVerifyPlanInput;
 
-  @TaskInput({
-    title: "证书颁发机构",
-    value: "letsencrypt",
-    component: {
-      name: "icon-select",
-      vModel: "value",
-      options: [
-        { value: "letsencrypt", label: "Let's Encrypt（免费，新手推荐，支持IP证书）", icon: "simple-icons:letsencrypt" },
-        { value: "google", label: "Google（免费）", icon: "flat-color-icons:google" },
-        { value: "zerossl", label: "ZeroSSL（免费）", icon: "emojione:digit-zero" },
-        { value: "litessl", label: "litessl（免费）", icon: "roentgen:free" },
-        { value: "sslcom", label: "SSL.com（仅主域名和www免费）", icon: "la:expeditedssl" },
-        { value: "letsencrypt_staging", label: "Let's Encrypt测试环境（仅供测试）", icon: "simple-icons:letsencrypt" },
-      ],
-    },
-    mergeScript: `return {
-      component:{
-        onSelectedChange: ctx.compute(({form})=>{
-          return ($event)=>{
-            form.acmeAccountAccessId = null
-          }
-        })
+  @TaskInput(
+    createRemoteSelectInputDefine({
+      title: "证书颁发机构",
+      typeName: "CertApply",
+      action: "onSslProviderList",
+      single: true,
+      value: "letsencrypt",
+      required: true,
+      helper:
+        "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权，无需翻墙\nSSL.com：仅主域名和www免费,必须设置CAA记录\n自定义ACME：适用于内网CA、企业CA等，由管理员在「系统设置-流水线设置」中配置",
+      mergeScript: `return {
+        component:{
+          onSelectedChange: ctx.compute(({form})=>{
+            return ($event)=>{
+              form.acmeAccountAccessId = null
+            }
+          })
+        }
       }
-    }
-    `,
-    helper: "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权，无需翻墙\nSSL.com：仅主域名和www免费,必须设置CAA记录",
-    required: true,
-  })
+      `,
+    })
+  )
   sslProvider!: SSLProvider;
 
   @TaskInput({
@@ -571,11 +565,18 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
   eab!: EabAccess;
 
+  // 当前颁发机构在系统「流水线设置」中的配置（内置 + 自定义），onInit 时解析
+  private acmeProvider?: CustomAcmeProvider;
+
   async onInit() {
     let eab: EabAccess = null;
 
+    // 解析当前颁发机构的系统配置（内置 + 自定义），自定义未配置时直接报错
+    this.acmeProvider = await this.getAcmeProvider();
+
     const isNewVersion = this.version === 2;
-    if (!isNewVersion && this.sslProvider && !this.sslProvider.startsWith("letsencrypt")) {
+    // 内置非 LE 颁发机构需要走EAB获取流程；自定义ACME无需EAB（其EAB在ACME账号授权中按需选填）
+    if (!isNewVersion && this.sslProvider && !this.sslProvider.startsWith("letsencrypt") && this.acmeProvider?.builtIn) {
       if (this.sslProvider === "google" && this.googleAccessId) {
         this.logger.info("当前正在使用 google服务账号授权获取EAB");
         const googleAccess = await this.getAccess(this.googleAccessId);
@@ -608,10 +609,13 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       userContext: this.userContext,
       logger: this.logger,
       sslProvider: this.sslProvider,
+      // 自定义ACME：Directory URL 来自系统「流水线设置」中的配置；内置颁发机构走内置端点
+      directoryUrl: this.acmeProvider?.builtIn ? undefined : this.acmeProvider?.directoryUrl,
       eab,
       skipLocalVerify: this.skipLocalVerify,
       useMappingProxy: this.useProxy,
-      reverseProxy: this.reverseProxy,
+      // 颁发机构配置了反向代理地址时优先使用，否则使用任务上填写的反向代理
+      reverseProxy: this.acmeProvider?.reverseProxy || this.reverseProxy,
       privateKeyType: this.privateKeyType,
       signal: this.ctx.signal,
       maxCheckRetryCount: this.maxCheckRetryCount,
@@ -620,7 +624,37 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     });
   }
 
+  /**
+   * 获取当前颁发机构在系统「流水线设置」中的配置（内置 + 自定义）；未找到时给出明确报错
+   */
+  private async getAcmeProvider(): Promise<CustomAcmeProvider> {
+    const customAcmeProviderService: any = await this.ctx.serviceGetter.get("customAcmeProviderService");
+    const provider = await customAcmeProviderService.getBySslProvider(this.sslProvider);
+    if (!provider) {
+      throw new Error(`未找到颁发机构【${this.sslProvider}】的配置，请到「系统设置-流水线设置」中检查自定义ACME配置`);
+    }
+    return provider;
+  }
+
+  /**
+   * 证书颁发机构下拉选项（remote-select action）：系统「流水线设置」中的全部颁发机构（内置 + 自定义ACME）
+   */
+  async onSslProviderList() {
+    const customAcmeProviderService: any = await this.ctx.serviceGetter.get("customAcmeProviderService");
+    const providers = (await customAcmeProviderService.getAll()) || [];
+    return providers
+      .filter(provider => provider.sslProvider && provider.title)
+      .map(provider => ({
+        value: provider.sslProvider,
+        label: provider.builtIn ? provider.title : `${provider.title}（自定义ACME）`,
+      }));
+  }
+
   async doCertApply() {
+    // 自定义ACME不支持DNS持久验证（_validation-persist 为 Let's Encrypt 特有机制）
+    if (this.acmeProvider && this.acmeProvider.builtIn !== true && this.challengeType === "dns-persist") {
+      throw new Error("自定义ACME不支持DNS持久验证，请改用其他域名验证方式");
+    }
     let email = this.email;
     if (this.eab && this.eab.email) {
       email = this.eab.email;
@@ -649,8 +683,10 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     } else {
       acmeAccount = await this.getCommonAcmeAccount();
     }
-    if (this.version === 2 && !acmeAccount) {
-      throw new Error("请选择颁发机构对应的ACME账号");
+    const isCustomSslProvider = this.acmeProvider != null && this.acmeProvider.builtIn !== true;
+    if ((this.version === 2 || isCustomSslProvider) && !acmeAccount) {
+      // 自定义ACME必须复用ACME账号（账号绑定Directory URL），不允许临时建账号
+      throw new Error(isCustomSslProvider ? "自定义ACME必须选择对应的ACME账号" : "请选择颁发机构对应的ACME账号");
     }
     if (this.challengeType === "dns-persist") {
       if (!acmeAccount) {

@@ -14,7 +14,7 @@ import { CertInfoService } from "../../../monitor/index.js";
 import { ICertInfoGetter } from "@certd/plugin-lib";
 import { CnameProviderService } from "../../../cname/service/cname-provider-service.js";
 
-const serviceNames = ["ocrService", "certInfoService"];
+const serviceNames = ["ocrService", "certInfoService", "customAcmeProviderService"];
 export class TaskServiceGetter implements IServiceGetter {
   private userId: number;
   private projectId: number;
