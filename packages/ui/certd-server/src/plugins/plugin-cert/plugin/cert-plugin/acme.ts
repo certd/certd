@@ -201,6 +201,11 @@ export class AcmeService {
 
   async resolveUrlMapping(directoryUrl: string) {
     const urlMapping = this.buildUrlMapping(directoryUrl);
+    // 显式配置了反向代理地址（如自定义ACME配置的 reverseProxy）时，直接启用 urlMapping，保证反代始终生效
+    if (this.options.reverseProxy) {
+      urlMapping.enabled = true;
+      return urlMapping;
+    }
     if (this.options.useMappingProxy) {
       urlMapping.enabled = true;
       return urlMapping;

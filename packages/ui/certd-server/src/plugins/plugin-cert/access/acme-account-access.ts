@@ -45,12 +45,18 @@ export class AcmeAccountAccess extends BaseAccess {
       single: true,
     },
     required: true,
-    helper: "自定义ACME：适用于内网CA、企业CA等，由管理员在「系统设置-流水线设置」中配置",
     mergeScript: `
     return {
       component: {
-        disabled: ctx.compute(({form})=> !!form.access?.account)
-      }
+        disabled: ctx.compute(({form})=> !!form.access?.account),
+        on: {
+          "selected-change": (scope)=>{
+            // 把选中颁发机构的 needEAB 同步到表单隐藏字段，用于控制 EAB 输入框显隐
+            let form = scope.form || {};
+            form.access._needEAB = scope.$event?.needEAB
+          }
+        }
+      },
     }
     `,
   })
@@ -104,18 +110,8 @@ export class AcmeAccountAccess extends BaseAccess {
     mergeScript: `
     return {
       show: ctx.compute(({form})=>{
-        const caType = form.access?.caType;
-        // 内置颁发机构按 needEAB 配置显隐；自定义ACME显示EAB（选填）
-        const builtInNeedEab = { letsencrypt: false, letsencrypt_staging: false, google: true, zerossl: true, sslcom: true, litessl: true };
-        if (caType && builtInNeedEab[caType] !== undefined) {
-          return builtInNeedEab[caType];
-        }
-        return !!caType;
-      }),
-      required: ctx.compute(({form})=>{
-        const caType = form.access?.caType;
-        // 内置需要EAB的颁发机构必填，自定义ACME选填
-        return ['google','zerossl','sslcom','litessl'].includes(caType);
+        // 按所选颁发机构的 needEAB 配置显隐（由 caType 的 onSelectedChange 同步到 _needEAB）
+        return form.access?._needEAB === true;
       }),
       component: {
         disabled: ctx.compute(({form})=> !!form.access?.account)
@@ -135,18 +131,8 @@ export class AcmeAccountAccess extends BaseAccess {
     mergeScript: `
     return {
       show: ctx.compute(({form})=>{
-        const caType = form.access?.caType;
-        // 内置颁发机构按 needEAB 配置显隐；自定义ACME显示EAB（选填）
-        const builtInNeedEab = { letsencrypt: false, letsencrypt_staging: false, google: true, zerossl: true, sslcom: true, litessl: true };
-        if (caType && builtInNeedEab[caType] !== undefined) {
-          return builtInNeedEab[caType];
-        }
-        return !!caType;
-      }),
-      required: ctx.compute(({form})=>{
-        const caType = form.access?.caType;
-        // 内置需要EAB的颁发机构必填，自定义ACME选填
-        return ['google','zerossl','sslcom','litessl'].includes(caType);
+        // 按所选颁发机构的 needEAB 配置显隐（由 caType 的 onSelectedChange 同步到 _needEAB）
+        return form.access?._needEAB === true;
       }),
       component: {
         disabled: ctx.compute(({form})=> !!form.access?.account)
@@ -210,6 +196,9 @@ export class AcmeAccountAccess extends BaseAccess {
    * - 自定义ACME：按 sslProvider 从「流水线设置」读取 directoryUrl
    */
   async getDirectoryUrl() {
+    if (!this.caType) {
+      throw new Error("请先选择颁发机构");
+    }
     if (this.caType === "custom") {
       if (!this.directoryUrl) {
         throw new Error("自定义ACME需要填写Directory URL");
@@ -287,6 +276,8 @@ export class AcmeAccountAccess extends BaseAccess {
       sslProvider: this.caType as any,
       // 自定义ACME时把 Directory URL 传给 AcmeService（生成账号必须走自定义端点）；内置颁发机构走内置端点
       directoryUrl: provider?.builtIn ? undefined : directoryUrl,
+      // 自定义ACME配置的反向代理地址，生成账号（访问directory/newAccount）时同样使用
+      reverseProxy: provider?.reverseProxy,
       eab: externalAccountBinding ? ({ ...externalAccountBinding, id: 0 } as any) : undefined,
       privateKeyType: "rsa_2048",
       signal: (this.ctx as any)?.signal,

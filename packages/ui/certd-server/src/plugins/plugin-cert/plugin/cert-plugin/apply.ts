@@ -257,15 +257,17 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       single: true,
       value: "letsencrypt",
       required: true,
-      helper:
-        "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权，无需翻墙\nSSL.com：仅主域名和www免费,必须设置CAA记录\n自定义ACME：适用于内网CA、企业CA等，由管理员在「系统设置-流水线设置」中配置",
+      helper: "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权，无需翻墙\nSSL.com：仅主域名和www免费,必须设置CAA记录\n自定义ACME：管理员可在「系统设置-流水线设置」中配置",
       mergeScript: `return {
         component:{
-          onSelectedChange: ctx.compute(({form})=>{
-            return ($event)=>{
+          on: {
+            "selected-change": (scope)=>{
+              // 切换颁发机构后，清空已选择的ACME账号，避免账号与颁发机构不匹配
+              let form = scope.form || {};
+              form = form.input || form.body || form;
               form.acmeAccountAccessId = null
             }
-          })
+          }
         }
       }
       `,
@@ -569,11 +571,17 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   private acmeProvider?: CustomAcmeProvider;
 
   async onInit() {
-    let eab: EabAccess = null;
+   
 
-    // 解析当前颁发机构的系统配置（内置 + 自定义），自定义未配置时直接报错
-    this.acmeProvider = await this.getAcmeProvider();
+   
+  }
 
+  private async getAcmeClient() {
+    if (this.acme) {
+      return this.acme;
+    }
+
+     let eab: EabAccess = null;
     const isNewVersion = this.version === 2;
     // 内置非 LE 颁发机构需要走EAB获取流程；自定义ACME无需EAB（其EAB在ACME账号授权中按需选填）
     if (!isNewVersion && this.sslProvider && !this.sslProvider.startsWith("letsencrypt") && this.acmeProvider?.builtIn) {
@@ -603,6 +611,8 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     this.eab = eab;
     const subDomainsGetter = await this.ctx.serviceGetter.get<ISubDomainsGetter>("subDomainsGetter");
     const domainParser = new DomainParser(subDomainsGetter, this.logger);
+     // 解析当前颁发机构的系统配置（内置 + 自定义），自定义未配置时直接报错
+    this.acmeProvider = await this.getAcmeProvider();
 
     this.acme = new AcmeService({
       userId: this.ctx.user.id,
@@ -622,12 +632,16 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       domainParser,
       waitDnsDiffuseTime: this.waitDnsDiffuseTime,
     });
+    return this.acme;
   }
 
   /**
    * 获取当前颁发机构在系统「流水线设置」中的配置（内置 + 自定义）；未找到时给出明确报错
    */
   private async getAcmeProvider(): Promise<CustomAcmeProvider> {
+    if (!this.sslProvider) {
+      throw new Error("请先选择证书颁发机构");
+    }
     const customAcmeProviderService: any = await this.ctx.serviceGetter.get("customAcmeProviderService");
     const provider = await customAcmeProviderService.getBySslProvider(this.sslProvider);
     if (!provider) {
@@ -651,6 +665,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
   }
 
   async doCertApply() {
+    await this.getAcmeClient();
     // 自定义ACME不支持DNS持久验证（_validation-persist 为 Let's Encrypt 特有机制）
     if (this.acmeProvider && this.acmeProvider.builtIn !== true && this.challengeType === "dns-persist") {
       throw new Error("自定义ACME不支持DNS持久验证，请改用其他域名验证方式");

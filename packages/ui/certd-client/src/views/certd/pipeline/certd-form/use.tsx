@@ -1,6 +1,6 @@
 import { checkPipelineLimit } from "/@/views/certd/pipeline/utils";
 import { cloneDeep, merge, omit } from "lodash-es";
-import { notification, Modal } from "ant-design-vue";
+import { notification, Modal, message } from "ant-design-vue";
 import { nanoid } from "nanoid";
 import { useRouter } from "vue-router";
 import { compute, CreateCrudOptionsRet, dict, useFormWrapper } from "@fast-crud/fast-crud";
@@ -237,7 +237,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                 content: pickCertApplyTemplateParams(form.input),
               });
               await reloadApplyTemplates();
-              notification.success({ message: "保存成功" });
+              // notification.success({ message: "保存成功" });
             },
           },
         },
@@ -620,7 +620,8 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
           console.error(e);
         }
       }
-      notification.success({ message: "创建成功,请添加证书部署任务" });
+      //这里要用message 因为流水线详情页面，右上角有编辑保存按钮，Notification会把他们挡住
+      message.success("创建成功,请添加证书部署任务");
       router.push({ path: "/certd/pipeline/detail", query: { id, editMode: "true" } });
     }
     const certPlugins = await getCertPlugins();
