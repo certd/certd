@@ -50,6 +50,9 @@ export class PluginEntity {
   @Column({ comment: "额外配置", length: 40960, nullable: true })
   extra: string;
 
+  @Column({ name: "depend_plugins", comment: "依赖的其他插件声明(type:name -> 版本或完整标识)", length: 4096, nullable: true })
+  dependPlugins: string;
+
   @Column({ comment: "作者", length: 100, nullable: true })
   author: string;
 

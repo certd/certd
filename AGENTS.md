@@ -153,7 +153,9 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 前端用户提示**统一使用 `notification`**（ant-design-vue 的 `notification.success({ message: X })` / `.error` / `.warning` / `.info`），**不要使用 `message` API**；`src/vben/` 目录（vben 框架内置布局/组件）保持原样不动。
 - 不要运行前端 `pnpm tsc` / `vue-tsc`；当前 `vue-tsc@1.8.27` 会抛无效内部错误。前端 `test:unit` 只是占位脚本，也不要跑。
 - 前端 TS/Vue/locale 改动后，只对本次改动文件运行现有 Prettier / ESLint：`packages\ui\certd-client\node_modules\.bin\prettier.cmd --write <files>` 和 `packages\ui\certd-client\node_modules\.bin\eslint.cmd --fix <files>`。
-- Vue 模板中需要用 JSX 动态渲染时，使用 `<script setup lang="tsx">` 编写；不要使用 `h()` 创建 VNode。
+- 需要手写 render 的地方（如 `Modal.confirm` 的 `content`、`useFormDialog` 的 `body`、动态插槽等），一律用 JSX 编写，禁止使用 `h()` 创建 VNode：
+  - `.vue` 组件：把 `<script lang="ts" setup>` 改为 `<script lang="tsx" setup>`，然后在 JSX 中直接写元素（如 `content: () => (<div class="xxx">...</div>)`）。
+  - `.ts` 文件：直接把文件后缀改为 `.tsx`，再写 JSX render。
 - 列表管理、后台管理、记录查询、CRUD 表格页面优先使用 Fast Crud；开发或重构前读 `.trae/skills/fast-crud-page-dev/SKILL.md`。
 - 只有轻量只读展示、强交互自定义界面或既有页面模式明显不适合 Fast Crud 时，才手写 `a-table` / 自定义列表，并在回复中说明。
 - 内嵌 Fast Crud 时，外层必须有稳定高度或完整 `flex: 1; min-height: 0` 链路。

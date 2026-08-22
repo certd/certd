@@ -197,6 +197,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             sorter: true,
           },
         },
+        remark: {
+          title: t("certd.columnRemark"),
+          type: "textarea",
+          column: {
+            width: 200,
+            ellipsis: true,
+            tooltip: true,
+          },
+        },
         expirationDate: {
           title: t("certd.domain.expirationDate"),
           type: "date",
