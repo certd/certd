@@ -2,6 +2,7 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/c
 import { BaseController } from "@certd/lib-server";
 import { PluginFindReq, PluginImportReq, PluginService } from "../../../modules/plugin/service/plugin-service.js";
 import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { isPlus } from "@certd/plus-core";
 
 @Provide()
 @Controller("/api/scoped/sys/ai/plugin")
@@ -22,6 +23,9 @@ export class AiPluginController extends BaseController {
   @Post("/info", { description: "sys:settings:view", summary: "AI 查询插件信息" })
   async info(@Query("id") id: number) {
     const res = await this.service.info(id);
+    if (res && res.vip && res.vip!=='free' && !isPlus()) {
+        return this.fail("查看该插件的源代码需要专业版及以上");
+    }
     return this.ok(res);
   }
 

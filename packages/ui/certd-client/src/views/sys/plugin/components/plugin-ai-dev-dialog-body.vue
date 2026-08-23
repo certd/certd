@@ -1,233 +1,276 @@
 <template>
   <div class="plugin-ai-dev">
-    <section class="plugin-ai-dev__setup">
-      <div class="plugin-ai-dev__form">
-        <div class="plugin-ai-dev__field">
-          <label class="plugin-ai-dev__label">开发需求</label>
-          <a-textarea v-model:value="requirement" :rows="8" placeholder="描述你想开发或优化的插件，例如：开发一个 Foo DNS Provider，支持创建和删除 TXT 记录。" />
+    <a-steps :current="step" size="small" class="plugin-ai-dev__steps"><a-step title="确认插件" /><a-step title="编写提示词" /><a-step title="测试验证" /></a-steps>
+    <div class="plugin-ai-dev__content">
+      <template v-if="step === 0"
+        ><a-alert message="先确认本次开发的目标" type="info" show-icon /><a-radio-group v-model:value="mode" class="plugin-ai-dev__mode"
+          ><a-radio-button value="new">开发新插件</a-radio-button><a-radio-button value="edit">修改已有插件</a-radio-button></a-radio-group
+        >
+        <div v-if="mode === 'new'" class="plugin-ai-dev__field plugin-ai-dev__type-field">
+          <label>插件类型</label>
+          <a-radio-group v-model:value="pluginType" class="plugin-ai-dev__type-grid">
+            <a-radio-button v-for="item in pluginTypeOptions" :key="item.value" :value="item.value" class="plugin-ai-dev__type-card">
+              <span class="plugin-ai-dev__type-title">{{ item.label }}</span>
+              <span class="plugin-ai-dev__type-desc">{{ item.desc }}</span>
+            </a-radio-button>
+          </a-radio-group>
         </div>
-        <div class="plugin-ai-dev__field">
-          <label class="plugin-ai-dev__label">选择现有插件</label>
-          <a-select v-model:value="selectedPluginId" allow-clear show-search placeholder="不选择则开发新插件" :filter-option="filterPluginOption" :options="pluginOptions" :loading="pluginLoading" />
+        <div v-else class="plugin-ai-dev__field">
+          <label>选择插件</label>
+          <DependPluginsInput v-model="pluginPath" single editable-only />
         </div>
-        <div class="plugin-ai-dev__actions">
-          <a-button type="primary" :loading="creating" @click="createPrompt">生成启动提示词</a-button>
-          <a-button :disabled="!prompt" @click="copyPrompt">复制提示词</a-button>
-        </div>
-      </div>
-      <div class="plugin-ai-dev__prompt">
-        <div class="plugin-ai-dev__prompt-head">
-          <span>Codex / Trae 启动提示词</span>
-          <a-tag color="blue">API 模式</a-tag>
-        </div>
-        <a-textarea class="plugin-ai-dev__prompt-text" :value="prompt" readonly :rows="24" placeholder="生成后复制到 Codex 或 Trae 中运行。" />
-        <div class="plugin-ai-dev__prompt-warning">提示词使用受限且短时有效的 AI 开发 Token，可正常提供给可信 Agent，请勿公开或随意转发</div>
-      </div>
-    </section>
+      </template>
+      <template v-else-if="step === 1"
+        ><label class="plugin-ai-dev__label">开发需求</label
+        ><a-textarea
+          v-model:value="requirement"
+          :rows="8"
+          placeholder="例如：开发一个部署证书到阿里云DCDN的插件，API接口请参考：https://api.aliyuncs.com/https/xxxxxx/。要求： 1、能够引用上传到阿里云CAS步骤输出的证书。2、支持在UI上选择账户下某区域下的DCDN的域名列表。3、支持一次性选择多个域名进行部署"
+        /><a-button class="plugin-ai-dev__generate" type="primary" :loading="creating" :disabled="!requirement.trim()" @click="createPrompt">生成启动提示词</a-button>
+        <div class="plugin-ai-dev__prompt-head"><span>Codex / Trae 启动提示词</span><a-tag color="blue">API 模式</a-tag></div>
+        <a-textarea class="plugin-ai-dev__prompt" :value="prompt" readonly :rows="10" placeholder="点击上方按钮生成提示词" />
+        <a-button class="plugin-ai-dev__copy" type="primary" :disabled="!prompt" @click="copyPrompt">复制提示词</a-button>
+        <div class="plugin-ai-dev__warning">将提示词复制到 Codex / Trae 等AI开发工具中，即可开始开发插件，开发完成后会自动推送到Certd平台，然后就可以配置到流水线中进行测试。</div>
+      </template>
+      <template v-else
+        ><a-alert message="等待 Codex / Trae 完成开发并提交插件版本后，再选择流水线测试。" type="warning" show-icon /><label class="plugin-ai-dev__label">选择已有证书的流水线</label
+        ><a-select v-model:value="pipelineId" show-search allow-clear :loading="pipelineLoading" :options="pipelineOptions" placeholder="选择流水线" class="plugin-ai-dev__pipeline" /><a-button
+          type="primary"
+          :loading="testing"
+          :disabled="!pipelineId"
+          @click="runTest"
+          >运行流水线测试</a-button
+        ><a-result v-if="testStarted" status="success" title="测试已启动" sub-title="可在流水线执行记录中查看结果"
+      /></template>
+    </div>
+    <div class="plugin-ai-dev__footer">
+      <a-button :disabled="step === 0" @click="step--">上一步</a-button><a-button v-if="step === 0" type="primary" :disabled="!canNext" @click="nextStep">下一步</a-button
+      ><a-button
+        v-if="step === 1"
+        type="primary"
+        @click="
+          step = 2;
+          loadPipelines();
+        "
+        >进入测试验证</a-button
+      >
+    </div>
   </div>
 </template>
-
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
+import { computed, ref } from "vue";
 import { notification } from "ant-design-vue";
 import * as api from "../api";
-import { env } from "/src/utils/util.env";
-
-defineOptions({
-  name: "PluginAiDevDialogBody",
-});
-
-const props = defineProps<{
-  pluginId?: number | string;
-  pluginName?: string;
-}>();
-
+import * as pipelineApi from "/@/views/certd/pipeline/api";
+import DependPluginsInput from "./depend-plugins-input.vue";
+const props = defineProps<{ pluginId?: number | string; pluginName?: string }>();
+const step = ref(0);
+const mode = ref<"new" | "edit">(props.pluginId ? "edit" : "new");
+const pluginType = ref<string>();
+const pluginTypeOptions = [
+  { value: "access", label: "授权插件", desc: "接入云厂商或第三方服务凭据" },
+  { value: "dnsProvider", label: "DNS Provider", desc: "管理 DNS 记录并完成域名验证" },
+  { value: "deploy", label: "部署插件", desc: "将证书部署到服务器或云服务" },
+  { value: "notification", label: "通知插件", desc: "通过消息、邮件等方式发送通知" },
+  { value: "addon", label: "Addon", desc: "扩展流水线的通用辅助能力" },
+];
 const requirement = ref("");
-const selectedPluginId = ref<number | string | undefined>(props.pluginId);
-const pluginOptions = ref<{ label: string; value: number | string }[]>([]);
-const pluginLoading = ref(false);
+const pluginPath = ref<string[]>(props.pluginId ? [String(props.pluginId)] : []);
 const creating = ref(false);
 const prompt = ref("");
-
-function filterPluginOption(input: string, option: any) {
-  return `${option?.label || ""}`.toLowerCase().includes(input.toLowerCase());
+const pipelineOptions = ref<any[]>([]);
+const pipelineLoading = ref(false);
+const pipelineId = ref<number>();
+const testing = ref(false);
+const testStarted = ref(false);
+const canNext = computed(() => (step.value === 0 ? (mode.value === "new" ? !!pluginType.value : pluginPath.value.length > 0) : !!requirement.value.trim()));
+function nextStep() {
+  if (canNext.value) step.value++;
 }
-
-async function loadPluginOptions() {
-  pluginLoading.value = true;
-  try {
-    const setting = await api.OnlinePluginSetting();
-    const lastSyncTime = Number(setting?.lastSyncTime || 0);
-    const syncExpired = !lastSyncTime || Date.now() - lastSyncTime > 3 * 24 * 60 * 60 * 1000;
-    if (syncExpired) {
-      await api.OnlinePluginSync();
-    }
-    const records = await api.FindPlugins({
-      keyword: "",
-      includeBuiltIn: true,
-      includeStore: true,
-    });
-    pluginOptions.value = (records || []).map((item: any) => {
-      return {
-        label: item.fullName || (item.author ? `${item.author}/${item.name}` : item.name) || item.title,
-        value: item.id,
-      };
-    });
-    if (props.pluginId && props.pluginName && !pluginOptions.value.some(item => item.value === props.pluginId)) {
-      pluginOptions.value.unshift({
-        label: props.pluginName,
-        value: props.pluginId,
-      });
-    }
-  } finally {
-    pluginLoading.value = false;
-  }
-}
-
 async function createPrompt() {
-  if (!requirement.value.trim()) {
-    notification.warning({ message: "请先填写插件开发需求" });
-    return;
-  }
+  if (!requirement.value.trim()) return;
   creating.value = true;
   try {
-    const accessToken = await api.GetScopedAccessToken(["sys/ai"]);
-    prompt.value = buildPrompt(accessToken.token);
+    const token = await api.GetScopedAccessToken(["sys/ai"]);
+    prompt.value = `你是 Certd 在线插件开发 Agent。\n\n开发模式：${mode.value === "new" ? "开发新插件" : "修改已有插件"}\n插件类型：${pluginType.value || "按已有插件类型"}\n插件 ID：${pluginPath.value.at(-1) || "无"}\n用户需求：\n${requirement.value.trim()}\n\n如果用户需求描述与他选择的插件类型有冲突，你需要跟用户确认是否选错插件类型。 \nCertd 地址：${window.location.origin}\n受限 AccessToken（6小时有效）：${token.token}\n\n请先读取 .trae/skills/certd-online-plugin-dev/SKILL.md，按插件类型开发并提交版本。仅调用 /scoped/sys/ai/plugin/ 前缀接口，完成后报告提交结果，不自动发布。\n如果当前工作目录不是 Certd 项目，或缺少 certd-online-plugin-dev Skill，先拉取 Certd 仓库代码并切换到仓库内工作(git clone https://atomgit.com/certd/certd --depth 1 )`;
     notification.success({ message: "启动提示词已生成" });
   } finally {
     creating.value = false;
   }
 }
-
-function buildPrompt(token: string) {
-  const pluginLabel = props.pluginName || selectedPluginId.value;
-  const pluginText = pluginLabel ? `当前插件：${pluginLabel}` : "当前为新插件开发";
-  const certdUrl = window.location.origin;
-  const apiBase = new URL(env.API || "/api", certdUrl).toString().replace(/\/$/, "");
-  return `你是 Certd 在线插件开发 Agent。
-
-用户需求：
-${requirement.value.trim()}
-
-${pluginText}
-
-Certd 地址：
-${certdUrl}
-
-Certd API 地址：
-${apiBase}
-
-受限的 Certd AccessToken（仅能访问插件查询、编辑相关的几个接口）：
-${token}
-
-如果token过期，请向用户重新申请AccessToken. （让用户重新生成提示词，到里面复制上面这一串新AccessToken给你）
-
-开发流程：
-1. 开始开发前，先检查当前工作目录是否已经是 certd 项目：应能看到 package.json、packages/ui/certd-server/src/plugins/、.trae/skills/ 等特征。
-2. 检查 .trae/skills/ 下是否已经有 certd-online-plugin-dev 技能。
-3. 如果当前目录不是 certd 项目，或缺少该技能，则先拉取 certd 仓库代码：优先 https://atomgit.com/certd/certd/，如果 AtomGit 拉取失败，再使用 https://github.com/certd/certd。
-4. 加载 .trae/skills/certd-online-plugin-dev/SKILL.md，并按插件类型加载对应子 Skill。
-5. 参考 certd 项目下已有内置插件 packages/ui/certd-server/src/plugins/ 的实现方式进行开发。
-6. 使用受限 Token 调用 Certd API，只能访问 /scoped/sys/ai/plugin/ 前缀接口；通过 /scoped/sys/ai/plugin/find 查询插件和 Access。
-7. 开发 Task 或 DNS 插件前，先查询对应 Access，优先复用 Access 提供的 API/SDK 能力。
-8. 如果没有 Access，先创建 Access 插件；如果 Access 的 editable 为 true 且缺少能力，可以先修改 Access。
-9. 在当前工作区创建并使用 .tmp/online-plugin-dev 作为本次插件开发临时目录，历史记录、临时 YAML、脚本草稿和调试记录都放在该目录下。
-10. 修改任何插件前，先在 .tmp/online-plugin-dev/history 下保存完整 YAML 历史记录，便于恢复。
-11. 读取完整 YAML 使用 /scoped/sys/ai/plugin/export，保存完整 YAML 使用 /scoped/sys/ai/plugin/import；不使用 WebSocket，不依赖浏览器草稿。
-12. 保存完成后向用户报告 API 操作结果，不自动发布。
-
-认证请求要求：
-- 请求头使用 Authorization: ${token}
-- 所有请求使用 JSON。
-- 不要把 Token、证书、私钥、API 密钥或授权配置写入日志和历史摘要。
-
-当前插件 ID：
-${selectedPluginId.value || "无"}
-
-开始前先读取 Skill 和当前插件信息。`;
-}
-
 async function copyPrompt() {
-  if (!prompt.value) {
-    return;
-  }
   await navigator.clipboard.writeText(prompt.value);
   notification.success({ message: "已复制启动提示词" });
 }
-
-onMounted(loadPluginOptions);
+async function loadPipelines() {
+  if (pipelineOptions.value.length) return;
+  pipelineLoading.value = true;
+  try {
+    const res: any = await pipelineApi.GetList({ page: { offset: 0, limit: 100 }, query: { type: "cert" } });
+    const rows = res?.records || res?.data || [];
+    pipelineOptions.value = rows.filter((p: any) => p.lastVars?.certExpiresTime || p.certExpiresTime).map((p: any) => ({ value: p.id, label: `${p.title || "未命名流水线"}（已有证书）` }));
+  } finally {
+    pipelineLoading.value = false;
+  }
+}
+async function runTest() {
+  if (!pipelineId.value) return;
+  testing.value = true;
+  try {
+    await pipelineApi.Trigger(pipelineId.value);
+    testStarted.value = true;
+    notification.success({ message: "流水线测试已启动" });
+  } finally {
+    testing.value = false;
+  }
+}
 </script>
-
 <style lang="less">
 .plugin-ai-dev {
   display: flex;
-  min-height: 600px;
+  height: 60vh;
   flex-direction: column;
+  gap: 20px;
 
-  &__setup {
-    display: grid;
-    min-height: 0;
-    flex: 1;
-    grid-template-columns: minmax(320px, 0.8fr) minmax(480px, 1.2fr);
-    gap: 16px;
+  &__steps {
+    flex: none;
   }
 
-  &__form,
-  &__prompt {
+  &__content {
     display: flex;
-    min-width: 0;
-    min-height: 0;
+    flex: 1;
     flex-direction: column;
-    border: 1px solid #e5eaf1;
-    border-radius: 8px;
-    background: #fff;
-    padding: 14px;
+    gap: 18px;
+    padding: 8px 20px;
+    overflow-y: auto;
+  }
+
+  &__mode {
+    margin: 18px 0;
   }
 
   &__field {
-    margin-bottom: 16px;
+    max-width: 620px;
   }
 
-  &__label {
+  &__type-field {
+    width: 100%;
+    max-width: none;
+  }
+
+  &__type-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  &__type-card {
+    display: flex;
+    width: 100%;
+    height: auto;
+    min-height: 74px;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 12px 14px;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 6px !important;
+    text-align: left;
+    white-space: normal;
+
+    &:not(:first-child)::before {
+      display: none;
+    }
+
+    &.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+      z-index: 1;
+      border-color: #1677ff !important;
+      background: #e6f4ff;
+      color: #0958d9;
+    }
+  }
+
+  &__type-title,
+  &__type-desc {
     display: block;
-    margin-bottom: 6px;
-    color: #334155;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 20px;
   }
 
-  &__actions {
-    display: flex;
-    gap: 8px;
-    margin-top: auto;
-  }
-
-  &__prompt-head {
-    display: flex;
-    flex: none;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 10px;
+  &__type-title {
+    margin-bottom: 4px;
     color: #1f2937;
     font-size: 14px;
     font-weight: 600;
   }
 
-  &__prompt-text {
+  &__type-desc {
+    color: #64748b;
+    font-size: 12px;
+    line-height: 18px;
+  }
+
+  &__field label,
+  &__label {
+    display: block;
+    margin-bottom: 8px;
+    color: #334155;
+    font-weight: 600;
+  }
+
+  &__cascader,
+  &__pipeline {
+    width: 100%;
+    max-width: 620px;
+  }
+
+  &__prompt {
     flex: 1;
-    min-height: 0;
-    font-family: Consolas, "Courier New", monospace;
+    font-family: Consolas, monospace;
     font-size: 12px;
   }
 
-  &__prompt-warning {
-    flex: none;
-    margin-top: 8px;
+  &__generate,
+  &__copy {
+    align-self: flex-start;
+  }
+
+  &__generate {
+    margin-top: -8px;
+  }
+
+  &__copy {
+    margin-top: -10px;
+  }
+
+  &__prompt-head {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+  }
+
+  &__warning {
     color: #d4380d;
     font-size: 12px;
-    line-height: 20px;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid #edf0f4;
+    padding: 16px 20px 0;
+  }
+}
+
+.plugin-ai-dev {
+  :deep(.ant-select-selector),
+  :deep(.ant-cascader-picker),
+  :deep(.ant-radio-button-wrapper) {
+    border-radius: 6px;
+  }
+}
+
+@media (max-width: 640px) {
+  .plugin-ai-dev__type-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

@@ -1,4 +1,4 @@
-import { h, ref } from "vue";
+import { ref } from "vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import PluginAiDevDialogBody from "./components/plugin-ai-dev-dialog-body.vue";
 
@@ -19,16 +19,17 @@ export function usePluginAiDev() {
       wrapper: {
         width: 980,
         destroyOnClose: true,
-        maskClosable: false,
+        maskClosable: true,
         footer: null,
+        buttons: {
+          copy: { show: false },
+          cancel: { show: false },
+          reset: { show: false },
+          ok: { show: false },
+        },
         class: "plugin-ai-dev-dialog",
       },
-      body: () =>
-        h(PluginAiDevDialogBody, {
-          ref: bodyRef,
-          pluginId: options.pluginId,
-          pluginName: options.pluginName,
-        }),
+      body: () => <PluginAiDevDialogBody ref={bodyRef} pluginId={options.pluginId} pluginName={options.pluginName} />,
     });
   }
 

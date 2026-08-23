@@ -1,5 +1,6 @@
 <template>
   <div class="depend-plugins-input">
+    <a-cascader v-if="single" :value="singleValue" :options="cascaderOptions" :loading="loadingOptions" placeholder="选择插件" class="depend-plugins-input__select" @change="onSingleChange" />
     <div v-for="(item, index) of displayItems" :key="index" class="depend-plugins-input__row">
       <a-cascader :value="item.cascaderValue" :options="cascaderOptions" placeholder="选择依赖插件" class="depend-plugins-input__select" @change="onPluginChange(index, $event)" />
       <a-button type="link" danger @click="removeItem(index)">
@@ -8,7 +9,7 @@
         </template>
       </a-button>
     </div>
-    <a-button type="dashed" block @click="addItem">
+    <a-button v-if="!single" type="dashed" block @click="addItem">
       <template #icon>
         <PlusOutlined />
       </template>
@@ -22,14 +23,18 @@ import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons-vue";
 import * as api from "../api";
 import { usePluginStore } from "/@/store/plugin";
+import { useSettingStore } from "/src/store/settings";
 import { useI18n } from "/src/locales";
 
 const props = defineProps<{
-  modelValue: Record<string, string>;
+  modelValue: Record<string, string> | string[];
+  single?: boolean;
+  editableOnly?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: "update:modelValue", value: Record<string, string>): void;
+  (e: "update:modelValue", value: string[]): void;
 }>();
 
 interface DepItem {
@@ -54,6 +59,7 @@ interface CascaderOption {
 
 const { t } = useI18n();
 const pluginStore = usePluginStore();
+const settingStore = useSettingStore();
 const items = ref<DepItem[]>([]);
 const pluginEntries = ref<PluginEntry[]>([]);
 const loadingOptions = ref(false);
@@ -71,6 +77,10 @@ const TYPE_LABELS: Record<string, string> = {
 const TYPE_ORDER = ["access", "plugin", "dnsProvider", "notification", "addon"];
 
 const cascaderOptions = computed<CascaderOption[]>(() => buildCascaderOptions(pluginEntries.value));
+const singleValue = computed(() => {
+  const value = Array.isArray(props.modelValue) ? props.modelValue : [];
+  return value.length === 1 ? toCascaderValue(value[0]) : value;
+});
 
 /**
  * 渲染用：根据 optionValue 实时反查级联选中路径。
@@ -93,7 +103,7 @@ watch(
       // 自身 emit 引起的 modelValue 回写，跳过重建，避免输入框被重置
       return;
     }
-    syncItemsFromModel(val);
+    syncItemsFromModel(val as Record<string, string>);
   },
   { deep: true, immediate: true }
 );
@@ -103,9 +113,14 @@ onMounted(() => {
 });
 
 function syncItemsFromModel(model: Record<string, string>) {
+  if (props.single) return;
   items.value = Object.keys(model || {}).map(key => ({
     optionValue: key,
   }));
+}
+
+function onSingleChange(path: string[]) {
+  emit("update:modelValue", path || []);
 }
 
 async function loadPluginOptions() {
@@ -121,6 +136,7 @@ async function loadPluginOptions() {
     // 已同步的市场插件（含已安装的）
     const marketList = (await api.OnlinePluginList({})) || [];
     for (const plugin of marketList) {
+      if (props.editableOnly && !canEditPlugin(plugin)) continue;
       const ref = pluginFullName(plugin);
       const typePrefix = pluginTypePrefix(plugin.pluginType, plugin.addonType);
       if (!ref || !typePrefix) {
@@ -147,6 +163,9 @@ async function loadPluginOptions() {
         if (plugin.type === "store") {
           continue; // 已从市场列表加入
         }
+        if (props.editableOnly && !canEditPlugin(plugin)) {
+          continue;
+        }
         const ref = `${plugin.name || ""}`.trim();
         const typePrefix = pluginTypePrefix(plugin.pluginType, plugin.addonType);
         if (!ref || !typePrefix) {
@@ -170,6 +189,12 @@ async function loadPluginOptions() {
   } finally {
     loadingOptions.value = false;
   }
+}
+
+function canEditPlugin(plugin: any) {
+  const developerId = Number(plugin.developerId || 0);
+  const bindUserId = Number(settingStore.installInfo?.bindUserId || 0);
+  return !developerId || (!!bindUserId && developerId === bindUserId);
 }
 
 /**

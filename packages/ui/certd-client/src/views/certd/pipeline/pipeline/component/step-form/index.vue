@@ -443,6 +443,9 @@ defineExpose({
   }
 
   .pi-step-form {
+    .ant-tabs-content {
+      height: 100%;
+    }
     .step-plugin-source-pane-local,
     .step-plugin-source-pane-online {
       display: flex;

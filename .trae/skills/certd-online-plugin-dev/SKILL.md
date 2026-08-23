@@ -52,7 +52,7 @@ Content-Type: application/json
 
 不要把 Token 写入代码、历史摘要、日志、提交信息或插件 YAML。
 
-所有 Certd API 请求统一使用 Node.js 18+ 的 `fetch`。不要使用 PowerShell 的 `Invoke-RestMethod`、`Invoke-WebRequest` 或 .NET HTTP 客户端发送插件 YAML/JSON；它们在 Windows 上可能造成中文乱码或使完整 YAML 导入请求长时间无响应。
+所有 Certd API 请求统一使用 Node.js 的 `fetch`。不要使用 PowerShell 的 `Invoke-RestMethod`、`Invoke-WebRequest` 或 .NET HTTP 客户端发送插件 YAML/JSON；它们在 Windows 上可能造成中文乱码或使完整 YAML 导入请求长时间无响应。
 
 Node 请求须直接读取 UTF-8 文件或在 Node 内构造 JSON，并使用 `JSON.stringify`：
 
@@ -101,14 +101,13 @@ const response = await fetch(`${apiBase}/scoped/sys/ai/plugin/find`, {
 
 ## 本地历史
 
-开发插件时，必须在当前工作区创建并使用 `.tmp/online-plugin-dev/` 作为临时目录。历史记录、临时 YAML、脚本草稿和调试记录都放在该目录下。
+开发插件时，必须在当前工作区创建并使用 `.tmp/{plugin-name}` 作为临时目录。历史记录、临时 YAML、脚本草稿和调试记录都放在该目录下。
 
-每次修改插件前，必须将完整 YAML 保存到 `.tmp/online-plugin-dev/history/`：
+每次修改插件前，必须将完整 YAML 保存到 `.tmp/{plugin-name}/history/`：
 
 ```text
-.tmp/online-plugin-dev/
-  history/
-    plugin-12/
+.tmp/{plugin-name}/xxxxx.yaml
+.tmp/{plugin-name}/history/
       2026-08-02T12-30-00-before-edit.yaml
       2026-08-02T12-30-00-change.md
 ```
@@ -161,4 +160,3 @@ Certd 会保存证书、私钥、API Token、云厂商密钥、SSH 凭据和其�
 - 禁止把认证 Token 写入插件、历史、日志或摘要。
 - 禁止读取无关的证书、私钥、Cookie、环境变量和系统设置。
 - 只使用脱敏示例数据和公开文档。
-- 不要自动发布；保存、测试、审核和发布由用户确认。
