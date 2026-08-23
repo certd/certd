@@ -198,6 +198,10 @@ function transformDesc(desc: string = "") {
     }
   }
 
+  .ant-tabs-content {
+    height: 100%;
+  }
+
   .ant-tabs-nav .ant-tabs-tab {
     margin-top: 10px !important;
     padding: 8px 14px !important;
