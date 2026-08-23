@@ -30,6 +30,7 @@ const props = defineProps<{
   modelValue: Record<string, string> | string[];
   single?: boolean;
   editableOnly?: boolean;
+  valueMode?: "reference" | "id";
 }>();
 
 const emit = defineEmits<{
@@ -43,6 +44,7 @@ interface DepItem {
 }
 
 interface PluginEntry {
+  id?: number;
   value: string;
   label: string;
   /** 类型前缀（plugin 表示 deploy） */
@@ -120,6 +122,13 @@ function syncItemsFromModel(model: Record<string, string>) {
 }
 
 function onSingleChange(path: string[]) {
+  const reference = path?.at(-1) || "";
+  if (props.valueMode === "id") {
+    const entry = pluginEntries.value.find(item => item.value === reference);
+    const value = entry?.id != null ? String(entry.id) : reference;
+    emit("update:modelValue", value ? [value] : []);
+    return;
+  }
   emit("update:modelValue", path || []);
 }
 
@@ -148,6 +157,7 @@ async function loadPluginOptions() {
       }
       seen.add(value);
       entries.push({
+        id: plugin.id,
         value,
         label: `${plugin.title || plugin.name} (${ref})`,
         pluginType: typePrefix,
@@ -177,6 +187,7 @@ async function loadPluginOptions() {
         }
         seen.add(value);
         entries.push({
+          id: plugin.id,
           value,
           label: `${plugin.title || plugin.name} (${ref})`,
           pluginType: typePrefix,
@@ -240,6 +251,8 @@ function buildCascaderOptions(entries: PluginEntry[]): CascaderOption[] {
 }
 
 function toCascaderValue(optionValue: string): string[] {
+  const entry = pluginEntries.value.find(item => String(item.value) === String(optionValue) || (props.valueMode === "id" && String(item.id) === String(optionValue)));
+  if (entry) optionValue = entry.value;
   for (const type of cascaderOptions.value) {
     for (const group of type.children) {
       const leaf = group.children.find((item: any) => item.value === optionValue);

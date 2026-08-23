@@ -506,23 +506,18 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
   }
 
-  async trigger(id: any, stepId?: string, doCheck = false) {
+  async trigger(id: any, stepId?: string) {
     const entity: PipelineEntity = await this.info(id);
-    if (doCheck) {
-      await this.beforeCheck(entity);
-    }
-    this.cron.register({
-      name: `pipeline.${id}.trigger.once`,
-      cron: null,
-      job: async () => {
-        logger.info("用户手动启动job");
-        try {
-          await this.doRun(entity, null, stepId);
-        } catch (e) {
-          logger.error("手动job执行失败：", e);
-        }
-      },
-    });
+    // this.cron.register({
+    //   name: `pipeline.${id}.trigger.once`,
+    //   cron: null,
+    //   job: async () => {
+
+    //   },
+    // });
+
+    logger.info("用户手动启动job");
+    return await this.doRun(entity, null, stepId,false);
   }
 
   async checkHasDeployCount(pipelineId: number, userId: number) {
@@ -678,7 +673,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     };
   }
 
-  async doRun(entity: PipelineEntity, triggerId: string, stepId?: string) {
+  async doRun(entity: PipelineEntity, triggerId: string, stepId?: string, wait: boolean = true) {
     let suite: any = null;
     try {
       const res = await this.beforeCheck(entity);
@@ -820,27 +815,43 @@ export class PipelineService extends BaseService<PipelineEntity> {
       sysInfo,
       serviceGetter: taskServiceGetter,
     });
-    try {
-      runningTasks.set(historyId, executor);
-      await executor.init();
-      if (stepId) {
-        // 清除该step的状态
-        executor.clearLastStatus(stepId);
-      }
-      const result = await executor.run(historyId, triggerType);
 
-      if (result === ResultType.success) {
-        if (isComm()) {
-          // 消耗成功次数
-          await this.userSuiteService.consumeDeployCount(suite, 1);
+    const run = async () => {
+      try {
+        runningTasks.set(historyId, executor);
+        await executor.init();
+        if (stepId) {
+          // 清除该step的状态
+          executor.clearLastStatus(stepId);
         }
+        const result = await executor.run(historyId, triggerType);
+
+        if (result === ResultType.success) {
+          if (isComm()) {
+            // 消耗成功次数
+            await this.userSuiteService.consumeDeployCount(suite, 1);
+          }
+        }
+      } catch (e) {
+        logger.error("执行失败：", e);
+        // throw e;
+      } finally {
+        runningTasks.delete(historyId);
       }
-    } catch (e) {
-      logger.error("执行失败：", e);
-      // throw e;
-    } finally {
-      runningTasks.delete(historyId);
     }
+
+    if (wait) {
+      await run();
+    } else {
+      run();
+    }
+
+    return {
+      pipelineId: pipeline.id,
+      triggerType,
+      historyId,
+    }
+
   }
 
   async cancel(historyId: number) {

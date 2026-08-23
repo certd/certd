@@ -164,6 +164,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 可复用的公共样式名放在 `packages/ui/certd-client/src/style` 下维护，优先使用 `cd-` 前缀，避免散落在业务组件里重复定义。
 - 后台管理列表展示或筛选用户字段时，优先参考 `packages/ui/certd-client/src/views/sys/suite/user-suite/crud.tsx` 的 `userId` 字段模式，用 `table-select` + `/sys/authority/user/getSimpleUserByIds` 字典回显和搜索。
 - 对话框里只做确认可用 `Modal.confirm`；有字段输入、表单校验或提交字段时，必须用 `useFormDialog` / `openFormDialog`。
+- 使用 `table-select` / `fs-table-select` 时，`dict` 必须配置 `getNodesByValues`，支持根据已选 ID 批量懒加载选项，确保编辑回显和异步数据场景正常工作。
 
 ### 前端地图
 

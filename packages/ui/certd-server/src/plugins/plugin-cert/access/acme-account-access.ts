@@ -103,7 +103,7 @@ export class AcmeAccountAccess extends BaseAccess {
     helper:
       "需要提供EAB授权" +
       "\nZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB Credentials'" +
-      "\nGoogle:请查看[google获取eab帮助文档](https://certd.docmirror.cn/guide/use/google/),用过一次后会绑定邮箱，后续复用EAB要用同一个邮箱" +
+      "\nGoogle:请查看[google获取eab帮助文档](https://certd.docmirror.cn/guide/use/google/),需要你去翻墙得到EAB填到这里" +
       "\nSSL.com:[SSL.com账号页面](https://secure.ssl.com/account),然后点击api credentials链接，然后点击编辑按钮，查看Secret key和HMAC key" +
       "\nlitessl:[litesslEAB页面](https://freessl.cn/automation/eab-manager),然后点击新增EAB",
     required: true,

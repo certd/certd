@@ -12,7 +12,7 @@ description: 用于通过 Certd API 开发、修改、读取、保存和恢复�
 - 前端只生成包含需求、API 地址和认证 Token 的启动提示词。
 - Agent 直接调用 Certd API 读取和保存插件 YAML。
 - Agent 的进度、日志和代码修改在 Codex/Trae 中查看。
-- 插件开发临时文件和修改历史统一保存在 Agent 工作区的 `.tmp/online-plugin-dev/` 下，不保存到浏览器或 Certd 后端。
+- 插件开发临时文件和修改历史统一保存在 Agent 工作区的 `.plugin-dev/` 下，不保存到浏览器或 Certd 后端。
 
 ## 启动检查
 
@@ -101,13 +101,13 @@ const response = await fetch(`${apiBase}/scoped/sys/ai/plugin/find`, {
 
 ## 本地历史
 
-开发插件时，必须在当前工作区创建并使用 `.tmp/{plugin-name}` 作为临时目录。历史记录、临时 YAML、脚本草稿和调试记录都放在该目录下。
+开发插件时，必须在当前工作区创建并使用 `.plugin-dev/{plugin-name}` 作为插件开发目录。历史记录、临时 YAML、脚本草稿和调试记录都放在该目录下。
 
-每次修改插件前，必须将完整 YAML 保存到 `.tmp/{plugin-name}/history/`：
+每次修改插件前，必须将完整 YAML 保存到 `.plugin-dev/{plugin-name}/history/`：
 
 ```text
-.tmp/{plugin-name}/xxxxx.yaml
-.tmp/{plugin-name}/history/
+.plugin-dev/{plugin-name}/xxxxx.yaml
+.plugin-dev/{plugin-name}/history/  
       2026-08-02T12-30-00-before-edit.yaml
       2026-08-02T12-30-00-change.md
 ```
