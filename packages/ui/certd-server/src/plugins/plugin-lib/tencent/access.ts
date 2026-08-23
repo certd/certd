@@ -86,7 +86,8 @@ export class TencentAccess extends BaseAccess {
   }
 
   buildEndpoint(endpoint: string) {
-    return `${this.intlDomain()}${endpoint}`;
+    // 改成  xxx.intl.tencentcloudapi.com
+    return `${endpoint.replace(".tencentcloudapi.com", "")}${this.intlDomain()}tencentcloudapi.com`;
   }
 
   async getCallerIdentity() {
