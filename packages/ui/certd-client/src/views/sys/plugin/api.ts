@@ -20,6 +20,7 @@ export async function FindPlugins(query: {
   keywords?: string[];
   includeBuiltIn?: boolean;
   includeStore?: boolean;
+  includeLocal?: boolean;
 }) {
   return await request({
     url: apiPrefix + "/find",

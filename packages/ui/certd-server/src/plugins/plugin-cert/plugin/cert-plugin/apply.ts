@@ -257,7 +257,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       single: true,
       value: "letsencrypt",
       required: true,
-      helper: "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，仅首次需要翻墙获取EAB授权，无需翻墙\nSSL.com：仅主域名和www免费,必须设置CAA记录\n自定义ACME：管理员可在「系统设置-流水线设置」中配置",
+      helper: "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，无需配置翻墙代理\nSSL.com：仅主域名和www免费,必须设置CAA记录\n自定义ACME：管理员可在「系统设置-流水线设置」中配置",
       mergeScript: `return {
         component:{
           on: {

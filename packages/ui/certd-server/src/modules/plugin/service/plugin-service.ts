@@ -36,6 +36,8 @@ export type PluginFindReq = {
   keywords?: string[];
   includeBuiltIn?: boolean;
   includeStore?: boolean;
+  /** 同时查询本地导入或自开发的旧插件记录。 */
+  includeLocal?: boolean;
 };
 
 export type OnlinePluginInstallReq = {
@@ -122,6 +124,8 @@ export type OnlinePluginBean = {
   localDisabled?: boolean;
   localEditable?: boolean;
   syncTime?: number;
+  createTime?: Date;
+  updateTime?: Date;
 };
 
 export type OnlinePluginVersionBean = {
@@ -389,9 +393,7 @@ export class PluginService extends BaseService<PluginEntity> {
     }
 
     if (includeStore) {
-      const storeQuery: any = {
-        type: "store",
-      };
+      const storeQuery: any = { type: "store" };
       if (req.pluginType) {
         storeQuery.pluginType = req.pluginType;
       }
@@ -405,18 +407,14 @@ export class PluginService extends BaseService<PluginEntity> {
         storeQuery.author = req.author;
       }
 
-      let storeWhere: any = storeQuery;
+      let storeWhere: any = req.includeLocal ? [storeQuery, { ...storeQuery, developerId: IsNull() }, { ...storeQuery, type: IsNull() }] : storeQuery;
       const keywords = this.normalizePluginFindKeywords(req);
       if (keywords.length > 0) {
         const searchFields = ["fullName", "name", "title", "desc", "group", "pluginType"];
         storeWhere = keywords.flatMap(keyword => {
           const keywordLike = Like(`%${keyword}%`);
-          return searchFields.map(field => {
-            return {
-              ...storeQuery,
-              [field]: keywordLike,
-            };
-          });
+          const queries = req.includeLocal ? [storeQuery, { ...storeQuery, developerId: IsNull() }, { ...storeQuery, type: IsNull() }] : [storeQuery];
+          return queries.flatMap(query => searchFields.map(field => ({ ...query, [field]: keywordLike })));
         });
       }
       const storeList = await this.find({
@@ -435,12 +433,14 @@ export class PluginService extends BaseService<PluginEntity> {
         bindUserId = installInfo.bindUserId || 0;
       }
       records.push(
-        ...storeList.map(item => {
-          return {
-            ...this.toOnlinePluginBean(item),
-            editable: canEditStorePlugin(item.developerId, bindUserId),
-          };
-        })
+        ...storeList
+          .filter((item, index, list) => list.findIndex(other => other.id === item.id) === index)
+          .map(item => {
+            return {
+              ...this.toOnlinePluginBean(item),
+              editable: canEditStorePlugin(item.developerId, bindUserId),
+            };
+          })
       );
     }
 
@@ -845,6 +845,8 @@ export class PluginService extends BaseService<PluginEntity> {
       localPluginId: isInstalled ? item.id : undefined,
       localDisabled: isInstalled ? item.disabled : undefined,
       installedVersion: isInstalled ? item.version : undefined,
+      createTime: item.createTime,
+      updateTime: item.updateTime,
     };
   }
 
