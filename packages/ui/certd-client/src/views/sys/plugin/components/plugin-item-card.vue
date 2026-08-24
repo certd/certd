@@ -556,7 +556,7 @@ function formatScore(score?: number) {
   if (!Number.isFinite(value)) {
     return "0";
   }
-  return value.toFixed(1).replace(/\.0$/, "");
+  return value.toFixed(1);
 }
 
 function handleVersionClick() {
