@@ -341,15 +341,11 @@ export class PluginService extends BaseService<PluginEntity> {
     if (query.pluginType) {
       records = records.filter(item => item.pluginType === query.pluginType);
     }
-    if (query.name) {
-      const keyword = `${query.name}`.trim().toLowerCase();
-      records = records.filter(item => (item.name || "").toLowerCase().includes(keyword));
-    }
     const keywords = this.normalizePluginFindKeywords(query as any);
     if (keywords.length > 0) {
       records = records.filter(item => {
         return keywords.some(keyword => {
-          return [item.name, item.title, item.desc, item.group, item.pluginType].some(value => `${value || ""}`.toLowerCase().includes(keyword));
+          return [item.name, item.fullName, item.desc, item.title, item.group, item.pluginType].some(value => `${value || ""}`.toLowerCase().includes(keyword));
         });
       });
     }
@@ -357,8 +353,20 @@ export class PluginService extends BaseService<PluginEntity> {
   }
 
   private normalizePluginFindKeywords(req: PluginFindReq) {
-    const values = [...(req.keywords || []), req.keyword || ""];
+    const values = [...(req.keywords || []), req.keyword || "", req.name || ""];
     return values.map(item => `${item || ""}`.trim().toLowerCase()).filter((item, index, list) => item.length > 0 && list.indexOf(item) === index);
+  }
+
+  private addPluginNameSearchQuery(buildQuery: any, keyword: string) {
+    const like = `%${keyword}%`;
+    buildQuery.andWhere(
+      new Brackets(query => {
+        query
+          .where("LOWER(COALESCE(main.name, '')) LIKE :pluginNameKeyword", { pluginNameKeyword: like })
+          .orWhere("LOWER(COALESCE(main.fullName, '')) LIKE :pluginNameKeyword", { pluginNameKeyword: like })
+          .orWhere("LOWER(COALESCE(main.desc, '')) LIKE :pluginNameKeyword", { pluginNameKeyword: like });
+      })
+    );
   }
 
   async findPlugins(req: PluginFindReq = {}) {
@@ -397,9 +405,6 @@ export class PluginService extends BaseService<PluginEntity> {
       if (req.group) {
         storeQuery.group = req.group;
       }
-      if (req.name) {
-        storeQuery.name = Like(`%${req.name}%`);
-      }
       if (req.author) {
         storeQuery.author = req.author;
       }
@@ -407,7 +412,7 @@ export class PluginService extends BaseService<PluginEntity> {
       let storeWhere: any = req.includeLocal ? [storeQuery, { ...storeQuery, developerId: IsNull() }, { ...storeQuery, type: IsNull() }] : storeQuery;
       const keywords = this.normalizePluginFindKeywords(req);
       if (keywords.length > 0) {
-        const searchFields = ["fullName", "name", "title", "desc", "group", "pluginType"];
+        const searchFields = ["fullName", "name", "desc", "title", "group", "pluginType"];
         storeWhere = keywords.flatMap(keyword => {
           const keywordLike = Like(`%${keyword}%`);
           const queries = req.includeLocal ? [storeQuery, { ...storeQuery, developerId: IsNull() }, { ...storeQuery, type: IsNull() }] : [storeQuery];
@@ -445,15 +450,25 @@ export class PluginService extends BaseService<PluginEntity> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async page(pageReq: PageReq<PluginEntity>) {
     pageReq.query = pageReq.query || {};
-    const query:any = pageReq.query as Partial<PluginEntity> & { onlyMine?: boolean };
+    const query: any = pageReq.query as Partial<PluginEntity> & { onlyMine?: boolean };
     const onlyMine = query.onlyMine === true;
     delete query.onlyMine;
     if (query.type === "custom") {
       query.type = "store";
     }
 
+    const nameKeyword = `${query.name || ""}`.trim().toLowerCase();
+    if (nameKeyword && query.type !== "builtIn") {
+      delete query.name;
+      const originalBuildQuery = pageReq.buildQuery;
+      pageReq.buildQuery = buildQuery => {
+        originalBuildQuery?.(buildQuery);
+        this.addPluginNameSearchQuery(buildQuery, nameKeyword);
+      };
+    }
+
     const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
-    const bindUserId = installInfo.bindUserId ;
+    const bindUserId = installInfo.bindUserId;
     if (onlyMine) {
       query.type = "store";
       query.developerId = Or(IsNull(), Equal(bindUserId), Equal(0));

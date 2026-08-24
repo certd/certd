@@ -49,7 +49,13 @@ function createPluginRepositoryMock(options: RepoOptions = {}) {
     function getFilteredList(options?: { paginate?: boolean }) {
       let list = (state.savedRows.length ? state.savedRows : state.queryRows).slice();
       for (const key of Object.keys(flags.whereQuery)) {
-        list = list.filter(item => item[key] === flags.whereQuery[key]);
+        const value = flags.whereQuery[key];
+        if (key === "developerId" && value?._type === "or") {
+          const developerIds = value._value.map((condition: any) => (condition._type === "isNull" ? null : condition._value));
+          list = list.filter(item => developerIds.includes(item.developerId ?? null));
+          continue;
+        }
+        list = list.filter(item => item[key] === value);
       }
       if (flags.notBuiltIn) {
         list = list.filter(item => item.type !== "builtIn");
@@ -236,6 +242,24 @@ describe("PluginService online plugins", () => {
     assert.equal(getPluginFullName({ author: "developer", name: "plugin" }), "developer/plugin");
     assert.equal(getPluginFullName({ author: "", name: "plugin" }), "plugin");
     assert.equal(getPluginFullName({ name: "developer/plugin", author: "developer" }), "developer/plugin");
+  });
+
+  it("searches plugin name keywords in name, fullName, and description", () => {
+    const service = new PluginService();
+    const records = (service as any).filterBuiltInList(
+      [
+        { id: 1, name: "demo-access" },
+        { id: 2, fullName: "developer/demo-deploy" },
+        { id: 3, desc: "用于 demo 场景" },
+        { id: 4, name: "other-plugin", fullName: "other/other-plugin", desc: "无关插件" },
+      ],
+      { name: "demo" }
+    );
+
+    assert.deepEqual(
+      records.map((item: any) => item.id),
+      [1, 2, 3]
+    );
   });
 
   it("requires a user-provided author for local store plugin edits", async () => {
