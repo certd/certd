@@ -46,7 +46,7 @@ const iframeSrc = computed(() => {
   const params = new URLSearchParams({
     embedded: "true",
     fullName: plugin.fullName || "",
-    installedVersion: plugin.installedVersion || "",
+    installedVersion: plugin.version || "",
     t: `${Date.now()}`,
   });
   return `${baseUrl}/#/app/certd/plugin/${plugin.id || 0}?${params.toString()}`;

@@ -86,13 +86,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     return Date.now() - time > autoSyncInterval;
   }
 
-  function canEditStorePlugin(row: any) {
-    if (row.type !== "store") {
-      return false;
-    }
-    const bindUserId = Number(settingStore.installInfo?.bindUserId || 0);
-    const developerId = Number(row.developerId || 0);
-    return !developerId || (!!bindUserId && developerId === bindUserId);
+  function isEditablePlugin(row: any) {
+    return row.editable === true;
   }
 
   async function syncOnlinePlugins(options?: { showSuccess?: boolean }) {
@@ -221,12 +216,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         buttons: {
           edit: {
             show: compute(({ row }) => {
-              return canEditStorePlugin(row);
+              return isEditablePlugin(row);
             }),
           },
           copy: {
             show: compute(({ row }) => {
-              return canEditStorePlugin(row);
+              return isEditablePlugin(row);
             }),
             async click({ row }) {
               const copyRow = { ...row };
@@ -251,7 +246,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             type: "link",
             //@ts-ignore
             show: compute(({ row }) => {
-              return canEditStorePlugin(row);
+              return isEditablePlugin(row);
             }),
             async click({ row }) {
               const content = await api.ExportPlugin(row.id);
@@ -545,7 +540,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
           },
         },
-        "extra.dependPlugins": {
+        dependPlugins: {
           title: t("certd.pluginDependencies"),
           type: "text",
           form: {
