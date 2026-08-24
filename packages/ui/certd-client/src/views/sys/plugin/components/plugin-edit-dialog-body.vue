@@ -42,7 +42,6 @@ import createCrudOptions from "../crud";
 import { compareVersions } from "../use-online-install";
 import { usePluginPublish } from "../use-publish";
 import { usePluginStore } from "/@/store/plugin";
-import { useSettingStore } from "/@/store/settings";
 import { usePluginAiDev } from "../use-ai-dev";
 import { useI18n } from "/src/locales";
 
@@ -59,7 +58,6 @@ const emit = defineEmits<{
 }>();
 
 const pluginStore = usePluginStore();
-const settingStore = useSettingStore();
 const { t } = useI18n();
 const plugin = ref<any>({});
 const formOptionsRef: Ref = ref();
@@ -94,15 +92,7 @@ const pluginName = computed(() => {
 });
 
 const canEditPlugin = computed(() => {
-  const current = plugin.value || {};
-  if (current.type === "custom") {
-    return true;
-  }
-  if (current.type !== "store") {
-    return false;
-  }
-  const bindUserId = Number(settingStore.installInfo?.bindUserId || 0);
-  return !current.developerId || (!!bindUserId && Number(current.developerId) === bindUserId);
+  return plugin.value?.editable === true;
 });
 
 provide("get:plugin", () => plugin);

@@ -67,7 +67,7 @@
           </a-tooltip>
         </div>
         <template v-if="pluginCardState.isCloudPlugin && pluginCardState.isInstalled">
-          <div v-if="plugin.localPluginId" class="plugin-card__action-zone" :class="{ 'is-loading': isActionLoading('uninstall') }">
+          <div v-if="plugin.id" class="plugin-card__action-zone" :class="{ 'is-loading': isActionLoading('uninstall') }">
             <a-tag color="green" class="plugin-status-tag">{{ t("certd.onlinePluginInstalled") }}</a-tag>
             <a-button class="plugin-card__action-button" size="small" danger ghost :loading="isActionLoading('uninstall')" @click.stop="uninstallPlugin">
               {{ t("certd.onlinePluginUninstall") }}
@@ -99,9 +99,9 @@
         <a-tag v-if="plugin.group">{{ plugin.group }}</a-tag>
       </template>
       <template v-else-if="!simple">
-        <a-tooltip v-if="plugin.installed && plugin.localPluginId" :title="toggleTitle">
-          <a-tag class="plugin-status-tag" :class="{ 'is-loading': isActionLoading('toggle') }" :color="plugin.localDisabled ? 'default' : 'green'" @click.stop="togglePlugin">
-            {{ plugin.localDisabled ? t("certd.onlinePluginDisabled") : t("certd.onlinePluginEnabled") }}
+        <a-tooltip v-if="plugin.installed && plugin.id" :title="toggleTitle">
+          <a-tag class="plugin-status-tag" :class="{ 'is-loading': isActionLoading('toggle') }" :color="plugin.disabled ? 'default' : 'green'" @click.stop="togglePlugin">
+            {{ plugin.disabled ? t("certd.onlinePluginDisabled") : t("certd.onlinePluginEnabled") }}
           </a-tag>
         </a-tooltip>
         <a-tag>{{ pluginTypeLabel }}</a-tag>
@@ -126,9 +126,9 @@
           <fs-icon v-if="plugin.upgradeAvailable" class="plugin-card__version-icon" icon="carbon:upgrade" />
         </span>
       </a-tooltip>
-      <a-tooltip v-if="source !== 'local' && authorName" :title="plugin.selfAuthored ? '这是我自己提交的插件' : `${t('certd.author')}：${authorName}`">
-        <span class="plugin-card__author" :class="{ 'is-self-authored': plugin.selfAuthored }">
-          <fs-icon :icon="plugin.selfAuthored ? 'ion:person-circle' : 'ion:person-circle-outline'" />
+      <a-tooltip v-if="source !== 'local' && authorName" :title="`${t('certd.author')}：${authorName}`">
+        <span class="plugin-card__author">
+          <fs-icon icon="ion:person-circle-outline" />
           <span>{{ authorName }}</span>
         </span>
       </a-tooltip>
@@ -190,11 +190,11 @@ const pluginCardState = computed(() => {
   const isCloudPlugin = Number(props.plugin.developerId) > 0;
   const isBuiltInPlugin = props.plugin.type === "builtIn";
   const isAvailableLocally = isLocal || !!props.plugin.installed;
-  const canEditPlugin = props.editable != null ? props.editable : !isCloudPlugin;
+  const canEditPlugin = props.editable === true;
   const canManagePlugin = !isBuiltInPlugin && canEditPlugin && isAvailableLocally;
 
   return {
-    editPluginId: props.plugin.localPluginId || props.plugin.id,
+    editPluginId: props.plugin.id,
     isLocal,
     isCloudPlugin,
     canEditPlugin,
@@ -204,7 +204,7 @@ const pluginCardState = computed(() => {
     showEditButton: canManagePlugin,
     showConfigButton: !!props.showConfig,
     isInstalled: isCloudPlugin && !!props.plugin.installed,
-    isDisabled: isLocal ? !!props.plugin.disabled : !!props.plugin.localDisabled,
+    isDisabled: !!props.plugin.disabled,
     requiresVip: props.plugin.vip === "plus" || props.plugin.needPlus === true,
     canRemovePlugin: isLocal && canManagePlugin,
     isBuiltInPlugin,
@@ -255,7 +255,7 @@ const currentVersion = computed(() => {
   if (props.source === "local") {
     return props.plugin.version || props.plugin.latest || "-";
   }
-  return props.plugin.installedVersion || props.plugin.latest || "-";
+  return props.plugin.version || props.plugin.latest || "-";
 });
 
 const versionTitle = computed(() => {
@@ -265,10 +265,10 @@ const versionTitle = computed(() => {
   if (props.source === "local") {
     return `${t("certd.version")} v${currentVersion.value}`;
   }
-  if (props.plugin.installedVersion && props.plugin.upgradeAvailable && props.plugin.latest) {
+  if (props.plugin.version && props.plugin.upgradeAvailable && props.plugin.latest) {
     return `${t("certd.dashboard.latestVersion", { version: `v${props.plugin.latest}` })}，${t("certd.onlinePluginClickToUpdate")}`;
   }
-  if (props.plugin.installedVersion) {
+  if (props.plugin.version) {
     return t("certd.onlinePluginAlreadyLatest");
   }
   if (props.plugin.latest) {
@@ -278,16 +278,16 @@ const versionTitle = computed(() => {
 });
 
 /**
- * 本地存在未发布的改动：当前版本（本地 version / 已安装 installedVersion）高于云端已发布版本 latest。
+ * 本地存在未发布的改动：当前版本高于云端已发布版本 latest。
  * latest 高于当前版本时走 upgradeAvailable 的升级提示。
  */
 const hasLocalUnpublishedChanges = computed(() => {
-  const currentVersion = props.source === "local" ? props.plugin.version : props.plugin.installedVersion;
+  const currentVersion = props.plugin.version;
   return !!currentVersion && !!props.plugin.latest && compareVersions(currentVersion, props.plugin.latest) > 0;
 });
 
 const toggleTitle = computed(() => {
-  const disabled = props.source === "local" ? props.plugin.disabled : props.plugin.localDisabled;
+  const disabled = props.plugin.disabled;
   return disabled ? t("certd.onlinePluginClickToEnable") : t("certd.onlinePluginClickToDisable");
 });
 
@@ -483,7 +483,7 @@ function confirmRemoveMissingOnlinePlugin() {
 }
 
 function uninstallPlugin() {
-  if (!props.plugin.localPluginId) {
+  if (!props.plugin.id) {
     return;
   }
   Modal.confirm({
@@ -491,7 +491,7 @@ function uninstallPlugin() {
     content: t("certd.onlinePluginDeleteConfirm", { name: fullNameValue() || props.plugin.title || props.plugin.name }),
     async onOk() {
       await runAction("uninstall", async () => {
-        await api.OnlinePluginUninstall(props.plugin.localPluginId);
+        await api.OnlinePluginUninstall(props.plugin.id);
         await pluginStore.reload();
         notification.success({ message: t("certd.onlinePluginUninstallSuccess") });
       });
@@ -516,7 +516,7 @@ function removePlugin() {
 }
 
 function togglePlugin() {
-  const id = props.source === "local" ? props.plugin.id : props.plugin.localPluginId;
+  const id = props.plugin.id;
   const canToggleBuiltInPlugin = props.source === "local" && props.plugin.type === "builtIn" && !!props.plugin.name;
   if (!id && !canToggleBuiltInPlugin) {
     return;
@@ -556,7 +556,7 @@ function formatScore(score?: number) {
   if (!Number.isFinite(value)) {
     return "0";
   }
-  return value.toFixed(1).replace(/\.0$/, "");
+  return value.toFixed(1);
 }
 
 function handleVersionClick() {

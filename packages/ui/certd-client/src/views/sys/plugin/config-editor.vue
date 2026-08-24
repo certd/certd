@@ -284,7 +284,7 @@ async function loadPluginSetting() {
     currentPlugin.value = await pluginStore.getPluginDefineFromOrigin(props.plugin.name);
   }
   if (!currentPlugin.value?.input && props.plugin.id) {
-    const plugin = await api.GetObj(props.plugin.localPluginId || props.plugin.id);
+    const plugin = await api.GetObj(props.plugin.id);
     const metadata = plugin.metadata ? yaml.load(plugin.metadata) : {};
     currentPlugin.value = {
       ...plugin,

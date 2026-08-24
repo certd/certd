@@ -69,7 +69,6 @@ export default {
   onlinePluginCurrentVersion: "当前 {version}",
   onlinePluginAlreadyLatest: "当前已是最新版本",
   onlinePluginClickToUpdate: "点击更新",
-  onlinePluginSelfAuthored: "我的",
   onlinePluginInstallSuccess: "在线插件安装成功",
   onlinePluginUnpublishedChanges: "本地有改动还未发布",
   onlinePluginVersionMustExceedLatest: "请先提升版本号：本地版本需要高于已发布版本 {version} 才能保存",
