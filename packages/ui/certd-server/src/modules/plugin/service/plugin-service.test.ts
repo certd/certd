@@ -434,6 +434,7 @@ describe("PluginService online plugins", () => {
               title: `plugin ${index + 1}`,
               latest: "1.0.0",
               status: "published",
+              score: 4.5,
               aiCheckStatus: "passed",
             })),
           };
@@ -488,6 +489,7 @@ describe("PluginService online plugins", () => {
     assert.equal(res.length, 201);
     assert.equal(repository.state.savedRows.length, 201);
     assert.equal(repository.state.savedRows[0].fullName, "developer/plugin-1");
+    assert.equal(repository.state.savedRows[0].score, 4.5);
     assert.equal(repository.state.savedRows[0].aiCheckStatus, "passed");
     assert.equal(savedSettings.length, 1);
     assert.equal(typeof savedSettings[0].lastSyncTime, "number");

@@ -74,7 +74,7 @@ export class PluginEntity {
   @Column({ name: "download_count", comment: "下载次数", nullable: true })
   downloadCount: number;
 
-  @Column({ comment: "评分", nullable: true })
+  @Column({ type: "real", comment: "评分", nullable: true })
   score: number;
 
   @Column({ name: "ai_check_status", comment: "最新版本AI审核状态", length: 32, default: "" })
