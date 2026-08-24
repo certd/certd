@@ -90,7 +90,7 @@
           <div class="plugin-ai-dev__section-title">本次测试日志</div>
           <pre>{{ testLogs.join("\n") }}</pre>
         </div>
-        <a-empty v-if="testStarted && !testing && !testLogs.length" description="暂未获取到匹配的插件日志" />
+        <a-empty v-if="testStarted && !testing && !testLogs.length" description="暂未获取到运行日志" />
       </template>
     </div>
     <a-modal v-model:open="aiTestVisible" title="AI 自动测试提示词" width="720px" :footer="null">
@@ -123,10 +123,8 @@ import DependPluginsInput from "./depend-plugins-input.vue";
 import PluginEditDialogBody from "./plugin-edit-dialog-body.vue";
 import PipelineEditDialog from "/@/views/certd/pipeline/components/pipeline-edit-dialog.vue";
 import { useFormDialog } from "/@/use/use-dialog";
-import { useSettingStore } from "/src/store/settings";
 import dayjs from "dayjs";
 const props = defineProps<{ pluginId?: number | string; pluginName?: string }>();
-const settingStore = useSettingStore();
 const step = ref(0);
 const mode = ref<"new" | "edit">(props.pluginId ? "edit" : "new");
 const pluginType = ref<string>();
@@ -174,7 +172,7 @@ const selectedPluginReference = computed(() => recentPlugins.value[0]?.fullName 
 const aiTestPrompt = computed(() => {
   if (!pipelineId.value || !accessToken.value) return "";
   const plugin = selectedPluginReference.value;
-  return `请使用 Certd AI 测试接口验证插件。\n1. POST ${window.location.origin}/api/scoped/sys/ai/plugin/pipeline/trigger，JSON：{"pipelineId":${pipelineId.value},"taskId":"${pluginTaskId.value || ""}"}，Authorization: Bearer ${accessToken.value}。保存响应中的 historyId。\n2. 每 2 秒 POST ${window.location.origin}/api/scoped/sys/ai/plugin/pipeline/status，JSON：{"pipelineId":${pipelineId.value},"historyId":"上一步返回的historyId","plugin":"${plugin}"}。\n3. 根据返回的 pipelineStatus、currentTask、pluginTask 和 logs 判断流水线及当前开发插件是否成功；测试结束后给出结论和关键日志。`;
+  return `请使用 Certd AI 测试接口验证插件。\n1. POST ${window.location.origin}/api/scoped/sys/ai/plugin/pipeline/trigger，JSON：{"pipelineId":${pipelineId.value},"taskId":"${pluginTaskId.value || ""}"}，Authorization: Bearer ${accessToken.value}。保存响应中的 historyId。\n2. 每 5-10 秒 POST ${window.location.origin}/api/scoped/sys/ai/plugin/pipeline/status，JSON：{"pipelineId":${pipelineId.value},"historyId":"上一步返回的historyId","plugin":"${plugin}"}。\n3. 根据返回的 pipelineStatus、currentTask、pluginTask 和 logs 判断流水线及当前开发插件是否成功；测试结束后给出结论和关键日志。`;
 });
 function nextStep() {
   if (canNext.value) step.value++;
@@ -253,13 +251,7 @@ async function loadRecentPlugins(force = false) {
       query: { type: "store" },
     });
     const list: any[] = result?.records || [];
-    const bindUserId = Number(settingStore.installInfo?.bindUserId || 0);
-    recentPlugins.value = list
-      .filter(item => {
-        const developerId = Number(item.developerId || 0);
-        return !developerId || (!!bindUserId && developerId === bindUserId);
-      })
-      .slice(0, 3);
+    recentPlugins.value = list.filter(item => item.editable === true).slice(0, 3);
   } finally {
     recentPluginsLoading.value = false;
   }
@@ -291,7 +283,7 @@ function formatTime(value: any) {
   return value ? dayjs(value).format("YYYY-MM-DD HH:mm:ss") : "更新时间未知";
 }
 async function openPluginEditor(plugin: any) {
-  const id = plugin.localPluginId || plugin.id;
+  const id = plugin.id;
   if (!id) return;
   const bodyRef = ref();
   await openFormDialog({
@@ -306,42 +298,12 @@ async function openPluginEditor(plugin: any) {
     },
   });
 }
-function collectPluginLogKeys(detail: any) {
-  const selectedRaw = String(pluginPath.value.at(-1) || props.pluginName || "").toLowerCase();
-  const selected = selectedRaw.split(":").at(-1) || selectedRaw;
-  if (!selected) return Object.keys(detail.logs || {});
-  const ids: string[] = [];
-  const visit = (value: any) => {
-    if (!value || typeof value !== "object") return;
-    if (
-      value.id &&
-      [value.type, value.pluginName, value.name, value.fullName].some(item =>
-        String(item || "")
-          .toLowerCase()
-          .includes(selected)
-      )
-    ) {
-      ids.push(String(value.id));
-    }
-    Object.values(value).forEach(visit);
-  };
-  visit(detail.pipeline?.stages || detail.pipeline);
-  const keys = Object.keys(detail.logs || {}).filter(key => ids.includes(key) || key.toLowerCase().includes(selected));
-  if (keys.length) return keys;
-  return Object.keys(detail.logs || {}).filter(key => ids.includes(key));
-}
-async function loadTestLogs(pipeline: number) {
-  const before: any[] = await historyApi.GetList({ pipelineId: pipeline });
-  const beforeIds = new Set(before.map(item => String(item.id)));
+async function loadTestLogs(historyId: number) {
   for (let attempt = 0; attempt < 8; attempt++) {
-    const histories: any[] = await historyApi.GetList({ pipelineId: pipeline });
-    const latest = histories?.find(item => !beforeIds.has(String(item.id))) || histories?.[0];
-    if (latest?.id) {
-      const detail: any = await historyApi.GetDetail({ id: latest.id });
-      const keys = collectPluginLogKeys(detail);
-      testLogs.value = keys.flatMap(key => (detail.logs?.[key] || []).map((line: string) => String(line).trim()).filter(Boolean));
-      if (testLogs.value.length) return;
-    }
+    const detail: any = await historyApi.GetDetail({ id: historyId });
+    const logGroups = Object.values(detail.logs || {}) as string[][];
+    testLogs.value = logGroups.flatMap(logs => logs.map(line => String(line).trim()).filter(Boolean));
+    if (testLogs.value.length) return;
     await new Promise(resolve => setTimeout(resolve, 1500));
   }
 }
@@ -350,10 +312,15 @@ async function runTest() {
   testing.value = true;
   try {
     pluginTaskId.value = await findPluginTaskId(pipelineId.value);
-    await pipelineApi.Trigger(pipelineId.value, pluginTaskId.value || undefined);
+    const triggerResult: any = await pipelineApi.Trigger(pipelineId.value, pluginTaskId.value || undefined);
+    const historyId = Number(triggerResult?.historyId);
+    if (!historyId) {
+      notification.error({ message: "流水线测试未返回运行记录 ID" });
+      return;
+    }
     testStarted.value = true;
     testLogs.value = [];
-    await loadTestLogs(pipelineId.value);
+    await loadTestLogs(historyId);
   } finally {
     testing.value = false;
   }

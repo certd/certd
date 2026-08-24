@@ -60,7 +60,7 @@ export function useOnlineInstall() {
           </div>
           <div class="plugin-dependency-detail__item">
             <span class="plugin-dependency-detail__label">{t("certd.version")}</span>
-            <span>{item.latest || item.installedVersion || "-"}</span>
+            <span>{item.version || item.latest || "-"}</span>
           </div>
           <div class="plugin-dependency-detail__item">
             <span class="plugin-dependency-detail__label">{t("certd.desc")}</span>
@@ -210,7 +210,7 @@ export function useOnlineInstall() {
       return true;
     }
     // 具体版本号要求：已安装版本不低于要求即视为已满足，否则需要重新安装升级
-    return compareVersions(record.installedVersion, requirementText) >= 0;
+    return compareVersions(record.version, requirementText) >= 0;
   }
 
   return {

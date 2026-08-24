@@ -23,7 +23,6 @@ import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons-vue";
 import * as api from "../api";
 import { usePluginStore } from "/@/store/plugin";
-import { useSettingStore } from "/src/store/settings";
 import { useI18n } from "/src/locales";
 
 const props = defineProps<{
@@ -61,7 +60,6 @@ interface CascaderOption {
 
 const { t } = useI18n();
 const pluginStore = usePluginStore();
-const settingStore = useSettingStore();
 const items = ref<DepItem[]>([]);
 const pluginEntries = ref<PluginEntry[]>([]);
 const loadingOptions = ref(false);
@@ -203,9 +201,7 @@ async function loadPluginOptions() {
 }
 
 function canEditPlugin(plugin: any) {
-  const developerId = Number(plugin.developerId || 0);
-  const bindUserId = Number(settingStore.installInfo?.bindUserId || 0);
-  return !developerId || (!!bindUserId && developerId === bindUserId);
+  return plugin.editable === true;
 }
 
 /**

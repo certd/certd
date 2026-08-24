@@ -69,7 +69,6 @@ export default {
   onlinePluginCurrentVersion: "Current {version}",
   onlinePluginAlreadyLatest: "Already up to date",
   onlinePluginClickToUpdate: "Click to update",
-  onlinePluginSelfAuthored: "Mine",
   onlinePluginInstallSuccess: "Online plugin installed successfully",
   onlinePluginUnpublishedChanges: "Local changes not published yet",
   onlinePluginVersionMustExceedLatest: "Please bump the version: the local version must be higher than the published version {version} to save",
