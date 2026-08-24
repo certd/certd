@@ -517,7 +517,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     // });
 
     logger.info("用户手动启动job");
-    return await this.doRun(entity, null, stepId,false);
+    return await this.doRun(entity, null, stepId, false);
   }
 
   async checkHasDeployCount(pipelineId: number, userId: number) {
@@ -673,7 +673,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     };
   }
 
-  async doRun(entity: PipelineEntity, triggerId: string, stepId?: string, wait: boolean = true) {
+  async doRun(entity: PipelineEntity, triggerId: string, stepId?: string, wait = true) {
     let suite: any = null;
     try {
       const res = await this.beforeCheck(entity);
@@ -838,7 +838,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       } finally {
         runningTasks.delete(historyId);
       }
-    }
+    };
 
     if (wait) {
       await run();
@@ -850,8 +850,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
       pipelineId: pipeline.id,
       triggerType,
       historyId,
-    }
-
+    };
   }
 
   async cancel(historyId: number) {

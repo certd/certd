@@ -123,10 +123,8 @@ import DependPluginsInput from "./depend-plugins-input.vue";
 import PluginEditDialogBody from "./plugin-edit-dialog-body.vue";
 import PipelineEditDialog from "/@/views/certd/pipeline/components/pipeline-edit-dialog.vue";
 import { useFormDialog } from "/@/use/use-dialog";
-import { useSettingStore } from "/src/store/settings";
 import dayjs from "dayjs";
 const props = defineProps<{ pluginId?: number | string; pluginName?: string }>();
-const settingStore = useSettingStore();
 const step = ref(0);
 const mode = ref<"new" | "edit">(props.pluginId ? "edit" : "new");
 const pluginType = ref<string>();
@@ -253,13 +251,7 @@ async function loadRecentPlugins(force = false) {
       query: { type: "store" },
     });
     const list: any[] = result?.records || [];
-    const bindUserId = Number(settingStore.installInfo?.bindUserId || 0);
-    recentPlugins.value = list
-      .filter(item => {
-        const developerId = Number(item.developerId || 0);
-        return !developerId || (!!bindUserId && developerId === bindUserId);
-      })
-      .slice(0, 3);
+    recentPlugins.value = list.filter(item => item.editable === true).slice(0, 3);
   } finally {
     recentPluginsLoading.value = false;
   }
@@ -291,7 +283,7 @@ function formatTime(value: any) {
   return value ? dayjs(value).format("YYYY-MM-DD HH:mm:ss") : "更新时间未知";
 }
 async function openPluginEditor(plugin: any) {
-  const id = plugin.localPluginId || plugin.id;
+  const id = plugin.id;
   if (!id) return;
   const bodyRef = ref();
   await openFormDialog({

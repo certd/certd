@@ -114,13 +114,10 @@ export type OnlinePluginBean = {
   vip?: string;
   dependPlugins?: Record<string, string>;
   editable?: boolean;
-  selfAuthored?: boolean;
   installed?: boolean;
-  installedVersion?: string;
   upgradeAvailable?: boolean;
-  localPluginId?: number;
-  localDisabled?: boolean;
-  localEditable?: boolean;
+  version?: string;
+  disabled?: boolean;
   syncTime?: number;
   addonType?: string;
 };

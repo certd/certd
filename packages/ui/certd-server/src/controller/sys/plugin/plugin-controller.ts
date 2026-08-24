@@ -73,7 +73,7 @@ export class PluginController extends CrudController<PluginService> {
 
   @Post("/info", { description: "sys:settings:view" })
   async info(@Query("id") id: number) {
-    return super.info(id);
+    return this.ok(await this.service.infoWithEditable(id));
   }
 
   @Post("/delete", { description: "sys:settings:edit", summary: "删除插件" })
