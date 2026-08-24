@@ -792,42 +792,9 @@ export class PluginService extends BaseService<PluginEntity> {
   private toOnlinePluginBean(item: PluginEntity): OnlinePluginBean {
     const isInstalled = item.installed === true;
     const dependPlugins = parseDependPlugins(item.dependPlugins);
-<<<<<<< HEAD
-    let legacyDependPlugins: Record<string, string> = {};
-    if (Object.keys(dependPlugins).length === 0 && item.extra) {
-      try {
-        const extra = (yaml.load(item.extra) as { dependPlugins?: Record<string, string> }) || {};
-        legacyDependPlugins = extra.dependPlugins || {};
-      } catch (e) {
-        legacyDependPlugins = {};
-      }
-    }
-    return {
-      id: item.id,
-      appId: item.appId,
-      developerId: item.developerId,
-      fullName: item.fullName,
-      author: item.author,
-      type: item.type,
-      name: item.name,
-      pluginType: item.pluginType,
-      title: item.title,
-      icon: item.icon,
-      group: item.group,
-      desc: item.desc,
-      latest: item.latest,
-      status: item.status,
-      downloadCount: item.downloadCount,
-      score: item.score == null ? undefined : Number(item.score),
-      aiCheckStatus: item.aiCheckStatus,
-      vip: item.vip,
-      dependPlugins: Object.keys(dependPlugins).length > 0 ? dependPlugins : legacyDependPlugins,
-      syncTime: item.syncTime,
-=======
     const record: any = {
       ...item,
       dependPlugins,
->>>>>>> a91d7c000a2aa6456a249433ff90a47787ec90f0
       installed: isInstalled,
     };
     delete record.content;
