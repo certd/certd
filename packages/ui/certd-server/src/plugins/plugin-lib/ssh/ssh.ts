@@ -159,6 +159,34 @@ export class AsyncSsh2Client {
     };
   }
 
+  /**
+   * 根据服务端 keyboard-interactive prompts 生成答案数组。
+   * 所有答案一律为 string，禁止出现 undefined，
+   * 否则 ssh2 内部 Protocol.authInfoRes 调用 Buffer.byteLength(undefined) 会抛：
+   *   TypeError: The "string" argument must be of type string or an instance of Buffer or ArrayBuffer.
+   *
+   * 匹配优先级（按 prompt 关键字）：
+   *   - passphrase → 优先 connConf.passphrase，兜底 password，再兜底 ""
+   *   - password / 口令 → 优先 connConf.password，兜底 ""
+   *   - 其他未知 prompt（如 OTP、二次验证）→ 按 password > passphrase > "" 兜底
+   */
+  resolveKeyboardInteractiveAnswers(prompts: Array<{ prompt?: string; echo?: boolean }>): string[] {
+    const { password, passphrase } = this.connConf;
+    return prompts.map(p => {
+      const promptStr = (p.prompt || "").toLowerCase();
+      if (promptStr.includes("passphrase")) {
+        // 私钥加密后要求输入 passphrase
+        return (passphrase ?? password ?? "") as string;
+      }
+      if (promptStr.includes("password") || promptStr.includes("口令")) {
+        // 普通登录密码
+        return (password ?? "") as string;
+      }
+      // OTP / 二次验证 / 其它未知 prompt：能给就给，给不出空字符串
+      return (password ?? passphrase ?? "") as string;
+    });
+  }
+
   private async connectClient() {
     const ssh2 = await import("ssh2");
     const ssh2Constants = await import("ssh2/lib/protocol/constants.js");
@@ -179,14 +207,10 @@ export class AsyncSsh2Client {
             this.conn = conn;
             resolve(this.conn);
           })
-          .on("keyboard-interactive", (name, descr, lang, prompts, finish) => {
-            // For illustration purposes only! It's not safe to do this!
-            // You can read it from process.stdin or whatever else...
-            const password = this.connConf.password;
-            return finish([password]);
-
-            // And remember, server may trigger this event multiple times
-            // and for different purposes (not only auth)
+          .on("keyboard-interactive", (_name, _descr, _lang, prompts, finish) => {
+            // 按 prompts 匹配关键字取答案；保证所有项均为 string，杜绝 undefined 传入
+            const answers = this.resolveKeyboardInteractiveAnswers(prompts);
+            return finish(answers);
           })
           .connect({
             ...connectConfig,
