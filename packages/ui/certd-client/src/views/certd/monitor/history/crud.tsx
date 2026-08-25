@@ -1,6 +1,6 @@
 // @ts-ignore
 import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import { ref } from "vue";
 import { createGroupDictRef } from "../../basic/group/api";
 import { useDicts } from "../../dicts";
@@ -47,13 +47,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         content: `确定要批量删除这${selectedRowKeys.value.length}条记录吗`,
         async onOk() {
           await api.BatchDelObj(selectedRowKeys.value);
-          message.info("删除成功");
+          notification.info({ message: "删除成功" });
           crudExpose.doRefresh();
           selectedRowKeys.value = [];
         },
       });
     } else {
-      message.error("请先勾选记录");
+      notification.error({ message: "请先勾选记录" });
     }
   };
 

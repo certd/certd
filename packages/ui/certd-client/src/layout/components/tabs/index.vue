@@ -53,6 +53,7 @@
 <script lang="ts">
 import { usePageStore } from "../../../store/modules/page";
 import { computed } from "vue";
+import { notification } from "ant-design-vue";
 export default {
   name: "FsTabs",
   components: {
@@ -163,7 +164,7 @@ export default {
           this.closeAll();
           break;
         default:
-          this.$message.error("无效的操作");
+          notification.error({ message: "无效的操作" });
           break;
       }
     },

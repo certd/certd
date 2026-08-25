@@ -1,4 +1,4 @@
-import { compute, dict, useFormWrapper } from "@fast-crud/fast-crud";
+﻿import { compute, dict, useFormWrapper } from "@fast-crud/fast-crud";
 import NotificationSelector from "/@/views/certd/notification/notification-selector/index.vue";
 import { cloneDeep, omit } from "lodash-es";
 import { useReference } from "/@/use/use-refrence";
@@ -212,7 +212,7 @@ export function useCertUpload() {
                 groupId: form.groupId,
               });
               router.push({
-                path: "/certd/pipeline/detail",
+                path: "/cert/pipeline/detail",
                 query: { id: id, editMode: "true" },
               });
             },

@@ -15,7 +15,7 @@
 
 <script lang="ts" setup>
 import { useFs } from "@fast-crud/fast-crud";
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import { DeleteBatch } from "./api";
 import createCrudOptions from "./crud";
 import { useCrudPermission } from "/@/plugin/permission";
@@ -43,13 +43,13 @@ const handleBatchDelete = () => {
       content: t("certd.confirmBatchDeleteContent", { count: selectedRowKeys.value.length }),
       async onOk() {
         await DeleteBatch(selectedRowKeys.value);
-        message.info(t("certd.deleteSuccess"));
+        notification.info({ message: t("certd.deleteSuccess") });
         crudExpose.doRefresh();
         selectedRowKeys.value = [];
       },
     });
   } else {
-    message.error(t("certd.pleaseSelectRecords"));
+    notification.error({ message: t("certd.pleaseSelectRecords") });
   }
 };
 useMounted(() => crudExpose.doRefresh());

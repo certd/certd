@@ -409,7 +409,7 @@ import PiTaskView from "./component/task-view/index.vue";
 import PiStatusShow from "./component/status-show.vue";
 import VDraggable from "vuedraggable";
 import { cloneDeep, merge, remove } from "lodash-es";
-import { message, Modal, notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { nanoid } from "nanoid";
 import { PipelineDetail, PipelineOptions, RunHistory } from "./type";
 import type { Runnable, Stage } from "@certd/pipeline";
@@ -1074,11 +1074,11 @@ export default defineComponent({
           }
         }
         if (!props.options.doTrigger) {
-          message.warn("暂不支持运行");
+          notification.warning({ message: "暂不支持运行" });
           return;
         }
         if (pipeline.value.stages == null || pipeline.value.stages.length === 0) {
-          message.warn("请先添加阶段和任务");
+          notification.warning({ message: "请先添加阶段和任务" });
           return;
         }
         Modal.confirm({

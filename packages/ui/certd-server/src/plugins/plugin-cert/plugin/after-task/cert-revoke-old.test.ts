@@ -25,6 +25,8 @@ function createPlugin(opts: { revokeOld?: boolean; list?: any[]; pipeline?: any;
   const { revokeOld = true, list = [], pipeline = createApplyPipeline(), filterByTaskId = true } = opts;
   const plugin = new CertRevokeOldPlugin();
   plugin.revokeOld = revokeOld;
+  // 默认不等待（避免每个用例都走 sleep）；等待场景由专门用例单独配置 delay 与 utils
+  plugin.delay = 0;
   plugin.logger = { info: () => {}, warn: () => {}, error: () => {} } as any;
   plugin.ctx = {
     pipeline,

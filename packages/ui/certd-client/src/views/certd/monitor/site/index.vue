@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <fs-page>
     <template #header>
       <div class="title flex items-center">
@@ -6,7 +6,7 @@
         <div class="sub flex-1">
           <div>
             {{ t("monitor.description") }}
-            <router-link to="/certd/monitor/setting">{{ t("monitor.settingLink") }}</router-link>
+            <router-link to="/cert/monitor/setting">{{ t("monitor.settingLink") }}</router-link>
           </div>
           <div class="flex items-center">
             {{ t("monitor.limitInfo") }}

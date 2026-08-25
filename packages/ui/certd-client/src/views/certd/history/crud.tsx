@@ -1,4 +1,4 @@
-import * as api from "./api";
+﻿import * as api from "./api";
 import { useI18n } from "/src/locales";
 import { computed, Ref, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -94,7 +94,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           copy: { show: false },
           view: {
             async click({ row }) {
-              await router.push({ path: "/certd/pipeline/detail", query: { id: row.pipelineId, historyId: row.id, editMode: "false" } });
+              await router.push({ path: "/cert/pipeline/detail", query: { id: row.pipelineId, historyId: row.id, editMode: "false" } });
             },
           },
         },
@@ -154,7 +154,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             tooltip: true,
             ellipsis: true,
             cellRender: ({ row, value }) => {
-              return <router-link to={{ path: "/certd/pipeline/detail", query: { id: row.pipelineId, editMode: false, historyId: row.id } }}>{value}</router-link>;
+              return <router-link to={{ path: "/cert/pipeline/detail", query: { id: row.pipelineId, editMode: false, historyId: row.id } }}>{value}</router-link>;
             },
           },
         },

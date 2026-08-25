@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <a-dropdown class="project-selector">
     <template #overlay>
       <a-menu @click="handleMenuClick">
@@ -43,7 +43,7 @@ onMounted(async () => {
 const router = useRouter();
 function handleMenuClick({ key }: any) {
   if (key === "join") {
-    router.push("/certd/project/join");
+    router.push("/cert/project/join");
     return;
   }
 

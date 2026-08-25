@@ -3,7 +3,7 @@
     <template #header>
       <div class="title">
         证书申请参数模版
-        <span class="sub">预设证书申请参数，不包含域名和校验方式</span>
+        <span class="sub">预设证书申请参数，创建证书流水线时自动帮你填写参数。(不包含域名和校验方式)</span>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>

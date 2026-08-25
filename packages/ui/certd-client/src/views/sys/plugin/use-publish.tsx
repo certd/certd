@@ -1,5 +1,5 @@
 import { reactive, ref } from "vue";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useI18n } from "/src/locales";
 import { usePluginStore } from "/@/store/plugin";
@@ -40,7 +40,7 @@ export function usePluginPublish() {
   }
 
   function registerPluginAuthor() {
-    return new Promise<api.OnlinePluginAuthorBean | undefined>(resolve => {
+    return new Promise<api.OnlinePluginAuthorBean | undefined>(async resolve => {
       let resolved = false;
       const resolveAuthor = (author?: api.OnlinePluginAuthorBean) => {
         if (resolved) {
@@ -50,7 +50,7 @@ export function usePluginPublish() {
         resolve(author);
       };
 
-      void openFormDialog({
+      const formRes = await openFormDialog({
         title: t("certd.onlinePluginAuthorRegister"),
         wrapper: {
           width: 560,
@@ -65,7 +65,10 @@ export function usePluginPublish() {
         },
         async onSubmit(form: any) {
           if (form.name?.trim() !== form.nameConfirm?.trim()) {
-            throw new Error("两次输入的作者名称不一致");
+            notification.error({
+              message: "两次输入的作者名称不一致",
+            });
+            return false;
           }
           const author = await api.OnlinePluginAuthorAdd({
             name: form.name,
@@ -96,7 +99,16 @@ export function usePluginPublish() {
             form: {
               col: { span: 24 },
               helper: "请再次输入相同名称。作者名称注册后不允许修改。",
-              rules: [{ required: true, message: "请再次输入作者名称" }],
+              rules: [
+                { required: true, message: "请再次输入作者名称" },
+                {
+                  validator: async (rule: any, value: string) => {
+                    if (value !== formRes?.getFormData().name) {
+                      throw new Error("两次输入的作者名称不一致");
+                    }
+                  },
+                },
+              ],
             },
           },
         },
@@ -497,7 +509,7 @@ export function usePluginPublish() {
       }
       await pluginStore.reload();
       await options?.afterPublish?.();
-      message.success(t("certd.onlinePluginPublishSuccess"));
+      notification.success({ message: t("certd.onlinePluginPublishSuccess") });
     } finally {
       publishingPluginId.value = "";
     }

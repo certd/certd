@@ -1,4 +1,4 @@
-﻿import { getRuntimeDepsService } from "@certd/pipeline";
+import { getRuntimeDepsService } from "@certd/pipeline";
 import { ALL, Body, Controller, Inject, Post, Provide, Query, RequestIP } from "@midwayjs/core";
 import { addonRegistry, AddonService, CrudController, SysPrivateSettings, SysPublicSettings, SysSafeSetting, SysSettingsEntity, SysSettingsService } from "@certd/lib-server";
 import { cloneDeep, merge } from "lodash-es";
@@ -136,6 +136,10 @@ export class SysSettingsController extends CrudController<SysSettingsService> {
     const privateSettings = await this.service.getPrivateSettings();
     merge(publicSettings, body.public);
     merge(privateSettings, body.private);
+    // customAcmeProviders 是数组，lodash merge 按下标合并，删除/调整顺序不会生效，需整体替换
+    if (body.private?.customAcmeProviders !== undefined) {
+      privateSettings.customAcmeProviders = body.private.customAcmeProviders;
+    }
     await this.service.savePublicSettings(publicSettings);
     await this.service.savePrivateSettings(privateSettings);
     await this.auditLog({ content: "保存了系统设置" });

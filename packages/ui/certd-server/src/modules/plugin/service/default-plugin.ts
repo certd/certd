@@ -190,3 +190,40 @@ return class DemoDnsProvider extends AbstractDnsProvider {
     content: script,
   };
 }
+
+export function getDefaultNotificationPlugin() {
+  const metadata = `
+input:   # 通知插件的输入参数
+  webhook:
+    title: 通知渠道webhook地址
+    component:
+      name: a-input
+    required: true
+  key:
+    title: 通知渠道授权key
+    component:
+      name: a-input
+    required: false
+`;
+
+  const script = `
+// 必须使用 await import 来引入模块
+const { BaseNotification } = await import("@certd/pipeline")
+// 需要返回一个继承BaseNotification的类
+return class DemoNotification extends BaseNotification {
+  // 通知输入参数，对应左边 input 配置
+  async send(body){
+    this.logger.info("title:", body.title)
+    this.logger.info("content:", body.content)
+    this.logger.info("webhook:", body.webhook)
+    // 调用第三方 API 发送通知  
+    // await this.ctx.http.request({url:body.webhook,method:"POST",body:body})
+  }
+}
+`;
+
+  return {
+    metadata: metadata,
+    content: script,
+  };
+}

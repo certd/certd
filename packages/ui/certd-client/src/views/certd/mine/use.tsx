@@ -6,7 +6,7 @@ import * as userProfileApi from "./api";
 import { useUserStore } from "/@/store/user";
 import { useI18n } from "/src/locales";
 import CaptchaInput from "/@/components/captcha/captcha-input.vue";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { ContactCodeInput } from "./contact-code-input";
 import { IdentityCodeInput } from "./identity-code-input";
 import { useFormDialog } from "/@/use/use-dialog";
@@ -189,7 +189,7 @@ export function useContactBind() {
               identityValidationCode,
             });
           }
-          message.success("绑定信息已更新");
+          notification.success({ message: "绑定信息已更新" });
           await req.onUpdated?.();
         },
         columns: {

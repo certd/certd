@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div v-if="data.length !== 0" class="expiring-pipeline-list">
     <div v-for="item of data" :key="item.id" class="pipeline-row">
       <div class="title" :title="item.title">
@@ -22,7 +22,7 @@ const props = defineProps<{
 }>();
 const router = useRouter();
 function goDetail(item) {
-  router.push({ path: "/certd/pipeline/detail", query: { id: item.id } });
+  router.push({ path: "/cert/pipeline/detail", query: { id: item.id } });
 }
 </script>
 <style lang="less">

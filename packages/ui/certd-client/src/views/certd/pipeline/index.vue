@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <fs-page class="page-cert">
     <template #header>
       <div class="title">
@@ -112,7 +112,7 @@ function openCertApplyDialog(req: { key: string; title: string }) {
     return;
   }
   if (req.key === "BatchAddPipeline") {
-    router.push({ path: "/certd/pipeline/template" });
+    router.push({ path: "/cert/pipeline/template" });
     return;
   }
 

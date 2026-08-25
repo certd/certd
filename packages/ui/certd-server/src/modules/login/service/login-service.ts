@@ -262,6 +262,7 @@ export class LoginService {
       throw new CommonException("scoped不能为空");
     }
     const setting = await this.sysSettingsService.getSetting<SysPrivateSettings>(SysPrivateSettings);
+    // 受限令牌短时效：不超过全局 jwt 过期时间，且上限 6 小时
     const expire = Math.min(this.jwt.expire, 6 * 60 * 60);
     const token = jwt.sign(
       {

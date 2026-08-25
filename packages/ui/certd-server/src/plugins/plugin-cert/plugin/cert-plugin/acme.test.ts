@@ -1,4 +1,5 @@
 import assert from "assert";
+import esmock from "esmock";
 import { utils } from "@certd/basic";
 import { AcmeService } from "./acme.js";
 
@@ -197,5 +198,104 @@ describe("AcmeService challenge", () => {
     } finally {
       utils.http.request = originalRequest;
     }
+  });
+
+  it("显式配置 reverseProxy 时强制启用 urlMapping，不再依赖直连测试", async () => {
+    const originalRequest = utils.http.request;
+    let requestCount = 0;
+    utils.http.request = async () => {
+      requestCount++;
+      return {};
+    };
+
+    try {
+      const service = new AcmeService({
+        userId: 1,
+        userContext: {} as any,
+        logger: logger as any,
+        sslProvider: "custom",
+        directoryUrl: "https://myca.example.com/directory",
+        reverseProxy: "myca-proxy.example.com",
+        domainParser: {} as any,
+      });
+
+      const urlMapping = await service.resolveUrlMapping("https://myca.example.com/directory");
+
+      // 配置了反向代理地址时直接启用，不进行直连测试
+      assert.equal(urlMapping.enabled, true);
+      assert.equal(urlMapping.mappings["myca.example.com"], "myca-proxy.example.com");
+      assert.equal(requestCount, 0);
+    } finally {
+      utils.http.request = originalRequest;
+    }
+  });
+});
+
+describe("AcmeService custom directoryUrl", () => {
+  it("传入 directoryUrl 时使用自定义ACME端点，不再调用内置目录", async () => {
+    const originalRequest = utils.http.request;
+    utils.http.request = async () => ({});
+    try {
+      let recordedDirectoryUrl: string | null = null;
+      const { AcmeService: CustomAcmeService } = await esmock("./acme.js", {
+        "@certd/acme-client": {
+          getDirectoryUrl() {
+            throw new Error("不应调用内置目录获取");
+          },
+          Client: class {
+            constructor(opts: any) {
+              recordedDirectoryUrl = opts.directoryUrl;
+            }
+            async createAccount() {}
+            getAccountUrl() {
+              return "https://myca.example.com/acct/1";
+            }
+          },
+          crypto: {
+            createPrivateKey: async () => "account-key",
+          },
+        },
+      });
+
+      const service = new CustomAcmeService({
+        userId: 1,
+        userContext: {
+          async getObj() {
+            return { key: "account-key" };
+          },
+          async setObj() {},
+        } as any,
+        logger: logger as any,
+        sslProvider: "custom",
+        directoryUrl: "https://myca.example.com/directory",
+        domainParser: {} as any,
+      });
+
+      await service.getAcmeClient("user@example.com");
+
+      assert.equal(recordedDirectoryUrl, "https://myca.example.com/directory");
+    } finally {
+      utils.http.request = originalRequest;
+    }
+  });
+
+  it("custom 颁发机构未传 directoryUrl 时报错", async () => {
+    const { AcmeService: CustomAcmeService } = await esmock("./acme.js", {
+      "@certd/acme-client": {
+        getDirectoryUrl() {
+          throw new Error("内置目录中不存在 custom");
+        },
+      },
+    });
+
+    const service = new CustomAcmeService({
+      userId: 1,
+      userContext: {} as any,
+      logger: logger as any,
+      sslProvider: "custom",
+      domainParser: {} as any,
+    });
+
+    await assert.rejects(() => service.getAcmeClient("user@example.com"), /自定义ACME需要填写Directory URL/);
   });
 });

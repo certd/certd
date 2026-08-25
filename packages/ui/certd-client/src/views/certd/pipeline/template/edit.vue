@@ -25,7 +25,7 @@
               <router-link
                 v-if="detail?.template?.pipelineId > 0"
                 :to="{
-                  path: '/certd/pipeline/detail',
+                  path: '/cert/pipeline/detail',
                   query: { id: detail?.template?.pipelineId, editMode: true },
                 }"
               >

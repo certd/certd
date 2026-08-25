@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="sys-settings-form sys-settings-mode">
     <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish">
       <a-form-item :label="t('certd.sys.setting.adminMode')" :name="['public', 'adminMode']">
@@ -106,7 +106,7 @@ const onFinish = async (form: any) => {
 const router = useRouter();
 const goCurrentProject = () => {
   router.push({
-    path: "/certd/project/detail",
+    path: "/cert/project/detail",
     query: {
       migrate: "true",
     },

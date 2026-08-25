@@ -1,9 +1,9 @@
 <template>
   <div class="kv-input">
     <div v-for="(item, index) of items" :key="index" class="kv-row">
-      <a-input :value="item.key" placeholder="名称" class="kv-key" @input="onKeyChange(index, $event)" @blur="emitValue" />
+      <a-input :value="item.key" placeholder="名称" class="kv-key" @input="onKeyChange(index, $event)" />
       <span class="kv-sep">:</span>
-      <a-input :value="item.value" placeholder="版本" class="kv-value" @input="onValueChange(index, $event)" @blur="emitValue" />
+      <a-input :value="item.value" placeholder="版本" class="kv-value" @input="onValueChange(index, $event)" />
       <a-button type="link" danger @click="removeItem(index)">
         <template #icon><DeleteOutlined /></template>
       </a-button>
@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { nextTick, ref, watch } from "vue";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons-vue";
 
 const props = defineProps<{
@@ -34,6 +34,9 @@ interface KvItem {
 
 const items = ref<KvItem[]>([]);
 
+// emitting 必须在 watch（immediate）之前声明，避免 TDZ 报错
+const emitting = ref(false);
+
 function initItems(val: Record<string, string>) {
   if (val && typeof val === "object" && !Array.isArray(val)) {
     items.value = Object.entries(val).map(([k, v]) => ({
@@ -48,10 +51,22 @@ function initItems(val: Record<string, string>) {
 watch(
   () => props.modelValue,
   val => {
+    if (emitting.value) {
+      // 自身 emit 引起的 modelValue 回写，跳过重建，避免输入框被重置
+      return;
+    }
     initItems(val);
   },
   { deep: true, immediate: true }
 );
+
+function emitValue() {
+  emitting.value = true;
+  emit("update:modelValue", rebuildRecord());
+  void nextTick(() => {
+    emitting.value = false;
+  });
+}
 
 function rebuildRecord(): Record<string, string> {
   const record: Record<string, string> = {};
@@ -64,18 +79,16 @@ function rebuildRecord(): Record<string, string> {
   return record;
 }
 
-function emitValue() {
-  emit("update:modelValue", rebuildRecord());
-}
-
 function onKeyChange(index: number, event: Event) {
   const target = event.target as HTMLInputElement;
   items.value[index].key = target.value;
+  emitValue();
 }
 
 function onValueChange(index: number, event: Event) {
   const target = event.target as HTMLInputElement;
   items.value[index].value = target.value;
+  emitValue();
 }
 
 function addItem() {

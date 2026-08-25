@@ -39,10 +39,11 @@ import { useColumns } from "@fast-crud/fast-crud";
 import yaml from "js-yaml";
 import * as api from "../api";
 import createCrudOptions from "../crud";
+import { compareVersions } from "../use-online-install";
 import { usePluginPublish } from "../use-publish";
 import { usePluginStore } from "/@/store/plugin";
-import { useSettingStore } from "/@/store/settings";
 import { usePluginAiDev } from "../use-ai-dev";
+import { useI18n } from "/src/locales";
 
 defineOptions({
   name: "PluginEditDialogBody",
@@ -57,7 +58,7 @@ const emit = defineEmits<{
 }>();
 
 const pluginStore = usePluginStore();
-const settingStore = useSettingStore();
+const { t } = useI18n();
 const plugin = ref<any>({});
 const formOptionsRef: Ref = ref();
 const baseFormRef: Ref = ref({});
@@ -91,15 +92,7 @@ const pluginName = computed(() => {
 });
 
 const canEditPlugin = computed(() => {
-  const current = plugin.value || {};
-  if (current.type === "custom") {
-    return true;
-  }
-  if (current.type !== "store") {
-    return false;
-  }
-  const bindUserId = Number(settingStore.installInfo?.bindUserId || 0);
-  return !current.developerId || (!!bindUserId && Number(current.developerId) === bindUserId);
+  return plugin.value?.editable === true;
 });
 
 provide("get:plugin", () => plugin);
@@ -142,9 +135,16 @@ async function doSave() {
     return;
   }
   validate();
+  const form = buildSubmitForm();
+  // 本地编辑后必须提升版本号才能保存：本地版本需要高于云端已发布版本
+  if (form.latest && form.version && compareVersions(form.version, form.latest) <= 0) {
+    notification.warning({
+      message: t("certd.onlinePluginVersionMustExceedLatest", { version: `v${form.latest}` }),
+    });
+    return;
+  }
   saveLoading.value = true;
   try {
-    const form = buildSubmitForm();
     await api.UpdateObj(form);
     plugin.value = form;
     pluginStore.clear();

@@ -1,5 +1,5 @@
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { message, Modal, notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import * as api from "./api";
 import { Dicts } from "/@/components/plugins/lib/dicts";
 import { createAccessApi } from "/@/views/certd/access/api";
@@ -70,7 +70,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
     const setting = JSON.parse(access.setting || "{}");
     const account = parseAccount(setting.account);
     if (!account?.accountUri) {
-      message.error("ACME账号授权缺少accountUri，请重新生成账号");
+      notification.error({ message: "ACME账号授权缺少accountUri，请重新生成账号" });
       return;
     }
     const record = await api.BuildRecord({
@@ -88,7 +88,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
 
   async function verifyRecord(row: any) {
     const ok = await api.Verify(row.id);
-    message[ok ? "success" : "error"](ok ? "校验成功" : "未找到匹配的TXT记录，请稍后重试");
+    notification[ok ? "success" : "error"]({ message: ok ? "校验成功" : "未找到匹配的TXT记录，请稍后重试" });
     await crudExpose.doRefresh();
     return ok;
   }

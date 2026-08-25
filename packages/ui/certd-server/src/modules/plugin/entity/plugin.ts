@@ -50,6 +50,9 @@ export class PluginEntity {
   @Column({ comment: "额外配置", length: 40960, nullable: true })
   extra: string;
 
+  @Column({ name: "depend_plugins", comment: "依赖的其他插件声明(type:name -> 版本或完整标识)", length: 4096, nullable: true })
+  dependPlugins: string;
+
   @Column({ comment: "作者", length: 100, nullable: true })
   author: string;
 
@@ -71,7 +74,7 @@ export class PluginEntity {
   @Column({ name: "download_count", comment: "下载次数", nullable: true })
   downloadCount: number;
 
-  @Column({ comment: "评分", nullable: true })
+  @Column({ type: "real", comment: "评分", nullable: true })
   score: number;
 
   @Column({ name: "ai_check_status", comment: "最新版本AI审核状态", length: 32, default: "" })

@@ -51,7 +51,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, ref, Ref, watch } from "vue";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { usePluginStore, PluginGroups } from "/@/store/plugin";
 import { useSettingStore } from "/@/store/settings";
 import { useUserStore } from "/@/store/user";
@@ -142,7 +142,7 @@ watch(
 
 function checkNeedPlus(item: any): boolean {
   if (item.needPlus && !settingStore.isPlus) {
-    message.warn("此插件需要开通Certd专业版才能使用");
+    notification.warning({ message: "此插件需要开通Certd专业版才能使用" });
     mitter.emit("openVipModal");
     return false;
   }
@@ -196,6 +196,10 @@ function transformDesc(desc: string = "") {
         align-items: center;
       }
     }
+  }
+
+  .ant-tabs-content {
+    height: 100%;
   }
 
   .ant-tabs-nav .ant-tabs-tab {

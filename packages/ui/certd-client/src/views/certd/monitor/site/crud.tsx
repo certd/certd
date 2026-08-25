@@ -4,7 +4,7 @@ import { AddReq, ColumnCompositionProps, ColumnProps, compute, CreateCrudOptions
 import { siteInfoApi } from "./api";
 import * as settingApi from "./setting/api";
 import dayjs from "dayjs";
-import { message, Modal, notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { useSettingStore } from "/@/store/settings";
 import { mySuiteApi } from "/@/views/certd/suite/mine/api";
 import { mitter } from "/@/utils/util.mitt";
@@ -74,13 +74,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         content: t("monitor.batchDeleteConfirm", { count: selectedRowKeys.value.length }),
         async onOk() {
           await api.BatchDelObj(selectedRowKeys.value);
-          message.info(t("monitor.deleteSuccess"));
+          notification.info({ message: t("monitor.deleteSuccess") });
           crudExpose.doRefresh();
           selectedRowKeys.value = [];
         },
       });
     } else {
-      message.error(t("monitor.selectRecordsFirst"));
+      notification.error({ message: t("monitor.selectRecordsFirst") });
     }
   };
 

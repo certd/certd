@@ -1,4 +1,5 @@
 import { useFormWrapper } from "@fast-crud/fast-crud";
+import { notification } from "ant-design-vue";
 import { merge } from "lodash-es";
 
 export type FormOptionReq = {
@@ -47,7 +48,7 @@ export function useFormDialog() {
             async afterSubmit() {},
             async doSubmit({ form }: any) {
               if (req.onSubmit) {
-                await req.onSubmit(form);
+                return await req.onSubmit(form);
               }
             },
           },

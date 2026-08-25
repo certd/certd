@@ -60,6 +60,13 @@
         <div class="helper">{{ t("certd.sys.setting.acmeWalkFromAuthoritativeHelper") }}</div>
       </a-form-item>
 
+      <a-form-item :label="t('certd.sys.setting.customAcmeManage')" :name="['private', 'customAcmeProviders']">
+        <div class="w-full">
+          <div class="helper">{{ t("certd.sys.setting.customAcmeManageHelper") }}</div>
+          <custom-acme-provider-list v-model="formState.private.customAcmeProviders" />
+        </div>
+      </a-form-item>
+
       <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">
         <a-button :loading="saveLoading" type="primary" html-type="submit">{{ t("certd.saveButton") }}</a-button>
       </a-form-item>
@@ -73,6 +80,7 @@ import { SysSettings } from "/@/views/sys/settings/api";
 import * as api from "/@/views/sys/settings/api";
 import { merge } from "lodash-es";
 import { useSettingStore } from "/@/store/settings";
+import CustomAcmeProviderList from "/@/views/sys/settings/components/custom-acme-provider-list.vue";
 import { notification } from "ant-design-vue";
 import { useI18n } from "/src/locales";
 const { t } = useI18n();
@@ -85,6 +93,7 @@ const formState = reactive<Partial<SysSettings>>({
   public: {},
   private: {
     acmeWalkFromAuthoritative: true,
+    customAcmeProviders: [],
   },
 });
 
@@ -96,6 +105,7 @@ async function loadSysSettings() {
 const saveLoading = ref(false);
 loadSysSettings();
 const settingsStore = useSettingStore();
+
 const onFinish = async (form: any) => {
   try {
     saveLoading.value = true;

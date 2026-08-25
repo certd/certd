@@ -78,7 +78,7 @@
 </template>
 
 <script lang="tsx" setup>
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import { provide, ref, Ref } from "vue";
 import { merge, cloneDeep } from "lodash-es";
 import { nanoid } from "nanoid";
@@ -141,7 +141,7 @@ function useStepForm() {
       return;
     }
     if (item.needPlus && !settingStore.isPlus) {
-      message.warn("此插件需要开通Certd专业版才能使用");
+      notification.warning({ message: "此插件需要开通Certd专业版才能使用" });
       mitter.emit("openVipModal");
       throw new Error("此插件需要开通Certd专业版才能使用");
     }
@@ -153,7 +153,7 @@ function useStepForm() {
   const stepTypeSave = async () => {
     currentStep.value._isAdd = false;
     if (currentStep.value.type == null) {
-      message.warn("请先选择类型");
+      notification.warning({ message: "请先选择类型" });
       return;
     }
 
@@ -443,6 +443,9 @@ defineExpose({
   }
 
   .pi-step-form {
+    .ant-tabs-content {
+      height: 100%;
+    }
     .step-plugin-source-pane-local,
     .step-plugin-source-pane-online {
       display: flex;

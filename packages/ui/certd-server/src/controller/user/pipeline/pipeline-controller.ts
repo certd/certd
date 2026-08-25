@@ -266,11 +266,11 @@ export class PipelineController extends CrudController<PipelineService> {
   @Post("/trigger", { description: Constants.per.authOnly, summary: "触发流水线执行" })
   async trigger(@Query("id") id: number, @Query("stepId") stepId?: string) {
     await this.checkOwner(this.getService(), id, "write", true);
-    await this.service.trigger(id, stepId, true);
+    const { historyId, triggerType, pipelineId } = await this.service.trigger(id, stepId);
     this.auditLog({
       content: `手动执行了流水线(ID:${id})`,
     });
-    return this.ok({});
+    return this.ok({ historyId, triggerType, pipelineId });
   }
 
   @Post("/cancel", { description: Constants.per.authOnly, summary: "取消流水线执行" })

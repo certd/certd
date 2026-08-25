@@ -35,7 +35,6 @@
 
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-import { message } from "ant-design-vue";
 import * as api from "./api";
 import ProductInfo from "/@/views/certd/suite/product-info.vue";
 import OrderModal from "/@/views/certd/suite/order-modal.vue";
@@ -79,7 +78,7 @@ async function openActivateDialog() {
 async function doActivate() {
   const code = activationCode.value.trim().toUpperCase();
   if (!code) {
-    message.warning("请输入激活码");
+    notification.warning({ message: "请输入激活码" });
     return;
   }
   activationCode.value = code;
@@ -92,7 +91,7 @@ async function doActivate() {
       description: `您已成功激活 ${res.title}，时长 ${res.duration} 天`,
     });
   } catch (e: any) {
-    message.error(e?.message || "兑换失败");
+    notification.error({ message: e?.message || "兑换失败" });
   } finally {
     activating.value = false;
   }

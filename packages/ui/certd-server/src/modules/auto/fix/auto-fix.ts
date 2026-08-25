@@ -6,6 +6,7 @@ import { CertInfoWildcardDomainCountFix } from "./cert-info-wildcard-domain-coun
 import { SuiteContentWildcardDomainCountFix } from "./suite-content-wildcard-domain-count-fix.js";
 import { LegacyAcmeAccountAccessFix } from "./legacy-acme-account-access-fix.js";
 import { CommonEabToAcmeAccountFix } from "./common-eab-to-acme-account-fix.js";
+import { ReverseProxyMigrateFix } from "./reverse-proxy-migrate-fix.js";
 
 type AutoFixTask = {
   key: string;
@@ -38,6 +39,9 @@ export class AutoFix {
   @Inject()
   commonEabToAcmeAccountFix: CommonEabToAcmeAccountFix;
 
+  @Inject()
+  reverseProxyMigrateFix: ReverseProxyMigrateFix;
+
   async init() {
     const setting = await this.sysSettingsService.getSetting<SysAutoFixSetting>(SysAutoFixSetting);
     setting.fixed = setting.fixed || {};
@@ -65,6 +69,10 @@ export class AutoFix {
       {
         key: "common-eab-to-acme-account",
         fix: this.commonEabToAcmeAccountFix,
+      },
+      {
+        key: "reverse-proxy-migrate",
+        fix: this.reverseProxyMigrateFix,
       },
     ];
 

@@ -2,11 +2,12 @@ import * as api from "./api";
 import { useI18n } from "/src/locales";
 import { Ref, ref, computed } from "vue";
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { Modal, message } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 //@ts-ignore
 import yaml from "js-yaml";
 import { usePluginImport } from "./use-import";
 import KvInput from "/@/components/plugins/common/kv-input.vue";
+import DependPluginsInput from "./components/depend-plugins-input.vue";
 import { usePluginConfig } from "./use-config";
 import { useSettingStore } from "/src/store/settings/index";
 import { usePluginStore } from "/@/store/plugin";
@@ -85,15 +86,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     return Date.now() - time > autoSyncInterval;
   }
 
-  function canEditStorePlugin(row: any) {
-    if (row.type !== "store") {
-      return false;
-    }
-    if (typeof row.localEditable === "boolean") {
-      return row.localEditable;
-    }
-    const bindUserId = Number(settingStore.installInfo?.bindUserId || 0);
-    return !row.developerId || (!!bindUserId && Number(row.developerId) === bindUserId);
+  function isEditablePlugin(row: any) {
+    return row.editable === true;
   }
 
   async function syncOnlinePlugins(options?: { showSuccess?: boolean }) {
@@ -108,7 +102,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       await pluginStore.reload();
       crudExpose.doRefresh();
       if (options?.showSuccess !== false) {
-        message.success(t("certd.onlinePluginSyncSuccess"));
+        notification.success({ message: t("certd.onlinePluginSyncSuccess") });
       }
     } finally {
       syncLoading.value = false;
@@ -151,15 +145,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       actionbar: {
         buttons: {
-          aiDev: {
-            show: true,
-            icon: "ion:sparkles-outline",
-            text: "AI 开发插件",
-            type: "primary",
-            async click() {
-              await openAiDevDialog();
-            },
-          },
           add: {
             show: true,
             icon: "ion:ios-add-circle-outline",
@@ -172,6 +157,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             type: "primary",
             async click() {
               await openImportDialog({ crudExpose });
+            },
+          },
+          aiDev: {
+            show: true,
+            icon: "ion:sparkles-outline",
+            text: "AI 开发插件",
+            type: "primary",
+            async click() {
+              await openAiDevDialog();
             },
           },
           syncOnline: {
@@ -198,7 +192,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 content: t("certd.clearRuntimeDepsConfirm"),
                 async onOk() {
                   await api.ClearRuntimeDeps();
-                  message.success(t("certd.clearRuntimeDepsSuccess"));
+                  notification.success({ message: t("certd.clearRuntimeDepsSuccess") });
                 },
               });
             },
@@ -207,7 +201,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       table: {
         show: false,
-        rowKey: "name",
+        rowKey: "fullName",
         remove: {
           afterRemove: async context => {
             await pluginStore.reload();
@@ -222,12 +216,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         buttons: {
           edit: {
             show: compute(({ row }) => {
-              return canEditStorePlugin(row);
+              return isEditablePlugin(row);
             }),
           },
           copy: {
             show: compute(({ row }) => {
-              return canEditStorePlugin(row);
+              return isEditablePlugin(row);
             }),
             async click({ row }) {
               const copyRow = { ...row };
@@ -252,7 +246,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             type: "link",
             //@ts-ignore
             show: compute(({ row }) => {
-              return canEditStorePlugin(row);
+              return isEditablePlugin(row);
             }),
             async click({ row }) {
               const content = await api.ExportPlugin(row.id);
@@ -328,6 +322,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               { label: t("certd.auth"), value: "access" },
               { label: t("certd.dns"), value: "dnsProvider" },
               { label: t("certd.deployPlugin"), value: "deploy" },
+              { label: "通知", value: "notification" },
+              { label: "Addon", value: "addon" },
             ],
           }),
           column: {
@@ -544,12 +540,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
           },
         },
-        "extra.dependPlugins": {
+        dependPlugins: {
           title: t("certd.pluginDependencies"),
           type: "text",
           form: {
             component: {
-              name: KvInput,
+              name: DependPluginsInput,
               vModel: "modelValue",
             },
             helper: t("certd.pluginDependenciesHelper"),
