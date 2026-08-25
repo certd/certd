@@ -33,10 +33,15 @@ describe("CertInfoService", () => {
   describe("updateCertByPipelineId 多条模式", () => {
     it("新建激活证书并绑定流水线id、继承已有记录来源", async () => {
       const service = new CertInfoService();
-      // 该流水线已有旧证书记录（upload 来源）
+      // 该流水线已有旧证书记录（upload 来源），但没有空证书记录
       const existing = { id: 10, userId: 2, projectId: 3, pipelineId: 1, fromType: "upload", status: CertStatus.inactive };
       service.repository = {
-        async findOne() {
+        async findOne(args: any) {
+          const where = args?.where ?? args;
+          if (where.certInfo !== undefined) {
+            // 空证书记录（占位）查询：该流水线没有占位记录
+            return null;
+          }
           return existing;
         },
         async delete() {},
@@ -176,12 +181,13 @@ describe("CertInfoService", () => {
       assert.equal(updateSet.status, CertStatus.inactive);
     });
 
-    it("空证书记录（带任务id）在申请成功后标记为未激活，避免同流水线多条 active 记录", async () => {
+    it("存在空证书记录时，申请成功后直接更新占位记录，不新建记录", async () => {
       const service = new CertInfoService();
       // 保存流水线时创建的空证书记录（占位，certInfo 为空，已记录申请任务id）
       const emptyRecord = { id: 184, userId: 2, projectId: 1, pipelineId: 209, fromType: "pipeline", status: CertStatus.active, taskId: "PgaUhdeO1DWB_BLbIlzqV", certInfo: null };
       service.repository = {
         async findOne() {
+          // 既有记录查询与空证书记录查询都命中同一条占位记录
           return emptyRecord;
         },
       } as any;
@@ -190,8 +196,10 @@ describe("CertInfoService", () => {
           return { id: 209, userId: 2, projectId: 1, type: "cert_auto" };
         },
       } as any;
+      let newBean: any = null;
       service.addOrUpdate = async (bean: any) => {
-        bean.id = 185;
+        // 更新占位记录：保留原 id，不分配新 id
+        newBean = bean;
         return bean;
       };
       let updateWhere: any = null;
@@ -203,12 +211,72 @@ describe("CertInfoService", () => {
       };
 
       const cert = createSelfSignedCert();
-      await service.updateCertByPipelineId(209, cert, "pipeline", "PgaUhdeO1DWB_BLbIlzqV");
+      const bean = await service.updateCertByPipelineId(209, cert, "pipeline", "PgaUhdeO1DWB_BLbIlzqV");
 
-      // 空证书记录因 taskId 相同被标记为未激活，只剩新证书保持 active
+      // 直接更新占位记录（id 不变），写入证书内容并保持激活，不再新建一条
+      assert.equal(newBean.id, 184);
+      assert.equal(newBean.taskId, "PgaUhdeO1DWB_BLbIlzqV");
+      assert.equal(newBean.status, CertStatus.active);
+      assert.ok(newBean.certInfo.includes("BEGIN CERTIFICATE"));
+      assert.equal(bean.id, 184);
+      // 标记未激活时排除占位记录自己（id: Not(184)），其他同任务 active 记录被标记
       assert.equal(updateWhere.pipelineId, 209);
+      assert.equal(updateWhere.status, CertStatus.active);
+      assert.equal(updateWhere.id._value, 184);
       assert.equal(updateWhere.taskId, "PgaUhdeO1DWB_BLbIlzqV");
       assert.equal(updateSet.status, CertStatus.inactive);
+    });
+
+    it("updateCertByPipelineId 从流水线配置解析并记录 ACME账号授权id（供吊销读表，不再查流水线）", async () => {
+      const service = new CertInfoService();
+      service.repository = {
+        async findOne(args: any) {
+          const where = args?.where ?? args;
+          if (where.certInfo !== undefined) {
+            // 占位记录查询：没有占位记录
+            return null;
+          }
+          // 已有记录查询：没有历史记录
+          return null;
+        },
+        async delete() {},
+        async update() {},
+      } as any;
+      service.pipelineRepository = {
+        async findOne(args: any) {
+          if (args?.select) {
+            return { type: "cert_auto" };
+          }
+          return {
+            id: 1,
+            userId: 2,
+            projectId: 3,
+            type: "cert_auto",
+            content: JSON.stringify({
+              stages: [
+                {
+                  tasks: [
+                    {
+                      steps: [{ runnableType: "step", type: "CertApply", input: { sslProvider: "custom", acmeAccountAccessId: 9 } }],
+                    },
+                  ],
+                },
+              ],
+            }),
+          };
+        },
+      } as any;
+      let newBean: any = null;
+      service.addOrUpdate = async (bean: any) => {
+        bean.id = 100;
+        newBean = bean;
+        return bean;
+      };
+
+      const cert = createSelfSignedCert();
+      await service.updateCertByPipelineId(1, cert, "pipeline");
+
+      assert.equal(newBean.acmeAccountAccessId, 9);
     });
 
     it("updateDomains 保存流水线时为申请任务创建空证书记录（记录任务id）", async () => {
@@ -441,6 +509,61 @@ describe("CertInfoService", () => {
       assert.equal(updated.where.id, 1);
       assert.equal(updated.set.status, CertStatus.revoked);
       assert.ok(updated.set.revokeTime > 0);
+    });
+
+    it("吊销时优先使用记录上的ACME账号，不再解析流水线", async () => {
+      const service = new CertInfoService();
+      const cert = createSelfSignedCert();
+      service.info = async () =>
+        ({
+          id: 1,
+          userId: 2,
+          projectId: null,
+          status: CertStatus.inactive,
+          certInfo: JSON.stringify(cert),
+          pipelineId: 5,
+          acmeAccountAccessId: 9,
+        } as any);
+      // 若吊销仍解析流水线，会触发 pipelineRepository 查询 → 直接抛错证明未走旧逻辑
+      service.pipelineRepository = {
+        async findOne() {
+          throw new Error("吊销不应再查询流水线");
+        },
+      } as any;
+      service.accessService = {
+        async getAccessById() {
+          return {
+            getAccount: () => ({
+              accountKey: "account-key",
+              accountUri: "https://myca.example.com/acct/1",
+              caType: "custom",
+              email: "user@example.com",
+              directoryUrl: "https://myca.example.com/directory",
+            }),
+          };
+        },
+      } as any;
+      let updated: any = null;
+      service.repository = {
+        async update(where: any, set: any) {
+          updated = { where, set };
+          return {} as any;
+        },
+      } as any;
+
+      const original = AcmeService.prototype.revokeCert;
+      let revokeArgs: any = null;
+      AcmeService.prototype.revokeCert = async function (args: any) {
+        revokeArgs = args;
+      };
+      try {
+        await service.revoke(1, 2);
+      } finally {
+        AcmeService.prototype.revokeCert = original;
+      }
+
+      assert.equal(revokeArgs.acmeAccount.accountUri, "https://myca.example.com/acct/1");
+      assert.equal(updated.set.status, CertStatus.revoked);
     });
 
     it("未找到关联流水线配置时无法吊销", async () => {

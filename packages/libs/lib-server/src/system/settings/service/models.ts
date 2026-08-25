@@ -71,6 +71,25 @@ export class SysPublicSettings extends BaseSettings {
   adminMode?: "enterprise" | "saas" = "saas";
 }
 
+/**
+ * 证书颁发机构配置（内置 + 自定义ACME，管理员在「流水线设置」中维护）
+ * - 内置项（builtIn=true）：系统预置，前端不允许修改和删除
+ * - 自定义项：sslProvider 为唯一标识（如 myca），配置后可在证书申请任务和ACME账号授权中作为颁发机构使用
+ */
+export type CustomAcmeProvider = {
+  sslProvider: string;
+  title: string;
+  directoryUrl: string;
+  // 反向代理地址（不带协议前缀，如 myca-proxy.example.com）；可选
+  reverseProxy?: string;
+  // 是否需要EAB（外部账号绑定）；内置CA与自定义CA均可配置，控制EAB输入框显隐与生成账号校验
+  needEAB?: boolean;
+  // 是否内置颁发机构（内置不允许修改删除）
+  builtIn?: boolean;
+  // 其他参数后期扩展
+  [key: string]: any;
+};
+
 export class SysPrivateSettings extends BaseSettings {
   static __title__ = "系统私有设置";
   static __access__ = "private";
@@ -83,6 +102,8 @@ export class SysPrivateSettings extends BaseSettings {
   noProxy? = "";
   commonHeaders?: string = "";
 
+  // 已废弃：旧版「网络设置-反代设置」数据，仅用于兼容迁移（迁移到 customAcmeProviders 内置项的 reverseProxy）
+  // 新配置统一在 customAcmeProviders 中维护，不再读取本字段做全局反代
   reverseProxies?: Record<string, string> = {};
 
   dnsResultOrder? = "";
@@ -103,6 +124,18 @@ export class SysPrivateSettings extends BaseSettings {
     type: "aliyun",
     config: {},
   };
+
+  // 证书颁发机构配置列表（内置 + 自定义ACME），内置项 builtIn=true 不允许修改删除。
+  // 内置项不在此配置 Directory URL：其端点由运行时按加密算法（pkType）通过 acme.getDirectoryUrl 获取，
+  // 例如 ZeroSSL、SSL.com 的 RSA 与 EC 证书使用不同的端点，写死单一 URL 会导致 EC 申请走错端点。
+  customAcmeProviders?: CustomAcmeProvider[] = [
+    { sslProvider: "letsencrypt", title: "Let's Encrypt", directoryUrl: "", needEAB: false, builtIn: true },
+    { sslProvider: "letsencrypt_staging", title: "Let's Encrypt测试环境", directoryUrl: "", needEAB: false, builtIn: true },
+    { sslProvider: "google", title: "Google", directoryUrl: "", needEAB: true, builtIn: true },
+    { sslProvider: "zerossl", title: "ZeroSSL", directoryUrl: "", needEAB: true, builtIn: true },
+    { sslProvider: "litessl", title: "litessl", directoryUrl: "", needEAB: true, builtIn: true },
+    { sslProvider: "sslcom", title: "SSL.com", directoryUrl: "", needEAB: true, builtIn: true },
+  ];
 
   removeSecret() {
     const clone = cloneDeep(this);

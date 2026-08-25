@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div v-if="detail.enabled" class="my-suite-card">
     <div class="flex-o flex-wrap">
       <a-popover>
@@ -94,7 +94,7 @@ loadSuiteDetail();
 const router = useRouter();
 function goBuy() {
   router.push({
-    path: "/certd/suite/buy",
+    path: "/cert/suite/buy",
   });
 }
 </script>

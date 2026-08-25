@@ -20,7 +20,7 @@
 import { defineComponent, reactive, ref, watch, inject, onMounted, Ref } from "vue";
 import CertAccessModal from "./access/index.vue";
 import { createAccessApi } from "../api";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { useUserStore } from "/@/store/user";
 import { useProjectStore } from "/@/store/project";
 export default defineComponent({
@@ -90,12 +90,12 @@ export default defineComponent({
         if (isEnterprice) {
           const projectId = projectStore.currentProjectId;
           if (pipeline?.value?.projectId !== projectId) {
-            message.error(`对不起，您不能修改其他项目流水线的授权`);
+            notification.error({ message: `对不起，您不能修改其他项目流水线的授权` });
             return;
           }
         } else {
           if (pipeline?.value && pipeline.value.userId !== userId) {
-            message.error(`对不起，您不能修改他人流水线的授权`);
+            notification.error({ message: `对不起，您不能修改他人流水线的授权` });
             return;
           }
         }

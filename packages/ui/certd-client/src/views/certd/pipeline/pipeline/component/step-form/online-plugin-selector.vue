@@ -228,7 +228,7 @@ function getInstalledPlugin(plugin: any) {
     }
   }
   return groups.groups.all.plugins.find((item: any) => {
-    if (plugin.localPluginId && item.id === plugin.localPluginId) {
+    if (plugin.id && item.id === plugin.id) {
       return true;
     }
     return item.author === plugin.author && item.name === plugin.name;

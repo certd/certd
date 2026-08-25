@@ -1,4 +1,4 @@
-import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, useFormWrapper, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+﻿import { AddReq, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, useFormWrapper, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { templateApi } from "./api";
 import { useRouter } from "vue-router";
 import { useModal } from "/@/use/use-modal";
@@ -49,7 +49,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       addForm: {
         onSuccess: ({ res }) => {
-          router.push({ path: "/certd/pipeline/template/edit", query: { templateId: res.id, editMode: "true" } });
+          router.push({ path: "/cert/pipeline/template/edit", query: { templateId: res.id, editMode: "true" } });
         },
       },
       search: {
@@ -95,7 +95,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           //     openCreateFromTemplateDialog({
           //       templateId: row.id,
           //       onCreated: ({ id }) => {
-          //         router.push({ path: "/certd/pipeline/detail", query: { id, editMode: "true" } });
+          //         router.push({ path: "/cert/pipeline/detail", query: { id, editMode: "true" } });
           //       },
           //     });
           //   },
@@ -105,7 +105,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           //   title: "批量导入创建",
           //   icon: "ion:duplicate",
           //   click({ row }) {
-          //     router.push({ path: "/certd/pipeline/template/import", query: { templateId: row.id } });
+          //     router.push({ path: "/cert/pipeline/template/import", query: { templateId: row.id } });
           //   },
           // },
         },
@@ -142,7 +142,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             sorter: true,
             cellRender({ row, value }) {
               return (
-                <router-link class={"flex items-center"} to={{ path: "/certd/pipeline/template/edit", query: { templateId: row.id } }}>
+                <router-link class={"flex items-center"} to={{ path: "/cert/pipeline/template/edit", query: { templateId: row.id } }}>
                   <fs-icon icon={"ion:create-outline"}></fs-icon>
                   <span class={"ml-5"}> {value}</span>
                 </router-link>
@@ -212,7 +212,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 openCreateFromTemplateDialog({
                   templateId: row.id,
                   onCreated: ({ id }) => {
-                    router.push({ path: "/certd/pipeline/detail", query: { id, editMode: "true" } });
+                    router.push({ path: "/cert/pipeline/detail", query: { id, editMode: "true" } });
                   },
                 });
               }
@@ -233,7 +233,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             width: 400,
             cellRender({ row }) {
               return (
-                <router-link class={"flex items-center"} to={{ path: "/certd/pipeline/template/import", query: { templateId: row.id } }}>
+                <router-link class={"flex items-center"} to={{ path: "/cert/pipeline/template/import", query: { templateId: row.id } }}>
                   <fs-icon icon={"ion:duplicate"}></fs-icon>
                   <span class={"ml-5"}>{t("certd.template.batchCreate")}</span>
                 </router-link>

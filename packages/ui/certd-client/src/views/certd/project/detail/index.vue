@@ -31,7 +31,7 @@ import { onMounted, ref } from "vue";
 import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import { DeleteBatch } from "./api";
 import { useI18n } from "/src/locales";
 import { useRoute, useRouter } from "vue-router";
@@ -101,20 +101,20 @@ const handleBatchDelete = () => {
       content: t("certd.confirmDeleteBatch", { count: selectedRowKeys.value.length }),
       async onOk() {
         await DeleteBatch(selectedRowKeys.value);
-        message.info(t("certd.deleteSuccess"));
+        notification.info({ message: t("certd.deleteSuccess") });
         crudExpose.doRefresh();
         selectedRowKeys.value = [];
       },
     });
   } else {
-    message.error(t("certd.selectRecordsFirst"));
+    notification.error({ message: t("certd.selectRecordsFirst") });
   }
 };
 
 // 页面打开后获取列表数据
 onMounted(async () => {
   if (!projectId) {
-    message.error("您还未选择项目");
+    notification.error({ message: "您还未选择项目" });
     return;
   }
   await loadProjectDetail();

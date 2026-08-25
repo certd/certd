@@ -20,6 +20,7 @@ export async function FindPlugins(query: {
   keywords?: string[];
   includeBuiltIn?: boolean;
   includeStore?: boolean;
+  includeLocal?: boolean;
 }) {
   return await request({
     url: apiPrefix + "/find",
@@ -111,15 +112,14 @@ export type OnlinePluginBean = {
   score?: number;
   aiCheckStatus?: string;
   vip?: string;
+  dependPlugins?: Record<string, string>;
   editable?: boolean;
-  selfAuthored?: boolean;
   installed?: boolean;
-  installedVersion?: string;
   upgradeAvailable?: boolean;
-  localPluginId?: number;
-  localDisabled?: boolean;
-  localEditable?: boolean;
+  version?: string;
+  disabled?: boolean;
   syncTime?: number;
+  addonType?: string;
 };
 
 export type OnlinePluginVersionBean = {
@@ -218,10 +218,11 @@ export type OnlinePluginAuthorBean = {
   status?: string;
 };
 
-export async function OnlinePluginAuthorGet(): Promise<{ registered?: boolean; author?: OnlinePluginAuthorBean }> {
+export async function OnlinePluginAuthorGet(options?: { showErrorNotify?: boolean }): Promise<{ registered?: boolean; author?: OnlinePluginAuthorBean }> {
   return await request({
     url: apiPrefix + "/online/author/get",
     method: "post",
+    showErrorNotify: options?.showErrorNotify,
   });
 }
 

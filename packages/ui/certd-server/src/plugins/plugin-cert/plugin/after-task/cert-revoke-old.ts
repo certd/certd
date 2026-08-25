@@ -44,7 +44,7 @@ export class CertRevokeOldPlugin extends AbstractTaskPlugin {
     order: 1,
     helper: "执行吊销前等待的秒数，确保新证书生效后再吊销旧证书",
   })
-  delay: number = 50;
+  delay = 50;
 
   /**
    * 证书申请类插件类型：证书仓库按这些任务的 id 记录来源，吊销时按相同任务 id 精确匹配

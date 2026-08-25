@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
-import { canEditStorePlugin, getPluginFullName, isOnlinePluginUpgradeAvailable, parseOnlinePluginFullName, PluginService } from "./plugin-service.js";
+import yaml from "js-yaml";
+import { getPluginFullName, isAuthor, isOnlinePluginUpgradeAvailable, parseOnlinePluginFullName, PluginService } from "./plugin-service.js";
 
 type RepoOptions = {
   marketRows?: any[];
@@ -48,7 +49,13 @@ function createPluginRepositoryMock(options: RepoOptions = {}) {
     function getFilteredList(options?: { paginate?: boolean }) {
       let list = (state.savedRows.length ? state.savedRows : state.queryRows).slice();
       for (const key of Object.keys(flags.whereQuery)) {
-        list = list.filter(item => item[key] === flags.whereQuery[key]);
+        const value = flags.whereQuery[key];
+        if (key === "developerId" && value?._type === "or") {
+          const developerIds = value._value.map((condition: any) => (condition._type === "isNull" ? null : condition._value));
+          list = list.filter(item => developerIds.includes(item.developerId ?? null));
+          continue;
+        }
+        list = list.filter(item => item[key] === value);
       }
       if (flags.notBuiltIn) {
         list = list.filter(item => item.type !== "builtIn");
@@ -221,12 +228,13 @@ describe("PluginService online plugins", () => {
     assert.equal(isOnlinePluginUpgradeAvailable("beta", "beta2"), true);
   });
 
-  it("allows editing store plugins without developerId or owned by bound user", () => {
-    assert.equal(canEditStorePlugin(undefined, undefined), true);
-    assert.equal(canEditStorePlugin(0, undefined), true);
-    assert.equal(canEditStorePlugin(12, 12), true);
-    assert.equal(canEditStorePlugin(12, 13), false);
-    assert.equal(canEditStorePlugin(12, undefined), false);
+  it("identifies authors for plugins without developerId or owned by the bound user", () => {
+    assert.equal(isAuthor({}, undefined), true);
+    assert.equal(isAuthor({ developerId: undefined }, undefined), true);
+    assert.equal(isAuthor({ developerId: 0 }, undefined), false);
+    assert.equal(isAuthor({ developerId: 12 }, 12), true);
+    assert.equal(isAuthor({ developerId: 12 }, 13), false);
+    assert.equal(isAuthor({ developerId: 12 }, undefined), false);
   });
 
   it("uses fullName for plugin registration and falls back to name when author is empty", () => {
@@ -236,6 +244,24 @@ describe("PluginService online plugins", () => {
     assert.equal(getPluginFullName({ name: "developer/plugin", author: "developer" }), "developer/plugin");
   });
 
+  it("searches plugin name keywords in name, fullName, and description", () => {
+    const service = new PluginService();
+    const records = (service as any).filterBuiltInList(
+      [
+        { id: 1, name: "demo-access" },
+        { id: 2, fullName: "developer/demo-deploy" },
+        { id: 3, desc: "用于 demo 场景" },
+        { id: 4, name: "other-plugin", fullName: "other/other-plugin", desc: "无关插件" },
+      ],
+      { name: "demo" }
+    );
+
+    assert.deepEqual(
+      records.map((item: any) => item.id),
+      [1, 2, 3]
+    );
+  });
+
   it("requires a user-provided author for local store plugin edits", async () => {
     const service = new PluginService();
 
@@ -243,17 +269,59 @@ describe("PluginService online plugins", () => {
     await assert.rejects(() => service.update({ id: 1, type: "store", author: "", name: "demo" }), /请先填写插件作者/);
   });
 
+  it("creates a notification plugin with the default template", async () => {
+    const service = new PluginService();
+    let savedPlugin: any;
+    service.repository = {
+      async findOne() {
+        return null;
+      },
+      async findOneBy() {
+        return null;
+      },
+      async save(plugin: any) {
+        if (plugin.id == null) {
+          plugin.id = 1;
+        }
+        savedPlugin = plugin;
+        return plugin;
+      },
+    } as any;
+    service.registerById = async () => {};
+
+    const res = await service.add({
+      type: "store",
+      author: "greper",
+      name: "demo-notify",
+      title: "Demo Notify",
+      pluginType: "notification",
+    });
+
+    assert.equal(savedPlugin.pluginType, "notification");
+    assert.match(savedPlugin.content, /BaseNotification/);
+    assert.equal(typeof res.id, "number");
+  });
+
   it("marks online plugins with local installation state", async () => {
     const service = new PluginService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return {};
+      },
+    } as any;
     service.repository = createPluginRepositoryMock({
       marketRows: [
         {
+          id: 3,
           type: "store",
           fullName: "greper/DeployToDemo",
           author: "greper",
           name: "DeployToDemo",
           pluginType: "deploy",
           latest: "1.0.1",
+          version: "1.0.0",
+          installed: true,
+          disabled: false,
           title: "Deploy Demo",
         },
         {
@@ -275,32 +343,18 @@ describe("PluginService online plugins", () => {
           title: "Deploy Demo From Other Author",
         },
       ],
-      installedRows: [
-        {
-          type: "store",
-          id: 3,
-          fullName: "greper/DeployToDemo",
-          author: "greper",
-          name: "DeployToDemo",
-          pluginType: "deploy",
-          version: "1.0.0",
-          disabled: false,
-          installed: true,
-          content: "name: DeployToDemo",
-        },
-      ],
     }) as any;
 
     const list = await service.onlinePluginList({});
 
     assert.equal(list.length, 3);
     assert.equal(list[0].installed, true);
-    assert.equal(list[0].installedVersion, "1.0.0");
+    assert.equal(list[0].version, "1.0.0");
     assert.equal(list[0].upgradeAvailable, true);
-    assert.equal(list[0].localPluginId, 3);
+    assert.equal(list[0].id, 3);
     assert.equal(list[1].installed, false);
     assert.equal(list[2].installed, false);
-    assert.equal((service.repository as any).state.findCalls, 1);
+    assert.equal((service.repository as any).state.findCalls, 0);
   });
 
   it("filters market plugins by the current bound developer when onlyMine is enabled", async () => {
@@ -346,8 +400,40 @@ describe("PluginService online plugins", () => {
     assert.equal(page.records[0].fullName, "developer/owned-plugin");
   });
 
+  it("returns no records for onlyMine when no developer account is bound", async () => {
+    const service = new PluginService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return {};
+      },
+    } as any;
+    service.repository = createPluginRepositoryMock({
+      marketRows: [
+        {
+          id: 1,
+          type: "store",
+          developerId: 12,
+          fullName: "developer/owned-plugin",
+        },
+      ],
+    }) as any;
+
+    const page = await service.page({
+      query: { type: "store", onlyMine: true } as any,
+      page: { offset: 0, limit: 20 },
+    });
+
+    assert.deepEqual(page.records, []);
+    assert.equal(page.total, 0);
+  });
+
   it("does not treat uninstalled market rows as installed plugins", async () => {
     const service = new PluginService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return {};
+      },
+    } as any;
     service.repository = createPluginRepositoryMock({
       marketRows: [
         {
@@ -400,6 +486,7 @@ describe("PluginService online plugins", () => {
               title: `plugin ${index + 1}`,
               latest: "1.0.0",
               status: "published",
+              score: 4.5,
               aiCheckStatus: "passed",
             })),
           };
@@ -454,14 +541,122 @@ describe("PluginService online plugins", () => {
     assert.equal(res.length, 201);
     assert.equal(repository.state.savedRows.length, 201);
     assert.equal(repository.state.savedRows[0].fullName, "developer/plugin-1");
+    assert.equal(repository.state.savedRows[0].score, 4.5);
     assert.equal(repository.state.savedRows[0].aiCheckStatus, "passed");
     assert.equal(savedSettings.length, 1);
     assert.equal(typeof savedSettings[0].lastSyncTime, "number");
     assert.equal(savedSettings[0].lastSyncTime > 0, true);
   });
 
+  it("syncs dependPlugins from platform and returns them in the online list", async () => {
+    const service = new PluginService();
+    const savedSettings: any[] = [];
+    service.plusService = {
+      async register() {},
+      async request() {
+        return {
+          page: {
+            start: 0,
+            limit: 200,
+            total: 2,
+          },
+          list: [
+            {
+              author: "greper",
+              name: "TestDeploy",
+              pluginType: "deploy",
+              title: "TestDeploy",
+              latest: "1.0.2",
+              status: "published",
+              dependPlugins: {
+                "access:greper/hostAccess": "*",
+              },
+            },
+            {
+              author: "greper",
+              name: "hostAccess",
+              pluginType: "access",
+              title: "Host Access",
+              latest: "1.0.0",
+              status: "published",
+            },
+          ],
+        };
+      },
+    } as any;
+    service.sysSettingsService = {
+      async getSetting() {
+        return { lastSyncTime: 0 };
+      },
+      async saveSetting(setting: any) {
+        savedSettings.push(setting);
+      },
+    } as any;
+    const repository = createPluginRepositoryMock({
+      existingStoreRows: [],
+      queryRows: [],
+    });
+    service.repository = repository as any;
+
+    const res = await service.syncOnlinePluginList();
+
+    const saved = repository.state.savedRows.find((item: any) => item.fullName === "greper/TestDeploy");
+    assert.deepEqual(yaml.load(saved.dependPlugins), { "access:greper/hostAccess": "*" });
+    // 列表接口同样能返回 dependPlugins，供前端依赖解析匹配 type:author/name
+    const deployRecord = res.find((item: any) => item.fullName === "greper/TestDeploy");
+    assert.deepEqual(deployRecord.dependPlugins, { "access:greper/hostAccess": "*" });
+    const hostRecord = res.find((item: any) => item.fullName === "greper/hostAccess");
+    assert.equal(hostRecord.fullName, "greper/hostAccess");
+  });
+
+  it("onlinePluginList returns fullName and dependPlugins for dependency matching", async () => {
+    const service = new PluginService();
+    const row = {
+      id: 1,
+      type: "store",
+      fullName: "greper/hostAccess",
+      author: "greper",
+      name: "hostAccess",
+      pluginType: "access",
+      installed: false,
+      dependPlugins: yaml.dump({ "access:aliyun": "*" }),
+      content: "secret plugin content",
+      setting: "secret setting",
+      sysSetting: "secret system setting",
+      metadata: "secret metadata",
+      extra: "secret extra",
+    };
+    service.repository = createPluginRepositoryMock({
+      queryRows: [row],
+      existingStoreRows: [row],
+    }) as any;
+    service.sysSettingsService = {
+      async getSetting() {
+        return {};
+      },
+    } as any;
+
+    const res = await service.onlinePluginList({});
+
+    // 前端依赖解析依赖这些字段匹配 type:author/name
+    assert.equal(res.length, 1);
+    assert.equal(res[0].fullName, "greper/hostAccess");
+    assert.deepEqual(res[0].dependPlugins, { "access:aliyun": "*" });
+    const responseRecord = res[0] as any;
+    assert.equal(responseRecord.content, undefined);
+    assert.equal(responseRecord.setting, undefined);
+    assert.equal(responseRecord.sysSetting, undefined);
+    assert.equal(responseRecord.metadata, undefined);
+    assert.equal(responseRecord.extra, undefined);
+  });
+
   it("page includes synced store plugins without installed state", async () => {
     const service = new PluginService();
+    service.sysSettingsService = {
+      async getSetting() {
+        return {};
+      },
+    } as any;
     const installedRow = {
       id: 2,
       type: "store",
@@ -515,7 +710,7 @@ describe("PluginService online plugins", () => {
     );
     assert.equal((res.records[0] as any).installed, false);
     assert.equal((res.records[1] as any).installed, true);
-    assert.equal((res.records[1] as any).localPluginId, installedRow.id);
+    assert.equal((res.records[1] as any).id, installedRow.id);
     assert.equal((res.records[1] as any).upgradeAvailable, true);
   });
 
@@ -618,6 +813,134 @@ describe("PluginService online plugins", () => {
       type: "store",
       fullName: "greper/DeployToDemo",
     });
+  });
+
+  it("preserves dependPlugins when syncing online plugin metadata", async () => {
+    const service = new PluginService();
+    service.repository = createPluginRepositoryMock() as any;
+    const record = (service as any).normalizeOnlinePluginRecord(
+      {
+        fullName: "developer/demo",
+        author: "developer",
+        name: "demo",
+        pluginType: "deploy",
+        dependPlugins: {
+          "access:aliyun": "developer/aliyun-access",
+        },
+      },
+      123
+    );
+
+    assert.deepEqual(yaml.load(record.dependPlugins), {
+      "access:aliyun": "developer/aliyun-access",
+    });
+  });
+
+  it("clears dependPlugins when remote plugin no longer declares dependencies", async () => {
+    const service = new PluginService();
+    service.repository = createPluginRepositoryMock() as any;
+    const old = { extra: yaml.dump({ dependPackages: { axios: "*" } }) };
+    const record = (service as any).normalizeOnlinePluginRecord(
+      {
+        fullName: "developer/demo",
+        author: "developer",
+        name: "demo",
+        pluginType: "deploy",
+      },
+      123,
+      old
+    );
+
+    // 远程下掉依赖后，专用列不再保留旧声明。
+    assert.equal(record.dependPlugins, null);
+    assert.deepEqual(yaml.load(record.extra), { dependPackages: { axios: "*" } });
+  });
+
+  it("reads dependPlugins from the dedicated column", async () => {
+    const service = new PluginService();
+    const bean = (service as any).toOnlinePluginBean({
+      id: 1,
+      type: "store",
+      fullName: "developer/demo",
+      author: "developer",
+      name: "demo",
+      pluginType: "deploy",
+      installed: false,
+      dependPlugins: yaml.dump({ "access:aliyun": "*" }),
+    });
+
+    assert.deepEqual(bean.dependPlugins, { "access:aliyun": "*" });
+  });
+
+  it("parses dependPlugins with author-qualified colon keys from the column", async () => {
+    const service = new PluginService();
+    // 数据库里存的实际格式：access:author/name: version（含冒号的 key）
+    const bean = (service as any).toOnlinePluginBean({
+      id: 1,
+      type: "store",
+      fullName: "tencent/TestDeploy",
+      author: "tencent",
+      name: "TestDeploy",
+      pluginType: "deploy",
+      installed: false,
+      dependPlugins: "access:tencent/TestAccess: '*'\n",
+    });
+
+    assert.deepEqual(bean.dependPlugins, { "access:tencent/TestAccess": "*" });
+  });
+
+  it("does not read dependPlugins from extra when the dedicated column is empty", async () => {
+    const service = new PluginService();
+    const bean = (service as any).toOnlinePluginBean({
+      id: 1,
+      type: "store",
+      fullName: "developer/demo",
+      author: "developer",
+      name: "demo",
+      pluginType: "deploy",
+      installed: false,
+      extra: yaml.dump({ dependPlugins: { "access:aliyun": "*" } }),
+    });
+
+    assert.deepEqual(bean.dependPlugins, {});
+  });
+
+  it("writes dependPlugins into the dedicated column when importing plugin content", async () => {
+    const service = new PluginService();
+    let savedPlugin: any;
+    service.repository = {
+      async findOne() {
+        return null;
+      },
+      async findOneBy() {
+        return null;
+      },
+      async save(plugin: any) {
+        savedPlugin = plugin;
+        return plugin;
+      },
+    } as any;
+    service.add = async (param: any) => {
+      param.id = 1;
+      return { id: 1 };
+    };
+    service.unRegisterById = async () => {};
+    service.registerById = async () => {};
+
+    await service.importPlugin({
+      type: "store",
+      override: true,
+      content: yaml.dump({
+        name: "demo",
+        pluginType: "deploy",
+        author: "developer",
+        dependPlugins: { "access:aliyun": "*" },
+        content: "return class Demo {}",
+      }),
+    });
+
+    // extra 主存储与列冗余都写入
+    assert.deepEqual(yaml.load(savedPlugin.dependPlugins), { "access:aliyun": "*" });
   });
 
   it("fills missing yaml version from online plugin version before import", async () => {
@@ -1068,5 +1391,92 @@ describe("PluginService online plugins", () => {
     await assert.rejects(service.uninstallOnlinePlugin(7), /在线插件/);
 
     assert.deepEqual(deleted, []);
+  });
+
+  it("persists dependPlugins from the edit form (object form) through update", async () => {
+    const service = new PluginService();
+    let savedPlugin: any;
+
+    service.repository = {
+      async findOne() {
+        return null;
+      },
+      async save(plugin: any) {
+        savedPlugin = plugin;
+        return plugin;
+      },
+    } as any;
+    service.unRegisterById = async () => {};
+    service.registerById = async () => {};
+
+    // 前端编辑表单提交的是 KvInput 的对象形式
+    await service.update({
+      id: 7,
+      type: "store",
+      fullName: "developer/demo",
+      author: "developer",
+      name: "demo",
+      pluginType: "deploy",
+      dependPlugins: {
+        "access:aliyun": "*",
+      },
+    });
+
+    assert.deepEqual(yaml.load(savedPlugin.dependPlugins), { "access:aliyun": "*" });
+  });
+
+  it("persists dependPlugins from the edit form (yaml string form) through update", async () => {
+    const service = new PluginService();
+    let savedPlugin: any;
+
+    service.repository = {
+      async findOne() {
+        return null;
+      },
+      async save(plugin: any) {
+        savedPlugin = plugin;
+        return plugin;
+      },
+    } as any;
+    service.unRegisterById = async () => {};
+    service.registerById = async () => {};
+
+    // 部分提交路径（如表格 Fast Crud submit）可能已经是 YAML 字符串
+    await service.update({
+      id: 7,
+      type: "store",
+      fullName: "developer/demo",
+      author: "developer",
+      name: "demo",
+      pluginType: "deploy",
+      dependPlugins: yaml.dump({ "access:aliyun": "*" }),
+    });
+
+    assert.deepEqual(yaml.load(savedPlugin.dependPlugins), { "access:aliyun": "*" });
+  });
+
+  it("exports dependPlugins back into the plugin YAML", async () => {
+    const service = new PluginService();
+    service.info = (async (id: number) => {
+      return {
+        id,
+        type: "store",
+        fullName: "developer/demo",
+        author: "developer",
+        name: "demo",
+        pluginType: "deploy",
+        title: "demo",
+        icon: "icon",
+        group: "default",
+        desc: "desc",
+        version: "1.0.0",
+        dependPlugins: yaml.dump({ "access:aliyun": "*" }),
+      } as any;
+    }) as any;
+
+    const content = await service.exportPlugin(7);
+    const loaded = yaml.load(content) as Record<string, any>;
+
+    assert.deepEqual(loaded.dependPlugins, { "access:aliyun": "*" });
   });
 });

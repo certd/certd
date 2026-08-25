@@ -89,7 +89,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 确实不适合先写测试时，在回复中说明原因和替代验证方式。
 - 后补单元测试时，按正确行为写预期；若红灯需要修改既有实现，先向用户确认这是 bug 还是既有需求，避免未经确认改变行为。
 - 后端纯单测放在 `src/**/*.test.ts`，尽量与被测文件相邻；`test:unit` 只跑这些文件，构建/打包应排除 `*.test.ts`。
-- 单测需要 mock ESM 静态 import 时，优先使用 `esmock`，不要为了测试改业务代码结构。
+- 单测需要 mock ESM 静态 import（如 `@certd/plus-core` 的 `isPlus`、第三方包）时，**优先使用 `esmock`**，通过 `esmock(被测模块路径, { 依赖模块: { 导出: mock实现 } })` 加载被测模块并替换依赖；**不要为了测试给业务代码加注入点/改业务结构**（如不需要给类加 `isPlusFn` 之类的可注入属性）。
 - 各包 `test:unit` 脚本应显式设置 `NODE_ENV=unittest`。
 - 单包单测优先用 `cd <包目录> && npm run test:unit`，例如 `cd packages\ui\certd-server && npm run test:unit`。
 - 优先对改动包运行聚焦测试或格式化/ESLint；只有跨包影响明显时再考虑更大范围构建。
@@ -150,9 +150,12 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 
 - 前端主包是 `packages/ui/certd-client`，使用 Vue 3、Vite、TypeScript、Ant Design Vue、Fast Crud、Pinia、vue-router、vue-i18n。
 - 做前端任务时，先定位 `packages/ui/certd-client/src/views/certd` 下的页面，再找对应 `src/api`。
+- 前端用户提示**统一使用 `notification`**（ant-design-vue 的 `notification.success({ message: X })` / `.error` / `.warning` / `.info`），**不要使用 `message` API**；`src/vben/` 目录（vben 框架内置布局/组件）保持原样不动。
 - 不要运行前端 `pnpm tsc` / `vue-tsc`；当前 `vue-tsc@1.8.27` 会抛无效内部错误。前端 `test:unit` 只是占位脚本，也不要跑。
 - 前端 TS/Vue/locale 改动后，只对本次改动文件运行现有 Prettier / ESLint：`packages\ui\certd-client\node_modules\.bin\prettier.cmd --write <files>` 和 `packages\ui\certd-client\node_modules\.bin\eslint.cmd --fix <files>`。
-- Vue 模板中需要用 JSX 动态渲染时，使用 `<script setup lang="tsx">` 编写；不要使用 `h()` 创建 VNode。
+- 需要手写 render 的地方（如 `Modal.confirm` 的 `content`、`useFormDialog` 的 `body`、动态插槽等），一律用 JSX 编写，禁止使用 `h()` 创建 VNode：
+  - `.vue` 组件：把 `<script lang="ts" setup>` 改为 `<script lang="tsx" setup>`，然后在 JSX 中直接写元素（如 `content: () => (<div class="xxx">...</div>)`）。
+  - `.ts` 文件：直接把文件后缀改为 `.tsx`，再写 JSX render。
 - 列表管理、后台管理、记录查询、CRUD 表格页面优先使用 Fast Crud；开发或重构前读 `.trae/skills/fast-crud-page-dev/SKILL.md`。
 - 只有轻量只读展示、强交互自定义界面或既有页面模式明显不适合 Fast Crud 时，才手写 `a-table` / 自定义列表，并在回复中说明。
 - 内嵌 Fast Crud 时，外层必须有稳定高度或完整 `flex: 1; min-height: 0` 链路。
@@ -161,6 +164,7 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 可复用的公共样式名放在 `packages/ui/certd-client/src/style` 下维护，优先使用 `cd-` 前缀，避免散落在业务组件里重复定义。
 - 后台管理列表展示或筛选用户字段时，优先参考 `packages/ui/certd-client/src/views/sys/suite/user-suite/crud.tsx` 的 `userId` 字段模式，用 `table-select` + `/sys/authority/user/getSimpleUserByIds` 字典回显和搜索。
 - 对话框里只做确认可用 `Modal.confirm`；有字段输入、表单校验或提交字段时，必须用 `useFormDialog` / `openFormDialog`。
+- 使用 `table-select` / `fs-table-select` 时，`dict` 必须配置 `getNodesByValues`，支持根据已选 ID 批量懒加载选项，确保编辑回显和异步数据场景正常工作。
 
 ### 前端地图
 
@@ -203,6 +207,14 @@ Certd 是可私有化部署的 SSL/TLS 证书自动化管理平台，提供 Web 
 - 修改 EAB `kid` 后，应重新生成绑定该 `kid` 的 account private key；否则应阻止继续申请并提示刷新账号私钥。
 - 插件开发前先读对应技能：`.trae/skills/dns-provider-dev/SKILL.md`、`.trae/skills/task-plugin-dev/SKILL.md`、`.trae/skills/access-plugin-dev/SKILL.md`、`.trae/skills/plugin-converter/SKILL.md`。
 - `.codex/skills` 是指向 `.trae/skills` 的目录链接；更新技能只维护 `.trae/skills`，不要复制第二份。
+
+### 插件市场身份与卡片操作
+
+- 插件唯一身份是 `fullName`：有作者时为 `author/name`，内置插件为其 `name`。数据库判重、同步/安装匹配、前端列表 `key` 和 Fast Crud `rowKey` 都必须使用 `fullName`，不得退回仅按 `name` 匹配。
+- 新增或导入本地插件必须生成 `fullName`；旧插件若缺失 `fullName`，应在迁移或兼容更新时按作者和名称补齐，避免同名不同作者的插件互相覆盖或误判已安装。
+- 插件分为四类：内置插件（无作者，需通过内置插件接口获取）、导入/自开发插件（无 `developerId`）、云端同步未安装插件（有 `developerId` 且 `installed=false`）、云端已安装插件（有 `developerId` 且 `installed=true`）。
+- 云端插件是否属于当前用户，只能以当前站点绑定账号的 `userId === developerId` 判断；不要以 `localEditable` 或插件名称、作者名称等字段代替。
+- 插件管理卡片所有类型都必须有“配置”入口。导入/自开发插件应显示编辑、复制、发布、删除；当前用户自己的已安装云端插件应显示编辑、复制、发布，但云端插件一律不显示删除。云端插件按 `installed` 显示安装或卸载，且管理操作和卸载入口可同时存在，不能互相覆盖。
 
 ### 后置任务（AfterTask）机制
 

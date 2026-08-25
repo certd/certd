@@ -27,7 +27,7 @@ const isLocalAuthor = computed(() => {
 async function loadAuthor() {
   loading.value = true;
   try {
-    const result = await api.OnlinePluginAuthorGet();
+    const result = await api.OnlinePluginAuthorGet({ showErrorNotify: false });
     if ((!props.modelValue || isLocalAuthor.value) && result.author?.name) {
       emit("update:modelValue", result.author.name);
     }

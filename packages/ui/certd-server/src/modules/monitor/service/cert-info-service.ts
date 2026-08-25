@@ -16,6 +16,7 @@ export type UploadCertReq = {
   projectId?: number;
   pipelineId?: number;
   taskId?: string;
+  acmeAccountAccessId?: number;
 };
 
 /**
@@ -149,12 +150,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
    * 流水线申请证书成功后写入证书仓库
    *
    * 每条流水线可保留多条证书记录：
-   * 1. 新证书总是新建一条激活状态（active）的记录，并绑定流水线id与申请任务id；
-   * 2. 证书来源（fromType）保持与该流水线原有记录一致（如 upload/auto）；
-   * 3. 同流水线、同申请任务的其他激活状态的证书记录被标记为未激活（inactive）；
-   * 4. 【重要】不得删除该流水线的空证书记录（certInfo 为空、由保存流水线时 updateDomains 维护的占位记录）。
-   *    开放接口（OpenAPI autoApply）正是根据证书仓库中是否有该流水线的记录来判断“是否已申请过”：
-   *    若删掉这条空记录，证书申请成功前开放接口会反复触发创建新流水线。空证书记录必须保留。
+   * 1. 【重要】若该流水线存在空证书记录（certInfo 为空、由保存流水线时 updateDomains 创建的占位记录），
+   *    直接更新这条占位记录写入证书内容，不要新建一条——占位记录是开放接口（OpenAPI autoApply）
+   *    判断“是否已申请过”的依据，必须保留，更新它既能复用记录又保持记录数不变；
+   * 2. 没有占位记录时，新证书新建一条激活状态（active）的记录，并绑定流水线id与申请任务id；
+   * 3. 证书来源（fromType）保持与该流水线原有记录一致（如 upload/auto）；
+   * 4. 同流水线、同申请任务的其他激活状态的证书记录被标记为未激活（inactive）。
    */
   async updateCertByPipelineId(pipelineId: number, cert: CertInfo, fromType?: string, taskId?: string) {
     const pipeline = await this.pipelineRepository.findOne({
@@ -176,6 +177,20 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     const certUserId = pipeline?.userId;
     const certProjectId = pipeline?.projectId;
 
+    // 查找该流水线的空证书记录（占位记录，certInfo 为空）：存在则直接更新它，不新建记录
+    const placeholderRecord = await this.repository.findOne({
+      where: {
+        pipelineId,
+        taskId: taskId ?? IsNull(),
+        certInfo: IsNull(),
+        ...this.buildUserProjectQuery(certUserId, certProjectId),
+      },
+      order: { id: "DESC" },
+    });
+
+    // 解析ACME账号授权id，随证书记录落库：吊销旧证书时直接读表，无需再解析流水线
+    const acmeAccountAccessId = this.parseAcmeAccountAccessId(pipeline);
+
     const bean = await this.updateCert({
       certReader: new CertReader(cert),
       fromType: certFromType,
@@ -183,6 +198,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       projectId: certProjectId,
       pipelineId,
       taskId,
+      id: placeholderRecord?.id,
+      acmeAccountAccessId,
     });
     // 旧证书标记为未激活（仅同申请任务产出的旧证书，避免误伤其他任务仍在使用的证书）
     await this.repository.update(
@@ -289,7 +306,9 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     const bean = new CertInfoEntity();
     const { id, fromType, userId, certReader } = req;
     if (id) {
+      // 更新已有记录（如空证书记录占位被申请成功复用）：写入新证书内容后该记录应为激活状态
       bean.id = id;
+      bean.status = CertStatus.active;
     } else {
       bean.fromType = fromType;
       // 新证书默认为激活状态
@@ -310,8 +329,21 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     bean.taskId = req.taskId;
     bean.userId = userId;
     bean.projectId = req.projectId;
+    // 吊销旧证书时直接使用记录上的ACME账号授权id（无需再解析流水线）
+    bean.acmeAccountAccessId = req.acmeAccountAccessId;
     await this.addOrUpdate(bean);
     return bean;
+  }
+
+  /**
+   * 从流水线配置中解析证书申请任务使用的ACME账号授权id（写入证书记录，吊销时读表使用）
+   */
+  private parseAcmeAccountAccessId(pipeline?: PipelineEntity): number | undefined {
+    if (!pipeline?.content) {
+      return undefined;
+    }
+    const input = this.parseCertApplyInput(pipeline.content);
+    return input?.acmeAccountAccessId;
   }
 
   /**
@@ -352,8 +384,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     }
     const certInfo = JSON.parse(entity.certInfo) as CertInfo;
 
-    // 从关联流水线解析证书颁发机构与ACME账号
-    const { sslProvider, acmeAccount, useProxy, reverseProxy } = await this.resolveRevokeParams(entity.pipelineId, userId, projectId);
+    // 优先使用证书记录上保存的ACME账号授权id（吊销不再解析流水线）；旧数据没有该字段时回退解析流水线
+    const { sslProvider, acmeAccount, useProxy, reverseProxy } = await this.resolveRevokeParamsWithEntity(entity, userId, projectId);
     if (!acmeAccount && !sslProvider) {
       throw new CodeException({
         ...Constants.res.openCertNotFound,
@@ -371,6 +403,28 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         revokeTime: Date.now(),
       }
     );
+  }
+
+  /**
+   * 解析吊销所需参数（sslProvider / acmeAccount / 代理配置）
+   *
+   * 优先使用证书记录上保存的 acmeAccountAccessId 直接取ACME账号（无需查询流水线）；
+   * 记录上没有该字段（旧数据或非ACME来源）时，回退到从流水线配置解析（旧版兼容）。
+   */
+  private async resolveRevokeParamsWithEntity(entity: CertInfoEntity, userId: number, projectId?: number): Promise<{ sslProvider?: string; acmeAccount?: any; useProxy?: boolean; reverseProxy?: string }> {
+    if (entity.acmeAccountAccessId) {
+      const access = await this.accessService.getAccessById(entity.acmeAccountAccessId, true, userId, projectId);
+      if (access?.getAccount) {
+        const acmeAccount = access.getAccount();
+        return {
+          sslProvider: acmeAccount?.caType,
+          acmeAccount,
+          useProxy: undefined,
+          reverseProxy: undefined,
+        };
+      }
+    }
+    return this.resolveRevokeParams(entity.pipelineId, userId, projectId);
   }
 
   /**

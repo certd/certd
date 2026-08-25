@@ -15,6 +15,7 @@
     "dev-mysql": "cross-env NODE_ENV=dev-mysql mwtsc --watch --run @midwayjs/mock/app",
     "dev-mysql-comm": "cross-env NODE_ENV=dev-mysql-comm mwtsc --watch --run @midwayjs/mock/app",
     "dev-localplus": "cross-env NODE_ENV=dev-localplus mwtsc --watch --run @midwayjs/mock/app",
+    "dev-localplus2": "cross-env NODE_ENV=dev-localplus2 mwtsc --watch --run @midwayjs/mock/app",
     "dev-pgpl": "cross-env NODE_ENV=dev-pgpl mwtsc --watch --run @midwayjs/mock/app",
     "dev-new": "cross-env NODE_ENV=dev-new mwtsc --watch --run @midwayjs/mock/app",
     "rm-newdb": "rimraf ./data/db-new.sqlite",

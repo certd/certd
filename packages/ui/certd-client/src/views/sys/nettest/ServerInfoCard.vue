@@ -48,7 +48,7 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { GetServerInfo } from "./api";
 
 // 服务器信息类型
@@ -70,7 +70,7 @@ const loadServerInfo = async () => {
     serverInfo.value = await GetServerInfo();
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
-    message.error("获取服务器信息失败");
+    notification.error({ message: "获取服务器信息失败" });
   } finally {
     loading.value = false;
   }

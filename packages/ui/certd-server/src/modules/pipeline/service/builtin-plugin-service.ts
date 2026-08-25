@@ -1,6 +1,7 @@
 import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
-import { accessRegistry, pluginGroups, pluginRegistry } from "@certd/pipeline";
+import { accessRegistry, notificationRegistry, pluginGroups, pluginRegistry } from "@certd/pipeline";
 import { dnsProviderRegistry } from "@certd/plugin-cert";
+import { addonRegistry } from "@certd/lib-server";
 import { cloneDeep } from "lodash-es";
 
 @Provide()
@@ -27,7 +28,13 @@ export class BuiltInPluginService {
   }
 
   getAllList() {
-    const pluginList = this.getList();
+    // 各注册表补 pluginType，供内置插件按类型查询/筛选
+    const pluginList = this.getList().map(item => {
+      return {
+        ...item,
+        pluginType: "deploy",
+      };
+    });
     const accessList = accessRegistry.getDefineList().map(item => {
       return {
         ...item,
@@ -40,7 +47,19 @@ export class BuiltInPluginService {
         pluginType: "dnsProvider",
       };
     });
-    const list = [...pluginList, ...accessList, ...dnsProviderList];
+    const notificationList = notificationRegistry.getDefineList().map(item => {
+      return {
+        ...item,
+        pluginType: "notification",
+      };
+    });
+    const addonList = (addonRegistry.getDefineList?.() || []).map(item => {
+      return {
+        ...item,
+        pluginType: "addon",
+      };
+    });
+    const list = [...pluginList, ...accessList, ...dnsProviderList, ...notificationList, ...addonList];
     return list.sort((a, b) => {
       return (a.order ?? 10) - (b.order ?? 10);
     });

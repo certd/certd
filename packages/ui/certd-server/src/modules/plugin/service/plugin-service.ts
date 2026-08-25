@@ -1,15 +1,15 @@
-﻿import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { addonRegistry, BaseService, PageReq, PlusService, SysInstallInfo, SysPluginSetting, SysSettingsService } from "@certd/lib-server";
 import { PluginEntity } from "../entity/plugin.js";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Brackets, IsNull, Like, Not, Repository } from "typeorm";
+import { Brackets, Equal, IsNull, Like, Not, Or, Repository } from "typeorm";
 import { isComm } from "@certd/plus-core";
 import { BuiltInPluginService } from "../../pipeline/service/builtin-plugin-service.js";
 import { merge } from "lodash-es";
 import { dnsProviderRegistry } from "@certd/plugin-cert";
 import { logger } from "@certd/basic";
 import yaml from "js-yaml";
-import { getDefaultAccessPlugin, getDefaultDeployPlugin, getDefaultDnsPlugin } from "./default-plugin.js";
+import { getDefaultAccessPlugin, getDefaultDeployPlugin, getDefaultDnsPlugin, getDefaultNotificationPlugin } from "./default-plugin.js";
 import fs from "fs";
 import path from "path";
 import { importRuntime as importRuntimeDirect, getRuntimeDepsService, pluginRegistry, accessRegistry, notificationRegistry } from "@certd/pipeline";
@@ -36,6 +36,8 @@ export type PluginFindReq = {
   keywords?: string[];
   includeBuiltIn?: boolean;
   includeStore?: boolean;
+  /** 同时查询本地导入或自开发的旧插件记录。 */
+  includeLocal?: boolean;
 };
 
 export type OnlinePluginInstallReq = {
@@ -112,15 +114,15 @@ export type OnlinePluginBean = {
   score?: number;
   aiCheckStatus?: string;
   vip?: string;
+  dependPlugins?: Record<string, string>;
   editable?: boolean;
-  selfAuthored?: boolean;
   installed?: boolean;
-  installedVersion?: string;
   upgradeAvailable?: boolean;
-  localPluginId?: number;
-  localDisabled?: boolean;
-  localEditable?: boolean;
+  version?: string;
+  disabled?: boolean;
   syncTime?: number;
+  createTime?: Date;
+  updateTime?: Date;
 };
 
 export type OnlinePluginVersionBean = {
@@ -219,6 +221,38 @@ function fillOnlinePluginYamlVersion(content: string, version?: string) {
   );
 }
 
+/**
+ * 把依赖插件声明序列化为 YAML 字符串；空依赖返回 null，不落库。
+ */
+function toDependPluginsYaml(dependPlugins?: Record<string, string> | null): string | null {
+  if (!dependPlugins || typeof dependPlugins !== "object" || Array.isArray(dependPlugins) || Object.keys(dependPlugins).length === 0) {
+    return null;
+  }
+  return yaml.dump(dependPlugins);
+}
+
+/**
+ * 解析依赖插件声明。depend_plugins 字段存的是 YAML 字符串；
+ * 兼容直接传入对象（如内置插件本地 YAML 注册）和旧数据。
+ */
+function parseDependPlugins(value?: string | Record<string, string> | null): Record<string, string> {
+  if (!value) {
+    return {};
+  }
+  if (typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, string>;
+  }
+  try {
+    const parsed = yaml.load(value);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as Record<string, string>;
+    }
+  } catch (e) {
+    // 解析失败按无依赖处理，避免脏数据阻断注册
+  }
+  return {};
+}
+
 function isBareModuleSpecifier(modulePath: string) {
   if (modulePath.startsWith(".") || modulePath.startsWith("/") || modulePath.startsWith("file:") || modulePath.startsWith("node:")) {
     return false;
@@ -233,11 +267,11 @@ function normalizePluginSourceType(type?: string) {
   return type;
 }
 
-export function canEditStorePlugin(developerId?: number, bindUserId?: number) {
-  if (!developerId) {
+export function isAuthor(item?: any, bindUserId?: number) {
+  if (item?.developerId == null) {
     return true;
   }
-  return !!bindUserId && developerId === bindUserId;
+  return !!bindUserId && item.developerId === bindUserId;
 }
 
 export function getPluginFullName(plugin: { fullName?: string; author?: string; name?: string }) {
@@ -307,15 +341,11 @@ export class PluginService extends BaseService<PluginEntity> {
     if (query.pluginType) {
       records = records.filter(item => item.pluginType === query.pluginType);
     }
-    if (query.name) {
-      const keyword = `${query.name}`.trim().toLowerCase();
-      records = records.filter(item => (item.name || "").toLowerCase().includes(keyword));
-    }
     const keywords = this.normalizePluginFindKeywords(query as any);
     if (keywords.length > 0) {
       records = records.filter(item => {
         return keywords.some(keyword => {
-          return [item.name, item.title, item.desc, item.group, item.pluginType].some(value => `${value || ""}`.toLowerCase().includes(keyword));
+          return [item.name, item.fullName, item.desc, item.title, item.group, item.pluginType].some(value => `${value || ""}`.toLowerCase().includes(keyword));
         });
       });
     }
@@ -323,8 +353,20 @@ export class PluginService extends BaseService<PluginEntity> {
   }
 
   private normalizePluginFindKeywords(req: PluginFindReq) {
-    const values = [...(req.keywords || []), req.keyword || ""];
+    const values = [...(req.keywords || []), req.keyword || "", req.name || ""];
     return values.map(item => `${item || ""}`.trim().toLowerCase()).filter((item, index, list) => item.length > 0 && list.indexOf(item) === index);
+  }
+
+  private addPluginNameSearchQuery(buildQuery: any, keyword: string) {
+    const like = `%${keyword}%`;
+    buildQuery.andWhere(
+      new Brackets(query => {
+        query
+          .where("LOWER(COALESCE(main.name, '')) LIKE :pluginNameKeyword", { pluginNameKeyword: like })
+          .orWhere("LOWER(COALESCE(main.fullName, '')) LIKE :pluginNameKeyword", { pluginNameKeyword: like })
+          .orWhere("LOWER(COALESCE(main.desc, '')) LIKE :pluginNameKeyword", { pluginNameKeyword: like });
+      })
+    );
   }
 
   async findPlugins(req: PluginFindReq = {}) {
@@ -356,34 +398,25 @@ export class PluginService extends BaseService<PluginEntity> {
     }
 
     if (includeStore) {
-      const storeQuery: any = {
-        type: "store",
-      };
+      const storeQuery: any = { type: "store" };
       if (req.pluginType) {
         storeQuery.pluginType = req.pluginType;
       }
       if (req.group) {
         storeQuery.group = req.group;
       }
-      if (req.name) {
-        storeQuery.name = Like(`%${req.name}%`);
-      }
       if (req.author) {
         storeQuery.author = req.author;
       }
 
-      let storeWhere: any = storeQuery;
+      let storeWhere: any = req.includeLocal ? [storeQuery, { ...storeQuery, developerId: IsNull() }, { ...storeQuery, type: IsNull() }] : storeQuery;
       const keywords = this.normalizePluginFindKeywords(req);
       if (keywords.length > 0) {
-        const searchFields = ["fullName", "name", "title", "desc", "group", "pluginType"];
+        const searchFields = ["fullName", "name", "desc", "title", "group", "pluginType"];
         storeWhere = keywords.flatMap(keyword => {
           const keywordLike = Like(`%${keyword}%`);
-          return searchFields.map(field => {
-            return {
-              ...storeQuery,
-              [field]: keywordLike,
-            };
-          });
+          const queries = req.includeLocal ? [storeQuery, { ...storeQuery, developerId: IsNull() }, { ...storeQuery, type: IsNull() }] : [storeQuery];
+          return queries.flatMap(query => searchFields.map(field => ({ ...query, [field]: keywordLike })));
         });
       }
       const storeList = await this.find({
@@ -405,7 +438,7 @@ export class PluginService extends BaseService<PluginEntity> {
         ...storeList.map(item => {
           return {
             ...this.toOnlinePluginBean(item),
-            editable: canEditStorePlugin(item.developerId, bindUserId),
+            editable: isAuthor(item, bindUserId),
           };
         })
       );
@@ -417,29 +450,33 @@ export class PluginService extends BaseService<PluginEntity> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async page(pageReq: PageReq<PluginEntity>) {
     pageReq.query = pageReq.query || {};
-    const query = pageReq.query as Partial<PluginEntity> & { onlyMine?: boolean };
+    const query: any = pageReq.query as Partial<PluginEntity> & { onlyMine?: boolean };
     const onlyMine = query.onlyMine === true;
     delete query.onlyMine;
-    if (onlyMine) {
-      const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
-      if (!installInfo.bindUserId) {
-        return {
-          records: [],
-          total: 0,
-          offset: pageReq.page.offset,
-          limit: pageReq.page.limit,
-        };
-      }
-      query.type = "store";
-      query.developerId = installInfo.bindUserId;
-    }
     if (query.type === "custom") {
       query.type = "store";
+    }
+
+    const nameKeyword = `${query.name || ""}`.trim().toLowerCase();
+    if (nameKeyword && query.type !== "builtIn") {
+      delete query.name;
+      const originalBuildQuery = pageReq.buildQuery;
+      pageReq.buildQuery = buildQuery => {
+        originalBuildQuery?.(buildQuery);
+        this.addPluginNameSearchQuery(buildQuery, nameKeyword);
+      };
+    }
+
+    const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
+    const bindUserId = installInfo.bindUserId;
+    if (onlyMine) {
+      query.type = "store";
+      query.developerId = Or(IsNull(), Equal(bindUserId), Equal(0));
     }
     if (query.type && query.type !== "builtIn") {
       const pageRes = await super.page(pageReq);
       if (query.type === "store") {
-        pageRes.records = (await this.attachOnlineInstallState(pageRes.records.map(item => this.toOnlinePluginBean(item)))) as any;
+        pageRes.records = this.attachOnlineInstallState(pageRes.records, bindUserId) as any;
       }
       return pageRes;
     }
@@ -458,6 +495,18 @@ export class PluginService extends BaseService<PluginEntity> {
       total: builtInList.length,
       offset: offset,
       limit: limit,
+    };
+  }
+
+  async infoWithEditable(id: number) {
+    const plugin = await this.info(id);
+    if (!plugin) {
+      return plugin;
+    }
+    const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
+    return {
+      ...plugin,
+      editable: normalizePluginSourceType(plugin.type) === "store" && isAuthor(plugin, installInfo.bindUserId),
     };
   }
 
@@ -562,8 +611,10 @@ export class PluginService extends BaseService<PluginEntity> {
       }
       merge(record, {
         name: item.name,
+        fullName: item.name,
         title: item.title,
         type: "builtIn",
+        pluginType: item.pluginType,
         icon: item.icon,
         desc: item.desc,
         group: item.group,
@@ -599,9 +650,18 @@ export class PluginService extends BaseService<PluginEntity> {
     return this.builtInPluginService.getByType(type);
   }
 
+  /**
+   * 表单可能直接提交对象形式的 dependPlugins（KvInput），落库前统一序列化为 YAML 字符串。
+   */
+  private normalizeDependPluginsParam(param: any) {
+    if (param.dependPlugins && typeof param.dependPlugins === "object" && !Array.isArray(param.dependPlugins)) {
+      param.dependPlugins = toDependPluginsYaml(param.dependPlugins);
+    }
+  }
+
   private normalizeStorePluginAuthor(plugin: Record<string, any>) {
     const author = `${plugin.author || ""}`.trim();
-    if (!author) {
+    if (!author || author.toLowerCase() === "local") {
       throw new Error("请先填写插件作者");
     }
     plugin.author = author;
@@ -616,6 +676,7 @@ export class PluginService extends BaseService<PluginEntity> {
    * @param param 数据
    */
   async add(param: any) {
+    this.normalizeDependPluginsParam(param);
     param.type = normalizePluginSourceType(param.type);
     if (param.type === "store") {
       this.normalizeStorePluginAuthor(param);
@@ -645,6 +706,9 @@ export class PluginService extends BaseService<PluginEntity> {
       plugin = getDefaultDeployPlugin();
     } else if (param.pluginType === "dnsProvider") {
       plugin = getDefaultDnsPlugin();
+      delete param.group;
+    } else if (param.pluginType === "notification") {
+      plugin = getDefaultNotificationPlugin();
       delete param.group;
     } else {
       throw new Error(`插件类型${param.pluginType}不支持`);
@@ -683,6 +747,15 @@ export class PluginService extends BaseService<PluginEntity> {
 
   private normalizeOnlinePluginRecord(item: OnlinePluginBean, syncTime: number, old?: PluginEntity) {
     const fullName = this.getOnlinePluginFullName(item);
+    let extra: Record<string, any> = {};
+    if (old?.extra) {
+      try {
+        extra = (yaml.load(old.extra) as Record<string, any>) || {};
+      } catch (e) {
+        extra = {};
+      }
+    }
+    delete extra.dependPlugins;
     return this.repository.create({
       id: old?.id,
       appId: item.appId,
@@ -698,9 +771,11 @@ export class PluginService extends BaseService<PluginEntity> {
       latest: item.latest,
       status: item.status,
       downloadCount: item.downloadCount,
-      score: item.score,
+      score: item.score == null ? undefined : Number(item.score),
       aiCheckStatus: item.aiCheckStatus,
       vip: item.vip,
+      dependPlugins: toDependPluginsYaml(item.dependPlugins),
+      extra: Object.keys(extra).length > 0 ? yaml.dump(extra) : null,
       syncTime,
       type: old?.type || "store",
       disabled: old?.disabled ?? false,
@@ -709,7 +784,6 @@ export class PluginService extends BaseService<PluginEntity> {
       sysSetting: old?.sysSetting,
       content: old?.content,
       metadata: old?.metadata,
-      extra: old?.extra,
       version: old?.version,
       updateTime: new Date(),
     });
@@ -717,31 +791,18 @@ export class PluginService extends BaseService<PluginEntity> {
 
   private toOnlinePluginBean(item: PluginEntity): OnlinePluginBean {
     const isInstalled = item.installed === true;
-    return {
-      id: item.id,
-      appId: item.appId,
-      developerId: item.developerId,
-      fullName: item.fullName,
-      author: item.author,
-      type: item.type,
-      name: item.name,
-      pluginType: item.pluginType,
-      title: item.title,
-      icon: item.icon,
-      group: item.group,
-      desc: item.desc,
-      latest: item.latest,
-      status: item.status,
-      downloadCount: item.downloadCount,
-      score: item.score,
-      aiCheckStatus: item.aiCheckStatus,
-      vip: item.vip,
-      syncTime: item.syncTime,
+    const dependPlugins = parseDependPlugins(item.dependPlugins);
+    const record: any = {
+      ...item,
+      dependPlugins,
       installed: isInstalled,
-      localPluginId: isInstalled ? item.id : undefined,
-      localDisabled: isInstalled ? item.disabled : undefined,
-      installedVersion: isInstalled ? item.version : undefined,
     };
+    delete record.content;
+    delete record.setting;
+    delete record.sysSetting;
+    delete record.metadata;
+    delete record.extra;
+    return record;
   }
 
   private async findOnlinePluginRecords(req: OnlinePluginListReq) {
@@ -777,70 +838,20 @@ export class PluginService extends BaseService<PluginEntity> {
     });
   }
 
-  private findInstalledOnlinePlugin(installedPlugins: PluginEntity[], record: OnlinePluginBean) {
-    const fullName = record.fullName || "";
-    return installedPlugins.find(plugin => {
-      return plugin.fullName === fullName;
+  private attachOnlineInstallState(list: PluginEntity[], bindUserId?: number) {
+    return list.map(item => {
+      const record = this.toOnlinePluginBean(item);
+      record.fullName = this.getOnlinePluginFullName(record);
+      record.upgradeAvailable = record.installed ? isOnlinePluginUpgradeAvailable(record.version, record.latest) : false;
+      record.editable = isAuthor(record, bindUserId);
+      return record;
     });
-  }
-
-  private async attachOnlineInstallState(list: OnlinePluginBean[]) {
-    const records: OnlinePluginBean[] = [];
-    const parsedRecords = new Map<OnlinePluginBean, { author: string; name: string }>();
-    let bindUserId = 0;
-    if (this.sysSettingsService) {
-      const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
-      bindUserId = installInfo.bindUserId || 0;
-    }
-    for (const item of list) {
-      const record: OnlinePluginBean = { ...item };
-      const fullName = this.getOnlinePluginFullName(record);
-      record.fullName = fullName;
-      record.selfAuthored = !!bindUserId && record.developerId === bindUserId;
-      record.localEditable = canEditStorePlugin(record.developerId, bindUserId);
-
-      let parsed: { author: string; name: string };
-      try {
-        parsed = parseOnlinePluginFullName(fullName);
-      } catch (e) {
-        record.installed = !!record.localPluginId;
-        record.upgradeAvailable = false;
-        records.push(record);
-        continue;
-      }
-
-      parsedRecords.set(record, parsed);
-      records.push(record);
-    }
-
-    const installedPlugins =
-      parsedRecords.size > 0
-        ? await this.find({
-            where: {
-              type: "store",
-              installed: true,
-            },
-          })
-        : [];
-    for (const record of records) {
-      const parsed = parsedRecords.get(record);
-      if (!parsed) {
-        continue;
-      }
-      const localPlugin = this.findInstalledOnlinePlugin(installedPlugins, record);
-      record.installed = !!localPlugin;
-      record.localPluginId = localPlugin?.id;
-      record.localDisabled = localPlugin?.disabled;
-      record.installedVersion = localPlugin?.version;
-      record.upgradeAvailable = localPlugin ? isOnlinePluginUpgradeAvailable(localPlugin.version, record.latest) : false;
-      record.localEditable = canEditStorePlugin(localPlugin?.developerId ?? record.developerId, bindUserId);
-    }
-    return records;
   }
 
   async onlinePluginList(req: OnlinePluginListReq) {
     const list = await this.findOnlinePluginRecords(req);
-    return await this.attachOnlineInstallState(list.map(item => this.toOnlinePluginBean(item)));
+    const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
+    return this.attachOnlineInstallState(list, installInfo.bindUserId);
   }
 
   async syncOnlinePluginList() {
@@ -972,7 +983,7 @@ export class PluginService extends BaseService<PluginEntity> {
       },
     });
     if (res?.plugin) {
-      const [plugin] = await this.attachOnlineInstallState([res.plugin]);
+      const [plugin] = this.attachOnlineInstallState([res.plugin]);
       res.plugin = plugin;
     }
     return res;
@@ -1012,7 +1023,7 @@ export class PluginService extends BaseService<PluginEntity> {
     if (normalizePluginSourceType(plugin.type) !== "store") {
       throw new Error("只有商店插件可以发布到插件市场");
     }
-    if (!canEditStorePlugin(plugin.developerId, installInfo.bindUserId)) {
+    if (!isAuthor(plugin, installInfo.bindUserId)) {
       throw new Error("当前绑定账号无权编辑该插件");
     }
     const authorReply = await this.getOnlinePluginAuthor();
@@ -1070,7 +1081,7 @@ export class PluginService extends BaseService<PluginEntity> {
       throw new Error("该插件不允许编辑");
     }
     const installInfo = await this.sysSettingsService.getSetting<SysInstallInfo>(SysInstallInfo);
-    if (!canEditStorePlugin(plugin.developerId, installInfo.bindUserId)) {
+    if (!isAuthor(plugin, installInfo.bindUserId)) {
       throw new Error("当前绑定账号无权编辑该插件");
     }
     return plugin;
@@ -1121,7 +1132,7 @@ export class PluginService extends BaseService<PluginEntity> {
       throw new Error("只有商店插件可以发布到插件市场");
     }
     const bindUserId = await this.getBindUserId("发布插件");
-    if (!canEditStorePlugin(plugin.developerId, bindUserId)) {
+    if (!isAuthor(plugin, bindUserId)) {
       throw new Error("当前绑定账号无权编辑该插件");
     }
 
@@ -1218,6 +1229,7 @@ export class PluginService extends BaseService<PluginEntity> {
   }
 
   async update(param: any) {
+    this.normalizeDependPluginsParam(param);
     param.type = normalizePluginSourceType(param.type);
     if (param.type === "store") {
       this.normalizeStorePluginAuthor(param);
@@ -1359,6 +1371,8 @@ export class PluginService extends BaseService<PluginEntity> {
     delete item.metadata;
     delete item.content;
     delete item.extra;
+    // depend_plugins 字段存的是 YAML 字符串，注册时解析为对象供运行时使用。
+    item.dependPlugins = parseDependPlugins(plugin.dependPlugins);
     const fullName = getPluginFullName(item);
     item.name = fullName;
     const name = getPluginRegistryName(item);
@@ -1414,8 +1428,9 @@ export class PluginService extends BaseService<PluginEntity> {
     if (!info) {
       throw new Error("插件不存在");
     }
-    const metadata = yaml.load(info.metadata || "");
-    const extra = yaml.load(info.extra || "");
+    // yaml.load 空字符串会返回 undefined，统一兜底为空对象，避免展开/取值崩溃
+    const metadata = (yaml.load(info.metadata || "") as Record<string, any>) || {};
+    const extra = (yaml.load(info.extra || "") as Record<string, any>) || {};
     const content = info.content;
     delete info.metadata;
     delete info.extra;
@@ -1423,12 +1438,18 @@ export class PluginService extends BaseService<PluginEntity> {
     delete info.id;
     delete info.createTime;
     delete info.updateTime;
+    const dependPlugins = parseDependPlugins(info.dependPlugins);
     const plugin = {
       ...info,
       ...metadata,
       ...extra,
       content,
+      dependPlugins,
     };
+    // depend_plugins 字段存的是 YAML 字符串，导出时恢复为对象。
+    if (Object.keys(dependPlugins).length === 0) {
+      delete plugin.dependPlugins;
+    }
 
     return yaml.dump(plugin) as string;
   }
@@ -1449,20 +1470,13 @@ export class PluginService extends BaseService<PluginEntity> {
     let old: PluginEntity | null;
     if (entityType === "store") {
       old = await this.findOne({
-        where: [
-          {
-            type: "store",
-            fullName,
-          },
-          {
-            type: "store",
-            author: loaded.author,
-            name: loaded.name,
-          },
-        ],
+        where: {
+          type: "store",
+          fullName,
+        },
       });
       if (!old) {
-        // 兼容旧版本仍标记为 custom 的在线插件，覆盖安装时应复用原记录。
+        // 兼容迁移前的旧插件：没有 fullName 时按作者和名称找回，并在下面补齐 fullName。
         old = await this.findOne({
           where: {
             author: loaded.author,
@@ -1484,7 +1498,6 @@ export class PluginService extends BaseService<PluginEntity> {
       output: loaded.output,
     };
     const extra = {
-      dependPlugins: loaded.dependPlugins,
       dependPackages: loaded.dependPackages,
       default: loaded.default,
       showRunStrategy: loaded.showRunStrategy,
@@ -1492,10 +1505,11 @@ export class PluginService extends BaseService<PluginEntity> {
 
     const pluginEntity = {
       ...loaded,
-      appId: entityType === "store" ? (old?.appId ?? loaded.appId) : loaded.appId,
-      developerId: entityType === "store" ? (old?.developerId ?? loaded.developerId) : loaded.developerId,
+      appId: entityType === "store" ? old?.appId ?? loaded.appId : loaded.appId,
+      developerId: entityType === "store" ? old?.developerId ?? loaded.developerId : loaded.developerId,
       fullName: entityType === "store" ? fullName || old?.fullName : old?.fullName,
       type: entityType,
+      dependPlugins: toDependPluginsYaml(loaded.dependPlugins),
       metadata: yaml.dump(metadata),
       extra: yaml.dump(extra),
       content: loaded.content,

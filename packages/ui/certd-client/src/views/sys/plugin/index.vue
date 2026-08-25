@@ -11,11 +11,11 @@
       <div v-else class="plugin-card-grid">
         <PluginItemCard
           v-for="item of pluginList"
-          :key="item.id || item.name"
+          :key="item.fullName"
           :source="getPluginCardSource(item)"
           :plugin="item"
-          :show-config="settingStore.isComm"
-          :editable="canEditPlugin(item)"
+          show-config
+          :editable="item.editable"
           :copy-handler="copyPlugin"
           @changed="handlePluginChanged"
           @click="openPluginDetail"
@@ -34,11 +34,9 @@ import OnlinePluginDetailModal from "./components/online-plugin-detail-modal.vue
 import { useI18n } from "/src/locales";
 import { useMounted } from "/@/use/use-mounted";
 import { computed, ref } from "vue";
-import { useSettingStore } from "/src/store/settings";
 import { usePluginStore } from "/@/store/plugin";
 
 const { t } = useI18n();
-const settingStore = useSettingStore();
 const pluginStore = usePluginStore();
 
 defineOptions({
@@ -53,21 +51,7 @@ const pluginList = computed(() => {
 });
 
 function getPluginCardSource(row: any) {
-  return row.type === "store" && (row.appId || row.developerId) ? "market" : "local";
-}
-
-function canEditPlugin(row: any) {
-  if (row.type === "custom") {
-    return true;
-  }
-  if (row.type !== "store") {
-    return false;
-  }
-  if (typeof row.localEditable === "boolean") {
-    return row.localEditable;
-  }
-  const bindUserId = Number(settingStore.installInfo?.bindUserId || 0);
-  return !row.developerId || (!!bindUserId && Number(row.developerId) === bindUserId);
+  return row.type === "store" && Number(row.developerId) > 0 ? "market" : "local";
 }
 
 function openPluginDetail(row: any) {

@@ -81,7 +81,8 @@ describe("LoginService.register", () => {
 describe("LoginService.generateScopedAccessToken", () => {
   it("adds the requested scopes to a short-lived JWT", async () => {
     const service = new LoginService();
-    (service as any).jwt = { expire: 7200 };
+    // 全局 jwt 过期时间大于受限令牌上限（6小时），验证受限令牌被截断到 6 小时
+    (service as any).jwt = { expire: 8 * 60 * 60 };
     service.sysSettingsService = {
       async getSetting() {
         return { jwtKey: "test-secret" };
@@ -99,6 +100,7 @@ describe("LoginService.generateScopedAccessToken", () => {
     const payload = jwt.verify(result.token, "test-secret") as jwt.JwtPayload;
 
     assert.deepEqual(payload.scoped, ["sys/ai"]);
-    assert.equal(result.expire, 3600);
+    // 受限令牌短时效：截断到 6 小时上限
+    assert.equal(result.expire, 6 * 60 * 60);
   });
 });
