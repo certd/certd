@@ -22,30 +22,28 @@
         />
       </div>
     </fs-crud>
-    <OnlinePluginDetailModal v-model:open="detailVisible" :plugin="detailPlugin" @installed="handleDetailInstalled" />
   </fs-page>
 </template>
 
-<script lang="ts" setup>
+<script lang="tsx" setup>
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import PluginItemCard from "./components/plugin-item-card.vue";
-import OnlinePluginDetailModal from "./components/online-plugin-detail-modal.vue";
+import OnlinePluginDetail from "./components/online-plugin-detail.vue";
 import { useI18n } from "/src/locales";
 import { useMounted } from "/@/use/use-mounted";
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted } from "vue";
 import { usePluginStore } from "/@/store/plugin";
+import { useFormDialog } from "/@/use/use-dialog";
 
 const { t } = useI18n();
 const pluginStore = usePluginStore();
+const { openFormDialog } = useFormDialog();
 
 defineOptions({
   name: "SysPlugin",
 });
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
-const detailVisible = ref(false);
-const detailPlugin = ref<any>();
-
 const pluginList = computed(() => {
   return crudBinding.value?.data || [];
 });
@@ -54,12 +52,28 @@ function getPluginCardSource(row: any) {
   return row.type === "store" && Number(row.developerId) > 0 ? "market" : "local";
 }
 
-function openPluginDetail(row: any) {
+async function openPluginDetail(row: any) {
   if (row.type !== "store" || !(row.fullName || (row.author && row.name))) {
     return;
   }
-  detailPlugin.value = row;
-  detailVisible.value = true;
+  await openFormDialog({
+    title: `插件详情 ${row.title || row.name || row.fullName}`,
+    columns: {},
+    noneForm: true,
+    className: "online-plugin-detail-dialog",
+    wrapper: {
+      width: "min(1540px, calc(100vw - 48px))",
+      destroyOnClose: true,
+      maskClosable: true,
+      footer: null,
+    },
+    body: () => <OnlinePluginDetail plugin={row} onInstalled={handleDetailInstalled} />,
+  });
+}
+
+function handleDependencyDetail(event: Event) {
+  const row = (event as CustomEvent).detail;
+  void openPluginDetail(row);
 }
 
 async function handleDetailInstalled() {
@@ -99,6 +113,14 @@ async function handlePluginChanged(payload: { action: string }) {
 useMounted(async () => {
   await crudExpose.doRefresh();
 });
+
+onMounted(() => {
+  window.addEventListener("certd:plugin-detail", handleDependencyDetail);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("certd:plugin-detail", handleDependencyDetail);
+});
 </script>
 <style lang="less">
 .page-sys-plugin {
@@ -125,6 +147,13 @@ useMounted(async () => {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
     padding: 4px 10px 12px;
+  }
+}
+
+.online-plugin-detail-dialog {
+  .ant-modal-body {
+    padding: 0;
+    overflow: hidden;
   }
 }
 @media (max-width: 1400px) {

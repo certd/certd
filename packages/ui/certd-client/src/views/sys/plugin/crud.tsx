@@ -13,6 +13,7 @@ import { useSettingStore } from "/src/store/settings/index";
 import { usePluginStore } from "/@/store/plugin";
 import PluginAuthorField from "./components/plugin-author-field.vue";
 import { usePluginAiDev } from "./use-ai-dev";
+import { useOnlineInstall } from "./use-online-install";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
@@ -60,10 +61,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const { openImportDialog } = usePluginImport();
   const { openConfigDialog } = usePluginConfig();
   const { openAiDevDialog } = usePluginAiDev();
+  const { installOnlinePluginChain, resolveOnlinePluginDependencies } = useOnlineInstall();
 
   const settingStore = useSettingStore();
   const pluginStore = usePluginStore();
   const syncLoading = ref(false);
+  const upgradeAllLoading = ref(false);
   const lastSyncTime = ref(0);
   const autoSyncInterval = 30 * 24 * 60 * 60 * 1000;
   const syncButtonTitle = computed(() => {
@@ -106,6 +109,52 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       }
     } finally {
       syncLoading.value = false;
+    }
+  }
+
+  async function upgradeAllOnlinePlugins() {
+    if (upgradeAllLoading.value) {
+      return;
+    }
+
+    upgradeAllLoading.value = true;
+    const failedPlugins: string[] = [];
+    try {
+      const onlinePlugins = await api.OnlinePluginList({});
+      const pluginsToUpgrade = onlinePlugins.filter(plugin => {
+        return plugin.installed && plugin.upgradeAvailable && !!plugin.fullName && !!plugin.latest;
+      });
+      if (pluginsToUpgrade.length === 0) {
+        notification.info({ message: t("certd.onlinePluginNoUpgradeAvailable") });
+        return;
+      }
+
+      for (const plugin of pluginsToUpgrade) {
+        try {
+          const dependencies = await resolveOnlinePluginDependencies(plugin);
+          await installOnlinePluginChain(dependencies, plugin, {
+            version: plugin.latest,
+            silent: true,
+          });
+        } catch (error) {
+          failedPlugins.push(plugin.title || plugin.fullName);
+        }
+      }
+      await pluginStore.reload();
+      crudExpose.doRefresh();
+
+      if (failedPlugins.length === 0) {
+        notification.success({ message: t("certd.onlinePluginUpgradeAllSuccess", { count: pluginsToUpgrade.length }) });
+        return;
+      }
+      notification.warning({
+        message: t("certd.onlinePluginUpgradeAllPartialFailure", {
+          successCount: pluginsToUpgrade.length - failedPlugins.length,
+          failedNames: failedPlugins.join("、"),
+        }),
+      });
+    } finally {
+      upgradeAllLoading.value = false;
     }
   }
 
@@ -177,6 +226,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             loading: syncLoading,
             async click() {
               await syncOnlinePlugins();
+            },
+          },
+          upgradeAllOnline: {
+            show: true,
+            icon: "carbon:upgrade",
+            type: "primary",
+            text: t("certd.onlinePluginUpgradeAll"),
+            loading: upgradeAllLoading,
+            async click() {
+              await upgradeAllOnlinePlugins();
             },
           },
           clearRuntimeDeps: {

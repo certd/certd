@@ -1,10 +1,8 @@
 <template>
-  <a-modal v-model:open="visible" :width="'min(1540px, calc(100vw - 48px))'" :footer="null" destroy-on-close class="online-plugin-detail-modal">
-    <a-spin :spinning="loading">
-      <iframe v-if="iframeSrc" ref="iframeRef" class="online-plugin-detail-modal__iframe" :src="iframeSrc" @load="handleIframeLoad" />
-      <a-empty v-else description="插件详情地址未配置" />
-    </a-spin>
-  </a-modal>
+  <div class="online-plugin-detail">
+    <iframe v-if="iframeSrc" ref="iframeRef" class="online-plugin-detail__iframe" :src="iframeSrc" @load="handleIframeLoad" />
+    <a-empty v-else description="插件详情地址未配置" />
+  </div>
 </template>
 
 <script lang="tsx" setup>
@@ -16,12 +14,10 @@ import { useSettingStore } from "/src/store/settings";
 import { useI18n } from "/src/locales";
 
 const props = defineProps<{
-  open: boolean;
   plugin?: any;
 }>();
 
 const emit = defineEmits<{
-  (e: "update:open", value: boolean): void;
   (e: "installed", value: { plugin: any; version?: string }): void;
 }>();
 
@@ -30,10 +26,6 @@ const { t } = useI18n();
 const { resolveOnlinePluginDependencies, installOnlinePluginChain, openDependencyDetail } = useOnlineInstall();
 const iframeRef = ref<HTMLIFrameElement>();
 const loading = ref(false);
-const visible = computed({
-  get: () => props.open,
-  set: value => emit("update:open", value),
-});
 const iframeSrc = computed(() => {
   const plugin = props.plugin;
   if (!plugin) {
@@ -55,9 +47,9 @@ const iframeSrc = computed(() => {
 let iframeClient: IframeClient = undefined;
 
 watch(
-  () => props.open,
-  async open => {
-    if (!open || !props.plugin) {
+  () => props.plugin,
+  async plugin => {
+    if (!plugin) {
       loading.value = false;
       return;
     }
@@ -173,23 +165,34 @@ async function installPluginVersion(data: { fullName?: string; version?: string 
 </script>
 
 <style lang="less">
-.online-plugin-detail-modal {
+.online-plugin-detail-dialog {
   .ant-modal-body {
-    height: 80vh;
-    padding: 0;
+    height: 66vh;
     overflow: hidden;
   }
-
-  .ant-spin-nested-loading,
-  .ant-spin-container {
+  .fs-form-wrapper-body {
     height: 100%;
+    .fs-form-body {
+      height: 100%;
+    }
   }
 
-  &__iframe {
+  .online-plugin-detail {
     display: block;
-    width: 100%;
-    height: 80vh;
-    border: 0;
+    height: 100%;
+    overflow: hidden;
+
+    .ant-spin-nested-loading,
+    .ant-spin-container {
+      height: 100%;
+    }
+
+    &__iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
   }
 }
 </style>
