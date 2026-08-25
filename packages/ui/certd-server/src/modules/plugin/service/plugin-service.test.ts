@@ -650,6 +650,93 @@ describe("PluginService online plugins", () => {
     assert.equal(responseRecord.extra, undefined);
   });
 
+  it("resolves online plugin dependencies in installation order and skips satisfied dependencies", async () => {
+    const service = new PluginService();
+    const records = [
+      {
+        type: "store",
+        fullName: "developer/target",
+        name: "target",
+        author: "developer",
+        pluginType: "deploy",
+        installed: false,
+        // dependPlugins 的值暂不参与判断，* 也应按依赖名称继续解析。
+        dependPlugins: yaml.dump({ "access:developer/access-a": "*" }),
+      },
+      {
+        type: "store",
+        fullName: "developer/access-a",
+        name: "access-a",
+        author: "developer",
+        pluginType: "access",
+        version: "1.0.0",
+        installed: false,
+        dependPlugins: yaml.dump({ "access:developer/access-b": "1.0.0" }),
+      },
+      {
+        type: "store",
+        fullName: "developer/access-b",
+        name: "access-b",
+        author: "developer",
+        pluginType: "access",
+        version: "1.0.0",
+        installed: false,
+      },
+    ];
+    const findCalls: any[] = [];
+    (service as any).findOne = async (options: any) => {
+      findCalls.push(options.where);
+      return records.find(item => {
+        return Object.entries(options.where).every(([key, value]) => item[key] === value);
+      });
+    };
+
+    const dependencies = await service.onlinePluginDependencies({ fullName: "developer/target" });
+
+    assert.deepEqual(
+      dependencies.map(item => item.fullName),
+      [
+        "developer/access-b",
+        "developer/access-a",
+      ]
+    );
+    assert.deepEqual(findCalls, [
+      { type: "store", fullName: "developer/target" },
+      { type: "store", pluginType: "access", fullName: "developer/access-a" },
+      { type: "store", pluginType: "access", fullName: "developer/access-b" },
+    ]);
+  });
+
+  it("does not return an installed dependency", async () => {
+    const service = new PluginService();
+    const records = [
+      {
+        type: "store",
+        fullName: "developer/target",
+        name: "target",
+        author: "developer",
+        pluginType: "deploy",
+        dependPlugins: yaml.dump({ "access:developer/access-a": "1.2.0" }),
+      },
+      {
+        type: "store",
+        fullName: "developer/access-a",
+        name: "access-a",
+        author: "developer",
+        pluginType: "access",
+        version: "1.3.0",
+        installed: true,
+      },
+    ];
+    (service as any).findOne = async (options: any) => {
+      return records.find(item => Object.entries(options.where).every(([key, value]) => item[key] === value));
+    };
+
+    const dependencies = await service.onlinePluginDependencies({ fullName: "developer/target" });
+
+    assert.deepEqual(dependencies, []);
+  });
+
   it("page includes synced store plugins without installed state", async () => {
     const service = new PluginService();
     service.sysSettingsService = {
@@ -988,6 +1075,7 @@ describe("PluginService online plugins", () => {
           latest: "1.0.1",
           status: "published",
           downloadCount: 20,
+          score: 4.5,
           syncTime: 123,
         };
       },
@@ -1008,6 +1096,7 @@ describe("PluginService online plugins", () => {
     assert.equal(updatedPlugin.latest, "1.0.1");
     assert.equal(updatedPlugin.status, "published");
     assert.equal(updatedPlugin.downloadCount, 20);
+    assert.equal(updatedPlugin.score, 4.5);
     assert.equal(updatedPlugin.syncTime, 123);
     assert.equal(updatedPlugin.installed, true);
   });
@@ -1417,12 +1506,20 @@ describe("PluginService online plugins", () => {
       author: "developer",
       name: "demo",
       pluginType: "deploy",
+      extra: {
+        showRunStrategy: false,
+        dependPackages: ["example-sdk"],
+      },
       dependPlugins: {
         "access:aliyun": "*",
       },
     });
 
     assert.deepEqual(yaml.load(savedPlugin.dependPlugins), { "access:aliyun": "*" });
+    assert.deepEqual(yaml.load(savedPlugin.extra), {
+      showRunStrategy: false,
+      dependPackages: ["example-sdk"],
+    });
   });
 
   it("persists dependPlugins from the edit form (yaml string form) through update", async () => {
@@ -1470,6 +1567,14 @@ describe("PluginService online plugins", () => {
         group: "default",
         desc: "desc",
         version: "1.0.0",
+        appId: 10,
+        developerId: 20,
+        latest: "1.1.0",
+        status: "published",
+        downloadCount: 100,
+        score: 4.5,
+        aiCheckStatus: "passed",
+        syncTime: 123456,
         dependPlugins: yaml.dump({ "access:aliyun": "*" }),
       } as any;
     }) as any;
@@ -1478,5 +1583,13 @@ describe("PluginService online plugins", () => {
     const loaded = yaml.load(content) as Record<string, any>;
 
     assert.deepEqual(loaded.dependPlugins, { "access:aliyun": "*" });
+    assert.equal(loaded.appId, undefined);
+    assert.equal(loaded.developerId, undefined);
+    assert.equal(loaded.latest, undefined);
+    assert.equal(loaded.status, undefined);
+    assert.equal(loaded.downloadCount, undefined);
+    assert.equal(loaded.score, undefined);
+    assert.equal(loaded.aiCheckStatus, undefined);
+    assert.equal(loaded.syncTime, undefined);
   });
 });

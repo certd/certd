@@ -1053,31 +1053,4 @@ function handleVersionClick() {
   }
 }
 
-.plugin-dependency-detail-dialog {
-  .plugin-dependency-detail {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    .plugin-dependency-detail__item {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      font-size: 13px;
-      line-height: 20px;
-    }
-
-    .plugin-dependency-detail__label {
-      width: 76px;
-      flex: none;
-      color: #8c8c8c;
-      text-align: right;
-    }
-
-    .plugin-dependency-detail__desc {
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-  }
-}
 </style>

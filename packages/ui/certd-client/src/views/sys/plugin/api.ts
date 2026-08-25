@@ -145,6 +145,16 @@ export async function OnlinePluginList(body: { pluginType?: string; group?: stri
   });
 }
 
+export type OnlinePluginDependencyBean = OnlinePluginBean;
+
+export async function OnlinePluginDependencies(fullName: string): Promise<OnlinePluginDependencyBean[]> {
+  return await request({
+    url: apiPrefix + "/online/dependencies",
+    method: "post",
+    data: { fullName },
+  });
+}
+
 export async function OnlinePluginSync(): Promise<OnlinePluginBean[]> {
   return await request({
     url: apiPrefix + "/online/sync",

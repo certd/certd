@@ -3,6 +3,7 @@ import { merge } from "lodash-es";
 import { CrudController } from "@certd/lib-server";
 import {
   OnlinePluginAuthorAddReq,
+  OnlinePluginDependenciesReq,
   OnlinePluginInstallReq,
   OnlinePluginListReq,
   OnlinePluginPublishInfoReq,
@@ -128,6 +129,12 @@ export class PluginController extends CrudController<PluginService> {
   @Post("/online/list", { description: "sys:settings:view", summary: "查询在线插件" })
   async onlineList(@Body(ALL) body: OnlinePluginListReq) {
     const res = await this.service.onlinePluginList(body);
+    return this.ok(res);
+  }
+
+  @Post("/online/dependencies", { description: "sys:settings:view", summary: "查询在线插件依赖" })
+  async onlineDependencies(@Body(ALL) body: OnlinePluginDependenciesReq) {
+    const res = await this.service.onlinePluginDependencies(body);
     return this.ok(res);
   }
 

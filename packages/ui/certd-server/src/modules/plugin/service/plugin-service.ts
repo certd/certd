@@ -26,6 +26,10 @@ export type OnlinePluginListReq = {
   keyword?: string;
 };
 
+export type OnlinePluginDependenciesReq = {
+  fullName: string;
+};
+
 export type PluginFindReq = {
   type?: "builtIn" | "store";
   pluginType?: string;
@@ -124,6 +128,8 @@ export type OnlinePluginBean = {
   createTime?: Date;
   updateTime?: Date;
 };
+
+export type OnlinePluginDependencyBean = OnlinePluginBean;
 
 export type OnlinePluginVersionBean = {
   id?: number;
@@ -854,6 +860,102 @@ export class PluginService extends BaseService<PluginEntity> {
     return this.attachOnlineInstallState(list, installInfo.bindUserId);
   }
 
+  async onlinePluginDependencies(req: OnlinePluginDependenciesReq): Promise<OnlinePluginBean[]> {
+    const fullName = `${req?.fullName || ""}`.trim();
+    parseOnlinePluginFullName(fullName);
+    const target = await this.findOne({
+      where: {
+        type: "store",
+        fullName,
+      },
+    });
+    if (!target) {
+      throw new Error("插件不存在");
+    }
+
+    const visited = new Set<string>();
+    const visiting = new Set<string>();
+    const ordered: OnlinePluginBean[] = [];
+    let builtInPlugins: PluginEntity[] | undefined;
+
+    const getBuiltInPlugins = async () => {
+      if (!builtInPlugins) {
+        builtInPlugins = await this.getBuiltInEntityList();
+      }
+      return builtInPlugins;
+    };
+
+    const findDependency = async (dependencyKey: string) => {
+      const keyParts = dependencyKey.split(":");
+      const dependencyType = keyParts.length > 1 ? keyParts[0] : "";
+      const dependencyRef = keyParts.length > 1 ? keyParts.slice(1).join(":") : dependencyKey;
+      const pluginType = dependencyType === "plugin" ? "deploy" : dependencyType;
+      const query: Record<string, any> = { type: "store" };
+      if (pluginType) {
+        query.pluginType = pluginType;
+      }
+
+      let storePlugin: PluginEntity | null = null;
+      if (dependencyRef.includes("/")) {
+        storePlugin = await this.findOne({ where: { ...query, fullName: dependencyRef } });
+      } else {
+        storePlugin = await this.findOne({ where: { ...query, name: dependencyRef } });
+      }
+      if (storePlugin) {
+        return {
+          plugin: storePlugin,
+        };
+      }
+
+      const builtInList = await getBuiltInPlugins();
+      const builtInPlugin = builtInList.find(item => {
+        const sameType = !pluginType || item.pluginType === pluginType;
+        const sameName = this.getOnlinePluginFullName(item as any) === dependencyRef || item.name === dependencyRef;
+        return sameType && sameName;
+      });
+      if (builtInPlugin) {
+        return {
+          plugin: builtInPlugin,
+        };
+      }
+      return undefined;
+    };
+
+    const visit = async (record: PluginEntity, isTarget: boolean) => {
+      const identity = this.getOnlinePluginFullName(record as any);
+      if (!identity || visited.has(identity)) {
+        return;
+      }
+      if (!isTarget && record.type === "builtIn") {
+        return;
+      }
+      const satisfied = record.installed === true;
+      if (!isTarget && satisfied) {
+        return;
+      }
+      if (visiting.has(identity)) {
+        throw new Error(`插件依赖存在循环：${identity}`);
+      }
+      visiting.add(identity);
+      const dependencies = parseDependPlugins(record.dependPlugins);
+      for (const [dependencyKey] of Object.entries(dependencies)) {
+        const dependency = await findDependency(dependencyKey);
+        if (!dependency) {
+          throw new Error(`依赖插件未同步：${dependencyKey}`);
+        }
+        await visit(dependency.plugin, false);
+      }
+      visiting.delete(identity);
+      visited.add(identity);
+      if (!isTarget && record.type !== "builtIn" && !satisfied) {
+        ordered.push(this.toOnlinePluginBean(record));
+      }
+    };
+
+    await visit(target, true);
+    return ordered;
+  }
+
   async syncOnlinePluginList() {
     await this.plusService.register();
 
@@ -1432,15 +1534,22 @@ export class PluginService extends BaseService<PluginEntity> {
     const metadata = (yaml.load(info.metadata || "") as Record<string, any>) || {};
     const extra = (yaml.load(info.extra || "") as Record<string, any>) || {};
     const content = info.content;
-    delete info.metadata;
-    delete info.extra;
-    delete info.content;
-    delete info.id;
-    delete info.createTime;
-    delete info.updateTime;
+    const { name, icon, title, group, desc, type, disabled, version, pluginType, installed, author, fullName, vip } = info;
     const dependPlugins = parseDependPlugins(info.dependPlugins);
     const plugin = {
-      ...info,
+      name,
+      icon,
+      title,
+      group,
+      desc,
+      type,
+      disabled,
+      version,
+      pluginType,
+      installed,
+      author,
+      fullName,
+      vip,
       ...metadata,
       ...extra,
       content,
@@ -1466,31 +1575,23 @@ export class PluginService extends BaseService<PluginEntity> {
       this.normalizeStorePluginAuthor(loaded);
     }
     const fullName = loaded.fullName || (loaded.author && loaded.name ? `${loaded.author}/${loaded.name}` : "");
-
-    let old: PluginEntity | null;
-    if (entityType === "store") {
-      old = await this.findOne({
+    let old = await this.findOne({
+      where: {
+        type: "store",
+        fullName,
+      },
+    });
+    // 兼容历史自开发插件：旧记录可能没有 fullName，切换为在线插件时按作者和名称复用。
+    if (!old && entityType === "store" && loaded.author && loaded.name) {
+      const legacyPlugin = await this.findOne({
         where: {
-          type: "store",
-          fullName,
-        },
-      });
-      if (!old) {
-        // 兼容迁移前的旧插件：没有 fullName 时按作者和名称找回，并在下面补齐 fullName。
-        old = await this.findOne({
-          where: {
-            author: loaded.author,
-            name: loaded.name,
-          },
-        });
-      }
-    } else {
-      old = await this.findOne({
-        where: {
-          name: loaded.name,
           author: loaded.author,
+          name: loaded.name,
         },
       });
+      if (legacyPlugin?.type === "custom" || !legacyPlugin?.type) {
+        old = legacyPlugin;
+      }
     }
 
     const metadata = {
@@ -1503,7 +1604,9 @@ export class PluginService extends BaseService<PluginEntity> {
       showRunStrategy: loaded.showRunStrategy,
     };
 
+    delete loaded.aiCheckStatus;
     const pluginEntity = {
+      ...old,
       ...loaded,
       appId: entityType === "store" ? old?.appId ?? loaded.appId : loaded.appId,
       developerId: entityType === "store" ? old?.developerId ?? loaded.developerId : loaded.developerId,
@@ -1517,6 +1620,7 @@ export class PluginService extends BaseService<PluginEntity> {
       latest: old?.latest ?? loaded.latest,
       status: old?.status ?? loaded.status,
       downloadCount: old?.downloadCount ?? loaded.downloadCount,
+      score: old?.score ?? loaded.score,
       syncTime: old?.syncTime ?? loaded.syncTime,
       disabled: old?.disabled ?? false,
     };
