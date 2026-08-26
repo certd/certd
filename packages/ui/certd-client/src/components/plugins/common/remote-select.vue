@@ -124,6 +124,8 @@ const pagerRef: Ref = ref({
   total: 0,
   pageSize: props.pageSize || 50,
 });
+
+let isFirst = true;
 const getOptions = async () => {
   if (loading.value) {
     return;
@@ -204,6 +206,14 @@ const getOptions = async () => {
       if (res.total != null) {
         pagerRef.value.total = res.total ?? list.length;
       }
+    }
+
+    if (isFirst) {
+      isFirst = false;
+      if (props.value) {
+        emitSelectedChange(props.value);
+      }
+      return;
     }
 
     return res;

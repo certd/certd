@@ -475,7 +475,7 @@ export function usePluginPublish() {
     });
   }
 
-  async function publishLocalPlugin(row: any, options?: { beforePublish?: () => Promise<any>; afterPublish?: () => Promise<void> }) {
+  async function publishLocalPlugin(row: any, options?: { beforePublish?: (version: string) => Promise<any>; afterPublish?: () => Promise<void> }) {
     if (!row?.id || (row.type !== "store" && row.type !== "custom")) {
       return;
     }
@@ -496,17 +496,24 @@ export function usePluginPublish() {
 
     publishingPluginId.value = row.id;
     try {
-      const publishRow = (await options?.beforePublish?.()) || row;
+      let publishRow = row;
+      if (options?.beforePublish) {
+        const savedRow = await options.beforePublish(action.version);
+        if (!savedRow) {
+          return;
+        }
+        publishRow = savedRow;
+      } else {
+        await api.UpdateObj({
+          id: publishRow.id,
+          version: action.version,
+        });
+        publishRow = { ...publishRow, version: action.version };
+      }
       await api.OnlinePluginPublish({
         id: publishRow.id,
         version: action.version,
       });
-      if (normalizeVersion(publishRow.version) !== action.version) {
-        await api.UpdateObj({
-          ...publishRow,
-          version: action.version,
-        });
-      }
       await pluginStore.reload();
       await options?.afterPublish?.();
       notification.success({ message: t("certd.onlinePluginPublishSuccess") });
