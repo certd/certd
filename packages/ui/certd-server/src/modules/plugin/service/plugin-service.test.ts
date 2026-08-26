@@ -1552,6 +1552,73 @@ describe("PluginService online plugins", () => {
     assert.deepEqual(yaml.load(savedPlugin.dependPlugins), { "access:aliyun": "*" });
   });
 
+  it("only updates editable fields and preserves market synchronization fields", async () => {
+    const service = new PluginService();
+    let savedPlugin: any;
+
+    service.repository = {
+      async findOneBy() {
+        return {
+          id: 7,
+          type: "store",
+          author: "developer",
+          name: "demo",
+          fullName: "developer/demo",
+          appId: 1,
+          developerId: 2,
+          latest: "1.2.0",
+          status: "published",
+          downloadCount: 8,
+          score: 4.5,
+          aiCheckStatus: "passed",
+          syncTime: 123,
+          installed: true,
+        };
+      },
+      async findOne() {
+        return null;
+      },
+      async save(plugin: any) {
+        savedPlugin = plugin;
+        return plugin;
+      },
+    } as any;
+    service.unRegisterById = async () => {};
+    service.registerById = async () => {};
+
+    await service.update({
+      id: 7,
+      type: "store",
+      author: "developer",
+      name: "demo",
+      title: "更新后的标题",
+      version: "1.3.0",
+      appId: 999,
+      developerId: 999,
+      latest: "9.9.9",
+      status: "offline",
+      downloadCount: 0,
+      score: 0,
+      aiCheckStatus: "rejected",
+      syncTime: 999,
+      installed: false,
+      editable: false,
+    });
+
+    assert.equal(savedPlugin.title, "更新后的标题");
+    assert.equal(savedPlugin.version, "1.3.0");
+    assert.equal(savedPlugin.appId, undefined);
+    assert.equal(savedPlugin.developerId, undefined);
+    assert.equal(savedPlugin.latest, undefined);
+    assert.equal(savedPlugin.status, undefined);
+    assert.equal(savedPlugin.downloadCount, undefined);
+    assert.equal(savedPlugin.score, undefined);
+    assert.equal(savedPlugin.aiCheckStatus, undefined);
+    assert.equal(savedPlugin.syncTime, undefined);
+    assert.equal(savedPlugin.installed, undefined);
+    assert.equal(savedPlugin.editable, undefined);
+  });
+
   it("exports dependPlugins back into the plugin YAML", async () => {
     const service = new PluginService();
     service.info = (async (id: number) => {

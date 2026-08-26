@@ -665,6 +665,17 @@ export class PluginService extends BaseService<PluginEntity> {
     }
   }
 
+  private normalizePluginYamlParam(param: any, field: "extra" | "dependPlugins") {
+    const value = param[field];
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      param[field] = yaml.dump(value, {
+        lineWidth: -1,
+        noRefs: true,
+        sortKeys: false,
+      });
+    }
+  }
+
   private normalizeStorePluginAuthor(plugin: Record<string, any>) {
     const author = `${plugin.author || ""}`.trim();
     if (!author || author.toLowerCase() === "local") {
@@ -1331,34 +1342,53 @@ export class PluginService extends BaseService<PluginEntity> {
   }
 
   async update(param: any) {
-    this.normalizeDependPluginsParam(param);
-    param.type = normalizePluginSourceType(param.type);
-    if (param.type === "store") {
-      this.normalizeStorePluginAuthor(param);
+    if (!param?.id) {
+      throw new Error("id 不能为空");
+    }
+    // 编辑接口只允许修改插件自身内容，市场同步字段始终以数据库记录为准。
+    const current = this.repository?.findOneBy ? await this.info(param.id) : null;
+    const source = { ...(current || {}), ...param };
+    source.type = normalizePluginSourceType(current?.type || param.type);
+    if (source.type === "store") {
+      this.normalizeStorePluginAuthor(source);
     }
     let old: PluginEntity | null;
-    if (param.type === "store" && param.fullName) {
+    if (source.type === "store" && source.fullName) {
       old = await this.findOne({
         where: {
           type: "store",
-          fullName: param.fullName,
+          fullName: source.fullName,
         },
       });
     } else {
       old = await this.findOne({
         where: {
-          name: param.name,
-          author: param.author,
+          name: source.name,
+          author: source.author,
         },
       });
     }
 
     if (old && old.id !== param.id) {
-      throw new Error(`插件${param.author}/${param.name}已存在`);
+      throw new Error(`插件${source.author}/${source.name}已存在`);
     }
 
+    const editableFields = ["name", "author", "fullName", "icon", "title", "group", "desc", "setting", "sysSetting", "content", "version", "pluginType", "metadata", "extra", "dependPlugins", "vip", "disabled"];
+    const updateData: any = { id: param.id };
+    for (const field of editableFields) {
+      if (Object.prototype.hasOwnProperty.call(param, field)) {
+        updateData[field] = param[field];
+      }
+    }
+    this.normalizePluginYamlParam(updateData, "extra");
+    this.normalizeDependPluginsParam(updateData);
+    updateData.type = source.type;
+    updateData.author = source.author;
+    updateData.name = source.name;
+    updateData.fullName = source.fullName;
+
     await this.unRegisterById(param.id);
-    const res = await super.update(param);
+    const res = await super.update(updateData);
 
     await this.registerById(param.id);
     return res;
