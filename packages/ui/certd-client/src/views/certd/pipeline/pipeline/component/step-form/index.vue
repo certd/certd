@@ -47,7 +47,7 @@
         </template>
         <div class="w-100 h-100">
           <a-form ref="stepFormRef" class="step-form" :model="currentStep" :label-col="labelCol" :wrapper-col="wrapperCol">
-            <fs-form-item
+            <fs-form-item-col
               v-model="currentStep.title"
               :item="{
                 title: '任务名称',
@@ -61,10 +61,10 @@
               :get-context-fn="getScopeFunc"
             />
             <template v-for="(item, key) in currentPlugin.input" :key="key">
-              <fs-form-item v-if="item.show !== false" v-model="currentStep.input[key]" :item="item" :get-context-fn="getScopeFunc" />
+              <fs-form-item-col v-model="currentStep.input[key]" :item="item" :get-context-fn="getScopeFunc" />
             </template>
 
-            <fs-form-item v-if="settingStore.sysPublic.showRunStrategy || currentPlugin.showRunStrategy" v-model="currentStep.strategy.runStrategy" :item="runStrategyProps" :get-context-fn="getScopeFunc" />
+            <fs-form-item-col v-if="settingStore.sysPublic.showRunStrategy || currentPlugin.showRunStrategy" v-model="currentStep.strategy.runStrategy" :item="runStrategyProps" :get-context-fn="getScopeFunc" />
           </a-form>
         </div>
         <template #footer>
@@ -79,7 +79,7 @@
 
 <script lang="tsx" setup>
 import { notification, Modal } from "ant-design-vue";
-import { provide, ref, Ref } from "vue";
+import { computed, provide, ref, Ref } from "vue";
 import { merge, cloneDeep } from "lodash-es";
 import { nanoid } from "nanoid";
 import { usePluginStore } from "/@/store/plugin";
@@ -236,10 +236,10 @@ function useStepForm() {
     };
   }
 
-  const { doComputed } = useCompute();
-  const currentPlugin = doComputed(() => {
+  const currentPlugin = computed(() => {
     return currentPluginDefine.value || {};
-  }, getContext);
+  });
+
   const changeCurrentPlugin = async (step: any) => {
     const stepType = step.type;
     step.type = stepType;
