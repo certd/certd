@@ -80,7 +80,7 @@ export default {
       oauthAutoRedirect: "Auto Redirect to OAuth2 Login",
       oauthAutoRedirectHelper: "Whether to auto redirect to OAuth2 login when login (using the first enabled OAuth2 login type)",
       oauthOnly: "OAuth2 Login Only",
-      oauthOnlyHelper: "Whether to only allow OAuth2 login, disable password login",
+      oauthOnlyHelper: "Only allow OAuth2 login. Password login remains available for 10 minutes after server startup as an emergency window.",
       enablePasskey: "Enable Passkey Login",
       passkeyHostnameNotSame: "Passkey hostname must be the same as the main domain",
       passkeyEnabledHelper:
