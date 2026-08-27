@@ -75,3 +75,4 @@ return class DemoTask extends AbstractTaskPlugin {
 - 外部 API 返回失败或业务失败时抛出异常。
 - 对重复执行保持幂等，避免把真实 Token、证书和私钥写入日志。
 - 修改完成后把整个 YAML 通过 Certd `/scoped/sys/ai/plugin/import` 保存。
+- 一般将API接口方法封装到Access中，其他plugin使用access当做client sdk使用
