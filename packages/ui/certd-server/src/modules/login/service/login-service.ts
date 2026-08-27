@@ -16,6 +16,8 @@ import { PasskeyService } from "./passkey-service.js";
 import { InviteService } from "@certd/commercial-core";
 import { EntityManager } from "typeorm";
 
+const PASSWORD_LOGIN_GRACE_PERIOD_SECONDS = 10 * 60;
+
 /**
  */
 @Provide()
@@ -151,6 +153,11 @@ export class LoginService {
   }
 
   async loginByPassword(req: { username: string; password: string; phoneCode: string }) {
+    const publicSettings = await this.sysSettingsService.getPublicSettings();
+    if (publicSettings.oauthOnly && process.uptime() >= PASSWORD_LOGIN_GRACE_PERIOD_SECONDS) {
+      throw new CommonException(`当前站点仅允许第三方登录，如果需要使用密码登录，请在服务重启后的前10分钟内登录`);
+    }
+
     this.checkIsBlocked(req.username);
     const { username, password, phoneCode } = req;
     const info = await this.userService.findOne([

@@ -223,7 +223,6 @@ const handleTwoFactorSubmit = async () => {
 };
 
 const sysPublicSettings = settingStore.getSysPublic;
-
 const hasRegisterTypeEnabled = () => {
   return sysPublicSettings.registerEnabled && (sysPublicSettings.usernameRegisterEnabled || sysPublicSettings.emailRegisterEnabled || sysPublicSettings.mobileRegisterEnabled || sysPublicSettings.smsLoginEnabled);
 };
