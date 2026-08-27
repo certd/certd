@@ -581,7 +581,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     this.acmeProvider = await this.getAcmeProvider();
 
     let eab: EabAccess = null;
-    const isNewVersion = this.version === 2;
+    const isNewVersion = this.version === 2 || this.acmeAccountAccessId !== undefined;
     // 内置非 LE 颁发机构需要走EAB获取流程；自定义ACME无需EAB（其EAB在ACME账号授权中按需选填）
     if (!isNewVersion && this.sslProvider && !this.sslProvider.startsWith("letsencrypt") && this.acmeProvider?.builtIn) {
       if (this.sslProvider === "google" && this.googleAccessId) {
