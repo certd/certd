@@ -68,3 +68,4 @@ return class DemoDnsProvider extends AbstractDnsProvider {
 - 只处理业务 API 所需的 TXT 记录参数，不在日志中输出授权密钥。
 - 网络失败、授权失败和 API 业务失败要有明确日志；创建失败必须抛出异常。
 - 保持创建和删除幂等，避免清理失败阻断无关流程。
+- 一般将API接口方法封装到Access中，其他plugin使用access当做client sdk使用
