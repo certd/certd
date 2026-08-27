@@ -22,6 +22,7 @@ import * as upload from "@midwayjs/upload";
 import { setLogger } from "@certd/acme-client";
 import { HiddenMiddleware } from "./middleware/hidden.js";
 import { shouldSetDefaultNoCache } from "./configuration-cache.js";
+import { compressResponse } from "./middleware/compression.js";
 // import * as swagger from '@midwayjs/swagger';
 //@ts-ignore
 // process.env.UV_THREADPOOL_SIZE = 2
@@ -90,6 +91,7 @@ export class MainConfiguration {
         origin: "*",
       })
     );
+    this.app.use(compressResponse);
     //
     // this.app.use(async (ctx, next) => {
     //   // 只在返回 'index.html' 的时候设置 maxAge
