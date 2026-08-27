@@ -20,6 +20,7 @@ class AcmeApi {
     getLocationFromHeader(resp) {
         let locationUrl = resp.headers.location;
         const mapping = this.http.urlMapping;
+        // 服务器返回的是反代地址，这里还原为 ACME 原始资源 URL，供后续 JWS url 使用。
         if (mapping.mappings) {
             // eslint-disable-next-line guard-for-in,no-restricted-syntax
             for (const key in mapping.mappings) {
