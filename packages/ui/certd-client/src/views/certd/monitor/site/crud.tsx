@@ -254,7 +254,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             title: t("certd.domain.importFromResolveRecords"),
             text: t("certd.domain.importFromResolveRecords"),
             type: "primary",
-            needPlus: true,
+            // needPlus: true,
             color: "gold",
             icon: "mingcute:vip-1-line",
             click: async () => {

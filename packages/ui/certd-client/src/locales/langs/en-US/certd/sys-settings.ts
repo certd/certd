@@ -49,7 +49,7 @@ export default {
       customAcmeSslProviderHelper: "Unique identifier, e.g. myca; used to distinguish providers in pipeline and ACME account",
       customAcmeReverseProxy: "Reverse Proxy",
       customAcmeReverseProxyHelper:
-        "For example, for Let's Encrypt, configure the reverse proxy on your overseas server: proxy_pass https://acme-v02.api.letsencrypt.org/; then fill in your reverse proxy server domain here, without http://",
+        "For example, for Let's Encrypt, configure the reverse proxy on your overseas server: \nproxy_pass https://acme-v02.api.letsencrypt.org/; \nthen fill in your reverse proxy server domain here, without http://",
       customAcmeAdd: "Add Custom ACME",
       customAcmeEdit: "Edit Custom ACME",
       customAcmeNeedEab: "Need EAB",
