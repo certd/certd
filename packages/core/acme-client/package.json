@@ -55,7 +55,6 @@
         "lint-types": "tsd --files \"types/index.test-d.ts\"",
         "prepublishOnly": "npm run build",
         "test": "mocha -t 60000 \"test/setup.js\" \"test/**/*.spec.js\"",
-        "test:unit": "cross-env NODE_ENV=unittest tsc -p tsconfig.test.json --skipLibCheck && cross-env NODE_ENV=unittest mocha -t 60000 \"dist-test/**/*.test.js\"",
         "pub": "npm publish",
         "compile": "rimraf dist && tsc --skipLibCheck --watch",
         "format": "prettier --write src"
