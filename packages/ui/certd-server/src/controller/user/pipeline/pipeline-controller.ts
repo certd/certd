@@ -210,6 +210,7 @@ export class PipelineController extends CrudController<PipelineService> {
       bean.userId = userId;
       bean.projectId = projectId;
     } else {
+      delete bean.id;
       bean.userId = userId;
       bean.projectId = projectId;
     }
