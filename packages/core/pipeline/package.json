@@ -14,7 +14,7 @@
     "build3": "rollup -c",
     "preview": "vite preview",
     "test": "mocha   --loader=ts-node/esm",
-    "test:unit": "cross-env NODE_ENV=unittest mocha --no-config --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
+    "test:unit": "cross-env NODE_ENV=unittest mocha --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
     "pub": "npm publish",
     "compile": "rimraf dist && tsc --skipLibCheck --watch",
     "format": "prettier --write src",
