@@ -7,27 +7,27 @@ input:
   caType:
     title: 颁发机构
     component:
-      name: a-select
-      options:
-        - value: letsencrypt
-          label: Let's Encrypt
-        - value: letsencrypt_staging
-          label: Let's Encrypt测试环境
-        - value: google
-          label: Google
-        - value: zerossl
-          label: ZeroSSL
-        - value: litessl
-          label: litessl
-        - value: sslcom
-          label: SSL.com
+      name: remote-select
+      vModel: value
+      type: access
+      typeName: acmeAccount
+      action: onCaTypeList
+      single: true
+      mode: tags
     required: true
     mergeScript: |2-
 
           return {
             component: {
-              disabled: ctx.compute(({form})=> !!form.access?.account)
-            }
+              disabled: ctx.compute(({form})=> !!form.access?.account),
+              on: {
+                "selected-change": (scope)=>{
+                  // 把选中颁发机构的 needEAB 同步到表单隐藏字段，用于控制 EAB 输入框显隐
+                  let form = scope.form || {};
+                  form.access._needEAB = scope.$event?.needEAB
+                }
+              }
+            },
           }
           
   email:
@@ -49,8 +49,8 @@ input:
   directoryUrl:
     title: ACME Directory URL
     component:
-      placeholder: 自定义ACME服务端点
-    helper: 自定义ACME时必填，其他颁发机构默认自动使用内置端点
+      placeholder: https://your-ca.example.com/directory
+    helper: 旧版自定义ACME使用，现已由系统「流水线设置」中的自定义ACME配置管理
     required: false
     mergeScript: |2-
 
@@ -68,7 +68,7 @@ input:
       ZeroSSL：请前往[zerossl开发者中心](https://app.zerossl.com/developer),生成 'EAB
       Credentials'
 
-      Google:请查看[google获取eab帮助文档](https://certd.docmirror.cn/guide/use/google/),用过一次后会绑定邮箱，后续复用EAB要用同一个邮箱
+      Google:请查看[google获取eab帮助文档](https://certd.docmirror.cn/guide/use/google/),需要你去翻墙得到EAB填到这里
 
       SSL.com:[SSL.com账号页面](https://secure.ssl.com/account),然后点击api
       credentials链接，然后点击编辑按钮，查看Secret key和HMAC key
@@ -80,8 +80,8 @@ input:
 
           return {
             show: ctx.compute(({form})=>{
-              const caType = form.access?.caType;
-              return ['google','zerossl','sslcom','litessl'].includes(caType);
+              // 按所选颁发机构的 needEAB 配置显隐（由 caType 的 onSelectedChange 同步到 _needEAB）
+              return form.access?._needEAB === true;
             }),
             component: {
               disabled: ctx.compute(({form})=> !!form.access?.account)
@@ -98,8 +98,8 @@ input:
 
           return {
             show: ctx.compute(({form})=>{
-              const caType = form.access?.caType;
-              return ['google','zerossl','sslcom','litessl'].includes(caType);
+              // 按所选颁发机构的 needEAB 配置显隐（由 caType 的 onSelectedChange 同步到 _needEAB）
+              return form.access?._needEAB === true;
             }),
             component: {
               disabled: ctx.compute(({form})=> !!form.access?.account)

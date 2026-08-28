@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-lib",
   "private": false,
-  "version": "1.43.0",
+  "version": "1.44.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,9 +17,9 @@
     "lint": "eslint --fix --ext .ts src"
   },
   "dependencies": {
-    "@certd/acme-client": "^1.43.0",
-    "@certd/basic": "^1.43.0",
-    "@certd/pipeline": "^1.43.0",
+    "@certd/acme-client": "^1.44.0",
+    "@certd/basic": "^1.44.0",
+    "@certd/pipeline": "^1.44.0",
     "dayjs": "^1.11.7",
     "jszip": "^3.10.1",
     "lodash-es": "^4.17.21",
