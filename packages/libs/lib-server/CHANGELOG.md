@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.44.0](https://github.com/certd/certd/compare/v1.43.0...v1.44.0) (2026-08-28)
+
+### Features
+
+* 实现自定义ACME证书颁发机构支持 ([97c417b](https://github.com/certd/certd/commit/97c417b1ad64b9a14bee8bfe98a2e789b9278820))
+* 新增证书吊销后置任务与证书状态管理 ([1cc9641](https://github.com/certd/certd/commit/1cc9641f5669710d1e5809995ad395c843855a12))
+* 支持审计日志，操作日志 ([f2855d6](https://github.com/certd/certd/commit/f2855d6dac74c9db71d92f99601e35c360b10666))
+* 支持在线插件下载安装审核等 ([255960d](https://github.com/certd/certd/commit/255960d434eebb3d567a08f737f1642ab417b5d0))
+
+### Performance Improvements
+
+* 新增自定义ACME管理功能，完善证书颁发机构适配 ([2ab23f5](https://github.com/certd/certd/commit/2ab23f50b216e27495fc823d2269ca0ba6366d15))
+* 移除全局反向代理配置，迁移到自定义ACME配置 ([c57110e](https://github.com/certd/certd/commit/c57110e42aada31dd0028b56b5baec1b19722525))
+* **login,settings:** 仅第三方登录开启后，在重启10分钟后将无法使用密码登录 ([1d12ad7](https://github.com/certd/certd/commit/1d12ad73c6ca827d2eb36bda867f9d9fe62dab48))
+
 # [1.43.0](https://github.com/certd/certd/compare/v1.42.6...v1.43.0) (2026-08-14)
 
 ### Features

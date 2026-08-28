@@ -1,0 +1,32 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: CertRevokeOld
+title: 吊销旧证书
+group: cert
+icon: tabler:certificate-off
+desc: 新证书申请成功，并全部部署成功后，吊销本流水线产生的旧证书。（注意 如果本流水线证书还在别处有使用或手动部署，请慎重添加此吊销任务）
+supportAfterTask: true
+input:
+  revokeOld:
+    title: 吊销未激活的旧证书
+    value: true
+    component:
+      name: a-switch
+      vModel: checked
+    order: 0
+    helper: 勾选后，将真实调用证书颁发机构吊销该流水线已被替换的旧证书
+  delay:
+    title: 等待时长（秒）
+    value: 50
+    component:
+      name: a-input-number
+      vModel: value
+      min: 0
+    order: 1
+    helper: 执行吊销前等待的秒数，确保新证书生效后再吊销旧证书
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-cert/plugin/after-task/cert-revoke-old.js

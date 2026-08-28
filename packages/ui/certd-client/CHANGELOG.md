@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.44.0](https://github.com/certd/certd/compare/v1.43.0...v1.44.0) (2026-08-28)
+
+### Bug Fixes
+
+* **plugin-ai-dev:** 优化AI插件测试流程并修复日志获取问题 ([faf9828](https://github.com/certd/certd/commit/faf9828168f6ce82adc530a65eaf313d6c9904b5))
+* **plugin-item-card:** 移除分数格式化时去掉.0的逻辑 ([a91d7c0](https://github.com/certd/certd/commit/a91d7c000a2aa6456a249433ff90a47787ec90f0))
+
+### Features
+
+* 实现自定义ACME证书颁发机构支持 ([97c417b](https://github.com/certd/certd/commit/97c417b1ad64b9a14bee8bfe98a2e789b9278820))
+* 新增证书吊销后置任务与证书状态管理 ([1cc9641](https://github.com/certd/certd/commit/1cc9641f5669710d1e5809995ad395c843855a12))
+* 新增AI插件开发全流程能力 ([6f9dffe](https://github.com/certd/certd/commit/6f9dffe6e59cc125bd394d7db6086d66a9c71e49))
+* 支持审计日志，操作日志 ([f2855d6](https://github.com/certd/certd/commit/f2855d6dac74c9db71d92f99601e35c360b10666))
+* 支持在线插件下载安装审核等 ([255960d](https://github.com/certd/certd/commit/255960d434eebb3d567a08f737f1642ab417b5d0))
+
+### Performance Improvements
+
+*  新增AI插件开发受限令牌与隔离API ([3a9069f](https://github.com/certd/certd/commit/3a9069f6e6242940229fd63c686f7e445408dbbb))
+* 统一将路由前缀从/certd改为/cert ([4db0f83](https://github.com/certd/certd/commit/4db0f83304dc6fd9199673c48b1805421f024601))
+* 新增官方客户端Certd Client的多语言配置与页面入口 ([fbfe125](https://github.com/certd/certd/commit/fbfe1256a5c8be6dfb2fbae7e6130eb5f6c6d946))
+* 新增证书吊销功能，添加证书状态字段 ([5074572](https://github.com/certd/certd/commit/5074572694383c8e1bf2880e26827987683dc62c))
+* 新增自定义ACME管理功能，完善证书颁发机构适配 ([2ab23f5](https://github.com/certd/certd/commit/2ab23f50b216e27495fc823d2269ca0ba6366d15))
+* 移除全局反向代理配置，迁移到自定义ACME配置 ([c57110e](https://github.com/certd/certd/commit/c57110e42aada31dd0028b56b5baec1b19722525))
+* 增加稳定版，预览版区分，预览版是最新版，稳定版在预览版验证稳定后，再将预览版转为稳定版 ([1574090](https://github.com/certd/certd/commit/15740904e5e97ee767c39e4401dbc1d645795c38))
+* 支持AI开发在线插件 ([eae7edb](https://github.com/certd/certd/commit/eae7edbda0fd7357163f33fb4084fcba21396f5f))
+* **domain:** 域名管理增加remark字段 ([e4041ea](https://github.com/certd/certd/commit/e4041eabece1bab2c1c4b955129cf7a7fe7302d0))
+* **login,settings:** 仅第三方登录开启后，在重启10分钟后将无法使用密码登录 ([1d12ad7](https://github.com/certd/certd/commit/1d12ad73c6ca827d2eb36bda867f9d9fe62dab48))
+* **plugin:** 插件安装支持检测依赖 ([e79660c](https://github.com/certd/certd/commit/e79660c5d17ed4049508a00a359950a54470332f))
+* **plugin:** 新增插件评分展示、排序与个人插件筛选功能 ([7ab5029](https://github.com/certd/certd/commit/7ab502991e0c001777b268b9f159311ef5e000a0))
+
 # [1.43.0](https://github.com/certd/certd/compare/v1.42.6...v1.43.0) (2026-08-14)
 
 ### Bug Fixes

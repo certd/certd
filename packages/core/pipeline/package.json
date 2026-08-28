@@ -1,7 +1,7 @@
 {
   "name": "@certd/pipeline",
   "private": false,
-  "version": "1.43.0",
+  "version": "1.44.0",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -19,10 +19,10 @@
     "compile": "rimraf dist && tsc --skipLibCheck --watch",
     "format": "prettier --write src",
     "lint": "eslint --fix --ext .ts src"
-  },  
+  },
   "dependencies": {
-    "@certd/basic": "^1.43.0",
-    "@certd/plus-core": "^1.43.0",
+    "@certd/basic": "^1.44.0",
+    "@certd/plus-core": "^1.44.0",
     "dayjs": "^1.11.7",
     "lodash-es": "^4.17.21",
     "reflect-metadata": "^0.2.2"
