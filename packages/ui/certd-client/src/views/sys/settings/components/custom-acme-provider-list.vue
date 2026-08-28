@@ -80,7 +80,7 @@ function buildColumns(editing: CustomAcmeProviderForm | null) {
         show: hideForBuiltIn,
         rules: [{ required: true, message: t("certd.sys.setting.customAcmeSaveCheck") }],
         placeholder: "https://your-ca.example.com/directory",
-        helper: "Directory URL of the ACME server",
+        helper: "Directory URL of the ACME server (e.g., https://acme-v02.api.letsencrypt.org/directory)",
       },
     },
     reverseProxy: {

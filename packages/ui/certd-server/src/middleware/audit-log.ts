@@ -34,7 +34,7 @@ export class AuditLogMiddleware implements IWebMiddleware {
       return;
     }
     // 匿名请求不记录操作日志
-    if (!ctx.user?.id) {
+    if (!ctx.user?.id && auditLog?.userId == null) {
       return;
     }
     let isSuccess = this.isSuccessResponse(ctx);

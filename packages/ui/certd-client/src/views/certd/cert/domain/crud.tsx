@@ -126,8 +126,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             title: t("certd.domain.importFromProvider"),
             type: "primary",
             text: t("certd.domain.importFromProvider"),
-            needPlus: true,
-            color: "gold",
+            // needPlus: true,
             icon: "mingcute:vip-1-line",
             click: async () => {
               await openDomainImportManageDialog({

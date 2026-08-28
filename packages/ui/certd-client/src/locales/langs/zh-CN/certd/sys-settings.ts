@@ -47,7 +47,7 @@ export default {
       customAcmeSslProvider: "颁发机构标识",
       customAcmeSslProviderHelper: "唯一标识，如 myca；创建流水线和ACME账号时用它来区分颁发机构，不能重复，创建后不能修改",
       customAcmeReverseProxy: "反向代理地址",
-      customAcmeReverseProxyHelper: "例如：对于letsencrypt 你在海外服务器配置反代： proxy_pass https://acme-v02.api.letsencrypt.org/; 然后在这里填写你的反代服务器的域名，不要带http://",
+      customAcmeReverseProxyHelper: "例如：对于letsencrypt 你在海外服务器配置反代：\nproxy_pass https://acme-v02.api.letsencrypt.org/; \n然后在这里填写你的反代服务器的域名，不要带http://",
       customAcmeAdd: "添加自定义ACME",
       customAcmeEdit: "编辑自定义ACME",
       customAcmeNeedEab: "需要EAB",
