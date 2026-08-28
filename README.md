@@ -130,12 +130,12 @@ registry.cn-shenzhen.aliyuncs.com/certd/certd:[version-][system-][latest/stable]
 | slim | `certd:slim` |  Debian slim | 基于glibc，dns解析兼容性好 | `certd:slim-stable` |
 | armv7 | `certd:armv7` |  Alpine Linux | ARMv7 架构专用版本 | `certd:armv7-stable` |
 
-##### 2. 镜像地址：
+##### 3. 镜像地址：
 
 | 镜像仓库 | 最新预览版  | slim | armv7 | 
 | --- | --- | --- | --- | 
 | 阿里云【默认】 | `registry.cn-shenzhen.aliyuncs.com/certd/certd:latest` | `certd:slim` | `certd:armv7` |
-| Docker Hub | `greper/certd:latest` | `certd:slim` |
+| Docker Hub | `certd/certd:latest` | `certd:slim` |
 | GitHub Packages | `ghcr.io/certd/certd:latest` | `certd:slim` | `certd:armv7` |
 
 
@@ -143,6 +143,9 @@ registry.cn-shenzhen.aliyuncs.com/certd/certd:[version-][system-][latest/stable]
 > 1. 后面的各个版本省略了镜像地址，使用时需要将镜像地址拼接完整。
 > 2. 稳定版在后面加 `-stable` 即可。
 > 3. 如需指定具体的版本号，在冒号后面加 `version-`即可，例如 `certd:1.42.1-stable`。
+
+最新版本号：
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/certd/certd?label=Latest%20Release&sort=semver)
 
 
 ##### 3. 镜像构建说明：
