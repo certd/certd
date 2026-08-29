@@ -2,7 +2,7 @@ import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { addonRegistry, BaseService, PageReq, PlusService, SysInstallInfo, SysPluginSetting, SysSettingsService } from "@certd/lib-server";
 import { PluginEntity } from "../entity/plugin.js";
 import { InjectEntityModel } from "@midwayjs/typeorm";
-import { Brackets, Equal, IsNull, Like, Not, Or, Repository } from "typeorm";
+import { Brackets, Equal, In, IsNull, Like, Not, Or, Repository } from "typeorm";
 import { isComm } from "@certd/plus-core";
 import { BuiltInPluginService } from "../../pipeline/service/builtin-plugin-service.js";
 import { merge } from "lodash-es";
@@ -711,6 +711,7 @@ export class PluginService extends BaseService<PluginEntity> {
 
     if (param.type === "builtIn") {
       return await super.add({
+        disabled: false,
         ...param,
       });
     }
@@ -732,6 +733,7 @@ export class PluginService extends BaseService<PluginEntity> {
     }
 
     const res = await super.add({
+      disabled: false,
       ...param,
       ...plugin,
     });
@@ -762,19 +764,10 @@ export class PluginService extends BaseService<PluginEntity> {
     return "";
   }
 
-  private normalizeOnlinePluginRecord(item: OnlinePluginBean, syncTime: number, old?: PluginEntity) {
+  private normalizeOnlinePluginRecord(item: OnlinePluginBean, syncTime: number) {
     const fullName = this.getOnlinePluginFullName(item);
     let extra: Record<string, any> = {};
-    if (old?.extra) {
-      try {
-        extra = (yaml.load(old.extra) as Record<string, any>) || {};
-      } catch (e) {
-        extra = {};
-      }
-    }
-    delete extra.dependPlugins;
-    return this.repository.create({
-      id: old?.id,
+    return {
       appId: item.appId,
       developerId: item.developerId,
       fullName,
@@ -794,9 +787,9 @@ export class PluginService extends BaseService<PluginEntity> {
       dependPlugins: toDependPluginsYaml(item.dependPlugins),
       extra: Object.keys(extra).length > 0 ? yaml.dump(extra) : null,
       syncTime,
-      type: old?.type || "store",
+      type: "store",
       updateTime: new Date(),
-    });
+    };
   }
 
   private toOnlinePluginBean(item: PluginEntity): OnlinePluginBean {
@@ -964,19 +957,6 @@ export class PluginService extends BaseService<PluginEntity> {
     await this.plusService.register();
 
     // 只同步市场列表元数据，插件 YAML 内容仍然在安装时按版本下载。
-    const createdAtLt = Date.now();
-    const existingList = await this.find({
-      where: {
-        type: "store",
-      },
-    });
-    const existingMap = new Map<string, PluginEntity>();
-    for (const item of existingList) {
-      const fullName = item.fullName || this.getOnlinePluginFullName(item as any);
-      if (fullName) {
-        existingMap.set(fullName, item);
-      }
-    }
     const syncTime = new Date().getTime();
     let pageStart = 0;
     while (true) {
@@ -984,7 +964,6 @@ export class PluginService extends BaseService<PluginEntity> {
         url: "/activation/plugin/page",
         method: "post",
         data: {
-          createdAtLt,
           page: {
             start: pageStart,
             limit: ONLINE_PLUGIN_SYNC_PAGE_SIZE,
@@ -998,23 +977,44 @@ export class PluginService extends BaseService<PluginEntity> {
         },
       });
       const list = res?.list || [];
-      const pluginMap = new Map<string, OnlinePluginBean>();
-      for (const item of list) {
-        const record = { ...item };
-        const fullName = this.getOnlinePluginFullName(record);
-        if (!fullName) {
-          continue;
-        }
-        record.fullName = fullName;
-        pluginMap.set(fullName, record);
-      }
-      const records = Array.from(pluginMap.values()).map(item => {
-        return this.normalizeOnlinePluginRecord(item, syncTime, existingMap.get(item.fullName));
+
+      const fullNames = list.map(item => this.getOnlinePluginFullName(item));
+      const existingRecords = await this.repository.find({
+        where: {
+          type: "store",
+          fullName: In(fullNames),
+        },
       });
-      if (records.length > 0) {
-        await this.addOrUpdate(records);
-        for (const record of records) {
-          existingMap.set(record.fullName, record);
+      const existingMap = new Map(existingRecords.map(item => [item.fullName, item]));
+      for (const item of list) {
+        const itemFromStore:any = this.normalizeOnlinePluginRecord(item, syncTime);
+        const fullName = itemFromStore.fullName;
+        const existingRecord = existingMap.get(fullName);
+        if (existingRecord) {
+           //本地已存在,只更新市场相关字段
+           if (existingRecord.installed){
+              //如果本地已经安装的，则只同步版本 分数 下载量
+               const updateBean: Record<string, any> = {
+                id: existingRecord.id,
+                score: itemFromStore.score,
+                downloadCount: itemFromStore.downloadCount,
+                latestVersion: itemFromStore.version,
+              }
+              await this.update(updateBean);
+           }else{
+             //如果本地未安装的，则同步所有字段
+             const updateBean: Record<string, any> = {
+                id: existingRecord.id,
+                ...itemFromStore,
+              }
+              await this.update(updateBean);
+           }
+            
+          
+           continue;
+        }else{
+          itemFromStore.disabled = false;
+          await this.add(itemFromStore);
         }
       }
       const total = Number(res?.page?.total || 0);
@@ -1586,18 +1586,6 @@ export class PluginService extends BaseService<PluginEntity> {
         fullName,
       },
     });
-    // 兼容历史自开发插件：旧记录可能没有 fullName，切换为在线插件时按作者和名称复用。
-    if (!old && entityType === "store" && loaded.author && loaded.name) {
-      const legacyPlugin = await this.findOne({
-        where: {
-          author: loaded.author,
-          name: loaded.name,
-        },
-      });
-      if (legacyPlugin?.type === "custom" || !legacyPlugin?.type) {
-        old = legacyPlugin;
-      }
-    }
 
     const metadata = {
       input: loaded.input,
@@ -1630,16 +1618,16 @@ export class PluginService extends BaseService<PluginEntity> {
     }
     if (!old) {
       //add
-      const { id } = await this.add(pluginEntity);
-      pluginEntity.id = id;
+      await super.add(pluginEntity);
     } else {
       if (!req.override) {
         throw new Error(`插件${loaded.author}/${loaded.name}已存在`);
       }
       pluginEntity.id = old.id;
+       //update
+      await this.update(pluginEntity);
     }
-    //update
-    await this.update(pluginEntity);
+   
     return {
       id: pluginEntity.id,
     };
@@ -1669,5 +1657,26 @@ export class PluginService extends BaseService<PluginEntity> {
         disabled: false,
       }
     );
+  }
+
+
+  isNewVersion(version: string, latestVersion: string) {
+    if (!latestVersion) {
+      return false;
+    }
+    if (latestVersion === version) {
+      return false;
+    }
+    //分段比较
+    const current = version.split(".");
+    const latest = latestVersion.split(".");
+    for (let i = 0; i < current.length; i++) {
+      if (parseInt(latest[i]) > parseInt(current[i])) {
+        return true;
+      } else if (parseInt(latest[i]) < parseInt(current[i])) {
+        return false;
+      }
+    }
+    return false;
   }
 }
