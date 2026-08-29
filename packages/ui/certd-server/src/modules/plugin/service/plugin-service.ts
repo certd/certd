@@ -85,6 +85,7 @@ export type OnlinePluginAuthorBean = {
   avatar?: string;
   desc?: string;
   status?: string;
+  email?: string;
 };
 
 export type OnlinePluginAuthorGetReply = {
@@ -97,7 +98,9 @@ export type OnlinePluginAuthorAddReq = {
   displayName?: string;
   avatar?: string;
   desc?: string;
+  email: string;
 };
+export type OnlinePluginAuthorUpdateReq = { email: string };
 
 export type OnlinePluginBean = {
   id?: number;
@@ -1208,6 +1211,9 @@ export class PluginService extends BaseService<PluginEntity> {
   }
 
   async addOnlinePluginAuthor(req: OnlinePluginAuthorAddReq): Promise<OnlinePluginAuthorBean> {
+    if (!/^\S+@\S+\.\S+$/.test(req.email?.trim() || "")) {
+      throw new Error("请输入有效的作者邮箱");
+    }
     await this.getBindUserId("注册插件作者");
     await this.plusService.register();
     return await this.plusService.request({
@@ -1215,11 +1221,18 @@ export class PluginService extends BaseService<PluginEntity> {
       method: "post",
       data: {
         name: req.name,
-        displayName: req.displayName || "",
-        avatar: req.avatar || "",
-        desc: req.desc || "",
+        email: req.email,
       },
     });
+  }
+
+  async updateOnlinePluginAuthor(req: OnlinePluginAuthorUpdateReq): Promise<OnlinePluginAuthorBean> {
+    if (!/^\S+@\S+\.\S+$/.test(req.email?.trim() || "")) {
+      throw new Error("请输入有效的作者邮箱");
+    }
+    await this.getBindUserId("修改插件作者");
+    await this.plusService.register();
+    return await this.plusService.request({ url: "/activation/plugin/author/update", method: "post", data: { email: req.email } });
   }
 
   async getOnlinePluginPublishInfo(req: OnlinePluginPublishInfoReq): Promise<OnlinePluginPublishInfo> {
