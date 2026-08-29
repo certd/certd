@@ -9,17 +9,7 @@
     <fs-crud ref="crudRef" class="plugin-card-crud" v-bind="crudBinding">
       <a-empty v-if="pluginList.length === 0" class="plugin-card-empty" />
       <div v-else class="plugin-card-grid">
-        <PluginItemCard
-          v-for="item of pluginList"
-          :key="item.fullName"
-          :source="getPluginCardSource(item)"
-          :plugin="item"
-          show-config
-          :editable="item.editable"
-          :copy-handler="copyPlugin"
-          @changed="handlePluginChanged"
-          @click="openPluginDetail"
-        />
+        <PluginItemCard v-for="item of pluginList" :key="item.fullName" :source="getPluginCardSource(item)" :plugin="item" show-config :editable="item.editable" @changed="handlePluginChanged" @click="openPluginDetail" />
       </div>
     </fs-crud>
   </fs-page>
@@ -80,30 +70,8 @@ async function handleDetailInstalled() {
   crudExpose.doRefresh();
 }
 
-async function copyPlugin(row: any) {
-  const copyRow = { ...row };
-  delete copyRow.fullName;
-  delete copyRow.id;
-  delete copyRow.developerId;
-  delete copyRow.appId;
-  delete copyRow.latest;
-  delete copyRow.status;
-  delete copyRow.downloadCount;
-  delete copyRow.score;
-  await crudExpose.openCopy(
-    {
-      row: copyRow,
-    },
-    {
-      async onSuccess() {
-        crudExpose.doRefresh();
-      },
-    }
-  );
-}
-
 async function handlePluginChanged(payload: { action: string }) {
-  if (payload.action === "install" || payload.action === "uninstall" || payload.action === "remove" || payload.action === "copy") {
+  if (payload.action === "install" || payload.action === "uninstall" || payload.action === "remove") {
     await pluginStore.reload();
   }
   crudExpose.doRefresh();

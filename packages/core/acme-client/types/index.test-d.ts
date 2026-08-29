@@ -65,7 +65,6 @@ import * as acme from '..';
         email: 'test@example.com',
         termsOfServiceAgreed: false,
         skipChallengeVerification: false,
-        challengePriority: ['http-01', 'dns-01'],
         preferredChain: 'DST Root CA X3',
         challengeCreateFn: async (authz, keyAuthorization) => ({
             challenge: authz.challenges[0],

@@ -179,7 +179,7 @@ function onAuthenticatorEnabledChanged(value: any) {
 <style lang="less">
 .page-user-settings {
   .user-settings-form {
-    width: 600px;
+    width: 700px;
     margin: 20px;
   }
 }

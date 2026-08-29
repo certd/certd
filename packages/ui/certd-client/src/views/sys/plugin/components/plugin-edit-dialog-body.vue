@@ -120,22 +120,32 @@ function validate() {
   }
 }
 
-function buildSubmitForm() {
+function buildSubmitForm(versionOverride?: string) {
   const baseForm = baseFormRef.value.getFormData();
-  const form = { ...plugin.value, ...baseForm };
+  const source = { ...plugin.value, ...baseForm };
+  const form: Record<string, any> = { id: plugin.value.id };
+  const editableFields = ["name", "author", "icon", "title", "group", "desc", "setting", "sysSetting", "content", "version", "pluginType", "metadata", "extra", "dependPlugins", "vip", "disabled"];
+  for (const field of editableFields) {
+    if (Object.prototype.hasOwnProperty.call(source, field)) {
+      form[field] = source[field];
+    }
+  }
+  if (versionOverride) {
+    form.version = versionOverride;
+  }
   if (form.extra) {
     form.extra = yaml.dump(form.extra);
   }
   return form;
 }
 
-async function doSave() {
+async function doSave(versionOverride?: string) {
   if (!canEditPlugin.value) {
     notification.warning({ message: "当前绑定账号无权编辑该插件" });
     return;
   }
   validate();
-  const form = buildSubmitForm();
+  const form = buildSubmitForm(versionOverride);
   // 本地编辑后必须提升版本号才能保存：本地版本需要高于云端已发布版本
   if (form.latest && form.version && compareVersions(form.version, form.latest) <= 0) {
     notification.warning({
@@ -146,7 +156,7 @@ async function doSave() {
   saveLoading.value = true;
   try {
     await api.UpdateObj(form);
-    plugin.value = form;
+    plugin.value = { ...plugin.value, ...form };
     pluginStore.clear();
     notification.success({ message: "保存成功" });
     emit("saved");

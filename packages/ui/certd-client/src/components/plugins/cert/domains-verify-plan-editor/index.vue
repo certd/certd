@@ -399,7 +399,7 @@ watch(
             width: 80px;
           }
           .input {
-            width: 150px;
+            width: 180px;
           }
         }
       }
