@@ -81,5 +81,4 @@ jobs:
         run: |
           export ATOMGIT_TOKEN=${{ secrets.ATOMGIT_TOKEN }}
           export VERSION=${{ inputs.version }}
-          npm install --no-save --no-package-lock --omit=dev --workspaces=false axios@^1.9.0
-          npm run set-release-stable
+          node ./scripts/set-release-stable-fetch.js
