@@ -701,10 +701,7 @@ describe("PluginService online plugins", () => {
 
     assert.deepEqual(
       dependencies.map(item => item.fullName),
-      [
-        "developer/access-b",
-        "developer/access-a",
-      ]
+      ["developer/access-b", "developer/access-a"]
     );
     assert.deepEqual(findCalls, [
       { type: "store", fullName: "developer/target" },

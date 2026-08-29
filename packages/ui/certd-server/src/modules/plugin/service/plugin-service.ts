@@ -1344,7 +1344,7 @@ export class PluginService extends BaseService<PluginEntity> {
       throw new Error("id 不能为空");
     }
     // 编辑接口只允许修改插件自身内容，市场同步字段始终以数据库记录为准。
-    const source = {  ...param };
+    const source = { ...param };
     source.type = normalizePluginSourceType(source.type);
     this.normalizeStorePluginAuthor(source);
     let old: PluginEntity | null;
@@ -1359,7 +1359,7 @@ export class PluginService extends BaseService<PluginEntity> {
       throw new Error(`插件${source.author}/${source.name}已存在`);
     }
 
-    const updateData: any = {...source, id: param.id };
+    const updateData: any = { ...source, id: param.id };
     this.normalizePluginYamlParam(updateData, "extra");
     this.normalizeDependPluginsParam(updateData);
 
