@@ -40,8 +40,8 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.dockerhub_username }}
-          password: ${{ secrets.dockerhub_password }}
+          username: ${{ secrets.dockerhub_username2 }}
+          password: ${{ secrets.dockerhub_password2 }}
 
       # stable 镜像：叠加 ENV 层
       - name: Build and push stable images
@@ -50,6 +50,8 @@ jobs:
           ENV certd_release_mode=stable" > Dockerfile.stable
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
+            --provenance=false \
+            --sbom=false \
             --push \
             -f Dockerfile.stable \
             -t registry.cn-shenzhen.aliyuncs.com/handsfree/certd:stable \
@@ -65,6 +67,8 @@ jobs:
           ENV certd_release_mode=stable" > Dockerfile.slim-stable
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
+            --provenance=false \
+            --sbom=false \
             --push \
             -f Dockerfile.slim-stable \
             -t registry.cn-shenzhen.aliyuncs.com/handsfree/certd:slim-stable \
