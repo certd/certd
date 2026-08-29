@@ -32,7 +32,7 @@ async function request(method, url, options = {}) {
 
 async function main() {
   try {
-    const releaseUrl = apiBase + "/releases/" + encodeURIComponent(version);
+    const releaseUrl = apiBase + "/releases/v" + encodeURIComponent(version);
     const release = await request("GET", releaseUrl, {
       params: { access_token: token },
     });
