@@ -108,6 +108,7 @@ export type OnlinePluginBean = {
   desc?: string;
   latest?: string;
   status?: string;
+  email?: string;
   downloadCount?: number;
   score?: number;
   aiCheckStatus?: string;
@@ -218,14 +219,8 @@ export async function OnlinePluginPublishInfo(body: { id: number }): Promise<{
 
 export type OnlinePluginAuthorBean = {
   id?: number;
-  appId?: number;
-  appOwnerId?: number;
-  developerId?: number;
   name?: string;
-  displayName?: string;
-  avatar?: string;
-  desc?: string;
-  status?: string;
+  email?: string;
 };
 
 export async function OnlinePluginAuthorGet(options?: { showErrorNotify?: boolean }): Promise<{ registered?: boolean; author?: OnlinePluginAuthorBean }> {
@@ -236,12 +231,15 @@ export async function OnlinePluginAuthorGet(options?: { showErrorNotify?: boolea
   });
 }
 
-export async function OnlinePluginAuthorAdd(body: { name: string; displayName?: string; avatar?: string; desc?: string }): Promise<OnlinePluginAuthorBean> {
+export async function OnlinePluginAuthorAdd(body: { name: string; email: string }): Promise<OnlinePluginAuthorBean> {
   return await request({
     url: apiPrefix + "/online/author/add",
     method: "post",
     data: body,
   });
+}
+export async function OnlinePluginAuthorUpdate(body: { email: string }): Promise<OnlinePluginAuthorBean> {
+  return await request({ url: apiPrefix + "/online/author/update", method: "post", data: body });
 }
 
 export type PluginConfigBean = {

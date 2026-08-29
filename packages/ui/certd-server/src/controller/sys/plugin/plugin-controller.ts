@@ -3,6 +3,7 @@ import { merge } from "lodash-es";
 import { CrudController } from "@certd/lib-server";
 import {
   OnlinePluginAuthorAddReq,
+  OnlinePluginAuthorUpdateReq,
   OnlinePluginDependenciesReq,
   OnlinePluginInstallReq,
   OnlinePluginListReq,
@@ -190,6 +191,11 @@ export class PluginController extends CrudController<PluginService> {
     const res = await this.service.addOnlinePluginAuthor(body);
     await this.auditLog({ content: `注册了在线插件作者「${body.name}」` });
     return this.ok(res);
+  }
+
+  @Post("/online/author/update", { description: "sys:settings:edit", summary: "修改在线插件作者邮箱" })
+  async onlineAuthorUpdate(@Body(ALL) body: OnlinePluginAuthorUpdateReq) {
+    return this.ok(await this.service.updateOnlinePluginAuthor(body));
   }
 
   @Post("/online/publish/info", { description: "sys:settings:view", summary: "查询本地插件发布信息" })
