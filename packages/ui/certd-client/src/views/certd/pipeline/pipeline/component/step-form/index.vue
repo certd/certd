@@ -47,7 +47,7 @@
         </template>
         <div class="w-100 h-100">
           <a-form ref="stepFormRef" class="step-form" :model="currentStep" :label-col="labelCol" :wrapper-col="wrapperCol">
-            <fs-form-item
+            <fs-form-item-col
               v-model="currentStep.title"
               :item="{
                 title: '任务名称',
@@ -61,10 +61,10 @@
               :get-context-fn="getScopeFunc"
             />
             <template v-for="(item, key) in currentPlugin.input" :key="key">
-              <fs-form-item v-if="item.show !== false" v-model="currentStep.input[key]" :item="item" :get-context-fn="getScopeFunc" />
+              <fs-form-item-col v-model="currentStep.input[key]" :item="item" :get-context-fn="getScopeFunc" />
             </template>
 
-            <fs-form-item v-if="settingStore.sysPublic.showRunStrategy || currentPlugin.showRunStrategy" v-model="currentStep.strategy.runStrategy" :item="runStrategyProps" :get-context-fn="getScopeFunc" />
+            <fs-form-item-col v-if="settingStore.sysPublic.showRunStrategy || currentPlugin.showRunStrategy" v-model="currentStep.strategy.runStrategy" :item="runStrategyProps" :get-context-fn="getScopeFunc" />
           </a-form>
         </div>
         <template #footer>
@@ -79,11 +79,10 @@
 
 <script lang="tsx" setup>
 import { notification, Modal } from "ant-design-vue";
-import { provide, ref, Ref } from "vue";
+import { computed, provide, reactive, ref, Ref, UnwrapNestedRefs } from "vue";
 import { merge, cloneDeep } from "lodash-es";
 import { nanoid } from "nanoid";
 import { usePluginStore } from "/@/store/plugin";
-import { useCompute } from "@fast-crud/fast-crud";
 import { useReference } from "/@/use/use-refrence";
 import { useSettingStore } from "/@/store/settings";
 import { mitter } from "/@/utils/util.mitt";
@@ -122,7 +121,8 @@ function useStepForm() {
   const settingStore = useSettingStore();
   const mode: Ref = ref("add");
   const callback: Ref = ref();
-  const currentStep: Ref = ref({ title: undefined, input: {} });
+  const currentStep: UnwrapNestedRefs<any> = reactive({ title: undefined, input: {} });
+  const currentStepScope = { form: currentStep };
   const stepFormRef: Ref = ref(null);
   const stepDrawerVisible: Ref = ref(false);
   const fullscreen: Ref<boolean> = ref(false);
@@ -145,30 +145,30 @@ function useStepForm() {
       mitter.emit("openVipModal");
       throw new Error("此插件需要开通Certd专业版才能使用");
     }
-    currentStep.value.type = item.name;
-    currentStep.value.title = item.title;
-    console.log("currentStepTypeChanged:", currentStep.value);
+    currentStep.type = item.name;
+    currentStep.title = item.title;
+    console.log("currentStepTypeChanged:", currentStep);
   };
 
   const stepTypeSave = async () => {
-    currentStep.value._isAdd = false;
-    if (currentStep.value.type == null) {
+    currentStep._isAdd = false;
+    if (currentStep.type == null) {
       notification.warning({ message: "请先选择类型" });
       return;
     }
 
     // 给step的input设置默认值
-    await changeCurrentPlugin(currentStep.value);
+    await changeCurrentPlugin(currentStep);
 
     //合并默认值
     merge(
-      currentStep.value,
+      currentStep,
       {
         input: {},
         strategy: { runStrategy: 0 },
       },
       currentPlugin.value.default,
-      currentStep.value
+      currentStep
     );
   };
 
@@ -187,13 +187,16 @@ function useStepForm() {
 
   const stepOpen = (step: any, emit: any) => {
     callback.value = emit;
-    currentStep.value = merge({ input: {}, strategy: {} }, step);
+    for (const key of Object.keys(currentStep)) {
+      delete currentStep[key];
+    }
+    merge(currentStep, { input: {}, strategy: {} }, step);
     // 旧版证书申请任务没有 version 字段，编辑时补成 1，保持旧任务继续走兼容逻辑。
-    if (mode.value === "edit" && currentStep.value.type === "CertApply" && currentStep.value.input?.version == null) {
-      currentStep.value.input.version = 1;
+    if (mode.value === "edit" && currentStep.type === "CertApply" && currentStep.input?.version == null) {
+      currentStep.input.version = 1;
     }
     if (step.type) {
-      changeCurrentPlugin(currentStep.value);
+      changeCurrentPlugin(currentStep);
     }
     stepDrawerShow();
   };
@@ -230,16 +233,10 @@ function useStepForm() {
     return "plugin";
   });
 
-  function getContext() {
-    return {
-      form: currentStep.value.input,
-    };
-  }
-
-  const { doComputed } = useCompute();
-  const currentPlugin = doComputed(() => {
+  const currentPlugin = computed(() => {
     return currentPluginDefine.value || {};
-  }, getContext);
+  });
+
   const changeCurrentPlugin = async (step: any) => {
     const stepType = step.type;
     step.type = stepType;
@@ -262,15 +259,15 @@ function useStepForm() {
     for (let key in pluginDefine.input) {
       const column = pluginDefine.input[key];
       //设置初始值
-      if ((column.default != null || column.value != null) && currentStep.value.input[key] == null) {
-        currentStep.value.input[key] = column.default ?? column.value;
+      if ((column.default != null || column.value != null) && currentStep.input[key] == null) {
+        currentStep.input[key] = column.default ?? column.value;
       }
     }
     //设置系统初始值
     const pluginSysConfig = await pluginStore.getPluginConfig({ name: pluginDefine.name, type: "builtIn" });
     if (pluginSysConfig.sysSetting?.input) {
       for (const key in pluginSysConfig.sysSetting?.input) {
-        currentStep.value.input[key] = pluginSysConfig.sysSetting?.input[key];
+        currentStep.input[key] = pluginSysConfig.sysSetting?.input[key];
       }
     }
   };
@@ -283,7 +280,7 @@ function useStepForm() {
       return;
     }
 
-    callback.value("save", currentStep.value);
+    callback.value("save", currentStep);
     stepDrawerClose();
   };
 
@@ -301,7 +298,7 @@ function useStepForm() {
   };
 
   const stepCopy = () => {
-    const step = cloneDeep(currentStep.value);
+    const step = cloneDeep(currentStep);
     step.id = nanoid();
     step.title = `${step.title}-copy`;
     callback.value("copy", step);
@@ -309,9 +306,7 @@ function useStepForm() {
   };
 
   const getScopeFunc = () => {
-    return {
-      form: currentStep.value,
-    };
+    return currentStepScope;
   };
 
   const pluginSourceActive = ref("local");
@@ -321,9 +316,9 @@ function useStepForm() {
   };
 
   const handleOnlinePluginUninstalled = (plugin: any) => {
-    if (currentStep.value.type === plugin.fullName) {
-      currentStep.value.type = undefined;
-      currentStep.value.title = "新任务";
+    if (currentStep.type === plugin.fullName) {
+      currentStep.type = undefined;
+      currentStep.title = "新任务";
     }
   };
 

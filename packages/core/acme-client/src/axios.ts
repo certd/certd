@@ -3,7 +3,6 @@
  * Axios instance
  */
 import axios from 'axios';
-import { parseRetryAfterHeader } from './util.js';
 const { AxiosError } = axios;
 import {getGlobalAgents, HttpError} from '@certd/basic'
 import { log } from './logger.js';
@@ -113,12 +112,9 @@ instance.interceptors.response.use(null, async (error) => {
             log(`Caught ${code}, retry attempt ${config.retryAttempt}/${retryMaxAttempts} to URL ${config.url}`);
 
             const retryAfter = (retryDefaultDelay * config.retryAttempt);
-            /* Attempt to parse Retry-After header, fallback to default delay */
-            const headerRetryAfter = response ? parseRetryAfterHeader(response.headers['retry-after']) : 0;
-
-            if (headerRetryAfter > 0) {
-                const waitMinutes = (headerRetryAfter / 60).toFixed(1);
-                log(`Found retry-after response header with value: ${response.headers['retry-after']}, waiting ${waitMinutes} minutes`);
+            if (response?.status === 429) {
+                // CA 限流按产品策略立即失败，不能依据 Retry-After 自动重试，避免继续消耗配额。
+                log(`CA rate limit encountered (HTTP 429), failing immediately; Retry-After=${response.headers['retry-after']}`);
                 log(JSON.stringify(response.data));
                 return Promise.reject(new HttpError(error));
             }

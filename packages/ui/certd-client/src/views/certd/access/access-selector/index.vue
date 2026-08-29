@@ -162,34 +162,34 @@ export default defineComponent({
       },
     });
 
-    async function selectFirst(clearCurrent = false) {
-      if (!clearCurrent && props.modelValue) {
-        return;
-      }
-      const searchForm = projectStore.getSearchForm();
-      const query: any = {
-        query: {
-          type: props.type,
-          ...searchForm,
-        },
-        page: { page: 1, pageSize: 1 },
-        sort: { prop: "id", order: "ascending" },
-      };
-      if (props.subtype) {
-        query.query.subtype = props.subtype;
-      }
-      const res = await api.GetList(query);
-      const records = res?.records || [];
-      if (records.length > 0) {
-        await emitValue(records[0].id);
-      }
-    }
+    // async function selectFirst(clearCurrent = false) {
+    //   if (!clearCurrent && props.modelValue) {
+    //     return;
+    //   }
+    //   const searchForm = projectStore.getSearchForm();
+    //   const query: any = {
+    //     query: {
+    //       type: props.type,
+    //       ...searchForm,
+    //     },
+    //     page: { page: 1, pageSize: 1 },
+    //     sort: { prop: "id", order: "ascending" },
+    //   };
+    //   if (props.subtype) {
+    //     query.query.subtype = props.subtype;
+    //   }
+    //   const res = await api.GetList(query);
+    //   const records = res?.records || [];
+    //   if (records.length > 0) {
+    //     await emitValue(records[0].id);
+    //   }
+    // }
 
     onMounted(async () => {
-      if (!props.defaultSelect) {
-        return;
-      }
-      await selectFirst();
+      // if (!props.defaultSelect) {
+      //   return;
+      // }
+      // await selectFirst();
     });
 
     return {
@@ -198,7 +198,7 @@ export default defineComponent({
       selectedId,
       providerDefine,
       chooseForm,
-      selectFirst,
+      // selectFirst,
     };
   },
 });

@@ -13,8 +13,10 @@ import { utils } from '@certd/basic'
 
 const dns = dnsSdk.promises
 
+// 管理员可按当前部署环境全局开关权威 DNS 查询（例如内网环境可能无法访问权威服务器）。
 let walkFromAuthoritative = true
 export function setWalkFromAuthoritative(value = true) {
+    // 这是进程级配置，修改后影响后续所有 ACME DNS-01 本地校验。
     walkFromAuthoritative = value
 }
 

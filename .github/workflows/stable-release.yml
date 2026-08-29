@@ -40,8 +40,8 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.dockerhub_username }}
-          password: ${{ secrets.dockerhub_password }}
+          username: ${{ secrets.dockerhub_username2 }}
+          password: ${{ secrets.dockerhub_password2 }}
 
       # stable 镜像：叠加 ENV 层
       - name: Build and push stable images
@@ -50,16 +50,14 @@ jobs:
           ENV certd_release_mode=stable" > Dockerfile.stable
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
+            --provenance=false \
+            --sbom=false \
             --push \
             -f Dockerfile.stable \
             -t registry.cn-shenzhen.aliyuncs.com/handsfree/certd:stable \
-            -t registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{ inputs.version }}-stable \
             -t registry.cn-shenzhen.aliyuncs.com/certd/certd:stable \
-            -t registry.cn-shenzhen.aliyuncs.com/certd/certd:${{ inputs.version }}-stable \
             -t certd/certd:stable \
-            -t certd/certd:${{ inputs.version }}-stable \
             -t ghcr.io/${{ github.repository }}:stable \
-            -t ghcr.io/${{ github.repository }}:${{ inputs.version }}-stable \
             .
 
       # slim-stable 镜像
@@ -69,20 +67,18 @@ jobs:
           ENV certd_release_mode=stable" > Dockerfile.slim-stable
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
+            --provenance=false \
+            --sbom=false \
             --push \
             -f Dockerfile.slim-stable \
             -t registry.cn-shenzhen.aliyuncs.com/handsfree/certd:slim-stable \
-            -t registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{ inputs.version }}-slim-stable \
             -t registry.cn-shenzhen.aliyuncs.com/certd/certd:slim-stable \
-            -t registry.cn-shenzhen.aliyuncs.com/certd/certd:${{ inputs.version }}-slim-stable \
             -t certd/certd:slim-stable \
-            -t certd/certd:${{ inputs.version }}-slim-stable \
             -t ghcr.io/${{ github.repository }}:slim-stable \
-            -t ghcr.io/${{ github.repository }}:${{ inputs.version }}-slim-stable \
             .
 
       - name: Set AtomGit release as stable
         run: |
           export ATOMGIT_TOKEN=${{ secrets.ATOMGIT_TOKEN }}
           export VERSION=${{ inputs.version }}
-          npm run set-release-stable
+          node ./scripts/set-release-stable-fetch.js

@@ -147,21 +147,6 @@ const autoOpts = {
 const certificate = await client.auto(autoOpts);
 ```
 
-### Challenge priority
-
-When ordering a certificate using auto mode, `acme-client` uses a priority list when selecting challenges to respond to. Its default value is `['http-01', 'dns-01']` which translates to "use `http-01` if any challenges exist, otherwise fall back to `dns-01`".
-
-While most challenges can be validated using the method of your choosing, please note that **wildcard certificates can only be validated through `dns-01`**. More information regarding Let's Encrypt challenge types [can be found here](https://letsencrypt.org/docs/challenge-types/).
-
-To modify challenge priority, provide a list of challenge types in `challengePriority`:
-
-```js
-await client.auto({
-    ...,
-    challengePriority: ['http-01', 'dns-01'],
-});
-```
-
 ### Internal challenge verification
 
 When using auto mode, `acme-client` will first validate that challenges are satisfied internally before completing the challenge at the ACME provider. In some cases (firewalls, etc) this internal challenge verification might not be possible to complete.

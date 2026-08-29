@@ -201,12 +201,16 @@ export class PipelineController extends CrudController<PipelineService> {
   @Post("/save", { description: Constants.per.authOnly, summary: "新增/更新流水线" })
   async save(@Body() bean: PipelineSaveDTO) {
     const { userId, projectId } = await this.getProjectUserIdWrite();
-    const isNew = bean.id <= 0;
+    if ( bean.id < 0) {
+      throw new Error("流水线ID不能小于0");
+    }
+    const isNew = bean.id == 0 || bean.id == null;
     if (!isNew) {
       const { userId, projectId } = await this.checkOwner(this.getService(), bean.id, "write", true);
       bean.userId = userId;
       bean.projectId = projectId;
     } else {
+      delete bean.id;
       bean.userId = userId;
       bean.projectId = projectId;
     }

@@ -23,6 +23,7 @@ import { useUserStore } from "/@/store/user";
 import { env } from "/@/utils/util.env";
 import { mitter } from "/@/utils/util.mitt";
 import VipModalContent from "./vip-modal-content.vue";
+import { registerOnceVipModal } from "./once";
 const { t } = useI18n();
 
 defineOptions({
@@ -258,7 +259,7 @@ function openUpgrade() {
   });
 }
 onMounted(() => {
-  mitter.on("openVipModal", () => {
+  registerOnceVipModal(() => {
     if (props.mode === "nav" && !settingStore.isPlus) {
       openUpgrade();
     }

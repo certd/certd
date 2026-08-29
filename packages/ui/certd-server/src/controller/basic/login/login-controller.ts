@@ -51,7 +51,6 @@ export class LoginController extends BaseController {
       throw err;
     }
   }
-
   private writeTokenCookie(token: { expire: any; token: any }) {
     // this.loginService.writeTokenCookie(this.ctx,token);
   }
@@ -130,10 +129,10 @@ export class LoginController extends BaseController {
       );
 
       this.writeTokenCookie(token);
-      this.auditLog({ userId: token.userId, username: token.username, content: "用户Passkey登录成功" });
+      this.auditLog({ userId: token.userId, username: token.username, content: `用户「${token.username}」Passkey登录成功` });
       return this.ok(token);
     } catch (err: any) {
-      this.auditLog({ userId: err.userId, username: body.credential, content: `用户Passkey登录失败：${err.message}` });
+      this.auditLog({ userId: err.userId, username: body.credential, content: `用户「${body.credential}」Passkey登录失败：${err.message}` });
       throw err;
     }
   }

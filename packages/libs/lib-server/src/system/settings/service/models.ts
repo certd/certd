@@ -56,6 +56,10 @@ export class SysPublicSettings extends BaseSettings {
 
   // 第三方OAuth配置
   oauthEnabled?: boolean = false;
+  oauthOnly?: boolean = false;
+  passkeyEnabled?: boolean = false;
+  oauthAutoRedirect?: boolean = false;
+  oauthAutoRegister?: boolean = false;
   oauthProviders: Record<
     string,
     {

@@ -62,7 +62,6 @@ export interface ClientAutoOptions {
     email?: string;
     termsOfServiceAgreed?: boolean;
     skipChallengeVerification?: boolean;
-    challengePriority?: string[];
     preferredChain?: string;
     signal?: AbortSignal;
     profile?:string;

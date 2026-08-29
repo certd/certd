@@ -163,6 +163,7 @@ export abstract class BaseService<T> {
     const now = new Date();
     param.createTime = now;
     param.updateTime = now;
+    delete param.id;
     await this.addOrUpdate(param);
     await this.modifyAfter(param);
     return {
@@ -175,7 +176,9 @@ export abstract class BaseService<T> {
    * @param param 数据
    */
   async update(param: any) {
-    if (!param.id) throw new ValidateException("id 不能为空");
+    if (!param.id) {
+      throw new ValidateException("id 不能为空");
+    }
     param.updateTime = new Date();
     await this.addOrUpdate(param);
     await this.modifyAfter(param);

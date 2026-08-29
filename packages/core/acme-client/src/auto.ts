@@ -16,7 +16,6 @@ const defaultOpts = {
     preferredChain: null,
     termsOfServiceAgreed: false,
     skipChallengeVerification: false,
-    challengePriority: ["http-01", "dns-01"],
     challengeCreateFn: async () => {
         throw new Error("Missing challengeCreateFn()");
     },
@@ -277,7 +276,7 @@ export default async (client, userOpts) => {
             }
 
             log("开始向提供商请求检查验证");
-            await runPromisePa(completeChallengeTasks, 1000);
+            await runPromisePa(completeChallengeTasks, 4000);
         } catch (e) {
             log(`证书申请失败${e.message}`);
             throw e;
