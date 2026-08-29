@@ -102,6 +102,20 @@
           </statistic-card>
         </a-col>
         <a-col :md="6" :xs="24">
+          <statistic-card icon="fluent-color:link-multiple-24" :title="t('certd.dashboard.siteMonitorCount')" :count="count.siteCount" link="/cert/monitor/site" :sub-counts="count.siteStatusCount">
+            <template #footer>
+              <router-link to="/cert/monitor/site" class="flex"> <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" /> {{ t("certd.dashboard.manageSiteMonitor") }} </router-link>
+            </template>
+          </statistic-card>
+        </a-col>
+        <a-col :md="6" :xs="24">
+          <statistic-card icon="fluent-color:globe-24" :title="t('certd.dashboard.domainCount')" :count="count.domainCount" link="/cert/cert/domain" :sub-counts="count.domainStatusCount">
+            <template #footer>
+              <router-link to="/cert/cert/domain" class="flex"> <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" /> {{ t("certd.dashboard.manageDomain") }} </router-link>
+            </template>
+          </statistic-card>
+        </a-col>
+        <a-col :md="6" :xs="24">
           <statistic-card icon="fluent-color:data-trending-24" :title="t('certd.dashboard.recentRun')" :footer="false">
             <day-count v-if="count.historyCountPerDay" :data="count.historyCountPerDay" :title="t('certd.dashboard.runCount')"></day-count>
           </statistic-card>
@@ -121,6 +135,7 @@
             <fs-icon icon="fluent-color:puzzle-piece-24" class="mr-5 fs-28" />
             <div class="mr-5">{{ t("certd.dashboard.supportedTasks") }}</div>
             <a-tag color="green">{{ pluginGroups.groups.all.plugins.length }}</a-tag>
+            <div class="helper">列表仅做展示，请创建流水线来使用它们</div>
           </div>
         </template>
         <a-row :gutter="10">
@@ -300,6 +315,21 @@ function transformStatusCount() {
     { name: t("certd.dashboard.certNoExpireCount"), value: certCount.notExpired, color: "green", link: { path: "/cert/monitor/cert", query: { expireStatus: "noExpired" } } },
   ];
   count.value.certCount = certCount.total;
+
+  const siteCount = count.value.siteCount;
+  count.value.siteStatusCount = [
+    { name: t("certd.dashboard.siteAbnormalCount"), value: siteCount.abnormal, color: "red", checkIcon: "mingcute:warning-fill:#f44336", link: { path: "/cert/monitor/site", query: { checkStatus: "error" } } },
+    { name: t("certd.dashboard.siteNormalCount"), value: siteCount.normal, color: "green" },
+  ];
+  count.value.siteCount = siteCount.total;
+
+  const domainCount = count.value.domainCount;
+  count.value.domainStatusCount = [
+    { name: t("certd.dashboard.domainExpiredCount"), value: domainCount.expired, color: "red", checkIcon: "mingcute:warning-fill:#f44336", link: { path: "/cert/cert/domain", query: { expirationStatus: "expired" } } },
+    { name: t("certd.dashboard.domainExpiringCount"), value: domainCount.expiring, color: "yellow", checkIcon: "mingcute:alert-fill:#ff9800" },
+    { name: t("certd.dashboard.domainNotExpiredCount"), value: domainCount.notExpired, color: "green" },
+  ];
+  count.value.domainCount = domainCount.total;
 }
 async function loadCount() {
   count.value = await GetStatisticCount();
