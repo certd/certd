@@ -81,4 +81,5 @@ jobs:
         run: |
           export ATOMGIT_TOKEN=${{ secrets.ATOMGIT_TOKEN }}
           export VERSION=${{ inputs.version }}
+          npm install
           npm run set-release-stable
