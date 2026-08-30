@@ -17,7 +17,7 @@
     "cov": "midway-bin cov --ts",
     "prepublish": "npm run build",
     "pub": "npm publish",
-    "compile": "rimraf dist && tsc --skipLibCheck --watch",
+    "compile": " tsc --skipLibCheck --watch",
     "format": "prettier --write src",
     "lint": "eslint --fix --ext .ts src"
   },
