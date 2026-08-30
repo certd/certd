@@ -58,7 +58,7 @@
         "test": "mocha -t 60000 \"test/setup.js\" \"test/**/*.spec.js\"",
         "test:unit": "cross-env NODE_ENV=unittest mocha --node-option no-warnings --node-option loader=ts-node/esm \"src/**/*.test.ts\"",
         "pub": "npm publish",
-        "compile": "rimraf dist && tsc --skipLibCheck --watch",
+        "compile": " tsc --skipLibCheck --watch",
         "format": "prettier --write src"
     },
     "repository": {
