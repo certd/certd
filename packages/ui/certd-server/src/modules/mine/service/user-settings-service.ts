@@ -3,8 +3,9 @@ import { InjectEntityModel } from "@midwayjs/typeorm";
 import { Repository } from "typeorm";
 import { BaseService, BaseSettings } from "@certd/lib-server";
 import { UserSettingsEntity } from "../entity/user-settings.js";
-import { LocalCache, mergeUtils } from "@certd/basic";
-import { UserStatisticSetting } from "./models.js";
+import { LocalCache, locker, mergeUtils } from "@certd/basic";
+import { UserStatisticField, UserStatisticSetting } from "./models.js";
+import { get, set } from "lodash-es";
 const { merge } = mergeUtils;
 
 const UserSettingCache = new LocalCache({
@@ -135,44 +136,13 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     await this.repository.save(newEntity);
   }
 
-  async incrementStatistic(userId: number, projectId: number | null | undefined, field: keyof UserStatisticSetting["genCertCount"]) {
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        await this.repository.manager.transaction("SERIALIZABLE", async manager => {
-          const repo = manager.getRepository(UserSettingsEntity);
-          const query = this.buildUserProjectQuery(userId, projectId);
-          let entity = await repo.findOne({ where: { key: UserStatisticSetting.__key__, ...query }, lock: { mode: "pessimistic_write" } });
-          const savedSetting = entity ? JSON.parse(entity.setting || "{}") : {};
-          const setting = this.normalizeStatisticSetting(savedSetting);
-          setting.genCertCount[field] += 1;
-          if (!entity) {
-            entity = new UserSettingsEntity();
-            entity.userId = userId;
-            entity.projectId = projectId;
-            entity.key = UserStatisticSetting.__key__;
-            entity.title = UserStatisticSetting.__title__;
-          }
-          entity.setting = JSON.stringify(setting);
-          await repo.save(entity);
-        });
-        return;
-      } catch (error: any) {
-        const retryable = error?.code === "40001" || error?.code === "40P01" || error?.code === "ER_LOCK_DEADLOCK";
-        if (!retryable || attempt === 2) {
-          throw error;
-        }
-      }
-    }
-  }
-
-  normalizeStatisticSetting(savedSetting: any): UserStatisticSetting {
-    const setting = merge(new UserStatisticSetting(), savedSetting);
-    const legacySetting = savedSetting as Partial<Record<keyof UserStatisticSetting["genCertCount"], number>>;
-    for (const field of Object.keys(setting.genCertCount) as (keyof UserStatisticSetting["genCertCount"])[]) {
-      if (setting.genCertCount[field] === 0 && legacySetting[field] != null) {
-        setting.genCertCount[field] = Number(legacySetting[field]) || 0;
-      }
-    }
-    return setting;
+  async incrementStatistic(userId: number, projectId: number | null | undefined, field: UserStatisticField) {
+    const lockKey = `user-statistic:${userId}:${projectId ?? "global"}`;
+    await locker.execute(lockKey, async () => {
+      const setting = await this.getSetting<UserStatisticSetting>(userId, projectId ?? undefined, UserStatisticSetting);
+      const current = Number(get(setting, field, 0)) || 0;
+      set(setting, field, current + 1);
+      await this.saveSetting(userId, projectId ?? undefined, setting);
+    });
   }
 }

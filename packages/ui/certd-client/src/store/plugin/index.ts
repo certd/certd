@@ -39,15 +39,15 @@ export function fillPluginDefine(plugin: any) {
       }
     }
   }
-  if (plugin.sysSetting?.input) {
-    // 设置系统默认值
-    for (const key in plugin.input) {
-      const sysValue = plugin.sysSetting?.input[key];
-      if (sysValue != undefined) {
-        set(plugin, `input.${key}.value`, sysValue);
-      }
-    }
-  }
+  // if (plugin.sysSetting?.input) {
+  //   // 设置系统默认值, 不能放这里设置
+  //   for (const key in plugin.input) {
+  //     const sysValue = plugin.sysSetting?.input[key];
+  //     if (sysValue != undefined) {
+  //       set(plugin, `input.${key}.value`, sysValue);
+  //     }
+  //   }
+  // }
 }
 export type PluginGroup = {
   key: string;
@@ -69,6 +69,7 @@ export type PluginDefine = {
   output: {
     [key: string]: any;
   };
+  type?: string;
 };
 
 export class PluginGroups {

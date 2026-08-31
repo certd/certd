@@ -39,7 +39,7 @@ export default {
     singleDomainCertCount: "Single-domain Certificates Generated",
     multiDomainCertCount: "Multi-domain Certificates Generated",
     wildcardCertCount: "Wildcard Certificates Generated",
-    savedAmount: "Estimated savings: ¥{amount}",
+    savedAmount: "Estimated savings",
     savedAmountRule: "Estimated at one quarter of Tencent Cloud's annual certificate prices: single-domain ¥532, multi-domain ¥912, and wildcard ¥2147. Actual savings may vary.",
     totalPipelineRuns: "Total Pipeline Runs",
     supportedTasks: "Overview of Supported Deployment Tasks",

@@ -103,8 +103,7 @@ export class StatisticController extends BaseController {
     const domainExpiring = await this.domainService.repository.count({
       where: { ...domainProjectQuery, expirationDate: Between(now, oneMonthLater) },
     });
-    const rawUserStatistic = await this.userSettingsService.getSetting<UserStatisticSetting>(userId, projectId, UserStatisticSetting);
-    const userStatistic = this.userSettingsService.normalizeStatisticSetting(rawUserStatistic);
+    const userStatistic = await this.userSettingsService.getSetting<UserStatisticSetting>(userId, projectId, UserStatisticSetting);
 
     const count: UserStatisticCount = {
       pipelineCount,
@@ -115,12 +114,7 @@ export class StatisticController extends BaseController {
       domainCount: { total: domainTotal, expired: domainExpired, expiring: domainExpiring, notExpired: domainTotal - domainExpired - domainExpiring },
       historyCountPerDay: historyCount,
       expiringList,
-      genCertCount: {
-        singleDomainCertCount: Number(userStatistic.genCertCount.singleDomainCertCount) || 0,
-        multiDomainCertCount: Number(userStatistic.genCertCount.multiDomainCertCount) || 0,
-        wildcardCertCount: Number(userStatistic.genCertCount.wildcardCertCount) || 0,
-        totalPipelineRuns: Number(userStatistic.genCertCount.totalPipelineRuns) || 0,
-      },
+      genCertCount: userStatistic.genCertCount,
     };
     return this.ok(count);
   }

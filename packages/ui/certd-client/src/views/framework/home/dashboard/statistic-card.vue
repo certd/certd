@@ -15,12 +15,6 @@
               <div class="total flex-center flex-1 flex-col pointer" @click="goDetail(link)">
                 <span>{{ count ?? 0 }}</span>
                 <span class="sub-title">{{ title }}</span>
-                <span v-if="helperText" class="helper-text">
-                  {{ helperText }}
-                  <a-tooltip v-if="helperTooltip" :title="helperTooltip">
-                    <fs-icon icon="mingcute:information-line" class="helper-icon" />
-                  </a-tooltip>
-                </span>
               </div>
               <a-divider type="vertical h-10"></a-divider>
               <div class="sub flex-1 flex-col h-[80%] flex-evenly pl-1 2xl:pl-4">
@@ -37,6 +31,13 @@
                   </div>
                 </div>
               </div>
+            </div>
+            <div v-if="helperText" class="helper-text mt-10">
+              <span>{{ helperText }}</span>
+              <strong v-if="helperValue" class="helper-value">{{ helperValue }}</strong>
+              <a-tooltip v-if="helperTooltip" :title="helperTooltip">
+                <fs-icon icon="mingcute:information-line" class="helper-icon" />
+              </a-tooltip>
             </div>
           </div>
           <slot></slot>
@@ -66,6 +67,7 @@ const props = defineProps<{
     link?: any;
   }[];
   helperText?: string;
+  helperValue?: string;
   helperTooltip?: string;
 }>();
 const slots = defineSlots();
@@ -105,6 +107,14 @@ function goDetail(link: any) {
 
     .ant-card.has-warning {
       background: linear-gradient(135deg, rgba(91, 72, 25, 0.68), rgba(28, 28, 28, 0.96) 62%);
+    }
+
+    .helper-text {
+      color: rgba(242, 242, 242, 0.72);
+
+      .helper-value {
+        color: #8bd7a0;
+      }
     }
   }
 }
@@ -178,23 +188,11 @@ function goDetail(link: any) {
           font-weight: 700;
           .total {
             color: hsl(var(--primary));
+
             .sub-title {
               font-size: 12px;
               font-weight: 400;
               color: #626262;
-            }
-            .helper-text {
-              color: #52a26a;
-              font-size: 12px;
-              font-weight: 500;
-              line-height: 20px;
-
-              .helper-icon {
-                cursor: help;
-                font-size: 14px;
-                margin-left: 4px;
-                vertical-align: -2px;
-              }
             }
           }
 
@@ -226,6 +224,31 @@ function goDetail(link: any) {
             .bg-gray {
               background: linear-gradient(90deg, #9e9e9e, #bdbdbd);
             }
+          }
+        }
+
+        .helper-text {
+          display: flex;
+          align-items: baseline;
+          justify-content: center;
+          gap: 4px;
+          margin-top: 6px;
+          color: #626262;
+          font-size: 12px;
+          font-weight: 400;
+          line-height: 20px;
+
+          .helper-value {
+            color: #52a26a;
+            font-size: 16px;
+            font-weight: 700;
+          }
+
+          .helper-icon {
+            cursor: help;
+            font-size: 14px;
+            margin-left: 2px;
+            vertical-align: -2px;
           }
         }
       }
