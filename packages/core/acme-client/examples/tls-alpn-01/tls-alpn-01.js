@@ -59,7 +59,6 @@ async function getCertOnDemand(client, servername, attempt = 0) {
         csr,
         email: 'test@example.com',
         termsOfServiceAgreed: true,
-        challengePriority: ['tls-alpn-01'],
         challengeCreateFn: async (authz, challenge, keyAuthorization) => {
             alpnResponses[authz.identifier.value] = await acme.crypto.createAlpnCertificate(authz, keyAuthorization);
         },

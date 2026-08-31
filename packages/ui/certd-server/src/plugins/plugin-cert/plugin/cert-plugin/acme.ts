@@ -545,14 +545,12 @@ export class AcmeService {
       domainsVerifyPlan,
     };
     /* 自动申请证书 */
-    const challengePriority = domainsVerifyPlan && Object.values(domainsVerifyPlan).some((item: any) => item?.type === "dns-persist") ? ["dns-persist-01"] : ["dns-01", "http-01"];
     try {
       const crt = await client.auto({
         csr,
         email: email,
         termsOfServiceAgreed: true,
         skipChallengeVerification: this.skipLocalVerify,
-        challengePriority,
         challengeCreateFn: async (
           authz: acme.Authorization,
           keyAuthorizationGetter: (challenge: Challenge) => Promise<string>

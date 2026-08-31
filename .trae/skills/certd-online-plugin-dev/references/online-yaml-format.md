@@ -14,15 +14,26 @@ pluginType: task
 group: other
 version: 1.0.0
 input:
-  cert:
+  cert: # 输入字段定义
     title: 域名证书
-    required: true
-    component:
-      name: cert-select
-output: {}
-dependPlugins: []
-dependPackages: []
-default: {}
+    required: true  # 是否必填
+    component: # 输入字段组件
+      name: cert-select # 前端vue组件名称
+output:  # 【可选】输出字段定义
+  cert:
+    title: 证书 #输出字段标题
+    type: "cert" # 输出字段类型
+dependPlugins: # 依赖的插件
+  # - access:certd/DemoAccess: *
+dependPackages:  #  依赖的nodejs包
+   # xxx: ^1.0.0
+vip: "free" # 默认免费，plus 需要专业版
+showRunStrategy: false # 【默认不显示】
+default: {
+  strategy: { 
+    runStrategy: 0, # 运行策略， 0 = 成功后跳过，1 = 正常运行
+  },
+}
 content: |
   const { AbstractTaskPlugin } = await _ctx.import("@certd/pipeline")
   const { DemoAccess } = await _ctx.import("/@/plugins/plugin-lib/demo/access/index.js")

@@ -73,10 +73,11 @@ export class DomainService extends BaseService<DomainEntity> {
     if (!param.domain) {
       throw new Error("domain 不能为空");
     }
-    const old = await this.repository.findOne({
+    const query = this.buildUserProjectQuery(param.userId, param.projectId);
+    const old = await this.findOne({
       where: {
         domain: param.domain,
-        userId: param.userId,
+        ...query
       },
     });
     if (old) {
@@ -96,11 +97,11 @@ export class DomainService extends BaseService<DomainEntity> {
     if (!old) {
       throw new Error("domain记录不存在");
     }
-
+    const query = this.buildUserProjectQuery(param.userId, param.projectId);
     const same = await this.repository.findOne({
       where: {
         domain: param.domain,
-        userId: old.userId,
+        ...query,
         id: Not(param.id),
       },
     });
@@ -222,7 +223,6 @@ export class DomainService extends BaseService<DomainEntity> {
       }
       domainVerifiers[domain] = null;
     }
-
     return domainVerifiers;
   }
 

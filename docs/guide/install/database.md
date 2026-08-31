@@ -125,9 +125,9 @@ docker-compose up -d
 
 ## 三、问题
 
-### 1. 迁移到PG之后，所有表的Sequence会从1开始
+### 1. 迁移到PostgreSQL之后，所有表的Sequence会从1开始
 
-执行如下sql 语句，批量将所有表的id自增设置到当前数据的最大值
+执行如下sql 语句，批量将所有表的id自增设置到当前数据的最大值【仅迁移到postgresql需要执行】
 ```sql
 DO $$
 DECLARE

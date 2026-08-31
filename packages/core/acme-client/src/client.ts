@@ -263,7 +263,14 @@ class AcmeClient {
         const accountUrl = this.api.getAccountUrl();
 
         /* Create new HTTP and API clients using new key */
-        const newHttpClient = new HttpClient(this.opts.directoryUrl, newAccountKey, this.opts.externalAccountBinding);
+        const newHttpClient = new HttpClient(
+            this.opts.directoryUrl,
+            newAccountKey,
+            this.opts.externalAccountBinding,
+            this.opts.urlMapping,
+            this.logger,
+            true,
+        );
         const newApiClient = new AcmeApi(newHttpClient, accountUrl);
 
         /* Get old JWK */
@@ -280,6 +287,8 @@ class AcmeClient {
         /* Replace existing HTTP and API client */
         this.http = newHttpClient;
         this.api = newApiClient;
+        // 更新本地配置，避免后续重建客户端时又使用旧账号密钥。
+        this.opts.accountKey = newAccountKey;
 
         return resp.data;
     }
@@ -709,7 +718,6 @@ class AcmeClient {
      * @param {string} [opts.email] Account email address
      * @param {boolean} [opts.termsOfServiceAgreed] Agree to Terms of Service, default: `false`
      * @param {boolean} [opts.skipChallengeVerification] Skip internal challenge verification before notifying ACME provider, default: `false`
-     * @param {string[]} [opts.challengePriority] Array defining challenge type priority, default: `['http-01', 'dns-01']`
      * @param {string} [opts.preferredChain] Indicate which certificate chain is preferred if a CA offers multiple, by exact issuer common name, default: `null`
      * @returns {Promise<string>} Certificate
      *

@@ -3,7 +3,7 @@ title: Google Cloud DNS
 desc: Google Cloud DNS提供商
 icon: flat-color-icons:google
 accessType: google
-order: 50
+order: 2
 pluginType: dnsProvider
 type: builtIn
 scriptFilePath: /plugins/plugin-google/dns-provider.js

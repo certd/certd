@@ -60,7 +60,6 @@ async function getCertOnDemand(client, servername, attempt = 0) {
         csr,
         email: 'test@example.com',
         termsOfServiceAgreed: true,
-        challengePriority: ['http-01'],
         challengeCreateFn: (authz, challenge, keyAuthorization) => {
             challengeResponses[challenge.token] = keyAuthorization;
         },

@@ -31,31 +31,29 @@ input:
   region:
     title: 大区
     component:
-      name: a-auto-complete
+      name: remote-select
       vModel: value
-      options:
-        - value: ap-guangzhou
-        - value: ap-beijing
-        - value: ap-chengdu
-        - value: ap-chongqing
-        - value: ap-hongkong
-        - value: ap-jakarta
-        - value: ap-mumbai
-        - value: ap-nanjing
-        - value: ap-seoul
-        - value: ap-shanghai
-        - value: ap-shanghai-fsi
-        - value: ap-shenzhen-fsi
-        - value: ap-singapore
-        - value: ap-tokyo
-        - value: eu-frankfurt
-        - value: na-ashburn
-        - value: na-siliconvalley
-        - value: na-toronto
-        - value: sa-saopaulo
-        - value: ap-taipei
-      helper: 如果列表中没有，您可以手动输入
+      mode: tags
+      type: plugin
+      action: onGetRegionList
+      search: false
+      pager: false
+      single: true
+      watches:
+        - certDomains
+        - accessId
     required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 请选择CLB地域
     order: 0
   loadBalancerId:
     title: 负载均衡ID

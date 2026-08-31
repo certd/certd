@@ -11,10 +11,10 @@ input:
     title: 前置任务证书
     helper: 请选择前置任务产生的证书
     component:
-      name: output-selector
+      name: output-selector # 前置任务输出选择组件
       vModel: modelValue
       from:
-        - ':cert:'
+        - ':cert:' # 前置任务输出作为输入的筛选条件 , 格式 pluginType:valueType:keyName ， 为空表示任意匹配
     required: true
   certDomains:
     title: 当前证书域名
@@ -50,10 +50,10 @@ input:
         - value: '2'
           label: 选项2
     required: false
-showRunStrategy: false
+showRunStrategy: false # 用户是否可以选择运行策略， 【默认不显示】
 default:
   strategy:
-    runStrategy: 1
+    runStrategy: 0 # 运行策略， 0 = 成功后跳过，1 = 正常运行
 content: >
 
   // 要用await来import模块
@@ -96,5 +96,8 @@ content: >
       }
       this.logger.info("执行成功")
       // this.outputName = xxxx //设置输出参数，可以被其他插件选择使用
+
+      // 此处可以返回 "skip" ， 表示本次任务没有做任何操作和改变 ， 配合runStrategy=1使用
+      // return "skip"
     }
   }

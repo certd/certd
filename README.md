@@ -109,7 +109,8 @@ https://certd.handfree.work/
 
 ```
 registry.cn-shenzhen.aliyuncs.com/certd/certd:[version-][system-][latest/stable]  
------------- ↑ 镜像地址 ------------- ↑ 镜像名 -- ↑指定版本- ↑基础系统- ↑最新版本类型             
+------------ ↑ 镜像地址 ------------- ↑ 镜像名 -- ↑指定版本- ↑基础系统- ↑最新版本类型 (中括号表示可选)       
+
 ```
 ##### 2. 版本标签：
 
@@ -124,25 +125,25 @@ registry.cn-shenzhen.aliyuncs.com/certd/certd:[version-][system-][latest/stable]
 
 > 根据基础镜像不同，分为如下三个分支版本，没有特殊需求选择默认的即可（他们功能是一样的）
 
-| 系统版本 | 版本标签 |   基础系统 | 说明 | 稳定版标签 | 
-| --- | --- | --- | --- | --- | 
-| alpine【默认】 | `certd:latest` |  Alpine Linux | 默认版本，镜像体积小  | `certd:stable` |
-| slim | `certd:slim` |  Debian slim | 基于glibc，dns解析兼容性好 | `certd:slim-stable` |
-| armv7 | `certd:armv7` |  Alpine Linux | ARMv7 架构专用版本 | `certd:armv7-stable` |
+| 系统版本 | 版本标签 |   基础系统 | 说明 | 稳定版标签 | 指定版本 |
+| --- | --- | --- | --- | --- | --- |
+| alpine【默认】 | `certd:latest` |  Alpine Linux | 默认版本，镜像体积小  | `certd:stable` | `certd:1.43.0` |
+| slim | `certd:slim` |  Debian slim | 基于glibc，dns解析兼容性好 | `certd:slim-stable` | `certd:1.43.0-slim` |
+| armv7 | `certd:armv7` |  Alpine Linux | ARMv7 架构专用版本 | `certd:armv7-stable` | `certd:1.43.0-armv7` |
 
-##### 2. 镜像地址：
+##### 3. 镜像地址：
 
 | 镜像仓库 | 最新预览版  | slim | armv7 | 
 | --- | --- | --- | --- | 
 | 阿里云【默认】 | `registry.cn-shenzhen.aliyuncs.com/certd/certd:latest` | `certd:slim` | `certd:armv7` |
-| Docker Hub | `greper/certd:latest` | `certd:slim` |
+| Docker Hub | `certd/certd:latest` | `certd:slim` |
 | GitHub Packages | `ghcr.io/certd/certd:latest` | `certd:slim` | `certd:armv7` |
 
-
-> 注意： 
 > 1. 后面的各个版本省略了镜像地址，使用时需要将镜像地址拼接完整。
-> 2. 稳定版在后面加 `-stable` 即可。
-> 3. 如需指定具体的版本号，在冒号后面加 `version-`即可，例如 `certd:1.42.1-stable`。
+> 2. 如果您不确定使用哪个版本，请使用默认的 `certd:latest` 版本。
+
+最新版本号：
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/certd/certd?label=Latest%20Release&sort=semver)
 
 
 ##### 3. 镜像构建说明：
