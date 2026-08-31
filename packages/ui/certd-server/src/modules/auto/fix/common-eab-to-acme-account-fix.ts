@@ -93,6 +93,7 @@ export class CommonEabToAcmeAccountFix {
             ...certApplyConfig.sysSetting,
             input,
           },
+          type: "builtIn",
         });
       }
       return true;

@@ -256,12 +256,13 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       action: "onSslProviderList",
       single: true,
       value: "letsencrypt",
+      emitImmediate: false,
       required: true,
       helper: "Let's Encrypt：申请最简单\nGoogle：大厂光环，兼容性好，无需配置翻墙代理\nSSL.com：仅主域名和www免费,必须设置CAA记录\n自定义ACME：管理员可在「系统设置-流水线设置」中配置",
       mergeScript: `return {
         component:{
           on: {
-            "selected-change": (scope)=>{
+            "selectedChange": (scope)=>{
               // 切换颁发机构后，清空已选择的ACME账号，避免账号与颁发机构不匹配
               let form = scope.form || {};
               form = form.input || form.body || form;

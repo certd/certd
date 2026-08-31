@@ -48,7 +48,7 @@ import { cloneDeep, merge, unset } from "lodash-es";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Rollbackable from "./rollbackable.vue";
-import { usePluginStore } from "/@/store/plugin";
+import { fillPluginDefine, usePluginStore } from "/@/store/plugin";
 import * as api from "./api";
 // @ts-ignore js-yaml 没有在当前前端包中提供类型声明。
 import yaml from "js-yaml";
@@ -106,7 +106,7 @@ const editableKeys = ref([
     },
     editRender(item: any) {
       return () => {
-        return <fs-component-render {...item.component} vModel:modelValue={configForm[item.key]["value"]} scope={getScope()} />;
+        return <fs-component-render {...item.component} vModel:modelValue={configForm[item.key].value} scope={getScope()} />;
       };
     },
   },
@@ -267,38 +267,18 @@ function clearFormValue(key: string) {
   console.log(key, configForm);
 }
 
-function getPluginOriginName() {
-  if (props.plugin.fullName) {
-    return props.plugin.fullName;
-  }
-  if (props.plugin.author && props.plugin.name) {
-    return `${props.plugin.author}/${props.plugin.name}`;
-  }
-  return props.plugin.name;
-}
-
 async function loadPluginSetting() {
-  const originName = getPluginOriginName();
-  currentPlugin.value = await pluginStore.getPluginDefineFromOrigin(originName);
-  if (!currentPlugin.value?.input && originName !== props.plugin.name) {
-    currentPlugin.value = await pluginStore.getPluginDefineFromOrigin(props.plugin.name);
-  }
-  if (!currentPlugin.value?.input && props.plugin.id) {
-    const plugin = await api.GetObj(props.plugin.id);
-    const metadata = plugin.metadata ? yaml.load(plugin.metadata) : {};
-    currentPlugin.value = {
-      ...plugin,
-      ...(metadata || {}),
-    };
-  }
+  const pluginName = props.plugin.fullName || props.plugin.name; // 这里必须两种进行兼容
+  currentPlugin.value = await api.getPluginDefine(pluginName);
+  fillPluginDefine(currentPlugin.value);
   const input = currentPlugin.value?.input || {};
   for (const key in input) {
     configForm[key] = {};
   }
-  const setting = currentPlugin.value?.sysSetting || props.plugin.sysSetting;
-  if (setting) {
-    const settingJson = JSON.parse(setting);
-    merge(configForm, settingJson.metadata?.input || {});
+
+  const pluginConfig = await api.getPluginSetting(pluginName, currentPlugin.value.type);
+  if (pluginConfig?.sysSetting) {
+    merge(configForm, pluginConfig.sysSetting?.metadata?.input || {});
   }
 }
 

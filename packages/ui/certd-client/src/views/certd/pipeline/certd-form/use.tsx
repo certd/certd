@@ -556,12 +556,12 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
 
     //设置系统初始值
     const initialForm: any = { input: {} };
-    const pluginSysConfig = await pluginStore.getPluginConfig({ name: req.pluginName, type: "builtIn" });
-    if (pluginSysConfig.sysSetting?.input) {
-      for (const key in pluginSysConfig.sysSetting?.input) {
-        initialForm.input[key] = pluginSysConfig.sysSetting?.input[key];
-      }
-    }
+    // const pluginSysConfig = await pluginStore.getPluginConfig({ name: req.pluginName, type: "builtIn" });
+    // if (pluginSysConfig.sysSetting?.input) {
+    //   for (const key in pluginSysConfig.sysSetting?.input) {
+    //     initialForm.input[key] = pluginSysConfig.sysSetting?.input[key];
+    //   }
+    // }
     async function doSubmit({ form }: any) {
       // const certDetail = readCertDetail(form.cert.crt);
       // 添加certd pipeline
