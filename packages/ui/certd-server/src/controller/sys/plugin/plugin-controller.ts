@@ -104,11 +104,11 @@ export class PluginController extends CrudController<PluginService> {
     await this.auditLog({ content: "保存了公共插件配置" });
     return this.ok(res);
   }
-  @Post("/getPluginByName", { description: "sys:settings:view" })
-  async getPluginByName(@Body("name") name: string) {
+  @Post("/getSetting", { description: "sys:settings:view" })
+  async getSetting(@Body("name") name: string, @Body("type") type: string) {
     const res = await this.pluginConfigService.getPluginConfig({
-      name: name,
-      type: "builtIn",
+      name,
+      type,
     });
     return this.ok(res);
   }
@@ -207,6 +207,12 @@ export class PluginController extends CrudController<PluginService> {
   @Post("/export", { description: "sys:settings:edit", summary: "导出插件" })
   async export(@Body("id") id: number) {
     const res = await this.service.exportPlugin(id);
+    return this.ok(res);
+  }
+
+  @Post("/getPluginDefine", { description: "sys:settings:view", summary: "根据插件名称获取插件定义" })
+  async getPluginDefine(@Body("name") name: string) {
+    const res = await this.service.getPluginDefine(name);
     return this.ok(res);
   }
 }

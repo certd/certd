@@ -71,6 +71,7 @@ const props = defineProps<
     pager?: boolean;
     single?: boolean;
     pageSize?: number;
+    emitImmediate?: boolean;
     uploadCert?: UploadCertProps;
   } & ComponentPropsType
 >();
@@ -210,8 +211,9 @@ const getOptions = async () => {
 
     if (isFirst) {
       isFirst = false;
-      if (props.value) {
+      if (props.value && props.emitImmediate) {
         emitSelectedChange(props.value);
+        emit("update:value", props.value);
       }
       return;
     }

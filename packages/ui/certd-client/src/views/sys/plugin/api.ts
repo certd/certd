@@ -1,3 +1,4 @@
+import { PluginDefine } from "@certd/pipeline";
 import { request } from "/src/api/service";
 
 const apiPrefix = "/sys/plugin";
@@ -246,6 +247,7 @@ export type PluginConfigBean = {
   name: string;
   disabled: boolean;
   sysSetting: {
+    metadata?: Record<string, any>;
     input?: Record<string, any>;
   };
 };
@@ -283,7 +285,7 @@ export async function SaveCommPluginConfigs(data: CommPluginConfig): Promise<voi
   });
 }
 
-export async function savePluginSetting(req: { name: string; sysSetting: any }): Promise<void> {
+export async function savePluginSetting(req: { name: string; sysSetting: any; type: string }): Promise<void> {
   return await request({
     url: apiPrefix + "/saveSetting",
     method: "post",
@@ -291,11 +293,11 @@ export async function savePluginSetting(req: { name: string; sysSetting: any }):
   });
 }
 
-export async function GetPluginByName(name: string): Promise<PluginConfigBean> {
+export async function getPluginSetting(name: string, type: string = "builtIn"): Promise<PluginConfigBean> {
   return await request({
-    url: apiPrefix + "/getPluginByName",
+    url: apiPrefix + "/getSetting",
     method: "post",
-    data: { name },
+    data: { name, type },
   });
 }
 
@@ -303,5 +305,13 @@ export async function ClearRuntimeDeps(): Promise<void> {
   return await request({
     url: "/sys/settings/clearRuntimeDeps",
     method: "post",
+  });
+}
+
+export async function getPluginDefine(name: string): Promise<PluginDefine> {
+  return await request({
+    url: apiPrefix + "/getPluginDefine",
+    method: "post",
+    data: { name },
   });
 }

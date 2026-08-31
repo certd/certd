@@ -9,6 +9,8 @@ import { SiteInfoService } from "../../../modules/monitor/service/site-info-serv
 import { DomainService } from "../../../modules/cert/service/domain-service.js";
 import { Between, LessThan } from "typeorm";
 import { ApiTags } from "@midwayjs/swagger";
+import { UserSettingsService } from "../../../modules/mine/service/user-settings-service.js";
+import { UserStatisticSetting } from "../../../modules/mine/service/models.js";
 
 export type ChartItem = {
   name: string;
@@ -40,6 +42,12 @@ export type UserStatisticCount = {
     notExpired: number;
   };
   expiringList: any[];
+  genCertCount: {
+    singleDomainCertCount: number;
+    multiDomainCertCount: number;
+    wildcardCertCount: number;
+    totalPipelineRuns: number;
+  };
 };
 /**
  */
@@ -65,6 +73,9 @@ export class StatisticController extends BaseController {
 
   @Inject()
   domainService: DomainService;
+
+  @Inject()
+  userSettingsService: UserSettingsService;
 
   @Post("/count", { description: Constants.per.authOnly, summary: "查询仪表盘统计数据" })
   public async count() {
@@ -92,6 +103,8 @@ export class StatisticController extends BaseController {
     const domainExpiring = await this.domainService.repository.count({
       where: { ...domainProjectQuery, expirationDate: Between(now, oneMonthLater) },
     });
+    const rawUserStatistic = await this.userSettingsService.getSetting<UserStatisticSetting>(userId, projectId, UserStatisticSetting);
+    const userStatistic = this.userSettingsService.normalizeStatisticSetting(rawUserStatistic);
 
     const count: UserStatisticCount = {
       pipelineCount,
@@ -102,6 +115,12 @@ export class StatisticController extends BaseController {
       domainCount: { total: domainTotal, expired: domainExpired, expiring: domainExpiring, notExpired: domainTotal - domainExpired - domainExpiring },
       historyCountPerDay: historyCount,
       expiringList,
+      genCertCount: {
+        singleDomainCertCount: Number(userStatistic.genCertCount.singleDomainCertCount) || 0,
+        multiDomainCertCount: Number(userStatistic.genCertCount.multiDomainCertCount) || 0,
+        wildcardCertCount: Number(userStatistic.genCertCount.wildcardCertCount) || 0,
+        totalPipelineRuns: Number(userStatistic.genCertCount.totalPipelineRuns) || 0,
+      },
     };
     return this.ok(count);
   }

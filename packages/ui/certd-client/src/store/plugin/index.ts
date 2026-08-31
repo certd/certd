@@ -1,13 +1,54 @@
+import { DynamicType, FormItemProps, useMerge } from "@fast-crud/fast-crud";
+import { merge, set } from "lodash-es";
 import { defineStore } from "pinia";
 import * as api from "./api.plugin";
-import { DynamicType, FormItemProps, useMerge } from "@fast-crud/fast-crud";
 import { i18n } from "/src/locales/i18n";
-import { cloneDeep } from "lodash-es";
 interface PluginState {
   group?: PluginGroups;
   originGroup?: PluginGroups;
 }
 
+export function fillPluginDefine(plugin: any) {
+  const columns = plugin.input;
+  for (const key in columns) {
+    const column = columns[key];
+    if (!column.component) {
+      column.component = {
+        name: "a-input",
+        vModel: "value",
+      };
+    } else {
+      if (column.component.vModel == null && column.component.name?.startsWith("a-")) {
+        column.component.vModel = "value";
+      }
+    }
+  }
+
+  if (plugin.sysSetting?.metadata) {
+    merge(plugin.input, plugin.sysSetting.metadata?.input || {});
+    // 应用选项映射
+    for (const key of Object.keys(plugin.input)) {
+      const inputDef = plugin.input[key];
+      if (inputDef.optionsMapping && inputDef.component?.options) {
+        const mapping = inputDef.optionsMapping;
+        for (const opt of inputDef.component.options) {
+          if (mapping[opt.value] !== undefined) {
+            opt.label = mapping[opt.value];
+          }
+        }
+      }
+    }
+  }
+  if (plugin.sysSetting?.input) {
+    // 设置系统默认值
+    for (const key in plugin.input) {
+      const sysValue = plugin.sysSetting?.input[key];
+      if (sysValue != undefined) {
+        set(plugin, `input.${key}.value`, sysValue);
+      }
+    }
+  }
+}
 export type PluginGroup = {
   key: string;
   title: string;
@@ -35,10 +76,9 @@ export class PluginGroups {
   map!: { [key: string]: PluginDefine };
   t: any;
   mergeSetting?: boolean;
-  constructor(groups: { [key: string]: PluginGroup }, opts?: { mergeSetting?: boolean }) {
+  constructor(groups: { [key: string]: PluginGroup }) {
     this.groups = groups;
     this.t = i18n.global.t;
-    this.mergeSetting = opts?.mergeSetting ?? false;
     this.initGroup(groups);
     this.initMap();
   }
@@ -53,26 +93,9 @@ export class PluginGroups {
       icon: "material-symbols:border-all-rounded",
     };
     for (const key in groups) {
-      if (this.mergeSetting) {
-        for (const plugin of groups[key].plugins) {
-          if (plugin.sysSetting) {
-            merge(plugin.input, plugin.sysSetting.metadata?.input || {});
-            // 应用选项映射
-            for (const key of Object.keys(plugin.input)) {
-              const inputDef = plugin.input[key];
-              if (inputDef.optionsMapping && inputDef.component?.options) {
-                const mapping = inputDef.optionsMapping;
-                for (const opt of inputDef.component.options) {
-                  if (mapping[opt.value] !== undefined) {
-                    opt.label = mapping[opt.value];
-                  }
-                }
-              }
-            }
-          }
-        }
+      for (const plugin of groups[key].plugins) {
+        fillPluginDefine(plugin);
       }
-
       all.plugins.push(...groups[key].plugins);
     }
     this.groups = {
@@ -173,16 +196,12 @@ export const usePluginStore = defineStore({
   id: "app.plugin",
   state: (): PluginState => ({
     group: null,
-    originGroup: null,
   }),
   actions: {
     async reload() {
       const groups = await api.GetGroups({});
-      const installedGroups = filterInstalledPluginGroups(groups);
-      this.group = new PluginGroups(installedGroups, { mergeSetting: true });
-      this.originGroup = new PluginGroups(cloneDeep(installedGroups));
+      this.group = new PluginGroups(groups);
       console.log("group", this.group);
-      console.log("originGroup", this.originGroup);
     },
     async init() {
       if (!this.group) {
@@ -205,10 +224,6 @@ export const usePluginStore = defineStore({
     async getPluginDefine(name: string): Promise<PluginDefine> {
       await this.init();
       return this.group.get(name);
-    },
-    async getPluginDefineFromOrigin(name: string): Promise<PluginDefine> {
-      await this.init();
-      return this.originGroup.get(name);
     },
     async getPluginConfig(query: any) {
       return await api.GetPluginConfig(query);

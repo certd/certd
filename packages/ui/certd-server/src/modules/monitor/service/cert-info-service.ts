@@ -7,6 +7,7 @@ import { logger, utils } from "@certd/basic";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
 import { AcmeService } from "../../../plugins/plugin-cert/plugin/cert-plugin/acme.js";
 import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
+import { UserSettingsService } from "../../mine/service/user-settings-service.js";
 
 export type UploadCertReq = {
   id?: number;
@@ -38,6 +39,9 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
 
   @InjectEntityModel(PipelineEntity)
   pipelineRepository: Repository<PipelineEntity>;
+
+  @Inject()
+  userSettingsService: UserSettingsService;
 
   //@ts-ignore
   getRepository() {
@@ -213,6 +217,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         status: CertStatus.inactive,
       }
     );
+    if (certUserId != null) {
+      const domains = cert?.crt ? new CertReader(cert).getAltNames() : [];
+      const wildcardCount = domains.filter(domain => String(domain).trim().toLowerCase().startsWith("*.")).length;
+      const field = wildcardCount > 0 ? "wildcardCertCount" : domains.length > 1 ? "multiDomainCertCount" : "singleDomainCertCount";
+      await this.userSettingsService.incrementStatistic(certUserId, certProjectId, field);
+    }
     return bean;
   }
 
@@ -256,7 +266,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       // 每个申请任务维护一条 active 记录（不重复创建，最新真证书申请成功后旧记录会被标记为 inactive）
       const bean = new CertInfoEntity();
       let found = foundHistory.find(item => item.taskId === task.taskId);
-      if (!found && foundHistory.length == 1 && applyTasks.length == 1){
+      if (!found && foundHistory.length == 1 && applyTasks.length == 1) {
         found = foundHistory[0];
       }
       if (found) {

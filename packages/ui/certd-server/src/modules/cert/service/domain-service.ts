@@ -77,7 +77,7 @@ export class DomainService extends BaseService<DomainEntity> {
     const old = await this.findOne({
       where: {
         domain: param.domain,
-        ...query
+        ...query,
       },
     });
     if (old) {

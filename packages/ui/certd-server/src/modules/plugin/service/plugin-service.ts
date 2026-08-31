@@ -538,7 +538,7 @@ export class PluginService extends BaseService<PluginEntity> {
     const settingPlugins = await this.find({
       select: {
         id: true,
-        name: true,
+        fullName: true,
         sysSetting: true,
       },
       where: {
@@ -551,7 +551,7 @@ export class PluginService extends BaseService<PluginEntity> {
       if (!item.sysSetting) {
         continue;
       }
-      pluginSettingMap[item.name] = JSON.parse(item.sysSetting);
+      pluginSettingMap[item.fullName] = JSON.parse(item.sysSetting);
     }
     for (const key in groups) {
       const group = groups[key];
@@ -559,7 +559,7 @@ export class PluginService extends BaseService<PluginEntity> {
         continue;
       }
       for (const item of group.plugins) {
-        const pluginSetting = pluginSettingMap[item.name];
+        const pluginSetting = pluginSettingMap[item.fullName];
         if (pluginSetting) {
           item.sysSetting = pluginSetting;
         }
@@ -572,7 +572,7 @@ export class PluginService extends BaseService<PluginEntity> {
         disabled: true,
       },
     });
-    const disabledNames = list.map(it => it.name);
+    const disabledNames = list.map(it => it.fullName);
     for (const key in groups) {
       const group = groups[key];
       if (!group.plugins) {
@@ -703,13 +703,13 @@ export class PluginService extends BaseService<PluginEntity> {
     }
     const old = await this.findOne({
       where: {
-        type: "store",
+        type: param.type,
         fullName: param.fullName,
       },
     });
 
     if (old) {
-      throw new Error(`插件${param.author}/${param.name}已存在`);
+      throw new Error(`插件${param.fullName}已存在`);
     }
 
     if (param.type === "builtIn") {
@@ -769,7 +769,7 @@ export class PluginService extends BaseService<PluginEntity> {
 
   private normalizeOnlinePluginRecord(item: OnlinePluginBean, syncTime: number) {
     const fullName = this.getOnlinePluginFullName(item);
-    let extra: Record<string, any> = {};
+    const extra: Record<string, any> = {};
     return {
       appId: item.appId,
       developerId: item.developerId,
@@ -990,32 +990,31 @@ export class PluginService extends BaseService<PluginEntity> {
       });
       const existingMap = new Map(existingRecords.map(item => [item.fullName, item]));
       for (const item of list) {
-        const itemFromStore:any = this.normalizeOnlinePluginRecord(item, syncTime);
+        const itemFromStore: any = this.normalizeOnlinePluginRecord(item, syncTime);
         const fullName = itemFromStore.fullName;
         const existingRecord = existingMap.get(fullName);
         if (existingRecord) {
-           //本地已存在,只更新市场相关字段
-           if (existingRecord.installed){
-              //如果本地已经安装的，则只同步版本 分数 下载量
-               const updateBean: Record<string, any> = {
-                id: existingRecord.id,
-                score: itemFromStore.score,
-                downloadCount: itemFromStore.downloadCount,
-                latestVersion: itemFromStore.version,
-              }
-              await this.update(updateBean);
-           }else{
-             //如果本地未安装的，则同步所有字段
-             const updateBean: Record<string, any> = {
-                id: existingRecord.id,
-                ...itemFromStore,
-              }
-              await this.update(updateBean);
-           }
-            
-          
-           continue;
-        }else{
+          //本地已存在,只更新市场相关字段
+          if (existingRecord.installed) {
+            //如果本地已经安装的，则只同步版本 分数 下载量
+            const updateBean: Record<string, any> = {
+              id: existingRecord.id,
+              score: itemFromStore.score,
+              downloadCount: itemFromStore.downloadCount,
+              latestVersion: itemFromStore.version,
+            };
+            await this.update(updateBean);
+          } else {
+            //如果本地未安装的，则同步所有字段
+            const updateBean: Record<string, any> = {
+              id: existingRecord.id,
+              ...itemFromStore,
+            };
+            await this.update(updateBean);
+          }
+
+          continue;
+        } else {
           itemFromStore.disabled = false;
           await this.add(itemFromStore);
         }
@@ -1593,7 +1592,7 @@ export class PluginService extends BaseService<PluginEntity> {
       this.normalizeStorePluginAuthor(loaded);
     }
     const fullName = loaded.fullName || (loaded.author && loaded.name ? `${loaded.author}/${loaded.name}` : "");
-    let old = await this.findOne({
+    const old = await this.findOne({
       where: {
         type: "store",
         fullName,
@@ -1637,10 +1636,10 @@ export class PluginService extends BaseService<PluginEntity> {
         throw new Error(`插件${loaded.author}/${loaded.name}已存在`);
       }
       pluginEntity.id = old.id;
-       //update
+      //update
       await this.update(pluginEntity);
     }
-   
+
     return {
       id: pluginEntity.id,
     };
@@ -1672,7 +1671,6 @@ export class PluginService extends BaseService<PluginEntity> {
     );
   }
 
-
   isNewVersion(version: string, latestVersion: string) {
     if (!latestVersion) {
       return false;
@@ -1691,5 +1689,9 @@ export class PluginService extends BaseService<PluginEntity> {
       }
     }
     return false;
+  }
+
+  async getPluginDefine(name: string) {
+    return pluginRegistry.getDefine(name);
   }
 }

@@ -15,6 +15,12 @@
               <div class="total flex-center flex-1 flex-col pointer" @click="goDetail(link)">
                 <span>{{ count ?? 0 }}</span>
                 <span class="sub-title">{{ title }}</span>
+                <span v-if="helperText" class="helper-text">
+                  {{ helperText }}
+                  <a-tooltip v-if="helperTooltip" :title="helperTooltip">
+                    <fs-icon icon="mingcute:information-line" class="helper-icon" />
+                  </a-tooltip>
+                </span>
               </div>
               <a-divider type="vertical h-10"></a-divider>
               <div class="sub flex-1 flex-col h-[80%] flex-evenly pl-1 2xl:pl-4">
@@ -59,6 +65,8 @@ const props = defineProps<{
     title?: string;
     link?: any;
   }[];
+  helperText?: string;
+  helperTooltip?: string;
 }>();
 const slots = defineSlots();
 const router = useRouter();
@@ -174,6 +182,19 @@ function goDetail(link: any) {
               font-size: 12px;
               font-weight: 400;
               color: #626262;
+            }
+            .helper-text {
+              color: #52a26a;
+              font-size: 12px;
+              font-weight: 500;
+              line-height: 20px;
+
+              .helper-icon {
+                cursor: help;
+                font-size: 14px;
+                margin-left: 4px;
+                vertical-align: -2px;
+              }
             }
           }
 
