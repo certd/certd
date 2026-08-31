@@ -5,7 +5,7 @@ description: 用于开发 Certd 在线 Access 插件。输出完整 YAML，conte
 
 # 在线 Access 插件
 
-读取父 Skill 的 `references/online-yaml-format.md`。不要沿用旧版 `@IsAccess`、`@AccessInput` 装饰器和独立 TypeScript 文件。
+读取父 Skill 的 `references/online-yaml-format.md`。不要沿用代码版 `@IsAccess`、`@AccessInput` 装饰器和独立 TypeScript 文件。
 
 ## 输出结构
 
@@ -57,3 +57,4 @@ return class DemoAccess extends BaseAccess {
 - `onTestRequest` 应调用实际 API 方法并在失败时抛出异常。
 - 对外 API 方法应统一处理分页、错误和返回字段。
 - 使用 `this.logger` 或框架提供的 logger，禁止 `console.log`。
+- 一般将API接口方法封装到Access中，其他plugin调用access的方法当做client sdk使用

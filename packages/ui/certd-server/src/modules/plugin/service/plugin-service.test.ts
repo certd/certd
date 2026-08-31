@@ -13,6 +13,7 @@ type RepoOptions = {
 function createPluginRepositoryMock(options: RepoOptions = {}) {
   const state = {
     savedRows: [] as any[],
+    saveCalls: [] as any[][],
     updates: [] as any[],
     findCalls: 0,
     queryRows: options.queryRows || options.marketRows || [],
@@ -198,6 +199,7 @@ function createPluginRepositoryMock(options: RepoOptions = {}) {
     },
     async save(records: any[] | any) {
       const list = Array.isArray(records) ? records : [records];
+      state.saveCalls.push(list);
       state.savedRows.push(...list);
       return records;
     },
@@ -538,6 +540,10 @@ describe("PluginService online plugins", () => {
     const res = await service.syncOnlinePluginList();
 
     assert.equal(requestCalls.length, 2);
+    assert.deepEqual(
+      repository.state.saveCalls.map(records => records.length),
+      [200, 1]
+    );
     assert.equal(res.length, 201);
     assert.equal(repository.state.savedRows.length, 201);
     assert.equal(repository.state.savedRows[0].fullName, "developer/plugin-1");
@@ -695,10 +701,7 @@ describe("PluginService online plugins", () => {
 
     assert.deepEqual(
       dependencies.map(item => item.fullName),
-      [
-        "developer/access-b",
-        "developer/access-a",
-      ]
+      ["developer/access-b", "developer/access-a"]
     );
     assert.deepEqual(findCalls, [
       { type: "store", fullName: "developer/target" },

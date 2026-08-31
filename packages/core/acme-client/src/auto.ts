@@ -16,7 +16,6 @@ const defaultOpts = {
     preferredChain: null,
     termsOfServiceAgreed: false,
     skipChallengeVerification: false,
-    challengePriority: ["http-01", "dns-01"],
     challengeCreateFn: async () => {
         throw new Error("Missing challengeCreateFn()");
     },

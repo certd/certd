@@ -349,6 +349,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       form: {
         onSuccess(opts: any) {
           crudExpose.doRefresh();
+          pluginStore.clear();
         },
       },
       columns: {

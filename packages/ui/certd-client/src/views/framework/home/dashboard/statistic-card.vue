@@ -1,6 +1,6 @@
 <template>
   <div class="statistic-card">
-    <a-card>
+    <a-card :class="cardTone">
       <div class="data-item">
         <div class="header">
           <div class="title">
@@ -11,9 +11,9 @@
         </div>
         <div class="content">
           <div v-if="!slots.default" class="statistic">
-            <div v-if="count !== 0" class="value flex items-center w-full">
+            <div class="value flex items-center w-full">
               <div class="total flex-center flex-1 flex-col pointer" @click="goDetail(link)">
-                <span>{{ count }}</span>
+                <span>{{ count ?? 0 }}</span>
                 <span class="sub-title">{{ title }}</span>
               </div>
               <a-divider type="vertical h-10"></a-divider>
@@ -32,7 +32,6 @@
                 </div>
               </div>
             </div>
-            <a-empty v-else></a-empty>
           </div>
           <slot></slot>
         </div>
@@ -45,6 +44,7 @@
 </template>
 <script setup lang="ts">
 import { FsIcon } from "@fast-crud/fast-crud";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 const props = defineProps<{
   icon: string;
@@ -62,6 +62,15 @@ const props = defineProps<{
 }>();
 const slots = defineSlots();
 const router = useRouter();
+const cardTone = computed(() => {
+  if (props.subCounts?.some(item => item.color === "red" && item.value > 0)) {
+    return "has-danger";
+  }
+  if (props.subCounts?.some(item => item.color === "yellow" && item.value > 0)) {
+    return "has-warning";
+  }
+  return "";
+});
 function goDetail(link: any) {
   if (!link) {
     return;
@@ -80,9 +89,27 @@ function goDetail(link: any) {
       color: rgba(242, 242, 242, 0.85) !important;
     }
   }
+
+  .statistic-card {
+    .ant-card.has-danger {
+      background: linear-gradient(135deg, rgba(92, 35, 35, 0.72), rgba(28, 28, 28, 0.96) 62%);
+    }
+
+    .ant-card.has-warning {
+      background: linear-gradient(135deg, rgba(91, 72, 25, 0.68), rgba(28, 28, 28, 0.96) 62%);
+    }
+  }
 }
 .statistic-card {
   margin-bottom: 10px;
+
+  .ant-card.has-danger {
+    background: linear-gradient(135deg, rgba(255, 241, 240, 0.9), #fff 58%);
+  }
+
+  .ant-card.has-warning {
+    background: linear-gradient(135deg, rgba(255, 251, 230, 0.9), #fff 58%);
+  }
   .icon-text {
     display: inline-flex;
     justify-content: left;

@@ -111,8 +111,8 @@ jobs:
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}-slim
             registry.cn-shenzhen.aliyuncs.com/certd/certd:slim
             registry.cn-shenzhen.aliyuncs.com/certd/certd:${{steps.get_certd_version.outputs.result}}-slim
-            certd/certd:slim
-            certd/certd:${{steps.get_certd_version.outputs.result}}-slim
+            greper/certd:slim
+            greper/certd:${{steps.get_certd_version.outputs.result}}-slim
             ghcr.io/${{ github.repository }}:slim
             ghcr.io/${{ github.repository }}:${{steps.get_certd_version.outputs.result}}-slim
 
@@ -129,22 +129,26 @@ jobs:
             registry.cn-shenzhen.aliyuncs.com/handsfree/certd:${{steps.get_certd_version.outputs.result}}-armv7
             registry.cn-shenzhen.aliyuncs.com/certd/certd:armv7
             registry.cn-shenzhen.aliyuncs.com/certd/certd:${{steps.get_certd_version.outputs.result}}-armv7
-            certd/certd:armv7
-            certd/certd:${{steps.get_certd_version.outputs.result}}-armv7
+            greper/certd:armv7
+            greper/certd:${{steps.get_certd_version.outputs.result}}-armv7
             ghcr.io/${{ github.repository }}:armv7
             ghcr.io/${{ github.repository }}:${{steps.get_certd_version.outputs.result}}-armv7
 
-      #      - name: Build agent
-      #        uses: docker/build-push-action@v6
-      #        with:
-      #          platforms: linux/amd64,linux/arm64
-      #          push: true
-      #          context: ./packages/ui/agent/
-      #          tags: |
-      #            registry.cn-shenzhen.aliyuncs.com/handsfree/certd-agent:latest
-      #            registry.cn-shenzhen.aliyuncs.com/handsfree/certd-agent:${{steps.get_certd_version.outputs.result}}
-      #            greper/certd-agent:latest
-      #            greper/certd-agent:${{steps.get_certd_version.outputs.result}}
+      - name: Login to Certd Docker Hub account
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.dockerhub_username2 }}
+          password: ${{ secrets.dockerhub_password2 }}
+
+      - name: Publish to certd Docker Hub repository
+        run: |
+          docker buildx imagetools create --tag certd/certd:latest greper/certd:latest
+          docker buildx imagetools create --tag certd/certd:${{ steps.get_certd_version.outputs.result }} greper/certd:${{ steps.get_certd_version.outputs.result }}
+          docker buildx imagetools create --tag certd/certd:slim greper/certd:slim
+          docker buildx imagetools create --tag certd/certd:${{ steps.get_certd_version.outputs.result }}-slim greper/certd:${{ steps.get_certd_version.outputs.result }}-slim
+          docker buildx imagetools create --tag certd/certd:armv7 greper/certd:armv7
+          docker buildx imagetools create --tag certd/certd:${{ steps.get_certd_version.outputs.result }}-armv7 greper/certd:${{ steps.get_certd_version.outputs.result }}-armv7
+
       - name: deploy-certd-doc
         uses: tyrrrz/action-http-request@prime
         with:

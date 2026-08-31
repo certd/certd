@@ -527,6 +527,8 @@ export const createAlpnCertificate = async (authz, keyAuthorization, keyPem = nu
     }
 
     const now = new Date();
+    // TLS-ALPN-01 只需要一张短期挑战证书；有效期不能为零，否则部分 TLS 实现会直接拒绝。
+    const notAfter = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     const commonName = authz.identifier.value;
 
     /* Pseudo-random serial - max 20 bytes, 11 for epoch (year 5138), 9 random */
@@ -537,14 +539,8 @@ export const createAlpnCertificate = async (authz, keyAuthorization, keyPem = nu
     const [keys, signingAlgorithm] = await getWebCryptoKeyPair(keyPem);
 
     const extensions = [
-        /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.3 */
-        new x509.KeyUsagesExtension(x509.KeyUsageFlags.keyCertSign | x509.KeyUsageFlags.cRLSign, true), // eslint-disable-line no-bitwise
-
-        /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.9 */
-        new x509.BasicConstraintsExtension(true, 2, true),
-
-        /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.2 */
-        await x509.SubjectKeyIdentifierExtension.create(keys.publicKey),
+        /* TLS 服务端挑战证书只用于签名，不是 CA 证书。 */
+        new x509.KeyUsagesExtension(x509.KeyUsageFlags.digitalSignature, true),
 
         /* https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6 */
         createSubjectAltNameExtension([commonName]),
@@ -562,7 +558,7 @@ export const createAlpnCertificate = async (authz, keyAuthorization, keyPem = nu
         extensions,
         serialNumber,
         notBefore: now,
-        notAfter: now,
+        notAfter,
         name: createCsrSubject({
             CN: commonName,
         }),

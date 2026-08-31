@@ -15,6 +15,9 @@ type PublishManagerResult =
       action: "registered";
     }
   | {
+      action: "updated";
+    }
+  | {
       action: "cancel";
     };
 
@@ -61,7 +64,7 @@ export function usePluginPublish() {
         initialForm: {
           name: "",
           nameConfirm: "",
-          desc: "",
+          email: "",
         },
         async onSubmit(form: any) {
           if (form.name?.trim() !== form.nameConfirm?.trim()) {
@@ -72,8 +75,7 @@ export function usePluginPublish() {
           }
           const author = await api.OnlinePluginAuthorAdd({
             name: form.name,
-            displayName: form.displayName,
-            desc: form.desc,
+            email: form.email,
           });
           resolveAuthor(author);
         },
@@ -108,6 +110,51 @@ export function usePluginPublish() {
                     }
                   },
                 },
+              ],
+            },
+          },
+          email: {
+            title: "作者邮箱",
+            type: "text",
+            form: {
+              col: { span: 24 },
+              rules: [
+                { required: true, message: "请输入作者邮箱" },
+                { type: "email", message: "请输入有效的作者邮箱" },
+              ],
+            },
+          },
+        },
+      });
+    });
+  }
+
+  function updatePluginAuthorEmail(author?: api.OnlinePluginAuthorBean) {
+    return new Promise<api.OnlinePluginAuthorBean | undefined>(async resolve => {
+      let resolved = false;
+      const resolveAuthor = (result?: api.OnlinePluginAuthorBean) => {
+        if (!resolved) {
+          resolved = true;
+          resolve(result);
+        }
+      };
+      await openFormDialog({
+        title: "修改作者邮箱",
+        wrapper: { width: 560, onClosed: () => resolveAuthor() },
+        initialForm: { email: author?.email || "" },
+        async onSubmit(form: any) {
+          const result = await api.OnlinePluginAuthorUpdate({ email: form.email });
+          resolveAuthor(result);
+        },
+        columns: {
+          email: {
+            title: "作者邮箱",
+            type: "text",
+            form: {
+              col: { span: 24 },
+              rules: [
+                { required: true, message: "请输入作者邮箱" },
+                { type: "email", message: "请输入有效的作者邮箱" },
               ],
             },
           },
@@ -326,7 +373,26 @@ export function usePluginPublish() {
 
     function renderAuthor() {
       if (info.authorRegistered) {
-        return author?.displayName || author?.name || "-";
+        return (
+          <span class="sys-plugin-publish__author-register">
+            <span>{author?.name || "-"}</span>
+            <a-button
+              size="small"
+              type="link"
+              onClick={async (event: any) => {
+                event.stopPropagation();
+                const updatedAuthor = await updatePluginAuthorEmail(author);
+                if (!updatedAuthor?.id) {
+                  return;
+                }
+                resolveResult({ action: "updated" });
+                formWrapper?.close?.();
+              }}
+            >
+              修改邮箱
+            </a-button>
+          </span>
+        );
       }
       return (
         <span class="sys-plugin-publish__author-register">
@@ -487,6 +553,10 @@ export function usePluginPublish() {
       return;
     }
     if (action.action === "registered") {
+      await publishLocalPlugin(row, options);
+      return;
+    }
+    if (action.action === "updated") {
       await publishLocalPlugin(row, options);
       return;
     }

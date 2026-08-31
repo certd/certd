@@ -72,6 +72,7 @@ class HttpClient {
      */
 
     async request(url, method, opts = {}) {
+        // 仅替换实际传输地址；signedRequest 已在映射前用 ACME 原始 URL 生成 JWS，协议要求两者保持一致。
         if (this.urlMapping && this.urlMapping.enabled && this.urlMapping.mappings) {
             // eslint-disable-next-line no-restricted-syntax
             for (const key in this.urlMapping.mappings) {

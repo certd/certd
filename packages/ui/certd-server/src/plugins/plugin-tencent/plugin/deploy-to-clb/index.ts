@@ -3,6 +3,29 @@ import dayjs from "dayjs";
 import { TencentAccess } from "../../../plugin-lib/tencent/index.js";
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { createRemoteSelectInputDefine } from "@certd/plugin-lib";
+
+const clbRegionOptions = [
+  { value: "default", label: "就近地域接入（推荐，只支持非金融区）", endpoint: "clb.tencentcloudapi.com" },
+  { value: "ap-guangzhou", label: "华南地区（广州）", endpoint: "clb.ap-guangzhou.tencentcloudapi.com" },
+  { value: "ap-shanghai", label: "华东地区（上海）", endpoint: "clb.ap-shanghai.tencentcloudapi.com" },
+  { value: "ap-nanjing", label: "华东地区（南京）", endpoint: "clb.ap-nanjing.tencentcloudapi.com" },
+  { value: "ap-beijing", label: "华北地区（北京）", endpoint: "clb.ap-beijing.tencentcloudapi.com" },
+  { value: "ap-chengdu", label: "西南地区（成都）", endpoint: "clb.ap-chengdu.tencentcloudapi.com" },
+  { value: "ap-chongqing", label: "西南地区（重庆）", endpoint: "clb.ap-chongqing.tencentcloudapi.com" },
+  { value: "ap-hongkong", label: "港澳台地区（中国香港）", endpoint: "clb.ap-hongkong.tencentcloudapi.com" },
+  { value: "ap-singapore", label: "亚太东南（新加坡）", endpoint: "clb.ap-singapore.tencentcloudapi.com" },
+  { value: "ap-jakarta", label: "亚太东南（雅加达）", endpoint: "clb.ap-jakarta.tencentcloudapi.com" },
+  { value: "ap-bangkok", label: "亚太东南（曼谷）", endpoint: "clb.ap-bangkok.tencentcloudapi.com" },
+  { value: "ap-seoul", label: "亚太东北（首尔）", endpoint: "clb.ap-seoul.tencentcloudapi.com" },
+  { value: "ap-tokyo", label: "亚太东北（东京）", endpoint: "clb.ap-tokyo.tencentcloudapi.com" },
+  { value: "na-ashburn", label: "美国东部（弗吉尼亚）", endpoint: "clb.na-ashburn.tencentcloudapi.com" },
+  { value: "na-siliconvalley", label: "美国西部（硅谷）", endpoint: "clb.na-siliconvalley.tencentcloudapi.com" },
+  { value: "sa-saopaulo", label: "南美地区（圣保罗）", endpoint: "clb.sa-saopaulo.tencentcloudapi.com" },
+  { value: "eu-frankfurt", label: "欧洲地区（法兰克福）", endpoint: "clb.eu-frankfurt.tencentcloudapi.com" },
+  { value: "ap-shanghai-fsi", label: "华东地区（上海金融）", endpoint: "clb.ap-shanghai-fsi.tencentcloudapi.com" },
+  { value: "ap-shenzhen-fsi", label: "华南地区（深圳金融）", endpoint: "clb.ap-shenzhen-fsi.tencentcloudapi.com" },
+];
+
 @IsTaskPlugin({
   name: "DeployCertToTencentCLB",
   title: "腾讯云-部署到CLB",
@@ -41,37 +64,16 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
   })
   accessId!: string;
 
-  @TaskInput({
-    title: "大区",
-    component: {
-      name: "a-auto-complete",
-      vModel: "value",
-      options: [
-        { value: "ap-guangzhou" },
-        { value: "ap-beijing" },
-        { value: "ap-chengdu" },
-        { value: "ap-chongqing" },
-        { value: "ap-hongkong" },
-        { value: "ap-jakarta" },
-        { value: "ap-mumbai" },
-        { value: "ap-nanjing" },
-        { value: "ap-seoul" },
-        { value: "ap-shanghai" },
-        { value: "ap-shanghai-fsi" },
-        { value: "ap-shenzhen-fsi" },
-        { value: "ap-singapore" },
-        { value: "ap-tokyo" },
-        { value: "eu-frankfurt" },
-        { value: "na-ashburn" },
-        { value: "na-siliconvalley" },
-        { value: "na-toronto" },
-        { value: "sa-saopaulo" },
-        { value: "ap-taipei" },
-      ],
-      helper: "如果列表中没有，您可以手动输入",
-    },
-    required: true,
-  })
+  @TaskInput(
+    createRemoteSelectInputDefine({
+      title: "大区",
+      helper: "请选择CLB地域",
+      action: DeployCertToTencentCLB.prototype.onGetRegionList.name,
+      single: true,
+      pager: false,
+      search: false,
+    })
+  )
   region!: string;
 
   @TaskInput(
@@ -130,21 +132,26 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
 
     const accessProvider = (await this.getAccess(this.accessId)) as TencentAccess;
 
-    const region = this.region;
+    const regionOption = clbRegionOptions.find(item => item.value === this.region);
+    const endpoint = regionOption?.endpoint || "clb.tencentcloudapi.com";
     const clientConfig = {
       credential: {
         secretId: accessProvider.secretId,
         secretKey: accessProvider.secretKey,
       },
-      region: region,
+      region: this.region === "default" ? "" : this.region,
       profile: {
         httpProfile: {
-          endpoint: `clb.${accessProvider.intlDomain()}tencentcloudapi.com`,
+          endpoint: accessProvider.buildEndpoint(endpoint),
         },
       },
     };
 
     return new ClbClient(clientConfig);
+  }
+
+  async onGetRegionList(data: PageSearch) {
+    return clbRegionOptions;
   }
 
   async execute(): Promise<void> {

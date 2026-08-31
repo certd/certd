@@ -251,6 +251,13 @@ describe('crypto', () => {
                     testAlpnCertificate = cert;
                 });
 
+                it(`${n}/should generate alpn certificate with a non-zero validity period`, () => {
+                    const info = crypto.readCertificateInfo(testAlpnCertificate);
+
+                    assert.isBelow(info.notBefore.getTime(), info.notAfter.getTime());
+                    assert.isAtMost(info.notAfter.getTime() - info.notBefore.getTime(), 24 * 60 * 60 * 1000);
+                });
+
                 it(`${n}/should generate alpn certificate with key as string`, async () => {
                     const k = await createFn();
                     const authz = { identifier: { value: 'test.example.com' } };

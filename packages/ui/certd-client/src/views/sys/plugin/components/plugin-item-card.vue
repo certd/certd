@@ -29,7 +29,7 @@
         </div>
       </div>
       <div class="plugin-card__actions">
-        <div v-if="pluginCardState.showEditButton || pluginCardState.showConfigButton" class="plugin-card__tools">
+        <div v-if="pluginCardState.showEditButton || pluginCardState.showConfigButton || pluginCardState.canExportPlugin" class="plugin-card__tools">
           <a-tooltip v-if="pluginCardState.showEditButton" title="编辑">
             <a-button class="plugin-card__tool" type="text" size="small" @click.stop="editPlugin">
               <template #icon>
@@ -37,10 +37,10 @@
               </template>
             </a-button>
           </a-tooltip>
-          <a-tooltip v-if="copyHandler && pluginCardState.canCopyPlugin" title="复制">
-            <a-button class="plugin-card__tool" type="text" size="small" @click.stop="copyPlugin">
+          <a-tooltip v-if="pluginCardState.canExportPlugin" :title="t('certd.export')">
+            <a-button class="plugin-card__tool" type="text" size="small" :loading="isActionLoading('export')" @click.stop="exportPlugin">
               <template #icon>
-                <fs-icon icon="ion:copy-outline" />
+                <fs-icon icon="ion:cloud-download-outline" />
               </template>
             </a-button>
           </a-tooltip>
@@ -160,11 +160,9 @@ const props = withDefaults(
     simple?: boolean;
     showConfig?: boolean;
     editable?: boolean;
-    copyHandler?: (plugin: any) => void | Promise<void>;
   }>(),
   {
     source: "market",
-    copyHandler: undefined,
   }
 );
 
@@ -183,7 +181,7 @@ const { resolveOnlinePluginDependencies, installOnlinePluginChain, openDependenc
 const actionLoading = ref<PluginCardAction | "">("");
 const editDialogBodyRef = ref();
 
-type PluginCardAction = "edit" | "copy" | "publish" | "config" | "install" | "uninstall" | "remove" | "toggle";
+type PluginCardAction = "edit" | "export" | "publish" | "config" | "install" | "uninstall" | "remove" | "toggle";
 
 const pluginCardState = computed(() => {
   const isLocal = props.source === "local";
@@ -200,7 +198,7 @@ const pluginCardState = computed(() => {
     canEditPlugin,
     isAvailableLocally,
     canManagePlugin,
-    canCopyPlugin: canManagePlugin,
+    canExportPlugin: canManagePlugin,
     showEditButton: canManagePlugin,
     showConfigButton: !!props.showConfig,
     isInstalled: isCloudPlugin && !!props.plugin.installed,
@@ -354,16 +352,26 @@ async function editPlugin() {
   });
 }
 
-async function copyPlugin() {
-  if (!props.copyHandler) {
+async function exportPlugin() {
+  if (!pluginCardState.value.canExportPlugin || !props.plugin.id) {
     return;
   }
   await runAction(
-    "copy",
+    "export",
     async () => {
-      await props.copyHandler?.(props.plugin);
+      const content = await api.ExportPlugin(props.plugin.id);
+      if (!content) {
+        return;
+      }
+      const blob = new Blob([content], { type: "text/yaml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${props.plugin.name || props.plugin.fullName || "plugin"}.yaml`;
+      link.click();
+      URL.revokeObjectURL(url);
     },
-    { emitChanged: true }
+    { emitChanged: false }
   );
 }
 
@@ -1052,5 +1060,4 @@ function handleVersionClick() {
     }
   }
 }
-
 </style>

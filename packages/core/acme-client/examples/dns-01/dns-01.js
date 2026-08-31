@@ -49,7 +49,6 @@ function log(m) {
             csr,
             email: 'test@example.com',
             termsOfServiceAgreed: true,
-            challengePriority: ['dns-01'],
             challengeCreateFn: (authz, challenge, keyAuthorization) => {
                 /* TODO: Implement this */
                 log(`[TODO] Add TXT record key=_acme-challenge.${authz.identifier.value} value=${keyAuthorization}`);

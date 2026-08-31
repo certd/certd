@@ -27,7 +27,7 @@
     "commitPro": "cd ./packages/pro/ && git add . && git commit -m \"build: publish\" && git push",
     "copylogs": "copyfiles \"CHANGELOG.md\"  ./docs/guide/changelogs/",
     "prepublishOnly1": "pnpm run test:unit && pnpm run check && lerna run build ",
-    "prepublishOnly2": "pnpm run test:unit && pnpm run check && pnpm run before-build && lerna run build && pnpm run plugin-doc-gen",
+    "prepublishOnly2": "pnpm run before-build && lerna run build  && pnpm run test:unit && pnpm run check && pnpm run plugin-doc-gen",
     "before-build": "pnpm run transform-sql && cd ./packages/core/basic && time /t >build.md && git add ./build.md && git commit -m \"build: prepare to build\"",
     "deploy1": "node --experimental-json-modules ./scripts/deploy.js ",
     "check": "node --experimental-json-modules ./scripts/publish-check.js",
@@ -53,7 +53,6 @@
   "dependencies": {
     "copyfiles": "^2.4.1",
     "lodash-es": "^4.17.21",
-    "root": "link:",
     "typescript": "^5.4.2"
   },
   "workspaces": [

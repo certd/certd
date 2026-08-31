@@ -4,6 +4,35 @@ import assert from "node:assert/strict";
 import { DeployCertToTencentCLB } from "./index.js";
 
 describe("DeployCertToTencentCLB", () => {
+  it("uses a remote single-select input for the CLB region", () => {
+    const input = (DeployCertToTencentCLB as any).define.input;
+
+    assert.equal(input.region.component.name, "remote-select");
+    assert.equal(input.region.component.single, true);
+    assert.equal(input.region.component.action, "onGetRegionList");
+    assert.equal(input.region.required, true);
+  });
+
+  it("returns CLB regions with their API endpoints", async () => {
+    const plugin = new DeployCertToTencentCLB();
+
+    const options = await plugin.onGetRegionList({});
+
+    assert.deepEqual(options[0], {
+      value: "default",
+      label: "就近地域接入（推荐，只支持非金融区）",
+      endpoint: "clb.tencentcloudapi.com",
+    });
+    assert.deepEqual(
+      options.find(item => item.value === "ap-shanghai-fsi"),
+      {
+        value: "ap-shanghai-fsi",
+        label: "华东地区（上海金融）",
+        endpoint: "clb.ap-shanghai-fsi.tencentcloudapi.com",
+      }
+    );
+  });
+
   it("uses remote single-select inputs for CLB and HTTPS listener", () => {
     const input = (DeployCertToTencentCLB as any).define.input;
 
