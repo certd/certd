@@ -241,7 +241,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
           }else if (form.challengeType === 'dnses'){
               return '给每个域名单独配置dns提供商'
           }else if (form.challengeType === 'dns-persist'){
-              return '请先创建并校验_validation-persist TXT持久记录，校验成功后才能提交流水线；当前仅 Let\\'s Encrypt 测试环境可以申请'
+              return '请先创建并校验_validation-persist TXT持久记录，校验成功后才能提交流水线；当前仅 Let\\'s Encrypt 可以申请'
           }
       })
     }
