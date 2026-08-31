@@ -789,7 +789,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     };
 
     const historyId = await this.historyService.start(entity, triggerType);
-    await this.userSettingsService.incrementStatistic(entity.userId, entity.projectId, "totalPipelineRuns");
+    await this.userSettingsService.incrementStatistic(entity.userId, entity.projectId, "genCertCount.totalPipelineRuns");
     const sysInfo: SysInfo = {};
     if (isComm()) {
       const siteInfo = await this.sysSettingsService.getSetting<SysSiteInfo>(SysSiteInfo);

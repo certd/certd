@@ -64,6 +64,8 @@ export class UserStatisticSetting extends BaseSettings {
   };
 }
 
+export type UserStatisticField = `genCertCount.${keyof UserStatisticSetting["genCertCount"]}`;
+
 export class UserPreferencesSetting extends BaseSettings {
   static __title__ = "用户偏好设置";
   static __key__ = "user.preferences";

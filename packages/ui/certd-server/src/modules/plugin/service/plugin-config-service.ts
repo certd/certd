@@ -49,8 +49,8 @@ export class PluginConfigService {
     if (!sysSetting) {
       throw new Error(`${name}.sysSetting is required`);
     }
-    let pluginEntity:any = await this.pluginService.getRepository().findOne({
-      where: { fullName:name, type: config.type },
+    let pluginEntity: any = await this.pluginService.getRepository().findOne({
+      where: { fullName: name, type: config.type },
     });
     if (!pluginEntity) {
       if (config.type !== "builtIn") {
@@ -59,12 +59,12 @@ export class PluginConfigService {
       }
       pluginEntity = {
         name: name,
-        fullName:name,
+        fullName: name,
         sysSetting: JSON.stringify(sysSetting),
         type: "builtIn",
         disabled: false,
-      }
-      const {id } = await this.pluginService.add(pluginEntity);
+      };
+      const { id } = await this.pluginService.add(pluginEntity);
       pluginEntity.id = id;
     } else {
       const setting = JSON.parse(pluginEntity.sysSetting || "{}");
@@ -74,7 +74,7 @@ export class PluginConfigService {
       if (sysSetting.input) {
         setting.input = sysSetting.input;
       }
-      await this.pluginService.getRepository().update({ fullName:name }, { sysSetting: JSON.stringify(setting) });
+      await this.pluginService.getRepository().update({ fullName: name }, { sysSetting: JSON.stringify(setting) });
     }
   }
 

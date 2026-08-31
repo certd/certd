@@ -152,6 +152,13 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
     });
 
     const initialForm = req.initialForm || {};
+    const pluginSysConfig = await pluginStore.getPluginConfig({ name: certPlugin.name, type: "builtIn" });
+    if (pluginSysConfig?.sysSetting?.input) {
+      //设置系统默认值，必须放这里设置，保证随时应用最新的系统值
+      for (const key in pluginSysConfig.sysSetting?.input) {
+        initialForm.input[key] = pluginSysConfig.sysSetting?.input[key];
+      }
+    }
     initialForm.type = certPlugin.name;
     const applyTemplates = reactive<any[]>([]);
     const selectedTemplateId = ref<number | null>(null);

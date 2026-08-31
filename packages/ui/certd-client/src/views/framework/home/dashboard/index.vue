@@ -65,7 +65,7 @@
         <SimpleSteps></SimpleSteps>
       </div>
     </div>
-    <div class="warning">
+    <div v-if="noticeList.length > 0" class="warning">
       <notice-bar :list="noticeList"></notice-bar>
     </div>
 
@@ -84,11 +84,35 @@
             </template>
           </statistic-card>
         </a-col>
-        <!-- <a-col :md="6" :xs="24">
+
+        <a-col :md="6" :xs="24">
           <statistic-card :title="t('certd.dashboard.pipelineStatus')" :footer="false">
-            <pie-count v-if="count.pipelineStatusCount" :data="count.pipelineStatusCount"></pie-count>
+            <pie-count v-if="count.pipelineStatusCount" :data="count.pipelineStatusCount" />
           </statistic-card>
-        </a-col> -->
+        </a-col>
+        <a-col :md="6" :xs="24">
+          <statistic-card icon="fluent-color:data-trending-24" :title="t('certd.dashboard.recentRun')" :footer="false">
+            <day-count v-if="count.historyCountPerDay" :data="count.historyCountPerDay" :title="t('certd.dashboard.runCount')"></day-count>
+          </statistic-card>
+        </a-col>
+        <a-col :md="6" :xs="24">
+          <statistic-card icon="fluent-color:alert-urgent-24" :title="t('certd.dashboard.expiringCerts')">
+            <expiring-list v-if="count.expiringList" :data="count.expiringList"></expiring-list>
+          </statistic-card>
+        </a-col>
+        <a-col :md="6" :xs="24">
+          <statistic-card
+            icon="fluent-color:certificate-24"
+            :title="t('certd.dashboard.totalGeneratedCertCount')"
+            :count="count.totalGeneratedCertCount"
+            :sub-counts="count.generatedCertTypeCounts"
+            :helper-text="t('certd.dashboard.savedAmount')"
+            :helper-value="`¥${formatSavedAmount(count.totalSavedAmount)}`"
+            :helper-tooltip="t('certd.dashboard.savedAmountRule')"
+            :footer="false"
+          />
+        </a-col>
+
         <a-col :md="6" :xs="24">
           <statistic-card icon="fluent-color:certificate-24" :title="t('certd.dashboard.certCount')" :count="count.certCount" link="/cert/monitor/cert" :sub-counts="count.certStatusCount">
             <template v-if="count.certCount === 0" #default>
@@ -114,30 +138,6 @@
               <router-link to="/cert/cert/domain" class="flex"> <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" /> {{ t("certd.dashboard.manageDomain") }} </router-link>
             </template>
           </statistic-card>
-        </a-col>
-        <a-col :md="6" :xs="24">
-          <statistic-card icon="fluent-color:data-trending-24" :title="t('certd.dashboard.recentRun')" :footer="false">
-            <day-count v-if="count.historyCountPerDay" :data="count.historyCountPerDay" :title="t('certd.dashboard.runCount')"></day-count>
-          </statistic-card>
-        </a-col>
-        <a-col :md="6" :xs="24">
-          <statistic-card icon="fluent-color:alert-urgent-24" :title="t('certd.dashboard.expiringCerts')">
-            <expiring-list v-if="count.expiringList" :data="count.expiringList"></expiring-list>
-          </statistic-card>
-        </a-col>
-        <a-col :md="6" :xs="24">
-          <statistic-card
-            icon="fluent-color:certificate-24"
-            :title="t('certd.dashboard.totalGeneratedCertCount')"
-            :count="count.totalGeneratedCertCount"
-            :sub-counts="count.generatedCertTypeCounts"
-            :helper-text="t('certd.dashboard.savedAmount', { amount: formatSavedAmount(count.totalSavedAmount) })"
-            :helper-tooltip="t('certd.dashboard.savedAmountRule')"
-            :footer="false"
-          />
-        </a-col>
-        <a-col :md="6" :xs="24">
-          <statistic-card icon="fluent-color:data-trending-24" :title="t('certd.dashboard.totalPipelineRuns')" :count="count.genCertCount?.totalPipelineRuns" :footer="false" />
         </a-col>
       </a-row>
     </div>
@@ -188,6 +188,7 @@ import { useRouter } from "vue-router";
 import * as api from "./api";
 import DayCount from "./charts/day-count.vue";
 import ExpiringList from "./charts/expiring-list.vue";
+import PieCount from "./charts/pie-count.vue";
 import NoticeBar from "./notice-bar.vue";
 import SuiteCard from "./suite-card.vue";
 import TutorialButton from "/@/components/tutorial/index.vue";

@@ -220,7 +220,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     if (certUserId != null) {
       const domains = cert?.crt ? new CertReader(cert).getAltNames() : [];
       const wildcardCount = domains.filter(domain => String(domain).trim().toLowerCase().startsWith("*.")).length;
-      const field = wildcardCount > 0 ? "wildcardCertCount" : domains.length > 1 ? "multiDomainCertCount" : "singleDomainCertCount";
+      const field = wildcardCount > 0 ? "genCertCount.wildcardCertCount" : domains.length > 1 ? "genCertCount.multiDomainCertCount" : "genCertCount.singleDomainCertCount";
       await this.userSettingsService.incrementStatistic(certUserId, certProjectId, field);
     }
     return bean;
