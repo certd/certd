@@ -1,7 +1,9 @@
 <template>
   <div class="plugin-author-field">
-    <a-input :value="modelValue" placeholder="请输入作者名称" @update:value="emit('update:modelValue', $event)" />
-    <a-button type="link" size="small" :loading="loading" @click="registerAuthor">注册作者</a-button>
+    <a-input :value="modelValue" placeholder="请输入作者名称" :disabled="authorRegistered" @update:value="emit('update:modelValue', $event)" />
+    <a-button type="link" size="small" :loading="loading" @click="handleAuthorAction">
+      {{ authorRegistered ? "修改邮箱" : "注册作者" }}
+    </a-button>
   </div>
 </template>
 
@@ -15,7 +17,9 @@ defineOptions({ name: "PluginAuthorField" });
 const props = defineProps<{ modelValue?: string }>();
 const emit = defineEmits<{ (event: "update:modelValue", value: string): void }>();
 const loading = ref(false);
-const { registerPluginAuthor } = usePluginPublish();
+const { registerPluginAuthor, updatePluginAuthorEmail } = usePluginPublish();
+const registeredAuthor = ref<api.OnlinePluginAuthorBean>();
+const authorRegistered = computed(() => !!registeredAuthor.value?.id);
 const isLocalAuthor = computed(() => {
   return (
     String(props.modelValue || "")
@@ -28,7 +32,8 @@ async function loadAuthor() {
   loading.value = true;
   try {
     const result = await api.OnlinePluginAuthorGet({ showErrorNotify: false });
-    if ((!props.modelValue || isLocalAuthor.value) && result.author?.name) {
+    if (result.registered && result.author?.id && result.author.name) {
+      registeredAuthor.value = result.author;
       emit("update:modelValue", result.author.name);
     }
   } catch {
@@ -38,11 +43,19 @@ async function loadAuthor() {
   }
 }
 
-async function registerAuthor() {
+async function handleAuthorAction() {
+  if (registeredAuthor.value) {
+    const author = await updatePluginAuthorEmail(registeredAuthor.value);
+    if (author?.id) {
+      registeredAuthor.value = author;
+    }
+    return;
+  }
   const author = await registerPluginAuthor();
   if (!author?.name) {
     return;
   }
+  registeredAuthor.value = author;
   emit("update:modelValue", author.name);
 }
 

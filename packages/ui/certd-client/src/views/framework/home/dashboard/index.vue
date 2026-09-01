@@ -101,19 +101,6 @@
           </statistic-card>
         </a-col>
         <a-col :md="6" :xs="24">
-          <statistic-card
-            icon="fluent-color:certificate-24"
-            :title="t('certd.dashboard.totalGeneratedCertCount')"
-            :count="count.totalGeneratedCertCount"
-            :sub-counts="count.generatedCertTypeCounts"
-            :helper-text="t('certd.dashboard.savedAmount')"
-            :helper-value="`¥${formatSavedAmount(count.totalSavedAmount)}`"
-            :helper-tooltip="t('certd.dashboard.savedAmountRule')"
-            :footer="false"
-          />
-        </a-col>
-
-        <a-col :md="6" :xs="24">
           <statistic-card icon="fluent-color:certificate-24" :title="t('certd.dashboard.certCount')" :count="count.certCount" link="/cert/monitor/cert" :sub-counts="count.certStatusCount">
             <template v-if="count.certCount === 0" #default>
               <div class="flex-center flex-1 flex-col">
@@ -124,6 +111,18 @@
               <router-link to="/cert/monitor/cert" class="flex"> <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" /> {{ t("certd.dashboard.manageCert") }} </router-link>
             </template>
           </statistic-card>
+        </a-col>
+        <a-col :md="6" :xs="24">
+          <statistic-card
+            icon="fluent-color:certificate-24"
+            :title="t('certd.dashboard.totalGeneratedCertCount')"
+            :count="count.totalGeneratedCertCount"
+            :sub-counts="count.generatedCertTypeCounts"
+            :helper-text="t('certd.dashboard.savedAmount')"
+            :helper-value="`¥${formatSavedAmount(count.totalSavedAmount)}`"
+            :helper-tooltip="t('certd.dashboard.savedAmountRule')"
+            :footer="false"
+          />
         </a-col>
         <a-col :md="6" :xs="24">
           <statistic-card icon="fluent-color:link-multiple-24" :title="t('certd.dashboard.siteMonitorCount')" :count="count.siteCount" link="/cert/monitor/site" :sub-counts="count.siteStatusCount">

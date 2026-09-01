@@ -591,10 +591,10 @@ export function usePluginPublish() {
       publishingPluginId.value = "";
     }
   }
-
   return {
     isPublishingPlugin,
     publishLocalPlugin,
     registerPluginAuthor,
+    updatePluginAuthorEmail,
   };
 }
