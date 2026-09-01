@@ -613,6 +613,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             show: false,
           },
+          valueBuilder({ row }) {
+            if (typeof row.dependPlugins === "string") {
+              row.dependPlugins = yaml.load(row.dependPlugins);
+            }
+          },
+          valueResolve({ row }) {
+            if (row.dependPlugins && typeof row.dependPlugins === "object") {
+              row.dependPlugins = yaml.dump(row.dependPlugins);
+            }
+          },
         },
         "extra.dependPackages": {
           title: t("certd.thirdPartyDependencies"),

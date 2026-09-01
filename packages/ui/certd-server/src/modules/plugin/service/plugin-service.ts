@@ -662,31 +662,28 @@ export class PluginService extends BaseService<PluginEntity> {
   /**
    * 表单可能直接提交对象形式的 dependPlugins（KvInput），落库前统一序列化为 YAML 字符串。
    */
-  private normalizeDependPluginsParam(param: any) {
-    if (param.dependPlugins && typeof param.dependPlugins === "object" && !Array.isArray(param.dependPlugins)) {
-      param.dependPlugins = toDependPluginsYaml(param.dependPlugins);
-    }
-  }
+  // private normalizeDependPluginsParam(param: any) {
+  //   if (param.dependPlugins && typeof param.dependPlugins === "object" && !Array.isArray(param.dependPlugins)) {
+  //     param.dependPlugins = toDependPluginsYaml(param.dependPlugins);
+  //   }
+  // }
 
-  private normalizePluginYamlParam(param: any, field: "extra" | "dependPlugins") {
-    const value = param[field];
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      param[field] = yaml.dump(value, {
-        lineWidth: -1,
-        noRefs: true,
-        sortKeys: false,
-      });
-    }
-  }
+  // private normalizePluginYamlParam(param: any, field: "extra" | "dependPlugins") {
+  //   const value = param[field];
+  //   if (value && typeof value === "object" && !Array.isArray(value)) {
+  //     param[field] = yaml.dump(value, {
+  //       lineWidth: -1,
+  //       noRefs: true,
+  //       sortKeys: false,
+  //     });
+  //   }
+  // }
 
   private normalizeStorePluginAuthor(plugin: Record<string, any>) {
     const author = `${plugin.author || ""}`.trim();
-    if (!author || author.toLowerCase() === "local") {
-      throw new Error("请先填写插件作者");
-    }
     plugin.author = author;
     const name = `${plugin.name || ""}`.trim();
-    if (name) {
+    if (name && author) {
       plugin.fullName = `${author}/${name}`;
     }
   }
@@ -696,7 +693,7 @@ export class PluginService extends BaseService<PluginEntity> {
    * @param param 数据
    */
   async add(param: any) {
-    this.normalizeDependPluginsParam(param);
+    // this.normalizeDependPluginsParam(param);
     param.type = normalizePluginSourceType(param.type);
     if (param.type === "store") {
       this.normalizeStorePluginAuthor(param);
@@ -751,6 +748,9 @@ export class PluginService extends BaseService<PluginEntity> {
       return;
     }
     if (item.type === "builtIn") {
+      return;
+    }
+    if (!item.installed) {
       return;
     }
     await this.registerPlugin(item);
@@ -1003,20 +1003,20 @@ export class PluginService extends BaseService<PluginEntity> {
               downloadCount: itemFromStore.downloadCount,
               latestVersion: itemFromStore.version,
             };
-            await this.update(updateBean);
+            await this.updateById(updateBean);
           } else {
             //如果本地未安装的，则同步所有字段
             const updateBean: Record<string, any> = {
               id: existingRecord.id,
               ...itemFromStore,
             };
-            await this.update(updateBean);
+            await this.updateById(updateBean);
           }
 
           continue;
         } else {
           itemFromStore.disabled = false;
-          await this.add(itemFromStore);
+          await this.repository.save(itemFromStore);
         }
       }
       const total = Number(res?.page?.total || 0);
@@ -1165,20 +1165,6 @@ export class PluginService extends BaseService<PluginEntity> {
         maxAppVersion: req.maxAppVersion || "",
       },
     });
-
-    const marketPlugin = publishReply?.plugin as OnlinePluginBean | undefined;
-    const publishedAuthor = marketPlugin?.author || author.name;
-    const publishedFullName = marketPlugin?.fullName || `${publishedAuthor}/${plugin.name}`;
-    await this.update({
-      ...plugin,
-      appId: marketPlugin?.appId || plugin.appId,
-      developerId: marketPlugin?.developerId || installInfo.bindUserId,
-      author: publishedAuthor,
-      fullName: publishedFullName,
-      latest: marketPlugin?.latest || plugin.latest,
-      status: marketPlugin?.status || plugin.status,
-      vip: marketPlugin?.vip || plugin.vip,
-    });
     return publishReply;
   }
 
@@ -1322,6 +1308,9 @@ export class PluginService extends BaseService<PluginEntity> {
     if (item.type === "builtIn") {
       return;
     }
+    if (!item.installed) {
+      return;
+    }
     const metadata = item.metadata ? yaml.load(item.metadata) : {};
     const extra = item.extra ? yaml.load(item.extra) : {};
     const plugin = {
@@ -1355,32 +1344,13 @@ export class PluginService extends BaseService<PluginEntity> {
     if (!param?.id) {
       throw new Error("id 不能为空");
     }
-    // 编辑接口只允许修改插件自身内容，市场同步字段始终以数据库记录为准。
-    const source = { ...param };
-    source.type = normalizePluginSourceType(source.type);
-    this.normalizeStorePluginAuthor(source);
-    let old: PluginEntity | null;
-    old = await this.findOne({
-      where: {
-        type: "store",
-        fullName: source.fullName,
-      },
-    });
-
-    if (old && old.id !== param.id) {
-      throw new Error(`插件${source.author}/${source.name}已存在`);
-    }
-
-    const updateData: any = { ...source, id: param.id };
-    this.normalizePluginYamlParam(updateData, "extra");
-    this.normalizeDependPluginsParam(updateData);
-
+    // this.normalizePluginYamlParam(param, "extra");
+    // this.normalizeDependPluginsParam(param);
     await this.unRegisterById(param.id);
-    const res = await super.update(updateData);
+    const res = await super.update(param);
     await this.registerById(param.id);
     return res;
   }
-
   async compile(code: string) {
     const ts = await import("typescript");
     return ts.transpileModule(code, {
@@ -1637,7 +1607,7 @@ export class PluginService extends BaseService<PluginEntity> {
       }
       pluginEntity.id = old.id;
       //update
-      await this.update(pluginEntity);
+      await this.updateById(pluginEntity);
     }
 
     return {
