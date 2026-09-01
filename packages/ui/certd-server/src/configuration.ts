@@ -128,7 +128,6 @@ export class MainConfiguration {
         ctx.response.set("Cache-Control", "public,max-age=0");
       }
     });
-
     //acme setlogger
     setLogger((text: string) => {
       logger.info(text);

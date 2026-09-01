@@ -143,7 +143,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 3.  <b>HTTP文件验证</b>：不支持泛域名，需要配置网站文件上传（IP证书必须选它）
 4.  <b>多DNS提供商</b>：每个域名可以选择独立的DNS提供商
 5.  <b>自动匹配</b>：此处无需选择校验方式，需要在[域名管理](#/certd/cert/domain)中提前配置好校验方式
-6.  <b>DNS持久验证</b>：需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅 Let's Encrypt 测试环境可以申请
+6.  <b>DNS持久验证</b>：需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅 Let's Encrypt 测试环境 可以申请
 `,
   })
   challengeType!: string;
@@ -241,7 +241,7 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
           }else if (form.challengeType === 'dnses'){
               return '给每个域名单独配置dns提供商'
           }else if (form.challengeType === 'dns-persist'){
-              return '请先创建并校验_validation-persist TXT持久记录，校验成功后才能提交流水线；当前仅 Let\\'s Encrypt 可以申请'
+              return '请先创建并校验_validation-persist TXT持久记录，校验成功后才能提交流水线；当前仅 Let\\'s Encrypt 测试环境 可以申请'
           }
       })
     }

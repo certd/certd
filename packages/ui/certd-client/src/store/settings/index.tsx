@@ -390,6 +390,9 @@ export const useSettingStore = defineStore({
       this.loadProductInfo();
       this.inited = true;
     },
+    getSiteId() {
+      return this.installInfo?.siteId || "";
+    },
   },
 });
 
