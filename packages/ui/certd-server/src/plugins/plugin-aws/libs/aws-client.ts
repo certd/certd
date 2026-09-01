@@ -129,32 +129,43 @@ export class AwsClient {
   }
 
   async route53ChangeRecord(req: { hostedZoneId: string; fullRecord: string; type: string; value: string; action: "UPSERT" | "DELETE" }) {
-    const { ChangeResourceRecordSetsCommand } = await this.access.importRuntime("@aws-sdk/client-route-53"); // ES Modules import
-    // const { Route53Client, ChangeResourceRecordSetsCommand } = require("@aws-sdk/client-route-53"); // CommonJS import
-    // import type { Route53ClientConfig } from "@aws-sdk/client-route-53";
+    const recordType = req.type.toUpperCase();
+    const recordValue = `"${req.value}"`;
+    const existingRecord = await this.route53GetRecord(req.hostedZoneId, req.fullRecord, recordType);
+    const existingValues = existingRecord?.ResourceRecords || [];
+
+    let action: "UPSERT" | "DELETE" = "UPSERT";
+    let values = existingValues;
+    if (req.action === "UPSERT") {
+      if (existingValues.some(item => item.Value === recordValue)) {
+        return;
+      }
+      values = [...existingValues, { Value: recordValue }];
+    } else {
+      const remainingValues = existingValues.filter(item => item.Value !== recordValue);
+      if (remainingValues.length === existingValues.length) {
+        return;
+      }
+      if (remainingValues.length === 0) {
+        action = "DELETE";
+      } else {
+        values = remainingValues;
+      }
+    }
+
+    const { ChangeResourceRecordSetsCommand } = await this.access.importRuntime("@aws-sdk/client-route-53");
     const client = await this.route53ClientGet();
     const input = {
-      // ChangeResourceRecordSetsRequest
-      HostedZoneId: req.hostedZoneId, // required
+      HostedZoneId: req.hostedZoneId,
       ChangeBatch: {
-        // ChangeBatch
         Changes: [
-          // Changes // required
           {
-            // Change
-            Action: req.action as any, // required
+            Action: action as any,
             ResourceRecordSet: {
-              // ResourceRecordSet
-              Name: req.fullRecord, // required
-              Type: req.type.toUpperCase() as any,
-              ResourceRecords: [
-                // ResourceRecords
-                {
-                  // ResourceRecord
-                  Value: `"${req.value}"`, // required
-                },
-              ],
-              TTL: 60,
+              Name: req.fullRecord,
+              Type: recordType as any,
+              ResourceRecords: values,
+              TTL: existingRecord?.TTL || 60,
             },
           },
         ],
@@ -166,15 +177,27 @@ export class AwsClient {
     console.log("Add record successful:", JSON.stringify(response));
     await utils.sleep(3000);
     return response;
-    /*
-    // { // ChangeResourceRecordSetsResponse
-//   ChangeInfo: { // ChangeInfo
-//     Id: "STRING_VALUE", // required
-//     Status: "PENDING" || "INSYNC", // required
-//     SubmittedAt: new Date("TIMESTAMP"), // required
-//     Comment: "STRING_VALUE",
-//   },
-// };*/
+  }
+
+  private async route53GetRecord(hostedZoneId: string, fullRecord: string, type: string): Promise<any> {
+    const { ListResourceRecordSetsCommand } = await this.access.importRuntime("@aws-sdk/client-route-53");
+    const client = await this.route53ClientGet();
+    const command = new ListResourceRecordSetsCommand({
+      HostedZoneId: hostedZoneId,
+      StartRecordName: fullRecord,
+      StartRecordType: type,
+      MaxItems: "1",
+    });
+    const response: any = await this.doRequest(() => client.send(command));
+    const record = response.ResourceRecordSets?.[0];
+    if (!record || record.Type !== type || !this.route53RecordNamesMatch(record.Name, fullRecord)) {
+      return undefined;
+    }
+    return record;
+  }
+
+  private route53RecordNamesMatch(left: string, right: string): boolean {
+    return left.replace(/\.$/, "").toLowerCase() === right.replace(/\.$/, "").toLowerCase();
   }
 
   async doRequest<T>(call: () => Promise<T>): Promise<T> {
