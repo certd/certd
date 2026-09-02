@@ -3,7 +3,9 @@ import { InjectEntityModel } from "@midwayjs/typeorm";
 import { Repository } from "typeorm";
 import { BaseService, BaseSettings } from "@certd/lib-server";
 import { UserSettingsEntity } from "../entity/user-settings.js";
-import { LocalCache, mergeUtils } from "@certd/basic";
+import { LocalCache, locker, mergeUtils } from "@certd/basic";
+import { UserStatisticField, UserStatisticSetting } from "./models.js";
+import { get, set } from "lodash-es";
 const { merge } = mergeUtils;
 
 const UserSettingCache = new LocalCache({
@@ -132,5 +134,15 @@ export class UserSettingsService extends BaseService<UserSettingsEntity> {
     }
     newEntity.setting = JSON.stringify(bean);
     await this.repository.save(newEntity);
+  }
+
+  async incrementStatistic(userId: number, projectId: number | null | undefined, field: UserStatisticField) {
+    const lockKey = `user-statistic:${userId}:${projectId ?? "global"}`;
+    await locker.execute(lockKey, async () => {
+      const setting = await this.getSetting<UserStatisticSetting>(userId, projectId ?? undefined, UserStatisticSetting);
+      const current = Number(get(setting, field, 0)) || 0;
+      set(setting, field, current + 1);
+      await this.saveSetting(userId, projectId ?? undefined, setting);
+    });
   }
 }

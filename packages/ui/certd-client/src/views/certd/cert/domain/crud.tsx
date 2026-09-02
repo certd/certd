@@ -235,7 +235,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               } else if (value === "dns-persist") {
                 Modal.confirm({
                   title: "请前往DNS持久验证记录页面添加记录",
-                  content: "DNS持久验证需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅 Let's Encrypt 测试环境可以申请。",
+                  content: "DNS持久验证需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅 Let's Encrypt 测试环境 可以申请。",
                   async onOk() {
                     router.push({
                       path: "/cert/cert/dns-persist",

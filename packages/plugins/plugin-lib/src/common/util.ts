@@ -40,6 +40,7 @@ export function createRemoteSelectInputDefine(opts?: {
   rules?: any;
   mergeScript?: string;
   search?: boolean;
+  emitImmediate?: boolean;
   pager?: boolean;
   component?: any;
   value?: any;

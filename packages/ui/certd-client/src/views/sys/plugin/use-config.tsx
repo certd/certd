@@ -49,12 +49,13 @@ export function usePluginConfig() {
                 }
               }
               const res = await api.savePluginSetting({
-                name: row.name,
+                name: row.fullName,
                 sysSetting: {
                   metadata: {
                     input: newForm,
                   },
                 },
+                type: row.type,
               });
               await pluginStore.clear();
               return res;

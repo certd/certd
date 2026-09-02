@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-iframe",
   "private": false,
-  "version": "1.44.0",
+  "version": "1.44.1",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -16,7 +16,7 @@
     "preview": "vite preview",
     "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
     "pub": "npm publish",
-    "compile": "rimraf dist && npm run build",
+    "compile": " npm run build",
     "format": "prettier --write src",
     "lint": "eslint --fix --ext .ts src"
   },
@@ -37,5 +37,5 @@
     "tslib": "^2.8.1",
     "typescript": "^5.4.2"
   },
-  "gitHead": "b40bc1b4876711f89bd05f197c88f110964d9d07"
+  "gitHead": "fe738fa7d4622016ed7d506c501df85393b6c857"
 }

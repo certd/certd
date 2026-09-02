@@ -105,6 +105,9 @@ async function loadPlugin() {
   if (baseForm.extra) {
     baseForm.extra = yaml.load(baseForm.extra);
   }
+  if (baseForm.dependPlugins) {
+    baseForm.dependPlugins = yaml.load(baseForm.dependPlugins);
+  }
   delete baseForm.metadata;
   delete baseForm.content;
   baseFormRef.value.setFormData(baseForm);
@@ -135,6 +138,9 @@ function buildSubmitForm(versionOverride?: string) {
   }
   if (form.extra) {
     form.extra = yaml.dump(form.extra);
+  }
+  if (form.dependPlugins) {
+    form.dependPlugins = yaml.dump(form.dependPlugins);
   }
   return form;
 }

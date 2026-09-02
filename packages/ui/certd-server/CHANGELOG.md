@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.44.1](https://github.com/certd/certd/compare/v1.44.0...v1.44.1) (2026-09-02)
+
+### Bug Fixes
+
+* 修复编辑证书申请任务导致清空ACME账号的bug ([d67379f](https://github.com/certd/certd/commit/d67379f29725bbd6dcdefe97d101023c7fd11f03))
+* 修复大量问题 ([f911e06](https://github.com/certd/certd/commit/f911e06a698d568ae228880ec89b7e25fdd1305b))
+* 修复旧流水线保存时清空证书仓库证书内容的bug ([f58f2f3](https://github.com/certd/certd/commit/f58f2f3cd603c37e55ac5868fdd2ca99aa937e44))
+* **pipeline-controller:** 处理非编辑场景下保留id的问题 ([6606f32](https://github.com/certd/certd/commit/6606f3267868e3aadaca0092ef4c83198312553c))
+* **pipeline:** 修正流水线保存时的ID判断逻辑并增加参数校验 ([6af12d4](https://github.com/certd/certd/commit/6af12d49fce1144943dc37ba574b3c9356998dcd))
+
+### Performance Improvements
+
+* **dashboard:** 新增仪表盘站点监控和域名管理的统计卡片 ([9842a24](https://github.com/certd/certd/commit/9842a24a50a841f710ee7c8050a38e3334c58394))
+
 # [1.44.0](https://github.com/certd/certd/compare/v1.43.0...v1.44.0) (2026-08-28)
 
 ### Bug Fixes

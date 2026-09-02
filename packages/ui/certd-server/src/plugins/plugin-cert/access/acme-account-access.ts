@@ -44,6 +44,7 @@ export class AcmeAccountAccess extends BaseAccess {
       action: "onCaTypeList",
       single: true,
       mode: "tags",
+      emitImmediate: true,
     },
     required: true,
     mergeScript: `

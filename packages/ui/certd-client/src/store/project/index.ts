@@ -24,7 +24,8 @@ export const useProjectStore = defineStore("app.project", () => {
   }
   const userStore = useUserStore();
   const userId = userStore.getUserInfo?.id;
-  const lastProjectIdCacheKey = "currentProjectId:" + userId;
+  const settingStore = useSettingStore();
+  const lastProjectIdCacheKey = `currentProjectId:${userId}`;
   const lastProjectId = LocalStorage.get(lastProjectIdCacheKey);
   currentProjectId.value = lastProjectId;
 
@@ -45,7 +46,6 @@ export const useProjectStore = defineStore("app.project", () => {
     return null;
   });
 
-  const settingStore = useSettingStore();
   const isEnterprise = computed(() => {
     return settingStore.isEnterprise;
   });

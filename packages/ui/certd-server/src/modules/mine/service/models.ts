@@ -52,6 +52,20 @@ export class UserGrantSetting extends BaseSettings {
   allowAdminViewCerts = false;
 }
 
+export class UserStatisticSetting extends BaseSettings {
+  static __title__ = "用户累计统计";
+  static __key__ = "user.statistic";
+
+  genCertCount = {
+    singleDomainCertCount: 0,
+    multiDomainCertCount: 0,
+    wildcardCertCount: 0,
+    totalPipelineRuns: 0,
+  };
+}
+
+export type UserStatisticField = `genCertCount.${keyof UserStatisticSetting["genCertCount"]}`;
+
 export class UserPreferencesSetting extends BaseSettings {
   static __title__ = "用户偏好设置";
   static __key__ = "user.preferences";

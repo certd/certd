@@ -1,3 +1,4 @@
+import { PluginDefine } from "@certd/pipeline";
 import { request } from "/src/api/service";
 
 const apiPrefix = "/sys/plugin";
@@ -108,6 +109,7 @@ export type OnlinePluginBean = {
   desc?: string;
   latest?: string;
   status?: string;
+  email?: string;
   downloadCount?: number;
   score?: number;
   aiCheckStatus?: string;
@@ -218,14 +220,8 @@ export async function OnlinePluginPublishInfo(body: { id: number }): Promise<{
 
 export type OnlinePluginAuthorBean = {
   id?: number;
-  appId?: number;
-  appOwnerId?: number;
-  developerId?: number;
   name?: string;
-  displayName?: string;
-  avatar?: string;
-  desc?: string;
-  status?: string;
+  email?: string;
 };
 
 export async function OnlinePluginAuthorGet(options?: { showErrorNotify?: boolean }): Promise<{ registered?: boolean; author?: OnlinePluginAuthorBean }> {
@@ -236,18 +232,22 @@ export async function OnlinePluginAuthorGet(options?: { showErrorNotify?: boolea
   });
 }
 
-export async function OnlinePluginAuthorAdd(body: { name: string; displayName?: string; avatar?: string; desc?: string }): Promise<OnlinePluginAuthorBean> {
+export async function OnlinePluginAuthorAdd(body: { name: string; email: string }): Promise<OnlinePluginAuthorBean> {
   return await request({
     url: apiPrefix + "/online/author/add",
     method: "post",
     data: body,
   });
 }
+export async function OnlinePluginAuthorUpdate(body: { email: string }): Promise<OnlinePluginAuthorBean> {
+  return await request({ url: apiPrefix + "/online/author/update", method: "post", data: body });
+}
 
 export type PluginConfigBean = {
   name: string;
   disabled: boolean;
   sysSetting: {
+    metadata?: Record<string, any>;
     input?: Record<string, any>;
   };
 };
@@ -285,7 +285,7 @@ export async function SaveCommPluginConfigs(data: CommPluginConfig): Promise<voi
   });
 }
 
-export async function savePluginSetting(req: { name: string; sysSetting: any }): Promise<void> {
+export async function savePluginSetting(req: { name: string; sysSetting: any; type: string }): Promise<void> {
   return await request({
     url: apiPrefix + "/saveSetting",
     method: "post",
@@ -293,11 +293,11 @@ export async function savePluginSetting(req: { name: string; sysSetting: any }):
   });
 }
 
-export async function GetPluginByName(name: string): Promise<PluginConfigBean> {
+export async function getPluginSetting(name: string, type: string = "builtIn"): Promise<PluginConfigBean> {
   return await request({
-    url: apiPrefix + "/getPluginByName",
+    url: apiPrefix + "/getSetting",
     method: "post",
-    data: { name },
+    data: { name, type },
   });
 }
 
@@ -305,5 +305,13 @@ export async function ClearRuntimeDeps(): Promise<void> {
   return await request({
     url: "/sys/settings/clearRuntimeDeps",
     method: "post",
+  });
+}
+
+export async function getPluginDefine(name: string): Promise<PluginDefine> {
+  return await request({
+    url: apiPrefix + "/getPluginDefine",
+    method: "post",
+    data: { name },
   });
 }

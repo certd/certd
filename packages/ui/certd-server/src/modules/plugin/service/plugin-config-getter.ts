@@ -8,9 +8,9 @@ export class PluginConfigGetter implements IPluginConfigService {
   @Inject()
   pluginConfigService: PluginConfigService;
 
-  async getPluginConfig(pluginName: string): Promise<PluginConfig> {
+  async getPluginConfig(name: string): Promise<PluginConfig> {
     const res = await this.pluginConfigService.getPluginConfig({
-      name: pluginName,
+      name,
       type: "builtIn",
     });
     return {

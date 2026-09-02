@@ -1,6 +1,6 @@
 <template>
   <div class="statistic-card">
-    <a-card>
+    <a-card :class="cardTone">
       <div class="data-item">
         <div class="header">
           <div class="title">
@@ -11,9 +11,9 @@
         </div>
         <div class="content">
           <div v-if="!slots.default" class="statistic">
-            <div v-if="count !== 0" class="value flex items-center w-full">
+            <div class="value flex items-center w-full">
               <div class="total flex-center flex-1 flex-col pointer" @click="goDetail(link)">
-                <span>{{ count }}</span>
+                <span>{{ count ?? 0 }}</span>
                 <span class="sub-title">{{ title }}</span>
               </div>
               <a-divider type="vertical h-10"></a-divider>
@@ -32,7 +32,13 @@
                 </div>
               </div>
             </div>
-            <a-empty v-else></a-empty>
+            <div v-if="helperText" class="helper-text mt-10">
+              <span>{{ helperText }}</span>
+              <strong v-if="helperValue" class="helper-value">{{ helperValue }}</strong>
+              <a-tooltip v-if="helperTooltip" :title="helperTooltip">
+                <fs-icon icon="mingcute:information-line" class="helper-icon" />
+              </a-tooltip>
+            </div>
           </div>
           <slot></slot>
         </div>
@@ -45,6 +51,7 @@
 </template>
 <script setup lang="ts">
 import { FsIcon } from "@fast-crud/fast-crud";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 const props = defineProps<{
   icon: string;
@@ -59,9 +66,21 @@ const props = defineProps<{
     title?: string;
     link?: any;
   }[];
+  helperText?: string;
+  helperValue?: string;
+  helperTooltip?: string;
 }>();
 const slots = defineSlots();
 const router = useRouter();
+const cardTone = computed(() => {
+  if (props.subCounts?.some(item => item.color === "red" && item.value > 0)) {
+    return "has-danger";
+  }
+  if (props.subCounts?.some(item => item.color === "yellow" && item.value > 0)) {
+    return "has-warning";
+  }
+  return "";
+});
 function goDetail(link: any) {
   if (!link) {
     return;
@@ -80,9 +99,35 @@ function goDetail(link: any) {
       color: rgba(242, 242, 242, 0.85) !important;
     }
   }
+
+  .statistic-card {
+    .ant-card.has-danger {
+      background: linear-gradient(135deg, rgba(92, 35, 35, 0.72), rgba(28, 28, 28, 0.96) 62%);
+    }
+
+    .ant-card.has-warning {
+      background: linear-gradient(135deg, rgba(91, 72, 25, 0.68), rgba(28, 28, 28, 0.96) 62%);
+    }
+
+    .helper-text {
+      color: rgba(242, 242, 242, 0.72);
+
+      .helper-value {
+        color: #8bd7a0;
+      }
+    }
+  }
 }
 .statistic-card {
   margin-bottom: 10px;
+
+  .ant-card.has-danger {
+    background: linear-gradient(135deg, rgba(255, 241, 240, 0.9), #fff 58%);
+  }
+
+  .ant-card.has-warning {
+    background: linear-gradient(135deg, rgba(255, 251, 230, 0.9), #fff 58%);
+  }
   .icon-text {
     display: inline-flex;
     justify-content: left;
@@ -143,6 +188,7 @@ function goDetail(link: any) {
           font-weight: 700;
           .total {
             color: hsl(var(--primary));
+
             .sub-title {
               font-size: 12px;
               font-weight: 400;
@@ -178,6 +224,31 @@ function goDetail(link: any) {
             .bg-gray {
               background: linear-gradient(90deg, #9e9e9e, #bdbdbd);
             }
+          }
+        }
+
+        .helper-text {
+          display: flex;
+          align-items: baseline;
+          justify-content: center;
+          gap: 4px;
+          margin-top: 6px;
+          color: #626262;
+          font-size: 12px;
+          font-weight: 400;
+          line-height: 20px;
+
+          .helper-value {
+            color: #52a26a;
+            font-size: 16px;
+            font-weight: 700;
+          }
+
+          .helper-icon {
+            cursor: help;
+            font-size: 14px;
+            margin-left: 2px;
+            vertical-align: -2px;
           }
         }
       }

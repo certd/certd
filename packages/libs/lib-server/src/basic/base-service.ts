@@ -114,6 +114,13 @@ export abstract class BaseService<T> {
     );
   }
 
+  async updateById(data: any) {
+    if (!data.id) {
+      throw new ValidateException("id 不能为空");
+    }
+    await this.addOrUpdate(data);
+  }
+
   /**
    * 删除
    * @param ids 删除的ID集合 如：[1,2,3] 或者 1,2,3
