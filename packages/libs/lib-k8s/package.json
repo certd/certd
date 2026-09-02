@@ -1,7 +1,7 @@
 {
   "name": "@certd/lib-k8s",
   "private": false,
-  "version": "1.44.0",
+  "version": "1.44.1",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -21,7 +21,7 @@
     "lint": "eslint --fix --ext .ts src"
   },
   "dependencies": {
-    "@certd/basic": "^1.44.0",
+    "@certd/basic": "^1.44.1",
     "@kubernetes/client-node": "0.21.0"
   },
   "devDependencies": {
