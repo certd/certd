@@ -712,6 +712,7 @@ export class PluginService extends BaseService<PluginEntity> {
     if (param.type === "builtIn") {
       return await super.add({
         disabled: false,
+        installed: true,
         ...param,
       });
     }
@@ -736,6 +737,7 @@ export class PluginService extends BaseService<PluginEntity> {
       disabled: false,
       ...param,
       ...plugin,
+      installed: true,
     });
 
     await this.registerById(res.id);
@@ -1009,13 +1011,14 @@ export class PluginService extends BaseService<PluginEntity> {
             const updateBean: Record<string, any> = {
               id: existingRecord.id,
               ...itemFromStore,
+              installed: false,
             };
             await this.updateById(updateBean);
           }
-
           continue;
         } else {
           itemFromStore.disabled = false;
+          itemFromStore.installed = false;
           await this.repository.save(itemFromStore);
         }
       }
