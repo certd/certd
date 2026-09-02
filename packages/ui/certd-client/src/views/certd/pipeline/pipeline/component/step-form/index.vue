@@ -263,8 +263,8 @@ function useStepForm() {
         currentStep.input[key] = column.default ?? column.value;
       }
     }
-    //设置系统初始值
-    const pluginSysConfig = await pluginStore.getPluginConfig({ name: pluginDefine.name, type: "builtIn" });
+    //设置系统初始值，必须放在这里设置，保证最新的系统值被清空后，这里也能跟着清空
+    const pluginSysConfig = await pluginStore.getPluginConfig({ name: pluginDefine.name, type: pluginDefine.type });
     if (pluginSysConfig.sysSetting?.input) {
       for (const key in pluginSysConfig.sysSetting?.input) {
         currentStep.input[key] = pluginSysConfig.sysSetting?.input[key];

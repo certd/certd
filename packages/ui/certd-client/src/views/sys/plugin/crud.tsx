@@ -383,7 +383,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               { label: t("certd.dns"), value: "dnsProvider" },
               { label: t("certd.deployPlugin"), value: "deploy" },
               { label: "通知", value: "notification" },
-              { label: "Addon", value: "addon" },
+              // { label: "Addon", value: "addon" },
             ],
           }),
           column: {
@@ -463,6 +463,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               name: PluginAuthorField,
               vModel: "modelValue",
             },
+            helper: "为保证插件名称引用一致性，作者一旦注册不允许修改",
             rules: [{ required: true, message: "请先注册并选择插件作者" }],
           },
           column: {
@@ -612,6 +613,16 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
           column: {
             show: false,
+          },
+          valueBuilder({ row }) {
+            if (typeof row.dependPlugins === "string") {
+              row.dependPlugins = yaml.load(row.dependPlugins);
+            }
+          },
+          valueResolve({ row }) {
+            if (row.dependPlugins && typeof row.dependPlugins === "object") {
+              row.dependPlugins = yaml.dump(row.dependPlugins);
+            }
           },
         },
         "extra.dependPackages": {

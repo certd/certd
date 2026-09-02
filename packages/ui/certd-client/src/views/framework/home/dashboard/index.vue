@@ -65,7 +65,7 @@
         <SimpleSteps></SimpleSteps>
       </div>
     </div>
-    <div class="warning">
+    <div v-if="noticeList.length > 0" class="warning">
       <notice-bar :list="noticeList"></notice-bar>
     </div>
 
@@ -84,11 +84,22 @@
             </template>
           </statistic-card>
         </a-col>
-        <!-- <a-col :md="6" :xs="24">
+
+        <a-col :md="6" :xs="24">
           <statistic-card :title="t('certd.dashboard.pipelineStatus')" :footer="false">
-            <pie-count v-if="count.pipelineStatusCount" :data="count.pipelineStatusCount"></pie-count>
+            <pie-count v-if="count.pipelineStatusCount" :data="count.pipelineStatusCount" />
           </statistic-card>
-        </a-col> -->
+        </a-col>
+        <a-col :md="6" :xs="24">
+          <statistic-card icon="fluent-color:data-trending-24" :title="t('certd.dashboard.recentRun')" :footer="false">
+            <day-count v-if="count.historyCountPerDay" :data="count.historyCountPerDay" :title="t('certd.dashboard.runCount')"></day-count>
+          </statistic-card>
+        </a-col>
+        <a-col :md="6" :xs="24">
+          <statistic-card icon="fluent-color:alert-urgent-24" :title="t('certd.dashboard.expiringCerts')">
+            <expiring-list v-if="count.expiringList" :data="count.expiringList"></expiring-list>
+          </statistic-card>
+        </a-col>
         <a-col :md="6" :xs="24">
           <statistic-card icon="fluent-color:certificate-24" :title="t('certd.dashboard.certCount')" :count="count.certCount" link="/cert/monitor/cert" :sub-counts="count.certStatusCount">
             <template v-if="count.certCount === 0" #default>
@@ -102,13 +113,29 @@
           </statistic-card>
         </a-col>
         <a-col :md="6" :xs="24">
-          <statistic-card icon="fluent-color:data-trending-24" :title="t('certd.dashboard.recentRun')" :footer="false">
-            <day-count v-if="count.historyCountPerDay" :data="count.historyCountPerDay" :title="t('certd.dashboard.runCount')"></day-count>
+          <statistic-card
+            icon="fluent-color:certificate-24"
+            :title="t('certd.dashboard.totalGeneratedCertCount')"
+            :count="count.totalGeneratedCertCount"
+            :sub-counts="count.generatedCertTypeCounts"
+            :helper-text="t('certd.dashboard.savedAmount')"
+            :helper-value="`¥${formatSavedAmount(count.totalSavedAmount)}`"
+            :helper-tooltip="t('certd.dashboard.savedAmountRule')"
+            :footer="false"
+          />
+        </a-col>
+        <a-col :md="6" :xs="24">
+          <statistic-card icon="fluent-color:link-multiple-24" :title="t('certd.dashboard.siteMonitorCount')" :count="count.siteCount" link="/cert/monitor/site" :sub-counts="count.siteStatusCount">
+            <template #footer>
+              <router-link to="/cert/monitor/site" class="flex"> <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" /> {{ t("certd.dashboard.manageSiteMonitor") }} </router-link>
+            </template>
           </statistic-card>
         </a-col>
         <a-col :md="6" :xs="24">
-          <statistic-card icon="fluent-color:alert-urgent-24" :title="t('certd.dashboard.expiringCerts')">
-            <expiring-list v-if="count.expiringList" :data="count.expiringList"></expiring-list>
+          <statistic-card icon="fluent-color:globe-24" :title="t('certd.dashboard.domainCount')" :count="count.domainCount" link="/cert/cert/domain" :sub-counts="count.domainStatusCount">
+            <template #footer>
+              <router-link to="/cert/cert/domain" class="flex"> <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" /> {{ t("certd.dashboard.manageDomain") }} </router-link>
+            </template>
           </statistic-card>
         </a-col>
       </a-row>
@@ -121,6 +148,7 @@
             <fs-icon icon="fluent-color:puzzle-piece-24" class="mr-5 fs-28" />
             <div class="mr-5">{{ t("certd.dashboard.supportedTasks") }}</div>
             <a-tag color="green">{{ pluginGroups.groups.all.plugins.length }}</a-tag>
+            <div class="helper">列表仅做展示，请创建流水线来使用它们</div>
           </div>
         </template>
         <a-row :gutter="10">
@@ -159,6 +187,7 @@ import { useRouter } from "vue-router";
 import * as api from "./api";
 import DayCount from "./charts/day-count.vue";
 import ExpiringList from "./charts/expiring-list.vue";
+import PieCount from "./charts/pie-count.vue";
 import NoticeBar from "./notice-bar.vue";
 import SuiteCard from "./suite-card.vue";
 import TutorialButton from "/@/components/tutorial/index.vue";
@@ -260,6 +289,10 @@ function goPipeline() {
 }
 
 const count: any = ref({});
+function formatSavedAmount(amountValue: number) {
+  const amount = Number(amountValue) || 0;
+  return Number.isInteger(amount) ? amount.toString() : amount.toFixed(2);
+}
 function transformStatusCount() {
   const data = count.value.pipelineStatusCount;
   const sorted = [
@@ -300,6 +333,33 @@ function transformStatusCount() {
     { name: t("certd.dashboard.certNoExpireCount"), value: certCount.notExpired, color: "green", link: { path: "/cert/monitor/cert", query: { expireStatus: "noExpired" } } },
   ];
   count.value.certCount = certCount.total;
+
+  const siteCount = count.value.siteCount;
+  count.value.siteStatusCount = [
+    { name: t("certd.dashboard.siteAbnormalCount"), value: siteCount.abnormal, color: "red", checkIcon: "mingcute:warning-fill:#f44336", link: { path: "/cert/monitor/site", query: { checkStatus: "error" } } },
+    { name: t("certd.dashboard.siteNormalCount"), value: siteCount.normal, color: "green" },
+  ];
+  count.value.siteCount = siteCount.total;
+
+  const domainCount = count.value.domainCount;
+  count.value.domainStatusCount = [
+    { name: t("certd.dashboard.domainExpiredCount"), value: domainCount.expired, color: "red", checkIcon: "mingcute:warning-fill:#f44336", link: { path: "/cert/cert/domain", query: { expirationStatus: "expired" } } },
+    { name: t("certd.dashboard.domainExpiringCount"), value: domainCount.expiring, color: "yellow", checkIcon: "mingcute:alert-fill:#ff9800" },
+    { name: t("certd.dashboard.domainNotExpiredCount"), value: domainCount.notExpired, color: "green" },
+  ];
+  count.value.domainCount = domainCount.total;
+
+  const genCertCount = count.value.genCertCount || {};
+  const singleDomainCertCount = Number(genCertCount.singleDomainCertCount) || 0;
+  const multiDomainCertCount = Number(genCertCount.multiDomainCertCount) || 0;
+  const wildcardCertCount = Number(genCertCount.wildcardCertCount) || 0;
+  count.value.totalGeneratedCertCount = singleDomainCertCount + multiDomainCertCount + wildcardCertCount;
+  count.value.generatedCertTypeCounts = [
+    { name: t("certd.dashboard.singleDomainCertShortCount"), value: singleDomainCertCount, color: "blue" },
+    { name: t("certd.dashboard.multiDomainCertShortCount"), value: multiDomainCertCount, color: "blue" },
+    { name: t("certd.dashboard.wildcardCertShortCount"), value: wildcardCertCount, color: "blue" },
+  ];
+  count.value.totalSavedAmount = singleDomainCertCount * (532 / 4) + multiDomainCertCount * (912 / 4) + wildcardCertCount * (2147 / 4);
 }
 async function loadCount() {
   count.value = await GetStatisticCount();

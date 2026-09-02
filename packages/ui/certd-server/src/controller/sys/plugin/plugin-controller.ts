@@ -3,6 +3,7 @@ import { merge } from "lodash-es";
 import { CrudController } from "@certd/lib-server";
 import {
   OnlinePluginAuthorAddReq,
+  OnlinePluginAuthorUpdateReq,
   OnlinePluginDependenciesReq,
   OnlinePluginInstallReq,
   OnlinePluginListReq,
@@ -103,11 +104,11 @@ export class PluginController extends CrudController<PluginService> {
     await this.auditLog({ content: "保存了公共插件配置" });
     return this.ok(res);
   }
-  @Post("/getPluginByName", { description: "sys:settings:view" })
-  async getPluginByName(@Body("name") name: string) {
+  @Post("/getSetting", { description: "sys:settings:view" })
+  async getSetting(@Body("name") name: string, @Body("type") type: string) {
     const res = await this.pluginConfigService.getPluginConfig({
-      name: name,
-      type: "builtIn",
+      name,
+      type,
     });
     return this.ok(res);
   }
@@ -192,6 +193,11 @@ export class PluginController extends CrudController<PluginService> {
     return this.ok(res);
   }
 
+  @Post("/online/author/update", { description: "sys:settings:edit", summary: "修改在线插件作者邮箱" })
+  async onlineAuthorUpdate(@Body(ALL) body: OnlinePluginAuthorUpdateReq) {
+    return this.ok(await this.service.updateOnlinePluginAuthor(body));
+  }
+
   @Post("/online/publish/info", { description: "sys:settings:view", summary: "查询本地插件发布信息" })
   async onlinePublishInfo(@Body(ALL) body: OnlinePluginPublishInfoReq) {
     const res = await this.service.getOnlinePluginPublishInfo(body);
@@ -201,6 +207,12 @@ export class PluginController extends CrudController<PluginService> {
   @Post("/export", { description: "sys:settings:edit", summary: "导出插件" })
   async export(@Body("id") id: number) {
     const res = await this.service.exportPlugin(id);
+    return this.ok(res);
+  }
+
+  @Post("/getPluginDefine", { description: "sys:settings:view", summary: "根据插件名称获取插件定义" })
+  async getPluginDefine(@Body("name") name: string) {
+    const res = await this.service.getPluginDefine(name);
     return this.ok(res);
   }
 }

@@ -90,7 +90,7 @@ input:
       5.  <b>自动匹配</b>：此处无需选择校验方式，需要在[域名管理](#/certd/cert/domain)中提前配置好校验方式
 
       6.  <b>DNS持久验证</b>：需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅
-      Let's Encrypt 测试环境可以申请
+      Let's Encrypt 测试环境 可以申请
     order: 0
   dnsProviderType:
     title: DNS解析服务商
@@ -180,7 +180,7 @@ input:
                 }else if (form.challengeType === 'dnses'){
                     return '给每个域名单独配置dns提供商'
                 }else if (form.challengeType === 'dns-persist'){
-                    return '请先创建并校验_validation-persist TXT持久记录，校验成功后才能提交流水线；当前仅 Let\'s Encrypt 测试环境可以申请'
+                    return '请先创建并校验_validation-persist TXT持久记录，校验成功后才能提交流水线；当前仅 Let\'s Encrypt 测试环境 可以申请'
                 }
             })
           }
@@ -207,7 +207,7 @@ input:
       return {
               component:{
                 on: {
-                  "selected-change": (scope)=>{
+                  "selectedChange": (scope)=>{
                     // 切换颁发机构后，清空已选择的ACME账号，避免账号与颁发机构不匹配
                     let form = scope.form || {};
                     form = form.input || form.body || form;

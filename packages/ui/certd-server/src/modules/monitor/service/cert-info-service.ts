@@ -7,6 +7,7 @@ import { logger, utils } from "@certd/basic";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
 import { AcmeService } from "../../../plugins/plugin-cert/plugin/cert-plugin/acme.js";
 import { PipelineEntity } from "../../pipeline/entity/pipeline.js";
+import { UserSettingsService } from "../../mine/service/user-settings-service.js";
 
 export type UploadCertReq = {
   id?: number;
@@ -38,6 +39,9 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
 
   @InjectEntityModel(PipelineEntity)
   pipelineRepository: Repository<PipelineEntity>;
+
+  @Inject()
+  userSettingsService: UserSettingsService;
 
   //@ts-ignore
   getRepository() {
@@ -213,6 +217,12 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         status: CertStatus.inactive,
       }
     );
+    if (certUserId != null) {
+      const domains = cert?.crt ? new CertReader(cert).getAltNames() : [];
+      const wildcardCount = domains.filter(domain => String(domain).trim().toLowerCase().startsWith("*.")).length;
+      const field = wildcardCount > 0 ? "genCertCount.wildcardCertCount" : domains.length > 1 ? "genCertCount.multiDomainCertCount" : "genCertCount.singleDomainCertCount";
+      await this.userSettingsService.incrementStatistic(certUserId, certProjectId, field);
+    }
     return bean;
   }
 
@@ -243,20 +253,28 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     }
     const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
     const taskIds = applyTasks.map(task => task.taskId);
+
+    const foundHistory = await this.repository.find({
+      where: {
+        pipelineId,
+        status: CertStatus.active,
+        ...userProjectQuery,
+      },
+    });
+
     for (const task of applyTasks) {
       // 每个申请任务维护一条 active 记录（不重复创建，最新真证书申请成功后旧记录会被标记为 inactive）
-      const found = await this.repository.findOne({
-        where: {
-          pipelineId,
-          taskId: task.taskId,
-          status: CertStatus.active,
-          ...userProjectQuery,
-        },
-      });
       const bean = new CertInfoEntity();
+      let found = foundHistory.find(item => item.taskId === task.taskId);
+      if (!found && foundHistory.length == 1 && applyTasks.length == 1) {
+        found = foundHistory[0];
+      }
       if (found) {
         //已有 active 记录（空占位或真证书）：更新域名信息
         bean.id = found.id;
+        if (!found.taskId) {
+          bean.taskId = task.taskId;
+        }
       } else {
         //创建空证书记录
         bean.pipelineId = pipelineId;
@@ -281,7 +299,6 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       taskId: Or(IsNull(), Not(In(taskIds))),
     });
   }
-
   /**
    * 根据流水线类型推导证书来源（与流水线保存逻辑保持一致）
    */

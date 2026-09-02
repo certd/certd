@@ -33,6 +33,7 @@ import { ProjectService } from "../../sys/enterprise/service/project-service.js"
 import { CertApplyStepInputPatch, updateCertApplyStepInputs } from "./pipeline-batch-update.js";
 import { calcNextSuiteCountUsed } from "./pipeline-suite-limit.js";
 import { CertApplyTemplateParams } from "../../cert/service/cert-apply-template-fields.js";
+import { UserSettingsService } from "../../mine/service/user-settings-service.js";
 const runningTasks: Map<string | number, Executor> = new Map();
 
 /**
@@ -90,6 +91,8 @@ export class PipelineService extends BaseService<PipelineEntity> {
 
   @Inject()
   projectService: ProjectService;
+  @Inject()
+  userSettingsService: UserSettingsService;
 
   //@ts-ignore
   getRepository() {
@@ -786,6 +789,7 @@ export class PipelineService extends BaseService<PipelineEntity> {
     };
 
     const historyId = await this.historyService.start(entity, triggerType);
+    await this.userSettingsService.incrementStatistic(entity.userId, entity.projectId, "genCertCount.totalPipelineRuns");
     const sysInfo: SysInfo = {};
     if (isComm()) {
       const siteInfo = await this.sysSettingsService.getSetting<SysSiteInfo>(SysSiteInfo);
@@ -915,6 +919,15 @@ export class PipelineService extends BaseService<PipelineEntity> {
     }
     return pipelineEntity.projectId;
   }
+
+  async getUserProjectId(pipelineId: number) {
+    const pipelineEntity = await this.repository.findOne({
+      select: { userId: true, projectId: true },
+      where: { id: pipelineId },
+    });
+    return pipelineEntity ? { userId: pipelineEntity.userId, projectId: pipelineEntity.projectId } : null;
+  }
+
   private async saveHistory(history: RunHistory) {
     //修改pipeline状态
     const pipelineEntity = new PipelineEntity();

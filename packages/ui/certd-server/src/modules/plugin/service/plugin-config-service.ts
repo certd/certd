@@ -4,7 +4,8 @@ import { PluginService } from "./plugin-service.js";
 export type PluginConfig = {
   name: string;
   disabled?: boolean;
-  sysSetting: {
+  type: string;
+  sysSetting?: {
     input?: Record<string, any>;
     metadata?: Record<string, any>;
   };
@@ -38,6 +39,7 @@ export class PluginConfigService {
 
   async saveCommPluginConfig(config: CommPluginConfig) {
     config.CertApply.name = "CertApply";
+    config.CertApply.type = "builtIn";
     await this.savePluginConfig(config.CertApply);
   }
 
@@ -47,17 +49,23 @@ export class PluginConfigService {
     if (!sysSetting) {
       throw new Error(`${name}.sysSetting is required`);
     }
-    const pluginEntity = await this.pluginService.getRepository().findOne({
-      where: { name },
+    let pluginEntity: any = await this.pluginService.getRepository().findOne({
+      where: { fullName: name, type: config.type },
     });
     if (!pluginEntity) {
-      await this.pluginService.add({
-        name,
+      if (config.type !== "builtIn") {
+        //只有内置插件才需要add config
+        throw new Error(`${name}.type must be builtIn`);
+      }
+      pluginEntity = {
+        name: name,
+        fullName: name,
         sysSetting: JSON.stringify(sysSetting),
         type: "builtIn",
         disabled: false,
-        author: "certd",
-      });
+      };
+      const { id } = await this.pluginService.add(pluginEntity);
+      pluginEntity.id = id;
     } else {
       const setting = JSON.parse(pluginEntity.sysSetting || "{}");
       if (sysSetting.metadata) {
@@ -66,18 +74,18 @@ export class PluginConfigService {
       if (sysSetting.input) {
         setting.input = sysSetting.input;
       }
-      await this.pluginService.getRepository().update({ name }, { sysSetting: JSON.stringify(setting) });
+      await this.pluginService.getRepository().update({ fullName: name }, { sysSetting: JSON.stringify(setting) });
     }
   }
 
   async get(req: PluginFindReq) {
     if (!req.name && !req.id) {
-      throw new Error("plugin s name or id is required");
+      throw new Error("plugin name or id is required");
     }
     return await this.pluginService.getRepository().findOne({
       where: {
         id: req.id,
-        name: req.name,
+        fullName: req.name,
         type: req.type,
       },
     });
@@ -98,8 +106,9 @@ export class PluginConfigService {
       sysSetting = JSON.parse(plugin.sysSetting);
     }
     return {
-      name: plugin.name,
+      name: plugin.fullName,
       disabled: plugin.disabled,
+      type: plugin.type,
       sysSetting,
     };
   }
