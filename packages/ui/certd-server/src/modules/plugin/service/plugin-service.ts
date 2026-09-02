@@ -94,11 +94,11 @@ export type OnlinePluginAuthorGetReply = {
 };
 
 export type OnlinePluginAuthorAddReq = {
-  name: string;
+  name?: string;
   displayName?: string;
   avatar?: string;
   desc?: string;
-  email: string;
+  email?: string;
 };
 export type OnlinePluginAuthorUpdateReq = { email: string };
 
