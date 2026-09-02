@@ -34,7 +34,7 @@ registry.cn-shenzhen.aliyuncs.com/certd/certd:[version-][system-][latest/stable]
 #### 3. 镜像地址：
 
 | 镜像仓库 | 最新预览版  | slim版 | armv7版 | 
-| --- | --- | --- | 
+| --- | --- | --- |  --- |    
 | 阿里云【默认】 | `registry.cn-shenzhen.aliyuncs.com/certd/certd:latest` | `certd:slim` | `certd:armv7` |
 | Docker Hub | `certd/certd:latest` | `certd:slim` | `certd:armv7` |
 | GitHub Packages | `ghcr.io/certd/certd:latest` | `certd:slim` | `certd:armv7` |
