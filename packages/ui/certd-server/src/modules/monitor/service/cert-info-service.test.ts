@@ -23,6 +23,14 @@ function createSelfSignedCert(domain = "example.com") {
   };
 }
 
+function createCertInfoService() {
+  const service = new CertInfoService();
+  service.userSettingsService = {
+    async incrementStatistic() {},
+  } as any;
+  return service;
+}
+
 describe("CertInfoService", () => {
   it("counts wildcard domains by normalized prefix", () => {
     const service = new CertInfoService();
@@ -32,7 +40,7 @@ describe("CertInfoService", () => {
 
   describe("updateCertByPipelineId 多条模式", () => {
     it("新建激活证书并绑定流水线id、继承已有记录来源", async () => {
-      const service = new CertInfoService();
+      const service = createCertInfoService();
       // 该流水线已有旧证书记录（upload 来源），但没有空证书记录
       const existing = { id: 10, userId: 2, projectId: 3, pipelineId: 1, fromType: "upload", status: CertStatus.inactive };
       service.repository = {
@@ -74,8 +82,11 @@ describe("CertInfoService", () => {
     });
 
     it("无已有记录时按流水线类型推导来源，并把同流水线旧激活证书标记为未激活", async () => {
-      const service = new CertInfoService();
+      const service = createCertInfoService();
       service.repository = {
+        async find() {
+          return [];
+        },
         async findOne() {
           return null;
         },
@@ -117,8 +128,11 @@ describe("CertInfoService", () => {
     });
 
     it("无已有记录且流水线类型无对应来源时，使用传入来源", async () => {
-      const service = new CertInfoService();
+      const service = createCertInfoService();
       service.repository = {
+        async find() {
+          return [];
+        },
         async findOne() {
           return null;
         },
@@ -143,8 +157,11 @@ describe("CertInfoService", () => {
     });
 
     it("传申请任务id时，新证书记录任务id，且只把同任务旧证书标记为未激活", async () => {
-      const service = new CertInfoService();
+      const service = createCertInfoService();
       service.repository = {
+        async find() {
+          return [];
+        },
         async findOne() {
           return null;
         },
@@ -182,10 +199,13 @@ describe("CertInfoService", () => {
     });
 
     it("存在空证书记录时，申请成功后直接更新占位记录，不新建记录", async () => {
-      const service = new CertInfoService();
+      const service = createCertInfoService();
       // 保存流水线时创建的空证书记录（占位，certInfo 为空，已记录申请任务id）
       const emptyRecord = { id: 184, userId: 2, projectId: 1, pipelineId: 209, fromType: "pipeline", status: CertStatus.active, taskId: "PgaUhdeO1DWB_BLbIlzqV", certInfo: null };
       service.repository = {
+        async find() {
+          return [];
+        },
         async findOne() {
           // 既有记录查询与空证书记录查询都命中同一条占位记录
           return emptyRecord;
@@ -228,7 +248,7 @@ describe("CertInfoService", () => {
     });
 
     it("updateCertByPipelineId 从流水线配置解析并记录 ACME账号授权id（供吊销读表，不再查流水线）", async () => {
-      const service = new CertInfoService();
+      const service = createCertInfoService();
       service.repository = {
         async findOne(args: any) {
           const where = args?.where ?? args;
@@ -282,6 +302,9 @@ describe("CertInfoService", () => {
     it("updateDomains 保存流水线时为申请任务创建空证书记录（记录任务id）", async () => {
       const service = new CertInfoService();
       service.repository = {
+        async find() {
+          return [];
+        },
         async findOne() {
           return null;
         },
@@ -312,6 +335,9 @@ describe("CertInfoService", () => {
       const service = new CertInfoService();
       const existing = { id: 10, pipelineId: 1, userId: 2, projectId: 3, fromType: "auto", taskId: "apply-step-1", status: CertStatus.active };
       service.repository = {
+        async find() {
+          return [existing];
+        },
         async findOne() {
           return existing;
         },
@@ -337,6 +363,9 @@ describe("CertInfoService", () => {
       const service = new CertInfoService();
       let findOneCount = 0;
       service.repository = {
+        async find() {
+          return [];
+        },
         async findOne() {
           findOneCount++;
           return null;
@@ -374,6 +403,9 @@ describe("CertInfoService", () => {
     it("updateDomains 删除孤儿 active 记录（流水线中已不存在的任务，含 taskId 为空的遗留记录）", async () => {
       const service = new CertInfoService();
       service.repository = {
+        async find() {
+          return [];
+        },
         async findOne() {
           return null;
         },
