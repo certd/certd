@@ -69,5 +69,5 @@
     "typeorm": "^0.3.20",
     "typescript": "^5.4.2"
   },
-  "gitHead": "fe738fa7d4622016ed7d506c501df85393b6c857"
+  "gitHead": "67f3daae625ba734e7e390dd84acc9e3bc1930bc"
 }
