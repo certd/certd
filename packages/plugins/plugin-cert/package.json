@@ -1,7 +1,7 @@
 {
   "name": "@certd/plugin-cert",
   "private": false,
-  "version": "1.44.1",
+  "version": "1.44.2",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,7 +20,7 @@
     "lint": "eslint --fix --ext .ts src"
   },
   "dependencies": {
-    "@certd/plugin-lib": "^1.44.1"
+    "@certd/plugin-lib": "^1.44.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.12",
