@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.44.2](https://github.com/certd/certd/compare/v1.44.1...v1.44.2) (2026-09-03)
+
+### Bug Fixes
+
+* 修复插件市场插件安装无效的bug ([15d2bd8](https://github.com/certd/certd/commit/15d2bd8484a9ddd142bf4ef03d839c74405f9e6d))
+* preserve Route53 TXT record values ([#791](https://github.com/certd/certd/issues/791)) ([f5430a8](https://github.com/certd/certd/commit/f5430a8925cf6cf4e16c75f2358fbd78437e6705))
+
 ## [1.44.1](https://github.com/certd/certd/compare/v1.44.0...v1.44.1) (2026-09-02)
 
 ### Bug Fixes
