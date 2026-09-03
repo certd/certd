@@ -1007,7 +1007,8 @@ describe("PluginService online plugins", () => {
     } as any;
     service.add = async (param: any) => {
       param.id = 1;
-      return { id: 1 };
+      savedPlugin = param;
+      return param;
     };
     service.unRegisterById = async () => {};
     service.registerById = async () => {};
@@ -1111,6 +1112,9 @@ describe("PluginService online plugins", () => {
       return null;
     };
     service.repository = {
+      async findOne() {
+        return null;
+      },
       async save(plugin: any) {
         plugin.id = 8;
         savedPlugin = plugin;
@@ -1124,7 +1128,13 @@ describe("PluginService online plugins", () => {
       content: "name: BaishanUpdateCert666\npluginType: deploy\nauthor: greper2\ncontent: |\n  return class Demo {}\n",
     });
 
-    assert.equal(findOptions.length, 1);
+    assert.equal(findOptions.length, 2);
+    for (const options of findOptions) {
+      assert.deepEqual(options.where, {
+        type: "store",
+        fullName: "greper2/BaishanUpdateCert666",
+      });
+    }
     assert.equal(savedPlugin.type, "store");
     assert.equal(savedPlugin.installed, true);
   });
