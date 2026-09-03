@@ -75,7 +75,10 @@ export abstract class BaseService<T> {
     if (!id) {
       throw new ValidateException("id不能为空");
     }
-    const info = await this.getRepository().findOneBy({ id } as any);
+    const info = await this.getRepository().findOne({
+      //@ts-ignore
+      where: { id },
+    });
     if (info && infoIgnoreProperty) {
       for (const property of infoIgnoreProperty) {
         delete info[property];
