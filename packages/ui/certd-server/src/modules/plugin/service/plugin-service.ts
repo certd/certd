@@ -1603,14 +1603,14 @@ export class PluginService extends BaseService<PluginEntity> {
     }
     if (!old) {
       //add
-      await super.add(pluginEntity);
+      await this.add(pluginEntity);
     } else {
       if (!req.override) {
         throw new Error(`插件${loaded.author}/${loaded.name}已存在`);
       }
       pluginEntity.id = old.id;
       //update
-      await this.updateById(pluginEntity);
+      await this.update(pluginEntity);
     }
 
     return {

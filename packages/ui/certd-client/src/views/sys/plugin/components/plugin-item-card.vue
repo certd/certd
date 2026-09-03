@@ -89,7 +89,7 @@
 
     <div class="plugin-card__meta">
       <template v-if="source === 'local'">
-        <a-tooltip :title="toggleTitle">
+        <a-tooltip v-if="plugin.showDisabled" :title="toggleTitle">
           <a-tag class="plugin-status-tag" :class="{ 'is-loading': isActionLoading('toggle') }" :color="plugin.disabled ? 'default' : 'green'" @click.stop="togglePlugin">
             {{ plugin.disabled ? t("certd.onlinePluginDisabled") : t("certd.onlinePluginEnabled") }}
           </a-tag>
@@ -99,7 +99,7 @@
         <a-tag v-if="plugin.group">{{ plugin.group }}</a-tag>
       </template>
       <template v-else-if="!simple">
-        <a-tooltip v-if="plugin.installed && plugin.id" :title="toggleTitle">
+        <a-tooltip v-if="plugin.installed && plugin.id && plugin.showDisabled" :title="toggleTitle">
           <a-tag class="plugin-status-tag" :class="{ 'is-loading': isActionLoading('toggle') }" :color="plugin.disabled ? 'default' : 'green'" @click.stop="togglePlugin">
             {{ plugin.disabled ? t("certd.onlinePluginDisabled") : t("certd.onlinePluginEnabled") }}
           </a-tag>
@@ -147,6 +147,7 @@ import PluginEditDialogBody from "./plugin-edit-dialog-body.vue";
 import { usePluginStore } from "/@/store/plugin";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useI18n } from "/src/locales";
+import { useSettingStore } from "/@/store/settings";
 
 defineOptions({
   name: "PluginItemCard",
@@ -183,6 +184,7 @@ const editDialogBodyRef = ref();
 
 type PluginCardAction = "edit" | "export" | "publish" | "config" | "install" | "uninstall" | "remove" | "toggle";
 
+const settingStore = useSettingStore();
 const pluginCardState = computed(() => {
   const isLocal = props.source === "local";
   const isCloudPlugin = Number(props.plugin.developerId) > 0;
@@ -190,7 +192,6 @@ const pluginCardState = computed(() => {
   const isAvailableLocally = isLocal || !!props.plugin.installed;
   const canEditPlugin = props.editable === true;
   const canManagePlugin = !isBuiltInPlugin && canEditPlugin && isAvailableLocally;
-
   return {
     editPluginId: props.plugin.id,
     isLocal,
@@ -200,9 +201,10 @@ const pluginCardState = computed(() => {
     canManagePlugin,
     canExportPlugin: canManagePlugin,
     showEditButton: canManagePlugin,
-    showConfigButton: !!props.showConfig,
+    showConfigButton: !!props.showConfig && isAvailableLocally && settingStore.isComm,
     isInstalled: isCloudPlugin && !!props.plugin.installed,
     isDisabled: !!props.plugin.disabled,
+    showDisabled: settingStore.isComm,
     requiresVip: props.plugin.vip === "plus" || props.plugin.needPlus === true,
     canRemovePlugin: isLocal && canManagePlugin,
     isBuiltInPlugin,
