@@ -1,5 +1,8 @@
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { PluginService } from "./plugin-service.js";
+import { accessRegistry, notificationRegistry, pluginRegistry } from "@certd/pipeline";
+import { dnsProviderRegistry } from "@certd/plugin-lib";
+import { addonRegistry } from "@certd/lib-server";
 
 export type PluginConfig = {
   name: string;
@@ -66,15 +69,55 @@ export class PluginConfigService {
       };
       const { id } = await this.pluginService.add(pluginEntity);
       pluginEntity.id = id;
+      this.loadPluginSetting(name, sysSetting);
     } else {
       const setting = JSON.parse(pluginEntity.sysSetting || "{}");
       if (sysSetting.metadata) {
         setting.metadata = sysSetting.metadata;
       }
       if (sysSetting.input) {
+        //如果没有新提交，不覆盖旧的input
         setting.input = sysSetting.input;
       }
       await this.pluginService.getRepository().update({ fullName: name }, { sysSetting: JSON.stringify(setting) });
+      this.loadPluginSetting(name, setting);
+    }
+  }
+
+  async loadPluginSetting(name: string, sysSetting: any) {
+    
+    let  pluginDefine = null;
+    if (!pluginDefine){
+      pluginDefine = accessRegistry.getDefine(name);
+    }
+    if (!pluginDefine){
+      pluginDefine = pluginRegistry.getDefine(name);
+    }
+    if (!pluginDefine){
+      pluginDefine = dnsProviderRegistry.getDefine(name);
+    }
+    if (!pluginDefine){
+      pluginDefine = addonRegistry.getDefine(name);
+    }
+    if (!pluginDefine){
+      pluginDefine = notificationRegistry.getDefine(name);
+    }
+    if (!pluginDefine){
+      return
+    }
+    pluginDefine.sysSetting = sysSetting;
+  }
+
+  async loadAllPluginSetting() {
+    const pluginSettings = await this.pluginService.getRepository().find({
+      select:{
+        fullName: true,
+        type: true,
+        sysSetting: true,
+      }
+    });
+    for (const plugin of pluginSettings) {
+      this.loadPluginSetting(plugin.fullName, JSON.parse(plugin.sysSetting || "{}"));
     }
   }
 

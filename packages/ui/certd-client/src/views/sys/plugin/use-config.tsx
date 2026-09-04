@@ -49,7 +49,7 @@ export function usePluginConfig() {
                 }
               }
               const res = await api.savePluginSetting({
-                name: row.fullName,
+                name: row.fullName || row.name,
                 sysSetting: {
                   metadata: {
                     input: newForm,
