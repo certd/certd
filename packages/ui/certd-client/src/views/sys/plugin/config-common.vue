@@ -113,7 +113,8 @@ const onFinishFailed = (errorInfo: any) => {
 const { openConfigDialog } = usePluginConfig();
 
 async function doPluginConfig() {
-  const certApplyInfo = await getPluginSetting("CertApply");
+  const certApplyInfo: any = await getPluginSetting("CertApply");
+  certApplyInfo.pluginType = "plugin";
   await openConfigDialog({
     row: certApplyInfo,
     onSuccess: async () => {
