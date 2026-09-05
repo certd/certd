@@ -27,10 +27,11 @@ export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
   accessId!: string;
 
   @TaskInput({
-    title: "证书ID",
-    helper: "要部署的 Fastly 证书ID。如果是前置任务上传的，可以在前置任务的高级设置中获取输出变量",
+    title: "Fastly 证书ID",
+    helper: "选择前置【Fastly-上传证书到Fastly】任务输出的 Fastly 证书ID",
     component: {
-      placeholder: "例如: tls_cert_xxx 或填入变量",
+      name: "output-selector",
+      from: ["FastlyUploadCert"],
     },
     required: true,
   })
