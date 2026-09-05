@@ -1,0 +1,37 @@
+name: DemoAccess
+icon: logos:airflow-icon
+title: Demo-授权插件示例  # 模块-插件名
+group: null
+desc: 这只是一个示例
+version: 1.0.0
+pluginType: access
+author: greper
+input:
+  username:
+    title: 用户名
+    required: true
+    encrypt: false
+    component:
+      name: a-input
+      allowClear: true
+  password:
+    title: 密码
+    required: true
+    encrypt: true
+    component:
+      name: a-input
+      allowClear: true
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+content: |
+
+  // 必须使用 await import 来引入模块
+  const { BaseAccess } = await import("@certd/pipeline")
+  // 需要返回一个继承BaseAccess的类
+  return class DemoAccess extends BaseAccess {
+    // 授权的字段，跟左边input一一对应
+    username;
+    password;
+  }

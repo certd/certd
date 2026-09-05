@@ -160,7 +160,7 @@ export class VolcengineDeployToALB extends AbstractTaskPlugin {
     const service = await this.getAlbService();
     for (const listener of this.listenerList) {
       this.logger.info(`开始部署监听器${listener}证书`);
-      if (this.certType === "default") {
+      if (this.certType === "default" || !this.certType) {
         // 部署默认证书
         const res = await service.request({
           action: "ModifyListenerAttributes",

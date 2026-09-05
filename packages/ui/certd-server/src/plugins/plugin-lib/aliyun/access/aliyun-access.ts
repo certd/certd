@@ -1,4 +1,4 @@
-import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
+﻿import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
 import { AliyunClientV2 } from "../lib/aliyun-client-v2.js";
 import { AliyunSslClient } from "../lib/ssl-client.js";
 @IsAccess({
@@ -45,7 +45,7 @@ export class AliyunAccess extends BaseAccess {
   }
 
   async getStsClient() {
-    const StsClient = await import("@alicloud/sts-sdk");
+    const StsClient = await this.importRuntime("@alicloud/sts-sdk");
 
     // 配置凭证
     const sts = new StsClient.default({

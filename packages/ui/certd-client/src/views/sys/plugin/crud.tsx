@@ -1,18 +1,21 @@
 import * as api from "./api";
 import { useI18n } from "/src/locales";
 import { Ref, ref, computed } from "vue";
-import { useRouter } from "vue-router";
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
-import { Modal } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 //@ts-ignore
 import yaml from "js-yaml";
 import { usePluginImport } from "./use-import";
+import KvInput from "/@/components/plugins/common/kv-input.vue";
+import DependPluginsInput from "./components/depend-plugins-input.vue";
 import { usePluginConfig } from "./use-config";
 import { useSettingStore } from "/src/store/settings/index";
 import { usePluginStore } from "/@/store/plugin";
+import PluginAuthorField from "./components/plugin-author-field.vue";
+import { usePluginAiDev } from "./use-ai-dev";
+import { useOnlineInstall } from "./use-online-install";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
-  const router = useRouter();
   const { t } = useI18n();
 
   let lastType = "";
@@ -21,6 +24,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       query.page.offset = 0;
     }
     lastType = query?.query?.type;
+    const queryData = query.query || {};
+    const sortBy = queryData.sortBy;
+    delete queryData.sortBy;
+    if (sortBy === "score" || sortBy === "downloadCount") {
+      query.sort = {
+        prop: sortBy,
+        asc: false,
+      };
+    } else {
+      delete query.sort;
+    }
     return await api.GetList(query);
   };
   const editRequest = async ({ form, row }: EditReq) => {
@@ -37,14 +51,124 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     return res;
   };
 
+  // const infoRequest = async ({ row }: AddReq) => {
+  //   return await api.GetObj(row.id);
+  // };
+
   const selectedRowKeys: Ref<any[]> = ref([]);
   context.selectedRowKeys = selectedRowKeys;
 
   const { openImportDialog } = usePluginImport();
   const { openConfigDialog } = usePluginConfig();
+  const { openAiDevDialog } = usePluginAiDev();
+  const { installOnlinePluginChain, resolveOnlinePluginDependencies } = useOnlineInstall();
 
   const settingStore = useSettingStore();
   const pluginStore = usePluginStore();
+  const syncLoading = ref(false);
+  const upgradeAllLoading = ref(false);
+  const lastSyncTime = ref(0);
+  const autoSyncInterval = 30 * 24 * 60 * 60 * 1000;
+  const syncButtonTitle = computed(() => {
+    if (!lastSyncTime.value) {
+      return t("certd.onlinePluginNotSynced");
+    }
+    return t("certd.onlinePluginLastSyncTime", {
+      time: formatSyncTime(lastSyncTime.value),
+    });
+  });
+
+  function formatSyncTime(time: number) {
+    return new Date(time).toLocaleString();
+  }
+
+  function needAutoSync(time: number) {
+    if (!time) {
+      return true;
+    }
+    return Date.now() - time > autoSyncInterval;
+  }
+
+  function isEditablePlugin(row: any) {
+    return row.editable === true;
+  }
+
+  async function syncOnlinePlugins(options?: { showSuccess?: boolean }) {
+    if (syncLoading.value) {
+      return;
+    }
+    syncLoading.value = true;
+    try {
+      await api.OnlinePluginSync();
+      const setting = await api.OnlinePluginSetting();
+      lastSyncTime.value = setting.lastSyncTime || Date.now();
+      await pluginStore.reload();
+      crudExpose.doRefresh();
+      if (options?.showSuccess !== false) {
+        notification.success({ message: t("certd.onlinePluginSyncSuccess") });
+      }
+    } finally {
+      syncLoading.value = false;
+    }
+  }
+
+  async function upgradeAllOnlinePlugins() {
+    if (upgradeAllLoading.value) {
+      return;
+    }
+
+    upgradeAllLoading.value = true;
+    const failedPlugins: string[] = [];
+    try {
+      const onlinePlugins = await api.OnlinePluginList({});
+      const pluginsToUpgrade = onlinePlugins.filter(plugin => {
+        return plugin.installed && plugin.upgradeAvailable && !!plugin.fullName && !!plugin.latest;
+      });
+      if (pluginsToUpgrade.length === 0) {
+        notification.info({ message: t("certd.onlinePluginNoUpgradeAvailable") });
+        return;
+      }
+
+      for (const plugin of pluginsToUpgrade) {
+        try {
+          const dependencies = await resolveOnlinePluginDependencies(plugin);
+          await installOnlinePluginChain(dependencies, plugin, {
+            version: plugin.latest,
+            silent: true,
+          });
+        } catch (error) {
+          failedPlugins.push(plugin.title || plugin.fullName);
+        }
+      }
+      await pluginStore.reload();
+      crudExpose.doRefresh();
+
+      if (failedPlugins.length === 0) {
+        notification.success({ message: t("certd.onlinePluginUpgradeAllSuccess", { count: pluginsToUpgrade.length }) });
+        return;
+      }
+      notification.warning({
+        message: t("certd.onlinePluginUpgradeAllPartialFailure", {
+          successCount: pluginsToUpgrade.length - failedPlugins.length,
+          failedNames: failedPlugins.join("、"),
+        }),
+      });
+    } finally {
+      upgradeAllLoading.value = false;
+    }
+  }
+
+  async function loadOnlinePluginSetting() {
+    const setting = await api.OnlinePluginSetting();
+    lastSyncTime.value = setting.lastSyncTime || 0;
+    if (needAutoSync(lastSyncTime.value)) {
+      await syncOnlinePlugins({ showSuccess: false });
+    }
+  }
+
+  loadOnlinePluginSetting().catch(e => {
+    console.warn("load online plugin setting failed", e);
+  });
   return {
     crudOptions: {
       settings: {
@@ -66,6 +190,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         addRequest,
         editRequest,
         delRequest,
+        // infoRequest,
       },
       actionbar: {
         buttons: {
@@ -83,10 +208,59 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               await openImportDialog({ crudExpose });
             },
           },
+          aiDev: {
+            show: true,
+            icon: "ion:sparkles-outline",
+            text: "AI 开发插件",
+            type: "primary",
+            async click() {
+              await openAiDevDialog();
+            },
+          },
+          syncOnline: {
+            show: true,
+            icon: "ion:sync-outline",
+            type: "primary",
+            text: t("certd.onlinePluginSync"),
+            tooltip: { title: syncButtonTitle },
+            loading: syncLoading,
+            async click() {
+              await syncOnlinePlugins();
+            },
+          },
+          upgradeAllOnline: {
+            show: true,
+            icon: "carbon:upgrade",
+            type: "primary",
+            text: t("certd.onlinePluginUpgradeAll"),
+            loading: upgradeAllLoading,
+            async click() {
+              await upgradeAllOnlinePlugins();
+            },
+          },
+          clearRuntimeDeps: {
+            show: true,
+            icon: "ion:trash-outline",
+            text: t("certd.clearRuntimeDeps"),
+            tooltip: { title: t("certd.clearRuntimeDepsTooltip") },
+            type: "primary",
+            danger: true,
+            async click() {
+              Modal.confirm({
+                title: t("certd.confirm"),
+                content: t("certd.clearRuntimeDepsConfirm"),
+                async onOk() {
+                  await api.ClearRuntimeDeps();
+                  notification.success({ message: t("certd.clearRuntimeDepsSuccess") });
+                },
+              });
+            },
+          },
         },
       },
       table: {
-        rowKey: "name",
+        show: false,
+        rowKey: "fullName",
         remove: {
           afterRemove: async context => {
             await pluginStore.reload();
@@ -101,18 +275,27 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         buttons: {
           edit: {
             show: compute(({ row }) => {
-              return row.type === "custom";
+              return isEditablePlugin(row);
             }),
           },
           copy: {
             show: compute(({ row }) => {
-              return row.type === "custom";
+              return isEditablePlugin(row);
             }),
+            async click({ row }) {
+              const copyRow = { ...row };
+              delete copyRow.fullName;
+              delete copyRow.id;
+              crudExpose.openCopy({
+                row: copyRow,
+              });
+            },
           },
           remove: {
             order: 999,
+            //@ts-ignore
             show: compute(({ row }) => {
-              return row.type === "custom";
+              return row.type === "custom" || row.type === "store";
             }),
           },
           export: {
@@ -120,8 +303,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             icon: "ion:cloud-download-outline",
             title: t("certd.export"),
             type: "link",
+            //@ts-ignore
             show: compute(({ row }) => {
-              return row.type === "custom";
+              return isEditablePlugin(row);
             }),
             async click({ row }) {
               const content = await api.ExportPlugin(row.id);
@@ -147,7 +331,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             async click({ row }) {
               await openConfigDialog({
                 row,
-                crudExpose,
+                onSuccess: async () => {
+                  crudExpose.doRefresh();
+                },
               });
             },
           },
@@ -162,14 +348,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       },
       form: {
         onSuccess(opts: any) {
-          if (opts.res?.id) {
-            router.push({
-              name: "SysPluginEdit",
-              query: {
-                id: opts.res.id,
-              },
-            });
-          }
+          crudExpose.doRefresh();
+          pluginStore.clear();
         },
       },
       columns: {
@@ -180,6 +360,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: true,
             component: {
               disabled: false,
+            },
+            col: {
+              span: 3,
             },
           },
           form: {
@@ -199,6 +382,8 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               { label: t("certd.auth"), value: "access" },
               { label: t("certd.dns"), value: "dnsProvider" },
               { label: t("certd.deployPlugin"), value: "deploy" },
+              { label: "通知", value: "notification" },
+              // { label: "Addon", value: "addon" },
             ],
           }),
           column: {
@@ -232,6 +417,9 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "text",
           search: {
             show: true,
+            col: {
+              span: 3,
+            },
           },
           form: {
             show: true,
@@ -260,28 +448,83 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           title: t("certd.author"),
           type: "text",
           search: {
+            component: {
+              name: "a-input",
+              vModel: "value",
+            },
             show: true,
+            col: {
+              span: 2,
+            },
           },
           form: {
             show: true,
-            helper: t("certd.authorHelper"),
-            rules: [
-              { required: true },
-              {
-                type: "pattern",
-                pattern: /^[a-zA-Z][a-zA-Z0-9]+$/,
-                message: t("certd.authorRuleMsg"),
-              },
-            ],
+            component: {
+              name: PluginAuthorField,
+              vModel: "modelValue",
+            },
+            helper: "为保证插件名称引用一致性，作者一旦注册不允许修改",
+            rules: [{ required: true, message: "请先注册并选择插件作者" }],
           },
           column: {
             width: 200,
             show: false,
           },
         },
+        onlyMine: {
+          title: "只看我的",
+          type: "dict-switch",
+          search: {
+            show: true,
+            col: {
+              span: 2,
+            },
+          },
+          form: {
+            show: false,
+          },
+          column: {
+            show: false,
+          },
+          dict: dict({
+            data: [
+              { label: "否", value: false },
+              { label: "是", value: true },
+            ],
+          }),
+        },
+        sortBy: {
+          title: "排序",
+          type: "dict-select",
+          search: {
+            show: true,
+            col: {
+              span: 3,
+            },
+          },
+          form: {
+            show: false,
+          },
+          column: {
+            show: false,
+          },
+          dict: dict({
+            data: [
+              { label: "默认排序", value: "" },
+              { label: "评分最高", value: "score" },
+              { label: "下载最多", value: "downloadCount" },
+            ],
+          }),
+        },
         title: {
           title: t("certd.titlea"),
           type: "text",
+          search: {
+            show: false,
+            col: {
+              span: 3,
+            },
+          },
           form: {
             helper: t("certd.titleHelper"),
             rules: [{ required: true }],
@@ -289,9 +532,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             width: 300,
             cellRender({ row }) {
-              if (row.type === "custom") {
-                return <router-link to={`/sys/plugin/edit?id=${row.id}`}>{row.title}</router-link>;
-              }
               return <div>{row.title}</div>;
             },
           },
@@ -310,9 +550,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           type: "dict-select",
           search: {
             show: true,
+            col: {
+              span: 3,
+            },
+            component: {
+              disabled: false,
+            },
           },
           form: {
-            value: "custom",
+            value: "store",
             component: {
               disabled: true,
             },
@@ -320,7 +566,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           dict: dict({
             data: [
               { label: t("certd.builtIn"), value: "builtIn" },
-              { label: t("certd.custom"), value: "custom" },
               { label: t("certd.store"), value: "store" },
             ],
           }),
@@ -332,6 +577,22 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             },
           },
         },
+        vip: {
+          title: "会员要求",
+          type: "dict-select",
+          dict: dict({
+            data: [
+              { label: "免费", value: "free" },
+              { label: "专业版", value: "plus" },
+            ],
+          }),
+          form: {
+            value: "free",
+          },
+          column: {
+            show: false,
+          },
+        },
         version: {
           title: t("certd.version"),
           type: "text",
@@ -340,17 +601,39 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
           },
         },
-        "extra.dependPlugins": {
+        dependPlugins: {
           title: t("certd.pluginDependencies"),
           type: "text",
           form: {
             component: {
-              name: "a-select",
-              mode: "tags",
-              open: false,
-              allowClear: true,
+              name: DependPluginsInput,
+              vModel: "modelValue",
             },
             helper: t("certd.pluginDependenciesHelper"),
+          },
+          column: {
+            show: false,
+          },
+          valueBuilder({ row }) {
+            if (typeof row.dependPlugins === "string") {
+              row.dependPlugins = yaml.load(row.dependPlugins);
+            }
+          },
+          valueResolve({ row }) {
+            if (row.dependPlugins && typeof row.dependPlugins === "object") {
+              row.dependPlugins = yaml.dump(row.dependPlugins);
+            }
+          },
+        },
+        "extra.dependPackages": {
+          title: t("certd.thirdPartyDependencies"),
+          type: "text",
+          form: {
+            component: {
+              name: KvInput,
+              vModel: "modelValue",
+            },
+            helper: t("certd.thirdPartyDependenciesHelper"),
           },
           column: {
             show: false,
@@ -401,18 +684,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: false,
           },
           valueBuilder({ row }) {
-            if (row.extra) {
+            if (typeof row.extra === "string") {
               row.extra = yaml.load(row.extra);
             }
           },
           valueResolve({ row }) {
-            if (row.extra) {
+            if (row.extra && typeof row.extra === "object") {
               row.extra = yaml.dump(row.extra);
             }
           },
         },
         disabled: {
-          title: t("certd.enableDisable"),
+          title: t("certd.clickToToggle"),
           type: "dict-switch",
           dict: dict({
             data: [
@@ -434,6 +717,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                   Modal.confirm({
                     title: t("certd.confirm"),
                     content: `${t("certd.confirmToggle")} ${!value ? t("certd.disable") : t("certd.enable")}?`,
+                    maskClosable: true,
                     onOk: async () => {
                       await api.SetDisabled({
                         id: row.id,
@@ -441,7 +725,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                         type: row.type,
                         disabled: !value,
                       });
-                      await crudExpose.doRefresh();
+                      crudExpose.doRefresh();
                     },
                   });
                 },
@@ -452,6 +736,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         group: {
           title: t("certd.pluginGroup"),
           type: "dict-select",
+          search: {
+            show: true,
+            col: {
+              span: 3,
+            },
+          },
           dict: dict({
             url: "/pi/plugin/groupsList",
             label: "title",

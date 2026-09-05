@@ -6,7 +6,7 @@ name: AliyunDeployCertToESA
 title: 阿里云-部署至ESA
 icon: svg:icon-aliyun
 group: aliyun
-desc: 部署证书到阿里云ESA(边缘安全加速)，自动删除过期证书
+desc: 部署证书到阿里云ESA(边缘安全加速)，支持边缘证书和SaaS证书两种模式
 needPlus: false
 input:
   cert:
@@ -70,6 +70,20 @@ input:
       type: aliyun
     required: true
     order: 0
+  deployMode:
+    title: 部署模式
+    value: edge
+    component:
+      name: a-radio-group
+      vModel: value
+      options:
+        - label: 边缘证书
+          value: edge
+        - label: SaaS证书
+          value: saas
+    helper: 边缘证书：将证书部署到站点的边缘节点；SaaS证书：将证书部署到站点的SaaS域名
+    required: true
+    order: 0
   siteIds:
     title: 站点
     component:
@@ -98,6 +112,39 @@ input:
                }
               
     helper: 请选择要部署证书的站点
+    order: 0
+  saasDomainIds:
+    title: SaaS域名
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetCustomHostnameList
+      search: false
+      pager: false
+      single: false
+      watches:
+        - certDomains
+        - accessId
+        - siteIds
+        - accessId
+        - regionId
+    required: false
+    mergeScript: |2-
+
+              return {
+                show: ctx.compute(({form})=>{
+                  return form.deployMode === 'saas'
+                }),
+                component:{
+                  form: ctx.compute(({form})=>{
+                    return form
+                  })
+                },
+              }
+            
+    helper: 请选择要部署证书的SaaS域名（SaaS证书模式下必选）
     order: 0
   certLimit:
     title: 免费证书数量限制

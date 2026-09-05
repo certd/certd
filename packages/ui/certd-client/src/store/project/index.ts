@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import * as api from "./api";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { computed, ref } from "vue";
 import { useSettingStore } from "../settings";
 import { LocalStorage } from "/@/utils/util.storage";
@@ -24,7 +24,8 @@ export const useProjectStore = defineStore("app.project", () => {
   }
   const userStore = useUserStore();
   const userId = userStore.getUserInfo?.id;
-  const lastProjectIdCacheKey = "currentProjectId:" + userId;
+  const settingStore = useSettingStore();
+  const lastProjectIdCacheKey = `currentProjectId:${userId}`;
   const lastProjectId = LocalStorage.get(lastProjectIdCacheKey);
   currentProjectId.value = lastProjectId;
 
@@ -45,7 +46,6 @@ export const useProjectStore = defineStore("app.project", () => {
     return null;
   });
 
-  const settingStore = useSettingStore();
   const isEnterprise = computed(() => {
     return settingStore.isEnterprise;
   });
@@ -73,7 +73,7 @@ export const useProjectStore = defineStore("app.project", () => {
     currentProjectId.value = id;
     LocalStorage.set(lastProjectIdCacheKey, id);
     if (!silent) {
-      message.success("切换项目成功");
+      notification.success({ message: "切换项目成功" });
     }
   }
 

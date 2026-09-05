@@ -5,12 +5,12 @@ import { accessRegistry, IAccessService } from "../access/index.js";
 import { PageSearch } from "../context/index.js";
 import { FileStore } from "../core/file-store.js";
 import { CancelError, IContext, RunHistory, RunnableCollection } from "../core/index.js";
-import { FileItem, FormItemProps, Pipeline, Runnable, Step } from "../dt/index.js";
+import { FileItem, FormItemProps, Pipeline, ResultType, Runnable, Step } from "../dt/index.js";
 import { INotificationService } from "../notification/index.js";
 import { Registrable } from "../registry/index.js";
 import { IPluginConfigService } from "../service/config.js";
 import { TaskEmitter } from "../service/emit.js";
-import { ICnameProxyService, IEmailService, IServiceGetter, IUrlService } from "../service/index.js";
+import { ICnameProxyService, IEmailService, IServiceGetter, IUrlService, getRuntimeDepsService } from "../service/index.js";
 
 export type PluginRequestHandleReq<T = any> = {
   typeName: string;
@@ -46,6 +46,8 @@ export type PluginDefine = Registrable & {
   default?: any;
   group?: string;
   icon?: string;
+  dependPlugins?: Record<string, string>;
+  dependPackages?: Record<string, string>;
   input?: {
     [key: string]: TaskInputDefine;
   };
@@ -67,12 +69,16 @@ export type PluginDefine = Registrable & {
   runStrategy?: any;
   pluginType?: string; //类型
   type?: string; //来源
+  // 标记该插件可作为流水线后置任务使用（展示在后置任务选择器中）
+  supportAfterTask?: boolean;
 };
 
 export type ITaskPlugin = {
   onInstance(): Promise<void>;
   execute(): Promise<void | string>;
   onRequest(req: PluginRequestHandleReq<any>): Promise<any>;
+  setCtx(ctx: TaskInstanceContext): Promise<void>;
+  importRuntime(specifier: string): Promise<any>;
   [key: string]: any;
 };
 
@@ -87,6 +93,12 @@ export type CertTargetItem = {
   value: string;
   label: string;
   domain: string | string[];
+};
+
+export type PipelineEvent<T = any> = {
+  cert: T;
+  runnableId: string;
+  pipelineId: number;
 };
 export type TaskInstanceContext = {
   //流水线定义
@@ -134,7 +146,7 @@ export type TaskInstanceContext = {
   //项目id
   projectId?: number;
 
-  emitter: TaskEmitter;
+  emitter: TaskEmitter<PipelineEvent>;
 
   //service 容器
   serviceGetter?: IServiceGetter;
@@ -146,6 +158,25 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
   logger!: ILogger;
   http!: HttpClient;
   accessService!: IAccessService;
+
+  get pipeline() {
+    return this.ctx.pipeline;
+  }
+
+  get step() {
+    return this.ctx.step;
+  }
+
+  /**
+   * 流水线本次运行结果（后置任务插件可用：success/error/canceled/skip/disabled）
+   */
+  get pipelineResult(): ResultType | undefined {
+    return this.ctx?.runtime?.pipeline?.status?.result;
+  }
+
+  async importRuntime(specifier: string) {
+    return await getRuntimeDepsService().importRuntime(specifier, this.logger);
+  }
 
   clearLastStatus() {
     this._result.clearLastStatus = true;
@@ -161,7 +192,14 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
     }
   }
 
-  setCtx(ctx: TaskInstanceContext) {
+  /**
+   * 等待指定毫秒（插件内自行控制延迟，如等待部署生效后再执行）
+   */
+  async sleep(ms: number) {
+    await this.ctx.utils.sleep(ms);
+  }
+
+  async setCtx(ctx: TaskInstanceContext) {
     this.ctx = ctx;
     this.logger = ctx.logger;
     this.accessService = ctx.accessService;
@@ -242,14 +280,6 @@ export abstract class AbstractTaskPlugin implements ITaskPlugin {
       this._result.files = [];
     }
     this._result.files.push(...(this.ctx.lastStatus?.status?.files || []));
-  }
-
-  get pipeline() {
-    return this.ctx.pipeline;
-  }
-
-  get step() {
-    return this.ctx.step;
   }
 
   async onInstance(): Promise<void> {

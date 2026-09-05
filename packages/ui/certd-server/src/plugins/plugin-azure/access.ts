@@ -75,7 +75,7 @@ export class AzureAccess extends BaseAccess {
     this.ctx.logger.info("开始测试 Azure 认证...");
 
     // 1. 先测试身份认证，获取访问令牌
-    const { ClientSecretCredential } = await import("@azure/identity");
+    const { ClientSecretCredential } = await this.importRuntime("@azure/identity");
 
     const credential = new ClientSecretCredential(this.tenantId, this.clientId, this.clientSecret);
 
@@ -88,8 +88,8 @@ export class AzureAccess extends BaseAccess {
   }
 
   async getDnsManagementClient() {
-    const { DnsManagementClient } = await import("@azure/arm-dns");
-    const { ClientSecretCredential } = await import("@azure/identity");
+    const { DnsManagementClient } = await this.importRuntime("@azure/arm-dns");
+    const { ClientSecretCredential } = await this.importRuntime("@azure/identity");
 
     const credential = new ClientSecretCredential(this.tenantId, this.clientId, this.clientSecret);
 
@@ -122,7 +122,7 @@ export class AzureAccess extends BaseAccess {
 
     this.ctx.logger.info(`找到 DNS 区域: ${matchingZone.name}, ID: ${matchingZone.id}`);
     return {
-      id: matchingZone.id.split("/").pop()!,
+      id: matchingZone.id.split("/").pop() || "",
       name: matchingZone.name,
     };
   }
@@ -136,7 +136,7 @@ export class AzureAccess extends BaseAccess {
     }
 
     list = list.map((item: any) => ({
-      id: item.id.split("/").pop()!,
+      id: item.id.split("/").pop() || "",
       domain: item.name,
     }));
 

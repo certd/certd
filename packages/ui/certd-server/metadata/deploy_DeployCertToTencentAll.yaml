@@ -8,6 +8,8 @@ needPlus: false
 icon: svg:icon-tencentcloud
 group: tencent
 desc: 支持负载均衡、CDN、DDoS、直播、点播、Web应用防火墙、API网关、TEO、容器服务、对象存储、轻应用服务器、云原生微服务、云开发
+dependPlugins:
+  access:tencent: '*'
 input:
   accessId:
     title: Access授权

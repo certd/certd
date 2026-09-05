@@ -3,6 +3,8 @@ name: tencent
 title: 腾讯云验证码
 desc: ''
 showTest: false
+dependPackages:
+  tencentcloud-sdk-nodejs: ^4.1.112
 input:
   accessId:
     title: 腾讯云授权

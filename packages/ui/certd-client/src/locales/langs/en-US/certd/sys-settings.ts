@@ -41,6 +41,25 @@ export default {
       acmeWalkFromAuthoritative: "Check TXT Record from Authoritative NS",
       acmeWalkFromAuthoritativeHelper: "Apply certificate when whether to check the TXT record from authoritative NS server first",
 
+      customAcmeManage: "Custom ACME Management",
+      customAcmeManageHelper:
+        "Configure certificate authorities (built-in + custom ACME). Built-in providers cannot be modified or deleted. Custom ACME providers (intranet CA, enterprise CA or any RFC 8555 compatible ACME service) become selectable as certificate authorities in apply tasks and ACME account authorization",
+      customAcmeName: "Name",
+      customAcmeSslProvider: "SSL Provider",
+      customAcmeSslProviderHelper: "Unique identifier, e.g. myca; used to distinguish providers in pipeline and ACME account",
+      customAcmeReverseProxy: "Reverse Proxy",
+      customAcmeReverseProxyHelper:
+        "For example, for Let's Encrypt, configure the reverse proxy on your overseas server: \nproxy_pass https://acme-v02.api.letsencrypt.org/; \nthen fill in your reverse proxy server domain here, without http://",
+      customAcmeAdd: "Add Custom ACME",
+      customAcmeEdit: "Edit Custom ACME",
+      customAcmeNeedEab: "Need EAB",
+      customAcmeBuiltIn: "Built-in",
+      customAcmeTag: "Custom",
+      customAcmeDeleteConfirmTitle: "Delete Custom ACME",
+      customAcmeDeleteConfirmContent: "Deleting '{title}' may affect pipelines using it to apply certificates. Are you sure?",
+      customAcmeSaveCheck: "Name, sslProvider and Directory URL are required",
+      customAcmeSslProviderUnique: "The sslProvider identifier must be unique",
+
       fixedCertExpireDays: "Fixed Cert Expire Days",
       fixedCertExpireDaysHelper: "Fixed cert expiration days, helpful for table list progress bar display",
       fixedCertExpireDaysRecommend: "Recommend 90",
@@ -61,7 +80,7 @@ export default {
       oauthAutoRedirect: "Auto Redirect to OAuth2 Login",
       oauthAutoRedirectHelper: "Whether to auto redirect to OAuth2 login when login (using the first enabled OAuth2 login type)",
       oauthOnly: "OAuth2 Login Only",
-      oauthOnlyHelper: "Whether to only allow OAuth2 login, disable password login",
+      oauthOnlyHelper: "Only allow OAuth2 login. Password login remains available for 10 minutes after server startup as an emergency window.",
       enablePasskey: "Enable Passkey Login",
       passkeyHostnameNotSame: "Passkey hostname must be the same as the main domain",
       passkeyEnabledHelper:
@@ -85,10 +104,6 @@ export default {
       customFooterHelper: "Custom site footer, displayed at the bottom of the page, support HTML format",
       customFooterPlaceholder: "Custom footer content",
 
-      reverseProxy: "Reverse Proxy List",
-      reverseProxyHelper: "Reverse proxy for ACME address, used when applying for certificate",
-      reverseProxyPlaceholder: "http://le.px.handfree.work",
-      reverseProxyEmpty: "No reverse proxy list configured",
       environmentVars: "Environment Variables",
       environmentVarsHelper: "configure the runtime environment variables, one per line, format: KEY=VALUE",
       commonHeaders: "Common Headers",

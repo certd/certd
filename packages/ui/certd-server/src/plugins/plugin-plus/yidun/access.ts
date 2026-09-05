@@ -55,7 +55,8 @@ export class YidunAccess extends BaseAccess {
   }
 
   async doRequest(url: string, method: string, data: any) {
-    const access = this;
+    // @ts-ignore
+    const access = this as any;
     const { apiKey, apiSecret } = access;
     const http = this.ctx.http;
     const res: any = await http.request({

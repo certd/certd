@@ -28,12 +28,12 @@ describe("DnsPersistRecordService", () => {
     const service = new DnsPersistRecordService();
 
     const record = await service.buildRecord({
-      domain: "aaa.handsfree.work",
+      domain: "aaa.handfree.work",
       accountUri: "https://example.com/acct/1",
     });
 
     assert.equal(record.hostRecord, "_validation-persist.aaa");
-    assert.equal(record.mainDomain, "handsfree.work");
+    assert.equal(record.mainDomain, "handfree.work");
     assert.equal(record.recordValue, "letsencrypt.org; accounturi=https://example.com/acct/1; policy=wildcard");
   });
 
@@ -108,11 +108,8 @@ describe("DnsPersistRecordService", () => {
         param.id = 77;
         saved = { ...param };
       },
-      async findOneBy(where: any) {
-        return where.id === 77 ? saved : null;
-      },
       async findOne() {
-        return null;
+        return saved;
       },
     };
     (service as any).accessService = {
@@ -218,10 +215,10 @@ describe("DnsPersistRecordService", () => {
         saved = { ...saved, ...param };
       },
       async findOne(options: any) {
+        if (options.where.id === 89) {
+          return saved;
+        }
         return options.where.domain === "example.com" && options.where.acmeAccountAccessId === 1 ? saved : null;
-      },
-      async findOneBy(where: any) {
-        return where.id === 89 ? saved : null;
       },
     };
     (service as any).accessService = {
@@ -256,8 +253,8 @@ describe("DnsPersistRecordService", () => {
     const service = new DnsPersistRecordService();
     let deletedIds: any = null;
     (service as any).repository = {
-      async findOneBy(where: any) {
-        return where.id === 90
+      async findOne(options: any) {
+        return options.where.id === 90
           ? {
               id: 90,
               domain: "example.com",
@@ -292,8 +289,8 @@ describe("DnsPersistRecordService", () => {
       status: "pending",
     };
     (service as any).repository = {
-      async findOneBy(where: any) {
-        return where.id === 91 ? saved : null;
+      async findOne(options: any) {
+        return options.where.id === 91 ? saved : null;
       },
       async save(param: any) {
         saved = { ...saved, ...param };

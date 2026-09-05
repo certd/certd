@@ -155,19 +155,6 @@ export const sysResources = [
         },
       },
       {
-        title: "certd.sysResources.sysPluginEdit",
-        name: "SysPluginEdit",
-        path: "/sys/plugin/edit",
-        component: "/sys/plugin/edit.vue",
-        meta: {
-          isMenu: false,
-          icon: "ion:extension-puzzle",
-          permission: "sys:settings:view",
-          keepAlive: true,
-          auth: true,
-        },
-      },
-      {
         title: "certd.sysResources.sysPluginConfig",
         name: "SysPluginConfig",
         path: "/sys/plugin/config",
@@ -409,6 +396,22 @@ export const sysResources = [
             },
           },
         ],
+      },
+      {
+        title: "certd.sysResources.auditLog",
+        name: "SysAuditLog",
+        path: "/sys/enterprise/audit",
+        component: "/sys/enterprise/audit/index.vue",
+        meta: {
+          icon: "ion:document-text-outline",
+          keepAlive: true,
+          auth: true,
+          isMenu: true,
+          show: () => {
+            const settingStore = useSettingStore();
+            return settingStore.isPlus;
+          },
+        },
       },
       {
         title: "certd.sysResources.netTest",

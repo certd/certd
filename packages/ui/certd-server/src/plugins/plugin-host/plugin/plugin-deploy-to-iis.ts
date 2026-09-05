@@ -132,7 +132,7 @@ export class HostDeployToIIS extends AbstractPlusTaskPlugin {
      *
      * SiteName HttpsBindings
      * -------- -------------
-     * first    *:443:first.handsfree.work
+     * first    *:443:first.handfree.work
      */
     // 解析获取网站名称
     const siteOptions = [];

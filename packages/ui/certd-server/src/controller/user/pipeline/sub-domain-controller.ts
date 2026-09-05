@@ -4,6 +4,7 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/c
 import { SubDomainService } from "../../../modules/pipeline/service/sub-domain-service.js";
 import { TaskServiceBuilder } from "../../../modules/pipeline/service/getter/task-service-getter.js";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  * 子域名托管
@@ -20,6 +21,10 @@ export class SubDomainController extends CrudController<SubDomainService> {
 
   getService() {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.subDomain.value;
   }
 
   @Post("/parseDomain", { description: Constants.per.authOnly, summary: "解析域名" })
@@ -64,7 +69,9 @@ export class SubDomainController extends CrudController<SubDomainService> {
     const { userId, projectId } = await this.getProjectUserIdRead();
     bean.userId = userId;
     bean.projectId = projectId;
-    return super.add(bean);
+    const res = await super.add(bean);
+    this.auditLog({ content: `新增了子域名「${bean.domain}」(ID:${res.data})` });
+    return res;
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新子域名" })
@@ -72,7 +79,9 @@ export class SubDomainController extends CrudController<SubDomainService> {
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
-    return super.update(bean);
+    const res = await super.update(bean);
+    this.auditLog({ content: `修改了子域名(ID:${bean.id})` });
+    return res;
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询子域名详情" })
   async info(@Query("id") id: number) {
@@ -83,7 +92,9 @@ export class SubDomainController extends CrudController<SubDomainService> {
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除子域名" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write");
-    return super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({ content: `删除了子域名(ID:${id})` });
+    return res;
   }
 
   @Post("/batchDelete", { description: Constants.per.authOnly, summary: "批量删除子域名" })

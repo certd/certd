@@ -8,10 +8,10 @@
 </template>
 
 <script lang="ts" setup>
-import { onActivated, onMounted } from "vue";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import { useSettingStore } from "/@/store/settings";
+import { useMounted } from "/@/use/use-mounted";
 
 defineOptions({
   name: "SettingsHeaderMenus",
@@ -20,10 +20,7 @@ const { crudBinding, crudRef, crudExpose, context } = useFs({ createCrudOptions 
 
 const settingStore = useSettingStore();
 // 页面打开后获取列表数据
-onMounted(() => {
-  // crudExpose.doRefresh();
-});
-onActivated(async () => {
+useMounted(async () => {
   await crudExpose.doRefresh();
 });
 </script>

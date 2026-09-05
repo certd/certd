@@ -1,5 +1,6 @@
-import { TencentAccess } from "../../../plugins/plugin-lib/tencent/access.js";
-import { ISmsService, PluginInputs, SmsPluginCtx } from "./api.js";
+﻿import { TencentAccess } from "../../../plugins/plugin-lib/tencent/access.js";
+import { importRuntime } from "@certd/pipeline";
+import { ISmsService, PluginInputs } from "./api.js";
 
 export type TencentSmsConfig = {
   accessId: string;
@@ -66,16 +67,16 @@ export class TencentSmsService implements ISmsService {
     };
   }
 
-  ctx: SmsPluginCtx<TencentSmsConfig>;
+  ctx: { accessService: any; config: TencentSmsConfig };
 
-  setCtx(ctx: any) {
+  async setCtx(ctx: any) {
     this.ctx = ctx;
   }
 
   async getClient() {
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/sms/v20210111/index.js");
+    const sdk = await importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/sms/v20210111/index.js");
     const client = sdk.v20210111.Client;
-    const access = await this.ctx.accessService.getById<TencentAccess>(this.ctx.config.accessId);
+    const access: TencentAccess = await this.ctx.accessService.getById(this.ctx.config.accessId);
 
     // const region = this.region;
     const clientConfig = {

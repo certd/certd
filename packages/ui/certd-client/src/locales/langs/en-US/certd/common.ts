@@ -46,6 +46,7 @@ export default {
   default: "Default",
   success: "Success",
   test: "Test",
+  operation: "Operation",
   testButton: "Test",
   operationSuccess: "Operation successful",
   batch_delete: "Batch Delete",
@@ -117,6 +118,63 @@ export default {
   helpDocLink: "Help Docs",
   suite: "Suite",
   helpDoc: "Help Document",
+  landing: {
+    console: "Console",
+    login: "Log In",
+    register: "Register",
+    slogan: "Keep your certificates from expiring",
+    heroTitle: "Keep your website certificates",
+    heroHighlight: "from expiring",
+    heroDescription: "An automated certificate management system with pipeline-based certificate application and deployment, helping you avoid certificate expiration.",
+    getStarted: "Get Started",
+    featuresTitle: "Powerful Features",
+    featuresSubtitle: "Supports mainstream cloud providers and deployment scenarios",
+    benefits: {
+      autoRenewal: "Auto Renewal",
+      centralizedManagement: "Centralized Management",
+      statusMonitoring: "Status Monitoring",
+      costSaving: "Cost Saving",
+      secureReliable: "Secure and Reliable",
+    },
+    features: {
+      autoApply: {
+        title: "Automated Certificate Application",
+        description: "Supports DNS-01, HTTP-01, CNAME proxy, and other domain validation methods",
+      },
+      autoDeploy: {
+        title: "Automated Deployment Updates",
+        description: "Supports 110+ deployment plugins covering mainstream cloud providers",
+      },
+      certFormats: {
+        title: "Multiple Certificate Formats",
+        description: "Supports PEM, PFX, DER, JKS, and P7B formats",
+      },
+      wildcardSupport: {
+        title: "Wildcard Domain Support",
+        description: "Supports wildcard domains and placing multiple domains in one certificate",
+      },
+      notifications: {
+        title: "Multiple Notification Methods",
+        description: "Supports email, webhooks, WeCom, DingTalk, Feishu, and other notifications",
+      },
+      security: {
+        title: "Security Protection",
+        description: "Authorization encryption, 2FA, brute-force protection, and local data storage",
+      },
+      databases: {
+        title: "Multiple Database Support",
+        description: "Supports SQLite, PostgreSQL, and MySQL databases",
+      },
+      openApi: {
+        title: "Open API",
+        description: "Provides RESTful APIs for integration with other systems",
+      },
+      siteMonitor: {
+        title: "Site Certificate Monitoring",
+        description: "Regularly monitors certificate expiration and warns in advance",
+      },
+    },
+  },
   pluginCommon: {
     test: "Test",
     errorWithMessage: "Error: {message}",

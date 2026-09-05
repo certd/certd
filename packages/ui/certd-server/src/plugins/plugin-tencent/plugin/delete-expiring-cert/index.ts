@@ -9,7 +9,10 @@ import { TencentAccess, TencentSslClient } from "../../../plugin-lib/tencent/ind
   title: "腾讯云-删除即将过期证书",
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
-  desc: "仅删除未使用的证书",
+  desc: "仅删除即将过期且未使用的证书",
+  dependPlugins: {
+    "access:tencent": "*",
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.AlwaysRun,

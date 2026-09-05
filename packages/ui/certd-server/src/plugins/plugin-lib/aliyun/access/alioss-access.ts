@@ -101,7 +101,7 @@ export class AliossAccess extends BaseAccess {
 
   async getClient(access: AliyunAccess) {
     // @ts-ignore
-    const OSS = await import("ali-oss");
+    const OSS = await this.importRuntime("ali-oss");
     return new OSS.default({
       accessKeyId: access.accessKeyId,
       accessKeySecret: access.accessKeySecret,

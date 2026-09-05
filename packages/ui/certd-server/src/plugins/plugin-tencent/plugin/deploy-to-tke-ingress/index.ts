@@ -11,6 +11,9 @@ import yaml from "js-yaml";
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "修改TKE集群密钥配置，支持Opaque和TLS证书类型。注意：\n1. serverless集群请使用K8S部署插件；\n2. Opaque类型需要【上传到腾讯云】作为前置任务；\n3. ApiServer需要开通公网访问（或者certd可访问），实际上底层仍然是通过KubeClient进行部署",
+  dependPlugins: {
+    "access:tencent": "*",
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -203,7 +206,7 @@ export class DeployCertToTencentTKEIngressPlugin extends AbstractTaskPlugin {
   }
 
   async getTkeClient(accessProvider: any, region = "ap-guangzhou") {
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/tke/v20180525/index.js");
+    const sdk = await this.importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/tke/v20180525/index.js");
     const TkeClient = sdk.v20180525.Client;
     const clientConfig = {
       credential: {

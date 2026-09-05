@@ -12,6 +12,7 @@ import cors from "@koa/cors";
 import { GlobalExceptionMiddleware } from "./middleware/global-exception.js";
 import { PreviewMiddleware } from "./middleware/preview.js";
 import { AuthorityMiddleware } from "./middleware/authority.js";
+import { AuditLogMiddleware } from "./middleware/audit-log.js";
 import { logger } from "@certd/basic";
 import { ResetPasswdMiddleware } from "./middleware/reset-passwd/middleware.js";
 import DefaultConfig from "./config/config.default.js";
@@ -21,6 +22,7 @@ import * as upload from "@midwayjs/upload";
 import { setLogger } from "@certd/acme-client";
 import { HiddenMiddleware } from "./middleware/hidden.js";
 import { shouldSetDefaultNoCache } from "./configuration-cache.js";
+import { compressResponse } from "./middleware/compression.js";
 // import * as swagger from '@midwayjs/swagger';
 //@ts-ignore
 // process.env.UV_THREADPOOL_SIZE = 2
@@ -43,7 +45,6 @@ process.on("uncaughtException", error => {
 //   setInterval(log, 200);
 //   log()
 // }
-
 // startHeapLog();
 
 @Configuration({
@@ -79,10 +80,8 @@ process.on("uncaughtException", error => {
 export class MainConfiguration {
   @App("koa")
   app: koa.Application;
-
   async onReady() {
     // 设置flyway logger
-
     // add middleware
     // this.app.useMiddleware([ReportMiddleware]);
     // add filter
@@ -93,6 +92,7 @@ export class MainConfiguration {
         origin: "*",
       })
     );
+    this.app.use(compressResponse);
     //
     // this.app.use(async (ctx, next) => {
     //   // 只在返回 'index.html' 的时候设置 maxAge
@@ -114,6 +114,7 @@ export class MainConfiguration {
       PreviewMiddleware,
       //授权处理
       AuthorityMiddleware,
+      AuditLogMiddleware,
 
       //resetPasswd,重置密码模式下不提供服务
       ResetPasswdMiddleware,
@@ -127,14 +128,10 @@ export class MainConfiguration {
         ctx.response.set("Cache-Control", "public,max-age=0");
       }
     });
-
     //acme setlogger
     setLogger((text: string) => {
       logger.info(text);
     });
-
     logger.info("当前环境：", this.app.getEnv()); // prod
-
-    
   }
 }

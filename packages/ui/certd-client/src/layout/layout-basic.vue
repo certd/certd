@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+﻿<script lang="ts" setup>
 import { BasicLayout, LockScreen, UserDropdown } from "/@/vben/layouts";
 
 import { computed, onErrorCaptured, onMounted, provide, ref } from "vue";
@@ -20,14 +20,14 @@ const router = useRouter();
 const menus = computed(() => [
   {
     handler: () => {
-      router.push("/certd/mine/user-profile");
+      router.push("/cert/mine/user-profile");
     },
     icon: "fa-solid:book",
     text: t("certd.accountInfo"),
   },
   {
     handler: () => {
-      router.push("/certd/mine/security");
+      router.push("/cert/mine/security");
     },
     icon: "fluent:shield-keyhole-16-regular",
     text: t("certd.securitySettings"),
@@ -49,7 +49,7 @@ async function handleLogout() {
   await userStore.logout(true);
 }
 function goUserProfile() {
-  router.push("/certd/mine/user-profile");
+  router.push("/cert/mine/user-profile");
 }
 
 const settingStore = useSettingStore();
@@ -74,6 +74,9 @@ onMounted(async () => {
 
 function goGithub() {
   window.open("https://github.com/certd/certd");
+}
+function goCertdClient() {
+  window.open("https://github.com/certd/certd-client");
 }
 const settingsStore = useSettingStore();
 const chatBox = ref();
@@ -106,12 +109,15 @@ const projectStore = useProjectStore();
         <vip-button class="flex-center header-btn" mode="nav" />
       </div>
       <div v-if="!settingStore.isComm" class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
+        <fs-button shape="circle" type="text" icon="clarity:host-solid-badged" :text="null" :tooltip="{ title: t('certd.client') }" @click="goCertdClient" />
+      </div>
+      <div v-if="!settingStore.isComm" class="hover:bg-accent ml-1 mr-2 cursor-pointer rounded-full hidden md:block">
         <fs-button shape="circle" type="text" icon="ion:logo-github" :text="null" @click="goGithub" />
       </div>
+      <MaxKBChat v-if="settingsStore.sysPublic.aiChatEnabled !== false" ref="chatBox" />
     </template>
     <template #footer>
       <PageFooter></PageFooter>
-      <MaxKBChat v-if="settingsStore.sysPublic.aiChatEnabled !== false" ref="chatBox" />
     </template>
   </BasicLayout>
 </template>

@@ -5,6 +5,7 @@ import { SysInviteCommissionSetting } from "@certd/commercial-core";
 import { cloneDeep } from "lodash-es";
 import { getVersion } from "../../utils/version.js";
 import { http } from "@certd/basic";
+import { getReleaseMode } from "./app-controller.js";
 
 /**
  */
@@ -108,6 +109,7 @@ export class BasicSettingsController extends BaseController {
       app: {
         time: new Date().getTime(),
         version,
+        releaseMode: getReleaseMode(),
       },
     });
   }

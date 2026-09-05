@@ -7,7 +7,7 @@ import * as UserApi from "./api.user";
 import { ForgotPasswordReq, RegisterReq, SmsLoginReq } from "./api.user";
 // @ts-ignore
 import { LoginReq, UserInfoRes } from "/@/store/user/api.user";
-import { message, Modal, notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { useI18n } from "vue-i18n";
 
 import { mitter } from "/src/utils/util.mitt";
@@ -149,7 +149,9 @@ export const useUserStore = defineStore({
 
       this.resetState();
       resetAllStores();
-      goLogin && router.push("/login");
+      if (goLogin) {
+        router.push("/login");
+      }
       mitter.emit("app.logout");
     },
 

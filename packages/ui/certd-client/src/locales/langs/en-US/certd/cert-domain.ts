@@ -18,6 +18,7 @@ export default {
     subdomainConfirmTitle: "Subdomain Confirmation",
     subdomainConfirmContent: "{domain} appears to be a subdomain. Only delegated subdomains and free second-level subdomains need to be maintained here. Otherwise certificate application may fail. Continue?",
     importFromProvider: "Import from Domain Provider",
+    importFromResolveRecords: "Import from DNS Records",
     syncExpirationDate: "Sync Domain Expiration Time",
     syncTaskSubmitted: "Sync task submitted",
     syncExpirationProgress: "Sync Domain Expiration Progress",

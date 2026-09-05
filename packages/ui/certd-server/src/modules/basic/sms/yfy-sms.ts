@@ -35,7 +35,7 @@ export class YfySmsService implements ISmsService {
 
   ctx: SmsPluginCtx<YfySmsConfig>;
 
-  setCtx(ctx: any) {
+  async setCtx(ctx: SmsPluginCtx<YfySmsConfig>) {
     this.ctx = ctx;
   }
 

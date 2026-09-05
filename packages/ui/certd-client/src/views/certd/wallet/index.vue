@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, h, onActivated, onMounted, reactive, ref } from "vue";
+import { computed, h, reactive, ref } from "vue";
 import { compute, dict, useFs } from "@fast-crud/fast-crud";
 import { Button, notification } from "ant-design-vue";
 import * as api from "./api";
@@ -36,6 +36,7 @@ import createWithdrawCrudOptions from "./crud-withdraw";
 import { util } from "/@/utils";
 import { useFormDialog } from "/@/use/use-dialog";
 import { useUserStore } from "/@/store/user";
+import { useMounted } from "/@/use/use-mounted";
 
 defineOptions({ name: "MyWallet" });
 
@@ -257,14 +258,8 @@ async function refreshWalletPage() {
   loaded.value = true;
 }
 
-onMounted(refreshWalletPage);
-
-onActivated(async () => {
-  if (!loaded.value) {
-    return;
-  }
-  await refreshWalletPage();
-});
+// 页面打开后获取列表数据
+useMounted(refreshWalletPage);
 </script>
 
 <style lang="less">

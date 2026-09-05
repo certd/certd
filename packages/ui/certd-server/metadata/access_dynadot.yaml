@@ -1,0 +1,36 @@
+name: dynadot
+title: Dynadot授权
+desc: ''
+icon: simple-icons:dynatrace
+input:
+  apiKey:
+    title: API Key
+    component:
+      placeholder: api key
+    helper: >-
+      前往 [Dynadot
+      API设置](https://www.dynadot.cn/zh/account/domain/setting/api.html) 获取API
+      Key
+    required: true
+    encrypt: true
+  apiSecret:
+    title: API Secret
+    component:
+      name: a-input-password
+      vModel: value
+      placeholder: api secret
+    helper: >-
+      前往 [Dynadot
+      API设置](https://www.dynadot.cn/zh/account/domain/setting/api.html) 获取API
+      Secret
+    required: true
+    encrypt: true
+  testRequest:
+    title: 测试
+    component:
+      name: api-test
+      action: TestRequest
+    helper: 点击测试接口是否正常
+pluginType: access
+type: builtIn
+scriptFilePath: /plugins/plugin-dynadot/access.js

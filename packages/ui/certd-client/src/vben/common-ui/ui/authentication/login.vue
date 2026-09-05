@@ -73,6 +73,14 @@ async function handleSubmit() {
   }
 }
 
+function handleKeydownEnter(e: KeyboardEvent) {
+  if (e.isComposing) {
+    return;
+  }
+  e.preventDefault();
+  handleSubmit();
+}
+
 function handleGo(path: string) {
   router.push(path);
 }
@@ -89,7 +97,7 @@ defineExpose({
 </script>
 
 <template>
-  <div @keydown.enter.prevent="handleSubmit">
+  <div @keydown.enter="handleKeydownEnter">
     <slot name="title">
       <Title>
         <slot name="title">

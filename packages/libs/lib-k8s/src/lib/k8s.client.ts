@@ -10,6 +10,7 @@ export type K8sClientOpts = {
   //暂时没用
   lookup?: any;
   skipTLSVerify?: boolean;
+  debug?: boolean;
 };
 export class K8sClient {
   kubeconfig!: KubeConfig;
@@ -18,11 +19,13 @@ export class K8sClient {
   client!: CoreV1Api;
   logger: ILogger;
   skipTLSVerify?: boolean;
+  debug?: boolean;
   constructor(opts: K8sClientOpts) {
     this.kubeConfigStr = opts.kubeConfigStr;
     this.logger = opts.logger;
     this.setLookup(opts.lookup);
     this.skipTLSVerify = opts.skipTLSVerify;
+    this.debug = opts.debug;
     this.init();
   }
 
@@ -86,6 +89,9 @@ export class K8sClient {
       yml.metadata = {};
     }
     yml.metadata.resourceVersion = existing.body.metadata.resourceVersion;
+    if (this.debug) {
+      this.logger.info("patch yaml body:", JSON.stringify(yml));
+    }
     const res = await client.patch(yml);
     return res?.body;
   }
@@ -126,6 +132,9 @@ export class K8sClient {
   async createSecret(opts: { namespace: string; body: V1Secret }) {
     const namespace = opts.namespace || "default";
     this.logger.info("create secret:", opts.body.metadata);
+    if (this.debug) {
+      this.logger.info("create secret body:", JSON.stringify(opts.body));
+    }
     const created = await this.client.createNamespacedSecret(namespace, opts.body);
     this.logger.info("new secrets:", opts.body.metadata);
     return created.body;
@@ -162,6 +171,9 @@ export class K8sClient {
             },
             opts.body
           );
+          if (this.debug) {
+            this.logger.info("create secret:", JSON.stringify(body));
+          }
           const res = await this.createSecret({ namespace, body });
           this.logger.info(`secret ${secretName} 已创建`);
           return res;
@@ -173,6 +185,9 @@ export class K8sClient {
     }
 
     const newSecret = merge(oldSecret.body, opts.body);
+    if (this.debug) {
+      this.logger.info("patch secret:", JSON.stringify(newSecret));
+    }
     const res = await this.client.replaceNamespacedSecret(secretName, namespace, newSecret);
     this.logger.info(`secret ${secretName} 已更新`);
     return res.body;
@@ -207,6 +222,9 @@ export class K8sClient {
     const client = this.kubeconfig.makeApiClient(NetworkingV1Api);
     const oldIngress = await client.readNamespacedIngress(ingressName, namespace);
     const newIngress = merge(oldIngress.body, opts.body);
+    if (this.debug) {
+      this.logger.info("patch ingress:", JSON.stringify(newIngress));
+    }
     const res = await client.replaceNamespacedIngress(ingressName, namespace, newIngress);
 
     this.logger.info("ingress patched", opts.body);
@@ -222,6 +240,7 @@ export class K8sClient {
       },
     };
     for (const ingress of ingressNames) {
+      this.logger.info(`ingress 开始重启:${ingress}`);
       await this.patchIngress({ namespace, ingressName: ingress, body });
       this.logger.info(`ingress已重启:${ingress}`);
     }

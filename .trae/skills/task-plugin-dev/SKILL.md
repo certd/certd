@@ -211,6 +211,9 @@ export class DemoTest extends AbstractTaskPlugin {
       //当以下参数变化时，触发获取选项
       watches: ['certDomains', 'accessId'],
       required: true,
+      single: false, // 是否单选
+      pager: true, // 是否卡其分页查询
+      search: true, // 是否开启搜索
     })
   )
   siteName!: string | string[];
@@ -260,9 +263,12 @@ export class DemoTest extends AbstractTaskPlugin {
       throw new Error('请选择Access授权');
     }
 
+    const pager = new Pager(req);
+
     // @ts-ignore
     const access = await this.getAccess(this.accessId);
-
+    //
+    // 根据接口情况是否支持翻页查询，和关键字查询， 传递对应的参数，pager.pageNo,pager.pageSize, req.searchKey
     // const siteRes = await access.GetDomainList(req);
     //以下是模拟数据
     const siteRes = [
@@ -275,12 +281,12 @@ export class DemoTest extends AbstractTaskPlugin {
       return {
         value: item.siteName,
         label: item.siteName,
-        domain: item.siteName,
+        domain: item.siteName, //这里必须要包含domain 否则后面分组时候全部分配到未匹配中
       };
     });
     //将站点域名名称根据证书域名进行匹配分组，分成匹配的和不匹配的两组选项，返回给前端，供用户选择
     return {
-      list: optionsUtils.buildGroupOptions(options, this.certDomains),
+      list: optionsUtils.buildGroupOptions(options, this.certDomains), //分组后的列表
       total: siteRes.length,
     };
   }
@@ -635,6 +641,7 @@ new AliyunOSSDeploy();
 4. **日志输出**：使用 `this.logger` 输出日志，而不是 `console`，参数文本化，不要传对象，否则会输出`[object Object]}`。
 5. **错误处理**：执行过程中的错误应被捕获并记录。
 6. **授权获取**：使用 `this.getAccess(accessId)` 获取授权信息。
+7. **旧版数据兼容**： 新增@TaskInput注解的插件参数，必须要考虑旧版数据兼容，比如新增一个deployType参数，有两种值：`default`和`custom`，需要在使用时判空，走旧版逻辑。
 
 ## 部署逻辑注意事项
 

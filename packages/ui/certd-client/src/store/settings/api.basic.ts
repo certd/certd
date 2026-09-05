@@ -11,6 +11,7 @@ export type AppInfo = {
   version?: string;
   time?: number;
   deltaTime?: number;
+  releaseMode?: string;
 };
 export type SiteInfo = {
   title?: string;
@@ -107,7 +108,6 @@ export type SysPrivateSetting = {
   httpsProxy?: string;
   noProxy?: string;
   commonHeaders?: string;
-  reverseProxies?: any;
   dnsResultOrder?: string;
   commonCnameEnabled?: boolean;
   // 同一个用户同时最大运行流水线数量

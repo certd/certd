@@ -3,6 +3,87 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.44.2](https://github.com/certd/certd/compare/v1.44.1...v1.44.2) (2026-09-03)
+
+**Note:** Version bump only for package @certd/plugin-lib
+
+## [1.44.1](https://github.com/certd/certd/compare/v1.44.0...v1.44.1) (2026-09-02)
+
+**Note:** Version bump only for package @certd/plugin-lib
+
+# [1.44.0](https://github.com/certd/certd/compare/v1.43.0...v1.44.0) (2026-08-28)
+
+### Bug Fixes
+
+* 修复证书申请时EAB判断逻辑，已选择Acme账号的情况下不需要EAB ([d87821e](https://github.com/certd/certd/commit/d87821ee02b17136fc925df4547223332bf22823))
+
+### Features
+
+* 新增证书吊销后置任务与证书状态管理 ([1cc9641](https://github.com/certd/certd/commit/1cc9641f5669710d1e5809995ad395c843855a12))
+
+# [1.43.0](https://github.com/certd/certd/compare/v1.42.6...v1.43.0) (2026-08-14)
+
+**Note:** Version bump only for package @certd/plugin-lib
+
+## [1.42.6](https://github.com/certd/certd/compare/v1.42.5...v1.42.6) (2026-07-18)
+
+**Note:** Version bump only for package @certd/plugin-lib
+
+## [1.42.5](https://github.com/certd/certd/compare/v1.42.4...v1.42.5) (2026-07-15)
+
+### Bug Fixes
+
+* 修复上传到cos报runtimeDepsService未初始化的问题 ([167b303](https://github.com/certd/certd/commit/167b303faeca02cc11cf97e4be2a3df914852167))
+
+## [1.42.4](https://github.com/certd/certd/compare/v1.42.3...v1.42.4) (2026-07-11)
+
+### Bug Fixes
+
+* **pipeline:** 重构运行时依赖加载逻辑，修复火山引擎DNS解析报runtimeDepsService未初始化的bug ([ec69b8f](https://github.com/certd/certd/commit/ec69b8f11bfd4b20991aef74a72a47182ca79a9d))
+
+## [1.42.3](https://github.com/certd/certd/compare/v1.42.2...v1.42.3) (2026-07-08)
+
+**Note:** Version bump only for package @certd/plugin-lib
+
+## [1.42.2](https://github.com/certd/certd/compare/v1.42.1...v1.42.2) (2026-07-07)
+
+**Note:** Version bump only for package @certd/plugin-lib
+
+## [1.42.1](https://github.com/certd/certd/compare/v1.42.0...v1.42.1) (2026-07-06)
+
+### Performance Improvements
+
+* **certd-server:** 使用 jks-go转换jks证书，大幅精简镜像大小 ([c78898e](https://github.com/certd/certd/commit/c78898e4c10dd1701467d2e42e3f72bd8f2a352f))
+
+# [1.42.0](https://github.com/certd/certd/compare/v1.41.4...v1.42.0) (2026-07-05)
+
+### Bug Fixes
+
+* 修复jdk证书格式的问题 ([260f5ae](https://github.com/certd/certd/commit/260f5ae777b83493b0c578fe30fd00ec0c873226))
+
+### Features
+
+* 通过插件配置懒加载依赖，动态加载第三方依赖包，精简安装镜像大小 ([01568ca](https://github.com/certd/certd/commit/01568ca1489069046b5a89ebdd4ced2f7f6ddf93))
+
+### Performance Improvements
+
+* 【破坏性更新】 证书压缩包不再生成文件存储，而是实时打包下载，证书申请插件不再输出certZip ([7cff1a9](https://github.com/certd/certd/commit/7cff1a98424120585205889874b3ef4956a30583))
+* 新增橙域网络(asia-isp) CDN证书部署插件 ([b48831e](https://github.com/certd/certd/commit/b48831e60b0059bef7ef9a34ab61c9dd2f684641))
+
+## [1.41.4](https://github.com/certd/certd/compare/v1.41.3...v1.41.4) (2026-06-14)
+
+**Note:** Version bump only for package @certd/plugin-lib
+
+## [1.41.3](https://github.com/certd/certd/compare/v1.41.2...v1.41.3) (2026-06-11)
+
+**Note:** Version bump only for package @certd/plugin-lib
+
+## [1.41.2](https://github.com/certd/certd/compare/v1.41.1...v1.41.2) (2026-06-10)
+
+### Performance Improvements
+
+* 新增站点证书监控从DNS解析记录批量导入功能 ([f9541fa](https://github.com/certd/certd/commit/f9541fab701e01ba57af061da322204c894adfb8))
+
 ## [1.41.1](https://github.com/certd/certd/compare/v1.41.0...v1.41.1) (2026-06-05)
 
 **Note:** Version bump only for package @certd/plugin-lib

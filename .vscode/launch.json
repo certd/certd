@@ -87,6 +87,34 @@
         "plus_use_prod": "false",
         "PLUS_SERVER_BASE_URL": "http://127.0.0.1:11007"
       }
+    },
+    {
+      "name": "server-local-plus2",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/packages/ui/certd-server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev-localplus2"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "plus_use_prod": "false",
+        "PLUS_SERVER_BASE_URL": "http://127.0.0.1:11007"
+      }
+    },
+    {
+      "name": "server-local-comm",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/packages/ui/certd-server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev-localcomm"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "plus_use_prod": "false",
+        "PLUS_SERVER_BASE_URL": "http://127.0.0.1:11007"
+      }
     }
   ],
   "compounds": [

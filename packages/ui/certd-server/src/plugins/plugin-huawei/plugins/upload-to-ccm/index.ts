@@ -62,8 +62,8 @@ export class HauweiUploadToCCM extends AbstractTaskPlugin {
 
   async getCcmClient() {
     const access = await this.getAccess<HuaweiAccess>(this.accessId);
-    const { BasicCredentials } = await import("@huaweicloud/huaweicloud-sdk-core");
-    const { ClientBuilder } = await import("@huaweicloud/huaweicloud-sdk-core/ClientBuilder.js");
+    const { BasicCredentials } = await this.importRuntime("@huaweicloud/huaweicloud-sdk-core");
+    const { ClientBuilder } = await this.importRuntime("@huaweicloud/huaweicloud-sdk-core/ClientBuilder.js");
     //@ts-ignore
     const { HuaweiCcmClient } = await import("./ccm-client.js");
 

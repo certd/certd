@@ -7,6 +7,8 @@ title: 腾讯云-部署到腾讯云EO
 icon: svg:icon-tencentcloud
 desc: 腾讯云边缘安全加速平台EdgeOne(EO)
 group: tencent
+dependPlugins:
+  access:tencent: '*'
 input:
   cert:
     title: 域名证书

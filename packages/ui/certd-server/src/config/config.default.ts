@@ -16,8 +16,11 @@ import { tmpdir } from "node:os";
 import { DefaultUploadFileMimeType, uploadWhiteList } from "@midwayjs/upload";
 import path from "path";
 import { logger } from "@certd/basic";
+import { createRequire } from "module";
 
 const env = process.env.NODE_ENV || "development";
+const require = createRequire(import.meta.url);
+const pkg = require("../../package.json");
 
 const development = {
   midwayLogger: {
@@ -102,6 +105,20 @@ const development = {
   },
   certd: {
     fileRootDir: "./data/files",
+  },
+  runtimeDeps: {
+    enabled: true,
+    rootDir: "./data/.runtime-deps",
+    pnpmCommand: "",
+    installTimeoutMs: 60000,
+    lazyDependencies: pkg.lazyDependencies || {},
+    registry: {
+      mode: "auto",
+      fixedUrl: "",
+      candidates: ["https://registry.npmmirror.com", "https://registry.npmjs.org"],
+      probeTimeoutMs: 3000,
+      cacheTtlMs: 6 * 60 * 60 * 1000,
+    },
   },
   system: {
     resetAdminPasswd: false,

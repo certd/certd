@@ -21,7 +21,7 @@ export class CertInfoWildcardDomainCountFix {
         },
       });
       let fixedCount = 0;
-      for (const item of list) {
+      for (const item of list as any[]) {
         if (!item.domains) {
           continue;
         }

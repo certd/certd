@@ -1,8 +1,8 @@
-import * as path from 'path';
-import * as fs from 'fs';
-import { QueryRunner, Table } from 'typeorm';
-import { FlywayHistory } from './entity.js';
-import * as crypto from 'crypto';
+import * as path from "path";
+import * as fs from "fs";
+import { QueryRunner, Table } from "typeorm";
+import { FlywayHistory } from "./entity.js";
+import * as crypto from "crypto";
 
 /**
  * 脚本文件信息
@@ -32,10 +32,10 @@ const DefaultLogger = {
   },
 };
 
-let customLogger:any = null;
-export function setFlywayLogger (logger: any) {
+let customLogger: any = null;
+export function setFlywayLogger(logger: any) {
   customLogger = logger;
-};
+}
 
 export class Flyway {
   scriptDir;
@@ -45,8 +45,8 @@ export class Flyway {
   connection;
   logger;
   constructor(opts: any) {
-    this.scriptDir = opts.scriptDir ?? 'db/migration';
-    this.flywayTableName = opts.flywayTableName ?? 'flyway_history';
+    this.scriptDir = opts.scriptDir ?? "db/migration";
+    this.flywayTableName = opts.flywayTableName ?? "flyway_history";
     this.baseline = opts.baseline ?? false;
     this.allowHashNotMatch = opts.allowHashNotMatch ?? false;
     this.logger = customLogger || opts.logger || DefaultLogger;
@@ -54,9 +54,9 @@ export class Flyway {
   }
 
   async run(ignores?: (RegExp | string)[]) {
-    this.logger.info('[ midfly ] start-------------');
+    this.logger.info("[ midfly ] start-------------");
     if (!fs.existsSync(this.scriptDir)) {
-      this.logger.info('[ midfly ] scriptDir<' + this.scriptDir + '> not found');
+      this.logger.info("[ midfly ] scriptDir<" + this.scriptDir + "> not found");
       return;
     }
 
@@ -77,7 +77,7 @@ export class Flyway {
           continue;
         }
         if (!file.isBaseline) {
-          this.logger.info('need exec script file: ', file.script);
+          this.logger.info("need exec script file: ", file.script);
           //执行sql文件
           if (/\.sql$/.test(file.script)) {
             await this.execSql(filepath, queryRunner);
@@ -87,18 +87,25 @@ export class Flyway {
           //   await this.execJsOrTs(filepath, t);
           // }
         } else {
-          this.logger.info('baseline script file: ', file.script);
+          this.logger.info("baseline script file: ", file.script);
         }
         await this.storeSqlExecLog(file.script, filepath, true, queryRunner);
         await queryRunner.commitTransaction();
       } catch (err) {
         this.logger.error(err);
+        this.errorTip(err);
         await this.storeSqlExecLog(file.script, filepath, false, queryRunner);
         await queryRunner.rollbackTransaction();
         throw err;
       }
     }
-    this.logger.info('[ midfly ] end-------------');
+    this.logger.info("[ midfly ] end-------------");
+  }
+
+  private errorTip(err: any) {
+    if (err.code === "SQLITE_IOERR_WRITE") {
+      this.logger.warn("SQLite数据库写入失败，可能您的操作系统版本太低，请将「certd:latest」镜像改为「certd:slim」即可。（如需指定版本可以修改成「certd:[version]-slim」）");
+    }
   }
 
   private async storeSqlExecLog(filename: string, filepath: string, success: boolean, queryRunner: QueryRunner) {
@@ -160,17 +167,17 @@ export class Flyway {
           name: this.flywayTableName,
           columns: [
             {
-              name: 'id',
+              name: "id",
               type: this.connection.driver.normalizeType({
                 type: this.connection.driver.mappedDataTypes.migrationId,
               }),
               isGenerated: true,
-              generationStrategy: 'increment',
+              generationStrategy: "increment",
               isPrimary: true,
               isNullable: false,
             },
             {
-              name: 'timestamp',
+              name: "timestamp",
               type: this.connection.driver.normalizeType({
                 type: this.connection.driver.mappedDataTypes.migrationTimestamp,
               }),
@@ -178,23 +185,23 @@ export class Flyway {
               isNullable: false,
             },
             {
-              name: 'name',
+              name: "name",
               type: this.connection.driver.normalizeType({
                 type: this.connection.driver.mappedDataTypes.migrationName,
               }),
               isNullable: false,
             },
             {
-              name: 'hash',
+              name: "hash",
               type: this.connection.driver.normalizeType({
                 type: this.connection.driver.mappedDataTypes.migrationName,
               }),
               isNullable: true,
             },
             {
-              name: 'success',
+              name: "success",
               type: this.connection.driver.normalizeType({
-                type: 'boolean',
+                type: "boolean",
               }),
               isNullable: true,
             },
@@ -210,7 +217,7 @@ export class Flyway {
     }
     let ret = false;
     for (const ignore of ignores) {
-      if (typeof ignore === 'string' && file === ignore) {
+      if (typeof ignore === "string" && file === ignore) {
         ret = true;
         break;
       }
@@ -233,20 +240,20 @@ export class Flyway {
       if (history.hash !== hash && this.allowHashNotMatch === false) {
         throw new Error(file + `hash conflict ,old: ${history.hash} != new: ${hash}`);
       }
-      this.logger.info('[ midfly ] script<' + file + '> already executed');
+      this.logger.info("[ midfly ] script<" + file + "> already executed");
       return true;
     }
-    this.logger.info('[ midfly ] script<' + file + '> not yet execute');
+    this.logger.info("[ midfly ] script<" + file + "> not yet execute");
     return false;
   }
 
   private async getFileHash(filepath: string) {
     const content = fs.readFileSync(filepath).toString();
-    return crypto.createHash('md5').update(content.toString()).digest('hex');
+    return crypto.createHash("md5").update(content.toString()).digest("hex");
   }
 
   private async execSql(filepath: string, queryRunner: QueryRunner) {
-    this.logger.info('[ midfly ] exec ', filepath);
+    this.logger.info("[ midfly ] exec ", filepath);
     const content = fs.readFileSync(filepath).toString().trim();
     const arr = this.splitSql2Array(content);
     for (const s of arr) {
@@ -255,11 +262,12 @@ export class Flyway {
   }
 
   private async execOnePart(sql: string, queryRunner: QueryRunner) {
-    this.logger.debug('exec sql index: ', sql);
+    this.logger.debug("exec sql index: ", sql);
     try {
       await queryRunner.query(sql);
     } catch (err: any) {
-      this.logger.error('exec sql error ： ', err.message, err);
+      this.logger.error("exec sql error ： ", err.message, err);
+      this.errorTip(err);
       throw err;
     }
   }
@@ -275,11 +283,11 @@ export class Flyway {
 
     const temp = String(str).trim();
 
-    if (temp === 'null') {
+    if (temp === "null") {
       return [];
     }
 
-    const semicolon = ';';
+    const semicolon = ";";
     const deepChars = ['"', "'"];
     const splits = [];
 
@@ -289,7 +297,7 @@ export class Flyway {
 
       if (deepChars.indexOf(charAt) >= 0) {
         //如果是深度char
-        if (i !== 0 && temp.charAt(i - 1) === '\\') {
+        if (i !== 0 && temp.charAt(i - 1) === "\\") {
           //如果前一个是转义字符，忽略它
         } else {
           //说明需要进出深度了

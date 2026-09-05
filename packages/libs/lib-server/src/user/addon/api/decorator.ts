@@ -48,8 +48,8 @@ export function AddonInput(input?: AddonInputDefine): PropertyDecorator {
   };
 }
 
-export async function newAddon(addonType:string,type: string, input: any, ctx: AddonContext) {
- const key = `${addonType}:${type}`
+export async function newAddon(addonType: string, type: string, input: any, ctx: AddonContext) {
+  const key = `${addonType}:${type}`;
   const register = addonRegistry.get(key);
   if (register == null) {
     throw new Error(`${addonType} ${type} not found`);
@@ -63,9 +63,7 @@ export async function newAddon(addonType:string,type: string, input: any, ctx: A
     throw new Error("ctx is required");
   }
   plugin.setDefine(register.define);
-  plugin.setCtx(ctx);
+  await plugin.setCtx(ctx);
   await plugin.onInstance();
   return plugin;
 }
-
-

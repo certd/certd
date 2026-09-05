@@ -1,4 +1,4 @@
-// @ts-ignore
+﻿// @ts-ignore
 import { useI18n } from "/src/locales";
 //
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, useFormWrapper, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
@@ -6,7 +6,7 @@ import { certInfoApi } from "./api";
 import dayjs from "dayjs";
 import { useRoute, useRouter } from "vue-router";
 import { useModal } from "/@/use/use-modal";
-import { notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import CertView from "/@/views/certd/pipeline/cert-view.vue";
 import { useCertUpload } from "/@/views/certd/pipeline/cert-upload/use";
 import { useSettingStore } from "/@/store/settings";
@@ -113,7 +113,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         show: true,
       },
       rowHandle: {
-        width: 100,
+        width: 160,
         fixed: "right",
         buttons: {
           view: { show: false },
@@ -132,16 +132,35 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             order: 10,
             show: false,
           },
+          revoke: {
+            order: 8,
+            title: t("certd.revoke.title"),
+            type: "link",
+            icon: "ant-design:stop-outlined",
+            // 只有未激活状态的证书才允许执行吊销
+            show: ({ row }) => {
+              return (row.status || "active") === "inactive";
+            },
+            async click({ row }) {
+              Modal.confirm({
+                title: t("certd.revoke.confirmTitle"),
+                content: t("certd.revoke.confirmContent"),
+                okText: t("certd.revoke.confirmOk"),
+                cancelText: t("certd.cancel"),
+                onOk: async () => {
+                  await api.Revoke(row.id);
+                  notification.success({ message: t("certd.revoke.success") });
+                  await crudExpose.doRefresh();
+                },
+              });
+            },
+          },
           download: {
             order: 9,
             title: t("certd.download.title"),
             type: "link",
             icon: "ant-design:download-outlined",
             async click({ row }) {
-              if (!row.certFile) {
-                notification.error({ message: t("certd.certificateNotGenerated") });
-                return;
-              }
               let url = "/api/monitor/cert/download?id=" + row.id;
               if (projectStore.isEnterprise) {
                 url += `&projectId=${projectStore.currentProject?.id}`;
@@ -196,6 +215,36 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           valueBuilder({ value, row, key }) {
             if (!value) {
               row[key] = "pipeline";
+            }
+          },
+        },
+        status: {
+          title: t("certd.status"),
+          search: {
+            show: true,
+          },
+          type: "dict-select",
+          dict: dict({
+            data: [
+              { label: t("certd.revoke.statusActive"), value: "active", color: "green" },
+              { label: t("certd.revoke.statusInactive"), value: "inactive", color: "orange" },
+              { label: t("certd.revoke.statusRevoked"), value: "revoked", color: "red" },
+            ],
+          }),
+          form: {
+            show: false,
+          },
+          column: {
+            width: 120,
+            sorter: true,
+            component: {
+              color: "auto",
+            },
+            conditionalRender: false,
+          },
+          valueBuilder({ value, row, key }) {
+            if (!value) {
+              row[key] = "active";
             }
           },
         },
@@ -348,7 +397,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             component: {
               on: {
                 onClick({ row }) {
-                  router.push({ path: "/certd/pipeline/detail", query: { id: row.pipelineId, editMode: "false" } });
+                  router.push({ path: "/cert/pipeline/detail", query: { id: row.pipelineId, editMode: "false" } });
                 },
               },
             },

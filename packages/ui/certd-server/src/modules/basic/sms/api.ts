@@ -1,8 +1,8 @@
-import { FormItemProps, IAccessService } from "@certd/pipeline";
+﻿import { FormItemProps, IAccessService } from "@certd/pipeline";
 
 export interface ISmsService {
   sendSmsCode(opts: { mobile: string; code: string; phoneCode: string }): Promise<void>;
-  setCtx(ctx: { accessService: IAccessService; config: { [key: string]: any } }): void;
+  setCtx(ctx: { accessService: IAccessService; config: { [key: string]: any } }): Promise<void>;
 }
 
 export type PluginInputs<T = any> = {

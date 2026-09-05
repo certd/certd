@@ -93,7 +93,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           column: {
             width: 200,
             cellRender({ row }) {
-              return <router-link to={{ path: `/certd/project/detail`, query: { projectId: row.id } }}>{row.name}</router-link>;
+              return <router-link to={{ path: `/cert/project/detail`, query: { projectId: row.id } }}>{row.name}</router-link>;
             },
           },
         },

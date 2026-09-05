@@ -71,23 +71,36 @@ const props = defineProps<
     pager?: boolean;
     single?: boolean;
     pageSize?: number;
+    emitImmediate?: boolean;
     uploadCert?: UploadCertProps;
   } & ComponentPropsType
 >();
 const emit = defineEmits<{
   "update:value": any;
+  "selected-change": any;
 }>();
 
 function updateValue(value: any) {
   if (props.single === true) {
     const last = value?.[value.length - 1];
     emit("update:value", last);
+    emitSelectedChange(last);
     selectRef.value.blur();
   } else {
     emit("update:value", value);
+    emitSelectedChange(value);
   }
+}
 
-  // emit("update:value", value);
+/**
+ * 选中值变化时，通过 selected-change 事件把选中的 option 对象发射出去，
+ * 供字段 mergeScript 里 on: { "selected-change": (scope) => {...} } 联动使用
+ * （如根据选项的 needEAB 显隐其他字段）。单选发射单个 option，多选发射 option 数组。
+ */
+function emitSelectedChange(value: any) {
+  const values = Array.isArray(value) ? value : [value];
+  const options = values.map(v => optionsRef.value.find((item: any) => item.value === v)).filter(Boolean);
+  emit("selected-change", props.single === true ? options[0] : options);
 }
 
 const attrs = useAttrs();
@@ -112,6 +125,8 @@ const pagerRef: Ref = ref({
   total: 0,
   pageSize: props.pageSize || 50,
 });
+
+let isFirst = true;
 const getOptions = async () => {
   if (loading.value) {
     return;
@@ -192,6 +207,15 @@ const getOptions = async () => {
       if (res.total != null) {
         pagerRef.value.total = res.total ?? list.length;
       }
+    }
+
+    if (isFirst) {
+      isFirst = false;
+      if (props.value && props.emitImmediate) {
+        emitSelectedChange(props.value);
+        emit("update:value", props.value);
+      }
+      return;
     }
 
     return res;

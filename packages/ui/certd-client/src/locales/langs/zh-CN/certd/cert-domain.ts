@@ -18,6 +18,7 @@ export default {
     subdomainConfirmTitle: "子域名确认",
     subdomainConfirmContent: "检测到{domain}为子域名，只有托管子域名和免费二级子域名才需要在此处维护，否则会导致申请证书失败，请确认是否继续？",
     importFromProvider: "从域名提供商导入",
+    importFromResolveRecords: "从解析记录导入",
     syncExpirationDate: "同步域名过期时间",
     syncTaskSubmitted: "同步任务已提交",
     syncExpirationProgress: "同步域名过期时间进度",

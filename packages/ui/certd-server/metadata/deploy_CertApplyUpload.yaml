@@ -142,9 +142,6 @@ output:
   cert:
     title: 域名证书
     type: cert
-  certZip:
-    title: 域名证书压缩文件
-    type: certZip
   certMd5:
     title: 证书MD5
     type: certMd5

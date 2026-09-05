@@ -112,7 +112,7 @@ certificateKey
     }
 
     /**
-     *  "Domain": "ucloud.certd.handsfree.work",
+     *  "Domain": "ucloud.certd.handfree.work",
       "DomainId": "ucdn-1kwdtph5ygbb"
      */
     const options = list.map((item: any) => {

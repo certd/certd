@@ -11,10 +11,10 @@ export class AccessGetter implements IAccessService {
   }
 
   async getById<T = any>(id: any) {
-    return await this.getter<T>(id, this.userId, this.projectId);
+    return await this.getter<T>(id, this.userId, this.projectId, false);
   }
 
   async getCommonById<T = any>(id: any) {
-    return await this.getter<T>(id, 0, null);
+    return await this.getter<T>(id, 0, null, false);
   }
 }

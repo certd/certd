@@ -41,7 +41,7 @@
 
 <script lang="ts" setup>
 import { ref, computed } from "vue";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 
 // 组件属性
 const props = defineProps<{
@@ -68,7 +68,7 @@ const runTest = async () => {
   } catch (err: any) {
     result.value = null;
     error.value = err.message || "测试失败";
-    message.error(`${props.title} 测试失败: ${error.value}`);
+    notification.error({ message: `${props.title} 测试失败: ${error.value}` });
   } finally {
     loading.value = false;
   }

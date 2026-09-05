@@ -5,6 +5,7 @@ import { IContext } from "@certd/pipeline";
 import { IDnsProvider, IDomainParser } from "@certd/plugin-lib";
 import punycode from "punycode.js";
 import { IOssClient } from "../../../plugin-lib/index.js";
+import { NonRetryableException } from "@certd/lib-server";
 export type CnameVerifyPlan = {
   type?: string;
   domain: string;
@@ -62,7 +63,7 @@ export type CertInfo = {
   one?: string;
   p7b?: string;
 };
-export type SSLProvider = "letsencrypt" | "google" | "zerossl" | "sslcom" | "letsencrypt_staging";
+export type SSLProvider = "letsencrypt" | "google" | "zerossl" | "sslcom" | "letsencrypt_staging" | "custom";
 export type PrivateKeyType = "rsa_1024" | "rsa_2048" | "rsa_3072" | "rsa_4096" | "ec_256" | "ec_384" | "ec_521";
 type AcmeEabOptions = ClientExternalAccountBindingOptions & {
   id?: number;
@@ -82,6 +83,10 @@ type AcmeServiceOptions = {
   userId: number;
   domainParser: IDomainParser;
   waitDnsDiffuseTime?: number;
+  /**
+   * 自定义ACME Directory URL（sslProvider=custom 时必填，其他颁发机构缺省使用内置端点）
+   */
+  directoryUrl?: string;
 };
 
 export class AcmeService {
@@ -176,15 +181,6 @@ export class AcmeService {
       "acme-v02.api.letsencrypt.org": "le.px.certd.handfree.work",
       "dv.acme-v02.api.pki.goog": "gg.px.certd.handfree.work",
     };
-    const reverseProxies = acme.getSslProviderReverseProxies();
-    if (reverseProxies) {
-      for (const key in reverseProxies) {
-        const value = reverseProxies[key];
-        if (value) {
-          mappings[key] = value;
-        }
-      }
-    }
     if (this.options.reverseProxy && targetUrl) {
       mappings[targetUrl] = this.options.reverseProxy;
     }
@@ -196,6 +192,11 @@ export class AcmeService {
 
   async resolveUrlMapping(directoryUrl: string) {
     const urlMapping = this.buildUrlMapping(directoryUrl);
+    // 显式配置了反向代理地址（如自定义ACME配置的 reverseProxy）时，直接启用 urlMapping，保证反代始终生效
+    if (this.options.reverseProxy) {
+      urlMapping.enabled = true;
+      return urlMapping;
+    }
     if (this.options.useMappingProxy) {
       urlMapping.enabled = true;
       return urlMapping;
@@ -209,7 +210,7 @@ export class AcmeService {
   }
 
   async getAcmeClient(email: string): Promise<acme.Client> {
-    const directoryUrl = acme.getDirectoryUrl({ sslProvider: this.sslProvider, pkType: this.options.privateKeyType });
+    const directoryUrl = this.getDirectoryUrl();
     const urlMapping = await this.resolveUrlMapping(directoryUrl);
     const conf = await this.getAccountConfig(email, urlMapping);
     if (conf.key == null) {
@@ -279,6 +280,20 @@ export class AcmeService {
       signal: this.options.signal,
       logger: this.logger,
     });
+  }
+
+  /**
+   * 获取ACME Directory URL：
+   * 优先使用自定义 directoryUrl（自定义ACME）；缺省时使用内置颁发机构端点
+   */
+  getDirectoryUrl() {
+    if (this.options.directoryUrl) {
+      return this.options.directoryUrl;
+    }
+    if (this.sslProvider === "custom") {
+      throw new Error("自定义ACME需要填写Directory URL");
+    }
+    return acme.getDirectoryUrl({ sslProvider: this.sslProvider, pkType: this.options.privateKeyType });
   }
 
   async createNewKey() {
@@ -530,39 +545,82 @@ export class AcmeService {
       domainsVerifyPlan,
     };
     /* 自动申请证书 */
-    const challengePriority = domainsVerifyPlan && Object.values(domainsVerifyPlan).some((item: any) => item?.type === "dns-persist") ? ["dns-persist-01"] : ["dns-01", "http-01"];
-    const crt = await client.auto({
-      csr,
-      email: email,
-      termsOfServiceAgreed: true,
-      skipChallengeVerification: this.skipLocalVerify,
-      challengePriority,
-      challengeCreateFn: async (
-        authz: acme.Authorization,
-        keyAuthorizationGetter: (challenge: Challenge) => Promise<string>
-      ): Promise<{ recordReq?: any; recordRes?: any; dnsProvider?: any; challenge: Challenge; keyAuthorization: string }> => {
-        return await this.challengeCreateFn(authz, keyAuthorizationGetter, providers);
-      },
-      challengeRemoveFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string, recordReq: any, recordRes: any, dnsProvider: IDnsProvider, httpUploader: IOssClient): Promise<any> => {
-        return await this.challengeRemoveFn(authz, challenge, keyAuthorization, recordReq, recordRes, dnsProvider, httpUploader);
-      },
-      signal: this.options.signal,
-      profile,
-      preferredChain,
-      waitDnsDiffuseTime: this.options.waitDnsDiffuseTime,
-    });
+    try {
+      const crt = await client.auto({
+        csr,
+        email: email,
+        termsOfServiceAgreed: true,
+        skipChallengeVerification: this.skipLocalVerify,
+        challengeCreateFn: async (
+          authz: acme.Authorization,
+          keyAuthorizationGetter: (challenge: Challenge) => Promise<string>
+        ): Promise<{ recordReq?: any; recordRes?: any; dnsProvider?: any; challenge: Challenge; keyAuthorization: string }> => {
+          return await this.challengeCreateFn(authz, keyAuthorizationGetter, providers);
+        },
+        challengeRemoveFn: async (authz: acme.Authorization, challenge: Challenge, keyAuthorization: string, recordReq: any, recordRes: any, dnsProvider: IDnsProvider, httpUploader: IOssClient): Promise<any> => {
+          return await this.challengeRemoveFn(authz, challenge, keyAuthorization, recordReq, recordRes, dnsProvider, httpUploader);
+        },
+        signal: this.options.signal,
+        profile,
+        preferredChain,
+        waitDnsDiffuseTime: this.options.waitDnsDiffuseTime,
+      });
 
-    const crtString = crt.toString();
-    const cert: CertInfo = {
-      crt: crtString,
-      key: key.toString(),
-      csr: csr.toString(),
-    };
-    /* Done */
-    this.logger.debug(`CSR:\n${cert.csr}`);
-    this.logger.debug(`Certificate:\n${cert.crt}`);
-    this.logger.info("证书申请成功");
-    return cert;
+      const crtString = crt.toString();
+      const cert: CertInfo = {
+        crt: crtString,
+        key: key.toString(),
+        csr: csr.toString(),
+      };
+      /* Done */
+      this.logger.debug(`CSR:\n${cert.csr}`);
+      this.logger.debug(`Certificate:\n${cert.crt}`);
+      this.logger.info("证书申请成功");
+      return cert;
+    } catch (e) {
+      const message = e?.message;
+      const REDUNDANT_WILDCARD_DOMAIN_ERROR = "redundant with a wildcard domain in the same request";
+      if (message != null && message.indexOf(REDUNDANT_WILDCARD_DOMAIN_ERROR) >= 0) {
+        throw new NonRetryableException(`通配符域名已经包含了普通域名，请删除其中一个（${message}）`);
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * 吊销证书
+   *
+   * 优先使用ACME账号私钥签名吊销请求（RFC 8555 §7.6 方式一）；
+   * 未提供ACME账号时，使用证书私钥签名吊销请求（RFC 8555 §7.6 方式二），此时无需账号信息。
+   */
+  async revokeCert(req: { cert: CertInfo; acmeAccount?: AcmeAccountInfo }) {
+    const { cert, acmeAccount } = req;
+    if (!cert?.crt) {
+      throw new Error("证书内容为空，无法吊销");
+    }
+    if (acmeAccount) {
+      // 方式一：使用ACME账号私钥签名
+      const client = await this.getAcmeClientByAccount(acmeAccount);
+      await client.revokeCertificate(cert.crt);
+      this.logger.info("证书吊销成功（ACME账号方式）");
+      return;
+    }
+    // 方式二：使用证书私钥签名
+    if (!cert.key) {
+      throw new Error("证书私钥为空，无法使用证书私钥方式吊销，请先在该流水线中配置ACME账号");
+    }
+    const directoryUrl = this.getDirectoryUrl();
+    const urlMapping = await this.resolveUrlMapping(directoryUrl);
+    const client = new acme.Client({
+      sslProvider: this.sslProvider,
+      directoryUrl,
+      accountKey: cert.key,
+      urlMapping,
+      logger: this.logger,
+    });
+    // 使用证书私钥签名吊销请求（JWS header 携带证书公钥 jwk，而非账号 kid）
+    await client.revokeCertificate(cert.crt, {}, { includeJwsKid: false });
+    this.logger.info("证书吊销成功（证书私钥方式）");
   }
 
   buildCommonNameByDomains(domains: string | string[]): {

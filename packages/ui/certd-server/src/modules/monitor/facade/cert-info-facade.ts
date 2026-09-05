@@ -1,5 +1,5 @@
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
-import { CodeException, Constants } from "@certd/lib-server";
+import { AccessService, CodeException, Constants, TextedException } from "@certd/lib-server";
 import { CertInfoEntity } from "../entity/cert-info.js";
 import { utils } from "@certd/basic";
 import { PipelineService } from "../../pipeline/service/pipeline-service.js";
@@ -30,8 +30,21 @@ export class CertInfoFacade {
   @Inject()
   certApplyTemplateService: CertApplyTemplateService;
 
-  async getCertInfo(req: { domains?: string; certId?: number; userId: number; projectId: number; autoApply?: boolean; format?: string; autoApplyTemplateId?: number; autoApplyParams?: CertApplyTemplateParams }) {
-    const { domains, certId, userId, projectId } = req;
+  @Inject()
+  accessService: AccessService;
+
+  async getCertInfo(req: {
+    domains?: string;
+    certId?: number;
+    pipelineId?: number;
+    userId: number;
+    projectId: number;
+    autoApply?: boolean;
+    format?: string;
+    autoApplyTemplateId?: number;
+    autoApplyParams?: CertApplyTemplateParams;
+  }) {
+    const { domains, certId, pipelineId, userId, projectId } = req;
     if (certId) {
       return await this.certInfoService.getCertInfoById({ id: certId, userId, projectId });
     }
@@ -43,7 +56,7 @@ export class CertInfoFacade {
     }
     const domainArr = domains.split(",");
 
-    const matchedList = await this.certInfoService.getMatchCertList({ domains: domainArr, userId, projectId });
+    const matchedList = await this.certInfoService.getMatchCertList({ domains: domainArr, userId, projectId, pipelineId });
 
     if (matchedList.length === 0) {
       if (req.autoApply === true) {
@@ -129,11 +142,6 @@ export class CertInfoFacade {
       }
     }
 
-    const userEmailSetting = await this.userSettingsService.getSetting<UserEmailSetting>(req.userId, null, UserEmailSetting);
-    if (!userEmailSetting.list) {
-      throw new CodeException(Constants.res.openEmailNotFound);
-    }
-    const email = userEmailSetting.list[0];
     const applyParams = await this.certApplyTemplateService.resolveApplyParams({
       userId: req.userId,
       projectId: req.projectId,
@@ -141,9 +149,30 @@ export class CertInfoFacade {
       params: req.autoApplyParams,
     });
 
+    if (!applyParams.email) {
+      let email = null;
+      const userEmailSetting = await this.userSettingsService.getSetting<UserEmailSetting>(req.userId, null, UserEmailSetting);
+      if (userEmailSetting.list && userEmailSetting.list.length > 0) {
+        email = userEmailSetting.list[0];
+        applyParams.email = email;
+      }
+    }
+
+    if (!applyParams.acmeAccountAccessId) {
+      //如果没有配置acmeAccountAccessId，则默认使用默认的acmeAccountAccessId
+      applyParams.sslProvider = "letsencrypt";
+      const defaultAccount = await this.accessService.getDefaultByType({ type: "acmeAccount", userId: req.userId, projectId: req.projectId, subtype: "letsencrypt" });
+      if (defaultAccount) {
+        applyParams.acmeAccountAccessId = defaultAccount.id;
+      }
+    }
+    if (applyParams.certApplyRetryCount == null) {
+      //如果没有配置重试次数，则默认再重试2次
+      applyParams.certApplyRetryCount = 2;
+    }
+
     return await this.pipelineService.createAutoPipeline({
       domains: req.domains,
-      email,
       projectId: req.projectId,
       userId: req.userId,
       from: "OpenAPI",
@@ -153,18 +182,34 @@ export class CertInfoFacade {
 
   async triggerApplyPipeline(req: { pipelineId: number }) {
     //查询流水线状态
-    const status = await this.pipelineService.getStatus(req.pipelineId);
+    const pipelineStatus = await this.pipelineService.getStatus(req.pipelineId);
+    const status = pipelineStatus?.status;
+    if (status === "error" && !this.canRetryErrorPipeline(pipelineStatus?.updateTime)) {
+      throw new CodeException({
+        ...Constants.res.openPipelineError,
+        data: {
+          pipelineId: req.pipelineId,
+        },
+      });
+    }
     if (status != "running" && status != "start") {
       await this.pipelineService.trigger(req.pipelineId);
       await utils.sleep(2000);
     }
     const certInfo = await this.certInfoService.getByPipelineId(req.pipelineId);
-    throw new CodeException({
+    throw new TextedException({
       ...Constants.res.openCertApplying,
       data: {
         pipelineId: req.pipelineId,
         certId: certInfo?.id,
       },
     });
+  }
+  private canRetryErrorPipeline(updateTime?: Date) {
+    if (!updateTime) {
+      return false;
+    }
+    const retryInterval = 3 * 60 * 60 * 1000;
+    return Date.now() - updateTime.getTime() >= retryInterval;
   }
 }

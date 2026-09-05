@@ -3,7 +3,7 @@ import { Registrable } from "../registry/index.js";
 import { FormItemProps, HistoryResult, Pipeline } from "../dt/index.js";
 import { HttpClient, ILogger, utils } from "@certd/basic";
 import * as _ from "lodash-es";
-import { IEmailService } from "../service/index.js";
+import { IEmailService, IServiceGetter, getRuntimeDepsService } from "../service/index.js";
 
 export type NotificationBody = {
   userId?: number;
@@ -39,6 +39,8 @@ export type NotificationInputDefine = FormItemProps & {
 };
 export type NotificationDefine = Registrable & {
   needPlus?: boolean;
+  dependPlugins?: Record<string, string>;
+  dependPackages?: Record<string, string>;
   input?: {
     [key: string]: NotificationInputDefine;
   };
@@ -78,6 +80,8 @@ export type NotificationContext = {
   logger: ILogger;
   utils: typeof utils;
   emailService: IEmailService;
+  serviceGetter?: IServiceGetter;
+  define?: NotificationDefine;
 };
 
 export abstract class BaseNotification implements INotification {
@@ -86,14 +90,22 @@ export abstract class BaseNotification implements INotification {
   http!: HttpClient;
   logger!: ILogger;
 
+  async importRuntime(specifier: string) {
+    return await getRuntimeDepsService().importRuntime(specifier, this.logger);
+  }
+
   async doSend(body: NotificationBody) {
+    if (body.content) {
+      const content = body.content?.replace(/\n/g, "   \n");
+      body.content = content;
+    }
     return await this.send(body);
   }
   abstract send(body: NotificationBody): Promise<void>;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   async onInstance() {}
-  setCtx(ctx: NotificationContext) {
+  async setCtx(ctx: NotificationContext) {
     this.ctx = ctx;
     this.http = ctx.http;
     this.logger = ctx.logger;

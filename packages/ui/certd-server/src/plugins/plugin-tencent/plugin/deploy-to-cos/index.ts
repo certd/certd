@@ -3,19 +3,28 @@ import { CertInfo } from "@certd/plugin-cert";
 import { createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { TencentSslClient } from "../../../plugin-lib/tencent/index.js";
 import { CertApplyPluginNames } from "@certd/plugin-cert";
-@IsTaskPlugin({
+
+const deployCertToTencentCosDefine: any = {
   name: "DeployCertToTencentCosPlugin",
   title: "腾讯云-部署证书到COS",
   needPlus: false,
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "部署到腾讯云COS源站域名证书，注意是源站域名，加速域名请使用腾讯云CDN v2插件【注意：很不稳定，需要重试很多次偶尔才能成功一次】",
+  dependPlugins: {
+    "access:tencent": "*",
+  },
+  dependPackages: {
+    "cos-nodejs-sdk-v5": "^2.14.6",
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
-})
+};
+
+@IsTaskPlugin(deployCertToTencentCosDefine)
 export class DeployCertToTencentCosPlugin extends AbstractTaskPlugin {
   /**
    * AccessProvider的id
@@ -133,7 +142,7 @@ export class DeployCertToTencentCosPlugin extends AbstractTaskPlugin {
   async onGetDomainList(data: any) {
     const access = await this.getAccess(this.accessId);
 
-    const cosv5 = await import("cos-nodejs-sdk-v5");
+    const cosv5 = await this.importRuntime("cos-nodejs-sdk-v5");
     const cos = new cosv5.default({
       SecretId: access.secretId,
       SecretKey: access.secretKey,

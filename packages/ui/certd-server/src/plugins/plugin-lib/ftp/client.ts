@@ -12,7 +12,7 @@ export class FtpClient {
   }
 
   async connect(callback: (client: FtpClient) => Promise<any>) {
-    const ftp = await import("basic-ftp");
+    const ftp = await this.access.importRuntime("basic-ftp");
     const Client = ftp.Client;
     const client = new Client();
     client.ftp.verbose = true;

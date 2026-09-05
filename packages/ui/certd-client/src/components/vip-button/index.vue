@@ -12,7 +12,7 @@
   </div>
 </template>
 <script lang="tsx" setup>
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import dayjs from "dayjs";
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
@@ -23,6 +23,7 @@ import { useUserStore } from "/@/store/user";
 import { env } from "/@/utils/util.env";
 import { mitter } from "/@/utils/util.mitt";
 import VipModalContent from "./vip-modal-content.vue";
+import { registerOnceVipModal } from "./once";
 const { t } = useI18n();
 
 defineOptions({
@@ -130,7 +131,7 @@ const userStore = useUserStore();
 
 async function getVipTrial(vipType = "plus") {
   const res = await api.getVipTrial(vipType);
-  message.success(t("vip.congratulations_vip_trial", { duration: res.duration }));
+  notification.success({ message: t("vip.congratulations_vip_trial", { duration: res.duration }) });
   await settingStore.init();
 }
 
@@ -157,7 +158,7 @@ function openTrialModal(vipType = "plus") {
 
 function openStarModal(vipType: string) {
   if (settingStore.isPlus) {
-    message.error(t("vip.already_vip"));
+    notification.error({ message: t("vip.already_vip") });
     return;
   }
   Modal.destroyAll();
@@ -189,7 +190,7 @@ function openStarModal(vipType: string) {
 
 function openUpgrade() {
   if (!userStore.isAdmin) {
-    message.info(t("vip.admin_only_operation"));
+    notification.info({ message: t("vip.admin_only_operation") });
     return;
   }
   const placeholder = t("vip.enter_activation_code");
@@ -258,7 +259,7 @@ function openUpgrade() {
   });
 }
 onMounted(() => {
-  mitter.on("openVipModal", () => {
+  registerOnceVipModal(() => {
     if (props.mode === "nav" && !settingStore.isPlus) {
       openUpgrade();
     }

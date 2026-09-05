@@ -9,6 +9,9 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "推荐使用，支持CDN域名以及COS加速域名",
+  dependPlugins: {
+    "access:tencent": "*",
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -29,7 +32,6 @@ export class TencentDeployCertToCDNv2 extends AbstractTaskPlugin {
 
   @TaskInput(createCertDomainGetterInputDefine({ props: { required: false } }))
   certDomains!: string[];
-
   @TaskInput({
     title: "Access提供者",
     helper: "access 授权",
@@ -89,7 +91,7 @@ export class TencentDeployCertToCDNv2 extends AbstractTaskPlugin {
 
   async getCdnClient() {
     const accessProvider = await this.getAccess<TencentAccess>(this.accessId);
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/cdn/v20180606/index.js");
+    const sdk = await (this as any).importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/cdn/v20180606/index.js");
     const CdnClient = sdk.v20180606.Client;
 
     const clientConfig = {

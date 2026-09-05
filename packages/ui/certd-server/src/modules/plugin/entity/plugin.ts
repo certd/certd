@@ -30,7 +30,7 @@ export class PluginEntity {
   content: string;
 
   @Column({ comment: "类型", length: 100, nullable: true })
-  type: string; // builtIn | local | download
+  type: string; // builtIn | store
 
   @Column({ comment: "启用/禁用", default: false })
   disabled: boolean;
@@ -41,14 +41,50 @@ export class PluginEntity {
   @Column({ comment: "插件类型", length: 100, nullable: true })
   pluginType: string;
 
+  @Column({ comment: "是否已安装", default: true })
+  installed: boolean;
+
   @Column({ comment: "元数据", length: 40960, nullable: true })
   metadata: string;
 
   @Column({ comment: "额外配置", length: 40960, nullable: true })
   extra: string;
 
+  @Column({ name: "depend_plugins", comment: "依赖的其他插件声明(type:name -> 版本或完整标识)", length: 4096, nullable: true })
+  dependPlugins: string;
+
   @Column({ comment: "作者", length: 100, nullable: true })
   author: string;
+
+  @Column({ name: "app_id", comment: "平台应用ID", nullable: true })
+  appId: number;
+
+  @Column({ name: "developer_id", comment: "平台开发者ID", nullable: true })
+  developerId: number;
+
+  @Column({ name: "full_name", comment: "插件完整名称", length: 200, nullable: true })
+  fullName: string;
+
+  @Column({ comment: "最新版本", length: 100, nullable: true })
+  latest: string;
+
+  @Column({ comment: "市场状态", length: 100, nullable: true })
+  status: string;
+
+  @Column({ name: "download_count", comment: "下载次数", nullable: true })
+  downloadCount: number;
+
+  @Column({ type: "real", comment: "评分", nullable: true })
+  score: number;
+
+  @Column({ name: "ai_check_status", comment: "最新版本AI审核状态", length: 32, default: "" })
+  aiCheckStatus: string;
+
+  @Column({ comment: "最低VIP等级", length: 50, nullable: true })
+  vip: string;
+
+  @Column({ name: "sync_time", comment: "同步时间", nullable: true })
+  syncTime: number;
 
   @Column({
     name: "create_time",

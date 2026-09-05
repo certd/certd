@@ -104,26 +104,37 @@ export class BaotaDeployWebSiteCert extends AbstractTaskPlugin {
     }
 
     const lockKey = `baota-lock-${accessId}`;
-
+    if (this.isDockerSite) {
+      this.logger.info(`当前已勾选docker站点（如果部署失败，请确认站点：${siteNames}， 是否全部为docker站点）`);
+    }
     for (const site of siteNames) {
       // 加锁，防止并发部署证书， 宝塔并发部署会导致nginx的conf错乱
       await this.ctx.utils.locker.execute(lockKey, async () => {
-        this.logger.info(`为站点:${site}设置证书，目前支持宝塔网站站点、docker站点`);
-        if (this.isDockerSite) {
-          const res = await client.doRequest("/mod/docker/com/set_ssl", "", {
-            site_name: site,
-            key: cert.key,
-            csr: cert.crt,
-          });
-          this.logger.info(res?.msg);
-        } else {
-          const res = await client.doRequest("/site", "SetSSL", {
-            type: 0,
-            siteName: site,
-            key: cert.key,
-            csr: cert.crt,
-          });
-          this.logger.info(res?.msg);
+        try {
+          if (this.isDockerSite) {
+            this.logger.info(`为Docker站点:${site} 设置证书`);
+            const res = await client.doRequest("/mod/docker/com/set_ssl", "", {
+              site_name: site,
+              key: cert.key,
+              csr: cert.crt,
+            });
+            this.logger.info(res?.msg);
+          } else {
+            this.logger.info(`为非Docker站点:${site} 设置证书`);
+            const res = await client.doRequest("/site", "SetSSL", {
+              type: 0,
+              siteName: site,
+              key: cert.key,
+              csr: cert.crt,
+            });
+            this.logger.info(res?.msg);
+          }
+        } catch (e: any) {
+          if (e?.message?.includes("没有服务器配置文件")) {
+            this.logger.error(e.message);
+            this.logger.warn(`首先请确认站点 ${site} 是否存在，如果存在，请到宝塔上手动保存一下该站点证书试试`);
+          }
+          throw e;
         }
       });
     }

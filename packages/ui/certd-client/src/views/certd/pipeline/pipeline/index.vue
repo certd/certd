@@ -119,9 +119,50 @@
               </template>
 
               <template #item="{ element: stage, index }">
-                <div :key="stage.id" class="stage" :class="{ 'last-stage': isLastStage(index), ['stage_' + index]: true }">
+                <div :key="stage.id" class="stage" :class="{ 'last-stage': isLastStage(index), ['stage_' + index]: true }" :style="getStageStyle(stage)">
                   <div class="title" @mousedown.stop>
-                    <text-editable v-model="stage.title" :disabled="!editMode"></text-editable>
+                    <template v-if="isStageBatchEditing(stage.id)">
+                      <div class="stage-batch-actions">
+                        <a-tooltip title="全选任务">
+                          <a-checkbox
+                            :aria-label="`全选${stage.title}中的任务`"
+                            :checked="isAllTasksSelected(stage)"
+                            :indeterminate="isTasksSelectionIndeterminate(stage)"
+                            @click.stop
+                            @change="toggleAllTasks(stage, $event.target.checked)"
+                          />
+                        </a-tooltip>
+                        <!-- <a-tag v-if="getSelectedTaskCount(stage) > 0" color="blue">{{ getSelectedTaskCount(stage) }}</a-tag> -->
+                        <a-tooltip title="批量启用任务">
+                          <a-button type="text" size="small" :disabled="getSelectedTaskCount(stage) === 0" @click="batchEnableTasks(stage)">
+                            <fs-icon :class="{ 'text-green-600': getSelectedTaskCount(stage) !== 0 }" icon="ion:power-outline"></fs-icon>
+                          </a-button>
+                        </a-tooltip>
+                        <a-tooltip title="批量禁用任务">
+                          <a-button type="text" size="small" :disabled="getSelectedTaskCount(stage) === 0" @click="batchDisableTasks(stage)">
+                            <fs-icon icon="ion:stop-circle-outline"></fs-icon>
+                          </a-button>
+                        </a-tooltip>
+                        <a-tooltip title="批量删除任务">
+                          <a-button danger type="text" size="small" :disabled="getSelectedTaskCount(stage) === 0" @click="batchDeleteTasks(stage)">
+                            <fs-icon icon="ion:trash-outline"></fs-icon>
+                          </a-button>
+                        </a-tooltip>
+                        <a-tooltip title="退出批量编辑">
+                          <a-button type="text" size="small" @click="setStageBatchEditing(stage, false)">
+                            <fs-icon icon="ion:close-outline"></fs-icon>
+                          </a-button>
+                        </a-tooltip>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <text-editable v-model="stage.title" :disabled="!editMode" title="编辑阶段标题"></text-editable>
+                      <a-tooltip v-if="editMode && stage.tasks.length > 0" title="批量编辑任务">
+                        <a-button type="text" size="small" class="stage-batch-edit-button need-plus" @click="setStageBatchEditing(stage, true)">
+                          <fs-icon icon="tdesign:ai-edit-1"></fs-icon>
+                        </a-button>
+                      </a-tooltip>
+                    </template>
                     <div v-plus class="icon-box stage-move-handle">
                       <fs-icon v-if="editMode" title="拖动排序" icon="ion:move-outline"></fs-icon>
                     </div>
@@ -135,6 +176,14 @@
                           'validate-error': hasValidateError(task.id),
                         }"
                       >
+                        <a-checkbox
+                          v-if="isStageBatchEditing(stage.id)"
+                          class="task-select"
+                          :aria-label="`选择任务${task.title}`"
+                          :checked="isTaskSelected(stage.id, task.id)"
+                          @click.stop
+                          @change="toggleTaskSelection(stage.id, task.id, $event.target.checked)"
+                        />
                         <div class="line line-left">
                           <div class="flow-line"></div>
                           <fs-icon v-if="editMode" class="add-stage-btn" title="添加新阶段" icon="ion:add-circle" @click="stageAdd(index)"></fs-icon>
@@ -192,6 +241,7 @@
                       </div>
                     </template>
                   </v-draggable>
+                  <div v-if="editMode" class="stage-resize-handle" title="拖动调整阶段宽度" @mousedown.stop.prevent="startStageResize(stage, $event)"></div>
                 </div>
               </template>
               <template #footer>
@@ -209,6 +259,30 @@
                         <a-button shape="round" type="dashed" @click="stageAdd()">
                           <fs-icon icon="ion:add-circle-outline"></fs-icon>
                           添加任务
+                        </a-button>
+                      </div>
+                    </div>
+                    <div class="task-container">
+                      <div class="line line-left">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" type="dashed" @click="afterTaskAdd()">
+                          <fs-icon icon="ion:add-circle-outline"></fs-icon>
+                          添加后置任务
+                        </a-button>
+                      </div>
+                    </div>
+                    <div v-for="(item, ii) of pipeline.afterTasks" :key="ii" class="task-container">
+                      <div class="line line-left">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" @click="afterTaskEdit(item, ii as number)">
+                          <div class="flex-o w-100">
+                            <fs-icon icon="ion:flash-outline"></fs-icon>
+                            <span class="ellipsis flex-1 step-title align-left"> 【后置】 {{ item.title || item.type }} </span>
+                          </div>
                         </a-button>
                       </div>
                     </div>
@@ -242,16 +316,31 @@
                   <div class="title">
                     <text-editable model-value="结束" :disabled="true" />
                   </div>
-                  <div v-if="pipeline.notifications?.length > 0" class="tasks">
+                  <div v-if="pipeline.notifications?.length > 0 || pipeline.afterTasks?.length > 0" class="tasks">
+                    <div v-for="(item, index) of pipeline.afterTasks" :key="index" class="task-container" :class="{ 'first-task': pipeline.notifications?.length === 0 && index == 0 }">
+                      <div class="line line-left">
+                        <div class="flow-line"></div>
+                      </div>
+                      <div class="task">
+                        <a-button shape="round" :title="item.title || item.type" @click="viewNodeLogs(`afterTask.${item.id}`, t('certd.view_after_task_log'), item)">
+                          <div class="flex-o w-100">
+                            <fs-icon icon="ion:flash-outline"></fs-icon>
+                            <span class="ellipsis flex-1 step-title align-left"> 【后置】 {{ item.title || item.type }} </span>
+                            <pi-status-show v-if="item.status?.result" :status="item.status.result"></pi-status-show>
+                          </div>
+                        </a-button>
+                      </div>
+                    </div>
                     <div v-for="(item, index) of pipeline.notifications" :key="index" class="task-container" :class="{ 'first-task': index == 0 }">
                       <div class="line line-left">
                         <div class="flow-line"></div>
                       </div>
                       <div class="task">
-                        <a-button shape="round" @click="notificationEdit(item, index)">
+                        <a-button shape="round" :title="item.title || item.type" @click="viewNodeLogs(`notification.${item.id}`, t('certd.view_notification_log'), item)">
                           <div class="flex-o w-100">
                             <fs-icon icon="ion:notifications"></fs-icon>
                             <span class="ellipsis flex-1 step-title align-left"> 【通知】 {{ item.title || item.type }} </span>
+                            <pi-status-show v-if="item.status?.result" :status="item.status.result"></pi-status-show>
                           </div>
                         </a-button>
                       </div>
@@ -304,6 +393,7 @@
     <pi-trigger-form ref="triggerFormRef" :edit-mode="editMode"></pi-trigger-form>
     <pi-task-view ref="taskViewRef" @run="run"></pi-task-view>
     <PiNotificationForm ref="notificationFormRef" :edit-mode="editMode"></PiNotificationForm>
+    <PiAfterTaskForm ref="afterTaskFormRef" :edit-mode="editMode"></PiAfterTaskForm>
   </fs-page>
 </template>
 
@@ -314,11 +404,12 @@ import { useRouter } from "vue-router";
 import PiTaskForm from "./component/task-form/index.vue";
 import PiTriggerForm from "./component/trigger-form/index.vue";
 import PiNotificationForm from "./component/notification-form/index.vue";
+import PiAfterTaskForm from "./component/after-task-form/index.vue";
 import PiTaskView from "./component/task-view/index.vue";
 import PiStatusShow from "./component/status-show.vue";
 import VDraggable from "vuedraggable";
 import { cloneDeep, merge, remove } from "lodash-es";
-import { message, Modal, notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { nanoid } from "nanoid";
 import { PipelineDetail, PipelineOptions, RunHistory } from "./type";
 import type { Runnable, Stage } from "@certd/pipeline";
@@ -335,6 +426,7 @@ import { useI18n } from "/@/locales";
 import TriggerIcon from "./component/trigger-icon.vue";
 import { useCrudPermission } from "/@/plugin/permission";
 import { onBeforeRouteLeave } from "vue-router";
+import { disableTasks, enableTasks, getStageWidth, removeSelectedItems, setStageWidth } from "./component/batch-actions";
 export default defineComponent({
   name: "PipelineEdit",
   // eslint-disable-next-line vue/no-unused-components
@@ -346,6 +438,7 @@ export default defineComponent({
     PiTaskView,
     PiStatusShow,
     PiNotificationForm,
+    PiAfterTaskForm,
     VDraggable,
     TaskShortcuts,
     TriggerIcon,
@@ -544,6 +637,7 @@ export default defineComponent({
             stages: [],
             triggers: [],
             notifications: [],
+            afterTasks: [],
           },
           detail.pipeline
         );
@@ -572,11 +666,113 @@ export default defineComponent({
       const taskFormRef: Ref<any> = ref(null);
       const currentStageIndex = ref(0);
       const currentTaskIndex = ref(0);
+      const selectedTaskIds = ref<Record<string, string[]>>({});
+      const batchEditingStageIds = ref<Record<string, boolean>>({});
       provide("currentStageIndex", currentStageIndex);
       provide("currentTaskIndex", currentTaskIndex);
 
+      const getSelectedTaskIds = (stage: any) => {
+        const taskIds = new Set(stage.tasks.map((task: any) => task.id));
+        return (selectedTaskIds.value[stage.id] || []).filter(taskId => taskIds.has(taskId));
+      };
+
+      const getSelectedTaskCount = (stage: any) => {
+        return getSelectedTaskIds(stage).length;
+      };
+
+      const isTaskSelected = (stageId: string, taskId: string) => {
+        return (selectedTaskIds.value[stageId] || []).includes(taskId);
+      };
+
+      const toggleTaskSelection = (stageId: string, taskId: string, selected: boolean) => {
+        const taskIds = new Set(selectedTaskIds.value[stageId] || []);
+        if (selected) {
+          taskIds.add(taskId);
+        } else {
+          taskIds.delete(taskId);
+        }
+        selectedTaskIds.value[stageId] = [...taskIds];
+      };
+
+      const isAllTasksSelected = (stage: any) => {
+        return stage.tasks.length > 0 && getSelectedTaskCount(stage) === stage.tasks.length;
+      };
+
+      const isTasksSelectionIndeterminate = (stage: any) => {
+        const selectedCount = getSelectedTaskCount(stage);
+        return selectedCount > 0 && selectedCount < stage.tasks.length;
+      };
+
+      const toggleAllTasks = (stage: any, selected: boolean) => {
+        selectedTaskIds.value[stage.id] = selected ? stage.tasks.map((task: any) => task.id) : [];
+      };
+
+      const clearTaskSelection = (stageId: string) => {
+        selectedTaskIds.value[stageId] = [];
+      };
+
+      const isStageBatchEditing = (stageId: string) => {
+        return batchEditingStageIds.value[stageId] === true;
+      };
+
+      const setStageBatchEditing = (stage: any, enabled: boolean) => {
+        if (enabled) {
+          // 批量编辑任务为专业版功能，非专业版用户点击后弹出升级提示并中断
+          settingStore.checkPlus();
+        }
+        batchEditingStageIds.value[stage.id] = enabled;
+        if (!enabled) {
+          clearTaskSelection(stage.id);
+        }
+      };
+
+      const clearTaskBatchEditing = () => {
+        selectedTaskIds.value = {};
+        batchEditingStageIds.value = {};
+      };
+
+      watch(
+        () => props.editMode,
+        editMode => {
+          if (!editMode) {
+            clearTaskBatchEditing();
+          }
+        }
+      );
+
+      const batchEnableTasks = (stage: any) => {
+        const selectedIds = new Set(getSelectedTaskIds(stage));
+        stage.tasks = enableTasks(stage.tasks, selectedIds);
+        clearTaskSelection(stage.id);
+      };
+
+      const batchDisableTasks = (stage: any) => {
+        const selectedIds = new Set(getSelectedTaskIds(stage));
+        stage.tasks = disableTasks(stage.tasks, selectedIds);
+        clearTaskSelection(stage.id);
+      };
+
+      const batchDeleteTasks = (stage: any) => {
+        const selectedIds = new Set(getSelectedTaskIds(stage));
+        const selectedCount = selectedIds.size;
+        if (selectedCount === 0) {
+          return;
+        }
+
+        Modal.confirm({
+          title: "确认",
+          content: `确定要删除选中的 ${selectedCount} 个任务吗？`,
+          onOk() {
+            stage.tasks = removeSelectedItems(stage.tasks, selectedIds);
+            clearTaskSelection(stage.id);
+            if (stage.tasks.length === 0) {
+              remove(pipeline.value.stages, (item: Runnable) => item.id === stage.id);
+            }
+          },
+        });
+      };
+
       function useTaskView() {
-        const taskViewRef: Ref<any> = ref(null);
         const taskViewOpen = (task: any) => {
           taskViewRef.value.open(task);
         };
@@ -638,10 +834,29 @@ export default defineComponent({
         }
       };
 
-      return { taskAdd, taskEdit, taskCopy, taskFormRef, ...taskView };
+      return {
+        taskAdd,
+        taskEdit,
+        taskCopy,
+        taskFormRef,
+        isStageBatchEditing,
+        setStageBatchEditing,
+        isTaskSelected,
+        getSelectedTaskCount,
+        isAllTasksSelected,
+        isTasksSelectionIndeterminate,
+        toggleTaskSelection,
+        toggleAllTasks,
+        batchEnableTasks,
+        batchDisableTasks,
+        batchDeleteTasks,
+        ...taskView,
+      };
     }
 
     function useStage(useTaskRet: any) {
+      let clearStageResize: (() => void) | null = null;
+
       const stageAdd = (stageIndex = pipeline.value.stages.length) => {
         const stage: any = {
           id: nanoid(),
@@ -658,6 +873,35 @@ export default defineComponent({
         });
       };
 
+      const getStageStyle = (stage: any) => {
+        return { width: `${getStageWidth(stage)}px` };
+      };
+
+      const startStageResize = (stage: any, event: MouseEvent) => {
+        clearStageResize?.();
+
+        const startX = event.clientX;
+        const startWidth = getStageWidth(stage);
+        const onMouseMove = (moveEvent: MouseEvent) => {
+          setStageWidth(stage, startWidth + moveEvent.clientX - startX);
+        };
+        const onMouseUp = () => {
+          clearStageResize?.();
+        };
+
+        clearStageResize = () => {
+          document.removeEventListener("mousemove", onMouseMove);
+          document.removeEventListener("mouseup", onMouseUp);
+          clearStageResize = null;
+        };
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+      };
+
+      onUnmounted(() => {
+        clearStageResize?.();
+      });
+
       function isLastStage(index: number) {
         return false;
       }
@@ -665,6 +909,8 @@ export default defineComponent({
       return {
         stageAdd,
         isLastStage,
+        getStageStyle,
+        startStageResize,
       };
     }
 
@@ -700,6 +946,20 @@ export default defineComponent({
       };
     }
 
+    // 任务日志弹窗引用（任务/后置任务/通知日志查看共用）
+    const taskViewRef: Ref<any> = ref(null);
+
+    // 查看后置任务/通知的运行日志（复用任务日志弹窗，按节点id读取运行历史日志）
+    function viewNodeLogs(nodeId: string, title: string, node: any) {
+      if (taskViewRef.value) {
+        taskViewRef.value.taskViewOpenNode({
+          id: nodeId,
+          title,
+          status: node?.status,
+        });
+      }
+    }
+
     function useNotification() {
       const notificationFormRef = ref();
       const notificationAdd = () => {
@@ -725,7 +985,8 @@ export default defineComponent({
             }
           });
         } else {
-          notificationFormRef.value.notificationView(notification, (type: string, value: any) => {});
+          // 非编辑模式：查看通知发送日志
+          viewNodeLogs(`notification.${notification.id}`, t("certd.view_notification_log"), notification);
         }
       };
       const notificationDelete = (notification: any, index: any) => {
@@ -742,6 +1003,52 @@ export default defineComponent({
         notificationEdit,
         notificationDelete,
         notificationFormRef,
+      };
+    }
+
+    function useAfterTask() {
+      const afterTaskFormRef = ref();
+      const afterTaskAdd = () => {
+        afterTaskFormRef.value.afterTaskAdd((type: string, value: any) => {
+          if (type === "save") {
+            if (pipeline.value.afterTasks == null) {
+              pipeline.value.afterTasks = [];
+            }
+            pipeline.value.afterTasks.push(value);
+          }
+        });
+      };
+      const afterTaskEdit = (afterTask: any, index: any) => {
+        if (afterTaskFormRef.value == null) {
+          return;
+        }
+        if (props.editMode) {
+          afterTaskFormRef.value.afterTaskEdit(afterTask, (type: string, value: any) => {
+            if (type === "delete") {
+              pipeline.value.afterTasks.splice(index, 1);
+            } else if (type === "save") {
+              pipeline.value.afterTasks[index] = value;
+            }
+          });
+        } else {
+          // 非编辑模式：查看后置任务执行日志
+          viewNodeLogs(`afterTask.${afterTask.id}`, t("certd.view_after_task_log"), afterTask);
+        }
+      };
+      const afterTaskDelete = (afterTask: any, index: any) => {
+        Modal.confirm({
+          title: t("certd.confirm"),
+          content: t("certd.after_task_delete_confirm"),
+          async onOk() {
+            pipeline.value.afterTasks.splice(index, 1);
+          },
+        });
+      };
+      return {
+        afterTaskAdd,
+        afterTaskEdit,
+        afterTaskDelete,
+        afterTaskFormRef,
       };
     }
 
@@ -767,11 +1074,11 @@ export default defineComponent({
           }
         }
         if (!props.options.doTrigger) {
-          message.warn("暂不支持运行");
+          notification.warning({ message: "暂不支持运行" });
           return;
         }
         if (pipeline.value.stages == null || pipeline.value.stages.length === 0) {
-          message.warn("请先添加阶段和任务");
+          notification.warning({ message: "请先添加阶段和任务" });
           return;
         }
         Modal.confirm({
@@ -1022,6 +1329,7 @@ export default defineComponent({
 
     const { hasActionPermission } = useCrudPermission({ permission: { isProjectPermission: true } });
     return {
+      t,
       isCert,
       pipeline,
       currentHistory,
@@ -1036,7 +1344,9 @@ export default defineComponent({
       ...actions,
       ...useHistory(),
       ...useNotification(),
+      ...useAfterTask(),
       ...useScroll(),
+      viewNodeLogs,
       nextTriggerTimes,
       viewCert,
       downloadCert,
@@ -1112,7 +1422,12 @@ export default defineComponent({
       height: 100%;
 
       .stage {
+        --stage-selection-center: 38px;
         width: 300px;
+        min-width: 260px;
+        max-width: 720px;
+        flex: 0 0 auto;
+        position: relative;
         border-right: 1px solid #c7c7c7;
 
         .is-add {
@@ -1125,13 +1440,46 @@ export default defineComponent({
         }
 
         .title {
+          box-sizing: border-box;
+          min-height: 72px;
           padding: 20px;
           color: gray;
           display: flex;
+          align-items: center;
+
+          .stage-batch-edit-button {
+            margin-left: auto;
+          }
 
           .stage-move-handle {
             cursor: move;
             margin-left: 4px;
+          }
+        }
+
+        .stage-batch-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex: 1;
+          margin-left: calc(var(--stage-selection-center) - 28px);
+
+          .ant-tag {
+            margin-right: 0;
+          }
+        }
+
+        .stage-resize-handle {
+          position: absolute;
+          top: 0;
+          right: -4px;
+          z-index: 20;
+          width: 8px;
+          height: 100%;
+          cursor: col-resize;
+
+          &:hover {
+            border-right: 2px solid #1677ff;
           }
         }
 
@@ -1258,6 +1606,8 @@ export default defineComponent({
               flex-direction: column;
               justify-content: center;
               align-items: center;
+              width: calc(100% - 100px);
+              min-width: 160px;
               height: 100%;
               z-index: 2;
 
@@ -1293,7 +1643,7 @@ export default defineComponent({
               }
 
               .ant-btn {
-                width: 200px;
+                width: 100%;
               }
 
               position: relative;
@@ -1303,6 +1653,14 @@ export default defineComponent({
                 bottom: -10px;
                 left: 20px;
               }
+            }
+
+            .task-select {
+              position: absolute;
+              top: 50%;
+              left: calc(var(--stage-selection-center) - 8px);
+              z-index: 3;
+              transform: translateY(-50%);
             }
           }
         }

@@ -1,6 +1,7 @@
-import { TencentAccess } from "../access.js";
+﻿import { TencentAccess } from "../access.js";
 import { ILogger, safePromise } from "@certd/basic";
 import fs from "fs";
+import { importRuntime as importRuntimeDirect } from "@certd/pipeline";
 
 export class TencentCosClient {
   access: TencentAccess;
@@ -15,8 +16,12 @@ export class TencentCosClient {
     this.region = opts.region;
   }
 
+  async importRuntime(specifier: string) {
+    return await importRuntimeDirect(specifier, this.logger);
+  }
+
   async getCosClient() {
-    const sdk = await import("cos-nodejs-sdk-v5");
+    const sdk = await this.importRuntime("cos-nodejs-sdk-v5");
     const clientConfig = {
       SecretId: this.access.secretId,
       SecretKey: this.access.secretKey,

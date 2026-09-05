@@ -1,10 +1,16 @@
-import { BaseController, Constants, SysSettingsService } from "@certd/lib-server";
+import { AccessGetter, AccessService, BaseController, Constants, isEnterprise, SysSettingsService } from "@certd/lib-server";
 import { ALL, Body, Controller, Inject, Post, Provide } from "@midwayjs/core";
 import { PasskeyService } from "../../../modules/login/service/passkey-service.js";
 import { RoleService } from "../../../modules/sys/authority/service/role-service.js";
 import { UserService } from "../../../modules/sys/authority/service/user-service.js";
+import { NotificationService } from "../../../modules/pipeline/service/notification-service.js";
+import { newAccess } from "@certd/pipeline";
+import { http, logger, utils } from "@certd/basic";
 import { ApiTags } from "@midwayjs/swagger";
 import { CodeService } from "../../../modules/basic/service/code-service.js";
+import { EmailService } from "../../../modules/basic/service/email-service.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
+import { TaskServiceBuilder } from "../../../modules/pipeline/service/getter/task-service-getter.js";
 
 /**
  */
@@ -27,6 +33,21 @@ export class MineController extends BaseController {
   @Inject()
   sysSettingsService: SysSettingsService;
 
+  @Inject()
+  accessService: AccessService;
+
+  @Inject()
+  notificationService: NotificationService;
+
+  @Inject()
+  emailService: EmailService;
+
+  getAuditType(): string {
+    return AuditType.mine.value;
+  }
+  @Inject()
+  taskServiceBuilder: TaskServiceBuilder;
+
   @Post("/info", { description: Constants.per.authOnly, summary: "查询用户信息" })
   public async info() {
     const userId = this.getUserId();
@@ -41,6 +62,18 @@ export class MineController extends BaseController {
     delete user.password;
     //@ts-ignore
     user.needInitPassword = needInitPassword;
+    //@ts-ignore
+    user.needInitAccount = false;
+    if (!isEnterprise()) {
+      const existingAccess = await this.accessService.findOne({
+        where: { type: "acmeAccount", subtype: "letsencrypt", userId },
+      });
+      if (!existingAccess) {
+        //@ts-ignore
+        user.needInitAccount = true;
+      }
+    }
+
     return this.ok(user);
   }
 
@@ -48,6 +81,7 @@ export class MineController extends BaseController {
   public async changePassword(@Body(ALL) body: any) {
     const userId = this.getUserId();
     await this.userService.changePassword(userId, body);
+    this.auditLog({ content: "修改了密码" });
     return this.ok({});
   }
 
@@ -55,6 +89,7 @@ export class MineController extends BaseController {
   public async initPassword(@Body(ALL) body: any) {
     const userId = this.getUserId();
     await this.userService.initPassword(userId, body);
+    this.auditLog({ content: "初始化了密码" });
     return this.ok({});
   }
 
@@ -66,6 +101,7 @@ export class MineController extends BaseController {
       avatar: body.avatar,
       nickName: body.nickName,
     });
+    this.auditLog({ content: `更新了个人资料` });
     return this.ok({});
   }
 
@@ -104,7 +140,14 @@ export class MineController extends BaseController {
       phoneCode: body.phoneCode,
       mobile: body.mobile,
     });
+    //手机号脱敏处理
+    const mobile = this.maskPhone(body.mobile);
+    this.auditLog({ content: `修改了手机号 「${mobile}」` });
     return this.ok({});
+  }
+
+  private maskPhone(phone: string) {
+    return phone.replace(/(\d{3})\d{4}(\d{4})/, "$1****$2");
   }
 
   @Post("/contact/email", { description: Constants.per.authOnly, summary: "绑定或修改邮箱" })
@@ -120,6 +163,63 @@ export class MineController extends BaseController {
     await this.userService.updateEmail(userId, {
       email: body.email,
     });
+    this.auditLog({ content: `修改了邮箱地址 「${body.email}」` });
     return this.ok({});
+  }
+
+  @Post("/accountInit", { description: Constants.per.authOnly, summary: "初始化Let's Encrypt ACME账号和邮件通知" })
+  public async accountInit(@Body("email") email?: string) {
+    const userId = this.getUserId();
+    let userEmail = email;
+    let user: any = null;
+    if (!userEmail) {
+      user = await this.userService.info(userId);
+      userEmail = user.email;
+    }
+    if (!userEmail) {
+      return this.ok({ needEmail: true });
+    }
+
+    if (email) {
+      if (!user) {
+        user = await this.userService.info(userId);
+      }
+      if (!user.email) {
+        await this.userService.updateEmail(userId, { email: userEmail });
+      }
+    }
+
+    await this.emailService.add(userId, userEmail);
+
+    await this.notificationService.getOrCreateDefault(userEmail, userId);
+
+    const getAccessById = this.accessService.getById.bind(this.accessService);
+    const accessGetter = new AccessGetter(userId, undefined, getAccessById);
+    const serviceGetter = this.taskServiceBuilder.create({ userId });
+    const accessContext = {
+      http,
+      logger,
+      utils,
+      accessService: accessGetter,
+      serviceGetter,
+      define: undefined,
+    } as any;
+    const access = await newAccess("acmeAccount", { caType: "letsencrypt", email: userEmail }, accessGetter, accessContext);
+    const accountJson = await access.onGenerateAccount();
+
+    await this.accessService.add({
+      type: "acmeAccount",
+      name: "Let's Encrypt",
+      userId,
+      projectId: undefined,
+      setting: JSON.stringify({
+        caType: "letsencrypt",
+        email: userEmail,
+        account: accountJson,
+      }),
+    });
+
+    this.auditLog({ content: "初始化了Let's Encrypt ACME账号和邮件通知" });
+    return this.ok({ success: true });
   }
 }

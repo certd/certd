@@ -16,6 +16,8 @@ import { PasskeyService } from "./passkey-service.js";
 import { InviteService } from "@certd/commercial-core";
 import { EntityManager } from "typeorm";
 
+const PASSWORD_LOGIN_GRACE_PERIOD_SECONDS = 10 * 60;
+
 /**
  */
 @Provide()
@@ -64,7 +66,7 @@ export class LoginService {
     cache.delete(`login_block_duration:${username}`);
   }
 
-  addErrorTimes(username: string, errorMessage: string) {
+  addErrorTimes(username: string, errorMessage: string, userId?: number) {
     const errorTimesKey = `login_error_times:${username}`;
     const blockTimesKey = `login_block_times:${username}`;
     const blockDurationKey = `login_block_duration:${username}`;
@@ -100,13 +102,13 @@ export class LoginService {
       });
       // 清除error次数
       cache.delete(errorTimesKey);
-      throw new LoginErrorException(`登录失败次数过多，请${leftMin}分钟后重试`, 0);
+      throw new LoginErrorException(`登录失败次数过多，请${leftMin}分钟后重试`, 0, userId);
     }
     const leftTimes = maxRetryTimes - errorTimes;
     if (leftTimes < 3) {
-      throw new LoginErrorException(`登录失败(${errorMessage})，剩余尝试次数：${leftTimes}`, leftTimes);
+      throw new LoginErrorException(`登录失败(${errorMessage})，剩余尝试次数：${leftTimes}`, leftTimes, userId);
     }
-    throw new LoginErrorException(errorMessage, leftTimes);
+    throw new LoginErrorException(errorMessage, leftTimes, userId);
   }
 
   async register(type: string, user: UserEntity, inviteCode?: string, withTx?: (tx: EntityManager) => Promise<void>) {
@@ -151,6 +153,11 @@ export class LoginService {
   }
 
   async loginByPassword(req: { username: string; password: string; phoneCode: string }) {
+    const publicSettings = await this.sysSettingsService.getPublicSettings();
+    if (publicSettings.oauthOnly && process.uptime() >= PASSWORD_LOGIN_GRACE_PERIOD_SECONDS) {
+      throw new CommonException(`当前站点仅允许第三方登录，如果需要使用密码登录，请在服务重启后的前10分钟内登录`);
+    }
+
     this.checkIsBlocked(req.username);
     const { username, password, phoneCode } = req;
     const info = await this.userService.findOne([
@@ -166,7 +173,7 @@ export class LoginService {
     }
     const right = await this.userService.checkPassword(password, info.password, info.passwordVersion);
     if (!right) {
-      this.addErrorTimes(username, "用户名或密码错误");
+      this.addErrorTimes(username, "用户名或密码错误", info.id);
     }
     this.clearCacheOnSuccess(username);
     return this.onLoginSuccess(info);
@@ -251,6 +258,36 @@ export class LoginService {
     return {
       token,
       expire,
+      userId: user.id,
+      username: user.username,
+    };
+  }
+
+  async generateScopedAccessToken(user: { id: number; username: string; roles: number[] }, scoped: string[]) {
+    const normalizedScopes = [...new Set((scoped || []).map(item => `${item || ""}`.trim()).filter(Boolean))];
+    if (normalizedScopes.length === 0) {
+      throw new CommonException("scoped不能为空");
+    }
+    const setting = await this.sysSettingsService.getSetting<SysPrivateSettings>(SysPrivateSettings);
+    // 受限令牌短时效：不超过全局 jwt 过期时间，且上限 6 小时
+    const expire = Math.min(this.jwt.expire, 6 * 60 * 60);
+    const token = jwt.sign(
+      {
+        username: user.username,
+        id: user.id,
+        roles: user.roles,
+        scoped: normalizedScopes,
+      },
+      setting.jwtKey,
+      { expiresIn: expire }
+    );
+
+    return {
+      token,
+      expire,
+      userId: user.id,
+      username: user.username,
+      scoped: normalizedScopes,
     };
   }
 
