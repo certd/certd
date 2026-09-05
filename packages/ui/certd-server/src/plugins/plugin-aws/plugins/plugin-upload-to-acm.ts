@@ -65,7 +65,7 @@ export class AwsUploadToACM extends AbstractTaskPlugin {
       region,
       logger: this.logger,
     });
-    this.awsCertARN = await acmClient.importCertificate(cert);
+    this.awsCertARN = await acmClient.withRetry(() => acmClient.importCertificate(cert));
     this.logger.info("证书上传成功,id=", this.awsCertARN);
   }
 }

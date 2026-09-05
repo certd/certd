@@ -202,10 +202,91 @@ export class AwsClient {
 
   async doRequest<T>(call: () => Promise<T>): Promise<T> {
     try {
-      return await call();
-    } catch (err) {
-      this.logger.error(`调用接口失败:${err.Error?.Message || err.message},requestId:${err.requestId}`);
+      return await this.withRetry(call);
+    } catch (err: any) {
+      this.logger.error(`请求失败:${err.Error?.Message || err.message},requestId:${err.requestId}`);
       throw err;
     }
+  }
+
+  /**
+   * Retries an AWS SDK call with exponential backoff + jitter when the error is a
+   * throttling / rate-limit response. See {@link AwsClient.isRetryableAwsError}.
+   */
+  async withRetry<T>(call: () => Promise<T>, maxAttempts = 5, baseDelayMs = 2000): Promise<T> {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await call();
+      } catch (err: any) {
+        if (attempt >= maxAttempts || !AwsClient.isRetryableAwsError(err)) {
+          throw err;
+        }
+        const code = err?.name || err?.Code || err?.code || err?.$metadata?.httpStatusCode || "unknown";
+        const ceiling = baseDelayMs * Math.pow(2, attempt - 1); // 2s, 4s, 8s, 16s …
+        const delay = Math.round(ceiling / 2 + Math.random() * (ceiling / 2)); // equal jitter: ~1-2s, ~2-4s, ~4-8s, ~8-16s
+        this.logger.warn(`AWS request throttled (${code}), attempt ${attempt}/${maxAttempts}, retrying in ${delay}ms…`);
+        await utils.sleep(delay);
+      }
+    }
+    throw new Error("Unreachable");
+  }
+
+  /**
+   * Detects AWS throttling / rate-limit errors that are safe to retry.
+   * Covers SDK v3 retry hints ($retryable.throttling, HTTP 429/503) plus known
+   * throttling codes across ACM / STS / CloudFront / Route53, including Route53's
+   * PriorRequestNotComplete concurrent-change limit.
+   */
+  static isRetryableAwsError(err: any): boolean {
+    if (!err) {
+      return false;
+    }
+    const retryableCodes = new Set([
+      "TooManyRequestsException",
+      "ThrottlingException",
+      "ThrottledException",
+      "RequestLimitExceeded",
+      "Throttling",
+      "SlowDown",
+      "PriorRequestNotComplete",
+    ]);
+    const code = err.name || err.Code || err.code || "";
+    const httpStatus = err.$metadata?.httpStatusCode;
+    return (
+      retryableCodes.has(code) ||
+      err.$retryable?.throttling === true ||
+      httpStatus === 429 ||
+      httpStatus === 503 ||
+      (typeof err.message === "string" && err.message.toLowerCase().includes("rate exceeded"))
+    );
+  }
+
+  /**
+   * Polls a CloudFront distribution until its Status becomes "Deployed".
+   * CloudFront propagates changes globally and can take several minutes.
+   */
+  async waitForDistributionDeployed(cloudFrontClient: any, distributionId: string, timeoutMs = 600_000, pollIntervalMs = 15_000): Promise<void> {
+    const { GetDistributionCommand } = await this.access.importRuntime("@aws-sdk/client-cloudfront");
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      let status: string | undefined;
+      try {
+        const res = await this.withRetry(() => cloudFrontClient.send(new GetDistributionCommand({ Id: distributionId })));
+        status = res?.Distribution?.Status;
+      } catch (err: any) {
+        // A throttle that outlives withRetry's budget shouldn't abort the whole deploy;
+        // keep polling until the deadline and let non-throttle errors propagate.
+        if (!AwsClient.isRetryableAwsError(err)) {
+          throw err;
+        }
+        this.logger.warn(`CloudFront status check throttled (${err?.name || err?.code}), will retry on next poll…`);
+      }
+      this.logger.info(`CloudFront distribution ${distributionId} status: ${status}`);
+      if (status === "Deployed") {
+        return;
+      }
+      await utils.sleep(pollIntervalMs);
+    }
+    throw new Error(`Timed out waiting for CloudFront distribution ${distributionId} to reach Deployed status`);
   }
 }

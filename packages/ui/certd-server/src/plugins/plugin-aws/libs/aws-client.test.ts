@@ -35,7 +35,7 @@ async function createAwsClient(records: any[]) {
         ChangeResourceRecordSetsCommand,
       }),
     } as any,
-    logger: { info() {}, error() {} } as any,
+    logger: { info() {}, warn() {}, error() {} } as any,
     region: "us-east-1",
   });
   return { client, sentChanges };
@@ -90,5 +90,82 @@ describe("AwsClient.route53ChangeRecord", () => {
     const change = sentChanges[0].ChangeBatch.Changes[0];
     assert.equal(change.Action, "UPSERT");
     assert.deepEqual(change.ResourceRecordSet.ResourceRecords, [{ Value: '"wildcard-token"' }]);
+  });
+});
+
+function throttle(name: string, extra: Record<string, any> = {}) {
+  const err: any = new Error(name);
+  err.name = name;
+  return Object.assign(err, extra);
+}
+
+describe("AwsClient.withRetry", () => {
+  it("retries a throttled call and then resolves", async () => {
+    const { client } = await createAwsClient([]);
+    let calls = 0;
+    const result = await client.withRetry(async () => {
+      calls++;
+      if (calls < 3) {
+        throw throttle("ThrottlingException");
+      }
+      return "ok";
+    });
+    assert.equal(result, "ok");
+    assert.equal(calls, 3);
+  });
+
+  it("retries Route53 PriorRequestNotComplete", async () => {
+    const { client } = await createAwsClient([]);
+    let calls = 0;
+    const result = await client.withRetry(async () => {
+      calls++;
+      if (calls < 2) {
+        throw throttle("PriorRequestNotComplete");
+      }
+      return "done";
+    });
+    assert.equal(result, "done");
+    assert.equal(calls, 2);
+  });
+
+  it("retries on HTTP 429 without a known error code", async () => {
+    const { client } = await createAwsClient([]);
+    let calls = 0;
+    await client.withRetry(async () => {
+      calls++;
+      if (calls < 2) {
+        const err: any = new Error("too many requests");
+        err.$metadata = { httpStatusCode: 429 };
+        throw err;
+      }
+      return null;
+    });
+    assert.equal(calls, 2);
+  });
+
+  it("does not retry non-throttling errors", async () => {
+    const { client } = await createAwsClient([]);
+    let calls = 0;
+    await assert.rejects(
+      client.withRetry(async () => {
+        calls++;
+        throw throttle("AccessDeniedException");
+      }),
+      /AccessDeniedException/
+    );
+    assert.equal(calls, 1);
+  });
+
+  it("stops after maxAttempts and rethrows the throttling error", async () => {
+    const { client } = await createAwsClient([]);
+    let calls = 0;
+    await assert.rejects(
+      client.withRetry(async () => {
+        calls++;
+        throw throttle("Throttling", { message: "Rate exceeded" });
+      }, 3),
+      /Throttling|Rate exceeded/
+    );
+    assert.equal(calls, 3);
   });
 });
