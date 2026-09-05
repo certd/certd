@@ -67,6 +67,20 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
   )
   distributionIds!: string[];
 
+  @TaskInput({
+    title: "等待部署完成",
+    value: false,
+    helper:
+      "开启后，会轮询等待每个CloudFront分配状态变为Deployed（通常需要几分钟）再结束任务。" +
+      "关闭时，提交证书更新后立即结束——CloudFront会在后台自行完成部署。" +
+      "仅当后续任务依赖证书已全球生效时才需要开启。",
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+  })
+  waitForDeployed = false;
+
   async onInstance() {}
 
   async execute(): Promise<void> {
@@ -120,11 +134,15 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
         )
       );
 
-      this.logger.info(`证书已提交到 ${distributionId}，等待全局部署完成…`);
-      // Wait for this distribution to fully propagate before moving to the next one.
-      // Updating a distribution that is still InProgress results in a PreconditionFailed error.
-      await acmClient.waitForDistributionDeployed(cloudFrontClient, distributionId);
-      this.logger.info(`部署 ${distributionId} 完成`);
+      if (this.waitForDeployed) {
+        this.logger.info(`证书已提交到 ${distributionId}，等待全局部署完成…`);
+        // CloudFront propagates globally in a few minutes; only block when the
+        // user opts in (e.g. a downstream task needs the cert already live).
+        await acmClient.waitForDistributionDeployed(cloudFrontClient, distributionId);
+        this.logger.info(`部署 ${distributionId} 完成`);
+      } else {
+        this.logger.info(`证书已提交到 ${distributionId}，CloudFront 将在后台完成部署`);
+      }
     }
     this.logger.info("部署完成");
   }
