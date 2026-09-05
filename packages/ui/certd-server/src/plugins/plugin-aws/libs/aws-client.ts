@@ -210,32 +210,55 @@ export class AwsClient {
   }
 
   /**
-   * Retries an AWS SDK call with exponential backoff when throttled.
-   * Handles: TooManyRequestsException, ThrottlingException, RequestLimitExceeded, Throttling
+   * Retries an AWS SDK call with exponential backoff + jitter when the error is a
+   * throttling / rate-limit response. See {@link AwsClient.isRetryableAwsError}.
    */
   async withRetry<T>(call: () => Promise<T>, maxAttempts = 5, baseDelayMs = 2000): Promise<T> {
-    const throttlingCodes = new Set([
-      "TooManyRequestsException",
-      "ThrottlingException",
-      "RequestLimitExceeded",
-      "Throttling",
-    ]);
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await call();
       } catch (err: any) {
-        const code = err?.name || err?.Code || err?.code || "";
-        const isThrottle = throttlingCodes.has(code) || err?.message?.toLowerCase().includes("rate exceeded");
-        if (isThrottle && attempt < maxAttempts) {
-          const delay = baseDelayMs * Math.pow(2, attempt - 1); // 2s, 4s, 8s, 16s …
-          this.logger.warn(`AWS rate limit hit (${code}), attempt ${attempt}/${maxAttempts}, retrying in ${delay}ms…`);
-          await utils.sleep(delay);
-        } else {
+        if (attempt >= maxAttempts || !AwsClient.isRetryableAwsError(err)) {
           throw err;
         }
+        const code = err?.name || err?.Code || err?.code || err?.$metadata?.httpStatusCode || "unknown";
+        const ceiling = baseDelayMs * Math.pow(2, attempt - 1); // 2s, 4s, 8s, 16s …
+        const delay = Math.round(ceiling / 2 + Math.random() * (ceiling / 2)); // equal jitter: ~1-2s, ~2-4s, ~4-8s, ~8-16s
+        this.logger.warn(`AWS request throttled (${code}), attempt ${attempt}/${maxAttempts}, retrying in ${delay}ms…`);
+        await utils.sleep(delay);
       }
     }
     throw new Error("Unreachable");
+  }
+
+  /**
+   * Detects AWS throttling / rate-limit errors that are safe to retry.
+   * Covers SDK v3 retry hints ($retryable.throttling, HTTP 429/503) plus known
+   * throttling codes across ACM / STS / CloudFront / Route53, including Route53's
+   * PriorRequestNotComplete concurrent-change limit.
+   */
+  static isRetryableAwsError(err: any): boolean {
+    if (!err) {
+      return false;
+    }
+    const retryableCodes = new Set([
+      "TooManyRequestsException",
+      "ThrottlingException",
+      "ThrottledException",
+      "RequestLimitExceeded",
+      "Throttling",
+      "SlowDown",
+      "PriorRequestNotComplete",
+    ]);
+    const code = err.name || err.Code || err.code || "";
+    const httpStatus = err.$metadata?.httpStatusCode;
+    return (
+      retryableCodes.has(code) ||
+      err.$retryable?.throttling === true ||
+      httpStatus === 429 ||
+      httpStatus === 503 ||
+      (typeof err.message === "string" && err.message.toLowerCase().includes("rate exceeded"))
+    );
   }
 
   /**
@@ -246,8 +269,18 @@ export class AwsClient {
     const { GetDistributionCommand } = await this.access.importRuntime("@aws-sdk/client-cloudfront");
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
-      const res = await this.withRetry(() => cloudFrontClient.send(new GetDistributionCommand({ Id: distributionId })));
-      const status = res?.Distribution?.Status;
+      let status: string | undefined;
+      try {
+        const res = await this.withRetry(() => cloudFrontClient.send(new GetDistributionCommand({ Id: distributionId })));
+        status = res?.Distribution?.Status;
+      } catch (err: any) {
+        // A throttle that outlives withRetry's budget shouldn't abort the whole deploy;
+        // keep polling until the deadline and let non-throttle errors propagate.
+        if (!AwsClient.isRetryableAwsError(err)) {
+          throw err;
+        }
+        this.logger.warn(`CloudFront status check throttled (${err?.name || err?.code}), will retry on next poll…`);
+      }
       this.logger.info(`CloudFront distribution ${distributionId} status: ${status}`);
       if (status === "Deployed") {
         return;
