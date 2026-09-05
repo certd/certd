@@ -48,11 +48,9 @@ export class FastlyPurgeCachePlugin extends AbstractTaskPlugin {
     }
 
     this.logger.info(`开始清理 Fastly 服务 [${this.serviceId}] 的所有缓存...`);
-    
-    // POST /service/{service_id}/purge_all
-    await access.doRequestApi(`/service/${this.serviceId}/purge_all`, {
-      // empty body is acceptable for this endpoint, Fastly uses headers for auth
-    }, "post");
+
+    // POST /service/{service_id}/purge_all — no body; auth is via the Fastly-Key header
+    await access.doRequestApi(`/service/${this.serviceId}/purge_all`, null, "post");
 
     this.logger.info(`清理 Fastly 服务 [${this.serviceId}] 缓存成功`);
   }

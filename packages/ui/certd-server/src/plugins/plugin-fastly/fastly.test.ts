@@ -75,6 +75,59 @@ describe("FastlyAccess", () => {
   });
 });
 
+describe("FastlyAccess list helpers", () => {
+  function mockAccess(handler: (url: string) => any) {
+    const access = new FastlyAccess();
+    access.apiKey = "k";
+    (access as any).ctx = {
+      http: { request: async (req: any) => handler(req.url) },
+      logger: { info: () => {}, error: () => {} },
+    };
+    return access;
+  }
+
+  it("getCertificates returns body.data (not body.data.data) and aggregates all pages", async () => {
+    const urls: string[] = [];
+    const access = mockAccess((url: string) => {
+      urls.push(url);
+      const page = Number(url.match(/page\[number\]=(\d+)/)?.[1]);
+      // 3 pages total, 2 items each
+      const pageItems = [
+        [{ id: "c1" }, { id: "c2" }],
+        [{ id: "c3" }, { id: "c4" }],
+        [{ id: "c5" }, { id: "c6" }],
+      ];
+      return { data: pageItems[page - 1] ?? [], meta: { total_pages: 3 } };
+    });
+
+    const list = await access.getCertificates();
+    assert.deepEqual(
+      list.map((x: any) => x.id),
+      ["c1", "c2", "c3", "c4", "c5", "c6"]
+    );
+    assert.equal(urls.length, 3);
+  });
+
+  it("stops paginating on a short page when total_pages is absent", async () => {
+    let calls = 0;
+    const access = mockAccess(() => {
+      calls++;
+      // single short page (< pageSize) => no more requests
+      return { data: [{ id: "d1" }] };
+    });
+
+    const list = await access.getTlsDomains();
+    assert.deepEqual(list, [{ id: "d1" }]);
+    assert.equal(calls, 1);
+  });
+
+  it("getServices unwraps a bare array response", async () => {
+    const access = mockAccess(() => [{ id: "svc1", name: "a" }]);
+    const list = await access.getServices();
+    assert.deepEqual(list, [{ id: "svc1", name: "a" }]);
+  });
+});
+
 describe("FastlyUploadCertPlugin - new certificate (2-step flow)", () => {
   it("should upload private key first then create certificate with relationship", async () => {
     const plugin = new FastlyUploadCertPlugin();

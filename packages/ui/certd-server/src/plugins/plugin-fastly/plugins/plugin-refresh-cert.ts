@@ -41,7 +41,9 @@ export class FastlyRefreshCertPlugin extends AbstractTaskPlugin {
   @TaskInput(
     createRemoteSelectInputDefine({
       title: "证书列表",
-      helper: "选择要更新的 Fastly 证书 (必须是已存在的自定义证书)",
+      helper:
+        "选择要更新的 Fastly 证书 (必须是已存在的自定义证书)。" +
+        "注意：Fastly 要求更新后的证书与原证书使用相同私钥，请确保续期时复用私钥(reuse key)，否则更新会失败。",
       action: FastlyRefreshCertPlugin.prototype.onGetCertList.name,
       pager: false,
       search: false,

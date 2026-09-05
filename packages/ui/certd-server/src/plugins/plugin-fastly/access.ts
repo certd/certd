@@ -82,25 +82,47 @@ export class FastlyAccess extends BaseAccess {
     }
   }
 
+  /**
+   * Fetches every page of a Fastly JSON:API list endpoint.
+   * ctx.http already unwraps the response to its body, so the item array is at `body.data`.
+   * Fastly paginates these endpoints at 20 items/page by default; without looping only the
+   * first page would be visible in the selectors.
+   */
+  async listAllJsonApi(path: string, pageSize = 100): Promise<any[]> {
+    const all: any[] = [];
+    const maxPages = 100; // hard cap to avoid an infinite loop if the API misbehaves
+    for (let page = 1; page <= maxPages; page++) {
+      const sep = path.includes("?") ? "&" : "?";
+      const body = await this.doRequestApi(`${path}${sep}page[number]=${page}&page[size]=${pageSize}`, null, "get");
+      const items = body?.data;
+      if (!Array.isArray(items) || items.length === 0) {
+        break;
+      }
+      all.push(...items);
+      const totalPages = body?.meta?.total_pages;
+      if (totalPages != null ? page >= totalPages : items.length < pageSize) {
+        break;
+      }
+    }
+    return all;
+  }
+
   async getServices() {
-    const res = await this.doRequestApi("/service", null, "get");
-    // /service returns a direct array of objects
+    // legacy /service endpoint returns a bare array of objects (not JSON:API)
+    const res = await this.doRequestApi("/service?per_page=200", null, "get");
     return Array.isArray(res) ? res : res?.data || [];
   }
 
   async getTlsConfigurations() {
-    const res = await this.doRequestApi("/tls/configurations", null, "get");
-    return res?.data?.data || [];
+    return this.listAllJsonApi("/tls/configurations");
   }
 
   async getTlsDomains() {
-    const res = await this.doRequestApi("/tls/domains", null, "get");
-    return res?.data?.data || [];
+    return this.listAllJsonApi("/tls/domains");
   }
 
   async getCertificates() {
-    const res = await this.doRequestApi("/tls/certificates", null, "get");
-    return res?.data?.data || [];
+    return this.listAllJsonApi("/tls/certificates");
   }
 }
 

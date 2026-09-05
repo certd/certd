@@ -39,7 +39,9 @@ export class FastlyUploadCertPlugin extends AbstractTaskPlugin {
 
   @TaskInput({
     title: "证书ID (tls_certificate_id)",
-    helper: "可选。若填写则对 Fastly 已有证书进行更新(PATCH)；留空则新建上传(POST)",
+    helper:
+      "可选。若填写则对 Fastly 已有证书进行更新(PATCH)；留空则新建上传(POST)。" +
+      "注意：Fastly 更新证书要求新证书与原证书使用相同的私钥，请确保续期时复用私钥(reuse key)，否则更新会失败。",
     component: {
       placeholder: "例如: tls_cert_xxx (留空表示新建)",
     },
