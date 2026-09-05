@@ -202,9 +202,9 @@ export class AwsClient {
 
   async doRequest<T>(call: () => Promise<T>): Promise<T> {
     try {
-      return await call();
-    } catch (err) {
-      this.logger.error(`调用接口失败:${err.Error?.Message || err.message},requestId:${err.requestId}`);
+      return await this.withRetry(call);
+    } catch (err: any) {
+      this.logger.error(`请求失败:${err.Error?.Message || err.message},requestId:${err.requestId}`);
       throw err;
     }
   }
@@ -235,6 +235,7 @@ export class AwsClient {
         }
       }
     }
+    throw new Error("Unreachable");
   }
 
   /**
@@ -242,7 +243,7 @@ export class AwsClient {
    * CloudFront propagates changes globally and can take several minutes.
    */
   async waitForDistributionDeployed(cloudFrontClient: any, distributionId: string, timeoutMs = 600_000, pollIntervalMs = 15_000): Promise<void> {
-    const { GetDistributionCommand } = await import("@aws-sdk/client-cloudfront");
+    const { GetDistributionCommand } = await this.access.importRuntime("@aws-sdk/client-cloudfront");
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
       const res = await this.withRetry(() => cloudFrontClient.send(new GetDistributionCommand({ Id: distributionId })));
