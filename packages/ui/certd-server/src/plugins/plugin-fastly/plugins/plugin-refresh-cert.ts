@@ -45,7 +45,6 @@ export class FastlyRefreshCertPlugin extends AbstractTaskPlugin {
       action: FastlyRefreshCertPlugin.prototype.onGetCertList.name,
       pager: false,
       search: false,
-      multiple: true,
       required: true,
     })
   )
