@@ -19,7 +19,7 @@ export type GoogleCloudDnsRecord = {
   desc: "Google Cloud DNS提供商",
   icon: "flat-color-icons:google",
   accessType: "google",
-  order: 50,
+  order: 2,
 })
 export class GoogleCloudDnsProvider extends AbstractDnsProvider<GoogleCloudDnsRecord> {
   access!: GoogleAccess;
@@ -52,7 +52,7 @@ export class GoogleCloudDnsProvider extends AbstractDnsProvider<GoogleCloudDnsRe
   }
 
   private async getGoogleDnsClient() {
-    const { DNS } = await import("@google-cloud/dns");
+    const { DNS } = await this.importRuntime("@google-cloud/dns");
     return new DNS({ credentials: this.credentials });
   }
 

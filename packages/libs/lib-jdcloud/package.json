@@ -1,6 +1,6 @@
 {
   "name": "@certd/jdcloud",
-  "version": "1.41.1",
+  "version": "1.44.2",
   "description": "jdcloud openApi sdk",
   "main": "./dist/bundle.js",
   "module": "./dist/bundle.js",
@@ -10,7 +10,10 @@
     "build": "npm run before-build && rollup -c ",
     "dev-build": "npm run build",
     "test:unit": "cross-env NODE_ENV=unittest echo no unit tests",
-    "pub": "npm publish"
+    "pub": "npm publish",
+    "compile": "npm run build",
+    "format": "prettier --write src",
+    "lint": "eslint --fix --ext .ts src"
   },
   "author": "",
   "license": "Apache",
@@ -21,7 +24,7 @@
     "debug": "^3.1.0",
     "node-fetch": "^2.1.2",
     "querystring": "^0.2.0",
-    "rollup": "^3.7.4",
+    "rollup": "4.50.0",
     "url": "^0.11.0",
     "uuid": "^3.1.0"
   },
@@ -29,13 +32,14 @@
     "@rollup/plugin-typescript": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
-    "chai": "^4.1.2",
+    "chai": "^5.1.0",
     "config": "^1.30.0",
     "cross-env": "^7.0.3",
+    "eslint": "^8.57.0",
     "esmock": "^2.7.5",
     "js-yaml": "^3.11.0",
-    "mocha": "^5.0.0",
-    "prettier": "^2.8.8",
+    "mocha": "^10.6.0",
+    "prettier": "3.3.3",
     "tslib": "^2.8.1"
   },
   "engines": {
@@ -59,5 +63,5 @@
       "fetch"
     ]
   },
-  "gitHead": "cdea411136fdf56352699a6e278a403e0f53a94f"
+  "gitHead": "67f3daae625ba734e7e390dd84acc9e3bc1930bc"
 }

@@ -14,7 +14,7 @@ export default {
       default: undefined,
     },
   },
-  emits: ["update:modelValue", "selected-change"],
+  emits: ["update:modelValue", "selected-change", "change"],
   setup(props: any, ctx: any) {
     const options = ref<any[]>([]);
 
@@ -33,7 +33,8 @@ export default {
       // if (props.modelValue == null && options.value.length > 0) {
       //   ctx.emit("update:modelValue", options.value[0].value);
       // }
-      onSelectedChange(props.modelValue);
+      //这里需要一个第一次的selected-change事件，外部表单字段有情况会用到选中的option
+      onSelectedChange(props.modelValue, true);
     }
     onCreate();
 
@@ -41,9 +42,12 @@ export default {
       ctx.emit("update:modelValue", value);
       onSelectedChange(value);
     }
-    function onSelectedChange(value: any) {
+    function onSelectedChange(value: any, isFirst: boolean = false) {
       if (value) {
         const option = options.value.find(item => item.value == value);
+        if (!isFirst) {
+          ctx.emit("change", value);
+        }
         if (option) {
           ctx.emit("selected-change", option);
           return;

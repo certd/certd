@@ -46,7 +46,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
     title: "区域",
     helper: "选择火山引擎区域",
     component: {
-      name: "select",
+      name: "a-select",
       options: [
         { value: "cn-north-1", label: "华北1（北京）" },
         { value: "ap-southeast-1", label: "东南亚1（新加坡）" },
@@ -78,6 +78,7 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
       options: [
         { value: "play", label: "点播加速域名" },
         { value: "image", label: "封面加速域名" },
+        { value: "third", label: "自定义源站" },
       ],
     },
     value: "play",
@@ -107,19 +108,25 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
 
     const access = await this.getAccess<VolcengineAccess>(this.accessId);
     const certId = await this.uploadOrGetCertId(access);
+    await this.ctx.utils.sleep(3000);
+    const domainTypeMapping: Record<string, string> = {
+      play: "vod_play",
+      image: "vod_image",
+    };
+    const apiDomainType = domainTypeMapping[this.domainType] || this.domainType;
 
-    const service = await this.getVodService({ version: "2023-07-01", region: this.regionId });
+    const service = await this.getVodService({ version: "2026-01-01", region: this.regionId });
     const domains = Array.isArray(this.domainList) ? this.domainList : [this.domainList];
     for (const domain of domains) {
       this.logger.info(`开始部署域名${domain}证书`);
       await service.request({
-        action: "UpdateDomainConfig",
+        action: "UpdateVodDomainConfig",
         method: "POST",
         body: {
           SpaceName: this.spaceName,
-          DomainType: this.domainType,
-          Domain: domain,
-          Config: {
+          DomainType: apiDomainType,
+          UpdateCdnConfigParam: {
+            Domain: domain,
             HTTPS: {
               Switch: true,
               CertInfo: {
@@ -204,33 +211,41 @@ export class VolcengineDeployToVOD extends AbstractTaskPlugin {
     if (!this.spaceName) {
       throw new Error("请先选择空间名称");
     }
-    const service = await this.getVodService({ version: "2023-01-01", region: this.regionId });
+    const service = await this.getVodService({ version: "2026-01-01", region: this.regionId });
 
-    const res = await service.request({
-      action: "ListDomain",
-      query: {
-        SpaceName: this.spaceName,
-        DomainType: this.domainType,
+    const domainTypeMapping: Record<string, string> = {
+      play: "vod_play",
+      image: "vod_image",
+    };
+    const apiDomainType = domainTypeMapping[this.domainType] || this.domainType;
+
+    const body: Record<string, any> = {
+      SpaceName: this.spaceName,
+      ListCdnDomainsParam: {
+        PageNum: 1,
+        PageSize: 100,
       },
+    };
+    if (apiDomainType) {
+      body.DomainType = apiDomainType;
+    }
+    const res = await service.request({
+      action: "ListVodDomains",
+      method: "POST",
+      body,
     });
 
-    const instances = res.Result?.PlayInstanceInfo?.ByteInstances;
-    if (!instances || instances.length === 0) {
-      throw new Error("找不到域名，您也可以手动输入域名");
+    const domains = res.Result?.VodInfo?.Domains;
+    if (!domains || domains.length === 0) {
+      return [];
     }
-    const list = [];
-    for (const item of instances) {
-      if (item.Domains && item.Domains.length > 0) {
-        for (const domain of item.Domains) {
-          if (domain.Domain) {
-            list.push({
-              value: domain.Domain,
-              label: domain.Domain,
-            });
-          }
-        }
-      }
-    }
+    const list = domains.map((item: any) => {
+      return {
+        value: item.Domain,
+        label: item.Domain,
+        domain: item.Domain,
+      };
+    });
     return this.ctx.utils.options.buildGroupOptions(list, this.certDomains);
   }
 }

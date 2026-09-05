@@ -1,4 +1,4 @@
-import { AbstractTaskPlugin, FileItem, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertInfo, CertReader } from "@certd/plugin-cert";
 import dayjs from "dayjs";
 import { get } from "lodash-es";
@@ -27,17 +27,6 @@ export class DeployCertToMailPlugin extends AbstractTaskPlugin {
     required: true,
   })
   cert!: CertInfo;
-
-  @TaskInput({
-    title: "证书压缩文件",
-    helper: "请选择前置任务输出的域名证书压缩文件",
-    component: {
-      name: "output-selector",
-      from: [":certZip:"],
-    },
-    required: true,
-  })
-  certZip!: FileItem;
 
   @TaskInput({
     title: "接收邮箱",
@@ -146,18 +135,18 @@ export class DeployCertToMailPlugin extends AbstractTaskPlugin {
       `;
     data.content = content;
     data.title = title;
-    const file = this.certZip;
-    if (!file) {
-      throw new Error("证书压缩文件还未生成，重新运行证书任务");
-    }
+
+    const zipBuffer = await certReader.buildZip();
+    const zipFilename = certReader.buildZipFilename("cert");
+
     await this.ctx.emailService.sendByTemplate({
       type: "sendCert",
       data,
       receivers: this.email,
       attachments: [
         {
-          filename: file.filename,
-          path: file.path,
+          filename: zipFilename,
+          content: zipBuffer,
         },
       ],
     });

@@ -1,4 +1,4 @@
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { reactive } from "vue";
 import AccessSelector from "/@/views/certd/access/access-selector/index.vue";
 import DnsProviderSelector from "/@/components/plugins/cert/dns-provider-selector/index.vue";
@@ -43,7 +43,7 @@ export function useDnsPersistSettingDialog() {
       }
       if (form.mode === "manual") {
         await TriggerVerify(record.id);
-        message.success("已提交校验");
+        notification.success({ message: "已提交校验" });
         await req.onDone?.();
         return;
       }
@@ -55,7 +55,7 @@ export function useDnsPersistSettingDialog() {
         dnsProviderType: form.dnsProviderType,
         dnsProviderAccess: form.dnsProviderAccess,
       });
-      message.success("TXT记录已创建");
+      notification.success({ message: "TXT记录已创建" });
       await req.onDone?.();
     }
 

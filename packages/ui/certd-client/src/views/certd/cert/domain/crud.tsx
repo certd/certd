@@ -1,4 +1,4 @@
-import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
+﻿import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { Modal, notification } from "ant-design-vue";
 import { Ref, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -126,8 +126,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             title: t("certd.domain.importFromProvider"),
             type: "primary",
             text: t("certd.domain.importFromProvider"),
-            needPlus: true,
-            color: "gold",
+            // needPlus: true,
             icon: "mingcute:vip-1-line",
             click: async () => {
               await openDomainImportManageDialog({
@@ -159,7 +158,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             text: t("certd.domain.expirationMonitorSetting"),
             click: async () => {
               router.push({
-                path: "/certd/cert/domain/setting",
+                path: "/cert/cert/domain/setting",
               });
             },
           },
@@ -197,6 +196,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             sorter: true,
           },
         },
+        remark: {
+          title: t("certd.columnRemark"),
+          type: "textarea",
+          column: {
+            width: 200,
+            ellipsis: true,
+            tooltip: true,
+          },
+        },
         expirationDate: {
           title: t("certd.domain.expirationDate"),
           type: "date",
@@ -219,7 +227,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                   title: t("certd.domain.gotoCnameTip"),
                   async onOk() {
                     router.push({
-                      path: "/certd/cname/record",
+                      path: "/cert/cname/record",
                     });
                     crudExpose.getFormWrapperRef().close();
                   },
@@ -227,10 +235,10 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               } else if (value === "dns-persist") {
                 Modal.confirm({
                   title: "请前往DNS持久验证记录页面添加记录",
-                  content: "DNS持久验证需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅 Let's Encrypt 测试环境可以申请。",
+                  content: "DNS持久验证需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅 Let's Encrypt 测试环境 可以申请。",
                   async onOk() {
                     router.push({
-                      path: "/certd/cert/dns-persist",
+                      path: "/cert/cert/dns-persist",
                     });
                     crudExpose.getFormWrapperRef().close();
                   },

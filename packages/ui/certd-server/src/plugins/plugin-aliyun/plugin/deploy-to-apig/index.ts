@@ -78,8 +78,8 @@ export class DeployCertToAliyunApig extends AbstractTaskPlugin {
       action: DeployCertToAliyunApig.prototype.onGetDomainList.name,
       watches: ["region", "accessId", "gatewayType"],
       required: true,
-      pager:true,
-      search:true,
+      pager: true,
+      search: true,
     })
   )
   domainList!: string[];
@@ -196,7 +196,7 @@ export class DeployCertToAliyunApig extends AbstractTaskPlugin {
       throw new Error("请选择网关类型");
     }
 
-    const pager  = new Pager(data);
+    const pager = new Pager(data);
     const access = await this.getAccess<AliyunAccess>(this.accessId);
 
     const client = access.getClient(this.regionEndpoint);
@@ -227,7 +227,11 @@ export class DeployCertToAliyunApig extends AbstractTaskPlugin {
         domain: item.name,
       };
     });
-    return optionsUtils.buildGroupOptions(options, this.certDomains);
+    const records = optionsUtils.buildGroupOptions(options, this.certDomains);
+    return {
+      list: records,
+      total: res?.data?.totalSize || 0,
+    };
   }
 
   async onGetRegionList(data: any) {

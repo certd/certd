@@ -1,7 +1,6 @@
 import { IPaymentProvider, TradeEntity, UpdateTrade, UpdateTradeInfo } from "@certd/commercial-core";
-import WxPay from "wechatpay-node-v3";
 import dayjs from "dayjs";
-import { logger } from "@certd/basic"; // 支持使用require
+import { logger } from "@certd/basic";
 import { WxpayAccess } from "../../../plugins/plugin-plus/wxpay/access.js";
 export class PaymentWxpay implements IPaymentProvider {
   access: WxpayAccess;
@@ -26,7 +25,7 @@ export class PaymentWxpay implements IPaymentProvider {
      *   }
      */
 
-    const pay = this.createSdk();
+    const pay = await this.createSdk();
 
     const result: any = await pay.query({ out_trade_no: tradeNo });
     logger.info(`微信支付查询订单返回：${JSON.stringify(result)}`);
@@ -58,7 +57,7 @@ export class PaymentWxpay implements IPaymentProvider {
   async createOrder(trade: TradeEntity, opts: { bindUrl: string; clientIp: string }) {
     const notify_url = `${opts.bindUrl}/api/payment/notify/wxpay`;
 
-    const pay = this.createSdk();
+    const pay = await this.createSdk();
 
     const params = {
       description: trade.title,
@@ -83,7 +82,9 @@ export class PaymentWxpay implements IPaymentProvider {
     };
   }
 
-  private createSdk() {
+  private async createSdk() {
+    const WxPayLib = await this.access.importRuntime("wechatpay-node-v3");
+    const WxPay = WxPayLib.default;
     const pay = new WxPay({
       appid: this.access.appId,
       mchid: this.access.mchid,
@@ -94,7 +95,7 @@ export class PaymentWxpay implements IPaymentProvider {
   }
 
   async onNotify(notifyData: any, updateTrade: UpdateTrade) {
-    const pay = this.createSdk();
+    const pay = await this.createSdk();
     const { ciphertext, associated_data, nonce } = notifyData.resource;
     logger.info(`微信支付notify：${JSON.stringify(notifyData)}`);
     const key = this.access.key;

@@ -4,12 +4,12 @@ import { AddReq, ColumnCompositionProps, ColumnProps, compute, CreateCrudOptions
 import { siteInfoApi } from "./api";
 import * as settingApi from "./setting/api";
 import dayjs from "dayjs";
-import { message, Modal, notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { useSettingStore } from "/@/store/settings";
 import { mySuiteApi } from "/@/views/certd/suite/mine/api";
 import { mitter } from "/@/utils/util.mitt";
 import { useSiteIpMonitor } from "./ip/use";
-import { useSiteImport } from "/@/views/certd/monitor/site/use";
+import { useSiteImport, useSiteImportTaskManage } from "/@/views/certd/monitor/site/use";
 import { ref } from "vue";
 import GroupSelector from "../../basic/group/group-selector.vue";
 import { createGroupDictRef } from "../../basic/group/api";
@@ -53,6 +53,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const { openSiteIpMonitorDialog } = useSiteIpMonitor();
   const { openSiteImportDialog } = useSiteImport();
+  const openSiteImportTaskManageDialog = useSiteImportTaskManage();
 
   const certValidDaysRef = ref(10);
 
@@ -73,13 +74,13 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         content: t("monitor.batchDeleteConfirm", { count: selectedRowKeys.value.length }),
         async onOk() {
           await api.BatchDelObj(selectedRowKeys.value);
-          message.info(t("monitor.deleteSuccess"));
+          notification.info({ message: t("monitor.deleteSuccess") });
           crudExpose.doRefresh();
           selectedRowKeys.value = [];
         },
       });
     } else {
-      message.error(t("monitor.selectRecordsFirst"));
+      notification.error({ message: t("monitor.selectRecordsFirst") });
     }
   };
 
@@ -200,6 +201,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       actionbar: {
         buttons: {
           add: {
+            icon: "ion:add-circle-outline",
             async click() {
               if (!settingsStore.isPlus) {
                 // 非plus
@@ -236,6 +238,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: hasActionPermission("write"),
             text: t("monitor.bulkImport"),
             type: "primary",
+            icon: "ion:cloud-upload-outline",
             async click() {
               const defaultGroupId = getDefaultGroupId();
               openSiteImportDialog({
@@ -246,10 +249,27 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
               });
             },
           },
+          importFromProvider: {
+            show: hasActionPermission("write"),
+            title: t("certd.domain.importFromResolveRecords"),
+            text: t("certd.domain.importFromResolveRecords"),
+            type: "primary",
+            // needPlus: true,
+            color: "gold",
+            icon: "mingcute:vip-1-line",
+            click: async () => {
+              await openSiteImportTaskManageDialog({
+                afterSubmit: () => {
+                  crudExpose.doRefresh();
+                },
+              });
+            },
+          },
           checkAll: {
             show: true,
             text: t("monitor.checkAll"),
             type: "primary",
+            icon: "ion:play-circle-outline",
             click() {
               checkAll();
             },

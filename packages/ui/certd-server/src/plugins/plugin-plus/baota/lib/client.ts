@@ -1,15 +1,17 @@
 import crypto from "node:crypto";
 import { BaotaAccess } from "../access.js";
-import { HttpClient, HttpRequestConfig } from "@certd/basic";
+import { HttpClient, HttpRequestConfig, ILogger } from "@certd/basic";
 import * as querystring from "node:querystring";
 
 export class BaotaClient {
   access: BaotaAccess;
   http: HttpClient;
+  logger: ILogger;
 
   constructor(access: BaotaAccess, http: HttpClient) {
     this.access = access;
     this.http = http;
+    this.logger = access.ctx.logger;
   }
 
   //将以上 java代码 翻译成nodejs 代码

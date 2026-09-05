@@ -118,7 +118,7 @@ export class CtyunDeployToCDN extends AbstractTaskPlugin {
       const domain_details = res.domain_details;
       const errorMessage = "";
       for (const domainDetail of domain_details) {
-        // "code":200002,"domain":"ctyun.handsfree.work","message":"参数cert_name只在https_status为on时才有效"}
+        // "code":200002,"domain":"ctyun.handfree.work","message":"参数cert_name只在https_status为on时才有效"}
         if (domainDetail.code !== 100000) {
           const thisMessage = `部署失败[${domainDetail.code}]：${domainDetail.domain}:${domainDetail.message}`;
           if (thisMessage.includes("已有进行中的工单") || errorMessage.includes("域名正在操作中")) {

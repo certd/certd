@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <fs-page class="page-sys-console">
     <template #header>
       <div class="title">控制台</div>
@@ -24,7 +24,7 @@
           <a-col :span="6">
             <statistic-card title="全站流水线总数" :count="count.pipelineCount">
               <template #footer>
-                <router-link to="/certd/pipeline" class="flex">
+                <router-link to="/cert/pipeline" class="flex">
                   <fs-icon icon="ion:settings-outline" class="mr-5 fs-16" />
                   管理流水线
                 </router-link>

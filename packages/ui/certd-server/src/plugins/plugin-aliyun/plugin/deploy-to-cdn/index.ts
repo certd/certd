@@ -1,4 +1,4 @@
-import { optionsUtils } from "@certd/basic";
+﻿import { optionsUtils } from "@certd/basic";
 import { AbstractTaskPlugin, CertTargetItem, IsTaskPlugin, Pager, PageSearch, pluginGroups, RunStrategy, TaskInput, TaskOutput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertReader } from "@certd/plugin-cert";
 import { CertInfo, createCertDomainGetterInputDefine, createRemoteSelectInputDefine } from "@certd/plugin-lib";
@@ -254,12 +254,15 @@ export class DeployCertToAliyunCDN extends AbstractTaskPlugin {
     const client = await this.getClient(access);
 
     const pager = new Pager(data);
-    const params = {
-      DomainName: data.searchKey,
+    const params: any = {
       PageSize: pager.pageSize || 100,
       PageNumber: pager.pageNo || 1,
       DomainSearchType: "fuzzy_match",
     };
+
+    if (data.searchKey) {
+      params.DomainName = data.searchKey;
+    }
 
     const requestOption = {
       method: "POST",

@@ -7,6 +7,7 @@ import { merge } from "lodash-es";
 import { SiteIpService } from "../../../modules/monitor/service/site-ip-service.js";
 import { utils } from "@certd/basic";
 import { ApiTags } from "@midwayjs/swagger";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -20,9 +21,12 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   authService: AuthService;
   @Inject()
   siteIpService: SiteIpService;
-
   getService(): SiteInfoService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.monitor.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询站点监控分页列表" })
@@ -75,6 +79,9 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     if (entity.disabled) {
       this.service.check(entity.id, true, 0);
     }
+    this.auditLog({
+      content: `新增了站点监控「${bean.name}」(ID:${res.id}, 域名:${bean.domain})`,
+    });
     return this.ok(res);
   }
 
@@ -88,6 +95,9 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     if (entity.disabled) {
       this.service.check(entity.id, true, 0);
     }
+    this.auditLog({
+      content: `修改了站点监控「${bean.name}」(ID:${bean.id})`,
+    });
     return this.ok();
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询站点监控详情" })
@@ -99,13 +109,20 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除站点监控" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.service, id, "write");
-    return await super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({
+      content: `删除了站点监控 「ID:${id}」`,
+    });
+    return res;
   }
 
   @Post("/batchDelete", { description: Constants.per.authOnly, summary: "批量删除站点监控" })
   async batchDelete(@Body(ALL) body: any) {
     const { projectId, userId } = await this.getProjectUserIdWrite();
-    await this.service.batchDelete(body.ids, userId, projectId);
+    const count = await this.service.batchDelete(body.ids, userId, projectId);
+    this.auditLog({
+      content: `批量删除了${count}条站点监控`,
+    });
     return this.ok();
   }
 
@@ -133,6 +150,58 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
       userId,
       projectId,
     });
+    this.auditLog({ content: `导入了站点监控 「${body.text}」` });
+    return this.ok();
+  }
+
+  @Post("/import/save", { description: Constants.per.authOnly, summary: "保存站点证书监控导入任务" })
+  async siteInfoImportSave(@Body(ALL) body: any) {
+    const { projectId, userId } = await this.getProjectUserIdWrite();
+    const { dnsProviderType, dnsProviderAccessId, key, groupId } = body;
+    const item = await this.service.saveSiteInfoImportTask({
+      userId: userId,
+      projectId: projectId,
+      dnsProviderType,
+      dnsProviderAccessId,
+      key,
+      groupId,
+    });
+    return this.ok(item);
+  }
+
+  @Post("/import/status", { description: Constants.per.authOnly, summary: "查询站点证书监控导入任务状态" })
+  async siteInfoImportStatus() {
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    const task = await this.service.getSiteInfoImportTaskStatus({
+      userId: userId,
+      projectId: projectId,
+    });
+    return this.ok(task);
+  }
+
+  @Post("/import/delete", { description: Constants.per.authOnly, summary: "删除站点证书监控导入任务" })
+  async siteInfoImportDelete(@Body(ALL) body: any) {
+    const { projectId, userId } = await this.getProjectUserIdWrite();
+    const { key } = body;
+    await this.service.deleteSiteInfoImportTask({
+      userId: userId,
+      projectId: projectId,
+      key,
+    });
+    this.auditLog({ content: "删除了站点监控导入任务" });
+    return this.ok();
+  }
+
+  @Post("/import/start", { description: Constants.per.authOnly, summary: "开始站点证书监控导入任务" })
+  async siteInfoImportStart(@Body(ALL) body: any) {
+    const { projectId, userId } = await this.getProjectUserIdWrite();
+    const { key } = body;
+    await this.service.startSiteInfoImportTask({
+      key,
+      userId: userId,
+      projectId: projectId,
+    });
+    this.auditLog({ content: "开始了站点监控导入任务" });
     return this.ok();
   }
 
@@ -153,6 +222,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
       id: bean.id,
       disabled: bean.disabled,
     });
+    this.auditLog({ content: `${bean.disabled ? "禁用" : "启用"}` });
     return this.ok();
   }
 
@@ -170,6 +240,7 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     merge(setting, bean);
 
     await this.service.saveSetting(userId, projectId, setting);
+    this.auditLog({});
     return this.ok({});
   }
 }

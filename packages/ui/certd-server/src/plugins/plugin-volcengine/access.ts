@@ -43,7 +43,11 @@ export class VolcengineAccess extends BaseAccess {
   testRequest = true;
 
   async onTestRequest() {
-    await this.getCallerIdentity();
+    const result = await this.getCallerIdentity();
+    this.ctx.logger.info("✅ 密钥有效！");
+    this.ctx.logger.info(`   账户ID: ${result.accountId}`);
+    this.ctx.logger.info(`   ARN: ${result.arn}`);
+    this.ctx.logger.info(`   用户ID: ${result.userId}`);
     return "ok";
   }
 
@@ -60,17 +64,17 @@ export class VolcengineAccess extends BaseAccess {
     });
 
     const result = res.Result || {};
-    this.ctx.logger.info("✅ 密钥有效！");
-    this.ctx.logger.info(`   账户ID: ${result.AccountId}`);
-    this.ctx.logger.info(`   ARN: ${result.Trn}`);
-    this.ctx.logger.info(`   用户ID: ${result.IdentityId}`);
-
     return {
       valid: true,
       accountId: result.AccountId,
       arn: result.Trn,
-      userId: result.IdentityId,
+      userId: parseInt(result.IdentityId),
     };
+  }
+
+  async getUserId() {
+    const { userId } = await this.getCallerIdentity();
+    return userId;
   }
 }
 

@@ -3,18 +3,23 @@ import { CertApplyPluginNames, CertReader } from "@certd/plugin-cert";
 import { TencentAccess } from "../../../plugin-lib/tencent/access.js";
 import { TencentSslClient } from "../../../plugin-lib/tencent/index.js";
 
-@IsTaskPlugin({
+const uploadCertToTencentDefine: any = {
   name: "UploadCertToTencent",
   title: "腾讯云-上传证书到腾讯云",
   icon: "svg:icon-tencentcloud",
   desc: "上传成功后输出：tencentCertId",
   group: pluginGroups.tencent.key,
+  dependPlugins: {
+    "access:tencent": "*",
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
-})
+};
+
+@IsTaskPlugin(uploadCertToTencentDefine)
 export class UploadCertToTencent extends AbstractTaskPlugin {
   // @TaskInput({ title: '证书名称' })
   // name!: string;
@@ -48,7 +53,7 @@ export class UploadCertToTencent extends AbstractTaskPlugin {
 
   Client: any;
   async onInstance() {
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js");
+    const sdk = await this.importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/ssl/v20191205/index.js");
     this.Client = sdk.v20191205.Client;
   }
 

@@ -103,6 +103,9 @@ export class VolcengineDeployToDCDN extends AbstractTaskPlugin {
     this.certDomains = new CertReader(this.cert).getAllDomains();
 
     let domainList = this.domainList;
+    if (typeof domainList === "string") {
+      domainList = [domainList];
+    }
     if (!this.autoMatch) {
       //手动根据域名部署
       if (!this.domainList || this.domainList.length === 0) {
@@ -128,21 +131,20 @@ export class VolcengineDeployToDCDN extends AbstractTaskPlugin {
       }
     }
 
-    //域名十个十个的分割
-    for (let i = 0; i < domainList.length; i += 10) {
-      const batch = domainList.slice(i, i + 10);
-      this.logger.info(`开始部署证书到域名:${batch}`);
+    for (let i = 0; i < domainList.length; i++) {
+      this.logger.info(`开始部署证书到域名:${domainList[i]}`);
       const res = await service.request({
         action: "CreateCertBind",
         method: "POST",
         body: {
-          DomainNames: batch,
+          DomainNames: [domainList[i]],
           CertSource: "volc",
           CertId: certId,
         },
         version: "2021-04-01",
       });
       this.logger.info(`部署证书到域名成功：`, JSON.stringify(res));
+      await this.ctx.utils.sleep(2000);
     }
 
     this.logger.info("部署完成");

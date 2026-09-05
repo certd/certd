@@ -1,5 +1,5 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { Encryptor, SysSecret, SysSettingsService } from '../../../system/index.js';
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { Encryptor, SysSecret, SysSettingsService } from "../../../system/index.js";
 
 /**
  * 授权

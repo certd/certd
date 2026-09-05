@@ -1,12 +1,12 @@
-import { useProjectStore } from "/@/store/project";
+﻿import { useProjectStore } from "/@/store/project";
 import { useSettingStore } from "/@/store/settings";
 
 export const certdResources = [
   {
     title: "certd.title",
     name: "CertdRoot",
-    path: "/certd",
-    redirect: "/certd/pipeline",
+    path: "/cert",
+    redirect: "/cert/pipeline",
     meta: {
       icon: "ion:key-outline",
       auth: true,
@@ -16,7 +16,7 @@ export const certdResources = [
       {
         title: "certd.sysResources.myProjectManager",
         name: "MyProjectManager",
-        path: "/certd/project",
+        path: "/cert/project",
         component: "/certd/project/index.vue",
         meta: {
           show: () => {
@@ -32,7 +32,7 @@ export const certdResources = [
       {
         title: "certd.sysResources.projectJoin",
         name: "ProjectJoin",
-        path: "/certd/project/join",
+        path: "/cert/project/join",
         component: "/certd/project/join.vue",
         meta: {
           isMenu: false,
@@ -44,7 +44,7 @@ export const certdResources = [
       {
         title: "certd.pipeline",
         name: "PipelineManager",
-        path: "/certd/pipeline",
+        path: "/cert/pipeline",
         component: "/certd/pipeline/index.vue",
         meta: {
           icon: "ion:analytics-sharp",
@@ -55,7 +55,7 @@ export const certdResources = [
       {
         title: "certd.pipelineEdit",
         name: "PipelineEdit",
-        path: "/certd/pipeline/detail",
+        path: "/cert/pipeline/detail",
         component: "/certd/pipeline/detail.vue",
         meta: {
           isMenu: false,
@@ -65,7 +65,7 @@ export const certdResources = [
       {
         title: "certd.history",
         name: "PipelineHistory",
-        path: "/certd/history",
+        path: "/cert/history",
         component: "/certd/history/index.vue",
         meta: {
           icon: "ion:timer-outline",
@@ -76,7 +76,7 @@ export const certdResources = [
       {
         title: "certd.template.title",
         name: "PipelineTemplate",
-        path: "/certd/pipeline/template",
+        path: "/cert/pipeline/template",
         component: "/certd/pipeline/template/index.vue",
         meta: {
           isMenu: true,
@@ -88,7 +88,7 @@ export const certdResources = [
       {
         title: "certd.template.edit",
         name: "PipelineTemplateEdit",
-        path: "/certd/pipeline/template/edit",
+        path: "/cert/pipeline/template/edit",
         component: "/certd/pipeline/template/edit.vue",
         meta: {
           isMenu: false,
@@ -98,7 +98,7 @@ export const certdResources = [
       {
         title: "certd.template.importCreate",
         name: "PipelineTemplateImport",
-        path: "/certd/pipeline/template/import",
+        path: "/cert/pipeline/template/import",
         component: "/certd/pipeline/template/import/index.vue",
         meta: {
           isMenu: false,
@@ -108,7 +108,7 @@ export const certdResources = [
       {
         title: "certd.certStore",
         name: "CertStore",
-        path: "/certd/monitor/cert",
+        path: "/cert/monitor/cert",
         component: "/certd/monitor/cert/index.vue",
         meta: {
           icon: "ion:shield-checkmark-outline",
@@ -120,7 +120,7 @@ export const certdResources = [
       {
         title: "certd.siteMonitor",
         name: "SiteCertMonitor",
-        path: "/certd/monitor/site",
+        path: "/cert/monitor/site",
         component: "/certd/monitor/site/index.vue",
         meta: {
           icon: "ion:videocam-outline",
@@ -131,7 +131,7 @@ export const certdResources = [
       {
         title: "certd.sysResources.currentProject",
         name: "ProjectMemberManager",
-        path: "/certd/project/detail",
+        path: "/cert/project/detail",
         component: "/certd/project/detail/index.vue",
         meta: {
           show: () => {
@@ -146,8 +146,8 @@ export const certdResources = [
       {
         title: "certd.settings",
         name: "MineSetting",
-        path: "/certd/setting",
-        redirect: "/certd/access",
+        path: "/cert/setting",
+        redirect: "/cert/access",
         meta: {
           icon: "ion:settings-outline",
           auth: true,
@@ -157,7 +157,7 @@ export const certdResources = [
           {
             title: "certd.accessManager",
             name: "AccessManager",
-            path: "/certd/access",
+            path: "/cert/access",
             component: "/certd/access/index.vue",
             meta: {
               icon: "ion:disc-outline",
@@ -168,7 +168,7 @@ export const certdResources = [
           {
             title: "certd.domain.domainManager",
             name: "DomainManager",
-            path: "/certd/cert/domain",
+            path: "/cert/cert/domain",
             component: "/certd/cert/domain/index.vue",
             meta: {
               icon: "ion:globe-outline",
@@ -179,7 +179,7 @@ export const certdResources = [
           {
             title: "certd.cnameRecord",
             name: "CnameRecord",
-            path: "/certd/cname/record",
+            path: "/cert/cname/record",
             component: "/certd/cname/record/index.vue",
             meta: {
               icon: "ion:link-outline",
@@ -190,7 +190,7 @@ export const certdResources = [
           {
             title: "certd.dnsPersistRecord",
             name: "DnsPersistRecord",
-            path: "/certd/cert/dns-persist",
+            path: "/cert/cert/dns-persist",
             component: "/certd/cert/dns-persist/index.vue",
             meta: {
               icon: "ion:shield-half-outline",
@@ -201,7 +201,7 @@ export const certdResources = [
           {
             title: "certd.certApplyTemplate",
             name: "CertApplyTemplate",
-            path: "/certd/cert/apply-template",
+            path: "/cert/cert/apply-template",
             component: "/certd/cert/apply-template/index.vue",
             meta: {
               icon: "ion:list-circle-outline",
@@ -212,7 +212,7 @@ export const certdResources = [
           {
             title: "certd.subDomain",
             name: "SubDomain",
-            path: "/certd/pipeline/subDomain",
+            path: "/cert/pipeline/subDomain",
             component: "/certd/pipeline/sub-domain/index.vue",
             meta: {
               icon: "material-symbols:approval-delegation-outline",
@@ -223,7 +223,7 @@ export const certdResources = [
           {
             title: "certd.pipelineGroup",
             name: "PipelineGroupManager",
-            path: "/certd/pipeline/group",
+            path: "/cert/pipeline/group",
             component: "/certd/pipeline/group/index.vue",
             meta: {
               icon: "mdi:format-list-group",
@@ -234,7 +234,7 @@ export const certdResources = [
           {
             title: "certd.openKey",
             name: "OpenKey",
-            path: "/certd/open/openkey",
+            path: "/cert/open/openkey",
             component: "/certd/open/openkey/index.vue",
             meta: {
               icon: "hugeicons:api",
@@ -245,7 +245,7 @@ export const certdResources = [
           {
             title: "certd.notification",
             name: "NotificationManager",
-            path: "/certd/notification",
+            path: "/cert/notification",
             component: "/certd/notification/index.vue",
             meta: {
               icon: "ion:megaphone-outline",
@@ -256,7 +256,7 @@ export const certdResources = [
           {
             title: "certd.siteMonitorSetting",
             name: "SiteMonitorSetting",
-            path: "/certd/monitor/setting",
+            path: "/cert/monitor/setting",
             component: "/certd/monitor/site/setting/index.vue",
             meta: {
               icon: "ion:videocam-outline",
@@ -267,7 +267,7 @@ export const certdResources = [
           {
             title: "certd.sysResources.domainMonitorSetting",
             name: "DomainMonitorSetting",
-            path: "/certd/cert/domain/setting",
+            path: "/cert/cert/domain/setting",
             component: "/certd/cert/domain/setting/index.vue",
             meta: {
               icon: "ion:stopwatch-outline",
@@ -278,7 +278,7 @@ export const certdResources = [
           {
             title: "certd.sysResources.jobHistory",
             name: "JobHistory",
-            path: "/certd/monitor/history",
+            path: "/cert/monitor/history",
             component: "/certd/monitor/history/index.vue",
             meta: {
               icon: "ion:barcode-outline",
@@ -288,9 +288,25 @@ export const certdResources = [
             },
           },
           {
+            title: "certd.auditLog",
+            name: "AuditLog",
+            path: "/cert/audit",
+            component: "/certd/audit/index.vue",
+            meta: {
+              icon: "ion:document-text-outline",
+              auth: true,
+              keepAlive: true,
+              isMenu: true,
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isPlus;
+              },
+            },
+          },
+          {
             title: "certd.userSecurity",
             name: "UserSecurity",
-            path: "/certd/mine/security",
+            path: "/cert/mine/security",
             component: "/certd/mine/security/index.vue",
             meta: {
               icon: "fluent:shield-keyhole-16-regular",
@@ -301,7 +317,7 @@ export const certdResources = [
           {
             title: "certd.userGrant",
             name: "UserGrantSetting",
-            path: "/certd/mine/grant",
+            path: "/cert/mine/grant",
             component: "/certd/mine/grant/index.vue",
             meta: {
               icon: "mi:user-check",
@@ -316,7 +332,7 @@ export const certdResources = [
           {
             title: "certd.userProfile",
             name: "UserProfile",
-            path: "/certd/mine/user-profile",
+            path: "/cert/mine/user-profile",
             component: "/certd/mine/user-profile.vue",
             meta: {
               icon: "ion:person-outline",
@@ -329,8 +345,8 @@ export const certdResources = [
       {
         title: "certd.suite",
         name: "SuiteProduct",
-        path: "/certd/suite",
-        redirect: "/certd/suite/mine",
+        path: "/cert/suite",
+        redirect: "/cert/suite/mine",
         meta: {
           show: () => {
             const settingStore = useSettingStore();
@@ -343,7 +359,7 @@ export const certdResources = [
           {
             title: "certd.mySuite",
             name: "MySuite",
-            path: "/certd/suite/mine",
+            path: "/cert/suite/mine",
             component: "/certd/suite/mine/index.vue",
             meta: {
               show: () => {
@@ -358,7 +374,7 @@ export const certdResources = [
           {
             title: "certd.suiteBuy",
             name: "SuiteProductBuy",
-            path: "/certd/suite/buy",
+            path: "/cert/suite/buy",
             component: "/certd/suite/buy.vue",
             meta: {
               show: () => {
@@ -372,7 +388,7 @@ export const certdResources = [
           {
             title: "certd.myTrade",
             name: "MyTrade",
-            path: "/certd/trade",
+            path: "/cert/trade",
             component: "/certd/trade/index.vue",
             meta: {
               show: () => {
@@ -387,7 +403,7 @@ export const certdResources = [
           {
             title: "certd.inviteCommission",
             name: "InviteCommission",
-            path: "/certd/invite",
+            path: "/cert/invite",
             component: "/certd/invite/index.vue",
             meta: {
               show: () => {
@@ -402,7 +418,7 @@ export const certdResources = [
           {
             title: "certd.myWallet",
             name: "MyWallet",
-            path: "/certd/wallet",
+            path: "/cert/wallet",
             component: "/certd/wallet/index.vue",
             meta: {
               show: () => {
@@ -417,7 +433,7 @@ export const certdResources = [
           {
             title: "certd.paymentReturn",
             name: "PaymentReturn",
-            path: "/certd/payment/return/:type",
+            path: "/cert/payment/return/:type",
             component: "/certd/payment/return.vue",
             meta: {
               icon: "ant-design:pay-circle-outlined",

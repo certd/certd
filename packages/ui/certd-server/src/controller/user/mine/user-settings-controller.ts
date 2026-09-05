@@ -2,10 +2,12 @@ import { ALL, Body, Controller, Inject, Post, Provide, Query } from "@midwayjs/c
 import { Constants, CrudController } from "@certd/lib-server";
 import { UserSettingsService } from "../../../modules/mine/service/user-settings-service.js";
 import { UserSettingsEntity } from "../../../modules/mine/entity/user-settings.js";
-import { UserGrantSetting } from "../../../modules/mine/service/models.js";
+import { UserGrantSetting, UserPreferencesSetting } from "../../../modules/mine/service/models.js";
 import { isPlus } from "@certd/plus-core";
 import { merge } from "lodash-es";
 import { ApiTags } from "@midwayjs/swagger";
+import { parseUserPreferencesPayload } from "./user-preferences.js";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -18,6 +20,10 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
 
   getService() {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.mine.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询用户设置分页列表" })
@@ -62,6 +68,7 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
   async save(@Body(ALL) bean: UserSettingsEntity) {
     bean.userId = this.getUserId();
     await this.service.save(bean);
+    this.auditLog({ content: "保存了用户设置" });
     return this.ok({});
   }
 
@@ -88,6 +95,41 @@ export class UserSettingsController extends CrudController<UserSettingsService> 
     merge(setting, bean);
 
     await this.service.saveSetting(userId, null, setting);
+    this.auditLog({ content: `保存了授权设置 「${setting.allowAdminViewCerts ? "允许管理员查看证书" : "禁止管理员查看证书"}」` });
+    return this.ok({});
+  }
+
+  @Post("/preferences/get", { description: Constants.per.authOnly, summary: "获取用户偏好设置" })
+  async preferencesGet() {
+    const userId = this.getUserId();
+    const entity = await this.service.getByKey(UserPreferencesSetting.__key__, userId, null);
+    if (!entity?.setting) {
+      return this.ok(null);
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(entity.setting);
+    } catch {
+      return this.ok(null);
+    }
+    return this.ok(parseUserPreferencesPayload(parsed));
+  }
+
+  @Post("/preferences/save", { description: Constants.per.authOnly, summary: "保存用户偏好设置" })
+  async preferencesSave(@Body(ALL) bean: any) {
+    const userId = this.getUserId();
+    const preferences = parseUserPreferencesPayload(bean);
+    if (!preferences) {
+      throw new Error("偏好设置内容无效");
+    }
+    // 整份替换，避免 saveSetting 深合并留下已恢复为默认值的旧字段
+    const entity = new UserSettingsEntity();
+    entity.key = UserPreferencesSetting.__key__;
+    entity.title = UserPreferencesSetting.__title__;
+    entity.userId = userId;
+    entity.setting = JSON.stringify({ preferences });
+    await this.service.save(entity);
+    this.auditLog({ content: "保存了用户偏好设置" });
     return this.ok({});
   }
 }

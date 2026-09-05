@@ -8,6 +8,9 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "已废弃，请使用v2版",
+  dependPlugins: {
+    "access:tencent": "*",
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -63,7 +66,7 @@ export class DeployToCdnPlugin extends AbstractTaskPlugin {
   Client: any;
 
   async onInstance() {
-    const sdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/cdn/v20180606/index.js");
+    const sdk = await (this as any).importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/cdn/v20180606/index.js");
     this.Client = sdk.v20180606.Client;
   }
 

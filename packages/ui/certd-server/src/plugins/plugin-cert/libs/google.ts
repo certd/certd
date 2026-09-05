@@ -10,7 +10,7 @@ export class GoogleClient {
   }
   async getEab() {
     // https://cloud.google.com/docs/authentication/api-keys-use#using-with-client-libs
-    const { v1 } = await import("@google-cloud/publicca");
+    const { v1 } = await this.access.importRuntime("@google-cloud/publicca");
     // process.env.HTTPS_PROXY = "http://127.0.0.1:10811";
     const access = this.access;
     if (!access.serviceAccountSecret) {

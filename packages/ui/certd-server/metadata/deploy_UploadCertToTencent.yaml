@@ -7,6 +7,8 @@ title: 腾讯云-上传证书到腾讯云
 icon: svg:icon-tencentcloud
 desc: 上传成功后输出：tencentCertId
 group: tencent
+dependPlugins:
+  access:tencent: '*'
 input:
   accessId:
     title: Access授权

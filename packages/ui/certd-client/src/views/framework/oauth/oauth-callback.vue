@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="oauth-callback-page">
     <div class="oauth-callback-content">
       <div v-if="!bindRequired" class="oauth-callback-title">
@@ -71,7 +71,7 @@ async function doBindCurrent() {
     message: "绑定成功",
   });
   //跳转到首页
-  router.replace("/certd/mine/user-profile");
+  router.replace("/cert/mine/user-profile");
 }
 
 onMounted(async () => {

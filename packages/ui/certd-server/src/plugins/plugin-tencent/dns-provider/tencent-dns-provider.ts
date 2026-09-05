@@ -1,14 +1,20 @@
-import { AbstractDnsProvider, CreateRecordOptions, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
+import { AbstractDnsProvider, CreateRecordOptions, DnsResolveRecord, DomainRecord, IsDnsProvider, RemoveRecordOptions } from "@certd/plugin-cert";
 import { TencentAccess } from "../../plugin-lib/tencent/index.js";
 import { Pager, PageRes, PageSearch } from "@certd/pipeline";
 
-@IsDnsProvider({
+const tencentDnsProviderDefine: any = {
   name: "tencent",
   title: "腾讯云",
   desc: "腾讯云域名DNS解析提供者",
   accessType: "tencent",
   icon: "svg:icon-tencentcloud",
-})
+  order: 0,
+  dependPlugins: {
+    "access:tencent": "*",
+  },
+};
+
+@IsDnsProvider(tencentDnsProviderDefine)
 export class TencentDnsProvider extends AbstractDnsProvider {
   access!: TencentAccess;
 
@@ -27,7 +33,7 @@ export class TencentDnsProvider extends AbstractDnsProvider {
         },
       },
     };
-    const dnspodSdk = await import("tencentcloud-sdk-nodejs/tencentcloud/services/dnspod/v20210323/index.js");
+    const dnspodSdk = await (this as any).importRuntime("tencentcloud-sdk-nodejs/tencentcloud/services/dnspod/v20210323/index.js");
     const DnspodClient = dnspodSdk.v20210323.Client;
     // 实例化要请求产品的client对象,clientProfile是可选的
     this.client = new DnspodClient(clientConfig);
@@ -112,6 +118,30 @@ export class TencentDnsProvider extends AbstractDnsProvider {
       domain: item.Name,
     }));
     const total = ret.DomainCountInfo?.AllTotal || list.length;
+    return { total, list };
+  }
+
+  async getRecordListPage(domain: string, req: PageSearch): Promise<PageRes<DnsResolveRecord>> {
+    const pager = new Pager(req);
+
+    const params: any = {
+      Domain: domain,
+      Offset: pager.getOffset(),
+      Limit: pager.pageSize,
+    };
+    if (req.searchKey) {
+      params.Subdomain = req.searchKey;
+    }
+    const ret = await this.client.DescribeRecordList(params);
+    let list = ret.RecordList || [];
+    list = list.map((item: any) => ({
+      id: String(item.RecordId),
+      hostRecord: item.Name,
+      fullRecord: item.Name === "@" ? domain : `${item.Name}.${domain}`,
+      type: item.Type,
+      value: item.Value,
+    }));
+    const total = ret.TotalCount || list.length;
     return { total, list };
   }
 }

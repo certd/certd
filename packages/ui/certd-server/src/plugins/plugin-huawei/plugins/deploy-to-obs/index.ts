@@ -91,7 +91,7 @@ export class HauweiDeployCertToOBS extends AbstractTaskPlugin {
     const regionStr = region ? `${region}.` : "cn-north-4.";
     const bucketStr = bucket ? `${bucket}.` : "";
     const access = await this.getAccess<HuaweiAccess>(this.accessId);
-    const sdk = await import("esdk-obs-nodejs");
+    const sdk = await this.importRuntime("esdk-obs-nodejs");
     const obsClient = new sdk.default({
       // 推荐通过环境变量获取AKSK，这里也可以使用其他外部引入方式传入，如果使用硬编码可能会存在泄露风险
       // 您可以登录访问管理控制台获取访问密钥AK/SK，获取方式请参见https://support.huaweicloud.com/usermanual-ca/ca_01_0003.html

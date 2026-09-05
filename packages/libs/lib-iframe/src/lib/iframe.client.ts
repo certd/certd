@@ -1,4 +1,4 @@
-import { nanoid } from 'nanoid';
+import { nanoid } from "nanoid";
 
 export type IframeMessageData<T> = {
   action: string;
@@ -29,10 +29,12 @@ export class IframeClient {
   onError?: any;
 
   handlers: Record<string, (data: IframeMessageData<any>) => Promise<void>> = {};
+  private messageHandler: (event: MessageEvent<IframeMessageData<any>>) => Promise<void>;
+
   constructor(iframe?: HTMLIFrameElement, onError?: (e: any) => void) {
     this.iframe = iframe;
     this.onError = onError;
-    window.addEventListener('message', async (event: MessageEvent<IframeMessageData<any>>) => {
+    this.messageHandler = async (event: MessageEvent<IframeMessageData<any>>) => {
       const data = event.data;
       if (data.action) {
         console.log(`收到消息[isSub:${this.isInFrame()}]`, data);
@@ -40,20 +42,21 @@ export class IframeClient {
           const handler = this.handlers[data.action];
           if (handler) {
             const res = await handler(data);
-            if (data.id && data.action !== 'reply') {
-              await this.send('reply', res, data.id);
+            if (data.id && data.action !== "reply") {
+              await this.send("reply", res, data.id);
             }
           } else {
             throw new Error(`action:${data.action} 未注册处理器，可能版本过低`);
           }
         } catch (e: any) {
           console.error(e);
-          await this.send('reply', {}, data.id, 500, e.message);
+          await this.send("reply", {}, data.id, 500, e.message);
         }
       }
-    });
+    };
+    window.addEventListener("message", this.messageHandler);
 
-    this.register('reply', async data => {
+    this.register("reply", async data => {
       const req = this.requestQueue[data.replyId!];
       if (req) {
         req.onReply(data);
@@ -61,11 +64,20 @@ export class IframeClient {
       }
     });
   }
-  isInFrame() {
+
+  public destroy() {
+    window.removeEventListener("message", this.messageHandler);
+    this.requestQueue = {};
+    this.handlers = {};
+  }
+  public close() {
+    this.destroy();
+  }
+  public isInFrame() {
     return window.self !== window.top;
   }
 
-  register<T = any>(action: string, handler: (data: IframeMessageData<T>) => Promise<any>) {
+  public register<T = any>(action: string, handler: (data: IframeMessageData<T>) => Promise<any>) {
     this.handlers[action] = handler;
   }
 
@@ -106,12 +118,12 @@ export class IframeClient {
         console.log(`send message[isSub:${this.isInFrame()}]:`, reqMessageData);
         if (!this.iframe) {
           if (!window.parent) {
-            reject('当前页面不在 iframe 中');
+            reject("当前页面不在 iframe 中");
           }
-          window.parent.postMessage(reqMessageData, '*');
+          window.parent.postMessage(reqMessageData, "*");
         } else {
           //子页面
-          this.iframe.contentWindow?.postMessage(reqMessageData, '*');
+          this.iframe.contentWindow?.postMessage(reqMessageData, "*");
         }
       } catch (e) {
         console.error(e);

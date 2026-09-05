@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 /**
  * ACME API client
  */
@@ -20,6 +20,7 @@ class AcmeApi {
     getLocationFromHeader(resp) {
         let locationUrl = resp.headers.location;
         const mapping = this.http.urlMapping;
+        // 服务器返回的是反代地址，这里还原为 ACME 原始资源 URL，供后续 JWS url 使用。
         if (mapping.mappings) {
             // eslint-disable-next-line guard-for-in,no-restricted-syntax
             for (const key in mapping.mappings) {
@@ -237,11 +238,12 @@ class AcmeApi {
      * https://datatracker.ietf.org/doc/html/rfc8555#section-7.6
      *
      * @param {object} data Request payload
+     * @param {object} [opts] Request options, e.g. `{ includeJwsKid: false }` to sign with certificate private key (jwk) instead of account key
      * @returns {Promise<object>} HTTP response
      */
 
-    revokeCert(data) {
-        return this.apiResourceRequest('revokeCert', data, [200]);
+    revokeCert(data, opts = {}) {
+        return this.apiResourceRequest('revokeCert', data, [200], opts);
     }
 }
 

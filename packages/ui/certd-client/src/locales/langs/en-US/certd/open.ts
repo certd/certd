@@ -10,5 +10,6 @@ export default {
     contentPart1: "Test the x-certd-token below, you can use it within 3 minutes to test ",
     openApi: "Open API",
     contentPart2: " request testing",
+    apiAddress: "API Address",
   },
 };

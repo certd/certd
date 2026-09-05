@@ -85,7 +85,7 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
     }
     //部署到CloudFront
 
-    const { CloudFrontClient, UpdateDistributionCommand, GetDistributionConfigCommand } = await import("@aws-sdk/client-cloudfront");
+    const { CloudFrontClient, UpdateDistributionCommand, GetDistributionConfigCommand } = await this.importRuntime("@aws-sdk/client-cloudfront");
     const cloudFrontClient = new CloudFrontClient({
       region: this.region,
       credentials: {
@@ -140,7 +140,7 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
     }
 
     const access = await this.getAccess<AwsAccess>(this.accessId);
-    const { CloudFrontClient, ListDistributionsCommand } = await import("@aws-sdk/client-cloudfront");
+    const { CloudFrontClient, ListDistributionsCommand } = await this.importRuntime("@aws-sdk/client-cloudfront");
     const cloudFrontClient = new CloudFrontClient({
       region: this.region,
       credentials: {

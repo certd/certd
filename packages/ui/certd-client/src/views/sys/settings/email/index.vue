@@ -45,7 +45,7 @@
               </a-form-item>
             </div>
           </a-tab-pane>
-          <a-tab-pane key="plus" class="plus" :disabled="!settingStore.isPlus" v-if="formState.usePlus">
+          <a-tab-pane v-if="formState.usePlus" key="plus" class="plus" :disabled="!settingStore.isPlus">
             <template #tab>
               <span class="flex items-center">
                 {{ t("certd.useOfficialEmailServer") }}

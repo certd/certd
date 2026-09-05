@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <fs-page class="page-user-profile">
     <template #header>
       <div class="title">{{ t("certd.myInfo") }}</div>
@@ -108,6 +108,10 @@
                   <div class="passkey-name">{{ passkey.deviceName }}</div>
                   <div class="passkey-meta flex items-center">
                     <span class="meta-item flex items-center">
+                      <fs-icon icon="ion:globe-outline" class="meta-icon" />
+                      {{ passkey.rpId || "-" }}
+                    </span>
+                    <span class="meta-item flex items-center">
                       <fs-icon icon="ion:calendar-outline" class="meta-icon" />
                       {{ formatDate(passkey.registeredAt) }}
                     </span>
@@ -150,7 +154,7 @@ import ChangePasswordButton from "/@/views/certd/mine/change-password-button.vue
 import { useI18n } from "/src/locales";
 import { useContactBind, useUserProfile } from "./use";
 import { usePasskeyRegister } from "./use";
-import { message, Modal, notification } from "ant-design-vue";
+import { Modal, notification } from "ant-design-vue";
 import { useSettingStore } from "/@/store/settings";
 import { isEmpty } from "lodash-es";
 import { dict } from "@fast-crud/fast-crud";
@@ -196,7 +200,7 @@ function doUpdate() {
 
 const router = useRouter();
 function goSecuritySetting() {
-  router.push("/certd/mine/security");
+  router.push("/cert/mine/security");
 }
 
 const oauthBounds = ref([]);
@@ -304,7 +308,7 @@ async function registerPasskey() {
         return;
       }
       await doRegisterPasskey(deviceName);
-      message.success("Passkey注册成功");
+      notification.success({ message: "Passkey注册成功" });
     },
   });
 }
@@ -454,6 +458,8 @@ onMounted(async () => {
     }
 
     .card-header {
+      background: linear-gradient(145deg, #1e1e1e, #252525);
+
       .header-bg-gradient {
         background: rgba(255, 255, 255, 0.04);
         opacity: 1;
@@ -472,12 +478,30 @@ onMounted(async () => {
 
       .detail-tag {
         background: #3b3b3b;
+        border-color: rgba(255, 255, 255, 0.12);
         color: #e5e5e5;
 
         .tag-icon {
           color: #e5e5e5;
         }
       }
+    }
+
+    .card-title {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .binding-icon {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.22) 0%, rgba(160, 120, 234, 0.22) 100%);
+    }
+
+    .passkey-icon {
+      background: linear-gradient(135deg, rgba(17, 153, 142, 0.22) 0%, rgba(56, 239, 125, 0.22) 100%);
+    }
+
+    .binding-icon .icon,
+    .passkey-icon .icon {
+      color: rgba(255, 255, 255, 0.7);
     }
 
     .bindings-list {

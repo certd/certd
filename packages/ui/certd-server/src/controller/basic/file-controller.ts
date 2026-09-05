@@ -55,7 +55,7 @@ export class FileController extends BaseController {
       const key = await this.fileService.saveFile(this.getUserId(), cacheKey, "public");
       return this.ok({
         key,
-        url: `/api/basic/file/download?key=${encodeURIComponent(key)}`,
+        url: `/api/basic/file/download?key=${encodeURIComponent(key as string)}`,
       });
     }
     return this.ok({

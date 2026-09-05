@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <a-dropdown>
     <div class="fs-user-info" @click="goUserProfile">{{ t("user.greeting") }}，{{ userStore.getUserInfo?.nickName || userStore.getUserInfo?.username }}</div>
     <template #overlay>
@@ -29,7 +29,7 @@ const router = useRouter();
 
 function goUserProfile() {
   console.log("goUserProfile");
-  router.push("/certd/mine/user-profile");
+  router.push("/cert/mine/user-profile");
 }
 function doLogout() {
   Modal.confirm({

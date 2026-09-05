@@ -1,9 +1,9 @@
-import { Inject, Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { AppKey, PlusRequestService } from '@certd/plus-core';
-import { cache, http, HttpRequestConfig, logger } from '@certd/basic';
-import { SysInstallInfo, SysLicenseInfo, SysSettingsService } from '../../settings/index.js';
-import { merge } from 'lodash-es';
-import fs from 'fs';
+import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { AppKey, PlusRequestService } from "@certd/plus-core";
+import { cache, http, HttpRequestConfig, logger } from "@certd/basic";
+import { SysInstallInfo, SysLicenseInfo, SysSettingsService } from "../../settings/index.js";
+import { merge } from "lodash-es";
+import fs from "fs";
 @Provide("plusService")
 @Scope(ScopeEnum.Request, { allowDowngrade: true })
 export class PlusService {
@@ -54,9 +54,9 @@ export class PlusService {
     await plusRequestService.verify({ license: licenseInfo.license });
   }
 
-  async bindUrl(url: string, url2?:string) {
+  async bindUrl(url: string, url2?: string) {
     const plusRequestService = await this.getPlusRequestService();
-    const res = await plusRequestService.bindUrl(url,url2);
+    const res = await plusRequestService.bindUrl(url, url2);
     this.plusRequestService = null;
     return res;
   }
@@ -66,7 +66,7 @@ export class PlusService {
     const licenseInfo: SysLicenseInfo = await this.sysSettingsService.getSetting(SysLicenseInfo);
     if (!licenseInfo.license) {
       await plusRequestService.register();
-      logger.info('站点注册成功');
+      logger.info("站点注册成功");
       this.plusRequestService = null;
     }
   }
@@ -74,8 +74,8 @@ export class PlusService {
   async userPreBind(userId: number) {
     const plusRequestService = await this.getPlusRequestService();
     await plusRequestService.requestWithoutSign({
-      url: '/activation/subject/preBind',
-      method: 'POST',
+      url: "/activation/subject/preBind",
+      method: "POST",
       data: {
         userId,
         appKey: AppKey,
@@ -91,9 +91,9 @@ export class PlusService {
     if (attachments.length > 0) {
       const newAttachments: any[] = [];
       attachments.forEach((item: any) => {
-        const name = item.filename || item.path.split('/').pop();
+        const name = item.filename || item.path.split("/").pop();
         const body = item.content || fs.readFileSync(item.path);
-        const bodyBase64 = Buffer.from(body).toString('base64');
+        const bodyBase64 = Buffer.from(body).toString("base64");
         item = {
           name,
           body: bodyBase64,
@@ -104,7 +104,7 @@ export class PlusService {
     }
 
     await plusRequestService.request({
-      url: '/activation/emailSend',
+      url: "/activation/emailSend",
       data: {
         subject: email.subject,
         to: email.receivers,
@@ -116,7 +116,7 @@ export class PlusService {
   }
 
   async getAccessToken() {
-    const cacheKey = 'certd:subject:access_token';
+    const cacheKey = "certd:subject:access_token";
     const token = cache.get(cacheKey);
     if (token) {
       return token;
@@ -131,15 +131,15 @@ export class PlusService {
     return res.accessToken;
   }
 
-  async getVipTrial(vipType= "plus") {
+  async getVipTrial(vipType = "plus") {
     await this.register();
     const plusRequestService = await this.getPlusRequestService();
     const res = await plusRequestService.request({
-      url: '/activation/subject/vip/trialGet',
-      method: 'POST',
-      data:{
-        vipType
-      }
+      url: "/activation/subject/vip/trialGet",
+      method: "POST",
+      data: {
+        vipType,
+      },
     });
     if (res.license) {
       await this.updateLicense(res.license);
@@ -147,14 +147,14 @@ export class PlusService {
         duration: res.duration,
       };
     } else {
-      throw new Error('您已经领取过VIP试用了');
+      throw new Error("您已经领取过VIP试用了");
     }
   }
 
-  async getTodayOrderCount () {
+  async getTodayOrderCount() {
     await this.register();
     const plusRequestService = await this.getPlusRequestService();
-    return await plusRequestService.getOrderCount()
+    return await plusRequestService.getOrderCount();
   }
 
   async requestWithToken(config: HttpRequestConfig) {
@@ -162,9 +162,9 @@ export class PlusService {
     const token = await this.getAccessToken();
     merge(config, {
       baseURL: plusRequestService.getBaseURL(),
-      method: 'post',
+      method: "post",
       headers: {
-        Authorization: `Berear ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     const res = await http.request(config);
@@ -172,5 +172,10 @@ export class PlusService {
       throw new Error(res.message);
     }
     return res.data;
+  }
+
+  async request(config: HttpRequestConfig) {
+    const plusRequestService = await this.getPlusRequestService();
+    return await plusRequestService.request(config);
   }
 }

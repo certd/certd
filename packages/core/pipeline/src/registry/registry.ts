@@ -7,6 +7,7 @@ export type Registrable = {
   group?: string;
   deprecated?: string;
   order?: number;
+  icon?: string;
 };
 export type TargetGetter<T> = () => Promise<T>;
 export type RegistryItem<T> = {

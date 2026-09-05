@@ -1,15 +1,15 @@
-import { Provide, Scope, ScopeEnum } from '@midwayjs/core';
-import { InjectEntityModel } from '@midwayjs/typeorm';
-import { Repository } from 'typeorm';
-import { SysSettingsEntity } from '../entity/sys-settings.js';
-import { BaseSettings, SysInstallInfo, SysPrivateSettings, SysPublicSettings, SysSecret, SysSecretBackup } from './models.js';
+import { Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { InjectEntityModel } from "@midwayjs/typeorm";
+import { Repository } from "typeorm";
+import { SysSettingsEntity } from "../entity/sys-settings.js";
+import { BaseSettings, SysInstallInfo, SysPrivateSettings, SysPublicSettings, SysSecret, SysSecretBackup } from "./models.js";
 
-import { getAllSslProviderDomains, setSslProviderReverseProxies, setWalkFromAuthoritative } from '@certd/acme-client';
-import { cache, logger, mergeUtils, setGlobalHeaders, setGlobalProxy } from '@certd/basic';
-import { isPlus } from '@certd/plus-core';
-import * as dns from 'node:dns';
-import { BaseService, setAdminMode } from '../../../basic/index.js';
-import { executorQueue } from '../../basic/service/executor-queue.js';
+import { setWalkFromAuthoritative } from "@certd/acme-client";
+import { cache, logger, mergeUtils, setGlobalHeaders, setGlobalProxy } from "@certd/basic";
+import { isPlus } from "@certd/plus-core";
+import * as dns from "node:dns";
+import { BaseService, setAdminMode } from "../../../basic/index.js";
+import { executorQueue } from "../../basic/service/executor-queue.js";
 const { merge } = mergeUtils;
 
 let lastSaveEnvVars = {};
@@ -131,14 +131,7 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   }
 
   async getPrivateSettings(): Promise<SysPrivateSettings> {
-    const res = await this.getSetting<SysPrivateSettings>(SysPrivateSettings);
-    const sslProviderDomains = getAllSslProviderDomains();
-    for (const domain of sslProviderDomains) {
-      if (!res.reverseProxies[domain]) {
-        res.reverseProxies[domain] = "";
-      }
-    }
-    return res
+    return await this.getSetting<SysPrivateSettings>(SysPrivateSettings);
   }
 
   async savePrivateSettings(bean: SysPrivateSettings) {
@@ -149,14 +142,14 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
   }
 
   async reloadSettings() {
-    await this.reloadPrivateSettings()
-    await this.reloadPublicSettings()
+    await this.reloadPrivateSettings();
+    await this.reloadPublicSettings();
   }
 
   async reloadPublicSettings() {
-    const publicSetting = await this.getPublicSettings()
-    if (isPlus()){
-      setAdminMode(publicSetting.adminMode  ) 
+    const publicSetting = await this.getPublicSettings();
+    if (isPlus()) {
+      setAdminMode(publicSetting.adminMode);
     }
   }
 
@@ -173,40 +166,36 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     if (privateSetting.dnsResultOrder) {
       dns.setDefaultResultOrder(privateSetting.dnsResultOrder as any);
     }
-
     if (privateSetting.pipelineMaxRunningCount) {
       executorQueue.setMaxRunningCount(privateSetting.pipelineMaxRunningCount);
     }
-
-    setSslProviderReverseProxies(privateSetting.reverseProxies);
 
     //加载环境变量
     this.setEnvironmentVars(privateSetting.environmentVars);
 
     setWalkFromAuthoritative(privateSetting.acmeWalkFromAuthoritative);
-    
   }
 
   parseKeyValueText(text: string) {
     const values = {};
-    if (typeof text !== 'string') {
+    if (typeof text !== "string") {
       text = "";
     }
-    text.split('\n').forEach(line => {
+    text.split("\n").forEach(line => {
       line = line.trim();
-      if (!line || line.startsWith('#')) {
-        return
+      if (!line || line.startsWith("#")) {
+        return;
       }
 
-      const arr = line.split("#")
+      const arr = line.split("#");
       if (arr.length > 0) {
         line = arr[0].trim();
       }
       if (!line.includes("=")) {
-        return
+        return;
       }
 
-      const eqIndex = line.indexOf('=');
+      const eqIndex = line.indexOf("=");
       const key = line.substring(0, eqIndex).trim();
       const value = line.substring(eqIndex + 1).trim();
       if (key && value) {
@@ -221,7 +210,7 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     //先删除旧环境变量
     if (lastSaveEnvVars) {
       for (const key in lastSaveEnvVars) {
-          delete process.env[key];
+        delete process.env[key];
       }
     }
 
@@ -235,7 +224,7 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
       entity.setting = JSON.stringify(setting);
       await this.repository.save(entity);
     } else {
-      throw new Error('该设置不存在');
+      throw new Error("该设置不存在");
     }
     cache.delete(`settings.${key}`);
   }
@@ -247,20 +236,20 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     if (settings == null) {
       const backup = new SysSecretBackup();
       if (installInfo.siteId == null || privateSettings.encryptSecret == null) {
-        logger.error('备份密钥失败，siteId或encryptSecret为空');
+        logger.error("备份密钥失败，siteId或encryptSecret为空");
         return;
       }
       backup.siteId = installInfo.siteId;
       backup.encryptSecret = privateSettings.encryptSecret;
       await this.saveSetting(backup);
-      logger.info('备份密钥成功');
+      logger.info("备份密钥成功");
     } else {
       //校验是否有变化
       if (settings.siteId !== installInfo.siteId) {
         throw new Error(`siteId与备份不一致，可能是数据异常，请检查：backup=${settings.siteId}, current=${installInfo.siteId}`);
       }
       if (settings.encryptSecret !== privateSettings.encryptSecret) {
-        throw new Error('encryptSecret与备份不一致，可能是数据异常，请检查');
+        throw new Error("encryptSecret与备份不一致，可能是数据异常，请检查");
       }
     }
   }
@@ -272,12 +261,12 @@ export class SysSettingsService extends BaseService<SysSettingsEntity> {
     //从备份中读取
     const settings = await this.getSettingByKey(SysSecretBackup.__key__);
     if (settings == null || !settings.encryptSecret) {
-      throw new Error('密钥备份不存在');
+      throw new Error("密钥备份不存在");
     }
     sysSecret.siteId = settings.siteId;
     sysSecret.encryptSecret = settings.encryptSecret;
     await this.saveSetting(sysSecret);
-    logger.info('密钥恢复成功');
+    logger.info("密钥恢复成功");
     return sysSecret;
   }
 }

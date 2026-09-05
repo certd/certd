@@ -43,7 +43,7 @@ export class QiniuClient {
   }
 
   async doRequest(url: string, method: string, body?: any) {
-    const { generateAccessToken } = await import("qiniu/qiniu/util.js");
+    const { generateAccessToken } = await this.access.importRuntime("qiniu/qiniu/util.js");
     const token = generateAccessToken(this.access, url);
     const res = await this.http.request({
       url,
@@ -65,8 +65,8 @@ export class QiniuClient {
   }
 
   async doRequestV2(opts: { url: string; method: string; body?: any; contentType: string }) {
-    const { HttpClient } = await import("qiniu/qiniu/httpc/client.js");
-    const { QiniuAuthMiddleware } = await import("qiniu/qiniu/httpc/middleware/qiniuAuth.js");
+    const { HttpClient } = await this.access.importRuntime("qiniu/qiniu/httpc/client.js");
+    const { QiniuAuthMiddleware } = await this.access.importRuntime("qiniu/qiniu/httpc/middleware/qiniuAuth.js");
     // X-Qiniu-Date: 20060102T150405Z
     const auth = new QiniuAuthMiddleware({
       mac: {
@@ -100,7 +100,7 @@ export class QiniuClient {
   }
 
   async uploadFile(bucket: string, key: string, content: Buffer | string) {
-    const sdk = await import("qiniu");
+    const sdk = await this.access.importRuntime("qiniu");
     const qiniu = sdk.default;
     const mac = new qiniu.auth.digest.Mac(this.access.accessKey, this.access.secretKey);
     const options = {
@@ -161,7 +161,7 @@ export class QiniuClient {
   }
 
   private async getBucketManager() {
-    const sdk = await import("qiniu");
+    const sdk = await this.access.importRuntime("qiniu");
     const qiniu = sdk.default;
     const mac = new qiniu.auth.digest.Mac(this.access.accessKey, this.access.secretKey);
     const config = new qiniu.conf.Config();

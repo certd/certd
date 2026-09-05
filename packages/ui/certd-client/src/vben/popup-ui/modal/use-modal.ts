@@ -95,6 +95,7 @@ export function useVbenModal<TParentModalProps extends ModalProps = ModalProps>(
       return () =>
         h(
           VbenModal,
+          //@ts-ignore
           {
             ...props,
             ...attrs,

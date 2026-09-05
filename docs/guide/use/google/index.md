@@ -1,15 +1,23 @@
 # google证书申请教程
 
-## 1、启用API
+## 1、 添加流水线
+
+ 点击“创建证书流水线”按钮
+
+## 2、 生成google ACME账号
+
+![](./images/google-acme.png)
+
+## 3、 获取Google EAB
+
+### 3.1、启用API
 打开如下链接，启用 API
 
 https://console.cloud.google.com/apis/library/publicca.googleapis.com
 
 打开该链接后点击“启用”，随后等待右侧出现“API已启用”则可以关闭该页。
 
-## 2、 获取授权
-以下两种方式任选其一
-### 2.1 直接获取EAB 【推荐】
+## 3.2、 创建EAB
 
 
 1. 打开“Google Cloud Shell”（在右上角点击激活CloudShell图标）。   
@@ -28,31 +36,13 @@ keyId: xxxxxxxxxxxxx]
 ```
 ![](./images/google-eab.png)
 
-3. 到Certd中，创建一条EAB授权记录，填写keyId(=kid) 和 b64MacKey 信息    
+3. 到Certd中，创建一条EAB授权记录，填写keyId(=kid) 和 b64MacKey 信息      
    注意：keyId没有`]`结尾，不要把`]`也复制了   
+
+## 4、 生成Google ACME账号
 
 注意：EAB授权使用过一次之后，会绑定邮箱，后续再次使用时，要使用相同的邮箱，所以邮箱切记不要修改    
 否则会报错 `Unknown external account binding (EAB) key. This may be due to the EAB key expiring which occurs 7 days after creation`
 
-4. 创建证书流水线，选择证书提供商为google，选择EAB授权，运行流水线申请证书
-
-
-### 2.2 通过google服务账号接口获取授权
-
-此方式可以自动获取EAB，需要服务端配置代理
-
-1. 创建服务账号    
-https://console.cloud.google.com/projectselector2/iam-admin/serviceaccounts/create?walkthrough_id=iam--create-service-account&hl=zh-cn#step_index=1
-
-2. 选择一个项目，进入创建服务账号页面
-3. 给服务账号起一个名字，点击`创建并继续`
-4. 向此服务账号授予对项目的访问权限： `选择角色`->`基本`->`Owner`
-5. 点击完成
-6. 点击服务账号，进入服务账号详情页面
-7. 点击`添加密钥`->`创建新密钥`->`JSON`，下载密钥文件
-8. 将json文件内容粘贴到 certd中 Google服务授权输入框中
-
-9. 创建证书流水线，选择证书提供商为google， 选择服务账号授权，运行流水线申请证书
-
-
+## 5、创建证书流水线，运行流水线申请证书
 

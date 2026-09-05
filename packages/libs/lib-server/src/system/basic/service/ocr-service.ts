@@ -15,10 +15,9 @@ export class OcrService implements IOcrService {
       url: "/activation/certd/ocr",
       method: "post",
       data: {
-        image: opts.image
-      }
+        image: opts.image,
+      },
     });
     return res;
   }
-
 }

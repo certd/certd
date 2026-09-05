@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <fs-page class="page-invite">
     <template #header>
       <div class="title">
@@ -149,7 +149,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onActivated, onMounted, reactive, ref } from "vue";
+import { computed, nextTick, reactive, ref } from "vue";
 import { FsIcon, useFs } from "@fast-crud/fast-crud";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
@@ -158,6 +158,7 @@ import createInviteesCrudOptions from "./crud-invitees";
 import createLogsCrudOptions from "./crud-logs";
 import { useSettingStore } from "/@/store/settings";
 import { util } from "/@/utils";
+import { useMounted } from "/@/use/use-mounted";
 
 defineOptions({ name: "InviteCommission" });
 
@@ -241,7 +242,7 @@ function levelIcon(level: any) {
 }
 
 function gotoWallet() {
-  router.push({ path: "/certd/wallet" });
+  router.push({ path: "/cert/wallet" });
 }
 
 function openAgreementDialog(needOpenPlan: boolean) {
@@ -314,15 +315,9 @@ async function refreshInvitePage(autoOpenAgreement = true) {
   await refreshActiveList();
 }
 
-onMounted(async () => {
+// 页面打开后获取列表数据
+useMounted(async () => {
   await refreshInvitePage(true);
-});
-
-onActivated(async () => {
-  if (!loaded.value) {
-    return;
-  }
-  await refreshInvitePage();
 });
 </script>
 

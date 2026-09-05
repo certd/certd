@@ -62,7 +62,6 @@ export interface ClientAutoOptions {
     email?: string;
     termsOfServiceAgreed?: boolean;
     skipChallengeVerification?: boolean;
-    challengePriority?: string[];
     preferredChain?: string;
     signal?: AbortSignal;
     profile?:string;
@@ -86,7 +85,7 @@ export class Client {
     completeChallenge(challenge: rfc8555.Challenge): Promise<rfc8555.Challenge>;
     waitForValidStatus<T = Order | Authorization | rfc8555.Challenge>(item: T): Promise<T>;
     getCertificate(order: Order, preferredChain?: string): Promise<string>;
-    revokeCertificate(cert: CertificateBuffer | CertificateString, data?: rfc8555.CertificateRevocationRequest): Promise<void>;
+    revokeCertificate(cert: CertificateBuffer | CertificateString, data?: rfc8555.CertificateRevocationRequest, opts?: { includeJwsKid?: boolean }): Promise<void>;
     auto(opts: ClientAutoOptions): Promise<string>;
 }
 
@@ -126,9 +125,6 @@ export const directory: {
 };
 
 export function getDirectoryUrl(opts:{sslProvider:string, pkType: string}): string;
-export function getAllSslProviderDomains(): string[];
-export function getSslProviderReverseProxies(): Record<string, string>;
-export function setSslProviderReverseProxies(reverseProxies: Record<string, string>): void;
 
 /**
  * Crypto

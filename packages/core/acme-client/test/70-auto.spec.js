@@ -235,7 +235,6 @@ describe('client.auto', () => {
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.assertHttpChallengeCreateFn,
                     challengeRemoveFn: cts.challengeRemoveFn,
-                    challengePriority: ['http-01'],
                 });
 
                 assert.isString(cert);
@@ -251,7 +250,6 @@ describe('client.auto', () => {
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.assertHttpsChallengeCreateFn,
                     challengeRemoveFn: cts.challengeRemoveFn,
-                    challengePriority: ['http-01'],
                 });
 
                 assert.isString(cert);
@@ -267,7 +265,6 @@ describe('client.auto', () => {
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.assertDnsChallengeCreateFn,
                     challengeRemoveFn: cts.challengeRemoveFn,
-                    challengePriority: ['dns-01'],
                 });
 
                 assert.isString(cert);
@@ -283,7 +280,6 @@ describe('client.auto', () => {
                     termsOfServiceAgreed: true,
                     challengeCreateFn: cts.assertTlsAlpnChallengeCreateFn,
                     challengeRemoveFn: cts.challengeRemoveFn,
-                    challengePriority: ['tls-alpn-01'],
                 });
 
                 assert.isString(cert);

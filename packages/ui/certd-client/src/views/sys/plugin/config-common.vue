@@ -69,7 +69,7 @@
 <script lang="ts" setup>
 import AccessSelector from "/@/views/certd/access/access-selector/index.vue";
 import { reactive, ref } from "vue";
-import { CommPluginConfig, GetCommPluginConfigs, SaveCommPluginConfigs, GetPluginByName } from "/@/views/sys/plugin/api";
+import { CommPluginConfig, GetCommPluginConfigs, SaveCommPluginConfigs, getPluginSetting } from "/@/views/sys/plugin/api";
 import { merge } from "lodash-es";
 import { notification } from "ant-design-vue";
 import { usePluginConfig } from "./use-config";
@@ -113,8 +113,14 @@ const onFinishFailed = (errorInfo: any) => {
 const { openConfigDialog } = usePluginConfig();
 
 async function doPluginConfig() {
-  const certApplyInfo = await GetPluginByName("CertApply");
-  await openConfigDialog({ row: certApplyInfo, crudExpose: null });
+  const certApplyInfo: any = await getPluginSetting("CertApply");
+  certApplyInfo.pluginType = "plugin";
+  await openConfigDialog({
+    row: certApplyInfo,
+    onSuccess: async () => {
+      await loadForm();
+    },
+  });
 }
 </script>
 <style lang="less"></style>

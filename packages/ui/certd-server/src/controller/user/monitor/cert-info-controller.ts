@@ -5,10 +5,10 @@ import { CertInfoService } from "../../../modules/monitor/index.js";
 import { PipelineService } from "../../../modules/pipeline/service/pipeline-service.js";
 import { SelectQueryBuilder } from "typeorm";
 import { logger } from "@certd/basic";
-import fs from "fs";
 import dayjs from "dayjs";
 import { ApiTags } from "@midwayjs/swagger";
 import { CertReader } from "@certd/plugin-lib";
+import { AuditType } from "../../../modules/sys/enterprise/service/audit-constants.js";
 
 /**
  */
@@ -28,6 +28,10 @@ export class CertInfoController extends CrudController<CertInfoService> {
 
   getService(): CertInfoService {
     return this.service;
+  }
+
+  getAuditType(): string {
+    return AuditType.monitor.value;
   }
 
   @Post("/page", { description: Constants.per.authOnly, summary: "查询证书分页列表" })
@@ -118,7 +122,9 @@ export class CertInfoController extends CrudController<CertInfoService> {
     const { projectId, userId } = await this.getProjectUserIdWrite();
     bean.projectId = projectId;
     bean.userId = userId;
-    return await super.add(bean);
+    const res = await super.add(bean);
+    this.auditLog({ content: `新增了证书「${bean.domain}」(ID:${res.data})` });
+    return res;
   }
 
   @Post("/update", { description: Constants.per.authOnly, summary: "更新证书" })
@@ -126,7 +132,9 @@ export class CertInfoController extends CrudController<CertInfoService> {
     await this.checkOwner(this.service, bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
-    return await super.update(bean);
+    const res = await super.update(bean);
+    this.auditLog({ content: `修改了证书(ID:${bean.id})` });
+    return res;
   }
   @Post("/info", { description: Constants.per.authOnly, summary: "查询证书详情" })
   async info(@Query("id") id: number) {
@@ -137,7 +145,16 @@ export class CertInfoController extends CrudController<CertInfoService> {
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除证书" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.service, id, "write");
-    return await super.delete(id);
+    const res = await super.delete(id);
+    this.auditLog({ content: `删除了证书(ID:${id})` });
+    return res;
+  }
+
+  @Post("/revoke", { description: Constants.per.authOnly, summary: "吊销证书" })
+  async revoke(@Body(ALL) body: { id: number }) {
+    const { userId, projectId } = await this.getProjectUserIdWrite();
+    await this.service.revoke(body.id, userId, projectId);
+    return this.ok(true);
   }
 
   @Post("/all", { description: Constants.per.authOnly, summary: "查询所有证书" })
@@ -167,29 +184,29 @@ export class CertInfoController extends CrudController<CertInfoService> {
   @Get("/download", { description: Constants.per.authOnly, summary: "下载证书文件" })
   async download(@Query("id") id: number) {
     const { userId, projectId } = await this.checkOwner(this.getService(), id, "read");
-    const certInfo = await this.getService().info(id);
-    if (certInfo == null) {
+    const certInfoEntity = await this.getService().info(id);
+    if (certInfoEntity == null) {
       throw new CommonException("file not found");
     }
-    if (certInfo.userId !== userId) {
+    if (certInfoEntity.userId !== userId) {
       throw new CommonException("file not found");
     }
-    if (projectId && certInfo.projectId !== projectId) {
+    if (projectId && certInfoEntity.projectId !== projectId) {
       throw new CommonException("file not found");
     }
-    // koa send file
-    // 下载文件的名称
-    // const filename = file.filename;
-    // 要下载的文件的完整路径
-    const path = certInfo.certFile;
-    if (!path) {
-      throw new CommonException("file not found");
+    if (!certInfoEntity.certInfo) {
+      throw new CommonException("证书数据未生成");
     }
-    logger.info(`download:${path}`);
-    // 以流的形式下载文件
-    this.ctx.attachment(path);
-    this.ctx.set("Content-Type", "application/octet-stream");
 
-    return fs.createReadStream(path);
+    const certInfo = JSON.parse(certInfoEntity.certInfo);
+    const certReader = new CertReader(certInfo);
+    const zipBuffer = await certReader.buildZip();
+    const filename = certReader.buildZipFilename("cert");
+
+    logger.info(`download cert zip: ${filename}, size: ${zipBuffer.length}`);
+
+    this.ctx.attachment(filename);
+    this.ctx.set("Content-Type", "application/zip");
+    this.ctx.body = zipBuffer;
   }
 }

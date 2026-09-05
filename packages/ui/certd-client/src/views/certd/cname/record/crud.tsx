@@ -5,7 +5,7 @@ import { useRouter } from "vue-router";
 import { AddReq, compute, CreateCrudOptionsProps, CreateCrudOptionsRet, DelReq, dict, EditReq, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import { useUserStore } from "/@/store/user";
 import { useSettingStore } from "/@/store/settings";
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal } from "ant-design-vue";
 import CnameTip from "/@/components/plugins/cert/domains-verify-plan-editor/cname-tip.vue";
 import { useCnameImport } from "./use";
 import { useCrudPermission } from "/@/plugin/permission";
@@ -282,18 +282,18 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
                 try {
                   const res = await api.DoVerify(row.id);
                   if (res === true) {
-                    message.success(t("certd.validation_successful"));
+                    notification.success({ message: t("certd.validation_successful") });
                     row.status = "valid";
                   } else if (res === false) {
-                    message.success(t("certd.validation_timed_out"));
+                    notification.success({ message: t("certd.validation_timed_out") });
                     row.status = "timeout";
                   } else {
-                    message.success(t("certd.validation_started"));
+                    notification.success({ message: t("certd.validation_started") });
                   }
                   await crudExpose.doRefresh();
                 } catch (e: any) {
                   console.error(e);
-                  message.error(e.message);
+                  notification.error({ message: e.message });
                 } finally {
                   row._validating_ = false;
                 }

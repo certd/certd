@@ -1,11 +1,12 @@
-import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import { ApplicationContext, Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
+import type { IMidwayContainer } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { In, Repository } from "typeorm";
 import { AccessGetter, BaseService, PageReq, PermissionException, ValidateException } from "../../../index.js";
 import { AccessEntity } from "../entity/access.js";
 import { AccessDefine, accessRegistry, newAccess } from "@certd/pipeline";
 import { EncryptService } from "./encrypt-service.js";
-import { logger, utils } from "@certd/basic";
+import { http, logger, utils } from "@certd/basic";
 
 /**
  * 授权
@@ -18,6 +19,9 @@ export class AccessService extends BaseService<AccessEntity> {
 
   @Inject()
   encryptService: EncryptService;
+
+  @ApplicationContext()
+  applicationContext: IMidwayContainer;
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
@@ -34,7 +38,7 @@ export class AccessService extends BaseService<AccessEntity> {
     return res;
   }
 
-  async add(param) {
+  async add(param: any): Promise<{ id: number; [key: string]: any }> {
     let oldEntity = null;
     if (param._copyFrom) {
       oldEntity = await this.info(param._copyFrom);
@@ -183,11 +187,22 @@ export class AccessService extends BaseService<AccessEntity> {
       id: entity.id,
       ...setting,
     };
-    const accessGetter = new AccessGetter(userId, projectId, this.getById.bind(this));
-    return await newAccess(entity.type, input, accessGetter);
+    const taskServiceBuilder: any = await this.applicationContext.getAsync("taskServiceBuilder");
+    const serviceGetter = taskServiceBuilder.create({ userId: userId || 0, projectId });
+    const getAccessById = this.getById.bind(this);
+    const accessGetter = new AccessGetter(userId, projectId, getAccessById);
+    const accessContext = {
+      logger,
+      http,
+      utils,
+      accessService: accessGetter,
+      serviceGetter,
+    } as any;
+    const access = await newAccess(entity.type, input, accessGetter, accessContext);
+    return access;
   }
 
-  async getById(id: any, userId: number, projectId?: number): Promise<any> {
+  async getById(id: any, userId: number, projectId?: number, _ignorePermission?: boolean): Promise<any> {
     return await this.getAccessById(id, true, userId, projectId);
   }
 
@@ -273,5 +288,16 @@ export class AccessService extends BaseService<AccessEntity> {
     };
     await this.repository.save(newAccess);
     return newAccess.id;
+  }
+
+  async getDefaultByType({ type, userId, projectId, subtype }) {
+    return await this.repository.findOne({
+      where: {
+        type,
+        userId,
+        projectId,
+        subtype,
+      },
+    });
   }
 }

@@ -45,10 +45,13 @@
 <script setup lang="tsx">
 import { dict, FsRender } from "@fast-crud/fast-crud";
 import { cloneDeep, merge, unset } from "lodash-es";
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, provide, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Rollbackable from "./rollbackable.vue";
-import { usePluginStore } from "/@/store/plugin";
+import { fillPluginDefine, usePluginStore } from "/@/store/plugin";
+import * as api from "./api";
+// @ts-ignore js-yaml 没有在当前前端包中提供类型声明。
+import yaml from "js-yaml";
 const route = useRoute();
 const router = useRouter();
 const pluginStore = usePluginStore();
@@ -65,7 +68,7 @@ const labelCol = ref({
   },
 });
 const wrapperCol = ref({ span: 16 });
-const configForm: any = reactive({});
+const configForm: any = reactive({ type: props.plugin.fullName || props.plugin.name });
 
 const showDict = dict({
   data: [
@@ -103,7 +106,7 @@ const editableKeys = ref([
     },
     editRender(item: any) {
       return () => {
-        return <fs-component-render {...item.component} vModel:modelValue={configForm[item.key]["value"]} scope={getScope()} />;
+        return <fs-component-render {...item.component} vModel:modelValue={configForm[item.key].value} scope={getScope()} />;
       };
     },
   },
@@ -182,9 +185,11 @@ const optionsMappingKey = {
   },
   editRender(item: any) {
     return () => {
-      const options = item.component?.options || [];
-      if (options.length === 0) {
-        return <span class="text-gray-400">该组件没有预设选项</span>;
+      const options = reactive(cloneDeep(item.component?.options || []));
+
+      const showAdd = options.length === 0;
+      function addOption(opt: any) {
+        options.push(opt);
       }
 
       const onLabelChange = (optValue: string, newLabel: string) => {
@@ -230,6 +235,13 @@ const optionsMappingKey = {
               ))}
             </tbody>
           </table>
+          {showAdd && (
+            <div class="mt-2">
+              <a-button type="primary" size={() => addOption({ value: "", label: "" })}>
+                添加选项
+              </a-button>
+            </div>
+          )}
           <div class="helper mt-1">只需填写需要自定义的选项，留空则使用原始显示内容</div>
         </div>
       );
@@ -265,14 +277,17 @@ function clearFormValue(key: string) {
 }
 
 async function loadPluginSetting() {
-  currentPlugin.value = await pluginStore.getPluginDefineFromOrigin(props.plugin.name);
-  for (const key in currentPlugin.value.input) {
+  const pluginName = props.plugin.fullName || props.plugin.name; // 这里必须两种进行兼容
+  currentPlugin.value = await api.getPluginDefine(pluginName);
+  fillPluginDefine(currentPlugin.value);
+  const input = currentPlugin.value?.input || {};
+  for (const key in input) {
     configForm[key] = {};
   }
-  const setting = props.plugin.sysSetting;
-  if (setting) {
-    const settingJson = JSON.parse(setting);
-    merge(configForm, settingJson.metadata?.input || {});
+
+  const pluginConfig = await api.getPluginSetting(pluginName, currentPlugin.value.type);
+  if (pluginConfig?.sysSetting) {
+    merge(configForm, pluginConfig.sysSetting?.metadata?.input || {});
   }
 }
 
@@ -282,6 +297,17 @@ onMounted(async () => {
 
 defineExpose({
   getForm,
+});
+
+provide("getCurrentPluginDefine", () => {
+  return { value: props.plugin };
+});
+provide("get:scope", () => {
+  return getScope();
+});
+provide("get:plugin:type", () => {
+  debugger;
+  return props.plugin.pluginType;
 });
 </script>
 

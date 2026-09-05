@@ -8,4 +8,45 @@
   .vben-normal-menu__item.is-active {
     background-color: #3b3b3b !important;
   }
+
+  .cd-table {
+    th,
+    td {
+      border-bottom: 1px solid #303030;
+      border-left: 1px solid #303030;
+    }
+
+    th {
+      background: #1f1f1f;
+      color: rgba(255, 255, 255, 0.85);
+      border-top: 1px solid #303030;
+
+      &:last-child {
+        border-right: 1px solid #303030;
+      }
+    }
+
+    td {
+      &:last-child {
+        border-right: 1px solid #303030;
+      }
+    }
+
+    td.position-sticky-right {
+      background-color: #141414;
+    }
+
+    .position-sticky-right::before {
+      background: #303030;
+    }
+
+    tr.hover-color:hover td {
+      background: #262626;
+    }
+
+    .status-active {
+      background: #1f3a23;
+      color: #81c784;
+    }
+  }
 }

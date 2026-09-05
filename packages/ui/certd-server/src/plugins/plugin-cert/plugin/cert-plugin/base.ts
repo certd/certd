@@ -1,4 +1,5 @@
 import { NotificationBody, Step, TaskInput } from "@certd/pipeline";
+import { NotificationTypes } from "@certd/lib-server";
 import dayjs from "dayjs";
 import { CertReader } from "@certd/plugin-lib";
 import { pick } from "lodash-es";
@@ -76,7 +77,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
       this.clearLastStatus();
 
       if (this.successNotify) {
-        await this.sendSuccessNotify();
+        await this.sendSuccessNotify(cert);
       }
     } else {
       throw new Error("申请证书失败");
@@ -150,7 +151,7 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
     // 检查有效期
     const leftDays = Math.floor((expires - dayjs().valueOf()) / (1000 * 60 * 60 * 24));
     this.logger.info(`证书有效期剩余天数：${leftDays}`);
-    if (totalDays < maxDays) {
+    if (totalDays < 10 && totalDays < maxDays) {
       this.logger.warn(`当前更新天数为${maxDays}，证书总天数${totalDays}，总天数小于更新天数（更新天数是指到期前多少天更新证书，您可以在任务配置中调整该值）`);
       maxDays = Math.floor(totalDays / 2);
       if (maxDays < 2) {
@@ -165,14 +166,16 @@ export abstract class CertApplyBasePlugin extends CertApplyBaseConvertPlugin {
       nextUpdateDays: leftDays - maxDays,
     };
   }
-  async sendSuccessNotify() {
+  async sendSuccessNotify(certReader: CertReader) {
     this.logger.info("发送证书申请成功通知");
     const url = await this.ctx.urlService.getPipelineDetailUrl(this.pipeline.id, this.ctx.runtime.id);
     const body: NotificationBody = {
       title: `证书申请成功【${this.pipeline.title}】`,
-      content: `域名：${this.domains.join(",")}`,
+      content: `域名：${this.domains.join(",")}\n
+证书有效期：${dayjs(certReader.expires).format("YYYY-MM-DD HH:mm:ss")}\n
+`,
       url: url,
-      notificationType: "certApplySuccess",
+      notificationType: NotificationTypes.CertApplySuccess,
     };
     try {
       await this.ctx.notificationService.send({

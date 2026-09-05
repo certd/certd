@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="domain-select">
     <div class="flex flex-row">
       <a-select
@@ -9,6 +9,7 @@
         :filter-option="filterOption"
         :options="optionsRef"
         :value="value"
+        :tag-render="tagRender"
         v-bind="attrs"
         @click="onClick"
         @update:value="emit('update:value', $event)"
@@ -46,7 +47,8 @@
           </div>
         </template>
       </a-select>
-      <div class="ml-5">
+      <div class="ml-5 flex flex-row items-center">
+        <fs-button title="复制全部域名" icon="ion:copy-outline" class="domain-select-copy-icon mr-5" @click="copySelectedDomains" />
         <fs-button :loading="loading" :title="t('certd.pluginCommon.refreshMyDomains')" icon="ion:refresh-outline" @click="refreshOptions"></fs-button>
       </div>
     </div>
@@ -55,10 +57,12 @@
     </div>
   </div>
 </template>
-<script setup lang="ts">
+<script setup lang="tsx">
 import { computed, defineComponent, onMounted, ref, Ref, useAttrs } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
+import { useClipboard } from "@vueuse/core";
+import { notification } from "ant-design-vue";
 import { Dicts } from "../lib/dicts";
 import { request } from "/@/api/service";
 import { openRouteInNewWindow } from "/@/vben/utils";
@@ -69,6 +73,7 @@ defineOptions({
 });
 
 const { t } = useI18n();
+const { copy } = useClipboard({ legacy: true });
 
 const VNodes = defineComponent({
   props: {
@@ -212,8 +217,8 @@ const challengeTypeDict = Dicts.challengeTypeDict;
 const router = useRouter();
 function openDomainManager(e: any) {
   e.preventDefault();
-  // router.push("/certd/cert/domain");
-  openRouteInNewWindow("/certd/cert/domain");
+  // router.push("/cert/cert/domain");
+  openRouteInNewWindow("/cert/cert/domain");
 }
 
 const openDomainImportManageDialog = useDomainImportManage();
@@ -231,6 +236,54 @@ const dropdownStyle = ref({
 onMounted(() => {
   refreshOptions();
 });
+
+function tagRender(tag: { value: string; label: string; closable: boolean; onClose: any; option: any }) {
+  const value = String(tag.value ?? tag.label);
+  return (
+    <a-tag
+      closable={tag.closable}
+      onClose={tag.onClose}
+      type="primary"
+      color="green"
+      title="点击复制"
+      class="domain-select-tag"
+      onClick={async (event: MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        await copy(value);
+        notification.success({ message: "复制成功" });
+      }}
+    >
+      {tag.label}
+    </a-tag>
+  );
+}
+
+async function copySelectedDomains(event: MouseEvent) {
+  event.preventDefault();
+  event.stopPropagation();
+  const domains = (props.value || []).join(",");
+  if (!domains) {
+    return;
+  }
+  await copy(domains);
+  notification.success({ message: "复制成功" });
+}
 </script>
 
-<style lang="less"></style>
+<style lang="less">
+.domain-select {
+  .domain-select-tag {
+    font-size: 14px;
+    height: 24px;
+    margin-right: 4px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    cursor: pointer;
+    // background-color: rgba(50, 54, 57, 0.06);
+  }
+  .domain-select-copy-icon {
+    cursor: pointer;
+  }
+}
+</style>

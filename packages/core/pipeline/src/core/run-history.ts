@@ -34,6 +34,19 @@ export class RunHistory {
     this.trigger = trigger;
   }
 
+  clearNotificationStatus() {
+    if (this.pipeline.notifications) {
+      for (const item of this.pipeline!.notifications) {
+        delete item.status;
+      }
+    }
+    if (this.pipeline.afterTasks) {
+      for (const item of this.pipeline!.afterTasks) {
+        delete item.status;
+      }
+    }
+  }
+
   start(runnable: Runnable): HistoryResult {
     const now = new Date().getTime();
     this.logs[runnable.id] = [];

@@ -96,7 +96,7 @@ export class CmccClient {
   async getToken(): Promise<string> {
     // 检查是否有有效的token
     if (this.isTokenValid()) {
-      return this.token!;
+      return this.token;
     }
 
     const datetime = this.getCurrentIsoTime();

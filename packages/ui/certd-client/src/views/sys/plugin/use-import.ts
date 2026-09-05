@@ -2,10 +2,12 @@ import * as api from "/@/views/sys/plugin/api";
 import { dict, useFormWrapper } from "@fast-crud/fast-crud";
 import { useI18n } from "/@/locales";
 import { notification } from "ant-design-vue";
+import { usePluginStore } from "/@/store/plugin";
 
 export function usePluginImport() {
   const { openCrudFormDialog } = useFormWrapper();
   const { t } = useI18n();
+  const pluginStore = usePluginStore();
 
   async function openImportDialog(opts: any) {
     const { crudExpose } = opts;
@@ -62,10 +64,12 @@ export function usePluginImport() {
             afterSubmit() {
               notification.success({ message: t("certd.operationSuccess") });
               crudExpose.doRefresh();
+              pluginStore.clear();
             },
             async doSubmit({ form }: any) {
               return await api.ImportPlugin({
                 ...form,
+                type: "store",
               });
             },
           },

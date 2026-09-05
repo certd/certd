@@ -18,7 +18,7 @@ const emit = defineEmits<{
   change: any;
 }>();
 
-const batchUpdateFields = ["renewDays", "privateKeyType"];
+const batchUpdateFields = ["challengeType", "sslProvider", "acmeAccountAccessId", "renewDays", "privateKeyType"];
 
 function hasFormValue(form: any, field: string) {
   return form[field] != null && form[field] !== "";
@@ -44,12 +44,18 @@ const { openCrudFormDialog } = useFormWrapper();
 const settingStore = useSettingStore();
 const pluginStore = usePluginStore();
 
-function createInputColumn(inputDefine: any) {
+function createInputColumn(field: string, inputDefine: any) {
   const form = cloneDeep(inputDefine);
   useReference(form);
   delete form.value;
   delete form.rules;
   form.required = false;
+  if (field === "challengeType") {
+    form.component = {
+      ...form.component,
+      options: [{ value: "auto", label: "自动匹配" }],
+    };
+  }
   if (form.component) {
     form.component.allowClear = true;
   }
@@ -62,7 +68,11 @@ function createInputColumn(inputDefine: any) {
 function createColumns(inputDefines: any) {
   const columns: any = {};
   for (const field of batchUpdateFields) {
-    columns[field] = createInputColumn(inputDefines[field]);
+    const inputDefine = inputDefines[field];
+    if (inputDefine == null) {
+      continue;
+    }
+    columns[field] = createInputColumn(field, inputDefine);
   }
   return columns;
 }

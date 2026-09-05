@@ -1,6 +1,6 @@
-import { checkPipelineLimit } from "/@/views/certd/pipeline/utils";
+﻿import { checkPipelineLimit } from "/@/views/certd/pipeline/utils";
 import { cloneDeep, merge, omit } from "lodash-es";
-import { message, Modal } from "ant-design-vue";
+import { notification, Modal, message } from "ant-design-vue";
 import { nanoid } from "nanoid";
 import { useRouter } from "vue-router";
 import { compute, CreateCrudOptionsRet, dict, useFormWrapper } from "@fast-crud/fast-crud";
@@ -152,6 +152,13 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
     });
 
     const initialForm = req.initialForm || {};
+    const pluginSysConfig = await pluginStore.getPluginConfig({ name: certPlugin.name, type: "builtIn" });
+    if (pluginSysConfig?.sysSetting?.input) {
+      //设置系统默认值，必须放这里设置，保证随时应用最新的系统值
+      for (const key in pluginSysConfig.sysSetting?.input) {
+        initialForm.input[key] = pluginSysConfig.sysSetting?.input[key];
+      }
+    }
     initialForm.type = certPlugin.name;
     const applyTemplates = reactive<any[]>([]);
     const selectedTemplateId = ref<number | null>(null);
@@ -237,7 +244,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
                 content: pickCertApplyTemplateParams(form.input),
               });
               await reloadApplyTemplates();
-              message.success("保存成功");
+              // notification.success({ message: "保存成功" });
             },
           },
         },
@@ -271,7 +278,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
             async doSubmit({ form: templateForm }: any) {
               await certApplyTemplateApi.UpdateObj(buildTemplateSubmitData(templateForm));
               await reloadApplyTemplates();
-              message.success("保存成功");
+              notification.success({ message: "保存成功" });
             },
           },
         },
@@ -288,7 +295,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
           if (selectedTemplateId.value === templateId) {
             selectedTemplateId.value = null;
           }
-          message.success("删除成功");
+          notification.success({ message: "删除成功" });
         },
       });
     }
@@ -556,12 +563,12 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
 
     //设置系统初始值
     const initialForm: any = { input: {} };
-    const pluginSysConfig = await pluginStore.getPluginConfig({ name: req.pluginName, type: "builtIn" });
-    if (pluginSysConfig.sysSetting?.input) {
-      for (const key in pluginSysConfig.sysSetting?.input) {
-        initialForm.input[key] = pluginSysConfig.sysSetting?.input[key];
-      }
-    }
+    // const pluginSysConfig = await pluginStore.getPluginConfig({ name: req.pluginName, type: "builtIn" });
+    // if (pluginSysConfig.sysSetting?.input) {
+    //   for (const key in pluginSysConfig.sysSetting?.input) {
+    //     initialForm.input[key] = pluginSysConfig.sysSetting?.input[key];
+    //   }
+    // }
     async function doSubmit({ form }: any) {
       // const certDetail = readCertDetail(form.cert.crt);
       // 添加certd pipeline
@@ -605,7 +612,7 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
       const { id } = await api.Save({
         title: pipeline.title,
         content: JSON.stringify(pipeline),
-        keepHistoryCount: 30,
+        keepHistoryCount: 100,
         type: "cert",
         groupId,
         addToMonitorEnabled: form.addToMonitorEnabled,
@@ -620,13 +627,14 @@ export function useCertPipelineCreator({ formWrapperRef }: { formWrapperRef: Ref
           console.error(e);
         }
       }
+      //这里要用message 因为流水线详情页面，右上角有编辑保存按钮，Notification会把他们挡住
       message.success("创建成功,请添加证书部署任务");
-      router.push({ path: "/certd/pipeline/detail", query: { id, editMode: "true" } });
+      router.push({ path: "/cert/pipeline/detail", query: { id, editMode: "true" } });
     }
     const certPlugins = await getCertPlugins();
     const certPlugin = certPlugins.find(plugin => plugin.name === req.pluginName);
     if (!certPlugin) {
-      message.error("该证书申请插件不存在");
+      notification.error({ message: "该证书申请插件不存在" });
       return;
     }
 

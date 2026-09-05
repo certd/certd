@@ -12,7 +12,7 @@ export function usePluginConfig() {
 
   const pluginStore = usePluginStore();
   // @ts-ignore
-  async function openConfigDialog({ row, crudExpose }) {
+  async function openConfigDialog({ row, onSuccess }) {
     const configEditorRef = ref();
     function createCrudOptions() {
       return {
@@ -33,10 +33,10 @@ export function usePluginConfig() {
                 },
               },
             },
-            afterSubmit() {
+            async afterSubmit() {
               notification.success({ message: t("certd.operationSuccess") });
-              if (crudExpose) {
-                crudExpose.doRefresh();
+              if (onSuccess) {
+                await onSuccess();
               }
             },
             async doSubmit({}: any) {
@@ -49,12 +49,13 @@ export function usePluginConfig() {
                 }
               }
               const res = await api.savePluginSetting({
-                name: row.name,
+                name: row.fullName || row.name,
                 sysSetting: {
                   metadata: {
                     input: newForm,
                   },
                 },
+                type: row.type,
               });
               await pluginStore.clear();
               return res;

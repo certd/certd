@@ -49,7 +49,7 @@ export class OidcOauthProvider extends BaseAddon implements IOauthProvider {
   issuerUrl = "";
 
   async getClient() {
-    const client = await import("openid-client");
+    const client = await this.importRuntime("openid-client");
     const server = new URL(this.issuerUrl); // Authorization Server's Issuer Identifier
 
     const config = await client.discovery(server, this.clientId, this.clientSecretKey);

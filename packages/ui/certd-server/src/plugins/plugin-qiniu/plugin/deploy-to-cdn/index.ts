@@ -47,7 +47,7 @@ export class QiniuDeployCertToCDN extends AbstractTaskPlugin {
   @TaskInput(
     createRemoteSelectInputDefine({
       title: "CDN加速域名",
-      helper: "你在七牛云上配置的CDN加速域名，比如:certd.handsfree.work",
+      helper: "你在七牛云上配置的CDN加速域名，比如:certd.handfree.work",
       rules: [{ type: "domains", allowDotStart: true }],
       action: QiniuDeployCertToCDN.prototype.onGetDomainList.name,
       required: true,

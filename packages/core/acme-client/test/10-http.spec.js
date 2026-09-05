@@ -81,26 +81,17 @@ describe('http', () => {
      * Retry on HTTP errors
      */
 
-    it('should retry on 429 rate limit', async () => {
+    it('should fail immediately on 429 rate limit', async () => {
         let rateLimitCount = 0;
 
         nock(endpoint).persist().get('/').reply(() => {
             rateLimitCount += 1;
-
-            if (rateLimitCount < 3) {
-                return [429, 'Rate Limit Exceeded', { 'Retry-After': 1 }];
-            }
-
-            return [200, 'ok'];
+            return [429, 'Rate Limit Exceeded', { 'Retry-After': 1 }];
         });
 
         assert.strictEqual(rateLimitCount, 0);
-        const resp = await testClient.request(endpoint, 'get');
-
-        assert.isObject(resp);
-        assert.strictEqual(resp.status, 200);
-        assert.strictEqual(resp.data, 'ok');
-        assert.strictEqual(rateLimitCount, 3);
+        await assert.isRejected(testClient.request(endpoint, 'get'));
+        assert.strictEqual(rateLimitCount, 1);
     });
 
     it('should retry on 5xx server error', async () => {

@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import { useFs } from "@fast-crud/fast-crud";
-import { message } from "ant-design-vue";
+import { notification } from "ant-design-vue";
 import { defineComponent, ref } from "vue";
 import * as permissionApi from "../permission/api";
 import FsPermissionTree from "../permission/fs-permission-tree.vue";
@@ -72,7 +72,7 @@ function useAuthz() {
     authzClose();
     //await updateChecked(roleId);
 
-    message.success("授权成功");
+    notification.success({ message: "授权成功" });
   }
 
   return {

@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 /**
  * ACME client
  *
@@ -263,7 +263,14 @@ class AcmeClient {
         const accountUrl = this.api.getAccountUrl();
 
         /* Create new HTTP and API clients using new key */
-        const newHttpClient = new HttpClient(this.opts.directoryUrl, newAccountKey, this.opts.externalAccountBinding);
+        const newHttpClient = new HttpClient(
+            this.opts.directoryUrl,
+            newAccountKey,
+            this.opts.externalAccountBinding,
+            this.opts.urlMapping,
+            this.logger,
+            true,
+        );
         const newApiClient = new AcmeApi(newHttpClient, accountUrl);
 
         /* Get old JWK */
@@ -280,6 +287,8 @@ class AcmeClient {
         /* Replace existing HTTP and API client */
         this.http = newHttpClient;
         this.api = newApiClient;
+        // 更新本地配置，避免后续重建客户端时又使用旧账号密钥。
+        this.opts.accountKey = newAccountKey;
 
         return resp.data;
     }
@@ -681,11 +690,21 @@ class AcmeClient {
      *     reason: 4,
      * });
      * ```
+     *
+     * @example Revoke certificate with certificate private key (RFC 8555 §7.6)
+     * 当无法提供ACME账号私钥时，可以使用证书私钥签名吊销请求：
+     * ```js
+     * const client = new acme.Client({
+     *     directoryUrl: acme.directory.letsencrypt.production,
+     *     accountKey: certificateKey, // 证书私钥，而非账号私钥
+     * });
+     * const result = await client.revokeCertificate(certificate, {}, { includeJwsKid: false });
+     * ```
      */
 
-    async revokeCertificate(cert, data = {}) {
+    async revokeCertificate(cert, data = {}, opts = {}) {
         data.certificate = getPemBodyAsB64u(cert);
-        const resp = await this.api.revokeCert(data);
+        const resp = await this.api.revokeCert(data, opts);
         return resp.data;
     }
 
@@ -699,7 +718,6 @@ class AcmeClient {
      * @param {string} [opts.email] Account email address
      * @param {boolean} [opts.termsOfServiceAgreed] Agree to Terms of Service, default: `false`
      * @param {boolean} [opts.skipChallengeVerification] Skip internal challenge verification before notifying ACME provider, default: `false`
-     * @param {string[]} [opts.challengePriority] Array defining challenge type priority, default: `['http-01', 'dns-01']`
      * @param {string} [opts.preferredChain] Indicate which certificate chain is preferred if a CA offers multiple, by exact issuer common name, default: `null`
      * @returns {Promise<string>} Certificate
      *

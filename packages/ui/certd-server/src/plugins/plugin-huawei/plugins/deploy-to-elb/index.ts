@@ -103,8 +103,8 @@ export class HauweiDeployCertToELB extends AbstractTaskPlugin {
       throw new Error("项目ID不能为空");
     }
     const access = await this.getAccess<HuaweiAccess>(this.accessId);
-    const { BasicCredentials } = await import("@huaweicloud/huaweicloud-sdk-core");
-    const elb = await import("@huaweicloud/huaweicloud-sdk-elb/v3/public-api.js");
+    const { BasicCredentials } = await this.importRuntime("@huaweicloud/huaweicloud-sdk-core");
+    const elb = await this.importRuntime("@huaweicloud/huaweicloud-sdk-elb/v3/public-api.js");
     //恢复华为云把log4j的config改了的问题
     resetLogConfigure();
     const projectArr = this.projectId.split("_");

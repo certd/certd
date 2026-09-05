@@ -14,7 +14,7 @@ import { CertInfoService } from "../../../monitor/index.js";
 import { ICertInfoGetter } from "@certd/plugin-lib";
 import { CnameProviderService } from "../../../cname/service/cname-provider-service.js";
 
-const serviceNames = ["ocrService"];
+const serviceNames = ["ocrService", "certInfoService", "customAcmeProviderService"];
 export class TaskServiceGetter implements IServiceGetter {
   private userId: number;
   private projectId: number;
@@ -46,6 +46,7 @@ export class TaskServiceGetter implements IServiceGetter {
       if (!service) {
         throw new Error(`${serviceName} not found`);
       }
+      return service as T;
     }
   }
 
@@ -63,7 +64,8 @@ export class TaskServiceGetter implements IServiceGetter {
 
   async getAccessService(): Promise<AccessGetter> {
     const accessService: AccessService = await this.appCtx.getAsync("accessService");
-    return new AccessGetter(this.userId, this.projectId, accessService.getById.bind(accessService));
+    const getAccessById = accessService.getById.bind(accessService);
+    return new AccessGetter(this.userId, this.projectId, getAccessById);
   }
 
   async getCnameProxyService(): Promise<CnameProxyService> {

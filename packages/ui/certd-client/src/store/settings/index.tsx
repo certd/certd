@@ -35,6 +35,7 @@ export interface SettingState {
     version?: string;
     time?: number;
     deltaTime?: number;
+    releaseMode?: string;
   };
   productInfo: {
     notice?: string;
@@ -109,6 +110,7 @@ export const useSettingStore = defineStore({
       version: "",
       time: 0,
       deltaTime: 0,
+      releaseMode: "latest",
     },
     productInfo: {
       notice: "",
@@ -229,6 +231,9 @@ export const useSettingStore = defineStore({
       this.app.time = appInfo.time;
       this.app.version = appInfo.version;
       this.app.deltaTime = new Date().getTime() - this.app.time;
+      if (appInfo.releaseMode) {
+        this.app.releaseMode = appInfo.releaseMode;
+      }
     },
     initSiteInfo(siteInfo: SiteInfo) {
       //@ts-ignore
@@ -385,9 +390,18 @@ export const useSettingStore = defineStore({
       this.loadProductInfo();
       this.inited = true;
     },
+    getSiteId() {
+      return this.installInfo?.siteId || "";
+    },
   },
 });
 
 mitter.on("app.login", async () => {
   await useSettingStore().init();
+  try {
+    const { loadPreferencesFromAccount } = await import("/@/vben/layouts/widgets/preferences/account-sync");
+    await loadPreferencesFromAccount();
+  } catch (e) {
+    console.error("加载账号偏好设置失败", e);
+  }
 });
