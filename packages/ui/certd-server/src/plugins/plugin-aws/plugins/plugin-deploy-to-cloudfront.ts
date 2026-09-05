@@ -92,12 +92,14 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
         accessKeyId: access.accessKeyId,
         secretAccessKey: access.secretAccessKey,
       },
+      // Disable the SDK's own retries; acmClient.withRetry is the single retry authority.
+      maxAttempts: 1,
     });
 
     // update-distribution
     for (const distributionId of this.distributionIds) {
       // get-distribution-config (with retry for throttling)
-      const configData = await acmClient.withRetry(() =>
+      const configData: any = await acmClient.withRetry(() =>
         cloudFrontClient.send(new GetDistributionConfigCommand({ Id: distributionId }))
       );
 
@@ -147,6 +149,7 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
         accessKeyId: access.accessKeyId,
         secretAccessKey: access.secretAccessKey,
       },
+      maxAttempts: 1,
     });
     // list-distributions
     const listDistributionsCommand = new ListDistributionsCommand({});

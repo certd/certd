@@ -143,6 +143,50 @@ describe("AwsClient.withRetry", () => {
     assert.equal(calls, 2);
   });
 
+  it("retries transient HTTP 5xx", async () => {
+    const { client } = await createAwsClient([]);
+    let calls = 0;
+    await client.withRetry(async () => {
+      calls++;
+      if (calls < 2) {
+        const err: any = new Error("service unavailable");
+        err.$metadata = { httpStatusCode: 503 };
+        throw err;
+      }
+      return null;
+    });
+    assert.equal(calls, 2);
+  });
+
+  it("retries when the SDK marks the error $retryable", async () => {
+    const { client } = await createAwsClient([]);
+    let calls = 0;
+    await client.withRetry(async () => {
+      calls++;
+      if (calls < 2) {
+        const err: any = new Error("internal failure");
+        err.name = "InternalFailure";
+        err.$retryable = {};
+        throw err;
+      }
+      return null;
+    });
+    assert.equal(calls, 2);
+  });
+
+  it("retries connection-level errors", async () => {
+    const { client } = await createAwsClient([]);
+    let calls = 0;
+    await client.withRetry(async () => {
+      calls++;
+      if (calls < 2) {
+        throw throttle("Error", { code: "ECONNRESET" });
+      }
+      return null;
+    });
+    assert.equal(calls, 2);
+  });
+
   it("does not retry non-throttling errors", async () => {
     const { client } = await createAwsClient([]);
     let calls = 0;
