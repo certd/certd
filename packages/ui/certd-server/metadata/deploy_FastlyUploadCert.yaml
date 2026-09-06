@@ -1,0 +1,49 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: FastlyUploadCert
+title: Fastly-上传证书到Fastly
+desc: 部署 / 上传 SSL/TLS 自定义证书到 Fastly CDN
+icon: simple-icons:fastly
+group: cdn
+input:
+  cert:
+    title: 域名证书
+    helper: 请选择前置任务输出的域名证书
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+    required: true
+    order: 0
+  accessId:
+    title: Access授权
+    helper: Fastly 授权凭证
+    component:
+      name: access-selector
+      type: fastly
+    required: true
+    order: 0
+  certificateId:
+    title: 证书ID (tls_certificate_id)
+    helper: >-
+      可选。若填写则对 Fastly 已有证书进行更新(PATCH)；留空则新建上传(POST)。注意：Fastly
+      更新证书要求新证书与原证书使用相同的私钥，请确保续期时复用私钥(reuse key)，否则更新会失败。
+    component:
+      placeholder: '例如: tls_cert_xxx (留空表示新建)'
+    required: false
+    order: 0
+  name:
+    title: 证书名称
+    helper: 可选。上传到 Fastly 上的自定义证书名称/标签
+    component:
+      placeholder: '例如: my-fastly-cert'
+    required: false
+    order: 0
+output:
+  fastlyCertId:
+    title: Fastly 证书 ID
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-fastly/plugins/plugin-upload-cert.js

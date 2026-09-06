@@ -62,10 +62,7 @@ describe("AwsClient.route53ChangeRecord", () => {
 
     const change = sentChanges[0].ChangeBatch.Changes[0];
     assert.equal(change.Action, "UPSERT");
-    assert.deepEqual(change.ResourceRecordSet.ResourceRecords, [
-      { Value: '"apex-token"' },
-      { Value: '"wildcard-token"' },
-    ]);
+    assert.deepEqual(change.ResourceRecordSet.ResourceRecords, [{ Value: '"apex-token"' }, { Value: '"wildcard-token"' }]);
     assert.equal(change.ResourceRecordSet.TTL, 300);
   });
 

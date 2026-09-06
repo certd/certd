@@ -85,36 +85,35 @@ export class PluginConfigService {
   }
 
   async loadPluginSetting(name: string, sysSetting: any) {
-    
-    let  pluginDefine = null;
-    if (!pluginDefine){
+    let pluginDefine = null;
+    if (!pluginDefine) {
       pluginDefine = accessRegistry.getDefine(name);
     }
-    if (!pluginDefine){
+    if (!pluginDefine) {
       pluginDefine = pluginRegistry.getDefine(name);
     }
-    if (!pluginDefine){
+    if (!pluginDefine) {
       pluginDefine = dnsProviderRegistry.getDefine(name);
     }
-    if (!pluginDefine){
+    if (!pluginDefine) {
       pluginDefine = addonRegistry.getDefine(name);
     }
-    if (!pluginDefine){
+    if (!pluginDefine) {
       pluginDefine = notificationRegistry.getDefine(name);
     }
-    if (!pluginDefine){
-      return
+    if (!pluginDefine) {
+      return;
     }
     pluginDefine.sysSetting = sysSetting;
   }
 
   async loadAllPluginSetting() {
     const pluginSettings = await this.pluginService.getRepository().find({
-      select:{
+      select: {
         fullName: true,
         type: true,
         sysSetting: true,
-      }
+      },
     });
     for (const plugin of pluginSettings) {
       this.loadPluginSetting(plugin.fullName, JSON.parse(plugin.sysSetting || "{}"));
