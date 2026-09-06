@@ -196,6 +196,83 @@ describe("FastlyUploadCertPlugin - new certificate (2-step flow)", () => {
       /Fastly 私钥上传失败，未获取到 private key ID/
     );
   });
+
+  it("reuses the existing private key when Fastly reports it already exists", async () => {
+    const plugin = new FastlyUploadCertPlugin();
+    plugin.cert = mockCert as any;
+    plugin.accessId = "access-1";
+
+    const calls: { path: string; payload: any; method: string }[] = [];
+
+    const mockAccess = fakeAccess(async (path: string, payload: any, method: string) => {
+      calls.push({ path, payload, method });
+      if (path === "/tls/private_keys") {
+        throw new Error(
+          'Fastly API 请求失败: {"errors":[{"title":"Can\'t create key","detail":"Key already exists: \'EO8Drv7EYjThQ4DUPo4Ot0\'"}]}'
+        );
+      }
+      if (path === "/tls/certificates") {
+        return { data: { id: "tls_cert_new_1" } };
+      }
+      throw new Error(`Unexpected call: ${path}`);
+    });
+
+    (plugin as any).getAccess = async () => mockAccess;
+    (plugin as any).logger = { info: () => {}, error: () => {} };
+
+    await plugin.execute();
+
+    assert.equal(calls.length, 2);
+    assert.equal(calls[1].path, "/tls/certificates");
+    assert.equal(calls[1].payload.data.relationships.tls_private_key.data.id, "EO8Drv7EYjThQ4DUPo4Ot0");
+    assert.equal(plugin.fastlyCertId, "tls_cert_new_1");
+  });
+
+  it("reuses the existing certificate when Fastly reports it already exists", async () => {
+    const plugin = new FastlyUploadCertPlugin();
+    plugin.cert = mockCert as any;
+    plugin.accessId = "access-1";
+
+    const mockAccess = fakeAccess(async (path: string) => {
+      if (path === "/tls/private_keys") {
+        return { data: { id: "pk_1" } };
+      }
+      if (path === "/tls/certificates") {
+        throw new Error(
+          'Fastly API 请求失败: {"errors":[{"title":"Can\'t create certificate","detail":"Certificate already exists: \'aBcDeFgHiJkLmNoPqRsTuV\'"}]}'
+        );
+      }
+      throw new Error(`Unexpected call: ${path}`);
+    });
+
+    (plugin as any).getAccess = async () => mockAccess;
+    (plugin as any).logger = { info: () => {}, error: () => {} };
+
+    await plugin.execute();
+
+    assert.equal(plugin.fastlyCertId, "aBcDeFgHiJkLmNoPqRsTuV");
+  });
+
+  it("surfaces guidance when the certificate already exists without a recoverable id", async () => {
+    const plugin = new FastlyUploadCertPlugin();
+    plugin.cert = mockCert as any;
+    plugin.accessId = "access-1";
+
+    const mockAccess = fakeAccess(async (path: string) => {
+      if (path === "/tls/private_keys") {
+        return { data: { id: "pk_1" } };
+      }
+      if (path === "/tls/certificates") {
+        throw new Error('Fastly API 请求失败: {"errors":[{"detail":"cert_blob is already in use"}]}');
+      }
+      throw new Error(`Unexpected call: ${path}`);
+    });
+
+    (plugin as any).getAccess = async () => mockAccess;
+    (plugin as any).logger = { info: () => {}, error: () => {} };
+
+    await assert.rejects(() => plugin.execute(), /填写该证书ID以走更新\(PATCH\)流程/);
+  });
 });
 
 describe("FastlyUploadCertPlugin - update existing certificate (PATCH)", () => {
