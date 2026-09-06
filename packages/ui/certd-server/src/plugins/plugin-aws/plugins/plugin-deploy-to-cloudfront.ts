@@ -67,15 +67,35 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
   )
   distributionIds!: string[];
 
+  @TaskInput({
+    title: "等待部署完成",
+    value: false,
+    helper:
+      "开启后，会轮询等待每个CloudFront分配状态变为Deployed（通常需要几分钟）再结束任务。" +
+      "关闭时，提交证书更新后立即结束——CloudFront会在后台自行完成部署。" +
+      "仅当后续任务依赖证书已全球生效时才需要开启。",
+    component: {
+      name: "a-switch",
+      vModel: "checked",
+    },
+  })
+  waitForDeployed = false;
+
   async onInstance() {}
 
   async execute(): Promise<void> {
     const access = await this.getAccess<AwsAccess>(this.accessId);
 
+    const acmClient = new AwsClient({
+      access,
+      region: this.region,
+      logger: this.logger,
+    });
+
     let certId = this.cert as string;
     if (typeof this.cert !== "string") {
       //先上传
-      certId = await this.uploadToACM(access, this.cert);
+      certId = await this.uploadToACM(acmClient, this.cert);
     }
     //部署到CloudFront
 
@@ -86,42 +106,49 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
         accessKeyId: access.accessKeyId,
         secretAccessKey: access.secretAccessKey,
       },
+      // Disable the SDK's own retries; acmClient.withRetry is the single retry authority.
+      maxAttempts: 1,
     });
 
     // update-distribution
     for (const distributionId of this.distributionIds) {
-      // get-distribution-config
-      const getDistributionConfigCommand = new GetDistributionConfigCommand({
-        Id: distributionId,
-      });
+      // get-distribution-config (with retry for throttling)
+      const configData: any = await acmClient.withRetry(() =>
+        cloudFrontClient.send(new GetDistributionConfigCommand({ Id: distributionId }))
+      );
 
-      const configData = await cloudFrontClient.send(getDistributionConfigCommand);
+      await acmClient.withRetry(() =>
+        cloudFrontClient.send(
+          new UpdateDistributionCommand({
+            DistributionConfig: {
+              ...configData.DistributionConfig,
+              ViewerCertificate: {
+                ...configData.DistributionConfig.ViewerCertificate,
+                CloudFrontDefaultCertificate: false,
+                ACMCertificateArn: certId,
+              },
+            },
+            Id: distributionId,
+            IfMatch: configData.ETag,
+          })
+        )
+      );
 
-      const updateDistributionCommand = new UpdateDistributionCommand({
-        DistributionConfig: {
-          ...configData.DistributionConfig,
-          ViewerCertificate: {
-            ...configData.DistributionConfig.ViewerCertificate,
-            CloudFrontDefaultCertificate: false,
-            ACMCertificateArn: certId,
-          },
-        },
-        Id: distributionId,
-        IfMatch: configData.ETag,
-      });
-      await cloudFrontClient.send(updateDistributionCommand);
-      this.logger.info(`部署${distributionId}完成:`);
+      if (this.waitForDeployed) {
+        this.logger.info(`证书已提交到 ${distributionId}，等待全局部署完成…`);
+        // CloudFront propagates globally in a few minutes; only block when the
+        // user opts in (e.g. a downstream task needs the cert already live).
+        await acmClient.waitForDistributionDeployed(cloudFrontClient, distributionId);
+        this.logger.info(`部署 ${distributionId} 完成`);
+      } else {
+        this.logger.info(`证书已提交到 ${distributionId}，CloudFront 将在后台完成部署`);
+      }
     }
     this.logger.info("部署完成");
   }
 
-  private async uploadToACM(access: AwsAccess, cert: CertInfo) {
-    const acmClient = new AwsClient({
-      access,
-      region: this.region,
-      logger: this.logger,
-    });
-    const awsCertARN = await acmClient.importCertificate(cert);
+  private async uploadToACM(acmClient: AwsClient, cert: CertInfo) {
+    const awsCertARN = await acmClient.withRetry(() => acmClient.importCertificate(cert));
     this.logger.info("证书上传成功,id=", awsCertARN);
     return awsCertARN;
   }
@@ -140,6 +167,7 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
         accessKeyId: access.accessKeyId,
         secretAccessKey: access.secretAccessKey,
       },
+      maxAttempts: 1,
     });
     // list-distributions
     const listDistributionsCommand = new ListDistributionsCommand({});
