@@ -1,5 +1,5 @@
 # 任务插件
-共 `135` 款任务插件    
+共 `139` 款任务插件    
 ## 1. 证书申请
 
 | 序号 | 名称 | 说明 |
@@ -31,26 +31,30 @@
 | 4.| **中国移动-部署证书到CDN** | 中国移动自动部署证书到CDN | 
 | 5.| **多吉云-部署到多吉云CDN** |  | 
 | 6.| **farcdn-更新证书** | www.farcdn.net | 
-| 7.| **FlexCDN-更新证书** |  | 
-| 8.| **Gcore-刷新Gcore证书** | 刷新现有的证书 | 
-| 9.| **Gcore-部署证书到Gcore** | 仅上传 并不会部署到cdn | 
-| 10.| **GoEdge-更新证书** | GoEdge | 
-| 11.| **金山云-更新CDN证书** | 金山云自动更新CDN证书 | 
-| 12.| **白山云-更新证书** |  | 
-| 13.| **cdnfly-部署证书到cdnfly** | cdnfly | 
-| 14.| **天翼云-部署证书到CDN** | 部署证书到天翼云CDN和全站加速 | 
-| 15.| **括彩云-部署到括彩云CDN** | 括彩云CDN，每月免费30G，[注册即领](https://kuocaicdn.com/register?code=8mn536rrzfbf8) | 
-| 16.| **LeCDN-更新证书V2** | 支持新版本LeCDN | 
-| 17.| **LeCDN-更新证书** |  | 
-| 18.| **Maoyun-更新猫云CDN证书** |  | 
-| 19.| **易盾-部署到易盾DCDN** | 主要是防御，http://user.yiduncdn.com/ | 
-| 20.| **易盾-部署到易盾RCDN** | 易盾CDN，每月免费30G，[注册即领](https://rhcdn.yiduncdn.com/register?code=8mn536rrzfbf8) | 
-| 21.| **雨云-更新证书** | app.rainyun.com | 
-| 22.| **又拍云-部署证书到CDN/USS** | 支持又拍云CDN，又拍云云存储USS | 
-| 23.| **网宿-更新证书** | 网宿证书自动更新 | 
-| 24.| **西数-部署到虚拟主机** | 西部数码部署证书到虚拟主机 | 
-| 25.| **我爱云-部署证书到我爱云CDN** | 部署证书到我爱云CDN | 
-| 26.| **Zenlayer-刷新证书** | 刷新Zenlayer CDN证书 | 
+| 7.| **Fastly-部署TLS激活** | 部署 Fastly 证书 (创建 TLS Activation 绑定证书到域名) | 
+| 8.| **Fastly-清除缓存** | 清除 Fastly 指定 Service 的所有缓存 (Purge All) | 
+| 9.| **Fastly-更新证书** | 自动更新 Fastly CDN 上的已有自定义证书 | 
+| 10.| **Fastly-上传证书到Fastly** | 部署 / 上传 SSL/TLS 自定义证书到 Fastly CDN | 
+| 11.| **FlexCDN-更新证书** |  | 
+| 12.| **Gcore-刷新Gcore证书** | 刷新现有的证书 | 
+| 13.| **Gcore-部署证书到Gcore** | 仅上传 并不会部署到cdn | 
+| 14.| **GoEdge-更新证书** | GoEdge | 
+| 15.| **金山云-更新CDN证书** | 金山云自动更新CDN证书 | 
+| 16.| **白山云-更新证书** |  | 
+| 17.| **cdnfly-部署证书到cdnfly** | cdnfly | 
+| 18.| **天翼云-部署证书到CDN** | 部署证书到天翼云CDN和全站加速 | 
+| 19.| **括彩云-部署到括彩云CDN** | 括彩云CDN，每月免费30G，[注册即领](https://kuocaicdn.com/register?code=8mn536rrzfbf8) | 
+| 20.| **LeCDN-更新证书V2** | 支持新版本LeCDN | 
+| 21.| **LeCDN-更新证书** |  | 
+| 22.| **Maoyun-更新猫云CDN证书** |  | 
+| 23.| **易盾-部署到易盾DCDN** | 主要是防御，http://user.yiduncdn.com/ | 
+| 24.| **易盾-部署到易盾RCDN** | 易盾CDN，每月免费30G，[注册即领](https://rhcdn.yiduncdn.com/register?code=8mn536rrzfbf8) | 
+| 25.| **雨云-更新证书** | app.rainyun.com | 
+| 26.| **又拍云-部署证书到CDN/USS** | 支持又拍云CDN，又拍云云存储USS | 
+| 27.| **网宿-更新证书** | 网宿证书自动更新 | 
+| 28.| **西数-部署到虚拟主机** | 西部数码部署证书到虚拟主机 | 
+| 29.| **我爱云-部署证书到我爱云CDN** | 部署证书到我爱云CDN | 
+| 30.| **Zenlayer-刷新证书** | 刷新Zenlayer CDN证书 | 
 ## 4. 面板
 
 | 序号 | 名称 | 说明 |

@@ -140,7 +140,13 @@ describe("FastlyAccess list helpers", () => {
     const access = mockAccess((url: string) => {
       if (url.endsWith("/service?per_page=200")) {
         return [
-          { id: "svc1", versions: [{ number: 1, active: false }, { number: 2, active: true }] },
+          {
+            id: "svc1",
+            versions: [
+              { number: 1, active: false },
+              { number: 2, active: true },
+            ],
+          },
           { id: "svc2", version: 5 },
         ];
       }
@@ -212,10 +218,7 @@ describe("FastlyUploadCertPlugin - new certificate (2-step flow)", () => {
     (plugin as any).getAccess = async () => mockAccess;
     (plugin as any).logger = { info: () => {}, error: () => {} };
 
-    await assert.rejects(
-      () => plugin.execute(),
-      /Fastly 私钥上传失败，未获取到 private key ID/
-    );
+    await assert.rejects(() => plugin.execute(), /Fastly 私钥上传失败，未获取到 private key ID/);
   });
 
   it("reuses the existing private key when Fastly reports it already exists", async () => {
@@ -228,9 +231,7 @@ describe("FastlyUploadCertPlugin - new certificate (2-step flow)", () => {
     const mockAccess = fakeAccess(async (path: string, payload: any, method: string) => {
       calls.push({ path, payload, method });
       if (path === "/tls/private_keys") {
-        throw new Error(
-          'Fastly API 请求失败: {"errors":[{"title":"Can\'t create key","detail":"Key already exists: \'EO8Drv7EYjThQ4DUPo4Ot0\'"}]}'
-        );
+        throw new Error('Fastly API 请求失败: {"errors":[{"title":"Can\'t create key","detail":"Key already exists: \'EO8Drv7EYjThQ4DUPo4Ot0\'"}]}');
       }
       if (path === "/tls/certificates") {
         return { data: { id: "tls_cert_new_1" } };
@@ -259,9 +260,7 @@ describe("FastlyUploadCertPlugin - new certificate (2-step flow)", () => {
         return { data: { id: "pk_1" } };
       }
       if (path === "/tls/certificates") {
-        throw new Error(
-          'Fastly API 请求失败: {"errors":[{"title":"Can\'t create certificate","detail":"Certificate already exists: \'aBcDeFgHiJkLmNoPqRsTuV\'"}]}'
-        );
+        throw new Error('Fastly API 请求失败: {"errors":[{"title":"Can\'t create certificate","detail":"Certificate already exists: \'aBcDeFgHiJkLmNoPqRsTuV\'"}]}');
       }
       throw new Error(`Unexpected call: ${path}`);
     });
@@ -354,15 +353,15 @@ describe("FastlyPurgeCachePlugin", () => {
 
     let capturedUrl = "";
     let capturedMethod = "";
-    
+
     const mockAccess = {
       doRequestApi: async (path: string, payload: any, method: string) => {
         capturedUrl = path;
         capturedMethod = method;
         return { data: { status: "ok" } };
-      }
+      },
     };
-    
+
     (plugin as any).getAccess = async () => mockAccess;
     (plugin as any).logger = { info: () => {}, error: () => {} };
 
@@ -481,15 +480,15 @@ describe("FastlyRefreshCertPlugin", () => {
     plugin.accessId = "access-1";
     plugin.certList = ["cert_a", "cert_b"];
 
-    const calls: { path: string, payload: any }[] = [];
-    
+    const calls: { path: string; payload: any }[] = [];
+
     const mockAccess = {
       doRequestApi: async (path: string, payload: any, method: string) => {
         calls.push({ path, payload });
-        return { data: { id: path.split('/').pop() } };
-      }
+        return { data: { id: path.split("/").pop() } };
+      },
     };
-    
+
     (plugin as any).getAccess = async () => mockAccess;
     (plugin as any).logger = { info: () => {}, error: () => {} };
 

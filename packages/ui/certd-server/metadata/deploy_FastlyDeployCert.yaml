@@ -1,0 +1,95 @@
+showRunStrategy: false
+default:
+  strategy:
+    runStrategy: 1
+name: FastlyDeployCert
+title: Fastly-部署TLS激活
+desc: 部署 Fastly 证书 (创建 TLS Activation 绑定证书到域名)
+icon: simple-icons:fastly
+group: cdn
+input:
+  cert:
+    title: 域名证书
+    helper: 选择前置任务输出的域名证书(将自动上传到 Fastly)，或选择前置【Fastly-上传证书到Fastly】任务输出的 Fastly 证书ID。
+    component:
+      name: output-selector
+      from:
+        - ':cert:'
+        - FastlyUploadCert
+    required: true
+    order: 0
+  name:
+    title: 证书名称
+    helper: 可选。当传入的是域名证书需要先上传时，作为 Fastly 上的自定义证书名称/标签
+    component:
+      placeholder: '例如: my-fastly-cert'
+    required: false
+    order: 0
+  accessId:
+    title: Access授权
+    helper: Fastly 授权凭证
+    component:
+      name: access-selector
+      type: fastly
+    required: true
+    order: 0
+  domainIds:
+    title: TLS 域名
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetTlsDomainList
+      search: false
+      pager: false
+      single: false
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: >-
+      选择要绑定证书的域名，可多选(将为每个域名创建或更新一个 TLS 激活)。列表为你 Fastly 服务上配置的域名，请选择被证书覆盖的具体主机名(如
+      www.example.com)，而非通配 *.example.com(除非确有服务使用通配域名)。列表没有的也可直接输入。
+    order: 0
+  configurationId:
+    title: TLS 配置
+    component:
+      name: remote-select
+      vModel: value
+      mode: tags
+      type: plugin
+      action: onGetTlsConfigurationList
+      search: false
+      pager: false
+      single: true
+      watches:
+        - certDomains
+        - accessId
+    required: true
+    mergeScript: |2-
+
+                return {
+                  component:{
+                    form: ctx.compute(({form})=>{
+                      return form
+                    })
+                  },
+               }
+              
+    helper: 选择关联的 TLS 配置
+    order: 0
+output: {}
+pluginType: deploy
+type: builtIn
+scriptFilePath: /plugins/plugin-fastly/plugins/plugin-deploy-to-service.js

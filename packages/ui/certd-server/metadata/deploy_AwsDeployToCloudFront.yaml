@@ -150,6 +150,15 @@ input:
               
     helper: 请选择distributions id
     order: 0
+  waitForDeployed:
+    title: 等待部署完成
+    value: false
+    helper: >-
+      开启后，会轮询等待每个CloudFront分配状态变为Deployed（通常需要几分钟）再结束任务。关闭时，提交证书更新后立即结束——CloudFront会在后台自行完成部署。仅当后续任务依赖证书已全球生效时才需要开启。
+    component:
+      name: a-switch
+      vModel: checked
+    order: 0
 output: {}
 pluginType: deploy
 type: builtIn

@@ -70,10 +70,7 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
   @TaskInput({
     title: "等待部署完成",
     value: false,
-    helper:
-      "开启后，会轮询等待每个CloudFront分配状态变为Deployed（通常需要几分钟）再结束任务。" +
-      "关闭时，提交证书更新后立即结束——CloudFront会在后台自行完成部署。" +
-      "仅当后续任务依赖证书已全球生效时才需要开启。",
+    helper: "开启后，会轮询等待每个CloudFront分配状态变为Deployed（通常需要几分钟）再结束任务。" + "关闭时，提交证书更新后立即结束——CloudFront会在后台自行完成部署。" + "仅当后续任务依赖证书已全球生效时才需要开启。",
     component: {
       name: "a-switch",
       vModel: "checked",
@@ -113,9 +110,7 @@ export class AwsDeployToCloudFront extends AbstractTaskPlugin {
     // update-distribution
     for (const distributionId of this.distributionIds) {
       // get-distribution-config (with retry for throttling)
-      const configData: any = await acmClient.withRetry(() =>
-        cloudFrontClient.send(new GetDistributionConfigCommand({ Id: distributionId }))
-      );
+      const configData: any = await acmClient.withRetry(() => cloudFrontClient.send(new GetDistributionConfigCommand({ Id: distributionId })));
 
       await acmClient.withRetry(() =>
         cloudFrontClient.send(

@@ -284,8 +284,10 @@ export class FastlyAccess extends BaseAccess {
   }
 
   private async findActivation(configurationId: string, domainId: string): Promise<any | undefined> {
+    // encodeURIComponent 按规范保留 `*`，但 Fastly 过滤条件要求通配符编码为 `%2A`。
+    const encodedDomainId = encodeURIComponent(domainId).replace(/\*/g, "%2A");
     const body = await this.doRequestApi(
-      `/tls/activations?filter[tls_domain.id]=${encodeURIComponent(domainId)}&page[size]=100`,
+      `/tls/activations?filter[tls_domain.id]=${encodedDomainId}&page[size]=100`,
       null,
       "get"
     );

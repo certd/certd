@@ -18,9 +18,7 @@ import { FastlyAccess } from "../access.js";
 export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
   @TaskInput({
     title: "域名证书",
-    helper:
-      "选择前置任务输出的域名证书(将自动上传到 Fastly)，" +
-      "或选择前置【Fastly-上传证书到Fastly】任务输出的 Fastly 证书ID。",
+    helper: "选择前置任务输出的域名证书(将自动上传到 Fastly)，" + "或选择前置【Fastly-上传证书到Fastly】任务输出的 Fastly 证书ID。",
     component: {
       name: "output-selector",
       from: [...CertApplyPluginNames, "FastlyUploadCert"],
@@ -119,10 +117,7 @@ export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
   async onGetTlsDomainList() {
     const access = (await this.getAccess(this.accessId)) as FastlyAccess;
 
-    const [serviceDomains, tlsDomains] = await Promise.all([
-      access.getServiceDomains().catch(() => [] as string[]),
-      access.getTlsDomains().catch(() => [] as any[]),
-    ]);
+    const [serviceDomains, tlsDomains] = await Promise.all([access.getServiceDomains().catch(() => [] as string[]), access.getTlsDomains().catch(() => [] as any[])]);
 
     const options: { label: string; value: string }[] = [];
     const seen = new Set<string>();
