@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.44.3](https://github.com/certd/certd/compare/v1.44.2...v1.44.3) (2026-09-06)
+
+### Bug Fixes
+
+* **plugin:** 修复插件配置保存与加载的相关问题 ([bd94334](https://github.com/certd/certd/commit/bd9433478a43d5d64ce6370386d0fe0aaff07d2e))
+
 ## [1.44.2](https://github.com/certd/certd/compare/v1.44.1...v1.44.2) (2026-09-03)
 
 ### Bug Fixes
