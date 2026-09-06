@@ -1,4 +1,5 @@
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { createRemoteSelectInputDefine } from "@certd/plugin-lib";
 import { FastlyAccess } from "../access.js";
 
@@ -16,6 +17,29 @@ import { FastlyAccess } from "../access.js";
 })
 export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
   @TaskInput({
+    title: "域名证书",
+    helper:
+      "选择前置任务输出的域名证书(将自动上传到 Fastly)，" +
+      "或选择前置【Fastly-上传证书到Fastly】任务输出的 Fastly 证书ID。",
+    component: {
+      name: "output-selector",
+      from: [...CertApplyPluginNames, "FastlyUploadCert"],
+    },
+    required: true,
+  })
+  cert!: CertInfo | string;
+
+  @TaskInput({
+    title: "证书名称",
+    helper: "可选。当传入的是域名证书需要先上传时，作为 Fastly 上的自定义证书名称/标签",
+    component: {
+      placeholder: "例如: my-fastly-cert",
+    },
+    required: false,
+  })
+  name = "";
+
+  @TaskInput({
     title: "Access授权",
     helper: "Fastly 授权凭证",
     component: {
@@ -25,17 +49,6 @@ export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
     required: true,
   })
   accessId!: string;
-
-  @TaskInput({
-    title: "Fastly 证书ID",
-    helper: "选择前置【Fastly-上传证书到Fastly】任务输出的 Fastly 证书ID",
-    component: {
-      name: "output-selector",
-      from: ["FastlyUploadCert"],
-    },
-    required: true,
-  })
-  certificateId!: string;
 
   @TaskInput(
     createRemoteSelectInputDefine({
@@ -66,8 +79,24 @@ export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const access = (await this.getAccess(this.accessId)) as FastlyAccess;
 
-    if (!this.certificateId || !this.domainId || !this.configurationId) {
-      throw new Error("请提供完整的证书ID、TLS域名ID和TLS配置ID");
+    if (!this.domainId || !this.configurationId) {
+      throw new Error("请提供完整的 TLS 域名和 TLS 配置");
+    }
+
+    // `cert` is a string when it comes from a FastlyUploadCert step (already a Fastly
+    // tls_certificate id); otherwise it is a raw CertInfo that must be uploaded first.
+    let certificateId: string;
+    if (typeof this.cert === "string") {
+      certificateId = this.cert;
+    } else {
+      const certName = this.name && this.name.trim() ? this.name.trim() : undefined;
+      this.logger.info("未检测到 Fastly 证书ID，先上传证书到 Fastly...");
+      certificateId = await access.createCertificate(this.cert.crt, this.cert.key, certName);
+      this.logger.info(`证书上传成功, Fastly 证书ID: ${certificateId}`);
+    }
+
+    if (!certificateId) {
+      throw new Error("未能获取 Fastly 证书ID");
     }
 
     this.logger.info(`开始部署 Fastly TLS 激活 (域名ID: ${this.domainId})...`);
@@ -79,7 +108,7 @@ export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
           tls_certificate: {
             data: {
               type: "tls_certificate",
-              id: this.certificateId,
+              id: certificateId,
             },
           },
           tls_configuration: {

@@ -71,74 +71,17 @@ export class FastlyUploadCertPlugin extends AbstractTaskPlugin {
     const access = (await this.getAccess(accessId)) as FastlyAccess;
 
     // cert.crt is the full certificate chain (PEM); cert.key is the private key (PEM)
-    const certPem = cert.crt;
-    const keyPem = cert.key;
-
     const certName = name && name.trim() ? name.trim() : undefined;
+    const targetId = certificateId && certificateId.trim();
 
-    if (certificateId && certificateId.trim()) {
-      // --- UPDATE existing certificate (PATCH) ---
-      // Only cert_blob is needed; private key is already linked to the certificate.
-      const targetId = certificateId.trim();
+    if (targetId) {
+      // Update an existing Fastly certificate in place (same private key required).
       this.logger.info(`开始更新 Fastly 证书 [${targetId}]...`);
-
-      const payload: any = {
-        data: {
-          type: "tls_certificate",
-          id: targetId,
-          attributes: {
-            cert_blob: certPem,
-            ...(certName && { name: certName }),
-          },
-        },
-      };
-
-      const res = await access.doRequestApi(`/tls/certificates/${targetId}`, payload, "patch");
-      this.fastlyCertId = res?.data?.id || targetId;
+      this.fastlyCertId = await access.updateCertificate(targetId, cert.crt, certName);
       this.logger.info(`Fastly 证书更新成功, ID: ${this.fastlyCertId}`);
     } else {
-      // --- CREATE new certificate (2-step: upload private key first, then cert) ---
-      // Step 1: Upload the private key to /tls/private_keys
-      this.logger.info("开始上传私钥到 Fastly...");
-      const keyPayload: any = {
-        data: {
-          type: "tls_private_key",
-          attributes: {
-            key: keyPem,
-            ...(certName && { name: certName }),
-          },
-        },
-      };
-
-      const keyRes = await access.doRequestApi("/tls/private_keys", keyPayload, "post");
-      const privateKeyId = keyRes?.data?.id;
-      if (!privateKeyId) {
-        throw new Error("Fastly 私钥上传失败，未获取到 private key ID");
-      }
-      this.logger.info(`Fastly 私钥上传成功, privateKeyId: ${privateKeyId}`);
-
-      // Step 2: Upload the certificate referencing the private key
-      this.logger.info("开始上传证书到 Fastly...");
-      const certPayload: any = {
-        data: {
-          type: "tls_certificate",
-          attributes: {
-            cert_blob: certPem,
-            ...(certName && { name: certName }),
-          },
-          relationships: {
-            tls_private_key: {
-              data: {
-                type: "tls_private_key",
-                id: privateKeyId,
-              },
-            },
-          },
-        },
-      };
-
-      const certRes = await access.doRequestApi("/tls/certificates", certPayload, "post");
-      this.fastlyCertId = certRes?.data?.id || "";
+      // Create a new Fastly certificate (uploads the private key first).
+      this.fastlyCertId = await access.createCertificate(cert.crt, cert.key, certName);
       this.logger.info(`Fastly 证书新建成功, ID: ${this.fastlyCertId}`);
     }
   }
