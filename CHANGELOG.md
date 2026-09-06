@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.44.3](https://github.com/certd/certd/compare/v1.44.2...v1.44.3) (2026-09-06)
+
+### Bug Fixes
+
+* **plugin-service:** 修复同步自己开发的云端插件不显示已安装状态问题 ([dac94b6](https://github.com/certd/certd/commit/dac94b64f0ceb7176e2cf07ce220be0aa5ed98d2))
+* **plugin:** 修复插件配置保存与加载的相关问题 ([bd94334](https://github.com/certd/certd/commit/bd9433478a43d5d64ce6370386d0fe0aaff07d2e))
+
+### Performance Improvements
+
+* **plugin:** add Fastly custom TLS certificates integration ([#797](https://github.com/certd/certd/issues/797)) [@szhu25](https://github.com/szhu25) ([2a2e963](https://github.com/certd/certd/commit/2a2e963914c4dfc192cbe0a4bbb9c115e626da01))
+
 ## [1.44.2](https://github.com/certd/certd/compare/v1.44.1...v1.44.2) (2026-09-03)
 
 ### Bug Fixes
