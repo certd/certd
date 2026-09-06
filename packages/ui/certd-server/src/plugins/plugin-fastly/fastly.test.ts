@@ -135,6 +135,27 @@ describe("FastlyAccess list helpers", () => {
     const list = await access.getServices();
     assert.deepEqual(list, [{ id: "svc1", name: "a" }]);
   });
+
+  it("getServiceDomains collects domains from each service's active version", async () => {
+    const access = mockAccess((url: string) => {
+      if (url.endsWith("/service?per_page=200")) {
+        return [
+          { id: "svc1", versions: [{ number: 1, active: false }, { number: 2, active: true }] },
+          { id: "svc2", version: 5 },
+        ];
+      }
+      if (url.endsWith("/service/svc1/version/2/domain")) {
+        return [{ name: "www.g0l.net" }, { name: "img.g0l.net" }];
+      }
+      if (url.endsWith("/service/svc2/version/5/domain")) {
+        return [{ name: "www.g0l.net" }, { name: "api.other.net" }];
+      }
+      throw new Error(`unexpected ${url}`);
+    });
+
+    const domains = await access.getServiceDomains();
+    assert.deepEqual(domains.sort(), ["api.other.net", "img.g0l.net", "www.g0l.net"]);
+  });
 });
 
 describe("FastlyUploadCertPlugin - new certificate (2-step flow)", () => {

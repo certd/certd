@@ -53,7 +53,10 @@ export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
   @TaskInput(
     createRemoteSelectInputDefine({
       title: "TLS 域名",
-      helper: "选择要绑定证书的 Fastly TLS 域名，可多选(将为每个域名创建或更新一个 TLS 激活)",
+      helper:
+        "选择要绑定证书的域名，可多选(将为每个域名创建或更新一个 TLS 激活)。" +
+        "列表为你 Fastly 服务上配置的域名，请选择被证书覆盖的具体主机名(如 www.example.com)，" +
+        "而非通配 *.example.com(除非确有服务使用通配域名)。列表没有的也可直接输入。",
       action: FastlyDeployCertPlugin.prototype.onGetTlsDomainList.name,
       pager: false,
       search: false,
@@ -115,19 +118,31 @@ export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
 
   async onGetTlsDomainList() {
     const access = (await this.getAccess(this.accessId)) as FastlyAccess;
-    const list = await access.getTlsDomains();
 
-    if (!list || list.length === 0) {
-      return { list: [] };
+    const [serviceDomains, tlsDomains] = await Promise.all([
+      access.getServiceDomains().catch(() => [] as string[]),
+      access.getTlsDomains().catch(() => [] as any[]),
+    ]);
+
+    const options: { label: string; value: string }[] = [];
+    const seen = new Set<string>();
+
+    // Domains actually served by your Fastly services — these can be activated.
+    for (const name of serviceDomains) {
+      if (name && !seen.has(name)) {
+        seen.add(name);
+        options.push({ label: name, value: name });
+      }
     }
 
-    const options = list.map((item: any) => {
-      // Fastly API typically returns id as the domain name for tls_domains
-      return {
-        label: item.id,
-        value: item.id,
-      };
-    });
+    // TLS domains from certificates/subscriptions (incl. wildcards) as extra choices.
+    for (const item of tlsDomains || []) {
+      const name = item?.id;
+      if (name && !seen.has(name)) {
+        seen.add(name);
+        options.push({ label: `${name} (来自证书)`, value: name });
+      }
+    }
 
     return { list: options };
   }

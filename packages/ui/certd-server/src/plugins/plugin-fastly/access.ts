@@ -113,6 +113,51 @@ export class FastlyAccess extends BaseAccess {
     return Array.isArray(res) ? res : res?.data || [];
   }
 
+  /**
+   * Every domain configured on the active version of each Fastly service.
+   * These are the names you can actually create a TLS activation for — unlike
+   * `/tls/domains`, which just echoes the SAN entries of your certificates
+   * (so a wildcard cert shows "*.example.com" that no service serves directly).
+   */
+  async getServiceDomains(): Promise<string[]> {
+    const services = await this.getServices();
+    const domains = new Set<string>();
+    for (const svc of services) {
+      if (!svc?.id) {
+        continue;
+      }
+      try {
+        const activeVersion = this.resolveActiveVersion(svc);
+        if (activeVersion == null) {
+          continue;
+        }
+        const list = await this.doRequestApi(`/service/${svc.id}/version/${activeVersion}/domain`, null, "get");
+        const items: any[] = Array.isArray(list) ? list : list?.data || [];
+        for (const d of items) {
+          if (d?.name) {
+            domains.add(d.name);
+          }
+        }
+      } catch (e: any) {
+        this.ctx.logger.error(`获取 Fastly 服务 ${svc.id} 域名失败: ${e?.message}`);
+      }
+    }
+    return [...domains];
+  }
+
+  private resolveActiveVersion(svc: any): number | undefined {
+    const versions: any[] = Array.isArray(svc?.versions) ? svc.versions : [];
+    const active = versions.find((v: any) => v?.active === true);
+    if (active?.number != null) {
+      return active.number;
+    }
+    if (typeof svc?.version === "number") {
+      return svc.version;
+    }
+    const numbers = versions.map((v: any) => v?.number).filter((n: any) => typeof n === "number");
+    return numbers.length ? Math.max(...numbers) : undefined;
+  }
+
   async getTlsConfigurations() {
     return this.listAllJsonApi("/tls/configurations");
   }
