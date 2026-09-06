@@ -50,3 +50,4 @@
 // export * from './plugin-nginx-proxy-manager/index.js'
 // export * from './plugin-hipmdnsmgr/index.js'
 // export * from './plugin-dynadot/index.js'
+// export * from './plugin-fastly/index.js';
