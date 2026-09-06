@@ -6,13 +6,17 @@
 
 Certd 提供多种 Docker 镜像版本，您可以根据需要选择：
 
-#### 1. 镜像地址格式：
+#### 1. 镜像地址：
 
-```
-registry.cn-shenzhen.aliyuncs.com/certd/certd:[version-][system-][latest/stable]  
------------- ↑ 镜像地址 ------------- ↑ 镜像名 -- ↑指定版本- ↑基础系统- ↑最新版本类型             
-```
-#### 2. 版本标签：
+| 镜像仓库 | 最新预览版  | 稳定版 | slim版 | armv7版 | 
+| --- | --- | --- | --- | --- | 
+| 阿里云【默认】 | `registry.cn-shenzhen.aliyuncs.com/certd/certd:latest` | `certd:stable` | `certd:slim` | `certd:armv7` |
+| Docker Hub | `certd/certd:latest` | `certd:stable` | `certd:slim` | `certd:armv7` |
+| GitHub Packages | `ghcr.io/certd/certd:latest` | `certd:stable` | `certd:slim` | `certd:armv7` |
+
+> 后面的各个版本省略了镜像地址，使用时需要将镜像地址拼接完整。
+
+#### 2. 版本标签说明：
 
 **最新版本标签：**
 
@@ -25,22 +29,14 @@ registry.cn-shenzhen.aliyuncs.com/certd/certd:[version-][system-][latest/stable]
 
 > 根据基础镜像不同，分为如下三个分支版本，没有特殊需求选择默认的即可（他们功能是一样的）
 
-| 系统版本 | 版本标签 |  基础系统 | 说明 | 稳定版标签 | 指定版本 |
-| --- | --- | --- | --- | --- | --- | 
-| alpine【默认】 | `certd:latest` |  Alpine Linux | 默认版本，镜像体积小，支持x86、ARM架构  | `certd:stable` | `certd:1.43.0` |
+| 系统版本 | 版本标签 |   基础系统 | 说明 | 稳定版标签 | 指定版本 |
+| --- | --- | --- | --- | --- | --- |
+| alpine【默认】 | `certd:latest` |  Alpine Linux | 默认版本，镜像体积小  | `certd:stable` | `certd:1.43.0` |
 | slim | `certd:slim` |  Debian slim | 基于glibc，dns解析兼容性好 | `certd:slim-stable` | `certd:1.43.0-slim` |
 | armv7 | `certd:armv7` |  Alpine Linux | ARMv7 架构专用版本 | `certd:armv7-stable` | `certd:1.43.0-armv7` |
 
-#### 3. 镜像地址：
 
-| 镜像仓库 | 最新预览版  | slim版 | armv7版 | 
-| --- | --- | --- |  --- |    
-| 阿里云【默认】 | `registry.cn-shenzhen.aliyuncs.com/certd/certd:latest` | `certd:slim` | `certd:armv7` |
-| Docker Hub | `certd/certd:latest` | `certd:slim` | `certd:armv7` |
-| GitHub Packages | `ghcr.io/certd/certd:latest` | `certd:slim` | `certd:armv7` |
-
-> 1. 后面的各个版本省略了镜像地址，使用时需要将镜像地址拼接完整。
-> 2. 如果您不确定使用哪个版本，请使用默认的 `certd:latest` 版本。
+> 如果您不确定使用哪个版本，请使用默认的 `certd:latest` 版本。
 
 最新版本号：
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/certd/certd?label=Latest%20Release&sort=semver)
