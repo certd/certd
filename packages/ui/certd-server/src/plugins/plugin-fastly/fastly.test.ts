@@ -353,18 +353,21 @@ describe("FastlyPurgeCachePlugin", () => {
 });
 
 describe("FastlyDeployCertPlugin", () => {
-  it("should create tls_activation directly when cert is an existing Fastly cert id", async () => {
+  it("creates one tls_activation per domain when none exists yet", async () => {
     const plugin = new FastlyDeployCertPlugin();
     plugin.accessId = "access-1";
     plugin.cert = "cert_1";
-    plugin.domainId = "dom_1";
+    plugin.domainIds = ["*.g0l.net", "g0l.net"];
     plugin.configurationId = "cfg_1";
 
     const calls: { path: string; payload: any; method: string }[] = [];
 
     const mockAccess = fakeAccess(async (path: string, payload: any, method: string) => {
       calls.push({ path, payload, method });
-      return { data: { id: "act_123" } };
+      if (method === "get") {
+        return { data: [] }; // no existing activation
+      }
+      return { data: { id: "act_new" } };
     });
 
     (plugin as any).getAccess = async () => mockAccess;
@@ -372,21 +375,53 @@ describe("FastlyDeployCertPlugin", () => {
 
     await plugin.execute();
 
-    // No upload calls, only the activation
-    assert.equal(calls.length, 1);
-    assert.equal(calls[0].path, "/tls/activations");
-    assert.equal(calls[0].payload.data.type, "tls_activation");
-    assert.equal(calls[0].payload.data.relationships.tls_certificate.data.id, "cert_1");
-    assert.equal(calls[0].payload.data.relationships.tls_configuration.data.id, "cfg_1");
-    assert.equal(calls[0].payload.data.relationships.tls_domain.data.id, "dom_1");
+    const posts = calls.filter(c => c.method === "post");
+    assert.equal(posts.length, 2);
+    assert.equal(posts[0].path, "/tls/activations");
+    assert.equal(posts[0].payload.data.relationships.tls_certificate.data.id, "cert_1");
+    assert.equal(posts[0].payload.data.relationships.tls_configuration.data.id, "cfg_1");
+    assert.equal(posts[0].payload.data.relationships.tls_domain.data.id, "*.g0l.net");
+    assert.equal(posts[1].payload.data.relationships.tls_domain.data.id, "g0l.net");
+    // domain filter is url-encoded (wildcard -> %2A)
+    assert.ok(calls[0].path.startsWith("/tls/activations?filter[tls_domain.id]=%2A.g0l.net"));
   });
 
-  it("should upload a raw CertInfo to Fastly first, then bind the new cert id", async () => {
+  it("patches the existing activation onto the new cert (renewal)", async () => {
+    const plugin = new FastlyDeployCertPlugin();
+    plugin.accessId = "access-1";
+    plugin.cert = "cert_new";
+    plugin.domainIds = ["g0l.net"];
+    plugin.configurationId = "cfg_1";
+
+    const calls: { path: string; payload: any; method: string }[] = [];
+
+    const mockAccess = fakeAccess(async (path: string, payload: any, method: string) => {
+      calls.push({ path, payload, method });
+      if (method === "get") {
+        return { data: [{ id: "act_1", relationships: { tls_configuration: { data: { id: "cfg_1" } } } }] };
+      }
+      return { data: { id: "act_1" } };
+    });
+
+    (plugin as any).getAccess = async () => mockAccess;
+    (plugin as any).logger = { info: () => {}, error: () => {} };
+
+    await plugin.execute();
+
+    const write = calls.find(c => c.method !== "get")!;
+    assert.equal(write.method, "patch");
+    assert.equal(write.path, "/tls/activations/act_1");
+    assert.equal(write.payload.data.id, "act_1");
+    assert.equal(write.payload.data.relationships.tls_certificate.data.id, "cert_new");
+    assert.equal(write.payload.data.relationships.tls_configuration, undefined);
+  });
+
+  it("uploads a raw CertInfo to Fastly first, then binds the new cert id", async () => {
     const plugin = new FastlyDeployCertPlugin();
     plugin.accessId = "access-1";
     plugin.cert = mockCert as any;
     plugin.name = "my-cert";
-    plugin.domainId = "dom_1";
+    plugin.domainIds = ["dom_1"];
     plugin.configurationId = "cfg_1";
 
     const calls: { path: string; payload: any; method: string }[] = [];
@@ -399,10 +434,10 @@ describe("FastlyDeployCertPlugin", () => {
       if (path === "/tls/certificates") {
         return { data: { id: "tls_cert_uploaded_1" } };
       }
-      if (path === "/tls/activations") {
-        return { data: { id: "act_123" } };
+      if (method === "get") {
+        return { data: [] };
       }
-      throw new Error(`Unexpected call: ${path}`);
+      return { data: { id: "act_new" } };
     });
 
     (plugin as any).getAccess = async () => mockAccess;
@@ -410,14 +445,11 @@ describe("FastlyDeployCertPlugin", () => {
 
     await plugin.execute();
 
-    assert.deepEqual(
-      calls.map(c => c.path),
-      ["/tls/private_keys", "/tls/certificates", "/tls/activations"]
-    );
-    assert.equal(calls[0].payload.data.attributes.key, mockCert.key);
-    assert.equal(calls[0].payload.data.attributes.name, "my-cert");
+    assert.equal(calls[0].path, "/tls/private_keys");
+    assert.equal(calls[1].path, "/tls/certificates");
     assert.equal(calls[1].payload.data.attributes.cert_blob, mockCert.crt);
-    assert.equal(calls[2].payload.data.relationships.tls_certificate.data.id, "tls_cert_uploaded_1");
+    const post = calls.find(c => c.path === "/tls/activations" && c.method === "post")!;
+    assert.equal(post.payload.data.relationships.tls_certificate.data.id, "tls_cert_uploaded_1");
   });
 });
 

@@ -53,14 +53,14 @@ export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
   @TaskInput(
     createRemoteSelectInputDefine({
       title: "TLS 域名",
-      helper: "选择要绑定证书的 Fastly TLS 域名",
+      helper: "选择要绑定证书的 Fastly TLS 域名，可多选(将为每个域名创建或更新一个 TLS 激活)",
       action: FastlyDeployCertPlugin.prototype.onGetTlsDomainList.name,
       pager: false,
       search: false,
       required: true,
     })
   )
-  domainId!: string;
+  domainIds!: string[];
 
   @TaskInput(
     createRemoteSelectInputDefine({
@@ -69,6 +69,7 @@ export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
       action: FastlyDeployCertPlugin.prototype.onGetTlsConfigurationList.name,
       pager: false,
       search: false,
+      single: true,
       required: true,
     })
   )
@@ -79,7 +80,13 @@ export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
   async execute(): Promise<void> {
     const access = (await this.getAccess(this.accessId)) as FastlyAccess;
 
-    if (!this.domainId || !this.configurationId) {
+    // remote-select hands back an array; tolerate a single value too (older config / single:true).
+    const rawDomains: any = this.domainIds ?? (this as any).domainId;
+    const domainIds: string[] = Array.isArray(rawDomains) ? rawDomains.filter(Boolean) : rawDomains ? [rawDomains] : [];
+    const rawConfig: any = this.configurationId;
+    const configurationId: string = Array.isArray(rawConfig) ? rawConfig[0] : rawConfig;
+
+    if (domainIds.length === 0 || !configurationId) {
       throw new Error("请提供完整的 TLS 域名和 TLS 配置");
     }
 
@@ -99,36 +106,11 @@ export class FastlyDeployCertPlugin extends AbstractTaskPlugin {
       throw new Error("未能获取 Fastly 证书ID");
     }
 
-    this.logger.info(`开始部署 Fastly TLS 激活 (域名ID: ${this.domainId})...`);
-
-    const payload: any = {
-      data: {
-        type: "tls_activation",
-        relationships: {
-          tls_certificate: {
-            data: {
-              type: "tls_certificate",
-              id: certificateId,
-            },
-          },
-          tls_configuration: {
-            data: {
-              type: "tls_configuration",
-              id: this.configurationId,
-            },
-          },
-          tls_domain: {
-            data: {
-              type: "tls_domain",
-              id: this.domainId,
-            },
-          },
-        },
-      },
-    };
-
-    const res = await access.doRequestApi("/tls/activations", payload, "post");
-    this.logger.info(`Fastly TLS 激活部署成功, 激活ID: ${res?.data?.id}`);
+    for (const domainId of domainIds) {
+      this.logger.info(`开始部署 Fastly TLS 激活 (域名: ${domainId})...`);
+      const { id, action } = await access.deployActivation(certificateId, configurationId, domainId);
+      this.logger.info(`Fastly TLS 激活${action === "updated" ? "更新" : "创建"}成功 (域名: ${domainId}), 激活ID: ${id}`);
+    }
   }
 
   async onGetTlsDomainList() {

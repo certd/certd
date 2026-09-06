@@ -197,6 +197,62 @@ export class FastlyAccess extends BaseAccess {
   }
 
   /**
+   * Binds a certificate to one TLS domain under a TLS configuration.
+   * A tls_activation is per (certificate, configuration, domain), and only one may
+   * exist per domain+configuration. If one is already there (e.g. on renewal) we
+   * PATCH it onto the new certificate instead of failing on a duplicate POST.
+   */
+  async deployActivation(certificateId: string, configurationId: string, domainId: string): Promise<{ id: string; action: "created" | "updated" }> {
+    const existing = await this.findActivation(configurationId, domainId);
+    if (existing?.id) {
+      const res = await this.doRequestApi(
+        `/tls/activations/${existing.id}`,
+        {
+          data: {
+            type: "tls_activation",
+            id: existing.id,
+            relationships: {
+              tls_certificate: { data: { type: "tls_certificate", id: certificateId } },
+            },
+          },
+        },
+        "patch"
+      );
+      return { id: res?.data?.id || existing.id, action: "updated" };
+    }
+
+    const res = await this.doRequestApi(
+      "/tls/activations",
+      {
+        data: {
+          type: "tls_activation",
+          relationships: {
+            tls_certificate: { data: { type: "tls_certificate", id: certificateId } },
+            tls_configuration: { data: { type: "tls_configuration", id: configurationId } },
+            tls_domain: { data: { type: "tls_domain", id: domainId } },
+          },
+        },
+      },
+      "post"
+    );
+    return { id: res?.data?.id || "", action: "created" };
+  }
+
+  private async findActivation(configurationId: string, domainId: string): Promise<any | undefined> {
+    const body = await this.doRequestApi(
+      `/tls/activations?filter[tls_domain.id]=${encodeURIComponent(domainId)}&page[size]=100`,
+      null,
+      "get"
+    );
+    const items: any[] = Array.isArray(body?.data) ? body.data : [];
+    if (items.length === 0) {
+      return undefined;
+    }
+    // Prefer the activation tied to this configuration; fall back to the sole match.
+    return items.find((a: any) => a?.relationships?.tls_configuration?.data?.id === configurationId) ?? (items.length === 1 ? items[0] : undefined);
+  }
+
+  /**
    * Uploads the private key, or reuses the one Fastly already stores.
    * Fastly deduplicates TLS private keys by content: re-uploading an existing key
    * fails with 400 "Key already exists: '<id>'" (common on renewal when the key is
