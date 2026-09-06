@@ -28,6 +28,8 @@ export class AwsClient {
         accessKeyId: this.access.accessKeyId, // 从环境变量中读取
         secretAccessKey: this.access.secretAccessKey,
       },
+      // Disable the SDK's own retries; withRetry/doRequest is the single retry authority.
+      maxAttempts: 1,
     });
 
     // Split the full PEM chain: first block is the leaf cert, the rest is the intermediate chain
@@ -57,6 +59,7 @@ export class AwsClient {
         accessKeyId: this.access.accessKeyId, // 从环境变量中读取
         secretAccessKey: this.access.secretAccessKey,
       },
+      maxAttempts: 1,
     });
 
     const command = new GetCallerIdentityCommand({});
@@ -75,6 +78,7 @@ export class AwsClient {
         accessKeyId: this.access.accessKeyId, // 从环境变量中读取
         secretAccessKey: this.access.secretAccessKey,
       },
+      maxAttempts: 1,
     });
   }
 
@@ -202,10 +206,107 @@ export class AwsClient {
 
   async doRequest<T>(call: () => Promise<T>): Promise<T> {
     try {
-      return await call();
-    } catch (err) {
-      this.logger.error(`调用接口失败:${err.Error?.Message || err.message},requestId:${err.requestId}`);
+      return await this.withRetry(call);
+    } catch (err: any) {
+      this.logger.error(`请求失败:${err.Error?.Message || err.message},requestId:${err.requestId}`);
       throw err;
     }
+  }
+
+  /**
+   * Retries an AWS SDK call with exponential backoff + jitter while the error is
+   * retryable. See {@link AwsClient.isRetryableAwsError}.
+   *
+   * `T` defaults to `any` so that call sites passing an untyped SDK client
+   * (`@aws-sdk/*` is a lazyDependency and has no types at build time) don't
+   * collapse the result to `unknown`.
+   */
+  async withRetry<T = any>(call: () => Promise<T>, maxAttempts = 5, baseDelayMs = 2000): Promise<T> {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await call();
+      } catch (err: any) {
+        if (attempt >= maxAttempts || !AwsClient.isRetryableAwsError(err)) {
+          throw err;
+        }
+        const code = err?.name || err?.Code || err?.code || err?.$metadata?.httpStatusCode || "unknown";
+        const ceiling = baseDelayMs * Math.pow(2, attempt - 1); // 2s, 4s, 8s, 16s …
+        const delay = Math.round(ceiling / 2 + Math.random() * (ceiling / 2)); // equal jitter: ~1-2s, ~2-4s, ~4-8s, ~8-16s
+        this.logger.warn(`AWS request failed (${code}), attempt ${attempt}/${maxAttempts}, retrying in ${delay}ms…`);
+        await utils.sleep(delay);
+      }
+    }
+    throw new Error("Unreachable");
+  }
+
+  /**
+   * Detects AWS errors that are safe to retry. Because we disable the SDK's own
+   * retries (maxAttempts: 1 on every client), this is the single source of truth
+   * and covers what the SDK's `standard` strategy would have retried:
+   *  - throttling / rate-limit codes across ACM / STS / CloudFront / Route53,
+   *    including Route53's PriorRequestNotComplete concurrent-change limit;
+   *  - SDK v3 retry hints (`$retryable`);
+   *  - transient HTTP 429 and 5xx;
+   *  - connection-level errors (ECONNRESET, ETIMEDOUT, EAI_AGAIN, …).
+   */
+  static isRetryableAwsError(err: any): boolean {
+    if (!err) {
+      return false;
+    }
+    const retryableCodes = new Set([
+      "TooManyRequestsException",
+      "ThrottlingException",
+      "ThrottledException",
+      "RequestLimitExceeded",
+      "RequestThrottled",
+      "Throttling",
+      "SlowDown",
+      "PriorRequestNotComplete",
+      "RequestTimeout",
+      "RequestTimeoutException",
+      "TimeoutError",
+    ]);
+    const connectionCodes = new Set(["ECONNRESET", "ECONNREFUSED", "EPIPE", "ETIMEDOUT", "EAI_AGAIN", "ENOTFOUND", "EHOSTUNREACH", "ENETUNREACH"]);
+    const code = err.name || err.Code || err.code || "";
+    const httpStatus = err.$metadata?.httpStatusCode;
+    return (
+      retryableCodes.has(code) ||
+      connectionCodes.has(err.code) ||
+      err.$retryable != null ||
+      httpStatus === 429 ||
+      (typeof httpStatus === "number" && httpStatus >= 500) ||
+      (typeof err.message === "string" && err.message.toLowerCase().includes("rate exceeded"))
+    );
+  }
+
+  /**
+   * Polls a CloudFront distribution until its Status becomes "Deployed".
+   * CloudFront propagates changes globally and can take several minutes.
+   */
+  async waitForDistributionDeployed(cloudFrontClient: any, distributionId: string, timeoutMs = 600_000, pollIntervalMs = 15_000): Promise<void> {
+    const { GetDistributionCommand } = await this.access.importRuntime("@aws-sdk/client-cloudfront");
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      let status: string | undefined;
+      try {
+        const res: any = await this.withRetry(() => cloudFrontClient.send(new GetDistributionCommand({ Id: distributionId })));
+        status = res?.Distribution?.Status;
+      } catch (err: any) {
+        // A retryable error that outlives withRetry's budget shouldn't abort the whole deploy;
+        // keep polling until the deadline and let genuine (non-retryable) errors propagate.
+        if (!AwsClient.isRetryableAwsError(err)) {
+          throw err;
+        }
+        this.logger.warn(`CloudFront status check failed (${err?.name || err?.code}), will retry on next poll…`);
+        await utils.sleep(pollIntervalMs);
+        continue;
+      }
+      this.logger.info(`CloudFront distribution ${distributionId} status: ${status}`);
+      if (status === "Deployed") {
+        return;
+      }
+      await utils.sleep(pollIntervalMs);
+    }
+    throw new Error(`Timed out waiting for CloudFront distribution ${distributionId} to reach Deployed status`);
   }
 }
