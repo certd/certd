@@ -1004,6 +1004,13 @@ export class PluginService extends BaseService<PluginEntity> {
               score: itemFromStore.score,
               downloadCount: itemFromStore.downloadCount,
               latestVersion: itemFromStore.version,
+              developerId: itemFromStore.developerId,
+              vip: itemFromStore.vip,
+              dependPlugins: itemFromStore.dependPlugins,
+              aiCheckStatus: itemFromStore.aiCheckStatus,
+              status: itemFromStore.status,
+              appId: itemFromStore.appId,
+              author: itemFromStore.author,
             };
             await this.updateById(updateBean);
           } else {
