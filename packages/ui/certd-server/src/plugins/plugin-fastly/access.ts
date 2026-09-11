@@ -212,10 +212,7 @@ export class FastlyAccess extends BaseAccess {
         this.ctx.logger.info(`Fastly 已存在相同证书，复用 certId: ${existingId}`);
         return existingId;
       }
-      throw new Error(
-        `Fastly 证书已存在：${message}。` +
-          "该证书可能此前已上传。请在【Fastly-上传证书到Fastly】任务中填写该证书ID以走更新(PATCH)流程。"
-      );
+      throw new Error(`Fastly 证书已存在：${message}。` + "该证书可能此前已上传。请在【Fastly-上传证书到Fastly】任务中填写该证书ID以走更新(PATCH)流程。");
     }
   }
 
@@ -286,11 +283,7 @@ export class FastlyAccess extends BaseAccess {
   private async findActivation(configurationId: string, domainId: string): Promise<any | undefined> {
     // encodeURIComponent 按规范保留 `*`，但 Fastly 过滤条件要求通配符编码为 `%2A`。
     const encodedDomainId = encodeURIComponent(domainId).replace(/\*/g, "%2A");
-    const body = await this.doRequestApi(
-      `/tls/activations?filter[tls_domain.id]=${encodedDomainId}&page[size]=100`,
-      null,
-      "get"
-    );
+    const body = await this.doRequestApi(`/tls/activations?filter[tls_domain.id]=${encodedDomainId}&page[size]=100`, null, "get");
     const items: any[] = Array.isArray(body?.data) ? body.data : [];
     if (items.length === 0) {
       return undefined;
@@ -308,11 +301,7 @@ export class FastlyAccess extends BaseAccess {
   private async ensurePrivateKey(keyPem: string, name?: string): Promise<string> {
     this.ctx.logger.info("开始上传私钥到 Fastly...");
     try {
-      const keyRes = await this.doRequestApi(
-        "/tls/private_keys",
-        { data: { type: "tls_private_key", attributes: { key: keyPem, ...(name && { name }) } } },
-        "post"
-      );
+      const keyRes = await this.doRequestApi("/tls/private_keys", { data: { type: "tls_private_key", attributes: { key: keyPem, ...(name && { name }) } } }, "post");
       const id = keyRes?.data?.id;
       if (!id) {
         throw new Error("Fastly 私钥上传失败，未获取到 private key ID");
@@ -337,11 +326,7 @@ export class FastlyAccess extends BaseAccess {
           return matched[0].id;
         }
       }
-      throw new Error(
-        `Fastly 私钥已存在但无法确定其ID：${message}。` +
-          "请在【Fastly-上传证书到Fastly】任务中填写已有证书ID以走更新(PATCH)流程，" +
-          "或在 Fastly 控制台删除该孤立私钥后重试。"
-      );
+      throw new Error(`Fastly 私钥已存在但无法确定其ID：${message}。` + "请在【Fastly-上传证书到Fastly】任务中填写已有证书ID以走更新(PATCH)流程，" + "或在 Fastly 控制台删除该孤立私钥后重试。");
     }
   }
 
