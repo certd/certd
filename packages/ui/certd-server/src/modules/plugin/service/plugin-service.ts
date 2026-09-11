@@ -659,26 +659,6 @@ export class PluginService extends BaseService<PluginEntity> {
     return this.builtInPluginService.getByType(type);
   }
 
-  /**
-   * 表单可能直接提交对象形式的 dependPlugins（KvInput），落库前统一序列化为 YAML 字符串。
-   */
-  // private normalizeDependPluginsParam(param: any) {
-  //   if (param.dependPlugins && typeof param.dependPlugins === "object" && !Array.isArray(param.dependPlugins)) {
-  //     param.dependPlugins = toDependPluginsYaml(param.dependPlugins);
-  //   }
-  // }
-
-  // private normalizePluginYamlParam(param: any, field: "extra" | "dependPlugins") {
-  //   const value = param[field];
-  //   if (value && typeof value === "object" && !Array.isArray(value)) {
-  //     param[field] = yaml.dump(value, {
-  //       lineWidth: -1,
-  //       noRefs: true,
-  //       sortKeys: false,
-  //     });
-  //   }
-  // }
-
   private normalizeStorePluginAuthor(plugin: Record<string, any>) {
     const author = `${plugin.author || ""}`.trim();
     plugin.author = author;
@@ -693,7 +673,6 @@ export class PluginService extends BaseService<PluginEntity> {
    * @param param 数据
    */
   async add(param: any) {
-    // this.normalizeDependPluginsParam(param);
     param.type = normalizePluginSourceType(param.type);
     if (param.type === "store") {
       this.normalizeStorePluginAuthor(param);
@@ -849,7 +828,6 @@ export class PluginService extends BaseService<PluginEntity> {
   private attachOnlineInstallState(list: PluginEntity[], bindUserId?: number) {
     return list.map(item => {
       const record = this.toOnlinePluginBean(item);
-      record.fullName = this.getOnlinePluginFullName(record);
       record.upgradeAvailable = record.installed ? isOnlinePluginUpgradeAvailable(record.version, record.latest) : false;
       record.editable = isAuthor(record, bindUserId);
       return record;
@@ -903,6 +881,7 @@ export class PluginService extends BaseService<PluginEntity> {
       } else {
         storePlugin = await this.findOne({ where: { ...query, name: dependencyRef } });
       }
+
       if (storePlugin) {
         return {
           plugin: storePlugin,
@@ -1084,7 +1063,6 @@ export class PluginService extends BaseService<PluginEntity> {
       override: true,
       type: "store",
     });
-    // await this.refreshOnlinePluginDownloadCount(res.fullName || fullName, res.plugin?.downloadCount);
     return {
       ...importRes,
       fullName: res.fullName || fullName,
@@ -1295,21 +1273,6 @@ export class PluginService extends BaseService<PluginEntity> {
     await this.sysSettingsService.saveSetting(setting);
   }
 
-  // private async refreshOnlinePluginDownloadCount(fullName: string, downloadCount?: number) {
-  //   if (!fullName || downloadCount == null) {
-  //     return;
-  //   }
-  //   await this.updateWhere(
-  //     {
-  //       type: "store",
-  //       fullName,
-  //     },
-  //     {
-  //       downloadCount,
-  //     }
-  //   );
-  // }
-
   async unRegisterById(id: any) {
     const item = await this.info(id);
     if (!item) {
@@ -1354,18 +1317,10 @@ export class PluginService extends BaseService<PluginEntity> {
     if (!param?.id) {
       throw new Error("id 不能为空");
     }
-    // this.normalizePluginYamlParam(param, "extra");
-    // this.normalizeDependPluginsParam(param);
     await this.unRegisterById(param.id);
     const res = await super.update(param);
     await this.registerById(param.id);
     return res;
-  }
-  async compile(code: string) {
-    const ts = await import("typescript");
-    return ts.transpileModule(code, {
-      compilerOptions: { module: ts.ModuleKind.ESNext },
-    }).outputText;
   }
 
   async importer(modulePath: string) {
@@ -1406,7 +1361,6 @@ export class PluginService extends BaseService<PluginEntity> {
       const plugin = info[0];
       try {
         const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
-        // const script = await this.compile(plugin.content);
         const script = plugin.content;
         const getPluginClass = new AsyncFunction("_ctx", script);
         const importer = this.importer.bind(this);
@@ -1649,26 +1603,6 @@ export class PluginService extends BaseService<PluginEntity> {
         disabled: false,
       }
     );
-  }
-
-  isNewVersion(version: string, latestVersion: string) {
-    if (!latestVersion) {
-      return false;
-    }
-    if (latestVersion === version) {
-      return false;
-    }
-    //分段比较
-    const current = version.split(".");
-    const latest = latestVersion.split(".");
-    for (let i = 0; i < current.length; i++) {
-      if (parseInt(latest[i]) > parseInt(current[i])) {
-        return true;
-      } else if (parseInt(latest[i]) < parseInt(current[i])) {
-        return false;
-      }
-    }
-    return false;
   }
 
   async getPluginDefine(name: string) {
