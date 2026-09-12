@@ -53,6 +53,8 @@ export default {
     suiteSetting: "Suite Settings",
     orderManager: "Order Management",
     userSuites: "User Suites",
+    balanceManager: "Balance Management",
+    balanceLog: "Balance Change Records",
     inviteCommissionSetting: "Incentive Plan Settings",
     inviteLevel: "Promotion Levels",
     inviteUserLevel: "User Promotion Levels",

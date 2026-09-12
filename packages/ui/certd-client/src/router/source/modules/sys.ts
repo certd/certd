@@ -318,6 +318,34 @@ export const sysResources = [
             },
           },
           {
+            title: "certd.sysResources.balanceManager",
+            name: "SysWallet",
+            path: "/sys/suite/wallet",
+            component: "/sys/suite/wallet/index.vue",
+            meta: {
+              show: () => {
+                const settingStore = useSettingStore();
+                return settingStore.isComm;
+              },
+              icon: "ion:wallet-outline",
+              permission: "sys:settings:edit",
+              auth: true,
+              keepAlive: true,
+            },
+          },
+          {
+            title: "certd.sysResources.balanceLog",
+            name: "SysWalletLog",
+            path: "/sys/suite/wallet-log",
+            component: "/sys/suite/wallet/log/index.vue",
+            meta: {
+              isMenu: false,
+              permission: "sys:settings:view",
+              auth: true,
+              keepAlive: false,
+            },
+          },
+          {
             title: "certd.sysResources.inviteCommissionSetting",
             name: "SysInviteCommissionSetting",
             path: "/sys/suite/invite/setting",

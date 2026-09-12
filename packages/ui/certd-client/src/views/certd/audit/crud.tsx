@@ -51,10 +51,11 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       rowHandle: {
         width: 120,
         fixed: "right",
+        show: false,
         buttons: {
           view: { show: false },
           edit: { show: false },
-          remove: { show: true },
+          remove: { show: false },
           copy: { show: false },
         },
       },
