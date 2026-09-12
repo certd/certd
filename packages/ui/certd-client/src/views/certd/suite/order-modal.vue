@@ -54,7 +54,7 @@
       <div class="flex-o mt-5">
         <span class="label">{{ $t("certd.order.paymentMethod") }}：</span>
         <div v-if="durationSelected.price === 0 || expectedThirdPartyAmount === 0">0元</div>
-        <div v-else-if="noPaymentMethod">暂不支持在线支付</div>
+        <div v-else-if="noPaymentMethod">当前仅支持余额支付</div>
         <fs-dict-select v-else v-model:value="formRef.payType" :dict="paymentsDictRef" style="width: 200px"> </fs-dict-select>
       </div>
 
