@@ -26,6 +26,14 @@ export function fillPluginDefine(plugin: any) {
 
   if (plugin.sysSetting?.metadata) {
     merge(plugin.input, plugin.sysSetting.metadata?.input || {});
+    const keys = Object.keys(plugin.input);
+    for (const key of keys) {
+      //修复旧版本错误引入的key导致报错的问题 【多引入进了一个type=CertApply】
+      const column = plugin.input[key];
+      if (typeof column != "object") {
+        delete plugin.input[key];
+      }
+    }
     // 应用选项映射
     for (const key of Object.keys(plugin.input)) {
       const inputDef = plugin.input[key];

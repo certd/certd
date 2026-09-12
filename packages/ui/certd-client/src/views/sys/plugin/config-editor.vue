@@ -68,7 +68,7 @@ const labelCol = ref({
   },
 });
 const wrapperCol = ref({ span: 16 });
-const configForm: any = reactive({ type: props.plugin.fullName || props.plugin.name });
+const configForm: any = reactive({});
 
 const showDict = dict({
   data: [
@@ -306,7 +306,6 @@ provide("get:scope", () => {
   return getScope();
 });
 provide("get:plugin:type", () => {
-  debugger;
   return props.plugin.pluginType;
 });
 </script>
