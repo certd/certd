@@ -43,7 +43,7 @@ input:
 
           return {
             component: {
-              disabled: ctx.compute(({form})=> !!form.access?.account)
+              disabled: ctx.compute(({form})=> !!form.access?.account && !form.access?.editAccount)
             }
           }
           
@@ -85,7 +85,7 @@ input:
               return form.access?._needEAB === true;
             }),
             component: {
-              disabled: ctx.compute(({form})=> !!form.access?.account)
+              disabled: ctx.compute(({form})=> !!form.access?.account && !form.access?.editAccount)
             }
           }
           
@@ -103,7 +103,7 @@ input:
               return form.access?._needEAB === true;
             }),
             component: {
-              disabled: ctx.compute(({form})=> !!form.access?.account)
+              disabled: ctx.compute(({form})=> !!form.access?.account && !form.access?.editAccount)
             }
           }
           
