@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.44.4](https://github.com/certd/certd/compare/v1.44.3...v1.44.4) (2026-09-12)
+
+### Bug Fixes
+
+* 修复添加步骤会修改所有步骤标题的bug ([51e83e4](https://github.com/certd/certd/commit/51e83e4c38f7f319314fdc38ef33cf5720b2dde0))
+* 修复证书插件配置无法打开的bug ([5563abb](https://github.com/certd/certd/commit/5563abb13a62140f4dee668ab768cf4ff9371ddb))
+
+### Performance Improvements
+
+* 新增余额管理，管理员充值功能 ([bded368](https://github.com/certd/certd/commit/bded368cbb8974b6937ae260e448c25fae5c33ad))
+* **ui:** 商业版套餐购买不要求设置支付方式 ([e971145](https://github.com/certd/certd/commit/e9711456860d7db40914a0c295534f7bca56f83c))
+
 ## [1.44.3](https://github.com/certd/certd/compare/v1.44.2...v1.44.3) (2026-09-06)
 
 ### Bug Fixes

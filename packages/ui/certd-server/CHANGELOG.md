@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.44.4](https://github.com/certd/certd/compare/v1.44.3...v1.44.4) (2026-09-12)
+
+### Performance Improvements
+
+* 新增余额管理，管理员充值功能 ([bded368](https://github.com/certd/certd/commit/bded368cbb8974b6937ae260e448c25fae5c33ad))
+* **acme-account-access:** AcmeAccount授权允许修改eab，重新生成account ([6a649aa](https://github.com/certd/certd/commit/6a649aaca083ccd3b517f7d676a58220aa33b37d))
+
 ## [1.44.3](https://github.com/certd/certd/compare/v1.44.2...v1.44.3) (2026-09-06)
 
 ### Bug Fixes
