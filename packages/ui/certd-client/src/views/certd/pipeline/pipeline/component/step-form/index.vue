@@ -280,7 +280,10 @@ function useStepForm() {
       return;
     }
 
-    callback.value("save", currentStep);
+    // currentStep 是复用同一份 reactive 对象，直接传给回调会被 task.steps 保存同一引用，
+    // 后续再次 stepOpen 会 delete 掉其属性，导致已保存的步骤（如第一个步骤）被覆盖。
+    // 这里深拷贝一份再传出，保证每个步骤是独立对象。
+    callback.value("save", cloneDeep(currentStep));
     stepDrawerClose();
   };
 
