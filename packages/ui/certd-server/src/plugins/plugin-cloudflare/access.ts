@@ -19,7 +19,7 @@ export class CloudflareAccess extends BaseAccess {
     component: {
       placeholder: "api token，用户 API 令牌",
     },
-    helper: "前往 [获取API令牌](https://dash.cloudflare.com/profile/api-tokens)，注意是令牌，不是密钥。\n token权限必须包含：[Zone区域-Zone区域-Edit编辑], [Zone区域-DNS-Edit编辑]",
+    helper: "前往 [获取API令牌](https://dash.cloudflare.com/profile/api-tokens)，注意是令牌，不是密钥。\n token权限必须包含两条：\n[Zone区域-Zone区域-Edit编辑]\n[Zone区域-DNS-Edit编辑]",
     required: true,
     encrypt: true,
   })
