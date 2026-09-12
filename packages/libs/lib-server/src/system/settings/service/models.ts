@@ -133,12 +133,12 @@ export class SysPrivateSettings extends BaseSettings {
   // 内置项不在此配置 Directory URL：其端点由运行时按加密算法（pkType）通过 acme.getDirectoryUrl 获取，
   // 例如 ZeroSSL、SSL.com 的 RSA 与 EC 证书使用不同的端点，写死单一 URL 会导致 EC 申请走错端点。
   customAcmeProviders?: CustomAcmeProvider[] = [
-    { sslProvider: "letsencrypt", title: "Let's Encrypt", directoryUrl: "", needEAB: false, builtIn: true },
-    { sslProvider: "letsencrypt_staging", title: "Let's Encrypt测试环境", directoryUrl: "", needEAB: false, builtIn: true },
+    { sslProvider: "letsencrypt", title: "Let's Encrypt（支持7天IP证书）", directoryUrl: "", needEAB: false, builtIn: true },
     { sslProvider: "google", title: "Google", directoryUrl: "", needEAB: true, builtIn: true },
     { sslProvider: "zerossl", title: "ZeroSSL", directoryUrl: "", needEAB: true, builtIn: true },
-    { sslProvider: "litessl", title: "litessl", directoryUrl: "", needEAB: true, builtIn: true },
+    { sslProvider: "litessl", title: "Litessl", directoryUrl: "", needEAB: true, builtIn: true },
     { sslProvider: "sslcom", title: "SSL.com", directoryUrl: "", needEAB: true, builtIn: true },
+    { sslProvider: "letsencrypt_staging", title: "Let's Encrypt测试环境(只能生成测试证书)", directoryUrl: "", needEAB: false, builtIn: true },
   ];
 
   removeSecret() {
