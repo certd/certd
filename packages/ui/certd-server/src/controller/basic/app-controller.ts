@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Post, Provide } from "@midwayjs/core";
+import { Body, Config, Controller, Get, Inject, Post, Provide } from "@midwayjs/core";
 import { BaseController, Constants, FileService, SysSettingsService, SysSiteInfo } from "@certd/lib-server";
 import { http, logger } from "@certd/basic";
 import { isComm } from "@certd/plus-core";
@@ -6,10 +6,6 @@ import { isComm } from "@certd/plus-core";
 export function normalizeReleaseVersion(release: { tag_name?: string; name?: string }) {
   const version = release?.tag_name || release?.name || "";
   return version.replace(/^v/i, "");
-}
-
-export function getReleaseMode(): "stable" | "latest" {
-  return process.env.certd_release_mode === "stable" ? "stable" : "latest";
 }
 
 /**
@@ -22,9 +18,14 @@ export class AppController extends BaseController {
   @Inject()
   fileService: FileService;
 
+  @Config("release.mode")
+  releaseMode: "stable" | "latest";
+
+  config: any;
+
   @Get("/latest", { description: Constants.per.authOnly })
   async latest(): Promise<any> {
-    const mode = getReleaseMode();
+    const mode = this.releaseMode
     try {
       let latest = "";
       if (mode === "stable") {

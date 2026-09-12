@@ -4,8 +4,7 @@ import { AppKey, getPlusInfo, isComm } from "@certd/plus-core";
 import { SysInviteCommissionSetting } from "@certd/commercial-core";
 import { cloneDeep } from "lodash-es";
 import { getVersion } from "../../utils/version.js";
-import { http } from "@certd/basic";
-import { getReleaseMode } from "./app-controller.js";
+import { http, logger } from "@certd/basic";
 
 /**
  */
@@ -16,6 +15,10 @@ export class BasicSettingsController extends BaseController {
   sysSettingsService: SysSettingsService;
   @Config("account.server.baseUrl")
   accountServerBaseUrl: any;
+
+  @Config("release.mode")
+  releaseMode: "stable" | "latest";
+
 
   @Config("agent")
   agentConfig: SysSiteEnv["agent"];
@@ -97,6 +100,7 @@ export class BasicSettingsController extends BaseController {
     const suiteSetting = await this.getSuiteSetting();
     const inviteSetting = await this.getInviteSetting();
     const version = await getVersion();
+    logger.info(`当前版本模式：${this.releaseMode}, 当前版本：${version}`);
     return this.ok({
       sysPublic,
       installInfo,
@@ -109,7 +113,7 @@ export class BasicSettingsController extends BaseController {
       app: {
         time: new Date().getTime(),
         version,
-        releaseMode: getReleaseMode(),
+        releaseMode: this.releaseMode,
       },
     });
   }
