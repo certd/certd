@@ -74,7 +74,7 @@ export class AcmeAccountAccess extends BaseAccess {
     mergeScript: `
     return {
       component: {
-        disabled: ctx.compute(({form})=> !!form.access?.account)
+        disabled: ctx.compute(({form})=> !!form.access?.account && !form.access?.editAccount)
       }
     }
     `,
@@ -116,7 +116,7 @@ export class AcmeAccountAccess extends BaseAccess {
         return form.access?._needEAB === true;
       }),
       component: {
-        disabled: ctx.compute(({form})=> !!form.access?.account)
+        disabled: ctx.compute(({form})=> !!form.access?.account && !form.access?.editAccount)
       }
     }
     `,
@@ -137,7 +137,7 @@ export class AcmeAccountAccess extends BaseAccess {
         return form.access?._needEAB === true;
       }),
       component: {
-        disabled: ctx.compute(({form})=> !!form.access?.account)
+        disabled: ctx.compute(({form})=> !!form.access?.account && !form.access?.editAccount)
       }
     }
     `,
