@@ -3,7 +3,7 @@
     <template #header>
       <div class="title">
         套餐设置
-        <span class="sub"> 需要<router-link :to="{ path: '/sys/settings', query: { tab: 'payment' } }">开启至少一种支付方式</router-link></span>
+        <span class="sub"> 建议<router-link :to="{ path: '/sys/settings', query: { tab: 'payment' } }">开启至少一种支付方式</router-link></span>
       </div>
     </template>
 
@@ -38,7 +38,7 @@
 
         <a-form-item label=" " :colon="false">
           <loading-button type="primary" html-type="button" :click="onClick">保存</loading-button>
-          <div class="helper">需要 <router-link :to="{ path: '/sys/settings', query: { tab: 'payment' } }">开启至少一种支付方式</router-link></div>
+          <div class="helper">建议 <router-link :to="{ path: '/sys/settings', query: { tab: 'payment' } }">开启至少一种支付方式</router-link></div>
         </a-form-item>
       </a-form>
     </div>
