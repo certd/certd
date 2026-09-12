@@ -54,6 +54,8 @@ export default {
     suiteSetting: "套餐设置",
     orderManager: "订单管理",
     userSuites: "用户套餐",
+    balanceManager: "余额管理",
+    balanceLog: "余额变更记录",
     inviteCommissionSetting: "激励计划设置",
     inviteLevel: "推广等级",
     inviteUserLevel: "用户推广等级",
