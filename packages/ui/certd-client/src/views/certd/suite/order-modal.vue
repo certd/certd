@@ -56,6 +56,10 @@
         <div v-if="durationSelected.price === 0 || expectedThirdPartyAmount === 0">{{ $t("certd.order.free") }}</div>
         <fs-dict-select v-else v-model:value="formRef.payType" :dict="paymentsDictRef" style="width: 200px"> </fs-dict-select>
       </div>
+
+      <div v-if="showBalanceInsufficientTip" class="flex-o mt-5">
+        <span class="color-red">余额不足，请联系管理员，充值或设置套餐</span>
+      </div>
     </div>
   </a-modal>
 </template>
@@ -88,11 +92,16 @@ async function open(opts: OrderModalOpenReq) {
   formRef.value.productId = opts.product.id;
   formRef.value.duration = opts.duration;
   formRef.value.num = opts.num ?? 1;
-  formRef.value.useRebateBalance = false;
+  formRef.value.useRebateBalance = true;
   try {
     wallet.value = await GetWalletSummary();
   } catch (e) {
     wallet.value = { availableAmount: 0 };
+  }
+  try {
+    await paymentsDictRef.loadDict();
+  } catch (e) {
+    // 支付方式加载失败时按无可用支付方式处理
   }
 }
 const paymentsDictRef = dict({
@@ -117,6 +126,23 @@ const expectedRebateAmount = computed(() => {
 
 const expectedThirdPartyAmount = computed(() => {
   return Math.max(0, (durationSelected.value?.price || 0) - expectedRebateAmount.value);
+});
+
+const noPaymentMethod = computed(() => {
+  return paymentsDictRef.data.length === 0;
+});
+
+const balanceInsufficient = computed(() => {
+  const price = durationSelected.value?.price || 0;
+  if (price <= 0) {
+    return false;
+  }
+  const availableAmount = wallet.value?.availableAmount || 0;
+  return availableAmount < price;
+});
+
+const showBalanceInsufficientTip = computed(() => {
+  return noPaymentMethod.value && balanceInsufficient.value;
 });
 
 function amountToYuan(amount: number) {
