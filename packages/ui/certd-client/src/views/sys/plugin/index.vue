@@ -25,16 +25,38 @@ import { useMounted } from "/@/use/use-mounted";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { usePluginStore } from "/@/store/plugin";
 import { useFormDialog } from "/@/use/use-dialog";
+import { notification } from "ant-design-vue";
 import * as api from "./api";
 const { t } = useI18n();
 const pluginStore = usePluginStore();
 const { openFormDialog } = useFormDialog();
 const lastSyncTime = ref<number>(0);
+const syncLoading = ref(false);
 const autoSyncInterval = 3 * 24 * 60 * 60 * 1000;
 defineOptions({
   name: "SysPlugin",
 });
-const context = { lastSyncTime };
+
+async function syncOnlinePlugins(options?: { showSuccess?: boolean }) {
+  if (syncLoading.value) {
+    return;
+  }
+  syncLoading.value = true;
+  try {
+    await api.OnlinePluginSync();
+    const setting = await api.OnlinePluginSetting();
+    lastSyncTime.value = setting.lastSyncTime || Date.now();
+    await pluginStore.clear();
+    crudExpose.doRefresh();
+    if (options?.showSuccess !== false) {
+      notification.success({ message: t("certd.onlinePluginSyncSuccess") });
+    }
+  } finally {
+    syncLoading.value = false;
+  }
+}
+
+const context = { lastSyncTime, syncLoading, syncOnlinePlugins };
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 const pluginList = computed(() => {
   return crudBinding.value?.data || [];
@@ -96,8 +118,8 @@ async function autoSyncOnlinePlugins() {
 
 // 页面打开后获取列表数据
 useMounted(async () => {
-  await autoSyncOnlinePlugins();
-  await crudExpose.doRefresh();
+  autoSyncOnlinePlugins();
+  crudExpose.doRefresh();
 });
 
 onMounted(() => {

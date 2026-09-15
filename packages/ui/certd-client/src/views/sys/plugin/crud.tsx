@@ -19,6 +19,8 @@ import dayjs from "dayjs";
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
   const lastSyncTime = context.lastSyncTime;
+  const syncLoading = context.syncLoading;
+  const syncOnlinePlugins = context.syncOnlinePlugins;
   let lastType = "";
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     if (lastType && lastType != query?.query?.type) {
@@ -66,7 +68,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const settingStore = useSettingStore();
   const pluginStore = usePluginStore();
-  const syncLoading = ref(false);
   const upgradeAllLoading = ref(false);
 
   const syncButtonTitle = computed(() => {
@@ -84,25 +85,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   function isEditablePlugin(row: any) {
     return row.editable === true;
-  }
-
-  async function syncOnlinePlugins(options?: { showSuccess?: boolean }) {
-    if (syncLoading.value) {
-      return;
-    }
-    syncLoading.value = true;
-    try {
-      await api.OnlinePluginSync();
-      const setting = await api.OnlinePluginSetting();
-      lastSyncTime.value = setting.lastSyncTime || Date.now();
-      await pluginStore.reload();
-      crudExpose.doRefresh();
-      if (options?.showSuccess !== false) {
-        notification.success({ message: t("certd.onlinePluginSyncSuccess") });
-      }
-    } finally {
-      syncLoading.value = false;
-    }
   }
 
   async function upgradeAllOnlinePlugins() {
