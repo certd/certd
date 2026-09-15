@@ -121,6 +121,7 @@ export class MainConfiguration {
       ResetPasswdMiddleware,
     ]);
 
+    
     this.app.getMiddleware().insertFirst(async (ctx: IMidwayKoaContext, next: NextFunction) => {
       await next();
       const path = ctx.path;
