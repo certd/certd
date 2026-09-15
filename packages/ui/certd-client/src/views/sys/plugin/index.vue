@@ -22,18 +22,20 @@ import PluginItemCard from "./components/plugin-item-card.vue";
 import OnlinePluginDetail from "./components/online-plugin-detail.vue";
 import { useI18n } from "/src/locales";
 import { useMounted } from "/@/use/use-mounted";
-import { computed, onBeforeUnmount, onMounted } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { usePluginStore } from "/@/store/plugin";
 import { useFormDialog } from "/@/use/use-dialog";
-
+import * as api from "./api";
 const { t } = useI18n();
 const pluginStore = usePluginStore();
 const { openFormDialog } = useFormDialog();
-
+const lastSyncTime = ref<number>(0);
+const autoSyncInterval = 3 * 24 * 60 * 60 * 1000;
 defineOptions({
   name: "SysPlugin",
 });
-const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
+const context = { lastSyncTime };
+const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 const pluginList = computed(() => {
   return crudBinding.value?.data || [];
 });
@@ -77,8 +79,24 @@ async function handlePluginChanged(payload: { action: string }) {
   crudExpose.doRefresh();
 }
 
+function needAutoSync(time: number) {
+  if (!time) {
+    return true;
+  }
+  return Date.now() - time > autoSyncInterval;
+}
+
+async function autoSyncOnlinePlugins() {
+  const setting = await api.OnlinePluginSetting();
+  lastSyncTime.value = setting.lastSyncTime || 0;
+  if (needAutoSync(lastSyncTime.value)) {
+    await syncOnlinePlugins({ showSuccess: false });
+  }
+}
+
 // 页面打开后获取列表数据
 useMounted(async () => {
+  await autoSyncOnlinePlugins();
   await crudExpose.doRefresh();
 });
 

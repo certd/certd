@@ -14,10 +14,11 @@ import { usePluginStore } from "/@/store/plugin";
 import PluginAuthorField from "./components/plugin-author-field.vue";
 import { usePluginAiDev } from "./use-ai-dev";
 import { useOnlineInstall } from "./use-online-install";
+import dayjs from "dayjs";
 
 export default function ({ crudExpose, context }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const { t } = useI18n();
-
+  const lastSyncTime = context.lastSyncTime;
   let lastType = "";
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     if (lastType && lastType != query?.query?.type) {
@@ -67,8 +68,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const pluginStore = usePluginStore();
   const syncLoading = ref(false);
   const upgradeAllLoading = ref(false);
-  const lastSyncTime = ref(0);
-  const autoSyncInterval = 30 * 24 * 60 * 60 * 1000;
+
   const syncButtonTitle = computed(() => {
     if (!lastSyncTime.value) {
       return t("certd.onlinePluginNotSynced");
@@ -79,14 +79,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   });
 
   function formatSyncTime(time: number) {
-    return new Date(time).toLocaleString();
-  }
-
-  function needAutoSync(time: number) {
-    if (!time) {
-      return true;
-    }
-    return Date.now() - time > autoSyncInterval;
+    return dayjs(time).format("YYYY-MM-DD HH:mm:ss");
   }
 
   function isEditablePlugin(row: any) {
@@ -157,18 +150,6 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       upgradeAllLoading.value = false;
     }
   }
-
-  async function loadOnlinePluginSetting() {
-    const setting = await api.OnlinePluginSetting();
-    lastSyncTime.value = setting.lastSyncTime || 0;
-    if (needAutoSync(lastSyncTime.value)) {
-      await syncOnlinePlugins({ showSuccess: false });
-    }
-  }
-
-  loadOnlinePluginSetting().catch(e => {
-    console.warn("load online plugin setting failed", e);
-  });
   return {
     crudOptions: {
       settings: {
