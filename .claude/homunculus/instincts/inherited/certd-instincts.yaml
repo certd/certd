@@ -1,0 +1,486 @@
+# Instincts generated from https://github.com/certd/certd
+# Generated: 2026-07-30T02:08:05.402Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: certd-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/certd/certd
+---
+
+# Certd Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: feat
+
+## Evidence
+
+- 2 commits analyzed
+- Detected conventional commit pattern
+- Examples: feat: 偏好设置支持从剪切板导入, feat: 偏好设置支持保存到账号并在登录后自动同步
+
+---
+id: certd-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/certd/certd
+---
+
+# Certd Commit Length
+
+## Action
+
+Keep commit messages concise (~22 characters)
+
+## Evidence
+
+- Average commit message length: 22 chars
+- Based on 2 commits
+
+---
+id: certd-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/certd/certd
+---
+
+# Certd Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: certd-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/certd/certd
+---
+
+# Certd Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: certd-arch-feature-based
+trigger: "when adding a new feature"
+confidence: 0.85
+domain: architecture
+source: repo-analysis
+source_repo: https://github.com/certd/certd
+---
+
+# Certd Arch Feature Based
+
+## Action
+
+Create a new folder in src/features/ with all related code colocated
+
+## Evidence
+
+- Feature-based module organization detected
+- Structure: src/features/[feature-name]/
+
+---
+id: certd-workflow-extend-preferences-feature
+trigger: "when doing extend preferences feature"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/certd/certd
+---
+
+# Certd Workflow Extend Preferences Feature
+
+## Action
+
+Follow the extend-preferences-feature workflow:
+1. Update localization files for new preference-related strings
+2. Modify or add Vue components for preferences UI
+3. Update or add supporting icon definitions
+4. Implement or update store logic for settings
+5. Add or update backend API/controller for user preferences
+6. Write or update backend tests for new preference logic
+7. Update backend models if necessary
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: packages/ui/certd-client/src/locales/langs/en-US/preferences.ts, packages/ui/certd-client/src/locales/langs/zh-CN/preferences.ts, packages/ui/certd-client/src/vben/layouts/widgets/preferences/preferences-drawer.vue
+
+---
+id: certd-instinct-file-naming
+trigger: "When creating a new file in the codebase"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct File Naming
+
+## Action
+
+Name the file using camelCase
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.files
+
+---
+id: certd-instinct-function-naming
+trigger: "When defining a new function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Function Naming
+
+## Action
+
+Use camelCase for function names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.functions
+
+---
+id: certd-instinct-class-naming
+trigger: "When defining a new class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Class Naming
+
+## Action
+
+Use PascalCase for class names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.classes
+
+---
+id: certd-instinct-constant-naming
+trigger: "When declaring a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Constant Naming
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for constant names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.constants
+
+---
+id: certd-instinct-import-style
+trigger: "When importing modules"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Import Style
+
+## Action
+
+Use absolute import paths
+
+## Evidence
+
+- Pattern in codeStyle.importStyle
+
+---
+id: certd-instinct-export-style
+trigger: "When exporting from a module"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Export Style
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in codeStyle.exportStyle
+
+---
+id: certd-instinct-try-catch
+trigger: "When handling errors in code"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Try Catch
+
+## Action
+
+Use try-catch blocks for error handling
+
+## Evidence
+
+- Pattern in errorHandling.style
+
+---
+id: certd-instinct-test-location
+trigger: "When adding or updating tests"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Test Location
+
+## Action
+
+Place tests in both source and test-specific folders as appropriate (mixed location)
+
+## Evidence
+
+- Pattern in architecture.folderStructure.testLocation
+- Seen in files like packages/ui/certd-server/src/controller/user/mine/user-preferences.test.ts
+
+---
+id: certd-instinct-backend-test-pattern
+trigger: "When adding backend logic for user preferences"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Backend Test Pattern
+
+## Action
+
+Create or update a corresponding .test.ts file in the same directory
+
+## Evidence
+
+- Seen in packages/ui/certd-server/src/controller/user/mine/user-preferences.test.ts
+
+---
+id: certd-instinct-conventional-commits
+trigger: "When writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Conventional Commits
+
+## Action
+
+Use the conventional commit format with a type prefix (e.g., feat: ...)
+
+## Evidence
+
+- Pattern in commits.type
+- Examples: feat: 偏好设置支持从剪切板导入
+
+---
+id: certd-instinct-commit-length
+trigger: "When writing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Commit Length
+
+## Action
+
+Keep the commit message concise, around 22 characters on average
+
+## Evidence
+
+- Pattern in commits.averageLength
+
+---
+id: certd-instinct-extend-preferences-localization
+trigger: "When extending or adding a user preference feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Extend Preferences Localization
+
+## Action
+
+Update localization files for new preference-related strings
+
+## Evidence
+
+- Workflow: extend-preferences-feature
+- Files: packages/ui/certd-client/src/locales/langs/en-US/preferences.ts, packages/ui/certd-client/src/locales/langs/zh-CN/preferences.ts
+
+---
+id: certd-instinct-extend-preferences-ui
+trigger: "When extending or adding a user preference feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Extend Preferences Ui
+
+## Action
+
+Modify or add Vue components for the preferences UI
+
+## Evidence
+
+- Workflow: extend-preferences-feature
+- Files: packages/ui/certd-client/src/vben/layouts/widgets/preferences/preferences-drawer.vue
+
+---
+id: certd-instinct-extend-preferences-icons
+trigger: "When extending or adding a user preference feature"
+confidence: 0.8
+domain: workflow
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Extend Preferences Icons
+
+## Action
+
+Update or add supporting icon definitions
+
+## Evidence
+
+- Workflow: extend-preferences-feature
+- File: packages/ui/certd-client/src/vben/icons/lucide.ts
+
+---
+id: certd-instinct-extend-preferences-store
+trigger: "When extending or adding a user preference feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Extend Preferences Store
+
+## Action
+
+Implement or update store logic for settings
+
+## Evidence
+
+- Workflow: extend-preferences-feature
+- File: packages/ui/certd-client/src/store/settings/index.tsx
+
+---
+id: certd-instinct-extend-preferences-backend-api
+trigger: "When extending or adding a user preference feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Extend Preferences Backend Api
+
+## Action
+
+Add or update backend API/controller for user preferences
+
+## Evidence
+
+- Workflow: extend-preferences-feature
+- Files: packages/ui/certd-server/src/controller/user/mine/user-preferences.ts, packages/ui/certd-server/src/controller/user/mine/user-settings-controller.ts
+
+---
+id: certd-instinct-extend-preferences-backend-test
+trigger: "When extending or adding a user preference feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Extend Preferences Backend Test
+
+## Action
+
+Write or update backend tests for new preference logic
+
+## Evidence
+
+- Workflow: extend-preferences-feature
+- File: packages/ui/certd-server/src/controller/user/mine/user-preferences.test.ts
+
+---
+id: certd-instinct-extend-preferences-models
+trigger: "When extending or adding a user preference feature and new data is needed"
+confidence: 0.8
+domain: workflow
+source: repo-analysis
+source_repo: certd/certd
+---
+
+# Certd Instinct Extend Preferences Models
+
+## Action
+
+Update backend models if necessary
+
+## Evidence
+
+- Workflow: extend-preferences-feature
+- File: packages/ui/certd-server/src/modules/mine/service/models.ts
+
