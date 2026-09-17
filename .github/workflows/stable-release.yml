@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "版本号（如 v1.42.5）"
+        description: "版本号（如 1.42.5）"
         required: true
         type: string
 
