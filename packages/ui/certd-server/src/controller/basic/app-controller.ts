@@ -25,7 +25,7 @@ export class AppController extends BaseController {
 
   @Get("/latest", { description: Constants.per.authOnly })
   async latest(): Promise<any> {
-    const mode = this.releaseMode
+    const mode = this.releaseMode;
     try {
       let latest = "";
       if (mode === "stable") {

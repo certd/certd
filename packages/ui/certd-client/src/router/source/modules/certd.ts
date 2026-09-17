@@ -1,4 +1,4 @@
-﻿import { useProjectStore } from "/@/store/project";
+import { useProjectStore } from "/@/store/project";
 import { useSettingStore } from "/@/store/settings";
 
 export const certdResources = [
@@ -124,6 +124,17 @@ export const certdResources = [
         component: "/certd/monitor/site/index.vue",
         meta: {
           icon: "ion:videocam-outline",
+          auth: true,
+          keepAlive: true,
+        },
+      },
+      {
+        title: "certd.clientManager",
+        name: "ClientManager",
+        path: "/cert/client",
+        component: "/certd/client/index.vue",
+        meta: {
+          icon: "ion:desktop-outline",
           auth: true,
           keepAlive: true,
         },
