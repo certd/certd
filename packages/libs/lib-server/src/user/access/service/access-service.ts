@@ -174,11 +174,11 @@ export class AccessService extends BaseService<AccessEntity> {
         throw new ValidateException("userId不能为空");
       }
       if (userId !== entity.userId) {
-        throw new PermissionException("您对该Access授权无访问权限");
+        throw new PermissionException(`您对该Access授权${entity.name}(${entity.id})无访问权限`);
       }
     }
     if (projectId != null && projectId !== entity.projectId) {
-      throw new PermissionException("您对该Access授权无访问权限");
+      throw new PermissionException(`您对该Access授权${entity.name}(${entity.id})无访问权限`);
     }
 
     // const access = accessRegistry.get(entity.type);

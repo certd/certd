@@ -1,0 +1,20 @@
+export default {
+  clientManager: "Client Manager",
+  client: {
+    title: "Client Manager",
+    description: "View online status and managed site count of connected Certd clients. Clients report a heartbeat every 10 minutes and are marked offline if no heartbeat arrives for 30 minutes.",
+    plusRequired: "This feature requires the Pro edition",
+    machineName: "Machine",
+    clientId: "Client ID",
+    version: "Version",
+    os: "OS",
+    status: "Status",
+    online: "Online",
+    offline: "Offline",
+    siteCount: "Sites",
+    httpsSiteCount: "HTTPS Sites",
+    syncedSiteCount: "Synced",
+    failedSiteCount: "Failed",
+    lastHeartbeatAt: "Last Heartbeat",
+  },
+};

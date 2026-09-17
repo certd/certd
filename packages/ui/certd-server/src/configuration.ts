@@ -120,8 +120,6 @@ export class MainConfiguration {
       //resetPasswd,重置密码模式下不提供服务
       ResetPasswdMiddleware,
     ]);
-
-    
     this.app.getMiddleware().insertFirst(async (ctx: IMidwayKoaContext, next: NextFunction) => {
       await next();
       const path = ctx.path;

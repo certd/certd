@@ -19,7 +19,6 @@ export class BasicSettingsController extends BaseController {
   @Config("release.mode")
   releaseMode: "stable" | "latest";
 
-
   @Config("agent")
   agentConfig: SysSiteEnv["agent"];
 

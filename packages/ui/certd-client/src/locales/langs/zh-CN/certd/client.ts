@@ -1,0 +1,20 @@
+export default {
+  clientManager: "客户端管理",
+  client: {
+    title: "客户端管理",
+    description: "查看已接入的 Certd 客户端在线状态与管理的站点数量；客户端每 10 分钟上报一次心跳，超过 30 分钟未上报则标记为离线",
+    plusRequired: "此功能需要专业版",
+    machineName: "机器名",
+    clientId: "客户端ID",
+    version: "版本",
+    os: "系统",
+    status: "在线状态",
+    online: "在线",
+    offline: "离线",
+    siteCount: "站点数",
+    httpsSiteCount: "HTTPS站点",
+    syncedSiteCount: "已同步",
+    failedSiteCount: "异常",
+    lastHeartbeatAt: "上次心跳",
+  },
+};
