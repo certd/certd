@@ -3,14 +3,11 @@
     <template #header>
       <div class="title flex items-center">
         {{ t("certd.client.title") }}
-        <div class="sub flex-1">
+        <div class="sub flex items-center flex-1">
           <div>
             {{ t("certd.client.description") }}
           </div>
-          <div v-if="!settingStore.isPlus" class="flex items-center">
-            {{ t("certd.client.plusRequired") }}
-            <vip-button class="ml-5" mode="nav"></vip-button>
-          </div>
+          <vip-button class="ml-5" mode="button"></vip-button>
         </div>
       </div>
     </template>
