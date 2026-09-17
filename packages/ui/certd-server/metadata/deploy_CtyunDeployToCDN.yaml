@@ -80,6 +80,7 @@ input:
       watches:
         - certDomains
         - accessId
+        - productCode
     required: true
     mergeScript: |2-
 

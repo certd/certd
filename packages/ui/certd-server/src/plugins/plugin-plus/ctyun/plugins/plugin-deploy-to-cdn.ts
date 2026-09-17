@@ -73,6 +73,8 @@ export class CtyunDeployToCDN extends AbstractTaskPlugin {
       helper: "请选择加速域名",
       typeName: "CtyunDeployToCDN",
       action: CtyunDeployToCDN.prototype.onGetDomainList.name,
+      // 产品类型变化后域名列表需要重新拉取，否则会一直显示上一个产品类型下的域名
+      watches: ["productCode"],
     })
   )
   domains!: string[];
@@ -136,6 +138,10 @@ export class CtyunDeployToCDN extends AbstractTaskPlugin {
   }
 
   async onGetDomainList() {
+    if (!this.productCode) {
+      throw new Error("请先选择产品类型，再选择加速域名");
+    }
+
     const access = await this.getAccess(this.accessId);
     const http: HttpClient = this.ctx.http;
     const client = new CtyunClient({
@@ -149,10 +155,12 @@ export class CtyunDeployToCDN extends AbstractTaskPlugin {
     if (!all || all.length === 0) {
       throw new Error("未找到加速域名，你可以手动输入");
     }
+    // domain 字段用于 buildGroupOptions 与当前证书域名做匹配分组，缺少它会导致所有域名都落到“未匹配”
     const options = all.map(item => {
       return {
         label: item.domain,
         value: item.domain,
+        domain: item.domain,
       };
     });
     return this.ctx.utils.options.buildGroupOptions(options, this.certDomains);
