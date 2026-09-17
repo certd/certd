@@ -47,10 +47,18 @@ export function mergeConfig(config: any, envType: string) {
   return config;
 }
 
-export function loadDotEnv() {
-  const envStr = fs.readFileSync(".env").toString();
+export function loadDotEnv(envName= ".env") {
+  if (!fs.existsSync(envName)) {
+    return;
+  }
+  logger.info("load env file:", envName);
+  const envStr = fs.readFileSync(envName).toString();
   envStr.split("\n").forEach(line => {
     const [key, value] = line.trim().split("=");
+    if (key.trim().startsWith("#") || key.trim() === "") {
+      return;
+    }
+    logger.info("load env var:", key, value);
     const oldValue = process.env[key];
     if (!oldValue) {
       process.env[key] = value;
