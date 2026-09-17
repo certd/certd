@@ -249,6 +249,7 @@ const development = {
     ],
   },
 } as MidwayConfig;
+loadDotEnv(`.env.${env}`);
 loadDotEnv();
 
 mergeConfig(development, "development");
