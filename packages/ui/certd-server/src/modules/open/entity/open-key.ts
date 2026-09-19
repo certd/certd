@@ -17,6 +17,9 @@ export class OpenKeyEntity {
   @Column({ name: "scope", comment: "权限范围" })
   scope: string; // open 仅开放接口、 user 用户所有权限
 
+  @Column({ name: "remark", comment: "密钥用途备注", length: 512, nullable: true })
+  remark: string; // 用于说明该密钥的用途，便于区分和查找
+
   @Column({ name: "project_id", comment: "项目id" })
   projectId: number;
 

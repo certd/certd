@@ -31,10 +31,11 @@ export class OpenKeyService extends BaseService<OpenKeyEntity> {
   }
 
   async add(bean: OpenKeyEntity) {
-    return await this.generate(bean.userId, bean.projectId, bean.scope);
+    return await this.generate({ userId: bean.userId, projectId: bean.projectId, scope: bean.scope, remark: bean.remark });
   }
 
-  async generate(userId: number, projectId?: number, scope = "open") {
+  async generate(req: { userId: number; projectId?: number; scope?: string; remark?: string }) {
+    const { userId, projectId, scope, remark } = req;
     const keyId = utils.id.simpleNanoId(18) + "_key";
     const secretKey = crypto.randomBytes(32);
     const keySecret = Buffer.from(secretKey).toString("hex");
@@ -44,6 +45,7 @@ export class OpenKeyService extends BaseService<OpenKeyEntity> {
     entity.keyId = keyId;
     entity.keySecret = keySecret;
     entity.scope = scope ?? "open";
+    entity.remark = remark;
     await this.repository.save(entity);
     return entity;
   }

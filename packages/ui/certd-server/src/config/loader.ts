@@ -47,7 +47,7 @@ export function mergeConfig(config: any, envType: string) {
   return config;
 }
 
-export function loadDotEnv(envName= ".env") {
+export function loadDotEnv(envName = ".env") {
   if (!fs.existsSync(envName)) {
     return;
   }

@@ -13,10 +13,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetList(query);
   };
+  // 编辑允许修改备注与权限范围。
+  // keyId/keySecret 属于密钥本体，列表中 keySecret 是脱敏串，误提交会把真实密钥写坏，故不提交。
   const editRequest = async (req: EditReq) => {
     const { form, row } = req;
-    form.id = row.id;
-    const res = await api.UpdateObj(form);
+    const res = await api.UpdateObj({
+      id: row.id,
+      remark: form.remark,
+      scope: form.scope,
+    });
     return res;
   };
   const delRequest = async (req: DelReq) => {
@@ -68,7 +73,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         buttons: {
           view: { show: true },
           copy: { show: false },
-          edit: { show: false },
+          edit: { show: true },
           remove: { show: true },
           gen: {
             text: t("certd.gen.text"),
@@ -191,6 +196,22 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             width: 120,
             align: "center",
             sorter: true,
+          },
+        },
+        remark: {
+          title: t("certd.keyRemark"),
+          type: "text",
+          search: {
+            show: true,
+          },
+          column: {
+            width: 200,
+            sorter: true,
+          },
+          form: {
+            show: true,
+            helper: t("certd.keyRemarkHelper"),
+            rules: [{ max: 512, message: t("certd.keyRemarkMaxChars") }],
           },
         },
         projectId: {

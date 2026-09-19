@@ -3,6 +3,9 @@ export default {
   scopeOpenApiOnly: "Open API Only",
   scopeFullAccount: "Full Account Permissions",
   scopeHelper: "Open API only allows access to open APIs; full account permissions allow access to all APIs",
+  keyRemark: "Key Purpose",
+  keyRemarkHelper: "Describe the purpose of this key for easier identification",
+  keyRemarkMaxChars: "Maximum 512 characters",
   gen: {
     text: "API Test",
     title: "x-certd-token",
