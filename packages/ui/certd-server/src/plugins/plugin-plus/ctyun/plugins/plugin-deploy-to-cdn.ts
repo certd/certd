@@ -160,7 +160,7 @@ export class CtyunDeployToCDN extends AbstractTaskPlugin {
       return {
         label: item.domain,
         value: item.domain,
-        domain: item.domain,
+        domain: item.domain, //支持匹配证书域名
       };
     });
     return this.ctx.utils.options.buildGroupOptions(options, this.certDomains);
