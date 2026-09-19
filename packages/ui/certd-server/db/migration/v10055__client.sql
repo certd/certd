@@ -19,3 +19,6 @@ CREATE TABLE "cd_client"
 CREATE INDEX "index_client_user_id" ON "cd_client" ("user_id");
 CREATE INDEX "index_client_project_id" ON "cd_client" ("project_id");
 CREATE UNIQUE INDEX "index_client_user_client" ON "cd_client" ("user_id", "client_id");
+
+-- 开放接口密钥用途备注
+ALTER TABLE cd_open_key ADD COLUMN "remark" varchar(512);

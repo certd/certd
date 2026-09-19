@@ -62,7 +62,7 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
     body.userId = userId;
     const res = await this.service.add(body);
     this.auditLog({
-      content: `新增了API密钥(ID:${res.id}, scope:${body.scope})`,
+      content: `新增了API密钥(ID:${res.id}, scope:${body.scope}, remark:${body.remark})`,
     });
     return this.ok(res);
   }
@@ -72,9 +72,14 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
     await this.checkOwner(this.getService(), bean.id, "write");
     delete bean.userId;
     delete bean.projectId;
-    await this.service.update(bean);
+    const upd = {
+      id: bean.id,
+      remark: bean.remark,
+      scope: bean.scope,
+    }
+    await this.service.update(upd);
     this.auditLog({
-      content: `修改了API密钥(ID:${bean.id})`,
+      content: `修改了API密钥(ID:${bean.id}, scope:${bean.scope}, remark:${bean.remark})`,
     });
     return this.ok();
   }
@@ -100,9 +105,10 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
   @Post("/delete", { description: Constants.per.authOnly, summary: "删除开放API密钥" })
   async delete(@Query("id") id: number) {
     await this.checkOwner(this.getService(), id, "write");
+    const info = await this.service.info(id);
     const res = await super.delete(id);
     this.auditLog({
-      content: `删除了API密钥(ID:${id})`,
+      content: `删除了API密钥(ID:${id}, scope:${info.scope}, remark:${info.remark})`,
     });
     return res;
   }

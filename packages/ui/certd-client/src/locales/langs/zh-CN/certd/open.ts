@@ -3,6 +3,9 @@ export default {
   scopeOpenApiOnly: "仅开放接口",
   scopeFullAccount: "账户所有权限",
   scopeHelper: "仅开放接口只可以访问开放接口，账户所有权限可以访问所有接口",
+  keyRemark: "密钥用途",
+  keyRemarkHelper: "说明该密钥的用途，便于区分和查找",
+  keyRemarkMaxChars: "最大512个字符",
   gen: {
     text: "接口测试",
     title: "x-certd-token",
