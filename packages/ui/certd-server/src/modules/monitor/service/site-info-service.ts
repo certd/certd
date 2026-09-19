@@ -99,6 +99,18 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
 
     data.disabled = false;
 
+    // 批量导入等入口不会传这几个IP检查字段，必须补上明确的布尔默认值，
+    // 否则数据库里存 NULL，编辑弹窗的开关看着是关闭状态却过不了必填校验（issue #803）
+    if (data.ipCheck == null) {
+      data.ipCheck = false;
+    }
+    if (data.ipSyncAuto == null) {
+      data.ipSyncAuto = true;
+    }
+    if (data.ipIgnoreCoherence == null) {
+      data.ipIgnoreCoherence = false;
+    }
+
     const found = await this.repository.findOne({
       where: {
         domain: data.domain,
