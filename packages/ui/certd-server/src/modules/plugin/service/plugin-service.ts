@@ -712,10 +712,12 @@ export class PluginService extends BaseService<PluginEntity> {
       throw new Error(`插件类型${param.pluginType}不支持`);
     }
 
+    // 默认模板只作为兜底：调用方已提供 content/metadata 时必须保留其内容，
+    // 否则通过接口导入的插件代码会被默认示例脚本覆盖。
     const res = await super.add({
       disabled: false,
-      ...param,
       ...plugin,
+      ...param,
       installed: true,
     });
 

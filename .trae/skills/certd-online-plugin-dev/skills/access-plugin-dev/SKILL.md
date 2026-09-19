@@ -58,3 +58,40 @@ return class DemoAccess extends BaseAccess {
 - 对外 API 方法应统一处理分页、错误和返回字段。
 - 使用 `this.logger` 或框架提供的 logger，禁止 `console.log`。
 - 一般将API接口方法封装到Access中，其他plugin调用access的方法当做client sdk使用
+
+## 字段动态显隐
+
+多种鉴权方式（例如「ApiKey」和「AccessKey签名」）共用一个授权时，
+用字段上的 `mergeScript` 按所选方式显隐对应字段，只让用户看到当前方式需要的字段：
+
+```yaml
+input:
+  authType:
+    title: 鉴权方式
+    value: apikey
+    component:
+      name: a-select
+      vModel: value
+      options:
+        - { label: AccessKey签名, value: aksk }
+        - { label: ApiKey, value: apikey }
+  accessKeyId:
+    title: accessKeyId
+    component:
+      name: a-input
+      vModel: value
+    mergeScript: |2-
+
+          return {
+            show: ctx.compute(({form})=>{
+              return !form.access.authType || form.access.authType === 'aksk';
+            })
+          }
+```
+
+- 判断必须写在 `ctx.compute(({form})=>{ ... })` 回调里；脚本本身在插件定义阶段就拼好了，
+  那时表单还没打开，用参数在服务端判断字段值没有意义。
+- 授权表单的字段值在 `form.access.xxx`（任务表单才是 `form.xxx`）。
+- 历史授权没有 `authType` 字段，条件里要用 `!form.access.authType || ...` 兜底走旧逻辑。
+
+完整用法见父 Skill 的 `references/merge-script.md`。

@@ -43,3 +43,4 @@ output/
 .certd-plugin-history/
 .tmp
 .plugin-dev/
+.tmp_chunks/

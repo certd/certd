@@ -1,6 +1,6 @@
 <template>
   <div class="plugin-author-field">
-    <a-input :value="modelValue" placeholder="请输入作者名称" :disabled="authorRegistered" @update:value="emit('update:modelValue', $event)" />
+    <a-input :value="modelValue" placeholder="请输入作者名称" :disabled="inputDisabled" @update:value="emit('update:modelValue', $event)" />
     <a-button type="link" size="small" :loading="loading" @click="handleAuthorAction">
       {{ authorRegistered ? "修改邮箱" : "注册作者" }}
     </a-button>
@@ -14,12 +14,22 @@ import { usePluginPublish } from "../use-publish";
 
 defineOptions({ name: "PluginAuthorField" });
 
-const props = defineProps<{ modelValue?: string }>();
+const props = withDefaults(
+  defineProps<{
+    modelValue?: string;
+    // 允许手动输入作者名称，默认使用后端已注册作者且不可修改
+    editable?: boolean;
+  }>(),
+  {
+    editable: false,
+  }
+);
 const emit = defineEmits<{ (event: "update:modelValue", value: string): void }>();
 const loading = ref(false);
 const { registerPluginAuthor, updatePluginAuthorEmail } = usePluginPublish();
 const registeredAuthor = ref<api.OnlinePluginAuthorBean>();
 const authorRegistered = computed(() => !!registeredAuthor.value?.id);
+const inputDisabled = computed(() => authorRegistered.value && !props.editable);
 const isLocalAuthor = computed(() => {
   return (
     String(props.modelValue || "")
