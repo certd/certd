@@ -9,7 +9,7 @@ description: 用于通过 Certd API 开发、修改、读取、保存和恢复�
 
 本 Skill 使用 Certd HTTP API，不使用 WebSocket，也不依赖浏览器传递代码草稿。
 
-- 前端只生成包含需求、API 地址和认证 Token 的启动提示词。
+- 前端只生成包含需求、插件作者、API 地址和认证 Token 的启动提示词。
 - Agent 直接调用 Certd API 读取和保存插件 YAML。
 - Agent 的进度、日志和代码修改在 Codex/Trae 中查看。
 - 插件开发临时文件和修改历史统一保存在 Agent 工作区的 `.plugin-dev/` 下，不保存到浏览器或 Certd 后端。
@@ -43,14 +43,12 @@ Certd 插件按来源分为三类：
 
 ## API 认证
 
-提示词会提供 Certd API 地址和仅限 AI 插件开发接口的受限 Token。调用 API 时使用：
+提示词会提供 Certd API 地址和仅限 AI 插件开发接口的受限的短时效的 Token。调用 API 时使用：
 
 ```http
 Authorization: <token>
 Content-Type: application/json
 ```
-
-不要把 Token 写入代码、历史摘要、日志、提交信息或插件 YAML。
 
 所有 Certd API 请求统一使用 Node.js 的 `fetch`。不要使用 PowerShell 的 `Invoke-RestMethod`、`Invoke-WebRequest` 或 .NET HTTP 客户端发送插件 YAML/JSON；它们在 Windows 上可能造成中文乱码或使完整 YAML 导入请求长时间无响应。
 
@@ -118,6 +116,7 @@ const response = await fetch(`${apiBase}/scoped/sys/ai/plugin/find`, {
 - 修改后保存修改摘要。
 - 恢复前再次备份当前版本。
 - 不上传历史文件，不保存 Token、证书、私钥或真实授权值。
+- 修改完一版后立即提交更新到certd，但不要发布到市场。
 
 详细格式见 `references/local-history.md`。
 
@@ -125,6 +124,7 @@ const response = await fetch(`${apiBase}/scoped/sys/ai/plugin/find`, {
 
 插件始终以完整 YAML 传递和保存，脚本源码放在顶层 `content` 字段。
 
+- 新插件的 `author` 必须使用启动提示词中给出的插件作者，不要自行编造作者名；修改已有插件时保留原 `author`，不要改成其他作者。
 - 统一使用 `await _ctx.import(...)` 引用模块。
 - `"/@/..."` 表示以绝对路径引用 `server/src/` 下的模块。
 - 最后返回继承目标基类的 class。
@@ -135,6 +135,28 @@ const response = await fetch(`${apiBase}/scoped/sys/ai/plugin/find`, {
 
 需要字段格式时读取 `references/online-yaml-format.md`。
 需要组件示例时读取 `references/component-examples.md`。
+需要按其他字段动态显隐/必填/联动时读取 `references/merge-script.md`。
+
+### 字段动态显隐（mergeScript）
+
+字段定义支持 `mergeScript`：脚本 `return` 的对象会合并进本字段，用来做「选了 A 才显示 B」这类联动。
+
+```yaml
+    mergeScript: |2-
+
+          return {
+            show: ctx.compute(({form})=>{
+              return form.access.authType === 'apikey';
+            })
+          }
+```
+
+- 动态逻辑必须写在 `ctx.compute(({form})=>{ ... })` 回调里；`mergeScript` 本身在插件类定义阶段就
+  被拼成字符串，那时表单还没打开，用参数在 node 侧判断字段值没有任何意义。
+- 授权表单字段值在 `form.access.xxx`，任务表单字段值在 `form.xxx`。
+- 新增可选字段时要给历史数据兜底，例如 `!form.access.authType || form.access.authType === 'aksk'`。
+
+完整用法（能力、可动态化的属性、事件联动、常见错误、验证方式）见 `references/merge-script.md`。
 
 ## 示例插件
 

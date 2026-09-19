@@ -1,6 +1,6 @@
 name: DemoDnsProvider
 icon: fa-solid:frog
-title: Demo-Dns提供商插件示例  # 模块-插件名
+title: Demo-Dns提供商插件示例  # 格式：平台-功能 ，例如： 阿里云-DNS提供商 ；腾讯云-DNS提供商
 desc: 这只是一个示例
 type: custom
 version: 1.0.0

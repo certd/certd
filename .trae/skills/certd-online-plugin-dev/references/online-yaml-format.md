@@ -7,7 +7,7 @@
 ```yaml
 name: DemoTask
 author: demo
-title: Demo 任务
+title: Demo-插件名称 # 格式：平台-功能 ，例如： 网宿-更新CDNpro证书 ； 阿里云-上传到CAS证书管理服务 ； 天翼云-更新CDN证书
 desc: 插件说明
 icon: clarity:plugin-line
 pluginType: task
@@ -61,6 +61,8 @@ content: |
 ### 编辑规则
 
 - 修改已有插件时保留 `name`、`author`、`pluginType` 和已有兼容字段。
+- 新插件的 `author` 使用启动提示词中给出的插件作者，不要自行编造作者名；启动提示词未给出作者时先向用户确认。
+- `fullName` 由 `author/name` 组成，作者变化会导致插件身份变化，不要随意修改。
 - 只修改需求涉及的字段，避免删除未知的 YAML 字段。
 - 脚本过长时仍放在同一个 `content` block scalar 中。
 - 提交前检查 YAML 可解析、`content` 非空、版本和插件类型没有被意外修改。

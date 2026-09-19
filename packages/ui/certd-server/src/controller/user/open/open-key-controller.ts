@@ -76,7 +76,7 @@ export class OpenKeyController extends CrudController<OpenKeyService> {
       id: bean.id,
       remark: bean.remark,
       scope: bean.scope,
-    }
+    };
     await this.service.update(upd);
     this.auditLog({
       content: `修改了API密钥(ID:${bean.id}, scope:${bean.scope}, remark:${bean.remark})`,

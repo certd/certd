@@ -21,7 +21,17 @@
         </div>
       </template>
       <template v-else-if="step === 1"
-        ><label class="plugin-ai-dev__label">开发需求</label><a-textarea v-model:value="requirement" :rows="6" /><a-button
+        ><div v-if="mode === 'new'" class="plugin-ai-dev__field">
+          <label>插件作者</label>
+          <PluginAuthorField v-model="author" editable />
+          <div class="plugin-ai-dev__hint">自动读取绑定账号已注册的插件作者，也可以手动输入作者名称。</div>
+        </div>
+        <div v-else class="plugin-ai-dev__field">
+          <label>插件作者</label>
+          <a-input :value="author" disabled />
+          <div class="plugin-ai-dev__hint">修改已有插件时沿用该插件当前作者，作者变化会导致插件身份变化。</div>
+        </div>
+        <label class="plugin-ai-dev__label">开发需求</label><a-textarea v-model:value="requirement" :rows="6" /><a-button
           class="plugin-ai-dev__generate"
           type="primary"
           :loading="creating"
@@ -120,6 +130,7 @@ import * as api from "../api";
 import * as pipelineApi from "/@/views/certd/pipeline/api";
 import * as historyApi from "/@/views/certd/pipeline/api.history";
 import DependPluginsInput from "./depend-plugins-input.vue";
+import PluginAuthorField from "./plugin-author-field.vue";
 import PluginEditDialogBody from "./plugin-edit-dialog-body.vue";
 import PipelineEditDialog from "/@/views/certd/pipeline/components/pipeline-edit-dialog.vue";
 import { useFormDialog } from "/@/use/use-dialog";
@@ -135,6 +146,7 @@ const pluginTypeOptions = [
   { value: "notification", label: "通知插件", desc: "通过消息、邮件等方式发送通知" },
   // { value: "addon", label: "Addon", desc: "扩展流水线的通用辅助能力" },
 ];
+const author = ref("");
 const requirement = ref(
   "例如：开发一个部署证书到阿里云DCDN的插件\nAPI接口请参考：https://help.aliyun.com/zh/edge-security-acceleration/dcdn/developer-reference/api-dcdn-2018-01-15-overview。\n要求： \n1、能够引用上传到阿里云CAS步骤输出的证书。\n2、支持在UI上选择账户下某区域下的DCDN的域名列表。\n3、支持一次性选择多个域名进行部署"
 );
@@ -183,7 +195,33 @@ async function createPrompt() {
   try {
     const token = await api.GetScopedAccessToken(["sys/ai"]);
     accessToken.value = token.token;
-    prompt.value = `你是 Certd 在线插件开发 Agent。\n\n开发模式：${mode.value === "new" ? "开发新插件" : "修改已有插件"}\n插件类型：${pluginType.value || "按已有插件类型"}\n插件 ID：${pluginPath.value.at(-1) || "无"}\n用户需求：\n${requirement.value.trim()}\n\n如果用户需求描述与他选择的插件类型有冲突，你需要跟用户确认是否选错插件类型。 \nCertd 地址：${window.location.origin}\n受限 AccessToken（6小时有效）：${token.token}\n\n请先读取 .trae/skills/certd-online-plugin-dev/SKILL.md，按插件类型开发并提交版本。仅调用 /scoped/sys/ai/plugin/ 前缀接口，完成后报告提交结果，不自动发布。\n如果当前工作目录不是 Certd 项目，或缺少 certd-online-plugin-dev Skill，先拉取 Certd 仓库代码并切换到仓库内工作(git clone https://atomgit.com/certd/certd --depth 1 )`;
+    const authorName = author.value.trim();
+    let authorText = authorName;
+    if (!authorText && mode.value === "edit") {
+      // 修改已有插件时作者保持原样，不能凭空补一个作者出来
+      authorText = "无（保持原插件的 author 字段不变，不要新增作者）";
+    }
+    if (!authorText) {
+      authorText = "未指定（请先向用户确认作者名称，不要自行编造作者名）";
+    }
+    prompt.value = `
+你是 Certd 在线插件开发 Agent。
+
+开发模式：${mode.value === "new" ? "开发新插件" : "修改已有插件"}
+插件类型：${pluginType.value || "按已有插件类型"}
+插件 ID：${pluginPath.value.at(-1) || "无"}
+插件作者：${authorText}
+用户需求：
+${requirement.value.trim()}
+
+如果用户需求描述与他选择的插件类型有冲突，你需要跟用户确认是否选错插件类型。 
+Certd 地址：${window.location.origin}
+受限 AccessToken（6小时有效）：${token.token}
+
+请先读取 .trae/skills/certd-online-plugin-dev/SKILL.md，按插件类型开发并提交版本。仅调用 /scoped/sys/ai/plugin/ 前缀接口，完成后报告提交结果，不自动发布。
+如果当前工作目录不是 Certd 项目，或缺少 certd-online-plugin-dev Skill，先拉取 Certd 仓库代码并切换到仓库内工作(git clone https://atomgit.com/certd/certd --depth 1 )
+本次开发的在线插件无需写单元测试。
+`;
     notification.success({ message: "启动提示词已生成" });
   } finally {
     creating.value = false;
@@ -259,24 +297,31 @@ async function loadRecentPlugins(force = false) {
 async function loadSelectedPlugin() {
   const selectedValue = pluginPath.value.at(-1);
   if (!selectedValue) {
-    recentPlugins.value = [];
+    setSelectedPlugin(null);
     return;
   }
   if (props.pluginId && selectedValue === String(props.pluginId)) {
     const selected = await api.GetObj(props.pluginId);
-    recentPlugins.value = selected ? [selected] : [];
+    setSelectedPlugin(selected);
     return;
   }
   let selected = await api.GetObj(selectedValue);
-  if (selected) {
-    recentPlugins.value = [selected];
-    return;
+  if (!selected) {
+    const fullName = selectedValue.includes(":") ? selectedValue.slice(selectedValue.indexOf(":") + 1) : selectedValue;
+    const result: any = await api.FindPlugins({ includeBuiltIn: true, includeStore: true, keyword: fullName });
+    const records: any[] = Array.isArray(result) ? result : result?.records || [];
+    selected = records.find(item => String(item.fullName || item.name) === fullName) || records[0];
   }
-  const fullName = selectedValue.includes(":") ? selectedValue.slice(selectedValue.indexOf(":") + 1) : selectedValue;
-  const result: any = await api.FindPlugins({ includeBuiltIn: true, includeStore: true, keyword: fullName });
-  const records: any[] = Array.isArray(result) ? result : result?.records || [];
-  selected = records.find(item => String(item.fullName || item.name) === fullName) || records[0];
-  recentPlugins.value = selected ? [selected] : [];
+  setSelectedPlugin(selected);
+}
+
+function setSelectedPlugin(plugin: any) {
+  recentPlugins.value = plugin ? [plugin] : [];
+  const pluginAuthor = String(plugin?.author || "").trim();
+  if (pluginAuthor) {
+    // 修改已有插件时，作者默认沿用该插件当前作者，避免插件身份被改错
+    author.value = pluginAuthor;
+  }
 }
 
 function formatTime(value: any) {
@@ -361,9 +406,9 @@ watch(mode, value => {
 <style lang="less">
 .plugin-ai-dev {
   display: flex;
-  height: 60vh;
+  height: 65vh;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
 
   &__steps {
     flex: none;
@@ -373,7 +418,7 @@ watch(mode, value => {
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 18px;
+    gap: 10px;
     padding: 8px 20px;
     overflow-y: auto;
   }

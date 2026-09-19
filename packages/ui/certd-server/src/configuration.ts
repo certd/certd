@@ -116,7 +116,6 @@ export class MainConfiguration {
       //授权处理
       AuthorityMiddleware,
       AuditLogMiddleware,
-
       //resetPasswd,重置密码模式下不提供服务
       ResetPasswdMiddleware,
     ]);
@@ -134,5 +133,4 @@ export class MainConfiguration {
     });
     logger.info("当前环境：", this.app.getEnv()); // prod
   }
-  
 }

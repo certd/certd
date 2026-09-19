@@ -307,6 +307,43 @@ describe("PluginService online plugins", () => {
     assert.equal(typeof res.id, "number");
   });
 
+  it("creates a store plugin with the caller supplied content instead of the default template", async () => {
+    // 传入自定义 content / metadata 时必须保留，不能被默认模板覆盖，
+    // 否则通过接口导入的插件代码会被默认示例脚本静默替换掉。
+    const service = new PluginService();
+    let savedPlugin: any;
+    service.repository = {
+      async findOne() {
+        return null;
+      },
+      async findOneBy() {
+        return null;
+      },
+      async save(plugin: any) {
+        if (plugin.id == null) {
+          plugin.id = 1;
+        }
+        savedPlugin = plugin;
+        return plugin;
+      },
+    } as any;
+    service.registerById = async () => {};
+
+    await service.add({
+      type: "store",
+      author: "greper",
+      name: "MyDeploy",
+      title: "我的部署插件",
+      pluginType: "deploy",
+      content: "return class MyDeploy { }",
+      metadata: "input:\n  cert:\n    title: 域名证书\n",
+    });
+
+    assert.equal(savedPlugin.content, "return class MyDeploy { }");
+    assert.match(savedPlugin.metadata, /域名证书/);
+    assert.doesNotMatch(savedPlugin.content, /DemoTask/);
+  });
+
   it("marks online plugins with local installation state", async () => {
     const service = new PluginService();
     service.sysSettingsService = {
