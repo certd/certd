@@ -1,4 +1,5 @@
 import qs from "qs";
+import { stringUtils } from "@certd/basic";
 import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-cert";
 
@@ -128,17 +129,6 @@ export class WebhookDeployCert extends AbstractTaskPlugin {
   })
   successStr = "";
 
-  replaceTemplate(target: string, body: any, urlEncode = false) {
-    let bodyStr = target;
-    const keys = Object.keys(body);
-    for (const key of keys) {
-      let value = urlEncode ? encodeURIComponent(body[key]) : body[key];
-      value = value.replaceAll(`\n`, "\\n");
-      bodyStr = bodyStr.replaceAll(`\${${key}}`, value);
-    }
-    return bodyStr;
-  }
-
   async send() {
     if (!this.template) {
       throw new Error("模版不能为空");
@@ -154,7 +144,8 @@ export class WebhookDeployCert extends AbstractTaskPlugin {
       domains: certReader.getAllDomains().join(","),
       ...this.cert,
     };
-    const bodyStr = this.replaceTemplate(this.template, replaceBody);
+
+    const bodyStr = stringUtils.replaceTemplate(this.template, replaceBody);
     let data = JSON.parse(bodyStr);
 
     let url = this.webhook;
