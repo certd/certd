@@ -7,6 +7,8 @@ export default {
   settingLink: "站点监控设置",
   limitInfo: "基础版限制1条，专业版以上无限制，当前",
   checkAll: "检查全部",
+  checkBatch: "检查选中",
+  batchCheckConfirm: "确认触发检查选中的{count}个站点吗?",
   checkNow: "立即检查",
   batchDelete: "批量删除",
   confirmTitle: "确认",

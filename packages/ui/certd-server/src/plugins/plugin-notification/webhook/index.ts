@@ -1,4 +1,5 @@
 import { BaseNotification, IsNotification, NotificationBody, NotificationInput } from "@certd/pipeline";
+import { stringUtils } from "@certd/basic";
 import qs from "qs";
 
 @IsNotification({
@@ -95,17 +96,6 @@ export class WebhookNotification extends BaseNotification {
   })
   skipSslVerify: boolean;
 
-  replaceTemplate(target: string, body: any, urlEncode = false) {
-    let bodyStr = target;
-    const keys = Object.keys(body);
-    for (const key of keys) {
-      let value = urlEncode ? encodeURIComponent(body[key]) : body[key];
-      value = value.replaceAll(`\n`, "\\n");
-      bodyStr = bodyStr.replaceAll(`{${key}}`, value);
-    }
-    return bodyStr;
-  }
-
   async send(body: NotificationBody) {
     if (!this.template) {
       throw new Error("模版不能为空");
@@ -119,7 +109,7 @@ export class WebhookNotification extends BaseNotification {
       content: body.content,
       url: body.url,
     };
-    const bodyStr = this.replaceTemplate(this.template, replaceBody);
+    const bodyStr = stringUtils.replaceTemplate(this.template, replaceBody);
     let data = JSON.parse(bodyStr);
 
     let url = this.webhook;

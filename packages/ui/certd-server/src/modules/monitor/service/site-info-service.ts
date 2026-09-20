@@ -324,6 +324,23 @@ export class SiteInfoService extends BaseService<SiteInfoEntity> {
     return;
   }
 
+  async checkBatch(ids: number[], userId: number, projectId?: number) {
+    const validIds = this.filterIds(ids);
+    if (validIds.length === 0) {
+      return 0;
+    }
+    const userProjectQuery = this.buildUserProjectQuery(userId, projectId);
+    const sites = await this.repository.find({
+      where: {
+        id: In(validIds),
+        ...userProjectQuery,
+        disabled: false,
+      },
+    });
+    await this.checkList(sites);
+    return sites.length;
+  }
+
   async sendCheckErrorNotify(siteId: number, fromIpCheck = false, setting: UserSiteMonitorSetting) {
     const site = await this.info(siteId);
     const url = await this.notificationService.getBindUrl("#/certd/monitor/site");
