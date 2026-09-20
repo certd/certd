@@ -7,6 +7,8 @@ export default {
   settingLink: "Site Monitoring Settings",
   limitInfo: "Basic edition limited to 1, professional and above unlimited, current",
   checkAll: "Check All",
+  checkBatch: "Check Selected",
+  batchCheckConfirm: "Check the {count} selected sites now?",
   checkNow: "Check Now",
   batchDelete: "Batch Delete",
   confirmTitle: "Confirm",

@@ -134,6 +134,14 @@ export class SiteInfoController extends CrudController<SiteInfoService> {
     return this.ok();
   }
 
+  @Post("/checkBatch", { description: Constants.per.authOnly, summary: "批量检查站点监控" })
+  async checkBatch(@Body(ALL) body: any) {
+    const { projectId, userId } = await this.getProjectUserIdRead();
+    const count = await this.service.checkBatch(body.ids, userId, projectId);
+    this.auditLog({ content: `批量检查了${count}条站点监控` });
+    return this.ok({ count });
+  }
+
   @Post("/checkAll", { description: Constants.per.authOnly, summary: "检查所有站点监控" })
   async checkAll() {
     const { projectId, userId } = await this.getProjectUserIdWrite();

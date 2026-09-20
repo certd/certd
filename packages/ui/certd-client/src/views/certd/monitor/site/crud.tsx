@@ -100,6 +100,23 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
     });
   }
 
+  function checkBatch() {
+    if (selectedRowKeys.value.length === 0) {
+      notification.error({ message: t("monitor.selectRecordsFirst") });
+      return;
+    }
+    Modal.confirm({
+      title: t("monitor.confirmTitle"),
+      content: t("monitor.batchCheckConfirm", { count: selectedRowKeys.value.length }),
+      onOk: async () => {
+        await siteInfoApi.CheckBatch(selectedRowKeys.value);
+        notification.success({ message: t("monitor.checkSubmitted") });
+        selectedRowKeys.value = [];
+        await crudExpose.doRefresh();
+      },
+    });
+  }
+
   const GroupTypeSite = "site";
   const groupDictRef = createGroupDictRef(GroupTypeSite);
 
@@ -253,6 +270,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             show: hasActionPermission("write"),
             title: t("certd.domain.importFromResolveRecords"),
             text: t("certd.domain.importFromResolveRecords"),
+            tooltip: { title: t("certd.domain.importFromResolveRecordsTooltip") },
             type: "primary",
             // needPlus: true,
             color: "gold",
@@ -272,6 +290,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             icon: "ion:play-circle-outline",
             click() {
               checkAll();
+            },
+          },
+          checkBatch: {
+            show: true,
+            text: t("monitor.checkBatch"),
+            type: "primary",
+            icon: "ion:play-forward-outline",
+            click() {
+              checkBatch();
             },
           },
         },
