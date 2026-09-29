@@ -5,8 +5,8 @@
 `Certd`默认启用https，监听7002端口    
 如果你想关闭https，或者修改端口，可以在环境变量中配置
 ```shell
-CERTD_HTTPS_ENABLE=true
-CERTD_HTTPS_port=7002
+certd_https_enabled=true
+certd_https_port=7002
 
 ```
 
