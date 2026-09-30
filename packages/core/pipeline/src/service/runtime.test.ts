@@ -64,6 +64,28 @@ describe("RuntimeDepsService", () => {
     assert.equal(mod.value, 42);
   });
 
+  it("logs a cache clearing hint when a nested runtime dependency is missing", async () => {
+    const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-deps-missing-nested-"));
+    const packageDir = path.join(rootDir, "node_modules", "runtime-only");
+    fs.mkdirSync(packageDir, { recursive: true });
+    fs.writeFileSync(path.join(rootDir, "package.json"), JSON.stringify({ name: "runtime-root", type: "module" }), "utf8");
+    fs.writeFileSync(path.join(packageDir, "package.json"), JSON.stringify({ name: "runtime-only", main: "index.js" }), "utf8");
+    fs.writeFileSync(path.join(packageDir, "index.js"), "module.exports = require('missing-nested');\n", "utf8");
+    const logs: string[] = [];
+    const logger = {
+      info() {},
+      warn() {},
+      error(message: string, ...args: any[]) {
+        logs.push([message, ...args.map(item => item?.message || String(item))].join(" "));
+      },
+    };
+    const service = new RuntimeDepsService({ rootDir }, null);
+
+    await assert.rejects(() => service.importRuntime("runtime-only", logger));
+    assert.ok(logs.some(message => message.includes("Cannot find module 'missing-nested'")));
+    assert.ok(logs.some(message => message.includes("插件管理页面->清除缓存依赖->重启certd")));
+  });
+
   it("installs configured lazy dependency when import target is missing", async () => {
     const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), "certd-runtime-deps-lazy-"));
     const service = new RuntimeDepsService({ rootDir, lazyDependencies: { "lazy-pkg": "^1.2.3" } }, null);
