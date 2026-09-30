@@ -251,6 +251,7 @@ export class RuntimeDepsService {
     }
 
     let resolved: string;
+    let fromRuntimeDeps = false;
     try {
       //尝试加载本项目依赖
       resolved = this.resolveProjectSpecifier(specifier).resolved;
@@ -258,13 +259,22 @@ export class RuntimeDepsService {
       if (!this.isModuleNotFoundError(error)) {
         throw error;
       }
+      fromRuntimeDeps = true;
       resolved = await this.resolveLazyOrInstallSpecifier(specifier, logger);
     }
     if (!resolved) {
       throw new Error(`依赖未安装成功: ${specifier}`);
     }
 
-    return await import(pathToFileURL(resolved).href);
+    try {
+      return await import(pathToFileURL(resolved).href);
+    } catch (error: any) {
+      if (fromRuntimeDeps && this.isModuleNotFoundError(error)) {
+        logger.error?.("动态依赖加载失败:", error);
+        logger.error?.("动态依赖加载失败，请前往插件管理页面->清除缓存依赖->重启certd后重试");
+      }
+      throw error;
+    }
   }
 
   //动态获取模块解析
