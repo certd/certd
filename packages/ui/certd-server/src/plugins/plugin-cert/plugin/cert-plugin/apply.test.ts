@@ -4,6 +4,14 @@ import { NonRetryableException } from "@certd/lib-server";
 import { CertApplyPlugin } from "./apply.js";
 
 describe("CertApplyPlugin dns-persist verify plan", () => {
+  it("builds dns-persist fallback values from the ACME account issuer", () => {
+    const plugin: any = new CertApplyPlugin();
+
+    const recordValue = plugin.buildDnsPersistRecordValue("https://pki.goog/acct/12345678", true, undefined, "pki.goog");
+
+    assert.equal(recordValue, "pki.goog; accounturi=https://pki.goog/acct/12345678; policy=wildcard");
+  });
+
   it("keeps dns-persist entries when building mixed domain verify plans", async () => {
     const plugin: any = new CertApplyPlugin();
     plugin.acme = {

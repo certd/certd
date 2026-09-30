@@ -79,3 +79,4 @@ export * from './verify.js'
 export * from './error.js'
 
 export * from './util.js'
+export * from './dns-persist.js'

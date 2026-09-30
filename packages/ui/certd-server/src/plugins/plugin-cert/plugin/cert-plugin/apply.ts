@@ -1,4 +1,5 @@
 import { IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { getDnsPersistIssuer } from "@certd/acme-client";
 import { utils } from "@certd/basic";
 import { CustomAcmeProvider, NonRetryableException } from "@certd/lib-server";
 
@@ -664,10 +665,10 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
 
   async doCertApply() {
     await this.getAcmeClient();
-    // 自定义ACME不支持DNS持久验证（_validation-persist 为 Let's Encrypt 特有机制）
-    if (this.acmeProvider && this.acmeProvider.builtIn !== true && this.challengeType === "dns-persist") {
-      throw new Error("自定义ACME不支持DNS持久验证，请改用其他域名验证方式");
-    }
+    // 自定义ACME暂不支持DNS持久验证
+    // if (this.acmeProvider && this.acmeProvider.builtIn !== true && this.challengeType === "dns-persist") {
+    //   throw new Error("自定义ACME不支持DNS持久验证，请改用其他域名验证方式");
+    // }
     let email = this.email;
     if (this.eab && this.eab.email) {
       email = this.eab.email;
@@ -786,6 +787,9 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     if (!parsed.accountKey || !parsed.accountUri) {
       throw new Error("ACME账号无效，请重新生成ACME账号");
     }
+    if (!parsed.issuer) {
+      parsed.issuer = getDnsPersistIssuer(parsed.directoryUrl);
+    }
     return parsed;
   }
 
@@ -834,14 +838,14 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
       domain,
       dnsPersistVerifyPlan: {
         hostRecord: persistRecord.hostRecord || `_validation-persist.${domain}`,
-        recordValue: persistRecord.recordValue || this.buildDnsPersistRecordValue(acmeAccount.accountUri, true),
+        recordValue: persistRecord.recordValue || this.buildDnsPersistRecordValue(acmeAccount.accountUri, true, undefined, acmeAccount.issuer),
         accountUri: persistRecord.accountUri || acmeAccount.accountUri,
       },
     };
   }
 
-  buildDnsPersistRecordValue(accountUri: string, wildcard = false, persistUntil?: number) {
-    const parts = [`letsencrypt.org`, `accounturi=${accountUri}`];
+  buildDnsPersistRecordValue(accountUri: string, wildcard = false, persistUntil?: number, issuer = "letsencrypt.org") {
+    const parts = [issuer, `accounturi=${accountUri}`];
     if (wildcard !== false) {
       parts.push("policy=wildcard");
     }

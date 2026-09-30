@@ -1,7 +1,16 @@
 import assert from "assert";
+import { getDnsPersistIssuer } from "@certd/acme-client";
 import { buildDnsPersistRecordValue, DnsPersistRecordService } from "./dns-persist-record-service.js";
 
 describe("DnsPersistRecordService", () => {
+  it("gets issuer from the ACME directory URL", () => {
+    assert.equal(getDnsPersistIssuer("https://dv.acme-v02.api.pki.goog/directory"), "pki.goog");
+    assert.equal(getDnsPersistIssuer("https://acme-v02.api.letsencrypt.org/directory"), "letsencrypt.org");
+    assert.equal(getDnsPersistIssuer("https://acme.example.co.uk/directory"), "example.co.uk");
+    assert.equal(getDnsPersistIssuer(), "letsencrypt.org");
+    assert.throws(() => getDnsPersistIssuer("not a url"), /Directory URL无效/);
+    assert.throws(() => getDnsPersistIssuer("https://localhost/directory"), /可注册主域名/);
+  });
   it("builds dns-persist-01 record value", () => {
     const value = buildDnsPersistRecordValue({
       accountUri: "https://example.com/acct/1",
@@ -10,6 +19,36 @@ describe("DnsPersistRecordService", () => {
     });
 
     assert.equal(value, "letsencrypt.org; accounturi=https://example.com/acct/1; policy=wildcard; persistUntil=1893456000");
+  });
+
+  it("uses the registrable domain from the ACME directory URL", async () => {
+    const service = new DnsPersistRecordService();
+    (service as any).accessService = {
+      async getAccessById() {
+        return {
+          account: JSON.stringify({
+            accountKey: "private-key",
+            accountUri: "https://pki.goog/acct/12345678",
+            caType: "custom",
+            directoryUrl: "https://dv.acme-v02.api.pki.goog/directory",
+          }),
+        };
+      },
+    };
+
+    const buildRequest = {
+      domain: "example.com",
+      caType: "custom",
+      acmeAccountAccessId: 12,
+      userId: 1,
+    };
+    const acmeAccount = await service.getAcmeAccount(buildRequest);
+
+    assert.equal(acmeAccount.account.issuer, "pki.goog");
+
+    const record = await service.buildRecordByAcmeAccount(buildRequest);
+
+    assert.equal(record.recordValue, "pki.goog; accounturi=https://pki.goog/acct/12345678; policy=wildcard");
   });
 
   it("builds validation host from wildcard domain", async () => {
