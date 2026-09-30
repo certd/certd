@@ -23,6 +23,7 @@ describe("AcmeAccountAccess", () => {
 
     assert.equal(account.accountKey, "private-key");
     assert.equal(account.accountUri, "https://example.com/acct/1");
+    assert.equal(account.issuer, "example.com");
   });
 
   it("generates account payload through acme service", async () => {

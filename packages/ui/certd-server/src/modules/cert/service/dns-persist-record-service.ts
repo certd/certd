@@ -2,14 +2,13 @@ import { BaseService } from "@certd/lib-server";
 import { Inject, Provide, Scope, ScopeEnum } from "@midwayjs/core";
 import { InjectEntityModel } from "@midwayjs/typeorm";
 import { In, Repository } from "typeorm";
-import { createChallengeFn } from "@certd/acme-client";
+import { createChallengeFn, getDnsPersistIssuer } from "@certd/acme-client";
 import { AccessService } from "@certd/lib-server";
 import { http, logger, utils } from "@certd/basic";
 import { createDnsProvider, DomainParser } from "@certd/plugin-lib";
 import { DnsPersistRecordEntity } from "../entity/dns-persist-record.js";
 import { TaskServiceBuilder } from "../../pipeline/service/getter/task-service-getter.js";
 import { DomainEntity } from "../entity/domain.js";
-
 export function buildDnsPersistRecordValue(req: { issuer?: string; accountUri: string; wildcard?: boolean; persistUntil?: number }) {
   const parts = [req.issuer || "letsencrypt.org", `accounturi=${req.accountUri}`];
   if (req.wildcard !== false) {
@@ -93,6 +92,9 @@ export class DnsPersistRecordService extends BaseService<DnsPersistRecordEntity>
     if (!parsed.accountKey || !parsed.accountUri) {
       throw new Error("ACME账号授权无效，请重新生成ACME账号");
     }
+    if (!parsed.issuer) {
+      parsed.issuer = getDnsPersistIssuer(parsed.directoryUrl);
+    }
     return parsed;
   }
 
@@ -123,7 +125,7 @@ export class DnsPersistRecordService extends BaseService<DnsPersistRecordEntity>
     };
   }
 
-  async buildRecord(req: { domain: string; accountUri: string; wildcard?: boolean; persistUntil?: number; userId?: number; projectId?: number }) {
+  async buildRecord(req: { domain: string; accountUri: string; issuer?: string; wildcard?: boolean; persistUntil?: number; userId?: number; projectId?: number }) {
     const domain = this.normalizeDomain(req.domain);
     const mainDomain = await this.parseMainDomain(domain, req.userId, req.projectId);
     return {
@@ -141,6 +143,7 @@ export class DnsPersistRecordService extends BaseService<DnsPersistRecordEntity>
     const record = await this.buildRecord({
       domain: req.domain,
       accountUri: account.accountUri,
+      issuer: account.issuer,
       wildcard: true,
       persistUntil: req.persistUntil,
       userId: req.userId,

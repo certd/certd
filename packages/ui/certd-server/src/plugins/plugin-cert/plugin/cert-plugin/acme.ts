@@ -38,6 +38,7 @@ export type AcmeAccountInfo = {
   caType: SSLProvider | string;
   email: string;
   directoryUrl: string;
+  issuer?: string;
 };
 
 export type DnsPersistVerifyPlan = {

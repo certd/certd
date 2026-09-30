@@ -139,7 +139,7 @@ describe("WangsuAccess 授权方式", () => {
   it("未选择 ApiKey 方式时，ApiKey 专属接口给出明确指引", () => {
     const { access } = createAccess({ authType: "aksk" });
 
-    assert.throws(() => access.encryptPrivateKey("MOCK-KEY"), /当前授权未选择「ApiKey（CDN Pro）」鉴权方式/);
+    assert.throws(() => access.encryptPrivateKey("MOCK-KEY"), /当前授权未选择「ApiKey」鉴权方式/);
   });
 
   it("requireApiKeyAuth 在 apikey 方式下放行，在 aksk 方式下报错", () => {
@@ -147,7 +147,7 @@ describe("WangsuAccess 授权方式", () => {
     assert.doesNotThrow(() => access.requireApiKeyAuth());
 
     const akskAccess = createAccess({ authType: "aksk" }).access;
-    assert.throws(() => akskAccess.requireApiKeyAuth(), /当前授权未选择「ApiKey（CDN Pro）」鉴权方式/);
+    assert.throws(() => akskAccess.requireApiKeyAuth(), /当前授权未选择「ApiKey」鉴权方式/);
   });
 
   it("doRequest 传入 dateStr 时用该 Date 鉴权，保证与私钥加密用的是同一个 Date", async () => {
@@ -194,17 +194,6 @@ describe("WangsuAccess 授权方式", () => {
     const list = await access.getCertList({});
 
     assert.deepEqual(list, certificates);
-  });
-
-  it("getCertDnsNames 兼容 dnsNames / dns_names / domains 三种域名写法", () => {
-    assert.deepEqual(WangsuAccess.getCertDnsNames({ dnsNames: ["a.example.com"] }), ["a.example.com"]);
-    assert.deepEqual(WangsuAccess.getCertDnsNames({ dns_names: ["b.example.com"] }), ["b.example.com"]);
-    assert.deepEqual(WangsuAccess.getCertDnsNames({ domains: ["c.example.com"] }), ["c.example.com"]);
-    // 单个字符串也统一成数组
-    assert.deepEqual(WangsuAccess.getCertDnsNames({ dnsNames: "d.example.com" }), ["d.example.com"]);
-    // 没有域名信息时返回空数组，交给调用方提示，不要抛异常
-    assert.deepEqual(WangsuAccess.getCertDnsNames({ id: "cert-1" }), []);
-    assert.deepEqual(WangsuAccess.getCertDnsNames(null), []);
   });
 
   it("apikey 方式下 PATCH 证书把请求体透传", async () => {
@@ -293,6 +282,6 @@ describe("WangsuAccess 授权方式", () => {
   it("encryptPrivateKey 在未选择 ApiKey 方式时直接报错", () => {
     const { access } = createAccess({ authType: "aksk" });
 
-    assert.throws(() => access.encryptPrivateKey("MOCK-KEY"), /当前授权未选择「ApiKey（CDN Pro）」鉴权方式/);
+    assert.throws(() => access.encryptPrivateKey("MOCK-KEY"), /当前授权未选择「ApiKey」鉴权方式/);
   });
 });

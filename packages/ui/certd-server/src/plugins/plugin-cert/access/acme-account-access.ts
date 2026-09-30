@@ -9,6 +9,7 @@ export type AcmeAccountInfo = {
   caType: string;
   email: string;
   directoryUrl: string;
+  issuer?: string;
   eab?: {
     kid?: string;
     hmacKey?: string;
@@ -20,10 +21,11 @@ function parseAccount(account?: string | AcmeAccountInfo): AcmeAccountInfo | nul
   if (!account) {
     return null;
   }
-  if (typeof account !== "string") {
-    return account;
+  const parsed = typeof account === "string" ? JSON.parse(account) : account;
+  if (!parsed.issuer) {
+    parsed.issuer = acme.getDnsPersistIssuer(parsed.directoryUrl);
   }
-  return JSON.parse(account);
+  return parsed;
 }
 
 @IsAccess({
@@ -297,6 +299,7 @@ export class AcmeAccountAccess extends BaseAccess {
       caType: this.caType,
       email: this.email,
       directoryUrl,
+      issuer: acme.getDnsPersistIssuer(directoryUrl),
     };
     if (externalAccountBinding) {
       account.eab = {
