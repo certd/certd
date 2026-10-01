@@ -93,7 +93,7 @@ export class DnsPersistRecordService extends BaseService<DnsPersistRecordEntity>
       throw new Error("ACME账号授权无效，请重新生成ACME账号");
     }
     if (!parsed.issuer) {
-      parsed.issuer = getDnsPersistIssuer(parsed.directoryUrl);
+      parsed.issuer = getDnsPersistIssuer(parsed.directoryUrl || parsed.accountUri);
     }
     return parsed;
   }
