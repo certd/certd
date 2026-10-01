@@ -97,6 +97,7 @@ export class DnsPersistRecordService extends BaseService<DnsPersistRecordEntity>
     }
     return parsed;
   }
+  
 
   async getAcmeAccount(req: DnsPersistRecordBuildReq & { userId: number; projectId?: number }) {
     const accessId = req.acmeAccountAccessId || req.commonAcmeAccountAccessId;

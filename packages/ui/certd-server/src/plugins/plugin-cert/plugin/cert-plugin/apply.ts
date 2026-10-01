@@ -140,11 +140,11 @@ export class CertApplyPlugin extends CertApplyBasePlugin {
     },
     required: true,
     helper: `1. <b>DNS直接验证</b>：当域名dns解析已被本系统支持时（即下方DNS解析服务商选项中可选），推荐选择此方式
-2.  <b>CNAME代理验证</b>：支持任何注册商的域名，第一次需要手动添加[CNAME记录](#/certd/cname/record)（如果经常申请失败，建议将DNS服务器修改为阿里云/腾讯云的，然后使用DNS直接验证）
-3.  <b>HTTP文件验证</b>：不支持泛域名，需要配置网站文件上传（IP证书必须选它）
-4.  <b>多DNS提供商</b>：每个域名可以选择独立的DNS提供商
-5.  <b>自动匹配</b>：此处无需选择校验方式，需要在[域名管理](#/certd/cert/domain)中提前配置好校验方式
-6.  <b>DNS持久验证</b>：需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅 Let's Encrypt 测试环境 可以申请
+2.  <b>DNS持久验证</b>：需要先配置ACME账号和_validation-persist持久TXT记录，续期时不再增删DNS记录；当前仅 Google证书 可以申请
+3.  <b>CNAME代理验证</b>：支持任何注册商的域名，第一次需要手动添加[CNAME记录](#/certd/cname/record)（如果经常申请失败，建议将DNS服务器修改为阿里云/腾讯云的，然后使用DNS直接验证）
+4.  <b>HTTP文件验证</b>：不支持泛域名，需要配置网站文件上传（IP证书必须选它）
+5.  <b>多DNS提供商</b>：每个域名可以选择独立的DNS提供商或校验方式
+6.  <b>自动匹配</b>：此处无需选择校验方式，需要在[域名管理](#/certd/cert/domain)中提前配置好校验方式
 `,
   })
   challengeType!: string;
