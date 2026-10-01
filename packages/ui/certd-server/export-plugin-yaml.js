@@ -76,15 +76,20 @@ async function genMetadata() {
 
   fs.rmSync("./metadata", { recursive: true });
   fs.mkdirSync("./metadata", { recursive: true });
+  const warnings = []
   for (const key in modules) {
     const module = modules[key];
     const entry = Object.entries(module);
-    if (entry.length > 1) {
-      console.log(`[warning] 文件 ${key} 导出了 ${entry.length} 个对象: ${entry.map(([name, value]) => name).join(", ")}`);
-    }
+    // if (entry.length > 1) {
+    //   warnings.push(`[warning] 文件 ${key} 导出了 ${entry.length} 个对象: ${entry.map(([name, value]) => name).join(", ")}`);
+    // }
+    const isManyExport = entry.length > 1;
     for (const [name, value] of entry) {
       //如果有define属性
       if (value.define) {
+        if (isManyExport) {
+          throw new Error(`插件文件禁止导出多个对象， ${key} 导出了 ${entry.length} 个对象: ${entry.map(([name, value]) => name).join(", ")}`);
+        }
         //那么就是插件
         let location = key.substring(4);
         location = location.substring(0, location.length - 3);
@@ -119,6 +124,11 @@ async function genMetadata() {
         const data = yaml.dump(pluginDefine);
         fs.writeFileSync(filePath, data, "utf8");
       }
+    }
+  }
+  if (warnings.length > 0) {
+    for (const warning of warnings) {
+      console.log(warning);
     }
   }
 }

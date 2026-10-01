@@ -11,13 +11,11 @@ input:
       vModel: value
       allowClear: false
       options:
-        - label: AccessKey签名（/api 老接口）
+        - label: AccessKey签名
           value: aksk
-        - label: ApiKey（CDN Pro）
+        - label: ApiKey（CDN Pro必须用这个）
           value: apikey
-    helper: >-
-      历史授权默认使用 AccessKey 签名；对接 CDN Pro（/cdn 接口）请选择 ApiKey 方式，并填写 CDN Pro 控制台的
-      API 账号名与 API Key
+    helper: 网宿接口鉴权方式
     required: false
   accessKeyId:
     title: accessKeyId
@@ -58,7 +56,7 @@ input:
       name: a-input
       vModel: value
       placeholder: API账号名
-    helper: CDN Pro 控制台里的 API 账号名，与 API Key 配套使用
+    helper: 控制台里的 API 账号名，与 API Key 配套使用
     encrypt: false
     required: false
     mergeScript: |2-
@@ -75,7 +73,7 @@ input:
       name: a-input
       vModel: value
       placeholder: API Key
-    helper: CDN Pro 控制台里的 API Key，请求签名与私钥加密都会用到它
+    helper: 控制台里的 API Key，[点击前往获取](https://console.wangsu.com/account/apiManage)
     encrypt: true
     required: false
     mergeScript: |2-

@@ -59,6 +59,7 @@ input:
       vModel: value
       mode: tags
       action: GetSiteList
+      search: true
       watches:
         - certDomains
         - accessId
