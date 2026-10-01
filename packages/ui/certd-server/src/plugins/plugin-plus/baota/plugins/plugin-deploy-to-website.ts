@@ -1,5 +1,5 @@
 import { HttpClient } from "@certd/basic";
-import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, PageSearch, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
 import { BaotaClient } from "../lib/client.js";
@@ -72,6 +72,7 @@ export class BaotaDeployWebSiteCert extends AbstractTaskPlugin {
       vModel: "value",
       mode: "tags",
       action: "GetSiteList",
+      search: true,
       watches: ["certDomains", "accessId", "isDockerSite"],
     },
     required: true,
@@ -186,7 +187,7 @@ export class BaotaDeployWebSiteCert extends AbstractTaskPlugin {
     // this.logger.info(`部署成功：${JSON.stringify(res)}`);
   }
 
-  async onGetSiteList() {
+  async onGetSiteList(data: PageSearch = {}) {
     // if (!isPlus()) {
     //   throw new Error("自动获取站点列表为专业版功能，您可以手动输入站点域名/站点名称进行部署");
     // }
@@ -229,8 +230,17 @@ export class BaotaDeployWebSiteCert extends AbstractTaskPlugin {
     if (!all || all.length === 0) {
       throw new Error("未找到站点，你可以手动输入");
     }
+    const searchKey = data.searchKey?.trim().toLocaleLowerCase();
+    const filteredSites = all
+      .filter(item => {
+        if (!searchKey) {
+          return true;
+        }
+        return item.toLocaleLowerCase().includes(searchKey);
+      })
+      .sort((left, right) => left.localeCompare(right, undefined, { sensitivity: "base" }));
     const options: SiteItem[] = [];
-    for (const item of all) {
+    for (const item of filteredSites) {
       options.push({
         value: item,
         label: item,
