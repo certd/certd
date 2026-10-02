@@ -107,7 +107,7 @@ describe("DnsPersistRecordService", () => {
     assert.equal(record.accountUri, "https://example.com/acct/1");
     assert.equal(record.hostRecord, "_validation-persist");
     assert.equal(record.mainDomain, "example.com");
-    assert.equal(record.recordValue, "letsencrypt.org; accounturi=https://example.com/acct/1; policy=wildcard");
+    assert.equal(record.recordValue, "example.com; accounturi=https://example.com/acct/1; policy=wildcard");
     assert.equal(record.policy, "wildcard");
     assert.equal(record.status, "pending");
   });
@@ -179,7 +179,7 @@ describe("DnsPersistRecordService", () => {
     assert.equal(record.id, 77);
     assert.equal(record.hostRecord, "_validation-persist");
     assert.equal(record.mainDomain, "example.com");
-    assert.equal(record.recordValue, "letsencrypt.org; accounturi=https://example.com/acct/1; policy=wildcard");
+    assert.equal(record.recordValue, "example.com; accounturi=https://example.com/acct/1; policy=wildcard");
     assert.equal(record.status, "pending");
   });
 
@@ -284,7 +284,7 @@ describe("DnsPersistRecordService", () => {
     assert.equal(record.policy, "wildcard");
     assert.equal(record.status, "pending");
     assert.equal(record.mainDomain, "example.com");
-    assert.equal(record.recordValue, "letsencrypt.org; accounturi=https://example.com/acct/1; policy=wildcard");
+    assert.equal(record.recordValue, "example.com; accounturi=https://example.com/acct/1; policy=wildcard");
     assert.equal(record.recordRes, null);
   });
 

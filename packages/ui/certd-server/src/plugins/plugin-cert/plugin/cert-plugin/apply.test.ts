@@ -312,7 +312,7 @@ describe("CertApplyPlugin custom 颁发机构", () => {
     await assert.rejects(() => plugin.getAcmeClient(), /请先选择证书颁发机构/);
   });
 
-  it("自定义颁发机构不支持 DNS 持久验证", async () => {
+  it("自定义颁发机构申请时必须选择对应 ACME 账号", async () => {
     const plugin: any = new CertApplyPlugin();
     plugin.version = 2;
     plugin.sslProvider = "myca";
@@ -330,6 +330,6 @@ describe("CertApplyPlugin custom 颁发机构", () => {
       signal: undefined,
     };
 
-    await assert.rejects(() => plugin.doCertApply(), /DNS持久验证/);
+    await assert.rejects(() => plugin.doCertApply(), /自定义ACME必须选择对应的ACME账号/);
   });
 });

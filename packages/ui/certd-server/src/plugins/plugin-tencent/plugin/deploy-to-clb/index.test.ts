@@ -19,8 +19,8 @@ describe("DeployCertToTencentCLB", () => {
     const options = await plugin.onGetRegionList({});
 
     assert.deepEqual(options[0], {
-      value: "default",
-      label: "就近地域接入（推荐，只支持非金融区）",
+      value: "ap-guangzhou",
+      label: "华南地区（广州）",
       endpoint: "clb.tencentcloudapi.com",
     });
     assert.deepEqual(
