@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.45.0](https://github.com/certd/certd/compare/v1.44.4...v1.45.0) (2026-10-02)
+
+### Bug Fixes
+
+* **webhook:** 修复模版转义换行符，避免手动上传的证书报错 ([2735feb](https://github.com/certd/certd/commit/2735feb3302f8308708dafc8b295adcd4b91d7f0))
+
 ## [1.44.4](https://github.com/certd/certd/compare/v1.44.3...v1.44.4) (2026-09-12)
 
 **Note:** Version bump only for package @certd/basic

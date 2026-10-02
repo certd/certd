@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.45.0](https://github.com/certd/certd/compare/v1.44.4...v1.45.0) (2026-10-02)
+
+### Bug Fixes
+
+* 缺失运行时嵌套依赖时添加清除缓存提示 ([2d0b85b](https://github.com/certd/certd/commit/2d0b85b3054fc1aa82b3ab5db34a2a56308f71f2))
+
 ## [1.44.4](https://github.com/certd/certd/compare/v1.44.3...v1.44.4) (2026-09-12)
 
 **Note:** Version bump only for package @certd/pipeline
