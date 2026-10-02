@@ -2,9 +2,40 @@ import { logger as defaultLogger } from "@certd/basic";
 import { spawn } from "child_process";
 import fs from "fs";
 import { createRequire } from "module";
+import net from "net";
 import path from "path";
 import { pathToFileURL } from "url";
 import type { Registry } from "../registry/registry.js";
+
+function isSafeRegistryUrl(registryUrl: string): boolean {
+  try {
+    const parsed = new URL(registryUrl);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return false;
+    }
+    const hostname = parsed.hostname.toLowerCase();
+    if (hostname === "localhost" || hostname === "metadata.google.internal") {
+      return false;
+    }
+    if (net.isIP(hostname)) {
+      if (
+        /^127\./.test(hostname) ||
+        /^10\./.test(hostname) ||
+        /^172\.(1[6-9]|2\d|3[01])\./.test(hostname) ||
+        /^192\.168\./.test(hostname) ||
+        /^169\.254\./.test(hostname) ||
+        hostname === "::1" ||
+        /^f[cd][0-9a-f]{2}:/i.test(hostname) ||
+        /^fe80:/i.test(hostname)
+      ) {
+        return false;
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
 export type ILogger = {
   info: (message: string) => void;
   warn?: (message: string) => void;
