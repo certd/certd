@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.45.0](https://github.com/publishlab/node-acme-client/compare/v1.44.4...v1.45.0) (2026-10-02)
+
+### Bug Fixes
+
+* 支持google persist校验方式 ([97d2b50](https://github.com/publishlab/node-acme-client/commit/97d2b5007409ec79ea864d437c473a2f9b5dfae4))
+
 ## [1.44.4](https://github.com/publishlab/node-acme-client/compare/v1.44.3...v1.44.4) (2026-09-12)
 
 **Note:** Version bump only for package @certd/acme-client
