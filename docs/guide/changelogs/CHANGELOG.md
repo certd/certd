@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.45.0](https://github.com/certd/certd/compare/v1.44.4...v1.45.0) (2026-10-02)
+
+### Bug Fixes
+
+* [BUG]使用天翼云CDN部署证书时无法匹配域名 ([bb1f232](https://github.com/certd/certd/commit/bb1f232f415c522851dede979f5d609dda844fd3))
+* 缺失运行时嵌套依赖时添加清除缓存提示 ([2d0b85b](https://github.com/certd/certd/commit/2d0b85b3054fc1aa82b3ab5db34a2a56308f71f2))
+* 支持google persist校验方式 ([97d2b50](https://github.com/certd/certd/commit/97d2b5007409ec79ea864d437c473a2f9b5dfae4))
+* **config:** 修复环境变量加载逻辑并更新配置文件 ([07f0d3b](https://github.com/certd/certd/commit/07f0d3b4d626628a0e3dfc7e5c52e8c4a98bad47))
+* **ctyun-cdn:** 修复天翼云CDN部署插件的域名选择问题 ([ea7d14c](https://github.com/certd/certd/commit/ea7d14c289b8720781bf101bfef59eac7bb03765))
+* **webhook:** 修复模版转义换行符，避免手动上传的证书报错 ([2735feb](https://github.com/certd/certd/commit/2735feb3302f8308708dafc8b295adcd4b91d7f0))
+
+### Features
+
+* **client:** 新增客户端管理功能 ([3dbbe72](https://github.com/certd/certd/commit/3dbbe72fc15c114ca6b5e8ff45cb21f258b80650))
+
+### Performance Improvements
+
+* 宝塔站点列表支持搜索和排序 ([4420472](https://github.com/certd/certd/commit/4420472f8fac272d30fb8ccb1cc2ee9763989001))
+* 网宿插件双鉴权支持 ([241b2e5](https://github.com/certd/certd/commit/241b2e55848471e61b5d2be0c87a7dc9a0d29557))
+* **monitor:** 站点证书监控支持手动选中触发检查 ([f60e63f](https://github.com/certd/certd/commit/f60e63fbaf00460d5050cd7705bd75d57dec202d))
+* **open-api:** openkey增加用途备注 ([bbeaf61](https://github.com/certd/certd/commit/bbeaf617d19750515f6eca51863e74e23bc1de50))
+* **tencent clb:** 修改所有CLB地域的endpoint为就近接入 ([c427735](https://github.com/certd/certd/commit/c4277350bcc8cf034cf4e76db2a6daa1842bc5d7))
+
 ## [1.44.4](https://github.com/certd/certd/compare/v1.44.3...v1.44.4) (2026-09-12)
 
 ### Bug Fixes
