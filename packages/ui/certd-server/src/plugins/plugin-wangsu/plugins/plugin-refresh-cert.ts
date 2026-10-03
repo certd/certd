@@ -80,7 +80,7 @@ export class WangsuRefreshCert extends AbstractTaskPlugin {
 
   async onGetCertList(data: PageSearch = {}) {
     const access = await this.getAccess<WangsuAccess>(this.accessId);
-    const list = await access.getCertList({});
+    const list = await access.getCertList();
     if (!list || list.length === 0) {
       throw new Error("没有找到证书，请先在控制台上传一次证书且关联域名");
     }
