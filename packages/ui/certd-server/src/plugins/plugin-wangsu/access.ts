@@ -211,7 +211,7 @@ export class WangsuAccess extends BaseAccess {
     };
   }
 
-  async getCertList() {
+  async getCertList(req: any = {}) {
     // 普通证书列表
     /**
      * certificate-id
@@ -226,7 +226,7 @@ export class WangsuAccess extends BaseAccess {
     return res.data["ssl-certificate"];
   }
 
-  async getCdnProCertList() {
+  async getCdnProCertList(req: any = {}) {
     if (!this.isApiKeyAuth()) {
       throw new Error("CDNPro仅支持apikey授权方式")
     }
