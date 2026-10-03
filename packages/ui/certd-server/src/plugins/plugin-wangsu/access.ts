@@ -211,20 +211,8 @@ export class WangsuAccess extends BaseAccess {
     };
   }
 
-  async getCertList(req: Record<string, never>) {
-    if (this.isApiKeyAuth()) {
-      // CDN Pro 证书列表，limit 上限 200
-      const res: any = await this.doRequest({
-        url: "/cdn/certificates?limit=200",
-        method: "GET",
-      });
-      const body = res.data;
-      if (body == null) {
-        return [];
-      }
-      return body.certificates || [];
-    }
-
+  async getCertList() {
+    // 普通证书列表
     /**
      * certificate-id
      * name
@@ -236,6 +224,17 @@ export class WangsuAccess extends BaseAccess {
     });
 
     return res.data["ssl-certificate"];
+  }
+
+  async getCdnProCertList() {
+    if (!this.isApiKeyAuth()) {
+      throw new Error("CDNPro仅支持apikey授权方式")
+    }
+    const res: any = await this.doRequest({
+      url: "/cdn/certificates?limit=200",
+      method: "GET",
+    });
+    return res.data.certificates || [];
   }
 
   async getCertInfo(req: { certId: string }) {

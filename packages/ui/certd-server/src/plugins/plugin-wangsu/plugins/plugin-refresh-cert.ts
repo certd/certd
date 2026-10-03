@@ -7,7 +7,7 @@ import { WangsuAccess } from "../access.js";
   //命名规范，插件类型+功能（就是目录plugin-demo中的demo），大写字母开头，驼峰命名
   name: "WangsuRefreshCert",
   title: "网宿-更新证书",
-  desc: "网宿证书自动更新",
+  desc: "网宿证书自动更新，注意：仅支持普通CDN证书更新，CDN pro的证书请安装在线插件“网宿-CDNPro更新证书”",
   icon: "svg:icon-wangsu",
   //插件分组
   group: pluginGroups.cdn.key,
@@ -80,7 +80,6 @@ export class WangsuRefreshCert extends AbstractTaskPlugin {
 
   async onGetCertList(data: PageSearch = {}) {
     const access = await this.getAccess<WangsuAccess>(this.accessId);
-
     const list = await access.getCertList({});
     if (!list || list.length === 0) {
       throw new Error("没有找到证书，请先在控制台上传一次证书且关联域名");
