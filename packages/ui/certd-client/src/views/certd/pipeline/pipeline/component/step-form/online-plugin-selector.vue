@@ -1,7 +1,15 @@
 <template>
   <div class="step-plugin-source-pane-online">
     <div class="step-plugin-search">
-      <a-input-search v-model:value="onlinePluginSearch.keyword" placeholder="搜索插件市场" :allow-clear="true" :show-search="true" :loading="onlineLoading" @search="handleOnlinePluginSearch"></a-input-search>
+      <a-space class="step-plugin-search-actions" :size="8">
+        <a-input-search v-model:value="onlinePluginSearch.keyword" placeholder="搜索插件市场" :allow-clear="true" :show-search="true" :loading="onlineLoading" @search="handleOnlinePluginSearch"></a-input-search>
+        <a-button :loading="onlineSyncLoading" @click="syncOnlinePlugins">
+          <template #icon>
+            <fs-icon icon="material-symbols:sync" />
+          </template>
+          {{ t("certd.onlinePluginSync") }}
+        </a-button>
+      </a-space>
     </div>
     <a-tabs v-model:active-key="onlinePluginGroupActive" tab-position="left" class="step-plugin-selector-tabs step-market-tabs flex-1 overflow-hidden h-full">
       <a-tab-pane v-for="group of computedOnlinePluginGroups" :key="group.key" class="step-plugin-list-pane">
@@ -32,6 +40,7 @@
 
 <script lang="ts" setup>
 import { computed, ref, Ref, watch } from "vue";
+import { notification } from "ant-design-vue";
 import { PluginGroups, usePluginStore } from "/@/store/plugin";
 import { useUserStore } from "/@/store/user";
 import PluginItemCard from "/@/views/sys/plugin/components/plugin-item-card.vue";
@@ -58,6 +67,7 @@ const pluginGroup: Ref<PluginGroups | undefined> = ref();
 const onlinePlugins: Ref<pluginApi.OnlinePluginBean[]> = ref([]);
 const onlineGroupPlugins: Ref<pluginApi.OnlinePluginBean[]> = ref([]);
 const onlineLoading: Ref<boolean> = ref(false);
+const onlineSyncLoading: Ref<boolean> = ref(false);
 const onlineGroupLoaded: Ref<boolean> = ref(false);
 const onlinePluginSearch = ref({
   keyword: "",
@@ -65,7 +75,7 @@ const onlinePluginSearch = ref({
 const onlinePluginQueryKeyword = ref("");
 const onlinePluginGroupActive = ref("all");
 const onlinePage = ref(1);
-const onlinePageSize = 8;
+const onlinePageSize = 18;
 let onlineRequestId = 0;
 
 async function loadPluginGroups() {
@@ -128,6 +138,23 @@ async function loadOnlinePlugins(force = false, options?: { silent?: boolean }) 
     if (!options?.silent && requestId === onlineRequestId) {
       onlineLoading.value = false;
     }
+  }
+}
+
+async function syncOnlinePlugins() {
+  if (onlineSyncLoading.value) {
+    return;
+  }
+  onlineSyncLoading.value = true;
+  try {
+    await pluginApi.OnlinePluginSync();
+    await pluginStore.clear();
+    onlineGroupLoaded.value = false;
+    await loadPluginGroups();
+    await loadOnlinePlugins(true);
+    notification.success({ message: t("certd.onlinePluginSyncSuccess") });
+  } finally {
+    onlineSyncLoading.value = false;
   }
 }
 
@@ -339,6 +366,16 @@ loadOnlinePlugins();
   .step-market-content {
     min-height: 100%;
     padding: 2px 2px 12px 0;
+  }
+
+  .step-plugin-search-actions {
+    display: flex;
+    width: 100%;
+
+    .ant-input-search {
+      min-width: 0;
+      flex: 1;
+    }
   }
 
   .step-market-state {
