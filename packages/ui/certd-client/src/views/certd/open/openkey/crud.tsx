@@ -202,7 +202,17 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
         returnCertPassword: {
           title: t("certd.returnCertPassword"),
           type: "dict-switch",
-          form: { show: true, value: false },
+          form: {
+            show: true,
+            value: false,
+            helper: t("certd.returnCertPasswordHelper"),
+          },
+          dict: dict({
+            data: [
+              { label: t("certd.no"), value: false, color: "red" },
+              { label: t("certd.yes"), value: true, color: "green" },
+            ],
+          }),
           column: { width: 140, align: "center" },
         },
         remark: {
