@@ -15,6 +15,12 @@ import { KuocaiCdnAccess } from "../access.js";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Kuocai - Deploy to CDN",
+      desc: "Deploy the certificate to the CDN.",
+    },
+  },
 })
 export class KuocaiDeployToCDNPlugin extends AbstractTaskPlugin {
   //证书选择，此项必须要有

@@ -18,6 +18,12 @@ import { WestAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "West-Deploy to Vhost Plugin",
+      desc: "Deploy certificates to West Vhost.",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class WestDeployToVhost extends AbstractTaskPlugin {

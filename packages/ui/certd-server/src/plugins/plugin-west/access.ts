@@ -11,6 +11,12 @@ import iconv from "iconv-lite";
   title: "西部数码授权",
   desc: "",
   icon: "tabler:map-west",
+  i18n: {
+    "en-US": {
+      title: "West Access",
+      desc: "West IAM access.",
+    },
+  },
 })
 export class WestAccess extends BaseAccess {
   /**

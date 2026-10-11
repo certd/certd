@@ -9,6 +9,12 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "推荐使用，支持CDN域名以及COS加速域名",
+  i18n: {
+    "en-US": {
+      title: "Tencent-Deploy to CDN v2",
+      desc: "Deploy a certificate to Tencent Cloud CDN.",
+    },
+  },
   dependPlugins: {
     "access:tencent": "*",
   },
@@ -126,3 +132,4 @@ export class TencentDeployCertToCDNv2 extends AbstractTaskPlugin {
     return this.ctx.utils.options.buildGroupOptions(options, this.certDomains);
   }
 }
+

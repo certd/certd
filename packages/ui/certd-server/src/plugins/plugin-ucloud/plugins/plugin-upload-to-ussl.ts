@@ -17,6 +17,12 @@ import { UCloudAccess } from "../access.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Ucloud-Upload to USSL Plugin",
+      desc: "Integration plugin for UCloudUploadToUSSL",
+    },
+  },
 })
 //类名规范，跟上面插件名称（name）一致
 export class UCloudUploadToUSSL extends AbstractTaskPlugin {

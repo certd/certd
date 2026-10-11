@@ -4,6 +4,15 @@ import { BaseNotification, IsNotification, NotificationBody, NotificationInput }
   name: "email",
   title: "电子邮件",
   desc: "电子邮件通知",
+  i18n: {
+    "en-US": {
+      title: "Email Notification",
+      desc: "Send pipeline notifications by email.",
+      input: {
+        receivers: { title: "Recipient Email Addresses", helper: "Enter multiple addresses, pressing Enter after each one. Configure the mail server first in Settings > Email." },
+      },
+    },
+  },
   order: -100,
 })
 export class EmailNotification extends BaseNotification {

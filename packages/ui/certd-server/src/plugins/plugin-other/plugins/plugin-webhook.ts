@@ -8,6 +8,7 @@ import { CertApplyPluginNames, CertInfo, CertReader } from "@certd/plugin-cert";
   title: "webhook方式部署证书",
   icon: "ion:send-sharp",
   desc: "调用webhook部署证书",
+  i18n: { "en-US": { title: "Deploy Certificate via Webhook", desc: "Deploy certificates by calling a webhook." } },
   group: pluginGroups.other.key,
   showRunStrategy: false,
   default: {

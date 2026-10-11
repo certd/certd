@@ -13,6 +13,12 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Gcore-Refresh Certificate",
+      desc: "Configure Gcore refresh credentials.",
+    },
+  },
 })
 export class GcoreflushPlugin extends AbstractTaskPlugin {
   @TaskInput({

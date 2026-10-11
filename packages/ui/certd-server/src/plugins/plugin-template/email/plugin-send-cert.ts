@@ -7,6 +7,10 @@ import { BaseEmailTemplateProvider } from "./plugin-base.js";
   name: "sendCert",
   title: "发送证书邮件模版",
   desc: "邮件发送证书插件的邮件模版",
+  i18n: { "en-US": { 
+    title: "Certificate Email Template",
+    desc: "Email template for sending certificates.",
+  } },
   icon: "simple-icons:email:blue",
   showTest: false,
 })

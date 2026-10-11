@@ -6,6 +6,12 @@ import { AsiaIspClient } from "./client.js";
   title: "橙域网络(asia-isp)授权",
   desc: "橙域网络CDN API授权，用于部署证书到橙域CDN",
   icon: "clarity:plugin-line",
+  i18n: {
+    "en-US": {
+      title: "AsiaIsp Access",
+      desc: "AsiaIsp API access",
+    },
+  },
 })
 export class AsiaIspAccess extends BaseAccess {
   @AccessInput({

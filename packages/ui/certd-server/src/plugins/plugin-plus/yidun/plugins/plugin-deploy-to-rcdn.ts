@@ -15,6 +15,12 @@ import { YidunRcdnAccess } from "../access-rcdn.js";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Yidun - Deploy to RCDN",
+      desc: "Deploy a certificate to Yidun RCDN.",
+    },
+  },
 })
 export class YidunDeployToRCDNPlugin extends AbstractTaskPlugin {
   //证书选择，此项必须要有

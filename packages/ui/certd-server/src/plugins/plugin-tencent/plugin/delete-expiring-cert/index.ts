@@ -10,6 +10,12 @@ import { TencentAccess, TencentSslClient } from "../../../plugin-lib/tencent/ind
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "仅删除即将过期且未使用的证书",
+  i18n: {
+    "en-US": {
+      title: "Tencent-Delete Expiring Certificates ",
+      desc: "Delete certificates that are about to expire from Tencent Cloud.",
+    },
+  },
   dependPlugins: {
     "access:tencent": "*",
   },
@@ -203,3 +209,4 @@ export class TencentDeleteExpiringCert extends AbstractPlusTaskPlugin {
 }
 
 new TencentDeleteExpiringCert();
+

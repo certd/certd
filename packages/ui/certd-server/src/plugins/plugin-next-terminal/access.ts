@@ -8,6 +8,12 @@ import { AccessInput, BaseAccess, IsAccess, Pager, PageRes, PageSearch } from "@
   title: "Next Terminal 授权",
   icon: "clarity:plugin-line",
   desc: "用于访问 Next Terminal API 的授权配置",
+  i18n: {
+    "en-US": {
+      title: "NextTerminal Access",
+      desc: "Configure the NextTerminal Access integration.",
+    },
+  },
 })
 export class NextTerminalAccess extends BaseAccess {
   /**

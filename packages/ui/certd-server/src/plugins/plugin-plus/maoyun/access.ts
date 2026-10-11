@@ -8,6 +8,17 @@ import { MaoyunClient } from "@certd/plugin-plus";
   title: "猫云授权",
   desc: "",
   icon: "svg:icon-lucky",
+  i18n: {
+    "en-US": {
+      title: "Maoyun Access",
+      input: {
+        username: { title: "Username", helper: "Username, mobile number, or email." },
+        password: { title: "Password" },
+        httpProxy: { title: "HTTP Proxy" },
+        testRequest: { title: "Test", helper: "Test the API connection." },
+      },
+    },
+  },
 })
 export class MaoyunAccess extends BaseAccess {
   @AccessInput({

@@ -16,6 +16,12 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "Ctyun - Deploy to CDN",
+      desc: "Deploy the certificate to the CDN.",
+    },
+  },
 })
 export class CtyunDeployToCDN extends AbstractTaskPlugin {
   //证书选择，此项必须要有

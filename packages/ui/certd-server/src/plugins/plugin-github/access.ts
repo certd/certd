@@ -8,6 +8,12 @@ import { HttpRequestConfig } from "@certd/basic";
   title: "Github授权",
   desc: "",
   icon: "ion:logo-github",
+  i18n: {
+    "en-US": {
+      title: "Github Access",
+      desc: "Configure Github access credentials.",
+    },
+  },
 })
 export class GithubAccess extends BaseAccess {
   @AccessInput({

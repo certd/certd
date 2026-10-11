@@ -9,6 +9,12 @@ import { CertInfo, CertReader } from "@certd/plugin-cert";
   title: "farcdn授权",
   desc: "",
   icon: "svg:icon-lucky",
+  i18n: {
+    "en-US": {
+      title: "Farcdn Access",
+      desc: "Configure Farcdn access credentials.",
+    },
+  },
 })
 export class FarcdnAccess extends BaseAccess {
   @AccessInput({

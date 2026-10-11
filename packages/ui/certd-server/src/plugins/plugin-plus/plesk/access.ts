@@ -15,6 +15,17 @@ export type PleskReq = {
   title: "plesk授权",
   desc: "",
   icon: "svg:icon-plesk",
+  i18n: {
+    "en-US": {
+      title: "Plesk Access",
+      input: {
+        url: { title: "Plesk URL", helper: "For example: https://example.com:8443/." },
+        username: { title: "Username" },
+        password: { title: "Password" },
+        testRequest: { title: "Test", helper: "Test the API connection." },
+      },
+    },
+  },
 })
 export class PleskAccess extends BaseAccess {
   @AccessInput({

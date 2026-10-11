@@ -33,6 +33,12 @@ interface TokenResponse {
   title: "Nginx Proxy Manager 授权",
   desc: "用于登录 Nginx Proxy Manager，并为代理主机证书部署提供授权。",
   icon: "logos:nginx",
+  i18n: {
+    "en-US": {
+      title: "NginxProxyManager Access",
+      desc: "Configure the NginxProxyManager Access integration.",
+    },
+  },
 })
 export class NginxProxyManagerAccess extends BaseAccess {
   @AccessInput({

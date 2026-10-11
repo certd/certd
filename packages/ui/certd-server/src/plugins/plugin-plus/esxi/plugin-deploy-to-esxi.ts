@@ -15,6 +15,11 @@ import { AbstractPlusTaskPlugin } from "@certd/plugin-plus";
     },
   },
   needPlus: true,
+  i18n: {
+    "en-US": {
+      title: "ESXi - Deploy to ESXi",
+    },
+  },
 })
 export class EsxiDeployCertPlugin extends AbstractPlusTaskPlugin {
   //证书选择，此项必须要有

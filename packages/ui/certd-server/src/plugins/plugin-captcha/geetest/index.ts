@@ -7,6 +7,7 @@ import { ICaptchaAddon } from "../api.js";
   name: "geetest",
   title: "极验验证码v4",
   desc: "",
+  i18n: { "en-US": { title: "GeeTest CAPTCHA", desc: "Verify user requests with GeeTest CAPTCHA." } },
   showTest: false,
 })
 export class GeeTestCaptcha extends BaseAddon implements ICaptchaAddon {

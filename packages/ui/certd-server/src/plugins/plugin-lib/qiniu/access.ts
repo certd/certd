@@ -5,6 +5,7 @@ import { QiniuClient } from "./lib/sdk.js";
   name: "qiniu",
   title: "七牛云授权",
   desc: "",
+  i18n: { "en-US": { title: "Qiniu Cloud Access" } },
   icon: "svg:icon-qiniuyun",
   input: {},
   order: 2,

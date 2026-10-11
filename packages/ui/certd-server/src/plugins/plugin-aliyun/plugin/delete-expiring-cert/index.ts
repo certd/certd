@@ -10,6 +10,12 @@ import { AliyunSslClient } from "../../../plugin-lib/aliyun/lib/index.js";
   icon: "ant-design:aliyun-outlined",
   group: pluginGroups.aliyun.key,
   desc: "仅删除未使用的证书",
+  i18n: {
+    "en-US": {
+      title: "Aliyun - Delete Expiring Certificates",
+      desc: "Delete certificates that are about to expire from Alibaba Cloud.",
+    },
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.AlwaysRun,
@@ -160,3 +166,4 @@ export class AliyunDeleteExpiringCert extends AbstractPlusTaskPlugin {
 }
 
 new AliyunDeleteExpiringCert();
+

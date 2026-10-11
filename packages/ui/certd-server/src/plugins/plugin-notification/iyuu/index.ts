@@ -4,6 +4,7 @@ import { BaseNotification, IsNotification, NotificationBody, NotificationInput }
   name: "iyuu",
   title: "爱语飞飞微信通知(iyuu)",
   desc: "https://iyuu.cn/",
+  i18n: { "en-US": { title: "IYUU Notification", desc: "Send pipeline notifications using IYUU." } },
   needPlus: true,
 })
 export class IyuuNotification extends BaseNotification {

@@ -5,6 +5,18 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   title: "CacheFly",
   desc: "CacheFly",
   icon: "clarity:plugin-line",
+  i18n: {
+    "en-US": {
+      title: "CacheFly",
+      desc: "CacheFly access credentials",
+      input: {
+        username: { title: "Username", component: { placeholder: "Username" } },
+        password: { title: "Password", component: { placeholder: "Password" } },
+        otpkey: { title: "TOTP key", component: { placeholder: "TOTP key" } },
+        testRequest: { title: "Test", helper: "Verify that the access credentials are valid" },
+      },
+    },
+  },
 })
 export class CacheflyAccess extends BaseAccess {
   @AccessInput({

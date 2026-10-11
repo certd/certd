@@ -14,6 +14,12 @@ export type RequestOptions = {
   title: "Dynadot授权",
   desc: "",
   icon: "simple-icons:dynatrace",
+  i18n: {
+    "en-US": {
+      title: "Dynadot Access",
+      desc: "Configure Dynadot access credentials.",
+    },
+  },
 })
 export class DynadotAccess extends BaseAccess {
   @AccessInput({

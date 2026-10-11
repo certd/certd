@@ -5,6 +5,7 @@ import { AliyunSslClient } from "../lib/ssl-client.js";
   name: "aliyun",
   title: "阿里云授权",
   desc: "",
+  i18n: { "en-US": { title: "Aliyun Access", desc: "Configure Aliyun access credentials." } },
   icon: "ant-design:aliyun-outlined",
   order: 0,
 })

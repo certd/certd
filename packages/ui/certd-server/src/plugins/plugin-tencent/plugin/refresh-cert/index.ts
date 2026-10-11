@@ -9,6 +9,12 @@ import { omit } from "lodash-es";
   name: "TencentRefreshCert",
   title: "腾讯云-更新证书(Id不变)",
   desc: "根据证书id一键更新腾讯云证书并自动部署（Id不变），注意：当前仅支持CLB，其他需要等腾讯接口完善",
+  i18n: {
+    "en-US": {
+      title: "Tencent-Refresh Certificate (Keep ID)",
+      desc: "Refresh a Tencent Cloud certificate while keeping its certificate ID.",
+    },
+  },
   icon: "svg:icon-tencentcloud",
   //插件分组
   group: pluginGroups.tencent.key,
@@ -337,3 +343,4 @@ export class TencentRefreshCert extends AbstractTaskPlugin {
 
 //实例化一下，注册插件
 new TencentRefreshCert();
+

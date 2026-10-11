@@ -9,6 +9,12 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   name: "safeline",
   title: "长亭雷池授权",
   icon: "svg:icon-safeline",
+  i18n: {
+    "en-US": {
+      title: "Safeline Access",
+      input: { url: { title: "SafeLine URL" }, apiToken: { title: "API Token" }, skipSslVerify: { title: "Skip Certificate Verification" }, testRequest: { title: "Test", helper: "Test the API connection." } },
+    },
+  },
 })
 export class SafelineAccess extends BaseAccess {
   @AccessInput({

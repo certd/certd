@@ -14,6 +14,12 @@ import { BaiduYunCertClient } from "../client.js";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Baidu - Upload to Cert Hosted",
+      desc: "Upload the certificate to the Baidu Cert Hosted.",
+    },
+  },
 })
 export class BaiduUploadCert extends AbstractTaskPlugin {
   // @TaskInput({ title: '证书名称' })

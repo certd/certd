@@ -10,6 +10,12 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
   icon: "svg:icon-huawei",
   group: pluginGroups.huawei.key,
   desc: "",
+  i18n: {
+    "en-US": {
+      title: "Huawei Cloud - Deploy Certificate to ELB",
+      desc: "Deploy a certificate to Huawei Cloud ELB.",
+    },
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -146,3 +152,4 @@ export class HauweiDeployCertToELB extends AbstractTaskPlugin {
   }
 }
 new HauweiDeployCertToELB();
+

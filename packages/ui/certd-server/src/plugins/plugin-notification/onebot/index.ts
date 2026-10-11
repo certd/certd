@@ -10,6 +10,7 @@ import axios from "axios";
   name: "onebot",
   title: "OneBot V11 通知",
   desc: "通过动态拼接URL发送 OneBot V11 协议消息",
+  i18n: { "en-US": { title: "OneBot Notification", desc: "Send pipeline notifications using OneBot." } },
   needPlus: false,
 })
 export class OneBotNotification extends BaseNotification {

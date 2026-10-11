@@ -9,6 +9,12 @@ import { CertInfo } from "@certd/plugin-cert";
   title: "金山云授权",
   desc: "",
   icon: "svg:icon-ksyun",
+  i18n: {
+    "en-US": {
+      title: "Ksyun Access",
+      desc: "Configure Ksyun access credentials.",
+    },
+  },
 })
 export class KsyunAccess extends BaseAccess {
   @AccessInput({

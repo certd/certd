@@ -15,6 +15,12 @@ import { FtpClient } from "../../../plugin-lib/ftp/client.js";
     },
   },
   needPlus: false,
+  i18n: {
+    "en-US": {
+      title: "FTP - Upload to FTP",
+      desc: "Upload the certificate to the FTP server.",
+    },
+  },
 })
 export class UploadCertToFTPPlugin extends AbstractTaskPlugin {
   @TaskInput({

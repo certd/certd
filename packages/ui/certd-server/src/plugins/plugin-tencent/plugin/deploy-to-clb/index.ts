@@ -34,6 +34,12 @@ const clbRegionOptions = [
   icon: "svg:icon-tencentcloud",
   group: pluginGroups.tencent.key,
   desc: "暂时只支持单向认证证书，暂时只支持通用负载均衡",
+  i18n: {
+    "en-US": {
+      title: "Tencent-Deploy to CLB",
+      desc: "Deploy a certificate to Tencent Cloud CLB.",
+    },
+  },
   dependPlugins: {
     "access:tencent": "*",
   },
@@ -387,3 +393,4 @@ export class DeployCertToTencentCLB extends AbstractTaskPlugin {
     }
   }
 }
+

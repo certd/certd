@@ -10,6 +10,12 @@ import { DogeClient } from "./lib/index.js";
   title: "多吉云",
   desc: "",
   icon: "svg:icon-dogecloud",
+  i18n: {
+    "en-US": {
+      title: "Dogecloud Access",
+      desc: "Configure Dogecloud access credentials.",
+    },
+  },
 })
 export class DogeCloudAccess extends BaseAccess {
   /**

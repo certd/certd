@@ -4,6 +4,7 @@ import { BaseNotification, IsNotification, NotificationBody, NotificationInput }
   name: "serverchan3",
   title: "Server酱³",
   desc: "https://doc.sc3.ft07.com/serverchan3",
+  i18n: { "en-US": { title: "ServerChan 3 Notification", desc: "Send pipeline notifications using ServerChan 3." } },
   needPlus: true,
 })
 export class ServerChan3Notification extends BaseNotification {

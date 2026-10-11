@@ -3,6 +3,11 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   name: "wxpay",
   title: "微信支付",
   icon: "tdesign:logo-wechatpay-filled",
+  i18n: {
+    "en-US": {
+      title: "Wxpay Access",
+    },
+  },
 })
 export class WxpayAccess extends BaseAccess {
   /**

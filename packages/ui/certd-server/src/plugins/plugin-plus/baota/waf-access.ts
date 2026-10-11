@@ -10,6 +10,15 @@ import { HttpRequestConfig, utils } from "@certd/basic";
   title: "宝塔云WAF授权",
   desc: "用于连接和管理宝塔云WAF服务的授权配置",
   icon: "svg:icon-bt",
+  i18n: {
+    "en-US": {
+      title: "Baota WAF Access",
+      desc: "Baota WAF access.",
+      input: {
+        testRequest: { title: "Test", helper: "Test whether the credentials are valid." },
+      },
+    },
+  },
 })
 export class BaotaWafAccess extends BaseAccess {
   @AccessInput({

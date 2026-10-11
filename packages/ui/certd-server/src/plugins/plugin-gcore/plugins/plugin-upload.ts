@@ -13,6 +13,12 @@ import { CertApplyPluginNames } from "@certd/plugin-cert";
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "Gcore-Upload Certificate",
+      desc: "Configure Gcore upload credentials.",
+    },
+  },
 })
 export class GcoreuploadPlugin extends AbstractTaskPlugin {
   @TaskInput({

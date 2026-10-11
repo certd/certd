@@ -19,6 +19,12 @@ interface ProxyHostOption {
       runStrategy: RunStrategy.SkipWhenSucceed,
     },
   },
+  i18n: {
+    "en-US": {
+      title: "NginxProxyManager - Deploy to Proxy Hosts",
+      desc: "Upload custom certificates to the Nginx Proxy Manager and bind them to selected proxy hosts.",
+    },
+  },
 })
 export class NginxProxyManagerDeploy extends AbstractTaskPlugin {
   @TaskInput({

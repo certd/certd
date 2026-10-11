@@ -1,4 +1,4 @@
-﻿import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
+import { AbstractTaskPlugin, IsTaskPlugin, pluginGroups, RunStrategy, TaskInput } from "@certd/pipeline";
 import { utils } from "@certd/basic";
 
 import { CertApplyPluginNames, CertInfo } from "@certd/plugin-cert";
@@ -9,6 +9,12 @@ import { AliyunAccess, AliyunClient } from "../../../plugin-lib/aliyun/index.js"
   title: "阿里云-部署到Ack",
   icon: "svg:icon-aliyun",
   desc: "部署到阿里云Ack集群Ingress等通过Secret管理证书的应用",
+  i18n: {
+    "en-US": {
+      title: "Aliyun-Deploy Certificate to ACK",
+      desc: "Deploy a certificate to Alibaba Cloud ACK.",
+    },
+  },
   group: pluginGroups.aliyun.key,
   needPlus: false,
   input: {},
@@ -294,3 +300,4 @@ export class DeployCertToAliyunAckPlugin extends AbstractTaskPlugin {
 }
 
 new DeployCertToAliyunAckPlugin();
+

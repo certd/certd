@@ -4,6 +4,7 @@ import { AccessInput, BaseAccess, IsAccess } from "@certd/pipeline";
   name: "sftp",
   title: "SFTP授权",
   desc: "",
+  i18n: { "en-US": { title: "Sftp Access" } },
   icon: "clarity:host-line",
   input: {},
 })

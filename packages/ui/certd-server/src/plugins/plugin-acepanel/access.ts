@@ -11,6 +11,12 @@ import url from "url";
   title: "AcePanel授权",
   desc: "",
   icon: "svg:icon-lucky",
+  i18n: {
+    "en-US": {
+      title: "AcePanel Access",
+      desc: "AcePanel IAM access.",
+    },
+  },
 })
 export class AcePanelAccess extends BaseAccess {
   @AccessInput({

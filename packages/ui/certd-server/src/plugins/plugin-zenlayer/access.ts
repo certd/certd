@@ -15,6 +15,12 @@ export type ZenlayerRequest = HttpRequestConfig & {
   title: "Zenlayer授权",
   icon: "svg:icon-lucky",
   desc: "Zenlayer授权",
+  i18n: {
+    "en-US": {
+      title: "Zenlayer Access",
+      desc: "Zenlayer IAM access.",
+    },
+  },
 })
 export class ZenlayerAccess extends BaseAccess {
   /**

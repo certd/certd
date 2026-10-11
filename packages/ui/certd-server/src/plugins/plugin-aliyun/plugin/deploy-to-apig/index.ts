@@ -11,6 +11,12 @@ import { optionsUtils } from "@certd/basic";
   icon: "svg:icon-aliyun",
   group: pluginGroups.aliyun.key,
   desc: "自动部署域名证书至云原生API网关、AI网关",
+  i18n: {
+    "en-US": {
+      title: "Aliyun - Deploy Certificate to API Gateway",
+      desc: "Deploy a certificate to Aliyun API Gateway.",
+    },
+  },
   default: {
     strategy: {
       runStrategy: RunStrategy.SkipWhenSucceed,
@@ -273,3 +279,4 @@ export class DeployCertToAliyunApig extends AbstractTaskPlugin {
   }
 }
 new DeployCertToAliyunApig();
+
