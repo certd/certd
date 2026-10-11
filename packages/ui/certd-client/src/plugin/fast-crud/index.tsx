@@ -13,6 +13,7 @@ import { App } from "vue";
 import { notification } from "ant-design-vue";
 import { usePreferences } from "/@/vben/preferences";
 import { LocalStorage } from "/@/utils/util.storage";
+import i18n from "/@/locales/i18n";
 
 import { FsEditorCode } from "@fast-crud/editor-code";
 import "@fast-crud/editor-code/dist/style.css";
@@ -53,6 +54,7 @@ const tableSaver = new ColumnSizeSaver("table");
 
 function install(app: App, options: any = {}) {
   app.use(UiAntdv);
+  const t = i18n.global.t;
   //设置日志级别
   setLogger({ level: "info" });
 
@@ -177,10 +179,10 @@ function install(app: App, options: any = {}) {
         rowHandle: {
           fixed: "right",
           buttons: {
-            view: { type: "link", text: null, icon: "ion:eye-outline", tooltip: { title: "查看" } },
-            copy: { show: true, type: "link", text: null, icon: "ion:copy-outline", tooltip: { title: "复制" } },
-            edit: { type: "link", text: null, icon: "ion:create-outline", tooltip: { title: "编辑" } },
-            remove: { type: "link", style: { color: "red" }, text: null, icon: "ion:trash-outline", tooltip: { title: "删除" } },
+            view: { type: "link", text: null, icon: "ion:eye-outline", tooltip: { title: t("certd.common.fastCrud.view") } },
+            copy: { show: true, type: "link", text: null, icon: "ion:copy-outline", tooltip: { title: t("certd.common.fastCrud.copy") } },
+            edit: { type: "link", text: null, icon: "ion:create-outline", tooltip: { title: t("certd.common.fastCrud.edit") } },
+            remove: { type: "link", style: { color: "red" }, text: null, icon: "ion:trash-outline", tooltip: { title: t("certd.common.fastCrud.remove") } },
           },
           dropdown: {
             more: {
@@ -236,9 +238,9 @@ function install(app: App, options: any = {}) {
           },
           async afterSubmit({ mode }) {
             if (mode === "add") {
-              notification.success({ message: "添加成功" });
+              notification.success({ message: t("certd.common.fastCrud.addSuccess") });
             } else if (mode === "edit") {
-              notification.success({ message: "保存成功" });
+              notification.success({ message: t("certd.common.fastCrud.saveSuccess") });
             }
           },
           wrapperCol: {

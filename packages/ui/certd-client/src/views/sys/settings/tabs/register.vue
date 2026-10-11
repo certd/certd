@@ -198,11 +198,11 @@ const onFinish = async (form: any) => {
 
 const loginTypeOptions = computed(() => [
   {
-    label: t("authentication.loginType.password"),
+    label: t("certd.auth.loginType.password"),
     value: "password",
   },
   {
-    label: t("authentication.loginType.sms"),
+    label: t("certd.auth.loginType.sms"),
     value: "sms",
     disabled: !formState.public.smsLoginEnabled,
   },

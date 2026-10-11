@@ -11,7 +11,7 @@ export function useSiteIpMonitor() {
   async function openSiteIpMonitorDialog(opts: { siteId: number }) {
     await openDialog({
       wrapper: {
-        title: t("monitor.siteIpMonitor"),
+        title: t("certd.monitor.siteIpMonitor"),
         width: "80%",
         is: "a-modal",
         footer: false,
@@ -42,10 +42,10 @@ export function useSiteIpMonitor() {
         columns: {
           text: {
             type: "textarea",
-            title: t("monitor.ipList"),
+            title: t("certd.monitor.ipList"),
             form: {
-              helper: t("monitor.ipListHelper"),
-              rules: [{ required: true, message: t("monitor.enterImportIpOrDomain") }],
+              helper: t("certd.monitor.ipListHelper"),
+              rules: [{ required: true, message: t("certd.monitor.enterImportIpOrDomain") }],
               component: {
                 placeholder: "192.168.1.2\ncname.foo.com",
                 rows: 8,

@@ -34,7 +34,7 @@
                   </a-tooltip>
                 </span>
                 <span v-else>
-                  <span class="price-text">{{ t("vip.freee") }}</span>
+                  <span class="price-text">{{ t("certd.vip.freee") }}</span>
                 </span>
               </div>
               <div class="get-show">
@@ -44,15 +44,15 @@
                     <span class="color-red"> {{ todayOrderCount.vipTotal }}</span>
                     位伙伴支持
                   </span>
-                  <a-tooltip :title="t('vip.afdian_support_vip')">
+                  <a-tooltip :title="t('certd.vip.afdian_support_vip')">
                     <a-button size="small" type="primary" @click="goBuyPlusPage">
-                      {{ t("vip.get_after_support") }}
+                      {{ t("certd.vip.get_after_support") }}
                     </a-button>
                   </a-tooltip>
                 </template>
                 <template v-else-if="item.type === 'comm'">
                   <a-button size="small" type="primary" @click="goBuyCommPage">
-                    {{ t("vip.buy") }}
+                    {{ t("certd.vip.buy") }}
                   </a-button>
                 </template>
               </div>
@@ -63,36 +63,36 @@
     </div>
     <div>
       <a href="https://certd.docmirror.cn/guide/donate/#相关问题" target="_blank">
-        {{ t("vip.question") }}
+        {{ t("certd.vip.question") }}
       </a>
     </div>
     <div class="mt-10">
       <div class="w-100 flex-col md:flex-row">
-        <span>{{ t("vip.site_id") }}：</span>
+        <span>{{ t("certd.vip.site_id") }}：</span>
         <fs-copyable v-model="computedSiteId" class="mr-2 inline-flex"></fs-copyable>
-        <a @click="goBindAccount">{{ t("vip.not_effective") }}</a>
+        <a @click="goBindAccount">{{ t("certd.vip.not_effective") }}</a>
       </div>
     </div>
     <div v-if="isPlus" class="mt-10 flex flex-col md:flex-row">
-      <span class="mr-2"> {{ t("vip.current") }} {{ vipLabel }} {{ t("vip.activated_expire_time") }} {{ settingStore.expiresText }} </span>
+      <span class="mr-2"> {{ t("certd.vip.current") }} {{ vipLabel }} {{ t("certd.vip.activated_expire_time") }} {{ settingStore.expiresText }} </span>
       <a href="https://app.handfree.work/subject/#/page/detail/1" target="_blank">
-        {{ t("vip.learn_more") }}
+        {{ t("certd.vip.learn_more") }}
       </a>
     </div>
     <div class="mt-10">
-      <span class="mr-2">{{ t("vip.have_activation_code") }}</span>
+      <span class="mr-2">{{ t("certd.vip.have_activation_code") }}</span>
       <span>
-        <a @click="showManualActivation">{{ t("vip.manual_activation") }}</a>
+        <a @click="showManualActivation">{{ t("certd.vip.manual_activation") }}</a>
       </span>
     </div>
     <div v-if="manualActiveFlag" class="mt-10">
       <div class="mt-10">
-        <a-input-search v-model:value="formState.code" class="w-2/6" :placeholder="placeholder" :enter-button="t('vip.activate')" @search="doActive"></a-input-search>
+        <a-input-search v-model:value="formState.code" class="w-2/6" :placeholder="placeholder" :enter-button="t('certd.vip.activate')" @search="doActive"></a-input-search>
       </div>
       <div class="mt-10">
-        {{ t("vip.activation_code_one_use") }}
-        <a @click="goAccount">{{ t("vip.bind_account") }}</a
-        >，{{ t("vip.transfer_vip") }}
+        {{ t("certd.vip.activation_code_one_use") }}
+        <a @click="goAccount">{{ t("certd.vip.bind_account") }}</a
+        >，{{ t("certd.vip.transfer_vip") }}
       </div>
     </div>
   </div>
@@ -128,24 +128,24 @@ const formState = reactive({
 
 async function doActive() {
   if (!formState.code) {
-    notification.error({ message: t("vip.enterCode") });
-    throw new Error(t("vip.enterCode"));
+    notification.error({ message: t("certd.vip.enterCode") });
+    throw new Error(t("certd.vip.enterCode"));
   }
   const res = await api.doActive(formState);
   if (res) {
     await settingStore.init();
     const vipLabel = settingStore.vipLabel;
     Modal.success({
-      title: t("vip.successTitle"),
-      content: t("vip.successContent", {
+      title: t("certd.vip.successTitle"),
+      content: t("certd.vip.successContent", {
         vipLabel,
-        expireDate: settingStore.plusInfo.expireTime === -1 ? t("vip.permanent") : dayjs(settingStore.plusInfo.expireTime).format("YYYY-MM-DD"),
+        expireDate: settingStore.plusInfo.expireTime === -1 ? t("certd.vip.permanent") : dayjs(settingStore.plusInfo.expireTime).format("YYYY-MM-DD"),
       }),
       onOk() {
         if (!(settingStore.installInfo.bindUserId > 0)) {
           Modal.confirm({
-            title: t("vip.bindAccountTitle"),
-            content: t("vip.bindAccountContent"),
+            title: t("certd.vip.bindAccountTitle"),
+            content: t("certd.vip.bindAccountContent"),
             onOk() {
               router.push("/sys/account");
             },
@@ -179,39 +179,39 @@ function goBindAccount() {
 
 const vipTypeDefine: any = {
   free: {
-    title: t("vip.basic_edition"),
-    desc: t("vip.community_free_version"),
+    title: t("certd.vip.basic_edition"),
+    desc: t("certd.vip.community_free_version"),
     type: "free",
     icon: "lucide:package-open",
-    privilege: t("vip.free_privilege").split("\n"),
+    privilege: t("certd.vip.free_privilege").split("\n"),
   },
   plus: {
-    title: t("vip.professional_edition"),
-    desc: t("vip.open_source_support"),
+    title: t("certd.vip.professional_edition"),
+    desc: t("certd.vip.open_source_support"),
     type: "plus",
-    privilege: t("vip.plus_privilege").split("\n"),
+    privilege: t("certd.vip.plus_privilege").split("\n"),
     trial: {
-      title: t("vip.click_to_get_7_day_trial"),
+      title: t("certd.vip.click_to_get_7_day_trial"),
       click: () => {
         props.openStarModal("plus");
       },
     },
     icon: "stash:thumb-up",
-    priceText: props.productInfo.plus.priceText || `¥${props.productInfo.plus.price}/${t("vip.years")}`,
-    discountText: props.productInfo.plus.discountText || `¥${props.productInfo.plus.price3}/3${t("vip.years")}`,
+    priceText: props.productInfo.plus.priceText || `¥${props.productInfo.plus.price}/${t("certd.vip.years")}`,
+    discountText: props.productInfo.plus.discountText || `¥${props.productInfo.plus.price3}/3${t("certd.vip.years")}`,
     tooltip: props.productInfo.plus.tooltip,
   },
   comm: {
-    title: t("vip.business_edition"),
-    desc: t("vip.commercial_license"),
+    title: t("certd.vip.business_edition"),
+    desc: t("certd.vip.commercial_license"),
     type: "comm",
     icon: "vaadin:handshake",
-    privilege: t("vip.comm_privilege").split("\n"),
-    priceText: props.productInfo.comm.priceText || `¥${props.productInfo.comm.price}/${t("vip.years")}`,
-    discountText: props.productInfo.comm.discountText || `¥${props.productInfo.comm.price3}/3${t("vip.years")}`,
+    privilege: t("certd.vip.comm_privilege").split("\n"),
+    priceText: props.productInfo.comm.priceText || `¥${props.productInfo.comm.price}/${t("certd.vip.years")}`,
+    discountText: props.productInfo.comm.discountText || `¥${props.productInfo.comm.price3}/3${t("certd.vip.years")}`,
     tooltip: props.productInfo.comm.tooltip,
     trial: {
-      title: t("vip.click_to_get_7_day_trial"),
+      title: t("certd.vip.click_to_get_7_day_trial"),
       click: () => {
         props.openStarModal("comm");
       },

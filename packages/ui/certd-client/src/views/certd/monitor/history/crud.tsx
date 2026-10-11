@@ -26,15 +26,15 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
 
   const historyResultDict = dict({
     data: [
-      { label: t("monitor.history.jobResult.done"), value: "done", color: "green" },
-      { label: t("monitor.history.jobResult.start"), value: "start", color: "blue" },
+      { label: t("certd.monitor.history.jobResult.done"), value: "done", color: "green" },
+      { label: t("certd.monitor.history.jobResult.start"), value: "start", color: "blue" },
     ],
   });
 
   const jobTypeDict = dict({
     data: [
-      { label: t("monitor.history.jobType.domainExpirationCheck"), value: "domainExpirationCheck", color: "green" },
-      { label: t("monitor.history.jobType.siteCertMonitor"), value: "siteCertMonitor", color: "blue" },
+      { label: t("certd.monitor.history.jobType.domainExpirationCheck"), value: "domainExpirationCheck", color: "green" },
+      { label: t("certd.monitor.history.jobType.siteCertMonitor"), value: "siteCertMonitor", color: "blue" },
     ],
   });
 
@@ -166,7 +166,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         type: {
-          title: t("monitor.history.jobTypeTitle"),
+          title: t("certd.monitor.history.jobTypeTitle"),
           search: {
             show: true,
           },
@@ -180,7 +180,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         title: {
-          title: t("monitor.history.titleTitle"),
+          title: t("certd.monitor.history.titleTitle"),
           search: {
             show: true,
           },
@@ -190,7 +190,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         content: {
-          title: t("monitor.history.contentTitle"),
+          title: t("certd.monitor.history.contentTitle"),
           search: {
             show: true,
           },
@@ -201,7 +201,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         result: {
-          title: t("monitor.history.resultTitle"),
+          title: t("certd.monitor.history.resultTitle"),
           search: {
             show: false,
           },
@@ -224,7 +224,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         startAt: {
-          title: t("monitor.history.startAtTitle"),
+          title: t("certd.monitor.history.startAtTitle"),
           search: {
             show: true,
           },
@@ -234,7 +234,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
           },
         },
         endAt: {
-          title: t("monitor.history.endAtTitle"),
+          title: t("certd.monitor.history.endAtTitle"),
           search: {
             show: true,
           },

@@ -5,18 +5,18 @@
       <!--      <div class="login-title">登录</div>-->
       <template v-if="!isOauthOnly">
         <a-tabs v-model:active-key="formState.loginType" :tab-bar-style="{ textAlign: 'center', borderBottom: 'unset' }">
-          <a-tab-pane key="password" :tab="t('authentication.passwordTab')">
+          <a-tab-pane key="password" :tab="t('certd.auth.passwordTab')">
             <template v-if="formState.loginType === 'password'">
               <!--      <div class="login-title">登录</div>-->
               <a-form-item required has-feedback name="username" :rules="rules.username">
-                <a-input v-model:value="formState.username" :placeholder="t('authentication.usernamePlaceholder')" autocomplete="off" @keydown.enter="handleFinish">
+                <a-input v-model:value="formState.username" :placeholder="t('certd.auth.usernamePlaceholder')" autocomplete="off" @keydown.enter="handleFinish">
                   <template #prefix>
                     <fs-icon icon="ion:phone-portrait-outline"></fs-icon>
                   </template>
                 </a-input>
               </a-form-item>
               <a-form-item has-feedback name="password" :rules="rules.password">
-                <a-input-password v-model:value="formState.password" :placeholder="t('authentication.passwordPlaceholder')" autocomplete="off" @keyup.enter="handleFinish">
+                <a-input-password v-model:value="formState.password" :placeholder="t('certd.auth.passwordPlaceholder')" autocomplete="off" @keyup.enter="handleFinish">
                   <template #prefix>
                     <fs-icon icon="ion:lock-closed-outline"></fs-icon>
                   </template>
@@ -28,10 +28,10 @@
               </a-form-item>
             </template>
           </a-tab-pane>
-          <a-tab-pane v-if="sysPublicSettings.smsLoginEnabled === true" key="sms" :tab="t('authentication.smsTab')">
+          <a-tab-pane v-if="sysPublicSettings.smsLoginEnabled === true" key="sms" :tab="t('certd.auth.smsTab')">
             <template v-if="formState.loginType === 'sms'">
               <a-form-item has-feedback name="mobile" :rules="rules.mobile">
-                <a-input v-model:value="formState.mobile" :placeholder="t('authentication.mobilePlaceholder')" autocomplete="off">
+                <a-input v-model:value="formState.mobile" :placeholder="t('certd.auth.mobilePlaceholder')" autocomplete="off">
                   <template #prefix>
                     <fs-icon icon="ion:phone-portrait-outline"></fs-icon>
                   </template>
@@ -50,7 +50,7 @@
         </a-tabs>
         <a-form-item>
           <a-button type="primary" size="large" html-type="button" :loading="loading" class="login-button" @click="handleFinish">
-            {{ queryBindCode ? t("authentication.bindButton") : t("authentication.loginButton") }}
+            {{ queryBindCode ? t("certd.auth.bindButton") : t("certd.auth.loginButton") }}
           </a-button>
         </a-form-item>
         <a-form-item>
@@ -58,14 +58,14 @@
             <div class="flex items-center gap-2">
               <language-toggle class="text-blue-500"></language-toggle>
               <router-link v-if="!!settingStore.sysPublic.selfServicePasswordRetrievalEnabled && !queryBindCode" :to="{ name: 'forgotPassword' }">
-                {{ t("authentication.forgotPassword") }}
+                {{ t("certd.auth.forgotPassword") }}
               </router-link>
               <a v-else v-comm="false" href="https://certd.docmirror.cn/guide/use/forgotpasswd/" target="_blank">
-                {{ t("authentication.forgotPassword") }}
+                {{ t("certd.auth.forgotPassword") }}
               </a>
             </div>
             <router-link v-if="hasRegisterTypeEnabled() && !queryBindCode" class="register" :to="{ name: 'register' }">
-              {{ t("authentication.registerLink") }}
+              {{ t("certd.auth.registerLink") }}
             </router-link>
           </div>
         </a-form-item>
