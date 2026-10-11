@@ -1,4 +1,7 @@
+import tutorialGuide from "./tutorial-guide";
+
 export default {
+  ...tutorialGuide,
   steps: {
     createPipeline: "创建证书流水线",
     addTask: "添加部署任务",

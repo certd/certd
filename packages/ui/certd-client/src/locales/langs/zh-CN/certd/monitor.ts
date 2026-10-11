@@ -1,4 +1,7 @@
+import monitorSite from "./monitor-site";
+
 export default {
+  ...monitorSite,
   certificateRepo: {
     title: "证书仓库",
     sub: "从流水线生成的证书",

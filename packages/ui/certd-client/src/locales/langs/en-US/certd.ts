@@ -25,6 +25,9 @@ import nettest from "./certd/nettest";
 import audit from "./certd/audit";
 import applyTemplate from "./certd/apply-template";
 import dnsPersist from "./certd/dns-persist";
+import auth from "./certd/auth";
+import guide from "./certd/guide";
+import vip from "./certd/vip";
 
 // Note: @ is reserved in locale messages; use {'@'} when needed.
 export default {
@@ -57,4 +60,7 @@ export default {
   audit,
   applyTemplate,
   dnsPersist,
+  auth,
+  guide,
+  vip,
 };

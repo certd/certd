@@ -1,4 +1,7 @@
+import monitorSite from "./monitor-site";
+
 export default {
+  ...monitorSite,
   certificateRepo: {
     title: "Certificate Repository",
     sub: "Certificates generated from pipeline",

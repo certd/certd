@@ -517,7 +517,7 @@ useMounted(async () => {
   }
 
   .info-label {
-    width: 72px;
+    width: 90px;
     flex: none;
     color: hsl(var(--foreground));
     font-size: 13px;

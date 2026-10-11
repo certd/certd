@@ -1,35 +1,35 @@
 <template>
   <fs-page class="page-user-settings page-domain-monitor-setting">
     <template #header>
-      <div class="title">{{ t("monitor.setting.domain.monitorSettings") }}</div>
+      <div class="title">{{ t("certd.monitor.setting.domain.monitorSettings") }}</div>
     </template>
     <div class="user-settings-form settings-form">
       <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off">
-        <a-form-item :label="t('monitor.setting.domain.enabled')" :name="['enabled']">
+        <a-form-item :label="t('certd.monitor.setting.domain.enabled')" :name="['enabled']">
           <div class="flex flex-baseline">
             <a-switch v-model:checked="formState.enabled" :disabled="!settingsStore.isPlus" />
             <vip-button class="ml-5" mode="button"></vip-button>
           </div>
-          <div class="helper">{{ t("monitor.setting.domain.enabledHelper") }}</div>
+          <div class="helper">{{ t("certd.monitor.setting.domain.enabledHelper") }}</div>
         </a-form-item>
-        <a-form-item v-if="formState.enabled" :label="t('monitor.setting.domain.notificationChannel')" :name="['notificationId']">
+        <a-form-item v-if="formState.enabled" :label="t('certd.monitor.setting.domain.notificationChannel')" :name="['notificationId']">
           <div class="flex">
             <NotificationSelector v-model="formState.notificationId" />
           </div>
-          <div class="helper">{{ t("monitor.setting.domain.setNotificationChannel") }}</div>
+          <div class="helper">{{ t("certd.monitor.setting.domain.setNotificationChannel") }}</div>
         </a-form-item>
-        <a-form-item v-if="formState.enabled" :label="t('monitor.setting.domain.willExpireDays')" :name="['willExpireDays']">
+        <a-form-item v-if="formState.enabled" :label="t('certd.monitor.setting.domain.willExpireDays')" :name="['willExpireDays']">
           <div class="flex">
             <a-input-number v-model:value="formState.willExpireDays" />
           </div>
-          <div class="helper">{{ t("monitor.setting.domain.willExpireDaysHelper") }}</div>
+          <div class="helper">{{ t("certd.monitor.setting.domain.willExpireDaysHelper") }}</div>
         </a-form-item>
-        <a-form-item v-if="formState.enabled" :label="t('monitor.setting.domain.monitorCronSetting')" :name="['cron']">
+        <a-form-item v-if="formState.enabled" :label="t('certd.monitor.setting.domain.monitorCronSetting')" :name="['cron']">
           <div class="flex flex-baseline">
             <cron-editor v-model="formState.cron" :disabled="!settingsStore.isPlus" :allow-every-min="userStore.isAdmin" />
             <vip-button class="ml-5" mode="button"></vip-button>
           </div>
-          <div class="helper">{{ t("monitor.setting.domain.cronTrigger") }}</div>
+          <div class="helper">{{ t("certd.monitor.setting.domain.cronTrigger") }}</div>
         </a-form-item>
         <a-form-item label=" " :colon="false" :wrapper-col="{ span: 16 }">
           <loading-button type="primary" html-type="button" :click="doSave" :disabled="!hasActionPermission('write')">{{ t("certd.common.save") }}</loading-button>

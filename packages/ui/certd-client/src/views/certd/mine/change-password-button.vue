@@ -1,6 +1,6 @@
 <template>
   <a-button v-if="showButton" type="primary" @click="open">
-    {{ t("authentication.changePasswordButton") }}
+    {{ t("certd.auth.changePasswordButton") }}
   </a-button>
 </template>
 
@@ -31,21 +31,21 @@ type OpenOptions = {
 
 const validatePass1 = async (rule: any, value: any) => {
   if (value === "") {
-    throw new Error(t("authentication.enterPassword"));
+    throw new Error(t("certd.auth.enterPassword"));
   }
   const formData = passwordFormRef.value.getFormData();
   if (formData.confirmNewPassword !== "") {
     passwordFormRef.value.formRef.formRef.validateFields(["confirmNewPassword"]);
   }
   if (formData.password === formData.newPassword) {
-    throw new Error(t("authentication.newPasswordNotSameOld"));
+    throw new Error(t("certd.auth.newPasswordNotSameOld"));
   }
 };
 const validatePass2 = async (rule: any, value: any) => {
   if (value === "") {
-    throw new Error(t("authentication.enterPasswordAgain"));
+    throw new Error(t("certd.auth.enterPasswordAgain"));
   } else if (value !== passwordFormRef.value.getFormData().newPassword) {
-    throw new Error(t("authentication.passwordsNotMatch"));
+    throw new Error(t("certd.auth.passwordsNotMatch"));
   }
 };
 
@@ -58,7 +58,7 @@ const passwordFormOptions: CrudOptions = {
       span: 24,
     },
     wrapper: {
-      title: t("authentication.title"),
+      title: t("certd.auth.title"),
       width: "500px",
     },
     async doSubmit({ form }) {
@@ -72,7 +72,7 @@ const passwordFormOptions: CrudOptions = {
     },
     async afterSubmit() {
       const formData = passwordFormRef.value?.getFormData?.();
-      const msg = formData?.init ? t("authentication.initPasswordSuccessMessage") : t("authentication.successMessage");
+      const msg = formData?.init ? t("certd.auth.initPasswordSuccessMessage") : t("certd.auth.successMessage");
       notification.success({ message: msg });
     },
   },
@@ -85,33 +85,33 @@ const passwordFormOptions: CrudOptions = {
       },
     },
     password: {
-      title: t("authentication.oldPassword"),
+      title: t("certd.auth.oldPassword"),
       type: "password",
       form: {
         //@ts-ignore
         show: compute(({ form }) => form.init !== true),
-        rules: [{ required: true, message: t("authentication.oldPasswordRequired") }],
+        rules: [{ required: true, message: t("certd.auth.oldPasswordRequired") }],
       },
     },
     newPassword: {
-      title: t("authentication.newPassword"),
+      title: t("certd.auth.newPassword"),
       type: "password",
       form: {
         rules: [
-          { required: true, message: t("authentication.newPasswordRequired") },
+          { required: true, message: t("certd.auth.newPasswordRequired") },
           //@ts-ignore
           { validator: validatePass1, trigger: "blur" },
         ],
       },
     },
     confirmNewPassword: {
-      title: t("authentication.confirmNewPassword"),
+      title: t("certd.auth.confirmNewPassword"),
       type: "password",
       form: {
         rules: [
           {
             required: true,
-            message: t("authentication.confirmNewPasswordRequired"),
+            message: t("certd.auth.confirmNewPasswordRequired"),
           },
           //@ts-ignore
           { validator: validatePass2, trigger: "blur" },
@@ -125,7 +125,7 @@ async function open(opts: OpenOptions = {}) {
   const formOptions = buildFormOptions(passwordFormOptions);
   formOptions.newInstance = true;
   if (opts.init) {
-    formOptions.wrapper.title = t("authentication.initPasswordTitle");
+    formOptions.wrapper.title = t("certd.auth.initPasswordTitle");
   }
   formOptions.wrapper.onClosed = () => {
     emit("close");

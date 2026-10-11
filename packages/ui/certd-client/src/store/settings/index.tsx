@@ -172,9 +172,9 @@ export const useSettingStore = defineStore({
     vipLabel(): string {
       const { t } = useI18n();
       const vipLabelMap: any = {
-        free: t("vip.label.free"),
-        plus: t("vip.label.plus"),
-        comm: t("vip.label.comm"),
+        free: t("certd.vip.label.free"),
+        plus: t("certd.vip.label.plus"),
+        comm: t("certd.vip.label.comm"),
       };
       return vipLabelMap[this.plusInfo?.vipType || "free"];
     },
@@ -208,10 +208,10 @@ export const useSettingStore = defineStore({
     checkPlus() {
       if (!this.isPlus) {
         notification.warn({
-          message: $t("vip.needVipTip"),
+          message: $t("certd.vip.needVipTip"),
         });
         mitter.emit("openVipModal");
-        throw new Error($t("vip.needVipTip"));
+        throw new Error($t("certd.vip.needVipTip"));
       }
     },
     async loadSysSettings() {

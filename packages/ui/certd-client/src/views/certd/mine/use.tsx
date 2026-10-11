@@ -114,7 +114,7 @@ export function usePasskeyRegister() {
     const { t } = useI18n();
 
     await openFormDialog({
-      title: t("authentication.registerPasskey"),
+      title: t("certd.auth.registerPasskey"),
       wrapper: {
         width: 500,
       },
@@ -126,7 +126,7 @@ export function usePasskeyRegister() {
       },
       columns: {
         deviceName: {
-          title: t("authentication.deviceName"),
+          title: t("certd.auth.deviceName"),
           type: "text",
           form: {
             component: {
@@ -135,8 +135,8 @@ export function usePasskeyRegister() {
             col: {
               span: 24,
             },
-            helper: t("authentication.deviceNameHelper"),
-            rules: [{ required: true, message: t("authentication.deviceName") }],
+            helper: t("certd.auth.deviceNameHelper"),
+            rules: [{ required: true, message: t("certd.auth.deviceName") }],
           },
         },
       },

@@ -48,56 +48,56 @@ const text = computed<Text>(() => {
   const map = {
     isComm: {
       comm: {
-        name: t("vip.comm.name", { vipLabel }),
-        title: t("vip.comm.title", { expire: expireTime.value }),
+        name: t("certd.vip.comm.name", { vipLabel }),
+        title: t("certd.vip.comm.title", { expire: expireTime.value }),
       },
       button: {
-        name: t("vip.comm.name", { vipLabel }),
-        title: t("vip.comm.title", { expire: expireTime.value }),
+        name: t("certd.vip.comm.name", { vipLabel }),
+        title: t("certd.vip.comm.title", { expire: expireTime.value }),
       },
       icon: {
         name: "",
-        title: t("vip.comm.name", { vipLabel }),
+        title: t("certd.vip.comm.name", { vipLabel }),
       },
       nav: {
-        name: t("vip.comm.nav", { vipLabel }),
-        title: t("vip.comm.title", { expire: expireTime.value }),
+        name: t("certd.vip.comm.nav", { vipLabel }),
+        title: t("certd.vip.comm.title", { expire: expireTime.value }),
       },
     },
     isPlus: {
       comm: {
-        name: t("vip.plus.name"),
-        title: t("vip.plus.title"),
+        name: t("certd.vip.plus.name"),
+        title: t("certd.vip.plus.title"),
       },
       button: {
-        name: t("vip.comm.name", { vipLabel }),
-        title: t("vip.comm.title", { expire: expireTime.value }),
+        name: t("certd.vip.comm.name", { vipLabel }),
+        title: t("certd.vip.comm.title", { expire: expireTime.value }),
       },
       icon: {
         name: "",
-        title: t("vip.comm.name", { vipLabel }),
+        title: t("certd.vip.comm.name", { vipLabel }),
       },
       nav: {
-        name: t("vip.comm.nav", { vipLabel }),
-        title: t("vip.comm.title", { expire: expireTime.value }),
+        name: t("certd.vip.comm.nav", { vipLabel }),
+        title: t("certd.vip.comm.title", { expire: expireTime.value }),
       },
     },
     free: {
       comm: {
-        name: t("vip.free.comm.name"),
-        title: t("vip.free.comm.title"),
+        name: t("certd.vip.free.comm.name"),
+        title: t("certd.vip.free.comm.title"),
       },
       button: {
-        name: t("vip.free.button.name"),
-        title: t("vip.free.button.title"),
+        name: t("certd.vip.free.button.name"),
+        title: t("certd.vip.free.button.title"),
       },
       icon: {
         name: "",
-        title: t("vip.free.button.name"),
+        title: t("certd.vip.free.button.name"),
       },
       nav: {
-        name: t("vip.free.nav.name"),
-        title: plusMessage || t("vip.free.nav.title"),
+        name: t("certd.vip.free.nav.name"),
+        title: plusMessage || t("certd.vip.free.nav.title"),
       },
     },
   };
@@ -131,7 +131,7 @@ const userStore = useUserStore();
 
 async function getVipTrial(vipType = "plus") {
   const res = await api.getVipTrial(vipType);
-  notification.success({ message: t("vip.congratulations_vip_trial", { duration: res.duration }) });
+  notification.success({ message: t("certd.vip.congratulations_vip_trial", { duration: res.duration }) });
   await settingStore.init();
 }
 
@@ -139,8 +139,8 @@ function openTrialModal(vipType = "plus") {
   Modal.destroyAll();
 
   modal.confirm({
-    title: t("vip.trial_modal_title"),
-    okText: t("vip.trial_modal_ok_text"),
+    title: t("certd.vip.trial_modal_title"),
+    okText: t("certd.vip.trial_modal_ok_text"),
     onOk() {
       getVipTrial(vipType);
     },
@@ -148,8 +148,8 @@ function openTrialModal(vipType = "plus") {
     content: () => {
       return (
         <div class="flex-col mt-10 mb-10">
-          <div>{t("vip.trial_modal_thanks")}</div>
-          <div>{t("vip.trial_modal_click_confirm", { vipType })}</div>
+          <div>{t("certd.vip.trial_modal_thanks")}</div>
+          <div>{t("certd.vip.trial_modal_click_confirm", { vipType })}</div>
         </div>
       );
     },
@@ -158,7 +158,7 @@ function openTrialModal(vipType = "plus") {
 
 function openStarModal(vipType: string) {
   if (settingStore.isPlus) {
-    notification.error({ message: t("vip.already_vip") });
+    notification.error({ message: t("certd.vip.already_vip") });
     return;
   }
   Modal.destroyAll();
@@ -170,8 +170,8 @@ function openStarModal(vipType: string) {
   // };
 
   // modal.confirm({
-  //   title: t("vip.get_7_day_pro_trial"),
-  //   okText: t("vip.star_now"),
+  //   title: t("certd.vip.get_7_day_pro_trial"),
+  //   okText: t("certd.vip.star_now"),
   //   onOk() {
   //     goGithub();
   //     openTrialModal(vipType);
@@ -180,7 +180,7 @@ function openStarModal(vipType: string) {
   //   content: () => {
   //     return (
   //       <div class="flex mt-10 mb-10">
-  //         <div>{t("vip.please_help_star")}</div>
+  //         <div>{t("certd.vip.please_help_star")}</div>
   //         <img class="ml-5" src="https://img.shields.io/github/stars/certd/certd?logo=github" />
   //       </div>
   //     );
@@ -190,16 +190,16 @@ function openStarModal(vipType: string) {
 
 function openUpgrade() {
   if (!userStore.isAdmin) {
-    notification.info({ message: t("vip.admin_only_operation") });
+    notification.info({ message: t("certd.vip.admin_only_operation") });
     return;
   }
-  const placeholder = t("vip.enter_activation_code");
+  const placeholder = t("certd.vip.enter_activation_code");
   const isPlus = settingStore.isPlus;
-  let title = t("vip.activate_pro_business");
+  let title = t("certd.vip.activate_pro_business");
   if (settingStore.isComm) {
-    title = t("vip.renew_business");
+    title = t("certd.vip.renew_business");
   } else if (settingStore.isPlus) {
-    title = t("vip.renew_pro_upgrade_business");
+    title = t("certd.vip.renew_pro_upgrade_business");
   }
 
   // const goBuyUrl = "https://afdian.com/a/greper"
@@ -214,10 +214,10 @@ function openUpgrade() {
   function checkPerpetualPlus() {
     if (settingStore.isPerpetual) {
       Modal.warn({
-        title: t("vip.already_perpetual_plus"),
-        okText: t("vip.confirm"),
+        title: t("certd.vip.already_perpetual_plus"),
+        okText: t("certd.vip.confirm"),
       });
-      throw new Error(t("vip.already_perpetual_plus"));
+      throw new Error(t("certd.vip.already_perpetual_plus"));
     }
   }
 
@@ -225,8 +225,8 @@ function openUpgrade() {
     checkPerpetualPlus();
     if (settingStore.isComm) {
       Modal.warn({
-        title: t("vip.already_comm"),
-        okText: t("vip.confirm"),
+        title: t("certd.vip.already_comm"),
+        okText: t("certd.vip.confirm"),
       });
       return;
     }
@@ -237,8 +237,8 @@ function openUpgrade() {
     checkPerpetualPlus();
     if (settingStore.isPlus && !settingStore.isComm) {
       Modal.confirm({
-        title: t("vip.already_plus"),
-        okText: t("vip.confirm"),
+        title: t("certd.vip.already_plus"),
+        okText: t("certd.vip.confirm"),
         onOk() {
           window.open(goBuyCommUrl);
         },
@@ -251,7 +251,7 @@ function openUpgrade() {
     title,
     class: "vip-modal",
     maskClosable: true,
-    okText: t("vip.close"),
+    okText: t("certd.vip.close"),
     width: 1180,
     content: () => {
       return <VipModalContent placeholder={placeholder} isPlus={isPlus} productInfo={productInfo} goBuyPlusPage={goBuyPlusPage} goBuyCommPage={goBuyCommPage} openStarModal={openStarModal} modalRef={modalRef} />;
