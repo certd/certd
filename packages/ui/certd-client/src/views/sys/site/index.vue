@@ -1,27 +1,27 @@
 <template>
   <fs-page class="page-sys-settings page-sys-site">
     <template #header>
-      <div class="title">站点个性化设置</div>
+      <div class="title">{{ $t("certd.sys.settings.sitePersonalization") }}</div>
     </template>
     <div class="sys-settings-form">
       <a-form :model="formState" name="basic" :label-col="{ span: 8 }" :wrapper-col="{ span: 16 }" autocomplete="off" @finish="onFinish" @finish-failed="onFinishFailed">
-        <a-form-item label="站点名称" name="title">
+        <a-form-item :label="$t('certd.sys.settings.siteName')" name="title">
           <a-input v-model:value="formState.title" />
         </a-form-item>
-        <a-form-item label="副标题/口号" name="slogan">
+        <a-form-item :label="$t('certd.sys.settings.slogan')" name="slogan">
           <a-input v-model:value="formState.slogan" />
         </a-form-item>
         <a-form-item label="Logo" name="logo">
           <fs-cropper-uploader v-model:model-value="formState.logo" :cropper="cropperOptions" value-type="key" :uploader="uploaderConfig" :build-url="buildUrl" />
         </a-form-item>
-        <a-form-item label="登录页Logo" name="loginLogo">
+        <a-form-item :label="$t('certd.sys.settings.loginLogo')" name="loginLogo">
           <fs-cropper-uploader v-model:model-value="formState.loginLogo" :cropper="loginLogoCropperOptions" value-type="key" :uploader="uploaderConfig" :build-url="buildUrl" />
         </a-form-item>
-        <a-form-item label="你的主体名称" name="licenseTo">
+        <a-form-item :label="$t('certd.sys.settings.entityName')" name="licenseTo">
           <a-input v-model:value="formState.licenseTo" />
-          <div class="helper">将会显示在底部</div>
+          <div class="helper">{{ $t("certd.sys.settings.shownAtBottom") }}</div>
         </a-form-item>
-        <a-form-item label="你的主体URL" name="licenseToUrl">
+        <a-form-item :label="$t('certd.sys.settings.entityUrl')" name="licenseToUrl">
           <a-input v-model:value="formState.licenseToUrl" />
         </a-form-item>
         <a-form-item label=" " :colon="false" :wrapper-col="{ span: 8 }">

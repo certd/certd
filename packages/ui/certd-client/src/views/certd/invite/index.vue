@@ -2,11 +2,11 @@
   <fs-page class="page-invite">
     <template #header>
       <div class="title">
-        激励计划
-        <span class="sub"> 邀请好友，获取丰厚佣金奖励 </span>
+        {{ $t("certd.suite.inviteCommission") }}
+        <span class="sub"> {{ $t("certd.suite.inviteSubtitle") }} </span>
       </div>
       <div class="more">
-        <a-button type="primary" @click="openAgreementDialog(false)">推广协议</a-button>
+        <a-button type="primary" @click="openAgreementDialog(false)">{{ $t("certd.suite.promotionAgreement") }}</a-button>
       </div>
     </template>
 
@@ -18,8 +18,8 @@
             <div class="summary-value" :class="item.className">{{ item.value }}</div>
           </div>
           <div v-if="item.key === 'totalIncome'" class="withdraw-action">
-            <div class="withdraw-available">可提现 {{ moneyText(inviteInfo.wallet?.availableAmount) }}</div>
-            <a-button class="summary-action-button" type="primary" @click="gotoWallet">提现</a-button>
+            <div class="withdraw-available">{{ $t("certd.suite.withdrawAvailable", { amount: moneyText(inviteInfo.wallet?.availableAmount) }) }}</div>
+            <a-button class="summary-action-button" type="primary" @click="gotoWallet">{{ $t("certd.suite.withdraw") }}</a-button>
           </div>
         </div>
       </div>
@@ -29,7 +29,7 @@
           <div class="info-icon">
             <fs-icon icon="ion:ticket-outline" />
           </div>
-          <span class="info-label">邀请码</span>
+          <span class="info-label">{{ $t("certd.suite.inviteCode") }}</span>
           <div class="info-content">
             <fs-copyable v-model="inviteInfo.inviteCode" />
           </div>
@@ -39,7 +39,7 @@
           <div class="info-icon">
             <fs-icon icon="ion:link-outline" />
           </div>
-          <span class="info-label">邀请链接</span>
+          <span class="info-label">{{ $t("certd.suite.inviteLink") }}</span>
           <div class="info-content">
             <fs-copyable v-model="inviteInfo.inviteLink" />
           </div>
@@ -50,11 +50,11 @@
             <fs-icon v-if="inviteInfo.currentLevel" :icon="levelIcon(inviteInfo.currentLevel)" />
             <fs-icon v-else icon="ion:ribbon-outline" />
           </div>
-          <span class="info-label">我的等级</span>
+          <span class="info-label">{{ $t("certd.suite.myLevel") }}</span>
           <div class="info-content level-info-content">
-            <span class="level-name-text">{{ inviteInfo.currentLevel?.name || "未设置" }}</span>
+            <span class="level-name-text">{{ inviteInfo.currentLevel?.name || $t("certd.suite.unset") }}</span>
             <span v-if="inviteInfo.currentLevel" class="current-level-rate">
-              <span class="current-level-rate-label">返佣比例</span>
+              <span class="current-level-rate-label">{{ $t("certd.suite.commissionRate") }}</span>
               <span class="current-level-rate-value">{{ inviteInfo.currentLevel.commissionRate }}%</span>
             </span>
             <span v-if="inviteInfo.currentLevel" class="level-rate-desc">好友付费后按此比例计算佣金</span>
@@ -68,7 +68,7 @@
           <span class="info-label">返佣比例</span>
           <div class="info-content level-info-content">
             <span class="current-level-rate fixed-rate-tag">
-              <span class="current-level-rate-label">比例</span>
+              <span class="current-level-rate-label">{{ $t("certd.suite.proportion") }}</span>
               <span class="current-level-rate-value">{{ inviteInfo.fixedCommissionRate || 0 }}%</span>
             </span>
             <span class="level-rate-desc">好友付费后按此比例计算佣金</span>
@@ -77,21 +77,21 @@
       </div>
 
       <a-tabs v-model:active-key="activeTab" class="invite-tabs" @change="handleTabChange">
-        <a-tab-pane key="invitees" tab="邀请成功">
+        <a-tab-pane key="invitees" :tab="$t('certd.suite.inviteSuccess')">
           <fs-crud v-if="activeTab === 'invitees'" ref="inviteesCrudRef" class="invite-crud" v-bind="inviteesCrudBinding" />
         </a-tab-pane>
-        <a-tab-pane key="logs" tab="收益记录">
+        <a-tab-pane key="logs" :tab="$t('certd.suite.incomeRecords')">
           <fs-crud v-if="activeTab === 'logs'" ref="logsCrudRef" class="invite-crud" v-bind="logsCrudBinding" />
         </a-tab-pane>
       </a-tabs>
     </div>
 
     <div v-else-if="loaded && enabled" class="invite-disabled">
-      <a-empty description="请先开通激励计划">
-        <a-button type="primary" @click="openAgreementDialog(true)">开通激励计划</a-button>
+      <a-empty :description="$t('certd.suite.enableFirst')">
+        <a-button type="primary" @click="openAgreementDialog(true)">{{ $t("certd.suite.enable") }}</a-button>
       </a-empty>
     </div>
-    <a-empty v-else-if="loaded" description="激励计划未开启" />
+    <a-empty v-else-if="loaded" :description="$t('certd.suite.disabled')" />
 
     <a-modal v-if="inviteInfo.levelEnabled" v-model:open="levelDialogOpen" title="推广等级" width="820px" wrap-class-name="invite-level-modal" :footer="null">
       <div class="level-modal-subtitle">推广越多，等级越高，返佣比例越高</div>
@@ -127,7 +127,7 @@
 
     <a-modal
       v-model:open="agreementDialogOpen"
-      :title="agreementDialogNeedOpen ? '开通激励计划' : '推广协议'"
+      :title="agreementDialogNeedOpen ? $t('certd.suite.enable') : $t('certd.suite.promotionAgreement')"
       width="760px"
       :mask-closable="!agreementDialogNeedOpen"
       :keyboard="!agreementDialogNeedOpen"
@@ -150,6 +150,7 @@
 
 <script lang="ts" setup>
 import { computed, nextTick, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { FsIcon, useFs } from "@fast-crud/fast-crud";
 import { notification } from "ant-design-vue";
 import { useRouter } from "vue-router";
@@ -199,28 +200,29 @@ function moneyText(amount: number) {
   return `¥ ${amountToYuan(amount)}`;
 }
 
+const { t } = useI18n();
 const summaryCards = computed(() => [
   {
     key: "totalIncome",
-    title: "累计收益",
+    title: t("certd.suite.totalIncome"),
     value: moneyText(inviteInfo.summary.totalIncomeAmount),
     className: "income",
   },
   {
     key: "monthIncome",
-    title: "本月收益",
+    title: t("certd.suite.monthIncome"),
     value: moneyText(inviteInfo.summary.monthIncomeAmount),
     className: "income",
   },
   {
     key: "promotionAmount",
-    title: "累计推广金额",
+    title: t("certd.suite.promotionAmount"),
     value: moneyText(inviteInfo.summary.promotionAmount),
     className: "promotion",
   },
   {
     key: "inviteeCount",
-    title: "已推广人数",
+    title: t("certd.suite.inviteeCount"),
     value: `${inviteInfo.summary.inviteeCount || 0} 人`,
     className: "people",
   },
@@ -267,7 +269,7 @@ async function handleAgreementOk() {
   agreementSubmitting.value = true;
   try {
     await api.OpenInvitePlan();
-    notification.success({ message: "激励计划已开通" });
+    notification.success({ message: t("certd.suite.enabledSuccess") });
     closeAgreementDialog();
     await refreshInvitePage(false);
   } finally {

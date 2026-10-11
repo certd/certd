@@ -42,7 +42,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.pipeline",
+        title: "certd.navigation.pipeline",
         name: "PipelineManager",
         path: "/cert/pipeline",
         component: "/certd/pipeline/index.vue",
@@ -63,7 +63,7 @@ export const certdResources = [
         },
       },
       {
-        title: "certd.history",
+        title: "certd.navigation.history",
         name: "PipelineHistory",
         path: "/cert/history",
         component: "/certd/history/index.vue",
@@ -254,7 +254,7 @@ export const certdResources = [
             },
           },
           {
-            title: "certd.notification",
+            title: "certd.navigation.notification",
             name: "NotificationManager",
             path: "/cert/notification",
             component: "/certd/notification/index.vue",
@@ -354,7 +354,7 @@ export const certdResources = [
         ],
       },
       {
-        title: "certd.suite",
+        title: "certd.common.suite",
         name: "SuiteProduct",
         path: "/cert/suite",
         redirect: "/cert/suite/mine",

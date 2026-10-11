@@ -2,8 +2,8 @@
   <fs-page>
     <template #header>
       <div class="title">
-        通知管理
-        <span class="sub">管理通知配置</span>
+        {{ t("certd.navigation.notification") }}
+        <span class="sub">{{ t("certd.navigation.notificationHelper") }}</span>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
@@ -12,6 +12,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { useI18n } from "/src/locales";
 import { useMounted } from "/@/use/use-mounted";
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
@@ -21,6 +22,7 @@ import { addonProvide } from "/@/views/certd/addon/common";
 export default defineComponent({
   name: "AddonManager",
   setup() {
+    const { t } = useI18n();
     const api = createAddonApi({ from: "user", addonType: "" });
     addonProvide(api);
     const { crudBinding, crudRef, crudExpose } = useFs({
@@ -30,6 +32,7 @@ export default defineComponent({
     useMounted(() => crudExpose.doRefresh());
 
     return {
+      t,
       crudBinding,
       crudRef,
     };

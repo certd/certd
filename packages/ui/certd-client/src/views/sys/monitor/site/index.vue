@@ -1,11 +1,11 @@
 <template>
   <fs-page>
     <template #header>
-      <div class="title">用户证书监控管理</div>
+      <div class="title">{{ t("certd.navigation.sysResources.siteMonitorManager") }}</div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding">
       <template #pagination-left>
-        <a-tooltip title="批量删除">
+        <a-tooltip :title="$t('certd.common.batchDelete')">
           <fs-button icon="DeleteOutlined" @click="handleBatchDelete"></fs-button>
         </a-tooltip>
       </template>
@@ -14,6 +14,7 @@
 </template>
 
 <script lang="ts" setup>
+import { useI18n } from "/src/locales";
 import { useFs } from "@fast-crud/fast-crud";
 import { useMounted } from "/@/use/use-mounted";
 import createCrudOptions from "./crud";
@@ -23,6 +24,7 @@ defineOptions({
 });
 
 const context: any = {};
+const { t } = useI18n();
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions, context });
 const handleBatchDelete = context.handleBatchDelete;
 useMounted(() => crudExpose.doRefresh());

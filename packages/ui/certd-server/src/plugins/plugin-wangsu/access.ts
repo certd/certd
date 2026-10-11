@@ -228,7 +228,7 @@ export class WangsuAccess extends BaseAccess {
 
   async getCdnProCertList(req: any = {}) {
     if (!this.isApiKeyAuth()) {
-      throw new Error("CDNPro仅支持apikey授权方式")
+      throw new Error("CDNPro仅支持apikey授权方式");
     }
     const res: any = await this.doRequest({
       url: "/cdn/certificates?limit=200",

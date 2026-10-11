@@ -157,8 +157,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         notAfter: certReader.expires,
       },
     };
-    if (req.returnCertPassword){
-       result.certPassword = entity.certPassword;
+    if (req.returnCertPassword) {
+      result.certPassword = entity.certPassword;
     }
     return result;
   }
@@ -563,4 +563,3 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     };
   }
 }
-
