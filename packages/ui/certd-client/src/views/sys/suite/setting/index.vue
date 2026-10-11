@@ -2,7 +2,7 @@
   <fs-page class="page-sys-settings page-sys-settings-suite">
     <template #header>
       <div class="title">
-        套餐设置
+        {{ $t("certd.sys.settings.suiteSetting") }}
         <span class="sub"> 建议<router-link :to="{ path: '/sys/settings', query: { tab: 'payment' } }">开启至少一种支付方式</router-link></span>
       </div>
     </template>
@@ -53,10 +53,12 @@ import { request } from "/@/api/service";
 import SuiteDurationSelector from "/@/views/sys/suite/setting/suite-duration-selector.vue";
 import ProductManager from "/@/views/sys/suite/product/index.vue";
 import { useSettingStore } from "/@/store/settings";
+import { useI18n } from "/src/locales";
 
 defineOptions({
   name: "SettingsSuite",
 });
+const { t } = useI18n();
 
 const api = {
   async SuiteSettingGet() {
@@ -100,7 +102,7 @@ const onClick = async () => {
   await loadSettings();
   await settingsStore.loadSysSettings();
   notification.success({
-    message: "保存成功",
+    message: t("certd.common.saveSuccess"),
   });
 };
 

@@ -4,6 +4,23 @@ import { IsAccess, AccessInput, BaseAccess } from "@certd/pipeline";
   name: "google",
   title: "google cloud",
   desc: "谷歌云授权",
+  i18n: {
+    "en-US": {
+      title: "Google Cloud",
+      desc: "Google Cloud credentials.",
+      input: {
+        type: { title: "Credential Type", optionsMapping: { serviceAccount: "Service Account Key", apiKey: "API Key (unavailable)" }, helper: "Credential type." },
+        projectId: { title: "Project ID", helper: "Project ID" },
+        apiKey: { title: "API Key", helper: "Do not select this option; it is currently unavailable." },
+        serviceAccountSecret: {
+          title: "Service Account Key",
+          helper:
+            "[Create a service account](https://cloud.google.com/iam/docs/service-accounts-create?hl=en) and [create a key](https://console.cloud.google.com/iam-admin/serviceaccounts). Download the JSON key and paste its contents here.",
+        },
+        httpsProxy: { title: "HTTPS Proxy", helper: "Google requests may require a proxy. If unset, the global HTTPS_PROXY environment variable is used. A proxy is not needed when the server is located overseas." },
+      },
+    },
+  },
   icon: "flat-color-icons:google",
 })
 export class GoogleAccess extends BaseAccess {

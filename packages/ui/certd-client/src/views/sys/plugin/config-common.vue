@@ -1,7 +1,7 @@
 <template>
   <fs-page class="page-plugin-config">
     <template #header>
-      <div class="title">证书插件配置</div>
+      <div class="title">{{ $t("certd.sys.plugin.certPluginConfig") }}</div>
     </template>
 
     <div class="sys-plugin-config settings-form">
@@ -16,7 +16,7 @@
           </div>
         </a-form-item>
 
-        <a-form-item label="公共Google ACME账号" :name="['CertApply', 'sysSetting', 'input', 'googleCommonAcmeAccountAccessId']">
+        <a-form-item :label="$t('certd.sys.plugin.commonGoogleAcme')" :name="['CertApply', 'sysSetting', 'input', 'googleCommonAcmeAccountAccessId']">
           <access-selector v-model:model-value="formState.CertApply.sysSetting.input.googleCommonAcmeAccountAccessId" type="acmeAccount" subtype="google" from="sys"></access-selector>
           <div class="helper">
             <div>优先推荐配置公共ACME账号。配置后普通用户申请Google证书时无需选择账号，也不会重复消费公共EAB。</div>
@@ -33,7 +33,7 @@
           </div>
         </a-form-item>
 
-        <a-form-item label="公共ZeroSSL ACME账号" :name="['CertApply', 'sysSetting', 'input', 'zerosslCommonAcmeAccountAccessId']">
+        <a-form-item :label="$t('certd.sys.plugin.commonZeroSslAcme')" :name="['CertApply', 'sysSetting', 'input', 'zerosslCommonAcmeAccountAccessId']">
           <access-selector v-model:model-value="formState.CertApply.sysSetting.input.zerosslCommonAcmeAccountAccessId" type="acmeAccount" subtype="zerossl" from="sys"></access-selector>
         </a-form-item>
 
@@ -47,19 +47,19 @@
           </div>
         </a-form-item>
 
-        <a-form-item label="公共litessl ACME账号" :name="['CertApply', 'sysSetting', 'input', 'litesslCommonAcmeAccountAccessId']">
+        <a-form-item :label="$t('certd.sys.plugin.commonLiteSslAcme')" :name="['CertApply', 'sysSetting', 'input', 'litesslCommonAcmeAccountAccessId']">
           <access-selector v-model:model-value="formState.CertApply.sysSetting.input.litesslCommonAcmeAccountAccessId" type="acmeAccount" subtype="litessl" from="sys"></access-selector>
         </a-form-item>
 
-        <a-form-item label="其他配置">
-          <a-button type="primary" @click="doPluginConfig">证书申请插件默认值设置</a-button>
+        <a-form-item :label="$t('certd.sys.plugin.otherConfig')">
+          <a-button type="primary" @click="doPluginConfig">{{ $t("certd.sys.plugin.certApplyDefaults") }}</a-button>
           <div class="helper">
-            <div>自定义证书申请插件参数</div>
+            <div>{{ $t("certd.sys.plugin.customCertApplyParams") }}</div>
           </div>
         </a-form-item>
 
         <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
-          <a-button :loading="saveLoading" type="primary" html-type="submit">保存</a-button>
+          <a-button :loading="saveLoading" type="primary" html-type="submit">{{ $t("certd.sys.plugin.save") }}</a-button>
         </a-form-item>
       </a-form>
     </div>
@@ -73,9 +73,11 @@ import { CommPluginConfig, GetCommPluginConfigs, SaveCommPluginConfigs, getPlugi
 import { merge } from "lodash-es";
 import { notification } from "ant-design-vue";
 import { usePluginConfig } from "./use-config";
+import { useI18n } from "vue-i18n";
 defineOptions({
   name: "SysPluginConfig",
 });
+const { t } = useI18n();
 const formState = reactive<Partial<CommPluginConfig>>({
   CertApply: {
     sysSetting: {
@@ -99,7 +101,7 @@ const onFinish = async (form: any) => {
     saveLoading.value = true;
     await SaveCommPluginConfigs(form);
     notification.success({
-      message: "保存成功",
+      message: t("certd.sys.plugin.saveSuccess"),
     });
   } finally {
     saveLoading.value = false;

@@ -30,6 +30,8 @@ version: 1.0.0
    - 指定对应的云平台的 access 类型名称
    - 设置排序值（可选）
    - 继承 `AbstractDnsProvider` 类
+   - 插件默认文案使用中文；需要英文时，在注解参数对象中添加同级 `i18n: { "en-US": { ... } }`，不要写成 `metadata.i18n`。`define` 本身就是插件 metadata。
+   - `i18n["en-US"]` 仅配置要翻译的展示字段，如 `title`、`desc`、`input`；输入字段可翻译 `title`、`helper`、组件展示文案和 `optionsMapping`。缺少英文翻译时回退默认中文。
 
 4. **实现 onInstance 方法**
 

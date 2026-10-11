@@ -159,4 +159,3 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
     return new CertReader(cert);
   }
 }
-

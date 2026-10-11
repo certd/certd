@@ -1,6 +1,7 @@
 import { CreateCrudOptionsRet, dict, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import * as api from "./api";
 import { util } from "/@/utils";
+import { useI18n } from "/src/locales";
 
 function moneyText(amount: number) {
   const yuan = util.amount.toYuan(Math.abs(amount || 0));
@@ -11,6 +12,7 @@ function moneyText(amount: number) {
 }
 
 export default function (): CreateCrudOptionsRet {
+  const { t } = useI18n();
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetWalletLogs(query);
   };
@@ -23,24 +25,24 @@ export default function (): CreateCrudOptionsRet {
       toolbar: { show: false },
       rowHandle: { show: false },
       columns: {
-        createTime: { title: "时间", type: "datetime", column: { width: 180 } },
+        createTime: { title: t("certd.wallet.applyTime"), type: "datetime", column: { width: 180 } },
         type: {
-          title: "类型",
+          title: t("certd.wallet.type"),
           type: "dict-select",
           dict: dict({
             data: [
-              { label: "收益入账", value: "income", color: "success" },
-              { label: "余额抵扣", value: "consume", color: "default" },
-              { label: "提现冻结", value: "withdraw_freeze", color: "warning" },
-              { label: "提现成功", value: "withdraw", color: "success" },
-              { label: "提现成功", value: "withdraw_success", color: "success" },
-              { label: "提现退回", value: "withdraw_reject", color: "processing" },
+              { label: t("certd.wallet.income"), value: "income", color: "success" },
+              { label: t("certd.wallet.consume"), value: "consume", color: "default" },
+              { label: t("certd.wallet.withdrawFreeze"), value: "withdraw_freeze", color: "warning" },
+              { label: t("certd.wallet.withdrawSuccess"), value: "withdraw", color: "success" },
+              { label: t("certd.wallet.withdrawSuccess"), value: "withdraw_success", color: "success" },
+              { label: t("certd.wallet.withdrawReject"), value: "withdraw_reject", color: "processing" },
             ],
           }),
           column: { width: 120 },
         },
         amount: {
-          title: "变动金额",
+          title: t("certd.wallet.changeAmount"),
           type: "number",
           column: {
             width: 120,
@@ -51,7 +53,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         balanceAfter: {
-          title: "变动后余额",
+          title: t("certd.wallet.balanceAfter"),
           type: "number",
           column: {
             width: 130,
@@ -61,7 +63,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         remark: {
-          title: "备注",
+          title: t("certd.wallet.remark"),
           type: "text",
           column: { minWidth: 220 },
         },

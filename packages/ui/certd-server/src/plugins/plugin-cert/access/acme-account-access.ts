@@ -32,6 +32,30 @@ function parseAccount(account?: string | AcmeAccountInfo): AcmeAccountInfo | nul
   name: "acmeAccount",
   title: "ACME账号",
   desc: "用于复用ACME账号私钥和账号地址，证书申请时不再临时创建账号",
+  i18n: {
+    "en-US": {
+      title: "ACME Account",
+      desc: "Reuse an ACME account key and account URL instead of creating a temporary account for each certificate request.",
+      input: {
+        caType: { title: "Certificate Authority" },
+        email: { title: "Email", helper: "Enter a valid email address." },
+        directoryUrl: { title: "ACME Directory URL", helper: "For legacy custom ACME only. Manage custom ACME providers in Pipeline Settings." },
+        eabKid: {
+          title: "EAB KID",
+          component: { placeholder: "Required when creating an account with a CA that requires EAB" },
+          helper:
+            "EAB credentials are required by some CAs.\nZeroSSL: Generate EAB credentials in the [ZeroSSL Developer Center](https://app.zerossl.com/developer).\nGoogle: See the [Google EAB guide](https://certd.docmirror.cn/guide/use/google/).\nSSL.com: Open Account > API Credentials and view the Secret Key and HMAC Key.\nlitessl: Create an EAB on the [litessl EAB page](https://freessl.cn/automation/eab-manager).",
+        },
+        eabHmacKey: { title: "EAB HMAC Key", component: { placeholder: "Required when creating an account with a CA that requires EAB" } },
+        account: {
+          title: "Generate ACME Account",
+          component: { buttonText: "Generate ACME Account", successMessage: "ACME account generated. Save this access configuration." },
+          helper: "Click the button on the right to generate an ACME account. A generated account cannot be changed.",
+        },
+        editAccount: { title: "Edit ACME Account", helper: "Allow editing the ACME account. This may affect DNS persistent validation records." },
+      },
+    },
+  },
   icon: "ph:certificate",
   subtype: "caType",
 } as any)

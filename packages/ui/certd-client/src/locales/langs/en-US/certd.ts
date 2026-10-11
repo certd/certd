@@ -20,6 +20,7 @@ import cnameSettings from "./certd/sys-cname";
 import tutorial from "./certd/tutorial";
 import cron from "./certd/cron";
 import client from "./certd/client";
+import wallet from "./certd/wallet";
 
 // Note: @ is reserved in locale messages; use {'@'} when needed.
 export default {
@@ -47,4 +48,5 @@ export default {
   tutorial,
   cron,
   client,
+  wallet,
 };

@@ -43,6 +43,7 @@ export type TaskInputDefine = {
 } & FormItemProps;
 
 export type PluginDefine = Registrable & {
+  i18n?: Record<string, any>;
   default?: any;
   group?: string;
   icon?: string;
@@ -457,4 +458,3 @@ export type OutputVO = {
   title: string;
   value: any;
 };
-

@@ -2,8 +2,8 @@
   <fs-page class="page-cert-apply-template">
     <template #header>
       <div class="title">
-        证书申请参数模版
-        <span class="sub">预设证书申请参数，创建证书流水线时自动帮你填写参数。(不包含域名和校验方式)</span>
+        {{ t("certd.navigation.certApplyTemplate") }}
+        <span class="sub">{{ t("certd.navigation.certApplyTemplateHelper") }}</span>
       </div>
     </template>
     <fs-crud ref="crudRef" v-bind="crudBinding"> </fs-crud>
@@ -14,6 +14,9 @@
 import { useFs } from "@fast-crud/fast-crud";
 import createCrudOptions from "./crud";
 import { useMounted } from "/@/use/use-mounted";
+import { useI18n } from "/src/locales";
+
+const { t } = useI18n();
 
 defineOptions({
   name: "CertApplyTemplate",

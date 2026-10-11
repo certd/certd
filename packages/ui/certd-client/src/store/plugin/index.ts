@@ -1,11 +1,29 @@
 import { DynamicType, FormItemProps, useMerge } from "@fast-crud/fast-crud";
-import { merge, set } from "lodash-es";
+import { cloneDeep, merge, set } from "lodash-es";
 import { defineStore } from "pinia";
 import * as api from "./api.plugin";
 import { i18n } from "/src/locales/i18n";
 interface PluginState {
   group?: PluginGroups;
   originGroup?: PluginGroups;
+}
+
+export function resolvePluginLocale(plugin: any, locale = i18n.global.locale.value) {
+  const resolved = cloneDeep(plugin || {});
+  if (locale === "en-US") {
+    const english = resolved.i18n?.["en-US"] || resolved.metadata?.i18n?.["en-US"];
+    if (english) {
+      const translatedFields = ["title", "desc", "group", "input", "output", "shortcut"];
+      const translated: Record<string, any> = {};
+      for (const field of translatedFields) {
+        if (english[field] !== undefined) {
+          translated[field] = english[field];
+        }
+      }
+      merge(resolved, translated);
+    }
+  }
+  return resolved;
 }
 
 export function fillPluginDefine(plugin: any) {
@@ -102,10 +120,14 @@ export class PluginGroups {
       icon: "material-symbols:border-all-rounded",
     };
     for (const key in groups) {
+      const localizedPlugins = [];
       for (const plugin of groups[key].plugins) {
-        fillPluginDefine(plugin);
+        const localizedPlugin = resolvePluginLocale(plugin);
+        fillPluginDefine(localizedPlugin);
+        localizedPlugins.push(localizedPlugin);
       }
-      all.plugins.push(...groups[key].plugins);
+      groups[key] = { ...groups[key], plugins: localizedPlugins };
+      all.plugins.push(...localizedPlugins);
     }
     this.groups = {
       all,

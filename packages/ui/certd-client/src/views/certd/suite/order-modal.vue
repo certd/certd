@@ -67,6 +67,7 @@
 
 <script setup lang="tsx">
 import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { GetPaymentTypes, OrderModalOpenReq, TradeCreate } from "/@/views/certd/suite/api";
 import SuiteValue from "/@/views/sys/suite/product/suite-value.vue";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
@@ -84,6 +85,7 @@ const product = ref<any>(null);
 const formRef = ref<any>({});
 const durationSelected = ref<any>(null);
 const wallet = ref<any>({ availableAmount: 0 });
+const { t } = useI18n();
 async function open(opts: OrderModalOpenReq) {
   openRef.value = true;
 
@@ -160,7 +162,7 @@ async function orderCreate() {
       payType: "free",
     });
     notification.success({
-      message: "套餐购买成功",
+      message: t("certd.suite.purchaseSuccess"),
     });
     openRef.value = false;
     return;
@@ -182,7 +184,7 @@ async function orderCreate() {
 
   if (paymentReq.paid) {
     notification.success({
-      message: "套餐购买成功",
+      message: t("certd.suite.purchaseSuccess"),
     });
     openRef.value = false;
     return;
