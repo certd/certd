@@ -51,6 +51,7 @@ export class OpenCertController extends BaseOpenController {
       autoApplyParams: typeof req.autoApplyParams === "string" ? JSON.parse(req.autoApplyParams) : req.autoApplyParams,
       format: req.format,
       projectId,
+      returnCertPassword: openKey.returnCertPassword,
     });
     return this.ok(res);
   }

@@ -18,6 +18,15 @@ export type UploadCertReq = {
   pipelineId?: number;
   taskId?: string;
   acmeAccountAccessId?: number;
+  certPassword?: string;
+};
+
+export type UpdateCertReq = {
+  pipelineId: number;
+  cert: CertInfo;
+  fromType?: string;
+  taskId?: string;
+  certPassword?: string;
 };
 
 /**
@@ -126,7 +135,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     });
   }
 
-  async getCertInfoById(req: { id: number; userId: number; projectId: number; format?: string }) {
+  async getCertInfoById(req: { id: number; userId: number; projectId: number; format?: string; returnCertPassword?: boolean }) {
     const entity = await this.info(req.id);
     if (!entity || entity.userId !== req.userId) {
       throw new CodeException(Constants.res.openCertNotFound);
@@ -140,7 +149,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     }
     const certInfo = JSON.parse(entity.certInfo) as CertInfo;
     const certReader = new CertReader(certInfo);
-    return {
+    const result: any = {
       ...certReader.toCertInfo(req.format),
       detail: {
         id: entity.id,
@@ -148,6 +157,10 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
         notAfter: certReader.expires,
       },
     };
+    if (req.returnCertPassword){
+       result.certPassword = entity.certPassword;
+    }
+    return result;
   }
 
   /**
@@ -161,7 +174,8 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
    * 3. 证书来源（fromType）保持与该流水线原有记录一致（如 upload/auto）；
    * 4. 同流水线、同申请任务的其他激活状态的证书记录被标记为未激活（inactive）。
    */
-  async updateCertByPipelineId(pipelineId: number, cert: CertInfo, fromType?: string, taskId?: string) {
+  async updateCertByPipelineId(req: UpdateCertReq) {
+    const { pipelineId, cert, fromType, taskId, certPassword } = req;
     const pipeline = await this.pipelineRepository.findOne({
       where: { id: pipelineId },
     });
@@ -204,6 +218,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
       taskId,
       id: placeholderRecord?.id,
       acmeAccountAccessId,
+      certPassword,
     });
     // 旧证书标记为未激活（仅同申请任务产出的旧证书，避免误伤其他任务仍在使用的证书）
     await this.repository.update(
@@ -348,6 +363,7 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     bean.projectId = req.projectId;
     // 吊销旧证书时直接使用记录上的ACME账号授权id（无需再解析流水线）
     bean.acmeAccountAccessId = req.acmeAccountAccessId;
+    bean.certPassword = req.certPassword;
     await this.addOrUpdate(bean);
     return bean;
   }
@@ -547,3 +563,4 @@ export class CertInfoService extends BaseService<CertInfoEntity> {
     };
   }
 }
+
