@@ -84,6 +84,7 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
     const emitter = this.ctx.emitter;
     const value = {
       cert: this.cert,
+      certPassword: this.pfxPassword,
       pipelineId: this.ctx.pipeline.id,
       runnableId: this.ctx.step.id,
     };
@@ -158,3 +159,4 @@ export abstract class CertApplyBaseConvertPlugin extends AbstractTaskPlugin {
     return new CertReader(cert);
   }
 }
+

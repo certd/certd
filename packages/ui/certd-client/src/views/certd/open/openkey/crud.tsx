@@ -21,6 +21,7 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
       id: row.id,
       remark: form.remark,
       scope: form.scope,
+      returnCertPassword: form.returnCertPassword,
     });
     return res;
   };
@@ -197,6 +198,12 @@ export default function ({ crudExpose, context }: CreateCrudOptionsProps): Creat
             align: "center",
             sorter: true,
           },
+        },
+        returnCertPassword: {
+          title: t("certd.returnCertPassword"),
+          type: "dict-switch",
+          form: { show: true, value: false },
+          column: { width: 140, align: "center" },
         },
         remark: {
           title: t("certd.keyRemark"),

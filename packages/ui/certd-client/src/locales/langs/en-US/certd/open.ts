@@ -6,6 +6,7 @@ export default {
   keyRemark: "Key Purpose",
   keyRemarkHelper: "Describe the purpose of this key for easier identification",
   keyRemarkMaxChars: "Maximum 512 characters",
+  returnCertPassword: "Return certificate password",
   gen: {
     text: "API Test",
     title: "x-certd-token",

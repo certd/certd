@@ -97,6 +97,7 @@ export type CertTargetItem = {
 
 export type PipelineEvent<T = any> = {
   cert: T;
+  certPassword?: string;
   runnableId: string;
   pipelineId: number;
 };
@@ -456,3 +457,4 @@ export type OutputVO = {
   title: string;
   value: any;
 };
+

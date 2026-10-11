@@ -6,6 +6,7 @@ export default {
   keyRemark: "密钥用途",
   keyRemarkHelper: "说明该密钥的用途，便于区分和查找",
   keyRemarkMaxChars: "最大512个字符",
+  returnCertPassword: "返回证书密码",
   gen: {
     text: "接口测试",
     title: "x-certd-token",
