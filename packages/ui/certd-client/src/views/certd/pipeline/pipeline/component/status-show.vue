@@ -11,6 +11,7 @@
 
 <script lang="ts">
 import { computed, defineComponent } from "vue";
+import { useI18n } from "/@/locales";
 import { statusUtil } from "/@/views/certd/pipeline/pipeline/utils/util.status";
 
 export default defineComponent({
@@ -26,8 +27,10 @@ export default defineComponent({
     },
   },
   setup(props, ctx) {
+    const { t } = useI18n();
     const statusRef = computed(() => {
-      return statusUtil.get(props.status as string);
+      const status = statusUtil.get(props.status as string);
+      return { ...status, label: t(`certd.pipeline.editor.status${String(status.value).replace(/(^|_)(\w)/g, (_, _separator, letter) => letter.toUpperCase())}`) };
     });
 
     return {

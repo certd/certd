@@ -21,6 +21,10 @@ import tutorial from "./certd/tutorial";
 import cron from "./certd/cron";
 import client from "./certd/client";
 import wallet from "./certd/wallet";
+import nettest from "./certd/nettest";
+import audit from "./certd/audit";
+import applyTemplate from "./certd/apply-template";
+import dnsPersist from "./certd/dns-persist";
 
 // Note: @ is reserved in locale messages; use {'@'} when needed.
 export default {
@@ -49,4 +53,8 @@ export default {
   cron,
   client,
   wallet,
+  nettest,
+  audit,
+  applyTemplate,
+  dnsPersist,
 };

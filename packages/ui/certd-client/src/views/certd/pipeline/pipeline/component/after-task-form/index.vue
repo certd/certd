@@ -21,7 +21,7 @@
               <div v-html="transformDesc(currentPlugin.desc)"></div>
             </template>
             <template #action>
-              <a v-if="editMode && mode !== 'edit'" @click="backToPluginSelect">重新选择插件</a>
+              <a v-if="editMode && mode !== 'edit'" @click="backToPluginSelect">{{ t("certd.pipeline.editor.selectPlugin") }}</a>
             </template>
           </a-alert>
 

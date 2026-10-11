@@ -119,11 +119,19 @@ export class AccessController extends CrudController<AccessService> {
     for (const item of list) {
       dict.push({
         value: item.name,
-        label: item.title,
+        label: this.getLocalizedTitle(item),
         icon: item.icon,
       });
     }
     return this.ok(dict);
+  }
+
+  private getLocalizedTitle(item: AccessDefine): string {
+    const language = this.ctx.headers["accept-language"];
+    if (language?.startsWith("en-US")) {
+      return item.i18n?.["en-US"]?.title || item.title;
+    }
+    return item.title;
   }
 
   @Post("/simpleInfo", { description: Constants.per.authOnly, summary: "查询授权配置简单信息" })

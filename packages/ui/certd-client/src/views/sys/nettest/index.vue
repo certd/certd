@@ -2,8 +2,8 @@
   <fs-page class="page-sys-nettest">
     <template #header>
       <div class="title">
-        网络测试
-        <span class="sub">测试您的服务器容器网络连接是否正常</span>
+        {{ t("certd.nettest.title") }}
+        <span class="sub">{{ t("certd.nettest.helper") }}</span>
       </div>
     </template>
     <div class="nettest-container">
@@ -15,7 +15,7 @@
         <!-- 百度域名测试 (用于对比) -->
         <domain-test-card class="test-card" :domain="'baidu.com'" :port="443" :auto-start="true" />
         <!-- 用户输入域名测试 -->
-        <domain-test-card class="test-card" :title="'自定义域名测试'" />
+        <domain-test-card class="test-card" :title="t('certd.nettest.customDomain')" />
       </div>
     </div>
   </fs-page>
@@ -24,6 +24,9 @@
 <script lang="ts" setup>
 import DomainTestCard from "./DomainTestCard.vue";
 import ServerInfoCard from "./ServerInfoCard.vue";
+import { useI18n } from "/@/locales";
+
+const { t } = useI18n();
 </script>
 
 <style lang="less">

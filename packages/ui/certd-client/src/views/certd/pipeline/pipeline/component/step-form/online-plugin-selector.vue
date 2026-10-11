@@ -2,7 +2,14 @@
   <div class="step-plugin-source-pane-online">
     <div class="step-plugin-search">
       <a-space class="step-plugin-search-actions" :size="8">
-        <a-input-search v-model:value="onlinePluginSearch.keyword" placeholder="搜索插件市场" :allow-clear="true" :show-search="true" :loading="onlineLoading" @search="handleOnlinePluginSearch"></a-input-search>
+        <a-input-search
+          v-model:value="onlinePluginSearch.keyword"
+          :placeholder="t('certd.pipeline.editor.searchPluginMarket')"
+          :allow-clear="true"
+          :show-search="true"
+          :loading="onlineLoading"
+          @search="handleOnlinePluginSearch"
+        ></a-input-search>
         <a-button :loading="onlineSyncLoading" @click="syncOnlinePlugins">
           <template #icon>
             <fs-icon icon="material-symbols:sync" />
@@ -19,8 +26,8 @@
             <div>{{ group.title }}</div>
           </div>
         </template>
-        <div v-if="onlineLoading" class="step-market-state">正在加载插件市场...</div>
-        <div v-else-if="!group.plugins || group.plugins.length === 0" class="step-plugin-empty">没有找到插件</div>
+        <div v-if="onlineLoading" class="step-market-state">{{ t("certd.pipeline.editor.loadingPluginMarket") }}</div>
+        <div v-else-if="!group.plugins || group.plugins.length === 0" class="step-plugin-empty">{{ t("certd.pipeline.editor.noPluginFound") }}</div>
         <template v-else>
           <div class="step-market-content">
             <a-row :gutter="[12, 12]">
@@ -191,23 +198,32 @@ function getOnlinePluginGroupMeta(groupKey: string) {
   const localGroup = localGroups[groupKey];
   if (localGroup) {
     return {
-      title: localGroup.title,
+      title: getTranslatedPluginGroupTitle(groupKey, localGroup.title),
       icon: localGroup.icon,
       order: localGroup.order,
     };
   }
   if (groupKey === "other") {
     return {
-      title: "其他",
+      title: t("certd.pipeline.editor.pluginGroups.other"),
       icon: "clarity:plugin-line",
       order: 9999,
     };
   }
   return {
-    title: groupKey,
+    title: getTranslatedPluginGroupTitle(groupKey, groupKey),
     icon: "clarity:plugin-line",
     order: 1000,
   };
+}
+
+function getTranslatedPluginGroupTitle(groupKey: string, fallbackTitle: string) {
+  const translationKey = `certd.pipeline.editor.pluginGroups.${groupKey}`;
+  const translatedTitle = t(translationKey);
+  if (translatedTitle === translationKey) {
+    return fallbackTitle;
+  }
+  return translatedTitle;
 }
 
 function getFilteredOnlinePlugins() {

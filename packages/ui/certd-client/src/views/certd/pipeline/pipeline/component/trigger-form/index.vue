@@ -52,7 +52,7 @@
 
         <template #footer>
           <a-form-item v-if="editMode" :wrapper-col="{ span: 14, offset: 4 }">
-            <a-button type="primary" @click="triggerSave"> 确定 </a-button>
+            <a-button type="primary" @click="triggerSave"> {{ t("certd.pipeline.editor.confirm") }} </a-button>
           </a-form-item>
         </template>
       </pi-container>
@@ -128,7 +128,7 @@ export default {
         const trigger = { id: nanoid(), title: t("certd.pipeline.timerTrigger"), type: "timer", props: {} };
         if (triggerType === "webhook") {
           trigger.type = "webhook";
-          trigger.title = "Webhook触发";
+          trigger.title = t("certd.pipeline.editor.triggerWebhook");
         }
         triggerOpen(trigger, emit);
       };
@@ -173,12 +173,12 @@ export default {
 
       function typeValueChange(value) {
         if (value === "webhook") {
-          if (currentTrigger.value.title === "定时触发" || !currentTrigger.value.title) {
-            currentTrigger.value.title = "Webhook触发";
+          if (currentTrigger.value.title === t("certd.pipeline.editor.triggerSchedule") || !currentTrigger.value.title) {
+            currentTrigger.value.title = t("certd.pipeline.editor.triggerWebhook");
           }
         } else if (value === "timer") {
-          if (currentTrigger.value.title === "Webhook触发" || !currentTrigger.value.title) {
-            currentTrigger.value.title = "定时触发";
+          if (currentTrigger.value.title === t("certd.pipeline.editor.triggerWebhook") || !currentTrigger.value.title) {
+            currentTrigger.value.title = t("certd.pipeline.editor.triggerSchedule");
           }
         }
         currentTrigger.value.type = value;

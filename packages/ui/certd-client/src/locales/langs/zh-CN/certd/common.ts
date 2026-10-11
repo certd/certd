@@ -1,4 +1,6 @@
 export default {
+  required: "必填项",
+  no: "否",
   usera: "用户",
   disabledSuccess: "关闭成功",
   app: {

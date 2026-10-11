@@ -1,46 +1,46 @@
 <template>
-  <a-card title="服务端信息" class="server-info-card">
+  <a-card :title="t('certd.nettest.serverInfo')" class="server-info-card">
     <template #extra>
       <a-button size="small" :loading="loading" @click="refreshServerInfo">
         <template #icon>
           <a-icon type="sync" :spin="loading" />
         </template>
-        刷新
+        {{ t("certd.nettest.refresh") }}
       </a-button>
     </template>
     <div v-if="loading" class="loading">
       <a-spin size="small" />
-      <span style="margin-left: 8px">加载中...</span>
+      <span style="margin-left: 8px">{{ t("certd.nettest.loading") }}</span>
     </div>
     <div v-else-if="error" class="error">
-      <a-alert message="获取服务器信息失败" :description="error" type="error" show-icon />
+      <a-alert :message="t('certd.nettest.fetchFailed')" :description="error" type="error" show-icon />
     </div>
     <div v-else class="server-info-grid">
       <!-- 本地IP -->
       <div class="info-item">
-        <div class="info-label">本地IP:</div>
+        <div class="info-label">{{ t("certd.nettest.localIp") }}:</div>
         <div v-if="serverInfo.localIP && serverInfo.localIP.length > 0" class="info-value">
           <a-tag v-for="ip in serverInfo.localIP" :key="ip" type="info" color="blue">{{ ip }}</a-tag>
         </div>
-        <div v-else class="info-empty">暂无信息</div>
+        <div v-else class="info-empty">{{ t("certd.nettest.noInfo") }}</div>
       </div>
 
       <!-- 外网IP -->
       <div class="info-item">
-        <div class="info-label">外网IP:</div>
+        <div class="info-label">{{ t("certd.nettest.publicIp") }}:</div>
         <div v-if="serverInfo.publicIP && serverInfo.publicIP.length > 0" class="info-value">
           <a-tag v-for="ip in serverInfo.publicIP" :key="ip" type="info" color="green">{{ ip }}</a-tag>
         </div>
-        <div v-else class="info-empty">暂无信息</div>
+        <div v-else class="info-empty">{{ t("certd.nettest.noInfo") }}</div>
       </div>
 
       <!-- DNS服务器 -->
       <div class="info-item">
-        <div class="info-label">DNS服务器:</div>
+        <div class="info-label">{{ t("certd.nettest.dnsServer") }}:</div>
         <div v-if="serverInfo.dnsServers && serverInfo.dnsServers.length > 0" class="info-value">
           <a-tag v-for="dns in serverInfo.dnsServers" :key="dns" type="info" color="cyan">{{ dns }}</a-tag>
         </div>
-        <div v-else class="info-empty">暂无信息</div>
+        <div v-else class="info-empty">{{ t("certd.nettest.noInfo") }}</div>
       </div>
     </div>
   </a-card>
@@ -50,6 +50,9 @@
 import { ref, onMounted } from "vue";
 import { notification } from "ant-design-vue";
 import { GetServerInfo } from "./api";
+import { useI18n } from "/@/locales";
+
+const { t } = useI18n();
 
 // 服务器信息类型
 interface ServerInfo {
@@ -70,7 +73,7 @@ const loadServerInfo = async () => {
     serverInfo.value = await GetServerInfo();
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e);
-    notification.error({ message: "获取服务器信息失败" });
+    notification.error({ message: t("certd.nettest.fetchFailed") });
   } finally {
     loading.value = false;
   }

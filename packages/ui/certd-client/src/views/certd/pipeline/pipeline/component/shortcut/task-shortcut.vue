@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { doRequest } from "/@/components/plugins/lib";
 import { ref, useAttrs, inject } from "vue";
+import { useI18n } from "vue-i18n";
 import { useFormWrapper } from "@fast-crud/fast-crud";
 import { notification } from "ant-design-vue";
 import { mergeWith, isArray } from "lodash-es";
@@ -26,6 +27,7 @@ const props = defineProps<{
 }>();
 
 const attrs = useAttrs();
+const { t } = useI18n();
 
 const loading = ref(false);
 
@@ -36,7 +38,7 @@ async function openDialog() {
         columns: {
           ...props.form.columns,
           immediateRun: {
-            title: "立即运行",
+            title: t("certd.pipeline.editor.immediateRun"),
             type: "switch",
             span: 24,
             form: {
@@ -45,7 +47,7 @@ async function openDialog() {
                 name: "a-switch",
                 vModel: "checked",
               },
-              helper: "保存后是否立即触发运行流水线",
+              helper: t("certd.pipeline.editor.immediateRunHelper"),
             },
           },
         },
@@ -55,7 +57,7 @@ async function openDialog() {
             saveRemind: false,
           },
           afterSubmit() {
-            notification.success({ message: "操作成功" });
+            notification.success({ message: t("certd.pipeline.editor.operationSuccess") });
           },
           async doSubmit({ form }: any) {
             return await doPluginFormSubmit(form);

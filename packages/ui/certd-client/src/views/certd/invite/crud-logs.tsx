@@ -1,8 +1,10 @@
 import { CreateCrudOptionsRet, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import * as api from "./api";
 import PriceInput from "/@/views/sys/suite/product/price-input.vue";
+import { useI18n } from "/src/locales";
 
 export default function (): CreateCrudOptionsRet {
+  const { t } = useI18n();
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetCommissionLogs(query);
   };
@@ -16,12 +18,12 @@ export default function (): CreateCrudOptionsRet {
       rowHandle: { show: false },
       columns: {
         createTime: {
-          title: "时间",
+          title: t("certd.suite.orderTime"),
           type: "datetime",
           column: { width: 180 },
         },
         amount: {
-          title: "收益金额",
+          title: t("certd.suite.totalIncome"),
           type: "number",
           column: {
             width: 120,
@@ -29,7 +31,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         simpleUser: {
-          title: "被推广用户",
+          title: t("certd.suite.inviteeCount"),
           type: "text",
           column: {
             width: 170,
@@ -49,7 +51,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         consumeAmount: {
-          title: "推广金额",
+          title: t("certd.suite.promotionAmount"),
           type: "number",
           column: {
             width: 120,
@@ -57,7 +59,7 @@ export default function (): CreateCrudOptionsRet {
           },
         },
         remark: {
-          title: "备注",
+          title: t("certd.common.remark"),
           type: "text",
           column: { minWidth: 220 },
         },

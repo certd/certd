@@ -1,7 +1,9 @@
 import { CreateCrudOptionsProps, CreateCrudOptionsRet, UserPageQuery, UserPageRes } from "@fast-crud/fast-crud";
 import * as api from "./api";
+import { useI18n } from "/src/locales";
 
 export default function (): CreateCrudOptionsRet {
+  const { t } = useI18n();
   const pageRequest = async (query: UserPageQuery): Promise<UserPageRes> => {
     return await api.GetInvitees(query);
   };
@@ -15,26 +17,26 @@ export default function (): CreateCrudOptionsRet {
       rowHandle: { show: false },
       columns: {
         createTime: {
-          title: "邀请时间",
+          title: t("certd.suite.inviteTime"),
           type: "datetime",
           column: { width: 180 },
         },
         simpleUser: {
-          title: "被邀请用户名",
+          title: t("certd.suite.inviteeUsername"),
           type: "text",
           column: {
             minWidth: 180,
             cellRender({ row }) {
               const simpleUser = row.simpleUser;
               if (!simpleUser) {
-                return row.inviteeUserId ? `用户${row.inviteeUserId} (${row.inviteeUserId})` : "-";
+                return row.inviteeUserId ? `${t("certd.common.usera")}${row.inviteeUserId} (${row.inviteeUserId})` : "-";
               }
               return simpleUser.displayName || `${simpleUser.username || "-"} (${simpleUser.id})`;
             },
           },
         },
         inviteCode: {
-          title: "邀请码",
+          title: t("certd.suite.inviteCode"),
           type: "text",
           column: { width: 160 },
         },

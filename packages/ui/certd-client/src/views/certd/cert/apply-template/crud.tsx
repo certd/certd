@@ -4,15 +4,17 @@ import * as api from "./api";
 import { useProjectStore } from "/@/store/project";
 import { usePluginStore } from "/@/store/plugin";
 import { buildCertApplyTemplateColumns, buildTemplateSubmitData, pickCertApplyTemplateParams } from "./fields";
+import { useI18n } from "/src/locales";
 
 export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOptionsRet {
   const pluginStore = usePluginStore();
+  const { t } = useI18n();
   const projectStore = useProjectStore();
   const { openCrudFormDialog } = useFormWrapper();
   const isDefaultDict = dict({
     data: [
-      { value: true, label: "默认", color: "green" },
-      { value: false, label: "否", color: "gray" },
+      { value: true, label: t("certd.applyTemplate.default"), color: "green" },
+      { value: false, label: t("certd.common.no"), color: "gray" },
     ],
   });
 
@@ -38,7 +40,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
 
   async function setDefault(row: any) {
     await api.SetDefault(row.id);
-    notification.success({ message: "设置成功" });
+    notification.success({ message: t("certd.applyTemplate.setSuccess") });
     await crudExpose.doRefresh();
   }
 
@@ -64,7 +66,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           initialForm,
           wrapper: {
             width: 1100,
-            title: row ? "编辑证书申请参数模版" : "新增证书申请参数模版",
+            title: row ? t("certd.applyTemplate.editTitle") : t("certd.applyTemplate.addTitle"),
             saveRemind: false,
           },
           col: {
@@ -125,13 +127,13 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           form: { show: false },
         },
         name: {
-          title: "模版名称",
+          title: t("certd.applyTemplate.name"),
           type: "text",
           search: { show: true },
           column: { minWidth: 220 },
         },
         isDefault: {
-          title: "默认",
+          title: t("certd.applyTemplate.default"),
           type: "dict-switch",
           dict: isDefaultDict,
           column: {
@@ -149,7 +151,7 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
                         setDefault(row);
                       }}
                     >
-                      设为默认
+                      {t("certd.applyTemplate.setDefault")}
                     </a-button>
                   )}
                 </div>
@@ -158,18 +160,18 @@ export default function ({ crudExpose }: CreateCrudOptionsProps): CreateCrudOpti
           },
         },
         disabled: {
-          title: "禁用",
+          title: t("certd.applyTemplate.disabled"),
           type: "dict-switch",
           column: { show: false },
           form: { show: false },
         },
         createTime: {
-          title: "创建时间",
+          title: t("certd.applyTemplate.createTime"),
           type: "datetime",
           column: { width: 180 },
         },
         content: {
-          title: "配置",
+          title: t("certd.applyTemplate.config"),
           type: "text",
           column: { show: false },
           form: { show: false },

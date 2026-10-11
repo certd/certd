@@ -1,5 +1,6 @@
 export default {
   domain: {
+    dnsPersistDescription: "当前仅 Google 证书可以申请 DNS 持久验证。",
     domainManager: "域名管理",
     domainDescription: "流水线校验方式选择“自动选择”时此处配置才有用，支持自动导入；注意：这里只需要管理主域名即可，子域名不要填写（子域名托管和免费二级子域名除外）",
     domain: "域名",
